@@ -2,8 +2,10 @@ package cz.muni.ics.kypo.model;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.TreeSet;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -41,17 +43,15 @@ public class TrainingDefinition {
   @Column(name = "state", nullable = false)
   @Enumerated(EnumType.ORDINAL)
   private TDState state;
-  @Column(name = "initial_level", nullable = false)
-  private String initialLevel;
   @OneToMany(fetch = FetchType.LAZY, mappedBy = "trainingDefinition")
-  private Set<AbstractLevel> abstractLevel = new HashSet<>(0);
+  private Set<AbstractLevel> levels = new TreeSet<>(Comparator.comparingLong(AbstractLevel::getId));
   @OneToMany(fetch = FetchType.LAZY, mappedBy = "trainingDefinition")
   private Set<TrainingInstance> trainingInstance = new HashSet<>(0);
 
   public TrainingDefinition() {}
 
-  public TrainingDefinition(Long id, String title, String description, String[] prerequisities, String[] outcomes, TDState state, String initialLevel,
-      Set<AbstractLevel> abstractLevel) {
+  public TrainingDefinition(Long id, String title, String description, String[] prerequisities, String[] outcomes, TDState state, Set<AbstractLevel> levels,
+      Set<TrainingInstance> trainingInstance) {
     super();
     this.id = id;
     this.title = title;
@@ -59,8 +59,8 @@ public class TrainingDefinition {
     this.prerequisities = prerequisities;
     this.outcomes = outcomes;
     this.state = state;
-    this.initialLevel = initialLevel;
-    this.abstractLevel = abstractLevel;
+    this.levels = levels;
+    this.trainingInstance = trainingInstance;
   }
 
   public Long getId() {
@@ -111,20 +111,12 @@ public class TrainingDefinition {
     this.state = state;
   }
 
-  public String getInitialLevel() {
-    return initialLevel;
+  public Set<AbstractLevel> getLevels() {
+    return Collections.unmodifiableSet(levels);
   }
 
-  public void setInitialLevel(String initialLevel) {
-    this.initialLevel = initialLevel;
-  }
-
-  public Set<AbstractLevel> getAbstractLevel() {
-    return Collections.unmodifiableSet(abstractLevel);
-  }
-
-  public void setAbstractLevel(Set<AbstractLevel> abstractLevel) {
-    this.abstractLevel = abstractLevel;
+  public void setLevels(Set<AbstractLevel> levels) {
+    this.levels = levels;
   }
 
   public Set<TrainingInstance> getTrainingInstance() {
@@ -138,8 +130,7 @@ public class TrainingDefinition {
   @Override
   public String toString() {
     return "TrainingDefinition [id=" + id + ", title=" + title + ", description=" + description + ", prerequisities=" + Arrays.toString(prerequisities)
-        + ", outcomes=" + Arrays.toString(outcomes) + ", state=" + state + ", initialLevel=" + initialLevel + ", abstractLevel=" + abstractLevel
-        + ", trainingInstance=" + trainingInstance + "]";
+        + ", outcomes=" + Arrays.toString(outcomes) + ", state=" + state + ", levels=" + levels + ", trainingInstance=" + trainingInstance + "]";
   }
 
 }

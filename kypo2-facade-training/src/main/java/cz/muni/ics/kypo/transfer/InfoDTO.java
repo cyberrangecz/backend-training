@@ -1,52 +1,50 @@
 package cz.muni.ics.kypo.transfer;
 
+import java.util.Arrays;
+import java.util.Set;
+
+import cz.muni.ics.kypo.model.TrainingDefinition;
+import cz.muni.ics.kypo.model.TrainingRun;
+
 /**
  * 
  * @author Pavel Šeda (441048)
  *
  */
-public class InfoDTO {
+public class InfoDTO extends AbstractLevelDTO {
 
-  private Long id;
-  private String description;
-  private String author;
+	private byte[] content;
 
-  public InfoDTO() {}
+	public InfoDTO() {
+	}
 
-  public InfoDTO(Long id, String description, String author) {
-    super();
-    this.id = id;
-    this.description = description;
-    this.author = author;
-  }
+	public InfoDTO(byte[] content) {
+		super();
+		this.content = content;
+	}
 
-  public Long getId() {
-    return id;
-  }
+	public InfoDTO(Long id, String title, int maxScore, byte[] preHook, byte[] postHook, Long nextLevel,
+			TrainingDefinition trainingDefinition, Set<TrainingRun> trainingRun, byte[] content) {
+		super(id, title, maxScore, preHook, postHook, nextLevel, trainingDefinition, trainingRun);
+		this.content = content;
+	}
 
-  public void setId(Long id) {
-    this.id = id;
-  }
+	public byte[] getContent() {
+		return content;
+	}
 
-  public String getDescription() {
-    return description;
-  }
+	public void setContent(byte[] content) {
+		this.content = content;
+	}
 
-  public void setDescription(String description) {
-    this.description = description;
-  }
-
-  public String getAuthor() {
-    return author;
-  }
-
-  public void setAuthor(String author) {
-    this.author = author;
-  }
-
-  @Override
-  public String toString() {
-    return "InfoDTO [id=" + id + ", description=" + description + ", author=" + author + "]";
-  }
+	@Override
+	public String toString() {
+		return "InfoDTO [content=" + Arrays.toString(content) + ", getId()=" + getId() + ", getTitle()=" + getTitle()
+				+ ", getMaxScore()=" + getMaxScore() + ", getPreHook()=" + Arrays.toString(getPreHook())
+				+ ", getPostHook()=" + Arrays.toString(getPostHook()) + ", getNextLevel()=" + getNextLevel()
+				+ ", getTrainingDefinition()=" + getTrainingDefinition() + ", getTrainingRun()=" + getTrainingRun()
+				+ ", toString()=" + super.toString() + ", getClass()=" + getClass() + ", hashCode()=" + hashCode()
+				+ "]";
+	}
 
 }

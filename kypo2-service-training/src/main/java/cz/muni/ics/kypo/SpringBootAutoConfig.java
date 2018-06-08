@@ -18,16 +18,16 @@ import cz.muni.ics.kypo.repository.TrainingDefinitionRepository;
 @EnableAutoConfiguration
 public class SpringBootAutoConfig implements CommandLineRunner {
 
-  @Autowired
-  private TrainingDefinitionRepository trainingRepository;
+	@Autowired
+	private TrainingDefinitionRepository trainingRepository;
 
-  public static void main(String args[]) {
-    SpringApplication.run(SpringBootAutoConfig.class, args);
-  }
+	public static void main(String args[]) {
+		SpringApplication.run(SpringBootAutoConfig.class, args);
+	}
 
-  @Override
-  public void run(String... args) throws Exception {
-    trainingRepository.save(new TrainingInstance());
-  }
+	@Override
+	public void run(String... args) throws Exception {
+		trainingRepository.save(new TrainingInstance());
+	}
 
 }

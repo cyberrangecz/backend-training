@@ -1,5 +1,6 @@
 package cz.muni.ics.kypo.model;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Objects;
@@ -35,6 +36,8 @@ public abstract class AbstractLevel {
   private String title;
   @Column(name = "max_score", nullable = false)
   private int maxScore;
+  @Column(name = "order", nullable = false)
+  private int order;
   @Column(name = "pre_hook", nullable = true)
   private byte[] preHook;
   @Column(name = "post_hook", nullable = true)
@@ -49,12 +52,13 @@ public abstract class AbstractLevel {
 
   public AbstractLevel() {}
 
-  public AbstractLevel(Long id, String title, int maxScore, byte[] preHook, byte[] postHook, Long nextLevel, TrainingDefinition trainingDefinition,
+  public AbstractLevel(Long id, String title, int maxScore, int order, byte[] preHook, byte[] postHook, Long nextLevel, TrainingDefinition trainingDefinition,
       Set<TrainingRun> trainingRun) {
     super();
     this.id = id;
     this.title = title;
     this.maxScore = maxScore;
+    this.order = order;
     this.preHook = preHook;
     this.postHook = postHook;
     this.nextLevel = nextLevel;
@@ -84,6 +88,14 @@ public abstract class AbstractLevel {
 
   public void setMaxScore(int maxScore) {
     this.maxScore = maxScore;
+  }
+
+  public int getOrder() {
+    return order;
+  }
+
+  public void setOrder(int order) {
+    this.order = order;
   }
 
   public byte[] getPreHook() {
@@ -150,8 +162,9 @@ public abstract class AbstractLevel {
 
   @Override
   public String toString() {
-    return "AbstractLevel [id=" + id + ", title=" + title + ", maxScore=" + maxScore + ", preHook=" + preHook + ", postHook=" + postHook + ", nextLevel="
-        + nextLevel + ", trainingDefinition=" + trainingDefinition + ", trainingRun=" + trainingRun + "]";
+    return "AbstractLevel [id=" + id + ", title=" + title + ", maxScore=" + maxScore + ", order=" + order + ", preHook=" + Arrays.toString(preHook)
+        + ", postHook=" + Arrays.toString(postHook) + ", nextLevel=" + nextLevel + ", trainingDefinition=" + trainingDefinition + ", trainingRun=" + trainingRun
+        + "]";
   }
 
 }

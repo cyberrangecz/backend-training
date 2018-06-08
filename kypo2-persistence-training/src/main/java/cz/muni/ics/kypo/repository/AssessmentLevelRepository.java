@@ -4,7 +4,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.stereotype.Repository;
 
-import cz.muni.ics.kypo.model.AbstractLevel;
+import cz.muni.ics.kypo.model.AssessmentLevel;
 
 /**
  * 
@@ -12,6 +12,6 @@ import cz.muni.ics.kypo.model.AbstractLevel;
  *
  */
 @Repository
-public interface AbstractLevelRepository extends JpaRepository<AbstractLevel, Long>, QuerydslPredicateExecutor<AbstractLevel> {
+public interface AssessmentLevelRepository extends JpaRepository<AssessmentLevel, Long>, QuerydslPredicateExecutor<AssessmentLevel> {
 
 }

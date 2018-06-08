@@ -34,7 +34,7 @@ public class InfoLevel extends AbstractLevel {
   public void setContent(byte[] content) {
     this.content = content;
   }
-
+  
   @Override
   public String toString() {
     return "InfoLevel [content=" + content + "]";
