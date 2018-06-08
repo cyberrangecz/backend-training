@@ -1,0 +1,102 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>cz.muni.ics.kypo</groupId>
+	<artifactId>kypo2-training</artifactId>
+	<version>1.0.0</version>
+	<packaging>pom</packaging>
+
+	<name>Language School Parent</name>
+
+	<parent>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-parent</artifactId>
+		<version>2.0.2.RELEASE</version>
+	</parent>
+
+	<properties>
+		<project.version>1.0.0</project.version>
+		<groupId.version>cz.muni.ics.kypo</groupId.version>
+
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+		<java.version>1.8</java.version>
+
+		<!-- maven compiler -->
+		<maven.compiler.version>3.7.0</maven.compiler.version>
+
+		<slf4j.version>1.6.4</slf4j.version>
+		<flyway.version>5.0.7</flyway.version>
+	</properties>
+
+	<developers>
+		<developer>
+			<name>Pavel Šeda</name>
+			<email>441048@mail.muni.cz</email>
+			<organization>CSIRT</organization>
+			<organizationUrl>https://csirt.muni.cz/</organizationUrl>
+			<roles>
+				<role>developer</role>
+			</roles>
+			<timezone>CET/Central European Time - offset: UTC +1</timezone>
+		</developer>
+	</developers>
+
+	<!-- specifies versions not defined by the Spring platform-bom -->
+	<dependencyManagement>
+		<dependencies>
+
+			<!--Others -->
+			<dependency>
+				<groupId>com.fasterxml.jackson.core</groupId>
+				<artifactId>jackson-databind</artifactId>
+				<version>2.9.0</version>
+			</dependency>
+			<dependency>
+				<groupId>org.jsondoc</groupId>
+				<artifactId>jsondoc-core</artifactId>
+				<version>1.0.3</version>
+				<exclusions>
+					<exclusion>
+						<artifactId>log4j</artifactId>
+						<groupId>log4j</groupId>
+					</exclusion>
+					<exclusion>
+						<artifactId>servlet-api</artifactId>
+						<groupId>javax.servlet</groupId>
+					</exclusion>
+				</exclusions>
+			</dependency>
+			<dependency>
+				<groupId>org.mockito</groupId>
+				<artifactId>mockito-all</artifactId>
+				<scope>test</scope>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
+	<build>
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-compiler-plugin</artifactId>
+					<version>${maven.compiler.version}</version>
+					<configuration>
+						<source>${java.version}</source>
+						<target>${java.version}</target>
+						<encoding>${project.build.sourceEncoding}</encoding>
+					</configuration>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+	</build>
+
+	<modules>
+		<module>kypo2-persistence-training</module>
+		<module>kypo2-service-training</module>
+		<module>kypo2-rest-training</module>
+		<module>kypo2-elasticsearch-training</module>
+		<module>kypo2-facade-training</module>
+	</modules>
+</project>

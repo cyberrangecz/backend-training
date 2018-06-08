@@ -1,0 +1,11 @@
+cz/muni/ics/kypo/validation/EmailValidator.class
+cz/muni/ics/kypo/validation/annotations/ValidEmail.class
+cz/muni/ics/kypo/config/FacadeConfiguration.class
+cz/muni/ics/kypo/facade/InfoFacade.class
+cz/muni/ics/kypo/mapping/BeanMappingImpl.class
+cz/muni/ics/kypo/facade/impl/InfoFacadeImpl.class
+cz/muni/ics/kypo/transfer/InfoDTO.class
+cz/muni/ics/kypo/mapping/BeanMapping.class
+cz/muni/ics/kypo/transfer/factory/InfoDTOFactory.class
+cz/muni/ics/kypo/exception/FacadeLayerException.class
+cz/muni/ics/kypo/transfer/resource/LevelDTOResource.class

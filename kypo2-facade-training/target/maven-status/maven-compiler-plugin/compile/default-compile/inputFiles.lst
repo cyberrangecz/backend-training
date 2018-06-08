@@ -1,0 +1,11 @@
+/home/seda/eclipse-workspace/kypo2-training/kypo2-facade-training/src/main/java/cz/muni/ics/kypo/transfer/InfoDTO.java
+/home/seda/eclipse-workspace/kypo2-training/kypo2-facade-training/src/main/java/cz/muni/ics/kypo/mapping/BeanMappingImpl.java
+/home/seda/eclipse-workspace/kypo2-training/kypo2-facade-training/src/main/java/cz/muni/ics/kypo/config/FacadeConfiguration.java
+/home/seda/eclipse-workspace/kypo2-training/kypo2-facade-training/src/main/java/cz/muni/ics/kypo/exception/FacadeLayerException.java
+/home/seda/eclipse-workspace/kypo2-training/kypo2-facade-training/src/main/java/cz/muni/ics/kypo/validation/EmailValidator.java
+/home/seda/eclipse-workspace/kypo2-training/kypo2-facade-training/src/main/java/cz/muni/ics/kypo/validation/annotations/ValidEmail.java
+/home/seda/eclipse-workspace/kypo2-training/kypo2-facade-training/src/main/java/cz/muni/ics/kypo/facade/InfoFacade.java
+/home/seda/eclipse-workspace/kypo2-training/kypo2-facade-training/src/main/java/cz/muni/ics/kypo/mapping/BeanMapping.java
+/home/seda/eclipse-workspace/kypo2-training/kypo2-facade-training/src/main/java/cz/muni/ics/kypo/facade/impl/InfoFacadeImpl.java
+/home/seda/eclipse-workspace/kypo2-training/kypo2-facade-training/src/main/java/cz/muni/ics/kypo/transfer/resource/LevelDTOResource.java
+/home/seda/eclipse-workspace/kypo2-training/kypo2-facade-training/src/main/java/cz/muni/ics/kypo/transfer/factory/InfoDTOFactory.java
