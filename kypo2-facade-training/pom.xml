@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>cz.muni.ics.kypo</groupId>
 		<artifactId>kypo2-training</artifactId>
-		<version>1.0.0</version>
+		<version>${project.version}</version>
 	</parent>
 	<artifactId>kypo2-facade-training</artifactId>
 	<packaging>jar</packaging>
@@ -22,7 +22,7 @@
 		<dependency>
 			<groupId>cz.muni.ics.kypo</groupId>
 			<artifactId>kypo2-service-training</artifactId>
-			<version>1.0.0</version>
+			<version>${project.version}</version>
 		</dependency>
 		<!-- mapping entities to dto -->
 		<!-- https://mvnrepository.com/artifact/org.modelmapper/modelmapper -->

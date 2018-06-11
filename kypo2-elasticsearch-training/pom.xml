@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>cz.muni.ics.kypo</groupId>
 		<artifactId>kypo2-training</artifactId>
-		<version>1.0.0</version>
+		<version>${project.version}</version>
 	</parent>
 	<artifactId>kypo2-elasticsearch-training</artifactId>
 	<packaging>jar</packaging>
@@ -23,11 +23,6 @@
 	</developers>
 
 	<properties>
-		<java.version>1.8</java.version>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-		<maven.compiler.source>1.8</maven.compiler.source>
-		<maven.compiler.target>1.8</maven.compiler.target>
 		<jackson-schema-validator.version>2.2.8</jackson-schema-validator.version>
 
 		<guava.version>18.0</guava.version>

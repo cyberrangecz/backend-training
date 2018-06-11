@@ -15,6 +15,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.support.ResourceBundleMessageSource;
+import org.springframework.data.web.config.EnableSpringDataWebSupport;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -28,6 +29,7 @@ import cz.muni.ics.kypo.config.FacadeConfiguration;
  *
  */
 @SpringBootApplication
+@EnableSpringDataWebSupport
 @Import({FacadeConfiguration.class})
 @ComponentScan(basePackages = {"cz.muni.ics.kypo.rest"})
 public class WebConfigRestTraining extends SpringBootServletInitializer {
@@ -57,7 +59,6 @@ public class WebConfigRestTraining extends SpringBootServletInitializer {
     messageSource.setDefaultEncoding("UTF-8");
     return messageSource;
   }
-
 
   @Bean
   @Primary

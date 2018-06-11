@@ -1,6 +1,8 @@
 package cz.muni.ics.kypo.model;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -10,7 +12,6 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
@@ -22,8 +23,8 @@ import cz.muni.ics.kypo.model.enums.TRState;
  *
  */
 @Entity
-@Table(name = "training_run")
-public class TrainingRun {
+@Table(catalog = "training", schema = "public", name = "training_run")
+public class TrainingRun implements Serializable {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -32,14 +33,12 @@ public class TrainingRun {
   private LocalDateTime localDateTime;
   @Column(name = "event_log_reference", nullable = true)
   private String eventLogReference;
-  @Column(name = "state", nullable = false)
-  @Enumerated(EnumType.ORDINAL)
+  @Column(name = "state", length = 128, nullable = false)
+  @Enumerated(EnumType.STRING)
   private TRState state;
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "trainingRun")
-  private AbstractLevel abstractLevel;
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "trainingInstance")
+  @ManyToOne(fetch = FetchType.LAZY, optional = true)
+  private AbstractLevel level;
+  @ManyToOne(fetch = FetchType.EAGER)
   private TrainingInstance trainingInstance;
 
   public TrainingRun() {}
@@ -51,7 +50,7 @@ public class TrainingRun {
     this.localDateTime = localDateTime;
     this.eventLogReference = eventLogReference;
     this.state = state;
-    this.abstractLevel = abstractLevel;
+    this.level = abstractLevel;
     this.trainingInstance = trainingInstance;
   }
 
@@ -87,12 +86,12 @@ public class TrainingRun {
     this.state = state;
   }
 
-  public AbstractLevel getAbstractLevel() {
-    return abstractLevel;
+  public AbstractLevel getLevel() {
+    return level;
   }
 
-  public void setAbstractLevel(AbstractLevel abstractLevel) {
-    this.abstractLevel = abstractLevel;
+  public void setLevel(AbstractLevel level) {
+    this.level = level;
   }
 
   public TrainingInstance getTrainingInstance() {
@@ -104,9 +103,32 @@ public class TrainingRun {
   }
 
   @Override
+  public int hashCode() {
+    return Objects.hash(level, eventLogReference, localDateTime, state, trainingInstance);
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj)
+      return true;
+    if (obj == null)
+      return false;
+    if (!(obj instanceof TrainingRun))
+      return false;
+    TrainingRun other = (TrainingRun) obj;
+    // @formatter:off
+    return Objects.equals(level, other.getLevel()) 
+        && Objects.equals(eventLogReference, other.getEventLogReference())
+        && Objects.equals(localDateTime, other.getLocalDateTime()) 
+        && Objects.equals(state, other.getState())
+        && Objects.equals(trainingInstance, other.getTrainingInstance());
+    // @formatter:on
+  }
+
+  @Override
   public String toString() {
     return "TrainingRun [id=" + id + ", localDateTime=" + localDateTime + ", eventLogReference=" + eventLogReference + ", state=" + state + ", abstractLevel="
-        + abstractLevel + ", trainingInstance=" + trainingInstance + "]";
+        + level + ", trainingInstance=" + trainingInstance + ", toString()=" + super.toString() + "]";
   }
 
 }

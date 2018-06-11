@@ -1,5 +1,9 @@
 package cz.muni.ics.kypo.model;
 
+import java.io.Serializable;
+import java.util.Arrays;
+import java.util.Objects;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -7,6 +11,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
@@ -16,19 +21,20 @@ import javax.persistence.Table;
  *
  */
 @Entity
-@Table(name = "hint")
-public class Hint {
+@Table(catalog = "training", schema = "public", name = "hint")
+public class Hint implements Serializable {
+
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
   @Column(name = "title", nullable = false)
   private String title;
+  @Lob
   @Column(name = "content", nullable = false)
   private byte[] content;
   @Column(name = "points", nullable = false)
   private Integer points;
   @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "hints")
   private GameLevel gameLevel;
 
   public Hint() {}
@@ -83,8 +89,31 @@ public class Hint {
   }
 
   @Override
+  public int hashCode() {
+    return Objects.hash(content, gameLevel, points, title);
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj)
+      return true;
+    if (obj == null)
+      return false;
+    if (!(obj instanceof Hint))
+      return false;
+    Hint other = (Hint) obj;
+    // @formatter:off
+    return Arrays.equals(content, other.getContent())
+        && Objects.equals(gameLevel, other.getGameLevel()) 
+        && Objects.equals(points, other.getPoints())
+        && Objects.equals(title, other.getTitle());
+    // @formatter:on
+  }
+
+  @Override
   public String toString() {
-    return "Hint [id=" + id + ", title=" + title + ", content=" + content + ", points=" + points + ", gameLevel=" + gameLevel + "]";
+    return "Hint [id=" + id + ", title=" + title + ", content=" + Arrays.toString(content) + ", points=" + points + ", gameLevel=" + gameLevel + ", toString()="
+        + super.toString() + "]";
   }
 
 }

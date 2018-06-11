@@ -1,26 +1,40 @@
 package cz.muni.ics.kypo.model;
 
-import java.util.Set;
+import java.util.Arrays;
+import java.util.Objects;
 
 import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.PrimaryKeyJoinColumn;
+import javax.persistence.Table;
 
 import org.hibernate.annotations.Type;
+import org.hibernate.annotations.TypeDef;
+import org.hibernate.annotations.TypeDefs;
 
 import cz.muni.ics.kypo.model.enums.AssessmentType;
+import cz.muni.ics.kypo.utils.StringJsonUserType;
 
 /**
  * 
  * @author Pavel Seda (441048)
  *
  */
+@Entity
+@Table(catalog = "training", schema = "public", name = "assessment_level")
+@TypeDefs({@TypeDef(name = "JsonObject", typeClass = StringJsonUserType.class)})
+@PrimaryKeyJoinColumn(name = "id")
 public class AssessmentLevel extends AbstractLevel {
 
-  @Type(type = "jsonb")
-  @Column(name = "questions", columnDefinition = "json", nullable = false)
+  @Type(type = "JsonObject")
+  @Column(name = "questions", columnDefinition = "jsonb", nullable = false)
   private String questions;
   @Column(name = "instructions", nullable = false)
   private String instructions;
-  @Column(name = "assessment_type", nullable = false)
+  @Column(name = "assessment_type", length = 128, nullable = false)
+  @Enumerated(EnumType.STRING)
   private AssessmentType assessmentType;
 
   public AssessmentLevel() {}
@@ -30,11 +44,6 @@ public class AssessmentLevel extends AbstractLevel {
     this.questions = questions;
     this.instructions = instructions;
     this.assessmentType = assessmentType;
-  }
-
-  public AssessmentLevel(Long id, String title, int maxScore, int order, byte[] preHook, byte[] postHook, Long nextLevel, TrainingDefinition trainingDefinition,
-      Set<TrainingRun> trainingRun) {
-    super(id, title, maxScore, order, preHook, postHook, nextLevel, trainingDefinition, trainingRun);
   }
 
   public String getQuestions() {
@@ -62,8 +71,32 @@ public class AssessmentLevel extends AbstractLevel {
   }
 
   @Override
+  public int hashCode() {
+    return Objects.hash(questions, instructions, assessmentType);
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj)
+      return true;
+    if (!super.equals(obj))
+      return false;
+    if (!(obj instanceof AssessmentLevel))
+      return false;
+    AssessmentLevel other = (AssessmentLevel) obj;
+    // @formatter:off
+    return Objects.equals(assessmentType, other.getAssessmentType()) 
+        && Objects.equals(instructions, other.getInstructions())
+        && Objects.equals(questions, other.getQuestions());
+    // @formatter:on
+  }
+
+  @Override
   public String toString() {
-    return "AssessmentLevel [questions=" + questions + ", instructions=" + instructions + ", assessmentType=" + assessmentType + "]";
+    return "AssessmentLevel [questions=" + questions + ", instructions=" + instructions + ", assessmentType=" + assessmentType + ", getId()=" + getId()
+        + ", getTitle()=" + getTitle() + ", getMaxScore()=" + getMaxScore() + ", getOrder()=" + getOrder() + ", getPreHook()=" + Arrays.toString(getPreHook())
+        + ", getPostHook()=" + Arrays.toString(getPostHook()) + ", getNextLevel()=" + getNextLevel() + ", getTrainingDefinition()=" + getTrainingDefinition()
+        + ", getTrainingRun()=" + getTrainingRun() + ", toString()=" + super.toString() + "]";
   }
 
 }

@@ -1,5 +1,6 @@
 package cz.muni.ics.kypo.transfer.factory;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -8,7 +9,8 @@ import org.springframework.stereotype.Component;
 
 import cz.muni.ics.kypo.model.InfoLevel;
 import cz.muni.ics.kypo.transfer.InfoDTO;
-import cz.muni.ics.kypo.transfer.resource.LevelDTOResource;
+import cz.muni.ics.kypo.transfer.ResultInfoDTO;
+import cz.muni.ics.kypo.transfer.resource.InfoLevelsDTOResource;
 
 /**
  * Factory class for info DTO and Resource classes
@@ -25,12 +27,24 @@ public class InfoDTOFactory {
         info.getTrainingDefinition(), info.getTrainingRun(), info.getContent());
   }
 
-  public LevelDTOResource<InfoDTO> createInfoDTOsResource(List<InfoDTO> infos) {
-    return new LevelDTOResource<>(infos);
+  public List<InfoDTO> createInfoDTOs(List<InfoLevel> infoLevels) {
+    List<InfoDTO> infoDTOs = new ArrayList<>();
+    infoLevels.forEach(infoLevel -> {
+      infoDTOs.add(createInfoDTO(infoLevel));
+    });
+    return infoDTOs;
   }
 
-  public LevelDTOResource<InfoDTO> createInfoDTOResource(InfoDTO info) {
-    return new LevelDTOResource<>(Arrays.asList(info));
+  public InfoLevelsDTOResource<InfoDTO> createInfoDTOsResource(InfoDTO infoLevel) {
+    return new InfoLevelsDTOResource<>(Arrays.asList(infoLevel));
+  }
+
+  public InfoLevelsDTOResource<InfoDTO> createInfoDTOsResource(List<InfoDTO> infoLevels) {
+    return new InfoLevelsDTOResource<>(infoLevels);
+  }
+
+  public InfoLevelsDTOResource<InfoDTO> createInfoDTOsResource(List<InfoDTO> infoLevels, ResultInfoDTO resultInfo) {
+    return new InfoLevelsDTOResource<>(resultInfo, infoLevels);
   }
 
 }

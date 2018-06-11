@@ -14,41 +14,37 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
-import javax.persistence.JoinColumn;
+import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
-/**
- * 
- * @author Pavel Seda (441048)
- *
- */
 @Entity
-@Table(name = "level")
+@Table(catalog = "training", schema = "public", name = "\"abstract_level\"")
 @Inheritance(strategy = InheritanceType.JOINED)
 public abstract class AbstractLevel {
-
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private Long id;
+  @Column(name = "id")
+  protected Long id;
   @Column(name = "title", nullable = false)
-  private String title;
+  protected String title;
   @Column(name = "max_score", nullable = false)
-  private int maxScore;
-  @Column(name = "order", nullable = false)
-  private int order;
+  protected int maxScore;
+  @Column(name = "\"order\"", nullable = false)
+  protected int order;
+  @Lob
   @Column(name = "pre_hook", nullable = true)
-  private byte[] preHook;
+  protected byte[] preHook;
+  @Lob
   @Column(name = "post_hook", nullable = true)
-  private byte[] postHook;
+  protected byte[] postHook;
   @Column(name = "next_level", nullable = false)
-  private Long nextLevel;
+  protected Long nextLevel;
   @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "abstractLevel")
-  private TrainingDefinition trainingDefinition;
-  @OneToMany(fetch = FetchType.LAZY, mappedBy = "abstractLevel")
-  private Set<TrainingRun> trainingRun = new HashSet<>(0);
+  protected TrainingDefinition trainingDefinition;
+  @OneToMany(fetch = FetchType.LAZY, targetEntity = TrainingRun.class, mappedBy = "level")
+  protected Set<TrainingRun> trainingRun = new HashSet<>();
 
   public AbstractLevel() {}
 
@@ -73,6 +69,7 @@ public abstract class AbstractLevel {
   public void setId(Long id) {
     this.id = id;
   }
+
 
   public String getTitle() {
     return title;
@@ -140,7 +137,7 @@ public abstract class AbstractLevel {
 
   @Override
   public int hashCode() {
-    return Objects.hash(id);
+    return Objects.hashCode(id);
   }
 
   @Override
@@ -162,9 +159,8 @@ public abstract class AbstractLevel {
 
   @Override
   public String toString() {
-    return "AbstractLevel [id=" + id + ", title=" + title + ", maxScore=" + maxScore + ", order=" + order + ", preHook=" + Arrays.toString(preHook)
-        + ", postHook=" + Arrays.toString(postHook) + ", nextLevel=" + nextLevel + ", trainingDefinition=" + trainingDefinition + ", trainingRun=" + trainingRun
-        + "]";
+    return "Level [id=" + id + ", title=" + title + ", maxScore=" + maxScore + ", order=" + order + ", preHook=" + Arrays.toString(preHook) + ", postHook="
+        + Arrays.toString(postHook) + ", nextLevel=" + nextLevel + ", trainingDefinition=" + trainingDefinition + ", trainingRun=" + trainingRun + "]";
   }
 
 }

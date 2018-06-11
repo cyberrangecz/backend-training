@@ -1,8 +1,10 @@
 package cz.muni.ics.kypo.model;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 import javax.persistence.Column;
@@ -22,8 +24,8 @@ import javax.persistence.Table;
  *
  */
 @Entity
-@Table(name = "training_instance")
-public class TrainingInstance {
+@Table(catalog = "training", schema = "public", name = "training_instance")
+public class TrainingInstance implements Serializable {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -39,10 +41,9 @@ public class TrainingInstance {
   @Column(name = "keywords", nullable = false)
   private String keywords;
   @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "trainingInstance")
   private TrainingDefinition trainingDefinition;
-  @OneToMany(fetch = FetchType.LAZY, mappedBy = "trainingInstance")
-  private Set<TrainingRun> trainingRun = new HashSet<>(0);
+  @OneToMany(fetch = FetchType.LAZY, targetEntity = TrainingRun.class, mappedBy = "trainingInstance")
+  private Set<TrainingRun> trainingRun = new HashSet<>();
 
   public TrainingInstance() {}
 
@@ -124,9 +125,34 @@ public class TrainingInstance {
   }
 
   @Override
+  public int hashCode() {
+    return Objects.hash(keywords, lifeTime, localDateTime, poolSize, title, trainingDefinition, trainingRun);
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj)
+      return true;
+    if (obj == null)
+      return false;
+    if (!(obj instanceof TrainingInstance))
+      return false;
+    TrainingInstance other = (TrainingInstance) obj;
+    // @formatter:off
+    return Objects.equals(keywords, other.getKeywords()) 
+        && Objects.equals(lifeTime, other.getLifeTime())
+        && Objects.equals(localDateTime, other.getLocalDateTime())
+        && Objects.equals(poolSize, other.getPoolSize())
+        && Objects.equals(title, other.getTitle())
+        && Objects.equals(trainingDefinition, other.getTrainingDefinition()) 
+        && Objects.equals(trainingRun, other.getTrainingRun());
+    // @formatter:on
+  }
+
+  @Override
   public String toString() {
     return "TrainingInstance [id=" + id + ", localDateTime=" + localDateTime + ", lifeTime=" + lifeTime + ", title=" + title + ", poolSize=" + poolSize
-        + ", keywords=" + keywords + ", trainingDefinition=" + trainingDefinition + ", trainingRun=" + trainingRun + "]";
+        + ", keywords=" + keywords + ", trainingDefinition=" + trainingDefinition + ", trainingRun=" + trainingRun + ", toString()=" + super.toString() + "]";
   }
 
 }
