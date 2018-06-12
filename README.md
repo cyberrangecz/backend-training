@@ -1,8 +1,16 @@
+# KYPO2 Trainings
 This is parent project representing back-end for Trainings. It is divided into several modules as REST, facade, service, persistence, elasticsearch. 
-The main project is REST module.
+The main project is [REST module] (https://gitlab.ics.muni.cz/kypo2/services-and-portlets/kypo2-training/tree/master/kypo2-rest-training).
+
+## Authors
+
+Role         | UCO          | Name 
+------------ | ------------ | -------------
+Developer    |   441048     | Šeda Pavel
+
 
 ## Starting up Project (NOT implemented yet)
-You don't have to install Java, Maven, Tomcat, Elasticsearch, etc. to your local development environment. All you need is Vagrant installed (http://docs.ansible.com/ansible/latest/guide_vagrant.html).
+You don't have to install Java, Maven, Tomcat, Elasticsearch, etc. to your local development environment. All you need is [Vagrant installed] (http://docs.ansible.com/ansible/latest/guide_vagrant.html).
 
 ```
 vagrant up
@@ -24,9 +32,10 @@ e.g. on localhost it should be:
 http://localhost:8080/kypo2-rest-training/swagger-ui.html
 ```
 
+NOTE: please note that client for that REST API could be generated using [Swagger codegen] (https://swagger.io/tools/swagger-codegen/). It is crucial to annotate each RestController method properly!
 # Following steps are necessary for manual starting up project
 
-# Database migration
+## Database migration
 Prerequisities running PostgreSQL and created database named 'training' with schema 'public'.
 To migrate database data it is necessary to run these two scripts:
 
@@ -35,9 +44,10 @@ $ mvn flyway:migrate -Djdbc.url=jdbc:postgresql://{url to DB}/training -Djdbc.us
 
 ```
 
-NOTE: This script must be run in kypo2-training-persistence module.
+NOTE: This script must be run in [kypo2-training-persistence] (https://gitlab.ics.muni.cz/kypo2/services-and-portlets/kypo2-training/tree/master/kypo2-persistence-training) module.
 
-# Application properties
+## Application properties
+```
 <!-- For description of each field check: https://docs.spring.io/spring-boot/docs/current/reference/html/common-application-properties.html -->
 
 <!-- DATASOURCE (DataSourceAutoConfiguration & DataSourceProperties) -->
@@ -61,8 +71,9 @@ elasticsearch.port1=9200
 elasticsearch.port2=9201
 
 spring.jmx.enabled = false
+```
 
-# Installing project
+## Installing project
 Installing by maven:
 
 ```
