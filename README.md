@@ -1,5 +1,5 @@
 # KYPO2 Trainings
-This is parent project representing back-end for Trainings. It is divided into several modules as REST, facade, service, persistence, elasticsearch. 
+This is parent project representing back-end for Trainings. It is divided into several modules as [REST] (https://gitlab.ics.muni.cz/kypo2/services-and-portlets/kypo2-training/tree/master/kypo2-rest-training), [facade] (https://gitlab.ics.muni.cz/kypo2/services-and-portlets/kypo2-training/tree/master/kypo2-facade-training), [service] (https://gitlab.ics.muni.cz/kypo2/services-and-portlets/kypo2-training/tree/master/kypo2-service-training), [persistence] (https://gitlab.ics.muni.cz/kypo2/services-and-portlets/kypo2-training/tree/master/kypo2-persistence-training), [Elasticsearch] (https://gitlab.ics.muni.cz/kypo2/services-and-portlets/kypo2-training/tree/master/kypo2-elasticsearch-training). 
 The main project is [REST module] (https://gitlab.ics.muni.cz/kypo2/services-and-portlets/kypo2-training/tree/master/kypo2-rest-training).
 
 ## Authors
