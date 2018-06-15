@@ -32,19 +32,19 @@ public class Hint implements Serializable {
   @Lob
   @Column(name = "content", nullable = false)
   private byte[] content;
-  @Column(name = "points", nullable = false)
-  private Integer points;
+  @Column(name = "hint_penalty", nullable = false)
+  private Integer hintPenalty;
   @ManyToOne(fetch = FetchType.LAZY)
   private GameLevel gameLevel;
 
   public Hint() {}
 
-  public Hint(Long id, String title, byte[] content, Integer points, GameLevel gameLevel) {
+  public Hint(Long id, String title, byte[] content, Integer hintPenalty, GameLevel gameLevel) {
     super();
     this.id = id;
     this.title = title;
     this.content = content;
-    this.points = points;
+    this.hintPenalty = hintPenalty;
     this.gameLevel = gameLevel;
   }
 
@@ -72,12 +72,12 @@ public class Hint implements Serializable {
     this.content = content;
   }
 
-  public Integer getPoints() {
-    return points;
+  public Integer getHintPenalty() {
+    return hintPenalty;
   }
 
-  public void setPoints(Integer points) {
-    this.points = points;
+  public void setHintPenalty(Integer hintPenalty) {
+    this.hintPenalty = hintPenalty;
   }
 
   public GameLevel getGameLevel() {
@@ -90,7 +90,7 @@ public class Hint implements Serializable {
 
   @Override
   public int hashCode() {
-    return Objects.hash(content, gameLevel, points, title);
+    return Objects.hash(content, gameLevel, hintPenalty, title);
   }
 
   @Override
@@ -105,15 +105,15 @@ public class Hint implements Serializable {
     // @formatter:off
     return Arrays.equals(content, other.getContent())
         && Objects.equals(gameLevel, other.getGameLevel()) 
-        && Objects.equals(points, other.getPoints())
+        && Objects.equals(hintPenalty, other.getHintPenalty())
         && Objects.equals(title, other.getTitle());
     // @formatter:on
   }
 
   @Override
   public String toString() {
-    return "Hint [id=" + id + ", title=" + title + ", content=" + Arrays.toString(content) + ", points=" + points + ", gameLevel=" + gameLevel + ", toString()="
-        + super.toString() + "]";
+    return "Hint [id=" + id + ", title=" + title + ", content=" + Arrays.toString(content) + ", hintPenalty=" + hintPenalty + ", gameLevel=" + gameLevel
+        + ", toString()=" + super.toString() + "]";
   }
 
 }

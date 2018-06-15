@@ -29,28 +29,31 @@ public class TrainingRun implements Serializable {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
-  @Column(name = "date_time", nullable = false)
-  private LocalDateTime localDateTime;
+  @Column(name = "start_time", nullable = false)
+  private LocalDateTime startTime;
+  @Column(name = "end_time", nullable = false)
+  private LocalDateTime endTime;
   @Column(name = "event_log_reference", nullable = true)
   private String eventLogReference;
   @Column(name = "state", length = 128, nullable = false)
   @Enumerated(EnumType.STRING)
   private TRState state;
   @ManyToOne(fetch = FetchType.LAZY, optional = true)
-  private AbstractLevel level;
+  private AbstractLevel currentLevel;
   @ManyToOne(fetch = FetchType.EAGER)
   private TrainingInstance trainingInstance;
 
   public TrainingRun() {}
 
-  public TrainingRun(Long id, LocalDateTime localDateTime, String eventLogReference, TRState state, AbstractLevel abstractLevel,
+  public TrainingRun(Long id, LocalDateTime startTime, LocalDateTime endTime, String eventLogReference, TRState state, AbstractLevel currentLevel,
       TrainingInstance trainingInstance) {
     super();
     this.id = id;
-    this.localDateTime = localDateTime;
+    this.startTime = startTime;
+    this.endTime = endTime;
     this.eventLogReference = eventLogReference;
     this.state = state;
-    this.level = abstractLevel;
+    this.currentLevel = currentLevel;
     this.trainingInstance = trainingInstance;
   }
 
@@ -62,12 +65,20 @@ public class TrainingRun implements Serializable {
     this.id = id;
   }
 
-  public LocalDateTime getLocalDateTime() {
-    return localDateTime;
+  public LocalDateTime getStartTime() {
+    return startTime;
   }
 
-  public void setLocalDateTime(LocalDateTime localDateTime) {
-    this.localDateTime = localDateTime;
+  public void setStartTime(LocalDateTime startTime) {
+    this.startTime = startTime;
+  }
+
+  public LocalDateTime getEndTime() {
+    return endTime;
+  }
+
+  public void setEndTime(LocalDateTime endTime) {
+    this.endTime = endTime;
   }
 
   public String getEventLogReference() {
@@ -86,12 +97,12 @@ public class TrainingRun implements Serializable {
     this.state = state;
   }
 
-  public AbstractLevel getLevel() {
-    return level;
+  public AbstractLevel getCurrentLevel() {
+    return currentLevel;
   }
 
-  public void setLevel(AbstractLevel level) {
-    this.level = level;
+  public void setCurrentLevel(AbstractLevel currentLevel) {
+    this.currentLevel = currentLevel;
   }
 
   public TrainingInstance getTrainingInstance() {
@@ -104,7 +115,7 @@ public class TrainingRun implements Serializable {
 
   @Override
   public int hashCode() {
-    return Objects.hash(level, eventLogReference, localDateTime, state, trainingInstance);
+    return Objects.hash(currentLevel, eventLogReference, startTime, endTime, state, trainingInstance);
   }
 
   @Override
@@ -117,9 +128,10 @@ public class TrainingRun implements Serializable {
       return false;
     TrainingRun other = (TrainingRun) obj;
     // @formatter:off
-    return Objects.equals(level, other.getLevel()) 
+    return Objects.equals(currentLevel, other.getCurrentLevel()) 
         && Objects.equals(eventLogReference, other.getEventLogReference())
-        && Objects.equals(localDateTime, other.getLocalDateTime()) 
+        && Objects.equals(startTime, other.getStartTime())
+        && Objects.equals(endTime, other.getEndTime()) 
         && Objects.equals(state, other.getState())
         && Objects.equals(trainingInstance, other.getTrainingInstance());
     // @formatter:on
@@ -127,8 +139,8 @@ public class TrainingRun implements Serializable {
 
   @Override
   public String toString() {
-    return "TrainingRun [id=" + id + ", localDateTime=" + localDateTime + ", eventLogReference=" + eventLogReference + ", state=" + state + ", abstractLevel="
-        + level + ", trainingInstance=" + trainingInstance + ", toString()=" + super.toString() + "]";
+    return "TrainingRun [id=" + id + ", startTime=" + startTime + ", endTime=" + endTime + ", eventLogReference=" + eventLogReference + ", state=" + state
+        + ", currentLevel=" + currentLevel + ", trainingInstance=" + trainingInstance + ", getClass()=" + getClass() + ", toString()=" + super.toString() + "]";
   }
 
 }

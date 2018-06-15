@@ -8,7 +8,7 @@ import cz.muni.csirt.kypo.elasticsearch.service.audit.config.TrainingElasticsear
 
 @Configuration
 @Import({PersistenceConfig.class, TrainingElasticsearchServiceConfig.class})
-@ComponentScan(basePackages = {"cz.muni.ics.kypo.service"})
+//@ComponentScan(basePackages = {"cz.muni.ics.kypo.service"})
 public class ServiceConfig {
 
 }

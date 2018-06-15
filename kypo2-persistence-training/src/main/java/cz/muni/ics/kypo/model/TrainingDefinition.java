@@ -46,8 +46,7 @@ public class TrainingDefinition implements Serializable {
   @Enumerated(EnumType.STRING)
   private TDState state;
   @OneToMany(fetch = FetchType.LAZY, targetEntity = AbstractLevel.class, mappedBy = "trainingDefinition")
-  // private Set<Level> levels = new TreeSet<>(Comparator.comparingLong(AbstractLevel::getId));
-  private Set<AbstractLevel> levels = new HashSet<>();
+  private Set<AbstractLevel> levels = new TreeSet<>(Comparator.comparingLong(AbstractLevel::getId));
   @OneToMany(fetch = FetchType.LAZY, targetEntity = TrainingInstance.class, mappedBy = "trainingDefinition")
   private Set<TrainingInstance> trainingInstance = new HashSet<>();
 

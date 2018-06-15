@@ -14,12 +14,12 @@ import com.querydsl.core.types.Predicate;
 
 import cz.muni.ics.kypo.exception.FacadeLayerException;
 import cz.muni.ics.kypo.exceptions.ServiceLayerException;
-import cz.muni.ics.kypo.facade.InfoFacade;
+import cz.muni.ics.kypo.facade.InfoLevelFacade;
 import cz.muni.ics.kypo.model.InfoLevel;
-import cz.muni.ics.kypo.service.InfoService;
-import cz.muni.ics.kypo.transfer.InfoDTO;
+import cz.muni.ics.kypo.service.InfoLevelService;
+import cz.muni.ics.kypo.transfer.InfoLevelDTO;
 import cz.muni.ics.kypo.transfer.ResultInfoDTO;
-import cz.muni.ics.kypo.transfer.factory.InfoDTOFactory;
+import cz.muni.ics.kypo.transfer.factory.InfoLevelDTOFactory;
 import cz.muni.ics.kypo.transfer.resource.InfoLevelsDTOResource;
 
 /**
@@ -28,25 +28,25 @@ import cz.muni.ics.kypo.transfer.resource.InfoLevelsDTOResource;
  */
 @Service
 @Transactional
-public class InfoFacadeImpl implements InfoFacade {
+public class InfoLevelFacadeImpl implements InfoLevelFacade {
 
-  private InfoService infoService;
-  private InfoDTOFactory infoDTOFactory;
+  private InfoLevelService infoService;
+  private InfoLevelDTOFactory infoDTOFactory;
 
   @Autowired
-  public InfoFacadeImpl(InfoService infoService, InfoDTOFactory infoDTOFactory) {
+  public InfoLevelFacadeImpl(InfoLevelService infoService, InfoLevelDTOFactory infoDTOFactory) {
     this.infoService = infoService;
     this.infoDTOFactory = infoDTOFactory;
   }
 
   @Override
   @Transactional(readOnly = true)
-  public InfoLevelsDTOResource<InfoDTO> findById(Long id) {
+  public InfoLevelsDTOResource<InfoLevelDTO> findById(Long id) {
     try {
       Objects.requireNonNull(id);
       Optional<InfoLevel> info = infoService.findById(id);
       InfoLevel inf = info.orElseThrow(() -> new ServiceLayerException("Info with this id is not found"));
-      InfoDTO infoDTO = infoDTOFactory.createInfoDTO(inf);
+      InfoLevelDTO infoDTO = infoDTOFactory.createInfoDTO(inf);
       return infoDTOFactory.createInfoDTOsResource(infoDTO);
     } catch (NullPointerException ex) {
       throw new FacadeLayerException("Given info ID is null.");
@@ -57,10 +57,10 @@ public class InfoFacadeImpl implements InfoFacade {
 
   @Override
   @Transactional(readOnly = true)
-  public InfoLevelsDTOResource<InfoDTO> findAll(Predicate predicate, Pageable pageable) {
+  public InfoLevelsDTOResource<InfoLevelDTO> findAll(Predicate predicate, Pageable pageable) {
     try {
       Page<InfoLevel> infoLevels = infoService.findAll(predicate, pageable);
-      List<InfoDTO> infoDTOs = infoDTOFactory.createInfoDTOs(infoLevels.getContent());
+      List<InfoLevelDTO> infoDTOs = infoDTOFactory.createInfoDTOs(infoLevels.getContent());
       return infoDTOFactory.createInfoDTOsResource(infoDTOs, new ResultInfoDTO(infoLevels.getNumber(), infoLevels.getNumberOfElements(), infoLevels.getSize(),
           infoLevels.getTotalElements(), infoLevels.getTotalPages()));
     } catch (ServiceLayerException ex) {

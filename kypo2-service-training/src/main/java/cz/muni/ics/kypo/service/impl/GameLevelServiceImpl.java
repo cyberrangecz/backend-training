@@ -1,6 +1,5 @@
 package cz.muni.ics.kypo.service.impl;
 
-
 import java.util.Optional;
 
 import org.hibernate.HibernateException;
@@ -12,9 +11,9 @@ import org.springframework.stereotype.Service;
 import com.querydsl.core.types.Predicate;
 
 import cz.muni.ics.kypo.exceptions.ServiceLayerException;
-import cz.muni.ics.kypo.model.InfoLevel;
-import cz.muni.ics.kypo.repository.InfoLevelRepository;
-import cz.muni.ics.kypo.service.InfoService;
+import cz.muni.ics.kypo.model.GameLevel;
+import cz.muni.ics.kypo.repository.GameLevelRepository;
+import cz.muni.ics.kypo.service.GameLevelService;
 
 /**
  * 
@@ -22,28 +21,28 @@ import cz.muni.ics.kypo.service.InfoService;
  *
  */
 @Service
-public class InfoServiceImpl implements InfoService {
+public class GameLevelServiceImpl implements GameLevelService {
 
-  private InfoLevelRepository infoRepository;
+  private GameLevelRepository gameLevelRepository;
 
   @Autowired
-  public InfoServiceImpl(InfoLevelRepository infoRepository) {
-    this.infoRepository = infoRepository;
+  public GameLevelServiceImpl(GameLevelRepository gameLevelRepository) {
+    this.gameLevelRepository = gameLevelRepository;
   }
 
   @Override
-  public Optional<InfoLevel> findById(Long id) {
+  public Optional<GameLevel> findById(long id) {
     try {
-      return infoRepository.findById(id);
+      return gameLevelRepository.findById(id);
     } catch (HibernateException ex) {
       throw new ServiceLayerException(ex.getLocalizedMessage());
     }
   }
 
   @Override
-  public Page<InfoLevel> findAll(Predicate predicate, Pageable pageable) {
+  public Page<GameLevel> findAll(Predicate predicate, Pageable pageable) {
     try {
-      return infoRepository.findAll(predicate, pageable);
+      return gameLevelRepository.findAll(predicate, pageable);
     } catch (HibernateException ex) {
       throw new ServiceLayerException(ex.getLocalizedMessage());
     }

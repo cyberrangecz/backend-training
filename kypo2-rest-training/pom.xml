@@ -38,6 +38,10 @@
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>
 		<dependency>
@@ -66,18 +70,12 @@
 			<artifactId>squiggly-filter-jackson</artifactId>
 			<version>${squiggly.filter.jackson.version}</version>
 		</dependency>
-		<!-- jackson -->
-		<dependency>
-			<groupId>com.fasterxml.jackson.core</groupId>
-			<artifactId>jackson-core</artifactId>
-		</dependency>
 		<dependency>
 			<groupId>org.elasticsearch.client</groupId>
 			<artifactId>elasticsearch-rest-high-level-client</artifactId>
 			<version>${elasticsearch.client.version}</version>
 		</dependency>
 	</dependencies>
-
 
 	<build>
 		<!-- mvn -Des-config-file=/etc/kypo2_config.properties -->

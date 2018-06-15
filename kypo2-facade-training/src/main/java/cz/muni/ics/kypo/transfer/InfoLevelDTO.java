@@ -11,19 +11,19 @@ import cz.muni.ics.kypo.model.TrainingRun;
  * @author Pavel Šeda (441048)
  *
  */
-public class InfoDTO extends AbstractLevelDTO {
+public class InfoLevelDTO extends AbstractLevelDTO {
 
 	private byte[] content;
 
-	public InfoDTO() {
+	public InfoLevelDTO() {
 	}
 
-	public InfoDTO(byte[] content) {
+	public InfoLevelDTO(byte[] content) {
 		super();
 		this.content = content;
 	}
 
-	public InfoDTO(Long id, String title, int maxScore, byte[] preHook, byte[] postHook, Long nextLevel,
+	public InfoLevelDTO(Long id, String title, int maxScore, byte[] preHook, byte[] postHook, Long nextLevel,
 			TrainingDefinition trainingDefinition, Set<TrainingRun> trainingRun, byte[] content) {
 		super(id, title, maxScore, preHook, postHook, nextLevel, trainingDefinition, trainingRun);
 		this.content = content;

@@ -16,10 +16,6 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter</artifactId>
-		</dependency>
-		<dependency>
 			<groupId>cz.muni.ics.kypo</groupId>
 			<artifactId>kypo2-service-training</artifactId>
 			<version>${project.version}</version>

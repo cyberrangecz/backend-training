@@ -1,8 +1,5 @@
 package cz.muni.ics.kypo.rest.config;
 
-import java.text.SimpleDateFormat;
-import java.util.Locale;
-
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
@@ -33,11 +30,6 @@ import cz.muni.ics.kypo.config.FacadeConfiguration;
 @Import({FacadeConfiguration.class})
 @ComponentScan(basePackages = {"cz.muni.ics.kypo.rest"})
 public class WebConfigRestTraining extends SpringBootServletInitializer {
-
-  @Bean
-  public WebServerFactoryCustomizer<ConfigurableServletWebServerFactory> webServerFactoryCustomizer() {
-    return factory -> factory.setContextPath("/kypo2-rest-training/api/v1");
-  }
 
   @Override
   protected SpringApplicationBuilder configure(SpringApplicationBuilder application) {
@@ -72,7 +64,6 @@ public class WebConfigRestTraining extends SpringBootServletInitializer {
   @Primary
   public ObjectMapper objectMapperForRestAPI() {
     ObjectMapper obj = new ObjectMapper();
-    obj.setDateFormat(new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.ENGLISH));
     obj.setPropertyNamingStrategy(snakeCase());
     return obj;
   }

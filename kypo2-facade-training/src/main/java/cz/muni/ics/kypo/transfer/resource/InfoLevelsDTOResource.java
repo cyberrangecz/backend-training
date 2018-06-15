@@ -14,7 +14,7 @@ import cz.muni.ics.kypo.transfer.ResultInfoDTO;
  * @author Pavel Šeda (441048)
  *
  */
-@ApiObject(name = "Info Level Resource", description = "REST API resource with levels.")
+@ApiObject(name = "Info Level Resource", description = "REST API resource with info levels.")
 public class InfoLevelsDTOResource<E> {
 
   @ApiObjectField(description = "Result info about returned levels.")

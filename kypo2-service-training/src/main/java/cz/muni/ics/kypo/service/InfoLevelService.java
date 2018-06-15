@@ -14,7 +14,7 @@ import cz.muni.ics.kypo.model.InfoLevel;
  * @author Pavel Seda (441048)
  *
  */
-public interface InfoService {
+public interface InfoLevelService {
 
   /**
    * Finds specific Info level by id
@@ -22,7 +22,7 @@ public interface InfoService {
    * @param id of a Info level that would be returned
    * @return specific info level by id
    */
-  public Optional<InfoLevel> findById(Long id);
+  public Optional<InfoLevel> findById(long id);
 
   /**
    * Find all Info Levels.

@@ -43,7 +43,7 @@ public abstract class AbstractLevel {
   protected Long nextLevel;
   @ManyToOne(fetch = FetchType.LAZY)
   protected TrainingDefinition trainingDefinition;
-  @OneToMany(fetch = FetchType.LAZY, targetEntity = TrainingRun.class, mappedBy = "level")
+  @OneToMany(fetch = FetchType.LAZY, targetEntity = TrainingRun.class, mappedBy = "currentLevel")
   protected Set<TrainingRun> trainingRun = new HashSet<>();
 
   public AbstractLevel() {}
