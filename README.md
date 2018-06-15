@@ -41,6 +41,10 @@ To migrate database data it is necessary to run these two scripts:
 
 ```
 $ mvn flyway:migrate -Djdbc.url=jdbc:postgresql://{url to DB}/training -Djdbc.username={username in DB} -Djdbc.password={password to DB} -P training
+```
+e.g.:
+```
+$ mvn flyway:migrate -Djdbc.url=jdbc:postgresql://localhost:5432/training -Djdbc.username=postgres -Djdbc.password=postgre
 
 ```
 
