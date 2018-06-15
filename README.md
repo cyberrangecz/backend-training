@@ -40,7 +40,7 @@ Prerequisities running PostgreSQL and created database named 'training' with sch
 To migrate database data it is necessary to run these two scripts:
 
 ```
-$ mvn flyway:migrate -Djdbc.url=jdbc:postgresql://{url to DB}/training -Djdbc.username={username in DB} -Djdbc.password={password to DB} -P training
+$ mvn flyway:migrate -Djdbc.url=jdbc:postgresql://{url to DB}/training -Djdbc.username={username in DB} -Djdbc.password={password to DB}
 ```
 e.g.:
 ```
