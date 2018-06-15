@@ -1,9 +1,12 @@
 package cz.muni.ics.kypo.model;
 
+import java.util.Arrays;
 import java.util.Objects;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.Lob;
+import javax.persistence.PrimaryKeyJoinColumn;
 import javax.persistence.Table;
 
 /**
@@ -12,10 +15,12 @@ import javax.persistence.Table;
  *
  */
 @Entity
-@Table(name = "info_level")
+@Table(catalog = "training", schema = "public", name = "info_level")
+@PrimaryKeyJoinColumn(name = "id")
 public class InfoLevel extends AbstractLevel {
 
-  @Column(name = "content", nullable = false)
+  @Lob
+  @Column(name = "content", nullable = false) // maybe should be unique?
   private byte[] content;
 
   public InfoLevel() {
@@ -36,8 +41,28 @@ public class InfoLevel extends AbstractLevel {
   }
 
   @Override
+  public int hashCode() {
+    return Objects.hashCode(content);
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj)
+      return true;
+    if (!super.equals(obj))
+      return false;
+    if (!(obj instanceof InfoLevel))
+      return false;
+    InfoLevel other = (InfoLevel) obj;
+    return Arrays.equals(content, other.getContent());
+  }
+
+  @Override
   public String toString() {
-    return "InfoLevel [content=" + content + "]";
+    return "InfoLevel [content=" + Arrays.toString(content) + ", getId()=" + getId() + ", getTitle()=" + getTitle() + ", getMaxScore()=" + getMaxScore()
+        + ", getOrder()=" + getOrder() + ", getPreHook()=" + Arrays.toString(getPreHook()) + ", getPostHook()=" + Arrays.toString(getPostHook())
+        + ", getNextLevel()=" + getNextLevel() + ", getTrainingDefinition()=" + getTrainingDefinition() + ", getTrainingRun()=" + getTrainingRun()
+        + ", toString()=" + super.toString() + "]";
   }
 
 }

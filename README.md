@@ -74,6 +74,14 @@ elasticsearch.protocol=http
 elasticsearch.port1=9200
 elasticsearch.port2=9201
 
+<!-- context path -->
+server.servlet.context-path=/kypo2-rest-training/api/v1
+server.port=8080
+
+<!-- Jackson (e.g. converting Java 8 dates to ISO format -->
+spring.jackson.serialization.write_dates_as_timestamps=false 
+
+
 spring.jmx.enabled = false
 ```
 

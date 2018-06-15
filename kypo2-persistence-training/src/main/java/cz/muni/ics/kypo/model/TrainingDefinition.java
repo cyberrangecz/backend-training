@@ -1,9 +1,13 @@
 package cz.muni.ics.kypo.model;
 
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
+import java.util.TreeSet;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -24,8 +28,8 @@ import cz.muni.ics.kypo.model.enums.TDState;
  *
  */
 @Entity
-@Table(name = "training_definition")
-public class TrainingDefinition {
+@Table(catalog = "training", schema = "public", name = "training_definition")
+public class TrainingDefinition implements Serializable {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -38,20 +42,18 @@ public class TrainingDefinition {
   private String[] prerequisities;
   @Column(name = "outcomes", nullable = true)
   private String[] outcomes;
-  @Column(name = "state", nullable = false)
-  @Enumerated(EnumType.ORDINAL)
+  @Column(name = "state", length = 128, nullable = false)
+  @Enumerated(EnumType.STRING)
   private TDState state;
-  @Column(name = "initial_level", nullable = false)
-  private String initialLevel;
-  @OneToMany(fetch = FetchType.LAZY, mappedBy = "trainingDefinition")
-  private Set<AbstractLevel> abstractLevel = new HashSet<>(0);
-  @OneToMany(fetch = FetchType.LAZY, mappedBy = "trainingDefinition")
-  private Set<TrainingInstance> trainingInstance = new HashSet<>(0);
+  @OneToMany(fetch = FetchType.LAZY, targetEntity = AbstractLevel.class, mappedBy = "trainingDefinition")
+  private Set<AbstractLevel> levels = new TreeSet<>(Comparator.comparingLong(AbstractLevel::getId));
+  @OneToMany(fetch = FetchType.LAZY, targetEntity = TrainingInstance.class, mappedBy = "trainingDefinition")
+  private Set<TrainingInstance> trainingInstance = new HashSet<>();
 
   public TrainingDefinition() {}
 
-  public TrainingDefinition(Long id, String title, String description, String[] prerequisities, String[] outcomes, TDState state, String initialLevel,
-      Set<AbstractLevel> abstractLevel) {
+  public TrainingDefinition(Long id, String title, String description, String[] prerequisities, String[] outcomes, TDState state, Set<AbstractLevel> levels,
+      Set<TrainingInstance> trainingInstance) {
     super();
     this.id = id;
     this.title = title;
@@ -59,8 +61,8 @@ public class TrainingDefinition {
     this.prerequisities = prerequisities;
     this.outcomes = outcomes;
     this.state = state;
-    this.initialLevel = initialLevel;
-    this.abstractLevel = abstractLevel;
+    this.levels = levels;
+    this.trainingInstance = trainingInstance;
   }
 
   public Long getId() {
@@ -111,20 +113,12 @@ public class TrainingDefinition {
     this.state = state;
   }
 
-  public String getInitialLevel() {
-    return initialLevel;
+  public Set<AbstractLevel> getLevels() {
+    return Collections.unmodifiableSet(levels);
   }
 
-  public void setInitialLevel(String initialLevel) {
-    this.initialLevel = initialLevel;
-  }
-
-  public Set<AbstractLevel> getAbstractLevel() {
-    return Collections.unmodifiableSet(abstractLevel);
-  }
-
-  public void setAbstractLevel(Set<AbstractLevel> abstractLevel) {
-    this.abstractLevel = abstractLevel;
+  public void setLevels(Set<AbstractLevel> levels) {
+    this.levels = levels;
   }
 
   public Set<TrainingInstance> getTrainingInstance() {
@@ -136,10 +130,35 @@ public class TrainingDefinition {
   }
 
   @Override
+  public int hashCode() {
+    return Objects.hash(description, levels, outcomes, prerequisities, state, title, trainingInstance);
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj)
+      return true;
+    if (obj == null)
+      return false;
+    if (!(obj instanceof TrainingDefinition))
+      return false;
+    TrainingDefinition other = (TrainingDefinition) obj;
+    // @formatter:off
+    return Objects.equals(description, other.getDescription()) 
+        && Objects.equals(levels, other.getLevels())
+        && Arrays.equals(outcomes, other.getOutcomes())
+        && Arrays.equals(prerequisities, other.getPrerequisities())
+        && Objects.equals(state, other.getState()) 
+        && Objects.equals(title, other.getTitle())
+        && Objects.equals(trainingInstance, other.getTrainingInstance());
+    // @formatter:on
+  }
+
+  @Override
   public String toString() {
     return "TrainingDefinition [id=" + id + ", title=" + title + ", description=" + description + ", prerequisities=" + Arrays.toString(prerequisities)
-        + ", outcomes=" + Arrays.toString(outcomes) + ", state=" + state + ", initialLevel=" + initialLevel + ", abstractLevel=" + abstractLevel
-        + ", trainingInstance=" + trainingInstance + "]";
+        + ", outcomes=" + Arrays.toString(outcomes) + ", state=" + state + ", levels=" + levels + ", trainingInstance=" + trainingInstance + ", toString()="
+        + super.toString() + "]";
   }
 
 }

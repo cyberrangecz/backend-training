@@ -1,8 +1,10 @@
 package cz.muni.ics.kypo.model;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 import javax.persistence.Column;
@@ -11,7 +13,6 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
@@ -22,39 +23,38 @@ import javax.persistence.Table;
  *
  */
 @Entity
-@Table(name = "training_instance")
-public class TrainingInstance {
+@Table(catalog = "training", schema = "public", name = "training_instance")
+public class TrainingInstance implements Serializable {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
-  @Column(name = "date_time", nullable = false)
-  private LocalDateTime localDateTime;
-  @Column(name = "life_time", nullable = false)
-  private int lifeTime;
+  @Column(name = "start_time", nullable = false)
+  private LocalDateTime startTime;
+  @Column(name = "end_time", nullable = true)
+  private LocalDateTime endTime;
   @Column(name = "title", nullable = false)
   private String title;
   @Column(name = "pool_size", nullable = false)
   private int poolSize;
-  @Column(name = "keywords", nullable = false)
-  private String keywords;
+  @Column(name = "\"keyword\"", nullable = false)
+  private String keyword;
   @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "trainingInstance")
   private TrainingDefinition trainingDefinition;
-  @OneToMany(fetch = FetchType.LAZY, mappedBy = "trainingInstance")
-  private Set<TrainingRun> trainingRun = new HashSet<>(0);
+  @OneToMany(fetch = FetchType.LAZY, targetEntity = TrainingRun.class, mappedBy = "trainingInstance")
+  private Set<TrainingRun> trainingRun = new HashSet<>();
 
   public TrainingInstance() {}
 
-  public TrainingInstance(Long id, LocalDateTime localDateTime, int lifeTime, String title, int poolSize, String keywords,
+  public TrainingInstance(Long id, LocalDateTime startTime, LocalDateTime endTime, String title, int poolSize, String keyword,
       TrainingDefinition trainingDefinition, Set<TrainingRun> trainingRun) {
     super();
     this.id = id;
-    this.localDateTime = localDateTime;
-    this.lifeTime = lifeTime;
+    this.startTime = startTime;
+    this.endTime = endTime;
     this.title = title;
     this.poolSize = poolSize;
-    this.keywords = keywords;
+    this.keyword = keyword;
     this.trainingDefinition = trainingDefinition;
     this.trainingRun = trainingRun;
   }
@@ -67,20 +67,28 @@ public class TrainingInstance {
     this.id = id;
   }
 
-  public LocalDateTime getLocalDateTime() {
-    return localDateTime;
+  public LocalDateTime getStartTime() {
+    return startTime;
   }
 
-  public void setLocalDateTime(LocalDateTime localDateTime) {
-    this.localDateTime = localDateTime;
+  public void setStartTime(LocalDateTime startTime) {
+    this.startTime = startTime;
   }
 
-  public int getLifeTime() {
-    return lifeTime;
+  public LocalDateTime getEndTime() {
+    return endTime;
   }
 
-  public void setLifeTime(int lifeTime) {
-    this.lifeTime = lifeTime;
+  public void setEndTime(LocalDateTime endTime) {
+    this.endTime = endTime;
+  }
+
+  public String getKeyword() {
+    return keyword;
+  }
+
+  public void setKeyword(String keyword) {
+    this.keyword = keyword;
   }
 
   public String getTitle() {
@@ -100,11 +108,11 @@ public class TrainingInstance {
   }
 
   public String getKeywords() {
-    return keywords;
+    return keyword;
   }
 
   public void setKeywords(String keywords) {
-    this.keywords = keywords;
+    this.keyword = keywords;
   }
 
   public TrainingDefinition getTrainingDefinition() {
@@ -124,9 +132,34 @@ public class TrainingInstance {
   }
 
   @Override
+  public int hashCode() {
+    return Objects.hash(keyword, startTime, endTime, poolSize, title, trainingDefinition, trainingRun);
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj)
+      return true;
+    if (obj == null)
+      return false;
+    if (!(obj instanceof TrainingInstance))
+      return false;
+    TrainingInstance other = (TrainingInstance) obj;
+    // @formatter:off
+    return Objects.equals(keyword, other.getKeywords()) 
+        && Objects.equals(startTime, other.getStartTime())
+        && Objects.equals(endTime, other.getEndTime())
+        && Objects.equals(poolSize, other.getPoolSize())
+        && Objects.equals(title, other.getTitle())
+        && Objects.equals(trainingDefinition, other.getTrainingDefinition()) 
+        && Objects.equals(trainingRun, other.getTrainingRun());
+    // @formatter:on
+  }
+
+  @Override
   public String toString() {
-    return "TrainingInstance [id=" + id + ", localDateTime=" + localDateTime + ", lifeTime=" + lifeTime + ", title=" + title + ", poolSize=" + poolSize
-        + ", keywords=" + keywords + ", trainingDefinition=" + trainingDefinition + ", trainingRun=" + trainingRun + "]";
+    return "TrainingInstance [id=" + id + ", startTime=" + startTime + ", endTime=" + endTime + ", title=" + title + ", poolSize=" + poolSize + ", keyword="
+        + keyword + ", trainingDefinition=" + trainingDefinition + ", trainingRun=" + trainingRun + ", toString()=" + super.toString() + "]";
   }
 
 }

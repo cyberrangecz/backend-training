@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>cz.muni.ics.kypo</groupId>
 		<artifactId>kypo2-training</artifactId>
-		<version>1.0.0</version>
+		<version>${project.version}</version>
 	</parent>
 	<artifactId>kypo2-persistence-training</artifactId>
 	<packaging>jar</packaging>
@@ -24,11 +24,28 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
+		<!-- for formating LocalDateTime in JSON -->
+		<!-- jackson -->
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-core</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-databind</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.datatype</groupId>
+			<artifactId>jackson-datatype-jsr310</artifactId>
+		</dependency>
 		<!-- PostgreSQL driver -->
 		<dependency>
 			<groupId>org.postgresql</groupId>
 			<artifactId>postgresql</artifactId>
 		</dependency>
+		<!-- DB migration -->
+		<!-- <dependency> <groupId>org.flywaydb</groupId> <artifactId>flyway-core</artifactId> 
+			</dependency> -->
 		<!-- logging -->
 		<dependency>
 			<groupId>junit</groupId>
@@ -86,7 +103,26 @@
 					</execution>
 				</executions>
 			</plugin>
-
+			<plugin>
+				<groupId>org.flywaydb</groupId>
+				<artifactId>flyway-maven-plugin</artifactId>
+				<configuration>
+					<sqlMigrationSeparator>__</sqlMigrationSeparator>
+					<locations>
+						<location>filesystem:src/main/resources/db/migration/training</location>
+					</locations>
+					<url>${jdbc.url}</url>
+					<user>${jdbc.username}</user>
+					<password>${jdbc.password}</password>
+				</configuration>
+				<dependencies>
+					<dependency>
+						<groupId>org.postgresql</groupId>
+						<artifactId>postgresql</artifactId>
+						<version>${postgresql.version}</version>
+					</dependency>
+				</dependencies>
+			</plugin>
 		</plugins>
 	</build>
 </project>

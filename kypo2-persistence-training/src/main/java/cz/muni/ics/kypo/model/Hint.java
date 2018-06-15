@@ -1,5 +1,9 @@
 package cz.muni.ics.kypo.model;
 
+import java.io.Serializable;
+import java.util.Arrays;
+import java.util.Objects;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -7,6 +11,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
@@ -16,29 +21,30 @@ import javax.persistence.Table;
  *
  */
 @Entity
-@Table(name = "hint")
-public class Hint {
+@Table(catalog = "training", schema = "public", name = "hint")
+public class Hint implements Serializable {
+
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
   @Column(name = "title", nullable = false)
   private String title;
+  @Lob
   @Column(name = "content", nullable = false)
   private byte[] content;
-  @Column(name = "points", nullable = false)
-  private Integer points;
+  @Column(name = "hint_penalty", nullable = false)
+  private Integer hintPenalty;
   @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "hints")
   private GameLevel gameLevel;
 
   public Hint() {}
 
-  public Hint(Long id, String title, byte[] content, Integer points, GameLevel gameLevel) {
+  public Hint(Long id, String title, byte[] content, Integer hintPenalty, GameLevel gameLevel) {
     super();
     this.id = id;
     this.title = title;
     this.content = content;
-    this.points = points;
+    this.hintPenalty = hintPenalty;
     this.gameLevel = gameLevel;
   }
 
@@ -66,12 +72,12 @@ public class Hint {
     this.content = content;
   }
 
-  public Integer getPoints() {
-    return points;
+  public Integer getHintPenalty() {
+    return hintPenalty;
   }
 
-  public void setPoints(Integer points) {
-    this.points = points;
+  public void setHintPenalty(Integer hintPenalty) {
+    this.hintPenalty = hintPenalty;
   }
 
   public GameLevel getGameLevel() {
@@ -83,8 +89,31 @@ public class Hint {
   }
 
   @Override
+  public int hashCode() {
+    return Objects.hash(content, gameLevel, hintPenalty, title);
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj)
+      return true;
+    if (obj == null)
+      return false;
+    if (!(obj instanceof Hint))
+      return false;
+    Hint other = (Hint) obj;
+    // @formatter:off
+    return Arrays.equals(content, other.getContent())
+        && Objects.equals(gameLevel, other.getGameLevel()) 
+        && Objects.equals(hintPenalty, other.getHintPenalty())
+        && Objects.equals(title, other.getTitle());
+    // @formatter:on
+  }
+
+  @Override
   public String toString() {
-    return "Hint [id=" + id + ", title=" + title + ", content=" + content + ", points=" + points + ", gameLevel=" + gameLevel + "]";
+    return "Hint [id=" + id + ", title=" + title + ", content=" + Arrays.toString(content) + ", hintPenalty=" + hintPenalty + ", gameLevel=" + gameLevel
+        + ", toString()=" + super.toString() + "]";
   }
 
 }

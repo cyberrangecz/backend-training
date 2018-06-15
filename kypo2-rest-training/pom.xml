@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>cz.muni.ics.kypo</groupId>
 		<artifactId>kypo2-training</artifactId>
-		<version>1.0.0</version>
+		<version>${project.version}</version>
 	</parent>
 	<artifactId>kypo2-rest-training</artifactId>
 	<packaging>war</packaging>
@@ -34,7 +34,11 @@
 		<dependency>
 			<groupId>cz.muni.ics.kypo</groupId>
 			<artifactId>kypo2-facade-training</artifactId>
-			<version>1.0.0</version>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -66,18 +70,12 @@
 			<artifactId>squiggly-filter-jackson</artifactId>
 			<version>${squiggly.filter.jackson.version}</version>
 		</dependency>
-		<!-- jackson -->
-		<dependency>
-			<groupId>com.fasterxml.jackson.core</groupId>
-			<artifactId>jackson-core</artifactId>
-		</dependency>
 		<dependency>
 			<groupId>org.elasticsearch.client</groupId>
 			<artifactId>elasticsearch-rest-high-level-client</artifactId>
 			<version>${elasticsearch.client.version}</version>
 		</dependency>
 	</dependencies>
-
 
 	<build>
 		<!-- mvn -Des-config-file=/etc/kypo2_config.properties -->
