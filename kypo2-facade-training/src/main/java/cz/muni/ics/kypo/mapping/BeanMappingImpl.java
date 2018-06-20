@@ -10,6 +10,8 @@ import java.util.Set;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.stereotype.Component;
 
 
@@ -34,6 +36,15 @@ public class BeanMappingImpl implements BeanMapping {
       mappedCollection.add(modelMapper.map(object, mapToClass));
     }
     return mappedCollection;
+  }
+
+  @Override
+  public <T> Page<T> mapTo(Page<?> objects, Class<T> mapToClass) {
+    List<T> mappedCollection = new ArrayList<>();
+    objects.forEach(obj -> {
+      mappedCollection.add(modelMapper.map(obj, mapToClass));
+    });
+    return new PageImpl<T>(mappedCollection, objects.getPageable(), mappedCollection.size());
   }
 
   @Override

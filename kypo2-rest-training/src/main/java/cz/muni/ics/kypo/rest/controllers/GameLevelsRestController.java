@@ -1,9 +1,8 @@
 package cz.muni.ics.kypo.rest.controllers;
 
-import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.querydsl.binding.QuerydslPredicate;
 import org.springframework.http.HttpStatus;
@@ -21,19 +20,38 @@ import com.github.bohnman.squiggly.Squiggly;
 import com.github.bohnman.squiggly.util.SquigglyUtils;
 import com.querydsl.core.types.Predicate;
 
+import cz.muni.ics.kypo.dto.GameLevelDTO;
 import cz.muni.ics.kypo.exception.FacadeLayerException;
 import cz.muni.ics.kypo.facade.GameLevelFacade;
-import cz.muni.ics.kypo.model.InfoLevel;
+import cz.muni.ics.kypo.model.GameLevel;
 import cz.muni.ics.kypo.rest.exceptions.ResourceNotFoundException;
-import cz.muni.ics.kypo.transfer.GameLevelDTO;
-import cz.muni.ics.kypo.transfer.resource.GameLevelsDTOResource;
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
+import io.swagger.annotations.Authorization;
+import io.swagger.annotations.AuthorizationScope;
 
 /**
  * @author Pavel Šeda
  *
  */
+//@formatter:off
+@Api(value = "/game-levels", 
+  consumes = "application/json", 
+  authorizations = {
+    @Authorization(value = "sampleoauth", 
+      scopes = {
+        @AuthorizationScope(
+          scope = "HTTP operations on Game Level Resource", 
+          description = "allows operations on Game Level Resource."
+        )
+      }
+    )
+  }
+)
+//@formatter:on
 @RestController
 @RequestMapping(value = "/game-levels")
 public class GameLevelsRestController {
@@ -48,42 +66,84 @@ public class GameLevelsRestController {
   }
 
   /**
-   * Get requested Info by id.
+   * Get requested Game Level by id.
    * 
-   * @param id of info to return.
-   * @return Requested Info by id.
+   * @param id of Game Level to return.
+   * @return Requested Assessment Level by id.
    */
+  //@formatter:off
+  @ApiOperation(httpMethod = "GET", 
+      value = "Get Game Level by Id.", 
+      response = GameLevelDTO.class,
+      nickname = "findGameLevelById",
+      produces = "application/json",
+      authorizations = {
+          @Authorization(value = "sampleoauth", 
+              scopes = {
+                  @AuthorizationScope(
+                      scope = "find Game Level by ID", 
+                      description = "allows returning Game Level by ID."
+                  )
+              }
+          )
+      }
+  )
+  @ApiResponses(value = {
+      @ApiResponse(code = 404, message = "The requested resource was not found.") 
+  })
   @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-  @ApiOperation(httpMethod = "GET", value = "Get info by Id.", produces = "application/json")
-  public ResponseEntity<Object> findInfoLevelById(@ApiParam(name = "game level ID") @PathVariable long id,
-      @ApiParam(value = "Fields which should be returned in REST API response", required = false) @RequestParam(value = "fields",
-          required = false) String fields) {
+  public ResponseEntity<Object> findGameLevelById(@ApiParam(name = "GameLevel ID") @PathVariable long id,
+      @ApiParam(value = "Fields which should be returned in REST API response", required = false) 
+      @RequestParam(value = "fields", required = false) String fields) {
     try {
-      GameLevelsDTOResource<GameLevelDTO> gameLevelResource = gameLevelFacade.findById(id);
+      GameLevelDTO gameLevelResource = gameLevelFacade.findById(id);
       Squiggly.init(objectMapper, fields);
       return new ResponseEntity<>(SquigglyUtils.stringify(objectMapper, gameLevelResource), HttpStatus.OK);
     } catch (FacadeLayerException ex) {
       throw new ResourceNotFoundException(ex.getLocalizedMessage());
     }
   }
+  //@formatter:on
 
   /**
-   * Get all game levels.
+   * Get all Game Level.
    * 
-   * @return all game levels.
+   * @return all Game Level.
    */
+  //@formatter:off
+  @ApiOperation(httpMethod = "GET",
+      value = "Get all Game Levels.",
+      response = GameLevelDTO.class,
+      responseContainer = "Page",
+      nickname = "findAllGameLevels",
+      produces = "application/json",
+      authorizations = {
+          @Authorization(value = "sampleoauth", 
+              scopes = {
+                  @AuthorizationScope(
+                      scope = "find all Game Levels", 
+                      description = "allows returning Game Levels."
+                  )
+              }
+          )
+      }
+  )
+  @ApiResponses(value = {
+      @ApiResponse(code = 404, message = "The requested resource was not found.") 
+  })
   @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-  @ApiOperation(httpMethod = "GET", value = "Get all game levels.", produces = "application/json")
-  public ResponseEntity<Object> findAllInfoLevels(@QuerydslPredicate(root = InfoLevel.class) Predicate predicate, Pageable pageable,
-      @RequestParam MultiValueMap<String, String> parameters, @ApiParam(value = "Fields which should be returned in REST API response",
-          required = false) @RequestParam(value = "fields", required = false) String fields) {
+  public ResponseEntity<Object> findAllGameLevels(@QuerydslPredicate(root = GameLevel.class) Predicate predicate, Pageable pageable,
+      @RequestParam MultiValueMap<String, String> parameters, 
+      @ApiParam(value = "Fields which should be returned in REST API response", required = false) 
+      @RequestParam(value = "fields", required = false) String fields) {
     try {
-      GameLevelsDTOResource<List<GameLevelDTO>> gameLevelResource = gameLevelFacade.findAll(predicate, pageable);
+      Page<GameLevelDTO> gameLevelResource = gameLevelFacade.findAll(predicate, pageable);
       Squiggly.init(objectMapper, fields);
       return new ResponseEntity<>(SquigglyUtils.stringify(objectMapper, gameLevelResource), HttpStatus.OK);
     } catch (FacadeLayerException ex) {
       throw new ResourceNotFoundException(ex.getLocalizedMessage());
     }
   }
+  //@formatter:on
 
 }

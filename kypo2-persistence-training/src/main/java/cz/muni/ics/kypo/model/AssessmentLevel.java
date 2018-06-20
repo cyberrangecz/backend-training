@@ -1,7 +1,6 @@
 package cz.muni.ics.kypo.model;
 
 import java.io.Serializable;
-import java.util.Arrays;
 import java.util.Objects;
 
 import javax.persistence.Column;
@@ -70,8 +69,8 @@ public class AssessmentLevel extends AbstractLevel implements Serializable {
   public void setAssessmentType(AssessmentType assessmentType) {
     this.assessmentType = assessmentType;
   }
-  
-  
+
+
 
   @Override
   public int hashCode() {
@@ -97,9 +96,8 @@ public class AssessmentLevel extends AbstractLevel implements Serializable {
   @Override
   public String toString() {
     return "AssessmentLevel [questions=" + questions + ", instructions=" + instructions + ", assessmentType=" + assessmentType + ", getId()=" + getId()
-        + ", getTitle()=" + getTitle() + ", getMaxScore()=" + getMaxScore() + ", getLevelOrder()=" + getLevelOrder() + ", getPreHook()=" + getPreHook()
-        + ", getPostHook()=" + getPostHook() + ", getNextLevel()=" + getNextLevel() + ", getTrainingDefinition()=" + getTrainingDefinition() + ", toString()="
-        + super.toString() + "]";
+        + ", getTitle()=" + getTitle() + ", getMaxScore()=" + getMaxScore() + ", getLevelOrder()=" + getLevelOrder() + ", getNextLevel()=" + getNextLevel()
+        + ", getTrainingDefinition()=" + getTrainingDefinition() + ", toString()=" + super.toString() + "]";
   }
 
 }

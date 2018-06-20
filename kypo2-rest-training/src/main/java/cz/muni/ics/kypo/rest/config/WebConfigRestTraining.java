@@ -18,6 +18,21 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import cz.muni.ics.kypo.config.FacadeConfiguration;
 
 /**
+ * <p>
+ * To run with external property file add following to:
+ * 
+ * <pre>
+ * <code>
+ *  Run Configuration -> tab: Arguments -> Program arguments
+ * </code>
+ * </pre>
+ * </p>
+ * 
+ * <pre>
+ * <code>
+ *  --spring.config.location=classpath:file:///etc/kypo2/training/application.properties
+ * </code>
+ * </pre>
  * 
  * @author Pavel Seda (441048)
  *

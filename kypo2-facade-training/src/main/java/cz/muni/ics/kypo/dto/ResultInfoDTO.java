@@ -1,4 +1,6 @@
-package cz.muni.ics.kypo.transfer;
+package cz.muni.ics.kypo.dto;
+
+import java.util.List;
 
 import org.jsondoc.core.annotation.ApiObject;
 
@@ -6,13 +8,18 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * 
+ * This class is not used, but could be used if we wanna replace Page class and reduce number of
+ * returned elements.
+ * 
  * @author Pavel Šeda (441048)
  *
  */
 @ApiObject(name = "Result info (Page)",
     description = "Meta information about REST API result page. Including page number, number of elements in page, size of elements, total number of elements and total number of pages")
-public class ResultInfoDTO {
+public class ResultInfoDTO<E> {
 
+  @JsonProperty(required = true)
+  private List<E> content;
   @JsonProperty(required = true)
   private int number;
   @JsonProperty(required = true)
@@ -26,8 +33,9 @@ public class ResultInfoDTO {
 
   public ResultInfoDTO() {}
 
-  public ResultInfoDTO(int number, int numberOfElements, int size, long totalElements, int totalPages) {
+  public ResultInfoDTO(List<E> content, int number, int numberOfElements, int size, long totalElements, int totalPages) {
     super();
+    this.content = content;
     this.number = number;
     this.numberOfElements = numberOfElements;
     this.size = size;
@@ -77,8 +85,8 @@ public class ResultInfoDTO {
 
   @Override
   public String toString() {
-    return "ResultInfoDTO [number=" + number + ", numberOfElements=" + numberOfElements + ", size=" + size + ", totalElements=" + totalElements
-        + ", totalPages=" + totalPages + "]";
+    return "ResultInfoDTO [content=" + content + ", number=" + number + ", numberOfElements=" + numberOfElements + ", size=" + size + ", totalElements="
+        + totalElements + ", totalPages=" + totalPages + ", toString()=" + super.toString() + "]";
   }
 
 }

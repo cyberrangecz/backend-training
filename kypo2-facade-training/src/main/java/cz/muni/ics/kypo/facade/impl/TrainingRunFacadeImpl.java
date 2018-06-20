@@ -1,5 +1,6 @@
 package cz.muni.ics.kypo.facade.impl;
 
+import java.util.Objects;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,13 +11,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.querydsl.core.types.Predicate;
 
-import cz.muni.ics.kypo.dto.GameLevelDTO;
+import cz.muni.ics.kypo.dto.TrainingRunDTO;
 import cz.muni.ics.kypo.exception.FacadeLayerException;
 import cz.muni.ics.kypo.exceptions.ServiceLayerException;
-import cz.muni.ics.kypo.facade.GameLevelFacade;
+import cz.muni.ics.kypo.facade.TrainingRunFacade;
 import cz.muni.ics.kypo.mapping.BeanMapping;
-import cz.muni.ics.kypo.model.GameLevel;
-import cz.muni.ics.kypo.service.GameLevelService;
+import cz.muni.ics.kypo.model.TrainingRun;
+import cz.muni.ics.kypo.service.TrainingRunService;
 
 /**
  * @author Pavel Šeda
@@ -24,26 +25,27 @@ import cz.muni.ics.kypo.service.GameLevelService;
  */
 @Service
 @Transactional
-public class GameLevelFacadeImpl implements GameLevelFacade {
+public class TrainingRunFacadeImpl implements TrainingRunFacade {
 
-  private GameLevelService gameLevelService;
+  private TrainingRunService trainingRunService;
   private BeanMapping beanMapping;
 
   @Autowired
-  public GameLevelFacadeImpl(GameLevelService gameLevelService, BeanMapping beanMapping) {
-    this.gameLevelService = gameLevelService;
+  public TrainingRunFacadeImpl(TrainingRunService trainingRunService, BeanMapping beanMapping) {
+    this.trainingRunService = trainingRunService;
     this.beanMapping = beanMapping;
   }
 
   @Override
   @Transactional(readOnly = true)
-  public GameLevelDTO findById(long id) {
+  public TrainingRunDTO findById(long id) {
     try {
-      Optional<GameLevel> gameLevel = gameLevelService.findById(id);
-      GameLevel game = gameLevel.orElseThrow(() -> new ServiceLayerException("GameLevel with this id is not found."));
-      return beanMapping.mapTo(game, GameLevelDTO.class);
+      Objects.requireNonNull(id);
+      Optional<TrainingRun> trainingRun = trainingRunService.findById(id);
+      TrainingRun tr = trainingRun.orElseThrow(() -> new ServiceLayerException("TrainingRun with this id is not found"));
+      return beanMapping.mapTo(tr, TrainingRunDTO.class);
     } catch (NullPointerException ex) {
-      throw new FacadeLayerException("Given GameLevel ID is null.");
+      throw new FacadeLayerException("Given TrainingRun ID is null.");
     } catch (ServiceLayerException ex) {
       throw new FacadeLayerException(ex.getLocalizedMessage());
     }
@@ -51,9 +53,9 @@ public class GameLevelFacadeImpl implements GameLevelFacade {
 
   @Override
   @Transactional(readOnly = true)
-  public Page<GameLevelDTO> findAll(Predicate predicate, Pageable pageable) {
+  public Page<TrainingRunDTO> findAll(Predicate predicate, Pageable pageable) {
     try {
-      return beanMapping.mapTo(gameLevelService.findAll(predicate, pageable), GameLevelDTO.class);
+      return beanMapping.mapTo(trainingRunService.findAll(predicate, pageable), TrainingRunDTO.class);
     } catch (ServiceLayerException ex) {
       throw new FacadeLayerException(ex.getLocalizedMessage());
     }

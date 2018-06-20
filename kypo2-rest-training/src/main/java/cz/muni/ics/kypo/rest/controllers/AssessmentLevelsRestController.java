@@ -20,10 +20,11 @@ import com.github.bohnman.squiggly.Squiggly;
 import com.github.bohnman.squiggly.util.SquigglyUtils;
 import com.querydsl.core.types.Predicate;
 
+import cz.muni.ics.kypo.dto.AssessmentLevelDTO;
 import cz.muni.ics.kypo.dto.InfoLevelDTO;
 import cz.muni.ics.kypo.exception.FacadeLayerException;
-import cz.muni.ics.kypo.facade.InfoLevelFacade;
-import cz.muni.ics.kypo.model.InfoLevel;
+import cz.muni.ics.kypo.facade.AssessmentLevelFacade;
+import cz.muni.ics.kypo.model.AssessmentLevel;
 import cz.muni.ics.kypo.rest.exceptions.ResourceNotFoundException;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -38,14 +39,14 @@ import io.swagger.annotations.AuthorizationScope;
  *
  */
 //@formatter:off
-@Api(value = "/info-levels", 
+@Api(value = "/assessment-levels", 
   consumes = "application/json", 
   authorizations = {
     @Authorization(value = "sampleoauth", 
       scopes = {
         @AuthorizationScope(
-          scope = "HTTP operations on Info Level Resource", 
-          description = "allows operations on Info Level Resource."
+          scope = "HTTP operations on Assessment Level Resource", 
+          description = "allows operations on Assessment Level Resource."
         )
       }
     )
@@ -53,36 +54,36 @@ import io.swagger.annotations.AuthorizationScope;
 )
 //@formatter:on
 @RestController
-@RequestMapping(value = "/info-levels")
-public class InfoLevelsRestController {
+@RequestMapping(value = "/assessment-levels")
+public class AssessmentLevelsRestController {
 
-  private InfoLevelFacade infoLevelFacade;
+  private AssessmentLevelFacade assessmentLevelFacade;
   private ObjectMapper objectMapper;
 
   @Autowired
-  public InfoLevelsRestController(InfoLevelFacade infoLevelFacade, @Qualifier("objMapperRESTApi") ObjectMapper objectMapper) {
-    this.infoLevelFacade = infoLevelFacade;
+  public AssessmentLevelsRestController(AssessmentLevelFacade assessmentLevelFacade, @Qualifier("objMapperRESTApi") ObjectMapper objectMapper) {
+    this.assessmentLevelFacade = assessmentLevelFacade;
     this.objectMapper = objectMapper;
   }
 
   /**
-   * Get requested Info Level by id.
+   * Get requested Assessment Level by id.
    * 
-   * @param id of Info Level to return.
-   * @return Requested Info by id.
+   * @param id of Assessment Level to return.
+   * @return Requested Assessment Level by id.
    */
   //@formatter:off
   @ApiOperation(httpMethod = "GET", 
-      value = "Get Info level by Id.", 
+      value = "Get Assessment Level by Id.", 
       response = InfoLevelDTO.class,
-      nickname = "findInfoLevelById",
+      nickname = "findAssessmentLevelById",
       produces = "application/json",
       authorizations = {
           @Authorization(value = "sampleoauth", 
               scopes = {
                   @AuthorizationScope(
-                      scope = "find Info level by ID", 
-                      description = "allows returning Info level by ID."
+                      scope = "find Assessment Level by ID", 
+                      description = "allows returning Assessment Level by ID."
                   )
               }
           )
@@ -92,13 +93,13 @@ public class InfoLevelsRestController {
       @ApiResponse(code = 404, message = "The requested resource was not found.") 
   })
   @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<Object> findInfoLevelById(@ApiParam(name = "InfoLevel ID") @PathVariable long id,
+  public ResponseEntity<Object> findAssessmentLevelById(@ApiParam(name = "AssessmentLevel ID") @PathVariable long id,
       @ApiParam(value = "Fields which should be returned in REST API response", required = false) 
       @RequestParam(value = "fields", required = false) String fields) {
     try {
-      InfoLevelDTO infoLevelResource = infoLevelFacade.findById(id);
+      AssessmentLevelDTO assessmentLevelResource = assessmentLevelFacade.findById(id);
       Squiggly.init(objectMapper, fields);
-      return new ResponseEntity<>(SquigglyUtils.stringify(objectMapper, infoLevelResource), HttpStatus.OK);
+      return new ResponseEntity<>(SquigglyUtils.stringify(objectMapper, assessmentLevelResource), HttpStatus.OK);
     } catch (FacadeLayerException ex) {
       throw new ResourceNotFoundException(ex.getLocalizedMessage());
     }
@@ -112,17 +113,17 @@ public class InfoLevelsRestController {
    */
   //@formatter:off
   @ApiOperation(httpMethod = "GET",
-      value = "Get all info levels.",
+      value = "Get all Assessment Levels.",
       response = InfoLevelDTO.class,
       responseContainer = "Page",
-      nickname = "findAllInfoLevels",
+      nickname = "findAllAssessmentLevels",
       produces = "application/json",
       authorizations = {
           @Authorization(value = "sampleoauth", 
               scopes = {
                   @AuthorizationScope(
-                      scope = "find all Info levels", 
-                      description = "allows returning Info levels."
+                      scope = "find all Assessment Levels", 
+                      description = "allows returning Assessment Levels."
                   )
               }
           )
@@ -132,17 +133,18 @@ public class InfoLevelsRestController {
       @ApiResponse(code = 404, message = "The requested resource was not found.") 
   })
   @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<Object> findAllInfoLevels(@QuerydslPredicate(root = InfoLevel.class) Predicate predicate, Pageable pageable,
+  public ResponseEntity<Object> findAllAssessmentLevels(@QuerydslPredicate(root = AssessmentLevel.class) Predicate predicate, Pageable pageable,
       @RequestParam MultiValueMap<String, String> parameters, 
       @ApiParam(value = "Fields which should be returned in REST API response", required = false) 
       @RequestParam(value = "fields", required = false) String fields) {
     try {
-      Page<InfoLevelDTO> infoLevelResource = infoLevelFacade.findAll(predicate, pageable);
+      Page<AssessmentLevelDTO> assessmentLevelResource = assessmentLevelFacade.findAll(predicate, pageable);
       Squiggly.init(objectMapper, fields);
-      return new ResponseEntity<>(SquigglyUtils.stringify(objectMapper, infoLevelResource), HttpStatus.OK);
+      return new ResponseEntity<>(SquigglyUtils.stringify(objectMapper, assessmentLevelResource), HttpStatus.OK);
     } catch (FacadeLayerException ex) {
       throw new ResourceNotFoundException(ex.getLocalizedMessage());
     }
   }
   //@formatter:on
+
 }

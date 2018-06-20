@@ -21,9 +21,10 @@ import com.github.bohnman.squiggly.util.SquigglyUtils;
 import com.querydsl.core.types.Predicate;
 
 import cz.muni.ics.kypo.dto.InfoLevelDTO;
+import cz.muni.ics.kypo.dto.TrainingDefinitionDTO;
 import cz.muni.ics.kypo.exception.FacadeLayerException;
-import cz.muni.ics.kypo.facade.InfoLevelFacade;
-import cz.muni.ics.kypo.model.InfoLevel;
+import cz.muni.ics.kypo.facade.TrainingDefinitionFacade;
+import cz.muni.ics.kypo.model.TrainingDefinition;
 import cz.muni.ics.kypo.rest.exceptions.ResourceNotFoundException;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -38,14 +39,14 @@ import io.swagger.annotations.AuthorizationScope;
  *
  */
 //@formatter:off
-@Api(value = "/info-levels", 
+@Api(value = "/training-definitions", 
   consumes = "application/json", 
   authorizations = {
     @Authorization(value = "sampleoauth", 
       scopes = {
         @AuthorizationScope(
-          scope = "HTTP operations on Info Level Resource", 
-          description = "allows operations on Info Level Resource."
+          scope = "HTTP operations on Training Definition Resource", 
+          description = "allows operations on Training Definition Resource."
         )
       }
     )
@@ -53,36 +54,36 @@ import io.swagger.annotations.AuthorizationScope;
 )
 //@formatter:on
 @RestController
-@RequestMapping(value = "/info-levels")
-public class InfoLevelsRestController {
+@RequestMapping(value = "/training-definitions")
+public class TrainingDefinitionsRestController {
 
-  private InfoLevelFacade infoLevelFacade;
+  private TrainingDefinitionFacade trainingDefinitionFacade;
   private ObjectMapper objectMapper;
 
   @Autowired
-  public InfoLevelsRestController(InfoLevelFacade infoLevelFacade, @Qualifier("objMapperRESTApi") ObjectMapper objectMapper) {
-    this.infoLevelFacade = infoLevelFacade;
+  public TrainingDefinitionsRestController(TrainingDefinitionFacade trainingDefinitionFacade, @Qualifier("objMapperRESTApi") ObjectMapper objectMapper) {
+    this.trainingDefinitionFacade = trainingDefinitionFacade;
     this.objectMapper = objectMapper;
   }
 
   /**
-   * Get requested Info Level by id.
+   * Get requested Training Definition by id.
    * 
-   * @param id of Info Level to return.
-   * @return Requested Info by id.
+   * @param id of Training Definition to return.
+   * @return Requested Training Definition by id.
    */
   //@formatter:off
   @ApiOperation(httpMethod = "GET", 
-      value = "Get Info level by Id.", 
-      response = InfoLevelDTO.class,
-      nickname = "findInfoLevelById",
+      value = "Get Training Definition by Id.", 
+      response = TrainingDefinitionDTO.class,
+      nickname = "findTrainingDefinitionById",
       produces = "application/json",
       authorizations = {
           @Authorization(value = "sampleoauth", 
               scopes = {
                   @AuthorizationScope(
-                      scope = "find Info level by ID", 
-                      description = "allows returning Info level by ID."
+                      scope = "find Training Definition by ID", 
+                      description = "allows returning Training Definition by ID."
                   )
               }
           )
@@ -92,13 +93,13 @@ public class InfoLevelsRestController {
       @ApiResponse(code = 404, message = "The requested resource was not found.") 
   })
   @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<Object> findInfoLevelById(@ApiParam(name = "InfoLevel ID") @PathVariable long id,
+  public ResponseEntity<Object> findTrainingDefinitionById(@ApiParam(name = "TrainingDefinition ID") @PathVariable long id,
       @ApiParam(value = "Fields which should be returned in REST API response", required = false) 
       @RequestParam(value = "fields", required = false) String fields) {
     try {
-      InfoLevelDTO infoLevelResource = infoLevelFacade.findById(id);
+      TrainingDefinitionDTO trainingDefinitionResource = trainingDefinitionFacade.findById(id);
       Squiggly.init(objectMapper, fields);
-      return new ResponseEntity<>(SquigglyUtils.stringify(objectMapper, infoLevelResource), HttpStatus.OK);
+      return new ResponseEntity<>(SquigglyUtils.stringify(objectMapper, trainingDefinitionResource), HttpStatus.OK);
     } catch (FacadeLayerException ex) {
       throw new ResourceNotFoundException(ex.getLocalizedMessage());
     }
@@ -106,23 +107,23 @@ public class InfoLevelsRestController {
   //@formatter:on
 
   /**
-   * Get all Info Levels.
+   * Get all Training Definitions.
    * 
-   * @return all Info levels.
+   * @return all Training Definitions.
    */
   //@formatter:off
   @ApiOperation(httpMethod = "GET",
-      value = "Get all info levels.",
+      value = "Get all Training Definitions.",
       response = InfoLevelDTO.class,
       responseContainer = "Page",
-      nickname = "findAllInfoLevels",
+      nickname = "findAllTrainingDefinitions",
       produces = "application/json",
       authorizations = {
           @Authorization(value = "sampleoauth", 
               scopes = {
                   @AuthorizationScope(
-                      scope = "find all Info levels", 
-                      description = "allows returning Info levels."
+                      scope = "find all Training Definitions", 
+                      description = "allows returning Training Definitions."
                   )
               }
           )
@@ -132,17 +133,18 @@ public class InfoLevelsRestController {
       @ApiResponse(code = 404, message = "The requested resource was not found.") 
   })
   @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<Object> findAllInfoLevels(@QuerydslPredicate(root = InfoLevel.class) Predicate predicate, Pageable pageable,
+  public ResponseEntity<Object> findAllTrainingDefinitions(@QuerydslPredicate(root = TrainingDefinition.class) Predicate predicate, Pageable pageable,
       @RequestParam MultiValueMap<String, String> parameters, 
       @ApiParam(value = "Fields which should be returned in REST API response", required = false) 
       @RequestParam(value = "fields", required = false) String fields) {
     try {
-      Page<InfoLevelDTO> infoLevelResource = infoLevelFacade.findAll(predicate, pageable);
+      Page<TrainingDefinitionDTO> trainingDefinitionResource = trainingDefinitionFacade.findAll(predicate, pageable);
       Squiggly.init(objectMapper, fields);
-      return new ResponseEntity<>(SquigglyUtils.stringify(objectMapper, infoLevelResource), HttpStatus.OK);
+      return new ResponseEntity<>(SquigglyUtils.stringify(objectMapper, trainingDefinitionResource), HttpStatus.OK);
     } catch (FacadeLayerException ex) {
       throw new ResourceNotFoundException(ex.getLocalizedMessage());
     }
   }
   //@formatter:on
+
 }

@@ -11,13 +11,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.querydsl.core.types.Predicate;
 
-import cz.muni.ics.kypo.dto.InfoLevelDTO;
+import cz.muni.ics.kypo.dto.TrainingInstanceDTO;
 import cz.muni.ics.kypo.exception.FacadeLayerException;
 import cz.muni.ics.kypo.exceptions.ServiceLayerException;
-import cz.muni.ics.kypo.facade.InfoLevelFacade;
+import cz.muni.ics.kypo.facade.TrainingInstanceFacade;
 import cz.muni.ics.kypo.mapping.BeanMapping;
-import cz.muni.ics.kypo.model.InfoLevel;
-import cz.muni.ics.kypo.service.InfoLevelService;
+import cz.muni.ics.kypo.model.TrainingInstance;
+import cz.muni.ics.kypo.service.TrainingInstanceService;
 
 /**
  * @author Pavel Šeda
@@ -25,27 +25,27 @@ import cz.muni.ics.kypo.service.InfoLevelService;
  */
 @Service
 @Transactional
-public class InfoLevelFacadeImpl implements InfoLevelFacade {
+public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
 
-  private InfoLevelService infoService;
+  private TrainingInstanceService trainingInstanceService;
   private BeanMapping beanMapping;
 
   @Autowired
-  public InfoLevelFacadeImpl(InfoLevelService infoService, BeanMapping beanMapping) {
-    this.infoService = infoService;
+  public TrainingInstanceFacadeImpl(TrainingInstanceService trainingInstanceService, BeanMapping beanMapping) {
+    this.trainingInstanceService = trainingInstanceService;
     this.beanMapping = beanMapping;
   }
 
   @Override
   @Transactional(readOnly = true)
-  public InfoLevelDTO findById(Long id) {
+  public TrainingInstanceDTO findById(long id) {
     try {
       Objects.requireNonNull(id);
-      Optional<InfoLevel> info = infoService.findById(id);
-      InfoLevel inf = info.orElseThrow(() -> new ServiceLayerException("Info with this id is not found"));
-      return beanMapping.mapTo(inf, InfoLevelDTO.class);
+      Optional<TrainingInstance> trainingInstance = trainingInstanceService.findById(id);
+      TrainingInstance ti = trainingInstance.orElseThrow(() -> new ServiceLayerException("TrainingInstance with this id is not found"));
+      return beanMapping.mapTo(ti, TrainingInstanceDTO.class);
     } catch (NullPointerException ex) {
-      throw new FacadeLayerException("Given info ID is null.");
+      throw new FacadeLayerException("Given TrainingInstance ID is null.");
     } catch (ServiceLayerException ex) {
       throw new FacadeLayerException(ex.getLocalizedMessage());
     }
@@ -53,9 +53,9 @@ public class InfoLevelFacadeImpl implements InfoLevelFacade {
 
   @Override
   @Transactional(readOnly = true)
-  public Page<InfoLevelDTO> findAll(Predicate predicate, Pageable pageable) {
+  public Page<TrainingInstanceDTO> findAll(Predicate predicate, Pageable pageable) {
     try {
-      return beanMapping.mapTo(infoService.findAll(predicate, pageable), InfoLevelDTO.class);
+      return beanMapping.mapTo(trainingInstanceService.findAll(predicate, pageable), TrainingInstanceDTO.class);
     } catch (ServiceLayerException ex) {
       throw new FacadeLayerException(ex.getLocalizedMessage());
     }

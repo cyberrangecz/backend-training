@@ -14,11 +14,11 @@ import org.springframework.http.HttpStatus;
  */
 public class ApiErrorTraining {
 
-  protected long timestamp;
-  protected HttpStatus status;
-  protected String message;
-  protected List<String> errors;
-  protected String path;
+  private long timestamp;
+  private HttpStatus status;
+  private String message;
+  private List<String> errors;
+  private String path;
 
   public static class ApiErrorBuilder {
     // required member variables
