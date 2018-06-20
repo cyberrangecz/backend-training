@@ -46,8 +46,13 @@ public class BeanMappingImpl implements BeanMapping {
   }
 
   @Override
-  public <T> Optional<T> mapTo(Object u, Class<T> mapToClass) {
+  public <T> Optional<T> mapToOptional(Object u, Class<T> mapToClass) {
     return Optional.ofNullable(modelMapper.map(u, mapToClass));
+  }
+
+  @Override
+  public <T> T mapTo(Object u, Class<T> mapToClass) {
+    return modelMapper.map(u, mapToClass);
   }
 
   public boolean isCollection(Object obj) {

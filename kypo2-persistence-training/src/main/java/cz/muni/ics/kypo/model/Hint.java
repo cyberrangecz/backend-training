@@ -1,7 +1,6 @@
 package cz.muni.ics.kypo.model;
 
 import java.io.Serializable;
-import java.util.Arrays;
 import java.util.Objects;
 
 import javax.persistence.Column;
@@ -20,8 +19,8 @@ import javax.persistence.Table;
  * @author Pavel Seda (441048)
  *
  */
-@Entity
-@Table(catalog = "training", schema = "public", name = "hint")
+@Entity(name = "Hint")
+@Table(name = "hint")
 public class Hint implements Serializable {
 
   @Id
@@ -31,7 +30,7 @@ public class Hint implements Serializable {
   private String title;
   @Lob
   @Column(name = "content", nullable = false)
-  private byte[] content;
+  private String content;
   @Column(name = "hint_penalty", nullable = false)
   private Integer hintPenalty;
   @ManyToOne(fetch = FetchType.LAZY)
@@ -39,7 +38,7 @@ public class Hint implements Serializable {
 
   public Hint() {}
 
-  public Hint(Long id, String title, byte[] content, Integer hintPenalty, GameLevel gameLevel) {
+  public Hint(Long id, String title, String content, Integer hintPenalty, GameLevel gameLevel) {
     super();
     this.id = id;
     this.title = title;
@@ -64,11 +63,11 @@ public class Hint implements Serializable {
     this.title = title;
   }
 
-  public byte[] getContent() {
+  public String getContent() {
     return content;
   }
 
-  public void setContent(byte[] content) {
+  public void setContent(String content) {
     this.content = content;
   }
 
@@ -103,7 +102,7 @@ public class Hint implements Serializable {
       return false;
     Hint other = (Hint) obj;
     // @formatter:off
-    return Arrays.equals(content, other.getContent())
+    return Objects.equals(content, other.getContent())
         && Objects.equals(gameLevel, other.getGameLevel()) 
         && Objects.equals(hintPenalty, other.getHintPenalty())
         && Objects.equals(title, other.getTitle());
@@ -112,8 +111,8 @@ public class Hint implements Serializable {
 
   @Override
   public String toString() {
-    return "Hint [id=" + id + ", title=" + title + ", content=" + Arrays.toString(content) + ", hintPenalty=" + hintPenalty + ", gameLevel=" + gameLevel
-        + ", toString()=" + super.toString() + "]";
+    return "Hint [id=" + id + ", title=" + title + ", content=" + content + ", hintPenalty=" + hintPenalty + ", gameLevel=" + gameLevel + ", toString()="
+        + super.toString() + "]";
   }
 
 }

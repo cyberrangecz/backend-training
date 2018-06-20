@@ -6,9 +6,13 @@ import org.springframework.context.annotation.Import;
 
 import cz.muni.csirt.kypo.elasticsearch.service.audit.config.TrainingElasticsearchServiceConfig;
 
+/**
+ * @author Pavel Šeda
+ *
+ */
 @Configuration
 @Import({PersistenceConfig.class, TrainingElasticsearchServiceConfig.class})
-//@ComponentScan(basePackages = {"cz.muni.ics.kypo.service"})
+@ComponentScan(basePackages = {"cz.muni.ics.kypo.service"})
 public class ServiceConfig {
 
 }

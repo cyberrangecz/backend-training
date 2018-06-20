@@ -1,6 +1,6 @@
 package cz.muni.ics.kypo.model;
 
-import java.util.Arrays;
+import java.io.Serializable;
 import java.util.Objects;
 
 import javax.persistence.Column;
@@ -14,29 +14,29 @@ import javax.persistence.Table;
  * @author Pavel Seda (441048)
  *
  */
-@Entity
-@Table(catalog = "training", schema = "public", name = "info_level")
+@Entity(name = "InfoLevel")
+@Table(name = "info_level")
 @PrimaryKeyJoinColumn(name = "id")
-public class InfoLevel extends AbstractLevel {
+public class InfoLevel extends AbstractLevel implements Serializable {
 
   @Lob
   @Column(name = "content", nullable = false) // maybe should be unique?
-  private byte[] content;
+  private String content;
 
   public InfoLevel() {
     super();
   }
 
-  public InfoLevel(byte[] content) {
+  public InfoLevel(String content) {
     super();
     this.content = content;
   }
 
-  public byte[] getContent() {
+  public String getContent() {
     return content;
   }
 
-  public void setContent(byte[] content) {
+  public void setContent(String content) {
     this.content = content;
   }
 
@@ -54,15 +54,14 @@ public class InfoLevel extends AbstractLevel {
     if (!(obj instanceof InfoLevel))
       return false;
     InfoLevel other = (InfoLevel) obj;
-    return Arrays.equals(content, other.getContent());
+    return Objects.equals(content, other.getContent());
   }
 
   @Override
   public String toString() {
-    return "InfoLevel [content=" + Arrays.toString(content) + ", getId()=" + getId() + ", getTitle()=" + getTitle() + ", getMaxScore()=" + getMaxScore()
-        + ", getOrder()=" + getOrder() + ", getPreHook()=" + Arrays.toString(getPreHook()) + ", getPostHook()=" + Arrays.toString(getPostHook())
-        + ", getNextLevel()=" + getNextLevel() + ", getTrainingDefinition()=" + getTrainingDefinition() + ", getTrainingRun()=" + getTrainingRun()
-        + ", toString()=" + super.toString() + "]";
+    return "InfoLevel [content=" + content + ", getId()=" + getId() + ", getTitle()=" + getTitle() + ", getMaxScore()=" + getMaxScore() + ", getLevelOrder()="
+        + getLevelOrder() + ", getPreHook()=" + getPreHook() + ", getPostHook()=" + getPostHook() + ", getNextLevel()=" + getNextLevel()
+        + ", getTrainingDefinition()=" + getTrainingDefinition() + ", toString()=" + super.toString() + "]";
   }
 
 }

@@ -1,5 +1,6 @@
 package cz.muni.ics.kypo.model;
 
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Objects;
 
@@ -22,11 +23,11 @@ import cz.muni.ics.kypo.utils.StringJsonUserType;
  * @author Pavel Seda (441048)
  *
  */
-@Entity
-@Table(catalog = "training", schema = "public", name = "assessment_level")
+@Entity(name = "AssessmentLevel")
+@Table(name = "assessment_level")
 @TypeDefs({@TypeDef(name = "JsonObject", typeClass = StringJsonUserType.class)})
 @PrimaryKeyJoinColumn(name = "id")
-public class AssessmentLevel extends AbstractLevel {
+public class AssessmentLevel extends AbstractLevel implements Serializable {
 
   @Type(type = "JsonObject")
   @Column(name = "questions", columnDefinition = "jsonb", nullable = false)
@@ -69,6 +70,8 @@ public class AssessmentLevel extends AbstractLevel {
   public void setAssessmentType(AssessmentType assessmentType) {
     this.assessmentType = assessmentType;
   }
+  
+  
 
   @Override
   public int hashCode() {
@@ -94,9 +97,9 @@ public class AssessmentLevel extends AbstractLevel {
   @Override
   public String toString() {
     return "AssessmentLevel [questions=" + questions + ", instructions=" + instructions + ", assessmentType=" + assessmentType + ", getId()=" + getId()
-        + ", getTitle()=" + getTitle() + ", getMaxScore()=" + getMaxScore() + ", getOrder()=" + getOrder() + ", getPreHook()=" + Arrays.toString(getPreHook())
-        + ", getPostHook()=" + Arrays.toString(getPostHook()) + ", getNextLevel()=" + getNextLevel() + ", getTrainingDefinition()=" + getTrainingDefinition()
-        + ", getTrainingRun()=" + getTrainingRun() + ", toString()=" + super.toString() + "]";
+        + ", getTitle()=" + getTitle() + ", getMaxScore()=" + getMaxScore() + ", getLevelOrder()=" + getLevelOrder() + ", getPreHook()=" + getPreHook()
+        + ", getPostHook()=" + getPostHook() + ", getNextLevel()=" + getNextLevel() + ", getTrainingDefinition()=" + getTrainingDefinition() + ", toString()="
+        + super.toString() + "]";
   }
 
 }

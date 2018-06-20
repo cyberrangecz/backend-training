@@ -35,6 +35,8 @@ public interface BeanMapping {
 
   public <T> Set<T> mapToSet(Collection<?> objects, Class<T> mapToClass);
 
-  public <T> Optional<T> mapTo(Object u, Class<T> mapToClass);
+  public <T> Optional<T> mapToOptional(Object u, Class<T> mapToClass);
+
+  public <T> T mapTo(Object u, Class<T> mapToClass);
 
 }

@@ -12,6 +12,7 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
@@ -22,8 +23,8 @@ import cz.muni.ics.kypo.model.enums.TRState;
  * @author Pavel Seda (441048)
  *
  */
-@Entity
-@Table(catalog = "training", schema = "public", name = "training_run")
+@Entity(name = "TrainingRun")
+@Table(name = "training_run")
 public class TrainingRun implements Serializable {
 
   @Id
@@ -40,22 +41,13 @@ public class TrainingRun implements Serializable {
   private TRState state;
   @ManyToOne(fetch = FetchType.LAZY, optional = true)
   private AbstractLevel currentLevel;
-  @ManyToOne(fetch = FetchType.EAGER)
+  @ManyToOne(fetch = FetchType.LAZY)
   private TrainingInstance trainingInstance;
+  @ManyToOne(fetch = FetchType.LAZY)
+  private SandboxInstanceRef sandboxInstanceRef;
 
   public TrainingRun() {}
 
-  public TrainingRun(Long id, LocalDateTime startTime, LocalDateTime endTime, String eventLogReference, TRState state, AbstractLevel currentLevel,
-      TrainingInstance trainingInstance) {
-    super();
-    this.id = id;
-    this.startTime = startTime;
-    this.endTime = endTime;
-    this.eventLogReference = eventLogReference;
-    this.state = state;
-    this.currentLevel = currentLevel;
-    this.trainingInstance = trainingInstance;
-  }
 
   public Long getId() {
     return id;
@@ -111,6 +103,15 @@ public class TrainingRun implements Serializable {
 
   public void setTrainingInstance(TrainingInstance trainingInstance) {
     this.trainingInstance = trainingInstance;
+  }
+
+  public SandboxInstanceRef getSandboxInstanceRef() {
+    return sandboxInstanceRef;
+  }
+
+
+  public void setSandboxInstanceRef(SandboxInstanceRef sandboxInstanceRef) {
+    this.sandboxInstanceRef = sandboxInstanceRef;
   }
 
   @Override

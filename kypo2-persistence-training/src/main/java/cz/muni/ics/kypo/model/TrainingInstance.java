@@ -13,6 +13,8 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
@@ -22,8 +24,8 @@ import javax.persistence.Table;
  * @author Pavel Seda (441048)
  *
  */
-@Entity
-@Table(catalog = "training", schema = "public", name = "training_instance")
+@Entity(name = "TrainingInstance")
+@Table(name = "training_instance")
 public class TrainingInstance implements Serializable {
 
   @Id
@@ -41,13 +43,15 @@ public class TrainingInstance implements Serializable {
   private String keyword;
   @ManyToOne(fetch = FetchType.LAZY)
   private TrainingDefinition trainingDefinition;
-  @OneToMany(fetch = FetchType.LAZY, targetEntity = TrainingRun.class, mappedBy = "trainingInstance")
-  private Set<TrainingRun> trainingRun = new HashSet<>();
+  @ManyToMany(fetch = FetchType.LAZY)
+  private Set<UserRef> organizers = new HashSet<>();
+  @ManyToMany(fetch = FetchType.LAZY)
+  private Set<SandboxInstanceRef> sandboxInstanceRef = new HashSet<>();
 
   public TrainingInstance() {}
 
   public TrainingInstance(Long id, LocalDateTime startTime, LocalDateTime endTime, String title, int poolSize, String keyword,
-      TrainingDefinition trainingDefinition, Set<TrainingRun> trainingRun) {
+      TrainingDefinition trainingDefinition, Set<UserRef> organizers, Set<SandboxInstanceRef> sandboxInstanceRef) {
     super();
     this.id = id;
     this.startTime = startTime;
@@ -56,7 +60,8 @@ public class TrainingInstance implements Serializable {
     this.poolSize = poolSize;
     this.keyword = keyword;
     this.trainingDefinition = trainingDefinition;
-    this.trainingRun = trainingRun;
+    this.organizers = organizers;
+    this.sandboxInstanceRef = sandboxInstanceRef;
   }
 
   public Long getId() {
@@ -123,17 +128,26 @@ public class TrainingInstance implements Serializable {
     this.trainingDefinition = trainingDefinition;
   }
 
-  public Set<TrainingRun> getTrainingRun() {
-    return Collections.unmodifiableSet(trainingRun);
+
+  public Set<UserRef> getOrganizers() {
+    return Collections.unmodifiableSet(organizers);
   }
 
-  public void setTrainingRun(Set<TrainingRun> trainingRun) {
-    this.trainingRun = trainingRun;
+  public void setOrganizers(Set<UserRef> organizers) {
+    this.organizers = organizers;
+  }
+
+  public Set<SandboxInstanceRef> getSandboxInstanceRef() {
+    return Collections.unmodifiableSet(sandboxInstanceRef);
+  }
+
+  public void setSandboxInstanceRef(Set<SandboxInstanceRef> sandboxInstanceRef) {
+    this.sandboxInstanceRef = sandboxInstanceRef;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(keyword, startTime, endTime, poolSize, title, trainingDefinition, trainingRun);
+    return Objects.hash(keyword, startTime, endTime, poolSize, title, trainingDefinition);
   }
 
   @Override
@@ -151,15 +165,14 @@ public class TrainingInstance implements Serializable {
         && Objects.equals(endTime, other.getEndTime())
         && Objects.equals(poolSize, other.getPoolSize())
         && Objects.equals(title, other.getTitle())
-        && Objects.equals(trainingDefinition, other.getTrainingDefinition()) 
-        && Objects.equals(trainingRun, other.getTrainingRun());
+        && Objects.equals(trainingDefinition, other.getTrainingDefinition());
     // @formatter:on
   }
 
   @Override
   public String toString() {
     return "TrainingInstance [id=" + id + ", startTime=" + startTime + ", endTime=" + endTime + ", title=" + title + ", poolSize=" + poolSize + ", keyword="
-        + keyword + ", trainingDefinition=" + trainingDefinition + ", trainingRun=" + trainingRun + ", toString()=" + super.toString() + "]";
+        + keyword + ", trainingDefinition=" + trainingDefinition + ", toString()=" + super.toString() + "]";
   }
 
 }

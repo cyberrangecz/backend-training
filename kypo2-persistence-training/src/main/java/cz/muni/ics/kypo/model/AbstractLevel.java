@@ -1,10 +1,7 @@
 package cz.muni.ics.kypo.model;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
+import java.io.Serializable;
 import java.util.Objects;
-import java.util.Set;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -14,15 +11,15 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
-import javax.persistence.Lob;
+import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
-@Entity
-@Table(catalog = "training", schema = "public", name = "\"abstract_level\"")
+@Entity(name = "AbstractLevel")
+@Table(name = "abstract_level")
 @Inheritance(strategy = InheritanceType.JOINED)
-public abstract class AbstractLevel {
+public abstract class AbstractLevel implements Serializable {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   @Column(name = "id")
@@ -31,36 +28,19 @@ public abstract class AbstractLevel {
   protected String title;
   @Column(name = "max_score", nullable = false)
   protected int maxScore;
-  @Column(name = "\"order\"", nullable = false)
-  protected int order;
-  @Lob
-  @Column(name = "pre_hook", nullable = true)
-  protected byte[] preHook;
-  @Lob
-  @Column(name = "post_hook", nullable = true)
-  protected byte[] postHook;
+  @Column(name = "level_order", nullable = false)
+  protected Long levelOrder;
   @Column(name = "next_level", nullable = false)
   protected Long nextLevel;
   @ManyToOne(fetch = FetchType.LAZY)
   protected TrainingDefinition trainingDefinition;
-  @OneToMany(fetch = FetchType.LAZY, targetEntity = TrainingRun.class, mappedBy = "currentLevel")
-  protected Set<TrainingRun> trainingRun = new HashSet<>();
+  @OneToOne(fetch = FetchType.LAZY, optional = true)
+  protected PreHook preHook;
+  @OneToOne(fetch = FetchType.LAZY, optional = true)
+  protected PostHook postHook;
 
   public AbstractLevel() {}
 
-  public AbstractLevel(Long id, String title, int maxScore, int order, byte[] preHook, byte[] postHook, Long nextLevel, TrainingDefinition trainingDefinition,
-      Set<TrainingRun> trainingRun) {
-    super();
-    this.id = id;
-    this.title = title;
-    this.maxScore = maxScore;
-    this.order = order;
-    this.preHook = preHook;
-    this.postHook = postHook;
-    this.nextLevel = nextLevel;
-    this.trainingDefinition = trainingDefinition;
-    this.trainingRun = trainingRun;
-  }
 
   public Long getId() {
     return id;
@@ -87,27 +67,27 @@ public abstract class AbstractLevel {
     this.maxScore = maxScore;
   }
 
-  public int getOrder() {
-    return order;
+  public Long getLevelOrder() {
+    return levelOrder;
   }
 
-  public void setOrder(int order) {
-    this.order = order;
+  public void setLevelOrder(Long levelOrder) {
+    this.levelOrder = levelOrder;
   }
 
-  public byte[] getPreHook() {
+  public PreHook getPreHook() {
     return preHook;
   }
 
-  public void setPreHook(byte[] preHook) {
+  public void setPreHook(PreHook preHook) {
     this.preHook = preHook;
   }
 
-  public byte[] getPostHook() {
+  public PostHook getPostHook() {
     return postHook;
   }
 
-  public void setPostHook(byte[] postHook) {
+  public void setPostHook(PostHook postHook) {
     this.postHook = postHook;
   }
 
@@ -127,13 +107,7 @@ public abstract class AbstractLevel {
     this.trainingDefinition = trainingDefinition;
   }
 
-  public Set<TrainingRun> getTrainingRun() {
-    return Collections.unmodifiableSet(trainingRun);
-  }
 
-  public void setTrainingRun(Set<TrainingRun> trainingRun) {
-    this.trainingRun = trainingRun;
-  }
 
   @Override
   public int hashCode() {
@@ -159,8 +133,8 @@ public abstract class AbstractLevel {
 
   @Override
   public String toString() {
-    return "Level [id=" + id + ", title=" + title + ", maxScore=" + maxScore + ", order=" + order + ", preHook=" + Arrays.toString(preHook) + ", postHook="
-        + Arrays.toString(postHook) + ", nextLevel=" + nextLevel + ", trainingDefinition=" + trainingDefinition + ", trainingRun=" + trainingRun + "]";
+    return "AbstractLevel [id=" + id + ", title=" + title + ", maxScore=" + maxScore + ", levelOrder=" + levelOrder + ", nextLevel=" + nextLevel
+        + ", trainingDefinition=" + trainingDefinition + ", preHook=" + preHook + ", postHook=" + postHook + ", toString()=" + super.toString() + "]";
   }
 
 }

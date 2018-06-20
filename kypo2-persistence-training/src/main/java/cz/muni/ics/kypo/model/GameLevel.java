@@ -1,5 +1,6 @@
 package cz.muni.ics.kypo.model;
 
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -7,7 +8,6 @@ import java.util.Objects;
 import java.util.Set;
 
 import javax.persistence.Column;
-import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.Lob;
@@ -20,19 +20,19 @@ import javax.persistence.Table;
  * @author Pavel Seda (441048)
  *
  */
-@Entity
-@Table(catalog = "training", schema = "public", name = "game_level")
+@Entity(name = "GameLevel")
+@Table(name = "game_level")
 @PrimaryKeyJoinColumn(name = "id")
-public class GameLevel extends AbstractLevel {
+public class GameLevel extends AbstractLevel implements Serializable {
 
   @Column(name = "flag", nullable = false)
   private String flag;
   @Lob
   @Column(name = "content", nullable = false)
-  private byte[] content;
+  private String content;
   @Lob
   @Column(name = "solution", nullable = false)
-  private byte[] solution;
+  private String solution;
   @Column(name = "incorrect_flag_penalty", nullable = false)
   private int incorrectFlagPenalty;
   @Column(name = "solution_penalty", nullable = false)
@@ -46,19 +46,6 @@ public class GameLevel extends AbstractLevel {
 
   public GameLevel() {}
 
-  public GameLevel(String flag, byte[] content, byte[] solution, int incorrectFlagPenalty, int solutionPenalty, int estimatedDuration, String[] attachments,
-      Set<Hint> hints) {
-    super();
-    this.flag = flag;
-    this.content = content;
-    this.solution = solution;
-    this.incorrectFlagPenalty = incorrectFlagPenalty;
-    this.solutionPenalty = solutionPenalty;
-    this.estimatedDuration = estimatedDuration;
-    this.attachments = attachments;
-    this.hints = hints;
-  }
-
   public String getFlag() {
     return flag;
   }
@@ -67,19 +54,19 @@ public class GameLevel extends AbstractLevel {
     this.flag = flag;
   }
 
-  public byte[] getContent() {
+  public String getContent() {
     return content;
   }
 
-  public void setContent(byte[] content) {
+  public void setContent(String content) {
     this.content = content;
   }
 
-  public byte[] getSolution() {
+  public String getSolution() {
     return solution;
   }
 
-  public void setSolution(byte[] solution) {
+  public void setSolution(String solution) {
     this.solution = solution;
   }
 
@@ -123,7 +110,6 @@ public class GameLevel extends AbstractLevel {
     this.hints = hints;
   }
 
-
   @Override
   public int hashCode() {
     return Objects.hash(attachments, content, estimatedDuration, flag, hints, incorrectFlagPenalty, solution, solutionPenalty);
@@ -140,24 +126,23 @@ public class GameLevel extends AbstractLevel {
     GameLevel other = (GameLevel) obj;
     // @formatter:off
     return Arrays.equals(attachments, other.getAttachments()) 
-        && Arrays.equals(content, other.getContent())
+        && Objects.equals(content, other.getContent())
         && Objects.equals(estimatedDuration, other.getEstimatedDuration()) 
         && Objects.equals(flag, other.getFlag()) 
         && Objects.equals(hints, other.getHints())
         && Objects.equals(incorrectFlagPenalty, other.getIncorrectFlagPenalty()) 
-        && Arrays.equals(solution, other.getSolution())
+        && Objects.equals(solution, other.getSolution())
         && Objects.equals(solutionPenalty, other.getSolutionPenalty());
     // @formatter:on
   }
 
   @Override
   public String toString() {
-    return "GameLevel [flag=" + flag + ", content=" + Arrays.toString(content) + ", solution=" + Arrays.toString(solution) + ", incorrectFlagPenalty="
-        + incorrectFlagPenalty + ", solutionPenalty=" + solutionPenalty + ", estimatedDuration=" + estimatedDuration + ", attachments="
-        + Arrays.toString(attachments) + ", hints=" + hints + ", getId()=" + getId() + ", getTitle()=" + getTitle() + ", getMaxScore()=" + getMaxScore()
-        + ", getOrder()=" + getOrder() + ", getPreHook()=" + Arrays.toString(getPreHook()) + ", getPostHook()=" + Arrays.toString(getPostHook())
-        + ", getNextLevel()=" + getNextLevel() + ", getTrainingDefinition()=" + getTrainingDefinition() + ", getTrainingRun()=" + getTrainingRun()
-        + ", toString()=" + super.toString() + "]";
+    return "GameLevel [flag=" + flag + ", content=" + content + ", solution=" + solution + ", incorrectFlagPenalty=" + incorrectFlagPenalty
+        + ", solutionPenalty=" + solutionPenalty + ", estimatedDuration=" + estimatedDuration + ", attachments=" + Arrays.toString(attachments) + ", hints="
+        + hints + ", getId()=" + getId() + ", getTitle()=" + getTitle() + ", getMaxScore()=" + getMaxScore() + ", getLevelOrder()=" + getLevelOrder()
+        + ", getPreHook()=" + getPreHook() + ", getPostHook()=" + getPostHook() + ", getNextLevel()=" + getNextLevel() + ", getTrainingDefinition()="
+        + getTrainingDefinition() + ", toString()=" + super.toString() + "]";
   }
 
 }
