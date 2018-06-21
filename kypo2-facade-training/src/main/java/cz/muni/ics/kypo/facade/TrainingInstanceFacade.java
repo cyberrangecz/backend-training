@@ -1,11 +1,11 @@
 package cz.muni.ics.kypo.facade;
 
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import com.querydsl.core.types.Predicate;
 
-import cz.muni.ics.kypo.dto.TrainingInstanceDTO;
+import cz.muni.ics.kypo.api.PageResultResource;
+import cz.muni.ics.kypo.api.dto.TrainingInstanceDTO;
 
 /**
  * 
@@ -27,6 +27,6 @@ public interface TrainingInstanceFacade {
    * 
    * @return all Training Instances
    */
-  public Page<TrainingInstanceDTO> findAll(Predicate predicate, Pageable pageable);
+  public PageResultResource<TrainingInstanceDTO> findAll(Predicate predicate, Pageable pageable);
 
 }

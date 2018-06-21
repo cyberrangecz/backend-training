@@ -2,7 +2,6 @@ package cz.muni.ics.kypo.rest.controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.querydsl.binding.QuerydslPredicate;
 import org.springframework.http.HttpStatus;
@@ -20,7 +19,8 @@ import com.github.bohnman.squiggly.Squiggly;
 import com.github.bohnman.squiggly.util.SquigglyUtils;
 import com.querydsl.core.types.Predicate;
 
-import cz.muni.ics.kypo.dto.InfoLevelDTO;
+import cz.muni.ics.kypo.api.PageResultResource;
+import cz.muni.ics.kypo.api.dto.InfoLevelDTO;
 import cz.muni.ics.kypo.exception.FacadeLayerException;
 import cz.muni.ics.kypo.facade.InfoLevelFacade;
 import cz.muni.ics.kypo.model.InfoLevel;
@@ -137,7 +137,7 @@ public class InfoLevelsRestController {
       @ApiParam(value = "Fields which should be returned in REST API response", required = false) 
       @RequestParam(value = "fields", required = false) String fields) {
     try {
-      Page<InfoLevelDTO> infoLevelResource = infoLevelFacade.findAll(predicate, pageable);
+      PageResultResource<InfoLevelDTO> infoLevelResource = infoLevelFacade.findAll(predicate, pageable);
       Squiggly.init(objectMapper, fields);
       return new ResponseEntity<>(SquigglyUtils.stringify(objectMapper, infoLevelResource), HttpStatus.OK);
     } catch (FacadeLayerException ex) {

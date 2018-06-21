@@ -4,14 +4,14 @@ import java.util.Objects;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.querydsl.core.types.Predicate;
 
-import cz.muni.ics.kypo.dto.AssessmentLevelDTO;
+import cz.muni.ics.kypo.api.PageResultResource;
+import cz.muni.ics.kypo.api.dto.AssessmentLevelDTO;
 import cz.muni.ics.kypo.exception.FacadeLayerException;
 import cz.muni.ics.kypo.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.facade.AssessmentLevelFacade;
@@ -53,9 +53,9 @@ public class AssessmentLevelFacadeImpl implements AssessmentLevelFacade {
 
   @Override
   @Transactional(readOnly = true)
-  public Page<AssessmentLevelDTO> findAll(Predicate predicate, Pageable pageable) {
+  public PageResultResource<AssessmentLevelDTO> findAll(Predicate predicate, Pageable pageable) {
     try {
-      return beanMapping.mapTo(assessmentLevelService.findAll(predicate, pageable), AssessmentLevelDTO.class);
+      return beanMapping.mapToPageResultDTO(assessmentLevelService.findAll(predicate, pageable), AssessmentLevelDTO.class);
     } catch (ServiceLayerException ex) {
       throw new FacadeLayerException(ex.getLocalizedMessage());
     }

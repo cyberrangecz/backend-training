@@ -3,14 +3,14 @@ package cz.muni.ics.kypo.facade.impl;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.querydsl.core.types.Predicate;
 
-import cz.muni.ics.kypo.dto.GameLevelDTO;
+import cz.muni.ics.kypo.api.PageResultResource;
+import cz.muni.ics.kypo.api.dto.GameLevelDTO;
 import cz.muni.ics.kypo.exception.FacadeLayerException;
 import cz.muni.ics.kypo.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.facade.GameLevelFacade;
@@ -51,9 +51,9 @@ public class GameLevelFacadeImpl implements GameLevelFacade {
 
   @Override
   @Transactional(readOnly = true)
-  public Page<GameLevelDTO> findAll(Predicate predicate, Pageable pageable) {
+  public PageResultResource<GameLevelDTO> findAll(Predicate predicate, Pageable pageable) {
     try {
-      return beanMapping.mapTo(gameLevelService.findAll(predicate, pageable), GameLevelDTO.class);
+      return beanMapping.mapToPageResultDTO(gameLevelService.findAll(predicate, pageable), GameLevelDTO.class);
     } catch (ServiceLayerException ex) {
       throw new FacadeLayerException(ex.getLocalizedMessage());
     }

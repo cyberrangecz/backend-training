@@ -7,6 +7,8 @@ import java.util.Set;
 
 import org.springframework.data.domain.Page;
 
+import cz.muni.ics.kypo.api.PageResultResource;
+
 /**
  * That class is used for mapping entities to DTO classes. Example of usage for this mapper shown
  * below:
@@ -36,6 +38,8 @@ public interface BeanMapping {
   public <T> List<T> mapTo(Collection<?> objects, Class<T> mapToClass);
 
   public <T> Page<T> mapTo(Page<?> objects, Class<T> mapToClass);
+
+  public <T> PageResultResource<T> mapToPageResultDTO(Page<?> objects, Class<T> mapToClass);
 
   public <T> Set<T> mapToSet(Collection<?> objects, Class<T> mapToClass);
 

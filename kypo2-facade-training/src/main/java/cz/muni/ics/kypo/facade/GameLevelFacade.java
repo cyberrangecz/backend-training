@@ -1,11 +1,11 @@
 package cz.muni.ics.kypo.facade;
 
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import com.querydsl.core.types.Predicate;
 
-import cz.muni.ics.kypo.dto.GameLevelDTO;
+import cz.muni.ics.kypo.api.PageResultResource;
+import cz.muni.ics.kypo.api.dto.GameLevelDTO;
 
 /**
  * @author Pavel Šeda
@@ -26,5 +26,5 @@ public interface GameLevelFacade {
    * 
    * @return all game levels
    */
-  public Page<GameLevelDTO> findAll(Predicate predicate, Pageable pageable);
+  public PageResultResource<GameLevelDTO> findAll(Predicate predicate, Pageable pageable);
 }

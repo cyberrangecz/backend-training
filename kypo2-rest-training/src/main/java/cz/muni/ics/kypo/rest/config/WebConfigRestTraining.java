@@ -21,6 +21,8 @@ import cz.muni.ics.kypo.config.FacadeConfiguration;
  * <p>
  * To run with external property file add following to:
  * 
+ * Eclipse example:
+ * 
  * <pre>
  * <code>
  *  Run Configuration -> tab: Arguments -> Program arguments

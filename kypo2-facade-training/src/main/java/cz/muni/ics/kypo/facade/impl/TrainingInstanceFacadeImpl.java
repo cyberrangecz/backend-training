@@ -4,14 +4,14 @@ import java.util.Objects;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.querydsl.core.types.Predicate;
 
-import cz.muni.ics.kypo.dto.TrainingInstanceDTO;
+import cz.muni.ics.kypo.api.PageResultResource;
+import cz.muni.ics.kypo.api.dto.TrainingInstanceDTO;
 import cz.muni.ics.kypo.exception.FacadeLayerException;
 import cz.muni.ics.kypo.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.facade.TrainingInstanceFacade;
@@ -53,9 +53,9 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
 
   @Override
   @Transactional(readOnly = true)
-  public Page<TrainingInstanceDTO> findAll(Predicate predicate, Pageable pageable) {
+  public PageResultResource<TrainingInstanceDTO> findAll(Predicate predicate, Pageable pageable) {
     try {
-      return beanMapping.mapTo(trainingInstanceService.findAll(predicate, pageable), TrainingInstanceDTO.class);
+      return beanMapping.mapToPageResultDTO(trainingInstanceService.findAll(predicate, pageable), TrainingInstanceDTO.class);
     } catch (ServiceLayerException ex) {
       throw new FacadeLayerException(ex.getLocalizedMessage());
     }

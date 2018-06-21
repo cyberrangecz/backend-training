@@ -4,14 +4,14 @@ import java.util.Objects;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.querydsl.core.types.Predicate;
 
-import cz.muni.ics.kypo.dto.InfoLevelDTO;
+import cz.muni.ics.kypo.api.PageResultResource;
+import cz.muni.ics.kypo.api.dto.InfoLevelDTO;
 import cz.muni.ics.kypo.exception.FacadeLayerException;
 import cz.muni.ics.kypo.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.facade.InfoLevelFacade;
@@ -53,9 +53,9 @@ public class InfoLevelFacadeImpl implements InfoLevelFacade {
 
   @Override
   @Transactional(readOnly = true)
-  public Page<InfoLevelDTO> findAll(Predicate predicate, Pageable pageable) {
+  public PageResultResource<InfoLevelDTO> findAll(Predicate predicate, Pageable pageable) {
     try {
-      return beanMapping.mapTo(infoService.findAll(predicate, pageable), InfoLevelDTO.class);
+      return beanMapping.mapToPageResultDTO(infoService.findAll(predicate, pageable), InfoLevelDTO.class);
     } catch (ServiceLayerException ex) {
       throw new FacadeLayerException(ex.getLocalizedMessage());
     }

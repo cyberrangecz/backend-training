@@ -1,4 +1,4 @@
-package cz.muni.ics.kypo.dto;
+package cz.muni.ics.kypo.api.dto;
 
 import io.swagger.annotations.ApiModel;
 
