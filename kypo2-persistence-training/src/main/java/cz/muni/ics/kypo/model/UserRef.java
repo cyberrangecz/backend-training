@@ -25,7 +25,7 @@ public class UserRef implements Serializable {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  @Column(name = "id")
+  @Column(name = "id", unique = true, nullable = false, insertable = false)
   private Long id;
   @Column(name = "user_ref_id")
   private Long userRefId;

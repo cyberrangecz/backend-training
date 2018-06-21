@@ -22,7 +22,7 @@ import javax.persistence.Table;
 public abstract class AbstractLevel implements Serializable {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  @Column(name = "id")
+  @Column(name = "id", unique = true, nullable = false, insertable = false)
   protected Long id;
   @Column(name = "title", nullable = false)
   protected String title;
@@ -40,7 +40,6 @@ public abstract class AbstractLevel implements Serializable {
   protected PostHook postHook;
 
   public AbstractLevel() {}
-
 
   public Long getId() {
     return id;
@@ -107,8 +106,6 @@ public abstract class AbstractLevel implements Serializable {
     this.trainingDefinition = trainingDefinition;
   }
 
-
-
   @Override
   public int hashCode() {
     return Objects.hashCode(id);
@@ -123,12 +120,7 @@ public abstract class AbstractLevel implements Serializable {
     if (!(obj instanceof AbstractLevel))
       return false;
     AbstractLevel other = (AbstractLevel) obj;
-    if (id == null) {
-      if (other.id != null)
-        return false;
-    } else if (!id.equals(other.getId()))
-      return false;
-    return true;
+    return Objects.equals(id, other.getId());
   }
 
   @Override

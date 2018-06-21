@@ -20,7 +20,7 @@ public class SandboxDefinitionRef implements Serializable {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  @Column(name = "id")
+  @Column(name = "id", unique = true, nullable = false, insertable = false)
   private Long id;
   @Column(name = "sandbox_definition_ref")
   private Long sandboxDefinitionRef;

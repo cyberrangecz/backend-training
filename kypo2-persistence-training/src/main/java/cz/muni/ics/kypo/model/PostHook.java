@@ -22,7 +22,7 @@ public class PostHook implements Serializable {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  @Column(name = "id")
+  @Column(name = "id", unique = true, nullable = false, insertable = false)
   private Long id;
   @OneToOne(mappedBy = "postHook", fetch = FetchType.LAZY)
   private AbstractLevel abstractLevel;

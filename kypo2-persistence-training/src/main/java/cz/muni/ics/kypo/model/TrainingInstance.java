@@ -30,6 +30,7 @@ public class TrainingInstance implements Serializable {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @Column(name = "id", unique = true, nullable = false, insertable = false)
   private Long id;
   @Column(name = "start_time", nullable = false)
   private LocalDateTime startTime;

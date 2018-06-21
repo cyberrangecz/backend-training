@@ -25,7 +25,7 @@ public class AuthorRef implements Serializable {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  @Column(name = "id")
+  @Column(name = "id", unique = true, nullable = false, insertable = false)
   private Long id;
   @Column(name = "author_ref_id")
   private Long authorRefId;
@@ -57,8 +57,8 @@ public class AuthorRef implements Serializable {
   public void setTrainingDefinition(Set<TrainingDefinition> trainingDefinition) {
     this.trainingDefinition = trainingDefinition;
   }
-  
-  
+
+
 
   @Override
   public String toString() {

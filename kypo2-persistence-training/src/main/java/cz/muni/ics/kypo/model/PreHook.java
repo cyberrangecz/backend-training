@@ -22,7 +22,7 @@ public class PreHook implements Serializable {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  @Column(name = "id")
+  @Column(name = "id", unique = true, nullable = false, insertable = false)
   private Long id;
   @OneToOne(mappedBy = "preHook", fetch = FetchType.LAZY)
   private AbstractLevel abstractLevel;

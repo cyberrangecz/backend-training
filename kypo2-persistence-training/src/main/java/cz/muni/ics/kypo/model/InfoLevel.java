@@ -20,7 +20,7 @@ import javax.persistence.Table;
 public class InfoLevel extends AbstractLevel implements Serializable {
 
   @Lob
-  @Column(name = "content", nullable = false) // maybe should be unique?
+  @Column(name = "content", unique = true, nullable = false) // maybe should be unique?
   private String content;
 
   public InfoLevel() {
