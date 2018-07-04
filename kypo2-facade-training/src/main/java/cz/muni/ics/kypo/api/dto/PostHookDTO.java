@@ -1,6 +1,5 @@
 package cz.muni.ics.kypo.api.dto;
 
-import cz.muni.ics.kypo.model.AbstractLevel;
 import io.swagger.annotations.ApiModel;
 
 /**
@@ -12,7 +11,7 @@ import io.swagger.annotations.ApiModel;
 public class PostHookDTO {
 
   private Long id;
-  private AbstractLevel abstractLevel;
+  private AbstractLevelDTO abstractLevel;
 
   public PostHookDTO() {}
 
@@ -24,11 +23,11 @@ public class PostHookDTO {
     this.id = id;
   }
 
-  public AbstractLevel getAbstractLevel() {
+  public AbstractLevelDTO getAbstractLevel() {
     return abstractLevel;
   }
 
-  public void setAbstractLevel(AbstractLevel abstractLevel) {
+  public void setAbstractLevel(AbstractLevelDTO abstractLevel) {
     this.abstractLevel = abstractLevel;
   }
 

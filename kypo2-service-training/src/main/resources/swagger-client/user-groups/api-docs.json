@@ -1,0 +1,1443 @@
+{
+	"swagger": "2.0",
+	"info": {
+		"description": "Developed By CSIRT team",
+		"title": "REST API documentation",
+		"termsOfService": "Licensed by CSIRT team"
+	},
+	"host": "localhost:8080",
+	"basePath": "/kypo2-rest-training/api/v1",
+	"tags": [
+		{
+			"name": "assessment-levels-rest-controller",
+			"description": "Assessment Levels Rest Controller"
+		},
+		{
+			"name": "basic-error-controller",
+			"description": "Basic Error Controller"
+		},
+		{
+			"name": "game-levels-rest-controller",
+			"description": "Game Levels Rest Controller"
+		},
+		{
+			"name": "info-levels-rest-controller",
+			"description": "Info Levels Rest Controller"
+		},
+		{
+			"name": "operation-handler",
+			"description": "Operation Handler"
+		},
+		{
+			"name": "training-definitions-rest-controller",
+			"description": "Training Definitions Rest Controller"
+		},
+		{
+			"name": "training-instances-rest-controller",
+			"description": "Training Instances Rest Controller"
+		},
+		{
+			"name": "training-runs-rest-controller",
+			"description": "Training Runs Rest Controller"
+		},
+		{
+			"name": "web-mvc-endpoint-handler-mapping",
+			"description": "Web Mvc Endpoint Handler Mapping"
+		}
+	],
+	"paths": {
+		"/actuator": {
+			"get": {
+				"tags": [
+					"web-mvc-endpoint-handler-mapping"
+				],
+				"summary": "links",
+				"operationId": "linksUsingGET",
+				"produces": [
+					"application/json",
+					"application/vnd.spring-boot.actuator.v2+json"
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"schema": {
+							"type": "object",
+							"additionalProperties": {
+								"type": "object",
+								"additionalProperties": {
+									"$ref": "#/definitions/Link"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Unauthorized"
+					},
+					"403": {
+						"description": "Forbidden"
+					},
+					"404": {
+						"description": "Not Found"
+					}
+				}
+			}
+		},
+		"/actuator/health": {
+			"get": {
+				"tags": [
+					"operation-handler"
+				],
+				"summary": "handle",
+				"operationId": "handleUsingGET",
+				"produces": [
+					"application/json",
+					"application/vnd.spring-boot.actuator.v2+json"
+				],
+				"parameters": [
+					{
+						"in": "body",
+						"name": "body",
+						"description": "body",
+						"required": false,
+						"schema": {
+							"type": "object",
+							"additionalProperties": {
+								"type": "string"
+							}
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"schema": {
+							"type": "object"
+						}
+					},
+					"401": {
+						"description": "Unauthorized"
+					},
+					"403": {
+						"description": "Forbidden"
+					},
+					"404": {
+						"description": "Not Found"
+					}
+				}
+			}
+		},
+		"/actuator/info": {
+			"get": {
+				"tags": [
+					"operation-handler"
+				],
+				"summary": "handle",
+				"operationId": "handleUsingGET_1",
+				"produces": [
+					"application/json",
+					"application/vnd.spring-boot.actuator.v2+json"
+				],
+				"parameters": [
+					{
+						"in": "body",
+						"name": "body",
+						"description": "body",
+						"required": false,
+						"schema": {
+							"type": "object",
+							"additionalProperties": {
+								"type": "string"
+							}
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"schema": {
+							"type": "object"
+						}
+					},
+					"401": {
+						"description": "Unauthorized"
+					},
+					"403": {
+						"description": "Forbidden"
+					},
+					"404": {
+						"description": "Not Found"
+					}
+				}
+			}
+		},
+		"/assessment-levels": {
+			"get": {
+				"tags": [
+					"assessment-levels-rest-controller"
+				],
+				"summary": "Get all Assessment Levels.",
+				"operationId": "findAllAssessmentLevels",
+				"produces": [
+					"application/json"
+				],
+				"parameters": [
+					{
+						"name": "parameters",
+						"in": "query",
+						"description": "parameters",
+						"required": true,
+						"items": {
+							"type": "object",
+							"additionalProperties": {
+								"type": "string"
+							}
+						}
+					},
+					{
+						"name": "fields",
+						"in": "query",
+						"description": "Fields which should be returned in REST API response",
+						"required": false,
+						"type": "string"
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"schema": {
+							"$ref": "#/definitions/InfoLevelDTO"
+						}
+					},
+					"401": {
+						"description": "Unauthorized"
+					},
+					"403": {
+						"description": "Forbidden"
+					},
+					"404": {
+						"description": "The requested resource was not found."
+					}
+				},
+				"security": [
+					{
+						"sampleoauth": [
+							"find all Assessment Levels"
+						]
+					}
+				]
+			}
+		},
+		"/assessment-levels/{id}": {
+			"get": {
+				"tags": [
+					"assessment-levels-rest-controller"
+				],
+				"summary": "Get Assessment Level by Id.",
+				"operationId": "findAssessmentLevelById",
+				"produces": [
+					"application/json"
+				],
+				"parameters": [
+					{
+						"name": "AssessmentLevel ID",
+						"in": "path",
+						"description": "id",
+						"required": false,
+						"type": "integer",
+						"format": "int64"
+					},
+					{
+						"name": "fields",
+						"in": "query",
+						"description": "Fields which should be returned in REST API response",
+						"required": false,
+						"type": "string"
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"schema": {
+							"$ref": "#/definitions/InfoLevelDTO"
+						}
+					},
+					"401": {
+						"description": "Unauthorized"
+					},
+					"403": {
+						"description": "Forbidden"
+					},
+					"404": {
+						"description": "The requested resource was not found."
+					}
+				},
+				"security": [
+					{
+						"sampleoauth": [
+							"find Assessment Level by ID"
+						]
+					}
+				]
+			}
+		},
+		"/error": {
+			"get": {
+				"tags": [
+					"basic-error-controller"
+				],
+				"summary": "error",
+				"operationId": "errorUsingGET",
+				"produces": [
+					"*/*"
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"schema": {
+							"type": "object",
+							"additionalProperties": {
+								"type": "object"
+							}
+						}
+					},
+					"401": {
+						"description": "Unauthorized"
+					},
+					"403": {
+						"description": "Forbidden"
+					},
+					"404": {
+						"description": "Not Found"
+					}
+				}
+			},
+			"head": {
+				"tags": [
+					"basic-error-controller"
+				],
+				"summary": "error",
+				"operationId": "errorUsingHEAD",
+				"consumes": [
+					"application/json"
+				],
+				"produces": [
+					"*/*"
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"schema": {
+							"type": "object",
+							"additionalProperties": {
+								"type": "object"
+							}
+						}
+					},
+					"204": {
+						"description": "No Content"
+					},
+					"401": {
+						"description": "Unauthorized"
+					},
+					"403": {
+						"description": "Forbidden"
+					}
+				}
+			},
+			"post": {
+				"tags": [
+					"basic-error-controller"
+				],
+				"summary": "error",
+				"operationId": "errorUsingPOST",
+				"consumes": [
+					"application/json"
+				],
+				"produces": [
+					"*/*"
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"schema": {
+							"type": "object",
+							"additionalProperties": {
+								"type": "object"
+							}
+						}
+					},
+					"201": {
+						"description": "Created"
+					},
+					"401": {
+						"description": "Unauthorized"
+					},
+					"403": {
+						"description": "Forbidden"
+					},
+					"404": {
+						"description": "Not Found"
+					}
+				}
+			},
+			"put": {
+				"tags": [
+					"basic-error-controller"
+				],
+				"summary": "error",
+				"operationId": "errorUsingPUT",
+				"consumes": [
+					"application/json"
+				],
+				"produces": [
+					"*/*"
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"schema": {
+							"type": "object",
+							"additionalProperties": {
+								"type": "object"
+							}
+						}
+					},
+					"201": {
+						"description": "Created"
+					},
+					"401": {
+						"description": "Unauthorized"
+					},
+					"403": {
+						"description": "Forbidden"
+					},
+					"404": {
+						"description": "Not Found"
+					}
+				}
+			},
+			"delete": {
+				"tags": [
+					"basic-error-controller"
+				],
+				"summary": "error",
+				"operationId": "errorUsingDELETE",
+				"produces": [
+					"*/*"
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"schema": {
+							"type": "object",
+							"additionalProperties": {
+								"type": "object"
+							}
+						}
+					},
+					"204": {
+						"description": "No Content"
+					},
+					"401": {
+						"description": "Unauthorized"
+					},
+					"403": {
+						"description": "Forbidden"
+					}
+				}
+			},
+			"options": {
+				"tags": [
+					"basic-error-controller"
+				],
+				"summary": "error",
+				"operationId": "errorUsingOPTIONS",
+				"consumes": [
+					"application/json"
+				],
+				"produces": [
+					"*/*"
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"schema": {
+							"type": "object",
+							"additionalProperties": {
+								"type": "object"
+							}
+						}
+					},
+					"204": {
+						"description": "No Content"
+					},
+					"401": {
+						"description": "Unauthorized"
+					},
+					"403": {
+						"description": "Forbidden"
+					}
+				}
+			},
+			"patch": {
+				"tags": [
+					"basic-error-controller"
+				],
+				"summary": "error",
+				"operationId": "errorUsingPATCH",
+				"consumes": [
+					"application/json"
+				],
+				"produces": [
+					"*/*"
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"schema": {
+							"type": "object",
+							"additionalProperties": {
+								"type": "object"
+							}
+						}
+					},
+					"204": {
+						"description": "No Content"
+					},
+					"401": {
+						"description": "Unauthorized"
+					},
+					"403": {
+						"description": "Forbidden"
+					}
+				}
+			}
+		},
+		"/game-levels": {
+			"get": {
+				"tags": [
+					"game-levels-rest-controller"
+				],
+				"summary": "Get all Game Levels.",
+				"operationId": "findAllGameLevels",
+				"produces": [
+					"application/json"
+				],
+				"parameters": [
+					{
+						"name": "parameters",
+						"in": "query",
+						"description": "parameters",
+						"required": true,
+						"items": {
+							"type": "object",
+							"additionalProperties": {
+								"type": "string"
+							}
+						}
+					},
+					{
+						"name": "fields",
+						"in": "query",
+						"description": "Fields which should be returned in REST API response",
+						"required": false,
+						"type": "string"
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"schema": {
+							"$ref": "#/definitions/GameLevelDTO"
+						}
+					},
+					"401": {
+						"description": "Unauthorized"
+					},
+					"403": {
+						"description": "Forbidden"
+					},
+					"404": {
+						"description": "The requested resource was not found."
+					}
+				},
+				"security": [
+					{
+						"sampleoauth": [
+							"find all Game Levels"
+						]
+					}
+				]
+			}
+		},
+		"/game-levels/{id}": {
+			"get": {
+				"tags": [
+					"game-levels-rest-controller"
+				],
+				"summary": "Get Game Level by Id.",
+				"operationId": "findGameLevelById",
+				"produces": [
+					"application/json"
+				],
+				"parameters": [
+					{
+						"name": "GameLevel ID",
+						"in": "path",
+						"description": "id",
+						"required": false,
+						"type": "integer",
+						"format": "int64"
+					},
+					{
+						"name": "fields",
+						"in": "query",
+						"description": "Fields which should be returned in REST API response",
+						"required": false,
+						"type": "string"
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"schema": {
+							"$ref": "#/definitions/GameLevelDTO"
+						}
+					},
+					"401": {
+						"description": "Unauthorized"
+					},
+					"403": {
+						"description": "Forbidden"
+					},
+					"404": {
+						"description": "The requested resource was not found."
+					}
+				},
+				"security": [
+					{
+						"sampleoauth": [
+							"find Game Level by ID"
+						]
+					}
+				]
+			}
+		},
+		"/info-levels": {
+			"get": {
+				"tags": [
+					"info-levels-rest-controller"
+				],
+				"summary": "Get all info levels.",
+				"operationId": "findAllInfoLevels",
+				"produces": [
+					"application/json"
+				],
+				"parameters": [
+					{
+						"name": "parameters",
+						"in": "query",
+						"description": "parameters",
+						"required": true,
+						"items": {
+							"type": "object",
+							"additionalProperties": {
+								"type": "string"
+							}
+						}
+					},
+					{
+						"name": "fields",
+						"in": "query",
+						"description": "Fields which should be returned in REST API response",
+						"required": false,
+						"type": "string"
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"schema": {
+							"$ref": "#/definitions/InfoLevelDTO"
+						}
+					},
+					"401": {
+						"description": "Unauthorized"
+					},
+					"403": {
+						"description": "Forbidden"
+					},
+					"404": {
+						"description": "The requested resource was not found."
+					}
+				},
+				"security": [
+					{
+						"sampleoauth": [
+							"find all Info levels"
+						]
+					}
+				]
+			}
+		},
+		"/info-levels/{id}": {
+			"get": {
+				"tags": [
+					"info-levels-rest-controller"
+				],
+				"summary": "Get Info level by Id.",
+				"operationId": "findInfoLevelById",
+				"produces": [
+					"application/json"
+				],
+				"parameters": [
+					{
+						"name": "InfoLevel ID",
+						"in": "path",
+						"description": "id",
+						"required": false,
+						"type": "integer",
+						"format": "int64"
+					},
+					{
+						"name": "fields",
+						"in": "query",
+						"description": "Fields which should be returned in REST API response",
+						"required": false,
+						"type": "string"
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"schema": {
+							"$ref": "#/definitions/InfoLevelDTO"
+						}
+					},
+					"401": {
+						"description": "Unauthorized"
+					},
+					"403": {
+						"description": "Forbidden"
+					},
+					"404": {
+						"description": "The requested resource was not found."
+					}
+				},
+				"security": [
+					{
+						"sampleoauth": [
+							"find Info level by ID"
+						]
+					}
+				]
+			}
+		},
+		"/training-definitions": {
+			"get": {
+				"tags": [
+					"training-definitions-rest-controller"
+				],
+				"summary": "Get all Training Definitions.",
+				"operationId": "findAllTrainingDefinitions",
+				"produces": [
+					"application/json"
+				],
+				"parameters": [
+					{
+						"name": "parameters",
+						"in": "query",
+						"description": "parameters",
+						"required": true,
+						"items": {
+							"type": "object",
+							"additionalProperties": {
+								"type": "string"
+							}
+						}
+					},
+					{
+						"name": "fields",
+						"in": "query",
+						"description": "Fields which should be returned in REST API response",
+						"required": false,
+						"type": "string"
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"schema": {
+							"$ref": "#/definitions/InfoLevelDTO"
+						}
+					},
+					"401": {
+						"description": "Unauthorized"
+					},
+					"403": {
+						"description": "Forbidden"
+					},
+					"404": {
+						"description": "The requested resource was not found."
+					}
+				},
+				"security": [
+					{
+						"sampleoauth": [
+							"find all Training Definitions"
+						]
+					}
+				]
+			}
+		},
+		"/training-definitions/{id}": {
+			"get": {
+				"tags": [
+					"training-definitions-rest-controller"
+				],
+				"summary": "Get Training Definition by Id.",
+				"operationId": "findTrainingDefinitionById",
+				"produces": [
+					"application/json"
+				],
+				"parameters": [
+					{
+						"name": "TrainingDefinition ID",
+						"in": "path",
+						"description": "id",
+						"required": false,
+						"type": "integer",
+						"format": "int64"
+					},
+					{
+						"name": "fields",
+						"in": "query",
+						"description": "Fields which should be returned in REST API response",
+						"required": false,
+						"type": "string"
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"schema": {
+							"$ref": "#/definitions/TrainingDefinitionDTO"
+						}
+					},
+					"401": {
+						"description": "Unauthorized"
+					},
+					"403": {
+						"description": "Forbidden"
+					},
+					"404": {
+						"description": "The requested resource was not found."
+					}
+				},
+				"security": [
+					{
+						"sampleoauth": [
+							"find Training Definition by ID"
+						]
+					}
+				]
+			}
+		},
+		"/training-instances": {
+			"get": {
+				"tags": [
+					"training-instances-rest-controller"
+				],
+				"summary": "Get all Training Instances.",
+				"operationId": "findAllTrainingInstances",
+				"produces": [
+					"application/json"
+				],
+				"parameters": [
+					{
+						"name": "parameters",
+						"in": "query",
+						"description": "parameters",
+						"required": true,
+						"items": {
+							"type": "object",
+							"additionalProperties": {
+								"type": "string"
+							}
+						}
+					},
+					{
+						"name": "fields",
+						"in": "query",
+						"description": "Fields which should be returned in REST API response",
+						"required": false,
+						"type": "string"
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"schema": {
+							"$ref": "#/definitions/InfoLevelDTO"
+						}
+					},
+					"401": {
+						"description": "Unauthorized"
+					},
+					"403": {
+						"description": "Forbidden"
+					},
+					"404": {
+						"description": "The requested resource was not found."
+					}
+				},
+				"security": [
+					{
+						"sampleoauth": [
+							"find all Training Instances"
+						]
+					}
+				]
+			}
+		},
+		"/training-instances/{id}": {
+			"get": {
+				"tags": [
+					"training-instances-rest-controller"
+				],
+				"summary": "Get Training Instance by Id.",
+				"operationId": "findTrainingInstanceById",
+				"produces": [
+					"application/json"
+				],
+				"parameters": [
+					{
+						"name": "Training Instance ID",
+						"in": "path",
+						"description": "id",
+						"required": false,
+						"type": "integer",
+						"format": "int64"
+					},
+					{
+						"name": "fields",
+						"in": "query",
+						"description": "Fields which should be returned in REST API response",
+						"required": false,
+						"type": "string"
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"schema": {
+							"$ref": "#/definitions/TrainingDefinitionDTO"
+						}
+					},
+					"401": {
+						"description": "Unauthorized"
+					},
+					"403": {
+						"description": "Forbidden"
+					},
+					"404": {
+						"description": "The requested resource was not found."
+					}
+				},
+				"security": [
+					{
+						"sampleoauth": [
+							"find Training Instance by ID"
+						]
+					}
+				]
+			}
+		},
+		"/training-runs": {
+			"get": {
+				"tags": [
+					"training-runs-rest-controller"
+				],
+				"summary": "Get all Training Runs.",
+				"operationId": "findAllTrainingRuns",
+				"produces": [
+					"application/json"
+				],
+				"parameters": [
+					{
+						"name": "parameters",
+						"in": "query",
+						"description": "parameters",
+						"required": true,
+						"items": {
+							"type": "object",
+							"additionalProperties": {
+								"type": "string"
+							}
+						}
+					},
+					{
+						"name": "fields",
+						"in": "query",
+						"description": "Fields which should be returned in REST API response",
+						"required": false,
+						"type": "string"
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"schema": {
+							"$ref": "#/definitions/InfoLevelDTO"
+						}
+					},
+					"401": {
+						"description": "Unauthorized"
+					},
+					"403": {
+						"description": "Forbidden"
+					},
+					"404": {
+						"description": "The requested resource was not found."
+					}
+				},
+				"security": [
+					{
+						"sampleoauth": [
+							"find all Training Runs"
+						]
+					}
+				]
+			}
+		},
+		"/training-runs/{id}": {
+			"get": {
+				"tags": [
+					"training-runs-rest-controller"
+				],
+				"summary": "Get Training Run by Id.",
+				"operationId": "findTrainingRunById",
+				"produces": [
+					"application/json"
+				],
+				"parameters": [
+					{
+						"name": "Training Run ID",
+						"in": "path",
+						"description": "id",
+						"required": false,
+						"type": "integer",
+						"format": "int64"
+					},
+					{
+						"name": "fields",
+						"in": "query",
+						"description": "Fields which should be returned in REST API response",
+						"required": false,
+						"type": "string"
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"schema": {
+							"$ref": "#/definitions/TrainingRunDTO"
+						}
+					},
+					"401": {
+						"description": "Unauthorized"
+					},
+					"403": {
+						"description": "Forbidden"
+					},
+					"404": {
+						"description": "The requested resource was not found."
+					}
+				},
+				"security": [
+					{
+						"sampleoauth": [
+							"find Training Run by ID"
+						]
+					}
+				]
+			}
+		}
+	},
+	"definitions": {
+		"AbstractLevel": {
+			"type": "object",
+			"properties": {
+				"id": {
+					"type": "integer",
+					"format": "int64"
+				},
+				"levelOrder": {
+					"type": "integer",
+					"format": "int64"
+				},
+				"maxScore": {
+					"type": "integer",
+					"format": "int32"
+				},
+				"nextLevel": {
+					"type": "integer",
+					"format": "int64"
+				},
+				"postHook": {
+					"$ref": "#/definitions/PostHook"
+				},
+				"preHook": {
+					"$ref": "#/definitions/PreHook"
+				},
+				"title": {
+					"type": "string"
+				},
+				"trainingDefinition": {
+					"$ref": "#/definitions/TrainingDefinition"
+				}
+			},
+			"title": "AbstractLevel"
+		},
+		"AuthorRef": {
+			"type": "object",
+			"properties": {
+				"authorRefId": {
+					"type": "integer",
+					"format": "int64"
+				},
+				"id": {
+					"type": "integer",
+					"format": "int64"
+				},
+				"trainingDefinition": {
+					"type": "array",
+					"items": {
+						"$ref": "#/definitions/TrainingDefinition"
+					}
+				}
+			},
+			"title": "AuthorRef"
+		},
+		"GameLevelDTO": {
+			"type": "object",
+			"properties": {
+				"id": {
+					"type": "integer",
+					"format": "int64"
+				},
+				"levelOrder": {
+					"type": "integer",
+					"format": "int64"
+				},
+				"maxScore": {
+					"type": "integer",
+					"format": "int32"
+				},
+				"nextLevel": {
+					"type": "integer",
+					"format": "int64"
+				},
+				"postHook": {
+					"$ref": "#/definitions/PostHookDTO"
+				},
+				"preHook": {
+					"$ref": "#/definitions/PreHookDTO"
+				},
+				"title": {
+					"type": "string"
+				},
+				"trainingDefinition": {
+					"$ref": "#/definitions/TrainingDefinitionDTO"
+				}
+			},
+			"title": "GameLevelDTO",
+			"description": "."
+		},
+		"InfoLevelDTO": {
+			"type": "object",
+			"properties": {
+				"content": {
+					"type": "string"
+				},
+				"id": {
+					"type": "integer",
+					"format": "int64"
+				},
+				"levelOrder": {
+					"type": "integer",
+					"format": "int64"
+				},
+				"maxScore": {
+					"type": "integer",
+					"format": "int32"
+				},
+				"nextLevel": {
+					"type": "integer",
+					"format": "int64"
+				},
+				"postHook": {
+					"$ref": "#/definitions/PostHookDTO"
+				},
+				"preHook": {
+					"$ref": "#/definitions/PreHookDTO"
+				},
+				"title": {
+					"type": "string"
+				},
+				"trainingDefinition": {
+					"$ref": "#/definitions/TrainingDefinitionDTO"
+				}
+			},
+			"title": "InfoLevelDTO",
+			"description": "."
+		},
+		"Link": {
+			"type": "object",
+			"properties": {
+				"href": {
+					"type": "string"
+				},
+				"templated": {
+					"type": "boolean"
+				}
+			},
+			"title": "Link"
+		},
+		"Map«string,Link»": {
+			"type": "object",
+			"title": "Map«string,Link»",
+			"additionalProperties": {
+				"$ref": "#/definitions/Link"
+			}
+		},
+		"ModelAndView": {
+			"type": "object",
+			"properties": {
+				"empty": {
+					"type": "boolean"
+				},
+				"model": {
+					"type": "object"
+				},
+				"modelMap": {
+					"type": "object",
+					"additionalProperties": {
+						"type": "object"
+					}
+				},
+				"reference": {
+					"type": "boolean"
+				},
+				"status": {
+					"type": "string",
+					"enum": [
+						"100",
+						"101",
+						"102",
+						"103",
+						"200",
+						"201",
+						"202",
+						"203",
+						"204",
+						"205",
+						"206",
+						"207",
+						"208",
+						"226",
+						"300",
+						"301",
+						"302",
+						"303",
+						"304",
+						"305",
+						"307",
+						"308",
+						"400",
+						"401",
+						"402",
+						"403",
+						"404",
+						"405",
+						"406",
+						"407",
+						"408",
+						"409",
+						"410",
+						"411",
+						"412",
+						"413",
+						"414",
+						"415",
+						"416",
+						"417",
+						"418",
+						"419",
+						"420",
+						"421",
+						"422",
+						"423",
+						"424",
+						"426",
+						"428",
+						"429",
+						"431",
+						"451",
+						"500",
+						"501",
+						"502",
+						"503",
+						"504",
+						"505",
+						"506",
+						"507",
+						"508",
+						"509",
+						"510",
+						"511"
+					]
+				},
+				"view": {
+					"$ref": "#/definitions/View"
+				},
+				"viewName": {
+					"type": "string"
+				}
+			},
+			"title": "ModelAndView"
+		},
+		"PostHook": {
+			"type": "object",
+			"properties": {
+				"abstractLevel": {
+					"$ref": "#/definitions/AbstractLevel"
+				},
+				"id": {
+					"type": "integer",
+					"format": "int64"
+				}
+			},
+			"title": "PostHook"
+		},
+		"PostHookDTO": {
+			"type": "object",
+			"properties": {
+				"abstractLevel": {
+					"$ref": "#/definitions/AbstractLevel"
+				},
+				"id": {
+					"type": "integer",
+					"format": "int64"
+				}
+			},
+			"title": "PostHookDTO",
+			"description": "."
+		},
+		"PreHook": {
+			"type": "object",
+			"properties": {
+				"abstractLevel": {
+					"$ref": "#/definitions/AbstractLevel"
+				},
+				"id": {
+					"type": "integer",
+					"format": "int64"
+				}
+			},
+			"title": "PreHook"
+		},
+		"PreHookDTO": {
+			"type": "object",
+			"properties": {
+				"abstractLevel": {
+					"$ref": "#/definitions/AbstractLevel"
+				},
+				"id": {
+					"type": "integer",
+					"format": "int64"
+				}
+			},
+			"title": "PreHookDTO",
+			"description": "."
+		},
+		"SandboxDefinitionRef": {
+			"type": "object",
+			"properties": {
+				"id": {
+					"type": "integer",
+					"format": "int64"
+				},
+				"sandboxDefinitionRef": {
+					"type": "integer",
+					"format": "int64"
+				}
+			},
+			"title": "SandboxDefinitionRef"
+		},
+		"TrainingDefinition": {
+			"type": "object",
+			"properties": {
+				"authorRef": {
+					"type": "array",
+					"items": {
+						"$ref": "#/definitions/AuthorRef"
+					}
+				},
+				"description": {
+					"type": "string"
+				},
+				"id": {
+					"type": "integer",
+					"format": "int64"
+				},
+				"outcomes": {
+					"type": "array",
+					"items": {
+						"type": "string"
+					}
+				},
+				"prerequisities": {
+					"type": "array",
+					"items": {
+						"type": "string"
+					}
+				},
+				"sandBoxDefinitionRef": {
+					"$ref": "#/definitions/SandboxDefinitionRef"
+				},
+				"state": {
+					"type": "string",
+					"enum": [
+						"PRIVATED",
+						"RELEASED",
+						"ARCHIVED"
+					]
+				},
+				"title": {
+					"type": "string"
+				}
+			},
+			"title": "TrainingDefinition"
+		},
+		"TrainingDefinitionDTO": {
+			"type": "object",
+			"title": "TrainingDefinitionDTO",
+			"description": "."
+		},
+		"TrainingRunDTO": {
+			"type": "object",
+			"title": "TrainingRunDTO",
+			"description": "."
+		},
+		"View": {
+			"type": "object",
+			"properties": {
+				"contentType": {
+					"type": "string"
+				}
+			},
+			"title": "View"
+		}
+	}
+}

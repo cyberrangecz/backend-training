@@ -15,7 +15,8 @@ import cz.muni.ics.kypo.model.TrainingDefinition;
  *
  */
 @Repository
-public interface TrainingDefinitionRepository extends JpaRepository<TrainingDefinition, Long>, QuerydslPredicateExecutor<TrainingDefinition> {
+public interface TrainingDefinitionRepository
+    extends JpaRepository<TrainingDefinition, Long>, QuerydslPredicateExecutor<TrainingDefinition> {
 
   @Query("SELECT al.id FROM TrainingDefinition td JOIN AbstractLevel al ON td.id = al.id")
   List<Long> findAllIdsFromAbstractLevel();

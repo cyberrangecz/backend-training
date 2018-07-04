@@ -11,7 +11,7 @@ import cz.muni.csirt.kypo.elasticsearch.service.audit.config.TrainingElasticsear
  *
  */
 @Configuration
-@Import({PersistenceConfig.class, TrainingElasticsearchServiceConfig.class})
+@Import({PersistenceConfig.class, TrainingElasticsearchServiceConfig.class, KypoManagementIntegrationConfig.class})
 @ComponentScan(basePackages = {"cz.muni.ics.kypo.service"})
 public class ServiceConfig {
 

@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.querydsl.binding.QuerydslPredicate;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -92,7 +93,9 @@ public class GameLevelsRestController {
       @ApiResponse(code = 404, message = "The requested resource was not found.") 
   })
   @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<Object> findGameLevelById(@ApiParam(name = "GameLevel ID") @PathVariable long id,
+  public ResponseEntity<Object> findGameLevelById(
+      @ApiParam(name = "GameLevel ID")
+      @PathVariable long id,
       @ApiParam(value = "Fields which should be returned in REST API response", required = false) 
       @RequestParam(value = "fields", required = false) String fields) {
     try {
@@ -132,7 +135,9 @@ public class GameLevelsRestController {
       @ApiResponse(code = 404, message = "The requested resource was not found.") 
   })
   @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<Object> findAllGameLevels(@QuerydslPredicate(root = GameLevel.class) Predicate predicate, Pageable pageable,
+  public ResponseEntity<Object> findAllGameLevels(
+      @QuerydslPredicate(root = GameLevel.class) Predicate predicate, 
+      @PageableDefault(size = 20) final Pageable pageable,
       @RequestParam MultiValueMap<String, String> parameters, 
       @ApiParam(value = "Fields which should be returned in REST API response", required = false) 
       @RequestParam(value = "fields", required = false) String fields) {

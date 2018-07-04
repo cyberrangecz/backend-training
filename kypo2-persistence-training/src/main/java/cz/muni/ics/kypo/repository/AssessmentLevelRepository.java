@@ -12,6 +12,7 @@ import cz.muni.ics.kypo.model.AssessmentLevel;
  *
  */
 @Repository
-public interface AssessmentLevelRepository extends JpaRepository<AssessmentLevel, Long>, QuerydslPredicateExecutor<AssessmentLevel> {
+public interface AssessmentLevelRepository
+    extends JpaRepository<AssessmentLevel, Long>, QuerydslPredicateExecutor<AssessmentLevel> {
 
 }

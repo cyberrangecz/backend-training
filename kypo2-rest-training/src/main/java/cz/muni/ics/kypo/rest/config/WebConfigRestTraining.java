@@ -11,6 +11,7 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.data.web.config.EnableSpringDataWebSupport;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
@@ -41,7 +42,7 @@ import cz.muni.ics.kypo.config.FacadeConfiguration;
  */
 @SpringBootApplication
 @EnableSpringDataWebSupport
-@Import({FacadeConfiguration.class})
+@Import({FacadeConfiguration.class, SwaggerConfig.class})
 public class WebConfigRestTraining extends SpringBootServletInitializer {
 
   @Override

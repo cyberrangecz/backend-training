@@ -12,6 +12,7 @@ import cz.muni.ics.kypo.model.TrainingRun;
  *
  */
 @Repository
-public interface TrainingRunRepository extends JpaRepository<TrainingRun, Long>, QuerydslPredicateExecutor<TrainingRun> {
+public interface TrainingRunRepository
+    extends JpaRepository<TrainingRun, Long>, QuerydslPredicateExecutor<TrainingRun> {
 
 }
