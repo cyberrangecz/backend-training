@@ -29,6 +29,7 @@ public class BeanMappingImpl implements BeanMapping {
 
   @Autowired
   public BeanMappingImpl(ModelMapper modelMapper) {
+    modelMapper.getConfiguration().setAmbiguityIgnored(true);
     this.modelMapper = modelMapper;
   }
 
