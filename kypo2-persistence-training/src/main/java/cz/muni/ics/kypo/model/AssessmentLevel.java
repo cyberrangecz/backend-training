@@ -24,11 +24,11 @@ import cz.muni.ics.kypo.utils.StringJsonUserType;
  */
 @Entity(name = "AssessmentLevel")
 @Table(name = "assessment_level")
-@TypeDefs({@TypeDef(name = "JsonObject", typeClass = StringJsonUserType.class)})
+@TypeDefs({@TypeDef(name = "JsonArray", typeClass = StringJsonUserType.class)})
 @PrimaryKeyJoinColumn(name = "id")
 public class AssessmentLevel extends AbstractLevel implements Serializable {
 
-  @Type(type = "JsonObject")
+  @Type(type = "JsonArray")
   @Column(name = "questions", columnDefinition = "jsonb", nullable = false)
   private String questions;
   @Column(name = "instructions", nullable = false)
