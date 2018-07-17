@@ -3,6 +3,8 @@ package cz.muni.ics.kypo.facade.impl;
 import java.util.Objects;
 import java.util.Optional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -27,6 +29,8 @@ import cz.muni.ics.kypo.service.InfoLevelService;
 @Transactional
 public class InfoLevelFacadeImpl implements InfoLevelFacade {
 
+  private static final Logger LOG = LoggerFactory.getLogger(GameLevelFacadeImpl.class);
+
   private InfoLevelService infoService;
   private BeanMapping beanMapping;
 
@@ -39,6 +43,7 @@ public class InfoLevelFacadeImpl implements InfoLevelFacade {
   @Override
   @Transactional(readOnly = true)
   public InfoLevelDTO findById(Long id) {
+    LOG.debug("findById({})", id);
     try {
       Objects.requireNonNull(id);
       Optional<InfoLevel> info = infoService.findById(id);
@@ -54,6 +59,7 @@ public class InfoLevelFacadeImpl implements InfoLevelFacade {
   @Override
   @Transactional(readOnly = true)
   public PageResultResource<InfoLevelDTO> findAll(Predicate predicate, Pageable pageable) {
+    LOG.debug("findAll({},{})", predicate, pageable);
     try {
       return beanMapping.mapToPageResultDTO(infoService.findAll(predicate, pageable), InfoLevelDTO.class);
     } catch (ServiceLayerException ex) {

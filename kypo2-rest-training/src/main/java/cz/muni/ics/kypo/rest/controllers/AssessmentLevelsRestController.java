@@ -1,5 +1,7 @@
 package cz.muni.ics.kypo.rest.controllers;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Pageable;
@@ -57,6 +59,8 @@ import io.swagger.annotations.AuthorizationScope;
 @RequestMapping(value = "/assessment-levels")
 public class AssessmentLevelsRestController {
 
+  private static final Logger LOG = LoggerFactory.getLogger(AssessmentLevelsRestController.class);
+
   private AssessmentLevelFacade assessmentLevelFacade;
   private ObjectMapper objectMapper;
 
@@ -96,6 +100,7 @@ public class AssessmentLevelsRestController {
   public ResponseEntity<Object> findAssessmentLevelById(@ApiParam(name = "AssessmentLevel ID") @PathVariable long id,
       @ApiParam(value = "Fields which should be returned in REST API response", required = false) 
       @RequestParam(value = "fields", required = false) String fields) {
+    LOG.debug("findAssessmentLevelById({},{})", id, fields);
     try {
       AssessmentLevelDTO assessmentLevelResource = assessmentLevelFacade.findById(id);
       Squiggly.init(objectMapper, fields);
@@ -137,6 +142,7 @@ public class AssessmentLevelsRestController {
       @RequestParam MultiValueMap<String, String> parameters, 
       @ApiParam(value = "Fields which should be returned in REST API response", required = false) 
       @RequestParam(value = "fields", required = false) String fields) {
+    LOG.debug("findAllAssessmentLevels({},{})", parameters, fields);
     try {
       PageResultResource<AssessmentLevelDTO> assessmentLevelResource = assessmentLevelFacade.findAll(predicate, pageable);
       Squiggly.init(objectMapper, fields);

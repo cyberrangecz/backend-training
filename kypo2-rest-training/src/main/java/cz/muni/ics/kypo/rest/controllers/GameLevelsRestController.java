@@ -1,5 +1,7 @@
 package cz.muni.ics.kypo.rest.controllers;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Pageable;
@@ -57,6 +59,8 @@ import io.swagger.annotations.AuthorizationScope;
 @RequestMapping(value = "/game-levels")
 public class GameLevelsRestController {
 
+  private static final Logger LOG = LoggerFactory.getLogger(GameLevelsRestController.class);
+
   private GameLevelFacade gameLevelFacade;
   private ObjectMapper objectMapper;
 
@@ -98,6 +102,7 @@ public class GameLevelsRestController {
       @PathVariable long id,
       @ApiParam(value = "Fields which should be returned in REST API response", required = false) 
       @RequestParam(value = "fields", required = false) String fields) {
+    LOG.debug("findGameLevelById({},{})", id, fields);
     try {
       GameLevelDTO gameLevelResource = gameLevelFacade.findById(id);
       Squiggly.init(objectMapper, fields);
@@ -141,6 +146,7 @@ public class GameLevelsRestController {
       @RequestParam MultiValueMap<String, String> parameters, 
       @ApiParam(value = "Fields which should be returned in REST API response", required = false) 
       @RequestParam(value = "fields", required = false) String fields) {
+    LOG.debug("findAllGameLevels({},{})", parameters, fields);
     try {
       PageResultResource<GameLevelDTO> gameLevelResource = gameLevelFacade.findAll(predicate, pageable);
       Squiggly.init(objectMapper, fields);

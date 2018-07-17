@@ -1,5 +1,7 @@
 package cz.muni.ics.kypo.config;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -17,5 +19,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 @EntityScan(basePackages = "cz.muni.ics.kypo.model")
 @EnableJpaRepositories(basePackages = "cz.muni.ics.kypo.repository")
 public class PersistenceConfig {
+
+  private static final Logger LOG = LoggerFactory.getLogger(PersistenceConfig.class);
 
 }
