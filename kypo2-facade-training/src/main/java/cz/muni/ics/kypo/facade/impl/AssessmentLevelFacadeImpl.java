@@ -3,6 +3,8 @@ package cz.muni.ics.kypo.facade.impl;
 import java.util.Objects;
 import java.util.Optional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -27,6 +29,8 @@ import cz.muni.ics.kypo.service.AssessmentLevelService;
 @Transactional
 public class AssessmentLevelFacadeImpl implements AssessmentLevelFacade {
 
+  private static final Logger LOG = LoggerFactory.getLogger(AssessmentLevelFacadeImpl.class);
+
   private AssessmentLevelService assessmentLevelService;
   private BeanMapping beanMapping;
 
@@ -39,6 +43,7 @@ public class AssessmentLevelFacadeImpl implements AssessmentLevelFacade {
   @Override
   @Transactional(readOnly = true)
   public AssessmentLevelDTO findById(long id) {
+    LOG.debug("findById({})", id);
     try {
       Objects.requireNonNull(id);
       Optional<AssessmentLevel> assessmentLevel = assessmentLevelService.findById(id);
@@ -54,6 +59,7 @@ public class AssessmentLevelFacadeImpl implements AssessmentLevelFacade {
   @Override
   @Transactional(readOnly = true)
   public PageResultResource<AssessmentLevelDTO> findAll(Predicate predicate, Pageable pageable) {
+    LOG.debug("findAll({},{})", predicate, pageable);
     try {
       return beanMapping.mapToPageResultDTO(assessmentLevelService.findAll(predicate, pageable), AssessmentLevelDTO.class);
     } catch (ServiceLayerException ex) {

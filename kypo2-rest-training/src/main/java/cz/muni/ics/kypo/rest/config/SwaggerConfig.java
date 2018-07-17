@@ -1,5 +1,7 @@
 package cz.muni.ics.kypo.rest.config;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import springfox.documentation.builders.ApiInfoBuilder;
@@ -27,8 +29,11 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
 @EnableSwagger2
 public class SwaggerConfig {
 
+  private static final Logger LOG = LoggerFactory.getLogger(SwaggerConfig.class);
+
   @Bean
   public Docket api() {
+    LOG.debug("SwaggerConfig -> api()");
     // @formatter:off
         return new Docket(DocumentationType.SWAGGER_2)
                 .groupName("public-api")
@@ -41,6 +46,7 @@ public class SwaggerConfig {
   }
 
   private ApiInfo apiInfo() {
+    LOG.debug("SwaggerConfig -> apiInfo()");
     // @formatter:off
         return new ApiInfoBuilder()
                 .title("REST API documentation")

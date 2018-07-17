@@ -2,6 +2,8 @@ package cz.muni.ics.kypo.facade.impl;
 
 import java.util.Optional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -26,6 +28,8 @@ import cz.muni.ics.kypo.service.GameLevelService;
 @Transactional
 public class GameLevelFacadeImpl implements GameLevelFacade {
 
+  private static final Logger LOG = LoggerFactory.getLogger(GameLevelFacadeImpl.class);
+
   private GameLevelService gameLevelService;
   private BeanMapping beanMapping;
 
@@ -38,6 +42,7 @@ public class GameLevelFacadeImpl implements GameLevelFacade {
   @Override
   @Transactional(readOnly = true)
   public GameLevelDTO findById(long id) {
+    LOG.debug("findById({})", id);
     try {
       Optional<GameLevel> gameLevel = gameLevelService.findById(id);
       GameLevel game = gameLevel.orElseThrow(() -> new ServiceLayerException("GameLevel with this id is not found."));
@@ -52,6 +57,7 @@ public class GameLevelFacadeImpl implements GameLevelFacade {
   @Override
   @Transactional(readOnly = true)
   public PageResultResource<GameLevelDTO> findAll(Predicate predicate, Pageable pageable) {
+    LOG.debug("findAll({},{})", predicate, pageable);
     try {
       return beanMapping.mapToPageResultDTO(gameLevelService.findAll(predicate, pageable), GameLevelDTO.class);
     } catch (ServiceLayerException ex) {

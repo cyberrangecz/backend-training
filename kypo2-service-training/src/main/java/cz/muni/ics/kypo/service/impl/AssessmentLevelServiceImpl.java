@@ -3,6 +3,8 @@ package cz.muni.ics.kypo.service.impl;
 import java.util.Optional;
 
 import org.hibernate.HibernateException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -23,6 +25,8 @@ import cz.muni.ics.kypo.service.AssessmentLevelService;
 @Service
 public class AssessmentLevelServiceImpl implements AssessmentLevelService {
 
+  private static final Logger LOG = LoggerFactory.getLogger(AssessmentLevelServiceImpl.class);
+
   private AssessmentLevelRepository assessmentLevelRepository;
 
   @Autowired
@@ -32,6 +36,7 @@ public class AssessmentLevelServiceImpl implements AssessmentLevelService {
 
   @Override
   public Optional<AssessmentLevel> findById(long id) {
+    LOG.debug("findById({})", id);
     try {
       return assessmentLevelRepository.findById(id);
     } catch (HibernateException ex) {
@@ -41,6 +46,7 @@ public class AssessmentLevelServiceImpl implements AssessmentLevelService {
 
   @Override
   public Page<AssessmentLevel> findAll(Predicate predicate, Pageable pageable) {
+    LOG.debug("findAll({},{})", predicate, pageable);
     try {
       return assessmentLevelRepository.findAll(predicate, pageable);
     } catch (HibernateException ex) {

@@ -4,6 +4,8 @@ package cz.muni.ics.kypo.service.impl;
 import java.util.Optional;
 
 import org.hibernate.HibernateException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -24,6 +26,8 @@ import cz.muni.ics.kypo.service.InfoLevelService;
 @Service
 public class InfoLevelServiceImpl implements InfoLevelService {
 
+  private static final Logger LOG = LoggerFactory.getLogger(InfoLevelServiceImpl.class);
+
   private InfoLevelRepository infoRepository;
 
   @Autowired
@@ -33,6 +37,7 @@ public class InfoLevelServiceImpl implements InfoLevelService {
 
   @Override
   public Optional<InfoLevel> findById(long id) {
+    LOG.debug("findById({})", id);
     try {
       return infoRepository.findById(id);
     } catch (HibernateException ex) {
@@ -42,6 +47,7 @@ public class InfoLevelServiceImpl implements InfoLevelService {
 
   @Override
   public Page<InfoLevel> findAll(Predicate predicate, Pageable pageable) {
+    LOG.debug("findAll({},{})", predicate, pageable);
     try {
       return infoRepository.findAll(predicate, pageable);
     } catch (HibernateException ex) {

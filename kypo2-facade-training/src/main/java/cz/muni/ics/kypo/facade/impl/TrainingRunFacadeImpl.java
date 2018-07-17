@@ -3,6 +3,8 @@ package cz.muni.ics.kypo.facade.impl;
 import java.util.Objects;
 import java.util.Optional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -27,6 +29,8 @@ import cz.muni.ics.kypo.service.TrainingRunService;
 @Transactional
 public class TrainingRunFacadeImpl implements TrainingRunFacade {
 
+  private static final Logger LOG = LoggerFactory.getLogger(TrainingRunFacadeImpl.class);
+
   private TrainingRunService trainingRunService;
   private BeanMapping beanMapping;
 
@@ -39,6 +43,7 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
   @Override
   @Transactional(readOnly = true)
   public TrainingRunDTO findById(long id) {
+    LOG.debug("findById({})", id);
     try {
       Objects.requireNonNull(id);
       Optional<TrainingRun> trainingRun = trainingRunService.findById(id);
@@ -54,6 +59,7 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
   @Override
   @Transactional(readOnly = true)
   public PageResultResource<TrainingRunDTO> findAll(Predicate predicate, Pageable pageable) {
+    LOG.debug("findAll({},{})", predicate, pageable);
     try {
       return beanMapping.mapToPageResultDTO(trainingRunService.findAll(predicate, pageable), TrainingRunDTO.class);
     } catch (ServiceLayerException ex) {

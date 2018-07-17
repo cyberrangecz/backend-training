@@ -19,7 +19,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.bohnman.squiggly.Squiggly;
 import com.github.bohnman.squiggly.util.SquigglyUtils;
 import com.querydsl.core.types.Predicate;
-// import com.mysema.query.types.Predicate;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import cz.muni.ics.kypo.api.PageResultResource;
 import cz.muni.ics.kypo.api.dto.InfoLevelDTO;
@@ -57,6 +59,8 @@ import io.swagger.annotations.AuthorizationScope;
 @RestController
 @RequestMapping(value = "/info-levels")
 public class InfoLevelsRestController {
+
+  private static final Logger LOG = LoggerFactory.getLogger(InfoLevelsRestController.class);
 
   private InfoLevelFacade infoLevelFacade;
   private ObjectMapper objectMapper;
@@ -97,6 +101,7 @@ public class InfoLevelsRestController {
   public ResponseEntity<Object> findInfoLevelById(@ApiParam(name = "InfoLevel ID") @PathVariable long id,
       @ApiParam(value = "Fields which should be returned in REST API response", required = false) 
       @RequestParam(value = "fields", required = false) String fields) {
+    LOG.debug("findInfoLevelById({},{}", id, fields);
     try {
       InfoLevelDTO infoLevelResource = infoLevelFacade.findById(id);
       Squiggly.init(objectMapper, fields);
@@ -140,6 +145,7 @@ public class InfoLevelsRestController {
       @RequestParam MultiValueMap<String, String> parameters, 
       @ApiParam(value = "Fields which should be returned in REST API response", required = false) 
       @RequestParam(value = "fields", required = false) String fields) {
+    LOG.debug("findAllInfoLevels({},{}", parameters, fields);
     try {
       PageResultResource<InfoLevelDTO> infoLevelResource = infoLevelFacade.findAll(predicate, pageable);
       Squiggly.init(objectMapper, fields);

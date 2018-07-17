@@ -1,5 +1,7 @@
 package cz.muni.ics.kypo.rest.controllers;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Pageable;
@@ -57,6 +59,8 @@ import io.swagger.annotations.AuthorizationScope;
 @RequestMapping(value = "/training-definitions")
 public class TrainingDefinitionsRestController {
 
+  private static final Logger LOG = LoggerFactory.getLogger(TrainingDefinitionsRestController.class);
+
   private TrainingDefinitionFacade trainingDefinitionFacade;
   private ObjectMapper objectMapper;
 
@@ -96,6 +100,7 @@ public class TrainingDefinitionsRestController {
   public ResponseEntity<Object> findTrainingDefinitionById(@ApiParam(name = "TrainingDefinition ID") @PathVariable long id,
       @ApiParam(value = "Fields which should be returned in REST API response", required = false) 
       @RequestParam(value = "fields", required = false) String fields) {
+    LOG.debug("findTrainingDefinitionById({},{})", id, fields);
     try {
       TrainingDefinitionDTO trainingDefinitionResource = trainingDefinitionFacade.findById(id);
       Squiggly.init(objectMapper, fields);
@@ -137,6 +142,7 @@ public class TrainingDefinitionsRestController {
       @RequestParam MultiValueMap<String, String> parameters, 
       @ApiParam(value = "Fields which should be returned in REST API response", required = false) 
       @RequestParam(value = "fields", required = false) String fields) {
+    LOG.debug("findAllTrainingDefinitions({},{})", parameters, fields);
     try {
       PageResultResource<TrainingDefinitionDTO> trainingDefinitionResource = trainingDefinitionFacade.findAll(predicate, pageable);
       Squiggly.init(objectMapper, fields);

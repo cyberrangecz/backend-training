@@ -3,6 +3,8 @@ package cz.muni.ics.kypo.service.impl;
 import java.util.Optional;
 
 import org.hibernate.HibernateException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -23,6 +25,8 @@ import cz.muni.ics.kypo.service.TrainingRunService;
 @Service
 public class TrainingRunServiceImpl implements TrainingRunService {
 
+  private static final Logger LOG = LoggerFactory.getLogger(TrainingRunServiceImpl.class);
+
   private TrainingRunRepository trainingRunRepository;
 
   @Autowired
@@ -33,6 +37,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
 
   @Override
   public Optional<TrainingRun> findById(long id) {
+    LOG.debug("findById({})", id);
     try {
       return trainingRunRepository.findById(id);
     } catch (HibernateException ex) {
@@ -42,6 +47,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
 
   @Override
   public Page<TrainingRun> findAll(Predicate predicate, Pageable pageable) {
+    LOG.debug("findAll({},{})", predicate, pageable);
     try {
       return trainingRunRepository.findAll(predicate, pageable);
     } catch (HibernateException ex) {

@@ -1,5 +1,7 @@
 package cz.muni.ics.kypo.rest.config;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
@@ -44,6 +46,8 @@ import cz.muni.ics.kypo.config.FacadeConfiguration;
 @Import({FacadeConfiguration.class, SwaggerConfig.class})
 public class WebConfigRestTraining extends SpringBootServletInitializer {
 
+  private static final Logger LOG = LoggerFactory.getLogger(WebConfigRestTraining.class);
+
   @Override
   protected SpringApplicationBuilder configure(SpringApplicationBuilder application) {
     return application.sources(WebConfigRestTraining.class);
@@ -60,6 +64,7 @@ public class WebConfigRestTraining extends SpringBootServletInitializer {
    */
   @Bean
   public MessageSource messageSource() {
+    LOG.debug("messageSource()");
     ResourceBundleMessageSource messageSource = new ResourceBundleMessageSource();
     messageSource.setDefaultEncoding("UTF-8");
     return messageSource;
@@ -68,6 +73,7 @@ public class WebConfigRestTraining extends SpringBootServletInitializer {
   @Bean
   @Primary
   public MappingJackson2HttpMessageConverter jacksonHTTPMessageConverter() {
+    LOG.debug("jacksonHTTPMessageConverter()");
     MappingJackson2HttpMessageConverter jsonConverter = new MappingJackson2HttpMessageConverter();
     jsonConverter.setObjectMapper(objectMapperForRestAPI());
     return jsonConverter;
@@ -76,6 +82,7 @@ public class WebConfigRestTraining extends SpringBootServletInitializer {
   @Bean(name = "objMapperRESTApi")
   @Primary
   public ObjectMapper objectMapperForRestAPI() {
+    LOG.debug("objectMapperForRestAPI()");
     ObjectMapper obj = new ObjectMapper();
     obj.setPropertyNamingStrategy(snakeCase());
     return obj;
@@ -88,6 +95,7 @@ public class WebConfigRestTraining extends SpringBootServletInitializer {
    */
   @Bean(name = "properyNamingSnakeCase")
   public PropertyNamingStrategy snakeCase() {
+    LOG.debug("properyNamingSnakeCase -> snakeCase()");
     return PropertyNamingStrategy.SNAKE_CASE;
   }
 
