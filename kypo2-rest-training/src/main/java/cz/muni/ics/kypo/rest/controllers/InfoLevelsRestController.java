@@ -19,6 +19,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.bohnman.squiggly.Squiggly;
 import com.github.bohnman.squiggly.util.SquigglyUtils;
 import com.querydsl.core.types.Predicate;
+// import com.mysema.query.types.Predicate;
 
 import cz.muni.ics.kypo.api.PageResultResource;
 import cz.muni.ics.kypo.api.dto.InfoLevelDTO;
@@ -134,8 +135,8 @@ public class InfoLevelsRestController {
   })
   @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<Object> findAllInfoLevels(
-      @QuerydslPredicate(root = InfoLevel.class) Predicate predicate, 
-      @PageableDefault(size = 20) final Pageable pageable,
+      @PageableDefault(size = 10) Pageable pageable,
+      @QuerydslPredicate(root = InfoLevel.class) Predicate predicate,
       @RequestParam MultiValueMap<String, String> parameters, 
       @ApiParam(value = "Fields which should be returned in REST API response", required = false) 
       @RequestParam(value = "fields", required = false) String fields) {
