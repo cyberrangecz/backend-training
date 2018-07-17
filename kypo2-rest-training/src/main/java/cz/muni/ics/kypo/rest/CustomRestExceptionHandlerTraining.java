@@ -70,7 +70,6 @@ import cz.muni.ics.kypo.rest.exceptions.VariantAlsoNegotiatesException;
  * @author Pavel Seda (441048)
  *
  */
-@EnableWebMvc
 @Order(Ordered.HIGHEST_PRECEDENCE)
 @RestControllerAdvice
 public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionHandler {

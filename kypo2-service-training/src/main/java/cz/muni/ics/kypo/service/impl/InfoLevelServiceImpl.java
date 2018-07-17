@@ -45,6 +45,7 @@ public class InfoLevelServiceImpl implements InfoLevelService {
     try {
       return infoRepository.findAll(predicate, pageable);
     } catch (HibernateException ex) {
+      System.out.println("Error message is: " + ex);
       throw new ServiceLayerException(ex.getLocalizedMessage());
     }
   }
