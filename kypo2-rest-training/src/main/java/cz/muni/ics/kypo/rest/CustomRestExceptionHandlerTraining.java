@@ -556,6 +556,9 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
   public ResponseEntity<Object> handleAll(final Exception ex, final WebRequest request, HttpServletRequest req) {
     // LOGGER.debug("handleAll({}, {}, {})", ex, request, req);
 
+    System.out.println("Error message is: " + ex);
+
+
     final ApiErrorTraining apiError = new ApiErrorTraining.ApiErrorBuilder(HttpStatus.INTERNAL_SERVER_ERROR, ex.getLocalizedMessage())
         .setError("error occurred").setPath(URLHELPER.getRequestUri(req)).build();
     return new ResponseEntity<>(apiError, new HttpHeaders(), apiError.getStatus());
