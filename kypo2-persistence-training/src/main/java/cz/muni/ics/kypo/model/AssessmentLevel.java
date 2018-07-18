@@ -70,8 +70,6 @@ public class AssessmentLevel extends AbstractLevel implements Serializable {
     this.assessmentType = assessmentType;
   }
 
-
-
   @Override
   public int hashCode() {
     return Objects.hash(questions, instructions, assessmentType);
