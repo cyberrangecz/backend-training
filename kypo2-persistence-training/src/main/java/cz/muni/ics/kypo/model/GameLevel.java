@@ -106,9 +106,15 @@ public class GameLevel extends AbstractLevel implements Serializable {
     return Collections.unmodifiableSet(hints);
   }
 
+  public void addHint(Hint hint) {
+    this.hints.add(hint);
+  }
+
   public void setHints(Set<Hint> hints) {
     this.hints = hints;
   }
+  
+  
 
   @Override
   public int hashCode() {
