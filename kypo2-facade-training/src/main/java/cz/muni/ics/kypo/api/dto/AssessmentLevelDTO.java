@@ -5,6 +5,7 @@ import cz.muni.ics.kypo.api.dto.AbstractLevelDTO;
 import cz.muni.ics.kypo.model.TrainingDefinition;
 import cz.muni.ics.kypo.model.TrainingRun;
 import cz.muni.ics.kypo.model.enums.AssessmentType;
+import io.swagger.annotations.ApiModel;
 
 import java.util.Arrays;
 import java.util.Set;
@@ -14,6 +15,7 @@ import java.util.Set;
  * @author Dominik Pilár (445537)
  *
  */
+@ApiModel(value = "AssessmentLevelDTO", description = ".")
 public class AssessmentLevelDTO extends AbstractLevelDTO {
 
     private String questions;
