@@ -47,9 +47,7 @@ public class AssessmentLevelFacadeImpl implements AssessmentLevelFacade {
 
   @Override
   @Transactional(readOnly = true)
-
   public AssessmentLevelDTO findById(Long id) throws FacadeLayerException {
-
     try {
       Objects.requireNonNull(id);
       Optional<AssessmentLevel> assessmentLevel = assessmentLevelService.findById(id);
@@ -62,18 +60,19 @@ public class AssessmentLevelFacadeImpl implements AssessmentLevelFacade {
     }
   }
 
-  @Override
-  @Transactional(readOnly = true)
-
-  public PageResultResource<AssessmentLevelDTO> findAll(Pageable pageable) {
-    try {
-      return beanMapping.mapToPageResultDTO(assessmentLevelService.findAll(pageable), AssessmentLevelDTO.class);
-    } catch (ServiceLayerException ex) {
-      throw new FacadeLayerException(ex.getLocalizedMessage());
+    @Override
+    @Transactional(readOnly = true)
+    public PageResultResource<AssessmentLevelDTO> findAll(Predicate predicate, Pageable pageable) {
+        LOG.debug("findAll({},{})", predicate, pageable);
+        try {
+            return beanMapping.mapToPageResultDTO(assessmentLevelService.findAll(predicate, pageable), AssessmentLevelDTO.class);
+        } catch (ServiceLayerException ex) {
+            throw new FacadeLayerException(ex.getLocalizedMessage());
+        }
     }
-  }
 
-  @Override
+
+    @Override
   @Transactional
   public AssessmentLevelDTO create(AssessmentLevel al) {
     try {

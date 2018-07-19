@@ -1,5 +1,7 @@
 package cz.muni.ics.kypo;
 
+import com.querydsl.core.types.Predicate;
+import com.querydsl.core.types.dsl.PathBuilder;
 import cz.muni.ics.kypo.api.PageResultResource;
 import cz.muni.ics.kypo.api.dto.AssessmentLevelDTO;
 import cz.muni.ics.kypo.exception.FacadeLayerException;
@@ -25,6 +27,9 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.data.querydsl.SimpleEntityPathResolver;
+import org.springframework.data.querydsl.binding.QuerydslPredicateBuilder;
+import org.springframework.format.support.DefaultFormattingConversionService;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.ArrayList;
@@ -115,22 +120,27 @@ public class AssessmentLevelFacadeTest {
 
         Page p = new PageImpl<AssessmentLevel>(expected);
 
-        given(assessmentLevelService.findAll(any(Pageable.class))).willReturn(p);
+        PathBuilder<AssessmentLevel> aL = new PathBuilder<AssessmentLevel>(AssessmentLevel.class, "assessmentLevel");
+        Predicate predicate = aL.isNotNull();
 
-        PageResultResource<AssessmentLevelDTO> assessmentLevelDTOS = assessmentLevelFacade.findAll(PageRequest.of(0,2));
+        given(assessmentLevelService.findAll(any(Predicate.class), any(Pageable.class))).willReturn(p);
+
+        PageResultResource<AssessmentLevelDTO> assessmentLevelDTOS = assessmentLevelFacade.findAll(predicate,PageRequest.of(0,2));
         deepEquals(al1, assessmentLevelDTOS.getContent().get(0));
         deepEquals(al2, assessmentLevelDTOS.getContent().get(1));
 
-        then(assessmentLevelService).should().findAll(PageRequest.of(0,2));
+        then(assessmentLevelService).should().findAll(predicate,PageRequest.of(0,2));
     }
 
     @Test
     public void findAllWithServiceLayerException() {
-        willThrow(ServiceLayerException.class).given(assessmentLevelService).findAll(any(Pageable.class));
+        willThrow(ServiceLayerException.class).given(assessmentLevelService).findAll(any(Predicate.class),any(Pageable.class));
         thrown.expect(FacadeLayerException.class);
 
+        PathBuilder<AssessmentLevel> aL = new PathBuilder<AssessmentLevel>(AssessmentLevel.class, "assessmentLevel");
+        Predicate predicate = aL.isNotNull();
 
-        PageResultResource<AssessmentLevelDTO> assessmentLevelDTOS = assessmentLevelFacade.findAll(PageRequest.of(0,2));
+        PageResultResource<AssessmentLevelDTO> assessmentLevelDTOS = assessmentLevelFacade.findAll(predicate,PageRequest.of(0,2));
     }
 
     @Test

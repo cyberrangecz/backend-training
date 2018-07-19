@@ -1,5 +1,6 @@
 package cz.muni.ics.kypo.service.impl;
 
+import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.model.AssessmentLevel;
 import cz.muni.ics.kypo.repository.AssessmentLevelRepository;
@@ -28,43 +29,41 @@ public class AssessmentLevelServiceImpl implements AssessmentLevelService {
     public AssessmentLevelServiceImpl(AssessmentLevelRepository assessmentLevelRepository) {
         this.assessmentLevelRepository = assessmentLevelRepository;
     }
-  @Override
-  public Optional<AssessmentLevel> findById(long id) {
-    LOG.debug("findById({})", id);
-    try {
-      return assessmentLevelRepository.findById(id);
-    } catch (HibernateException ex) {
-      throw new ServiceLayerException(ex.getLocalizedMessage());
-    }
-  }
-
-
-
-
 
     @Override
-    public Page<AssessmentLevel> findAll(Pageable pageable) {
+    public Optional<AssessmentLevel> findById(long id) {
+        LOG.debug("findById({})", id);
         try {
-            return assessmentLevelRepository.findAll(pageable);
+            return assessmentLevelRepository.findById(id);
         } catch (HibernateException ex) {
             throw new ServiceLayerException(ex.getLocalizedMessage());
         }
     }
 
     @Override
-    public Optional<AssessmentLevel> create(AssessmentLevel assessmentLevel)  {
+    public Page<AssessmentLevel> findAll(Predicate predicate, Pageable pageable) {
+        LOG.debug("findAll({},{})", predicate, pageable);
+        try {
+            return assessmentLevelRepository.findAll(predicate, pageable);
+        } catch (HibernateException ex) {
+            throw new ServiceLayerException(ex.getLocalizedMessage());
+        }
+    }
+
+    @Override
+    public Optional<AssessmentLevel> create(AssessmentLevel assessmentLevel) {
         Assert.notNull(assessmentLevel, "Input assessment level must not be null");
         AssessmentLevel aL = assessmentLevelRepository.save(assessmentLevel);
-        LOG.info("Assessment level with id: " + aL.getId() + " created.");
+        LOG.info("Assessment level with id: " + assessmentLevel.getId() + " created.");
         return Optional.of(aL);
 
     }
 
     @Override
-    public Optional<AssessmentLevel> update(AssessmentLevel assessmentLevel)  {
+    public Optional<AssessmentLevel> update(AssessmentLevel assessmentLevel) {
         Assert.notNull(assessmentLevel, "Input assessment level must not be null.");
         AssessmentLevel aL = assessmentLevelRepository.saveAndFlush(assessmentLevel);
-        LOG.info("Assessment level with id: " + aL.getId() + "updated." );
+        LOG.info("Assessment level with id: " + assessmentLevel.getId() + "updated.");
         return Optional.of(aL);
     }
 
@@ -72,7 +71,7 @@ public class AssessmentLevelServiceImpl implements AssessmentLevelService {
     public void delete(AssessmentLevel assessmentLevel) {
         Assert.notNull(assessmentLevel, "Input assessment level must not be null.");
         assessmentLevelRepository.delete(assessmentLevel);
-        LOG.info("Assessment level with id: "  + assessmentLevel.getId() + " was deleted.   ");
+        LOG.info("Assessment level with id: " + assessmentLevel.getId() + " was deleted.   ");
     }
 
 }

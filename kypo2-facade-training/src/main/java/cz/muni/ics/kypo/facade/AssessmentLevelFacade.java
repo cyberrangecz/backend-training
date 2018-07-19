@@ -28,7 +28,7 @@ public interface AssessmentLevelFacade {
    * 
    * @return all a ssessment levels
    */
-  public PageResultResource<AssessmentLevelDTO> findAll(Pageable pageable) throws FacadeLayerException;
+  public PageResultResource<AssessmentLevelDTO> findAll(Predicate predicate, Pageable pageable) throws FacadeLayerException;
 
   public AssessmentLevelDTO create(AssessmentLevel assessmentLevel) throws FacadeLayerException;
 

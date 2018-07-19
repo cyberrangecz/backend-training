@@ -1,11 +1,17 @@
 package cz.muni.ics.kypo;
 
+import com.querydsl.core.BooleanBuilder;
+import com.querydsl.core.QueryMetadata;
+import com.querydsl.core.types.Predicate;
+import com.querydsl.core.types.dsl.PathBuilder;
 import cz.muni.ics.kypo.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.model.AssessmentLevel;
 import cz.muni.ics.kypo.model.enums.AssessmentType;
 import cz.muni.ics.kypo.repository.AssessmentLevelRepository;
 import cz.muni.ics.kypo.service.AssessmentLevelService;
+import org.hibernate.Criteria;
 import org.hibernate.HibernateException;
+import org.hibernate.query.criteria.internal.CriteriaBuilderImpl;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -20,6 +26,7 @@ import org.springframework.data.domain.*;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import javax.persistence.criteria.CriteriaBuilder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -104,10 +111,13 @@ public class AssessmentLevelServiceTest {
         expected.add(assessmentLevel2);
 
         Page p = new PageImpl<AssessmentLevel>(expected);
+        PathBuilder<AssessmentLevel> aL = new PathBuilder<AssessmentLevel>(AssessmentLevel.class, "assessmentLevel");
+        Predicate predicate = aL.isNotNull();
 
-        given(assessmentLevelRepository.findAll(any(Pageable.class))).willReturn(p);
 
-        Page pr = assessmentLevelService.findAll(PageRequest.of(0,2));
+        given(assessmentLevelRepository.findAll(any(Predicate.class), any(Pageable.class))).willReturn(p);
+
+        Page pr = assessmentLevelService.findAll(predicate, PageRequest.of(0, 2));
         assertEquals(2, pr.getTotalElements());
     }
 

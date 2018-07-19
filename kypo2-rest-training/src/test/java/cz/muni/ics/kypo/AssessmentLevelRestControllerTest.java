@@ -2,6 +2,7 @@ package cz.muni.ics.kypo;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
+import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.api.PageResultResource;
 import cz.muni.ics.kypo.api.dto.AssessmentLevelDTO;
 import cz.muni.ics.kypo.exception.FacadeLayerException;
@@ -24,14 +25,20 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.aspectj.EnableSpringConfigured;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.querydsl.SimpleEntityPathResolver;
+import org.springframework.data.querydsl.binding.QuerydslBindingsFactory;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
+import org.springframework.data.web.config.EnableSpringDataWebSupport;
+import org.springframework.data.web.querydsl.QuerydslPredicateArgumentResolver;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
@@ -39,6 +46,7 @@ import org.springframework.web.context.WebApplicationContext;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
@@ -51,7 +59,6 @@ import static org.mockito.BDDMockito.given;
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = AssessmentLevelsRestController.class)
 @ComponentScan(basePackages = "cz.muni.ics.kypo")
-
 public class AssessmentLevelRestControllerTest {
 
     @Autowired
@@ -88,7 +95,8 @@ public class AssessmentLevelRestControllerTest {
     public void setup() throws  RuntimeException {
         MockitoAnnotations.initMocks(this);
         this.mockMvc = MockMvcBuilders.standaloneSetup(assessmentLevelsRestController)
-                .setCustomArgumentResolvers(new PageableHandlerMethodArgumentResolver())
+                .setCustomArgumentResolvers(new PageableHandlerMethodArgumentResolver(), new QuerydslPredicateArgumentResolver(new QuerydslBindingsFactory(SimpleEntityPathResolver.INSTANCE),
+                        Optional.empty()))
                 .setMessageConverters(new MappingJackson2HttpMessageConverter()).build();
 
         al1DTO = new AssessmentLevelDTO();
@@ -167,7 +175,7 @@ public class AssessmentLevelRestControllerTest {
     public void findAllAssessmentLevels() throws Exception {
         String valueAs = convertObjectToJsonBytes(assessmentLevelDTOPageResultResource);
         given(objectMapper.writeValueAsString(any(Object.class))).willReturn(valueAs);
-        given(assessmentLevelFacade.findAll(any(Pageable.class))).willReturn(assessmentLevelDTOPageResultResource);
+        given(assessmentLevelFacade.findAll(any(Predicate.class),any(Pageable.class))).willReturn(assessmentLevelDTOPageResultResource);
 
         MockHttpServletResponse result = mockMvc.perform(get("/assessment-levels"))
                 .andExpect(status().isOk())
@@ -179,7 +187,7 @@ public class AssessmentLevelRestControllerTest {
     @Test
     public void findAllAssessmentLevelsWithFacadeException() throws Exception {
         PageResultResource<AssessmentLevelDTO> assessmentLevelDTOPageResultResource = beanMapping.mapToPageResultDTO(p, AssessmentLevelDTO.class);
-        willThrow(FacadeLayerException.class).given(assessmentLevelFacade).findAll(any(Pageable.class));
+        willThrow(FacadeLayerException.class).given(assessmentLevelFacade).findAll(any(Predicate.class),any(Pageable.class));
 
         Exception exception = mockMvc.perform(get("/assessment-levels"))
                 .andExpect(status().isNotFound())

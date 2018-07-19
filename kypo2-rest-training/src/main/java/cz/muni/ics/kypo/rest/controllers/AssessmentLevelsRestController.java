@@ -1,19 +1,21 @@
 package cz.muni.ics.kypo.rest.controllers;
 
 
+import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.mapping.BeanMapping;
 import cz.muni.ics.kypo.rest.exceptions.ResourceNotCreatedException;
 import cz.muni.ics.kypo.rest.exceptions.ResourceNotModifiedException;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.querydsl.binding.QuerydslPredicate;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -55,7 +57,6 @@ import io.swagger.annotations.AuthorizationScope;
 @RestController
 @RequestMapping(value = "/assessment-levels")
 public class AssessmentLevelsRestController {
-
 
     private static final Logger LOG = LoggerFactory.getLogger(AssessmentLevelsRestController.class);
 
@@ -142,12 +143,13 @@ public class AssessmentLevelsRestController {
             @ApiResponse(code = 404, message = "The requested resource was not found.")
     })
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Object> findAllAssessmentLevels(@PageableDefault(size = 20) final Pageable pageable,
+    public ResponseEntity<Object> findAllAssessmentLevels(@QuerydslPredicate(root = AssessmentLevel.class) Predicate predicate, Pageable pageable,
+                                                          @RequestParam MultiValueMap<String, String> parameters,
                                                           @ApiParam(value = "Fields which should be returned in REST API response", required = false)
                                                           @RequestParam(value = "fields", required = false) String fields) {
         LOG.debug("findAllAssessmentLevels({})", fields);
         try {
-            PageResultResource<AssessmentLevelDTO> assessmentLevelResource = assessmentLevelFacade.findAll(pageable);
+            PageResultResource<AssessmentLevelDTO> assessmentLevelResource = assessmentLevelFacade.findAll(predicate, pageable);
             Squiggly.init(objectMapper, fields);
             return new ResponseEntity<>(SquigglyUtils.stringify(objectMapper, assessmentLevelResource), HttpStatus.OK);
         } catch (FacadeLayerException ex) {
@@ -262,6 +264,11 @@ public class AssessmentLevelsRestController {
         } catch (FacadeLayerException ex) {
             throw new ResourceNotModifiedException(ex.getLocalizedMessage());
         }
+
     }
+
+
+    //@formatter:off
+
 
 }

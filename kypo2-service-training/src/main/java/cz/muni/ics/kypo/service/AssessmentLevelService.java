@@ -1,5 +1,6 @@
 package cz.muni.ics.kypo.service;
 
+import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.model.AssessmentLevel;
 import org.springframework.data.domain.Page;
@@ -18,7 +19,12 @@ public interface AssessmentLevelService {
      */
     public Optional<AssessmentLevel> findById(long id);
 
-    public Page<AssessmentLevel> findAll(Pageable pageable);
+    /**
+     * Find all Assessment Levels.
+     *
+     * @return all a ssessment levels
+     */
+    public Page<AssessmentLevel> findAll(Predicate predicate, Pageable pageable);
 
     /**
      * Creates given assessment in database.
