@@ -23,14 +23,14 @@ import cz.muni.ics.kypo.service.TrainingRunService;
  *
  */
 @Service
-public class TrainingRunServiceTest implements TrainingRunService {
+public class TrainingRunServiceImpl implements TrainingRunService {
 
-  private static final Logger LOG = LoggerFactory.getLogger(TrainingRunServiceTest.class);
+  private static final Logger LOG = LoggerFactory.getLogger(TrainingRunServiceImpl.class);
 
   private TrainingRunRepository trainingRunRepository;
 
   @Autowired
-  public TrainingRunServiceTest(TrainingRunRepository trainingRunRepository) {
+  public TrainingRunServiceImpl(TrainingRunRepository trainingRunRepository) {
     this.trainingRunRepository = trainingRunRepository;
   }
 
