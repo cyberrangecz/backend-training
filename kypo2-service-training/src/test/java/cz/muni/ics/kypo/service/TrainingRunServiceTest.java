@@ -26,7 +26,7 @@ import static org.mockito.BDDMockito.*;
 @RunWith(SpringRunner.class)
 @SpringBootTest
 @EntityScan(basePackages = {"cz.muni.ics.kypo.model"})
-@EnableJpaRepositories(basePackages = {"cz.muni.ics.kypo.repository"})
+@EnableJpaRepositories(basePackages = {"cz.muni.ics.kypo"})
 public class TrainingRunServiceTest {
 
     @Rule
@@ -49,15 +49,16 @@ public class TrainingRunServiceTest {
         trainingRun1 = new TrainingRun();
         trainingRun1.setId(1L);
         trainingRun1.setState(TRState.NEW);
+
     }
 
     @Test
     public void getTrainingRun() {
         given(trainingRunRepository.findById(trainingRun1.getId())).willReturn(Optional.of(trainingRun1));
 
-        Optional<TrainingRun> t = trainingRunService.findById(trainingRun1.getId());
-        assertEquals(t.get().getId(), trainingRun1.getId());
-        assertEquals(t.get().getState(), trainingRun1.getState());
+        TrainingRun t = trainingRunService.findById(trainingRun1.getId()).get();
+        assertEquals(t.getId(), trainingRun1.getId());
+        assertEquals(t.getState(), trainingRun1.getState());
 
         then(trainingRunRepository).should().findById(trainingRun1.getId());
 
