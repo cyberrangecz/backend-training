@@ -84,7 +84,7 @@ public class TrainingRunServiceTest {
     }
 
     @Test
-    public void findNonexistingTrainingRunById() {
+    public void getNonexistentTrainingRunById() {
         Long id = 6L;
         assertEquals(Optional.empty(), trainingRunService.findById(id));
     }
