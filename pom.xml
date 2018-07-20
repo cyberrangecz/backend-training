@@ -119,6 +119,7 @@
 				<artifactId>springfox-spring-web</artifactId>
 				<version>${swagger.version}</version>
 			</dependency>
+
 		</dependencies>
 	</dependencyManagement>
 
