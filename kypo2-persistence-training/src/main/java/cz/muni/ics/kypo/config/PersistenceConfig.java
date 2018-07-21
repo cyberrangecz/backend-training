@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
@@ -18,6 +19,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 @ComponentScan(basePackages = {"cz.muni.ics.kypo"})
 @EntityScan(basePackages = "cz.muni.ics.kypo.model")
 @EnableJpaRepositories(basePackages = "cz.muni.ics.kypo.repository")
+@PropertySource("file:${path.to.config.file}")
 public class PersistenceConfig {
 
   private static final Logger LOG = LoggerFactory.getLogger(PersistenceConfig.class);

@@ -36,6 +36,11 @@
 		</dependency>
 		<dependency>
 			<groupId>cz.muni.ics.kypo</groupId>
+			<artifactId>kypo2-security-training</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>cz.muni.ics.kypo</groupId>
 			<artifactId>kypo2-elasticsearch-training</artifactId>
 			<version>${project.version}</version>
 		</dependency>
