@@ -1,5 +1,6 @@
 package cz.muni.ics.kypo.config;
 
+import cz.muni.ics.kypo.training.security.config.ResourceServerSecurityConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.ComponentScan;
@@ -13,7 +14,7 @@ import cz.muni.csirt.kypo.elasticsearch.service.audit.config.TrainingElasticsear
  *
  */
 @Configuration
-@Import({PersistenceConfig.class, TrainingElasticsearchServiceConfig.class, KypoManagementIntegrationConfig.class})
+@Import({PersistenceConfig.class, TrainingElasticsearchServiceConfig.class, ResourceServerSecurityConfig.class})
 @ComponentScan(basePackages = {"cz.muni.ics.kypo.service"})
 public class ServiceConfig {
 
