@@ -39,7 +39,7 @@ public class TrainingRunRestControllerTest {
     private TrainingRunService trainingRunService;
 
     @Mock
-    BeanMapping beanMapping;
+    private BeanMapping beanMapping;
 
     @InjectMocks
     private TrainingRunsRestController trainingRunsRestController;
@@ -70,7 +70,7 @@ public class TrainingRunRestControllerTest {
         trainingRun2.setState(TRState.ARCHIVED);
 
         trainingRun1DTO = new TrainingRunDTO();
-        
+
 
         given(beanMapping.mapTo(trainingRun1, TrainingRunDTO.class)).willReturn(trainingRun1DTO);
         given(beanMapping.mapTo(trainingRun2, TrainingRunDTO.class)).willReturn(trainingRun2DTO);
