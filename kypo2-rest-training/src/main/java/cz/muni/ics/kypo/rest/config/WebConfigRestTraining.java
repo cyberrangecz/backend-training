@@ -37,6 +37,21 @@ import cz.muni.ics.kypo.config.FacadeConfiguration;
  *  --spring.config.location=classpath:file:///etc/kypo2/training/application.properties
  * </code>
  * </pre>
+ *
+ *  Intellij idea example:
+ *
+ *  <pre>
+ *  <code>
+ *   Run Configuration -> tab: Arguments -> Program arguments
+ *  </code>
+ *  </pre>
+ *  </p>
+ *
+ *  <pre>
+ *  <code>
+ *   --path.to.config.file="/etc/kypo2/training/application.properties"
+ *  </code>
+ *  </pre>
  * 
  * @author Pavel Seda (441048)
  *
