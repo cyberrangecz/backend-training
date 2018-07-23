@@ -7,6 +7,7 @@ The main project is [REST module] (https://gitlab.ics.muni.cz/kypo2/services-and
 Role         | UCO          | Name 
 ------------ | ------------ | -------------
 Developer    |   441048     | Šeda Pavel
+Developer    |   445537     | Dominik Pilár
 
 
 ## Starting up Project (NOT implemented yet)
@@ -29,13 +30,87 @@ Documentation is done in Swagger framework. It is possible to reach it on the fo
 e.g. on localhost it should be:
 
 ```
-http://localhost:8080/kypo2-rest-training/swagger-ui.html
+http://localhost:8080/kypo2-rest-training/api/v1/swagger-ui.html
 ```
 
 NOTE: please note that client for that REST API could be generated using [Swagger codegen] (https://swagger.io/tools/swagger-codegen/). It is crucial to annotate each RestController method properly!
 # Following steps are necessary for manual starting up project
 
-## Database migration
+### 1. Getting Masaryk University OpenID Connect credentials 
+
+1. Go to `https://oidc.ics.muni.cz/oidc/` and log in.
+2. Click on "**Self-service Client Registration**" -> "**New Client**".
+3. Set Client name.
+4. Add at least one custom Redirect URI and `http://localhost:8080/{context path from external properties file}/webjars/springfox-swagger-ui/oauth2-redirect.html` (IMPORTANT for Swagger UI).
+5. In tab "**Access**":
+    1. choose which information about user you will be getting, so called `scopes`.
+    2. select just *implicit* in **Grand Types**
+    3. select *token* and *code id_toke* in **Responses Types**
+6. Hit **Save** button.
+7. Then got to tab "**JSON**", copy the JSON file and save it to file. **IMPORTANT STEP**
+8. Now create new Resource in "**Self-service Protected Resource Registration**".
+9. Again insert client Name and save JSON to external file in "**JSON**" tab.
+10. In tab "**Access**" again choose which information about user you will be getting, so called `scopes`.
+11. Hit **Save** button.
+
+### 2. Properties file
+
+After step 1 you have to create properties file according to format below and save it.
+```properties
+server.port={port for service}
+server.servlet.context-path=/{context path for service}
+
+# Logging
+logging.level.org.springframework.web=DEBUG
+logging.level.org.hibernate=ERROR
+logging.level.org.mitre.openid.connect.binder.service=DEBUG
+
+# Elasticsearch
+elasticsearch.ipaddress=localhost
+elasticsearch.protocol=http
+elasticsearch.port1=9200
+elasticsearch.port2=9201
+
+# OpenID Connect
+kypo.idp.4oauth.introspectionURI=https://oidc.ics.muni.cz/oidc/introspect
+kypo.idp.4oauth.authorizationURI=https://oidc.ics.muni.cz/oidc/authorize
+kypo.idp.4oauth.resource.clientId={your client ID from Self-service protected resource}
+kypo.idp.4oauth.resource.clientSecret={your client secret from Self-service protected resource}
+kypo.idp.4oauth.client.clientId={your client ID from Self-service client}
+kypo.idp.4oauth.scopes=openid, email
+# you can add more scopes according to settings from step 1.
+
+# DATASOURCE
+spring.datasource.url=jdbc:postgresql://{url to DB}
+spring.datasource.username={user in DB}
+spring.datasource.password={password for user to DB}
+spring.jpa.properties.hibernate.temp.use_jdbc_metadata_defaults = false
+spring.jpa.database-platform=org.hibernate.dialect.PostgreSQL9Dialect
+
+# FLYWAY
+spring.flyway.url=jdbc:postgresql://{url to DB}
+spring.flyway.user={user in DB}
+spring.flyway.password={password for user to DB}
+spring.flyway.table=schema_version
+
+# logging
+logging.level.root= WARN
+logging.level.org.springframework.security= DEBUG
+logging.level.org.springframework.web= ERROR
+logging.level.org.hibernate= DEBUG
+logging.level.org.apache.commons.dbcp2= DEBUG  
+logging.file = logs/kypo2-training.log  
+
+# Jackson (e.g. converting Java 8 dates to ISO format
+spring.jackson.serialization.write_dates_as_timestamps=false 
+#spring.jackson.property-naming-strategy=com.fasterxml.jackson.databind.PropertyNamingStrategy.SNAKE_CASE
+
+# to fix: Method jmxMBeanExporter in org.springframework.boot.actuate.autoconfigure.endpoint.jmx.JmxEndpointAutoConfiguration required a single bean, but 2 were found: (objMapperESClient,objectMapperForRestAPI)
+spring.jmx.enabled = false
+
+```
+
+## 3. Database migration
 Prerequisities running PostgreSQL and created database named 'training' with schema 'public'.
 To migrate database data it is necessary to run these two scripts:
 
@@ -50,47 +125,19 @@ $ mvn flyway:migrate -Djdbc.url=jdbc:postgresql://localhost:5432/training -Djdbc
 
 NOTE: This script must be run in [kypo2-training-persistence] (https://gitlab.ics.muni.cz/kypo2/services-and-portlets/kypo2-training/tree/master/kypo2-persistence-training) module.
 
-## Application properties
-```
-<!-- For description of each field check: https://docs.spring.io/spring-boot/docs/current/reference/html/common-application-properties.html -->
-
-<!-- DATASOURCE (DataSourceAutoConfiguration & DataSourceProperties) -->
-spring.datasource.url=jdbc:postgresql://localhost:5432/training 
-spring.datasource.username=postgres
-spring.datasource.password=postgre
-spring.datasource.driver-class-name=org.postgresql.Driver
-
-<!-- JPA (JpaBaseConfiguration, HibernateJpaAutoConfiguration) -->
-spring.data.jpa.repositories.enabled=true
-spring.jpa.database-platform=org.hibernate.dialect.PostgreSQL9Dialect
-spring.jpa.properties.hibernate.dialect = org.hibernate.dialect.PostgreSQLDialect
-spring.jpa.hibernate.ddl-auto=validate
-spring.jpa.show-sql=true 
-spring.jpa.properties.hibernate.temp.use_jdbc_metadata_defaults = false
-
-<!-- Elasticsearch -->
-elasticsearch.ipaddress=localhost
-elasticsearch.protocol=http
-elasticsearch.port1=9200
-elasticsearch.port2=9201
-
-<!-- context path -->
-server.servlet.context-path=/kypo2-rest-training/api/v1
-server.port=8080
-
-<!-- Jackson (e.g. converting Java 8 dates to ISO format -->
-spring.jackson.serialization.write_dates_as_timestamps=false 
-
-
-spring.jmx.enabled = false
-```
-
 ## Installing project
 Installing by maven:
 
 ```
-mvn clean install
+mvn clean install -Dpath.to.config.file={path to properties file from step 2}
 ```
+
+## Run project
+In Intellij Idea:
+1. Click on "**Run**" -> "**Edit configurations**".
+2. Choose "**WebConfigRestTraining**" configuration.
+3. Add into "**Program arguments**" --path.to.config.file="{path to your config properties}".
+4. Run WebConfigRestTraining
 
 ## Used Technologies
 The project was built and tested with these technologies, so if you have any unexpected troubles let us know.
