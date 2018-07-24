@@ -19,6 +19,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -36,7 +37,7 @@ import static org.mockito.BDDMockito.*;
 @RunWith(SpringRunner.class)
 @SpringBootTest
 @EntityScan(basePackages = {"cz.muni.ics.kypo.model"})
-@EnableJpaRepositories(basePackages = {"cz.muni.ics.kypo"})
+@ComponentScan(basePackages = {"cz.muni.ics.kypo"})
 public class TrainingDefinitionFacadeTest {
 
     @Rule
@@ -76,17 +77,10 @@ public class TrainingDefinitionFacadeTest {
     }
 
     @Test
-    public void findTrainingDefinitionByIdWithNullId() {
-        Long id = null;
-        thrown.expect(FacadeLayerException.class);
-        trainingDefinitionFacade.findById(id);
-    }
-
-    @Test
     public void findNonexistentTrainingDefinitionById() {
         Long id = 6L;
         given(trainingDefinitionService.findById(id)).willReturn(Optional.empty());
-        thrown.expect(ServiceLayerException.class);
+        thrown.expect(FacadeLayerException.class);
         trainingDefinitionFacade.findById(id);
     }
 
