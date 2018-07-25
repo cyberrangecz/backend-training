@@ -116,8 +116,8 @@ public class TrainingRunsRestControllerTest {
     @Test
     public void findTrainingRunById() throws Exception {
         given(trainingRunFacade.findById(any(Long.class))).willReturn(trainingRun1DTO);
-        String valueAs = convertObjectToJsonBytes(trainingRun1DTO);
-        given(objectMapper.writeValueAsString(any(Object.class))).willReturn(valueAs);
+        String valueTr = convertObjectToJsonBytes(trainingRun1DTO);
+        given(objectMapper.writeValueAsString(any(Object.class))).willReturn(valueTr);
         MockHttpServletResponse result = mockMvc.perform(get("/training-runs" + "/{id}", 1l))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
@@ -151,7 +151,6 @@ public class TrainingRunsRestControllerTest {
     private static String convertObjectToJsonBytes(Object object) throws IOException {
         ObjectMapper mapper = new ObjectMapper();
         return mapper.writeValueAsString(object);
-
     }
 
 }
