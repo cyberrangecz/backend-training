@@ -120,7 +120,6 @@ public class InfoLevelsRestControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andReturn().getResponse();
-        System.out.println(result.getContentAsString());
         assertEquals(convertObjectToJsonBytes(convertObjectToJsonBytes(infoLevel1DTO)), result.getContentAsString());
     }
 
