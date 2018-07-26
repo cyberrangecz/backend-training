@@ -1,4 +1,4 @@
-package cz.muni.ics.kypo;
+package cz.muni.ics.kypo.service;
 
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.QueryMetadata;

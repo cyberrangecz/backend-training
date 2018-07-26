@@ -1,9 +1,10 @@
-package cz.muni.ics.kypo;
+package cz.muni.ics.kypo.facade;
 
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.PathBuilder;
 import cz.muni.ics.kypo.api.PageResultResource;
 import cz.muni.ics.kypo.api.dto.AssessmentLevelDTO;
+import cz.muni.ics.kypo.config.FacadeTestConfiguration;
 import cz.muni.ics.kypo.exception.FacadeLayerException;
 import cz.muni.ics.kypo.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.facade.AssessmentLevelFacade;
@@ -22,6 +23,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -45,7 +48,9 @@ import static org.mockito.BDDMockito.willThrow;
 @RunWith(SpringRunner.class)
 @SpringBootTest
 @EntityScan(basePackages = {"cz.muni.ics.kypo.model"})
-@EnableJpaRepositories(basePackages = {"cz.muni.ics.kypo"})
+@EnableJpaRepositories(basePackages = {"cz.muni.ics.kypo.repository"})
+@ComponentScan(basePackages = {"cz.muni.ics.kypo.facade", "cz.muni.ics.kypo.service", "cz.muni.ics.kypo.mapping"})
+@Import(FacadeTestConfiguration.class)
 public class AssessmentLevelFacadeTest {
 
     @Rule
