@@ -153,3 +153,7 @@ Tomcat        : 8
 PostgreSQL    : 9.5
 Elasticsearch : 5.5.0
 ```
+
+## ER Diagram
+ER diagram generated from model in persistence module
+![alt text](er_diagram_training.jpg)
