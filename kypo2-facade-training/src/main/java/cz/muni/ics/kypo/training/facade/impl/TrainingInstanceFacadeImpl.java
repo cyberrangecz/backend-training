@@ -67,4 +67,45 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
     }
   }
 
+  @Override
+  @Transactional
+  public TrainingInstanceDTO update(TrainingInstance trainingInstance) {
+    LOG.debug("update({})",trainingInstance);
+    try{
+      Objects.requireNonNull(trainingInstance);
+      Optional<TrainingInstance> tI = trainingInstanceService.update(trainingInstance);
+      TrainingInstance updatedTI = tI.orElseThrow(()-> new ServiceLayerException());
+      return beanMapping.mapTo(updatedTI, TrainingInstanceDTO.class);
+    } catch (NullPointerException | ServiceLayerException ex){
+      throw new FacadeLayerException(ex.getLocalizedMessage());
+    }
+  }
+
+  @Override
+  @Transactional
+  public TrainingInstanceDTO create(TrainingInstance trainingInstance) {
+    LOG.debug("create({})", trainingInstance);
+    try{
+      Objects.requireNonNull(trainingInstance);
+      Optional<TrainingInstance> tI = trainingInstanceService.create(trainingInstance);
+      TrainingInstance newTI = tI.orElseThrow(() -> new ServiceLayerException());
+      return beanMapping.mapTo(newTI, TrainingInstanceDTO.class);
+    } catch(NullPointerException | ServiceLayerException ex) {
+      throw new FacadeLayerException(ex.getLocalizedMessage());
+    }
+  }
+
+  @Override
+  @Transactional
+  public void delete(Long id) {
+    Optional<TrainingInstance> trainingInstance = null;
+    try {
+      Objects.requireNonNull(id);
+      trainingInstance = trainingInstanceService.findById(id);
+      TrainingInstance tI =trainingInstance.orElseThrow(() -> new ServiceLayerException("Training instance with this id is not found"));
+      trainingInstanceService.delete(tI);
+    } catch(NullPointerException | ServiceLayerException ex) {
+      throw new FacadeLayerException(ex.getLocalizedMessage());
+    }
+  }
 }
