@@ -1,5 +1,7 @@
 package cz.muni.ics.kypo.facade;
 
+import cz.muni.ics.kypo.exception.FacadeLayerException;
+import cz.muni.ics.kypo.model.TrainingInstance;
 import org.springframework.data.domain.Pageable;
 
 import com.querydsl.core.types.Predicate;
@@ -28,5 +30,11 @@ public interface TrainingInstanceFacade {
    * @return all Training Instances
    */
   public PageResultResource<TrainingInstanceDTO> findAll(Predicate predicate, Pageable pageable);
+
+  public TrainingInstanceDTO update(TrainingInstance trainingInstance) throws FacadeLayerException;
+
+  public TrainingInstanceDTO create(TrainingInstance trainingInstance) throws FacadeLayerException;
+
+  public void delete(Long id) throws FacadeLayerException;
 
 }

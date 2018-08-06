@@ -107,7 +107,39 @@ public class TrainingInstanceFacadeTest {
         then(trainingInstanceService).should().findAll(predicate, PageRequest.of(0,2));
     }
 
+    @Test
+    public void createTrainingInstance() {
+        given(trainingInstanceService.create(trainingInstance1)).willReturn(Optional.of(trainingInstance1));
+        TrainingInstanceDTO trainingInstanceDTO = trainingInstanceFacade.create(trainingInstance1);
+        deepEquals(trainingInstance1, trainingInstanceDTO);
+        then(trainingInstanceService).should().create(trainingInstance1);
+    }
 
+    @Test
+    public void createTrainingInstanceWithNull() {
+        thrown.expect(FacadeLayerException.class);
+        trainingInstanceFacade.create(null);
+    }
+
+    @Test
+    public void updateTrainingInstance() {
+        given(trainingInstanceService.update(any(TrainingInstance.class))).willReturn(Optional.of(trainingInstance1));
+        TrainingInstanceDTO trainingInstanceDTO = trainingInstanceFacade.update(trainingInstance1);
+        deepEquals(trainingInstance1,trainingInstanceDTO);
+        then(trainingInstanceService).should().update(any(TrainingInstance.class));
+    }
+
+    @Test
+    public void updateTrainingInstanceWithNull() {
+        thrown.expect(FacadeLayerException.class);
+        trainingInstanceFacade.update(null);
+    }
+
+    @Test
+    public void deleteTrainingInstanceWithNull() {
+        thrown.expect(FacadeLayerException.class);
+        trainingInstanceFacade.delete(null);
+    }
 
     private void deepEquals(TrainingInstance expected, TrainingInstanceDTO actual) {
         assertEquals(expected.getId(), actual.getId());
