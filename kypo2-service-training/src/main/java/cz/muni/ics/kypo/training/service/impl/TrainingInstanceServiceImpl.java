@@ -2,6 +2,7 @@ package cz.muni.ics.kypo.training.service.impl;
 
 import java.util.Optional;
 
+import com.mysema.commons.lang.Assert;
 import org.hibernate.HibernateException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,4 +56,29 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
     }
   }
 
+  @Override
+  public Optional<TrainingInstance> create(TrainingInstance trainingInstance) {
+    LOG.debug("create({})", trainingInstance);
+    Assert.notNull(trainingInstance, "Input training instance must not be null");
+    TrainingInstance tI = trainingInstanceRepository.save(trainingInstance);
+    LOG.info("Training instance with id: " + trainingInstance.getId() + "created.");
+    return Optional.of(tI);
+  }
+
+  @Override
+  public Optional<TrainingInstance> update(TrainingInstance trainingInstance) {
+    LOG.debug("update({})", trainingInstance);
+    Assert.notNull(trainingInstance, "Input training instance must not be null");
+    TrainingInstance tI = trainingInstanceRepository.saveAndFlush(trainingInstance);
+    LOG.info("Training instance with id: " + trainingInstance.getId() + "updated.");
+    return Optional.of(tI);
+  }
+
+  @Override
+  public void delete(TrainingInstance trainingInstance) {
+    LOG.debug("delete({})",trainingInstance);
+    Assert.notNull(trainingInstance, "Input training instance must not be null");
+    trainingInstanceRepository.delete(trainingInstance);
+    LOG.info("Training instance with id: " + trainingInstance.getId() + "created.");
+  }
 }

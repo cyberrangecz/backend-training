@@ -105,6 +105,42 @@ public class TrainingInstanceServiceTest {
         assertEquals(2, pr.getTotalElements());
     }
 
+    @Test
+    public void createTrainingInstance(){
+        given(trainingInstanceRepository.save(trainingInstance1)).willReturn(trainingInstance1);
+        TrainingInstance tI = trainingInstanceService.create(trainingInstance1).get();
+        deepEquals(trainingInstance1, tI);
+        then(trainingInstanceRepository).should().save(trainingInstance1);
+    }
+
+    @Test
+    public void createTrainingInstanceWithNull(){
+      thrown.expect(IllegalArgumentException.class);
+      thrown.expectMessage("Input training instance must not be null");
+      trainingInstanceService.create(null);
+    }
+
+    @Test
+    public void updateTrainingInstance(){
+        given(trainingInstanceRepository.saveAndFlush(trainingInstance1)).willReturn(trainingInstance1);
+        TrainingInstance tI = trainingInstanceService.update(trainingInstance1).get();
+        deepEquals(trainingInstance1, tI);
+    }
+
+    @Test
+    public void updateTrainingInstanceWithNull(){
+        thrown.expect(IllegalArgumentException.class);
+        thrown.expectMessage("Input training instance must not be null");
+        trainingInstanceService.update(null);
+    }
+
+    @Test
+    public void deleteTrainingInstaceWithNull(){
+        thrown.expect(IllegalArgumentException.class);
+        thrown.expectMessage("Input training instance must not be null");
+        trainingInstanceService.delete(null);
+    }
+
     @After
     public void after() {
         reset(trainingInstanceRepository);
