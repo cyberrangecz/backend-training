@@ -31,5 +31,11 @@ public interface TrainingInstanceService {
    */
   public Page<TrainingInstance> findAll(Predicate predicate, Pageable pageable);
 
+  public Optional<TrainingInstance> create(TrainingInstance trainingInstance);
+
+  public Optional<TrainingInstance> update(TrainingInstance trainingInstance);
+
+  public void delete(TrainingInstance trainingInstance);
+
 
 }
