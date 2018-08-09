@@ -1,5 +1,8 @@
 package cz.muni.ics.kypo.training.controllers;
 
+import cz.muni.ics.kypo.mapping.BeanMapping;
+import cz.muni.ics.kypo.rest.exceptions.ResourceNotCreatedException;
+import cz.muni.ics.kypo.rest.exceptions.ResourceNotModifiedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,11 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.MultiValueMap;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.bohnman.squiggly.Squiggly;
@@ -64,11 +63,13 @@ public class TrainingInstancesRestController {
 
   private TrainingInstanceFacade trainingInstanceFacade;
   private ObjectMapper objectMapper;
+  private BeanMapping dtoMapper;
 
   @Autowired
-  public TrainingInstancesRestController(TrainingInstanceFacade trainingInstanceFacade, @Qualifier("objMapperRESTApi") ObjectMapper objectMapper) {
+  public TrainingInstancesRestController(TrainingInstanceFacade trainingInstanceFacade, @Qualifier("objMapperRESTApi") ObjectMapper objectMapper, BeanMapping dtoMapper) {
     this.trainingInstanceFacade = trainingInstanceFacade;
     this.objectMapper = objectMapper;
+    this.dtoMapper = dtoMapper;
   }
 
   /**
@@ -153,5 +154,69 @@ public class TrainingInstancesRestController {
     }
   }
   //@formatter:on
+
+  @ApiOperation(httpMethod = "POST",
+      value = "Create Traininig Instance",
+      response = TrainingInstanceDTO.class,
+      nickname = "createTrainingInstance",
+      produces = "application/json",
+      consumes = "application/json")
+  @ApiResponses(value = {
+          @ApiResponse(code = 400, message = "The requested resource was not created")
+  })
+  @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<Object> createTrainingInstance(@ApiParam(name = "Training instance to be created") @RequestBody TrainingInstanceDTO trainingInstanceDTO,
+                                                       @ApiParam(value = "Fields which should be returned in REST API response", required = false)
+                                                       @RequestParam(value = "fields", required = false) String fields) {
+    try {
+      TrainingInstance trainingInstance = dtoMapper.mapTo(trainingInstanceDTO, TrainingInstance.class);
+      TrainingInstanceDTO trainingInstanceResource = trainingInstanceFacade.create(trainingInstance);
+      Squiggly.init(objectMapper, fields);
+      return new ResponseEntity<>(SquigglyUtils.stringify(objectMapper, trainingInstanceResource), HttpStatus.OK);
+    } catch (FacadeLayerException ex) {
+      throw new ResourceNotCreatedException(ex.getLocalizedMessage());
+    }
+  }
+
+  @ApiOperation(httpMethod = "PUT",
+      value = "Update Training Instance",
+      response = TrainingInstanceDTO.class,
+      nickname = "updateTrainingInstance",
+      produces = "application/json",
+      consumes = "application/json")
+  @ApiResponses(value = {
+          @ApiResponse(code = 400, message = "The requested resource was not modified")
+  })
+  @PutMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<Object> updateTrainingInstance(@ApiParam(name = "Training instance to be updated") @RequestBody TrainingInstanceDTO trainingInstanceDTO,
+                                                       @ApiParam(value = "Fields which should be returned in REST API response", required = false)
+                                                       @RequestParam(value = "fields", required = false) String fields) {
+    try {
+      TrainingInstance trainingInstance = dtoMapper.mapTo(trainingInstanceDTO, TrainingInstance.class);
+      TrainingInstanceDTO trainingInstanceResource = trainingInstanceFacade.update(trainingInstance);
+      Squiggly.init(objectMapper, fields);
+      return new ResponseEntity<>(SquigglyUtils.stringify(objectMapper, trainingInstanceResource), HttpStatus.OK);
+    } catch (FacadeLayerException ex) {
+      throw new ResourceNotModifiedException(ex.getLocalizedMessage());
+    }
+  }
+  @ApiOperation(httpMethod = "DELETE",
+    value = "Delete TrainingInstance",
+    response = TrainingInstanceDTO.class,
+    nickname = "deleteTrainingInstance",
+    produces = "application/json",
+    consumes = "application/json")
+  @ApiResponses( value = {
+          @ApiResponse(code = 400, message = "The requested resource was not modified")
+  })
+  @DeleteMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<Void> deleteTrainingInstance(@ApiParam(name = "Id of training instance to be deleted") @RequestParam("trainingInstanceId") long id) {
+    try {
+      trainingInstanceFacade.delete(id);
+      return new ResponseEntity<>(HttpStatus.OK);
+    } catch (FacadeLayerException ex) {
+      throw new ResourceNotModifiedException(ex.getLocalizedMessage());
+    }
+  }
 
 }
