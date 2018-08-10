@@ -124,6 +124,21 @@ public class TrainingDefinitionServiceTest {
         trainingDefinitionService.update(null);
     }
 
+    @Test
+    public void cloneTrainingDefinition(){
+        given(trainingDefinitionRepository.save(trainingDefinition1)).willReturn(trainingDefinition1);
+        TrainingDefinition tD = trainingDefinitionService.clone(trainingDefinition1).get();
+        deepEquals(trainingDefinition1, tD);
+        then(trainingDefinitionRepository).should().save(tD);
+    }
+
+    @Test
+    public void cloneTrainingDefinitionWithNull() {
+        thrown.expect(IllegalArgumentException.class);
+        thrown.expectMessage("Input training definition must not be null");
+        trainingDefinitionService.clone(null);
+    }
+
     @After
     public void after(){
         reset(trainingDefinitionRepository);

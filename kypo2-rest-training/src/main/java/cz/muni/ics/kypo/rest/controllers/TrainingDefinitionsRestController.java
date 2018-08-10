@@ -1,6 +1,7 @@
 package cz.muni.ics.kypo.rest.controllers;
 
 import cz.muni.ics.kypo.mapping.BeanMapping;
+import cz.muni.ics.kypo.rest.exceptions.ResourceNotCreatedException;
 import cz.muni.ics.kypo.rest.exceptions.ResourceNotModifiedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -159,7 +160,7 @@ public class TrainingDefinitionsRestController {
       produces = "application/json",
       consumes = "application/json")
   @ApiResponses(value = {
-
+          @ApiResponse(code = 400, message = "The requested resource was not modified")
   })
   @PutMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<Object> updateTrainingDefinition(@ApiParam(name = "Training definition to be updated") @RequestBody TrainingDefinitionDTO trainingDefinitionDTO,
@@ -176,5 +177,30 @@ public class TrainingDefinitionsRestController {
   }
 
   //@formatter:on
+
+  @ApiOperation(httpMethod = "POST",
+      value = "Clone Training Definition",
+      response = TrainingDefinitionDTO.class,
+      nickname = "cloneTrainingDefinition",
+      produces = "application/json")
+  @ApiResponses(value = {
+          @ApiResponse(code = 404, message = "The requested resource was not found."),
+          @ApiResponse(code = 400, message = "The requested resource was not created")
+  })
+  @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<Object> cloneTrainingDefinition(@ApiParam(name = "Id of training definition to be cloned") @RequestParam("trainingDefinitionId") long id,
+                                                        @ApiParam(value = "Fields which should be returned in REST API response", required = false)
+                                                        @RequestParam(value = "fields", required = false) String fields){
+    try{
+      TrainingDefinitionDTO trainingDefinitionDTO = trainingDefinitionFacade.clone(id);
+      Squiggly.init(objectMapper, fields);
+      return new ResponseEntity<>(SquigglyUtils.stringify(objectMapper, trainingDefinitionDTO), HttpStatus.OK);
+    } catch (FacadeLayerException ex) {
+      throw new ResourceNotCreatedException(ex.getLocalizedMessage());
+    }
+
+
+  }
+
 
 }

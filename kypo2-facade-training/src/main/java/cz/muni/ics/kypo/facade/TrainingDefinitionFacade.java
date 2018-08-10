@@ -39,4 +39,12 @@ public interface TrainingDefinitionFacade {
    */
   public TrainingDefinitionDTO update(TrainingDefinition trainingDefinition) throws FacadeLayerException;
 
+  /**
+   * Clones Training Definition by id
+   * @param id of definition to be cloned
+   * @return DTO of cloned definition
+   * @throws FacadeLayerException
+   */
+  public TrainingDefinitionDTO clone(Long id) throws FacadeLayerException;
+
 }
