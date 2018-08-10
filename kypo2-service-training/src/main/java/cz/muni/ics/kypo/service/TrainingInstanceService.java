@@ -31,10 +31,24 @@ public interface TrainingInstanceService {
    */
   public Page<TrainingInstance> findAll(Predicate predicate, Pageable pageable);
 
+  /**
+   * Creates new training instance
+   * @param trainingInstance to be created
+   * @return created instance
+   */
   public Optional<TrainingInstance> create(TrainingInstance trainingInstance);
 
+  /**
+   * Updates training instance
+   * @param trainingInstance to be updated
+   * @return updated instance
+   */
   public Optional<TrainingInstance> update(TrainingInstance trainingInstance);
 
+  /**
+   * Deletes instance
+   * @param trainingInstance to be deleted
+   */
   public void delete(TrainingInstance trainingInstance);
 
 
