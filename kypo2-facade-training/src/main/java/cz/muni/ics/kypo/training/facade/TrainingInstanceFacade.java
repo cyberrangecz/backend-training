@@ -31,10 +31,27 @@ public interface TrainingInstanceFacade {
    */
   public PageResultResource<TrainingInstanceDTO> findAll(Predicate predicate, Pageable pageable);
 
+  /**
+   * Updates training instance
+   * @param trainingInstance to be updated
+   * @return DTO of updated instance
+   * @throws FacadeLayerException
+   */
   public TrainingInstanceDTO update(TrainingInstance trainingInstance) throws FacadeLayerException;
 
+  /**
+   * Creates new training instance
+   * @param trainingInstance to be created
+   * @return DTO of created instance
+   * @throws FacadeLayerException
+   */
   public TrainingInstanceDTO create(TrainingInstance trainingInstance) throws FacadeLayerException;
 
+  /**
+   * Deletes specific training instance based on id
+   * @param id of training instance to be deleted
+   * @throws FacadeLayerException
+   */
   public void delete(Long id) throws FacadeLayerException;
 
 }
