@@ -6,6 +6,7 @@ import com.mysema.commons.lang.Assert;
 import org.hibernate.HibernateException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -63,4 +64,16 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     LOG.info("Training definition with id: " + trainingDefinition.getId() + " updated");
     return Optional.of(tD);
   }
+
+  @Override
+  public Optional<TrainingDefinition> clone(TrainingDefinition trainingDefinition) {
+    LOG.debug("clone({})", trainingDefinition);
+    Assert.notNull(trainingDefinition, "Input training definition must not be null");
+    TrainingDefinition tD = new TrainingDefinition();
+    BeanUtils.copyProperties(trainingDefinition, tD);
+    tD = trainingDefinitionRepository.save(tD);
+    LOG.info("Training definition with id: "+ trainingDefinition.getId() +" cloned.");
+    return Optional.of(tD);
+  }
+
 }
