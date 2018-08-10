@@ -31,4 +31,10 @@ public interface TrainingDefinitionService {
    */
   public Page<TrainingDefinition> findAll(Predicate predicate, Pageable pageable);
 
+  /**
+   * Updates Training Definition
+   * @param trainingDefinition to be updated
+   * @return updated definition
+   */
+  public Optional<TrainingDefinition> update(TrainingDefinition trainingDefinition);
 }

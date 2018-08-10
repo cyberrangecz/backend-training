@@ -67,4 +67,17 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
     }
   }
 
+  @Override
+  @Transactional
+  public TrainingDefinitionDTO update(TrainingDefinition trainingDefinition) {
+    LOG.debug("update({})", trainingDefinition);
+    try {
+      Objects.requireNonNull(trainingDefinition);
+      Optional<TrainingDefinition> tD = trainingDefinitionService.update(trainingDefinition);
+      TrainingDefinition updatedTD = tD.orElseThrow(() -> new ServiceLayerException());
+      return beanMapping.mapTo(updatedTD, TrainingDefinitionDTO.class);
+    } catch (NullPointerException | ServiceLayerException ex) {
+      throw new FacadeLayerException(ex.getLocalizedMessage());
+    }
+  }
 }

@@ -1,5 +1,7 @@
 package cz.muni.ics.kypo.training.controllers;
 
+import cz.muni.ics.kypo.mapping.BeanMapping;
+import cz.muni.ics.kypo.rest.exceptions.ResourceNotModifiedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,11 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.MultiValueMap;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.bohnman.squiggly.Squiggly;
@@ -63,11 +61,13 @@ public class TrainingDefinitionsRestController {
 
   private TrainingDefinitionFacade trainingDefinitionFacade;
   private ObjectMapper objectMapper;
+  private BeanMapping dtoMapper;
 
   @Autowired
-  public TrainingDefinitionsRestController(TrainingDefinitionFacade trainingDefinitionFacade, @Qualifier("objMapperRESTApi") ObjectMapper objectMapper) {
+  public TrainingDefinitionsRestController(TrainingDefinitionFacade trainingDefinitionFacade, @Qualifier("objMapperRESTApi") ObjectMapper objectMapper, BeanMapping dtoMapper) {
     this.trainingDefinitionFacade = trainingDefinitionFacade;
     this.objectMapper = objectMapper;
+    this.dtoMapper = dtoMapper;
   }
 
   /**
@@ -119,7 +119,7 @@ public class TrainingDefinitionsRestController {
   //@formatter:off
   @ApiOperation(httpMethod = "GET",
       value = "Get all Training Definitions.",
-      response = InfoLevelDTO.class,
+      response = TrainingDefinitionDTO.class,
       responseContainer = "Page",
       nickname = "findAllTrainingDefinitions",
       produces = "application/json",
@@ -151,6 +151,30 @@ public class TrainingDefinitionsRestController {
       throw new ResourceNotFoundException(ex.getLocalizedMessage());
     }
   }
+
+  @ApiOperation(httpMethod = "PUT",
+      value = "Update Training Definition",
+      response = TrainingDefinitionDTO.class,
+      nickname = "updateTrainingDefinition",
+      produces = "application/json",
+      consumes = "application/json")
+  @ApiResponses(value = {
+
+  })
+  @PutMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<Object> updateTrainingDefinition(@ApiParam(name = "Training definition to be updated") @RequestBody TrainingDefinitionDTO trainingDefinitionDTO,
+                                                         @ApiParam(name = "Fields which should be returned in REST API response", required = false)
+                                                         @RequestParam(value = "fields", required = false) String fields){
+    try {
+      TrainingDefinition trainingDefinition = dtoMapper.mapTo(trainingDefinitionDTO,TrainingDefinition.class);
+      TrainingDefinitionDTO trainingDefinitionResource = trainingDefinitionFacade.update(trainingDefinition);
+      Squiggly.init(objectMapper, fields);
+      return new ResponseEntity<>(SquigglyUtils.stringify(objectMapper, trainingDefinitionResource), HttpStatus.OK);
+    } catch (FacadeLayerException ex) {
+      throw new ResourceNotModifiedException(ex.getLocalizedMessage());
+    }
+  }
+
   //@formatter:on
 
 }

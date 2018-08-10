@@ -2,6 +2,7 @@ package cz.muni.ics.kypo.training.service.impl;
 
 import java.util.Optional;
 
+import com.mysema.commons.lang.Assert;
 import org.hibernate.HibernateException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,4 +55,12 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     }
   }
 
+  @Override
+  public Optional<TrainingDefinition> update(TrainingDefinition trainingDefinition) {
+    LOG.debug("update({})", trainingDefinition);
+    Assert.notNull(trainingDefinition, "Input training definition must not be null");
+    TrainingDefinition tD = trainingDefinitionRepository.saveAndFlush(trainingDefinition);
+    LOG.info("Training definition with id: " + trainingDefinition.getId() + " updated");
+    return Optional.of(tD);
+  }
 }
