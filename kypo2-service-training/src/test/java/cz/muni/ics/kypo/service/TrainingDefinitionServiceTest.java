@@ -110,6 +110,20 @@ public class TrainingDefinitionServiceTest {
         assertEquals(2, pr.getTotalElements());
     }
 
+    @Test
+    public void updateTrainingDefinition() {
+        given(trainingDefinitionRepository.saveAndFlush(trainingDefinition1)).willReturn(trainingDefinition1);
+        TrainingDefinition tD = trainingDefinitionService.update(trainingDefinition1).get();
+        deepEquals(trainingDefinition1,tD);
+    }
+
+    @Test
+    public void updateTrainingDefinitionWithNull() {
+        thrown.expect(IllegalArgumentException.class);
+        thrown.expectMessage("Input training definition must not be null");
+        trainingDefinitionService.update(null);
+    }
+
     @After
     public void after(){
         reset(trainingDefinitionRepository);

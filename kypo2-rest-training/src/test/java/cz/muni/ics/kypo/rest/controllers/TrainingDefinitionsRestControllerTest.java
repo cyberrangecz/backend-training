@@ -13,6 +13,7 @@ import cz.muni.ics.kypo.mapping.BeanMappingImpl;
 import cz.muni.ics.kypo.model.TrainingDefinition;
 import cz.muni.ics.kypo.model.enums.TDState;
 import cz.muni.ics.kypo.rest.exceptions.ResourceNotFoundException;
+import cz.muni.ics.kypo.rest.exceptions.ResourceNotModifiedException;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -45,6 +46,7 @@ import java.util.Optional;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.BDDMockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -64,6 +66,9 @@ public class TrainingDefinitionsRestControllerTest {
     @MockBean
     @Qualifier("objMapperRESTApi")
     private ObjectMapper objectMapper;
+
+    @MockBean
+    private BeanMapping beanMapping;
 
     private TrainingDefinition trainingDefinition1, trainingDefinition2;
 
@@ -146,9 +151,37 @@ public class TrainingDefinitionsRestControllerTest {
         assertEquals(convertObjectToJsonBytes(convertObjectToJsonBytes(trainingDefinitionDTOPageResultResource)), result.getContentAsString());
     }
 
+    @Test
+    public void updateTrainingInstance() throws Exception {
+        String valueTd = convertObjectToJsonBytes(trainingDefinition1DTO);
+        given(objectMapper.writeValueAsString(any(Object.class))).willReturn(valueTd);
+        given(trainingDefinitionFacade.update(any(TrainingDefinition.class))).willReturn(trainingDefinition1DTO);
+        given(beanMapping.mapTo(any(TrainingDefinitionDTO.class), eq(TrainingDefinition.class))).willReturn(trainingDefinition1);
+        MockHttpServletResponse result = mockMvc.perform(put("/training-definitions")
+                .content(convertObjectToJsonBytes(trainingDefinition1))
+                .contentType(MediaType.APPLICATION_JSON_VALUE))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andReturn().getResponse();
+        assertEquals(convertObjectToJsonBytes(convertObjectToJsonBytes(trainingDefinition1DTO)), result.getContentAsString());
+    }
+
+    @Test
+    public void updateTrainingDefinitionWithFacadeException() throws Exception {
+        willThrow(FacadeLayerException.class).given(trainingDefinitionFacade).update(any(TrainingDefinition.class));
+        given(beanMapping.mapTo(any(TrainingDefinitionDTO.class), eq(TrainingDefinition.class))).willReturn(trainingDefinition1);
+        Exception exception = mockMvc.perform(put("/training-definitions")
+                .content(convertObjectToJsonBytes(trainingDefinition1))
+                .contentType(MediaType.APPLICATION_JSON_VALUE))
+                .andExpect(status().isNotModified())
+                .andReturn().getResolvedException();
+        assertEquals(ResourceNotModifiedException.class, exception.getClass());
+    }
+
     private static String convertObjectToJsonBytes(Object object) throws IOException {
         ObjectMapper mapper = new ObjectMapper();
         return mapper.writeValueAsString(object);
     }
+
 
 }
