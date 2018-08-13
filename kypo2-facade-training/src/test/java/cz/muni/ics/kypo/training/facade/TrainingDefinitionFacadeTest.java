@@ -120,6 +120,12 @@ public class TrainingDefinitionFacadeTest {
       trainingDefinitionFacade.update(null);
     }
 
+    @Test
+    public void cloneTrainingDefinitionWithNull(){
+        thrown.expect(NullPointerException.class);
+        trainingDefinitionFacade.clone(null);
+    }
+
     private void deepEquals(TrainingDefinition expected, TrainingDefinitionDTO actual) {
         assertEquals(expected.getId(), actual.getId());
         assertEquals(expected.getState(), actual.getState());
