@@ -12,6 +12,7 @@ import cz.muni.ics.kypo.mapping.BeanMapping;
 import cz.muni.ics.kypo.mapping.BeanMappingImpl;
 import cz.muni.ics.kypo.model.TrainingDefinition;
 import cz.muni.ics.kypo.model.enums.TDState;
+import cz.muni.ics.kypo.rest.exceptions.ResourceNotCreatedException;
 import cz.muni.ics.kypo.rest.exceptions.ResourceNotFoundException;
 import cz.muni.ics.kypo.rest.exceptions.ResourceNotModifiedException;
 import org.junit.Before;
@@ -46,6 +47,7 @@ import java.util.Optional;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.BDDMockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -177,6 +179,19 @@ public class TrainingDefinitionsRestControllerTest {
                 .andReturn().getResolvedException();
         assertEquals(ResourceNotModifiedException.class, exception.getClass());
     }
+
+    @Test
+    public void cloneTrainingDefinitionWithFacadeException() throws Exception {
+        willThrow(FacadeLayerException.class).given(trainingDefinitionFacade).clone(any(Long.class));
+        Exception exception = mockMvc.perform(post("/training-definitions")
+                .param("trainingDefinitionId","1")
+                .contentType(MediaType.APPLICATION_JSON_VALUE))
+                .andExpect(status().isNotAcceptable())
+                .andReturn().getResolvedException();
+        assertEquals(ResourceNotCreatedException.class, exception.getClass());
+
+    }
+
 
     private static String convertObjectToJsonBytes(Object object) throws IOException {
         ObjectMapper mapper = new ObjectMapper();
