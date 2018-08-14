@@ -123,17 +123,7 @@ public class TrainingDefinitionsRestController {
       response = TrainingDefinitionDTO.class,
       responseContainer = "Page",
       nickname = "findAllTrainingDefinitions",
-      produces = "application/json",
-      authorizations = {
-          @Authorization(value = "sampleoauth", 
-              scopes = {
-                  @AuthorizationScope(
-                      scope = "find all Training Definitions", 
-                      description = "allows returning Training Definitions."
-                  )
-              }
-          )
-      }
+      produces = "application/json"
   )
   @ApiResponses(value = {
       @ApiResponse(code = 404, message = "The requested resource was not found.") 
@@ -163,8 +153,8 @@ public class TrainingDefinitionsRestController {
           @ApiResponse(code = 400, message = "The requested resource was not modified")
   })
   @PutMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<Object> updateTrainingDefinition(@ApiParam(name = "Training definition to be updated") @RequestBody TrainingDefinitionDTO trainingDefinitionDTO,
-                                                         @ApiParam(name = "Fields which should be returned in REST API response", required = false)
+  public ResponseEntity<Object> updateTrainingDefinition(@ApiParam(value = "Training definition to be updated") @RequestBody TrainingDefinitionDTO trainingDefinitionDTO,
+                                                         @ApiParam(value = "Fields which should be returned in REST API response", required = false)
                                                          @RequestParam(value = "fields", required = false) String fields){
     try {
       TrainingDefinition trainingDefinition = dtoMapper.mapTo(trainingDefinitionDTO,TrainingDefinition.class);
@@ -187,13 +177,11 @@ public class TrainingDefinitionsRestController {
           @ApiResponse(code = 404, message = "The requested resource was not found."),
           @ApiResponse(code = 400, message = "The requested resource was not created")
   })
-  @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<Object> cloneTrainingDefinition(@ApiParam(name = "Id of training definition to be cloned") @RequestParam("trainingDefinitionId") long id,
-                                                        @ApiParam(value = "Fields which should be returned in REST API response", required = false)
-                                                        @RequestParam(value = "fields", required = false) String fields){
+  @PostMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<Object> cloneTrainingDefinition(@ApiParam(value = "Id of training definition to be cloned") @PathVariable("id") Long id){
     try{
       TrainingDefinitionDTO trainingDefinitionDTO = trainingDefinitionFacade.clone(id);
-      Squiggly.init(objectMapper, fields);
+
       return new ResponseEntity<>(SquigglyUtils.stringify(objectMapper, trainingDefinitionDTO), HttpStatus.OK);
     } catch (FacadeLayerException ex) {
       throw new ResourceNotCreatedException(ex.getLocalizedMessage());
