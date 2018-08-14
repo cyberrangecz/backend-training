@@ -71,6 +71,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     Assert.notNull(trainingDefinition, "Input training definition must not be null");
     TrainingDefinition tD = new TrainingDefinition();
     BeanUtils.copyProperties(trainingDefinition, tD);
+    tD.setId(null);
     tD = trainingDefinitionRepository.save(tD);
     LOG.info("Training definition with id: "+ trainingDefinition.getId() +" cloned.");
     return Optional.of(tD);

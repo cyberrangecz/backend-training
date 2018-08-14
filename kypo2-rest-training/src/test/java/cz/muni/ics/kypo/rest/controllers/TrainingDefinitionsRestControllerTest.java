@@ -183,8 +183,7 @@ public class TrainingDefinitionsRestControllerTest {
     @Test
     public void cloneTrainingDefinitionWithFacadeException() throws Exception {
         willThrow(FacadeLayerException.class).given(trainingDefinitionFacade).clone(any(Long.class));
-        Exception exception = mockMvc.perform(post("/training-definitions")
-                .param("trainingDefinitionId","1")
+        Exception exception = mockMvc.perform(post("/training-definitions/1")
                 .contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isNotAcceptable())
                 .andReturn().getResolvedException();
