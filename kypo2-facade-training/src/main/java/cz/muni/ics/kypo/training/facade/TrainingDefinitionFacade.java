@@ -47,4 +47,6 @@ public interface TrainingDefinitionFacade {
    */
   public TrainingDefinitionDTO clone(Long id) throws FacadeLayerException;
 
+
+
 }

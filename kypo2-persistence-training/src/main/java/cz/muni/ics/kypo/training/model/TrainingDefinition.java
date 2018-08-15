@@ -49,6 +49,9 @@ public class TrainingDefinition implements Serializable {
   private Set<AuthorRef> authorRef = new HashSet<>();
   @ManyToOne(fetch = FetchType.LAZY)
   private SandboxDefinitionRef sandBoxDefinitionRef;
+  @Column(name = "starting_level")
+  private Long startingLevel;
+
 
   public TrainingDefinition() {}
 

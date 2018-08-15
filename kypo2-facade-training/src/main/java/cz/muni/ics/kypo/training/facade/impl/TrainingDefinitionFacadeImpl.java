@@ -90,11 +90,12 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
       Objects.requireNonNull(id);
       trainingDefinition = trainingDefinitionService.findById(id);
       TrainingDefinition foundTD = trainingDefinition.orElseThrow(() -> new ServiceLayerException("Training instance with this id is not found"));
-      Optional<TrainingDefinition> tD = trainingDefinitionService.clone(foundTD);
+      Optional<TrainingDefinition> tD = trainingDefinitionService.clone(foundTD.getId());
       TrainingDefinition clonedTD = tD.orElseThrow(() -> new ServiceLayerException());
       return beanMapping.mapTo(clonedTD, TrainingDefinitionDTO.class);
     } catch (ServiceLayerException ex) {
       throw new FacadeLayerException(ex.getLocalizedMessage());
     }
   }
+
 }

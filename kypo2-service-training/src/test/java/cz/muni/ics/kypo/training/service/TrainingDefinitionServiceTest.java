@@ -130,7 +130,7 @@ public class TrainingDefinitionServiceTest {
     @Test
     public void cloneTrainingDefinition(){
         given(trainingDefinitionRepository.save(trainingDefinition1)).willReturn(trainingDefinition1);
-        TrainingDefinition tD = trainingDefinitionService.clone(trainingDefinition1).get();
+        TrainingDefinition tD = trainingDefinitionService.clone(trainingDefinition1.getId()).get();
         deepEquals(trainingDefinition1, tD);
         then(trainingDefinitionRepository).should().save(tD);
     }

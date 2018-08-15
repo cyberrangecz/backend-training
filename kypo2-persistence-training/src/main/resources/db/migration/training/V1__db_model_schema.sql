@@ -47,7 +47,7 @@ CREATE TABLE abstract_level (
     id bigint NOT NULL,
     level_order bigint NOT NULL,
     max_score integer NOT NULL,
-    next_level bigint NOT NULL,
+    next_level bigint,
     title character varying(255) NOT NULL,
     post_hook_id bigint,
     pre_hook_id bigint,
@@ -363,7 +363,8 @@ CREATE TABLE training_definition (
     prerequisities bytea,
     state character varying(128) NOT NULL,
     title character varying(255) NOT NULL,
-    sand_box_definition_ref_id bigint
+    sand_box_definition_ref_id bigint,
+    starting_level int8
 );
 
 

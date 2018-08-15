@@ -29,7 +29,7 @@ public abstract class AbstractLevel implements Serializable {
   private int maxScore;
   @Column(name = "level_order", nullable = false)
   private Long levelOrder;
-  @Column(name = "next_level", nullable = false)
+  @Column(name = "next_level")
   private Long nextLevel;
   @ManyToOne(fetch = FetchType.LAZY)
   private TrainingDefinition trainingDefinition;
