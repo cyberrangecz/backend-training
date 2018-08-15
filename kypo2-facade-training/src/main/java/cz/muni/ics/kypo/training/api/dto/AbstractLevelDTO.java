@@ -19,11 +19,7 @@ public abstract class AbstractLevelDTO {
   protected String title;
   @NotNull
   protected int maxScore;
-  @NotNull
-  protected Long levelOrder;
-  @NotNull
   protected Long nextLevel;
-  protected TrainingDefinitionDTO trainingDefinition;
   protected PreHookDTO preHook;
   protected PostHookDTO postHook;
 
@@ -53,28 +49,12 @@ public abstract class AbstractLevelDTO {
     this.maxScore = maxScore;
   }
 
-  public Long getLevelOrder() {
-    return levelOrder;
-  }
-
-  public void setLevelOrder(Long levelOrder) {
-    this.levelOrder = levelOrder;
-  }
-
   public Long getNextLevel() {
     return nextLevel;
   }
 
   public void setNextLevel(Long nextLevel) {
     this.nextLevel = nextLevel;
-  }
-
-  public TrainingDefinitionDTO getTrainingDefinition() {
-    return trainingDefinition;
-  }
-
-  public void setTrainingDefinition(TrainingDefinitionDTO trainingDefinition) {
-    this.trainingDefinition = trainingDefinition;
   }
 
   public PreHookDTO getPreHook() {
@@ -112,8 +92,8 @@ public abstract class AbstractLevelDTO {
 
   @Override
   public String toString() {
-    return "AbstractLevelDTO [id=" + id + ", title=" + title + ", maxScore=" + maxScore + ", levelOrder=" + levelOrder + ", nextLevel=" + nextLevel
-        + ", trainingDefinition=" + trainingDefinition + ", preHook=" + preHook + ", postHook=" + postHook + "]";
+    return "AbstractLevelDTO [id=" + id + ", title=" + title + ", maxScore=" + maxScore + ", nextLevel=" + nextLevel
+        + ", preHook=" + preHook + ", postHook=" + postHook + "]";
   }
 
 }

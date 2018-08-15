@@ -120,6 +120,14 @@ public class TrainingDefinition implements Serializable {
     this.sandBoxDefinitionRef = sandBoxDefinitionRef;
   }
 
+  public Long getStartingLevel() {
+    return startingLevel;
+  }
+
+  public void setStartingLevel(Long startingLevel) {
+    this.startingLevel = startingLevel;
+  }
+
   @Override
   public int hashCode() {
     return Objects.hash(description, outcomes, prerequisities, state, title);

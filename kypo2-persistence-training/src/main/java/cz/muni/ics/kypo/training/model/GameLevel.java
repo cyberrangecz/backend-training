@@ -46,70 +46,6 @@ public class GameLevel extends AbstractLevel implements Serializable {
 
   public GameLevel() {}
 
-  public Long getId() {
-      return super.getId();
-  }
-
-  public void setId(Long id) {
-      super.setId(id);
-  }
-
-  public String getTitle() {
-      return super.getTitle();
-  }
-
-  public void setTitle(String title) {
-      super.setTitle(title);
-  }
-
-  public int getMaxScore() {
-      return super.getMaxScore();
-  }
-
-  public void setMaxScore(int maxScore) {
-      super.setMaxScore(maxScore);
-  }
-
-  public Long getLevelOrder() {
-      return super.getLevelOrder();
-  }
-
-  public void setLevelOrder(Long levelOrder) {
-      super.setLevelOrder(levelOrder);
-  }
-
-  public PreHook getPreHook() {
-      return super.getPreHook();
-  }
-
-  public void setPreHook(PreHook preHook) {
-      super.setPreHook(preHook);
-  }
-
-  public PostHook getPostHook() {
-      return super.getPostHook();
-  }
-
-  public void setPostHook(PostHook postHook) {
-      super.setPostHook(postHook);
-  }
-
-  public Long getNextLevel() {
-      return super.getNextLevel();
-  }
-
-  public void setNextLevel(Long nextLevel) {
-      super.setNextLevel(nextLevel);
-  }
-
-  public TrainingDefinition getTrainingDefinition() {
-      return super.getTrainingDefinition();
-  }
-
-  public void setTrainingDefinition(TrainingDefinition trainingDefinition) {
-      super.setTrainingDefinition(trainingDefinition);
-  }
-
   public String getFlag() {
     return flag;
   }
@@ -210,9 +146,9 @@ public class GameLevel extends AbstractLevel implements Serializable {
   public String toString() {
     return "GameLevel [flag=" + flag + ", content=" + content + ", solution=" + solution + ", incorrectFlagPenalty=" + incorrectFlagPenalty
         + ", solutionPenalty=" + solutionPenalty + ", estimatedDuration=" + estimatedDuration + ", attachments=" + Arrays.toString(attachments) + ", hints="
-        + hints + ", getId()=" + getId() + ", getTitle()=" + getTitle() + ", getMaxScore()=" + getMaxScore() + ", getLevelOrder()=" + getLevelOrder()
-        + ", getPreHook()=" + getPreHook() + ", getPostHook()=" + getPostHook() + ", getNextLevel()=" + getNextLevel() + ", getTrainingDefinition()="
-        + getTrainingDefinition() + ", toString()=" + super.toString() + "]";
+        + hints + ", getId()=" + getId() + ", getTitle()=" + getTitle() + ", getMaxScore()=" + getMaxScore() + ", getPreHook()="
+        + getPreHook() + ", getPostHook()=" + getPostHook() + ", getNextLevel()=" + getNextLevel() + ", getTrainingDefinition()="
+        + ", toString()=" + super.toString() + "]";
   }
 
 }

@@ -104,9 +104,7 @@ public class GameLevelDTO extends AbstractLevelDTO {
                 ", id=" + id +
                 ", title='" + title + '\'' +
                 ", maxScore=" + maxScore +
-                ", levelOrder=" + levelOrder +
                 ", nextLevel=" + nextLevel +
-                ", trainingDefinition=" + trainingDefinition +
                 ", preHook=" + preHook +
                 ", postHook=" + postHook +
                 '}';
