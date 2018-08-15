@@ -40,8 +40,9 @@ public interface TrainingDefinitionService {
 
   /**
    * Creates new training definition by cloning existing one
-   * @param trainingDefinition to be cloned
+   * @param id of definition to be cloned
    * @return cloned definition
    */
-  public Optional<TrainingDefinition> clone(TrainingDefinition trainingDefinition);
+  public Optional<TrainingDefinition> clone(Long id);
+
 }

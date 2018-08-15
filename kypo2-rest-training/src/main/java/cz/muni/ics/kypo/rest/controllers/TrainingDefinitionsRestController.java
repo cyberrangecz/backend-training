@@ -21,7 +21,6 @@ import com.github.bohnman.squiggly.util.SquigglyUtils;
 import com.querydsl.core.types.Predicate;
 
 import cz.muni.ics.kypo.api.PageResultResource;
-import cz.muni.ics.kypo.api.dto.InfoLevelDTO;
 import cz.muni.ics.kypo.api.dto.TrainingDefinitionDTO;
 import cz.muni.ics.kypo.exception.FacadeLayerException;
 import cz.muni.ics.kypo.facade.TrainingDefinitionFacade;
@@ -153,14 +152,11 @@ public class TrainingDefinitionsRestController {
           @ApiResponse(code = 400, message = "The requested resource was not modified")
   })
   @PutMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<Object> updateTrainingDefinition(@ApiParam(value = "Training definition to be updated") @RequestBody TrainingDefinitionDTO trainingDefinitionDTO,
-                                                         @ApiParam(value = "Fields which should be returned in REST API response", required = false)
-                                                         @RequestParam(value = "fields", required = false) String fields){
+  public ResponseEntity<Void> updateTrainingDefinition(@ApiParam(value = "Training definition to be updated") @RequestBody TrainingDefinitionDTO trainingDefinitionDTO){
     try {
       TrainingDefinition trainingDefinition = dtoMapper.mapTo(trainingDefinitionDTO,TrainingDefinition.class);
-      TrainingDefinitionDTO trainingDefinitionResource = trainingDefinitionFacade.update(trainingDefinition);
-      Squiggly.init(objectMapper, fields);
-      return new ResponseEntity<>(SquigglyUtils.stringify(objectMapper, trainingDefinitionResource), HttpStatus.OK);
+      trainingDefinitionFacade.update(trainingDefinition);
+      return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     } catch (FacadeLayerException ex) {
       throw new ResourceNotModifiedException(ex.getLocalizedMessage());
     }
@@ -186,9 +182,6 @@ public class TrainingDefinitionsRestController {
     } catch (FacadeLayerException ex) {
       throw new ResourceNotCreatedException(ex.getLocalizedMessage());
     }
-
-
   }
-
 
 }
