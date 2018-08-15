@@ -101,28 +101,24 @@ public class AssessmentLevelRestControllerTest {
 
         al1DTO = new AssessmentLevelDTO();
         al1DTO.setId(1L);
-        al1DTO.setLevelOrder(1L);
         al1DTO.setNextLevel(2L);
         al1DTO.setType(AssessmentType.TEST);
         al1DTO.setTitle("Test1");
 
         al2DTO = new AssessmentLevelDTO();
         al2DTO.setId(2L);
-        al2DTO.setLevelOrder(2L);
         al2DTO.setNextLevel(3L);
         al2DTO.setType(AssessmentType.TEST);
         al2DTO.setTitle("Test2");
 
         al1 = new AssessmentLevel();
         al1.setId(1L);
-        al1.setLevelOrder(1L);
         al1.setNextLevel(2L);
         al1.setAssessmentType(AssessmentType.TEST);
         al1.setTitle("Test1");
 
         al2 = new AssessmentLevel();
         al2.setId(2L);
-        al2.setLevelOrder(2L);
         al2.setNextLevel(3L);
         al2.setAssessmentType(AssessmentType.TEST);
         al2.setTitle("Test2");

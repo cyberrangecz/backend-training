@@ -154,21 +154,6 @@ public class TrainingDefinitionsRestControllerTest {
     }
 
     @Test
-    public void updateTrainingInstance() throws Exception {
-        String valueTd = convertObjectToJsonBytes(trainingDefinition1DTO);
-        given(objectMapper.writeValueAsString(any(Object.class))).willReturn(valueTd);
-        given(trainingDefinitionFacade.update(any(TrainingDefinition.class))).willReturn(trainingDefinition1DTO);
-        given(beanMapping.mapTo(any(TrainingDefinitionDTO.class), eq(TrainingDefinition.class))).willReturn(trainingDefinition1);
-        MockHttpServletResponse result = mockMvc.perform(put("/training-definitions")
-                .content(convertObjectToJsonBytes(trainingDefinition1))
-                .contentType(MediaType.APPLICATION_JSON_VALUE))
-                .andExpect(status().isOk())
-                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-                .andReturn().getResponse();
-        assertEquals(convertObjectToJsonBytes(convertObjectToJsonBytes(trainingDefinition1DTO)), result.getContentAsString());
-    }
-
-    @Test
     public void updateTrainingDefinitionWithFacadeException() throws Exception {
         willThrow(FacadeLayerException.class).given(trainingDefinitionFacade).update(any(TrainingDefinition.class));
         given(beanMapping.mapTo(any(TrainingDefinitionDTO.class), eq(TrainingDefinition.class))).willReturn(trainingDefinition1);

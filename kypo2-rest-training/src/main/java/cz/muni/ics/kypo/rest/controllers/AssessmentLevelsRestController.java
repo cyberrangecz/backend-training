@@ -167,17 +167,7 @@ public class AssessmentLevelsRestController {
             response = AssessmentLevelDTO.class,
             nickname = "createAssessmentLevel",
             produces = "application/json",
-            consumes = "application/json",
-            authorizations = {
-                    @Authorization(value = "sampleoauth",
-                            scopes = {
-                                    @AuthorizationScope(
-                                            scope = "create Assessment Level",
-                                            description = "allows returning created Assessment Level."
-                                    )
-                            }
-                    )
-            }
+            consumes = "application/json"
     )
     @ApiResponses(value = {
             @ApiResponse(code = 404, message = "The requested resource was not found.")

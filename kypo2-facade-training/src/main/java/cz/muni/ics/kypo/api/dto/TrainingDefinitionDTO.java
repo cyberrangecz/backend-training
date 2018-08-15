@@ -25,6 +25,7 @@ public class TrainingDefinitionDTO {
     private TDState state;
     private Set<AuthorRef> authorRef = new HashSet<>();
     private SandboxDefinitionRef sandBoxDefinitionRef;
+    private Long startingLevel;
 
     public TrainingDefinitionDTO() {}
 
@@ -90,6 +91,14 @@ public class TrainingDefinitionDTO {
 
     public void setSandBoxDefinitionRef(SandboxDefinitionRef sandBoxDefinitionRef) {
         this.sandBoxDefinitionRef = sandBoxDefinitionRef;
+    }
+
+    public Long getStartingLevel() {
+        return startingLevel;
+    }
+
+    public void setStartingLevel(Long startingLevel) {
+        this.startingLevel = startingLevel;
     }
 
     @Override

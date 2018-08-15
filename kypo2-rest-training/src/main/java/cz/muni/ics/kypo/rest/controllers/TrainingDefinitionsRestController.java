@@ -177,7 +177,6 @@ public class TrainingDefinitionsRestController {
   public ResponseEntity<Object> cloneTrainingDefinition(@ApiParam(value = "Id of training definition to be cloned") @PathVariable("id") Long id){
     try{
       TrainingDefinitionDTO trainingDefinitionDTO = trainingDefinitionFacade.clone(id);
-
       return new ResponseEntity<>(SquigglyUtils.stringify(objectMapper, trainingDefinitionDTO), HttpStatus.OK);
     } catch (FacadeLayerException ex) {
       throw new ResourceNotCreatedException(ex.getLocalizedMessage());
