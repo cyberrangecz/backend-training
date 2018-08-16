@@ -21,6 +21,8 @@ import cz.muni.ics.kypo.mapping.BeanMapping;
 import cz.muni.ics.kypo.model.TrainingDefinition;
 import cz.muni.ics.kypo.service.TrainingDefinitionService;
 
+import javax.validation.constraints.Null;
+
 /**
  * @author Pavel Šeda
  *
@@ -95,4 +97,15 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
     }
   }
 
+  @Override
+  public void swapLeft(Long definitionId, Long levelId) {
+    LOG.debug("swapLeft({},{})", definitionId, levelId);
+    try{
+      Objects.requireNonNull(definitionId);
+      Objects.requireNonNull(levelId);
+      trainingDefinitionService.swapLeft(definitionId,levelId);
+    } catch (NullPointerException | ServiceLayerException ex){
+      throw new FacadeLayerException(ex.getLocalizedMessage());
+    }
+  }
 }

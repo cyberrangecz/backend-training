@@ -45,4 +45,18 @@ public interface TrainingDefinitionService {
    */
   public Optional<TrainingDefinition> clone(Long id);
 
+  /**
+   * Swaps level to the left
+   * @param definitionId - Id of definition containing level to be swapped
+   * @param levelId - Id of level to be swapped
+   */
+  public void swapLeft(Long definitionId, Long levelId);
+
+  /**
+   * Swaps level to the right
+   * @param definitionId - Id of definition containing level to be swaped
+   * @param levelId - Id of level to be swaped
+   */
+  public void swapRight(Long definitionId, Long levelId);
+
 }

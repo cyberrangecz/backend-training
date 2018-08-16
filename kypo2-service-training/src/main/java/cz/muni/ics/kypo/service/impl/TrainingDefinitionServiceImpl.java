@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -22,9 +23,7 @@ import cz.muni.ics.kypo.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.service.TrainingDefinitionService;
 
 /**
- * 
  * @author Pavel Seda (441048)
- *
  */
 @Service
 public class TrainingDefinitionServiceImpl implements TrainingDefinitionService {
@@ -81,100 +80,100 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
   @Override
   public Optional<TrainingDefinition> clone(Long id) {
     LOG.debug("clone({})", id);
-    try{
+    try {
       TrainingDefinition trainingDefinition = trainingDefinitionRepository.findById(id).orElseThrow(() -> new ServiceLayerException());
       TrainingDefinition tD = new TrainingDefinition();
       BeanUtils.copyProperties(trainingDefinition, tD);
       tD.setId(null);
-      Long startinglvl = tD.getStartingLevel();
-      if (tD.getStartingLevel() != null){
+      if (tD.getStartingLevel() != null) {
         tD.setStartingLevel(createLevels(tD.getStartingLevel()));
       }
       tD = trainingDefinitionRepository.save(tD);
-      LOG.info("Training definition with id: "+ trainingDefinition.getId() +" cloned.");
+      LOG.info("Training definition with id: " + trainingDefinition.getId() + " cloned.");
       return Optional.of(tD);
     } catch (HibernateException ex) {
       throw new ServiceLayerException(ex.getLocalizedMessage());
     }
   }
 
-  private Long createLevels(Long id){
+  private Long createLevels(Long id) {
     List<AbstractLevel> levels = new ArrayList<AbstractLevel>();
-    while(id != null){
+    while (id != null) {
       AbstractLevel nextLevel = abstractLevelRepository.findById(id).get();
-      id = nextLevel.getNextLevel();
       levels.add(nextLevel);
     }
-
-
-
-
     Long newId = null;
-    for (int i = levels.size()-1; i >= 0; i--){
-      if (levels.get(i) instanceof AssessmentLevel){
+    for (int i = levels.size() - 1; i >= 0; i--) {
+      if (levels.get(i) instanceof AssessmentLevel) {
         AssessmentLevel newAL = new AssessmentLevel();
         BeanUtils.copyProperties(levels.get(i), newAL);
         newAL.setId(null);
         newAL.setNextLevel(newId);
         AssessmentLevel newLevel = assessmentLevelRepository.save(newAL);
         newId = newLevel.getId();
+      } else if (levels.get(i) instanceof InfoLevel) {
+        InfoLevel newIL = new InfoLevel();
+        BeanUtils.copyProperties(levels.get(i), newIL);
+        newIL.setId(null);
+        newIL.setNextLevel(newId);
+        InfoLevel newLevel = infoLevelRepository.save(newIL);
+        newId = newLevel.getId();
       } else {
-        if (levels.get(i) instanceof InfoLevel) {
-          InfoLevel newIL = new InfoLevel();
-          BeanUtils.copyProperties(levels.get(i), newIL);
-          newIL.setId(null);
-          newIL.setNextLevel(newId);
-          InfoLevel newLevel = infoLevelRepository.save(newIL);
-          newId = newLevel.getId();
-        } else {
-          GameLevel newGL = new GameLevel();
-          BeanUtils.copyProperties(levels.get(i), newGL);
-          newGL.setId(null);
-          newGL.setNextLevel(newId);
-          GameLevel newLevel = gameLevelRepository.save(newGL);
-          newId = newLevel.getId();
-        }
+        GameLevel newGL = new GameLevel();
+        BeanUtils.copyProperties(levels.get(i), newGL);
+        newGL.setId(null);
+        newGL.setNextLevel(newId);
+        GameLevel newLevel = gameLevelRepository.save(newGL);
+        newId = newLevel.getId();
       }
-
-      //levels.get(i).setNextLevel(newId);
-      //levels.get(i).setId(null);
-
-      //AbstractLevel newLevel = abstractLevelRepository.save(levels.get(i));
-
     }
     return newId;
   }
 
-  /*
-  private Long createLevels(Long id){
-    Optional<AbstractLevel> aL = abstractLevelRepository.findById(id);
-    if (aL.get() instanceof GameLevel) {
-      GameLevel gL = ((GameLevel) aL.get());
-      if (gL.getNextLevel() != null) {
-        Long newId = createLevels(gL.getNextLevel());
-        gL.setNextLevel(newId);
+  @Override
+  public void swapLeft(Long definitionId, Long levelId) {
+    TrainingDefinition trainingDefinition = findById(definitionId).orElseThrow(() -> new ServiceLayerException());
+    AbstractLevel swapLevel = abstractLevelRepository.findById(trainingDefinition.getStartingLevel()).orElseThrow(() -> new ServiceLayerException());
+    Long oneBeforeId = null;
+    Long twoBeforeId = null;
+    while (swapLevel.getId() != levelId){
+      twoBeforeId = oneBeforeId;
+      oneBeforeId = swapLevel.getId();
+      swapLevel = abstractLevelRepository.findById(swapLevel.getNextLevel()).orElseThrow(() -> new ServiceLayerException());
+    }
+    try {
+      AbstractLevel oneBefore = abstractLevelRepository.findById(oneBeforeId).orElseThrow(() -> new ServiceLayerException());
+      oneBefore.setNextLevel(swapLevel.getNextLevel());
+      swapLevel.setNextLevel(oneBeforeId);
+      updateLevel(swapLevel);
+      updateLevel(oneBefore);
+      if (twoBeforeId != null){
+        AbstractLevel twoBefore = abstractLevelRepository.findById(twoBeforeId).orElseThrow(() -> new ServiceLayerException());
+        twoBefore.setNextLevel(swapLevel.getId());
+        updateLevel(twoBefore);
       }
-      gL.setId(null);
-      return gameLevelRepository.save(gL).getId();
-    } else {
-      if (aL.get() instanceof InfoLevel) {
-        InfoLevel iL = ((InfoLevel) aL.get());
-        if (iL.getNextLevel() != null) {
-          Long newId = createLevels(iL.getNextLevel());
-          iL.setNextLevel(newId);
-        }
-        iL.setId(null);
-        return infoLevelRepository.save(iL).getId();
-      } else {
-        AssessmentLevel asL = ((AssessmentLevel) aL.get());
-        if (asL.getNextLevel() != null){
-          Long newId = createLevels(asL.getNextLevel());
-          asL.setNextLevel(newId);
-        }
-        asL.setId(null);
-        return assessmentLevelRepository.save(asL).getId();
+      if (oneBeforeId == trainingDefinition.getStartingLevel()){
+        trainingDefinition.setStartingLevel(swapLevel.getId());
+        update(trainingDefinition);
       }
+    } catch (NullPointerException ex){
+      throw new ServiceLayerException("Cant swap level");
     }
   }
-  */
+
+  @Override
+  public void swapRight(Long definitionId, Long levelId) {
+
+  }
+
+  private void updateLevel(AbstractLevel level){
+    if (level instanceof AssessmentLevel) {
+      assessmentLevelRepository.saveAndFlush((AssessmentLevel) level);
+    } else if (level instanceof InfoLevel) {
+      infoLevelRepository.saveAndFlush((InfoLevel) level);
+    } else {
+      gameLevelRepository.saveAndFlush((GameLevel) level);
+    }
+  }
+
 }

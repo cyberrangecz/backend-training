@@ -47,6 +47,11 @@ public interface TrainingDefinitionFacade {
    */
   public TrainingDefinitionDTO clone(Long id) throws FacadeLayerException;
 
-
+  /**
+   * swaps level to the left
+   * @param definitionId - id of definition containing level to be swapped
+   * @param levelId - id of level to be swapped
+   */
+  public void swapLeft(Long definitionId, Long levelId);
 
 }
