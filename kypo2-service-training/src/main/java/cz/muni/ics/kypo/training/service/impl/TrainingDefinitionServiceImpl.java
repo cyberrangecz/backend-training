@@ -165,6 +165,32 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
 
   @Override
   public void swapRight(Long definitionId, Long levelId) {
+    TrainingDefinition trainingDefinition = findById(definitionId).orElseThrow(() -> new ServiceLayerException());
+    AbstractLevel swapLevel = abstractLevelRepository.findById(trainingDefinition.getStartingLevel()).orElseThrow(() -> new ServiceLayerException());
+    Long oneBeforeId = null;
+    while (swapLevel.getId() != levelId){
+      oneBeforeId = swapLevel.getId();
+      swapLevel = abstractLevelRepository.findById(swapLevel.getNextLevel()).orElseThrow(() -> new ServiceLayerException());
+    }
+    try {
+      if (oneBeforeId !=null){
+        AbstractLevel oneBefore = abstractLevelRepository.findById(oneBeforeId).orElseThrow(() -> new ServiceLayerException());
+        oneBefore.setNextLevel(swapLevel.getNextLevel());
+        updateLevel(oneBefore);
+      }
+      AbstractLevel nextLevel = abstractLevelRepository.findById(swapLevel.getNextLevel()).orElseThrow(() -> new ServiceLayerException());
+      swapLevel.setNextLevel(nextLevel.getNextLevel());
+      nextLevel.setNextLevel(swapLevel.getId());
+      updateLevel(nextLevel);
+      updateLevel(swapLevel);
+      if (trainingDefinition.getStartingLevel() == levelId){
+        trainingDefinition.setStartingLevel(nextLevel.getId());
+        update(trainingDefinition);
+      }
+    } catch (NullPointerException ex) {
+      throw new ServiceLayerException("Cant swap level");
+    }
+
 
   }
 
