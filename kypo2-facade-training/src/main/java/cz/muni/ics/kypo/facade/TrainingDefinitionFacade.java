@@ -54,4 +54,11 @@ public interface TrainingDefinitionFacade {
    */
   public void swapLeft(Long definitionId, Long levelId);
 
+  /**
+   * swaps level to the right
+   * @param definitionId - id of definition containing level to be swapped
+   * @param levelId - id of level to be swapped
+   */
+  public void swapRight(Long definitionId, Long levelId);
+
 }

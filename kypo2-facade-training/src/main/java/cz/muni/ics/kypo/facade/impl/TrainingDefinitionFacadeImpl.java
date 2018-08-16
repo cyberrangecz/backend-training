@@ -108,4 +108,16 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
       throw new FacadeLayerException(ex.getLocalizedMessage());
     }
   }
+
+  @Override
+  public void swapRight(Long definitionId, Long levelId) {
+    LOG.debug("swapRight({},{})", definitionId, levelId);
+    try{
+      Objects.requireNonNull(definitionId);
+      Objects.requireNonNull(levelId);
+      trainingDefinitionService.swapRight(definitionId,levelId);
+    } catch (NullPointerException | ServiceLayerException ex){
+      throw new FacadeLayerException(ex.getLocalizedMessage());
+    }
+  }
 }
