@@ -37,7 +37,7 @@ public interface TrainingDefinitionFacade {
    * @return DTO of updated definition
    * @throws FacadeLayerException
    */
-  public TrainingDefinitionDTO update(TrainingDefinition trainingDefinition) throws FacadeLayerException;
+  public void update(TrainingDefinition trainingDefinition) throws FacadeLayerException;
 
   /**
    * Clones Training Definition by id

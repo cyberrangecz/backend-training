@@ -1,5 +1,6 @@
 package cz.muni.ics.kypo.training.facade;
 
+import cz.muni.ics.kypo.model.GameLevel;
 import org.springframework.data.domain.Pageable;
 
 import com.querydsl.core.types.Predicate;
@@ -27,4 +28,10 @@ public interface GameLevelFacade {
    * @return all game levels
    */
   public PageResultResource<GameLevelDTO> findAll(Predicate predicate, Pageable pageable);
+
+  /**
+   * updates game level
+   * @param gameLevel to be updated
+   */
+  public void update(GameLevel gameLevel);
 }

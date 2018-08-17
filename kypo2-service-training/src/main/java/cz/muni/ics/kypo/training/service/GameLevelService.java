@@ -31,4 +31,10 @@ public interface GameLevelService {
    */
   public Page<GameLevel> findAll(Predicate predicate, Pageable pageable);
 
+  /**
+   * updates game level
+   * @param gameLevel to be updated
+   */
+  public void update(GameLevel gameLevel);
+
 }

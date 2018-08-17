@@ -21,7 +21,6 @@ import cz.muni.ics.kypo.training.mapping.BeanMapping;
 import cz.muni.ics.kypo.training.model.TrainingDefinition;
 import cz.muni.ics.kypo.training.service.TrainingDefinitionService;
 
-import javax.validation.constraints.Null;
 
 /**
  * @author Pavel Šeda
@@ -71,13 +70,11 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
 
   @Override
   @Transactional
-  public TrainingDefinitionDTO update(TrainingDefinition trainingDefinition) {
+  public void update(TrainingDefinition trainingDefinition) {
     LOG.debug("update({})", trainingDefinition);
     try {
       Objects.requireNonNull(trainingDefinition);
-      Optional<TrainingDefinition> tD = trainingDefinitionService.update(trainingDefinition);
-      TrainingDefinition updatedTD = tD.orElseThrow(() -> new ServiceLayerException());
-      return beanMapping.mapTo(updatedTD, TrainingDefinitionDTO.class);
+      trainingDefinitionService.update(trainingDefinition);
     } catch (NullPointerException | ServiceLayerException ex) {
       throw new FacadeLayerException(ex.getLocalizedMessage());
     }
@@ -98,6 +95,7 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
   }
 
   @Override
+  @Transactional
   public void swapLeft(Long definitionId, Long levelId) {
     LOG.debug("swapLeft({},{})", definitionId, levelId);
     try{
@@ -110,6 +108,7 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
   }
 
   @Override
+  @Transactional
   public void swapRight(Long definitionId, Long levelId) {
     LOG.debug("swapRight({},{})", definitionId, levelId);
     try{
@@ -122,6 +121,7 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
   }
 
   @Override
+  @Transactional
   public void delete(Long id) {
     LOG.debug("delete({})", id);
     try{

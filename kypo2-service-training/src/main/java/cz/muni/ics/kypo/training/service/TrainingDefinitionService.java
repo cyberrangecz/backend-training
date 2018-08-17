@@ -36,7 +36,7 @@ public interface TrainingDefinitionService {
    * @param trainingDefinition to be updated
    * @return updated definition
    */
-  public Optional<TrainingDefinition> update(TrainingDefinition trainingDefinition);
+  public void update(TrainingDefinition trainingDefinition);
 
   /**
    * Creates new training definition by cloning existing one
