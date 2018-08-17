@@ -75,6 +75,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
   @Override
   public Optional<TrainingDefinition> update(TrainingDefinition trainingDefinition) {
     LOG.debug("update({})", trainingDefinition);
+    if (trainingDefinition.getState() != TDState.UNRELEASED) throw new ServiceLayerException("Cant edit released or archived training definition");
     Assert.notNull(trainingDefinition, "Input training definition must not be null");
     TrainingDefinition tD = trainingDefinitionRepository.saveAndFlush(trainingDefinition);
     LOG.info("Training definition with id: " + trainingDefinition.getId() + " updated");
@@ -86,6 +87,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     LOG.debug("clone({})", id);
     try {
       TrainingDefinition trainingDefinition = trainingDefinitionRepository.findById(id).orElseThrow(() -> new ServiceLayerException());
+      if (trainingDefinition.getState() == TDState.UNRELEASED) throw new ServiceLayerException("Cant copy unreleased training definition");
       TrainingDefinition tD = new TrainingDefinition();
       BeanUtils.copyProperties(trainingDefinition, tD);
       tD.setId(null);
@@ -214,6 +216,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     LOG.debug("delete({})", id);
     try {
       TrainingDefinition definition = trainingDefinitionRepository.findById(id).orElseThrow(() -> new ServiceLayerException());
+      if (definition.getState() == TDState.RELEASED) throw new ServiceLayerException("Cant delete released training definition");
       if (definition.getStartingLevel() != null) deleteLevels(definition.getStartingLevel());
       trainingDefinitionRepository.delete(definition);
     } catch(NullPointerException ex) {
