@@ -59,4 +59,10 @@ public interface TrainingDefinitionService {
    */
   public void swapRight(Long definitionId, Long levelId);
 
+  /**
+   * Deletes specific training definition based on id
+   * @param id of definition to be deleted
+   */
+  public void delete(Long id);
+
 }

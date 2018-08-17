@@ -120,4 +120,15 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
       throw new FacadeLayerException(ex.getLocalizedMessage());
     }
   }
+
+  @Override
+  public void delete(Long id) {
+    LOG.debug("delete({})", id);
+    try{
+      Objects.requireNonNull(id);
+      trainingDefinitionService.delete(id);
+    } catch (ServiceLayerException ex) {
+      throw new FacadeLayerException(ex.getLocalizedMessage());
+    }
+  }
 }

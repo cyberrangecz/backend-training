@@ -61,4 +61,10 @@ public interface TrainingDefinitionFacade {
    */
   public void swapRight(Long definitionId, Long levelId);
 
+  /**
+   * Deletes specific training instance based on id
+   * @param id of definition to be deleted
+   */
+  public void delete(Long id);
+
 }
