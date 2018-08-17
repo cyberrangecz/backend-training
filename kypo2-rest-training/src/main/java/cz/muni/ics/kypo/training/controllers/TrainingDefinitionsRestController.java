@@ -222,4 +222,22 @@ public class TrainingDefinitionsRestController {
     }
   }
 
+  @ApiOperation(httpMethod = "DELETE",
+          value = "Delete training definition",
+          nickname = "deleteTrainingDefinition",
+          response = Void.class)
+  @ApiResponses(value = {
+          @ApiResponse(code = 400, message = "The requested resource was not modified"),
+          @ApiResponse(code = 404, message = "The requested resourve was not foud")
+  })
+  @DeleteMapping(value = "/{id}")
+  public ResponseEntity<Void> deleteTrainingDefinition(@ApiParam(value = "Id of definition") @PathVariable("id") Long id){
+    try {
+      trainingDefinitionFacade.delete(id);
+      return new ResponseEntity<>(HttpStatus.OK);
+    } catch (FacadeLayerException ex) {
+      throw new ResourceNotModifiedException(ex.getLocalizedMessage());
+    }
+  }
+
 }

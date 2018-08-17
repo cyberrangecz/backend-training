@@ -6,6 +6,7 @@ import java.util.Optional;
 
 import com.mysema.commons.lang.Assert;
 import cz.muni.ics.kypo.model.*;
+import cz.muni.ics.kypo.model.enums.TDState;
 import cz.muni.ics.kypo.repository.*;
 import org.hibernate.HibernateException;
 import org.slf4j.Logger;
@@ -23,6 +24,9 @@ import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.model.TrainingDefinition;
 import cz.muni.ics.kypo.training.repository.TrainingDefinitionRepository;
 import cz.muni.ics.kypo.training.service.TrainingDefinitionService;
+
+import javax.sound.sampled.Line;
+import javax.validation.constraints.Null;
 
 /**
  * @author Pavel Seda (441048)
@@ -87,6 +91,8 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
       TrainingDefinition tD = new TrainingDefinition();
       BeanUtils.copyProperties(trainingDefinition, tD);
       tD.setId(null);
+      tD.setTitle("Clone of " + tD.getTitle());
+      tD.setState(TDState.UNRELEASED);
       if (tD.getStartingLevel() != null) {
         tD.setStartingLevel(createLevels(tD.getStartingLevel()));
       }
@@ -101,7 +107,8 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
   private Long createLevels(Long id) {
     List<AbstractLevel> levels = new ArrayList<AbstractLevel>();
     while (id != null) {
-      AbstractLevel nextLevel = abstractLevelRepository.findById(id).get();
+      AbstractLevel nextLevel = abstractLevelRepository.findById(id).orElseThrow(() -> new ServiceLayerException());
+      id = nextLevel.getNextLevel();
       levels.add(nextLevel);
     }
     Long newId = null;
@@ -134,6 +141,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
 
   @Override
   public void swapLeft(Long definitionId, Long levelId) {
+    LOG.debug("swapLeft({}, {})", definitionId, levelId);
     TrainingDefinition trainingDefinition = findById(definitionId).orElseThrow(() -> new ServiceLayerException());
     AbstractLevel swapLevel = abstractLevelRepository.findById(trainingDefinition.getStartingLevel()).orElseThrow(() -> new ServiceLayerException());
     Long oneBeforeId = null;
@@ -165,6 +173,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
 
   @Override
   public void swapRight(Long definitionId, Long levelId) {
+    LOG.debug("swapRight({}, {})", definitionId, levelId);
     TrainingDefinition trainingDefinition = findById(definitionId).orElseThrow(() -> new ServiceLayerException());
     AbstractLevel swapLevel = abstractLevelRepository.findById(trainingDefinition.getStartingLevel()).orElseThrow(() -> new ServiceLayerException());
     Long oneBeforeId = null;
@@ -190,8 +199,6 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     } catch (NullPointerException ex) {
       throw new ServiceLayerException("Cant swap level");
     }
-
-
   }
 
   private void updateLevel(AbstractLevel level){
@@ -204,4 +211,29 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     }
   }
 
+  @Override
+  public void delete(Long id) {
+    LOG.debug("delete({})", id);
+    try {
+      TrainingDefinition definition = trainingDefinitionRepository.findById(id).orElseThrow(() -> new ServiceLayerException());
+      if (definition.getStartingLevel() != null) deleteLevels(definition.getStartingLevel());
+      trainingDefinitionRepository.delete(definition);
+    } catch(NullPointerException ex) {
+      throw new ServiceLayerException();
+    }
+  }
+
+  private void deleteLevels(Long id) {
+    while (id != null) {
+      AbstractLevel level = abstractLevelRepository.findById(id).orElseThrow(() -> new ServiceLayerException());
+      id = level.getNextLevel();
+      if (level instanceof AssessmentLevel) {
+        assessmentLevelRepository.delete((AssessmentLevel) level);
+      } else if (level instanceof InfoLevel) {
+        infoLevelRepository.delete((InfoLevel) level);
+      } else {
+        gameLevelRepository.delete((GameLevel) level);
+      }
+    }
+  }
 }
