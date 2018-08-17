@@ -1,5 +1,7 @@
 package cz.muni.ics.kypo.rest.controllers;
 
+import cz.muni.ics.kypo.mapping.BeanMapping;
+import cz.muni.ics.kypo.rest.exceptions.ResourceNotModifiedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,11 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.MultiValueMap;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.bohnman.squiggly.Squiggly;
@@ -63,11 +61,13 @@ public class GameLevelsRestController {
 
   private GameLevelFacade gameLevelFacade;
   private ObjectMapper objectMapper;
+  private BeanMapping dtoMapper;
 
   @Autowired
-  public GameLevelsRestController(GameLevelFacade gameLevelFacade, @Qualifier("objMapperRESTApi") ObjectMapper objectMapper) {
+  public GameLevelsRestController(GameLevelFacade gameLevelFacade, @Qualifier("objMapperRESTApi") ObjectMapper objectMapper, BeanMapping dtoMapper) {
     this.gameLevelFacade = gameLevelFacade;
     this.objectMapper = objectMapper;
+    this.dtoMapper = dtoMapper;
   }
 
   /**
@@ -157,4 +157,24 @@ public class GameLevelsRestController {
   }
   //@formatter:on
 
+
+  @ApiOperation(httpMethod = "PUT",
+          value = "Update Game Level",
+          response = GameLevelDTO.class,
+          nickname = "updateGameLevel",
+          produces = "application/json",
+          consumes = "application/json")
+  @ApiResponses(value = {
+          @ApiResponse(code = 400, message = "The requested resource was not modified")
+  })
+  @PutMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<Void> updateGameLevel(@ApiParam(value = "Game level to be updated") @RequestBody GameLevelDTO gameLevelDTO) {
+    try {
+      GameLevel infoLevel = dtoMapper.mapTo(gameLevelDTO, GameLevel.class);
+      gameLevelFacade.update(infoLevel);
+      return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    } catch (FacadeLayerException ex) {
+      throw new ResourceNotModifiedException(ex.getLocalizedMessage());
+    }
+  }
 }

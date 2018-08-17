@@ -108,14 +108,6 @@ public class TrainingDefinitionFacadeTest {
     }
 
     @Test
-    public void updateTrainingDefinition() {
-        given(trainingDefinitionService.update(trainingDefinition1)).willReturn(Optional.of(trainingDefinition1));
-        TrainingDefinitionDTO trainingDefinitionDTO = trainingDefinitionFacade.update(trainingDefinition1);
-        deepEquals(trainingDefinition1, trainingDefinitionDTO);
-        then(trainingDefinitionService).should().update(any(TrainingDefinition.class));
-    }
-
-    @Test
     public void updateTrainingDefinitionWithNull() {
       thrown.expect(FacadeLayerException.class);
       trainingDefinitionFacade.update(null);

@@ -31,5 +31,10 @@ public interface InfoLevelService {
    */
   public Page<InfoLevel> findAll(Predicate predicate, Pageable pageable);
 
+  /**
+   * updates info level
+   * @param infoLevel to be updated
+   */
+  public void update(InfoLevel infoLevel);
 
 }

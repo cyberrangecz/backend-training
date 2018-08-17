@@ -3,6 +3,7 @@ package cz.muni.ics.kypo.service.impl;
 
 import java.util.Optional;
 
+import com.mysema.commons.lang.Assert;
 import org.hibernate.HibernateException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,4 +57,11 @@ public class InfoLevelServiceImpl implements InfoLevelService {
     }
   }
 
+  @Override
+  public void update(InfoLevel infoLevel) {
+    LOG.debug("update({})", infoLevel);
+    Assert.notNull(infoLevel, "Info level must not be null");
+    infoRepository.saveAndFlush(infoLevel);
+    LOG.info("Info Level with id: "+ infoLevel.getId() + " updated");
+  }
 }

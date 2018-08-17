@@ -13,7 +13,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -22,9 +21,6 @@ import com.querydsl.core.types.Predicate;
 
 import cz.muni.ics.kypo.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.service.TrainingDefinitionService;
-
-import javax.sound.sampled.Line;
-import javax.validation.constraints.Null;
 
 /**
  * @author Pavel Seda (441048)
@@ -73,13 +69,12 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
   }
 
   @Override
-  public Optional<TrainingDefinition> update(TrainingDefinition trainingDefinition) {
+  public void update(TrainingDefinition trainingDefinition) {
     LOG.debug("update({})", trainingDefinition);
     if (trainingDefinition.getState() != TDState.UNRELEASED) throw new ServiceLayerException("Cant edit released or archived training definition");
     Assert.notNull(trainingDefinition, "Input training definition must not be null");
-    TrainingDefinition tD = trainingDefinitionRepository.saveAndFlush(trainingDefinition);
+    trainingDefinitionRepository.saveAndFlush(trainingDefinition);
     LOG.info("Training definition with id: " + trainingDefinition.getId() + " updated");
-    return Optional.of(tD);
   }
 
   @Override

@@ -1,5 +1,6 @@
 package cz.muni.ics.kypo.facade.impl;
 
+import java.util.Objects;
 import java.util.Optional;
 
 import org.slf4j.Logger;
@@ -65,4 +66,15 @@ public class GameLevelFacadeImpl implements GameLevelFacade {
     }
   }
 
+  @Override
+  @Transactional
+  public void update(GameLevel gameLevel) {
+    LOG.debug("update({})", gameLevel);
+    try {
+      Objects.requireNonNull(gameLevel);
+      gameLevelService.update(gameLevel);
+    } catch (NullPointerException | ServiceLayerException ex){
+      throw new FacadeLayerException(ex.getLocalizedMessage());
+    }
+  }
 }
