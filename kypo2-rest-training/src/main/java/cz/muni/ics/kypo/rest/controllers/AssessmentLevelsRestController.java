@@ -194,7 +194,7 @@ public class AssessmentLevelsRestController {
             value = "Update Assessment Level.",
             response = AssessmentLevelDTO.class,
             nickname = "updateAssessmentLevel",
-            produces = "application/json",
+            consumes = "application/json",
             authorizations = {
                     @Authorization(value = "sampleoauth",
                             scopes = {
@@ -209,15 +209,12 @@ public class AssessmentLevelsRestController {
     @ApiResponses(value = {
             @ApiResponse(code = 404, message = "The requested resource was not found.")
     })
-    @PutMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Object> updateAssessmentLevel(@ApiParam(name = "Assessment level to be updated") @RequestBody AssessmentLevelDTO assessmentLevel,
-                                                        @ApiParam(value = "Fields which should be returned in REST API response", required = false)
-                                                        @RequestParam(value = "fields", required = false) String fields) {
+    @PutMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Void> updateAssessmentLevel(@ApiParam(name = "Assessment level to be updated") @RequestBody AssessmentLevelDTO assessmentLevel) {
         try {
             AssessmentLevel al = dtoMapper.mapTo(assessmentLevel, AssessmentLevel.class);
-            AssessmentLevelDTO assessmentLevelResource = assessmentLevelFacade.update(al);
-            Squiggly.init(objectMapper, fields);
-            return new ResponseEntity<>(SquigglyUtils.stringify(objectMapper, assessmentLevelResource), HttpStatus.OK);
+            assessmentLevelFacade.update(al);
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         } catch (FacadeLayerException ex) {
             throw new ResourceNotModifiedException(ex.getLocalizedMessage());
         }
@@ -225,40 +222,6 @@ public class AssessmentLevelsRestController {
 
     //@formatter:on
 
-
-    //@formatter:off
-    @ApiOperation(httpMethod = "DELETE",
-            value = "Delete Assessment Level.",
-            response = AssessmentLevelDTO.class,
-            nickname = "deleteAssessmentLevel",
-            produces = "application/json",
-            authorizations = {
-                    @Authorization(value = "sampleoauth",
-                            scopes = {
-                                    @AuthorizationScope(
-                                            scope = "delete Assessment Level",
-                                            description = "allows deleting Assessment Level."
-                                    )
-                            }
-                    )
-            }
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 404, message = "The requested resource was not found.")
-    })
-    @DeleteMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Void> deleteAssessmentLevel(@ApiParam(name = "Id of assessment level to be deleted") @RequestParam("assessmentLevelId") long id) {
-        try {
-            assessmentLevelFacade.delete(id);
-            return new ResponseEntity<>(HttpStatus.OK);
-        } catch (FacadeLayerException ex) {
-            throw new ResourceNotModifiedException(ex.getLocalizedMessage());
-        }
-
-    }
-
-
-    //@formatter:off
 
 
 }

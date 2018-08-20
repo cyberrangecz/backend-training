@@ -52,6 +52,7 @@ public class AssessmentLevelServiceImpl implements AssessmentLevelService {
 
     @Override
     public Optional<AssessmentLevel> create(AssessmentLevel assessmentLevel) {
+        LOG.debug("create({})", assessmentLevel);
         Assert.notNull(assessmentLevel, "Input assessment level must not be null");
         AssessmentLevel aL = assessmentLevelRepository.save(assessmentLevel);
         LOG.info("Assessment level with id: " + assessmentLevel.getId() + " created.");
@@ -60,18 +61,11 @@ public class AssessmentLevelServiceImpl implements AssessmentLevelService {
     }
 
     @Override
-    public Optional<AssessmentLevel> update(AssessmentLevel assessmentLevel) {
+    public void update(AssessmentLevel assessmentLevel) {
+        LOG.debug("update({})",assessmentLevel);
         Assert.notNull(assessmentLevel, "Input assessment level must not be null.");
-        AssessmentLevel aL = assessmentLevelRepository.saveAndFlush(assessmentLevel);
+        assessmentLevelRepository.saveAndFlush(assessmentLevel);
         LOG.info("Assessment level with id: " + assessmentLevel.getId() + "updated.");
-        return Optional.of(aL);
-    }
-
-    @Override
-    public void delete(AssessmentLevel assessmentLevel) {
-        Assert.notNull(assessmentLevel, "Input assessment level must not be null.");
-        assessmentLevelRepository.delete(assessmentLevel);
-        LOG.info("Assessment level with id: " + assessmentLevel.getId() + " was deleted.   ");
     }
 
 }
