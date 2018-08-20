@@ -131,4 +131,17 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
       throw new FacadeLayerException(ex.getLocalizedMessage());
     }
   }
+
+  @Override
+  @Transactional
+  public void deleteOneLevel(Long definitionId, Long levelId) {
+    LOG.debug("deleteOneLevel({}, {})", definitionId, levelId);
+    try {
+      Objects.requireNonNull(definitionId);
+      Objects.requireNonNull(levelId);
+      trainingDefinitionService.deleteOneLevel(definitionId, levelId);
+    } catch (ServiceLayerException ex) {
+      throw new FacadeLayerException(ex.getLocalizedMessage());
+    }
+  }
 }

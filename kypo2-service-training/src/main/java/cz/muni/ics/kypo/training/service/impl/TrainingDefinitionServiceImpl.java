@@ -101,41 +101,6 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     }
   }
 
-  private Long createLevels(Long id) {
-    List<AbstractLevel> levels = new ArrayList<AbstractLevel>();
-    while (id != null) {
-      AbstractLevel nextLevel = abstractLevelRepository.findById(id).orElseThrow(() -> new ServiceLayerException());
-      id = nextLevel.getNextLevel();
-      levels.add(nextLevel);
-    }
-    Long newId = null;
-    for (int i = levels.size() - 1; i >= 0; i--) {
-      if (levels.get(i) instanceof AssessmentLevel) {
-        AssessmentLevel newAL = new AssessmentLevel();
-        BeanUtils.copyProperties(levels.get(i), newAL);
-        newAL.setId(null);
-        newAL.setNextLevel(newId);
-        AssessmentLevel newLevel = assessmentLevelRepository.save(newAL);
-        newId = newLevel.getId();
-      } else if (levels.get(i) instanceof InfoLevel) {
-        InfoLevel newIL = new InfoLevel();
-        BeanUtils.copyProperties(levels.get(i), newIL);
-        newIL.setId(null);
-        newIL.setNextLevel(newId);
-        InfoLevel newLevel = infoLevelRepository.save(newIL);
-        newId = newLevel.getId();
-      } else {
-        GameLevel newGL = new GameLevel();
-        BeanUtils.copyProperties(levels.get(i), newGL);
-        newGL.setId(null);
-        newGL.setNextLevel(newId);
-        GameLevel newLevel = gameLevelRepository.save(newGL);
-        newId = newLevel.getId();
-      }
-    }
-    return newId;
-  }
-
   @Override
   public void swapLeft(Long definitionId, Long levelId) {
     LOG.debug("swapLeft({}, {})", definitionId, levelId);
@@ -198,6 +163,94 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     }
   }
 
+  @Override
+  public void delete(Long id) {
+    LOG.debug("delete({})", id);
+    try {
+      TrainingDefinition definition = trainingDefinitionRepository.findById(id).orElseThrow(() -> new ServiceLayerException());
+      if (definition.getState() == TDState.RELEASED) throw new ServiceLayerException("Cant delete released training definition");
+      if (definition.getStartingLevel() != null){
+        Long levelId = definition.getStartingLevel();
+        while (levelId != null){
+          AbstractLevel level = abstractLevelRepository.findById(levelId).orElseThrow(() -> new ServiceLayerException());
+          levelId = level.getNextLevel();
+          deleteLevel(level);
+        }
+      }
+      trainingDefinitionRepository.delete(definition);
+    } catch(NullPointerException ex) {
+      throw new ServiceLayerException();
+    }
+  }
+
+  @Override
+  public void deleteOneLevel(Long definitionId, Long levelId) {
+    LOG.debug("deleteOneLevel({}, {})",definitionId, levelId);
+    TrainingDefinition trainingDefinition = trainingDefinitionRepository.findById(definitionId).orElseThrow(() -> new ServiceLayerException());
+    if (trainingDefinition.getState() != TDState.UNRELEASED) throw new ServiceLayerException("Cant edit released or archived training definition");
+    AbstractLevel level = abstractLevelRepository.findById(trainingDefinition.getStartingLevel()).orElseThrow(() -> new ServiceLayerException());
+    Long oneIdBefore = null;
+    while (level.getId() != levelId) {
+      oneIdBefore = level.getId();
+      level = abstractLevelRepository.findById(level.getNextLevel()).orElseThrow(() -> new ServiceLayerException());
+    }
+
+    if (trainingDefinition.getStartingLevel() == level.getId()){
+      trainingDefinition.setStartingLevel(level.getNextLevel());
+      trainingDefinitionRepository.saveAndFlush(trainingDefinition);
+    }else {
+      AbstractLevel oneBefore = abstractLevelRepository.findById(oneIdBefore).orElseThrow(() -> new ServiceLayerException());
+      oneBefore.setNextLevel(level.getNextLevel());
+      updateLevel(oneBefore);
+    }
+    deleteLevel(level);
+  }
+
+  private Long createLevels(Long id) {
+    List<AbstractLevel> levels = new ArrayList<AbstractLevel>();
+    while (id != null) {
+      AbstractLevel nextLevel = abstractLevelRepository.findById(id).orElseThrow(() -> new ServiceLayerException());
+      id = nextLevel.getNextLevel();
+      levels.add(nextLevel);
+    }
+    Long newId = null;
+    for (int i = levels.size() - 1; i >= 0; i--) {
+      if (levels.get(i) instanceof AssessmentLevel) {
+        AssessmentLevel newAL = new AssessmentLevel();
+        BeanUtils.copyProperties(levels.get(i), newAL);
+        newAL.setId(null);
+        newAL.setNextLevel(newId);
+        AssessmentLevel newLevel = assessmentLevelRepository.save(newAL);
+        newId = newLevel.getId();
+      } else if (levels.get(i) instanceof InfoLevel) {
+        InfoLevel newIL = new InfoLevel();
+        BeanUtils.copyProperties(levels.get(i), newIL);
+        newIL.setId(null);
+        newIL.setNextLevel(newId);
+        InfoLevel newLevel = infoLevelRepository.save(newIL);
+        newId = newLevel.getId();
+      } else {
+        GameLevel newGL = new GameLevel();
+        BeanUtils.copyProperties(levels.get(i), newGL);
+        newGL.setId(null);
+        newGL.setNextLevel(newId);
+        GameLevel newLevel = gameLevelRepository.save(newGL);
+        newId = newLevel.getId();
+      }
+    }
+    return newId;
+  }
+
+  private void deleteLevel(AbstractLevel level) {
+    if (level instanceof AssessmentLevel) {
+      assessmentLevelRepository.delete((AssessmentLevel) level);
+    } else if (level instanceof InfoLevel) {
+      infoLevelRepository.delete((InfoLevel) level);
+    } else {
+      gameLevelRepository.delete((GameLevel) level);
+    }
+  }
+
   private void updateLevel(AbstractLevel level){
     if (level instanceof AssessmentLevel) {
       assessmentLevelRepository.saveAndFlush((AssessmentLevel) level);
@@ -205,33 +258,6 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
       infoLevelRepository.saveAndFlush((InfoLevel) level);
     } else {
       gameLevelRepository.saveAndFlush((GameLevel) level);
-    }
-  }
-
-  @Override
-  public void delete(Long id) {
-    LOG.debug("delete({})", id);
-    try {
-      TrainingDefinition definition = trainingDefinitionRepository.findById(id).orElseThrow(() -> new ServiceLayerException());
-      if (definition.getState() == TDState.RELEASED) throw new ServiceLayerException("Cant delete released training definition");
-      if (definition.getStartingLevel() != null) deleteLevels(definition.getStartingLevel());
-      trainingDefinitionRepository.delete(definition);
-    } catch(NullPointerException ex) {
-      throw new ServiceLayerException();
-    }
-  }
-
-  private void deleteLevels(Long id) {
-    while (id != null) {
-      AbstractLevel level = abstractLevelRepository.findById(id).orElseThrow(() -> new ServiceLayerException());
-      id = level.getNextLevel();
-      if (level instanceof AssessmentLevel) {
-        assessmentLevelRepository.delete((AssessmentLevel) level);
-      } else if (level instanceof InfoLevel) {
-        infoLevelRepository.delete((InfoLevel) level);
-      } else {
-        gameLevelRepository.delete((GameLevel) level);
-      }
     }
   }
 }

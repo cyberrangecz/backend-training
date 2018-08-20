@@ -65,4 +65,11 @@ public interface TrainingDefinitionService {
    */
   public void delete(Long id);
 
+  /**
+   * Deletes specific level based on id
+   * @param definitionId - id of definition containing level to be deleted
+   * @param levelId - id of level to be deleted
+   */
+  public void deleteOneLevel(Long definitionId, Long levelId);
+
 }

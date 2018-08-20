@@ -67,4 +67,11 @@ public interface TrainingDefinitionFacade {
    */
   public void delete(Long id);
 
+  /**
+   * deletes specific level by id
+   * @param definitionId - id of definition containing level to be deleted
+   * @param levelId - id of level to be deleted
+   */
+  public void deleteOneLevel(Long definitionId, Long levelId);
+
 }
