@@ -64,4 +64,13 @@ public class InfoLevelServiceImpl implements InfoLevelService {
     infoRepository.saveAndFlush(infoLevel);
     LOG.info("Info Level with id: "+ infoLevel.getId() + " updated");
   }
+
+  @Override
+  public Optional<InfoLevel> create(InfoLevel infoLevel) {
+    LOG.debug("create ({})", infoLevel);
+    Assert.notNull(infoLevel, "Info level must not be null");
+    InfoLevel iL = infoRepository.save(infoLevel);
+    LOG.info("Info level with id: "+ iL.getId() +" created");
+    return Optional.of(iL);
+  }
 }

@@ -1,7 +1,9 @@
 package cz.muni.ics.kypo.training.controllers;
 
 import cz.muni.ics.kypo.mapping.BeanMapping;
+import cz.muni.ics.kypo.rest.exceptions.ResourceNotCreatedException;
 import cz.muni.ics.kypo.rest.exceptions.ResourceNotModifiedException;
+import io.swagger.models.auth.In;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Pageable;
@@ -160,12 +162,11 @@ public class InfoLevelsRestController {
           value = "Update Info Level",
           response = InfoLevelDTO.class,
           nickname = "updateInfoLevel",
-          produces = "application/json",
           consumes = "application/json")
   @ApiResponses(value = {
           @ApiResponse(code = 400, message = "The requested resource was not modified")
   })
-  @PutMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+  @PutMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<Void> updateInfoLevel(@ApiParam(value = "Info level to be updated") @RequestBody InfoLevelDTO infoLevelDTO){
     try {
       InfoLevel infoLevel = dtoMapper.mapTo(infoLevelDTO, InfoLevel.class);
@@ -173,6 +174,27 @@ public class InfoLevelsRestController {
       return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     } catch (FacadeLayerException ex) {
       throw new ResourceNotModifiedException(ex.getLocalizedMessage());
+    }
+
+  }
+
+  @ApiOperation(httpMethod = "POST",
+      value = "Create Info Level",
+      response = InfoLevelDTO.class,
+      nickname = "createInfoLevel",
+      produces = "application/json",
+      consumes = "application/json")
+  @ApiResponses(value = {
+          @ApiResponse( code = 400, message = "The requested resource was not created")
+  })
+  @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<InfoLevelDTO> createInfoLevel(@ApiParam(value = "Info level to be created") @RequestBody InfoLevelDTO infoLevelDTO){
+    try {
+      InfoLevel infoLevel = dtoMapper.mapTo(infoLevelDTO, InfoLevel.class);
+      InfoLevelDTO newInfoLevel = infoLevelFacade.create(infoLevel);
+      return new ResponseEntity<>(newInfoLevel, HttpStatus.CREATED);
+    } catch (FacadeLayerException ex){
+      throw new ResourceNotCreatedException(ex.getLocalizedMessage());
     }
 
   }

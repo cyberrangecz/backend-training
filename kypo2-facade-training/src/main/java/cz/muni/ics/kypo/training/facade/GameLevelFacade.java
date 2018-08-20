@@ -34,4 +34,11 @@ public interface GameLevelFacade {
    * @param gameLevel to be updated
    */
   public void update(GameLevel gameLevel);
+
+  /**
+   * creates new game level
+   * @param gameLevel to be created
+   * @return DTO of new game level
+   */
+  public GameLevelDTO create(GameLevel gameLevel);
 }
