@@ -1,6 +1,9 @@
 package cz.muni.ics.kypo.training.facade;
 
 import cz.muni.ics.kypo.exception.FacadeLayerException;
+import cz.muni.ics.kypo.exceptions.CannotBeClonedException;
+import cz.muni.ics.kypo.exceptions.CannotBeDeletedException;
+import cz.muni.ics.kypo.exceptions.CannotBeUpdatedException;
 import cz.muni.ics.kypo.model.TrainingDefinition;
 import org.springframework.data.domain.Pageable;
 
@@ -35,43 +38,53 @@ public interface TrainingDefinitionFacade {
    * Updates training definition
    * @param trainingDefinition to be updated
    * @return DTO of updated definition
-   * @throws FacadeLayerException
+   * @throws FacadeLayerException if training definition is not found
+   * @throws CannotBeUpdatedException if definition status is not UNRELEASED
    */
-  public void update(TrainingDefinition trainingDefinition) throws FacadeLayerException;
+  public void update(TrainingDefinition trainingDefinition) throws FacadeLayerException, CannotBeUpdatedException;
 
   /**
    * Clones Training Definition by id
    * @param id of definition to be cloned
    * @return DTO of cloned definition
-   * @throws FacadeLayerException
+   * @throws FacadeLayerException if training definition is not found
+   * @throws CannotBeClonedException if definition status is unreleased
    */
-  public TrainingDefinitionDTO clone(Long id) throws FacadeLayerException;
+  public TrainingDefinitionDTO clone(Long id) throws FacadeLayerException, CannotBeClonedException;
 
   /**
    * swaps level to the left
    * @param definitionId - id of definition containing level to be swapped
    * @param levelId - id of level to be swapped
+   * @throws FacadeLayerException if training definition or level is not found
+   * @throws CannotBeUpdatedException if definition status is not UNRELEASED
    */
-  public void swapLeft(Long definitionId, Long levelId);
+  public void swapLeft(Long definitionId, Long levelId) throws FacadeLayerException, CannotBeUpdatedException;
 
   /**
    * swaps level to the right
    * @param definitionId - id of definition containing level to be swapped
    * @param levelId - id of level to be swapped
+   * @throws FacadeLayerException if training definition or level is not found
+   * @throws CannotBeUpdatedException if definition status is not UNRELEASED
    */
-  public void swapRight(Long definitionId, Long levelId);
+  public void swapRight(Long definitionId, Long levelId) throws FacadeLayerException, CannotBeUpdatedException;
 
   /**
    * Deletes specific training instance based on id
    * @param id of definition to be deleted
+   * @throws FacadeLayerException if training definition is not found
+   * @throws CannotBeDeletedException if definition status is RELEASED
    */
-  public void delete(Long id);
+  public void delete(Long id) throws FacadeLayerException, CannotBeDeletedException;
 
   /**
    * deletes specific level by id
    * @param definitionId - id of definition containing level to be deleted
    * @param levelId - id of level to be deleted
+   * @throws FacadeLayerException if training definition or level is not found
+   * @throws CannotBeUpdatedException if definition status is not UNRELEASED
    */
-  public void deleteOneLevel(Long definitionId, Long levelId);
+  public void deleteOneLevel(Long definitionId, Long levelId) throws FacadeLayerException, CannotBeUpdatedException;
 
 }

@@ -38,12 +38,6 @@ public interface AssessmentLevelService {
      * @param assessment assessment to be updated
      * @throws ServiceLayerException
      */
-    Optional<AssessmentLevel> update(AssessmentLevel assessment);
+    void update(AssessmentLevel assessment);
 
-    /**
-     * Deletes given assessment from database.
-     * @param assessment assessment to be deleted
-     * @throws ServiceLayerException
-     */
-    void delete(AssessmentLevel assessment);
 }

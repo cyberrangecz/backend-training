@@ -3,6 +3,9 @@ package cz.muni.ics.kypo.training.facade.impl;
 import java.util.Objects;
 import java.util.Optional;
 
+import cz.muni.ics.kypo.exceptions.CannotBeClonedException;
+import cz.muni.ics.kypo.exceptions.CannotBeDeletedException;
+import cz.muni.ics.kypo.exceptions.CannotBeUpdatedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -70,7 +73,7 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
 
   @Override
   @Transactional
-  public void update(TrainingDefinition trainingDefinition) {
+  public void update(TrainingDefinition trainingDefinition) throws FacadeLayerException, CannotBeUpdatedException {
     LOG.debug("update({})", trainingDefinition);
     try {
       Objects.requireNonNull(trainingDefinition);
@@ -82,7 +85,7 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
 
   @Override
   @Transactional
-  public TrainingDefinitionDTO clone(Long id) throws FacadeLayerException {
+  public TrainingDefinitionDTO clone(Long id) throws FacadeLayerException, CannotBeClonedException {
     LOG.debug("clone({})", id);
     try {
       Objects.requireNonNull(id);
@@ -96,7 +99,7 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
 
   @Override
   @Transactional
-  public void swapLeft(Long definitionId, Long levelId) {
+  public void swapLeft(Long definitionId, Long levelId) throws FacadeLayerException, CannotBeUpdatedException {
     LOG.debug("swapLeft({},{})", definitionId, levelId);
     try{
       Objects.requireNonNull(definitionId);
@@ -109,7 +112,7 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
 
   @Override
   @Transactional
-  public void swapRight(Long definitionId, Long levelId) {
+  public void swapRight(Long definitionId, Long levelId) throws FacadeLayerException, CannotBeUpdatedException {
     LOG.debug("swapRight({},{})", definitionId, levelId);
     try{
       Objects.requireNonNull(definitionId);
@@ -122,7 +125,7 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
 
   @Override
   @Transactional
-  public void delete(Long id) {
+  public void delete(Long id) throws FacadeLayerException, CannotBeDeletedException {
     LOG.debug("delete({})", id);
     try{
       Objects.requireNonNull(id);
@@ -134,7 +137,7 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
 
   @Override
   @Transactional
-  public void deleteOneLevel(Long definitionId, Long levelId) {
+  public void deleteOneLevel(Long definitionId, Long levelId) throws FacadeLayerException, CannotBeUpdatedException {
     LOG.debug("deleteOneLevel({}, {})", definitionId, levelId);
     try {
       Objects.requireNonNull(definitionId);

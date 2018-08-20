@@ -71,7 +71,7 @@ public class AssessmentLevelFacadeImpl implements AssessmentLevelFacade {
 
     @Override
   @Transactional
-  public AssessmentLevelDTO create(AssessmentLevel al) {
+  public AssessmentLevelDTO create(AssessmentLevel al) throws FacadeLayerException {
     try {
       Objects.requireNonNull(al);
       Optional<AssessmentLevel> assessmentLevel = assessmentLevelService.create(al);
@@ -84,30 +84,14 @@ public class AssessmentLevelFacadeImpl implements AssessmentLevelFacade {
 
   @Override
   @Transactional
-  public AssessmentLevelDTO update(AssessmentLevel al) {
+  public void update(AssessmentLevel al) throws FacadeLayerException {
+    LOG.debug("update({})",al);
     try {
         Objects.requireNonNull(al);
-        Optional<AssessmentLevel> assessmentLevel = assessmentLevelService.update(al);
-        AssessmentLevel updatedAL = assessmentLevel.orElseThrow(() -> new ServiceLayerException());
-        return beanMapping.mapTo(updatedAL, AssessmentLevelDTO.class);
+        assessmentLevelService.update(al);
     } catch (NullPointerException|ServiceLayerException ex) {
         throw new FacadeLayerException(ex.getLocalizedMessage());
     }
   }
 
-  @Override
-  @Transactional
-  public void delete(Long id) {
-      Optional<AssessmentLevel> assessmentLevel = null;
-      try {
-          Objects.requireNonNull(id);
-          assessmentLevel = assessmentLevelService.findById(id);
-          AssessmentLevel al = assessmentLevel.orElseThrow(() -> new ServiceLayerException("AssessmentLevel with this id is not found"));
-          assessmentLevelService.delete(al);
-    } catch (NullPointerException ex) {
-          throw new FacadeLayerException("Assessment level with null id cannot be deleted.");
-      } catch (ServiceLayerException ex) {
-          throw new FacadeLayerException(ex.getLocalizedMessage());
-      }
-  }
 }

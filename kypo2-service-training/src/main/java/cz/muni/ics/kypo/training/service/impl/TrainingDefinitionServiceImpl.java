@@ -5,6 +5,9 @@ import java.util.List;
 import java.util.Optional;
 
 import com.mysema.commons.lang.Assert;
+import cz.muni.ics.kypo.exceptions.CannotBeClonedException;
+import cz.muni.ics.kypo.exceptions.CannotBeDeletedException;
+import cz.muni.ics.kypo.exceptions.CannotBeUpdatedException;
 import cz.muni.ics.kypo.model.*;
 import cz.muni.ics.kypo.model.enums.TDState;
 import cz.muni.ics.kypo.repository.*;
@@ -71,20 +74,20 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
   }
 
   @Override
-  public void update(TrainingDefinition trainingDefinition) {
+  public void update(TrainingDefinition trainingDefinition) throws ServiceLayerException, CannotBeClonedException {
     LOG.debug("update({})", trainingDefinition);
-    if (trainingDefinition.getState() != TDState.UNRELEASED) throw new ServiceLayerException("Cant edit released or archived training definition");
+    if (trainingDefinition.getState() != TDState.UNRELEASED) throw new CannotBeUpdatedException("Cant edit released or archived training definition");
     Assert.notNull(trainingDefinition, "Input training definition must not be null");
     trainingDefinitionRepository.saveAndFlush(trainingDefinition);
     LOG.info("Training definition with id: " + trainingDefinition.getId() + " updated");
   }
 
   @Override
-  public Optional<TrainingDefinition> clone(Long id) {
+  public Optional<TrainingDefinition> clone(Long id) throws ServiceLayerException, CannotBeUpdatedException {
     LOG.debug("clone({})", id);
     try {
       TrainingDefinition trainingDefinition = trainingDefinitionRepository.findById(id).orElseThrow(() -> new ServiceLayerException());
-      if (trainingDefinition.getState() == TDState.UNRELEASED) throw new ServiceLayerException("Cant copy unreleased training definition");
+      if (trainingDefinition.getState() == TDState.UNRELEASED) throw new CannotBeClonedException("Cant copy unreleased training definition");
       TrainingDefinition tD = new TrainingDefinition();
       BeanUtils.copyProperties(trainingDefinition, tD);
       tD.setId(null);
@@ -102,9 +105,10 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
   }
 
   @Override
-  public void swapLeft(Long definitionId, Long levelId) {
+  public void swapLeft(Long definitionId, Long levelId) throws ServiceLayerException, CannotBeUpdatedException {
     LOG.debug("swapLeft({}, {})", definitionId, levelId);
     TrainingDefinition trainingDefinition = findById(definitionId).orElseThrow(() -> new ServiceLayerException());
+    if (trainingDefinition.getState() != TDState.UNRELEASED) throw new CannotBeUpdatedException("Cant edit released or archived training definition");
     AbstractLevel swapLevel = abstractLevelRepository.findById(trainingDefinition.getStartingLevel()).orElseThrow(() -> new ServiceLayerException());
     Long oneBeforeId = null;
     Long twoBeforeId = null;
@@ -134,9 +138,10 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
   }
 
   @Override
-  public void swapRight(Long definitionId, Long levelId) {
+  public void swapRight(Long definitionId, Long levelId) throws ServiceLayerException, CannotBeUpdatedException {
     LOG.debug("swapRight({}, {})", definitionId, levelId);
     TrainingDefinition trainingDefinition = findById(definitionId).orElseThrow(() -> new ServiceLayerException());
+    if (trainingDefinition.getState() != TDState.UNRELEASED) throw new CannotBeUpdatedException("Cant edit released or archived training definition");
     AbstractLevel swapLevel = abstractLevelRepository.findById(trainingDefinition.getStartingLevel()).orElseThrow(() -> new ServiceLayerException());
     Long oneBeforeId = null;
     while (swapLevel.getId() != levelId){
@@ -164,11 +169,11 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
   }
 
   @Override
-  public void delete(Long id) {
+  public void delete(Long id) throws ServiceLayerException, CannotBeDeletedException {
     LOG.debug("delete({})", id);
     try {
       TrainingDefinition definition = trainingDefinitionRepository.findById(id).orElseThrow(() -> new ServiceLayerException());
-      if (definition.getState() == TDState.RELEASED) throw new ServiceLayerException("Cant delete released training definition");
+      if (definition.getState() == TDState.RELEASED) throw new CannotBeDeletedException("Cant delete released training definition");
       if (definition.getStartingLevel() != null){
         Long levelId = definition.getStartingLevel();
         while (levelId != null){
@@ -184,10 +189,10 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
   }
 
   @Override
-  public void deleteOneLevel(Long definitionId, Long levelId) {
+  public void deleteOneLevel(Long definitionId, Long levelId) throws ServiceLayerException, CannotBeUpdatedException {
     LOG.debug("deleteOneLevel({}, {})",definitionId, levelId);
     TrainingDefinition trainingDefinition = trainingDefinitionRepository.findById(definitionId).orElseThrow(() -> new ServiceLayerException());
-    if (trainingDefinition.getState() != TDState.UNRELEASED) throw new ServiceLayerException("Cant edit released or archived training definition");
+    if (trainingDefinition.getState() != TDState.UNRELEASED) throw new CannotBeUpdatedException("Cant edit released or archived training definition");
     AbstractLevel level = abstractLevelRepository.findById(trainingDefinition.getStartingLevel()).orElseThrow(() -> new ServiceLayerException());
     Long oneIdBefore = null;
     while (level.getId() != levelId) {
