@@ -240,4 +240,23 @@ public class TrainingDefinitionsRestController {
     }
   }
 
+  @ApiOperation(httpMethod = "PUT",
+      value = "Delete specific level from definition",
+      nickname = "deleteOneLevel",
+      response = Void.class)
+  @ApiResponses(value = {
+          @ApiResponse(code = 400, message = "The requested resource was not modified"),
+          @ApiResponse(code = 404, message = "The requested resourve was not foud")
+  })
+  @PutMapping(value = "/deleteLevel/{definitionId}/{levelId}")
+  public ResponseEntity<Void> deleteOneLevel(@ApiParam(value = "Id of definition") @PathVariable("definitionId") Long definitionId,
+                                             @ApiParam(value = "Id of level to be swapped") @PathVariable("levelId") Long levelId){
+    try{
+      trainingDefinitionFacade.deleteOneLevel(definitionId, levelId);
+      return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    } catch (FacadeLayerException ex) {
+      throw new ResourceNotModifiedException(ex.getLocalizedMessage());
+    }
+  }
+
 }
