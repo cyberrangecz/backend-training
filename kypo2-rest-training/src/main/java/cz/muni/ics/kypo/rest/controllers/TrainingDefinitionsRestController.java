@@ -1,6 +1,7 @@
 package cz.muni.ics.kypo.rest.controllers;
 
 import cz.muni.ics.kypo.mapping.BeanMapping;
+import cz.muni.ics.kypo.rest.exceptions.ConflictException;
 import cz.muni.ics.kypo.rest.exceptions.ResourceNotCreatedException;
 import cz.muni.ics.kypo.rest.exceptions.ResourceNotModifiedException;
 import org.slf4j.Logger;
@@ -226,7 +227,7 @@ public class TrainingDefinitionsRestController {
           nickname = "deleteTrainingDefinition",
           response = Void.class)
   @ApiResponses(value = {
-          @ApiResponse(code = 400, message = "The requested resource was not modified"),
+          @ApiResponse(code = 409, message = "The requested resource was not deleted"),
           @ApiResponse(code = 404, message = "The requested resourve was not foud")
   })
   @DeleteMapping(value = "/{id}")
@@ -235,7 +236,7 @@ public class TrainingDefinitionsRestController {
       trainingDefinitionFacade.delete(id);
       return new ResponseEntity<>(HttpStatus.OK);
     } catch (FacadeLayerException ex) {
-      throw new ResourceNotModifiedException(ex.getLocalizedMessage());
+      throw new ConflictException(ex.getLocalizedMessage());
     }
   }
 

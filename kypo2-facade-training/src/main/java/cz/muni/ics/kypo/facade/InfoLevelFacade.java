@@ -35,4 +35,10 @@ public interface InfoLevelFacade {
    */
   public void update(InfoLevel infoLevel);
 
+  /**
+   * creates new info level
+   * @param infoLevel to be created
+   * @return DTO of new info level
+   */
+  public InfoLevelDTO create(InfoLevel infoLevel);
 }

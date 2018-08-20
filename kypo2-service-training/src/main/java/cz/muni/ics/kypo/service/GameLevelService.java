@@ -37,4 +37,11 @@ public interface GameLevelService {
    */
   public void update(GameLevel gameLevel);
 
+  /**
+   * creates game level
+   * @param gameLevel to be created
+   * @return created game level
+   */
+  public Optional<GameLevel> create(GameLevel gameLevel);
+
 }

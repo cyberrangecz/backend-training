@@ -1,6 +1,7 @@
 package cz.muni.ics.kypo.rest.controllers;
 
 import cz.muni.ics.kypo.mapping.BeanMapping;
+import cz.muni.ics.kypo.rest.exceptions.ResourceNotCreatedException;
 import cz.muni.ics.kypo.rest.exceptions.ResourceNotModifiedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -177,4 +178,27 @@ public class GameLevelsRestController {
       throw new ResourceNotModifiedException(ex.getLocalizedMessage());
     }
   }
+
+
+  @ApiOperation(httpMethod = "POST",
+          value = "Create Game Level",
+          response = GameLevelDTO.class,
+          nickname = "createGameLevel",
+          produces = "application/json",
+          consumes = "application/json")
+  @ApiResponses(value = {
+          @ApiResponse( code = 400, message = "The requested resource was not created")
+  })
+  @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<GameLevelDTO> createGameLevel(@ApiParam(value = "Game level to be created") @RequestBody GameLevelDTO gameLevelDTO){
+    try {
+      GameLevel gameLevel = dtoMapper.mapTo(gameLevelDTO, GameLevel.class);
+      GameLevelDTO newGameLevel = gameLevelFacade.create(gameLevel);
+      return new ResponseEntity<>(newGameLevel, HttpStatus.CREATED);
+    } catch (FacadeLayerException ex){
+      throw new ResourceNotCreatedException(ex.getLocalizedMessage());
+    }
+
+  }
+
 }

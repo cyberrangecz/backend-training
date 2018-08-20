@@ -37,4 +37,11 @@ public interface InfoLevelService {
    */
   public void update(InfoLevel infoLevel);
 
+  /**
+   * creates new info level
+   * @param infoLevel to be created
+   * @return new info level
+   */
+  public Optional<InfoLevel> create(InfoLevel infoLevel);
+
 }
