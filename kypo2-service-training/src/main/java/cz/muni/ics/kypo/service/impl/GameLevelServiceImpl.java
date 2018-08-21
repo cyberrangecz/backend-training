@@ -59,7 +59,7 @@ public class GameLevelServiceImpl implements GameLevelService {
   public void update(GameLevel gameLevel) {
     LOG.debug("update({})", gameLevel);
     Assert.notNull(gameLevel, "Game level must not be null");
-    gameLevelRepository.saveAndFlush(gameLevel);
+    gameLevelRepository.save(gameLevel);
     LOG.info("Info Level with id: "+ gameLevel.getId() + " updated");
   }
 

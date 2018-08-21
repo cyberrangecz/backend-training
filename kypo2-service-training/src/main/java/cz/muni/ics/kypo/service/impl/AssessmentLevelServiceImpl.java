@@ -64,7 +64,7 @@ public class AssessmentLevelServiceImpl implements AssessmentLevelService {
     public void update(AssessmentLevel assessmentLevel) {
         LOG.debug("update({})",assessmentLevel);
         Assert.notNull(assessmentLevel, "Input assessment level must not be null.");
-        assessmentLevelRepository.saveAndFlush(assessmentLevel);
+        assessmentLevelRepository.save(assessmentLevel);
         LOG.info("Assessment level with id: " + assessmentLevel.getId() + "updated.");
     }
 

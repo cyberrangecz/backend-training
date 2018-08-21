@@ -12,7 +12,6 @@ import cz.muni.ics.kypo.model.enums.TDState;
 import cz.muni.ics.kypo.repository.AbstractLevelRepository;
 import cz.muni.ics.kypo.repository.AssessmentLevelRepository;
 import cz.muni.ics.kypo.repository.TrainingDefinitionRepository;
-import io.micrometer.core.annotation.TimedSet;
 import org.hibernate.HibernateException;
 import org.junit.After;
 import org.junit.Before;
@@ -32,11 +31,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import javax.swing.text.html.Option;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.Spliterator;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
@@ -45,7 +42,6 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.BDDMockito.willThrow;
 import static org.mockito.BDDMockito.any;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
 
