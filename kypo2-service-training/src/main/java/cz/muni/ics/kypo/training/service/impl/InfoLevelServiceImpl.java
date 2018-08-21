@@ -61,7 +61,7 @@ public class InfoLevelServiceImpl implements InfoLevelService {
   public void update(InfoLevel infoLevel) {
     LOG.debug("update({})", infoLevel);
     Assert.notNull(infoLevel, "Info level must not be null");
-    infoRepository.saveAndFlush(infoLevel);
+    infoRepository.save(infoLevel);
     LOG.info("Info Level with id: "+ infoLevel.getId() + " updated");
   }
 

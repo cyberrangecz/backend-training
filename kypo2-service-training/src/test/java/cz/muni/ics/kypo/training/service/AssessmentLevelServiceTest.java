@@ -85,7 +85,6 @@ public class AssessmentLevelServiceTest {
     public void findByIdHibernateException() {
         Long id = 3L;
         willThrow(HibernateException.class).given(assessmentLevelRepository).findById(id);
-        //thrown.expectMessage("Error while loading assessment level with id: " + id);
         thrown.expect(ServiceLayerException.class);
         assessmentLevelService.findById(id);
 
@@ -135,10 +134,9 @@ public class AssessmentLevelServiceTest {
 
     @Test
     public void updateAssessmentLevel() {
-        given(assessmentLevelRepository.saveAndFlush(assessmentLevel1)).willReturn(assessmentLevel1);
-        AssessmentLevel al = assessmentLevelService.update(assessmentLevel1).get();
-        deepEquals(assessmentLevel1, al);
-        then(assessmentLevelRepository).should().saveAndFlush(assessmentLevel1);
+        given(assessmentLevelRepository.findById(assessmentLevel1.getId())).willReturn(Optional.of(assessmentLevel1));
+        assessmentLevelService.update(assessmentLevel1);
+        then(assessmentLevelRepository).should().save(assessmentLevel1);
     }
 
     @Test
@@ -148,12 +146,6 @@ public class AssessmentLevelServiceTest {
         assessmentLevelService.update(null);
     }
 
-    @Test
-    public void deleteAssessmentLevelWithNull() {
-        thrown.expect(IllegalArgumentException.class);
-        thrown.expectMessage("Input assessment level must not be null");
-        assessmentLevelService.delete(null);
-    }
 
     private void deepEquals(AssessmentLevel expectedAssessmentLevel, AssessmentLevel actualAssessmentLevel) {
         assertEquals(expectedAssessmentLevel.getId(), actualAssessmentLevel.getId());
