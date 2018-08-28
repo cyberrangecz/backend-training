@@ -81,7 +81,7 @@ public class AssessmentLevelFacadeImpl implements AssessmentLevelFacade {
       throw new FacadeLayerException(ex.getLocalizedMessage());
     }
   }
-
+  /**
   @Override
   @Transactional
   public void update(AssessmentLevel al) throws FacadeLayerException {
@@ -93,5 +93,5 @@ public class AssessmentLevelFacadeImpl implements AssessmentLevelFacade {
         throw new FacadeLayerException(ex.getLocalizedMessage());
     }
   }
-
+  */
 }

@@ -27,6 +27,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import javax.validation.constraints.Null;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -394,6 +395,56 @@ public class TrainingDefinitionServiceTest {
         given(trainingDefinitionRepository.findById(unreleasedDefinition.getId())).willReturn(Optional.of(unreleasedDefinition));
         thrown.expect(ServiceLayerException.class);
         trainingDefinitionService.deleteOneLevel(unreleasedDefinition.getId(), null);
+    }
+
+    @Test
+    public void updateLevel() {
+        given(trainingDefinitionRepository.findById(unreleasedDefinition.getId())).willReturn(Optional.of(unreleasedDefinition));
+        given(abstractLevelRepository.findById(level1.getId())).willReturn(Optional.of(level1));
+        given(abstractLevelRepository.findById(level2.getId())).willReturn(Optional.of(level2));
+
+        trainingDefinitionService.updateLevel(unreleasedDefinition.getId(), level2);
+
+        then(trainingDefinitionRepository).should().findById(unreleasedDefinition.getId());
+        then(abstractLevelRepository).should(times(2)).findById(any(Long.class));
+        then(assessmentLevelRepository).should().save(level2);
+    }
+
+    @Test
+    public void updateLevelWithCannotBeUpdatedException(){
+        given(trainingDefinitionRepository.findById(releasedDefinition.getId())).willReturn(Optional.of(releasedDefinition));
+        thrown.expect(CannotBeUpdatedException.class);
+        thrown.expectMessage("Cant edit released or archived training definition");
+
+        trainingDefinitionService.updateLevel(releasedDefinition.getId(), any(AbstractLevel.class));
+    }
+
+    @Test
+    public void updateLevelWithLevelNotInDefinition(){
+        AssessmentLevel level = new AssessmentLevel();
+        level.setId(8L);
+        level.setNextLevel(null);
+        given(abstractLevelRepository.findById(level1.getId())).willReturn(Optional.of(level1));
+        given(abstractLevelRepository.findById(level2.getId())).willReturn(Optional.of(level2));
+        given(abstractLevelRepository.findById(level3.getId())).willReturn(Optional.of(level3));
+        given(trainingDefinitionRepository.findById(unreleasedDefinition.getId())).willReturn(Optional.of(unreleasedDefinition));
+        thrown.expect(CannotBeUpdatedException.class);
+        thrown.expectMessage("Level was not found in definition");
+
+        trainingDefinitionService.updateLevel(unreleasedDefinition.getId(), level);
+    }
+
+    @Test
+    public void updateLevelWithNullDefinition() {
+        thrown.expect(NullPointerException.class);
+        trainingDefinitionService.updateLevel(null, level2);
+    }
+
+    @Test
+    public void updateLevelWithNullLevel(){
+        given(trainingDefinitionRepository.findById(unreleasedDefinition.getId())).willReturn(Optional.of(unreleasedDefinition));
+        thrown.expect(NullPointerException.class);
+        trainingDefinitionService.updateLevel(unreleasedDefinition.getId(), null);
     }
 
     @After

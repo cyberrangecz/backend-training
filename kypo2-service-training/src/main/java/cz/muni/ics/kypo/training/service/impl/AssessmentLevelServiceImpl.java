@@ -59,7 +59,7 @@ public class AssessmentLevelServiceImpl implements AssessmentLevelService {
         return Optional.of(aL);
 
     }
-
+    /*
     @Override
     public void update(AssessmentLevel assessmentLevel) {
         LOG.debug("update({})",assessmentLevel);
@@ -67,5 +67,6 @@ public class AssessmentLevelServiceImpl implements AssessmentLevelService {
         assessmentLevelRepository.save(assessmentLevel);
         LOG.info("Assessment level with id: " + assessmentLevel.getId() + "updated.");
     }
+    */
 
 }

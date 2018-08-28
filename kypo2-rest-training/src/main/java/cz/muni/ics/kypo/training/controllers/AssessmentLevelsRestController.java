@@ -85,7 +85,7 @@ public class AssessmentLevelsRestController {
             value = "Get Assessment Level by Id.",
             response = AssessmentLevelDTO.class,
             nickname = "findAssessmentLevelById",
-            produces = "application/json",
+            produces = "application/json"/*,
             authorizations = {
                     @Authorization(value = "sampleoauth",
                             scopes = {
@@ -95,13 +95,13 @@ public class AssessmentLevelsRestController {
                                     )
                             }
                     )
-            }
+            }*/
     )
     @ApiResponses(value = {
             @ApiResponse(code = 404, message = "The requested resource was not found.")
     })
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Object> findAssessmentLevelById(@ApiParam(name = "AssessmentLevel ID") @PathVariable long id,
+    public ResponseEntity<Object> findAssessmentLevelById(@ApiParam(value = "AssessmentLevel ID") @PathVariable long id,
                                                           @ApiParam(value = "Fields which should be returned in REST API response", required = false)
                                                           @RequestParam(value = "fields", required = false) String fields) {
         LOG.debug("findAssessmentLevelById({},{})", id, fields);
@@ -187,7 +187,7 @@ public class AssessmentLevelsRestController {
 
     //@formatter:on
 
-
+    /*
     //@formatter:off
     @ApiOperation(httpMethod = "PUT",
             value = "Update Assessment Level.",
@@ -205,6 +205,7 @@ public class AssessmentLevelsRestController {
                     )
             }
     )
+
     @ApiResponses(value = {
             @ApiResponse(code = 404, message = "The requested resource was not found.")
     })
@@ -218,7 +219,7 @@ public class AssessmentLevelsRestController {
             throw new ResourceNotModifiedException(ex.getLocalizedMessage());
         }
     }
-
+    */
     //@formatter:on
 
 

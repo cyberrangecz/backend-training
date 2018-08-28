@@ -1,9 +1,11 @@
 package cz.muni.ics.kypo.training.facade;
 
+import cz.muni.ics.kypo.api.dto.AbstractLevelDTO;
 import cz.muni.ics.kypo.exception.FacadeLayerException;
 import cz.muni.ics.kypo.exceptions.CannotBeClonedException;
 import cz.muni.ics.kypo.exceptions.CannotBeDeletedException;
 import cz.muni.ics.kypo.exceptions.CannotBeUpdatedException;
+import cz.muni.ics.kypo.model.AbstractLevel;
 import cz.muni.ics.kypo.model.TrainingDefinition;
 import org.springframework.data.domain.Pageable;
 
@@ -86,5 +88,14 @@ public interface TrainingDefinitionFacade {
    * @throws CannotBeUpdatedException if definition status is not UNRELEASED
    */
   public void deleteOneLevel(Long definitionId, Long levelId) throws FacadeLayerException, CannotBeUpdatedException;
+
+  /**
+   * updates level from training definition
+   * @param definitionId - id of training definition containing level to be updated
+   * @param level to be updated
+   * @throws FacadeLayerException if training definition is not found
+   * @throws CannotBeUpdatedException if definition status is not UNRELEASED
+   */
+  public void updateLevel(Long definitionId, AbstractLevel level) throws FacadeLayerException, CannotBeUpdatedException;
 
 }

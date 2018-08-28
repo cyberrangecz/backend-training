@@ -158,7 +158,7 @@ public class GameLevelsRestController {
   }
   //@formatter:on
 
-
+/*
   @ApiOperation(httpMethod = "PUT",
           value = "Update Game Level",
           response = GameLevelDTO.class,
@@ -177,7 +177,7 @@ public class GameLevelsRestController {
     } catch (FacadeLayerException ex) {
       throw new ResourceNotModifiedException(ex.getLocalizedMessage());
     }
-  }
+  }*/
 
 
   @ApiOperation(httpMethod = "POST",

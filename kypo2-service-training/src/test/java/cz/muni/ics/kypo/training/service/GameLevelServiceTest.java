@@ -109,7 +109,7 @@ public class GameLevelServiceTest {
         Page pr = gameLevelService.findAll(predicate, PageRequest.of(0,2));
         assertEquals(2, pr.getTotalElements());
     }
-
+    /*
     @Test
     public void updateGameLevel() {
         given(gameLevelRepository.findById(gameLevel1.getId())).willReturn(Optional.of(gameLevel1));
@@ -123,7 +123,7 @@ public class GameLevelServiceTest {
         thrown.expectMessage("Game level must not be null");
         gameLevelService.update(null);
     }
-
+    */
     @After
     public void after(){
         reset(gameLevelRepository);

@@ -3,9 +3,11 @@ package cz.muni.ics.kypo.training.facade.impl;
 import java.util.Objects;
 import java.util.Optional;
 
+import cz.muni.ics.kypo.api.dto.AbstractLevelDTO;
 import cz.muni.ics.kypo.exceptions.CannotBeClonedException;
 import cz.muni.ics.kypo.exceptions.CannotBeDeletedException;
 import cz.muni.ics.kypo.exceptions.CannotBeUpdatedException;
+import cz.muni.ics.kypo.model.AbstractLevel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -143,6 +145,19 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
       Objects.requireNonNull(definitionId);
       Objects.requireNonNull(levelId);
       trainingDefinitionService.deleteOneLevel(definitionId, levelId);
+    } catch (ServiceLayerException ex) {
+      throw new FacadeLayerException(ex.getLocalizedMessage());
+    }
+  }
+
+  @Override
+  @Transactional
+  public void updateLevel(Long definitionId, AbstractLevel level) throws FacadeLayerException, CannotBeUpdatedException {
+    LOG.debug("updateLevel({}, {})", definitionId, level);
+    try {
+      Objects.requireNonNull(level);
+      Objects.requireNonNull(definitionId);
+      trainingDefinitionService.updateLevel(definitionId, level);
     } catch (ServiceLayerException ex) {
       throw new FacadeLayerException(ex.getLocalizedMessage());
     }

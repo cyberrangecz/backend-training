@@ -38,6 +38,6 @@ public interface AssessmentLevelService {
      * @param assessment assessment to be updated
      * @throws ServiceLayerException
      */
-    void update(AssessmentLevel assessment);
+   // void update(AssessmentLevel assessment);
 
 }

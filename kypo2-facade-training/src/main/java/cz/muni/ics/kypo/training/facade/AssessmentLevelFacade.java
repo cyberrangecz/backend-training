@@ -43,6 +43,6 @@ public interface AssessmentLevelFacade {
    * @param assessmentLevel to be updated
    * @throws FacadeLayerException if level was not found
    */
-  public void update(AssessmentLevel assessmentLevel) throws FacadeLayerException;
+  // public void update(AssessmentLevel assessmentLevel) throws FacadeLayerException;
 
 }
