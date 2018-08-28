@@ -90,7 +90,7 @@ public class TrainingDefinitionsRestControllerTest {
 
         trainingDefinition1 = new TrainingDefinition();
         trainingDefinition1.setId(1L);
-        trainingDefinition1.setState(TDState.ARCHIVED);
+        trainingDefinition1.setState(TDState.UNRELEASED);
 
         trainingDefinition2 = new TrainingDefinition();
         trainingDefinition2.setId(2L);
@@ -98,7 +98,7 @@ public class TrainingDefinitionsRestControllerTest {
 
         trainingDefinition1DTO = new TrainingDefinitionDTO();
         trainingDefinition1DTO.setId(1L);
-        trainingDefinition1DTO.setState(TDState.ARCHIVED);
+        trainingDefinition1DTO.setState(TDState.UNRELEASED);
 
         trainingDefinition2DTO = new TrainingDefinitionDTO();
         trainingDefinition2DTO.setId(2L);
@@ -151,6 +151,17 @@ public class TrainingDefinitionsRestControllerTest {
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andReturn().getResponse();
         assertEquals(convertObjectToJsonBytes(convertObjectToJsonBytes(trainingDefinitionDTOPageResultResource)), result.getContentAsString());
+    }
+
+    @Test
+    public void updateTrainingDefinition() throws Exception {
+        given(beanMapping.mapTo(any(TrainingDefinitionDTO.class), eq(TrainingDefinition.class))).willReturn(trainingDefinition1);
+
+        MockHttpServletResponse result = mockMvc.perform(put("/training-definitions")
+                .content(convertObjectToJsonBytes(trainingDefinition1))
+                .contentType(MediaType.APPLICATION_JSON_VALUE))
+                .andExpect(status().isNoContent())
+                .andReturn().getResponse();
     }
 
     @Test

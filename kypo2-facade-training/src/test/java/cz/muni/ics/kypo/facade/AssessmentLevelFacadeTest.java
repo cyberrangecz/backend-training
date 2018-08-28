@@ -168,13 +168,11 @@ public class AssessmentLevelFacadeTest {
         thrown.expect(FacadeLayerException.class);
         assessmentLevelFacade.create(al1);
     }
-
+    /*
     @Test
     public void updateAssessmentLevel() {
-        given(assessmentLevelService.update(any(AssessmentLevel.class))).willReturn(Optional.of(al1));
-        AssessmentLevelDTO alDTO = assessmentLevelFacade.update(al1);
-        deepEquals(al1, alDTO);
-        then(assessmentLevelService).should().update(any(AssessmentLevel.class));
+        assessmentLevelFacade.update(al1);
+        then(assessmentLevelService).should().update(al1);
     }
 
     @Test
@@ -189,20 +187,8 @@ public class AssessmentLevelFacadeTest {
         thrown.expect(FacadeLayerException.class);
         assessmentLevelFacade.update(al1);
     }
+    */
 
-    @Test
-    public void deleteAssessmentLevelWithNull() {
-        thrown.expect(FacadeLayerException.class);
-        thrown.expectMessage("Assessment level with null id cannot be deleted.");
-        assessmentLevelFacade.delete(null);
-    }
-
-    @Test
-    public void deleteAssessmentLevelWithServiceLayerException() {
-        thrown.expect(FacadeLayerException.class);
-        thrown.expectMessage("AssessmentLevel with this id is not found");
-        assessmentLevelFacade.delete(6L);
-    }
 
     private void deepEquals(AssessmentLevel expectedAssessmentLevel, AssessmentLevelDTO actualAssessmentLevel) {
         assertEquals(expectedAssessmentLevel.getId(), actualAssessmentLevel.getId());

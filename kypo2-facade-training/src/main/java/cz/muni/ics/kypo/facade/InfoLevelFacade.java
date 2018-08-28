@@ -33,7 +33,7 @@ public interface InfoLevelFacade {
    * update info level
    * @param infoLevel to be updated
    */
-  public void update(InfoLevel infoLevel);
+  //public void update(InfoLevel infoLevel);
 
   /**
    * creates new info level

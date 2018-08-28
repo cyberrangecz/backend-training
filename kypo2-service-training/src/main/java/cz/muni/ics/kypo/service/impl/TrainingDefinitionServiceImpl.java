@@ -2,6 +2,7 @@ package cz.muni.ics.kypo.service.impl;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 
@@ -211,6 +212,26 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
       updateLevel(oneBefore);
     }
     deleteLevel(level);
+  }
+
+  @Override
+  public void updateLevel(Long definitionId, AbstractLevel level) throws ServiceLayerException, CannotBeUpdatedException {
+    LOG.debug("updateLevel({}, {})",definitionId, level);
+    TrainingDefinition trainingDefinition = findById(definitionId).orElseThrow(() -> new ServiceLayerException());
+    if (trainingDefinition.getState() != TDState.UNRELEASED)
+      throw new CannotBeUpdatedException("Cant edit released or archived training definition");
+
+    Long nextId = trainingDefinition.getStartingLevel();
+    Boolean found = false;
+    if (nextId == level.getId()) found = true;
+    while(nextId != null && !found){
+      AbstractLevel nextLevel = abstractLevelRepository.findById(nextId).orElseThrow(() -> new ServiceLayerException());
+      if (nextLevel.getId() == level.getId()) found = true;
+      nextId = nextLevel.getNextLevel();
+    }
+    if (!found)
+      throw new CannotBeUpdatedException("Level was not found in definition");
+    updateLevel(level);
   }
 
   private Long createLevels(Long id) {

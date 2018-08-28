@@ -6,6 +6,7 @@ import cz.muni.ics.kypo.exceptions.CannotBeClonedException;
 import cz.muni.ics.kypo.exceptions.CannotBeDeletedException;
 import cz.muni.ics.kypo.exceptions.CannotBeUpdatedException;
 import cz.muni.ics.kypo.exceptions.ServiceLayerException;
+import cz.muni.ics.kypo.model.AbstractLevel;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -87,5 +88,14 @@ public interface TrainingDefinitionService {
    * @throws CannotBeUpdatedException if definition status is not UNRELEASED
    */
   public void deleteOneLevel(Long definitionId, Long levelId) throws ServiceLayerException, CannotBeUpdatedException;
+
+  /**
+   * Updates level in training definition
+   * @param definitionId - id of training definition containing level to be updated
+   * @param level to be updated
+   * @throws ServiceLayerException if training definition or level in not found
+   * @throws CannotBeUpdatedException if definition status is not UNRELEASED
+   */
+  public void updateLevel(Long definitionId, AbstractLevel level) throws ServiceLayerException, CannotBeUpdatedException;
 
 }

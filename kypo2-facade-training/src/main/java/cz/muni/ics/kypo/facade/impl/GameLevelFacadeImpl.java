@@ -65,7 +65,7 @@ public class GameLevelFacadeImpl implements GameLevelFacade {
       throw new FacadeLayerException(ex.getLocalizedMessage());
     }
   }
-
+  /*
   @Override
   @Transactional
   public void update(GameLevel gameLevel) {
@@ -77,7 +77,7 @@ public class GameLevelFacadeImpl implements GameLevelFacade {
       throw new FacadeLayerException(ex.getLocalizedMessage());
     }
   }
-
+  */
   @Transactional
   @Override
   public GameLevelDTO create(GameLevel gameLevel) {

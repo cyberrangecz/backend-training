@@ -66,7 +66,7 @@ public class InfoLevelFacadeImpl implements InfoLevelFacade {
       throw new FacadeLayerException(ex.getLocalizedMessage());
     }
   }
-
+  /*
   @Override
   @Transactional
   public void update(InfoLevel infoLevel) {
@@ -78,7 +78,7 @@ public class InfoLevelFacadeImpl implements InfoLevelFacade {
       throw new FacadeLayerException(ex.getLocalizedMessage());
     }
   }
-
+  */
 
   @Transactional
   @Override

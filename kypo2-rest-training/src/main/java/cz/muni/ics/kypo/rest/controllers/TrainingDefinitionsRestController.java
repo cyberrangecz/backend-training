@@ -1,9 +1,11 @@
 package cz.muni.ics.kypo.rest.controllers;
 
+import cz.muni.ics.kypo.api.dto.AbstractLevelDTO;
 import cz.muni.ics.kypo.exceptions.CannotBeClonedException;
 import cz.muni.ics.kypo.exceptions.CannotBeDeletedException;
 import cz.muni.ics.kypo.exceptions.CannotBeUpdatedException;
 import cz.muni.ics.kypo.mapping.BeanMapping;
+import cz.muni.ics.kypo.model.AbstractLevel;
 import cz.muni.ics.kypo.rest.exceptions.ConflictException;
 import cz.muni.ics.kypo.rest.exceptions.ResourceNotCreatedException;
 import cz.muni.ics.kypo.rest.exceptions.ResourceNotModifiedException;
@@ -85,9 +87,10 @@ public class TrainingDefinitionsRestController {
       value = "Get Training Definition by Id.", 
       response = TrainingDefinitionDTO.class,
       nickname = "findTrainingDefinitionById",
-      produces = "application/json",
-      authorizations = {
-          @Authorization(value = "sampleoauth", 
+      produces = "application/json"//,
+      /*authorizations = {
+
+          @Authorization(value = "sampleoauth",
               scopes = {
                   @AuthorizationScope(
                       scope = "find Training Definition by ID", 
@@ -95,7 +98,7 @@ public class TrainingDefinitionsRestController {
                   )
               }
           )
-      }
+      }*/
   )
   @ApiResponses(value = {
       @ApiResponse(code = 404, message = "The requested resource was not found.") 
@@ -159,7 +162,7 @@ public class TrainingDefinitionsRestController {
   @PutMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<Void> updateTrainingDefinition(@ApiParam(value = "Training definition to be updated") @RequestBody TrainingDefinitionDTO trainingDefinitionDTO){
     try {
-      TrainingDefinition trainingDefinition = dtoMapper.mapTo(trainingDefinitionDTO,TrainingDefinition.class);
+      TrainingDefinition trainingDefinition = dtoMapper.mapTo(trainingDefinitionDTO, TrainingDefinition.class);
       trainingDefinitionFacade.update(trainingDefinition);
       return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     } catch (FacadeLayerException ex) {
@@ -198,7 +201,7 @@ public class TrainingDefinitionsRestController {
       response = Void.class)
   @ApiResponses(value = {
           @ApiResponse(code = 409, message = "The requested resource was not modified because of its status"),
-          @ApiResponse(code = 404, message = "The requested resourve was not foud")
+          @ApiResponse(code = 404, message = "The requested resource was not found")
   })
   @PutMapping(value = "/swapLeft/{definitionId}/{levelId}")
   public ResponseEntity<Void> swapLeft(@ApiParam(value = "Id of definition") @PathVariable("definitionId") Long definitionId,
@@ -219,7 +222,7 @@ public class TrainingDefinitionsRestController {
           response = Void.class)
   @ApiResponses(value = {
           @ApiResponse(code = 409, message = "The requested resource was not modified because of its status"),
-          @ApiResponse(code = 404, message = "The requested resourve was not foud")
+          @ApiResponse(code = 404, message = "The requested resource was not found")
   })
   @PutMapping(value = "/swapRight/{definitionId}/{levelId}")
   public ResponseEntity<Void> swapRight(@ApiParam(value = "Id of definition") @PathVariable("definitionId") Long definitionId,
@@ -240,7 +243,7 @@ public class TrainingDefinitionsRestController {
           response = Void.class)
   @ApiResponses(value = {
           @ApiResponse(code = 409, message = "The requested resource was not deleted because of its status"),
-          @ApiResponse(code = 404, message = "The requested resourve was not foud")
+          @ApiResponse(code = 404, message = "The requested resource was not found")
   })
   @DeleteMapping(value = "/{id}")
   public ResponseEntity<Void> deleteTrainingDefinition(@ApiParam(value = "Id of definition") @PathVariable("id") Long id){
@@ -260,7 +263,7 @@ public class TrainingDefinitionsRestController {
       response = Void.class)
   @ApiResponses(value = {
           @ApiResponse(code = 409, message = "The requested resource was not modified because of its status"),
-          @ApiResponse(code = 404, message = "The requested resourve was not foud")
+          @ApiResponse(code = 404, message = "The requested resource was not found")
   })
   @PutMapping(value = "/deleteLevel/{definitionId}/{levelId}")
   public ResponseEntity<Void> deleteOneLevel(@ApiParam(value = "Id of definition") @PathVariable("definitionId") Long definitionId,
@@ -273,6 +276,30 @@ public class TrainingDefinitionsRestController {
     } catch (CannotBeUpdatedException ex) {
       throw new ConflictException(ex.getLocalizedMessage());
     }
+  }
+
+  @ApiOperation(httpMethod = "PUT",
+      value = "Update specific level from definition",
+      nickname = "updateLevel",
+      response = Void.class,
+      consumes = "application/json")
+  @ApiResponses(value = {
+          @ApiResponse(code = 409, message = "The requested resource was not modified because of its status"),
+          @ApiResponse(code = 404, message = "The requested resource was not found")
+  })
+  @PutMapping(value = "/updateLevel",consumes = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<Void> updateLevel(@ApiParam(value = "Id of definition") @RequestBody Long definitionId,
+                                          @ApiParam(value = "Level to be updated") @RequestBody AbstractLevelDTO levelDTO) {
+    try{
+      AbstractLevel level = dtoMapper.mapTo(levelDTO, AbstractLevel.class);
+      trainingDefinitionFacade.updateLevel(definitionId, level);
+      return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    } catch (FacadeLayerException ex) {
+      throw new ResourceNotFoundException(ex.getLocalizedMessage());
+    } catch (CannotBeUpdatedException ex){
+      throw new ConflictException(ex.getLocalizedMessage());
+    }
+
   }
 
 }

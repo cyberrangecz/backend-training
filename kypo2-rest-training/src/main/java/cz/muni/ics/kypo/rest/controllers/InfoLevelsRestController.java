@@ -157,7 +157,7 @@ public class InfoLevelsRestController {
     }
   }
   //@formatter:on
-
+/*
   @ApiOperation(httpMethod = "PUT",
           value = "Update Info Level",
           response = InfoLevelDTO.class,
@@ -177,7 +177,7 @@ public class InfoLevelsRestController {
     }
 
   }
-
+*/
   @ApiOperation(httpMethod = "POST",
       value = "Create Info Level",
       response = InfoLevelDTO.class,
