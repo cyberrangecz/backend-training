@@ -82,7 +82,7 @@ public class GameLevelsRestController {
       value = "Get Game Level by Id.", 
       response = GameLevelDTO.class,
       nickname = "findGameLevelById",
-      produces = "application/json",
+      produces = "application/json"/*,
       authorizations = {
           @Authorization(value = "sampleoauth", 
               scopes = {
@@ -92,14 +92,14 @@ public class GameLevelsRestController {
                   )
               }
           )
-      }
+      }*/
   )
   @ApiResponses(value = {
       @ApiResponse(code = 404, message = "The requested resource was not found.") 
   })
   @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<Object> findGameLevelById(
-      @ApiParam(name = "GameLevel ID")
+      @ApiParam(value = "GameLevel ID")
       @PathVariable long id,
       @ApiParam(value = "Fields which should be returned in REST API response", required = false) 
       @RequestParam(value = "fields", required = false) String fields) {
@@ -158,7 +158,7 @@ public class GameLevelsRestController {
   }
   //@formatter:on
 
-/*
+
   @ApiOperation(httpMethod = "PUT",
           value = "Update Game Level",
           response = GameLevelDTO.class,
@@ -171,13 +171,13 @@ public class GameLevelsRestController {
   @PutMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<Void> updateGameLevel(@ApiParam(value = "Game level to be updated") @RequestBody GameLevelDTO gameLevelDTO) {
     try {
-      GameLevel infoLevel = dtoMapper.mapTo(gameLevelDTO, GameLevel.class);
-      gameLevelFacade.update(infoLevel);
+      GameLevel gameLevel = dtoMapper.mapTo(gameLevelDTO, GameLevel.class);
+      gameLevelFacade.update(gameLevel);
       return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     } catch (FacadeLayerException ex) {
       throw new ResourceNotModifiedException(ex.getLocalizedMessage());
     }
-  }*/
+  }
 
 
   @ApiOperation(httpMethod = "POST",

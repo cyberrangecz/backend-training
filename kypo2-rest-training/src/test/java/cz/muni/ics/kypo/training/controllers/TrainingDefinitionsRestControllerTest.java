@@ -102,6 +102,8 @@ public class TrainingDefinitionsRestControllerTest {
         trainingDefinition2DTO.setId(2L);
         trainingDefinition2DTO.setState(TDState.PRIVATED);
 
+
+
         List<TrainingDefinition> expected = new ArrayList<>();
         expected.add(trainingDefinition1);
         expected.add(trainingDefinition2);
@@ -155,11 +157,11 @@ public class TrainingDefinitionsRestControllerTest {
     public void updateTrainingDefinition() throws Exception {
         given(beanMapping.mapTo(any(TrainingDefinitionDTO.class), eq(TrainingDefinition.class))).willReturn(trainingDefinition1);
 
-        MockHttpServletResponse result = mockMvc.perform(put("/training-definitions")
+        mockMvc.perform(put("/training-definitions")
                 .content(convertObjectToJsonBytes(trainingDefinition1))
                 .contentType(MediaType.APPLICATION_JSON_VALUE))
-                .andExpect(status().isNoContent())
-                .andReturn().getResponse();
+                .andExpect(status().isNoContent());
+        //        .andReturn().getResponse();
     }
 
     @Test
@@ -175,6 +177,22 @@ public class TrainingDefinitionsRestControllerTest {
     }
 
     @Test
+    public void cloneTrainingDefinition() throws Exception {
+        TrainingDefinitionDTO trainingDefinitionClone = new TrainingDefinitionDTO();
+        trainingDefinitionClone.setId(8L);
+        trainingDefinitionClone.setTitle("Clone of" + trainingDefinition2.getTitle());
+        trainingDefinitionClone.setState(TDState.UNRELEASED);
+        given(trainingDefinitionFacade.clone(any(Long.class))).willReturn(trainingDefinitionClone);
+
+        MockHttpServletResponse result = mockMvc.perform(post("/training-definitions/{id}", 2L)
+                .contentType(MediaType.APPLICATION_JSON_VALUE))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andReturn().getResponse();
+        assertEquals(result.getContentAsString(), trainingDefinitionClone.toString());
+    }
+
+    @Test
     public void cloneTrainingDefinitionWithFacadeException() throws Exception {
         willThrow(FacadeLayerException.class).given(trainingDefinitionFacade).clone(any(Long.class));
         Exception exception = mockMvc.perform(post("/training-definitions/1")
@@ -182,9 +200,15 @@ public class TrainingDefinitionsRestControllerTest {
                 .andExpect(status().isNotAcceptable())
                 .andReturn().getResolvedException();
         assertEquals(ResourceNotCreatedException.class, exception.getClass());
-
     }
 
+    @Test
+    public void swapLeft() throws Exception {
+        AssessmentLevel level = new AssessmentLevel();
+        level.setId(1L);
+        mockMvc.perform(put("/swapLeft/{definitionId}/{levelId}", 1L, 1L))
+                .andExpect(status().isNoContent());
+    }
 
     private static String convertObjectToJsonBytes(Object object) throws IOException {
         ObjectMapper mapper = new ObjectMapper();

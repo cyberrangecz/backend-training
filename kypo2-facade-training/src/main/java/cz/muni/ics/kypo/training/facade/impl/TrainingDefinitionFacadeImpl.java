@@ -7,7 +7,7 @@ import cz.muni.ics.kypo.api.dto.AbstractLevelDTO;
 import cz.muni.ics.kypo.exceptions.CannotBeClonedException;
 import cz.muni.ics.kypo.exceptions.CannotBeDeletedException;
 import cz.muni.ics.kypo.exceptions.CannotBeUpdatedException;
-import cz.muni.ics.kypo.model.AbstractLevel;
+import cz.muni.ics.kypo.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -152,14 +152,41 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
 
   @Override
   @Transactional
-  public void updateLevel(Long definitionId, AbstractLevel level) throws FacadeLayerException, CannotBeUpdatedException {
-    LOG.debug("updateLevel({}, {})", definitionId, level);
+  public void updateGameLevel(Long definitionId, GameLevel gameLevel) throws FacadeLayerException, CannotBeUpdatedException {
+    LOG.debug("updateGameLevel({}, {})", definitionId, gameLevel);
     try {
-      Objects.requireNonNull(level);
+      Objects.requireNonNull(gameLevel);
       Objects.requireNonNull(definitionId);
-      trainingDefinitionService.updateLevel(definitionId, level);
+      trainingDefinitionService.updateGameLevel(definitionId, gameLevel);
     } catch (ServiceLayerException ex) {
       throw new FacadeLayerException(ex.getLocalizedMessage());
     }
   }
+
+  @Override
+  @Transactional
+  public void updateInfoLevel(Long definitionId, InfoLevel infoLevel) throws FacadeLayerException, CannotBeUpdatedException {
+    LOG.debug("updateInfoLevel({}, {})", definitionId, infoLevel);
+    try {
+      Objects.requireNonNull(infoLevel);
+      Objects.requireNonNull(definitionId);
+      trainingDefinitionService.updateInfoLevel(definitionId, infoLevel);
+    } catch (ServiceLayerException ex) {
+      throw new FacadeLayerException(ex.getLocalizedMessage());
+    }
+  }
+
+  @Override
+  @Transactional
+  public void updateAssessmentLevel(Long definitionId, AssessmentLevel assessmentLevel) throws FacadeLayerException, CannotBeUpdatedException {
+    LOG.debug("updateAssessmentLevel({}, {})", definitionId, assessmentLevel);
+    try {
+      Objects.requireNonNull(assessmentLevel);
+      Objects.requireNonNull(definitionId);
+      trainingDefinitionService.updateAssessmentLevel(definitionId, assessmentLevel);
+    } catch (ServiceLayerException ex) {
+      throw new FacadeLayerException(ex.getLocalizedMessage());
+    }
+  }
+
 }

@@ -6,14 +6,13 @@ import cz.muni.ics.kypo.exceptions.CannotBeClonedException;
 import cz.muni.ics.kypo.exceptions.CannotBeDeletedException;
 import cz.muni.ics.kypo.exceptions.CannotBeUpdatedException;
 import cz.muni.ics.kypo.exceptions.ServiceLayerException;
-import cz.muni.ics.kypo.model.AbstractLevel;
+import cz.muni.ics.kypo.model.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import com.querydsl.core.types.Predicate;
 
 import cz.muni.ics.kypo.training.model.TrainingDefinition;
-
 /**
  * 
  * @author Pavel Seda (441048)
@@ -90,12 +89,30 @@ public interface TrainingDefinitionService {
   public void deleteOneLevel(Long definitionId, Long levelId) throws ServiceLayerException, CannotBeUpdatedException;
 
   /**
-   * Updates level in training definition
+   * Updates game level in training definition
    * @param definitionId - id of training definition containing level to be updated
-   * @param level to be updated
+   * @param gameLevel to be updated
    * @throws ServiceLayerException if training definition or level in not found
    * @throws CannotBeUpdatedException if definition status is not UNRELEASED
    */
-  public void updateLevel(Long definitionId, AbstractLevel level) throws ServiceLayerException, CannotBeUpdatedException;
+  public void updateGameLevel(Long definitionId, GameLevel gameLevel) throws ServiceLayerException, CannotBeUpdatedException;
+
+  /**
+   * Updates info level in training definition
+   * @param definitionId - id of training definition containing level to be updated
+   * @param infoLevel to be updated
+   * @throws ServiceLayerException if training definition or level in not found
+   * @throws CannotBeUpdatedException if definition status is not UNRELEASED
+   */
+  public void updateInfoLevel(Long definitionId, InfoLevel infoLevel) throws ServiceLayerException, CannotBeUpdatedException;
+
+  /**
+   * Updates assessment level in training definition
+   * @param definitionId - id of training definition containing level to be updated
+   * @param assessmentLevel to be updated
+   * @throws ServiceLayerException if training definition or level in not found
+   * @throws CannotBeUpdatedException if definition status is not UNRELEASED
+   */
+  public void updateAssessmentLevel(Long definitionId, AssessmentLevel assessmentLevel) throws ServiceLayerException, CannotBeUpdatedException;
 
 }

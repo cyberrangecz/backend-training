@@ -33,7 +33,7 @@ public interface GameLevelFacade {
    * updates game level
    * @param gameLevel to be updated
    */
-  //public void update(GameLevel gameLevel);
+  public void update(GameLevel gameLevel);
 
   /**
    * creates new game level

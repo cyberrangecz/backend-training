@@ -396,7 +396,7 @@ public class TrainingDefinitionServiceTest {
         thrown.expect(ServiceLayerException.class);
         trainingDefinitionService.deleteOneLevel(unreleasedDefinition.getId(), null);
     }
-
+    /*
     @Test
     public void updateLevel() {
         given(trainingDefinitionRepository.findById(unreleasedDefinition.getId())).willReturn(Optional.of(unreleasedDefinition));
@@ -446,7 +446,7 @@ public class TrainingDefinitionServiceTest {
         thrown.expect(NullPointerException.class);
         trainingDefinitionService.updateLevel(unreleasedDefinition.getId(), null);
     }
-
+    */
     @After
     public void after(){
         reset(trainingDefinitionRepository);

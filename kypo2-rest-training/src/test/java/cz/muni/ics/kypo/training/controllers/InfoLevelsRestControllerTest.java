@@ -65,6 +65,9 @@ public class InfoLevelsRestControllerTest {
     @Qualifier("objMapperRESTApi")
     private ObjectMapper objectMapper;
 
+    @MockBean
+    private BeanMapping beanMapping;
+
     private InfoLevel infoLevel1, infoLevel2;
 
     private InfoLevelDTO infoLevel1DTO, infoLevel2DTO;
