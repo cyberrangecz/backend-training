@@ -1,11 +1,12 @@
 package cz.muni.ics.kypo.rest.controllers;
 
 import cz.muni.ics.kypo.api.dto.AbstractLevelDTO;
+import cz.muni.ics.kypo.api.dto.GameLevelDTO;
 import cz.muni.ics.kypo.exceptions.CannotBeClonedException;
 import cz.muni.ics.kypo.exceptions.CannotBeDeletedException;
 import cz.muni.ics.kypo.exceptions.CannotBeUpdatedException;
 import cz.muni.ics.kypo.mapping.BeanMapping;
-import cz.muni.ics.kypo.model.AbstractLevel;
+import cz.muni.ics.kypo.model.*;
 import cz.muni.ics.kypo.rest.exceptions.ConflictException;
 import cz.muni.ics.kypo.rest.exceptions.ResourceNotCreatedException;
 import cz.muni.ics.kypo.rest.exceptions.ResourceNotModifiedException;
@@ -30,7 +31,6 @@ import cz.muni.ics.kypo.api.PageResultResource;
 import cz.muni.ics.kypo.api.dto.TrainingDefinitionDTO;
 import cz.muni.ics.kypo.exception.FacadeLayerException;
 import cz.muni.ics.kypo.facade.TrainingDefinitionFacade;
-import cz.muni.ics.kypo.model.TrainingDefinition;
 import cz.muni.ics.kypo.rest.exceptions.ResourceNotFoundException;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -279,27 +279,71 @@ public class TrainingDefinitionsRestController {
   }
 
   @ApiOperation(httpMethod = "PUT",
-      value = "Update specific level from definition",
-      nickname = "updateLevel",
+      value = "Update specific game level from definition",
+      nickname = "updateGameLevel",
       response = Void.class,
       consumes = "application/json")
   @ApiResponses(value = {
           @ApiResponse(code = 409, message = "The requested resource was not modified because of its status"),
           @ApiResponse(code = 404, message = "The requested resource was not found")
   })
-  @PutMapping(value = "/updateLevel",consumes = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<Void> updateLevel(@ApiParam(value = "Id of definition") @RequestBody Long definitionId,
-                                          @ApiParam(value = "Level to be updated") @RequestBody AbstractLevelDTO levelDTO) {
+  @PutMapping(value = "/updateGameLevel/{definitionId}",consumes = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<Void> updateGameLevel(@ApiParam(value = "Id of definition") @PathVariable(value = "definitionId") Long definitionId,
+                                              @ApiParam(value = "Game level to be updated") @RequestBody GameLevel gameLevelDTO) {
     try{
-      AbstractLevel level = dtoMapper.mapTo(levelDTO, AbstractLevel.class);
-      trainingDefinitionFacade.updateLevel(definitionId, level);
+      GameLevel level = dtoMapper.mapTo(gameLevelDTO, GameLevel.class);
+      trainingDefinitionFacade.updateGameLevel(definitionId, level);
       return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     } catch (FacadeLayerException ex) {
       throw new ResourceNotFoundException(ex.getLocalizedMessage());
     } catch (CannotBeUpdatedException ex){
       throw new ConflictException(ex.getLocalizedMessage());
     }
-
   }
 
+  @ApiOperation(httpMethod = "PUT",
+          value = "Update specific info level from definition",
+          nickname = "updateInfoLevel",
+          response = Void.class,
+          consumes = "application/json")
+  @ApiResponses(value = {
+          @ApiResponse(code = 409, message = "The requested resource was not modified because of its status"),
+          @ApiResponse(code = 404, message = "The requested resource was not found")
+  })
+  @PutMapping(value = "/updateInfoLevel/{definitionId}",consumes = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<Void> updateInfoLevel(@ApiParam(value = "Id of definition") @PathVariable(value = "definitionId") Long definitionId,
+                                              @ApiParam(value = "Info level to be updated") @RequestBody InfoLevel infoLevelDTO) {
+    try{
+      InfoLevel infoLevel = dtoMapper.mapTo(infoLevelDTO, InfoLevel.class);
+      trainingDefinitionFacade.updateInfoLevel(definitionId, infoLevel);
+      return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    } catch (FacadeLayerException ex) {
+      throw new ResourceNotFoundException(ex.getLocalizedMessage());
+    } catch (CannotBeUpdatedException ex){
+      throw new ConflictException(ex.getLocalizedMessage());
+    }
+  }
+
+  @ApiOperation(httpMethod = "PUT",
+          value = "Update specific assessment level from definition",
+          nickname = "updateAssessmentLevel",
+          response = Void.class,
+          consumes = "application/json")
+  @ApiResponses(value = {
+          @ApiResponse(code = 409, message = "The requested resource was not modified because of its status"),
+          @ApiResponse(code = 404, message = "The requested resource was not found")
+  })
+  @PutMapping(value = "/updateAssessmentLevel/{definitionId}",consumes = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<Void> updateAssessmentLevel(@ApiParam(value = "Id of definition") @PathVariable(value = "definitionId") Long definitionId,
+                                                    @ApiParam(value = "Assessment level to be updated") @RequestBody AssessmentLevel assessmentLevelDTO) {
+    try{
+      AssessmentLevel assessmentLevel = dtoMapper.mapTo(assessmentLevelDTO, AssessmentLevel.class);
+      trainingDefinitionFacade.updateAssessmentLevel(definitionId, assessmentLevel);
+      return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    } catch (FacadeLayerException ex) {
+      throw new ResourceNotFoundException(ex.getLocalizedMessage());
+    } catch (CannotBeUpdatedException ex){
+      throw new ConflictException(ex.getLocalizedMessage());
+    }
+  }
 }

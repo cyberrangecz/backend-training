@@ -229,7 +229,7 @@ public class TrainingDefinitionFacadeTest {
         thrown.expect(NullPointerException.class);
         trainingDefinitionFacade.deleteOneLevel(trainingDefinition1.getId(), null);
     }
-
+    /*
     @Test
     public void updateLevel() {
         trainingDefinitionFacade.updateLevel(unreleasedDefinition.getId(), level1);
@@ -247,7 +247,7 @@ public class TrainingDefinitionFacadeTest {
         thrown.expect(NullPointerException.class);
         trainingDefinitionFacade.updateLevel(trainingDefinition1.getId(), null);
     }
-
+    */
     private void deepEquals(TrainingDefinition expected, TrainingDefinitionDTO actual) {
         assertEquals(expected.getId(), actual.getId());
         assertEquals(expected.getState(), actual.getState());

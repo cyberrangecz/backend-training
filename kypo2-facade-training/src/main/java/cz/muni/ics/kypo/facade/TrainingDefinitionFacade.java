@@ -5,8 +5,7 @@ import cz.muni.ics.kypo.exception.FacadeLayerException;
 import cz.muni.ics.kypo.exceptions.CannotBeClonedException;
 import cz.muni.ics.kypo.exceptions.CannotBeDeletedException;
 import cz.muni.ics.kypo.exceptions.CannotBeUpdatedException;
-import cz.muni.ics.kypo.model.AbstractLevel;
-import cz.muni.ics.kypo.model.TrainingDefinition;
+import cz.muni.ics.kypo.model.*;
 import org.springframework.data.domain.Pageable;
 
 import com.querydsl.core.types.Predicate;
@@ -90,12 +89,29 @@ public interface TrainingDefinitionFacade {
   public void deleteOneLevel(Long definitionId, Long levelId) throws FacadeLayerException, CannotBeUpdatedException;
 
   /**
-   * updates level from training definition
+   * updates game level from training definition
    * @param definitionId - id of training definition containing level to be updated
-   * @param level to be updated
+   * @param gameLevel to be updated
    * @throws FacadeLayerException if training definition is not found
    * @throws CannotBeUpdatedException if definition status is not UNRELEASED
    */
-  public void updateLevel(Long definitionId, AbstractLevel level) throws FacadeLayerException, CannotBeUpdatedException;
+  public void updateGameLevel(Long definitionId, GameLevel gameLevel) throws FacadeLayerException, CannotBeUpdatedException;
 
+  /**
+   * updates info level from training definition
+   * @param definitionId - id of training definition containing level to be updated
+   * @param infoLevel to be updated
+   * @throws FacadeLayerException if training definition is not found
+   * @throws CannotBeUpdatedException if definition status is not UNRELEASED
+   */
+  public void updateInfoLevel(Long definitionId, InfoLevel infoLevel) throws FacadeLayerException, CannotBeUpdatedException;
+
+  /**
+   * updates assessment level from training definition
+   * @param definitionId - id of training definition containing level to be updated
+   * @param assessmentLevel to be updated
+   * @throws FacadeLayerException if training definition is not found
+   * @throws CannotBeUpdatedException if definition status is not UNRELEASED
+   */
+  public void updateAssessmentLevel(Long definitionId, AssessmentLevel assessmentLevel) throws FacadeLayerException, CannotBeUpdatedException;
 }
