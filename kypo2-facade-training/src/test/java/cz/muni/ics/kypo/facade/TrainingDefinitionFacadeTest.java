@@ -9,6 +9,8 @@ import cz.muni.ics.kypo.exception.FacadeLayerException;
 import cz.muni.ics.kypo.exceptions.CannotBeUpdatedException;
 import cz.muni.ics.kypo.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.model.AssessmentLevel;
+import cz.muni.ics.kypo.model.GameLevel;
+import cz.muni.ics.kypo.model.InfoLevel;
 import cz.muni.ics.kypo.model.TrainingDefinition;
 import cz.muni.ics.kypo.model.enums.TDState;
 import cz.muni.ics.kypo.service.TrainingDefinitionService;
@@ -63,6 +65,10 @@ public class TrainingDefinitionFacadeTest {
 
     private AssessmentLevel level1;
 
+    private GameLevel gameLevel;
+
+    private InfoLevel infoLevel;
+
     @SpringBootApplication
     static class TestConfiguration {
     }
@@ -72,13 +78,22 @@ public class TrainingDefinitionFacadeTest {
         level1 = new AssessmentLevel();
         level1.setId(1L);
 
+        gameLevel = new GameLevel();
+        gameLevel.setId(2L);
+        gameLevel.setNextLevel(null);
+
+        infoLevel = new InfoLevel();
+        infoLevel.setId(3L);
+        infoLevel.setNextLevel(gameLevel.getId());
+
         trainingDefinition1 = new TrainingDefinition();
         trainingDefinition1.setId(1L);
         trainingDefinition1.setState(TDState.RELEASED);
 
         trainingDefinition2 = new TrainingDefinition();
         trainingDefinition2.setId(2L);
-        trainingDefinition2.setState(TDState.ARCHIVED);
+        trainingDefinition2.setState(TDState.UNRELEASED);
+        trainingDefinition2.setStartingLevel(infoLevel.getId());
 
         unreleasedDefinition = new TrainingDefinition();
         unreleasedDefinition.setId(4L);
@@ -229,25 +244,62 @@ public class TrainingDefinitionFacadeTest {
         thrown.expect(NullPointerException.class);
         trainingDefinitionFacade.deleteOneLevel(trainingDefinition1.getId(), null);
     }
-    /*
+
     @Test
-    public void updateLevel() {
-        trainingDefinitionFacade.updateLevel(unreleasedDefinition.getId(), level1);
-        then(trainingDefinitionService).should().updateLevel(unreleasedDefinition.getId(), level1);
+    public void updateAssessmentLevel() {
+        trainingDefinitionFacade.updateAssessmentLevel(unreleasedDefinition.getId(), level1);
+        then(trainingDefinitionService).should().updateAssessmentLevel(unreleasedDefinition.getId(), level1);
     }
 
     @Test
-    public void updateLevelWithNullDefinition() {
+    public void updateAssessmentLevelWithNullDefinition() {
         thrown.expect(NullPointerException.class);
-        trainingDefinitionFacade.updateLevel(null, level1);
+        trainingDefinitionFacade.updateAssessmentLevel(null, level1);
     }
 
     @Test
-    public void updateLevelWithNullLevel() {
+    public void updateAssessmentLevelWithNullLevel() {
         thrown.expect(NullPointerException.class);
-        trainingDefinitionFacade.updateLevel(trainingDefinition1.getId(), null);
+        trainingDefinitionFacade.updateAssessmentLevel(unreleasedDefinition.getId(), null);
     }
-    */
+
+    @Test
+    public void updateGameLevel() {
+        trainingDefinitionFacade.updateGameLevel(trainingDefinition2.getId(), gameLevel);
+        then(trainingDefinitionService).should().updateGameLevel(trainingDefinition2.getId(), gameLevel);
+    }
+
+    @Test
+    public void updateGameLevelWithNullDefinition() {
+        thrown.expect(NullPointerException.class);
+        trainingDefinitionFacade.updateGameLevel(null, gameLevel);
+    }
+
+    @Test
+    public void updateGameLevelWithNullLevel() {
+        thrown.expect(NullPointerException.class);
+        trainingDefinitionFacade.updateGameLevel(trainingDefinition2.getId(), null);
+    }
+
+    @Test
+    public void updateInfoLevel() {
+        trainingDefinitionFacade.updateInfoLevel(trainingDefinition2.getId(), infoLevel);
+        then(trainingDefinitionService).should().updateInfoLevel(trainingDefinition2.getId(), infoLevel);
+    }
+
+    @Test
+    public void updateInfoLevelWithNullDefinition() {
+        thrown.expect(NullPointerException.class);
+        trainingDefinitionFacade.updateInfoLevel(null, infoLevel);
+    }
+
+    @Test
+    public void updateInfoLevelWithNullLevel() {
+        thrown.expect(NullPointerException.class);
+        trainingDefinitionFacade.updateInfoLevel(trainingDefinition2.getId(), null);
+    }
+
+
     private void deepEquals(TrainingDefinition expected, TrainingDefinitionDTO actual) {
         assertEquals(expected.getId(), actual.getId());
         assertEquals(expected.getState(), actual.getState());
