@@ -3,17 +3,7 @@ package cz.muni.ics.kypo.training.model;
 import java.io.Serializable;
 import java.util.Objects;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Inheritance;
-import javax.persistence.InheritanceType;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToOne;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 @Entity(name = "AbstractLevel")
 @Table(name = "abstract_level")
@@ -29,9 +19,9 @@ public abstract class AbstractLevel implements Serializable {
   private int maxScore;
   @Column(name = "next_level")
   private Long nextLevel;
-  @OneToOne(fetch = FetchType.LAZY, optional = true)
+  @OneToOne( fetch = FetchType.LAZY, optional = true, cascade = CascadeType.ALL)
   private PreHook preHook;
-  @OneToOne(fetch = FetchType.LAZY, optional = true)
+  @OneToOne(fetch = FetchType.LAZY, optional = true, cascade = CascadeType.ALL)
   private PostHook postHook;
 
   public AbstractLevel() {}
