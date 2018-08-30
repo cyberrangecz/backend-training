@@ -6,13 +6,9 @@ import cz.muni.ics.kypo.exceptions.CannotBeClonedException;
 import cz.muni.ics.kypo.exceptions.CannotBeDeletedException;
 import cz.muni.ics.kypo.exceptions.CannotBeUpdatedException;
 import cz.muni.ics.kypo.exceptions.ServiceLayerException;
-import cz.muni.ics.kypo.model.AbstractLevel;
-import cz.muni.ics.kypo.model.AssessmentLevel;
-import cz.muni.ics.kypo.model.TrainingDefinition;
+import cz.muni.ics.kypo.model.*;
 import cz.muni.ics.kypo.model.enums.TDState;
-import cz.muni.ics.kypo.repository.AbstractLevelRepository;
-import cz.muni.ics.kypo.repository.AssessmentLevelRepository;
-import cz.muni.ics.kypo.repository.TrainingDefinitionRepository;
+import cz.muni.ics.kypo.repository.*;
 import org.hibernate.HibernateException;
 import org.junit.After;
 import org.junit.Before;
@@ -66,11 +62,21 @@ public class TrainingDefinitionServiceTest {
     private AbstractLevelRepository abstractLevelRepository;
 
     @MockBean
+    private GameLevelRepository gameLevelRepository;
+
+    @MockBean
+    private InfoLevelRepository infoLevelRepository;
+
+    @MockBean
     private AssessmentLevelRepository assessmentLevelRepository;
 
     private TrainingDefinition trainingDefinition1, trainingDefinition2, unreleasedDefinition, releasedDefinition;
 
     private AssessmentLevel level1, level2, level3;
+
+    private GameLevel gameLevel;
+
+    private InfoLevel infoLevel;
 
     @SpringBootApplication
     static class TestConfiguration{
@@ -90,6 +96,14 @@ public class TrainingDefinitionServiceTest {
         level1.setId(1L);
         level1.setNextLevel(level2.getId());
 
+        gameLevel = new GameLevel();
+        gameLevel.setId(4L);
+        gameLevel.setNextLevel(null);
+
+        infoLevel = new InfoLevel();
+        infoLevel.setId(5L);
+        infoLevel.setNextLevel(gameLevel.getId());
+
         trainingDefinition1 = new TrainingDefinition();
         trainingDefinition1.setId(1L);
         trainingDefinition1.setDescription("test1");
@@ -100,7 +114,9 @@ public class TrainingDefinitionServiceTest {
         trainingDefinition2.setId(2L);
         trainingDefinition2.setDescription("test2");
         trainingDefinition2.setTitle("test2");
-        trainingDefinition2.setState(TDState.ARCHIVED);
+        trainingDefinition2.setState(TDState.UNRELEASED);
+        trainingDefinition2.setStartingLevel(infoLevel.getId());
+
 
         unreleasedDefinition = new TrainingDefinition();
         unreleasedDefinition.setId(4L);
@@ -400,14 +416,14 @@ public class TrainingDefinitionServiceTest {
         thrown.expect(ServiceLayerException.class);
         trainingDefinitionService.deleteOneLevel(unreleasedDefinition.getId(), null);
     }
-    /*
+
     @Test
-    public void updateLevel() {
+    public void updateAssessmentLevel() {
         given(trainingDefinitionRepository.findById(unreleasedDefinition.getId())).willReturn(Optional.of(unreleasedDefinition));
         given(abstractLevelRepository.findById(level1.getId())).willReturn(Optional.of(level1));
         given(abstractLevelRepository.findById(level2.getId())).willReturn(Optional.of(level2));
 
-        trainingDefinitionService.updateLevel(unreleasedDefinition.getId(), level2);
+        trainingDefinitionService.updateAssessmentLevel(unreleasedDefinition.getId(), level2);
 
         then(trainingDefinitionRepository).should().findById(unreleasedDefinition.getId());
         then(abstractLevelRepository).should(times(2)).findById(any(Long.class));
@@ -415,16 +431,16 @@ public class TrainingDefinitionServiceTest {
     }
 
     @Test
-    public void updateLevelWithCannotBeUpdatedException(){
+    public void updateAssessmentLevelWithCannotBeUpdatedException(){
         given(trainingDefinitionRepository.findById(releasedDefinition.getId())).willReturn(Optional.of(releasedDefinition));
         thrown.expect(CannotBeUpdatedException.class);
         thrown.expectMessage("Cant edit released or archived training definition");
 
-        trainingDefinitionService.updateLevel(releasedDefinition.getId(), any(AbstractLevel.class));
+        trainingDefinitionService.updateAssessmentLevel(releasedDefinition.getId(), any(AssessmentLevel.class));
     }
 
     @Test
-    public void updateLevelWithLevelNotInDefinition(){
+    public void updateAssessmentLevelWithLevelNotInDefinition(){
         AssessmentLevel level = new AssessmentLevel();
         level.setId(8L);
         level.setNextLevel(null);
@@ -435,22 +451,115 @@ public class TrainingDefinitionServiceTest {
         thrown.expect(CannotBeUpdatedException.class);
         thrown.expectMessage("Level was not found in definition");
 
-        trainingDefinitionService.updateLevel(unreleasedDefinition.getId(), level);
+        trainingDefinitionService.updateAssessmentLevel(unreleasedDefinition.getId(), level);
     }
 
     @Test
-    public void updateLevelWithNullDefinition() {
+    public void updateAssessmentLevelWithNullDefinition() {
         thrown.expect(NullPointerException.class);
-        trainingDefinitionService.updateLevel(null, level2);
+        trainingDefinitionService.updateAssessmentLevel(null, level2);
     }
 
     @Test
-    public void updateLevelWithNullLevel(){
+    public void updateAssessmentLevelWithNullLevel(){
         given(trainingDefinitionRepository.findById(unreleasedDefinition.getId())).willReturn(Optional.of(unreleasedDefinition));
         thrown.expect(NullPointerException.class);
-        trainingDefinitionService.updateLevel(unreleasedDefinition.getId(), null);
+        trainingDefinitionService.updateAssessmentLevel(unreleasedDefinition.getId(), null);
     }
-    */
+
+    @Test
+    public void updateGameLevel() {
+        given(trainingDefinitionRepository.findById(trainingDefinition2.getId())).willReturn(Optional.of(trainingDefinition2));
+        given(abstractLevelRepository.findById(infoLevel.getId())).willReturn(Optional.of(infoLevel));
+        given(abstractLevelRepository.findById(gameLevel.getId())).willReturn(Optional.of(gameLevel));
+
+        trainingDefinitionService.updateGameLevel(trainingDefinition2.getId(), gameLevel);
+
+        then(trainingDefinitionRepository).should().findById(trainingDefinition2.getId());
+        then(abstractLevelRepository).should(times(2)).findById(any(Long.class));
+        then(gameLevelRepository).should().save(gameLevel);
+    }
+
+    @Test
+    public void updateGameLevelWithCannotBeUpdatedException(){
+        given(trainingDefinitionRepository.findById(releasedDefinition.getId())).willReturn(Optional.of(releasedDefinition));
+        thrown.expect(CannotBeUpdatedException.class);
+        thrown.expectMessage("Cant edit released or archived training definition");
+
+        trainingDefinitionService.updateGameLevel(releasedDefinition.getId(), any(GameLevel.class));
+    }
+
+    @Test
+    public void updateGameLevelWithLevelNotInDefinition(){
+        GameLevel level = new GameLevel();
+        level.setId(8L);
+        level.setNextLevel(null);
+        given(abstractLevelRepository.findById(infoLevel.getId())).willReturn(Optional.of(infoLevel));
+        given(abstractLevelRepository.findById(gameLevel.getId())).willReturn(Optional.of(gameLevel));
+        given(trainingDefinitionRepository.findById(trainingDefinition2.getId())).willReturn(Optional.of(trainingDefinition2));
+        thrown.expect(CannotBeUpdatedException.class);
+        thrown.expectMessage("Level was not found in definition");
+
+        trainingDefinitionService.updateGameLevel(trainingDefinition2.getId(), level);
+    }
+
+    @Test
+    public void updateGameLevelWithNullDefinition() {
+        thrown.expect(NullPointerException.class);
+        trainingDefinitionService.updateGameLevel(null, gameLevel);
+    }
+
+    @Test
+    public void updateGameLevelWithNullLevel(){
+        given(trainingDefinitionRepository.findById(trainingDefinition2.getId())).willReturn(Optional.of(trainingDefinition2));
+        thrown.expect(NullPointerException.class);
+        trainingDefinitionService.updateGameLevel(trainingDefinition2.getId(), null);
+    }
+
+    @Test
+    public void updateInfoLevel() {
+        given(trainingDefinitionRepository.findById(trainingDefinition2.getId())).willReturn(Optional.of(trainingDefinition2));
+        trainingDefinitionService.updateInfoLevel(trainingDefinition2.getId(), infoLevel);
+        then(trainingDefinitionRepository).should().findById(trainingDefinition2.getId());
+        then(infoLevelRepository).should().save(infoLevel);
+    }
+
+    @Test
+    public void updateInfoLevelWithCannotBeUpdatedException(){
+        given(trainingDefinitionRepository.findById(releasedDefinition.getId())).willReturn(Optional.of(releasedDefinition));
+        thrown.expect(CannotBeUpdatedException.class);
+        thrown.expectMessage("Cant edit released or archived training definition");
+
+        trainingDefinitionService.updateInfoLevel(releasedDefinition.getId(), any(InfoLevel.class));
+    }
+
+    @Test
+    public void updateInfoLevelWithLevelNotInDefinition(){
+        InfoLevel level = new InfoLevel();
+        level.setId(8L);
+        level.setNextLevel(null);
+        given(abstractLevelRepository.findById(infoLevel.getId())).willReturn(Optional.of(infoLevel));
+        given(abstractLevelRepository.findById(gameLevel.getId())).willReturn(Optional.of(gameLevel));
+        given(trainingDefinitionRepository.findById(trainingDefinition2.getId())).willReturn(Optional.of(trainingDefinition2));
+        thrown.expect(CannotBeUpdatedException.class);
+        thrown.expectMessage("Level was not found in definition");
+
+        trainingDefinitionService.updateInfoLevel(trainingDefinition2.getId(), level);
+    }
+
+    @Test
+    public void updateInfoLevelWithNullDefinition() {
+        thrown.expect(NullPointerException.class);
+        trainingDefinitionService.updateInfoLevel(null, infoLevel);
+    }
+
+    @Test
+    public void updateInfoLevelWithNullLevel(){
+        given(trainingDefinitionRepository.findById(trainingDefinition2.getId())).willReturn(Optional.of(trainingDefinition2));
+        thrown.expect(NullPointerException.class);
+        trainingDefinitionService.updateInfoLevel(trainingDefinition2.getId(), null);
+    }
+
     @After
     public void after(){
         reset(trainingDefinitionRepository);

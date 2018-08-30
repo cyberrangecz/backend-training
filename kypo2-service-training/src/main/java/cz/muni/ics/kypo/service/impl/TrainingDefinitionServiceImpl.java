@@ -222,18 +222,6 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
       throw new CannotBeUpdatedException("Cant edit released or archived training definition");
     if (!findLevelInDefinition(trainingDefinition, gameLevel.getId()))
       throw new CannotBeUpdatedException("Level was not found in definition");
-    /*
-    Long nextId = trainingDefinition.getStartingLevel();
-    Boolean found = false;
-    if (nextId == gameLevel.getId()) found = true;
-    while(nextId != null && !found){
-      AbstractLevel nextLevel = abstractLevelRepository.findById(nextId).orElseThrow(() -> new ServiceLayerException());
-      if (nextLevel.getId() == gameLevel.getId()) found = true;
-      nextId = nextLevel.getNextLevel();
-    }
-    if (!found)
-      throw new CannotBeUpdatedException("Level was not found in definition");
-    */
     gameLevelRepository.save(gameLevel);
   }
 
@@ -243,21 +231,8 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     TrainingDefinition trainingDefinition = findById(definitionId).orElseThrow(() -> new ServiceLayerException());
     if (trainingDefinition.getState() != TDState.UNRELEASED)
       throw new CannotBeUpdatedException("Cant edit released or archived training definition");
-
     if (!findLevelInDefinition(trainingDefinition, infoLevel.getId()))
       throw new CannotBeUpdatedException("Level was not found in definition");
-    /*
-    Long nextId = trainingDefinition.getStartingLevel();
-    Boolean found = false;
-    if (nextId == infoLevel.getId()) found = true;
-    while(nextId != null && !found){
-      AbstractLevel nextLevel = abstractLevelRepository.findById(nextId).orElseThrow(() -> new ServiceLayerException());
-      if (nextLevel.getId() == infoLevel.getId()) found = true;
-      nextId = nextLevel.getNextLevel();
-    }
-    if (!found)
-      throw new CannotBeUpdatedException("Level was not found in definition");
-    */
     infoLevelRepository.save(infoLevel);
   }
 
@@ -267,18 +242,6 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     TrainingDefinition trainingDefinition = findById(definitionId).orElseThrow(() -> new ServiceLayerException());
     if (trainingDefinition.getState() != TDState.UNRELEASED)
       throw new CannotBeUpdatedException("Cant edit released or archived training definition");
-  /*
-    Long nextId = trainingDefinition.getStartingLevel();
-    Boolean found = false;
-    if (nextId == assessmentLevel.getId()) found = true;
-    while(nextId != null && !found){
-      AbstractLevel nextLevel = abstractLevelRepository.findById(nextId).orElseThrow(() -> new ServiceLayerException());
-      if (nextLevel.getId() == assessmentLevel.getId()) found = true;
-      nextId = nextLevel.getNextLevel();
-    }
-    if (!found)
-      throw new CannotBeUpdatedException("Level was not found in definition");
-  */
     if (!findLevelInDefinition(trainingDefinition, assessmentLevel.getId()))
       throw new CannotBeUpdatedException("Level was not found in definition");
     assessmentLevelRepository.save(assessmentLevel);
