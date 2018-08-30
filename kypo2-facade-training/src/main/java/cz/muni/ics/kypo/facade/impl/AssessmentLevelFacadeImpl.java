@@ -84,17 +84,4 @@ public class AssessmentLevelFacadeImpl implements AssessmentLevelFacade {
       throw new FacadeLayerException(ex.getLocalizedMessage());
     }
   }
-  /**
-  @Override
-  @Transactional
-  public void update(AssessmentLevel al) throws FacadeLayerException {
-    LOG.debug("update({})",al);
-    try {
-        Objects.requireNonNull(al);
-        assessmentLevelService.update(al);
-    } catch (NullPointerException|ServiceLayerException ex) {
-        throw new FacadeLayerException(ex.getLocalizedMessage());
-    }
-  }
-  */
 }

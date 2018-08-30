@@ -30,12 +30,6 @@ public interface GameLevelFacade {
   public PageResultResource<GameLevelDTO> findAll(Predicate predicate, Pageable pageable);
 
   /**
-   * updates game level
-   * @param gameLevel to be updated
-   */
-  public void update(GameLevel gameLevel);
-
-  /**
    * creates new game level
    * @param gameLevel to be created
    * @return DTO of new game level

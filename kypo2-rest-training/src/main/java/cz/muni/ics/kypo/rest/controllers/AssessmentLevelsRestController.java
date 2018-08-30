@@ -186,43 +186,4 @@ public class AssessmentLevelsRestController {
         }
     }
 
-    //@formatter:on
-
-    /*
-    //@formatter:off
-    @ApiOperation(httpMethod = "PUT",
-            value = "Update Assessment Level.",
-            response = AssessmentLevelDTO.class,
-            nickname = "updateAssessmentLevel",
-            consumes = "application/json",
-            authorizations = {
-                    @Authorization(value = "sampleoauth",
-                            scopes = {
-                                    @AuthorizationScope(
-                                            scope = "update Assessment Level",
-                                            description = "allows returning created Assessment Level."
-                                    )
-                            }
-                    )
-            }
-    )
-
-    @ApiResponses(value = {
-            @ApiResponse(code = 404, message = "The requested resource was not found.")
-    })
-    @PutMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Void> updateAssessmentLevel(@ApiParam(name = "Assessment level to be updated") @RequestBody AssessmentLevelDTO assessmentLevel) {
-        try {
-            AssessmentLevel al = dtoMapper.mapTo(assessmentLevel, AssessmentLevel.class);
-            assessmentLevelFacade.update(al);
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-        } catch (FacadeLayerException ex) {
-            throw new ResourceNotModifiedException(ex.getLocalizedMessage());
-        }
-    }
-    */
-    //@formatter:on
-
-
-
 }

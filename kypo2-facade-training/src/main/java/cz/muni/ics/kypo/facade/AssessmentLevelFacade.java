@@ -38,11 +38,4 @@ public interface AssessmentLevelFacade {
    */
   public AssessmentLevelDTO create(AssessmentLevel assessmentLevel) throws FacadeLayerException;
 
-  /**
-   * updates assessment level
-   * @param assessmentLevel to be updated
-   * @throws FacadeLayerException if level was not found
-   */
-  // public void update(AssessmentLevel assessmentLevel) throws FacadeLayerException;
-
 }

@@ -134,21 +134,6 @@ public class AssessmentLevelServiceTest {
         thrown.expectMessage("Input assessment level must not be null");
         assessmentLevelService.create(null);
     }
-    /*
-    @Test
-    public void updateAssessmentLevel() {
-        given(assessmentLevelRepository.findById(assessmentLevel1.getId())).willReturn(Optional.of(assessmentLevel1));
-        assessmentLevelService.update(assessmentLevel1);
-        then(assessmentLevelRepository).should().save(assessmentLevel1);
-    }
-
-    @Test
-    public void updateAssessmentLevelWithNull() {
-        thrown.expect(IllegalArgumentException.class);
-        thrown.expectMessage("Input assessment level must not be null");
-        assessmentLevelService.update(null);
-    }
-    */
 
     private void deepEquals(AssessmentLevel expectedAssessmentLevel, AssessmentLevel actualAssessmentLevel) {
         assertEquals(expectedAssessmentLevel.getId(), actualAssessmentLevel.getId());

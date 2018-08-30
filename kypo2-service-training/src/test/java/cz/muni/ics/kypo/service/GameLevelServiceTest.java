@@ -106,21 +106,7 @@ public class GameLevelServiceTest {
         Page pr = gameLevelService.findAll(predicate, PageRequest.of(0,2));
         assertEquals(2, pr.getTotalElements());
     }
-    /*
-    @Test
-    public void updateGameLevel() {
-        given(gameLevelRepository.findById(gameLevel1.getId())).willReturn(Optional.of(gameLevel1));
-        gameLevelService.update(gameLevel1);
-        then(gameLevelRepository).should().save(gameLevel1);
-    }
 
-    @Test
-    public void updateGameLevelWithNull() {
-        thrown.expect(IllegalArgumentException.class);
-        thrown.expectMessage("Game level must not be null");
-        gameLevelService.update(null);
-    }
-    */
     @After
     public void after(){
         reset(gameLevelRepository);
