@@ -158,28 +158,6 @@ public class GameLevelsRestController {
   }
   //@formatter:on
 
-
-  @ApiOperation(httpMethod = "PUT",
-          value = "Update Game Level",
-          response = GameLevelDTO.class,
-          nickname = "updateGameLevel",
-          produces = "application/json",
-          consumes = "application/json")
-  @ApiResponses(value = {
-          @ApiResponse(code = 400, message = "The requested resource was not modified")
-  })
-  @PutMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<Void> updateGameLevel(@ApiParam(value = "Game level to be updated") @RequestBody GameLevelDTO gameLevelDTO) {
-    try {
-      GameLevel gameLevel = dtoMapper.mapTo(gameLevelDTO, GameLevel.class);
-      gameLevelFacade.update(gameLevel);
-      return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-    } catch (FacadeLayerException ex) {
-      throw new ResourceNotModifiedException(ex.getLocalizedMessage());
-    }
-  }
-
-
   @ApiOperation(httpMethod = "POST",
           value = "Create Game Level",
           response = GameLevelDTO.class,

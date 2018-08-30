@@ -157,27 +157,7 @@ public class InfoLevelsRestController {
     }
   }
   //@formatter:on
-/*
-  @ApiOperation(httpMethod = "PUT",
-          value = "Update Info Level",
-          response = InfoLevelDTO.class,
-          nickname = "updateInfoLevel",
-          consumes = "application/json")
-  @ApiResponses(value = {
-          @ApiResponse(code = 400, message = "The requested resource was not modified")
-  })
-  @PutMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<Void> updateInfoLevel(@ApiParam(value = "Info level to be updated") @RequestBody InfoLevelDTO infoLevelDTO){
-    try {
-      InfoLevel infoLevel = dtoMapper.mapTo(infoLevelDTO, InfoLevel.class);
-      infoLevelFacade.update(infoLevel);
-      return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-    } catch (FacadeLayerException ex) {
-      throw new ResourceNotModifiedException(ex.getLocalizedMessage());
-    }
 
-  }
-*/
   @ApiOperation(httpMethod = "POST",
       value = "Create Info Level",
       response = InfoLevelDTO.class,

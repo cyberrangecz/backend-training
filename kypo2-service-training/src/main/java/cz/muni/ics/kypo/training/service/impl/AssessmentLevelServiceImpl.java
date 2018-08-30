@@ -59,14 +59,5 @@ public class AssessmentLevelServiceImpl implements AssessmentLevelService {
         return Optional.of(aL);
 
     }
-    /*
-    @Override
-    public void update(AssessmentLevel assessmentLevel) {
-        LOG.debug("update({})",assessmentLevel);
-        Assert.notNull(assessmentLevel, "Input assessment level must not be null.");
-        assessmentLevelRepository.save(assessmentLevel);
-        LOG.info("Assessment level with id: " + assessmentLevel.getId() + "updated.");
-    }
-    */
 
 }

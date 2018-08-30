@@ -56,15 +56,7 @@ public class InfoLevelServiceImpl implements InfoLevelService {
       throw new ServiceLayerException(ex.getLocalizedMessage());
     }
   }
-  /*
-  @Override
-  public void update(InfoLevel infoLevel) {
-    LOG.debug("update({})", infoLevel);
-    Assert.notNull(infoLevel, "Info level must not be null");
-    infoRepository.save(infoLevel);
-    LOG.info("Info Level with id: "+ infoLevel.getId() + " updated");
-  }
-  */
+
   @Override
   public Optional<InfoLevel> create(InfoLevel infoLevel) {
     LOG.debug("create ({})", infoLevel);

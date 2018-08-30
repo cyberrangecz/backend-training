@@ -162,27 +162,6 @@ public class AssessmentLevelFacadeTest {
         thrown.expect(FacadeLayerException.class);
         assessmentLevelFacade.create(al1);
     }
-    /*
-    @Test
-    public void updateAssessmentLevel() {
-        assessmentLevelFacade.update(al1);
-        then(assessmentLevelService).should().update(al1);
-    }
-
-    @Test
-    public void updateAssessmentLevelWithNull() {
-        thrown.expect(FacadeLayerException.class);
-        assessmentLevelFacade.update(null);
-    }
-
-    @Test
-    public void updateAssessmentLevelWithServiceLayerException() {
-        willThrow(ServiceLayerException.class).given(assessmentLevelService).update(al1);
-        thrown.expect(FacadeLayerException.class);
-        assessmentLevelFacade.update(al1);
-    }
-    */
-
 
     private void deepEquals(AssessmentLevel expectedAssessmentLevel, AssessmentLevelDTO actualAssessmentLevel) {
         assertEquals(expectedAssessmentLevel.getId(), actualAssessmentLevel.getId());

@@ -188,9 +188,6 @@ public class AssessmentLevelRestControllerTest {
         assertEquals(ResourceNotFoundException.class, exception.getClass());
     }
 
-
-
-
     @Test
     public void createAssessmentLevel() throws Exception {
         String valueAs = convertObjectToJsonBytes(al1DTO);
@@ -217,58 +214,7 @@ public class AssessmentLevelRestControllerTest {
                 .andReturn().getResolvedException();
         assertEquals(ResourceNotCreatedException.class, exception.getClass());
     }
-    /**
-    @Test
-    public void updateAssessmentLevel() throws Exception {
-        String valueAs = convertObjectToJsonBytes(al2DTO);
-        given(objectMapper.writeValueAsString(any(Object.class))).willReturn(valueAs);
-        given(assessmentLevelFacade.update(any(AssessmentLevel.class))).willReturn(al2DTO);
-        given(beanMapping.mapTo(any(AssessmentLevelDTO.class), eq(AssessmentLevel.class))).willReturn(al2);
-        MockHttpServletResponse result = mockMvc.perform(put("/assessment-levels")
-                .content(convertObjectToJsonBytes(al2))
-                .contentType(MediaType.APPLICATION_JSON_VALUE))
-                .andExpect(status().isOk())
-                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-                .andReturn().getResponse();
-        assertEquals(convertObjectToJsonBytes(convertObjectToJsonBytes(al2DTO)), result.getContentAsString());
-    }
-    */
-    /*
-    @Test
-    public void updateAssessmentLevelWithFacadeException() throws Exception {
-        willThrow(FacadeLayerException.class).given(assessmentLevelFacade).update(any(AssessmentLevel.class));
-        given(beanMapping.mapTo(any(AssessmentLevelDTO.class), eq(AssessmentLevel.class))).willReturn(al1);
-        Exception exception = mockMvc.perform(put("/assessment-levels")
-                .content(convertObjectToJsonBytes(al1))
-                .contentType(MediaType.APPLICATION_JSON_VALUE))
-                .andExpect(status().isNotModified())
-                .andReturn().getResolvedException();
-        assertEquals(ResourceNotModifiedException.class, exception.getClass());
-    }
 
-    */
-    /*
-    @Test
-    public void deleteAssessmentLevel() throws Exception {
-
-        mockMvc.perform(delete("/assessment-levels/")
-                .param("assessmentLevelId", "1")
-                .contentType(MediaType.APPLICATION_JSON_VALUE))
-                .andExpect(status().isOk());
-    }
-    */
-    /**
-    @Test
-    public void deleteAssessmentLevelWithFacadeException() throws Exception {
-        willThrow(FacadeLayerException.class).given(assessmentLevelFacade).delete(any(Long.class));
-        Exception exception = mockMvc.perform(delete("/assessment-levels/")
-                .param("assessmentLevelId", "1")
-                .contentType(MediaType.APPLICATION_JSON_VALUE))
-                .andExpect(status().isNotModified())
-                .andReturn().getResolvedException();
-        assertEquals(ResourceNotModifiedException.class, exception.getClass());
-    }
-    */
     private static String convertObjectToJsonBytes(Object object) throws IOException {
         ObjectMapper mapper = new ObjectMapper();
         return mapper.writeValueAsString(object);

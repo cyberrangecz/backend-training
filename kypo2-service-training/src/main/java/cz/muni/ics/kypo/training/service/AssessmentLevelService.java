@@ -33,11 +33,4 @@ public interface AssessmentLevelService {
      */
     Optional<AssessmentLevel> create(AssessmentLevel assessment);
 
-    /**
-     * Updates given assessment in database.
-     * @param assessment assessment to be updated
-     * @throws ServiceLayerException
-     */
-   // void update(AssessmentLevel assessment);
-
 }

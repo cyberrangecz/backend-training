@@ -30,12 +30,6 @@ public interface InfoLevelFacade {
   public PageResultResource<InfoLevelDTO> findAll(Predicate predicate, Pageable pageable);
 
   /**
-   * update info level
-   * @param infoLevel to be updated
-   */
-  //public void update(InfoLevel infoLevel);
-
-  /**
    * creates new info level
    * @param infoLevel to be created
    * @return DTO of new info level

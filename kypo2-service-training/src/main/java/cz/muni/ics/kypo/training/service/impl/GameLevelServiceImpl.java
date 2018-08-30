@@ -56,14 +56,6 @@ public class GameLevelServiceImpl implements GameLevelService {
   }
 
   @Override
-  public void update(GameLevel gameLevel) {
-    LOG.debug("update({})", gameLevel);
-    Assert.notNull(gameLevel, "Game level must not be null");
-    gameLevelRepository.save(gameLevel);
-    LOG.info("Info Level with id: "+ gameLevel.getId() + " updated");
-  }
-
-  @Override
   public Optional<GameLevel> create(GameLevel gameLevel) {
     LOG.debug("create({})", gameLevel);
     Assert.notNull(gameLevel, "Game level must not be null");
