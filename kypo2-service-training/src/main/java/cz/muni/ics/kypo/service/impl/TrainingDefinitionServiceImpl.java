@@ -6,9 +6,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 
-import cz.muni.ics.kypo.exceptions.CannotBeClonedException;
-import cz.muni.ics.kypo.exceptions.CannotBeDeletedException;
-import cz.muni.ics.kypo.exceptions.CannotBeUpdatedException;
+import cz.muni.ics.kypo.exceptions.*;
 import cz.muni.ics.kypo.model.*;
 import cz.muni.ics.kypo.model.enums.TDState;
 import cz.muni.ics.kypo.repository.*;
@@ -24,7 +22,6 @@ import org.springframework.util.Assert;
 
 import com.querydsl.core.types.Predicate;
 
-import cz.muni.ics.kypo.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.service.TrainingDefinitionService;
 
 /**
@@ -245,6 +242,42 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     if (!findLevelInDefinition(trainingDefinition, assessmentLevel.getId()))
       throw new CannotBeUpdatedException("Level was not found in definition");
     assessmentLevelRepository.save(assessmentLevel);
+  }
+
+  @Override
+  public Optional<GameLevel> createGameLevel(Long definitionId, GameLevel gameLevel) throws ServiceLayerException, CannotBeUpdatedException {
+    LOG.debug("createGameLevel({}, {})", definitionId, gameLevel);
+    TrainingDefinition trainingDefinition = findById(definitionId).orElseThrow(() -> new ServiceLayerException());
+    if (!trainingDefinition.getState().equals(TDState.UNRELEASED))
+      throw new CannotBeUpdatedException("Cant create level in released or archived training definition");
+    Assert.notNull(gameLevel, "Game level must not be null");
+    GameLevel gL = gameLevelRepository.save(gameLevel);
+    LOG.info("Game level with id: "+ gL.getId() +" created");
+    return Optional.of(gL);
+  }
+
+  @Override
+  public Optional<InfoLevel> createInfoLevel(Long definitionId, InfoLevel infoLevel) throws ServiceLayerException, CannotBeUpdatedException {
+    LOG.debug("createInfoLevel({}, {})", definitionId, infoLevel);
+    TrainingDefinition trainingDefinition = findById(definitionId).orElseThrow(() -> new ServiceLayerException());
+    if (!trainingDefinition.getState().equals(TDState.UNRELEASED))
+      throw new CannotBeUpdatedException("Cant create level in released or archived training definition");
+    Assert.notNull(infoLevel, "Info level must not be null");
+    InfoLevel iL = infoLevelRepository.save(infoLevel);
+    LOG.info("Info level with id: "+ iL.getId() +" created");
+    return Optional.of(iL);
+  }
+
+  @Override
+  public Optional<AssessmentLevel> createAssessmentLevel(Long definitionId, AssessmentLevel assessmentLevel) throws ServiceLayerException, CannotBeUpdatedException {
+    LOG.debug("createAssessmentLevel({}, {})", definitionId, assessmentLevel);
+    TrainingDefinition trainingDefinition = findById(definitionId).orElseThrow(() -> new ServiceLayerException());
+    if (!trainingDefinition.getState().equals(TDState.UNRELEASED))
+      throw new CannotBeUpdatedException("Cant create level in released or archived training definition");
+    Assert.notNull(assessmentLevel, "Assessment level must not be null");
+    AssessmentLevel aL = assessmentLevelRepository.save(assessmentLevel);
+    LOG.info("Assessment level with id: "+ aL.getId() +" created");
+    return Optional.of(aL);
   }
 
   private boolean findLevelInDefinition(TrainingDefinition definition, Long levelId) {
