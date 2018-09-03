@@ -256,7 +256,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
       trainingDefinition.setStartingLevel(gL.getId());
       update(trainingDefinition);
     } else {
-      AbstractLevel lastLevel = findLastLevel(gL.getId());
+      AbstractLevel lastLevel = findLastLevel(trainingDefinition.getStartingLevel());
       lastLevel.setNextLevel(gL.getId());
       updateLevel(lastLevel);
     }
@@ -277,7 +277,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
       trainingDefinition.setStartingLevel(iL.getId());
       update(trainingDefinition);
     } else {
-      AbstractLevel lastLevel = findLastLevel(iL.getId());
+      AbstractLevel lastLevel = findLastLevel(trainingDefinition.getStartingLevel());
       lastLevel.setNextLevel(iL.getId());
       updateLevel(lastLevel);
     }
@@ -298,7 +298,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
       trainingDefinition.setStartingLevel(aL.getId());
       update(trainingDefinition);
     } else {
-      AbstractLevel lastLevel = findLastLevel(aL.getId());
+      AbstractLevel lastLevel = findLastLevel(trainingDefinition.getStartingLevel());
       lastLevel.setNextLevel(aL.getId());
       updateLevel(lastLevel);
     }
