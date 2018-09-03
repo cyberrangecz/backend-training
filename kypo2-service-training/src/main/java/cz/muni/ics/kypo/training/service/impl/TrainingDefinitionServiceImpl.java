@@ -121,7 +121,6 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
       oneBeforeId = swapLevel.getId();
       swapLevel = abstractLevelRepository.findById(swapLevel.getNextLevel()).orElseThrow(() -> new ServiceLayerException());
     }
-
     AbstractLevel oneBefore = abstractLevelRepository.findById(oneBeforeId).orElseThrow(() -> new ServiceLayerException("Cant swap left first level"));
     oneBefore.setNextLevel(swapLevel.getNextLevel());
     swapLevel.setNextLevel(oneBeforeId);
@@ -136,7 +135,6 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
       trainingDefinition.setStartingLevel(swapLevel.getId());
       update(trainingDefinition);
     }
-
   }
 
   @Override
@@ -151,7 +149,6 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
       oneBeforeId = swapLevel.getId();
       swapLevel = abstractLevelRepository.findById(swapLevel.getNextLevel()).orElseThrow(() -> new ServiceLayerException());
     }
-
     if (oneBeforeId != null) {
       AbstractLevel oneBefore = abstractLevelRepository.findById(oneBeforeId).orElseThrow(() -> new ServiceLayerException());
       oneBefore.setNextLevel(swapLevel.getNextLevel());
@@ -166,7 +163,6 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
       trainingDefinition.setStartingLevel(nextLevel.getId());
       update(trainingDefinition);
     }
-
   }
 
   @Override
@@ -255,6 +251,15 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
       throw new CannotBeUpdatedException("Cant create level in released or archived training definition");
     Assert.notNull(gameLevel, "Game level must not be null");
     GameLevel gL = gameLevelRepository.save(gameLevel);
+
+    if (trainingDefinition.getStartingLevel() == null){
+      trainingDefinition.setStartingLevel(gL.getId());
+      update(trainingDefinition);
+    } else {
+      AbstractLevel lastLevel = findLastLevel(gL.getId());
+      lastLevel.setNextLevel(gL.getId());
+      updateLevel(lastLevel);
+    }
     LOG.info("Game level with id: "+ gL.getId() +" created");
     return Optional.of(gL);
   }
@@ -267,6 +272,15 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
       throw new CannotBeUpdatedException("Cant create level in released or archived training definition");
     Assert.notNull(infoLevel, "Info level must not be null");
     InfoLevel iL = infoLevelRepository.save(infoLevel);
+
+    if (trainingDefinition.getStartingLevel() == null){
+      trainingDefinition.setStartingLevel(iL.getId());
+      update(trainingDefinition);
+    } else {
+      AbstractLevel lastLevel = findLastLevel(iL.getId());
+      lastLevel.setNextLevel(iL.getId());
+      updateLevel(lastLevel);
+    }
     LOG.info("Info level with id: "+ iL.getId() +" created");
     return Optional.of(iL);
   }
@@ -279,8 +293,27 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
       throw new CannotBeUpdatedException("Cant create level in released or archived training definition");
     Assert.notNull(assessmentLevel, "Assessment level must not be null");
     AssessmentLevel aL = assessmentLevelRepository.save(assessmentLevel);
+
+    if (trainingDefinition.getStartingLevel() == null){
+      trainingDefinition.setStartingLevel(aL.getId());
+      update(trainingDefinition);
+    } else {
+      AbstractLevel lastLevel = findLastLevel(aL.getId());
+      lastLevel.setNextLevel(aL.getId());
+      updateLevel(lastLevel);
+    }
     LOG.info("Assessment level with id: "+ aL.getId() +" created");
     return Optional.of(aL);
+  }
+
+  private AbstractLevel findLastLevel(Long levelId){
+    AbstractLevel lastLevel = abstractLevelRepository.findById(levelId).orElseThrow(() -> new ServiceLayerException());
+    levelId = lastLevel.getNextLevel();
+    while (levelId != null){
+      lastLevel = abstractLevelRepository.findById(lastLevel.getNextLevel()).orElseThrow(() -> new ServiceLayerException());
+      levelId = lastLevel.getNextLevel();
+    }
+    return lastLevel;
   }
 
   private boolean findLevelInDefinition(TrainingDefinition definition, Long levelId) {
