@@ -1,7 +1,6 @@
 package cz.muni.ics.kypo.rest.controllers;
 
-import cz.muni.ics.kypo.api.dto.AbstractLevelDTO;
-import cz.muni.ics.kypo.api.dto.GameLevelDTO;
+import cz.muni.ics.kypo.api.dto.*;
 import cz.muni.ics.kypo.exceptions.CannotBeClonedException;
 import cz.muni.ics.kypo.exceptions.CannotBeDeletedException;
 import cz.muni.ics.kypo.exceptions.CannotBeUpdatedException;
@@ -28,7 +27,6 @@ import com.github.bohnman.squiggly.util.SquigglyUtils;
 import com.querydsl.core.types.Predicate;
 
 import cz.muni.ics.kypo.api.PageResultResource;
-import cz.muni.ics.kypo.api.dto.TrainingDefinitionDTO;
 import cz.muni.ics.kypo.exception.FacadeLayerException;
 import cz.muni.ics.kypo.facade.TrainingDefinitionFacade;
 import cz.muni.ics.kypo.rest.exceptions.ResourceNotFoundException;
@@ -184,10 +182,10 @@ public class TrainingDefinitionsRestController {
           @ApiResponse(code = 409, message = "The requested resource was not created because of the status of origin resource")
   })
   @PostMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<Object> cloneTrainingDefinition(@ApiParam(value = "Id of training definition to be cloned") @PathVariable("id") Long id){
+  public ResponseEntity<TrainingDefinitionDTO> cloneTrainingDefinition(@ApiParam(value = "Id of training definition to be cloned") @PathVariable("id") Long id){
     try{
       TrainingDefinitionDTO trainingDefinitionDTO = trainingDefinitionFacade.clone(id);
-      return new ResponseEntity<>(SquigglyUtils.stringify(objectMapper, trainingDefinitionDTO), HttpStatus.OK);
+      return new ResponseEntity<>(trainingDefinitionDTO, HttpStatus.OK);
     } catch (FacadeLayerException ex) {
       throw new ResourceNotCreatedException(ex.getLocalizedMessage());
     } catch (CannotBeClonedException ex){
@@ -289,7 +287,7 @@ public class TrainingDefinitionsRestController {
   })
   @PutMapping(value = "/updateGameLevel/{definitionId}",consumes = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<Void> updateGameLevel(@ApiParam(value = "Id of definition") @PathVariable(value = "definitionId") Long definitionId,
-                                              @ApiParam(value = "Game level to be updated") @RequestBody GameLevel gameLevelDTO) {
+                                              @ApiParam(value = "Game level to be updated") @RequestBody GameLevelDTO gameLevelDTO) {
     try{
       GameLevel level = dtoMapper.mapTo(gameLevelDTO, GameLevel.class);
       trainingDefinitionFacade.updateGameLevel(definitionId, level);
@@ -312,7 +310,7 @@ public class TrainingDefinitionsRestController {
   })
   @PutMapping(value = "/updateInfoLevel/{definitionId}",consumes = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<Void> updateInfoLevel(@ApiParam(value = "Id of definition") @PathVariable(value = "definitionId") Long definitionId,
-                                              @ApiParam(value = "Info level to be updated") @RequestBody InfoLevel infoLevelDTO) {
+                                              @ApiParam(value = "Info level to be updated") @RequestBody InfoLevelDTO infoLevelDTO) {
     try{
       InfoLevel infoLevel = dtoMapper.mapTo(infoLevelDTO, InfoLevel.class);
       trainingDefinitionFacade.updateInfoLevel(definitionId, infoLevel);
@@ -335,7 +333,7 @@ public class TrainingDefinitionsRestController {
   })
   @PutMapping(value = "/updateAssessmentLevel/{definitionId}",consumes = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<Void> updateAssessmentLevel(@ApiParam(value = "Id of definition") @PathVariable(value = "definitionId") Long definitionId,
-                                                    @ApiParam(value = "Assessment level to be updated") @RequestBody AssessmentLevel assessmentLevelDTO) {
+                                                    @ApiParam(value = "Assessment level to be updated") @RequestBody AssessmentLevelDTO assessmentLevelDTO) {
     try{
       AssessmentLevel assessmentLevel = dtoMapper.mapTo(assessmentLevelDTO, AssessmentLevel.class);
       trainingDefinitionFacade.updateAssessmentLevel(definitionId, assessmentLevel);
