@@ -1,6 +1,6 @@
 package cz.muni.ics.kypo.training.facade;
 
-import cz.muni.ics.kypo.api.dto.AbstractLevelDTO;
+import cz.muni.ics.kypo.api.dto.*;
 import cz.muni.ics.kypo.exception.FacadeLayerException;
 import cz.muni.ics.kypo.exceptions.CannotBeClonedException;
 import cz.muni.ics.kypo.exceptions.CannotBeDeletedException;
@@ -114,4 +114,35 @@ public interface TrainingDefinitionFacade {
    * @throws CannotBeUpdatedException if definition status is not UNRELEASED
    */
   public void updateAssessmentLevel(Long definitionId, AssessmentLevel assessmentLevel) throws FacadeLayerException, CannotBeUpdatedException;
+
+  /**
+   * creates new info level in training definition
+   * @param definitionId - id of definition in which level will be created
+   * @param infoLevel to be created
+   * @return DTO of new info level
+   * @throws FacadeLayerException if training definition is not found
+   * @throws CannotBeUpdatedException if definition status is not UNRELEASED
+   */
+  public InfoLevelDTO createInfoLevel(Long definitionId, InfoLevel infoLevel) throws FacadeLayerException, CannotBeUpdatedException;
+
+  /**
+   * creates new game level in training definition
+   * @param definitionId - id of definition in which level will be created
+   * @param gameLevel to be created
+   * @return DTO of new game level
+   * @throws FacadeLayerException if training definition is not found
+   * @throws CannotBeUpdatedException if definition status is not UNRELEASED
+   */
+  public GameLevelDTO createGameLevel(Long definitionId, GameLevel gameLevel) throws FacadeLayerException, CannotBeUpdatedException;
+
+  /**
+   * creates new assessment level in training definition
+   * @param definitionId - id of definition in which level will be created
+   * @param assessmentLevel to be created
+   * @return DTO of new assessment level
+   * @throws FacadeLayerException if training definition is not found
+   * @throws CannotBeUpdatedException if definition status is not UNRELEASED
+   */
+  public AssessmentLevelDTO createAssessmentLevel(Long definitionId, AssessmentLevel assessmentLevel) throws FacadeLayerException, CannotBeUpdatedException;
+
 }
