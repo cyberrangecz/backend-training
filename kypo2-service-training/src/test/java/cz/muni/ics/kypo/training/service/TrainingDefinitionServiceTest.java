@@ -559,7 +559,31 @@ public class TrainingDefinitionServiceTest {
         thrown.expect(NullPointerException.class);
         trainingDefinitionService.updateInfoLevel(trainingDefinition2.getId(), null);
     }
+    /*
+    @Test
+    public void createGameLevel() {
+        GameLevel newGameLevel = new GameLevel();
+        newGameLevel.setId(10L);
+        newGameLevel.setTitle("title");
+        newGameLevel.setMaxScore(20);
 
+        given(trainingDefinitionService.createGameLevel(trainingDefinition2.getId(), newGameLevel)).willReturn(Optional.of(newGameLevel));
+        given(trainingDefinitionService.findById(any(Long.class))).willReturn(Optional.of(trainingDefinition2));
+        given(abstractLevelRepository.findById(gameLevel.getId())).willReturn(Optional.of(gameLevel));
+        given(abstractLevelRepository.findById(infoLevel.getId())).willReturn(Optional.of(infoLevel));
+
+        GameLevel createdLevel = trainingDefinitionService.createGameLevel(trainingDefinition2.getId(), newGameLevel).get();
+
+        assertEquals(newGameLevel.getTitle(), createdLevel.getTitle());
+        assertEquals(newGameLevel.getMaxScore(), createdLevel.getMaxScore());
+        //assertNotEquals(newGameLevel.getId(), createdLevel.getId());
+        assertEquals(gameLevel.getNextLevel(), createdLevel.getId());
+
+        then(gameLevelRepository).should().save(newGameLevel);
+        then(abstractLevelRepository).should(times(2)).findById(any(Long.class));
+        then(trainingDefinitionRepository).should().findById(trainingDefinition2.getId());
+    }
+    */
     @After
     public void after(){
         reset(trainingDefinitionRepository);
