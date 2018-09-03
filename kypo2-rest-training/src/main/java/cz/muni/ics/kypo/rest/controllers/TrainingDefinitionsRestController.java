@@ -344,4 +344,71 @@ public class TrainingDefinitionsRestController {
       throw new ConflictException(ex.getLocalizedMessage());
     }
   }
+
+  @ApiOperation(httpMethod = "PUT",
+          value = "Create Game Level",
+          response = GameLevelDTO.class,
+          nickname = "createGameLevel",
+          produces = "application/json",
+          consumes = "application/json")
+  @ApiResponses(value = {
+          @ApiResponse(code = 404, message = "The requested resource was not found"),
+          @ApiResponse(code = 409, message = "The requested resource was not created")
+  })
+  @PutMapping(value = "createGameLevel/{definitionId}", consumes = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<GameLevelDTO> createGameLevel(@ApiParam(value = "Id of definition") @PathVariable(value = "definitionId") Long definitionId,
+                                                      @ApiParam(value = "Game level to be created") @RequestBody GameLevelDTO gameLevelDTO){
+    try {
+      GameLevel gameLevel = dtoMapper.mapTo(gameLevelDTO, GameLevel.class);
+      GameLevelDTO newGameLevel = trainingDefinitionFacade.createGameLevel(definitionId, gameLevel);
+      return new ResponseEntity<>(newGameLevel, HttpStatus.CREATED);
+    } catch (FacadeLayerException ex){
+      throw new ResourceNotCreatedException(ex.getLocalizedMessage());
+    }
+  }
+
+  @ApiOperation(httpMethod = "PUT",
+          value = "Create Info Level",
+          response = InfoLevelDTO.class,
+          nickname = "createInfoLevel",
+          produces = "application/json",
+          consumes = "application/json")
+  @ApiResponses(value = {
+          @ApiResponse(code = 404, message = "The requested resource was not found"),
+          @ApiResponse(code = 409, message = "The requested resource was not created")
+  })
+  @PutMapping(value = "createInfoLevel/{definitionId}", consumes = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<InfoLevelDTO> createInfoLevel(@ApiParam(value = "Id of definition") @PathVariable(value = "definitionId") Long definitionId,
+                                                      @ApiParam(value = "Info level to be created") @RequestBody InfoLevelDTO infoLevelDTO){
+    try {
+      InfoLevel infoLevel = dtoMapper.mapTo(infoLevelDTO, InfoLevel.class);
+      InfoLevelDTO newInfoLevel = trainingDefinitionFacade.createInfoLevel(definitionId, infoLevel);
+      return new ResponseEntity<>(newInfoLevel, HttpStatus.CREATED);
+    } catch (FacadeLayerException ex){
+      throw new ResourceNotCreatedException(ex.getLocalizedMessage());
+    }
+  }
+
+
+  @ApiOperation(httpMethod = "PUT",
+          value = "Create Assessment Level",
+          response = AssessmentLevelDTO.class,
+          nickname = "createAssessmentLevel",
+          produces = "application/json",
+          consumes = "application/json")
+  @ApiResponses(value = {
+          @ApiResponse(code = 404, message = "The requested resource was not found"),
+          @ApiResponse(code = 409, message = "The requested resource was not created")
+  })
+  @PutMapping(value = "createAssessmentLevel/{definitionId}", consumes = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<AssessmentLevelDTO> createAssessmentLevel(@ApiParam(value = "Id of definition") @PathVariable(value = "definitionId") Long definitionId,
+                                                                  @ApiParam(value = "Assessment level to be created") @RequestBody AssessmentLevelDTO assessmentLevelDTO){
+    try {
+      AssessmentLevel assessmentLevel = dtoMapper.mapTo(assessmentLevelDTO, AssessmentLevel.class);
+      AssessmentLevelDTO newAssessmentLevel = trainingDefinitionFacade.createAssessmentLevel(definitionId, assessmentLevel);
+      return new ResponseEntity<>(newAssessmentLevel, HttpStatus.CREATED);
+    } catch (FacadeLayerException ex){
+      throw new ResourceNotCreatedException(ex.getLocalizedMessage());
+    }
+  }
 }
