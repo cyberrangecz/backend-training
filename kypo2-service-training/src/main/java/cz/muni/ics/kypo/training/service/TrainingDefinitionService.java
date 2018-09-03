@@ -2,10 +2,7 @@ package cz.muni.ics.kypo.training.service;
 
 import java.util.Optional;
 
-import cz.muni.ics.kypo.exceptions.CannotBeClonedException;
-import cz.muni.ics.kypo.exceptions.CannotBeDeletedException;
-import cz.muni.ics.kypo.exceptions.CannotBeUpdatedException;
-import cz.muni.ics.kypo.exceptions.ServiceLayerException;
+import cz.muni.ics.kypo.exceptions.*;
 import cz.muni.ics.kypo.model.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -114,5 +111,37 @@ public interface TrainingDefinitionService {
    * @throws CannotBeUpdatedException if definition status is not UNRELEASED
    */
   public void updateAssessmentLevel(Long definitionId, AssessmentLevel assessmentLevel) throws ServiceLayerException, CannotBeUpdatedException;
+
+  /**
+   * Creates new game level
+   * @param definitionId - id of definition in which level will be created
+   * @param gameLevel to be created
+   * @return new game level
+   * @throws ServiceLayerException if definition is not found
+   * @throws CannotBeUpdatedException if definition status is not UNRELEASED
+   */
+  public Optional<GameLevel> createGameLevel(Long definitionId, GameLevel gameLevel) throws ServiceLayerException, CannotBeUpdatedException;
+
+
+  /**
+   * Creates new info level
+   * @param definitionId - id of definition in which level will be created
+   * @param infoLevel to be created
+   * @return new info level
+   * @throws ServiceLayerException if definition is not found
+   * @throws CannotBeUpdatedException if definition status is not UNRELEASED
+   */
+  public Optional<InfoLevel> createInfoLevel(Long definitionId, InfoLevel infoLevel) throws ServiceLayerException, CannotBeUpdatedException;
+
+  /**
+   * Creates new assessment level
+   * @param definitionId - id of definition in which level will be created
+   * @param assessmentLevel to be created
+   * @return new assessment level
+   * @throws ServiceLayerException if definition is not found
+   * @throws CannotBeUpdatedException if definition status is not UNRELEASED
+   */
+  public Optional<AssessmentLevel> createAssessmentLevel(Long definitionId, AssessmentLevel assessmentLevel) throws ServiceLayerException, CannotBeUpdatedException;
+
 
 }
