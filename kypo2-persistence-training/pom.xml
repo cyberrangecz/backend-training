@@ -15,6 +15,11 @@
 
 	<dependencies>
 		<dependency>
+			<groupId>cz.muni.ics.kypo</groupId>
+			<artifactId>kypo2-security-commons-rest</artifactId>
+			<version>1.0.0</version>
+		</dependency>
+		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-jpa</artifactId>
 			<exclusions>
@@ -110,7 +115,7 @@
 				<configuration>
 					<sqlMigrationSeparator>__</sqlMigrationSeparator>
 					<locations>
-						<location>filesystem:src/main/resources/db/migration/training</location>
+						<location>classpath:db.migration</location>
 					</locations>
 					<url>${jdbc.url}</url>
 					<user>${jdbc.username}</user>
