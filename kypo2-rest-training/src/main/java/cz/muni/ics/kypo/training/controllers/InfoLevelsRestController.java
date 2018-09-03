@@ -1,8 +1,8 @@
 package cz.muni.ics.kypo.training.controllers;
 
-import cz.muni.ics.kypo.mapping.BeanMapping;
-import cz.muni.ics.kypo.rest.exceptions.ResourceNotCreatedException;
-import cz.muni.ics.kypo.rest.exceptions.ResourceNotModifiedException;
+import cz.muni.ics.kypo.training.mapping.BeanMapping;
+import cz.muni.ics.kypo.training.exceptions.ResourceNotCreatedException;
+import cz.muni.ics.kypo.training.exceptions.ResourceNotModifiedException;
 import io.swagger.models.auth.In;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;

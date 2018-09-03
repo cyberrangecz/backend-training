@@ -1,7 +1,7 @@
 package cz.muni.ics.kypo.training.facade;
 
-import cz.muni.ics.kypo.exception.FacadeLayerException;
-import cz.muni.ics.kypo.model.TrainingInstance;
+import cz.muni.ics.kypo.training.exception.FacadeLayerException;
+import cz.muni.ics.kypo.training.model.TrainingInstance;
 import org.springframework.data.domain.Pageable;
 
 import com.querydsl.core.types.Predicate;

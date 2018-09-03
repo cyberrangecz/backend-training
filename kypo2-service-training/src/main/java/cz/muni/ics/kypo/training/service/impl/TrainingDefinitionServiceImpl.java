@@ -2,14 +2,14 @@ package cz.muni.ics.kypo.training.service.impl;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
-
-import cz.muni.ics.kypo.exceptions.*;
-import cz.muni.ics.kypo.model.*;
-import cz.muni.ics.kypo.model.enums.TDState;
-import cz.muni.ics.kypo.repository.*;
+import cz.muni.ics.kypo.training.exceptions.CannotBeClonedException;
+import cz.muni.ics.kypo.training.exceptions.CannotBeDeletedException;
+import cz.muni.ics.kypo.training.exceptions.CannotBeUpdatedException;
+import cz.muni.ics.kypo.training.model.*;
+import cz.muni.ics.kypo.training.model.enums.TDState;
+import cz.muni.ics.kypo.training.repository.*;
 import org.hibernate.HibernateException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,8 +23,6 @@ import org.springframework.util.Assert;
 import com.querydsl.core.types.Predicate;
 
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
-import cz.muni.ics.kypo.training.model.TrainingDefinition;
-import cz.muni.ics.kypo.training.repository.TrainingDefinitionRepository;
 import cz.muni.ics.kypo.training.service.TrainingDefinitionService;
 
 /**

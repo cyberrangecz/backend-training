@@ -1,6 +1,6 @@
 package cz.muni.ics.kypo.training.repository.custom;
 
-import cz.muni.ics.kypo.model.AbstractLevel;
+import cz.muni.ics.kypo.training.model.AbstractLevel;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.repository.NoRepositoryBean;

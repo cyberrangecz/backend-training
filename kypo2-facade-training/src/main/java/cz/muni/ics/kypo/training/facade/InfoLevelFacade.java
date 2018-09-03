@@ -1,6 +1,6 @@
 package cz.muni.ics.kypo.training.facade;
 
-import cz.muni.ics.kypo.model.InfoLevel;
+import cz.muni.ics.kypo.training.model.InfoLevel;
 import org.springframework.data.domain.Pageable;
 
 import com.querydsl.core.types.Predicate;

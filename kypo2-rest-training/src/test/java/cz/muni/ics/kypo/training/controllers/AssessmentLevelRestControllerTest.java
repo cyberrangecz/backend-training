@@ -1,4 +1,4 @@
-package cz.muni.ics.kypo;
+package cz.muni.ics.kypo.training.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;

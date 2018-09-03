@@ -1,4 +1,4 @@
-package cz.muni.ics.kypo.exceptions;
+package cz.muni.ics.kypo.training.exceptions;
 
 public class CannotBeClonedException extends RuntimeException {
 

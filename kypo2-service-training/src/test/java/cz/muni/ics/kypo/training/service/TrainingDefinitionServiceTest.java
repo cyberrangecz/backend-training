@@ -2,10 +2,16 @@ package cz.muni.ics.kypo.training.service;
 
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.PathBuilder;
+import cz.muni.ics.kypo.training.exceptions.CannotBeClonedException;
+import cz.muni.ics.kypo.training.exceptions.CannotBeDeletedException;
+import cz.muni.ics.kypo.training.exceptions.CannotBeUpdatedException;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
+import cz.muni.ics.kypo.training.model.AssessmentLevel;
+import cz.muni.ics.kypo.training.model.GameLevel;
+import cz.muni.ics.kypo.training.model.InfoLevel;
 import cz.muni.ics.kypo.training.model.TrainingDefinition;
 import cz.muni.ics.kypo.training.model.enums.TDState;
-import cz.muni.ics.kypo.training.repository.TrainingDefinitionRepository;
+import cz.muni.ics.kypo.training.repository.*;
 import cz.muni.ics.kypo.training.service.TrainingDefinitionService;
 import org.hibernate.HibernateException;
 import org.junit.After;

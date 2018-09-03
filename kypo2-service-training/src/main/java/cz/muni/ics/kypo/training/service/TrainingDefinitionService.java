@@ -2,8 +2,13 @@ package cz.muni.ics.kypo.training.service;
 
 import java.util.Optional;
 
-import cz.muni.ics.kypo.exceptions.*;
-import cz.muni.ics.kypo.model.*;
+import cz.muni.ics.kypo.training.exceptions.CannotBeClonedException;
+import cz.muni.ics.kypo.training.exceptions.CannotBeDeletedException;
+import cz.muni.ics.kypo.training.exceptions.CannotBeUpdatedException;
+import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
+import cz.muni.ics.kypo.training.model.AssessmentLevel;
+import cz.muni.ics.kypo.training.model.GameLevel;
+import cz.muni.ics.kypo.training.model.InfoLevel;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 

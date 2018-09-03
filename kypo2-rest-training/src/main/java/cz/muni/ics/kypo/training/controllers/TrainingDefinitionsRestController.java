@@ -1,14 +1,16 @@
 package cz.muni.ics.kypo.training.controllers;
 
-import cz.muni.ics.kypo.api.dto.*;
-import cz.muni.ics.kypo.exceptions.CannotBeClonedException;
-import cz.muni.ics.kypo.exceptions.CannotBeDeletedException;
-import cz.muni.ics.kypo.exceptions.CannotBeUpdatedException;
-import cz.muni.ics.kypo.mapping.BeanMapping;
-import cz.muni.ics.kypo.model.*;
-import cz.muni.ics.kypo.rest.exceptions.ConflictException;
-import cz.muni.ics.kypo.rest.exceptions.ResourceNotCreatedException;
-import cz.muni.ics.kypo.rest.exceptions.ResourceNotModifiedException;
+import cz.muni.ics.kypo.training.api.dto.*;
+import cz.muni.ics.kypo.training.exceptions.CannotBeClonedException;
+import cz.muni.ics.kypo.training.exceptions.CannotBeDeletedException;
+import cz.muni.ics.kypo.training.exceptions.CannotBeUpdatedException;
+import cz.muni.ics.kypo.training.mapping.BeanMapping;
+import cz.muni.ics.kypo.training.exceptions.ConflictException;
+import cz.muni.ics.kypo.training.exceptions.ResourceNotCreatedException;
+import cz.muni.ics.kypo.training.exceptions.ResourceNotModifiedException;
+import cz.muni.ics.kypo.training.model.AssessmentLevel;
+import cz.muni.ics.kypo.training.model.GameLevel;
+import cz.muni.ics.kypo.training.model.InfoLevel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
