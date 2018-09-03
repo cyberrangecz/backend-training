@@ -41,7 +41,7 @@ public class GameLevel extends AbstractLevel implements Serializable {
   private int estimatedDuration;
   @Column(name = "attachments")
   private String[] attachments;
-  @OneToMany(fetch = FetchType.LAZY, targetEntity = Hint.class, mappedBy = "gameLevel")
+  @OneToMany(fetch = FetchType.LAZY, targetEntity = Hint.class, mappedBy = "gameLevel", orphanRemoval = true)
   private Set<Hint> hints = new HashSet<>();
 
   public GameLevel() {}
