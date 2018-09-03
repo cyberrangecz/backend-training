@@ -3,7 +3,7 @@ package cz.muni.ics.kypo.facade.impl;
 import java.util.Objects;
 import java.util.Optional;
 
-import cz.muni.ics.kypo.api.dto.AbstractLevelDTO;
+import cz.muni.ics.kypo.api.dto.*;
 import cz.muni.ics.kypo.exceptions.CannotBeClonedException;
 import cz.muni.ics.kypo.exceptions.CannotBeDeletedException;
 import cz.muni.ics.kypo.exceptions.CannotBeUpdatedException;
@@ -18,7 +18,6 @@ import org.springframework.transaction.annotation.Transactional;
 import com.querydsl.core.types.Predicate;
 
 import cz.muni.ics.kypo.api.PageResultResource;
-import cz.muni.ics.kypo.api.dto.TrainingDefinitionDTO;
 import cz.muni.ics.kypo.exception.FacadeLayerException;
 import cz.muni.ics.kypo.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.facade.TrainingDefinitionFacade;
@@ -188,4 +187,45 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
     }
   }
 
+  @Override
+  @Transactional
+  public InfoLevelDTO createInfoLevel(Long definitionId, InfoLevel infoLevel) throws FacadeLayerException, CannotBeUpdatedException {
+    LOG.debug("createInfoLevel({}, {})", definitionId, infoLevel);
+    try{
+      Objects.requireNonNull(infoLevel);
+      Objects.requireNonNull(definitionId);
+      InfoLevel iL = trainingDefinitionService.createInfoLevel(definitionId ,infoLevel).orElseThrow(() -> new ServiceLayerException());
+      return beanMapping.mapTo(iL, InfoLevelDTO.class);
+    } catch (ServiceLayerException ex){
+      throw new FacadeLayerException(ex.getLocalizedMessage());
+    }
+  }
+
+  @Override
+  @Transactional
+  public GameLevelDTO createGameLevel(Long definitionId, GameLevel gameLevel) throws FacadeLayerException, CannotBeUpdatedException {
+    LOG.debug("createGameLevel({}, {})", definitionId, gameLevel);
+    try{
+      Objects.requireNonNull(gameLevel);
+      Objects.requireNonNull(definitionId);
+      GameLevel gL = trainingDefinitionService.createGameLevel(definitionId ,gameLevel).orElseThrow(() -> new ServiceLayerException());
+      return beanMapping.mapTo(gL, GameLevelDTO.class);
+    } catch (ServiceLayerException ex){
+      throw new FacadeLayerException(ex.getLocalizedMessage());
+    }
+  }
+
+  @Override
+  @Transactional
+  public AssessmentLevelDTO createAssessmentLevel(Long definitionId, AssessmentLevel assessmentLevel) throws FacadeLayerException, CannotBeUpdatedException {
+    LOG.debug("assessmentInfoLevel({}, {})", definitionId, assessmentLevel);
+    try{
+      Objects.requireNonNull(assessmentLevel);
+      Objects.requireNonNull(definitionId);
+      AssessmentLevel aL = trainingDefinitionService.createAssessmentLevel(definitionId ,assessmentLevel).orElseThrow(() -> new ServiceLayerException());
+      return beanMapping.mapTo(aL, AssessmentLevelDTO.class);
+    } catch (ServiceLayerException ex){
+      throw new FacadeLayerException(ex.getLocalizedMessage());
+    }
+  }
 }
