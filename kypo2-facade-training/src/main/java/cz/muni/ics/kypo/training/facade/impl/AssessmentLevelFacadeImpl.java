@@ -68,17 +68,4 @@ public class AssessmentLevelFacadeImpl implements AssessmentLevelFacade {
         }
     }
 
-
-    @Override
-  @Transactional
-  public AssessmentLevelDTO create(AssessmentLevel al) throws FacadeLayerException {
-    try {
-      Objects.requireNonNull(al);
-      Optional<AssessmentLevel> assessmentLevel = assessmentLevelService.create(al);
-      AssessmentLevel createdAL = assessmentLevel.orElseThrow(() -> new ServiceLayerException());
-      return beanMapping.mapTo(createdAL, AssessmentLevelDTO.class);
-    }catch (NullPointerException| ServiceLayerException ex ) {
-      throw new FacadeLayerException(ex.getLocalizedMessage());
-    }
-  }
 }

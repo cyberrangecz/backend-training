@@ -28,11 +28,4 @@ public interface GameLevelFacade {
    * @return all game levels
    */
   public PageResultResource<GameLevelDTO> findAll(Predicate predicate, Pageable pageable);
-
-  /**
-   * creates new game level
-   * @param gameLevel to be created
-   * @return DTO of new game level
-   */
-  public GameLevelDTO create(GameLevel gameLevel);
 }

@@ -28,11 +28,4 @@ public interface InfoLevelFacade {
    * @return all info levels
    */
   public PageResultResource<InfoLevelDTO> findAll(Predicate predicate, Pageable pageable);
-
-  /**
-   * creates new info level
-   * @param infoLevel to be created
-   * @return DTO of new info level
-   */
-  public InfoLevelDTO create(InfoLevel infoLevel);
 }

@@ -30,12 +30,4 @@ public interface GameLevelService {
    * @return all game levels
    */
   public Page<GameLevel> findAll(Predicate predicate, Pageable pageable);
-
-  /**
-   * creates game level
-   * @param gameLevel to be created
-   * @return created game level
-   */
-  public Optional<GameLevel> create(GameLevel gameLevel);
-
 }

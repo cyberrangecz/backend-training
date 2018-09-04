@@ -140,29 +140,6 @@ public class AssessmentLevelFacadeTest {
         PageResultResource<AssessmentLevelDTO> assessmentLevelDTOS = assessmentLevelFacade.findAll(predicate,PageRequest.of(0,2));
     }
 
-    @Test
-    public void createAssessmentLevel() {
-
-        given(assessmentLevelService.create(al1)).willReturn(Optional.of(al1));
-        AssessmentLevelDTO alDTO = assessmentLevelFacade.create(al1);
-        deepEquals(al1, alDTO);
-        then(assessmentLevelService).should().create(al1);
-
-    }
-
-    @Test
-    public void createAssessmentLevelWithNull() {
-        thrown.expect(FacadeLayerException.class);
-        assessmentLevelFacade.create(null);
-    }
-
-    @Test
-    public void createAssessmentLevelWithServiceLayerException() {
-        willThrow(ServiceLayerException.class).given(assessmentLevelService).create(al1);
-        thrown.expect(FacadeLayerException.class);
-        assessmentLevelFacade.create(al1);
-    }
-
     private void deepEquals(AssessmentLevel expectedAssessmentLevel, AssessmentLevelDTO actualAssessmentLevel) {
         assertEquals(expectedAssessmentLevel.getId(), actualAssessmentLevel.getId());
         assertEquals(expectedAssessmentLevel.getAssessmentType(), actualAssessmentLevel.getType());

@@ -156,27 +156,4 @@ public class InfoLevelsRestController {
       throw new ResourceNotFoundException(ex.getLocalizedMessage());
     }
   }
-  //@formatter:on
-
-  @ApiOperation(httpMethod = "POST",
-      value = "Create Info Level",
-      response = InfoLevelDTO.class,
-      nickname = "createInfoLevel",
-      produces = "application/json",
-      consumes = "application/json")
-  @ApiResponses(value = {
-          @ApiResponse( code = 400, message = "The requested resource was not created")
-  })
-  @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<InfoLevelDTO> createInfoLevel(@ApiParam(value = "Info level to be created") @RequestBody InfoLevelDTO infoLevelDTO){
-    try {
-      InfoLevel infoLevel = dtoMapper.mapTo(infoLevelDTO, InfoLevel.class);
-      InfoLevelDTO newInfoLevel = infoLevelFacade.create(infoLevel);
-      return new ResponseEntity<>(newInfoLevel, HttpStatus.CREATED);
-    } catch (FacadeLayerException ex){
-      throw new ResourceNotCreatedException(ex.getLocalizedMessage());
-    }
-
-  }
-
 }

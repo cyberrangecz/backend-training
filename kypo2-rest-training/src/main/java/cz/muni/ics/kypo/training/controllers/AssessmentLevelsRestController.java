@@ -157,34 +157,5 @@ public class AssessmentLevelsRestController {
             throw new ResourceNotFoundException(ex.getLocalizedMessage());
         }
     }
-    //@formatter:on
-
-
-    //@formatter:off
-
-
-    @ApiOperation(httpMethod = "POST",
-            value = "Create Assessment Level.",
-            response = AssessmentLevelDTO.class,
-            nickname = "createAssessmentLevel",
-            produces = "application/json",
-            consumes = "application/json"
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 404, message = "The requested resource was not found.")
-    })
-    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Object> createAssessmentLevel(@ApiParam(name = "Assessment level to be created") @RequestBody AssessmentLevelDTO assessmentLevel,
-                                                        @ApiParam(value = "Fields which should be returned in REST API response", required = false)
-                                                        @RequestParam(value = "fields", required = false) String fields) {
-        try {
-            AssessmentLevel al = dtoMapper.mapTo(assessmentLevel, AssessmentLevel.class);
-            AssessmentLevelDTO assessmentLevelResource = assessmentLevelFacade.create(al);
-            Squiggly.init(objectMapper, fields);
-            return new ResponseEntity<>(SquigglyUtils.stringify(objectMapper, assessmentLevelResource), HttpStatus.OK);
-        } catch (FacadeLayerException ex) {
-            throw new ResourceNotCreatedException(ex.getLocalizedMessage());
-        }
-    }
 
 }

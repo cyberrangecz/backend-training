@@ -30,12 +30,4 @@ public interface InfoLevelService {
    * @return all info levels
    */
   public Page<InfoLevel> findAll(Predicate predicate, Pageable pageable);
-
-  /**
-   * creates new info level
-   * @param infoLevel to be created
-   * @return new info level
-   */
-  public Optional<InfoLevel> create(InfoLevel infoLevel);
-
 }

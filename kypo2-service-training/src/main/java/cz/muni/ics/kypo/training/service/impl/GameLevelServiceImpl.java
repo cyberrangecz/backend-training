@@ -54,13 +54,4 @@ public class GameLevelServiceImpl implements GameLevelService {
       throw new ServiceLayerException(ex.getLocalizedMessage());
     }
   }
-
-  @Override
-  public Optional<GameLevel> create(GameLevel gameLevel) {
-    LOG.debug("create({})", gameLevel);
-    Assert.notNull(gameLevel, "Game level must not be null");
-    GameLevel gL = gameLevelRepository.save(gameLevel);
-    LOG.info("Game level with id: "+ gL.getId() +" created");
-    return Optional.of(gL);
-  }
 }

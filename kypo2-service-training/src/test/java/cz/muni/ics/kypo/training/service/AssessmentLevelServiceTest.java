@@ -93,10 +93,7 @@ public class AssessmentLevelServiceTest {
     public void findByIdNotFoundAssessmentLevel() {
         Long id = 3L;
         assertEquals(Optional.empty(), assessmentLevelService.findById(id));
-
-
     }
-
 
     @Test
     public void findAll() {
@@ -115,28 +112,8 @@ public class AssessmentLevelServiceTest {
         assertEquals(2, pr.getTotalElements());
     }
 
-    @Test
-    public void createAssessmentLevel() {
-
-        given(assessmentLevelRepository.save(assessmentLevel1)).willReturn(assessmentLevel1);
-        AssessmentLevel al = assessmentLevelService.create(assessmentLevel1).get();
-        deepEquals(assessmentLevel1, al);
-        then(assessmentLevelRepository).should().save(assessmentLevel1);
-
-    }
-
-    @Test
-    public void createAssessmentLevelWithNull() {
-        thrown.expect(IllegalArgumentException.class);
-        thrown.expectMessage("Input assessment level must not be null");
-        assessmentLevelService.create(null);
-    }
-
     private void deepEquals(AssessmentLevel expectedAssessmentLevel, AssessmentLevel actualAssessmentLevel) {
         assertEquals(expectedAssessmentLevel.getId(), actualAssessmentLevel.getId());
         assertEquals(expectedAssessmentLevel.getAssessmentType(), actualAssessmentLevel.getAssessmentType());
     }
-
-
-
 }

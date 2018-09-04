@@ -49,15 +49,4 @@ public class AssessmentLevelServiceImpl implements AssessmentLevelService {
             throw new ServiceLayerException(ex.getLocalizedMessage());
         }
     }
-
-    @Override
-    public Optional<AssessmentLevel> create(AssessmentLevel assessmentLevel) {
-        LOG.debug("create({})", assessmentLevel);
-        Assert.notNull(assessmentLevel, "Input assessment level must not be null");
-        AssessmentLevel aL = assessmentLevelRepository.save(assessmentLevel);
-        LOG.info("Assessment level with id: " + assessmentLevel.getId() + " created.");
-        return Optional.of(aL);
-
-    }
-
 }

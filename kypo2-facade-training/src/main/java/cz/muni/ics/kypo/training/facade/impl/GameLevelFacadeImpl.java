@@ -65,17 +65,4 @@ public class GameLevelFacadeImpl implements GameLevelFacade {
       throw new FacadeLayerException(ex.getLocalizedMessage());
     }
   }
-
-  @Transactional
-  @Override
-  public GameLevelDTO create(GameLevel gameLevel) {
-    LOG.debug("create({})", gameLevel);
-    try{
-      Objects.requireNonNull(gameLevel);
-      GameLevel gL = gameLevelService.create(gameLevel).orElseThrow(() -> new ServiceLayerException());
-      return beanMapping.mapTo(gL, GameLevelDTO.class);
-    } catch (NullPointerException | ServiceLayerException ex){
-      throw new FacadeLayerException(ex.getLocalizedMessage());
-    }
-  }
 }

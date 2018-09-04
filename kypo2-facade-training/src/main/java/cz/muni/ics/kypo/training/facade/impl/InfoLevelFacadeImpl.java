@@ -66,18 +66,4 @@ public class InfoLevelFacadeImpl implements InfoLevelFacade {
       throw new FacadeLayerException(ex.getLocalizedMessage());
     }
   }
-  
-  @Transactional
-  @Override
-  public InfoLevelDTO create(InfoLevel infoLevel) {
-    LOG.debug("create({})", infoLevel);
-    try{
-      Objects.requireNonNull(infoLevel);
-      InfoLevel iL = infoService.create(infoLevel).orElseThrow(() -> new ServiceLayerException());
-      return beanMapping.mapTo(iL, InfoLevelDTO.class);
-    } catch (NullPointerException | ServiceLayerException ex){
-      throw new FacadeLayerException(ex.getLocalizedMessage());
-    }
-  }
-
 }
