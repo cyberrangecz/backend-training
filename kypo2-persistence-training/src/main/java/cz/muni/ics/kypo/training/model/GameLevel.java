@@ -7,13 +7,7 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.Lob;
-import javax.persistence.OneToMany;
-import javax.persistence.PrimaryKeyJoinColumn;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 /**
  * 
@@ -41,7 +35,7 @@ public class GameLevel extends AbstractLevel implements Serializable {
   private int estimatedDuration;
   @Column(name = "attachments")
   private String[] attachments;
-  @OneToMany(fetch = FetchType.LAZY, targetEntity = Hint.class, mappedBy = "gameLevel", orphanRemoval = true)
+  @OneToMany(fetch = FetchType.LAZY, targetEntity = Hint.class, mappedBy = "gameLevel", cascade = CascadeType.ALL)
   private Set<Hint> hints = new HashSet<>();
 
   public GameLevel() {}

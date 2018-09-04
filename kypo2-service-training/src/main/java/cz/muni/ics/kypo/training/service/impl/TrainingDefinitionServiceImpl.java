@@ -244,6 +244,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
   @Override
   public Optional<GameLevel> createGameLevel(Long definitionId, GameLevel gameLevel) throws ServiceLayerException, CannotBeUpdatedException {
     LOG.debug("createGameLevel({}, {})", definitionId, gameLevel);
+    Assert.notNull(definitionId, "Definition id must not be null");
     TrainingDefinition trainingDefinition = findById(definitionId).orElseThrow(() -> new ServiceLayerException());
     if (!trainingDefinition.getState().equals(TDState.UNRELEASED))
       throw new CannotBeUpdatedException("Cant create level in released or archived training definition");
@@ -265,6 +266,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
   @Override
   public Optional<InfoLevel> createInfoLevel(Long definitionId, InfoLevel infoLevel) throws ServiceLayerException, CannotBeUpdatedException {
     LOG.debug("createInfoLevel({}, {})", definitionId, infoLevel);
+    Assert.notNull(definitionId, "Definition id must not be null");
     TrainingDefinition trainingDefinition = findById(definitionId).orElseThrow(() -> new ServiceLayerException());
     if (!trainingDefinition.getState().equals(TDState.UNRELEASED))
       throw new CannotBeUpdatedException("Cant create level in released or archived training definition");
@@ -286,6 +288,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
   @Override
   public Optional<AssessmentLevel> createAssessmentLevel(Long definitionId, AssessmentLevel assessmentLevel) throws ServiceLayerException, CannotBeUpdatedException {
     LOG.debug("createAssessmentLevel({}, {})", definitionId, assessmentLevel);
+    Assert.notNull(definitionId, "Definition id must not be null");
     TrainingDefinition trainingDefinition = findById(definitionId).orElseThrow(() -> new ServiceLayerException());
     if (!trainingDefinition.getState().equals(TDState.UNRELEASED))
       throw new CannotBeUpdatedException("Cant create level in released or archived training definition");
