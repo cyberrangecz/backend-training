@@ -3,6 +3,9 @@ package cz.muni.ics.kypo.training.facade;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.PathBuilder;
 import cz.muni.ics.kypo.training.api.PageResultResource;
+import cz.muni.ics.kypo.training.api.dto.AssessmentLevelDTO;
+import cz.muni.ics.kypo.training.api.dto.GameLevelDTO;
+import cz.muni.ics.kypo.training.api.dto.InfoLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.TrainingDefinitionDTO;
 import cz.muni.ics.kypo.training.config.FacadeTestConfiguration;
 import cz.muni.ics.kypo.training.exception.FacadeLayerException;
@@ -294,6 +297,85 @@ public class TrainingDefinitionFacadeTest {
     public void updateInfoLevelWithNullLevel() {
         thrown.expect(NullPointerException.class);
         trainingDefinitionFacade.updateInfoLevel(trainingDefinition2.getId(), null);
+    }
+
+    @Test
+    public void createInfoLevel() {
+        InfoLevel newInfoLevel = new InfoLevel();
+        newInfoLevel.setId(5L);
+        newInfoLevel.setTitle("test");
+        given(trainingDefinitionService.createInfoLevel(unreleasedDefinition.getId(), newInfoLevel)).willReturn(Optional.of(newInfoLevel));
+
+        InfoLevelDTO createdLevel = trainingDefinitionFacade.createInfoLevel(unreleasedDefinition.getId(), newInfoLevel);
+
+        assertEquals(newInfoLevel.getId(), createdLevel.getId());
+        assertEquals(newInfoLevel.getTitle(), createdLevel.getTitle());
+        then(trainingDefinitionService).should().createInfoLevel(unreleasedDefinition.getId(), newInfoLevel);
+    }
+
+    @Test
+    public void createInfoLevelWithNullDefinitionId() {
+        thrown.expect(NullPointerException.class);
+        trainingDefinitionFacade.createInfoLevel(null, infoLevel);
+    }
+
+    @Test
+    public void createInfoLevelWithNullLevel() {
+        thrown.expect(NullPointerException.class);
+        trainingDefinitionFacade.createInfoLevel(trainingDefinition1.getId(), null);
+    }
+
+
+    @Test
+    public void createGameLevel() {
+        GameLevel newGameLevel = new GameLevel();
+        newGameLevel.setId(5L);
+        newGameLevel.setTitle("test");
+        given(trainingDefinitionService.createGameLevel(unreleasedDefinition.getId(), newGameLevel)).willReturn(Optional.of(newGameLevel));
+
+        GameLevelDTO createdLevel = trainingDefinitionFacade.createGameLevel(unreleasedDefinition.getId(), newGameLevel);
+
+        assertEquals(newGameLevel.getId(), createdLevel.getId());
+        assertEquals(newGameLevel.getTitle(), createdLevel.getTitle());
+        then(trainingDefinitionService).should().createGameLevel(unreleasedDefinition.getId(), newGameLevel);
+    }
+
+    @Test
+    public void createGameLevelWithNullDefinitionId() {
+        thrown.expect(NullPointerException.class);
+        trainingDefinitionFacade.createGameLevel(null, gameLevel);
+    }
+
+    @Test
+    public void createGameLevelWithNullLevel() {
+        thrown.expect(NullPointerException.class);
+        trainingDefinitionFacade.createGameLevel(trainingDefinition1.getId(), null);
+    }
+
+    @Test
+    public void createAssessmentLevel() {
+        AssessmentLevel newAssessmentLevel = new AssessmentLevel();
+        newAssessmentLevel.setId(5L);
+        newAssessmentLevel.setTitle("test");
+        given(trainingDefinitionService.createAssessmentLevel(unreleasedDefinition.getId(), newAssessmentLevel)).willReturn(Optional.of(newAssessmentLevel));
+
+        AssessmentLevelDTO createdLevel = trainingDefinitionFacade.createAssessmentLevel(unreleasedDefinition.getId(), newAssessmentLevel);
+
+        assertEquals(newAssessmentLevel.getId(), createdLevel.getId());
+        assertEquals(newAssessmentLevel.getTitle(), createdLevel.getTitle());
+        then(trainingDefinitionService).should().createAssessmentLevel(unreleasedDefinition.getId(), newAssessmentLevel);
+    }
+
+    @Test
+    public void createAssessmentLevelWithNullDefinitionId() {
+        thrown.expect(NullPointerException.class);
+        trainingDefinitionFacade.createAssessmentLevel(null, level1);
+    }
+
+    @Test
+    public void createAssessmentLevelWithNullLevel() {
+        thrown.expect(NullPointerException.class);
+        trainingDefinitionFacade.createAssessmentLevel(trainingDefinition1.getId(), null);
     }
 
 
