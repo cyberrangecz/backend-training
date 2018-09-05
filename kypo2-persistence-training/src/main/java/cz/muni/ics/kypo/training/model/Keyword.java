@@ -2,8 +2,12 @@ package cz.muni.ics.kypo.training.model;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.Objects;
 
+/**
+ * @author Boris Jadus
+ */
 @Entity(name = "Keyword")
 @Table(name = "keyword")
 public class Keyword implements Serializable {
@@ -12,8 +16,8 @@ public class Keyword implements Serializable {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   @Column(name = "id", unique = true, nullable = false, insertable = false)
   private Long id;
-  @Column(name = "keyword", nullable = false)
-  private String keyword;
+  @Column(name = "keyword_hash", nullable = false)
+  private String keywordHash;
 
   public Long getId() {
     return id;
@@ -23,12 +27,12 @@ public class Keyword implements Serializable {
     this.id = id;
   }
 
-  public String getKeyword() {
-    return keyword;
+  public String getKeywordHash() {
+    return keywordHash;
   }
 
-  public void setKeyword(String keyword) {
-    this.keyword = keyword;
+  public void setKeywordHash(String keywordHash) {
+    this.keywordHash = keywordHash;
   }
 
   @Override
@@ -37,20 +41,20 @@ public class Keyword implements Serializable {
     if (!(o instanceof Keyword)) return false;
     Keyword keyword = (Keyword) o;
     return Objects.equals(id, keyword.id) &&
-            Objects.equals(this.keyword, keyword.keyword);
+            Objects.equals(this.keywordHash, keyword.keywordHash);
   }
 
   @Override
   public int hashCode() {
 
-    return Objects.hash(id, keyword);
+    return Objects.hash(id, keywordHash);
   }
 
   @Override
   public String toString() {
     return "Keyword{" +
             "id=" + id +
-            ", keyword='" + keyword + '\'' +
+            ", keywordHash=" + keywordHash +
             '}';
   }
 }

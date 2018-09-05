@@ -51,5 +51,11 @@ public interface TrainingInstanceService {
    */
   public void delete(TrainingInstance trainingInstance);
 
+  /**
+   * Generates keyword for training instance
+   * @return new keyword
+   */
+  public char[] generateKeyword();
+
 
 }

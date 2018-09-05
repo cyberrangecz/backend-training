@@ -90,19 +90,19 @@ public class TrainingInstancesRestControllerTest {
 
         trainingInstance1 = new TrainingInstance();
         trainingInstance1.setId(1L);
-        trainingInstance1.setKeyword("test1");
+        trainingInstance1.setTitle("test1");
 
         trainingInstance2 = new TrainingInstance();
         trainingInstance2.setId(2L);
-        trainingInstance2.setKeyword("test2");
+        trainingInstance2.setTitle("test2");
 
         trainingInstance1DTO = new TrainingInstanceDTO();
         trainingInstance1.setId(1L);
-        trainingInstance1.setKeyword("test1");
+        trainingInstance1.setTitle("test1");
 
         trainingInstance2DTO = new TrainingInstanceDTO();
         trainingInstance2.setId(2L);
-        trainingInstance2.setKeyword("test2");
+        trainingInstance2.setTitle("test2");
 
         List<TrainingInstance> expected = new ArrayList<>();
         expected.add(trainingInstance1);

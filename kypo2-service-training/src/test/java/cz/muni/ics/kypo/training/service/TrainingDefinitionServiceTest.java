@@ -13,6 +13,8 @@ import cz.muni.ics.kypo.training.model.TrainingDefinition;
 import cz.muni.ics.kypo.training.model.enums.TDState;
 import cz.muni.ics.kypo.training.repository.*;
 import cz.muni.ics.kypo.training.service.TrainingDefinitionService;
+import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.hibernate.HibernateException;
 import org.junit.After;
 import org.junit.Before;
@@ -772,6 +774,27 @@ public class TrainingDefinitionServiceTest {
         thrown.expect(IllegalArgumentException.class);
         thrown.expectMessage("Assessment level must not be null");
         trainingDefinitionService.createAssessmentLevel(definitionWithoutLevels.getId(), null);
+    }
+
+    @Test
+    public void test(){
+        String upperCase = "QWERTYUIOPASDFGHJKLZXCVBNM";
+        String lowerCase = "qwertyuiopasdfghjklzxcvbnm";
+        String num = "0123456789";
+        String special = "~!@#$%^&*()_+|{}:<>?-=";
+        String chars = upperCase + lowerCase + num + special;
+        String pass;
+        pass = RandomStringUtils.random(6, true, true);
+        System.out.println(pass + " --> " + DigestUtils.sha256Hex(pass));
+        pass = RandomStringUtils.random(6, true, true);
+        System.out.println(pass + " --> " + DigestUtils.sha256Hex(pass));
+        pass = RandomStringUtils.random(6, true, true);
+        System.out.println(pass + " --> " + DigestUtils.sha256Hex(pass));
+        pass = RandomStringUtils.random(6, true, true);
+        System.out.println(pass + " --> " + DigestUtils.sha256Hex(pass));
+        pass = RandomStringUtils.random(6, true, true);
+        System.out.println(pass + " --> " + DigestUtils.sha256Hex(pass));
+
     }
 
     @After

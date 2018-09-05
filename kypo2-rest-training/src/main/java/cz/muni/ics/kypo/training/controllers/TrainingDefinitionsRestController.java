@@ -43,6 +43,8 @@ import io.swagger.annotations.ApiResponses;
 import io.swagger.annotations.Authorization;
 import io.swagger.annotations.AuthorizationScope;
 
+import javax.validation.Valid;
+
 /**
  * @author Pavel Šeda
  *
@@ -384,7 +386,7 @@ public class TrainingDefinitionsRestController {
   })
   @PutMapping(value = "createInfoLevel/{definitionId}", consumes = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<InfoLevelDTO> createInfoLevel(@ApiParam(value = "Id of definition") @PathVariable(value = "definitionId") Long definitionId,
-                                                      @ApiParam(value = "Info level to be created") @RequestBody InfoLevelDTO infoLevelDTO){
+                                                      @ApiParam(value = "Info level to be created") @RequestBody @Valid InfoLevelDTO infoLevelDTO){
     try {
       InfoLevel infoLevel = dtoMapper.mapTo(infoLevelDTO, InfoLevel.class);
       InfoLevelDTO newInfoLevel = trainingDefinitionFacade.createInfoLevel(definitionId, infoLevel);

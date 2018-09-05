@@ -12,7 +12,7 @@ import io.swagger.annotations.ApiModel;
 @ApiModel(value = "InfoLevelDTO", description = ".")
 public class InfoLevelDTO extends AbstractLevelDTO {
 
-  @NotNull
+  @NotNull(message = "neco")
   private String content;
 
   public InfoLevelDTO() {}

@@ -3,6 +3,9 @@ package cz.muni.ics.kypo.training.service.impl;
 import java.util.Optional;
 
 import com.mysema.commons.lang.Assert;
+import cz.muni.ics.kypo.training.repository.KeywordRepository;
+import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.hibernate.HibernateException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,10 +32,12 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
   private static final Logger LOG = LoggerFactory.getLogger(TrainingInstanceServiceImpl.class);
 
   private TrainingInstanceRepository trainingInstanceRepository;
+  private KeywordRepository keywordRepository;
 
   @Autowired
-  public TrainingInstanceServiceImpl(TrainingInstanceRepository trainingInstanceRepository) {
+  public TrainingInstanceServiceImpl(TrainingInstanceRepository trainingInstanceRepository, KeywordRepository keywordRepository) {
     this.trainingInstanceRepository = trainingInstanceRepository;
+    this.keywordRepository = keywordRepository;
   }
 
 
@@ -81,4 +86,23 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
     trainingInstanceRepository.delete(trainingInstance);
     LOG.info("Training instance with id: " + trainingInstance.getId() + "created.");
   }
+
+  @Override
+  public char[] generateKeyword() {
+    /*
+    String upperCase = "QWERTYUIOPASDFGHJKLZXCVBNM";
+    String lowerCase = "qwertyuiopasdfghjklzxcvbnm";
+    String num = "0123456789";
+    String special = "~!@#$%^&*()_+|{}:<>?-=";
+    String chars = upperCase + lowerCase + num + special;
+    */
+    String newKeyword = RandomStringUtils.random(6, true, true);
+    String newKeywordHash = DigestUtils.sha256Hex(newKeyword);
+
+    //keywordRepository.
+
+    return newKeyword.toCharArray();
+  }
+
+
 }

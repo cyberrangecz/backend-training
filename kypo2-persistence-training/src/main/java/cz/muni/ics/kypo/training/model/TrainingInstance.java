@@ -30,8 +30,8 @@ public class TrainingInstance implements Serializable {
   private String title;
   @Column(name = "pool_size", nullable = false)
   private int poolSize;
-  @OneToOne(fetch = FetchType.LAZY)
-  private Keyword keyword;
+  @Column(name = "keyword", nullable = false)
+  private char[] keyword;
   @ManyToOne(fetch = FetchType.LAZY)
   private TrainingDefinition trainingDefinition;
   @ManyToMany(fetch = FetchType.LAZY)
@@ -41,7 +41,7 @@ public class TrainingInstance implements Serializable {
 
   public TrainingInstance() {}
 
-  public TrainingInstance(Long id, LocalDateTime startTime, LocalDateTime endTime, String title, int poolSize, Keyword keyword,
+  public TrainingInstance(Long id, LocalDateTime startTime, LocalDateTime endTime, String title, int poolSize, char[] keyword,
       TrainingDefinition trainingDefinition, Set<UserRef> organizers, Set<SandboxInstanceRef> sandboxInstanceRef) {
     super();
     this.id = id;
@@ -79,11 +79,11 @@ public class TrainingInstance implements Serializable {
     this.endTime = endTime;
   }
 
-  public Keyword getKeyword() {
+  public char[] getKeyword() {
     return keyword;
   }
 
-  public void setKeyword(Keyword keyword) {
+  public void setKeyword(char[] keyword) {
     this.keyword = keyword;
   }
 
@@ -103,11 +103,11 @@ public class TrainingInstance implements Serializable {
     this.poolSize = poolSize;
   }
 
-  public Keyword getKeywords() {
+  public char[] getKeywords() {
     return keyword;
   }
 
-  public void setKeywords(Keyword keywords) {
+  public void setKeywords(char[] keywords) {
     this.keyword = keywords;
   }
 
