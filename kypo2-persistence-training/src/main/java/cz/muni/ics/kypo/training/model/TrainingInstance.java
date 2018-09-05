@@ -7,15 +7,7 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.ManyToMany;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 /**
  * 
@@ -38,8 +30,8 @@ public class TrainingInstance implements Serializable {
   private String title;
   @Column(name = "pool_size", nullable = false)
   private int poolSize;
-  @Column(name = "\"keyword\"", nullable = false)
-  private String keyword;
+  @OneToOne(fetch = FetchType.LAZY)
+  private Keyword keyword;
   @ManyToOne(fetch = FetchType.LAZY)
   private TrainingDefinition trainingDefinition;
   @ManyToMany(fetch = FetchType.LAZY)
@@ -49,7 +41,7 @@ public class TrainingInstance implements Serializable {
 
   public TrainingInstance() {}
 
-  public TrainingInstance(Long id, LocalDateTime startTime, LocalDateTime endTime, String title, int poolSize, String keyword,
+  public TrainingInstance(Long id, LocalDateTime startTime, LocalDateTime endTime, String title, int poolSize, Keyword keyword,
       TrainingDefinition trainingDefinition, Set<UserRef> organizers, Set<SandboxInstanceRef> sandboxInstanceRef) {
     super();
     this.id = id;
@@ -87,11 +79,11 @@ public class TrainingInstance implements Serializable {
     this.endTime = endTime;
   }
 
-  public String getKeyword() {
+  public Keyword getKeyword() {
     return keyword;
   }
 
-  public void setKeyword(String keyword) {
+  public void setKeyword(Keyword keyword) {
     this.keyword = keyword;
   }
 
@@ -111,11 +103,11 @@ public class TrainingInstance implements Serializable {
     this.poolSize = poolSize;
   }
 
-  public String getKeywords() {
+  public Keyword getKeywords() {
     return keyword;
   }
 
-  public void setKeywords(String keywords) {
+  public void setKeywords(Keyword keywords) {
     this.keyword = keywords;
   }
 
