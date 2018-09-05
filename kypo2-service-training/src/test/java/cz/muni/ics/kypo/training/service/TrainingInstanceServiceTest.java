@@ -23,6 +23,7 @@ import org.springframework.data.domain.*;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -138,7 +139,8 @@ public class TrainingInstanceServiceTest {
     @Test
     public void deleteTrainingInstaceWithNull(){
         thrown.expect(IllegalArgumentException.class);
-        thrown.expectMessage("Input training instance must not be null");
+        thrown.expectMessage("Input training instance id" +
+                " must not be null");
         trainingInstanceService.delete(null);
     }
 
@@ -146,8 +148,6 @@ public class TrainingInstanceServiceTest {
     public void after() {
         reset(trainingInstanceRepository);
     }
-
-
 
     private void deepEquals(TrainingInstance expected, TrainingInstance actual) {
         assertEquals(expected.getId(), actual.getId());

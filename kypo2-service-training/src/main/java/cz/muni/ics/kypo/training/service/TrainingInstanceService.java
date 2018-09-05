@@ -2,6 +2,7 @@ package cz.muni.ics.kypo.training.service;
 
 import java.util.Optional;
 
+import cz.muni.ics.kypo.training.exceptions.CannotBeDeletedException;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -48,9 +49,9 @@ public interface TrainingInstanceService {
 
   /**
    * Deletes instance
-   * @param trainingInstance to be deleted
+   * @param id of instance to be deleted
    */
-  public void delete(TrainingInstance trainingInstance);
+  public void delete(Long id) throws CannotBeDeletedException, ServiceLayerException;
 
   /**
    * Generates keyword for training instance

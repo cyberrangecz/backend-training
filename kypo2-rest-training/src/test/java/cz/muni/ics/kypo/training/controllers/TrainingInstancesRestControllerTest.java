@@ -220,9 +220,9 @@ public class TrainingInstancesRestControllerTest {
         Exception exception = mockMvc.perform(delete("/training-instances")
                 .param("trainingInstanceId", "1")
                 .contentType(MediaType.APPLICATION_JSON_VALUE))
-                .andExpect(status().isNotModified())
+                .andExpect(status().isNotFound())
                 .andReturn().getResolvedException();
-        assertEquals(ResourceNotModifiedException.class, exception.getClass());
+        assertEquals(ResourceNotFoundException.class, exception.getClass());
     }
 
     private static String convertObjectToJsonBytes(Object object) throws IOException {

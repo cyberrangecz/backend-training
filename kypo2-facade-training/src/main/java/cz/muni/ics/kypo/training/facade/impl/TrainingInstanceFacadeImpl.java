@@ -97,19 +97,17 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
 
   @Override
   @Transactional
-  public void delete(Long id) {
-    Optional<TrainingInstance> trainingInstance = null;
+  public void delete(Long id) throws FacadeLayerException{
     try {
       Objects.requireNonNull(id);
-      trainingInstance = trainingInstanceService.findById(id);
-      TrainingInstance tI =trainingInstance.orElseThrow(() -> new ServiceLayerException("Training instance with id: "+ id +", is not found"));
-      trainingInstanceService.delete(tI);
-    } catch(NullPointerException | ServiceLayerException ex) {
+      trainingInstanceService.delete(id);
+    } catch(ServiceLayerException ex) {
       throw new FacadeLayerException(ex.getLocalizedMessage());
     }
   }
 
   @Override
+  @Transactional
   public char[] generateKeyword() throws FacadeLayerException {
     try {
       char[] newKeyword = trainingInstanceService.generateKeyword();

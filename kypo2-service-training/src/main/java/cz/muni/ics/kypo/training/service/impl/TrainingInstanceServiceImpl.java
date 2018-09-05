@@ -1,8 +1,11 @@
 package cz.muni.ics.kypo.training.service.impl;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 import com.mysema.commons.lang.Assert;
+import cz.muni.ics.kypo.training.exceptions.CannotBeDeletedException;
 import cz.muni.ics.kypo.training.model.Keyword;
 import cz.muni.ics.kypo.training.repository.KeywordRepository;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -81,11 +84,15 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
   }
 
   @Override
-  public void delete(TrainingInstance trainingInstance) {
-    LOG.debug("delete({})",trainingInstance);
-    Assert.notNull(trainingInstance, "Input training instance must not be null");
+  public void delete(Long id) throws CannotBeDeletedException, ServiceLayerException{
+    LOG.debug("delete({})", id);
+    Assert.notNull(id, "Input training instance id must not be null");
+    TrainingInstance trainingInstance = trainingInstanceRepository.findById(id)
+            .orElseThrow(() -> new ServiceLayerException("Training instance with id: " + id + ", not found"));
+    LocalDateTime currentDate = LocalDateTime.now();
+    if (!currentDate.isAfter(trainingInstance.getEndTime())) throw new CannotBeDeletedException("Only finished instances can be deleted");
     trainingInstanceRepository.delete(trainingInstance);
-    LOG.info("Training instance with id: " + trainingInstance.getId() + "created.");
+    LOG.info("Training instance with id: " + id + "created.");
   }
 
   @Override

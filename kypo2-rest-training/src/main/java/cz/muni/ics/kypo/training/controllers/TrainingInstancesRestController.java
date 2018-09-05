@@ -1,8 +1,7 @@
 package cz.muni.ics.kypo.training.controllers;
 
+import cz.muni.ics.kypo.training.exceptions.*;
 import cz.muni.ics.kypo.training.mapping.BeanMapping;
-import cz.muni.ics.kypo.training.exceptions.ResourceNotCreatedException;
-import cz.muni.ics.kypo.training.exceptions.ResourceNotModifiedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,7 +26,6 @@ import cz.muni.ics.kypo.training.api.dto.TrainingInstanceDTO;
 import cz.muni.ics.kypo.training.exception.FacadeLayerException;
 import cz.muni.ics.kypo.training.facade.TrainingInstanceFacade;
 import cz.muni.ics.kypo.training.model.TrainingInstance;
-import cz.muni.ics.kypo.training.exceptions.ResourceNotFoundException;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -207,7 +205,8 @@ public class TrainingInstancesRestController {
     produces = "application/json",
     consumes = "application/json")
   @ApiResponses( value = {
-          @ApiResponse(code = 400, message = "The requested resource was not modified")
+          @ApiResponse(code = 404, message = "The requested resource was not found"),
+          @ApiResponse(code = 409, message = "The requested resource was not deleted because of conflict in current date")
   })
   @DeleteMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<Void> deleteTrainingInstance(@ApiParam(name = "Id of training instance to be deleted") @RequestParam("trainingInstanceId") long id) {
@@ -215,8 +214,11 @@ public class TrainingInstancesRestController {
       trainingInstanceFacade.delete(id);
       return new ResponseEntity<>(HttpStatus.OK);
     } catch (FacadeLayerException ex) {
-      throw new ResourceNotModifiedException(ex.getLocalizedMessage());
+      throw new ResourceNotFoundException(ex.getLocalizedMessage());
+    } catch (CannotBeDeletedException ex) {
+      throw new ConflictException(ex.getLocalizedMessage());
     }
+
   }
 
   @ApiOperation(httpMethod = "POST",

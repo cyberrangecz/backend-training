@@ -136,7 +136,7 @@ public class TrainingInstanceFacadeTest {
 
     @Test
     public void deleteTrainingInstanceWithNull() {
-        thrown.expect(FacadeLayerException.class);
+        thrown.expect(NullPointerException.class);
         trainingInstanceFacade.delete(null);
     }
 
