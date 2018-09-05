@@ -3,6 +3,7 @@ package cz.muni.ics.kypo.training.service.impl;
 import java.util.Optional;
 
 import com.mysema.commons.lang.Assert;
+import cz.muni.ics.kypo.training.model.Keyword;
 import cz.muni.ics.kypo.training.repository.KeywordRepository;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -88,18 +89,15 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
   }
 
   @Override
-  public char[] generateKeyword() {
-    /*
-    String upperCase = "QWERTYUIOPASDFGHJKLZXCVBNM";
-    String lowerCase = "qwertyuiopasdfghjklzxcvbnm";
-    String num = "0123456789";
-    String special = "~!@#$%^&*()_+|{}:<>?-=";
-    String chars = upperCase + lowerCase + num + special;
-    */
+  public char[] generateKeyword() throws ServiceLayerException {
     String newKeyword = RandomStringUtils.random(6, true, true);
     String newKeywordHash = DigestUtils.sha256Hex(newKeyword);
 
-    //keywordRepository.
+    Optional<Keyword> keyword = keywordRepository.findOneByKeywordHash(newKeywordHash);
+    if (keyword.isPresent()) throw new ServiceLayerException("Keyword already exists");
+    Keyword newKeywordInstance = new Keyword();
+    newKeywordInstance.setKeywordHash(newKeywordHash);
+    keywordRepository.save(newKeywordInstance);
 
     return newKeyword.toCharArray();
   }

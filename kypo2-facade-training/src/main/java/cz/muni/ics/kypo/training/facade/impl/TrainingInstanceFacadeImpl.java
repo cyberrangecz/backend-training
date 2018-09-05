@@ -108,4 +108,14 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
       throw new FacadeLayerException(ex.getLocalizedMessage());
     }
   }
+
+  @Override
+  public char[] generateKeyword() throws FacadeLayerException {
+    try {
+      char[] newKeyword = trainingInstanceService.generateKeyword();
+      return newKeyword;
+    } catch (ServiceLayerException ex){
+      throw new FacadeLayerException(ex.getLocalizedMessage());
+    }
+  }
 }

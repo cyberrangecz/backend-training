@@ -776,27 +776,6 @@ public class TrainingDefinitionServiceTest {
         trainingDefinitionService.createAssessmentLevel(definitionWithoutLevels.getId(), null);
     }
 
-    @Test
-    public void test(){
-        String upperCase = "QWERTYUIOPASDFGHJKLZXCVBNM";
-        String lowerCase = "qwertyuiopasdfghjklzxcvbnm";
-        String num = "0123456789";
-        String special = "~!@#$%^&*()_+|{}:<>?-=";
-        String chars = upperCase + lowerCase + num + special;
-        String pass;
-        pass = RandomStringUtils.random(6, true, true);
-        System.out.println(pass + " --> " + DigestUtils.sha256Hex(pass));
-        pass = RandomStringUtils.random(6, true, true);
-        System.out.println(pass + " --> " + DigestUtils.sha256Hex(pass));
-        pass = RandomStringUtils.random(6, true, true);
-        System.out.println(pass + " --> " + DigestUtils.sha256Hex(pass));
-        pass = RandomStringUtils.random(6, true, true);
-        System.out.println(pass + " --> " + DigestUtils.sha256Hex(pass));
-        pass = RandomStringUtils.random(6, true, true);
-        System.out.println(pass + " --> " + DigestUtils.sha256Hex(pass));
-
-    }
-
     @After
     public void after(){
         reset(trainingDefinitionRepository);

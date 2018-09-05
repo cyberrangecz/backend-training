@@ -54,4 +54,11 @@ public interface TrainingInstanceFacade {
    */
   public void delete(Long id) throws FacadeLayerException;
 
+  /**
+   * Generates new keyword
+   * @return generated keyword
+   * @throws FacadeLayerException if keyword already exists
+   */
+  public char[] generateKeyword() throws FacadeLayerException;
+
 }

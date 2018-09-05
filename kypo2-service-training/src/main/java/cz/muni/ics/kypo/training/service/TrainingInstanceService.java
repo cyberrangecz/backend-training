@@ -2,6 +2,7 @@ package cz.muni.ics.kypo.training.service;
 
 import java.util.Optional;
 
+import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -54,8 +55,9 @@ public interface TrainingInstanceService {
   /**
    * Generates keyword for training instance
    * @return new keyword
+   * @throws ServiceLayerException if keyword already exists
    */
-  public char[] generateKeyword();
+  public char[] generateKeyword() throws ServiceLayerException;
 
 
 }
