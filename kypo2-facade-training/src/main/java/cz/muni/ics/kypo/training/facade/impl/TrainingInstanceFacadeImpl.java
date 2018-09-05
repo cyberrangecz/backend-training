@@ -74,7 +74,7 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
     try{
       Objects.requireNonNull(trainingInstance);
       Optional<TrainingInstance> tI = trainingInstanceService.update(trainingInstance);
-      TrainingInstance updatedTI = tI.orElseThrow(()-> new ServiceLayerException());
+      TrainingInstance updatedTI = tI.orElseThrow(()-> new ServiceLayerException("Training instance with id: "+ trainingInstance.getId() +", is not found"));
       return beanMapping.mapTo(updatedTI, TrainingInstanceDTO.class);
     } catch (NullPointerException | ServiceLayerException ex){
       throw new FacadeLayerException(ex.getLocalizedMessage());
@@ -88,7 +88,7 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
     try{
       Objects.requireNonNull(trainingInstance);
       Optional<TrainingInstance> tI = trainingInstanceService.create(trainingInstance);
-      TrainingInstance newTI = tI.orElseThrow(() -> new ServiceLayerException());
+      TrainingInstance newTI = tI.orElseThrow(() -> new ServiceLayerException("Training definition not created"));
       return beanMapping.mapTo(newTI, TrainingInstanceDTO.class);
     } catch(NullPointerException | ServiceLayerException ex) {
       throw new FacadeLayerException(ex.getLocalizedMessage());
@@ -102,7 +102,7 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
     try {
       Objects.requireNonNull(id);
       trainingInstance = trainingInstanceService.findById(id);
-      TrainingInstance tI =trainingInstance.orElseThrow(() -> new ServiceLayerException("Training instance with this id is not found"));
+      TrainingInstance tI =trainingInstance.orElseThrow(() -> new ServiceLayerException("Training instance with id: "+ id +", is not found"));
       trainingInstanceService.delete(tI);
     } catch(NullPointerException | ServiceLayerException ex) {
       throw new FacadeLayerException(ex.getLocalizedMessage());

@@ -94,7 +94,7 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
     try {
       Objects.requireNonNull(id);
       Optional<TrainingDefinition> tD = trainingDefinitionService.clone(id);
-      TrainingDefinition clonedTD = tD.orElseThrow(() -> new ServiceLayerException());
+      TrainingDefinition clonedTD = tD.orElseThrow(() -> new ServiceLayerException("Training instance with id: "+ id +", is not found"));
       return beanMapping.mapTo(clonedTD, TrainingDefinitionDTO.class);
     } catch (ServiceLayerException ex) {
       throw new FacadeLayerException(ex.getLocalizedMessage());
@@ -198,7 +198,8 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
     try{
       Objects.requireNonNull(infoLevel);
       Objects.requireNonNull(definitionId);
-      InfoLevel iL = trainingDefinitionService.createInfoLevel(definitionId ,infoLevel).orElseThrow(() -> new ServiceLayerException());
+      InfoLevel iL = trainingDefinitionService.createInfoLevel(definitionId ,infoLevel)
+              .orElseThrow(() -> new ServiceLayerException("Training instance with id: "+ definitionId +", is not found"));
       return beanMapping.mapTo(iL, InfoLevelDTO.class);
     } catch (ServiceLayerException ex){
       throw new FacadeLayerException(ex.getLocalizedMessage());
@@ -212,7 +213,8 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
     try{
       Objects.requireNonNull(gameLevel);
       Objects.requireNonNull(definitionId);
-      GameLevel gL = trainingDefinitionService.createGameLevel(definitionId ,gameLevel).orElseThrow(() -> new ServiceLayerException());
+      GameLevel gL = trainingDefinitionService.createGameLevel(definitionId ,gameLevel)
+              .orElseThrow(() -> new ServiceLayerException("Training instance with id: "+ definitionId +", is not found"));
       return beanMapping.mapTo(gL, GameLevelDTO.class);
     } catch (ServiceLayerException ex){
       throw new FacadeLayerException(ex.getLocalizedMessage());
@@ -226,7 +228,8 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
     try{
       Objects.requireNonNull(assessmentLevel);
       Objects.requireNonNull(definitionId);
-      AssessmentLevel aL = trainingDefinitionService.createAssessmentLevel(definitionId ,assessmentLevel).orElseThrow(() -> new ServiceLayerException());
+      AssessmentLevel aL = trainingDefinitionService.createAssessmentLevel(definitionId ,assessmentLevel)
+              .orElseThrow(() -> new ServiceLayerException("Training instance with id: "+ definitionId +", is not found"));
       return beanMapping.mapTo(aL, AssessmentLevelDTO.class);
     } catch (ServiceLayerException ex){
       throw new FacadeLayerException(ex.getLocalizedMessage());
