@@ -26,6 +26,7 @@ public class TrainingDefinitionDTO {
     private Set<AuthorRef> authorRef = new HashSet<>();
     private SandboxDefinitionRef sandBoxDefinitionRef;
     private Long startingLevel;
+    private Set<BasicLevelInfoDTO> basicLevelInfoDTOs;
 
     public TrainingDefinitionDTO() {}
 
@@ -101,6 +102,14 @@ public class TrainingDefinitionDTO {
         this.startingLevel = startingLevel;
     }
 
+    public Set<BasicLevelInfoDTO> getBasicLevelInfoDTOs() {
+        return basicLevelInfoDTOs;
+    }
+
+    public void setBasicLevelInfoDTOs(Set<BasicLevelInfoDTO> basicLevelInfoDTOs) {
+        this.basicLevelInfoDTOs = basicLevelInfoDTOs;
+    }
+
     @Override
     public String toString() {
         return "TrainingDefinitionDTO{" +
@@ -112,6 +121,8 @@ public class TrainingDefinitionDTO {
                 ", state=" + state +
                 ", authorRef=" + authorRef +
                 ", sandBoxDefinitionRef=" + sandBoxDefinitionRef +
+                ", startingLevel=" + startingLevel +
+                ", basicLevelInfoDTOs=" + basicLevelInfoDTOs +
                 '}';
     }
 }

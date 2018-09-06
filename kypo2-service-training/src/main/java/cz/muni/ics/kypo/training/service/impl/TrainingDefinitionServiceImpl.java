@@ -1,8 +1,6 @@
 package cz.muni.ics.kypo.training.service.impl;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import cz.muni.ics.kypo.training.exceptions.CannotBeClonedException;
 import cz.muni.ics.kypo.training.exceptions.CannotBeDeletedException;
@@ -328,6 +326,24 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     }
     LOG.info("Assessment level with id: "+ aL.getId() +" created");
     return Optional.of(aL);
+  }
+
+  @Override
+  public ArrayList<AbstractLevel> findAllLevelsFromDefinition(Long id) {
+    LOG.debug("findAllLevelsFromDefinition({})", id);
+    Assert.notNull(id, "Definition id must not be null");
+    TrainingDefinition trainingDefinition = findById(id)
+            .orElseThrow(() -> new ServiceLayerException("Training definition with id: " + id + ", not found"));
+    ArrayList<AbstractLevel> levels = new ArrayList<>();
+    Long levelId = trainingDefinition.getStartingLevel();
+    AbstractLevel level = null;
+    while(levelId != null){
+      level = abstractLevelRepository.findById(levelId)
+              .orElseThrow(() -> new ServiceLayerException("Level not found"));
+      levels.add(level);
+      levelId = level.getNextLevel();
+    }
+    return levels;
   }
 
   private AbstractLevel findLastLevel(Long levelId){

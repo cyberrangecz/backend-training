@@ -1,20 +1,19 @@
 package cz.muni.ics.kypo.training.service;
 
+import java.util.ArrayList;
 import java.util.Optional;
+import java.util.Set;
 
 import cz.muni.ics.kypo.training.exceptions.CannotBeClonedException;
 import cz.muni.ics.kypo.training.exceptions.CannotBeDeletedException;
 import cz.muni.ics.kypo.training.exceptions.CannotBeUpdatedException;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
-import cz.muni.ics.kypo.training.model.AssessmentLevel;
-import cz.muni.ics.kypo.training.model.GameLevel;
-import cz.muni.ics.kypo.training.model.InfoLevel;
+import cz.muni.ics.kypo.training.model.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import com.querydsl.core.types.Predicate;
 
-import cz.muni.ics.kypo.training.model.TrainingDefinition;
 /**
  * 
  * @author Pavel Seda (441048)
@@ -147,6 +146,13 @@ public interface TrainingDefinitionService {
    * @throws CannotBeUpdatedException if definition status is not UNRELEASED
    */
   public Optional<AssessmentLevel> createAssessmentLevel(Long definitionId, AssessmentLevel assessmentLevel) throws ServiceLayerException, CannotBeUpdatedException;
+
+  /**
+   * Finds all levels from single definition
+   * @param id of definition
+   * @return set of levels
+   */
+  public ArrayList<AbstractLevel> findAllLevelsFromDefinition(Long id);
 
 
 }

@@ -1,15 +1,13 @@
 package cz.muni.ics.kypo.training.facade.impl;
 
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 import cz.muni.ics.kypo.training.api.dto.*;
 import cz.muni.ics.kypo.training.exceptions.CannotBeClonedException;
 import cz.muni.ics.kypo.training.exceptions.CannotBeDeletedException;
 import cz.muni.ics.kypo.training.exceptions.CannotBeUpdatedException;
-import cz.muni.ics.kypo.training.model.AssessmentLevel;
-import cz.muni.ics.kypo.training.model.GameLevel;
-import cz.muni.ics.kypo.training.model.InfoLevel;
+import cz.muni.ics.kypo.training.model.*;
+import cz.muni.ics.kypo.training.model.enums.LevelType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,7 +23,6 @@ import cz.muni.ics.kypo.training.exception.FacadeLayerException;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.facade.TrainingDefinitionFacade;
 import cz.muni.ics.kypo.training.mapping.BeanMapping;
-import cz.muni.ics.kypo.training.model.TrainingDefinition;
 import cz.muni.ics.kypo.training.service.TrainingDefinitionService;
 
 
@@ -56,7 +53,23 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
       Objects.requireNonNull(id);
       Optional<TrainingDefinition> trainingDef = trainingDefinitionService.findById(id);
       TrainingDefinition td = trainingDef.orElseThrow(() -> new ServiceLayerException("TrainingDefinition with this id is not found"));
-      return beanMapping.mapTo(td, TrainingDefinitionDTO.class);
+      ArrayList<AbstractLevel> levels = trainingDefinitionService.findAllLevelsFromDefinition(id);
+      TrainingDefinitionDTO trainingDefinitionDTO = beanMapping.mapTo(td, TrainingDefinitionDTO.class);
+
+      Set<BasicLevelInfoDTO> levelInfoDTOs = new HashSet<>();
+      for (int i = 0; i < levels.size()-1; i++){
+        BasicLevelInfoDTO basicLevelInfoDTO = new BasicLevelInfoDTO();
+        basicLevelInfoDTO.setId(levels.get(i).getId());
+        basicLevelInfoDTO.setOrder(i);
+        basicLevelInfoDTO.setTitle(levels.get(i).getTitle());
+        if(levels.get(i) instanceof GameLevel) basicLevelInfoDTO.setLevelType(LevelType.GAME);
+        else if (levels.get(i) instanceof AssessmentLevel) basicLevelInfoDTO.setLevelType(LevelType.ASSESSMENT);
+          else basicLevelInfoDTO.setLevelType(LevelType.INFO);
+        levelInfoDTOs.add(basicLevelInfoDTO);
+      }
+
+      trainingDefinitionDTO.setBasicLevelInfoDTOs(levelInfoDTOs);
+      return trainingDefinitionDTO;
     } catch (NullPointerException ex) {
       throw new FacadeLayerException("Given TrainingDefinition ID is null.");
     } catch (ServiceLayerException ex) {
