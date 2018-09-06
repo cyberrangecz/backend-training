@@ -6,13 +6,11 @@ import cz.muni.ics.kypo.training.exceptions.CannotBeClonedException;
 import cz.muni.ics.kypo.training.exceptions.CannotBeDeletedException;
 import cz.muni.ics.kypo.training.exceptions.CannotBeUpdatedException;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
-import cz.muni.ics.kypo.training.model.AssessmentLevel;
-import cz.muni.ics.kypo.training.model.GameLevel;
-import cz.muni.ics.kypo.training.model.InfoLevel;
-import cz.muni.ics.kypo.training.model.TrainingDefinition;
+import cz.muni.ics.kypo.training.model.*;
 import cz.muni.ics.kypo.training.model.enums.TDState;
 import cz.muni.ics.kypo.training.repository.*;
 import cz.muni.ics.kypo.training.service.TrainingDefinitionService;
+import jdk.nashorn.internal.runtime.regexp.joni.constants.OPCode;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.hibernate.HibernateException;
@@ -774,6 +772,29 @@ public class TrainingDefinitionServiceTest {
         thrown.expect(IllegalArgumentException.class);
         thrown.expectMessage("Assessment level must not be null");
         trainingDefinitionService.createAssessmentLevel(definitionWithoutLevels.getId(), null);
+    }
+
+    @Test
+    public void findAllLevelsFromDefinition() {
+        given(trainingDefinitionRepository.findById(trainingDefinition2.getId())).willReturn(Optional.of(trainingDefinition2));
+        given(abstractLevelRepository.findById(infoLevel.getId())).willReturn(Optional.of(infoLevel));
+        given(abstractLevelRepository.findById(gameLevel.getId())).willReturn(Optional.of(gameLevel));
+        ArrayList<AbstractLevel> expected = new ArrayList<>();
+        expected.add(infoLevel);
+        expected.add(gameLevel);
+
+        ArrayList<AbstractLevel> actual = trainingDefinitionService.findAllLevelsFromDefinition(trainingDefinition2.getId());
+
+        assertEquals(expected, actual);
+        then(abstractLevelRepository).should(times(2)).findById(any(Long.class));
+        then(trainingDefinitionRepository).should().findById(trainingDefinition2.getId());
+    }
+
+    @Test
+    public void findAllLevelsFromDefinitionWithNullDefinitionId() {
+        thrown.expect(IllegalArgumentException.class);
+        thrown.expectMessage("Definition id must not be null");
+        trainingDefinitionService.findAllLevelsFromDefinition(null);
     }
 
     @After

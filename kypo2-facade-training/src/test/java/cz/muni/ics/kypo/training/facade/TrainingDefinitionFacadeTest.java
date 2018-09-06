@@ -378,7 +378,6 @@ public class TrainingDefinitionFacadeTest {
         trainingDefinitionFacade.createAssessmentLevel(trainingDefinition1.getId(), null);
     }
 
-
     private void deepEquals(TrainingDefinition expected, TrainingDefinitionDTO actual) {
         assertEquals(expected.getId(), actual.getId());
         assertEquals(expected.getState(), actual.getState());
