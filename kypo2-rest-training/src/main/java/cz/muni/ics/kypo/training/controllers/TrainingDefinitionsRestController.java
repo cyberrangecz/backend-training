@@ -154,6 +154,27 @@ public class TrainingDefinitionsRestController {
     }
   }
 
+  @ApiOperation(httpMethod = "POST",
+          value = "Create Training Definition",
+          response = TrainingDefinitionDTO.class,
+          nickname = "createTrainingDefinition",
+          produces = "application/json",
+          consumes = "application/json")
+  @ApiResponses(value = {
+          @ApiResponse(code = 400, message = "The requested resource was not created")
+  })
+  @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<TrainingDefinitionDTO> createTrainingDefinition(@ApiParam(name = "Training Definition to be created") @RequestBody TrainingDefinitionDTO trainingDefinitionDTO) {
+    try {
+      TrainingDefinition trainingDefinition = dtoMapper.mapTo(trainingDefinitionDTO, TrainingDefinition.class);
+      TrainingDefinitionDTO newTrainingDefinitionDTO = trainingDefinitionFacade.create(trainingDefinition);
+      return new ResponseEntity<>(newTrainingDefinitionDTO, HttpStatus.OK);
+    } catch (FacadeLayerException ex) {
+      throw new ResourceNotCreatedException(ex.getLocalizedMessage());
+    }
+  }
+
+
   @ApiOperation(httpMethod = "PUT",
       value = "Update Training Definition",
       response = TrainingDefinitionDTO.class,

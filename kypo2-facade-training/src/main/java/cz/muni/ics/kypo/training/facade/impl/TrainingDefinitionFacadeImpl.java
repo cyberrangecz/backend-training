@@ -90,6 +90,20 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
 
   @Override
   @Transactional
+  public TrainingDefinitionDTO create(TrainingDefinition trainingDefinition) {
+    LOG.debug("create({})", trainingDefinition);
+    try{
+      Objects.requireNonNull(trainingDefinition);
+      Optional<TrainingDefinition> tD = trainingDefinitionService.create(trainingDefinition);
+      TrainingDefinition newTD = tD.orElseThrow(() -> new ServiceLayerException("Training definition not created"));
+      return beanMapping.mapTo(newTD, TrainingDefinitionDTO.class);
+    } catch(NullPointerException | ServiceLayerException ex) {
+      throw new FacadeLayerException(ex.getLocalizedMessage());
+    }
+  }
+
+  @Override
+  @Transactional
   public void update(TrainingDefinition trainingDefinition) throws FacadeLayerException, CannotBeUpdatedException {
     LOG.debug("update({})", trainingDefinition);
     try {

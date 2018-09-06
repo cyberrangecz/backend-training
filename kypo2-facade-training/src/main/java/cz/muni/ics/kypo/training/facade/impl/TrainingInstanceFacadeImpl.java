@@ -86,7 +86,7 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
     try{
       Objects.requireNonNull(trainingInstance);
       Optional<TrainingInstance> tI = trainingInstanceService.create(trainingInstance);
-      TrainingInstance newTI = tI.orElseThrow(() -> new ServiceLayerException("Training definition not created"));
+      TrainingInstance newTI = tI.orElseThrow(() -> new ServiceLayerException("Training instance not created"));
       return beanMapping.mapTo(newTI, TrainingInstanceDTO.class);
     } catch(NullPointerException | ServiceLayerException ex) {
       throw new FacadeLayerException(ex.getLocalizedMessage());

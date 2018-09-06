@@ -48,6 +48,16 @@ public interface TrainingDefinitionFacade {
   public void update(TrainingDefinition trainingDefinition) throws FacadeLayerException, CannotBeUpdatedException;
 
   /**
+   * Creates new training definition
+   * @param trainingDefinition to be created
+   * @return DTO of created definition
+   * @throws FacadeLayerException
+   */
+  public TrainingDefinitionDTO create(TrainingDefinition trainingDefinition) throws FacadeLayerException;
+
+
+
+  /**
    * Clones Training Definition by id
    * @param id of definition to be cloned
    * @return DTO of cloned definition

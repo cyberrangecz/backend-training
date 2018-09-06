@@ -70,6 +70,15 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
   }
 
   @Override
+  public Optional<TrainingDefinition> create(TrainingDefinition trainingDefinition) {
+    LOG.debug("create({})", trainingDefinition);
+    Assert.notNull(trainingDefinition, "Input training definition must not be null");
+    TrainingDefinition tD = trainingDefinitionRepository.save(trainingDefinition);
+    LOG.info("Training definition with id: " + trainingDefinition.getId() + "created.");
+    return Optional.of(tD);
+  }
+
+  @Override
   public void update(TrainingDefinition trainingDefinition) throws ServiceLayerException, CannotBeClonedException {
     LOG.debug("update({})", trainingDefinition);
     Assert.notNull(trainingDefinition, "Input training definition must not be null");

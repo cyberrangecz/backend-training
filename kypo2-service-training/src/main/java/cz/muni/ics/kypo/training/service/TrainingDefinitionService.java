@@ -154,5 +154,12 @@ public interface TrainingDefinitionService {
    */
   public ArrayList<AbstractLevel> findAllLevelsFromDefinition(Long id);
 
+  /**
+   * creates new training definition
+   * @param trainingDefinition to be created
+   * @return new training definition
+   */
+  public Optional<TrainingDefinition> create(TrainingDefinition trainingDefinition);
+
 
 }
