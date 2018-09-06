@@ -59,14 +59,12 @@ public class AssessmentLevelServiceTest {
     public void init() {
         assessmentLevel1 = new AssessmentLevel();
         assessmentLevel1.setId(1L);
-        assessmentLevel1.setLevelOrder(1L);
         assessmentLevel1.setNextLevel(2L);
         assessmentLevel1.setAssessmentType(AssessmentType.TEST);
         assessmentLevel1.setTitle("Test");
 
         assessmentLevel2 = new AssessmentLevel();
         assessmentLevel2.setId(2L);
-        assessmentLevel2.setLevelOrder(2L);
         assessmentLevel2.setNextLevel(3L);
         assessmentLevel2.setAssessmentType(AssessmentType.QUESTIONNAIRE);
         assessmentLevel2.setTitle("Questionnaire");
@@ -160,7 +158,6 @@ public class AssessmentLevelServiceTest {
     private void deepEquals(AssessmentLevel expectedAssessmentLevel, AssessmentLevel actualAssessmentLevel) {
         assertEquals(expectedAssessmentLevel.getId(), actualAssessmentLevel.getId());
         assertEquals(expectedAssessmentLevel.getAssessmentType(), actualAssessmentLevel.getAssessmentType());
-        assertEquals(expectedAssessmentLevel.getLevelOrder(), actualAssessmentLevel.getLevelOrder());
     }
 
 
