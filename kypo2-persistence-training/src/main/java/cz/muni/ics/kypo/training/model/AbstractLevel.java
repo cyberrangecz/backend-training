@@ -27,9 +27,7 @@ public abstract class AbstractLevel implements Serializable {
   private String title;
   @Column(name = "max_score", nullable = false)
   private int maxScore;
-  @Column(name = "level_order", nullable = false)
-  private Long levelOrder;
-  @Column(name = "next_level", nullable = false)
+  @Column(name = "next_level")
   private Long nextLevel;
   @ManyToOne(fetch = FetchType.LAZY)
   private TrainingDefinition trainingDefinition;
@@ -40,68 +38,60 @@ public abstract class AbstractLevel implements Serializable {
 
   public AbstractLevel() {}
 
-  protected Long getId() {
+  public Long getId() {
     return id;
   }
 
-  protected void setId(Long id) {
+  public void setId(Long id) {
     this.id = id;
   }
 
 
-  protected String getTitle() {
+  public String getTitle() {
     return title;
   }
 
-  protected void setTitle(String title) {
+  public void setTitle(String title) {
     this.title = title;
   }
 
-  protected int getMaxScore() {
+  public int getMaxScore() {
     return maxScore;
   }
 
-  protected void setMaxScore(int maxScore) {
+  public void setMaxScore(int maxScore) {
     this.maxScore = maxScore;
   }
 
-  protected Long getLevelOrder() {
-    return levelOrder;
-  }
-
-  protected void setLevelOrder(Long levelOrder) {
-    this.levelOrder = levelOrder;
-  }
-
-  protected PreHook getPreHook() {
+  public PreHook getPreHook() {
     return preHook;
   }
 
-  protected void setPreHook(PreHook preHook) {
+  public void setPreHook(PreHook preHook) {
     this.preHook = preHook;
   }
 
-  protected PostHook getPostHook() {
+  public PostHook getPostHook() {
     return postHook;
   }
 
-  protected void setPostHook(PostHook postHook) {
+  public void setPostHook(PostHook postHook) {
     this.postHook = postHook;
   }
 
-  protected Long getNextLevel() {
+  public Long getNextLevel() {
     return nextLevel;
   }
 
-  protected void setNextLevel(Long nextLevel) {
+  public void setNextLevel(Long nextLevel) {
     this.nextLevel = nextLevel;
   }
 
-  protected TrainingDefinition getTrainingDefinition() {
+  public TrainingDefinition getTrainingDefinition() {
     return trainingDefinition;
   }
 
-  protected void setTrainingDefinition(TrainingDefinition trainingDefinition) {
+  public void setTrainingDefinition(TrainingDefinition trainingDefinition) {
     this.trainingDefinition = trainingDefinition;
   }
 
@@ -124,7 +114,7 @@ public abstract class AbstractLevel implements Serializable {
 
   @Override
   public String toString() {
-    return "AbstractLevel [id=" + id + ", title=" + title + ", maxScore=" + maxScore + ", levelOrder=" + levelOrder + ", nextLevel=" + nextLevel
+    return "AbstractLevel [id=" + id + ", title=" + title + ", maxScore=" + maxScore + ", nextLevel=" + nextLevel
         + ", trainingDefinition=" + trainingDefinition + ", preHook=" + preHook + ", postHook=" + postHook + ", toString()=" + super.toString() + "]";
   }
 

@@ -70,14 +70,6 @@ public class GameLevel extends AbstractLevel implements Serializable {
       super.setMaxScore(maxScore);
   }
 
-  public Long getLevelOrder() {
-      return super.getLevelOrder();
-  }
-
-  public void setLevelOrder(Long levelOrder) {
-      super.setLevelOrder(levelOrder);
-  }
-
   public PreHook getPreHook() {
       return super.getPreHook();
   }
@@ -210,8 +202,7 @@ public class GameLevel extends AbstractLevel implements Serializable {
   public String toString() {
     return "GameLevel [flag=" + flag + ", content=" + content + ", solution=" + solution + ", incorrectFlagPenalty=" + incorrectFlagPenalty
         + ", solutionPenalty=" + solutionPenalty + ", estimatedDuration=" + estimatedDuration + ", attachments=" + Arrays.toString(attachments) + ", hints="
-        + hints + ", getId()=" + getId() + ", getTitle()=" + getTitle() + ", getMaxScore()=" + getMaxScore() + ", getLevelOrder()=" + getLevelOrder()
-        + ", getPreHook()=" + getPreHook() + ", getPostHook()=" + getPostHook() + ", getNextLevel()=" + getNextLevel() + ", getTrainingDefinition()="
+        + hints + ", getId()=" + getId() + ", getTitle()=" + getTitle() + ", getMaxScore()=" + getMaxScore() + ", getPreHook()=" + getPreHook() + ", getPostHook()=" + getPostHook() + ", getNextLevel()=" + getNextLevel() + ", getTrainingDefinition()="
         + getTrainingDefinition() + ", toString()=" + super.toString() + "]";
   }
 

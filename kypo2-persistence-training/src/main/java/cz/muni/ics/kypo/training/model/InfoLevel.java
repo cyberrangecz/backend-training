@@ -20,7 +20,7 @@ import javax.persistence.Table;
 public class InfoLevel extends AbstractLevel implements Serializable {
 
   @Lob
-  @Column(name = "content", unique = true, nullable = false) // maybe should be unique?
+  @Column(name = "content", nullable = false) // maybe should be unique?
   private String content;
 
   public InfoLevel() {
@@ -54,14 +54,6 @@ public class InfoLevel extends AbstractLevel implements Serializable {
 
   public void setMaxScore(int maxScore) {
     super.setMaxScore(maxScore);
-  }
-
-  public Long getLevelOrder() {
-    return super.getLevelOrder();
-  }
-
-  public void setLevelOrder(Long levelOrder) {
-    super.setLevelOrder(levelOrder);
   }
 
   public PreHook getPreHook() {
@@ -123,8 +115,7 @@ public class InfoLevel extends AbstractLevel implements Serializable {
 
   @Override
   public String toString() {
-    return "InfoLevel [content=" + content + ", getId()=" + getId() + ", getTitle()=" + getTitle() + ", getMaxScore()=" + getMaxScore() + ", getLevelOrder()="
-        + getLevelOrder() + ", getPreHook()=" + getPreHook() + ", getPostHook()=" + getPostHook() + ", getNextLevel()=" + getNextLevel()
+    return "InfoLevel [content=" + content + ", getId()=" + getId() + ", getTitle()=" + getTitle() + ", getMaxScore()=" + getMaxScore() + "getPreHook()=" + getPreHook() + ", getPostHook()=" + getPostHook() + ", getNextLevel()=" + getNextLevel()
         + ", getTrainingDefinition()=" + getTrainingDefinition() + ", toString()=" + super.toString() + "]";
   }
 

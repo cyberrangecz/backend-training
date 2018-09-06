@@ -3,17 +3,9 @@ package cz.muni.ics.kypo.training.model;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.Objects;
+import java.util.Set;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 import cz.muni.ics.kypo.training.model.enums.TRState;
 
@@ -39,12 +31,16 @@ public class TrainingRun implements Serializable {
   @Column(name = "state", length = 128, nullable = false)
   @Enumerated(EnumType.STRING)
   private TRState state;
-  @ManyToOne(fetch = FetchType.LAZY, optional = true)
+  @ManyToOne(fetch = FetchType.LAZY, optional = false)
   private AbstractLevel currentLevel;
-  @ManyToOne(fetch = FetchType.LAZY)
+  @ManyToOne(fetch = FetchType.LAZY, optional = false)
   private TrainingInstance trainingInstance;
-  @ManyToOne(fetch = FetchType.LAZY)
+  @OneToOne(fetch = FetchType.LAZY, optional = false)
+  @JoinColumn(name = "sandbox_instance_ref_id")
   private SandboxInstanceRef sandboxInstanceRef;
+  @ManyToOne(fetch = FetchType.EAGER)
+  @JoinColumn(name = "participant_ref_id", nullable = false)
+  private ParticipantRef participantRef;
 
   public TrainingRun() {}
 
@@ -114,6 +110,14 @@ public class TrainingRun implements Serializable {
     this.sandboxInstanceRef = sandboxInstanceRef;
   }
 
+  public ParticipantRef getParticipantRef() {
+    return participantRef;
+  }
+
+  public void setParticipantRef(ParticipantRef participantRef) {
+    this.participantRef = participantRef;
+  }
+
   @Override
   public int hashCode() {
     return Objects.hash(currentLevel, eventLogReference, startTime, endTime, state, trainingInstance);
@@ -134,14 +138,15 @@ public class TrainingRun implements Serializable {
         && Objects.equals(startTime, other.getStartTime())
         && Objects.equals(endTime, other.getEndTime()) 
         && Objects.equals(state, other.getState())
-        && Objects.equals(trainingInstance, other.getTrainingInstance());
+        && Objects.equals(trainingInstance, other.getTrainingInstance())
+        && Objects.equals(participantRef, other.getParticipantRef());
     // @formatter:on
   }
 
   @Override
   public String toString() {
     return "TrainingRun [id=" + id + ", startTime=" + startTime + ", endTime=" + endTime + ", eventLogReference=" + eventLogReference + ", state=" + state
-        + ", currentLevel=" + currentLevel + ", trainingInstance=" + trainingInstance + ", getClass()=" + getClass() + ", toString()=" + super.toString() + "]";
+        + ", currentLevel=" + currentLevel + ", trainingInstance=" + trainingInstance + ", participantRef=" + participantRef + ", getClass()=" + getClass() + ", toString()=" + super.toString() + "]";
   }
 
 }

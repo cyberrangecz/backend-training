@@ -6,16 +6,9 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.ManyToMany;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 /**
  * 
@@ -44,8 +37,8 @@ public class TrainingInstance implements Serializable {
   private TrainingDefinition trainingDefinition;
   @ManyToMany(fetch = FetchType.LAZY)
   private Set<UserRef> organizers = new HashSet<>();
-  @ManyToMany(fetch = FetchType.LAZY)
-  private Set<SandboxInstanceRef> sandboxInstanceRef = new HashSet<>();
+  @OneToMany(fetch = FetchType.LAZY)
+  private Set<SandboxInstanceRef> sandboxInstanceRefs = new HashSet<>();
 
   public TrainingInstance() {}
 
@@ -60,7 +53,7 @@ public class TrainingInstance implements Serializable {
     this.keyword = keyword;
     this.trainingDefinition = trainingDefinition;
     this.organizers = organizers;
-    this.sandboxInstanceRef = sandboxInstanceRef;
+    this.sandboxInstanceRefs = sandboxInstanceRef;
   }
 
   public Long getId() {
@@ -136,12 +129,12 @@ public class TrainingInstance implements Serializable {
     this.organizers = organizers;
   }
 
-  public Set<SandboxInstanceRef> getSandboxInstanceRef() {
-    return Collections.unmodifiableSet(sandboxInstanceRef);
+  public Set<SandboxInstanceRef> getSandboxInstanceRefs() {
+    return sandboxInstanceRefs.stream().collect(Collectors.toSet());
   }
 
-  public void setSandboxInstanceRef(Set<SandboxInstanceRef> sandboxInstanceRef) {
-    this.sandboxInstanceRef = sandboxInstanceRef;
+  public void setSandboxInstanceRefs(Set<SandboxInstanceRef> sandboxInstanceRef) {
+    this.sandboxInstanceRefs = sandboxInstanceRef;
   }
 
   @Override

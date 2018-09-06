@@ -5,14 +5,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.ManyToMany;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 /**
  * 
@@ -29,8 +22,9 @@ public class SandboxInstanceRef implements Serializable {
   private Long id;
   @Column(name = "sandbox_instance_ref")
   private Long sandboxInstanceRef;
-  @ManyToMany(mappedBy = "sandboxInstanceRef", fetch = FetchType.LAZY)
-  private Set<TrainingInstance> trainingInstance = new HashSet<>();
+  @ManyToOne(fetch = FetchType.EAGER)
+  @JoinColumn(name = "training_instance_id", nullable = false)
+  private TrainingInstance trainingInstance;
 
   public SandboxInstanceRef() {}
 
@@ -50,11 +44,11 @@ public class SandboxInstanceRef implements Serializable {
     this.sandboxInstanceRef = sandboxInstanceRef;
   }
 
-  public Set<TrainingInstance> getTrainingInstance() {
-    return Collections.unmodifiableSet(trainingInstance);
+  public TrainingInstance getTrainingInstance() {
+    return trainingInstance;
   }
 
-  public void setTrainingInstance(Set<TrainingInstance> trainingInstance) {
+  public void setTrainingInstance(TrainingInstance trainingInstance) {
     this.trainingInstance = trainingInstance;
   }
 
