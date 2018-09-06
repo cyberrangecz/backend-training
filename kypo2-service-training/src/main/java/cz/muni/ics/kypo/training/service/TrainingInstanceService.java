@@ -3,6 +3,7 @@ package cz.muni.ics.kypo.training.service;
 import java.util.Optional;
 
 import cz.muni.ics.kypo.training.exceptions.CannotBeDeletedException;
+import cz.muni.ics.kypo.training.exceptions.CannotBeUpdatedException;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -41,15 +42,18 @@ public interface TrainingInstanceService {
   public Optional<TrainingInstance> create(TrainingInstance trainingInstance);
 
   /**
-   * Updates training instance
+   * updates training instance
    * @param trainingInstance to be updated
-   * @return updated instance
+   * @throws CannotBeUpdatedException if starting date of instance is not in future
+   * @throws ServiceLayerException if instance is not found
    */
-  public Optional<TrainingInstance> update(TrainingInstance trainingInstance);
+  public void update(TrainingInstance trainingInstance) throws CannotBeUpdatedException, ServiceLayerException;
 
   /**
-   * Deletes instance
-   * @param id of instance to be deleted
+   * deletes training instance
+   * @param id of training instance
+   * @throws CannotBeDeletedException if end date of instance is not in past
+   * @throws ServiceLayerException if instance is not found
    */
   public void delete(Long id) throws CannotBeDeletedException, ServiceLayerException;
 

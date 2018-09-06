@@ -82,7 +82,7 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
     try {
       Objects.requireNonNull(trainingDefinition);
       trainingDefinitionService.update(trainingDefinition);
-    } catch (NullPointerException | ServiceLayerException ex) {
+    } catch (ServiceLayerException ex) {
       throw new FacadeLayerException(ex.getLocalizedMessage());
     }
   }

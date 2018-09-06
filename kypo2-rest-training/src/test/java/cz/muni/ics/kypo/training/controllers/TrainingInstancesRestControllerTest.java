@@ -178,7 +178,7 @@ public class TrainingInstancesRestControllerTest {
                 .andReturn().getResolvedException();
         assertEquals(ResourceNotCreatedException.class, exception.getClass());
     }
-
+    /*
     @Test
     public void updateTrainingInstance() throws Exception {
         String valueTi = convertObjectToJsonBytes(trainingInstance1DTO);
@@ -205,7 +205,7 @@ public class TrainingInstancesRestControllerTest {
                 .andReturn().getResolvedException();
         assertEquals(ResourceNotModifiedException.class, exception.getClass());
     }
-
+    */
     @Test
     public void deleteTrainingInstance() throws Exception {
         mockMvc.perform(delete("/training-instances")

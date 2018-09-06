@@ -154,7 +154,7 @@ public class TrainingInstancesRestController {
   //@formatter:on
 
   @ApiOperation(httpMethod = "POST",
-      value = "Create Traininig Instance",
+      value = "Create Training Instance",
       response = TrainingInstanceDTO.class,
       nickname = "createTrainingInstance",
       produces = "application/json",
@@ -180,22 +180,21 @@ public class TrainingInstancesRestController {
       value = "Update Training Instance",
       response = TrainingInstanceDTO.class,
       nickname = "updateTrainingInstance",
-      produces = "application/json",
       consumes = "application/json")
   @ApiResponses(value = {
-          @ApiResponse(code = 400, message = "The requested resource was not modified")
+          @ApiResponse(code = 404, message = "The requested resource was not found"),
+          @ApiResponse(code = 409, message = "The requested resource was not deleted because of its finish time")
   })
-  @PutMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<Object> updateTrainingInstance(@ApiParam(name = "Training instance to be updated") @RequestBody TrainingInstanceDTO trainingInstanceDTO,
-                                                       @ApiParam(value = "Fields which should be returned in REST API response", required = false)
-                                                       @RequestParam(value = "fields", required = false) String fields) {
+  @PutMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<Void> updateTrainingInstance(@ApiParam(name = "Training instance to be updated") @RequestBody TrainingInstanceDTO trainingInstanceDTO){
     try {
       TrainingInstance trainingInstance = dtoMapper.mapTo(trainingInstanceDTO, TrainingInstance.class);
-      TrainingInstanceDTO trainingInstanceResource = trainingInstanceFacade.update(trainingInstance);
-      Squiggly.init(objectMapper, fields);
-      return new ResponseEntity<>(SquigglyUtils.stringify(objectMapper, trainingInstanceResource), HttpStatus.OK);
+      trainingInstanceFacade.update(trainingInstance);
+      return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     } catch (FacadeLayerException ex) {
       throw new ResourceNotModifiedException(ex.getLocalizedMessage());
+    } catch (CannotBeUpdatedException ex) {
+      throw new ConflictException(ex.getLocalizedMessage());
     }
   }
   @ApiOperation(httpMethod = "DELETE",
@@ -206,7 +205,7 @@ public class TrainingInstancesRestController {
     consumes = "application/json")
   @ApiResponses( value = {
           @ApiResponse(code = 404, message = "The requested resource was not found"),
-          @ApiResponse(code = 409, message = "The requested resource was not deleted because of conflict in current date")
+          @ApiResponse(code = 409, message = "The requested resource was not deleted because of its finish time")
   })
   @DeleteMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<Void> deleteTrainingInstance(@ApiParam(name = "Id of training instance to be deleted") @RequestParam("trainingInstanceId") long id) {

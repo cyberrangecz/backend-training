@@ -1,6 +1,7 @@
 package cz.muni.ics.kypo.training.facade;
 
 import cz.muni.ics.kypo.training.exception.FacadeLayerException;
+import cz.muni.ics.kypo.training.exceptions.CannotBeUpdatedException;
 import cz.muni.ics.kypo.training.model.TrainingInstance;
 import org.springframework.data.domain.Pageable;
 
@@ -34,10 +35,10 @@ public interface TrainingInstanceFacade {
   /**
    * Updates training instance
    * @param trainingInstance to be updated
-   * @return DTO of updated instance
-   * @throws FacadeLayerException
+   * @throws FacadeLayerException if instance is not found
+   * @throws CannotBeUpdatedException if starting date of instance is not in future
    */
-  public TrainingInstanceDTO update(TrainingInstance trainingInstance) throws FacadeLayerException;
+  public void update(TrainingInstance trainingInstance) throws FacadeLayerException, CannotBeUpdatedException;
 
   /**
    * Creates new training instance

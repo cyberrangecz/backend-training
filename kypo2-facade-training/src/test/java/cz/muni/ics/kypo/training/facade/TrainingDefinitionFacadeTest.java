@@ -150,8 +150,8 @@ public class TrainingDefinitionFacadeTest {
     }
 
     @Test
-    public void udateTrainingDefinitionWithNull() {
-        thrown.expect(FacadeLayerException.class);
+    public void updateTrainingDefinitionWithNull() {
+        thrown.expect(NullPointerException.class);
         trainingDefinitionFacade.update(null);
     }
 

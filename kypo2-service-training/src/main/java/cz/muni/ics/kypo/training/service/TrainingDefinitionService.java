@@ -66,7 +66,7 @@ public interface TrainingDefinitionService {
 
   /**
    * Swaps level to the right
-   * @param definitionId - Id of definition containing level to be swaped
+   * @param definitionId - Id of definition containing level to be swapped
    * @param levelId - Id of level to be swaped
    * @throws ServiceLayerException if training definition or level is not found
    * @throws CannotBeUpdatedException if definition status is not UNRELEASED

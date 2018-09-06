@@ -69,14 +69,12 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
 
   @Override
   @Transactional
-  public TrainingInstanceDTO update(TrainingInstance trainingInstance) {
+  public void update(TrainingInstance trainingInstance) {
     LOG.debug("update({})",trainingInstance);
     try{
       Objects.requireNonNull(trainingInstance);
-      Optional<TrainingInstance> tI = trainingInstanceService.update(trainingInstance);
-      TrainingInstance updatedTI = tI.orElseThrow(()-> new ServiceLayerException("Training instance with id: "+ trainingInstance.getId() +", is not found"));
-      return beanMapping.mapTo(updatedTI, TrainingInstanceDTO.class);
-    } catch (NullPointerException | ServiceLayerException ex){
+      trainingInstanceService.update(trainingInstance);
+    } catch (ServiceLayerException ex){
       throw new FacadeLayerException(ex.getLocalizedMessage());
     }
   }

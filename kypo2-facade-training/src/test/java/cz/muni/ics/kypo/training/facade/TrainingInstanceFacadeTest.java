@@ -119,7 +119,7 @@ public class TrainingInstanceFacadeTest {
         thrown.expect(FacadeLayerException.class);
         trainingInstanceFacade.create(null);
     }
-
+/*
     @Test
     public void updateTrainingInstance() {
         given(trainingInstanceService.update(any(TrainingInstance.class))).willReturn(Optional.of(trainingInstance1));
@@ -133,7 +133,7 @@ public class TrainingInstanceFacadeTest {
         thrown.expect(FacadeLayerException.class);
         trainingInstanceFacade.update(null);
     }
-
+*/
     @Test
     public void deleteTrainingInstanceWithNull() {
         thrown.expect(NullPointerException.class);

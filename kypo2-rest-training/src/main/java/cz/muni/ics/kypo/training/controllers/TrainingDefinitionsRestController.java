@@ -173,7 +173,7 @@ public class TrainingDefinitionsRestController {
     } catch (FacadeLayerException ex) {
       throw new ResourceNotModifiedException(ex.getLocalizedMessage());
     } catch (CannotBeUpdatedException ex){
-      throw new CannotBeUpdatedException(ex.getLocalizedMessage());
+      throw new ConflictException(ex.getLocalizedMessage());
     }
   }
 
@@ -208,6 +208,7 @@ public class TrainingDefinitionsRestController {
           @ApiResponse(code = 409, message = "The requested resource was not modified because of its status"),
           @ApiResponse(code = 404, message = "The requested resource was not found")
   })
+  //@PutMapping(value = "/{definitionId}/levels/{levelId}/swap-left")
   @PutMapping(value = "/swapLeft/{definitionId}/{levelId}")
   public ResponseEntity<Void> swapLeft(@ApiParam(value = "Id of definition") @PathVariable("definitionId") Long definitionId,
                                        @ApiParam(value = "Id of level to be swapped") @PathVariable("levelId") Long levelId){
@@ -229,6 +230,7 @@ public class TrainingDefinitionsRestController {
           @ApiResponse(code = 409, message = "The requested resource was not modified because of its status"),
           @ApiResponse(code = 404, message = "The requested resource was not found")
   })
+  //@PutMapping(value = "/{definitionId}/levels/{levelId}/swap-right")
   @PutMapping(value = "/swapRight/{definitionId}/{levelId}")
   public ResponseEntity<Void> swapRight(@ApiParam(value = "Id of definition") @PathVariable("definitionId") Long definitionId,
                                        @ApiParam(value = "Id of level to be swapped") @PathVariable("levelId") Long levelId){
@@ -270,9 +272,10 @@ public class TrainingDefinitionsRestController {
           @ApiResponse(code = 409, message = "The requested resource was not modified because of its status"),
           @ApiResponse(code = 404, message = "The requested resource was not found")
   })
+  //@DeleteMapping(value = "/{definitionId}/levels/{levelId}")
   @PutMapping(value = "/deleteLevel/{definitionId}/{levelId}")
   public ResponseEntity<Void> deleteOneLevel(@ApiParam(value = "Id of definition") @PathVariable("definitionId") Long definitionId,
-                                             @ApiParam(value = "Id of level to be swapped") @PathVariable("levelId") Long levelId){
+                                             @ApiParam(value = "Id of level to be deleted") @PathVariable("levelId") Long levelId){
     try{
       trainingDefinitionFacade.deleteOneLevel(definitionId, levelId);
       return new ResponseEntity<>(HttpStatus.NO_CONTENT);
@@ -292,6 +295,7 @@ public class TrainingDefinitionsRestController {
           @ApiResponse(code = 409, message = "The requested resource was not modified because of its status"),
           @ApiResponse(code = 404, message = "The requested resource was not found")
   })
+  //@PutMapping(value = "/{definitionId}/game-levels",consumes = MediaType.APPLICATION_JSON_VALUE)
   @PutMapping(value = "/updateGameLevel/{definitionId}",consumes = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<Void> updateGameLevel(@ApiParam(value = "Id of definition") @PathVariable(value = "definitionId") Long definitionId,
                                               @ApiParam(value = "Game level to be updated") @RequestBody GameLevelDTO gameLevelDTO) {

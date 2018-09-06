@@ -6,6 +6,7 @@ import java.util.Optional;
 
 import com.mysema.commons.lang.Assert;
 import cz.muni.ics.kypo.training.exceptions.CannotBeDeletedException;
+import cz.muni.ics.kypo.training.exceptions.CannotBeUpdatedException;
 import cz.muni.ics.kypo.training.model.Keyword;
 import cz.muni.ics.kypo.training.repository.KeywordRepository;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -75,12 +76,16 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
   }
 
   @Override
-  public Optional<TrainingInstance> update(TrainingInstance trainingInstance) {
+  public void update(TrainingInstance trainingInstance) throws ServiceLayerException, CannotBeUpdatedException {
     LOG.debug("update({})", trainingInstance);
     Assert.notNull(trainingInstance, "Input training instance must not be null");
-    TrainingInstance tI = trainingInstanceRepository.saveAndFlush(trainingInstance);
+    TrainingInstance tI = trainingInstanceRepository.findById(trainingInstance.getId())
+            .orElseThrow(() -> new ServiceLayerException("Training instance with id: "+ trainingInstance.getId() +", not found"));
+    LocalDateTime currentDate = LocalDateTime.now();
+    if (!currentDate.isBefore(trainingInstance.getStartTime()))
+      throw new CannotBeUpdatedException("Starting time of instance must be in future");
+    trainingInstanceRepository.save(trainingInstance);
     LOG.info("Training instance with id: " + trainingInstance.getId() + "updated.");
-    return Optional.of(tI);
   }
 
   @Override
@@ -90,7 +95,8 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
     TrainingInstance trainingInstance = trainingInstanceRepository.findById(id)
             .orElseThrow(() -> new ServiceLayerException("Training instance with id: " + id + ", not found"));
     LocalDateTime currentDate = LocalDateTime.now();
-    if (!currentDate.isAfter(trainingInstance.getEndTime())) throw new CannotBeDeletedException("Only finished instances can be deleted");
+    if (!currentDate.isAfter(trainingInstance.getEndTime()))
+      throw new CannotBeDeletedException("Only finished instances can be deleted");
     trainingInstanceRepository.delete(trainingInstance);
     LOG.info("Training instance with id: " + id + "created.");
   }
