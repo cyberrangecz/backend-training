@@ -378,6 +378,20 @@ public class TrainingDefinitionFacadeTest {
         trainingDefinitionFacade.createAssessmentLevel(trainingDefinition1.getId(), null);
     }
 
+    @Test
+    public void createTrainingDefinition() {
+        given(trainingDefinitionService.create(trainingDefinition1)).willReturn(Optional.of(trainingDefinition1));
+        TrainingDefinitionDTO trainingDefinitionDTO= trainingDefinitionFacade.create(trainingDefinition1);
+        deepEquals(trainingDefinition1, trainingDefinitionDTO);
+        then(trainingDefinitionService).should().create(trainingDefinition1);
+    }
+
+    @Test
+    public void createTrainingDefinitionWithNull() {
+        thrown.expect(FacadeLayerException.class);
+        trainingDefinitionFacade.create(null);
+    }
+
     private void deepEquals(TrainingDefinition expected, TrainingDefinitionDTO actual) {
         assertEquals(expected.getId(), actual.getId());
         assertEquals(expected.getState(), actual.getState());

@@ -797,6 +797,21 @@ public class TrainingDefinitionServiceTest {
         trainingDefinitionService.findAllLevelsFromDefinition(null);
     }
 
+    @Test
+    public void createTrainingDefinition(){
+        given(trainingDefinitionRepository.save(trainingDefinition1)).willReturn(trainingDefinition1);
+        TrainingDefinition tD = trainingDefinitionService.create(trainingDefinition1).get();
+        deepEquals(trainingDefinition1, tD);
+        then(trainingDefinitionRepository).should().save(trainingDefinition1);
+    }
+
+    @Test
+    public void createTrainingInstanceWithNull(){
+        thrown.expect(IllegalArgumentException.class);
+        thrown.expectMessage("Input training definition must not be null");
+        trainingDefinitionService.create(null);
+    }
+
     @After
     public void after(){
         reset(trainingDefinitionRepository);

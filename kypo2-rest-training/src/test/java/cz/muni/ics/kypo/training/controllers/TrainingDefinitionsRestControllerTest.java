@@ -413,6 +413,32 @@ public class TrainingDefinitionsRestControllerTest {
         assertEquals(ConflictException.class, exception.getClass());
     }
 
+    @Test
+    public void createTrainingDefinition() throws Exception {
+        String valueTd = convertObjectToJsonBytes(trainingDefinition1DTO);
+        given(objectMapper.writeValueAsString(any(Object.class))).willReturn(valueTd);
+        given(trainingDefinitionFacade.create(any(TrainingDefinition.class))).willReturn(trainingDefinition1DTO);
+        given(beanMapping.mapTo(any(TrainingDefinitionDTO.class), eq(TrainingDefinition.class))).willReturn(trainingDefinition1);
+        MockHttpServletResponse result = mockMvc.perform(post("/training-definitions")
+                .content(convertObjectToJsonBytes(trainingDefinition1))
+                .contentType(MediaType.APPLICATION_JSON_VALUE))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andReturn().getResponse();
+        assertEquals(convertObjectToJsonBytes(trainingDefinition1DTO), result.getContentAsString());
+    }
+
+    @Test
+    public void createTrainingDefinitionWithFacadeException() throws Exception {
+        willThrow(FacadeLayerException.class).given(trainingDefinitionFacade).create(any(TrainingDefinition.class));
+        given(beanMapping.mapTo(any(TrainingDefinitionDTO.class), eq(TrainingDefinition.class))).willReturn(trainingDefinition1);
+        Exception exception = mockMvc.perform(post("/training-definitions")
+                .content(convertObjectToJsonBytes(trainingDefinition1))
+                .contentType(MediaType.APPLICATION_JSON_VALUE))
+                .andExpect(status().isNotAcceptable())
+                .andReturn().getResolvedException();
+        assertEquals(ResourceNotCreatedException.class, exception.getClass());
+    }
     private static String convertObjectToJsonBytes(Object object) throws IOException {
         ObjectMapper mapper = new ObjectMapper();
         return mapper.writeValueAsString(object);
