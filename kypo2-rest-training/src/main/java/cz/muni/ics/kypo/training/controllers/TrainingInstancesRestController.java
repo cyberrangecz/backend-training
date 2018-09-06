@@ -221,18 +221,18 @@ public class TrainingInstancesRestController {
   }
 
   @ApiOperation(httpMethod = "POST",
-    value = "Generate keyword",
+    value = "Generate password",
     response = char[].class,
-    nickname = "generateKeyword"
+    nickname = "generatePassword"
   )
   @ApiResponses(value = {
-          @ApiResponse( code = 500, message = "Generated keyword already exists")
+          @ApiResponse( code = 500, message = "Generated password already exists")
   })
-  @PostMapping(value = "/generateKeyword")
-  public ResponseEntity<char[]> generateKeyword() {
+  @PostMapping(value = "/passwords")
+  public ResponseEntity<char[]> generatePassword() {
     try {
-      char[] newKeyword = trainingInstanceFacade.generateKeyword();
-      return new ResponseEntity<char[]>(newKeyword, HttpStatus.CREATED);
+      char[] newPassword = trainingInstanceFacade.generatePassword();
+      return new ResponseEntity<char[]>(newPassword, HttpStatus.CREATED);
     } catch (FacadeLayerException ex){
       throw new ResourceNotCreatedException(ex.getLocalizedMessage());
     }

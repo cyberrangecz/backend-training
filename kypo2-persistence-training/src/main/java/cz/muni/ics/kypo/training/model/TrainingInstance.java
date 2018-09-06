@@ -30,8 +30,8 @@ public class TrainingInstance implements Serializable {
   private String title;
   @Column(name = "pool_size", nullable = false)
   private int poolSize;
-  @Column(name = "keyword", nullable = false)
-  private char[] keyword;
+  @Column(name = "password", nullable = false)
+  private char[] password;
   @ManyToOne(fetch = FetchType.LAZY)
   private TrainingDefinition trainingDefinition;
   @ManyToMany(fetch = FetchType.LAZY)
@@ -41,7 +41,7 @@ public class TrainingInstance implements Serializable {
 
   public TrainingInstance() {}
 
-  public TrainingInstance(Long id, LocalDateTime startTime, LocalDateTime endTime, String title, int poolSize, char[] keyword,
+  public TrainingInstance(Long id, LocalDateTime startTime, LocalDateTime endTime, String title, int poolSize, char[] password,
       TrainingDefinition trainingDefinition, Set<UserRef> organizers, Set<SandboxInstanceRef> sandboxInstanceRef) {
     super();
     this.id = id;
@@ -49,7 +49,7 @@ public class TrainingInstance implements Serializable {
     this.endTime = endTime;
     this.title = title;
     this.poolSize = poolSize;
-    this.keyword = keyword;
+    this.password = password;
     this.trainingDefinition = trainingDefinition;
     this.organizers = organizers;
     this.sandboxInstanceRef = sandboxInstanceRef;
@@ -79,12 +79,12 @@ public class TrainingInstance implements Serializable {
     this.endTime = endTime;
   }
 
-  public char[] getKeyword() {
-    return keyword;
+  public char[] getPassword() {
+    return password;
   }
 
-  public void setKeyword(char[] keyword) {
-    this.keyword = keyword;
+  public void setPassword(char[] password) {
+    this.password = password;
   }
 
   public String getTitle() {
@@ -103,12 +103,12 @@ public class TrainingInstance implements Serializable {
     this.poolSize = poolSize;
   }
 
-  public char[] getKeywords() {
-    return keyword;
+  public char[] getPasswords() {
+    return password;
   }
 
-  public void setKeywords(char[] keywords) {
-    this.keyword = keywords;
+  public void setPasswords(char[] passwords) {
+    this.password = passwords;
   }
 
   public TrainingDefinition getTrainingDefinition() {
@@ -138,7 +138,7 @@ public class TrainingInstance implements Serializable {
 
   @Override
   public int hashCode() {
-    return Objects.hash(keyword, startTime, endTime, poolSize, title, trainingDefinition);
+    return Objects.hash(password, startTime, endTime, poolSize, title, trainingDefinition);
   }
 
   @Override
@@ -151,7 +151,7 @@ public class TrainingInstance implements Serializable {
       return false;
     TrainingInstance other = (TrainingInstance) obj;
     // @formatter:off
-    return Objects.equals(keyword, other.getKeywords()) 
+    return Objects.equals(password, other.getPasswords())
         && Objects.equals(startTime, other.getStartTime())
         && Objects.equals(endTime, other.getEndTime())
         && Objects.equals(poolSize, other.getPoolSize())
@@ -162,8 +162,8 @@ public class TrainingInstance implements Serializable {
 
   @Override
   public String toString() {
-    return "TrainingInstance [id=" + id + ", startTime=" + startTime + ", endTime=" + endTime + ", title=" + title + ", poolSize=" + poolSize + ", keyword="
-        + keyword + ", trainingDefinition=" + trainingDefinition + ", toString()=" + super.toString() + "]";
+    return "TrainingInstance [id=" + id + ", startTime=" + startTime + ", endTime=" + endTime + ", title=" + title + ", poolSize=" + poolSize + ", password="
+        + password + ", trainingDefinition=" + trainingDefinition + ", toString()=" + super.toString() + "]";
   }
 
 }

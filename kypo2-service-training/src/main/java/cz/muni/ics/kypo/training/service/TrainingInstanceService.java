@@ -58,11 +58,11 @@ public interface TrainingInstanceService {
   public void delete(Long id) throws CannotBeDeletedException, ServiceLayerException;
 
   /**
-   * Generates keyword for training instance
-   * @return new keyword
-   * @throws ServiceLayerException if keyword already exists
+   * Generates password for training instance
+   * @return new password
+   * @throws ServiceLayerException if password already exists
    */
-  public char[] generateKeyword() throws ServiceLayerException;
+  public char[] generatePassword() throws ServiceLayerException;
 
 
 }

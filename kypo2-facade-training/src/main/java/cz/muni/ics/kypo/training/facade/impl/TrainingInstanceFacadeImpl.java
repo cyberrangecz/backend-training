@@ -106,10 +106,10 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
 
   @Override
   @Transactional
-  public char[] generateKeyword() throws FacadeLayerException {
+  public char[] generatePassword() throws FacadeLayerException {
     try {
-      char[] newKeyword = trainingInstanceService.generateKeyword();
-      return newKeyword;
+      char[] newPassword = trainingInstanceService.generatePassword();
+      return newPassword;
     } catch (ServiceLayerException ex){
       throw new FacadeLayerException(ex.getLocalizedMessage());
     }

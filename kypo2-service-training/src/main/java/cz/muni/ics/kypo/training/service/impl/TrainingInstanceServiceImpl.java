@@ -1,14 +1,13 @@
 package cz.muni.ics.kypo.training.service.impl;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
 import com.mysema.commons.lang.Assert;
 import cz.muni.ics.kypo.training.exceptions.CannotBeDeletedException;
 import cz.muni.ics.kypo.training.exceptions.CannotBeUpdatedException;
-import cz.muni.ics.kypo.training.model.Keyword;
-import cz.muni.ics.kypo.training.repository.KeywordRepository;
+import cz.muni.ics.kypo.training.model.Password;
+import cz.muni.ics.kypo.training.repository.PasswordRepository;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.hibernate.HibernateException;
@@ -37,12 +36,12 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
   private static final Logger LOG = LoggerFactory.getLogger(TrainingInstanceServiceImpl.class);
 
   private TrainingInstanceRepository trainingInstanceRepository;
-  private KeywordRepository keywordRepository;
+  private PasswordRepository passwordRepository;
 
   @Autowired
-  public TrainingInstanceServiceImpl(TrainingInstanceRepository trainingInstanceRepository, KeywordRepository keywordRepository) {
+  public TrainingInstanceServiceImpl(TrainingInstanceRepository trainingInstanceRepository, PasswordRepository passwordRepository) {
     this.trainingInstanceRepository = trainingInstanceRepository;
-    this.keywordRepository = keywordRepository;
+    this.passwordRepository = passwordRepository;
   }
 
 
@@ -102,17 +101,17 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
   }
 
   @Override
-  public char[] generateKeyword() throws ServiceLayerException {
-    String newKeyword = RandomStringUtils.random(6, true, true);
-    String newKeywordHash = DigestUtils.sha256Hex(newKeyword);
+  public char[] generatePassword() throws ServiceLayerException {
+    String newPassword = RandomStringUtils.random(6, true, true);
+    String newPasswordHash = DigestUtils.sha256Hex(newPassword);
 
-    Optional<Keyword> keyword = keywordRepository.findOneByKeywordHash(newKeywordHash);
-    if (keyword.isPresent()) throw new ServiceLayerException("Keyword already exists");
-    Keyword newKeywordInstance = new Keyword();
-    newKeywordInstance.setKeywordHash(newKeywordHash);
-    keywordRepository.save(newKeywordInstance);
+    Optional<Password> password = passwordRepository.findOneByPasswordHash(newPasswordHash);
+    if (password.isPresent()) throw new ServiceLayerException("Password already exists");
+    Password newPasswordInstance = new Password();
+    newPasswordInstance.setPasswordHash(newPasswordHash);
+    passwordRepository.save(newPasswordInstance);
 
-    return newKeyword.toCharArray();
+    return newPassword.toCharArray();
   }
 
 
