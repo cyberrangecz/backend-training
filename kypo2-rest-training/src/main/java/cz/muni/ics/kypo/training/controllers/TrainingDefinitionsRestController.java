@@ -208,8 +208,7 @@ public class TrainingDefinitionsRestController {
           @ApiResponse(code = 409, message = "The requested resource was not modified because of its status"),
           @ApiResponse(code = 404, message = "The requested resource was not found")
   })
-  //@PutMapping(value = "/{definitionId}/levels/{levelId}/swap-left")
-  @PutMapping(value = "/swapLeft/{definitionId}/{levelId}")
+  @PutMapping(value = "/{definitionId}/levels/{levelId}/swap-left")
   public ResponseEntity<Void> swapLeft(@ApiParam(value = "Id of definition") @PathVariable("definitionId") Long definitionId,
                                        @ApiParam(value = "Id of level to be swapped") @PathVariable("levelId") Long levelId){
     try {
@@ -230,8 +229,7 @@ public class TrainingDefinitionsRestController {
           @ApiResponse(code = 409, message = "The requested resource was not modified because of its status"),
           @ApiResponse(code = 404, message = "The requested resource was not found")
   })
-  //@PutMapping(value = "/{definitionId}/levels/{levelId}/swap-right")
-  @PutMapping(value = "/swapRight/{definitionId}/{levelId}")
+  @PutMapping(value = "/{definitionId}/levels/{levelId}/swap-right")
   public ResponseEntity<Void> swapRight(@ApiParam(value = "Id of definition") @PathVariable("definitionId") Long definitionId,
                                        @ApiParam(value = "Id of level to be swapped") @PathVariable("levelId") Long levelId){
     try {
@@ -264,7 +262,7 @@ public class TrainingDefinitionsRestController {
     }
   }
 
-  @ApiOperation(httpMethod = "PUT",
+  @ApiOperation(httpMethod = "DELETE",
       value = "Delete specific level from definition",
       nickname = "deleteOneLevel",
       response = Void.class)
@@ -272,8 +270,7 @@ public class TrainingDefinitionsRestController {
           @ApiResponse(code = 409, message = "The requested resource was not modified because of its status"),
           @ApiResponse(code = 404, message = "The requested resource was not found")
   })
-  //@DeleteMapping(value = "/{definitionId}/levels/{levelId}")
-  @PutMapping(value = "/deleteLevel/{definitionId}/{levelId}")
+  @DeleteMapping(value = "/{definitionId}/levels/{levelId}")
   public ResponseEntity<Void> deleteOneLevel(@ApiParam(value = "Id of definition") @PathVariable("definitionId") Long definitionId,
                                              @ApiParam(value = "Id of level to be deleted") @PathVariable("levelId") Long levelId){
     try{
@@ -295,8 +292,7 @@ public class TrainingDefinitionsRestController {
           @ApiResponse(code = 409, message = "The requested resource was not modified because of its status"),
           @ApiResponse(code = 404, message = "The requested resource was not found")
   })
-  //@PutMapping(value = "/{definitionId}/game-levels",consumes = MediaType.APPLICATION_JSON_VALUE)
-  @PutMapping(value = "/updateGameLevel/{definitionId}",consumes = MediaType.APPLICATION_JSON_VALUE)
+  @PutMapping(value = "/{definitionId}/game-levels",consumes = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<Void> updateGameLevel(@ApiParam(value = "Id of definition") @PathVariable(value = "definitionId") Long definitionId,
                                               @ApiParam(value = "Game level to be updated") @RequestBody GameLevelDTO gameLevelDTO) {
     try{
@@ -319,7 +315,7 @@ public class TrainingDefinitionsRestController {
           @ApiResponse(code = 409, message = "The requested resource was not modified because of its status"),
           @ApiResponse(code = 404, message = "The requested resource was not found")
   })
-  @PutMapping(value = "/updateInfoLevel/{definitionId}",consumes = MediaType.APPLICATION_JSON_VALUE)
+  @PutMapping(value = "/{definitionId}/info-levels",consumes = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<Void> updateInfoLevel(@ApiParam(value = "Id of definition") @PathVariable(value = "definitionId") Long definitionId,
                                               @ApiParam(value = "Info level to be updated") @RequestBody InfoLevelDTO infoLevelDTO) {
     try{
@@ -342,7 +338,7 @@ public class TrainingDefinitionsRestController {
           @ApiResponse(code = 409, message = "The requested resource was not modified because of its status"),
           @ApiResponse(code = 404, message = "The requested resource was not found")
   })
-  @PutMapping(value = "/updateAssessmentLevel/{definitionId}",consumes = MediaType.APPLICATION_JSON_VALUE)
+  @PutMapping(value = "/{definitionId}/assessment-levels",consumes = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<Void> updateAssessmentLevel(@ApiParam(value = "Id of definition") @PathVariable(value = "definitionId") Long definitionId,
                                                     @ApiParam(value = "Assessment level to be updated") @RequestBody AssessmentLevelDTO assessmentLevelDTO) {
     try{
@@ -356,7 +352,7 @@ public class TrainingDefinitionsRestController {
     }
   }
 
-  @ApiOperation(httpMethod = "PUT",
+  @ApiOperation(httpMethod = "POST",
           value = "Create Game Level",
           response = GameLevelDTO.class,
           nickname = "createGameLevel",
@@ -366,7 +362,7 @@ public class TrainingDefinitionsRestController {
           @ApiResponse(code = 404, message = "The requested resource was not found"),
           @ApiResponse(code = 409, message = "The requested resource was not created")
   })
-  @PutMapping(value = "createGameLevel/{definitionId}", consumes = MediaType.APPLICATION_JSON_VALUE)
+  @PostMapping(value = "/{definitionId}/game-levels", consumes = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<GameLevelDTO> createGameLevel(@ApiParam(value = "Id of definition") @PathVariable(value = "definitionId") Long definitionId,
                                                       @ApiParam(value = "Game level to be created") @RequestBody GameLevelDTO gameLevelDTO){
     try {
@@ -378,7 +374,7 @@ public class TrainingDefinitionsRestController {
     }
   }
 
-  @ApiOperation(httpMethod = "PUT",
+  @ApiOperation(httpMethod = "POST",
           value = "Create Info Level",
           response = InfoLevelDTO.class,
           nickname = "createInfoLevel",
@@ -388,7 +384,7 @@ public class TrainingDefinitionsRestController {
           @ApiResponse(code = 404, message = "The requested resource was not found"),
           @ApiResponse(code = 409, message = "The requested resource was not created")
   })
-  @PutMapping(value = "createInfoLevel/{definitionId}", consumes = MediaType.APPLICATION_JSON_VALUE)
+  @PostMapping(value = "/{definitionId}/info-levels", consumes = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<InfoLevelDTO> createInfoLevel(@ApiParam(value = "Id of definition") @PathVariable(value = "definitionId") Long definitionId,
                                                       @ApiParam(value = "Info level to be created") @RequestBody @Valid InfoLevelDTO infoLevelDTO){
     try {
@@ -401,7 +397,7 @@ public class TrainingDefinitionsRestController {
   }
 
 
-  @ApiOperation(httpMethod = "PUT",
+  @ApiOperation(httpMethod = "POST",
           value = "Create Assessment Level",
           response = AssessmentLevelDTO.class,
           nickname = "createAssessmentLevel",
@@ -411,7 +407,7 @@ public class TrainingDefinitionsRestController {
           @ApiResponse(code = 404, message = "The requested resource was not found"),
           @ApiResponse(code = 409, message = "The requested resource was not created")
   })
-  @PutMapping(value = "createAssessmentLevel/{definitionId}", consumes = MediaType.APPLICATION_JSON_VALUE)
+  @PostMapping(value = "/{definitionId}/assessment-levels", consumes = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<AssessmentLevelDTO> createAssessmentLevel(@ApiParam(value = "Id of definition") @PathVariable(value = "definitionId") Long definitionId,
                                                                   @ApiParam(value = "Assessment level to be created") @RequestBody AssessmentLevelDTO assessmentLevelDTO){
     try {
