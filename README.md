@@ -24,7 +24,7 @@ NOTE: This command will also insert some testing data to data storages.
 Documentation is done in Swagger framework. It is possible to reach it on the following page:
 
 ```
-~/kypo2-rest-training/swagger-ui.html
+~/kypo2-rest-training/api/v1/swagger-ui.html
 ```
 
 e.g. on localhost it should be:
@@ -89,7 +89,7 @@ kypo.idp.4oauth.resource.clientSecret={your client secret from Self-service prot
 kypo.idp.4oauth.client.clientId={your client ID from Self-service client}
 kypo.idp.4oauth.scopes=openid, email
 
-path.to.file.with.initial.roles={path to your 
+path.to.file.with.initial.roles={path to your yaml file with roles}
 
 # you can add more scopes according to settings from step 1.
 
