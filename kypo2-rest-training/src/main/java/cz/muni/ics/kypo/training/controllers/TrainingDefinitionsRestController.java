@@ -164,7 +164,7 @@ public class TrainingDefinitionsRestController {
           @ApiResponse(code = 400, message = "The requested resource was not created")
   })
   @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<TrainingDefinitionDTO> createTrainingDefinition(@ApiParam(name = "Training Definition to be created") @RequestBody TrainingDefinitionDTO trainingDefinitionDTO) {
+  public ResponseEntity<TrainingDefinitionDTO> createTrainingDefinition(@ApiParam(name = "Training Definition to be created") @RequestBody @Valid TrainingDefinitionDTO trainingDefinitionDTO) {
     try {
       TrainingDefinition trainingDefinition = dtoMapper.mapTo(trainingDefinitionDTO, TrainingDefinition.class);
       TrainingDefinitionDTO newTrainingDefinitionDTO = trainingDefinitionFacade.create(trainingDefinition);
@@ -186,7 +186,7 @@ public class TrainingDefinitionsRestController {
           @ApiResponse(code = 409, message = "The requested resource was not modified because of its status")
   })
   @PutMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<Void> updateTrainingDefinition(@ApiParam(value = "Training definition to be updated") @RequestBody TrainingDefinitionDTO trainingDefinitionDTO){
+  public ResponseEntity<Void> updateTrainingDefinition(@ApiParam(value = "Training definition to be updated") @RequestBody @Valid TrainingDefinitionDTO trainingDefinitionDTO){
     try {
       TrainingDefinition trainingDefinition = dtoMapper.mapTo(trainingDefinitionDTO, TrainingDefinition.class);
       trainingDefinitionFacade.update(trainingDefinition);
@@ -315,7 +315,7 @@ public class TrainingDefinitionsRestController {
   })
   @PutMapping(value = "/{definitionId}/game-levels",consumes = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<Void> updateGameLevel(@ApiParam(value = "Id of definition") @PathVariable(value = "definitionId") Long definitionId,
-                                              @ApiParam(value = "Game level to be updated") @RequestBody GameLevelDTO gameLevelDTO) {
+                                              @ApiParam(value = "Game level to be updated") @RequestBody @Valid GameLevelDTO gameLevelDTO) {
     try{
       GameLevel level = dtoMapper.mapTo(gameLevelDTO, GameLevel.class);
       trainingDefinitionFacade.updateGameLevel(definitionId, level);
@@ -338,7 +338,7 @@ public class TrainingDefinitionsRestController {
   })
   @PutMapping(value = "/{definitionId}/info-levels",consumes = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<Void> updateInfoLevel(@ApiParam(value = "Id of definition") @PathVariable(value = "definitionId") Long definitionId,
-                                              @ApiParam(value = "Info level to be updated") @RequestBody InfoLevelDTO infoLevelDTO) {
+                                              @ApiParam(value = "Info level to be updated") @RequestBody @Valid InfoLevelDTO infoLevelDTO) {
     try{
       InfoLevel infoLevel = dtoMapper.mapTo(infoLevelDTO, InfoLevel.class);
       trainingDefinitionFacade.updateInfoLevel(definitionId, infoLevel);
@@ -361,7 +361,7 @@ public class TrainingDefinitionsRestController {
   })
   @PutMapping(value = "/{definitionId}/assessment-levels",consumes = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<Void> updateAssessmentLevel(@ApiParam(value = "Id of definition") @PathVariable(value = "definitionId") Long definitionId,
-                                                    @ApiParam(value = "Assessment level to be updated") @RequestBody AssessmentLevelDTO assessmentLevelDTO) {
+                                                    @ApiParam(value = "Assessment level to be updated") @RequestBody @Valid AssessmentLevelDTO assessmentLevelDTO) {
     try{
       AssessmentLevel assessmentLevel = dtoMapper.mapTo(assessmentLevelDTO, AssessmentLevel.class);
       trainingDefinitionFacade.updateAssessmentLevel(definitionId, assessmentLevel);
@@ -385,7 +385,7 @@ public class TrainingDefinitionsRestController {
   })
   @PostMapping(value = "/{definitionId}/game-levels", consumes = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<GameLevelDTO> createGameLevel(@ApiParam(value = "Id of definition") @PathVariable(value = "definitionId") Long definitionId,
-                                                      @ApiParam(value = "Game level to be created") @RequestBody GameLevelDTO gameLevelDTO){
+                                                      @ApiParam(value = "Game level to be created") @RequestBody @Valid GameLevelDTO gameLevelDTO){
     try {
       GameLevel gameLevel = dtoMapper.mapTo(gameLevelDTO, GameLevel.class);
       GameLevelDTO newGameLevel = trainingDefinitionFacade.createGameLevel(definitionId, gameLevel);
@@ -430,7 +430,7 @@ public class TrainingDefinitionsRestController {
   })
   @PostMapping(value = "/{definitionId}/assessment-levels", consumes = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<AssessmentLevelDTO> createAssessmentLevel(@ApiParam(value = "Id of definition") @PathVariable(value = "definitionId") Long definitionId,
-                                                                  @ApiParam(value = "Assessment level to be created") @RequestBody AssessmentLevelDTO assessmentLevelDTO){
+                                                                  @ApiParam(value = "Assessment level to be created") @RequestBody @Valid AssessmentLevelDTO assessmentLevelDTO){
     try {
       AssessmentLevel assessmentLevel = dtoMapper.mapTo(assessmentLevelDTO, AssessmentLevel.class);
       AssessmentLevelDTO newAssessmentLevel = trainingDefinitionFacade.createAssessmentLevel(definitionId, assessmentLevel);

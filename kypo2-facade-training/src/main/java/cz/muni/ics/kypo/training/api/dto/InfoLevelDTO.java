@@ -1,5 +1,6 @@
 package cz.muni.ics.kypo.training.api.dto;
 
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 import io.swagger.annotations.ApiModel;
@@ -12,7 +13,7 @@ import io.swagger.annotations.ApiModel;
 @ApiModel(value = "InfoLevelDTO", description = ".")
 public class InfoLevelDTO extends AbstractLevelDTO {
 
-  @NotNull(message = "neco")
+  @NotEmpty(message = "Level content cannot be empty")
   private String content;
 
   public InfoLevelDTO() {}

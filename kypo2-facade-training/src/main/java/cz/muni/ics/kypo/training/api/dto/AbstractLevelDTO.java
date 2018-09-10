@@ -2,6 +2,9 @@ package cz.muni.ics.kypo.training.api.dto;
 
 import java.util.Objects;
 
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 import io.swagger.annotations.ApiModel;
@@ -15,9 +18,11 @@ import io.swagger.annotations.ApiModel;
 public abstract class AbstractLevelDTO {
 
   protected Long id;
-  @NotNull
+  @NotEmpty(message = "Level title cannot be empty")
   protected String title;
   @NotNull
+  @Min(value = 0, message = "Max score cannot be lower than 0")
+  @Max(value = 100, message = "Max score cannot be greater than 100")
   protected int maxScore;
   protected Long nextLevel;
   protected PreHookDTO preHook;

@@ -37,6 +37,8 @@ public class GameLevel extends AbstractLevel implements Serializable {
   private String[] attachments;
   @OneToMany(fetch = FetchType.LAZY, targetEntity = Hint.class, mappedBy = "gameLevel", cascade = CascadeType.ALL)
   private Set<Hint> hints = new HashSet<>();
+  @Column(name = "incorrect_flag_limit")
+  private int incorrectFlagLimit;
 
   public GameLevel() {}
 
@@ -107,42 +109,52 @@ public class GameLevel extends AbstractLevel implements Serializable {
   public void setHints(Set<Hint> hints) {
     this.hints = hints;
   }
-  
-  
 
-  @Override
-  public int hashCode() {
-    return Objects.hash(attachments, content, estimatedDuration, flag, hints, incorrectFlagPenalty, solution, solutionPenalty);
+  public int getIncorrectFlagLimit() {
+    return incorrectFlagLimit;
+  }
+
+  public void setIncorrectFlagLimit(int incorrectFlagLimit) {
+    this.incorrectFlagLimit = incorrectFlagLimit;
   }
 
   @Override
-  public boolean equals(Object obj) {
-    if (this == obj)
-      return true;
-    if (!super.equals(obj))
-      return false;
-    if (!(obj instanceof GameLevel))
-      return false;
-    GameLevel other = (GameLevel) obj;
-    // @formatter:off
-    return Arrays.equals(attachments, other.getAttachments()) 
-        && Objects.equals(content, other.getContent())
-        && Objects.equals(estimatedDuration, other.getEstimatedDuration()) 
-        && Objects.equals(flag, other.getFlag()) 
-        && Objects.equals(hints, other.getHints())
-        && Objects.equals(incorrectFlagPenalty, other.getIncorrectFlagPenalty()) 
-        && Objects.equals(solution, other.getSolution())
-        && Objects.equals(solutionPenalty, other.getSolutionPenalty());
-    // @formatter:on
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    if (!super.equals(o)) return false;
+    GameLevel gameLevel = (GameLevel) o;
+    return incorrectFlagPenalty == gameLevel.incorrectFlagPenalty &&
+            solutionPenalty == gameLevel.solutionPenalty &&
+            estimatedDuration == gameLevel.estimatedDuration &&
+            incorrectFlagLimit == gameLevel.incorrectFlagLimit &&
+            Objects.equals(flag, gameLevel.flag) &&
+            Objects.equals(content, gameLevel.content) &&
+            Objects.equals(solution, gameLevel.solution) &&
+            Arrays.equals(attachments, gameLevel.attachments) &&
+            Objects.equals(hints, gameLevel.hints);
+  }
+
+  @Override
+  public int hashCode() {
+
+    int result = Objects.hash(super.hashCode(), flag, content, solution, incorrectFlagPenalty, solutionPenalty, estimatedDuration, hints, incorrectFlagLimit);
+    result = 31 * result + Arrays.hashCode(attachments);
+    return result;
   }
 
   @Override
   public String toString() {
-    return "GameLevel [flag=" + flag + ", content=" + content + ", solution=" + solution + ", incorrectFlagPenalty=" + incorrectFlagPenalty
-        + ", solutionPenalty=" + solutionPenalty + ", estimatedDuration=" + estimatedDuration + ", attachments=" + Arrays.toString(attachments) + ", hints="
-        + hints + ", getId()=" + getId() + ", getTitle()=" + getTitle() + ", getMaxScore()=" + getMaxScore() + ", getPreHook()="
-        + getPreHook() + ", getPostHook()=" + getPostHook() + ", getNextLevel()=" + getNextLevel() + ", getTrainingDefinition()="
-        + ", toString()=" + super.toString() + "]";
+    return "GameLevel{" +
+            "flag='" + flag + '\'' +
+            ", content='" + content + '\'' +
+            ", solution='" + solution + '\'' +
+            ", incorrectFlagPenalty=" + incorrectFlagPenalty +
+            ", solutionPenalty=" + solutionPenalty +
+            ", estimatedDuration=" + estimatedDuration +
+            ", attachments=" + Arrays.toString(attachments) +
+            ", hints=" + hints +
+            ", incorrectFlagLimit=" + incorrectFlagLimit +
+            '}';
   }
-
 }

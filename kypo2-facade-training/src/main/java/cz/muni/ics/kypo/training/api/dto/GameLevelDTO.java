@@ -3,6 +3,7 @@ package cz.muni.ics.kypo.training.api.dto;
 import cz.muni.ics.kypo.training.model.Hint;
 import io.swagger.annotations.ApiModel;
 
+import javax.validation.constraints.*;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -14,15 +15,22 @@ import java.util.Set;
  */
 @ApiModel(value = "GameLevelDTO", description = ".")
 public class GameLevelDTO extends AbstractLevelDTO {
-
+    @NotEmpty(message = "Flag cannot be empty")
+    @Size(max = 50, message = "Flag cannot be longer than 50 characters")
     private String flag;
+    @NotEmpty(message = "Level content cannot be empty")
     private String content;
+    @NotEmpty(message = "Level solution cannot be empty")
     private String solution;
     private int incorrectFlagPenalty;
     private int solutionPenalty = super.getMaxScore() - 1;
+    @Min(value = 1, message = "Estimated duration cannot be lower than 1")
+    @Max(value = 60, message = "Estimated duration cannot be greater than 60")
     private int estimatedDuration;
     private String[] attachments;
     private Set<Hint> hints = new HashSet<>();
+    @Positive(message = "Incorrect flag limit must be positive number")
+    private int incorrectFlagLimit;
 
     public GameLevelDTO() {}
 
@@ -90,6 +98,14 @@ public class GameLevelDTO extends AbstractLevelDTO {
         this.hints = hints;
     }
 
+    public int getIncorrectFlagLimit() {
+        return incorrectFlagLimit;
+    }
+
+    public void setIncorrectFlagLimit(int incorrectFlagLimit) {
+        this.incorrectFlagLimit = incorrectFlagLimit;
+    }
+
     @Override
     public String toString() {
         return "GameLevelDTO{" +
@@ -101,12 +117,7 @@ public class GameLevelDTO extends AbstractLevelDTO {
                 ", estimatedDuration=" + estimatedDuration +
                 ", attachments=" + Arrays.toString(attachments) +
                 ", hints=" + hints +
-                ", id=" + id +
-                ", title='" + title + '\'' +
-                ", maxScore=" + maxScore +
-                ", nextLevel=" + nextLevel +
-                ", preHook=" + preHook +
-                ", postHook=" + postHook +
+                ", incorrectFlagLimit=" + incorrectFlagLimit +
                 '}';
     }
 }
