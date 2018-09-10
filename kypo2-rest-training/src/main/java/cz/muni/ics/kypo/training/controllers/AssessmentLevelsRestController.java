@@ -32,25 +32,13 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
-import io.swagger.annotations.Authorization;
-import io.swagger.annotations.AuthorizationScope;
 
 /**
  * @author Pavel Šeda
  */
 //@formatter:off
 @Api(value = "/assessment-levels",
-        consumes = "application/json",
-        authorizations = {
-                @Authorization(value = "sampleoauth",
-                        scopes = {
-                                @AuthorizationScope(
-                                        scope = "HTTP operations on Assessment Level Resource",
-                                        description = "allows operations on Assessment Level Resource."
-                                )
-                        }
-                )
-        }
+     consumes = "application/json"
 )
 //@formatter:on
 @RestController
@@ -85,17 +73,7 @@ public class AssessmentLevelsRestController {
             value = "Get Assessment Level by Id.",
             response = AssessmentLevelDTO.class,
             nickname = "findAssessmentLevelById",
-            produces = "application/json",
-            authorizations = {
-                    @Authorization(value = "sampleoauth",
-                            scopes = {
-                                    @AuthorizationScope(
-                                            scope = "find Assessment Level by ID",
-                                            description = "allows returning Assessment Level by ID."
-                                    )
-                            }
-                    )
-            }
+            produces = "application/json"
     )
     @ApiResponses(value = {
             @ApiResponse(code = 404, message = "The requested resource was not found.")
@@ -126,17 +104,7 @@ public class AssessmentLevelsRestController {
             response = AssessmentLevelDTO.class,
             responseContainer = "Page",
             nickname = "findAllAssessmentLevels",
-            produces = "application/json",
-            authorizations = {
-                    @Authorization(value = "sampleoauth",
-                            scopes = {
-                                    @AuthorizationScope(
-                                            scope = "find all Assessment Levels",
-                                            description = "allows returning Assessment Levels."
-                                    )
-                            }
-                    )
-            }
+            produces = "application/json"
     )
     @ApiResponses(value = {
             @ApiResponse(code = 404, message = "The requested resource was not found.")
@@ -166,17 +134,7 @@ public class AssessmentLevelsRestController {
             response = AssessmentLevelDTO.class,
             nickname = "createAssessmentLevel",
             produces = "application/json",
-            consumes = "application/json",
-            authorizations = {
-                    @Authorization(value = "sampleoauth",
-                            scopes = {
-                                    @AuthorizationScope(
-                                            scope = "create Assessment Level",
-                                            description = "allows returning created Assessment Level."
-                                    )
-                            }
-                    )
-            }
+            consumes = "application/json"
     )
     @ApiResponses(value = {
             @ApiResponse(code = 404, message = "The requested resource was not found.")
@@ -203,17 +161,7 @@ public class AssessmentLevelsRestController {
             value = "Update Assessment Level.",
             response = AssessmentLevelDTO.class,
             nickname = "updateAssessmentLevel",
-            produces = "application/json",
-            authorizations = {
-                    @Authorization(value = "sampleoauth",
-                            scopes = {
-                                    @AuthorizationScope(
-                                            scope = "update Assessment Level",
-                                            description = "allows returning created Assessment Level."
-                                    )
-                            }
-                    )
-            }
+            produces = "application/json"
     )
     @ApiResponses(value = {
             @ApiResponse(code = 404, message = "The requested resource was not found.")
@@ -231,7 +179,6 @@ public class AssessmentLevelsRestController {
             throw new ResourceNotModifiedException(ex.getLocalizedMessage());
         }
     }
-
     //@formatter:on
 
 
@@ -240,17 +187,7 @@ public class AssessmentLevelsRestController {
             value = "Delete Assessment Level.",
             response = AssessmentLevelDTO.class,
             nickname = "deleteAssessmentLevel",
-            produces = "application/json",
-            authorizations = {
-                    @Authorization(value = "sampleoauth",
-                            scopes = {
-                                    @AuthorizationScope(
-                                            scope = "delete Assessment Level",
-                                            description = "allows deleting Assessment Level."
-                                    )
-                            }
-                    )
-            }
+            produces = "application/json"
     )
     @ApiResponses(value = {
             @ApiResponse(code = 404, message = "The requested resource was not found.")
@@ -263,10 +200,7 @@ public class AssessmentLevelsRestController {
         } catch (FacadeLayerException ex) {
             throw new ResourceNotModifiedException(ex.getLocalizedMessage());
         }
-
     }
-
-
     //@formatter:off
 
 

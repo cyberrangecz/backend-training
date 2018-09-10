@@ -33,8 +33,6 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
-import io.swagger.annotations.Authorization;
-import io.swagger.annotations.AuthorizationScope;
 
 /**
  * @author Pavel Šeda
@@ -42,17 +40,7 @@ import io.swagger.annotations.AuthorizationScope;
  */
 //@formatter:off
 @Api(value = "/training-runs", 
-  consumes = "application/json", 
-  authorizations = {
-    @Authorization(value = "sampleoauth", 
-      scopes = {
-        @AuthorizationScope(
-          scope = "HTTP operations on Training Run Resource", 
-          description = "allows operations on Training Run Resource."
-        )
-      }
-    )
-  }
+  consumes = "application/json" 
 )
 //@formatter:on
 @RestController
@@ -81,17 +69,7 @@ public class TrainingRunsRestController {
       value = "Get Training Run by Id.", 
       response = TrainingRunDTO.class,
       nickname = "findTrainingRunById",
-      produces = "application/json",
-      authorizations = {
-          @Authorization(value = "sampleoauth", 
-              scopes = {
-                  @AuthorizationScope(
-                      scope = "find Training Run by ID", 
-                      description = "allows returning Training Run by ID."
-                  )
-              }
-          )
-      }
+      produces = "application/json"
   )
   @ApiResponses(value = {
       @ApiResponse(code = 404, message = "The requested resource was not found.") 
@@ -122,17 +100,7 @@ public class TrainingRunsRestController {
       response = InfoLevelDTO.class,
       responseContainer = "Page",
       nickname = "findAllTrainingRuns",
-      produces = "application/json",
-      authorizations = {
-          @Authorization(value = "sampleoauth", 
-              scopes = {
-                  @AuthorizationScope(
-                      scope = "find all Training Runs", 
-                      description = "allows returning Training Runs."
-                  )
-              }
-          )
-      }
+      produces = "application/json"
   )
   @ApiResponses(value = {
       @ApiResponse(code = 404, message = "The requested resource was not found.") 
