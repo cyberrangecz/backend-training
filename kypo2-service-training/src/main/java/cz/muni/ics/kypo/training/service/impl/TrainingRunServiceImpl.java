@@ -1,6 +1,9 @@
 package cz.muni.ics.kypo.training.service.impl;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -288,8 +291,16 @@ public class TrainingRunServiceImpl implements TrainingRunService {
 
 	private void auditGameStartedAction(TrainingInstance trainingInstance) {
 		// String loggedInUser = getSubOfLoggedInUser();
-		GameDetails gameDetails =
-				new GameDetails(trainingInstance.getId(), trainingInstance.getTrainingDefinition().getStartingLevel(), 0L, "");
-		auditService.<GameStarted>save(new GameStarted(gameDetails));
+		if (trainingInstance != null) {
+			LocalDateTime startTime = trainingInstance.getStartTime();
+			if (startTime != null) {
+				long logicalTime = Duration.between(startTime, LocalDateTime.now()).get(ChronoUnit.MILLIS);
+				// TODO this class must be pass loggedInUser returned from getSubOfLoggedInUser when it will
+				// be working and passed as last argument of GameDetails class
+				GameDetails gameDetails =
+						new GameDetails(trainingInstance.getId(), trainingInstance.getTrainingDefinition().getStartingLevel(), logicalTime, "");
+				auditService.<GameStarted>save(new GameStarted(gameDetails));
+			}
+		}
 	}
 }

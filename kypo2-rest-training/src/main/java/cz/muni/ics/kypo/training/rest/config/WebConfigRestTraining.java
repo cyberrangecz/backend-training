@@ -32,7 +32,7 @@ import cz.muni.ics.kypo.training.config.FacadeConfiguration;
  * 
  * <pre>
  * <code>
- *  --spring.config.location=classpath:file:///etc/kypo2/training/application.properties
+ *  --path.to.config.file="C:/CSIRT/property-files/training.properties"
  * </code>
  * </pre>
  *
