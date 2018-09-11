@@ -34,8 +34,6 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
-import io.swagger.annotations.Authorization;
-import io.swagger.annotations.AuthorizationScope;
 
 /**
  * @author Pavel Šeda
@@ -43,17 +41,7 @@ import io.swagger.annotations.AuthorizationScope;
  */
 //@formatter:off
 @Api(value = "/info-levels", 
-  consumes = "application/json", 
-  authorizations = {
-    @Authorization(value = "sampleoauth", 
-      scopes = {
-        @AuthorizationScope(
-          scope = "HTTP operations on Info Level Resource", 
-          description = "allows operations on Info Level Resource."
-        )
-      }
-    )
-  }
+  	 consumes = "application/json"
 )
 //@formatter:on
 @RestController
@@ -84,17 +72,7 @@ public class InfoLevelsRestController {
       value = "Get Info level by Id.", 
       response = InfoLevelDTO.class,
       nickname = "findInfoLevelById",
-      produces = "application/json",
-      authorizations = {
-          @Authorization(value = "sampleoauth", 
-              scopes = {
-                  @AuthorizationScope(
-                      scope = "find Info level by ID", 
-                      description = "allows returning Info level by ID."
-                  )
-              }
-          )
-      }
+      produces = "application/json"
   )
   @ApiResponses(value = {
       @ApiResponse(code = 404, message = "The requested resource was not found.") 
@@ -125,17 +103,7 @@ public class InfoLevelsRestController {
       response = InfoLevelDTO.class,
       responseContainer = "Page",
       nickname = "findAllInfoLevels",
-      produces = "application/json",
-      authorizations = {
-          @Authorization(value = "sampleoauth", 
-              scopes = {
-                  @AuthorizationScope(
-                      scope = "find all Info levels", 
-                      description = "allows returning Info levels."
-                  )
-              }
-          )
-      }
+      produces = "application/json"
   )
   @ApiResponses(value = {
       @ApiResponse(code = 404, message = "The requested resource was not found.") 

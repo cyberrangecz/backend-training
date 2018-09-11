@@ -31,8 +31,6 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
-import io.swagger.annotations.Authorization;
-import io.swagger.annotations.AuthorizationScope;
 
 /**
  * @author Pavel Šeda
@@ -40,17 +38,7 @@ import io.swagger.annotations.AuthorizationScope;
  */
 //@formatter:off
 @Api(value = "/training-instances", 
-  consumes = "application/json", 
-  authorizations = {
-    @Authorization(value = "sampleoauth", 
-      scopes = {
-        @AuthorizationScope(
-          scope = "HTTP operations on Training Instances Resource", 
-          description = "allows operations on Training Instances Resource."
-        )
-      }
-    )
-  }
+  consumes = "application/json"
 )
 //@formatter:on
 @RestController
@@ -81,17 +69,7 @@ public class TrainingInstancesRestController {
       value = "Get Training Instance by Id.", 
       response = TrainingDefinitionDTO.class,
       nickname = "findTrainingInstanceById",
-      produces = "application/json",
-      authorizations = {
-          @Authorization(value = "sampleoauth", 
-              scopes = {
-                  @AuthorizationScope(
-                      scope = "find Training Instance by ID", 
-                      description = "allows returning Training Instance by ID."
-                  )
-              }
-          )
-      }
+      produces = "application/json"
   )
   @ApiResponses(value = {
       @ApiResponse(code = 404, message = "The requested resource was not found.") 
@@ -122,17 +100,7 @@ public class TrainingInstancesRestController {
       response = InfoLevelDTO.class,
       responseContainer = "Page",
       nickname = "findAllTrainingInstances",
-      produces = "application/json",
-      authorizations = {
-          @Authorization(value = "sampleoauth", 
-              scopes = {
-                  @AuthorizationScope(
-                      scope = "find all Training Instances", 
-                      description = "allows returning Training Instances."
-                  )
-              }
-          )
-      }
+      produces = "application/json"
   )
   @ApiResponses(value = {
       @ApiResponse(code = 404, message = "The requested resource was not found.") 

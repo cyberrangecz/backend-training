@@ -25,7 +25,7 @@ NOTE: This command will also insert some testing data to data storages.
 Documentation is done in Swagger framework. It is possible to reach it on the following page:
 
 ```
-~/kypo2-rest-training/swagger-ui.html
+~/kypo2-rest-training/api/v1/swagger-ui.html
 ```
 
 e.g. on localhost it should be:
@@ -54,17 +54,27 @@ NOTE: please note that client for that REST API could be generated using [Swagge
 10. In tab "**Access**" again choose which information about user you will be getting, so called `scopes`.
 11. Hit **Save** button.
 
+
+### Creating YAML file with roles 
+
+If you want to insert initial roles to the system you have to specify them in external YAML file (e.g., roles.yml) and then insert its path to 
+properties file which is describe in next step. For each role you only need to specify role type which will be used in your project. 
+Roles are stored as string in DB but they are rewritten to upperCase. So roles in example below are stored as GUEST, ADMINISTRATOR and
+USER.  
+ 
+```yaml
+roles:
+    - ADMINISTRATOR
+    - USER
+    - GUEST
+```
+
 ### 2. Properties file
 
 After step 1 you have to create properties file according to format below and save it.
 ```properties
 server.port={port for service}
 server.servlet.context-path=/{context path for service}
-
-# Logging
-logging.level.org.springframework.web=DEBUG
-logging.level.org.hibernate=ERROR
-logging.level.org.mitre.openid.connect.binder.service=DEBUG
 
 # Elasticsearch
 elasticsearch.ipaddress=localhost
@@ -79,6 +89,9 @@ kypo.idp.4oauth.resource.clientId={your client ID from Self-service protected re
 kypo.idp.4oauth.resource.clientSecret={your client secret from Self-service protected resource}
 kypo.idp.4oauth.client.clientId={your client ID from Self-service client}
 kypo.idp.4oauth.scopes=openid, email
+
+path.to.file.with.initial.roles={path to your yaml file with roles}
+
 # you can add more scopes according to settings from step 1.
 
 # DATASOURCE
@@ -94,12 +107,13 @@ spring.flyway.user={user in DB}
 spring.flyway.password={password for user to DB}
 spring.flyway.table=schema_version
 
-# logging
+# Logging
+logging.level.org.mitre.openid.connect.binder.service=DEBUG
 logging.level.root= WARN
 logging.level.org.springframework.security= DEBUG
 logging.level.org.springframework.web= ERROR
-logging.level.org.hibernate= DEBUG
 logging.level.org.apache.commons.dbcp2= DEBUG  
+logging.level.org.hibernate=ERROR
 logging.file = logs/kypo2-training.log  
 
 # Jackson (e.g. converting Java 8 dates to ISO format
