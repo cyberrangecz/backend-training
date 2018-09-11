@@ -49,29 +49,4 @@ public class AssessmentLevelServiceImpl implements AssessmentLevelService {
             throw new ServiceLayerException(ex.getLocalizedMessage());
         }
     }
-
-    @Override
-    public Optional<AssessmentLevel> create(AssessmentLevel assessmentLevel) {
-        Assert.notNull(assessmentLevel, "Input assessment level must not be null");
-        AssessmentLevel aL = assessmentLevelRepository.save(assessmentLevel);
-        LOG.info("Assessment level with id: " + assessmentLevel.getId() + " created.");
-        return Optional.of(aL);
-
-    }
-
-    @Override
-    public Optional<AssessmentLevel> update(AssessmentLevel assessmentLevel) {
-        Assert.notNull(assessmentLevel, "Input assessment level must not be null.");
-        AssessmentLevel aL = assessmentLevelRepository.saveAndFlush(assessmentLevel);
-        LOG.info("Assessment level with id: " + assessmentLevel.getId() + "updated.");
-        return Optional.of(aL);
-    }
-
-    @Override
-    public void delete(AssessmentLevel assessmentLevel) {
-        Assert.notNull(assessmentLevel, "Input assessment level must not be null.");
-        assessmentLevelRepository.delete(assessmentLevel);
-        LOG.info("Assessment level with id: " + assessmentLevel.getId() + " was deleted.   ");
-    }
-
 }

@@ -6,6 +6,8 @@ package cz.muni.ics.kypo.training.repository.custom;
  * @author Pavel Seda (441048)
  *
  */
+/**
 public class AbstractLevelRepositoryImpl implements AbstractLevelRepositoryCustom {
 
 }
+*/

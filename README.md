@@ -8,6 +8,7 @@ Role         | UCO          | Name
 ------------ | ------------ | -------------
 Developer    |   441048     | Šeda Pavel
 Developer    |   445537     | Dominik Pilár
+Developer    |   445343     | Boris Jaduš
 
 
 ## Starting up Project (NOT implemented yet)

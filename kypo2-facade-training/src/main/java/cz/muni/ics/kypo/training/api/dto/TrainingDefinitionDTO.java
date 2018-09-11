@@ -5,6 +5,9 @@ import cz.muni.ics.kypo.training.model.SandboxDefinitionRef;
 import cz.muni.ics.kypo.training.model.enums.TDState;
 import io.swagger.annotations.ApiModel;
 
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -18,13 +21,19 @@ import java.util.Set;
 public class TrainingDefinitionDTO {
 
     private Long id;
+    @NotEmpty(message = "Training definition title cannot be empty")
+    //@Pattern(regexp = "/\s/g", message = "")
     private String title;
     private String description;
     private String[] prerequisities;
     private String[] outcomes;
     private TDState state;
+    @NotEmpty(message = "Authors cannot be empty")
     private Set<AuthorRef> authorRef = new HashSet<>();
+    @NotNull(message = "Sandbox definition cannot be empty")
     private SandboxDefinitionRef sandBoxDefinitionRef;
+    private Long startingLevel;
+    private Set<BasicLevelInfoDTO> basicLevelInfoDTOs;
 
     public TrainingDefinitionDTO() {}
 
@@ -92,6 +101,22 @@ public class TrainingDefinitionDTO {
         this.sandBoxDefinitionRef = sandBoxDefinitionRef;
     }
 
+    public Long getStartingLevel() {
+        return startingLevel;
+    }
+
+    public void setStartingLevel(Long startingLevel) {
+        this.startingLevel = startingLevel;
+    }
+
+    public Set<BasicLevelInfoDTO> getBasicLevelInfoDTOs() {
+        return basicLevelInfoDTOs;
+    }
+
+    public void setBasicLevelInfoDTOs(Set<BasicLevelInfoDTO> basicLevelInfoDTOs) {
+        this.basicLevelInfoDTOs = basicLevelInfoDTOs;
+    }
+
     @Override
     public String toString() {
         return "TrainingDefinitionDTO{" +
@@ -103,6 +128,8 @@ public class TrainingDefinitionDTO {
                 ", state=" + state +
                 ", authorRef=" + authorRef +
                 ", sandBoxDefinitionRef=" + sandBoxDefinitionRef +
+                ", startingLevel=" + startingLevel +
+                ", basicLevelInfoDTOs=" + basicLevelInfoDTOs +
                 '}';
     }
 }

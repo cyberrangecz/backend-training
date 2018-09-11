@@ -1,5 +1,6 @@
 package cz.muni.ics.kypo.training.facade;
 
+import cz.muni.ics.kypo.training.model.InfoLevel;
 import org.springframework.data.domain.Pageable;
 
 import com.querydsl.core.types.Predicate;
@@ -27,6 +28,4 @@ public interface InfoLevelFacade {
    * @return all info levels
    */
   public PageResultResource<InfoLevelDTO> findAll(Predicate predicate, Pageable pageable);
-
-
 }

@@ -23,6 +23,7 @@ import org.springframework.data.domain.*;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -54,14 +55,15 @@ public class TrainingInstanceServiceTest {
 
     @Before
     public void init() {
+
         trainingInstance1 = new TrainingInstance();
         trainingInstance1.setId(1L);
-        trainingInstance1.setKeyword("test1");
+        //trainingInstance1.setKeyword("test1");
         trainingInstance1.setTitle("test1");
 
         trainingInstance2 = new TrainingInstance();
         trainingInstance2.setId(1L);
-        trainingInstance2.setKeyword("test2");
+        //trainingInstance2.setKeyword("test2");
         trainingInstance2.setTitle("test2");
     }
 
@@ -105,16 +107,51 @@ public class TrainingInstanceServiceTest {
         assertEquals(2, pr.getTotalElements());
     }
 
+    @Test
+    public void createTrainingInstance(){
+        given(trainingInstanceRepository.save(trainingInstance1)).willReturn(trainingInstance1);
+        TrainingInstance tI = trainingInstanceService.create(trainingInstance1).get();
+        deepEquals(trainingInstance1, tI);
+        then(trainingInstanceRepository).should().save(trainingInstance1);
+    }
+
+    @Test
+    public void createTrainingInstanceWithNull(){
+      thrown.expect(IllegalArgumentException.class);
+      thrown.expectMessage("Input training instance must not be null");
+      trainingInstanceService.create(null);
+    }
+/**
+    @Test
+    public void updateTrainingInstance(){
+        given(trainingInstanceRepository.saveAndFlush(trainingInstance1)).willReturn(trainingInstance1);
+        TrainingInstance tI = trainingInstanceService.update(trainingInstance1).get();
+        deepEquals(trainingInstance1, tI);
+    }
+
+    @Test
+    public void updateTrainingInstanceWithNull(){
+        thrown.expect(IllegalArgumentException.class);
+        thrown.expectMessage("Input training instance must not be null");
+        trainingInstanceService.update(null);
+    }
+**/
+    @Test
+    public void deleteTrainingInstaceWithNull(){
+        thrown.expect(IllegalArgumentException.class);
+        thrown.expectMessage("Input training instance id" +
+                " must not be null");
+        trainingInstanceService.delete(null);
+    }
+
     @After
     public void after() {
         reset(trainingInstanceRepository);
     }
 
-
-
     private void deepEquals(TrainingInstance expected, TrainingInstance actual) {
         assertEquals(expected.getId(), actual.getId());
-        assertEquals(expected.getKeyword(), actual.getKeyword());
+        assertEquals(expected.getPassword(), actual.getPassword());
         assertEquals(expected.getTitle(), actual.getTitle());
     }
 

@@ -16,6 +16,7 @@ import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.model.GameLevel;
 import cz.muni.ics.kypo.training.repository.GameLevelRepository;
 import cz.muni.ics.kypo.training.service.GameLevelService;
+import org.springframework.util.Assert;
 
 /**
  * 
@@ -53,5 +54,4 @@ public class GameLevelServiceImpl implements GameLevelService {
       throw new ServiceLayerException(ex.getLocalizedMessage());
     }
   }
-
 }

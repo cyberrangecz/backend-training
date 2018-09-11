@@ -30,5 +30,4 @@ public interface GameLevelService {
    * @return all game levels
    */
   public Page<GameLevel> findAll(Predicate predicate, Pageable pageable);
-
 }

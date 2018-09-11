@@ -66,5 +66,4 @@ public class InfoLevelFacadeImpl implements InfoLevelFacade {
       throw new FacadeLayerException(ex.getLocalizedMessage());
     }
   }
-
 }

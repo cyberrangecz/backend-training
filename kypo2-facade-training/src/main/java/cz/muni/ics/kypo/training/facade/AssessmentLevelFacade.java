@@ -30,11 +30,4 @@ public interface AssessmentLevelFacade {
    */
   public PageResultResource<AssessmentLevelDTO> findAll(Predicate predicate, Pageable pageable) throws FacadeLayerException;
 
-  public AssessmentLevelDTO create(AssessmentLevel assessmentLevel) throws FacadeLayerException;
-
-  public AssessmentLevelDTO update(AssessmentLevel assessmentLevel) throws FacadeLayerException;
-
-  public void delete(Long id) throws FacadeLayerException;
-
-
 }
