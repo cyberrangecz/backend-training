@@ -110,7 +110,7 @@ public class TrainingRunServiceTest {
         trainingInstance = new TrainingInstance();
         trainingInstance.setId(1L);
         trainingInstance.setSandboxInstanceRefs(new HashSet<>(Arrays.asList(sandboxInstanceRef1, sandboxInstanceRef2)));
-        trainingInstance.setKeyword("Password");
+        trainingInstance.setPassword("Password".toCharArray());
         trainingInstance.setTrainingDefinition(trainingDefinition);
 
         participantRef = new ParticipantRef();

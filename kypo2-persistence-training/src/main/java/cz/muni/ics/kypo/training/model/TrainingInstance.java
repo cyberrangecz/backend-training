@@ -104,14 +104,6 @@ public class TrainingInstance implements Serializable {
     this.poolSize = poolSize;
   }
 
-  public char[] getPasswords() {
-    return password;
-  }
-
-  public void setPasswords(char[] passwords) {
-    this.password = passwords;
-  }
-
   public TrainingDefinition getTrainingDefinition() {
     return trainingDefinition;
   }
@@ -152,7 +144,7 @@ public class TrainingInstance implements Serializable {
       return false;
     TrainingInstance other = (TrainingInstance) obj;
     // @formatter:off
-    return Objects.equals(password, other.getPasswords())
+    return Objects.equals(password, other.getPassword())
         && Objects.equals(startTime, other.getStartTime())
         && Objects.equals(endTime, other.getEndTime())
         && Objects.equals(poolSize, other.getPoolSize())

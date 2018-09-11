@@ -68,6 +68,7 @@ public class TrainingDefinitionServiceTest {
     @MockBean
     private RestTemplate restTemplate;
 
+    @MockBean
     private AbstractLevelRepository abstractLevelRepository;
 
     @MockBean
