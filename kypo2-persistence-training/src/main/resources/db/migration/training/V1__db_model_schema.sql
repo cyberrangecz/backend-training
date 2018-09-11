@@ -86,13 +86,35 @@ ALTER SEQUENCE abstract_level_id_seq OWNED BY abstract_level.id;
 CREATE TABLE assessment_level (
     assessment_type character varying(128) NOT NULL,
     instructions character varying(255) NOT NULL,
-    questions jsonb NOT NULL,
+    questions character varying(255) NOT NULL,
     id bigint NOT NULL
 );
-
-
 ALTER TABLE assessment_level OWNER TO postgres;
 
+CREATE TABLE participant_ref (
+    id bigint NOT NULL,
+    participant_ref_login character varying(255) NOT NULL
+);
+
+ALTER TABLE participant_ref OWNER TO postgres;
+
+CREATE SEQUENCE participant_ref_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE participant_ref_id_seq OWNER TO postgres;
+
+--
+-- TOC entry 2306 (class 0 OID 0)
+-- Dependencies: 188
+-- Name: author_ref_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE participant_ref_id_seq OWNED BY participant_ref.id;
 --
 -- TOC entry 189 (class 1259 OID 24277)
 -- Name: author_ref; Type: TABLE; Schema: public; Owner: postgres
@@ -318,7 +340,8 @@ ALTER SEQUENCE sandbox_definition_ref_id_seq OWNED BY sandbox_definition_ref.id;
 
 CREATE TABLE sandbox_instance_ref (
     id bigint NOT NULL,
-    sandbox_instance_ref bigint
+    sandbox_instance_ref bigint,
+    training_instance_id bigint
 );
 
 
@@ -361,7 +384,7 @@ CREATE TABLE training_definition (
     state character varying(128) NOT NULL,
     title character varying(255) NOT NULL,
     sand_box_definition_ref_id bigint,
-    starting_level int8
+    starting_level bigint
 );
 
 
@@ -480,16 +503,29 @@ ALTER TABLE training_instance_sandbox_instance_ref OWNER TO postgres;
 CREATE TABLE training_run (
     id bigint NOT NULL,
     end_time timestamp without time zone NOT NULL,
-    event_log_reference character varying(255),
     start_time timestamp without time zone NOT NULL,
     state character varying(128) NOT NULL,
     current_level_id bigint,
     sandbox_instance_ref_id bigint,
-    training_instance_id bigint
+    training_instance_id bigint,
+    participant_ref_id bigint
 );
 
 
 ALTER TABLE training_run OWNER TO postgres;
+
+CREATE TABLE historic_training_run (
+    id bigint NOT NULL,
+    end_time timestamp without time zone NOT NULL,
+    event_log_reference character varying(255),
+    start_time timestamp without time zone NOT NULL,
+    current_level_id bigint,
+    sandbox_instance_ref_id bigint,
+    training_instance_id bigint,
+    participant_ref_id bigint
+);
+
+ALTER TABLE historic_training_run OWNER TO postgres;
 
 --
 -- TOC entry 209 (class 1259 OID 24379)

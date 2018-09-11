@@ -6,6 +6,7 @@ import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Positive;
 
 import io.swagger.annotations.ApiModel;
 
@@ -16,7 +17,6 @@ import io.swagger.annotations.ApiModel;
  */
 @ApiModel(value = "AbstractLevelDTO", description = ".")
 public abstract class AbstractLevelDTO {
-
   protected Long id;
   @NotEmpty(message = "Level title cannot be empty")
   protected String title;

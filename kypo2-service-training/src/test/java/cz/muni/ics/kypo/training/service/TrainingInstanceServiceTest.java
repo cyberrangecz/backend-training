@@ -22,6 +22,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.data.domain.*;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -46,6 +47,9 @@ public class TrainingInstanceServiceTest {
 
     @MockBean
     private TrainingInstanceRepository trainingInstanceRepository;
+
+    @MockBean
+    private RestTemplate restTemplate;
 
     private TrainingInstance trainingInstance1, trainingInstance2;
 

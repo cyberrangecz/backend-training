@@ -18,6 +18,7 @@ import javax.validation.constraints.NotNull;
 public class AssessmentLevelDTO extends AbstractLevelDTO {
     @NotEmpty(message = "Questions cannot be empty")
     private String questions;
+    @NotEmpty
     private String instructions;
     @NotNull(message = "Assessment type must be set")
     private AssessmentType type;

@@ -32,6 +32,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.web.client.RestTemplate;
 
 import javax.validation.constraints.Null;
 import java.util.ArrayList;
@@ -65,6 +66,9 @@ public class TrainingDefinitionServiceTest {
     private TrainingDefinitionRepository trainingDefinitionRepository;
 
     @MockBean
+    private RestTemplate restTemplate;
+
+    @MockBean
     private AbstractLevelRepository abstractLevelRepository;
 
     @MockBean
@@ -83,6 +87,7 @@ public class TrainingDefinitionServiceTest {
     private GameLevel gameLevel, newGameLevel;
 
     private InfoLevel infoLevel, newInfoLevel;
+
 
     @SpringBootApplication
     static class TestConfiguration{

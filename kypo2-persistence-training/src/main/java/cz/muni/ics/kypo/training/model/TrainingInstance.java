@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.persistence.*;
 
@@ -36,8 +37,8 @@ public class TrainingInstance implements Serializable {
   private TrainingDefinition trainingDefinition;
   @ManyToMany(fetch = FetchType.LAZY)
   private Set<UserRef> organizers = new HashSet<>();
-  @ManyToMany(fetch = FetchType.LAZY)
-  private Set<SandboxInstanceRef> sandboxInstanceRef = new HashSet<>();
+  @OneToMany(fetch = FetchType.LAZY)
+  private Set<SandboxInstanceRef> sandboxInstanceRefs = new HashSet<>();
 
   public TrainingInstance() {}
 
@@ -52,7 +53,7 @@ public class TrainingInstance implements Serializable {
     this.password = password;
     this.trainingDefinition = trainingDefinition;
     this.organizers = organizers;
-    this.sandboxInstanceRef = sandboxInstanceRef;
+    this.sandboxInstanceRefs = sandboxInstanceRef;
   }
 
   public Long getId() {
@@ -103,14 +104,6 @@ public class TrainingInstance implements Serializable {
     this.poolSize = poolSize;
   }
 
-  public char[] getPasswords() {
-    return password;
-  }
-
-  public void setPasswords(char[] passwords) {
-    this.password = passwords;
-  }
-
   public TrainingDefinition getTrainingDefinition() {
     return trainingDefinition;
   }
@@ -128,12 +121,12 @@ public class TrainingInstance implements Serializable {
     this.organizers = organizers;
   }
 
-  public Set<SandboxInstanceRef> getSandboxInstanceRef() {
-    return Collections.unmodifiableSet(sandboxInstanceRef);
+  public Set<SandboxInstanceRef> getSandboxInstanceRefs() {
+    return sandboxInstanceRefs.stream().collect(Collectors.toSet());
   }
 
-  public void setSandboxInstanceRef(Set<SandboxInstanceRef> sandboxInstanceRef) {
-    this.sandboxInstanceRef = sandboxInstanceRef;
+  public void setSandboxInstanceRefs(Set<SandboxInstanceRef> sandboxInstanceRef) {
+    this.sandboxInstanceRefs = sandboxInstanceRef;
   }
 
   @Override
@@ -151,7 +144,7 @@ public class TrainingInstance implements Serializable {
       return false;
     TrainingInstance other = (TrainingInstance) obj;
     // @formatter:off
-    return Objects.equals(password, other.getPasswords())
+    return Objects.equals(password, other.getPassword())
         && Objects.equals(startTime, other.getStartTime())
         && Objects.equals(endTime, other.getEndTime())
         && Objects.equals(poolSize, other.getPoolSize())

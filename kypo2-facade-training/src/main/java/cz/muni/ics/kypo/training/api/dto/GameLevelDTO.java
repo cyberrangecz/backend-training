@@ -15,6 +15,7 @@ import java.util.Set;
  */
 @ApiModel(value = "GameLevelDTO", description = ".")
 public class GameLevelDTO extends AbstractLevelDTO {
+
     @NotEmpty(message = "Flag cannot be empty")
     @Size(max = 50, message = "Flag cannot be longer than 50 characters")
     private String flag;
