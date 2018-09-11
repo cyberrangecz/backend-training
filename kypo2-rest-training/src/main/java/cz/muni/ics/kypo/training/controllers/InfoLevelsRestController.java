@@ -1,5 +1,9 @@
 package cz.muni.ics.kypo.training.controllers;
 
+import cz.muni.ics.kypo.training.mapping.BeanMapping;
+import cz.muni.ics.kypo.training.exceptions.ResourceNotCreatedException;
+import cz.muni.ics.kypo.training.exceptions.ResourceNotModifiedException;
+import io.swagger.models.auth.In;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Pageable;
@@ -9,11 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.MultiValueMap;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.bohnman.squiggly.Squiggly;
@@ -34,8 +34,6 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
-import io.swagger.annotations.Authorization;
-import io.swagger.annotations.AuthorizationScope;
 
 /**
  * @author Pavel Šeda
@@ -43,17 +41,7 @@ import io.swagger.annotations.AuthorizationScope;
  */
 //@formatter:off
 @Api(value = "/info-levels", 
-  consumes = "application/json", 
-  authorizations = {
-    @Authorization(value = "sampleoauth", 
-      scopes = {
-        @AuthorizationScope(
-          scope = "HTTP operations on Info Level Resource", 
-          description = "allows operations on Info Level Resource."
-        )
-      }
-    )
-  }
+  	 consumes = "application/json"
 )
 //@formatter:on
 @RestController
@@ -64,11 +52,13 @@ public class InfoLevelsRestController {
 
   private InfoLevelFacade infoLevelFacade;
   private ObjectMapper objectMapper;
+  private BeanMapping  dtoMapper;
 
   @Autowired
-  public InfoLevelsRestController(InfoLevelFacade infoLevelFacade, @Qualifier("objMapperRESTApi") ObjectMapper objectMapper) {
+  public InfoLevelsRestController(InfoLevelFacade infoLevelFacade, @Qualifier("objMapperRESTApi") ObjectMapper objectMapper, BeanMapping dtoMapper) {
     this.infoLevelFacade = infoLevelFacade;
     this.objectMapper = objectMapper;
+    this.dtoMapper = dtoMapper;
   }
 
   /**
@@ -82,17 +72,7 @@ public class InfoLevelsRestController {
       value = "Get Info level by Id.", 
       response = InfoLevelDTO.class,
       nickname = "findInfoLevelById",
-      produces = "application/json",
-      authorizations = {
-          @Authorization(value = "sampleoauth", 
-              scopes = {
-                  @AuthorizationScope(
-                      scope = "find Info level by ID", 
-                      description = "allows returning Info level by ID."
-                  )
-              }
-          )
-      }
+      produces = "application/json"
   )
   @ApiResponses(value = {
       @ApiResponse(code = 404, message = "The requested resource was not found.") 
@@ -123,17 +103,7 @@ public class InfoLevelsRestController {
       response = InfoLevelDTO.class,
       responseContainer = "Page",
       nickname = "findAllInfoLevels",
-      produces = "application/json",
-      authorizations = {
-          @Authorization(value = "sampleoauth", 
-              scopes = {
-                  @AuthorizationScope(
-                      scope = "find all Info levels", 
-                      description = "allows returning Info levels."
-                  )
-              }
-          )
-      }
+      produces = "application/json"
   )
   @ApiResponses(value = {
       @ApiResponse(code = 404, message = "The requested resource was not found.") 
@@ -154,5 +124,4 @@ public class InfoLevelsRestController {
       throw new ResourceNotFoundException(ex.getLocalizedMessage());
     }
   }
-  //@formatter:on
 }

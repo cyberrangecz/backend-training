@@ -46,13 +46,11 @@ SET default_with_oids = false;
 CREATE TABLE abstract_level (
     id bigint NOT NULL,
     max_score integer NOT NULL,
-    next_level bigint NOT NULL,
+    next_level bigint,
     title character varying(255) NOT NULL,
     post_hook_id bigint,
-    pre_hook_id bigint,
-    training_definition_id bigint
+    pre_hook_id bigint
 );
-
 
 ALTER TABLE abstract_level OWNER TO postgres;
 
@@ -684,7 +682,7 @@ ALTER TABLE ONLY user_ref ALTER COLUMN id SET DEFAULT nextval('user_ref_id_seq':
 -- Data for Name: abstract_level; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY abstract_level (id, level_order, max_score, next_level, title, post_hook_id, pre_hook_id, training_definition_id) FROM stdin;
+COPY abstract_level (id, max_score, next_level, title, post_hook_id, pre_hook_id) FROM stdin;
 \.
 
 
@@ -1098,16 +1096,6 @@ ALTER TABLE ONLY training_run
 
 ALTER TABLE ONLY user_ref
     ADD CONSTRAINT user_ref_pkey PRIMARY KEY (id);
-
-
---
--- TOC entry 2138 (class 2606 OID 24405)
--- Name: abstract_level fk24361n3estpsxei7bx7sfvcxs; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY abstract_level
-    ADD CONSTRAINT fk24361n3estpsxei7bx7sfvcxs FOREIGN KEY (training_definition_id) REFERENCES training_definition(id);
-
 
 --
 -- TOC entry 2146 (class 2606 OID 24445)

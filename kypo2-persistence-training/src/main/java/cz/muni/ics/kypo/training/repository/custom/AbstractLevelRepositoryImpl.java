@@ -7,8 +7,8 @@ package cz.muni.ics.kypo.training.repository.custom;
  *
  */
 /**
- public class AbstractLevelRepositoryImpl implements AbstractLevelRepositoryCustom {
 
- }
- */
+public class AbstractLevelRepositoryImpl implements AbstractLevelRepositoryCustom {
 
+}
+*/

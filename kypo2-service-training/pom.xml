@@ -1,10 +1,11 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>cz.muni.ics.kypo</groupId>
 		<artifactId>kypo2-training</artifactId>
-		<version>${project.version}</version>
+		<version>1.0.0</version>
 	</parent>
 	<artifactId>kypo2-service-training</artifactId>
 	<packaging>jar</packaging>
@@ -32,12 +33,12 @@
 		<dependency>
 			<groupId>cz.muni.ics.kypo</groupId>
 			<artifactId>kypo2-persistence-training</artifactId>
-			<version>${project.version}</version>
+			<version>1.0.0</version>
 		</dependency>
 		<dependency>
 			<groupId>cz.muni.ics.kypo</groupId>
 			<artifactId>kypo2-elasticsearch-training</artifactId>
-			<version>${project.version}</version>
+			<version>1.0.0</version>
 		</dependency>
 		<!-- spring web dependencies are necessary for swagger codegen classes -->
 		<dependency>
@@ -83,11 +84,11 @@
 			<artifactId>swagger-codegen-maven-plugin</artifactId>
 			<version>${swagger-codegen.version}</version>
 		</dependency>
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-core</artifactId>
-            <scope>test</scope>
-        </dependency>
+		<dependency>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-core</artifactId>
+			<scope>test</scope>
+		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
@@ -101,6 +102,7 @@
 	</dependencies>
 
 	<build>
+		<finalName>${project.artifactId}</finalName>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -111,31 +113,6 @@
 					<encoding>${project.build.sourceEncoding}</encoding>
 				</configuration>
 			</plugin>
-			<!-- 
-			<plugin>
-				<groupId>io.swagger</groupId>
-				<artifactId>swagger-codegen-maven-plugin</artifactId>
-				<version>${swagger-codegen-plugin.version}</version>
-				<executions>
-					<execution>
-						<goals>
-							<goal>generate</goal>
-						</goals>
-						<configuration>
-							<inputSpec>${project.basedir}/src/main/resources/swagger-client/user-groups/api-docs.json</inputSpec>
-							<language>java</language>
-							<apiPackage>cz.muni.ics.kypo.user.groups.api</apiPackage>
-							<modelPackage>cz.muni.ics.kypo.user.groups.model</modelPackage>
-							<invokerPackage>cz.muni.ics.kypo.user.groups.util</invokerPackage>
-							<configOptions>
-								<dateLibrary>java8</dateLibrary>
-							</configOptions>
-							<library>resttemplate</library>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-			 -->
 		</plugins>
 	</build>
 

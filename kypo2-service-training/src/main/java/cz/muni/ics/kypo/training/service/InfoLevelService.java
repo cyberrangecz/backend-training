@@ -30,6 +30,4 @@ public interface InfoLevelService {
    * @return all info levels
    */
   public Page<InfoLevel> findAll(Predicate predicate, Pageable pageable);
-
-
 }

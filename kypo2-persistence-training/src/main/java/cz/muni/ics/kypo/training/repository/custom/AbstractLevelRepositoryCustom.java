@@ -17,6 +17,5 @@ import java.util.Optional;
 @NoRepositoryBean
 public interface AbstractLevelRepositoryCustom<T extends AbstractLevel>  extends JpaRepository<T, Long>, QuerydslPredicateExecutor<T> {
 
-    //public Optional<T> findById(Long id);
 
 }

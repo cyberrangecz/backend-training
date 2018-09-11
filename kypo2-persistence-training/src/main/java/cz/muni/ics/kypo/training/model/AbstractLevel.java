@@ -3,17 +3,7 @@ package cz.muni.ics.kypo.training.model;
 import java.io.Serializable;
 import java.util.Objects;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Inheritance;
-import javax.persistence.InheritanceType;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToOne;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 @Entity(name = "AbstractLevel")
 @Table(name = "abstract_level")
@@ -29,11 +19,9 @@ public abstract class AbstractLevel implements Serializable {
   private int maxScore;
   @Column(name = "next_level")
   private Long nextLevel;
-  @ManyToOne(fetch = FetchType.LAZY)
-  private TrainingDefinition trainingDefinition;
-  @OneToOne(fetch = FetchType.LAZY, optional = true)
+  @OneToOne( fetch = FetchType.LAZY, optional = true, cascade = CascadeType.ALL)
   private PreHook preHook;
-  @OneToOne(fetch = FetchType.LAZY, optional = true)
+  @OneToOne(fetch = FetchType.LAZY, optional = true, cascade = CascadeType.ALL)
   private PostHook postHook;
 
   public AbstractLevel() {}
@@ -45,7 +33,6 @@ public abstract class AbstractLevel implements Serializable {
   public void setId(Long id) {
     this.id = id;
   }
-
 
   public String getTitle() {
     return title;
@@ -87,14 +74,6 @@ public abstract class AbstractLevel implements Serializable {
     this.nextLevel = nextLevel;
   }
 
-  public TrainingDefinition getTrainingDefinition() {
-    return trainingDefinition;
-  }
-
-  public void setTrainingDefinition(TrainingDefinition trainingDefinition) {
-    this.trainingDefinition = trainingDefinition;
-  }
-
   @Override
   public int hashCode() {
     return Objects.hashCode(id);
@@ -115,7 +94,7 @@ public abstract class AbstractLevel implements Serializable {
   @Override
   public String toString() {
     return "AbstractLevel [id=" + id + ", title=" + title + ", maxScore=" + maxScore + ", nextLevel=" + nextLevel
-        + ", trainingDefinition=" + trainingDefinition + ", preHook=" + preHook + ", postHook=" + postHook + ", toString()=" + super.toString() + "]";
+        + ", preHook=" + preHook + ", postHook=" + postHook + ", toString()=" + super.toString() + "]";
   }
 
 }

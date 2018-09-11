@@ -25,25 +25,4 @@ public interface AssessmentLevelService {
      * @return all a ssessment levels
      */
     public Page<AssessmentLevel> findAll(Predicate predicate, Pageable pageable);
-
-    /**
-     * Creates given assessment in database.
-     * @param assessment assessment to be created
-     * @throws ServiceLayerException
-     */
-    Optional<AssessmentLevel> create(AssessmentLevel assessment);
-
-    /**
-     * Updates given assessment in database.
-     * @param assessment assessment to be updated
-     * @throws ServiceLayerException
-     */
-    Optional<AssessmentLevel> update(AssessmentLevel assessment);
-
-    /**
-     * Deletes given assessment from database.
-     * @param assessment assessment to be deleted
-     * @throws ServiceLayerException
-     */
-    void delete(AssessmentLevel assessment);
 }

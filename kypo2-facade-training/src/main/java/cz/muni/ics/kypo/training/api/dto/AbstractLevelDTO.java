@@ -4,6 +4,7 @@ import java.util.Objects;
 
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Positive;
 
@@ -17,16 +18,13 @@ import io.swagger.annotations.ApiModel;
 @ApiModel(value = "AbstractLevelDTO", description = ".")
 public abstract class AbstractLevelDTO {
   protected Long id;
-  @NotNull
+  @NotEmpty(message = "Level title cannot be empty")
   protected String title;
   @NotNull
-  @Min(0)
-  @Max(100)
+  @Min(value = 0, message = "Max score cannot be lower than 0")
+  @Max(value = 100, message = "Max score cannot be greater than 100")
   protected int maxScore;
-  @Positive
   protected Long nextLevel;
-  @NotNull
-  protected TrainingDefinitionDTO trainingDefinition;
   protected PreHookDTO preHook;
   protected PostHookDTO postHook;
 
@@ -62,14 +60,6 @@ public abstract class AbstractLevelDTO {
 
   public void setNextLevel(Long nextLevel) {
     this.nextLevel = nextLevel;
-  }
-
-  public TrainingDefinitionDTO getTrainingDefinition() {
-    return trainingDefinition;
-  }
-
-  public void setTrainingDefinition(TrainingDefinitionDTO trainingDefinition) {
-    this.trainingDefinition = trainingDefinition;
   }
 
   public PreHookDTO getPreHook() {
@@ -108,7 +98,7 @@ public abstract class AbstractLevelDTO {
   @Override
   public String toString() {
     return "AbstractLevelDTO [id=" + id + ", title=" + title + ", maxScore=" + maxScore + ", nextLevel=" + nextLevel
-        + ", trainingDefinition=" + trainingDefinition + ", preHook=" + preHook + ", postHook=" + postHook + "]";
+        + ", preHook=" + preHook + ", postHook=" + postHook + "]";
   }
 
 }

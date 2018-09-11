@@ -32,62 +32,6 @@ public class InfoLevel extends AbstractLevel implements Serializable {
     this.content = content;
   }
 
-  public Long getId() {
-    return super.getId();
-  }
-
-  public void setId(Long id) {
-    super.setId(id);
-  }
-
-  public String getTitle() {
-    return super.getTitle();
-  }
-
-  public void setTitle(String title) {
-    super.setTitle(title);
-  }
-
-  public int getMaxScore() {
-    return super.getMaxScore();
-  }
-
-  public void setMaxScore(int maxScore) {
-    super.setMaxScore(maxScore);
-  }
-
-  public PreHook getPreHook() {
-    return super.getPreHook();
-  }
-
-  public void setPreHook(PreHook preHook) {
-    super.setPreHook(preHook);
-  }
-
-  public PostHook getPostHook() {
-    return super.getPostHook();
-  }
-
-  public void setPostHook(PostHook postHook) {
-    super.setPostHook(postHook);
-  }
-
-  public Long getNextLevel() {
-    return super.getNextLevel();
-  }
-
-  public void setNextLevel(Long nextLevel) {
-    super.setNextLevel(nextLevel);
-  }
-
-  public TrainingDefinition getTrainingDefinition() {
-    return super.getTrainingDefinition();
-  }
-
-  public void setTrainingDefinition(TrainingDefinition trainingDefinition) {
-    super.setTrainingDefinition(trainingDefinition);
-  }
-
   public String getContent() {
     return content;
   }
@@ -115,8 +59,9 @@ public class InfoLevel extends AbstractLevel implements Serializable {
 
   @Override
   public String toString() {
-    return "InfoLevel [content=" + content + ", getId()=" + getId() + ", getTitle()=" + getTitle() + ", getMaxScore()=" + getMaxScore() + "getPreHook()=" + getPreHook() + ", getPostHook()=" + getPostHook() + ", getNextLevel()=" + getNextLevel()
-        + ", getTrainingDefinition()=" + getTrainingDefinition() + ", toString()=" + super.toString() + "]";
+    return "InfoLevel [content=" + content + ", getId()=" + getId() + ", getTitle()=" + getTitle() + ", getMaxScore()="
+        + getMaxScore()  + ", getPreHook()=" + getPreHook() + ", getPostHook()=" + getPostHook() + ", getNextLevel()=" + getNextLevel()
+        + ", toString()=" + super.toString() + "]";
   }
 
 }

@@ -65,6 +65,9 @@ public class GameLevelsRestControllerTest {
     @Qualifier("objMapperRESTApi")
     private ObjectMapper objectMapper;
 
+    @MockBean
+    private BeanMapping beanMapping;
+
     private GameLevel gameLevel1, gameLevel2;
 
     private GameLevelDTO gameLevel1DTO, gameLevel2DTO;

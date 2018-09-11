@@ -7,6 +7,7 @@ import cz.muni.ics.kypo.training.model.enums.AssessmentType;
 import io.swagger.annotations.ApiModel;
 
 import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 
 /**
  *
@@ -15,11 +16,11 @@ import javax.validation.constraints.NotEmpty;
  */
 @ApiModel(value = "AssessmentLevelDTO", description = ".")
 public class AssessmentLevelDTO extends AbstractLevelDTO {
-    @NotEmpty
+    @NotEmpty(message = "Questions cannot be empty")
     private String questions;
     @NotEmpty
     private String instructions;
-    @NotEmpty
+    @NotNull(message = "Assessment type must be set")
     private AssessmentType type;
 
 
@@ -53,7 +54,7 @@ public class AssessmentLevelDTO extends AbstractLevelDTO {
     @Override
     public String toString() {
         return "AssessmentLevelDTO [id=" + id + ", title=" + title + ", maxScore=" + maxScore + ", nextLevel=" + nextLevel
-                + ", trainingDefinition=" + trainingDefinition + ", preHook=" + preHook + ", postHook=" + postHook + ", questions=" + questions +
+                + ", preHook=" + preHook + ", postHook=" + postHook + ", questions=" + questions +
                 ", instructions=" + instructions + ", type=" + type.name() + "]";
     }
 }

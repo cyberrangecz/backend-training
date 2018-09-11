@@ -40,62 +40,6 @@ public class AssessmentLevel extends AbstractLevel implements Serializable {
     this.assessmentType = assessmentType;
   }
 
-  public Long getId() {
-    return super.getId();
-  }
-
-  public void setId(Long id) {
-    super.setId(id);
-  }
-
-  public String getTitle() {
-    return super.getTitle();
-  }
-
-  public void setTitle(String title) {
-    super.setTitle(title);
-  }
-
-  public int getMaxScore() {
-    return super.getMaxScore();
-  }
-
-  public void setMaxScore(int maxScore) { super.setMaxScore(maxScore);
-  }
-
-  public PreHook getPreHook() {
-    return super.getPreHook();
-  }
-
-  public void setPreHook(PreHook preHook) {
-    super.setPreHook(preHook);
-  }
-
-  public PostHook getPostHook() {
-    return super.getPostHook();
-  }
-
-  public void setPostHook(PostHook postHook) {
-    super.setPostHook(postHook);
-  }
-
-  public Long getNextLevel() {
-    return super.getNextLevel();
-  }
-
-  public void setNextLevel(Long nextLevel) {
-    super.setNextLevel(nextLevel);
-  }
-
-  public TrainingDefinition getTrainingDefinition() {
-    return super.getTrainingDefinition();
-  }
-
-  public void setTrainingDefinition(TrainingDefinition trainingDefinition) {
-    super.setTrainingDefinition(trainingDefinition);
-  }
-
-
   public String getQuestions() {
     return questions;
   }
@@ -145,7 +89,7 @@ public class AssessmentLevel extends AbstractLevel implements Serializable {
   public String toString() {
     return "AssessmentLevel [questions=" + questions + ", instructions=" + instructions + ", assessmentType=" + assessmentType + ", getId()=" + getId()
         + ", getTitle()=" + getTitle() + ", getMaxScore()=" + getMaxScore() + ", getNextLevel()=" + getNextLevel()
-        + ", getTrainingDefinition()=" + getTrainingDefinition() + ", toString()=" + super.toString() + "]";
+        + ", toString()=" + super.toString() + "]";
   }
 
 }

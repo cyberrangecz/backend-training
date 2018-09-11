@@ -1,5 +1,8 @@
 package cz.muni.ics.kypo.training.controllers;
 
+import cz.muni.ics.kypo.training.mapping.BeanMapping;
+import cz.muni.ics.kypo.training.exceptions.ResourceNotCreatedException;
+import cz.muni.ics.kypo.training.exceptions.ResourceNotModifiedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,11 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.MultiValueMap;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.bohnman.squiggly.Squiggly;
@@ -33,8 +32,6 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
-import io.swagger.annotations.Authorization;
-import io.swagger.annotations.AuthorizationScope;
 
 /**
  * @author Pavel Šeda
@@ -42,17 +39,7 @@ import io.swagger.annotations.AuthorizationScope;
  */
 //@formatter:off
 @Api(value = "/game-levels", 
-  consumes = "application/json", 
-  authorizations = {
-    @Authorization(value = "sampleoauth", 
-      scopes = {
-        @AuthorizationScope(
-          scope = "HTTP operations on Game Level Resource", 
-          description = "allows operations on Game Level Resource."
-        )
-      }
-    )
-  }
+  	 consumes = "application/json" 
 )
 //@formatter:on
 @RestController
@@ -63,11 +50,13 @@ public class GameLevelsRestController {
 
   private GameLevelFacade gameLevelFacade;
   private ObjectMapper objectMapper;
+  private BeanMapping dtoMapper;
 
   @Autowired
-  public GameLevelsRestController(GameLevelFacade gameLevelFacade, @Qualifier("objMapperRESTApi") ObjectMapper objectMapper) {
+  public GameLevelsRestController(GameLevelFacade gameLevelFacade, @Qualifier("objMapperRESTApi") ObjectMapper objectMapper, BeanMapping dtoMapper) {
     this.gameLevelFacade = gameLevelFacade;
     this.objectMapper = objectMapper;
+    this.dtoMapper = dtoMapper;
   }
 
   /**
@@ -81,24 +70,14 @@ public class GameLevelsRestController {
       value = "Get Game Level by Id.", 
       response = GameLevelDTO.class,
       nickname = "findGameLevelById",
-      produces = "application/json",
-      authorizations = {
-          @Authorization(value = "sampleoauth", 
-              scopes = {
-                  @AuthorizationScope(
-                      scope = "find Game Level by ID", 
-                      description = "allows returning Game Level by ID."
-                  )
-              }
-          )
-      }
+      produces = "application/json"
   )
   @ApiResponses(value = {
       @ApiResponse(code = 404, message = "The requested resource was not found.") 
   })
   @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<Object> findGameLevelById(
-      @ApiParam(name = "GameLevel ID")
+      @ApiParam(value = "GameLevel ID")
       @PathVariable long id,
       @ApiParam(value = "Fields which should be returned in REST API response", required = false) 
       @RequestParam(value = "fields", required = false) String fields) {
@@ -124,17 +103,7 @@ public class GameLevelsRestController {
       response = GameLevelDTO.class,
       responseContainer = "Page",
       nickname = "findAllGameLevels",
-      produces = "application/json",
-      authorizations = {
-          @Authorization(value = "sampleoauth", 
-              scopes = {
-                  @AuthorizationScope(
-                      scope = "find all Game Levels", 
-                      description = "allows returning Game Levels."
-                  )
-              }
-          )
-      }
+      produces = "application/json"
   )
   @ApiResponses(value = {
       @ApiResponse(code = 404, message = "The requested resource was not found.") 
@@ -155,6 +124,5 @@ public class GameLevelsRestController {
       throw new ResourceNotFoundException(ex.getLocalizedMessage());
     }
   }
-  //@formatter:on
 
 }

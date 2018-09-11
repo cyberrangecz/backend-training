@@ -67,4 +67,51 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
     }
   }
 
+  @Override
+  @Transactional
+  public void update(TrainingInstance trainingInstance) {
+    LOG.debug("update({})",trainingInstance);
+    try{
+      Objects.requireNonNull(trainingInstance);
+      trainingInstanceService.update(trainingInstance);
+    } catch (ServiceLayerException ex){
+      throw new FacadeLayerException(ex.getLocalizedMessage());
+    }
+  }
+
+  @Override
+  @Transactional
+  public TrainingInstanceDTO create(TrainingInstance trainingInstance) {
+    LOG.debug("create({})", trainingInstance);
+    try{
+      Objects.requireNonNull(trainingInstance);
+      Optional<TrainingInstance> tI = trainingInstanceService.create(trainingInstance);
+      TrainingInstance newTI = tI.orElseThrow(() -> new ServiceLayerException("Training instance not created"));
+      return beanMapping.mapTo(newTI, TrainingInstanceDTO.class);
+    } catch(NullPointerException | ServiceLayerException ex) {
+      throw new FacadeLayerException(ex.getLocalizedMessage());
+    }
+  }
+
+  @Override
+  @Transactional
+  public void delete(Long id) throws FacadeLayerException{
+    try {
+      Objects.requireNonNull(id);
+      trainingInstanceService.delete(id);
+    } catch(ServiceLayerException ex) {
+      throw new FacadeLayerException(ex.getLocalizedMessage());
+    }
+  }
+
+  @Override
+  @Transactional
+  public char[] generatePassword() throws FacadeLayerException {
+    try {
+      char[] newPassword = trainingInstanceService.generatePassword();
+      return newPassword;
+    } catch (ServiceLayerException ex){
+      throw new FacadeLayerException(ex.getLocalizedMessage());
+    }
+  }
 }
