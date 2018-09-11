@@ -39,6 +39,12 @@ public interface TrainingDefinitionFacade {
   public PageResultResource<TrainingDefinitionDTO> findAll(Predicate predicate, Pageable pageable);
 
   /**
+   * Find all training definition with same sandbox definition
+   * @param sandboxDefinitionId - id of sandbox definition
+   * @return all training definition with same sandbox definition
+   */
+  public PageResultResource<TrainingDefinitionDTO> findAllBySandboxDefinitionId(Long sandboxDefinitionId, Pageable pageable);
+  /**
    * Updates training definition
    * @param trainingDefinition to be updated
    * @return DTO of updated definition

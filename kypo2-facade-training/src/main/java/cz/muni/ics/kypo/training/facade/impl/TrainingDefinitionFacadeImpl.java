@@ -89,6 +89,16 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
   }
 
   @Override
+  public PageResultResource<TrainingDefinitionDTO> findAllBySandboxDefinitionId(Long sandboxDefinitionId, Pageable pageable) {
+    LOG.debug("findAllBySandboxDefinitionId({}, {})",sandboxDefinitionId, pageable);
+    try {
+      return beanMapping.mapToPageResultDTO(trainingDefinitionService.findAllBySandboxDefinitionId(sandboxDefinitionId, pageable), TrainingDefinitionDTO.class);
+    } catch (ServiceLayerException ex) {
+      throw new FacadeLayerException(ex.getLocalizedMessage());
+    }
+  }
+
+  @Override
   @Transactional
   public TrainingDefinitionDTO create(TrainingDefinition trainingDefinition) {
     LOG.debug("create({})", trainingDefinition);

@@ -70,6 +70,16 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
   }
 
   @Override
+  public Page<TrainingDefinition> findAllBySandboxDefinitionId(Long sandboxDefinitionId, Pageable pageable) {
+    LOG.debug("findAllBySandboxDefinitionId({}, {})", sandboxDefinitionId, pageable);
+    try{
+      return trainingDefinitionRepository.findAllBySandBoxDefinitionRefId(sandboxDefinitionId, pageable);
+    } catch (HibernateException ex) {
+      throw new ServiceLayerException(ex.getLocalizedMessage());
+    }
+  }
+
+  @Override
   public Optional<TrainingDefinition> create(TrainingDefinition trainingDefinition) {
     LOG.debug("create({})", trainingDefinition);
     Assert.notNull(trainingDefinition, "Input training definition must not be null");
