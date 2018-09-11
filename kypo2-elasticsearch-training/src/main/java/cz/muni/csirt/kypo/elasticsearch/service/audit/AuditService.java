@@ -14,6 +14,6 @@ public interface AuditService {
    * 
    * @param pojoClass class saving to Elasticsearch
    */
-	<T extends AbstractAuditPOJO> void save(T pojoClass);
+  <T extends AbstractAuditPOJO> void save(T pojoClass);
 
 }

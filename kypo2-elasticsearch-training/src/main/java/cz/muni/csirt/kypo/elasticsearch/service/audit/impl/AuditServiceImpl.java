@@ -10,10 +10,9 @@ import cz.muni.csirt.kypo.elasticsearch.AbstractAuditPOJO;
 import cz.muni.csirt.kypo.elasticsearch.data.dao.AuditDAO;
 import cz.muni.csirt.kypo.elasticsearch.data.exceptions.ElasticsearchTrainingDataLayerException;
 import cz.muni.csirt.kypo.elasticsearch.service.audit.AuditService;
-import cz.muni.csirt.kypo.elasticsearch.service.audit.exceptions.ElasticsearchTrainingServiceLayerException;
+import cz.muni.csirt.kypo.elasticsearch.service.exceptions.ElasticsearchTrainingServiceLayerException;
 
 /**
- * This class have to be extended when some event should be saved to Elasticsearch.
  * 
  * @author Pavel Šeda
  *
@@ -36,7 +35,6 @@ public class AuditServiceImpl implements AuditService {
       pojoClass.setType(pojoClass.getClass().getName());
 
       auditDAO.save(pojoClass);
-
     } catch (IOException | ElasticsearchTrainingDataLayerException ex) {
       throw new ElasticsearchTrainingServiceLayerException(ex);
     }

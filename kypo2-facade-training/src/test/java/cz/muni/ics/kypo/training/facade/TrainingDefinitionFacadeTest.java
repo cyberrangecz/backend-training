@@ -7,7 +7,7 @@ import cz.muni.ics.kypo.training.api.dto.AssessmentLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.GameLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.InfoLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.TrainingDefinitionDTO;
-import cz.muni.ics.kypo.training.config.FacadeTestConfiguration;
+import cz.muni.ics.kypo.training.config.FacadeConfigTest;
 import cz.muni.ics.kypo.training.exception.FacadeLayerException;
 import cz.muni.ics.kypo.training.model.AssessmentLevel;
 import cz.muni.ics.kypo.training.model.GameLevel;
@@ -22,34 +22,26 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import javax.validation.constraints.Null;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.BDDMockito.*;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
-@EntityScan(basePackages = {"cz.muni.ics.kypo.training.model"})
-@EnableJpaRepositories(basePackages = {"cz.muni.ics.kypo.training.repository"})
-@ComponentScan(basePackages = {"cz.muni.ics.kypo.training.facade", "cz.muni.ics.kypo.training.service", "cz.muni.ics.kypo.training.mapping"})
-@Import(FacadeTestConfiguration.class)
+@Import(FacadeConfigTest.class)
 public class TrainingDefinitionFacadeTest {
 
     @Rule
@@ -130,7 +122,7 @@ public class TrainingDefinitionFacadeTest {
         expected.add(trainingDefinition1);
         expected.add(trainingDefinition2);
 
-        Page p = new PageImpl<TrainingDefinition>(expected);
+        Page<TrainingDefinition> p = new PageImpl<TrainingDefinition>(expected);
         PathBuilder<TrainingDefinition> tD = new PathBuilder<TrainingDefinition>(TrainingDefinition.class, "trainingDefinition");
         Predicate predicate = tD.isNotNull();
 
