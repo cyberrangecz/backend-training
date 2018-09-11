@@ -10,5 +10,5 @@ import java.util.Optional;
 @Repository
 public interface ParticipantRefRepository extends JpaRepository<ParticipantRef, Long>, QuerydslPredicateExecutor<ParticipantRef> {
 
-    Optional<ParticipantRef> findByParticipantRefId(long participantRefId);
+    Optional<ParticipantRef> findByParticipantRefLogin(String participantRefLogin);
 }

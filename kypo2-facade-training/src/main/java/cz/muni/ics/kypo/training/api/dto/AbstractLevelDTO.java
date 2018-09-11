@@ -2,7 +2,10 @@ package cz.muni.ics.kypo.training.api.dto;
 
 import java.util.Objects;
 
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Positive;
 
 import io.swagger.annotations.ApiModel;
 
@@ -13,16 +16,16 @@ import io.swagger.annotations.ApiModel;
  */
 @ApiModel(value = "AbstractLevelDTO", description = ".")
 public abstract class AbstractLevelDTO {
-
   protected Long id;
   @NotNull
   protected String title;
   @NotNull
+  @Min(0)
+  @Max(100)
   protected int maxScore;
-  @NotNull
-  protected Long levelOrder;
-  @NotNull
+  @Positive
   protected Long nextLevel;
+  @NotNull
   protected TrainingDefinitionDTO trainingDefinition;
   protected PreHookDTO preHook;
   protected PostHookDTO postHook;
@@ -51,14 +54,6 @@ public abstract class AbstractLevelDTO {
 
   public void setMaxScore(int maxScore) {
     this.maxScore = maxScore;
-  }
-
-  public Long getLevelOrder() {
-    return levelOrder;
-  }
-
-  public void setLevelOrder(Long levelOrder) {
-    this.levelOrder = levelOrder;
   }
 
   public Long getNextLevel() {
@@ -112,7 +107,7 @@ public abstract class AbstractLevelDTO {
 
   @Override
   public String toString() {
-    return "AbstractLevelDTO [id=" + id + ", title=" + title + ", maxScore=" + maxScore + ", levelOrder=" + levelOrder + ", nextLevel=" + nextLevel
+    return "AbstractLevelDTO [id=" + id + ", title=" + title + ", maxScore=" + maxScore + ", nextLevel=" + nextLevel
         + ", trainingDefinition=" + trainingDefinition + ", preHook=" + preHook + ", postHook=" + postHook + "]";
   }
 

@@ -26,8 +26,9 @@ public interface TrainingRunService {
    * 
    * @param id of a Training Run that would be returned
    * @return specific Training Run by id
+   *
    */
-  public Optional<TrainingRun> findById(Long id);
+  public TrainingRun findById(Long id);
 
   /**
    * Find all Training Runs.
@@ -37,21 +38,19 @@ public interface TrainingRunService {
   public Page<TrainingRun> findAll(Predicate predicate, Pageable pageable);
 
   /**
-   * Finds all Training Runs of specific participant.
+   * Finds all Training Runs of logged in user.
    *
-   * @param participantId id of participant whose Training Runs would be returned
-   * @return Training Runs of specific participant
+   * @return Training Runs of logged in user.
    */
-  public Page<TrainingRun> findAllByParticipantRefId(Long participantId, Pageable pageable);
+  public Page<TrainingRun> findAllByParticipantRefLogin(Pageable pageable);
 
   /**
-   * Finds all Training Runs of specific participant and training definition.
+   * Finds all Training Runs of specific Training Definition of logged in user.
    *
-   * @param participantId id of participant whose Training Runs would be returned
    * @param trainingDefinitionId id of Training Definition
-   * @return Training Runs of specific participant
+   * @return Training Runs
    */
-  public Page<TrainingRun> findAllByTrainingDefinitionAndParticipant(Long trainingDefinitionId, Long participantId, Pageable pageable);
+  public Page<TrainingRun> findAllByTrainingDefinitionAndParticipant(Long trainingDefinitionId, Pageable pageable);
 
   /**
    * Finds all Training Runs of specific training definition.
@@ -83,15 +82,14 @@ public interface TrainingRunService {
    * @param trainingRunId id of Training Run whose next level should be returned.
    * @return Abstract Level
    */
-  public Optional<AbstractLevel> getNextLevel(Long trainingRunId);
+  public AbstractLevel getNextLevel(Long trainingRunId);
   /**
    * Access training run based on given password.
    *
    * @param password of Training Instance.
-   * @param participantId id of participant who is trying to access Training Run.
    * @return Abstract Level
    */
-  public Optional<AbstractLevel> accessTrainingRun(String password, Long participantId) throws NoAvailableSandboxException;
+  public AbstractLevel accessTrainingRun(String password) throws NoAvailableSandboxException;
   /**
    * Gets list of all levels in Training Definition.
    *
@@ -124,7 +122,8 @@ public interface TrainingRunService {
    * @param hintId id of hint to be returned.
    * @return Hint
    */
-  public Optional<Hint> getHint(Long trainingRunId, Long hintId);
+  public Hint getHint(Long trainingRunId, Long hintId);
 
+  public int getLevelOrder(Long idOfFirstLevel, Long actualLevel);
 
 }

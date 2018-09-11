@@ -45,6 +45,7 @@ public class TrainingRunEntityTest {
         infoLevel.setTitle("infoLevel");
         infoLevel.setContent("content for info level");
         participantRef = new ParticipantRef();
+        participantRef.setParticipantRefLogin("user");
         trainingInstance.setKeyword("keyword");
         trainingInstance.setStartTime(LocalDateTime.now());
         trainingInstance.setEndTime(LocalDateTime.now());

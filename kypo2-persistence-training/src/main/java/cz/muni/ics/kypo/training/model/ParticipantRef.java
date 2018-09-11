@@ -12,8 +12,14 @@ public class ParticipantRef {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", unique = true, nullable = false, insertable = false)
     private Long id;
-    @Column(name = "participant_ref")
-    private Long participantRefId;
+    @Column(name = "participant_ref_login", nullable = false)
+    private String participantRefLogin;
+
+    public ParticipantRef() {};
+
+    public ParticipantRef(String login) {
+        this.participantRefLogin = login;
+    }
 
     public Long getId() {
         return id;
@@ -23,20 +29,14 @@ public class ParticipantRef {
         this.id = id;
     }
 
-    public Long getParticipantRefId() {
-        return participantRefId;
+    public String getParticipantRefLogin() {
+        return participantRefLogin;
     }
 
-    public void setParticipantRefId(Long participantRefId) {
-        this.participantRefId = participantRefId;
+    public void setParticipantRefLogin(String participantRefLogin) {
+        this.participantRefLogin = participantRefLogin;
     }
 
-    public ParticipantRef() {
-    }
-
-    public ParticipantRef(long participantRefId) {
-        this.participantRefId = participantRefId;
-    }
 
     @Override
     public boolean equals(Object obj) {
@@ -49,19 +49,19 @@ public class ParticipantRef {
 
         ParticipantRef other = (ParticipantRef) obj;
         return Objects.equals(id, other.getId())
-                && Objects.equals(participantRefId, other.getParticipantRefId());
+                && Objects.equals(participantRefLogin, other.getParticipantRefLogin());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, participantRefId);
+        return Objects.hash(id, participantRefLogin);
     }
 
     @Override
     public String toString() {
         return "ParticipantRef{" +
                 "id=" + id +
-                ", participantRefId=" + participantRefId +
+                ", participantRefLogin=" + participantRefLogin +
                 '}';
     }
 }

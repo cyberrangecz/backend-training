@@ -1,4 +1,4 @@
-package cz.muni.ics.kypo.training.api.dto;
+package cz.muni.ics.kypo.training.api.dto.run;
 
 import cz.muni.ics.kypo.training.model.AbstractLevel;
 import cz.muni.ics.kypo.training.model.SandboxInstanceRef;

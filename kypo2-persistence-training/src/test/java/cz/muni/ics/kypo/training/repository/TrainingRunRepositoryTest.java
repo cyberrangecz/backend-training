@@ -65,7 +65,7 @@ public class TrainingRunRepositoryTest {
         infoLevel.setTitle("infoLevel");
         infoLevel.setContent("content for info level");
         participantRef = new ParticipantRef();
-        participantRef.setParticipantRefId(1L);
+        participantRef.setParticipantRefLogin("user");
         trainingInstance.setKeyword("keyword");
         trainingInstance.setStartTime(LocalDateTime.now());
         trainingInstance.setEndTime(LocalDateTime.now());
@@ -107,7 +107,7 @@ public class TrainingRunRepositoryTest {
     public void findAllByParticipantRefId() throws Exception {
         entityManager.persist(trainingRun1);
         entityManager.persist(trainingRun2);
-        List<TrainingRun> trainingRuns = trainingRunRepository.findAllByParticipantRefId(1L, pageable).getContent();
+        List<TrainingRun> trainingRuns = trainingRunRepository.findAllByParticipantRefLogin("user", pageable).getContent();
         assertTrue(trainingRuns.contains(trainingRun1));
         assertTrue(trainingRuns.contains(trainingRun2));
         assertEquals(2, trainingRuns.size());
@@ -116,7 +116,7 @@ public class TrainingRunRepositoryTest {
     @Test
     public void findAllByTrainingDefinitionIdAndParticipantRefId() throws Exception {
         entityManager.persistAndFlush(trainingRun1);
-        List<TrainingRun> trainingRuns = trainingRunRepository.findAllByTrainingDefinitionIdAndParticipantRefId(trainingDefinition.getId(), participantRef.getParticipantRefId(), pageable).getContent();
+        List<TrainingRun> trainingRuns = trainingRunRepository.findAllByTrainingDefinitionIdAndParticipantRefLogin(trainingDefinition.getId(), participantRef.getParticipantRefLogin(), pageable).getContent();
         assertEquals(1, trainingRuns.size());
 
     }

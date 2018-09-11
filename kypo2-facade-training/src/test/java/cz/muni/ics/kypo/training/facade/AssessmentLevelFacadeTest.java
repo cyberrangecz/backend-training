@@ -67,14 +67,12 @@ public class AssessmentLevelFacadeTest {
     public void init() {
         al1 = new AssessmentLevel();
         al1.setId(1L);
-        al1.setLevelOrder(1L);
         al1.setNextLevel(2L);
         al1.setAssessmentType(AssessmentType.TEST);
         al1.setTitle("Test1");
 
         al2 = new AssessmentLevel();
         al2.setId(2L);
-        al2.setLevelOrder(2L);
         al2.setNextLevel(3L);
         al2.setAssessmentType(AssessmentType.TEST);
         al2.setTitle("Test2");
@@ -203,7 +201,6 @@ public class AssessmentLevelFacadeTest {
     private void deepEquals(AssessmentLevel expectedAssessmentLevel, AssessmentLevelDTO actualAssessmentLevel) {
         assertEquals(expectedAssessmentLevel.getId(), actualAssessmentLevel.getId());
         assertEquals(expectedAssessmentLevel.getAssessmentType(), actualAssessmentLevel.getType());
-        assertEquals(expectedAssessmentLevel.getLevelOrder(), actualAssessmentLevel.getLevelOrder());
     }
 
 }

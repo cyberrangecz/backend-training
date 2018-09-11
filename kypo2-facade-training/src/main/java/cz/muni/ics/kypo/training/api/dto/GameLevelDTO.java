@@ -3,6 +3,9 @@ package cz.muni.ics.kypo.training.api.dto;
 import cz.muni.ics.kypo.training.model.Hint;
 import io.swagger.annotations.ApiModel;
 
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotEmpty;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -14,12 +17,16 @@ import java.util.Set;
  */
 @ApiModel(value = "GameLevelDTO", description = ".")
 public class GameLevelDTO extends AbstractLevelDTO {
-
+    @NotEmpty
     private String flag;
+    @NotEmpty
     private String content;
+    @NotEmpty
     private String solution;
     private int incorrectFlagPenalty;
     private int solutionPenalty = super.getMaxScore() - 1;
+    @Min(1)
+    @Max(60)
     private int estimatedDuration;
     private String[] attachments;
     private Set<Hint> hints = new HashSet<>();
@@ -104,7 +111,6 @@ public class GameLevelDTO extends AbstractLevelDTO {
                 ", id=" + id +
                 ", title='" + title + '\'' +
                 ", maxScore=" + maxScore +
-                ", levelOrder=" + levelOrder +
                 ", nextLevel=" + nextLevel +
                 ", trainingDefinition=" + trainingDefinition +
                 ", preHook=" + preHook +

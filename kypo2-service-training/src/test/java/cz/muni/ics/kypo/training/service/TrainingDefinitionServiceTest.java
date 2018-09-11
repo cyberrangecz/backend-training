@@ -26,6 +26,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -53,6 +54,9 @@ public class TrainingDefinitionServiceTest {
 
     @MockBean
     private TrainingDefinitionRepository trainingDefinitionRepository;
+
+    @MockBean
+    private RestTemplate restTemplate;
 
     private TrainingDefinition trainingDefinition1, trainingDefinition2;
 

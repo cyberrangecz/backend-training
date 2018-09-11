@@ -3,7 +3,7 @@ package cz.muni.ics.kypo.training.facade;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.PathBuilder;
 import cz.muni.ics.kypo.training.api.PageResultResource;
-import cz.muni.ics.kypo.training.api.dto.TrainingRunDTO;
+import cz.muni.ics.kypo.training.api.dto.run.TrainingRunDTO;
 import cz.muni.ics.kypo.training.config.FacadeTestConfiguration;
 import cz.muni.ics.kypo.training.exception.FacadeLayerException;
 import cz.muni.ics.kypo.training.model.TrainingRun;
@@ -72,7 +72,7 @@ public class TrainingRunFacadeTest {
 
     @Test
     public void findTrainingRunById() {
-        given(trainingRunService.findById(trainingRun1.getId())).willReturn(Optional.of(trainingRun1));
+        given(trainingRunService.findById(trainingRun1.getId())).willReturn(trainingRun1);
 
         TrainingRunDTO trainingRunDTO = trainingRunFacade.findById(trainingRun1.getId());
         deepEquals(trainingRun1, trainingRunDTO);
@@ -80,13 +80,6 @@ public class TrainingRunFacadeTest {
         then(trainingRunService).should().findById(trainingRun1.getId());
     }
 
-    @Test
-    public void findNonexistentTrainingRunById() {
-        Long id = 6L;
-        given(trainingRunService.findById(id)).willReturn(Optional.empty());
-        thrown.expect(FacadeLayerException.class);
-        trainingRunFacade.findById(id);
-    }
 
     @Test
     public void findAllTrainingRuns() {

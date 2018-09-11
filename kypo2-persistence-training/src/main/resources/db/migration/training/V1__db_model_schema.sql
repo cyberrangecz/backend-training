@@ -95,7 +95,7 @@ ALTER TABLE assessment_level OWNER TO postgres;
 
 CREATE TABLE participant_ref (
     id bigint NOT NULL,
-    participant_ref_id bigint
+    participant_ref_login character varying(255) NOT NULL
 );
 
 ALTER TABLE participant_ref OWNER TO postgres;
