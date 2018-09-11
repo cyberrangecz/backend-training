@@ -1,12 +1,10 @@
 package cz.muni.ics.kypo.training.service;
 
 import java.util.List;
-import java.util.Optional;
 
 import cz.muni.ics.kypo.training.exceptions.NoAvailableSandboxException;
 import cz.muni.ics.kypo.training.model.AbstractLevel;
 import cz.muni.ics.kypo.training.model.Hint;
-import cz.muni.ics.kypo.training.model.TrainingInstance;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 

@@ -25,15 +25,15 @@ public class GameDetails {
   @JsonProperty(value = "logical_time", required = true)
   private long logicalTime;
   @ApiObjectField(description = "ID of a player in the game.")
-  @JsonProperty(value = "player_id", required = true)
-  private long playerId;
+  @JsonProperty(value = "player_login", required = true)
+  private String playerLogin;
 
-  public GameDetails(long gameInstanceId, long level, long logicalTime, long playerId) {
+  public GameDetails(long gameInstanceId, long level, long logicalTime, String playerLogin) {
     super();
     this.gameInstanceId = gameInstanceId;
     this.level = level;
     this.logicalTime = logicalTime;
-    this.playerId = playerId;
+    this.playerLogin = playerLogin;
   }
 
   public long getGameInstanceId() {
@@ -60,17 +60,18 @@ public class GameDetails {
     this.logicalTime = logicalTime;
   }
 
-  public long getPlayerId() {
-    return playerId;
-  }
 
-  public void setPlayerId(long playerId) {
-    this.playerId = playerId;
+  public String getPlayerLogin() {
+	return playerLogin;
+  }
+	
+  public void setPlayerLogin(String playerLogin) {
+	this.playerLogin = playerLogin;
   }
 
   @Override
   public String toString() {
-    return "GameDetails [gameInstanceId=" + gameInstanceId + ", level=" + level + ", logicalTime=" + logicalTime + ", playerId=" + playerId + "]";
+    return "GameDetails [gameInstanceId=" + gameInstanceId + ", level=" + level + ", logicalTime=" + logicalTime + ", player_login=" + playerLogin + "]";
   }
 
 }

@@ -286,11 +286,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
   }
   
   private void auditGameStartedAction(TrainingInstance trainingInstance) {
-	String participantLoginInfo = getSubOfLoggedInUser();
-	//long participantId = participantRefRepository.findByParticipantRefLogin(participantLoginInfo);
-  	
-	//Need to get participantID information
-  	GameDetails gameDetails = new GameDetails(trainingInstance.getId(), trainingInstance.getTrainingDefinition().getStartingLevel(), 0L, 0);
+  	GameDetails gameDetails = new GameDetails(trainingInstance.getId(), trainingInstance.getTrainingDefinition().getStartingLevel(), 0L, getSubOfLoggedInUser());
   	auditService.<GameStarted>save(new GameStarted(gameDetails));
   }
 }
