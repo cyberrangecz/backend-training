@@ -22,12 +22,12 @@ public interface InfoLevelService {
    * @param id of a Info level that would be returned
    * @return specific info level by id
    */
-  public Optional<InfoLevel> findById(long id);
+  Optional<InfoLevel> findById(long id);
 
   /**
    * Find all Info Levels.
    * 
    * @return all info levels
    */
-  public Page<InfoLevel> findAll(Predicate predicate, Pageable pageable);
+  Page<InfoLevel> findAll(Predicate predicate, Pageable pageable);
 }

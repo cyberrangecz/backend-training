@@ -23,8 +23,6 @@ public class LevelSkipped extends AbstractAuditPOJO {
   @JsonProperty(value = "game_details", required = true)
   private GameDetails gameDetails;
 
-  public LevelSkipped() {}
-
   public LevelSkipped(GameDetails gameDetails) {
     super();
     this.gameDetails = gameDetails;

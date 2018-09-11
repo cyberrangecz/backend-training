@@ -1,8 +1,7 @@
 package cz.muni.ics.kypo.training.service;
 
-import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 import cz.muni.ics.kypo.training.exceptions.CannotBeClonedException;
 import cz.muni.ics.kypo.training.exceptions.CannotBeDeletedException;
@@ -27,14 +26,14 @@ public interface TrainingDefinitionService {
    * @param id of a Training Definition that would be returned
    * @return specific Training Definition by id
    */
-  public Optional<TrainingDefinition> findById(long id);
+  Optional<TrainingDefinition> findById(long id);
 
   /**
    * Find all Training Definitions.
    * 
    * @return all Training Definitions
    */
-  public Page<TrainingDefinition> findAll(Predicate predicate, Pageable pageable);
+  Page<TrainingDefinition> findAll(Predicate predicate, Pageable pageable);
 
   /**
    * Updates Training Definition
@@ -43,7 +42,7 @@ public interface TrainingDefinitionService {
    * @throws ServiceLayerException if training definition is not found
    * @throws CannotBeUpdatedException if definition status is not UNRELEASED
    */
-  public void update(TrainingDefinition trainingDefinition) throws ServiceLayerException, CannotBeUpdatedException;
+  void update(TrainingDefinition trainingDefinition) throws ServiceLayerException, CannotBeUpdatedException;
 
   /**
    * Creates new training definition by cloning existing one
@@ -52,7 +51,7 @@ public interface TrainingDefinitionService {
    * @throws ServiceLayerException if training definition is not found
    * @throws CannotBeClonedException if definition status is unreleased
    */
-  public Optional<TrainingDefinition> clone(Long id) throws ServiceLayerException, CannotBeClonedException;
+  Optional<TrainingDefinition> clone(Long id) throws ServiceLayerException, CannotBeClonedException;
 
   /**
    * Swaps level to the left
@@ -61,7 +60,7 @@ public interface TrainingDefinitionService {
    * @throws ServiceLayerException if training definition or level is not found
    * @throws CannotBeUpdatedException if definition status is not UNRELEASED
    */
-  public void swapLeft(Long definitionId, Long levelId) throws ServiceLayerException, CannotBeUpdatedException;
+  void swapLeft(Long definitionId, Long levelId) throws ServiceLayerException, CannotBeUpdatedException;
 
   /**
    * Swaps level to the right
@@ -70,7 +69,7 @@ public interface TrainingDefinitionService {
    * @throws ServiceLayerException if training definition or level is not found
    * @throws CannotBeUpdatedException if definition status is not UNRELEASED
    */
-  public void swapRight(Long definitionId, Long levelId) throws ServiceLayerException, CannotBeUpdatedException;
+  void swapRight(Long definitionId, Long levelId) throws ServiceLayerException, CannotBeUpdatedException;
 
   /**
    * Deletes specific training definition based on id
@@ -78,7 +77,7 @@ public interface TrainingDefinitionService {
    * @throws ServiceLayerException if training definition is not found
    * @throws CannotBeDeletedException if definition status is RELEASED
    */
-  public void delete(Long id) throws ServiceLayerException, CannotBeDeletedException;
+  void delete(Long id) throws ServiceLayerException, CannotBeDeletedException;
 
   /**
    * Deletes specific level based on id
@@ -87,7 +86,7 @@ public interface TrainingDefinitionService {
    * @throws ServiceLayerException if training definition or level is not found
    * @throws CannotBeUpdatedException if definition status is not UNRELEASED
    */
-  public void deleteOneLevel(Long definitionId, Long levelId) throws ServiceLayerException, CannotBeUpdatedException;
+  void deleteOneLevel(Long definitionId, Long levelId) throws ServiceLayerException, CannotBeUpdatedException;
 
   /**
    * Updates game level in training definition
@@ -96,7 +95,7 @@ public interface TrainingDefinitionService {
    * @throws ServiceLayerException if training definition or level in not found
    * @throws CannotBeUpdatedException if definition status is not UNRELEASED
    */
-  public void updateGameLevel(Long definitionId, GameLevel gameLevel) throws ServiceLayerException, CannotBeUpdatedException;
+  void updateGameLevel(Long definitionId, GameLevel gameLevel) throws ServiceLayerException, CannotBeUpdatedException;
 
   /**
    * Updates info level in training definition
@@ -105,7 +104,7 @@ public interface TrainingDefinitionService {
    * @throws ServiceLayerException if training definition or level in not found
    * @throws CannotBeUpdatedException if definition status is not UNRELEASED
    */
-  public void updateInfoLevel(Long definitionId, InfoLevel infoLevel) throws ServiceLayerException, CannotBeUpdatedException;
+  void updateInfoLevel(Long definitionId, InfoLevel infoLevel) throws ServiceLayerException, CannotBeUpdatedException;
 
   /**
    * Updates assessment level in training definition
@@ -114,7 +113,7 @@ public interface TrainingDefinitionService {
    * @throws ServiceLayerException if training definition or level in not found
    * @throws CannotBeUpdatedException if definition status is not UNRELEASED
    */
-  public void updateAssessmentLevel(Long definitionId, AssessmentLevel assessmentLevel) throws ServiceLayerException, CannotBeUpdatedException;
+  void updateAssessmentLevel(Long definitionId, AssessmentLevel assessmentLevel) throws ServiceLayerException, CannotBeUpdatedException;
 
   /**
    * Creates new game level
@@ -124,7 +123,7 @@ public interface TrainingDefinitionService {
    * @throws ServiceLayerException if definition is not found
    * @throws CannotBeUpdatedException if definition status is not UNRELEASED
    */
-  public Optional<GameLevel> createGameLevel(Long definitionId, GameLevel gameLevel) throws ServiceLayerException, CannotBeUpdatedException;
+  Optional<GameLevel> createGameLevel(Long definitionId, GameLevel gameLevel) throws ServiceLayerException, CannotBeUpdatedException;
 
 
   /**
@@ -135,7 +134,7 @@ public interface TrainingDefinitionService {
    * @throws ServiceLayerException if definition is not found
    * @throws CannotBeUpdatedException if definition status is not UNRELEASED
    */
-  public Optional<InfoLevel> createInfoLevel(Long definitionId, InfoLevel infoLevel) throws ServiceLayerException, CannotBeUpdatedException;
+  Optional<InfoLevel> createInfoLevel(Long definitionId, InfoLevel infoLevel) throws ServiceLayerException, CannotBeUpdatedException;
 
   /**
    * Creates new assessment level
@@ -145,21 +144,21 @@ public interface TrainingDefinitionService {
    * @throws ServiceLayerException if definition is not found
    * @throws CannotBeUpdatedException if definition status is not UNRELEASED
    */
-  public Optional<AssessmentLevel> createAssessmentLevel(Long definitionId, AssessmentLevel assessmentLevel) throws ServiceLayerException, CannotBeUpdatedException;
+  Optional<AssessmentLevel> createAssessmentLevel(Long definitionId, AssessmentLevel assessmentLevel) throws ServiceLayerException, CannotBeUpdatedException;
 
   /**
    * Finds all levels from single definition
    * @param id of definition
    * @return set of levels
    */
-  public ArrayList<AbstractLevel> findAllLevelsFromDefinition(Long id);
+  List<AbstractLevel> findAllLevelsFromDefinition(Long id);
 
   /**
    * creates new training definition
    * @param trainingDefinition to be created
    * @return new training definition
    */
-  public Optional<TrainingDefinition> create(TrainingDefinition trainingDefinition);
+  Optional<TrainingDefinition> create(TrainingDefinition trainingDefinition);
 
 
 }

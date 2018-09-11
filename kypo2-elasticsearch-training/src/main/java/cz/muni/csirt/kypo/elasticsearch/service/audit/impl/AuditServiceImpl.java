@@ -19,17 +19,17 @@ import cz.muni.csirt.kypo.elasticsearch.service.audit.exceptions.ElasticsearchTr
  *
  */
 @Service
-public class AuditServiceImpl<T extends AbstractAuditPOJO> implements AuditService<T> {
+public class AuditServiceImpl implements AuditService {
 
-  private AuditDAO<T> auditDAO;
+  private AuditDAO auditDAO;
 
   @Autowired
-  public AuditServiceImpl(AuditDAO<T> auditDAO) {
+  public AuditServiceImpl(AuditDAO auditDAO) {
     this.auditDAO = auditDAO;
   }
 
   @Override
-  public void save(T pojoClass) {
+  public <T extends AbstractAuditPOJO> void save(T pojoClass) {
     Objects.requireNonNull(pojoClass, "Null class could not be saved via audit method.");
     try {
       pojoClass.setTimestamp(System.currentTimeMillis());

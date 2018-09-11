@@ -3,7 +3,6 @@ package cz.muni.ics.kypo.training.service.impl;
 
 import java.util.Optional;
 
-import com.mysema.commons.lang.Assert;
 import org.hibernate.HibernateException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -5,7 +5,10 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import com.google.gson.JsonObject;
+
 import cz.muni.csirt.kypo.elasticsearch.service.audit.AuditService;
+import cz.muni.csirt.kypo.events.game.GameStarted;
+import cz.muni.csirt.kypo.events.game.common.GameDetails;
 import cz.muni.ics.kypo.training.exceptions.NoAvailableSandboxException;
 import cz.muni.ics.kypo.training.model.*;
 import cz.muni.ics.kypo.training.model.enums.TRState;
@@ -49,26 +52,26 @@ public class TrainingRunServiceImpl implements TrainingRunService {
   private AbstractLevelRepository abstractLevelRepository;
   private TrainingInstanceRepository trainingInstanceRepository;
   private ParticipantRefRepository participantRefRepository;
+  private AuditService auditService;
   private RestTemplate restTemplate;
 
   @Autowired
   public TrainingRunServiceImpl(TrainingRunRepository trainingRunRepository, AbstractLevelRepository abstractLevelRepository,
-                                TrainingInstanceRepository trainingInstanceRepository, ParticipantRefRepository participantRefRepository,
-                                RestTemplate restTemplate) {
+                                TrainingInstanceRepository trainingInstanceRepository, ParticipantRefRepository participantRefRepository, 
+                                AuditService auditService, RestTemplate restTemplate) {
     this.trainingRunRepository = trainingRunRepository;
     this.abstractLevelRepository = abstractLevelRepository;
     this.trainingInstanceRepository = trainingInstanceRepository;
     this.participantRefRepository = participantRefRepository;
+    this.auditService = auditService;
     this.restTemplate = restTemplate;
   }
-
 
   @Override
   public TrainingRun findById(Long id) {
     LOG.debug("findById({})", id);
     Objects.requireNonNull(id);
     return trainingRunRepository.findById(id).orElseThrow(() -> new ServiceLayerException("Training Run with id " + id + " not found."));
-
   }
 
   @Override
@@ -76,7 +79,6 @@ public class TrainingRunServiceImpl implements TrainingRunService {
   public Page<TrainingRun> findAll(Predicate predicate, Pageable pageable) {
     LOG.debug("findAll({},{})", predicate, pageable);
     return trainingRunRepository.findAll(predicate, pageable);
-
   }
 
   @Override
@@ -109,7 +111,6 @@ public class TrainingRunServiceImpl implements TrainingRunService {
     trainingRunRepository.save(trainingRun);
     //event log LevelStarted
     return abstractLevel;
-
   }
 
   @Override
@@ -147,25 +148,14 @@ public class TrainingRunServiceImpl implements TrainingRunService {
     return levels;
   }
 
-
-
-
   @Override
   public AbstractLevel accessTrainingRun(String password) {
     LOG.debug("accessTrainingRun({})", password);
     Assert.hasLength(password, "Password cannot be null or empty.");
     List<TrainingInstance> trainingInstances = trainingInstanceRepository.findAll();
-    for (TrainingInstance ti: trainingInstances) {
+    for (TrainingInstance ti : trainingInstances) {
+      auditGameStartedAction(ti);
 
-/*
-      long id = ti.getId();
-      long level = ti.getTrainingDefinition().getStartingLevel();
-      long logicalTime = 0; // we do not know how to retrieve this value ???
-      long playerId = participantId;
-      GameStarted gs = new GameStarted();
-      auditService.<GameStarted>save(gs);
-
-*/
       //check hash of password not String
       if (new String(ti.getPassword()).equals(password)) {
         Set<SandboxInstanceRef> sandboxInstancePool = ti.getSandboxInstanceRefs();
@@ -219,7 +209,6 @@ public class TrainingRunServiceImpl implements TrainingRunService {
       sandboxInstancePool.removeIf(sandboxInstanceRef -> sandboxInstanceRef.getSandboxInstanceRef() != sandboxInfoList.get(0).getId());
       return sandboxInstancePool.iterator().next();
     }
-
   }
 
   @Override
@@ -288,12 +277,20 @@ public class TrainingRunServiceImpl implements TrainingRunService {
       }
     }
     throw new ServiceLayerException("Wrong parameters entered.");
-
   }
 
   public String getSubOfLoggedInUser() {
     OAuth2Authentication authentication = (OAuth2Authentication) SecurityContextHolder.getContext().getAuthentication();
     JsonObject credentials = (JsonObject) authentication.getUserAuthentication().getCredentials();
     return credentials.get("sub").getAsString();
+  }
+  
+  private void auditGameStartedAction(TrainingInstance trainingInstance) {
+	String participantLoginInfo = getSubOfLoggedInUser();
+	//long participantId = participantRefRepository.findByParticipantRefLogin(participantLoginInfo);
+  	
+	//Need to get participantID information
+  	GameDetails gameDetails = new GameDetails(trainingInstance.getId(), trainingInstance.getTrainingDefinition().getStartingLevel(), 0L, 0);
+  	auditService.<GameStarted>save(new GameStarted(gameDetails));
   }
 }

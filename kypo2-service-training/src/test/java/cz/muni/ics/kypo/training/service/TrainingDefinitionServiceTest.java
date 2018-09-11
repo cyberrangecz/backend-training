@@ -784,11 +784,11 @@ public class TrainingDefinitionServiceTest {
         given(trainingDefinitionRepository.findById(trainingDefinition2.getId())).willReturn(Optional.of(trainingDefinition2));
         given(abstractLevelRepository.findById(infoLevel.getId())).willReturn(Optional.of(infoLevel));
         given(abstractLevelRepository.findById(gameLevel.getId())).willReturn(Optional.of(gameLevel));
-        ArrayList<AbstractLevel> expected = new ArrayList<>();
+        List<AbstractLevel> expected = new ArrayList<>();
         expected.add(infoLevel);
         expected.add(gameLevel);
 
-        ArrayList<AbstractLevel> actual = trainingDefinitionService.findAllLevelsFromDefinition(trainingDefinition2.getId());
+        List<AbstractLevel> actual = trainingDefinitionService.findAllLevelsFromDefinition(trainingDefinition2.getId());
 
         assertEquals(expected, actual);
         then(abstractLevelRepository).should(times(2)).findById(any(Long.class));

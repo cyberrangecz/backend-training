@@ -23,8 +23,6 @@ public class SolutionClosed extends AbstractAuditPOJO {
   @JsonProperty(value = "game_details", required = true)
   private GameDetails gameDetails;
 
-  public SolutionClosed() {}
-
   public SolutionClosed(GameDetails gameDetails) {
     super();
     this.gameDetails = gameDetails;

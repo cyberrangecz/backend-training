@@ -17,20 +17,18 @@ public class GameDetails {
 
   @ApiObjectField(description = "Instance ID of game.")
   @JsonProperty(value = "game_instance_id", required = true)
-  private int gameInstanceId;
+  private long gameInstanceId;
   @ApiObjectField(description = "Level of game.")
   @JsonProperty(value = "level", required = true)
-  private int level;
+  private long level;
   @ApiObjectField(description = "Game logical time.")
   @JsonProperty(value = "logical_time", required = true)
-  private int logicalTime;
+  private long logicalTime;
   @ApiObjectField(description = "ID of a player in the game.")
   @JsonProperty(value = "player_id", required = true)
-  private int playerId;
+  private long playerId;
 
-  public GameDetails() {}
-
-  public GameDetails(int gameInstanceId, int level, int logicalTime, int playerId) {
+  public GameDetails(long gameInstanceId, long level, long logicalTime, long playerId) {
     super();
     this.gameInstanceId = gameInstanceId;
     this.level = level;
@@ -38,35 +36,35 @@ public class GameDetails {
     this.playerId = playerId;
   }
 
-  public int getGameInstanceId() {
+  public long getGameInstanceId() {
     return gameInstanceId;
   }
 
-  public void setGameInstanceId(int gameInstanceId) {
+  public void setGameInstanceId(long gameInstanceId) {
     this.gameInstanceId = gameInstanceId;
   }
 
-  public int getLevel() {
+  public long getLevel() {
     return level;
   }
 
-  public void setLevel(int level) {
+  public void setLevel(long level) {
     this.level = level;
   }
 
-  public int getLogicalTime() {
+  public long getLogicalTime() {
     return logicalTime;
   }
 
-  public void setLogicalTime(int logicalTime) {
+  public void setLogicalTime(long logicalTime) {
     this.logicalTime = logicalTime;
   }
 
-  public int getPlayerId() {
+  public long getPlayerId() {
     return playerId;
   }
 
-  public void setPlayerId(int playerId) {
+  public void setPlayerId(long playerId) {
     this.playerId = playerId;
   }
 

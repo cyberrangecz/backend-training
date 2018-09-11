@@ -71,7 +71,7 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
     Assert.notNull(trainingInstance, "Input training instance must not be null");
     TrainingInstance tI = trainingInstanceRepository.save(trainingInstance);
     LOG.info("Training instance with id: " + trainingInstance.getId() + "created.");
-    return Optional.of(tI);
+    return Optional.ofNullable(tI);
   }
 
   @Override

@@ -9,7 +9,7 @@ import cz.muni.csirt.kypo.elasticsearch.AbstractAuditPOJO;
  * @author Pavel Šeda
  *
  */
-public interface AuditDAO<T extends AbstractAuditPOJO> {
+public interface AuditDAO {
 
   /**
    * Method for saving general class into Elasticsearch under specific index and type. Index is
@@ -20,7 +20,7 @@ public interface AuditDAO<T extends AbstractAuditPOJO> {
    * @param pojoClass class saving to Elasticsearch
    * @throws IOException
    */
-  void save(T pojoClass) throws IOException;
+	<T extends AbstractAuditPOJO> void save(T pojoClass) throws IOException;
 
   /**
    * Update particular document.
@@ -28,6 +28,6 @@ public interface AuditDAO<T extends AbstractAuditPOJO> {
    * @param pojoClass class updating in Elasticsearch
    * @throws IOException
    */
-  void update(T pojoClass) throws IOException;
+	<T extends AbstractAuditPOJO> void update(T pojoClass) throws IOException;
 
 }
