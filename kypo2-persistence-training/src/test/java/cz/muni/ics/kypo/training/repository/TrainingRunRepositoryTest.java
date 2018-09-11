@@ -1,8 +1,6 @@
 package cz.muni.ics.kypo.training.repository;
 
 import com.querydsl.core.types.Predicate;
-import cz.muni.ics.kypo.commons.model.IDMGroupRef;
-import cz.muni.ics.kypo.commons.model.Role;
 import cz.muni.ics.kypo.training.model.*;
 import cz.muni.ics.kypo.training.model.enums.TDState;
 import cz.muni.ics.kypo.training.model.enums.TRState;

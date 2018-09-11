@@ -227,12 +227,15 @@ public class TrainingRunServiceImpl implements TrainingRunService {
     LOG.debug("isCorrectFlag({})", trainingRunId);
     Assert.notNull(trainingRunId, "Input training run id must not be null.");
     Assert.hasLength(flag, "Submitted flag must not be nul nor empty.");
-    AbstractLevel level = findById(trainingRunId).getCurrentLevel();
+    TrainingRun tR = findById(trainingRunId);
+    AbstractLevel level = tR.getCurrentLevel();
     if (level instanceof GameLevel) {
       if(((GameLevel) level).getFlag().equals(flag)) {
+        tR.setIncorrectFlagCount(0);
         //event log Corrected Flag
         return true;
       } else {
+        tR.setIncorrectFlagCount(tR.getIncorrectFlagCount() + 1);
         //event log Wrong Flag
         return false;
       }
@@ -242,9 +245,22 @@ public class TrainingRunServiceImpl implements TrainingRunService {
   }
 
   @Override
+  public int getRemainingAttempts(Long trainingRunId) {
+    LOG.debug("getRemainingAttempts({})", trainingRunId);
+    Assert.notNull(trainingRunId, "Input training run id must not be null.");
+    TrainingRun tR = findById(trainingRunId);
+    AbstractLevel level = tR.getCurrentLevel();
+    if (level instanceof GameLevel) {
+      return ((GameLevel) level).getIncorrectFlagLimit() - tR.getIncorrectFlagCount();
+    } else {
+      throw new ServiceLayerException("Current level is not game level and does not have flag.");
+    }
+  }
+
+  @Override
   public String getSolution(Long trainingRunId) {
     LOG.debug("getSolution({})", trainingRunId);
-    Assert.notNull(trainingRunId, "Input trainign run id must not be null.");
+    Assert.notNull(trainingRunId, "Input training run id must not be null.");
     AbstractLevel level = findById(trainingRunId).getCurrentLevel();
     if (level instanceof GameLevel) {
       //event getSolution

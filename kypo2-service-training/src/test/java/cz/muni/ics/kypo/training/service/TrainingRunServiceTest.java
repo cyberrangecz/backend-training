@@ -133,6 +133,7 @@ public class TrainingRunServiceTest {
         gameLevel.setFlag("flag");
         gameLevel.setHints(new HashSet<>(Arrays.asList(hint1, hint2)));
         gameLevel.setNextLevel(2L);
+        gameLevel.setIncorrectFlagLimit(5);
 
         infoLevel = new InfoLevel();
         infoLevel.setId(2L);
@@ -236,6 +237,13 @@ public class TrainingRunServiceTest {
         given(trainingRunRepository.findById(trainingRun1.getId())).willReturn(Optional.of(trainingRun1));
         Boolean isCorrect = trainingRunService.isCorrectFlag(trainingRun1.getId(), "flag");
         assertTrue(isCorrect);
+     }
+
+     @Test
+     public void getRemainingAttempts() {
+        given(trainingRunRepository.findById(trainingRun1.getId())).willReturn(Optional.ofNullable(trainingRun1));
+        int attempts = trainingRunService.getRemainingAttempts(trainingRun1.getId());
+        assertEquals(5, attempts);
      }
 
      @Test

@@ -48,6 +48,6 @@ public interface TrainingRunFacade {
 
   public HintDTO getHint(Long trainingRunId, Long hintId);
 
-  public boolean isCorrectFlag(Long trainingRunId, String flag);
+  public IsCorrectFlagDTO isCorrectFlag(Long trainingRunId, String flag, boolean solutionTaken);
 
 }
