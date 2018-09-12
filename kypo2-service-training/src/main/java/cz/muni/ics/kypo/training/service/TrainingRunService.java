@@ -101,7 +101,7 @@ public interface TrainingRunService {
    *
    * @param trainingRunId id of Training Run to check flag.
    * @param flag string which player submit.
-   * @return true if flag is correct, false if flag is wrong.
+   * @return -1 if flag is correct, >0 remaining attempts, 0 all attempts exhausted.
    */
   boolean isCorrectFlag(Long trainingRunId, String flag);
 
@@ -123,5 +123,7 @@ public interface TrainingRunService {
   Hint getHint(Long trainingRunId, Long hintId);
 
   int getLevelOrder(Long idOfFirstLevel, Long actualLevel);
+
+  public int getRemainingAttempts(Long trainingRunId);
 
 }

@@ -1,7 +1,6 @@
 package cz.muni.ics.kypo.training.service.impl;
 
 import java.time.Duration;
-import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
@@ -74,6 +73,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
 		LOG.debug("findById({})", id);
 		Objects.requireNonNull(id);
 		return trainingRunRepository.findById(id).orElseThrow(() -> new ServiceLayerException("Training Run with id " + id + " not found."));
+
 	}
 
 	@Override
@@ -81,6 +81,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
 	public Page<TrainingRun> findAll(Predicate predicate, Pageable pageable) {
 		LOG.debug("findAll({},{})", predicate, pageable);
 		return trainingRunRepository.findAll(predicate, pageable);
+
 	}
 
 	@Override
@@ -95,6 +96,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
 		LOG.debug("create({})", trainingRun);
 		Assert.notNull(trainingRun, "Input training run must not be empty.");
 		return trainingRunRepository.save(trainingRun);
+
 	}
 
 	@Override
@@ -112,6 +114,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
 		trainingRunRepository.save(trainingRun);
 		// event log LevelStarted
 		return abstractLevel;
+
 	}
 
 	@Override
@@ -157,6 +160,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
 		Assert.hasLength(password, "Password cannot be null or empty.");
 		List<TrainingInstance> trainingInstances = trainingInstanceRepository.findAll();
 		for (TrainingInstance ti : trainingInstances) {
+
 			auditGameStartedAction(ti);
 
 			// check hash of password not String
@@ -213,6 +217,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
 			sandboxInstancePool.removeIf(sandboxInstanceRef -> sandboxInstanceRef.getSandboxInstanceRef() != sandboxInfoList.get(0).getId());
 			return sandboxInstancePool.iterator().next();
 		}
+
 	}
 
 	@Override
@@ -220,12 +225,15 @@ public class TrainingRunServiceImpl implements TrainingRunService {
 		LOG.debug("isCorrectFlag({})", trainingRunId);
 		Assert.notNull(trainingRunId, "Input training run id must not be null.");
 		Assert.hasLength(flag, "Submitted flag must not be nul nor empty.");
-		AbstractLevel level = findById(trainingRunId).getCurrentLevel();
+		TrainingRun tR = findById(trainingRunId);
+		AbstractLevel level = tR.getCurrentLevel();
 		if (level instanceof GameLevel) {
 			if (((GameLevel) level).getFlag().equals(flag)) {
+				tR.setIncorrectFlagCount(0);
 				// event log Corrected Flag
 				return true;
 			} else {
+				tR.setIncorrectFlagCount(tR.getIncorrectFlagCount() + 1);
 				// event log Wrong Flag
 				return false;
 			}
@@ -235,9 +243,22 @@ public class TrainingRunServiceImpl implements TrainingRunService {
 	}
 
 	@Override
+	public int getRemainingAttempts(Long trainingRunId) {
+		LOG.debug("getRemainingAttempts({})", trainingRunId);
+		Assert.notNull(trainingRunId, "Input training run id must not be null.");
+		TrainingRun tR = findById(trainingRunId);
+		AbstractLevel level = tR.getCurrentLevel();
+		if (level instanceof GameLevel) {
+			return ((GameLevel) level).getIncorrectFlagLimit() - tR.getIncorrectFlagCount();
+		} else {
+			throw new ServiceLayerException("Current level is not game level and does not have flag.");
+		}
+	}
+
+	@Override
 	public String getSolution(Long trainingRunId) {
 		LOG.debug("getSolution({})", trainingRunId);
-		Assert.notNull(trainingRunId, "Input trainign run id must not be null.");
+		Assert.notNull(trainingRunId, "Input training run id must not be null.");
 		AbstractLevel level = findById(trainingRunId).getCurrentLevel();
 		if (level instanceof GameLevel) {
 			// event getSolution
@@ -281,6 +302,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
 			}
 		}
 		throw new ServiceLayerException("Wrong parameters entered.");
+
 	}
 
 	public String getSubOfLoggedInUser() {

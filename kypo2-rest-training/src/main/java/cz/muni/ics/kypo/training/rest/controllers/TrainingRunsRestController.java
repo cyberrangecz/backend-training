@@ -299,13 +299,13 @@ public class TrainingRunsRestController {
             @ApiResponse(code = 404, message = "The requested resource was not found.")
     })
     @GetMapping(value = "/{id}/is-correct", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Boolean> isCorrectFlag(@ApiParam(name = "Training Run ID") @PathVariable Long id,
-                                                      @ApiParam(value = "Submited flag")
-                                                      @RequestParam(value = "flag") String flag) {
+    public ResponseEntity<Object> isCorrectFlag(@ApiParam(name = "Training Run ID") @PathVariable Long id,
+                                                      @ApiParam(value = "Submitted flag") @RequestParam(value = "flag") String flag,
+    @ApiParam(value = "Solution taken") @RequestParam(value = "solutionTaken") boolean solutionTaken) {
         LOG.debug("isCorrectFlag({}, {})", id, flag);
         try {
-            Boolean isCorrect = trainingRunFacade.isCorrectFlag(id, flag);
-            return new ResponseEntity<>(isCorrect, HttpStatus.OK);
+            IsCorrectFlagDTO isCorrectFlagDTO = trainingRunFacade.isCorrectFlag(id, flag, solutionTaken);
+            return new ResponseEntity<>(SquigglyUtils.stringify(objectMapper,isCorrectFlagDTO), HttpStatus.OK);
         } catch (FacadeLayerException ex) {
             throw new ResourceNotFoundException(ex.getLocalizedMessage());
         }

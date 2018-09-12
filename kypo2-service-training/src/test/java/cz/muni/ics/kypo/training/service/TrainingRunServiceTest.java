@@ -56,6 +56,7 @@ public class TrainingRunServiceTest {
 
 	@Autowired
 	private TrainingRunService trainingRunService;
+
 	@MockBean
 	private TrainingRunRepository trainingRunRepository;
 	@MockBean
@@ -124,6 +125,7 @@ public class TrainingRunServiceTest {
 		gameLevel.setFlag("flag");
 		gameLevel.setHints(new HashSet<>(Arrays.asList(hint1, hint2)));
 		gameLevel.setNextLevel(2L);
+		gameLevel.setIncorrectFlagLimit(5);
 
 		infoLevel = new InfoLevel();
 		infoLevel.setId(2L);
@@ -195,7 +197,6 @@ public class TrainingRunServiceTest {
 		trainingRunService.accessTrainingRun("Password");
 	}
 
-	@SuppressWarnings("unchecked")
 	@Test
 	public void accessTrainingRun() {
 		mockSpringSecurityContextForGet();
@@ -228,6 +229,13 @@ public class TrainingRunServiceTest {
 		given(trainingRunRepository.findById(trainingRun1.getId())).willReturn(Optional.of(trainingRun1));
 		Boolean isCorrect = trainingRunService.isCorrectFlag(trainingRun1.getId(), "flag");
 		assertTrue(isCorrect);
+	}
+
+	@Test
+	public void getRemainingAttempts() {
+		given(trainingRunRepository.findById(trainingRun1.getId())).willReturn(Optional.ofNullable(trainingRun1));
+		int attempts = trainingRunService.getRemainingAttempts(trainingRun1.getId());
+		assertEquals(5, attempts);
 	}
 
 	@Test
@@ -278,13 +286,13 @@ public class TrainingRunServiceTest {
 		expected.add(trainingRun1);
 		expected.add(trainingRun2);
 
-		Page<TrainingRun> p = new PageImpl<TrainingRun>(expected);
+		Page p = new PageImpl<TrainingRun>(expected);
 		PathBuilder<TrainingRun> t = new PathBuilder<TrainingRun>(TrainingRun.class, "trainingRun");
 		Predicate predicate = t.isNotNull();
 
 		given(trainingRunRepository.findAll(any(Predicate.class), any(Pageable.class))).willReturn(p);
 
-		Page<TrainingRun> pr = trainingRunService.findAll(predicate, PageRequest.of(0, 2));
+		Page pr = trainingRunService.findAll(predicate, PageRequest.of(0, 2));
 		assertEquals(2, pr.getTotalElements());
 	}
 
