@@ -33,20 +33,13 @@ public class AssessmentLevelServiceImpl implements AssessmentLevelService {
     @Override
     public Optional<AssessmentLevel> findById(long id) {
         LOG.debug("findById({})", id);
-        try {
-            return assessmentLevelRepository.findById(id);
-        } catch (HibernateException ex) {
-            throw new ServiceLayerException(ex.getLocalizedMessage());
-        }
+        return assessmentLevelRepository.findById(id);
+
     }
 
     @Override
     public Page<AssessmentLevel> findAll(Predicate predicate, Pageable pageable) {
         LOG.debug("findAll({},{})", predicate, pageable);
-        try {
-            return assessmentLevelRepository.findAll(predicate, pageable);
-        } catch (HibernateException ex) {
-            throw new ServiceLayerException(ex.getLocalizedMessage());
-        }
+        return assessmentLevelRepository.findAll(predicate, pageable);
     }
 }

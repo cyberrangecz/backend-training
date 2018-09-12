@@ -47,11 +47,7 @@ public class AssessmentLevelFacadeImpl implements AssessmentLevelFacade {
   public AssessmentLevelDTO findById(Long id) throws FacadeLayerException {
     try {
       Objects.requireNonNull(id);
-      Optional<AssessmentLevel> assessmentLevel = assessmentLevelService.findById(id);
-      AssessmentLevel al = assessmentLevel.orElseThrow(() -> new ServiceLayerException("AssessmentLevel with this id is not found"));
-      return beanMapping.mapTo(al, AssessmentLevelDTO.class);
-    } catch (NullPointerException ex) {
-      throw new FacadeLayerException();
+      return beanMapping.mapTo(assessmentLevelService.findById(id), AssessmentLevelDTO.class);
     } catch (ServiceLayerException ex) {
       throw new FacadeLayerException(ex.getLocalizedMessage());
     }

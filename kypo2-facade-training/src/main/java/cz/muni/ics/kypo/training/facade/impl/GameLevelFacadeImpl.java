@@ -45,13 +45,9 @@ public class GameLevelFacadeImpl implements GameLevelFacade {
   public GameLevelDTO findById(long id) {
     LOG.debug("findById({})", id);
     try {
-      Optional<GameLevel> gameLevel = gameLevelService.findById(id);
-      GameLevel game = gameLevel.orElseThrow(() -> new ServiceLayerException("GameLevel with this id is not found."));
-      return beanMapping.mapTo(game, GameLevelDTO.class);
-    } catch (NullPointerException ex) {
-      throw new FacadeLayerException("Given GameLevel ID is null.");
+      return beanMapping.mapTo(gameLevelService.findById(id), GameLevelDTO.class);
     } catch (ServiceLayerException ex) {
-      throw new FacadeLayerException(ex.getLocalizedMessage());
+      throw new FacadeLayerException(ex);
     }
   }
 

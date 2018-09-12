@@ -161,8 +161,6 @@ public class TrainingInstancesRestController {
       return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     } catch (FacadeLayerException ex) {
       throw new ResourceNotModifiedException(ex.getLocalizedMessage());
-    } catch (CannotBeUpdatedException ex) {
-      throw new ConflictException(ex.getLocalizedMessage());
     }
   }
   @ApiOperation(httpMethod = "DELETE",
@@ -182,8 +180,6 @@ public class TrainingInstancesRestController {
       return new ResponseEntity<>(HttpStatus.OK);
     } catch (FacadeLayerException ex) {
       throw new ResourceNotFoundException(ex.getLocalizedMessage());
-    } catch (CannotBeDeletedException ex) {
-      throw new ConflictException(ex.getLocalizedMessage());
     }
 
   }

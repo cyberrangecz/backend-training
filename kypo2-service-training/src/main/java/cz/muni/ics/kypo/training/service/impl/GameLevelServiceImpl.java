@@ -38,20 +38,12 @@ public class GameLevelServiceImpl implements GameLevelService {
   @Override
   public Optional<GameLevel> findById(long id) {
     LOG.debug("findById({})", id);
-    try {
-      return gameLevelRepository.findById(id);
-    } catch (HibernateException ex) {
-      throw new ServiceLayerException(ex.getLocalizedMessage());
-    }
+    return gameLevelRepository.findById(id);
   }
 
   @Override
   public Page<GameLevel> findAll(Predicate predicate, Pageable pageable) {
     LOG.debug("findAll({},{})", predicate, pageable);
-    try {
-      return gameLevelRepository.findAll(predicate, pageable);
-    } catch (HibernateException ex) {
-      throw new ServiceLayerException(ex.getLocalizedMessage());
-    }
+    return gameLevelRepository.findAll(predicate, pageable);
   }
 }

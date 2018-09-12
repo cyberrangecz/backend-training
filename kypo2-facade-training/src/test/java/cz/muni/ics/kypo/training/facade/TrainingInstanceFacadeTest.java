@@ -6,6 +6,7 @@ import cz.muni.ics.kypo.training.api.PageResultResource;
 import cz.muni.ics.kypo.training.api.dto.TrainingInstanceDTO;
 import cz.muni.ics.kypo.training.config.FacadeTestConfiguration;
 import cz.muni.ics.kypo.training.exception.FacadeLayerException;
+import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.model.TrainingInstance;
 import cz.muni.ics.kypo.training.service.TrainingInstanceService;
 import org.junit.Before;
@@ -70,7 +71,7 @@ public class TrainingInstanceFacadeTest {
 
     @Test
     public void findTrainingInstanceById() {
-        given(trainingInstanceService.findById(trainingInstance1.getId())).willReturn(Optional.of(trainingInstance1));
+        given(trainingInstanceService.findById(trainingInstance1.getId())).willReturn(trainingInstance1);
 
         TrainingInstanceDTO trainingInstanceDTO = trainingInstanceFacade.findById(trainingInstance1.getId());
         deepEquals(trainingInstance1, trainingInstanceDTO);
@@ -81,7 +82,7 @@ public class TrainingInstanceFacadeTest {
     @Test
     public void findNonexistentTrainingInstanceById() {
         Long id = 6L;
-        given(trainingInstanceService.findById(id)).willReturn(Optional.empty());
+        willThrow(ServiceLayerException.class).given(trainingInstanceService.findById(id));
         thrown.expect(FacadeLayerException.class);
         trainingInstanceFacade.findById(id);
     }
@@ -108,7 +109,7 @@ public class TrainingInstanceFacadeTest {
 
     @Test
     public void createTrainingInstance() {
-        given(trainingInstanceService.create(trainingInstance1)).willReturn(Optional.of(trainingInstance1));
+        given(trainingInstanceService.create(trainingInstance1)).willReturn(trainingInstance1);
         TrainingInstanceDTO trainingInstanceDTO = trainingInstanceFacade.create(trainingInstance1);
         deepEquals(trainingInstance1, trainingInstanceDTO);
         then(trainingInstanceService).should().create(trainingInstance1);

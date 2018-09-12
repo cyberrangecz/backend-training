@@ -2,13 +2,10 @@ package cz.muni.ics.kypo.training.service.impl;
 
 import java.util.*;
 
-import cz.muni.ics.kypo.training.exceptions.CannotBeClonedException;
-import cz.muni.ics.kypo.training.exceptions.CannotBeDeletedException;
-import cz.muni.ics.kypo.training.exceptions.CannotBeUpdatedException;
+import cz.muni.ics.kypo.training.exceptions.ErrorCode;
 import cz.muni.ics.kypo.training.model.*;
 import cz.muni.ics.kypo.training.model.enums.TDState;
 import cz.muni.ics.kypo.training.repository.*;
-import org.hibernate.HibernateException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -50,96 +47,84 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
   }
 
   @Override
-  public Optional<TrainingDefinition> findById(long id) {
+  public TrainingDefinition findById(long id) {
     LOG.debug("findById({})", id);
-    try {
-      return trainingDefinitionRepository.findById(id);
-    } catch (HibernateException ex) {
-      throw new ServiceLayerException(ex.getLocalizedMessage());
-    }
+    return trainingDefinitionRepository.findById(id).orElseThrow(() -> new ServiceLayerException("Training definition with id: " + id + " cannot be found.", ErrorCode.RESOURCE_NOT_FOUND));
   }
 
   @Override
   public Page<TrainingDefinition> findAll(Predicate predicate, Pageable pageable) {
     LOG.debug("findAll({},{})", predicate, pageable);
-    try {
-      return trainingDefinitionRepository.findAll(predicate, pageable);
-    } catch (HibernateException ex) {
-      throw new ServiceLayerException(ex.getLocalizedMessage());
-    }
+    return trainingDefinitionRepository.findAll(predicate, pageable);
+
   }
 
   @Override
-  public Optional<TrainingDefinition> create(TrainingDefinition trainingDefinition) {
+  public TrainingDefinition create(TrainingDefinition trainingDefinition) {
     LOG.debug("create({})", trainingDefinition);
     Assert.notNull(trainingDefinition, "Input training definition must not be null");
     TrainingDefinition tD = trainingDefinitionRepository.save(trainingDefinition);
     LOG.info("Training definition with id: " + trainingDefinition.getId() + "created.");
-    return Optional.of(tD);
+    return tD;
   }
 
   @Override
-  public void update(TrainingDefinition trainingDefinition) throws ServiceLayerException, CannotBeClonedException {
+  public void update(TrainingDefinition trainingDefinition) throws ServiceLayerException {
     LOG.debug("update({})", trainingDefinition);
     Assert.notNull(trainingDefinition, "Input training definition must not be null");
-    TrainingDefinition tD = findById(trainingDefinition.getId())
-            .orElseThrow(() -> new ServiceLayerException("Training definition with id: " + trainingDefinition.getId() + ", not found"));
+    TrainingDefinition tD = findById(trainingDefinition.getId());
     if (!tD.getState().equals(TDState.UNRELEASED))
-      throw new CannotBeUpdatedException("Cant edit released or archived training definition");
+      throw new ServiceLayerException("Cannot edit released or archived training definition.", ErrorCode.CANNOT_BE_MODIFIED);
     trainingDefinitionRepository.save(trainingDefinition);
     LOG.info("Training definition with id: " + trainingDefinition.getId() + " updated");
   }
 
   @Override
-  public Optional<TrainingDefinition> clone(Long id) throws ServiceLayerException, CannotBeUpdatedException {
+  public TrainingDefinition clone(Long id) throws ServiceLayerException {
     LOG.debug("clone({})", id);
-    try {
-      TrainingDefinition trainingDefinition = findById(id)
-              .orElseThrow(() -> new ServiceLayerException("Training definition with id: " + id + ", not found"));
-      if (trainingDefinition.getState().equals(TDState.UNRELEASED))
-        throw new CannotBeClonedException("Cant copy unreleased training definition");
-      TrainingDefinition tD = new TrainingDefinition();
-      BeanUtils.copyProperties(trainingDefinition, tD);
-      tD.setId(null);
-      tD.setTitle("Clone of " + tD.getTitle());
-      tD.setState(TDState.UNRELEASED);
-      if (tD.getStartingLevel() != null) {
-        tD.setStartingLevel(createLevels(tD.getStartingLevel()));
-      }
-      tD = trainingDefinitionRepository.save(tD);
-      LOG.info("Training definition with id: " + trainingDefinition.getId() + " cloned.");
-      return Optional.of(tD);
-    } catch (HibernateException ex) {
-      throw new ServiceLayerException(ex.getLocalizedMessage());
+
+    TrainingDefinition trainingDefinition = findById(id);
+    if (trainingDefinition.getState().equals(TDState.UNRELEASED))
+      throw new ServiceLayerException("Cannot copy unreleased training definition.", ErrorCode.CANNOT_BE_CREATED);
+    TrainingDefinition tD = new TrainingDefinition();
+    BeanUtils.copyProperties(trainingDefinition, tD);
+    tD.setId(null);
+    tD.setTitle("Clone of " + tD.getTitle());
+    tD.setState(TDState.UNRELEASED);
+    if (tD.getStartingLevel() != null) {
+      tD.setStartingLevel(createLevels(tD.getStartingLevel()));
     }
+    tD = trainingDefinitionRepository.save(tD);
+    LOG.info("Training definition with id: " + trainingDefinition.getId() + " cloned.");
+    return tD;
+
   }
 
   @Override
-  public void swapLeft(Long definitionId, Long levelId) throws ServiceLayerException, CannotBeUpdatedException {
+  public void swapLeft(Long definitionId, Long levelId) throws ServiceLayerException {
     LOG.debug("swapLeft({}, {})", definitionId, levelId);
-    TrainingDefinition trainingDefinition = findById(definitionId)
-            .orElseThrow(() -> new ServiceLayerException("Training definition with id: " + definitionId + ", not found"));
+    TrainingDefinition trainingDefinition = findById(definitionId);
     if (!trainingDefinition.getState().equals(TDState.UNRELEASED))
-      throw new CannotBeUpdatedException("Cant edit released or archived training definition");
+      throw new ServiceLayerException("Cannot edit released or archived training definition.", ErrorCode.CANNOT_BE_MODIFIED);
     AbstractLevel swapLevel = abstractLevelRepository.findById(trainingDefinition.getStartingLevel())
-            .orElseThrow(() -> new ServiceLayerException("Level with id: "+ trainingDefinition.getStartingLevel() +", not found"));
+            .orElseThrow(() -> new ServiceLayerException("Level with id: "+ trainingDefinition.getStartingLevel() +", not found.", ErrorCode.RESOURCE_NOT_FOUND));
     Long oneBeforeId = null;
     Long twoBeforeId = null;
     while (!swapLevel.getId().equals(levelId)) {
       twoBeforeId = oneBeforeId;
       oneBeforeId = swapLevel.getId();
       swapLevel = abstractLevelRepository.findById(swapLevel.getNextLevel())
-              .orElseThrow(() -> new ServiceLayerException("Level not found"));
+              .orElseThrow(() -> new ServiceLayerException("Level not found.", ErrorCode.RESOURCE_NOT_FOUND));
     }
     AbstractLevel oneBefore = abstractLevelRepository.findById(oneBeforeId)
-            .orElseThrow(() -> new ServiceLayerException("Cant swap left first level"));
+            .orElseThrow(() -> new ServiceLayerException("Cant swap left first level.", ErrorCode.RESOURCE_NOT_FOUND));
     oneBefore.setNextLevel(swapLevel.getNextLevel());
     swapLevel.setNextLevel(oneBeforeId);
     updateLevel(swapLevel);
     updateLevel(oneBefore);
     if (twoBeforeId != null) {
       AbstractLevel twoBefore = abstractLevelRepository.findById(twoBeforeId)
-              .orElseThrow(() -> new ServiceLayerException("Level not found"));
+              .orElseThrow(() -> new ServiceLayerException("Level not found.", ErrorCode.RESOURCE_NOT_FOUND));
       twoBefore.setNextLevel(swapLevel.getId());
       updateLevel(twoBefore);
     }
@@ -150,27 +135,26 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
   }
 
   @Override
-  public void swapRight(Long definitionId, Long levelId) throws ServiceLayerException, CannotBeUpdatedException {
+  public void swapRight(Long definitionId, Long levelId) throws ServiceLayerException {
     LOG.debug("swapRight({}, {})", definitionId, levelId);
-    TrainingDefinition trainingDefinition = findById(definitionId)
-            .orElseThrow(() -> new ServiceLayerException("Training definition with id: " + definitionId + ", not found"));
+    TrainingDefinition trainingDefinition = findById(definitionId);
     if (!trainingDefinition.getState().equals(TDState.UNRELEASED))
-      throw new CannotBeUpdatedException("Cant edit released or archived training definition");
+      throw new ServiceLayerException("Cannot edit released or archived training definition.", ErrorCode.CANNOT_BE_MODIFIED);
     AbstractLevel swapLevel = abstractLevelRepository.findById(trainingDefinition.getStartingLevel())
-            .orElseThrow(() -> new ServiceLayerException("Level with id: "+ trainingDefinition.getStartingLevel()+", not found"));
+            .orElseThrow(() -> new ServiceLayerException("Level with id: "+ trainingDefinition.getStartingLevel()+", not found.", ErrorCode.RESOURCE_NOT_FOUND));
     Long oneBeforeId = null;
     while (!swapLevel.getId().equals(levelId)) {
       oneBeforeId = swapLevel.getId();
       swapLevel = abstractLevelRepository.findById(swapLevel.getNextLevel())
-              .orElseThrow(() -> new ServiceLayerException("Level not found"));
+              .orElseThrow(() -> new ServiceLayerException("Level not found.", ErrorCode.RESOURCE_NOT_FOUND));
     }
     if (oneBeforeId != null) {
       AbstractLevel oneBefore = abstractLevelRepository.findById(oneBeforeId)
-              .orElseThrow(() -> new ServiceLayerException("Level not found"));
+              .orElseThrow(() -> new ServiceLayerException("Level not found.", ErrorCode.RESOURCE_NOT_FOUND));
       oneBefore.setNextLevel(swapLevel.getNextLevel());
       updateLevel(oneBefore);
     }
-    AbstractLevel nextLevel = abstractLevelRepository.findById(swapLevel.getNextLevel()).orElseThrow(() -> new ServiceLayerException("Cant swap right last level"));
+    AbstractLevel nextLevel = abstractLevelRepository.findById(swapLevel.getNextLevel()).orElseThrow(() -> new ServiceLayerException("Cant swap right last level.", ErrorCode.CANNOT_BE_MODIFIED));
     swapLevel.setNextLevel(nextLevel.getNextLevel());
     nextLevel.setNextLevel(swapLevel.getId());
     updateLevel(nextLevel);
@@ -182,42 +166,38 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
   }
 
   @Override
-  public void delete(Long id) throws ServiceLayerException, CannotBeDeletedException {
+  public void delete(Long id) throws ServiceLayerException {
     LOG.debug("delete({})", id);
-    try {
-      TrainingDefinition definition = findById(id)
-              .orElseThrow(() -> new ServiceLayerException("Training definition with id: " + id + ", not found"));
-      if (definition.getState().equals(TDState.RELEASED))
-        throw new CannotBeDeletedException("Cant delete released training definition");
-      if (definition.getStartingLevel() != null) {
-        Long levelId = definition.getStartingLevel();
-        while (levelId != null) {
-          AbstractLevel level = abstractLevelRepository.findById(levelId)
-                  .orElseThrow(() -> new ServiceLayerException("Level not found"));
-          levelId = level.getNextLevel();
-          deleteLevel(level);
-        }
+
+    TrainingDefinition definition = findById(id);
+    if (definition.getState().equals(TDState.RELEASED))
+      throw new ServiceLayerException("Cannot delete released training definition.", ErrorCode.CANNOT_BE_MODIFIED);
+    if (definition.getStartingLevel() != null) {
+      Long levelId = definition.getStartingLevel();
+      while (levelId != null) {
+        AbstractLevel level = abstractLevelRepository.findById(levelId)
+                .orElseThrow(() -> new ServiceLayerException("Level not found.", ErrorCode.RESOURCE_NOT_FOUND));
+        levelId = level.getNextLevel();
+        deleteLevel(level);
       }
-      trainingDefinitionRepository.delete(definition);
-    } catch (NullPointerException ex) {
-      throw new ServiceLayerException();
     }
+    trainingDefinitionRepository.delete(definition);
+
   }
 
   @Override
-  public void deleteOneLevel(Long definitionId, Long levelId) throws ServiceLayerException, CannotBeUpdatedException {
+  public void deleteOneLevel(Long definitionId, Long levelId) throws ServiceLayerException {
     LOG.debug("deleteOneLevel({}, {})", definitionId, levelId);
-    TrainingDefinition trainingDefinition = findById(definitionId)
-            .orElseThrow(() -> new ServiceLayerException("Training definition with id: " + definitionId + ", not found"));
+    TrainingDefinition trainingDefinition = findById(definitionId);
     if (!trainingDefinition.getState().equals(TDState.UNRELEASED))
-      throw new CannotBeUpdatedException("Cant edit released or archived training definition");
+      throw new ServiceLayerException("Cannot edit released or archived training definition.", ErrorCode.CANNOT_BE_MODIFIED);
     AbstractLevel level = abstractLevelRepository.findById(trainingDefinition.getStartingLevel())
-            .orElseThrow(() -> new ServiceLayerException("Level with id: " + trainingDefinition.getStartingLevel() + ", not found"));
+            .orElseThrow(() -> new ServiceLayerException("Level with id: " + trainingDefinition.getStartingLevel() + ", not found.", ErrorCode.RESOURCE_NOT_FOUND));
     Long oneIdBefore = null;
     while (!level.getId().equals(levelId)) {
       oneIdBefore = level.getId();
       level = abstractLevelRepository.findById(level.getNextLevel())
-              .orElseThrow(() -> new ServiceLayerException("Level not found"));
+              .orElseThrow(() -> new ServiceLayerException("Level not found.", ErrorCode.RESOURCE_NOT_FOUND));
     }
 
     if (trainingDefinition.getStartingLevel().equals(level.getId())) {
@@ -225,7 +205,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
       trainingDefinitionRepository.save(trainingDefinition);
     } else {
       AbstractLevel oneBefore = abstractLevelRepository
-              .findById(oneIdBefore).orElseThrow(() -> new ServiceLayerException("Level not found"));
+              .findById(oneIdBefore).orElseThrow(() -> new ServiceLayerException("Level not found.", ErrorCode.RESOURCE_NOT_FOUND));
       oneBefore.setNextLevel(level.getNextLevel());
       updateLevel(oneBefore);
     }
@@ -233,49 +213,45 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
   }
 
   @Override
-  public void updateGameLevel(Long definitionId, GameLevel gameLevel) throws ServiceLayerException, CannotBeUpdatedException {
+  public void updateGameLevel(Long definitionId, GameLevel gameLevel) throws ServiceLayerException {
     LOG.debug("updateGameLevel({}, {})",definitionId, gameLevel);
-    TrainingDefinition trainingDefinition = findById(definitionId)
-            .orElseThrow(() -> new ServiceLayerException("Training definition with id: " + definitionId + ", not found"));
+    TrainingDefinition trainingDefinition = findById(definitionId);
     if (!trainingDefinition.getState().equals(TDState.UNRELEASED))
-      throw new CannotBeUpdatedException("Cant edit released or archived training definition");
+      throw new ServiceLayerException("Cannot edit released or archived training definition.", ErrorCode.CANNOT_BE_MODIFIED);
     if (!findLevelInDefinition(trainingDefinition, gameLevel.getId()))
-      throw new CannotBeUpdatedException("Level was not found in definition");
+      throw new ServiceLayerException("Level was not found in definition.", ErrorCode.RESOURCE_NOT_FOUND);
     gameLevelRepository.save(gameLevel);
   }
 
   @Override
-  public void updateInfoLevel(Long definitionId, InfoLevel infoLevel) throws ServiceLayerException, CannotBeUpdatedException {
+  public void updateInfoLevel(Long definitionId, InfoLevel infoLevel) throws ServiceLayerException {
     LOG.debug("updateInfoLevel({}, {})",definitionId, infoLevel);
-    TrainingDefinition trainingDefinition = findById(definitionId)
-            .orElseThrow(() -> new ServiceLayerException("Training definition with id: " + definitionId + ", not found"));
+    TrainingDefinition trainingDefinition = findById(definitionId);
     if (!trainingDefinition.getState().equals(TDState.UNRELEASED))
-      throw new CannotBeUpdatedException("Cant edit released or archived training definition");
+      throw new ServiceLayerException("Cannot edit released or archived training definition.", ErrorCode.CANNOT_BE_MODIFIED);
     if (!findLevelInDefinition(trainingDefinition, infoLevel.getId()))
-      throw new CannotBeUpdatedException("Level was not found in definition");
+      throw new ServiceLayerException("Level was not found in definition.", ErrorCode.RESOURCE_NOT_FOUND);
     infoLevelRepository.save(infoLevel);
   }
 
   @Override
-  public void updateAssessmentLevel(Long definitionId, AssessmentLevel assessmentLevel) throws ServiceLayerException, CannotBeUpdatedException {
+  public void updateAssessmentLevel(Long definitionId, AssessmentLevel assessmentLevel) throws ServiceLayerException {
     LOG.debug("updateAssessmentLevel({}, {})",definitionId, assessmentLevel);
-    TrainingDefinition trainingDefinition = findById(definitionId)
-            .orElseThrow(() -> new ServiceLayerException("Training definition with id: " + definitionId + ", not found"));
+    TrainingDefinition trainingDefinition = findById(definitionId);
     if (!trainingDefinition.getState().equals(TDState.UNRELEASED))
-      throw new CannotBeUpdatedException("Cant edit released or archived training definition");
+      throw new ServiceLayerException("Cannot edit released or archived training definition.", ErrorCode.CANNOT_BE_MODIFIED);
     if (!findLevelInDefinition(trainingDefinition, assessmentLevel.getId()))
-      throw new CannotBeUpdatedException("Level was not found in definition");
+      throw new ServiceLayerException("Level was not found in definition", ErrorCode.RESOURCE_NOT_FOUND);
     assessmentLevelRepository.save(assessmentLevel);
   }
 
   @Override
-  public Optional<GameLevel> createGameLevel(Long definitionId, GameLevel gameLevel) throws ServiceLayerException, CannotBeUpdatedException {
+  public GameLevel createGameLevel(Long definitionId, GameLevel gameLevel) throws ServiceLayerException {
     LOG.debug("createGameLevel({}, {})", definitionId, gameLevel);
     Assert.notNull(definitionId, "Definition id must not be null");
-    TrainingDefinition trainingDefinition = findById(definitionId)
-            .orElseThrow(() -> new ServiceLayerException("Training definition with id: " + definitionId + ", not found"));
+    TrainingDefinition trainingDefinition = findById(definitionId);
     if (!trainingDefinition.getState().equals(TDState.UNRELEASED))
-      throw new CannotBeUpdatedException("Cant create level in released or archived training definition");
+      throw new ServiceLayerException("Cannot create level in released or archived training definition", ErrorCode.CANNOT_BE_CREATED);
     Assert.notNull(gameLevel, "Game level must not be null");
     GameLevel gL = gameLevelRepository.save(gameLevel);
 
@@ -288,17 +264,16 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
       updateLevel(lastLevel);
     }
     LOG.info("Game level with id: "+ gL.getId() +" created");
-    return Optional.of(gL);
+    return gL;
   }
 
   @Override
-  public Optional<InfoLevel> createInfoLevel(Long definitionId, InfoLevel infoLevel) throws ServiceLayerException, CannotBeUpdatedException {
+  public InfoLevel createInfoLevel(Long definitionId, InfoLevel infoLevel) throws ServiceLayerException {
     LOG.debug("createInfoLevel({}, {})", definitionId, infoLevel);
     Assert.notNull(definitionId, "Definition id must not be null");
-    TrainingDefinition trainingDefinition = findById(definitionId)
-            .orElseThrow(() -> new ServiceLayerException("Training definition with id: " + definitionId + ", not found"));
+    TrainingDefinition trainingDefinition = findById(definitionId);
     if (!trainingDefinition.getState().equals(TDState.UNRELEASED))
-      throw new CannotBeUpdatedException("Cant create level in released or archived training definition");
+      throw new ServiceLayerException("Cannot create level in released or archived training definition", ErrorCode.CANNOT_BE_CREATED);
     Assert.notNull(infoLevel, "Info level must not be null");
     InfoLevel iL = infoLevelRepository.save(infoLevel);
 
@@ -311,17 +286,16 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
       updateLevel(lastLevel);
     }
     LOG.info("Info level with id: "+ iL.getId() +" created");
-    return Optional.of(iL);
+    return iL;
   }
 
   @Override
-  public Optional<AssessmentLevel> createAssessmentLevel(Long definitionId, AssessmentLevel assessmentLevel) throws ServiceLayerException, CannotBeUpdatedException {
+  public AssessmentLevel createAssessmentLevel(Long definitionId, AssessmentLevel assessmentLevel) throws ServiceLayerException {
     LOG.debug("createAssessmentLevel({}, {})", definitionId, assessmentLevel);
     Assert.notNull(definitionId, "Definition id must not be null");
-    TrainingDefinition trainingDefinition = findById(definitionId)
-            .orElseThrow(() -> new ServiceLayerException("Training definition with id: " + definitionId + ", not found"));
+    TrainingDefinition trainingDefinition = findById(definitionId);
     if (!trainingDefinition.getState().equals(TDState.UNRELEASED))
-      throw new CannotBeUpdatedException("Cant create level in released or archived training definition");
+      throw new ServiceLayerException("Cannot create level in released or archived training definition.", ErrorCode.CANNOT_BE_CREATED);
     Assert.notNull(assessmentLevel, "Assessment level must not be null");
     AssessmentLevel aL = assessmentLevelRepository.save(assessmentLevel);
 
@@ -334,21 +308,20 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
       updateLevel(lastLevel);
     }
     LOG.info("Assessment level with id: "+ aL.getId() +" created");
-    return Optional.of(aL);
+    return aL;
   }
 
   @Override
   public ArrayList<AbstractLevel> findAllLevelsFromDefinition(Long id) {
     LOG.debug("findAllLevelsFromDefinition({})", id);
     Assert.notNull(id, "Definition id must not be null");
-    TrainingDefinition trainingDefinition = findById(id)
-            .orElseThrow(() -> new ServiceLayerException("Training definition with id: " + id + ", not found"));
+    TrainingDefinition trainingDefinition = findById(id);
     ArrayList<AbstractLevel> levels = new ArrayList<>();
     Long levelId = trainingDefinition.getStartingLevel();
     AbstractLevel level = null;
     while(levelId != null){
       level = abstractLevelRepository.findById(levelId)
-              .orElseThrow(() -> new ServiceLayerException("Level not found"));
+              .orElseThrow(() -> new ServiceLayerException("Level not found", ErrorCode.RESOURCE_NOT_FOUND));
       levels.add(level);
       levelId = level.getNextLevel();
     }
@@ -357,11 +330,11 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
 
   private AbstractLevel findLastLevel(Long levelId){
     AbstractLevel lastLevel = abstractLevelRepository.findById(levelId)
-            .orElseThrow(() -> new ServiceLayerException("Level not found"));
+            .orElseThrow(() -> new ServiceLayerException("Level not found", ErrorCode.RESOURCE_NOT_FOUND));
     levelId = lastLevel.getNextLevel();
     while (levelId != null){
       lastLevel = abstractLevelRepository.findById(lastLevel.getNextLevel())
-              .orElseThrow(() -> new ServiceLayerException("Level not found"));
+              .orElseThrow(() -> new ServiceLayerException("Level not found", ErrorCode.RESOURCE_NOT_FOUND));
       levelId = lastLevel.getNextLevel();
     }
     return lastLevel;
@@ -373,7 +346,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     if (nextId.equals(levelId)) found = true;
     while(nextId != null && !found){
       AbstractLevel nextLevel = abstractLevelRepository.findById(nextId)
-              .orElseThrow(() -> new ServiceLayerException("Level not found"));
+              .orElseThrow(() -> new ServiceLayerException("Level not found", ErrorCode.RESOURCE_NOT_FOUND));
       if (nextLevel.getId().equals(levelId)) found = true;
       nextId = nextLevel.getNextLevel();
     }
@@ -384,7 +357,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     List<AbstractLevel> levels = new ArrayList<AbstractLevel>();
     while (id != null) {
       AbstractLevel nextLevel = abstractLevelRepository.findById(id)
-              .orElseThrow(() -> new ServiceLayerException("Level not found"));
+              .orElseThrow(() -> new ServiceLayerException("Level not found", ErrorCode.RESOURCE_NOT_FOUND));
       id = nextLevel.getNextLevel();
       levels.add(nextLevel);
     }

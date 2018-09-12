@@ -46,13 +46,9 @@ public class InfoLevelFacadeImpl implements InfoLevelFacade {
     LOG.debug("findById({})", id);
     try {
       Objects.requireNonNull(id);
-      Optional<InfoLevel> info = infoService.findById(id);
-      InfoLevel inf = info.orElseThrow(() -> new ServiceLayerException("Info with this id is not found"));
-      return beanMapping.mapTo(inf, InfoLevelDTO.class);
-    } catch (NullPointerException ex) {
-      throw new FacadeLayerException("Given info ID is null.");
+      return beanMapping.mapTo(infoService.findById(id), InfoLevelDTO.class);
     } catch (ServiceLayerException ex) {
-      throw new FacadeLayerException(ex.getLocalizedMessage());
+      throw new FacadeLayerException(ex);
     }
   }
 
@@ -63,7 +59,7 @@ public class InfoLevelFacadeImpl implements InfoLevelFacade {
     try {
       return beanMapping.mapToPageResultDTO(infoService.findAll(predicate, pageable), InfoLevelDTO.class);
     } catch (ServiceLayerException ex) {
-      throw new FacadeLayerException(ex.getLocalizedMessage());
+      throw new FacadeLayerException(ex);
     }
   }
 }

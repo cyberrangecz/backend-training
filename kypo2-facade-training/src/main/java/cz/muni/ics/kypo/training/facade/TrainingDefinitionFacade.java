@@ -2,9 +2,6 @@ package cz.muni.ics.kypo.training.facade;
 
 import cz.muni.ics.kypo.training.api.dto.*;
 import cz.muni.ics.kypo.training.exception.FacadeLayerException;
-import cz.muni.ics.kypo.training.exceptions.CannotBeClonedException;
-import cz.muni.ics.kypo.training.exceptions.CannotBeDeletedException;
-import cz.muni.ics.kypo.training.exceptions.CannotBeUpdatedException;
 import cz.muni.ics.kypo.training.model.AssessmentLevel;
 import cz.muni.ics.kypo.training.model.GameLevel;
 import cz.muni.ics.kypo.training.model.InfoLevel;
@@ -43,9 +40,8 @@ public interface TrainingDefinitionFacade {
    * @param trainingDefinition to be updated
    * @return DTO of updated definition
    * @throws FacadeLayerException if training definition is not found
-   * @throws CannotBeUpdatedException if definition status is not UNRELEASED
    */
-  public void update(TrainingDefinition trainingDefinition) throws FacadeLayerException, CannotBeUpdatedException;
+  public void update(TrainingDefinition trainingDefinition) throws FacadeLayerException;
 
   /**
    * Creates new training definition
@@ -62,71 +58,63 @@ public interface TrainingDefinitionFacade {
    * @param id of definition to be cloned
    * @return DTO of cloned definition
    * @throws FacadeLayerException if training definition is not found
-   * @throws CannotBeClonedException if definition status is unreleased
    */
-  public TrainingDefinitionDTO clone(Long id) throws FacadeLayerException, CannotBeClonedException;
+  public TrainingDefinitionDTO clone(Long id) throws FacadeLayerException;
 
   /**
    * swaps level to the left
    * @param definitionId - id of definition containing level to be swapped
    * @param levelId - id of level to be swapped
    * @throws FacadeLayerException if training definition or level is not found
-   * @throws CannotBeUpdatedException if definition status is not UNRELEASED
    */
-  public void swapLeft(Long definitionId, Long levelId) throws FacadeLayerException, CannotBeUpdatedException;
+  public void swapLeft(Long definitionId, Long levelId) throws FacadeLayerException;
 
   /**
    * swaps level to the right
    * @param definitionId - id of definition containing level to be swapped
    * @param levelId - id of level to be swapped
    * @throws FacadeLayerException if training definition or level is not found
-   * @throws CannotBeUpdatedException if definition status is not UNRELEASED
    */
-  public void swapRight(Long definitionId, Long levelId) throws FacadeLayerException, CannotBeUpdatedException;
+  public void swapRight(Long definitionId, Long levelId) throws FacadeLayerException;
 
   /**
    * Deletes specific training instance based on id
    * @param id of definition to be deleted
    * @throws FacadeLayerException if training definition is not found
-   * @throws CannotBeDeletedException if definition status is RELEASED
    */
-  public void delete(Long id) throws FacadeLayerException, CannotBeDeletedException;
+  public void delete(Long id) throws FacadeLayerException;
 
   /**
    * deletes specific level by id
    * @param definitionId - id of definition containing level to be deleted
    * @param levelId - id of level to be deleted
    * @throws FacadeLayerException if training definition or level is not found
-   * @throws CannotBeUpdatedException if definition status is not UNRELEASED
    */
-  public void deleteOneLevel(Long definitionId, Long levelId) throws FacadeLayerException, CannotBeUpdatedException;
+  public void deleteOneLevel(Long definitionId, Long levelId) throws FacadeLayerException;
 
   /**
    * updates game level from training definition
    * @param definitionId - id of training definition containing level to be updated
    * @param gameLevel to be updated
    * @throws FacadeLayerException if training definition is not found
-   * @throws CannotBeUpdatedException if definition status is not UNRELEASED
    */
-  public void updateGameLevel(Long definitionId, GameLevel gameLevel) throws FacadeLayerException, CannotBeUpdatedException;
+  public void updateGameLevel(Long definitionId, GameLevel gameLevel) throws FacadeLayerException;
 
   /**
    * updates info level from training definition
    * @param definitionId - id of training definition containing level to be updated
    * @param infoLevel to be updated
    * @throws FacadeLayerException if training definition is not found
-   * @throws CannotBeUpdatedException if definition status is not UNRELEASED
    */
-  public void updateInfoLevel(Long definitionId, InfoLevel infoLevel) throws FacadeLayerException, CannotBeUpdatedException;
+  public void updateInfoLevel(Long definitionId, InfoLevel infoLevel) throws FacadeLayerException;
 
   /**
    * updates assessment level from training definition
    * @param definitionId - id of training definition containing level to be updated
    * @param assessmentLevel to be updated
    * @throws FacadeLayerException if training definition is not found
-   * @throws CannotBeUpdatedException if definition status is not UNRELEASED
    */
-  public void updateAssessmentLevel(Long definitionId, AssessmentLevel assessmentLevel) throws FacadeLayerException, CannotBeUpdatedException;
+  public void updateAssessmentLevel(Long definitionId, AssessmentLevel assessmentLevel) throws FacadeLayerException;
 
   /**
    * creates new info level in training definition
@@ -134,9 +122,8 @@ public interface TrainingDefinitionFacade {
    * @param infoLevel to be created
    * @return DTO of new info level
    * @throws FacadeLayerException if training definition is not found
-   * @throws CannotBeUpdatedException if definition status is not UNRELEASED
    */
-  public InfoLevelDTO createInfoLevel(Long definitionId, InfoLevel infoLevel) throws FacadeLayerException, CannotBeUpdatedException;
+  public InfoLevelDTO createInfoLevel(Long definitionId, InfoLevel infoLevel) throws FacadeLayerException;
 
   /**
    * creates new game level in training definition
@@ -144,9 +131,8 @@ public interface TrainingDefinitionFacade {
    * @param gameLevel to be created
    * @return DTO of new game level
    * @throws FacadeLayerException if training definition is not found
-   * @throws CannotBeUpdatedException if definition status is not UNRELEASED
    */
-  public GameLevelDTO createGameLevel(Long definitionId, GameLevel gameLevel) throws FacadeLayerException, CannotBeUpdatedException;
+  public GameLevelDTO createGameLevel(Long definitionId, GameLevel gameLevel) throws FacadeLayerException;
 
   /**
    * creates new assessment level in training definition
@@ -154,8 +140,7 @@ public interface TrainingDefinitionFacade {
    * @param assessmentLevel to be created
    * @return DTO of new assessment level
    * @throws FacadeLayerException if training definition is not found
-   * @throws CannotBeUpdatedException if definition status is not UNRELEASED
    */
-  public AssessmentLevelDTO createAssessmentLevel(Long definitionId, AssessmentLevel assessmentLevel) throws FacadeLayerException, CannotBeUpdatedException;
+  public AssessmentLevelDTO createAssessmentLevel(Long definitionId, AssessmentLevel assessmentLevel) throws FacadeLayerException;
 
 }

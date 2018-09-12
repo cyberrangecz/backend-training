@@ -46,13 +46,9 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
     LOG.debug("findById({})", id);
     try {
       Objects.requireNonNull(id);
-      Optional<TrainingInstance> trainingInstance = trainingInstanceService.findById(id);
-      TrainingInstance ti = trainingInstance.orElseThrow(() -> new ServiceLayerException("TrainingInstance with this id is not found"));
-      return beanMapping.mapTo(ti, TrainingInstanceDTO.class);
-    } catch (NullPointerException ex) {
-      throw new FacadeLayerException("Given TrainingInstance ID is null.");
+      return beanMapping.mapTo(trainingInstanceService.findById(id), TrainingInstanceDTO.class);
     } catch (ServiceLayerException ex) {
-      throw new FacadeLayerException(ex.getLocalizedMessage());
+      throw new FacadeLayerException(ex);
     }
   }
 
@@ -63,7 +59,7 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
     try {
       return beanMapping.mapToPageResultDTO(trainingInstanceService.findAll(predicate, pageable), TrainingInstanceDTO.class);
     } catch (ServiceLayerException ex) {
-      throw new FacadeLayerException(ex.getLocalizedMessage());
+      throw new FacadeLayerException(ex);
     }
   }
 
@@ -75,7 +71,7 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
       Objects.requireNonNull(trainingInstance);
       trainingInstanceService.update(trainingInstance);
     } catch (ServiceLayerException ex){
-      throw new FacadeLayerException(ex.getLocalizedMessage());
+      throw new FacadeLayerException(ex);
     }
   }
 
@@ -85,11 +81,9 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
     LOG.debug("create({})", trainingInstance);
     try{
       Objects.requireNonNull(trainingInstance);
-      Optional<TrainingInstance> tI = trainingInstanceService.create(trainingInstance);
-      TrainingInstance newTI = tI.orElseThrow(() -> new ServiceLayerException("Training instance not created"));
-      return beanMapping.mapTo(newTI, TrainingInstanceDTO.class);
-    } catch(NullPointerException | ServiceLayerException ex) {
-      throw new FacadeLayerException(ex.getLocalizedMessage());
+      return beanMapping.mapTo(trainingInstanceService.create(trainingInstance), TrainingInstanceDTO.class);
+    } catch(ServiceLayerException ex) {
+      throw new FacadeLayerException(ex);
     }
   }
 
@@ -100,7 +94,7 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
       Objects.requireNonNull(id);
       trainingInstanceService.delete(id);
     } catch(ServiceLayerException ex) {
-      throw new FacadeLayerException(ex.getLocalizedMessage());
+      throw new FacadeLayerException(ex);
     }
   }
 
@@ -111,7 +105,7 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
       char[] newPassword = trainingInstanceService.generatePassword();
       return newPassword;
     } catch (ServiceLayerException ex){
-      throw new FacadeLayerException(ex.getLocalizedMessage());
+      throw new FacadeLayerException(ex);
     }
   }
 }

@@ -251,7 +251,7 @@ public class TrainingDefinitionsRestControllerTest {
         mockMvc.perform(put("/training-definitions/{definitionId}/levels/{levelId}/swap-left", trainingDefinition1.getId(), gameLevel.getId()))
                 .andExpect(status().isNoContent());
     }
-
+/*
     @Test
     public void swapLeftWithCannotBeUpdatedException() throws Exception {
         willThrow(CannotBeUpdatedException.class).given(trainingDefinitionFacade).swapLeft(any(Long.class), any(Long.class));
@@ -260,7 +260,7 @@ public class TrainingDefinitionsRestControllerTest {
                 .andReturn().getResolvedException();
         assertEquals(ConflictException.class, exception.getClass());
     }
-
+*/
     @Test
     public void swapLeftWithFacadeLayerException() throws Exception {
         willThrow(FacadeLayerException.class).given(trainingDefinitionFacade).swapLeft(any(Long.class), any(Long.class));
@@ -275,7 +275,7 @@ public class TrainingDefinitionsRestControllerTest {
         mockMvc.perform(put("/training-definitions/{definitionId}/levels/{levelId}/swap-right", trainingDefinition1.getId(), gameLevel.getId()))
                 .andExpect(status().isNoContent());
     }
-
+/*
     @Test
     public void swapRightWithCannotBeUpdatedException() throws Exception {
         willThrow(CannotBeUpdatedException.class).given(trainingDefinitionFacade).swapRight(any(Long.class), any(Long.class));
@@ -284,7 +284,7 @@ public class TrainingDefinitionsRestControllerTest {
                 .andReturn().getResolvedException();
         assertEquals(ConflictException.class, exception.getClass());
     }
-
+*/
     @Test
     public void swapRightWithFacadeLayerException() throws Exception {
         willThrow(FacadeLayerException.class).given(trainingDefinitionFacade).swapRight(any(Long.class), any(Long.class));
@@ -299,7 +299,7 @@ public class TrainingDefinitionsRestControllerTest {
         mockMvc.perform(delete("/training-definitions/{id}", trainingDefinition1.getId()))
                 .andExpect(status().isOk());
     }
-
+/*
     @Test
     public void deleteTrainingDefinitionWithCannotBeDeletedException() throws Exception {
         willThrow(CannotBeDeletedException.class).given(trainingDefinitionFacade).delete(any(Long.class));
@@ -309,7 +309,7 @@ public class TrainingDefinitionsRestControllerTest {
 
         assertEquals(ConflictException.class, exception.getClass());
     }
-
+*/
     @Test
     public void deleteTrainingDefinitionWithFacadeLayerException() throws Exception {
         willThrow(FacadeLayerException.class).given(trainingDefinitionFacade).delete(any(Long.class));
@@ -324,7 +324,7 @@ public class TrainingDefinitionsRestControllerTest {
         mockMvc.perform(delete("/training-definitions/{definitionId}/levels/{levelId}", trainingDefinition1.getId(), gameLevel.getId()))
                 .andExpect(status().isNoContent());
     }
-
+/*
     @Test
     public void deleteLevelWithCannotBeUpdatedException() throws Exception {
         willThrow(CannotBeUpdatedException.class).given(trainingDefinitionFacade).deleteOneLevel(any(Long.class), any(Long.class));
@@ -333,7 +333,7 @@ public class TrainingDefinitionsRestControllerTest {
                 .andReturn().getResolvedException();
         assertEquals(ConflictException.class, exception.getClass());
     }
-
+*/
     @Test
     public void deleteLevelWithFacadeLayerException() throws Exception {
         willThrow(FacadeLayerException.class).given(trainingDefinitionFacade).deleteOneLevel(any(Long.class), any(Long.class));
@@ -362,7 +362,7 @@ public class TrainingDefinitionsRestControllerTest {
                 .andReturn().getResolvedException();
         assertEquals(ResourceNotFoundException.class, exception.getClass());
     }
-
+/*
     @Test
     public void updateGameLevelWithCannotBeUpdatedException() throws Exception {
         willThrow(CannotBeUpdatedException.class).given(trainingDefinitionFacade).updateGameLevel(any(Long.class), any(GameLevel .class));
@@ -374,7 +374,7 @@ public class TrainingDefinitionsRestControllerTest {
                 .andReturn().getResolvedException();
         assertEquals(ConflictException.class, exception.getClass());
     }
-
+*/
     @Test
     public void updateInfoLevel() throws Exception {
 
@@ -395,7 +395,7 @@ public class TrainingDefinitionsRestControllerTest {
                 .andReturn().getResolvedException();
         assertEquals(ResourceNotFoundException.class, exception.getClass());
     }
-
+/*
     @Test
     public void updateInfoLevelWithCannotBeUpdatedException() throws Exception {
         willThrow(CannotBeUpdatedException.class).given(trainingDefinitionFacade).updateInfoLevel(any(Long.class), any(InfoLevel .class));
@@ -406,7 +406,7 @@ public class TrainingDefinitionsRestControllerTest {
                 .andExpect(status().isConflict())
                 .andReturn().getResolvedException();
         assertEquals(ConflictException.class, exception.getClass());
-    }
+    }*/
 /*
     @Test
     public void updateAssessmentLevel() throws Exception {

@@ -75,7 +75,7 @@ public class TrainingInstanceServiceTest {
     public void getTrainingInstanceById() {
         given(trainingInstanceRepository.findById(trainingInstance1.getId())).willReturn(Optional.of(trainingInstance1));
 
-        TrainingInstance tI = trainingInstanceService.findById(trainingInstance1.getId()).get();
+        TrainingInstance tI = trainingInstanceService.findById(trainingInstance1.getId());
         deepEquals(trainingInstance1, tI);
 
         then(trainingInstanceRepository).should().findById(trainingInstance1.getId());
@@ -114,7 +114,7 @@ public class TrainingInstanceServiceTest {
     @Test
     public void createTrainingInstance(){
         given(trainingInstanceRepository.save(trainingInstance1)).willReturn(trainingInstance1);
-        TrainingInstance tI = trainingInstanceService.create(trainingInstance1).get();
+        TrainingInstance tI = trainingInstanceService.create(trainingInstance1);
         deepEquals(trainingInstance1, tI);
         then(trainingInstanceRepository).should().save(trainingInstance1);
     }

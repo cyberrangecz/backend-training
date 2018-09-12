@@ -1,9 +1,6 @@
 package cz.muni.ics.kypo.training.controllers;
 
 import cz.muni.ics.kypo.training.api.dto.*;
-import cz.muni.ics.kypo.training.exceptions.CannotBeClonedException;
-import cz.muni.ics.kypo.training.exceptions.CannotBeDeletedException;
-import cz.muni.ics.kypo.training.exceptions.CannotBeUpdatedException;
 import cz.muni.ics.kypo.training.mapping.BeanMapping;
 import cz.muni.ics.kypo.training.exceptions.ConflictException;
 import cz.muni.ics.kypo.training.exceptions.ResourceNotCreatedException;
@@ -170,8 +167,6 @@ public class TrainingDefinitionsRestController {
       return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     } catch (FacadeLayerException ex) {
       throw new ResourceNotModifiedException(ex.getLocalizedMessage());
-    } catch (CannotBeUpdatedException ex){
-      throw new ConflictException(ex.getLocalizedMessage());
     }
   }
 
@@ -193,8 +188,6 @@ public class TrainingDefinitionsRestController {
       return new ResponseEntity<>(trainingDefinitionDTO, HttpStatus.OK);
     } catch (FacadeLayerException ex) {
       throw new ResourceNotCreatedException(ex.getLocalizedMessage());
-    } catch (CannotBeClonedException ex){
-      throw new ConflictException(ex.getLocalizedMessage());
     }
   }
 
@@ -214,8 +207,6 @@ public class TrainingDefinitionsRestController {
       return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     } catch (FacadeLayerException ex) {
       throw new ResourceNotModifiedException(ex.getLocalizedMessage());
-    } catch (CannotBeUpdatedException ex) {
-      throw new ConflictException(ex.getLocalizedMessage());
     }
   }
 
@@ -235,8 +226,6 @@ public class TrainingDefinitionsRestController {
       return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     } catch (FacadeLayerException ex) {
       throw new ResourceNotModifiedException(ex.getLocalizedMessage());
-    } catch (CannotBeUpdatedException ex) {
-      throw new ConflictException(ex.getLocalizedMessage());
     }
   }
 
@@ -253,8 +242,6 @@ public class TrainingDefinitionsRestController {
     try {
       trainingDefinitionFacade.delete(id);
       return new ResponseEntity<>(HttpStatus.OK);
-    } catch (CannotBeDeletedException ex) {
-      throw new ConflictException(ex.getLocalizedMessage());
     } catch (FacadeLayerException ex) {
       throw new ResourceNotFoundException(ex.getLocalizedMessage());
     }
@@ -276,8 +263,6 @@ public class TrainingDefinitionsRestController {
       return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     } catch (FacadeLayerException ex) {
       throw new ResourceNotFoundException(ex.getLocalizedMessage());
-    } catch (CannotBeUpdatedException ex) {
-      throw new ConflictException(ex.getLocalizedMessage());
     }
   }
 
@@ -299,8 +284,6 @@ public class TrainingDefinitionsRestController {
       return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     } catch (FacadeLayerException ex) {
       throw new ResourceNotFoundException(ex.getLocalizedMessage());
-    } catch (CannotBeUpdatedException ex){
-      throw new ConflictException(ex.getLocalizedMessage());
     }
   }
 
@@ -322,8 +305,6 @@ public class TrainingDefinitionsRestController {
       return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     } catch (FacadeLayerException ex) {
       throw new ResourceNotFoundException(ex.getLocalizedMessage());
-    } catch (CannotBeUpdatedException ex){
-      throw new ConflictException(ex.getLocalizedMessage());
     }
   }
 
@@ -345,8 +326,6 @@ public class TrainingDefinitionsRestController {
       return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     } catch (FacadeLayerException ex) {
       throw new ResourceNotFoundException(ex.getLocalizedMessage());
-    } catch (CannotBeUpdatedException ex){
-      throw new ConflictException(ex.getLocalizedMessage());
     }
   }
 

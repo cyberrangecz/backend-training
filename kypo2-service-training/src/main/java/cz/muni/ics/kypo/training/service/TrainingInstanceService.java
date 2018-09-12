@@ -1,9 +1,5 @@
 package cz.muni.ics.kypo.training.service;
 
-import java.util.Optional;
-
-import cz.muni.ics.kypo.training.exceptions.CannotBeDeletedException;
-import cz.muni.ics.kypo.training.exceptions.CannotBeUpdatedException;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -24,8 +20,10 @@ public interface TrainingInstanceService {
    * 
    * @param id of a Training Instance that would be returned
    * @return specific Training Instance by id
+   * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND given training instance is not found.
+   *
    */
-  public Optional<TrainingInstance> findById(long id);
+  public TrainingInstance findById(long id) throws ServiceLayerException;
 
   /**
    * Find all Training Instances.
@@ -39,28 +37,28 @@ public interface TrainingInstanceService {
    * @param trainingInstance to be created
    * @return created instance
    */
-  public Optional<TrainingInstance> create(TrainingInstance trainingInstance);
+  public TrainingInstance create(TrainingInstance trainingInstance);
 
   /**
    * updates training instance
    * @param trainingInstance to be updated
-   * @throws CannotBeUpdatedException if starting date of instance is not in future
-   * @throws ServiceLayerException if instance is not found
+   * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND given training instance is not found.
+   *                                               CANNOT_BE_UPDATED cannot be updated for some reason.
    */
-  public void update(TrainingInstance trainingInstance) throws CannotBeUpdatedException, ServiceLayerException;
+  public void update(TrainingInstance trainingInstance) throws ServiceLayerException;
 
   /**
    * deletes training instance
    * @param id of training instance
-   * @throws CannotBeDeletedException if end date of instance is not in past
-   * @throws ServiceLayerException if instance is not found
+   * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND given training instance is not found.
+   *                                               CANNOT_BE_DELETED cannot be deleted for some reason.
    */
-  public void delete(Long id) throws CannotBeDeletedException, ServiceLayerException;
+  public void delete(Long id) throws ServiceLayerException;
 
   /**
    * Generates password for training instance
    * @return new password
-   * @throws ServiceLayerException if password already exists
+   * @throws ServiceLayerException with ErrorCode: PASSWORD_ALREADY_EXISTS given password already exists in DB.
    */
   public char[] generatePassword() throws ServiceLayerException;
 

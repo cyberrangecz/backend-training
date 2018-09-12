@@ -3,7 +3,6 @@ package cz.muni.ics.kypo.training.service;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.PathBuilder;
 import cz.muni.csirt.kypo.elasticsearch.service.audit.AuditService;
-import cz.muni.ics.kypo.training.exceptions.NoAvailableSandboxException;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.model.*;
 import cz.muni.ics.kypo.training.model.enums.TRState;
@@ -11,9 +10,7 @@ import cz.muni.ics.kypo.training.repository.AbstractLevelRepository;
 import cz.muni.ics.kypo.training.repository.ParticipantRefRepository;
 import cz.muni.ics.kypo.training.repository.TrainingInstanceRepository;
 import cz.muni.ics.kypo.training.repository.TrainingRunRepository;
-import cz.muni.ics.kypo.training.service.TrainingRunService;
 import cz.muni.ics.kypo.training.utils.SandboxInfo;
-import org.hibernate.HibernateException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -195,7 +192,7 @@ public class TrainingRunServiceTest {
 
     @Test
     public void accessTrainingRunWithNoAvailableSandbox() {
-        thrown.expect(NoAvailableSandboxException.class);
+        thrown.expect(ServiceLayerException.class);
         thrown.expectMessage("There is no available sandbox, wait a minute and try again.");
         mockSpringSecurityContextForGet();
         given(trainingInstanceRepository.findAll()).willReturn(Arrays.asList(trainingInstance));

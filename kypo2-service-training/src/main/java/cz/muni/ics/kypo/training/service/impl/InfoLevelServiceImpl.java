@@ -39,21 +39,12 @@ public class InfoLevelServiceImpl implements InfoLevelService {
   @Override
   public Optional<InfoLevel> findById(long id) {
     LOG.debug("findById({})", id);
-    try {
       return infoRepository.findById(id);
-    } catch (HibernateException ex) {
-      throw new ServiceLayerException(ex.getLocalizedMessage());
-    }
   }
 
   @Override
   public Page<InfoLevel> findAll(Predicate predicate, Pageable pageable) {
     LOG.debug("findAll({},{})", predicate, pageable);
-    try {
       return infoRepository.findAll(predicate, pageable);
-    } catch (HibernateException ex) {
-      System.out.println("Error message is: " + ex);
-      throw new ServiceLayerException(ex.getLocalizedMessage());
-    }
   }
 }

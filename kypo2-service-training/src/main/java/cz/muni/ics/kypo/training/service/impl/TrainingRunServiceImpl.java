@@ -5,8 +5,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import com.google.gson.JsonObject;
-import cz.muni.csirt.kypo.elasticsearch.service.audit.AuditService;
-import cz.muni.ics.kypo.training.exceptions.NoAvailableSandboxException;
+import cz.muni.ics.kypo.training.exceptions.ErrorCode;
 import cz.muni.ics.kypo.training.model.*;
 import cz.muni.ics.kypo.training.model.enums.TRState;
 import cz.muni.ics.kypo.training.repository.*;
@@ -19,7 +18,6 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.*;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.stereotype.Service;
@@ -67,12 +65,11 @@ public class TrainingRunServiceImpl implements TrainingRunService {
   public TrainingRun findById(Long id) {
     LOG.debug("findById({})", id);
     Objects.requireNonNull(id);
-    return trainingRunRepository.findById(id).orElseThrow(() -> new ServiceLayerException("Training Run with id " + id + " not found."));
+    return trainingRunRepository.findById(id).orElseThrow(() -> new ServiceLayerException("Training Run with id: " + id + " not found.", ErrorCode.RESOURCE_NOT_FOUND));
 
   }
 
   @Override
-  @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.model.enums.RoleType).ADMINISTRATOR)")
   public Page<TrainingRun> findAll(Predicate predicate, Pageable pageable) {
     LOG.debug("findAll({},{})", predicate, pageable);
     return trainingRunRepository.findAll(predicate, pageable);
@@ -101,10 +98,10 @@ public class TrainingRunServiceImpl implements TrainingRunService {
     TrainingRun trainingRun = findById(trainingRunId);
     Long nextLevelId = trainingRun.getCurrentLevel().getNextLevel();
     if(nextLevelId == null) {
-      throw new ServiceLayerException("There is no next level.");
+      throw new ServiceLayerException("There is no next level.", ErrorCode.NO_NEXT_LEVEL);
     }
     AbstractLevel abstractLevel = abstractLevelRepository.findById(nextLevelId).orElseThrow(() ->
-          new ServiceLayerException("Level with id " + nextLevelId + " not found."));
+          new ServiceLayerException("Level with id: " + nextLevelId + " not found.", ErrorCode.RESOURCE_NOT_FOUND));
     trainingRun.setCurrentLevel(abstractLevel);
     trainingRunRepository.save(trainingRun);
     //event log LevelStarted
@@ -120,7 +117,6 @@ public class TrainingRunServiceImpl implements TrainingRunService {
   }
 
   @Override
-  @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.model.enums.RoleType).ADMINISTRATOR)")
   public Page<TrainingRun> findAllByTrainingDefinition(Long trainingDefinitionId, Pageable pageable) {
     LOG.debug("findAllByTrainingDefinition({},{})", trainingDefinitionId, pageable);
     Assert.notNull(trainingDefinitionId, "Input training definition id must not be null.");
@@ -128,7 +124,6 @@ public class TrainingRunServiceImpl implements TrainingRunService {
   }
 
   @Override
-  @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.model.enums.RoleType).ORGANIZER)")
   public Page<TrainingRun> findAllByTrainingInstance(Long trainingInstanceId, Pageable pageable) {
     LOG.debug("findAllByTrainingInstance({},{})", trainingInstanceId);
     Assert.notNull(trainingInstanceId, "Input training instance id must not be null.");
@@ -141,7 +136,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
     List<AbstractLevel> levels = new ArrayList<>();
     AbstractLevel al;
     do {
-      al = abstractLevelRepository.findById(levelId).orElseThrow(() -> new ServiceLayerException("Level with id: " + levelId + " not found."));
+      al = abstractLevelRepository.findById(levelId).orElseThrow(() -> new ServiceLayerException("Level with id: " + levelId + " not found.", ErrorCode.RESOURCE_NOT_FOUND));
       levels.add(al);
     } while (al.getNextLevel() != null);
     return levels;
@@ -177,11 +172,11 @@ public class TrainingRunServiceImpl implements TrainingRunService {
           create(getNewTrainingRun(al,getSubOfLoggedInUser(), ti, TRState.NEW, LocalDateTime.now(),ti.getEndTime(), sandboxInstanceRef));
           return al;
         } else {
-          throw new NoAvailableSandboxException("There is no available sandbox, wait a minute and try again.");
+          throw new ServiceLayerException("There is no available sandbox, wait a minute and try again.", ErrorCode.NO_AVAILABLE_SANDBOX);
         }
       }
     }
-    throw new ServiceLayerException("There is no training instance with password " + password + ".");
+    throw new ServiceLayerException("There is no training instance with password " + password + ".", ErrorCode.WRONG_PASSWORD);
   }
 
   private TrainingRun getNewTrainingRun(AbstractLevel currentLevel, String participantRefLogin, TrainingInstance trainingInstance,
@@ -209,12 +204,12 @@ public class TrainingRunServiceImpl implements TrainingRunService {
     String listOfIds = idsOfNotAllocatedSandboxes.stream().map(Object::toString).collect(Collectors.joining(","));
     ResponseEntity<List<SandboxInfo>> response = restTemplate.exchange(serverUrl + SANDBOX_INFO_ENDPOINT, HttpMethod.GET, new HttpEntity<>(httpHeaders), new ParameterizedTypeReference<List<SandboxInfo>>(){}, listOfIds);
     if (response.getStatusCode().isError()) {
-      throw new ServiceLayerException();
+      throw new ServiceLayerException("Some error occured during getting info about sandboxes.", ErrorCode.CANNOT_REACH_RESOURCE );
     }
     List<SandboxInfo> sandboxInfoList = response.getBody();
     sandboxInfoList.removeIf(s -> !s.getState().equals("READY"));
     if (sandboxInfoList.isEmpty()) {
-      throw new NoAvailableSandboxException("There is no available sandbox, wait a minute and try again.");
+      throw new ServiceLayerException("There is no available sandbox, wait a minute and try again.", ErrorCode.NO_AVAILABLE_SANDBOX);
     } else {
       sandboxInstancePool.removeIf(sandboxInstanceRef -> sandboxInstanceRef.getSandboxInstanceRef() != sandboxInfoList.get(0).getId());
       return sandboxInstancePool.iterator().next();
@@ -237,20 +232,20 @@ public class TrainingRunServiceImpl implements TrainingRunService {
         return false;
       }
     } else {
-      throw new ServiceLayerException("Current level is not game level and does not have flag.");
+      throw new ServiceLayerException("Current level is not game level and does not have flag.", ErrorCode.WRONG_LEVEL_TYPE);
     }
   }
 
   @Override
   public String getSolution(Long trainingRunId) {
     LOG.debug("getSolution({})", trainingRunId);
-    Assert.notNull(trainingRunId, "Input trainign run id must not be null.");
+    Assert.notNull(trainingRunId, "Input training run id must not be null.");
     AbstractLevel level = findById(trainingRunId).getCurrentLevel();
     if (level instanceof GameLevel) {
       //event getSolution
       return ((GameLevel) level).getSolution();
     } else {
-      throw new ServiceLayerException("Current level is not game level and does not have solution.");
+      throw new ServiceLayerException("Current level is not game level and does not have solution.", ErrorCode.WRONG_LEVEL_TYPE);
     }
   }
 
@@ -267,9 +262,9 @@ public class TrainingRunServiceImpl implements TrainingRunService {
           return hint;
         }
       }
-      throw new ServiceLayerException("Hint with id " + hintId + " not found.");
+      throw new ServiceLayerException("Hint with id " + hintId + " not found.", ErrorCode.RESOURCE_NOT_FOUND);
     } else {
-      throw new ServiceLayerException("Current level is not game level and does not contain hints.");
+      throw new ServiceLayerException("Current level is not game level and does not contain hints.", ErrorCode.WRONG_LEVEL_TYPE);
     }
   }
 
@@ -287,7 +282,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
         abstractLevel = abstractLevelRepository.findById(idOfFirstLevel).get();
       }
     }
-    throw new ServiceLayerException("Wrong parameters entered.");
+    throw new IllegalArgumentException("Wrong parameters entered.");
 
   }
 

@@ -9,6 +9,7 @@ import cz.muni.ics.kypo.training.api.dto.InfoLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.TrainingDefinitionDTO;
 import cz.muni.ics.kypo.training.config.FacadeTestConfiguration;
 import cz.muni.ics.kypo.training.exception.FacadeLayerException;
+import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.model.AssessmentLevel;
 import cz.muni.ics.kypo.training.model.GameLevel;
 import cz.muni.ics.kypo.training.model.InfoLevel;
@@ -108,7 +109,7 @@ public class TrainingDefinitionFacadeTest {
 
     @Test
     public void findTrainingDefinitionById() {
-        given(trainingDefinitionService.findById(trainingDefinition1.getId())).willReturn(Optional.of(trainingDefinition1));
+        given(trainingDefinitionService.findById(trainingDefinition1.getId())).willReturn(trainingDefinition1);
 
         TrainingDefinitionDTO trainingDefinitionDTO = trainingDefinitionFacade.findById(trainingDefinition1.getId());
         deepEquals(trainingDefinition1, trainingDefinitionDTO);
@@ -119,7 +120,7 @@ public class TrainingDefinitionFacadeTest {
     @Test
     public void findNonexistentTrainingDefinitionById() {
         Long id = 6L;
-        given(trainingDefinitionService.findById(id)).willReturn(Optional.empty());
+        willThrow(ServiceLayerException.class).given(trainingDefinitionService.findById(id));
         thrown.expect(FacadeLayerException.class);
         trainingDefinitionFacade.findById(id);
     }
@@ -162,7 +163,7 @@ public class TrainingDefinitionFacadeTest {
         clonedDefinition.setState(TDState.UNRELEASED);
         clonedDefinition.setTitle("Clone of " + trainingDefinition1.getTitle());
 
-        given(trainingDefinitionService.clone(trainingDefinition1.getId())).willReturn(Optional.of(clonedDefinition));
+        given(trainingDefinitionService.clone(trainingDefinition1.getId())).willReturn(clonedDefinition);
 
         TrainingDefinitionDTO newClone = trainingDefinitionFacade.clone(trainingDefinition1.getId());
         assertEquals("Clone of " + trainingDefinition1.getTitle(), newClone.getTitle());
@@ -304,7 +305,7 @@ public class TrainingDefinitionFacadeTest {
         InfoLevel newInfoLevel = new InfoLevel();
         newInfoLevel.setId(5L);
         newInfoLevel.setTitle("test");
-        given(trainingDefinitionService.createInfoLevel(unreleasedDefinition.getId(), newInfoLevel)).willReturn(Optional.of(newInfoLevel));
+        given(trainingDefinitionService.createInfoLevel(unreleasedDefinition.getId(), newInfoLevel)).willReturn(newInfoLevel);
 
         InfoLevelDTO createdLevel = trainingDefinitionFacade.createInfoLevel(unreleasedDefinition.getId(), newInfoLevel);
 
@@ -331,7 +332,7 @@ public class TrainingDefinitionFacadeTest {
         GameLevel newGameLevel = new GameLevel();
         newGameLevel.setId(5L);
         newGameLevel.setTitle("test");
-        given(trainingDefinitionService.createGameLevel(unreleasedDefinition.getId(), newGameLevel)).willReturn(Optional.of(newGameLevel));
+        given(trainingDefinitionService.createGameLevel(unreleasedDefinition.getId(), newGameLevel)).willReturn(newGameLevel);
 
         GameLevelDTO createdLevel = trainingDefinitionFacade.createGameLevel(unreleasedDefinition.getId(), newGameLevel);
 
@@ -357,7 +358,7 @@ public class TrainingDefinitionFacadeTest {
         AssessmentLevel newAssessmentLevel = new AssessmentLevel();
         newAssessmentLevel.setId(5L);
         newAssessmentLevel.setTitle("test");
-        given(trainingDefinitionService.createAssessmentLevel(unreleasedDefinition.getId(), newAssessmentLevel)).willReturn(Optional.of(newAssessmentLevel));
+        given(trainingDefinitionService.createAssessmentLevel(unreleasedDefinition.getId(), newAssessmentLevel)).willReturn(newAssessmentLevel);
 
         AssessmentLevelDTO createdLevel = trainingDefinitionFacade.createAssessmentLevel(unreleasedDefinition.getId(), newAssessmentLevel);
 
@@ -380,7 +381,7 @@ public class TrainingDefinitionFacadeTest {
 
     @Test
     public void createTrainingDefinition() {
-        given(trainingDefinitionService.create(trainingDefinition1)).willReturn(Optional.of(trainingDefinition1));
+        given(trainingDefinitionService.create(trainingDefinition1)).willReturn(trainingDefinition1);
         TrainingDefinitionDTO trainingDefinitionDTO= trainingDefinitionFacade.create(trainingDefinition1);
         deepEquals(trainingDefinition1, trainingDefinitionDTO);
         then(trainingDefinitionService).should().create(trainingDefinition1);

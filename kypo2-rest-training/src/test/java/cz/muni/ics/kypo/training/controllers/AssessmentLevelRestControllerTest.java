@@ -55,7 +55,7 @@ import static org.mockito.BDDMockito.given;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = AssessmentLevelsRestController.class)
-@ComponentScan(basePackages = "cz.muni.ics.kypo")
+@ComponentScan(basePackages = "cz.muni.ics.kypo.training")
 public class AssessmentLevelRestControllerTest {
 
     @Autowired

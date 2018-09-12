@@ -2,17 +2,10 @@ package cz.muni.ics.kypo.training.service;
 
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.PathBuilder;
-import cz.muni.ics.kypo.training.exceptions.CannotBeClonedException;
-import cz.muni.ics.kypo.training.exceptions.CannotBeDeletedException;
-import cz.muni.ics.kypo.training.exceptions.CannotBeUpdatedException;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.model.*;
 import cz.muni.ics.kypo.training.model.enums.TDState;
 import cz.muni.ics.kypo.training.repository.*;
-import cz.muni.ics.kypo.training.service.TrainingDefinitionService;
-import jdk.nashorn.internal.runtime.regexp.joni.constants.OPCode;
-import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.hibernate.HibernateException;
 import org.junit.After;
 import org.junit.Before;
@@ -34,14 +27,11 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.web.client.RestTemplate;
 
-import javax.validation.constraints.Null;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.BDDMockito.willThrow;
@@ -163,7 +153,7 @@ public class TrainingDefinitionServiceTest {
     public void getTrainingDefinitionById() {
         given(trainingDefinitionRepository.findById(trainingDefinition1.getId())).willReturn(Optional.of(trainingDefinition1));
 
-        TrainingDefinition tD = trainingDefinitionService.findById(trainingDefinition1.getId()).get();
+        TrainingDefinition tD = trainingDefinitionService.findById(trainingDefinition1.getId());
         deepEquals(tD, trainingDefinition1);
 
         then(trainingDefinitionRepository).should().findById(trainingDefinition1.getId());
@@ -210,12 +200,12 @@ public class TrainingDefinitionServiceTest {
         given(trainingDefinitionRepository.findById(trainingDefinition1.getId())).willReturn(Optional.of(trainingDefinition1));
         given(trainingDefinitionRepository.save(any(TrainingDefinition.class))).willReturn(tDcloned);
 
-        Optional<TrainingDefinition> optionalNewClone = trainingDefinitionService.clone(trainingDefinition1.getId());
-        assertTrue(optionalNewClone.isPresent());
-        assertEquals("Clone of "+ trainingDefinition1.getTitle(), optionalNewClone.get().getTitle());
-        assertNotEquals(trainingDefinition1.getId(), optionalNewClone.get().getId());
-        assertNotEquals(trainingDefinition1.getState(), optionalNewClone.get().getState());
-        assertEquals(trainingDefinition1.getDescription(), optionalNewClone.get().getDescription());
+        TrainingDefinition optionalNewClone = trainingDefinitionService.clone(trainingDefinition1.getId());
+        assertNotNull(optionalNewClone);
+        assertEquals("Clone of "+ trainingDefinition1.getTitle(), optionalNewClone.getTitle());
+        assertNotEquals(trainingDefinition1.getId(), optionalNewClone.getId());
+        assertNotEquals(trainingDefinition1.getState(), optionalNewClone.getState());
+        assertEquals(trainingDefinition1.getDescription(), optionalNewClone.getDescription());
 
         then(trainingDefinitionRepository).should().findById(trainingDefinition1.getId());
         then(trainingDefinitionRepository).should().save(any(TrainingDefinition.class));
@@ -225,8 +215,8 @@ public class TrainingDefinitionServiceTest {
     public void cloneTrainingDefinitionWithCannotBeClonedException() {
         given(trainingDefinitionRepository.findById(unreleasedDefinition.getId())).willReturn(Optional.of(unreleasedDefinition));
 
-        thrown.expect(CannotBeClonedException.class);
-        thrown.expectMessage("Cant copy unreleased training definition");
+        thrown.expect(ServiceLayerException.class);
+        thrown.expectMessage("Cannot copy unreleased training definition");
         trainingDefinitionService.clone(unreleasedDefinition.getId());
 
         then(trainingDefinitionRepository).should().findById(unreleasedDefinition.getId());
@@ -252,7 +242,7 @@ public class TrainingDefinitionServiceTest {
     public void updateTrainingDefinitionWithCannotBeUpdatedException(){
         given(trainingDefinitionRepository.findById(releasedDefinition.getId())).willReturn(Optional.of(releasedDefinition));
 
-        thrown.expect(CannotBeUpdatedException.class);
+        thrown.expect(ServiceLayerException.class);
         thrown.expectMessage("Cant edit released or archived training definition");
         trainingDefinitionService.update(releasedDefinition);
     }
@@ -284,7 +274,7 @@ public class TrainingDefinitionServiceTest {
     @Test
     public void swapLeftWithCannotBeUpdatedException() {
         given(trainingDefinitionRepository.findById(releasedDefinition.getId())).willReturn(Optional.of(releasedDefinition));
-        thrown.expect(CannotBeUpdatedException.class);
+        thrown.expect(ServiceLayerException.class);
         thrown.expectMessage("Cant edit released or archived training definition");
 
         trainingDefinitionService.swapLeft(releasedDefinition.getId(), any(Long.class));
@@ -333,7 +323,7 @@ public class TrainingDefinitionServiceTest {
     @Test
     public void swapRightWithCannotBeUpdatedException() {
         given(trainingDefinitionRepository.findById(releasedDefinition.getId())).willReturn(Optional.of(releasedDefinition));
-        thrown.expect(CannotBeUpdatedException.class);
+        thrown.expect(ServiceLayerException.class);
         thrown.expectMessage("Cant edit released or archived training definition");
 
         trainingDefinitionService.swapRight(releasedDefinition.getId(), any(Long.class));
@@ -383,7 +373,7 @@ public class TrainingDefinitionServiceTest {
     @Test
     public void deleteWithCannotBeDeletedException() {
         given(trainingDefinitionRepository.findById(releasedDefinition.getId())).willReturn(Optional.of(releasedDefinition));
-        thrown.expect(CannotBeDeletedException.class);
+        thrown.expect(ServiceLayerException.class);
         thrown.expectMessage("Cant delete released training definition");
 
         trainingDefinitionService.delete(releasedDefinition.getId());
@@ -427,7 +417,7 @@ public class TrainingDefinitionServiceTest {
     @Test
     public void deleteOneLevelWithCannotBeUpdatedException() {
         given(trainingDefinitionRepository.findById(releasedDefinition.getId())).willReturn(Optional.of(releasedDefinition));
-        thrown.expect(CannotBeUpdatedException.class);
+        thrown.expect(ServiceLayerException.class);
         thrown.expectMessage("Cant edit released or archived training definition");
 
         trainingDefinitionService.deleteOneLevel(releasedDefinition.getId(),any(Long.class));
@@ -463,7 +453,7 @@ public class TrainingDefinitionServiceTest {
     @Test
     public void updateAssessmentLevelWithCannotBeUpdatedException(){
         given(trainingDefinitionRepository.findById(releasedDefinition.getId())).willReturn(Optional.of(releasedDefinition));
-        thrown.expect(CannotBeUpdatedException.class);
+        thrown.expect(ServiceLayerException.class);
         thrown.expectMessage("Cant edit released or archived training definition");
 
         trainingDefinitionService.updateAssessmentLevel(releasedDefinition.getId(), any(AssessmentLevel.class));
@@ -478,7 +468,7 @@ public class TrainingDefinitionServiceTest {
         given(abstractLevelRepository.findById(level2.getId())).willReturn(Optional.of(level2));
         given(abstractLevelRepository.findById(level3.getId())).willReturn(Optional.of(level3));
         given(trainingDefinitionRepository.findById(unreleasedDefinition.getId())).willReturn(Optional.of(unreleasedDefinition));
-        thrown.expect(CannotBeUpdatedException.class);
+        thrown.expect(ServiceLayerException.class);
         thrown.expectMessage("Level was not found in definition");
 
         trainingDefinitionService.updateAssessmentLevel(unreleasedDefinition.getId(), level);
@@ -513,7 +503,7 @@ public class TrainingDefinitionServiceTest {
     @Test
     public void updateGameLevelWithCannotBeUpdatedException(){
         given(trainingDefinitionRepository.findById(releasedDefinition.getId())).willReturn(Optional.of(releasedDefinition));
-        thrown.expect(CannotBeUpdatedException.class);
+        thrown.expect(ServiceLayerException.class);
         thrown.expectMessage("Cant edit released or archived training definition");
 
         trainingDefinitionService.updateGameLevel(releasedDefinition.getId(), any(GameLevel.class));
@@ -527,7 +517,7 @@ public class TrainingDefinitionServiceTest {
         given(abstractLevelRepository.findById(infoLevel.getId())).willReturn(Optional.of(infoLevel));
         given(abstractLevelRepository.findById(gameLevel.getId())).willReturn(Optional.of(gameLevel));
         given(trainingDefinitionRepository.findById(trainingDefinition2.getId())).willReturn(Optional.of(trainingDefinition2));
-        thrown.expect(CannotBeUpdatedException.class);
+        thrown.expect(ServiceLayerException.class);
         thrown.expectMessage("Level was not found in definition");
 
         trainingDefinitionService.updateGameLevel(trainingDefinition2.getId(), level);
@@ -557,7 +547,7 @@ public class TrainingDefinitionServiceTest {
     @Test
     public void updateInfoLevelWithCannotBeUpdatedException(){
         given(trainingDefinitionRepository.findById(releasedDefinition.getId())).willReturn(Optional.of(releasedDefinition));
-        thrown.expect(CannotBeUpdatedException.class);
+        thrown.expect(ServiceLayerException.class);
         thrown.expectMessage("Cant edit released or archived training definition");
 
         trainingDefinitionService.updateInfoLevel(releasedDefinition.getId(), any(InfoLevel.class));
@@ -571,7 +561,7 @@ public class TrainingDefinitionServiceTest {
         given(abstractLevelRepository.findById(infoLevel.getId())).willReturn(Optional.of(infoLevel));
         given(abstractLevelRepository.findById(gameLevel.getId())).willReturn(Optional.of(gameLevel));
         given(trainingDefinitionRepository.findById(trainingDefinition2.getId())).willReturn(Optional.of(trainingDefinition2));
-        thrown.expect(CannotBeUpdatedException.class);
+        thrown.expect(ServiceLayerException.class);
         thrown.expectMessage("Level was not found in definition");
 
         trainingDefinitionService.updateInfoLevel(trainingDefinition2.getId(), level);
@@ -596,14 +586,13 @@ public class TrainingDefinitionServiceTest {
         given(abstractLevelRepository.findById(gameLevel.getId())).willReturn(Optional.of(gameLevel));
         given(abstractLevelRepository.findById(infoLevel.getId())).willReturn(Optional.of(infoLevel));
         given(gameLevelRepository.save(newGameLevel)).willReturn(newGameLevel);
+        GameLevel createdLevel = trainingDefinitionService.createGameLevel(trainingDefinition2.getId(), newGameLevel);
 
-        Optional<GameLevel> createdLevel = trainingDefinitionService.createGameLevel(trainingDefinition2.getId(), newGameLevel);
-
-        assertTrue(createdLevel.isPresent());
-        assertEquals(newGameLevel.getTitle(), createdLevel.get().getTitle());
-        assertEquals(newGameLevel.getMaxScore(), createdLevel.get().getMaxScore());
-        assertEquals(newGameLevel.getId(), createdLevel.get().getId());
-        assertEquals(gameLevel.getNextLevel(), createdLevel.get().getId());
+        assertNotNull(createdLevel);
+        assertEquals(newGameLevel.getTitle(), createdLevel.getTitle());
+        assertEquals(newGameLevel.getMaxScore(), createdLevel.getMaxScore());
+        assertEquals(newGameLevel.getId(), createdLevel.getId());
+        assertEquals(gameLevel.getNextLevel(), createdLevel.getId());
 
         then(gameLevelRepository).should().save(newGameLevel);
         then(abstractLevelRepository).should(times(2)).findById(any(Long.class));
@@ -615,13 +604,13 @@ public class TrainingDefinitionServiceTest {
         given(trainingDefinitionRepository.findById(definitionWithoutLevels.getId())).willReturn(Optional.of(definitionWithoutLevels));
         given(gameLevelRepository.save(newGameLevel)).willReturn(newGameLevel);
 
-        Optional<GameLevel> createdLevel = trainingDefinitionService.createGameLevel(definitionWithoutLevels.getId(), newGameLevel);
+        GameLevel createdLevel = trainingDefinitionService.createGameLevel(definitionWithoutLevels.getId(), newGameLevel);
 
-        assertTrue(createdLevel.isPresent());
-        assertEquals(newGameLevel.getTitle(), createdLevel.get().getTitle());
-        assertEquals(newGameLevel.getMaxScore(), createdLevel.get().getMaxScore());
-        assertEquals(newGameLevel.getId(), createdLevel.get().getId());
-        assertEquals(definitionWithoutLevels.getStartingLevel(), createdLevel.get().getId());
+        assertNotNull(createdLevel);
+        assertEquals(newGameLevel.getTitle(), createdLevel.getTitle());
+        assertEquals(newGameLevel.getMaxScore(), createdLevel.getMaxScore());
+        assertEquals(newGameLevel.getId(), createdLevel.getId());
+        assertEquals(definitionWithoutLevels.getStartingLevel(), createdLevel.getId());
 
         then(gameLevelRepository).should().save(newGameLevel);
         then(trainingDefinitionRepository).should(times(2)).findById(definitionWithoutLevels.getId());
@@ -631,7 +620,7 @@ public class TrainingDefinitionServiceTest {
     @Test
     public void createGameLevelWithCannotBeUpdatedException() {
         given(trainingDefinitionRepository.findById(releasedDefinition.getId())).willReturn(Optional.of(releasedDefinition));
-        thrown.expect(CannotBeUpdatedException.class);
+        thrown.expect(ServiceLayerException.class);
         thrown.expectMessage("Cant create level in released or archived training definition");
 
         trainingDefinitionService.createGameLevel(releasedDefinition.getId(), any(GameLevel.class));
@@ -660,13 +649,13 @@ public class TrainingDefinitionServiceTest {
         given(abstractLevelRepository.findById(infoLevel.getId())).willReturn(Optional.of(infoLevel));
         given(infoLevelRepository.save(newInfoLevel)).willReturn(newInfoLevel);
 
-        Optional<InfoLevel> createdLevel = trainingDefinitionService.createInfoLevel(trainingDefinition2.getId(), newInfoLevel);
+        InfoLevel createdLevel = trainingDefinitionService.createInfoLevel(trainingDefinition2.getId(), newInfoLevel);
 
-        assertTrue(createdLevel.isPresent());
-        assertEquals(newInfoLevel.getTitle(), createdLevel.get().getTitle());
-        assertEquals(newInfoLevel.getMaxScore(), createdLevel.get().getMaxScore());
-        assertEquals(newInfoLevel.getId(), createdLevel.get().getId());
-        assertEquals(gameLevel.getNextLevel(), createdLevel.get().getId());
+        assertNotNull(createdLevel);
+        assertEquals(newInfoLevel.getTitle(), createdLevel.getTitle());
+        assertEquals(newInfoLevel.getMaxScore(), createdLevel.getMaxScore());
+        assertEquals(newInfoLevel.getId(), createdLevel.getId());
+        assertEquals(gameLevel.getNextLevel(), createdLevel.getId());
 
         then(infoLevelRepository).should().save(newInfoLevel);
         then(abstractLevelRepository).should(times(2)).findById(any(Long.class));
@@ -678,13 +667,13 @@ public class TrainingDefinitionServiceTest {
         given(trainingDefinitionRepository.findById(definitionWithoutLevels.getId())).willReturn(Optional.of(definitionWithoutLevels));
         given(infoLevelRepository.save(newInfoLevel)).willReturn(newInfoLevel);
 
-        Optional<InfoLevel> createdLevel = trainingDefinitionService.createInfoLevel(definitionWithoutLevels.getId(), newInfoLevel);
+        InfoLevel createdLevel = trainingDefinitionService.createInfoLevel(definitionWithoutLevels.getId(), newInfoLevel);
 
-        assertTrue(createdLevel.isPresent());
-        assertEquals(newInfoLevel.getTitle(), createdLevel.get().getTitle());
-        assertEquals(newInfoLevel.getMaxScore(), createdLevel.get().getMaxScore());
-        assertEquals(newInfoLevel.getId(), createdLevel.get().getId());
-        assertEquals(definitionWithoutLevels.getStartingLevel(), createdLevel.get().getId());
+        assertNotNull(createdLevel);
+        assertEquals(newInfoLevel.getTitle(), createdLevel.getTitle());
+        assertEquals(newInfoLevel.getMaxScore(), createdLevel.getMaxScore());
+        assertEquals(newInfoLevel.getId(), createdLevel.getId());
+        assertEquals(definitionWithoutLevels.getStartingLevel(), createdLevel.getId());
 
         then(infoLevelRepository).should().save(newInfoLevel);
         then(trainingDefinitionRepository).should(times(2)).findById(definitionWithoutLevels.getId());
@@ -694,7 +683,7 @@ public class TrainingDefinitionServiceTest {
     @Test
     public void createInfoLevelWithCannotBeUpdatedException() {
         given(trainingDefinitionRepository.findById(releasedDefinition.getId())).willReturn(Optional.of(releasedDefinition));
-        thrown.expect(CannotBeUpdatedException.class);
+        thrown.expect(ServiceLayerException.class);
         thrown.expectMessage("Cant create level in released or archived training definition");
 
         trainingDefinitionService.createInfoLevel(releasedDefinition.getId(), any(InfoLevel.class));
@@ -723,13 +712,13 @@ public class TrainingDefinitionServiceTest {
         given(abstractLevelRepository.findById(infoLevel.getId())).willReturn(Optional.of(infoLevel));
         given(assessmentLevelRepository.save(newAssessmentLevel)).willReturn(newAssessmentLevel);
 
-        Optional<AssessmentLevel> createdLevel = trainingDefinitionService.createAssessmentLevel(trainingDefinition2.getId(), newAssessmentLevel);
+        AssessmentLevel createdLevel = trainingDefinitionService.createAssessmentLevel(trainingDefinition2.getId(), newAssessmentLevel);
 
-        assertTrue(createdLevel.isPresent());
-        assertEquals(newAssessmentLevel.getTitle(), createdLevel.get().getTitle());
-        assertEquals(newAssessmentLevel.getMaxScore(), createdLevel.get().getMaxScore());
-        assertEquals(newAssessmentLevel.getId(), createdLevel.get().getId());
-        assertEquals(gameLevel.getNextLevel(), createdLevel.get().getId());
+        assertNotNull(createdLevel);
+        assertEquals(newAssessmentLevel.getTitle(), createdLevel.getTitle());
+        assertEquals(newAssessmentLevel.getMaxScore(), createdLevel.getMaxScore());
+        assertEquals(newAssessmentLevel.getId(), createdLevel.getId());
+        assertEquals(gameLevel.getNextLevel(), createdLevel.getId());
 
         then(assessmentLevelRepository).should().save(newAssessmentLevel);
         then(abstractLevelRepository).should(times(2)).findById(any(Long.class));
@@ -741,13 +730,13 @@ public class TrainingDefinitionServiceTest {
         given(trainingDefinitionRepository.findById(definitionWithoutLevels.getId())).willReturn(Optional.of(definitionWithoutLevels));
         given(assessmentLevelRepository.save(newAssessmentLevel)).willReturn(newAssessmentLevel);
 
-        Optional<AssessmentLevel> createdLevel = trainingDefinitionService.createAssessmentLevel(definitionWithoutLevels.getId(), newAssessmentLevel);
+        AssessmentLevel createdLevel = trainingDefinitionService.createAssessmentLevel(definitionWithoutLevels.getId(), newAssessmentLevel);
 
-        assertTrue(createdLevel.isPresent());
-        assertEquals(newAssessmentLevel.getTitle(), createdLevel.get().getTitle());
-        assertEquals(newAssessmentLevel.getMaxScore(), createdLevel.get().getMaxScore());
-        assertEquals(newAssessmentLevel.getId(), createdLevel.get().getId());
-        assertEquals(definitionWithoutLevels.getStartingLevel(), createdLevel.get().getId());
+        assertNotNull(createdLevel);
+        assertEquals(newAssessmentLevel.getTitle(), createdLevel.getTitle());
+        assertEquals(newAssessmentLevel.getMaxScore(), createdLevel.getMaxScore());
+        assertEquals(newAssessmentLevel.getId(), createdLevel.getId());
+        assertEquals(definitionWithoutLevels.getStartingLevel(), createdLevel.getId());
 
         then(assessmentLevelRepository).should().save(newAssessmentLevel);
         then(trainingDefinitionRepository).should(times(2)).findById(definitionWithoutLevels.getId());
@@ -757,7 +746,7 @@ public class TrainingDefinitionServiceTest {
     @Test
     public void createAssessmentLevelWithCannotBeUpdatedException() {
         given(trainingDefinitionRepository.findById(releasedDefinition.getId())).willReturn(Optional.of(releasedDefinition));
-        thrown.expect(CannotBeUpdatedException.class);
+        thrown.expect(ServiceLayerException.class);
         thrown.expectMessage("Cant create level in released or archived training definition");
 
         trainingDefinitionService.createAssessmentLevel(releasedDefinition.getId(), any(AssessmentLevel.class));
@@ -805,7 +794,7 @@ public class TrainingDefinitionServiceTest {
     @Test
     public void createTrainingDefinition(){
         given(trainingDefinitionRepository.save(trainingDefinition1)).willReturn(trainingDefinition1);
-        TrainingDefinition tD = trainingDefinitionService.create(trainingDefinition1).get();
+        TrainingDefinition tD = trainingDefinitionService.create(trainingDefinition1);
         deepEquals(trainingDefinition1, tD);
         then(trainingDefinitionRepository).should().save(trainingDefinition1);
     }

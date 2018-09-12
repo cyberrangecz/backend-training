@@ -55,10 +55,8 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
     try {
       TrainingRun trainingRun = trainingRunService.findById(id);
       return beanMapping.mapTo(trainingRun, TrainingRunDTO.class);
-    } catch (NullPointerException ex) {
-      throw new FacadeLayerException("Given TrainingRun ID is null.");
     } catch (ServiceLayerException ex) {
-      throw new FacadeLayerException(ex.getLocalizedMessage());
+      throw new FacadeLayerException(ex);
     }
   }
 
@@ -69,7 +67,7 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
     try {
       return beanMapping.mapToPageResultDTO(trainingRunService.findAll(predicate, pageable), TrainingRunDTO.class);
     } catch (ServiceLayerException ex) {
-      throw new FacadeLayerException(ex.getLocalizedMessage());
+      throw new FacadeLayerException(ex);
     }
   }
 
@@ -80,7 +78,7 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
       Page<TrainingRun> trainingRuns = trainingRunService.findAllByParticipantRefLogin(pageable);
       return convertToAccessedRunDTO(trainingRuns);
     } catch (ServiceLayerException ex) {
-      throw new FacadeLayerException(ex.getLocalizedMessage());
+      throw new FacadeLayerException(ex);
     }
   }
 
@@ -103,8 +101,8 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
 
       accessTrainingRunDTO.setInfoLevels(getInfoAboutLevels(abstractLevel.getId()));
       return accessTrainingRunDTO;
-    } catch (IllegalArgumentException ex) {
-      throw new FacadeLayerException("Password cannot be null and must has length.");
+    } catch (ServiceLayerException ex) {
+      throw new FacadeLayerException(ex);
     }
   }
 
@@ -130,7 +128,7 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
       Page<TrainingRun> trainingRuns = trainingRunService.findAllByTrainingDefinitionAndParticipant(trainingDefinitionId, pageable);
       return beanMapping.mapToPageResultDTO(trainingRuns, TrainingRunDTO.class);
     } catch (ServiceLayerException ex) {
-      throw new FacadeLayerException(ex.getLocalizedMessage());
+      throw new FacadeLayerException(ex);
     }
   }
 
@@ -141,7 +139,7 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
       Page<TrainingRun> trainingRuns = trainingRunService.findAllByTrainingDefinition(trainingDefinitionId, pageable);
       return beanMapping.mapToPageResultDTO(trainingRuns, TrainingRunDTO.class);
     } catch (ServiceLayerException ex) {
-      throw new FacadeLayerException(ex.getLocalizedMessage());
+      throw new FacadeLayerException(ex);
     }
   }
 
@@ -152,7 +150,7 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
       Page<TrainingRun> trainingRuns = trainingRunService.findAllByTrainingInstance(trainingInstanceId, pageable);
       return beanMapping.mapToPageResultDTO(trainingRuns, TrainingRunDTO.class);
     } catch (ServiceLayerException ex) {
-      throw new FacadeLayerException(ex.getLocalizedMessage());
+      throw new FacadeLayerException(ex);
     }
 
   }
