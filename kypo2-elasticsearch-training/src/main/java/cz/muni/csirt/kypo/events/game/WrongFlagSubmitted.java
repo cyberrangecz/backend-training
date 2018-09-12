@@ -28,8 +28,6 @@ public class WrongFlagSubmitted extends AbstractAuditPOJO {
   @JsonProperty(value = "value", required = true)
   private String value;
 
-  public WrongFlagSubmitted() {}
-
   public WrongFlagSubmitted(GameDetails GameDetailsWithStrings, String value) {
     super();
     this.gameDetails = GameDetailsWithStrings;

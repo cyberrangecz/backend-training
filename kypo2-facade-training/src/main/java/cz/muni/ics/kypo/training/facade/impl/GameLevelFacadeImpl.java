@@ -1,6 +1,5 @@
 package cz.muni.ics.kypo.training.facade.impl;
 
-import java.util.Objects;
 import java.util.Optional;
 
 import org.slf4j.Logger;

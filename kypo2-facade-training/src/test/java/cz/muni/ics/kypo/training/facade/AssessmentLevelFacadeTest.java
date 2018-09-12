@@ -4,7 +4,7 @@ import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.PathBuilder;
 import cz.muni.ics.kypo.training.api.PageResultResource;
 import cz.muni.ics.kypo.training.api.dto.AssessmentLevelDTO;
-import cz.muni.ics.kypo.training.config.FacadeTestConfiguration;
+import cz.muni.ics.kypo.training.config.FacadeConfigTest;
 import cz.muni.ics.kypo.training.exception.FacadeLayerException;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.model.AssessmentLevel;
@@ -17,16 +17,13 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.ArrayList;
@@ -41,10 +38,7 @@ import static org.mockito.BDDMockito.willThrow;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
-@EntityScan(basePackages = {"cz.muni.ics.kypo.training.model"})
-@EnableJpaRepositories(basePackages = {"cz.muni.ics.kypo.training.repository"})
-@ComponentScan(basePackages = {"cz.muni.ics.kypo.training.facade", "cz.muni.ics.kypo.training.service", "cz.muni.ics.kypo.training.mapping"})
-@Import(FacadeTestConfiguration.class)
+@Import(FacadeConfigTest.class)
 public class AssessmentLevelFacadeTest {
 
     @Rule
@@ -111,11 +105,11 @@ public class AssessmentLevelFacadeTest {
 
     @Test
     public void findAll() {
-        List<AssessmentLevel> expected = new ArrayList();
+        List<AssessmentLevel> expected = new ArrayList<>();
         expected.add(al1);
         expected.add(al2);
 
-        Page p = new PageImpl<AssessmentLevel>(expected);
+        Page<AssessmentLevel> p = new PageImpl<AssessmentLevel>(expected);
 
         PathBuilder<AssessmentLevel> aL = new PathBuilder<AssessmentLevel>(AssessmentLevel.class, "assessmentLevel");
         Predicate predicate = aL.isNotNull();
@@ -137,7 +131,7 @@ public class AssessmentLevelFacadeTest {
         PathBuilder<AssessmentLevel> aL = new PathBuilder<AssessmentLevel>(AssessmentLevel.class, "assessmentLevel");
         Predicate predicate = aL.isNotNull();
 
-        PageResultResource<AssessmentLevelDTO> assessmentLevelDTOS = assessmentLevelFacade.findAll(predicate,PageRequest.of(0,2));
+        PageResultResource<AssessmentLevelDTO> assessmentLevelDTOS = assessmentLevelFacade.findAll(predicate, PageRequest.of(0,2));
     }
 
     private void deepEquals(AssessmentLevel expectedAssessmentLevel, AssessmentLevelDTO actualAssessmentLevel) {

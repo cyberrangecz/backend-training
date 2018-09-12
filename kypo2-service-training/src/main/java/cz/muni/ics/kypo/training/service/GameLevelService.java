@@ -22,12 +22,12 @@ public interface GameLevelService {
    * @param id of a Game Level that would be returned
    * @return specific game level by id
    */
-  public Optional<GameLevel> findById(long id);
+  Optional<GameLevel> findById(long id);
 
   /**
    * Find all Game Levels.
    * 
    * @return all game levels
    */
-  public Page<GameLevel> findAll(Predicate predicate, Pageable pageable);
+  Page<GameLevel> findAll(Predicate predicate, Pageable pageable);
 }

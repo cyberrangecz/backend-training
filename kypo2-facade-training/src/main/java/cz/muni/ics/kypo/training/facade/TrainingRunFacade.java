@@ -23,31 +23,31 @@ public interface TrainingRunFacade {
    * @param id of a Training Run that would be returned
    * @return specific Training Run by id
    */
-  public TrainingRunDTO findById(Long id);
+  TrainingRunDTO findById(Long id);
 
   /**
    * Find all Training Runs.
    * 
    * @return all Training Runs
    */
-  public PageResultResource<TrainingRunDTO> findAll(Predicate predicate, Pageable pageable);
+  PageResultResource<TrainingRunDTO> findAll(Predicate predicate, Pageable pageable);
 
-  public PageResultResource<AccessedTrainingRunDTO> findAllAccessedTrainingRuns(Pageable pageable);
+  PageResultResource<AccessedTrainingRunDTO> findAllAccessedTrainingRuns(Pageable pageable);
 
-  public AccessTrainingRunDTO accessTrainingRun(String password);
+  AccessTrainingRunDTO accessTrainingRun(String password);
 
-  public PageResultResource<TrainingRunDTO> findAllByTrainingDefinitionAndParticipant(Long trainingDefinitionId, Pageable pageable);
+  PageResultResource<TrainingRunDTO> findAllByTrainingDefinitionAndParticipant(Long trainingDefinitionId, Pageable pageable);
 
-  public PageResultResource<TrainingRunDTO> findAllByTrainingDefinition(Long trainingDefinitionId, Pageable pageable);
+  PageResultResource<TrainingRunDTO> findAllByTrainingDefinition(Long trainingDefinitionId, Pageable pageable);
 
-  public PageResultResource<TrainingRunDTO> findAllByTrainingInstance(Long trainingInstanceId, Pageable pageable);
+  PageResultResource<TrainingRunDTO> findAllByTrainingInstance(Long trainingInstanceId, Pageable pageable);
 
-  public AbstractLevelDTO getNextLevel(Long trainingRunId);
+  AbstractLevelDTO getNextLevel(Long trainingRunId);
 
-  public String getSolution(Long trainingRunId);
+  String getSolution(Long trainingRunId);
 
-  public HintDTO getHint(Long trainingRunId, Long hintId);
+  HintDTO getHint(Long trainingRunId, Long hintId);
 
-  public IsCorrectFlagDTO isCorrectFlag(Long trainingRunId, String flag, boolean solutionTaken);
+  IsCorrectFlagDTO isCorrectFlag(Long trainingRunId, String flag, boolean solutionTaken);
 
 }

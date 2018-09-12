@@ -27,8 +27,6 @@ public class HintTaken extends AbstractAuditPOJO {
   @JsonProperty(value = "hint_id", required = true)
   private int hintId;
 
-  public HintTaken() {}
-
   public HintTaken(GameDetails gameDetails, int hintId) {
     super();
     this.gameDetails = gameDetails;

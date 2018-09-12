@@ -3,7 +3,6 @@ package cz.muni.ics.kypo.training.facade.impl;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import cz.muni.ics.kypo.training.api.dto.*;
 import cz.muni.ics.kypo.training.api.dto.run.AccessTrainingRunDTO;
