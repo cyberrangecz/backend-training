@@ -3,7 +3,6 @@ package cz.muni.ics.kypo.training.facade.impl;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import cz.muni.ics.kypo.training.api.dto.*;
 import cz.muni.ics.kypo.training.api.dto.run.AccessTrainingRunDTO;
@@ -184,9 +183,19 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
   }
 
   @Override
-  public boolean isCorrectFlag(Long trainingRunId, String flag) {
+  public IsCorrectFlagDTO isCorrectFlag(Long trainingRunId, String flag, boolean solutionTaken) {
     LOG.debug("isCorrectFlag({},{})", trainingRunId, flag);
-    return trainingRunService.isCorrectFlag(trainingRunId, flag);
+    IsCorrectFlagDTO correctFlagDTO = new IsCorrectFlagDTO();
+    if (solutionTaken) {
+      correctFlagDTO.setRemainingAttempts(0);
+      correctFlagDTO.setCorrect(trainingRunService.isCorrectFlag(trainingRunId, flag));
+    } else {
+      int attempts = trainingRunService.getRemainingAttempts(trainingRunId);
+      correctFlagDTO.setRemainingAttempts(attempts - 1);
+      correctFlagDTO.setCorrect(trainingRunService.isCorrectFlag(trainingRunId, flag));
+    }
+
+    return correctFlagDTO;
   }
 
   private PageResultResource<AccessedTrainingRunDTO> convertToAccessedRunDTO(Page<TrainingRun> runs) {

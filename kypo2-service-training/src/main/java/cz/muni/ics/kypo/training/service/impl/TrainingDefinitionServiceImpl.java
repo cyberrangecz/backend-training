@@ -85,7 +85,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     Assert.notNull(trainingDefinition, "Input training definition must not be null");
     TrainingDefinition tD = trainingDefinitionRepository.save(trainingDefinition);
     LOG.info("Training definition with id: " + trainingDefinition.getId() + "created.");
-    return Optional.of(tD);
+    return Optional.ofNullable(tD);
   }
 
   @Override
@@ -118,7 +118,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
       }
       tD = trainingDefinitionRepository.save(tD);
       LOG.info("Training definition with id: " + trainingDefinition.getId() + " cloned.");
-      return Optional.of(tD);
+      return Optional.ofNullable(tD);
     } catch (HibernateException ex) {
       throw new ServiceLayerException(ex.getLocalizedMessage());
     }
@@ -298,7 +298,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
       updateLevel(lastLevel);
     }
     LOG.info("Game level with id: "+ gL.getId() +" created");
-    return Optional.of(gL);
+    return Optional.ofNullable(gL);
   }
 
   @Override
@@ -321,7 +321,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
       updateLevel(lastLevel);
     }
     LOG.info("Info level with id: "+ iL.getId() +" created");
-    return Optional.of(iL);
+    return Optional.ofNullable(iL);
   }
 
   @Override
@@ -344,16 +344,16 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
       updateLevel(lastLevel);
     }
     LOG.info("Assessment level with id: "+ aL.getId() +" created");
-    return Optional.of(aL);
+    return Optional.ofNullable(aL);
   }
 
   @Override
-  public ArrayList<AbstractLevel> findAllLevelsFromDefinition(Long id) {
+  public List<AbstractLevel> findAllLevelsFromDefinition(Long id) {
     LOG.debug("findAllLevelsFromDefinition({})", id);
     Assert.notNull(id, "Definition id must not be null");
     TrainingDefinition trainingDefinition = findById(id)
             .orElseThrow(() -> new ServiceLayerException("Training definition with id: " + id + ", not found"));
-    ArrayList<AbstractLevel> levels = new ArrayList<>();
+    List<AbstractLevel> levels = new ArrayList<>();
     Long levelId = trainingDefinition.getStartingLevel();
     AbstractLevel level = null;
     while(levelId != null){

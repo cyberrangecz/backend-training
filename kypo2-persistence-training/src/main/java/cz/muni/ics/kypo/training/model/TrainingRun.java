@@ -8,6 +8,7 @@ import java.util.Set;
 import javax.persistence.*;
 
 import cz.muni.ics.kypo.training.model.enums.TRState;
+import org.hibernate.annotations.ColumnDefault;
 
 /**
  * 
@@ -31,6 +32,8 @@ public class TrainingRun implements Serializable {
   @Column(name = "state", length = 128, nullable = false)
   @Enumerated(EnumType.STRING)
   private TRState state;
+  @Column(name = "incorrect_flag_count", nullable = false)
+  private int incorrectFlagCount;
   @ManyToOne(fetch = FetchType.LAZY, optional = false)
   private AbstractLevel currentLevel;
   @ManyToOne(fetch = FetchType.LAZY, optional = false)
@@ -105,6 +108,13 @@ public class TrainingRun implements Serializable {
     return sandboxInstanceRef;
   }
 
+  public int getIncorrectFlagCount() {
+    return incorrectFlagCount;
+  }
+
+  public void setIncorrectFlagCount(int incorrectFlagCount) {
+    this.incorrectFlagCount = incorrectFlagCount;
+  }
 
   public void setSandboxInstanceRef(SandboxInstanceRef sandboxInstanceRef) {
     this.sandboxInstanceRef = sandboxInstanceRef;
@@ -120,7 +130,7 @@ public class TrainingRun implements Serializable {
 
   @Override
   public int hashCode() {
-    return Objects.hash(currentLevel, eventLogReference, startTime, endTime, state, trainingInstance);
+    return Objects.hash(currentLevel, eventLogReference, startTime, endTime, state, trainingInstance, incorrectFlagCount);
   }
 
   @Override
@@ -138,6 +148,7 @@ public class TrainingRun implements Serializable {
         && Objects.equals(startTime, other.getStartTime())
         && Objects.equals(endTime, other.getEndTime()) 
         && Objects.equals(state, other.getState())
+        && Objects.equals(incorrectFlagCount, other.getIncorrectFlagCount())
         && Objects.equals(trainingInstance, other.getTrainingInstance())
         && Objects.equals(participantRef, other.getParticipantRef());
     // @formatter:on
@@ -146,7 +157,7 @@ public class TrainingRun implements Serializable {
   @Override
   public String toString() {
     return "TrainingRun [id=" + id + ", startTime=" + startTime + ", endTime=" + endTime + ", eventLogReference=" + eventLogReference + ", state=" + state
-        + ", currentLevel=" + currentLevel + ", trainingInstance=" + trainingInstance + ", participantRef=" + participantRef + ", getClass()=" + getClass() + ", toString()=" + super.toString() + "]";
+            + ", incorrectFlagCount=" + incorrectFlagCount + ", currentLevel=" + currentLevel + ", trainingInstance=" + trainingInstance + ", participantRef=" + participantRef + ", getClass()=" + getClass() + ", toString()=" + super.toString() + "]";
   }
 
 }

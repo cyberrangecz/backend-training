@@ -17,62 +17,61 @@ public class GameDetails {
 
   @ApiObjectField(description = "Instance ID of game.")
   @JsonProperty(value = "game_instance_id", required = true)
-  private int gameInstanceId;
+  private long gameInstanceId;
   @ApiObjectField(description = "Level of game.")
   @JsonProperty(value = "level", required = true)
-  private int level;
+  private long level;
   @ApiObjectField(description = "Game logical time.")
   @JsonProperty(value = "logical_time", required = true)
-  private int logicalTime;
+  private long logicalTime;
   @ApiObjectField(description = "ID of a player in the game.")
-  @JsonProperty(value = "player_id", required = true)
-  private int playerId;
+  @JsonProperty(value = "player_login", required = true)
+  private String playerLogin;
 
-  public GameDetails() {}
-
-  public GameDetails(int gameInstanceId, int level, int logicalTime, int playerId) {
+  public GameDetails(long gameInstanceId, long level, long logicalTime, String playerLogin) {
     super();
     this.gameInstanceId = gameInstanceId;
     this.level = level;
     this.logicalTime = logicalTime;
-    this.playerId = playerId;
+    this.playerLogin = playerLogin;
   }
 
-  public int getGameInstanceId() {
+  public long getGameInstanceId() {
     return gameInstanceId;
   }
 
-  public void setGameInstanceId(int gameInstanceId) {
+  public void setGameInstanceId(long gameInstanceId) {
     this.gameInstanceId = gameInstanceId;
   }
 
-  public int getLevel() {
+  public long getLevel() {
     return level;
   }
 
-  public void setLevel(int level) {
+  public void setLevel(long level) {
     this.level = level;
   }
 
-  public int getLogicalTime() {
+  public long getLogicalTime() {
     return logicalTime;
   }
 
-  public void setLogicalTime(int logicalTime) {
+  public void setLogicalTime(long logicalTime) {
     this.logicalTime = logicalTime;
   }
 
-  public int getPlayerId() {
-    return playerId;
-  }
 
-  public void setPlayerId(int playerId) {
-    this.playerId = playerId;
+  public String getPlayerLogin() {
+	return playerLogin;
+  }
+	
+  public void setPlayerLogin(String playerLogin) {
+	this.playerLogin = playerLogin;
   }
 
   @Override
   public String toString() {
-    return "GameDetails [gameInstanceId=" + gameInstanceId + ", level=" + level + ", logicalTime=" + logicalTime + ", playerId=" + playerId + "]";
+    return "GameDetails [gameInstanceId=" + gameInstanceId + ", level=" + level + ", logicalTime=" + logicalTime + ", player_login=" + playerLogin + "]";
   }
 
 }

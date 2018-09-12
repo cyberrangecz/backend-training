@@ -27,8 +27,6 @@ public class GameLevel extends AbstractLevel implements Serializable {
   @Lob
   @Column(name = "solution", nullable = false)
   private String solution;
-  @Column(name = "incorrect_flag_penalty", nullable = false)
-  private int incorrectFlagPenalty;
   @Column(name = "solution_penalty", nullable = false)
   private int solutionPenalty = super.getMaxScore() - 1;
   @Column(name = "estimated_duration")
@@ -64,14 +62,6 @@ public class GameLevel extends AbstractLevel implements Serializable {
 
   public void setSolution(String solution) {
     this.solution = solution;
-  }
-
-  public int getIncorrectFlagPenalty() {
-    return incorrectFlagPenalty;
-  }
-
-  public void setIncorrectFlagPenalty(int incorrectFlagPenalty) {
-    this.incorrectFlagPenalty = incorrectFlagPenalty;
   }
 
   public int getSolutionPenalty() {
@@ -124,8 +114,7 @@ public class GameLevel extends AbstractLevel implements Serializable {
     if (o == null || getClass() != o.getClass()) return false;
     if (!super.equals(o)) return false;
     GameLevel gameLevel = (GameLevel) o;
-    return incorrectFlagPenalty == gameLevel.incorrectFlagPenalty &&
-            solutionPenalty == gameLevel.solutionPenalty &&
+    return  solutionPenalty == gameLevel.solutionPenalty &&
             estimatedDuration == gameLevel.estimatedDuration &&
             incorrectFlagLimit == gameLevel.incorrectFlagLimit &&
             Objects.equals(flag, gameLevel.flag) &&
@@ -138,7 +127,7 @@ public class GameLevel extends AbstractLevel implements Serializable {
   @Override
   public int hashCode() {
 
-    int result = Objects.hash(super.hashCode(), flag, content, solution, incorrectFlagPenalty, solutionPenalty, estimatedDuration, hints, incorrectFlagLimit);
+    int result = Objects.hash(super.hashCode(), flag, content, solution, solutionPenalty, estimatedDuration, hints, incorrectFlagLimit);
     result = 31 * result + Arrays.hashCode(attachments);
     return result;
   }
@@ -149,7 +138,6 @@ public class GameLevel extends AbstractLevel implements Serializable {
             "flag='" + flag + '\'' +
             ", content='" + content + '\'' +
             ", solution='" + solution + '\'' +
-            ", incorrectFlagPenalty=" + incorrectFlagPenalty +
             ", solutionPenalty=" + solutionPenalty +
             ", estimatedDuration=" + estimatedDuration +
             ", attachments=" + Arrays.toString(attachments) +

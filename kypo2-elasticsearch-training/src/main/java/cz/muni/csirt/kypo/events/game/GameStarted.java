@@ -24,8 +24,6 @@ public class GameStarted extends AbstractAuditPOJO {
   @JsonProperty(value = "game_details", required = true)
   private GameDetails gameDetails;
 
-  public GameStarted() {}
-
   public GameStarted(GameDetails gameDetails) {
     super();
     this.gameDetails = gameDetails;

@@ -23,14 +23,14 @@ public interface TrainingInstanceFacade {
    * @param id of a Training Instance that would be returned
    * @return specific Training Instance by id
    */
-  public TrainingInstanceDTO findById(long id);
+  TrainingInstanceDTO findById(long id);
 
   /**
    * Find all Training Instances.
    * 
    * @return all Training Instances
    */
-  public PageResultResource<TrainingInstanceDTO> findAll(Predicate predicate, Pageable pageable);
+  PageResultResource<TrainingInstanceDTO> findAll(Predicate predicate, Pageable pageable);
 
   /**
    * Updates training instance
@@ -38,7 +38,7 @@ public interface TrainingInstanceFacade {
    * @throws FacadeLayerException if instance is not found
    * @throws CannotBeUpdatedException if starting date of instance is not in future
    */
-  public void update(TrainingInstance trainingInstance) throws FacadeLayerException, CannotBeUpdatedException;
+  void update(TrainingInstance trainingInstance) throws FacadeLayerException, CannotBeUpdatedException;
 
   /**
    * Creates new training instance
@@ -46,20 +46,20 @@ public interface TrainingInstanceFacade {
    * @return DTO of created instance
    * @throws FacadeLayerException
    */
-  public TrainingInstanceDTO create(TrainingInstance trainingInstance) throws FacadeLayerException;
+  TrainingInstanceDTO create(TrainingInstance trainingInstance) throws FacadeLayerException;
 
   /**
    * Deletes specific training instance based on id
    * @param id of training instance to be deleted
    * @throws FacadeLayerException
    */
-  public void delete(Long id) throws FacadeLayerException;
+  void delete(Long id) throws FacadeLayerException;
 
   /**
    * Generates new password
    * @return generated password
    * @throws FacadeLayerException if password already exists
    */
-  public char[] generatePassword() throws FacadeLayerException;
+  char[] generatePassword() throws FacadeLayerException;
 
 }

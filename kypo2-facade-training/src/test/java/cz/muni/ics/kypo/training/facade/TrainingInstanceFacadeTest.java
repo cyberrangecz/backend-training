@@ -4,7 +4,7 @@ import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.PathBuilder;
 import cz.muni.ics.kypo.training.api.PageResultResource;
 import cz.muni.ics.kypo.training.api.dto.TrainingInstanceDTO;
-import cz.muni.ics.kypo.training.config.FacadeTestConfiguration;
+import cz.muni.ics.kypo.training.config.FacadeConfigTest;
 import cz.muni.ics.kypo.training.exception.FacadeLayerException;
 import cz.muni.ics.kypo.training.model.TrainingInstance;
 import cz.muni.ics.kypo.training.service.TrainingInstanceService;
@@ -15,16 +15,13 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.ArrayList;
@@ -36,10 +33,7 @@ import static org.mockito.BDDMockito.*;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
-@EntityScan(basePackages = {"cz.muni.ics.kypo.training.model"})
-@EnableJpaRepositories(basePackages = {"cz.muni.ics.kypo.training.repository"})
-@ComponentScan(basePackages = {"cz.muni.ics.kypo.training.facade", "cz.muni.ics.kypo.training.service", "cz.muni.ics.kypo.training.mapping"})
-@Import(FacadeTestConfiguration.class)
+@Import(FacadeConfigTest.class)
 public class TrainingInstanceFacadeTest {
 
     @Rule
@@ -92,7 +86,7 @@ public class TrainingInstanceFacadeTest {
         expected.add(trainingInstance1);
         expected.add(trainingInstance2);
 
-        Page p = new PageImpl<TrainingInstance>(expected);
+        Page<TrainingInstance> p = new PageImpl<TrainingInstance>(expected);
 
         PathBuilder<TrainingInstance> tI = new PathBuilder<TrainingInstance>(TrainingInstance.class, "trainingInstance");
         Predicate predicate = tI.isNotNull();
@@ -119,21 +113,7 @@ public class TrainingInstanceFacadeTest {
         thrown.expect(FacadeLayerException.class);
         trainingInstanceFacade.create(null);
     }
-/*
-    @Test
-    public void updateTrainingInstance() {
-        given(trainingInstanceService.update(any(TrainingInstance.class))).willReturn(Optional.of(trainingInstance1));
-        TrainingInstanceDTO trainingInstanceDTO = trainingInstanceFacade.update(trainingInstance1);
-        deepEquals(trainingInstance1,trainingInstanceDTO);
-        then(trainingInstanceService).should().update(any(TrainingInstance.class));
-    }
 
-    @Test
-    public void updateTrainingInstanceWithNull() {
-        thrown.expect(FacadeLayerException.class);
-        trainingInstanceFacade.update(null);
-    }
-*/
     @Test
     public void deleteTrainingInstanceWithNull() {
         thrown.expect(NullPointerException.class);

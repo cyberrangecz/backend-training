@@ -53,7 +53,7 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
       Objects.requireNonNull(id);
       Optional<TrainingDefinition> trainingDef = trainingDefinitionService.findById(id);
       TrainingDefinition td = trainingDef.orElseThrow(() -> new ServiceLayerException("TrainingDefinition with this id is not found"));
-      ArrayList<AbstractLevel> levels = trainingDefinitionService.findAllLevelsFromDefinition(id);
+      List<AbstractLevel> levels = trainingDefinitionService.findAllLevelsFromDefinition(id);
       TrainingDefinitionDTO trainingDefinitionDTO = beanMapping.mapTo(td, TrainingDefinitionDTO.class);
 
       Set<BasicLevelInfoDTO> levelInfoDTOs = new HashSet<>();

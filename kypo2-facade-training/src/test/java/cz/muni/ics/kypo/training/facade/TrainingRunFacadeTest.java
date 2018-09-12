@@ -3,9 +3,11 @@ package cz.muni.ics.kypo.training.facade;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.PathBuilder;
 import cz.muni.ics.kypo.training.api.PageResultResource;
+import cz.muni.ics.kypo.training.api.dto.IsCorrectFlagDTO;
 import cz.muni.ics.kypo.training.api.dto.run.TrainingRunDTO;
-import cz.muni.ics.kypo.training.config.FacadeTestConfiguration;
-import cz.muni.ics.kypo.training.exception.FacadeLayerException;
+import cz.muni.ics.kypo.training.config.FacadeConfigTest;
+import cz.muni.ics.kypo.training.model.GameLevel;
+import cz.muni.ics.kypo.training.model.InfoLevel;
 import cz.muni.ics.kypo.training.model.TrainingRun;
 import cz.muni.ics.kypo.training.model.enums.TRState;
 import cz.muni.ics.kypo.training.service.TrainingRunService;
@@ -16,31 +18,24 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.BDDMockito.*;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
-@EntityScan(basePackages = {"cz.muni.ics.kypo.training.model"})
-@EnableJpaRepositories(basePackages = {"cz.muni.ics.kypo.training.repository"})
-@ComponentScan(basePackages = {"cz.muni.ics.kypo.training.facade", "cz.muni.ics.kypo.training.service", "cz.muni.ics.kypo.training.mapping"})
-@Import(FacadeTestConfiguration.class)
+@Import(FacadeConfigTest.class)
 public class TrainingRunFacadeTest {
 
     @Rule
@@ -53,6 +48,8 @@ public class TrainingRunFacadeTest {
     private TrainingRunService trainingRunService;
 
     private TrainingRun trainingRun1, trainingRun2;
+    private GameLevel gameLevel;
+    private InfoLevel infoLevel;
 
     @SpringBootApplication
     static class TestConfiguration {
@@ -61,13 +58,25 @@ public class TrainingRunFacadeTest {
 
     @Before
     public void init() {
+        gameLevel = new GameLevel();
+        gameLevel.setIncorrectFlagLimit(2);
+        gameLevel.setId(1L);
+        gameLevel.setFlag("flag");
+
+        infoLevel = new InfoLevel();
+        infoLevel.setId(2L);
+        infoLevel.setTitle("Info level");
+        infoLevel.setContent("Info content");
+
         trainingRun1 = new TrainingRun();
         trainingRun1.setId(1L);
         trainingRun1.setState(TRState.READY);
+        trainingRun1.setCurrentLevel(gameLevel);
 
         trainingRun2 = new TrainingRun();
         trainingRun2.setId(2L);
         trainingRun2.setState(TRState.ARCHIVED);
+        trainingRun2.setCurrentLevel(infoLevel);
     }
 
     @Test
@@ -80,6 +89,23 @@ public class TrainingRunFacadeTest {
         then(trainingRunService).should().findById(trainingRun1.getId());
     }
 
+    @Test
+    public void isCorrectFlagBeforeSolutionTaken() {
+        given(trainingRunService.isCorrectFlag(trainingRun1.getId(), "flag")).willReturn(true);
+        given(trainingRunService.getRemainingAttempts(trainingRun1.getId())).willReturn(2);
+        IsCorrectFlagDTO correctFlagDTO = trainingRunFacade.isCorrectFlag(trainingRun1.getId(), "flag", false);
+        assertEquals(true, correctFlagDTO.isCorrect());
+        assertEquals(1, correctFlagDTO.getRemainingAttempts());
+    }
+    @Test
+    public void isCorrectFlagAfterSolutionTaken() {
+        given(trainingRunService.isCorrectFlag(trainingRun1.getId(), "flag")).willReturn(false);
+        IsCorrectFlagDTO correctFlagDTO = trainingRunFacade.isCorrectFlag(trainingRun1.getId(), "flag", true);
+        assertEquals(false, correctFlagDTO.isCorrect());
+        assertEquals(0, correctFlagDTO.getRemainingAttempts());
+    }
+
+
 
     @Test
     public void findAllTrainingRuns() {
@@ -87,7 +113,7 @@ public class TrainingRunFacadeTest {
         expected.add(trainingRun1);
         expected.add(trainingRun2);
 
-        Page p = new PageImpl<TrainingRun>(expected);
+        Page<TrainingRun> p = new PageImpl<TrainingRun>(expected);
 
         PathBuilder<TrainingRun> tR = new PathBuilder<TrainingRun>(TrainingRun.class, "trainingRun");
         Predicate predicate = tR.isNotNull();

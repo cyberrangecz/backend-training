@@ -17,12 +17,12 @@ public interface AssessmentLevelService {
      * @return assessment with given id
      * @throws ServiceLayerException
      */
-    public Optional<AssessmentLevel> findById(long id);
+    Optional<AssessmentLevel> findById(long id);
 
     /**
      * Find all Assessment Levels.
      *
      * @return all a ssessment levels
      */
-    public Page<AssessmentLevel> findAll(Predicate predicate, Pageable pageable);
+    Page<AssessmentLevel> findAll(Predicate predicate, Pageable pageable);
 }

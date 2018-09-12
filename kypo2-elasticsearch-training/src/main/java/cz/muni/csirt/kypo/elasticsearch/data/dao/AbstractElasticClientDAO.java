@@ -12,41 +12,37 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 public abstract class AbstractElasticClientDAO {
 
-  protected RestHighLevelClient client;
-  protected RestClient lowLevelClient;
-  protected ObjectMapper mapper;
+	private RestHighLevelClient client;
+	private RestClient lowLevelClient;
+	private ObjectMapper mapper;
 
-  public AbstractElasticClientDAO() {}
+	protected AbstractElasticClientDAO(RestHighLevelClient client, RestClient lowLevelClient, ObjectMapper mapper) {
+		this.client = client;
+		this.lowLevelClient = lowLevelClient;
+		this.mapper = mapper;
+	}
 
-  public AbstractElasticClientDAO(RestHighLevelClient client, RestClient lowLevelClient, ObjectMapper mapper) {
-    this.client = client;
-    this.lowLevelClient = lowLevelClient;
-    this.mapper = mapper;
-  }
+	protected RestHighLevelClient getClient() {
+		return client;
+	}
 
-  public RestHighLevelClient getClient() {
-    return client;
-  }
+	protected void setClient(RestHighLevelClient client) {
+		this.client = client;
+	}
 
-  public void setClient(RestHighLevelClient client) {
-    this.client = client;
-  }
+	protected RestClient getLowLevelClient() {
+		return lowLevelClient;
+	}
 
-  public RestClient getLowLevelClient() {
-    return lowLevelClient;
-  }
+	protected void setLowLevelClient(RestClient lowLevelClient) {
+		this.lowLevelClient = lowLevelClient;
+	}
 
-  public void setLowLevelClient(RestClient lowLevelClient) {
-    this.lowLevelClient = lowLevelClient;
-  }
+	protected ObjectMapper getMapper() {
+		return mapper;
+	}
 
-  public ObjectMapper getMapper() {
-    return mapper;
-  }
-
-  public void setMapper(ObjectMapper mapper) {
-    this.mapper = mapper;
-  }
+	protected void setMapper(ObjectMapper mapper) {
+		this.mapper = mapper;
+	}
 }
-
-
