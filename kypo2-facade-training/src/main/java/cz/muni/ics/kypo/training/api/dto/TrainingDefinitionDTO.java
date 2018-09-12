@@ -28,10 +28,10 @@ public class TrainingDefinitionDTO {
     private String[] prerequisities;
     private String[] outcomes;
     private TDState state;
-    @NotEmpty(message = "Authors cannot be empty")
-    private Set<AuthorRef> authorRef = new HashSet<>();
+   // @NotEmpty(message = "Authors cannot be empty")
+    private Set<AuthorRefDTO> authorRefDTO = new HashSet<>();
     @NotNull(message = "Sandbox definition cannot be empty")
-    private SandboxDefinitionRef sandBoxDefinitionRef;
+    private SandboxDefinitionRefDTO sandBoxDefinitionRefDTO;
     private Long startingLevel;
     private Set<BasicLevelInfoDTO> basicLevelInfoDTOs;
 
@@ -85,20 +85,20 @@ public class TrainingDefinitionDTO {
         this.state = state;
     }
 
-    public Set<AuthorRef> getAuthorRef() {
-        return authorRef;
+    public Set<AuthorRefDTO> getAuthorRefDTO() {
+        return authorRefDTO;
     }
 
-    public void setAuthorRef(Set<AuthorRef> authorRef) {
-        this.authorRef = authorRef;
+    public void setAuthorRefDTO(Set<AuthorRefDTO> authorRefDTO) {
+        this.authorRefDTO = authorRefDTO;
     }
 
-    public SandboxDefinitionRef getSandBoxDefinitionRef() {
-        return sandBoxDefinitionRef;
+    public SandboxDefinitionRefDTO getSandBoxDefinitionRefDTO() {
+        return sandBoxDefinitionRefDTO;
     }
 
-    public void setSandBoxDefinitionRef(SandboxDefinitionRef sandBoxDefinitionRef) {
-        this.sandBoxDefinitionRef = sandBoxDefinitionRef;
+    public void setSandBoxDefinitionRefDTO(SandboxDefinitionRefDTO sandBoxDefinitionRefDTO) {
+        this.sandBoxDefinitionRefDTO = sandBoxDefinitionRefDTO;
     }
 
     public Long getStartingLevel() {
@@ -126,8 +126,8 @@ public class TrainingDefinitionDTO {
                 ", prerequisities=" + Arrays.toString(prerequisities) +
                 ", outcomes=" + Arrays.toString(outcomes) +
                 ", state=" + state +
-                ", authorRef=" + authorRef +
-                ", sandBoxDefinitionRef=" + sandBoxDefinitionRef +
+                ", authorRefDTO=" + authorRefDTO +
+                ", sandBoxDefinitionRefDTO=" + sandBoxDefinitionRefDTO +
                 ", startingLevel=" + startingLevel +
                 ", basicLevelInfoDTOs=" + basicLevelInfoDTOs +
                 '}';

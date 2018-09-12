@@ -28,7 +28,7 @@ public class AuthorRef implements Serializable {
   @Column(name = "id", unique = true, nullable = false, insertable = false)
   private Long id;
   @Column(name = "author_ref_id")
-  private Long authorRefId;
+  private String authorRefLogin;
   @ManyToMany(mappedBy = "authorRef", fetch = FetchType.LAZY)
   private Set<TrainingDefinition> trainingDefinition = new HashSet<>();
 
@@ -42,27 +42,28 @@ public class AuthorRef implements Serializable {
     this.id = id;
   }
 
-  public Long getAuthorRefId() {
-    return authorRefId;
+  public String getAuthorRefLogin() {
+    return authorRefLogin;
   }
 
-  public void setAuthorRefId(Long authorRefId) {
-    this.authorRefId = authorRefId;
+  public void setAuthorRefLogin(String authorRefLogin) {
+    this.authorRefLogin = authorRefLogin;
   }
 
   public Set<TrainingDefinition> getTrainingDefinition() {
-    return Collections.unmodifiableSet(trainingDefinition);
+    return trainingDefinition;
   }
 
   public void setTrainingDefinition(Set<TrainingDefinition> trainingDefinition) {
     this.trainingDefinition = trainingDefinition;
   }
 
-
-
   @Override
   public String toString() {
-    return "AuthorRef [id=" + id + ", authorRefId=" + authorRefId + ", trainingDefinition=" + trainingDefinition + ", toString()=" + super.toString() + "]";
+    return "AuthorRef{" +
+            "id=" + id +
+            ", authorRefLogin='" + authorRefLogin + '\'' +
+            ", trainingDefinition=" + trainingDefinition +
+            '}';
   }
-
 }

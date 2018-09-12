@@ -5,10 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.training.api.PageResultResource;
-import cz.muni.ics.kypo.training.api.dto.AssessmentLevelDTO;
-import cz.muni.ics.kypo.training.api.dto.GameLevelDTO;
-import cz.muni.ics.kypo.training.api.dto.InfoLevelDTO;
-import cz.muni.ics.kypo.training.api.dto.TrainingDefinitionDTO;
+import cz.muni.ics.kypo.training.api.dto.*;
 import cz.muni.ics.kypo.training.exception.FacadeLayerException;
 import cz.muni.ics.kypo.training.exceptions.*;
 import cz.muni.ics.kypo.training.facade.TrainingDefinitionFacade;
@@ -118,7 +115,12 @@ public class TrainingDefinitionsRestControllerTest {
         Set<AuthorRef> authorRefSet = new HashSet<>();
         authorRefSet.add(authorRef);
 
+        AuthorRefDTO authorRefDTO = new AuthorRefDTO();
+        Set<AuthorRefDTO> authorRefSetDTO = new HashSet<>();
+        authorRefSetDTO.add(authorRefDTO);
+
         SandboxDefinitionRef sandboxDefinitionRef = new SandboxDefinitionRef();
+        SandboxDefinitionRefDTO sandboxDefinitionRefDTO = new SandboxDefinitionRefDTO();
 
         trainingDefinition1 = new TrainingDefinition();
         trainingDefinition1.setId(1L);
@@ -139,15 +141,15 @@ public class TrainingDefinitionsRestControllerTest {
         trainingDefinition1DTO.setId(1L);
         trainingDefinition1DTO.setState(TDState.UNRELEASED);
         trainingDefinition1DTO.setTitle("test");
-        trainingDefinition1DTO.setAuthorRef(authorRefSet);
-        trainingDefinition1DTO.setSandBoxDefinitionRef(sandboxDefinitionRef);
+        trainingDefinition1DTO.setAuthorRefDTO(authorRefSetDTO);
+        trainingDefinition1DTO.setSandBoxDefinitionRefDTO(sandboxDefinitionRefDTO);
 
         trainingDefinition2DTO = new TrainingDefinitionDTO();
         trainingDefinition2DTO.setId(2L);
         trainingDefinition2DTO.setState(TDState.PRIVATED);
         trainingDefinition2DTO.setTitle("test");
-        trainingDefinition2DTO.setAuthorRef(authorRefSet);
-        trainingDefinition2DTO.setSandBoxDefinitionRef(sandboxDefinitionRef);
+        trainingDefinition2DTO.setAuthorRefDTO(authorRefSetDTO);
+        trainingDefinition2DTO.setSandBoxDefinitionRefDTO(sandboxDefinitionRefDTO);
 
 
         List<TrainingDefinition> expected = new ArrayList<>();
