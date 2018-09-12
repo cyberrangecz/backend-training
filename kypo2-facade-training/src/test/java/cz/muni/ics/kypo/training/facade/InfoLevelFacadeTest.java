@@ -38,73 +38,73 @@ import static org.mockito.BDDMockito.then;
 @Import(FacadeConfigTest.class)
 public class InfoLevelFacadeTest {
 
-    @Rule
-    public ExpectedException thrown = ExpectedException.none();
+	@Rule
+	public ExpectedException thrown = ExpectedException.none();
 
-    @Autowired
-    private InfoLevelFacade infoLevelFacade;
+	@Autowired
+	private InfoLevelFacade infoLevelFacade;
 
-    @MockBean
-    private InfoLevelService infoLevelService;
+	@MockBean
+	private InfoLevelService infoLevelService;
 
-    private InfoLevel infoLevel1, infoLevel2;
+	private InfoLevel infoLevel1, infoLevel2;
 
-    @SpringBootApplication
-    static class TestConfiguration {
-    }
+	@SpringBootApplication
+	static class TestConfiguration {
+	}
 
-    @Before
-    public void init() {
-        infoLevel1 = new InfoLevel();
-        infoLevel1.setId(1L);
-        infoLevel1.setTitle("Test1");
+	@Before
+	public void init() {
+		infoLevel1 = new InfoLevel();
+		infoLevel1.setId(1L);
+		infoLevel1.setTitle("Test1");
 
-        infoLevel2 = new InfoLevel();
-        infoLevel2.setId(2L);
-        infoLevel2.setTitle("Test2");
-    }
+		infoLevel2 = new InfoLevel();
+		infoLevel2.setId(2L);
+		infoLevel2.setTitle("Test2");
+	}
 
-    @Test
-    public void findInfoLevelById() {
-        given(infoLevelService.findById(infoLevel1.getId())).willReturn(Optional.of(infoLevel1));
+	@Test
+	public void findInfoLevelById() {
+		given(infoLevelService.findById(infoLevel1.getId())).willReturn(Optional.of(infoLevel1));
 
-        InfoLevelDTO infoLevelDTO = infoLevelFacade.findById(infoLevel1.getId());
-        deepEquals(infoLevel1, infoLevelDTO);
+		InfoLevelDTO infoLevelDTO = infoLevelFacade.findById(infoLevel1.getId());
+		deepEquals(infoLevel1, infoLevelDTO);
 
-        then(infoLevelService).should().findById(infoLevel1.getId());
-    }
+		then(infoLevelService).should().findById(infoLevel1.getId());
+	}
 
-    @Test
-    public void findNonexistentInfoLevelById() {
-        Long id = 6L;
-        given(infoLevelService.findById(id)).willReturn(Optional.empty());
-        thrown.expect(FacadeLayerException.class);
-        infoLevelFacade.findById(id);
-    }
+	@Test
+	public void findNonexistentInfoLevelById() {
+		Long id = 6L;
+		given(infoLevelService.findById(id)).willReturn(Optional.empty());
+		thrown.expect(FacadeLayerException.class);
+		infoLevelFacade.findById(id);
+	}
 
-    @Test
-    public void findAllInfoLevels() {
-        List<InfoLevel> expected = new ArrayList<>();
-        expected.add(infoLevel1);
-        expected.add(infoLevel2);
+	@Test
+	public void findAllInfoLevels() {
+		List<InfoLevel> expected = new ArrayList<>();
+		expected.add(infoLevel1);
+		expected.add(infoLevel2);
 
-        Page<InfoLevel> p = new PageImpl<InfoLevel>(expected);
-        PathBuilder<InfoLevel> iL = new PathBuilder<InfoLevel>(InfoLevel.class, "infoLevel");
-        Predicate predicate = iL.isNotNull();
+		Page<InfoLevel> p = new PageImpl<InfoLevel>(expected);
+		PathBuilder<InfoLevel> iL = new PathBuilder<InfoLevel>(InfoLevel.class, "infoLevel");
+		Predicate predicate = iL.isNotNull();
 
-        given(infoLevelService.findAll(any(Predicate.class), any (Pageable.class))).willReturn(p);
+		given(infoLevelService.findAll(any(Predicate.class), any(Pageable.class))).willReturn(p);
 
-        PageResultResource<InfoLevelDTO> infoLevelDTO = infoLevelFacade.findAll(predicate, PageRequest.of(0, 2));
-        deepEquals(infoLevel1, infoLevelDTO.getContent().get(0));
-        deepEquals(infoLevel2, infoLevelDTO.getContent().get(1));
+		PageResultResource<InfoLevelDTO> infoLevelDTO = infoLevelFacade.findAll(predicate, PageRequest.of(0, 2));
+		deepEquals(infoLevel1, infoLevelDTO.getContent().get(0));
+		deepEquals(infoLevel2, infoLevelDTO.getContent().get(1));
 
-        then(infoLevelService).should().findAll(predicate, PageRequest.of(0,2));
+		then(infoLevelService).should().findAll(predicate, PageRequest.of(0, 2));
 
-    }
+	}
 
-    private void deepEquals(InfoLevel expected, InfoLevelDTO actual) {
-        assertEquals(expected.getId(), actual.getId());
-        assertEquals(expected.getTitle(), actual.getTitle());
-    }
+	private void deepEquals(InfoLevel expected, InfoLevelDTO actual) {
+		assertEquals(expected.getId(), actual.getId());
+		assertEquals(expected.getTitle(), actual.getTitle());
+	}
 
 }

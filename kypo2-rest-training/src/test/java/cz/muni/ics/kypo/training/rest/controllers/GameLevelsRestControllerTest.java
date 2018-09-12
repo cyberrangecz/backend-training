@@ -23,7 +23,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -67,9 +66,6 @@ public class GameLevelsRestControllerTest {
 	@MockBean
 	@Qualifier("objMapperRESTApi")
 	private ObjectMapper objectMapper;
-
-	@MockBean
-	private BeanMapping beanMapping;
 
 	private GameLevel gameLevel1, gameLevel2;
 

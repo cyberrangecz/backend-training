@@ -23,6 +23,6 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 @PropertySource("file:${path.to.config.file}")
 public class PersistenceConfig {
 
-  private static final Logger LOG = LoggerFactory.getLogger(PersistenceConfig.class);
+	private static final Logger LOG = LoggerFactory.getLogger(PersistenceConfig.class);
 
 }

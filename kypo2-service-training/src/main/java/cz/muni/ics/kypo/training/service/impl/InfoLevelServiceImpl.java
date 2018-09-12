@@ -1,6 +1,5 @@
 package cz.muni.ics.kypo.training.service.impl;
 
-
 import java.util.Optional;
 
 import org.hibernate.HibernateException;
@@ -26,33 +25,33 @@ import cz.muni.ics.kypo.training.service.InfoLevelService;
 @Service
 public class InfoLevelServiceImpl implements InfoLevelService {
 
-  private static final Logger LOG = LoggerFactory.getLogger(InfoLevelServiceImpl.class);
+	private static final Logger LOG = LoggerFactory.getLogger(InfoLevelServiceImpl.class);
 
-  private InfoLevelRepository infoRepository;
+	private InfoLevelRepository infoRepository;
 
-  @Autowired
-  public InfoLevelServiceImpl(InfoLevelRepository infoRepository) {
-    this.infoRepository = infoRepository;
-  }
+	@Autowired
+	public InfoLevelServiceImpl(InfoLevelRepository infoRepository) {
+		this.infoRepository = infoRepository;
+	}
 
-  @Override
-  public Optional<InfoLevel> findById(long id) {
-    LOG.debug("findById({})", id);
-    try {
-      return infoRepository.findById(id);
-    } catch (HibernateException ex) {
-      throw new ServiceLayerException(ex.getLocalizedMessage());
-    }
-  }
+	@Override
+	public Optional<InfoLevel> findById(long id) {
+		LOG.debug("findById({})", id);
+		try {
+			return infoRepository.findById(id);
+		} catch (HibernateException ex) {
+			throw new ServiceLayerException(ex.getLocalizedMessage());
+		}
+	}
 
-  @Override
-  public Page<InfoLevel> findAll(Predicate predicate, Pageable pageable) {
-    LOG.debug("findAll({},{})", predicate, pageable);
-    try {
-      return infoRepository.findAll(predicate, pageable);
-    } catch (HibernateException ex) {
-      System.out.println("Error message is: " + ex);
-      throw new ServiceLayerException(ex.getLocalizedMessage());
-    }
-  }
+	@Override
+	public Page<InfoLevel> findAll(Predicate predicate, Pageable pageable) {
+		LOG.debug("findAll({},{})", predicate, pageable);
+		try {
+			return infoRepository.findAll(predicate, pageable);
+		} catch (HibernateException ex) {
+			System.out.println("Error message is: " + ex);
+			throw new ServiceLayerException(ex.getLocalizedMessage());
+		}
+	}
 }

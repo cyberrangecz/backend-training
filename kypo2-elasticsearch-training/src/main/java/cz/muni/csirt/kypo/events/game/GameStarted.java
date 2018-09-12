@@ -10,7 +10,6 @@ import com.fasterxml.jackson.annotation.JsonRootName;
 import cz.muni.csirt.kypo.elasticsearch.AbstractAuditPOJO;
 import cz.muni.csirt.kypo.events.game.common.GameDetails;
 
-
 /**
  * @author Pavel Šeda
  *
@@ -20,26 +19,26 @@ import cz.muni.csirt.kypo.events.game.common.GameDetails;
 @JsonRootName(value = "event")
 public class GameStarted extends AbstractAuditPOJO {
 
-  @ApiObjectField(description = "Details of the game.")
-  @JsonProperty(value = "game_details", required = true)
-  private GameDetails gameDetails;
+	@ApiObjectField(description = "Details of the game.")
+	@JsonProperty(value = "game_details", required = true)
+	private GameDetails gameDetails;
 
-  public GameStarted(GameDetails gameDetails) {
-    super();
-    this.gameDetails = gameDetails;
-  }
+	public GameStarted(GameDetails gameDetails) {
+		super();
+		this.gameDetails = gameDetails;
+	}
 
-  public GameDetails getGameDetails() {
-    return gameDetails;
-  }
+	public GameDetails getGameDetails() {
+		return gameDetails;
+	}
 
-  public void setGameDetails(GameDetails gameDetails) {
-    this.gameDetails = gameDetails;
-  }
+	public void setGameDetails(GameDetails gameDetails) {
+		this.gameDetails = gameDetails;
+	}
 
-  @Override
-  public String toString() {
-    return "GameStarted [gameDetails=" + gameDetails + "]";
-  }
+	@Override
+	public String toString() {
+		return "GameStarted [gameDetails=" + gameDetails + "]";
+	}
 
 }

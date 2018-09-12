@@ -8,5 +8,5 @@ package cz.muni.ics.kypo.training.model.enums;
  *
  */
 public enum TRState {
-  NEW, ALLOCATED, READY, ARCHIVED;
+	NEW, ALLOCATED, READY, ARCHIVED;
 }

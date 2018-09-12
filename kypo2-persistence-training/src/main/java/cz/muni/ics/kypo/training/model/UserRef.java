@@ -29,7 +29,7 @@ public class UserRef implements Serializable {
   private Long id;
   @Column(name = "user_ref_id")
   private Long userRefId;
-  @ManyToMany(mappedBy = "organizers", fetch = FetchType.LAZY)
+	@ManyToMany(mappedBy = "organizers", fetch = FetchType.LAZY)
   private Set<TrainingInstance> trainingInstance = new HashSet<>();
 
   public UserRef() {}

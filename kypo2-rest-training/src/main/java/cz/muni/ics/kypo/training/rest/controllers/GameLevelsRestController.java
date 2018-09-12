@@ -1,7 +1,5 @@
 package cz.muni.ics.kypo.training.rest.controllers;
 
-import cz.muni.ics.kypo.training.mapping.BeanMapping;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,9 +23,7 @@ import cz.muni.ics.kypo.training.api.dto.GameLevelDTO;
 import cz.muni.ics.kypo.training.exception.FacadeLayerException;
 import cz.muni.ics.kypo.training.facade.GameLevelFacade;
 import cz.muni.ics.kypo.training.model.GameLevel;
-import cz.muni.ics.kypo.training.rest.exceptions.ResourceNotCreatedException;
 import cz.muni.ics.kypo.training.rest.exceptions.ResourceNotFoundException;
-import cz.muni.ics.kypo.training.rest.exceptions.ResourceNotModifiedException;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -47,26 +43,24 @@ import io.swagger.annotations.ApiResponses;
 @RequestMapping(value = "/game-levels")
 public class GameLevelsRestController {
 
-  private static final Logger LOG = LoggerFactory.getLogger(GameLevelsRestController.class);
+	private static final Logger LOG = LoggerFactory.getLogger(GameLevelsRestController.class);
 
-  private GameLevelFacade gameLevelFacade;
-  private ObjectMapper objectMapper;
-  private BeanMapping dtoMapper;
+	private GameLevelFacade gameLevelFacade;
+	private ObjectMapper objectMapper;
 
-  @Autowired
-  public GameLevelsRestController(GameLevelFacade gameLevelFacade, @Qualifier("objMapperRESTApi") ObjectMapper objectMapper, BeanMapping dtoMapper) {
-    this.gameLevelFacade = gameLevelFacade;
-    this.objectMapper = objectMapper;
-    this.dtoMapper = dtoMapper;
-  }
+	@Autowired
+	public GameLevelsRestController(GameLevelFacade gameLevelFacade, @Qualifier("objMapperRESTApi") ObjectMapper objectMapper) {
+		this.gameLevelFacade = gameLevelFacade;
+		this.objectMapper = objectMapper;
+	}
 
-  /**
-   * Get requested Game Level by id.
-   * 
-   * @param id of Game Level to return.
-   * @return Requested Assessment Level by id.
-   */
-  //@formatter:off
+	/**
+	 * Get requested Game Level by id.
+	 * 
+	 * @param id of Game Level to return.
+	 * @return Requested Assessment Level by id.
+	 */
+	//@formatter:off
   @ApiOperation(httpMethod = "GET", 
       value = "Get Game Level by Id.", 
       response = GameLevelDTO.class,
@@ -93,12 +87,12 @@ public class GameLevelsRestController {
   }
   //@formatter:on
 
-  /**
-   * Get all Game Level.
-   * 
-   * @return all Game Level.
-   */
-  //@formatter:off
+	/**
+	 * Get all Game Level.
+	 * 
+	 * @return all Game Level.
+	 */
+	//@formatter:off
   @ApiOperation(httpMethod = "GET",
       value = "Get all Game Levels.",
       response = GameLevelDTO.class,

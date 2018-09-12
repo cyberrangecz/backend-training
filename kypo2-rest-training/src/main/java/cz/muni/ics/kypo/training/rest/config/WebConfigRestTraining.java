@@ -36,20 +36,20 @@ import cz.muni.ics.kypo.training.config.FacadeConfiguration;
  * </code>
  * </pre>
  *
- *  Intellij idea example:
+ * Intellij idea example:
  *
- *  <pre>
+ * <pre>
  *  <code>
  *   Run Configuration -> tab: Arguments -> Program arguments
  *  </code>
- *  </pre>
- *  </p>
+ * </pre>
+ * </p>
  *
- *  <pre>
+ * <pre>
  *  <code>
  *   --path.to.config.file="/etc/kypo2/training/application.properties"
  *  </code>
- *  </pre>
+ * </pre>
  * 
  * @author Pavel Seda (441048)
  *
@@ -59,57 +59,57 @@ import cz.muni.ics.kypo.training.config.FacadeConfiguration;
 @Import({FacadeConfiguration.class})
 public class WebConfigRestTraining extends SpringBootServletInitializer {
 
-  private static final Logger LOG = LoggerFactory.getLogger(WebConfigRestTraining.class);
+	private static final Logger LOG = LoggerFactory.getLogger(WebConfigRestTraining.class);
 
-  @Override
-  protected SpringApplicationBuilder configure(SpringApplicationBuilder application) {
-    return application.sources(WebConfigRestTraining.class);
-  }
+	@Override
+	protected SpringApplicationBuilder configure(SpringApplicationBuilder application) {
+		return application.sources(WebConfigRestTraining.class);
+	}
 
-  public static void main(String[] args) {
-    SpringApplication.run(WebConfigRestTraining.class, args);
-  }
+	public static void main(String[] args) {
+		SpringApplication.run(WebConfigRestTraining.class, args);
+	}
 
-  // REST settings
+	// REST settings
 
-  /**
-   * Provides localized messages.
-   */
-  @Bean
-  public MessageSource messageSource() {
-    LOG.debug("messageSource()");
-    ResourceBundleMessageSource messageSource = new ResourceBundleMessageSource();
-    messageSource.setDefaultEncoding("UTF-8");
-    return messageSource;
-  }
+	/**
+	 * Provides localized messages.
+	 */
+	@Bean
+	public MessageSource messageSource() {
+		LOG.debug("messageSource()");
+		ResourceBundleMessageSource messageSource = new ResourceBundleMessageSource();
+		messageSource.setDefaultEncoding("UTF-8");
+		return messageSource;
+	}
 
-  @Bean
-  @Primary
-  public MappingJackson2HttpMessageConverter jacksonHTTPMessageConverter() {
-    LOG.debug("jacksonHTTPMessageConverter()");
-    MappingJackson2HttpMessageConverter jsonConverter = new MappingJackson2HttpMessageConverter();
-    jsonConverter.setObjectMapper(objectMapperForRestAPI());
-    return jsonConverter;
-  }
+	@Bean
+	@Primary
+	public MappingJackson2HttpMessageConverter jacksonHTTPMessageConverter() {
+		LOG.debug("jacksonHTTPMessageConverter()");
+		MappingJackson2HttpMessageConverter jsonConverter = new MappingJackson2HttpMessageConverter();
+		jsonConverter.setObjectMapper(objectMapperForRestAPI());
+		return jsonConverter;
+	}
 
-  @Bean(name = "objMapperRESTApi")
-  @Primary
-  public ObjectMapper objectMapperForRestAPI() {
-    LOG.debug("objectMapperForRestAPI()");
-    ObjectMapper obj = new ObjectMapper();
-    obj.setPropertyNamingStrategy(snakeCase());
-    return obj;
-  }
+	@Bean(name = "objMapperRESTApi")
+	@Primary
+	public ObjectMapper objectMapperForRestAPI() {
+		LOG.debug("objectMapperForRestAPI()");
+		ObjectMapper obj = new ObjectMapper();
+		obj.setPropertyNamingStrategy(snakeCase());
+		return obj;
+	}
 
-  /**
-   * Naming strategy for returned JSONs.
-   * 
-   * @return Naming Strategy for JSON properties
-   */
-  @Bean(name = "properyNamingSnakeCase")
-  public PropertyNamingStrategy snakeCase() {
-    LOG.debug("properyNamingSnakeCase -> snakeCase()");
-    return PropertyNamingStrategy.SNAKE_CASE;
-  }
+	/**
+	 * Naming strategy for returned JSONs.
+	 * 
+	 * @return Naming Strategy for JSON properties
+	 */
+	@Bean(name = "properyNamingSnakeCase")
+	public PropertyNamingStrategy snakeCase() {
+		LOG.debug("properyNamingSnakeCase -> snakeCase()");
+		return PropertyNamingStrategy.SNAKE_CASE;
+	}
 
 }

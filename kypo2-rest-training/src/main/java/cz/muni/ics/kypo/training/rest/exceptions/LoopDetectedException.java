@@ -21,7 +21,7 @@ public class LoopDetectedException extends RuntimeException {
 	super(message,ex);
   }
   
-  public LoopDetectedException(Throwable ex) {
+	public LoopDetectedException(Throwable ex) {
     super(ex);
   }
 

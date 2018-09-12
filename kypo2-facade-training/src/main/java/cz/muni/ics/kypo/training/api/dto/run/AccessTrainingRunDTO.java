@@ -8,22 +8,35 @@ import java.util.List;
 
 @ApiModel(value = "AccessTrainingRunDTO", description = ".")
 public class AccessTrainingRunDTO {
-    private AbstractLevelDTO abstractLevelDTO;
-    private List<BasicInfoLevelDTO> infoAboutLevels;
 
-    public AbstractLevelDTO getAbstractLevelDTO() {
-        return abstractLevelDTO;
-    }
+	private AbstractLevelDTO abstractLevelDTO;
+	private List<BasicInfoLevelDTO> infoAboutLevels;
 
-    public void setAbstractLevelDTO(AbstractLevelDTO abstractLevelDTO) {
-        this.abstractLevelDTO = abstractLevelDTO;
-    }
+	public AbstractLevelDTO getAbstractLevelDTO() {
+		return abstractLevelDTO;
+	}
 
-    public List<BasicInfoLevelDTO> getInfoLevels() {
-        return infoAboutLevels;
-    }
+	public void setAbstractLevelDTO(AbstractLevelDTO abstractLevelDTO) {
+		this.abstractLevelDTO = abstractLevelDTO;
+	}
 
-    public void setInfoLevels(List<BasicInfoLevelDTO> infoLevels) {
-        this.infoAboutLevels = infoLevels;
-    }
+	public List<BasicInfoLevelDTO> getInfoLevels() {
+		return infoAboutLevels;
+	}
+
+	public void setInfoLevels(List<BasicInfoLevelDTO> infoLevels) {
+		this.infoAboutLevels = infoLevels;
+	}
+
+	@Override
+	public String toString() {
+		StringBuilder builder = new StringBuilder();
+		builder.append("AccessTrainingRunDTO [abstractLevelDTO=");
+		builder.append(abstractLevelDTO);
+		builder.append(", infoAboutLevels=");
+		builder.append(infoAboutLevels);
+		builder.append("]");
+		return builder.toString();
+	}
+
 }

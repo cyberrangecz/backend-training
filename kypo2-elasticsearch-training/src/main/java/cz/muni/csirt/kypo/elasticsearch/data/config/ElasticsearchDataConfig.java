@@ -25,42 +25,42 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @ComponentScan(basePackages = {"cz.muni.csirt.kypo.elasticsearch.data"})
 public class ElasticsearchDataConfig {
 
-  @Value("${elasticsearch.ipaddress}")
-  private String ipaddress;
-  @Value("${elasticsearch.protocol}")
-  private String protocol;
-  @Value("${elasticsearch.port1}")
-  private int esPort1;
-  @Value("${elasticsearch.port2}")
-  private int esPort2;
+	@Value("${elasticsearch.ipaddress}")
+	private String ipaddress;
+	@Value("${elasticsearch.protocol}")
+	private String protocol;
+	@Value("${elasticsearch.port1}")
+	private int esPort1;
+	@Value("${elasticsearch.port2}")
+	private int esPort2;
 
-  @Primary
-  @Bean
-  public RestClient lowLevelClient() {
-    // @formatter:off
+	@Primary
+	@Bean
+	public RestClient lowLevelClient() {
+		// @formatter:off
           RestClient lowLevelRestClient = RestClient
                   .builder(new HttpHost(ipaddress, esPort1, protocol), new HttpHost(ipaddress, esPort2, protocol))
                   .build();
       // @formatter:on
-    return lowLevelRestClient;
-  }
+		return lowLevelRestClient;
+	}
 
-  @Bean
-  public RestHighLevelClient highLevelClient() {
-    return new RestHighLevelClient(lowLevelClient());
-  }
+	@Bean
+	public RestHighLevelClient highLevelClient() {
+		return new RestHighLevelClient(lowLevelClient());
+	}
 
-  @Bean(name = "objMapperESClient")
-  public ObjectMapper objectMapper() {
-    ObjectMapper objectMapper = new ObjectMapper();
-    return objectMapper;
-  }
+	@Bean(name = "objMapperESClient")
+	public ObjectMapper objectMapper() {
+		ObjectMapper objectMapper = new ObjectMapper();
+		return objectMapper;
+	}
 
-  // To resolve ${} in @Value
-  @Bean
-  public static PropertySourcesPlaceholderConfigurer propertyConfigInDev() {
-    PropertySourcesPlaceholderConfigurer confPropertyPlaceholder = new PropertySourcesPlaceholderConfigurer();
-    confPropertyPlaceholder.setIgnoreUnresolvablePlaceholders(true);
-    return confPropertyPlaceholder;
-  }
+	// To resolve ${} in @Value
+	@Bean
+	public static PropertySourcesPlaceholderConfigurer propertyConfigInDev() {
+		PropertySourcesPlaceholderConfigurer confPropertyPlaceholder = new PropertySourcesPlaceholderConfigurer();
+		confPropertyPlaceholder.setIgnoreUnresolvablePlaceholders(true);
+		return confPropertyPlaceholder;
+	}
 }

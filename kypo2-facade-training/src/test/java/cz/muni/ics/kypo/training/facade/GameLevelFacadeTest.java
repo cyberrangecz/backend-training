@@ -38,72 +38,72 @@ import static org.mockito.BDDMockito.then;
 @Import(FacadeConfigTest.class)
 public class GameLevelFacadeTest {
 
-    @Rule
-    public ExpectedException thrown = ExpectedException.none();
+	@Rule
+	public ExpectedException thrown = ExpectedException.none();
 
-    @Autowired
-    private GameLevelFacade gameLevelFacade;
+	@Autowired
+	private GameLevelFacade gameLevelFacade;
 
-    @MockBean
-    private GameLevelService gameLevelService;
+	@MockBean
+	private GameLevelService gameLevelService;
 
-    private GameLevel gameLevel1, gameLevel2;
+	private GameLevel gameLevel1, gameLevel2;
 
-    @SpringBootApplication
-    static class TestConfiguration {
-    }
+	@SpringBootApplication
+	static class TestConfiguration {
+	}
 
-    @Before
-    public void init() {
-        gameLevel1 = new GameLevel();
-        gameLevel1.setId(1L);
-        gameLevel1.setSolution("test1");
+	@Before
+	public void init() {
+		gameLevel1 = new GameLevel();
+		gameLevel1.setId(1L);
+		gameLevel1.setSolution("test1");
 
-        gameLevel2 = new GameLevel();
-        gameLevel2.setId(2L);
-        gameLevel2.setSolution("test2");
-    }
+		gameLevel2 = new GameLevel();
+		gameLevel2.setId(2L);
+		gameLevel2.setSolution("test2");
+	}
 
-    @Test
-    public void findGameLevelById() {
-        given(gameLevelService.findById(gameLevel1.getId())).willReturn(Optional.of(gameLevel1));
+	@Test
+	public void findGameLevelById() {
+		given(gameLevelService.findById(gameLevel1.getId())).willReturn(Optional.of(gameLevel1));
 
-        GameLevelDTO gameLevelDTO = gameLevelFacade.findById(gameLevel1.getId());
-        deepEquals(gameLevel1, gameLevelDTO);
+		GameLevelDTO gameLevelDTO = gameLevelFacade.findById(gameLevel1.getId());
+		deepEquals(gameLevel1, gameLevelDTO);
 
-        then(gameLevelService).should().findById(gameLevel1.getId());
-    }
+		then(gameLevelService).should().findById(gameLevel1.getId());
+	}
 
-    @Test
-    public void findNonexistentGameLevelById() {
-        Long id = 6L;
-        given(gameLevelService.findById(id)).willReturn(Optional.empty());
-        thrown.expect(FacadeLayerException.class);
-        gameLevelFacade.findById(id);
-    }
+	@Test
+	public void findNonexistentGameLevelById() {
+		Long id = 6L;
+		given(gameLevelService.findById(id)).willReturn(Optional.empty());
+		thrown.expect(FacadeLayerException.class);
+		gameLevelFacade.findById(id);
+	}
 
-    @Test
-    public void findAllGameLevels() {
-        List<GameLevel> expected = new ArrayList<>();
-        expected.add(gameLevel1);
-        expected.add(gameLevel2);
+	@Test
+	public void findAllGameLevels() {
+		List<GameLevel> expected = new ArrayList<>();
+		expected.add(gameLevel1);
+		expected.add(gameLevel2);
 
-        Page<GameLevel> p = new PageImpl<GameLevel>(expected);
-        PathBuilder<GameLevel> gL = new PathBuilder<GameLevel>(GameLevel.class, "gameLevel");
-        Predicate predicate = gL.isNotNull();
+		Page<GameLevel> p = new PageImpl<GameLevel>(expected);
+		PathBuilder<GameLevel> gL = new PathBuilder<GameLevel>(GameLevel.class, "gameLevel");
+		Predicate predicate = gL.isNotNull();
 
-        given(gameLevelService.findAll(any(Predicate.class), any (Pageable.class))).willReturn(p);
+		given(gameLevelService.findAll(any(Predicate.class), any(Pageable.class))).willReturn(p);
 
-        PageResultResource<GameLevelDTO> gameLevelDTO = gameLevelFacade.findAll(predicate, PageRequest.of(0, 2));
-        deepEquals(gameLevel1, gameLevelDTO.getContent().get(0));
-        deepEquals(gameLevel2, gameLevelDTO.getContent().get(1));
+		PageResultResource<GameLevelDTO> gameLevelDTO = gameLevelFacade.findAll(predicate, PageRequest.of(0, 2));
+		deepEquals(gameLevel1, gameLevelDTO.getContent().get(0));
+		deepEquals(gameLevel2, gameLevelDTO.getContent().get(1));
 
-        then(gameLevelService).should().findAll(predicate, PageRequest.of(0,2));
+		then(gameLevelService).should().findAll(predicate, PageRequest.of(0, 2));
 
-    }
+	}
 
-    private void deepEquals(GameLevel expected, GameLevelDTO actual) {
-        assertEquals(expected.getId(), actual.getId());
-        assertEquals(expected.getSolution(), actual.getSolution());
-    }
+	private void deepEquals(GameLevel expected, GameLevelDTO actual) {
+		assertEquals(expected.getId(), actual.getId());
+		assertEquals(expected.getSolution(), actual.getSolution());
+	}
 }

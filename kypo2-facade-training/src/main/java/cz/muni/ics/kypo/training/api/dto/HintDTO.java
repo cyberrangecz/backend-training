@@ -8,71 +8,72 @@ import java.util.Arrays;
 import java.util.Objects;
 
 public class HintDTO {
-    private Long id;
-    @NotEmpty(message = "Title of hint cannot be empty.")
-    private String title;
-    @NotEmpty(message = "Content of hint cannot be empty.")
-    private String content;
-    @PositiveOrZero(message = "Penalty must be a positive number or zero.")
-    private Integer hintPenalty;
 
-    public Long getId() {
-        return id;
-    }
+	private Long id;
+	@NotEmpty(message = "Title of hint cannot be empty.")
+	private String title;
+	@NotEmpty(message = "Content of hint cannot be empty.")
+	private String content;
+	@PositiveOrZero(message = "Penalty must be a positive number or zero.")
+	private Integer hintPenalty;
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+	public Long getId() {
+		return id;
+	}
 
-    public String getTitle() {
-        return title;
-    }
+	public void setId(Long id) {
+		this.id = id;
+	}
 
-    public void setTitle(String title) {
-        this.title = title;
-    }
+	public String getTitle() {
+		return title;
+	}
 
-    public String getContent() {
-        return content;
-    }
+	public void setTitle(String title) {
+		this.title = title;
+	}
 
-    public void setContent(String content) {
-        this.content = content;
-    }
+	public String getContent() {
+		return content;
+	}
 
-    public Integer getHintPenalty() {
-        return hintPenalty;
-    }
+	public void setContent(String content) {
+		this.content = content;
+	}
 
-    public void setHintPenalty(Integer hintPenalty) {
-        this.hintPenalty = hintPenalty;
-    }
+	public Integer getHintPenalty() {
+		return hintPenalty;
+	}
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+	public void setHintPenalty(Integer hintPenalty) {
+		this.hintPenalty = hintPenalty;
+	}
 
-        HintDTO hintDTO = (HintDTO) o;
+	@Override
+	public boolean equals(Object o) {
+		if (this == o)
+			return true;
+		if (o == null || getClass() != o.getClass())
+			return false;
 
-        if (!id.equals(hintDTO.id)) return false;
-        if (!title.equals(hintDTO.title)) return false;
-        if (!content.equals(hintDTO.content)) return false;
-        return hintPenalty.equals(hintDTO.hintPenalty);
-    }
+		HintDTO hintDTO = (HintDTO) o;
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(id, title, content, hintPenalty);
-    }
+		if (!id.equals(hintDTO.id))
+			return false;
+		if (!title.equals(hintDTO.title))
+			return false;
+		if (!content.equals(hintDTO.content))
+			return false;
+		return hintPenalty.equals(hintDTO.hintPenalty);
+	}
 
-    @Override
-    public String toString() {
-        return "HintDTO{" +
-                "id=" + id +
-                ", title='" + title + '\'' +
-                ", content='" + content + '\'' +
-                ", hintPenalty=" + hintPenalty +
-                '}';
-    }
+	@Override
+	public int hashCode() {
+		return Objects.hash(id, title, content, hintPenalty);
+	}
+
+	@Override
+	public String toString() {
+		return "HintDTO{" + "id=" + id + ", title='" + title + '\'' + ", content='" + content + '\'' + ", hintPenalty=" + hintPenalty + '}';
+	}
 }
