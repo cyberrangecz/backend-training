@@ -27,7 +27,7 @@ public class AuthorRef implements Serializable {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   @Column(name = "id", unique = true, nullable = false, insertable = false)
   private Long id;
-  @Column(name = "author_ref_id")
+  @Column(name = "author_ref_login", nullable = false)
   private String authorRefLogin;
   @ManyToMany(mappedBy = "authorRef", fetch = FetchType.LAZY)
   private Set<TrainingDefinition> trainingDefinition = new HashSet<>();

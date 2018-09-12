@@ -122,7 +122,7 @@ ALTER SEQUENCE participant_ref_id_seq OWNED BY participant_ref.id;
 
 CREATE TABLE author_ref (
     id bigint NOT NULL,
-    author_ref_id bigint
+    author_ref_login character varying(255) NOT NULL
 );
 
 
@@ -162,10 +162,10 @@ CREATE TABLE game_level (
     content text NOT NULL,
     estimated_duration integer,
     flag character varying(255) NOT NULL,
-    incorrect_flag_penalty integer NOT NULL,
     solution text NOT NULL,
     solution_penalty integer NOT NULL,
-    id bigint NOT NULL
+    id bigint NOT NULL,
+    incorrect_flag_limit integer
 );
 
 
@@ -435,7 +435,7 @@ ALTER SEQUENCE training_definition_id_seq OWNED BY training_definition.id;
 CREATE TABLE training_instance (
     id bigint NOT NULL,
     end_time timestamp without time zone,
-    keyword character varying(255) NOT NULL,
+    password character varying(255) NOT NULL,
     pool_size integer NOT NULL,
     start_time timestamp without time zone NOT NULL,
     title character varying(255) NOT NULL,
@@ -508,29 +508,13 @@ CREATE TABLE training_run (
     current_level_id bigint,
     sandbox_instance_ref_id bigint,
     training_instance_id bigint,
-    participant_ref_id bigint
+    participant_ref_id bigint,
+    event_log_reference character varying(255),
+    incorrect_flag_count integer
 );
 
 
 ALTER TABLE training_run OWNER TO postgres;
-
-CREATE TABLE historic_training_run (
-    id bigint NOT NULL,
-    end_time timestamp without time zone NOT NULL,
-    event_log_reference character varying(255),
-    start_time timestamp without time zone NOT NULL,
-    current_level_id bigint,
-    sandbox_instance_ref_id bigint,
-    training_instance_id bigint,
-    participant_ref_id bigint
-);
-
-ALTER TABLE historic_training_run OWNER TO postgres;
-
---
--- TOC entry 209 (class 1259 OID 24379)
--- Name: training_run_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
---
 
 CREATE SEQUENCE training_run_id_seq
     START WITH 1
@@ -1255,4 +1239,53 @@ ALTER TABLE ONLY game_level
 --
 -- PostgreSQL database dump complete
 --
+
+INSERT INTO pre_hook(id) VALUE (1);
+INSERT INTO post_hook(id) VALUE (1);
+INSERT INTO pre_hook(id) VALUE (2);
+INSERT INTO post_hook(id) VALUE (2);
+INSERT INTO pre_hook(id) VALUE (3);
+INSERT INTO post_hook(id) VALUE (3);
+
+INSERT INTO abstract_level(id, max_score, next_level, title, post_hook_id, pre_hook_id) VALUES (3, 50, null, 'Assessment Level1', 3, 3);
+INSERT INTO abstract_level(id, max_score, next_level, title, post_hook_id, pre_hook_id) VALUES (2, 70, 3, 'Info Level1', 2, 2);
+INSERT INTO abstract_level(id, max_score, next_level, title, post_hook_id, pre_hook_id) VALUES (1, 20, 2, 'Game Level1', 1, 1);
+
+INSERT INTO hint(id, content, hint_penalty, title, game_level_id) VALUES (1, 'Very good advice', 10, 'Hint1', 1);
+
+INSERT INTO game_level(attachments, content, estimated_duration, flag, solution, solution_penalty, id, incorrect_flag_limit) VALUES (null, 'Play me', 25, 'secretFlag', 'This is how you do it', 19, 1, 5);
+INSERT INTO info_level(content, id) VALUES ('Informational stuff', 2);
+INSERT INTO assessment_level(assessment_type, instructions, questions, id) VALUES ('TEST', 'Fill me up', 'What is my mothers name?', 3);
+
+INSERT INTO sandbox_definition_ref(id, sandbox_definition_ref) VALUES (1, 1);
+INSERT INTO author_ref(id, author_ref_login) VALUES (1, 'xxx_ShalinMaster_xxx');
+INSERT INTO author_ref(id, author_ref_login) VALUES (2, 'ultraDesigner');
+
+INSERT INTO training_definition(id, description, outcomes, prerequisities, state, title, sand_box_definition_ref_id, starting_level) VALUES (1, 'Released training definition', null, null, 'RELEASED', 'TrainingDefinition1', 1, 1);
+INSERT INTO training_definition_author_ref(training_definition_id, author_ref_id) VALUES (1, 1);
+INSERT INTO training_definition_author_ref(training_definition_id, author_ref_id) VALUES (1, 2);
+
+
+INSERT INTO pre_hook(id) VALUE (4);
+INSERT INTO post_hook(id) VALUE (4);
+INSERT INTO pre_hook(id) VALUE (5);
+INSERT INTO post_hook(id) VALUE (5);
+INSERT INTO pre_hook(id) VALUE (6);
+INSERT INTO post_hook(id) VALUE (6);
+
+INSERT INTO abstract_level(id, max_score, next_level, title, post_hook_id, pre_hook_id) VALUES (6, 75, null, 'Assessment Level2', 6, 6);
+INSERT INTO abstract_level(id, max_score, next_level, title, post_hook_id, pre_hook_id) VALUES (5, 13, 6, 'Info Level2', 5, 5);
+INSERT INTO abstract_level(id, max_score, next_level, title, post_hook_id, pre_hook_id) VALUES (4, 55, 5, 'Game Level2', 4, 4);
+
+INSERT INTO hint(id, content, hint_penalty, title, game_level_id) VALUES (2, 'Very bad advice', 6, 'Hint2', 4);
+
+INSERT INTO game_level(attachments, content, estimated_duration, flag, solution, solution_penalty, id, incorrect_flag_limit) VALUES (null, 'Unsolvable problem', 60, 'jibberish', 'Not sure yet', 54, 4, 3);
+INSERT INTO info_level(content, id) VALUES ('Potatoes are not poisonous', 5);
+INSERT INTO assessment_level(assessment_type, instructions, questions, id) VALUES ('QUESTIONNAIRE', 'No rush', '...?', 6);
+
+INSERT INTO sandbox_definition_ref(id, sandbox_definition_ref) VALUES (2, 2);
+INSERT INTO author_ref(id, author_ref_login) VALUES (3, 'DatBoi');
+
+INSERT INTO training_definition(id, description, outcomes, prerequisities, state, title, sand_box_definition_ref_id, starting_level) VALUES (2, 'Unreleased training definition', null, null, 'UNRELEASED', 'TrainingDefinition2', 2, 4);
+INSERT INTO training_definition_author_ref(training_definition_id, author_ref_id) VALUES (2, 3);
 
