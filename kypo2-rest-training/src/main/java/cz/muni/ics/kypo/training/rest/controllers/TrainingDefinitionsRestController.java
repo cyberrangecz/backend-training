@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.querydsl.binding.QuerydslPredicate;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -129,6 +130,29 @@ public class TrainingDefinitionsRestController {
     } catch (FacadeLayerException ex) {
       throw new ResourceNotFoundException(ex.getLocalizedMessage());
     }
+  }
+
+  @ApiOperation( httpMethod = "GET",
+          value = "Get all training definition by sandbox definition id",
+          response = TrainingDefinitionDTO.class,
+          responseContainer = "Page",
+          nickname = "findAllTrainingDefinitionsBySandboxDefinitionId",
+          produces = "application/json"
+  )
+  @ApiResponses( value = {
+          @ApiResponse(code = 404, message = "The requested resource was not found")
+  })
+  @GetMapping(value = "/sandbox-definitions/{sandboxDefinitionId}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<Object> findAllTrainingDefinitionsBySandboxDefinitionId(@ApiParam(value = "Id of sandbox definition") @PathVariable(value = "sandboxDefinitionId") Long sandboxDefinitionId,
+                                                                                @PageableDefault(size = 10, page = 0) Pageable pageable){
+    LOG.debug("findAllTrainingDefinitionsBySandboxDefinitionId({}, {})", sandboxDefinitionId, pageable);
+    try {
+      PageResultResource<TrainingDefinitionDTO> trainingDefinitionResource = trainingDefinitionFacade.findAllBySandboxDefinitionId(sandboxDefinitionId, pageable);
+      return new ResponseEntity<>(SquigglyUtils.stringify(objectMapper, trainingDefinitionResource), HttpStatus.OK);
+    } catch (FacadeLayerException ex){
+      throw new ResourceNotFoundException(ex.getLocalizedMessage());
+    }
+
   }
 
   @ApiOperation(httpMethod = "POST",

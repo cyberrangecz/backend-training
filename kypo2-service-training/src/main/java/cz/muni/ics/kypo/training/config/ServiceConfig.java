@@ -15,7 +15,7 @@ import org.springframework.web.client.RestTemplate;
  *
  */
 @Configuration
-@Import({TrainingElasticsearchServiceConfig.class, WebConfigRestSecurityCommons.class})
+@Import({TrainingElasticsearchServiceConfig.class, WebConfigRestSecurityCommons.class, PersistenceConfig.class})
 @ComponentScan(basePackages = {"cz.muni.ics.kypo.training.service"})
 public class ServiceConfig {
 
