@@ -6,17 +6,17 @@ package cz.muni.csirt.kypo.elasticsearch.service.exceptions;
  */
 public class ElasticsearchTrainingServiceLayerException extends RuntimeException {
 
-  public ElasticsearchTrainingServiceLayerException() {}
+	public ElasticsearchTrainingServiceLayerException() {}
 
-  public ElasticsearchTrainingServiceLayerException(String message) {
-    super(message);
-  }
+	public ElasticsearchTrainingServiceLayerException(String message) {
+		super(message);
+	}
 
-  public ElasticsearchTrainingServiceLayerException(String message, Throwable ex) {
-    super(message, ex);
-  }
+	public ElasticsearchTrainingServiceLayerException(String message, Throwable ex) {
+		super(message, ex);
+	}
 
-  public ElasticsearchTrainingServiceLayerException(Throwable ex) {
-    super(ex);
-  }
+	public ElasticsearchTrainingServiceLayerException(Throwable ex) {
+		super(ex);
+	}
 }

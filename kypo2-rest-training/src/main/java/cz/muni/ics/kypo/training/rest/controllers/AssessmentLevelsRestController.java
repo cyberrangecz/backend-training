@@ -1,8 +1,6 @@
 package cz.muni.ics.kypo.training.rest.controllers;
 
-
 import com.querydsl.core.types.Predicate;
-import cz.muni.ics.kypo.training.mapping.BeanMapping;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,9 +23,7 @@ import cz.muni.ics.kypo.training.api.dto.AssessmentLevelDTO;
 import cz.muni.ics.kypo.training.exception.FacadeLayerException;
 import cz.muni.ics.kypo.training.facade.AssessmentLevelFacade;
 import cz.muni.ics.kypo.training.model.AssessmentLevel;
-import cz.muni.ics.kypo.training.rest.exceptions.ResourceNotCreatedException;
 import cz.muni.ics.kypo.training.rest.exceptions.ResourceNotFoundException;
-import cz.muni.ics.kypo.training.rest.exceptions.ResourceNotModifiedException;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -46,30 +42,25 @@ import io.swagger.annotations.ApiResponses;
 @RequestMapping(value = "/assessment-levels")
 public class AssessmentLevelsRestController {
 
-    private static final Logger LOG = LoggerFactory.getLogger(AssessmentLevelsRestController.class);
+	private static final Logger LOG = LoggerFactory.getLogger(AssessmentLevelsRestController.class);
 
-    private AssessmentLevelFacade assessmentLevelFacade;
+	private AssessmentLevelFacade assessmentLevelFacade;
+	private ObjectMapper objectMapper;
 
-    private ObjectMapper objectMapper;
+	@Autowired
+	public AssessmentLevelsRestController(AssessmentLevelFacade assessmentLevelFacade,
+			@Qualifier("objMapperRESTApi") ObjectMapper objectMapper) {
+		this.assessmentLevelFacade = assessmentLevelFacade;
+		this.objectMapper = objectMapper;
+	}
 
-    private BeanMapping dtoMapper;
-
-    private Logger log = LoggerFactory.getLogger(AssessmentLevelsRestController.class);
-
-    @Autowired
-    public AssessmentLevelsRestController(AssessmentLevelFacade assessmentLevelFacade, @Qualifier("objMapperRESTApi") ObjectMapper objectMapper, BeanMapping dtoMapper) {
-        this.assessmentLevelFacade = assessmentLevelFacade;
-        this.objectMapper = objectMapper;
-        this.dtoMapper = dtoMapper;
-    }
-
-    /**
-     * Get requested Assessment Level by id.
-     *
-     * @param id of Assessment Level to return.
-     * @return Requested Assessment Level by id.
-     */
-    //@formatter:off
+	/**
+	 * Get requested Assessment Level by id.
+	 *
+	 * @param id of Assessment Level to return.
+	 * @return Requested Assessment Level by id.
+	 */
+	//@formatter:off
     @ApiOperation(httpMethod = "GET",
             value = "Get Assessment Level by Id.",
             response = AssessmentLevelDTO.class,
@@ -94,12 +85,12 @@ public class AssessmentLevelsRestController {
     }
     //@formatter:on
 
-    /**
-     * Get all Assessment Levels.
-     *
-     * @return all Assessment levels.
-     */
-    //@formatter:off
+	/**
+	 * Get all Assessment Levels.
+	 *
+	 * @return all Assessment levels.
+	 */
+	//@formatter:off
     @ApiOperation(httpMethod = "GET",
             value = "Get all Assessment Levels.",
             response = AssessmentLevelDTO.class,

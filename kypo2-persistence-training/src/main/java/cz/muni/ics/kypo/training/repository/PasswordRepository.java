@@ -7,5 +7,6 @@ import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import java.util.Optional;
 
 public interface PasswordRepository extends JpaRepository<Password, Long>, QuerydslPredicateExecutor<Password> {
-  Optional<Password> findOneByPasswordHash(String passwordHash);
+
+	Optional<Password> findOneByPasswordHash(String passwordHash);
 }

@@ -6,5 +6,5 @@ package cz.muni.ics.kypo.training.model.enums;
  *
  */
 public enum AssessmentType {
-  TEST, QUESTIONNAIRE;
+	TEST, QUESTIONNAIRE;
 }

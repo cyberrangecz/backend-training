@@ -23,27 +23,28 @@ import com.google.common.reflect.ClassPath;
  */
 public class EsAvroSchemaGenerator {
 
-  private ObjectMapper mapper = new ObjectMapper(new AvroFactory());
+	private ObjectMapper mapper = new ObjectMapper(new AvroFactory());
 
-  public EsAvroSchemaGenerator() {}
+	public EsAvroSchemaGenerator() {}
 
-  /**
-   * Run this class to "manually" create AVRO schemas
-   *
-   */
-  public static void main(String[] args) {
-    EsAvroSchemaGenerator gen = new EsAvroSchemaGenerator();
-    gen.runGenerateAVROSchemas("cz.muni.csirt.kypo.events.game", "src/main/resources/validation-schemas/events/avro", Arrays.asList("common"));
-  }
+	/**
+	 * Run this class to "manually" create AVRO schemas
+	 *
+	 */
+	public static void main(String[] args) {
+		EsAvroSchemaGenerator gen = new EsAvroSchemaGenerator();
+		gen.runGenerateAVROSchemas("cz.muni.csirt.kypo.events.game", "src/main/resources/validation-schemas/events/avro",
+				Arrays.asList("common"));
+	}
 
-  /**
-   * Generates avro serialization files.
-   * 
-   * @param objectMapper
-   */
-  private final void runGenerateAVROSchemas(String topLevelClasses, String validationFolderName, List<String> excludes) {
-    try {
-      // @formatter:off
+	/**
+	 * Generates avro serialization files.
+	 * 
+	 * @param objectMapper
+	 */
+	private final void runGenerateAVROSchemas(String topLevelClasses, String validationFolderName, List<String> excludes) {
+		try {
+			// @formatter:off
 	  Set<ClassPath.ClassInfo> classInfo = ClassPath.from(getClass().getClassLoader())
 			.getTopLevelClassesRecursive(topLevelClasses).stream()
 			.filter(clazz -> Objects.nonNull(clazz) && Objects.nonNull(clazz.getName()) && Objects.nonNull(excludes))
@@ -51,43 +52,43 @@ public class EsAvroSchemaGenerator {
 			.filter(clazz -> !excludes.stream().anyMatch(str -> clazz.getName().contains(str)))
 			.collect(Collectors.toCollection(HashSet::new));
 	  // @formatter:on
-      classInfo.forEach(c -> {
-        try {
-          Class<?> clazz = Class.forName(c.getName());
-          Object documentInstanceObj = clazz.newInstance();
+			classInfo.forEach(c -> {
+				try {
+					Class<?> clazz = Class.forName(c.getName());
+					Object documentInstanceObj = clazz.newInstance();
 
-          String docName = c.getName();
+					String docName = c.getName();
 
-          generateJSONSchemas(documentInstanceObj, docName, docName, validationFolderName);
-        } catch (Exception e) {
-          e.printStackTrace();
-        }
-      });
-    } catch (IOException e1) {
-      e1.printStackTrace();
-    }
-  }
+					generateJSONSchemas(documentInstanceObj, docName, docName, validationFolderName);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			});
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		}
+	}
 
-  private final void generateJSONSchemas(Object className, String fileName, String type, String validationFolderName) {
-    // configure mapper, if necessary, then create schema generator
-    try {
-      AvroSchemaGenerator gen = new AvroSchemaGenerator();
-      mapper.acceptJsonFormatVisitor(className.getClass(), gen);
-      AvroSchema schemaWrapper = gen.getGeneratedSchema();
+	private final void generateJSONSchemas(Object className, String fileName, String type, String validationFolderName) {
+		// configure mapper, if necessary, then create schema generator
+		try {
+			AvroSchemaGenerator gen = new AvroSchemaGenerator();
+			mapper.acceptJsonFormatVisitor(className.getClass(), gen);
+			AvroSchema schemaWrapper = gen.getGeneratedSchema();
 
-      org.apache.avro.Schema avroSchema = schemaWrapper.getAvroSchema();
-      String asJson = avroSchema.toString(true);
+			org.apache.avro.Schema avroSchema = schemaWrapper.getAvroSchema();
+			String asJson = avroSchema.toString(true);
 
-      Path newSchema = Paths.get(validationFolderName + "/" + fileName + ".avsc");
-      // create validation-schemas directory if does not exists
-      Path parentDir = newSchema.getParent();
-      if (!Files.exists(parentDir)) {
-        Files.createDirectories(parentDir);
-      }
-      Files.write(newSchema, asJson.getBytes());
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
-  }
+			Path newSchema = Paths.get(validationFolderName + "/" + fileName + ".avsc");
+			// create validation-schemas directory if does not exists
+			Path parentDir = newSchema.getParent();
+			if (!Files.exists(parentDir)) {
+				Files.createDirectories(parentDir);
+			}
+			Files.write(newSchema, asJson.getBytes());
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
 
 }

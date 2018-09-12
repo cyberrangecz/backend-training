@@ -19,11 +19,11 @@ import org.springframework.web.client.RestTemplate;
 @ComponentScan(basePackages = {"cz.muni.ics.kypo.training.service"})
 public class ServiceConfig {
 
-  private static final Logger LOG = LoggerFactory.getLogger(ServiceConfig.class);
+	private static final Logger LOG = LoggerFactory.getLogger(ServiceConfig.class);
 
-  @Bean
-  public RestTemplate restTemplate() {
-    return new RestTemplate();
-  }
+	@Bean
+	public RestTemplate restTemplate() {
+		return new RestTemplate();
+	}
 
 }

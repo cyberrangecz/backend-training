@@ -16,18 +16,18 @@ import cz.muni.ics.kypo.training.model.GameLevel;
  */
 public interface GameLevelService {
 
-  /**
-   * Finds specific Game Level by id
-   * 
-   * @param id of a Game Level that would be returned
-   * @return specific game level by id
-   */
-  Optional<GameLevel> findById(long id);
+	/**
+	 * Finds specific Game Level by id
+	 * 
+	 * @param id of a Game Level that would be returned
+	 * @return specific game level by id
+	 */
+	Optional<GameLevel> findById(long id);
 
-  /**
-   * Find all Game Levels.
-   * 
-   * @return all game levels
-   */
-  Page<GameLevel> findAll(Predicate predicate, Pageable pageable);
+	/**
+	 * Find all Game Levels.
+	 * 
+	 * @return all game levels
+	 */
+	Page<GameLevel> findAll(Predicate predicate, Pageable pageable);
 }

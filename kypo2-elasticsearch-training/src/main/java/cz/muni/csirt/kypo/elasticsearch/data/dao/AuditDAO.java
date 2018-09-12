@@ -3,6 +3,7 @@ package cz.muni.csirt.kypo.elasticsearch.data.dao;
 import java.io.IOException;
 
 import cz.muni.csirt.kypo.elasticsearch.AbstractAuditPOJO;
+import cz.muni.csirt.kypo.elasticsearch.data.exceptions.ElasticsearchTrainingDataLayerException;
 
 /**
  * 
@@ -19,6 +20,7 @@ public interface AuditDAO {
 	 * 
 	 * @param pojoClass class saving to Elasticsearch
 	 * @throws IOException
+	 * @throws ElasticsearchTrainingDataLayerException
 	 */
 	<T extends AbstractAuditPOJO> void save(T pojoClass) throws IOException;
 
@@ -27,6 +29,7 @@ public interface AuditDAO {
 	 * 
 	 * @param pojoClass class updating in Elasticsearch
 	 * @throws IOException
+	 * @throws ElasticsearchTrainingDataLayerException
 	 */
 	<T extends AbstractAuditPOJO> void update(T pojoClass) throws IOException;
 

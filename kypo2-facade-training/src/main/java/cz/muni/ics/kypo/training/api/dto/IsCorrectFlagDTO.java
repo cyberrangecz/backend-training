@@ -1,23 +1,24 @@
 package cz.muni.ics.kypo.training.api.dto;
 
 public class IsCorrectFlagDTO {
-    private boolean isCorrect;
-    private int remainingAttempts;
 
-    public boolean isCorrect() {
-        return isCorrect;
-    }
+	private boolean isCorrect;
+	private int remainingAttempts;
 
-    public void setCorrect(boolean correct) {
-        isCorrect = correct;
-    }
+	public boolean isCorrect() {
+		return isCorrect;
+	}
 
-    public int getRemainingAttempts() {
-        return remainingAttempts;
-    }
+	public void setCorrect(boolean correct) {
+		isCorrect = correct;
+	}
 
-    public void setRemainingAttempts(int remainingAttempts) {
-        this.remainingAttempts = remainingAttempts;
-    }
+	public int getRemainingAttempts() {
+		return remainingAttempts;
+	}
+
+	public void setRemainingAttempts(int remainingAttempts) {
+		this.remainingAttempts = remainingAttempts;
+	}
 
 }

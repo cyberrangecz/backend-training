@@ -19,26 +19,26 @@ import cz.muni.csirt.kypo.events.game.common.GameDetails;
 @JsonRootName(value = "event")
 public class GameExited extends AbstractAuditPOJO {
 
-  @ApiObjectField(description = "Details of the game.")
-  @JsonProperty(value = "game_details", required = true)
-  private GameDetails gameDetails;
+	@ApiObjectField(description = "Details of the game.")
+	@JsonProperty(value = "game_details", required = true)
+	private GameDetails gameDetails;
 
-  public GameExited(GameDetails gameDetails) {
-    super();
-    this.gameDetails = gameDetails;
-  }
+	public GameExited(GameDetails gameDetails) {
+		super();
+		this.gameDetails = gameDetails;
+	}
 
-  public GameDetails getGameDetails() {
-    return gameDetails;
-  }
+	public GameDetails getGameDetails() {
+		return gameDetails;
+	}
 
-  public void setGameDetails(GameDetails gameDetails) {
-    this.gameDetails = gameDetails;
-  }
+	public void setGameDetails(GameDetails gameDetails) {
+		this.gameDetails = gameDetails;
+	}
 
-  @Override
-  public String toString() {
-    return "GameExited [gameDetails=" + gameDetails + "]";
-  }
+	@Override
+	public String toString() {
+		return "GameExited [gameDetails=" + gameDetails + "]";
+	}
 
 }

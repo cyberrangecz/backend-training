@@ -5,18 +5,19 @@ package cz.muni.ics.kypo.training.exceptions;
  *
  */
 public class ServiceLayerException extends RuntimeException {
-  public ServiceLayerException() {}
 
-  public ServiceLayerException(String message) {
-    super(message);
-  }
+	public ServiceLayerException() {}
 
-  public ServiceLayerException(String message, Throwable ex) {
-    super(message, ex);
-  }
+	public ServiceLayerException(String message) {
+		super(message);
+	}
 
-  public ServiceLayerException(Throwable ex) {
-    super(ex);
-  }
+	public ServiceLayerException(String message, Throwable ex) {
+		super(message, ex);
+	}
+
+	public ServiceLayerException(Throwable ex) {
+		super(ex);
+	}
 
 }

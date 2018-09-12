@@ -10,17 +10,17 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 @ResponseStatus(value = HttpStatus.UNPROCESSABLE_ENTITY, reason = "The requested resource already exists")
 public class ResourceAlreadyExistingException extends RuntimeException {
 
-  public ResourceAlreadyExistingException() {}
+	public ResourceAlreadyExistingException() {}
 
-  public ResourceAlreadyExistingException(String message) {
-    super(message);
-  }
+	public ResourceAlreadyExistingException(String message) {
+		super(message);
+	}
 
-  public ResourceAlreadyExistingException(String message, Throwable ex) {
-	super(message,ex);
-  }
-  
-  public ResourceAlreadyExistingException(Throwable ex) {
-    super(ex);
-  }
+	public ResourceAlreadyExistingException(String message, Throwable ex) {
+		super(message, ex);
+	}
+
+	public ResourceAlreadyExistingException(Throwable ex) {
+		super(ex);
+	}
 }

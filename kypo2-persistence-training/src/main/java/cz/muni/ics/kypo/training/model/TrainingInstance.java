@@ -19,131 +19,130 @@ import javax.persistence.*;
 @Table(name = "training_instance")
 public class TrainingInstance implements Serializable {
 
-  @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
-  @Column(name = "id", unique = true, nullable = false, insertable = false)
-  private Long id;
-  @Column(name = "start_time", nullable = false)
-  private LocalDateTime startTime;
-  @Column(name = "end_time", nullable = true)
-  private LocalDateTime endTime;
-  @Column(name = "title", nullable = false)
-  private String title;
-  @Column(name = "pool_size", nullable = false)
-  private int poolSize;
-  @Column(name = "password", nullable = false)
-  private char[] password;
-  @ManyToOne(fetch = FetchType.LAZY)
-  private TrainingDefinition trainingDefinition;
-  @ManyToMany(fetch = FetchType.LAZY)
-  private Set<UserRef> organizers = new HashSet<>();
-  @OneToMany(fetch = FetchType.LAZY)
-  private Set<SandboxInstanceRef> sandboxInstanceRefs = new HashSet<>();
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "id", unique = true, nullable = false, insertable = false)
+	private Long id;
+	@Column(name = "start_time", nullable = false)
+	private LocalDateTime startTime;
+	@Column(name = "end_time", nullable = true)
+	private LocalDateTime endTime;
+	@Column(name = "title", nullable = false)
+	private String title;
+	@Column(name = "pool_size", nullable = false)
+	private int poolSize;
+	@Column(name = "password", nullable = false)
+	private char[] password;
+	@ManyToOne(fetch = FetchType.LAZY)
+	private TrainingDefinition trainingDefinition;
+	@ManyToMany(fetch = FetchType.LAZY)
+	private Set<UserRef> organizers = new HashSet<>();
+	@OneToMany(fetch = FetchType.LAZY)
+	private Set<SandboxInstanceRef> sandboxInstanceRefs = new HashSet<>();
 
-  public TrainingInstance() {}
+	public TrainingInstance() {}
 
-  public TrainingInstance(Long id, LocalDateTime startTime, LocalDateTime endTime, String title, int poolSize, char[] password,
-      TrainingDefinition trainingDefinition, Set<UserRef> organizers, Set<SandboxInstanceRef> sandboxInstanceRef) {
-    super();
-    this.id = id;
-    this.startTime = startTime;
-    this.endTime = endTime;
-    this.title = title;
-    this.poolSize = poolSize;
-    this.password = password;
-    this.trainingDefinition = trainingDefinition;
-    this.organizers = organizers;
-    this.sandboxInstanceRefs = sandboxInstanceRef;
-  }
+	public TrainingInstance(Long id, LocalDateTime startTime, LocalDateTime endTime, String title, int poolSize, char[] password,
+			TrainingDefinition trainingDefinition, Set<UserRef> organizers, Set<SandboxInstanceRef> sandboxInstanceRef) {
+		super();
+		this.id = id;
+		this.startTime = startTime;
+		this.endTime = endTime;
+		this.title = title;
+		this.poolSize = poolSize;
+		this.password = password;
+		this.trainingDefinition = trainingDefinition;
+		this.organizers = organizers;
+		this.sandboxInstanceRefs = sandboxInstanceRef;
+	}
 
-  public Long getId() {
-    return id;
-  }
+	public Long getId() {
+		return id;
+	}
 
-  public void setId(Long id) {
-    this.id = id;
-  }
+	public void setId(Long id) {
+		this.id = id;
+	}
 
-  public LocalDateTime getStartTime() {
-    return startTime;
-  }
+	public LocalDateTime getStartTime() {
+		return startTime;
+	}
 
-  public void setStartTime(LocalDateTime startTime) {
-    this.startTime = startTime;
-  }
+	public void setStartTime(LocalDateTime startTime) {
+		this.startTime = startTime;
+	}
 
-  public LocalDateTime getEndTime() {
-    return endTime;
-  }
+	public LocalDateTime getEndTime() {
+		return endTime;
+	}
 
-  public void setEndTime(LocalDateTime endTime) {
-    this.endTime = endTime;
-  }
+	public void setEndTime(LocalDateTime endTime) {
+		this.endTime = endTime;
+	}
 
-  public char[] getPassword() {
-    return password;
-  }
+	public char[] getPassword() {
+		return password;
+	}
 
-  public void setPassword(char[] password) {
-    this.password = password;
-  }
+	public void setPassword(char[] password) {
+		this.password = password;
+	}
 
-  public String getTitle() {
-    return title;
-  }
+	public String getTitle() {
+		return title;
+	}
 
-  public void setTitle(String title) {
-    this.title = title;
-  }
+	public void setTitle(String title) {
+		this.title = title;
+	}
 
-  public int getPoolSize() {
-    return poolSize;
-  }
+	public int getPoolSize() {
+		return poolSize;
+	}
 
-  public void setPoolSize(int poolSize) {
-    this.poolSize = poolSize;
-  }
+	public void setPoolSize(int poolSize) {
+		this.poolSize = poolSize;
+	}
 
-  public TrainingDefinition getTrainingDefinition() {
-    return trainingDefinition;
-  }
+	public TrainingDefinition getTrainingDefinition() {
+		return trainingDefinition;
+	}
 
-  public void setTrainingDefinition(TrainingDefinition trainingDefinition) {
-    this.trainingDefinition = trainingDefinition;
-  }
+	public void setTrainingDefinition(TrainingDefinition trainingDefinition) {
+		this.trainingDefinition = trainingDefinition;
+	}
 
+	public Set<UserRef> getOrganizers() {
+		return Collections.unmodifiableSet(organizers);
+	}
 
-  public Set<UserRef> getOrganizers() {
-    return Collections.unmodifiableSet(organizers);
-  }
+	public void setOrganizers(Set<UserRef> organizers) {
+		this.organizers = organizers;
+	}
 
-  public void setOrganizers(Set<UserRef> organizers) {
-    this.organizers = organizers;
-  }
+	public Set<SandboxInstanceRef> getSandboxInstanceRefs() {
+		return sandboxInstanceRefs.stream().collect(Collectors.toSet());
+	}
 
-  public Set<SandboxInstanceRef> getSandboxInstanceRefs() {
-    return sandboxInstanceRefs.stream().collect(Collectors.toSet());
-  }
+	public void setSandboxInstanceRefs(Set<SandboxInstanceRef> sandboxInstanceRef) {
+		this.sandboxInstanceRefs = sandboxInstanceRef;
+	}
 
-  public void setSandboxInstanceRefs(Set<SandboxInstanceRef> sandboxInstanceRef) {
-    this.sandboxInstanceRefs = sandboxInstanceRef;
-  }
+	@Override
+	public int hashCode() {
+		return Objects.hash(password, startTime, endTime, poolSize, title, trainingDefinition);
+	}
 
-  @Override
-  public int hashCode() {
-    return Objects.hash(password, startTime, endTime, poolSize, title, trainingDefinition);
-  }
-
-  @Override
-  public boolean equals(Object obj) {
-    if (this == obj)
-      return true;
-    if (obj == null)
-      return false;
-    if (!(obj instanceof TrainingInstance))
-      return false;
-    TrainingInstance other = (TrainingInstance) obj;
-    // @formatter:off
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (!(obj instanceof TrainingInstance))
+			return false;
+		TrainingInstance other = (TrainingInstance) obj;
+		// @formatter:off
     return Objects.equals(password, other.getPassword())
         && Objects.equals(startTime, other.getStartTime())
         && Objects.equals(endTime, other.getEndTime())
@@ -151,12 +150,12 @@ public class TrainingInstance implements Serializable {
         && Objects.equals(title, other.getTitle())
         && Objects.equals(trainingDefinition, other.getTrainingDefinition());
     // @formatter:on
-  }
+	}
 
-  @Override
-  public String toString() {
-    return "TrainingInstance [id=" + id + ", startTime=" + startTime + ", endTime=" + endTime + ", title=" + title + ", poolSize=" + poolSize + ", password="
-        + password + ", trainingDefinition=" + trainingDefinition + ", toString()=" + super.toString() + "]";
-  }
+	@Override
+	public String toString() {
+		return "TrainingInstance [id=" + id + ", startTime=" + startTime + ", endTime=" + endTime + ", title=" + title + ", poolSize="
+				+ poolSize + ", password=" + password + ", trainingDefinition=" + trainingDefinition + ", toString()=" + super.toString() + "]";
+	}
 
 }

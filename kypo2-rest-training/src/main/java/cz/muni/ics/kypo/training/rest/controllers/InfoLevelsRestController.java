@@ -1,7 +1,5 @@
 package cz.muni.ics.kypo.training.rest.controllers;
 
-import cz.muni.ics.kypo.training.mapping.BeanMapping;
-import io.swagger.models.auth.In;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Pageable;
@@ -26,9 +24,7 @@ import cz.muni.ics.kypo.training.api.dto.InfoLevelDTO;
 import cz.muni.ics.kypo.training.exception.FacadeLayerException;
 import cz.muni.ics.kypo.training.facade.InfoLevelFacade;
 import cz.muni.ics.kypo.training.model.InfoLevel;
-import cz.muni.ics.kypo.training.rest.exceptions.ResourceNotCreatedException;
 import cz.muni.ics.kypo.training.rest.exceptions.ResourceNotFoundException;
-import cz.muni.ics.kypo.training.rest.exceptions.ResourceNotModifiedException;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -48,26 +44,24 @@ import io.swagger.annotations.ApiResponses;
 @RequestMapping(value = "/info-levels")
 public class InfoLevelsRestController {
 
-  private static final Logger LOG = LoggerFactory.getLogger(InfoLevelsRestController.class);
+	private static final Logger LOG = LoggerFactory.getLogger(InfoLevelsRestController.class);
 
-  private InfoLevelFacade infoLevelFacade;
-  private ObjectMapper objectMapper;
-  private BeanMapping  dtoMapper;
+	private InfoLevelFacade infoLevelFacade;
+	private ObjectMapper objectMapper;
 
-  @Autowired
-  public InfoLevelsRestController(InfoLevelFacade infoLevelFacade, @Qualifier("objMapperRESTApi") ObjectMapper objectMapper, BeanMapping dtoMapper) {
-    this.infoLevelFacade = infoLevelFacade;
-    this.objectMapper = objectMapper;
-    this.dtoMapper = dtoMapper;
-  }
+	@Autowired
+	public InfoLevelsRestController(InfoLevelFacade infoLevelFacade, @Qualifier("objMapperRESTApi") ObjectMapper objectMapper) {
+		this.infoLevelFacade = infoLevelFacade;
+		this.objectMapper = objectMapper;
+	}
 
-  /**
-   * Get requested Info Level by id.
-   * 
-   * @param id of Info Level to return.
-   * @return Requested Info by id.
-   */
-  //@formatter:off
+	/**
+	 * Get requested Info Level by id.
+	 * 
+	 * @param id of Info Level to return.
+	 * @return Requested Info by id.
+	 */
+	//@formatter:off
   @ApiOperation(httpMethod = "GET", 
       value = "Get Info level by Id.", 
       response = InfoLevelDTO.class,
@@ -92,12 +86,12 @@ public class InfoLevelsRestController {
   }
   //@formatter:on
 
-  /**
-   * Get all Info Levels.
-   * 
-   * @return all Info levels.
-   */
-  //@formatter:off
+	/**
+	 * Get all Info Levels.
+	 * 
+	 * @return all Info levels.
+	 */
+	//@formatter:off
   @ApiOperation(httpMethod = "GET",
       value = "Get all info levels.",
       response = InfoLevelDTO.class,
