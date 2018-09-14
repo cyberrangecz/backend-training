@@ -1329,5 +1329,11 @@ INSERT INTO training_instance_organizers(training_instance_id, organizers_id) VA
 INSERT INTO training_instance_organizers(training_instance_id, organizers_id) VALUES (2, 1);
 INSERT INTO training_instance_organizers(training_instance_id, organizers_id) VALUES (3, 2);
 
+-- TRAINING RUNS
 
+INSERT INTO participant_ref(id, participant_ref_login) VALUES (1, 'Participant1');
+INSERT INTO participant_ref(id, participant_ref_login) VALUES (1, 'Participant2');
+
+INSERT INTO training_run(id, end_time, start_time, state, current_level_id, sandbox_instance_ref_id, training_instance_id, participant_ref_id, event_log_reference, incorrect_flag_count) VALUES (1, 2022-10-19 10:23:54+02, 2016-10-19 10:23:54+02, 'ALLOCATED', 2, 2, 2, 1, null, 5);
+INSERT INTO training_run(id, end_time, start_time, state, current_level_id, sandbox_instance_ref_id, training_instance_id, participant_ref_id, event_log_reference, incorrect_flag_count) VALUES (2, 2024-10-19 10:23:54+02, 2020-10-19 10:23:54+02, 'NEW', 1, 3, 3, 2, null, 4);
 
