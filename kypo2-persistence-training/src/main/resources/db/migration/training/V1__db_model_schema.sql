@@ -560,6 +560,19 @@ CREATE SEQUENCE user_ref_id_seq
     NO MAXVALUE
     CACHE 1;
 
+CREATE TABLE password (
+  id bigint NOT NULL,
+  password_hash character varying(255)
+)
+
+
+CREATE SEQUENCE password_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
 
 ALTER TABLE user_ref_id_seq OWNER TO postgres;
 
@@ -1240,6 +1253,7 @@ ALTER TABLE ONLY game_level
 -- PostgreSQL database dump complete
 --
 
+-- TRAINING DEFINITIONS
 INSERT INTO pre_hook(id) VALUE (1);
 INSERT INTO post_hook(id) VALUE (1);
 INSERT INTO pre_hook(id) VALUE (2);
@@ -1258,8 +1272,8 @@ INSERT INTO info_level(content, id) VALUES ('Informational stuff', 2);
 INSERT INTO assessment_level(assessment_type, instructions, questions, id) VALUES ('TEST', 'Fill me up', 'What is my mothers name?', 3);
 
 INSERT INTO sandbox_definition_ref(id, sandbox_definition_ref) VALUES (1, 1);
-INSERT INTO author_ref(id, author_ref_login) VALUES (1, 'xxx_ShalinMaster_xxx');
-INSERT INTO author_ref(id, author_ref_login) VALUES (2, 'ultraDesigner');
+INSERT INTO author_ref(id, author_ref_login) VALUES (1, 'Designer1');
+INSERT INTO author_ref(id, author_ref_login) VALUES (2, 'Designer2');
 
 INSERT INTO training_definition(id, description, outcomes, prerequisities, state, title, sand_box_definition_ref_id, starting_level) VALUES (1, 'Released training definition', null, null, 'RELEASED', 'TrainingDefinition1', 1, 1);
 INSERT INTO training_definition_author_ref(training_definition_id, author_ref_id) VALUES (1, 1);
@@ -1284,8 +1298,36 @@ INSERT INTO info_level(content, id) VALUES ('Potatoes are not poisonous', 5);
 INSERT INTO assessment_level(assessment_type, instructions, questions, id) VALUES ('QUESTIONNAIRE', 'No rush', '...?', 6);
 
 INSERT INTO sandbox_definition_ref(id, sandbox_definition_ref) VALUES (2, 2);
-INSERT INTO author_ref(id, author_ref_login) VALUES (3, 'DatBoi');
+INSERT INTO author_ref(id, author_ref_login) VALUES (3, 'Designer3');
 
 INSERT INTO training_definition(id, description, outcomes, prerequisities, state, title, sand_box_definition_ref_id, starting_level) VALUES (2, 'Unreleased training definition', null, null, 'UNRELEASED', 'TrainingDefinition2', 2, 4);
 INSERT INTO training_definition_author_ref(training_definition_id, author_ref_id) VALUES (2, 3);
+
+-- TRAINING INSTANCES
+
+INSERT INTO training_instance(id, end_time, password, pool_size, start_time, title, training_definition_id) VALUES (1, 2017-10-19 10:23:54+02, Vyfqh5, 5, 2016-10-19 10:23:54+02, 'Concluded Instance', 1);
+INSERT INTO training_instance(id, end_time, password, pool_size, start_time, title, training_definition_id) VALUES (2, 2022-10-19 10:23:54+02, GVnkfn, 8, 2016-10-19 10:23:54+02, 'Current Instance', 1);
+INSERT INTO training_instance(id, end_time, password, pool_size, start_time, title, training_definition_id) VALUES (3, 2024-10-19 10:23:54+02, y5drFa, 25, 2020-10-19 10:23:54+02, 'Future Instance', 1);
+
+INSERT INTO password(id, password_hash) VALUES (1, b5f3dc27a09865be37cef07816c4f08cf5585b116a4e74b9387c3e43e3a25ec8);
+INSERT INTO password(id, password_hash) VALUES (2, b1267cae4b2f139fea197d8c45918a124874e5b469d5dbba23257f3779e713f8);
+INSERT INTO password(id, password_hash) VALUES (3, b97b9ce755d3b39024d2efee6e7a9529904caefb1024e41d782d8689e5c2a761);
+
+INSERT INTO sandbox_instance_ref(id, sandbox_instance_ref, training_instance_id) VALUES (1, 1, 1);
+INSERT INTO sandbox_instance_ref(id, sandbox_instance_ref, training_instance_id) VALUES (2, 2, 3);
+INSERT INTO sandbox_instance_ref(id, sandbox_instance_ref, training_instance_id) VALUES (3, 3, 3);
+
+INSERT INTO training_instance_sandbox_instance_ref(training_instance_id, sandbox_instance_ref_id) VALUES (1, 1);
+INSERT INTO training_instance_sandbox_instance_ref(training_instance_id, sandbox_instance_ref_id) VALUES (2, 2);
+INSERT INTO training_instance_sandbox_instance_ref(training_instance_id, sandbox_instance_ref_id) VALUES (3, 3);
+
+INSERT INTO user_ref(id, user_ref_id) VALUES (1, 1);
+INSERT INTO user_ref(id, user_ref_id) VALUES (2, 2);
+
+
+INSERT INTO training_instance_organizers(training_instance_id, organizers_id) VALUES (1, 1);
+INSERT INTO training_instance_organizers(training_instance_id, organizers_id) VALUES (2, 1);
+INSERT INTO training_instance_organizers(training_instance_id, organizers_id) VALUES (3, 2);
+
+
 
