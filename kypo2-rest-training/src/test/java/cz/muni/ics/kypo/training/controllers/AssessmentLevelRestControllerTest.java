@@ -6,15 +6,12 @@ import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.training.api.PageResultResource;
 import cz.muni.ics.kypo.training.api.dto.AssessmentLevelDTO;
 import cz.muni.ics.kypo.training.exception.FacadeLayerException;
+import cz.muni.ics.kypo.training.exceptions.ResourceNotFoundException;
 import cz.muni.ics.kypo.training.facade.AssessmentLevelFacade;
 import cz.muni.ics.kypo.training.mapping.BeanMapping;
 import cz.muni.ics.kypo.training.mapping.BeanMappingImpl;
 import cz.muni.ics.kypo.training.model.AssessmentLevel;
 import cz.muni.ics.kypo.training.model.enums.AssessmentType;
-import cz.muni.ics.kypo.training.controllers.AssessmentLevelsRestController;
-import cz.muni.ics.kypo.training.exceptions.ResourceNotCreatedException;
-import cz.muni.ics.kypo.training.exceptions.ResourceNotFoundException;
-import cz.muni.ics.kypo.training.exceptions.ResourceNotModifiedException;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -47,11 +44,11 @@ import java.util.Optional;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.BDDMockito.willThrow;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.willThrow;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = AssessmentLevelsRestController.class)
@@ -99,13 +96,13 @@ public class AssessmentLevelRestControllerTest {
         al1DTO = new AssessmentLevelDTO();
         al1DTO.setId(1L);
         al1DTO.setNextLevel(2L);
-        al1DTO.setType(AssessmentType.TEST);
+        al1DTO.setAssessmentType(AssessmentType.TEST);
         al1DTO.setTitle("Test1");
 
         al2DTO = new AssessmentLevelDTO();
         al2DTO.setId(2L);
         al2DTO.setNextLevel(3L);
-        al2DTO.setType(AssessmentType.TEST);
+        al2DTO.setAssessmentType(AssessmentType.TEST);
         al2DTO.setTitle("Test2");
 
         al1 = new AssessmentLevel();

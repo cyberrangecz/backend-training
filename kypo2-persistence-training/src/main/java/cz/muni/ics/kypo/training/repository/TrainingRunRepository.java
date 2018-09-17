@@ -1,6 +1,7 @@
 package cz.muni.ics.kypo.training.repository;
 
 import cz.muni.ics.kypo.training.model.SandboxInstanceRef;
+import cz.muni.ics.kypo.training.model.TrainingRun;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -9,12 +10,7 @@ import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import cz.muni.ics.kypo.training.model.TrainingRun;
-
-import java.util.List;
-import java.util.Optional;
 import java.util.Set;
-import java.util.function.Predicate;
 
 /**
  * 

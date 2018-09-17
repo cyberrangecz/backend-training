@@ -1,11 +1,10 @@
 package cz.muni.ics.kypo.training.validation;
 
-import java.util.regex.Pattern;
+import cz.muni.ics.kypo.training.validation.annotations.ValidEmail;
 
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
-
-import cz.muni.ics.kypo.training.validation.annotations.ValidEmail;
+import java.util.regex.Pattern;
 
 /**
  * @author Pavel Šeda

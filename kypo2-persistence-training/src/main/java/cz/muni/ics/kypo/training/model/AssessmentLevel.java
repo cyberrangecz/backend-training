@@ -1,16 +1,10 @@
 package cz.muni.ics.kypo.training.model;
 
-import java.io.Serializable;
-import java.util.Objects;
+import cz.muni.ics.kypo.training.model.enums.AssessmentType;
 
 import javax.persistence.*;
-
-import org.hibernate.annotations.Type;
-import org.hibernate.annotations.TypeDef;
-import org.hibernate.annotations.TypeDefs;
-
-import cz.muni.ics.kypo.training.model.enums.AssessmentType;
-import cz.muni.ics.kypo.training.utils.StringJsonUserType;
+import java.io.Serializable;
+import java.util.Objects;
 
 /**
  * 

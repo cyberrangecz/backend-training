@@ -6,7 +6,6 @@ import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.model.*;
 import cz.muni.ics.kypo.training.model.enums.TDState;
 import cz.muni.ics.kypo.training.repository.*;
-import org.hibernate.HibernateException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -32,10 +31,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.Assert.*;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.BDDMockito.then;
-import static org.mockito.BDDMockito.willThrow;
-import static org.mockito.BDDMockito.any;
+import static org.mockito.BDDMockito.*;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
 
@@ -160,17 +156,11 @@ public class TrainingDefinitionServiceTest {
     }
 
     @Test
-    public void getTrainingDefinitionByIdWithHibernateException() {
-        Long id = 1L;
-        willThrow(HibernateException.class).given(trainingDefinitionRepository).findById(id);
-        thrown.expect(ServiceLayerException.class);
-        trainingDefinitionService.findById(id);
-    }
-
-    @Test
     public void getNonexistentTrainingDefinitionById() {
         Long id = 6L;
-        assertEquals(Optional.empty(), trainingDefinitionService.findById(id));
+        thrown.expect(ServiceLayerException.class);
+        thrown.expectMessage("Training definition with id: " + id + " cannot be found.");
+        trainingDefinitionService.findById(id);
     }
 
     @Test
@@ -243,7 +233,7 @@ public class TrainingDefinitionServiceTest {
         given(trainingDefinitionRepository.findById(releasedDefinition.getId())).willReturn(Optional.of(releasedDefinition));
 
         thrown.expect(ServiceLayerException.class);
-        thrown.expectMessage("Cant edit released or archived training definition");
+        thrown.expectMessage("Cannot edit released or archived training definition");
         trainingDefinitionService.update(releasedDefinition);
     }
 
@@ -275,7 +265,7 @@ public class TrainingDefinitionServiceTest {
     public void swapLeftWithCannotBeUpdatedException() {
         given(trainingDefinitionRepository.findById(releasedDefinition.getId())).willReturn(Optional.of(releasedDefinition));
         thrown.expect(ServiceLayerException.class);
-        thrown.expectMessage("Cant edit released or archived training definition");
+        thrown.expectMessage("Cannot edit released or archived training definition");
 
         trainingDefinitionService.swapLeft(releasedDefinition.getId(), any(Long.class));
     }
@@ -285,7 +275,7 @@ public class TrainingDefinitionServiceTest {
         given(trainingDefinitionRepository.findById(unreleasedDefinition.getId())).willReturn(Optional.of(unreleasedDefinition));
         given(abstractLevelRepository.findById(level1.getId())).willReturn(Optional.of(level1));
         thrown.expect(ServiceLayerException.class);
-        thrown.expectMessage("Cant swap left first level");
+        thrown.expectMessage("Cannot swap left first level");
 
         trainingDefinitionService.swapLeft(unreleasedDefinition.getId(), level1.getId());
     }
@@ -324,7 +314,7 @@ public class TrainingDefinitionServiceTest {
     public void swapRightWithCannotBeUpdatedException() {
         given(trainingDefinitionRepository.findById(releasedDefinition.getId())).willReturn(Optional.of(releasedDefinition));
         thrown.expect(ServiceLayerException.class);
-        thrown.expectMessage("Cant edit released or archived training definition");
+        thrown.expectMessage("Cannot edit released or archived training definition");
 
         trainingDefinitionService.swapRight(releasedDefinition.getId(), any(Long.class));
     }
@@ -337,7 +327,7 @@ public class TrainingDefinitionServiceTest {
         given(abstractLevelRepository.findById(level2.getId())).willReturn(Optional.of(level2));
 
         thrown.expect(ServiceLayerException.class);
-        thrown.expectMessage("Cant swap right last level");
+        thrown.expectMessage("Cannot swap right last level");
 
         trainingDefinitionService.swapRight(unreleasedDefinition.getId(), level3.getId());
     }
@@ -374,14 +364,14 @@ public class TrainingDefinitionServiceTest {
     public void deleteWithCannotBeDeletedException() {
         given(trainingDefinitionRepository.findById(releasedDefinition.getId())).willReturn(Optional.of(releasedDefinition));
         thrown.expect(ServiceLayerException.class);
-        thrown.expectMessage("Cant delete released training definition");
+        thrown.expectMessage("Cannot delete released training definition");
 
         trainingDefinitionService.delete(releasedDefinition.getId());
     }
 
     @Test
     public void deleteWithNull() {
-        thrown.expect(ServiceLayerException.class);
+        thrown.expect(NullPointerException.class);
         trainingDefinitionService.delete(null);
     }
 
@@ -418,7 +408,7 @@ public class TrainingDefinitionServiceTest {
     public void deleteOneLevelWithCannotBeUpdatedException() {
         given(trainingDefinitionRepository.findById(releasedDefinition.getId())).willReturn(Optional.of(releasedDefinition));
         thrown.expect(ServiceLayerException.class);
-        thrown.expectMessage("Cant edit released or archived training definition");
+        thrown.expectMessage("Cannot edit released or archived training definition");
 
         trainingDefinitionService.deleteOneLevel(releasedDefinition.getId(),any(Long.class));
     }
@@ -454,7 +444,7 @@ public class TrainingDefinitionServiceTest {
     public void updateAssessmentLevelWithCannotBeUpdatedException(){
         given(trainingDefinitionRepository.findById(releasedDefinition.getId())).willReturn(Optional.of(releasedDefinition));
         thrown.expect(ServiceLayerException.class);
-        thrown.expectMessage("Cant edit released or archived training definition");
+        thrown.expectMessage("Cannot edit released or archived training definition");
 
         trainingDefinitionService.updateAssessmentLevel(releasedDefinition.getId(), any(AssessmentLevel.class));
     }
@@ -504,7 +494,7 @@ public class TrainingDefinitionServiceTest {
     public void updateGameLevelWithCannotBeUpdatedException(){
         given(trainingDefinitionRepository.findById(releasedDefinition.getId())).willReturn(Optional.of(releasedDefinition));
         thrown.expect(ServiceLayerException.class);
-        thrown.expectMessage("Cant edit released or archived training definition");
+        thrown.expectMessage("Cannot edit released or archived training definition");
 
         trainingDefinitionService.updateGameLevel(releasedDefinition.getId(), any(GameLevel.class));
     }
@@ -548,7 +538,7 @@ public class TrainingDefinitionServiceTest {
     public void updateInfoLevelWithCannotBeUpdatedException(){
         given(trainingDefinitionRepository.findById(releasedDefinition.getId())).willReturn(Optional.of(releasedDefinition));
         thrown.expect(ServiceLayerException.class);
-        thrown.expectMessage("Cant edit released or archived training definition");
+        thrown.expectMessage("Cannot edit released or archived training definition");
 
         trainingDefinitionService.updateInfoLevel(releasedDefinition.getId(), any(InfoLevel.class));
     }
@@ -621,7 +611,7 @@ public class TrainingDefinitionServiceTest {
     public void createGameLevelWithCannotBeUpdatedException() {
         given(trainingDefinitionRepository.findById(releasedDefinition.getId())).willReturn(Optional.of(releasedDefinition));
         thrown.expect(ServiceLayerException.class);
-        thrown.expectMessage("Cant create level in released or archived training definition");
+        thrown.expectMessage("Cannot create level in released or archived training definition");
 
         trainingDefinitionService.createGameLevel(releasedDefinition.getId(), any(GameLevel.class));
     }
@@ -684,7 +674,7 @@ public class TrainingDefinitionServiceTest {
     public void createInfoLevelWithCannotBeUpdatedException() {
         given(trainingDefinitionRepository.findById(releasedDefinition.getId())).willReturn(Optional.of(releasedDefinition));
         thrown.expect(ServiceLayerException.class);
-        thrown.expectMessage("Cant create level in released or archived training definition");
+        thrown.expectMessage("Cannot create level in released or archived training definition");
 
         trainingDefinitionService.createInfoLevel(releasedDefinition.getId(), any(InfoLevel.class));
     }
@@ -747,7 +737,7 @@ public class TrainingDefinitionServiceTest {
     public void createAssessmentLevelWithCannotBeUpdatedException() {
         given(trainingDefinitionRepository.findById(releasedDefinition.getId())).willReturn(Optional.of(releasedDefinition));
         thrown.expect(ServiceLayerException.class);
-        thrown.expectMessage("Cant create level in released or archived training definition");
+        thrown.expectMessage("Cannot create level in released or archived training definition");
 
         trainingDefinitionService.createAssessmentLevel(releasedDefinition.getId(), any(AssessmentLevel.class));
     }

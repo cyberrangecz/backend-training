@@ -1,9 +1,20 @@
 package cz.muni.ics.kypo.training.controllers;
 
-import cz.muni.ics.kypo.training.api.dto.*;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.bohnman.squiggly.Squiggly;
+import com.github.bohnman.squiggly.util.SquigglyUtils;
+import com.querydsl.core.types.Predicate;
+import cz.muni.ics.kypo.training.api.PageResultResource;
+import cz.muni.ics.kypo.training.api.dto.AbstractLevelDTO;
+import cz.muni.ics.kypo.training.api.dto.HintDTO;
 import cz.muni.ics.kypo.training.api.dto.run.AccessTrainingRunDTO;
 import cz.muni.ics.kypo.training.api.dto.run.AccessedTrainingRunDTO;
 import cz.muni.ics.kypo.training.api.dto.run.TrainingRunDTO;
+import cz.muni.ics.kypo.training.exception.FacadeLayerException;
+import cz.muni.ics.kypo.training.exceptions.*;
+import cz.muni.ics.kypo.training.facade.TrainingRunFacade;
+import cz.muni.ics.kypo.training.model.TrainingRun;
+import io.swagger.annotations.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,27 +26,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.MultiValueMap;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.bohnman.squiggly.Squiggly;
-import com.github.bohnman.squiggly.util.SquigglyUtils;
-import com.querydsl.core.types.Predicate;
-
-import cz.muni.ics.kypo.training.api.PageResultResource;
-import cz.muni.ics.kypo.training.exception.FacadeLayerException;
-import cz.muni.ics.kypo.training.facade.TrainingRunFacade;
-import cz.muni.ics.kypo.training.model.TrainingRun;
-import cz.muni.ics.kypo.training.exceptions.ResourceNotFoundException;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * @author Dominik Pilar (445537)
@@ -76,6 +67,7 @@ public class TrainingRunsRestController {
       produces = "application/json"
   )
   @ApiResponses(value = {
+      @ApiResponse(code = 200, message = "The requested resource has been found."),
       @ApiResponse(code = 404, message = "The requested resource was not found.") 
   })
   @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -88,7 +80,7 @@ public class TrainingRunsRestController {
       Squiggly.init(objectMapper, fields);
       return new ResponseEntity<>(SquigglyUtils.stringify(objectMapper, trainingRunResource), HttpStatus.OK);
     } catch (FacadeLayerException ex) {
-      throw new ResourceNotFoundException(ex.getLocalizedMessage());
+       throw throwException(ex);
     }
   }
   //@formatter:on
@@ -107,6 +99,7 @@ public class TrainingRunsRestController {
       produces = "application/json"
   )
   @ApiResponses(value = {
+      @ApiResponse(code = 200, message = "The requested resource has been found."),
       @ApiResponse(code = 404, message = "The requested resource was not found.") 
   })
   @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
@@ -115,13 +108,9 @@ public class TrainingRunsRestController {
       @ApiParam(value = "Fields which should be returned in REST API response", required = false) 
       @RequestParam(value = "fields", required = false) String fields) {
     LOG.debug("findAllTrainingRuns({},{})", parameters, fields);
-    try {
-      PageResultResource<TrainingRunDTO> trainingRunResource = trainingRunFacade.findAll(predicate, pageable);
-      Squiggly.init(objectMapper, fields);
-      return new ResponseEntity<>(SquigglyUtils.stringify(objectMapper, trainingRunResource), HttpStatus.OK);
-    } catch (FacadeLayerException ex) {
-      throw new ResourceNotFoundException(ex.getLocalizedMessage());
-    }
+    PageResultResource<TrainingRunDTO> trainingRunResource = trainingRunFacade.findAll(predicate, pageable);
+    Squiggly.init(objectMapper, fields);
+    return new ResponseEntity<>(SquigglyUtils.stringify(objectMapper, trainingRunResource), HttpStatus.OK);
   }
   //@formatter:on
 
@@ -141,7 +130,10 @@ public class TrainingRunsRestController {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 404, message = "The requested resource was not found.")
+            @ApiResponse(code = 200, message = "The requested resource has been found."),
+            @ApiResponse(code = 404, message = "The requested resource was not found."),
+            @ApiResponse(code = 500, message = "Getting info about sandboxes ended with error."),
+            @ApiResponse(code = 503, message = "There is no available sandbox, try again later.")
     })
     @GetMapping(value = "/access", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<AccessTrainingRunDTO> accessTrainingRun(@ApiParam(value = "password", required = true) @RequestParam(value = "password", required = false) String password) {
@@ -150,7 +142,7 @@ public class TrainingRunsRestController {
             AccessTrainingRunDTO accessTrainingRunDTO = trainingRunFacade.accessTrainingRun(password);
             return new ResponseEntity<AccessTrainingRunDTO>(accessTrainingRunDTO, HttpStatus.OK);
         } catch (FacadeLayerException ex) {
-            throw new ResourceNotFoundException(ex.getLocalizedMessage());
+            throw throwException(ex);
         }
     }
 
@@ -173,17 +165,14 @@ public class TrainingRunsRestController {
             }
     )
     @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "The requested resource has been found."),
             @ApiResponse(code = 404, message = "The requested resource was not found.")
     })
     @GetMapping(value = "/accessed", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> getAllAccessedTrainingRuns(@PageableDefault(size = 10, page = 0) Pageable pageable) {
         LOG.debug("findAllAccessedTrainingRuns()");
-        try {
-            PageResultResource<AccessedTrainingRunDTO> accessedTrainingRunDTOS = trainingRunFacade.findAllAccessedTrainingRuns(pageable);
-            return new ResponseEntity<>(SquigglyUtils.stringify(objectMapper, accessedTrainingRunDTOS), HttpStatus.OK);
-        } catch (FacadeLayerException ex) {
-            throw new ResourceNotFoundException(ex.getLocalizedMessage());
-        }
+        PageResultResource<AccessedTrainingRunDTO> accessedTrainingRunDTOS = trainingRunFacade.findAllAccessedTrainingRuns(pageable);
+        return new ResponseEntity<>(SquigglyUtils.stringify(objectMapper, accessedTrainingRunDTOS), HttpStatus.OK);
     }
 
     /**
@@ -202,7 +191,8 @@ public class TrainingRunsRestController {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 404, message = "The requested resource was not found.")
+            @ApiResponse(code = 200, message = "The requested resource has been found."),
+            @ApiResponse(code = 404, message = "The requested resource was not found or there is no next level."),
     })
     @GetMapping(value = "/{id}/get-next-level", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> getNextLevel(@ApiParam(name = "Training Run ID") @PathVariable Long id,
@@ -214,7 +204,7 @@ public class TrainingRunsRestController {
             Squiggly.init(objectMapper, fields);
             return new ResponseEntity<>(SquigglyUtils.stringify(objectMapper, levelDTO), HttpStatus.OK);
         } catch (FacadeLayerException ex) {
-            throw new ResourceNotFoundException(ex.getLocalizedMessage());
+            throw throwException(ex);
         }
     }
 
@@ -234,7 +224,9 @@ public class TrainingRunsRestController {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 404, message = "The requested resource was not found.")
+            @ApiResponse(code = 200, message = "The requested resource has been found."),
+            @ApiResponse(code = 404, message = "The requested resource was not found."),
+            @ApiResponse(code = 400, message = "Current level is not game level and does not contain solution.")
     })
     @GetMapping(value = "/{id}/get-solution", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> getSolution(@ApiParam(name = "Training Run ID") @PathVariable Long id){
@@ -243,7 +235,7 @@ public class TrainingRunsRestController {
             String solution = trainingRunFacade.getSolution(id);
             return new ResponseEntity<>(solution, HttpStatus.OK);
         } catch (FacadeLayerException ex) {
-            throw new ResourceNotFoundException(ex.getLocalizedMessage());
+            throw throwException(ex);
         }
     }
 
@@ -263,7 +255,9 @@ public class TrainingRunsRestController {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 404, message = "The requested resource was not found.")
+            @ApiResponse(code = 200, message = "The requested resource has been found."),
+            @ApiResponse(code = 404, message = "The requested resource was not found."),
+            @ApiResponse(code = 400, message = "Current level is not game level and does not contain hint.")
     })
     @GetMapping(value = "/{id}/get-hint/{hintId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> getHint(@ApiParam(name = "Training Run ID") @PathVariable Long id,
@@ -276,7 +270,7 @@ public class TrainingRunsRestController {
             Squiggly.init(objectMapper, fields);
             return new ResponseEntity<>(SquigglyUtils.stringify(objectMapper, hintDTO), HttpStatus.OK);
         } catch (FacadeLayerException ex) {
-            throw new ResourceNotFoundException(ex.getLocalizedMessage());
+            throw throwException(ex);
         }
     }
 
@@ -296,18 +290,38 @@ public class TrainingRunsRestController {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 404, message = "The requested resource was not found.")
+            @ApiResponse(code = 200, message = "The requested resource has been found."),
+            @ApiResponse(code = 404, message = "The requested resource was not found."),
+            @ApiResponse(code = 400, message = "Current level is not game level and does not contain flag.")
     })
     @GetMapping(value = "/{id}/is-correct", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Boolean> isCorrectFlag(@ApiParam(name = "Training Run ID") @PathVariable Long id,
-                                                      @ApiParam(value = "Submited flag")
+                                                      @ApiParam(value = "Submitted flag")
                                                       @RequestParam(value = "flag") String flag) {
         LOG.debug("isCorrectFlag({}, {})", id, flag);
         try {
             Boolean isCorrect = trainingRunFacade.isCorrectFlag(id, flag);
             return new ResponseEntity<>(isCorrect, HttpStatus.OK);
         } catch (FacadeLayerException ex) {
-            throw new ResourceNotFoundException(ex.getLocalizedMessage());
+            throw throwException(ex);
+        }
+    }
+
+    private RuntimeException throwException(RuntimeException ex) {
+        switch (((ServiceLayerException) ex.getCause()).getCode()) {
+            case WRONG_LEVEL_TYPE:
+                return new BadRequestException(ex.getLocalizedMessage());
+            case RESOURCE_NOT_FOUND:
+                return new ResourceNotFoundException(ex.getLocalizedMessage());
+            case NO_NEXT_LEVEL:
+                return new ResourceNotFoundException(ex.getLocalizedMessage());
+            case UNEXPECTED_ERROR:
+                return new InternalServerErrorException(ex.getLocalizedMessage());
+            case RESOURCE_CONFLICT:
+                return new ConflictException(ex.getLocalizedMessage());
+            case NO_AVAILABLE_SANDBOX:
+            default:
+                return new ServiceUnavailableException(ex.getLocalizedMessage());
         }
     }
 }

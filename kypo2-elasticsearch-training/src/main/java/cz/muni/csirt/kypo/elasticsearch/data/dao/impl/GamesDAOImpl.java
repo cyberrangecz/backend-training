@@ -1,11 +1,10 @@
 package cz.muni.csirt.kypo.elasticsearch.data.dao.impl;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
-
+import com.fasterxml.jackson.databind.ObjectMapper;
+import cz.muni.csirt.kypo.elasticsearch.data.QueryStrings;
+import cz.muni.csirt.kypo.elasticsearch.data.dao.AbstractElasticClientDAO;
+import cz.muni.csirt.kypo.elasticsearch.data.dao.GamesDAO;
+import cz.muni.csirt.kypo.elasticsearch.data.exceptions.ElasticsearchTrainingDataLayerException;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RestClient;
@@ -21,12 +20,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Repository;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import cz.muni.csirt.kypo.elasticsearch.data.QueryStrings;
-import cz.muni.csirt.kypo.elasticsearch.data.dao.AbstractElasticClientDAO;
-import cz.muni.csirt.kypo.elasticsearch.data.dao.GamesDAO;
-import cz.muni.csirt.kypo.elasticsearch.data.exceptions.ElasticsearchTrainingDataLayerException;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 

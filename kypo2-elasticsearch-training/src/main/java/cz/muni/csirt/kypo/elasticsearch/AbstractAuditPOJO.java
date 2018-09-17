@@ -1,10 +1,9 @@
 package cz.muni.csirt.kypo.elasticsearch;
 
-import org.jsondoc.core.annotation.ApiObject;
-import org.jsondoc.core.annotation.ApiObjectField;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import org.jsondoc.core.annotation.ApiObject;
+import org.jsondoc.core.annotation.ApiObjectField;
 
 /**
  * This class have to be extended when some event should be saved to Elasticsearch. It provides 2

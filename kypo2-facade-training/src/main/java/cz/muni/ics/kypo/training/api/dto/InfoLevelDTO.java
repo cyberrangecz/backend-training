@@ -1,9 +1,8 @@
 package cz.muni.ics.kypo.training.api.dto;
 
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
-
 import io.swagger.annotations.ApiModel;
+
+import javax.validation.constraints.NotEmpty;
 
 /**
  * 

@@ -35,14 +35,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import javax.validation.constraints.Null;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.BDDMockito.*;
 
 @RunWith(SpringRunner.class)
@@ -120,7 +117,7 @@ public class TrainingDefinitionFacadeTest {
     @Test
     public void findNonexistentTrainingDefinitionById() {
         Long id = 6L;
-        willThrow(ServiceLayerException.class).given(trainingDefinitionService.findById(id));
+        willThrow(ServiceLayerException.class).given(trainingDefinitionService).findById(id);
         thrown.expect(FacadeLayerException.class);
         trainingDefinitionFacade.findById(id);
     }
@@ -186,34 +183,9 @@ public class TrainingDefinitionFacadeTest {
     }
 
     @Test
-    public void swapLeftWithNullDefinition() {
-        thrown.expect(FacadeLayerException.class);
-        trainingDefinitionFacade.swapLeft(null, level1.getId());
-    }
-
-    @Test
-    public void swapLeftWithNullLevel() {
-        thrown.expect(FacadeLayerException.class);
-        trainingDefinitionFacade.swapLeft(releasedDefinition.getId(), null);
-    }
-
-
-    @Test
     public void swapRight() {
         trainingDefinitionFacade.swapRight(unreleasedDefinition.getId(),level1.getId());
         then(trainingDefinitionService).should().swapRight(unreleasedDefinition.getId(), level1.getId());
-    }
-
-    @Test
-    public void swapRightWithNullDefinition() {
-        thrown.expect(FacadeLayerException.class);
-        trainingDefinitionFacade.swapRight(null, level1.getId());
-    }
-
-    @Test
-    public void swapRightWithNullLevel() {
-        thrown.expect(FacadeLayerException.class);
-        trainingDefinitionFacade.swapRight(releasedDefinition.getId(), null);
     }
 
     @Test
@@ -385,12 +357,6 @@ public class TrainingDefinitionFacadeTest {
         TrainingDefinitionDTO trainingDefinitionDTO= trainingDefinitionFacade.create(trainingDefinition1);
         deepEquals(trainingDefinition1, trainingDefinitionDTO);
         then(trainingDefinitionService).should().create(trainingDefinition1);
-    }
-
-    @Test
-    public void createTrainingDefinitionWithNull() {
-        thrown.expect(FacadeLayerException.class);
-        trainingDefinitionFacade.create(null);
     }
 
     private void deepEquals(TrainingDefinition expected, TrainingDefinitionDTO actual) {

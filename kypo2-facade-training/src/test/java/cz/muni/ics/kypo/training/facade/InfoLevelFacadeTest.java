@@ -6,6 +6,7 @@ import cz.muni.ics.kypo.training.api.PageResultResource;
 import cz.muni.ics.kypo.training.api.dto.InfoLevelDTO;
 import cz.muni.ics.kypo.training.config.FacadeTestConfiguration;
 import cz.muni.ics.kypo.training.exception.FacadeLayerException;
+import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.model.InfoLevel;
 import cz.muni.ics.kypo.training.service.InfoLevelService;
 import org.junit.Before;
@@ -33,8 +34,7 @@ import java.util.Optional;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.BDDMockito.then;
+import static org.mockito.BDDMockito.*;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -83,7 +83,7 @@ public class InfoLevelFacadeTest {
     @Test
     public void findNonexistentInfoLevelById() {
         Long id = 6L;
-        given(infoLevelService.findById(id)).willReturn(Optional.empty());
+        willThrow(ServiceLayerException.class).given(infoLevelService).findById(id);
         thrown.expect(FacadeLayerException.class);
         infoLevelFacade.findById(id);
     }

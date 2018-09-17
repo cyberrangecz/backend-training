@@ -1,12 +1,12 @@
 package cz.muni.ics.kypo.training.service;
 
-import java.util.ArrayList;
+import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.model.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-import com.querydsl.core.types.Predicate;
+import java.util.ArrayList;
 
 /**
  * 
@@ -36,7 +36,7 @@ public interface TrainingDefinitionService {
    * @param trainingDefinition to be updated
    * @return updated definition
    * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND given training definition or one of the levels is not found.
-   *                                               CANNOT_BE_MODIFIED released or archived training definition cannot be modified.
+   *                                               RESOURCE_CONFLICT released or archived training definition cannot be modified.
    */
   public void update(TrainingDefinition trainingDefinition) throws ServiceLayerException;
 
@@ -45,7 +45,7 @@ public interface TrainingDefinitionService {
    * @param id of definition to be cloned
    * @return cloned definition
    * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND given training definition not found.
-   *                                               CANNOT_BE_CREATED cannot clone unreleased training definition.
+   *                                               RESOURCE_CONFLICT cannot clone unreleased training definition.
    */
   public TrainingDefinition clone(Long id) throws ServiceLayerException;
 
@@ -54,7 +54,7 @@ public interface TrainingDefinitionService {
    * @param definitionId - Id of definition containing level to be swapped
    * @param levelId - Id of level to be swapped
    * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND given training definition or one of the levels is not found.
-   *                                               CANNOT_BE_MODIFIED released or archived training definition cannot be modified.
+   *                                               RESOURCE_CONFLICT released or archived training definition cannot be modified.
    */
   public void swapLeft(Long definitionId, Long levelId) throws ServiceLayerException;
 
@@ -63,7 +63,7 @@ public interface TrainingDefinitionService {
    * @param definitionId - Id of definition containing level to be swapped
    * @param levelId - Id of level to be swapped
    * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND given training definition or one of the levels is not found.
-   *                                               CANNOT_BE_MODIFIED released or archived training definition cannot be modified.
+   *                                               RESOURCE_CONFLICT released or archived training definition cannot be modified.
    */
   public void swapRight(Long definitionId, Long levelId) throws ServiceLayerException;
 
@@ -71,7 +71,7 @@ public interface TrainingDefinitionService {
    * Deletes specific training definition based on id
    * @param id of definition to be deleted
    * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND given training definition or level is not found.
-   *                                               CANNOT_BE_MODIFIED released training definition cannot be deleted.
+   *                                               RESOURCE_CONFLICT released training definition cannot be deleted.
    */
   public void delete(Long id) throws ServiceLayerException;
 
@@ -80,7 +80,7 @@ public interface TrainingDefinitionService {
    * @param definitionId - id of definition containing level to be deleted
    * @param levelId - id of level to be deleted
    * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND given training definition or level is not found.
-   *                                               CANNOT_BE_MODIFIED level cannot be deleted in released or archived training definition.
+   *                                               RESOURCE_CONFLICT level cannot be deleted in released or archived training definition.
    */
   public void deleteOneLevel(Long definitionId, Long levelId) throws ServiceLayerException;
 
@@ -89,7 +89,7 @@ public interface TrainingDefinitionService {
    * @param definitionId - id of training definition containing level to be updated
    * @param gameLevel to be updated
    * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND given training definition is not found.
-   *                                               CANNOT_BE_MODIFIED level cannot be updated in released or archived training definition.
+   *                                               RESOURCE_CONFLICT level cannot be updated in released or archived training definition.
    */
   public void updateGameLevel(Long definitionId, GameLevel gameLevel) throws ServiceLayerException;
 
@@ -98,7 +98,7 @@ public interface TrainingDefinitionService {
    * @param definitionId - id of training definition containing level to be updated
    * @param infoLevel to be updated
    * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND given training definition is not found.
-   *                                               CANNOT_BE_MODIFIED level cannot be updated in released or archived training definition.
+   *                                               RESOURCE_CONFLICT level cannot be updated in released or archived training definition.
    */
   public void updateInfoLevel(Long definitionId, InfoLevel infoLevel) throws ServiceLayerException;
 
@@ -107,7 +107,7 @@ public interface TrainingDefinitionService {
    * @param definitionId - id of training definition containing level to be updated
    * @param assessmentLevel to be updated
    * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND given training definition is not found.
-   *                                               CANNOT_BE_MODIFIED level cannot be updated in released or archived training definition.
+   *                                               RESOURCE_CONFLICT level cannot be updated in released or archived training definition.
    */
   public void updateAssessmentLevel(Long definitionId, AssessmentLevel assessmentLevel) throws ServiceLayerException;
 
@@ -117,7 +117,7 @@ public interface TrainingDefinitionService {
    * @param gameLevel to be created
    * @return new game level
    * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND given training definition is not found.
-   *                                               CANNOT_BE_CREATED level cannot be created in released or archived training definition.
+   *                                               RESOURCE_CONFLICT level cannot be created in released or archived training definition.
    */
   public GameLevel createGameLevel(Long definitionId, GameLevel gameLevel) throws ServiceLayerException;
 
@@ -128,7 +128,7 @@ public interface TrainingDefinitionService {
    * @param infoLevel to be created
    * @return new info level
    * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND given training definition is not found.
-   *                                               CANNOT_BE_CREATED level cannot be created in released or archived training definition.
+   *                                               RESOURCE_CONFLICT level cannot be created in released or archived training definition.
    */
   public InfoLevel createInfoLevel(Long definitionId, InfoLevel infoLevel) throws ServiceLayerException;
 
@@ -138,7 +138,7 @@ public interface TrainingDefinitionService {
    * @param assessmentLevel to be created
    * @return new assessment level
    * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND given training definition is not found.
-   *                                               CANNOT_BE_CREATED level cannot be created in released or archived training definition.
+   *                                               RESOURCE_CONFLICT level cannot be created in released or archived training definition.
    */
   public AssessmentLevel createAssessmentLevel(Long definitionId, AssessmentLevel assessmentLevel) throws ServiceLayerException;
 

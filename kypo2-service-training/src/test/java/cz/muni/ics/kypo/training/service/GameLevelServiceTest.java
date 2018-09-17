@@ -2,11 +2,8 @@ package cz.muni.ics.kypo.training.service;
 
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.PathBuilder;
-import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.model.GameLevel;
 import cz.muni.ics.kypo.training.repository.GameLevelRepository;
-import cz.muni.ics.kypo.training.service.GameLevelService;
-import org.hibernate.HibernateException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -32,10 +29,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.Assert.assertEquals;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.BDDMockito.then;
-import static org.mockito.BDDMockito.willThrow;
-import static org.mockito.BDDMockito.any;
+import static org.mockito.BDDMockito.*;
 import static org.mockito.Mockito.reset;
 
 @RunWith(SpringRunner.class)
@@ -82,14 +76,6 @@ public class GameLevelServiceTest {
         deepEquals(gL, gameLevel1);
 
         then(gameLevelRepository).should().findById(gameLevel1.getId());
-    }
-
-    @Test
-    public void getGameLevelByIdWithHibernateException() {
-        Long id = 1L;
-        willThrow(HibernateException.class).given(gameLevelRepository).findById(id);
-        thrown.expect(ServiceLayerException.class);
-        gameLevelService.findById(id);
     }
 
     @Test

@@ -1,18 +1,14 @@
 package cz.muni.ics.kypo.training.service;
 
-import java.util.List;
-import java.util.Optional;
-
+import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.model.AbstractLevel;
 import cz.muni.ics.kypo.training.model.Hint;
-import cz.muni.ics.kypo.training.model.TrainingInstance;
+import cz.muni.ics.kypo.training.model.TrainingRun;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-import com.querydsl.core.types.Predicate;
-
-import cz.muni.ics.kypo.training.model.TrainingRun;
+import java.util.List;
 
 /**
  * 
@@ -26,7 +22,7 @@ public interface TrainingRunService {
    * 
    * @param id of a Training Run that would be returned
    * @return specific Training Run by id
-   * @throws  ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND hint is not found in DB.
+   * @throws  ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND training run is not found in DB.
    *
    */
   public TrainingRun findById(Long id) throws ServiceLayerException;
@@ -91,8 +87,8 @@ public interface TrainingRunService {
    *
    * @param password of Training Instance.
    * @return Abstract Level
-   * @throws  ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND hint is not found in DB.
-   *                                                WRONG_PASSWORD there is no training instance with given password.
+   * @throws  ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND cannot find training instance with given id or the password is wrong.
+   *                                                UNEXPECTED_ERROR there is error while getting info about sandboxes.
    *                                                NO_AVAILABLE_SANDBOX there is no free or ready sandbox
    */
   public AbstractLevel accessTrainingRun(String password) throws ServiceLayerException;
@@ -101,7 +97,7 @@ public interface TrainingRunService {
    *
    * @param levelId must be id of first level of some Training Definition.
    * @return List of Abstract Levels
-   * @throws  ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND hint is not found in DB.
+   * @throws  ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND one of the levels is not found in DB.
    *
    */
   public List<AbstractLevel> getLevels(Long levelId) throws ServiceLayerException;
@@ -112,8 +108,8 @@ public interface TrainingRunService {
    * @param trainingRunId id of Training Run to check flag.
    * @param flag string which player submit.
    * @return true if flag is correct, false if flag is wrong.
-   * @throws  ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND when hint is not found in DB.
-   *                                                WRONG_LEVEL_TYPE when the level is not game level.
+   * @throws  ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND training run is not found in DB.
+   *                                                WRONG_LEVEL_TYPE the level is not game level.
    */
   public boolean isCorrectFlag(Long trainingRunId, String flag) throws ServiceLayerException;
 
@@ -122,8 +118,8 @@ public interface TrainingRunService {
    *
    * @param trainingRunId id of Training Run which current level gets solution for.
    * @return solution of current level.
-   * @throws  ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND when hint is not found in DB.
-   *                                                WRONG_LEVEL_TYPE when the level is not game level.
+   * @throws  ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND training run is not found in DB.
+   *                                                WRONG_LEVEL_TYPE the level is not game level.
    */
   public String getSolution(Long trainingRunId) throws ServiceLayerException;
 
@@ -144,8 +140,8 @@ public interface TrainingRunService {
    * @param idOfFirstLevel must be the first level in training definition.
    * @param actualLevel id of actual level to get order.
    * @return order of actual level.
-   * @throws IllegalArgumentException when id of first level or actual level is wrong.
-   * @throws ServiceLayerException when one of the level cannot be found.
+   * @throws IllegalArgumentException id of first level or actual level is wrong.
+   * @throws ServiceLayerException one of the level cannot be found.
    */
   public int getLevelOrder(Long idOfFirstLevel, Long actualLevel) throws ServiceLayerException, IllegalArgumentException;
 

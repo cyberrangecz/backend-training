@@ -18,6 +18,13 @@ public class BasicLevelInfoDTO {
   public BasicLevelInfoDTO() {
   }
 
+  public BasicLevelInfoDTO(Long id, String title, LevelType levelType, int order) {
+    this.id = id;
+    this.title = title;
+    this.levelType = levelType;
+    this.order = order;
+  }
+
   public Long getId() {
     return id;
   }

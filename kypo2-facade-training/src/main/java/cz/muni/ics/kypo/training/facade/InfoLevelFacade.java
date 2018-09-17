@@ -1,12 +1,9 @@
 package cz.muni.ics.kypo.training.facade;
 
-import cz.muni.ics.kypo.training.model.InfoLevel;
-import org.springframework.data.domain.Pageable;
-
 import com.querydsl.core.types.Predicate;
-
 import cz.muni.ics.kypo.training.api.PageResultResource;
 import cz.muni.ics.kypo.training.api.dto.InfoLevelDTO;
+import org.springframework.data.domain.Pageable;
 
 /**
  * @author Pavel Šeda

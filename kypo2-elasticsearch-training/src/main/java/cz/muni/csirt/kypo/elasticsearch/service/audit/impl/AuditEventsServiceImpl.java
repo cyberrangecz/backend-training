@@ -1,15 +1,14 @@
 package cz.muni.csirt.kypo.elasticsearch.service.audit.impl;
 
-import java.io.IOException;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import cz.muni.csirt.kypo.elasticsearch.data.dao.AuditEventsDAO;
 import cz.muni.csirt.kypo.elasticsearch.service.audit.AuditEventsService;
 import cz.muni.csirt.kypo.elasticsearch.service.audit.exceptions.ElasticsearchTrainingServiceLayerException;
 import cz.muni.csirt.kypo.elasticsearch.service.eventvalidation.EventValidation;
 import cz.muni.csirt.kypo.utils.MyObjectsUtility;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.io.IOException;
 
 /**
  * 

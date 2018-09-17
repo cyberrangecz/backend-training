@@ -2,11 +2,8 @@ package cz.muni.ics.kypo.training.service;
 
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.PathBuilder;
-import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.model.InfoLevel;
 import cz.muni.ics.kypo.training.repository.InfoLevelRepository;
-import cz.muni.ics.kypo.training.service.InfoLevelService;
-import org.hibernate.HibernateException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -35,7 +32,6 @@ import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
-import static org.mockito.BDDMockito.willThrow;
 import static org.mockito.Mockito.reset;
 
 @RunWith(SpringRunner.class)
@@ -82,14 +78,6 @@ public class InfoLevelServiceTest {
         deepEquals(iL, infoLevel1);
 
         then(infoLevelRepository).should().findById(infoLevel1.getId());
-    }
-
-    @Test
-    public void getInfoLevelByIdWithHibernateException() {
-        Long id = 1L;
-        willThrow(HibernateException.class).given(infoLevelRepository).findById(id);
-        thrown.expect(ServiceLayerException.class);
-        infoLevelService.findById(id);
     }
 
     @Test

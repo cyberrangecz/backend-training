@@ -1,12 +1,14 @@
 package cz.muni.ics.kypo.training.service.impl;
 
-import java.time.LocalDateTime;
-import java.util.Optional;
-
 import com.mysema.commons.lang.Assert;
+import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.training.exceptions.ErrorCode;
+import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.model.Password;
+import cz.muni.ics.kypo.training.model.TrainingInstance;
 import cz.muni.ics.kypo.training.repository.PasswordRepository;
+import cz.muni.ics.kypo.training.repository.TrainingInstanceRepository;
+import cz.muni.ics.kypo.training.service.TrainingInstanceService;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
@@ -16,12 +18,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import com.querydsl.core.types.Predicate;
-
-import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
-import cz.muni.ics.kypo.training.model.TrainingInstance;
-import cz.muni.ics.kypo.training.repository.TrainingInstanceRepository;
-import cz.muni.ics.kypo.training.service.TrainingInstanceService;
+import java.time.LocalDateTime;
+import java.util.Optional;
 
 /**
  * 
@@ -72,7 +70,7 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
             .orElseThrow(() -> new ServiceLayerException("Training instance with id: "+ trainingInstance.getId() +", not found", ErrorCode.RESOURCE_NOT_FOUND));
     LocalDateTime currentDate = LocalDateTime.now();
     if (!currentDate.isBefore(trainingInstance.getStartTime()))
-      throw new ServiceLayerException("Starting time of instance must be in future", ErrorCode.CANNOT_BE_MODIFIED);
+      throw new ServiceLayerException("Starting time of instance must be in future", ErrorCode.RESOURCE_CONFLICT);
     trainingInstanceRepository.save(trainingInstance);
     LOG.info("Training instance with id: " + trainingInstance.getId() + "updated.");
   }
@@ -85,7 +83,7 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
             .orElseThrow(() -> new ServiceLayerException("Training instance with id: " + id + ", not found", ErrorCode.RESOURCE_NOT_FOUND));
     LocalDateTime currentDate = LocalDateTime.now();
     if (!currentDate.isAfter(trainingInstance.getEndTime()))
-      throw new ServiceLayerException("Only finished instances can be deleted", ErrorCode.CANNOT_BE_MODIFIED);
+      throw new ServiceLayerException("Only finished instances can be deleted", ErrorCode.RESOURCE_CONFLICT);
     trainingInstanceRepository.delete(trainingInstance);
     LOG.info("Training instance with id: " + id + "created.");
   }
@@ -96,7 +94,7 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
     String newPasswordHash = DigestUtils.sha256Hex(newPassword);
 
     Optional<Password> password = passwordRepository.findOneByPasswordHash(newPasswordHash);
-    if (password.isPresent()) throw new ServiceLayerException("Password already exists", ErrorCode.PASSWORD_ALREADY_EXISTS);
+    if (password.isPresent()) throw new ServiceLayerException("Password already exists", ErrorCode.RESOURCE_CONFLICT);
     Password newPasswordInstance = new Password();
     newPasswordInstance.setPasswordHash(newPasswordHash);
     passwordRepository.save(newPasswordInstance);

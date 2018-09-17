@@ -30,7 +30,6 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.BDDMockito.*;
@@ -82,7 +81,7 @@ public class TrainingInstanceFacadeTest {
     @Test
     public void findNonexistentTrainingInstanceById() {
         Long id = 6L;
-        willThrow(ServiceLayerException.class).given(trainingInstanceService.findById(id));
+        willThrow(ServiceLayerException.class).given(trainingInstanceService).findById(id);
         thrown.expect(FacadeLayerException.class);
         trainingInstanceFacade.findById(id);
     }
@@ -117,24 +116,22 @@ public class TrainingInstanceFacadeTest {
 
     @Test
     public void createTrainingInstanceWithNull() {
-        thrown.expect(FacadeLayerException.class);
+        thrown.expect(NullPointerException.class);
         trainingInstanceFacade.create(null);
     }
-/*
+
     @Test
     public void updateTrainingInstance() {
-        given(trainingInstanceService.update(any(TrainingInstance.class))).willReturn(Optional.of(trainingInstance1));
-        TrainingInstanceDTO trainingInstanceDTO = trainingInstanceFacade.update(trainingInstance1);
-        deepEquals(trainingInstance1,trainingInstanceDTO);
+        trainingInstanceService.update(trainingInstance1);
         then(trainingInstanceService).should().update(any(TrainingInstance.class));
     }
 
     @Test
     public void updateTrainingInstanceWithNull() {
-        thrown.expect(FacadeLayerException.class);
+        thrown.expect(NullPointerException.class);
         trainingInstanceFacade.update(null);
     }
-*/
+
     @Test
     public void deleteTrainingInstanceWithNull() {
         thrown.expect(NullPointerException.class);

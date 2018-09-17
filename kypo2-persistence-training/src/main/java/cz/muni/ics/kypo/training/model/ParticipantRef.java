@@ -1,9 +1,7 @@
 package cz.muni.ics.kypo.training.model;
 
 import javax.persistence.*;
-import java.util.HashSet;
 import java.util.Objects;
-import java.util.Set;
 
 @Entity(name = "ParticipantRef")
 @Table(name = "participant_ref")

@@ -1,8 +1,5 @@
 package cz.muni.ics.kypo.training.api.dto;
 
-
-import cz.muni.ics.kypo.training.model.TrainingDefinition;
-import cz.muni.ics.kypo.training.model.TrainingRun;
 import cz.muni.ics.kypo.training.model.enums.AssessmentType;
 import io.swagger.annotations.ApiModel;
 
@@ -21,7 +18,7 @@ public class AssessmentLevelDTO extends AbstractLevelDTO {
     @NotEmpty
     private String instructions;
     @NotNull(message = "Assessment type must be set")
-    private AssessmentType type;
+    private AssessmentType assessmentType;
 
 
     public AssessmentLevelDTO() {}
@@ -43,19 +40,19 @@ public class AssessmentLevelDTO extends AbstractLevelDTO {
         this.instructions = instructions;
     }
 
-    public AssessmentType getType() {
-        return type;
+    public AssessmentType getAssessmentType() {
+        return assessmentType;
     }
 
-    public void setType(AssessmentType type) {
-        this.type = type;
+    public void setAssessmentType(AssessmentType assessmentType) {
+        this.assessmentType = assessmentType;
     }
 
     @Override
     public String toString() {
         return "AssessmentLevelDTO [id=" + id + ", title=" + title + ", maxScore=" + maxScore + ", nextLevel=" + nextLevel
                 + ", preHook=" + preHook + ", postHook=" + postHook + ", questions=" + questions +
-                ", instructions=" + instructions + ", type=" + type.name() + "]";
+                ", instructions=" + instructions + ", type=" + assessmentType.name() + "]";
     }
 }
 

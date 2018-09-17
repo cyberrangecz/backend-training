@@ -1,12 +1,10 @@
 package cz.muni.ics.kypo.training.service;
 
+import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
+import cz.muni.ics.kypo.training.model.TrainingInstance;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-
-import com.querydsl.core.types.Predicate;
-
-import cz.muni.ics.kypo.training.model.TrainingInstance;
 
 /**
  * 
@@ -43,7 +41,7 @@ public interface TrainingInstanceService {
    * updates training instance
    * @param trainingInstance to be updated
    * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND given training instance is not found.
-   *                                               CANNOT_BE_UPDATED cannot be updated for some reason.
+   *                                               RESOURCE_CONFLICT cannot be updated for some reason.
    */
   public void update(TrainingInstance trainingInstance) throws ServiceLayerException;
 
@@ -51,14 +49,14 @@ public interface TrainingInstanceService {
    * deletes training instance
    * @param id of training instance
    * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND given training instance is not found.
-   *                                               CANNOT_BE_DELETED cannot be deleted for some reason.
+   *                                               RESOURCE_CONFLICT cannot be deleted for some reason.
    */
   public void delete(Long id) throws ServiceLayerException;
 
   /**
    * Generates password for training instance
    * @return new password
-   * @throws ServiceLayerException with ErrorCode: PASSWORD_ALREADY_EXISTS given password already exists in DB.
+   * @throws ServiceLayerException with ErrorCode: RESOURCE_CONFLICT given password already exists in DB.
    */
   public char[] generatePassword() throws ServiceLayerException;
 

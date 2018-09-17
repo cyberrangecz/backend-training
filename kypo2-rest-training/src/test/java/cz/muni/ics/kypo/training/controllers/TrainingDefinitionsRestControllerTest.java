@@ -10,7 +10,10 @@ import cz.muni.ics.kypo.training.api.dto.GameLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.InfoLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.TrainingDefinitionDTO;
 import cz.muni.ics.kypo.training.exception.FacadeLayerException;
-import cz.muni.ics.kypo.training.exceptions.*;
+import cz.muni.ics.kypo.training.exceptions.ConflictException;
+import cz.muni.ics.kypo.training.exceptions.ErrorCode;
+import cz.muni.ics.kypo.training.exceptions.ResourceNotFoundException;
+import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.facade.TrainingDefinitionFacade;
 import cz.muni.ics.kypo.training.mapping.BeanMapping;
 import cz.muni.ics.kypo.training.mapping.BeanMappingImpl;
@@ -45,7 +48,6 @@ import java.io.IOException;
 import java.util.*;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
 import static org.mockito.BDDMockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -113,6 +115,9 @@ public class TrainingDefinitionsRestControllerTest {
         assessmentLevel.setTitle("AssTest");
         assessmentLevel.setAssessmentType(AssessmentType.TEST);
         assessmentLevel.setQuestions("questions");
+        assessmentLevel.setMaxScore(20);
+        assessmentLevel.setAssessmentType(AssessmentType.TEST);
+        assessmentLevel.setInstructions("Instructions");
 
         AuthorRef authorRef = new AuthorRef();
         Set<AuthorRef> authorRefSet = new HashSet<>();
@@ -179,7 +184,8 @@ public class TrainingDefinitionsRestControllerTest {
 
     @Test
     public void findTrainingDefinitionByIdWithFacadeException() throws Exception {
-        willThrow(FacadeLayerException.class).given(trainingDefinitionFacade).findById(any(Long.class));
+        Exception exceptionThrow = new ServiceLayerException("message", ErrorCode.RESOURCE_NOT_FOUND);
+        willThrow(new FacadeLayerException(exceptionThrow)).given(trainingDefinitionFacade).findById(any(Long.class));
         Exception exception = mockMvc.perform(get("/training-definitions" + "/{id}", 6l))
                 .andExpect(status().isNotFound())
                 .andReturn().getResolvedException();
@@ -210,14 +216,15 @@ public class TrainingDefinitionsRestControllerTest {
 
     @Test
     public void updateTrainingDefinitionWithFacadeException() throws Exception {
-        willThrow(FacadeLayerException.class).given(trainingDefinitionFacade).update(any(TrainingDefinition.class));
+        Exception exceptionThrow = new ServiceLayerException("message", ErrorCode.RESOURCE_CONFLICT);
+        willThrow(new FacadeLayerException(exceptionThrow)).given(trainingDefinitionFacade).update(any(TrainingDefinition.class));
         given(beanMapping.mapTo(any(TrainingDefinitionDTO.class), eq(TrainingDefinition.class))).willReturn(trainingDefinition1);
         Exception exception = mockMvc.perform(put("/training-definitions")
                 .content(convertObjectToJsonBytes(trainingDefinition1))
                 .contentType(MediaType.APPLICATION_JSON_VALUE))
-                .andExpect(status().isNotModified())
+                .andExpect(status().isConflict())
                 .andReturn().getResolvedException();
-        assertEquals(ResourceNotModifiedException.class, exception.getClass());
+        assertEquals(ConflictException.class, exception.getClass());
     }
 /*
     @Test
@@ -238,12 +245,13 @@ public class TrainingDefinitionsRestControllerTest {
 */
     @Test
     public void cloneTrainingDefinitionWithFacadeException() throws Exception {
-        willThrow(FacadeLayerException.class).given(trainingDefinitionFacade).clone(any(Long.class));
+        Exception exceptionToThrow = new ServiceLayerException("message", ErrorCode.RESOURCE_CONFLICT);
+        willThrow(new FacadeLayerException(exceptionToThrow)).given(trainingDefinitionFacade).clone(any(Long.class));
         Exception exception = mockMvc.perform(post("/training-definitions/1")
                 .contentType(MediaType.APPLICATION_JSON_VALUE))
-                .andExpect(status().isNotAcceptable())
+                .andExpect(status().isConflict())
                 .andReturn().getResolvedException();
-        assertEquals(ResourceNotCreatedException.class, exception.getClass());
+        assertEquals(ConflictException.class, exception.getClass());
     }
 
     @Test
@@ -251,23 +259,25 @@ public class TrainingDefinitionsRestControllerTest {
         mockMvc.perform(put("/training-definitions/{definitionId}/levels/{levelId}/swap-left", trainingDefinition1.getId(), gameLevel.getId()))
                 .andExpect(status().isNoContent());
     }
-/*
+
     @Test
     public void swapLeftWithCannotBeUpdatedException() throws Exception {
-        willThrow(CannotBeUpdatedException.class).given(trainingDefinitionFacade).swapLeft(any(Long.class), any(Long.class));
+        Exception exceptionToThrow = new ServiceLayerException("message", ErrorCode.RESOURCE_CONFLICT);
+        willThrow(new FacadeLayerException(exceptionToThrow)).given(trainingDefinitionFacade).swapLeft(any(Long.class), any(Long.class));
         Exception exception = mockMvc.perform(put("/training-definitions/{definitionId}/levels/{levelId}/swap-left", trainingDefinition1.getId(), gameLevel.getId()))
                 .andExpect(status().isConflict())
                 .andReturn().getResolvedException();
         assertEquals(ConflictException.class, exception.getClass());
     }
-*/
+
     @Test
     public void swapLeftWithFacadeLayerException() throws Exception {
-        willThrow(FacadeLayerException.class).given(trainingDefinitionFacade).swapLeft(any(Long.class), any(Long.class));
+        Exception exceptionToThrow = new ServiceLayerException("message", ErrorCode.RESOURCE_NOT_FOUND);
+        willThrow(new FacadeLayerException(exceptionToThrow)).given(trainingDefinitionFacade).swapLeft(any(Long.class), any(Long.class));
         Exception exception = mockMvc.perform(put("/training-definitions/{definitionId}/levels/{levelId}/swap-left", trainingDefinition1.getId(), gameLevel.getId()))
-                .andExpect(status().isNotModified())
+                .andExpect(status().isNotFound())
                 .andReturn().getResolvedException();
-        assertEquals(ResourceNotModifiedException.class, exception.getClass());
+        assertEquals(ResourceNotFoundException.class, exception.getClass());
     }
 
     @Test
@@ -275,23 +285,25 @@ public class TrainingDefinitionsRestControllerTest {
         mockMvc.perform(put("/training-definitions/{definitionId}/levels/{levelId}/swap-right", trainingDefinition1.getId(), gameLevel.getId()))
                 .andExpect(status().isNoContent());
     }
-/*
+
     @Test
     public void swapRightWithCannotBeUpdatedException() throws Exception {
-        willThrow(CannotBeUpdatedException.class).given(trainingDefinitionFacade).swapRight(any(Long.class), any(Long.class));
+        Exception exceptionToThrow = new ServiceLayerException("message", ErrorCode.RESOURCE_CONFLICT);
+        willThrow(new FacadeLayerException(exceptionToThrow)).given(trainingDefinitionFacade).swapRight(any(Long.class), any(Long.class));
         Exception exception = mockMvc.perform(put("/training-definitions/{definitionId}/levels/{levelId}/swap-right", trainingDefinition1.getId(), gameLevel.getId()))
                 .andExpect(status().isConflict())
                 .andReturn().getResolvedException();
         assertEquals(ConflictException.class, exception.getClass());
     }
-*/
+
     @Test
     public void swapRightWithFacadeLayerException() throws Exception {
-        willThrow(FacadeLayerException.class).given(trainingDefinitionFacade).swapRight(any(Long.class), any(Long.class));
+        Exception exceptionThrow = new ServiceLayerException("message", ErrorCode.RESOURCE_NOT_FOUND);
+        willThrow(new FacadeLayerException(exceptionThrow)).given(trainingDefinitionFacade).swapRight(any(Long.class), any(Long.class));
         Exception exception = mockMvc.perform(put("/training-definitions/{definitionId}/levels/{levelId}/swap-right", trainingDefinition1.getId(), gameLevel.getId()))
-                .andExpect(status().isNotModified())
+                .andExpect(status().isNotFound())
                 .andReturn().getResolvedException();
-        assertEquals(ResourceNotModifiedException.class, exception.getClass());
+        assertEquals(ResourceNotFoundException.class, exception.getClass());
     }
 
     @Test
@@ -299,20 +311,22 @@ public class TrainingDefinitionsRestControllerTest {
         mockMvc.perform(delete("/training-definitions/{id}", trainingDefinition1.getId()))
                 .andExpect(status().isOk());
     }
-/*
+
     @Test
     public void deleteTrainingDefinitionWithCannotBeDeletedException() throws Exception {
-        willThrow(CannotBeDeletedException.class).given(trainingDefinitionFacade).delete(any(Long.class));
+        Exception exceptionToThrow = new ServiceLayerException("message", ErrorCode.RESOURCE_CONFLICT);
+        willThrow(new FacadeLayerException(exceptionToThrow)).given(trainingDefinitionFacade).delete(any(Long.class));
         Exception exception = mockMvc.perform(delete("/training-definitions/{id}", trainingDefinition2.getId()))
                 .andExpect(status().isConflict())
                 .andReturn().getResolvedException();
 
         assertEquals(ConflictException.class, exception.getClass());
     }
-*/
+
     @Test
     public void deleteTrainingDefinitionWithFacadeLayerException() throws Exception {
-        willThrow(FacadeLayerException.class).given(trainingDefinitionFacade).delete(any(Long.class));
+        Exception exceptionThrow = new ServiceLayerException("message", ErrorCode.RESOURCE_NOT_FOUND);
+        willThrow(new FacadeLayerException(exceptionThrow)).given(trainingDefinitionFacade).delete(any(Long.class));
         Exception exception = mockMvc.perform(delete("/training-definitions/{id}", trainingDefinition2.getId()))
                 .andExpect(status().isNotFound())
                 .andReturn().getResolvedException();
@@ -324,19 +338,21 @@ public class TrainingDefinitionsRestControllerTest {
         mockMvc.perform(delete("/training-definitions/{definitionId}/levels/{levelId}", trainingDefinition1.getId(), gameLevel.getId()))
                 .andExpect(status().isNoContent());
     }
-/*
+
     @Test
     public void deleteLevelWithCannotBeUpdatedException() throws Exception {
-        willThrow(CannotBeUpdatedException.class).given(trainingDefinitionFacade).deleteOneLevel(any(Long.class), any(Long.class));
+        Exception exceptionToThrow = new ServiceLayerException("message", ErrorCode.RESOURCE_CONFLICT);
+        willThrow(new FacadeLayerException(exceptionToThrow)).given(trainingDefinitionFacade).deleteOneLevel(any(Long.class), any(Long.class));
         Exception exception = mockMvc.perform(delete("/training-definitions/{definitionId}/levels/{levelId}",trainingDefinition2.getId(), gameLevel.getId()))
                 .andExpect(status().isConflict())
                 .andReturn().getResolvedException();
         assertEquals(ConflictException.class, exception.getClass());
     }
-*/
+
     @Test
     public void deleteLevelWithFacadeLayerException() throws Exception {
-        willThrow(FacadeLayerException.class).given(trainingDefinitionFacade).deleteOneLevel(any(Long.class), any(Long.class));
+        Exception exceptionToThrow = new ServiceLayerException("message", ErrorCode.RESOURCE_NOT_FOUND);
+        willThrow(new FacadeLayerException(exceptionToThrow)).given(trainingDefinitionFacade).deleteOneLevel(any(Long.class), any(Long.class));
         Exception exception = mockMvc.perform(delete("/training-definitions/{definitionId}/levels/{levelId}",trainingDefinition2.getId(), gameLevel.getId()))
                 .andExpect(status().isNotFound())
                 .andReturn().getResolvedException();
@@ -353,7 +369,8 @@ public class TrainingDefinitionsRestControllerTest {
 
     @Test
     public void updateGameLevelWithFacadeLayerException() throws Exception {
-        willThrow(FacadeLayerException.class).given(trainingDefinitionFacade).updateGameLevel(any(Long.class), any(GameLevel .class));
+        Exception exceptionThrow = new ServiceLayerException("message", ErrorCode.RESOURCE_NOT_FOUND);
+        willThrow(new FacadeLayerException(exceptionThrow)).given(trainingDefinitionFacade).updateGameLevel(any(Long.class), any(GameLevel .class));
         given(beanMapping.mapTo(any(GameLevelDTO.class), eq(GameLevel.class))).willReturn(gameLevel);
         Exception exception = mockMvc.perform(put("/training-definitions/{definitionId}/game-levels", trainingDefinition2.getId())
                 .content(convertObjectToJsonBytes(gameLevel))
@@ -362,10 +379,11 @@ public class TrainingDefinitionsRestControllerTest {
                 .andReturn().getResolvedException();
         assertEquals(ResourceNotFoundException.class, exception.getClass());
     }
-/*
+
     @Test
     public void updateGameLevelWithCannotBeUpdatedException() throws Exception {
-        willThrow(CannotBeUpdatedException.class).given(trainingDefinitionFacade).updateGameLevel(any(Long.class), any(GameLevel .class));
+        Exception exceptionToThrow = new ServiceLayerException("message", ErrorCode.RESOURCE_CONFLICT);
+        willThrow(new FacadeLayerException(exceptionToThrow)).given(trainingDefinitionFacade).updateGameLevel(any(Long.class), any(GameLevel .class));
         given(beanMapping.mapTo(any(GameLevelDTO.class), eq(GameLevel.class))).willReturn(gameLevel);
         Exception exception = mockMvc.perform(put("/training-definitions/{definitionId}/game-levels", trainingDefinition2.getId())
                 .content(convertObjectToJsonBytes(gameLevel))
@@ -374,7 +392,7 @@ public class TrainingDefinitionsRestControllerTest {
                 .andReturn().getResolvedException();
         assertEquals(ConflictException.class, exception.getClass());
     }
-*/
+
     @Test
     public void updateInfoLevel() throws Exception {
 
@@ -386,7 +404,8 @@ public class TrainingDefinitionsRestControllerTest {
 
     @Test
     public void updateInfoLevelWithFacadeLayerException() throws Exception {
-        willThrow(FacadeLayerException.class).given(trainingDefinitionFacade).updateInfoLevel(any(Long.class), any(InfoLevel .class));
+        Exception exceptionThrow = new ServiceLayerException("message", ErrorCode.RESOURCE_NOT_FOUND);
+        willThrow(new FacadeLayerException(exceptionThrow)).given(trainingDefinitionFacade).updateInfoLevel(any(Long.class), any(InfoLevel .class));
         given(beanMapping.mapTo(any(InfoLevelDTO.class), eq(InfoLevel.class))).willReturn(infoLevel);
         Exception exception = mockMvc.perform(put("/training-definitions/{definitionId}/info-levels", trainingDefinition2.getId())
                 .content(convertObjectToJsonBytes(infoLevel))
@@ -395,10 +414,11 @@ public class TrainingDefinitionsRestControllerTest {
                 .andReturn().getResolvedException();
         assertEquals(ResourceNotFoundException.class, exception.getClass());
     }
-/*
+
     @Test
     public void updateInfoLevelWithCannotBeUpdatedException() throws Exception {
-        willThrow(CannotBeUpdatedException.class).given(trainingDefinitionFacade).updateInfoLevel(any(Long.class), any(InfoLevel .class));
+        Exception exceptionToThrow = new ServiceLayerException("message", ErrorCode.RESOURCE_CONFLICT);
+        willThrow(new FacadeLayerException(exceptionToThrow)).given(trainingDefinitionFacade).updateInfoLevel(any(Long.class), any(InfoLevel .class));
         given(beanMapping.mapTo(any(InfoLevelDTO.class), eq(InfoLevel.class))).willReturn(infoLevel);
         Exception exception = mockMvc.perform(put("/training-definitions/{definitionId}/info-levels", trainingDefinition2.getId())
                 .content(convertObjectToJsonBytes(gameLevel))
@@ -406,8 +426,8 @@ public class TrainingDefinitionsRestControllerTest {
                 .andExpect(status().isConflict())
                 .andReturn().getResolvedException();
         assertEquals(ConflictException.class, exception.getClass());
-    }*/
-/*
+    }
+
     @Test
     public void updateAssessmentLevel() throws Exception {
 
@@ -419,10 +439,11 @@ public class TrainingDefinitionsRestControllerTest {
 
     @Test
     public void updateAssessmentLevelWithFacadeLayerException() throws Exception {
-        willThrow(FacadeLayerException.class).given(trainingDefinitionFacade).updateAssessmentLevel(any(Long.class), any(AssessmentLevel .class));
+        Exception exceptionToThrow = new ServiceLayerException("message", ErrorCode.RESOURCE_NOT_FOUND);
+        willThrow(new FacadeLayerException(exceptionToThrow)).given(trainingDefinitionFacade).updateAssessmentLevel(any(Long.class), any(AssessmentLevel .class));
         given(beanMapping.mapTo(any(AssessmentLevelDTO.class), eq(AssessmentLevel.class))).willReturn(assessmentLevel);
         Exception exception = mockMvc.perform(put("/training-definitions/{definitionId}/assessment-levels", trainingDefinition2.getId())
-                .content(convertObjectToJsonBytes(infoLevel))
+                .content(convertObjectToJsonBytes(assessmentLevel))
                 .contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isNotFound())
                 .andReturn().getResolvedException();
@@ -431,16 +452,17 @@ public class TrainingDefinitionsRestControllerTest {
 
     @Test
     public void updateAssessmentLevelWithCannotBeUpdatedException() throws Exception {
-        willThrow(CannotBeUpdatedException.class).given(trainingDefinitionFacade).updateAssessmentLevel(any(Long.class), any(AssessmentLevel .class));
+        Exception exceptionToThrow = new ServiceLayerException("message", ErrorCode.RESOURCE_CONFLICT);
+        willThrow(new FacadeLayerException(exceptionToThrow)).given(trainingDefinitionFacade).updateAssessmentLevel(any(Long.class), any(AssessmentLevel .class));
         given(beanMapping.mapTo(any(AssessmentLevelDTO.class), eq(AssessmentLevel.class))).willReturn(assessmentLevel);
         Exception exception = mockMvc.perform(put("/training-definitions/{definitionId}/assessment-levels", trainingDefinition2.getId())
-                .content(convertObjectToJsonBytes(gameLevel))
+                .content(convertObjectToJsonBytes(assessmentLevel))
                 .contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isConflict())
                 .andReturn().getResolvedException();
         assertEquals(ConflictException.class, exception.getClass());
     }
-*/
+
     @Test
     public void createTrainingDefinition() throws Exception {
         String valueTd = convertObjectToJsonBytes(trainingDefinition1DTO);
@@ -458,14 +480,15 @@ public class TrainingDefinitionsRestControllerTest {
 
     @Test
     public void createTrainingDefinitionWithFacadeException() throws Exception {
-        willThrow(FacadeLayerException.class).given(trainingDefinitionFacade).create(any(TrainingDefinition.class));
+        Exception exceptionThrow = new ServiceLayerException("message", ErrorCode.RESOURCE_CONFLICT);
+        willThrow(new FacadeLayerException(exceptionThrow)).given(trainingDefinitionFacade).create(any(TrainingDefinition.class));
         given(beanMapping.mapTo(any(TrainingDefinitionDTO.class), eq(TrainingDefinition.class))).willReturn(trainingDefinition1);
         Exception exception = mockMvc.perform(post("/training-definitions")
                 .content(convertObjectToJsonBytes(trainingDefinition1))
                 .contentType(MediaType.APPLICATION_JSON_VALUE))
-                .andExpect(status().isNotAcceptable())
+                .andExpect(status().isConflict())
                 .andReturn().getResolvedException();
-        assertEquals(ResourceNotCreatedException.class, exception.getClass());
+        assertEquals(ConflictException.class, exception.getClass());
     }
     private static String convertObjectToJsonBytes(Object object) throws IOException {
         ObjectMapper mapper = new ObjectMapper();

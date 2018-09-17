@@ -5,8 +5,6 @@ import com.querydsl.core.types.dsl.PathBuilder;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.model.TrainingInstance;
 import cz.muni.ics.kypo.training.repository.TrainingInstanceRepository;
-import cz.muni.ics.kypo.training.service.TrainingInstanceService;
-import org.hibernate.HibernateException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -19,17 +17,19 @@ import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.ComponentScan;
-import org.springframework.data.domain.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.web.client.RestTemplate;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 import static org.mockito.BDDMockito.*;
 
 @RunWith(SpringRunner.class)
@@ -82,17 +82,11 @@ public class TrainingInstanceServiceTest {
     }
 
     @Test
-    public void getTrainingInstanceByIdWithHibernateException() {
-        long id = 6L;
-        willThrow(HibernateException.class).given(trainingInstanceRepository).findById(id);
-        thrown.expect(ServiceLayerException.class);
-        trainingInstanceService.findById(id);
-    }
-
-    @Test
     public void getNonexistentTrainingInstanceById() {
         Long id = 6L;
-        assertEquals(Optional.empty(), trainingInstanceService.findById(id));
+        thrown.expect(ServiceLayerException.class);
+        thrown.expectMessage("Training instance with id: " + id + " not found.");
+        trainingInstanceService.findById(id);
     }
 
     @Test

@@ -6,6 +6,7 @@ import cz.muni.ics.kypo.training.api.PageResultResource;
 import cz.muni.ics.kypo.training.api.dto.GameLevelDTO;
 import cz.muni.ics.kypo.training.config.FacadeTestConfiguration;
 import cz.muni.ics.kypo.training.exception.FacadeLayerException;
+import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.model.GameLevel;
 import cz.muni.ics.kypo.training.service.GameLevelService;
 import org.junit.Before;
@@ -33,8 +34,7 @@ import java.util.Optional;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.BDDMockito.then;
+import static org.mockito.BDDMockito.*;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -83,7 +83,7 @@ public class GameLevelFacadeTest {
     @Test
     public void findNonexistentGameLevelById() {
         Long id = 6L;
-        given(gameLevelService.findById(id)).willReturn(Optional.empty());
+        willThrow(ServiceLayerException.class).given(gameLevelService).findById(id);
         thrown.expect(FacadeLayerException.class);
         gameLevelFacade.findById(id);
     }

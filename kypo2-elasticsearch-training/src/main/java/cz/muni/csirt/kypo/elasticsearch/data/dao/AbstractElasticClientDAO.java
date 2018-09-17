@@ -1,10 +1,8 @@
 package cz.muni.csirt.kypo.elasticsearch.data.dao;
 
-import org.elasticsearch.client.RestClient;
-
-import org.elasticsearch.client.RestHighLevelClient;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.elasticsearch.client.RestClient;
+import org.elasticsearch.client.RestHighLevelClient;
 
 /**
  * @author Pavel Šeda

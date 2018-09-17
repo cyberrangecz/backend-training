@@ -1,17 +1,6 @@
 package cz.muni.ics.kypo.training.facade.impl;
 
-import java.util.Objects;
-import java.util.Optional;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.querydsl.core.types.Predicate;
-
 import cz.muni.ics.kypo.training.api.PageResultResource;
 import cz.muni.ics.kypo.training.api.dto.GameLevelDTO;
 import cz.muni.ics.kypo.training.exception.FacadeLayerException;
@@ -20,6 +9,12 @@ import cz.muni.ics.kypo.training.facade.GameLevelFacade;
 import cz.muni.ics.kypo.training.mapping.BeanMapping;
 import cz.muni.ics.kypo.training.model.GameLevel;
 import cz.muni.ics.kypo.training.service.GameLevelService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * @author Pavel Šeda
@@ -45,7 +40,8 @@ public class GameLevelFacadeImpl implements GameLevelFacade {
   public GameLevelDTO findById(long id) {
     LOG.debug("findById({})", id);
     try {
-      return beanMapping.mapTo(gameLevelService.findById(id), GameLevelDTO.class);
+      GameLevel gameLevel = gameLevelService.findById(id).get();
+      return beanMapping.mapTo(gameLevel, GameLevelDTO.class);
     } catch (ServiceLayerException ex) {
       throw new FacadeLayerException(ex);
     }
@@ -58,7 +54,7 @@ public class GameLevelFacadeImpl implements GameLevelFacade {
     try {
       return beanMapping.mapToPageResultDTO(gameLevelService.findAll(predicate, pageable), GameLevelDTO.class);
     } catch (ServiceLayerException ex) {
-      throw new FacadeLayerException(ex.getLocalizedMessage());
+      throw new FacadeLayerException(ex);
     }
   }
 }

@@ -1,11 +1,7 @@
 package cz.muni.ics.kypo.training.model;
 
-import java.io.Serializable;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
-
 import javax.persistence.*;
+import java.io.Serializable;
 
 /**
  * 

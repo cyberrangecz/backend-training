@@ -35,9 +35,7 @@ import java.util.Optional;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.BDDMockito.then;
-import static org.mockito.BDDMockito.willThrow;
+import static org.mockito.BDDMockito.*;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -81,7 +79,7 @@ public class AssessmentLevelFacadeTest {
 
     @Test
     public void findByIdAssessmentLevel() {
-        given(assessmentLevelService.findById(al1.getId())).willReturn(Optional.of(al1));
+        given(assessmentLevelService.findById(al1.getId())).willReturn(Optional.ofNullable(al1));
 
         AssessmentLevelDTO alDTO = assessmentLevelFacade.findById(al1.getId());
         deepEquals(al1,alDTO);
@@ -90,20 +88,10 @@ public class AssessmentLevelFacadeTest {
     }
 
     @Test
-    public void findByIdWithNullId() {
-        Long id = null;
-        thrown.expect(FacadeLayerException.class);
-        //thrown.expectMessage("Given AssessmentLevel ID is null.");
-        assessmentLevelFacade.findById(id);
-
-    }
-
-    @Test
     public void findByIdNotFoundAssessmentLevel() {
         Long id = 3L;
-        given(assessmentLevelService.findById(id)).willReturn(Optional.empty());
         thrown.expect(FacadeLayerException.class);
-        thrown.expectMessage("AssessmentLevel with this id is not found");
+        willThrow(ServiceLayerException.class).given(assessmentLevelService).findById(id);
         assessmentLevelFacade.findById(id);
 
     }
@@ -142,7 +130,7 @@ public class AssessmentLevelFacadeTest {
 
     private void deepEquals(AssessmentLevel expectedAssessmentLevel, AssessmentLevelDTO actualAssessmentLevel) {
         assertEquals(expectedAssessmentLevel.getId(), actualAssessmentLevel.getId());
-        assertEquals(expectedAssessmentLevel.getAssessmentType(), actualAssessmentLevel.getType());
+        assertEquals(expectedAssessmentLevel.getAssessmentType(), actualAssessmentLevel.getAssessmentType());
     }
 
 }

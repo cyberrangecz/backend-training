@@ -1,8 +1,7 @@
 package cz.muni.ics.kypo.training.service.impl;
 
-import org.springframework.stereotype.Service;
-
 import cz.muni.ics.kypo.training.service.KypoManagementClientService;
+import org.springframework.stereotype.Service;
 
 /**
  * 

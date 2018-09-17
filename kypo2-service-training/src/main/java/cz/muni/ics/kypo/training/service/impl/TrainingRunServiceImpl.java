@@ -1,14 +1,16 @@
 package cz.muni.ics.kypo.training.service.impl;
 
-import java.time.LocalDateTime;
-import java.util.*;
-import java.util.stream.Collectors;
-
 import com.google.gson.JsonObject;
+import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.training.exceptions.ErrorCode;
+import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.model.*;
 import cz.muni.ics.kypo.training.model.enums.TRState;
-import cz.muni.ics.kypo.training.repository.*;
+import cz.muni.ics.kypo.training.repository.AbstractLevelRepository;
+import cz.muni.ics.kypo.training.repository.ParticipantRefRepository;
+import cz.muni.ics.kypo.training.repository.TrainingInstanceRepository;
+import cz.muni.ics.kypo.training.repository.TrainingRunRepository;
+import cz.muni.ics.kypo.training.service.TrainingRunService;
 import cz.muni.ics.kypo.training.utils.SandboxInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,18 +23,17 @@ import org.springframework.http.*;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.stereotype.Service;
-
-import com.querydsl.core.types.Predicate;
-
-import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
-import cz.muni.ics.kypo.training.service.TrainingRunService;
 import org.springframework.util.Assert;
 import org.springframework.web.client.RestTemplate;
+
+import java.time.LocalDateTime;
+import java.util.*;
+import java.util.stream.Collectors;
 
 
 /**
  * 
- * @author Pavel Seda (441048)
+ * @author Dominik Pilar (445537)
  *
  */
 @Service
@@ -136,9 +137,13 @@ public class TrainingRunServiceImpl implements TrainingRunService {
     List<AbstractLevel> levels = new ArrayList<>();
     AbstractLevel al;
     do {
-      al = abstractLevelRepository.findById(levelId).orElseThrow(() -> new ServiceLayerException("Level with id: " + levelId + " not found.", ErrorCode.RESOURCE_NOT_FOUND));
-      levels.add(al);
-    } while (al.getNextLevel() != null);
+      Optional<AbstractLevel> optionalAbstractLevel = abstractLevelRepository.findById(levelId);
+      if (!optionalAbstractLevel.isPresent()) {
+        throw  new ServiceLayerException("Level with id: " + levelId + " not found.", ErrorCode.RESOURCE_NOT_FOUND);
+      }
+      levelId = optionalAbstractLevel.get().getNextLevel();
+      levels.add(optionalAbstractLevel.get());
+    } while (levelId != null);
     return levels;
   }
 
@@ -176,7 +181,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
         }
       }
     }
-    throw new ServiceLayerException("There is no training instance with password " + password + ".", ErrorCode.WRONG_PASSWORD);
+    throw new ServiceLayerException("There is no training instance with password " + password + ".", ErrorCode.RESOURCE_NOT_FOUND);
   }
 
   private TrainingRun getNewTrainingRun(AbstractLevel currentLevel, String participantRefLogin, TrainingInstance trainingInstance,
@@ -204,7 +209,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
     String listOfIds = idsOfNotAllocatedSandboxes.stream().map(Object::toString).collect(Collectors.joining(","));
     ResponseEntity<List<SandboxInfo>> response = restTemplate.exchange(serverUrl + SANDBOX_INFO_ENDPOINT, HttpMethod.GET, new HttpEntity<>(httpHeaders), new ParameterizedTypeReference<List<SandboxInfo>>(){}, listOfIds);
     if (response.getStatusCode().isError()) {
-      throw new ServiceLayerException("Some error occured during getting info about sandboxes.", ErrorCode.CANNOT_REACH_RESOURCE );
+      throw new ServiceLayerException("Some error occurred during getting info about sandboxes.", ErrorCode.UNEXPECTED_ERROR );
     }
     List<SandboxInfo> sandboxInfoList = response.getBody();
     sandboxInfoList.removeIf(s -> !s.getState().equals("READY"));
@@ -274,12 +279,12 @@ public class TrainingRunServiceImpl implements TrainingRunService {
     Assert.notNull(idOfFirstLevel, "Input id of first level must not be null.");
     Assert.notNull(actualLevel, "Input id of actual level must not be null.");
     int order = 0;
-    AbstractLevel abstractLevel = abstractLevelRepository.findById(idOfFirstLevel).get();
+    AbstractLevel abstractLevel = abstractLevelRepository.findById(idOfFirstLevel).orElseThrow(() -> new ServiceLayerException("Level with id " + idOfFirstLevel + " not found.", ErrorCode.RESOURCE_NOT_FOUND));
     while (abstractLevel != null) {
       if (abstractLevel.getId() == actualLevel) {
-        return order;
+        return order + 1;
       } else {
-        abstractLevel = abstractLevelRepository.findById(idOfFirstLevel).get();
+        abstractLevel = abstractLevelRepository.findById(abstractLevel.getNextLevel()).orElseThrow(() -> new ServiceLayerException("Level with id " + idOfFirstLevel + " not found.", ErrorCode.RESOURCE_NOT_FOUND));
       }
     }
     throw new IllegalArgumentException("Wrong parameters entered.");

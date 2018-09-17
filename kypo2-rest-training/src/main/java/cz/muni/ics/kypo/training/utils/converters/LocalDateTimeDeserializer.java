@@ -1,11 +1,12 @@
 package cz.muni.ics.kypo.training.utils.converters;
 
-import java.io.IOException;
-import java.time.LocalDateTime;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
+
+import java.io.IOException;
+import java.time.LocalDateTime;
 
 /**
  * @author Pavel Šeda

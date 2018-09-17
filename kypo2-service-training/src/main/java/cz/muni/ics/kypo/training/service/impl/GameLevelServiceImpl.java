@@ -1,8 +1,9 @@
 package cz.muni.ics.kypo.training.service.impl;
 
-import java.util.Optional;
-
-import org.hibernate.HibernateException;
+import com.querydsl.core.types.Predicate;
+import cz.muni.ics.kypo.training.model.GameLevel;
+import cz.muni.ics.kypo.training.repository.GameLevelRepository;
+import cz.muni.ics.kypo.training.service.GameLevelService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,13 +11,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import com.querydsl.core.types.Predicate;
-
-import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
-import cz.muni.ics.kypo.training.model.GameLevel;
-import cz.muni.ics.kypo.training.repository.GameLevelRepository;
-import cz.muni.ics.kypo.training.service.GameLevelService;
-import org.springframework.util.Assert;
+import java.util.Optional;
 
 /**
  * 

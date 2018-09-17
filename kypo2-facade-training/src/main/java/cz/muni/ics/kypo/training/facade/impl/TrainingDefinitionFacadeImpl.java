@@ -1,10 +1,15 @@
 package cz.muni.ics.kypo.training.facade.impl;
 
-import java.util.*;
-
+import com.querydsl.core.types.Predicate;
+import cz.muni.ics.kypo.training.api.PageResultResource;
 import cz.muni.ics.kypo.training.api.dto.*;
+import cz.muni.ics.kypo.training.exception.FacadeLayerException;
+import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
+import cz.muni.ics.kypo.training.facade.TrainingDefinitionFacade;
+import cz.muni.ics.kypo.training.mapping.BeanMapping;
 import cz.muni.ics.kypo.training.model.*;
 import cz.muni.ics.kypo.training.model.enums.LevelType;
+import cz.muni.ics.kypo.training.service.TrainingDefinitionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,15 +17,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.querydsl.core.types.Predicate;
-
-import cz.muni.ics.kypo.training.api.PageResultResource;
-import cz.muni.ics.kypo.training.api.dto.TrainingDefinitionDTO;
-import cz.muni.ics.kypo.training.exception.FacadeLayerException;
-import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
-import cz.muni.ics.kypo.training.facade.TrainingDefinitionFacade;
-import cz.muni.ics.kypo.training.mapping.BeanMapping;
-import cz.muni.ics.kypo.training.service.TrainingDefinitionService;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.Set;
 
 
 /**
@@ -65,10 +65,8 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
 
       trainingDefinitionDTO.setBasicLevelInfoDTOs(levelInfoDTOs);
       return trainingDefinitionDTO;
-    } catch (NullPointerException ex) {
-      throw new FacadeLayerException("Given TrainingDefinition ID is null.");
     } catch (ServiceLayerException ex) {
-      throw new FacadeLayerException(ex.getLocalizedMessage());
+      throw new FacadeLayerException(ex);
     }
   }
 
@@ -140,7 +138,7 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
       Objects.requireNonNull(definitionId);
       Objects.requireNonNull(levelId);
       trainingDefinitionService.swapRight(definitionId,levelId);
-    } catch (NullPointerException | ServiceLayerException ex){
+    } catch (ServiceLayerException ex){
       throw new FacadeLayerException(ex);
     }
   }

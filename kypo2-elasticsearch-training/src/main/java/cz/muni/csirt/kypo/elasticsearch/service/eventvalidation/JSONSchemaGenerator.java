@@ -1,20 +1,9 @@
 package cz.muni.csirt.kypo.elasticsearch.service.eventvalidation;
 
-import java.io.IOException;
-import java.util.Set;
-import java.util.HashSet;
-import java.util.stream.Collectors;
-
-import javax.annotation.PostConstruct;
-
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
-
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.reflect.ClassPath;
-import com.kjetland.jackson.jsonSchema.JsonSchemaGenerator;
 
 /**
  * @author Pavel Šeda

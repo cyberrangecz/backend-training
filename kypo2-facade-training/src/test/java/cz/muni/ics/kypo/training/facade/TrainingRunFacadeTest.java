@@ -3,10 +3,13 @@ package cz.muni.ics.kypo.training.facade;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.PathBuilder;
 import cz.muni.ics.kypo.training.api.PageResultResource;
+import cz.muni.ics.kypo.training.api.dto.*;
+import cz.muni.ics.kypo.training.api.dto.run.AccessTrainingRunDTO;
 import cz.muni.ics.kypo.training.api.dto.run.TrainingRunDTO;
 import cz.muni.ics.kypo.training.config.FacadeTestConfiguration;
-import cz.muni.ics.kypo.training.exception.FacadeLayerException;
-import cz.muni.ics.kypo.training.model.TrainingRun;
+import cz.muni.ics.kypo.training.model.*;
+import cz.muni.ics.kypo.training.model.enums.AssessmentType;
+import cz.muni.ics.kypo.training.model.enums.LevelType;
 import cz.muni.ics.kypo.training.model.enums.TRState;
 import cz.muni.ics.kypo.training.service.TrainingRunService;
 import org.junit.Before;
@@ -29,8 +32,8 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.BDDMockito.*;
@@ -53,6 +56,10 @@ public class TrainingRunFacadeTest {
     private TrainingRunService trainingRunService;
 
     private TrainingRun trainingRun1, trainingRun2;
+    private Hint hint;
+    private GameLevel gameLevel;
+    private InfoLevel infoLevel;
+    private AssessmentLevel assessmentLevel;
 
     @SpringBootApplication
     static class TestConfiguration {
@@ -64,6 +71,25 @@ public class TrainingRunFacadeTest {
         trainingRun1 = new TrainingRun();
         trainingRun1.setId(1L);
         trainingRun1.setState(TRState.READY);
+
+        hint = new Hint();
+        hint.setId(1L);
+        hint.setContent("Hint");
+        hint.setTitle("Hint Title");
+
+        gameLevel = new GameLevel();
+        gameLevel.setId(1L);
+        gameLevel.setFlag("game flag");
+        gameLevel.setContent("game content");
+
+        assessmentLevel = new AssessmentLevel();
+        assessmentLevel.setId(2L);
+        assessmentLevel.setInstructions("Instructions");
+        assessmentLevel.setAssessmentType(AssessmentType.TEST);
+
+        infoLevel = new InfoLevel();
+        infoLevel.setId(3L);
+        infoLevel.setContent("content");
 
         trainingRun2 = new TrainingRun();
         trainingRun2.setId(2L);
@@ -101,6 +127,63 @@ public class TrainingRunFacadeTest {
         then(trainingRunService).should().findAll(predicate, PageRequest.of(0,2));
     }
 
+    @Test
+    public void accessTrainingRun() {
+        given(trainingRunService.accessTrainingRun("password")).willReturn(gameLevel);
+        given(trainingRunService.getLevels(1L)).willReturn(Arrays.asList(gameLevel,infoLevel,assessmentLevel));
+        AccessTrainingRunDTO accessTrainingRunDTO = trainingRunFacade.accessTrainingRun("password");
+        assertEquals(gameLevel.getId(), ((GameLevelDTO) accessTrainingRunDTO.getAbstractLevelDTO()).getId());
+        assertEquals(gameLevel.getFlag(), ((GameLevelDTO) accessTrainingRunDTO.getAbstractLevelDTO()).getFlag());
+        assertEquals(3, accessTrainingRunDTO.getInfoAboutLevels().size());
+        assertEquals(LevelType.GAME, accessTrainingRunDTO.getInfoAboutLevels().get(0).getLevelType());
+        assertEquals(LevelType.INFO, accessTrainingRunDTO.getInfoAboutLevels().get(1).getLevelType());
+        assertEquals(LevelType.ASSESSMENT, accessTrainingRunDTO.getInfoAboutLevels().get(2).getLevelType());
+
+    }
+
+    @Test
+    public void getNextLevelAssessment() {
+        given(trainingRunService.getNextLevel(trainingRun1.getId())).willReturn((AbstractLevel) assessmentLevel);
+        AbstractLevelDTO assessmentLevelDTO = trainingRunFacade.getNextLevel(trainingRun1.getId());
+        assertEquals(assessmentLevel.getId(), ((AssessmentLevelDTO) assessmentLevelDTO).getId()) ;
+        assertEquals(assessmentLevel.getAssessmentType(), ((AssessmentLevelDTO) assessmentLevelDTO).getAssessmentType()) ;
+        assertEquals(assessmentLevel.getInstructions(), ((AssessmentLevelDTO) assessmentLevelDTO).getInstructions()) ;
+
+    }
+    @Test
+    public void getNextLevelInfo() {
+        given(trainingRunService.getNextLevel(trainingRun1.getId())).willReturn((AbstractLevel) infoLevel);
+        AbstractLevelDTO infoLevelDTO = trainingRunFacade.getNextLevel(trainingRun1.getId());
+        assertEquals(infoLevel.getId(), ((InfoLevelDTO) infoLevelDTO).getId()) ;
+        assertEquals(infoLevel.getContent(), ((InfoLevelDTO) infoLevelDTO).getContent()) ;
+    }
+
+    @Test
+    public void getNextLevelGame() {
+        given(trainingRunService.getNextLevel(trainingRun1.getId())).willReturn((AbstractLevel) gameLevel);
+        AbstractLevelDTO gameLevelDTO = trainingRunFacade.getNextLevel(trainingRun1.getId());
+        assertEquals(gameLevel.getId(), ((GameLevelDTO) gameLevelDTO).getId()) ;
+        assertEquals(gameLevel.getFlag(), ((GameLevelDTO) gameLevelDTO).getFlag()) ;
+        assertEquals(gameLevel.getContent(), ((GameLevelDTO) gameLevelDTO).getContent());
+
+    }
+    @Test
+    public void getHint() {
+        given(trainingRunService.getHint(anyLong(),anyLong())).willReturn(hint);
+        HintDTO hintDTO = trainingRunFacade.getHint(1L,1L);
+        assertEquals(hint.getId(), hintDTO.getId());
+        assertEquals(hint.getContent(), hintDTO.getContent());
+        assertEquals(hint.getTitle(), hintDTO.getTitle());
+    }
+
+    @Test
+    public void getSolution() {
+        given(trainingRunService.getSolution(trainingRun1.getId())).willReturn("game solution");
+        String solution = trainingRunFacade.getSolution(trainingRun1.getId());
+        assertEquals("game solution", solution);
+
+
+    }
     private void deepEquals(TrainingRun expected, TrainingRunDTO actual) {
         assertEquals(expected.getId(), actual.getId());
         assertEquals(expected.getState(), actual.getState());

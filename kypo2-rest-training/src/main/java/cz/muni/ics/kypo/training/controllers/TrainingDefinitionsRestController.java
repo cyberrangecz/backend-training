@@ -1,13 +1,23 @@
 package cz.muni.ics.kypo.training.controllers;
 
-import cz.muni.ics.kypo.training.api.dto.*;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.bohnman.squiggly.Squiggly;
+import com.github.bohnman.squiggly.util.SquigglyUtils;
+import com.querydsl.core.types.Predicate;
+import cz.muni.ics.kypo.training.api.PageResultResource;
+import cz.muni.ics.kypo.training.api.dto.AssessmentLevelDTO;
+import cz.muni.ics.kypo.training.api.dto.GameLevelDTO;
+import cz.muni.ics.kypo.training.api.dto.InfoLevelDTO;
+import cz.muni.ics.kypo.training.api.dto.TrainingDefinitionDTO;
+import cz.muni.ics.kypo.training.exception.FacadeLayerException;
+import cz.muni.ics.kypo.training.exceptions.*;
+import cz.muni.ics.kypo.training.facade.TrainingDefinitionFacade;
 import cz.muni.ics.kypo.training.mapping.BeanMapping;
-import cz.muni.ics.kypo.training.exceptions.ConflictException;
-import cz.muni.ics.kypo.training.exceptions.ResourceNotCreatedException;
-import cz.muni.ics.kypo.training.exceptions.ResourceNotModifiedException;
 import cz.muni.ics.kypo.training.model.AssessmentLevel;
 import cz.muni.ics.kypo.training.model.GameLevel;
 import cz.muni.ics.kypo.training.model.InfoLevel;
+import cz.muni.ics.kypo.training.model.TrainingDefinition;
+import io.swagger.annotations.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,24 +29,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.bohnman.squiggly.Squiggly;
-import com.github.bohnman.squiggly.util.SquigglyUtils;
-import com.querydsl.core.types.Predicate;
-
-import cz.muni.ics.kypo.training.api.PageResultResource;
-import cz.muni.ics.kypo.training.api.dto.InfoLevelDTO;
-import cz.muni.ics.kypo.training.api.dto.TrainingDefinitionDTO;
-import cz.muni.ics.kypo.training.exception.FacadeLayerException;
-import cz.muni.ics.kypo.training.facade.TrainingDefinitionFacade;
-import cz.muni.ics.kypo.training.model.TrainingDefinition;
-import cz.muni.ics.kypo.training.exceptions.ResourceNotFoundException;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
 
 import javax.validation.Valid;
 
@@ -92,7 +84,7 @@ public class TrainingDefinitionsRestController {
       Squiggly.init(objectMapper, fields);
       return new ResponseEntity<>(SquigglyUtils.stringify(objectMapper, trainingDefinitionResource), HttpStatus.OK);
     } catch (FacadeLayerException ex) {
-      throw new ResourceNotFoundException(ex.getLocalizedMessage());
+        throw throwException(ex);
     }
   }
   //@formatter:on
@@ -119,13 +111,9 @@ public class TrainingDefinitionsRestController {
       @ApiParam(value = "Fields which should be returned in REST API response", required = false) 
       @RequestParam(value = "fields", required = false) String fields) {
     LOG.debug("findAllTrainingDefinitions({},{})", parameters, fields);
-    try {
-      PageResultResource<TrainingDefinitionDTO> trainingDefinitionResource = trainingDefinitionFacade.findAll(predicate, pageable);
-      Squiggly.init(objectMapper, fields);
-      return new ResponseEntity<>(SquigglyUtils.stringify(objectMapper, trainingDefinitionResource), HttpStatus.OK);
-    } catch (FacadeLayerException ex) {
-      throw new ResourceNotFoundException(ex.getLocalizedMessage());
-    }
+    PageResultResource<TrainingDefinitionDTO> trainingDefinitionResource = trainingDefinitionFacade.findAll(predicate, pageable);
+    Squiggly.init(objectMapper, fields);
+    return new ResponseEntity<>(SquigglyUtils.stringify(objectMapper, trainingDefinitionResource), HttpStatus.OK);
   }
 
   @ApiOperation(httpMethod = "POST",
@@ -135,7 +123,7 @@ public class TrainingDefinitionsRestController {
           produces = "application/json",
           consumes = "application/json")
   @ApiResponses(value = {
-          @ApiResponse(code = 400, message = "The requested resource was not created")
+          @ApiResponse(code = 409, message = "The requested resource was not created")
   })
   @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<TrainingDefinitionDTO> createTrainingDefinition(@ApiParam(name = "Training Definition to be created") @RequestBody @Valid TrainingDefinitionDTO trainingDefinitionDTO) {
@@ -144,7 +132,7 @@ public class TrainingDefinitionsRestController {
       TrainingDefinitionDTO newTrainingDefinitionDTO = trainingDefinitionFacade.create(trainingDefinition);
       return new ResponseEntity<>(newTrainingDefinitionDTO, HttpStatus.OK);
     } catch (FacadeLayerException ex) {
-      throw new ResourceNotCreatedException(ex.getLocalizedMessage());
+      throw throwException(ex);
     }
   }
 
@@ -166,7 +154,7 @@ public class TrainingDefinitionsRestController {
       trainingDefinitionFacade.update(trainingDefinition);
       return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     } catch (FacadeLayerException ex) {
-      throw new ResourceNotModifiedException(ex.getLocalizedMessage());
+        throw throwException(ex);
     }
   }
 
@@ -187,7 +175,7 @@ public class TrainingDefinitionsRestController {
       TrainingDefinitionDTO trainingDefinitionDTO = trainingDefinitionFacade.clone(id);
       return new ResponseEntity<>(trainingDefinitionDTO, HttpStatus.OK);
     } catch (FacadeLayerException ex) {
-      throw new ResourceNotCreatedException(ex.getLocalizedMessage());
+        throw throwException(ex);
     }
   }
 
@@ -206,8 +194,8 @@ public class TrainingDefinitionsRestController {
       trainingDefinitionFacade.swapLeft(definitionId, levelId);
       return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     } catch (FacadeLayerException ex) {
-      throw new ResourceNotModifiedException(ex.getLocalizedMessage());
-    }
+        throw throwException(ex);
+      }
   }
 
   @ApiOperation(httpMethod = "PUT",
@@ -225,7 +213,7 @@ public class TrainingDefinitionsRestController {
       trainingDefinitionFacade.swapRight(definitionId, levelId);
       return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     } catch (FacadeLayerException ex) {
-      throw new ResourceNotModifiedException(ex.getLocalizedMessage());
+        throw throwException(ex);
     }
   }
 
@@ -243,7 +231,7 @@ public class TrainingDefinitionsRestController {
       trainingDefinitionFacade.delete(id);
       return new ResponseEntity<>(HttpStatus.OK);
     } catch (FacadeLayerException ex) {
-      throw new ResourceNotFoundException(ex.getLocalizedMessage());
+        throw throwException(ex);
     }
   }
 
@@ -262,7 +250,7 @@ public class TrainingDefinitionsRestController {
       trainingDefinitionFacade.deleteOneLevel(definitionId, levelId);
       return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     } catch (FacadeLayerException ex) {
-      throw new ResourceNotFoundException(ex.getLocalizedMessage());
+        throw throwException(ex);
     }
   }
 
@@ -283,7 +271,7 @@ public class TrainingDefinitionsRestController {
       trainingDefinitionFacade.updateGameLevel(definitionId, level);
       return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     } catch (FacadeLayerException ex) {
-      throw new ResourceNotFoundException(ex.getLocalizedMessage());
+        throw throwException(ex);
     }
   }
 
@@ -304,7 +292,7 @@ public class TrainingDefinitionsRestController {
       trainingDefinitionFacade.updateInfoLevel(definitionId, infoLevel);
       return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     } catch (FacadeLayerException ex) {
-      throw new ResourceNotFoundException(ex.getLocalizedMessage());
+        throw throwException(ex);
     }
   }
 
@@ -325,7 +313,7 @@ public class TrainingDefinitionsRestController {
       trainingDefinitionFacade.updateAssessmentLevel(definitionId, assessmentLevel);
       return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     } catch (FacadeLayerException ex) {
-      throw new ResourceNotFoundException(ex.getLocalizedMessage());
+        throw throwException(ex);
     }
   }
 
@@ -347,7 +335,7 @@ public class TrainingDefinitionsRestController {
       GameLevelDTO newGameLevel = trainingDefinitionFacade.createGameLevel(definitionId, gameLevel);
       return new ResponseEntity<>(newGameLevel, HttpStatus.CREATED);
     } catch (FacadeLayerException ex){
-      throw new ResourceNotCreatedException(ex.getLocalizedMessage());
+        throw throwException(ex);
     }
   }
 
@@ -369,7 +357,7 @@ public class TrainingDefinitionsRestController {
       InfoLevelDTO newInfoLevel = trainingDefinitionFacade.createInfoLevel(definitionId, infoLevel);
       return new ResponseEntity<>(newInfoLevel, HttpStatus.CREATED);
     } catch (FacadeLayerException ex){
-      throw new ResourceNotCreatedException(ex.getLocalizedMessage());
+        throw throwException(ex);
     }
   }
 
@@ -392,7 +380,25 @@ public class TrainingDefinitionsRestController {
       AssessmentLevelDTO newAssessmentLevel = trainingDefinitionFacade.createAssessmentLevel(definitionId, assessmentLevel);
       return new ResponseEntity<>(newAssessmentLevel, HttpStatus.CREATED);
     } catch (FacadeLayerException ex){
-      throw new ResourceNotCreatedException(ex.getLocalizedMessage());
+        throw throwException(ex);
+    }
+  }
+
+  private RuntimeException throwException(RuntimeException ex) {
+    switch (((ServiceLayerException) ex.getCause()).getCode()) {
+      case WRONG_LEVEL_TYPE:
+        return new BadRequestException(ex.getLocalizedMessage());
+      case RESOURCE_NOT_FOUND:
+        return new ResourceNotFoundException(ex.getLocalizedMessage());
+      case NO_NEXT_LEVEL:
+        return new ResourceNotFoundException(ex.getLocalizedMessage());
+      case UNEXPECTED_ERROR:
+        return new InternalServerErrorException(ex.getLocalizedMessage());
+      case RESOURCE_CONFLICT:
+        return new ConflictException(ex.getLocalizedMessage());
+      case NO_AVAILABLE_SANDBOX:
+      default:
+        return new ServiceUnavailableException(ex.getLocalizedMessage());
     }
   }
 }

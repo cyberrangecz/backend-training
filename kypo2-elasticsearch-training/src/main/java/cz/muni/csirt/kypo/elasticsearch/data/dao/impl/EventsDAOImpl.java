@@ -1,12 +1,8 @@
 package cz.muni.csirt.kypo.elasticsearch.data.dao.impl;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.Map;
-import java.util.stream.Collectors;
-
+import com.fasterxml.jackson.databind.ObjectMapper;
+import cz.muni.csirt.kypo.elasticsearch.data.dao.AbstractElasticClientDAO;
+import cz.muni.csirt.kypo.elasticsearch.data.dao.EventsDAO;
 import org.apache.http.HttpEntity;
 import org.elasticsearch.client.Response;
 import org.elasticsearch.client.RestClient;
@@ -15,10 +11,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Repository;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import cz.muni.csirt.kypo.elasticsearch.data.dao.AbstractElasticClientDAO;
-import cz.muni.csirt.kypo.elasticsearch.data.dao.EventsDAO;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * 

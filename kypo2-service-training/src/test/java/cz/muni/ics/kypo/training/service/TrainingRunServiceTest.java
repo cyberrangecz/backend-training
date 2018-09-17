@@ -1,5 +1,6 @@
 package cz.muni.ics.kypo.training.service;
 
+import com.google.gson.JsonObject;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.PathBuilder;
 import cz.muni.csirt.kypo.elasticsearch.service.audit.AuditService;
@@ -15,8 +16,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.junit.rules.ExpectedException;
+import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -30,16 +31,16 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
-import org.springframework.http.*;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
-import org.springframework.security.oauth2.provider.authentication.OAuth2AuthenticationDetails;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.web.client.RestTemplate;
-import com.google.gson.JsonObject;
-
 
 import java.util.*;
 
@@ -135,7 +136,6 @@ public class TrainingRunServiceTest {
         infoLevel.setId(2L);
         infoLevel.setContent("content");
         infoLevel.setTitle("title");
-        infoLevel.setNextLevel(5L);
 
         trainingRun1 = new TrainingRun();
         trainingRun1.setId(1L);
@@ -170,8 +170,8 @@ public class TrainingRunServiceTest {
     public void getNonExistTrainingRunById() {
         Long id = 6L;
         thrown.expect(ServiceLayerException.class);
-        thrown.expectMessage("Training Run with id " + id + " not found.");
-        assertEquals(Optional.empty(), trainingRunService.findById(id));
+        thrown.expectMessage("Training Run with id: " + id + " not found.");
+        trainingRunService.findById(id);
     }
 
     @Test
@@ -179,6 +179,19 @@ public class TrainingRunServiceTest {
         given(abstractLevelRepository.findById(1L)).willReturn(Optional.of(gameLevel));
         given(abstractLevelRepository.findById(2L)).willReturn(Optional.of(infoLevel));
 
+        List<AbstractLevel> levels = trainingRunService.getLevels(1L);
+        assertEquals(2, levels.size());
+        assertEquals(gameLevel, levels.get(0));
+        assertEquals(infoLevel, levels.get(1));
+
+    }
+
+    @Test
+    public void getNonExistingLevels() {
+        given(abstractLevelRepository.findById(1L)).willReturn(Optional.empty());
+        thrown.expect(ServiceLayerException.class);
+        thrown.expectMessage("Level with id: " + 1L + " not found.");
+        trainingRunService.getLevels(1L);
     }
 
     @Test
@@ -274,6 +287,26 @@ public class TrainingRunServiceTest {
         thrown.expectMessage("Current level is not game level and does not contain hints.");
         given(trainingRunRepository.findById(trainingRun2.getId())).willReturn(Optional.of(trainingRun2));
         trainingRunService.getHint(trainingRun2.getId(), hint1.getId());
+
+    }
+
+    @Test
+    public void getLevelOrder() {
+        given(abstractLevelRepository.findById(1L)).willReturn(Optional.ofNullable(gameLevel));
+        given(abstractLevelRepository.findById(2L)).willReturn(Optional.ofNullable(infoLevel));
+
+        int order = trainingRunService.getLevelOrder(1L, 2L);
+        assertEquals(1, order);
+
+    }
+
+    @Test
+    public void getLevelOrderWrongFirstLevel() {
+        given(abstractLevelRepository.findById(1L)).willReturn(Optional.ofNullable(null));
+        thrown.expect(ServiceLayerException.class);
+        thrown.expectMessage("Level with id " + 1L + " not found.");
+        trainingRunService.getLevelOrder(1L, 2L);
+
 
     }
 

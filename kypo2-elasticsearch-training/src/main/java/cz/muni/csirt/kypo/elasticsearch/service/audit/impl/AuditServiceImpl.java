@@ -1,16 +1,15 @@
 package cz.muni.csirt.kypo.elasticsearch.service.audit.impl;
 
-import java.io.IOException;
-import java.util.Objects;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import cz.muni.csirt.kypo.elasticsearch.AbstractAuditPOJO;
 import cz.muni.csirt.kypo.elasticsearch.data.dao.AuditDAO;
 import cz.muni.csirt.kypo.elasticsearch.data.exceptions.ElasticsearchTrainingDataLayerException;
 import cz.muni.csirt.kypo.elasticsearch.service.audit.AuditService;
 import cz.muni.csirt.kypo.elasticsearch.service.audit.exceptions.ElasticsearchTrainingServiceLayerException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.io.IOException;
+import java.util.Objects;
 
 /**
  * This class have to be extended when some event should be saved to Elasticsearch.

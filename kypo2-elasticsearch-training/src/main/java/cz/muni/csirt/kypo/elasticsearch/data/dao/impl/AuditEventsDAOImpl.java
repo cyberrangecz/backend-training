@@ -1,22 +1,18 @@
 package cz.muni.csirt.kypo.elasticsearch.data.dao.impl;
 
-import java.io.IOException;
-
+import com.fasterxml.jackson.databind.ObjectMapper;
+import cz.muni.csirt.kypo.elasticsearch.data.dao.AbstractElasticClientDAO;
+import cz.muni.csirt.kypo.elasticsearch.data.dao.AuditEventsDAO;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.update.UpdateRequest;
 import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.xcontent.XContentType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Repository;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import cz.muni.csirt.kypo.elasticsearch.data.dao.AbstractElasticClientDAO;
-import cz.muni.csirt.kypo.elasticsearch.data.dao.AuditEventsDAO;
+import java.io.IOException;
 
 /**
  * 

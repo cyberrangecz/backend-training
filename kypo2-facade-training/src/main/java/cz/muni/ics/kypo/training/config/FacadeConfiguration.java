@@ -1,5 +1,6 @@
 package cz.muni.ics.kypo.training.config;
 
+import cz.muni.ics.kypo.training.validation.EmailValidator;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -8,8 +9,6 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
-
-import cz.muni.ics.kypo.training.validation.EmailValidator;
 
 /**
  * @author Pavel Šeda

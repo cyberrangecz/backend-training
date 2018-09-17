@@ -1,5 +1,6 @@
 package cz.muni.ics.kypo.training.model;
 
+import javax.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.Collections;
@@ -7,8 +8,6 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
-
-import javax.persistence.*;
 
 /**
  * 
