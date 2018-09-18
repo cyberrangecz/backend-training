@@ -60,7 +60,7 @@ ALTER TABLE abstract_level OWNER TO postgres;
 --
 
 CREATE SEQUENCE abstract_level_id_seq
-    START WITH 1
+    START WITH 7
     INCREMENT BY 1
     NO MINVALUE
     NO MAXVALUE
@@ -84,10 +84,10 @@ ALTER SEQUENCE abstract_level_id_seq OWNED BY abstract_level.id;
 --
 
 CREATE TABLE assessment_level (
+    id bigint NOT NULL,
     assessment_type character varying(128) NOT NULL,
-    instructions character varying(255) NOT NULL,
-    questions character varying(255) NOT NULL,
-    id bigint NOT NULL
+    instructions text NOT NULL,
+    questions character varying(255) NOT NULL
 );
 ALTER TABLE assessment_level OWNER TO postgres;
 
@@ -99,7 +99,7 @@ CREATE TABLE participant_ref (
 ALTER TABLE participant_ref OWNER TO postgres;
 
 CREATE SEQUENCE participant_ref_id_seq
-    START WITH 1
+    START WITH 3
     INCREMENT BY 1
     NO MINVALUE
     NO MAXVALUE
@@ -122,7 +122,7 @@ ALTER SEQUENCE participant_ref_id_seq OWNED BY participant_ref.id;
 
 CREATE TABLE author_ref (
     id bigint NOT NULL,
-    author_ref_id bigint
+    author_ref_login character varying(255) NOT NULL
 );
 
 
@@ -134,7 +134,7 @@ ALTER TABLE author_ref OWNER TO postgres;
 --
 
 CREATE SEQUENCE author_ref_id_seq
-    START WITH 1
+    START WITH 4
     INCREMENT BY 1
     NO MINVALUE
     NO MAXVALUE
@@ -158,14 +158,14 @@ ALTER SEQUENCE author_ref_id_seq OWNED BY author_ref.id;
 --
 
 CREATE TABLE game_level (
+    id bigint NOT NULL,
     attachments bytea,
     content text NOT NULL,
     estimated_duration integer,
     flag character varying(255) NOT NULL,
-    incorrect_flag_penalty integer NOT NULL,
     solution text NOT NULL,
     solution_penalty integer NOT NULL,
-    id bigint NOT NULL
+    incorrect_flag_limit integer
 );
 
 
@@ -193,7 +193,7 @@ ALTER TABLE hint OWNER TO postgres;
 --
 
 CREATE SEQUENCE hint_id_seq
-    START WITH 1
+    START WITH 3
     INCREMENT BY 1
     NO MINVALUE
     NO MAXVALUE
@@ -217,8 +217,8 @@ ALTER SEQUENCE hint_id_seq OWNED BY hint.id;
 --
 
 CREATE TABLE info_level (
-    content text NOT NULL,
-    id bigint NOT NULL
+    id bigint NOT NULL,
+    content text NOT NULL
 );
 
 
@@ -242,7 +242,7 @@ ALTER TABLE post_hook OWNER TO postgres;
 --
 
 CREATE SEQUENCE post_hook_id_seq
-    START WITH 1
+    START WITH 7
     INCREMENT BY 1
     NO MINVALUE
     NO MAXVALUE
@@ -278,7 +278,7 @@ ALTER TABLE pre_hook OWNER TO postgres;
 --
 
 CREATE SEQUENCE pre_hook_id_seq
-    START WITH 1
+    START WITH 7
     INCREMENT BY 1
     NO MINVALUE
     NO MAXVALUE
@@ -315,7 +315,7 @@ ALTER TABLE sandbox_definition_ref OWNER TO postgres;
 --
 
 CREATE SEQUENCE sandbox_definition_ref_id_seq
-    START WITH 1
+    START WITH 3
     INCREMENT BY 1
     NO MINVALUE
     NO MAXVALUE
@@ -353,7 +353,7 @@ ALTER TABLE sandbox_instance_ref OWNER TO postgres;
 --
 
 CREATE SEQUENCE sandbox_instance_ref_id_seq
-    START WITH 1
+    START WITH 4
     INCREMENT BY 1
     NO MINVALUE
     NO MAXVALUE
@@ -409,7 +409,7 @@ ALTER TABLE training_definition_author_ref OWNER TO postgres;
 --
 
 CREATE SEQUENCE training_definition_id_seq
-    START WITH 1
+    START WITH 3
     INCREMENT BY 1
     NO MINVALUE
     NO MAXVALUE
@@ -435,7 +435,7 @@ ALTER SEQUENCE training_definition_id_seq OWNED BY training_definition.id;
 CREATE TABLE training_instance (
     id bigint NOT NULL,
     end_time timestamp without time zone,
-    keyword character varying(255) NOT NULL,
+    password character varying(255) NOT NULL,
     pool_size integer NOT NULL,
     start_time timestamp without time zone NOT NULL,
     title character varying(255) NOT NULL,
@@ -451,7 +451,7 @@ ALTER TABLE training_instance OWNER TO postgres;
 --
 
 CREATE SEQUENCE training_instance_id_seq
-    START WITH 1
+    START WITH 4
     INCREMENT BY 1
     NO MINVALUE
     NO MAXVALUE
@@ -508,32 +508,16 @@ CREATE TABLE training_run (
     current_level_id bigint,
     sandbox_instance_ref_id bigint,
     training_instance_id bigint,
-    participant_ref_id bigint
+    participant_ref_id bigint,
+    event_log_reference character varying(255),
+    incorrect_flag_count integer
 );
 
 
 ALTER TABLE training_run OWNER TO postgres;
 
-CREATE TABLE historic_training_run (
-    id bigint NOT NULL,
-    end_time timestamp without time zone NOT NULL,
-    event_log_reference character varying(255),
-    start_time timestamp without time zone NOT NULL,
-    current_level_id bigint,
-    sandbox_instance_ref_id bigint,
-    training_instance_id bigint,
-    participant_ref_id bigint
-);
-
-ALTER TABLE historic_training_run OWNER TO postgres;
-
---
--- TOC entry 209 (class 1259 OID 24379)
--- Name: training_run_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
---
-
 CREATE SEQUENCE training_run_id_seq
-    START WITH 1
+    START WITH 3
     INCREMENT BY 1
     NO MINVALUE
     NO MAXVALUE
@@ -570,7 +554,20 @@ ALTER TABLE user_ref OWNER TO postgres;
 --
 
 CREATE SEQUENCE user_ref_id_seq
-    START WITH 1
+    START WITH 3
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+ CREATE TABLE password (
+  id bigint NOT NULL,
+  password_hash character varying(255)
+);
+
+
+CREATE SEQUENCE password_id_seq
+    START WITH 4
     INCREMENT BY 1
     NO MINVALUE
     NO MAXVALUE
@@ -711,7 +708,7 @@ COPY assessment_level (assessment_type, instructions, questions, id) FROM stdin;
 -- Data for Name: author_ref; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY author_ref (id, author_ref_id) FROM stdin;
+COPY author_ref (id, author_ref_login) FROM stdin;
 \.
 
 
@@ -730,7 +727,7 @@ SELECT pg_catalog.setval('author_ref_id_seq', 1, false);
 -- Data for Name: game_level; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY game_level (attachments, content, estimated_duration, flag, incorrect_flag_penalty, solution, solution_penalty, id) FROM stdin;
+COPY game_level (attachments, content, estimated_duration, flag, incorrect_flag_limit, solution, solution_penalty, id) FROM stdin;
 \.
 
 
@@ -874,7 +871,7 @@ SELECT pg_catalog.setval('training_definition_id_seq', 1, false);
 -- Data for Name: training_instance; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY training_instance (id, end_time, keyword, pool_size, start_time, title, training_definition_id) FROM stdin;
+COPY training_instance (id, end_time, password, pool_size, start_time, title, training_definition_id) FROM stdin;
 \.
 
 
@@ -1255,4 +1252,88 @@ ALTER TABLE ONLY game_level
 --
 -- PostgreSQL database dump complete
 --
+
+-- TRAINING DEFINITIONS
+INSERT INTO pre_hook(id) VALUES (1);
+INSERT INTO post_hook(id) VALUES (1);
+INSERT INTO pre_hook(id) VALUES (2);
+INSERT INTO post_hook(id) VALUES (2);
+INSERT INTO pre_hook(id) VALUES (3);
+INSERT INTO post_hook(id) VALUES (3);
+
+INSERT INTO abstract_level(id, max_score, next_level, title, post_hook_id, pre_hook_id) VALUES (3, 50, null, 'Assessment Level1', 3, 3);
+INSERT INTO abstract_level(id, max_score, next_level, title, post_hook_id, pre_hook_id) VALUES (2, 70, 3, 'Info Level1', 2, 2);
+INSERT INTO abstract_level(id, max_score, next_level, title, post_hook_id, pre_hook_id) VALUES (1, 20, 2, 'Game Level1', 1, 1);
+
+INSERT INTO game_level(id, attachments, content, estimated_duration, flag, solution, solution_penalty, incorrect_flag_limit) VALUES (1, null, 'Play me', 25, 'secretFlag', 'This is how you do it', 19, 5);
+INSERT INTO info_level(id, content) VALUES (2, 'Informational stuff');
+INSERT INTO assessment_level(assessment_type, instructions, questions, id) VALUES ('TEST', 'Fill me up', 'What is my mothers name?', 3);
+
+INSERT INTO hint(id, content, hint_penalty, title, game_level_id) VALUES (1, 'Very good advice', 10, 'Hint1', 1);
+
+INSERT INTO sandbox_definition_ref(id, sandbox_definition_ref) VALUES (1, 1);
+INSERT INTO author_ref(id, author_ref_login) VALUES (1, 'Designer1');
+INSERT INTO author_ref(id, author_ref_login) VALUES (2, 'Designer2');
+
+INSERT INTO training_definition(id, description, outcomes, prerequisities, state, title, sand_box_definition_ref_id, starting_level) VALUES (1, 'Released training definition', null, null, 'RELEASED', 'TrainingDefinition1', 1, 1);
+INSERT INTO training_definition_author_ref(training_definition_id, author_ref_id) VALUES (1, 1);
+INSERT INTO training_definition_author_ref(training_definition_id, author_ref_id) VALUES (1, 2);
+
+
+INSERT INTO pre_hook(id) VALUES (4);
+INSERT INTO post_hook(id) VALUES (4);
+INSERT INTO pre_hook(id) VALUES (5);
+INSERT INTO post_hook(id) VALUES (5);
+INSERT INTO pre_hook(id) VALUES (6);
+INSERT INTO post_hook(id) VALUES (6);
+
+INSERT INTO abstract_level(id, max_score, next_level, title, post_hook_id, pre_hook_id) VALUES (6, 75, null, 'Assessment Level2', 6, 6);
+INSERT INTO abstract_level(id, max_score, next_level, title, post_hook_id, pre_hook_id) VALUES (5, 13, 6, 'Info Level2', 5, 5);
+INSERT INTO abstract_level(id, max_score, next_level, title, post_hook_id, pre_hook_id) VALUES (4, 55, 5, 'Game Level2', 4, 4);
+
+INSERT INTO game_level(attachments, content, estimated_duration, flag, solution, solution_penalty, id, incorrect_flag_limit) VALUES (null, 'Unsolvable problem', 60, 'jibberish', 'Not sure yet', 54, 4, 3);
+INSERT INTO info_level(content, id) VALUES ('Potatoes are not poisonous', 5);
+INSERT INTO assessment_level(assessment_type, instructions, questions, id) VALUES ('QUESTIONNAIRE', 'No rush', '...?', 6);
+
+INSERT INTO hint(id, content, hint_penalty, title, game_level_id) VALUES (2, 'Very bad advice', 6, 'Hint2', 4);
+
+INSERT INTO sandbox_definition_ref(id, sandbox_definition_ref) VALUES (2, 2);
+INSERT INTO author_ref(id, author_ref_login) VALUES (3, 'Designer3');
+
+INSERT INTO training_definition(id, description, outcomes, prerequisities, state, title, sand_box_definition_ref_id, starting_level) VALUES (2, 'Unreleased training definition', null, null, 'UNRELEASED', 'TrainingDefinition2', 2, 4);
+INSERT INTO training_definition_author_ref(training_definition_id, author_ref_id) VALUES (2, 3);
+
+-- TRAINING INSTANCES
+
+INSERT INTO training_instance(id, end_time, password, pool_size, start_time, title, training_definition_id) VALUES (1, '2017-10-19 10:23:54+02', 'Vyfqh5', 5, '2016-10-19 10:23:54+02', 'Concluded Instance', 1);
+INSERT INTO training_instance(id, end_time, password, pool_size, start_time, title, training_definition_id) VALUES (2, '2022-10-19 10:23:54+02', 'GVnkfn', 8, '2016-10-19 10:23:54+02', 'Current Instance', 1);
+INSERT INTO training_instance(id, end_time, password, pool_size, start_time, title, training_definition_id) VALUES (3, '2024-10-19 10:23:54+02', 'y5drFa', 25, '2020-10-19 10:23:54+02', 'Future Instance', 1);
+
+INSERT INTO password(id, password_hash) VALUES (1, 'b5f3dc27a09865be37cef07816c4f08cf5585b116a4e74b9387c3e43e3a25ec8');
+INSERT INTO password(id, password_hash) VALUES (2, 'b1267cae4b2f139fea197d8c45918a124874e5b469d5dbba23257f3779e713f8');
+INSERT INTO password(id, password_hash) VALUES (3, 'b97b9ce755d3b39024d2efee6e7a9529904caefb1024e41d782d8689e5c2a761');
+
+INSERT INTO sandbox_instance_ref(id, sandbox_instance_ref, training_instance_id) VALUES (1, 1, 1);
+INSERT INTO sandbox_instance_ref(id, sandbox_instance_ref, training_instance_id) VALUES (2, 2, 3);
+INSERT INTO sandbox_instance_ref(id, sandbox_instance_ref, training_instance_id) VALUES (3, 3, 3);
+
+INSERT INTO training_instance_sandbox_instance_ref(training_instance_id, sandbox_instance_ref_id) VALUES (1, 1);
+INSERT INTO training_instance_sandbox_instance_ref(training_instance_id, sandbox_instance_ref_id) VALUES (2, 2);
+INSERT INTO training_instance_sandbox_instance_ref(training_instance_id, sandbox_instance_ref_id) VALUES (3, 3);
+
+INSERT INTO user_ref(id, user_ref_id) VALUES (1, 1);
+INSERT INTO user_ref(id, user_ref_id) VALUES (2, 2);
+
+
+INSERT INTO training_instance_organizers(training_instance_id, organizers_id) VALUES (1, 1);
+INSERT INTO training_instance_organizers(training_instance_id, organizers_id) VALUES (2, 1);
+INSERT INTO training_instance_organizers(training_instance_id, organizers_id) VALUES (3, 2);
+
+-- TRAINING RUNS
+
+INSERT INTO participant_ref(id, participant_ref_login) VALUES (1, 'Participant1');
+INSERT INTO participant_ref(id, participant_ref_login) VALUES (2, 'Participant2');
+
+INSERT INTO training_run(id, end_time, start_time, state, current_level_id, sandbox_instance_ref_id, training_instance_id, participant_ref_id, event_log_reference, incorrect_flag_count) VALUES (1, '2022-10-19 10:23:54+02', '2016-10-19 10:23:54+02', 'ALLOCATED', 2, 2, 2, 1, null, 5);
+INSERT INTO training_run(id, end_time, start_time, state, current_level_id, sandbox_instance_ref_id, training_instance_id, participant_ref_id, event_log_reference, incorrect_flag_count) VALUES (2, '2024-10-19 10:23:54+02', '2020-10-19 10:23:54+02', 'NEW', 1, 3, 3, 2, null, 4);
 

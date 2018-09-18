@@ -72,7 +72,7 @@ public class InfoLevelsRestController {
       @ApiResponse(code = 404, message = "The requested resource was not found.") 
   })
   @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<Object> findInfoLevelById(@ApiParam(name = "InfoLevel ID") @PathVariable long id,
+  public ResponseEntity<Object> findInfoLevelById(@ApiParam(value = "InfoLevel ID") @PathVariable long id,
       @ApiParam(value = "Fields which should be returned in REST API response", required = false) 
       @RequestParam(value = "fields", required = false) String fields) {
     LOG.debug("findInfoLevelById({},{}", id, fields);

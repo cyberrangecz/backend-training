@@ -88,7 +88,7 @@ public class TrainingDefinitionsRestController {
       @ApiResponse(code = 404, message = "The requested resource was not found.") 
   })
   @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<Object> findTrainingDefinitionById(@ApiParam(name = "TrainingDefinition ID") @PathVariable long id,
+  public ResponseEntity<Object> findTrainingDefinitionById(@ApiParam(value = "TrainingDefinition ID") @PathVariable long id,
       @ApiParam(value = "Fields which should be returned in REST API response", required = false) 
       @RequestParam(value = "fields", required = false) String fields) {
     LOG.debug("findTrainingDefinitionById({},{})", id, fields);

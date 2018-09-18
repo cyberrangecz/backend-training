@@ -1,5 +1,7 @@
 package cz.muni.ics.kypo.training.model;
 
+import org.hibernate.annotations.Type;
+
 import java.io.Serializable;
 import java.util.Objects;
 
@@ -19,9 +21,10 @@ import javax.persistence.Table;
 @PrimaryKeyJoinColumn(name = "id")
 public class InfoLevel extends AbstractLevel implements Serializable {
 
-	@Lob
-	@Column(name = "content", nullable = false) // maybe should be unique?
-	private String content;
+  @Lob
+  @Type(type = "org.hibernate.type.StringType")
+  @Column(name = "content", nullable = false) // maybe should be unique?
+  private String content;
 
 	public InfoLevel() {
 		super();

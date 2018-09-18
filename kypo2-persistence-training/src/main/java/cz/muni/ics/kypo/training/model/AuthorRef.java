@@ -23,14 +23,14 @@ import javax.persistence.Table;
 @Table(name = "author_ref")
 public class AuthorRef implements Serializable {
 
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "id", unique = true, nullable = false, insertable = false)
-	private Long id;
-	@Column(name = "author_ref_id")
-	private String authorRefLogin;
-	@ManyToMany(mappedBy = "authorRef", fetch = FetchType.LAZY)
-	private Set<TrainingDefinition> trainingDefinition = new HashSet<>();
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @Column(name = "id", unique = true, nullable = false, insertable = false)
+  private Long id;
+  @Column(name = "author_ref_login", nullable = false)
+  private String authorRefLogin;
+  @ManyToMany(mappedBy = "authorRef", fetch = FetchType.LAZY)
+  private Set<TrainingDefinition> trainingDefinition = new HashSet<>();
 
 	public AuthorRef() {}
 
