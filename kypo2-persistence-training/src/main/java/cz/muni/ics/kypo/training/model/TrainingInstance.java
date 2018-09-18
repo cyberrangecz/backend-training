@@ -38,7 +38,7 @@ public class TrainingInstance implements Serializable {
   @ManyToMany(fetch = FetchType.LAZY)
   private Set<UserRef> organizers = new HashSet<>();
   @OneToMany(fetch = FetchType.LAZY)
-  private Set<SandboxInstanceRef> sandboxInstanceRefs = new HashSet<>();
+  private Set<SandboxInstanceRef> sandboxInstanceRef = new HashSet<>();
 
   public TrainingInstance() {}
 
@@ -53,7 +53,7 @@ public class TrainingInstance implements Serializable {
     this.password = password;
     this.trainingDefinition = trainingDefinition;
     this.organizers = organizers;
-    this.sandboxInstanceRefs = sandboxInstanceRef;
+    this.sandboxInstanceRef = sandboxInstanceRef;
   }
 
   public Long getId() {
@@ -121,12 +121,12 @@ public class TrainingInstance implements Serializable {
     this.organizers = organizers;
   }
 
-  public Set<SandboxInstanceRef> getSandboxInstanceRefs() {
-    return sandboxInstanceRefs.stream().collect(Collectors.toSet());
+  public Set<SandboxInstanceRef> getSandboxInstanceRef() {
+    return sandboxInstanceRef.stream().collect(Collectors.toSet());
   }
 
   public void setSandboxInstanceRefs(Set<SandboxInstanceRef> sandboxInstanceRef) {
-    this.sandboxInstanceRefs = sandboxInstanceRef;
+    this.sandboxInstanceRef = sandboxInstanceRef;
   }
 
   @Override

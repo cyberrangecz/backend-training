@@ -23,6 +23,7 @@ import cz.muni.ics.kypo.training.utils.StringJsonUserType;
 public class AssessmentLevel extends AbstractLevel implements Serializable {
 
   @Lob
+  @Type(type = "org.hibernate.type.StringType")
   @Column(name = "questions", nullable = false)
   private String questions;
   @Column(name = "instructions", nullable = false)
