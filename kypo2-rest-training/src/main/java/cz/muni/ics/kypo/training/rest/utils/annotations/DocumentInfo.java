@@ -19,18 +19,18 @@ import java.lang.annotation.Target;
 @Target({ElementType.TYPE})
 public @interface DocumentInfo {
 
-  String index();
+	String index();
 
-  String type() default "events";
+	String type() default "events";
 
-  boolean useServerConfiguration() default false;
+	boolean useServerConfiguration() default false;
 
-  short shards() default 5;
+	short shards() default 5;
 
-  short replicas() default 1;
+	short replicas() default 1;
 
-  String refreshInterval() default "1s";
+	String refreshInterval() default "1s";
 
-  boolean createIndex() default true;
+	boolean createIndex() default true;
 
 }

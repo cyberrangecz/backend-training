@@ -50,24 +50,24 @@ import io.swagger.annotations.ApiResponses;
 @RequestMapping(value = "/training-runs")
 public class TrainingRunsRestController {
 
-  private static final Logger LOG = LoggerFactory.getLogger(TrainingRunsRestController.class);
+	private static final Logger LOG = LoggerFactory.getLogger(TrainingRunsRestController.class);
 
-  private TrainingRunFacade trainingRunFacade;
-  private ObjectMapper objectMapper;
+	private TrainingRunFacade trainingRunFacade;
+	private ObjectMapper objectMapper;
 
-  @Autowired
-  public TrainingRunsRestController(TrainingRunFacade trainingRunFacade, @Qualifier("objMapperRESTApi") ObjectMapper objectMapper) {
-    this.trainingRunFacade = trainingRunFacade;
-    this.objectMapper = objectMapper;
-  }
+	@Autowired
+	public TrainingRunsRestController(TrainingRunFacade trainingRunFacade, @Qualifier("objMapperRESTApi") ObjectMapper objectMapper) {
+		this.trainingRunFacade = trainingRunFacade;
+		this.objectMapper = objectMapper;
+	}
 
-  /**
-   * Get requested Training Run by id.
-   * 
-   * @param id of Training Run to return.
-   * @return Requested Training Run by id.
-   */
-  //@formatter:off
+	/**
+	 * Get requested Training Run by id.
+	 * 
+	 * @param id of Training Run to return.
+	 * @return Requested Training Run by id.
+	 */
+	//@formatter:off
   @ApiOperation(httpMethod = "GET", 
       value = "Get Training Run by Id.", 
       response = TrainingRunDTO.class,
@@ -93,12 +93,12 @@ public class TrainingRunsRestController {
   }
   //@formatter:on
 
-  /**
-   * Get all Training Runs.
-   * 
-   * @return all Training Runs.
-   */
-  //@formatter:off
+	/**
+	 * Get all Training Runs.
+	 * 
+	 * @return all Training Runs.
+	 */
+	//@formatter:off
   @ApiOperation(httpMethod = "GET",
       value = "Get all Training Runs.",
       response = TrainingRunDTO.class,
@@ -125,13 +125,12 @@ public class TrainingRunsRestController {
   }
   //@formatter:on
 
-
-    /**
-     * Access training run.
-     *
-     * @return first level of training run.
-     */
-    //@formatter:off
+	/**
+	 * Access training run.
+	 *
+	 * @return first level of training run.
+	 */
+	//@formatter:off
     @ApiOperation(httpMethod = "POST",
             value = "Access training run.",
             response = AccessTrainingRunDTO.class,

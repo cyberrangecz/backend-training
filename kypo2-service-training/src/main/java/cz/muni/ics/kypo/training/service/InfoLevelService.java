@@ -16,18 +16,18 @@ import cz.muni.ics.kypo.training.model.InfoLevel;
  */
 public interface InfoLevelService {
 
-  /**
-   * Finds specific Info level by id
-   * 
-   * @param id of a Info level that would be returned
-   * @return specific info level by id
-   */
-  Optional<InfoLevel> findById(long id);
+	/**
+	 * Finds specific Info level by id
+	 * 
+	 * @param id of a Info level that would be returned
+	 * @return specific info level by id
+	 */
+	Optional<InfoLevel> findById(long id);
 
-  /**
-   * Find all Info Levels.
-   * 
-   * @return all info levels
-   */
-  Page<InfoLevel> findAll(Predicate predicate, Pageable pageable);
+	/**
+	 * Find all Info Levels.
+	 * 
+	 * @return all info levels
+	 */
+	Page<InfoLevel> findAll(Predicate predicate, Pageable pageable);
 }

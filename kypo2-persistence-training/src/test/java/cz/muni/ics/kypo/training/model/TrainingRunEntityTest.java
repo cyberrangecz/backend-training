@@ -20,54 +20,54 @@ import static org.junit.Assert.assertEquals;
 @DataJpaTest
 public class TrainingRunEntityTest {
 
-    @Rule
-    public ExpectedException thrown = ExpectedException.none();
+	@Rule
+	public ExpectedException thrown = ExpectedException.none();
 
-    @Autowired
-    private TestEntityManager entityManager;
+	@Autowired
+	private TestEntityManager entityManager;
 
-    private TrainingRun trainingRun1, trainingRun2;
-    private TrainingInstance trainingInstance;
-    private SandboxInstanceRef sandboxInstanceRef;
-    private TrainingDefinition trainingDefinition;
-    private InfoLevel infoLevel;
-    private ParticipantRef participantRef;
+	private TrainingRun trainingRun1, trainingRun2;
+	private TrainingInstance trainingInstance;
+	private SandboxInstanceRef sandboxInstanceRef;
+	private TrainingDefinition trainingDefinition;
+	private InfoLevel infoLevel;
+	private ParticipantRef participantRef;
 
-    @SpringBootApplication
-    static class TestConfiguration {
-    }
-    @Before
-    public void init() {
-        trainingInstance = new TrainingInstance();
-        sandboxInstanceRef = new SandboxInstanceRef();
-        trainingDefinition = new TrainingDefinition();
-        infoLevel = new InfoLevel();
-        infoLevel.setTitle("infoLevel");
-        infoLevel.setContent("content for info level");
-        participantRef = new ParticipantRef();
-        participantRef.setParticipantRefLogin("user");
-        trainingInstance.setPassword("keyword".toCharArray());
-        trainingInstance.setStartTime(LocalDateTime.now());
-        trainingInstance.setEndTime(LocalDateTime.now());
-        trainingInstance.setTitle("title");
-        sandboxInstanceRef.setTrainingInstance(trainingInstance);
+	@SpringBootApplication
+	static class TestConfiguration {
+	}
 
-    }
+	@Before
+	public void init() {
+		trainingInstance = new TrainingInstance();
+		sandboxInstanceRef = new SandboxInstanceRef();
+		trainingDefinition = new TrainingDefinition();
+		infoLevel = new InfoLevel();
+		infoLevel.setTitle("infoLevel");
+		infoLevel.setContent("content for info level");
+		participantRef = new ParticipantRef();
+		participantRef.setParticipantRefLogin("user");
+		trainingInstance.setPassword("keyword".toCharArray());
+		trainingInstance.setStartTime(LocalDateTime.now());
+		trainingInstance.setEndTime(LocalDateTime.now());
+		trainingInstance.setTitle("title");
+		sandboxInstanceRef.setTrainingInstance(trainingInstance);
 
+	}
 
-    @Test
-    public void saveShouldPersistData() {
-        trainingRun1 = new TrainingRun();
-        trainingRun1.setStartTime(LocalDateTime.now());
-        trainingRun1.setEndTime(LocalDateTime.now());
-        trainingRun1.setState(TRState.NEW);
-        trainingRun1.setCurrentLevel(entityManager.persist(infoLevel));
-        trainingRun1.setParticipantRef(entityManager.persist(participantRef));
-        trainingRun1.setTrainingInstance(entityManager.persist(trainingInstance));
+	@Test
+	public void saveShouldPersistData() {
+		trainingRun1 = new TrainingRun();
+		trainingRun1.setStartTime(LocalDateTime.now());
+		trainingRun1.setEndTime(LocalDateTime.now());
+		trainingRun1.setState(TRState.NEW);
+		trainingRun1.setCurrentLevel(entityManager.persist(infoLevel));
+		trainingRun1.setParticipantRef(entityManager.persist(participantRef));
+		trainingRun1.setTrainingInstance(entityManager.persist(trainingInstance));
 
-        sandboxInstanceRef.setTrainingInstance(trainingInstance);
-        trainingRun1.setSandboxInstanceRef(entityManager.persist(sandboxInstanceRef));
-        TrainingRun tr = this.entityManager.persistFlushFind(trainingRun1);
-        assertEquals(TRState.NEW, tr.getState());
-    }
+		sandboxInstanceRef.setTrainingInstance(trainingInstance);
+		trainingRun1.setSandboxInstanceRef(entityManager.persist(sandboxInstanceRef));
+		TrainingRun tr = this.entityManager.persistFlushFind(trainingRun1);
+		assertEquals(TRState.NEW, tr.getState());
+	}
 }

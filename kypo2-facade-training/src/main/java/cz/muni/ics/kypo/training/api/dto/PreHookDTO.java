@@ -14,11 +14,11 @@ public class PreHookDTO {
   private Long id;
   //private AbstractLevelDTO abstractLevel;
 
-  public PreHookDTO() {}
+	public PreHookDTO() {}
 
-  public Long getId() {
-    return id;
-  }
+	public Long getId() {
+		return id;
+	}
 
   public void setId(Long id) {
     this.id = id;
@@ -28,9 +28,9 @@ public class PreHookDTO {
     return abstractLevel;
   }
 
-  public void setAbstractLevel(AbstractLevelDTO abstractLevel) {
-    this.abstractLevel = abstractLevel;
-  }
+	public void setAbstractLevel(AbstractLevelDTO abstractLevel) {
+		this.abstractLevel = abstractLevel;
+	}
 
   @Override
   public String toString() {

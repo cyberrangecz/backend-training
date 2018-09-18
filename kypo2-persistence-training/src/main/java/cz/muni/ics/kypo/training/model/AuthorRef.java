@@ -32,38 +32,34 @@ public class AuthorRef implements Serializable {
   @ManyToMany(mappedBy = "authorRef", fetch = FetchType.LAZY)
   private Set<TrainingDefinition> trainingDefinition = new HashSet<>();
 
-  public AuthorRef() {}
+	public AuthorRef() {}
 
-  public Long getId() {
-    return id;
-  }
+	public Long getId() {
+		return id;
+	}
 
-  public void setId(Long id) {
-    this.id = id;
-  }
+	public void setId(Long id) {
+		this.id = id;
+	}
 
-  public String getAuthorRefLogin() {
-    return authorRefLogin;
-  }
+	public String getAuthorRefLogin() {
+		return authorRefLogin;
+	}
 
-  public void setAuthorRefLogin(String authorRefLogin) {
-    this.authorRefLogin = authorRefLogin;
-  }
+	public void setAuthorRefLogin(String authorRefLogin) {
+		this.authorRefLogin = authorRefLogin;
+	}
 
-  public Set<TrainingDefinition> getTrainingDefinition() {
-    return trainingDefinition;
-  }
+	public Set<TrainingDefinition> getTrainingDefinition() {
+		return trainingDefinition;
+	}
 
-  public void setTrainingDefinition(Set<TrainingDefinition> trainingDefinition) {
-    this.trainingDefinition = trainingDefinition;
-  }
+	public void setTrainingDefinition(Set<TrainingDefinition> trainingDefinition) {
+		this.trainingDefinition = trainingDefinition;
+	}
 
-  @Override
-  public String toString() {
-    return "AuthorRef{" +
-            "id=" + id +
-            ", authorRefLogin='" + authorRefLogin + '\'' +
-            ", trainingDefinition=" + trainingDefinition +
-            '}';
-  }
+	@Override
+	public String toString() {
+		return "AuthorRef{" + "id=" + id + ", authorRefLogin='" + authorRefLogin + '\'' + ", trainingDefinition=" + trainingDefinition + '}';
+	}
 }

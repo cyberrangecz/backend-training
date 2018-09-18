@@ -149,4 +149,5 @@ public class GameLevel extends AbstractLevel implements Serializable {
             ", incorrectFlagLimit=" + incorrectFlagLimit +
             '}';
   }
+
 }

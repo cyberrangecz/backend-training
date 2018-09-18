@@ -38,100 +38,97 @@ import static org.mockito.BDDMockito.*;
 @Import(FacadeConfigTest.class)
 public class TrainingRunFacadeTest {
 
-    @Rule
-    public ExpectedException thrown = ExpectedException.none();
+	@Rule
+	public ExpectedException thrown = ExpectedException.none();
 
-    @Autowired
-    private TrainingRunFacade trainingRunFacade;
+	@Autowired
+	private TrainingRunFacade trainingRunFacade;
 
-    @MockBean
-    private TrainingRunService trainingRunService;
+	@MockBean
+	private TrainingRunService trainingRunService;
 
-    private TrainingRun trainingRun1, trainingRun2;
-    private GameLevel gameLevel;
-    private InfoLevel infoLevel;
+	private TrainingRun trainingRun1, trainingRun2;
+	private GameLevel gameLevel;
+	private InfoLevel infoLevel;
 
-    @SpringBootApplication
-    static class TestConfiguration {
-    }
+	@SpringBootApplication
+	static class TestConfiguration {
+	}
 
+	@Before
+	public void init() {
+		gameLevel = new GameLevel();
+		gameLevel.setIncorrectFlagLimit(2);
+		gameLevel.setId(1L);
+		gameLevel.setFlag("flag");
 
-    @Before
-    public void init() {
-        gameLevel = new GameLevel();
-        gameLevel.setIncorrectFlagLimit(2);
-        gameLevel.setId(1L);
-        gameLevel.setFlag("flag");
+		infoLevel = new InfoLevel();
+		infoLevel.setId(2L);
+		infoLevel.setTitle("Info level");
+		infoLevel.setContent("Info content");
 
-        infoLevel = new InfoLevel();
-        infoLevel.setId(2L);
-        infoLevel.setTitle("Info level");
-        infoLevel.setContent("Info content");
+		trainingRun1 = new TrainingRun();
+		trainingRun1.setId(1L);
+		trainingRun1.setState(TRState.READY);
+		trainingRun1.setCurrentLevel(gameLevel);
 
-        trainingRun1 = new TrainingRun();
-        trainingRun1.setId(1L);
-        trainingRun1.setState(TRState.READY);
-        trainingRun1.setCurrentLevel(gameLevel);
+		trainingRun2 = new TrainingRun();
+		trainingRun2.setId(2L);
+		trainingRun2.setState(TRState.ARCHIVED);
+		trainingRun2.setCurrentLevel(infoLevel);
+	}
 
-        trainingRun2 = new TrainingRun();
-        trainingRun2.setId(2L);
-        trainingRun2.setState(TRState.ARCHIVED);
-        trainingRun2.setCurrentLevel(infoLevel);
-    }
+	@Test
+	public void findTrainingRunById() {
+		given(trainingRunService.findById(trainingRun1.getId())).willReturn(trainingRun1);
 
-    @Test
-    public void findTrainingRunById() {
-        given(trainingRunService.findById(trainingRun1.getId())).willReturn(trainingRun1);
+		TrainingRunDTO trainingRunDTO = trainingRunFacade.findById(trainingRun1.getId());
+		deepEquals(trainingRun1, trainingRunDTO);
 
-        TrainingRunDTO trainingRunDTO = trainingRunFacade.findById(trainingRun1.getId());
-        deepEquals(trainingRun1, trainingRunDTO);
+		then(trainingRunService).should().findById(trainingRun1.getId());
+	}
 
-        then(trainingRunService).should().findById(trainingRun1.getId());
-    }
+	@Test
+	public void isCorrectFlagBeforeSolutionTaken() {
+		given(trainingRunService.isCorrectFlag(trainingRun1.getId(), "flag")).willReturn(true);
+		given(trainingRunService.getRemainingAttempts(trainingRun1.getId())).willReturn(2);
+		IsCorrectFlagDTO correctFlagDTO = trainingRunFacade.isCorrectFlag(trainingRun1.getId(), "flag", false);
+		assertEquals(true, correctFlagDTO.isCorrect());
+		assertEquals(1, correctFlagDTO.getRemainingAttempts());
+	}
 
-    @Test
-    public void isCorrectFlagBeforeSolutionTaken() {
-        given(trainingRunService.isCorrectFlag(trainingRun1.getId(), "flag")).willReturn(true);
-        given(trainingRunService.getRemainingAttempts(trainingRun1.getId())).willReturn(2);
-        IsCorrectFlagDTO correctFlagDTO = trainingRunFacade.isCorrectFlag(trainingRun1.getId(), "flag", false);
-        assertEquals(true, correctFlagDTO.isCorrect());
-        assertEquals(1, correctFlagDTO.getRemainingAttempts());
-    }
-    @Test
-    public void isCorrectFlagAfterSolutionTaken() {
-        given(trainingRunService.isCorrectFlag(trainingRun1.getId(), "flag")).willReturn(false);
-        IsCorrectFlagDTO correctFlagDTO = trainingRunFacade.isCorrectFlag(trainingRun1.getId(), "flag", true);
-        assertEquals(false, correctFlagDTO.isCorrect());
-        assertEquals(0, correctFlagDTO.getRemainingAttempts());
-    }
+	@Test
+	public void isCorrectFlagAfterSolutionTaken() {
+		given(trainingRunService.isCorrectFlag(trainingRun1.getId(), "flag")).willReturn(false);
+		IsCorrectFlagDTO correctFlagDTO = trainingRunFacade.isCorrectFlag(trainingRun1.getId(), "flag", true);
+		assertEquals(false, correctFlagDTO.isCorrect());
+		assertEquals(0, correctFlagDTO.getRemainingAttempts());
+	}
 
+	@Test
+	public void findAllTrainingRuns() {
+		List<TrainingRun> expected = new ArrayList<>();
+		expected.add(trainingRun1);
+		expected.add(trainingRun2);
 
+		Page<TrainingRun> p = new PageImpl<TrainingRun>(expected);
 
-    @Test
-    public void findAllTrainingRuns() {
-        List<TrainingRun> expected = new ArrayList<>();
-        expected.add(trainingRun1);
-        expected.add(trainingRun2);
+		PathBuilder<TrainingRun> tR = new PathBuilder<TrainingRun>(TrainingRun.class, "trainingRun");
+		Predicate predicate = tR.isNotNull();
 
-        Page<TrainingRun> p = new PageImpl<TrainingRun>(expected);
+		given(trainingRunService.findAll(any(Predicate.class), any(Pageable.class))).willReturn(p);
 
-        PathBuilder<TrainingRun> tR = new PathBuilder<TrainingRun>(TrainingRun.class, "trainingRun");
-        Predicate predicate = tR.isNotNull();
+		PageResultResource<TrainingRunDTO> trainingRunDTO = trainingRunFacade.findAll(predicate, PageRequest.of(0, 2));
+		deepEquals(trainingRun1, trainingRunDTO.getContent().get(0));
+		deepEquals(trainingRun2, trainingRunDTO.getContent().get(1));
 
-        given(trainingRunService.findAll(any(Predicate.class), any (Pageable.class))).willReturn(p);
+		then(trainingRunService).should().findAll(predicate, PageRequest.of(0, 2));
+	}
 
-        PageResultResource<TrainingRunDTO> trainingRunDTO = trainingRunFacade.findAll(predicate, PageRequest.of(0, 2));
-        deepEquals(trainingRun1, trainingRunDTO.getContent().get(0));
-        deepEquals(trainingRun2, trainingRunDTO.getContent().get(1));
+	private void deepEquals(TrainingRun expected, TrainingRunDTO actual) {
+		assertEquals(expected.getId(), actual.getId());
+		assertEquals(expected.getState(), actual.getState());
 
-        then(trainingRunService).should().findAll(predicate, PageRequest.of(0,2));
-    }
-
-    private void deepEquals(TrainingRun expected, TrainingRunDTO actual) {
-        assertEquals(expected.getId(), actual.getId());
-        assertEquals(expected.getState(), actual.getState());
-
-    }
+	}
 
 }
-

@@ -19,111 +19,113 @@ import cz.muni.ics.kypo.training.model.TrainingRun;
  */
 public interface TrainingRunService {
 
-  /**
-   * Finds specific Training Run by id.
-   * 
-   * @param id of a Training Run that would be returned
-   * @return specific Training Run by id
-   *
-   */
-  TrainingRun findById(Long id);
+	/**
+	 * Finds specific Training Run by id.
+	 * 
+	 * @param id of a Training Run that would be returned
+	 * @return specific Training Run by id
+	 *
+	 */
+	TrainingRun findById(Long id);
 
-  /**
-   * Find all Training Runs.
-   * 
-   * @return all Training Runs
-   */
-  Page<TrainingRun> findAll(Predicate predicate, Pageable pageable);
+	/**
+	 * Find all Training Runs.
+	 * 
+	 * @return all Training Runs
+	 */
+	Page<TrainingRun> findAll(Predicate predicate, Pageable pageable);
 
-  /**
-   * Finds all Training Runs of logged in user.
-   *
-   * @return Training Runs of logged in user.
-   */
-  Page<TrainingRun> findAllByParticipantRefLogin(Pageable pageable);
+	/**
+	 * Finds all Training Runs of logged in user.
+	 *
+	 * @return Training Runs of logged in user.
+	 */
+	Page<TrainingRun> findAllByParticipantRefLogin(Pageable pageable);
 
-  /**
-   * Finds all Training Runs of specific Training Definition of logged in user.
-   *
-   * @param trainingDefinitionId id of Training Definition
-   * @return Training Runs
-   */
-  Page<TrainingRun> findAllByTrainingDefinitionAndParticipant(Long trainingDefinitionId, Pageable pageable);
+	/**
+	 * Finds all Training Runs of specific Training Definition of logged in user.
+	 *
+	 * @param trainingDefinitionId id of Training Definition
+	 * @return Training Runs
+	 */
+	Page<TrainingRun> findAllByTrainingDefinitionAndParticipant(Long trainingDefinitionId, Pageable pageable);
 
-  /**
-   * Finds all Training Runs of specific training definition.
-   *
-   * @param trainingDefinitionId id of Training Definition whose Training Runs would be returned.
-   * @return Training Runs of specific Training Definition
-   */
-  Page<TrainingRun> findAllByTrainingDefinition(Long trainingDefinitionId, Pageable pageable);
+	/**
+	 * Finds all Training Runs of specific training definition.
+	 *
+	 * @param trainingDefinitionId id of Training Definition whose Training Runs would be returned.
+	 * @return Training Runs of specific Training Definition
+	 */
+	Page<TrainingRun> findAllByTrainingDefinition(Long trainingDefinitionId, Pageable pageable);
 
-  /**
-   * Finds all Training Runs of specific Training Instance.
-   *
-   * @param trainingInstanceId id of Training Instance whose Training Runs would be returned.
-   * @return Training Runs of specific Training Instance
-   */
-  Page<TrainingRun> findAllByTrainingInstance(Long trainingInstanceId, Pageable pageable);
+	/**
+	 * Finds all Training Runs of specific Training Instance.
+	 *
+	 * @param trainingInstanceId id of Training Instance whose Training Runs would be returned.
+	 * @return Training Runs of specific Training Instance
+	 */
+	Page<TrainingRun> findAllByTrainingInstance(Long trainingInstanceId, Pageable pageable);
 
-  /**
-   * Create given Training Run.
-   *
-   * @param trainingRun to be created in database.
-   * @return created Training Run
-   */
-  TrainingRun create(TrainingRun trainingRun);
+	/**
+	 * Create given Training Run.
+	 *
+	 * @param trainingRun to be created in database.
+	 * @return created Training Run
+	 */
+	TrainingRun create(TrainingRun trainingRun);
 
-  /**
-   * Gets next level of given Training Run and set new current level.
-   *
-   * @param trainingRunId id of Training Run whose next level should be returned.
-   * @return Abstract Level
-   */
-  AbstractLevel getNextLevel(Long trainingRunId);
-  /**
-   * Access training run based on given password.
-   *
-   * @param password of Training Instance.
-   * @return Abstract Level
-   */
-  AbstractLevel accessTrainingRun(String password) throws NoAvailableSandboxException;
-  /**
-   * Gets list of all levels in Training Definition.
-   *
-   * @param levelId must be id of first level of some Training Definition.
-   * @return List of Abstract Levels
-   */
-  List<AbstractLevel> getLevels(Long levelId);
+	/**
+	 * Gets next level of given Training Run and set new current level.
+	 *
+	 * @param trainingRunId id of Training Run whose next level should be returned.
+	 * @return Abstract Level
+	 */
+	AbstractLevel getNextLevel(Long trainingRunId);
 
-  /**
-   * Check given flag of given Training Run.
-   *
-   * @param trainingRunId id of Training Run to check flag.
-   * @param flag string which player submit.
-   * @return -1 if flag is correct, >0 remaining attempts, 0 all attempts exhausted.
-   */
-  boolean isCorrectFlag(Long trainingRunId, String flag);
+	/**
+	 * Access training run based on given password.
+	 *
+	 * @param password of Training Instance.
+	 * @return Abstract Level
+	 */
+	AbstractLevel accessTrainingRun(String password) throws NoAvailableSandboxException;
 
-  /**
-   * Gets solution of current level of given Training Run.
-   *
-   * @param trainingRunId id of Training Run which current level gets solution for.
-   * @return solution of current level.
-   */
-  String getSolution(Long trainingRunId);
+	/**
+	 * Gets list of all levels in Training Definition.
+	 *
+	 * @param levelId must be id of first level of some Training Definition.
+	 * @return List of Abstract Levels
+	 */
+	List<AbstractLevel> getLevels(Long levelId);
 
-  /**
-   * Gets hint of given current level of given Training Run.
-   *
-   * @param trainingRunId id of Training Run which current level gets hint for.
-   * @param hintId id of hint to be returned.
-   * @return Hint
-   */
-  Hint getHint(Long trainingRunId, Long hintId);
+	/**
+	 * Check given flag of given Training Run.
+	 *
+	 * @param trainingRunId id of Training Run to check flag.
+	 * @param flag string which player submit.
+	 * @return -1 if flag is correct, >0 remaining attempts, 0 all attempts exhausted.
+	 */
+	boolean isCorrectFlag(Long trainingRunId, String flag);
 
-  int getLevelOrder(Long idOfFirstLevel, Long actualLevel);
+	/**
+	 * Gets solution of current level of given Training Run.
+	 *
+	 * @param trainingRunId id of Training Run which current level gets solution for.
+	 * @return solution of current level.
+	 */
+	String getSolution(Long trainingRunId);
 
-  public int getRemainingAttempts(Long trainingRunId);
+	/**
+	 * Gets hint of given current level of given Training Run.
+	 *
+	 * @param trainingRunId id of Training Run which current level gets hint for.
+	 * @param hintId id of hint to be returned.
+	 * @return Hint
+	 */
+	Hint getHint(Long trainingRunId, Long hintId);
+
+	int getLevelOrder(Long idOfFirstLevel, Long actualLevel);
+
+	public int getRemainingAttempts(Long trainingRunId);
 
 }

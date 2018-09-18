@@ -151,12 +151,12 @@ public class TrainingInstance implements Serializable {
         && Objects.equals(title, other.getTitle())
         && Objects.equals(trainingDefinition, other.getTrainingDefinition());
     // @formatter:on
-  }
+	}
 
-  @Override
-  public String toString() {
-    return "TrainingInstance [id=" + id + ", startTime=" + startTime + ", endTime=" + endTime + ", title=" + title + ", poolSize=" + poolSize + ", password="
-        + password + ", trainingDefinition=" + trainingDefinition + ", toString()=" + super.toString() + "]";
-  }
+	@Override
+	public String toString() {
+		return "TrainingInstance [id=" + id + ", startTime=" + startTime + ", endTime=" + endTime + ", title=" + title + ", poolSize="
+				+ poolSize + ", password=" + password + ", trainingDefinition=" + trainingDefinition + ", toString()=" + super.toString() + "]";
+	}
 
 }

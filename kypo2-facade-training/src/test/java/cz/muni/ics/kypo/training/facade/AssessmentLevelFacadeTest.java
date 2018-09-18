@@ -41,102 +41,100 @@ import static org.mockito.BDDMockito.willThrow;
 @Import(FacadeConfigTest.class)
 public class AssessmentLevelFacadeTest {
 
-    @Rule
-    public ExpectedException thrown = ExpectedException.none();
+	@Rule
+	public ExpectedException thrown = ExpectedException.none();
 
-    @Autowired
-    private AssessmentLevelFacade assessmentLevelFacade;
+	@Autowired
+	private AssessmentLevelFacade assessmentLevelFacade;
 
-    @MockBean
-    private AssessmentLevelService assessmentLevelService;
+	@MockBean
+	private AssessmentLevelService assessmentLevelService;
 
-    private AssessmentLevel al1, al2;
+	private AssessmentLevel al1, al2;
 
+	@SpringBootApplication
+	static class TestConfiguration {
+	}
 
-    @SpringBootApplication
-    static class TestConfiguration {
-    }
+	@Before
+	public void init() {
+		al1 = new AssessmentLevel();
+		al1.setId(1L);
+		al1.setNextLevel(2L);
+		al1.setAssessmentType(AssessmentType.TEST);
+		al1.setTitle("Test1");
 
-    @Before
-    public void init() {
-        al1 = new AssessmentLevel();
-        al1.setId(1L);
-        al1.setNextLevel(2L);
-        al1.setAssessmentType(AssessmentType.TEST);
-        al1.setTitle("Test1");
+		al2 = new AssessmentLevel();
+		al2.setId(2L);
+		al2.setNextLevel(3L);
+		al2.setAssessmentType(AssessmentType.TEST);
+		al2.setTitle("Test2");
 
-        al2 = new AssessmentLevel();
-        al2.setId(2L);
-        al2.setNextLevel(3L);
-        al2.setAssessmentType(AssessmentType.TEST);
-        al2.setTitle("Test2");
+	}
 
-    }
+	@Test
+	public void findByIdAssessmentLevel() {
+		given(assessmentLevelService.findById(al1.getId())).willReturn(Optional.of(al1));
 
-    @Test
-    public void findByIdAssessmentLevel() {
-        given(assessmentLevelService.findById(al1.getId())).willReturn(Optional.of(al1));
+		AssessmentLevelDTO alDTO = assessmentLevelFacade.findById(al1.getId());
+		deepEquals(al1, alDTO);
 
-        AssessmentLevelDTO alDTO = assessmentLevelFacade.findById(al1.getId());
-        deepEquals(al1,alDTO);
+		then(assessmentLevelService).should().findById(al1.getId());
+	}
 
-        then(assessmentLevelService).should().findById(al1.getId());
-    }
+	@Test
+	public void findByIdWithNullId() {
+		Long id = null;
+		thrown.expect(FacadeLayerException.class);
+		// thrown.expectMessage("Given AssessmentLevel ID is null.");
+		assessmentLevelFacade.findById(id);
 
-    @Test
-    public void findByIdWithNullId() {
-        Long id = null;
-        thrown.expect(FacadeLayerException.class);
-        //thrown.expectMessage("Given AssessmentLevel ID is null.");
-        assessmentLevelFacade.findById(id);
+	}
 
-    }
+	@Test
+	public void findByIdNotFoundAssessmentLevel() {
+		Long id = 3L;
+		given(assessmentLevelService.findById(id)).willReturn(Optional.empty());
+		thrown.expect(FacadeLayerException.class);
+		thrown.expectMessage("AssessmentLevel with this id is not found");
+		assessmentLevelFacade.findById(id);
 
-    @Test
-    public void findByIdNotFoundAssessmentLevel() {
-        Long id = 3L;
-        given(assessmentLevelService.findById(id)).willReturn(Optional.empty());
-        thrown.expect(FacadeLayerException.class);
-        thrown.expectMessage("AssessmentLevel with this id is not found");
-        assessmentLevelFacade.findById(id);
+	}
 
-    }
+	@Test
+	public void findAll() {
+		List<AssessmentLevel> expected = new ArrayList<>();
+		expected.add(al1);
+		expected.add(al2);
 
+		Page<AssessmentLevel> p = new PageImpl<AssessmentLevel>(expected);
 
-    @Test
-    public void findAll() {
-        List<AssessmentLevel> expected = new ArrayList<>();
-        expected.add(al1);
-        expected.add(al2);
+		PathBuilder<AssessmentLevel> aL = new PathBuilder<AssessmentLevel>(AssessmentLevel.class, "assessmentLevel");
+		Predicate predicate = aL.isNotNull();
 
-        Page<AssessmentLevel> p = new PageImpl<AssessmentLevel>(expected);
+		given(assessmentLevelService.findAll(any(Predicate.class), any(Pageable.class))).willReturn(p);
 
-        PathBuilder<AssessmentLevel> aL = new PathBuilder<AssessmentLevel>(AssessmentLevel.class, "assessmentLevel");
-        Predicate predicate = aL.isNotNull();
+		PageResultResource<AssessmentLevelDTO> assessmentLevelDTOS = assessmentLevelFacade.findAll(predicate, PageRequest.of(0, 2));
+		deepEquals(al1, assessmentLevelDTOS.getContent().get(0));
+		deepEquals(al2, assessmentLevelDTOS.getContent().get(1));
 
-        given(assessmentLevelService.findAll(any(Predicate.class), any(Pageable.class))).willReturn(p);
+		then(assessmentLevelService).should().findAll(predicate, PageRequest.of(0, 2));
+	}
 
-        PageResultResource<AssessmentLevelDTO> assessmentLevelDTOS = assessmentLevelFacade.findAll(predicate,PageRequest.of(0,2));
-        deepEquals(al1, assessmentLevelDTOS.getContent().get(0));
-        deepEquals(al2, assessmentLevelDTOS.getContent().get(1));
+	@Test
+	public void findAllWithServiceLayerException() {
+		willThrow(ServiceLayerException.class).given(assessmentLevelService).findAll(any(Predicate.class), any(Pageable.class));
+		thrown.expect(FacadeLayerException.class);
 
-        then(assessmentLevelService).should().findAll(predicate,PageRequest.of(0,2));
-    }
+		PathBuilder<AssessmentLevel> aL = new PathBuilder<AssessmentLevel>(AssessmentLevel.class, "assessmentLevel");
+		Predicate predicate = aL.isNotNull();
 
-    @Test
-    public void findAllWithServiceLayerException() {
-        willThrow(ServiceLayerException.class).given(assessmentLevelService).findAll(any(Predicate.class),any(Pageable.class));
-        thrown.expect(FacadeLayerException.class);
+		PageResultResource<AssessmentLevelDTO> assessmentLevelDTOS = assessmentLevelFacade.findAll(predicate, PageRequest.of(0, 2));
+	}
 
-        PathBuilder<AssessmentLevel> aL = new PathBuilder<AssessmentLevel>(AssessmentLevel.class, "assessmentLevel");
-        Predicate predicate = aL.isNotNull();
-
-        PageResultResource<AssessmentLevelDTO> assessmentLevelDTOS = assessmentLevelFacade.findAll(predicate, PageRequest.of(0,2));
-    }
-
-    private void deepEquals(AssessmentLevel expectedAssessmentLevel, AssessmentLevelDTO actualAssessmentLevel) {
-        assertEquals(expectedAssessmentLevel.getId(), actualAssessmentLevel.getId());
-        assertEquals(expectedAssessmentLevel.getAssessmentType(), actualAssessmentLevel.getType());
-    }
+	private void deepEquals(AssessmentLevel expectedAssessmentLevel, AssessmentLevelDTO actualAssessmentLevel) {
+		assertEquals(expectedAssessmentLevel.getId(), actualAssessmentLevel.getId());
+		assertEquals(expectedAssessmentLevel.getAssessmentType(), actualAssessmentLevel.getType());
+	}
 
 }

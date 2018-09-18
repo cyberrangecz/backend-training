@@ -8,5 +8,5 @@ package cz.muni.ics.kypo.training.model.enums;
  *
  */
 public enum TDState {
-  PRIVATED, RELEASED, ARCHIVED, UNRELEASED;
+	PRIVATED, RELEASED, ARCHIVED, UNRELEASED;
 }

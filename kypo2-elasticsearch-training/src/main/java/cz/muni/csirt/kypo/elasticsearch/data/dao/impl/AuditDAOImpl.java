@@ -26,8 +26,7 @@ import cz.muni.csirt.kypo.elasticsearch.data.dao.AuditDAO;
 public class AuditDAOImpl extends AbstractElasticClientDAO implements AuditDAO {
 
 	@Autowired
-	public AuditDAOImpl(RestHighLevelClient client, RestClient lowLevelClient,
-			@Qualifier("objMapperESClient") ObjectMapper mapper) {
+	public AuditDAOImpl(RestHighLevelClient client, RestClient lowLevelClient, @Qualifier("objMapperESClient") ObjectMapper mapper) {
 		super(client, lowLevelClient, mapper);
 	}
 
