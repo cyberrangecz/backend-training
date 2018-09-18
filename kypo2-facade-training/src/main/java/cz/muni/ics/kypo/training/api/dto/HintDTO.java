@@ -16,6 +16,8 @@ public class HintDTO {
     @PositiveOrZero(message = "Penalty must be a positive number or zero.")
     private Integer hintPenalty;
 
+    public HintDTO(){}
+
     public Long getId() {
         return id;
     }

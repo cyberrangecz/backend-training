@@ -60,7 +60,7 @@ ALTER TABLE abstract_level OWNER TO postgres;
 --
 
 CREATE SEQUENCE abstract_level_id_seq
-    START WITH 1
+    START WITH 7
     INCREMENT BY 1
     NO MINVALUE
     NO MAXVALUE
@@ -99,7 +99,7 @@ CREATE TABLE participant_ref (
 ALTER TABLE participant_ref OWNER TO postgres;
 
 CREATE SEQUENCE participant_ref_id_seq
-    START WITH 1
+    START WITH 3
     INCREMENT BY 1
     NO MINVALUE
     NO MAXVALUE
@@ -134,7 +134,7 @@ ALTER TABLE author_ref OWNER TO postgres;
 --
 
 CREATE SEQUENCE author_ref_id_seq
-    START WITH 1
+    START WITH 4
     INCREMENT BY 1
     NO MINVALUE
     NO MAXVALUE
@@ -193,7 +193,7 @@ ALTER TABLE hint OWNER TO postgres;
 --
 
 CREATE SEQUENCE hint_id_seq
-    START WITH 1
+    START WITH 3
     INCREMENT BY 1
     NO MINVALUE
     NO MAXVALUE
@@ -242,7 +242,7 @@ ALTER TABLE post_hook OWNER TO postgres;
 --
 
 CREATE SEQUENCE post_hook_id_seq
-    START WITH 1
+    START WITH 7
     INCREMENT BY 1
     NO MINVALUE
     NO MAXVALUE
@@ -278,7 +278,7 @@ ALTER TABLE pre_hook OWNER TO postgres;
 --
 
 CREATE SEQUENCE pre_hook_id_seq
-    START WITH 1
+    START WITH 7
     INCREMENT BY 1
     NO MINVALUE
     NO MAXVALUE
@@ -315,7 +315,7 @@ ALTER TABLE sandbox_definition_ref OWNER TO postgres;
 --
 
 CREATE SEQUENCE sandbox_definition_ref_id_seq
-    START WITH 1
+    START WITH 3
     INCREMENT BY 1
     NO MINVALUE
     NO MAXVALUE
@@ -353,7 +353,7 @@ ALTER TABLE sandbox_instance_ref OWNER TO postgres;
 --
 
 CREATE SEQUENCE sandbox_instance_ref_id_seq
-    START WITH 1
+    START WITH 4
     INCREMENT BY 1
     NO MINVALUE
     NO MAXVALUE
@@ -409,7 +409,7 @@ ALTER TABLE training_definition_author_ref OWNER TO postgres;
 --
 
 CREATE SEQUENCE training_definition_id_seq
-    START WITH 1
+    START WITH 3
     INCREMENT BY 1
     NO MINVALUE
     NO MAXVALUE
@@ -451,7 +451,7 @@ ALTER TABLE training_instance OWNER TO postgres;
 --
 
 CREATE SEQUENCE training_instance_id_seq
-    START WITH 1
+    START WITH 4
     INCREMENT BY 1
     NO MINVALUE
     NO MAXVALUE
@@ -517,7 +517,7 @@ CREATE TABLE training_run (
 ALTER TABLE training_run OWNER TO postgres;
 
 CREATE SEQUENCE training_run_id_seq
-    START WITH 1
+    START WITH 3
     INCREMENT BY 1
     NO MINVALUE
     NO MAXVALUE
@@ -554,7 +554,7 @@ ALTER TABLE user_ref OWNER TO postgres;
 --
 
 CREATE SEQUENCE user_ref_id_seq
-    START WITH 1
+    START WITH 3
     INCREMENT BY 1
     NO MINVALUE
     NO MAXVALUE
@@ -567,7 +567,7 @@ CREATE SEQUENCE user_ref_id_seq
 
 
 CREATE SEQUENCE password_id_seq
-    START WITH 1
+    START WITH 4
     INCREMENT BY 1
     NO MINVALUE
     NO MAXVALUE
@@ -1265,8 +1265,8 @@ INSERT INTO abstract_level(id, max_score, next_level, title, post_hook_id, pre_h
 INSERT INTO abstract_level(id, max_score, next_level, title, post_hook_id, pre_hook_id) VALUES (2, 70, 3, 'Info Level1', 2, 2);
 INSERT INTO abstract_level(id, max_score, next_level, title, post_hook_id, pre_hook_id) VALUES (1, 20, 2, 'Game Level1', 1, 1);
 
-INSERT INTO game_level(attachments, content, estimated_duration, flag, solution, solution_penalty, id, incorrect_flag_limit) VALUES (null, 'Play me', 25, 'secretFlag', 'This is how you do it', 19, 1, 5);
-INSERT INTO info_level(content, id) VALUES ('Informational stuff', 2);
+INSERT INTO game_level(id, attachments, content, estimated_duration, flag, solution, solution_penalty, incorrect_flag_limit) VALUES (1, null, 'Play me', 25, 'secretFlag', 'This is how you do it', 19, 5);
+INSERT INTO info_level(id, content) VALUES (2, 'Informational stuff');
 INSERT INTO assessment_level(assessment_type, instructions, questions, id) VALUES ('TEST', 'Fill me up', 'What is my mothers name?', 3);
 
 INSERT INTO hint(id, content, hint_penalty, title, game_level_id) VALUES (1, 'Very good advice', 10, 'Hint1', 1);
@@ -1332,7 +1332,7 @@ INSERT INTO training_instance_organizers(training_instance_id, organizers_id) VA
 -- TRAINING RUNS
 
 INSERT INTO participant_ref(id, participant_ref_login) VALUES (1, 'Participant1');
-INSERT INTO participant_ref(id, participant_ref_login) VALUES (1, 'Participant2');
+INSERT INTO participant_ref(id, participant_ref_login) VALUES (2, 'Participant2');
 
 INSERT INTO training_run(id, end_time, start_time, state, current_level_id, sandbox_instance_ref_id, training_instance_id, participant_ref_id, event_log_reference, incorrect_flag_count) VALUES (1, '2022-10-19 10:23:54+02', '2016-10-19 10:23:54+02', 'ALLOCATED', 2, 2, 2, 1, null, 5);
 INSERT INTO training_run(id, end_time, start_time, state, current_level_id, sandbox_instance_ref_id, training_instance_id, participant_ref_id, event_log_reference, incorrect_flag_count) VALUES (2, '2024-10-19 10:23:54+02', '2020-10-19 10:23:54+02', 'NEW', 1, 3, 3, 2, null, 4);

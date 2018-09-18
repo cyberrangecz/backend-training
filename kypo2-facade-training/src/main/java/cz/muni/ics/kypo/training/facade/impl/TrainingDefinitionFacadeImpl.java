@@ -57,7 +57,7 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
       TrainingDefinitionDTO trainingDefinitionDTO = beanMapping.mapTo(td, TrainingDefinitionDTO.class);
 
       Set<BasicLevelInfoDTO> levelInfoDTOs = new HashSet<>();
-      for (int i = 0; i < levels.size()-1; i++){
+      for (int i = 0; i < levels.size(); i++){
         BasicLevelInfoDTO basicLevelInfoDTO = new BasicLevelInfoDTO();
         basicLevelInfoDTO.setId(levels.get(i).getId());
         basicLevelInfoDTO.setOrder(i);

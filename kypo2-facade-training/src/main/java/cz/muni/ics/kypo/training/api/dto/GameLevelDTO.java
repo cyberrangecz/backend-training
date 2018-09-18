@@ -29,7 +29,7 @@ public class GameLevelDTO extends AbstractLevelDTO {
     @Max(value = 60, message = "Estimated duration cannot be greater than 60")
     private int estimatedDuration;
     private String[] attachments;
-    private Set<Hint> hints = new HashSet<>();
+    private Set<HintDTO> hints = new HashSet<>();
     @Positive(message = "Incorrect flag limit must be positive number")
     private int incorrectFlagLimit;
 
@@ -91,11 +91,11 @@ public class GameLevelDTO extends AbstractLevelDTO {
         this.attachments = attachments;
     }
 
-    public Set<Hint> getHints() {
+    public Set<HintDTO> getHints() {
         return hints;
     }
 
-    public void setHints(Set<Hint> hints) {
+    public void setHints(Set<HintDTO> hints) {
         this.hints = hints;
     }
 

@@ -1,5 +1,7 @@
 package cz.muni.ics.kypo.training.model;
 
+import org.hibernate.annotations.Type;
+
 import java.io.Serializable;
 import java.util.Objects;
 
@@ -29,6 +31,7 @@ public class Hint implements Serializable {
   @Column(name = "title", nullable = false)
   private String title;
   @Lob
+  @Type(type = "org.hibernate.type.StringType")
   @Column(name = "content", nullable = false)
   private String content;
   @Column(name = "hint_penalty", nullable = false)
