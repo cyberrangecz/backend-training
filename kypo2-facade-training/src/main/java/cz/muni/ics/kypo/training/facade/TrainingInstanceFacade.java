@@ -2,13 +2,14 @@ package cz.muni.ics.kypo.training.facade;
 
 import cz.muni.ics.kypo.training.exception.FacadeLayerException;
 import cz.muni.ics.kypo.training.exceptions.CannotBeUpdatedException;
-import cz.muni.ics.kypo.training.model.TrainingInstance;
 import org.springframework.data.domain.Pageable;
 
 import com.querydsl.core.types.Predicate;
 
 import cz.muni.ics.kypo.training.api.PageResultResource;
-import cz.muni.ics.kypo.training.api.dto.TrainingInstanceDTO;
+import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceCreateDTO;
+import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceDTO;
+import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceUpdateDTO;
 
 /**
  * 
@@ -17,49 +18,53 @@ import cz.muni.ics.kypo.training.api.dto.TrainingInstanceDTO;
  */
 public interface TrainingInstanceFacade {
 
-  /**
-   * Finds specific Training Instance by id
-   * 
-   * @param id of a Training Instance that would be returned
-   * @return specific Training Instance by id
-   */
-  TrainingInstanceDTO findById(long id);
+	/**
+	 * Finds specific Training Instance by id
+	 * 
+	 * @param id of a Training Instance that would be returned
+	 * @return specific Training Instance by id
+	 */
+	TrainingInstanceDTO findById(long id);
 
-  /**
-   * Find all Training Instances.
-   * 
-   * @return all Training Instances
-   */
-  PageResultResource<TrainingInstanceDTO> findAll(Predicate predicate, Pageable pageable);
+	/**
+	 * Find all Training Instances.
+	 * 
+	 * @return all Training Instances
+	 */
+	PageResultResource<TrainingInstanceDTO> findAll(Predicate predicate, Pageable pageable);
 
-  /**
-   * Updates training instance
-   * @param trainingInstance to be updated
-   * @throws FacadeLayerException if instance is not found
-   * @throws CannotBeUpdatedException if starting date of instance is not in future
-   */
-  void update(TrainingInstance trainingInstance) throws FacadeLayerException, CannotBeUpdatedException;
+	/**
+	 * Updates training instance
+	 * 
+	 * @param trainingInstance to be updated
+	 * @throws FacadeLayerException if instance is not found
+	 * @throws CannotBeUpdatedException if starting date of instance is not in future
+	 */
+	void update(TrainingInstanceUpdateDTO trainingInstance) throws FacadeLayerException, CannotBeUpdatedException;
 
-  /**
-   * Creates new training instance
-   * @param trainingInstance to be created
-   * @return DTO of created instance
-   * @throws FacadeLayerException
-   */
-  TrainingInstanceDTO create(TrainingInstance trainingInstance) throws FacadeLayerException;
+	/**
+	 * Creates new training instance
+	 * 
+	 * @param trainingInstance to be created
+	 * @return DTO of created instance
+	 * @throws FacadeLayerException
+	 */
+	TrainingInstanceCreateDTO create(TrainingInstanceCreateDTO trainingInstance) throws FacadeLayerException;
 
-  /**
-   * Deletes specific training instance based on id
-   * @param id of training instance to be deleted
-   * @throws FacadeLayerException
-   */
-  void delete(Long id) throws FacadeLayerException;
+	/**
+	 * Deletes specific training instance based on id
+	 * 
+	 * @param id of training instance to be deleted
+	 * @throws FacadeLayerException
+	 */
+	void delete(Long id) throws FacadeLayerException;
 
-  /**
-   * Generates new password
-   * @return generated password
-   * @throws FacadeLayerException if password already exists
-   */
-  char[] generatePassword() throws FacadeLayerException;
+	/**
+	 * Generates new password
+	 * 
+	 * @return generated password
+	 * @throws FacadeLayerException if password already exists
+	 */
+	char[] generatePassword() throws FacadeLayerException;
 
 }

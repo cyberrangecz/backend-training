@@ -3,16 +3,23 @@ package cz.muni.ics.kypo.training.facade;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.PathBuilder;
 import cz.muni.ics.kypo.training.api.PageResultResource;
-import cz.muni.ics.kypo.training.api.dto.AssessmentLevelDTO;
-import cz.muni.ics.kypo.training.api.dto.GameLevelDTO;
-import cz.muni.ics.kypo.training.api.dto.InfoLevelDTO;
-import cz.muni.ics.kypo.training.api.dto.TrainingDefinitionDTO;
+import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelCreateDTO;
+import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelUpdateDTO;
+import cz.muni.ics.kypo.training.api.dto.gamelevel.GameLevelCreateDTO;
+import cz.muni.ics.kypo.training.api.dto.gamelevel.GameLevelUpdateDTO;
+import cz.muni.ics.kypo.training.api.dto.infolevel.InfoLevelCreateDTO;
+import cz.muni.ics.kypo.training.api.dto.infolevel.InfoLevelUpdateDTO;
+import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionCreateDTO;
+import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionDTO;
+import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionUpdateDTO;
 import cz.muni.ics.kypo.training.config.FacadeConfigTest;
 import cz.muni.ics.kypo.training.exception.FacadeLayerException;
+import cz.muni.ics.kypo.training.mapping.BeanMapping;
 import cz.muni.ics.kypo.training.model.AssessmentLevel;
 import cz.muni.ics.kypo.training.model.GameLevel;
 import cz.muni.ics.kypo.training.model.InfoLevel;
 import cz.muni.ics.kypo.training.model.TrainingDefinition;
+import cz.muni.ics.kypo.training.model.enums.AssessmentType;
 import cz.muni.ics.kypo.training.model.enums.TDState;
 import cz.muni.ics.kypo.training.service.TrainingDefinitionService;
 import org.junit.Before;
@@ -46,20 +53,29 @@ public class TrainingDefinitionFacadeTest {
 
 	@Rule
 	public ExpectedException thrown = ExpectedException.none();
-
+	@Autowired
+	private BeanMapping beanMapping;
 	@Autowired
 	private TrainingDefinitionFacade trainingDefinitionFacade;
 
 	@MockBean
 	private TrainingDefinitionService trainingDefinitionService;
 
-	private TrainingDefinition trainingDefinition1, trainingDefinition2, unreleasedDefinition, releasedDefinition;
+	private TrainingDefinition trainingDefinition1, trainingDefinition2, releasedDefinition;
+	private TrainingDefinitionUpdateDTO trainingDefinitionUpdate;
+	private TrainingDefinitionCreateDTO trainingDefinitionCreate;
 
 	private AssessmentLevel level1;
+	private AssessmentLevelUpdateDTO alUpdate;
+	private AssessmentLevelCreateDTO alCreate;
 
 	private GameLevel gameLevel;
+	private GameLevelUpdateDTO gameLevelUpdate;
+	private GameLevelCreateDTO gameLevelCreate;
 
 	private InfoLevel infoLevel;
+	private InfoLevelUpdateDTO infoLevelUpdate;
+	private InfoLevelCreateDTO infoLevelCreate;
 
 	@SpringBootApplication
 	static class TestConfiguration {
@@ -67,16 +83,68 @@ public class TrainingDefinitionFacadeTest {
 
 	@Before
 	public void init() {
+
 		level1 = new AssessmentLevel();
 		level1.setId(1L);
+
+		alUpdate = new AssessmentLevelUpdateDTO();
+		alUpdate.setId(2L);
 
 		gameLevel = new GameLevel();
 		gameLevel.setId(2L);
 		gameLevel.setNextLevel(null);
 
+		gameLevelUpdate = new GameLevelUpdateDTO();
+		gameLevelUpdate.setId(2L);
+		gameLevelUpdate.setTitle("title");
+		gameLevelUpdate.setAttachments(new String[3]);
+		gameLevelUpdate.setContent("Content");
+		gameLevelUpdate.setEstimatedDuration(1000);
+		gameLevelUpdate.setFlag("flag1");
+		gameLevelUpdate.setIncorrectFlagLimit(4);
+		gameLevelUpdate.setNextLevel(2L);
+
+		gameLevelCreate = new GameLevelCreateDTO();
+		gameLevelCreate.setTitle("title");
+		gameLevelCreate.setAttachments(new String[3]);
+		gameLevelCreate.setContent("Content");
+		gameLevelCreate.setEstimatedDuration(1000);
+		gameLevelCreate.setFlag("flag1");
+		gameLevelCreate.setIncorrectFlagLimit(4);
+		gameLevelCreate.setNextLevel(2L);
+
 		infoLevel = new InfoLevel();
 		infoLevel.setId(3L);
 		infoLevel.setNextLevel(gameLevel.getId());
+
+		infoLevelUpdate = new InfoLevelUpdateDTO();
+		infoLevelUpdate.setId(3L);
+		infoLevelUpdate.setMaxScore(40);
+		infoLevelUpdate.setTitle("some title");
+		infoLevelUpdate.setContent("some content");
+		infoLevelUpdate.setNextLevel(gameLevel.getId());
+
+		infoLevelCreate = new InfoLevelCreateDTO();
+		infoLevelCreate.setMaxScore(40);
+		infoLevelCreate.setTitle("some title");
+		infoLevelCreate.setContent("some content");
+		infoLevelCreate.setNextLevel(gameLevel.getId());
+
+		alCreate = new AssessmentLevelCreateDTO();
+		alCreate.setInstructions("instructions");
+		alCreate.setMaxScore(50);
+		alCreate.setNextLevel(1L);
+		alCreate.setQuestions("test");
+		alCreate.setTitle("Some title");
+		alCreate.setType(AssessmentType.QUESTIONNAIRE);
+
+		alUpdate = new AssessmentLevelUpdateDTO();
+		alUpdate.setInstructions("instructions");
+		alUpdate.setMaxScore(50);
+		alUpdate.setNextLevel(1L);
+		alUpdate.setQuestions("test");
+		alUpdate.setTitle("Some title");
+		alUpdate.setType(AssessmentType.QUESTIONNAIRE);
 
 		trainingDefinition1 = new TrainingDefinition();
 		trainingDefinition1.setId(1L);
@@ -87,10 +155,18 @@ public class TrainingDefinitionFacadeTest {
 		trainingDefinition2.setState(TDState.UNRELEASED);
 		trainingDefinition2.setStartingLevel(infoLevel.getId());
 
-		unreleasedDefinition = new TrainingDefinition();
-		unreleasedDefinition.setId(4L);
-		unreleasedDefinition.setState(TDState.UNRELEASED);
-		unreleasedDefinition.setStartingLevel(level1.getId());
+		trainingDefinitionUpdate = new TrainingDefinitionUpdateDTO();
+		trainingDefinitionUpdate.setId(4L);
+		trainingDefinitionUpdate.setState(TDState.UNRELEASED);
+		trainingDefinitionUpdate.setStartingLevel(level1.getId());
+
+		trainingDefinitionCreate = new TrainingDefinitionCreateDTO();
+		trainingDefinitionCreate.setDescription("TD desc");
+		trainingDefinitionCreate.setOutcomes(new String[0]);
+		trainingDefinitionCreate.setPrerequisities(new String[0]);
+		trainingDefinitionCreate.setStartingLevel(1L);
+		trainingDefinitionCreate.setState(TDState.ARCHIVED);
+		trainingDefinitionCreate.setTitle("TD some title");
 
 		releasedDefinition = new TrainingDefinition();
 		releasedDefinition.setState(TDState.RELEASED);
@@ -137,8 +213,8 @@ public class TrainingDefinitionFacadeTest {
 
 	@Test
 	public void updateTrainingDefinition() {
-		trainingDefinitionFacade.update(unreleasedDefinition);
-		then(trainingDefinitionService).should().update(unreleasedDefinition);
+		trainingDefinitionFacade.update(trainingDefinitionUpdate);
+		then(trainingDefinitionService).should().update(beanMapping.mapTo(trainingDefinitionUpdate, TrainingDefinition.class));
 	}
 
 	@Test
@@ -172,8 +248,8 @@ public class TrainingDefinitionFacadeTest {
 
 	@Test
 	public void swapLeft() {
-		trainingDefinitionFacade.swapLeft(unreleasedDefinition.getId(), level1.getId());
-		then(trainingDefinitionService).should().swapLeft(unreleasedDefinition.getId(), level1.getId());
+		trainingDefinitionFacade.swapLeft(trainingDefinition2.getId(), level1.getId());
+		then(trainingDefinitionService).should().swapLeft(trainingDefinition2.getId(), level1.getId());
 	}
 
 	@Test
@@ -190,8 +266,8 @@ public class TrainingDefinitionFacadeTest {
 
 	@Test
 	public void swapRight() {
-		trainingDefinitionFacade.swapRight(unreleasedDefinition.getId(), level1.getId());
-		then(trainingDefinitionService).should().swapRight(unreleasedDefinition.getId(), level1.getId());
+		trainingDefinitionFacade.swapRight(trainingDefinition2.getId(), level1.getId());
+		then(trainingDefinitionService).should().swapRight(trainingDefinition2.getId(), level1.getId());
 	}
 
 	@Test
@@ -238,32 +314,33 @@ public class TrainingDefinitionFacadeTest {
 
 	@Test
 	public void updateAssessmentLevel() {
-		trainingDefinitionFacade.updateAssessmentLevel(unreleasedDefinition.getId(), level1);
-		then(trainingDefinitionService).should().updateAssessmentLevel(unreleasedDefinition.getId(), level1);
+		trainingDefinitionFacade.updateAssessmentLevel(trainingDefinition1.getId(), alUpdate);
+		then(trainingDefinitionService).should().updateAssessmentLevel(trainingDefinition1.getId(),
+				beanMapping.mapTo(alUpdate, AssessmentLevel.class));
 	}
 
 	@Test
 	public void updateAssessmentLevelWithNullDefinition() {
 		thrown.expect(NullPointerException.class);
-		trainingDefinitionFacade.updateAssessmentLevel(null, level1);
+		trainingDefinitionFacade.updateAssessmentLevel(null, alUpdate);
 	}
 
 	@Test
 	public void updateAssessmentLevelWithNullLevel() {
 		thrown.expect(NullPointerException.class);
-		trainingDefinitionFacade.updateAssessmentLevel(unreleasedDefinition.getId(), null);
+		trainingDefinitionFacade.updateAssessmentLevel(trainingDefinition1.getId(), null);
 	}
 
 	@Test
 	public void updateGameLevel() {
-		trainingDefinitionFacade.updateGameLevel(trainingDefinition2.getId(), gameLevel);
+		trainingDefinitionFacade.updateGameLevel(trainingDefinition2.getId(), gameLevelUpdate);
 		then(trainingDefinitionService).should().updateGameLevel(trainingDefinition2.getId(), gameLevel);
 	}
 
 	@Test
 	public void updateGameLevelWithNullDefinition() {
 		thrown.expect(NullPointerException.class);
-		trainingDefinitionFacade.updateGameLevel(null, gameLevel);
+		trainingDefinitionFacade.updateGameLevel(null, gameLevelUpdate);
 	}
 
 	@Test
@@ -274,14 +351,15 @@ public class TrainingDefinitionFacadeTest {
 
 	@Test
 	public void updateInfoLevel() {
-		trainingDefinitionFacade.updateInfoLevel(trainingDefinition2.getId(), infoLevel);
-		then(trainingDefinitionService).should().updateInfoLevel(trainingDefinition2.getId(), infoLevel);
+		trainingDefinitionFacade.updateInfoLevel(trainingDefinition2.getId(), infoLevelUpdate);
+		then(trainingDefinitionService).should().updateInfoLevel(trainingDefinition2.getId(),
+				beanMapping.mapTo(infoLevelUpdate, InfoLevel.class));
 	}
 
 	@Test
 	public void updateInfoLevelWithNullDefinition() {
 		thrown.expect(NullPointerException.class);
-		trainingDefinitionFacade.updateInfoLevel(null, infoLevel);
+		trainingDefinitionFacade.updateInfoLevel(null, infoLevelUpdate);
 	}
 
 	@Test
@@ -295,19 +373,18 @@ public class TrainingDefinitionFacadeTest {
 		InfoLevel newInfoLevel = new InfoLevel();
 		newInfoLevel.setId(5L);
 		newInfoLevel.setTitle("test");
-		given(trainingDefinitionService.createInfoLevel(unreleasedDefinition.getId(), newInfoLevel)).willReturn(Optional.of(newInfoLevel));
+		given(trainingDefinitionService.createInfoLevel(trainingDefinition1.getId(), newInfoLevel)).willReturn(Optional.of(newInfoLevel));
 
-		InfoLevelDTO createdLevel = trainingDefinitionFacade.createInfoLevel(unreleasedDefinition.getId(), newInfoLevel);
+		InfoLevelCreateDTO createdLevel = trainingDefinitionFacade.createInfoLevel(trainingDefinition1.getId(), infoLevelCreate);
 
-		assertEquals(newInfoLevel.getId(), createdLevel.getId());
 		assertEquals(newInfoLevel.getTitle(), createdLevel.getTitle());
-		then(trainingDefinitionService).should().createInfoLevel(unreleasedDefinition.getId(), newInfoLevel);
+		then(trainingDefinitionService).should().createInfoLevel(trainingDefinition1.getId(), newInfoLevel);
 	}
 
 	@Test
 	public void createInfoLevelWithNullDefinitionId() {
 		thrown.expect(NullPointerException.class);
-		trainingDefinitionFacade.createInfoLevel(null, infoLevel);
+		trainingDefinitionFacade.createInfoLevel(null, infoLevelCreate);
 	}
 
 	@Test
@@ -321,19 +398,20 @@ public class TrainingDefinitionFacadeTest {
 		GameLevel newGameLevel = new GameLevel();
 		newGameLevel.setId(5L);
 		newGameLevel.setTitle("test");
-		given(trainingDefinitionService.createGameLevel(unreleasedDefinition.getId(), newGameLevel)).willReturn(Optional.of(newGameLevel));
+		given(trainingDefinitionService.createGameLevel(trainingDefinition1.getId(), beanMapping.mapTo(gameLevelCreate, GameLevel.class)))
+				.willReturn(Optional.of(newGameLevel));
 
-		GameLevelDTO createdLevel = trainingDefinitionFacade.createGameLevel(unreleasedDefinition.getId(), newGameLevel);
+		GameLevelCreateDTO createdLevel = trainingDefinitionFacade.createGameLevel(trainingDefinition1.getId(), gameLevelCreate);
 
-		assertEquals(newGameLevel.getId(), createdLevel.getId());
 		assertEquals(newGameLevel.getTitle(), createdLevel.getTitle());
-		then(trainingDefinitionService).should().createGameLevel(unreleasedDefinition.getId(), newGameLevel);
+		then(trainingDefinitionService).should().createGameLevel(trainingDefinition1.getId(),
+				beanMapping.mapTo(gameLevelCreate, GameLevel.class));
 	}
 
 	@Test
 	public void createGameLevelWithNullDefinitionId() {
 		thrown.expect(NullPointerException.class);
-		trainingDefinitionFacade.createGameLevel(null, gameLevel);
+		trainingDefinitionFacade.createGameLevel(null, gameLevelCreate);
 	}
 
 	@Test
@@ -347,20 +425,19 @@ public class TrainingDefinitionFacadeTest {
 		AssessmentLevel newAssessmentLevel = new AssessmentLevel();
 		newAssessmentLevel.setId(5L);
 		newAssessmentLevel.setTitle("test");
-		given(trainingDefinitionService.createAssessmentLevel(unreleasedDefinition.getId(), newAssessmentLevel))
+		given(trainingDefinitionService.createAssessmentLevel(trainingDefinition1.getId(), beanMapping.mapTo(alCreate, AssessmentLevel.class)))
 				.willReturn(Optional.of(newAssessmentLevel));
 
-		AssessmentLevelDTO createdLevel = trainingDefinitionFacade.createAssessmentLevel(unreleasedDefinition.getId(), newAssessmentLevel);
+		AssessmentLevelCreateDTO createdLevel = trainingDefinitionFacade.createAssessmentLevel(trainingDefinition1.getId(), alCreate);
 
-		assertEquals(newAssessmentLevel.getId(), createdLevel.getId());
 		assertEquals(newAssessmentLevel.getTitle(), createdLevel.getTitle());
-		then(trainingDefinitionService).should().createAssessmentLevel(unreleasedDefinition.getId(), newAssessmentLevel);
+		then(trainingDefinitionService).should().createAssessmentLevel(trainingDefinition1.getId(), newAssessmentLevel);
 	}
 
 	@Test
 	public void createAssessmentLevelWithNullDefinitionId() {
 		thrown.expect(NullPointerException.class);
-		trainingDefinitionFacade.createAssessmentLevel(null, level1);
+		trainingDefinitionFacade.createAssessmentLevel(null, alCreate);
 	}
 
 	@Test
@@ -371,10 +448,9 @@ public class TrainingDefinitionFacadeTest {
 
 	@Test
 	public void createTrainingDefinition() {
-		given(trainingDefinitionService.create(trainingDefinition1)).willReturn(Optional.of(trainingDefinition1));
-		TrainingDefinitionDTO trainingDefinitionDTO = trainingDefinitionFacade.create(trainingDefinition1);
-		deepEquals(trainingDefinition1, trainingDefinitionDTO);
-		then(trainingDefinitionService).should().create(trainingDefinition1);
+		given(trainingDefinitionService.create(beanMapping.mapTo(trainingDefinitionCreate, TrainingDefinition.class)))
+				.willReturn(Optional.of(beanMapping.mapTo(trainingDefinitionCreate, TrainingDefinition.class)));
+		then(trainingDefinitionService).should().create(beanMapping.mapTo(trainingDefinitionCreate, TrainingDefinition.class));
 	}
 
 	@Test

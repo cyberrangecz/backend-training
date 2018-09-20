@@ -1,4 +1,4 @@
-package cz.muni.ics.kypo.training.api.dto;
+package cz.muni.ics.kypo.training.api.dto.infolevel;
 
 import cz.muni.ics.kypo.training.api.enums.LevelType;
 

@@ -1,8 +1,6 @@
-package cz.muni.ics.kypo.training.api.dto;
+package cz.muni.ics.kypo.training.api.dto.infolevel;
 
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
-
+import cz.muni.ics.kypo.training.api.dto.AbstractLevelDTO;
 import io.swagger.annotations.ApiModel;
 
 /**
@@ -10,10 +8,9 @@ import io.swagger.annotations.ApiModel;
  * @author Pavel Šeda (441048)
  *
  */
-@ApiModel(value = "InfoLevelDTO", description = ".")
+@ApiModel(value = "InfoLevelDTO", description = "Info Level.")
 public class InfoLevelDTO extends AbstractLevelDTO {
 
-	@NotEmpty(message = "Level content cannot be empty")
 	private String content;
 
 	public InfoLevelDTO() {}
