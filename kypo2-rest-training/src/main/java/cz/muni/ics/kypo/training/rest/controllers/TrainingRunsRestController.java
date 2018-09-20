@@ -142,7 +142,7 @@ public class TrainingRunsRestController {
     @ApiResponses(value = {
             @ApiResponse(code = 404, message = "The requested resource was not found.")
     })
-    @GetMapping(value = "/access", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/accesses", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<AccessTrainingRunDTO> accessTrainingRun(@ApiParam(value = "password", required = true) @RequestParam(value = "password", required = false) String password) {
         LOG.debug("accessTrainingRun({})", password);
         try {
@@ -203,7 +203,7 @@ public class TrainingRunsRestController {
     @ApiResponses(value = {
             @ApiResponse(code = 404, message = "The requested resource was not found.")
     })
-    @GetMapping(value = "/{id}/get-next-level", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/{id}/next-levels", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> getNextLevel(@ApiParam(name = "Training Run ID") @PathVariable Long id,
                                                       @ApiParam(value = "Fields which should be returned in REST API response", required = false)
                                                       @RequestParam(value = "fields", required = false) String fields) {
@@ -235,7 +235,7 @@ public class TrainingRunsRestController {
     @ApiResponses(value = {
             @ApiResponse(code = 404, message = "The requested resource was not found.")
     })
-    @GetMapping(value = "/{id}/get-solution", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/{id}/solutions", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> getSolution(@ApiParam(name = "Training Run ID") @PathVariable Long id){
                 LOG.debug("getSolution({})", id);
         try {
@@ -264,7 +264,7 @@ public class TrainingRunsRestController {
     @ApiResponses(value = {
             @ApiResponse(code = 404, message = "The requested resource was not found.")
     })
-    @GetMapping(value = "/{id}/get-hint/{hintId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/{id}/hints/{hintId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> getHint(@ApiParam(name = "Training Run ID") @PathVariable Long id,
                                           @ApiParam(name = "Hint ID") @PathVariable Long hintId,
                                           @ApiParam(value = "Fields which should be returned in REST API response", required = false)
@@ -297,7 +297,7 @@ public class TrainingRunsRestController {
     @ApiResponses(value = {
             @ApiResponse(code = 404, message = "The requested resource was not found.")
     })
-    @GetMapping(value = "/{id}/is-correct", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/{id}/is-correct-flag", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> isCorrectFlag(@ApiParam(name = "Training Run ID") @PathVariable Long id,
                                                       @ApiParam(value = "Submitted flag") @RequestParam(value = "flag") String flag,
     @ApiParam(value = "Solution taken") @RequestParam(value = "solutionTaken") boolean solutionTaken) {
