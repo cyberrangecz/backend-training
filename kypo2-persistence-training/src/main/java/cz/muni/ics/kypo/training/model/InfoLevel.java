@@ -1,5 +1,7 @@
 package cz.muni.ics.kypo.training.model;
 
+import org.hibernate.annotations.Type;
+
 import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Objects;
@@ -15,6 +17,7 @@ import java.util.Objects;
 public class InfoLevel extends AbstractLevel implements Serializable {
 
   @Lob
+  @Type(type = "org.hibernate.type.TextType")
   @Column(name = "content", nullable = false) // maybe should be unique?
   private String content;
 
