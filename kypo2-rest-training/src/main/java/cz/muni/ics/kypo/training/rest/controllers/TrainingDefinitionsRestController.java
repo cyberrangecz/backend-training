@@ -1,5 +1,6 @@
 package cz.muni.ics.kypo.training.rest.controllers;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.bohnman.squiggly.Squiggly;
 import com.github.bohnman.squiggly.util.SquigglyUtils;
@@ -25,6 +26,8 @@ import cz.muni.ics.kypo.training.rest.exceptions.ResourceNotCreatedException;
 import cz.muni.ics.kypo.training.rest.exceptions.ResourceNotFoundException;
 import cz.muni.ics.kypo.training.rest.exceptions.ResourceNotModifiedException;
 import io.swagger.annotations.*;
+
+import org.jsondoc.core.annotation.ApiObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,6 +40,8 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 import javax.validation.Valid;
 
@@ -94,6 +99,17 @@ public class TrainingDefinitionsRestController {
     }
   }
 
+  @ApiObject(name = "Result info (Page)",
+  		description = "Content (Retrieved data) and meta information about REST API result page. Including page number, number of elements in page, size of elements, total number of elements and total number of pages")
+	private static class TrainingDefinitionRestResource extends PageResultResource<TrainingDefinitionDTO>{
+	 	 @JsonProperty(required = true)
+	 	 @ApiModelProperty(value = "Retrieved Training Definitions from databases.")
+	 	 private List<TrainingDefinitionDTO> content;
+	 	 @JsonProperty(required = true)
+		 @ApiModelProperty(value = "Pagination including: page number, number of elements in page, size, total elements and total pages.")
+		 private Pagination pagination;
+	}
+  
 	/**
 	 * Get all Training Definitions.
 	 * 
@@ -101,8 +117,7 @@ public class TrainingDefinitionsRestController {
 	 */
   @ApiOperation(httpMethod = "GET",
       value = "Get all Training Definitions.",
-      response = TrainingDefinitionDTO.class,
-      responseContainer = "Page",
+      response = TrainingDefinitionRestResource.class,
       nickname = "findAllTrainingDefinitions",
       produces = "application/json"
   )
@@ -124,11 +139,10 @@ public class TrainingDefinitionsRestController {
       throw new ResourceNotFoundException(ex.getLocalizedMessage());
     }
   }
-
+  
   @ApiOperation( httpMethod = "GET",
           value = "Get all training definition by sandbox definition id",
-          response = TrainingDefinitionDTO.class,
-          responseContainer = "Page",
+          response = TrainingDefinitionRestResource.class,
           nickname = "findAllTrainingDefinitionsBySandboxDefinitionId",
           produces = "application/json"
   )
