@@ -69,7 +69,6 @@ public class AssessmentLevelFacadeTest {
 		al2.setNextLevel(3L);
 		al2.setAssessmentType(AssessmentType.TEST);
 		al2.setTitle("Test2");
-
 	}
 
 	@Test

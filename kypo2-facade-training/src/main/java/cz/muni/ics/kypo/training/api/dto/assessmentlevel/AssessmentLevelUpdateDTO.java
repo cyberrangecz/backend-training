@@ -16,13 +16,14 @@ import io.swagger.annotations.ApiModel;
 @ApiModel(value = "AssessmentLevelUpdateDTO", description = "Assessment Level to update.")
 public class AssessmentLevelUpdateDTO {
 
+	@NotNull(message = "{assessmentlevelupdate.id.NotNull.message}")
 	protected Long id;
-	@NotEmpty(message = "Level title cannot be empty")
-	protected String title;
-	@NotNull
-	@Min(value = 0, message = "Max score cannot be lower than 0")
-	@Max(value = 100, message = "Max score cannot be greater than 100")
-	protected Integer maxScore;
+	@NotEmpty(message = "{assessmentlevelupdate.title.NotEmpty.message}")
+	private String title;
+	@NotNull(message = "{assessmentlevelupdate.maxScore.NotNull.message}")
+	@Min(value = 0, message = "{assessmentlevelupdate.maxScore.Min.message}")
+	@Max(value = 100, message = "{assessmentlevelupdate.maxScore.Max.message}")
+	private Integer maxScore;
 	protected Long nextLevel;
 	private String questions;
 	private String instructions;

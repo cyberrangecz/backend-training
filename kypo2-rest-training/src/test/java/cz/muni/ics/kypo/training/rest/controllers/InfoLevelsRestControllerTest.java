@@ -56,103 +56,98 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ComponentScan(basePackages = "cz.muni.ics.kypo")
 public class InfoLevelsRestControllerTest {
 
-    @Autowired
-    private InfoLevelsRestController infoLevelsRestController;
+	@Autowired
+	private InfoLevelsRestController infoLevelsRestController;
 
-    @MockBean
-    private InfoLevelFacade infoLevelFacade;
+	@MockBean
+	private InfoLevelFacade infoLevelFacade;
 
-    private MockMvc mockMvc;
+	private MockMvc mockMvc;
 
-    @MockBean
-    @Qualifier("objMapperRESTApi")
-    private ObjectMapper objectMapper;
+	@MockBean
+	@Qualifier("objMapperRESTApi")
+	private ObjectMapper objectMapper;
 
-    @MockBean
-    private BeanMapping beanMapping;
+	@MockBean
+	private BeanMapping beanMapping;
 
-    private InfoLevel infoLevel1, infoLevel2;
+	private InfoLevel infoLevel1, infoLevel2;
 
-    private InfoLevelDTO infoLevel1DTO, infoLevel2DTO;
+	private InfoLevelDTO infoLevel1DTO, infoLevel2DTO;
 
-    private Page p;
+	private Page p;
 
-    private PageResultResource<InfoLevelDTO> infoLevelDTOPageResultResource;
+	private PageResultResource<InfoLevelDTO> infoLevelDTOPageResultResource;
 
-    @Before
-    public void init() {
-        MockitoAnnotations.initMocks(this);
-        this.mockMvc = MockMvcBuilders.standaloneSetup(infoLevelsRestController)
-                .setCustomArgumentResolvers(new PageableHandlerMethodArgumentResolver(),
-                        new QuerydslPredicateArgumentResolver(new QuerydslBindingsFactory(SimpleEntityPathResolver.INSTANCE), Optional.empty()))
-                .setMessageConverters(new MappingJackson2HttpMessageConverter()).build();
+	@Before
+	public void init() {
+		MockitoAnnotations.initMocks(this);
+		this.mockMvc = MockMvcBuilders.standaloneSetup(infoLevelsRestController)
+				.setCustomArgumentResolvers(new PageableHandlerMethodArgumentResolver(),
+						new QuerydslPredicateArgumentResolver(new QuerydslBindingsFactory(SimpleEntityPathResolver.INSTANCE), Optional.empty()))
+				.setMessageConverters(new MappingJackson2HttpMessageConverter()).build();
 
-        infoLevel1 = new InfoLevel();
-        infoLevel1.setId(1L);
-        infoLevel1.setTitle("test1");
+		infoLevel1 = new InfoLevel();
+		infoLevel1.setId(1L);
+		infoLevel1.setTitle("test1");
 
-        infoLevel2 = new InfoLevel();
-        infoLevel2.setId(2L);
-        infoLevel2.setTitle("test2");
+		infoLevel2 = new InfoLevel();
+		infoLevel2.setId(2L);
+		infoLevel2.setTitle("test2");
 
-        infoLevel1DTO = new InfoLevelDTO();
-        infoLevel1DTO.setId(1L);
-        infoLevel1DTO.setTitle("test1");
+		infoLevel1DTO = new InfoLevelDTO();
+		infoLevel1DTO.setId(1L);
+		infoLevel1DTO.setTitle("test1");
 
-        infoLevel2DTO = new InfoLevelDTO();
-        infoLevel2DTO.setId(2L);
-        infoLevel2DTO.setTitle("test2");
+		infoLevel2DTO = new InfoLevelDTO();
+		infoLevel2DTO.setId(2L);
+		infoLevel2DTO.setTitle("test2");
 
-        List<InfoLevel> expected = new ArrayList<>();
-        expected.add(infoLevel1);
-        expected.add(infoLevel2);
+		List<InfoLevel> expected = new ArrayList<>();
+		expected.add(infoLevel1);
+		expected.add(infoLevel2);
 
-        p = new PageImpl<InfoLevel>(expected);
+		p = new PageImpl<InfoLevel>(expected);
 
-        ObjectMapper obj = new ObjectMapper();
-        obj.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
-        given(objectMapper.getSerializationConfig()).willReturn(obj.getSerializationConfig());
+		ObjectMapper obj = new ObjectMapper();
+		obj.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
+		given(objectMapper.getSerializationConfig()).willReturn(obj.getSerializationConfig());
 
-        BeanMapping bM = new BeanMappingImpl(new ModelMapper());
-        infoLevelDTOPageResultResource = bM.mapToPageResultDTO(p, InfoLevelDTO.class);
-    }
+		BeanMapping bM = new BeanMappingImpl(new ModelMapper());
+		infoLevelDTOPageResultResource = bM.mapToPageResultDTO(p, InfoLevelDTO.class);
+	}
 
-    @Test
-    public void findInfoLevelById() throws Exception {
-        given(infoLevelFacade.findById(any(Long.class))).willReturn(infoLevel1DTO);
-        String valueIl = convertObjectToJsonBytes(infoLevel1DTO);
-        given(objectMapper.writeValueAsString(any(Object.class))).willReturn(valueIl);
-        MockHttpServletResponse result = mockMvc.perform(get("/info-levels" + "/{id}", 1l))
-                .andExpect(status().isOk())
-                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-                .andReturn().getResponse();
-        assertEquals(convertObjectToJsonBytes(convertObjectToJsonBytes(infoLevel1DTO)), result.getContentAsString());
-    }
+	@Test
+	public void findInfoLevelById() throws Exception {
+		given(infoLevelFacade.findById(any(Long.class))).willReturn(infoLevel1DTO);
+		String valueIl = convertObjectToJsonBytes(infoLevel1DTO);
+		given(objectMapper.writeValueAsString(any(Object.class))).willReturn(valueIl);
+		MockHttpServletResponse result = mockMvc.perform(get("/info-levels" + "/{id}", 1l)).andExpect(status().isOk())
+				.andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON)).andReturn().getResponse();
+		assertEquals(convertObjectToJsonBytes(convertObjectToJsonBytes(infoLevel1DTO)), result.getContentAsString());
+	}
 
-    @Test
-    public void findInfoLevelByIdWithFacadeException() throws Exception {
-        willThrow(FacadeLayerException.class).given(infoLevelFacade).findById(any(Long.class));
-        Exception exception = mockMvc.perform(get("/info-levels" + "/{id}", 6l))
-                .andExpect(status().isNotFound())
-                .andReturn().getResolvedException();
-        assertEquals(ResourceNotFoundException.class, exception.getClass());
-    }
+	@Test
+	public void findInfoLevelByIdWithFacadeException() throws Exception {
+		willThrow(FacadeLayerException.class).given(infoLevelFacade).findById(any(Long.class));
+		Exception exception =
+				mockMvc.perform(get("/info-levels" + "/{id}", 6l)).andExpect(status().isNotFound()).andReturn().getResolvedException();
+		assertEquals(ResourceNotFoundException.class, exception.getClass());
+	}
 
-    @Test
-    public void findAllInfoLevels() throws Exception {
-        String valueIl = convertObjectToJsonBytes(infoLevelDTOPageResultResource);
-        given(objectMapper.writeValueAsString(any(Object.class))).willReturn(valueIl);
-        given(infoLevelFacade.findAll(any(Predicate.class),any(Pageable.class))).willReturn(infoLevelDTOPageResultResource);
+	@Test
+	public void findAllInfoLevels() throws Exception {
+		String valueIl = convertObjectToJsonBytes(infoLevelDTOPageResultResource);
+		given(objectMapper.writeValueAsString(any(Object.class))).willReturn(valueIl);
+		given(infoLevelFacade.findAll(any(Predicate.class), any(Pageable.class))).willReturn(infoLevelDTOPageResultResource);
 
-        MockHttpServletResponse result = mockMvc.perform(get("/info-levels"))
-                .andExpect(status().isOk())
-                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-                .andReturn().getResponse();
-        assertEquals(convertObjectToJsonBytes(convertObjectToJsonBytes(infoLevelDTOPageResultResource)), result.getContentAsString());
-    }
+		MockHttpServletResponse result = mockMvc.perform(get("/info-levels")).andExpect(status().isOk())
+				.andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON)).andReturn().getResponse();
+		assertEquals(convertObjectToJsonBytes(convertObjectToJsonBytes(infoLevelDTOPageResultResource)), result.getContentAsString());
+	}
 
-    private static String convertObjectToJsonBytes(Object object) throws IOException {
-        ObjectMapper mapper = new ObjectMapper();
-        return mapper.writeValueAsString(object);
-    }
+	private static String convertObjectToJsonBytes(Object object) throws IOException {
+		ObjectMapper mapper = new ObjectMapper();
+		return mapper.writeValueAsString(object);
+	}
 }

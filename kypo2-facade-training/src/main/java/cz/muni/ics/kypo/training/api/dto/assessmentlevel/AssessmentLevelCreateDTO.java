@@ -21,13 +21,13 @@ import io.swagger.annotations.ApiModel;
 @ApiModel(value = "AssessmentLevelCreateDTO", description = "Assessment Level to create.")
 public class AssessmentLevelCreateDTO {
 
-	@NotEmpty(message = "Level title cannot be empty")
-	protected String title;
-	@NotNull
-	@Min(value = 0, message = "Max score cannot be lower than 0")
-	@Max(value = 100, message = "Max score cannot be greater than 100")
-	protected Integer maxScore;
-	protected Long nextLevel;
+	@NotEmpty(message = "{assessmentlevelcreate.title.NotEmpty.message}")
+	private String title;
+	@NotNull(message = "{assessmentlevelcreate.maxScore.NotNull.message}")
+	@Min(value = 0, message = "{assessmentlevelcreate.maxScore.Min.message}")
+	@Max(value = 100, message = "{assessmentlevelcreate.maxScore.Max.message}")
+	private Integer maxScore;
+	private Long nextLevel;
 	private String questions;
 	private String instructions;
 	private AssessmentType type;

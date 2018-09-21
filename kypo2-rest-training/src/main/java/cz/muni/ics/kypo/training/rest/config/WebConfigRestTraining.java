@@ -56,7 +56,7 @@ import cz.muni.ics.kypo.training.config.FacadeConfiguration;
  */
 @SpringBootApplication
 @EnableSpringDataWebSupport
-@Import({FacadeConfiguration.class})
+@Import({FacadeConfiguration.class, ValidationMessagesConfig.class})
 public class WebConfigRestTraining extends SpringBootServletInitializer {
 
 	private static final Logger LOG = LoggerFactory.getLogger(WebConfigRestTraining.class);

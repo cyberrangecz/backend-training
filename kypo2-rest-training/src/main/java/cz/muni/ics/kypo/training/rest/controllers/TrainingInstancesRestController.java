@@ -3,7 +3,9 @@ package cz.muni.ics.kypo.training.rest.controllers;
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceCreateDTO;
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceUpdateDTO;
 import cz.muni.ics.kypo.training.exceptions.*;
-import cz.muni.ics.kypo.training.mapping.BeanMapping;
+
+import javax.validation.Valid;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,7 +48,6 @@ import io.swagger.annotations.ApiResponses;
 @Api(value = "/training-instances", 
   consumes = "application/json"
 )
-//@formatter:on
 @RestController
 @RequestMapping(value = "/training-instances")
 public class TrainingInstancesRestController {
@@ -55,14 +56,12 @@ public class TrainingInstancesRestController {
 
 	private TrainingInstanceFacade trainingInstanceFacade;
 	private ObjectMapper objectMapper;
-	private BeanMapping dtoMapper;
 
 	@Autowired
 	public TrainingInstancesRestController(TrainingInstanceFacade trainingInstanceFacade,
-			@Qualifier("objMapperRESTApi") ObjectMapper objectMapper, BeanMapping dtoMapper) {
+			@Qualifier("objMapperRESTApi") ObjectMapper objectMapper) {
 		this.trainingInstanceFacade = trainingInstanceFacade;
 		this.objectMapper = objectMapper;
-		this.dtoMapper = dtoMapper;
 	}
 
 	/**
@@ -71,7 +70,6 @@ public class TrainingInstancesRestController {
 	 * @param id of Training Instance to return.
 	 * @return Requested Training Instance by id.
 	 */
-	//@formatter:off
   @ApiOperation(httpMethod = "GET", 
       value = "Get Training Instance by Id.", 
       response = TrainingDefinitionDTO.class,
@@ -94,14 +92,12 @@ public class TrainingInstancesRestController {
       throw new ResourceNotFoundException(ex.getLocalizedMessage());
     }
   }
-  //@formatter:on
 
 	/**
 	 * Get all Training Instances.
 	 * 
 	 * @return all Training Instances.
 	 */
-	//@formatter:off
   @ApiOperation(httpMethod = "GET",
       value = "Get all Training Instances.",
       response = InfoLevelDTO.class,
@@ -126,35 +122,48 @@ public class TrainingInstancesRestController {
       throw new ResourceNotFoundException(ex.getLocalizedMessage());
     }
   }
-  //@formatter:on
 
-	@ApiOperation(httpMethod = "POST", value = "Create Training Instance", response = TrainingInstanceCreateDTO.class,
-		nickname = "createTrainingInstance", produces = "application/json", consumes = "application/json")
-	@ApiResponses(value = {@ApiResponse(code = 400, message = "The requested resource was not created")})
+	@ApiOperation(httpMethod = "POST",
+			value = "Create Training Instance",
+			response = TrainingInstanceCreateDTO.class,
+			nickname = "createTrainingInstance",
+			produces = "application/json",
+			consumes = "application/json")
+	@ApiResponses(
+			value = {
+					@ApiResponse(code = 400,
+							message = "The requested resource was not created")		
+			}
+	)
 	@PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<Object> createTrainingInstance(
-			@ApiParam(name = "Training instance to be created") @RequestBody TrainingInstanceCreateDTO trainingInstanceCreateDTO,
-			@ApiParam(value = "Fields which should be returned in REST API response", required = false) @RequestParam(value = "fields",
-				required = false) String fields) {
+			@ApiParam(name = "Training instance to be created") 
+			@RequestBody @Valid TrainingInstanceCreateDTO trainingInstanceCreateDTO,
+			@ApiParam(value = "Fields which should be returned in REST API response", required = false) 
+			@RequestParam(value = "fields",	required = false) String fields) {
 		try {
-			System.out.println("NIeEE");
-			TrainingInstanceCreateDTO newTrainingInstance= trainingInstanceFacade.create(trainingInstanceCreateDTO);
-			System.out.println("NOT CHYBA");
+			TrainingInstanceCreateDTO newTrainingInstance = trainingInstanceFacade.create(trainingInstanceCreateDTO);
 			Squiggly.init(objectMapper, fields);
 			return new ResponseEntity<>(SquigglyUtils.stringify(objectMapper, newTrainingInstance), HttpStatus.OK);
 		} catch (FacadeLayerException ex) {
-			System.out.println("CHYBA");
 			throw new ResourceNotCreatedException(ex.getLocalizedMessage());
 		}
 	}
 
-	@ApiOperation(httpMethod = "PUT", value = "Update Training Instance", response = TrainingInstanceUpdateDTO.class,
-		nickname = "updateTrainingInstance", consumes = "application/json")
-	@ApiResponses(value = {@ApiResponse(code = 404, message = "The requested resource was not found"),
-			@ApiResponse(code = 409, message = "The requested resource was not deleted because of its finish time")})
+	@ApiOperation(httpMethod = "PUT", 
+			value = "Update Training Instance", 
+			response = TrainingInstanceUpdateDTO.class,
+			nickname = "updateTrainingInstance",
+			consumes = "application/json")
+	@ApiResponses(value = {
+			@ApiResponse(code = 404, message = "The requested resource was not found"),
+			@ApiResponse(code = 409, message = "The requested resource was not deleted because of its finish time")
+			}
+	)
 	@PutMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<Void> updateTrainingInstance(
-			@ApiParam(name = "Training instance to be updated") @RequestBody TrainingInstanceUpdateDTO trainingInstanceUpdateDTO) {
+			@ApiParam(name = "Training instance to be updated")
+			@RequestBody TrainingInstanceUpdateDTO trainingInstanceUpdateDTO) {
 		try {
 			trainingInstanceFacade.update(trainingInstanceUpdateDTO);
 			return new ResponseEntity<>(HttpStatus.NO_CONTENT);
@@ -165,13 +174,21 @@ public class TrainingInstancesRestController {
 		}
 	}
 
-	@ApiOperation(httpMethod = "DELETE", value = "Delete TrainingInstance", response = TrainingInstanceDTO.class,
-		nickname = "deleteTrainingInstance", produces = "application/json", consumes = "application/json")
-	@ApiResponses(value = {@ApiResponse(code = 404, message = "The requested resource was not found"),
-			@ApiResponse(code = 409, message = "The requested resource was not deleted because of its finish time")})
+	@ApiOperation(httpMethod = "DELETE",
+			value = "Delete TrainingInstance", 
+			response = TrainingInstanceDTO.class,
+			nickname = "deleteTrainingInstance",
+			produces = "application/json", 
+			consumes = "application/json")
+	@ApiResponses(value = {
+			@ApiResponse(code = 404, message = "The requested resource was not found"),
+			@ApiResponse(code = 409, message = "The requested resource was not deleted because of its finish time")
+			}
+	)
 	@DeleteMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<Void> deleteTrainingInstance(
-			@ApiParam(name = "Id of training instance to be deleted") @RequestParam("trainingInstanceId") long id) {
+			@ApiParam(name = "Id of training instance to be deleted") 
+			@RequestParam("trainingInstanceId") long id) {
 		try {
 			trainingInstanceFacade.delete(id);
 			return new ResponseEntity<>(HttpStatus.OK);
@@ -183,8 +200,14 @@ public class TrainingInstancesRestController {
 
 	}
 
-	@ApiOperation(httpMethod = "POST", value = "Generate password", response = char[].class, nickname = "generatePassword")
-	@ApiResponses(value = {@ApiResponse(code = 500, message = "Generated password already exists")})
+	@ApiOperation(httpMethod = "POST", 
+			value = "Generate password", 
+			response = char[].class, 
+			nickname = "generatePassword")
+	@ApiResponses(value = {
+			@ApiResponse(code = 500, message = "Generated password already exists")
+			}
+	)
 	@PostMapping(value = "/passwords")
 	public ResponseEntity<char[]> generatePassword() {
 		try {
