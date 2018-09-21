@@ -16,8 +16,6 @@ import io.swagger.annotations.ApiModel;
 @ApiModel(value = "TrainingDefinitionCreateDTO", description = "Training Definition to create.")
 public class TrainingDefinitionCreateDTO {
 
-	@NotNull(message = "")
-	private Long id;
 	@NotEmpty(message = "")
 	private String title;
 	private String description;
@@ -29,14 +27,6 @@ public class TrainingDefinitionCreateDTO {
 	private Long startingLevel;
 
 	public TrainingDefinitionCreateDTO() {}
-
-	public Long getId() {
-		return id;
-	}
-
-	public void setId(Long id) {
-		this.id = id;
-	}
 
 	public String getTitle() {
 		return title;
@@ -90,7 +80,6 @@ public class TrainingDefinitionCreateDTO {
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
 		builder.append("TrainingDefinitionUpdateDTO [id=");
-		builder.append(id);
 		builder.append(", title=");
 		builder.append(title);
 		builder.append(", description=");

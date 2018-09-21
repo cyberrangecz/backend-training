@@ -1,13 +1,12 @@
 package cz.muni.ics.kypo.training.api.dto.gamelevel;
 
-import java.util.Arrays;
+import io.swagger.annotations.ApiModel;
 
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
-
-import io.swagger.annotations.ApiModel;
+import java.util.Arrays;
 
 /**
  * 
@@ -28,8 +27,7 @@ public class GameLevelUpdateDTO {
 	private String flag;
 	private String content;
 	private String solution;
-	private int incorrectFlagPenalty;
-	private int solutionPenalty = maxScore - 1;
+	private boolean solutionPenalized;
 	private int estimatedDuration;
 	private String[] attachments;
 	private int incorrectFlagLimit;
@@ -68,20 +66,12 @@ public class GameLevelUpdateDTO {
 		this.solution = solution;
 	}
 
-	public int getIncorrectFlagPenalty() {
-		return incorrectFlagPenalty;
+	public boolean isSolutionPenalized() {
+			return solutionPenalized;
 	}
 
-	public void setIncorrectFlagPenalty(int incorrectFlagPenalty) {
-		this.incorrectFlagPenalty = incorrectFlagPenalty;
-	}
-
-	public int getSolutionPenalty() {
-		return solutionPenalty;
-	}
-
-	public void setSolutionPenalty(int solutionPenalty) {
-		this.solutionPenalty = solutionPenalty;
+	public void setSolutionPenalized(boolean solutionPenalized) {
+			this.solutionPenalized = solutionPenalized;
 	}
 
 	public int getEstimatedDuration() {
@@ -108,14 +98,6 @@ public class GameLevelUpdateDTO {
 		this.title = title;
 	}
 
-	public int getMaxScore() {
-		return maxScore;
-	}
-
-	public void setMaxScore(int maxScore) {
-		this.maxScore = maxScore;
-	}
-
 	public Long getNextLevel() {
 		return nextLevel;
 	}
@@ -130,6 +112,14 @@ public class GameLevelUpdateDTO {
 
 	public void setIncorrectFlagLimit(int incorrectFlagLimit) {
 		this.incorrectFlagLimit = incorrectFlagLimit;
+	}
+
+	public Integer getMaxScore() {
+		return maxScore;
+	}
+
+	public void setMaxScore(Integer maxScore) {
+		this.maxScore = maxScore;
 	}
 
 	@Override
@@ -149,10 +139,8 @@ public class GameLevelUpdateDTO {
 		builder.append(content);
 		builder.append(", solution=");
 		builder.append(solution);
-		builder.append(", incorrectFlagPenalty=");
-		builder.append(incorrectFlagPenalty);
-		builder.append(", solutionPenalty=");
-		builder.append(solutionPenalty);
+		builder.append(", solutionPenalized=");
+		builder.append(solutionPenalized);
 		builder.append(", estimatedDuration=");
 		builder.append(estimatedDuration);
 		builder.append(", attachments=");

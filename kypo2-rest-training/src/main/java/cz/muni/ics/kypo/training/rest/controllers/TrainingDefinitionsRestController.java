@@ -1,13 +1,31 @@
 package cz.muni.ics.kypo.training.rest.controllers;
 
-import cz.muni.ics.kypo.training.api.dto.*;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.bohnman.squiggly.Squiggly;
+import com.github.bohnman.squiggly.util.SquigglyUtils;
+import com.querydsl.core.types.Predicate;
+import cz.muni.ics.kypo.training.api.PageResultResource;
+import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelCreateDTO;
+import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelUpdateDTO;
+import cz.muni.ics.kypo.training.api.dto.gamelevel.GameLevelCreateDTO;
+import cz.muni.ics.kypo.training.api.dto.gamelevel.GameLevelUpdateDTO;
+import cz.muni.ics.kypo.training.api.dto.infolevel.InfoLevelCreateDTO;
+import cz.muni.ics.kypo.training.api.dto.infolevel.InfoLevelUpdateDTO;
+import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionCreateDTO;
+import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionDTO;
+import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionUpdateDTO;
+import cz.muni.ics.kypo.training.exception.FacadeLayerException;
 import cz.muni.ics.kypo.training.exceptions.CannotBeClonedException;
 import cz.muni.ics.kypo.training.exceptions.CannotBeDeletedException;
 import cz.muni.ics.kypo.training.exceptions.CannotBeUpdatedException;
+import cz.muni.ics.kypo.training.facade.TrainingDefinitionFacade;
 import cz.muni.ics.kypo.training.mapping.BeanMapping;
-import cz.muni.ics.kypo.training.model.AssessmentLevel;
-import cz.muni.ics.kypo.training.model.GameLevel;
-import cz.muni.ics.kypo.training.model.InfoLevel;
+import cz.muni.ics.kypo.training.model.TrainingDefinition;
+import cz.muni.ics.kypo.training.rest.exceptions.ConflictException;
+import cz.muni.ics.kypo.training.rest.exceptions.ResourceNotCreatedException;
+import cz.muni.ics.kypo.training.rest.exceptions.ResourceNotFoundException;
+import cz.muni.ics.kypo.training.rest.exceptions.ResourceNotModifiedException;
+import io.swagger.annotations.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,27 +38,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.bohnman.squiggly.Squiggly;
-import com.github.bohnman.squiggly.util.SquigglyUtils;
-import com.querydsl.core.types.Predicate;
-
-import cz.muni.ics.kypo.training.api.PageResultResource;
-import cz.muni.ics.kypo.training.api.dto.InfoLevelDTO;
-import cz.muni.ics.kypo.training.api.dto.TrainingDefinitionDTO;
-import cz.muni.ics.kypo.training.exception.FacadeLayerException;
-import cz.muni.ics.kypo.training.facade.TrainingDefinitionFacade;
-import cz.muni.ics.kypo.training.model.TrainingDefinition;
-import cz.muni.ics.kypo.training.rest.exceptions.ConflictException;
-import cz.muni.ics.kypo.training.rest.exceptions.ResourceNotCreatedException;
-import cz.muni.ics.kypo.training.rest.exceptions.ResourceNotFoundException;
-import cz.muni.ics.kypo.training.rest.exceptions.ResourceNotModifiedException;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
 
 import javax.validation.Valid;
 
@@ -166,11 +163,10 @@ public class TrainingDefinitionsRestController {
           @ApiResponse(code = 400, message = "The requested resource was not created")
   })
   @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<TrainingDefinitionDTO> createTrainingDefinition(@ApiParam(name = "Training Definition to be created") @RequestBody @Valid TrainingDefinitionDTO trainingDefinitionDTO) {
+  public ResponseEntity<TrainingDefinitionCreateDTO> createTrainingDefinition(@ApiParam(name = "Training Definition to be created") @RequestBody @Valid TrainingDefinitionCreateDTO trainingDefinitionCreateDTO) {
     try {
-      TrainingDefinition trainingDefinition = dtoMapper.mapTo(trainingDefinitionDTO, TrainingDefinition.class);
-      TrainingDefinitionDTO newTrainingDefinitionDTO = trainingDefinitionFacade.create(trainingDefinition);
-      return new ResponseEntity<>(newTrainingDefinitionDTO, HttpStatus.OK);
+      TrainingDefinitionCreateDTO trainingDefinitionDTO = trainingDefinitionFacade.create(trainingDefinitionCreateDTO);
+      return new ResponseEntity<>(trainingDefinitionDTO, HttpStatus.OK);
     } catch (FacadeLayerException ex) {
       throw new ResourceNotCreatedException(ex.getLocalizedMessage());
     }
@@ -188,10 +184,10 @@ public class TrainingDefinitionsRestController {
           @ApiResponse(code = 409, message = "The requested resource was not modified because of its status")
   })
   @PutMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<Void> updateTrainingDefinition(@ApiParam(value = "Training definition to be updated") @RequestBody @Valid TrainingDefinitionDTO trainingDefinitionDTO){
+  public ResponseEntity<Void> updateTrainingDefinition(@ApiParam(value = "Training definition to be updated") @RequestBody @Valid TrainingDefinitionUpdateDTO trainingDefinitionUpdateDTO){
     try {
-      TrainingDefinition trainingDefinition = dtoMapper.mapTo(trainingDefinitionDTO, TrainingDefinition.class);
-      trainingDefinitionFacade.update(trainingDefinition);
+			System.out.println("DOMINO ");
+      trainingDefinitionFacade.update(trainingDefinitionUpdateDTO);
       return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     } catch (FacadeLayerException ex) {
       throw new ResourceNotModifiedException(ex.getLocalizedMessage());
@@ -288,10 +284,9 @@ public class TrainingDefinitionsRestController {
 			@ApiResponse(code = 404, message = "The requested resource was not found")})
 	@PutMapping(value = "/{definitionId}/game-levels", consumes = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<Void> updateGameLevel(@ApiParam(value = "Id of definition") @PathVariable(value = "definitionId") Long definitionId,
-			@ApiParam(value = "Game level to be updated") @RequestBody @Valid GameLevelDTO gameLevelDTO) {
+			@ApiParam(value = "Game level to be updated") @RequestBody @Valid GameLevelUpdateDTO gameLevelUpdateDTO) {
 		try {
-			GameLevel level = dtoMapper.mapTo(gameLevelDTO, GameLevel.class);
-			trainingDefinitionFacade.updateGameLevel(definitionId, level);
+			trainingDefinitionFacade.updateGameLevel(definitionId, gameLevelUpdateDTO);
 			return new ResponseEntity<>(HttpStatus.NO_CONTENT);
 		} catch (FacadeLayerException ex) {
 			throw new ResourceNotFoundException(ex.getLocalizedMessage());
@@ -306,10 +301,9 @@ public class TrainingDefinitionsRestController {
 			@ApiResponse(code = 404, message = "The requested resource was not found")})
 	@PutMapping(value = "/{definitionId}/info-levels", consumes = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<Void> updateInfoLevel(@ApiParam(value = "Id of definition") @PathVariable(value = "definitionId") Long definitionId,
-			@ApiParam(value = "Info level to be updated") @RequestBody @Valid InfoLevelDTO infoLevelDTO) {
+			@ApiParam(value = "Info level to be updated") @RequestBody @Valid InfoLevelUpdateDTO infoLevelUpdateDTO) {
 		try {
-			InfoLevel infoLevel = dtoMapper.mapTo(infoLevelDTO, InfoLevel.class);
-			trainingDefinitionFacade.updateInfoLevel(definitionId, infoLevel);
+			trainingDefinitionFacade.updateInfoLevel(definitionId, infoLevelUpdateDTO);
 			return new ResponseEntity<>(HttpStatus.NO_CONTENT);
 		} catch (FacadeLayerException ex) {
 			throw new ResourceNotFoundException(ex.getLocalizedMessage());
@@ -325,10 +319,9 @@ public class TrainingDefinitionsRestController {
 	@PutMapping(value = "/{definitionId}/assessment-levels", consumes = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<Void> updateAssessmentLevel(
 			@ApiParam(value = "Id of definition") @PathVariable(value = "definitionId") Long definitionId,
-			@ApiParam(value = "Assessment level to be updated") @RequestBody @Valid AssessmentLevelDTO assessmentLevelDTO) {
+			@ApiParam(value = "Assessment level to be updated") @RequestBody @Valid AssessmentLevelUpdateDTO assessmentLevelUpdateDTO) {
 		try {
-			AssessmentLevel assessmentLevel = dtoMapper.mapTo(assessmentLevelDTO, AssessmentLevel.class);
-			trainingDefinitionFacade.updateAssessmentLevel(definitionId, assessmentLevel);
+			trainingDefinitionFacade.updateAssessmentLevel(definitionId, assessmentLevelUpdateDTO);
 			return new ResponseEntity<>(HttpStatus.NO_CONTENT);
 		} catch (FacadeLayerException ex) {
 			throw new ResourceNotFoundException(ex.getLocalizedMessage());
@@ -337,51 +330,48 @@ public class TrainingDefinitionsRestController {
 		}
 	}
 
-	@ApiOperation(httpMethod = "POST", value = "Create Game Level", response = GameLevelDTO.class, nickname = "createGameLevel",
+	@ApiOperation(httpMethod = "POST", value = "Create Game Level", response = GameLevelCreateDTO.class, nickname = "createGameLevel",
 		produces = "application/json", consumes = "application/json")
 	@ApiResponses(value = {@ApiResponse(code = 404, message = "The requested resource was not found"),
 			@ApiResponse(code = 409, message = "The requested resource was not created")})
 	@PostMapping(value = "/{definitionId}/game-levels", consumes = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<GameLevelDTO> createGameLevel(
+	public ResponseEntity<GameLevelCreateDTO> createGameLevel(
 			@ApiParam(value = "Id of definition") @PathVariable(value = "definitionId") Long definitionId,
-			@ApiParam(value = "Game level to be created") @RequestBody @Valid GameLevelDTO gameLevelDTO) {
+			@ApiParam(value = "Game level to be created") @RequestBody @Valid GameLevelCreateDTO gameLevelCreateDTO) {
 		try {
-			GameLevel gameLevel = dtoMapper.mapTo(gameLevelDTO, GameLevel.class);
-			GameLevelDTO newGameLevel = trainingDefinitionFacade.createGameLevel(definitionId, gameLevel);
+			GameLevelCreateDTO newGameLevel = trainingDefinitionFacade.createGameLevel(definitionId, gameLevelCreateDTO);
 			return new ResponseEntity<>(newGameLevel, HttpStatus.CREATED);
 		} catch (FacadeLayerException ex) {
 			throw new ResourceNotCreatedException(ex.getLocalizedMessage());
 		}
 	}
 
-	@ApiOperation(httpMethod = "POST", value = "Create Info Level", response = InfoLevelDTO.class, nickname = "createInfoLevel",
+	@ApiOperation(httpMethod = "POST", value = "Create Info Level", response = InfoLevelCreateDTO.class, nickname = "createInfoLevel",
 		produces = "application/json", consumes = "application/json")
 	@ApiResponses(value = {@ApiResponse(code = 404, message = "The requested resource was not found"),
 			@ApiResponse(code = 409, message = "The requested resource was not created")})
 	@PostMapping(value = "/{definitionId}/info-levels", consumes = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<InfoLevelDTO> createInfoLevel(
+	public ResponseEntity<InfoLevelCreateDTO> createInfoLevel(
 			@ApiParam(value = "Id of definition") @PathVariable(value = "definitionId") Long definitionId,
-			@ApiParam(value = "Info level to be created") @RequestBody @Valid InfoLevelDTO infoLevelDTO) {
+			@ApiParam(value = "Info level to be created") @RequestBody @Valid InfoLevelCreateDTO infoLevelCreateDTO) {
 		try {
-			InfoLevel infoLevel = dtoMapper.mapTo(infoLevelDTO, InfoLevel.class);
-			InfoLevelDTO newInfoLevel = trainingDefinitionFacade.createInfoLevel(definitionId, infoLevel);
+			InfoLevelCreateDTO newInfoLevel= trainingDefinitionFacade.createInfoLevel(definitionId, infoLevelCreateDTO);
 			return new ResponseEntity<>(newInfoLevel, HttpStatus.CREATED);
 		} catch (FacadeLayerException ex) {
 			throw new ResourceNotCreatedException(ex.getLocalizedMessage());
 		}
 	}
 
-	@ApiOperation(httpMethod = "POST", value = "Create Assessment Level", response = AssessmentLevelDTO.class,
+	@ApiOperation(httpMethod = "POST", value = "Create Assessment Level", response = AssessmentLevelCreateDTO.class,
 		nickname = "createAssessmentLevel", produces = "application/json", consumes = "application/json")
 	@ApiResponses(value = {@ApiResponse(code = 404, message = "The requested resource was not found"),
 			@ApiResponse(code = 409, message = "The requested resource was not created")})
 	@PostMapping(value = "/{definitionId}/assessment-levels", consumes = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<AssessmentLevelDTO> createAssessmentLevel(
+	public ResponseEntity<AssessmentLevelCreateDTO> createAssessmentLevel(
 			@ApiParam(value = "Id of definition") @PathVariable(value = "definitionId") Long definitionId,
-			@ApiParam(value = "Assessment level to be created") @RequestBody @Valid AssessmentLevelDTO assessmentLevelDTO) {
+			@ApiParam(value = "Assessment level to be created") @RequestBody @Valid AssessmentLevelCreateDTO assessmentLevelCreateDTO) {
 		try {
-			AssessmentLevel assessmentLevel = dtoMapper.mapTo(assessmentLevelDTO, AssessmentLevel.class);
-			AssessmentLevelDTO newAssessmentLevel = trainingDefinitionFacade.createAssessmentLevel(definitionId, assessmentLevel);
+			AssessmentLevelCreateDTO newAssessmentLevel = trainingDefinitionFacade.createAssessmentLevel(definitionId, assessmentLevelCreateDTO);
 			return new ResponseEntity<>(newAssessmentLevel, HttpStatus.CREATED);
 		} catch (FacadeLayerException ex) {
 			throw new ResourceNotCreatedException(ex.getLocalizedMessage());

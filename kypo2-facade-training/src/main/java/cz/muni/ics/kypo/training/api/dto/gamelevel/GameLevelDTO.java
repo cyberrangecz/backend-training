@@ -19,8 +19,7 @@ public class GameLevelDTO extends AbstractLevelDTO {
 	private String flag;
 	private String content;
 	private String solution;
-	private int incorrectFlagPenalty;
-	private int solutionPenalty = super.getMaxScore() - 1;
+	private boolean solutionPenalized;
 	private int estimatedDuration;
 	private String[] attachments;
 	private Set<HintDTO> hints = new HashSet<>();
@@ -52,20 +51,12 @@ public class GameLevelDTO extends AbstractLevelDTO {
 		this.solution = solution;
 	}
 
-	public int getIncorrectFlagPenalty() {
-		return incorrectFlagPenalty;
+	public boolean isSolutionPenalized() {
+			return solutionPenalized;
 	}
 
-	public void setIncorrectFlagPenalty(int incorrectFlagPenalty) {
-		this.incorrectFlagPenalty = incorrectFlagPenalty;
-	}
-
-	public int getSolutionPenalty() {
-		return solutionPenalty;
-	}
-
-	public void setSolutionPenalty(int solutionPenalty) {
-		this.solutionPenalty = solutionPenalty;
+	public void setSolutionPenalized(boolean solutionPenalized) {
+			this.solutionPenalized = solutionPenalized;
 	}
 
 	public int getEstimatedDuration() {
@@ -103,7 +94,7 @@ public class GameLevelDTO extends AbstractLevelDTO {
 	@Override
 	public String toString() {
 		return "GameLevelDTO{" + "flag='" + flag + '\'' + ", content='" + content + '\'' + ", solution='" + solution + '\''
-				+ ", incorrectFlagPenalty=" + incorrectFlagPenalty + ", solutionPenalty=" + solutionPenalty + ", estimatedDuration="
+				+ ", solutionPenalized=" + solutionPenalized + ", estimatedDuration="
 				+ estimatedDuration + ", attachments=" + Arrays.toString(attachments) + ", hints=" + hints + ", incorrectFlagLimit="
 				+ incorrectFlagLimit + '}';
 	}

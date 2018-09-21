@@ -15,6 +15,7 @@ import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionUp
 import cz.muni.ics.kypo.training.config.FacadeConfigTest;
 import cz.muni.ics.kypo.training.exception.FacadeLayerException;
 import cz.muni.ics.kypo.training.mapping.BeanMapping;
+import cz.muni.ics.kypo.training.mapping.BeanMappingImpl;
 import cz.muni.ics.kypo.training.model.AssessmentLevel;
 import cz.muni.ics.kypo.training.model.GameLevel;
 import cz.muni.ics.kypo.training.model.InfoLevel;
@@ -27,6 +28,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -53,13 +55,14 @@ public class TrainingDefinitionFacadeTest {
 
 	@Rule
 	public ExpectedException thrown = ExpectedException.none();
-	@Autowired
-	private BeanMapping beanMapping;
+
 	@Autowired
 	private TrainingDefinitionFacade trainingDefinitionFacade;
 
 	@MockBean
 	private TrainingDefinitionService trainingDefinitionService;
+
+	private BeanMapping beanMapping;
 
 	private TrainingDefinition trainingDefinition1, trainingDefinition2, releasedDefinition;
 	private TrainingDefinitionUpdateDTO trainingDefinitionUpdate;
@@ -83,7 +86,7 @@ public class TrainingDefinitionFacadeTest {
 
 	@Before
 	public void init() {
-
+		beanMapping = new BeanMappingImpl(new ModelMapper());
 		level1 = new AssessmentLevel();
 		level1.setId(1L);
 
@@ -103,6 +106,7 @@ public class TrainingDefinitionFacadeTest {
 		gameLevelUpdate.setFlag("flag1");
 		gameLevelUpdate.setIncorrectFlagLimit(4);
 		gameLevelUpdate.setNextLevel(2L);
+		gameLevelUpdate.setSolutionPenalized(true);
 
 		gameLevelCreate = new GameLevelCreateDTO();
 		gameLevelCreate.setTitle("title");
@@ -334,7 +338,7 @@ public class TrainingDefinitionFacadeTest {
 	@Test
 	public void updateGameLevel() {
 		trainingDefinitionFacade.updateGameLevel(trainingDefinition2.getId(), gameLevelUpdate);
-		then(trainingDefinitionService).should().updateGameLevel(trainingDefinition2.getId(), gameLevel);
+		then(trainingDefinitionService).should().updateGameLevel(trainingDefinition2.getId(), beanMapping.mapTo(gameLevelUpdate, GameLevel.class));
 	}
 
 	@Test
@@ -373,12 +377,12 @@ public class TrainingDefinitionFacadeTest {
 		InfoLevel newInfoLevel = new InfoLevel();
 		newInfoLevel.setId(5L);
 		newInfoLevel.setTitle("test");
-		given(trainingDefinitionService.createInfoLevel(trainingDefinition1.getId(), newInfoLevel)).willReturn(Optional.of(newInfoLevel));
+		given(trainingDefinitionService.createInfoLevel(trainingDefinition1.getId(), beanMapping.mapTo(infoLevelCreate, InfoLevel.class))).willReturn(Optional.of(newInfoLevel));
 
 		InfoLevelCreateDTO createdLevel = trainingDefinitionFacade.createInfoLevel(trainingDefinition1.getId(), infoLevelCreate);
 
 		assertEquals(newInfoLevel.getTitle(), createdLevel.getTitle());
-		then(trainingDefinitionService).should().createInfoLevel(trainingDefinition1.getId(), newInfoLevel);
+		then(trainingDefinitionService).should().createInfoLevel(trainingDefinition1.getId(), beanMapping.mapTo(infoLevelCreate, InfoLevel.class));
 	}
 
 	@Test
@@ -431,7 +435,7 @@ public class TrainingDefinitionFacadeTest {
 		AssessmentLevelCreateDTO createdLevel = trainingDefinitionFacade.createAssessmentLevel(trainingDefinition1.getId(), alCreate);
 
 		assertEquals(newAssessmentLevel.getTitle(), createdLevel.getTitle());
-		then(trainingDefinitionService).should().createAssessmentLevel(trainingDefinition1.getId(), newAssessmentLevel);
+		then(trainingDefinitionService).should().createAssessmentLevel(trainingDefinition1.getId(), beanMapping.mapTo(alCreate, AssessmentLevel.class));
 	}
 
 	@Test
@@ -450,6 +454,7 @@ public class TrainingDefinitionFacadeTest {
 	public void createTrainingDefinition() {
 		given(trainingDefinitionService.create(beanMapping.mapTo(trainingDefinitionCreate, TrainingDefinition.class)))
 				.willReturn(Optional.of(beanMapping.mapTo(trainingDefinitionCreate, TrainingDefinition.class)));
+		trainingDefinitionFacade.create(trainingDefinitionCreate);
 		then(trainingDefinitionService).should().create(beanMapping.mapTo(trainingDefinitionCreate, TrainingDefinition.class));
 	}
 

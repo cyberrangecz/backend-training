@@ -1,11 +1,10 @@
 package cz.muni.ics.kypo.training.api.dto.gamelevel;
 
-import java.util.Arrays;
-
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
+import java.util.Arrays;
 
 /**
  * 
@@ -24,8 +23,7 @@ public class GameLevelCreateDTO {
 	private String flag;
 	private String content;
 	private String solution;
-	private int incorrectFlagPenalty;
-	private int solutionPenalty = maxScore - 1;
+	private boolean solutionPenalized;
 	private int estimatedDuration;
 	private String[] attachments;
 	private int incorrectFlagLimit;
@@ -80,22 +78,6 @@ public class GameLevelCreateDTO {
 		this.solution = solution;
 	}
 
-	public int getIncorrectFlagPenalty() {
-		return incorrectFlagPenalty;
-	}
-
-	public void setIncorrectFlagPenalty(int incorrectFlagPenalty) {
-		this.incorrectFlagPenalty = incorrectFlagPenalty;
-	}
-
-	public int getSolutionPenalty() {
-		return solutionPenalty;
-	}
-
-	public void setSolutionPenalty(int solutionPenalty) {
-		this.solutionPenalty = solutionPenalty;
-	}
-
 	public int getEstimatedDuration() {
 		return estimatedDuration;
 	}
@@ -135,10 +117,8 @@ public class GameLevelCreateDTO {
 		builder.append(content);
 		builder.append(", solution=");
 		builder.append(solution);
-		builder.append(", incorrectFlagPenalty=");
-		builder.append(incorrectFlagPenalty);
-		builder.append(", solutionPenalty=");
-		builder.append(solutionPenalty);
+		builder.append(", solutionPenalized=");
+		builder.append(solutionPenalized);
 		builder.append(", estimatedDuration=");
 		builder.append(estimatedDuration);
 		builder.append(", attachments=");
