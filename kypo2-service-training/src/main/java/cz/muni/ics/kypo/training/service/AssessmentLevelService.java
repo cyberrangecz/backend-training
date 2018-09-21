@@ -10,18 +10,19 @@ import java.util.Optional;
 
 public interface AssessmentLevelService {
 
-    /**
-     * Gets assessment with given id from database.
-     * @param id of the assessment to be loaded
-     * @return assessment with given id
-     * @throws ServiceLayerException
-     */
-    public Optional<AssessmentLevel> findById(long id);
+	/**
+	 * Gets assessment with given id from database.
+	 * 
+	 * @param id of the assessment to be loaded
+	 * @return assessment with given id
+	 * @throws ServiceLayerException
+	 */
+	Optional<AssessmentLevel> findById(long id);
 
-    /**
-     * Find all Assessment Levels.
-     *
-     * @return all a ssessment levels
-     */
-    public Page<AssessmentLevel> findAll(Predicate predicate, Pageable pageable);
+	/**
+	 * Find all Assessment Levels.
+	 *
+	 * @return all a ssessment levels
+	 */
+	Page<AssessmentLevel> findAll(Predicate predicate, Pageable pageable);
 }

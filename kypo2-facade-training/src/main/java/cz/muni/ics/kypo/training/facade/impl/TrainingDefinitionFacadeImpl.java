@@ -52,7 +52,7 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
       TrainingDefinitionDTO trainingDefinitionDTO = beanMapping.mapTo(trainingDefinitionService.findById(id), TrainingDefinitionDTO.class);
 
       Set<BasicLevelInfoDTO> levelInfoDTOs = new HashSet<>();
-      for (int i = 0; i < levels.size()-1; i++){
+      for (int i = 0; i < levels.size(); i++){
         BasicLevelInfoDTO basicLevelInfoDTO = new BasicLevelInfoDTO();
         basicLevelInfoDTO.setId(levels.get(i).getId());
         basicLevelInfoDTO.setOrder(i);
@@ -78,6 +78,16 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
       return beanMapping.mapToPageResultDTO(trainingDefinitionService.findAll(predicate, pageable), TrainingDefinitionDTO.class);
     } catch (ServiceLayerException ex) {
       throw new FacadeLayerException(ex);
+    }
+  }
+
+  @Override
+  public PageResultResource<TrainingDefinitionDTO> findAllBySandboxDefinitionId(Long sandboxDefinitionId, Pageable pageable) {
+    LOG.debug("findAllBySandboxDefinitionId({}, {})",sandboxDefinitionId, pageable);
+    try {
+      return beanMapping.mapToPageResultDTO(trainingDefinitionService.findAllBySandboxDefinitionId(sandboxDefinitionId, pageable), TrainingDefinitionDTO.class);
+    } catch (ServiceLayerException ex) {
+      throw new FacadeLayerException(ex.getLocalizedMessage());
     }
   }
 

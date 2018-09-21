@@ -8,7 +8,6 @@ import cz.muni.csirt.kypo.events.game.common.GameDetails;
 import org.jsondoc.core.annotation.ApiObject;
 import org.jsondoc.core.annotation.ApiObjectField;
 
-
 /**
  * @author Pavel Šeda
  *
@@ -18,28 +17,26 @@ import org.jsondoc.core.annotation.ApiObjectField;
 @JsonRootName(value = "event")
 public class GameStarted extends AbstractAuditPOJO {
 
-  @ApiObjectField(description = "Details of the game.")
-  @JsonProperty(value = "game_details", required = true)
-  private GameDetails gameDetails;
+	@ApiObjectField(description = "Details of the game.")
+	@JsonProperty(value = "game_details", required = true)
+	private GameDetails gameDetails;
 
-  public GameStarted() {}
+	public GameStarted(GameDetails gameDetails) {
+		super();
+		this.gameDetails = gameDetails;
+	}
 
-  public GameStarted(GameDetails gameDetails) {
-    super();
-    this.gameDetails = gameDetails;
-  }
+	public GameDetails getGameDetails() {
+		return gameDetails;
+	}
 
-  public GameDetails getGameDetails() {
-    return gameDetails;
-  }
+	public void setGameDetails(GameDetails gameDetails) {
+		this.gameDetails = gameDetails;
+	}
 
-  public void setGameDetails(GameDetails gameDetails) {
-    this.gameDetails = gameDetails;
-  }
-
-  @Override
-  public String toString() {
-    return "GameStarted [gameDetails=" + gameDetails + "]";
-  }
+	@Override
+	public String toString() {
+		return "GameStarted [gameDetails=" + gameDetails + "]";
+	}
 
 }

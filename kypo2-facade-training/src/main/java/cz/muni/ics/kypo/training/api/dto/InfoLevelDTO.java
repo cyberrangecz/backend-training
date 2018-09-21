@@ -12,22 +12,22 @@ import javax.validation.constraints.NotEmpty;
 @ApiModel(value = "InfoLevelDTO", description = ".")
 public class InfoLevelDTO extends AbstractLevelDTO {
 
-  @NotEmpty(message = "Level content cannot be empty")
-  private String content;
+	@NotEmpty(message = "Level content cannot be empty")
+	private String content;
 
-  public InfoLevelDTO() {}
+	public InfoLevelDTO() {}
 
-  public String getContent() {
-    return content;
-  }
+	public String getContent() {
+		return content;
+	}
 
-  public void setContent(String content) {
-    this.content = content;
-  }
+	public void setContent(String content) {
+		this.content = content;
+	}
 
-  @Override
-  public String toString() {
-    return "InfoLevelDTO [content=" + content + ", toString()=" + super.toString() + "]";
-  }
+	@Override
+	public String toString() {
+		return "InfoLevelDTO [content=" + content + ", toString()=" + super.toString() + "]";
+	}
 
 }

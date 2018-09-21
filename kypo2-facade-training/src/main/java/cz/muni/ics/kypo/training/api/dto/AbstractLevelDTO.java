@@ -15,88 +15,89 @@ import java.util.Objects;
  */
 @ApiModel(value = "AbstractLevelDTO", description = ".")
 public abstract class AbstractLevelDTO {
-  protected Long id;
-  @NotEmpty(message = "Level title cannot be empty")
-  protected String title;
-  @NotNull
-  @Min(value = 0, message = "Max score cannot be lower than 0")
-  @Max(value = 100, message = "Max score cannot be greater than 100")
-  protected int maxScore;
-  protected Long nextLevel;
-  protected PreHookDTO preHook;
-  protected PostHookDTO postHook;
 
-  public AbstractLevelDTO() {}
+	protected Long id;
+	@NotEmpty(message = "Level title cannot be empty")
+	protected String title;
+	@NotNull
+	@Min(value = 0, message = "Max score cannot be lower than 0")
+	@Max(value = 100, message = "Max score cannot be greater than 100")
+	protected int maxScore;
+	protected Long nextLevel;
+	protected PreHookDTO preHook;
+	protected PostHookDTO postHook;
 
-  public Long getId() {
-    return id;
-  }
+	public AbstractLevelDTO() {}
 
-  public void setId(Long id) {
-    this.id = id;
-  }
+	public Long getId() {
+		return id;
+	}
 
-  public String getTitle() {
-    return title;
-  }
+	public void setId(Long id) {
+		this.id = id;
+	}
 
-  public void setTitle(String title) {
-    this.title = title;
-  }
+	public String getTitle() {
+		return title;
+	}
 
-  public int getMaxScore() {
-    return maxScore;
-  }
+	public void setTitle(String title) {
+		this.title = title;
+	}
 
-  public void setMaxScore(int maxScore) {
-    this.maxScore = maxScore;
-  }
+	public int getMaxScore() {
+		return maxScore;
+	}
 
-  public Long getNextLevel() {
-    return nextLevel;
-  }
+	public void setMaxScore(int maxScore) {
+		this.maxScore = maxScore;
+	}
 
-  public void setNextLevel(Long nextLevel) {
-    this.nextLevel = nextLevel;
-  }
+	public Long getNextLevel() {
+		return nextLevel;
+	}
 
-  public PreHookDTO getPreHook() {
-    return preHook;
-  }
+	public void setNextLevel(Long nextLevel) {
+		this.nextLevel = nextLevel;
+	}
 
-  public void setPreHook(PreHookDTO preHook) {
-    this.preHook = preHook;
-  }
+	public PreHookDTO getPreHook() {
+		return preHook;
+	}
 
-  public PostHookDTO getPostHook() {
-    return postHook;
-  }
+	public void setPreHook(PreHookDTO preHook) {
+		this.preHook = preHook;
+	}
 
-  public void setPostHook(PostHookDTO postHook) {
-    this.postHook = postHook;
-  }
+	public PostHookDTO getPostHook() {
+		return postHook;
+	}
 
-  @Override
-  public int hashCode() {
-    return Objects.hashCode(id);
-  }
+	public void setPostHook(PostHookDTO postHook) {
+		this.postHook = postHook;
+	}
 
-  @Override
-  public boolean equals(Object obj) {
-    if (this == obj)
-      return true;
-    if (obj == null)
-      return false;
-    if (!(obj instanceof AbstractLevelDTO))
-      return false;
-    AbstractLevelDTO other = (AbstractLevelDTO) obj;
-    return Objects.equals(id, other.getId());
-  }
+	@Override
+	public int hashCode() {
+		return Objects.hashCode(id);
+	}
 
-  @Override
-  public String toString() {
-    return "AbstractLevelDTO [id=" + id + ", title=" + title + ", maxScore=" + maxScore + ", nextLevel=" + nextLevel
-        + ", preHook=" + preHook + ", postHook=" + postHook + "]";
-  }
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (!(obj instanceof AbstractLevelDTO))
+			return false;
+		AbstractLevelDTO other = (AbstractLevelDTO) obj;
+		return Objects.equals(id, other.getId());
+	}
+
+	@Override
+	public String toString() {
+		return "AbstractLevelDTO [id=" + id + ", title=" + title + ", maxScore=" + maxScore + ", nextLevel=" + nextLevel + ", preHook="
+				+ preHook + ", postHook=" + postHook + "]";
+	}
 
 }

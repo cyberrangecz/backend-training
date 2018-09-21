@@ -37,7 +37,7 @@ public class TrainingInstance implements Serializable {
   @ManyToMany(fetch = FetchType.LAZY)
   private Set<UserRef> organizers = new HashSet<>();
   @OneToMany(fetch = FetchType.LAZY)
-  private Set<SandboxInstanceRef> sandboxInstanceRefs = new HashSet<>();
+  private Set<SandboxInstanceRef> sandboxInstanceRef = new HashSet<>();
 
   public TrainingInstance() {}
 
@@ -52,7 +52,7 @@ public class TrainingInstance implements Serializable {
     this.password = password;
     this.trainingDefinition = trainingDefinition;
     this.organizers = organizers;
-    this.sandboxInstanceRefs = sandboxInstanceRef;
+    this.sandboxInstanceRef = sandboxInstanceRef;
   }
 
   public Long getId() {
@@ -121,11 +121,11 @@ public class TrainingInstance implements Serializable {
   }
 
   public Set<SandboxInstanceRef> getSandboxInstanceRefs() {
-    return sandboxInstanceRefs.stream().collect(Collectors.toSet());
+    return sandboxInstanceRef.stream().collect(Collectors.toSet());
   }
 
   public void setSandboxInstanceRefs(Set<SandboxInstanceRef> sandboxInstanceRef) {
-    this.sandboxInstanceRefs = sandboxInstanceRef;
+    this.sandboxInstanceRef = sandboxInstanceRef;
   }
 
   @Override
@@ -150,12 +150,12 @@ public class TrainingInstance implements Serializable {
         && Objects.equals(title, other.getTitle())
         && Objects.equals(trainingDefinition, other.getTrainingDefinition());
     // @formatter:on
-  }
+	}
 
-  @Override
-  public String toString() {
-    return "TrainingInstance [id=" + id + ", startTime=" + startTime + ", endTime=" + endTime + ", title=" + title + ", poolSize=" + poolSize + ", password="
-        + password + ", trainingDefinition=" + trainingDefinition + ", toString()=" + super.toString() + "]";
-  }
+	@Override
+	public String toString() {
+		return "TrainingInstance [id=" + id + ", startTime=" + startTime + ", endTime=" + endTime + ", title=" + title + ", poolSize="
+				+ poolSize + ", password=" + password + ", trainingDefinition=" + trainingDefinition + ", toString()=" + super.toString() + "]";
+	}
 
 }

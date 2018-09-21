@@ -16,94 +16,85 @@ import java.time.LocalDateTime;
 @ApiModel(value = "TrainingRunDTO", description = ".")
 public class TrainingRunDTO {
 
-    private Long id;
-    private LocalDateTime startTime;
-    private LocalDateTime endTime;
-    private String eventLogReference;
-    private TRState state;
-    private AbstractLevel currentLevel;
-    private TrainingInstance trainingInstance;
-    private SandboxInstanceRef sandboxInstanceRef;
+	private Long id;
+	private LocalDateTime startTime;
+	private LocalDateTime endTime;
+	private String eventLogReference;
+	private TRState state;
+	private AbstractLevel currentLevel;
+	private TrainingInstance trainingInstance;
+	private SandboxInstanceRef sandboxInstanceRef;
 
-    public TrainingRunDTO() {}
+	public TrainingRunDTO() {}
 
-    public Long getId() {
-        return id;
-    }
+	public Long getId() {
+		return id;
+	}
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+	public void setId(Long id) {
+		this.id = id;
+	}
 
-    public LocalDateTime getStartTime() {
-        return startTime;
-    }
+	public LocalDateTime getStartTime() {
+		return startTime;
+	}
 
-    public void setStartTime(LocalDateTime startTime) {
-        this.startTime = startTime;
-    }
+	public void setStartTime(LocalDateTime startTime) {
+		this.startTime = startTime;
+	}
 
-    public LocalDateTime getEndTime() {
-        return endTime;
-    }
+	public LocalDateTime getEndTime() {
+		return endTime;
+	}
 
-    public void setEndTime(LocalDateTime endTime) {
-        this.endTime = endTime;
-    }
+	public void setEndTime(LocalDateTime endTime) {
+		this.endTime = endTime;
+	}
 
-    public String getEventLogReference() {
-        return eventLogReference;
-    }
+	public String getEventLogReference() {
+		return eventLogReference;
+	}
 
-    public void setEventLogReference(String eventLogReference) {
-        this.eventLogReference = eventLogReference;
-    }
+	public void setEventLogReference(String eventLogReference) {
+		this.eventLogReference = eventLogReference;
+	}
 
-    public TRState getState() {
-        return state;
-    }
+	public TRState getState() {
+		return state;
+	}
 
-    public void setState(TRState state) {
-        this.state = state;
-    }
+	public void setState(TRState state) {
+		this.state = state;
+	}
 
-    public AbstractLevel getCurrentLevel() {
-        return currentLevel;
-    }
+	public AbstractLevel getCurrentLevel() {
+		return currentLevel;
+	}
 
-    public void setCurrentLevel(AbstractLevel currentLevel) {
-        this.currentLevel = currentLevel;
-    }
+	public void setCurrentLevel(AbstractLevel currentLevel) {
+		this.currentLevel = currentLevel;
+	}
 
-    public TrainingInstance getTrainingInstance() {
-        return trainingInstance;
-    }
+	public TrainingInstance getTrainingInstance() {
+		return trainingInstance;
+	}
 
-    public void setTrainingInstance(TrainingInstance trainingInstance) {
-        this.trainingInstance = trainingInstance;
-    }
+	public void setTrainingInstance(TrainingInstance trainingInstance) {
+		this.trainingInstance = trainingInstance;
+	}
 
-    public SandboxInstanceRef getSandboxInstanceRef() {
-        return sandboxInstanceRef;
-    }
+	public SandboxInstanceRef getSandboxInstanceRef() {
+		return sandboxInstanceRef;
+	}
 
-    public void setSandboxInstanceRef(SandboxInstanceRef sandboxInstanceRef) {
-        this.sandboxInstanceRef = sandboxInstanceRef;
-    }
+	public void setSandboxInstanceRef(SandboxInstanceRef sandboxInstanceRef) {
+		this.sandboxInstanceRef = sandboxInstanceRef;
+	}
 
-
-
-    @Override
-    public String toString() {
-        return "TrainingRunDTO{" +
-                "id=" + id +
-                ", startTime=" + startTime +
-                ", endTime=" + endTime +
-                ", eventLogReference='" + eventLogReference + '\'' +
-                ", state=" + state +
-                ", currentLevel=" + currentLevel +
-                ", trainingInstance=" + trainingInstance +
-                ", sandboxInstanceRef=" + sandboxInstanceRef +
-                '}';
-    }
+	@Override
+	public String toString() {
+		return "TrainingRunDTO{" + "id=" + id + ", startTime=" + startTime + ", endTime=" + endTime + ", eventLogReference='"
+				+ eventLogReference + '\'' + ", state=" + state + ", currentLevel=" + currentLevel + ", trainingInstance=" + trainingInstance
+				+ ", sandboxInstanceRef=" + sandboxInstanceRef + '}';
+	}
 }

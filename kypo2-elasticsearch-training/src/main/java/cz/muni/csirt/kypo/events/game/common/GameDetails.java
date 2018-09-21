@@ -14,64 +14,63 @@ import org.jsondoc.core.annotation.ApiObjectField;
 @JsonPropertyOrder({"game_instance_id", "level", "logical_time", "player_id"})
 public class GameDetails {
 
-  @ApiObjectField(description = "Instance ID of game.")
-  @JsonProperty(value = "game_instance_id", required = true)
-  private int gameInstanceId;
-  @ApiObjectField(description = "Level of game.")
-  @JsonProperty(value = "level", required = true)
-  private int level;
-  @ApiObjectField(description = "Game logical time.")
-  @JsonProperty(value = "logical_time", required = true)
-  private int logicalTime;
-  @ApiObjectField(description = "ID of a player in the game.")
-  @JsonProperty(value = "player_id", required = true)
-  private int playerId;
+	@ApiObjectField(description = "Instance ID of game.")
+	@JsonProperty(value = "game_instance_id", required = true)
+	private long gameInstanceId;
+	@ApiObjectField(description = "Level of game.")
+	@JsonProperty(value = "level", required = true)
+	private long level;
+	@ApiObjectField(description = "Game logical time.")
+	@JsonProperty(value = "logical_time", required = true)
+	private long logicalTime;
+	@ApiObjectField(description = "ID of a player in the game.")
+	@JsonProperty(value = "player_login", required = true)
+	private String playerLogin;
 
-  public GameDetails() {}
+	public GameDetails(long gameInstanceId, long level, long logicalTime, String playerLogin) {
+		super();
+		this.gameInstanceId = gameInstanceId;
+		this.level = level;
+		this.logicalTime = logicalTime;
+		this.playerLogin = playerLogin;
+	}
 
-  public GameDetails(int gameInstanceId, int level, int logicalTime, int playerId) {
-    super();
-    this.gameInstanceId = gameInstanceId;
-    this.level = level;
-    this.logicalTime = logicalTime;
-    this.playerId = playerId;
-  }
+	public long getGameInstanceId() {
+		return gameInstanceId;
+	}
 
-  public int getGameInstanceId() {
-    return gameInstanceId;
-  }
+	public void setGameInstanceId(long gameInstanceId) {
+		this.gameInstanceId = gameInstanceId;
+	}
 
-  public void setGameInstanceId(int gameInstanceId) {
-    this.gameInstanceId = gameInstanceId;
-  }
+	public long getLevel() {
+		return level;
+	}
 
-  public int getLevel() {
-    return level;
-  }
+	public void setLevel(long level) {
+		this.level = level;
+	}
 
-  public void setLevel(int level) {
-    this.level = level;
-  }
+	public long getLogicalTime() {
+		return logicalTime;
+	}
 
-  public int getLogicalTime() {
-    return logicalTime;
-  }
+	public void setLogicalTime(long logicalTime) {
+		this.logicalTime = logicalTime;
+	}
 
-  public void setLogicalTime(int logicalTime) {
-    this.logicalTime = logicalTime;
-  }
+	public String getPlayerLogin() {
+		return playerLogin;
+	}
 
-  public int getPlayerId() {
-    return playerId;
-  }
+	public void setPlayerLogin(String playerLogin) {
+		this.playerLogin = playerLogin;
+	}
 
-  public void setPlayerId(int playerId) {
-    this.playerId = playerId;
-  }
-
-  @Override
-  public String toString() {
-    return "GameDetails [gameInstanceId=" + gameInstanceId + ", level=" + level + ", logicalTime=" + logicalTime + ", playerId=" + playerId + "]";
-  }
+	@Override
+	public String toString() {
+		return "GameDetails [gameInstanceId=" + gameInstanceId + ", level=" + level + ", logicalTime=" + logicalTime + ", player_login="
+				+ playerLogin + "]";
+	}
 
 }

@@ -102,5 +102,4 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
     return newPassword.toCharArray();
   }
 
-
 }

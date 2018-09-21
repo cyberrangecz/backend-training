@@ -21,45 +21,45 @@ public class InfoLevel extends AbstractLevel implements Serializable {
   @Column(name = "content", nullable = false) // maybe should be unique?
   private String content;
 
-  public InfoLevel() {
-    super();
-  }
+	public InfoLevel() {
+		super();
+	}
 
-  public InfoLevel(String content) {
-    super();
-    this.content = content;
-  }
+	public InfoLevel(String content) {
+		super();
+		this.content = content;
+	}
 
-  public String getContent() {
-    return content;
-  }
+	public String getContent() {
+		return content;
+	}
 
-  public void setContent(String content) {
-    this.content = content;
-  }
+	public void setContent(String content) {
+		this.content = content;
+	}
 
-  @Override
-  public int hashCode() {
-    return Objects.hashCode(content);
-  }
+	@Override
+	public int hashCode() {
+		return Objects.hashCode(content);
+	}
 
-  @Override
-  public boolean equals(Object obj) {
-    if (this == obj)
-      return true;
-    if (!super.equals(obj))
-      return false;
-    if (!(obj instanceof InfoLevel))
-      return false;
-    InfoLevel other = (InfoLevel) obj;
-    return Objects.equals(content, other.getContent());
-  }
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (!super.equals(obj))
+			return false;
+		if (!(obj instanceof InfoLevel))
+			return false;
+		InfoLevel other = (InfoLevel) obj;
+		return Objects.equals(content, other.getContent());
+	}
 
-  @Override
-  public String toString() {
-    return "InfoLevel [content=" + content + ", getId()=" + getId() + ", getTitle()=" + getTitle() + ", getMaxScore()="
-        + getMaxScore()  + ", getPreHook()=" + getPreHook() + ", getPostHook()=" + getPostHook() + ", getNextLevel()=" + getNextLevel()
-        + ", toString()=" + super.toString() + "]";
-  }
+	@Override
+	public String toString() {
+		return "InfoLevel [content=" + content + ", getId()=" + getId() + ", getTitle()=" + getTitle() + ", getMaxScore()=" + getMaxScore()
+				+ ", getPreHook()=" + getPreHook() + ", getPostHook()=" + getPostHook() + ", getNextLevel()=" + getNextLevel() + ", toString()="
+				+ super.toString() + "]";
+	}
 
 }

@@ -11,29 +11,33 @@ import io.swagger.annotations.ApiModel;
 public class PreHookDTO {
 
   private Long id;
-  private AbstractLevelDTO abstractLevel;
+  //private AbstractLevelDTO abstractLevel;
 
-  public PreHookDTO() {}
+	public PreHookDTO() {}
 
-  public Long getId() {
-    return id;
-  }
+	public Long getId() {
+		return id;
+	}
 
   public void setId(Long id) {
     this.id = id;
   }
-
+/*
   public AbstractLevelDTO getAbstractLevel() {
     return abstractLevel;
   }
 
-  public void setAbstractLevel(AbstractLevelDTO abstractLevel) {
-    this.abstractLevel = abstractLevel;
-  }
+	public void setAbstractLevel(AbstractLevelDTO abstractLevel) {
+		this.abstractLevel = abstractLevel;
+	}
 
   @Override
   public String toString() {
     return "PreHookDTO [id=" + id + ", abstractLevel=" + abstractLevel + "]";
   }
+*/
 
+  @Override public String toString() {
+    return "PreHookDTO{" + "id=" + id + '}';
+  }
 }

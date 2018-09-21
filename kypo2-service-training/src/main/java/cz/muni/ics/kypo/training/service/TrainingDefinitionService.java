@@ -32,6 +32,14 @@ public interface TrainingDefinitionService {
   public Page<TrainingDefinition> findAll(Predicate predicate, Pageable pageable);
 
   /**
+   * Find all training definition with same sandbox definition
+   *
+   * @param sandboxDefinitionId - id of sandbox definition
+   * @return all training definition with same sandbox definition
+   */
+  public Page<TrainingDefinition> findAllBySandboxDefinitionId(Long sandboxDefinitionId, Pageable pageable);
+
+  /**
    * Updates Training Definition
    * @param trainingDefinition to be updated
    * @return updated definition

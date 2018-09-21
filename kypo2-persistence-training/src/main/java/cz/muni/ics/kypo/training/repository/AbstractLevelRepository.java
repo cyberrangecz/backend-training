@@ -7,4 +7,3 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface AbstractLevelRepository extends AbstractLevelRepositoryCustom<AbstractLevel> {
 }
-

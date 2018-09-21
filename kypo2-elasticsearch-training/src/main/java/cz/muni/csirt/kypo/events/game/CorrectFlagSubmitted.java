@@ -21,8 +21,6 @@ public class CorrectFlagSubmitted extends AbstractAuditPOJO {
   @JsonProperty(value = "game_details", required = true)
   private GameDetails gameDetails;
 
-  public CorrectFlagSubmitted() {}
-
   public CorrectFlagSubmitted(GameDetails gameDetails) {
     super();
     this.gameDetails = gameDetails;

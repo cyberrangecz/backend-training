@@ -1,6 +1,9 @@
 package cz.muni.ics.kypo.training.model;
 
 import javax.persistence.*;
+
+import org.hibernate.annotations.Type;
+
 import java.io.Serializable;
 import java.util.Objects;
 
@@ -20,6 +23,7 @@ public class Hint implements Serializable {
   @Column(name = "title", nullable = false)
   private String title;
   @Lob
+  @Type(type = "org.hibernate.type.StringType")
   @Column(name = "content", nullable = false)
   private String content;
   @Column(name = "hint_penalty", nullable = false)
@@ -98,12 +102,12 @@ public class Hint implements Serializable {
         && Objects.equals(hintPenalty, other.getHintPenalty())
         && Objects.equals(title, other.getTitle());
     // @formatter:on
-  }
+	}
 
-  @Override
-  public String toString() {
-    return "Hint [id=" + id + ", title=" + title + ", content=" + content + ", hintPenalty=" + hintPenalty + ", gameLevel=" + gameLevel + ", toString()="
-        + super.toString() + "]";
-  }
+	@Override
+	public String toString() {
+		return "Hint [id=" + id + ", title=" + title + ", content=" + content + ", hintPenalty=" + hintPenalty + ", gameLevel=" + gameLevel
+				+ ", toString()=" + super.toString() + "]";
+	}
 
 }

@@ -12,34 +12,34 @@ import java.io.Serializable;
 @Table(name = "pre_hook")
 public class PreHook implements Serializable {
 
-  @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
-  @Column(name = "id", unique = true, nullable = false, insertable = false)
-  private Long id;
-  @OneToOne(mappedBy = "preHook", fetch = FetchType.LAZY)
-  private AbstractLevel abstractLevel;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "id", unique = true, nullable = false, insertable = false)
+	private Long id;
+	@OneToOne(mappedBy = "preHook", fetch = FetchType.LAZY)
+	private AbstractLevel abstractLevel;
 
-  public PreHook() {}
+	public PreHook() {}
 
-  public Long getId() {
-    return id;
-  }
+	public Long getId() {
+		return id;
+	}
 
-  public void setId(Long id) {
-    this.id = id;
-  }
+	public void setId(Long id) {
+		this.id = id;
+	}
 
-  public AbstractLevel getAbstractLevel() {
-    return abstractLevel;
-  }
+	public AbstractLevel getAbstractLevel() {
+		return abstractLevel;
+	}
 
-  public void setAbstractLevel(AbstractLevel abstractLevel) {
-    this.abstractLevel = abstractLevel;
-  }
+	public void setAbstractLevel(AbstractLevel abstractLevel) {
+		this.abstractLevel = abstractLevel;
+	}
 
-  @Override
-  public String toString() {
-    return "PreHook [id=" + id + ", abstractLevel=" + abstractLevel + "]";
-  }
+	@Override
+	public String toString() {
+		return "PreHook [id=" + id + ", abstractLevel=" + abstractLevel + "]";
+	}
 
 }

@@ -30,8 +30,6 @@ public class AssessmentLevelFacadeImpl implements AssessmentLevelFacade {
 
   private AssessmentLevelService assessmentLevelService;
   private BeanMapping beanMapping;
-  private Logger log = LoggerFactory.getLogger(AssessmentLevelFacadeImpl.class);
-
 
   @Autowired
   public AssessmentLevelFacadeImpl(AssessmentLevelService assessmentLevelService, BeanMapping beanMapping) {

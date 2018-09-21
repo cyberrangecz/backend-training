@@ -8,92 +8,93 @@ import java.util.Objects;
 @Table(name = "abstract_level")
 @Inheritance(strategy = InheritanceType.JOINED)
 public abstract class AbstractLevel implements Serializable {
-  @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
-  @Column(name = "id", unique = true, nullable = false, insertable = false)
-  private Long id;
-  @Column(name = "title", nullable = false)
-  private String title;
-  @Column(name = "max_score", nullable = false)
-  private int maxScore;
-  @Column(name = "next_level")
-  private Long nextLevel;
-  @OneToOne( fetch = FetchType.LAZY, optional = true, cascade = CascadeType.ALL)
-  private PreHook preHook;
-  @OneToOne(fetch = FetchType.LAZY, optional = true, cascade = CascadeType.ALL)
-  private PostHook postHook;
 
-  public AbstractLevel() {}
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "id", unique = true, nullable = false, insertable = false)
+	private Long id;
+	@Column(name = "title", nullable = false)
+	private String title;
+	@Column(name = "max_score", nullable = false)
+	private int maxScore;
+	@Column(name = "next_level")
+	private Long nextLevel;
+	@OneToOne(fetch = FetchType.LAZY, optional = true, cascade = CascadeType.ALL)
+	private PreHook preHook;
+	@OneToOne(fetch = FetchType.LAZY, optional = true, cascade = CascadeType.ALL)
+	private PostHook postHook;
 
-  public Long getId() {
-    return id;
-  }
+	public AbstractLevel() {}
 
-  public void setId(Long id) {
-    this.id = id;
-  }
+	public Long getId() {
+		return id;
+	}
 
-  public String getTitle() {
-    return title;
-  }
+	public void setId(Long id) {
+		this.id = id;
+	}
 
-  public void setTitle(String title) {
-    this.title = title;
-  }
+	public String getTitle() {
+		return title;
+	}
 
-  public int getMaxScore() {
-    return maxScore;
-  }
+	public void setTitle(String title) {
+		this.title = title;
+	}
 
-  public void setMaxScore(int maxScore) {
-    this.maxScore = maxScore;
-  }
+	public int getMaxScore() {
+		return maxScore;
+	}
 
-  public PreHook getPreHook() {
-    return preHook;
-  }
+	public void setMaxScore(int maxScore) {
+		this.maxScore = maxScore;
+	}
 
-  public void setPreHook(PreHook preHook) {
-    this.preHook = preHook;
-  }
+	public PreHook getPreHook() {
+		return preHook;
+	}
 
-  public PostHook getPostHook() {
-    return postHook;
-  }
+	public void setPreHook(PreHook preHook) {
+		this.preHook = preHook;
+	}
 
-  public void setPostHook(PostHook postHook) {
-    this.postHook = postHook;
-  }
+	public PostHook getPostHook() {
+		return postHook;
+	}
 
-  public Long getNextLevel() {
-    return nextLevel;
-  }
+	public void setPostHook(PostHook postHook) {
+		this.postHook = postHook;
+	}
 
-  public void setNextLevel(Long nextLevel) {
-    this.nextLevel = nextLevel;
-  }
+	public Long getNextLevel() {
+		return nextLevel;
+	}
 
-  @Override
-  public int hashCode() {
-    return Objects.hashCode(id);
-  }
+	public void setNextLevel(Long nextLevel) {
+		this.nextLevel = nextLevel;
+	}
 
-  @Override
-  public boolean equals(Object obj) {
-    if (this == obj)
-      return true;
-    if (obj == null)
-      return false;
-    if (!(obj instanceof AbstractLevel))
-      return false;
-    AbstractLevel other = (AbstractLevel) obj;
-    return Objects.equals(id, other.getId());
-  }
+	@Override
+	public int hashCode() {
+		return Objects.hashCode(id);
+	}
 
-  @Override
-  public String toString() {
-    return "AbstractLevel [id=" + id + ", title=" + title + ", maxScore=" + maxScore + ", nextLevel=" + nextLevel
-        + ", preHook=" + preHook + ", postHook=" + postHook + ", toString()=" + super.toString() + "]";
-  }
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (!(obj instanceof AbstractLevel))
+			return false;
+		AbstractLevel other = (AbstractLevel) obj;
+		return Objects.equals(id, other.getId());
+	}
+
+	@Override
+	public String toString() {
+		return "AbstractLevel [id=" + id + ", title=" + title + ", maxScore=" + maxScore + ", nextLevel=" + nextLevel + ", preHook=" + preHook
+				+ ", postHook=" + postHook + ", toString()=" + super.toString() + "]";
+	}
 
 }

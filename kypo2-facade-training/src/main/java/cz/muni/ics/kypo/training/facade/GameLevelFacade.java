@@ -1,5 +1,6 @@
 package cz.muni.ics.kypo.training.facade;
 
+
 import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.training.api.PageResultResource;
 import cz.muni.ics.kypo.training.api.dto.GameLevelDTO;
@@ -17,12 +18,12 @@ public interface GameLevelFacade {
    * @param id of a Game Level that would be returned
    * @return specific game level by id
    */
-  public GameLevelDTO findById(long id);
+  GameLevelDTO findById(long id);
 
   /**
    * Find all Game Levels.
    * 
    * @return all game levels
    */
-  public PageResultResource<GameLevelDTO> findAll(Predicate predicate, Pageable pageable);
+  PageResultResource<GameLevelDTO> findAll(Predicate predicate, Pageable pageable);
 }

@@ -145,4 +145,6 @@ public interface TrainingRunService {
    */
   public int getLevelOrder(Long idOfFirstLevel, Long actualLevel) throws ServiceLayerException, IllegalArgumentException;
 
+	public int getRemainingAttempts(Long trainingRunId);
+
 }

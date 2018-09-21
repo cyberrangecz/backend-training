@@ -4,6 +4,8 @@ import com.google.gson.JsonObject;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.PathBuilder;
 import cz.muni.csirt.kypo.elasticsearch.service.audit.AuditService;
+import cz.muni.ics.kypo.training.config.ServiceTrainingConfigTest;
+
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.model.*;
 import cz.muni.ics.kypo.training.model.enums.TRState;
@@ -21,26 +23,26 @@ import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Import;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.web.client.RestTemplate;
+
 
 import java.util.*;
 
@@ -50,9 +52,7 @@ import static org.mockito.BDDMockito.*;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
-@EntityScan(basePackages = {"cz.muni.ics.kypo.training.model"})
-@EnableJpaRepositories(basePackages = {"cz.muni.ics.kypo.training.repository"})
-@ComponentScan(basePackages = {"cz.muni.ics.kypo.training.service"})
+@Import(ServiceTrainingConfigTest.class)
 public class TrainingRunServiceTest {
 
     @Rule
@@ -96,7 +96,6 @@ public class TrainingRunServiceTest {
         trainingDefinition.setTitle("Title");
         trainingDefinition.setStartingLevel(1L);
 
-
         sandboxInstanceRef1 = new SandboxInstanceRef();
         sandboxInstanceRef1.setId(1L);
         sandboxInstanceRef1.setSandboxInstanceRef(7L);
@@ -131,6 +130,7 @@ public class TrainingRunServiceTest {
         gameLevel.setFlag("flag");
         gameLevel.setHints(new HashSet<>(Arrays.asList(hint1, hint2)));
         gameLevel.setNextLevel(2L);
+        gameLevel.setIncorrectFlagLimit(5);
 
         infoLevel = new InfoLevel();
         infoLevel.setId(2L);
@@ -154,7 +154,6 @@ public class TrainingRunServiceTest {
 
 
     }
-
     @Test
     public void getTrainingRunById() {
         given(trainingRunRepository.findById(trainingRun1.getId())).willReturn(Optional.of(trainingRun1));
@@ -281,7 +280,15 @@ public class TrainingRunServiceTest {
 
     }
 
-    @Test
+		@Test
+		public void getRemainingAttempts() {
+				given(trainingRunRepository.findById(trainingRun1.getId())).willReturn(Optional.ofNullable(trainingRun1));
+				int attempts = trainingRunService.getRemainingAttempts(trainingRun1.getId());
+				assertEquals(5, attempts);
+		}
+
+
+		@Test
     public void getHintOfNonGameLevel() {
         thrown.expect(ServiceLayerException.class);
         thrown.expectMessage("Current level is not game level and does not contain hints.");

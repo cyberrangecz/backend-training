@@ -21,21 +21,21 @@ public interface TrainingInstanceService {
    * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND given training instance is not found.
    *
    */
-  public TrainingInstance findById(long id) throws ServiceLayerException;
+	TrainingInstance findById(long id) throws ServiceLayerException;
 
-  /**
-   * Find all Training Instances.
-   * 
-   * @return all Training Instances
-   */
-  public Page<TrainingInstance> findAll(Predicate predicate, Pageable pageable);
+	/**
+	 * Find all Training Instances.
+	 * 
+	 * @return all Training Instances
+	 */
+	Page<TrainingInstance> findAll(Predicate predicate, Pageable pageable);
 
   /**
    * Creates new training instance
    * @param trainingInstance to be created
    * @return created instance
    */
-  public TrainingInstance create(TrainingInstance trainingInstance);
+  TrainingInstance create(TrainingInstance trainingInstance);
 
   /**
    * updates training instance
@@ -43,7 +43,7 @@ public interface TrainingInstanceService {
    * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND given training instance is not found.
    *                                               RESOURCE_CONFLICT cannot be updated for some reason.
    */
-  public void update(TrainingInstance trainingInstance) throws ServiceLayerException;
+  void update(TrainingInstance trainingInstance) throws ServiceLayerException;
 
   /**
    * deletes training instance
@@ -51,14 +51,14 @@ public interface TrainingInstanceService {
    * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND given training instance is not found.
    *                                               RESOURCE_CONFLICT cannot be deleted for some reason.
    */
-  public void delete(Long id) throws ServiceLayerException;
+  void delete(Long id) throws ServiceLayerException;
 
   /**
    * Generates password for training instance
    * @return new password
    * @throws ServiceLayerException with ErrorCode: RESOURCE_CONFLICT given password already exists in DB.
    */
-  public char[] generatePassword() throws ServiceLayerException;
+  char[] generatePassword() throws ServiceLayerException;
 
 
 }

@@ -1,10 +1,12 @@
 package cz.muni.ics.kypo.training.model;
 
 import cz.muni.ics.kypo.training.model.enums.AssessmentType;
+import org.hibernate.annotations.Type;
 
 import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Objects;
+
 
 /**
  * 
@@ -17,6 +19,7 @@ import java.util.Objects;
 public class AssessmentLevel extends AbstractLevel implements Serializable {
 
   @Lob
+  @Type(type = "org.hibernate.type.StringType")
   @Column(name = "questions", nullable = false)
   private String questions;
   @Column(name = "instructions", nullable = false)
@@ -77,13 +80,13 @@ public class AssessmentLevel extends AbstractLevel implements Serializable {
         && Objects.equals(instructions, other.getInstructions())
         && Objects.equals(questions, other.getQuestions());
     // @formatter:on
-  }
+	}
 
-  @Override
-  public String toString() {
-    return "AssessmentLevel [questions=" + questions + ", instructions=" + instructions + ", assessmentType=" + assessmentType + ", getId()=" + getId()
-        + ", getTitle()=" + getTitle() + ", getMaxScore()=" + getMaxScore() + ", getNextLevel()=" + getNextLevel()
-        + ", toString()=" + super.toString() + "]";
-  }
+	@Override
+	public String toString() {
+		return "AssessmentLevel [questions=" + questions + ", instructions=" + instructions + ", assessmentType=" + assessmentType
+				+ ", getId()=" + getId() + ", getTitle()=" + getTitle() + ", getMaxScore()=" + getMaxScore() + ", getNextLevel()=" + getNextLevel()
+				+ ", toString()=" + super.toString() + "]";
+	}
 
 }

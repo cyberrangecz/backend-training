@@ -7,7 +7,7 @@ import cz.muni.ics.kypo.training.api.dto.AssessmentLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.GameLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.InfoLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.TrainingDefinitionDTO;
-import cz.muni.ics.kypo.training.config.FacadeTestConfiguration;
+import cz.muni.ics.kypo.training.config.FacadeConfigTest;
 import cz.muni.ics.kypo.training.exception.FacadeLayerException;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.model.AssessmentLevel;
@@ -23,16 +23,13 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.ArrayList;
@@ -44,49 +41,46 @@ import static org.mockito.BDDMockito.*;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
-@EntityScan(basePackages = {"cz.muni.ics.kypo.training.model"})
-@EnableJpaRepositories(basePackages = {"cz.muni.ics.kypo.training.repository"})
-@ComponentScan(basePackages = {"cz.muni.ics.kypo.training.facade", "cz.muni.ics.kypo.training.service", "cz.muni.ics.kypo.training.mapping"})
-@Import(FacadeTestConfiguration.class)
+@Import(FacadeConfigTest.class)
 public class TrainingDefinitionFacadeTest {
 
-    @Rule
-    public ExpectedException thrown = ExpectedException.none();
+	@Rule
+	public ExpectedException thrown = ExpectedException.none();
 
-    @Autowired
-    private TrainingDefinitionFacade trainingDefinitionFacade;
+	@Autowired
+	private TrainingDefinitionFacade trainingDefinitionFacade;
 
-    @MockBean
-    private TrainingDefinitionService trainingDefinitionService;
+	@MockBean
+	private TrainingDefinitionService trainingDefinitionService;
 
-    private TrainingDefinition trainingDefinition1, trainingDefinition2, unreleasedDefinition, releasedDefinition;
+	private TrainingDefinition trainingDefinition1, trainingDefinition2, unreleasedDefinition, releasedDefinition;
 
-    private AssessmentLevel level1;
+	private AssessmentLevel level1;
 
-    private GameLevel gameLevel;
+	private GameLevel gameLevel;
 
-    private InfoLevel infoLevel;
+	private InfoLevel infoLevel;
 
-    @SpringBootApplication
-    static class TestConfiguration {
-    }
+	@SpringBootApplication
+	static class TestConfiguration {
+	}
 
-    @Before
-    public void init() {
-        level1 = new AssessmentLevel();
-        level1.setId(1L);
+	@Before
+	public void init() {
+		level1 = new AssessmentLevel();
+		level1.setId(1L);
 
-        gameLevel = new GameLevel();
-        gameLevel.setId(2L);
-        gameLevel.setNextLevel(null);
+		gameLevel = new GameLevel();
+		gameLevel.setId(2L);
+		gameLevel.setNextLevel(null);
 
-        infoLevel = new InfoLevel();
-        infoLevel.setId(3L);
-        infoLevel.setNextLevel(gameLevel.getId());
+		infoLevel = new InfoLevel();
+		infoLevel.setId(3L);
+		infoLevel.setNextLevel(gameLevel.getId());
 
-        trainingDefinition1 = new TrainingDefinition();
-        trainingDefinition1.setId(1L);
-        trainingDefinition1.setState(TDState.RELEASED);
+		trainingDefinition1 = new TrainingDefinition();
+		trainingDefinition1.setId(1L);
+		trainingDefinition1.setState(TDState.RELEASED);
 
         trainingDefinition2 = new TrainingDefinition();
         trainingDefinition2.setId(2L);

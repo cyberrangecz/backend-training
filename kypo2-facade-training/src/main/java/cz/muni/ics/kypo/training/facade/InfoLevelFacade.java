@@ -17,12 +17,12 @@ public interface InfoLevelFacade {
    * @param id of a Info level that would be returned
    * @return specific info level by id
    */
-  public InfoLevelDTO findById(Long id);
+  InfoLevelDTO findById(Long id);
 
   /**
    * Find all Info Levels.
    * 
    * @return all info levels
    */
-  public PageResultResource<InfoLevelDTO> findAll(Predicate predicate, Pageable pageable);
+  PageResultResource<InfoLevelDTO> findAll(Predicate predicate, Pageable pageable);
 }

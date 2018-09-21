@@ -12,7 +12,6 @@ import org.springframework.data.repository.NoRepositoryBean;
  *
  */
 @NoRepositoryBean
-public interface AbstractLevelRepositoryCustom<T extends AbstractLevel>  extends JpaRepository<T, Long>, QuerydslPredicateExecutor<T> {
-
+public interface AbstractLevelRepositoryCustom<T extends AbstractLevel> extends JpaRepository<T, Long>, QuerydslPredicateExecutor<T> {
 
 }

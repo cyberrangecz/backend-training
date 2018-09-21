@@ -11,7 +11,6 @@ import org.springframework.stereotype.Repository;
  *
  */
 @Repository
-public interface TrainingInstanceRepository
-    extends JpaRepository<TrainingInstance, Long>, QuerydslPredicateExecutor<TrainingInstance> {
+public interface TrainingInstanceRepository extends JpaRepository<TrainingInstance, Long>, QuerydslPredicateExecutor<TrainingInstance> {
 
 }

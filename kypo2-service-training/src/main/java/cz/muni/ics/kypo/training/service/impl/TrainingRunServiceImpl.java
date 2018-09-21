@@ -2,6 +2,9 @@ package cz.muni.ics.kypo.training.service.impl;
 
 import com.google.gson.JsonObject;
 import com.querydsl.core.types.Predicate;
+import cz.muni.csirt.kypo.elasticsearch.service.audit.AuditService;
+import cz.muni.csirt.kypo.events.game.GameStarted;
+import cz.muni.csirt.kypo.events.game.common.GameDetails;
 import cz.muni.ics.kypo.training.exceptions.ErrorCode;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.model.*;
@@ -26,13 +29,15 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import org.springframework.web.client.RestTemplate;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 
 
 /**
- * 
+ *
  * @author Dominik Pilar (445537)
  *
  */
@@ -49,11 +54,12 @@ public class TrainingRunServiceImpl implements TrainingRunService {
   private TrainingInstanceRepository trainingInstanceRepository;
   private ParticipantRefRepository participantRefRepository;
   private RestTemplate restTemplate;
+  private AuditService auditService;
 
   @Autowired
   public TrainingRunServiceImpl(TrainingRunRepository trainingRunRepository, AbstractLevelRepository abstractLevelRepository,
                                 TrainingInstanceRepository trainingInstanceRepository, ParticipantRefRepository participantRefRepository,
-                                RestTemplate restTemplate) {
+                                RestTemplate restTemplate, AuditService auditService) {
     this.trainingRunRepository = trainingRunRepository;
     this.abstractLevelRepository = abstractLevelRepository;
     this.trainingInstanceRepository = trainingInstanceRepository;
@@ -227,19 +233,23 @@ public class TrainingRunServiceImpl implements TrainingRunService {
     LOG.debug("isCorrectFlag({})", trainingRunId);
     Assert.notNull(trainingRunId, "Input training run id must not be null.");
     Assert.hasLength(flag, "Submitted flag must not be nul nor empty.");
-    AbstractLevel level = findById(trainingRunId).getCurrentLevel();
+    TrainingRun tR = findById(trainingRunId);
+    AbstractLevel level = tR.getCurrentLevel();
     if (level instanceof GameLevel) {
-      if(((GameLevel) level).getFlag().equals(flag)) {
-        //event log Corrected Flag
+      if (((GameLevel) level).getFlag().equals(flag)) {
+        tR.setIncorrectFlagCount(0);
+        // event log Corrected Flag
         return true;
       } else {
-        //event log Wrong Flag
+        tR.setIncorrectFlagCount(tR.getIncorrectFlagCount() + 1);
+        // event log Wrong Flag
         return false;
       }
     } else {
       throw new ServiceLayerException("Current level is not game level and does not have flag.", ErrorCode.WRONG_LEVEL_TYPE);
     }
   }
+
 
   @Override
   public String getSolution(Long trainingRunId) {
@@ -296,4 +306,32 @@ public class TrainingRunServiceImpl implements TrainingRunService {
     JsonObject credentials = (JsonObject) authentication.getUserAuthentication().getCredentials();
     return credentials.get("sub").getAsString();
   }
+
+	@Override
+	public int getRemainingAttempts(Long trainingRunId) {
+		LOG.debug("getRemainingAttempts({})", trainingRunId);
+		Assert.notNull(trainingRunId, "Input training run id must not be null.");
+		TrainingRun tR = findById(trainingRunId);
+		AbstractLevel level = tR.getCurrentLevel();
+		if (level instanceof GameLevel) {
+			return ((GameLevel) level).getIncorrectFlagLimit() - tR.getIncorrectFlagCount();
+		} else {
+			throw new ServiceLayerException("Current level is not game level and does not have flag.", ErrorCode.WRONG_LEVEL_TYPE);
+		}
+	}
+
+	private void auditGameStartedAction(TrainingInstance trainingInstance) {
+		// String loggedInUser = getSubOfLoggedInUser();
+		if (trainingInstance != null) {
+			LocalDateTime startTime = trainingInstance.getStartTime();
+			if (startTime != null) {
+				long logicalTime = Duration.between(startTime, LocalDateTime.now()).get(ChronoUnit.MILLIS);
+				// TODO this class must be pass loggedInUser returned from getSubOfLoggedInUser when it will
+				// be working and passed as last argument of GameDetails class
+				GameDetails gameDetails =
+						new GameDetails(trainingInstance.getId(), trainingInstance.getTrainingDefinition().getStartingLevel(), logicalTime, "");
+				auditService.<GameStarted>save(new GameStarted(gameDetails));
+			}
+		}
+	}
 }

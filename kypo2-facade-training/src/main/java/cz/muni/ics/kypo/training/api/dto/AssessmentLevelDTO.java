@@ -13,47 +13,42 @@ import javax.validation.constraints.NotNull;
  */
 @ApiModel(value = "AssessmentLevelDTO", description = ".")
 public class AssessmentLevelDTO extends AbstractLevelDTO {
-    @NotEmpty(message = "Questions cannot be empty")
+    @NotEmpty(message = "assessment.level.questions.NotEmpty")
     private String questions;
     @NotEmpty
     private String instructions;
     @NotNull(message = "Assessment type must be set")
     private AssessmentType assessmentType;
 
-
     public AssessmentLevelDTO() {}
 
+		public String getQuestions() {
+				return questions;
+		}
 
-    public String getQuestions() {
-        return questions;
-    }
+		public void setQuestions(String questions) {
+				this.questions = questions;
+		}
 
-    public void setQuestions(String questions) {
-        this.questions = questions;
-    }
+		public String getInstructions() {
+				return instructions;
+		}
 
-    public String getInstructions() {
-        return instructions;
-    }
+		public void setInstructions(String instructions) {
+				this.instructions = instructions;
+		}
 
-    public void setInstructions(String instructions) {
-        this.instructions = instructions;
-    }
+		public AssessmentType getAssessmentType() {
+				return assessmentType;
+		}
 
-    public AssessmentType getAssessmentType() {
-        return assessmentType;
-    }
+		public void setAssessmentType(AssessmentType assessmentType) {
+				this.assessmentType = assessmentType;
+		}
 
-    public void setAssessmentType(AssessmentType assessmentType) {
-        this.assessmentType = assessmentType;
-    }
+		@Override public String toString() {
+				return "AssessmentLevelDTO [id=" + id + ", title=" + title + ", maxScore=" + maxScore + ", nextLevel=" + nextLevel + ", preHook=" + preHook + ", postHook=" + postHook + ", questions=" + questions + ", instructions=" + instructions + ", type="
+						+ assessmentType.name() + "]";
+		}
 
-    @Override
-    public String toString() {
-        return "AssessmentLevelDTO [id=" + id + ", title=" + title + ", maxScore=" + maxScore + ", nextLevel=" + nextLevel
-                + ", preHook=" + preHook + ", postHook=" + postHook + ", questions=" + questions +
-                ", instructions=" + instructions + ", type=" + assessmentType.name() + "]";
-    }
 }
-
-

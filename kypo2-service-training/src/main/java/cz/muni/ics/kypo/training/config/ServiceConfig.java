@@ -1,6 +1,7 @@
 package cz.muni.ics.kypo.training.config;
 
-import cz.muni.csirt.kypo.elasticsearch.service.audit.config.TrainingElasticsearchServiceConfig;
+
+import cz.muni.csirt.kypo.elasticsearch.service.TrainingElasticsearchServiceConfig;
 import cz.muni.ics.kypo.commons.config.WebConfigRestSecurityCommons;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,15 +16,15 @@ import org.springframework.web.client.RestTemplate;
  *
  */
 @Configuration
-@Import({TrainingElasticsearchServiceConfig.class, WebConfigRestSecurityCommons.class})
+@Import({TrainingElasticsearchServiceConfig.class, WebConfigRestSecurityCommons.class, PersistenceConfig.class})
 @ComponentScan(basePackages = {"cz.muni.ics.kypo.training.service"})
 public class ServiceConfig {
 
-  private static final Logger LOG = LoggerFactory.getLogger(ServiceConfig.class);
+	private static final Logger LOG = LoggerFactory.getLogger(ServiceConfig.class);
 
-  @Bean
-  public RestTemplate restTemplate() {
-    return new RestTemplate();
-  }
+	@Bean
+	public RestTemplate restTemplate() {
+		return new RestTemplate();
+	}
 
 }

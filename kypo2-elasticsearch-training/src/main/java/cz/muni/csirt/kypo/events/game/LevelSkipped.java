@@ -17,28 +17,26 @@ import org.jsondoc.core.annotation.ApiObjectField;
 @JsonRootName(value = "event")
 public class LevelSkipped extends AbstractAuditPOJO {
 
-  @ApiObjectField(description = "Details of the game.")
-  @JsonProperty(value = "game_details", required = true)
-  private GameDetails gameDetails;
+	@ApiObjectField(description = "Details of the game.")
+	@JsonProperty(value = "game_details", required = true)
+	private GameDetails gameDetails;
 
-  public LevelSkipped() {}
+	public LevelSkipped(GameDetails gameDetails) {
+		super();
+		this.gameDetails = gameDetails;
+	}
 
-  public LevelSkipped(GameDetails gameDetails) {
-    super();
-    this.gameDetails = gameDetails;
-  }
+	public GameDetails getGameDetails() {
+		return gameDetails;
+	}
 
-  public GameDetails getGameDetails() {
-    return gameDetails;
-  }
+	public void setGameDetails(GameDetails gameDetails) {
+		this.gameDetails = gameDetails;
+	}
 
-  public void setGameDetails(GameDetails gameDetails) {
-    this.gameDetails = gameDetails;
-  }
-
-  @Override
-  public String toString() {
-    return "LevelSkipped [gameDetails=" + gameDetails + "]";
-  }
+	@Override
+	public String toString() {
+		return "LevelSkipped [gameDetails=" + gameDetails + "]";
+	}
 
 }

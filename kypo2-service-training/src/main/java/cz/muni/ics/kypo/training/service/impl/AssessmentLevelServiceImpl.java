@@ -16,7 +16,6 @@ import java.util.Optional;
 @Service
 public class AssessmentLevelServiceImpl implements AssessmentLevelService {
 
-
     private static Logger LOG = LoggerFactory.getLogger(AssessmentLevelServiceImpl.class.getName());
 
     private AssessmentLevelRepository assessmentLevelRepository;
