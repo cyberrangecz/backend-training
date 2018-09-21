@@ -4,8 +4,11 @@ import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceCreate
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceUpdateDTO;
 import cz.muni.ics.kypo.training.exceptions.*;
 
+import java.util.List;
+
 import javax.validation.Valid;
 
+import org.jsondoc.core.annotation.ApiObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,12 +21,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.bohnman.squiggly.Squiggly;
 import com.github.bohnman.squiggly.util.SquigglyUtils;
 import com.querydsl.core.types.Predicate;
 
 import cz.muni.ics.kypo.training.api.PageResultResource;
+import cz.muni.ics.kypo.training.api.PageResultResource.Pagination;
 import cz.muni.ics.kypo.training.api.dto.infolevel.InfoLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionDTO;
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceDTO;
@@ -35,6 +40,7 @@ import cz.muni.ics.kypo.training.rest.exceptions.ResourceNotCreatedException;
 import cz.muni.ics.kypo.training.rest.exceptions.ResourceNotFoundException;
 import cz.muni.ics.kypo.training.rest.exceptions.ResourceNotModifiedException;
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiModelProperty;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
@@ -93,6 +99,17 @@ public class TrainingInstancesRestController {
     }
   }
 
+  @ApiObject(name = "Result info (Page)",
+  		description = "Content (Retrieved data) and meta information about REST API result page. Including page number, number of elements in page, size of elements, total number of elements and total number of pages")
+	private static class TrainingInstanceRestResource extends PageResultResource<TrainingInstanceDTO>{
+	 	 @JsonProperty(required = true)
+	 	 @ApiModelProperty(value = "Retrieved Training Instances from databases.")
+	 	 private List<TrainingInstanceDTO> content;
+	 	 @JsonProperty(required = true)
+		 @ApiModelProperty(value = "Pagination including: page number, number of elements in page, size, total elements and total pages.")
+		 private Pagination pagination;
+	}
+  
 	/**
 	 * Get all Training Instances.
 	 * 
@@ -100,7 +117,7 @@ public class TrainingInstancesRestController {
 	 */
   @ApiOperation(httpMethod = "GET",
       value = "Get all Training Instances.",
-      response = InfoLevelDTO.class,
+      response = TrainingInstanceRestResource.class,
       responseContainer = "Page",
       nickname = "findAllTrainingInstances",
       produces = "application/json"
