@@ -171,4 +171,4 @@ Elasticsearch : 5.5.0
 
 ## ER Diagram
 ER diagram generated from model in persistence module
-![alt text](er_diagram_training.jpg)
+![alt text](doc-files/er_diagram_training.jpg)

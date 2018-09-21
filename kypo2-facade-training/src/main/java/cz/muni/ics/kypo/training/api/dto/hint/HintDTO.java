@@ -1,10 +1,8 @@
-package cz.muni.ics.kypo.training.api.dto;
+package cz.muni.ics.kypo.training.api.dto.hint;
 
-import cz.muni.ics.kypo.training.model.GameLevel;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.PositiveOrZero;
-import java.util.Arrays;
 import java.util.Objects;
 
 public class HintDTO {

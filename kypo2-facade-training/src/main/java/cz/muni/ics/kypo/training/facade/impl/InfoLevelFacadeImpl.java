@@ -13,7 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.querydsl.core.types.Predicate;
 
 import cz.muni.ics.kypo.training.api.PageResultResource;
-import cz.muni.ics.kypo.training.api.dto.InfoLevelDTO;
+import cz.muni.ics.kypo.training.api.dto.infolevel.InfoLevelDTO;
 import cz.muni.ics.kypo.training.exception.FacadeLayerException;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.facade.InfoLevelFacade;

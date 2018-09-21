@@ -1,9 +1,21 @@
 package cz.muni.ics.kypo.training.rest.controllers;
 
-import cz.muni.ics.kypo.training.api.dto.*;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.bohnman.squiggly.Squiggly;
+import com.github.bohnman.squiggly.util.SquigglyUtils;
+import com.querydsl.core.types.Predicate;
+import cz.muni.ics.kypo.training.api.PageResultResource;
+import cz.muni.ics.kypo.training.api.dto.AbstractLevelDTO;
+import cz.muni.ics.kypo.training.api.dto.IsCorrectFlagDTO;
+import cz.muni.ics.kypo.training.api.dto.hint.HintDTO;
 import cz.muni.ics.kypo.training.api.dto.run.AccessTrainingRunDTO;
 import cz.muni.ics.kypo.training.api.dto.run.AccessedTrainingRunDTO;
 import cz.muni.ics.kypo.training.api.dto.run.TrainingRunDTO;
+import cz.muni.ics.kypo.training.exception.FacadeLayerException;
+import cz.muni.ics.kypo.training.facade.TrainingRunFacade;
+import cz.muni.ics.kypo.training.model.TrainingRun;
+import cz.muni.ics.kypo.training.rest.exceptions.ResourceNotFoundException;
+import io.swagger.annotations.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,27 +27,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.MultiValueMap;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.bohnman.squiggly.Squiggly;
-import com.github.bohnman.squiggly.util.SquigglyUtils;
-import com.querydsl.core.types.Predicate;
-
-import cz.muni.ics.kypo.training.api.PageResultResource;
-import cz.muni.ics.kypo.training.exception.FacadeLayerException;
-import cz.muni.ics.kypo.training.facade.TrainingRunFacade;
-import cz.muni.ics.kypo.training.model.TrainingRun;
-import cz.muni.ics.kypo.training.rest.exceptions.ResourceNotFoundException;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * @author Dominik Pilar (445537)

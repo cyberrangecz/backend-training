@@ -1,10 +1,8 @@
-package cz.muni.ics.kypo.training.api.dto;
+package cz.muni.ics.kypo.training.api.dto.assessmentlevel;
 
+import cz.muni.ics.kypo.training.api.dto.AbstractLevelDTO;
 import cz.muni.ics.kypo.training.model.enums.AssessmentType;
 import io.swagger.annotations.ApiModel;
-
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
 
 /**
  *
@@ -14,11 +12,8 @@ import javax.validation.constraints.NotNull;
 @ApiModel(value = "AssessmentLevelDTO", description = ".")
 public class AssessmentLevelDTO extends AbstractLevelDTO {
 
-	@NotEmpty(message = "Questions cannot be empty")
 	private String questions;
-	@NotEmpty
 	private String instructions;
-	@NotNull(message = "Assessment type must be set")
 	private AssessmentType type;
 
 	public AssessmentLevelDTO() {}

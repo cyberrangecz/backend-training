@@ -3,7 +3,7 @@ package cz.muni.ics.kypo.training.facade;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.PathBuilder;
 import cz.muni.ics.kypo.training.api.PageResultResource;
-import cz.muni.ics.kypo.training.api.dto.InfoLevelDTO;
+import cz.muni.ics.kypo.training.api.dto.infolevel.InfoLevelDTO;
 import cz.muni.ics.kypo.training.config.FacadeConfigTest;
 import cz.muni.ics.kypo.training.exception.FacadeLayerException;
 import cz.muni.ics.kypo.training.model.InfoLevel;

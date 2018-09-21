@@ -3,7 +3,8 @@ package cz.muni.ics.kypo.training.facade;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.PathBuilder;
 import cz.muni.ics.kypo.training.api.PageResultResource;
-import cz.muni.ics.kypo.training.api.dto.TrainingInstanceDTO;
+import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceCreateDTO;
+import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceDTO;
 import cz.muni.ics.kypo.training.config.FacadeConfigTest;
 import cz.muni.ics.kypo.training.exception.FacadeLayerException;
 import cz.muni.ics.kypo.training.model.TrainingInstance;
@@ -41,11 +42,11 @@ public class TrainingInstanceFacadeTest {
 
 	@Autowired
 	private TrainingInstanceFacade trainingInstanceFacade;
-
 	@MockBean
 	private TrainingInstanceService trainingInstanceService;
 
 	private TrainingInstance trainingInstance1, trainingInstance2;
+	private TrainingInstanceCreateDTO trainingInstanceCreate;
 
 	@SpringBootApplication
 	static class TestConfiguration {
@@ -60,6 +61,10 @@ public class TrainingInstanceFacadeTest {
 		trainingInstance2 = new TrainingInstance();
 		trainingInstance2.setId(2L);
 		trainingInstance2.setTitle("test");
+
+		trainingInstanceCreate = new TrainingInstanceCreateDTO();
+		trainingInstanceCreate.setTitle("test");
+
 	}
 
 	@Test
@@ -103,8 +108,7 @@ public class TrainingInstanceFacadeTest {
 	@Test
 	public void createTrainingInstance() {
 		given(trainingInstanceService.create(trainingInstance1)).willReturn(Optional.of(trainingInstance1));
-		TrainingInstanceDTO trainingInstanceDTO = trainingInstanceFacade.create(trainingInstance1);
-		deepEquals(trainingInstance1, trainingInstanceDTO);
+		TrainingInstanceCreateDTO trainingInstanceDTO = trainingInstanceFacade.create(trainingInstanceCreate);
 		then(trainingInstanceService).should().create(trainingInstance1);
 	}
 

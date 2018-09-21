@@ -5,7 +5,7 @@ import org.springframework.data.domain.Pageable;
 import com.querydsl.core.types.Predicate;
 
 import cz.muni.ics.kypo.training.api.PageResultResource;
-import cz.muni.ics.kypo.training.api.dto.InfoLevelDTO;
+import cz.muni.ics.kypo.training.api.dto.infolevel.InfoLevelDTO;
 
 /**
  * @author Pavel Šeda

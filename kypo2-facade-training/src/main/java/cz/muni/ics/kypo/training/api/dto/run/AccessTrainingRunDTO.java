@@ -1,7 +1,7 @@
 package cz.muni.ics.kypo.training.api.dto.run;
 
 import cz.muni.ics.kypo.training.api.dto.AbstractLevelDTO;
-import cz.muni.ics.kypo.training.api.dto.BasicInfoLevelDTO;
+import cz.muni.ics.kypo.training.api.dto.infolevel.BasicInfoLevelDTO;
 import io.swagger.annotations.ApiModel;
 
 import java.util.List;

@@ -19,7 +19,7 @@ import com.github.bohnman.squiggly.Squiggly;
 import com.github.bohnman.squiggly.util.SquigglyUtils;
 
 import cz.muni.ics.kypo.training.api.PageResultResource;
-import cz.muni.ics.kypo.training.api.dto.AssessmentLevelDTO;
+import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelDTO;
 import cz.muni.ics.kypo.training.exception.FacadeLayerException;
 import cz.muni.ics.kypo.training.facade.AssessmentLevelFacade;
 import cz.muni.ics.kypo.training.model.AssessmentLevel;
