@@ -235,4 +235,22 @@ public class TrainingInstancesRestController {
 		}
 	}
 
+	@ApiOperation(httpMethod = "POST",
+			value = "Allocate sandboxes",
+			response = Void.class,
+			nickname = "allocateSandboxes")
+	@ApiResponses(value = {
+			@ApiResponse(code = 404, message = "The requested resource was not found")
+	})
+	@PostMapping(value = "/{instanceId}/sandbox-instances")
+	public ResponseEntity<Void> allocateSandboxes(
+			@ApiParam(value = "Id of trainingInstance")
+			@PathVariable(value = "instanceId") Long instanceId) {
+  		try{
+  				return trainingInstanceFacade.allocateSandboxes(instanceId);
+			} catch (FacadeLayerException ex){
+  				throw new ResourceNotFoundException(ex.getLocalizedMessage());
+			}
+	}
+
 }

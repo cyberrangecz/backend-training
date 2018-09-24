@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -109,6 +110,7 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
 	@Override
 	@Transactional
 	public char[] generatePassword() throws FacadeLayerException {
+		LOG.debug("generatePassword()");
 		try {
 			char[] newPassword = trainingInstanceService.generatePassword();
 			return newPassword;
@@ -116,4 +118,13 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
 			throw new FacadeLayerException(ex.getLocalizedMessage());
 		}
 	}
+
+		@Override public ResponseEntity<Void> allocateSandboxes(Long instanceId) throws FacadeLayerException {
+			LOG.debug("allocateSandboxes({})", instanceId);
+			try{
+					return trainingInstanceService.allocateSandboxes(instanceId);
+			} catch( ServiceLayerException ex){
+					throw new FacadeLayerException(ex.getLocalizedMessage());
+			}
+		}
 }
