@@ -14,8 +14,13 @@ import org.hibernate.HibernateException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import com.querydsl.core.types.Predicate;
@@ -24,6 +29,7 @@ import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.model.TrainingInstance;
 import cz.muni.ics.kypo.training.repository.TrainingInstanceRepository;
 import cz.muni.ics.kypo.training.service.TrainingInstanceService;
+import org.springframework.web.client.RestTemplate;
 
 /**
  * 
@@ -34,14 +40,19 @@ import cz.muni.ics.kypo.training.service.TrainingInstanceService;
 public class TrainingInstanceServiceImpl implements TrainingInstanceService {
 
 	private static final Logger LOG = LoggerFactory.getLogger(TrainingInstanceServiceImpl.class);
+	@Value("${server.url}")
+	private String serverUrl;
 
 	private TrainingInstanceRepository trainingInstanceRepository;
 	private PasswordRepository passwordRepository;
+	private RestTemplate restTemplate;
 
 	@Autowired
-	public TrainingInstanceServiceImpl(TrainingInstanceRepository trainingInstanceRepository, PasswordRepository passwordRepository) {
+	public TrainingInstanceServiceImpl(TrainingInstanceRepository trainingInstanceRepository, PasswordRepository passwordRepository,
+			RestTemplate restTemplate) {
 		this.trainingInstanceRepository = trainingInstanceRepository;
 		this.passwordRepository = passwordRepository;
+		this.restTemplate = restTemplate;
 	}
 
 	@Override
@@ -101,6 +112,7 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
 
 	@Override
 	public char[] generatePassword() throws ServiceLayerException {
+		LOG.debug("generatePassword()");
 		String newPassword = RandomStringUtils.random(6, true, true);
 		String newPasswordHash = DigestUtils.sha256Hex(newPassword);
 
@@ -114,4 +126,15 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
 		return newPassword.toCharArray();
 	}
 
+	@Override
+	public ResponseEntity<Void> allocateSandboxes(Long instanceId) throws ServiceLayerException {
+		LOG.debug("allocateSandboxes({})", instanceId);
+		HttpHeaders httpHeaders = new HttpHeaders();
+		TrainingInstance trainingInstance = findById(instanceId)
+				.orElseThrow(() -> new ServiceLayerException("Training instance with id: " + instanceId + ", not found"));
+		int count = trainingInstance.getPoolSize();
+		Long sandboxId = trainingInstance.getTrainingDefinition().getSandBoxDefinitionRef().getId();
+		String url = "kypo-openstack/api/v1/sandbox-definitions/"+ sandboxId +"/build/"+ count;
+		return restTemplate.exchange(serverUrl + url, HttpMethod.POST, new HttpEntity<>(httpHeaders), Void.class);
+	}
 }

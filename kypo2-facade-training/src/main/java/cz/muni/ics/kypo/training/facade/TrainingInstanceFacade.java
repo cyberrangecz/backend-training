@@ -10,6 +10,7 @@ import cz.muni.ics.kypo.training.api.PageResultResource;
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceCreateDTO;
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceDTO;
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceUpdateDTO;
+import org.springframework.http.ResponseEntity;
 
 /**
  * 
@@ -66,5 +67,14 @@ public interface TrainingInstanceFacade {
 	 * @throws FacadeLayerException if password already exists
 	 */
 	char[] generatePassword() throws FacadeLayerException;
+
+	/**
+	 * Allocates sandboxes for training instance
+	 *
+	 * @param instanceId
+	 * @return
+	 * @throws FacadeLayerException
+	 */
+	ResponseEntity<Void> allocateSandboxes(Long instanceId) throws FacadeLayerException;
 
 }
