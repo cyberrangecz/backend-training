@@ -367,6 +367,15 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
 		return levels;
 	}
 
+	@Override
+	public AbstractLevel findLevelById(Long levelId) throws ServiceLayerException {
+		LOG.debug("findLevelById({})", levelId);
+		Assert.notNull(levelId, "Input level id must not be null.");
+		AbstractLevel level = abstractLevelRepository.findById(levelId)
+				.orElseThrow(() -> new ServiceLayerException("Level with id: "+ levelId +", not found"));
+		return level;
+	}
+
 	private AbstractLevel findLastLevel(Long levelId) {
 		AbstractLevel lastLevel = abstractLevelRepository.findById(levelId).orElseThrow(() -> new ServiceLayerException("Level not found"));
 		levelId = lastLevel.getNextLevel();

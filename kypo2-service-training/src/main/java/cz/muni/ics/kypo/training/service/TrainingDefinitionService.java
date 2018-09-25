@@ -182,4 +182,12 @@ public interface TrainingDefinitionService {
 	 */
 	Optional<TrainingDefinition> create(TrainingDefinition trainingDefinition);
 
+	/**
+	 * Finds specific level by id
+	 * @param levelId - id of wanted level
+	 * @return wanted level
+	 * @throws ServiceLayerException if level is not found
+	 */
+	AbstractLevel findLevelById(Long levelId) throws ServiceLayerException;
+
 }

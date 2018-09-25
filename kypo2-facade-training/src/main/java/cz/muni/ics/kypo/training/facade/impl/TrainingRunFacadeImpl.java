@@ -168,7 +168,7 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
     if(aL instanceof GameLevel) {
       return beanMapping.mapTo(trainingRunService.getNextLevel(trainingRunId), GameLevelDTO.class);
 
-    } else if (aL instanceof AbstractLevel) {
+    } else if (aL instanceof AssessmentLevel) {
       return beanMapping.mapTo(trainingRunService.getNextLevel(trainingRunId), AssessmentLevelDTO.class);
     } else {
       return beanMapping.mapTo(trainingRunService.getNextLevel(trainingRunId), InfoLevelDTO.class);

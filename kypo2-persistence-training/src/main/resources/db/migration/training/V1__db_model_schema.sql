@@ -164,7 +164,7 @@ CREATE TABLE game_level (
     estimated_duration integer,
     flag character varying(255) NOT NULL,
     solution text NOT NULL,
-    solution_penalty integer NOT NULL,
+    solution_penalized boolean NOT NULL,
     incorrect_flag_limit integer
 );
 
@@ -727,7 +727,7 @@ SELECT pg_catalog.setval('author_ref_id_seq', 1, false);
 -- Data for Name: game_level; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY game_level (attachments, content, estimated_duration, flag, incorrect_flag_limit, solution, solution_penalty, id) FROM stdin;
+COPY game_level (attachments, content, estimated_duration, flag, incorrect_flag_limit, solution, solution_penalized, id) FROM stdin;
 \.
 
 

@@ -1,5 +1,6 @@
 package cz.muni.ics.kypo.training.facade;
 
+import cz.muni.ics.kypo.training.api.dto.AbstractLevelDTO;
 import cz.muni.ics.kypo.training.exception.FacadeLayerException;
 import cz.muni.ics.kypo.training.exceptions.CannotBeClonedException;
 import cz.muni.ics.kypo.training.exceptions.CannotBeDeletedException;
@@ -121,7 +122,7 @@ public interface TrainingDefinitionFacade {
 	 * updates game level from training definition
 	 * 
 	 * @param definitionId - id of training definition containing level to be updated
-	 * @param gameLevelDTO to be updated
+	 * @param gameLevel to be updated
 	 * @throws FacadeLayerException if training definition is not found
 	 * @throws CannotBeUpdatedException if definition status is not UNRELEASED
 	 */
@@ -181,5 +182,14 @@ public interface TrainingDefinitionFacade {
 	 */
 	AssessmentLevelCreateDTO createAssessmentLevel(Long definitionId, AssessmentLevelCreateDTO assessmentLevel)
 			throws FacadeLayerException, CannotBeUpdatedException;
+
+	/**
+	 * Finds specific level by id
+	 *
+	 * @param levelId - id of wanted level
+	 * @return wanted level
+	 * @throws FacadeLayerException if level is not found
+	 */
+	AbstractLevelDTO findLevelById(Long levelId) throws FacadeLayerException;
 
 }

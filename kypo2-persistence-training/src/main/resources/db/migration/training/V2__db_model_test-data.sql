@@ -10,7 +10,7 @@ INSERT INTO abstract_level(id, max_score, next_level, title, post_hook_id, pre_h
 INSERT INTO abstract_level(id, max_score, next_level, title, post_hook_id, pre_hook_id) VALUES (2, 70, 3, 'Info Level1', 2, 2);
 INSERT INTO abstract_level(id, max_score, next_level, title, post_hook_id, pre_hook_id) VALUES (1, 20, 2, 'Game Level1', 1, 1);
 
-INSERT INTO game_level(id, attachments, content, estimated_duration, flag, solution, solution_penalty, incorrect_flag_limit) VALUES (1, null, 'Play me', 25, 'secretFlag', 'This is how you do it', 19, 5);
+INSERT INTO game_level(id, attachments, content, estimated_duration, flag, solution, solution_penalized, incorrect_flag_limit) VALUES (1, null, 'Play me', 25, 'secretFlag', 'This is how you do it', true , 5);
 INSERT INTO info_level(id, content) VALUES (2, 'Informational stuff');
 INSERT INTO assessment_level(assessment_type, instructions, questions, id) VALUES ('TEST', 'Fill me up', 'What is my mothers name?', 3);
 
@@ -36,7 +36,7 @@ INSERT INTO abstract_level(id, max_score, next_level, title, post_hook_id, pre_h
 INSERT INTO abstract_level(id, max_score, next_level, title, post_hook_id, pre_hook_id) VALUES (5, 13, 6, 'Info Level2', 5, 5);
 INSERT INTO abstract_level(id, max_score, next_level, title, post_hook_id, pre_hook_id) VALUES (4, 55, 5, 'Game Level2', 4, 4);
 
-INSERT INTO game_level(attachments, content, estimated_duration, flag, solution, solution_penalty, id, incorrect_flag_limit) VALUES (null, 'Unsolvable problem', 60, 'jibberish', 'Not sure yet', 54, 4, 3);
+INSERT INTO game_level(attachments, content, estimated_duration, flag, solution, solution_penalized, id, incorrect_flag_limit) VALUES (null, 'Unsolvable problem', 60, 'jibberish', 'Not sure yet', false, 4, 3);
 INSERT INTO info_level(content, id) VALUES ('Potatoes are not poisonous', 5);
 INSERT INTO assessment_level(assessment_type, instructions, questions, id) VALUES ('QUESTIONNAIRE', 'No rush', '...?', 6);
 

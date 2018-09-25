@@ -6,11 +6,15 @@ import com.github.bohnman.squiggly.Squiggly;
 import com.github.bohnman.squiggly.util.SquigglyUtils;
 import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.training.api.PageResultResource;
+import cz.muni.ics.kypo.training.api.dto.AbstractLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelCreateDTO;
+import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelUpdateDTO;
 import cz.muni.ics.kypo.training.api.dto.gamelevel.GameLevelCreateDTO;
+import cz.muni.ics.kypo.training.api.dto.gamelevel.GameLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.gamelevel.GameLevelUpdateDTO;
 import cz.muni.ics.kypo.training.api.dto.infolevel.InfoLevelCreateDTO;
+import cz.muni.ics.kypo.training.api.dto.infolevel.InfoLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.infolevel.InfoLevelUpdateDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionCreateDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionDTO;
@@ -20,6 +24,7 @@ import cz.muni.ics.kypo.training.exceptions.CannotBeClonedException;
 import cz.muni.ics.kypo.training.exceptions.CannotBeDeletedException;
 import cz.muni.ics.kypo.training.exceptions.CannotBeUpdatedException;
 import cz.muni.ics.kypo.training.facade.TrainingDefinitionFacade;
+import cz.muni.ics.kypo.training.model.GameLevel;
 import cz.muni.ics.kypo.training.model.TrainingDefinition;
 import cz.muni.ics.kypo.training.rest.exceptions.ConflictException;
 import cz.muni.ics.kypo.training.rest.exceptions.ResourceNotCreatedException;
@@ -483,4 +488,26 @@ public class TrainingDefinitionsRestController {
 			throw new ResourceNotCreatedException(ex.getLocalizedMessage());
 		}
 	}
+
+	@ApiOperation(httpMethod = "GET",
+			value = "Find level by id",
+			response = AbstractLevelDTO.class,
+			nickname = "findLevelById",
+			produces = "application/json")
+	@ApiResponses(value = {
+			@ApiResponse(code = 404, message = "The requested resource was not found")
+	})
+	@GetMapping(value = "/levels/{levelId}", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<Object> findLevelById(@ApiParam(value = "Id of wanted level") @PathVariable(value = "levelId") Long levelId,
+			@ApiParam(value = "Fields which should be returned in REST API response", required = false)
+      @RequestParam(value = "fields", required = false) String fields){
+  	try {
+			AbstractLevelDTO level = trainingDefinitionFacade.findLevelById(levelId);
+			Squiggly.init(objectMapper, fields);
+      return new ResponseEntity<>(SquigglyUtils.stringify(objectMapper, level), HttpStatus.OK);
+		} catch (FacadeLayerException ex){
+  		throw new ResourceNotFoundException(ex.getLocalizedMessage());
+		}
+	}
+
 }
