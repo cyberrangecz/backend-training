@@ -5,16 +5,17 @@ import com.github.bohnman.squiggly.Squiggly;
 import com.github.bohnman.squiggly.util.SquigglyUtils;
 import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.training.api.PageResultResource;
-import cz.muni.ics.kypo.training.api.dto.InfoLevelDTO;
-import cz.muni.ics.kypo.training.api.dto.TrainingDefinitionDTO;
-import cz.muni.ics.kypo.training.api.dto.TrainingInstanceDTO;
+import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionDTO;
+import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceCreateDTO;
+import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceDTO;
+import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceUpdateDTO;
 import cz.muni.ics.kypo.training.exception.FacadeLayerException;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.facade.TrainingInstanceFacade;
-import cz.muni.ics.kypo.training.mapping.BeanMapping;
 import cz.muni.ics.kypo.training.model.TrainingInstance;
 import cz.muni.ics.kypo.training.rest.exceptions.*;
-import io.swagger.annotations.*;
+import java.util.List;
+import org.jsondoc.core.annotation.ApiObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +27,15 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import cz.muni.ics.kypo.training.rest.exceptions.ConflictException;
+import cz.muni.ics.kypo.training.rest.exceptions.ResourceNotFoundException;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiModelProperty;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 
 /**
  * @author Pavel Šeda
@@ -35,33 +45,30 @@ import org.springframework.web.bind.annotation.*;
 @Api(value = "/training-instances",
   consumes = "application/json"
 )
-//@formatter:on
 @RestController
 @RequestMapping(value = "/training-instances")
 public class TrainingInstancesRestController {
 
 		private static final Logger LOG = LoggerFactory.getLogger(cz.muni.ics.kypo.training.rest.controllers.TrainingInstancesRestController.class);
 
-		private TrainingInstanceFacade trainingInstanceFacade;
-		private ObjectMapper objectMapper;
-		private BeanMapping dtoMapper;
+	private TrainingInstanceFacade trainingInstanceFacade;
+	private ObjectMapper objectMapper;
 
-		@Autowired
-		public TrainingInstancesRestController(TrainingInstanceFacade trainingInstanceFacade, @Qualifier("objMapperRESTApi") ObjectMapper objectMapper, BeanMapping dtoMapper) {
-				this.trainingInstanceFacade = trainingInstanceFacade;
-				this.objectMapper = objectMapper;
-				this.dtoMapper = dtoMapper;
-		}
+	@Autowired
+	public TrainingInstancesRestController(TrainingInstanceFacade trainingInstanceFacade,
+			@Qualifier("objMapperRESTApi") ObjectMapper objectMapper) {
+		this.trainingInstanceFacade = trainingInstanceFacade;
+		this.objectMapper = objectMapper;
+	}
 
-		/**
-		 * Get requested Training Instance by id.
-		 *
-		 * @param id of Training Instance to return.
-		 * @return Requested Training Instance by id.
-		 */
-		//@formatter:off
-  @ApiOperation(httpMethod = "GET",
-      value = "Get Training Instance by Id.",
+	/**
+	 * Get requested Training Instance by id.
+	 * 
+	 * @param id of Training Instance to return.
+	 * @return Requested Training Instance by id.
+	 */
+  @ApiOperation(httpMethod = "GET", 
+      value = "Get Training Instance by Id.", 
       response = TrainingDefinitionDTO.class,
       nickname = "findTrainingInstanceById",
       produces = "application/json"
@@ -82,17 +89,26 @@ public class TrainingInstancesRestController {
         throw throwException(ex);
     }
   }
-  //@formatter:on
 
-		/**
-		 * Get all Training Instances.
-		 *
-		 * @return all Training Instances.
-		 */
-		//@formatter:off
+  @ApiObject(name = "Result info (Page)",
+  		description = "Content (Retrieved data) and meta information about REST API result page. Including page number, number of elements in page, size of elements, total number of elements and total number of pages")
+	private static class TrainingInstanceRestResource extends PageResultResource<TrainingInstanceDTO>{
+	 	 @JsonProperty(required = true)
+	 	 @ApiModelProperty(value = "Retrieved Training Instances from databases.")
+	 	 private List<TrainingInstanceDTO> content;
+	 	 @JsonProperty(required = true)
+		 @ApiModelProperty(value = "Pagination including: page number, number of elements in page, size, total elements and total pages.")
+		 private Pagination pagination;
+	}
+
+	/**
+	 * Get all Training Instances.
+	 *
+	 * @return all Training Instances.
+	 */
   @ApiOperation(httpMethod = "GET",
       value = "Get all Training Instances.",
-      response = InfoLevelDTO.class,
+      response = TrainingInstanceRestResource.class,
       responseContainer = "Page",
       nickname = "findAllTrainingInstances",
       produces = "application/json"
@@ -110,7 +126,6 @@ public class TrainingInstancesRestController {
       Squiggly.init(objectMapper, fields);
       return new ResponseEntity<>(SquigglyUtils.stringify(objectMapper, trainingInstanceResource), HttpStatus.OK);
   }
-  //@formatter:on
 
 		@ApiOperation(httpMethod = "POST",
 				value = "Create Training Instance",
@@ -122,12 +137,11 @@ public class TrainingInstancesRestController {
 				@ApiResponse(code = 400, message = "The requested resource was not created")
 		})
 		@PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-		public ResponseEntity<Object> createTrainingInstance(@ApiParam(name = "Training instance to be created") @RequestBody TrainingInstanceDTO trainingInstanceDTO,
+		public ResponseEntity<Object> createTrainingInstance(@ApiParam(name = "Training instance to be created") @RequestBody TrainingInstanceCreateDTO trainingInstanceCreateDTO,
 				@ApiParam(value = "Fields which should be returned in REST API response", required = false)
 				@RequestParam(value = "fields", required = false) String fields) {
 				try {
-						TrainingInstance trainingInstance = dtoMapper.mapTo(trainingInstanceDTO, TrainingInstance.class);
-						TrainingInstanceDTO trainingInstanceResource = trainingInstanceFacade.create(trainingInstance);
+						TrainingInstanceCreateDTO trainingInstanceResource = trainingInstanceFacade.create(trainingInstanceCreateDTO);
 						Squiggly.init(objectMapper, fields);
 						return new ResponseEntity<>(SquigglyUtils.stringify(objectMapper, trainingInstanceResource), HttpStatus.OK);
 				} catch (FacadeLayerException ex) {
@@ -145,10 +159,9 @@ public class TrainingInstancesRestController {
 				@ApiResponse(code = 409, message = "The requested resource was not deleted because of its finish time")
 		})
 		@PutMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
-		public ResponseEntity<Void> updateTrainingInstance(@ApiParam(name = "Training instance to be updated") @RequestBody TrainingInstanceDTO trainingInstanceDTO){
+		public ResponseEntity<Void> updateTrainingInstance(@ApiParam(name = "Training instance to be updated") @RequestBody TrainingInstanceUpdateDTO trainingInstanceUpdateDTO){
 				try {
-						TrainingInstance trainingInstance = dtoMapper.mapTo(trainingInstanceDTO, TrainingInstance.class);
-						trainingInstanceFacade.update(trainingInstance);
+						trainingInstanceFacade.update(trainingInstanceUpdateDTO);
 						return new ResponseEntity<>(HttpStatus.NO_CONTENT);
 				} catch (FacadeLayerException ex) {
 						throw throwException(ex);
@@ -175,24 +188,6 @@ public class TrainingInstancesRestController {
 
 		}
 
-		@ApiOperation(httpMethod = "POST",
-				value = "Generate password",
-				response = char[].class,
-				nickname = "generatePassword"
-		)
-		@ApiResponses(value = {
-				@ApiResponse( code = 409, message = "Generated password already exists")
-		})
-		@PostMapping(value = "/passwords")
-		public ResponseEntity<char[]> generatePassword() {
-				try {
-						char[] newPassword = trainingInstanceFacade.generatePassword();
-						return new ResponseEntity<char[]>(newPassword, HttpStatus.CREATED);
-				} catch (FacadeLayerException ex){
-						throw new ConflictException(ex.getLocalizedMessage());
-				}
-		}
-
 		private RuntimeException throwException(RuntimeException ex) {
 				switch (((ServiceLayerException) ex.getCause()).getCode()) {
 						case WRONG_LEVEL_TYPE:
@@ -210,6 +205,24 @@ public class TrainingInstancesRestController {
 								return new ServiceUnavailableException(ex.getLocalizedMessage());
 				}
 		}
+	@ApiOperation(httpMethod = "POST",
+				value = "Allocate sandboxes",
+				response = Void.class,
+				nickname = "allocateSandboxes")
+		@ApiResponses(value = {
+				@ApiResponse(code = 404, message = "The requested resource was not found")
+		})
+		@PostMapping(value = "/{instanceId}/sandbox-instances")
+		public ResponseEntity<Void> allocateSandboxes(
+				@ApiParam(value = "Id of trainingInstance")
+				@PathVariable(value = "instanceId") Long instanceId) {
+				try{
+						return trainingInstanceFacade.allocateSandboxes(instanceId);
+				} catch (FacadeLayerException ex){
+						throw new ResourceNotFoundException(ex.getLocalizedMessage());
+				}
+		}
+
 
 }
 

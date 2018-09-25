@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.training.api.PageResultResource;
-import cz.muni.ics.kypo.training.api.dto.GameLevelDTO;
+import cz.muni.ics.kypo.training.api.dto.gamelevel.GameLevelDTO;
 import cz.muni.ics.kypo.training.exception.FacadeLayerException;
 import cz.muni.ics.kypo.training.facade.GameLevelFacade;
 import cz.muni.ics.kypo.training.mapping.BeanMapping;
@@ -53,104 +53,101 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ComponentScan(basePackages = {"cz.muni.ics.kypo"})
 public class GameLevelsRestControllerTest {
 
-		@Autowired
-		private GameLevelsRestController gameLevelsRestController;
+	@Autowired
+	private GameLevelsRestController gameLevelsRestController;
 
-		@MockBean
-		private GameLevelFacade gameLevelFacade;
+	@MockBean
+	private GameLevelFacade gameLevelFacade;
 
-		private MockMvc mockMvc;
+	private MockMvc mockMvc;
 
-		@MockBean
-		@Qualifier("objMapperRESTApi")
-		private ObjectMapper objectMapper;
+	@MockBean
+	@Qualifier("objMapperRESTApi")
+	private ObjectMapper objectMapper;
 
-		@MockBean
-		private BeanMapping beanMapping;
+	@MockBean
+	private BeanMapping beanMapping;
 
-		private GameLevel gameLevel1, gameLevel2;
+	private GameLevel gameLevel1, gameLevel2;
+	private GameLevelDTO gameLevel1DTO, gameLevel2DTO;
+	private Page p;
+	private PageResultResource<GameLevelDTO> gameLevelDTOPageResultResource;
 
-		private GameLevelDTO gameLevel1DTO, gameLevel2DTO;
+	@Before
+	public void init() {
+		MockitoAnnotations.initMocks(this);
+		this.mockMvc = MockMvcBuilders.standaloneSetup(gameLevelsRestController)
+				.setCustomArgumentResolvers(new PageableHandlerMethodArgumentResolver(),
+						new QuerydslPredicateArgumentResolver(new QuerydslBindingsFactory(SimpleEntityPathResolver.INSTANCE), Optional.empty()))
+				.setMessageConverters(new MappingJackson2HttpMessageConverter()).build();
 
-		private Page p;
+		gameLevel1 = new GameLevel();
+		gameLevel1.setId(1L);
+		gameLevel1.setSolution("test1");
 
-		private PageResultResource<GameLevelDTO> gameLevelDTOPageResultResource;
+		gameLevel2 = new GameLevel();
+		gameLevel2.setId(2L);
+		gameLevel2.setSolution("test2");
 
-		@Before
-		public void init() {
-				MockitoAnnotations.initMocks(this);
-				this.mockMvc = MockMvcBuilders.standaloneSetup(gameLevelsRestController)
-						.setCustomArgumentResolvers(new PageableHandlerMethodArgumentResolver(),
-								new QuerydslPredicateArgumentResolver(new QuerydslBindingsFactory(SimpleEntityPathResolver.INSTANCE), Optional.empty()))
-						.setMessageConverters(new MappingJackson2HttpMessageConverter()).build();
+		gameLevel1DTO = new GameLevelDTO();
+		gameLevel1DTO.setId(1L);
+		gameLevel1DTO.setSolution("test1");
 
-				gameLevel1 = new GameLevel();
-				gameLevel1.setId(1L);
-				gameLevel1.setSolution("test1");
+		gameLevel2DTO = new GameLevelDTO();
+		gameLevel2DTO.setId(2L);
+		gameLevel2DTO.setSolution("test2");
 
-				gameLevel2 = new GameLevel();
-				gameLevel2.setId(2L);
-				gameLevel2.setSolution("test2");
+		List<GameLevel> expected = new ArrayList<>();
+		expected.add(gameLevel1);
+		expected.add(gameLevel2);
 
-				gameLevel1DTO = new GameLevelDTO();
-				gameLevel1DTO.setId(1L);
-				gameLevel1DTO.setSolution("test1");
+		p = new PageImpl<GameLevel>(expected);
 
-				gameLevel2DTO = new GameLevelDTO();
-				gameLevel2DTO.setId(2L);
-				gameLevel2DTO.setSolution("test2");
+		ObjectMapper obj = new ObjectMapper();
+		obj.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
+		given(objectMapper.getSerializationConfig()).willReturn(obj.getSerializationConfig());
 
-				List<GameLevel> expected = new ArrayList<>();
-				expected.add(gameLevel1);
-				expected.add(gameLevel2);
+		BeanMapping bM = new BeanMappingImpl(new ModelMapper());
+		gameLevelDTOPageResultResource = bM.mapToPageResultDTO(p, GameLevelDTO.class);
+	}
 
-				p = new PageImpl<GameLevel>(expected);
+	@Test
+	public void findGameLevelById() throws Exception {
+		given(gameLevelFacade.findById(any(Long.class))).willReturn(gameLevel1DTO);
+		String valueGl = convertObjectToJsonBytes(gameLevel1DTO);
+		given(objectMapper.writeValueAsString(any(Object.class))).willReturn(valueGl);
+		MockHttpServletResponse result = mockMvc.perform(get("/game-levels" + "/{id}", 1l))
+				.andExpect(status().isOk())
+				.andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+				.andReturn().getResponse();
+		assertEquals(convertObjectToJsonBytes(convertObjectToJsonBytes(gameLevel1DTO)), result.getContentAsString());
+	}
 
-				ObjectMapper obj = new ObjectMapper();
-				obj.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
-				given(objectMapper.getSerializationConfig()).willReturn(obj.getSerializationConfig());
+	@Test
+	public void findGameLevelByIdWithFacadeException() throws Exception {
+		willThrow(FacadeLayerException.class).given(gameLevelFacade).findById(any(Long.class));
+		Exception exception = mockMvc.perform(get("/game-levels" + "/{id}", 6l))
+				.andExpect(status().isNotFound())
+				.andReturn().getResolvedException();
+		assertEquals(ResourceNotFoundException.class, exception.getClass());
+	}
 
-				BeanMapping bM = new BeanMappingImpl(new ModelMapper());
-				gameLevelDTOPageResultResource = bM.mapToPageResultDTO(p, GameLevelDTO.class);
-		}
+	@Test
+	public void findAllGameLevels() throws Exception {
+		String valueGl = convertObjectToJsonBytes(gameLevelDTOPageResultResource);
+		given(objectMapper.writeValueAsString(any(Object.class))).willReturn(valueGl);
+		given(gameLevelFacade.findAll(any(Predicate.class),any(Pageable.class))).willReturn(gameLevelDTOPageResultResource);
 
-		@Test
-		public void findGameLevelById() throws Exception {
-				given(gameLevelFacade.findById(any(Long.class))).willReturn(gameLevel1DTO);
-				String valueGl = convertObjectToJsonBytes(gameLevel1DTO);
-				given(objectMapper.writeValueAsString(any(Object.class))).willReturn(valueGl);
-				MockHttpServletResponse result = mockMvc.perform(get("/game-levels" + "/{id}", 1l))
-						.andExpect(status().isOk())
-						.andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-						.andReturn().getResponse();
-				assertEquals(convertObjectToJsonBytes(convertObjectToJsonBytes(gameLevel1DTO)), result.getContentAsString());
-		}
+		MockHttpServletResponse result = mockMvc.perform(get("/game-levels"))
+				.andExpect(status().isOk())
+				.andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+				.andReturn().getResponse();
+		assertEquals(convertObjectToJsonBytes(convertObjectToJsonBytes(gameLevelDTOPageResultResource)), result.getContentAsString());
+	}
 
-		@Test
-		public void findGameLevelByIdWithFacadeException() throws Exception {
-				willThrow(FacadeLayerException.class).given(gameLevelFacade).findById(any(Long.class));
-				Exception exception = mockMvc.perform(get("/game-levels" + "/{id}", 6l))
-						.andExpect(status().isNotFound())
-						.andReturn().getResolvedException();
-				assertEquals(ResourceNotFoundException.class, exception.getClass());
-		}
-
-		@Test
-		public void findAllGameLevels() throws Exception {
-				String valueGl = convertObjectToJsonBytes(gameLevelDTOPageResultResource);
-				given(objectMapper.writeValueAsString(any(Object.class))).willReturn(valueGl);
-				given(gameLevelFacade.findAll(any(Predicate.class),any(Pageable.class))).willReturn(gameLevelDTOPageResultResource);
-
-				MockHttpServletResponse result = mockMvc.perform(get("/game-levels"))
-						.andExpect(status().isOk())
-						.andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-						.andReturn().getResponse();
-				assertEquals(convertObjectToJsonBytes(convertObjectToJsonBytes(gameLevelDTOPageResultResource)), result.getContentAsString());
-		}
-
-		private static String convertObjectToJsonBytes(Object object) throws IOException {
-				ObjectMapper mapper = new ObjectMapper();
-				return mapper.writeValueAsString(object);
-		}
+	private static String convertObjectToJsonBytes(Object object) throws IOException {
+		ObjectMapper mapper = new ObjectMapper();
+		return mapper.writeValueAsString(object);
+	}
 
 }

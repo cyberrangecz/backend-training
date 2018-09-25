@@ -4,7 +4,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.training.api.PageResultResource;
-import cz.muni.ics.kypo.training.api.dto.*;
+import cz.muni.ics.kypo.training.api.dto.IsCorrectFlagDTO;
+import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelDTO;
+import cz.muni.ics.kypo.training.api.dto.gamelevel.GameLevelDTO;
+import cz.muni.ics.kypo.training.api.dto.hint.HintDTO;
+import cz.muni.ics.kypo.training.api.dto.infolevel.InfoLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.run.AccessTrainingRunDTO;
 import cz.muni.ics.kypo.training.api.dto.run.AccessedTrainingRunDTO;
 import cz.muni.ics.kypo.training.api.dto.run.TrainingRunDTO;
@@ -328,6 +332,7 @@ public class TrainingRunsRestControllerTest {
 				Exception exception = mockMvc.perform(get("/training-runs/{id}/get-hint/{hintId}", trainingRun1.getId(), hintDTO.getId()))
 						.andExpect(status().isNotFound())
 						.andReturn().getResolvedException();
+			System.out.println(exception);
 				assertEquals(ResourceNotFoundException.class, exception.getClass());
 		}
 

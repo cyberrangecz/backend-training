@@ -2,16 +2,23 @@ package cz.muni.ics.kypo.training.facade;
 
 import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.training.api.PageResultResource;
-import cz.muni.ics.kypo.training.api.dto.AssessmentLevelDTO;
-import cz.muni.ics.kypo.training.api.dto.GameLevelDTO;
-import cz.muni.ics.kypo.training.api.dto.InfoLevelDTO;
-import cz.muni.ics.kypo.training.api.dto.TrainingDefinitionDTO;
+import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceCreateDTO;
+import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceUpdateDTO;
 import cz.muni.ics.kypo.training.exception.FacadeLayerException;
 import cz.muni.ics.kypo.training.model.AssessmentLevel;
 import cz.muni.ics.kypo.training.model.GameLevel;
 import cz.muni.ics.kypo.training.model.InfoLevel;
 import cz.muni.ics.kypo.training.model.TrainingDefinition;
 import org.springframework.data.domain.Pageable;
+import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelCreateDTO;
+import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelUpdateDTO;
+import cz.muni.ics.kypo.training.api.dto.gamelevel.GameLevelCreateDTO;
+import cz.muni.ics.kypo.training.api.dto.gamelevel.GameLevelUpdateDTO;
+import cz.muni.ics.kypo.training.api.dto.infolevel.InfoLevelCreateDTO;
+import cz.muni.ics.kypo.training.api.dto.infolevel.InfoLevelUpdateDTO;
+import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionCreateDTO;
+import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionDTO;
+import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionUpdateDTO;
 
 /**
  * 
@@ -47,7 +54,7 @@ public interface TrainingDefinitionFacade {
    * @return DTO of updated definition
    * @throws FacadeLayerException if training definition is not found
    */
-  void update(TrainingDefinition trainingDefinition) throws FacadeLayerException;
+  void update(TrainingDefinitionUpdateDTO trainingDefinition) throws FacadeLayerException;
 
   /**
    * Creates new training definition
@@ -55,7 +62,7 @@ public interface TrainingDefinitionFacade {
    * @return DTO of created definition
    * @throws FacadeLayerException
    */
-  TrainingDefinitionDTO create(TrainingDefinition trainingDefinition) throws FacadeLayerException;
+  TrainingDefinitionCreateDTO create(TrainingDefinitionCreateDTO trainingDefinition) throws FacadeLayerException;
 
   /**
    * Clones Training Definition by id
@@ -107,7 +114,7 @@ public interface TrainingDefinitionFacade {
    * @param gameLevel to be updated
    * @throws FacadeLayerException if training definition is not found
    */
-   void updateGameLevel(Long definitionId, GameLevel gameLevel) throws FacadeLayerException;
+   void updateGameLevel(Long definitionId, GameLevelUpdateDTO gameLevel) throws FacadeLayerException;
 
 
   /**
@@ -116,7 +123,7 @@ public interface TrainingDefinitionFacade {
    * @param infoLevel to be updated
    * @throws FacadeLayerException if training definition is not found
    */
-  void updateInfoLevel(Long definitionId, InfoLevel infoLevel) throws FacadeLayerException;
+  void updateInfoLevel(Long definitionId, InfoLevelUpdateDTO infoLevel) throws FacadeLayerException;
 
 
   /**
@@ -125,7 +132,7 @@ public interface TrainingDefinitionFacade {
    * @param assessmentLevel to be updated
    * @throws FacadeLayerException if training definition is not found
    */
-  void updateAssessmentLevel(Long definitionId, AssessmentLevel assessmentLevel) throws FacadeLayerException;
+  void updateAssessmentLevel(Long definitionId, AssessmentLevelUpdateDTO assessmentLevel) throws FacadeLayerException;
 
 
   /**
@@ -135,7 +142,7 @@ public interface TrainingDefinitionFacade {
    * @return DTO of new info level
    * @throws FacadeLayerException if training definition is not found
    */
-   InfoLevelDTO createInfoLevel(Long definitionId, InfoLevel infoLevel) throws FacadeLayerException;
+   InfoLevelCreateDTO createInfoLevel(Long definitionId, InfoLevelCreateDTO infoLevel) throws FacadeLayerException;
 
 
   /**
@@ -145,7 +152,7 @@ public interface TrainingDefinitionFacade {
    * @return DTO of new game level
    * @throws FacadeLayerException if training definition is not found
    */
-  GameLevelDTO createGameLevel(Long definitionId, GameLevel gameLevel) throws FacadeLayerException;
+  GameLevelCreateDTO createGameLevel(Long definitionId, GameLevelCreateDTO gameLevel) throws FacadeLayerException;
 
 
   /**
@@ -155,7 +162,7 @@ public interface TrainingDefinitionFacade {
    * @return DTO of new assessment level
    * @throws FacadeLayerException if training definition is not found
    */
-  AssessmentLevelDTO createAssessmentLevel(Long definitionId, AssessmentLevel assessmentLevel) throws FacadeLayerException;
+  AssessmentLevelCreateDTO createAssessmentLevel(Long definitionId, AssessmentLevelCreateDTO assessmentLevel) throws FacadeLayerException;
 
 
 }

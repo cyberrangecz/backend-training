@@ -4,7 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.training.api.PageResultResource;
-import cz.muni.ics.kypo.training.api.dto.TrainingInstanceDTO;
+import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceCreateDTO;
+import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceDTO;
+import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceUpdateDTO;
 import cz.muni.ics.kypo.training.exception.FacadeLayerException;
 import cz.muni.ics.kypo.training.exceptions.ErrorCode;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
@@ -39,15 +41,14 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.BDDMockito.willThrow;
+import static org.mockito.BDDMockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -69,12 +70,11 @@ public class TrainingInstancesRestControllerTest {
 	@Qualifier("objMapperRESTApi")
 	private ObjectMapper objectMapper;
 
-	@MockBean
-	private BeanMapping beanMapping;
-
 	private TrainingInstance trainingInstance1, trainingInstance2;
 
 	private TrainingInstanceDTO trainingInstance1DTO, trainingInstance2DTO;
+	private TrainingInstanceCreateDTO trainingInstanceCreateDTO;
+	private TrainingInstanceUpdateDTO trainingInstanceUpdateDTO;
 
 	private Page p;
 
@@ -97,12 +97,25 @@ public class TrainingInstancesRestControllerTest {
 		trainingInstance2.setTitle("test2");
 
 		trainingInstance1DTO = new TrainingInstanceDTO();
-		trainingInstance1.setId(1L);
-		trainingInstance1.setTitle("test1");
+		trainingInstance1DTO.setId(1L);
+		trainingInstance1DTO.setTitle("test1");
 
 		trainingInstance2DTO = new TrainingInstanceDTO();
-		trainingInstance2.setId(2L);
-		trainingInstance2.setTitle("test2");
+		trainingInstance2DTO.setId(2L);
+		trainingInstance2DTO.setTitle("test2");
+
+		trainingInstanceCreateDTO = new TrainingInstanceCreateDTO();
+		trainingInstanceCreateDTO.setTitle("create instance title");
+		LocalDateTime startTime = LocalDateTime.now();
+		trainingInstanceCreateDTO.setStartTime(startTime);
+		LocalDateTime endTime = LocalDateTime.now().plusHours(10);
+		trainingInstanceCreateDTO.setEndTime(endTime);
+
+		trainingInstanceUpdateDTO = new TrainingInstanceUpdateDTO();
+		trainingInstanceUpdateDTO.setId(5L);
+		trainingInstanceUpdateDTO.setTitle("update instance title");
+		trainingInstanceUpdateDTO.setStartTime(startTime);
+		trainingInstanceUpdateDTO.setEndTime(endTime);
 
 		List<TrainingInstance> expected = new ArrayList<>();
 		expected.add(trainingInstance1);
@@ -118,27 +131,27 @@ public class TrainingInstancesRestControllerTest {
 		trainingInstanceDTOPageResultResource = bM.mapToPageResultDTO(p, TrainingInstanceDTO.class);
 	}
 
-		@Test
-		public void findTrainingInstanceById() throws Exception {
-				given(trainingInstanceFacade.findById(any(Long.class))).willReturn(trainingInstance1DTO);
-				String valueTi = convertObjectToJsonBytes(trainingInstance1DTO);
-				given(objectMapper.writeValueAsString(any(Object.class))).willReturn(valueTi);
-				MockHttpServletResponse result = mockMvc.perform(get("/training-instances" + "/{id}", 1l))
-						.andExpect(status().isOk())
-						.andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-						.andReturn().getResponse();
-				assertEquals(convertObjectToJsonBytes(convertObjectToJsonBytes(trainingInstance1DTO)), result.getContentAsString());
-		}
+	@Test
+	public void findTrainingInstanceById() throws Exception {
+		given(trainingInstanceFacade.findById(any(Long.class))).willReturn(trainingInstance1DTO);
+		String valueTi = convertObjectToJsonBytes(trainingInstance1DTO);
+		given(objectMapper.writeValueAsString(any(Object.class))).willReturn(valueTi);
+		MockHttpServletResponse result = mockMvc.perform(get("/training-instances" + "/{id}", 1l))
+				.andExpect(status().isOk())
+				.andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+				.andReturn().getResponse();
+		assertEquals(convertObjectToJsonBytes(convertObjectToJsonBytes(trainingInstance1DTO)), result.getContentAsString());
+	}
 
-		@Test
-		public void findTrainingInstanceByIdWithFacadeException() throws Exception {
-				Exception exceptionThrow = new ServiceLayerException("message", ErrorCode.RESOURCE_NOT_FOUND);
-				willThrow(new FacadeLayerException(exceptionThrow)).given(trainingInstanceFacade).findById(any(Long.class));
-				Exception exception = mockMvc.perform(get("/training-instances" + "/{id}", 6l))
-						.andExpect(status().isNotFound())
-						.andReturn().getResolvedException();
-				assertEquals(ResourceNotFoundException.class, exception.getClass());
-		}
+	@Test
+	public void findTrainingInstanceByIdWithFacadeException() throws Exception {
+		Exception exceptionThrow = new ServiceLayerException("message", ErrorCode.RESOURCE_NOT_FOUND);
+		willThrow(new FacadeLayerException(exceptionThrow)).given(trainingInstanceFacade).findById(any(Long.class));
+		Exception exception = mockMvc.perform(get("/training-instances" + "/{id}", 6l))
+				.andExpect(status().isNotFound())
+				.andReturn().getResolvedException();
+		assertEquals(ResourceNotFoundException.class, exception.getClass());
+	}
 
 		@Test
 		public void findAllTrainingInstances() throws Exception {
@@ -153,12 +166,12 @@ public class TrainingInstancesRestControllerTest {
 				assertEquals(convertObjectToJsonBytes(convertObjectToJsonBytes(trainingInstanceDTOPageResultResource)), result.getContentAsString());
 		}
 
+
 		@Test
 		public void createTrainingInstance() throws Exception {
 				String valueTi = convertObjectToJsonBytes(trainingInstance1DTO);
 				given(objectMapper.writeValueAsString(any(Object.class))).willReturn(valueTi);
-				given(trainingInstanceFacade.create(any(TrainingInstance.class))).willReturn(trainingInstance1DTO);
-				given(beanMapping.mapTo(any(TrainingInstanceDTO.class), eq(TrainingInstance.class))).willReturn(trainingInstance1);
+				given(trainingInstanceFacade.create(any(TrainingInstanceCreateDTO.class))).willReturn(trainingInstanceCreateDTO);
 				MockHttpServletResponse result = mockMvc.perform(post("/training-instances")
 						.content(convertObjectToJsonBytes(trainingInstance1))
 						.contentType(MediaType.APPLICATION_JSON_VALUE))
@@ -182,8 +195,7 @@ public class TrainingInstancesRestControllerTest {
 		@Test
 		public void updateTrainingInstanceWithFacadeException() throws Exception {
 				Exception exceptionThrow = new ServiceLayerException("message", ErrorCode.RESOURCE_CONFLICT);
-				willThrow(new FacadeLayerException(exceptionThrow)).given(trainingInstanceFacade).update(any(TrainingInstance.class));
-				given(beanMapping.mapTo(any(TrainingInstanceDTO.class), eq(TrainingInstance.class))).willReturn(trainingInstance1);
+				willThrow(new FacadeLayerException(exceptionThrow)).given(trainingInstanceFacade).update(any(TrainingInstanceUpdateDTO.class));
 				Exception exception = mockMvc.perform(put("/training-instances")
 						.content(convertObjectToJsonBytes(trainingInstance1))
 						.contentType(MediaType.APPLICATION_JSON_VALUE))
@@ -212,8 +224,38 @@ public class TrainingInstancesRestControllerTest {
 				assertEquals(ResourceNotFoundException.class, exception.getClass());
 		}
 
-		private static String convertObjectToJsonBytes(Object object) throws IOException {
-				ObjectMapper mapper = new ObjectMapper();
-				return mapper.writeValueAsString(object);
-		}
+
+
+
+
+
+	// TODO json parser cannot parse LocalDateTime
+	// @Test
+	// public void createTrainingInstance() throws Exception {
+	// String valueTi = convertObjectToJsonBytes(trainingInstanceCreateDTO);
+	// given(objectMapper.writeValueAsString(any(Object.class))).willReturn(valueTi);
+	// given(trainingInstanceFacade.create(any(TrainingInstanceCreateDTO.class))).willReturn(trainingInstanceCreateDTO);
+	// given(beanMapping.mapTo(any(TrainingInstanceCreateDTO.class),
+	// eq(TrainingInstance.class))).willReturn(trainingInstance1);
+	// MockHttpServletResponse result = mockMvc
+	// .perform(post("/training-instances").content(convertObjectToJsonBytes(trainingInstanceCreateDTO))
+	// .contentType(MediaType.APPLICATION_JSON_VALUE))
+	// .andExpect(status().isOk()).andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON)).andReturn().getResponse();
+	// assertEquals(convertObjectToJsonBytes(convertObjectToJsonBytes(trainingInstanceCreateDTO)),
+	// result.getContentAsString());
+	// }
+	//
+	// @Test
+	// public void createTrainingInstanceWithFacadeException() throws Exception {
+	// willThrow(FacadeLayerException.class).given(trainingInstanceFacade).create(trainingInstanceCreateDTO);
+	// Exception exception =
+	// mockMvc.perform(post("/training-instances").content(convertObjectToJsonBytes(trainingInstanceCreateDTO))
+	// .contentType(MediaType.APPLICATION_JSON_VALUE)).andExpect(status().isNotAcceptable()).andReturn().getResolvedException();
+	// assertEquals(ResourceNotCreatedException.class, exception.getClass());
+	// }
+
+	private static String convertObjectToJsonBytes(Object object) throws IOException {
+		ObjectMapper mapper = new ObjectMapper();
+		return mapper.writeValueAsString(object);
+	}
 }

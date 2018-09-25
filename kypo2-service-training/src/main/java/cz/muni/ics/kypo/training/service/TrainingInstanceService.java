@@ -5,6 +5,7 @@ import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.model.TrainingInstance;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
 
 /**
  * 
@@ -60,5 +61,13 @@ public interface TrainingInstanceService {
    */
   char[] generatePassword() throws ServiceLayerException;
 
+
+	/**
+	 * Allocates sandboxes for training instance
+	 *
+	 * @param instanceId of training instance
+	 * @throws ServiceLayerException if instance is not found
+	 */
+	ResponseEntity<Void> allocateSandboxes(Long instanceId) throws ServiceLayerException;
 
 }

@@ -1,12 +1,13 @@
 package cz.muni.ics.kypo.training.api.dto;
 
 import io.swagger.annotations.ApiModel;
-
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.util.Objects;
+import cz.muni.ics.kypo.training.api.dto.posthook.PostHookDTO;
+import cz.muni.ics.kypo.training.api.dto.prehook.PreHookDTO;
 
 /**
  * 
@@ -22,7 +23,7 @@ public abstract class AbstractLevelDTO {
 	@NotNull
 	@Min(value = 0, message = "Max score cannot be lower than 0")
 	@Max(value = 100, message = "Max score cannot be greater than 100")
-	protected int maxScore;
+	protected Integer maxScore;
 	protected Long nextLevel;
 	protected PreHookDTO preHook;
 	protected PostHookDTO postHook;
@@ -45,11 +46,11 @@ public abstract class AbstractLevelDTO {
 		this.title = title;
 	}
 
-	public int getMaxScore() {
+	public Integer getMaxScore() {
 		return maxScore;
 	}
 
-	public void setMaxScore(int maxScore) {
+	public void setMaxScore(Integer maxScore) {
 		this.maxScore = maxScore;
 	}
 

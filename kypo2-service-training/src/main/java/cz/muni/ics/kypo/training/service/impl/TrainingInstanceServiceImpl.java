@@ -14,12 +14,19 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
+import org.springframework.web.client.RestTemplate;
+
 
 /**
  * 
@@ -29,17 +36,21 @@ import java.util.Optional;
 @Service
 public class TrainingInstanceServiceImpl implements TrainingInstanceService {
 
-  private static final Logger LOG = LoggerFactory.getLogger(TrainingInstanceServiceImpl.class);
+	private static final Logger LOG = LoggerFactory.getLogger(TrainingInstanceServiceImpl.class);
+	@Value("${server.url}")
+	private String serverUrl;
 
-  private TrainingInstanceRepository trainingInstanceRepository;
-  private PasswordRepository passwordRepository;
+	private TrainingInstanceRepository trainingInstanceRepository;
+	private PasswordRepository passwordRepository;
+	private RestTemplate restTemplate;
 
-  @Autowired
-  public TrainingInstanceServiceImpl(TrainingInstanceRepository trainingInstanceRepository, PasswordRepository passwordRepository) {
-    this.trainingInstanceRepository = trainingInstanceRepository;
-    this.passwordRepository = passwordRepository;
-  }
-
+	@Autowired
+	public TrainingInstanceServiceImpl(TrainingInstanceRepository trainingInstanceRepository, PasswordRepository passwordRepository,
+			RestTemplate restTemplate) {
+		this.trainingInstanceRepository = trainingInstanceRepository;
+		this.passwordRepository = passwordRepository;
+		this.restTemplate = restTemplate;
+	}
 
   @Override
   public TrainingInstance findById(long id) {
@@ -102,4 +113,15 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
     return newPassword.toCharArray();
   }
 
+
+	@Override
+	public ResponseEntity<Void> allocateSandboxes(Long instanceId) throws ServiceLayerException {
+		LOG.debug("allocateSandboxes({})", instanceId);
+		HttpHeaders httpHeaders = new HttpHeaders();
+		TrainingInstance trainingInstance = findById(instanceId);
+		int count = trainingInstance.getPoolSize();
+		Long sandboxId = trainingInstance.getTrainingDefinition().getSandBoxDefinitionRef().getId();
+		String url = "kypo-openstack/api/v1/sandbox-definitions/"+ sandboxId +"/build/"+ count;
+		return restTemplate.exchange(serverUrl + url, HttpMethod.POST, new HttpEntity<>(httpHeaders), Void.class);
+	}
 }

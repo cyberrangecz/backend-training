@@ -26,8 +26,8 @@ public class GameLevel extends AbstractLevel implements Serializable {
   @Type(type = "org.hibernate.type.StringType")
   @Column(name = "solution", nullable = false)
   private String solution;
-  @Column(name = "solution_penalty", nullable = false)
-  private int solutionPenalty = super.getMaxScore() - 1;
+  @Column(name = "solution_penalized", nullable = false)
+  private boolean solutionPenalized;
   @Column(name = "estimated_duration")
   private int estimatedDuration;
   @Column(name = "attachments")
@@ -63,12 +63,12 @@ public class GameLevel extends AbstractLevel implements Serializable {
     this.solution = solution;
   }
 
-  public int getSolutionPenalty() {
-    return solutionPenalty;
+  public boolean isSolutionPenalized() {
+    return solutionPenalized;
   }
 
-  public void setSolutionPenalty(int solutionPenalty) {
-    this.solutionPenalty = solutionPenalty;
+  public void setSolutionPenalized(boolean solutionPenalized) {
+    this.solutionPenalized = solutionPenalized;
   }
 
   public int getEstimatedDuration() {
@@ -113,8 +113,8 @@ public class GameLevel extends AbstractLevel implements Serializable {
     if (o == null || getClass() != o.getClass()) return false;
     if (!super.equals(o)) return false;
     GameLevel gameLevel = (GameLevel) o;
-    return  solutionPenalty == gameLevel.solutionPenalty &&
-            estimatedDuration == gameLevel.estimatedDuration &&
+    return  estimatedDuration == gameLevel.estimatedDuration &&
+            solutionPenalized == gameLevel.solutionPenalized &&
             incorrectFlagLimit == gameLevel.incorrectFlagLimit &&
             Objects.equals(flag, gameLevel.flag) &&
             Objects.equals(content, gameLevel.content) &&
@@ -126,7 +126,7 @@ public class GameLevel extends AbstractLevel implements Serializable {
   @Override
   public int hashCode() {
 
-    int result = Objects.hash(super.hashCode(), flag, content, solution, solutionPenalty, estimatedDuration, hints, incorrectFlagLimit);
+    int result = Objects.hash(super.hashCode(), flag, content, solution, solutionPenalized, estimatedDuration, hints, incorrectFlagLimit);
     result = 31 * result + Arrays.hashCode(attachments);
     return result;
   }
@@ -137,7 +137,7 @@ public class GameLevel extends AbstractLevel implements Serializable {
             "flag='" + flag + '\'' +
             ", content='" + content + '\'' +
             ", solution='" + solution + '\'' +
-            ", solutionPenalty=" + solutionPenalty +
+            ", solutionPenalized=" + solutionPenalized +
             ", estimatedDuration=" + estimatedDuration +
             ", attachments=" + Arrays.toString(attachments) +
             ", hints=" + hints +

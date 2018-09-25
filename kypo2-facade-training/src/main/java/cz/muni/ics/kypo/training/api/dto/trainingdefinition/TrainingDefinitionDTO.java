@@ -1,10 +1,10 @@
-package cz.muni.ics.kypo.training.api.dto;
+package cz.muni.ics.kypo.training.api.dto.trainingdefinition;
 
 import cz.muni.ics.kypo.training.model.enums.TDState;
 import io.swagger.annotations.ApiModel;
-
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
+import cz.muni.ics.kypo.training.api.dto.AuthorRefDTO;
+import cz.muni.ics.kypo.training.api.dto.SandboxDefinitionRefDTO;
+import cz.muni.ics.kypo.training.api.dto.infolevel.BasicLevelInfoDTO;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -18,16 +18,12 @@ import java.util.Set;
 public class TrainingDefinitionDTO {
 
 	private Long id;
-	@NotEmpty(message = "Training definition title cannot be empty")
-	// @Pattern(regexp = "/\s/g", message = "")
 	private String title;
 	private String description;
 	private String[] prerequisities;
 	private String[] outcomes;
 	private TDState state;
-	@NotEmpty(message = "Authors cannot be empty")
 	private Set<AuthorRefDTO> authorRefDTO = new HashSet<>();
-	@NotNull(message = "Sandbox definition cannot be empty")
 	private SandboxDefinitionRefDTO sandBoxDefinitionRefDTO;
 	private Long startingLevel;
 	private Set<BasicLevelInfoDTO> basicLevelInfoDTOs;

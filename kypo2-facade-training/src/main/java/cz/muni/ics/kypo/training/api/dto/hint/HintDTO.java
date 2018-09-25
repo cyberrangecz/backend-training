@@ -1,4 +1,4 @@
-package cz.muni.ics.kypo.training.api.dto;
+package cz.muni.ics.kypo.training.api.dto.hint;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.PositiveOrZero;

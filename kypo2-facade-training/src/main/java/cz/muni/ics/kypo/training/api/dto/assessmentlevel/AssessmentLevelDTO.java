@@ -1,5 +1,6 @@
-package cz.muni.ics.kypo.training.api.dto;
+package cz.muni.ics.kypo.training.api.dto.assessmentlevel;
 
+import cz.muni.ics.kypo.training.api.dto.AbstractLevelDTO;
 import cz.muni.ics.kypo.training.model.enums.AssessmentType;
 import io.swagger.annotations.ApiModel;
 

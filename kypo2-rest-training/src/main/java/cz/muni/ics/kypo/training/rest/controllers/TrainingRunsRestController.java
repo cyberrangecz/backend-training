@@ -1,12 +1,12 @@
 package cz.muni.ics.kypo.training.rest.controllers;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.bohnman.squiggly.Squiggly;
 import com.github.bohnman.squiggly.util.SquigglyUtils;
 import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.training.api.PageResultResource;
 import cz.muni.ics.kypo.training.api.dto.AbstractLevelDTO;
-import cz.muni.ics.kypo.training.api.dto.HintDTO;
 import cz.muni.ics.kypo.training.api.dto.IsCorrectFlagDTO;
 import cz.muni.ics.kypo.training.api.dto.run.AccessTrainingRunDTO;
 import cz.muni.ics.kypo.training.api.dto.run.AccessedTrainingRunDTO;
@@ -17,6 +17,12 @@ import cz.muni.ics.kypo.training.facade.TrainingRunFacade;
 import cz.muni.ics.kypo.training.model.TrainingRun;
 import cz.muni.ics.kypo.training.rest.exceptions.*;
 import io.swagger.annotations.*;
+import cz.muni.ics.kypo.training.api.dto.hint.HintDTO;
+import cz.muni.ics.kypo.training.rest.exceptions.ResourceNotFoundException;
+
+import java.util.List;
+
+import org.jsondoc.core.annotation.ApiObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,8 +35,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
-
-
 
 /**
  * @author Dominik Pilar (445537)
@@ -87,18 +91,26 @@ public class TrainingRunsRestController {
        throw throwException(ex);
     }
   }
-  //@formatter:on
 
+  @ApiObject(name = "Result info (Page)",
+  		description = "Content (Retrieved data) and meta information about REST API result page. Including page number, number of elements in page, size of elements, total number of elements and total number of pages")
+	private static class TrainingRunRestResource extends PageResultResource<TrainingRunDTO>{
+	 	 @JsonProperty(required = true)
+	 	 @ApiModelProperty(value = "Retrieved Training Runs from databases.")
+	 	 private List<TrainingRunDTO> content;
+	 	 @JsonProperty(required = true)
+		 @ApiModelProperty(value = "Pagination including: page number, number of elements in page, size, total elements and total pages.")
+		 private Pagination pagination;
+	}  
+  
 	/**
 	 * Get all Training Runs.
 	 * 
 	 * @return all Training Runs.
 	 */
-	//@formatter:off
   @ApiOperation(httpMethod = "GET",
       value = "Get all Training Runs.",
-      response = TrainingRunDTO.class,
-      responseContainer = "Page",
+      response = TrainingRunRestResource.class,
       nickname = "findAllTrainingRuns",
       produces = "application/json"
   )
@@ -116,14 +128,12 @@ public class TrainingRunsRestController {
     Squiggly.init(objectMapper, fields);
     return new ResponseEntity<>(SquigglyUtils.stringify(objectMapper, trainingRunResource), HttpStatus.OK);
   }
-  //@formatter:on
 
 	/**
 	 * Access training run.
 	 *
 	 * @return first level of training run.
 	 */
-	//@formatter:off
     @ApiOperation(httpMethod = "POST",
             value = "Access training run.",
             response = AccessTrainingRunDTO.class,
@@ -149,18 +159,25 @@ public class TrainingRunsRestController {
         }
     }
 
-
-
+    @ApiObject(name = "Result info (Page)",
+    		description = "Content (Retrieved data) and meta information about REST API result page. Including page number, number of elements in page, size of elements, total number of elements and total number of pages")
+  	private static class AccessedTrainingRunRestResource extends PageResultResource<AccessedTrainingRunDTO>{
+  	 	 @JsonProperty(required = true)
+  	 	 @ApiModelProperty(value = "Retrieved Accessed Training Runs from databases.")
+  	 	 private List<AccessedTrainingRunDTO> content;
+  	 	 @JsonProperty(required = true)
+  		 @ApiModelProperty(value = "Pagination including: page number, number of elements in page, size, total elements and total pages.")
+  		 private Pagination pagination;
+  	}
 
     /**
      * Get all accessed Training Runs.
      *
      * @return all accessed Training Runs.
      */
-    //@formatter:off
     @ApiOperation(httpMethod = "GET",
             value = "Get all accessed Training Runs.",
-            response = AccessedTrainingRunDTO.class,
+            response = AccessedTrainingRunRestResource.class,
             responseContainer = "Page",
             nickname = "findAllTrainingRuns",
             produces = "application/json",
@@ -184,7 +201,6 @@ public class TrainingRunsRestController {
      * @param id of Training Run for which to get next level.
      * @return Requested next level.
      */
-    //@formatter:off
     @ApiOperation(httpMethod = "GET",
             value = "Get Level of given Training Run.",
             response = AbstractLevelDTO.class,
@@ -202,6 +218,7 @@ public class TrainingRunsRestController {
                                                       @ApiParam(value = "Fields which should be returned in REST API response", required = false)
                                                       @RequestParam(value = "fields", required = false) String fields) {
         LOG.debug("getNextLevel({},{})", id, fields);
+        System.out.println("FUNGUJE");
         try {
             AbstractLevelDTO levelDTO = trainingRunFacade.getNextLevel(id);
             Squiggly.init(objectMapper, fields);
@@ -217,7 +234,6 @@ public class TrainingRunsRestController {
      * @param id of Training Run for which to get solution.
      * @return Requested solution of game level.
      */
-    //@formatter:off
     @ApiOperation(httpMethod = "GET",
             value = "Get solution of game level.",
             response = String.class,
@@ -248,7 +264,6 @@ public class TrainingRunsRestController {
      * @param id of Training Run for which to get hint.
      * @return Requested hint of game level.
      */
-    //@formatter:off
     @ApiOperation(httpMethod = "GET",
             value = "Get hint of game level.",
             response = String.class,
@@ -283,7 +298,6 @@ public class TrainingRunsRestController {
      * @param flag submited string.
      * @return True if flag is correct, false if flag is wrong.
      */
-    //@formatter:off
     @ApiOperation(httpMethod = "GET",
             value = "Get boolean about flag correctness .",
             response = Boolean.class,
@@ -300,8 +314,8 @@ public class TrainingRunsRestController {
     @GetMapping(value = "/{id}/is-correct-flag", produces = MediaType.APPLICATION_JSON_VALUE)
 
     public ResponseEntity<IsCorrectFlagDTO> isCorrectFlag(@ApiParam(name = "Training Run ID") @PathVariable Long id,
-                                                      @ApiParam(value = "Submitted flag") @RequestParam(value = "flag") String flag,
-    @ApiParam(value = "Solution taken") @RequestParam(value = "solutionTaken") boolean solutionTaken) {
+                                                      	  @ApiParam(value = "Submitted flag") @RequestParam(value = "flag") String flag,
+    																											@ApiParam(value = "Solution taken") @RequestParam(value = "solutionTaken") boolean solutionTaken) {
         LOG.debug("isCorrectFlag({}, {})", id, flag);
         try {
             IsCorrectFlagDTO isCorrectFlagDTO = trainingRunFacade.isCorrectFlag(id, flag, solutionTaken);

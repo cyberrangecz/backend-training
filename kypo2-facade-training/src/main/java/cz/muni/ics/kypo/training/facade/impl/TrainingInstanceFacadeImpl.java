@@ -1,22 +1,24 @@
 package cz.muni.ics.kypo.training.facade.impl;
 
+import java.util.Objects;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.training.api.PageResultResource;
-import cz.muni.ics.kypo.training.api.dto.TrainingInstanceDTO;
+import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceCreateDTO;
+import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceDTO;
+import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceUpdateDTO;
 import cz.muni.ics.kypo.training.exception.FacadeLayerException;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.facade.TrainingInstanceFacade;
 import cz.muni.ics.kypo.training.mapping.BeanMapping;
 import cz.muni.ics.kypo.training.model.TrainingInstance;
 import cz.muni.ics.kypo.training.service.TrainingInstanceService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.Objects;
 
 /**
  * @author Pavel Šeda
@@ -26,16 +28,16 @@ import java.util.Objects;
 @Transactional
 public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
 
-  private static final Logger LOG = LoggerFactory.getLogger(TrainingInstanceFacadeImpl.class);
+	private static final Logger LOG = LoggerFactory.getLogger(TrainingInstanceFacadeImpl.class);
 
-  private TrainingInstanceService trainingInstanceService;
-  private BeanMapping beanMapping;
+	private TrainingInstanceService trainingInstanceService;
+	private BeanMapping beanMapping;
 
-  @Autowired
-  public TrainingInstanceFacadeImpl(TrainingInstanceService trainingInstanceService, BeanMapping beanMapping) {
-    this.trainingInstanceService = trainingInstanceService;
-    this.beanMapping = beanMapping;
-  }
+	@Autowired
+	public TrainingInstanceFacadeImpl(TrainingInstanceService trainingInstanceService, BeanMapping beanMapping) {
+		this.trainingInstanceService = trainingInstanceService;
+		this.beanMapping = beanMapping;
+	}
 
   @Override
   @Transactional(readOnly = true)
@@ -62,11 +64,11 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
 
   @Override
   @Transactional
-  public void update(TrainingInstance trainingInstance) {
+  public void update(TrainingInstanceUpdateDTO trainingInstance) {
     LOG.debug("update({})",trainingInstance);
     try{
       Objects.requireNonNull(trainingInstance);
-      trainingInstanceService.update(trainingInstance);
+      trainingInstanceService.update(beanMapping.mapTo(trainingInstance, TrainingInstance.class));
     } catch (ServiceLayerException ex){
       throw new FacadeLayerException(ex);
     }
@@ -74,11 +76,12 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
 
   @Override
   @Transactional
-  public TrainingInstanceDTO create(TrainingInstance trainingInstance) {
+  public TrainingInstanceCreateDTO create(TrainingInstanceCreateDTO trainingInstance) {
     LOG.debug("create({})", trainingInstance);
     try{
       Objects.requireNonNull(trainingInstance);
-      return beanMapping.mapTo(trainingInstanceService.create(trainingInstance), TrainingInstanceDTO.class);
+      TrainingInstance newTI = trainingInstanceService.create(beanMapping.mapTo(trainingInstance, TrainingInstance.class));
+      return beanMapping.mapTo(newTI, TrainingInstanceCreateDTO.class);
     } catch(ServiceLayerException ex) {
       throw new FacadeLayerException(ex);
     }
@@ -105,4 +108,13 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
       throw new FacadeLayerException(ex);
     }
   }
+
+	@Override public ResponseEntity<Void> allocateSandboxes(Long instanceId) throws FacadeLayerException {
+		LOG.debug("allocateSandboxes({})", instanceId);
+		try{
+				return trainingInstanceService.allocateSandboxes(instanceId);
+		} catch( ServiceLayerException ex){
+				throw new FacadeLayerException(ex.getLocalizedMessage());
+		}
+	}
 }
