@@ -292,7 +292,7 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
 	}
 
 	@Override
-	@Transactional
+	@Transactional(readOnly = true)
 	public AbstractLevelDTO findLevelById(Long levelId) throws FacadeLayerException {
 		LOG.debug("findLevelById({})", levelId);
 		try{
