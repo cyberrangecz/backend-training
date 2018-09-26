@@ -1,8 +1,7 @@
 package cz.muni.ics.kypo.training.model;
 
-import java.io.Serializable;
-
 import javax.persistence.*;
+import java.io.Serializable;
 
 /**
  * 

@@ -1,7 +1,14 @@
 package cz.muni.ics.kypo.training.rest.controllers;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.bohnman.squiggly.Squiggly;
+import com.github.bohnman.squiggly.util.SquigglyUtils;
+import com.querydsl.core.types.Predicate;
+import cz.muni.ics.kypo.training.api.PageResultResource;
+import cz.muni.ics.kypo.training.exception.FacadeLayerException;
+import cz.muni.ics.kypo.training.facade.GameLevelFacade;
+import cz.muni.ics.kypo.training.model.GameLevel;
 import java.util.List;
-
 import org.jsondoc.core.annotation.ApiObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,20 +22,8 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.bohnman.squiggly.Squiggly;
-import com.github.bohnman.squiggly.util.SquigglyUtils;
-import com.querydsl.core.types.Predicate;
-
-import cz.muni.ics.kypo.training.api.PageResultResource;
-import cz.muni.ics.kypo.training.api.PageResultResource.Pagination;
-import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.gamelevel.GameLevelDTO;
-import cz.muni.ics.kypo.training.exception.FacadeLayerException;
-import cz.muni.ics.kypo.training.facade.GameLevelFacade;
-import cz.muni.ics.kypo.training.model.GameLevel;
 import cz.muni.ics.kypo.training.rest.exceptions.ResourceNotFoundException;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiModelProperty;
@@ -137,8 +132,5 @@ public class GameLevelsRestController {
       throw new ResourceNotFoundException(ex.getLocalizedMessage());
     }
   }
-  
-
-
 
 }

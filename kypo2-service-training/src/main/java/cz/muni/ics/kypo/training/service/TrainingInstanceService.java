@@ -1,16 +1,10 @@
 package cz.muni.ics.kypo.training.service;
 
-import java.util.Optional;
-
-import cz.muni.ics.kypo.training.exceptions.CannotBeDeletedException;
-import cz.muni.ics.kypo.training.exceptions.CannotBeUpdatedException;
+import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
+import cz.muni.ics.kypo.training.model.TrainingInstance;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-
-import com.querydsl.core.types.Predicate;
-
-import cz.muni.ics.kypo.training.model.TrainingInstance;
 import org.springframework.http.ResponseEntity;
 
 /**
@@ -20,13 +14,15 @@ import org.springframework.http.ResponseEntity;
  */
 public interface TrainingInstanceService {
 
-	/**
-	 * Finds specific Training Instance by id
-	 * 
-	 * @param id of a Training Instance that would be returned
-	 * @return specific Training Instance by id
-	 */
-	Optional<TrainingInstance> findById(long id);
+  /**
+   * Finds specific Training Instance by id
+   * 
+   * @param id of a Training Instance that would be returned
+   * @return specific Training Instance by id
+   * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND given training instance is not found.
+   *
+   */
+	TrainingInstance findById(long id) throws ServiceLayerException;
 
 	/**
 	 * Find all Training Instances.
@@ -35,39 +31,36 @@ public interface TrainingInstanceService {
 	 */
 	Page<TrainingInstance> findAll(Predicate predicate, Pageable pageable);
 
-	/**
-	 * Creates new training instance
-	 * 
-	 * @param trainingInstance to be created
-	 * @return created instance
-	 */
-	Optional<TrainingInstance> create(TrainingInstance trainingInstance);
+  /**
+   * Creates new training instance
+   * @param trainingInstance to be created
+   * @return created instance
+   */
+  TrainingInstance create(TrainingInstance trainingInstance);
 
-	/**
-	 * updates training instance
-	 * 
-	 * @param trainingInstance to be updated
-	 * @throws CannotBeUpdatedException if starting date of instance is not in future
-	 * @throws ServiceLayerException if instance is not found
-	 */
-	void update(TrainingInstance trainingInstance) throws CannotBeUpdatedException, ServiceLayerException;
+  /**
+   * updates training instance
+   * @param trainingInstance to be updated
+   * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND given training instance is not found.
+   *                                               RESOURCE_CONFLICT cannot be updated for some reason.
+   */
+  void update(TrainingInstance trainingInstance) throws ServiceLayerException;
 
-	/**
-	 * deletes training instance
-	 * 
-	 * @param id of training instance
-	 * @throws CannotBeDeletedException if end date of instance is not in past
-	 * @throws ServiceLayerException if instance is not found
-	 */
-	void delete(Long id) throws CannotBeDeletedException, ServiceLayerException;
+  /**
+   * deletes training instance
+   * @param id of training instance
+   * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND given training instance is not found.
+   *                                               RESOURCE_CONFLICT cannot be deleted for some reason.
+   */
+  void delete(Long id) throws ServiceLayerException;
 
-	/**
-	 * Generates password for training instance
-	 * 
-	 * @return new password
-	 * @throws ServiceLayerException if password already exists
-	 */
-	char[] generatePassword() throws ServiceLayerException;
+  /**
+   * Generates password for training instance
+   * @return new password
+   * @throws ServiceLayerException with ErrorCode: RESOURCE_CONFLICT given password already exists in DB.
+   */
+  char[] generatePassword() throws ServiceLayerException;
+
 
 	/**
 	 * Allocates sandboxes for training instance

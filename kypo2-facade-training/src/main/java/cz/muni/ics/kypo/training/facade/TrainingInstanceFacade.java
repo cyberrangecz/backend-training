@@ -1,11 +1,8 @@
 package cz.muni.ics.kypo.training.facade;
 
 import cz.muni.ics.kypo.training.exception.FacadeLayerException;
-import cz.muni.ics.kypo.training.exceptions.CannotBeUpdatedException;
 import org.springframework.data.domain.Pageable;
-
 import com.querydsl.core.types.Predicate;
-
 import cz.muni.ics.kypo.training.api.PageResultResource;
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceCreateDTO;
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceDTO;
@@ -34,14 +31,12 @@ public interface TrainingInstanceFacade {
 	 */
 	PageResultResource<TrainingInstanceDTO> findAll(Predicate predicate, Pageable pageable);
 
-	/**
-	 * Updates training instance
-	 * 
-	 * @param trainingInstance to be updated
-	 * @throws FacadeLayerException if instance is not found
-	 * @throws CannotBeUpdatedException if starting date of instance is not in future
-	 */
-	void update(TrainingInstanceUpdateDTO trainingInstance) throws FacadeLayerException, CannotBeUpdatedException;
+  /**
+   * Updates training instance
+   * @param trainingInstance to be updated
+   * @throws FacadeLayerException if instance is not found
+   */
+  void update(TrainingInstanceUpdateDTO trainingInstance) throws FacadeLayerException;
 
 	/**
 	 * Creates new training instance

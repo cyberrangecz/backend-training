@@ -1,6 +1,5 @@
 package cz.muni.ics.kypo.training.api.dto.prehook;
 
-import cz.muni.ics.kypo.training.model.AbstractLevel;
 import io.swagger.annotations.ApiModel;
 
 /**

@@ -1,8 +1,8 @@
 package cz.muni.ics.kypo.training.utils;
 
-import java.sql.Types;
-
 import org.hibernate.dialect.PostgreSQL9Dialect;
+
+import java.sql.Types;
 
 /**
  * 

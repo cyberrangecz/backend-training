@@ -1,5 +1,15 @@
 package cz.muni.ics.kypo.training.rest.controllers;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.bohnman.squiggly.Squiggly;
+import com.github.bohnman.squiggly.util.SquigglyUtils;
+import com.querydsl.core.types.Predicate;
+import cz.muni.ics.kypo.training.api.PageResultResource;
+import cz.muni.ics.kypo.training.exception.FacadeLayerException;
+import cz.muni.ics.kypo.training.facade.InfoLevelFacade;
+import cz.muni.ics.kypo.training.model.InfoLevel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Pageable;
@@ -10,24 +20,10 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.bohnman.squiggly.Squiggly;
-import com.github.bohnman.squiggly.util.SquigglyUtils;
-import com.querydsl.core.types.Predicate;
-
 import java.util.List;
-
 import org.jsondoc.core.annotation.ApiObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import cz.muni.ics.kypo.training.api.PageResultResource;
 import cz.muni.ics.kypo.training.api.dto.infolevel.InfoLevelDTO;
-import cz.muni.ics.kypo.training.exception.FacadeLayerException;
-import cz.muni.ics.kypo.training.facade.InfoLevelFacade;
-import cz.muni.ics.kypo.training.model.InfoLevel;
 import cz.muni.ics.kypo.training.rest.exceptions.ResourceNotFoundException;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiModelProperty;
@@ -75,7 +71,8 @@ public class InfoLevelsRestController {
       @ApiResponse(code = 404, message = "The requested resource was not found.") 
   })
   @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<Object> findInfoLevelById(@ApiParam(value = "InfoLevel ID") @PathVariable long id,
+  public ResponseEntity<Object> findInfoLevelById(@ApiParam(value = "InfoLevel ID") @PathVariable("id") long id,
+
       @ApiParam(value = "Fields which should be returned in REST API response", required = false) 
       @RequestParam(value = "fields", required = false) String fields) {
     LOG.debug("findInfoLevelById({},{}", id, fields);

@@ -2,13 +2,10 @@ package cz.muni.ics.kypo.training.service;
 
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.PathBuilder;
-
 import cz.muni.ics.kypo.training.config.ServiceTrainingConfigTest;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.model.InfoLevel;
 import cz.muni.ics.kypo.training.repository.InfoLevelRepository;
-import cz.muni.ics.kypo.training.service.InfoLevelService;
-import org.hibernate.HibernateException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -35,7 +32,6 @@ import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
-import static org.mockito.BDDMockito.willThrow;
 import static org.mockito.Mockito.reset;
 
 @RunWith(SpringRunner.class)
@@ -43,82 +39,76 @@ import static org.mockito.Mockito.reset;
 @Import(ServiceTrainingConfigTest.class)
 public class InfoLevelServiceTest {
 
-	@Rule
-	public ExpectedException thrown = ExpectedException.none();
+    @Rule
+    public ExpectedException thrown = ExpectedException.none();
 
-	@Autowired
-	private InfoLevelService infoLevelService;
-	@MockBean
-	private RestTemplate restTemplate;
-	@MockBean
-	private InfoLevelRepository infoLevelRepository;
+    @Autowired
+    private InfoLevelService infoLevelService;
 
-	private InfoLevel infoLevel1, infoLevel2;
+    @MockBean
+    private RestTemplate restTemplate;
 
-	@SpringBootApplication
-	static class TestConfiguration {
-	}
+    @MockBean
+    private InfoLevelRepository infoLevelRepository;
 
-	@Before
-	public void init() {
-		infoLevel1 = new InfoLevel();
-		infoLevel1.setId(1L);
-		infoLevel1.setContent("test");
+    private InfoLevel infoLevel1, infoLevel2;
 
-		infoLevel2 = new InfoLevel();
-		infoLevel2.setId(2L);
-		infoLevel2.setContent("test1");
-	}
+    @SpringBootApplication
+    static class TestConfiguration{
+    }
 
-	@Test
-	public void getInfoLevelById() {
-		given(infoLevelRepository.findById(infoLevel1.getId())).willReturn(Optional.of(infoLevel1));
+    @Before
+    public void init() {
+        infoLevel1 = new InfoLevel();
+        infoLevel1.setId(1L);
+        infoLevel1.setContent("test");
 
-		InfoLevel iL = infoLevelService.findById(infoLevel1.getId()).get();
-		deepEquals(iL, infoLevel1);
+        infoLevel2 = new InfoLevel();
+        infoLevel2.setId(2L);
+        infoLevel2.setContent("test1");
+    }
 
-		then(infoLevelRepository).should().findById(infoLevel1.getId());
-	}
+    @Test
+    public void getInfoLevelById() {
+        given(infoLevelRepository.findById(infoLevel1.getId())).willReturn(Optional.of(infoLevel1));
 
-	@Test
-	public void getInfoLevelByIdWithHibernateException() {
-		Long id = 1L;
-		willThrow(HibernateException.class).given(infoLevelRepository).findById(id);
-		thrown.expect(ServiceLayerException.class);
-		infoLevelService.findById(id);
-	}
+        InfoLevel iL = infoLevelService.findById(infoLevel1.getId()).get();
+        deepEquals(iL, infoLevel1);
 
-	@Test
-	public void getNonexistentInfoLevelById() {
-		Long id = 6L;
-		assertEquals(Optional.empty(), infoLevelService.findById(id));
-	}
+        then(infoLevelRepository).should().findById(infoLevel1.getId());
+    }
 
-	@Test
-	public void findAll() {
-		List<InfoLevel> expected = new ArrayList<>();
-		expected.add(infoLevel1);
-		expected.add(infoLevel2);
+    @Test
+    public void getNonexistentInfoLevelById() {
+        Long id = 6L;
+        assertEquals(Optional.empty(), infoLevelService.findById(id));
+    }
 
-		Page<InfoLevel> p = new PageImpl<InfoLevel>(expected);
-		PathBuilder<InfoLevel> iL = new PathBuilder<InfoLevel>(InfoLevel.class, "infoLevel");
-		Predicate predicate = iL.isNotNull();
+    @Test
+    public void findAll() {
+        List<InfoLevel> expected = new ArrayList<>();
+        expected.add(infoLevel1);
+        expected.add(infoLevel2);
 
-		given(infoLevelRepository.findAll(any(Predicate.class), any(Pageable.class))).willReturn(p);
+        Page p = new PageImpl<InfoLevel>(expected);
+        PathBuilder<InfoLevel> iL = new PathBuilder<InfoLevel>(InfoLevel.class, "infoLevel");
+        Predicate predicate = iL.isNotNull();
 
-		Page<InfoLevel> pr = infoLevelService.findAll(predicate, PageRequest.of(0, 2));
-		assertEquals(2, pr.getTotalElements());
-	}
+        given(infoLevelRepository.findAll(any(Predicate.class), any(Pageable.class))).willReturn(p);
 
-	@After
-	public void after() {
-		reset(infoLevelRepository);
-	}
+        Page pr = infoLevelService.findAll(predicate, PageRequest.of(0,2));
+        assertEquals(2, pr.getTotalElements());
+    }
 
-	private void deepEquals(InfoLevel expected, InfoLevel actual) {
-		assertEquals(expected.getId(), actual.getId());
-		assertEquals(expected.getContent(), actual.getContent());
+    @After
+    public void after(){
+        reset(infoLevelRepository);
+    }
 
-	}
+    private void deepEquals(InfoLevel expected, InfoLevel actual){
+        assertEquals(expected.getId(), actual.getId());
+        assertEquals(expected.getContent(), actual.getContent());
+
+    }
 
 }

@@ -1,16 +1,16 @@
 package cz.muni.ics.kypo.training.service.impl;
 
-import java.time.LocalDateTime;
-import java.util.Optional;
-
 import com.mysema.commons.lang.Assert;
-import cz.muni.ics.kypo.training.exceptions.CannotBeDeletedException;
-import cz.muni.ics.kypo.training.exceptions.CannotBeUpdatedException;
+import com.querydsl.core.types.Predicate;
+import cz.muni.ics.kypo.training.exceptions.ErrorCode;
+import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.model.Password;
+import cz.muni.ics.kypo.training.model.TrainingInstance;
 import cz.muni.ics.kypo.training.repository.PasswordRepository;
+import cz.muni.ics.kypo.training.repository.TrainingInstanceRepository;
+import cz.muni.ics.kypo.training.service.TrainingInstanceService;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.RandomStringUtils;
-import org.hibernate.HibernateException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,13 +23,10 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import com.querydsl.core.types.Predicate;
-
-import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
-import cz.muni.ics.kypo.training.model.TrainingInstance;
-import cz.muni.ics.kypo.training.repository.TrainingInstanceRepository;
-import cz.muni.ics.kypo.training.service.TrainingInstanceService;
+import java.time.LocalDateTime;
+import java.util.Optional;
 import org.springframework.web.client.RestTemplate;
+
 
 /**
  * 
@@ -55,83 +52,73 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
 		this.restTemplate = restTemplate;
 	}
 
-	@Override
-	public Optional<TrainingInstance> findById(long id) {
-		LOG.debug("findById({})", id);
-		try {
-			return trainingInstanceRepository.findById(id);
-		} catch (HibernateException ex) {
-			throw new ServiceLayerException(ex.getLocalizedMessage());
-		}
-	}
+  @Override
+  public TrainingInstance findById(long id) {
+    LOG.debug("findById({})", id);
+    return trainingInstanceRepository.findById(id).orElseThrow(() -> new ServiceLayerException("Training instance with id: " + id + " not found.", ErrorCode.RESOURCE_NOT_FOUND));
+  }
 
-	@Override
-	public Page<TrainingInstance> findAll(Predicate predicate, Pageable pageable) {
-		LOG.debug("findAll({},{})", predicate, pageable);
-		try {
-			return trainingInstanceRepository.findAll(predicate, pageable);
-		} catch (HibernateException ex) {
-			throw new ServiceLayerException(ex.getLocalizedMessage());
-		}
-	}
+  @Override
+  public Page<TrainingInstance> findAll(Predicate predicate, Pageable pageable) {
+    LOG.debug("findAll({},{})", predicate, pageable);
+    return trainingInstanceRepository.findAll(predicate, pageable);
+  }
 
-	@Override
-	public Optional<TrainingInstance> create(TrainingInstance trainingInstance) {
-		LOG.debug("create({})", trainingInstance);
-		Assert.notNull(trainingInstance, "Input training instance must not be null");
-		TrainingInstance tI = trainingInstanceRepository.save(trainingInstance);
-		LOG.info("Training instance with id: " + trainingInstance.getId() + "created.");
-		return Optional.ofNullable(tI);
-	}
+  @Override
+  public TrainingInstance create(TrainingInstance trainingInstance) {
+    LOG.debug("create({})", trainingInstance);
+    Assert.notNull(trainingInstance, "Input training instance must not be null");
+    TrainingInstance tI = trainingInstanceRepository.save(trainingInstance);
+    LOG.info("Training instance with id: " + trainingInstance.getId() + "created.");
+    return tI;
+  }
 
-	@Override
-	public void update(TrainingInstance trainingInstance) throws ServiceLayerException, CannotBeUpdatedException {
-		LOG.debug("update({})", trainingInstance);
-		Assert.notNull(trainingInstance, "Input training instance must not be null");
-		TrainingInstance tI = trainingInstanceRepository.findById(trainingInstance.getId())
-				.orElseThrow(() -> new ServiceLayerException("Training instance with id: " + trainingInstance.getId() + ", not found"));
-		LocalDateTime currentDate = LocalDateTime.now();
-		if (!currentDate.isBefore(trainingInstance.getStartTime()))
-			throw new CannotBeUpdatedException("Starting time of instance must be in future");
-		trainingInstanceRepository.save(trainingInstance);
-		LOG.info("Training instance with id: " + trainingInstance.getId() + "updated.");
-	}
+  @Override
+  public void update(TrainingInstance trainingInstance) throws ServiceLayerException{
+    LOG.debug("update({})", trainingInstance);
+    Assert.notNull(trainingInstance, "Input training instance must not be null");
+    TrainingInstance tI = trainingInstanceRepository.findById(trainingInstance.getId())
+            .orElseThrow(() -> new ServiceLayerException("Training instance with id: "+ trainingInstance.getId() +", not found", ErrorCode.RESOURCE_NOT_FOUND));
+    LocalDateTime currentDate = LocalDateTime.now();
+    if (!currentDate.isBefore(trainingInstance.getStartTime()))
+      throw new ServiceLayerException("Starting time of instance must be in future", ErrorCode.RESOURCE_CONFLICT);
+    trainingInstanceRepository.save(trainingInstance);
+    LOG.info("Training instance with id: " + trainingInstance.getId() + "updated.");
+  }
 
-	@Override
-	public void delete(Long id) throws CannotBeDeletedException, ServiceLayerException {
-		LOG.debug("delete({})", id);
-		Assert.notNull(id, "Input training instance id must not be null");
-		TrainingInstance trainingInstance = trainingInstanceRepository.findById(id)
-				.orElseThrow(() -> new ServiceLayerException("Training instance with id: " + id + ", not found"));
-		LocalDateTime currentDate = LocalDateTime.now();
-		if (!currentDate.isAfter(trainingInstance.getEndTime()))
-			throw new CannotBeDeletedException("Only finished instances can be deleted");
-		trainingInstanceRepository.delete(trainingInstance);
-		LOG.info("Training instance with id: " + id + "created.");
-	}
+  @Override
+  public void delete(Long id) throws ServiceLayerException{
+    LOG.debug("delete({})", id);
+    Assert.notNull(id, "Input training instance id must not be null");
+    TrainingInstance trainingInstance = trainingInstanceRepository.findById(id)
+            .orElseThrow(() -> new ServiceLayerException("Training instance with id: " + id + ", not found", ErrorCode.RESOURCE_NOT_FOUND));
+    LocalDateTime currentDate = LocalDateTime.now();
+    if (!currentDate.isAfter(trainingInstance.getEndTime()))
+      throw new ServiceLayerException("Only finished instances can be deleted", ErrorCode.RESOURCE_CONFLICT);
+    trainingInstanceRepository.delete(trainingInstance);
+    LOG.info("Training instance with id: " + id + "created.");
+  }
 
-	@Override
-	public char[] generatePassword() throws ServiceLayerException {
-		LOG.debug("generatePassword()");
-		String newPassword = RandomStringUtils.random(6, true, true);
-		String newPasswordHash = DigestUtils.sha256Hex(newPassword);
+  @Override
+  public char[] generatePassword() throws ServiceLayerException {
+    String newPassword = RandomStringUtils.random(6, true, true);
+    String newPasswordHash = DigestUtils.sha256Hex(newPassword);
 
-		Optional<Password> password = passwordRepository.findOneByPasswordHash(newPasswordHash);
-		if (password.isPresent())
-			throw new ServiceLayerException("Password already exists");
-		Password newPasswordInstance = new Password();
-		newPasswordInstance.setPasswordHash(newPasswordHash);
-		passwordRepository.save(newPasswordInstance);
+    Optional<Password> password = passwordRepository.findOneByPasswordHash(newPasswordHash);
+    if (password.isPresent()) throw new ServiceLayerException("Password already exists", ErrorCode.RESOURCE_CONFLICT);
+    Password newPasswordInstance = new Password();
+    newPasswordInstance.setPasswordHash(newPasswordHash);
+    passwordRepository.save(newPasswordInstance);
 
-		return newPassword.toCharArray();
-	}
+    return newPassword.toCharArray();
+  }
+
 
 	@Override
 	public ResponseEntity<Void> allocateSandboxes(Long instanceId) throws ServiceLayerException {
 		LOG.debug("allocateSandboxes({})", instanceId);
 		HttpHeaders httpHeaders = new HttpHeaders();
-		TrainingInstance trainingInstance = findById(instanceId)
-				.orElseThrow(() -> new ServiceLayerException("Training instance with id: " + instanceId + ", not found"));
+		TrainingInstance trainingInstance = findById(instanceId);
 		int count = trainingInstance.getPoolSize();
 		Long sandboxId = trainingInstance.getTrainingDefinition().getSandBoxDefinitionRef().getId();
 		String url = "kypo-openstack/api/v1/sandbox-definitions/"+ sandboxId +"/build/"+ count;

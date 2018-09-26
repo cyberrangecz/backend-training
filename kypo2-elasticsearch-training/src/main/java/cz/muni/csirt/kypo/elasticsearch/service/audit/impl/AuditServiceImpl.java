@@ -13,31 +13,32 @@ import cz.muni.csirt.kypo.elasticsearch.service.audit.AuditService;
 import cz.muni.csirt.kypo.elasticsearch.service.exceptions.ElasticsearchTrainingServiceLayerException;
 
 /**
- * 
+ *
  * @author Pavel Šeda
  *
  */
 @Service
 public class AuditServiceImpl implements AuditService {
 
-	private AuditDAO auditDAO;
+		private AuditDAO auditDAO;
 
-	@Autowired
-	public AuditServiceImpl(AuditDAO auditDAO) {
-		this.auditDAO = auditDAO;
-	}
-
-	@Override
-	public <T extends AbstractAuditPOJO> void save(T pojoClass) {
-		Objects.requireNonNull(pojoClass, "Null class could not be saved via audit method.");
-		try {
-			pojoClass.setTimestamp(System.currentTimeMillis());
-			pojoClass.setType(pojoClass.getClass().getName());
-
-			auditDAO.save(pojoClass);
-		} catch (IOException | ElasticsearchTrainingDataLayerException ex) {
-			throw new ElasticsearchTrainingServiceLayerException(ex);
+		@Autowired
+		public AuditServiceImpl(AuditDAO auditDAO) {
+				this.auditDAO = auditDAO;
 		}
-	}
+
+		@Override
+		public <T extends AbstractAuditPOJO> void save(T pojoClass) {
+				Objects.requireNonNull(pojoClass, "Null class could not be saved via audit method.");
+				try {
+						pojoClass.setTimestamp(System.currentTimeMillis());
+						pojoClass.setType(pojoClass.getClass().getName());
+
+						auditDAO.save(pojoClass);
+				} catch (IOException | ElasticsearchTrainingDataLayerException ex) {
+						throw new ElasticsearchTrainingServiceLayerException(ex);
+				}
+		}
 
 }
+

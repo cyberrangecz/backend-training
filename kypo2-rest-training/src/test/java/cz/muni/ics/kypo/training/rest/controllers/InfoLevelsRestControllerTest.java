@@ -10,9 +10,7 @@ import cz.muni.ics.kypo.training.facade.InfoLevelFacade;
 import cz.muni.ics.kypo.training.mapping.BeanMapping;
 import cz.muni.ics.kypo.training.mapping.BeanMappingImpl;
 import cz.muni.ics.kypo.training.model.InfoLevel;
-import cz.muni.ics.kypo.training.rest.controllers.InfoLevelsRestController;
 import cz.muni.ics.kypo.training.rest.exceptions.ResourceNotFoundException;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -23,7 +21,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -72,11 +69,8 @@ public class InfoLevelsRestControllerTest {
 	private BeanMapping beanMapping;
 
 	private InfoLevel infoLevel1, infoLevel2;
-
 	private InfoLevelDTO infoLevel1DTO, infoLevel2DTO;
-
 	private Page p;
-
 	private PageResultResource<InfoLevelDTO> infoLevelDTOPageResultResource;
 
 	@Before

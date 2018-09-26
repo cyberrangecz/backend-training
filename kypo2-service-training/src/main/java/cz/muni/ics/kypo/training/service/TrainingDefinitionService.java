@@ -1,17 +1,12 @@
 package cz.muni.ics.kypo.training.service;
 
-import java.util.List;
-import java.util.Optional;
-
-import cz.muni.ics.kypo.training.exceptions.CannotBeClonedException;
-import cz.muni.ics.kypo.training.exceptions.CannotBeDeletedException;
-import cz.muni.ics.kypo.training.exceptions.CannotBeUpdatedException;
+import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.model.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-import com.querydsl.core.types.Predicate;
+import java.util.ArrayList;
 
 /**
  * 
@@ -20,166 +15,154 @@ import com.querydsl.core.types.Predicate;
  */
 public interface TrainingDefinitionService {
 
-	/**
-	 * Finds specific Training Definition by id
-	 * 
-	 * @param id of a Training Definition that would be returned
-	 * @return specific Training Definition by id
-	 */
-	Optional<TrainingDefinition> findById(long id);
+  /**
+   * Finds specific Training Definition by id
+   * 
+   * @param id of a Training Definition that would be returned
+   * @return specific Training Definition by id
+   * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND training definition cannot be found
+   */
+  public TrainingDefinition findById(long id) throws ServiceLayerException;
 
-	/**
-	 * Find all Training Definitions.
-	 * 
-	 * @return all Training Definitions
-	 */
-	Page<TrainingDefinition> findAll(Predicate predicate, Pageable pageable);
+  /**
+   * Find all Training Definitions.
+   * 
+   * @return all Training Definitions
+   */
+  public Page<TrainingDefinition> findAll(Predicate predicate, Pageable pageable);
 
-	/**
-	 * Find all training definition with same sandbox definition
-	 * 
-	 * @param sandboxDefinitionId - id of sandbox definition
-	 * @return all training definition with same sandbox definition
-	 */
-	public Page<TrainingDefinition> findAllBySandboxDefinitionId(Long sandboxDefinitionId, Pageable pageable);
+  /**
+   * Find all training definition with same sandbox definition
+   *
+   * @param sandboxDefinitionId - id of sandbox definition
+   * @return all training definition with same sandbox definition
+   */
+  public Page<TrainingDefinition> findAllBySandboxDefinitionId(Long sandboxDefinitionId, Pageable pageable);
 
-	/**
-	 * Updates Training Definition
-	 * 
-	 * @param trainingDefinition to be updated
-	 * @return updated definition
-	 * @throws ServiceLayerException if training definition is not found
-	 * @throws CannotBeUpdatedException if definition status is not UNRELEASED
-	 */
-	void update(TrainingDefinition trainingDefinition) throws ServiceLayerException, CannotBeUpdatedException;
+  /**
+   * Updates Training Definition
+   * @param trainingDefinition to be updated
+   * @return updated definition
+   * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND given training definition or one of the levels is not found.
+   *                                               RESOURCE_CONFLICT released or archived training definition cannot be modified.
+   */
+  public void update(TrainingDefinition trainingDefinition) throws ServiceLayerException;
 
-	/**
-	 * Creates new training definition by cloning existing one
-	 * 
-	 * @param id of definition to be cloned
-	 * @return cloned definition
-	 * @throws ServiceLayerException if training definition is not found
-	 * @throws CannotBeClonedException if definition status is unreleased
-	 */
-	Optional<TrainingDefinition> clone(Long id) throws ServiceLayerException, CannotBeClonedException;
+  /**
+   * Creates new training definition by cloning existing one
+   * @param id of definition to be cloned
+   * @return cloned definition
+   * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND given training definition not found.
+   *                                               RESOURCE_CONFLICT cannot clone unreleased training definition.
+   */
+  public TrainingDefinition clone(Long id) throws ServiceLayerException;
 
-	/**
-	 * Swaps level to the left
-	 * 
-	 * @param definitionId - Id of definition containing level to be swapped
-	 * @param levelId - Id of level to be swapped
-	 * @throws ServiceLayerException if training definition or level is not found
-	 * @throws CannotBeUpdatedException if definition status is not UNRELEASED
-	 */
-	void swapLeft(Long definitionId, Long levelId) throws ServiceLayerException, CannotBeUpdatedException;
+  /**
+   * Swaps level to the left
+   * @param definitionId - Id of definition containing level to be swapped
+   * @param levelId - Id of level to be swapped
+   * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND given training definition or one of the levels is not found.
+   *                                               RESOURCE_CONFLICT released or archived training definition cannot be modified.
+   */
+  public void swapLeft(Long definitionId, Long levelId) throws ServiceLayerException;
 
-	/**
-	 * Swaps level to the right
-	 * 
-	 * @param definitionId - Id of definition containing level to be swapped
-	 * @param levelId - Id of level to be swaped
-	 * @throws ServiceLayerException if training definition or level is not found
-	 * @throws CannotBeUpdatedException if definition status is not UNRELEASED
-	 */
-	void swapRight(Long definitionId, Long levelId) throws ServiceLayerException, CannotBeUpdatedException;
+  /**
+   * Swaps level to the right
+   * @param definitionId - Id of definition containing level to be swapped
+   * @param levelId - Id of level to be swapped
+   * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND given training definition or one of the levels is not found.
+   *                                               RESOURCE_CONFLICT released or archived training definition cannot be modified.
+   */
+  public void swapRight(Long definitionId, Long levelId) throws ServiceLayerException;
 
-	/**
-	 * Deletes specific training definition based on id
-	 * 
-	 * @param id of definition to be deleted
-	 * @throws ServiceLayerException if training definition is not found
-	 * @throws CannotBeDeletedException if definition status is RELEASED
-	 */
-	void delete(Long id) throws ServiceLayerException, CannotBeDeletedException;
+  /**
+   * Deletes specific training definition based on id
+   * @param id of definition to be deleted
+   * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND given training definition or level is not found.
+   *                                               RESOURCE_CONFLICT released training definition cannot be deleted.
+   */
+  public void delete(Long id) throws ServiceLayerException;
 
-	/**
-	 * Deletes specific level based on id
-	 * 
-	 * @param definitionId - id of definition containing level to be deleted
-	 * @param levelId - id of level to be deleted
-	 * @throws ServiceLayerException if training definition or level is not found
-	 * @throws CannotBeUpdatedException if definition status is not UNRELEASED
-	 */
-	void deleteOneLevel(Long definitionId, Long levelId) throws ServiceLayerException, CannotBeUpdatedException;
+  /**
+   * Deletes specific level based on id
+   * @param definitionId - id of definition containing level to be deleted
+   * @param levelId - id of level to be deleted
+   * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND given training definition or level is not found.
+   *                                               RESOURCE_CONFLICT level cannot be deleted in released or archived training definition.
+   */
+  public void deleteOneLevel(Long definitionId, Long levelId) throws ServiceLayerException;
 
-	/**
-	 * Updates game level in training definition
-	 * 
-	 * @param definitionId - id of training definition containing level to be updated
-	 * @param gameLevel to be updated
-	 * @throws ServiceLayerException if training definition or level in not found
-	 * @throws CannotBeUpdatedException if definition status is not UNRELEASED
-	 */
-	void updateGameLevel(Long definitionId, GameLevel gameLevel) throws ServiceLayerException, CannotBeUpdatedException;
+  /**
+   * Updates game level in training definition
+   * @param definitionId - id of training definition containing level to be updated
+   * @param gameLevel to be updated
+   * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND given training definition is not found.
+   *                                               RESOURCE_CONFLICT level cannot be updated in released or archived training definition.
+   */
+  public void updateGameLevel(Long definitionId, GameLevel gameLevel) throws ServiceLayerException;
 
-	/**
-	 * Updates info level in training definition
-	 * 
-	 * @param definitionId - id of training definition containing level to be updated
-	 * @param infoLevel to be updated
-	 * @throws ServiceLayerException if training definition or level in not found
-	 * @throws CannotBeUpdatedException if definition status is not UNRELEASED
-	 */
-	void updateInfoLevel(Long definitionId, InfoLevel infoLevel) throws ServiceLayerException, CannotBeUpdatedException;
+  /**
+   * Updates info level in training definition
+   * @param definitionId - id of training definition containing level to be updated
+   * @param infoLevel to be updated
+   * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND given training definition is not found.
+   *                                               RESOURCE_CONFLICT level cannot be updated in released or archived training definition.
+   */
+  public void updateInfoLevel(Long definitionId, InfoLevel infoLevel) throws ServiceLayerException;
 
-	/**
-	 * Updates assessment level in training definition
-	 * 
-	 * @param definitionId - id of training definition containing level to be updated
-	 * @param assessmentLevel to be updated
-	 * @throws ServiceLayerException if training definition or level in not found
-	 * @throws CannotBeUpdatedException if definition status is not UNRELEASED
-	 */
-	void updateAssessmentLevel(Long definitionId, AssessmentLevel assessmentLevel) throws ServiceLayerException, CannotBeUpdatedException;
+  /**
+   * Updates assessment level in training definition
+   * @param definitionId - id of training definition containing level to be updated
+   * @param assessmentLevel to be updated
+   * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND given training definition is not found.
+   *                                               RESOURCE_CONFLICT level cannot be updated in released or archived training definition.
+   */
+  public void updateAssessmentLevel(Long definitionId, AssessmentLevel assessmentLevel) throws ServiceLayerException;
 
-	/**
-	 * Creates new game level
-	 * 
-	 * @param definitionId - id of definition in which level will be created
-	 * @param gameLevel to be created
-	 * @return new game level
-	 * @throws ServiceLayerException if definition is not found
-	 * @throws CannotBeUpdatedException if definition status is not UNRELEASED
-	 */
-	Optional<GameLevel> createGameLevel(Long definitionId, GameLevel gameLevel) throws ServiceLayerException, CannotBeUpdatedException;
+  /**
+   * Creates new game level
+   * @param definitionId - id of definition in which level will be created
+   * @param gameLevel to be created
+   * @return new game level
+   * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND given training definition is not found.
+   *                                               RESOURCE_CONFLICT level cannot be created in released or archived training definition.
+   */
+  public GameLevel createGameLevel(Long definitionId, GameLevel gameLevel) throws ServiceLayerException;
 
-	/**
-	 * Creates new info level
-	 * 
-	 * @param definitionId - id of definition in which level will be created
-	 * @param infoLevel to be created
-	 * @return new info level
-	 * @throws ServiceLayerException if definition is not found
-	 * @throws CannotBeUpdatedException if definition status is not UNRELEASED
-	 */
-	Optional<InfoLevel> createInfoLevel(Long definitionId, InfoLevel infoLevel) throws ServiceLayerException, CannotBeUpdatedException;
 
-	/**
-	 * Creates new assessment level
-	 * 
-	 * @param definitionId - id of definition in which level will be created
-	 * @param assessmentLevel to be created
-	 * @return new assessment level
-	 * @throws ServiceLayerException if definition is not found
-	 * @throws CannotBeUpdatedException if definition status is not UNRELEASED
-	 */
-	Optional<AssessmentLevel> createAssessmentLevel(Long definitionId, AssessmentLevel assessmentLevel)
-			throws ServiceLayerException, CannotBeUpdatedException;
+  /**
+   * Creates new info level
+   * @param definitionId - id of definition in which level will be created
+   * @param infoLevel to be created
+   * @return new info level
+   * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND given training definition is not found.
+   *                                               RESOURCE_CONFLICT level cannot be created in released or archived training definition.
+   */
+  public InfoLevel createInfoLevel(Long definitionId, InfoLevel infoLevel) throws ServiceLayerException;
 
-	/**
-	 * Finds all levels from single definition
-	 * 
-	 * @param id of definition
-	 * @return set of levels
-	 */
-	List<AbstractLevel> findAllLevelsFromDefinition(Long id);
+  /**
+   * Creates new assessment level
+   * @param definitionId - id of definition in which level will be created
+   * @param assessmentLevel to be created
+   * @return new assessment level
+   * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND given training definition is not found.
+   *                                               RESOURCE_CONFLICT level cannot be created in released or archived training definition.
+   */
+  public AssessmentLevel createAssessmentLevel(Long definitionId, AssessmentLevel assessmentLevel) throws ServiceLayerException;
 
-	/**
-	 * creates new training definition
-	 * 
-	 * @param trainingDefinition to be created
-	 * @return new training definition
-	 */
-	Optional<TrainingDefinition> create(TrainingDefinition trainingDefinition);
+  /**
+   * Finds all levels from single definition
+   * @param id of definition
+   * @return set of levels
+   */
+  public ArrayList<AbstractLevel> findAllLevelsFromDefinition(Long id);
+
+  /**
+   * creates new training definition
+   * @param trainingDefinition to be created
+   * @return new training definition
+   */
+  public TrainingDefinition create(TrainingDefinition trainingDefinition);
+
 
 }

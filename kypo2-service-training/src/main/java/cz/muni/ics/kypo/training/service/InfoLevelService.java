@@ -1,13 +1,11 @@
 package cz.muni.ics.kypo.training.service;
 
-import java.util.Optional;
-
+import com.querydsl.core.types.Predicate;
+import cz.muni.ics.kypo.training.model.InfoLevel;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-import com.querydsl.core.types.Predicate;
-
-import cz.muni.ics.kypo.training.model.InfoLevel;
+import java.util.Optional;
 
 /**
  * 
