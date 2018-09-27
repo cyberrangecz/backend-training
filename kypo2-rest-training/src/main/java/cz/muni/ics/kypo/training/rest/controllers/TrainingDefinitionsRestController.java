@@ -20,6 +20,7 @@ import cz.muni.ics.kypo.training.exception.FacadeLayerException;
 import cz.muni.ics.kypo.training.facade.TrainingDefinitionFacade;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.model.TrainingDefinition;
+import cz.muni.ics.kypo.training.model.enums.LevelType;
 import cz.muni.ics.kypo.training.rest.exceptions.ConflictException;
 import cz.muni.ics.kypo.training.rest.exceptions.ResourceNotCreatedException;
 import cz.muni.ics.kypo.training.rest.exceptions.ResourceNotFoundException;
@@ -390,81 +391,6 @@ public class TrainingDefinitionsRestController {
 		}
 	}
 
-	@ApiOperation(httpMethod = "POST",
-			value = "Create Game Level",
-			response = GameLevelCreateDTO.class,
-			nickname = "createGameLevel",
-			produces = "application/json",
-			consumes = "application/json")
-	@ApiResponses(value = {
-			@ApiResponse(code = 404, message = "The requested resource was not found"),
-			@ApiResponse(code = 409, message = "The requested resource was not created")
-			}
-	)
-	@PostMapping(value = "/{definitionId}/game-levels", consumes = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<GameLevelCreateDTO> createGameLevel(
-			@ApiParam(value = "Id of definition")
-			@PathVariable(value = "definitionId") Long definitionId,
-			@ApiParam(value = "Game level to be created")
-			@RequestBody @Valid GameLevelCreateDTO gameLevelCreateDTO) {
-		try {
-			GameLevelCreateDTO newGameLevel = trainingDefinitionFacade.createGameLevel(definitionId, gameLevelCreateDTO);
-			return new ResponseEntity<>(newGameLevel, HttpStatus.CREATED);
-		} catch (FacadeLayerException ex) {
-			throw new ResourceNotCreatedException(ex.getLocalizedMessage());
-		}
-	}
-
-	@ApiOperation(httpMethod = "POST",
-			value = "Create Info Level",
-			response = InfoLevelCreateDTO.class,
-			nickname = "createInfoLevel",
-			produces = "application/json",
-			consumes = "application/json")
-	@ApiResponses(value = {
-			@ApiResponse(code = 404, message = "The requested resource was not found"),
-			@ApiResponse(code = 409, message = "The requested resource was not created")
-			}
-	)
-	@PostMapping(value = "/{definitionId}/info-levels", consumes = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<InfoLevelCreateDTO> createInfoLevel(
-			@ApiParam(value = "Id of definition")
-			@PathVariable(value = "definitionId") Long definitionId,
-			@ApiParam(value = "Info level to be created")
-			@RequestBody @Valid InfoLevelCreateDTO infoLevelCreateDTO) {
-		try {
-			InfoLevelCreateDTO newInfoLevel = trainingDefinitionFacade.createInfoLevel(definitionId, infoLevelCreateDTO);
-			return new ResponseEntity<>(newInfoLevel, HttpStatus.CREATED);
-		} catch (FacadeLayerException ex) {
-			throw new ResourceNotCreatedException(ex.getLocalizedMessage());
-		}
-	}
-
-	@ApiOperation(httpMethod = "POST",
-			value = "Create Assessment Level",
-			response = AssessmentLevelCreateDTO.class,
-			nickname = "createAssessmentLevel",
-			produces = "application/json",
-			consumes = "application/json")
-	@ApiResponses(value = {
-			@ApiResponse(code = 404, message = "The requested resource was not found"),
-			@ApiResponse(code = 409, message = "The requested resource was not created")
-			}
-	)
-	@PostMapping(value = "/{definitionId}/assessment-levels", consumes = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<AssessmentLevelCreateDTO> createAssessmentLevel(
-			@ApiParam(value = "Id of definition")
-			@PathVariable(value = "definitionId") Long definitionId,
-			@ApiParam(value = "Assessment level to be created")
-			@RequestBody @Valid AssessmentLevelCreateDTO assessmentLevelCreateDTO) {
-		try {
-			AssessmentLevelCreateDTO newAssessmentLevel = trainingDefinitionFacade.createAssessmentLevel(definitionId, assessmentLevelCreateDTO);
-			return new ResponseEntity<>(newAssessmentLevel, HttpStatus.CREATED);
-		} catch (FacadeLayerException ex) {
-			throw new ResourceNotCreatedException(ex.getLocalizedMessage());
-		}
-	}
-
 	@ApiOperation(httpMethod = "GET",
 			value = "Find level by id",
 			response = AbstractLevelDTO.class,
@@ -485,6 +411,35 @@ public class TrainingDefinitionsRestController {
   		throw new ResourceNotFoundException(ex.getLocalizedMessage());
 		}
 	}
+
+	@ApiOperation(httpMethod = "POST",
+			value = "Create Level",
+			//response = GameLevelCreateDTO.class,
+			nickname = "createLevel",
+			produces = "application/json")
+	@ApiResponses(value = {
+			@ApiResponse(code = 404, message = "The requested resource was not found"),
+			}
+	)
+	@PostMapping(value = "/{definitionId}/levels/{levelType}")
+	public ResponseEntity<Object> createLevel(
+			@ApiParam(value = "Id of definition")
+			@PathVariable(value = "definitionId") Long definitionId,
+			@ApiParam(value = "Level type")
+			@PathVariable (value = "levelType") LevelType levelType) {
+		try {
+			if (levelType.equals(LevelType.GAME)) {
+				return new ResponseEntity<>(trainingDefinitionFacade.createGameLevel(definitionId), HttpStatus.CREATED);
+			} else if (levelType.equals(LevelType.ASSESSMENT)) {
+				return new ResponseEntity<>(trainingDefinitionFacade.createAssessmentLevel(definitionId), HttpStatus.CREATED);
+			} else {
+				return new ResponseEntity<>(trainingDefinitionFacade.createInfoLevel(definitionId), HttpStatus.CREATED);
+			}
+		} catch (FacadeLayerException ex) {
+			throw new ResourceNotCreatedException(ex.getLocalizedMessage());
+		}
+	}
+
 		private RuntimeException throwException(RuntimeException ex) {
 				switch (((ServiceLayerException) ex.getCause()).getCode()) {
 						case WRONG_LEVEL_TYPE:
