@@ -5,19 +5,26 @@ package cz.muni.ics.kypo.training.exceptions;
  *
  */
 public class ServiceLayerException extends RuntimeException {
+  private final ErrorCode code;
 
-	public ServiceLayerException() {}
+  public ServiceLayerException(ErrorCode code) { this.code = code;}
 
-	public ServiceLayerException(String message) {
-		super(message);
-	}
+  public ServiceLayerException(String message, ErrorCode code) {
+    super(message);
+    this.code = code;
+  }
 
-	public ServiceLayerException(String message, Throwable ex) {
-		super(message, ex);
-	}
+  public ServiceLayerException(String message, Throwable ex, ErrorCode code) {
+    super(message, ex);
+    this.code = code;
+  }
 
-	public ServiceLayerException(Throwable ex) {
-		super(ex);
-	}
+  public ServiceLayerException(Throwable ex, ErrorCode code) {
+    super(ex);
+    this.code = code;
+  }
 
+  public ErrorCode getCode() {
+    return code;
+  }
 }

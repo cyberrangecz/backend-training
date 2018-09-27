@@ -1,9 +1,8 @@
 package cz.muni.ics.kypo.training.model;
 
+import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Objects;
-
-import javax.persistence.*;
 
 @Entity(name = "AbstractLevel")
 @Table(name = "abstract_level")

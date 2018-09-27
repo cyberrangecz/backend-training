@@ -1,10 +1,5 @@
 package cz.muni.ics.kypo.training.rest.utils.datemath;
 
-
-import java.time.ZoneId;
-import java.util.Locale;
-import java.util.regex.Pattern;
-
 import org.elasticsearch.common.joda.DateMathParser;
 import org.elasticsearch.common.joda.FormatDateTimeFormatter;
 import org.joda.time.DateTimeZone;
@@ -13,6 +8,10 @@ import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.DateTimeFormatterBuilder;
 import org.joda.time.format.DateTimeParser;
 import org.springframework.stereotype.Component;
+
+import java.time.ZoneId;
+import java.util.Locale;
+import java.util.regex.Pattern;
 
 /**
  * That parser is based on Elasticsearch DateMathParser.

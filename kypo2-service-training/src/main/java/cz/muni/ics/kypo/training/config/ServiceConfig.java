@@ -1,5 +1,6 @@
 package cz.muni.ics.kypo.training.config;
 
+
 import cz.muni.csirt.kypo.elasticsearch.service.TrainingElasticsearchServiceConfig;
 import cz.muni.ics.kypo.commons.config.WebConfigRestSecurityCommons;
 import org.slf4j.Logger;

@@ -1,12 +1,12 @@
 package cz.muni.ics.kypo.training.api.dto.assessmentlevel;
 
+import cz.muni.ics.kypo.training.model.enums.AssessmentType;
+import io.swagger.annotations.ApiModel;
+
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
-
-import cz.muni.ics.kypo.training.model.enums.AssessmentType;
-import io.swagger.annotations.ApiModel;
 
 /**
  * 

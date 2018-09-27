@@ -1,12 +1,11 @@
 package cz.muni.ics.kypo.training.model;
 
+import cz.muni.ics.kypo.training.model.enums.TRState;
+
+import javax.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.Objects;
-
-import javax.persistence.*;
-
-import cz.muni.ics.kypo.training.model.enums.TRState;
 
 /**
  * 

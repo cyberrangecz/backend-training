@@ -1,13 +1,6 @@
 package cz.muni.ics.kypo.training.rest;
 
-import java.nio.file.AccessDeniedException;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.validation.ConstraintViolation;
-import javax.validation.ConstraintViolationException;
-
+import cz.muni.ics.kypo.training.rest.exceptions.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.TypeMismatchException;
@@ -33,36 +26,12 @@ import org.springframework.web.servlet.NoHandlerFoundException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 import org.springframework.web.util.UrlPathHelper;
 
-import cz.muni.ics.kypo.training.rest.exceptions.BadGatewayException;
-import cz.muni.ics.kypo.training.rest.exceptions.BadRequestException;
-import cz.muni.ics.kypo.training.rest.exceptions.ForbiddenException;
-import cz.muni.ics.kypo.training.rest.exceptions.GatewayTimeoutException;
-import cz.muni.ics.kypo.training.rest.exceptions.HTTPVersionNotSupportedException;
-import cz.muni.ics.kypo.training.rest.exceptions.InsufficientStorageException;
-import cz.muni.ics.kypo.training.rest.exceptions.InternalServerErrorException;
-import cz.muni.ics.kypo.training.rest.exceptions.InvalidParameterException;
-import cz.muni.ics.kypo.training.rest.exceptions.LoopDetectedException;
-import cz.muni.ics.kypo.training.rest.exceptions.MethodNotAllowedException;
-import cz.muni.ics.kypo.training.rest.exceptions.MovedPermanentlyException;
-import cz.muni.ics.kypo.training.rest.exceptions.NetworkAuthenticationRequiredException;
-import cz.muni.ics.kypo.training.rest.exceptions.NoContentException;
-import cz.muni.ics.kypo.training.rest.exceptions.NotExtendedException;
-import cz.muni.ics.kypo.training.rest.exceptions.NotImplementedException;
-import cz.muni.ics.kypo.training.rest.exceptions.PayloadTooLargeException;
-import cz.muni.ics.kypo.training.rest.exceptions.ProxyAuthenticationRequiredException;
-import cz.muni.ics.kypo.training.rest.exceptions.RangeNotSatisfiableException;
-import cz.muni.ics.kypo.training.rest.exceptions.RequestTimeoutException;
-import cz.muni.ics.kypo.training.rest.exceptions.ResourceAlreadyExistingException;
-import cz.muni.ics.kypo.training.rest.exceptions.ResourceNotCreatedException;
-import cz.muni.ics.kypo.training.rest.exceptions.ResourceNotFoundException;
-import cz.muni.ics.kypo.training.rest.exceptions.ResourceNotModifiedException;
-import cz.muni.ics.kypo.training.rest.exceptions.ServiceUnavailableException;
-import cz.muni.ics.kypo.training.rest.exceptions.TooManyRequestsException;
-import cz.muni.ics.kypo.training.rest.exceptions.URITooLongException;
-import cz.muni.ics.kypo.training.rest.exceptions.UnauthorizedException;
-import cz.muni.ics.kypo.training.rest.exceptions.UnprocessableEntityException;
-import cz.muni.ics.kypo.training.rest.exceptions.UnsupportedMediaTypeException;
-import cz.muni.ics.kypo.training.rest.exceptions.VariantAlsoNegotiatesException;
+import javax.servlet.http.HttpServletRequest;
+import javax.validation.ConstraintViolation;
+import javax.validation.ConstraintViolationException;
+import java.nio.file.AccessDeniedException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 

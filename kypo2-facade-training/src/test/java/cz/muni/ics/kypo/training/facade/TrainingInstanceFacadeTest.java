@@ -7,6 +7,7 @@ import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceCreate
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceDTO;
 import cz.muni.ics.kypo.training.config.FacadeConfigTest;
 import cz.muni.ics.kypo.training.exception.FacadeLayerException;
+import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.model.TrainingInstance;
 import cz.muni.ics.kypo.training.service.TrainingInstanceService;
 import org.junit.Before;
@@ -27,9 +28,9 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.BDDMockito.*;
 
 @RunWith(SpringRunner.class)
@@ -42,15 +43,17 @@ public class TrainingInstanceFacadeTest {
 
 	@Autowired
 	private TrainingInstanceFacade trainingInstanceFacade;
+
 	@MockBean
 	private TrainingInstanceService trainingInstanceService;
 
 	private TrainingInstance trainingInstance1, trainingInstance2;
 	private TrainingInstanceCreateDTO trainingInstanceCreate;
 
+
 	@SpringBootApplication
-	static class TestConfiguration {
-	}
+    static class TestConfiguration {
+    }
 
 	@Before
 	public void init() {
@@ -64,12 +67,11 @@ public class TrainingInstanceFacadeTest {
 
 		trainingInstanceCreate = new TrainingInstanceCreateDTO();
 		trainingInstanceCreate.setTitle("test");
-
 	}
 
 	@Test
 	public void findTrainingInstanceById() {
-		given(trainingInstanceService.findById(trainingInstance1.getId())).willReturn(Optional.of(trainingInstance1));
+		given(trainingInstanceService.findById(trainingInstance1.getId())).willReturn(trainingInstance1);
 
 		TrainingInstanceDTO trainingInstanceDTO = trainingInstanceFacade.findById(trainingInstance1.getId());
 		deepEquals(trainingInstance1, trainingInstanceDTO);
@@ -80,42 +82,37 @@ public class TrainingInstanceFacadeTest {
 	@Test
 	public void findNonexistentTrainingInstanceById() {
 		Long id = 6L;
-		given(trainingInstanceService.findById(id)).willReturn(Optional.empty());
+		willThrow(ServiceLayerException.class).given(trainingInstanceService).findById(id);
 		thrown.expect(FacadeLayerException.class);
 		trainingInstanceFacade.findById(id);
 	}
 
-	@Test
-	public void findAllTrainingInstances() {
-		List<TrainingInstance> expected = new ArrayList<>();
-		expected.add(trainingInstance1);
-		expected.add(trainingInstance2);
 
-		Page<TrainingInstance> p = new PageImpl<TrainingInstance>(expected);
-
-		PathBuilder<TrainingInstance> tI = new PathBuilder<TrainingInstance>(TrainingInstance.class, "trainingInstance");
-		Predicate predicate = tI.isNotNull();
-
-		given(trainingInstanceService.findAll(any(Predicate.class), any(Pageable.class))).willReturn(p);
-
-		PageResultResource<TrainingInstanceDTO> trainingInstanceDTO = trainingInstanceFacade.findAll(predicate, PageRequest.of(0, 2));
-		deepEquals(trainingInstance1, trainingInstanceDTO.getContent().get(0));
-		deepEquals(trainingInstance2, trainingInstanceDTO.getContent().get(1));
-
-		then(trainingInstanceService).should().findAll(predicate, PageRequest.of(0, 2));
-	}
 
 	@Test
 	public void createTrainingInstance() {
-		given(trainingInstanceService.create(trainingInstance1)).willReturn(Optional.of(trainingInstance1));
+		given(trainingInstanceService.create(trainingInstance1)).willReturn(trainingInstance1);
 		TrainingInstanceCreateDTO trainingInstanceDTO = trainingInstanceFacade.create(trainingInstanceCreate);
+		assertEquals(trainingInstanceCreate.toString(), trainingInstanceDTO.toString());
 		then(trainingInstanceService).should().create(trainingInstance1);
 	}
 
 	@Test
 	public void createTrainingInstanceWithNull() {
-		thrown.expect(FacadeLayerException.class);
+		thrown.expect(NullPointerException.class);
 		trainingInstanceFacade.create(null);
+	}
+
+	@Test
+	public void updateTrainingInstance() {
+		trainingInstanceService.update(trainingInstance1);
+		then(trainingInstanceService).should().update(any(TrainingInstance.class));
+	}
+
+	@Test
+	public void updateTrainingInstanceWithNull() {
+		thrown.expect(NullPointerException.class);
+		trainingInstanceFacade.update(null);
 	}
 
 	@Test
@@ -123,6 +120,31 @@ public class TrainingInstanceFacadeTest {
 		thrown.expect(NullPointerException.class);
 		trainingInstanceFacade.delete(null);
 	}
+
+
+
+
+	@Test
+	public void findAllTrainingInstances() {
+		List<TrainingInstance> expected = new ArrayList<>();
+		expected.add(trainingInstance1);
+		expected.add(trainingInstance2);
+
+		Page p = new PageImpl<TrainingInstance>(expected);
+
+		PathBuilder<TrainingInstance> tI = new PathBuilder<TrainingInstance>(TrainingInstance.class, "trainingInstance");
+		Predicate predicate = tI.isNotNull();
+
+		given(trainingInstanceService.findAll(any(Predicate.class), any (Pageable.class))).willReturn(p);
+
+		PageResultResource<TrainingInstanceDTO> trainingInstanceDTO = trainingInstanceFacade.findAll(predicate, PageRequest.of(0, 2));
+		deepEquals(trainingInstance1, trainingInstanceDTO.getContent().get(0));
+		deepEquals(trainingInstance2, trainingInstanceDTO.getContent().get(1));
+
+		then(trainingInstanceService).should().findAll(predicate, PageRequest.of(0,2));
+	}
+
+
 
 	private void deepEquals(TrainingInstance expected, TrainingInstanceDTO actual) {
 		assertEquals(expected.getId(), actual.getId());

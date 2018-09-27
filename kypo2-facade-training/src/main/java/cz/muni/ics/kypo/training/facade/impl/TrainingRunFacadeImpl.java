@@ -1,21 +1,25 @@
 package cz.muni.ics.kypo.training.facade.impl;
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-
-import cz.muni.ics.kypo.training.api.dto.*;
+import com.querydsl.core.types.Predicate;
+import cz.muni.ics.kypo.training.api.PageResultResource;
+import cz.muni.ics.kypo.training.api.dto.AbstractLevelDTO;
+import cz.muni.ics.kypo.training.api.dto.IsCorrectFlagDTO;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.gamelevel.GameLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.hint.HintDTO;
-import cz.muni.ics.kypo.training.api.dto.infolevel.BasicInfoLevelDTO;
+import cz.muni.ics.kypo.training.api.dto.infolevel.BasicLevelInfoDTO;
 import cz.muni.ics.kypo.training.api.dto.infolevel.InfoLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.run.AccessTrainingRunDTO;
 import cz.muni.ics.kypo.training.api.dto.run.AccessedTrainingRunDTO;
 import cz.muni.ics.kypo.training.api.dto.run.TrainingRunDTO;
 import cz.muni.ics.kypo.training.api.enums.Actions;
-import cz.muni.ics.kypo.training.api.enums.LevelType;
+import cz.muni.ics.kypo.training.exception.FacadeLayerException;
+import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
+import cz.muni.ics.kypo.training.facade.TrainingRunFacade;
+import cz.muni.ics.kypo.training.mapping.BeanMapping;
 import cz.muni.ics.kypo.training.model.*;
+import cz.muni.ics.kypo.training.model.enums.LevelType;
+import cz.muni.ics.kypo.training.service.TrainingRunService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,14 +28,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.querydsl.core.types.Predicate;
-
-import cz.muni.ics.kypo.training.api.PageResultResource;
-import cz.muni.ics.kypo.training.exception.FacadeLayerException;
-import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
-import cz.muni.ics.kypo.training.facade.TrainingRunFacade;
-import cz.muni.ics.kypo.training.mapping.BeanMapping;
-import cz.muni.ics.kypo.training.service.TrainingRunService;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author Dominik Pilar (445537)
@@ -59,10 +58,8 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
     try {
       TrainingRun trainingRun = trainingRunService.findById(id);
       return beanMapping.mapTo(trainingRun, TrainingRunDTO.class);
-    } catch (NullPointerException ex) {
-      throw new FacadeLayerException("Given TrainingRun ID is null.");
     } catch (ServiceLayerException ex) {
-      throw new FacadeLayerException(ex.getLocalizedMessage());
+      throw new FacadeLayerException(ex);
     }
   }
 
@@ -73,22 +70,24 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
     try {
       return beanMapping.mapToPageResultDTO(trainingRunService.findAll(predicate, pageable), TrainingRunDTO.class);
     } catch (ServiceLayerException ex) {
-      throw new FacadeLayerException(ex.getLocalizedMessage());
+      throw new FacadeLayerException(ex);
     }
   }
 
   @Override
+  @Transactional(readOnly = true)
   public PageResultResource<AccessedTrainingRunDTO> findAllAccessedTrainingRuns(Pageable pageable) {
     LOG.debug("findAllAccessedTrainingRuns()");
     try {
       Page<TrainingRun> trainingRuns = trainingRunService.findAllByParticipantRefLogin(pageable);
       return convertToAccessedRunDTO(trainingRuns);
     } catch (ServiceLayerException ex) {
-      throw new FacadeLayerException(ex.getLocalizedMessage());
+      throw new FacadeLayerException(ex);
     }
   }
 
   @Override
+  @Transactional
   public AccessTrainingRunDTO accessTrainingRun(String password) {
     LOG.debug("accessTrainingRun({})", password);
     AccessTrainingRunDTO accessTrainingRunDTO = new AccessTrainingRunDTO();
@@ -105,63 +104,67 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
         accessTrainingRunDTO.setAbstractLevelDTO(beanMapping.mapTo(infoLevel, InfoLevelDTO.class));
       }
 
-      accessTrainingRunDTO.setInfoLevels(getInfoAboutLevels(abstractLevel.getId()));
+      accessTrainingRunDTO.setInfoAboutLevels(getInfoAboutLevels(abstractLevel.getId()));
       return accessTrainingRunDTO;
-    } catch (IllegalArgumentException ex) {
-      throw new FacadeLayerException("Password cannot be null and must has length.");
+    } catch (ServiceLayerException ex) {
+      throw new FacadeLayerException(ex);
     }
   }
 
-  private List<BasicInfoLevelDTO> getInfoAboutLevels(Long firstLevelId) {
-    List<BasicInfoLevelDTO> infoAboutLevels = new ArrayList<>();
+  private List<BasicLevelInfoDTO> getInfoAboutLevels(Long firstLevelId) {
+    List<BasicLevelInfoDTO> infoAboutLevels = new ArrayList<>();
     List<AbstractLevel> levels = trainingRunService.getLevels(firstLevelId);
     for (AbstractLevel al: levels) {
       if (al instanceof AssessmentLevel) {
-        infoAboutLevels.add(new BasicInfoLevelDTO(al.getId(), al.getTitle(), LevelType.ASSESSMENT_LEVEL));
+        infoAboutLevels.add(new BasicLevelInfoDTO(al.getId(), al.getTitle(), LevelType.ASSESSMENT, levels.indexOf(al)));
       } else if (al instanceof  GameLevel) {
-        infoAboutLevels.add(new BasicInfoLevelDTO(al.getId(), al.getTitle(), LevelType.GAME_LEVEL));
+        infoAboutLevels.add(new BasicLevelInfoDTO(al.getId(), al.getTitle(), LevelType.GAME, levels.indexOf(al)));
       } else {
-        infoAboutLevels.add(new BasicInfoLevelDTO(al.getId(), al.getTitle(), LevelType.INFO_LEVEL));
+        infoAboutLevels.add(new BasicLevelInfoDTO(al.getId(), al.getTitle(), LevelType.INFO, levels.indexOf(al)));
       }
     }
     return infoAboutLevels;
   }
 
   @Override
+  @Transactional(readOnly = true)
   public PageResultResource<TrainingRunDTO> findAllByTrainingDefinitionAndParticipant(Long trainingDefinitionId, Pageable pageable) {
     LOG.debug("findAllByTrainingDefinitionAndParticipant({})", trainingDefinitionId);
     try {
       Page<TrainingRun> trainingRuns = trainingRunService.findAllByTrainingDefinitionAndParticipant(trainingDefinitionId, pageable);
       return beanMapping.mapToPageResultDTO(trainingRuns, TrainingRunDTO.class);
     } catch (ServiceLayerException ex) {
-      throw new FacadeLayerException(ex.getLocalizedMessage());
+      throw new FacadeLayerException(ex);
     }
   }
 
   @Override
+  @Transactional(readOnly = true)
   public PageResultResource<TrainingRunDTO> findAllByTrainingDefinition(Long trainingDefinitionId, Pageable pageable) {
     LOG.debug("findAllByTrainingDefinition({})", trainingDefinitionId);
     try {
       Page<TrainingRun> trainingRuns = trainingRunService.findAllByTrainingDefinition(trainingDefinitionId, pageable);
       return beanMapping.mapToPageResultDTO(trainingRuns, TrainingRunDTO.class);
     } catch (ServiceLayerException ex) {
-      throw new FacadeLayerException(ex.getLocalizedMessage());
+      throw new FacadeLayerException(ex);
     }
   }
 
   @Override
+  @Transactional(readOnly = true)
   public PageResultResource<TrainingRunDTO> findAllByTrainingInstance(Long trainingInstanceId, Pageable pageable) {
     LOG.debug("findAllByTrainingInstance({})", trainingInstanceId);
     try {
       Page<TrainingRun> trainingRuns = trainingRunService.findAllByTrainingInstance(trainingInstanceId, pageable);
       return beanMapping.mapToPageResultDTO(trainingRuns, TrainingRunDTO.class);
     } catch (ServiceLayerException ex) {
-      throw new FacadeLayerException(ex.getLocalizedMessage());
+      throw new FacadeLayerException(ex);
     }
 
   }
 
   @Override
+  @Transactional
   public AbstractLevelDTO getNextLevel(Long trainingRunId) {
     LOG.debug("getNextLevel({})", trainingRunId);
     AbstractLevel aL = trainingRunService.getNextLevel(trainingRunId);
@@ -176,18 +179,21 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
   }
 
   @Override
+  @Transactional
   public String getSolution(Long trainingRunId) {
     LOG.debug("getSolution({})", trainingRunId);
     return trainingRunService.getSolution(trainingRunId);
   }
 
   @Override
+  @Transactional
   public HintDTO getHint(Long trainingRunId, Long hintId) {
     LOG.debug("getHint({},{})", trainingRunId, hintId);
     return beanMapping.mapTo(trainingRunService.getHint(trainingRunId,hintId), HintDTO.class);
   }
 
   @Override
+  @Transactional
   public IsCorrectFlagDTO isCorrectFlag(Long trainingRunId, String flag, boolean solutionTaken) {
     LOG.debug("isCorrectFlag({},{})", trainingRunId, flag);
     IsCorrectFlagDTO correctFlagDTO = new IsCorrectFlagDTO();

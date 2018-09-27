@@ -10,63 +10,77 @@ import java.util.Objects;
 
 public class BasicLevelInfoDTO {
 
-	private Long id;
-	private String title;
-	private int order;
-	private LevelType levelType;
+  private Long id;
+  private String title;
+  private int order;
+  private LevelType levelType;
 
-	public BasicLevelInfoDTO() {}
+  public BasicLevelInfoDTO() {
+  }
 
-	public Long getId() {
-		return id;
-	}
+  public BasicLevelInfoDTO(Long id, String title, LevelType levelType, int order) {
+    this.id = id;
+    this.title = title;
+    this.levelType = levelType;
+    this.order = order;
+  }
 
-	public void setId(Long id) {
-		this.id = id;
-	}
+  public Long getId() {
+    return id;
+  }
 
-	public String getTitle() {
-		return title;
-	}
+  public void setId(Long id) {
+    this.id = id;
+  }
 
-	public void setTitle(String title) {
-		this.title = title;
-	}
+  public String getTitle() {
+    return title;
+  }
 
-	public int getOrder() {
-		return order;
-	}
+  public void setTitle(String title) {
+    this.title = title;
+  }
 
-	public void setOrder(int order) {
-		this.order = order;
-	}
+  public int getOrder() {
+    return order;
+  }
 
-	public LevelType getLevelType() {
-		return levelType;
-	}
+  public void setOrder(int order) {
+    this.order = order;
+  }
 
-	public void setLevelType(LevelType levelType) {
-		this.levelType = levelType;
-	}
+  public LevelType getLevelType() {
+    return levelType;
+  }
 
-	@Override
-	public boolean equals(Object o) {
-		if (this == o)
-			return true;
-		if (o == null || getClass() != o.getClass())
-			return false;
-		BasicLevelInfoDTO that = (BasicLevelInfoDTO) o;
-		return order == that.order && Objects.equals(id, that.id) && Objects.equals(title, that.title) && levelType == that.levelType;
-	}
+  public void setLevelType(LevelType levelType) {
+    this.levelType = levelType;
+  }
 
-	@Override
-	public int hashCode() {
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    BasicLevelInfoDTO that = (BasicLevelInfoDTO) o;
+    return order == that.order &&
+            Objects.equals(id, that.id) &&
+            Objects.equals(title, that.title) &&
+            levelType == that.levelType;
+  }
 
-		return Objects.hash(id, title, order, levelType);
-	}
+  @Override
+  public int hashCode() {
 
-	@Override
-	public String toString() {
-		return "BasicLevelInfoDTO{" + "id=" + id + ", title='" + title + '\'' + ", order=" + order + ", levelType=" + levelType + '}';
-	}
+    return Objects.hash(id, title, order, levelType);
+  }
+
+  @Override
+  public String toString() {
+    return "BasicLevelInfoDTO{" +
+            "id=" + id +
+            ", title='" + title + '\'' +
+            ", order=" + order +
+            ", levelType=" + levelType +
+            '}';
+  }
 }

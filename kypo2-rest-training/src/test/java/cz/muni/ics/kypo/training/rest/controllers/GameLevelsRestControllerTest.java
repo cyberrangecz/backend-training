@@ -10,9 +10,7 @@ import cz.muni.ics.kypo.training.facade.GameLevelFacade;
 import cz.muni.ics.kypo.training.mapping.BeanMapping;
 import cz.muni.ics.kypo.training.mapping.BeanMappingImpl;
 import cz.muni.ics.kypo.training.model.GameLevel;
-import cz.muni.ics.kypo.training.rest.controllers.GameLevelsRestController;
 import cz.muni.ics.kypo.training.rest.exceptions.ResourceNotFoundException;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -52,7 +50,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = GameLevelsRestController.class)
-@ComponentScan(basePackages = "cz.muni.ics.kypo")
+@ComponentScan(basePackages = {"cz.muni.ics.kypo"})
 public class GameLevelsRestControllerTest {
 
 	@Autowired
@@ -67,12 +65,12 @@ public class GameLevelsRestControllerTest {
 	@Qualifier("objMapperRESTApi")
 	private ObjectMapper objectMapper;
 
+	@MockBean
+	private BeanMapping beanMapping;
+
 	private GameLevel gameLevel1, gameLevel2;
-
 	private GameLevelDTO gameLevel1DTO, gameLevel2DTO;
-
 	private Page p;
-
 	private PageResultResource<GameLevelDTO> gameLevelDTOPageResultResource;
 
 	@Before
@@ -118,16 +116,19 @@ public class GameLevelsRestControllerTest {
 		given(gameLevelFacade.findById(any(Long.class))).willReturn(gameLevel1DTO);
 		String valueGl = convertObjectToJsonBytes(gameLevel1DTO);
 		given(objectMapper.writeValueAsString(any(Object.class))).willReturn(valueGl);
-		MockHttpServletResponse result = mockMvc.perform(get("/game-levels" + "/{id}", 1l)).andExpect(status().isOk())
-				.andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON)).andReturn().getResponse();
+		MockHttpServletResponse result = mockMvc.perform(get("/game-levels" + "/{id}", 1l))
+				.andExpect(status().isOk())
+				.andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+				.andReturn().getResponse();
 		assertEquals(convertObjectToJsonBytes(convertObjectToJsonBytes(gameLevel1DTO)), result.getContentAsString());
 	}
 
 	@Test
 	public void findGameLevelByIdWithFacadeException() throws Exception {
 		willThrow(FacadeLayerException.class).given(gameLevelFacade).findById(any(Long.class));
-		Exception exception =
-				mockMvc.perform(get("/game-levels" + "/{id}", 6l)).andExpect(status().isNotFound()).andReturn().getResolvedException();
+		Exception exception = mockMvc.perform(get("/game-levels" + "/{id}", 6l))
+				.andExpect(status().isNotFound())
+				.andReturn().getResolvedException();
 		assertEquals(ResourceNotFoundException.class, exception.getClass());
 	}
 
@@ -135,10 +136,12 @@ public class GameLevelsRestControllerTest {
 	public void findAllGameLevels() throws Exception {
 		String valueGl = convertObjectToJsonBytes(gameLevelDTOPageResultResource);
 		given(objectMapper.writeValueAsString(any(Object.class))).willReturn(valueGl);
-		given(gameLevelFacade.findAll(any(Predicate.class), any(Pageable.class))).willReturn(gameLevelDTOPageResultResource);
+		given(gameLevelFacade.findAll(any(Predicate.class),any(Pageable.class))).willReturn(gameLevelDTOPageResultResource);
 
-		MockHttpServletResponse result = mockMvc.perform(get("/game-levels")).andExpect(status().isOk())
-				.andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON)).andReturn().getResponse();
+		MockHttpServletResponse result = mockMvc.perform(get("/game-levels"))
+				.andExpect(status().isOk())
+				.andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+				.andReturn().getResponse();
 		assertEquals(convertObjectToJsonBytes(convertObjectToJsonBytes(gameLevelDTOPageResultResource)), result.getContentAsString());
 	}
 

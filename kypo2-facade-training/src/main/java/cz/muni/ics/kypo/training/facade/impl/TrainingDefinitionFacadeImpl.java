@@ -3,6 +3,7 @@ package cz.muni.ics.kypo.training.facade.impl;
 import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.training.api.PageResultResource;
 import cz.muni.ics.kypo.training.api.dto.AbstractLevelDTO;
+import cz.muni.ics.kypo.training.exception.FacadeLayerException;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelCreateDTO;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelUpdateDTO;
@@ -16,10 +17,6 @@ import cz.muni.ics.kypo.training.api.dto.infolevel.InfoLevelUpdateDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionCreateDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionUpdateDTO;
-import cz.muni.ics.kypo.training.exception.FacadeLayerException;
-import cz.muni.ics.kypo.training.exceptions.CannotBeClonedException;
-import cz.muni.ics.kypo.training.exceptions.CannotBeDeletedException;
-import cz.muni.ics.kypo.training.exceptions.CannotBeUpdatedException;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.facade.TrainingDefinitionFacade;
 import cz.muni.ics.kypo.training.mapping.BeanMapping;
@@ -32,8 +29,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.Set;
 
 /**
  * @author Pavel Šeda
@@ -54,16 +53,15 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
 		this.beanMapping = beanMapping;
 	}
 
-	@Override
-	@Transactional(readOnly = true)
-	public TrainingDefinitionDTO findById(Long id) {
-		LOG.debug("findById({})", id);
-		try {
-			Objects.requireNonNull(id);
-			Optional<TrainingDefinition> trainingDef = trainingDefinitionService.findById(id);
-			TrainingDefinition td = trainingDef.orElseThrow(() -> new ServiceLayerException("TrainingDefinition with this id is not found"));
-			List<AbstractLevel> levels = trainingDefinitionService.findAllLevelsFromDefinition(id);
-			TrainingDefinitionDTO trainingDefinitionDTO = beanMapping.mapTo(td, TrainingDefinitionDTO.class);
+  @Override
+  @Transactional(readOnly = true)
+  public TrainingDefinitionDTO findById(long id) {
+    LOG.debug("findById({})", id);
+    try {
+      Objects.requireNonNull(id);
+      ArrayList<AbstractLevel> levels = trainingDefinitionService.findAllLevelsFromDefinition(id);
+      TrainingDefinitionDTO trainingDefinitionDTO = beanMapping.mapTo(trainingDefinitionService.findById(id), TrainingDefinitionDTO.class);
+
 
 			Set<BasicLevelInfoDTO> levelInfoDTOs = new HashSet<>();
 			for (int i = 0; i < levels.size(); i++) {
@@ -80,25 +78,24 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
 				levelInfoDTOs.add(basicLevelInfoDTO);
 			}
 
-			trainingDefinitionDTO.setBasicLevelInfoDTOs(levelInfoDTOs);
-			return trainingDefinitionDTO;
-		} catch (NullPointerException ex) {
-			throw new FacadeLayerException("Given TrainingDefinition ID is null.");
-		} catch (ServiceLayerException ex) {
-			throw new FacadeLayerException(ex.getLocalizedMessage());
-		}
-	}
+      trainingDefinitionDTO.setBasicLevelInfoDTOs(levelInfoDTOs);
+      return trainingDefinitionDTO;
+    } catch (ServiceLayerException ex) {
+      throw new FacadeLayerException(ex);
+    }
+  }
 
-	@Override
-	@Transactional(readOnly = true)
-	public PageResultResource<TrainingDefinitionDTO> findAll(Predicate predicate, Pageable pageable) {
-		LOG.debug("findAll({},{})", predicate, pageable);
-		try {
-			return beanMapping.mapToPageResultDTO(trainingDefinitionService.findAll(predicate, pageable), TrainingDefinitionDTO.class);
-		} catch (ServiceLayerException ex) {
-			throw new FacadeLayerException(ex.getLocalizedMessage());
-		}
-	}
+  @Override
+  @Transactional(readOnly = true)
+  public PageResultResource<TrainingDefinitionDTO> findAll(Predicate predicate, Pageable pageable) {
+    LOG.debug("findAll({},{})", predicate, pageable);
+    try {
+      return beanMapping.mapToPageResultDTO(trainingDefinitionService.findAll(predicate, pageable), TrainingDefinitionDTO.class);
+    } catch (ServiceLayerException ex) {
+      throw new FacadeLayerException(ex);
+    }
+  }
+
 
 	@Override
 	public PageResultResource<TrainingDefinitionDTO> findAllBySandboxDefinitionId(Long sandboxDefinitionId, Pageable pageable) {
@@ -111,183 +108,172 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
 		}
 	}
 
-	@Override
-	@Transactional
-	public TrainingDefinitionCreateDTO create(TrainingDefinitionCreateDTO trainingDefinition) {
-		LOG.debug("create({})", trainingDefinition);
-		try {
-			Objects.requireNonNull(trainingDefinition);
-			Optional<TrainingDefinition> tD = trainingDefinitionService.create(beanMapping.mapTo(trainingDefinition, TrainingDefinition.class));
-			TrainingDefinition newTD = tD.orElseThrow(() -> new ServiceLayerException("Training definition not created"));
-			return beanMapping.mapTo(newTD, TrainingDefinitionCreateDTO.class);
-		} catch (NullPointerException | ServiceLayerException ex) {
-			throw new FacadeLayerException(ex.getLocalizedMessage());
-		}
-	}
+  @Override
+  @Transactional
+  public TrainingDefinitionCreateDTO create(TrainingDefinitionCreateDTO trainingDefinition) {
+    LOG.debug("create({})", trainingDefinition);
+    try{
+      Objects.requireNonNull(trainingDefinition);
+      TrainingDefinition newTR = trainingDefinitionService.create(beanMapping.mapTo(trainingDefinition, TrainingDefinition.class));
+      return beanMapping.mapTo(newTR, TrainingDefinitionCreateDTO.class);
+    } catch(ServiceLayerException ex) {
+      throw new FacadeLayerException(ex);
+    }
+  }
+
+  @Override
+  @Transactional
+  public void update(TrainingDefinitionUpdateDTO trainingDefinition) throws FacadeLayerException {
+    LOG.debug("update({})", trainingDefinition);
+    try {
+      Objects.requireNonNull(trainingDefinition);
+      trainingDefinitionService.update(beanMapping.mapTo(trainingDefinition, TrainingDefinition.class));
+    } catch (ServiceLayerException ex) {
+      throw new FacadeLayerException(ex);
+    }
+  }
+
+  @Override
+  @Transactional
+  public TrainingDefinitionDTO clone(Long id) throws FacadeLayerException {
+    LOG.debug("clone({})", id);
+    try {
+      Objects.requireNonNull(id);
+      return beanMapping.mapTo(trainingDefinitionService.clone(id), TrainingDefinitionDTO.class);
+    } catch (ServiceLayerException ex) {
+      throw new FacadeLayerException(ex);
+    }
+  }
+
+  @Override
+  @Transactional
+  public void swapLeft(Long definitionId, Long levelId) throws FacadeLayerException {
+    LOG.debug("swapLeft({},{})", definitionId, levelId);
+    try{
+      Objects.requireNonNull(definitionId);
+      Objects.requireNonNull(levelId);
+      trainingDefinitionService.swapLeft(definitionId,levelId);
+    } catch (ServiceLayerException ex){
+      throw new FacadeLayerException(ex);
+    }
+  }
+
+  @Override
+  @Transactional
+  public void swapRight(Long definitionId, Long levelId) throws FacadeLayerException {
+    LOG.debug("swapRight({},{})", definitionId, levelId);
+    try{
+      Objects.requireNonNull(definitionId);
+      Objects.requireNonNull(levelId);
+      trainingDefinitionService.swapRight(definitionId,levelId);
+    } catch (ServiceLayerException ex){
+      throw new FacadeLayerException(ex);
+    }
+  }
+
+  @Override
+  @Transactional
+  public void delete(Long id) throws FacadeLayerException {
+    LOG.debug("delete({})", id);
+    try{
+      Objects.requireNonNull(id);
+      trainingDefinitionService.delete(id);
+    } catch (ServiceLayerException ex) {
+      throw new FacadeLayerException(ex);
+    }
+  }
+
+  @Override
+  @Transactional
+  public void deleteOneLevel(Long definitionId, Long levelId) throws FacadeLayerException {
+    LOG.debug("deleteOneLevel({}, {})", definitionId, levelId);
+    try {
+      Objects.requireNonNull(definitionId);
+      Objects.requireNonNull(levelId);
+      trainingDefinitionService.deleteOneLevel(definitionId, levelId);
+    } catch (ServiceLayerException ex) {
+      throw new FacadeLayerException(ex);
+    }
+  }
+
+  @Override
+  @Transactional
+  public void updateGameLevel(Long definitionId, GameLevelUpdateDTO gameLevel) throws FacadeLayerException {
+    LOG.debug("updateGameLevel({}, {})", definitionId, gameLevel);
+    try {
+      Objects.requireNonNull(gameLevel);
+      Objects.requireNonNull(definitionId);
+      trainingDefinitionService.updateGameLevel(definitionId,beanMapping.mapTo(gameLevel, GameLevel.class));
+    } catch (ServiceLayerException ex) {
+      throw new FacadeLayerException(ex);
+    }
+  }
+
+  @Override
+  @Transactional
+  public void updateInfoLevel(Long definitionId, InfoLevelUpdateDTO infoLevel) throws FacadeLayerException {
+    LOG.debug("updateInfoLevel({}, {})", definitionId, infoLevel);
+    try {
+      Objects.requireNonNull(infoLevel);
+      Objects.requireNonNull(definitionId);
+      trainingDefinitionService.updateInfoLevel(definitionId, beanMapping.mapTo(infoLevel, InfoLevel.class));
+    } catch (ServiceLayerException ex) {
+      throw new FacadeLayerException(ex);
+    }
+  }
+
+  @Override
+  @Transactional
+  public void updateAssessmentLevel(Long definitionId, AssessmentLevelUpdateDTO assessmentLevel) throws FacadeLayerException {
+    LOG.debug("updateAssessmentLevel({}, {})", definitionId, assessmentLevel);
+    try {
+      Objects.requireNonNull(assessmentLevel);
+      Objects.requireNonNull(definitionId);
+      trainingDefinitionService.updateAssessmentLevel(definitionId, beanMapping.mapTo(assessmentLevel, AssessmentLevel.class));
+    } catch (ServiceLayerException ex) {
+      throw new FacadeLayerException(ex);
+    }
+  }
+
+  @Override
+  @Transactional
+  public InfoLevelCreateDTO createInfoLevel(Long definitionId, InfoLevelCreateDTO infoLevel) throws FacadeLayerException {
+    LOG.debug("createInfoLevel({}, {})", definitionId, infoLevel);
+    try{
+      Objects.requireNonNull(infoLevel);
+      Objects.requireNonNull(definitionId);
+      InfoLevel newInfoLevel = trainingDefinitionService.createInfoLevel(definitionId, beanMapping.mapTo(infoLevel, InfoLevel.class));
+      return beanMapping.mapTo(newInfoLevel, InfoLevelCreateDTO.class);
+    } catch (ServiceLayerException ex){
+      throw new FacadeLayerException(ex);
+    }
+  }
+
+  @Override
+  @Transactional
+  public GameLevelCreateDTO createGameLevel(Long definitionId, GameLevelCreateDTO gameLevel) throws FacadeLayerException {
+    LOG.debug("createGameLevel({}, {})", definitionId, gameLevel);
+    try{
+      Objects.requireNonNull(gameLevel);
+      Objects.requireNonNull(definitionId);
+      GameLevel newGameLevel = trainingDefinitionService.createGameLevel(definitionId, beanMapping.mapTo(gameLevel, GameLevel.class));
+      return beanMapping.mapTo(newGameLevel, GameLevelCreateDTO.class);
+    } catch (ServiceLayerException ex){
+      throw new FacadeLayerException(ex);
+    }
+  }
 
 	@Override
 	@Transactional
-	public void update(TrainingDefinitionUpdateDTO trainingDefinition) throws FacadeLayerException, CannotBeUpdatedException {
-		LOG.debug("update({})", trainingDefinition);
-		try {
-			Objects.requireNonNull(trainingDefinition);
-			trainingDefinitionService.update(beanMapping.mapTo(trainingDefinition, TrainingDefinition.class));
-		} catch (ServiceLayerException ex) {
-			throw new FacadeLayerException(ex.getLocalizedMessage());
-		}
-	}
-
-	@Override
-	@Transactional
-	public TrainingDefinitionDTO clone(Long id) throws FacadeLayerException, CannotBeClonedException {
-		LOG.debug("clone({})", id);
-		try {
-			Objects.requireNonNull(id);
-			Optional<TrainingDefinition> tD = trainingDefinitionService.clone(id);
-			TrainingDefinition clonedTD = tD.orElseThrow(() -> new ServiceLayerException("Training instance with id: " + id + ", is not found"));
-			return beanMapping.mapTo(clonedTD, TrainingDefinitionDTO.class);
-		} catch (ServiceLayerException ex) {
-			throw new FacadeLayerException(ex.getLocalizedMessage());
-		}
-	}
-
-	@Override
-	@Transactional
-	public void swapLeft(Long definitionId, Long levelId) throws FacadeLayerException, CannotBeUpdatedException {
-		LOG.debug("swapLeft({},{})", definitionId, levelId);
-		try {
-			Objects.requireNonNull(definitionId);
-			Objects.requireNonNull(levelId);
-			trainingDefinitionService.swapLeft(definitionId, levelId);
-		} catch (NullPointerException | ServiceLayerException ex) {
-			throw new FacadeLayerException(ex.getLocalizedMessage());
-		}
-	}
-
-	@Override
-	@Transactional
-	public void swapRight(Long definitionId, Long levelId) throws FacadeLayerException, CannotBeUpdatedException {
-		LOG.debug("swapRight({},{})", definitionId, levelId);
-		try {
-			Objects.requireNonNull(definitionId);
-			Objects.requireNonNull(levelId);
-			trainingDefinitionService.swapRight(definitionId, levelId);
-		} catch (NullPointerException | ServiceLayerException ex) {
-			throw new FacadeLayerException(ex.getLocalizedMessage());
-		}
-	}
-
-	@Override
-	@Transactional
-	public void delete(Long id) throws FacadeLayerException, CannotBeDeletedException {
-		LOG.debug("delete({})", id);
-		try {
-			Objects.requireNonNull(id);
-			trainingDefinitionService.delete(id);
-		} catch (ServiceLayerException ex) {
-			throw new FacadeLayerException(ex.getLocalizedMessage());
-		}
-	}
-
-	@Override
-	@Transactional
-	public void deleteOneLevel(Long definitionId, Long levelId) throws FacadeLayerException, CannotBeUpdatedException {
-		LOG.debug("deleteOneLevel({}, {})", definitionId, levelId);
-		try {
-			Objects.requireNonNull(definitionId);
-			Objects.requireNonNull(levelId);
-			trainingDefinitionService.deleteOneLevel(definitionId, levelId);
-		} catch (ServiceLayerException ex) {
-			throw new FacadeLayerException(ex.getLocalizedMessage());
-		}
-	}
-
-	@Override
-	@Transactional
-	public void updateGameLevel(Long definitionId, GameLevelUpdateDTO gameLevel) throws FacadeLayerException, CannotBeUpdatedException {
-		LOG.debug("updateGameLevel({}, {})", definitionId, gameLevel);
-		try {
-			Objects.requireNonNull(gameLevel);
-			Objects.requireNonNull(definitionId);
-			trainingDefinitionService.updateGameLevel(definitionId, beanMapping.mapTo(gameLevel, GameLevel.class));
-		} catch (ServiceLayerException ex) {
-			throw new FacadeLayerException(ex.getLocalizedMessage());
-		}
-	}
-
-	@Override
-	@Transactional
-	public void updateInfoLevel(Long definitionId, InfoLevelUpdateDTO infoLevel) throws FacadeLayerException, CannotBeUpdatedException {
-		LOG.debug("updateInfoLevel({}, {})", definitionId, infoLevel);
-		try {
-			Objects.requireNonNull(infoLevel);
-			Objects.requireNonNull(definitionId);
-			trainingDefinitionService.updateInfoLevel(definitionId, beanMapping.mapTo(infoLevel, InfoLevel.class));
-		} catch (ServiceLayerException ex) {
-			throw new FacadeLayerException(ex.getLocalizedMessage());
-		}
-	}
-
-	@Override
-	@Transactional
-	public void updateAssessmentLevel(Long definitionId, AssessmentLevelUpdateDTO assessmentLevel)
-			throws FacadeLayerException, CannotBeUpdatedException {
-		LOG.debug("updateAssessmentLevel({}, {})", definitionId, assessmentLevel);
-		try {
-			Objects.requireNonNull(assessmentLevel);
-			Objects.requireNonNull(definitionId);
-			trainingDefinitionService.updateAssessmentLevel(definitionId, beanMapping.mapTo(assessmentLevel, AssessmentLevel.class));
-		} catch (ServiceLayerException ex) {
-			throw new FacadeLayerException(ex.getLocalizedMessage());
-		}
-	}
-
-	@Override
-	@Transactional
-	public InfoLevelCreateDTO createInfoLevel(Long definitionId, InfoLevelCreateDTO infoLevel)
-			throws FacadeLayerException, CannotBeUpdatedException {
-		LOG.debug("createInfoLevel({}, {})", definitionId, infoLevel);
-		try {
-			Objects.requireNonNull(infoLevel);
-			Objects.requireNonNull(definitionId);
-			InfoLevel iL = trainingDefinitionService.createInfoLevel(definitionId, beanMapping.mapTo(infoLevel, InfoLevel.class))
-					.orElseThrow(() -> new ServiceLayerException("Training instance with id: " + definitionId + ", is not found"));
-			return beanMapping.mapTo(iL, InfoLevelCreateDTO.class);
-		} catch (ServiceLayerException ex) {
-			throw new FacadeLayerException(ex.getLocalizedMessage());
-		}
-	}
-
-	@Override
-	@Transactional
-	public GameLevelCreateDTO createGameLevel(Long definitionId, GameLevelCreateDTO gameLevel)
-			throws FacadeLayerException, CannotBeUpdatedException {
-		LOG.debug("createGameLevel({}, {})", definitionId, gameLevel);
-		try {
-			Objects.requireNonNull(gameLevel);
-			Objects.requireNonNull(definitionId);
-			GameLevel gL = trainingDefinitionService.createGameLevel(definitionId, beanMapping.mapTo(gameLevel, GameLevel.class))
-					.orElseThrow(() -> new ServiceLayerException("Training instance with id: " + definitionId + ", is not found"));
-			return beanMapping.mapTo(gL, GameLevelCreateDTO.class);
-		} catch (ServiceLayerException ex) {
-			throw new FacadeLayerException(ex.getLocalizedMessage());
-		}
-	}
-
-	@Override
-	@Transactional
-	public AssessmentLevelCreateDTO createAssessmentLevel(Long definitionId, AssessmentLevelCreateDTO assessmentLevel)
-			throws FacadeLayerException, CannotBeUpdatedException {
+	public AssessmentLevelCreateDTO createAssessmentLevel(Long definitionId, AssessmentLevelCreateDTO assessmentLevel) throws FacadeLayerException {
 		LOG.debug("assessmentInfoLevel({}, {})", definitionId, assessmentLevel);
-		try {
+		try{
 			Objects.requireNonNull(assessmentLevel);
 			Objects.requireNonNull(definitionId);
-			AssessmentLevel aL =
-					trainingDefinitionService.createAssessmentLevel(definitionId, beanMapping.mapTo(assessmentLevel, AssessmentLevel.class))
-							.orElseThrow(() -> new ServiceLayerException("Training instance with id: " + definitionId + ", is not found"));
-			return beanMapping.mapTo(aL, AssessmentLevelCreateDTO.class);
-		} catch (ServiceLayerException ex) {
-			throw new FacadeLayerException(ex.getLocalizedMessage());
+			AssessmentLevel newAssessmentLevel = trainingDefinitionService.createAssessmentLevel(definitionId, beanMapping.mapTo(assessmentLevel, AssessmentLevel.class));
+			return beanMapping.mapTo(newAssessmentLevel, AssessmentLevelCreateDTO.class);
+		} catch (ServiceLayerException ex){
+			throw new FacadeLayerException(ex);
 		}
 	}
 

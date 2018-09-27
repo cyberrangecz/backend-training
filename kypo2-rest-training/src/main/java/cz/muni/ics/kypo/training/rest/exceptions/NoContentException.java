@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 @ResponseStatus(value = HttpStatus.NO_CONTENT, reason = "The server successfully processed the request and is not returning any content.")
 public class NoContentException extends RuntimeException {
 
-	public NoContentException() {}
+  public NoContentException() {}
 
 	public NoContentException(String message) {
 		super(message);

@@ -1,5 +1,6 @@
 package cz.muni.ics.kypo.training.repository;
 
+import cz.muni.ics.kypo.training.model.TrainingDefinition;
 import java.util.List;
 
 import org.springframework.data.domain.Page;
@@ -10,7 +11,7 @@ import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import cz.muni.ics.kypo.training.model.TrainingDefinition;
+import java.util.List;
 
 /**
  * 

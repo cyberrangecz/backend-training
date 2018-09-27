@@ -1,13 +1,12 @@
 package cz.muni.ics.kypo.training.mapping;
 
+import cz.muni.ics.kypo.training.api.PageResultResource;
+import org.springframework.data.domain.Page;
+
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-
-import org.springframework.data.domain.Page;
-
-import cz.muni.ics.kypo.training.api.PageResultResource;
 
 /**
  * That class is used for mapping entities to DTO classes. Example of usage for this mapper shown

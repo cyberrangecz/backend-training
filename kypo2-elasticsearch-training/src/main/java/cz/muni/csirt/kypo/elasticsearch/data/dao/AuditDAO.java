@@ -1,9 +1,9 @@
 package cz.muni.csirt.kypo.elasticsearch.data.dao;
 
-import java.io.IOException;
-
 import cz.muni.csirt.kypo.elasticsearch.AbstractAuditPOJO;
 import cz.muni.csirt.kypo.elasticsearch.data.exceptions.ElasticsearchTrainingDataLayerException;
+
+import java.io.IOException;
 
 /**
  * 
