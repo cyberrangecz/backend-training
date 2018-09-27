@@ -15,13 +15,14 @@ import io.swagger.annotations.ApiModel;
 @ApiModel(value = "InfoLevelCreateDTO", description = "Info Level to create.")
 public class InfoLevelCreateDTO {
 
+	@NotNull
+	private Long id;
 	@NotEmpty(message = "Level title cannot be empty")
 	protected String title;
 	@NotNull
 	@Min(value = 0, message = "Max score cannot be lower than 0")
 	@Max(value = 100, message = "Max score cannot be greater than 100")
 	protected Integer maxScore;
-	protected Long nextLevel;
 	private String content;
 
 	public InfoLevelCreateDTO() {}
@@ -42,14 +43,6 @@ public class InfoLevelCreateDTO {
 		this.maxScore = maxScore;
 	}
 
-	public Long getNextLevel() {
-		return nextLevel;
-	}
-
-	public void setNextLevel(Long nextLevel) {
-		this.nextLevel = nextLevel;
-	}
-
 	public String getContent() {
 		return content;
 	}
@@ -65,8 +58,6 @@ public class InfoLevelCreateDTO {
 		builder.append(title);
 		builder.append(", maxScore=");
 		builder.append(maxScore);
-		builder.append(", nextLevel=");
-		builder.append(nextLevel);
 		builder.append(", content=");
 		builder.append(content);
 		builder.append("]");

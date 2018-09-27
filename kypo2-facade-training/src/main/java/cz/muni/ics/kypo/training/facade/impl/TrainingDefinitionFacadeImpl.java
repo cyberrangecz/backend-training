@@ -237,12 +237,11 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
 
   @Override
   @Transactional
-  public InfoLevelCreateDTO createInfoLevel(Long definitionId, InfoLevelCreateDTO infoLevel) throws FacadeLayerException {
-    LOG.debug("createInfoLevel({}, {})", definitionId, infoLevel);
+  public InfoLevelCreateDTO createInfoLevel(Long definitionId) throws FacadeLayerException {
+    LOG.debug("createInfoLevel({})", definitionId);
     try{
-      Objects.requireNonNull(infoLevel);
       Objects.requireNonNull(definitionId);
-      InfoLevel newInfoLevel = trainingDefinitionService.createInfoLevel(definitionId, beanMapping.mapTo(infoLevel, InfoLevel.class));
+      InfoLevel newInfoLevel = trainingDefinitionService.createInfoLevel(definitionId);
       return beanMapping.mapTo(newInfoLevel, InfoLevelCreateDTO.class);
     } catch (ServiceLayerException ex){
       throw new FacadeLayerException(ex);
@@ -251,12 +250,11 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
 
   @Override
   @Transactional
-  public GameLevelCreateDTO createGameLevel(Long definitionId, GameLevelCreateDTO gameLevel) throws FacadeLayerException {
-    LOG.debug("createGameLevel({}, {})", definitionId, gameLevel);
+  public GameLevelCreateDTO createGameLevel(Long definitionId) throws FacadeLayerException {
+    LOG.debug("createGameLevel({})", definitionId);
     try{
-      Objects.requireNonNull(gameLevel);
       Objects.requireNonNull(definitionId);
-      GameLevel newGameLevel = trainingDefinitionService.createGameLevel(definitionId, beanMapping.mapTo(gameLevel, GameLevel.class));
+      GameLevel newGameLevel = trainingDefinitionService.createGameLevel(definitionId);
       return beanMapping.mapTo(newGameLevel, GameLevelCreateDTO.class);
     } catch (ServiceLayerException ex){
       throw new FacadeLayerException(ex);
@@ -265,12 +263,11 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
 
 	@Override
 	@Transactional
-	public AssessmentLevelCreateDTO createAssessmentLevel(Long definitionId, AssessmentLevelCreateDTO assessmentLevel) throws FacadeLayerException {
-		LOG.debug("assessmentInfoLevel({}, {})", definitionId, assessmentLevel);
+	public AssessmentLevelCreateDTO createAssessmentLevel(Long definitionId) throws FacadeLayerException {
+		LOG.debug("assessmentInfoLevel({})", definitionId);
 		try{
-			Objects.requireNonNull(assessmentLevel);
 			Objects.requireNonNull(definitionId);
-			AssessmentLevel newAssessmentLevel = trainingDefinitionService.createAssessmentLevel(definitionId, beanMapping.mapTo(assessmentLevel, AssessmentLevel.class));
+			AssessmentLevel newAssessmentLevel = trainingDefinitionService.createAssessmentLevel(definitionId);
 			return beanMapping.mapTo(newAssessmentLevel, AssessmentLevelCreateDTO.class);
 		} catch (ServiceLayerException ex){
 			throw new FacadeLayerException(ex);
@@ -293,6 +290,5 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
 		} catch (ServiceLayerException ex){
 			throw new FacadeLayerException(ex.getLocalizedMessage());
 		}
-
 	}
 }
