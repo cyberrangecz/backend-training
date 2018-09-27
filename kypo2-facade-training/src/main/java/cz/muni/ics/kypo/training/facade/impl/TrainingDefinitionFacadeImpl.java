@@ -2,13 +2,17 @@ package cz.muni.ics.kypo.training.facade.impl;
 
 import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.training.api.PageResultResource;
+import cz.muni.ics.kypo.training.api.dto.AbstractLevelDTO;
 import cz.muni.ics.kypo.training.exception.FacadeLayerException;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelCreateDTO;
+import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelUpdateDTO;
 import cz.muni.ics.kypo.training.api.dto.gamelevel.GameLevelCreateDTO;
+import cz.muni.ics.kypo.training.api.dto.gamelevel.GameLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.gamelevel.GameLevelUpdateDTO;
 import cz.muni.ics.kypo.training.api.dto.infolevel.BasicLevelInfoDTO;
 import cz.muni.ics.kypo.training.api.dto.infolevel.InfoLevelCreateDTO;
+import cz.muni.ics.kypo.training.api.dto.infolevel.InfoLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.infolevel.InfoLevelUpdateDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionCreateDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionDTO;
@@ -259,17 +263,36 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
     }
   }
 
-  @Override
-  @Transactional
-  public AssessmentLevelCreateDTO createAssessmentLevel(Long definitionId, AssessmentLevelCreateDTO assessmentLevel) throws FacadeLayerException {
-    LOG.debug("assessmentInfoLevel({}, {})", definitionId, assessmentLevel);
-    try{
-      Objects.requireNonNull(assessmentLevel);
-      Objects.requireNonNull(definitionId);
-      AssessmentLevel newAssessmentLevel = trainingDefinitionService.createAssessmentLevel(definitionId, beanMapping.mapTo(assessmentLevel, AssessmentLevel.class));
-      return beanMapping.mapTo(newAssessmentLevel, AssessmentLevelCreateDTO.class);
-    } catch (ServiceLayerException ex){
-      throw new FacadeLayerException(ex);
-    }
-  }
+	@Override
+	@Transactional
+	public AssessmentLevelCreateDTO createAssessmentLevel(Long definitionId, AssessmentLevelCreateDTO assessmentLevel) throws FacadeLayerException {
+		LOG.debug("assessmentInfoLevel({}, {})", definitionId, assessmentLevel);
+		try{
+			Objects.requireNonNull(assessmentLevel);
+			Objects.requireNonNull(definitionId);
+			AssessmentLevel newAssessmentLevel = trainingDefinitionService.createAssessmentLevel(definitionId, beanMapping.mapTo(assessmentLevel, AssessmentLevel.class));
+			return beanMapping.mapTo(newAssessmentLevel, AssessmentLevelCreateDTO.class);
+		} catch (ServiceLayerException ex){
+			throw new FacadeLayerException(ex);
+		}
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public AbstractLevelDTO findLevelById(Long levelId) throws FacadeLayerException {
+		LOG.debug("findLevelById({})", levelId);
+		try{
+			AbstractLevel aL = trainingDefinitionService.findLevelById(levelId);
+			if(aL instanceof GameLevel) {
+				return beanMapping.mapTo(aL, GameLevelDTO.class);
+			} else if (aL instanceof AssessmentLevel) {
+				return beanMapping.mapTo(aL, AssessmentLevelDTO.class);
+			} else {
+				return beanMapping.mapTo(aL, InfoLevelDTO.class);
+			}
+		} catch (ServiceLayerException ex){
+			throw new FacadeLayerException(ex.getLocalizedMessage());
+		}
+
+	}
 }

@@ -306,21 +306,31 @@ import java.util.List;
 				return aL;
 		}
 
-		@Override public ArrayList<AbstractLevel> findAllLevelsFromDefinition(Long id) {
-				LOG.debug("findAllLevelsFromDefinition({})", id);
-				Assert.notNull(id, "Definition id must not be null");
-				TrainingDefinition trainingDefinition = findById(id);
-				ArrayList<AbstractLevel> levels = new ArrayList<>();
-				Long levelId = trainingDefinition.getStartingLevel();
-				AbstractLevel level = null;
-				while (levelId != null) {
-						level = abstractLevelRepository.findById(levelId)
-								.orElseThrow(() -> new ServiceLayerException("Level not found", ErrorCode.RESOURCE_NOT_FOUND));
-						levels.add(level);
-						levelId = level.getNextLevel();
-				}
-				return levels;
+
+	@Override public ArrayList<AbstractLevel> findAllLevelsFromDefinition(Long id) {
+		LOG.debug("findAllLevelsFromDefinition({})", id);
+		Assert.notNull(id, "Definition id must not be null");
+		TrainingDefinition trainingDefinition = findById(id);
+		ArrayList<AbstractLevel> levels = new ArrayList<>();
+		Long levelId = trainingDefinition.getStartingLevel();
+		AbstractLevel level = null;
+		while (levelId != null) {
+			level = abstractLevelRepository.findById(levelId)
+					.orElseThrow(() -> new ServiceLayerException("Level not found", ErrorCode.RESOURCE_NOT_FOUND));
+			levels.add(level);
+			levelId = level.getNextLevel();
 		}
+		return levels;
+	}
+
+	@Override
+	public AbstractLevel findLevelById(Long levelId) throws ServiceLayerException {
+		LOG.debug("findLevelById({})", levelId);
+		Assert.notNull(levelId, "Input level id must not be null.");
+		AbstractLevel level = abstractLevelRepository.findById(levelId)
+				.orElseThrow(() -> new ServiceLayerException("Level with id: "+ levelId +", not found",  ErrorCode.RESOURCE_NOT_FOUND));
+		return level;
+	}
 
 		private AbstractLevel findLastLevel(Long levelId) {
 				AbstractLevel lastLevel = abstractLevelRepository.findById(levelId)

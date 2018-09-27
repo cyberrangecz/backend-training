@@ -1,15 +1,11 @@
 package cz.muni.ics.kypo.training.facade;
 
+import cz.muni.ics.kypo.training.api.dto.AbstractLevelDTO;
+import cz.muni.ics.kypo.training.exception.FacadeLayerException;
+import org.springframework.data.domain.Pageable;
+
 import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.training.api.PageResultResource;
-import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceCreateDTO;
-import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceUpdateDTO;
-import cz.muni.ics.kypo.training.exception.FacadeLayerException;
-import cz.muni.ics.kypo.training.model.AssessmentLevel;
-import cz.muni.ics.kypo.training.model.GameLevel;
-import cz.muni.ics.kypo.training.model.InfoLevel;
-import cz.muni.ics.kypo.training.model.TrainingDefinition;
-import org.springframework.data.domain.Pageable;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelCreateDTO;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelUpdateDTO;
 import cz.muni.ics.kypo.training.api.dto.gamelevel.GameLevelCreateDTO;
@@ -164,5 +160,13 @@ public interface TrainingDefinitionFacade {
    */
   AssessmentLevelCreateDTO createAssessmentLevel(Long definitionId, AssessmentLevelCreateDTO assessmentLevel) throws FacadeLayerException;
 
+	/**
+	 * Finds specific level by id
+	 *
+	 * @param levelId - id of wanted level
+	 * @return wanted level
+	 * @throws FacadeLayerException if level is not found
+	 */
+	AbstractLevelDTO findLevelById(Long levelId) throws FacadeLayerException;
 
 }

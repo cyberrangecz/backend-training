@@ -75,6 +75,7 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
   }
 
   @Override
+  @Transactional(readOnly = true)
   public PageResultResource<AccessedTrainingRunDTO> findAllAccessedTrainingRuns(Pageable pageable) {
     LOG.debug("findAllAccessedTrainingRuns()");
     try {
@@ -86,6 +87,7 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
   }
 
   @Override
+  @Transactional
   public AccessTrainingRunDTO accessTrainingRun(String password) {
     LOG.debug("accessTrainingRun({})", password);
     AccessTrainingRunDTO accessTrainingRunDTO = new AccessTrainingRunDTO();
@@ -125,6 +127,7 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
   }
 
   @Override
+  @Transactional(readOnly = true)
   public PageResultResource<TrainingRunDTO> findAllByTrainingDefinitionAndParticipant(Long trainingDefinitionId, Pageable pageable) {
     LOG.debug("findAllByTrainingDefinitionAndParticipant({})", trainingDefinitionId);
     try {
@@ -136,6 +139,7 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
   }
 
   @Override
+  @Transactional(readOnly = true)
   public PageResultResource<TrainingRunDTO> findAllByTrainingDefinition(Long trainingDefinitionId, Pageable pageable) {
     LOG.debug("findAllByTrainingDefinition({})", trainingDefinitionId);
     try {
@@ -147,6 +151,7 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
   }
 
   @Override
+  @Transactional(readOnly = true)
   public PageResultResource<TrainingRunDTO> findAllByTrainingInstance(Long trainingInstanceId, Pageable pageable) {
     LOG.debug("findAllByTrainingInstance({})", trainingInstanceId);
     try {
@@ -159,6 +164,7 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
   }
 
   @Override
+  @Transactional
   public AbstractLevelDTO getNextLevel(Long trainingRunId) {
     LOG.debug("getNextLevel({})", trainingRunId);
     AbstractLevel aL = trainingRunService.getNextLevel(trainingRunId);
@@ -173,18 +179,21 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
   }
 
   @Override
+  @Transactional
   public String getSolution(Long trainingRunId) {
     LOG.debug("getSolution({})", trainingRunId);
     return trainingRunService.getSolution(trainingRunId);
   }
 
   @Override
+  @Transactional
   public HintDTO getHint(Long trainingRunId, Long hintId) {
     LOG.debug("getHint({},{})", trainingRunId, hintId);
     return beanMapping.mapTo(trainingRunService.getHint(trainingRunId,hintId), HintDTO.class);
   }
 
   @Override
+  @Transactional
   public IsCorrectFlagDTO isCorrectFlag(Long trainingRunId, String flag, boolean solutionTaken) {
     LOG.debug("isCorrectFlag({},{})", trainingRunId, flag);
     IsCorrectFlagDTO correctFlagDTO = new IsCorrectFlagDTO();
