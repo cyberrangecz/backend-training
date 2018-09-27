@@ -122,33 +122,29 @@ public interface TrainingDefinitionService {
   /**
    * Creates new game level
    * @param definitionId - id of definition in which level will be created
-   * @param gameLevel to be created
    * @return new game level
    * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND given training definition is not found.
    *                                               RESOURCE_CONFLICT level cannot be created in released or archived training definition.
    */
-  public GameLevel createGameLevel(Long definitionId, GameLevel gameLevel) throws ServiceLayerException;
-
+  public GameLevel createGameLevel(Long definitionId) throws ServiceLayerException;
 
   /**
    * Creates new info level
    * @param definitionId - id of definition in which level will be created
-   * @param infoLevel to be created
    * @return new info level
    * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND given training definition is not found.
    *                                               RESOURCE_CONFLICT level cannot be created in released or archived training definition.
    */
-  public InfoLevel createInfoLevel(Long definitionId, InfoLevel infoLevel) throws ServiceLayerException;
+  public InfoLevel createInfoLevel(Long definitionId) throws ServiceLayerException;
 
   /**
    * Creates new assessment level
    * @param definitionId - id of definition in which level will be created
-   * @param assessmentLevel to be created
    * @return new assessment level
    * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND given training definition is not found.
    *                                               RESOURCE_CONFLICT level cannot be created in released or archived training definition.
    */
-  public AssessmentLevel createAssessmentLevel(Long definitionId, AssessmentLevel assessmentLevel) throws ServiceLayerException;
+  public AssessmentLevel createAssessmentLevel(Long definitionId) throws ServiceLayerException;
 
   /**
    * Finds all levels from single definition
