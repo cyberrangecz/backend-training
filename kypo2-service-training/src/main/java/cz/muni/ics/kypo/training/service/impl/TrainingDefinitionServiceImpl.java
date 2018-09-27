@@ -4,6 +4,7 @@ import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.training.exceptions.ErrorCode;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.model.*;
+import cz.muni.ics.kypo.training.model.enums.AssessmentType;
 import cz.muni.ics.kypo.training.model.enums.TDState;
 import cz.muni.ics.kypo.training.repository.*;
 import cz.muni.ics.kypo.training.service.TrainingDefinitionService;
@@ -241,14 +242,22 @@ import java.util.List;
 				assessmentLevelRepository.save(assessmentLevel);
 		}
 
-		@Override public GameLevel createGameLevel(Long definitionId, GameLevel gameLevel) throws ServiceLayerException {
-				LOG.debug("createGameLevel({}, {})", definitionId, gameLevel);
+		@Override
+		public GameLevel createGameLevel(Long definitionId) throws ServiceLayerException {
+				LOG.debug("createGameLevel({})", definitionId);
 				Assert.notNull(definitionId, "Definition id must not be null");
 				TrainingDefinition trainingDefinition = findById(definitionId);
 				if (!trainingDefinition.getState().equals(TDState.UNRELEASED))
 						throw new ServiceLayerException("Cannot create level in released or archived training definition", ErrorCode.RESOURCE_CONFLICT);
-				Assert.notNull(gameLevel, "Game level must not be null");
-				GameLevel gL = gameLevelRepository.save(gameLevel);
+
+				GameLevel newGameLevel = new GameLevel();
+				newGameLevel.setMaxScore(100);
+				newGameLevel.setTitle("New Game Level");
+				newGameLevel.setIncorrectFlagLimit(5);
+				newGameLevel.setFlag("");
+				newGameLevel.setSolutionPenalized(true);
+				newGameLevel.setSolution("");
+				GameLevel gL = gameLevelRepository.save(newGameLevel);
 
 				if (trainingDefinition.getStartingLevel() == null) {
 						trainingDefinition.setStartingLevel(gL.getId());
@@ -262,14 +271,19 @@ import java.util.List;
 				return gL;
 		}
 
-		@Override public InfoLevel createInfoLevel(Long definitionId, InfoLevel infoLevel) throws ServiceLayerException {
-				LOG.debug("createInfoLevel({}, {})", definitionId, infoLevel);
+		@Override
+		public InfoLevel createInfoLevel(Long definitionId) throws ServiceLayerException {
+				LOG.debug("createInfoLevel({})", definitionId);
 				Assert.notNull(definitionId, "Definition id must not be null");
 				TrainingDefinition trainingDefinition = findById(definitionId);
 				if (!trainingDefinition.getState().equals(TDState.UNRELEASED))
 						throw new ServiceLayerException("Cannot create level in released or archived training definition", ErrorCode.RESOURCE_CONFLICT);
-				Assert.notNull(infoLevel, "Info level must not be null");
-				InfoLevel iL = infoLevelRepository.save(infoLevel);
+
+				InfoLevel newInfoLevel = new InfoLevel();
+				newInfoLevel.setTitle("New Info Level");
+				newInfoLevel.setContent("");
+				newInfoLevel.setMaxScore(0);
+				InfoLevel iL = infoLevelRepository.save(newInfoLevel);
 
 				if (trainingDefinition.getStartingLevel() == null) {
 						trainingDefinition.setStartingLevel(iL.getId());
@@ -283,16 +297,22 @@ import java.util.List;
 				return iL;
 		}
 
-		@Override public AssessmentLevel createAssessmentLevel(Long definitionId, AssessmentLevel assessmentLevel)
-				throws ServiceLayerException {
-				LOG.debug("createAssessmentLevel({}, {})", definitionId, assessmentLevel);
+		@Override
+		public AssessmentLevel createAssessmentLevel(Long definitionId) throws ServiceLayerException {
+				LOG.debug("createAssessmentLevel({})", definitionId);
 				Assert.notNull(definitionId, "Definition id must not be null");
 				TrainingDefinition trainingDefinition = findById(definitionId);
 				if (!trainingDefinition.getState().equals(TDState.UNRELEASED))
 						throw new ServiceLayerException("Cannot create level in released or archived training definition.",
 								ErrorCode.RESOURCE_CONFLICT);
-				Assert.notNull(assessmentLevel, "Assessment level must not be null");
-				AssessmentLevel aL = assessmentLevelRepository.save(assessmentLevel);
+
+				AssessmentLevel newAssessmentLevel = new AssessmentLevel();
+				newAssessmentLevel.setTitle("New Assessment Level");
+				newAssessmentLevel.setMaxScore(0);
+				newAssessmentLevel.setAssessmentType(AssessmentType.QUESTIONNAIRE);
+				newAssessmentLevel.setInstructions("");
+				newAssessmentLevel.setQuestions("");
+				AssessmentLevel aL = assessmentLevelRepository.save(newAssessmentLevel);
 
 				if (trainingDefinition.getStartingLevel() == null) {
 						trainingDefinition.setStartingLevel(aL.getId());
