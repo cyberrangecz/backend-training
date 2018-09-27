@@ -257,6 +257,7 @@ import java.util.List;
 				newGameLevel.setFlag("");
 				newGameLevel.setSolutionPenalized(true);
 				newGameLevel.setSolution("");
+				newGameLevel.setContent("");
 				GameLevel gL = gameLevelRepository.save(newGameLevel);
 
 				if (trainingDefinition.getStartingLevel() == null) {
