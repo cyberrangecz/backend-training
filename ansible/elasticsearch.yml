@@ -1,0 +1,30 @@
+- name: Create elasticsearch user
+  user:
+    name: elasticsearch
+    groups:
+      - sudo
+      - admin
+    state: present
+    system: yes
+    createhome: no
+
+- name: Download Elasticsearch archive
+  get_url:
+    url: https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-5.5.0.tar.gz
+    checksum: sha256:aa316b8a46b1daef9189090f41e4226794b4e4e8f361caa1be5ad6c4ed753f2e
+    dest: /tmp/elasticsearch-5.5.0.tar.gz
+
+- name: Unzip Elasticsearch
+  unarchive:
+    src: /tmp/elasticsearch-5.5.0.tar.gz
+    dest: /opt
+    owner: elasticsearch
+
+- name: Run Elasticsearch
+  service:
+    name: /opt/elasticsearch-5.5.0/bin/elasticsearch
+    state: started
+    enabled: yes
+  become: yes
+  become_user: elasticsearch
+
