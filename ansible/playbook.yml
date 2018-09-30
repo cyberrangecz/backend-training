@@ -92,9 +92,9 @@
       args:
         chdir: '{{ item.repo }}'
       with_items:
-        - repo: '{{ repos_dir }}/kypo2-security-commons'
-          config: '{{ db_model_config_file }}'
         - repo: '{{ repos_dir }}/kypo2-user-and-group'
+          config: '{{ db_model_config_file }}'
+        - repo: '{{ repos_dir }}/kypo2-security-commons'
           config: '{{ db_model_config_file }}'
         - repo: /vagrant
           config: '{{ db_model_config_file }}'
