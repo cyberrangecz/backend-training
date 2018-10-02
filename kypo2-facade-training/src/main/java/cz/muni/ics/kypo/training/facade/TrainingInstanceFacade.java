@@ -58,14 +58,6 @@ public interface TrainingInstanceFacade {
 	void delete(Long id) throws FacadeLayerException;
 
 	/**
-	 * Generates new password
-	 * 
-	 * @return generated password
-	 * @throws FacadeLayerException if password already exists
-
-	char[] generatePassword() throws FacadeLayerException;
-	 */
-	/**
 	 * Allocates sandboxes for training instance
 	 *
 	 * @param instanceId

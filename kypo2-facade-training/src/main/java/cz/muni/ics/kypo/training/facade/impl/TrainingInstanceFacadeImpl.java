@@ -108,18 +108,7 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
       throw new FacadeLayerException(ex);
     }
   }
-	/*
-  @Override
-  @Transactional
-  public char[] generatePassword() throws FacadeLayerException {
-    try {
-      char[] newPassword = trainingInstanceService.generatePassword();
-      return newPassword;
-    } catch (ServiceLayerException ex){
-      throw new FacadeLayerException(ex);
-    }
-  }
-	*/
+
 	@Override public ResponseEntity<Void> allocateSandboxes(Long instanceId) throws FacadeLayerException {
 		LOG.debug("allocateSandboxes({})", instanceId);
 		try{
