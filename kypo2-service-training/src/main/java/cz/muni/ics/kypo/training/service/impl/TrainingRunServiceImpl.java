@@ -173,7 +173,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
 
 */
       //check hash of password not String
-      if (new String(ti.getPassword()).equals(password)) {
+      if (new String(ti.getPasswordHash()).equals(password)) {
         Set<SandboxInstanceRef> sandboxInstancePool = ti.getSandboxInstanceRefs();
         Set<SandboxInstanceRef> allocatedSandboxInstances = trainingRunRepository.findSandboxInstanceRefsOfTrainingInstance(ti.getId());
         sandboxInstancePool.removeAll(allocatedSandboxInstances);

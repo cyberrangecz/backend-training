@@ -54,12 +54,13 @@ public interface TrainingInstanceService {
    */
   void delete(Long id) throws ServiceLayerException;
 
-  /**
-   * Generates password for training instance
-   * @return new password
-   * @throws ServiceLayerException with ErrorCode: RESOURCE_CONFLICT given password already exists in DB.
-   */
-  char[] generatePassword() throws ServiceLayerException;
+	/**
+	 * Generates password for training instance
+	 * @param trainingInstance - Instance that wants to have new password
+	 * @param password - original string that is to be changed
+	 * @return new password
+	 */
+  char[] generatePassword(TrainingInstance trainingInstance, String password);
 
 
 	/**

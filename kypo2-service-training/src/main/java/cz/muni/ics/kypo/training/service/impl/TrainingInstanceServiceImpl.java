@@ -100,12 +100,20 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
   }
 
   @Override
-  public char[] generatePassword() throws ServiceLayerException {
-    String newPassword = RandomStringUtils.random(6, true, true);
-    String newPasswordHash = DigestUtils.sha256Hex(newPassword);
+  public char[] generatePassword(TrainingInstance trainingInstance, String password) {
+    String newPasswordHash = "", newPassword = "";
+		boolean generated = false;
 
-    Optional<Password> password = passwordRepository.findOneByPasswordHash(newPasswordHash);
-    if (password.isPresent()) throw new ServiceLayerException("Password already exists", ErrorCode.RESOURCE_CONFLICT);
+		while (!generated){
+			String numPart = RandomStringUtils.random(4, false, true);
+			newPassword = password + "-" + numPart;
+			newPasswordHash = DigestUtils.sha256Hex(newPassword);
+			Optional<Password> pW = passwordRepository.findOneByPasswordHash(newPasswordHash);
+			if (!pW.isPresent()) generated = true;
+		}
+
+		trainingInstance.setPasswordHash(newPasswordHash);
+		update(trainingInstance);
     Password newPasswordInstance = new Password();
     newPasswordInstance.setPasswordHash(newPasswordHash);
     passwordRepository.save(newPasswordInstance);

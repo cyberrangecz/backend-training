@@ -146,7 +146,6 @@ public class TrainingInstanceServiceTest {
 
     private void deepEquals(TrainingInstance expected, TrainingInstance actual) {
         assertEquals(expected.getId(), actual.getId());
-        assertEquals(expected.getPassword(), actual.getPassword());
         assertEquals(expected.getTitle(), actual.getTitle());
     }
 
