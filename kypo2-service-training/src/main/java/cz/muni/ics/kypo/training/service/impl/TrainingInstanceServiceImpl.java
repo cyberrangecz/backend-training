@@ -100,7 +100,7 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
   }
 
   @Override
-  public char[] generatePassword(TrainingInstance trainingInstance, String password) {
+  public char[] generatePassword(TrainingInstance trainingInstance, char[] password) {
     String newPasswordHash = "", newPassword = "";
 		boolean generated = false;
 

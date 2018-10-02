@@ -60,9 +60,9 @@ public interface TrainingInstanceFacade {
 	 * 
 	 * @return generated password
 	 * @throws FacadeLayerException if password already exists
-	 */
-	char[] generatePassword() throws FacadeLayerException;
 
+	char[] generatePassword() throws FacadeLayerException;
+	 */
 	/**
 	 * Allocates sandboxes for training instance
 	 *

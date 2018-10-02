@@ -81,7 +81,10 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
     try{
       Objects.requireNonNull(trainingInstance);
       TrainingInstance newTI = trainingInstanceService.create(beanMapping.mapTo(trainingInstance, TrainingInstance.class));
-      return beanMapping.mapTo(newTI, TrainingInstanceCreateDTO.class);
+      TrainingInstanceCreateDTO newTIDTO = beanMapping.mapTo(newTI, TrainingInstanceCreateDTO.class);
+      char[] newKeyword = trainingInstanceService.generatePassword(newTI, trainingInstance.getKeyword());
+      newTIDTO.setKeyword(newKeyword);
+      return newTIDTO;
     } catch(ServiceLayerException ex) {
       throw new FacadeLayerException(ex);
     }
@@ -97,7 +100,7 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
       throw new FacadeLayerException(ex);
     }
   }
-
+	/*
   @Override
   @Transactional
   public char[] generatePassword() throws FacadeLayerException {
@@ -108,7 +111,7 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
       throw new FacadeLayerException(ex);
     }
   }
-
+	*/
 	@Override public ResponseEntity<Void> allocateSandboxes(Long instanceId) throws FacadeLayerException {
 		LOG.debug("allocateSandboxes({})", instanceId);
 		try{
