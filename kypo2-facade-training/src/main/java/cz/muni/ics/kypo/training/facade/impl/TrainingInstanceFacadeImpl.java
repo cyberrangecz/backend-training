@@ -66,13 +66,19 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
 
   @Override
   @Transactional
-  public void update(TrainingInstanceUpdateDTO trainingInstance) {
+  public String update(TrainingInstanceUpdateDTO trainingInstance) {
     LOG.debug("update({})",trainingInstance);
     try{
       Objects.requireNonNull(trainingInstance);
-      trainingInstanceService.update(beanMapping.mapTo(trainingInstance, TrainingInstance.class));
-    } catch (ServiceLayerException ex){
-      throw new FacadeLayerException(ex);
+      TrainingInstance UpdatedTrainingInstance = beanMapping.mapTo(trainingInstance, TrainingInstance.class);
+			trainingInstanceService.update(UpdatedTrainingInstance);
+			if(!trainingInstance.getKeyword().isEmpty()){
+				String newKeyword = trainingInstanceService.generatePassword(UpdatedTrainingInstance, trainingInstance.getKeyword());
+				return newKeyword;
+			}
+			return null;
+		} catch (ServiceLayerException ex){
+			throw new FacadeLayerException(ex);
     }
   }
 

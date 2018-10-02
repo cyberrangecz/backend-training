@@ -160,10 +160,10 @@ public class TrainingInstancesRestController {
 				@ApiResponse(code = 409, message = "The requested resource was not deleted because of its finish time")
 		})
 		@PutMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
-		public ResponseEntity<Void> updateTrainingInstance(@ApiParam(name = "Training instance to be updated") @RequestBody TrainingInstanceUpdateDTO trainingInstanceUpdateDTO){
+		public ResponseEntity<String> updateTrainingInstance(@ApiParam(name = "Training instance to be updated") @RequestBody TrainingInstanceUpdateDTO trainingInstanceUpdateDTO){
 				try {
-						trainingInstanceFacade.update(trainingInstanceUpdateDTO);
-						return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+						String newPass = trainingInstanceFacade.update(trainingInstanceUpdateDTO);
+						return new ResponseEntity<>(newPass, HttpStatus.NO_CONTENT);
 				} catch (FacadeLayerException ex) {
 						throw throwException(ex);
 				}

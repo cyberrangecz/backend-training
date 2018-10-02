@@ -32,12 +32,13 @@ public interface TrainingInstanceFacade {
 	 */
 	PageResultResource<TrainingInstanceDTO> findAll(Predicate predicate, Pageable pageable);
 
-  /**
-   * Updates training instance
-   * @param trainingInstance to be updated
-   * @throws FacadeLayerException if instance is not found
-   */
-  void update(TrainingInstanceUpdateDTO trainingInstance) throws FacadeLayerException;
+	/**
+	 * Updates training instance
+	 * @param trainingInstance to be updated
+	 * @return newly generated password
+	 * @throws FacadeLayerException if instance is not found
+	 */
+  String update(TrainingInstanceUpdateDTO trainingInstance) throws FacadeLayerException;
 
 	/**
 	 * Creates new training instance
