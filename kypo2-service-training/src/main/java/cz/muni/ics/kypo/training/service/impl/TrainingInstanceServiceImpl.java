@@ -96,14 +96,13 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
     if (!currentDate.isAfter(trainingInstance.getEndTime()))
       throw new ServiceLayerException("Only finished instances can be deleted", ErrorCode.RESOURCE_CONFLICT);
     trainingInstanceRepository.delete(trainingInstance);
-    LOG.info("Training instance with id: " + id + "created.");
+    LOG.info("Training instance with id: " + id + "deleted.");
   }
 
   @Override
-  public char[] generatePassword(TrainingInstance trainingInstance, char[] password) {
+  public String generatePassword(TrainingInstance trainingInstance, String password) {
     String newPasswordHash = "", newPassword = "";
 		boolean generated = false;
-
 		while (!generated){
 			String numPart = RandomStringUtils.random(4, false, true);
 			newPassword = password + "-" + numPart;
@@ -111,16 +110,14 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
 			Optional<Password> pW = passwordRepository.findOneByPasswordHash(newPasswordHash);
 			if (!pW.isPresent()) generated = true;
 		}
+		Password newPasswordInstance = new Password();
+		newPasswordInstance.setPasswordHash(newPasswordHash);
+		passwordRepository.saveAndFlush(newPasswordInstance);
 
 		trainingInstance.setPasswordHash(newPasswordHash);
-		update(trainingInstance);
-    Password newPasswordInstance = new Password();
-    newPasswordInstance.setPasswordHash(newPasswordHash);
-    passwordRepository.save(newPasswordInstance);
-
-    return newPassword.toCharArray();
+		trainingInstanceRepository.save(trainingInstance);
+    return newPassword;
   }
-
 
 	@Override
 	public ResponseEntity<Void> allocateSandboxes(Long instanceId) throws ServiceLayerException {

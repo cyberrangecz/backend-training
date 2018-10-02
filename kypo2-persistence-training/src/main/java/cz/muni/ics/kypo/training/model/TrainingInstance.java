@@ -24,7 +24,7 @@ public class TrainingInstance implements Serializable {
   private Long id;
   @Column(name = "start_time", nullable = false)
   private LocalDateTime startTime;
-  @Column(name = "end_time", nullable = true)
+  @Column(name = "end_time", nullable = false)
   private LocalDateTime endTime;
   @Column(name = "title", nullable = false)
   private String title;

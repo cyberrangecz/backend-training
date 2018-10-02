@@ -16,7 +16,7 @@ public class TrainingInstanceCreateDTO {
 	private LocalDateTime endTime;
 	private String title;
 	private int poolSize;
-	private char[] keyword;
+	private String keyword;
 
 	public TrainingInstanceCreateDTO() {}
 
@@ -52,11 +52,11 @@ public class TrainingInstanceCreateDTO {
 		this.poolSize = poolSize;
 	}
 
-	public char[] getKeyword() {
+	public String getKeyword() {
 		return keyword;
 	}
 
-	public void setKeyword(char[] keyword) {
+	public void setKeyword(String keyword) {
 		this.keyword = keyword;
 	}
 

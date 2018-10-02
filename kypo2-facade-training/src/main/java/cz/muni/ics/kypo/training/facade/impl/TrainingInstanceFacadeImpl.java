@@ -82,7 +82,7 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
       Objects.requireNonNull(trainingInstance);
       TrainingInstance newTI = trainingInstanceService.create(beanMapping.mapTo(trainingInstance, TrainingInstance.class));
       TrainingInstanceCreateDTO newTIDTO = beanMapping.mapTo(newTI, TrainingInstanceCreateDTO.class);
-      char[] newKeyword = trainingInstanceService.generatePassword(newTI, trainingInstance.getKeyword());
+      String newKeyword = trainingInstanceService.generatePassword(newTI, trainingInstance.getKeyword());
       newTIDTO.setKeyword(newKeyword);
       return newTIDTO;
     } catch(ServiceLayerException ex) {

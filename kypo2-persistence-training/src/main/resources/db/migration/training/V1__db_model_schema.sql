@@ -434,7 +434,7 @@ ALTER SEQUENCE training_definition_id_seq OWNED BY training_definition.id;
 
 CREATE TABLE training_instance (
     id bigint NOT NULL,
-    end_time timestamp without time zone,
+    end_time timestamp without time zone NOT NULL,
     password_hash character varying(255),
     pool_size integer NOT NULL,
     start_time timestamp without time zone NOT NULL,
@@ -561,7 +561,7 @@ CREATE SEQUENCE user_ref_id_seq
     CACHE 1;
 
  CREATE TABLE password (
-  id bigint NOT NULL,
+  id bigint NOT NULL PRIMARY KEY,
   password_hash character varying(255)
 );
 
@@ -573,6 +573,9 @@ CREATE SEQUENCE password_id_seq
     NO MAXVALUE
     CACHE 1;
 
+ALTER TABLE password OWNER TO postgres;
+
+ALTER TABLE ONLY password ALTER COLUMN id SET DEFAULT nextval('password_id_seq'::regclass);
 
 ALTER TABLE user_ref_id_seq OWNER TO postgres;
 
