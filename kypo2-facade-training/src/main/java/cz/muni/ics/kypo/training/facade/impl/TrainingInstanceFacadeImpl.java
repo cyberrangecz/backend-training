@@ -1,6 +1,8 @@
 package cz.muni.ics.kypo.training.facade.impl;
 
 import java.util.Objects;
+
+import cz.muni.ics.kypo.training.api.dto.traininginstance.NewTrainingInstanceDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -76,12 +78,12 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
 
   @Override
   @Transactional
-  public TrainingInstanceCreateDTO create(TrainingInstanceCreateDTO trainingInstance) {
+  public NewTrainingInstanceDTO create(TrainingInstanceCreateDTO trainingInstance) {
     LOG.debug("create({})", trainingInstance);
     try{
       Objects.requireNonNull(trainingInstance);
       TrainingInstance newTI = trainingInstanceService.create(beanMapping.mapTo(trainingInstance, TrainingInstance.class));
-      TrainingInstanceCreateDTO newTIDTO = beanMapping.mapTo(newTI, TrainingInstanceCreateDTO.class);
+      NewTrainingInstanceDTO newTIDTO = beanMapping.mapTo(newTI, NewTrainingInstanceDTO.class);
       String newKeyword = trainingInstanceService.generatePassword(newTI, trainingInstance.getKeyword());
       newTIDTO.setKeyword(newKeyword);
       return newTIDTO;
