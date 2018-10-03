@@ -1,6 +1,8 @@
 package cz.muni.ics.kypo.training.api.dto.run;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import cz.muni.ics.kypo.training.api.enums.Actions;
+import cz.muni.ics.kypo.training.utils.converters.LocalDateTimeSerializer;
 import io.swagger.annotations.ApiModel;
 
 import java.time.LocalDateTime;
@@ -10,7 +12,9 @@ public class AccessedTrainingRunDTO {
 
 	private Long id;
 	private String title;
+	@JsonSerialize(using = LocalDateTimeSerializer.class)
 	private LocalDateTime trainingInstanceStartDate;
+	@JsonSerialize(using = LocalDateTimeSerializer.class)
 	private LocalDateTime trainingInstanceEndDate;
 	private int currentLevelOrder;
 	private int numberOfLevels;
