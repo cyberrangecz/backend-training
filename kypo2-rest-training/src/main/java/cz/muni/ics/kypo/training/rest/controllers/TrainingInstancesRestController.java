@@ -172,16 +172,18 @@ public class TrainingInstancesRestController {
 		}
 		@ApiOperation(httpMethod = "DELETE",
 				value = "Delete TrainingInstance",
-				response = TrainingInstanceDTO.class,
-				nickname = "deleteTrainingInstance",
-				produces = "application/json",
-				consumes = "application/json")
+				//response = TrainingInstanceDTO.class,
+				nickname = "deleteTrainingInstance"//,
+				//produces = "application/json",
+				//consumes = "application/json"
+				)
 		@ApiResponses( value = {
 				@ApiResponse(code = 404, message = "The requested resource was not found"),
 				@ApiResponse(code = 409, message = "The requested resource was not deleted because of its finish time")
 		})
-		@DeleteMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-		public ResponseEntity<Void> deleteTrainingInstance(@ApiParam(name = "Id of training instance to be deleted") @RequestParam("trainingInstanceId") long id) {
+		//@DeleteMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+		@DeleteMapping(value = "/{id}")
+		public ResponseEntity<Void> deleteTrainingInstance(@ApiParam(value = "Id of training instance to be deleted") @PathVariable(value = "id") Long id) {
 				try {
 						trainingInstanceFacade.delete(id);
 						return new ResponseEntity<>(HttpStatus.OK);
