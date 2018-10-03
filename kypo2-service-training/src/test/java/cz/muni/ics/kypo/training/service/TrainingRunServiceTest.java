@@ -107,7 +107,7 @@ public class TrainingRunServiceTest {
         trainingInstance = new TrainingInstance();
         trainingInstance.setId(1L);
         trainingInstance.setSandboxInstanceRefs(new HashSet<>(Arrays.asList(sandboxInstanceRef1, sandboxInstanceRef2)));
-        trainingInstance.setPasswordHash("b5f3dc27a09865be37cef07816c4f08cf5585b116a4e74b9387c3e43e3a25ec8".toCharArray());
+        trainingInstance.setPasswordHash("b5f3dc27a09865be37cef07816c4f08cf5585b116a4e74b9387c3e43e3a25ec8");
         trainingInstance.setTrainingDefinition(trainingDefinition);
 
         participantRef = new ParticipantRef();

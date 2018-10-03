@@ -64,7 +64,7 @@ public class TrainingRunRepositoryTest {
 		infoLevel.setContent("content for info level");
 		participantRef = new ParticipantRef();
 		participantRef.setParticipantRefLogin("user");
-		trainingInstance.setPasswordHash("b5f3dc27a09865be37cef07816c4f08cf5585b116a4e74b9387c3e43e3a25ec8".toCharArray());
+		trainingInstance.setPasswordHash("b5f3dc27a09865be37cef07816c4f08cf5585b116a4e74b9387c3e43e3a25ec8");
 		trainingInstance.setStartTime(LocalDateTime.now());
 		trainingInstance.setEndTime(LocalDateTime.now());
 		trainingInstance.setTitle("title");

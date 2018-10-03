@@ -38,7 +38,7 @@ public interface TrainingInstanceFacade {
 	 * @return newly generated password
 	 * @throws FacadeLayerException if instance is not found
 	 */
-  char[] update(TrainingInstanceUpdateDTO trainingInstance) throws FacadeLayerException;
+  String update(TrainingInstanceUpdateDTO trainingInstance) throws FacadeLayerException;
 
 	/**
 	 * Creates new training instance

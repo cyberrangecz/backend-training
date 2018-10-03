@@ -9,8 +9,6 @@ import cz.muni.ics.kypo.training.model.TrainingInstance;
 import cz.muni.ics.kypo.training.repository.PasswordRepository;
 import cz.muni.ics.kypo.training.repository.TrainingInstanceRepository;
 import cz.muni.ics.kypo.training.service.TrainingInstanceService;
-import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,9 +20,11 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.Optional;
 import org.springframework.web.client.RestTemplate;
 
@@ -101,16 +101,15 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
   }
 
   @Override
-  public char[] generatePassword(TrainingInstance trainingInstance, char[] password) {
-    char[] newPasswordHash = {};
-    char[] newPassword = {};
+  public String generatePassword(TrainingInstance trainingInstance, String password) {
+    String newPasswordHash = "";
+    String newPassword = "";
 		boolean generated = false;
 		while (!generated){
-			char[] numPart = ("-" + RandomStringUtils.random(4, false, true)).toCharArray();
-			//newPassword = password + "-" + numPart;
-			newPassword = ArrayUtils.addAll(password, numPart);
-			newPasswordHash = DigestUtils.sha256Hex(newPassword.toString()).toCharArray();
-			Optional<Password> pW = passwordRepository.findOneByPasswordHash(newPasswordHash.toString());
+			String numPart = RandomStringUtils.random(4, false, true);
+			newPassword = password +"-"+ numPart;
+			newPasswordHash = BCrypt.hashpw(newPassword, BCrypt.gensalt(12));
+			Optional<Password> pW = passwordRepository.findOneByPasswordHash(newPasswordHash);
 			if (!pW.isPresent()) generated = true;
 		}
 		Password newPasswordInstance = new Password();

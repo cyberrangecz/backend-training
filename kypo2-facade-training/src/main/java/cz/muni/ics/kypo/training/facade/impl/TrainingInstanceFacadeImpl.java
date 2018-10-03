@@ -66,14 +66,14 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
 
   @Override
   @Transactional
-  public char[] update(TrainingInstanceUpdateDTO trainingInstance) {
+  public String update(TrainingInstanceUpdateDTO trainingInstance) {
     LOG.debug("update({})",trainingInstance);
     try{
       Objects.requireNonNull(trainingInstance);
       TrainingInstance UpdatedTrainingInstance = beanMapping.mapTo(trainingInstance, TrainingInstance.class);
 			trainingInstanceService.update(UpdatedTrainingInstance);
 			if(!trainingInstance.getKeyword().isEmpty()){
-				char[] newKeyword = trainingInstanceService.generatePassword(UpdatedTrainingInstance, trainingInstance.getKeyword().toCharArray());
+				String newKeyword = trainingInstanceService.generatePassword(UpdatedTrainingInstance, trainingInstance.getKeyword());
 				return newKeyword;
 			}
 			return null;
@@ -90,7 +90,7 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
       Objects.requireNonNull(trainingInstance);
       TrainingInstance newTI = trainingInstanceService.create(beanMapping.mapTo(trainingInstance, TrainingInstance.class));
       NewTrainingInstanceDTO newTIDTO = beanMapping.mapTo(newTI, NewTrainingInstanceDTO.class);
-      char[] newKeyword = trainingInstanceService.generatePassword(newTI, trainingInstance.getKeyword());
+      String newKeyword = trainingInstanceService.generatePassword(newTI, trainingInstance.getKeyword());
       newTIDTO.setKeyword(newKeyword);
       return newTIDTO;
     } catch(ServiceLayerException ex) {

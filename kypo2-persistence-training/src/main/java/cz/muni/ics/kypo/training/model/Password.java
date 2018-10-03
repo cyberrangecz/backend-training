@@ -16,9 +16,9 @@ public class Password implements Serializable {
 	@Column(name = "id", unique = true, nullable = false, insertable = false)
 	private Long id;
 	@Column(name = "password_hash", nullable = false)
-	private char[] passwordHash;
+	private String passwordHash;
 
-	public Password(Long id, char[] passwordHash) {
+	public Password(Long id, String passwordHash) {
 		this.passwordHash = passwordHash;
 		this.id = id;
 	}
@@ -33,11 +33,11 @@ public class Password implements Serializable {
 		this.id = id;
 	}
 
-	public char[] getPasswordHash() {
+	public String getPasswordHash() {
 		return passwordHash;
 	}
 
-	public void setPasswordHash(char[] passwordHash) {
+	public void setPasswordHash(String passwordHash) {
 		this.passwordHash = passwordHash;
 	}
 
@@ -59,6 +59,6 @@ public class Password implements Serializable {
 
 	@Override
 	public String toString() {
-		return "Keyword{" + "id=" + id + ", keywordHash=" + passwordHash.toString() + '}';
+		return "Keyword{" + "id=" + id + ", keywordHash=" + passwordHash + '}';
 	}
 }
