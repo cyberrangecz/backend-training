@@ -1,9 +1,11 @@
 package cz.muni.ics.kypo.training.api.dto.run;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import cz.muni.ics.kypo.training.model.AbstractLevel;
 import cz.muni.ics.kypo.training.model.SandboxInstanceRef;
 import cz.muni.ics.kypo.training.model.TrainingInstance;
 import cz.muni.ics.kypo.training.model.enums.TRState;
+import cz.muni.ics.kypo.training.utils.converters.LocalDateTimeSerializer;
 import io.swagger.annotations.ApiModel;
 
 import java.time.LocalDateTime;
@@ -17,7 +19,9 @@ import java.time.LocalDateTime;
 public class TrainingRunDTO {
 
 	private Long id;
+	@JsonSerialize(using = LocalDateTimeSerializer.class)
 	private LocalDateTime startTime;
+	@JsonSerialize(using = LocalDateTimeSerializer.class)
 	private LocalDateTime endTime;
 	private String eventLogReference;
 	private TRState state;
