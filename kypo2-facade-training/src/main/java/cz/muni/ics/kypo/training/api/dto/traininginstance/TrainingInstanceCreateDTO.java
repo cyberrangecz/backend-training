@@ -2,6 +2,10 @@ package cz.muni.ics.kypo.training.api.dto.traininginstance;
 
 import java.time.LocalDateTime;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import cz.muni.ics.kypo.training.utils.converters.LocalDateTimeDeserializer;
+import cz.muni.ics.kypo.training.utils.converters.LocalDateTimeSerializer;
 import io.swagger.annotations.ApiModel;
 
 /**
@@ -12,7 +16,11 @@ import io.swagger.annotations.ApiModel;
 @ApiModel(value = "TrainingInstanceCreateDTO", description = "Training Instance to create.")
 public class TrainingInstanceCreateDTO {
 
+	@JsonSerialize(using = LocalDateTimeSerializer.class)
+	@JsonDeserialize(using = LocalDateTimeDeserializer.class)
 	private LocalDateTime startTime;
+	@JsonSerialize(using = LocalDateTimeSerializer.class)
+	@JsonDeserialize(using = LocalDateTimeDeserializer.class)
 	private LocalDateTime endTime;
 	private String title;
 	private int poolSize;

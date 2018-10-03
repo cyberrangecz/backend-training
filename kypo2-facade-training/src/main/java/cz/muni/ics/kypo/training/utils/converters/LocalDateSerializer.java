@@ -1,4 +1,4 @@
-package cz.muni.ics.kypo.training.rest.utils.converters;
+package cz.muni.ics.kypo.training.utils.converters;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonProcessingException;

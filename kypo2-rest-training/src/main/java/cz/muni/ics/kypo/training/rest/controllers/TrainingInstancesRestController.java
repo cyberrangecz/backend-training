@@ -38,6 +38,8 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 
+import javax.validation.Valid;
+
 /**
  * @author Pavel Šeda
  *
@@ -138,7 +140,7 @@ public class TrainingInstancesRestController {
 				@ApiResponse(code = 400, message = "The requested resource was not created")
 		})
 		@PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-		public ResponseEntity<Object> createTrainingInstance(@ApiParam(name = "Training instance to be created") @RequestBody TrainingInstanceCreateDTO trainingInstanceCreateDTO,
+		public ResponseEntity<Object> createTrainingInstance(@ApiParam(name = "Training instance to be created") @Valid @RequestBody TrainingInstanceCreateDTO trainingInstanceCreateDTO,
 				@ApiParam(value = "Fields which should be returned in REST API response", required = false)
 				@RequestParam(value = "fields", required = false) String fields) {
 				try {
