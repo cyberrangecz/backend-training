@@ -154,7 +154,7 @@ public class TrainingInstancesRestController {
 
 		@ApiOperation(httpMethod = "PUT",
 				value = "Update Training Instance",
-				response = TrainingInstanceDTO.class,
+				response = String.class,
 				nickname = "updateTrainingInstance",
 				consumes = "application/json")
 		@ApiResponses(value = {
@@ -165,23 +165,19 @@ public class TrainingInstancesRestController {
 		public ResponseEntity<String> updateTrainingInstance(@ApiParam(name = "Training instance to be updated") @RequestBody TrainingInstanceUpdateDTO trainingInstanceUpdateDTO){
 				try {
 						String newPass = trainingInstanceFacade.update(trainingInstanceUpdateDTO);
-						return new ResponseEntity<>(newPass, HttpStatus.NO_CONTENT);
+						return new ResponseEntity<>(newPass, HttpStatus.OK);
 				} catch (FacadeLayerException ex) {
 						throw throwException(ex);
 				}
 		}
 		@ApiOperation(httpMethod = "DELETE",
 				value = "Delete TrainingInstance",
-				//response = TrainingInstanceDTO.class,
-				nickname = "deleteTrainingInstance"//,
-				//produces = "application/json",
-				//consumes = "application/json"
+				nickname = "deleteTrainingInstance"
 				)
 		@ApiResponses( value = {
 				@ApiResponse(code = 404, message = "The requested resource was not found"),
 				@ApiResponse(code = 409, message = "The requested resource was not deleted because of its finish time")
 		})
-		//@DeleteMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
 		@DeleteMapping(value = "/{id}")
 		public ResponseEntity<Void> deleteTrainingInstance(@ApiParam(value = "Id of training instance to be deleted") @PathVariable(value = "id") Long id) {
 				try {

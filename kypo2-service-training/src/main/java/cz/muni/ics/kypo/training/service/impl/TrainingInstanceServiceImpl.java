@@ -83,6 +83,7 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
     LocalDateTime currentDate = LocalDateTime.now();
     if (!currentDate.isBefore(trainingInstance.getStartTime()))
       throw new ServiceLayerException("Starting time of instance must be in future", ErrorCode.RESOURCE_CONFLICT);
+    trainingInstance.setPasswordHash(tI.getPasswordHash());
     trainingInstanceRepository.save(trainingInstance);
     LOG.info("Training instance with id: " + trainingInstance.getId() + "updated.");
   }

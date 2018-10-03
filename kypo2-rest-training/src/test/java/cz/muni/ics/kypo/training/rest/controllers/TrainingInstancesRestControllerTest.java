@@ -198,7 +198,7 @@ public class TrainingInstancesRestControllerTest {
 				MockHttpServletResponse result = mockMvc.perform(put("/training-instances")
 						.content(convertObjectToJsonBytes(trainingInstance1))
 						.contentType(MediaType.APPLICATION_JSON_VALUE))
-						.andExpect(status().isNoContent())
+						.andExpect(status().isOk())
 						.andReturn().getResponse();
 		}
 
@@ -216,8 +216,7 @@ public class TrainingInstancesRestControllerTest {
 
 		@Test
 		public void deleteTrainingInstance() throws Exception {
-				mockMvc.perform(delete("/training-instances")
-						.param("trainingInstanceId", "1")
+				mockMvc.perform(delete("/training-instances"+"/{id}", 1l)
 						.contentType(MediaType.APPLICATION_JSON_VALUE))
 						.andExpect(status().isOk());
 		}
@@ -226,8 +225,7 @@ public class TrainingInstancesRestControllerTest {
 		public void deleteTrainingInstanceWithFacadeException() throws Exception {
 				Exception exceptionThrow = new ServiceLayerException("message", ErrorCode.RESOURCE_NOT_FOUND);
 				willThrow(new FacadeLayerException(exceptionThrow)).given(trainingInstanceFacade).delete(any(Long.class));
-				Exception exception = mockMvc.perform(delete("/training-instances")
-						.param("trainingInstanceId", "1")
+				Exception exception = mockMvc.perform(delete("/training-instances"+"/{id}", 1l)
 						.contentType(MediaType.APPLICATION_JSON_VALUE))
 						.andExpect(status().isNotFound())
 						.andReturn().getResolvedException();
