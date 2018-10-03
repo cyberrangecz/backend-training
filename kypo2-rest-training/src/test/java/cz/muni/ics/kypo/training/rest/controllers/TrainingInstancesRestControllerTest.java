@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.training.api.PageResultResource;
+import cz.muni.ics.kypo.training.api.dto.traininginstance.NewTrainingInstanceDTO;
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceCreateDTO;
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceDTO;
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceUpdateDTO;
@@ -75,6 +76,7 @@ public class TrainingInstancesRestControllerTest {
 	private TrainingInstanceDTO trainingInstance1DTO, trainingInstance2DTO;
 	private TrainingInstanceCreateDTO trainingInstanceCreateDTO;
 	private TrainingInstanceUpdateDTO trainingInstanceUpdateDTO;
+	private NewTrainingInstanceDTO newTrainingInstanceDTO;
 
 	private Page p;
 
@@ -116,6 +118,14 @@ public class TrainingInstancesRestControllerTest {
 		trainingInstanceUpdateDTO.setTitle("update instance title");
 		trainingInstanceUpdateDTO.setStartTime(startTime);
 		trainingInstanceUpdateDTO.setEndTime(endTime);
+
+		newTrainingInstanceDTO = new NewTrainingInstanceDTO();
+		newTrainingInstanceDTO.setId(6L);
+		newTrainingInstanceDTO.setStartTime(startTime);
+		newTrainingInstanceDTO.setEndTime(endTime);
+		newTrainingInstanceDTO.setKeyword("pass-1325");
+		newTrainingInstanceDTO.setTitle("title");
+		newTrainingInstanceDTO.setPoolSize(20);
 
 		List<TrainingInstance> expected = new ArrayList<>();
 		expected.add(trainingInstance1);
@@ -171,7 +181,7 @@ public class TrainingInstancesRestControllerTest {
 		public void createTrainingInstance() throws Exception {
 				String valueTi = convertObjectToJsonBytes(trainingInstance1DTO);
 				given(objectMapper.writeValueAsString(any(Object.class))).willReturn(valueTi);
-				given(trainingInstanceFacade.create(any(TrainingInstanceCreateDTO.class))).willReturn(trainingInstanceCreateDTO);
+				given(trainingInstanceFacade.create(any(TrainingInstanceCreateDTO.class))).willReturn(newTrainingInstanceDTO);
 				MockHttpServletResponse result = mockMvc.perform(post("/training-instances")
 						.content(convertObjectToJsonBytes(trainingInstance1))
 						.contentType(MediaType.APPLICATION_JSON_VALUE))

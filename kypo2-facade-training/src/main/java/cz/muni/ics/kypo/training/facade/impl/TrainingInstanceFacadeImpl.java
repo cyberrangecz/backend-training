@@ -1,6 +1,8 @@
 package cz.muni.ics.kypo.training.facade.impl;
 
 import java.util.Objects;
+
+import cz.muni.ics.kypo.training.api.dto.traininginstance.NewTrainingInstanceDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -64,24 +66,33 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
 
   @Override
   @Transactional
-  public void update(TrainingInstanceUpdateDTO trainingInstance) {
+  public String update(TrainingInstanceUpdateDTO trainingInstance) {
     LOG.debug("update({})",trainingInstance);
     try{
       Objects.requireNonNull(trainingInstance);
-      trainingInstanceService.update(beanMapping.mapTo(trainingInstance, TrainingInstance.class));
-    } catch (ServiceLayerException ex){
-      throw new FacadeLayerException(ex);
+      TrainingInstance UpdatedTrainingInstance = beanMapping.mapTo(trainingInstance, TrainingInstance.class);
+			trainingInstanceService.update(UpdatedTrainingInstance);
+			if(!trainingInstance.getKeyword().isEmpty()){
+				String newKeyword = trainingInstanceService.generatePassword(UpdatedTrainingInstance, trainingInstance.getKeyword());
+				return newKeyword;
+			}
+			return null;
+		} catch (ServiceLayerException ex){
+			throw new FacadeLayerException(ex);
     }
   }
 
   @Override
   @Transactional
-  public TrainingInstanceCreateDTO create(TrainingInstanceCreateDTO trainingInstance) {
+  public NewTrainingInstanceDTO create(TrainingInstanceCreateDTO trainingInstance) {
     LOG.debug("create({})", trainingInstance);
     try{
       Objects.requireNonNull(trainingInstance);
       TrainingInstance newTI = trainingInstanceService.create(beanMapping.mapTo(trainingInstance, TrainingInstance.class));
-      return beanMapping.mapTo(newTI, TrainingInstanceCreateDTO.class);
+      NewTrainingInstanceDTO newTIDTO = beanMapping.mapTo(newTI, NewTrainingInstanceDTO.class);
+      String newKeyword = trainingInstanceService.generatePassword(newTI, trainingInstance.getKeyword());
+      newTIDTO.setKeyword(newKeyword);
+      return newTIDTO;
     } catch(ServiceLayerException ex) {
       throw new FacadeLayerException(ex);
     }
@@ -94,17 +105,6 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
       Objects.requireNonNull(id);
       trainingInstanceService.delete(id);
     } catch(ServiceLayerException ex) {
-      throw new FacadeLayerException(ex);
-    }
-  }
-
-  @Override
-  @Transactional
-  public char[] generatePassword() throws FacadeLayerException {
-    try {
-      char[] newPassword = trainingInstanceService.generatePassword();
-      return newPassword;
-    } catch (ServiceLayerException ex){
       throw new FacadeLayerException(ex);
     }
   }

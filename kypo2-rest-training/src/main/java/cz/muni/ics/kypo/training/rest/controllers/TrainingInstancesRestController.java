@@ -6,6 +6,7 @@ import com.github.bohnman.squiggly.util.SquigglyUtils;
 import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.training.api.PageResultResource;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionDTO;
+import cz.muni.ics.kypo.training.api.dto.traininginstance.NewTrainingInstanceDTO;
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceCreateDTO;
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceDTO;
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceUpdateDTO;
@@ -36,6 +37,8 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+
+import javax.validation.Valid;
 
 /**
  * @author Pavel Šeda
@@ -77,7 +80,7 @@ public class TrainingInstancesRestController {
       @ApiResponse(code = 404, message = "The requested resource was not found.")
   })
   @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<Object> findTrainingInstanceById(@ApiParam(name = "Training Instance ID") @PathVariable long id,
+  public ResponseEntity<Object> findTrainingInstanceById(@ApiParam(value = "Training Instance ID") @PathVariable long id,
       @ApiParam(value = "Fields which should be returned in REST API response", required = false)
       @RequestParam(value = "fields", required = false) String fields) {
     LOG.debug("findTrainingInstanceById({},{})", id, fields);
@@ -137,11 +140,11 @@ public class TrainingInstancesRestController {
 				@ApiResponse(code = 400, message = "The requested resource was not created")
 		})
 		@PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-		public ResponseEntity<Object> createTrainingInstance(@ApiParam(name = "Training instance to be created") @RequestBody TrainingInstanceCreateDTO trainingInstanceCreateDTO,
+		public ResponseEntity<Object> createTrainingInstance(@ApiParam(name = "Training instance to be created") @Valid @RequestBody TrainingInstanceCreateDTO trainingInstanceCreateDTO,
 				@ApiParam(value = "Fields which should be returned in REST API response", required = false)
 				@RequestParam(value = "fields", required = false) String fields) {
 				try {
-						TrainingInstanceCreateDTO trainingInstanceResource = trainingInstanceFacade.create(trainingInstanceCreateDTO);
+						NewTrainingInstanceDTO trainingInstanceResource = trainingInstanceFacade.create(trainingInstanceCreateDTO);
 						Squiggly.init(objectMapper, fields);
 						return new ResponseEntity<>(SquigglyUtils.stringify(objectMapper, trainingInstanceResource), HttpStatus.OK);
 				} catch (FacadeLayerException ex) {
@@ -159,10 +162,10 @@ public class TrainingInstancesRestController {
 				@ApiResponse(code = 409, message = "The requested resource was not deleted because of its finish time")
 		})
 		@PutMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
-		public ResponseEntity<Void> updateTrainingInstance(@ApiParam(name = "Training instance to be updated") @RequestBody TrainingInstanceUpdateDTO trainingInstanceUpdateDTO){
+		public ResponseEntity<String> updateTrainingInstance(@ApiParam(name = "Training instance to be updated") @RequestBody TrainingInstanceUpdateDTO trainingInstanceUpdateDTO){
 				try {
-						trainingInstanceFacade.update(trainingInstanceUpdateDTO);
-						return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+						String newPass = trainingInstanceFacade.update(trainingInstanceUpdateDTO);
+						return new ResponseEntity<>(newPass, HttpStatus.NO_CONTENT);
 				} catch (FacadeLayerException ex) {
 						throw throwException(ex);
 				}

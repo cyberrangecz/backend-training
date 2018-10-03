@@ -107,7 +107,7 @@ public class TrainingRunServiceTest {
         trainingInstance = new TrainingInstance();
         trainingInstance.setId(1L);
         trainingInstance.setSandboxInstanceRefs(new HashSet<>(Arrays.asList(sandboxInstanceRef1, sandboxInstanceRef2)));
-        trainingInstance.setPassword("Password".toCharArray());
+        trainingInstance.setPasswordHash("b5f3dc27a09865be37cef07816c4f08cf5585b116a4e74b9387c3e43e3a25ec8");
         trainingInstance.setTrainingDefinition(trainingDefinition);
 
         participantRef = new ParticipantRef();
@@ -210,7 +210,7 @@ public class TrainingRunServiceTest {
         given(trainingInstanceRepository.findAll()).willReturn(Arrays.asList(trainingInstance));
         given(trainingRunRepository.findSandboxInstanceRefsOfTrainingInstance(trainingInstance.getId())).willReturn(new HashSet<>(Arrays.asList(sandboxInstanceRef1, sandboxInstanceRef2)));
         given(trainingRunRepository.save(any(TrainingRun.class))).willReturn(trainingRun1);
-        trainingRunService.accessTrainingRun("Password");
+        trainingRunService.accessTrainingRun("b5f3dc27a09865be37cef07816c4f08cf5585b116a4e74b9387c3e43e3a25ec8");
     }
 
     @Test
@@ -222,7 +222,7 @@ public class TrainingRunServiceTest {
         given(participantRefRepository.findByParticipantRefLogin("participant")).willReturn(Optional.of(participantRef));
         given(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class), anyString())).willReturn(new ResponseEntity<List<SandboxInfo>>(new ArrayList<>(Arrays.asList(sandboxInfo)), HttpStatus.OK));
         given(trainingRunRepository.save(any(TrainingRun.class))).willReturn(trainingRun1);
-        AbstractLevel level = trainingRunService.accessTrainingRun("Password");
+        AbstractLevel level = trainingRunService.accessTrainingRun("b5f3dc27a09865be37cef07816c4f08cf5585b116a4e74b9387c3e43e3a25ec8");
         assertEquals(gameLevel, level);
     }
 

@@ -1,21 +1,17 @@
 package cz.muni.ics.kypo.training.api.dto.traininginstance;
 
-import java.time.LocalDateTime;
-
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import cz.muni.ics.kypo.training.utils.converters.LocalDateTimeDeserializer;
 import cz.muni.ics.kypo.training.utils.converters.LocalDateTimeSerializer;
 import io.swagger.annotations.ApiModel;
 
-/**
- * 
- * @author Pavel Seda (441048)
- *
- */
-@ApiModel(value = "TrainingInstanceCreateDTO", description = "Training Instance to create.")
-public class TrainingInstanceCreateDTO {
+import java.time.LocalDateTime;
 
+@ApiModel(value = "NewTrainingInstanceDTO", description = "Newly created Training Instance.")
+public class NewTrainingInstanceDTO {
+
+	private Long id;
 	@JsonSerialize(using = LocalDateTimeSerializer.class)
 	@JsonDeserialize(using = LocalDateTimeDeserializer.class)
 	private LocalDateTime startTime;
@@ -26,7 +22,13 @@ public class TrainingInstanceCreateDTO {
 	private int poolSize;
 	private String keyword;
 
-	public TrainingInstanceCreateDTO() {}
+	public Long getId() {
+		return id;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
+	}
 
 	public LocalDateTime getStartTime() {
 		return startTime;
@@ -68,21 +70,8 @@ public class TrainingInstanceCreateDTO {
 		this.keyword = keyword;
 	}
 
-	@Override
-	public String toString() {
-		StringBuilder builder = new StringBuilder();
-		builder.append("TrainingInstanceCreateDTO [startTime=");
-		builder.append(startTime);
-		builder.append(", endTime=");
-		builder.append(endTime);
-		builder.append(", title=");
-		builder.append(title);
-		builder.append(", poolSize=");
-		builder.append(poolSize);
-		builder.append(", keyword=");
-		builder.append(keyword);
-		builder.append("]");
-		return builder.toString();
+	@Override public String toString() {
+		return "NewTrainingInstanceDTO{" + "id=" + id + ", startTime=" + startTime + ", endTime=" + endTime + ", title='" + title + '\''
+				+ ", poolSize=" + poolSize + ", keyword='" + keyword + '\'' + '}';
 	}
-
 }

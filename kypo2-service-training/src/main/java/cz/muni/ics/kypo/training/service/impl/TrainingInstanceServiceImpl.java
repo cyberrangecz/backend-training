@@ -9,7 +9,6 @@ import cz.muni.ics.kypo.training.model.TrainingInstance;
 import cz.muni.ics.kypo.training.repository.PasswordRepository;
 import cz.muni.ics.kypo.training.repository.TrainingInstanceRepository;
 import cz.muni.ics.kypo.training.service.TrainingInstanceService;
-import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,9 +20,11 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.Optional;
 import org.springframework.web.client.RestTemplate;
 
@@ -96,23 +97,29 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
     if (!currentDate.isAfter(trainingInstance.getEndTime()))
       throw new ServiceLayerException("Only finished instances can be deleted", ErrorCode.RESOURCE_CONFLICT);
     trainingInstanceRepository.delete(trainingInstance);
-    LOG.info("Training instance with id: " + id + "created.");
+    LOG.info("Training instance with id: " + id + "deleted.");
   }
 
   @Override
-  public char[] generatePassword() throws ServiceLayerException {
-    String newPassword = RandomStringUtils.random(6, true, true);
-    String newPasswordHash = DigestUtils.sha256Hex(newPassword);
+  public String generatePassword(TrainingInstance trainingInstance, String password) {
+    String newPasswordHash = "";
+    String newPassword = "";
+		boolean generated = false;
+		while (!generated){
+			String numPart = RandomStringUtils.random(4, false, true);
+			newPassword = password +"-"+ numPart;
+			newPasswordHash = BCrypt.hashpw(newPassword, BCrypt.gensalt(12));
+			Optional<Password> pW = passwordRepository.findOneByPasswordHash(newPasswordHash);
+			if (!pW.isPresent()) generated = true;
+		}
+		Password newPasswordInstance = new Password();
+		newPasswordInstance.setPasswordHash(newPasswordHash);
+		passwordRepository.saveAndFlush(newPasswordInstance);
 
-    Optional<Password> password = passwordRepository.findOneByPasswordHash(newPasswordHash);
-    if (password.isPresent()) throw new ServiceLayerException("Password already exists", ErrorCode.RESOURCE_CONFLICT);
-    Password newPasswordInstance = new Password();
-    newPasswordInstance.setPasswordHash(newPasswordHash);
-    passwordRepository.save(newPasswordInstance);
-
-    return newPassword.toCharArray();
+		trainingInstance.setPasswordHash(newPasswordHash);
+		trainingInstanceRepository.save(trainingInstance);
+    return newPassword;
   }
-
 
 	@Override
 	public ResponseEntity<Void> allocateSandboxes(Long instanceId) throws ServiceLayerException {

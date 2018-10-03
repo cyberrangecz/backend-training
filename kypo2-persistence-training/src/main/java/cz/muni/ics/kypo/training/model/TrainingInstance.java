@@ -24,14 +24,14 @@ public class TrainingInstance implements Serializable {
   private Long id;
   @Column(name = "start_time", nullable = false)
   private LocalDateTime startTime;
-  @Column(name = "end_time", nullable = true)
+  @Column(name = "end_time", nullable = false)
   private LocalDateTime endTime;
   @Column(name = "title", nullable = false)
   private String title;
   @Column(name = "pool_size", nullable = false)
   private int poolSize;
-  @Column(name = "password", nullable = false)
-  private char[] password;
+  @Column(name = "password_hash")
+  private String passwordHash;
   @ManyToOne(fetch = FetchType.LAZY)
   private TrainingDefinition trainingDefinition;
   @ManyToMany(fetch = FetchType.LAZY)
@@ -41,7 +41,7 @@ public class TrainingInstance implements Serializable {
 
   public TrainingInstance() {}
 
-  public TrainingInstance(Long id, LocalDateTime startTime, LocalDateTime endTime, String title, int poolSize, char[] password,
+  public TrainingInstance(Long id, LocalDateTime startTime, LocalDateTime endTime, String title, int poolSize, String passwordHash,
       TrainingDefinition trainingDefinition, Set<UserRef> organizers, Set<SandboxInstanceRef> sandboxInstanceRef) {
     super();
     this.id = id;
@@ -49,7 +49,7 @@ public class TrainingInstance implements Serializable {
     this.endTime = endTime;
     this.title = title;
     this.poolSize = poolSize;
-    this.password = password;
+    this.passwordHash = passwordHash;
     this.trainingDefinition = trainingDefinition;
     this.organizers = organizers;
     this.sandboxInstanceRef = sandboxInstanceRef;
@@ -79,12 +79,12 @@ public class TrainingInstance implements Serializable {
     this.endTime = endTime;
   }
 
-  public char[] getPassword() {
-    return password;
+  public String getPasswordHash() {
+    return passwordHash;
   }
 
-  public void setPassword(char[] password) {
-    this.password = password;
+  public void setPasswordHash(String passwordHash) {
+    this.passwordHash = passwordHash;
   }
 
   public String getTitle() {
@@ -130,7 +130,7 @@ public class TrainingInstance implements Serializable {
 
   @Override
   public int hashCode() {
-    return Objects.hash(password, startTime, endTime, poolSize, title, trainingDefinition);
+    return Objects.hash(passwordHash, startTime, endTime, poolSize, title, trainingDefinition);
   }
 
   @Override
@@ -143,7 +143,7 @@ public class TrainingInstance implements Serializable {
       return false;
     TrainingInstance other = (TrainingInstance) obj;
     // @formatter:off
-    return Objects.equals(password, other.getPassword())
+    return Objects.equals(passwordHash, other.getPasswordHash())
         && Objects.equals(startTime, other.getStartTime())
         && Objects.equals(endTime, other.getEndTime())
         && Objects.equals(poolSize, other.getPoolSize())
@@ -155,7 +155,7 @@ public class TrainingInstance implements Serializable {
 	@Override
 	public String toString() {
 		return "TrainingInstance [id=" + id + ", startTime=" + startTime + ", endTime=" + endTime + ", title=" + title + ", poolSize="
-				+ poolSize + ", password=" + password + ", trainingDefinition=" + trainingDefinition + ", toString()=" + super.toString() + "]";
+				+ poolSize + ", password=" + passwordHash + ", trainingDefinition=" + trainingDefinition + ", toString()=" + super.toString() + "]";
 	}
 
 }
