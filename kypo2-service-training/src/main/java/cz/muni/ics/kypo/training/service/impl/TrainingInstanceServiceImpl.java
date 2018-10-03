@@ -10,6 +10,7 @@ import cz.muni.ics.kypo.training.repository.PasswordRepository;
 import cz.muni.ics.kypo.training.repository.TrainingInstanceRepository;
 import cz.muni.ics.kypo.training.service.TrainingInstanceService;
 import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -100,14 +101,16 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
   }
 
   @Override
-  public String generatePassword(TrainingInstance trainingInstance, String password) {
-    String newPasswordHash = "", newPassword = "";
+  public char[] generatePassword(TrainingInstance trainingInstance, char[] password) {
+    char[] newPasswordHash = {};
+    char[] newPassword = {};
 		boolean generated = false;
 		while (!generated){
-			String numPart = RandomStringUtils.random(4, false, true);
-			newPassword = password + "-" + numPart;
-			newPasswordHash = DigestUtils.sha256Hex(newPassword);
-			Optional<Password> pW = passwordRepository.findOneByPasswordHash(newPasswordHash);
+			char[] numPart = ("-" + RandomStringUtils.random(4, false, true)).toCharArray();
+			//newPassword = password + "-" + numPart;
+			newPassword = ArrayUtils.addAll(password, numPart);
+			newPasswordHash = DigestUtils.sha256Hex(newPassword.toString()).toCharArray();
+			Optional<Password> pW = passwordRepository.findOneByPasswordHash(newPasswordHash.toString());
 			if (!pW.isPresent()) generated = true;
 		}
 		Password newPasswordInstance = new Password();

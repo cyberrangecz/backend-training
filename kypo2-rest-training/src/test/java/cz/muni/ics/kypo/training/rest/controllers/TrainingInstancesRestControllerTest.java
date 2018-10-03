@@ -123,7 +123,7 @@ public class TrainingInstancesRestControllerTest {
 		newTrainingInstanceDTO.setId(6L);
 		newTrainingInstanceDTO.setStartTime(startTime);
 		newTrainingInstanceDTO.setEndTime(endTime);
-		newTrainingInstanceDTO.setKeyword("pass-1325");
+		newTrainingInstanceDTO.setKeyword("pass-1325".toCharArray());
 		newTrainingInstanceDTO.setTitle("title");
 		newTrainingInstanceDTO.setPoolSize(20);
 

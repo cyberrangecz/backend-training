@@ -60,7 +60,7 @@ public interface TrainingInstanceService {
 	 * @param password - original string that is to be changed
 	 * @return new password
 	 */
-  String generatePassword(TrainingInstance trainingInstance, String password);
+  char[] generatePassword(TrainingInstance trainingInstance, char[] password);
 
 
 	/**

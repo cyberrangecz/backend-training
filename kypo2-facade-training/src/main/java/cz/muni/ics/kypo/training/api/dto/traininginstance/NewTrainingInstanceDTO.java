@@ -20,7 +20,7 @@ public class NewTrainingInstanceDTO {
 	private LocalDateTime endTime;
 	private String title;
 	private int poolSize;
-	private String keyword;
+	private char[] keyword;
 
 	public Long getId() {
 		return id;
@@ -62,16 +62,16 @@ public class NewTrainingInstanceDTO {
 		this.poolSize = poolSize;
 	}
 
-	public String getKeyword() {
+	public char[] getKeyword() {
 		return keyword;
 	}
 
-	public void setKeyword(String keyword) {
+	public void setKeyword(char[] keyword) {
 		this.keyword = keyword;
 	}
 
 	@Override public String toString() {
 		return "NewTrainingInstanceDTO{" + "id=" + id + ", startTime=" + startTime + ", endTime=" + endTime + ", title='" + title + '\''
-				+ ", poolSize=" + poolSize + ", keyword='" + keyword + '\'' + '}';
+				+ ", poolSize=" + poolSize + ", keyword='" + keyword.toString() + '\'' + '}';
 	}
 }

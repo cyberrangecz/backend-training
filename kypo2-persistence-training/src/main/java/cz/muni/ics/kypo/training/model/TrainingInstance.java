@@ -31,7 +31,7 @@ public class TrainingInstance implements Serializable {
   @Column(name = "pool_size", nullable = false)
   private int poolSize;
   @Column(name = "password_hash")
-  private String passwordHash;
+  private char[] passwordHash;
   @ManyToOne(fetch = FetchType.LAZY)
   private TrainingDefinition trainingDefinition;
   @ManyToMany(fetch = FetchType.LAZY)
@@ -41,7 +41,7 @@ public class TrainingInstance implements Serializable {
 
   public TrainingInstance() {}
 
-  public TrainingInstance(Long id, LocalDateTime startTime, LocalDateTime endTime, String title, int poolSize, String passwordHash,
+  public TrainingInstance(Long id, LocalDateTime startTime, LocalDateTime endTime, String title, int poolSize, char[] passwordHash,
       TrainingDefinition trainingDefinition, Set<UserRef> organizers, Set<SandboxInstanceRef> sandboxInstanceRef) {
     super();
     this.id = id;
@@ -79,11 +79,11 @@ public class TrainingInstance implements Serializable {
     this.endTime = endTime;
   }
 
-  public String getPasswordHash() {
+  public char[] getPasswordHash() {
     return passwordHash;
   }
 
-  public void setPasswordHash(String passwordHash) {
+  public void setPasswordHash(char[] passwordHash) {
     this.passwordHash = passwordHash;
   }
 
@@ -155,7 +155,7 @@ public class TrainingInstance implements Serializable {
 	@Override
 	public String toString() {
 		return "TrainingInstance [id=" + id + ", startTime=" + startTime + ", endTime=" + endTime + ", title=" + title + ", poolSize="
-				+ poolSize + ", password=" + passwordHash + ", trainingDefinition=" + trainingDefinition + ", toString()=" + super.toString() + "]";
+				+ poolSize + ", password=" + passwordHash.toString() + ", trainingDefinition=" + trainingDefinition + ", toString()=" + super.toString() + "]";
 	}
 
 }
