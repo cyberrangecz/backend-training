@@ -110,12 +110,12 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
 
   @Override
   @Transactional
-  public TrainingDefinitionCreateDTO create(TrainingDefinitionCreateDTO trainingDefinition) {
+  public TrainingDefinitionDTO create(TrainingDefinitionCreateDTO trainingDefinition) {
     LOG.debug("create({})", trainingDefinition);
     try{
       Objects.requireNonNull(trainingDefinition);
-      TrainingDefinition newTR = trainingDefinitionService.create(beanMapping.mapTo(trainingDefinition, TrainingDefinition.class));
-      return beanMapping.mapTo(newTR, TrainingDefinitionCreateDTO.class);
+      TrainingDefinition newTD = trainingDefinitionService.create(beanMapping.mapTo(trainingDefinition, TrainingDefinition.class));
+      return beanMapping.mapTo(newTD, TrainingDefinitionDTO.class);
     } catch(ServiceLayerException ex) {
       throw new FacadeLayerException(ex);
     }

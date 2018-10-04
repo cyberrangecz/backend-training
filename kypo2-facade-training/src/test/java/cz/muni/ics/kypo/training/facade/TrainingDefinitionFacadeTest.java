@@ -177,7 +177,6 @@ public class TrainingDefinitionFacadeTest {
 		trainingDefinitionCreate.setDescription("TD desc");
 		trainingDefinitionCreate.setOutcomes(new String[0]);
 		trainingDefinitionCreate.setPrerequisities(new String[0]);
-		trainingDefinitionCreate.setStartingLevel(1L);
 		trainingDefinitionCreate.setState(TDState.ARCHIVED);
 		trainingDefinitionCreate.setTitle("TD some title");
 	}

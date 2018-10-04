@@ -174,12 +174,15 @@ public class TrainingDefinitionsRestController {
           @ApiResponse(code = 400, message = "The requested resource was not created")
   })
   @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<TrainingDefinitionCreateDTO> createTrainingDefinition(
+  public ResponseEntity<Object> createTrainingDefinition(
   		@ApiParam(name = "Training Definition to be created")
-  		@RequestBody @Valid TrainingDefinitionCreateDTO trainingDefinitionCreateDTO) {
+  		@RequestBody @Valid TrainingDefinitionCreateDTO trainingDefinitionCreateDTO,
+			@ApiParam(value = "Fields which should be returned in REST API response", required = false)
+      @RequestParam(value = "fields", required = false) String fields) {
     try {
-      TrainingDefinitionCreateDTO trainingDefinitionDTO = trainingDefinitionFacade.create(trainingDefinitionCreateDTO);
-      return new ResponseEntity<>(trainingDefinitionDTO, HttpStatus.OK);
+      TrainingDefinitionDTO trainingDefinitionResource = trainingDefinitionFacade.create(trainingDefinitionCreateDTO);
+      Squiggly.init(objectMapper, fields);
+      return new ResponseEntity<>(SquigglyUtils.stringify(objectMapper, trainingDefinitionResource), HttpStatus.OK);
     } catch (FacadeLayerException ex) {
       throw new ResourceNotCreatedException(ex.getLocalizedMessage());
     }

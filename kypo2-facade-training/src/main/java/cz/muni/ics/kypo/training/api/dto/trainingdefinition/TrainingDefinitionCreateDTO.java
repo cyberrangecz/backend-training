@@ -1,10 +1,13 @@
 package cz.muni.ics.kypo.training.api.dto.trainingdefinition;
 
 import java.util.Arrays;
+import java.util.Set;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
+import cz.muni.ics.kypo.training.api.dto.AuthorRefDTO;
+import cz.muni.ics.kypo.training.api.dto.SandboxDefinitionRefDTO;
 import cz.muni.ics.kypo.training.model.enums.TDState;
 import io.swagger.annotations.ApiModel;
 
@@ -24,7 +27,11 @@ public class TrainingDefinitionCreateDTO {
 	@NotNull(message = "")
 	private TDState state;
 	@NotNull(message = "")
-	private Long startingLevel;
+	Set<AuthorRefDTO> authorRef;
+	@NotNull(message = "")
+	boolean showStepperBar;
+	@NotNull(message = "")
+	SandboxDefinitionRefDTO sandboxDefinitionRefDTO;
 
 	public TrainingDefinitionCreateDTO() {}
 
@@ -68,32 +75,33 @@ public class TrainingDefinitionCreateDTO {
 		this.state = state;
 	}
 
-	public Long getStartingLevel() {
-		return startingLevel;
+	public Set<AuthorRefDTO> getAuthorRef() {
+		return authorRef;
 	}
 
-	public void setStartingLevel(Long startingLevel) {
-		this.startingLevel = startingLevel;
+	public void setAuthorRef(Set<AuthorRefDTO> authorRef) {
+		this.authorRef = authorRef;
 	}
 
-	@Override
-	public String toString() {
-		StringBuilder builder = new StringBuilder();
-		builder.append("TrainingDefinitionUpdateDTO [id=");
-		builder.append(", title=");
-		builder.append(title);
-		builder.append(", description=");
-		builder.append(description);
-		builder.append(", prerequisities=");
-		builder.append(Arrays.toString(prerequisities));
-		builder.append(", outcomes=");
-		builder.append(Arrays.toString(outcomes));
-		builder.append(", state=");
-		builder.append(state);
-		builder.append(", startingLevel=");
-		builder.append(startingLevel);
-		builder.append("]");
-		return builder.toString();
+	public boolean isShowStepperBar() {
+		return showStepperBar;
 	}
 
+	public void setShowStepperBar(boolean showStepperBar) {
+		this.showStepperBar = showStepperBar;
+	}
+
+	public SandboxDefinitionRefDTO getSandboxDefinitionRefDTO() {
+		return sandboxDefinitionRefDTO;
+	}
+
+	public void setSandboxDefinitionRefDTO(SandboxDefinitionRefDTO sandboxDefinitionRefDTO) {
+		this.sandboxDefinitionRefDTO = sandboxDefinitionRefDTO;
+	}
+
+	@Override public String toString() {
+		return "TrainingDefinitionCreateDTO{" + "title='" + title + '\'' + ", description='" + description + '\'' + ", prerequisities=" + Arrays
+				.toString(prerequisities) + ", outcomes=" + Arrays.toString(outcomes) + ", state=" + state + ", authorRef=" + authorRef
+				+ ", showStepperBar=" + showStepperBar + ", sandboxDefinitionRefDTO=" + sandboxDefinitionRefDTO + '}';
+	}
 }

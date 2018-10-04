@@ -228,7 +228,6 @@ public class TrainingDefinitionsRestControllerTest {
 		trainingDefinitionCreateDTO.setDescription("TD desc");
 		trainingDefinitionCreateDTO.setOutcomes(new String[0]);
 		trainingDefinitionCreateDTO.setPrerequisities(new String[0]);
-		trainingDefinitionCreateDTO.setStartingLevel(1L);
 		trainingDefinitionCreateDTO.setState(TDState.ARCHIVED);
 		trainingDefinitionCreateDTO.setTitle("TD some title");
 
@@ -458,7 +457,7 @@ public class TrainingDefinitionsRestControllerTest {
 	public void createTrainingDefinition() throws Exception {
 		String valueTd = convertObjectToJsonBytes(trainingDefinitionCreateDTO);
 		given(objectMapper.writeValueAsString(any(Object.class))).willReturn(valueTd);
-		given(trainingDefinitionFacade.create(any(TrainingDefinitionCreateDTO.class))).willReturn(trainingDefinitionCreateDTO);
+		given(trainingDefinitionFacade.create(any(TrainingDefinitionCreateDTO.class))).willReturn(trainingDefinition1DTO);
 		MockHttpServletResponse result = mockMvc
 				.perform(post("/training-definitions").content(convertObjectToJsonBytes(trainingDefinitionCreateDTO))
 						.contentType(MediaType.APPLICATION_JSON_VALUE))

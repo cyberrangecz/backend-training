@@ -61,7 +61,7 @@ public interface TrainingDefinitionFacade {
    * @return DTO of created definition
    * @throws FacadeLayerException
    */
-  TrainingDefinitionCreateDTO create(TrainingDefinitionCreateDTO trainingDefinition) throws FacadeLayerException;
+  TrainingDefinitionDTO create(TrainingDefinitionCreateDTO trainingDefinition) throws FacadeLayerException;
 
   /**
    * Clones Training Definition by id
