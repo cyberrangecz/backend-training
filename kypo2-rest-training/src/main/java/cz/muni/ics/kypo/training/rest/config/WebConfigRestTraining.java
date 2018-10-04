@@ -14,6 +14,7 @@ import org.springframework.http.converter.json.MappingJackson2HttpMessageConvert
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import cz.muni.ics.kypo.training.config.FacadeConfiguration;
 
@@ -97,6 +98,7 @@ public class WebConfigRestTraining extends SpringBootServletInitializer {
 	public ObjectMapper objectMapperForRestAPI() {
 		LOG.debug("objectMapperForRestAPI()");
 		ObjectMapper obj = new ObjectMapper();
+		obj.registerModule(new JavaTimeModule());
 		obj.setPropertyNamingStrategy(snakeCase());
 		return obj;
 	}

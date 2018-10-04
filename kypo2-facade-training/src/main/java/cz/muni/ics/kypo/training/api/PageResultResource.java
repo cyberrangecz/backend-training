@@ -24,7 +24,7 @@ public class PageResultResource<E> {
 	private List<E> content;
 	@JsonProperty(required = true)
 	@ApiModelProperty(value = "Pagination including: page number, number of elements in page, size, total elements and total pages.")
-	private Pagination<E> pagination;
+	private Pagination pagination;
 
 	public PageResultResource() {}
 
@@ -33,7 +33,7 @@ public class PageResultResource<E> {
 		this.content = content;
 	}
 
-	public PageResultResource(List<E> content, Pagination<E> pageMetadata) {
+	public PageResultResource(List<E> content, Pagination pageMetadata) {
 		super();
 		this.content = content;
 		this.pagination = pageMetadata;
@@ -47,15 +47,15 @@ public class PageResultResource<E> {
 		this.content = content;
 	}
 
-	public Pagination<E> getPagination() {
+	public Pagination getPagination() {
 		return pagination;
 	}
 
-	public void setPagination(Pagination<E> pagination) {
+	public void setPagination(Pagination pagination) {
 		this.pagination = pagination;
 	}
 
-	public static class Pagination<T> {
+	public static class Pagination {
 
 		@ApiModelProperty(value = "Page number.")
 		@JsonProperty(required = true)

@@ -231,8 +231,8 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
   }
 
 
-  private <T> PageResultResource.Pagination<T> createPagination(Page<?> objects) {
-    PageResultResource.Pagination<T> pageMetadata = new PageResultResource.Pagination<T>();
+  private PageResultResource.Pagination createPagination(Page<?> objects) {
+    PageResultResource.Pagination pageMetadata = new PageResultResource.Pagination();
     pageMetadata.setNumber(objects.getNumber());
     pageMetadata.setNumberOfElements(objects.getNumberOfElements());
     pageMetadata.setSize(objects.getSize());
