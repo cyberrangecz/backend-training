@@ -27,11 +27,11 @@ public class TrainingDefinitionCreateDTO {
 	@NotNull(message = "")
 	private TDState state;
 	@NotNull(message = "")
-	Set<AuthorRefDTO> authorRef;
+	private Set<AuthorRefDTO> authorRef;
 	@NotNull(message = "")
-	boolean showStepperBar;
+	private boolean showStepperBar;
 	@NotNull(message = "")
-	SandboxDefinitionRefDTO sandboxDefinitionRefDTO;
+	private SandboxDefinitionRefDTO sandboxDefinitionRefDTO;
 
 	public TrainingDefinitionCreateDTO() {}
 
