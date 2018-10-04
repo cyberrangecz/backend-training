@@ -1,6 +1,7 @@
 package cz.muni.ics.kypo.training.facade;
 
 import cz.muni.ics.kypo.training.api.dto.AbstractLevelDTO;
+import cz.muni.ics.kypo.training.api.dto.BasicLevelInfoDTO;
 import cz.muni.ics.kypo.training.model.enums.LevelType;
 import cz.muni.ics.kypo.training.exception.FacadeLayerException;
 import org.springframework.data.domain.Pageable;
@@ -140,7 +141,7 @@ public interface TrainingDefinitionFacade {
    * @return DTO of new info level
    * @throws FacadeLayerException if training definition is not found
    */
-   InfoLevelCreateDTO createInfoLevel(Long definitionId) throws FacadeLayerException;
+   BasicLevelInfoDTO createInfoLevel(Long definitionId) throws FacadeLayerException;
 
 
   /**
@@ -149,7 +150,7 @@ public interface TrainingDefinitionFacade {
    * @return DTO of new game level
    * @throws FacadeLayerException if training definition is not found
    */
-  GameLevelCreateDTO createGameLevel(Long definitionId) throws FacadeLayerException;
+  BasicLevelInfoDTO createGameLevel(Long definitionId) throws FacadeLayerException;
 
 
   /**
@@ -158,7 +159,7 @@ public interface TrainingDefinitionFacade {
    * @return DTO of new assessment level
    * @throws FacadeLayerException if training definition is not found
    */
-  AssessmentLevelCreateDTO createAssessmentLevel(Long definitionId) throws FacadeLayerException;
+  BasicLevelInfoDTO createAssessmentLevel(Long definitionId) throws FacadeLayerException;
 
 	/**
 	 * Finds specific level by id

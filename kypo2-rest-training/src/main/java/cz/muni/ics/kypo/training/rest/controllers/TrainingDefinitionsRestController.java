@@ -7,6 +7,7 @@ import com.github.bohnman.squiggly.util.SquigglyUtils;
 import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.training.api.PageResultResource;
 import cz.muni.ics.kypo.training.api.dto.AbstractLevelDTO;
+import cz.muni.ics.kypo.training.api.dto.BasicLevelInfoDTO;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelCreateDTO;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelUpdateDTO;
 import cz.muni.ics.kypo.training.api.dto.gamelevel.GameLevelCreateDTO;
@@ -417,7 +418,7 @@ public class TrainingDefinitionsRestController {
 
 	@ApiOperation(httpMethod = "POST",
 			value = "Create Level",
-			//response = GameLevelCreateDTO.class,
+			response = BasicLevelInfoDTO.class,
 			nickname = "createLevel",
 			produces = "application/json")
 	@ApiResponses(value = {
@@ -429,15 +430,20 @@ public class TrainingDefinitionsRestController {
 			@ApiParam(value = "Id of definition")
 			@PathVariable(value = "definitionId") Long definitionId,
 			@ApiParam(value = "Level type")
-			@PathVariable (value = "levelType") LevelType levelType) {
+			@PathVariable (value = "levelType") LevelType levelType,
+			@ApiParam(value = "Fields which should be returned in REST API response", required = false)
+      @RequestParam(value = "fields", required = false) String fields) {
 		try {
+			BasicLevelInfoDTO basicLevelInfoDTO;
 			if (levelType.equals(LevelType.GAME)) {
-				return new ResponseEntity<>(trainingDefinitionFacade.createGameLevel(definitionId), HttpStatus.CREATED);
+				basicLevelInfoDTO = trainingDefinitionFacade.createGameLevel(definitionId);
 			} else if (levelType.equals(LevelType.ASSESSMENT)) {
-				return new ResponseEntity<>(trainingDefinitionFacade.createAssessmentLevel(definitionId), HttpStatus.CREATED);
+				basicLevelInfoDTO = trainingDefinitionFacade.createAssessmentLevel(definitionId);
 			} else {
-				return new ResponseEntity<>(trainingDefinitionFacade.createInfoLevel(definitionId), HttpStatus.CREATED);
+				basicLevelInfoDTO = trainingDefinitionFacade.createInfoLevel(definitionId);
 			}
+			Squiggly.init(objectMapper, fields);
+			return new ResponseEntity<>(SquigglyUtils.stringify(objectMapper, basicLevelInfoDTO), HttpStatus.CREATED);
 		} catch (FacadeLayerException ex) {
 			throw new ResourceNotCreatedException(ex.getLocalizedMessage());
 		}
