@@ -16,10 +16,10 @@ import java.util.Objects;
 @PrimaryKeyJoinColumn(name = "id")
 public class InfoLevel extends AbstractLevel implements Serializable {
 
-  @Lob
-  @Type(type = "org.hibernate.type.TextType")
-  @Column(name = "content", nullable = false) // maybe should be unique?
-  private String content;
+	@Lob
+	@Type(type = "org.hibernate.type.TextType")
+	@Column(name = "content", nullable = false) // maybe should be unique?
+	private String content;
 
 	public InfoLevel() {
 		super();

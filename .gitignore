@@ -8,7 +8,10 @@ logs/
 
 !.mvn/wrapper/maven-wrapper.jar
 
-### STS ###
+### Vagrant ###
+.vagrant
+
+### STS & Eclipse ###
 .apt_generated
 .classpath
 .factorypath

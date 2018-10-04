@@ -4,7 +4,6 @@ import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
-import java.util.Arrays;
 
 /**
  * 
@@ -93,7 +92,8 @@ public class GameLevelCreateDTO {
 		this.incorrectFlagLimit = incorrectFlagLimit;
 	}
 
-	@Override public String toString() {
+	@Override
+	public String toString() {
 		return "GameLevelCreateDTO{" + "title='" + title + '\'' + ", maxScore=" + maxScore + ", flag='" + flag + '\'' + ", content='" + content
 				+ '\'' + ", solution='" + solution + '\'' + ", solutionPenalized=" + solutionPenalized + ", incorrectFlagLimit="
 				+ incorrectFlagLimit + '}';

@@ -48,7 +48,7 @@ public class Password implements Serializable {
 		if (!(o instanceof Password))
 			return false;
 		Password keyword = (Password) o;
-		return Objects.equals(id, keyword.id) && Objects.equals(this.passwordHash, keyword.passwordHash);
+		return Objects.equals(id, keyword.getId()) && Objects.equals(this.passwordHash, keyword.getPasswordHash());
 	}
 
 	@Override
