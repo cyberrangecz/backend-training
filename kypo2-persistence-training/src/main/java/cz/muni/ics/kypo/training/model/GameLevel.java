@@ -108,28 +108,6 @@ public class GameLevel extends AbstractLevel implements Serializable {
 	}
 
 	@Override
-	public boolean equals(Object o) {
-		if (this == o)
-			return true;
-		if (o == null || getClass() != o.getClass())
-			return false;
-		if (!super.equals(o))
-			return false;
-		GameLevel gameLevel = (GameLevel) o;
-		return estimatedDuration == gameLevel.estimatedDuration && solutionPenalized == gameLevel.solutionPenalized
-				&& incorrectFlagLimit == gameLevel.incorrectFlagLimit && Objects.equals(flag, gameLevel.flag)
-				&& Objects.equals(content, gameLevel.content) && Objects.equals(solution, gameLevel.solution)
-				&& Arrays.equals(attachments, gameLevel.attachments) && Objects.equals(hints, gameLevel.hints);
-	}
-
-	@Override
-	public int hashCode() {
-		int result = Objects.hash(super.hashCode(), flag, content, solution, solutionPenalized, estimatedDuration, hints, incorrectFlagLimit);
-		result = 31 * result + Arrays.hashCode(attachments);
-		return result;
-	}
-
-	@Override
 	public String toString() {
 		return "GameLevel{" + "flag='" + flag + '\'' + ", content='" + content + '\'' + ", solution='" + solution + '\''
 				+ ", solutionPenalized=" + solutionPenalized + ", estimatedDuration=" + estimatedDuration + ", attachments="
