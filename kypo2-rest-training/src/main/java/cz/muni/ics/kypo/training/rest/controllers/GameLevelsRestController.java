@@ -119,9 +119,11 @@ public class GameLevelsRestController {
   @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<Object> findAllGameLevels(
       @QuerydslPredicate(root = GameLevel.class) Predicate predicate, 
+  		@ApiParam(value = "Pagination support.", required = false)
       @PageableDefault(size = 20) final Pageable pageable,
+      @ApiParam(value = "Parameters for filtering the objects.", required = false) 
       @RequestParam MultiValueMap<String, String> parameters, 
-      @ApiParam(value = "Fields which should be returned in REST API response", required = false) 
+      @ApiParam(value = "Fields which should be returned in REST API response.", required = false) 
       @RequestParam(value = "fields", required = false) String fields) {
     LOG.debug("findAllGameLevels({},{})", parameters, fields);
     try {

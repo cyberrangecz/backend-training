@@ -24,37 +24,37 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class GameLevelFacadeImpl implements GameLevelFacade {
 
-  private static final Logger LOG = LoggerFactory.getLogger(GameLevelFacadeImpl.class);
+	private static final Logger LOG = LoggerFactory.getLogger(GameLevelFacadeImpl.class);
 
-  private GameLevelService gameLevelService;
-  private BeanMapping beanMapping;
+	private GameLevelService gameLevelService;
+	private BeanMapping beanMapping;
 
-  @Autowired
-  public GameLevelFacadeImpl(GameLevelService gameLevelService, BeanMapping beanMapping) {
-    this.gameLevelService = gameLevelService;
-    this.beanMapping = beanMapping;
-  }
+	@Autowired
+	public GameLevelFacadeImpl(GameLevelService gameLevelService, BeanMapping beanMapping) {
+		this.gameLevelService = gameLevelService;
+		this.beanMapping = beanMapping;
+	}
 
-  @Override
-  @Transactional(readOnly = true)
-  public GameLevelDTO findById(long id) {
-    LOG.debug("findById({})", id);
-    try {
-      GameLevel gameLevel = gameLevelService.findById(id).get();
-      return beanMapping.mapTo(gameLevel, GameLevelDTO.class);
-    } catch (ServiceLayerException ex) {
-      throw new FacadeLayerException(ex);
-    }
-  }
+	@Override
+	@Transactional(readOnly = true)
+	public GameLevelDTO findById(long id) {
+		LOG.debug("findById({})", id);
+		try {
+			GameLevel gameLevel = gameLevelService.findById(id).get();
+			return beanMapping.mapTo(gameLevel, GameLevelDTO.class);
+		} catch (ServiceLayerException ex) {
+			throw new FacadeLayerException(ex);
+		}
+	}
 
-  @Override
-  @Transactional(readOnly = true)
-  public PageResultResource<GameLevelDTO> findAll(Predicate predicate, Pageable pageable) {
-    LOG.debug("findAll({},{})", predicate, pageable);
-    try {
-      return beanMapping.mapToPageResultDTO(gameLevelService.findAll(predicate, pageable), GameLevelDTO.class);
-    } catch (ServiceLayerException ex) {
-      throw new FacadeLayerException(ex);
-    }
-  }
+	@Override
+	@Transactional(readOnly = true)
+	public PageResultResource<GameLevelDTO> findAll(Predicate predicate, Pageable pageable) {
+		LOG.debug("findAll({},{})", predicate, pageable);
+		try {
+			return beanMapping.mapToPageResultDTO(gameLevelService.findAll(predicate, pageable), GameLevelDTO.class);
+		} catch (ServiceLayerException ex) {
+			throw new FacadeLayerException(ex);
+		}
+	}
 }

@@ -119,7 +119,10 @@ public class TrainingRunsRestController {
       @ApiResponse(code = 404, message = "The requested resource was not found.") 
   })
   @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<Object> findAllTrainingRuns(@QuerydslPredicate(root = TrainingRun.class) Predicate predicate, Pageable pageable,
+  public ResponseEntity<Object> findAllTrainingRuns(@QuerydslPredicate(root = TrainingRun.class) Predicate predicate, 
+  		@ApiParam(value = "Pagination support.", required = false)
+  		Pageable pageable,
+  		@ApiParam(value = "Parameters for filtering the objects.", required = false)
       @RequestParam MultiValueMap<String, String> parameters, 
       @ApiParam(value = "Fields which should be returned in REST API response", required = false) 
       @RequestParam(value = "fields", required = false) String fields) {
@@ -189,7 +192,9 @@ public class TrainingRunsRestController {
             @ApiResponse(code = 404, message = "The requested resource was not found.")
     })
     @GetMapping(value = "/accessed", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Object> getAllAccessedTrainingRuns(@PageableDefault(size = 10, page = 0) Pageable pageable) {
+    public ResponseEntity<Object> getAllAccessedTrainingRuns(
+    		@ApiParam(value = "Pagination support.", required = false)
+    		@PageableDefault(size = 10, page = 0) Pageable pageable) {
         LOG.debug("findAllAccessedTrainingRuns()");
         PageResultResource<AccessedTrainingRunDTO> accessedTrainingRunDTOS = trainingRunFacade.findAllAccessedTrainingRuns(pageable);
         return new ResponseEntity<>(SquigglyUtils.stringify(objectMapper, accessedTrainingRunDTOS), HttpStatus.OK);
