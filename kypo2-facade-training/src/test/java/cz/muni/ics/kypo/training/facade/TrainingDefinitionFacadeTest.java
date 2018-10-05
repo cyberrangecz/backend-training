@@ -3,11 +3,8 @@ package cz.muni.ics.kypo.training.facade;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.PathBuilder;
 import cz.muni.ics.kypo.training.api.PageResultResource;
-import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelCreateDTO;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelUpdateDTO;
-import cz.muni.ics.kypo.training.api.dto.gamelevel.GameLevelCreateDTO;
 import cz.muni.ics.kypo.training.api.dto.gamelevel.GameLevelUpdateDTO;
-import cz.muni.ics.kypo.training.api.dto.infolevel.InfoLevelCreateDTO;
 import cz.muni.ics.kypo.training.api.dto.infolevel.InfoLevelUpdateDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionCreateDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionDTO;
@@ -70,15 +67,12 @@ public class TrainingDefinitionFacadeTest {
 
 	private AssessmentLevel level1;
 	private AssessmentLevelUpdateDTO alUpdate;
-	private AssessmentLevelCreateDTO alCreate;
 
 	private GameLevel gameLevel;
 	private GameLevelUpdateDTO gameLevelUpdate;
-	private GameLevelCreateDTO gameLevelCreate;
 
 	private InfoLevel infoLevel;
 	private InfoLevelUpdateDTO infoLevelUpdate;
-	private InfoLevelCreateDTO infoLevelCreate;
 
 	@SpringBootApplication
 	static class TestConfiguration {
@@ -105,7 +99,6 @@ public class TrainingDefinitionFacadeTest {
 		gameLevelUpdate.setEstimatedDuration(1000);
 		gameLevelUpdate.setFlag("flag1");
 		gameLevelUpdate.setIncorrectFlagLimit(4);
-		gameLevelUpdate.setNextLevel(2L);
 		gameLevelUpdate.setSolutionPenalized(true);
 /*
 		gameLevelCreate = new GameLevelCreateDTO();
@@ -123,10 +116,8 @@ public class TrainingDefinitionFacadeTest {
 
 		infoLevelUpdate = new InfoLevelUpdateDTO();
 		infoLevelUpdate.setId(3L);
-		infoLevelUpdate.setMaxScore(40);
 		infoLevelUpdate.setTitle("some title");
 		infoLevelUpdate.setContent("some content");
-		infoLevelUpdate.setNextLevel(gameLevel.getId());
 /*
 		infoLevelCreate = new InfoLevelCreateDTO();
 		infoLevelCreate.setMaxScore(40);
@@ -145,7 +136,6 @@ public class TrainingDefinitionFacadeTest {
 		alUpdate = new AssessmentLevelUpdateDTO();
 		alUpdate.setInstructions("instructions");
 		alUpdate.setMaxScore(50);
-		alUpdate.setNextLevel(1L);
 		alUpdate.setQuestions("test");
 		alUpdate.setTitle("Some title");
 		alUpdate.setType(AssessmentType.QUESTIONNAIRE);

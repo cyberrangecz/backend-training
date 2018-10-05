@@ -24,7 +24,6 @@ public class AssessmentLevelUpdateDTO {
 	@Min(value = 0, message = "{assessmentlevelupdate.maxScore.Min.message}")
 	@Max(value = 100, message = "{assessmentlevelupdate.maxScore.Max.message}")
 	private Integer maxScore;
-	protected Long nextLevel;
 	private String questions;
 	private String instructions;
 	private AssessmentType type;
@@ -53,14 +52,6 @@ public class AssessmentLevelUpdateDTO {
 
 	public void setMaxScore(Integer maxScore) {
 		this.maxScore = maxScore;
-	}
-
-	public Long getNextLevel() {
-		return nextLevel;
-	}
-
-	public void setNextLevel(Long nextLevel) {
-		this.nextLevel = nextLevel;
 	}
 
 	public String getQuestions() {
@@ -96,8 +87,6 @@ public class AssessmentLevelUpdateDTO {
 		builder.append(title);
 		builder.append(", maxScore=");
 		builder.append(maxScore);
-		builder.append(", nextLevel=");
-		builder.append(nextLevel);
 		builder.append(", questions=");
 		builder.append(questions);
 		builder.append(", instructions=");

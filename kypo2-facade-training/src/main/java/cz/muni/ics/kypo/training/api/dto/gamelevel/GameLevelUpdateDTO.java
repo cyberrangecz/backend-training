@@ -1,5 +1,6 @@
 package cz.muni.ics.kypo.training.api.dto.gamelevel;
 
+import cz.muni.ics.kypo.training.api.dto.hint.HintDTO;
 import io.swagger.annotations.ApiModel;
 
 import javax.validation.constraints.Max;
@@ -7,6 +8,7 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.util.Arrays;
+import java.util.Set;
 
 /**
  * 
@@ -23,14 +25,14 @@ public class GameLevelUpdateDTO {
 	@Min(value = 0, message = "Max score cannot be lower than 0")
 	@Max(value = 100, message = "Max score cannot be greater than 100")
 	private Integer maxScore;
-	private Long nextLevel;
 	private String flag;
 	private String content;
 	private String solution;
 	private boolean solutionPenalized;
 	private int estimatedDuration;
-	private String[] attachments;
+	private String[] attachments;//?
 	private int incorrectFlagLimit;
+	private Set<HintDTO> hints;
 
 	public GameLevelUpdateDTO() {}
 
@@ -98,14 +100,6 @@ public class GameLevelUpdateDTO {
 		this.title = title;
 	}
 
-	public Long getNextLevel() {
-		return nextLevel;
-	}
-
-	public void setNextLevel(Long nextLevel) {
-		this.nextLevel = nextLevel;
-	}
-
 	public int getIncorrectFlagLimit() {
 		return incorrectFlagLimit;
 	}
@@ -122,33 +116,18 @@ public class GameLevelUpdateDTO {
 		this.maxScore = maxScore;
 	}
 
-	@Override
-	public String toString() {
-		StringBuilder builder = new StringBuilder();
-		builder.append("GameLevelUpdateDTO [id=");
-		builder.append(id);
-		builder.append(", title=");
-		builder.append(title);
-		builder.append(", maxScore=");
-		builder.append(maxScore);
-		builder.append(", nextLevel=");
-		builder.append(nextLevel);
-		builder.append(", flag=");
-		builder.append(flag);
-		builder.append(", content=");
-		builder.append(content);
-		builder.append(", solution=");
-		builder.append(solution);
-		builder.append(", solutionPenalized=");
-		builder.append(solutionPenalized);
-		builder.append(", estimatedDuration=");
-		builder.append(estimatedDuration);
-		builder.append(", attachments=");
-		builder.append(Arrays.toString(attachments));
-		builder.append(", incorrectFlagLimit=");
-		builder.append(incorrectFlagLimit);
-		builder.append("]");
-		return builder.toString();
+	public Set<HintDTO> getHints() {
+		return hints;
 	}
 
+	public void setHints(Set<HintDTO> hints) {
+		this.hints = hints;
+	}
+
+	@Override public String toString() {
+		return "GameLevelUpdateDTO{" + "id=" + id + ", title='" + title + '\'' + ", maxScore=" + maxScore + ", flag='" + flag + '\''
+				+ ", content='" + content + '\'' + ", solution='" + solution + '\'' + ", solutionPenalized=" + solutionPenalized
+				+ ", estimatedDuration=" + estimatedDuration + ", attachments=" + Arrays.toString(attachments) + ", incorrectFlagLimit="
+				+ incorrectFlagLimit + ", hints=" + hints + '}';
+	}
 }

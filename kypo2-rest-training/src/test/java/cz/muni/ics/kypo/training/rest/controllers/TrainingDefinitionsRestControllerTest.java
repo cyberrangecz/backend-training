@@ -5,11 +5,8 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import cz.muni.ics.kypo.training.api.PageResultResource;
 import cz.muni.ics.kypo.training.api.dto.AuthorRefDTO;
 import cz.muni.ics.kypo.training.api.dto.SandboxDefinitionRefDTO;
-import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelCreateDTO;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelUpdateDTO;
-import cz.muni.ics.kypo.training.api.dto.gamelevel.GameLevelCreateDTO;
 import cz.muni.ics.kypo.training.api.dto.gamelevel.GameLevelUpdateDTO;
-import cz.muni.ics.kypo.training.api.dto.infolevel.InfoLevelCreateDTO;
 import cz.muni.ics.kypo.training.api.dto.infolevel.InfoLevelUpdateDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionCreateDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionDTO;
@@ -83,15 +80,12 @@ public class TrainingDefinitionsRestControllerTest {
 	private TrainingDefinitionUpdateDTO trainingDefinitionUpdateDTO;
 
 	private GameLevel gameLevel;
-	private GameLevelCreateDTO gameLevelCreateDTO;
 	private GameLevelUpdateDTO gameLevelUpdateDTO;
 
 	private InfoLevel infoLevel;
-	private InfoLevelCreateDTO infoLevelCreateDTO;
 	private InfoLevelUpdateDTO infoLevelUpdateDTO;
 
 	private AssessmentLevel assessmentLevel;
-	private AssessmentLevelCreateDTO alCreateDTO;
 	private AssessmentLevelUpdateDTO alUpdateDTO;
 
 	private Page p;
@@ -124,7 +118,6 @@ public class TrainingDefinitionsRestControllerTest {
 		gameLevelUpdateDTO.setEstimatedDuration(1000);
 		gameLevelUpdateDTO.setFlag("flag1");
 		gameLevelUpdateDTO.setIncorrectFlagLimit(4);
-		gameLevelUpdateDTO.setNextLevel(2L);
 		gameLevelUpdateDTO.setSolutionPenalized(true);
 		gameLevelUpdateDTO.setMaxScore(20);
 /*
@@ -139,10 +132,8 @@ public class TrainingDefinitionsRestControllerTest {
 */
 		infoLevelUpdateDTO = new InfoLevelUpdateDTO();
 		infoLevelUpdateDTO.setId(3L);
-		infoLevelUpdateDTO.setMaxScore(40);
 		infoLevelUpdateDTO.setTitle("some title");
 		infoLevelUpdateDTO.setContent("some content");
-		infoLevelUpdateDTO.setNextLevel(gameLevel.getId());
 /*
 		infoLevelCreateDTO = new InfoLevelCreateDTO();
 		infoLevelCreateDTO.setMaxScore(40);
@@ -172,7 +163,6 @@ public class TrainingDefinitionsRestControllerTest {
 		alUpdateDTO = new AssessmentLevelUpdateDTO();
 		alUpdateDTO.setInstructions("instructions");
 		alUpdateDTO.setMaxScore(50);
-		alUpdateDTO.setNextLevel(1L);
 		alUpdateDTO.setQuestions("test");
 		alUpdateDTO.setTitle("Some title");
 		alUpdateDTO.setType(AssessmentType.QUESTIONNAIRE);
