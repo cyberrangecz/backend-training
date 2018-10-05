@@ -1,9 +1,12 @@
 package cz.muni.ics.kypo.training.api.dto.traininginstance;
 
 import java.time.LocalDateTime;
+import java.util.Set;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
+import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionDTO;
 import cz.muni.ics.kypo.training.utils.converters.LocalDateTimeDeserializer;
 import cz.muni.ics.kypo.training.utils.converters.LocalDateTimeSerializer;
 import io.swagger.annotations.ApiModel;
@@ -23,6 +26,8 @@ public class TrainingInstanceCreateDTO {
 	private String title;
 	private int poolSize;
 	private String keyword;
+	private TrainingDefinitionDTO trainingDefinition;
+	private Set<UserRefDTO> organizers;
 
 	public TrainingInstanceCreateDTO() {}
 
@@ -66,21 +71,24 @@ public class TrainingInstanceCreateDTO {
 		this.keyword = keyword;
 	}
 
-	@Override
-	public String toString() {
-		StringBuilder builder = new StringBuilder();
-		builder.append("TrainingInstanceCreateDTO [startTime=");
-		builder.append(startTime);
-		builder.append(", endTime=");
-		builder.append(endTime);
-		builder.append(", title=");
-		builder.append(title);
-		builder.append(", poolSize=");
-		builder.append(poolSize);
-		builder.append(", keyword=");
-		builder.append(keyword);
-		builder.append("]");
-		return builder.toString();
+	public TrainingDefinitionDTO getTrainingDefinition() {
+		return trainingDefinition;
 	}
 
+	public void setTrainingDefinition(TrainingDefinitionDTO trainingDefinition) {
+		this.trainingDefinition = trainingDefinition;
+	}
+
+	public Set<UserRefDTO> getOrganizers() {
+		return organizers;
+	}
+
+	public void setOrganizers(Set<UserRefDTO> organizers) {
+		this.organizers = organizers;
+	}
+
+	@Override public String toString() {
+		return "TrainingInstanceCreateDTO{" + "startTime=" + startTime + ", endTime=" + endTime + ", title='" + title + '\'' + ", poolSize="
+				+ poolSize + ", keyword='" + keyword + '\'' + ", trainingDefinition=" + trainingDefinition + ", organizers=" + organizers + '}';
+	}
 }

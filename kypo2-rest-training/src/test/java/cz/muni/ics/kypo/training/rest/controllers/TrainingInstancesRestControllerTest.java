@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.training.api.PageResultResource;
-import cz.muni.ics.kypo.training.api.dto.traininginstance.NewTrainingInstanceDTO;
+import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceCreateResponseDTO;
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceCreateDTO;
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceDTO;
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceUpdateDTO;
@@ -76,7 +76,7 @@ public class TrainingInstancesRestControllerTest {
 	private TrainingInstanceDTO trainingInstance1DTO, trainingInstance2DTO;
 	private TrainingInstanceCreateDTO trainingInstanceCreateDTO;
 	private TrainingInstanceUpdateDTO trainingInstanceUpdateDTO;
-	private NewTrainingInstanceDTO newTrainingInstanceDTO;
+	private TrainingInstanceCreateResponseDTO newTrainingInstanceDTO;
 
 	private Page p;
 
@@ -119,13 +119,9 @@ public class TrainingInstancesRestControllerTest {
 		trainingInstanceUpdateDTO.setStartTime(startTime);
 		trainingInstanceUpdateDTO.setEndTime(endTime);
 
-		newTrainingInstanceDTO = new NewTrainingInstanceDTO();
+		newTrainingInstanceDTO = new TrainingInstanceCreateResponseDTO();
 		newTrainingInstanceDTO.setId(6L);
-		newTrainingInstanceDTO.setStartTime(startTime);
-		newTrainingInstanceDTO.setEndTime(endTime);
 		newTrainingInstanceDTO.setKeyword("pass-1325");
-		newTrainingInstanceDTO.setTitle("title");
-		newTrainingInstanceDTO.setPoolSize(20);
 
 		List<TrainingInstance> expected = new ArrayList<>();
 		expected.add(trainingInstance1);

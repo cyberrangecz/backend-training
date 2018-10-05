@@ -6,7 +6,7 @@ import com.github.bohnman.squiggly.util.SquigglyUtils;
 import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.training.api.PageResultResource;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionDTO;
-import cz.muni.ics.kypo.training.api.dto.traininginstance.NewTrainingInstanceDTO;
+import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceCreateResponseDTO;
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceCreateDTO;
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceDTO;
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceUpdateDTO;
@@ -144,7 +144,7 @@ public class TrainingInstancesRestController {
 				@ApiParam(value = "Fields which should be returned in REST API response", required = false)
 				@RequestParam(value = "fields", required = false) String fields) {
 				try {
-						NewTrainingInstanceDTO trainingInstanceResource = trainingInstanceFacade.create(trainingInstanceCreateDTO);
+						TrainingInstanceCreateResponseDTO trainingInstanceResource = trainingInstanceFacade.create(trainingInstanceCreateDTO);
 						Squiggly.init(objectMapper, fields);
 						return new ResponseEntity<>(SquigglyUtils.stringify(objectMapper, trainingInstanceResource), HttpStatus.OK);
 				} catch (FacadeLayerException ex) {
