@@ -233,21 +233,21 @@ public class TrainingDefinitionsRestController {
 	@ApiOperation(httpMethod = "PUT",
 			value = "Swap level to the left",
 			nickname = "swapLeft",
-			response = Void.class)
+			produces = "application/json",
+			response = BasicLevelInfoDTO.class)
 	@ApiResponses(value = {
 			@ApiResponse(code = 409, message = "The requested resource was not modified because of its status"),
 			@ApiResponse(code = 404, message = "The requested resource was not found")
 			}
 	)
-	@PutMapping(value = "/{definitionId}/levels/{levelId}/swap-left")
-	public ResponseEntity<Void> swapLeft(
+	@PutMapping(value = "/{definitionId}/levels/{levelId}/swap-left", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<Object> swapLeft(
 			@ApiParam(value = "Id of definition")
 			@PathVariable("definitionId") Long definitionId,
 			@ApiParam(value = "Id of level to be swapped")
 			@PathVariable("levelId") Long levelId) {
 		try {
-			trainingDefinitionFacade.swapLeft(definitionId, levelId);
-			return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+			return new ResponseEntity<>(trainingDefinitionFacade.swapLeft(definitionId, levelId), HttpStatus.OK);
 		} catch (FacadeLayerException ex) {
 				throw throwException(ex);
 		}
@@ -256,21 +256,21 @@ public class TrainingDefinitionsRestController {
 	@ApiOperation(httpMethod = "PUT",
 			value = "Swap level to the right",
 			nickname = "swapRight",
-			response = Void.class)
+			produces = "application/json",
+			response = BasicLevelInfoDTO.class)
 	@ApiResponses(value = {
 			@ApiResponse(code = 409, message = "The requested resource was not modified because of its status"),
 			@ApiResponse(code = 404, message = "The requested resource was not found")
 			}
 	)
-	@PutMapping(value = "/{definitionId}/levels/{levelId}/swap-right")
-	public ResponseEntity<Void> swapRight(
+	@PutMapping(value = "/{definitionId}/levels/{levelId}/swap-right", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<Object> swapRight(
 			@ApiParam(value = "Id of definition")
 			@PathVariable("definitionId") Long definitionId,
 			@ApiParam(value = "Id of level to be swapped")
 			@PathVariable("levelId") Long levelId) {
 		try {
-			trainingDefinitionFacade.swapRight(definitionId, levelId);
-			return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+			return new ResponseEntity<>(trainingDefinitionFacade.swapRight(definitionId, levelId), HttpStatus.OK);
 		} catch (FacadeLayerException ex) {
 				throw throwException(ex);
 		}
@@ -300,21 +300,21 @@ public class TrainingDefinitionsRestController {
 	@ApiOperation(httpMethod = "DELETE",
 			value = "Delete specific level from definition",
 			nickname = "deleteOneLevel",
-			response = Void.class)
+			produces = "application/json",
+			response = BasicLevelInfoDTO.class)
 	@ApiResponses(value = {
 			@ApiResponse(code = 409, message = "The requested resource was not modified because of its status"),
 			@ApiResponse(code = 404, message = "The requested resource was not found")
 			}
 	)
-	@DeleteMapping(value = "/{definitionId}/levels/{levelId}")
-	public ResponseEntity<Void> deleteOneLevel(
+	@DeleteMapping(value = "/{definitionId}/levels/{levelId}", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<Object> deleteOneLevel(
 			@ApiParam(value = "Id of definition")
 			@PathVariable("definitionId") Long definitionId,
 			@ApiParam(value = "Id of level to be deleted")
 			@PathVariable("levelId") Long levelId) {
 		try {
-			trainingDefinitionFacade.deleteOneLevel(definitionId, levelId);
-			return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+			return new ResponseEntity<>(trainingDefinitionFacade.deleteOneLevel(definitionId, levelId), HttpStatus.OK);
 		} catch (FacadeLayerException ex) {
 				throw throwException(ex);
 		}

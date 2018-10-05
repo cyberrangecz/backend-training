@@ -3,6 +3,7 @@ package cz.muni.ics.kypo.training.facade;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.PathBuilder;
 import cz.muni.ics.kypo.training.api.PageResultResource;
+import cz.muni.ics.kypo.training.api.dto.AuthorRefDTO;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelUpdateDTO;
 import cz.muni.ics.kypo.training.api.dto.gamelevel.GameLevelUpdateDTO;
 import cz.muni.ics.kypo.training.api.dto.infolevel.InfoLevelUpdateDTO;
@@ -14,10 +15,7 @@ import cz.muni.ics.kypo.training.exception.FacadeLayerException;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.mapping.BeanMapping;
 import cz.muni.ics.kypo.training.mapping.BeanMappingImpl;
-import cz.muni.ics.kypo.training.model.AssessmentLevel;
-import cz.muni.ics.kypo.training.model.GameLevel;
-import cz.muni.ics.kypo.training.model.InfoLevel;
-import cz.muni.ics.kypo.training.model.TrainingDefinition;
+import cz.muni.ics.kypo.training.model.*;
 import cz.muni.ics.kypo.training.model.enums.AssessmentType;
 import cz.muni.ics.kypo.training.model.enums.TDState;
 import cz.muni.ics.kypo.training.service.TrainingDefinitionService;
@@ -39,7 +37,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
@@ -163,12 +163,19 @@ public class TrainingDefinitionFacadeTest {
 		trainingDefinitionUpdate.setState(TDState.UNRELEASED);
 		trainingDefinitionUpdate.setStartingLevel(level1.getId());
 
+
+		AuthorRefDTO authorRef = new AuthorRefDTO();
+		authorRef.setId(1l);
+		authorRef.setAuthorRefLogin("test");
+		Set<AuthorRefDTO> authorRefSet = new HashSet<>();
+		authorRefSet.add(authorRef);
 		trainingDefinitionCreate = new TrainingDefinitionCreateDTO();
 		trainingDefinitionCreate.setDescription("TD desc");
 		trainingDefinitionCreate.setOutcomes(new String[0]);
 		trainingDefinitionCreate.setPrerequisities(new String[0]);
 		trainingDefinitionCreate.setState(TDState.ARCHIVED);
 		trainingDefinitionCreate.setTitle("TD some title");
+		trainingDefinitionCreate.setAuthorRef(authorRefSet);
 	}
 
 	@Test

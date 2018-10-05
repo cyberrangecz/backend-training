@@ -15,6 +15,7 @@ import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionCr
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionUpdateDTO;
 
+import java.util.Set;
 import java.util.logging.Level;
 
 /**
@@ -76,7 +77,7 @@ public interface TrainingDefinitionFacade {
    * @param levelId - id of level to be swapped
    * @throws FacadeLayerException if training definition or level is not found
    */
-  void swapLeft(Long definitionId, Long levelId) throws FacadeLayerException;
+  Set<BasicLevelInfoDTO> swapLeft(Long definitionId, Long levelId) throws FacadeLayerException;
 
 
   /**
@@ -85,7 +86,7 @@ public interface TrainingDefinitionFacade {
    * @param levelId - id of level to be swapped
    * @throws FacadeLayerException if training definition or level is not found
    */
-  void swapRight(Long definitionId, Long levelId) throws FacadeLayerException;
+  Set<BasicLevelInfoDTO> swapRight(Long definitionId, Long levelId) throws FacadeLayerException;
 
 
   /**
@@ -102,7 +103,7 @@ public interface TrainingDefinitionFacade {
    * @param levelId - id of level to be deleted
    * @throws FacadeLayerException if training definition or level is not found
    */
-  void deleteOneLevel(Long definitionId, Long levelId) throws FacadeLayerException;
+  Set<BasicLevelInfoDTO> deleteOneLevel(Long definitionId, Long levelId) throws FacadeLayerException;
 
 
   /**

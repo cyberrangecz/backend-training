@@ -56,31 +56,35 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
     LOG.debug("findById({})", id);
     try {
       Objects.requireNonNull(id);
-      ArrayList<AbstractLevel> levels = trainingDefinitionService.findAllLevelsFromDefinition(id);
+//      ArrayList<AbstractLevel> levels = trainingDefinitionService.findAllLevelsFromDefinition(id);
       TrainingDefinitionDTO trainingDefinitionDTO = beanMapping.mapTo(trainingDefinitionService.findById(id), TrainingDefinitionDTO.class);
 
-
-			Set<BasicLevelInfoDTO> levelInfoDTOs = new HashSet<>();
-			for (int i = 0; i < levels.size(); i++) {
-				BasicLevelInfoDTO basicLevelInfoDTO = new BasicLevelInfoDTO();
-				basicLevelInfoDTO.setId(levels.get(i).getId());
-				basicLevelInfoDTO.setOrder(i);
-				basicLevelInfoDTO.setTitle(levels.get(i).getTitle());
-				if (levels.get(i) instanceof GameLevel)
-					basicLevelInfoDTO.setLevelType(LevelType.GAME);
-				else if (levels.get(i) instanceof AssessmentLevel)
-					basicLevelInfoDTO.setLevelType(LevelType.ASSESSMENT);
-				else
-					basicLevelInfoDTO.setLevelType(LevelType.INFO);
-				levelInfoDTOs.add(basicLevelInfoDTO);
-			}
-
-      trainingDefinitionDTO.setBasicLevelInfoDTOs(levelInfoDTOs);
+      trainingDefinitionDTO.setBasicLevelInfoDTOs(gatherBasicLevelInfo(id));
       return trainingDefinitionDTO;
     } catch (ServiceLayerException ex) {
       throw new FacadeLayerException(ex);
     }
   }
+
+  private Set<BasicLevelInfoDTO> gatherBasicLevelInfo(Long definitionId){
+		ArrayList<AbstractLevel> levels = trainingDefinitionService.findAllLevelsFromDefinition(definitionId);
+		Set<BasicLevelInfoDTO> levelInfoDTOs = new HashSet<>();
+
+		for (int i = 0; i < levels.size(); i++) {
+			BasicLevelInfoDTO basicLevelInfoDTO = new BasicLevelInfoDTO();
+			basicLevelInfoDTO.setId(levels.get(i).getId());
+			basicLevelInfoDTO.setOrder(i);
+			basicLevelInfoDTO.setTitle(levels.get(i).getTitle());
+			if (levels.get(i) instanceof GameLevel)
+				basicLevelInfoDTO.setLevelType(LevelType.GAME);
+			else if (levels.get(i) instanceof AssessmentLevel)
+				basicLevelInfoDTO.setLevelType(LevelType.ASSESSMENT);
+			else
+				basicLevelInfoDTO.setLevelType(LevelType.INFO);
+			levelInfoDTOs.add(basicLevelInfoDTO);
+		}
+		return levelInfoDTOs;
+	}
 
   @Override
   @Transactional(readOnly = true)
@@ -144,12 +148,13 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
 
   @Override
   @Transactional
-  public void swapLeft(Long definitionId, Long levelId) throws FacadeLayerException {
+  public Set<BasicLevelInfoDTO> swapLeft(Long definitionId, Long levelId) throws FacadeLayerException {
     LOG.debug("swapLeft({},{})", definitionId, levelId);
     try{
       Objects.requireNonNull(definitionId);
       Objects.requireNonNull(levelId);
       trainingDefinitionService.swapLeft(definitionId,levelId);
+      return gatherBasicLevelInfo(definitionId);
     } catch (ServiceLayerException ex){
       throw new FacadeLayerException(ex);
     }
@@ -157,12 +162,13 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
 
   @Override
   @Transactional
-  public void swapRight(Long definitionId, Long levelId) throws FacadeLayerException {
+  public Set<BasicLevelInfoDTO> swapRight(Long definitionId, Long levelId) throws FacadeLayerException {
     LOG.debug("swapRight({},{})", definitionId, levelId);
     try{
       Objects.requireNonNull(definitionId);
       Objects.requireNonNull(levelId);
       trainingDefinitionService.swapRight(definitionId,levelId);
+      return gatherBasicLevelInfo(definitionId);
     } catch (ServiceLayerException ex){
       throw new FacadeLayerException(ex);
     }
@@ -182,12 +188,13 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
 
   @Override
   @Transactional
-  public void deleteOneLevel(Long definitionId, Long levelId) throws FacadeLayerException {
+  public Set<BasicLevelInfoDTO> deleteOneLevel(Long definitionId, Long levelId) throws FacadeLayerException {
     LOG.debug("deleteOneLevel({}, {})", definitionId, levelId);
     try {
       Objects.requireNonNull(definitionId);
       Objects.requireNonNull(levelId);
       trainingDefinitionService.deleteOneLevel(definitionId, levelId);
+			return gatherBasicLevelInfo(definitionId);
     } catch (ServiceLayerException ex) {
       throw new FacadeLayerException(ex);
     }
