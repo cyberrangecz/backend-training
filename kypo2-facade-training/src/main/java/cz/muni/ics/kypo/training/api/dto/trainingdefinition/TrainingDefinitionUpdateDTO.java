@@ -30,9 +30,10 @@ public class TrainingDefinitionUpdateDTO {
 	@NotNull(message = "")
 	private TDState state;
 	@NotNull(message = "")
-	private Long startingLevel;
 	private Set<AuthorRefDTO> authorRef = new HashSet<>();
+	@NotNull(message = "")
 	private SandboxDefinitionRefDTO sandBoxDefinitionRef;
+	@NotNull(message = "")
 	private boolean showStepperBar;
 
 	public TrainingDefinitionUpdateDTO() {}
@@ -85,14 +86,6 @@ public class TrainingDefinitionUpdateDTO {
 		this.state = state;
 	}
 
-	public Long getStartingLevel() {
-		return startingLevel;
-	}
-
-	public void setStartingLevel(Long startingLevel) {
-		this.startingLevel = startingLevel;
-	}
-
 	public Set<AuthorRefDTO> getAuthorRef() {
 		return authorRef;
 	}
@@ -120,7 +113,6 @@ public class TrainingDefinitionUpdateDTO {
 	@Override public String toString() {
 		return "TrainingDefinitionUpdateDTO{" + "id=" + id + ", title='" + title + '\'' + ", description='" + description + '\''
 				+ ", prerequisities=" + Arrays.toString(prerequisities) + ", outcomes=" + Arrays.toString(outcomes) + ", state=" + state
-				+ ", startingLevel=" + startingLevel + ", authorRef=" + authorRef + ", sandBoxDefinitionRef=" + sandBoxDefinitionRef
-				+ ", showStepperBar=" + showStepperBar + '}';
+				+ ", authorRef=" + authorRef + ", sandBoxDefinitionRef=" + sandBoxDefinitionRef + ", showStepperBar=" + showStepperBar + '}';
 	}
 }

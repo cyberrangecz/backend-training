@@ -26,6 +26,7 @@ public class AssessmentLevelUpdateDTO {
 	private Integer maxScore;
 	private String questions;
 	private String instructions;
+	@NotNull(message = "")
 	private AssessmentType type;
 
 	public AssessmentLevelUpdateDTO() {}

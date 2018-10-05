@@ -161,7 +161,6 @@ public class TrainingDefinitionFacadeTest {
 		trainingDefinitionUpdate = new TrainingDefinitionUpdateDTO();
 		trainingDefinitionUpdate.setId(4L);
 		trainingDefinitionUpdate.setState(TDState.UNRELEASED);
-		trainingDefinitionUpdate.setStartingLevel(level1.getId());
 
 
 		AuthorRefDTO authorRef = new AuthorRefDTO();

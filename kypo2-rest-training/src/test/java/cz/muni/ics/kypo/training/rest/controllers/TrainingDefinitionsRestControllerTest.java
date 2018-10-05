@@ -210,7 +210,6 @@ public class TrainingDefinitionsRestControllerTest {
 		trainingDefinitionUpdateDTO = new TrainingDefinitionUpdateDTO();
 		trainingDefinitionUpdateDTO.setId(4L);
 		trainingDefinitionUpdateDTO.setState(TDState.UNRELEASED);
-		trainingDefinitionUpdateDTO.setStartingLevel(gameLevel.getId());
 		trainingDefinitionUpdateDTO.setState(TDState.RELEASED);
 		trainingDefinitionUpdateDTO.setTitle("training definition title");
 

@@ -2,11 +2,9 @@ package cz.muni.ics.kypo.training.api.dto.gamelevel;
 
 import cz.muni.ics.kypo.training.api.dto.hint.HintDTO;
 import io.swagger.annotations.ApiModel;
+import org.hibernate.validator.constraints.Length;
 
-import javax.validation.constraints.Max;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
+import javax.validation.constraints.*;
 import java.util.Arrays;
 import java.util.Set;
 
@@ -17,7 +15,7 @@ import java.util.Set;
  */
 @ApiModel(value = "GameLevelUpdateDTO", description = "Game Level to update.")
 public class GameLevelUpdateDTO {
-
+	@NotNull(message = "")
 	protected Long id;
 	@NotEmpty(message = "Level title cannot be empty")
 	protected String title;
@@ -25,12 +23,17 @@ public class GameLevelUpdateDTO {
 	@Min(value = 0, message = "Max score cannot be lower than 0")
 	@Max(value = 100, message = "Max score cannot be greater than 100")
 	private Integer maxScore;
+	@NotEmpty(message = "")
+	@Size(max = 50, message = "")
 	private String flag;
 	private String content;
 	private String solution;
+	@NotNull
 	private boolean solutionPenalized;
 	private int estimatedDuration;
 	private String[] attachments;//?
+	@NotNull
+	@Min(value = 0, message = "")
 	private int incorrectFlagLimit;
 	private Set<HintDTO> hints;
 

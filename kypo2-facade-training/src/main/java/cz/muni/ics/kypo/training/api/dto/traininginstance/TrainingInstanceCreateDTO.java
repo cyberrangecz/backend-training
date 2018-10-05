@@ -11,6 +11,11 @@ import cz.muni.ics.kypo.training.utils.converters.LocalDateTimeDeserializer;
 import cz.muni.ics.kypo.training.utils.converters.LocalDateTimeSerializer;
 import io.swagger.annotations.ApiModel;
 
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
+
 /**
  * 
  * @author Pavel Seda (441048)
@@ -18,15 +23,23 @@ import io.swagger.annotations.ApiModel;
  */
 @ApiModel(value = "TrainingInstanceCreateDTO", description = "Training Instance to create.")
 public class TrainingInstanceCreateDTO {
-
+	@NotNull(message = "")
 	@JsonDeserialize(using = LocalDateTimeDeserializer.class)
 	private LocalDateTime startTime;
+	@NotNull(message = "")
 	@JsonDeserialize(using = LocalDateTimeDeserializer.class)
 	private LocalDateTime endTime;
+	@NotEmpty(message = "")
 	private String title;
+	@NotEmpty(message = "")
+	@Min(value = 1, message = "")
+	@Max(value = 100, message = "")
 	private int poolSize;
+	@NotEmpty(message = "")
 	private String keyword;
+	@NotNull(message = "")
 	private TrainingDefinitionDTO trainingDefinition;
+	@NotNull(message = "")
 	private Set<UserRefDTO> organizers;
 
 	public TrainingInstanceCreateDTO() {}
