@@ -26,12 +26,12 @@ public class LoggingAspect {
 
 	@Before("cz.muni.ics.kypo.training.aop.CommonJoinPointConfig.dataLayerExecutionLoggingDebug()")
 	public void before(JoinPoint joinPoint) {
-		LOG.debug("Persistence layer Allowed execution for {}", joinPoint);
+		LOG.debug("Persistence layer execution for {}", joinPoint);
 	}
 
 	@AfterThrowing(pointcut = "cz.muni.ics.kypo.training.aop.CommonJoinPointConfig.restLayerExecutionLoggingError()", throwing = "ex")
-	public void afterThrowingExceptionInRestLayer(Exception ex) {
-		LOG.error("Error: {}", new Object[] {ex});
+	public void afterThrowingExceptionInRestLayer(JoinPoint jp, Exception ex) {
+		LOG.error("Error: " + jp.getSignature().getName() + ". Class: " + jp.getTarget().getClass().getSimpleName() + " Exception: {}", ex);
 	}
 
 	@Around("@annotation(cz.muni.ics.kypo.training.aop.TrackTime)")
