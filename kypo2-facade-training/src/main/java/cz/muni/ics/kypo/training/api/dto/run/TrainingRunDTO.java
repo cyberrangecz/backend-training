@@ -1,10 +1,11 @@
 package cz.muni.ics.kypo.training.api.dto.run;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import cz.muni.ics.kypo.training.model.AbstractLevel;
-import cz.muni.ics.kypo.training.model.SandboxInstanceRef;
-import cz.muni.ics.kypo.training.model.TrainingInstance;
-import cz.muni.ics.kypo.training.model.enums.TRState;
+
+import cz.muni.ics.kypo.training.persistence.model.AbstractLevel;
+import cz.muni.ics.kypo.training.persistence.model.SandboxInstanceRef;
+import cz.muni.ics.kypo.training.persistence.model.TrainingInstance;
+import cz.muni.ics.kypo.training.persistence.model.enums.TRState;
 import cz.muni.ics.kypo.training.utils.converters.LocalDateTimeSerializer;
 import io.swagger.annotations.ApiModel;
 

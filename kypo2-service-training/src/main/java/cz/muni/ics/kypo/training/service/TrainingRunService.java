@@ -2,9 +2,10 @@ package cz.muni.ics.kypo.training.service;
 
 import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
-import cz.muni.ics.kypo.training.model.AbstractLevel;
-import cz.muni.ics.kypo.training.model.Hint;
-import cz.muni.ics.kypo.training.model.TrainingRun;
+import cz.muni.ics.kypo.training.persistence.model.AbstractLevel;
+import cz.muni.ics.kypo.training.persistence.model.Hint;
+import cz.muni.ics.kypo.training.persistence.model.TrainingRun;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
