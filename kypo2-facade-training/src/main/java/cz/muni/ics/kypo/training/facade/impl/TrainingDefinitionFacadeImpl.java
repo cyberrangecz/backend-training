@@ -20,8 +20,8 @@ import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionUp
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.facade.TrainingDefinitionFacade;
 import cz.muni.ics.kypo.training.mapping.BeanMapping;
-import cz.muni.ics.kypo.training.model.*;
-import cz.muni.ics.kypo.training.model.enums.LevelType;
+import cz.muni.ics.kypo.training.persistence.model.*;
+import cz.muni.ics.kypo.training.persistence.model.enums.LevelType;
 import cz.muni.ics.kypo.training.service.TrainingDefinitionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

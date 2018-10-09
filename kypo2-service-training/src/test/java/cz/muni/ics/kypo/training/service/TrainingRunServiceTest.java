@@ -7,13 +7,14 @@ import cz.muni.csirt.kypo.elasticsearch.service.audit.AuditService;
 import cz.muni.ics.kypo.training.config.ServiceTrainingConfigTest;
 
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
-import cz.muni.ics.kypo.training.model.*;
-import cz.muni.ics.kypo.training.model.enums.TRState;
-import cz.muni.ics.kypo.training.repository.AbstractLevelRepository;
-import cz.muni.ics.kypo.training.repository.ParticipantRefRepository;
-import cz.muni.ics.kypo.training.repository.TrainingInstanceRepository;
-import cz.muni.ics.kypo.training.repository.TrainingRunRepository;
-import cz.muni.ics.kypo.training.utils.SandboxInfo;
+import cz.muni.ics.kypo.training.persistence.model.*;
+import cz.muni.ics.kypo.training.persistence.model.enums.TRState;
+import cz.muni.ics.kypo.training.persistence.repository.AbstractLevelRepository;
+import cz.muni.ics.kypo.training.persistence.repository.ParticipantRefRepository;
+import cz.muni.ics.kypo.training.persistence.repository.TrainingInstanceRepository;
+import cz.muni.ics.kypo.training.persistence.repository.TrainingRunRepository;
+import cz.muni.ics.kypo.training.persistence.utils.SandboxInfo;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;

@@ -1,8 +1,9 @@
 package cz.muni.ics.kypo.training.facade;
 
 import cz.muni.ics.kypo.training.api.dto.AbstractLevelDTO;
-import cz.muni.ics.kypo.training.model.enums.LevelType;
 import cz.muni.ics.kypo.training.exception.FacadeLayerException;
+import cz.muni.ics.kypo.training.persistence.model.enums.LevelType;
+
 import org.springframework.data.domain.Pageable;
 
 import com.querydsl.core.types.Predicate;
