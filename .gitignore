@@ -11,6 +11,7 @@ logs/
 */kypo2-facade-training/$*
 
 ### Vagrant ###
+.directory
 .vagrant
 ansible/gitlab/*
 ansible/roles/*
