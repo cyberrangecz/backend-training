@@ -63,7 +63,7 @@ public class TrainingRunsRestController {
 	/**
 	 * Get requested Training Run by id.
 	 * 
-	 * @param id of Training Run to return.
+	 * @param runId of Training Run to return.
 	 * @return Requested Training Run by id.
 	 */
 	//@formatter:off
@@ -78,13 +78,13 @@ public class TrainingRunsRestController {
       @ApiResponse(code = 200, message = "The requested resource has been found."),
       @ApiResponse(code = 404, message = "The requested resource was not found.") 
   })
-  @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<Object> findTrainingRunById(@ApiParam(name = "Training Run ID") @PathVariable long id,
+  @GetMapping(value = "/{runId}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<Object> findTrainingRunById(@ApiParam(value = "Training Run ID", required = true) @PathVariable Long runId,
       @ApiParam(value = "Fields which should be returned in REST API response", required = false) 
       @RequestParam(value = "fields", required = false) String fields) {
-    LOG.debug("findTrainingRunById", id, fields);
+    LOG.debug("findTrainingRunById", runId, fields);
     try {
-      TrainingRunDTO trainingRunResource = trainingRunFacade.findById(id);
+      TrainingRunDTO trainingRunResource = trainingRunFacade.findById(runId);
       Squiggly.init(objectMapper, fields);
       return new ResponseEntity<>(SquigglyUtils.stringify(objectMapper, trainingRunResource), HttpStatus.OK);
     } catch (FacadeLayerException ex) {
@@ -148,12 +148,12 @@ public class TrainingRunsRestController {
             @ApiResponse(code = 500, message = "Getting info about sandboxes ended with error."),
             @ApiResponse(code = 503, message = "There is no available sandbox, try again later.")
     })
-    @GetMapping(value = "/access", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/access", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<AccessTrainingRunDTO> accessTrainingRun(@ApiParam(value = "password", required = true) @RequestParam(value = "password", required = false) String password) {
         LOG.debug("accessTrainingRun({})", password);
         try {
             AccessTrainingRunDTO accessTrainingRunDTO = trainingRunFacade.accessTrainingRun(password);
-            return new ResponseEntity<AccessTrainingRunDTO>(accessTrainingRunDTO, HttpStatus.OK);
+            return new ResponseEntity<>(accessTrainingRunDTO, HttpStatus.OK);
         } catch (FacadeLayerException ex) {
             throw throwException(ex);
         }
@@ -198,7 +198,7 @@ public class TrainingRunsRestController {
     /**
      * Get next level of given Training Run.
      *
-     * @param id of Training Run for which to get next level.
+     * @param runId of Training Run for which to get next level.
      * @return Requested next level.
      */
     @ApiOperation(httpMethod = "GET",
@@ -213,14 +213,13 @@ public class TrainingRunsRestController {
             @ApiResponse(code = 200, message = "The requested resource has been found."),
             @ApiResponse(code = 404, message = "The requested resource was not found or there is no next level."),
     })
-    @GetMapping(value = "/{id}/get-next-level", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Object> getNextLevel(@ApiParam(name = "Training Run ID") @PathVariable Long id,
+    @GetMapping(value = "/{runId}/next-levels", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Object> getNextLevel(@ApiParam(value = "Training Run ID", required = true) @PathVariable Long runId,
                                                       @ApiParam(value = "Fields which should be returned in REST API response", required = false)
                                                       @RequestParam(value = "fields", required = false) String fields) {
-        LOG.debug("getNextLevel({},{})", id, fields);
-        System.out.println("FUNGUJE");
+        LOG.debug("getNextLevel({},{})", runId, fields);
         try {
-            AbstractLevelDTO levelDTO = trainingRunFacade.getNextLevel(id);
+            AbstractLevelDTO levelDTO = trainingRunFacade.getNextLevel(runId);
             Squiggly.init(objectMapper, fields);
             return new ResponseEntity<>(SquigglyUtils.stringify(objectMapper, levelDTO), HttpStatus.OK);
         } catch (FacadeLayerException ex) {
@@ -231,7 +230,7 @@ public class TrainingRunsRestController {
     /**
      * Get solution of current game level.
      *
-     * @param id of Training Run for which to get solution.
+     * @param runId of Training Run for which to get solution.
      * @return Requested solution of game level.
      */
     @ApiOperation(httpMethod = "GET",
@@ -247,12 +246,12 @@ public class TrainingRunsRestController {
             @ApiResponse(code = 404, message = "The requested resource was not found."),
             @ApiResponse(code = 400, message = "Current level is not game level and does not contain solution.")
     })
-    @GetMapping(value = "/{id}/get-solution", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> getSolution(@ApiParam(name = "Training Run ID") @PathVariable Long id){
-                LOG.debug("getSolution({})", id);
+    @GetMapping(value = "/{runId}/solutions", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> getSolution(@ApiParam(value = "Training Run ID", required = true) @PathVariable Long runId){
+                LOG.debug("getSolution({})", runId);
         try {
-            String solution = trainingRunFacade.getSolution(id);
-            return new ResponseEntity<>(solution, HttpStatus.OK);
+            String solution = trainingRunFacade.getSolution(runId);
+            return new ResponseEntity<>(SquigglyUtils.stringify(objectMapper, solution), HttpStatus.OK);
         } catch (FacadeLayerException ex) {
             throw throwException(ex);
         }
@@ -261,7 +260,7 @@ public class TrainingRunsRestController {
     /**
      * Get hint of current game level.
      *
-     * @param id of Training Run for which to get hint.
+     * @param runId of Training Run for which to get hint.
      * @return Requested hint of game level.
      */
     @ApiOperation(httpMethod = "GET",
@@ -277,14 +276,14 @@ public class TrainingRunsRestController {
             @ApiResponse(code = 404, message = "The requested resource was not found."),
             @ApiResponse(code = 400, message = "Current level is not game level and does not contain hint.")
     })
-    @GetMapping(value = "/{id}/get-hint/{hintId}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> getHint(@ApiParam(name = "Training Run ID") @PathVariable Long id,
-                                          @ApiParam(name = "Hint ID") @PathVariable Long hintId,
+    @GetMapping(value = "/{runId}/hints/{hintId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> getHint(@ApiParam(value = "Training Run ID", required = true) @PathVariable Long runId,
+                                          @ApiParam(value = "Hint ID", required = true) @PathVariable Long hintId,
                                           @ApiParam(value = "Fields which should be returned in REST API response", required = false)
                                               @RequestParam(value = "fields", required = false) String fields){
-        LOG.debug("getHint({}, {})", id, hintId);
+        LOG.debug("getHint({}, {})", runId, hintId);
         try {
-            HintDTO hintDTO = trainingRunFacade.getHint(id, hintId);
+            HintDTO hintDTO = trainingRunFacade.getHint(runId, hintId);
             Squiggly.init(objectMapper, fields);
             return new ResponseEntity<>(SquigglyUtils.stringify(objectMapper, hintDTO), HttpStatus.OK);
         } catch (FacadeLayerException ex) {
@@ -311,14 +310,13 @@ public class TrainingRunsRestController {
             @ApiResponse(code = 404, message = "The requested resource was not found."),
             @ApiResponse(code = 400, message = "Current level is not game level and does not contain flag.")
     })
-    @GetMapping(value = "/{id}/is-correct-flag", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/{runId}/is-correct-flag", produces = MediaType.APPLICATION_JSON_VALUE)
 
-    public ResponseEntity<IsCorrectFlagDTO> isCorrectFlag(@ApiParam(name = "Training Run ID") @PathVariable Long id,
-                                                      	  @ApiParam(value = "Submitted flag") @RequestParam(value = "flag") String flag,
-    																											@ApiParam(value = "Solution taken") @RequestParam(value = "solutionTaken") boolean solutionTaken) {
-        LOG.debug("isCorrectFlag({}, {})", id, flag);
+    public ResponseEntity<IsCorrectFlagDTO> isCorrectFlag(@ApiParam(value = "Training Run ID", required = true) @PathVariable Long runId,
+                                                      	  @ApiParam(value = "Submitted flag", required = true) @RequestParam(value = "flag") String flag) {
+        LOG.debug("isCorrectFlag({}, {})", runId, flag);
         try {
-            IsCorrectFlagDTO isCorrectFlagDTO = trainingRunFacade.isCorrectFlag(id, flag, solutionTaken);
+            IsCorrectFlagDTO isCorrectFlagDTO = trainingRunFacade.isCorrectFlag(runId, flag);
             return new ResponseEntity<>(isCorrectFlagDTO, HttpStatus.OK);
         } catch (FacadeLayerException ex) {
             throw throwException(ex);

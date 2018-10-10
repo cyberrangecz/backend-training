@@ -169,12 +169,12 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
     LOG.debug("getNextLevel({})", trainingRunId);
     AbstractLevel aL = trainingRunService.getNextLevel(trainingRunId);
     if(aL instanceof GameLevel) {
-      return beanMapping.mapTo(trainingRunService.getNextLevel(trainingRunId), GameLevelDTO.class);
+      return beanMapping.mapTo(aL, GameLevelDTO.class);
 
     } else if (aL instanceof AssessmentLevel) {
-      return beanMapping.mapTo(trainingRunService.getNextLevel(trainingRunId), AssessmentLevelDTO.class);
+      return beanMapping.mapTo(aL, AssessmentLevelDTO.class);
     } else {
-      return beanMapping.mapTo(trainingRunService.getNextLevel(trainingRunId), InfoLevelDTO.class);
+      return beanMapping.mapTo(aL, InfoLevelDTO.class);
     }
   }
 
@@ -194,18 +194,11 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
 
   @Override
   @Transactional
-  public IsCorrectFlagDTO isCorrectFlag(Long trainingRunId, String flag, boolean solutionTaken) {
+  public IsCorrectFlagDTO isCorrectFlag(Long trainingRunId, String flag) {
     LOG.debug("isCorrectFlag({},{})", trainingRunId, flag);
     IsCorrectFlagDTO correctFlagDTO = new IsCorrectFlagDTO();
-    if (solutionTaken) {
-      correctFlagDTO.setRemainingAttempts(0);
-      correctFlagDTO.setCorrect(trainingRunService.isCorrectFlag(trainingRunId, flag));
-    } else {
-      int attempts = trainingRunService.getRemainingAttempts(trainingRunId);
-      correctFlagDTO.setRemainingAttempts(attempts - 1);
-      correctFlagDTO.setCorrect(trainingRunService.isCorrectFlag(trainingRunId, flag));
-    }
-
+    correctFlagDTO.setCorrect(trainingRunService.isCorrectFlag(trainingRunId, flag));
+    correctFlagDTO.setRemainingAttempts(trainingRunService.getRemainingAttempts(trainingRunId));
     return correctFlagDTO;
   }
 

@@ -108,6 +108,6 @@ public interface TrainingRunFacade {
    * @throws FacadeLayerException if something wrong happened in service.
 
    */
-  IsCorrectFlagDTO isCorrectFlag(Long trainingRunId, String flag, boolean solutionTaken);
+  IsCorrectFlagDTO isCorrectFlag(Long trainingRunId, String flag);
 
 }

@@ -63,7 +63,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = TrainingRunsRestController.class)
-@ComponentScan(basePackages = "cz.muni.ics.kypo")
+@ComponentScan(basePackages = "cz.muni.ics.kypo.rest")
 public class TrainingRunsRestControllerTest {
 
 		@Autowired
@@ -302,9 +302,19 @@ public class TrainingRunsRestControllerTest {
 				assertEquals("Solution", result.getContentAsString().replace("\"", ""));
 		}
 
+	@Test
+	public void getSolutionWithException() throws Exception{
+		Exception exceptionToThrow = new ServiceLayerException("message", ErrorCode.WRONG_LEVEL_TYPE);
+		willThrow(new FacadeLayerException(exceptionToThrow)).given(trainingRunFacade).getSolution(1L);
+		Exception ex = mockMvc.perform(get("/training-runs/{id}/get-solution", 1L))
+				.andExpect(status().isBadRequest())
+				.andReturn().getResolvedException();
+		assertEquals(BadRequestException.class, ex.getClass());
+	}
+
 		@Test
 		public void isCorrectFlag() throws Exception {
-				given(trainingRunFacade.isCorrectFlag(trainingRun1.getId(), "flag", true)).willReturn(isCorrectFlagDTO);
+				given(trainingRunFacade.isCorrectFlag(trainingRun1.getId(), "flag")).willReturn(isCorrectFlagDTO);
 				MockHttpServletResponse result = mockMvc.perform(get("/training-runs/{id}/is-correct-flag", trainingRun1.getId())
 						.param("flag", "flag")
 						.param("solutionTaken", "true"))

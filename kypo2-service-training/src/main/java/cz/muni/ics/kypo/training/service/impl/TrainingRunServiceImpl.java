@@ -2,6 +2,8 @@ package cz.muni.ics.kypo.training.service.impl;
 
 import com.google.gson.JsonObject;
 import com.querydsl.core.types.Predicate;
+import com.querydsl.jpa.hibernate.HibernateUtil;
+import com.querydsl.jpa.impl.JPAUtil;
 import cz.muni.csirt.kypo.elasticsearch.service.audit.AuditService;
 import cz.muni.csirt.kypo.events.game.GameStarted;
 import cz.muni.csirt.kypo.events.game.common.GameDetails;
@@ -9,12 +11,10 @@ import cz.muni.ics.kypo.training.exceptions.ErrorCode;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.model.*;
 import cz.muni.ics.kypo.training.model.enums.TRState;
-import cz.muni.ics.kypo.training.repository.AbstractLevelRepository;
-import cz.muni.ics.kypo.training.repository.ParticipantRefRepository;
-import cz.muni.ics.kypo.training.repository.TrainingInstanceRepository;
-import cz.muni.ics.kypo.training.repository.TrainingRunRepository;
+import cz.muni.ics.kypo.training.repository.*;
 import cz.muni.ics.kypo.training.service.TrainingRunService;
 import cz.muni.ics.kypo.training.utils.SandboxInfo;
+import org.hibernate.Session;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,9 +26,12 @@ import org.springframework.http.*;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.util.Assert;
 import org.springframework.web.client.RestTemplate;
 
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
@@ -53,17 +56,21 @@ public class TrainingRunServiceImpl implements TrainingRunService {
   private AbstractLevelRepository abstractLevelRepository;
   private TrainingInstanceRepository trainingInstanceRepository;
   private ParticipantRefRepository participantRefRepository;
+  private HintRepository hintRepository;
   private RestTemplate restTemplate;
   private AuditService auditService;
+  @Autowired
+  private PlatformTransactionManager transactionManager;
 
   @Autowired
   public TrainingRunServiceImpl(TrainingRunRepository trainingRunRepository, AbstractLevelRepository abstractLevelRepository,
                                 TrainingInstanceRepository trainingInstanceRepository, ParticipantRefRepository participantRefRepository,
-                                RestTemplate restTemplate, AuditService auditService) {
+                                RestTemplate restTemplate, HintRepository hintRepository, AuditService auditService) {
     this.trainingRunRepository = trainingRunRepository;
     this.abstractLevelRepository = abstractLevelRepository;
     this.trainingInstanceRepository = trainingInstanceRepository;
     this.participantRefRepository = participantRefRepository;
+    this.hintRepository = hintRepository;
     this.restTemplate = restTemplate;
   }
 
@@ -110,6 +117,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
     AbstractLevel abstractLevel = abstractLevelRepository.findById(nextLevelId).orElseThrow(() ->
           new ServiceLayerException("Level with id: " + nextLevelId + " not found.", ErrorCode.RESOURCE_NOT_FOUND));
     trainingRun.setCurrentLevel(abstractLevel);
+    trainingRun.setSolutionTaken(false);
     trainingRunRepository.save(trainingRun);
     //event log LevelStarted
     return abstractLevel;
@@ -233,16 +241,18 @@ public class TrainingRunServiceImpl implements TrainingRunService {
     LOG.debug("isCorrectFlag({})", trainingRunId);
     Assert.notNull(trainingRunId, "Input training run id must not be null.");
     Assert.hasLength(flag, "Submitted flag must not be nul nor empty.");
-    TrainingRun tR = findById(trainingRunId);
+    TrainingRun tR = findByIdWithLevel(trainingRunId);
     AbstractLevel level = tR.getCurrentLevel();
     if (level instanceof GameLevel) {
       if (((GameLevel) level).getFlag().equals(flag)) {
-        tR.setIncorrectFlagCount(0);
-        // event log Corrected Flag
+        //tR.setIncorrectFlagCount(0);
+        trainingRunRepository.save(tR);
+        // TODO event log Corrected Flag
         return true;
       } else {
         tR.setIncorrectFlagCount(tR.getIncorrectFlagCount() + 1);
-        // event log Wrong Flag
+        trainingRunRepository.save(tR);
+        // TODO event log Wrong Flag
         return false;
       }
     } else {
@@ -250,14 +260,33 @@ public class TrainingRunServiceImpl implements TrainingRunService {
     }
   }
 
+  @Override
+  public int getRemainingAttempts(Long trainingRunId) {
+    LOG.debug("getRemainingAttempts({})", trainingRunId);
+    Assert.notNull(trainingRunId, "Input training run id must not be null.");
+    TrainingRun tR = findByIdWithLevel(trainingRunId);
+    AbstractLevel level = tR.getCurrentLevel();
+    if (level instanceof GameLevel) {
+      if (tR.isSolutionTaken()) {
+        return 0;
+      }
+      return ((GameLevel) level).getIncorrectFlagLimit() - tR.getIncorrectFlagCount();
+    }
+    throw new ServiceLayerException("Current level is not game level and does not have flag.", ErrorCode.WRONG_LEVEL_TYPE);
+  }
+
 
   @Override
   public String getSolution(Long trainingRunId) {
     LOG.debug("getSolution({})", trainingRunId);
     Assert.notNull(trainingRunId, "Input training run id must not be null.");
-    AbstractLevel level = findById(trainingRunId).getCurrentLevel();
+    TrainingRun tR = findByIdWithLevel(trainingRunId);
+    AbstractLevel level = tR.getCurrentLevel();
+    //LOG.info(level.toString());
     if (level instanceof GameLevel) {
       //event getSolution
+      tR.setSolutionTaken(true);
+      trainingRunRepository.save(tR);
       return ((GameLevel) level).getSolution();
     } else {
       throw new ServiceLayerException("Current level is not game level and does not have solution.", ErrorCode.WRONG_LEVEL_TYPE);
@@ -269,15 +298,15 @@ public class TrainingRunServiceImpl implements TrainingRunService {
     LOG.debug("getHint({},{})", trainingRunId, hintId);
     Assert.notNull(trainingRunId, "Input training run id must not be null.");
     Assert.notNull(hintId, "Input hint id must not be null.");
-    AbstractLevel level = findById(trainingRunId).getCurrentLevel();
+    TrainingRun tR = findByIdWithLevel(trainingRunId);
+    AbstractLevel level = tR.getCurrentLevel();
     if (level instanceof GameLevel) {
-      for (Hint hint: ((GameLevel) level).getHints()) {
-        if(hint.getId() == hintId) {
-          //event getHint()
-          return hint;
-        }
+      Hint hint = hintRepository.findById(hintId).orElseThrow(() -> new ServiceLayerException("Hint with id " + hintId + " not found.", ErrorCode.RESOURCE_NOT_FOUND));
+      if (hint.getGameLevel().getId().equals(level.getId())) {
+        //event getHint()
+        return hint;
       }
-      throw new ServiceLayerException("Hint with id " + hintId + " not found.", ErrorCode.RESOURCE_NOT_FOUND);
+      throw new ServiceLayerException("Hint with id " + hintId + " is not in current level of training run: " + trainingRunId +".", ErrorCode.RESOURCE_CONFLICT);
     } else {
       throw new ServiceLayerException("Current level is not game level and does not contain hints.", ErrorCode.WRONG_LEVEL_TYPE);
     }
@@ -290,14 +319,15 @@ public class TrainingRunServiceImpl implements TrainingRunService {
     Assert.notNull(actualLevel, "Input id of actual level must not be null.");
     int order = 0;
     AbstractLevel abstractLevel = abstractLevelRepository.findById(idOfFirstLevel).orElseThrow(() -> new ServiceLayerException("Level with id " + idOfFirstLevel + " not found.", ErrorCode.RESOURCE_NOT_FOUND));
-    while (abstractLevel != null) {
-      if (abstractLevel.getId() == actualLevel) {
-        return order + 1;
-      } else {
-        abstractLevel = abstractLevelRepository.findById(abstractLevel.getNextLevel()).orElseThrow(() -> new ServiceLayerException("Level with id " + idOfFirstLevel + " not found.", ErrorCode.RESOURCE_NOT_FOUND));
+    while (!abstractLevel.getId().equals(actualLevel)) {
+      order++;
+      if (abstractLevel.getNextLevel() == null) {
+        throw new IllegalArgumentException("Wrong parameters entered.");
       }
+      abstractLevel = abstractLevelRepository.findById(abstractLevel.getNextLevel()).orElseThrow(() -> new ServiceLayerException("Level with id " + idOfFirstLevel + " not found.", ErrorCode.RESOURCE_NOT_FOUND));
+
     }
-    throw new IllegalArgumentException("Wrong parameters entered.");
+    return order;
 
   }
 
@@ -306,19 +336,6 @@ public class TrainingRunServiceImpl implements TrainingRunService {
     JsonObject credentials = (JsonObject) authentication.getUserAuthentication().getCredentials();
     return credentials.get("sub").getAsString();
   }
-
-	@Override
-	public int getRemainingAttempts(Long trainingRunId) {
-		LOG.debug("getRemainingAttempts({})", trainingRunId);
-		Assert.notNull(trainingRunId, "Input training run id must not be null.");
-		TrainingRun tR = findById(trainingRunId);
-		AbstractLevel level = tR.getCurrentLevel();
-		if (level instanceof GameLevel) {
-			return ((GameLevel) level).getIncorrectFlagLimit() - tR.getIncorrectFlagCount();
-		} else {
-			throw new ServiceLayerException("Current level is not game level and does not have flag.", ErrorCode.WRONG_LEVEL_TYPE);
-		}
-	}
 
 	private void auditGameStartedAction(TrainingInstance trainingInstance) {
 		// String loggedInUser = getSubOfLoggedInUser();
@@ -334,4 +351,11 @@ public class TrainingRunServiceImpl implements TrainingRunService {
 			}
 		}
 	}
+
+  @Override public TrainingRun findByIdWithLevel(Long trainingRunId) {
+    LOG.debug("findById({})", trainingRunId);
+    Objects.requireNonNull(trainingRunId);
+    return trainingRunRepository.findByIdWithLevel(trainingRunId).orElseThrow(() ->
+        new ServiceLayerException("Training Run with id: " + trainingRunId + " not found.", ErrorCode.RESOURCE_NOT_FOUND));
+  }
 }

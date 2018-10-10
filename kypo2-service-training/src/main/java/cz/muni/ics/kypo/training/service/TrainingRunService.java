@@ -25,21 +25,21 @@ public interface TrainingRunService {
    * @throws  ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND training run is not found in DB.
    *
    */
-  public TrainingRun findById(Long id) throws ServiceLayerException;
+  TrainingRun findById(Long id) throws ServiceLayerException;
 
   /**
    * Find all Training Runs.
    * 
    * @return all Training Runs
    */
-  public Page<TrainingRun> findAll(Predicate predicate, Pageable pageable);
+  Page<TrainingRun> findAll(Predicate predicate, Pageable pageable);
 
   /**
    * Finds all Training Runs of logged in user.
    *
    * @return Training Runs of logged in user.
    */
-  public Page<TrainingRun> findAllByParticipantRefLogin(Pageable pageable);
+  Page<TrainingRun> findAllByParticipantRefLogin(Pageable pageable);
 
   /**
    * Finds all Training Runs of specific Training Definition of logged in user.
@@ -47,7 +47,7 @@ public interface TrainingRunService {
    * @param trainingDefinitionId id of Training Definition
    * @return Training Runs
    */
-  public Page<TrainingRun> findAllByTrainingDefinitionAndParticipant(Long trainingDefinitionId, Pageable pageable);
+  Page<TrainingRun> findAllByTrainingDefinitionAndParticipant(Long trainingDefinitionId, Pageable pageable);
 
   /**
    * Finds all Training Runs of specific training definition.
@@ -55,7 +55,7 @@ public interface TrainingRunService {
    * @param trainingDefinitionId id of Training Definition whose Training Runs would be returned.
    * @return Training Runs of specific Training Definition
    */
-  public Page<TrainingRun> findAllByTrainingDefinition(Long trainingDefinitionId, Pageable pageable);
+  Page<TrainingRun> findAllByTrainingDefinition(Long trainingDefinitionId, Pageable pageable);
 
   /**
    * Finds all Training Runs of specific Training Instance.
@@ -63,7 +63,7 @@ public interface TrainingRunService {
    * @param trainingInstanceId id of Training Instance whose Training Runs would be returned.
    * @return Training Runs of specific Training Instance
    */
-  public Page<TrainingRun> findAllByTrainingInstance(Long trainingInstanceId, Pageable pageable);
+  Page<TrainingRun> findAllByTrainingInstance(Long trainingInstanceId, Pageable pageable);
 
   /**
    * Create given Training Run.
@@ -71,7 +71,7 @@ public interface TrainingRunService {
    * @param trainingRun to be created in database.
    * @return created Training Run
    */
-  public TrainingRun create(TrainingRun trainingRun) throws NullPointerException;
+  TrainingRun create(TrainingRun trainingRun) throws NullPointerException;
 
   /**
    * Gets next level of given Training Run and set new current level.
@@ -81,7 +81,7 @@ public interface TrainingRunService {
    * @throws  ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND hint is not found in DB.
    *                                                NO_NEXT_LEVEL there is no next level.
    */
-  public AbstractLevel getNextLevel(Long trainingRunId) throws ServiceLayerException;
+  AbstractLevel getNextLevel(Long trainingRunId) throws ServiceLayerException;
   /**
    * Access training run based on given password.
    *
@@ -91,7 +91,7 @@ public interface TrainingRunService {
    *                                                UNEXPECTED_ERROR there is error while getting info about sandboxes.
    *                                                NO_AVAILABLE_SANDBOX there is no free or ready sandbox
    */
-  public AbstractLevel accessTrainingRun(String password) throws ServiceLayerException;
+  AbstractLevel accessTrainingRun(String password) throws ServiceLayerException;
   /**
    * Gets list of all levels in Training Definition.
    *
@@ -100,7 +100,7 @@ public interface TrainingRunService {
    * @throws  ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND one of the levels is not found in DB.
    *
    */
-  public List<AbstractLevel> getLevels(Long levelId) throws ServiceLayerException;
+  List<AbstractLevel> getLevels(Long levelId) throws ServiceLayerException;
 
   /**
    * Check given flag of given Training Run.
@@ -111,7 +111,7 @@ public interface TrainingRunService {
    * @throws  ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND training run is not found in DB.
    *                                                WRONG_LEVEL_TYPE the level is not game level.
    */
-  public boolean isCorrectFlag(Long trainingRunId, String flag) throws ServiceLayerException;
+  boolean isCorrectFlag(Long trainingRunId, String flag) throws ServiceLayerException;
 
   /**
    * Gets solution of current level of given Training Run.
@@ -121,7 +121,7 @@ public interface TrainingRunService {
    * @throws  ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND training run is not found in DB.
    *                                                WRONG_LEVEL_TYPE the level is not game level.
    */
-  public String getSolution(Long trainingRunId) throws ServiceLayerException;
+  String getSolution(Long trainingRunId) throws ServiceLayerException;
 
   /**
    * Gets hint of given current level of given Training Run.
@@ -132,7 +132,7 @@ public interface TrainingRunService {
    * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND when hint is not found in DB.
    *                                               WRONG_LEVEL_TYPE when the level is not game level.
    */
-  public Hint getHint(Long trainingRunId, Long hintId) throws ServiceLayerException;
+  Hint getHint(Long trainingRunId, Long hintId) throws ServiceLayerException;
 
   /**
    * Gets level order of given level.
@@ -143,8 +143,12 @@ public interface TrainingRunService {
    * @throws IllegalArgumentException id of first level or actual level is wrong.
    * @throws ServiceLayerException one of the level cannot be found.
    */
-  public int getLevelOrder(Long idOfFirstLevel, Long actualLevel) throws ServiceLayerException, IllegalArgumentException;
+  int getLevelOrder(Long idOfFirstLevel, Long actualLevel) throws ServiceLayerException, IllegalArgumentException;
 
-	public int getRemainingAttempts(Long trainingRunId);
+	int getRemainingAttempts(Long trainingRunId);
+
+	TrainingRun findByIdWithLevel(Long trainingRunId);
+
+
 
 }
