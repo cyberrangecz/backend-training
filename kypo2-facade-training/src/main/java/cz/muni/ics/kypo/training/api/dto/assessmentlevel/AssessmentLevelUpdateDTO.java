@@ -5,7 +5,7 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
-import cz.muni.ics.kypo.training.model.enums.AssessmentType;
+import cz.muni.ics.kypo.training.persistence.model.enums.AssessmentType;
 import io.swagger.annotations.ApiModel;
 
 /**

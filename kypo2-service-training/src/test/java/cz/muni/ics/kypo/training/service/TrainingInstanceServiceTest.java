@@ -4,8 +4,9 @@ import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.PathBuilder;
 import cz.muni.ics.kypo.training.config.ServiceTrainingConfigTest;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
-import cz.muni.ics.kypo.training.model.TrainingInstance;
-import cz.muni.ics.kypo.training.repository.TrainingInstanceRepository;
+import cz.muni.ics.kypo.training.persistence.model.TrainingInstance;
+import cz.muni.ics.kypo.training.persistence.repository.TrainingInstanceRepository;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -146,7 +147,6 @@ public class TrainingInstanceServiceTest {
 
     private void deepEquals(TrainingInstance expected, TrainingInstance actual) {
         assertEquals(expected.getId(), actual.getId());
-        assertEquals(expected.getPassword(), actual.getPassword());
         assertEquals(expected.getTitle(), actual.getTitle());
     }
 

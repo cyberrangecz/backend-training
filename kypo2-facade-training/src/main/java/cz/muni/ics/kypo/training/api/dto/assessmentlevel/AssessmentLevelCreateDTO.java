@@ -1,12 +1,13 @@
 package cz.muni.ics.kypo.training.api.dto.assessmentlevel;
 
-import cz.muni.ics.kypo.training.model.enums.AssessmentType;
 import io.swagger.annotations.ApiModel;
 
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
+
+import cz.muni.ics.kypo.training.persistence.model.enums.AssessmentType;
 
 /**
  * 
@@ -21,13 +22,14 @@ import javax.validation.constraints.NotNull;
 @ApiModel(value = "AssessmentLevelCreateDTO", description = "Assessment Level to create.")
 public class AssessmentLevelCreateDTO {
 
+	@NotNull
+	private Long id;
 	@NotEmpty(message = "{assessmentlevelcreate.title.NotEmpty.message}")
 	private String title;
 	@NotNull(message = "{assessmentlevelcreate.maxScore.NotNull.message}")
 	@Min(value = 0, message = "{assessmentlevelcreate.maxScore.Min.message}")
 	@Max(value = 100, message = "{assessmentlevelcreate.maxScore.Max.message}")
 	private Integer maxScore;
-	private Long nextLevel;
 	private String questions;
 	private String instructions;
 	private AssessmentType type;
@@ -48,14 +50,6 @@ public class AssessmentLevelCreateDTO {
 
 	public void setMaxScore(Integer maxScore) {
 		this.maxScore = maxScore;
-	}
-
-	public Long getNextLevel() {
-		return nextLevel;
-	}
-
-	public void setNextLevel(Long nextLevel) {
-		this.nextLevel = nextLevel;
 	}
 
 	public String getQuestions() {
@@ -89,8 +83,6 @@ public class AssessmentLevelCreateDTO {
 		builder.append(title);
 		builder.append(", maxScore=");
 		builder.append(maxScore);
-		builder.append(", nextLevel=");
-		builder.append(nextLevel);
 		builder.append(", questions=");
 		builder.append(questions);
 		builder.append(", instructions=");

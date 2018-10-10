@@ -1,12 +1,12 @@
 package cz.muni.ics.kypo.training.api.dto.gamelevel;
 
-import cz.muni.ics.kypo.training.api.dto.AbstractLevelDTO;
-import cz.muni.ics.kypo.training.api.dto.hint.HintDTO;
-import io.swagger.annotations.ApiModel;
-
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+
+import cz.muni.ics.kypo.training.api.dto.AbstractLevelDTO;
+import cz.muni.ics.kypo.training.api.dto.hint.HintDTO;
+import io.swagger.annotations.ApiModel;
 
 /**
  * 
@@ -52,11 +52,11 @@ public class GameLevelDTO extends AbstractLevelDTO {
 	}
 
 	public boolean isSolutionPenalized() {
-			return solutionPenalized;
+		return solutionPenalized;
 	}
 
 	public void setSolutionPenalized(boolean solutionPenalized) {
-			this.solutionPenalized = solutionPenalized;
+		this.solutionPenalized = solutionPenalized;
 	}
 
 	public int getEstimatedDuration() {
@@ -94,8 +94,7 @@ public class GameLevelDTO extends AbstractLevelDTO {
 	@Override
 	public String toString() {
 		return "GameLevelDTO{" + "flag='" + flag + '\'' + ", content='" + content + '\'' + ", solution='" + solution + '\''
-				+ ", solutionPenalized=" + solutionPenalized + ", estimatedDuration="
-				+ estimatedDuration + ", attachments=" + Arrays.toString(attachments) + ", hints=" + hints + ", incorrectFlagLimit="
-				+ incorrectFlagLimit + '}';
+				+ ", solutionPenalized=" + solutionPenalized + ", estimatedDuration=" + estimatedDuration + ", attachments="
+				+ Arrays.toString(attachments) + ", hints=" + hints + ", incorrectFlagLimit=" + incorrectFlagLimit + '}';
 	}
 }

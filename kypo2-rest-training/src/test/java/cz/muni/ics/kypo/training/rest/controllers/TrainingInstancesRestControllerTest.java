@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.training.api.PageResultResource;
+import cz.muni.ics.kypo.training.api.dto.traininginstance.NewTrainingInstanceDTO;
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceCreateDTO;
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceDTO;
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceUpdateDTO;
@@ -13,7 +14,7 @@ import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.facade.TrainingInstanceFacade;
 import cz.muni.ics.kypo.training.mapping.BeanMapping;
 import cz.muni.ics.kypo.training.mapping.BeanMappingImpl;
-import cz.muni.ics.kypo.training.model.TrainingInstance;
+import cz.muni.ics.kypo.training.persistence.model.TrainingInstance;
 import cz.muni.ics.kypo.training.rest.exceptions.ConflictException;
 import cz.muni.ics.kypo.training.rest.exceptions.ResourceNotFoundException;
 import org.junit.Before;
@@ -75,6 +76,7 @@ public class TrainingInstancesRestControllerTest {
 	private TrainingInstanceDTO trainingInstance1DTO, trainingInstance2DTO;
 	private TrainingInstanceCreateDTO trainingInstanceCreateDTO;
 	private TrainingInstanceUpdateDTO trainingInstanceUpdateDTO;
+	private NewTrainingInstanceDTO newTrainingInstanceDTO;
 
 	private Page p;
 
@@ -116,6 +118,14 @@ public class TrainingInstancesRestControllerTest {
 		trainingInstanceUpdateDTO.setTitle("update instance title");
 		trainingInstanceUpdateDTO.setStartTime(startTime);
 		trainingInstanceUpdateDTO.setEndTime(endTime);
+
+		newTrainingInstanceDTO = new NewTrainingInstanceDTO();
+		newTrainingInstanceDTO.setId(6L);
+		newTrainingInstanceDTO.setStartTime(startTime);
+		newTrainingInstanceDTO.setEndTime(endTime);
+		newTrainingInstanceDTO.setKeyword("pass-1325");
+		newTrainingInstanceDTO.setTitle("title");
+		newTrainingInstanceDTO.setPoolSize(20);
 
 		List<TrainingInstance> expected = new ArrayList<>();
 		expected.add(trainingInstance1);
@@ -171,7 +181,7 @@ public class TrainingInstancesRestControllerTest {
 		public void createTrainingInstance() throws Exception {
 				String valueTi = convertObjectToJsonBytes(trainingInstance1DTO);
 				given(objectMapper.writeValueAsString(any(Object.class))).willReturn(valueTi);
-				given(trainingInstanceFacade.create(any(TrainingInstanceCreateDTO.class))).willReturn(trainingInstanceCreateDTO);
+				given(trainingInstanceFacade.create(any(TrainingInstanceCreateDTO.class))).willReturn(newTrainingInstanceDTO);
 				MockHttpServletResponse result = mockMvc.perform(post("/training-instances")
 						.content(convertObjectToJsonBytes(trainingInstance1))
 						.contentType(MediaType.APPLICATION_JSON_VALUE))
@@ -188,7 +198,7 @@ public class TrainingInstancesRestControllerTest {
 				MockHttpServletResponse result = mockMvc.perform(put("/training-instances")
 						.content(convertObjectToJsonBytes(trainingInstance1))
 						.contentType(MediaType.APPLICATION_JSON_VALUE))
-						.andExpect(status().isNoContent())
+						.andExpect(status().isOk())
 						.andReturn().getResponse();
 		}
 
@@ -206,8 +216,7 @@ public class TrainingInstancesRestControllerTest {
 
 		@Test
 		public void deleteTrainingInstance() throws Exception {
-				mockMvc.perform(delete("/training-instances")
-						.param("trainingInstanceId", "1")
+				mockMvc.perform(delete("/training-instances"+"/{id}", 1l)
 						.contentType(MediaType.APPLICATION_JSON_VALUE))
 						.andExpect(status().isOk());
 		}
@@ -216,8 +225,7 @@ public class TrainingInstancesRestControllerTest {
 		public void deleteTrainingInstanceWithFacadeException() throws Exception {
 				Exception exceptionThrow = new ServiceLayerException("message", ErrorCode.RESOURCE_NOT_FOUND);
 				willThrow(new FacadeLayerException(exceptionThrow)).given(trainingInstanceFacade).delete(any(Long.class));
-				Exception exception = mockMvc.perform(delete("/training-instances")
-						.param("trainingInstanceId", "1")
+				Exception exception = mockMvc.perform(delete("/training-instances"+"/{id}", 1l)
 						.contentType(MediaType.APPLICATION_JSON_VALUE))
 						.andExpect(status().isNotFound())
 						.andReturn().getResolvedException();

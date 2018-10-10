@@ -14,7 +14,7 @@ import cz.muni.ics.kypo.training.api.dto.run.TrainingRunDTO;
 import cz.muni.ics.kypo.training.exception.FacadeLayerException;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.facade.TrainingRunFacade;
-import cz.muni.ics.kypo.training.model.TrainingRun;
+import cz.muni.ics.kypo.training.persistence.model.TrainingRun;
 import cz.muni.ics.kypo.training.rest.exceptions.*;
 import io.swagger.annotations.*;
 import cz.muni.ics.kypo.training.api.dto.hint.HintDTO;
@@ -119,7 +119,10 @@ public class TrainingRunsRestController {
       @ApiResponse(code = 404, message = "The requested resource was not found.") 
   })
   @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<Object> findAllTrainingRuns(@QuerydslPredicate(root = TrainingRun.class) Predicate predicate, Pageable pageable,
+  public ResponseEntity<Object> findAllTrainingRuns(@QuerydslPredicate(root = TrainingRun.class) Predicate predicate, 
+  		@ApiParam(value = "Pagination support.", required = false)
+  		Pageable pageable,
+  		@ApiParam(value = "Parameters for filtering the objects.", required = false)
       @RequestParam MultiValueMap<String, String> parameters, 
       @ApiParam(value = "Fields which should be returned in REST API response", required = false) 
       @RequestParam(value = "fields", required = false) String fields) {
@@ -189,7 +192,9 @@ public class TrainingRunsRestController {
             @ApiResponse(code = 404, message = "The requested resource was not found.")
     })
     @GetMapping(value = "/accessed", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Object> getAllAccessedTrainingRuns(@PageableDefault(size = 10, page = 0) Pageable pageable) {
+    public ResponseEntity<Object> getAllAccessedTrainingRuns(
+    		@ApiParam(value = "Pagination support.", required = false)
+    		@PageableDefault(size = 10, page = 0) Pageable pageable) {
         LOG.debug("findAllAccessedTrainingRuns()");
         PageResultResource<AccessedTrainingRunDTO> accessedTrainingRunDTOS = trainingRunFacade.findAllAccessedTrainingRuns(pageable);
         return new ResponseEntity<>(SquigglyUtils.stringify(objectMapper, accessedTrainingRunDTOS), HttpStatus.OK);
@@ -326,18 +331,18 @@ public class TrainingRunsRestController {
     private RuntimeException throwException(RuntimeException ex) {
         switch (((ServiceLayerException) ex.getCause()).getCode()) {
             case WRONG_LEVEL_TYPE:
-                return new BadRequestException(ex.getLocalizedMessage());
+                return new BadRequestException(ex.getCause().getLocalizedMessage());
             case RESOURCE_NOT_FOUND:
-                return new ResourceNotFoundException(ex.getLocalizedMessage());
+                return new ResourceNotFoundException(ex.getCause().getLocalizedMessage());
             case NO_NEXT_LEVEL:
-                return new ResourceNotFoundException(ex.getLocalizedMessage());
+                return new ResourceNotFoundException(ex.getCause().getLocalizedMessage());
             case UNEXPECTED_ERROR:
-                return new InternalServerErrorException(ex.getLocalizedMessage());
+                return new InternalServerErrorException(ex.getCause().getLocalizedMessage());
             case RESOURCE_CONFLICT:
-                return new ConflictException(ex.getLocalizedMessage());
+                return new ConflictException(ex.getCause().getLocalizedMessage());
             case NO_AVAILABLE_SANDBOX:
             default:
-                return new ServiceUnavailableException(ex.getLocalizedMessage());
+                return new ServiceUnavailableException(ex.getCause().getLocalizedMessage());
         }
     }
 }

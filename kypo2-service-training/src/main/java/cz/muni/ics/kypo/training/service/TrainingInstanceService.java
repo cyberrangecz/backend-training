@@ -2,7 +2,8 @@ package cz.muni.ics.kypo.training.service;
 
 import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
-import cz.muni.ics.kypo.training.model.TrainingInstance;
+import cz.muni.ics.kypo.training.persistence.model.TrainingInstance;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -54,12 +55,13 @@ public interface TrainingInstanceService {
    */
   void delete(Long id) throws ServiceLayerException;
 
-  /**
-   * Generates password for training instance
-   * @return new password
-   * @throws ServiceLayerException with ErrorCode: RESOURCE_CONFLICT given password already exists in DB.
-   */
-  char[] generatePassword() throws ServiceLayerException;
+	/**
+	 * Generates password for training instance
+	 * @param trainingInstance - Instance that wants to have new password
+	 * @param password - original string that is to be changed
+	 * @return new password
+	 */
+  String generatePassword(TrainingInstance trainingInstance, String password);
 
 
 	/**

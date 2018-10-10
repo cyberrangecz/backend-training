@@ -2,19 +2,17 @@ package cz.muni.ics.kypo.training.service.impl;
 
 import com.google.gson.JsonObject;
 import com.querydsl.core.types.Predicate;
-import com.querydsl.jpa.hibernate.HibernateUtil;
-import com.querydsl.jpa.impl.JPAUtil;
 import cz.muni.csirt.kypo.elasticsearch.service.audit.AuditService;
 import cz.muni.csirt.kypo.events.game.GameStarted;
 import cz.muni.csirt.kypo.events.game.common.GameDetails;
 import cz.muni.ics.kypo.training.exceptions.ErrorCode;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
-import cz.muni.ics.kypo.training.model.*;
-import cz.muni.ics.kypo.training.model.enums.TRState;
-import cz.muni.ics.kypo.training.repository.*;
+import cz.muni.ics.kypo.training.persistence.repository.*;
 import cz.muni.ics.kypo.training.service.TrainingRunService;
-import cz.muni.ics.kypo.training.utils.SandboxInfo;
-import org.hibernate.Session;
+import cz.muni.ics.kypo.training.persistence.model.*;
+import cz.muni.ics.kypo.training.persistence.model.enums.TRState;
+import cz.muni.ics.kypo.training.persistence.utils.SandboxInfo;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,8 +57,6 @@ public class TrainingRunServiceImpl implements TrainingRunService {
   private HintRepository hintRepository;
   private RestTemplate restTemplate;
   private AuditService auditService;
-  @Autowired
-  private PlatformTransactionManager transactionManager;
 
   @Autowired
   public TrainingRunServiceImpl(TrainingRunRepository trainingRunRepository, AbstractLevelRepository abstractLevelRepository,
@@ -181,7 +177,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
 
 */
       //check hash of password not String
-      if (new String(ti.getPassword()).equals(password)) {
+      if (new String(ti.getPasswordHash()).equals(password)) {
         Set<SandboxInstanceRef> sandboxInstancePool = ti.getSandboxInstanceRefs();
         Set<SandboxInstanceRef> allocatedSandboxInstances = trainingRunRepository.findSandboxInstanceRefsOfTrainingInstance(ti.getId());
         sandboxInstancePool.removeAll(allocatedSandboxInstances);

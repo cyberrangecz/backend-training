@@ -13,8 +13,11 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 /**
  * @author Pavel Šeda
  */
-@Configuration @EnableTransactionManagement @Import(ServiceConfig.class)
-@ComponentScan(basePackages = {"cz.muni.ics.kypo.training.facade", "cz.muni.ics.kypo.training.mapping"}) public class FacadeConfiguration {
+@Configuration
+@EnableTransactionManagement
+@Import(ServiceConfig.class)
+@ComponentScan(basePackages = {"cz.muni.ics.kypo.training.facade", "cz.muni.ics.kypo.training.mapping"})
+public class FacadeConfiguration {
 
 		private static final Logger LOG = LoggerFactory.getLogger(FacadeConfiguration.class);
 

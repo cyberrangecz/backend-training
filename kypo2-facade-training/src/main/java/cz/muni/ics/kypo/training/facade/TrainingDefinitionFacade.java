@@ -2,6 +2,8 @@ package cz.muni.ics.kypo.training.facade;
 
 import cz.muni.ics.kypo.training.api.dto.AbstractLevelDTO;
 import cz.muni.ics.kypo.training.exception.FacadeLayerException;
+import cz.muni.ics.kypo.training.persistence.model.enums.LevelType;
+
 import org.springframework.data.domain.Pageable;
 
 import com.querydsl.core.types.Predicate;
@@ -15,6 +17,8 @@ import cz.muni.ics.kypo.training.api.dto.infolevel.InfoLevelUpdateDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionCreateDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionUpdateDTO;
+
+import java.util.logging.Level;
 
 /**
  * 
@@ -134,31 +138,28 @@ public interface TrainingDefinitionFacade {
   /**
    * creates new info level in training definition
    * @param definitionId - id of definition in which level will be created
-   * @param infoLevel to be created
    * @return DTO of new info level
    * @throws FacadeLayerException if training definition is not found
    */
-   InfoLevelCreateDTO createInfoLevel(Long definitionId, InfoLevelCreateDTO infoLevel) throws FacadeLayerException;
+   InfoLevelCreateDTO createInfoLevel(Long definitionId) throws FacadeLayerException;
 
 
   /**
    * creates new game level in training definition
    * @param definitionId - id of definition in which level will be created
-   * @param gameLevel to be created
    * @return DTO of new game level
    * @throws FacadeLayerException if training definition is not found
    */
-  GameLevelCreateDTO createGameLevel(Long definitionId, GameLevelCreateDTO gameLevel) throws FacadeLayerException;
+  GameLevelCreateDTO createGameLevel(Long definitionId) throws FacadeLayerException;
 
 
   /**
    * creates new assessment level in training definition
    * @param definitionId - id of definition in which level will be created
-   * @param assessmentLevel to be created
    * @return DTO of new assessment level
    * @throws FacadeLayerException if training definition is not found
    */
-  AssessmentLevelCreateDTO createAssessmentLevel(Long definitionId, AssessmentLevelCreateDTO assessmentLevel) throws FacadeLayerException;
+  AssessmentLevelCreateDTO createAssessmentLevel(Long definitionId) throws FacadeLayerException;
 
 	/**
 	 * Finds specific level by id
