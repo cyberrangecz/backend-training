@@ -9,10 +9,7 @@ import cz.muni.ics.kypo.training.config.ServiceTrainingConfigTest;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.model.enums.TRState;
-import cz.muni.ics.kypo.training.persistence.repository.AbstractLevelRepository;
-import cz.muni.ics.kypo.training.persistence.repository.ParticipantRefRepository;
-import cz.muni.ics.kypo.training.persistence.repository.TrainingInstanceRepository;
-import cz.muni.ics.kypo.training.persistence.repository.TrainingRunRepository;
+import cz.muni.ics.kypo.training.persistence.repository.*;
 import cz.muni.ics.kypo.training.persistence.utils.SandboxInfo;
 
 import org.junit.After;
@@ -21,6 +18,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -73,6 +71,8 @@ public class TrainingRunServiceTest {
     @MockBean
     private ParticipantRefRepository participantRefRepository;
     @MockBean
+    private HintRepository hintRepository;
+    @MockBean
     private RestTemplate restTemplate;
 
     private TrainingRun trainingRun1, trainingRun2;
@@ -119,10 +119,6 @@ public class TrainingRunServiceTest {
         hint1.setId(1L);
         hint1.setContent("hint1 content");
 
-        hint2 = new Hint();
-        hint2.setId(2L);
-        hint2.setContent("hint2 content");
-
         gameLevel = new GameLevel();
         gameLevel.setId(1L);
         gameLevel.setSolution("solution");
@@ -132,6 +128,7 @@ public class TrainingRunServiceTest {
         gameLevel.setHints(new HashSet<>(Arrays.asList(hint1, hint2)));
         gameLevel.setNextLevel(2L);
         gameLevel.setIncorrectFlagLimit(5);
+        hint1.setGameLevel(gameLevel);
 
         infoLevel = new InfoLevel();
         infoLevel.setId(2L);
@@ -243,7 +240,7 @@ public class TrainingRunServiceTest {
 
      @Test
      public void isCorrectFlag() {
-        given(trainingRunRepository.findById(trainingRun1.getId())).willReturn(Optional.of(trainingRun1));
+        given(trainingRunRepository.findByIdWithLevel(trainingRun1.getId())).willReturn(Optional.of(trainingRun1));
         Boolean isCorrect = trainingRunService.isCorrectFlag(trainingRun1.getId(), "flag");
         assertTrue(isCorrect);
      }
@@ -252,13 +249,13 @@ public class TrainingRunServiceTest {
      public void isCorrectFlagOfNonGameLevel() {
         thrown.expect(ServiceLayerException.class);
          thrown.expectMessage("Current level is not game level and does not have flag.");
-         given(trainingRunRepository.findById(trainingRun2.getId())).willReturn(Optional.of(trainingRun2));
+         given(trainingRunRepository.findByIdWithLevel(trainingRun2.getId())).willReturn(Optional.of(trainingRun2));
         trainingRunService.isCorrectFlag(trainingRun2.getId(), "flag");
     }
 
     @Test
     public void getSolution() {
-        given(trainingRunRepository.findById(trainingRun1.getId())).willReturn(Optional.of(trainingRun1));
+        given(trainingRunRepository.findByIdWithLevel(trainingRun1.getId())).willReturn(Optional.of(trainingRun1));
         String solution = trainingRunService.getSolution(trainingRun1.getId());
         assertEquals(solution, gameLevel.getSolution());
     }
@@ -267,23 +264,22 @@ public class TrainingRunServiceTest {
     public void getSolutionOfNonGameLevel() {
         thrown.expect(ServiceLayerException.class);
         thrown.expectMessage("Current level is not game level and does not have solution.");
-        given(trainingRunRepository.findById(trainingRun2.getId())).willReturn(Optional.of(trainingRun2));
+        given(trainingRunRepository.findByIdWithLevel(trainingRun2.getId())).willReturn(Optional.of(trainingRun2));
         trainingRunService.getSolution(trainingRun2.getId());
     }
 
     @Test
     public void getHint() {
-        given(trainingRunRepository.findById(trainingRun1.getId())).willReturn(Optional.of(trainingRun1));
+        given(trainingRunRepository.findByIdWithLevel(trainingRun1.getId())).willReturn(Optional.of(trainingRun1));
+        given(hintRepository.findById(1L)).willReturn(Optional.ofNullable(hint1));
         Hint resultHint1 = trainingRunService.getHint(trainingRun1.getId(), 1L);
-        Hint resultHint2 = trainingRunService.getHint(trainingRun1.getId(), 2L);
         assertEquals(hint1,resultHint1);
-        assertEquals(hint2, resultHint2);
 
     }
 
 		@Test
 		public void getRemainingAttempts() {
-				given(trainingRunRepository.findById(trainingRun1.getId())).willReturn(Optional.ofNullable(trainingRun1));
+				given(trainingRunRepository.findByIdWithLevel(trainingRun1.getId())).willReturn(Optional.ofNullable(trainingRun1));
 				int attempts = trainingRunService.getRemainingAttempts(trainingRun1.getId());
 				assertEquals(5, attempts);
 		}
@@ -293,7 +289,7 @@ public class TrainingRunServiceTest {
     public void getHintOfNonGameLevel() {
         thrown.expect(ServiceLayerException.class);
         thrown.expectMessage("Current level is not game level and does not contain hints.");
-        given(trainingRunRepository.findById(trainingRun2.getId())).willReturn(Optional.of(trainingRun2));
+        given(trainingRunRepository.findByIdWithLevel(trainingRun2.getId())).willReturn(Optional.of(trainingRun2));
         trainingRunService.getHint(trainingRun2.getId(), hint1.getId());
 
     }

@@ -22,6 +22,7 @@ import cz.muni.ics.kypo.training.rest.exceptions.ResourceNotFoundException;
 
 import java.util.List;
 
+import org.json.JSONObject;
 import org.jsondoc.core.annotation.ApiObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -251,12 +252,12 @@ public class TrainingRunsRestController {
             @ApiResponse(code = 404, message = "The requested resource was not found."),
             @ApiResponse(code = 400, message = "Current level is not game level and does not contain solution.")
     })
-    @GetMapping(value = "/{runId}/solutions", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/{runId}/solutions", produces = MediaType.TEXT_PLAIN_VALUE)
     public ResponseEntity<String> getSolution(@ApiParam(value = "Training Run ID", required = true) @PathVariable Long runId){
                 LOG.debug("getSolution({})", runId);
         try {
             String solution = trainingRunFacade.getSolution(runId);
-            return new ResponseEntity<>(SquigglyUtils.stringify(objectMapper, solution), HttpStatus.OK);
+            return new ResponseEntity<>(solution, HttpStatus.OK);
         } catch (FacadeLayerException ex) {
             throw throwException(ex);
         }
