@@ -1,14 +1,15 @@
+
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
 repos = [
-	'git@gitlab.ics.muni.cz:kypo2/services-and-portlets/kypo2-user-and-group.git',
-    'git@gitlab.ics.muni.cz:kypo2/services-and-portlets/kypo2-security-commons.git',
+	'https://gitlab.ics.muni.cz/kypo2/services-and-portlets/kypo2-user-and-group.git',
+    'https://gitlab.ics.muni.cz/kypo2/services-and-portlets/kypo2-security-commons.git',
 ]
 roles = [
     {
         'name': 'postgresql',
-        'url': 'git@gitlab.ics.muni.cz:CSIRT-MU-public/ansible-roles/postgresql.git'
+        'url': 'https://gitlab.ics.muni.cz/CSIRT-MU-public/ansible-roles/postgresql.git'
     },
     {
         'name': 'jradtilbrook.elasticsearch',

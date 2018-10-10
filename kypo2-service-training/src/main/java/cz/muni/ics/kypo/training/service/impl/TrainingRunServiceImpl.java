@@ -7,14 +7,15 @@ import cz.muni.csirt.kypo.events.game.GameStarted;
 import cz.muni.csirt.kypo.events.game.common.GameDetails;
 import cz.muni.ics.kypo.training.exceptions.ErrorCode;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
-import cz.muni.ics.kypo.training.model.*;
-import cz.muni.ics.kypo.training.model.enums.TRState;
-import cz.muni.ics.kypo.training.repository.AbstractLevelRepository;
-import cz.muni.ics.kypo.training.repository.ParticipantRefRepository;
-import cz.muni.ics.kypo.training.repository.TrainingInstanceRepository;
-import cz.muni.ics.kypo.training.repository.TrainingRunRepository;
+import cz.muni.ics.kypo.training.persistence.model.*;
+import cz.muni.ics.kypo.training.persistence.model.enums.TRState;
+import cz.muni.ics.kypo.training.persistence.repository.AbstractLevelRepository;
+import cz.muni.ics.kypo.training.persistence.repository.ParticipantRefRepository;
+import cz.muni.ics.kypo.training.persistence.repository.TrainingInstanceRepository;
+import cz.muni.ics.kypo.training.persistence.repository.TrainingRunRepository;
+import cz.muni.ics.kypo.training.persistence.utils.SandboxInfo;
 import cz.muni.ics.kypo.training.service.TrainingRunService;
-import cz.muni.ics.kypo.training.utils.SandboxInfo;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -173,7 +174,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
 
 */
       //check hash of password not String
-      if (new String(ti.getPassword()).equals(password)) {
+      if (new String(ti.getPasswordHash()).equals(password)) {
         Set<SandboxInstanceRef> sandboxInstancePool = ti.getSandboxInstanceRefs();
         Set<SandboxInstanceRef> allocatedSandboxInstances = trainingRunRepository.findSandboxInstanceRefsOfTrainingInstance(ti.getId());
         sandboxInstancePool.removeAll(allocatedSandboxInstances);

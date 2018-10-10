@@ -27,7 +27,10 @@
 			<artifactId>modelmapper</artifactId>
 			<version>${modelmapper.version}</version>
 		</dependency>
-		<!-- swagger tools for generating REST API documentation -->
+		<dependency>
+			<groupId>com.fasterxml.jackson.datatype</groupId>
+			<artifactId>jackson-datatype-jsr310</artifactId>
+		</dependency>
 		<!-- swagger tools for generating REST API documentation -->
 		<dependency>
 			<groupId>io.springfox</groupId>

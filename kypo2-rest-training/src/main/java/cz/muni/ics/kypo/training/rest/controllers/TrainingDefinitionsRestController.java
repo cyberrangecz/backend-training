@@ -18,9 +18,9 @@ import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionDT
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionUpdateDTO;
 import cz.muni.ics.kypo.training.exception.FacadeLayerException;
 import cz.muni.ics.kypo.training.facade.TrainingDefinitionFacade;
+import cz.muni.ics.kypo.training.persistence.model.TrainingDefinition;
+import cz.muni.ics.kypo.training.persistence.model.enums.LevelType;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
-import cz.muni.ics.kypo.training.model.TrainingDefinition;
-import cz.muni.ics.kypo.training.model.enums.LevelType;
 import cz.muni.ics.kypo.training.rest.exceptions.ConflictException;
 import cz.muni.ics.kypo.training.rest.exceptions.ResourceNotCreatedException;
 import cz.muni.ics.kypo.training.rest.exceptions.ResourceNotFoundException;
@@ -126,7 +126,10 @@ public class TrainingDefinitionsRestController {
   })
   @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<Object> findAllTrainingDefinitions(
-  		@QuerydslPredicate(root = TrainingDefinition.class) Predicate predicate, Pageable pageable,
+  	  @QuerydslPredicate(root = TrainingDefinition.class) Predicate predicate, 
+  		@ApiParam(value = "Pagination support.", required = false)
+  	  Pageable pageable,
+      @ApiParam(value = "Parameters for filtering the objects.", required = false) 
       @RequestParam MultiValueMap<String, String> parameters,
       @ApiParam(value = "Fields which should be returned in REST API response", required = false)
       @RequestParam(value = "fields", required = false) String fields) {
@@ -151,8 +154,9 @@ public class TrainingDefinitionsRestController {
   })
   @GetMapping(value = "/sandbox-definitions/{sandboxDefinitionId}", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<Object> findAllTrainingDefinitionsBySandboxDefinitionId(
-  		@ApiParam(value = "Id of sandbox definition")
-  		@PathVariable(value = "sandboxDefinitionId") Long sandboxDefinitionId,
+  	  @ApiParam(value = "Id of sandbox definition")
+  	  @PathVariable(value = "sandboxDefinitionId") Long sandboxDefinitionId,
+  		@ApiParam(value = "Pagination support.", required = false)
       @PageableDefault(size = 10, page = 0) Pageable pageable){
     LOG.debug("findAllTrainingDefinitionsBySandboxDefinitionId({}, {})", sandboxDefinitionId, pageable);
     try {

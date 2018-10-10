@@ -1,7 +1,7 @@
 package cz.muni.ics.kypo.training.api.dto.assessmentlevel;
 
 import cz.muni.ics.kypo.training.api.dto.AbstractLevelDTO;
-import cz.muni.ics.kypo.training.model.enums.AssessmentType;
+import cz.muni.ics.kypo.training.persistence.model.enums.AssessmentType;
 import io.swagger.annotations.ApiModel;
 
 import javax.validation.constraints.NotEmpty;

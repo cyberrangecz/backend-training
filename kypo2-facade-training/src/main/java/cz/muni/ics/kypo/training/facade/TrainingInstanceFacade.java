@@ -1,5 +1,6 @@
 package cz.muni.ics.kypo.training.facade;
 
+import cz.muni.ics.kypo.training.api.dto.traininginstance.NewTrainingInstanceDTO;
 import cz.muni.ics.kypo.training.exception.FacadeLayerException;
 import org.springframework.data.domain.Pageable;
 import com.querydsl.core.types.Predicate;
@@ -31,12 +32,13 @@ public interface TrainingInstanceFacade {
 	 */
 	PageResultResource<TrainingInstanceDTO> findAll(Predicate predicate, Pageable pageable);
 
-  /**
-   * Updates training instance
-   * @param trainingInstance to be updated
-   * @throws FacadeLayerException if instance is not found
-   */
-  void update(TrainingInstanceUpdateDTO trainingInstance) throws FacadeLayerException;
+	/**
+	 * Updates training instance
+	 * @param trainingInstance to be updated
+	 * @return newly generated password
+	 * @throws FacadeLayerException if instance is not found
+	 */
+  String update(TrainingInstanceUpdateDTO trainingInstance) throws FacadeLayerException;
 
 	/**
 	 * Creates new training instance
@@ -45,7 +47,7 @@ public interface TrainingInstanceFacade {
 	 * @return DTO of created instance
 	 * @throws FacadeLayerException
 	 */
-	TrainingInstanceCreateDTO create(TrainingInstanceCreateDTO trainingInstance) throws FacadeLayerException;
+	NewTrainingInstanceDTO create(TrainingInstanceCreateDTO trainingInstance) throws FacadeLayerException;
 
 	/**
 	 * Deletes specific training instance based on id
@@ -54,14 +56,6 @@ public interface TrainingInstanceFacade {
 	 * @throws FacadeLayerException
 	 */
 	void delete(Long id) throws FacadeLayerException;
-
-	/**
-	 * Generates new password
-	 * 
-	 * @return generated password
-	 * @throws FacadeLayerException if password already exists
-	 */
-	char[] generatePassword() throws FacadeLayerException;
 
 	/**
 	 * Allocates sandboxes for training instance

@@ -6,13 +6,14 @@ import com.github.bohnman.squiggly.util.SquigglyUtils;
 import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.training.api.PageResultResource;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionDTO;
+import cz.muni.ics.kypo.training.api.dto.traininginstance.NewTrainingInstanceDTO;
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceCreateDTO;
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceDTO;
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceUpdateDTO;
 import cz.muni.ics.kypo.training.exception.FacadeLayerException;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.facade.TrainingInstanceFacade;
-import cz.muni.ics.kypo.training.model.TrainingInstance;
+import cz.muni.ics.kypo.training.persistence.model.TrainingInstance;
 import cz.muni.ics.kypo.training.rest.exceptions.*;
 import java.util.List;
 import org.jsondoc.core.annotation.ApiObject;
@@ -37,6 +38,8 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 
+import javax.validation.Valid;
+
 /**
  * @author Pavel Šeda
  *
@@ -49,7 +52,7 @@ import io.swagger.annotations.ApiResponses;
 @RequestMapping(value = "/training-instances")
 public class TrainingInstancesRestController {
 
-		private static final Logger LOG = LoggerFactory.getLogger(cz.muni.ics.kypo.training.rest.controllers.TrainingInstancesRestController.class);
+	private static final Logger LOG = LoggerFactory.getLogger(cz.muni.ics.kypo.training.rest.controllers.TrainingInstancesRestController.class);
 
 	private TrainingInstanceFacade trainingInstanceFacade;
 	private ObjectMapper objectMapper;
@@ -77,7 +80,7 @@ public class TrainingInstancesRestController {
       @ApiResponse(code = 404, message = "The requested resource was not found.")
   })
   @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<Object> findTrainingInstanceById(@ApiParam(name = "Training Instance ID") @PathVariable long id,
+  public ResponseEntity<Object> findTrainingInstanceById(@ApiParam(value = "Training Instance ID") @PathVariable long id,
       @ApiParam(value = "Fields which should be returned in REST API response", required = false)
       @RequestParam(value = "fields", required = false) String fields) {
     LOG.debug("findTrainingInstanceById({},{})", id, fields);
@@ -117,112 +120,112 @@ public class TrainingInstancesRestController {
       @ApiResponse(code = 404, message = "The requested resource was not found.")
   })
   @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<Object> findAllTrainingInstances(@QuerydslPredicate(root = TrainingInstance.class) Predicate predicate, Pageable pageable,
+  public ResponseEntity<Object> findAllTrainingInstances(@QuerydslPredicate(root = TrainingInstance.class) Predicate predicate, 
+  		@ApiParam(value = "Pagination support.", required = false)
+  		Pageable pageable,
+  		@ApiParam(value = "Parameters for filtering the objects.", required = false)
       @RequestParam MultiValueMap<String, String> parameters,
       @ApiParam(value = "Fields which should be returned in REST API response", required = false)
       @RequestParam(value = "fields", required = false) String fields) {
-    LOG.debug("findAllTrainingInstances({},{})", parameters, fields);
+      LOG.debug("findAllTrainingInstances({},{})", parameters, fields);
       PageResultResource<TrainingInstanceDTO> trainingInstanceResource = trainingInstanceFacade.findAll(predicate, pageable);
       Squiggly.init(objectMapper, fields);
       return new ResponseEntity<>(SquigglyUtils.stringify(objectMapper, trainingInstanceResource), HttpStatus.OK);
   }
 
-		@ApiOperation(httpMethod = "POST",
-				value = "Create Training Instance",
-				response = TrainingInstanceDTO.class,
-				nickname = "createTrainingInstance",
-				produces = "application/json",
-				consumes = "application/json")
-		@ApiResponses(value = {
-				@ApiResponse(code = 400, message = "The requested resource was not created")
-		})
-		@PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-		public ResponseEntity<Object> createTrainingInstance(@ApiParam(name = "Training instance to be created") @RequestBody TrainingInstanceCreateDTO trainingInstanceCreateDTO,
-				@ApiParam(value = "Fields which should be returned in REST API response", required = false)
-				@RequestParam(value = "fields", required = false) String fields) {
-				try {
-						TrainingInstanceCreateDTO trainingInstanceResource = trainingInstanceFacade.create(trainingInstanceCreateDTO);
-						Squiggly.init(objectMapper, fields);
-						return new ResponseEntity<>(SquigglyUtils.stringify(objectMapper, trainingInstanceResource), HttpStatus.OK);
-				} catch (FacadeLayerException ex) {
-						throw throwException(ex);
-				}
-		}
-
-		@ApiOperation(httpMethod = "PUT",
-				value = "Update Training Instance",
-				response = TrainingInstanceDTO.class,
-				nickname = "updateTrainingInstance",
-				consumes = "application/json")
-		@ApiResponses(value = {
-				@ApiResponse(code = 404, message = "The requested resource was not found"),
-				@ApiResponse(code = 409, message = "The requested resource was not deleted because of its finish time")
-		})
-		@PutMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
-		public ResponseEntity<Void> updateTrainingInstance(@ApiParam(name = "Training instance to be updated") @RequestBody TrainingInstanceUpdateDTO trainingInstanceUpdateDTO){
-				try {
-						trainingInstanceFacade.update(trainingInstanceUpdateDTO);
-						return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-				} catch (FacadeLayerException ex) {
-						throw throwException(ex);
-				}
-		}
-		@ApiOperation(httpMethod = "DELETE",
-				value = "Delete TrainingInstance",
-				response = TrainingInstanceDTO.class,
-				nickname = "deleteTrainingInstance",
-				produces = "application/json",
-				consumes = "application/json")
-		@ApiResponses( value = {
-				@ApiResponse(code = 404, message = "The requested resource was not found"),
-				@ApiResponse(code = 409, message = "The requested resource was not deleted because of its finish time")
-		})
-		@DeleteMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-		public ResponseEntity<Void> deleteTrainingInstance(@ApiParam(name = "Id of training instance to be deleted") @RequestParam("trainingInstanceId") long id) {
-				try {
-						trainingInstanceFacade.delete(id);
-						return new ResponseEntity<>(HttpStatus.OK);
-				} catch (FacadeLayerException ex) {
-						throw throwException(ex);
-				}
-
-		}
-
-		private RuntimeException throwException(RuntimeException ex) {
-				switch (((ServiceLayerException) ex.getCause()).getCode()) {
-						case WRONG_LEVEL_TYPE:
-								return new BadRequestException(ex.getLocalizedMessage());
-						case RESOURCE_NOT_FOUND:
-								return new ResourceNotFoundException(ex.getLocalizedMessage());
-						case NO_NEXT_LEVEL:
-								return new ResourceNotFoundException(ex.getLocalizedMessage());
-						case UNEXPECTED_ERROR:
-								return new InternalServerErrorException(ex.getLocalizedMessage());
-						case RESOURCE_CONFLICT:
-								return new ConflictException(ex.getLocalizedMessage());
-						case NO_AVAILABLE_SANDBOX:
-						default:
-								return new ServiceUnavailableException(ex.getLocalizedMessage());
-				}
-		}
 	@ApiOperation(httpMethod = "POST",
-				value = "Allocate sandboxes",
-				response = Void.class,
-				nickname = "allocateSandboxes")
-		@ApiResponses(value = {
-				@ApiResponse(code = 404, message = "The requested resource was not found")
-		})
-		@PostMapping(value = "/{instanceId}/sandbox-instances")
-		public ResponseEntity<Void> allocateSandboxes(
-				@ApiParam(value = "Id of trainingInstance")
-				@PathVariable(value = "instanceId") Long instanceId) {
-				try{
-						return trainingInstanceFacade.allocateSandboxes(instanceId);
-				} catch (FacadeLayerException ex){
-						throw new ResourceNotFoundException(ex.getLocalizedMessage());
-				}
-		}
+			value = "Create Training Instance",
+			response = TrainingInstanceDTO.class,
+			nickname = "createTrainingInstance",
+			produces = "application/json",
+			consumes = "application/json")
+	@ApiResponses(value = {
+			@ApiResponse(code = 400, message = "The requested resource was not created")
+	})
+	@PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<Object> createTrainingInstance(@ApiParam(name = "Training instance to be created") @Valid @RequestBody TrainingInstanceCreateDTO trainingInstanceCreateDTO,
+			@ApiParam(value = "Fields which should be returned in REST API response", required = false)
+			@RequestParam(value = "fields", required = false) String fields) {
+			try {
+					NewTrainingInstanceDTO trainingInstanceResource = trainingInstanceFacade.create(trainingInstanceCreateDTO);
+					Squiggly.init(objectMapper, fields);
+					return new ResponseEntity<>(SquigglyUtils.stringify(objectMapper, trainingInstanceResource), HttpStatus.OK);
+			} catch (FacadeLayerException ex) {
+					throw throwException(ex);
+			}
+	}
+	
+	@ApiOperation(httpMethod = "PUT",
+			value = "Update Training Instance",
+			response = String.class,
+			nickname = "updateTrainingInstance",
+			consumes = "application/json")
+	@ApiResponses(value = {
+			@ApiResponse(code = 404, message = "The requested resource was not found"),
+			@ApiResponse(code = 409, message = "The requested resource was not deleted because of its finish time")
+	})
+	@PutMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<String> updateTrainingInstance(@ApiParam(name = "Training instance to be updated") @RequestBody TrainingInstanceUpdateDTO trainingInstanceUpdateDTO){
+			try {
+					String newPass = trainingInstanceFacade.update(trainingInstanceUpdateDTO);
+					return new ResponseEntity<>(newPass, HttpStatus.OK);
+			} catch (FacadeLayerException ex) {
+					throw throwException(ex);
+			}
+	}
+	@ApiOperation(httpMethod = "DELETE",
+			value = "Delete TrainingInstance",
+			nickname = "deleteTrainingInstance"
+			)
+	@ApiResponses( value = {
+			@ApiResponse(code = 404, message = "The requested resource was not found"),
+			@ApiResponse(code = 409, message = "The requested resource was not deleted because of its finish time")
+	})
+	@DeleteMapping(value = "/{id}")
+	public ResponseEntity<Void> deleteTrainingInstance(@ApiParam(value = "Id of training instance to be deleted") @PathVariable(value = "id") Long id) {
+			try {
+					trainingInstanceFacade.delete(id);
+					return new ResponseEntity<>(HttpStatus.OK);
+			} catch (FacadeLayerException ex) {
+					throw throwException(ex);
+			}
+	
+	}
+	
+	private RuntimeException throwException(RuntimeException ex) {
+			switch (((ServiceLayerException) ex.getCause()).getCode()) {
+					case WRONG_LEVEL_TYPE:
+							return new BadRequestException(ex.getLocalizedMessage());
+					case RESOURCE_NOT_FOUND:
+							return new ResourceNotFoundException(ex.getLocalizedMessage());
+					case NO_NEXT_LEVEL:
+							return new ResourceNotFoundException(ex.getLocalizedMessage());
+					case UNEXPECTED_ERROR:
+							return new InternalServerErrorException(ex.getLocalizedMessage());
+					case RESOURCE_CONFLICT:
+							return new ConflictException(ex.getLocalizedMessage());
+					case NO_AVAILABLE_SANDBOX:
+					default:
+							return new ServiceUnavailableException(ex.getLocalizedMessage());
+			}
+	}
+	@ApiOperation(httpMethod = "POST",
+			value = "Allocate sandboxes",
+			response = Void.class,
+			nickname = "allocateSandboxes")
+	@ApiResponses(value = {
+			@ApiResponse(code = 404, message = "The requested resource was not found")
+	})
+	@PostMapping(value = "/{instanceId}/sandbox-instances")
+	public ResponseEntity<Void> allocateSandboxes(
+			@ApiParam(value = "Id of trainingInstance")
+			@PathVariable(value = "instanceId") Long instanceId) {
+			try{
+					return trainingInstanceFacade.allocateSandboxes(instanceId);
+			} catch (FacadeLayerException ex){
+					throw new ResourceNotFoundException(ex.getLocalizedMessage());
+			}
+	}
 
 
 }
-

@@ -14,6 +14,7 @@ import org.springframework.http.converter.json.MappingJackson2HttpMessageConvert
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import cz.muni.ics.kypo.training.config.FacadeConfiguration;
 
@@ -57,6 +58,7 @@ import cz.muni.ics.kypo.training.config.FacadeConfiguration;
 @SpringBootApplication
 @EnableSpringDataWebSupport
 @Import({FacadeConfiguration.class, ValidationMessagesConfig.class})
+@ComponentScan("cz.muni.ics.kypo.training.rest")
 public class WebConfigRestTraining extends SpringBootServletInitializer {
 
 	private static final Logger LOG = LoggerFactory.getLogger(WebConfigRestTraining.class);
@@ -97,6 +99,7 @@ public class WebConfigRestTraining extends SpringBootServletInitializer {
 	public ObjectMapper objectMapperForRestAPI() {
 		LOG.debug("objectMapperForRestAPI()");
 		ObjectMapper obj = new ObjectMapper();
+		obj.registerModule(new JavaTimeModule());
 		obj.setPropertyNamingStrategy(snakeCase());
 		return obj;
 	}
