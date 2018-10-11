@@ -70,5 +70,5 @@ public class TrainingInstanceRepositoryTest {
 			assertTrue(resultTraininginstance.contains(trainingInstance1));
 			assertTrue(resultTraininginstance.contains(trainingInstance2));
 		}
-		
+
 }
