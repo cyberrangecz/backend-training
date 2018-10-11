@@ -12,8 +12,9 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import cz.muni.ics.kypo.training.persistence.config.PersistenceConfigTest;
 import cz.muni.ics.kypo.training.persistence.model.InfoLevel;
-import cz.muni.ics.kypo.training.persistence.repository.InfoLevelRepository;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.Assert.assertEquals;
@@ -30,17 +31,20 @@ public class InfoLevelRepositoryTest {
 	@Autowired
 	private InfoLevelRepository infoLevelRepository;
 
-	private InfoLevel infoLevel;
+	private InfoLevel infoLevel, infoLevel2;
 
 	@SpringBootApplication
-	static class TestConfiguration {
-	}
+	static class TestConfiguration { }
 
 	@Before
 	public void init() {
 		infoLevel = new InfoLevel();
 		infoLevel.setTitle("infoLevel");
 		infoLevel.setContent("content for info level");
+
+		infoLevel2 = new InfoLevel();
+		infoLevel2.setTitle("infolevel2");
+		infoLevel2.setContent("content for info level2");
 	}
 
 	@Test
@@ -50,6 +54,16 @@ public class InfoLevelRepositoryTest {
 		InfoLevel iL = infoLevelOptional.orElseThrow(() -> new Exception("Training run should be found"));
 		assertNotNull(iL.getId());
 		assertEquals("content for info level", iL.getContent());
+	}
+
+	@Test
+	public void findAll() {
+		List<InfoLevel> expectedInfoLevels = Arrays.asList(infoLevel, infoLevel2);
+		expectedInfoLevels.stream().forEach(i -> entityManager.persist(i));
+		List<InfoLevel> resultInfoLevels = infoLevelRepository.findAll();
+		assertNotNull(resultInfoLevels);
+		assertEquals(expectedInfoLevels, resultInfoLevels);
+		assertEquals(expectedInfoLevels.size(), resultInfoLevels.size());
 	}
 
 }
