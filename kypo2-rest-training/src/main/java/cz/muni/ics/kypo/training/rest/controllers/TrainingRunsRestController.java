@@ -12,17 +12,15 @@ import cz.muni.ics.kypo.training.api.dto.run.AccessTrainingRunDTO;
 import cz.muni.ics.kypo.training.api.dto.run.AccessedTrainingRunDTO;
 import cz.muni.ics.kypo.training.api.dto.run.TrainingRunDTO;
 import cz.muni.ics.kypo.training.exception.FacadeLayerException;
-import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.facade.TrainingRunFacade;
 import cz.muni.ics.kypo.training.persistence.model.TrainingRun;
-import cz.muni.ics.kypo.training.rest.exceptions.*;
+import cz.muni.ics.kypo.training.rest.ApiErrorTraining;
+import cz.muni.ics.kypo.training.rest.ExceptionSorter;
 import io.swagger.annotations.*;
 import cz.muni.ics.kypo.training.api.dto.hint.HintDTO;
-import cz.muni.ics.kypo.training.rest.exceptions.ResourceNotFoundException;
 
 import java.util.List;
 
-import org.json.JSONObject;
 import org.jsondoc.core.annotation.ApiObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,6 +43,10 @@ import org.springframework.web.bind.annotation.*;
 @Api(value = "/training-runs", 
   consumes = "application/json" 
 )
+@ApiResponses(value = {
+		@ApiResponse(code = 401, message = "Full authentication is required to access this resource."),
+		@ApiResponse(code = 403, message = "The necessary permissions are required for a resource.")
+})
 //@formatter:on
 @RestController
 @RequestMapping(value = "/training-runs")
@@ -72,12 +74,12 @@ public class TrainingRunsRestController {
       value = "Get Training Run by Id.", 
       response = TrainingRunDTO.class,
       nickname = "findTrainingRunById",
-
       produces = "application/json"
   )
   @ApiResponses(value = {
-      @ApiResponse(code = 200, message = "The requested resource has been found."),
-      @ApiResponse(code = 404, message = "The requested resource was not found.") 
+      @ApiResponse(code = 200, message = "Training run with given id found.", response = TrainingRunDTO.class),
+      @ApiResponse(code = 404, message = "Training run with given id not found."),
+			@ApiResponse(code = 500, message = "Some error occurred.")
   })
   @GetMapping(value = "/{runId}", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<Object> findTrainingRunById(@ApiParam(value = "Training Run ID", required = true) @PathVariable Long runId,
@@ -89,7 +91,7 @@ public class TrainingRunsRestController {
       Squiggly.init(objectMapper, fields);
       return new ResponseEntity<>(SquigglyUtils.stringify(objectMapper, trainingRunResource), HttpStatus.OK);
     } catch (FacadeLayerException ex) {
-       throw throwException(ex);
+       throw ExceptionSorter.throwException(ex);
     }
   }
 
@@ -116,8 +118,8 @@ public class TrainingRunsRestController {
       produces = "application/json"
   )
   @ApiResponses(value = {
-      @ApiResponse(code = 200, message = "The requested resource has been found."),
-      @ApiResponse(code = 404, message = "The requested resource was not found.") 
+      @ApiResponse(code = 200, message = "All training runs found.", response = TrainingRunDTO.class, responseContainer = "List"),
+			@ApiResponse(code = 500, message = "Some error occurred.")
   })
   @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<Object> findAllTrainingRuns(@QuerydslPredicate(root = TrainingRun.class) Predicate predicate, 
@@ -147,10 +149,10 @@ public class TrainingRunsRestController {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "The requested resource has been found."),
-            @ApiResponse(code = 404, message = "The requested resource was not found."),
-            @ApiResponse(code = 500, message = "Getting info about sandboxes ended with error."),
-            @ApiResponse(code = 503, message = "There is no available sandbox, try again later.")
+            @ApiResponse(code = 200, message = "Training run accessed.", response = AccessTrainingRunDTO.class),
+            @ApiResponse(code = 404, message = "There is no training instance with given password or first level not found in database."),
+            @ApiResponse(code = 500, message = "Some error occurred during getting info about sandboxes."),
+            @ApiResponse(code = 503, message = "There is no available sandbox, wait a minute and try again.")
     })
     @PostMapping(value = "/access", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<AccessTrainingRunDTO> accessTrainingRun(@ApiParam(value = "password", required = true) @RequestParam(value = "password", required = false) String password) {
@@ -159,7 +161,7 @@ public class TrainingRunsRestController {
             AccessTrainingRunDTO accessTrainingRunDTO = trainingRunFacade.accessTrainingRun(password);
             return new ResponseEntity<>(accessTrainingRunDTO, HttpStatus.OK);
         } catch (FacadeLayerException ex) {
-            throw throwException(ex);
+            throw ExceptionSorter.throwException(ex);
         }
     }
 
@@ -189,8 +191,8 @@ public class TrainingRunsRestController {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "The requested resource has been found."),
-            @ApiResponse(code = 404, message = "The requested resource was not found.")
+            @ApiResponse(code = 200, message = "All accessed training runs found.", response = AccessedTrainingRunDTO.class, responseContainer = "List"),
+						@ApiResponse(code = 500, message = "Some error occurred.")
     })
     @GetMapping(value = "/accessed", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> getAllAccessedTrainingRuns(
@@ -216,8 +218,9 @@ public class TrainingRunsRestController {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "The requested resource has been found."),
-            @ApiResponse(code = 404, message = "The requested resource was not found or there is no next level."),
+            @ApiResponse(code = 200, message = "Next level found.", response = AbstractLevelDTO.class),
+            @ApiResponse(code = 404, message = "There is no next level or could not be found in database."),
+						@ApiResponse(code = 500, message = "Some error occurred.")
     })
     @GetMapping(value = "/{runId}/next-levels", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> getNextLevel(@ApiParam(value = "Training Run ID", required = true) @PathVariable Long runId,
@@ -229,7 +232,7 @@ public class TrainingRunsRestController {
             Squiggly.init(objectMapper, fields);
             return new ResponseEntity<>(SquigglyUtils.stringify(objectMapper, levelDTO), HttpStatus.OK);
         } catch (FacadeLayerException ex) {
-            throw throwException(ex);
+            throw ExceptionSorter.throwException(ex);
         }
     }
 
@@ -248,18 +251,19 @@ public class TrainingRunsRestController {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "The requested resource has been found."),
-            @ApiResponse(code = 404, message = "The requested resource was not found."),
-            @ApiResponse(code = 400, message = "Current level is not game level and does not contain solution.")
+            @ApiResponse(code = 200, message = "Solution found.", response = String.class),
+            @ApiResponse(code = 404, message = "Training run with given id cannot be found."),
+            @ApiResponse(code = 400, message = "Current level is not game level and does not have solution."),
+						@ApiResponse(code = 500, message = "Some error occurred.")
     })
-    @GetMapping(value = "/{runId}/solutions", produces = MediaType.TEXT_PLAIN_VALUE)
+    @GetMapping(value = "/{runId}/solutions")
     public ResponseEntity<String> getSolution(@ApiParam(value = "Training Run ID", required = true) @PathVariable Long runId){
                 LOG.debug("getSolution({})", runId);
         try {
             String solution = trainingRunFacade.getSolution(runId);
             return new ResponseEntity<>(solution, HttpStatus.OK);
         } catch (FacadeLayerException ex) {
-            throw throwException(ex);
+            throw ExceptionSorter.throwException(ex);
         }
     }
 
@@ -273,14 +277,14 @@ public class TrainingRunsRestController {
             value = "Get hint of game level.",
             response = String.class,
             nickname = "getHint",
-            produces = "application/json",
-            authorizations = {
-            }
+            produces = "application/json"
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "The requested resource has been found."),
-            @ApiResponse(code = 404, message = "The requested resource was not found."),
-            @ApiResponse(code = 400, message = "Current level is not game level and does not contain hint.")
+            @ApiResponse(code = 200, message = "Hint found.", response = HintDTO.class),
+            @ApiResponse(code = 404, message = "Hint with given id not found."),
+						@ApiResponse(code = 409, message = "Hint with given id is not in current level of training run."),
+            @ApiResponse(code = 400, message = "Current level is not game level and does not have hints."),
+						@ApiResponse(code = 500, message = "Some error occurred.")
     })
     @GetMapping(value = "/{runId}/hints/{hintId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> getHint(@ApiParam(value = "Training Run ID", required = true) @PathVariable Long runId,
@@ -293,7 +297,7 @@ public class TrainingRunsRestController {
             Squiggly.init(objectMapper, fields);
             return new ResponseEntity<>(SquigglyUtils.stringify(objectMapper, hintDTO), HttpStatus.OK);
         } catch (FacadeLayerException ex) {
-            throw throwException(ex);
+            throw ExceptionSorter.throwException(ex);
         }
     }
 
@@ -312,9 +316,10 @@ public class TrainingRunsRestController {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "The requested resource has been found."),
-            @ApiResponse(code = 404, message = "The requested resource was not found."),
-            @ApiResponse(code = 400, message = "Current level is not game level and does not contain flag.")
+            @ApiResponse(code = 200, message = "Flag checked.", response = IsCorrectFlagDTO.class),
+            @ApiResponse(code = 404, message = "Training run with given id not found."),
+            @ApiResponse(code = 400, message = "Current level is not game level and does not have flag."),
+						@ApiResponse(code = 500, message = "Some error occurred.")
     })
     @GetMapping(value = "/{runId}/is-correct-flag", produces = MediaType.APPLICATION_JSON_VALUE)
 
@@ -325,25 +330,9 @@ public class TrainingRunsRestController {
             IsCorrectFlagDTO isCorrectFlagDTO = trainingRunFacade.isCorrectFlag(runId, flag);
             return new ResponseEntity<>(isCorrectFlagDTO, HttpStatus.OK);
         } catch (FacadeLayerException ex) {
-            throw throwException(ex);
+            throw ExceptionSorter.throwException(ex);
         }
     }
 
-    private RuntimeException throwException(RuntimeException ex) {
-        switch (((ServiceLayerException) ex.getCause()).getCode()) {
-            case WRONG_LEVEL_TYPE:
-                return new BadRequestException(ex.getCause().getLocalizedMessage());
-            case RESOURCE_NOT_FOUND:
-                return new ResourceNotFoundException(ex.getCause().getLocalizedMessage());
-            case NO_NEXT_LEVEL:
-                return new ResourceNotFoundException(ex.getCause().getLocalizedMessage());
-            case UNEXPECTED_ERROR:
-                return new InternalServerErrorException(ex.getCause().getLocalizedMessage());
-            case RESOURCE_CONFLICT:
-                return new ConflictException(ex.getCause().getLocalizedMessage());
-            case NO_AVAILABLE_SANDBOX:
-            default:
-                return new ServiceUnavailableException(ex.getCause().getLocalizedMessage());
-        }
-    }
+
 }
