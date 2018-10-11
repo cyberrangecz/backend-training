@@ -1,10 +1,10 @@
 package cz.muni.ics.kypo.training.api.dto.run;
 
+import cz.muni.ics.kypo.training.api.dto.AbstractLevelDTO;
+import cz.muni.ics.kypo.training.api.dto.SandboxInstanceRefDTO;
+import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceDTO;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import cz.muni.ics.kypo.training.model.AbstractLevel;
-import cz.muni.ics.kypo.training.model.SandboxInstanceRef;
-import cz.muni.ics.kypo.training.model.TrainingInstance;
-import cz.muni.ics.kypo.training.model.enums.TRState;
+import cz.muni.ics.kypo.training.persistence.model.enums.TRState;
 import cz.muni.ics.kypo.training.utils.converters.LocalDateTimeSerializer;
 import io.swagger.annotations.ApiModel;
 
@@ -25,9 +25,9 @@ public class TrainingRunDTO {
 	private LocalDateTime endTime;
 	private String eventLogReference;
 	private TRState state;
-	private AbstractLevel currentLevel;
-	private TrainingInstance trainingInstance;
-	private SandboxInstanceRef sandboxInstanceRef;
+	private AbstractLevelDTO currentLevel;
+	private TrainingInstanceDTO trainingInstance;
+	private SandboxInstanceRefDTO sandboxInstanceRef;
 
 	public TrainingRunDTO() {}
 
@@ -71,27 +71,27 @@ public class TrainingRunDTO {
 		this.state = state;
 	}
 
-	public AbstractLevel getCurrentLevel() {
+	public AbstractLevelDTO getCurrentLevel() {
 		return currentLevel;
 	}
 
-	public void setCurrentLevel(AbstractLevel currentLevel) {
+	public void setCurrentLevel(AbstractLevelDTO currentLevel) {
 		this.currentLevel = currentLevel;
 	}
 
-	public TrainingInstance getTrainingInstance() {
+	public TrainingInstanceDTO getTrainingInstance() {
 		return trainingInstance;
 	}
 
-	public void setTrainingInstance(TrainingInstance trainingInstance) {
+	public void setTrainingInstance(TrainingInstanceDTO trainingInstance) {
 		this.trainingInstance = trainingInstance;
 	}
 
-	public SandboxInstanceRef getSandboxInstanceRef() {
+	public SandboxInstanceRefDTO getSandboxInstanceRef() {
 		return sandboxInstanceRef;
 	}
 
-	public void setSandboxInstanceRef(SandboxInstanceRef sandboxInstanceRef) {
+	public void setSandboxInstanceRef(SandboxInstanceRefDTO sandboxInstanceRef) {
 		this.sandboxInstanceRef = sandboxInstanceRef;
 	}
 

@@ -13,7 +13,7 @@ import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceUpdate
 import cz.muni.ics.kypo.training.exception.FacadeLayerException;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.facade.TrainingInstanceFacade;
-import cz.muni.ics.kypo.training.model.TrainingInstance;
+import cz.muni.ics.kypo.training.persistence.model.TrainingInstance;
 import cz.muni.ics.kypo.training.rest.exceptions.*;
 import java.util.List;
 import org.jsondoc.core.annotation.ApiObject;

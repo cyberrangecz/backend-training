@@ -5,7 +5,7 @@ import java.util.Arrays;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
-import cz.muni.ics.kypo.training.model.enums.TDState;
+import cz.muni.ics.kypo.training.persistence.model.enums.TDState;
 import io.swagger.annotations.ApiModel;
 
 /**
