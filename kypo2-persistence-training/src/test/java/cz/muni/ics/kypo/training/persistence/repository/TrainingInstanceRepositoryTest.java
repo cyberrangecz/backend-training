@@ -1,25 +1,28 @@
-package cz.muni.ics.kypo.training.repository;
+package cz.muni.ics.kypo.training.persistence.repository;
 
-import cz.muni.ics.kypo.training.model.TrainingInstance;
+import cz.muni.ics.kypo.training.persistence.config.PersistenceConfigTest;
+import cz.muni.ics.kypo.training.persistence.model.TrainingInstance;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.Assert.*;
+import static junit.framework.TestCase.assertEquals;
+import static junit.framework.TestCase.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 @RunWith(SpringRunner.class)
 @DataJpaTest
-@EntityScan(basePackages = {"cz.muni.ics.kypo.training.model"})
+@Import(PersistenceConfigTest.class)
 public class TrainingInstanceRepositoryTest {
 
 		@Autowired
@@ -64,11 +67,30 @@ public class TrainingInstanceRepositoryTest {
 		public void findAll() {
 			entityManager.persist(trainingInstance1);
 			entityManager.persist(trainingInstance2);
-			List<TrainingInstance> resultTraininginstance = trainingInstanceRepository.findAll();
-			assertNotNull(resultTraininginstance);
-			assertEquals(2, resultTraininginstance.size());
-			assertTrue(resultTraininginstance.contains(trainingInstance1));
-			assertTrue(resultTraininginstance.contains(trainingInstance2));
+			List<TrainingInstance> resultTrainingInstance = trainingInstanceRepository.findAll();
+			assertNotNull(resultTrainingInstance);
+			assertEquals(2, resultTrainingInstance.size());
+			assertTrue(resultTrainingInstance.contains(trainingInstance1));
+			assertTrue(resultTrainingInstance.contains(trainingInstance2));
 		}
 
+		@Test
+		public void update() {
+
+		}
+
+		@Test
+		public void create() {
+
+		}
+
+		@Test
+		public void delete() {
+
+		}
+
+		@Test
+		public void allocateSandboxes() {
+
+		}
 }
