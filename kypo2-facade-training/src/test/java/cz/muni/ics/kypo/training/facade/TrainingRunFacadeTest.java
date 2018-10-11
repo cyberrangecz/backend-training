@@ -68,6 +68,7 @@ public class TrainingRunFacadeTest {
         trainingRun1 = new TrainingRun();
         trainingRun1.setId(1L);
         trainingRun1.setState(TRState.READY);
+        trainingRun1.setSolutionTaken(false);
 
         hint = new Hint();
         hint.setId(1L);
@@ -106,8 +107,8 @@ public class TrainingRunFacadeTest {
 	@Test
 	public void isCorrectFlagBeforeSolutionTaken() {
 		given(trainingRunService.isCorrectFlag(trainingRun1.getId(), "flag")).willReturn(true);
-		given(trainingRunService.getRemainingAttempts(trainingRun1.getId())).willReturn(2);
-		IsCorrectFlagDTO correctFlagDTO = trainingRunFacade.isCorrectFlag(trainingRun1.getId(), "flag", false);
+		given(trainingRunService.getRemainingAttempts(trainingRun1.getId())).willReturn(1);
+		IsCorrectFlagDTO correctFlagDTO = trainingRunFacade.isCorrectFlag(trainingRun1.getId(), "flag");
 		assertEquals(true, correctFlagDTO.isCorrect());
 		assertEquals(1, correctFlagDTO.getRemainingAttempts());
 	}
@@ -115,7 +116,7 @@ public class TrainingRunFacadeTest {
 	@Test
 	public void isCorrectFlagAfterSolutionTaken() {
 		given(trainingRunService.isCorrectFlag(trainingRun1.getId(), "flag")).willReturn(false);
-		IsCorrectFlagDTO correctFlagDTO = trainingRunFacade.isCorrectFlag(trainingRun1.getId(), "flag", true);
+		IsCorrectFlagDTO correctFlagDTO = trainingRunFacade.isCorrectFlag(trainingRun1.getId(), "flag");
 		assertEquals(false, correctFlagDTO.isCorrect());
 		assertEquals(0, correctFlagDTO.getRemainingAttempts());
 	}

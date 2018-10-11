@@ -167,14 +167,19 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
   @Transactional
   public AbstractLevelDTO getNextLevel(Long trainingRunId) {
     LOG.debug("getNextLevel({})", trainingRunId);
-    AbstractLevel aL = trainingRunService.getNextLevel(trainingRunId);
+    AbstractLevel aL;
+    try {
+       aL = trainingRunService.getNextLevel(trainingRunId);
+    } catch (ServiceLayerException ex) {
+      throw new FacadeLayerException(ex);
+    }
     if(aL instanceof GameLevel) {
-      return beanMapping.mapTo(trainingRunService.getNextLevel(trainingRunId), GameLevelDTO.class);
+      return beanMapping.mapTo(aL, GameLevelDTO.class);
 
     } else if (aL instanceof AssessmentLevel) {
-      return beanMapping.mapTo(trainingRunService.getNextLevel(trainingRunId), AssessmentLevelDTO.class);
+      return beanMapping.mapTo(aL, AssessmentLevelDTO.class);
     } else {
-      return beanMapping.mapTo(trainingRunService.getNextLevel(trainingRunId), InfoLevelDTO.class);
+      return beanMapping.mapTo(aL, InfoLevelDTO.class);
     }
   }
 
@@ -182,30 +187,35 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
   @Transactional
   public String getSolution(Long trainingRunId) {
     LOG.debug("getSolution({})", trainingRunId);
-    return trainingRunService.getSolution(trainingRunId);
+    try {
+      return trainingRunService.getSolution(trainingRunId);
+    } catch (ServiceLayerException ex) {
+      throw new FacadeLayerException(ex);
+    }
   }
 
   @Override
   @Transactional
   public HintDTO getHint(Long trainingRunId, Long hintId) {
     LOG.debug("getHint({},{})", trainingRunId, hintId);
-    return beanMapping.mapTo(trainingRunService.getHint(trainingRunId,hintId), HintDTO.class);
+    try {
+      return beanMapping.mapTo(trainingRunService.getHint(trainingRunId,hintId), HintDTO.class);
+    } catch (ServiceLayerException ex) {
+      throw new FacadeLayerException(ex);
+    }
   }
 
   @Override
   @Transactional
-  public IsCorrectFlagDTO isCorrectFlag(Long trainingRunId, String flag, boolean solutionTaken) {
+  public IsCorrectFlagDTO isCorrectFlag(Long trainingRunId, String flag) {
     LOG.debug("isCorrectFlag({},{})", trainingRunId, flag);
     IsCorrectFlagDTO correctFlagDTO = new IsCorrectFlagDTO();
-    if (solutionTaken) {
-      correctFlagDTO.setRemainingAttempts(0);
+    try {
       correctFlagDTO.setCorrect(trainingRunService.isCorrectFlag(trainingRunId, flag));
-    } else {
-      int attempts = trainingRunService.getRemainingAttempts(trainingRunId);
-      correctFlagDTO.setRemainingAttempts(attempts - 1);
-      correctFlagDTO.setCorrect(trainingRunService.isCorrectFlag(trainingRunId, flag));
+      correctFlagDTO.setRemainingAttempts(trainingRunService.getRemainingAttempts(trainingRunId));
+    } catch (ServiceLayerException ex) {
+      throw new FacadeLayerException(ex);
     }
-
     return correctFlagDTO;
   }
 

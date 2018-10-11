@@ -32,6 +32,8 @@ public class TrainingRun implements Serializable {
 	private TRState state;
 	@Column(name = "incorrect_flag_count", nullable = false)
 	private int incorrectFlagCount;
+	@Column(name = "solution_taken", nullable = false)
+	private boolean solutionTaken;
 	@ManyToOne(fetch = FetchType.LAZY, optional = false)
 	private AbstractLevel currentLevel;
 	@ManyToOne(fetch = FetchType.LAZY, optional = false)
@@ -113,6 +115,14 @@ public class TrainingRun implements Serializable {
 		this.incorrectFlagCount = incorrectFlagCount;
 	}
 
+	public boolean isSolutionTaken() {
+		return solutionTaken;
+	}
+
+	public void setSolutionTaken(boolean solutionTaken) {
+		this.solutionTaken = solutionTaken;
+	}
+
 	public void setSandboxInstanceRef(SandboxInstanceRef sandboxInstanceRef) {
 		this.sandboxInstanceRef = sandboxInstanceRef;
 	}
@@ -140,14 +150,15 @@ public class TrainingRun implements Serializable {
 			return false;
 		TrainingRun other = (TrainingRun) obj;
 		// @formatter:off
-    return Objects.equals(currentLevel, other.getCurrentLevel()) 
+    return Objects.equals(currentLevel, other.getCurrentLevel())
         && Objects.equals(eventLogReference, other.getEventLogReference())
         && Objects.equals(startTime, other.getStartTime())
-        && Objects.equals(endTime, other.getEndTime()) 
+        && Objects.equals(endTime, other.getEndTime())
         && Objects.equals(state, other.getState())
         && Objects.equals(incorrectFlagCount, other.getIncorrectFlagCount())
         && Objects.equals(trainingInstance, other.getTrainingInstance())
-        && Objects.equals(participantRef, other.getParticipantRef());
+        && Objects.equals(participantRef, other.getParticipantRef())
+				&& Objects.equals(solutionTaken, other.isSolutionTaken());
     // @formatter:on
 	}
 
@@ -155,7 +166,7 @@ public class TrainingRun implements Serializable {
 	public String toString() {
 		return "TrainingRun [id=" + id + ", startTime=" + startTime + ", endTime=" + endTime + ", eventLogReference=" + eventLogReference
 				+ ", state=" + state + ", incorrectFlagCount=" + incorrectFlagCount + ", currentLevel=" + currentLevel + ", trainingInstance="
-				+ trainingInstance + ", participantRef=" + participantRef + ", getClass()=" + getClass() + ", toString()=" + super.toString() + "]";
+				+ trainingInstance + ", solutionTaken=" + solutionTaken + ", participantRef=" + participantRef + ", getClass()=" + getClass() + ", toString()=" + super.toString() + "]";
 	}
 
 }

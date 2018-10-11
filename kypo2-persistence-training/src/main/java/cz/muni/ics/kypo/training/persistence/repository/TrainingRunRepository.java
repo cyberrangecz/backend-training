@@ -7,10 +7,9 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-
+import java.util.Optional;
 import cz.muni.ics.kypo.training.persistence.model.SandboxInstanceRef;
 import cz.muni.ics.kypo.training.persistence.model.TrainingRun;
-
 import java.util.Set;
 
 /**
@@ -23,6 +22,9 @@ public interface TrainingRunRepository extends JpaRepository<TrainingRun, Long>,
 
 	@Query("SELECT DISTINCT tr FROM TrainingRun tr INNER JOIN tr.participantRef pr WHERE pr.participantRefLogin = :participantRef")
 	Page<TrainingRun> findAllByParticipantRefLogin(@Param("participantRef") String participantRefLogin, Pageable pageable);
+
+	@Query("SELECT tr FROM TrainingRun tr JOIN FETCH tr.currentLevel WHERE tr.id= :trainingRunId")
+	Optional<TrainingRun> findByIdWithLevel(@Param("trainingRunId") Long trainingRunId);
 
 	@Query("SELECT tr FROM TrainingRun tr INNER JOIN tr.participantRef pr INNER JOIN tr.trainingInstance ti INNER JOIN "
 			+ "ti.trainingDefinition td WHERE td.id = :trainingDefinitionId AND pr.participantRefLogin = :participantRefLogin")
