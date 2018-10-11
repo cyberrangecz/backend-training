@@ -16,7 +16,6 @@ import cz.muni.ics.kypo.training.persistence.config.PersistenceConfigTest;
 import cz.muni.ics.kypo.training.persistence.model.SandboxDefinitionRef;
 import cz.muni.ics.kypo.training.persistence.model.TrainingDefinition;
 import cz.muni.ics.kypo.training.persistence.model.enums.TDState;
-import cz.muni.ics.kypo.training.persistence.repository.TrainingDefinitionRepository;
 
 import java.util.List;
 
