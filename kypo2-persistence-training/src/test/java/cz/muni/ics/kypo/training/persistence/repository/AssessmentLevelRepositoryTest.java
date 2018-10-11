@@ -1,16 +1,16 @@
-package cz.muni.ics.kypo.training.repository;
+package cz.muni.ics.kypo.training.persistence.repository;
 
-import cz.muni.ics.kypo.training.model.AbstractLevel;
-import cz.muni.ics.kypo.training.model.AssessmentLevel;
-import cz.muni.ics.kypo.training.model.enums.AssessmentType;
+import cz.muni.ics.kypo.training.persistence.config.PersistenceConfigTest;
+import cz.muni.ics.kypo.training.persistence.model.AssessmentLevel;
+import cz.muni.ics.kypo.training.persistence.model.enums.AssessmentType;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.ArrayList;
@@ -18,11 +18,13 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 @RunWith(SpringRunner.class)
 @DataJpaTest
-@EntityScan(basePackages = {"cz.muni.ics.kypo.training.model"})
+@Import(PersistenceConfigTest.class)
 public class AssessmentLevelRepositoryTest {
 
 		@Autowired
@@ -62,9 +64,10 @@ public class AssessmentLevelRepositoryTest {
 
 		@Test
 		public void findAll() {
-			entityManager.persist(assessmentLevel1);
-			entityManager.persist(assessmentLevel2);
 			List<AssessmentLevel> extectedParticipantsRef = Arrays.asList(assessmentLevel1, assessmentLevel2);
+
+			extectedParticipantsRef.stream().forEach(p -> entityManager.persist(p));
+
 			List<AssessmentLevel> resultParticipantRef = assessmentLevelRepository.findAll();
 			assertEquals(extectedParticipantsRef, resultParticipantRef);
 			assertEquals(2, resultParticipantRef.size());
