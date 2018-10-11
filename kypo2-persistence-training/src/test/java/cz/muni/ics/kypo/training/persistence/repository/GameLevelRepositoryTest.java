@@ -2,6 +2,8 @@ package cz.muni.ics.kypo.training.repository;
 
 import cz.muni.ics.kypo.training.model.GameLevel;
 import cz.muni.ics.kypo.training.model.Hint;
+import cz.muni.ics.kypo.training.persistence.model.GameLevel;
+import cz.muni.ics.kypo.training.persistence.repository.GameLevelRepository;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
