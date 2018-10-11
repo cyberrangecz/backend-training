@@ -9,6 +9,11 @@ import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionDT
 import cz.muni.ics.kypo.training.utils.converters.LocalDateTimeDeserializer;
 import io.swagger.annotations.ApiModel;
 
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
+
 /**
  * 
  * @author Pavel Seda (441048)
@@ -16,16 +21,25 @@ import io.swagger.annotations.ApiModel;
  */
 @ApiModel(value = "TrainingInstanceUpdateDTO", description = "Training Instance to update.")
 public class TrainingInstanceUpdateDTO {
-
+	@NotNull(message = "{traininginstanceupdate.id.NotNull.message}")
 	private Long id;
+	@NotNull(message = "{traininginstanceupdate.startTime.NotNull.message}")
 	@JsonDeserialize(using = LocalDateTimeDeserializer.class)
 	private LocalDateTime startTime;
+	@NotNull(message = "{traininginstanceupdate.endTime.NotNull.message}")
 	@JsonDeserialize(using = LocalDateTimeDeserializer.class)
 	private LocalDateTime endTime;
+	@NotEmpty(message = "{traininginstanceupdate.title.NotEmpty.message}")
 	private String title;
+	@NotEmpty(message = "{traininginstanceupdate.poolSize.NotEmpty.message}")
+	@Min(value = 1, message = "{traininginstanceupdate.poolSize.Min.message}")
+	@Max(value = 100, message = "{traininginstanceupdate.poolSize.Max.message}")
 	private int poolSize;
+	@NotEmpty(message = "{traininginstanceupdate.keyword.NotEmpty.message}")
 	private String keyword;
+	@NotNull(message = "{traininginstanceupdate.trainingDefinition.NotNull.message}")
 	private TrainingDefinitionDTO trainingDefinition;
+	@NotNull(message = "{traininginstanceupdate.organizers.NotNull.message}")
 	private Set<UserRefDTO> organizers;
 
 	public TrainingInstanceUpdateDTO() {}

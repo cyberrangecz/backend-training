@@ -19,19 +19,19 @@ import io.swagger.annotations.ApiModel;
 @ApiModel(value = "TrainingDefinitionCreateDTO", description = "Training Definition to create.")
 public class TrainingDefinitionCreateDTO {
 
-	@NotEmpty(message = "")
+	@NotEmpty(message = "{trainingdefinitioncreate.title.NotEmpty.message}")
 	private String title;
 	private String description;
 	private String[] prerequisities;
 	private String[] outcomes;
-	@NotNull(message = "")
+	@NotNull(message = "{trainingdefinitioncreate.state.NotNull.message}")
 	private TDState state;
-	@NotNull(message = "")
+	@NotNull(message = "{trainingdefinitioncreate.authorRef.NotNull.message}")
 	private Set<AuthorRefDTO> authorRef;
-	@NotNull(message = "")
+	@NotNull(message = "{trainingdefinitioncreate.showStepperBar.NotNull.message}")
 	private boolean showStepperBar;
-	@NotNull(message = "")
-	private SandboxDefinitionRefDTO sandboxDefinitionRefDTO;
+	@NotNull(message = "{trainingdefinitioncreate.sandboxDefinitionRef.NotNull.message}")
+	private SandboxDefinitionRefDTO sandboxDefinitionRef;
 
 	public TrainingDefinitionCreateDTO() {}
 
@@ -91,17 +91,25 @@ public class TrainingDefinitionCreateDTO {
 		this.showStepperBar = showStepperBar;
 	}
 
-	public SandboxDefinitionRefDTO getSandboxDefinitionRefDTO() {
-		return sandboxDefinitionRefDTO;
+	public SandboxDefinitionRefDTO getSandboxDefinitionRef() {
+		return sandboxDefinitionRef;
 	}
 
-	public void setSandboxDefinitionRefDTO(SandboxDefinitionRefDTO sandboxDefinitionRefDTO) {
-		this.sandboxDefinitionRefDTO = sandboxDefinitionRefDTO;
+	public void setSandboxDefinitionRef(SandboxDefinitionRefDTO sandboxDefinitionRef) {
+		this.sandboxDefinitionRef = sandboxDefinitionRef;
 	}
 
-	@Override public String toString() {
-		return "TrainingDefinitionCreateDTO{" + "title='" + title + '\'' + ", description='" + description + '\'' + ", prerequisities=" + Arrays
-				.toString(prerequisities) + ", outcomes=" + Arrays.toString(outcomes) + ", state=" + state + ", authorRef=" + authorRef
-				+ ", showStepperBar=" + showStepperBar + ", sandboxDefinitionRefDTO=" + sandboxDefinitionRefDTO + '}';
+	@Override
+	public String toString() {
+		return "TrainingDefinitionCreateDTO{" +
+				"title='" + title + '\'' +
+				", description='" + description + '\'' +
+				", prerequisities=" + Arrays.toString(prerequisities) +
+				", outcomes=" + Arrays.toString(outcomes) +
+				", state=" + state +
+				", authorRef=" + authorRef +
+				", showStepperBar=" + showStepperBar +
+				", sandboxDefinitionRef=" + sandboxDefinitionRef +
+				'}';
 	}
 }

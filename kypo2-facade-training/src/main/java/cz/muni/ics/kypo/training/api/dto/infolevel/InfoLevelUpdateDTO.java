@@ -15,9 +15,9 @@ import io.swagger.annotations.ApiModel;
 @ApiModel(value = "InfoLevelUpdateDTO", description = "Info Level to update.")
 public class InfoLevelUpdateDTO {
 
-	@NotNull(message = "")
+	@NotNull(message = "{infolevelupdate.id.NotNull.message}")
 	protected Long id;
-	@NotEmpty(message = "Level title cannot be empty")
+	@NotEmpty(message = "{infolevelupdate.title.NotEmpty.message}")
 	protected String title;
 	private String content;
 

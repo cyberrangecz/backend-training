@@ -23,23 +23,23 @@ import javax.validation.constraints.NotNull;
  */
 @ApiModel(value = "TrainingInstanceCreateDTO", description = "Training Instance to create.")
 public class TrainingInstanceCreateDTO {
-	@NotNull(message = "")
+	@NotNull(message = "{traininginstancecreate.startTime.NotNull.message}")
 	@JsonDeserialize(using = LocalDateTimeDeserializer.class)
 	private LocalDateTime startTime;
-	@NotNull(message = "")
+	@NotNull(message = "{traininginstancecreate.endTime.NotNull.message}")
 	@JsonDeserialize(using = LocalDateTimeDeserializer.class)
 	private LocalDateTime endTime;
-	@NotEmpty(message = "")
+	@NotEmpty(message = "{traininginstancecreate.title.NotEmpty.message}")
 	private String title;
-	@NotEmpty(message = "")
-	@Min(value = 1, message = "")
-	@Max(value = 100, message = "")
+	@NotEmpty(message = "{traininginstancecreate.poolSize.NotEmpty.message}")
+	@Min(value = 1, message = "{traininginstancecreate.poolSize.Min.message}")
+	@Max(value = 100, message = "{traininginstancecreate.poolSize.Max.message}")
 	private int poolSize;
-	@NotEmpty(message = "")
+	@NotEmpty(message = "{traininginstancecreate.keyword.NotEmpty.message}")
 	private String keyword;
-	@NotNull(message = "")
+	@NotNull(message = "{traininginstancecreate.trainingDefinition.NotNull.message}")
 	private TrainingDefinitionDTO trainingDefinition;
-	@NotNull(message = "")
+	@NotNull(message = "{traininginstancecreate.organizers.NotNull.message}")
 	private Set<UserRefDTO> organizers;
 
 	public TrainingInstanceCreateDTO() {}

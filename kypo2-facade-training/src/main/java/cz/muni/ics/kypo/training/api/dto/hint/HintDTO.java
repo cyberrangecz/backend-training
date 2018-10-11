@@ -6,11 +6,8 @@ import java.util.Objects;
 
 public class HintDTO {
     private Long id;
-    @NotEmpty(message = "Title of hint cannot be empty.")
     private String title;
-    @NotEmpty(message = "Content of hint cannot be empty.")
     private String content;
-    @PositiveOrZero(message = "Penalty must be a positive number or zero.")
     private Integer hintPenalty;
 
     public HintDTO(){}

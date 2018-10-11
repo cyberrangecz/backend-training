@@ -15,25 +15,25 @@ import java.util.Set;
  */
 @ApiModel(value = "GameLevelUpdateDTO", description = "Game Level to update.")
 public class GameLevelUpdateDTO {
-	@NotNull(message = "")
+	@NotNull(message = "{gamelevelupdate.id.NotNull.message}")
 	protected Long id;
-	@NotEmpty(message = "Level title cannot be empty")
+	@NotEmpty(message = "{gamelevelupdate.title.NotEmpty.message}")
 	protected String title;
-	@NotNull
-	@Min(value = 0, message = "Max score cannot be lower than 0")
-	@Max(value = 100, message = "Max score cannot be greater than 100")
+	@NotNull(message = "{gamelevelupdate.maxScore.NotNull.message}")
+	@Min(value = 0, message = "{gamelevelupdate.maxScore.Min.message}")
+	@Max(value = 100, message = "{gamelevelupdate.maxScore.Max.message}")
 	private Integer maxScore;
-	@NotEmpty(message = "")
-	@Size(max = 50, message = "")
+	@NotEmpty(message = "{gamelevelupdate.flag.NotEmpty.message}")
+	@Size(max = 50, message = "{gamelevelupdate.flag.Size.message}")
 	private String flag;
 	private String content;
 	private String solution;
-	@NotNull
+	@NotNull(message = "{gamelevelupdate.solutionPenalized.NotNull.message}")
 	private boolean solutionPenalized;
 	private int estimatedDuration;
 	private String[] attachments;//?
-	@NotNull
-	@Min(value = 0, message = "")
+	@NotNull(message = "{gamelevelupdate.incorrectFlagLimit.NotEmpty.message}")
+	@Min(value = 0, message = "{gamelevelupdate.incorrectFlagLimit.Min.message}")
 	private int incorrectFlagLimit;
 	private Set<HintDTO> hints;
 
