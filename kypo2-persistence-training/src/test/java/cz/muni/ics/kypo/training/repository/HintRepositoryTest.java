@@ -12,11 +12,9 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
+import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -53,9 +51,8 @@ public class HintRepositoryTest {
 		public void findById() throws Exception {
 				long id = entityManager.persist(hint1).getId();
 				Optional<Hint> hintOptional = hintRepository.findById(id);
-				Hint expectedHint = hintOptional.orElseThrow(() -> new Exception("Hint should be found."));
-				assertNotNull(expectedHint.getId());
-				assertEquals(id, (long)expectedHint.getId());
+				assertThat(hintOptional.isPresent());
+				assertEquals(hint1, hintOptional.get());
 		}
 
 		@Test(expected = InvalidDataAccessApiUsageException.class)
