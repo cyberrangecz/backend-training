@@ -18,7 +18,7 @@ import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 public class ValidationMessagesConfig {
 
 	@Bean
-	public MessageSource messageSource() {
+	public MessageSource messageSourceValidation() {
 		final ReloadableResourceBundleMessageSource source = new ReloadableResourceBundleMessageSource();
 		source.setBasename("classpath:locale/ValidationMessages");
 		source.setUseCodeAsDefaultMessage(true);
@@ -31,7 +31,7 @@ public class ValidationMessagesConfig {
 	@Bean
 	public LocalValidatorFactoryBean getValidator() {
 		LocalValidatorFactoryBean bean = new LocalValidatorFactoryBean();
-		bean.setValidationMessageSource(messageSource());
+		bean.setValidationMessageSource(messageSourceValidation());
 		return bean;
 	}
 
