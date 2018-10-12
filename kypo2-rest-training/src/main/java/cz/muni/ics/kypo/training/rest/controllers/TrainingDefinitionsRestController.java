@@ -13,6 +13,7 @@ import cz.muni.ics.kypo.training.api.dto.gamelevel.GameLevelCreateDTO;
 import cz.muni.ics.kypo.training.api.dto.gamelevel.GameLevelUpdateDTO;
 import cz.muni.ics.kypo.training.api.dto.infolevel.InfoLevelCreateDTO;
 import cz.muni.ics.kypo.training.api.dto.infolevel.InfoLevelUpdateDTO;
+import cz.muni.ics.kypo.training.api.dto.run.TrainingRunDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionCreateDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionUpdateDTO;
@@ -21,6 +22,7 @@ import cz.muni.ics.kypo.training.facade.TrainingDefinitionFacade;
 import cz.muni.ics.kypo.training.persistence.model.TrainingDefinition;
 import cz.muni.ics.kypo.training.persistence.model.enums.LevelType;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
+import cz.muni.ics.kypo.training.rest.ExceptionSorter;
 import cz.muni.ics.kypo.training.rest.exceptions.ConflictException;
 import cz.muni.ics.kypo.training.rest.exceptions.ResourceNotCreatedException;
 import cz.muni.ics.kypo.training.rest.exceptions.ResourceNotFoundException;
@@ -53,6 +55,10 @@ import javax.validation.Valid;
 @Api(value = "/training-definitions",
   consumes = "application/json"
 )
+@ApiResponses(value = {
+		@ApiResponse(code = 401, message = "Full authentication is required to access this resource."),
+		@ApiResponse(code = 403, message = "The necessary permissions are required for a resource.")
+})
 @RestController
 @RequestMapping(value = "/training-definitions")
 public class TrainingDefinitionsRestController {
@@ -81,7 +87,9 @@ public class TrainingDefinitionsRestController {
       produces = "application/json"
   )
   @ApiResponses(value = {
-      @ApiResponse(code = 404, message = "The requested resource was not found.")
+  		@ApiResponse(code = 200, message = "Training definition found.", response = TrainingDefinitionDTO.class),
+      @ApiResponse(code = 404, message = "Training definition with given id not found."),
+			@ApiResponse(code = 500, message = "Unexpected condition was encountered.")
   })
   @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<Object> findTrainingDefinitionById(
@@ -122,7 +130,8 @@ public class TrainingDefinitionsRestController {
       produces = "application/json"
   )
   @ApiResponses(value = {
-      @ApiResponse(code = 404, message = "The requested resource was not found.")
+  		@ApiResponse(code = 200, message = "All training definitions found.", response = TrainingDefinitionDTO.class, responseContainer = "List"),
+			@ApiResponse(code = 500, message = "Unexpected condition was encountered.")
   })
   @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<Object> findAllTrainingDefinitions(
@@ -150,7 +159,8 @@ public class TrainingDefinitionsRestController {
           produces = "application/json"
   )
   @ApiResponses( value = {
-          @ApiResponse(code = 404, message = "The requested resource was not found")
+  				@ApiResponse(code = 200, message = "All training definitions by sandbox definition found.", response = TrainingDefinitionDTO.class, responseContainer = "List"),
+					@ApiResponse(code = 500, message = "Unexpected condition was encountered.")
   })
   @GetMapping(value = "/sandbox-definitions/{sandboxDefinitionId}", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<Object> findAllTrainingDefinitionsBySandboxDefinitionId(
@@ -175,7 +185,9 @@ public class TrainingDefinitionsRestController {
           produces = "application/json",
           consumes = "application/json")
   @ApiResponses(value = {
-          @ApiResponse(code = 400, message = "The requested resource was not created")
+  				@ApiResponse(code = 200, message = "The requested resource has been created.", response = TrainingDefinitionCreateDTO.class),
+          @ApiResponse(code = 400, message = "Given training definition is not valid"),
+					@ApiResponse(code = 500, message = "Unexpected condition was encountered.")
   })
   @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<TrainingDefinitionCreateDTO> createTrainingDefinition(
@@ -196,8 +208,11 @@ public class TrainingDefinitionsRestController {
       produces = "application/json",
       consumes = "application/json")
   @ApiResponses(value = {
-          @ApiResponse(code = 404, message = "The requested resource was not found."),
-          @ApiResponse(code = 409, message = "The requested resource was not modified because of its status")
+  				@ApiResponse(code = 200, message = "The requested resource has been updated."),
+					@ApiResponse(code = 400, message = "Given training definition is not valid"),
+          @ApiResponse(code = 404, message = "Training definition with given id not found."),
+          @ApiResponse(code = 409, message = "Cannot edit released or archived training definition."),
+					@ApiResponse(code = 500, message = "Unexpected condition was encountered.")
   })
   @PutMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<Void> updateTrainingDefinition(
@@ -207,7 +222,7 @@ public class TrainingDefinitionsRestController {
       trainingDefinitionFacade.update(trainingDefinitionUpdateDTO);
       return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     } catch (FacadeLayerException ex) {
-      	throw throwException(ex);
+      	throw ExceptionSorter.throwException(ex);
     }
   }
 
@@ -217,8 +232,10 @@ public class TrainingDefinitionsRestController {
 			nickname = "cloneTrainingDefinition",
 			produces = "application/json")
 	@ApiResponses(value = {
-			@ApiResponse(code = 404, message = "The requested resource was not found."),
-			@ApiResponse(code = 409, message = "The requested resource was not created because of the status of origin resource")
+			@ApiResponse(code = 200, message = "Training definition cloned.", response = TrainingDefinitionDTO.class),
+			@ApiResponse(code = 404, message = "Training definition with given id not found."),
+			@ApiResponse(code = 409, message = "Cannot copy unreleased training definition."),
+			@ApiResponse(code = 500, message = "Unexpected condition was encountered.")
 			}
 	)
 	@PostMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -229,7 +246,7 @@ public class TrainingDefinitionsRestController {
 			TrainingDefinitionDTO trainingDefinitionDTO = trainingDefinitionFacade.clone(id);
 			return new ResponseEntity<>(trainingDefinitionDTO, HttpStatus.OK);
 		} catch (FacadeLayerException ex) {
-				throw throwException(ex);
+				throw ExceptionSorter.throwException(ex);
 		}
 	}
 
@@ -238,8 +255,10 @@ public class TrainingDefinitionsRestController {
 			nickname = "swapLeft",
 			response = Void.class)
 	@ApiResponses(value = {
-			@ApiResponse(code = 409, message = "The requested resource was not modified because of its status"),
-			@ApiResponse(code = 404, message = "The requested resource was not found")
+			@ApiResponse(code = 200, message = "The level has been swapped to the left."),
+			@ApiResponse(code = 404, message = "Training definition with given id not found."),
+			@ApiResponse(code = 409, message = "Cannot edit released or archived training definition or cannot swap first level to the left."),
+			@ApiResponse(code = 500, message = "Unexpected condition was encountered.")
 			}
 	)
 	@PutMapping(value = "/{definitionId}/levels/{levelId}/swap-left")
@@ -252,7 +271,7 @@ public class TrainingDefinitionsRestController {
 			trainingDefinitionFacade.swapLeft(definitionId, levelId);
 			return new ResponseEntity<>(HttpStatus.NO_CONTENT);
 		} catch (FacadeLayerException ex) {
-				throw throwException(ex);
+				throw ExceptionSorter.throwException(ex);
 		}
 	}
 
@@ -261,8 +280,10 @@ public class TrainingDefinitionsRestController {
 			nickname = "swapRight",
 			response = Void.class)
 	@ApiResponses(value = {
-			@ApiResponse(code = 409, message = "The requested resource was not modified because of its status"),
-			@ApiResponse(code = 404, message = "The requested resource was not found")
+			@ApiResponse(code = 200, message = "The level has been swapped to the right."),
+			@ApiResponse(code = 404, message = "Training definition with given id not found."),
+			@ApiResponse(code = 409, message = "Cannot edit released or archived training definition or cannot swap last level to the right."),
+			@ApiResponse(code = 500, message = "Unexpected condition was encountered.")
 			}
 	)
 	@PutMapping(value = "/{definitionId}/levels/{levelId}/swap-right")
@@ -275,7 +296,7 @@ public class TrainingDefinitionsRestController {
 			trainingDefinitionFacade.swapRight(definitionId, levelId);
 			return new ResponseEntity<>(HttpStatus.NO_CONTENT);
 		} catch (FacadeLayerException ex) {
-				throw throwException(ex);
+				throw ExceptionSorter.throwException(ex);
 		}
 	}
 
@@ -284,8 +305,10 @@ public class TrainingDefinitionsRestController {
 			nickname = "deleteTrainingDefinition",
 			response = Void.class)
 	@ApiResponses(value = {
-			@ApiResponse(code = 409, message = "The requested resource was not deleted because of its status"),
-			@ApiResponse(code = 404, message = "The requested resource was not found")
+			@ApiResponse(code = 200, message = "Training definition deleted."),
+			@ApiResponse(code = 404, message = "Training definition or one of levels cannot be found."),
+			@ApiResponse(code = 409, message = "Cannot delete released training definition."),
+			@ApiResponse(code = 500, message = "Unexpected condition was encountered.")
 			}
 	)
 	@DeleteMapping(value = "/{id}")
@@ -296,7 +319,7 @@ public class TrainingDefinitionsRestController {
 			trainingDefinitionFacade.delete(id);
 			return new ResponseEntity<>(HttpStatus.OK);
 		} catch (FacadeLayerException ex) {
-				throw throwException(ex);
+				throw ExceptionSorter.throwException(ex);
 		}
 	}
 
@@ -305,8 +328,11 @@ public class TrainingDefinitionsRestController {
 			nickname = "deleteOneLevel",
 			response = Void.class)
 	@ApiResponses(value = {
-			@ApiResponse(code = 409, message = "The requested resource was not modified because of its status"),
-			@ApiResponse(code = 404, message = "The requested resource was not found")
+			@ApiResponse(code = 200, message = "The level deleted."),
+			@ApiResponse(code = 404, message = "Level with given id not found."),
+			@ApiResponse(code = 409, message = "Cannot edit released or archived training definition."),
+			@ApiResponse(code = 500, message = "Unexpected condition was encountered.")
+
 			}
 	)
 	@DeleteMapping(value = "/{definitionId}/levels/{levelId}")
@@ -319,7 +345,7 @@ public class TrainingDefinitionsRestController {
 			trainingDefinitionFacade.deleteOneLevel(definitionId, levelId);
 			return new ResponseEntity<>(HttpStatus.NO_CONTENT);
 		} catch (FacadeLayerException ex) {
-				throw throwException(ex);
+				throw ExceptionSorter.throwException(ex);
 		}
 	}
 
@@ -329,8 +355,11 @@ public class TrainingDefinitionsRestController {
 			response = Void.class,
 			consumes = "application/json")
 	@ApiResponses(value = {
-			@ApiResponse(code = 409, message = "The requested resource was not modified because of its status"),
-			@ApiResponse(code = 404, message = "The requested resource was not found")
+			@ApiResponse(code = 200, message = "Game level updated."),
+			@ApiResponse(code = 400, message = "Given game level is not valid."),
+			@ApiResponse(code = 409, message = "Cannot edit released or archived training definition."),
+			@ApiResponse(code = 404, message = "Level not found in definition."),
+			@ApiResponse(code = 500, message = "Unexpected condition was encountered.")
 			}
 	)
 	@PutMapping(value = "/{definitionId}/game-levels", consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -343,7 +372,7 @@ public class TrainingDefinitionsRestController {
 			trainingDefinitionFacade.updateGameLevel(definitionId, gameLevelUpdateDTO);
 			return new ResponseEntity<>(HttpStatus.NO_CONTENT);
 		} catch (FacadeLayerException ex) {
-				throw throwException(ex);
+				throw ExceptionSorter.throwException(ex);
 		}
 	}
 
@@ -353,8 +382,11 @@ public class TrainingDefinitionsRestController {
 			response = Void.class,
 			consumes = "application/json")
 	@ApiResponses(value = {
-			@ApiResponse(code = 409, message = "The requested resource was not modified because of its status"),
-			@ApiResponse(code = 404, message = "The requested resource was not found")
+			@ApiResponse(code = 200, message = "Info level updated."),
+			@ApiResponse(code = 400, message = "Given info level is not valid."),
+			@ApiResponse(code = 409, message = "Cannot edit released or archived training definition."),
+			@ApiResponse(code = 404, message = "Level not found in definition."),
+			@ApiResponse(code = 500, message = "Unexpected condition was encountered.")
 			}
 	)
 	@PutMapping(value = "/{definitionId}/info-levels", consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -367,7 +399,7 @@ public class TrainingDefinitionsRestController {
 			trainingDefinitionFacade.updateInfoLevel(definitionId, infoLevelUpdateDTO);
 			return new ResponseEntity<>(HttpStatus.NO_CONTENT);
 		} catch (FacadeLayerException ex) {
-				throw throwException(ex);
+				throw ExceptionSorter.throwException(ex);
 		}
 	}
 
@@ -377,8 +409,11 @@ public class TrainingDefinitionsRestController {
 			response = Void.class,
 			consumes = "application/json")
 	@ApiResponses(value = {
-			@ApiResponse(code = 409, message = "The requested resource was not modified because of its status"),
-			@ApiResponse(code = 404, message = "The requested resource was not found")
+			@ApiResponse(code = 200, message = "Assessment level updated."),
+			@ApiResponse(code = 400, message = "Given assessment level is not valid."),
+			@ApiResponse(code = 409, message = "Cannot edit released or archived training definition."),
+			@ApiResponse(code = 404, message = "Level not found in definition."),
+			@ApiResponse(code = 500, message = "Unexpected condition was encountered.")
 			}
 	)
 	@PutMapping(value = "/{definitionId}/assessment-levels", consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -391,7 +426,7 @@ public class TrainingDefinitionsRestController {
 			trainingDefinitionFacade.updateAssessmentLevel(definitionId, assessmentLevelUpdateDTO);
 			return new ResponseEntity<>(HttpStatus.NO_CONTENT);
 		} catch (FacadeLayerException ex) {
-				throw throwException(ex);
+				throw ExceptionSorter.throwException(ex);
 		}
 	}
 
@@ -401,7 +436,9 @@ public class TrainingDefinitionsRestController {
 			nickname = "findLevelById",
 			produces = "application/json")
 	@ApiResponses(value = {
-			@ApiResponse(code = 404, message = "The requested resource was not found")
+			@ApiResponse(code = 200, message = "Level has been found.", response = AbstractLevelDTO.class),
+			@ApiResponse(code = 404, message = "Level with given id not found."),
+			@ApiResponse(code = 500, message = "Unexpected condition was encountered.")
 	})
 	@GetMapping(value = "/levels/{levelId}", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<Object> findLevelById(@ApiParam(value = "Id of wanted level") @PathVariable(value = "levelId") Long levelId,
@@ -422,7 +459,10 @@ public class TrainingDefinitionsRestController {
 			nickname = "createLevel",
 			produces = "application/json")
 	@ApiResponses(value = {
-			@ApiResponse(code = 404, message = "The requested resource was not found"),
+			@ApiResponse(code = 200, message = "Level created.", response = AbstractLevelDTO.class),
+			@ApiResponse(code = 404, message = "Training definition with given id not found."),
+			@ApiResponse(code = 409, message = "Cannot create level in released or archived training definition."),
+			@ApiResponse(code = 500, message = "Unexpected condition was encountered.")
 			}
 	)
 	@PostMapping(value = "/{definitionId}/levels/{levelType}")
@@ -443,24 +483,6 @@ public class TrainingDefinitionsRestController {
 			throw new ResourceNotCreatedException(ex.getLocalizedMessage());
 		}
 	}
-
-		private RuntimeException throwException(RuntimeException ex) {
-				switch (((ServiceLayerException) ex.getCause()).getCode()) {
-						case WRONG_LEVEL_TYPE:
-								return new BadRequestException(ex.getLocalizedMessage());
-						case RESOURCE_NOT_FOUND:
-								return new ResourceNotFoundException(ex.getLocalizedMessage());
-						case NO_NEXT_LEVEL:
-								return new ResourceNotFoundException(ex.getLocalizedMessage());
-						case UNEXPECTED_ERROR:
-								return new InternalServerErrorException(ex.getLocalizedMessage());
-						case RESOURCE_CONFLICT:
-								return new ConflictException(ex.getLocalizedMessage());
-						case NO_AVAILABLE_SANDBOX:
-						default:
-								return new ServiceUnavailableException(ex.getLocalizedMessage());
-				}
-		}
 
 
 }

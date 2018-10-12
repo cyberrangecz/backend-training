@@ -157,7 +157,7 @@ public class TrainingDefinitionServiceTest {
     public void getNonexistentTrainingDefinitionById() {
         Long id = 6L;
         thrown.expect(ServiceLayerException.class);
-        thrown.expectMessage("Training definition with id: " + id + " cannot be found.");
+        thrown.expectMessage("Training definition with id: " + id + " not found.");
         trainingDefinitionService.findById(id);
     }
 

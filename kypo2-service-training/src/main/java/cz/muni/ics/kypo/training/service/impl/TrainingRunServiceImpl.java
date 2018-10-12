@@ -90,7 +90,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
   public Page<TrainingRun> findAllByParticipantRefLogin(Pageable pageable) {
     LOG.debug("findAllByParticipantRefId({})");
     Page<TrainingRun> trainingRuns = trainingRunRepository.findAllByParticipantRefLogin(getSubOfLoggedInUser(), pageable);
-      return trainingRuns;
+    return trainingRuns;
   }
 
   @Override
@@ -304,7 +304,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
       }
       throw new ServiceLayerException("Hint with id " + hintId + " is not in current level of training run: " + trainingRunId +".", ErrorCode.RESOURCE_CONFLICT);
     } else {
-      throw new ServiceLayerException("Current level is not game level and does not contain hints.", ErrorCode.WRONG_LEVEL_TYPE);
+      throw new ServiceLayerException("Current level is not game level and does not have hints.", ErrorCode.WRONG_LEVEL_TYPE);
     }
   }
 

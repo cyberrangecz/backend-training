@@ -50,7 +50,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
 	public TrainingDefinition findById(long id) {
 		LOG.debug("findById({})", id);
 		return trainingDefinitionRepository.findById(id).orElseThrow(
-				() -> new ServiceLayerException("Training definition with id: " + id + " cannot be found.", ErrorCode.RESOURCE_NOT_FOUND));
+				() -> new ServiceLayerException("Training definition with id: " + id + " not found.", ErrorCode.RESOURCE_NOT_FOUND));
 	}
 
 	@Override
