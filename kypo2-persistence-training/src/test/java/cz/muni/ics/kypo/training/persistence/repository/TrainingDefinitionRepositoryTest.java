@@ -17,9 +17,11 @@ import cz.muni.ics.kypo.training.persistence.model.SandboxDefinitionRef;
 import cz.muni.ics.kypo.training.persistence.model.TrainingDefinition;
 import cz.muni.ics.kypo.training.persistence.model.enums.TDState;
 
+import java.util.Arrays;
 import java.util.List;
 
 import static junit.framework.TestCase.assertEquals;
+import static junit.framework.TestCase.assertNotNull;
 import static junit.framework.TestCase.assertTrue;
 
 @RunWith(SpringRunner.class)
@@ -72,7 +74,7 @@ public class TrainingDefinitionRepositoryTest {
 	}
 
 	@Test
-	public void FindAllBySandboxDefinitionRefId() {
+	public void findAllBySandboxDefinitionRefId() {
 		entityManager.persist(trainingDefinition1);
 		entityManager.persist(trainingDefinition2);
 		entityManager.persist(trainingDefinition3);
