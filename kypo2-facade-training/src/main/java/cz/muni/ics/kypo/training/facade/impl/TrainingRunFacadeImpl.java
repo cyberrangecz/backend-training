@@ -67,15 +67,23 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
   @Transactional(readOnly = true)
   public PageResultResource<TrainingRunDTO> findAll(Predicate predicate, Pageable pageable) {
     LOG.debug("findAll({},{})", predicate, pageable);
-    return beanMapping.mapToPageResultDTO(trainingRunService.findAll(predicate, pageable), TrainingRunDTO.class);
+    try {
+      return beanMapping.mapToPageResultDTO(trainingRunService.findAll(predicate, pageable), TrainingRunDTO.class);
+    } catch (ServiceLayerException ex) {
+      throw new FacadeLayerException(ex);
+    }
   }
 
   @Override
   @Transactional(readOnly = true)
   public PageResultResource<AccessedTrainingRunDTO> findAllAccessedTrainingRuns(Pageable pageable) {
     LOG.debug("findAllAccessedTrainingRuns()");
-    Page<TrainingRun> trainingRuns = trainingRunService.findAllByParticipantRefLogin(pageable);
-    return convertToAccessedRunDTO(trainingRuns);
+    try {
+      Page<TrainingRun> trainingRuns = trainingRunService.findAllByParticipantRefLogin(pageable);
+      return convertToAccessedRunDTO(trainingRuns);
+    } catch (ServiceLayerException ex) {
+      throw new FacadeLayerException(ex);
+    }
   }
 
   @Override

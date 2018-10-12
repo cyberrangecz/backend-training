@@ -288,7 +288,7 @@ public class TrainingRunServiceTest {
 		@Test
     public void getHintOfNonGameLevel() {
         thrown.expect(ServiceLayerException.class);
-        thrown.expectMessage("Current level is not game level and does not have hints.");
+        thrown.expectMessage("Current level is not game level and does not contain hints.");
         given(trainingRunRepository.findByIdWithLevel(trainingRun2.getId())).willReturn(Optional.of(trainingRun2));
         trainingRunService.getHint(trainingRun2.getId(), hint1.getId());
 
