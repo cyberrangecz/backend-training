@@ -79,7 +79,6 @@ public class TrainingDefinitionRepositoryTest {
 
 		List<TrainingDefinition> trainingDefinitions = trainingDefinitionRepository
 				.findAllBySandBoxDefinitionRefId(sandboxDefinitionRef1.getSandboxDefinitionRef(), pageable).getContent();
-		System.out.println(trainingDefinitions);
 		assertTrue(trainingDefinitions.contains(trainingDefinition1));
 		assertTrue(trainingDefinitions.contains(trainingDefinition2));
 		assertEquals(2, trainingDefinitions.size());
