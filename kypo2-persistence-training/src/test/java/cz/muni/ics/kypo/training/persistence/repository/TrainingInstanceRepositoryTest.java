@@ -13,11 +13,13 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertNotNull;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 @RunWith(SpringRunner.class)
@@ -64,6 +66,12 @@ public class TrainingInstanceRepositoryTest {
 		}
 
 		@Test
+		public void findById_IdNotInTheDatabase() {
+				Optional<TrainingInstance> optionalTrainingInstance = trainingInstanceRepository.findById(5L);
+				assertFalse(optionalTrainingInstance.isPresent());
+		}
+
+		@Test
 		public void findAll() {
 			entityManager.persist(trainingInstance1);
 			entityManager.persist(trainingInstance2);
@@ -75,22 +83,12 @@ public class TrainingInstanceRepositoryTest {
 		}
 
 		@Test
-		public void update() {
-
+		public void findAll_emptyDatabase() {
+			List<TrainingInstance> expectedTrainingInstances = new ArrayList<>();
+			List<TrainingInstance> resultTrainingInstances = trainingInstanceRepository.findAll();
+			assertNotNull(resultTrainingInstances);
+			assertEquals(expectedTrainingInstances.size(), resultTrainingInstances.size());
+			assertEquals(expectedTrainingInstances, resultTrainingInstances);
 		}
 
-		@Test
-		public void create() {
-
-		}
-
-		@Test
-		public void delete() {
-
-		}
-
-		@Test
-		public void allocateSandboxes() {
-
-		}
 }
