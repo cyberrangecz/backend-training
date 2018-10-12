@@ -13,11 +13,13 @@ import org.springframework.test.context.junit4.SpringRunner;
 import cz.muni.ics.kypo.training.persistence.config.PersistenceConfigTest;
 import cz.muni.ics.kypo.training.persistence.model.InfoLevel;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 
 @RunWith(SpringRunner.class)
@@ -57,6 +59,12 @@ public class InfoLevelRepositoryTest {
 	}
 
 	@Test
+	public void findById_IdNotInTheDatabase() {
+		Optional<InfoLevel> infoLevelOptional = infoLevelRepository.findById(2L);
+		assertFalse(infoLevelOptional.isPresent());
+	}
+
+	@Test
 	public void findAll() {
 		List<InfoLevel> expectedInfoLevels = Arrays.asList(infoLevel, infoLevel2);
 		expectedInfoLevels.stream().forEach(i -> entityManager.persist(i));
@@ -65,5 +73,14 @@ public class InfoLevelRepositoryTest {
 		assertEquals(expectedInfoLevels, resultInfoLevels);
 		assertEquals(expectedInfoLevels.size(), resultInfoLevels.size());
 	}
+
+	@Test
+	public void findAll_emptyDatabase() {
+		List<InfoLevel> expectedInfoLevels = new ArrayList<>();
+		List<InfoLevel> resultInfoLevels = infoLevelRepository.findAll();
+		assertNotNull(resultInfoLevels);
+		assertEquals(expectedInfoLevels.size(), resultInfoLevels.size());
+		assertEquals(expectedInfoLevels, resultInfoLevels);
+ 	}
 
 }
