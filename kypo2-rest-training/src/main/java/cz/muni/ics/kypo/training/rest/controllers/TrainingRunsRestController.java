@@ -79,7 +79,7 @@ public class TrainingRunsRestController {
   @ApiResponses(value = {
       @ApiResponse(code = 200, message = "Training run with given id found.", response = TrainingRunDTO.class),
       @ApiResponse(code = 404, message = "Training run with given id not found."),
-			@ApiResponse(code = 500, message = "Some error occurred.")
+			@ApiResponse(code = 500, message = "Unexpected condition was encountered.")
   })
   @GetMapping(value = "/{runId}", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<Object> findTrainingRunById(@ApiParam(value = "Training Run ID", required = true) @PathVariable Long runId,
@@ -119,7 +119,7 @@ public class TrainingRunsRestController {
   )
   @ApiResponses(value = {
       @ApiResponse(code = 200, message = "All training runs found.", response = TrainingRunDTO.class, responseContainer = "List"),
-			@ApiResponse(code = 500, message = "Some error occurred.")
+			@ApiResponse(code = 500, message = "Unexpected condition was encountered.")
   })
   @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<Object> findAllTrainingRuns(@QuerydslPredicate(root = TrainingRun.class) Predicate predicate, 
@@ -192,7 +192,7 @@ public class TrainingRunsRestController {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "All accessed training runs found.", response = AccessedTrainingRunDTO.class, responseContainer = "List"),
-						@ApiResponse(code = 500, message = "Some error occurred.")
+						@ApiResponse(code = 500, message = "Unexpected condition was encountered.")
     })
     @GetMapping(value = "/accessed", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> getAllAccessedTrainingRuns(
@@ -220,7 +220,7 @@ public class TrainingRunsRestController {
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Next level found.", response = AbstractLevelDTO.class),
             @ApiResponse(code = 404, message = "There is no next level or could not be found in database."),
-						@ApiResponse(code = 500, message = "Some error occurred.")
+						@ApiResponse(code = 500, message = "Unexpected condition was encountered.")
     })
     @GetMapping(value = "/{runId}/next-levels", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> getNextLevel(@ApiParam(value = "Training Run ID", required = true) @PathVariable Long runId,
@@ -254,7 +254,7 @@ public class TrainingRunsRestController {
             @ApiResponse(code = 200, message = "Solution found.", response = String.class),
             @ApiResponse(code = 404, message = "Training run with given id cannot be found."),
             @ApiResponse(code = 400, message = "Current level is not game level and does not have solution."),
-						@ApiResponse(code = 500, message = "Some error occurred.")
+						@ApiResponse(code = 500, message = "Unexpected condition was encountered.")
     })
     @GetMapping(value = "/{runId}/solutions")
     public ResponseEntity<String> getSolution(@ApiParam(value = "Training Run ID", required = true) @PathVariable Long runId){
@@ -284,7 +284,7 @@ public class TrainingRunsRestController {
             @ApiResponse(code = 404, message = "Hint with given id not found."),
 						@ApiResponse(code = 409, message = "Hint with given id is not in current level of training run."),
             @ApiResponse(code = 400, message = "Current level is not game level and does not have hints."),
-						@ApiResponse(code = 500, message = "Some error occurred.")
+						@ApiResponse(code = 500, message = "Unexpected condition was encountered.")
     })
     @GetMapping(value = "/{runId}/hints/{hintId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> getHint(@ApiParam(value = "Training Run ID", required = true) @PathVariable Long runId,
@@ -319,7 +319,7 @@ public class TrainingRunsRestController {
             @ApiResponse(code = 200, message = "Flag checked.", response = IsCorrectFlagDTO.class),
             @ApiResponse(code = 404, message = "Training run with given id not found."),
             @ApiResponse(code = 400, message = "Current level is not game level and does not have flag."),
-						@ApiResponse(code = 500, message = "Some error occurred.")
+						@ApiResponse(code = 500, message = "Unexpected condition was encountered.")
     })
     @GetMapping(value = "/{runId}/is-correct-flag", produces = MediaType.APPLICATION_JSON_VALUE)
 

@@ -85,6 +85,7 @@ public class TrainingInstancesRestController {
   @ApiResponses(value = {
   		@ApiResponse(code = 200, message = "Training instance found", response = TrainingInstanceDTO.class),
       @ApiResponse(code = 404, message = "Training instance with given id not found."),
+			@ApiResponse(code = 500, message = "Unexpected condition was encountered.")
 
   })
   @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -126,7 +127,7 @@ public class TrainingInstancesRestController {
   )
   @ApiResponses(value = {
   		@ApiResponse(code = 200, message = "All training instances found.", response = TrainingInstanceDTO.class, responseContainer = "List"),
-			@ApiResponse(code = 500, message = "Some error occurred.")
+			@ApiResponse(code = 500, message = "Unexpected condition was encountered.")
   })
   @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<Object> findAllTrainingInstances(@QuerydslPredicate(root = TrainingInstance.class) Predicate predicate, 
@@ -151,7 +152,7 @@ public class TrainingInstancesRestController {
 	@ApiResponses(value = {
 			@ApiResponse(code = 201, message = "Training instance created.", response = NewTrainingInstanceDTO.class),
 			@ApiResponse(code = 400, message = "Given training instance is not valid."),
-			@ApiResponse(code = 500, message = "Some error occurred.")
+			@ApiResponse(code = 500, message = "Unexpected condition was encountered.")
 	})
 	@PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<Object> createTrainingInstance(@ApiParam(name = "Training instance to be created") @Valid @RequestBody TrainingInstanceCreateDTO trainingInstanceCreateDTO,
@@ -176,7 +177,7 @@ public class TrainingInstancesRestController {
 			@ApiResponse(code = 400, message = "Given training instance is not valid."),
 			@ApiResponse(code = 404, message = "Training instance with given id not found."),
 			@ApiResponse(code = 409, message = "Starting time of instance must be in future."),
-			@ApiResponse(code = 500, message = "Some error occurred.")
+			@ApiResponse(code = 500, message = "Unexpected condition was encountered.")
 	})
 	@PutMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<String> updateTrainingInstance(@ApiParam(name = "Training instance to be updated") @RequestBody TrainingInstanceUpdateDTO trainingInstanceUpdateDTO){
@@ -195,7 +196,7 @@ public class TrainingInstancesRestController {
 			@ApiResponse(code = 200, message = "Training instance deleted."),
 			@ApiResponse(code = 404, message = "Training instance with given id not found."),
 			@ApiResponse(code = 409, message = "Only finished instances can be deleted."),
-			@ApiResponse(code = 500, message = "Some error occurred.")
+			@ApiResponse(code = 500, message = "Unexpected condition was encountered.")
 	})
 	@DeleteMapping(value = "/{id}")
 	public ResponseEntity<Void> deleteTrainingInstance(@ApiParam(value = "Id of training instance to be deleted") @PathVariable(value = "id") Long id) {
@@ -215,7 +216,7 @@ public class TrainingInstancesRestController {
 	@ApiResponses(value = {
 			@ApiResponse(code = 200, message = "Sandboxes have been allocated."),
 			@ApiResponse(code = 404, message = "Training instance with given id not found."),
-			@ApiResponse(code = 500, message = "Some error occurred.")
+			@ApiResponse(code = 500, message = "Unexpected condition was encountered.")
 	})
 	@PostMapping(value = "/{instanceId}/sandbox-instances")
 	public ResponseEntity<Void> allocateSandboxes(

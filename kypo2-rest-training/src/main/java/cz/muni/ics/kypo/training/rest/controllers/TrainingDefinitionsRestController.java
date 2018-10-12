@@ -89,7 +89,7 @@ public class TrainingDefinitionsRestController {
   @ApiResponses(value = {
   		@ApiResponse(code = 200, message = "Training definition found.", response = TrainingDefinitionDTO.class),
       @ApiResponse(code = 404, message = "Training definition with given id not found."),
-			@ApiResponse(code = 500, message = "Some error occurred.")
+			@ApiResponse(code = 500, message = "Unexpected condition was encountered.")
   })
   @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<Object> findTrainingDefinitionById(
@@ -131,7 +131,7 @@ public class TrainingDefinitionsRestController {
   )
   @ApiResponses(value = {
   		@ApiResponse(code = 200, message = "All training definitions found.", response = TrainingDefinitionDTO.class, responseContainer = "List"),
-			@ApiResponse(code = 500, message = "Some error occurred.")
+			@ApiResponse(code = 500, message = "Unexpected condition was encountered.")
   })
   @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<Object> findAllTrainingDefinitions(
@@ -160,7 +160,7 @@ public class TrainingDefinitionsRestController {
   )
   @ApiResponses( value = {
   				@ApiResponse(code = 200, message = "All training definitions by sandbox definition found.", response = TrainingDefinitionDTO.class, responseContainer = "List"),
-					@ApiResponse(code = 500, message = "Some error occurred.")
+					@ApiResponse(code = 500, message = "Unexpected condition was encountered.")
   })
   @GetMapping(value = "/sandbox-definitions/{sandboxDefinitionId}", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<Object> findAllTrainingDefinitionsBySandboxDefinitionId(
@@ -187,7 +187,7 @@ public class TrainingDefinitionsRestController {
   @ApiResponses(value = {
   				@ApiResponse(code = 200, message = "The requested resource has been created.", response = TrainingDefinitionCreateDTO.class),
           @ApiResponse(code = 400, message = "Given training definition is not valid"),
-					@ApiResponse(code = 500, message = "Some error occurred.")
+					@ApiResponse(code = 500, message = "Unexpected condition was encountered.")
   })
   @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<TrainingDefinitionCreateDTO> createTrainingDefinition(
@@ -212,7 +212,7 @@ public class TrainingDefinitionsRestController {
 					@ApiResponse(code = 400, message = "Given training definition is not valid"),
           @ApiResponse(code = 404, message = "Training definition with given id not found."),
           @ApiResponse(code = 409, message = "Cannot edit released or archived training definition."),
-					@ApiResponse(code = 500, message = "Some error occurred.")
+					@ApiResponse(code = 500, message = "Unexpected condition was encountered.")
   })
   @PutMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<Void> updateTrainingDefinition(
@@ -235,7 +235,7 @@ public class TrainingDefinitionsRestController {
 			@ApiResponse(code = 200, message = "Training definition cloned.", response = TrainingDefinitionDTO.class),
 			@ApiResponse(code = 404, message = "Training definition with given id not found."),
 			@ApiResponse(code = 409, message = "Cannot copy unreleased training definition."),
-			@ApiResponse(code = 500, message = "Some error occurred.")
+			@ApiResponse(code = 500, message = "Unexpected condition was encountered.")
 			}
 	)
 	@PostMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -258,7 +258,7 @@ public class TrainingDefinitionsRestController {
 			@ApiResponse(code = 200, message = "The level has been swapped to the left."),
 			@ApiResponse(code = 404, message = "Training definition with given id not found."),
 			@ApiResponse(code = 409, message = "Cannot edit released or archived training definition or cannot swap first level to the left."),
-			@ApiResponse(code = 500, message = "Some error occurred.")
+			@ApiResponse(code = 500, message = "Unexpected condition was encountered.")
 			}
 	)
 	@PutMapping(value = "/{definitionId}/levels/{levelId}/swap-left")
@@ -283,7 +283,7 @@ public class TrainingDefinitionsRestController {
 			@ApiResponse(code = 200, message = "The level has been swapped to the right."),
 			@ApiResponse(code = 404, message = "Training definition with given id not found."),
 			@ApiResponse(code = 409, message = "Cannot edit released or archived training definition or cannot swap last level to the right."),
-			@ApiResponse(code = 500, message = "Some error occurred.")
+			@ApiResponse(code = 500, message = "Unexpected condition was encountered.")
 			}
 	)
 	@PutMapping(value = "/{definitionId}/levels/{levelId}/swap-right")
@@ -308,7 +308,7 @@ public class TrainingDefinitionsRestController {
 			@ApiResponse(code = 200, message = "Training definition deleted."),
 			@ApiResponse(code = 404, message = "Training definition or one of levels cannot be found."),
 			@ApiResponse(code = 409, message = "Cannot delete released training definition."),
-			@ApiResponse(code = 500, message = "Some error occurred.")
+			@ApiResponse(code = 500, message = "Unexpected condition was encountered.")
 			}
 	)
 	@DeleteMapping(value = "/{id}")
@@ -331,7 +331,7 @@ public class TrainingDefinitionsRestController {
 			@ApiResponse(code = 200, message = "The level deleted."),
 			@ApiResponse(code = 404, message = "Level with given id not found."),
 			@ApiResponse(code = 409, message = "Cannot edit released or archived training definition."),
-			@ApiResponse(code = 500, message = "Some error occurred.")
+			@ApiResponse(code = 500, message = "Unexpected condition was encountered.")
 
 			}
 	)
@@ -359,7 +359,7 @@ public class TrainingDefinitionsRestController {
 			@ApiResponse(code = 400, message = "Given game level is not valid."),
 			@ApiResponse(code = 409, message = "Cannot edit released or archived training definition."),
 			@ApiResponse(code = 404, message = "Level not found in definition."),
-			@ApiResponse(code = 500, message = "Some error occurred.")
+			@ApiResponse(code = 500, message = "Unexpected condition was encountered.")
 			}
 	)
 	@PutMapping(value = "/{definitionId}/game-levels", consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -386,7 +386,7 @@ public class TrainingDefinitionsRestController {
 			@ApiResponse(code = 400, message = "Given info level is not valid."),
 			@ApiResponse(code = 409, message = "Cannot edit released or archived training definition."),
 			@ApiResponse(code = 404, message = "Level not found in definition."),
-			@ApiResponse(code = 500, message = "Some error occurred.")
+			@ApiResponse(code = 500, message = "Unexpected condition was encountered.")
 			}
 	)
 	@PutMapping(value = "/{definitionId}/info-levels", consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -413,7 +413,7 @@ public class TrainingDefinitionsRestController {
 			@ApiResponse(code = 400, message = "Given assessment level is not valid."),
 			@ApiResponse(code = 409, message = "Cannot edit released or archived training definition."),
 			@ApiResponse(code = 404, message = "Level not found in definition."),
-			@ApiResponse(code = 500, message = "Some error occurred.")
+			@ApiResponse(code = 500, message = "Unexpected condition was encountered.")
 			}
 	)
 	@PutMapping(value = "/{definitionId}/assessment-levels", consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -438,7 +438,7 @@ public class TrainingDefinitionsRestController {
 	@ApiResponses(value = {
 			@ApiResponse(code = 200, message = "Level has been found.", response = AbstractLevelDTO.class),
 			@ApiResponse(code = 404, message = "Level with given id not found."),
-			@ApiResponse(code = 500, message = "Some error occurred.")
+			@ApiResponse(code = 500, message = "Unexpected condition was encountered.")
 	})
 	@GetMapping(value = "/levels/{levelId}", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<Object> findLevelById(@ApiParam(value = "Id of wanted level") @PathVariable(value = "levelId") Long levelId,
@@ -462,7 +462,7 @@ public class TrainingDefinitionsRestController {
 			@ApiResponse(code = 200, message = "Level created.", response = AbstractLevelDTO.class),
 			@ApiResponse(code = 404, message = "Training definition with given id not found."),
 			@ApiResponse(code = 409, message = "Cannot create level in released or archived training definition."),
-			@ApiResponse(code = 500, message = "Some error occurred.")
+			@ApiResponse(code = 500, message = "Unexpected condition was encountered.")
 			}
 	)
 	@PostMapping(value = "/{definitionId}/levels/{levelType}")
