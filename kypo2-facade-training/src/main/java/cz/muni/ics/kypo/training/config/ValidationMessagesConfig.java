@@ -19,6 +19,7 @@ public class ValidationMessagesConfig {
 
 	@Bean
 	public MessageSource messageSourceValidation() {
+		//Locale.setDefault(new Locale("cs", "CZ"));
 		final ReloadableResourceBundleMessageSource source = new ReloadableResourceBundleMessageSource();
 		source.setBasename("classpath:locale/ValidationMessages");
 		source.setUseCodeAsDefaultMessage(true);
