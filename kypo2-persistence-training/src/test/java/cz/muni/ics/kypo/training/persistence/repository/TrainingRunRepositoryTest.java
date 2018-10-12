@@ -98,7 +98,7 @@ public class TrainingRunRepositoryTest {
 	@Test
 	public void findById() throws Exception {
 		long expectedId = entityManager.persist(trainingRun1).getId();
-		Optional<TrainingRun> optionalTR = trainingRunRepository.findById(expectedId);
+		Optional<TrainingRun> optionalTR = trainingRunRepository.findByIdWithLevel(expectedId);
 		TrainingRun tr = optionalTR.orElseThrow(() -> new Exception("Training run should be found"));
 		assertEquals(trainingRun1, tr);
 	}
