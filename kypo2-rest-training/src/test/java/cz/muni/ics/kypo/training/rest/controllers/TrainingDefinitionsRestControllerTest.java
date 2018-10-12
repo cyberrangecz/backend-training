@@ -210,8 +210,10 @@ public class TrainingDefinitionsRestControllerTest {
 		trainingDefinitionUpdateDTO = new TrainingDefinitionUpdateDTO();
 		trainingDefinitionUpdateDTO.setId(4L);
 		trainingDefinitionUpdateDTO.setState(TDState.UNRELEASED);
-		trainingDefinitionUpdateDTO.setState(TDState.RELEASED);
 		trainingDefinitionUpdateDTO.setTitle("training definition title");
+		trainingDefinitionUpdateDTO.setAuthorRef(authorRefSetDTO);
+		trainingDefinitionUpdateDTO.setSandBoxDefinitionRef(sandboxDefinitionRefDTO);
+		trainingDefinitionUpdateDTO.setShowStepperBar(false);
 
 		trainingDefinitionCreateDTO = new TrainingDefinitionCreateDTO();
 		trainingDefinitionCreateDTO.setDescription("TD desc");
