@@ -384,7 +384,8 @@ CREATE TABLE training_definition (
     state character varying(128) NOT NULL,
     title character varying(255) NOT NULL,
     sand_box_definition_ref_id bigint,
-    starting_level bigint
+    starting_level bigint,
+    show_stepper_bar boolean
 );
 
 
@@ -846,7 +847,7 @@ SELECT pg_catalog.setval('sandbox_instance_ref_id_seq', 1, false);
 -- Data for Name: training_definition; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY training_definition (id, description, outcomes, prerequisities, state, title, sand_box_definition_ref_id) FROM stdin;
+COPY training_definition (id, description, outcomes, prerequisities, state, title, sand_box_definition_ref_id, show_stepper_bar) FROM stdin;
 \.
 
 

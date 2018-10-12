@@ -5,11 +5,8 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import cz.muni.ics.kypo.training.api.PageResultResource;
 import cz.muni.ics.kypo.training.api.dto.AuthorRefDTO;
 import cz.muni.ics.kypo.training.api.dto.SandboxDefinitionRefDTO;
-import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelCreateDTO;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelUpdateDTO;
-import cz.muni.ics.kypo.training.api.dto.gamelevel.GameLevelCreateDTO;
 import cz.muni.ics.kypo.training.api.dto.gamelevel.GameLevelUpdateDTO;
-import cz.muni.ics.kypo.training.api.dto.infolevel.InfoLevelCreateDTO;
 import cz.muni.ics.kypo.training.api.dto.infolevel.InfoLevelUpdateDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionCreateDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionDTO;
@@ -83,15 +80,12 @@ public class TrainingDefinitionsRestControllerTest {
 	private TrainingDefinitionUpdateDTO trainingDefinitionUpdateDTO;
 
 	private GameLevel gameLevel;
-	private GameLevelCreateDTO gameLevelCreateDTO;
 	private GameLevelUpdateDTO gameLevelUpdateDTO;
 
 	private InfoLevel infoLevel;
-	private InfoLevelCreateDTO infoLevelCreateDTO;
 	private InfoLevelUpdateDTO infoLevelUpdateDTO;
 
 	private AssessmentLevel assessmentLevel;
-	private AssessmentLevelCreateDTO alCreateDTO;
 	private AssessmentLevelUpdateDTO alUpdateDTO;
 
 	private Page p;
@@ -124,7 +118,6 @@ public class TrainingDefinitionsRestControllerTest {
 		gameLevelUpdateDTO.setEstimatedDuration(1000);
 		gameLevelUpdateDTO.setFlag("flag1");
 		gameLevelUpdateDTO.setIncorrectFlagLimit(4);
-		gameLevelUpdateDTO.setNextLevel(2L);
 		gameLevelUpdateDTO.setSolutionPenalized(true);
 		gameLevelUpdateDTO.setMaxScore(20);
 /*
@@ -139,10 +132,8 @@ public class TrainingDefinitionsRestControllerTest {
 */
 		infoLevelUpdateDTO = new InfoLevelUpdateDTO();
 		infoLevelUpdateDTO.setId(3L);
-		infoLevelUpdateDTO.setMaxScore(40);
 		infoLevelUpdateDTO.setTitle("some title");
 		infoLevelUpdateDTO.setContent("some content");
-		infoLevelUpdateDTO.setNextLevel(gameLevel.getId());
 /*
 		infoLevelCreateDTO = new InfoLevelCreateDTO();
 		infoLevelCreateDTO.setMaxScore(40);
@@ -172,7 +163,6 @@ public class TrainingDefinitionsRestControllerTest {
 		alUpdateDTO = new AssessmentLevelUpdateDTO();
 		alUpdateDTO.setInstructions("instructions");
 		alUpdateDTO.setMaxScore(50);
-		alUpdateDTO.setNextLevel(1L);
 		alUpdateDTO.setQuestions("test");
 		alUpdateDTO.setTitle("Some title");
 		alUpdateDTO.setType(AssessmentType.QUESTIONNAIRE);
@@ -207,28 +197,28 @@ public class TrainingDefinitionsRestControllerTest {
 		trainingDefinition1DTO.setId(1L);
 		trainingDefinition1DTO.setState(TDState.UNRELEASED);
 		trainingDefinition1DTO.setTitle("test");
-		trainingDefinition1DTO.setAuthorRefDTO(authorRefSetDTO);
+		trainingDefinition1DTO.setAuthorRef(authorRefSetDTO);
 		trainingDefinition1DTO.setSandBoxDefinitionRefDTO(sandboxDefinitionRefDTO);
 
 		trainingDefinition2DTO = new TrainingDefinitionDTO();
 		trainingDefinition2DTO.setId(2L);
 		trainingDefinition2DTO.setState(TDState.PRIVATED);
 		trainingDefinition2DTO.setTitle("test");
-		trainingDefinition2DTO.setAuthorRefDTO(authorRefSetDTO);
+		trainingDefinition2DTO.setAuthorRef(authorRefSetDTO);
 		trainingDefinition2DTO.setSandBoxDefinitionRefDTO(sandboxDefinitionRefDTO);
 
 		trainingDefinitionUpdateDTO = new TrainingDefinitionUpdateDTO();
 		trainingDefinitionUpdateDTO.setId(4L);
 		trainingDefinitionUpdateDTO.setState(TDState.UNRELEASED);
-		trainingDefinitionUpdateDTO.setStartingLevel(gameLevel.getId());
-		trainingDefinitionUpdateDTO.setState(TDState.RELEASED);
 		trainingDefinitionUpdateDTO.setTitle("training definition title");
+		trainingDefinitionUpdateDTO.setAuthorRef(authorRefSetDTO);
+		trainingDefinitionUpdateDTO.setSandBoxDefinitionRef(sandboxDefinitionRefDTO);
+		trainingDefinitionUpdateDTO.setShowStepperBar(false);
 
 		trainingDefinitionCreateDTO = new TrainingDefinitionCreateDTO();
 		trainingDefinitionCreateDTO.setDescription("TD desc");
 		trainingDefinitionCreateDTO.setOutcomes(new String[0]);
 		trainingDefinitionCreateDTO.setPrerequisities(new String[0]);
-		trainingDefinitionCreateDTO.setStartingLevel(1L);
 		trainingDefinitionCreateDTO.setState(TDState.ARCHIVED);
 		trainingDefinitionCreateDTO.setTitle("TD some title");
 
@@ -295,7 +285,7 @@ public class TrainingDefinitionsRestControllerTest {
 	@Test
 	public void swapLeft() throws Exception {
 		mockMvc.perform(put("/training-definitions/{definitionId}/levels/{levelId}/swap-left", trainingDefinition1.getId(), gameLevel.getId()))
-				.andExpect(status().isNoContent());
+				.andExpect(status().isOk());
 	}
 
 	@Test
@@ -321,7 +311,7 @@ public class TrainingDefinitionsRestControllerTest {
 	@Test
 	public void swapRight() throws Exception {
 		mockMvc.perform(put("/training-definitions/{definitionId}/levels/{levelId}/swap-right", trainingDefinition1.getId(), gameLevel.getId()))
-				.andExpect(status().isNoContent());
+				.andExpect(status().isOk());
 	}
 
 	@Test
@@ -372,7 +362,7 @@ public class TrainingDefinitionsRestControllerTest {
 	@Test
 	public void deleteLevel() throws Exception {
 		mockMvc.perform(delete("/training-definitions/{definitionId}/levels/{levelId}", trainingDefinition1.getId(), gameLevel.getId()))
-				.andExpect(status().isNoContent());
+				.andExpect(status().isOk());
 	}
 
 	@Test
@@ -453,12 +443,12 @@ public class TrainingDefinitionsRestControllerTest {
 				.andExpect(status().isConflict()).andReturn().getResolvedException();
 		assertEquals(ConflictException.class, exception.getClass());
 	}
-
+/*
 	@Test
 	public void createTrainingDefinition() throws Exception {
 		String valueTd = convertObjectToJsonBytes(trainingDefinitionCreateDTO);
 		given(objectMapper.writeValueAsString(any(Object.class))).willReturn(valueTd);
-		given(trainingDefinitionFacade.create(any(TrainingDefinitionCreateDTO.class))).willReturn(trainingDefinitionCreateDTO);
+		given(trainingDefinitionFacade.create(any(TrainingDefinitionCreateDTO.class))).willReturn(trainingDefinition1DTO);
 		MockHttpServletResponse result = mockMvc
 				.perform(post("/training-definitions").content(convertObjectToJsonBytes(trainingDefinitionCreateDTO))
 						.contentType(MediaType.APPLICATION_JSON_VALUE))
@@ -474,7 +464,7 @@ public class TrainingDefinitionsRestControllerTest {
 				.contentType(MediaType.APPLICATION_JSON_VALUE)).andExpect(status().isNotAcceptable()).andReturn().getResolvedException();
 		assertEquals(ResourceNotCreatedException.class, exception.getClass());
 	}
-
+*/
 
 
 	private static String convertObjectToJsonBytes(Object object) throws IOException {
