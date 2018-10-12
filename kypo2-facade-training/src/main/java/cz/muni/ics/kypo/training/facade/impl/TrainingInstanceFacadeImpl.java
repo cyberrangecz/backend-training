@@ -86,13 +86,16 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
   @Transactional
   public NewTrainingInstanceDTO create(TrainingInstanceCreateDTO trainingInstance) {
     LOG.debug("create({})", trainingInstance);
-		Objects.requireNonNull(trainingInstance);
-		TrainingInstance newTI = trainingInstanceService.create(beanMapping.mapTo(trainingInstance, TrainingInstance.class));
-		NewTrainingInstanceDTO newTIDTO = beanMapping.mapTo(newTI, NewTrainingInstanceDTO.class);
-		String newKeyword = trainingInstanceService.generatePassword(newTI, trainingInstance.getKeyword());
-		newTIDTO.setKeyword(newKeyword);
-		return newTIDTO;
-
+    try{
+      Objects.requireNonNull(trainingInstance);
+      TrainingInstance newTI = trainingInstanceService.create(beanMapping.mapTo(trainingInstance, TrainingInstance.class));
+      NewTrainingInstanceDTO newTIDTO = beanMapping.mapTo(newTI, NewTrainingInstanceDTO.class);
+      String newKeyword = trainingInstanceService.generatePassword(newTI, trainingInstance.getKeyword());
+      newTIDTO.setKeyword(newKeyword);
+      return newTIDTO;
+    } catch(ServiceLayerException ex) {
+      throw new FacadeLayerException(ex);
+    }
   }
 
   @Override
