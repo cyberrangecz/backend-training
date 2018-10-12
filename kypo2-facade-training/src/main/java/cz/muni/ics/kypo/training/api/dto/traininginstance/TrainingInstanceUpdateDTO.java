@@ -31,11 +31,11 @@ public class TrainingInstanceUpdateDTO {
 	private LocalDateTime endTime;
 	@NotEmpty(message = "{traininginstanceupdate.title.NotEmpty.message}")
 	private String title;
-	@NotEmpty(message = "{traininginstanceupdate.poolSize.NotEmpty.message}")
+	@NotNull(message = "{traininginstanceupdate.poolSize.NotNull.message}")
 	@Min(value = 1, message = "{traininginstanceupdate.poolSize.Min.message}")
 	@Max(value = 100, message = "{traininginstanceupdate.poolSize.Max.message}")
 	private int poolSize;
-	@NotEmpty(message = "{traininginstanceupdate.keyword.NotEmpty.message}")
+	//@NotEmpty(message = "{traininginstanceupdate.keyword.NotEmpty.message}")
 	private String keyword;
 	@NotNull(message = "{traininginstanceupdate.trainingDefinition.NotNull.message}")
 	private TrainingDefinitionDTO trainingDefinition;

@@ -31,7 +31,7 @@ public class TrainingInstanceCreateDTO {
 	private LocalDateTime endTime;
 	@NotEmpty(message = "{traininginstancecreate.title.NotEmpty.message}")
 	private String title;
-	@NotEmpty(message = "{traininginstancecreate.poolSize.NotEmpty.message}")
+	@NotNull(message = "{traininginstancecreate.poolSize.NotNull.message}")
 	@Min(value = 1, message = "{traininginstancecreate.poolSize.Min.message}")
 	@Max(value = 100, message = "{traininginstancecreate.poolSize.Max.message}")
 	private int poolSize;
