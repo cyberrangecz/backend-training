@@ -3,7 +3,7 @@ package cz.muni.ics.kypo.training.api.dto.trainingdefinition;
 import io.swagger.annotations.ApiModel;
 import cz.muni.ics.kypo.training.api.dto.AuthorRefDTO;
 import cz.muni.ics.kypo.training.api.dto.SandboxDefinitionRefDTO;
-import cz.muni.ics.kypo.training.api.dto.infolevel.BasicLevelInfoDTO;
+import cz.muni.ics.kypo.training.api.dto.BasicLevelInfoDTO;
 import cz.muni.ics.kypo.training.persistence.model.enums.TDState;
 
 import java.util.Arrays;
@@ -24,10 +24,11 @@ public class TrainingDefinitionDTO {
 	private String[] prerequisities;
 	private String[] outcomes;
 	private TDState state;
-	private Set<AuthorRefDTO> authorRefDTO = new HashSet<>();
-	private SandboxDefinitionRefDTO sandBoxDefinitionRefDTO;
+	private Set<AuthorRefDTO> authorRef = new HashSet<>();
+	private SandboxDefinitionRefDTO sandBoxDefinitionRef;
 	private Long startingLevel;
 	private Set<BasicLevelInfoDTO> basicLevelInfoDTOs;
+	private boolean showStepperBar;
 
 	public TrainingDefinitionDTO() {}
 
@@ -79,20 +80,20 @@ public class TrainingDefinitionDTO {
 		this.state = state;
 	}
 
-	public Set<AuthorRefDTO> getAuthorRefDTO() {
-		return authorRefDTO;
+	public Set<AuthorRefDTO> getAuthorRef() {
+		return authorRef;
 	}
 
-	public void setAuthorRefDTO(Set<AuthorRefDTO> authorRefDTO) {
-		this.authorRefDTO = authorRefDTO;
+	public void setAuthorRef(Set<AuthorRefDTO> authorRef) {
+		this.authorRef = authorRef;
 	}
 
-	public SandboxDefinitionRefDTO getSandBoxDefinitionRefDTO() {
-		return sandBoxDefinitionRefDTO;
+	public SandboxDefinitionRefDTO getSandBoxDefinitionRef() {
+		return sandBoxDefinitionRef;
 	}
 
 	public void setSandBoxDefinitionRefDTO(SandboxDefinitionRefDTO sandBoxDefinitionRefDTO) {
-		this.sandBoxDefinitionRefDTO = sandBoxDefinitionRefDTO;
+		this.sandBoxDefinitionRef = sandBoxDefinitionRef;
 	}
 
 	public Long getStartingLevel() {
@@ -111,11 +112,18 @@ public class TrainingDefinitionDTO {
 		this.basicLevelInfoDTOs = basicLevelInfoDTOs;
 	}
 
-	@Override
-	public String toString() {
+	public boolean isShowStepperBar() {
+		return showStepperBar;
+	}
+
+	public void setShowStepperBar(boolean showStepperBar) {
+		this.showStepperBar = showStepperBar;
+	}
+
+	@Override public String toString() {
 		return "TrainingDefinitionDTO{" + "id=" + id + ", title='" + title + '\'' + ", description='" + description + '\'' + ", prerequisities="
 				+ Arrays.toString(prerequisities) + ", outcomes=" + Arrays.toString(outcomes) + ", state=" + state + ", authorRefDTO="
-				+ authorRefDTO + ", sandBoxDefinitionRefDTO=" + sandBoxDefinitionRefDTO + ", startingLevel=" + startingLevel
-				+ ", basicLevelInfoDTOs=" + basicLevelInfoDTOs + '}';
+				+ authorRef + ", sandBoxDefinitionRefDTO=" + sandBoxDefinitionRef + ", startingLevel=" + startingLevel
+				+ ", basicLevelInfoDTOs=" + basicLevelInfoDTOs + ", showStepperBar=" + showStepperBar + '}';
 	}
 }

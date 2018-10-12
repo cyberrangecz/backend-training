@@ -37,6 +37,8 @@ public class TrainingDefinition implements Serializable {
 	private SandboxDefinitionRef sandBoxDefinitionRef;
 	@Column(name = "starting_level")
 	private Long startingLevel;
+	@Column(name = "show_stepper_bar", nullable = false)
+	private boolean showStepperBar;
 
 	public TrainingDefinition() {}
 
@@ -112,6 +114,14 @@ public class TrainingDefinition implements Serializable {
 		this.startingLevel = startingLevel;
 	}
 
+	public boolean isShowStepperBar() {
+		return showStepperBar;
+	}
+
+	public void setShowStepperBar(boolean showStepperBar) {
+		this.showStepperBar = showStepperBar;
+	}
+
 	@Override
 	public int hashCode() {
 		return Objects.hash(description, outcomes, prerequisities, state, title);
@@ -135,11 +145,10 @@ public class TrainingDefinition implements Serializable {
     // @formatter:on
 	}
 
-	@Override
-	public String toString() {
-		return "TrainingDefinition [id=" + id + ", title=" + title + ", description=" + description + ", prerequisities="
+	@Override public String toString() {
+		return "TrainingDefinition{" + "id=" + id + ", title='" + title + '\'' + ", description='" + description + '\'' + ", prerequisities="
 				+ Arrays.toString(prerequisities) + ", outcomes=" + Arrays.toString(outcomes) + ", state=" + state + ", authorRef=" + authorRef
-				+ ", sandBoxDefinitionRef=" + sandBoxDefinitionRef + ", toString()=" + super.toString() + "]";
+				+ ", sandBoxDefinitionRef=" + sandBoxDefinitionRef + ", startingLevel=" + startingLevel + ", showStepperBar=" + showStepperBar
+				+ '}';
 	}
-
 }

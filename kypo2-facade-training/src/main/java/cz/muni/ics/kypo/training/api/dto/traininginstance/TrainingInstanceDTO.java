@@ -2,11 +2,14 @@ package cz.muni.ics.kypo.training.api.dto.traininginstance;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
+import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionDTO;
 import cz.muni.ics.kypo.training.utils.converters.LocalDateTimeDeserializer;
 import cz.muni.ics.kypo.training.utils.converters.LocalDateTimeSerializer;
 import io.swagger.annotations.ApiModel;
 
 import java.time.LocalDateTime;
+import java.util.Set;
 
 /**
  * 
@@ -23,6 +26,8 @@ public class TrainingInstanceDTO {
 	private LocalDateTime endTime;
 	private String title;
 	private int poolSize;
+	private TrainingDefinitionDTO trainingDefinition;
+	private Set<UserRefDTO> organizers;
 
 	public TrainingInstanceDTO() {}
 
@@ -66,21 +71,24 @@ public class TrainingInstanceDTO {
 		this.poolSize = poolSize;
 	}
 
-	@Override
-	public String toString() {
-		StringBuilder builder = new StringBuilder();
-		builder.append("TrainingInstanceDTO [id=");
-		builder.append(id);
-		builder.append(", startTime=");
-		builder.append(startTime);
-		builder.append(", endTime=");
-		builder.append(endTime);
-		builder.append(", title=");
-		builder.append(title);
-		builder.append(", poolSize=");
-		builder.append(poolSize);
-		builder.append("]");
-		return builder.toString();
+	public TrainingDefinitionDTO getTrainingDefinition() {
+		return trainingDefinition;
 	}
 
+	public void setTrainingDefinition(TrainingDefinitionDTO trainingDefinition) {
+		this.trainingDefinition = trainingDefinition;
+	}
+
+	public Set<UserRefDTO> getOrganizers() {
+		return organizers;
+	}
+
+	public void setOrganizers(Set<UserRefDTO> organizers) {
+		this.organizers = organizers;
+	}
+
+	@Override public String toString() {
+		return "TrainingInstanceDTO{" + "id=" + id + ", startTime=" + startTime + ", endTime=" + endTime + ", title='" + title + '\''
+				+ ", poolSize=" + poolSize + ", trainingDefinition=" + trainingDefinition + ", organizers=" + organizers + '}';
+	}
 }

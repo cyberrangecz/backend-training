@@ -1,10 +1,18 @@
 package cz.muni.ics.kypo.training.api.dto.traininginstance;
 
 import java.time.LocalDateTime;
+import java.util.Set;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
+import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionDTO;
 import cz.muni.ics.kypo.training.utils.converters.LocalDateTimeDeserializer;
 import io.swagger.annotations.ApiModel;
+
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 
 /**
  * 
@@ -13,15 +21,26 @@ import io.swagger.annotations.ApiModel;
  */
 @ApiModel(value = "TrainingInstanceUpdateDTO", description = "Training Instance to update.")
 public class TrainingInstanceUpdateDTO {
-
+	@NotNull(message = "{traininginstanceupdate.id.NotNull.message}")
 	private Long id;
+	@NotNull(message = "{traininginstanceupdate.startTime.NotNull.message}")
 	@JsonDeserialize(using = LocalDateTimeDeserializer.class)
 	private LocalDateTime startTime;
+	@NotNull(message = "{traininginstanceupdate.endTime.NotNull.message}")
 	@JsonDeserialize(using = LocalDateTimeDeserializer.class)
 	private LocalDateTime endTime;
+	@NotEmpty(message = "{traininginstanceupdate.title.NotEmpty.message}")
 	private String title;
+	@NotNull(message = "{traininginstanceupdate.poolSize.NotNull.message}")
+	@Min(value = 1, message = "{traininginstanceupdate.poolSize.Min.message}")
+	@Max(value = 100, message = "{traininginstanceupdate.poolSize.Max.message}")
 	private int poolSize;
+	//@NotEmpty(message = "{traininginstanceupdate.keyword.NotEmpty.message}")
 	private String keyword;
+	@NotNull(message = "{traininginstanceupdate.trainingDefinition.NotNull.message}")
+	private TrainingDefinitionDTO trainingDefinition;
+	@NotNull(message = "{traininginstanceupdate.organizers.NotNull.message}")
+	private Set<UserRefDTO> organizers;
 
 	public TrainingInstanceUpdateDTO() {}
 
@@ -73,23 +92,25 @@ public class TrainingInstanceUpdateDTO {
 		this.keyword = keyword;
 	}
 
-	@Override
-	public String toString() {
-		StringBuilder builder = new StringBuilder();
-		builder.append("TrainingInstanceUpdateDTO [id=");
-		builder.append(id);
-		builder.append(", startTime=");
-		builder.append(startTime);
-		builder.append(", endTime=");
-		builder.append(endTime);
-		builder.append(", title=");
-		builder.append(title);
-		builder.append(", poolSize=");
-		builder.append(poolSize);
-		builder.append(", keyword=");
-		builder.append(keyword);
-		builder.append("]");
-		return builder.toString();
+	public TrainingDefinitionDTO getTrainingDefinition() {
+		return trainingDefinition;
 	}
 
+	public void setTrainingDefinition(TrainingDefinitionDTO trainingDefinition) {
+		this.trainingDefinition = trainingDefinition;
+	}
+
+	public Set<UserRefDTO> getOrganizers() {
+		return organizers;
+	}
+
+	public void setOrganizers(Set<UserRefDTO> organizers) {
+		this.organizers = organizers;
+	}
+
+	@Override public String toString() {
+		return "TrainingInstanceUpdateDTO{" + "id=" + id + ", startTime=" + startTime + ", endTime=" + endTime + ", title='" + title + '\''
+				+ ", poolSize=" + poolSize + ", keyword='" + keyword + '\'' + ", trainingDefinition=" + trainingDefinition + ", organizers="
+				+ organizers + '}';
+	}
 }

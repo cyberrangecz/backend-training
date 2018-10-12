@@ -1,4 +1,4 @@
-package cz.muni.ics.kypo.training.rest.config;
+package cz.muni.ics.kypo.training.config;
 
 import java.util.Arrays;
 import java.util.Locale;
@@ -18,9 +18,11 @@ import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 public class ValidationMessagesConfig {
 
 	@Bean
-	public MessageSource messageSource() {
+	public MessageSource messageSourceValidation() {
+		//Locale.setDefault(new Locale("cs", "CZ"));
+		//Locale.setDefault(new Locale("sk", "SK")); 
 		final ReloadableResourceBundleMessageSource source = new ReloadableResourceBundleMessageSource();
-		source.setBasename("classpath:locale/messages");
+		source.setBasename("classpath:locale/ValidationMessages");
 		source.setUseCodeAsDefaultMessage(true);
 		source.setDefaultEncoding("UTF-8");
 		// # -1 : never reload, 0 always reload
@@ -31,12 +33,12 @@ public class ValidationMessagesConfig {
 	@Bean
 	public LocalValidatorFactoryBean getValidator() {
 		LocalValidatorFactoryBean bean = new LocalValidatorFactoryBean();
-		bean.setValidationMessageSource(messageSource());
+		bean.setValidationMessageSource(messageSourceValidation());
 		return bean;
 	}
 
 	/**
-	 * Prints available locales. It is useful to set up appropriate messages.properties file name,
+	 * Prints available locales. It is useful to set up appropriate ValidationMessages.properties file name,
 	 * e.g. messages_en_US.properties
 	 * 
 	 * en_US

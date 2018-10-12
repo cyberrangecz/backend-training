@@ -7,11 +7,9 @@ import com.github.bohnman.squiggly.util.SquigglyUtils;
 import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.training.api.PageResultResource;
 import cz.muni.ics.kypo.training.api.dto.AbstractLevelDTO;
-import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelCreateDTO;
+import cz.muni.ics.kypo.training.api.dto.BasicLevelInfoDTO;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelUpdateDTO;
-import cz.muni.ics.kypo.training.api.dto.gamelevel.GameLevelCreateDTO;
 import cz.muni.ics.kypo.training.api.dto.gamelevel.GameLevelUpdateDTO;
-import cz.muni.ics.kypo.training.api.dto.infolevel.InfoLevelCreateDTO;
 import cz.muni.ics.kypo.training.api.dto.infolevel.InfoLevelUpdateDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionCreateDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionDTO;
@@ -178,12 +176,15 @@ public class TrainingDefinitionsRestController {
           @ApiResponse(code = 400, message = "The requested resource was not created")
   })
   @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<TrainingDefinitionCreateDTO> createTrainingDefinition(
+  public ResponseEntity<Object> createTrainingDefinition(
   		@ApiParam(name = "Training Definition to be created")
-  		@RequestBody @Valid TrainingDefinitionCreateDTO trainingDefinitionCreateDTO) {
+  		@RequestBody @Valid TrainingDefinitionCreateDTO trainingDefinitionCreateDTO,
+			@ApiParam(value = "Fields which should be returned in REST API response", required = false)
+      @RequestParam(value = "fields", required = false) String fields) {
     try {
-      TrainingDefinitionCreateDTO trainingDefinitionDTO = trainingDefinitionFacade.create(trainingDefinitionCreateDTO);
-      return new ResponseEntity<>(trainingDefinitionDTO, HttpStatus.OK);
+      TrainingDefinitionDTO trainingDefinitionResource = trainingDefinitionFacade.create(trainingDefinitionCreateDTO);
+      Squiggly.init(objectMapper, fields);
+      return new ResponseEntity<>(SquigglyUtils.stringify(objectMapper, trainingDefinitionResource), HttpStatus.OK);
     } catch (FacadeLayerException ex) {
       throw new ResourceNotCreatedException(ex.getLocalizedMessage());
     }
@@ -236,21 +237,21 @@ public class TrainingDefinitionsRestController {
 	@ApiOperation(httpMethod = "PUT",
 			value = "Swap level to the left",
 			nickname = "swapLeft",
-			response = Void.class)
+			produces = "application/json",
+			response = BasicLevelInfoDTO.class)
 	@ApiResponses(value = {
 			@ApiResponse(code = 409, message = "The requested resource was not modified because of its status"),
 			@ApiResponse(code = 404, message = "The requested resource was not found")
 			}
 	)
-	@PutMapping(value = "/{definitionId}/levels/{levelId}/swap-left")
-	public ResponseEntity<Void> swapLeft(
+	@PutMapping(value = "/{definitionId}/levels/{levelId}/swap-left", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<Object> swapLeft(
 			@ApiParam(value = "Id of definition")
 			@PathVariable("definitionId") Long definitionId,
 			@ApiParam(value = "Id of level to be swapped")
 			@PathVariable("levelId") Long levelId) {
 		try {
-			trainingDefinitionFacade.swapLeft(definitionId, levelId);
-			return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+			return new ResponseEntity<>(trainingDefinitionFacade.swapLeft(definitionId, levelId), HttpStatus.OK);
 		} catch (FacadeLayerException ex) {
 				throw throwException(ex);
 		}
@@ -259,21 +260,21 @@ public class TrainingDefinitionsRestController {
 	@ApiOperation(httpMethod = "PUT",
 			value = "Swap level to the right",
 			nickname = "swapRight",
-			response = Void.class)
+			produces = "application/json",
+			response = BasicLevelInfoDTO.class)
 	@ApiResponses(value = {
 			@ApiResponse(code = 409, message = "The requested resource was not modified because of its status"),
 			@ApiResponse(code = 404, message = "The requested resource was not found")
 			}
 	)
-	@PutMapping(value = "/{definitionId}/levels/{levelId}/swap-right")
-	public ResponseEntity<Void> swapRight(
+	@PutMapping(value = "/{definitionId}/levels/{levelId}/swap-right", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<Object> swapRight(
 			@ApiParam(value = "Id of definition")
 			@PathVariable("definitionId") Long definitionId,
 			@ApiParam(value = "Id of level to be swapped")
 			@PathVariable("levelId") Long levelId) {
 		try {
-			trainingDefinitionFacade.swapRight(definitionId, levelId);
-			return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+			return new ResponseEntity<>(trainingDefinitionFacade.swapRight(definitionId, levelId), HttpStatus.OK);
 		} catch (FacadeLayerException ex) {
 				throw throwException(ex);
 		}
@@ -303,21 +304,21 @@ public class TrainingDefinitionsRestController {
 	@ApiOperation(httpMethod = "DELETE",
 			value = "Delete specific level from definition",
 			nickname = "deleteOneLevel",
-			response = Void.class)
+			produces = "application/json",
+			response = BasicLevelInfoDTO.class)
 	@ApiResponses(value = {
 			@ApiResponse(code = 409, message = "The requested resource was not modified because of its status"),
 			@ApiResponse(code = 404, message = "The requested resource was not found")
 			}
 	)
-	@DeleteMapping(value = "/{definitionId}/levels/{levelId}")
-	public ResponseEntity<Void> deleteOneLevel(
+	@DeleteMapping(value = "/{definitionId}/levels/{levelId}", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<Object> deleteOneLevel(
 			@ApiParam(value = "Id of definition")
 			@PathVariable("definitionId") Long definitionId,
 			@ApiParam(value = "Id of level to be deleted")
 			@PathVariable("levelId") Long levelId) {
 		try {
-			trainingDefinitionFacade.deleteOneLevel(definitionId, levelId);
-			return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+			return new ResponseEntity<>(trainingDefinitionFacade.deleteOneLevel(definitionId, levelId), HttpStatus.OK);
 		} catch (FacadeLayerException ex) {
 				throw throwException(ex);
 		}
@@ -418,7 +419,7 @@ public class TrainingDefinitionsRestController {
 
 	@ApiOperation(httpMethod = "POST",
 			value = "Create Level",
-			//response = GameLevelCreateDTO.class,
+			response = BasicLevelInfoDTO.class,
 			nickname = "createLevel",
 			produces = "application/json")
 	@ApiResponses(value = {
@@ -430,15 +431,20 @@ public class TrainingDefinitionsRestController {
 			@ApiParam(value = "Id of definition")
 			@PathVariable(value = "definitionId") Long definitionId,
 			@ApiParam(value = "Level type")
-			@PathVariable (value = "levelType") LevelType levelType) {
+			@PathVariable (value = "levelType") LevelType levelType,
+			@ApiParam(value = "Fields which should be returned in REST API response", required = false)
+      @RequestParam(value = "fields", required = false) String fields) {
 		try {
+			BasicLevelInfoDTO basicLevelInfoDTO;
 			if (levelType.equals(LevelType.GAME)) {
-				return new ResponseEntity<>(trainingDefinitionFacade.createGameLevel(definitionId), HttpStatus.CREATED);
+				basicLevelInfoDTO = trainingDefinitionFacade.createGameLevel(definitionId);
 			} else if (levelType.equals(LevelType.ASSESSMENT)) {
-				return new ResponseEntity<>(trainingDefinitionFacade.createAssessmentLevel(definitionId), HttpStatus.CREATED);
+				basicLevelInfoDTO = trainingDefinitionFacade.createAssessmentLevel(definitionId);
 			} else {
-				return new ResponseEntity<>(trainingDefinitionFacade.createInfoLevel(definitionId), HttpStatus.CREATED);
+				basicLevelInfoDTO = trainingDefinitionFacade.createInfoLevel(definitionId);
 			}
+			Squiggly.init(objectMapper, fields);
+			return new ResponseEntity<>(SquigglyUtils.stringify(objectMapper, basicLevelInfoDTO), HttpStatus.CREATED);
 		} catch (FacadeLayerException ex) {
 			throw new ResourceNotCreatedException(ex.getLocalizedMessage());
 		}
