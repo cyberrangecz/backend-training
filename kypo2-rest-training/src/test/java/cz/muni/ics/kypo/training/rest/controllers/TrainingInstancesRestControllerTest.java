@@ -115,6 +115,10 @@ public class TrainingInstancesRestControllerTest {
 		trainingInstanceCreateDTO.setStartTime(startTime);
 		LocalDateTime endTime = LocalDateTime.now().plusHours(10);
 		trainingInstanceCreateDTO.setEndTime(endTime);
+		trainingInstanceCreateDTO.setKeyword("pass");
+		trainingInstanceCreateDTO.setPoolSize(20);
+		trainingInstanceCreateDTO.setOrganizers(organizers);
+		trainingInstanceCreateDTO.setTrainingDefinition(new TrainingDefinitionDTO());
 
 		trainingInstanceUpdateDTO = new TrainingInstanceUpdateDTO();
 		trainingInstanceUpdateDTO.setId(5L);
@@ -178,45 +182,6 @@ public class TrainingInstancesRestControllerTest {
 						.andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
 						.andReturn().getResponse();
 				assertEquals(convertObjectToJsonBytes(convertObjectToJsonBytes(trainingInstanceDTOPageResultResource)), result.getContentAsString());
-		}
-
-
-		@Test
-		public void createTrainingInstance() throws Exception {
-				String valueTi = convertObjectToJsonBytes(trainingInstance1DTO);
-				given(objectMapper.writeValueAsString(any(Object.class))).willReturn(valueTi);
-				given(trainingInstanceFacade.create(any(TrainingInstanceCreateDTO.class))).willReturn(newTrainingInstanceDTO);
-				MockHttpServletResponse result = mockMvc.perform(post("/training-instances")
-						.content(convertObjectToJsonBytes(trainingInstance1))
-						.contentType(MediaType.APPLICATION_JSON_VALUE))
-						.andExpect(status().isOk())
-						.andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-						.andReturn().getResponse();
-				assertEquals(convertObjectToJsonBytes(convertObjectToJsonBytes(trainingInstance1DTO)), result.getContentAsString());
-		}
-
-
-
-		@Test
-		public void updateTrainingInstance() throws Exception {
-			given(trainingInstanceFacade.update(trainingInstanceUpdateDTO)).willReturn("newPass");
-			MockHttpServletResponse result = mockMvc.perform(put("/training-instances")
-						.content(convertObjectToJsonBytes(trainingInstanceUpdateDTO))
-						.contentType(MediaType.APPLICATION_JSON_VALUE))
-						.andExpect(status().isOk())
-						.andReturn().getResponse();
-		}
-
-		@Test
-		public void updateTrainingInstanceWithFacadeException() throws Exception {
-				Exception exceptionThrow = new ServiceLayerException("message", ErrorCode.RESOURCE_CONFLICT);
-				willThrow(new FacadeLayerException(exceptionThrow)).given(trainingInstanceFacade).update(any(TrainingInstanceUpdateDTO.class));
-				Exception exception = mockMvc.perform(put("/training-instances")
-						.content(convertObjectToJsonBytes(trainingInstanceUpdateDTO))
-						.contentType(MediaType.APPLICATION_JSON_VALUE))
-						.andExpect(status().isConflict())
-						.andReturn().getResolvedException();
-				assertEquals(ConflictException.class, exception.getClass());
 		}
 
 		@Test
