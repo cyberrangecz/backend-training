@@ -1,8 +1,8 @@
 package cz.muni.ics.kypo.training.api.dto;
 
-import cz.muni.ics.kypo.training.model.enums.LevelType;
-
 import java.util.Objects;
+
+import cz.muni.ics.kypo.training.persistence.model.enums.LevelType;
 
 /**
  * @author Boris Jadus

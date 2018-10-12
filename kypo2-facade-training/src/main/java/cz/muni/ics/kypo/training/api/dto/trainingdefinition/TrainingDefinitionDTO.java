@@ -1,10 +1,11 @@
 package cz.muni.ics.kypo.training.api.dto.trainingdefinition;
 
-import cz.muni.ics.kypo.training.model.enums.TDState;
 import io.swagger.annotations.ApiModel;
 import cz.muni.ics.kypo.training.api.dto.AuthorRefDTO;
 import cz.muni.ics.kypo.training.api.dto.SandboxDefinitionRefDTO;
 import cz.muni.ics.kypo.training.api.dto.BasicLevelInfoDTO;
+import cz.muni.ics.kypo.training.persistence.model.enums.TDState;
+
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;

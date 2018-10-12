@@ -510,6 +510,7 @@ CREATE TABLE training_run (
     sandbox_instance_ref_id bigint,
     training_instance_id bigint,
     participant_ref_id bigint,
+    solution_taken boolean NOT NULL,
     event_log_reference character varying(255),
     incorrect_flag_count integer
 );

@@ -11,7 +11,6 @@ import io.swagger.annotations.ApiModel;
 public class PostHookDTO {
 
   private Long id;
-  //private AbstractLevelDTO abstractLevel;
 
 	public PostHookDTO() {}
 
@@ -22,20 +21,6 @@ public class PostHookDTO {
 	public void setId(Long id) {
 		this.id = id;
 	}
-
-  /*public AbstractLevelDTO getAbstractLevel() {
-    return abstractLevel;
-  }
-
-	public void setAbstractLevel(AbstractLevelDTO abstractLevel) {
-		this.abstractLevel = abstractLevel;
-	}
-
-  @Override
-  public String toString() {
-    return "PostHookDTO [id=" + id + ", abstractLevel=" + abstractLevel + "]";
-  }
-  */
 
   @Override public String toString() {
     return "PostHookDTO{" + "id=" + id + '}';

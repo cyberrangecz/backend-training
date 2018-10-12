@@ -8,7 +8,15 @@ logs/
 
 !.mvn/wrapper/maven-wrapper.jar
 
-### STS ###
+*/kypo2-facade-training/$*
+
+### Vagrant ###
+.directory
+.vagrant
+ansible/gitlab/*
+ansible/roles/*
+
+### STS & Eclipse ###
 .apt_generated
 .classpath
 .factorypath

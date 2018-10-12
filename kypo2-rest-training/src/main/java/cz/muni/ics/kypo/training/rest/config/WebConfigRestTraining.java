@@ -15,22 +15,23 @@ import org.springframework.http.converter.json.MappingJackson2HttpMessageConvert
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import cz.muni.ics.kypo.training.config.FacadeConfiguration;
 
 /**
  * <p>
  * To run with external property file add following to:
- * 
+ *
  * Eclipse example:
- * 
+ *
  * <pre>
  * <code>
  *  Run Configuration -> tab: Arguments -> Program arguments
  * </code>
  * </pre>
  * </p>
- * 
+ *
  * <pre>
  * <code>
  *  --path.to.config.file="C:/CSIRT/property-files/training.properties"
@@ -51,13 +52,14 @@ import cz.muni.ics.kypo.training.config.FacadeConfiguration;
  *   --path.to.config.file="/etc/kypo2/training/application.properties"
  *  </code>
  * </pre>
- * 
+ *
  * @author Pavel Seda (441048)
  *
  */
 @SpringBootApplication
 @EnableSpringDataWebSupport
 @Import({FacadeConfiguration.class})
+@ComponentScan("cz.muni.ics.kypo.training.rest")
 public class WebConfigRestTraining extends SpringBootServletInitializer {
 
 	private static final Logger LOG = LoggerFactory.getLogger(WebConfigRestTraining.class);
@@ -98,13 +100,14 @@ public class WebConfigRestTraining extends SpringBootServletInitializer {
 	public ObjectMapper objectMapperForRestAPI() {
 		LOG.debug("objectMapperForRestAPI()");
 		ObjectMapper obj = new ObjectMapper();
+		obj.registerModule(new JavaTimeModule());
 		obj.setPropertyNamingStrategy(snakeCase());
 		return obj;
 	}
 
 	/**
 	 * Naming strategy for returned JSONs.
-	 * 
+	 *
 	 * @return Naming Strategy for JSON properties
 	 */
 	@Bean(name = "properyNamingSnakeCase")

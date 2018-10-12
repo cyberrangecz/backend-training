@@ -15,7 +15,7 @@ import cz.muni.ics.kypo.training.api.dto.prehook.PreHookDTO;
  *
  */
 @ApiModel(value = "AbstractLevelDTO", description = ".")
-public abstract class AbstractLevelDTO {
+public class AbstractLevelDTO {
 
 	protected Long id;
 	protected String title;

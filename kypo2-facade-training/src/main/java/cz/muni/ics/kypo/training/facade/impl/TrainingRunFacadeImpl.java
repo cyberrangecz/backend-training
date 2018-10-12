@@ -17,8 +17,8 @@ import cz.muni.ics.kypo.training.exception.FacadeLayerException;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.facade.TrainingRunFacade;
 import cz.muni.ics.kypo.training.mapping.BeanMapping;
-import cz.muni.ics.kypo.training.model.*;
-import cz.muni.ics.kypo.training.model.enums.LevelType;
+import cz.muni.ics.kypo.training.persistence.model.*;
+import cz.muni.ics.kypo.training.persistence.model.enums.LevelType;
 import cz.muni.ics.kypo.training.service.TrainingRunService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -167,14 +167,19 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
   @Transactional
   public AbstractLevelDTO getNextLevel(Long trainingRunId) {
     LOG.debug("getNextLevel({})", trainingRunId);
-    AbstractLevel aL = trainingRunService.getNextLevel(trainingRunId);
+    AbstractLevel aL;
+    try {
+       aL = trainingRunService.getNextLevel(trainingRunId);
+    } catch (ServiceLayerException ex) {
+      throw new FacadeLayerException(ex);
+    }
     if(aL instanceof GameLevel) {
-      return beanMapping.mapTo(trainingRunService.getNextLevel(trainingRunId), GameLevelDTO.class);
+      return beanMapping.mapTo(aL, GameLevelDTO.class);
 
     } else if (aL instanceof AssessmentLevel) {
-      return beanMapping.mapTo(trainingRunService.getNextLevel(trainingRunId), AssessmentLevelDTO.class);
+      return beanMapping.mapTo(aL, AssessmentLevelDTO.class);
     } else {
-      return beanMapping.mapTo(trainingRunService.getNextLevel(trainingRunId), InfoLevelDTO.class);
+      return beanMapping.mapTo(aL, InfoLevelDTO.class);
     }
   }
 
@@ -182,30 +187,35 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
   @Transactional
   public String getSolution(Long trainingRunId) {
     LOG.debug("getSolution({})", trainingRunId);
-    return trainingRunService.getSolution(trainingRunId);
+    try {
+      return trainingRunService.getSolution(trainingRunId);
+    } catch (ServiceLayerException ex) {
+      throw new FacadeLayerException(ex);
+    }
   }
 
   @Override
   @Transactional
   public HintDTO getHint(Long trainingRunId, Long hintId) {
     LOG.debug("getHint({},{})", trainingRunId, hintId);
-    return beanMapping.mapTo(trainingRunService.getHint(trainingRunId,hintId), HintDTO.class);
+    try {
+      return beanMapping.mapTo(trainingRunService.getHint(trainingRunId,hintId), HintDTO.class);
+    } catch (ServiceLayerException ex) {
+      throw new FacadeLayerException(ex);
+    }
   }
 
   @Override
   @Transactional
-  public IsCorrectFlagDTO isCorrectFlag(Long trainingRunId, String flag, boolean solutionTaken) {
+  public IsCorrectFlagDTO isCorrectFlag(Long trainingRunId, String flag) {
     LOG.debug("isCorrectFlag({},{})", trainingRunId, flag);
     IsCorrectFlagDTO correctFlagDTO = new IsCorrectFlagDTO();
-    if (solutionTaken) {
-      correctFlagDTO.setRemainingAttempts(0);
+    try {
       correctFlagDTO.setCorrect(trainingRunService.isCorrectFlag(trainingRunId, flag));
-    } else {
-      int attempts = trainingRunService.getRemainingAttempts(trainingRunId);
-      correctFlagDTO.setRemainingAttempts(attempts - 1);
-      correctFlagDTO.setCorrect(trainingRunService.isCorrectFlag(trainingRunId, flag));
+      correctFlagDTO.setRemainingAttempts(trainingRunService.getRemainingAttempts(trainingRunId));
+    } catch (ServiceLayerException ex) {
+      throw new FacadeLayerException(ex);
     }
-
     return correctFlagDTO;
   }
 
@@ -231,8 +241,8 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
   }
 
 
-  private <T> PageResultResource.Pagination<T> createPagination(Page<?> objects) {
-    PageResultResource.Pagination<T> pageMetadata = new PageResultResource.Pagination<T>();
+  private PageResultResource.Pagination createPagination(Page<?> objects) {
+    PageResultResource.Pagination pageMetadata = new PageResultResource.Pagination();
     pageMetadata.setNumber(objects.getNumber());
     pageMetadata.setNumberOfElements(objects.getNumberOfElements());
     pageMetadata.setSize(objects.getSize());

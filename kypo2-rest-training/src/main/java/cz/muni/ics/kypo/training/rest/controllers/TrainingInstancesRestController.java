@@ -13,7 +13,7 @@ import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceUpdate
 import cz.muni.ics.kypo.training.exception.FacadeLayerException;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.facade.TrainingInstanceFacade;
-import cz.muni.ics.kypo.training.model.TrainingInstance;
+import cz.muni.ics.kypo.training.persistence.model.TrainingInstance;
 import cz.muni.ics.kypo.training.rest.exceptions.*;
 import java.util.List;
 import org.jsondoc.core.annotation.ApiObject;
@@ -52,7 +52,7 @@ import javax.validation.Valid;
 @RequestMapping(value = "/training-instances")
 public class TrainingInstancesRestController {
 
-		private static final Logger LOG = LoggerFactory.getLogger(cz.muni.ics.kypo.training.rest.controllers.TrainingInstancesRestController.class);
+	private static final Logger LOG = LoggerFactory.getLogger(cz.muni.ics.kypo.training.rest.controllers.TrainingInstancesRestController.class);
 
 	private TrainingInstanceFacade trainingInstanceFacade;
 	private ObjectMapper objectMapper;
@@ -120,11 +120,14 @@ public class TrainingInstancesRestController {
       @ApiResponse(code = 404, message = "The requested resource was not found.")
   })
   @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<Object> findAllTrainingInstances(@QuerydslPredicate(root = TrainingInstance.class) Predicate predicate, Pageable pageable,
+  public ResponseEntity<Object> findAllTrainingInstances(@QuerydslPredicate(root = TrainingInstance.class) Predicate predicate, 
+  		@ApiParam(value = "Pagination support.", required = false)
+  		Pageable pageable,
+  		@ApiParam(value = "Parameters for filtering the objects.", required = false)
       @RequestParam MultiValueMap<String, String> parameters,
       @ApiParam(value = "Fields which should be returned in REST API response", required = false)
       @RequestParam(value = "fields", required = false) String fields) {
-    LOG.debug("findAllTrainingInstances({},{})", parameters, fields);
+      LOG.debug("findAllTrainingInstances({},{})", parameters, fields);
       PageResultResource<TrainingInstanceDTO> trainingInstanceResource = trainingInstanceFacade.findAll(predicate, pageable);
       Squiggly.init(objectMapper, fields);
       return new ResponseEntity<>(SquigglyUtils.stringify(objectMapper, trainingInstanceResource), HttpStatus.OK);
@@ -206,24 +209,24 @@ public class TrainingInstancesRestController {
 								return new ServiceUnavailableException(ex.getLocalizedMessage());
 				}
 		}
+
 	@ApiOperation(httpMethod = "POST",
-				value = "Allocate sandboxes",
-				response = Void.class,
-				nickname = "allocateSandboxes")
-		@ApiResponses(value = {
-				@ApiResponse(code = 404, message = "The requested resource was not found")
-		})
-		@PostMapping(value = "/{instanceId}/sandbox-instances")
-		public ResponseEntity<Void> allocateSandboxes(
-				@ApiParam(value = "Id of trainingInstance")
-				@PathVariable(value = "instanceId") Long instanceId) {
-				try{
-						return trainingInstanceFacade.allocateSandboxes(instanceId);
-				} catch (FacadeLayerException ex){
-						throw new ResourceNotFoundException(ex.getLocalizedMessage());
-				}
-		}
+			value = "Allocate sandboxes",
+			response = Void.class,
+			nickname = "allocateSandboxes")
+	@ApiResponses(value = {
+			@ApiResponse(code = 404, message = "The requested resource was not found")
+	})
+	@PostMapping(value = "/{instanceId}/sandbox-instances")
+	public ResponseEntity<Void> allocateSandboxes(
+			@ApiParam(value = "Id of trainingInstance")
+			@PathVariable(value = "instanceId") Long instanceId) {
+			try{
+					return trainingInstanceFacade.allocateSandboxes(instanceId);
+			} catch (FacadeLayerException ex){
+					throw new ResourceNotFoundException(ex.getLocalizedMessage());
+			}
+	}
 
 
 }
-
