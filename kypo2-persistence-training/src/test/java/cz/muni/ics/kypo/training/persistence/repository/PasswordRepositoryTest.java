@@ -22,64 +22,59 @@ import static org.junit.Assert.*;
 @Import(PersistenceConfigTest.class)
 public class PasswordRepositoryTest {
 
-		@Autowired
-		private TestEntityManager entityManager;
+	@Autowired
+	private TestEntityManager entityManager;
 
-		@Autowired
-		private PasswordRepository passwordRepository;
+	@Autowired
+	private PasswordRepository passwordRepository;
 
-		private Password password1, password2;
+	private Password password1, password2;
+	private String passwordHash1, passwordHash2;
 
-		private String passwordHash1, passwordHash2;
+	@SpringBootApplication
+	static class TestConfiguration { }
 
-		@SpringBootApplication
-		static class TestConfiguration { }
+	@Before
+	public void setUp() {
+		passwordHash1 = "1Eh9A5l7Op5As8s0h9";
+		passwordHash2 = "R8a9C7B4a2c8A2cN1E";
+		password1 = new Password();
+		password1.setPasswordHash(passwordHash1);
+		password2 = new Password();
+		password2.setPasswordHash(passwordHash2);
+	}
 
-		@Before
-		public void setUp() {
-			passwordHash1 = "1Eh9A5l7Op5As8s0h9";
-			passwordHash2 = "R8a9C7B4a2c8A2cN1E";
+	@Test
+	public void findById() {
+		Long id = entityManager.persist(password2).getId();
+		Optional<Password> optionalPassword = passwordRepository.findById(id);
+		assertTrue(optionalPassword.isPresent());
+		assertEquals(password2, optionalPassword.get());
+	}
 
-			password1 = new Password();
-			password1.setPasswordHash(passwordHash1);
+	@Test
+	public void findAll() {
+		entityManager.persist(password2);
+		entityManager.persist(password1);
+		List<Password> resultPasswords = passwordRepository.findAll();
+		assertNotNull(resultPasswords);
+		assertEquals(2, resultPasswords.size());
+		assertTrue(resultPasswords.contains(password1));
+		assertTrue(resultPasswords.contains(password2));
+	}
 
-			password2 = new Password();
-			password2.setPasswordHash(passwordHash2);
-		}
+	@Test
+	public void findOneByPasswordHash() {
+		entityManager.persist(password1);
+		entityManager.persist(password2);
+		Optional<Password> optionalPassword = passwordRepository.findOneByPasswordHash(passwordHash1);
+		assertTrue(optionalPassword.isPresent());
+		assertEquals(password1, optionalPassword.get());
+	}
 
-		@Test
-		public void findById() {
-			Long id = entityManager.persist(password2).getId();
-			Optional<Password> optionalPassword = passwordRepository.findById(id);
-			assertTrue(optionalPassword.isPresent());
-			assertEquals(password2, optionalPassword.get());
-		}
-
-		@Test
-		public void findAll() {
-			entityManager.persist(password2);
-			entityManager.persist(password1);
-			List<Password> resultPasswords = passwordRepository.findAll();
-			assertNotNull(resultPasswords);
-			assertEquals(2, resultPasswords.size());
-			assertTrue(resultPasswords.contains(password1));
-			assertTrue(resultPasswords.contains(password2));
-		}
-
-		@Test
-		public void findOneByPasswordHash() {
-			entityManager.persist(password1);
-			entityManager.persist(password2);
-
-			Optional<Password> optionalPassword = passwordRepository.findOneByPasswordHash(passwordHash1);
-			assertTrue(optionalPassword.isPresent());
-			assertEquals(password1, optionalPassword.get());
-		}
-
-		@Test
-		public void findOneByPasswordHash_unpresent_passwordHash() {
-			Optional<Password> optionalPassword = passwordRepository.findOneByPasswordHash("8W93invalid987As52s");
-			assertFalse(optionalPassword.isPresent());
-		}
-
+	@Test
+	public void findOneByPasswordHash_unpresent_passwordHash() {
+		Optional<Password> optionalPassword = passwordRepository.findOneByPasswordHash("8W93invalid987As52s");
+		assertFalse(optionalPassword.isPresent());
+	}
 }

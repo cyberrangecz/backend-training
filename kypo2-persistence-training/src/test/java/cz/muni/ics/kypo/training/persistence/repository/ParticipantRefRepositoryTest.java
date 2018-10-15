@@ -25,61 +25,56 @@ import static org.junit.Assert.assertTrue;
 @Import(PersistenceConfigTest.class)
 public class ParticipantRefRepositoryTest {
 
-		@Autowired
-		private TestEntityManager entityManager;
+	@Autowired
+	private TestEntityManager entityManager;
 
-		@Autowired
-		private ParticipantRefRepository participantRefRepository;
+	@Autowired
+	private ParticipantRefRepository participantRefRepository;
 
-		private ParticipantRef participantRef1, participantRef2;
+	private ParticipantRef participantRef1, participantRef2;
+	private String participantRef1Login, participantRef2Login;
 
-		private String participantRef1Login, participantRef2Login;
+	@SpringBootApplication
+	static class TestConfiguration { }
 
-		@SpringBootApplication
-		static class TestConfiguration { }
+	@Before
+	public void init() {
+		participantRef1 = new ParticipantRef("ParticipantRef1Login123456");
+		participantRef2 = new ParticipantRef("ParticipantRef2Login654321");
+		participantRef1Login = "ParticipantRef1Login123456";
+		participantRef2Login = "ParticipantRef2Login654321";
+	}
 
-		@Before
-		public void init() {
-			participantRef1 = new ParticipantRef("ParticipantRef1Login123456");
-			participantRef2 = new ParticipantRef("ParticipantRef2Login654321");
+	@Test
+	public void findById() throws Exception {
+		Long id = (Long) entityManager.persistAndGetId(participantRef1);
+		Optional<ParticipantRef> optionalParticipantRef = participantRefRepository.findById(id);
+		assertTrue(optionalParticipantRef.isPresent());
+		assertEquals(id, optionalParticipantRef.get().getId());
+		assertEquals(participantRef1Login, optionalParticipantRef.get().getParticipantRefLogin());
+	}
 
-			participantRef1Login = "ParticipantRef1Login123456";
-			participantRef2Login = "ParticipantRef2Login654321";
-		}
+	@Test
+	public void findAll() {
+		List<ParticipantRef> extectedParticipantsRef = Arrays.asList(participantRef1, participantRef2);
+		extectedParticipantsRef.stream().forEach(e -> entityManager.persist(e));
+		List<ParticipantRef> resultParticipantRef = participantRefRepository.findAll();
+		assertEquals(extectedParticipantsRef, resultParticipantRef);
+		assertEquals(2, resultParticipantRef.size());
+	}
 
-		@Test
-		public void findById() throws Exception {
-			Long id = (Long) entityManager.persistAndGetId(participantRef1);
-			Optional<ParticipantRef> optionalParticipantRef = participantRefRepository.findById(id);
-			assertTrue(optionalParticipantRef.isPresent());
-			assertEquals(id, optionalParticipantRef.get().getId());
-			assertEquals(participantRef1Login, optionalParticipantRef.get().getParticipantRefLogin());
-		}
+	@Test
+	public void findByParticipantRefLogin() {
+		entityManager.persist(participantRef1);
+		entityManager.persist(participantRef2);
+		Optional<ParticipantRef> optionalParticipantRef = participantRefRepository.findByParticipantRefLogin(participantRef2Login);
+		assertTrue(optionalParticipantRef.isPresent());
+		assertEquals(participantRef2, optionalParticipantRef.get());
+	}
 
-		@Test
-		public void findAll() {
-			List<ParticipantRef> extectedParticipantsRef = Arrays.asList(participantRef1, participantRef2);
-
-			extectedParticipantsRef.stream().forEach(e -> entityManager.persist(e));
-
-			List<ParticipantRef> resultParticipantRef = participantRefRepository.findAll();
-			assertEquals(extectedParticipantsRef, resultParticipantRef);
-			assertEquals(2, resultParticipantRef.size());
-		}
-
-		@Test
-		public void findByParticipantRefLogin() {
-			entityManager.persist(participantRef1);
-			entityManager.persist(participantRef2);
-
-			Optional<ParticipantRef> optionalParticipantRef = participantRefRepository.findByParticipantRefLogin(participantRef2Login);
-			assertTrue(optionalParticipantRef.isPresent());
-			assertEquals(participantRef2, optionalParticipantRef.get());
-		}
-
-		@Test
-		public void findByParticipantRefLogin_unpresent_login() {
-			Optional<ParticipantRef> optionalParticipantRef = participantRefRepository.findByParticipantRefLogin("ParticipantInvalidLogin987123");
-			assertFalse(optionalParticipantRef.isPresent());
-		}
+	@Test
+	public void findByParticipantRefLogin_unpresent_login() {
+		Optional<ParticipantRef> optionalParticipantRef = participantRefRepository.findByParticipantRefLogin("ParticipantInvalidLogin987123");
+		assertFalse(optionalParticipantRef.isPresent());
+	}
 }
