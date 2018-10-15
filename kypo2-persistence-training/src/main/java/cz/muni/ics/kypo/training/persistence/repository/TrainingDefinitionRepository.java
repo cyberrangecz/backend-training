@@ -23,8 +23,8 @@ import java.util.List;
 public interface TrainingDefinitionRepository
 		extends JpaRepository<TrainingDefinition, Long>, QuerydslPredicateExecutor<TrainingDefinition> {
 
-	@Query("SELECT al.id FROM TrainingDefinition td JOIN AbstractLevel al ON td.id = al.id")
-	List<Long> findAllIdsFromAbstractLevel();
+//	@Query("SELECT al.id FROM TrainingDefinition td JOIN AbstractLevel al ON td.id = al.id")
+//	List<Long> findAllIdsFromAbstractLevel();
 
 	@Query("SELECT td FROM TrainingDefinition td INNER JOIN td.sandBoxDefinitionRef sbd WHERE sbd.sandboxDefinitionRef = :sandboxDefId")
 	Page<TrainingDefinition> findAllBySandBoxDefinitionRefId(@Param("sandboxDefId") Long sandboxDefId, Pageable pageable);

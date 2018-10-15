@@ -16,11 +16,12 @@ import cz.muni.ics.kypo.training.persistence.config.PersistenceConfigTest;
 import cz.muni.ics.kypo.training.persistence.model.SandboxDefinitionRef;
 import cz.muni.ics.kypo.training.persistence.model.TrainingDefinition;
 import cz.muni.ics.kypo.training.persistence.model.enums.TDState;
-import cz.muni.ics.kypo.training.persistence.repository.TrainingDefinitionRepository;
 
+import java.util.Arrays;
 import java.util.List;
 
 import static junit.framework.TestCase.assertEquals;
+import static junit.framework.TestCase.assertNotNull;
 import static junit.framework.TestCase.assertTrue;
 
 @RunWith(SpringRunner.class)
@@ -73,14 +74,13 @@ public class TrainingDefinitionRepositoryTest {
 	}
 
 	@Test
-	public void FindAllBySandboxDefinitionRefId() {
+	public void findAllBySandboxDefinitionRefId() {
 		entityManager.persist(trainingDefinition1);
 		entityManager.persist(trainingDefinition2);
 		entityManager.persist(trainingDefinition3);
 
 		List<TrainingDefinition> trainingDefinitions = trainingDefinitionRepository
 				.findAllBySandBoxDefinitionRefId(sandboxDefinitionRef1.getSandboxDefinitionRef(), pageable).getContent();
-		System.out.println(trainingDefinitions);
 		assertTrue(trainingDefinitions.contains(trainingDefinition1));
 		assertTrue(trainingDefinitions.contains(trainingDefinition2));
 		assertEquals(2, trainingDefinitions.size());
