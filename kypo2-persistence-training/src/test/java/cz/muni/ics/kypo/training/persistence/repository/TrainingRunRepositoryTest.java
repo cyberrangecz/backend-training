@@ -20,11 +20,13 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 @RunWith(SpringRunner.class)
@@ -96,11 +98,29 @@ public class TrainingRunRepositoryTest {
 	}
 
 	@Test
+	public void findByIdWithLevel() {
+		Long trainingRunId = (Long) entityManager.persistAndGetId(trainingRun2);
+		Optional<TrainingRun> optionalTrainingRun = trainingRunRepository.findByIdWithLevel(trainingRunId);
+		assertTrue(optionalTrainingRun.isPresent());
+		assertTrue(optionalTrainingRun.get().getCurrentLevel() instanceof InfoLevel);
+	}
+
+	@Test
 	public void findById() throws Exception {
 		long expectedId = entityManager.persist(trainingRun1).getId();
-		Optional<TrainingRun> optionalTR = trainingRunRepository.findByIdWithLevel(expectedId);
+		Optional<TrainingRun> optionalTR = trainingRunRepository.findById(expectedId);
 		TrainingRun tr = optionalTR.orElseThrow(() -> new Exception("Training run should be found"));
 		assertEquals(trainingRun1, tr);
+	}
+
+	@Test
+	public void findAll() {
+		List<TrainingRun> expectedTrainingRuns = Arrays.asList(trainingRun1, trainingRun2);
+		expectedTrainingRuns.stream().forEach(t -> entityManager.persist(t));
+		List<TrainingRun> resultTrainingRuns = trainingRunRepository.findAll();
+		assertNotNull(resultTrainingRuns);
+		assertEquals(expectedTrainingRuns, resultTrainingRuns);
+		assertEquals(expectedTrainingRuns.size(), resultTrainingRuns.size());
 	}
 
 	@Test
