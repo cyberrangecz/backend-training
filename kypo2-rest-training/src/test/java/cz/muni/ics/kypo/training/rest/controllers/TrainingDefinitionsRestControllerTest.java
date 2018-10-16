@@ -2,6 +2,8 @@ package cz.muni.ics.kypo.training.rest.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
+import com.google.common.base.Predicates;
+import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.training.api.PageResultResource;
 import cz.muni.ics.kypo.training.api.dto.AuthorRefDTO;
 import cz.muni.ics.kypo.training.api.dto.SandboxDefinitionRefDTO;
@@ -20,10 +22,10 @@ import cz.muni.ics.kypo.training.mapping.BeanMappingImpl;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.model.enums.AssessmentType;
 import cz.muni.ics.kypo.training.persistence.model.enums.TDState;
+import cz.muni.ics.kypo.training.rest.config.RestConfigTest;
 import cz.muni.ics.kypo.training.rest.exceptions.ConflictException;
-import cz.muni.ics.kypo.training.rest.exceptions.ResourceNotCreatedException;
 import cz.muni.ics.kypo.training.rest.exceptions.ResourceNotFoundException;
-import cz.muni.ics.kypo.training.rest.exceptions.ResourceNotModifiedException;
+import io.swagger.annotations.ApiParam;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -33,11 +35,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.querydsl.SimpleEntityPathResolver;
 import org.springframework.data.querydsl.binding.QuerydslBindingsFactory;
+import org.springframework.data.querydsl.binding.QuerydslPredicate;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.data.web.querydsl.QuerydslPredicateArgumentResolver;
 import org.springframework.http.MediaType;
@@ -58,7 +63,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = TrainingDefinitionsRestController.class)
-@ComponentScan(basePackages = "cz.muni.ics.kypo")
+@Import(RestConfigTest.class)
 public class TrainingDefinitionsRestControllerTest {
 
 	@Autowired
@@ -92,6 +97,11 @@ public class TrainingDefinitionsRestControllerTest {
 
 	private PageResultResource<TrainingDefinitionDTO> trainingDefinitionDTOPageResultResource;
 
+	private Predicate predicate;
+
+	@ApiParam(value = "Pagination support.", required = false)
+	private Pageable pageable;
+
 	@Before
 	public void init() {
 		MockitoAnnotations.initMocks(this);
@@ -99,6 +109,8 @@ public class TrainingDefinitionsRestControllerTest {
 				.setCustomArgumentResolvers(new PageableHandlerMethodArgumentResolver(),
 						new QuerydslPredicateArgumentResolver(new QuerydslBindingsFactory(SimpleEntityPathResolver.INSTANCE), Optional.empty()))
 				.setMessageConverters(new MappingJackson2HttpMessageConverter()).build();
+
+		predicate = (Predicate) Predicates.alwaysTrue();
 
 		gameLevel = new GameLevel();
 		gameLevel.setId(1L);
@@ -226,7 +238,7 @@ public class TrainingDefinitionsRestControllerTest {
 		expected.add(trainingDefinition1);
 		expected.add(trainingDefinition2);
 
-		p = new PageImpl<TrainingDefinition>(expected);
+		p = new PageImpl<>(expected);
 
 		ObjectMapper obj = new ObjectMapper();
 		obj.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
@@ -254,6 +266,35 @@ public class TrainingDefinitionsRestControllerTest {
 		Exception exception =
 				mockMvc.perform(get("/training-definitions" + "/{id}", 6l)).andExpect(status().isNotFound()).andReturn().getResolvedException();
 		assertEquals(ResourceNotFoundException.class, exception.getClass());
+	}
+
+	@Test
+	public void findAllTrainingDefinitions() throws Exception {
+		PageResultResource<TrainingDefinitionDTO> expected = new PageResultResource<>(Arrays.asList(trainingDefinition1DTO, trainingDefinition2DTO));
+		given(trainingDefinitionFacade.findAll(predicate, pageable)).willReturn(expected);
+		String valueTd = convertObjectToJsonBytes(expected);
+		given(objectMapper.writeValueAsString(any(Object.class))).willReturn(valueTd);
+		MockHttpServletResponse result = mockMvc.perform(get("/training-definitions")).andExpect(status().isOk())
+				.andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON)).andReturn().getResponse();
+		assertEquals(convertObjectToJsonBytes(convertObjectToJsonBytes(expected)), result.getContentAsString());
+	}
+
+	@Test(expected = ResourceNotFoundException.class)
+	public void findAllTrainingDefinitions_withFacadeException() throws Exception {
+		Exception exceptionThrow = new ServiceLayerException("message", ErrorCode.RESOURCE_NOT_FOUND);
+		willThrow(new FacadeLayerException(exceptionThrow)).given(trainingDefinitionFacade).findAll((Predicate) Predicates.alwaysTrue(), PageRequest.of(0, 10));
+		Exception exception =	mockMvc.perform(get("/training-definitions")).andExpect(status().isNotFound()).andReturn().getResolvedException();
+		//assertEquals(ResourceNotFoundException.class, exception.getClass());
+	}
+
+	@Test
+	public void findAllTrainingDefinitionsBySandboxDefinitionId() throws Exception {
+
+	}
+
+	@Test
+	public void createTrainingDefinition() throws Exception {
+
 	}
 
 	@Test
@@ -443,6 +484,22 @@ public class TrainingDefinitionsRestControllerTest {
 				.andExpect(status().isConflict()).andReturn().getResolvedException();
 		assertEquals(ConflictException.class, exception.getClass());
 	}
+
+	@Test
+	public void updateAssessmentLevel() throws Exception {
+
+	}
+
+	@Test
+	public void findLevelById() throws Exception {
+
+	}
+
+	@Test
+	public void createLevel() throws Exception {
+
+	}
+
 /*
 	@Test
 	public void createTrainingDefinition() throws Exception {
@@ -471,5 +528,4 @@ public class TrainingDefinitionsRestControllerTest {
 		ObjectMapper mapper = new ObjectMapper();
 		return mapper.writeValueAsString(object);
 	}
-
 }
