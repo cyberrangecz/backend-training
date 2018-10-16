@@ -1,4 +1,4 @@
-package cz.muni.ics.kypo.training.rest.controllers;
+package cz.muni.ics.kypo.training.rest;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.bohnman.squiggly.Squiggly;
@@ -52,7 +52,7 @@ import javax.validation.Valid;
 @RequestMapping(value = "/training-instances")
 public class TrainingInstancesRestController {
 
-	private static final Logger LOG = LoggerFactory.getLogger(cz.muni.ics.kypo.training.rest.controllers.TrainingInstancesRestController.class);
+	private static final Logger LOG = LoggerFactory.getLogger(TrainingInstancesRestController.class);
 
 	private TrainingInstanceFacade trainingInstanceFacade;
 	private ObjectMapper objectMapper;

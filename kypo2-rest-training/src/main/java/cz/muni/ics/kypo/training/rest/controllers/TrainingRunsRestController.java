@@ -1,4 +1,4 @@
-package cz.muni.ics.kypo.training.rest.controllers;
+package cz.muni.ics.kypo.training.rest;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -22,7 +22,6 @@ import cz.muni.ics.kypo.training.rest.exceptions.ResourceNotFoundException;
 
 import java.util.List;
 
-import org.json.JSONObject;
 import org.jsondoc.core.annotation.ApiObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
