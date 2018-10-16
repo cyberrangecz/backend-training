@@ -22,6 +22,7 @@ import cz.muni.ics.kypo.training.mapping.BeanMappingImpl;
 import cz.muni.ics.kypo.training.persistence.model.TrainingRun;
 import cz.muni.ics.kypo.training.persistence.model.enums.AssessmentType;
 import cz.muni.ics.kypo.training.persistence.model.enums.TRState;
+import cz.muni.ics.kypo.training.rest.config.RestConfigTest;
 import cz.muni.ics.kypo.training.rest.exceptions.BadRequestException;
 import cz.muni.ics.kypo.training.rest.exceptions.InternalServerErrorException;
 import cz.muni.ics.kypo.training.rest.exceptions.ResourceNotFoundException;
@@ -35,7 +36,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -67,7 +67,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = TrainingRunsRestController.class)
-@ComponentScan(basePackages = "cz.muni.ics.kypo.rest")
+@Import(RestConfigTest.class)
 public class TrainingRunsRestControllerTest {
 
 	@Autowired
@@ -147,13 +147,13 @@ public class TrainingRunsRestControllerTest {
 		accessedTrainingRunDTO.setTitle("accessed training run");
 		List<AccessedTrainingRunDTO> accessed = new ArrayList<>();
 		accessed.add(accessedTrainingRunDTO);
-		pAccessed = new PageImpl<AccessedTrainingRunDTO>(accessed);
+		pAccessed = new PageImpl<>(accessed);
 
 		List<TrainingRun> expected = new ArrayList<>();
 		expected.add(trainingRun1);
 		expected.add(trainingRun2);
 
-		p = new PageImpl<TrainingRun>(expected);
+		p = new PageImpl<>(expected);
 
 		ObjectMapper obj = new ObjectMapper();
 		obj.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
