@@ -1,4 +1,4 @@
-package cz.muni.ics.kypo.training.rest;
+package cz.muni.ics.kypo.training.rest.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.bohnman.squiggly.Squiggly;
