@@ -36,17 +36,15 @@ public class ParticipantRef {
 		this.participantRefLogin = participantRefLogin;
 	}
 
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
+	@Override public boolean equals(Object o) {
+		if (this == o)
 			return true;
-		if (!super.equals(obj))
-			return false;
-		if (!(obj instanceof ParticipantRef))
+		if (!(o instanceof ParticipantRef))
 			return false;
 
-		ParticipantRef other = (ParticipantRef) obj;
-		return Objects.equals(id, other.getId()) && Objects.equals(participantRefLogin, other.getParticipantRefLogin());
+		ParticipantRef that = (ParticipantRef) o;
+
+		return getParticipantRefLogin().equals(that.getParticipantRefLogin());
 	}
 
 	@Override

@@ -20,7 +20,7 @@ public class UserRef implements Serializable {
   @Column(name = "id", unique = true, nullable = false, insertable = false)
   private Long id;
   @Column(name = "user_ref_id")
-  private Long userRefId;
+  private String userRefLogin;
 	@ManyToMany(mappedBy = "organizers", fetch = FetchType.LAZY)
   private Set<TrainingInstance> trainingInstance = new HashSet<>();
 
@@ -34,12 +34,12 @@ public class UserRef implements Serializable {
     this.id = id;
   }
 
-  public Long getUserRefId() {
-    return userRefId;
+  public String getUserRefLogin() {
+    return userRefLogin;
   }
 
-  public void setUserRefId(Long userRefId) {
-    this.userRefId = userRefId;
+  public void setUserRefLogin(String userRefLogin) {
+    this.userRefLogin = userRefLogin;
   }
 
   public Set<TrainingInstance> getTrainingInstance() {
@@ -50,9 +50,24 @@ public class UserRef implements Serializable {
     this.trainingInstance = trainingInstance;
   }
 
+  @Override public boolean equals(Object o) {
+    if (this == o)
+      return true;
+    if (!(o instanceof UserRef))
+      return false;
+
+    UserRef userRef = (UserRef) o;
+
+    return getUserRefLogin().equals(userRef.getUserRefLogin());
+  }
+
+  @Override public int hashCode() {
+    return getUserRefLogin().hashCode();
+  }
+
   @Override
   public String toString() {
-    return "UserRef [id=" + id + ", userRefId=" + userRefId + ", trainingInstance=" + trainingInstance + ", toString()=" + super.toString() + "]";
+    return "UserRef [id=" + id + ", userRefLogin=" + userRefLogin + ", trainingInstance=" + trainingInstance + ", toString()=" + super.toString() + "]";
   }
 
 }

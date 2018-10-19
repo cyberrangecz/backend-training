@@ -21,7 +21,9 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -72,6 +74,8 @@ public class TrainingRunServiceImpl implements TrainingRunService {
 
 
   @Override
+  @PreAuthorize("hasAuthority('ADMINISTRATOR')" +
+      "or @securityService.isTraineeOfGivenTrainingRun(#id)")
   public TrainingRun findById(Long id) {
     LOG.debug("findById({})", id);
     Objects.requireNonNull(id);
@@ -80,6 +84,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
   }
 
   @Override
+  @PreAuthorize("hasAuthority('ADMINISTRATOR')")
   public Page<TrainingRun> findAll(Predicate predicate, Pageable pageable) {
     LOG.debug("findAll({},{})", predicate, pageable);
     return trainingRunRepository.findAll(predicate, pageable);
@@ -87,13 +92,15 @@ public class TrainingRunServiceImpl implements TrainingRunService {
   }
 
   @Override
+  @PreAuthorize("hasAuthority({'ADMINISTRATOR', T(cz.muni.ics.kypo.training.persistence.model.enums.RoleType).TRAINEE})")
   public Page<TrainingRun> findAllByParticipantRefLogin(Pageable pageable) {
     LOG.debug("findAllByParticipantRefId({})");
     Page<TrainingRun> trainingRuns = trainingRunRepository.findAllByParticipantRefLogin(getSubOfLoggedInUser(), pageable);
-      return trainingRuns;
+    return trainingRuns;
   }
 
   @Override
+  @PreAuthorize("hasAuthority('ADMINISTRATOR')")
   public TrainingRun create(TrainingRun trainingRun) {
     LOG.debug("create({})", trainingRun);
     Assert.notNull(trainingRun, "Input training run must not be empty.");
@@ -102,6 +109,8 @@ public class TrainingRunServiceImpl implements TrainingRunService {
   }
 
   @Override
+  @PreAuthorize("hasAuthority('ADMINISTRATOR')" +
+      "or @securityService.isTraineeOfGivenTrainingRun(#trainingRunId)" )
   public AbstractLevel getNextLevel(Long trainingRunId) {
     LOG.debug("getNextLevel({})", trainingRunId);
     Assert.notNull(trainingRunId, "Input training run id must not be null.");
@@ -115,12 +124,14 @@ public class TrainingRunServiceImpl implements TrainingRunService {
     trainingRun.setCurrentLevel(abstractLevel);
     trainingRun.setSolutionTaken(false);
     trainingRunRepository.save(trainingRun);
-    //event log LevelStarted
+    // TODO event log LevelStarted
     return abstractLevel;
 
   }
 
   @Override
+  @PreAuthorize("hasAuthority('ADMINISTRATOR')" +
+      "or @securityService.isDesignerOfGivenTrainingDefinition(#trainingDefinitionId)" )
   public Page<TrainingRun> findAllByTrainingDefinitionAndParticipant(Long trainingDefinitionId, Pageable pageable) {
     LOG.debug("findAllByTrainingDefinitionAndParticipant({})", trainingDefinitionId);
     Assert.notNull(trainingDefinitionId, "Input training definition id must not be null.");
@@ -128,6 +139,8 @@ public class TrainingRunServiceImpl implements TrainingRunService {
   }
 
   @Override
+  @PreAuthorize("hasAuthority('ADMINISTRATOR')" +
+      "or @securityService.isDesignerOfGivenTrainingDefinition(#trainingDefinitionId)")
   public Page<TrainingRun> findAllByTrainingDefinition(Long trainingDefinitionId, Pageable pageable) {
     LOG.debug("findAllByTrainingDefinition({},{})", trainingDefinitionId, pageable);
     Assert.notNull(trainingDefinitionId, "Input training definition id must not be null.");
@@ -135,6 +148,8 @@ public class TrainingRunServiceImpl implements TrainingRunService {
   }
 
   @Override
+  @PreAuthorize("hasAuthority('ADMINISTRATOR')" +
+      "or @securityService.isOrganizeOfGivenTrainingInstance(#trainingInstanceId)")
   public Page<TrainingRun> findAllByTrainingInstance(Long trainingInstanceId, Pageable pageable) {
     LOG.debug("findAllByTrainingInstance({},{})", trainingInstanceId);
     Assert.notNull(trainingInstanceId, "Input training instance id must not be null.");
@@ -142,6 +157,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
   }
 
   @Override
+  @PreAuthorize("hasAuthority('ADMINISTRATOR')")
   public List<AbstractLevel> getLevels(Long levelId) {
     Assert.notNull(levelId, "Id of first level must not be null.");
     List<AbstractLevel> levels = new ArrayList<>();
@@ -161,6 +177,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
 
 
   @Override
+  @PreAuthorize("hasAuthority({'ADMINISTRATOR', 'USER'})")
   public AbstractLevel accessTrainingRun(String password) {
     LOG.debug("accessTrainingRun({})", password);
     Assert.hasLength(password, "Password cannot be null or empty.");
@@ -177,7 +194,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
 
 */
       //check hash of password not String
-      if (new String(ti.getPasswordHash()).equals(password)) {
+      if (ti.getPasswordHash().equals(BCrypt.hashpw(password, BCrypt.gensalt(12)))) {
         Set<SandboxInstanceRef> sandboxInstancePool = ti.getSandboxInstanceRefs();
         Set<SandboxInstanceRef> allocatedSandboxInstances = trainingRunRepository.findSandboxInstanceRefsOfTrainingInstance(ti.getId());
         sandboxInstancePool.removeAll(allocatedSandboxInstances);
@@ -233,6 +250,8 @@ public class TrainingRunServiceImpl implements TrainingRunService {
   }
 
   @Override
+  @PreAuthorize("hasAuthority('ADMINISTRATOR')"  +
+      "or @securityService.isTraineeOfGivenTrainingRun(#trainingRunId)")
   public boolean isCorrectFlag(Long trainingRunId, String flag) {
     LOG.debug("isCorrectFlag({})", trainingRunId);
     Assert.notNull(trainingRunId, "Input training run id must not be null.");
@@ -257,6 +276,8 @@ public class TrainingRunServiceImpl implements TrainingRunService {
   }
 
   @Override
+  @PreAuthorize("hasAuthority('ADMINISTRATOR')"  +
+      "or @securityService.isTraineeOfGivenTrainingRun(#trainingRunId)")
   public int getRemainingAttempts(Long trainingRunId) {
     LOG.debug("getRemainingAttempts({})", trainingRunId);
     Assert.notNull(trainingRunId, "Input training run id must not be null.");
@@ -273,6 +294,8 @@ public class TrainingRunServiceImpl implements TrainingRunService {
 
 
   @Override
+  @PreAuthorize("hasAuthority('ADMINISTRATOR')"  +
+      "or @securityService.isTraineeOfGivenTrainingRun(#trainingRunId)")
   public String getSolution(Long trainingRunId) {
     LOG.debug("getSolution({})", trainingRunId);
     Assert.notNull(trainingRunId, "Input training run id must not be null.");
@@ -290,6 +313,8 @@ public class TrainingRunServiceImpl implements TrainingRunService {
   }
 
   @Override
+  @PreAuthorize("hasAuthority('ADMINISTRATOR')"  +
+      "or @securityService.isTraineeOfGivenTrainingRun(#trainingRunId)")
   public Hint getHint(Long trainingRunId, Long hintId) {
     LOG.debug("getHint({},{})", trainingRunId, hintId);
     Assert.notNull(trainingRunId, "Input training run id must not be null.");
@@ -304,11 +329,12 @@ public class TrainingRunServiceImpl implements TrainingRunService {
       }
       throw new ServiceLayerException("Hint with id " + hintId + " is not in current level of training run: " + trainingRunId +".", ErrorCode.RESOURCE_CONFLICT);
     } else {
-      throw new ServiceLayerException("Current level is not game level and does not contain hints.", ErrorCode.WRONG_LEVEL_TYPE);
+      throw new ServiceLayerException("Current level is not game level and does not have hints.", ErrorCode.WRONG_LEVEL_TYPE);
     }
   }
 
   @Override
+  @PreAuthorize("hasAuthority('ADMINISTRATOR')")
   public int getLevelOrder(Long idOfFirstLevel, Long actualLevel) {
     LOG.debug("getLevelOrder({}, {})", idOfFirstLevel, actualLevel);
     Assert.notNull(idOfFirstLevel, "Input id of first level must not be null.");
@@ -348,7 +374,10 @@ public class TrainingRunServiceImpl implements TrainingRunService {
 		}
 	}
 
-  @Override public TrainingRun findByIdWithLevel(Long trainingRunId) {
+  @Override
+  @PreAuthorize("hasAuthority('ADMINISTRATOR')" +
+      "or @securityService.isTraineeOfGivenTrainingRun(#trainingRunId)")
+  public TrainingRun findByIdWithLevel(Long trainingRunId) {
     LOG.debug("findById({})", trainingRunId);
     Objects.requireNonNull(trainingRunId);
     return trainingRunRepository.findByIdWithLevel(trainingRunId).orElseThrow(() ->

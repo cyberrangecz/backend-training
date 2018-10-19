@@ -49,6 +49,21 @@ public class AuthorRef implements Serializable {
 		this.trainingDefinition = trainingDefinition;
 	}
 
+	@Override public boolean equals(Object o) {
+		if (this == o)
+			return true;
+		if (!(o instanceof AuthorRef))
+			return false;
+
+		AuthorRef authorRef = (AuthorRef) o;
+
+		return getAuthorRefLogin().equals(authorRef.getAuthorRefLogin());
+	}
+
+	@Override public int hashCode() {
+		return getAuthorRefLogin().hashCode();
+	}
+
 	@Override
 	public String toString() {
 		return "AuthorRef{" + "id=" + id + ", authorRefLogin='" + authorRefLogin + '\'' + ", trainingDefinition=" + trainingDefinition + '}';
