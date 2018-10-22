@@ -19,7 +19,7 @@ public class UserRef implements Serializable {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   @Column(name = "id", unique = true, nullable = false, insertable = false)
   private Long id;
-  @Column(name = "user_ref_id")
+  @Column(name = "user_ref_login")
   private String userRefLogin;
 	@ManyToMany(mappedBy = "organizers", fetch = FetchType.LAZY)
   private Set<TrainingInstance> trainingInstance = new HashSet<>();

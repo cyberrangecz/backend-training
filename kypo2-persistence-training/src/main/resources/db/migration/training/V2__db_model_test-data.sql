@@ -66,8 +66,8 @@ INSERT INTO training_instance_sandbox_instance_ref(training_instance_id, sandbox
 INSERT INTO training_instance_sandbox_instance_ref(training_instance_id, sandbox_instance_ref_id) VALUES (2, 2);
 INSERT INTO training_instance_sandbox_instance_ref(training_instance_id, sandbox_instance_ref_id) VALUES (3, 3);
 
-INSERT INTO user_ref(id, user_ref_id) VALUES (1, 1);
-INSERT INTO user_ref(id, user_ref_id) VALUES (2, 2);
+INSERT INTO user_ref(id, user_ref_login) VALUES (1, 'Organizer1');
+INSERT INTO user_ref(id, user_ref_login) VALUES (2, 'Organizer2');
 
 
 INSERT INTO training_instance_organizers(training_instance_id, organizers_id) VALUES (1, 1);

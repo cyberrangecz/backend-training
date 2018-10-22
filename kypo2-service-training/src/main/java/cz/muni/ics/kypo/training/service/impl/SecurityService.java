@@ -6,15 +6,23 @@ import cz.muni.ics.kypo.training.persistence.repository.ParticipantRefRepository
 import cz.muni.ics.kypo.training.persistence.repository.TrainingDefinitionRepository;
 import cz.muni.ics.kypo.training.persistence.repository.TrainingInstanceRepository;
 import cz.muni.ics.kypo.training.persistence.repository.TrainingRunRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.stereotype.Service;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
 @Service
 public class SecurityService {
+
+	private static final Logger LOG = LoggerFactory.getLogger(SecurityService.class);
 	private TrainingRunRepository trainingRunRepository;
 	private TrainingDefinitionRepository trainingDefinitionRepository;
 	private TrainingInstanceRepository trainingInstanceRepository;
@@ -28,6 +36,8 @@ public class SecurityService {
 	}
 
 	public boolean isTraineeOfGivenTrainingRun(Long trainingRunId) {
+		OAuth2Authentication authentication = (OAuth2Authentication) SecurityContextHolder.getContext().getAuthentication();
+		LOG.info(authentication.getUserAuthentication().);
 		 TrainingRun trainingRun = trainingRunRepository.findById(trainingRunId).orElseThrow(() -> new SecurityException("Training run with id " +
 				 trainingRunId + " cannot be found."));
 		return trainingRun.getParticipantRef().getParticipantRefLogin().equals(getSubOfLoggedInUser());

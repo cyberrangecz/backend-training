@@ -294,8 +294,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
 
 
   @Override
-  @PreAuthorize("hasAuthority('ADMINISTRATOR')"  +
-      "or @securityService.isTraineeOfGivenTrainingRun(#trainingRunId)")
+  @PreAuthorize("@securityService.isTraineeOfGivenTrainingRun(#trainingRunId)")
   public String getSolution(Long trainingRunId) {
     LOG.debug("getSolution({})", trainingRunId);
     Assert.notNull(trainingRunId, "Input training run id must not be null.");
