@@ -19,7 +19,7 @@ public class AbstractLevelDTO {
 
 	protected Long id;
 	protected String title;
-	protected Integer maxScore;
+	protected int maxScore;
 	protected Long nextLevel;
 	protected PreHookDTO preHook;
 	protected PostHookDTO postHook;

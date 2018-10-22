@@ -2,10 +2,12 @@ package cz.muni.ics.kypo.training.facade;
 
 import cz.muni.ics.kypo.training.api.dto.AuthorRefDTO;
 import cz.muni.ics.kypo.training.api.dto.SandboxDefinitionRefDTO;
+import cz.muni.ics.kypo.training.api.dto.infolevel.InfoLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionDTO;
 import cz.muni.ics.kypo.training.config.FacadeConfigTest;
 import cz.muni.ics.kypo.training.mapping.BeanMapping;
 import cz.muni.ics.kypo.training.persistence.model.AuthorRef;
+import cz.muni.ics.kypo.training.persistence.model.InfoLevel;
 import cz.muni.ics.kypo.training.persistence.model.SandboxDefinitionRef;
 import cz.muni.ics.kypo.training.persistence.model.TrainingDefinition;
 import cz.muni.ics.kypo.training.persistence.model.enums.TDState;
@@ -17,10 +19,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 import static org.junit.Assert.assertEquals;
 
@@ -113,4 +112,34 @@ public class BeanMappingTest {
 		assertEquals(dto.isShowStepperBar(), tD.isShowStepperBar());
 	}
 
+	@Test
+	public void testMapListOfEntitiesToListOfDTO() {
+		List<InfoLevel> infoLevelsList = new ArrayList<>();
+
+		InfoLevel infoLevel1 = new InfoLevel();
+		infoLevel1.setId(1L);
+		infoLevel1.setContent("content1");
+		infoLevel1.setMaxScore(10);
+		infoLevel1.setTitle("title1");
+
+		InfoLevel infoLevel2 = new InfoLevel();
+		infoLevel2.setId(2L);
+		infoLevel2.setContent("content2");
+		infoLevel2.setMaxScore(9);
+		infoLevel2.setTitle("title2");
+
+		infoLevelsList.add(infoLevel1);
+		infoLevelsList.add(infoLevel2);
+		List<InfoLevelDTO> dtos = beanMapping.mapTo(infoLevelsList, InfoLevelDTO.class);
+
+		assertEquals(infoLevel1.getId(), dtos.get(0).getId());
+		assertEquals(infoLevel1.getContent(), dtos.get(0).getContent());
+		//assertEquals(infoLevel1.getMaxScore(), dtos.get(0).getMaxScore());
+		assertEquals(infoLevel1.getTitle(), dtos.get(0).getTitle());
+
+		assertEquals(infoLevel2.getId(), dtos.get(1).getId());
+		assertEquals(infoLevel2.getContent(), dtos.get(1).getContent());
+		//assertEquals(infoLevel2.getMaxScore(), dtos.get(1).getMaxScore());
+		assertEquals(infoLevel2.getTitle(), dtos.get(1).getTitle());
+	}
 }
