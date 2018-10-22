@@ -1,5 +1,7 @@
 package cz.muni.ics.kypo.training.facade;
 
+import cz.muni.ics.kypo.training.api.dto.AuthorRefDTO;
+import cz.muni.ics.kypo.training.api.dto.SandboxDefinitionRefDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionDTO;
 import cz.muni.ics.kypo.training.config.FacadeConfigTest;
 import cz.muni.ics.kypo.training.mapping.BeanMapping;
@@ -72,4 +74,43 @@ public class BeanMappingTest {
 		assertEquals(tD.getStartingLevel(), dto.getStartingLevel());
 		assertEquals(tD.isShowStepperBar(), dto.isShowStepperBar());
 	}
+
+	@Test
+	public void testMapDTOToEntity() {
+		TrainingDefinitionDTO dto = new TrainingDefinitionDTO();
+		dto.setId(1L);
+		dto.setTitle("TrainingDefinition");
+		dto.setDescription("description");
+		dto.setPrerequisities(new String[] {"p1", "p2"});
+		dto.setOutcomes(new String[] {"o1", "o2"});
+		dto.setState(TDState.RELEASED);
+		AuthorRefDTO aR = new AuthorRefDTO();
+		aR.setId(1L);
+		aR.setAuthorRefLogin("login");
+		dto.setAuthorRef(new HashSet<>(Arrays.asList(aR)));
+		SandboxDefinitionRefDTO sDR = new SandboxDefinitionRefDTO();
+		sDR.setId(1L);
+		sDR.setSandboxDefinitionRef(1L);
+		dto.setSandBoxDefinitionRef(sDR);
+		dto.setStartingLevel(1L);
+		dto.setShowStepperBar(true);
+
+		TrainingDefinition tD = beanMapping.mapTo(dto, TrainingDefinition.class);
+
+		assertEquals(dto.getId(), tD.getId());
+		assertEquals(dto.getTitle(), tD.getTitle());
+		assertEquals(dto.getDescription(), tD.getDescription());
+		assertEquals(dto.getPrerequisities()[0], tD.getPrerequisities()[0]);
+		assertEquals(dto.getPrerequisities()[1], tD.getPrerequisities()[1]);
+		assertEquals(dto.getOutcomes()[0], tD.getOutcomes()[0]);
+		assertEquals(dto.getOutcomes()[1], tD.getOutcomes()[1]);
+		assertEquals(dto.getState(), tD.getState());
+		assertEquals(dto.getAuthorRef().size(), tD.getAuthorRef().size());
+		assertEquals(dto.getAuthorRef().size(), tD.getAuthorRef().size());
+		assertEquals(dto.getSandBoxDefinitionRef().getId(), tD.getSandBoxDefinitionRef().getId());
+		assertEquals(dto.getSandBoxDefinitionRef().getSandboxDefinitionRef(), tD.getSandBoxDefinitionRef().getSandboxDefinitionRef());
+		assertEquals(dto.getStartingLevel(), tD.getStartingLevel());
+		assertEquals(dto.isShowStepperBar(), tD.isShowStepperBar());
+	}
+
 }
