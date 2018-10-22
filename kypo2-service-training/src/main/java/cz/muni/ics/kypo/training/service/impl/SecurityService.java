@@ -36,8 +36,6 @@ public class SecurityService {
 	}
 
 	public boolean isTraineeOfGivenTrainingRun(Long trainingRunId) {
-		OAuth2Authentication authentication = (OAuth2Authentication) SecurityContextHolder.getContext().getAuthentication();
-		LOG.info(authentication.getUserAuthentication().);
 		 TrainingRun trainingRun = trainingRunRepository.findById(trainingRunId).orElseThrow(() -> new SecurityException("Training run with id " +
 				 trainingRunId + " cannot be found."));
 		return trainingRun.getParticipantRef().getParticipantRefLogin().equals(getSubOfLoggedInUser());

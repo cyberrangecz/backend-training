@@ -294,13 +294,13 @@ public class TrainingRunServiceImpl implements TrainingRunService {
 
 
   @Override
-  @PreAuthorize("@securityService.isTraineeOfGivenTrainingRun(#trainingRunId)")
+  @PreAuthorize("hasAuthority('ADMINISTRATO')"  +
+      "or @securityService.isTraineeOfGivenTrainingRun(#trainingRunId)")
   public String getSolution(Long trainingRunId) {
     LOG.debug("getSolution({})", trainingRunId);
     Assert.notNull(trainingRunId, "Input training run id must not be null.");
     TrainingRun tR = findByIdWithLevel(trainingRunId);
     AbstractLevel level = tR.getCurrentLevel();
-    //LOG.info(level.toString());
     if (level instanceof GameLevel) {
       //event getSolution
       tR.setSolutionTaken(true);
