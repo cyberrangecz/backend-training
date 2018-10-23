@@ -17,6 +17,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.*;
@@ -172,5 +174,38 @@ public class BeanMappingTest {
 		assertEquals(infoLevelDTO2.getContent(), infoLevelList.get(1).getContent());
 		assertEquals(infoLevelDTO2.getMaxScore(), infoLevelList.get(1).getMaxScore());
 		assertEquals(infoLevelDTO2.getTitle(), infoLevelList.get(1).getTitle());
+	}
+
+	@Test
+	public void testMappingPageToDTO(){
+		InfoLevel infoLevel1 = new InfoLevel();
+		infoLevel1.setId(1L);
+		infoLevel1.setContent("content1");
+		infoLevel1.setMaxScore(10);
+		infoLevel1.setTitle("title1");
+
+		InfoLevel infoLevel2 = new InfoLevel();
+		infoLevel2.setId(2L);
+		infoLevel2.setContent("content2");
+		infoLevel2.setMaxScore(9);
+		infoLevel2.setTitle("title2");
+
+		List<InfoLevel> levels = new ArrayList<InfoLevel>();
+		levels.add(infoLevel1);
+		levels.add(infoLevel2);
+		Page p = new PageImpl<InfoLevel>(levels);
+		Page pDTO = beanMapping.mapTo(p, InfoLevelDTO.class);
+		InfoLevelDTO iLDTO1 = (InfoLevelDTO) pDTO.getContent().get(0);
+		InfoLevelDTO iLDTO2 = (InfoLevelDTO) pDTO.getContent().get(1);
+
+		assertEquals(pDTO.getTotalElements(), p.getTotalElements());
+		assertEquals(iLDTO1.getTitle(), infoLevel1.getTitle());
+		assertEquals(iLDTO1.getId(), infoLevel1.getId());
+		assertEquals(iLDTO1.getContent(), infoLevel1.getContent());
+		assertEquals(iLDTO1.getMaxScore(), infoLevel1.getMaxScore());
+		assertEquals(iLDTO2.getTitle(), infoLevel2.getTitle());
+		assertEquals(iLDTO2.getId(), infoLevel2.getId());
+		assertEquals(iLDTO2.getContent(), infoLevel2.getContent());
+		assertEquals(iLDTO2.getMaxScore(), infoLevel2.getMaxScore());
 	}
 }
