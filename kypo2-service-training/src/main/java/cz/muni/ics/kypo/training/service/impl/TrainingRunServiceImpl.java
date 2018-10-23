@@ -27,7 +27,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.util.Assert;
 import org.springframework.web.client.RestTemplate;
-
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import java.time.Duration;
@@ -87,7 +86,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
 
 	@Override
 	public Page<TrainingRun> findAllByParticipantRefLogin(Pageable pageable) {
-		LOG.debug("findAllByParticipantRefId({})");
+		LOG.debug("findAllByParticipantRefId({})", pageable);
 		Page<TrainingRun> trainingRuns = trainingRunRepository.findAllByParticipantRefLogin(getSubOfLoggedInUser(), pageable);
 		return trainingRuns;
 	}
@@ -136,7 +135,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
 
 	@Override
 	public Page<TrainingRun> findAllByTrainingInstance(Long trainingInstanceId, Pageable pageable) {
-		LOG.debug("findAllByTrainingInstance({},{})", trainingInstanceId);
+		LOG.debug("findAllByTrainingInstance({},{})", trainingInstanceId, pageable);
 		Assert.notNull(trainingInstanceId, "Input training instance id must not be null.");
 		return trainingRunRepository.findAllByTrainingInstanceId(trainingInstanceId, pageable);
 	}
