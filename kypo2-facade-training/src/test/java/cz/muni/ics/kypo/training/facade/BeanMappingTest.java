@@ -12,6 +12,7 @@ import cz.muni.ics.kypo.training.persistence.model.InfoLevel;
 import cz.muni.ics.kypo.training.persistence.model.SandboxDefinitionRef;
 import cz.muni.ics.kypo.training.persistence.model.TrainingDefinition;
 import cz.muni.ics.kypo.training.persistence.model.enums.TDState;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,31 +36,99 @@ public class BeanMappingTest {
 	@Autowired
 	private BeanMapping beanMapping;
 
+	private TrainingDefinition tD;
+	private TrainingDefinitionDTO tDDTO;
+	private AuthorRef aR;
+	private AuthorRefDTO aRDTO;
+	private SandboxDefinitionRef sDR;
+	private SandboxDefinitionRefDTO sDRDTO;
+	private InfoLevel iL1, iL2;
+	private InfoLevelDTO iLDTO1, iLDTO2;
+	private List<InfoLevel> levels;
+	private List<InfoLevelDTO> levelsDTO;
+
 	@SpringBootApplication
 	static class TestConfiguration {
 	}
 
-	@Test
-	public void testMapEntityToDTO() {
-		TrainingDefinition tD = new TrainingDefinition();
+	@Before
+	public void init() {
+		sDR = new SandboxDefinitionRef();
+		sDR.setId(1L);
+		sDR.setSandboxDefinitionRef(1L);
+
+		sDRDTO = new SandboxDefinitionRefDTO();
+		sDRDTO.setId(1L);
+		sDRDTO.setSandboxDefinitionRef(1L);
+
+		aR = new AuthorRef();
+		aR.setId(1L);
+		aR.setAuthorRefLogin("login");
+		aR.setTrainingDefinition(new HashSet<>(Arrays.asList(tD)));
+
+		aRDTO = new AuthorRefDTO();
+		aRDTO.setId(1L);
+		aRDTO.setAuthorRefLogin("login");
+
+		tD = new TrainingDefinition();
 		tD.setId(1L);
 		tD.setTitle("TrainingDefinition");
 		tD.setDescription("description");
 		tD.setPrerequisities(new String[] {"p1", "p2"});
 		tD.setOutcomes(new String[] {"o1", "o2"});
 		tD.setState(TDState.RELEASED);
-		AuthorRef aR = new AuthorRef();
-		aR.setId(1L);
-		aR.setAuthorRefLogin("login");
-		aR.setTrainingDefinition(new HashSet<>(Arrays.asList(tD)));
 		tD.setAuthorRef(new HashSet<>(Arrays.asList(aR)));
-		SandboxDefinitionRef sDR = new SandboxDefinitionRef();
-		sDR.setId(1L);
-		sDR.setSandboxDefinitionRef(1L);
 		tD.setSandBoxDefinitionRef(sDR);
 		tD.setStartingLevel(1L);
 		tD.setShowStepperBar(true);
 
+		tDDTO = new TrainingDefinitionDTO();
+		tDDTO.setId(1L);
+		tDDTO.setTitle("TrainingDefinition");
+		tDDTO.setDescription("description");
+		tDDTO.setPrerequisities(new String[] {"p1", "p2"});
+		tDDTO.setOutcomes(new String[] {"o1", "o2"});
+		tDDTO.setState(TDState.RELEASED);
+		tDDTO.setAuthorRef(new HashSet<>(Arrays.asList(aRDTO)));
+		tDDTO.setSandBoxDefinitionRef(sDRDTO);
+		tDDTO.setStartingLevel(1L);
+		tDDTO.setShowStepperBar(true);
+
+		iL1 = new InfoLevel();
+		iL1.setId(1L);
+		iL1.setContent("content1");
+		iL1.setMaxScore(10);
+		iL1.setTitle("title1");
+
+		iL2 = new InfoLevel();
+		iL2.setId(2L);
+		iL2.setContent("content2");
+		iL2.setMaxScore(9);
+		iL2.setTitle("title2");
+
+		iLDTO1 = new InfoLevelDTO();
+		iLDTO1.setId(1L);
+		iLDTO1.setContent("content1");
+		iLDTO1.setMaxScore(10);
+		iLDTO1.setTitle("title1");
+
+		iLDTO2 = new InfoLevelDTO();
+		iLDTO2.setId(2L);
+		iLDTO2.setContent("content2");
+		iLDTO2.setMaxScore(9);
+		iLDTO2.setTitle("title2");
+
+		levels = new ArrayList<>();
+		levels.add(iL1);
+		levels.add(iL2);
+
+		levelsDTO = new ArrayList<>();
+		levelsDTO.add(iLDTO1);
+		levelsDTO.add(iLDTO2);
+	}
+
+	@Test
+	public void testMapEntityToDTO() {
 		TrainingDefinitionDTO dto = beanMapping.mapTo(tD, TrainingDefinitionDTO.class);
 
 		assertEquals(tD.getId(), dto.getId());
@@ -80,299 +149,159 @@ public class BeanMappingTest {
 
 	@Test
 	public void testMapDTOToEntity() {
-		TrainingDefinitionDTO dto = new TrainingDefinitionDTO();
-		dto.setId(1L);
-		dto.setTitle("TrainingDefinition");
-		dto.setDescription("description");
-		dto.setPrerequisities(new String[] {"p1", "p2"});
-		dto.setOutcomes(new String[] {"o1", "o2"});
-		dto.setState(TDState.RELEASED);
-		AuthorRefDTO aR = new AuthorRefDTO();
-		aR.setId(1L);
-		aR.setAuthorRefLogin("login");
-		dto.setAuthorRef(new HashSet<>(Arrays.asList(aR)));
-		SandboxDefinitionRefDTO sDR = new SandboxDefinitionRefDTO();
-		sDR.setId(1L);
-		sDR.setSandboxDefinitionRef(1L);
-		dto.setSandBoxDefinitionRef(sDR);
-		dto.setStartingLevel(1L);
-		dto.setShowStepperBar(true);
+		TrainingDefinition tD = beanMapping.mapTo(tDDTO, TrainingDefinition.class);
 
-		TrainingDefinition tD = beanMapping.mapTo(dto, TrainingDefinition.class);
-
-		assertEquals(dto.getId(), tD.getId());
-		assertEquals(dto.getTitle(), tD.getTitle());
-		assertEquals(dto.getDescription(), tD.getDescription());
-		assertEquals(dto.getPrerequisities()[0], tD.getPrerequisities()[0]);
-		assertEquals(dto.getPrerequisities()[1], tD.getPrerequisities()[1]);
-		assertEquals(dto.getOutcomes()[0], tD.getOutcomes()[0]);
-		assertEquals(dto.getOutcomes()[1], tD.getOutcomes()[1]);
-		assertEquals(dto.getState(), tD.getState());
-		assertEquals(dto.getAuthorRef().size(), tD.getAuthorRef().size());
-		assertEquals(dto.getAuthorRef().size(), tD.getAuthorRef().size());
-		assertEquals(dto.getSandBoxDefinitionRef().getId(), tD.getSandBoxDefinitionRef().getId());
-		assertEquals(dto.getSandBoxDefinitionRef().getSandboxDefinitionRef(), tD.getSandBoxDefinitionRef().getSandboxDefinitionRef());
-		assertEquals(dto.getStartingLevel(), tD.getStartingLevel());
-		assertEquals(dto.isShowStepperBar(), tD.isShowStepperBar());
+		assertEquals(tDDTO.getId(), tD.getId());
+		assertEquals(tDDTO.getTitle(), tD.getTitle());
+		assertEquals(tDDTO.getDescription(), tD.getDescription());
+		assertEquals(tDDTO.getPrerequisities()[0], tD.getPrerequisities()[0]);
+		assertEquals(tDDTO.getPrerequisities()[1], tD.getPrerequisities()[1]);
+		assertEquals(tDDTO.getOutcomes()[0], tD.getOutcomes()[0]);
+		assertEquals(tDDTO.getOutcomes()[1], tD.getOutcomes()[1]);
+		assertEquals(tDDTO.getState(), tD.getState());
+		assertEquals(tDDTO.getAuthorRef().size(), tD.getAuthorRef().size());
+		assertEquals(tDDTO.getAuthorRef().size(), tD.getAuthorRef().size());
+		assertEquals(tDDTO.getSandBoxDefinitionRef().getId(), tD.getSandBoxDefinitionRef().getId());
+		assertEquals(tDDTO.getSandBoxDefinitionRef().getSandboxDefinitionRef(), tD.getSandBoxDefinitionRef().getSandboxDefinitionRef());
+		assertEquals(tDDTO.getStartingLevel(), tD.getStartingLevel());
+		assertEquals(tDDTO.isShowStepperBar(), tD.isShowStepperBar());
 	}
 
 	@Test
 	public void testMapListOfEntitiesToListOfDTO() {
-		List<InfoLevel> infoLevelsList = new ArrayList<>();
+		List<InfoLevelDTO> dtos = beanMapping.mapTo(levels, InfoLevelDTO.class);
 
-		InfoLevel infoLevel1 = new InfoLevel();
-		infoLevel1.setId(1L);
-		infoLevel1.setContent("content1");
-		infoLevel1.setMaxScore(10);
-		infoLevel1.setTitle("title1");
-
-		InfoLevel infoLevel2 = new InfoLevel();
-		infoLevel2.setId(2L);
-		infoLevel2.setContent("content2");
-		infoLevel2.setMaxScore(9);
-		infoLevel2.setTitle("title2");
-
-		infoLevelsList.add(infoLevel1);
-		infoLevelsList.add(infoLevel2);
-		List<InfoLevelDTO> dtos = beanMapping.mapTo(infoLevelsList, InfoLevelDTO.class);
-
-		assertEquals(infoLevel1.getId(), dtos.get(0).getId());
-		assertEquals(infoLevel1.getContent(), dtos.get(0).getContent());
-		assertEquals(infoLevel1.getMaxScore(), dtos.get(0).getMaxScore());
-		assertEquals(infoLevel1.getTitle(), dtos.get(0).getTitle());
-
-		assertEquals(infoLevel2.getId(), dtos.get(1).getId());
-		assertEquals(infoLevel2.getContent(), dtos.get(1).getContent());
-		assertEquals(infoLevel2.getMaxScore(), dtos.get(1).getMaxScore());
-		assertEquals(infoLevel2.getTitle(), dtos.get(1).getTitle());
+		assertEquals(iL1.getId(), dtos.get(0).getId());
+		assertEquals(iL1.getContent(), dtos.get(0).getContent());
+		assertEquals(iL1.getMaxScore(), dtos.get(0).getMaxScore());
+		assertEquals(iL1.getTitle(), dtos.get(0).getTitle());
+		assertEquals(iL2.getId(), dtos.get(1).getId());
+		assertEquals(iL2.getContent(), dtos.get(1).getContent());
+		assertEquals(iL2.getMaxScore(), dtos.get(1).getMaxScore());
+		assertEquals(iL2.getTitle(), dtos.get(1).getTitle());
 	}
 
 	@Test
 	public void testMapListOfDTOToListOfEntities() {
-		List<InfoLevelDTO> listOfDTO = new ArrayList<>();
+		List<InfoLevel> infoLevelList = beanMapping.mapTo(levelsDTO, InfoLevel.class);
 
-		InfoLevelDTO infoLevelDTO1 = new InfoLevelDTO();
-		infoLevelDTO1.setId(1L);
-		infoLevelDTO1.setContent("content1");
-		infoLevelDTO1.setMaxScore(10);
-		infoLevelDTO1.setTitle("title1");
-
-		InfoLevelDTO infoLevelDTO2 = new InfoLevelDTO();
-		infoLevelDTO2.setId(2L);
-		infoLevelDTO2.setContent("content2");
-		infoLevelDTO2.setMaxScore(9);
-		infoLevelDTO2.setTitle("title2");
-
-		listOfDTO.add(infoLevelDTO1);
-		listOfDTO.add(infoLevelDTO2);
-		List<InfoLevel> infoLevelList = beanMapping.mapTo(listOfDTO, InfoLevel.class);
-
-		assertEquals(infoLevelDTO1.getId(), infoLevelList.get(0).getId());
-		assertEquals(infoLevelDTO1.getContent(), infoLevelList.get(0).getContent());
-		assertEquals(infoLevelDTO1.getMaxScore(), infoLevelList.get(0).getMaxScore());
-		assertEquals(infoLevelDTO1.getTitle(), infoLevelList.get(0).getTitle());
-
-		assertEquals(infoLevelDTO2.getId(), infoLevelList.get(1).getId());
-		assertEquals(infoLevelDTO2.getContent(), infoLevelList.get(1).getContent());
-		assertEquals(infoLevelDTO2.getMaxScore(), infoLevelList.get(1).getMaxScore());
-		assertEquals(infoLevelDTO2.getTitle(), infoLevelList.get(1).getTitle());
+		assertEquals(iLDTO1.getId(), infoLevelList.get(0).getId());
+		assertEquals(iLDTO1.getContent(), infoLevelList.get(0).getContent());
+		assertEquals(iLDTO1.getMaxScore(), infoLevelList.get(0).getMaxScore());
+		assertEquals(iLDTO1.getTitle(), infoLevelList.get(0).getTitle());
+		assertEquals(iLDTO2.getId(), infoLevelList.get(1).getId());
+		assertEquals(iLDTO2.getContent(), infoLevelList.get(1).getContent());
+		assertEquals(iLDTO2.getMaxScore(), infoLevelList.get(1).getMaxScore());
+		assertEquals(iLDTO2.getTitle(), infoLevelList.get(1).getTitle());
 	}
 
 	@Test
 	public void testMapPageToDTO(){
-		InfoLevel infoLevel1 = new InfoLevel();
-		infoLevel1.setId(1L);
-		infoLevel1.setContent("content1");
-		infoLevel1.setMaxScore(10);
-		infoLevel1.setTitle("title1");
-
-		InfoLevel infoLevel2 = new InfoLevel();
-		infoLevel2.setId(2L);
-		infoLevel2.setContent("content2");
-		infoLevel2.setMaxScore(9);
-		infoLevel2.setTitle("title2");
-
-		List<InfoLevel> levels = new ArrayList<>();
-		levels.add(infoLevel1);
-		levels.add(infoLevel2);
 		Page p = new PageImpl<InfoLevel>(levels);
 		Page pDTO = beanMapping.mapTo(p, InfoLevelDTO.class);
 		InfoLevelDTO iLDTO1 = (InfoLevelDTO) pDTO.getContent().get(0);
 		InfoLevelDTO iLDTO2 = (InfoLevelDTO) pDTO.getContent().get(1);
 
 		assertEquals(pDTO.getTotalElements(), p.getTotalElements());
-		assertEquals(iLDTO1.getTitle(), infoLevel1.getTitle());
-		assertEquals(iLDTO1.getId(), infoLevel1.getId());
-		assertEquals(iLDTO1.getContent(), infoLevel1.getContent());
-		assertEquals(iLDTO1.getMaxScore(), infoLevel1.getMaxScore());
-		assertEquals(iLDTO2.getTitle(), infoLevel2.getTitle());
-		assertEquals(iLDTO2.getId(), infoLevel2.getId());
-		assertEquals(iLDTO2.getContent(), infoLevel2.getContent());
-		assertEquals(iLDTO2.getMaxScore(), infoLevel2.getMaxScore());
+		assertEquals(iLDTO1.getTitle(), iL1.getTitle());
+		assertEquals(iLDTO1.getId(), iL1.getId());
+		assertEquals(iLDTO1.getContent(), iL1.getContent());
+		assertEquals(iLDTO1.getMaxScore(), iL1.getMaxScore());
+		assertEquals(iLDTO2.getTitle(), iL2.getTitle());
+		assertEquals(iLDTO2.getId(), iL2.getId());
+		assertEquals(iLDTO2.getContent(), iL2.getContent());
+		assertEquals(iLDTO2.getMaxScore(), iL2.getMaxScore());
 	}
 
 	@Test
 	public void testMapDTOPageToEntity(){
-		InfoLevelDTO infoLevel1 = new InfoLevelDTO();
-		infoLevel1.setId(1L);
-		infoLevel1.setContent("content1");
-		infoLevel1.setMaxScore(10);
-		infoLevel1.setTitle("title1");
-
-		InfoLevelDTO infoLevel2 = new InfoLevelDTO();
-		infoLevel2.setId(2L);
-		infoLevel2.setContent("content2");
-		infoLevel2.setMaxScore(9);
-		infoLevel2.setTitle("title2");
-
-		List<InfoLevelDTO> levels = new ArrayList<>();
-		levels.add(infoLevel1);
-		levels.add(infoLevel2);
-		Page pDTO = new PageImpl<InfoLevelDTO>(levels);
+		Page pDTO = new PageImpl<InfoLevelDTO>(levelsDTO);
 		Page p = beanMapping.mapTo(pDTO, InfoLevel.class);
 		InfoLevel iL1 = (InfoLevel) p.getContent().get(0);
 		InfoLevel iL2 = (InfoLevel) p.getContent().get(1);
 
 		assertEquals(p.getTotalElements(), pDTO.getTotalElements());
-		assertEquals(iL1.getTitle(), infoLevel1.getTitle());
-		assertEquals(iL1.getId(), infoLevel1.getId());
-		assertEquals(iL1.getContent(), infoLevel1.getContent());
-		assertEquals(iL1.getMaxScore(), infoLevel1.getMaxScore());
-		assertEquals(iL2.getTitle(), infoLevel2.getTitle());
-		assertEquals(iL2.getId(), infoLevel2.getId());
-		assertEquals(iL2.getContent(), infoLevel2.getContent());
-		assertEquals(iL2.getMaxScore(), infoLevel2.getMaxScore());
+		assertEquals(iL1.getTitle(), iLDTO1.getTitle());
+		assertEquals(iL1.getId(), iLDTO1.getId());
+		assertEquals(iL1.getContent(), iLDTO1.getContent());
+		assertEquals(iL1.getMaxScore(), iLDTO1.getMaxScore());
+		assertEquals(iL2.getTitle(), iLDTO2.getTitle());
+		assertEquals(iL2.getId(), iLDTO2.getId());
+		assertEquals(iL2.getContent(), iLDTO2.getContent());
+		assertEquals(iL2.getMaxScore(), iLDTO2.getMaxScore());
 	}
 
 	@Test
 	public void testMapEntityToOptional(){
-		InfoLevel iL = new InfoLevel();
-		iL.setId(1L);
-		iL.setContent("content1");
-		iL.setMaxScore(10);
-		iL.setTitle("title1");
-		Optional<InfoLevelDTO> dto = beanMapping.mapToOptional(iL, InfoLevelDTO.class);
+		Optional<InfoLevelDTO> dto = beanMapping.mapToOptional(iL1, InfoLevelDTO.class);
 
 		assertTrue(dto.isPresent());
-		assertEquals(iL.getId(), dto.get().getId());
-		assertEquals(iL.getTitle(), dto.get().getTitle());
-		assertEquals(iL.getContent(), dto.get().getContent());
-		assertEquals(iL.getMaxScore(), dto.get().getMaxScore());
+		assertEquals(iL1.getId(), dto.get().getId());
+		assertEquals(iL1.getTitle(), dto.get().getTitle());
+		assertEquals(iL1.getContent(), dto.get().getContent());
+		assertEquals(iL1.getMaxScore(), dto.get().getMaxScore());
 	}
 
 	@Test
 	public void testMapDTOToOptional(){
-		InfoLevelDTO dto = new InfoLevelDTO();
-		dto.setId(1L);
-		dto.setContent("content1");
-		dto.setMaxScore(10);
-		dto.setTitle("title1");
-		Optional<InfoLevel> iL = beanMapping.mapToOptional(dto, InfoLevel.class);
+		Optional<InfoLevel> iL = beanMapping.mapToOptional(iL1, InfoLevel.class);
 
 		assertTrue(iL.isPresent());
-		assertEquals(dto.getId(), iL.get().getId());
-		assertEquals(dto.getTitle(), iL.get().getTitle());
-		assertEquals(dto.getContent(), iL.get().getContent());
-		assertEquals(dto.getMaxScore(), iL.get().getMaxScore());
+		assertEquals(iLDTO1.getId(), iL.get().getId());
+		assertEquals(iLDTO1.getTitle(), iL.get().getTitle());
+		assertEquals(iLDTO1.getContent(), iL.get().getContent());
+		assertEquals(iLDTO1.getMaxScore(), iL.get().getMaxScore());
 	}
 
 	@Test
 	public void testMapToPageResultDTO(){
-		InfoLevel infoLevel1 = new InfoLevel();
-		infoLevel1.setId(1L);
-		infoLevel1.setContent("content1");
-		infoLevel1.setMaxScore(10);
-		infoLevel1.setTitle("title1");
-
-		InfoLevel infoLevel2 = new InfoLevel();
-		infoLevel2.setId(2L);
-		infoLevel2.setContent("content2");
-		infoLevel2.setMaxScore(9);
-		infoLevel2.setTitle("title2");
-
-		List<InfoLevel> levels = new ArrayList<>();
-		levels.add(infoLevel1);
-		levels.add(infoLevel2);
 		Page p = new PageImpl<InfoLevel>(levels);
 		PageResultResource<InfoLevelDTO> pRR = beanMapping.mapToPageResultDTO(p, InfoLevelDTO.class);
 		InfoLevelDTO dto1 = pRR.getContent().get(0);
 		InfoLevelDTO dto2 = pRR.getContent().get(1);
 
 		assertEquals(pRR.getPagination().getNumberOfElements(), p.getNumberOfElements());
-		assertEquals(dto1.getId(), infoLevel1.getId());
-		assertEquals(dto1.getTitle(), infoLevel1.getTitle());
-		assertEquals(dto1.getContent(), infoLevel1.getContent());
-		assertEquals(dto1.getMaxScore(), infoLevel1.getMaxScore());
-		assertEquals(dto2.getId(), infoLevel2.getId());
-		assertEquals(dto2.getTitle(), infoLevel2.getTitle());
-		assertEquals(dto2.getContent(), infoLevel2.getContent());
-		assertEquals(dto2.getMaxScore(), infoLevel2.getMaxScore());
+		assertEquals(dto1.getId(), iL1.getId());
+		assertEquals(dto1.getTitle(), iL1.getTitle());
+		assertEquals(dto1.getContent(), iL1.getContent());
+		assertEquals(dto1.getMaxScore(), iL1.getMaxScore());
+		assertEquals(dto2.getId(), iL2.getId());
+		assertEquals(dto2.getTitle(), iL2.getTitle());
+		assertEquals(dto2.getContent(), iL2.getContent());
+		assertEquals(dto2.getMaxScore(), iL2.getMaxScore());
 	}
 
 	@Test
 	public void testMapEntityToDTOSet(){
-		List<InfoLevel> infoLevelsList = new ArrayList<>();
-
-		InfoLevel infoLevel1 = new InfoLevel();
-		infoLevel1.setId(1L);
-		infoLevel1.setContent("content1");
-		infoLevel1.setMaxScore(10);
-		infoLevel1.setTitle("title1");
-
-		InfoLevel infoLevel2 = new InfoLevel();
-		infoLevel2.setId(2L);
-		infoLevel2.setContent("content2");
-		infoLevel2.setMaxScore(9);
-		infoLevel2.setTitle("title2");
-
-		infoLevelsList.add(infoLevel1);
-		infoLevelsList.add(infoLevel2);
-		Set<InfoLevelDTO> dtos = beanMapping.mapToSet(infoLevelsList, InfoLevelDTO.class);
+		Set<InfoLevelDTO> dtos = beanMapping.mapToSet(levels, InfoLevelDTO.class);
 		InfoLevelDTO dto1 = (InfoLevelDTO) dtos.toArray()[0];
 		InfoLevelDTO dto2 = (InfoLevelDTO) dtos.toArray()[1];
 
-		assertEquals(dtos.size(), infoLevelsList.size());
-		assertEquals(dto1.getId(), infoLevel1.getId());
-		assertEquals(dto1.getTitle(), infoLevel1.getTitle());
-		assertEquals(dto1.getContent(), infoLevel1.getContent());
-		assertEquals(dto1.getMaxScore(), infoLevel1.getMaxScore());
-		assertEquals(dto2.getId(), infoLevel2.getId());
-		assertEquals(dto2.getTitle(), infoLevel2.getTitle());
-		assertEquals(dto2.getContent(), infoLevel2.getContent());
-		assertEquals(dto2.getMaxScore(), infoLevel2.getMaxScore());
+		assertEquals(dtos.size(), levels.size());
+		assertEquals(dto1.getId(), iL1.getId());
+		assertEquals(dto1.getTitle(), iL1.getTitle());
+		assertEquals(dto1.getContent(), iL1.getContent());
+		assertEquals(dto1.getMaxScore(), iL1.getMaxScore());
+		assertEquals(dto2.getId(), iL2.getId());
+		assertEquals(dto2.getTitle(), iL2.getTitle());
+		assertEquals(dto2.getContent(), iL2.getContent());
+		assertEquals(dto2.getMaxScore(), iL2.getMaxScore());
 	}
 
 	@Test
 	public void testMapDTOToEntitySet(){
-		List<InfoLevelDTO> dtos = new ArrayList<>();
-
-		InfoLevelDTO dto1 = new InfoLevelDTO();
-		dto1.setId(1L);
-		dto1.setContent("content1");
-		dto1.setMaxScore(10);
-		dto1.setTitle("title1");
-
-		InfoLevelDTO dto2 = new InfoLevelDTO();
-		dto2.setId(2L);
-		dto2.setContent("content2");
-		dto2.setMaxScore(9);
-		dto2.setTitle("title2");
-
-		dtos.add(dto1);
-		dtos.add(dto2);
-		Set<InfoLevel> levels = beanMapping.mapToSet(dtos, InfoLevel.class);
+		Set<InfoLevel> levels = beanMapping.mapToSet(levelsDTO, InfoLevel.class);
 		InfoLevel level1 = (InfoLevel) levels.toArray()[1];
 		InfoLevel level2 = (InfoLevel) levels.toArray()[0];
 
-		assertEquals(levels.size(), dtos.size());
-		assertEquals(level1.getId(), dto1.getId());
-		assertEquals(level1.getTitle(), dto1.getTitle());
-		assertEquals(level1.getContent(), dto1.getContent());
-		assertEquals(level1.getMaxScore(), dto1.getMaxScore());
-		assertEquals(level2.getId(), dto2.getId());
-		assertEquals(level2.getTitle(), dto2.getTitle());
-		assertEquals(level2.getContent(), dto2.getContent());
-		assertEquals(level2.getMaxScore(), dto2.getMaxScore());
+		assertEquals(levels.size(), levelsDTO.size());
+		assertEquals(level1.getId(), iLDTO1.getId());
+		assertEquals(level1.getTitle(), iLDTO1.getTitle());
+		assertEquals(level1.getContent(), iLDTO1.getContent());
+		assertEquals(level1.getMaxScore(), iLDTO1.getMaxScore());
+		assertEquals(level2.getId(), iLDTO2.getId());
+		assertEquals(level2.getTitle(), iLDTO2.getTitle());
+		assertEquals(level2.getContent(), iLDTO2.getContent());
+		assertEquals(level2.getMaxScore(), iLDTO2.getMaxScore());
 	}
-
 }
