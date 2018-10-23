@@ -67,23 +67,16 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
   @Transactional(readOnly = true)
   public PageResultResource<TrainingRunDTO> findAll(Predicate predicate, Pageable pageable) {
     LOG.debug("findAll({},{})", predicate, pageable);
-    try {
-      return beanMapping.mapToPageResultDTO(trainingRunService.findAll(predicate, pageable), TrainingRunDTO.class);
-    } catch (ServiceLayerException ex) {
-      throw new FacadeLayerException(ex);
-    }
+    return beanMapping.mapToPageResultDTO(trainingRunService.findAll(predicate, pageable), TrainingRunDTO.class);
   }
 
   @Override
   @Transactional(readOnly = true)
   public PageResultResource<AccessedTrainingRunDTO> findAllAccessedTrainingRuns(Pageable pageable) {
     LOG.debug("findAllAccessedTrainingRuns()");
-    try {
-      Page<TrainingRun> trainingRuns = trainingRunService.findAllByParticipantRefLogin(pageable);
-      return convertToAccessedRunDTO(trainingRuns);
-    } catch (ServiceLayerException ex) {
-      throw new FacadeLayerException(ex);
-    }
+    Page<TrainingRun> trainingRuns = trainingRunService.findAllByParticipantRefLogin(pageable);
+    return convertToAccessedRunDTO(trainingRuns);
+
   }
 
   @Override
@@ -130,37 +123,24 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
   @Transactional(readOnly = true)
   public PageResultResource<TrainingRunDTO> findAllByTrainingDefinitionAndParticipant(Long trainingDefinitionId, Pageable pageable) {
     LOG.debug("findAllByTrainingDefinitionAndParticipant({})", trainingDefinitionId);
-    try {
-      Page<TrainingRun> trainingRuns = trainingRunService.findAllByTrainingDefinitionAndParticipant(trainingDefinitionId, pageable);
-      return beanMapping.mapToPageResultDTO(trainingRuns, TrainingRunDTO.class);
-    } catch (ServiceLayerException ex) {
-      throw new FacadeLayerException(ex);
-    }
+    Page<TrainingRun> trainingRuns = trainingRunService.findAllByTrainingDefinitionAndParticipant(trainingDefinitionId, pageable);
+    return beanMapping.mapToPageResultDTO(trainingRuns, TrainingRunDTO.class);
   }
 
   @Override
   @Transactional(readOnly = true)
   public PageResultResource<TrainingRunDTO> findAllByTrainingDefinition(Long trainingDefinitionId, Pageable pageable) {
     LOG.debug("findAllByTrainingDefinition({})", trainingDefinitionId);
-    try {
-      Page<TrainingRun> trainingRuns = trainingRunService.findAllByTrainingDefinition(trainingDefinitionId, pageable);
-      return beanMapping.mapToPageResultDTO(trainingRuns, TrainingRunDTO.class);
-    } catch (ServiceLayerException ex) {
-      throw new FacadeLayerException(ex);
-    }
+    Page<TrainingRun> trainingRuns = trainingRunService.findAllByTrainingDefinition(trainingDefinitionId, pageable);
+    return beanMapping.mapToPageResultDTO(trainingRuns, TrainingRunDTO.class);
   }
 
   @Override
   @Transactional(readOnly = true)
   public PageResultResource<TrainingRunDTO> findAllByTrainingInstance(Long trainingInstanceId, Pageable pageable) {
     LOG.debug("findAllByTrainingInstance({})", trainingInstanceId);
-    try {
-      Page<TrainingRun> trainingRuns = trainingRunService.findAllByTrainingInstance(trainingInstanceId, pageable);
-      return beanMapping.mapToPageResultDTO(trainingRuns, TrainingRunDTO.class);
-    } catch (ServiceLayerException ex) {
-      throw new FacadeLayerException(ex);
-    }
-
+    Page<TrainingRun> trainingRuns = trainingRunService.findAllByTrainingInstance(trainingInstanceId, pageable);
+    return beanMapping.mapToPageResultDTO(trainingRuns, TrainingRunDTO.class);
   }
 
   @Override
