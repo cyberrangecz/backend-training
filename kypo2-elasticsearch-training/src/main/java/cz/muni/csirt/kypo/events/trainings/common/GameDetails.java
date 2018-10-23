@@ -1,4 +1,4 @@
-package cz.muni.csirt.kypo.events.game.common;
+package cz.muni.csirt.kypo.events.trainings.common;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
