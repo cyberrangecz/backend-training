@@ -15,7 +15,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
  */
 @Configuration
 @EnableTransactionManagement
-@Import(ServiceConfig.class)
+@Import({ServiceConfig.class, ValidationMessagesConfig.class})
 @ComponentScan(basePackages = {"cz.muni.ics.kypo.training.facade", "cz.muni.ics.kypo.training.mapping"})
 public class FacadeConfiguration {
 

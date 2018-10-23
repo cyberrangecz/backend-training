@@ -14,11 +14,8 @@ import javax.validation.constraints.NotNull;
  */
 @ApiModel(value = "AssessmentLevelDTO", description = ".")
 public class AssessmentLevelDTO extends AbstractLevelDTO {
-    @NotEmpty(message = "assessment.level.questions.NotEmpty")
     private String questions;
-    @NotEmpty
     private String instructions;
-    @NotNull(message = "Assessment type must be set")
     private AssessmentType assessmentType;
 
     public AssessmentLevelDTO() {}

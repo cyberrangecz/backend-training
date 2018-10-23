@@ -1,6 +1,6 @@
 package cz.muni.ics.kypo.training.facade;
 
-import cz.muni.ics.kypo.training.api.dto.traininginstance.NewTrainingInstanceDTO;
+import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceCreateResponseDTO;
 import cz.muni.ics.kypo.training.exception.FacadeLayerException;
 import org.springframework.data.domain.Pageable;
 import com.querydsl.core.types.Predicate;
@@ -47,7 +47,7 @@ public interface TrainingInstanceFacade {
 	 * @return DTO of created instance
 	 * @throws FacadeLayerException
 	 */
-	NewTrainingInstanceDTO create(TrainingInstanceCreateDTO trainingInstance) throws FacadeLayerException;
+	TrainingInstanceCreateResponseDTO create(TrainingInstanceCreateDTO trainingInstance) throws FacadeLayerException;
 
 	/**
 	 * Deletes specific training instance based on id

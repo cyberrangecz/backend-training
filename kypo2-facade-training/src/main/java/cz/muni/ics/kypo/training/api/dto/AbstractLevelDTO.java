@@ -18,12 +18,8 @@ import cz.muni.ics.kypo.training.api.dto.prehook.PreHookDTO;
 public class AbstractLevelDTO {
 
 	protected Long id;
-	@NotEmpty(message = "Level title cannot be empty")
 	protected String title;
-	@NotNull
-	@Min(value = 0, message = "Max score cannot be lower than 0")
-	@Max(value = 100, message = "Max score cannot be greater than 100")
-	protected Integer maxScore;
+	protected int maxScore;
 	protected Long nextLevel;
 	protected PreHookDTO preHook;
 	protected PostHookDTO postHook;
@@ -46,11 +42,11 @@ public class AbstractLevelDTO {
 		this.title = title;
 	}
 
-	public Integer getMaxScore() {
+	public int getMaxScore() {
 		return maxScore;
 	}
 
-	public void setMaxScore(Integer maxScore) {
+	public void setMaxScore(int maxScore) {
 		this.maxScore = maxScore;
 	}
 

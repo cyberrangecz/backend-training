@@ -57,7 +57,7 @@ import cz.muni.ics.kypo.training.config.FacadeConfiguration;
  */
 @SpringBootApplication
 @EnableSpringDataWebSupport
-@Import({FacadeConfiguration.class, ValidationMessagesConfig.class})
+@Import({FacadeConfiguration.class})
 @ComponentScan("cz.muni.ics.kypo.training.rest")
 public class WebConfigRestTraining extends SpringBootServletInitializer {
 
@@ -116,8 +116,3 @@ public class WebConfigRestTraining extends SpringBootServletInitializer {
 	}
 
 }
-
-
-
-
-

@@ -4,7 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.training.api.PageResultResource;
-import cz.muni.ics.kypo.training.api.dto.traininginstance.NewTrainingInstanceDTO;
+import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
+import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionDTO;
+import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceCreateResponseDTO;
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceCreateDTO;
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceDTO;
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceUpdateDTO;
@@ -43,9 +45,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
@@ -76,7 +76,7 @@ public class TrainingInstancesRestControllerTest {
 	private TrainingInstanceDTO trainingInstance1DTO, trainingInstance2DTO;
 	private TrainingInstanceCreateDTO trainingInstanceCreateDTO;
 	private TrainingInstanceUpdateDTO trainingInstanceUpdateDTO;
-	private NewTrainingInstanceDTO newTrainingInstanceDTO;
+	private TrainingInstanceCreateResponseDTO newTrainingInstanceDTO;
 
 	private Page p;
 
@@ -89,6 +89,9 @@ public class TrainingInstancesRestControllerTest {
 				.setCustomArgumentResolvers(new PageableHandlerMethodArgumentResolver(),
 						new QuerydslPredicateArgumentResolver(new QuerydslBindingsFactory(SimpleEntityPathResolver.INSTANCE), Optional.empty()))
 				.setMessageConverters(new MappingJackson2HttpMessageConverter()).build();
+
+		Set<UserRefDTO> organizers = new HashSet<>();
+		organizers.add(new UserRefDTO());
 
 		trainingInstance1 = new TrainingInstance();
 		trainingInstance1.setId(1L);
@@ -112,20 +115,25 @@ public class TrainingInstancesRestControllerTest {
 		trainingInstanceCreateDTO.setStartTime(startTime);
 		LocalDateTime endTime = LocalDateTime.now().plusHours(10);
 		trainingInstanceCreateDTO.setEndTime(endTime);
+		trainingInstanceCreateDTO.setKeyword("pass");
+		trainingInstanceCreateDTO.setPoolSize(20);
+		trainingInstanceCreateDTO.setOrganizers(organizers);
+		trainingInstanceCreateDTO.setTrainingDefinition(new TrainingDefinitionDTO());
 
 		trainingInstanceUpdateDTO = new TrainingInstanceUpdateDTO();
 		trainingInstanceUpdateDTO.setId(5L);
 		trainingInstanceUpdateDTO.setTitle("update instance title");
-		trainingInstanceUpdateDTO.setStartTime(startTime);
+		trainingInstanceUpdateDTO.setStartTime(startTime.plusHours(1));
 		trainingInstanceUpdateDTO.setEndTime(endTime);
+		trainingInstanceUpdateDTO.setPoolSize(5);
+		//trainingInstanceUpdateDTO.setKeyword("pass-2586");
+		trainingInstanceUpdateDTO.setTrainingDefinition(new TrainingDefinitionDTO());
+		trainingInstanceUpdateDTO.setOrganizers(organizers);
 
-		newTrainingInstanceDTO = new NewTrainingInstanceDTO();
+
+		newTrainingInstanceDTO = new TrainingInstanceCreateResponseDTO();
 		newTrainingInstanceDTO.setId(6L);
-		newTrainingInstanceDTO.setStartTime(startTime);
-		newTrainingInstanceDTO.setEndTime(endTime);
 		newTrainingInstanceDTO.setKeyword("pass-1325");
-		newTrainingInstanceDTO.setTitle("title");
-		newTrainingInstanceDTO.setPoolSize(20);
 
 		List<TrainingInstance> expected = new ArrayList<>();
 		expected.add(trainingInstance1);
@@ -174,44 +182,6 @@ public class TrainingInstancesRestControllerTest {
 						.andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
 						.andReturn().getResponse();
 				assertEquals(convertObjectToJsonBytes(convertObjectToJsonBytes(trainingInstanceDTOPageResultResource)), result.getContentAsString());
-		}
-
-
-		@Test
-		public void createTrainingInstance() throws Exception {
-				String valueTi = convertObjectToJsonBytes(trainingInstance1DTO);
-				given(objectMapper.writeValueAsString(any(Object.class))).willReturn(valueTi);
-				given(trainingInstanceFacade.create(any(TrainingInstanceCreateDTO.class))).willReturn(newTrainingInstanceDTO);
-				MockHttpServletResponse result = mockMvc.perform(post("/training-instances")
-						.content(convertObjectToJsonBytes(trainingInstance1))
-						.contentType(MediaType.APPLICATION_JSON_VALUE))
-						.andExpect(status().isOk())
-						.andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-						.andReturn().getResponse();
-				assertEquals(convertObjectToJsonBytes(convertObjectToJsonBytes(trainingInstance1DTO)), result.getContentAsString());
-		}
-
-
-
-		@Test
-		public void updateTrainingInstance() throws Exception {
-				MockHttpServletResponse result = mockMvc.perform(put("/training-instances")
-						.content(convertObjectToJsonBytes(trainingInstance1))
-						.contentType(MediaType.APPLICATION_JSON_VALUE))
-						.andExpect(status().isOk())
-						.andReturn().getResponse();
-		}
-
-		@Test
-		public void updateTrainingInstanceWithFacadeException() throws Exception {
-				Exception exceptionThrow = new ServiceLayerException("message", ErrorCode.RESOURCE_CONFLICT);
-				willThrow(new FacadeLayerException(exceptionThrow)).given(trainingInstanceFacade).update(any(TrainingInstanceUpdateDTO.class));
-				Exception exception = mockMvc.perform(put("/training-instances")
-						.content(convertObjectToJsonBytes(trainingInstance1))
-						.contentType(MediaType.APPLICATION_JSON_VALUE))
-						.andExpect(status().isConflict())
-						.andReturn().getResolvedException();
-				assertEquals(ConflictException.class, exception.getClass());
 		}
 
 		@Test

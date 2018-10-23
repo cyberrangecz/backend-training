@@ -2,7 +2,7 @@ package cz.muni.ics.kypo.training.facade.impl;
 
 import java.util.Objects;
 
-import cz.muni.ics.kypo.training.api.dto.traininginstance.NewTrainingInstanceDTO;
+import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceCreateResponseDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -84,15 +84,18 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
 
   @Override
   @Transactional
-  public NewTrainingInstanceDTO create(TrainingInstanceCreateDTO trainingInstance) {
+  public TrainingInstanceCreateResponseDTO create(TrainingInstanceCreateDTO trainingInstance) {
     LOG.debug("create({})", trainingInstance);
-		Objects.requireNonNull(trainingInstance);
-		TrainingInstance newTI = trainingInstanceService.create(beanMapping.mapTo(trainingInstance, TrainingInstance.class));
-		NewTrainingInstanceDTO newTIDTO = beanMapping.mapTo(newTI, NewTrainingInstanceDTO.class);
-		String newKeyword = trainingInstanceService.generatePassword(newTI, trainingInstance.getKeyword());
-		newTIDTO.setKeyword(newKeyword);
-		return newTIDTO;
-
+    try{
+      Objects.requireNonNull(trainingInstance);
+      TrainingInstance newTI = trainingInstanceService.create(beanMapping.mapTo(trainingInstance, TrainingInstance.class));
+      TrainingInstanceCreateResponseDTO newTIDTO = beanMapping.mapTo(newTI, TrainingInstanceCreateResponseDTO.class);
+      String newKeyword = trainingInstanceService.generatePassword(newTI, trainingInstance.getKeyword());
+      newTIDTO.setKeyword(newKeyword);
+      return newTIDTO;
+    } catch(ServiceLayerException ex) {
+      throw new FacadeLayerException(ex);
+    }
   }
 
   @Override
