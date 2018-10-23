@@ -259,4 +259,20 @@ public class BeanMappingTest {
 		assertEquals(iL.getMaxScore(), dto.get().getMaxScore());
 	}
 
+	@Test
+	public void testMapDTOToOptional(){
+		InfoLevelDTO dto = new InfoLevelDTO();
+		dto.setId(1L);
+		dto.setContent("content1");
+		dto.setMaxScore(10);
+		dto.setTitle("title1");
+		Optional<InfoLevel> iL = beanMapping.mapToOptional(dto, InfoLevel.class);
+
+		assertTrue(iL.isPresent());
+		assertEquals(dto.getId(), iL.get().getId());
+		assertEquals(dto.getTitle(), iL.get().getTitle());
+		assertEquals(dto.getContent(), iL.get().getContent());
+		assertEquals(dto.getMaxScore(), iL.get().getMaxScore());
+	}
+
 }
