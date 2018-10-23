@@ -91,22 +91,14 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
   @Transactional(readOnly = true)
   public PageResultResource<TrainingDefinitionDTO> findAll(Predicate predicate, Pageable pageable) {
     LOG.debug("findAll({},{})", predicate, pageable);
-    try {
-      return beanMapping.mapToPageResultDTO(trainingDefinitionService.findAll(predicate, pageable), TrainingDefinitionDTO.class);
-    } catch (ServiceLayerException ex) {
-      throw new FacadeLayerException(ex);
-    }
+		return beanMapping.mapToPageResultDTO(trainingDefinitionService.findAll(predicate, pageable), TrainingDefinitionDTO.class);
   }
 
 	@Override
 	public PageResultResource<TrainingDefinitionDTO> findAllBySandboxDefinitionId(Long sandboxDefinitionId, Pageable pageable) {
 		LOG.debug("findAllBySandboxDefinitionId({}, {})", sandboxDefinitionId, pageable);
-		try {
-			return beanMapping.mapToPageResultDTO(trainingDefinitionService.findAllBySandboxDefinitionId(sandboxDefinitionId, pageable),
+		return beanMapping.mapToPageResultDTO(trainingDefinitionService.findAllBySandboxDefinitionId(sandboxDefinitionId, pageable),
 					TrainingDefinitionDTO.class);
-		} catch (ServiceLayerException ex) {
-			throw new FacadeLayerException(ex.getLocalizedMessage());
-		}
 	}
 
   @Override

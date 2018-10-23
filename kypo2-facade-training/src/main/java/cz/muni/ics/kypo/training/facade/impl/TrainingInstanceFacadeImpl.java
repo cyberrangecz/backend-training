@@ -57,11 +57,7 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
   @Transactional(readOnly = true)
   public PageResultResource<TrainingInstanceDTO> findAll(Predicate predicate, Pageable pageable) {
     LOG.debug("findAll({},{})", predicate, pageable);
-    try {
-      return beanMapping.mapToPageResultDTO(trainingInstanceService.findAll(predicate, pageable), TrainingInstanceDTO.class);
-    } catch (ServiceLayerException ex) {
-      throw new FacadeLayerException(ex);
-    }
+    return beanMapping.mapToPageResultDTO(trainingInstanceService.findAll(predicate, pageable), TrainingInstanceDTO.class);
   }
 
   @Override
