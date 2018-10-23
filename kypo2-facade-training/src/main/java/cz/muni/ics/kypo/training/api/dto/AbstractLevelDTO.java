@@ -42,11 +42,11 @@ public class AbstractLevelDTO {
 		this.title = title;
 	}
 
-	public Integer getMaxScore() {
+	public int getMaxScore() {
 		return maxScore;
 	}
 
-	public void setMaxScore(Integer maxScore) {
+	public void setMaxScore(int maxScore) {
 		this.maxScore = maxScore;
 	}
 
