@@ -341,5 +341,38 @@ public class BeanMappingTest {
 		assertEquals(dto2.getContent(), infoLevel2.getContent());
 		assertEquals(dto2.getMaxScore(), infoLevel2.getMaxScore());
 	}
-	
+
+	@Test
+	public void testMapDTOToEntitySet(){
+		List<InfoLevelDTO> dtos = new ArrayList<>();
+
+		InfoLevelDTO dto1 = new InfoLevelDTO();
+		dto1.setId(1L);
+		dto1.setContent("content1");
+		dto1.setMaxScore(10);
+		dto1.setTitle("title1");
+
+		InfoLevelDTO dto2 = new InfoLevelDTO();
+		dto2.setId(2L);
+		dto2.setContent("content2");
+		dto2.setMaxScore(9);
+		dto2.setTitle("title2");
+
+		dtos.add(dto1);
+		dtos.add(dto2);
+		Set<InfoLevel> levels = beanMapping.mapToSet(dtos, InfoLevel.class);
+		InfoLevel level1 = (InfoLevel) levels.toArray()[1];
+		InfoLevel level2 = (InfoLevel) levels.toArray()[0];
+
+		assertEquals(levels.size(), dtos.size());
+		assertEquals(level1.getId(), dto1.getId());
+		assertEquals(level1.getTitle(), dto1.getTitle());
+		assertEquals(level1.getContent(), dto1.getContent());
+		assertEquals(level1.getMaxScore(), dto1.getMaxScore());
+		assertEquals(level2.getId(), dto2.getId());
+		assertEquals(level2.getTitle(), dto2.getTitle());
+		assertEquals(level2.getContent(), dto2.getContent());
+		assertEquals(level2.getMaxScore(), dto2.getMaxScore());
+	}
+
 }
