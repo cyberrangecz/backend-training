@@ -190,7 +190,7 @@ public class BeanMappingTest {
 		infoLevel2.setMaxScore(9);
 		infoLevel2.setTitle("title2");
 
-		List<InfoLevel> levels = new ArrayList<InfoLevel>();
+		List<InfoLevel> levels = new ArrayList<>();
 		levels.add(infoLevel1);
 		levels.add(infoLevel2);
 		Page p = new PageImpl<InfoLevel>(levels);
@@ -207,5 +207,38 @@ public class BeanMappingTest {
 		assertEquals(iLDTO2.getId(), infoLevel2.getId());
 		assertEquals(iLDTO2.getContent(), infoLevel2.getContent());
 		assertEquals(iLDTO2.getMaxScore(), infoLevel2.getMaxScore());
+	}
+
+	@Test
+	public void testMappingDTOPageToEntity(){
+		InfoLevelDTO infoLevel1 = new InfoLevelDTO();
+		infoLevel1.setId(1L);
+		infoLevel1.setContent("content1");
+		infoLevel1.setMaxScore(10);
+		infoLevel1.setTitle("title1");
+
+		InfoLevelDTO infoLevel2 = new InfoLevelDTO();
+		infoLevel2.setId(2L);
+		infoLevel2.setContent("content2");
+		infoLevel2.setMaxScore(9);
+		infoLevel2.setTitle("title2");
+
+		List<InfoLevelDTO> levels = new ArrayList<>();
+		levels.add(infoLevel1);
+		levels.add(infoLevel2);
+		Page pDTO = new PageImpl<InfoLevelDTO>(levels);
+		Page p = beanMapping.mapTo(pDTO, InfoLevel.class);
+		InfoLevel iL1 = (InfoLevel) p.getContent().get(0);
+		InfoLevel iL2 = (InfoLevel) p.getContent().get(1);
+
+		assertEquals(p.getTotalElements(), pDTO.getTotalElements());
+		assertEquals(iL1.getTitle(), infoLevel1.getTitle());
+		assertEquals(iL1.getId(), infoLevel1.getId());
+		assertEquals(iL1.getContent(), infoLevel1.getContent());
+		assertEquals(iL1.getMaxScore(), infoLevel1.getMaxScore());
+		assertEquals(iL2.getTitle(), infoLevel2.getTitle());
+		assertEquals(iL2.getId(), infoLevel2.getId());
+		assertEquals(iL2.getContent(), infoLevel2.getContent());
+		assertEquals(iL2.getMaxScore(), infoLevel2.getMaxScore());
 	}
 }
