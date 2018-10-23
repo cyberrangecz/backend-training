@@ -24,6 +24,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import java.util.*;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -241,4 +242,21 @@ public class BeanMappingTest {
 		assertEquals(iL2.getContent(), infoLevel2.getContent());
 		assertEquals(iL2.getMaxScore(), infoLevel2.getMaxScore());
 	}
+
+	@Test
+	public void testMapEntityToOptional(){
+		InfoLevel iL = new InfoLevel();
+		iL.setId(1L);
+		iL.setContent("content1");
+		iL.setMaxScore(10);
+		iL.setTitle("title1");
+		Optional<InfoLevelDTO> dto = beanMapping.mapToOptional(iL, InfoLevelDTO.class);
+
+		assertTrue(dto.isPresent());
+		assertEquals(iL.getId(), dto.get().getId());
+		assertEquals(iL.getTitle(), dto.get().getTitle());
+		assertEquals(iL.getContent(), dto.get().getContent());
+		assertEquals(iL.getMaxScore(), dto.get().getMaxScore());
+	}
+
 }
