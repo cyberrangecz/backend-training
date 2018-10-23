@@ -12,7 +12,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
  *
  */
 @Configuration
-@EntityScan(basePackages = "cz.muni.ics.kypo.training.persistence.model", basePackageClasses = Jsr310JpaConverters.class)
+@EntityScan(basePackages = "cz.muni.ics.kypo.training.persistence.model")
 @EnableJpaRepositories(basePackages = "cz.muni.ics.kypo.training.persistence.repository")
 @ComponentScan(basePackages = {"cz.muni.ics.kypo.training.service", "cz.muni.csirt.kypo.elasticsearch"})
 public class ServiceTrainingConfigTest {
