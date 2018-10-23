@@ -170,7 +170,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
 				sandboxInstancePool.removeAll(allocatedSandboxInstances);
 				if (!sandboxInstancePool.isEmpty()) {
 					SandboxInstanceRef sandboxInstanceRef = getReadySandboxInstanceRef(sandboxInstancePool);
-					AbstractLevel al = abstractLevelRepository.findById(ti.getTrainingDefinition().getStartingLevel()).get();
+					AbstractLevel al = abstractLevelRepository.findById(ti.getTrainingDefinition().getStartingLevel()).orElseThrow(() -> new ServiceLayerException("No starting level available for this training definition", ErrorCode.RESOURCE_NOT_FOUND));
 					TrainingRun tr =
 							getNewTrainingRun(al, getSubOfLoggedInUser(), ti, TRState.NEW, LocalDateTime.now(), ti.getEndTime(), sandboxInstanceRef);
 					create(tr);
