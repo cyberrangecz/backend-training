@@ -1,10 +1,11 @@
-package cz.muni.csirt.kypo.events.game;
+package cz.muni.csirt.kypo.events.trainings;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.annotation.JsonRootName;
 import cz.muni.csirt.kypo.elasticsearch.AbstractAuditPOJO;
-import cz.muni.csirt.kypo.events.game.common.GameDetails;
+import cz.muni.csirt.kypo.events.trainings.common.GameDetails;
+
 import org.jsondoc.core.annotation.ApiObject;
 import org.jsondoc.core.annotation.ApiObjectField;
 
@@ -12,18 +13,22 @@ import org.jsondoc.core.annotation.ApiObjectField;
  * @author Pavel Šeda
  *
  */
-@ApiObject(name = "Solution Closed", description = "Type of event from game scenario (when solution is closed).")
-@JsonPropertyOrder({"type", "game_details", "timestamp"})
+@ApiObject(name = "Hint Taken", description = "Type of event from game scenario (when hint is taken).")
+@JsonPropertyOrder({"type", "game_details", "timestamp", "hint_id"})
 @JsonRootName(value = "event")
-public class SolutionClosed extends AbstractAuditPOJO {
+public class HintTaken extends AbstractAuditPOJO {
 
 	@ApiObjectField(description = "Details of the game.")
 	@JsonProperty(value = "game_details", required = true)
 	private GameDetails gameDetails;
+	@ApiObjectField(description = "ID of used hint.")
+	@JsonProperty(value = "hint_id", required = true)
+	private int hintId;
 
-	public SolutionClosed(GameDetails gameDetails) {
+	public HintTaken(GameDetails gameDetails, int hintId) {
 		super();
 		this.gameDetails = gameDetails;
+		this.hintId = hintId;
 	}
 
 	public GameDetails getGameDetails() {
@@ -34,9 +39,17 @@ public class SolutionClosed extends AbstractAuditPOJO {
 		this.gameDetails = gameDetails;
 	}
 
+	public int getHintId() {
+		return hintId;
+	}
+
+	public void setHintId(int hintId) {
+		this.hintId = hintId;
+	}
+
 	@Override
 	public String toString() {
-		return "SolutionClosed [gameDetails=" + gameDetails + "]";
+		return "HintTaken [gameDetails=" + gameDetails + ", hintId=" + hintId + "]";
 	}
 
 }

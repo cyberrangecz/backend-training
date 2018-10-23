@@ -1,6 +1,7 @@
 package cz.muni.csirt.kypo.elasticsearch.service.audit;
 
 import cz.muni.csirt.kypo.elasticsearch.AbstractAuditPOJO;
+import cz.muni.csirt.kypo.elasticsearch.service.exceptions.ElasticsearchTrainingServiceLayerException;
 
 /**
  * 
