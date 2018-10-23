@@ -23,7 +23,7 @@ INSERT INTO author_ref(id, author_ref_login) VALUES (2, 'Designer2');
 INSERT INTO training_definition(id, description, outcomes, prerequisities, state, title, sand_box_definition_ref_id, starting_level, show_stepper_bar) VALUES (1, 'Released training definition', null, null, 'RELEASED', 'TrainingDefinition1', 1, 1, true);
 INSERT INTO training_definition_author_ref(training_definition_id, author_ref_id) VALUES (1, 1);
 INSERT INTO training_definition_author_ref(training_definition_id, author_ref_id) VALUES (1, 2);
-
+INSERT INTO training_definition_sandbox_definition_ref(training_definition_id, sandbox_definition_ref_id) VALUES (1, 1);
 
 INSERT INTO pre_hook(id) VALUES (4);
 INSERT INTO post_hook(id) VALUES (4);
@@ -47,7 +47,7 @@ INSERT INTO author_ref(id, author_ref_login) VALUES (3, 'Designer3');
 
 INSERT INTO training_definition(id, description, outcomes, prerequisities, state, title, sand_box_definition_ref_id, starting_level, show_stepper_bar) VALUES (2, 'Unreleased training definition', null, null, 'UNRELEASED', 'TrainingDefinition2', 2, 4, false);
 INSERT INTO training_definition_author_ref(training_definition_id, author_ref_id) VALUES (2, 3);
-
+INSERT INTO training_definition_sandbox_definition_ref(training_definition_id, sandbox_definition_ref_id) VALUES (2, 2);
 -- TRAINING INSTANCES
 
 INSERT INTO training_instance(id, end_time, password_hash, pool_size, start_time, title, training_definition_id) VALUES (1, '2017-10-19 10:23:54+02', 'b5f3dc27a09865be37cef07816c4f08cf5585b116a4e74b9387c3e43e3a25ec8', 5, '2016-10-19 10:23:54+02', 'Concluded Instance', 1);
