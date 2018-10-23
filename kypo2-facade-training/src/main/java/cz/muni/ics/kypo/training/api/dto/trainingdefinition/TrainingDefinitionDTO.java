@@ -92,7 +92,7 @@ public class TrainingDefinitionDTO {
 		return sandBoxDefinitionRef;
 	}
 
-	public void setSandBoxDefinitionRefDTO(SandboxDefinitionRefDTO sandBoxDefinitionRefDTO) {
+	public void setSandBoxDefinitionRef(SandboxDefinitionRefDTO sandBoxDefinitionRef) {
 		this.sandBoxDefinitionRef = sandBoxDefinitionRef;
 	}
 
