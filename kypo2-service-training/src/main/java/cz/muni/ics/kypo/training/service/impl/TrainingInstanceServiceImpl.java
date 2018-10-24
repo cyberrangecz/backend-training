@@ -20,6 +20,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Service;
 
@@ -54,18 +55,21 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
 	}
 
   @Override
+	@PreAuthorize("hasAuthority('ADMINISTRATOR')")
   public TrainingInstance findById(long id) {
     LOG.debug("findById({})", id);
     return trainingInstanceRepository.findById(id).orElseThrow(() -> new ServiceLayerException("Training instance with id: " + id + " not found.", ErrorCode.RESOURCE_NOT_FOUND));
   }
 
   @Override
+	@PreAuthorize("hasAuthority('ADMINISTRATOR')")
   public Page<TrainingInstance> findAll(Predicate predicate, Pageable pageable) {
     LOG.debug("findAll({},{})", predicate, pageable);
     return trainingInstanceRepository.findAll(predicate, pageable);
   }
 
   @Override
+	@PreAuthorize("hasAuthority({'ADMINISTRATOR', T(cz.muni.ics.kypo.training.persistence.model.enums.RoleType).ORGANIZER})")
   public TrainingInstance create(TrainingInstance trainingInstance) {
     LOG.debug("create({})", trainingInstance);
     Assert.notNull(trainingInstance, "Input training instance must not be null");
@@ -75,6 +79,8 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
   }
 
   @Override
+	@PreAuthorize("hasAuthority('ADMINISTRATOR')" +
+			"or @securityService.isOrganizeOfGivenTrainingInstance(#trainingInstance.id)")
   public void update(TrainingInstance trainingInstance) throws ServiceLayerException{
     LOG.debug("update({})", trainingInstance);
     Assert.notNull(trainingInstance, "Input training instance must not be null");
@@ -89,6 +95,8 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
   }
 
   @Override
+	@PreAuthorize("hasAuthority('ADMINISTRATOR')"  +
+			"or @securityService.isOrganizeOfGivenTrainingInstance(#id)")
   public void delete(Long id) throws ServiceLayerException{
     LOG.debug("delete({})", id);
     Assert.notNull(id, "Input training instance id must not be null");
@@ -102,6 +110,7 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
   }
 
   @Override
+	@PreAuthorize("hasAuthority({'ADMINISTRATOR', T(cz.muni.ics.kypo.training.persistence.model.enums.RoleType).ORGANIZER}) ")
   public String generatePassword(TrainingInstance trainingInstance, String password) {
     String newPasswordHash = "";
     String newPassword = "";
@@ -123,6 +132,8 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
   }
 
 	@Override
+	@PreAuthorize("hasAuthority('ADMINISTRATOR')" +
+			"or @securityService.isOrganizeOfGivenTrainingInstance(#instanceId)")
 	public ResponseEntity<Void> allocateSandboxes(Long instanceId) throws ServiceLayerException {
 		LOG.debug("allocateSandboxes({})", instanceId);
 		HttpHeaders httpHeaders = new HttpHeaders();

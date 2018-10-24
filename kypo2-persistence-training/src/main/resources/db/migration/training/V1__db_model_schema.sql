@@ -551,7 +551,7 @@ ALTER SEQUENCE training_run_id_seq OWNED BY training_run.id;
 
 CREATE TABLE user_ref (
     id bigint NOT NULL,
-    user_ref_id bigint
+    user_ref_login character varying(255) NOT NULL
 );
 
 
@@ -942,7 +942,7 @@ SELECT pg_catalog.setval('training_run_id_seq', 1, false);
 -- Data for Name: user_ref; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY user_ref (id, user_ref_id) FROM stdin;
+COPY user_ref (id, user_ref_login) FROM stdin;
 \.
 
 

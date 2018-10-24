@@ -14,6 +14,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
@@ -47,6 +48,8 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
 	}
 
 	@Override
+	@PreAuthorize("hasAuthority('ADMINISTRATOR')" +
+			"or @securityService.isDesignerOfGivenTrainingDefinition(#id)")
 	public TrainingDefinition findById(long id) {
 		LOG.debug("findById({})", id);
 		return trainingDefinitionRepository.findById(id).orElseThrow(
@@ -54,6 +57,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
 	}
 
 	@Override
+	@PreAuthorize("hasAuthority('ADMINISTRATOR')")
 	public Page<TrainingDefinition> findAll(Predicate predicate, Pageable pageable) {
 		LOG.debug("findAll({},{})", predicate, pageable);
 		return trainingDefinitionRepository.findAll(predicate, pageable);
@@ -61,6 +65,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
 	}
 
 	@Override
+	@PreAuthorize("hasAuthority({'ADMINISTRATOR', T(cz.muni.ics.kypo.training.persistence.model.enums.RoleType).DESIGNER})")
 	public TrainingDefinition create(TrainingDefinition trainingDefinition) {
 		LOG.debug("create({})", trainingDefinition);
 		Assert.notNull(trainingDefinition, "Input training definition must not be null");
@@ -70,6 +75,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
 	}
 
 	@Override
+	@PreAuthorize("hasAuthority('ADMINISTRATOR')")
 	public Page<TrainingDefinition> findAllBySandboxDefinitionId(Long sandboxDefinitionId, Pageable pageable) {
 		LOG.debug("findAllBySandboxDefinitionId({}, {})", sandboxDefinitionId, pageable);
 		return trainingDefinitionRepository.findAllBySandBoxDefinitionRefId(sandboxDefinitionId, pageable);
@@ -77,6 +83,8 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
 	}
 
 	@Override
+	@PreAuthorize("hasAuthority('ADMINISTRATOR')" +
+			"or @securityService.isDesignerOfGivenTrainingDefinition(#trainingDefinition.id)")
 	public void update(TrainingDefinition trainingDefinition) throws ServiceLayerException {
 		LOG.debug("update({})", trainingDefinition);
 		Assert.notNull(trainingDefinition, "Input training definition must not be null");
@@ -88,6 +96,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
 	}
 
 	@Override
+	@PreAuthorize("hasAuthority({'ADMINISTRATOR', T(cz.muni.ics.kypo.training.persistence.model.enums.RoleType).DESIGNER})")
 	public TrainingDefinition clone(Long id) throws ServiceLayerException {
 		LOG.debug("clone({})", id);
 
@@ -109,6 +118,8 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
 	}
 
 	@Override
+	@PreAuthorize("hasAuthority('ADMINISTRATOR')" +
+			"or @securityService.isDesignerOfGivenTrainingDefinition(#definitionId)")
 	public void swapLeft(Long definitionId, Long levelId) throws ServiceLayerException {
 		LOG.debug("swapLeft({}, {})", definitionId, levelId);
 		TrainingDefinition trainingDefinition = findById(definitionId);
@@ -144,6 +155,8 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
 	}
 
 	@Override
+	@PreAuthorize("hasAuthority('ADMINISTRATOR')" +
+			"or @securityService.isDesignerOfGivenTrainingDefinition(#definitionId)")
 	public void swapRight(Long definitionId, Long levelId) throws ServiceLayerException {
 		LOG.debug("swapRight({}, {})", definitionId, levelId);
 		TrainingDefinition trainingDefinition = findById(definitionId);
@@ -177,6 +190,8 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
 	}
 
 	@Override
+	@PreAuthorize("hasAuthority('ADMINISTRATOR')" +
+			"or @securityService.isDesignerOfGivenTrainingDefinition(#id)")
 	public void delete(Long id) throws ServiceLayerException {
 		LOG.debug("delete({})", id);
 
@@ -197,6 +212,8 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
 	}
 
 	@Override
+	@PreAuthorize("hasAuthority('ADMINISTRATOR')" +
+			"or @securityService.isDesignerOfGivenTrainingDefinition(#definitionId)")
 	public void deleteOneLevel(Long definitionId, Long levelId) throws ServiceLayerException {
 		LOG.debug("deleteOneLevel({}, {})", definitionId, levelId);
 		TrainingDefinition trainingDefinition = findById(definitionId);
@@ -225,6 +242,8 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
 	}
 
 	@Override
+	@PreAuthorize("hasAuthority('ADMINISTRATOR')" +
+			"or @securityService.isDesignerOfGivenTrainingDefinition(#definitionId)")
 	public void updateGameLevel(Long definitionId, GameLevel gameLevel) throws ServiceLayerException {
 		LOG.debug("updateGameLevel({}, {})", definitionId, gameLevel);
 		TrainingDefinition trainingDefinition = findById(definitionId);
@@ -236,6 +255,8 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
 	}
 
 	@Override
+	@PreAuthorize("hasAuthority('ADMINISTRATOR')" +
+			"or @securityService.isDesignerOfGivenTrainingDefinition(#definitionId)")
 	public void updateInfoLevel(Long definitionId, InfoLevel infoLevel) throws ServiceLayerException {
 		LOG.debug("updateInfoLevel({}, {})", definitionId, infoLevel);
 		TrainingDefinition trainingDefinition = findById(definitionId);
@@ -247,6 +268,8 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
 	}
 
 	@Override
+	@PreAuthorize("hasAuthority('ADMINISTRATOR')" +
+			"or @securityService.isDesignerOfGivenTrainingDefinition(#definitionId)")
 	public void updateAssessmentLevel(Long definitionId, AssessmentLevel assessmentLevel) throws ServiceLayerException {
 		LOG.debug("updateAssessmentLevel({}, {})", definitionId, assessmentLevel);
 		TrainingDefinition trainingDefinition = findById(definitionId);
@@ -258,6 +281,8 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
 	}
 
 	@Override
+	@PreAuthorize("hasAuthority('ADMINISTRATOR')" +
+			"or @securityService.isDesignerOfGivenTrainingDefinition(#definitionId)")
 	public GameLevel createGameLevel(Long definitionId) throws ServiceLayerException {
 		LOG.debug("createGameLevel({})", definitionId);
 		Assert.notNull(definitionId, "Definition id must not be null");
@@ -288,6 +313,8 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
 	}
 
 	@Override
+	@PreAuthorize("hasAuthority('ADMINISTRATOR')" +
+			"or @securityService.isDesignerOfGivenTrainingDefinition(#definitionId)")
 	public InfoLevel createInfoLevel(Long definitionId) throws ServiceLayerException {
 		LOG.debug("createInfoLevel({})", definitionId);
 		Assert.notNull(definitionId, "Definition id must not be null");
@@ -314,6 +341,8 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
 	}
 
 	@Override
+	@PreAuthorize("hasAuthority('ADMINISTRATOR')" +
+			"or @securityService.isDesignerOfGivenTrainingDefinition(#definitionId)")
 	public AssessmentLevel createAssessmentLevel(Long definitionId) throws ServiceLayerException {
 		LOG.debug("createAssessmentLevel({})", definitionId);
 		Assert.notNull(definitionId, "Definition id must not be null");
@@ -342,6 +371,8 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
 	}
 
 	@Override
+	@PreAuthorize("hasAuthority('ADMINISTRATOR')" +
+			"or @securityService.isDesignerOfGivenTrainingDefinition(#id)")
 	public ArrayList<AbstractLevel> findAllLevelsFromDefinition(Long id) {
 		LOG.debug("findAllLevelsFromDefinition({})", id);
 		Assert.notNull(id, "Definition id must not be null");
@@ -359,6 +390,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
 	}
 
 	@Override
+	@PreAuthorize("hasAuthority({'ADMINISTRATOR', T(cz.muni.ics.kypo.training.persistence.model.enums.RoleType).DESIGNER})")
 	public AbstractLevel findLevelById(Long levelId) throws ServiceLayerException {
 		LOG.debug("findLevelById({})", levelId);
 		Assert.notNull(levelId, "Input level id must not be null.");

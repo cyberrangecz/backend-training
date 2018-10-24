@@ -23,10 +23,4 @@ import org.springframework.web.client.RestTemplate;
 public class ServiceConfig {
 
 	private static final Logger LOG = LoggerFactory.getLogger(ServiceConfig.class);
-
-	@Bean
-	public RestTemplate restTemplate() {
-		return new RestTemplate();
-	}
-
 }
