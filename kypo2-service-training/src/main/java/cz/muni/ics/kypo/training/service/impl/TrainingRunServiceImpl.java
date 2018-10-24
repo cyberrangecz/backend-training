@@ -289,7 +289,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
 
 
   @Override
-  @PreAuthorize("hasAuthority('ADMINISTRATO')"  +
+  @PreAuthorize("hasAuthority('ADMINISTRATOR')"  +
       "or @securityService.isTraineeOfGivenTrainingRun(#trainingRunId)")
   public String getSolution(Long trainingRunId) {
     LOG.debug("getSolution({})", trainingRunId);
