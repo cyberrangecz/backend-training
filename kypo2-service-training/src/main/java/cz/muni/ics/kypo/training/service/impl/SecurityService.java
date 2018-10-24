@@ -1,6 +1,8 @@
 package cz.muni.ics.kypo.training.service.impl;
 
 import com.google.gson.JsonObject;
+import cz.muni.ics.kypo.training.exceptions.ErrorCode;
+import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.repository.ParticipantRefRepository;
 import cz.muni.ics.kypo.training.persistence.repository.TrainingDefinitionRepository;
@@ -36,20 +38,17 @@ public class SecurityService {
 	}
 
 	public boolean isTraineeOfGivenTrainingRun(Long trainingRunId) {
-		 TrainingRun trainingRun = trainingRunRepository.findById(trainingRunId).orElseThrow(() -> new SecurityException("Training run with id " +
-				 trainingRunId + " cannot be found."));
+		 TrainingRun trainingRun = trainingRunRepository.findById(trainingRunId).orElseThrow(() -> new ServiceLayerException("The necessary permissions are required for a resource.", ErrorCode.SECURITY_RIGHTS));
 		return trainingRun.getParticipantRef().getParticipantRefLogin().equals(getSubOfLoggedInUser());
 	}
 
 	public boolean isOrganizeOfGivenTrainingInstance(Long instanceId) {
-		TrainingInstance trainingInstance = trainingInstanceRepository.findById(instanceId).orElseThrow(() -> new SecurityException("Training instance with id " +
-				instanceId + " cannot be found."));
+		TrainingInstance trainingInstance = trainingInstanceRepository.findById(instanceId).orElseThrow(() -> new ServiceLayerException("The necessary permissions are required for a resource.", ErrorCode.SECURITY_RIGHTS));
 		return trainingInstance.getOrganizers().stream().anyMatch(o -> o.getUserRefLogin().equals(getSubOfLoggedInUser()));
 	}
 
 	public boolean isDesignerOfGivenTrainingDefinition(Long definitionId) {
-		TrainingDefinition trainingDefinition = trainingDefinitionRepository.findById(definitionId).orElseThrow(() -> new SecurityException("Training definition with id " +
-				definitionId + " cannot be found."));
+		TrainingDefinition trainingDefinition = trainingDefinitionRepository.findById(definitionId).orElseThrow(() -> new ServiceLayerException("The necessary permissions are required for a resource.", ErrorCode.SECURITY_RIGHTS));
 		return  trainingDefinition.getAuthorRef().stream().anyMatch(a -> a.getAuthorRefLogin().equals(getSubOfLoggedInUser()));
 	}
 

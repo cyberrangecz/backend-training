@@ -35,6 +35,7 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
 
@@ -262,7 +263,7 @@ public class TrainingRunsRestController {
             @ApiResponse(code = 400, message = "Current level is not game level and does not have solution."),
 						@ApiResponse(code = 500, message = "Unexpected condition was encountered.")
     })
-    @GetMapping(value = "/{runId}/solutions", produces = MediaType.TEXT_PLAIN_VALUE)
+    @GetMapping(value = "/{runId}/solutions", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> getSolution(@ApiParam(value = "Training Run ID", required = true) @PathVariable Long runId){
                 LOG.debug("getSolution({})", runId);
         try {

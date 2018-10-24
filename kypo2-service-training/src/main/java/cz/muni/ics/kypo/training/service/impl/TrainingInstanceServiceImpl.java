@@ -69,7 +69,7 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
   }
 
   @Override
-	@PreAuthorize("hasAuthority('ADMINISTRATOR')")
+	@PreAuthorize("hasAuthority({'ADMINISTRATOR', T(cz.muni.ics.kypo.training.persistence.model.enums.RoleType).ORGANIZER})")
   public TrainingInstance create(TrainingInstance trainingInstance) {
     LOG.debug("create({})", trainingInstance);
     Assert.notNull(trainingInstance, "Input training instance must not be null");
@@ -95,7 +95,8 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
   }
 
   @Override
-	@PreAuthorize("hasAuthority('ADMINISTRATOR')")
+	@PreAuthorize("hasAuthority('ADMINISTRATOR')"  +
+			"or @securityService.isOrganizeOfGivenTrainingInstance(#id)")
   public void delete(Long id) throws ServiceLayerException{
     LOG.debug("delete({})", id);
     Assert.notNull(id, "Input training instance id must not be null");
@@ -109,7 +110,7 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
   }
 
   @Override
-	@PreAuthorize("hasAuthority('ADMINISTRATOR')")
+	@PreAuthorize("hasAuthority({'ADMINISTRATOR', T(cz.muni.ics.kypo.training.persistence.model.enums.RoleType).ORGANIZER}) ")
   public String generatePassword(TrainingInstance trainingInstance, String password) {
     String newPasswordHash = "";
     String newPassword = "";

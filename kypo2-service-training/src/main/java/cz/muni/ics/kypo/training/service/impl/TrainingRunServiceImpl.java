@@ -148,7 +148,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
   }
 
   @Override
-  @PreAuthorize("hasAuthority('ADMINISTRATOR')")
+  //@PreAuthorize("hasAuthority('ADMINISTRATOR')")
   public List<AbstractLevel> getLevels(Long levelId) {
     Assert.notNull(levelId, "Id of first level must not be null.");
     List<AbstractLevel> levels = new ArrayList<>();
@@ -328,7 +328,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
   }
 
   @Override
-  @PreAuthorize("hasAuthority('ADMINISTRATOR')")
+  //@PreAuthorize("hasAuthority('ADMINISTRATOR')")
   public int getLevelOrder(Long idOfFirstLevel, Long actualLevel) {
     LOG.debug("getLevelOrder({}, {})", idOfFirstLevel, actualLevel);
     Assert.notNull(idOfFirstLevel, "Input id of first level must not be null.");
@@ -357,7 +357,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
         new ServiceLayerException("Training Run with id: " + trainingRunId + " not found.", ErrorCode.RESOURCE_NOT_FOUND));
   }
 
-	public String getSubOfLoggedInUser() {
+	private String getSubOfLoggedInUser() {
 		OAuth2Authentication authentication = (OAuth2Authentication) SecurityContextHolder.getContext().getAuthentication();
 		JsonObject credentials = (JsonObject) authentication.getUserAuthentication().getCredentials();
 		return credentials.get("sub").getAsString();

@@ -9,6 +9,7 @@ import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.validation.BindException;
 import org.springframework.validation.FieldError;
 import org.springframework.validation.ObjectError;
@@ -29,7 +30,6 @@ import org.springframework.web.util.UrlPathHelper;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
-import java.nio.file.AccessDeniedException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -521,11 +521,20 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
 	// Existing Java Exceptions
 
 	// access denied
-	@ExceptionHandler({AccessDeniedException.class})
-	public ResponseEntity<Object> handleAccessDeniedException(AccessDeniedException ex, WebRequest request) {
+	@ExceptionHandler({java.nio.file.AccessDeniedException.class})
+	public ResponseEntity<Object> handleAccessDeniedException(java.nio.file.AccessDeniedException ex, WebRequest request) {
 		LOG.debug("handleAccessDeniedException({}, {})", new Object[] {ex, request});
 
 		return new ResponseEntity<Object>("Access denied message here", new HttpHeaders(), HttpStatus.FORBIDDEN);
+	}
+
+	@ExceptionHandler({org.springframework.security.access.AccessDeniedException.class})
+	public ResponseEntity<Object> handleSpringAccessDeniedException(org.springframework.security.access.AccessDeniedException ex, WebRequest request, HttpServletRequest req) {
+		LOG.info("handleAccessDeniedException({}, {})", ex, request);
+
+		final ApiErrorTraining apiError = new ApiErrorTraining.ApiErrorBuilder(HttpStatus.FORBIDDEN, ex.getLocalizedMessage()).setError("Access denied")
+				.setPath(URLHELPER.getRequestUri(req)).build();
+		return new ResponseEntity<>(apiError, new HttpHeaders(), apiError.getStatus());
 	}
 
 	// handle illegal argument exceptions e.g. given payload is not valid against

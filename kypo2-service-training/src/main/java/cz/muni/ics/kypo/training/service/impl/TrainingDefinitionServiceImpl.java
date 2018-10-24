@@ -65,7 +65,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
 	}
 
 	@Override
-	@PreAuthorize("hasAuthority({'ADMINISTRATOR', T(cz.muni.ics.kypo.training.persistence.model.enums.RoleType).ORGANIZER})")
+	@PreAuthorize("hasAuthority({'ADMINISTRATOR', T(cz.muni.ics.kypo.training.persistence.model.enums.RoleType).DESIGNER})")
 	public TrainingDefinition create(TrainingDefinition trainingDefinition) {
 		LOG.debug("create({})", trainingDefinition);
 		Assert.notNull(trainingDefinition, "Input training definition must not be null");
