@@ -3,8 +3,7 @@ package cz.muni.ics.kypo.training.service.impl;
 import com.google.gson.JsonObject;
 import com.querydsl.core.types.Predicate;
 import cz.muni.csirt.kypo.elasticsearch.service.audit.AuditService;
-import cz.muni.csirt.kypo.events.game.GameStarted;
-import cz.muni.csirt.kypo.events.game.common.GameDetails;
+import cz.muni.csirt.kypo.events.trainings.TrainingRunStarted;
 import cz.muni.ics.kypo.training.exceptions.ErrorCode;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.persistence.repository.*;
@@ -26,18 +25,11 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.util.Assert;
 import org.springframework.web.client.RestTemplate;
-
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-import java.time.Duration;
 import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
-
 
 /**
  *
@@ -72,15 +64,14 @@ public class TrainingRunServiceImpl implements TrainingRunService {
     this.restTemplate = restTemplate;
   }
 
-
   @Override
   @PreAuthorize("hasAuthority('ADMINISTRATOR')" +
       "or @securityService.isTraineeOfGivenTrainingRun(#id)")
   public TrainingRun findById(Long id) {
     LOG.debug("findById({})", id);
     Objects.requireNonNull(id);
-    return trainingRunRepository.findById(id).orElseThrow(() -> new ServiceLayerException("Training Run with id: " + id + " not found.", ErrorCode.RESOURCE_NOT_FOUND));
-
+		return trainingRunRepository.findById(id)
+				.orElseThrow(() -> new ServiceLayerException("Training Run with id: " + id + " not found.", ErrorCode.RESOURCE_NOT_FOUND));
   }
 
   @Override
@@ -195,14 +186,18 @@ public class TrainingRunServiceImpl implements TrainingRunService {
 */
       //check hash of password not String
       if (ti.getPasswordHash().equals(BCrypt.hashpw(password, BCrypt.gensalt(12)))) {
-        Set<SandboxInstanceRef> sandboxInstancePool = ti.getSandboxInstanceRefs();
-        Set<SandboxInstanceRef> allocatedSandboxInstances = trainingRunRepository.findSandboxInstanceRefsOfTrainingInstance(ti.getId());
-        sandboxInstancePool.removeAll(allocatedSandboxInstances);
-        if (!sandboxInstancePool.isEmpty()) {
-          SandboxInstanceRef sandboxInstanceRef = getReadySandboxInstanceRef(sandboxInstancePool);
-          AbstractLevel al = abstractLevelRepository.findById(ti.getTrainingDefinition().getStartingLevel()).get();
-          create(getNewTrainingRun(al,getSubOfLoggedInUser(), ti, TRState.NEW, LocalDateTime.now(),ti.getEndTime(), sandboxInstanceRef));
-          return al;
+				Set<SandboxInstanceRef> sandboxInstancePool = ti.getSandboxInstanceRefs();
+				Set<SandboxInstanceRef> allocatedSandboxInstances = trainingRunRepository.findSandboxInstanceRefsOfTrainingInstance(ti.getId());
+				sandboxInstancePool.removeAll(allocatedSandboxInstances);
+				if (!sandboxInstancePool.isEmpty()) {
+					SandboxInstanceRef sandboxInstanceRef = getReadySandboxInstanceRef(sandboxInstancePool);
+					AbstractLevel al = abstractLevelRepository.findById(ti.getTrainingDefinition().getStartingLevel()).orElseThrow(() -> new ServiceLayerException("No starting level available for this training definition", ErrorCode.RESOURCE_NOT_FOUND));
+					TrainingRun tr =
+							getNewTrainingRun(al, getSubOfLoggedInUser(), ti, TRState.NEW, LocalDateTime.now(), ti.getEndTime(), sandboxInstanceRef);
+					create(tr);
+					// audit this action to the Elasticsearch
+					auditTrainingRunStartedAction(ti, tr);
+					return al;
         } else {
           throw new ServiceLayerException("There is no available sandbox, wait a minute and try again.", ErrorCode.NO_AVAILABLE_SANDBOX);
         }
@@ -211,7 +206,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
     throw new ServiceLayerException("There is no training instance with password " + password + ".", ErrorCode.RESOURCE_NOT_FOUND);
   }
 
-  private TrainingRun getNewTrainingRun(AbstractLevel currentLevel, String participantRefLogin, TrainingInstance trainingInstance,
+	private TrainingRun getNewTrainingRun(AbstractLevel currentLevel, String participantRefLogin, TrainingInstance trainingInstance,
   TRState state, LocalDateTime startTime, LocalDateTime endTime, SandboxInstanceRef sandboxInstanceRef) {
     TrainingRun tR = new TrainingRun();
     tR.setCurrentLevel(currentLevel);
@@ -352,27 +347,6 @@ public class TrainingRunServiceImpl implements TrainingRunService {
 
   }
 
-  public String getSubOfLoggedInUser() {
-    OAuth2Authentication authentication = (OAuth2Authentication) SecurityContextHolder.getContext().getAuthentication();
-    JsonObject credentials = (JsonObject) authentication.getUserAuthentication().getCredentials();
-    return credentials.get("sub").getAsString();
-  }
-
-	private void auditGameStartedAction(TrainingInstance trainingInstance) {
-		// String loggedInUser = getSubOfLoggedInUser();
-		if (trainingInstance != null) {
-			LocalDateTime startTime = trainingInstance.getStartTime();
-			if (startTime != null) {
-				long logicalTime = Duration.between(startTime, LocalDateTime.now()).get(ChronoUnit.MILLIS);
-				// TODO this class must be pass loggedInUser returned from getSubOfLoggedInUser when it will
-				// be working and passed as last argument of GameDetails class
-				GameDetails gameDetails =
-						new GameDetails(trainingInstance.getId(), trainingInstance.getTrainingDefinition().getStartingLevel(), logicalTime, "");
-				auditService.<GameStarted>save(new GameStarted(gameDetails));
-			}
-		}
-	}
-
   @Override
   @PreAuthorize("hasAuthority('ADMINISTRATOR')" +
       "or @securityService.isTraineeOfGivenTrainingRun(#trainingRunId)")
@@ -382,4 +356,18 @@ public class TrainingRunServiceImpl implements TrainingRunService {
     return trainingRunRepository.findByIdWithLevel(trainingRunId).orElseThrow(() ->
         new ServiceLayerException("Training Run with id: " + trainingRunId + " not found.", ErrorCode.RESOURCE_NOT_FOUND));
   }
+
+	public String getSubOfLoggedInUser() {
+		OAuth2Authentication authentication = (OAuth2Authentication) SecurityContextHolder.getContext().getAuthentication();
+		JsonObject credentials = (JsonObject) authentication.getUserAuthentication().getCredentials();
+		return credentials.get("sub").getAsString();
+	}
+
+	private void auditTrainingRunStartedAction(TrainingInstance trainingInstance, TrainingRun trainingRun) {
+		if (trainingInstance != null) {
+			TrainingRunStarted trainingRunStarted = new TrainingRunStarted(trainingInstance.getId(), trainingRun.getId(), getSubOfLoggedInUser(),
+					trainingRun.getCurrentLevel().getId());
+			auditService.<TrainingRunStarted>save(trainingRunStarted);
+		}
+	}
 }

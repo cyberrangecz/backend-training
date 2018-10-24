@@ -1,10 +1,11 @@
-package cz.muni.csirt.kypo.events.game;
+package cz.muni.csirt.kypo.events.trainings;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.annotation.JsonRootName;
 import cz.muni.csirt.kypo.elasticsearch.AbstractAuditPOJO;
-import cz.muni.csirt.kypo.events.game.common.GameDetails;
+import cz.muni.csirt.kypo.events.trainings.common.GameDetails;
+
 import org.jsondoc.core.annotation.ApiObject;
 import org.jsondoc.core.annotation.ApiObjectField;
 
@@ -12,16 +13,16 @@ import org.jsondoc.core.annotation.ApiObjectField;
  * @author Pavel Šeda
  *
  */
-@ApiObject(name = "Game Exited", description = "Type of event from game scenario (when game is exited).")
+@ApiObject(name = "Solution Displayed", description = "Type of event from game scenario (when solution is displayed).")
 @JsonPropertyOrder({"type", "game_details", "timestamp"})
 @JsonRootName(value = "event")
-public class GameExited extends AbstractAuditPOJO {
+public class SolutionDisplayed extends AbstractAuditPOJO {
 
 	@ApiObjectField(description = "Details of the game.")
 	@JsonProperty(value = "game_details", required = true)
 	private GameDetails gameDetails;
 
-	public GameExited(GameDetails gameDetails) {
+	public SolutionDisplayed(GameDetails gameDetails) {
 		super();
 		this.gameDetails = gameDetails;
 	}
@@ -36,7 +37,7 @@ public class GameExited extends AbstractAuditPOJO {
 
 	@Override
 	public String toString() {
-		return "GameExited [gameDetails=" + gameDetails + "]";
+		return "SolutionDisplayed [gameDetails=" + gameDetails + "]";
 	}
 
 }

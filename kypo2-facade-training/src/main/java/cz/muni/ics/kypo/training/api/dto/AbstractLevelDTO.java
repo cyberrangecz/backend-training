@@ -19,7 +19,7 @@ public class AbstractLevelDTO {
 
 	protected Long id;
 	protected String title;
-	protected Integer maxScore;
+	protected int maxScore;
 	protected Long nextLevel;
 	protected PreHookDTO preHook;
 	protected PostHookDTO postHook;
@@ -42,11 +42,11 @@ public class AbstractLevelDTO {
 		this.title = title;
 	}
 
-	public Integer getMaxScore() {
+	public int getMaxScore() {
 		return maxScore;
 	}
 
-	public void setMaxScore(Integer maxScore) {
+	public void setMaxScore(int maxScore) {
 		this.maxScore = maxScore;
 	}
 

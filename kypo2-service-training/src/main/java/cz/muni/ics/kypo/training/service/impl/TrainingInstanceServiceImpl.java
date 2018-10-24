@@ -85,7 +85,7 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
     LOG.debug("update({})", trainingInstance);
     Assert.notNull(trainingInstance, "Input training instance must not be null");
     TrainingInstance tI = trainingInstanceRepository.findById(trainingInstance.getId())
-            .orElseThrow(() -> new ServiceLayerException("Training instance with id: "+ trainingInstance.getId() +", not found", ErrorCode.RESOURCE_NOT_FOUND));
+            .orElseThrow(() -> new ServiceLayerException("Training instance with id: "+ trainingInstance.getId() +", not found.", ErrorCode.RESOURCE_NOT_FOUND));
     LocalDateTime currentDate = LocalDateTime.now();
     if (!currentDate.isBefore(trainingInstance.getStartTime()))
       throw new ServiceLayerException("Starting time of instance must be in future", ErrorCode.RESOURCE_CONFLICT);
@@ -100,10 +100,10 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
     LOG.debug("delete({})", id);
     Assert.notNull(id, "Input training instance id must not be null");
     TrainingInstance trainingInstance = trainingInstanceRepository.findById(id)
-            .orElseThrow(() -> new ServiceLayerException("Training instance with id: " + id + ", not found", ErrorCode.RESOURCE_NOT_FOUND));
+            .orElseThrow(() -> new ServiceLayerException("Training instance with id: " + id + ", not found.", ErrorCode.RESOURCE_NOT_FOUND));
     LocalDateTime currentDate = LocalDateTime.now();
     if (!currentDate.isAfter(trainingInstance.getEndTime()))
-      throw new ServiceLayerException("Only finished instances can be deleted", ErrorCode.RESOURCE_CONFLICT);
+      throw new ServiceLayerException("Only finished instances can be deleted.", ErrorCode.RESOURCE_CONFLICT);
     trainingInstanceRepository.delete(trainingInstance);
     LOG.info("Training instance with id: " + id + "deleted.");
   }

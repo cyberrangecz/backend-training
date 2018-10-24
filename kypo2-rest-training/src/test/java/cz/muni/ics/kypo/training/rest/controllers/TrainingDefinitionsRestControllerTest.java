@@ -198,14 +198,14 @@ public class TrainingDefinitionsRestControllerTest {
 		trainingDefinition1DTO.setState(TDState.UNRELEASED);
 		trainingDefinition1DTO.setTitle("test");
 		trainingDefinition1DTO.setAuthorRef(authorRefSetDTO);
-		trainingDefinition1DTO.setSandBoxDefinitionRefDTO(sandboxDefinitionRefDTO);
+		trainingDefinition1DTO.setSandBoxDefinitionRef(sandboxDefinitionRefDTO);
 
 		trainingDefinition2DTO = new TrainingDefinitionDTO();
 		trainingDefinition2DTO.setId(2L);
 		trainingDefinition2DTO.setState(TDState.PRIVATED);
 		trainingDefinition2DTO.setTitle("test");
 		trainingDefinition2DTO.setAuthorRef(authorRefSetDTO);
-		trainingDefinition2DTO.setSandBoxDefinitionRefDTO(sandboxDefinitionRefDTO);
+		trainingDefinition2DTO.setSandBoxDefinitionRef(sandboxDefinitionRefDTO);
 
 		trainingDefinitionUpdateDTO = new TrainingDefinitionUpdateDTO();
 		trainingDefinitionUpdateDTO.setId(4L);

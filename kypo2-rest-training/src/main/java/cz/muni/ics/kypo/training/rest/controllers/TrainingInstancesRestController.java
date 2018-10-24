@@ -14,6 +14,7 @@ import cz.muni.ics.kypo.training.exception.FacadeLayerException;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.facade.TrainingInstanceFacade;
 import cz.muni.ics.kypo.training.persistence.model.TrainingInstance;
+import cz.muni.ics.kypo.training.rest.ExceptionSorter;
 import cz.muni.ics.kypo.training.rest.exceptions.*;
 import java.util.List;
 import org.jsondoc.core.annotation.ApiObject;
@@ -48,6 +49,11 @@ import javax.validation.Valid;
 @Api(value = "/training-instances",
   consumes = "application/json"
 )
+@ApiResponses(value = {
+		@ApiResponse(code = 401, message = "Full authentication is required to access this resource."),
+		@ApiResponse(code = 403, message = "The necessary permissions are required for a resource.")
+})
+
 @RestController
 @RequestMapping(value = "/training-instances")
 public class TrainingInstancesRestController {
@@ -77,7 +83,10 @@ public class TrainingInstancesRestController {
       produces = "application/json"
   )
   @ApiResponses(value = {
-      @ApiResponse(code = 404, message = "The requested resource was not found.")
+      @ApiResponse(code = 200, message = "Training instance found", response = TrainingInstanceDTO.class),
+      @ApiResponse(code = 404, message = "Training instance with given id not found."),
+			@ApiResponse(code = 500, message = "Unexpected condition was encountered.")
+
   })
   @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<Object> findTrainingInstanceById(@ApiParam(value = "Training Instance ID") @PathVariable long id,
@@ -89,7 +98,7 @@ public class TrainingInstancesRestController {
       Squiggly.init(objectMapper, fields);
       return new ResponseEntity<>(SquigglyUtils.stringify(objectMapper, trainingInstanceResource), HttpStatus.OK);
     } catch (FacadeLayerException ex) {
-        throw throwException(ex);
+        throw ExceptionSorter.throwException(ex);
     }
   }
 
@@ -117,7 +126,9 @@ public class TrainingInstancesRestController {
       produces = "application/json"
   )
   @ApiResponses(value = {
-      @ApiResponse(code = 404, message = "The requested resource was not found.")
+      @ApiResponse(code = 200, message = "All training instances found.", response = TrainingInstanceDTO.class, responseContainer = "List"),
+			@ApiResponse(code = 500, message = "Unexpected condition was encountered.")
+
   })
   @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<Object> findAllTrainingInstances(@QuerydslPredicate(root = TrainingInstance.class) Predicate predicate, 
@@ -140,7 +151,10 @@ public class TrainingInstancesRestController {
 				produces = "application/json",
 				consumes = "application/json")
 		@ApiResponses(value = {
-				@ApiResponse(code = 400, message = "The requested resource was not created")
+				@ApiResponse(code = 201, message = "Training instance created.", response = TrainingInstanceCreateDTO.class),
+				@ApiResponse(code = 400, message = "Given training instance is not valid."),
+				@ApiResponse(code = 500, message = "Unexpected condition was encountered.")
+
 		})
 		@PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
 		public ResponseEntity<Object> createTrainingInstance(@ApiParam(name = "Training instance to be created") @Valid @RequestBody TrainingInstanceCreateDTO trainingInstanceCreateDTO,
@@ -151,7 +165,8 @@ public class TrainingInstancesRestController {
 						Squiggly.init(objectMapper, fields);
 						return new ResponseEntity<>(SquigglyUtils.stringify(objectMapper, trainingInstanceResource), HttpStatus.OK);
 				} catch (FacadeLayerException ex) {
-						throw throwException(ex);
+						throw ExceptionSorter.throwException(ex);
+
 				}
 		}
 
@@ -170,7 +185,7 @@ public class TrainingInstancesRestController {
 						String newPass = trainingInstanceFacade.update(trainingInstanceUpdateDTO);
 						return new ResponseEntity<>(newPass, HttpStatus.OK);
 				} catch (FacadeLayerException ex) {
-						throw throwException(ex);
+						throw ExceptionSorter.throwException(ex);
 				}
 		}
 		@ApiOperation(httpMethod = "DELETE",
@@ -178,8 +193,12 @@ public class TrainingInstancesRestController {
 				nickname = "deleteTrainingInstance"
 				)
 		@ApiResponses( value = {
-				@ApiResponse(code = 404, message = "The requested resource was not found"),
-				@ApiResponse(code = 409, message = "The requested resource was not deleted because of its finish time")
+				@ApiResponse(code = 200, message = "Training instance updated.", response = String.class),
+				@ApiResponse(code = 400, message = "Given training instance is not valid."),
+				@ApiResponse(code = 404, message = "Training instance with given id not found."),
+				@ApiResponse(code = 409, message = "Starting time of instance must be in future."),
+				@ApiResponse(code = 500, message = "Unexpected condition was encountered.")
+
 		})
 		@DeleteMapping(value = "/{id}")
 		public ResponseEntity<Void> deleteTrainingInstance(@ApiParam(value = "Id of training instance to be deleted") @PathVariable(value = "id") Long id) {
@@ -187,27 +206,10 @@ public class TrainingInstancesRestController {
 						trainingInstanceFacade.delete(id);
 						return new ResponseEntity<>(HttpStatus.OK);
 				} catch (FacadeLayerException ex) {
-						throw throwException(ex);
+						throw ExceptionSorter.throwException(ex);
+
 				}
 
-		}
-
-		private RuntimeException throwException(RuntimeException ex) {
-				switch (((ServiceLayerException) ex.getCause()).getCode()) {
-						case WRONG_LEVEL_TYPE:
-								return new BadRequestException(ex.getLocalizedMessage());
-						case RESOURCE_NOT_FOUND:
-								return new ResourceNotFoundException(ex.getLocalizedMessage());
-						case NO_NEXT_LEVEL:
-								return new ResourceNotFoundException(ex.getLocalizedMessage());
-						case UNEXPECTED_ERROR:
-								return new InternalServerErrorException(ex.getLocalizedMessage());
-						case RESOURCE_CONFLICT:
-								return new ConflictException(ex.getLocalizedMessage());
-						case NO_AVAILABLE_SANDBOX:
-						default:
-								return new ServiceUnavailableException(ex.getLocalizedMessage());
-				}
 		}
 
 	@ApiOperation(httpMethod = "POST",
@@ -215,7 +217,10 @@ public class TrainingInstancesRestController {
 			response = Void.class,
 			nickname = "allocateSandboxes")
 	@ApiResponses(value = {
-			@ApiResponse(code = 404, message = "The requested resource was not found")
+			@ApiResponse(code = 200, message = "Sandboxes have been allocated."),
+			@ApiResponse(code = 404, message = "Training instance with given id not found."),
+			@ApiResponse(code = 500, message = "Unexpected condition was encountered.")
+
 	})
 	@PostMapping(value = "/{instanceId}/sandbox-instances")
 	public ResponseEntity<Void> allocateSandboxes(
