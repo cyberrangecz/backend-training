@@ -92,7 +92,7 @@ public class TrainingDefinitionsRestController {
   })
   @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<Object> findTrainingDefinitionById(
-  		@ApiParam(value = "TrainingDefinition ID")
+  		@ApiParam(value = "ID of training definition to be retrieved.")
   		@PathVariable long id,
       @ApiParam(value = "Fields which should be returned in REST API response", required = false)
       @RequestParam(value = "fields", required = false) String fields) {
