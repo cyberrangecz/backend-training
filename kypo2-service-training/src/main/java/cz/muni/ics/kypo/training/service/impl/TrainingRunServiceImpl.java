@@ -185,8 +185,8 @@ public class TrainingRunServiceImpl implements TrainingRunService {
 
 */
       //check hash of password not String
-      if (ti.getPasswordHash().equals(BCrypt.hashpw(password, BCrypt.gensalt(12)))) {
-				Set<SandboxInstanceRef> sandboxInstancePool = ti.getSandboxInstanceRefs();
+      if (BCrypt.checkpw(password, ti.getPasswordHash())) {
+        Set<SandboxInstanceRef> sandboxInstancePool = ti.getSandboxInstanceRefs();
 				Set<SandboxInstanceRef> allocatedSandboxInstances = trainingRunRepository.findSandboxInstanceRefsOfTrainingInstance(ti.getId());
 				sandboxInstancePool.removeAll(allocatedSandboxInstances);
 				if (!sandboxInstancePool.isEmpty()) {
