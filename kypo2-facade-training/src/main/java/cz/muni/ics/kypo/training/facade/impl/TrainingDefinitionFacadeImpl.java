@@ -57,7 +57,6 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
     LOG.debug("findById({})", id);
     try {
       Objects.requireNonNull(id);
-//      ArrayList<AbstractLevel> levels = trainingDefinitionService.findAllLevelsFromDefinition(id);
       TrainingDefinitionDTO trainingDefinitionDTO = beanMapping.mapTo(trainingDefinitionService.findById(id), TrainingDefinitionDTO.class);
 
       trainingDefinitionDTO.setBasicLevelInfoDTOs(gatherBasicLevelInfo(id));

@@ -3,6 +3,7 @@ package cz.muni.ics.kypo.training.persistence.model;
 import javax.persistence.*;
 import java.io.Serializable;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -52,16 +53,15 @@ public class AuthorRef implements Serializable {
 	@Override public boolean equals(Object o) {
 		if (this == o)
 			return true;
-		if (!(o instanceof AuthorRef))
+		if (o == null || getClass() != o.getClass())
 			return false;
-
 		AuthorRef authorRef = (AuthorRef) o;
-
-		return getAuthorRefLogin().equals(authorRef.getAuthorRefLogin());
+		return Objects.equals(id, authorRef.id) && Objects.equals(authorRefLogin, authorRef.authorRefLogin) && Objects
+				.equals(trainingDefinition, authorRef.trainingDefinition);
 	}
 
 	@Override public int hashCode() {
-		return getAuthorRefLogin().hashCode();
+		return Objects.hash(id, authorRefLogin, trainingDefinition);
 	}
 
 	@Override
