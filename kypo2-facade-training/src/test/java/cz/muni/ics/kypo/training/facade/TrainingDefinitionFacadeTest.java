@@ -374,9 +374,9 @@ public class TrainingDefinitionFacadeTest {
 
 	@Test
 	public void createAssessmentLevel() {
-		given(trainingDefinitionService.createAssessmentLevel(trainingDefinition1.getId())).willReturn(any(AssessmentLevel.class));
+		given(trainingDefinitionService.createAssessmentLevel(trainingDefinition1.getId())).willReturn(assessmentLevel);
 		trainingDefinitionFacade.createAssessmentLevel(trainingDefinition1.getId());
-		then(trainingDefinitionService).should().createGameLevel(trainingDefinition1.getId());
+		then(trainingDefinitionService).should().createAssessmentLevel(trainingDefinition1.getId());
 	}
 
 	@Test
