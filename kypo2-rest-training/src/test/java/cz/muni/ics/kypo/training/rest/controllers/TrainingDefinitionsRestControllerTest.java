@@ -145,6 +145,7 @@ public class TrainingDefinitionsRestControllerTest {
 		alUpdateDTO.setType(AssessmentType.QUESTIONNAIRE);
 
 		AuthorRef authorRef = new AuthorRef();
+		authorRef.setAuthorRefLogin("Author");
 		Set<AuthorRef> authorRefSet = new HashSet<>();
 		authorRefSet.add(authorRef);
 
