@@ -77,7 +77,7 @@ After step 1 you have to create properties file according to format below and sa
 # Environment DEV or PROD
 ### DEV environment does not need kypo2-user-and-group project but assign authority as GUEST by default
 spring.profiles.active=DEV
-spring.profile.dev.roles=ADMIN
+spring.profile.dev.roles=ADMINISTRATOR
 
 
 server.port={port for service}
