@@ -2,14 +2,16 @@ package cz.muni.ics.kypo.training.rest.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
-import com.google.common.base.Predicates;
 import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.training.api.PageResultResource;
+import cz.muni.ics.kypo.training.api.dto.AbstractLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.AuthorRefDTO;
 import cz.muni.ics.kypo.training.api.dto.SandboxDefinitionRefDTO;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelUpdateDTO;
 import cz.muni.ics.kypo.training.api.dto.gamelevel.GameLevelUpdateDTO;
 import cz.muni.ics.kypo.training.api.dto.infolevel.InfoLevelUpdateDTO;
+import cz.muni.ics.kypo.training.api.dto.posthook.PostHookDTO;
+import cz.muni.ics.kypo.training.api.dto.prehook.PreHookDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionCreateDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionUpdateDTO;
@@ -22,7 +24,6 @@ import cz.muni.ics.kypo.training.mapping.BeanMappingImpl;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.model.enums.AssessmentType;
 import cz.muni.ics.kypo.training.persistence.model.enums.TDState;
-import cz.muni.ics.kypo.training.rest.config.RestConfigTest;
 import cz.muni.ics.kypo.training.rest.exceptions.ConflictException;
 import cz.muni.ics.kypo.training.rest.exceptions.ResourceNotFoundException;
 import io.swagger.annotations.ApiParam;
@@ -36,14 +37,11 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.querydsl.SimpleEntityPathResolver;
 import org.springframework.data.querydsl.binding.QuerydslBindingsFactory;
-import org.springframework.data.querydsl.binding.QuerydslPredicate;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.data.web.querydsl.QuerydslPredicateArgumentResolver;
 import org.springframework.http.MediaType;
@@ -64,7 +62,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = TrainingDefinitionsRestController.class)
-@Import(RestConfigTest.class)
+@ComponentScan(basePackages = "cz.muni.ics.kypo")
 public class TrainingDefinitionsRestControllerTest {
 
 	@Autowired
@@ -92,7 +90,9 @@ public class TrainingDefinitionsRestControllerTest {
 	private InfoLevelUpdateDTO infoLevelUpdateDTO;
 
 	private AssessmentLevel assessmentLevel;
-	private AssessmentLevelUpdateDTO alUpdateDTO;
+	private AssessmentLevelUpdateDTO assessmentLevelUpdateDTO;
+
+	private AbstractLevelDTO abstractLevelDTO;
 
 	private Page p;
 
@@ -173,12 +173,12 @@ public class TrainingDefinitionsRestControllerTest {
 		alCreateDTO.setTitle("Some title");
 		alCreateDTO.setType(AssessmentType.QUESTIONNAIRE);
 */
-		alUpdateDTO = new AssessmentLevelUpdateDTO();
-		alUpdateDTO.setInstructions("instructions");
-		alUpdateDTO.setMaxScore(50);
-		alUpdateDTO.setQuestions("test");
-		alUpdateDTO.setTitle("Some title");
-		alUpdateDTO.setType(AssessmentType.QUESTIONNAIRE);
+		assessmentLevelUpdateDTO = new AssessmentLevelUpdateDTO();
+		assessmentLevelUpdateDTO.setInstructions("instructions");
+		assessmentLevelUpdateDTO.setMaxScore(50);
+		assessmentLevelUpdateDTO.setQuestions("test");
+		assessmentLevelUpdateDTO.setTitle("Some title");
+		assessmentLevelUpdateDTO.setType(AssessmentType.QUESTIONNAIRE);
 
 		AuthorRef authorRef = new AuthorRef();
 		Set<AuthorRef> authorRefSet = new HashSet<>();
@@ -189,6 +189,7 @@ public class TrainingDefinitionsRestControllerTest {
 		authorRefSetDTO.add(authorRefDTO);
 
 		SandboxDefinitionRef sandboxDefinitionRef = new SandboxDefinitionRef();
+		sandboxDefinitionRef.setId(1L);
 		SandboxDefinitionRefDTO sandboxDefinitionRefDTO = new SandboxDefinitionRefDTO();
 
 		trainingDefinition1 = new TrainingDefinition();
@@ -235,6 +236,15 @@ public class TrainingDefinitionsRestControllerTest {
 		trainingDefinitionCreateDTO.setState(TDState.ARCHIVED);
 		trainingDefinitionCreateDTO.setTitle("TD some title");
 
+		abstractLevelDTO = new AbstractLevelDTO();
+		abstractLevelDTO.setId(1L);
+		abstractLevelDTO.setTitle("title");
+		abstractLevelDTO.setMaxScore(1000);
+		abstractLevelDTO.setNextLevel(5L);
+		abstractLevelDTO.setPreHook(new PreHookDTO());
+		abstractLevelDTO.setPostHook(new PostHookDTO());
+
+
 		List<TrainingDefinition> expected = new ArrayList<>();
 		expected.add(trainingDefinition1);
 		expected.add(trainingDefinition2);
@@ -269,34 +279,51 @@ public class TrainingDefinitionsRestControllerTest {
 		assertEquals(ResourceNotFoundException.class, exception.getClass());
 	}
 
-//	@Test
-//	public void findAllTrainingDefinitions() throws Exception {
-//		PageResultResource<TrainingDefinitionDTO> expected = new PageResultResource<>(Arrays.asList(trainingDefinition1DTO, trainingDefinition2DTO));
-//		given(trainingDefinitionFacade.findAll(predicate, pageable)).willReturn(expected);
-//		String valueTd = convertObjectToJsonBytes(expected);
-//		given(objectMapper.writeValueAsString(any(Object.class))).willReturn(valueTd);
-//		MockHttpServletResponse result = mockMvc.perform(get("/training-definitions")).andExpect(status().isOk())
-//				.andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON)).andReturn().getResponse();
-//		assertEquals(convertObjectToJsonBytes(convertObjectToJsonBytes(expected)), result.getContentAsString());
-//	}
-//
-//	@Test(expected = ResourceNotFoundException.class)
-//	public void findAllTrainingDefinitions_withFacadeException() throws Exception {
-//		Exception exceptionThrow = new ServiceLayerException("message", ErrorCode.RESOURCE_NOT_FOUND);
-//		willThrow(new FacadeLayerException(exceptionThrow)).given(trainingDefinitionFacade).findAll((Predicate) Predicates.alwaysTrue(), PageRequest.of(0, 10));
-//		Exception exception =	mockMvc.perform(get("/training-definitions")).andExpect(status().isNotFound()).andReturn().getResolvedException();
-//		//assertEquals(ResourceNotFoundException.class, exception.getClass());
-//	}
+	@Test
+	public void findAllTrainingDefinitions() throws Exception {
+		String valueTi = convertObjectToJsonBytes(trainingDefinitionDTOPageResultResource);
+		given(objectMapper.writeValueAsString(any(Object.class))).willReturn(valueTi);
+		given(trainingDefinitionFacade.findAll(any(Predicate.class),any(Pageable.class))).willReturn(trainingDefinitionDTOPageResultResource);
+		MockHttpServletResponse result = mockMvc.perform(get("/training-definitions"))
+				.andExpect(status().isOk())
+				.andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+				.andReturn().getResponse();
+		assertEquals(convertObjectToJsonBytes(convertObjectToJsonBytes(trainingDefinitionDTOPageResultResource)), result.getContentAsString());
+	}
 
 	@Test
 	public void findAllTrainingDefinitionsBySandboxDefinitionId() throws Exception {
-
+		String valueTi = convertObjectToJsonBytes(trainingDefinitionDTOPageResultResource);
+		given(objectMapper.writeValueAsString(any(Object.class))).willReturn(valueTi);
+		given(trainingDefinitionFacade.findAllBySandboxDefinitionId(any(Long.class), any(Pageable.class))).willReturn(trainingDefinitionDTOPageResultResource);
+		MockHttpServletResponse result = mockMvc.perform(get("/training-definitions/sandbox-definitions" + "/{id}", 1L))
+				.andExpect(status().isOk())
+				.andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+				.andReturn().getResponse();
+		assertEquals(convertObjectToJsonBytes(convertObjectToJsonBytes(trainingDefinitionDTOPageResultResource)), result.getContentAsString());
 	}
 
-	@Test
-	public void createTrainingDefinition() throws Exception {
-
+		@Test
+	public void findAllTrainingDefinitionsBySandboxDefinitionId_withFecadeException() throws Exception {
+		Exception exceptionThrow = new ServiceLayerException("message", ErrorCode.RESOURCE_NOT_FOUND);
+		willThrow(new FacadeLayerException(exceptionThrow)).given(trainingDefinitionFacade).findAllBySandboxDefinitionId(any(Long.class), any(Pageable.class));
+		Exception resultException = mockMvc.perform(get("/training-definitions/sandbox-definitions" + "/{id}", 5L))
+				.andExpect(status().isNotFound())
+				.andReturn().getResolvedException();
+		assertEquals(ResourceNotFoundException.class, resultException.getClass());
 	}
+
+//	@Test
+//	public void createTrainingDefinition() throws Exception {
+//		String valueTd = convertObjectToJsonBytes(trainingDefinitionCreateDTO);
+//		given(objectMapper.writeValueAsString(any(Object.class))).willReturn(valueTd);
+//		given(trainingDefinitionFacade.create(any(TrainingDefinitionCreateDTO.class))).willReturn(trainingDefinition1DTO);
+//		MockHttpServletResponse result = mockMvc
+//				.perform(post("/training-definitions").content(valueTd)
+//						.contentType(MediaType.APPLICATION_JSON_VALUE))
+//				.andExpect(status().isOk()).andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON)).andReturn().getResponse();
+//		assertEquals(convertObjectToJsonBytes(trainingDefinitionCreateDTO), result.getContentAsString());
+//	}
 
 	@Test
 	public void updateTrainingDefinition() throws Exception {
@@ -488,12 +515,18 @@ public class TrainingDefinitionsRestControllerTest {
 
 	@Test
 	public void updateAssessmentLevel() throws Exception {
-
+		mockMvc.perform(put("/training-definitions/{definitionId}/assessment-levels", trainingDefinition1.getId())
+			.content(convertObjectToJsonBytes(assessmentLevelUpdateDTO)).contentType(MediaType.APPLICATION_JSON_VALUE)).andExpect(status().isNoContent());
 	}
 
 	@Test
 	public void findLevelById() throws Exception {
-
+		given(trainingDefinitionFacade.findLevelById(any(Long.class))).willReturn(abstractLevelDTO);
+		String valueTd = convertObjectToJsonBytes(abstractLevelDTO);
+		given(objectMapper.writeValueAsString(any(Object.class))).willReturn(valueTd);
+		MockHttpServletResponse result = mockMvc.perform(get("/training-definitions/levels" + "/{levelId}", 1L)).andExpect(status().isOk())
+			.andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON)).andReturn().getResponse();
+		assertEquals(convertObjectToJsonBytes(valueTd), result.getContentAsString());
 	}
 
 	@Test
