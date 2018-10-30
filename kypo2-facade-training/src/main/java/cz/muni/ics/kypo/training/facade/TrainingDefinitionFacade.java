@@ -57,9 +57,8 @@ public interface TrainingDefinitionFacade {
    * Creates new training definition
    * @param trainingDefinition to be created
    * @return DTO of created definition
-   * @throws FacadeLayerException
    */
-  TrainingDefinitionDTO create(TrainingDefinitionCreateDTO trainingDefinition) throws FacadeLayerException;
+  TrainingDefinitionDTO create(TrainingDefinitionCreateDTO trainingDefinition);
 
   /**
    * Clones Training Definition by id

@@ -150,7 +150,7 @@ public class TrainingDefinitionFacadeTest {
 
 	@Test
 	public void findTrainingDefinitionById() {
-		given(trainingDefinitionService.findById(trainingDefinition1.getId())).willReturn(trainingDefinition1);
+		given(trainingDefinitionService.findById(any(Long.class))).willReturn(trainingDefinition1);
 
 		TrainingDefinitionDTO trainingDefinitionDTO = trainingDefinitionFacade.findById(trainingDefinition1.getId());
 		deepEquals(trainingDefinition1, trainingDefinitionDTO);
@@ -159,30 +159,10 @@ public class TrainingDefinitionFacadeTest {
 	}
 
 	@Test
-	public void findNonexistentTrainingDefinitionById() {
-		Long id = 6L;
-		willThrow(ServiceLayerException.class).given(trainingDefinitionService).findById(id);
+	public void findTrainingDefinitionByIdWithFacadeLayerException() {
+		willThrow(ServiceLayerException.class).given(trainingDefinitionService).findById(any(long.class));
 		thrown.expect(FacadeLayerException.class);
-		trainingDefinitionFacade.findById(id);
-	}
-
-	@Test
-	public void cloneTrainingDefinitionWithNull() {
-		thrown.expect(NullPointerException.class);
-		trainingDefinitionFacade.clone(null);
-	}
-
-	@Test
-	public void createTrainingDefinition() {
-		given(trainingDefinitionService.create(beanMapping.mapTo(trainingDefinitionCreate, TrainingDefinition.class)))
-				.willReturn(beanMapping.mapTo(trainingDefinitionCreate, TrainingDefinition.class));
-		trainingDefinitionFacade.create(trainingDefinitionCreate);
-		then(trainingDefinitionService).should().create(beanMapping.mapTo(trainingDefinitionCreate, TrainingDefinition.class));
-	}
-
-	private void deepEquals(TrainingDefinition expected, TrainingDefinitionDTO actual) {
-		assertEquals(expected.getId(), actual.getId());
-		assertEquals(expected.getState(), actual.getState());
+		trainingDefinitionFacade.findById(any(Long.class));
 	}
 
 	@Test
@@ -215,6 +195,29 @@ public class TrainingDefinitionFacadeTest {
 		thrown.expect(NullPointerException.class);
 		trainingDefinitionFacade.update(null);
 	}
+	/**
+	 * TO DO
+	@Test
+	public void updateTrainingDefinitionWithFacadeLayerException(){
+		willThrow(ServiceLayerException.class).given(trainingDefinitionService).update(beanMapping.mapTo(trainingDefinitionUpdate, TrainingDefinition.class));
+		thrown.expect(FacadeLayerException.class);
+		given(beanMapping.mapTo(trainingDefinitionUpdate, TrainingDefinition.class)).willReturn(beanMapping.mapTo(trainingDefinitionUpdate, TrainingDefinition.class));
+		trainingDefinitionFacade.update(trainingDefinitionUpdate);
+	}
+*/
+	@Test
+	public void createTrainingDefinition() {
+		given(trainingDefinitionService.create(beanMapping.mapTo(trainingDefinitionCreate, TrainingDefinition.class)))
+				.willReturn(beanMapping.mapTo(trainingDefinitionCreate, TrainingDefinition.class));
+		trainingDefinitionFacade.create(trainingDefinitionCreate);
+		then(trainingDefinitionService).should().create(beanMapping.mapTo(trainingDefinitionCreate, TrainingDefinition.class));
+	}
+
+	@Test
+	public void createTrainingDefinitionWithNull() {
+		thrown.expect(NullPointerException.class);
+		trainingDefinitionFacade.create(null);
+	}
 
 	@Test
 	public void cloneTrainingDefinition() {
@@ -231,6 +234,19 @@ public class TrainingDefinitionFacadeTest {
 		assertNotEquals(trainingDefinition1.getId(), newClone.getId());
 
 		then(trainingDefinitionService).should().clone(trainingDefinition1.getId());
+	}
+
+	@Test
+	public void cloneTrainingDefinitionWithNull() {
+		thrown.expect(NullPointerException.class);
+		trainingDefinitionFacade.clone(null);
+	}
+
+	@Test
+	public void cloneTrainingDefinitionWithFacadeLayerException(){
+		thrown.expect(FacadeLayerException.class);
+		willThrow(ServiceLayerException.class).given(trainingDefinitionService).clone(any(Long.class));
+		trainingDefinitionFacade.clone(any(Long.class));
 	}
 
 	@Test
@@ -390,6 +406,11 @@ public class TrainingDefinitionFacadeTest {
 		thrown.expect(FacadeLayerException.class);
 		given(trainingDefinitionService.createAssessmentLevel(any(Long.class))).willThrow(ServiceLayerException.class);
 		trainingDefinitionFacade.createAssessmentLevel(any(Long.class));
+	}
+
+	private void deepEquals(TrainingDefinition expected, TrainingDefinitionDTO actual) {
+		assertEquals(expected.getId(), actual.getId());
+		assertEquals(expected.getState(), actual.getState());
 	}
 
 }
