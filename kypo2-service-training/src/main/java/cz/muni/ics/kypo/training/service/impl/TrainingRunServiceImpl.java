@@ -41,6 +41,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
 
   private static final Logger LOG = LoggerFactory.getLogger(TrainingRunServiceImpl.class);
   private static final String SANDBOX_INFO_ENDPOINT = "kypo-openstack/api/v1/sandboxes?ids={ids}";
+  private static final String MUST_NOT_BE_NULL = "Input training run id must not be null.";
   @Value("${server.url}")
   private String serverUrl;
 
@@ -85,9 +86,9 @@ public class TrainingRunServiceImpl implements TrainingRunService {
   @Override
   @PreAuthorize("hasAuthority({'ADMINISTRATOR', T(cz.muni.ics.kypo.training.persistence.model.enums.RoleType).TRAINEE})")
   public Page<TrainingRun> findAllByParticipantRefLogin(Pageable pageable) {
-    LOG.debug("findAllByParticipantRefId({})");
-    Page<TrainingRun> trainingRuns = trainingRunRepository.findAllByParticipantRefLogin(getSubOfLoggedInUser(), pageable);
-    return trainingRuns;
+    String login = getSubOfLoggedInUser();
+    LOG.debug("findAllByParticipantRefLogin({})", login);
+    return trainingRunRepository.findAllByParticipantRefLogin(login, pageable);
   }
 
   @Override
@@ -104,7 +105,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
       "or @securityService.isTraineeOfGivenTrainingRun(#trainingRunId)" )
   public AbstractLevel getNextLevel(Long trainingRunId) {
     LOG.debug("getNextLevel({})", trainingRunId);
-    Assert.notNull(trainingRunId, "Input training run id must not be null.");
+    Assert.notNull(trainingRunId, MUST_NOT_BE_NULL);
     TrainingRun trainingRun = findById(trainingRunId);
     Long nextLevelId = trainingRun.getCurrentLevel().getNextLevel();
     if(nextLevelId == null) {
@@ -142,7 +143,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
   @PreAuthorize("hasAuthority('ADMINISTRATOR')" +
       "or @securityService.isOrganizeOfGivenTrainingInstance(#trainingInstanceId)")
   public Page<TrainingRun> findAllByTrainingInstance(Long trainingInstanceId, Pageable pageable) {
-    LOG.debug("findAllByTrainingInstance({},{})", trainingInstanceId);
+    LOG.debug("findAllByTrainingInstance({})", trainingInstanceId);
     Assert.notNull(trainingInstanceId, "Input training instance id must not be null.");
     return trainingRunRepository.findAllByTrainingInstanceId(trainingInstanceId, pageable);
   }
@@ -152,7 +153,6 @@ public class TrainingRunServiceImpl implements TrainingRunService {
   public List<AbstractLevel> getLevels(Long levelId) {
     Assert.notNull(levelId, "Id of first level must not be null.");
     List<AbstractLevel> levels = new ArrayList<>();
-    AbstractLevel al;
     do {
       Optional<AbstractLevel> optionalAbstractLevel = abstractLevelRepository.findById(levelId);
       if (!optionalAbstractLevel.isPresent()) {
@@ -249,7 +249,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
       "or @securityService.isTraineeOfGivenTrainingRun(#trainingRunId)")
   public boolean isCorrectFlag(Long trainingRunId, String flag) {
     LOG.debug("isCorrectFlag({})", trainingRunId);
-    Assert.notNull(trainingRunId, "Input training run id must not be null.");
+    Assert.notNull(trainingRunId, MUST_NOT_BE_NULL);
     Assert.hasLength(flag, "Submitted flag must not be nul nor empty.");
     TrainingRun tR = findByIdWithLevel(trainingRunId);
     AbstractLevel level = tR.getCurrentLevel();
@@ -275,7 +275,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
       "or @securityService.isTraineeOfGivenTrainingRun(#trainingRunId)")
   public int getRemainingAttempts(Long trainingRunId) {
     LOG.debug("getRemainingAttempts({})", trainingRunId);
-    Assert.notNull(trainingRunId, "Input training run id must not be null.");
+    Assert.notNull(trainingRunId, MUST_NOT_BE_NULL);
     TrainingRun tR = findByIdWithLevel(trainingRunId);
     AbstractLevel level = tR.getCurrentLevel();
     if (level instanceof GameLevel) {
@@ -293,7 +293,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
       "or @securityService.isTraineeOfGivenTrainingRun(#trainingRunId)")
   public String getSolution(Long trainingRunId) {
     LOG.debug("getSolution({})", trainingRunId);
-    Assert.notNull(trainingRunId, "Input training run id must not be null.");
+    Assert.notNull(trainingRunId, MUST_NOT_BE_NULL);
     TrainingRun tR = findByIdWithLevel(trainingRunId);
     AbstractLevel level = tR.getCurrentLevel();
     if (level instanceof GameLevel) {
@@ -311,7 +311,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
       "or @securityService.isTraineeOfGivenTrainingRun(#trainingRunId)")
   public Hint getHint(Long trainingRunId, Long hintId) {
     LOG.debug("getHint({},{})", trainingRunId, hintId);
-    Assert.notNull(trainingRunId, "Input training run id must not be null.");
+    Assert.notNull(trainingRunId, MUST_NOT_BE_NULL);
     Assert.notNull(hintId, "Input hint id must not be null.");
     TrainingRun tR = findByIdWithLevel(trainingRunId);
     AbstractLevel level = tR.getCurrentLevel();

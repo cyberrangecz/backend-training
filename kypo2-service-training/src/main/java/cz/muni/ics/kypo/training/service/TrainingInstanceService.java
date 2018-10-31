@@ -23,7 +23,7 @@ public interface TrainingInstanceService {
    * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND given training instance is not found.
    *
    */
-	TrainingInstance findById(long id) throws ServiceLayerException;
+	TrainingInstance findById(long id);
 
 	/**
 	 * Find all Training Instances.
@@ -45,7 +45,7 @@ public interface TrainingInstanceService {
    * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND given training instance is not found.
    *                                               RESOURCE_CONFLICT cannot be updated for some reason.
    */
-  void update(TrainingInstance trainingInstance) throws ServiceLayerException;
+  void update(TrainingInstance trainingInstance);
 
   /**
    * deletes training instance
@@ -53,7 +53,7 @@ public interface TrainingInstanceService {
    * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND given training instance is not found.
    *                                               RESOURCE_CONFLICT cannot be deleted for some reason.
    */
-  void delete(Long id) throws ServiceLayerException;
+  void delete(Long id);
 
 	/**
 	 * Generates password for training instance
@@ -70,6 +70,6 @@ public interface TrainingInstanceService {
 	 * @param instanceId of training instance
 	 * @throws ServiceLayerException if instance is not found
 	 */
-	ResponseEntity<Void> allocateSandboxes(Long instanceId) throws ServiceLayerException;
+	ResponseEntity<Void> allocateSandboxes(Long instanceId);
 
 }

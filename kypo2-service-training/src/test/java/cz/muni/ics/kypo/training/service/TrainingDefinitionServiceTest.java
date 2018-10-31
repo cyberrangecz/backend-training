@@ -765,7 +765,7 @@ public class TrainingDefinitionServiceTest {
         expected.add(infoLevel);
         expected.add(gameLevel);
 
-        ArrayList<AbstractLevel> actual = trainingDefinitionService.findAllLevelsFromDefinition(trainingDefinition2.getId());
+        List<AbstractLevel> actual = trainingDefinitionService.findAllLevelsFromDefinition(trainingDefinition2.getId());
 
         assertEquals(expected, actual);
         then(abstractLevelRepository).should(times(2)).findById(any(Long.class));
