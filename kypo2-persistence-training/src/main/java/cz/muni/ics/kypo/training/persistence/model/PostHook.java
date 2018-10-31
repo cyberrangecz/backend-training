@@ -19,8 +19,6 @@ public class PostHook implements Serializable {
 	@OneToOne(mappedBy = "postHook", fetch = FetchType.LAZY)
 	private AbstractLevel abstractLevel;
 
-	public PostHook() {}
-
 	public Long getId() {
 		return id;
 	}

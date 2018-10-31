@@ -19,8 +19,6 @@ public class PreHook implements Serializable {
 	@OneToOne(mappedBy = "preHook", fetch = FetchType.LAZY)
 	private AbstractLevel abstractLevel;
 
-	public PreHook() {}
-
 	public Long getId() {
 		return id;
 	}

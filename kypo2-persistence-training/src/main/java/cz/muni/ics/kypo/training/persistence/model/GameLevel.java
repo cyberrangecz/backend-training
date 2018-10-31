@@ -37,8 +37,6 @@ public class GameLevel extends AbstractLevel implements Serializable {
 	@Column(name = "incorrect_flag_limit")
 	private int incorrectFlagLimit;
 
-	public GameLevel() {}
-
 	public String getFlag() {
 		return flag;
 	}
@@ -114,4 +112,25 @@ public class GameLevel extends AbstractLevel implements Serializable {
 				+ Arrays.toString(attachments) + ", hints=" + hints + ", incorrectFlagLimit=" + incorrectFlagLimit + '}';
 	}
 
+	@Override public boolean equals(Object o) {
+		if (this == o)
+			return true;
+		if (!(o instanceof GameLevel))
+			return false;
+		if (!super.equals(o))
+			return false;
+
+		GameLevel gameLevel = (GameLevel) o;
+
+		if (!getContent().equals(gameLevel.getContent()))
+			return false;
+		return getSolution().equals(gameLevel.getSolution());
+	}
+
+	@Override public int hashCode() {
+		int result = super.hashCode();
+		result = 31 * result + getContent().hashCode();
+		result = 31 * result + getSolution().hashCode();
+		return result;
+	}
 }

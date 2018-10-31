@@ -23,8 +23,6 @@ public class AuthorRef implements Serializable {
   @ManyToMany(mappedBy = "authorRef", fetch = FetchType.LAZY)
   private Set<TrainingDefinition> trainingDefinition = new HashSet<>();
 
-	public AuthorRef() {}
-
 	public Long getId() {
 		return id;
 	}
