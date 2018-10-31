@@ -28,6 +28,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -56,7 +57,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = TrainingInstancesRestController.class)
-@Import(RestConfigTest.class)
+@ComponentScan(basePackages = "cz.muni.ics.kypo")
 public class TrainingInstancesRestControllerTest {
 
 	@Autowired
@@ -96,6 +97,7 @@ public class TrainingInstancesRestControllerTest {
 		trainingInstance1 = new TrainingInstance();
 		trainingInstance1.setId(1L);
 		trainingInstance1.setTitle("test1");
+		trainingInstance1.setSandboxInstanceRefs(new HashSet<>());
 
 		trainingInstance2 = new TrainingInstance();
 		trainingInstance2.setId(2L);
@@ -139,7 +141,7 @@ public class TrainingInstancesRestControllerTest {
 		expected.add(trainingInstance1);
 		expected.add(trainingInstance2);
 
-		p = new PageImpl<TrainingInstance>(expected);
+		p = new PageImpl<>(expected);
 
 		ObjectMapper obj = new ObjectMapper();
 		obj.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
@@ -202,8 +204,31 @@ public class TrainingInstancesRestControllerTest {
 				assertEquals(ResourceNotFoundException.class, exception.getClass());
 		}
 
+//		@Test
+//		public void createTrainingInstance() throws Exception {
+//
+//		}
 
+//		@Test
+//		public void updateTrainingInstance() throws Exception {
+//			mockMvc.perform(put("/training-instances").content(convertObjectToJsonBytes(trainingInstanceUpdateDTO))
+//					.contentType(MediaType.APPLICATION_JSON_VALUE)).andExpect(status().isOk());
+//		}
 
+		@Test
+		public void allocateSandboxes_withFecadeException() throws Exception {
+			Exception exceptionThrow = new ServiceLayerException("message", ErrorCode.RESOURCE_NOT_FOUND);
+				willThrow(new FacadeLayerException(exceptionThrow)).given(trainingInstanceFacade).allocateSandboxes(any(Long.class));
+				Exception exception =
+						mockMvc.perform(post("/training-instances" + "/{instanceId}/" + "sandbox-instances", 698L))
+								.andExpect(status().isNotFound()).andReturn().getResolvedException();
+				assertEquals(ResourceNotFoundException.class, exception.getClass());
+		}
+
+//		@Test
+//		public void allocateSandboxes() throws Exception {
+//			given(trainingInstanceFacade.allocateSandboxes(trainingInstance1.getId()));
+//		}
 
 
 
