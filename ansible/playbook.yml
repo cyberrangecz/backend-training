@@ -97,7 +97,7 @@
           config: '{{ db_model_config_file }}'
 
     - name: Run Tomcat server on port 8080
-      shell: mvn spring-boot:run -Dpath.to.db.config.file={{ db_model_config_file }}  </dev/null >/dev/null 2>&1 & sleep 1
+      shell: mvn spring-boot:run -Dpath.to.config.file={{ db_model_config_file }}  </dev/null >/dev/null 2>&1 & sleep 1
       args:
           chdir: vagrant/kypo2-rest-training
 
