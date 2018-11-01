@@ -151,10 +151,7 @@ public class TrainingDefinitionFacadeTest {
 	@Test
 	public void findTrainingDefinitionById() {
 		given(trainingDefinitionService.findById(any(Long.class))).willReturn(trainingDefinition1);
-
-		TrainingDefinitionDTO trainingDefinitionDTO = trainingDefinitionFacade.findById(trainingDefinition1.getId());
-		deepEquals(trainingDefinition1, trainingDefinitionDTO);
-
+		trainingDefinitionFacade.findById(trainingDefinition1.getId());
 		then(trainingDefinitionService).should().findById(trainingDefinition1.getId());
 	}
 
