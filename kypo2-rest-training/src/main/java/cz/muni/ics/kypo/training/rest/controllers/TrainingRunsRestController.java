@@ -12,18 +12,12 @@ import cz.muni.ics.kypo.training.api.dto.run.AccessTrainingRunDTO;
 import cz.muni.ics.kypo.training.api.dto.run.AccessedTrainingRunDTO;
 import cz.muni.ics.kypo.training.api.dto.run.TrainingRunDTO;
 import cz.muni.ics.kypo.training.exception.FacadeLayerException;
-import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.facade.TrainingRunFacade;
 import cz.muni.ics.kypo.training.persistence.model.TrainingRun;
 import cz.muni.ics.kypo.training.rest.ExceptionSorter;
-import cz.muni.ics.kypo.training.rest.exceptions.*;
 import io.swagger.annotations.*;
 import cz.muni.ics.kypo.training.api.dto.hint.HintDTO;
-import cz.muni.ics.kypo.training.rest.exceptions.ResourceNotFoundException;
-
 import java.util.List;
-
-import org.json.JSONObject;
 import org.jsondoc.core.annotation.ApiObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,7 +29,6 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
 
@@ -92,7 +85,7 @@ public class TrainingRunsRestController {
   public ResponseEntity<Object> findTrainingRunById(@ApiParam(value = "Training Run ID", required = true) @PathVariable Long runId,
       @ApiParam(value = "Fields which should be returned in REST API response", required = false) 
       @RequestParam(value = "fields", required = false) String fields) {
-    LOG.debug("findTrainingRunById", runId, fields);
+    LOG.debug("findTrainingRunById({},{})", runId, fields);
     try {
       TrainingRunDTO trainingRunResource = trainingRunFacade.findById(runId);
       Squiggly.init(objectMapper, fields);

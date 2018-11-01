@@ -36,8 +36,6 @@ public class AssessmentLevelUpdateDTO {
 	@NotNull(message = "{assessmentlevelupdate.type.NotNull.message}")
 	private AssessmentType type;
 
-	public AssessmentLevelUpdateDTO() {}
-
 	public Long getId() {
 		return id;
 	}

@@ -19,7 +19,4 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 @EnableJpaRepositories(basePackages = "cz.muni.ics.kypo.training.persistence.repository")
 @PropertySource("file:${path.to.config.file}")
 public class PersistenceConfig {
-	private PersistenceConfig() {
-		throw new IllegalStateException("Config class.");
-	}
 }

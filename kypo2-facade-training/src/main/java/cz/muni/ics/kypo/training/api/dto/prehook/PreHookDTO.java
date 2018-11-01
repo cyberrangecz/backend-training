@@ -12,8 +12,6 @@ public class PreHookDTO {
 
   private Long id;
 
-	public PreHookDTO() {}
-
 	public Long getId() {
 		return id;
 	}

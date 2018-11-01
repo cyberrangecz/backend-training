@@ -18,12 +18,8 @@ import cz.muni.ics.kypo.training.exception.FacadeLayerException;
 import cz.muni.ics.kypo.training.facade.TrainingDefinitionFacade;
 import cz.muni.ics.kypo.training.persistence.model.TrainingDefinition;
 import cz.muni.ics.kypo.training.persistence.model.enums.LevelType;
-import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.rest.ExceptionSorter;
-import cz.muni.ics.kypo.training.rest.exceptions.ConflictException;
-import cz.muni.ics.kypo.training.rest.exceptions.ResourceNotCreatedException;
 import cz.muni.ics.kypo.training.rest.exceptions.ResourceNotFoundException;
-import cz.muni.ics.kypo.training.rest.exceptions.*;
 import io.swagger.annotations.*;
 
 import org.jsondoc.core.annotation.ApiObject;

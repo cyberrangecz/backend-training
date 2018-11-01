@@ -99,7 +99,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
 
 	@Override
 	@PreAuthorize("hasAuthority({'ADMINISTRATOR', T(cz.muni.ics.kypo.training.persistence.model.enums.RoleType).DESIGNER})")
-	public TrainingDefinition clone(Long id) throws ServiceLayerException {
+	public TrainingDefinition clone(Long id) {
 		LOG.debug("clone({})", id);
 
 		TrainingDefinition trainingDefinition = findById(id);
@@ -138,8 +138,11 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
 			swapLevel = abstractLevelRepository.findById(swapLevel.getNextLevel())
 					.orElseThrow(() -> new ServiceLayerException(LEVEL_NOT_FOUND, ErrorCode.RESOURCE_NOT_FOUND));
 		}
+		if(oneBeforeId == null) {
+			throw new ServiceLayerException("Cannot swap left first level.", ErrorCode.RESOURCE_CONFLICT);
+		}
 		AbstractLevel oneBefore = abstractLevelRepository.findById(oneBeforeId)
-				.orElseThrow(() -> new ServiceLayerException("Cannot swap left first level.", ErrorCode.RESOURCE_NOT_FOUND));
+				.orElseThrow(() -> new ServiceLayerException(LEVEL_NOT_FOUND, ErrorCode.RESOURCE_NOT_FOUND));
 		oneBefore.setNextLevel(swapLevel.getNextLevel());
 		swapLevel.setNextLevel(oneBeforeId);
 		updateLevel(swapLevel);

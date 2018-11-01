@@ -27,8 +27,6 @@ public class TrainingInstanceDTO {
 	private TrainingDefinitionDTO trainingDefinition;
 	private Set<UserRefDTO> organizers;
 
-	public TrainingInstanceDTO() {}
-
 	public Long getId() {
 		return id;
 	}

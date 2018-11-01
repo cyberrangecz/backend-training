@@ -51,7 +51,7 @@ public interface TrainingDefinitionFacade {
    * @return DTO of updated definition
    * @throws FacadeLayerException if training definition is not found
    */
-  void update(TrainingDefinitionUpdateDTO trainingDefinition) throws FacadeLayerException;
+  void update(TrainingDefinitionUpdateDTO trainingDefinition);
 
   /**
    * Creates new training definition
@@ -59,7 +59,7 @@ public interface TrainingDefinitionFacade {
    * @return DTO of created definition
    * @throws FacadeLayerException
    */
-  TrainingDefinitionDTO create(TrainingDefinitionCreateDTO trainingDefinition) throws FacadeLayerException;
+  TrainingDefinitionDTO create(TrainingDefinitionCreateDTO trainingDefinition);
 
   /**
    * Clones Training Definition by id
@@ -67,7 +67,7 @@ public interface TrainingDefinitionFacade {
    * @return DTO of cloned definition
    * @throws FacadeLayerException if training definition is not found
    */
-  TrainingDefinitionDTO clone(Long id) throws FacadeLayerException;
+  TrainingDefinitionDTO clone(Long id);
 
 
   /**
@@ -76,7 +76,7 @@ public interface TrainingDefinitionFacade {
    * @param levelId - id of level to be swapped
    * @throws FacadeLayerException if training definition or level is not found
    */
-  Set<BasicLevelInfoDTO> swapLeft(Long definitionId, Long levelId) throws FacadeLayerException;
+  Set<BasicLevelInfoDTO> swapLeft(Long definitionId, Long levelId);
 
 
   /**
@@ -85,7 +85,7 @@ public interface TrainingDefinitionFacade {
    * @param levelId - id of level to be swapped
    * @throws FacadeLayerException if training definition or level is not found
    */
-  Set<BasicLevelInfoDTO> swapRight(Long definitionId, Long levelId) throws FacadeLayerException;
+  Set<BasicLevelInfoDTO> swapRight(Long definitionId, Long levelId);
 
 
   /**
@@ -93,7 +93,7 @@ public interface TrainingDefinitionFacade {
    * @param id of definition to be deleted
    * @throws FacadeLayerException if training definition is not found
    */
-  void delete(Long id) throws FacadeLayerException;
+  void delete(Long id);
 
 
   /**
@@ -102,7 +102,7 @@ public interface TrainingDefinitionFacade {
    * @param levelId - id of level to be deleted
    * @throws FacadeLayerException if training definition or level is not found
    */
-  Set<BasicLevelInfoDTO> deleteOneLevel(Long definitionId, Long levelId) throws FacadeLayerException;
+  Set<BasicLevelInfoDTO> deleteOneLevel(Long definitionId, Long levelId);
 
 
   /**
@@ -111,7 +111,7 @@ public interface TrainingDefinitionFacade {
    * @param gameLevel to be updated
    * @throws FacadeLayerException if training definition is not found
    */
-   void updateGameLevel(Long definitionId, GameLevelUpdateDTO gameLevel) throws FacadeLayerException;
+   void updateGameLevel(Long definitionId, GameLevelUpdateDTO gameLevel);
 
 
   /**
@@ -120,7 +120,7 @@ public interface TrainingDefinitionFacade {
    * @param infoLevel to be updated
    * @throws FacadeLayerException if training definition is not found
    */
-  void updateInfoLevel(Long definitionId, InfoLevelUpdateDTO infoLevel) throws FacadeLayerException;
+  void updateInfoLevel(Long definitionId, InfoLevelUpdateDTO infoLevel);
 
 
   /**
@@ -129,7 +129,7 @@ public interface TrainingDefinitionFacade {
    * @param assessmentLevel to be updated
    * @throws FacadeLayerException if training definition is not found
    */
-  void updateAssessmentLevel(Long definitionId, AssessmentLevelUpdateDTO assessmentLevel) throws FacadeLayerException;
+  void updateAssessmentLevel(Long definitionId, AssessmentLevelUpdateDTO assessmentLevel);
 
 
   /**
@@ -138,7 +138,7 @@ public interface TrainingDefinitionFacade {
    * @return DTO of new info level
    * @throws FacadeLayerException if training definition is not found
    */
-   BasicLevelInfoDTO createInfoLevel(Long definitionId) throws FacadeLayerException;
+   BasicLevelInfoDTO createInfoLevel(Long definitionId);
 
 
   /**
@@ -147,7 +147,7 @@ public interface TrainingDefinitionFacade {
    * @return DTO of new game level
    * @throws FacadeLayerException if training definition is not found
    */
-  BasicLevelInfoDTO createGameLevel(Long definitionId) throws FacadeLayerException;
+  BasicLevelInfoDTO createGameLevel(Long definitionId);
 
 
   /**
@@ -156,7 +156,7 @@ public interface TrainingDefinitionFacade {
    * @return DTO of new assessment level
    * @throws FacadeLayerException if training definition is not found
    */
-  BasicLevelInfoDTO createAssessmentLevel(Long definitionId) throws FacadeLayerException;
+  BasicLevelInfoDTO createAssessmentLevel(Long definitionId);
 
 	/**
 	 * Finds specific level by id
@@ -165,6 +165,6 @@ public interface TrainingDefinitionFacade {
 	 * @return wanted level
 	 * @throws FacadeLayerException if level is not found
 	 */
-	AbstractLevelDTO findLevelById(Long levelId) throws FacadeLayerException;
+	AbstractLevelDTO findLevelById(Long levelId);
 
 }

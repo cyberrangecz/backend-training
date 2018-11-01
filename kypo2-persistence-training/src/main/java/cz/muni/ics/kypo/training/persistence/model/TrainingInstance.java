@@ -39,22 +39,6 @@ public class TrainingInstance implements Serializable {
   @OneToMany(fetch = FetchType.LAZY)
   private Set<SandboxInstanceRef> sandboxInstanceRef = new HashSet<>();
 
-  public TrainingInstance() {}
-
-  public TrainingInstance(Long id, LocalDateTime startTime, LocalDateTime endTime, String title, int poolSize, String passwordHash,
-      TrainingDefinition trainingDefinition, Set<UserRef> organizers, Set<SandboxInstanceRef> sandboxInstanceRef) {
-    super();
-    this.id = id;
-    this.startTime = startTime;
-    this.endTime = endTime;
-    this.title = title;
-    this.poolSize = poolSize;
-    this.passwordHash = passwordHash;
-    this.trainingDefinition = trainingDefinition;
-    this.organizers = organizers;
-    this.sandboxInstanceRef = sandboxInstanceRef;
-  }
-
   public Long getId() {
     return id;
   }

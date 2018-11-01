@@ -29,8 +29,6 @@ public class TrainingRunDTO {
 	private TrainingInstanceDTO trainingInstance;
 	private SandboxInstanceRefDTO sandboxInstanceRef;
 
-	public TrainingRunDTO() {}
-
 	public Long getId() {
 		return id;
 	}

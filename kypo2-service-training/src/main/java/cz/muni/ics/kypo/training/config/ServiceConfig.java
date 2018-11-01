@@ -17,7 +17,4 @@ import org.springframework.context.annotation.Import;
 @Import({TrainingElasticsearchServiceConfig.class, WebConfigRestSecurityCommons.class, PersistenceConfig.class})
 @ComponentScan(basePackages = {"cz.muni.ics.kypo.training.service"})
 public class ServiceConfig {
-	private ServiceConfig() {
-		throw new IllegalStateException("Config class.");
-	}
 }
