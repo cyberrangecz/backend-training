@@ -2,6 +2,7 @@ package cz.muni.ics.kypo.training.rest.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.training.api.PageResultResource;
 import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
@@ -17,8 +18,8 @@ import cz.muni.ics.kypo.training.facade.TrainingInstanceFacade;
 import cz.muni.ics.kypo.training.mapping.BeanMapping;
 import cz.muni.ics.kypo.training.mapping.BeanMappingImpl;
 import cz.muni.ics.kypo.training.persistence.model.TrainingInstance;
-import cz.muni.ics.kypo.training.rest.config.RestConfigTest;
 import cz.muni.ics.kypo.training.rest.exceptions.ResourceNotFoundException;
+import cz.muni.ics.kypo.training.utils.converters.LocalDateTimeDeserializer;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -204,16 +205,25 @@ public class TrainingInstancesRestControllerTest {
 				assertEquals(ResourceNotFoundException.class, exception.getClass());
 		}
 
-//		@Test
-//		public void createTrainingInstance() throws Exception {
-//
-//		}
+		@Test
+		public void createTrainingInstance() throws Exception {
+			String valueTd = convertObjectToJsonBytes(trainingInstanceCreateDTO);
+			given(objectMapper.writeValueAsString(any(Object.class))).willReturn(valueTd);
+			given(trainingInstanceFacade.create(any(TrainingInstanceCreateDTO.class))).willReturn(newTrainingInstanceDTO);
+			MockHttpServletResponse result = mockMvc
+					.perform(post("/training-instances").content(convertObjectToJsonBytes(trainingInstanceCreateDTO))
+							.contentType(MediaType.APPLICATION_JSON_VALUE))
+					.andExpect(status().isOk()).andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+					.andReturn().getResponse();
+		}
 
-//		@Test
-//		public void updateTrainingInstance() throws Exception {
-//			mockMvc.perform(put("/training-instances").content(convertObjectToJsonBytes(trainingInstanceUpdateDTO))
-//					.contentType(MediaType.APPLICATION_JSON_VALUE)).andExpect(status().isOk());
-//		}
+		@Test
+		public void updateTrainingInstance() throws Exception {
+			String valueTi = convertObjectToJsonBytes(trainingInstanceUpdateDTO);
+			System.out.println(convertObjectToJsonBytes(trainingInstanceUpdateDTO.getStartTime()));
+			mockMvc.perform(put("/training-instances").content(valueTi)
+					.contentType(MediaType.APPLICATION_JSON_VALUE)).andExpect(status().isOk());
+		}
 
 		@Test
 		public void allocateSandboxes_withFecadeException() throws Exception {
@@ -225,28 +235,22 @@ public class TrainingInstancesRestControllerTest {
 				assertEquals(ResourceNotFoundException.class, exception.getClass());
 		}
 
-//		@Test
-//		public void allocateSandboxes() throws Exception {
-//			given(trainingInstanceFacade.allocateSandboxes(trainingInstance1.getId()));
-//		}
 
-
-
-	// TODO json parser cannot parse LocalDateTime
-	// @Test
-	// public void createTrainingInstance() throws Exception {
-	// String valueTi = convertObjectToJsonBytes(trainingInstanceCreateDTO);
-	// given(objectMapper.writeValueAsString(any(Object.class))).willReturn(valueTi);
-	// given(trainingInstanceFacade.create(any(TrainingInstanceCreateDTO.class))).willReturn(trainingInstanceCreateDTO);
-	// given(beanMapping.mapTo(any(TrainingInstanceCreateDTO.class),
-	// eq(TrainingInstance.class))).willReturn(trainingInstance1);
-	// MockHttpServletResponse result = mockMvc
-	// .perform(post("/training-instances").content(convertObjectToJsonBytes(trainingInstanceCreateDTO))
-	// .contentType(MediaType.APPLICATION_JSON_VALUE))
-	// .andExpect(status().isOk()).andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON)).andReturn().getResponse();
-	// assertEquals(convertObjectToJsonBytes(convertObjectToJsonBytes(trainingInstanceCreateDTO)),
-	// result.getContentAsString());
-	// }
+//	// TODO json parser cannot parse LocalDateTime
+//	 @Test
+//	 public void createTrainingInstance() throws Exception {
+//	 String valueTi = convertObjectToJsonBytes(trainingInstanceCreateDTO);
+//	 given(objectMapper.writeValueAsString(any(Object.class))).willReturn(valueTi);
+//	 given(trainingInstanceFacade.create(any(TrainingInstanceCreateDTO.class))).willReturn(trainingInstanceCreateDTO);
+//	 given(beanMapping.mapTo(any(TrainingInstanceCreateDTO.class),
+//	 eq(TrainingInstance.class))).willReturn(trainingInstance1);
+//	 MockHttpServletResponse result = mockMvc
+//	 .perform(post("/training-instances").content(convertObjectToJsonBytes(trainingInstanceCreateDTO))
+//	 .contentType(MediaType.APPLICATION_JSON_VALUE))
+//	 .andExpect(status().isOk()).andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON)).andReturn().getResponse();
+//	 assertEquals(convertObjectToJsonBytes(convertObjectToJsonBytes(trainingInstanceCreateDTO)),
+//	 result.getContentAsString());
+//	}
 	//
 	// @Test
 	// public void createTrainingInstanceWithFacadeException() throws Exception {
@@ -259,6 +263,7 @@ public class TrainingInstancesRestControllerTest {
 
 	private static String convertObjectToJsonBytes(Object object) throws IOException {
 		ObjectMapper mapper = new ObjectMapper();
+		mapper.registerModule(new JavaTimeModule().addDeserializer(LocalDateTime.class, new LocalDateTimeDeserializer()));
 		return mapper.writeValueAsString(object);
 	}
 }
