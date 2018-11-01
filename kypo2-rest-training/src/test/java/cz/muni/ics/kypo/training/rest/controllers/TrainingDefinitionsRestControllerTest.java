@@ -539,7 +539,6 @@ public class TrainingDefinitionsRestControllerTest {
 		assertEquals(convertObjectToJsonBytes(valueTd), result.getContentAsString());
 	}
 
-	//problem
 	@Test
 	public void createLevel() throws Exception {
 		given(trainingDefinitionFacade.createGameLevel(any(Long.class))).willReturn(basicLevelInfoDTO);
