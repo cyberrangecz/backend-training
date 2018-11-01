@@ -3,8 +3,10 @@ package cz.muni.ics.kypo.training.facade;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.PathBuilder;
 import cz.muni.ics.kypo.training.api.PageResultResource;
+import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionDTO;
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceCreateDTO;
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceDTO;
+import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceUpdateDTO;
 import cz.muni.ics.kypo.training.config.FacadeConfigTest;
 import cz.muni.ics.kypo.training.exception.FacadeLayerException;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
@@ -26,7 +28,9 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
@@ -49,7 +53,7 @@ public class TrainingInstanceFacadeTest {
 
 	private TrainingInstance trainingInstance1, trainingInstance2;
 	private TrainingInstanceCreateDTO trainingInstanceCreate;
-
+	private TrainingInstanceUpdateDTO trainingInstanceUpdate;
 
 	@SpringBootApplication
     static class TestConfiguration {
@@ -67,63 +71,33 @@ public class TrainingInstanceFacadeTest {
 
 		trainingInstanceCreate = new TrainingInstanceCreateDTO();
 		trainingInstanceCreate.setTitle("test");
+
+		trainingInstanceUpdate = new TrainingInstanceUpdateDTO();
+		trainingInstanceUpdate.setId(1L);
+		trainingInstanceUpdate.setTitle("title");
+		trainingInstanceUpdate.setKeyword("hello");
+		trainingInstanceUpdate.setPoolSize(20);
+		trainingInstanceUpdate.setEndTime(LocalDateTime.now());
+		trainingInstanceUpdate.setStartTime(LocalDateTime.now());
+		trainingInstanceUpdate.setTrainingDefinition(new TrainingDefinitionDTO());
+		trainingInstanceUpdate.setOrganizers(new HashSet<>());
 	}
+
+
 
 	@Test
 	public void findTrainingInstanceById() {
-		given(trainingInstanceService.findById(trainingInstance1.getId())).willReturn(trainingInstance1);
-
-		TrainingInstanceDTO trainingInstanceDTO = trainingInstanceFacade.findById(trainingInstance1.getId());
-		deepEquals(trainingInstance1, trainingInstanceDTO);
-
+		given(trainingInstanceService.findById(any(Long.class))).willReturn(trainingInstance1);
+		trainingInstanceFacade.findById(trainingInstance1.getId());
 		then(trainingInstanceService).should().findById(trainingInstance1.getId());
 	}
 
 	@Test
 	public void findNonexistentTrainingInstanceById() {
-		Long id = 6L;
-		willThrow(ServiceLayerException.class).given(trainingInstanceService).findById(id);
+		willThrow(ServiceLayerException.class).given(trainingInstanceService).findById(1L);
 		thrown.expect(FacadeLayerException.class);
-		trainingInstanceFacade.findById(id);
+		trainingInstanceFacade.findById(1L);
 	}
-
-
-/*
-	@Test
-	public void createTrainingInstance() {
-		given(trainingInstanceService.create(trainingInstance1)).willReturn(trainingInstance1);
-		given(trainingInstanceService.generatePassword(trainingInstance1, "hello".toCharArray())).willReturn("hello-1235".toCharArray());
-		TrainingInstanceCreateDTO trainingInstanceDTO = trainingInstanceFacade.create(trainingInstanceCreate);
-		assertEquals(trainingInstanceCreate.toString(), trainingInstanceDTO.toString());
-		then(trainingInstanceService).should().create(trainingInstance1);
-	}
-*/
-	@Test
-	public void createTrainingInstanceWithNull() {
-		thrown.expect(NullPointerException.class);
-		trainingInstanceFacade.create(null);
-	}
-
-	@Test
-	public void updateTrainingInstance() {
-		trainingInstanceService.update(trainingInstance1);
-		then(trainingInstanceService).should().update(any(TrainingInstance.class));
-	}
-
-	@Test
-	public void updateTrainingInstanceWithNull() {
-		thrown.expect(NullPointerException.class);
-		trainingInstanceFacade.update(null);
-	}
-
-	@Test
-	public void deleteTrainingInstanceWithNull() {
-		thrown.expect(NullPointerException.class);
-		trainingInstanceFacade.delete(null);
-	}
-
-
-
 
 	@Test
 	public void findAllTrainingInstances() {
@@ -138,7 +112,7 @@ public class TrainingInstanceFacadeTest {
 
 		given(trainingInstanceService.findAll(any(Predicate.class), any (Pageable.class))).willReturn(p);
 
-		PageResultResource<TrainingInstanceDTO> trainingInstanceDTO = trainingInstanceFacade.findAll(predicate, PageRequest.of(0, 2));
+		PageResultResource<TrainingInstanceDTO> trainingInstanceDTO =	trainingInstanceFacade.findAll(predicate, PageRequest.of(0, 2));
 		deepEquals(trainingInstance1, trainingInstanceDTO.getContent().get(0));
 		deepEquals(trainingInstance2, trainingInstanceDTO.getContent().get(1));
 
@@ -146,6 +120,57 @@ public class TrainingInstanceFacadeTest {
 	}
 
 
+	@Test
+	public void createTrainingInstance() {
+		given(trainingInstanceService.create(any(TrainingInstance.class))).willReturn(trainingInstance1);
+		given(trainingInstanceService.generatePassword(trainingInstance1, "hello")).willReturn("hello-1235");
+		trainingInstanceFacade.create(trainingInstanceCreate);
+		then(trainingInstanceService).should().create(trainingInstance1);
+	}
+
+	@Test
+	public void createTrainingInstanceWithNull() {
+		thrown.expect(NullPointerException.class);
+		trainingInstanceFacade.create(null);
+	}
+
+	@Test
+	public void updateTrainingInstance() {
+		trainingInstanceFacade.update(trainingInstanceUpdate);
+		then(trainingInstanceService).should().update(any(TrainingInstance.class));
+	}
+
+	@Test
+	public void updateTrainingInstanceWithNull() {
+		thrown.expect(NullPointerException.class);
+		trainingInstanceFacade.update(null);
+	}
+
+	@Test
+	public void updateTrainingInstanceWithFacadeLayerException() {
+		thrown.expect(FacadeLayerException.class);
+		willThrow(ServiceLayerException.class).given(trainingInstanceService).update(any(TrainingInstance.class));
+		trainingInstanceFacade.update(trainingInstanceUpdate);
+	}
+
+	@Test
+	public void deleteTrainingInstance() {
+		trainingInstanceFacade.delete(1L);
+		then(trainingInstanceService).should().delete(1L);
+	}
+
+	@Test
+	public void deleteTrainingInstanceWithNull() {
+		thrown.expect(NullPointerException.class);
+		trainingInstanceFacade.delete(null);
+	}
+
+	@Test
+	public void deleteTrainingInstanceWithFacadeLayerException(){
+		thrown.expect(FacadeLayerException.class);
+		willThrow(ServiceLayerException.class).given(trainingInstanceService).delete(1L);
+		trainingInstanceFacade.delete(1L);
+	}
 
 	private void deepEquals(TrainingInstance expected, TrainingInstanceDTO actual) {
 		assertEquals(expected.getId(), actual.getId());
