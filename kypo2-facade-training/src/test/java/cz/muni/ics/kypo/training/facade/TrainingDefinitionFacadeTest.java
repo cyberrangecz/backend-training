@@ -64,7 +64,7 @@ public class TrainingDefinitionFacadeTest {
 
 	private BeanMapping beanMapping;
 
-	private TrainingDefinition trainingDefinition1, trainingDefinition2;//, releasedDefinition;
+	private TrainingDefinition trainingDefinition1, trainingDefinition2;
 	private TrainingDefinitionUpdateDTO trainingDefinitionUpdate;
 	private TrainingDefinitionCreateDTO trainingDefinitionCreate;
 
@@ -195,16 +195,15 @@ public class TrainingDefinitionFacadeTest {
 		thrown.expect(NullPointerException.class);
 		trainingDefinitionFacade.update(null);
 	}
-	/**
-	 * TO DO
+
 	@Test
 	public void updateTrainingDefinitionWithFacadeLayerException(){
-		willThrow(ServiceLayerException.class).given(trainingDefinitionService).update(beanMapping.mapTo(trainingDefinitionUpdate, TrainingDefinition.class));
+		willThrow(ServiceLayerException.class).given(trainingDefinitionService)
+			.update(any(TrainingDefinition.class));
 		thrown.expect(FacadeLayerException.class);
-		given(beanMapping.mapTo(trainingDefinitionUpdate, TrainingDefinition.class)).willReturn(beanMapping.mapTo(trainingDefinitionUpdate, TrainingDefinition.class));
 		trainingDefinitionFacade.update(trainingDefinitionUpdate);
 	}
-*/
+
 	@Test
 	public void createTrainingDefinition() {
 		given(trainingDefinitionService.create(beanMapping.mapTo(trainingDefinitionCreate, TrainingDefinition.class)))
@@ -221,18 +220,8 @@ public class TrainingDefinitionFacadeTest {
 
 	@Test
 	public void cloneTrainingDefinition() {
-		TrainingDefinition clonedDefinition = new TrainingDefinition();
-		clonedDefinition.setId(3L);
-		clonedDefinition.setState(TDState.UNRELEASED);
-		clonedDefinition.setTitle("Clone of " + trainingDefinition1.getTitle());
-
-		given(trainingDefinitionService.clone(trainingDefinition1.getId())).willReturn(clonedDefinition);
-
-		TrainingDefinitionDTO newClone = trainingDefinitionFacade.clone(trainingDefinition1.getId());
-		assertEquals("Clone of " + trainingDefinition1.getTitle(), newClone.getTitle());
-		assertNotEquals(trainingDefinition1.getState(), newClone.getState());
-		assertNotEquals(trainingDefinition1.getId(), newClone.getId());
-
+		given(trainingDefinitionService.clone(trainingDefinition1.getId())).willReturn(trainingDefinition1);
+		trainingDefinitionFacade.clone(trainingDefinition1.getId());
 		then(trainingDefinitionService).should().clone(trainingDefinition1.getId());
 	}
 
@@ -255,11 +244,48 @@ public class TrainingDefinitionFacadeTest {
 		then(trainingDefinitionService).should().swapLeft(trainingDefinition1.getId(), assessmentLevel.getId());
 	}
 
+	@Test
+	public void swapLeftWithNullTrainingDefinitionId() {
+		thrown.expect(NullPointerException.class);
+		trainingDefinitionFacade.swapLeft(null, 1L);
+	}
+
+	@Test
+	public void swapLeftWithNullLevelId() {
+		thrown.expect(NullPointerException.class);
+		trainingDefinitionFacade.swapLeft(1L, null);
+	}
+
+	@Test
+	public void swapLeftWithFacadeLayerException(){
+		thrown.expect(FacadeLayerException.class);
+		willThrow(ServiceLayerException.class).given(trainingDefinitionService).swapLeft(any(Long.class), any(Long.class));
+		trainingDefinitionFacade.swapLeft(any(Long.class), any(Long.class));
+	}
 
 	@Test
 	public void swapRight() {
 		trainingDefinitionFacade.swapRight(trainingDefinition1.getId(), assessmentLevel.getId());
 		then(trainingDefinitionService).should().swapRight(trainingDefinition1.getId(), assessmentLevel.getId());
+	}
+
+	@Test
+	public void swapRightWithNullTrainingDefinitionId() {
+		thrown.expect(NullPointerException.class);
+		trainingDefinitionFacade.swapRight(null, 1L);
+	}
+
+	@Test
+	public void swapRightWithNullLevelId() {
+		thrown.expect(NullPointerException.class);
+		trainingDefinitionFacade.swapRight(1L, null);
+	}
+
+	@Test
+	public void swapRightWithFacadeLayerException(){
+		thrown.expect(FacadeLayerException.class);
+		willThrow(ServiceLayerException.class).given(trainingDefinitionService).swapRight(any(Long.class), any(Long.class));
+		trainingDefinitionFacade.swapRight(any(Long.class), any(Long.class));
 	}
 
 	@Test
@@ -272,6 +298,13 @@ public class TrainingDefinitionFacadeTest {
 	public void deleteTrainingDefinitionWithNull() {
 		thrown.expect(NullPointerException.class);
 		trainingDefinitionFacade.delete(null);
+	}
+
+	@Test
+	public void deleteTrainingDefinitionWithFacadeLayerException() {
+		thrown.expect(FacadeLayerException.class);
+		willThrow(ServiceLayerException.class).given(trainingDefinitionService).delete(any(Long.class));
+		trainingDefinitionFacade.delete(1L);
 	}
 
 	@Test
@@ -290,6 +323,13 @@ public class TrainingDefinitionFacadeTest {
 	public void deleteOneLevelWithNullLevel() {
 		thrown.expect(NullPointerException.class);
 		trainingDefinitionFacade.deleteOneLevel(trainingDefinition1.getId(), null);
+	}
+
+	@Test
+	public void deleteOneLevelWithFacadeLayerException() {
+		thrown.expect(FacadeLayerException.class);
+		willThrow(ServiceLayerException.class).given(trainingDefinitionService).deleteOneLevel(any(Long.class), any(Long.class));
+		trainingDefinitionFacade.deleteOneLevel(1L, 1L);
 	}
 
 	@Test
@@ -312,6 +352,13 @@ public class TrainingDefinitionFacadeTest {
 	}
 
 	@Test
+	public void updateAssessmentLevelWithFacadeLayerException() {
+		thrown.expect(FacadeLayerException.class);
+		willThrow(ServiceLayerException.class).given(trainingDefinitionService).updateAssessmentLevel(any(Long.class), any(AssessmentLevel.class));
+		trainingDefinitionFacade.updateAssessmentLevel(1L, alUpdate);
+	}
+
+	@Test
 	public void updateGameLevel() {
 		trainingDefinitionFacade.updateGameLevel(trainingDefinition2.getId(), gameLevelUpdate);
 		then(trainingDefinitionService).should().updateGameLevel(trainingDefinition2.getId(), beanMapping.mapTo(gameLevelUpdate, GameLevel.class));
@@ -327,6 +374,13 @@ public class TrainingDefinitionFacadeTest {
 	public void updateGameLevelWithNullLevel() {
 		thrown.expect(NullPointerException.class);
 		trainingDefinitionFacade.updateGameLevel(trainingDefinition2.getId(), null);
+	}
+
+	@Test
+	public void updateGameLevelWithFacadeLayerException() {
+		thrown.expect(FacadeLayerException.class);
+		willThrow(ServiceLayerException.class).given(trainingDefinitionService).updateGameLevel(any(Long.class), any(GameLevel.class));
+		trainingDefinitionFacade.updateGameLevel(1L, gameLevelUpdate);
 	}
 
 	@Test
@@ -346,6 +400,14 @@ public class TrainingDefinitionFacadeTest {
 	public void updateInfoLevelWithNullLevel() {
 		thrown.expect(NullPointerException.class);
 		trainingDefinitionFacade.updateInfoLevel(trainingDefinition2.getId(), null);
+	}
+
+
+	@Test
+	public void updateInfoLevelWithFacadeLayerException() {
+		thrown.expect(FacadeLayerException.class);
+		willThrow(ServiceLayerException.class).given(trainingDefinitionService).updateInfoLevel(any(Long.class), any(InfoLevel.class));
+		trainingDefinitionFacade.updateInfoLevel(1L, infoLevelUpdate);
 	}
 
 	@Test
