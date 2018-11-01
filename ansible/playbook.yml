@@ -1,14 +1,14 @@
 
 - hosts: all
   vars:
-    repos_dir: /vagrant
+    repos_dir: /vagrant/gitlab
     elastic_data: data
     api_root: http://localhost:9200
-    db_model_config_file: '${ repos_dir}/ansible/properties/kypo2-config.properties'
+    db_model_config_file: '{{ repos_dir }}/properties/kypo2-config.properties'
     db_model:
         name: training
         user: postgres
-        pass: postgre
+        pass: postgres
         host: 'jdbc:postgresql://localhost:5432/training'
   environment:
     JAVA_HOME: "/usr/lib/jvm/java-8-oracle"
@@ -80,12 +80,12 @@
     - name: Migrate Repos
       command: mvn flyway:migrate -Djdbc.url={{ db_model.host }} -Djdbc.username={{ db_model.user }} -Djdbc.password={{ db_model.pass }}
       args:
-        chdir: '${ { item}}}'
+        chdir: '{{ repos_dir }}/{{ item }}'
       with_items:
-        - /vagrant/kypo2-persistance-training
+        - kypo2-persistance-training
 
     - name: Compile Repos
-      command: mvn clean install {% if item.config is defined %}-Dpath.to.db.config.file={{ item.config }}{% endif %}
+      command: mvn clean install {% if item.config is defined %}-Dpath.to.config.file={{ item.config }}{% endif %}
       args:
         chdir: '{{ item.repo }}'
       with_items:
@@ -99,7 +99,7 @@
     - name: Run Tomcat server on port 8080
       shell: mvn spring-boot:run -Dpath.to.db.config.file={{ db_model_config_file }}  </dev/null >/dev/null 2>&1 & sleep 1
       args:
-          chdir: /vagrant/kypo2-rest-training
+          chdir: vagrant/kypo2-rest-training
 
     - name:
       file:
