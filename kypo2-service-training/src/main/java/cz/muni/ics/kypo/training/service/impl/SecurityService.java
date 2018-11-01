@@ -17,7 +17,6 @@ import org.springframework.stereotype.Service;
 @Service
 public class SecurityService {
 
-	private static final Logger LOG = LoggerFactory.getLogger(SecurityService.class);
 	private TrainingRunRepository trainingRunRepository;
 	private TrainingDefinitionRepository trainingDefinitionRepository;
 	private TrainingInstanceRepository trainingInstanceRepository;

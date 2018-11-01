@@ -21,7 +21,7 @@ public class LocalTimeDeserializer extends StdDeserializer<LocalTime> {
 	}
 
 	@Override
-	public LocalTime deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException, JsonProcessingException {
+	public LocalTime deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException {
 		return LocalTime.parse(jp.readValueAs(String.class));
 	}
 }
