@@ -59,14 +59,6 @@ public interface TrainingRunService {
   Page<TrainingRun> findAllByTrainingDefinition(Long trainingDefinitionId, Pageable pageable);
 
   /**
-   * Finds all Training Runs of specific Training Instance.
-   *
-   * @param trainingInstanceId id of Training Instance whose Training Runs would be returned.
-   * @return Training Runs of specific Training Instance
-   */
-  Page<TrainingRun> findAllByTrainingInstance(Long trainingInstanceId, Pageable pageable);
-
-  /**
    * Create given Training Run.
    *
    * @param trainingRun to be created in database.

@@ -4,6 +4,7 @@ import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.persistence.model.TrainingInstance;
 
+import cz.muni.ics.kypo.training.persistence.model.TrainingRun;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -71,5 +72,13 @@ public interface TrainingInstanceService {
 	 * @throws ServiceLayerException if instance is not found
 	 */
 	ResponseEntity<Void> allocateSandboxes(Long instanceId) throws ServiceLayerException;
+
+	/**
+	 * Finds all Training Runs of specific Training Instance.
+	 *
+	 * @param trainingInstanceId id of Training Instance whose Training Runs would be returned.
+	 * @return Training Runs of specific Training Instance
+	 */
+	Page<TrainingRun> findTrainingRunsByTrainingInstance(Long trainingInstanceId, Pageable pageable);
 
 }

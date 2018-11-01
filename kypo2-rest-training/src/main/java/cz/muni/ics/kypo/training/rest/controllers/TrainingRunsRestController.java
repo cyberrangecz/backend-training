@@ -337,34 +337,4 @@ public class TrainingRunsRestController {
             throw ExceptionSorter.throwException(ex);
         }
     }
-
-    /**
-	 * Get all Training Runs by Training Instance id.
-	 *
-	 * @return all Training Runs in given Training Instance.
-	 */
-  @ApiOperation(httpMethod = "GET",
-      value = "Get all Training Runs by Training Instance id.",
-      response = TrainingRunRestResource.class,
-      nickname = "findAllTrainingRunsByTrainingInstanceId",
-      produces = "application/json"
-  )
-  @ApiResponses(value = {
-      @ApiResponse(code = 200, message = "All training runs in given training instance found.", response = TrainingRunDTO.class, responseContainer = "List"),
-			@ApiResponse(code = 500, message = "Unexpected condition was encountered.")
-  })
-  @GetMapping(value = "/of-training-instance/{trainingInstanceId}", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<Object> findAllTrainingRunsByTrainingInstanceId(
-  		@ApiParam(value = "Training Instance Id", required = true) @PathVariable Long trainingInstanceId,
-			@ApiParam(value = "Pagination support.", required = false) Pageable pageable,
-  		@ApiParam(value = "Parameters for filtering the objects.", required = false)
-      @RequestParam MultiValueMap<String, String> parameters,
-      @ApiParam(value = "Fields which should be returned in REST API response", required = false)
-      @RequestParam(value = "fields", required = false) String fields) {
-
-  	LOG.debug("findAllTrainingRunsByTrainingInstnceId({})", trainingInstanceId);
-    PageResultResource<TrainingRunDTO> trainingRunResource = trainingRunFacade.findAllByTrainingInstance(trainingInstanceId, pageable);
-    Squiggly.init(objectMapper, fields);
-    return new ResponseEntity<>(SquigglyUtils.stringify(objectMapper, trainingRunResource), HttpStatus.OK);
-  }
 }
