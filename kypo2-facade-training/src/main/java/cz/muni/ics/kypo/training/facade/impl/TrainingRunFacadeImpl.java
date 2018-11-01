@@ -1,6 +1,8 @@
 package cz.muni.ics.kypo.training.facade.impl;
 
 import com.querydsl.core.types.Predicate;
+import cz.muni.ics.kypo.training.annotations.TransactionalRO;
+import cz.muni.ics.kypo.training.annotations.TransactionalWO;
 import cz.muni.ics.kypo.training.api.PageResultResource;
 import cz.muni.ics.kypo.training.api.dto.AbstractLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.IsCorrectFlagDTO;
@@ -52,7 +54,7 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
   }
 
   @Override
-  @Transactional(readOnly = true)
+  @TransactionalRO
   public TrainingRunDTO findById(Long id) {
     LOG.debug("findById({})", id);
     try {
@@ -64,14 +66,14 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
   }
 
   @Override
-  @Transactional(readOnly = true)
+  @TransactionalRO
   public PageResultResource<TrainingRunDTO> findAll(Predicate predicate, Pageable pageable) {
     LOG.debug("findAll({},{})", predicate, pageable);
     return beanMapping.mapToPageResultDTO(trainingRunService.findAll(predicate, pageable), TrainingRunDTO.class);
   }
 
   @Override
-  @Transactional(readOnly = true)
+  @TransactionalRO
   public PageResultResource<AccessedTrainingRunDTO> findAllAccessedTrainingRuns(Pageable pageable) {
     LOG.debug("findAllAccessedTrainingRuns()");
     Page<TrainingRun> trainingRuns = trainingRunService.findAllByParticipantRefLogin(pageable);
@@ -80,7 +82,7 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
   }
 
   @Override
-  @Transactional
+  @TransactionalWO
   public AccessTrainingRunDTO accessTrainingRun(String password) {
     LOG.debug("accessTrainingRun({})", password);
     AccessTrainingRunDTO accessTrainingRunDTO = new AccessTrainingRunDTO();
@@ -120,7 +122,7 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
   }
 
   @Override
-  @Transactional(readOnly = true)
+  @TransactionalRO
   public PageResultResource<TrainingRunDTO> findAllByTrainingDefinitionAndParticipant(Long trainingDefinitionId, Pageable pageable) {
     LOG.debug("findAllByTrainingDefinitionAndParticipant({})", trainingDefinitionId);
     Page<TrainingRun> trainingRuns = trainingRunService.findAllByTrainingDefinitionAndParticipant(trainingDefinitionId, pageable);
@@ -128,7 +130,7 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
   }
 
   @Override
-  @Transactional(readOnly = true)
+  @TransactionalRO
   public PageResultResource<TrainingRunDTO> findAllByTrainingDefinition(Long trainingDefinitionId, Pageable pageable) {
     LOG.debug("findAllByTrainingDefinition({})", trainingDefinitionId);
     Page<TrainingRun> trainingRuns = trainingRunService.findAllByTrainingDefinition(trainingDefinitionId, pageable);
@@ -136,7 +138,7 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
   }
 
   @Override
-  @Transactional(readOnly = true)
+  @TransactionalRO
   public PageResultResource<TrainingRunDTO> findAllByTrainingInstance(Long trainingInstanceId, Pageable pageable) {
     LOG.debug("findAllByTrainingInstance({})", trainingInstanceId);
     Page<TrainingRun> trainingRuns = trainingRunService.findAllByTrainingInstance(trainingInstanceId, pageable);
@@ -144,7 +146,7 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
   }
 
   @Override
-  @Transactional
+  @TransactionalWO
   public AbstractLevelDTO getNextLevel(Long trainingRunId) {
     LOG.debug("getNextLevel({})", trainingRunId);
     AbstractLevel aL;
@@ -155,7 +157,6 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
     }
     if(aL instanceof GameLevel) {
       return beanMapping.mapTo(aL, GameLevelDTO.class);
-
     } else if (aL instanceof AssessmentLevel) {
       return beanMapping.mapTo(aL, AssessmentLevelDTO.class);
     } else {
@@ -164,7 +165,7 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
   }
 
   @Override
-  @Transactional
+  @TransactionalWO
   public String getSolution(Long trainingRunId) {
     LOG.debug("getSolution({})", trainingRunId);
     try {
@@ -175,7 +176,7 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
   }
 
   @Override
-  @Transactional
+  @TransactionalWO
   public HintDTO getHint(Long trainingRunId, Long hintId) {
     LOG.debug("getHint({},{})", trainingRunId, hintId);
     try {
@@ -186,7 +187,7 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
   }
 
   @Override
-  @Transactional
+  @TransactionalWO
   public IsCorrectFlagDTO isCorrectFlag(Long trainingRunId, String flag) {
     LOG.debug("isCorrectFlag({},{})", trainingRunId, flag);
     IsCorrectFlagDTO correctFlagDTO = new IsCorrectFlagDTO();
@@ -219,7 +220,6 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
     PageResultResource<AccessedTrainingRunDTO> pageResultDTO = new PageResultResource<AccessedTrainingRunDTO>(accessedTrainingRunDTOS, createPagination(runs));
     return pageResultDTO;
   }
-
 
   private PageResultResource.Pagination createPagination(Page<?> objects) {
     PageResultResource.Pagination pageMetadata = new PageResultResource.Pagination();
