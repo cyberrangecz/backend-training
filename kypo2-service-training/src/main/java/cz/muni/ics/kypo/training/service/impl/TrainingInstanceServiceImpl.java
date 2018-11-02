@@ -28,131 +28,130 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
+
 import org.springframework.web.client.RestTemplate;
 
 
 /**
- * 
  * @author Pavel Seda (441048)
- *
  */
 @Service
 public class TrainingInstanceServiceImpl implements TrainingInstanceService {
 
-	private static final Logger LOG = LoggerFactory.getLogger(TrainingInstanceServiceImpl.class);
-	@Value("${server.url}")
-	private String serverUrl;
+    private static final Logger LOG = LoggerFactory.getLogger(TrainingInstanceServiceImpl.class);
+    @Value("${server.url}")
+    private String serverUrl;
 
-	private TrainingInstanceRepository trainingInstanceRepository;
-	private TrainingRunRepository trainingRunRepository;
-	private PasswordRepository passwordRepository;
-	private RestTemplate restTemplate;
+    private TrainingInstanceRepository trainingInstanceRepository;
+    private TrainingRunRepository trainingRunRepository;
+    private PasswordRepository passwordRepository;
+    private RestTemplate restTemplate;
 
-	@Autowired
-	public TrainingInstanceServiceImpl(TrainingInstanceRepository trainingInstanceRepository, PasswordRepository passwordRepository,
-			RestTemplate restTemplate, TrainingRunRepository trainingRunRepository) {
-		this.trainingInstanceRepository = trainingInstanceRepository;
-		this.trainingRunRepository = trainingRunRepository;
-		this.passwordRepository = passwordRepository;
-		this.restTemplate = restTemplate;
-	}
+    @Autowired
+    public TrainingInstanceServiceImpl(TrainingInstanceRepository trainingInstanceRepository, PasswordRepository passwordRepository,
+                                       RestTemplate restTemplate, TrainingRunRepository trainingRunRepository) {
+        this.trainingInstanceRepository = trainingInstanceRepository;
+        this.trainingRunRepository = trainingRunRepository;
+        this.passwordRepository = passwordRepository;
+        this.restTemplate = restTemplate;
+    }
 
-  @Override
-	@PreAuthorize("hasAuthority('ADMINISTRATOR')")
-  public TrainingInstance findById(long id) {
-    LOG.debug("findById({})", id);
-    return trainingInstanceRepository.findById(id).orElseThrow(() -> new ServiceLayerException("Training instance with id: " + id + " not found.", ErrorCode.RESOURCE_NOT_FOUND));
-  }
+    @Override
+    @PreAuthorize("hasAuthority('ADMINISTRATOR')")
+    public TrainingInstance findById(long id) {
+        LOG.debug("findById({})", id);
+        return trainingInstanceRepository.findById(id).orElseThrow(() -> new ServiceLayerException("Training instance with id: " + id + " not found.", ErrorCode.RESOURCE_NOT_FOUND));
+    }
 
-  @Override
-	@PreAuthorize("hasAuthority('ADMINISTRATOR')")
-  public Page<TrainingInstance> findAll(Predicate predicate, Pageable pageable) {
-    LOG.debug("findAll({},{})", predicate, pageable);
-    return trainingInstanceRepository.findAll(predicate, pageable);
-  }
+    @Override
+    @PreAuthorize("hasAuthority('ADMINISTRATOR')")
+    public Page<TrainingInstance> findAll(Predicate predicate, Pageable pageable) {
+        LOG.debug("findAll({},{})", predicate, pageable);
+        return trainingInstanceRepository.findAll(predicate, pageable);
+    }
 
-  @Override
-	@PreAuthorize("hasAuthority({'ADMINISTRATOR', T(cz.muni.ics.kypo.training.persistence.model.enums.RoleType).ORGANIZER})")
-  public TrainingInstance create(TrainingInstance trainingInstance) {
-    LOG.debug("create({})", trainingInstance);
-    Assert.notNull(trainingInstance, "Input training instance must not be null");
-    TrainingInstance tI = trainingInstanceRepository.save(trainingInstance);
-    LOG.info("Training instance with id: {} created.", trainingInstance.getId());
-    return tI;
-  }
+    @Override
+    @PreAuthorize("hasAuthority({'ADMINISTRATOR', T(cz.muni.ics.kypo.training.persistence.model.enums.RoleType).ORGANIZER})")
+    public TrainingInstance create(TrainingInstance trainingInstance) {
+        LOG.debug("create({})", trainingInstance);
+        Assert.notNull(trainingInstance, "Input training instance must not be null");
+        TrainingInstance tI = trainingInstanceRepository.save(trainingInstance);
+        LOG.info("Training instance with id: {} created.", trainingInstance.getId());
+        return tI;
+    }
 
-  @Override
-	@PreAuthorize("hasAuthority('ADMINISTRATOR')" +
-			"or @securityService.isOrganizeOfGivenTrainingInstance(#trainingInstance.id)")
-  public void update(TrainingInstance trainingInstance) {
-    LOG.debug("update({})", trainingInstance);
-    Assert.notNull(trainingInstance, "Input training instance must not be null");
-    TrainingInstance tI = trainingInstanceRepository.findById(trainingInstance.getId())
-            .orElseThrow(() -> new ServiceLayerException("Training instance with id: "+ trainingInstance.getId() +", not found.", ErrorCode.RESOURCE_NOT_FOUND));
-    LocalDateTime currentDate = LocalDateTime.now();
-    if (!currentDate.isBefore(trainingInstance.getStartTime()))
-      throw new ServiceLayerException("Starting time of instance must be in future", ErrorCode.RESOURCE_CONFLICT);
-    trainingInstance.setPasswordHash(tI.getPasswordHash());
-    trainingInstanceRepository.save(trainingInstance);
-    LOG.info("Training instance with id: {} updated.", trainingInstance.getId());
-  }
+    @Override
+    @PreAuthorize("hasAuthority('ADMINISTRATOR')" +
+            "or @securityService.isOrganizeOfGivenTrainingInstance(#trainingInstance.id)")
+    public void update(TrainingInstance trainingInstance) {
+        LOG.debug("update({})", trainingInstance);
+        Assert.notNull(trainingInstance, "Input training instance must not be null");
+        TrainingInstance tI = trainingInstanceRepository.findById(trainingInstance.getId())
+                .orElseThrow(() -> new ServiceLayerException("Training instance with id: " + trainingInstance.getId() + ", not found.", ErrorCode.RESOURCE_NOT_FOUND));
+        LocalDateTime currentDate = LocalDateTime.now();
+        if (!currentDate.isBefore(trainingInstance.getStartTime()))
+            throw new ServiceLayerException("Starting time of instance must be in future", ErrorCode.RESOURCE_CONFLICT);
+        trainingInstance.setPasswordHash(tI.getPasswordHash());
+        trainingInstanceRepository.save(trainingInstance);
+        LOG.info("Training instance with id: {} updated.", trainingInstance.getId());
+    }
 
-  @Override
-	@PreAuthorize("hasAuthority('ADMINISTRATOR')"  +
-			"or @securityService.isOrganizeOfGivenTrainingInstance(#id)")
-  public void delete(Long id) {
-    LOG.debug("delete({})", id);
-    Assert.notNull(id, "Input training instance id must not be null");
-    TrainingInstance trainingInstance = trainingInstanceRepository.findById(id)
-            .orElseThrow(() -> new ServiceLayerException("Training instance with id: " + id + ", not found.", ErrorCode.RESOURCE_NOT_FOUND));
-    LocalDateTime currentDate = LocalDateTime.now();
-    if (!currentDate.isAfter(trainingInstance.getEndTime()))
-      throw new ServiceLayerException("Only finished instances can be deleted.", ErrorCode.RESOURCE_CONFLICT);
-    trainingInstanceRepository.delete(trainingInstance);
-    LOG.info("Training instance with id: {} deleted.", id);
-  }
+    @Override
+    @PreAuthorize("hasAuthority('ADMINISTRATOR')" +
+            "or @securityService.isOrganizeOfGivenTrainingInstance(#id)")
+    public void delete(Long id) {
+        LOG.debug("delete({})", id);
+        Assert.notNull(id, "Input training instance id must not be null");
+        TrainingInstance trainingInstance = trainingInstanceRepository.findById(id)
+                .orElseThrow(() -> new ServiceLayerException("Training instance with id: " + id + ", not found.", ErrorCode.RESOURCE_NOT_FOUND));
+        LocalDateTime currentDate = LocalDateTime.now();
+        if (!currentDate.isAfter(trainingInstance.getEndTime()))
+            throw new ServiceLayerException("Only finished instances can be deleted.", ErrorCode.RESOURCE_CONFLICT);
+        trainingInstanceRepository.delete(trainingInstance);
+        LOG.info("Training instance with id: {} deleted.", id);
+    }
 
-  @Override
-	@PreAuthorize("hasAuthority({'ADMINISTRATOR', T(cz.muni.ics.kypo.training.persistence.model.enums.RoleType).ORGANIZER}) ")
-  public String generatePassword(TrainingInstance trainingInstance, String password) {
-    String newPasswordHash = "";
-    String newPassword = "";
-		boolean generated = false;
-		while (!generated){
-			String numPart = RandomStringUtils.random(4, false, true);
-			newPassword = password +"-"+ numPart;
-			newPasswordHash = BCrypt.hashpw(newPassword, BCrypt.gensalt(12));
-			Optional<Password> pW = passwordRepository.findOneByPasswordHash(newPasswordHash);
-			if (!pW.isPresent()) generated = true;
-		}
-		Password newPasswordInstance = new Password();
-		newPasswordInstance.setPasswordHash(newPasswordHash);
-		passwordRepository.saveAndFlush(newPasswordInstance);
+    @Override
+    @PreAuthorize("hasAuthority({'ADMINISTRATOR', T(cz.muni.ics.kypo.training.persistence.model.enums.RoleType).ORGANIZER}) ")
+    public String generatePassword(TrainingInstance trainingInstance, String password) {
+        String newPasswordHash = "";
+        String newPassword = "";
+        boolean generated = false;
+        while (!generated) {
+            String numPart = RandomStringUtils.random(4, false, true);
+            newPassword = password + "-" + numPart;
+            newPasswordHash = BCrypt.hashpw(newPassword, BCrypt.gensalt(12));
+            Optional<Password> pW = passwordRepository.findOneByPasswordHash(newPasswordHash);
+            if (!pW.isPresent()) generated = true;
+        }
+        Password newPasswordInstance = new Password();
+        newPasswordInstance.setPasswordHash(newPasswordHash);
+        passwordRepository.saveAndFlush(newPasswordInstance);
 
-		trainingInstance.setPasswordHash(newPasswordHash);
-		trainingInstanceRepository.save(trainingInstance);
-    return newPassword;
-  }
+        trainingInstance.setPasswordHash(newPasswordHash);
+        trainingInstanceRepository.save(trainingInstance);
+        return newPassword;
+    }
 
-	@Override
-	@PreAuthorize("hasAuthority('ADMINISTRATOR')" +
-			"or @securityService.isOrganizeOfGivenTrainingInstance(#instanceId)")
-	public ResponseEntity<Void> allocateSandboxes(Long instanceId) {
-		LOG.debug("allocateSandboxes({})", instanceId);
-		HttpHeaders httpHeaders = new HttpHeaders();
-		TrainingInstance trainingInstance = findById(instanceId);
-		int count = trainingInstance.getPoolSize();
-		Long sandboxId = trainingInstance.getTrainingDefinition().getSandBoxDefinitionRef().getId();
-		String url = "kypo-openstack/api/v1/sandbox-definitions/"+ sandboxId +"/build/"+ count;
-		return restTemplate.exchange(serverUrl + url, HttpMethod.POST, new HttpEntity<>(httpHeaders), Void.class);
-	}
+    @Override
+    @PreAuthorize("hasAuthority('ADMINISTRATOR')" +
+            "or @securityService.isOrganizeOfGivenTrainingInstance(#instanceId)")
+    public ResponseEntity<Void> allocateSandboxes(Long instanceId) {
+        LOG.debug("allocateSandboxes({})", instanceId);
+        HttpHeaders httpHeaders = new HttpHeaders();
+        TrainingInstance trainingInstance = findById(instanceId);
+        int count = trainingInstance.getPoolSize();
+        Long sandboxId = trainingInstance.getTrainingDefinition().getSandBoxDefinitionRef().getId();
+        String url = "kypo-openstack/api/v1/sandbox-definitions/" + sandboxId + "/build/" + count;
+        return restTemplate.exchange(serverUrl + url, HttpMethod.POST, new HttpEntity<>(httpHeaders), Void.class);
+    }
 
-	@Override
-	@PreAuthorize("hasAuthority('ADMINISTRATOR')" +
-			"or @securityService.isOrganizeOfGivenTrainingInstance(#trainingInstanceId)")
-	public Page<TrainingRun> findTrainingRunsByTrainingInstance(Long trainingInstanceId, Pageable pageable) {
-		LOG.debug("findTrainingRunsByTrainingInstance({})", trainingInstanceId);
-		org.springframework.util.Assert.notNull(trainingInstanceId, "Input training instance id must not be null.");
-		return trainingRunRepository.findAllByTrainingInstanceId(trainingInstanceId, pageable);
-	}
+    @Override
+    @PreAuthorize("hasAuthority('ADMINISTRATOR')" +
+            "or @securityService.isOrganizeOfGivenTrainingInstance(#trainingInstanceId)")
+    public Page<TrainingRun> findTrainingRunsByTrainingInstance(Long trainingInstanceId, Pageable pageable) {
+        LOG.debug("findTrainingRunsByTrainingInstance({})", trainingInstanceId);
+        org.springframework.util.Assert.notNull(trainingInstanceId, "Input training instance id must not be null.");
+        return trainingRunRepository.findAllByTrainingInstanceId(trainingInstanceId, pageable);
+    }
 }

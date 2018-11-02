@@ -9,18 +9,17 @@ import java.time.LocalTime;
 
 /**
  * @author Pavel Šeda
- *
  */
 public class LocalTimeDeserializer extends StdDeserializer<LocalTime> {
 
-	private static final long serialVersionUID = -7109214569997590716L;
+    private static final long serialVersionUID = -7109214569997590716L;
 
-	public LocalTimeDeserializer() {
-		super(LocalTime.class);
-	}
+    public LocalTimeDeserializer() {
+        super(LocalTime.class);
+    }
 
-	@Override
-	public LocalTime deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException {
-		return LocalTime.parse(jp.readValueAs(String.class));
-	}
+    @Override
+    public LocalTime deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException {
+        return LocalTime.parse(jp.readValueAs(String.class));
+    }
 }

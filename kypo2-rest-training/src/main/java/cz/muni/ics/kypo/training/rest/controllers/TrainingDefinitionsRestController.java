@@ -50,7 +50,6 @@ import javax.validation.Valid;
         @ApiResponse(code = 401, message = "Full authentication is required to access this resource."),
         @ApiResponse(code = 403, message = "The necessary permissions are required for a resource.")
 })
-
 @RestController
 @RequestMapping(value = "/training-definitions")
 public class TrainingDefinitionsRestController {

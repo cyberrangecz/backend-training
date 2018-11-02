@@ -11,7 +11,6 @@ import org.springframework.context.annotation.Import;
 
 /**
  * @author Pavel Šeda
- *
  */
 @Configuration
 @Import({TrainingElasticsearchServiceConfig.class, WebConfigRestSecurityCommons.class, PersistenceConfig.class})
