@@ -1,5 +1,6 @@
 package cz.muni.ics.kypo.training.facade;
 
+import cz.muni.ics.kypo.training.api.dto.run.TrainingRunDTO;
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceCreateResponseDTO;
 import cz.muni.ics.kypo.training.exception.FacadeLayerException;
 import org.springframework.data.domain.Pageable;
@@ -65,5 +66,13 @@ public interface TrainingInstanceFacade {
 	 * @throws FacadeLayerException
 	 */
 	ResponseEntity<Void> allocateSandboxes(Long instanceId);
+
+	/**
+	 * Finds all Training Runs by specific Training Instance.
+	 *
+	 * @param trainingInstanceId id of Training Instance whose Training Runs would be returned.
+	 * @return Training Runs of specific Training Instance
+	 */
+	PageResultResource<TrainingRunDTO> findTrainingRunsByTrainingInstance(Long trainingInstanceId, Pageable pageable);
 
 }

@@ -6,8 +6,10 @@ import cz.muni.ics.kypo.training.exceptions.ErrorCode;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.persistence.model.Password;
 import cz.muni.ics.kypo.training.persistence.model.TrainingInstance;
+import cz.muni.ics.kypo.training.persistence.model.TrainingRun;
 import cz.muni.ics.kypo.training.persistence.repository.PasswordRepository;
 import cz.muni.ics.kypo.training.persistence.repository.TrainingInstanceRepository;
+import cz.muni.ics.kypo.training.persistence.repository.TrainingRunRepository;
 import cz.muni.ics.kypo.training.service.TrainingInstanceService;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
@@ -42,13 +44,15 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
 	private String serverUrl;
 
 	private TrainingInstanceRepository trainingInstanceRepository;
+	private TrainingRunRepository trainingRunRepository;
 	private PasswordRepository passwordRepository;
 	private RestTemplate restTemplate;
 
 	@Autowired
 	public TrainingInstanceServiceImpl(TrainingInstanceRepository trainingInstanceRepository, PasswordRepository passwordRepository,
-			RestTemplate restTemplate) {
+			RestTemplate restTemplate, TrainingRunRepository trainingRunRepository) {
 		this.trainingInstanceRepository = trainingInstanceRepository;
+		this.trainingRunRepository = trainingRunRepository;
 		this.passwordRepository = passwordRepository;
 		this.restTemplate = restTemplate;
 	}
@@ -141,5 +145,14 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
 		Long sandboxId = trainingInstance.getTrainingDefinition().getSandBoxDefinitionRef().getId();
 		String url = "kypo-openstack/api/v1/sandbox-definitions/"+ sandboxId +"/build/"+ count;
 		return restTemplate.exchange(serverUrl + url, HttpMethod.POST, new HttpEntity<>(httpHeaders), Void.class);
+	}
+
+	@Override
+	@PreAuthorize("hasAuthority('ADMINISTRATOR')" +
+			"or @securityService.isOrganizeOfGivenTrainingInstance(#trainingInstanceId)")
+	public Page<TrainingRun> findTrainingRunsByTrainingInstance(Long trainingInstanceId, Pageable pageable) {
+		LOG.debug("findTrainingRunsByTrainingInstance({})", trainingInstanceId);
+		org.springframework.util.Assert.notNull(trainingInstanceId, "Input training instance id must not be null.");
+		return trainingRunRepository.findAllByTrainingInstanceId(trainingInstanceId, pageable);
 	}
 }

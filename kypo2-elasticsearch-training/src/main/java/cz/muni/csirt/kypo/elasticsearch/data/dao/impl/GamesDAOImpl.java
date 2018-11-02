@@ -67,7 +67,7 @@ public class GamesDAOImpl extends AbstractElasticClientDAO implements GamesDAO {
 					Map<String, Object> source = hit.getSource();
 					events.add(source);
 				}
-				if (events.size() == 0) {
+				if (events.isEmpty()) {
 					throw new ElasticsearchTrainingDataLayerException("There are no events in this game.");
 				}
 			}

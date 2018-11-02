@@ -1,8 +1,6 @@
 package cz.muni.ics.kypo.training.api.dto.run;
 
-import cz.muni.ics.kypo.training.api.dto.AbstractLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.SandboxInstanceRefDTO;
-import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceDTO;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import cz.muni.ics.kypo.training.persistence.model.enums.TRState;
 import cz.muni.ics.kypo.training.utils.converters.LocalDateTimeSerializer;
@@ -25,8 +23,6 @@ public class TrainingRunDTO {
 	private LocalDateTime endTime;
 	private String eventLogReference;
 	private TRState state;
-	private AbstractLevelDTO currentLevel;
-	private TrainingInstanceDTO trainingInstance;
 	private SandboxInstanceRefDTO sandboxInstanceRef;
 
 	public Long getId() {
@@ -69,22 +65,6 @@ public class TrainingRunDTO {
 		this.state = state;
 	}
 
-	public AbstractLevelDTO getCurrentLevel() {
-		return currentLevel;
-	}
-
-	public void setCurrentLevel(AbstractLevelDTO currentLevel) {
-		this.currentLevel = currentLevel;
-	}
-
-	public TrainingInstanceDTO getTrainingInstance() {
-		return trainingInstance;
-	}
-
-	public void setTrainingInstance(TrainingInstanceDTO trainingInstance) {
-		this.trainingInstance = trainingInstance;
-	}
-
 	public SandboxInstanceRefDTO getSandboxInstanceRef() {
 		return sandboxInstanceRef;
 	}
@@ -96,7 +76,6 @@ public class TrainingRunDTO {
 	@Override
 	public String toString() {
 		return "TrainingRunDTO{" + "id=" + id + ", startTime=" + startTime + ", endTime=" + endTime + ", eventLogReference='"
-				+ eventLogReference + '\'' + ", state=" + state + ", currentLevel=" + currentLevel + ", trainingInstance=" + trainingInstance
-				+ ", sandboxInstanceRef=" + sandboxInstanceRef + '}';
+				+ eventLogReference + '\'' + ", state=" + state + ", sandboxInstanceRef=" + sandboxInstanceRef + '}';
 	}
 }
