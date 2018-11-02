@@ -138,14 +138,6 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
   }
 
   @Override
-  @TransactionalRO
-  public PageResultResource<TrainingRunDTO> findAllByTrainingInstance(Long trainingInstanceId, Pageable pageable) {
-    LOG.debug("findAllByTrainingInstance({})", trainingInstanceId);
-    Page<TrainingRun> trainingRuns = trainingRunService.findAllByTrainingInstance(trainingInstanceId, pageable);
-    return beanMapping.mapToPageResultDTO(trainingRuns, TrainingRunDTO.class);
-  }
-
-  @Override
   @TransactionalWO
   public AbstractLevelDTO getNextLevel(Long trainingRunId) {
     LOG.debug("getNextLevel({})", trainingRunId);

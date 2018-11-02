@@ -139,15 +139,6 @@ public class TrainingRunServiceImpl implements TrainingRunService {
   }
 
   @Override
-  @PreAuthorize("hasAuthority('ADMINISTRATOR')" +
-      "or @securityService.isOrganizeOfGivenTrainingInstance(#trainingInstanceId)")
-  public Page<TrainingRun> findAllByTrainingInstance(Long trainingInstanceId, Pageable pageable) {
-    LOG.debug("findAllByTrainingInstance({},{})", trainingInstanceId);
-    Assert.notNull(trainingInstanceId, "Input training instance id must not be null.");
-    return trainingRunRepository.findAllByTrainingInstanceId(trainingInstanceId, pageable);
-  }
-
-  @Override
   //@PreAuthorize("hasAuthority('ADMINISTRATOR')")
   public List<AbstractLevel> getLevels(Long levelId) {
     Assert.notNull(levelId, "Id of first level must not be null.");

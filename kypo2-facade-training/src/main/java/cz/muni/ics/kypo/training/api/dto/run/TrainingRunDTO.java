@@ -25,8 +25,6 @@ public class TrainingRunDTO {
 	private LocalDateTime endTime;
 	private String eventLogReference;
 	private TRState state;
-	private AbstractLevelDTO currentLevel;
-	private TrainingInstanceDTO trainingInstance;
 	private SandboxInstanceRefDTO sandboxInstanceRef;
 
 	public TrainingRunDTO() {}
@@ -71,22 +69,6 @@ public class TrainingRunDTO {
 		this.state = state;
 	}
 
-	public AbstractLevelDTO getCurrentLevel() {
-		return currentLevel;
-	}
-
-	public void setCurrentLevel(AbstractLevelDTO currentLevel) {
-		this.currentLevel = currentLevel;
-	}
-
-	public TrainingInstanceDTO getTrainingInstance() {
-		return trainingInstance;
-	}
-
-	public void setTrainingInstance(TrainingInstanceDTO trainingInstance) {
-		this.trainingInstance = trainingInstance;
-	}
-
 	public SandboxInstanceRefDTO getSandboxInstanceRef() {
 		return sandboxInstanceRef;
 	}
@@ -98,7 +80,6 @@ public class TrainingRunDTO {
 	@Override
 	public String toString() {
 		return "TrainingRunDTO{" + "id=" + id + ", startTime=" + startTime + ", endTime=" + endTime + ", eventLogReference='"
-				+ eventLogReference + '\'' + ", state=" + state + ", currentLevel=" + currentLevel + ", trainingInstance=" + trainingInstance
-				+ ", sandboxInstanceRef=" + sandboxInstanceRef + '}';
+				+ eventLogReference + '\'' + ", state=" + state + ", sandboxInstanceRef=" + sandboxInstanceRef + '}';
 	}
 }

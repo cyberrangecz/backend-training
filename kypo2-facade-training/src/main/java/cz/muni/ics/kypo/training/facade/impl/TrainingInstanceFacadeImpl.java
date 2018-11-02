@@ -2,12 +2,15 @@ package cz.muni.ics.kypo.training.facade.impl;
 
 import java.util.Objects;
 
+import cz.muni.ics.kypo.training.api.dto.run.TrainingRunDTO;
 import cz.muni.ics.kypo.training.annotations.TransactionalRO;
 import cz.muni.ics.kypo.training.annotations.TransactionalWO;
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceCreateResponseDTO;
+import cz.muni.ics.kypo.training.persistence.model.TrainingRun;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -106,14 +109,23 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
         }
     }
 
-    @Override
-    @TransactionalWO
-    public ResponseEntity<Void> allocateSandboxes(Long instanceId) throws FacadeLayerException {
-        LOG.debug("allocateSandboxes({})", instanceId);
-        try {
-            return trainingInstanceService.allocateSandboxes(instanceId);
-        } catch (ServiceLayerException ex) {
-            throw new FacadeLayerException(ex.getLocalizedMessage());
-        }
-    }
+	@Override
+	@TransactionalWO
+	public ResponseEntity<Void> allocateSandboxes(Long instanceId) throws FacadeLayerException {
+		LOG.debug("allocateSandboxes({})", instanceId);
+		try {
+			return trainingInstanceService.allocateSandboxes(instanceId);
+		} catch (ServiceLayerException ex) {
+			throw new FacadeLayerException(ex.getLocalizedMessage());
+		}
+	}
+
+
+	@Override
+	@Transactional(readOnly = true)
+	public PageResultResource<TrainingRunDTO> findTrainingRunsByTrainingInstance(Long trainingInstanceId, Pageable pageable) {
+		LOG.debug("findAllTrainingRunsByTrainingInstance({})", trainingInstanceId);
+		Page<TrainingRun> trainingRuns = trainingInstanceService.findTrainingRunsByTrainingInstance(trainingInstanceId, pageable);
+		return beanMapping.mapToPageResultDTO(trainingRuns, TrainingRunDTO.class);
+	}
 }
