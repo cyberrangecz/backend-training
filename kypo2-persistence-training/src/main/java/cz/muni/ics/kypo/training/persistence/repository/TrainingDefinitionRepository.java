@@ -12,14 +12,12 @@ import cz.muni.ics.kypo.training.persistence.model.TrainingDefinition;
 
 
 /**
- * 
  * @author Pavel Seda (441048)
- *
  */
 @Repository
 public interface TrainingDefinitionRepository
-		extends JpaRepository<TrainingDefinition, Long>, QuerydslPredicateExecutor<TrainingDefinition> {
+        extends JpaRepository<TrainingDefinition, Long>, QuerydslPredicateExecutor<TrainingDefinition> {
 
-	@Query("SELECT td FROM TrainingDefinition td INNER JOIN td.sandBoxDefinitionRef sbd WHERE sbd.sandboxDefinitionRefId = :sandboxDefId")
-	Page<TrainingDefinition> findAllBySandBoxDefinitionRefId(@Param("sandboxDefId") Long sandboxDefId, Pageable pageable);
+    @Query("SELECT td FROM TrainingDefinition td INNER JOIN td.sandBoxDefinitionRef sbd WHERE sbd.sandboxDefinitionRefId = :sandboxDefId")
+    Page<TrainingDefinition> findAllBySandBoxDefinitionRefId(@Param("sandboxDefId") Long sandboxDefId, Pageable pageable);
 }

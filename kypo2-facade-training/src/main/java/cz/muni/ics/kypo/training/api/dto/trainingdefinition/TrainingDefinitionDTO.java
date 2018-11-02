@@ -11,117 +11,116 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * 
  * @author Pavel Seda (441048)
- *
  */
 @ApiModel(value = "TrainingDefinitionDTO", description = ".")
 public class TrainingDefinitionDTO {
 
-	private Long id;
-	private String title;
-	private String description;
-	private String[] prerequisities;
-	private String[] outcomes;
-	private TDState state;
-	private Set<AuthorRefDTO> authorRef = new HashSet<>();
-	private SandboxDefinitionRefDTO sandBoxDefinitionRef;
-	private Long startingLevel;
-	private Set<BasicLevelInfoDTO> basicLevelInfoDTOs;
-	private boolean showStepperBar;
+    private Long id;
+    private String title;
+    private String description;
+    private String[] prerequisities;
+    private String[] outcomes;
+    private TDState state;
+    private Set<AuthorRefDTO> authorRef = new HashSet<>();
+    private SandboxDefinitionRefDTO sandBoxDefinitionRef;
+    private Long startingLevel;
+    private Set<BasicLevelInfoDTO> basicLevelInfoDTOs;
+    private boolean showStepperBar;
 
-	public Long getId() {
-		return id;
-	}
+    public Long getId() {
+        return id;
+    }
 
-	public void setId(Long id) {
-		this.id = id;
-	}
+    public void setId(Long id) {
+        this.id = id;
+    }
 
-	public String getTitle() {
-		return title;
-	}
+    public String getTitle() {
+        return title;
+    }
 
-	public void setTitle(String title) {
-		this.title = title;
-	}
+    public void setTitle(String title) {
+        this.title = title;
+    }
 
-	public String getDescription() {
-		return description;
-	}
+    public String getDescription() {
+        return description;
+    }
 
-	public void setDescription(String description) {
-		this.description = description;
-	}
+    public void setDescription(String description) {
+        this.description = description;
+    }
 
-	public String[] getPrerequisities() {
-		return prerequisities;
-	}
+    public String[] getPrerequisities() {
+        return prerequisities;
+    }
 
-	public void setPrerequisities(String[] prerequisities) {
-		this.prerequisities = prerequisities;
-	}
+    public void setPrerequisities(String[] prerequisities) {
+        this.prerequisities = prerequisities;
+    }
 
-	public String[] getOutcomes() {
-		return outcomes;
-	}
+    public String[] getOutcomes() {
+        return outcomes;
+    }
 
-	public void setOutcomes(String[] outcomes) {
-		this.outcomes = outcomes;
-	}
+    public void setOutcomes(String[] outcomes) {
+        this.outcomes = outcomes;
+    }
 
-	public TDState getState() {
-		return state;
-	}
+    public TDState getState() {
+        return state;
+    }
 
-	public void setState(TDState state) {
-		this.state = state;
-	}
+    public void setState(TDState state) {
+        this.state = state;
+    }
 
-	public Set<AuthorRefDTO> getAuthorRef() {
-		return authorRef;
-	}
+    public Set<AuthorRefDTO> getAuthorRef() {
+        return authorRef;
+    }
 
-	public void setAuthorRef(Set<AuthorRefDTO> authorRef) {
-		this.authorRef = authorRef;
-	}
+    public void setAuthorRef(Set<AuthorRefDTO> authorRef) {
+        this.authorRef = authorRef;
+    }
 
-	public SandboxDefinitionRefDTO getSandBoxDefinitionRef() {
-		return sandBoxDefinitionRef;
-	}
+    public SandboxDefinitionRefDTO getSandBoxDefinitionRef() {
+        return sandBoxDefinitionRef;
+    }
 
-	public void setSandBoxDefinitionRef(SandboxDefinitionRefDTO sandBoxDefinitionRef) {
-		this.sandBoxDefinitionRef = sandBoxDefinitionRef;
-	}
+    public void setSandBoxDefinitionRef(SandboxDefinitionRefDTO sandBoxDefinitionRef) {
+        this.sandBoxDefinitionRef = sandBoxDefinitionRef;
+    }
 
-	public Long getStartingLevel() {
-		return startingLevel;
-	}
+    public Long getStartingLevel() {
+        return startingLevel;
+    }
 
-	public void setStartingLevel(Long startingLevel) {
-		this.startingLevel = startingLevel;
-	}
+    public void setStartingLevel(Long startingLevel) {
+        this.startingLevel = startingLevel;
+    }
 
-	public Set<BasicLevelInfoDTO> getBasicLevelInfoDTOs() {
-		return basicLevelInfoDTOs;
-	}
+    public Set<BasicLevelInfoDTO> getBasicLevelInfoDTOs() {
+        return basicLevelInfoDTOs;
+    }
 
-	public void setBasicLevelInfoDTOs(Set<BasicLevelInfoDTO> basicLevelInfoDTOs) {
-		this.basicLevelInfoDTOs = basicLevelInfoDTOs;
-	}
+    public void setBasicLevelInfoDTOs(Set<BasicLevelInfoDTO> basicLevelInfoDTOs) {
+        this.basicLevelInfoDTOs = basicLevelInfoDTOs;
+    }
 
-	public boolean isShowStepperBar() {
-		return showStepperBar;
-	}
+    public boolean isShowStepperBar() {
+        return showStepperBar;
+    }
 
-	public void setShowStepperBar(boolean showStepperBar) {
-		this.showStepperBar = showStepperBar;
-	}
+    public void setShowStepperBar(boolean showStepperBar) {
+        this.showStepperBar = showStepperBar;
+    }
 
-	@Override public String toString() {
-		return "TrainingDefinitionDTO{" + "id=" + id + ", title='" + title + '\'' + ", description='" + description + '\'' + ", prerequisities="
-				+ Arrays.toString(prerequisities) + ", outcomes=" + Arrays.toString(outcomes) + ", state=" + state + ", authorRefDTO="
-				+ authorRef + ", sandBoxDefinitionRefDTO=" + sandBoxDefinitionRef + ", startingLevel=" + startingLevel
-				+ ", basicLevelInfoDTOs=" + basicLevelInfoDTOs + ", showStepperBar=" + showStepperBar + '}';
-	}
+    @Override
+    public String toString() {
+        return "TrainingDefinitionDTO{" + "id=" + id + ", title='" + title + '\'' + ", description='" + description + '\'' + ", prerequisities="
+                + Arrays.toString(prerequisities) + ", outcomes=" + Arrays.toString(outcomes) + ", state=" + state + ", authorRefDTO="
+                + authorRef + ", sandBoxDefinitionRefDTO=" + sandBoxDefinitionRef + ", startingLevel=" + startingLevel
+                + ", basicLevelInfoDTOs=" + basicLevelInfoDTOs + ", showStepperBar=" + showStepperBar + '}';
+    }
 }

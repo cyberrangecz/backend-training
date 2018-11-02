@@ -18,153 +18,166 @@ import java.util.Set;
 import java.util.logging.Level;
 
 /**
- * 
  * @author Pavel Seda (441048)
- *
  */
 public interface TrainingDefinitionFacade {
 
-  /**
-   * Finds specific Training Definition by id
-   * 
-   * @param id of a Training Definition that would be returned
-   * @return specific Training Definition by id
-   */
-  TrainingDefinitionDTO findById(long id);
+    /**
+     * Finds specific Training Definition by id
+     *
+     * @param id of a Training Definition that would be returned
+     * @return specific Training Definition by id
+     */
+    TrainingDefinitionDTO findById(long id);
 
-  /**
-   * Find all Training Definitions.
-   * 
-   * @return all Training Definitions
-   */
-  PageResultResource<TrainingDefinitionDTO> findAll(Predicate predicate, Pageable pageable);
+    /**
+     * Find all Training Definitions.
+     *
+     * @return all Training Definitions
+     */
+    PageResultResource<TrainingDefinitionDTO> findAll(Predicate predicate, Pageable pageable);
 
-  /**
-   * Find all training definition with same sandbox definition
-   * @param sandboxDefinitionId - id of sandbox definition
-   * @return all training definition with same sandbox definition
-   */
-  public PageResultResource<TrainingDefinitionDTO> findAllBySandboxDefinitionId(Long sandboxDefinitionId, Pageable pageable);
-  /**
-   * Updates training definition
-   * @param trainingDefinition to be updated
-   * @return DTO of updated definition
-   * @throws FacadeLayerException if training definition is not found
-   */
-  void update(TrainingDefinitionUpdateDTO trainingDefinition);
+    /**
+     * Find all training definition with same sandbox definition
+     *
+     * @param sandboxDefinitionId - id of sandbox definition
+     * @return all training definition with same sandbox definition
+     */
+    public PageResultResource<TrainingDefinitionDTO> findAllBySandboxDefinitionId(Long sandboxDefinitionId, Pageable pageable);
 
-  /**
-   * Creates new training definition
-   * @param trainingDefinition to be created
-   * @return DTO of created definition
-   * @throws FacadeLayerException
-   */
-  TrainingDefinitionDTO create(TrainingDefinitionCreateDTO trainingDefinition);
+    /**
+     * Updates training definition
+     *
+     * @param trainingDefinition to be updated
+     * @return DTO of updated definition
+     * @throws FacadeLayerException if training definition is not found
+     */
+    void update(TrainingDefinitionUpdateDTO trainingDefinition);
 
-  /**
-   * Clones Training Definition by id
-   * @param id of definition to be cloned
-   * @return DTO of cloned definition
-   * @throws FacadeLayerException if training definition is not found
-   */
-  TrainingDefinitionDTO clone(Long id);
+    /**
+     * Creates new training definition
+     *
+     * @param trainingDefinition to be created
+     * @return DTO of created definition
+     * @throws FacadeLayerException
+     */
+    TrainingDefinitionDTO create(TrainingDefinitionCreateDTO trainingDefinition);
 
-
-  /**
-   * swaps level to the left
-   * @param definitionId - id of definition containing level to be swapped
-   * @param levelId - id of level to be swapped
-   * @throws FacadeLayerException if training definition or level is not found
-   */
-  Set<BasicLevelInfoDTO> swapLeft(Long definitionId, Long levelId);
+    /**
+     * Clones Training Definition by id
+     *
+     * @param id of definition to be cloned
+     * @return DTO of cloned definition
+     * @throws FacadeLayerException if training definition is not found
+     */
+    TrainingDefinitionDTO clone(Long id);
 
 
-  /**
-   * swaps level to the right
-   * @param definitionId - id of definition containing level to be swapped
-   * @param levelId - id of level to be swapped
-   * @throws FacadeLayerException if training definition or level is not found
-   */
-  Set<BasicLevelInfoDTO> swapRight(Long definitionId, Long levelId);
+    /**
+     * swaps level to the left
+     *
+     * @param definitionId - id of definition containing level to be swapped
+     * @param levelId      - id of level to be swapped
+     * @throws FacadeLayerException if training definition or level is not found
+     */
+    Set<BasicLevelInfoDTO> swapLeft(Long definitionId, Long levelId);
 
 
-  /**
-   * Deletes specific training instance based on id
-   * @param id of definition to be deleted
-   * @throws FacadeLayerException if training definition is not found
-   */
-  void delete(Long id);
+    /**
+     * swaps level to the right
+     *
+     * @param definitionId - id of definition containing level to be swapped
+     * @param levelId      - id of level to be swapped
+     * @throws FacadeLayerException if training definition or level is not found
+     */
+    Set<BasicLevelInfoDTO> swapRight(Long definitionId, Long levelId);
 
 
-  /**
-   * deletes specific level by id
-   * @param definitionId - id of definition containing level to be deleted
-   * @param levelId - id of level to be deleted
-   * @throws FacadeLayerException if training definition or level is not found
-   */
-  Set<BasicLevelInfoDTO> deleteOneLevel(Long definitionId, Long levelId);
+    /**
+     * Deletes specific training instance based on id
+     *
+     * @param id of definition to be deleted
+     * @throws FacadeLayerException if training definition is not found
+     */
+    void delete(Long id);
 
 
-  /**
-   * updates game level from training definition
-   * @param definitionId - id of training definition containing level to be updated
-   * @param gameLevel to be updated
-   * @throws FacadeLayerException if training definition is not found
-   */
-   void updateGameLevel(Long definitionId, GameLevelUpdateDTO gameLevel);
+    /**
+     * deletes specific level by id
+     *
+     * @param definitionId - id of definition containing level to be deleted
+     * @param levelId      - id of level to be deleted
+     * @throws FacadeLayerException if training definition or level is not found
+     */
+    Set<BasicLevelInfoDTO> deleteOneLevel(Long definitionId, Long levelId);
 
 
-  /**
-   * updates info level from training definition
-   * @param definitionId - id of training definition containing level to be updated
-   * @param infoLevel to be updated
-   * @throws FacadeLayerException if training definition is not found
-   */
-  void updateInfoLevel(Long definitionId, InfoLevelUpdateDTO infoLevel);
+    /**
+     * updates game level from training definition
+     *
+     * @param definitionId - id of training definition containing level to be updated
+     * @param gameLevel    to be updated
+     * @throws FacadeLayerException if training definition is not found
+     */
+    void updateGameLevel(Long definitionId, GameLevelUpdateDTO gameLevel);
 
 
-  /**
-   * updates assessment level from training definition
-   * @param definitionId - id of training definition containing level to be updated
-   * @param assessmentLevel to be updated
-   * @throws FacadeLayerException if training definition is not found
-   */
-  void updateAssessmentLevel(Long definitionId, AssessmentLevelUpdateDTO assessmentLevel);
+    /**
+     * updates info level from training definition
+     *
+     * @param definitionId - id of training definition containing level to be updated
+     * @param infoLevel    to be updated
+     * @throws FacadeLayerException if training definition is not found
+     */
+    void updateInfoLevel(Long definitionId, InfoLevelUpdateDTO infoLevel);
 
 
-  /**
-   * creates new info level in training definition
-   * @param definitionId - id of definition in which level will be created
-   * @return DTO of new info level
-   * @throws FacadeLayerException if training definition is not found
-   */
-   BasicLevelInfoDTO createInfoLevel(Long definitionId);
+    /**
+     * updates assessment level from training definition
+     *
+     * @param definitionId    - id of training definition containing level to be updated
+     * @param assessmentLevel to be updated
+     * @throws FacadeLayerException if training definition is not found
+     */
+    void updateAssessmentLevel(Long definitionId, AssessmentLevelUpdateDTO assessmentLevel);
 
 
-  /**
-   * creates new game level in training definition
-   * @param definitionId - id of definition in which level will be created
-   * @return DTO of new game level
-   * @throws FacadeLayerException if training definition is not found
-   */
-  BasicLevelInfoDTO createGameLevel(Long definitionId);
+    /**
+     * creates new info level in training definition
+     *
+     * @param definitionId - id of definition in which level will be created
+     * @return DTO of new info level
+     * @throws FacadeLayerException if training definition is not found
+     */
+    BasicLevelInfoDTO createInfoLevel(Long definitionId);
 
 
-  /**
-   * creates new assessment level in training definition
-   * @param definitionId - id of definition in which level will be created
-   * @return DTO of new assessment level
-   * @throws FacadeLayerException if training definition is not found
-   */
-  BasicLevelInfoDTO createAssessmentLevel(Long definitionId);
+    /**
+     * creates new game level in training definition
+     *
+     * @param definitionId - id of definition in which level will be created
+     * @return DTO of new game level
+     * @throws FacadeLayerException if training definition is not found
+     */
+    BasicLevelInfoDTO createGameLevel(Long definitionId);
 
-	/**
-	 * Finds specific level by id
-	 *
-	 * @param levelId - id of wanted level
-	 * @return wanted level
-	 * @throws FacadeLayerException if level is not found
-	 */
-	AbstractLevelDTO findLevelById(Long levelId);
+
+    /**
+     * creates new assessment level in training definition
+     *
+     * @param definitionId - id of definition in which level will be created
+     * @return DTO of new assessment level
+     * @throws FacadeLayerException if training definition is not found
+     */
+    BasicLevelInfoDTO createAssessmentLevel(Long definitionId);
+
+    /**
+     * Finds specific level by id
+     *
+     * @param levelId - id of wanted level
+     * @return wanted level
+     * @throws FacadeLayerException if level is not found
+     */
+    AbstractLevelDTO findLevelById(Long levelId);
 
 }

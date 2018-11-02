@@ -19,18 +19,18 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 @ComponentScan(basePackages = {"cz.muni.ics.kypo.training.facade", "cz.muni.ics.kypo.training.mapping"})
 public class FacadeConfiguration {
 
-	private static final Logger LOG = LoggerFactory.getLogger(FacadeConfiguration.class);
+    private static final Logger LOG = LoggerFactory.getLogger(FacadeConfiguration.class);
 
-	@Bean
-	public ModelMapper modelMapper() {
-		LOG.debug("modelMapper()");
-		return new ModelMapper();
-	}
+    @Bean
+    public ModelMapper modelMapper() {
+        LOG.debug("modelMapper()");
+        return new ModelMapper();
+    }
 
-	@Bean
-	public EmailValidator usernameValidator() {
-		LOG.debug("usernameValidator()");
-		return new EmailValidator();
-	}
+    @Bean
+    public EmailValidator usernameValidator() {
+        LOG.debug("usernameValidator()");
+        return new EmailValidator();
+    }
 
 }
