@@ -25,8 +25,6 @@ public class GameLevelDTO extends AbstractLevelDTO {
 	private Set<HintDTO> hints = new HashSet<>();
 	private int incorrectFlagLimit;
 
-	public GameLevelDTO() {}
-
 	public String getFlag() {
 		return flag;
 	}

@@ -1,11 +1,12 @@
 package cz.muni.ics.kypo.training.persistence.model;
 
 import javax.persistence.*;
+import java.io.Serializable;
 import java.util.Objects;
 
 @Entity(name = "ParticipantRef")
 @Table(name = "participant_ref")
-public class ParticipantRef {
+public class ParticipantRef implements Serializable {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -14,7 +15,7 @@ public class ParticipantRef {
 	@Column(name = "participant_ref_login", nullable = false)
 	private String participantRefLogin;
 
-	public ParticipantRef() {};
+	public ParticipantRef() {}
 
 	public ParticipantRef(String login) {
 		this.participantRefLogin = login;

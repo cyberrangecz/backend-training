@@ -17,9 +17,7 @@ public class SandboxDefinitionRef implements Serializable {
 	@Column(name = "id", unique = true, nullable = false, insertable = false)
 	private Long id;
 	@Column(name = "sandbox_definition_ref")
-	private Long sandboxDefinitionRef;
-
-	public SandboxDefinitionRef() {}
+	private Long sandboxDefinitionRefId;
 
 	public Long getId() {
 		return id;
@@ -30,16 +28,16 @@ public class SandboxDefinitionRef implements Serializable {
 	}
 
 	public Long getSandboxDefinitionRef() {
-		return sandboxDefinitionRef;
+		return sandboxDefinitionRefId;
 	}
 
 	public void setSandboxDefinitionRef(Long sandboxDefinitionRef) {
-		this.sandboxDefinitionRef = sandboxDefinitionRef;
+		this.sandboxDefinitionRefId = sandboxDefinitionRef;
 	}
 
 	@Override
 	public String toString() {
-		return "SandboxDefinitionRef [id=" + id + ", sandboxDefinitionRef=" + sandboxDefinitionRef + "]";
+		return "SandboxDefinitionRef [id=" + id + ", sandboxDefinitionRef=" + sandboxDefinitionRefId + "]";
 	}
 
 }

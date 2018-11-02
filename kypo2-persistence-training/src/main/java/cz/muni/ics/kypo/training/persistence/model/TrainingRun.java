@@ -45,8 +45,6 @@ public class TrainingRun implements Serializable {
 	@JoinColumn(name = "participant_ref_id", nullable = false)
 	private ParticipantRef participantRef;
 
-	public TrainingRun() {}
-
 	public Long getId() {
 		return id;
 	}

@@ -1,5 +1,6 @@
 package cz.muni.ics.kypo.training.facade;
 
+import cz.muni.ics.kypo.training.api.dto.run.TrainingRunDTO;
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceCreateResponseDTO;
 import cz.muni.ics.kypo.training.exception.FacadeLayerException;
 import org.springframework.data.domain.Pageable;
@@ -38,7 +39,7 @@ public interface TrainingInstanceFacade {
 	 * @return newly generated password
 	 * @throws FacadeLayerException if instance is not found
 	 */
-  String update(TrainingInstanceUpdateDTO trainingInstance) throws FacadeLayerException;
+  String update(TrainingInstanceUpdateDTO trainingInstance);
 
 	/**
 	 * Creates new training instance
@@ -47,7 +48,7 @@ public interface TrainingInstanceFacade {
 	 * @return DTO of created instance
 	 * @throws FacadeLayerException
 	 */
-	TrainingInstanceCreateResponseDTO create(TrainingInstanceCreateDTO trainingInstance) throws FacadeLayerException;
+	TrainingInstanceCreateResponseDTO create(TrainingInstanceCreateDTO trainingInstance);
 
 	/**
 	 * Deletes specific training instance based on id
@@ -55,7 +56,7 @@ public interface TrainingInstanceFacade {
 	 * @param id of training instance to be deleted
 	 * @throws FacadeLayerException
 	 */
-	void delete(Long id) throws FacadeLayerException;
+	void delete(Long id);
 
 	/**
 	 * Allocates sandboxes for training instance
@@ -64,6 +65,14 @@ public interface TrainingInstanceFacade {
 	 * @return
 	 * @throws FacadeLayerException
 	 */
-	ResponseEntity<Void> allocateSandboxes(Long instanceId) throws FacadeLayerException;
+	ResponseEntity<Void> allocateSandboxes(Long instanceId);
+
+	/**
+	 * Finds all Training Runs by specific Training Instance.
+	 *
+	 * @param trainingInstanceId id of Training Instance whose Training Runs would be returned.
+	 * @return Training Runs of specific Training Instance
+	 */
+	PageResultResource<TrainingRunDTO> findTrainingRunsByTrainingInstance(Long trainingInstanceId, Pageable pageable);
 
 }
