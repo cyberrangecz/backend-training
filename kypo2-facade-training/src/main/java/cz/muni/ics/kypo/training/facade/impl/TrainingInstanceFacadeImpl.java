@@ -111,23 +111,23 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
     }
 
 
-	@Override
-	@TransactionalWO
-	public ResponseEntity<Void> allocateSandboxes(Long instanceId) {
-		LOG.debug("allocateSandboxes({})", instanceId);
-		try {
-			return trainingInstanceService.allocateSandboxes(instanceId);
-		} catch (ServiceLayerException ex) {
-			throw new FacadeLayerException(ex.getLocalizedMessage());
-		}
-	}
+    @Override
+    @TransactionalWO
+    public ResponseEntity<Void> allocateSandboxes(Long instanceId) {
+        LOG.debug("allocateSandboxes({})", instanceId);
+        try {
+            return trainingInstanceService.allocateSandboxes(instanceId);
+        } catch (ServiceLayerException ex) {
+            throw new FacadeLayerException(ex.getLocalizedMessage());
+        }
+    }
 
 
-	@Override
-	@Transactional(readOnly = true)
-	public PageResultResource<TrainingRunDTO> findTrainingRunsByTrainingInstance(Long trainingInstanceId, Pageable pageable) {
-		LOG.debug("findAllTrainingRunsByTrainingInstance({})", trainingInstanceId);
-		Page<TrainingRun> trainingRuns = trainingInstanceService.findTrainingRunsByTrainingInstance(trainingInstanceId, pageable);
-		return beanMapping.mapToPageResultDTO(trainingRuns, TrainingRunDTO.class);
-	}
+    @Override
+    @TransactionalRO
+    public PageResultResource<TrainingRunDTO> findTrainingRunsByTrainingInstance(Long trainingInstanceId, Pageable pageable) {
+        LOG.debug("findAllTrainingRunsByTrainingInstance({})", trainingInstanceId);
+        Page<TrainingRun> trainingRuns = trainingInstanceService.findTrainingRunsByTrainingInstance(trainingInstanceId, pageable);
+        return beanMapping.mapToPageResultDTO(trainingRuns, TrainingRunDTO.class);
+    }
 }

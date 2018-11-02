@@ -10,48 +10,46 @@ import org.jsondoc.core.annotation.ApiObject;
 import org.jsondoc.core.annotation.ApiObjectField;
 
 /**
- * 
  * @author Pavel Šeda
- *
  */
 @ApiObject(name = "Wrong Flag Submitted", description = "Type of event from game scenario (when wrong flag is used).")
 @JsonPropertyOrder({"type", "game_details", "timestamp", "value"})
 @JsonRootName(value = "event")
 public class WrongFlagSubmitted extends AbstractAuditPOJO {
 
-	@ApiObjectField(description = "Details of the game.")
-	@JsonProperty(value = "game_details", required = true)
-	private GameDetails gameDetails;
-	@ApiObjectField(description = "Value.") // TODO describe in more detail what is this value
-																					// attribute
-	@JsonProperty(value = "value", required = true)
-	private String value;
+    @ApiObjectField(description = "Details of the game.")
+    @JsonProperty(value = "game_details", required = true)
+    private GameDetails gameDetails;
+    @ApiObjectField(description = "Value.") // TODO describe in more detail what is this value
+    // attribute
+    @JsonProperty(value = "value", required = true)
+    private String value;
 
-	public WrongFlagSubmitted(GameDetails gameDetailsWithStrings, String value) {
-		super();
-		this.gameDetails = gameDetailsWithStrings;
-		this.value = value;
-	}
+    public WrongFlagSubmitted(GameDetails gameDetailsWithStrings, String value) {
+        super();
+        this.gameDetails = gameDetailsWithStrings;
+        this.value = value;
+    }
 
-	public GameDetails getGameDetails() {
-		return gameDetails;
-	}
+    public GameDetails getGameDetails() {
+        return gameDetails;
+    }
 
-	public void setGameDetails(GameDetails gameDetails) {
-		this.gameDetails = gameDetails;
-	}
+    public void setGameDetails(GameDetails gameDetails) {
+        this.gameDetails = gameDetails;
+    }
 
-	public String getValue() {
-		return value;
-	}
+    public String getValue() {
+        return value;
+    }
 
-	public void setValue(String value) {
-		this.value = value;
-	}
+    public void setValue(String value) {
+        this.value = value;
+    }
 
-	@Override
-	public String toString() {
-		return "WrongFlagSubmitted [gameDetails=" + gameDetails + ", value=" + value + "]";
-	}
+    @Override
+    public String toString() {
+        return "WrongFlagSubmitted [gameDetails=" + gameDetails + ", value=" + value + "]";
+    }
 
 }

@@ -64,9 +64,9 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
         }
     }
 
-  private Set<BasicLevelInfoDTO> gatherBasicLevelInfo(Long definitionId){
-		List<AbstractLevel> levels = trainingDefinitionService.findAllLevelsFromDefinition(definitionId);
-		Set<BasicLevelInfoDTO> levelInfoDTOs = new HashSet<>();
+    private Set<BasicLevelInfoDTO> gatherBasicLevelInfo(Long definitionId) {
+        List<AbstractLevel> levels = trainingDefinitionService.findAllLevelsFromDefinition(definitionId);
+        Set<BasicLevelInfoDTO> levelInfoDTOs = new HashSet<>();
 
 
         for (int i = 0; i < levels.size(); i++) {

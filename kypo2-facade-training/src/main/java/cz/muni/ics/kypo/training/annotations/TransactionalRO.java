@@ -10,6 +10,7 @@ import java.lang.annotation.*;
 @Transactional(rollbackFor = Exception.class, readOnly = true)
 @Target({ElementType.METHOD, ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
+@Inherited
 @Documented
 public @interface TransactionalRO {
 }

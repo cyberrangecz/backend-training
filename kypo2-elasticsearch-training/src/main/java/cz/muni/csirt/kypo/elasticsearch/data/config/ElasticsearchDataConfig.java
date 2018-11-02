@@ -12,50 +12,48 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 
 /**
- * 
  * Install this project with following command (create kypo2_config.properties in /etc:
- * 
+ * <p>
  * mvn clean install -Dpath.to.db.config.file=/etc/kypo2_config.properties
- * 
- * @author Pavel Šeda
  *
+ * @author Pavel Šeda
  */
 @Configuration
 @ComponentScan(basePackages = {"cz.muni.csirt.kypo.elasticsearch.data"})
 public class ElasticsearchDataConfig {
 
-	@Value("${elasticsearch.ipaddress}")
-	private String ipaddress;
-	@Value("${elasticsearch.protocol}")
-	private String protocol;
-	@Value("${elasticsearch.port1}")
-	private int esPort1;
-	@Value("${elasticsearch.port2}")
-	private int esPort2;
+    @Value("${elasticsearch.ipaddress}")
+    private String ipaddress;
+    @Value("${elasticsearch.protocol}")
+    private String protocol;
+    @Value("${elasticsearch.port1}")
+    private int esPort1;
+    @Value("${elasticsearch.port2}")
+    private int esPort2;
 
-	@Primary
-	@Bean
-	public RestClient lowLevelClient() {
-          return RestClient
-                  .builder(new HttpHost(ipaddress, esPort1, protocol), new HttpHost(ipaddress, esPort2, protocol))
-                  .build();
-	}
+    @Primary
+    @Bean
+    public RestClient lowLevelClient() {
+        return RestClient
+                .builder(new HttpHost(ipaddress, esPort1, protocol), new HttpHost(ipaddress, esPort2, protocol))
+                .build();
+    }
 
-	@Bean
-	public RestHighLevelClient highLevelClient() {
-		return new RestHighLevelClient(lowLevelClient());
-	}
+    @Bean
+    public RestHighLevelClient highLevelClient() {
+        return new RestHighLevelClient(lowLevelClient());
+    }
 
-	@Bean(name = "objMapperESClient")
-	public ObjectMapper objectMapper() {
-		return new ObjectMapper();
-	}
+    @Bean(name = "objMapperESClient")
+    public ObjectMapper objectMapper() {
+        return new ObjectMapper();
+    }
 
-	// To resolve ${} in @Value
-	@Bean
-	public static PropertySourcesPlaceholderConfigurer propertyConfigInDev() {
-		PropertySourcesPlaceholderConfigurer confPropertyPlaceholder = new PropertySourcesPlaceholderConfigurer();
-		confPropertyPlaceholder.setIgnoreUnresolvablePlaceholders(true);
-		return confPropertyPlaceholder;
-	}
+    // To resolve ${} in @Value
+    @Bean
+    public static PropertySourcesPlaceholderConfigurer propertyConfigInDev() {
+        PropertySourcesPlaceholderConfigurer confPropertyPlaceholder = new PropertySourcesPlaceholderConfigurer();
+        confPropertyPlaceholder.setIgnoreUnresolvablePlaceholders(true);
+        return confPropertyPlaceholder;
+    }
 }

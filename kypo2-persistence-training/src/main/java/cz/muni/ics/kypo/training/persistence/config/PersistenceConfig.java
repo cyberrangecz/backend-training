@@ -8,9 +8,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 /**
- * 
  * @author Pavel Seda (441048)
- *
  */
 @Configuration
 @EnableTransactionManagement
