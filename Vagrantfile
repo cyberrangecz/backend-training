@@ -3,8 +3,8 @@
 # vi: set ft=ruby :
 
 repos = [
-	'https://gitlab.ics.muni.cz/kypo2/services-and-portlets/kypo2-user-and-group.git',
-    'https://gitlab.ics.muni.cz/kypo2/services-and-portlets/kypo2-security-commons.git',
+    'git@gitlab.ics.muni.cz:kypo2/services-and-portlets/kypo2-user-and-group.git',
+    'git@gitlab.ics.muni.cz:kypo2/services-and-portlets/kypo2-security-commons.git',
 ]
 roles = [
     {
