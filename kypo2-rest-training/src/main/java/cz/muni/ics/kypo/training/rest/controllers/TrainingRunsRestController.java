@@ -77,18 +77,18 @@ public class TrainingRunsRestController {
             @ApiResponse(code = 404, message = "Training run with given id not found."),
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.")
 
-    })
-    @GetMapping(value = "/{runId}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Object> findTrainingRunById(@ApiParam(value = "Training Run ID", required = true) @PathVariable Long runId,
-                                                      @ApiParam(value = "Fields which should be returned in REST API response", required = false)
-                                                      @RequestParam(value = "fields", required = false) String fields) {
-        LOG.debug("findTrainingRunById", runId, fields);
-        try {
-            TrainingRunDTO trainingRunResource = trainingRunFacade.findById(runId);
-            Squiggly.init(objectMapper, fields);
-            return new ResponseEntity<>(SquigglyUtils.stringify(objectMapper, trainingRunResource), HttpStatus.OK);
-        } catch (FacadeLayerException ex) {
-            throw ExceptionSorter.throwException(ex);
+  })
+  @GetMapping(value = "/{runId}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<Object> findTrainingRunById(@ApiParam(value = "Training Run ID", required = true) @PathVariable Long runId,
+      @ApiParam(value = "Fields which should be returned in REST API response", required = false) 
+      @RequestParam(value = "fields", required = false) String fields) {
+    LOG.debug("findTrainingRunById({},{})", runId, fields);
+    try {
+      TrainingRunDTO trainingRunResource = trainingRunFacade.findById(runId);
+      Squiggly.init(objectMapper, fields);
+      return new ResponseEntity<>(SquigglyUtils.stringify(objectMapper, trainingRunResource), HttpStatus.OK);
+    } catch (FacadeLayerException ex) {
+       throw ExceptionSorter.throwException(ex);
         }
     }
 
@@ -121,8 +121,7 @@ public class TrainingRunsRestController {
     @ApiPageableSwagger
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> findAllTrainingRuns(@QuerydslPredicate(root = TrainingRun.class) Predicate predicate,
-                                                      @ApiParam(value = "Pagination support.", required = false)
-                                                              Pageable pageable,
+                                                      @ApiParam(value = "Pagination support.", required = false) Pageable pageable,
                                                       @ApiParam(value = "Parameters for filtering the objects.", required = false)
                                                       @RequestParam MultiValueMap<String, String> parameters,
                                                       @ApiParam(value = "Fields which should be returned in REST API response", required = false)

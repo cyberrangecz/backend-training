@@ -42,8 +42,6 @@ public class TrainingInstanceUpdateDTO {
 	@NotNull(message = "{traininginstanceupdate.organizers.NotNull.message}")
 	private Set<UserRefDTO> organizers;
 
-	public TrainingInstanceUpdateDTO() {}
-
 	public Long getId() {
 		return id;
 	}

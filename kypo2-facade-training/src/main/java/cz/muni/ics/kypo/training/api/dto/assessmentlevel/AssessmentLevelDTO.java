@@ -21,8 +21,6 @@ public class AssessmentLevelDTO extends AbstractLevelDTO {
 	@ApiModelProperty(value = "Assessment level assessment type.")
 	private AssessmentType assessmentType;
 
-	public AssessmentLevelDTO() {}
-
 	public String getQuestions() {
 		return questions;
 	}

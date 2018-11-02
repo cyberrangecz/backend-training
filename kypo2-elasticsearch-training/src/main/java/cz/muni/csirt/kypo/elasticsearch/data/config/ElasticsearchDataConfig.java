@@ -36,12 +36,9 @@ public class ElasticsearchDataConfig {
 	@Primary
 	@Bean
 	public RestClient lowLevelClient() {
-		// @formatter:off
-          RestClient lowLevelRestClient = RestClient
+          return RestClient
                   .builder(new HttpHost(ipaddress, esPort1, protocol), new HttpHost(ipaddress, esPort2, protocol))
                   .build();
-      // @formatter:on
-		return lowLevelRestClient;
 	}
 
 	@Bean
@@ -51,8 +48,7 @@ public class ElasticsearchDataConfig {
 
 	@Bean(name = "objMapperESClient")
 	public ObjectMapper objectMapper() {
-		ObjectMapper objectMapper = new ObjectMapper();
-		return objectMapper;
+		return new ObjectMapper();
 	}
 
 	// To resolve ${} in @Value

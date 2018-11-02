@@ -4,8 +4,6 @@ public class AuthorRefDTO {
   private Long id;
   private String authorRefLogin;
 
-  public AuthorRefDTO() {}
-
   public Long getId() {
     return id;
   }

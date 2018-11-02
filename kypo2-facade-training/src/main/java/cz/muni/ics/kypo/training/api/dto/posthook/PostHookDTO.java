@@ -12,8 +12,6 @@ public class PostHookDTO {
 
   private Long id;
 
-	public PostHookDTO() {}
-
 	public Long getId() {
 		return id;
 	}

@@ -14,8 +14,6 @@ public class InfoLevelDTO extends AbstractLevelDTO {
 
 	private String content;
 
-	public InfoLevelDTO() {}
-
 	public String getContent() {
 		return content;
 	}

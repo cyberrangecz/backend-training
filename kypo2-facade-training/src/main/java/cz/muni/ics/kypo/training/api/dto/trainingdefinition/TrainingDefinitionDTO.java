@@ -30,8 +30,6 @@ public class TrainingDefinitionDTO {
 	private Set<BasicLevelInfoDTO> basicLevelInfoDTOs;
 	private boolean showStepperBar;
 
-	public TrainingDefinitionDTO() {}
-
 	public Long getId() {
 		return id;
 	}

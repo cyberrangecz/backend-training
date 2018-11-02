@@ -24,7 +24,6 @@ public class UserRef implements Serializable {
 	@ManyToMany(mappedBy = "organizers", fetch = FetchType.LAZY)
   private Set<TrainingInstance> trainingInstance = new HashSet<>();
 
-  public UserRef() {}
 
   public Long getId() {
     return id;

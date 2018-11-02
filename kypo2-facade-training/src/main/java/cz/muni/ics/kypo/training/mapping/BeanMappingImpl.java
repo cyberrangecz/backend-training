@@ -3,7 +3,6 @@ package cz.muni.ics.kypo.training.mapping;
 import cz.muni.ics.kypo.training.api.PageResultResource;
 import cz.muni.ics.kypo.training.api.PageResultResource.Pagination;
 import org.modelmapper.ModelMapper;
-import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -38,20 +37,17 @@ public class BeanMappingImpl implements BeanMapping {
 	@Override
 	public <T> Page<T> mapTo(Page<?> objects, Class<T> mapToClass) {
 		List<T> mappedCollection = new ArrayList<>();
-		objects.forEach(obj -> {
-			mappedCollection.add(modelMapper.map(obj, mapToClass));
-		});
+		objects.forEach(obj ->
+			mappedCollection.add(modelMapper.map(obj, mapToClass)));
 		return new PageImpl<T>(mappedCollection, objects.getPageable(), mappedCollection.size());
 	}
 
 	@Override
 	public <T> PageResultResource<T> mapToPageResultDTO(Page<?> objects, Class<T> mapToClass) {
 		List<T> mappedCollection = new ArrayList<>();
-		objects.forEach(obj -> {
-			mappedCollection.add(modelMapper.map(obj, mapToClass));
-		});
-		PageResultResource<T> pageResultDTO = new PageResultResource<T>(mappedCollection, createPagination(objects));
-		return pageResultDTO;
+		objects.forEach(obj ->
+			mappedCollection.add(modelMapper.map(obj, mapToClass)));
+		return new PageResultResource<T>(mappedCollection, createPagination(objects));
 	}
 
 	@Override

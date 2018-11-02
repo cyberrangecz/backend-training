@@ -209,8 +209,7 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
         aTRD.setPossibleAction(Actions.TRY_AGAIN);
       }
     }
-    PageResultResource<AccessedTrainingRunDTO> pageResultDTO = new PageResultResource<AccessedTrainingRunDTO>(accessedTrainingRunDTOS, createPagination(runs));
-    return pageResultDTO;
+    return new PageResultResource<>(accessedTrainingRunDTOS, createPagination(runs));
   }
 
   private PageResultResource.Pagination createPagination(Page<?> objects) {

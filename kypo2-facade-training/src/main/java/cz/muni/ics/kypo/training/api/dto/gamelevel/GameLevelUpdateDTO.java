@@ -2,8 +2,6 @@ package cz.muni.ics.kypo.training.api.dto.gamelevel;
 
 import cz.muni.ics.kypo.training.api.dto.hint.HintDTO;
 import io.swagger.annotations.ApiModel;
-import org.hibernate.validator.constraints.Length;
-
 import javax.validation.constraints.*;
 import java.util.Arrays;
 import java.util.Set;
@@ -36,8 +34,6 @@ public class GameLevelUpdateDTO {
 	@Min(value = 0, message = "{gamelevelupdate.incorrectFlagLimit.Min.message}")
 	private int incorrectFlagLimit;
 	private Set<HintDTO> hints;
-
-	public GameLevelUpdateDTO() {}
 
 	public Long getId() {
 		return id;

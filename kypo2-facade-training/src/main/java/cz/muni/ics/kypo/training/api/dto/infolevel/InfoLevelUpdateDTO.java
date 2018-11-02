@@ -1,7 +1,5 @@
 package cz.muni.ics.kypo.training.api.dto.infolevel;
 
-import javax.validation.constraints.Max;
-import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
@@ -20,8 +18,6 @@ public class InfoLevelUpdateDTO {
 	@NotEmpty(message = "{infolevelupdate.title.NotEmpty.message}")
 	protected String title;
 	private String content;
-
-	public InfoLevelUpdateDTO() {}
 
 	public Long getId() {
 		return id;

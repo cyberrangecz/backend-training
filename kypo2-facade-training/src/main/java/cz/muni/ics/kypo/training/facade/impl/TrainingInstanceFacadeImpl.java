@@ -64,17 +64,17 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
         return beanMapping.mapToPageResultDTO(trainingInstanceService.findAll(predicate, pageable), TrainingInstanceDTO.class);
     }
 
+
     @Override
     @TransactionalWO
     public String update(TrainingInstanceUpdateDTO trainingInstance) {
         LOG.debug("update({})", trainingInstance);
         try {
             Objects.requireNonNull(trainingInstance);
-            TrainingInstance UpdatedTrainingInstance = beanMapping.mapTo(trainingInstance, TrainingInstance.class);
-            trainingInstanceService.update(UpdatedTrainingInstance);
+            TrainingInstance updatedTrainingInstance = beanMapping.mapTo(trainingInstance, TrainingInstance.class);
+            trainingInstanceService.update(updatedTrainingInstance);
             if (!trainingInstance.getKeyword().isEmpty()) {
-                String newKeyword = trainingInstanceService.generatePassword(UpdatedTrainingInstance, trainingInstance.getKeyword());
-                return newKeyword;
+                return trainingInstanceService.generatePassword(updatedTrainingInstance, trainingInstance.getKeyword());
             }
             return null;
         } catch (ServiceLayerException ex) {
@@ -98,9 +98,10 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
         }
     }
 
+
     @Override
     @TransactionalWO
-    public void delete(Long id) throws FacadeLayerException {
+    public void delete(Long id) {
         try {
             Objects.requireNonNull(id);
             trainingInstanceService.delete(id);
@@ -109,9 +110,10 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
         }
     }
 
+
 	@Override
 	@TransactionalWO
-	public ResponseEntity<Void> allocateSandboxes(Long instanceId) throws FacadeLayerException {
+	public ResponseEntity<Void> allocateSandboxes(Long instanceId) {
 		LOG.debug("allocateSandboxes({})", instanceId);
 		try {
 			return trainingInstanceService.allocateSandboxes(instanceId);

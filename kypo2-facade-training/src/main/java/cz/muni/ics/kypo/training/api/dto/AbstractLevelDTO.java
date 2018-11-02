@@ -20,8 +20,6 @@ public class AbstractLevelDTO {
 	protected PreHookDTO preHook;
 	protected PostHookDTO postHook;
 
-	public AbstractLevelDTO() {}
-
 	public Long getId() {
 		return id;
 	}

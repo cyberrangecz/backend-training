@@ -27,7 +27,6 @@ import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.Arrays;
 import java.util.Optional;
 import org.springframework.web.client.RestTemplate;
 
@@ -78,14 +77,14 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
     LOG.debug("create({})", trainingInstance);
     Assert.notNull(trainingInstance, "Input training instance must not be null");
     TrainingInstance tI = trainingInstanceRepository.save(trainingInstance);
-    LOG.info("Training instance with id: " + trainingInstance.getId() + "created.");
+    LOG.info("Training instance with id: {} created.", trainingInstance.getId());
     return tI;
   }
 
   @Override
 	@PreAuthorize("hasAuthority('ADMINISTRATOR')" +
 			"or @securityService.isOrganizeOfGivenTrainingInstance(#trainingInstance.id)")
-  public void update(TrainingInstance trainingInstance) throws ServiceLayerException{
+  public void update(TrainingInstance trainingInstance) {
     LOG.debug("update({})", trainingInstance);
     Assert.notNull(trainingInstance, "Input training instance must not be null");
     TrainingInstance tI = trainingInstanceRepository.findById(trainingInstance.getId())
@@ -95,13 +94,13 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
       throw new ServiceLayerException("Starting time of instance must be in future", ErrorCode.RESOURCE_CONFLICT);
     trainingInstance.setPasswordHash(tI.getPasswordHash());
     trainingInstanceRepository.save(trainingInstance);
-    LOG.info("Training instance with id: " + trainingInstance.getId() + "updated.");
+    LOG.info("Training instance with id: {} updated.", trainingInstance.getId());
   }
 
   @Override
 	@PreAuthorize("hasAuthority('ADMINISTRATOR')"  +
 			"or @securityService.isOrganizeOfGivenTrainingInstance(#id)")
-  public void delete(Long id) throws ServiceLayerException{
+  public void delete(Long id) {
     LOG.debug("delete({})", id);
     Assert.notNull(id, "Input training instance id must not be null");
     TrainingInstance trainingInstance = trainingInstanceRepository.findById(id)
@@ -110,7 +109,7 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
     if (!currentDate.isAfter(trainingInstance.getEndTime()))
       throw new ServiceLayerException("Only finished instances can be deleted.", ErrorCode.RESOURCE_CONFLICT);
     trainingInstanceRepository.delete(trainingInstance);
-    LOG.info("Training instance with id: " + id + "deleted.");
+    LOG.info("Training instance with id: {} deleted.", id);
   }
 
   @Override
@@ -138,7 +137,7 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
 	@Override
 	@PreAuthorize("hasAuthority('ADMINISTRATOR')" +
 			"or @securityService.isOrganizeOfGivenTrainingInstance(#instanceId)")
-	public ResponseEntity<Void> allocateSandboxes(Long instanceId) throws ServiceLayerException {
+	public ResponseEntity<Void> allocateSandboxes(Long instanceId) {
 		LOG.debug("allocateSandboxes({})", instanceId);
 		HttpHeaders httpHeaders = new HttpHeaders();
 		TrainingInstance trainingInstance = findById(instanceId);
@@ -152,7 +151,7 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
 	@PreAuthorize("hasAuthority('ADMINISTRATOR')" +
 			"or @securityService.isOrganizeOfGivenTrainingInstance(#trainingInstanceId)")
 	public Page<TrainingRun> findTrainingRunsByTrainingInstance(Long trainingInstanceId, Pageable pageable) {
-		LOG.debug("findTrainingRunsByTrainingInstance({},{})", trainingInstanceId);
+		LOG.debug("findTrainingRunsByTrainingInstance({})", trainingInstanceId);
 		org.springframework.util.Assert.notNull(trainingInstanceId, "Input training instance id must not be null.");
 		return trainingRunRepository.findAllByTrainingInstanceId(trainingInstanceId, pageable);
 	}

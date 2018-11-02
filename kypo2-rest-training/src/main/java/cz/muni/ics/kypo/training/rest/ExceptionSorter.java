@@ -5,6 +5,9 @@ import cz.muni.ics.kypo.training.rest.exceptions.*;
 import org.springframework.security.access.AccessDeniedException;
 
 public class ExceptionSorter {
+	private ExceptionSorter() {
+		throw new IllegalStateException("Util class");
+	}
 
 	public static RuntimeException throwException(RuntimeException ex) {
 		switch (((ServiceLayerException) ex.getCause()).getCode()) {

@@ -40,8 +40,6 @@ public class TrainingDefinition implements Serializable {
 	@Column(name = "show_stepper_bar", nullable = false)
 	private boolean showStepperBar;
 
-	public TrainingDefinition() {}
-
 	public Long getId() {
 		return id;
 	}

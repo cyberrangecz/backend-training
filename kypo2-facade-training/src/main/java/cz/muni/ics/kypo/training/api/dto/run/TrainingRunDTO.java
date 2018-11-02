@@ -1,8 +1,6 @@
 package cz.muni.ics.kypo.training.api.dto.run;
 
-import cz.muni.ics.kypo.training.api.dto.AbstractLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.SandboxInstanceRefDTO;
-import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceDTO;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import cz.muni.ics.kypo.training.persistence.model.enums.TRState;
 import cz.muni.ics.kypo.training.utils.converters.LocalDateTimeSerializer;
@@ -26,8 +24,6 @@ public class TrainingRunDTO {
 	private String eventLogReference;
 	private TRState state;
 	private SandboxInstanceRefDTO sandboxInstanceRef;
-
-	public TrainingRunDTO() {}
 
 	public Long getId() {
 		return id;

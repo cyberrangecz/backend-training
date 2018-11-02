@@ -36,8 +36,6 @@ public class TrainingDefinitionUpdateDTO {
 	@NotNull(message = "{trainingdefinitionupdate.showStepperBar.NotNull.message}")
 	private boolean showStepperBar;
 
-	public TrainingDefinitionUpdateDTO() {}
-
 	public Long getId() {
 		return id;
 	}
