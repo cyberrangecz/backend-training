@@ -135,23 +135,24 @@ public class ApiErrorTraining {
 		if (errors == null) {
 			if (other.errors != null)
 				return false;
-		} else if (!errors.equals(other.getErrors()))
+		} else if (!errors.equals(other.getErrors())) {
 			return false;
+		}
 		if (message == null) {
 			if (other.message != null)
 				return false;
-		} else if (!message.equals(other.getMessage()))
+		} else if (!message.equals(other.getMessage())) {
 			return false;
+		}
 		if (path == null) {
 			if (other.path != null)
 				return false;
-		} else if (!path.equals(other.getPath()))
+		} else if (!path.equals(other.getPath())) {
 			return false;
+		}
 		if (status != other.getStatus())
 			return false;
-		if (timestamp != other.getTimestamp())
-			return false;
-		return true;
+		return timestamp != other.getTimestamp();
 	}
 
 }

@@ -33,8 +33,6 @@ public class TrainingDefinitionCreateDTO {
 	@NotNull(message = "{trainingdefinitioncreate.sandboxDefinitionRef.NotNull.message}")
 	private SandboxDefinitionRefDTO sandboxDefinitionRef;
 
-	public TrainingDefinitionCreateDTO() {}
-
 	public String getTitle() {
 		return title;
 	}

@@ -17,12 +17,10 @@ public class SandboxInstanceRef implements Serializable {
 	@Column(name = "id", unique = true, nullable = false, insertable = false)
 	private Long id;
 	@Column(name = "sandbox_instance_ref")
-	private Long sandboxInstanceRef;
+	private Long sandboxInstanceRefId;
 	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn(name = "training_instance_id", nullable = false)
 	private TrainingInstance trainingInstance;
-
-	public SandboxInstanceRef() {}
 
 	public Long getId() {
 		return id;
@@ -33,11 +31,11 @@ public class SandboxInstanceRef implements Serializable {
 	}
 
 	public Long getSandboxInstanceRef() {
-		return sandboxInstanceRef;
+		return sandboxInstanceRefId;
 	}
 
 	public void setSandboxInstanceRef(Long sandboxInstanceRef) {
-		this.sandboxInstanceRef = sandboxInstanceRef;
+		this.sandboxInstanceRefId = sandboxInstanceRef;
 	}
 
 	public TrainingInstance getTrainingInstance() {
@@ -50,7 +48,7 @@ public class SandboxInstanceRef implements Serializable {
 
 	@Override
 	public String toString() {
-		return "SandboxInstanceRef [id=" + id + ", sandboxInstanceRef=" + sandboxInstanceRef + ", trainingInstance=" + trainingInstance
+		return "SandboxInstanceRef [id=" + id + ", sandboxInstanceRef=" + sandboxInstanceRefId + ", trainingInstance=" + trainingInstance
 				+ ", toString()=" + super.toString() + "]";
 	}
 

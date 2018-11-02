@@ -9,7 +9,6 @@ import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.validation.BindException;
 import org.springframework.validation.FieldError;
 import org.springframework.validation.ObjectError;
@@ -51,7 +50,7 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
 			final HttpStatus status, final WebRequest request) {
 		LOG.debug("handleMethodArgumentNotValid({}, {}, {}, {})", new Object[] {ex, headers, status, request});
 
-		final List<String> errors = new ArrayList<String>();
+		final List<String> errors = new ArrayList<>();
 		for (final FieldError error : ex.getBindingResult().getFieldErrors()) {
 			errors.add(error.getField() + ": " + error.getDefaultMessage());
 		}
@@ -69,7 +68,7 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
 			final WebRequest request) {
 		LOG.debug("handleBindException({}, {}, {}, {})", new Object[] {ex, headers, status, request});
 
-		final List<String> errors = new ArrayList<String>();
+		final List<String> errors = new ArrayList<>();
 		for (final FieldError error : ex.getBindingResult().getFieldErrors()) {
 			errors.add(error.getField() + ": " + error.getDefaultMessage());
 		}
@@ -525,7 +524,7 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
 	public ResponseEntity<Object> handleAccessDeniedException(java.nio.file.AccessDeniedException ex, WebRequest request) {
 		LOG.debug("handleAccessDeniedException({}, {})", new Object[] {ex, request});
 
-		return new ResponseEntity<Object>("Access denied message here", new HttpHeaders(), HttpStatus.FORBIDDEN);
+		return new ResponseEntity<>("Access denied message here", new HttpHeaders(), HttpStatus.FORBIDDEN);
 	}
 
 	@ExceptionHandler({org.springframework.security.access.AccessDeniedException.class})
@@ -565,7 +564,7 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
 			HttpServletRequest req) {
 		LOG.debug("handleConstraintViolation({}, {}, {})", new Object[] {ex, request, req});
 
-		final List<String> errors = new ArrayList<String>();
+		final List<String> errors = new ArrayList<>();
 		for (final ConstraintViolation<?> violation : ex.getConstraintViolations()) {
 			errors.add(violation.getRootBeanClass().getName() + " " + violation.getPropertyPath() + ": " + violation.getMessage());
 		}

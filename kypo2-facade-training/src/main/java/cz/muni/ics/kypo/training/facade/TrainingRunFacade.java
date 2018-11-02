@@ -64,14 +64,6 @@ public interface TrainingRunFacade {
   PageResultResource<TrainingRunDTO> findAllByTrainingDefinition(Long trainingDefinitionId, Pageable pageable);
 
   /**
-   * Finds all Training Runs by specific Training Instance.
-   *
-   * @param trainingInstanceId id of Training Instance whose Training Runs would be returned.
-   * @return Training Runs of specific Training Instance
-   */
-  PageResultResource<TrainingRunDTO> findAllByTrainingInstance(Long trainingInstanceId, Pageable pageable);
-
-  /**
    * Gets next level of given Training Run and set new current level.
    *
    * @param trainingRunId id of Training Run whose next level should be returned.

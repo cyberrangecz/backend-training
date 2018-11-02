@@ -1,7 +1,6 @@
 package cz.muni.ics.kypo.training.utils.converters;
 
 import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 
@@ -21,7 +20,7 @@ public class LocalDateDeserializer extends StdDeserializer<LocalDate> {
 	}
 
 	@Override
-	public LocalDate deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException, JsonProcessingException {
+	public LocalDate deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException {
 		return LocalDate.parse(jp.readValueAs(String.class));
 	}
 

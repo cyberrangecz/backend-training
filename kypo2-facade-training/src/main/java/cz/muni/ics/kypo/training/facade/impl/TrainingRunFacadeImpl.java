@@ -138,14 +138,6 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
   }
 
   @Override
-  @TransactionalRO
-  public PageResultResource<TrainingRunDTO> findAllByTrainingInstance(Long trainingInstanceId, Pageable pageable) {
-    LOG.debug("findAllByTrainingInstance({})", trainingInstanceId);
-    Page<TrainingRun> trainingRuns = trainingRunService.findAllByTrainingInstance(trainingInstanceId, pageable);
-    return beanMapping.mapToPageResultDTO(trainingRuns, TrainingRunDTO.class);
-  }
-
-  @Override
   @TransactionalWO
   public AbstractLevelDTO getNextLevel(Long trainingRunId) {
     LOG.debug("getNextLevel({})", trainingRunId);
@@ -217,8 +209,7 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
         aTRD.setPossibleAction(Actions.TRY_AGAIN);
       }
     }
-    PageResultResource<AccessedTrainingRunDTO> pageResultDTO = new PageResultResource<AccessedTrainingRunDTO>(accessedTrainingRunDTOS, createPagination(runs));
-    return pageResultDTO;
+    return new PageResultResource<>(accessedTrainingRunDTOS, createPagination(runs));
   }
 
   private PageResultResource.Pagination createPagination(Page<?> objects) {

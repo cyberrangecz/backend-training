@@ -40,8 +40,6 @@ public class TrainingInstanceCreateDTO {
 	@NotNull(message = "{traininginstancecreate.organizers.NotNull.message}")
 	private Set<UserRefDTO> organizers;
 
-	public TrainingInstanceCreateDTO() {}
-
 	public LocalDateTime getStartTime() {
 		return startTime;
 	}
