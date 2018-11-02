@@ -16,7 +16,7 @@
     JRE_HOME: "/usr/lib/jvm/java-8-oracle/jre"
   become: yes
 
-  pre_tasks:
+  pre_tasks:vagran
     - name: Create elasticsearch user
       user:
         name: elasticsearch
