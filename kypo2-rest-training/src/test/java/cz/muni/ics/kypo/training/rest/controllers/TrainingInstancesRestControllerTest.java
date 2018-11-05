@@ -22,6 +22,7 @@ import cz.muni.ics.kypo.training.rest.exceptions.ResourceNotFoundException;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,14 +56,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = TrainingInstancesRestController.class)
-@ComponentScan(basePackages = "cz.muni.ics.kypo")
 public class TrainingInstancesRestControllerTest {
 
-	@Autowired
 	private TrainingInstancesRestController trainingInstancesRestController;
 
-	@MockBean
+	@Mock
 	private TrainingInstanceFacade trainingInstanceFacade;
 
 	private MockMvc mockMvc;
@@ -85,6 +83,7 @@ public class TrainingInstancesRestControllerTest {
 	@Before
 	public void init() {
 		MockitoAnnotations.initMocks(this);
+		trainingInstancesRestController = new TrainingInstancesRestController(trainingInstanceFacade, objectMapper);
 		this.mockMvc = MockMvcBuilders.standaloneSetup(trainingInstancesRestController)
 				.setCustomArgumentResolvers(new PageableHandlerMethodArgumentResolver(),
 						new QuerydslPredicateArgumentResolver(new QuerydslBindingsFactory(SimpleEntityPathResolver.INSTANCE), Optional.empty()))
