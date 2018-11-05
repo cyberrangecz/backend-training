@@ -4,7 +4,6 @@ import com.google.gson.JsonObject;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.PathBuilder;
 import cz.muni.csirt.kypo.elasticsearch.service.audit.AuditService;
-import cz.muni.ics.kypo.training.config.ServiceTrainingConfigTest;
 
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.persistence.model.*;
@@ -12,6 +11,7 @@ import cz.muni.ics.kypo.training.persistence.model.enums.TRState;
 import cz.muni.ics.kypo.training.persistence.repository.*;
 import cz.muni.ics.kypo.training.persistence.utils.SandboxInfo;
 
+import cz.muni.ics.kypo.training.service.impl.TrainingRunServiceImpl;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -20,20 +20,11 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.Import;
-import org.springframework.core.ParameterizedTypeReference;
+import org.mockito.MockitoAnnotations;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
@@ -50,29 +41,26 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.BDDMockito.*;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest
-@Import(ServiceTrainingConfigTest.class)
 public class TrainingRunServiceTest {
 
     @Rule
     public ExpectedException thrown = ExpectedException.none();
 
-    @Autowired
     private TrainingRunService trainingRunService;
 
-    @MockBean
+    @Mock
     private TrainingRunRepository trainingRunRepository;
-    @MockBean
+    @Mock
     private AuditService auditService;
-    @MockBean
+    @Mock
     private AbstractLevelRepository abstractLevelRepository;
-    @MockBean
+    @Mock
     private TrainingInstanceRepository trainingInstanceRepository;
-    @MockBean
+    @Mock
     private ParticipantRefRepository participantRefRepository;
-    @MockBean
+    @Mock
     private HintRepository hintRepository;
-    @MockBean
+    @Mock
     private RestTemplate restTemplate;
 
     private TrainingRun trainingRun1, trainingRun2;
@@ -85,13 +73,12 @@ public class TrainingRunServiceTest {
     private SandboxInfo sandboxInfo;
     private TrainingDefinition trainingDefinition;
 
-
-    @SpringBootApplication
-    static class TestConfiguration {
-    }
-
     @Before
     public void init() {
+        MockitoAnnotations.initMocks(this);
+        trainingRunService = new TrainingRunServiceImpl(trainingRunRepository, abstractLevelRepository, trainingInstanceRepository,
+            participantRefRepository, restTemplate, hintRepository, auditService);
+
         trainingDefinition = new TrainingDefinition();
         trainingDefinition.setId(1L);
         trainingDefinition.setTitle("Title");
