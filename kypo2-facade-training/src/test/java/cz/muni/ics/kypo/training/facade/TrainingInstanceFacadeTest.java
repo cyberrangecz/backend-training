@@ -7,9 +7,10 @@ import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionDT
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceCreateDTO;
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceDTO;
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceUpdateDTO;
-import cz.muni.ics.kypo.training.config.FacadeConfigTest;
 import cz.muni.ics.kypo.training.exception.FacadeLayerException;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
+import cz.muni.ics.kypo.training.facade.impl.TrainingInstanceFacadeImpl;
+import cz.muni.ics.kypo.training.mapping.BeanMappingImpl;
 import cz.muni.ics.kypo.training.persistence.model.TrainingInstance;
 import cz.muni.ics.kypo.training.service.TrainingInstanceService;
 import org.junit.Before;
@@ -17,11 +18,9 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.Import;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -38,29 +37,25 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.BDDMockito.*;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest
-@Import(FacadeConfigTest.class)
 public class TrainingInstanceFacadeTest {
 
 	@Rule
 	public ExpectedException thrown = ExpectedException.none();
 
-	@Autowired
 	private TrainingInstanceFacade trainingInstanceFacade;
 
-	@MockBean
+	@Mock
 	private TrainingInstanceService trainingInstanceService;
 
 	private TrainingInstance trainingInstance1, trainingInstance2;
 	private TrainingInstanceCreateDTO trainingInstanceCreate;
 	private TrainingInstanceUpdateDTO trainingInstanceUpdate;
 
-	@SpringBootApplication
-    static class TestConfiguration {
-    }
-
 	@Before
 	public void init() {
+		MockitoAnnotations.initMocks(this);
+		trainingInstanceFacade = new TrainingInstanceFacadeImpl(trainingInstanceService, new BeanMappingImpl(new ModelMapper()));
+
 		trainingInstance1 = new TrainingInstance();
 		trainingInstance1.setId(1L);
 		trainingInstance1.setTitle("test");

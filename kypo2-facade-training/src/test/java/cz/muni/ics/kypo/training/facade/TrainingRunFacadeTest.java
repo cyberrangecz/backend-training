@@ -5,9 +5,10 @@ import com.querydsl.core.types.dsl.PathBuilder;
 import cz.muni.ics.kypo.training.api.dto.IsCorrectFlagDTO;
 import cz.muni.ics.kypo.training.api.dto.run.AccessTrainingRunDTO;
 import cz.muni.ics.kypo.training.api.dto.run.TrainingRunDTO;
-import cz.muni.ics.kypo.training.config.FacadeConfigTest;
 import cz.muni.ics.kypo.training.exception.FacadeLayerException;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
+import cz.muni.ics.kypo.training.facade.impl.TrainingRunFacadeImpl;
+import cz.muni.ics.kypo.training.mapping.BeanMappingImpl;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.model.enums.AssessmentType;
 import cz.muni.ics.kypo.training.persistence.model.enums.TRState;
@@ -17,11 +18,9 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.Import;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -35,17 +34,14 @@ import static org.junit.Assert.assertEquals;
 import static org.mockito.BDDMockito.*;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest
-@Import(FacadeConfigTest.class)
 public class TrainingRunFacadeTest {
 
 	@Rule
 	public ExpectedException thrown = ExpectedException.none();
 
-	@Autowired
 	private TrainingRunFacade trainingRunFacade;
 
-	@MockBean
+	@Mock
 	private TrainingRunService trainingRunService;
 
     private TrainingRun trainingRun1, trainingRun2;
@@ -54,13 +50,11 @@ public class TrainingRunFacadeTest {
     private InfoLevel infoLevel;
     private AssessmentLevel assessmentLevel;
 
-	@SpringBootApplication
-	static class TestConfiguration {
-	}
-
-
     @Before
     public void init() {
+    	MockitoAnnotations.initMocks(this);
+    	trainingRunFacade = new TrainingRunFacadeImpl(trainingRunService, new BeanMappingImpl(new ModelMapper()));
+
         trainingRun1 = new TrainingRun();
         trainingRun1.setId(1L);
         trainingRun1.setState(TRState.READY);
@@ -196,7 +190,6 @@ public class TrainingRunFacadeTest {
     private void deepEquals(TrainingRun expected, TrainingRunDTO actual) {
         assertEquals(expected.getId(), actual.getId());
         assertEquals(expected.getState(), actual.getState());
-
 		}
 
 }

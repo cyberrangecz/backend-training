@@ -10,9 +10,9 @@ import cz.muni.ics.kypo.training.api.dto.infolevel.InfoLevelUpdateDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionCreateDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionUpdateDTO;
-import cz.muni.ics.kypo.training.config.FacadeConfigTest;
 import cz.muni.ics.kypo.training.exception.FacadeLayerException;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
+import cz.muni.ics.kypo.training.facade.impl.TrainingDefinitionFacadeImpl;
 import cz.muni.ics.kypo.training.mapping.BeanMapping;
 import cz.muni.ics.kypo.training.mapping.BeanMappingImpl;
 import cz.muni.ics.kypo.training.persistence.model.AssessmentLevel;
@@ -27,12 +27,9 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -45,21 +42,17 @@ import java.util.List;
 import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
 import static org.mockito.BDDMockito.*;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest
-@Import(FacadeConfigTest.class)
 public class TrainingDefinitionFacadeTest {
 
 	@Rule
 	public ExpectedException thrown = ExpectedException.none();
 
-	@Autowired
 	private TrainingDefinitionFacade trainingDefinitionFacade;
 
-	@MockBean
+	@Mock
 	private TrainingDefinitionService trainingDefinitionService;
 
 	private BeanMapping beanMapping;
@@ -77,12 +70,10 @@ public class TrainingDefinitionFacadeTest {
 	private InfoLevel infoLevel;
 	private InfoLevelUpdateDTO infoLevelUpdate;
 
-	@SpringBootApplication
-	static class TestConfiguration {
-	}
-
 	@Before
 	public void init() {
+		MockitoAnnotations.initMocks(this);
+		trainingDefinitionFacade = new TrainingDefinitionFacadeImpl(trainingDefinitionService, new BeanMappingImpl(new ModelMapper()));
 		beanMapping = new BeanMappingImpl(new ModelMapper());
 		assessmentLevel = new AssessmentLevel();
 		assessmentLevel.setId(1L);
@@ -150,9 +141,9 @@ public class TrainingDefinitionFacadeTest {
 
 	@Test
 	public void findTrainingDefinitionById() {
-		given(trainingDefinitionService.findById(any(Long.class))).willReturn(trainingDefinition1);
-		trainingDefinitionFacade.findById(trainingDefinition1.getId());
-		then(trainingDefinitionService).should().findById(trainingDefinition1.getId());
+		given(trainingDefinitionService.findById(1L)).willReturn(trainingDefinition1);
+		trainingDefinitionFacade.findById(1L);
+		then(trainingDefinitionService).should().findById(1L);
 	}
 
 	@Test
