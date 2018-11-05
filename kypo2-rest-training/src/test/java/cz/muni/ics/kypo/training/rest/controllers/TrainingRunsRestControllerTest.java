@@ -22,7 +22,6 @@ import cz.muni.ics.kypo.training.mapping.BeanMappingImpl;
 import cz.muni.ics.kypo.training.persistence.model.TrainingRun;
 import cz.muni.ics.kypo.training.persistence.model.enums.AssessmentType;
 import cz.muni.ics.kypo.training.persistence.model.enums.TRState;
-import cz.muni.ics.kypo.training.rest.config.RestConfigTest;
 import cz.muni.ics.kypo.training.rest.exceptions.BadRequestException;
 import cz.muni.ics.kypo.training.rest.exceptions.InternalServerErrorException;
 import cz.muni.ics.kypo.training.rest.exceptions.ResourceNotFoundException;
@@ -36,7 +35,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.Import;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -67,7 +66,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = TrainingRunsRestController.class)
-@Import(RestConfigTest.class)
+@ComponentScan(basePackages = "cz.muni.ics.kypo")
 public class TrainingRunsRestControllerTest {
 
 	@Autowired

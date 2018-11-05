@@ -30,7 +30,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -174,92 +173,60 @@ public class TrainingInstancesRestControllerTest {
 		assertEquals(ResourceNotFoundException.class, exception.getClass());
 	}
 
-		@Test
-		public void findAllTrainingInstances() throws Exception {
-				String valueTi = convertObjectToJsonBytes(trainingInstanceDTOPageResultResource);
-				given(objectMapper.writeValueAsString(any(Object.class))).willReturn(valueTi);
-				given(trainingInstanceFacade.findAll(any(Predicate.class),any(Pageable.class))).willReturn(trainingInstanceDTOPageResultResource);
-
-				MockHttpServletResponse result = mockMvc.perform(get("/training-instances"))
-						.andExpect(status().isOk())
-						.andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-						.andReturn().getResponse();
-				assertEquals(convertObjectToJsonBytes(convertObjectToJsonBytes(trainingInstanceDTOPageResultResource)), result.getContentAsString());
-		}
-
-		@Test
-		public void deleteTrainingInstance() throws Exception {
-				mockMvc.perform(delete("/training-instances"+"/{id}", 1l)
-						.contentType(MediaType.APPLICATION_JSON_VALUE))
-						.andExpect(status().isOk());
-		}
-
-		@Test
-		public void deleteTrainingInstanceWithFacadeException() throws Exception {
-				Exception exceptionThrow = new ServiceLayerException("message", ErrorCode.RESOURCE_NOT_FOUND);
-				willThrow(new FacadeLayerException(exceptionThrow)).given(trainingInstanceFacade).delete(any(Long.class));
-				Exception exception = mockMvc.perform(delete("/training-instances"+"/{id}", 1l)
-						.contentType(MediaType.APPLICATION_JSON_VALUE))
-						.andExpect(status().isNotFound())
-						.andReturn().getResolvedException();
-				assertEquals(ResourceNotFoundException.class, exception.getClass());
-		}
-
-		@Test
-		public void createTrainingInstance() throws Exception {
-			String valueTd = convertObjectToJsonBytes(trainingInstanceCreateDTO);
-			given(objectMapper.writeValueAsString(any(Object.class))).willReturn(valueTd);
-			given(trainingInstanceFacade.create(any(TrainingInstanceCreateDTO.class))).willReturn(newTrainingInstanceDTO);
-			MockHttpServletResponse result = mockMvc
-					.perform(post("/training-instances").content(convertObjectToJsonBytes(trainingInstanceCreateDTO))
-							.contentType(MediaType.APPLICATION_JSON_VALUE))
-					.andExpect(status().isOk()).andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+	@Test
+	public void findAllTrainingInstances() throws Exception {
+			String valueTi = convertObjectToJsonBytes(trainingInstanceDTOPageResultResource);
+			given(objectMapper.writeValueAsString(any(Object.class))).willReturn(valueTi);
+			given(trainingInstanceFacade.findAll(any(Predicate.class),any(Pageable.class))).willReturn(trainingInstanceDTOPageResultResource);
+			MockHttpServletResponse result = mockMvc.perform(get("/training-instances"))
+					.andExpect(status().isOk())
+					.andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
 					.andReturn().getResponse();
-		}
-
-		@Test
-		public void updateTrainingInstance() throws Exception {
-			String valueTi = convertObjectToJsonBytes(trainingInstanceUpdateDTO);
-			System.out.println(convertObjectToJsonBytes(trainingInstanceUpdateDTO.getStartTime()));
-			mockMvc.perform(put("/training-instances").content(valueTi)
-					.contentType(MediaType.APPLICATION_JSON_VALUE)).andExpect(status().isOk());
-		}
-
-		@Test
-		public void allocateSandboxes_withFecadeException() throws Exception {
+			assertEquals(convertObjectToJsonBytes(convertObjectToJsonBytes(trainingInstanceDTOPageResultResource)), result.getContentAsString());
+	}
+	@Test
+	public void deleteTrainingInstance() throws Exception {
+			mockMvc.perform(delete("/training-instances"+"/{id}", 1l)
+					.contentType(MediaType.APPLICATION_JSON_VALUE))
+					.andExpect(status().isOk());
+	}
+	@Test
+	public void deleteTrainingInstanceWithFacadeException() throws Exception {
 			Exception exceptionThrow = new ServiceLayerException("message", ErrorCode.RESOURCE_NOT_FOUND);
-				willThrow(new FacadeLayerException(exceptionThrow)).given(trainingInstanceFacade).allocateSandboxes(any(Long.class));
-				Exception exception =
-						mockMvc.perform(post("/training-instances" + "/{instanceId}/" + "sandbox-instances", 698L))
-								.andExpect(status().isNotFound()).andReturn().getResolvedException();
-				assertEquals(ResourceNotFoundException.class, exception.getClass());
-		}
-
-
-//	// TODO json parser cannot parse LocalDateTime
-//	 @Test
-//	 public void createTrainingInstance() throws Exception {
-//	 String valueTi = convertObjectToJsonBytes(trainingInstanceCreateDTO);
-//	 given(objectMapper.writeValueAsString(any(Object.class))).willReturn(valueTi);
-//	 given(trainingInstanceFacade.create(any(TrainingInstanceCreateDTO.class))).willReturn(trainingInstanceCreateDTO);
-//	 given(beanMapping.mapTo(any(TrainingInstanceCreateDTO.class),
-//	 eq(TrainingInstance.class))).willReturn(trainingInstance1);
-//	 MockHttpServletResponse result = mockMvc
-//	 .perform(post("/training-instances").content(convertObjectToJsonBytes(trainingInstanceCreateDTO))
-//	 .contentType(MediaType.APPLICATION_JSON_VALUE))
-//	 .andExpect(status().isOk()).andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON)).andReturn().getResponse();
-//	 assertEquals(convertObjectToJsonBytes(convertObjectToJsonBytes(trainingInstanceCreateDTO)),
-//	 result.getContentAsString());
-//	}
-	//
-	// @Test
-	// public void createTrainingInstanceWithFacadeException() throws Exception {
-	// willThrow(FacadeLayerException.class).given(trainingInstanceFacade).create(trainingInstanceCreateDTO);
-	// Exception exception =
-	// mockMvc.perform(post("/training-instances").content(convertObjectToJsonBytes(trainingInstanceCreateDTO))
-	// .contentType(MediaType.APPLICATION_JSON_VALUE)).andExpect(status().isNotAcceptable()).andReturn().getResolvedException();
-	// assertEquals(ResourceNotCreatedException.class, exception.getClass());
-	// }
+			willThrow(new FacadeLayerException(exceptionThrow)).given(trainingInstanceFacade).delete(any(Long.class));
+			Exception exception = mockMvc.perform(delete("/training-instances"+"/{id}", 1l)
+					.contentType(MediaType.APPLICATION_JSON_VALUE))
+					.andExpect(status().isNotFound())
+					.andReturn().getResolvedException();
+			assertEquals(ResourceNotFoundException.class, exception.getClass());
+	}
+	@Test
+	public void createTrainingInstance() throws Exception {
+		String valueTd = convertObjectToJsonBytes(trainingInstanceCreateDTO);
+		given(objectMapper.writeValueAsString(any(Object.class))).willReturn(valueTd);
+		given(trainingInstanceFacade.create(any(TrainingInstanceCreateDTO.class))).willReturn(newTrainingInstanceDTO);
+		MockHttpServletResponse result = mockMvc
+				.perform(post("/training-instances").content(convertObjectToJsonBytes(trainingInstanceCreateDTO))
+						.contentType(MediaType.APPLICATION_JSON_VALUE))
+				.andExpect(status().isOk()).andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+				.andReturn().getResponse();
+	}
+	@Test
+	public void updateTrainingInstance() throws Exception {
+		String valueTi = convertObjectToJsonBytes(trainingInstanceUpdateDTO);
+		System.out.println(convertObjectToJsonBytes(trainingInstanceUpdateDTO.getStartTime()));
+		mockMvc.perform(put("/training-instances").content(valueTi)
+				.contentType(MediaType.APPLICATION_JSON_VALUE)).andExpect(status().isOk());
+	}
+	@Test
+	public void allocateSandboxes_withFecadeException() throws Exception {
+		Exception exceptionThrow = new ServiceLayerException("message", ErrorCode.RESOURCE_NOT_FOUND);
+			willThrow(new FacadeLayerException(exceptionThrow)).given(trainingInstanceFacade).allocateSandboxes(any(Long.class));
+			Exception exception =
+					mockMvc.perform(post("/training-instances" + "/{instanceId}/" + "sandbox-instances", 698L))
+							.andExpect(status().isNotFound()).andReturn().getResolvedException();
+			assertEquals(ResourceNotFoundException.class, exception.getClass());
+	}
 
 	private static String convertObjectToJsonBytes(Object object) throws IOException {
 		ObjectMapper mapper = new ObjectMapper();

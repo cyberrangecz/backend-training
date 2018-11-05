@@ -133,27 +133,12 @@ public class TrainingDefinitionsRestControllerTest {
 		gameLevelUpdateDTO.setIncorrectFlagLimit(4);
 		gameLevelUpdateDTO.setSolutionPenalized(true);
 		gameLevelUpdateDTO.setMaxScore(20);
-/*
-		gameLevelCreateDTO = new GameLevelCreateDTO();
-		gameLevelCreateDTO.setTitle("title");
-		gameLevelCreateDTO.setAttachments(new String[3]);
-		gameLevelCreateDTO.setContent("Content");
-		gameLevelCreateDTO.setEstimatedDuration(1000);
-		gameLevelCreateDTO.setFlag("flag1");
-		gameLevelCreateDTO.setIncorrectFlagLimit(4);
-		gameLevelCreateDTO.setNextLevel(2L);
-*/
+
 		infoLevelUpdateDTO = new InfoLevelUpdateDTO();
 		infoLevelUpdateDTO.setId(3L);
 		infoLevelUpdateDTO.setTitle("some title");
 		infoLevelUpdateDTO.setContent("some content");
-/*
-		infoLevelCreateDTO = new InfoLevelCreateDTO();
-		infoLevelCreateDTO.setMaxScore(40);
-		infoLevelCreateDTO.setTitle("some title");
-		infoLevelCreateDTO.setContent("some content");
-		infoLevelCreateDTO.setNextLevel(gameLevel.getId());
-*/
+
 		infoLevel = new InfoLevel();
 		infoLevel.setId(2L);
 		infoLevel.setTitle("InfoTest");
@@ -164,15 +149,7 @@ public class TrainingDefinitionsRestControllerTest {
 		assessmentLevel.setTitle("AssTest");
 		assessmentLevel.setAssessmentType(AssessmentType.TEST);
 		assessmentLevel.setQuestions("questions");
-/*
-		alCreateDTO = new AssessmentLevelCreateDTO();
-		alCreateDTO.setInstructions("instructions");
-		alCreateDTO.setMaxScore(50);
-		alCreateDTO.setNextLevel(1L);
-		alCreateDTO.setQuestions("test");
-		alCreateDTO.setTitle("Some title");
-		alCreateDTO.setType(AssessmentType.QUESTIONNAIRE);
-*/
+
 		assessmentLevelUpdateDTO = new AssessmentLevelUpdateDTO();
 		assessmentLevelUpdateDTO.setId(9L);
 		assessmentLevelUpdateDTO.setInstructions("instructions");
@@ -466,8 +443,7 @@ public class TrainingDefinitionsRestControllerTest {
 
 	@Test
 	public void updateGameLevel() throws Exception {
-		mockMvc
-				.perform(put("/training-definitions/{definitionId}/game-levels", trainingDefinition1.getId())
+		mockMvc.perform(put("/training-definitions/{definitionId}/game-levels", trainingDefinition1.getId())
 						.content(convertObjectToJsonBytes(gameLevelUpdateDTO)).contentType(MediaType.APPLICATION_JSON_VALUE))
 				.andExpect(status().isNoContent());
 	}
