@@ -5,8 +5,8 @@ import cz.muni.ics.kypo.training.api.dto.AuthorRefDTO;
 import cz.muni.ics.kypo.training.api.dto.SandboxDefinitionRefDTO;
 import cz.muni.ics.kypo.training.api.dto.infolevel.InfoLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionDTO;
-import cz.muni.ics.kypo.training.config.FacadeConfigTest;
 import cz.muni.ics.kypo.training.mapping.BeanMapping;
+import cz.muni.ics.kypo.training.mapping.BeanMappingImpl;
 import cz.muni.ics.kypo.training.persistence.model.AuthorRef;
 import cz.muni.ics.kypo.training.persistence.model.InfoLevel;
 import cz.muni.ics.kypo.training.persistence.model.SandboxDefinitionRef;
@@ -14,26 +14,17 @@ import cz.muni.ics.kypo.training.persistence.model.TrainingDefinition;
 import cz.muni.ics.kypo.training.persistence.model.enums.TDState;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
+import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.*;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-@RunWith(SpringRunner.class)
-@SpringBootTest
-@Import(FacadeConfigTest.class)
 public class BeanMappingTest {
 
-	@Autowired
 	private BeanMapping beanMapping;
 
 	private TrainingDefinition tD;
@@ -47,12 +38,10 @@ public class BeanMappingTest {
 	private List<InfoLevel> levels;
 	private List<InfoLevelDTO> levelsDTO;
 
-	@SpringBootApplication
-	static class TestConfiguration {
-	}
-
 	@Before
 	public void init() {
+		beanMapping = new BeanMappingImpl(new ModelMapper());
+
 		sDR = new SandboxDefinitionRef();
 		sDR.setId(1L);
 		sDR.setSandboxDefinitionRef(1L);

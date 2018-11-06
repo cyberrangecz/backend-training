@@ -2,18 +2,15 @@ package cz.muni.ics.kypo.training.facade;
 
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.PathBuilder;
-import cz.muni.ics.kypo.training.api.dto.AbstractLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.IsCorrectFlagDTO;
-import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelDTO;
-import cz.muni.ics.kypo.training.api.dto.gamelevel.GameLevelDTO;
-import cz.muni.ics.kypo.training.api.dto.hint.HintDTO;
-import cz.muni.ics.kypo.training.api.dto.infolevel.InfoLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.run.AccessTrainingRunDTO;
 import cz.muni.ics.kypo.training.api.dto.run.TrainingRunDTO;
-import cz.muni.ics.kypo.training.config.FacadeConfigTest;
+import cz.muni.ics.kypo.training.exception.FacadeLayerException;
+import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
+import cz.muni.ics.kypo.training.facade.impl.TrainingRunFacadeImpl;
+import cz.muni.ics.kypo.training.mapping.BeanMappingImpl;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.model.enums.AssessmentType;
-import cz.muni.ics.kypo.training.persistence.model.enums.LevelType;
 import cz.muni.ics.kypo.training.persistence.model.enums.TRState;
 import cz.muni.ics.kypo.training.service.TrainingRunService;
 import org.junit.Before;
@@ -21,11 +18,9 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.Import;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -39,17 +34,14 @@ import static org.junit.Assert.assertEquals;
 import static org.mockito.BDDMockito.*;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest
-@Import(FacadeConfigTest.class)
 public class TrainingRunFacadeTest {
 
 	@Rule
 	public ExpectedException thrown = ExpectedException.none();
 
-	@Autowired
 	private TrainingRunFacade trainingRunFacade;
 
-	@MockBean
+	@Mock
 	private TrainingRunService trainingRunService;
 
     private TrainingRun trainingRun1, trainingRun2;
@@ -58,13 +50,11 @@ public class TrainingRunFacadeTest {
     private InfoLevel infoLevel;
     private AssessmentLevel assessmentLevel;
 
-	@SpringBootApplication
-	static class TestConfiguration {
-	}
-
-
     @Before
     public void init() {
+    	MockitoAnnotations.initMocks(this);
+    	trainingRunFacade = new TrainingRunFacadeImpl(trainingRunService, new BeanMappingImpl(new ModelMapper()));
+
         trainingRun1 = new TrainingRun();
         trainingRun1.setId(1L);
         trainingRun1.setState(TRState.READY);
@@ -96,12 +86,30 @@ public class TrainingRunFacadeTest {
 
 	@Test
 	public void findTrainingRunById() {
-		given(trainingRunService.findById(trainingRun1.getId())).willReturn(trainingRun1);
-
-		TrainingRunDTO trainingRunDTO = trainingRunFacade.findById(trainingRun1.getId());
-		deepEquals(trainingRun1, trainingRunDTO);
-
+		given(trainingRunService.findById(any(Long.class))).willReturn(trainingRun1);
+		trainingRunFacade.findById(trainingRun1.getId());
 		then(trainingRunService).should().findById(trainingRun1.getId());
+	}
+
+	@Test
+	public void findTrainingRunByIdWithFacadeLayerException() {
+		thrown.expect(FacadeLayerException.class);
+		willThrow(ServiceLayerException.class).given(trainingRunService).findById(1L);
+		trainingRunFacade.findById(1L);
+	}
+
+	@Test
+	public void findAllTrainingRuns() {
+		List<TrainingRun> expected = new ArrayList<>();
+		expected.add(trainingRun1);
+		expected.add(trainingRun2);
+
+		Page<TrainingRun> p = new PageImpl<TrainingRun>(expected);
+
+		PathBuilder<TrainingRun> tR = new PathBuilder<TrainingRun>(TrainingRun.class, "trainingRun");
+		Predicate predicate = tR.isNotNull();
+
+		given(trainingRunService.findAll(any(Predicate.class), any(Pageable.class))).willReturn(p);
 	}
 
 	@Test
@@ -121,81 +129,67 @@ public class TrainingRunFacadeTest {
 		assertEquals(0, correctFlagDTO.getRemainingAttempts());
 	}
 
-	@Test
-	public void findAllTrainingRuns() {
-			List<TrainingRun> expected = new ArrayList<>();
-			expected.add(trainingRun1);
-			expected.add(trainingRun2);
-
-			Page<TrainingRun> p = new PageImpl<TrainingRun>(expected);
-
-			PathBuilder<TrainingRun> tR = new PathBuilder<TrainingRun>(TrainingRun.class, "trainingRun");
-			Predicate predicate = tR.isNotNull();
-
-			given(trainingRunService.findAll(any(Predicate.class), any(Pageable.class))).willReturn(p);
-	}
-
     @Test
     public void accessTrainingRun() {
         given(trainingRunService.accessTrainingRun("password")).willReturn(gameLevel);
         given(trainingRunService.getLevels(1L)).willReturn(Arrays.asList(gameLevel,infoLevel,assessmentLevel));
-        AccessTrainingRunDTO accessTrainingRunDTO = trainingRunFacade.accessTrainingRun("password");
-        assertEquals(gameLevel.getId(), ((GameLevelDTO) accessTrainingRunDTO.getAbstractLevelDTO()).getId());
-        assertEquals(gameLevel.getFlag(), ((GameLevelDTO) accessTrainingRunDTO.getAbstractLevelDTO()).getFlag());
-        assertEquals(3, accessTrainingRunDTO.getInfoAboutLevels().size());
-        assertEquals(LevelType.GAME, accessTrainingRunDTO.getInfoAboutLevels().get(0).getLevelType());
-        assertEquals(LevelType.INFO, accessTrainingRunDTO.getInfoAboutLevels().get(1).getLevelType());
-        assertEquals(LevelType.ASSESSMENT, accessTrainingRunDTO.getInfoAboutLevels().get(2).getLevelType());
-
+        Object result = trainingRunFacade.accessTrainingRun("password");
+        assertEquals(AccessTrainingRunDTO.class, result.getClass());
+        then(trainingRunService).should().accessTrainingRun("password");
     }
 
     @Test
-    public void getNextLevelAssessment() {
-        given(trainingRunService.getNextLevel(trainingRun1.getId())).willReturn((AbstractLevel) assessmentLevel);
-        AbstractLevelDTO assessmentLevelDTO = trainingRunFacade.getNextLevel(trainingRun1.getId());
-        assertEquals(assessmentLevel.getId(), ((AssessmentLevelDTO) assessmentLevelDTO).getId()) ;
-        assertEquals(assessmentLevel.getAssessmentType(), ((AssessmentLevelDTO) assessmentLevelDTO).getAssessmentType()) ;
-        assertEquals(assessmentLevel.getInstructions(), ((AssessmentLevelDTO) assessmentLevelDTO).getInstructions()) ;
+		public void accessTrainingRunWithFacadeLayerException(){
+			thrown.expect(FacadeLayerException.class);
+			willThrow(ServiceLayerException.class).given(trainingRunService).accessTrainingRun("pass");
+			trainingRunFacade.accessTrainingRun("pass");
+		}
 
-    }
-    @Test
-    public void getNextLevelInfo() {
-        given(trainingRunService.getNextLevel(trainingRun1.getId())).willReturn((AbstractLevel) infoLevel);
-        AbstractLevelDTO infoLevelDTO = trainingRunFacade.getNextLevel(trainingRun1.getId());
-        assertEquals(infoLevel.getId(), ((InfoLevelDTO) infoLevelDTO).getId()) ;
-        assertEquals(infoLevel.getContent(), ((InfoLevelDTO) infoLevelDTO).getContent()) ;
-    }
+		@Test
+		public void getNextLevel(){
+			given(trainingRunService.getNextLevel(1L)).willReturn((AbstractLevel) assessmentLevel);
+			trainingRunFacade.getNextLevel(1L);
+			then(trainingRunService).should().getNextLevel(1L);
+		}
 
-    @Test
-    public void getNextLevelGame() {
-        given(trainingRunService.getNextLevel(trainingRun1.getId())).willReturn((AbstractLevel) gameLevel);
-        AbstractLevelDTO gameLevelDTO = trainingRunFacade.getNextLevel(trainingRun1.getId());
-        assertEquals(gameLevel.getId(), ((GameLevelDTO) gameLevelDTO).getId()) ;
-        assertEquals(gameLevel.getFlag(), ((GameLevelDTO) gameLevelDTO).getFlag()) ;
-        assertEquals(gameLevel.getContent(), ((GameLevelDTO) gameLevelDTO).getContent());
+		@Test
+		public void getNextLevelWithFacadeLayerException(){
+			thrown.expect(FacadeLayerException.class);
+			willThrow(ServiceLayerException.class).given(trainingRunService).getNextLevel(1L);
+			trainingRunFacade.getNextLevel(1L);
+		}
 
-    }
     @Test
     public void getHint() {
-        given(trainingRunService.getHint(anyLong(),anyLong())).willReturn(hint);
-        HintDTO hintDTO = trainingRunFacade.getHint(1L,1L);
-        assertEquals(hint.getId(), hintDTO.getId());
-        assertEquals(hint.getContent(), hintDTO.getContent());
-        assertEquals(hint.getTitle(), hintDTO.getTitle());
-    }
+			given(trainingRunService.getHint(anyLong(),anyLong())).willReturn(hint);
+      trainingRunFacade.getHint(1L,1L);
+			then(trainingRunService).should().getHint(1L,1L);
+		}
+
+		@Test
+		public void getHintWithFacadeLayerException() {
+			thrown.expect(FacadeLayerException.class);
+			willThrow(ServiceLayerException.class).given(trainingRunService).getHint(1L,1L);
+			trainingRunFacade.getHint(1L,1L);
+		}
 
     @Test
     public void getSolution() {
-        given(trainingRunService.getSolution(trainingRun1.getId())).willReturn("game solution");
-        String solution = trainingRunFacade.getSolution(trainingRun1.getId());
-        assertEquals("game solution", solution);
-
-
+        given(trainingRunService.getSolution(1L)).willReturn("game solution");
+        trainingRunFacade.getSolution(trainingRun1.getId());
+        then(trainingRunService).should().getSolution(1L);
     }
+
+    @Test
+		public void getSolutionWithFacadeLayerException() {
+			thrown.expect(FacadeLayerException.class);
+			willThrow(ServiceLayerException.class).given(trainingRunService).getSolution(1L);
+			trainingRunFacade.getSolution(1L);
+		}
+
     private void deepEquals(TrainingRun expected, TrainingRunDTO actual) {
         assertEquals(expected.getId(), actual.getId());
         assertEquals(expected.getState(), actual.getState());
-
 		}
 
 }

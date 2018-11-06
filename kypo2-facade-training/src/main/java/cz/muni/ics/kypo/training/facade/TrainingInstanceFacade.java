@@ -16,13 +16,14 @@ import org.springframework.http.ResponseEntity;
  */
 public interface TrainingInstanceFacade {
 
-    /**
-     * Finds specific Training Instance by id
-     *
-     * @param id of a Training Instance that would be returned
-     * @return specific Training Instance by id
-     */
-    TrainingInstanceDTO findById(long id);
+	/**
+	 * Finds specific Training Instance by id
+	 * 
+	 * @param id of a Training Instance that would be returned
+	 * @return specific Training Instance by id
+	 * @throws FacadeLayerException if training instance is not found
+	 */
+	TrainingInstanceDTO findById(long id) throws FacadeLayerException;
 
     /**
      * Find all Training Instances.

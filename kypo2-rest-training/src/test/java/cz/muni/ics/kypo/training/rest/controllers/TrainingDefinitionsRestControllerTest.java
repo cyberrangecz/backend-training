@@ -25,13 +25,11 @@ import cz.muni.ics.kypo.training.rest.exceptions.ResourceNotFoundException;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.querydsl.SimpleEntityPathResolver;
@@ -55,14 +53,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = TrainingDefinitionsRestController.class)
-@ComponentScan(basePackages = "cz.muni.ics.kypo")
 public class TrainingDefinitionsRestControllerTest {
 
-	@Autowired
 	private TrainingDefinitionsRestController trainingDefinitionsRestController;
 
-	@MockBean
+	@Mock
 	private TrainingDefinitionFacade trainingDefinitionFacade;
 
 	private MockMvc mockMvc;
@@ -93,6 +88,7 @@ public class TrainingDefinitionsRestControllerTest {
 	@Before
 	public void init() {
 		MockitoAnnotations.initMocks(this);
+		trainingDefinitionsRestController = new TrainingDefinitionsRestController(trainingDefinitionFacade, objectMapper);
 		this.mockMvc = MockMvcBuilders.standaloneSetup(trainingDefinitionsRestController)
 				.setCustomArgumentResolvers(new PageableHandlerMethodArgumentResolver(),
 						new QuerydslPredicateArgumentResolver(new QuerydslBindingsFactory(SimpleEntityPathResolver.INSTANCE), Optional.empty()))
@@ -118,46 +114,23 @@ public class TrainingDefinitionsRestControllerTest {
 		gameLevelUpdateDTO.setIncorrectFlagLimit(4);
 		gameLevelUpdateDTO.setSolutionPenalized(true);
 		gameLevelUpdateDTO.setMaxScore(20);
-/*
-		gameLevelCreateDTO = new GameLevelCreateDTO();
-		gameLevelCreateDTO.setTitle("title");
-		gameLevelCreateDTO.setAttachments(new String[3]);
-		gameLevelCreateDTO.setContent("Content");
-		gameLevelCreateDTO.setEstimatedDuration(1000);
-		gameLevelCreateDTO.setFlag("flag1");
-		gameLevelCreateDTO.setIncorrectFlagLimit(4);
-		gameLevelCreateDTO.setNextLevel(2L);
-*/
-		infoLevelUpdateDTO = new InfoLevelUpdateDTO();
-		infoLevelUpdateDTO.setId(3L);
-		infoLevelUpdateDTO.setTitle("some title");
-		infoLevelUpdateDTO.setContent("some content");
-/*
-		infoLevelCreateDTO = new InfoLevelCreateDTO();
-		infoLevelCreateDTO.setMaxScore(40);
-		infoLevelCreateDTO.setTitle("some title");
-		infoLevelCreateDTO.setContent("some content");
-		infoLevelCreateDTO.setNextLevel(gameLevel.getId());
-*/
+
 		infoLevel = new InfoLevel();
 		infoLevel.setId(2L);
 		infoLevel.setTitle("InfoTest");
 		infoLevel.setContent("content");
+
+		infoLevelUpdateDTO = new InfoLevelUpdateDTO();
+		infoLevelUpdateDTO.setId(3L);
+		infoLevelUpdateDTO.setTitle("some title");
+		infoLevelUpdateDTO.setContent("some content");
 
 		assessmentLevel = new AssessmentLevel();
 		assessmentLevel.setId(3L);
 		assessmentLevel.setTitle("AssTest");
 		assessmentLevel.setAssessmentType(AssessmentType.TEST);
 		assessmentLevel.setQuestions("questions");
-/*
-		alCreateDTO = new AssessmentLevelCreateDTO();
-		alCreateDTO.setInstructions("instructions");
-		alCreateDTO.setMaxScore(50);
-		alCreateDTO.setNextLevel(1L);
-		alCreateDTO.setQuestions("test");
-		alCreateDTO.setTitle("Some title");
-		alCreateDTO.setType(AssessmentType.QUESTIONNAIRE);
-*/
+
 		alUpdateDTO = new AssessmentLevelUpdateDTO();
 		alUpdateDTO.setInstructions("instructions");
 		alUpdateDTO.setMaxScore(50);

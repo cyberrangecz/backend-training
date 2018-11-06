@@ -2,22 +2,21 @@ package cz.muni.ics.kypo.training.service;
 
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.PathBuilder;
-import cz.muni.ics.kypo.training.config.ServiceTrainingConfigTest;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.persistence.model.TrainingInstance;
+import cz.muni.ics.kypo.training.persistence.repository.PasswordRepository;
 import cz.muni.ics.kypo.training.persistence.repository.TrainingInstanceRepository;
 
+import cz.muni.ics.kypo.training.persistence.repository.TrainingRunRepository;
+import cz.muni.ics.kypo.training.service.impl.TrainingInstanceServiceImpl;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.Import;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -33,30 +32,31 @@ import static org.junit.Assert.assertEquals;
 import static org.mockito.BDDMockito.*;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest
-@Import(ServiceTrainingConfigTest.class)
 public class TrainingInstanceServiceTest {
 
     @Rule
     public ExpectedException thrown = ExpectedException.none();
 
-    @Autowired
     private TrainingInstanceService trainingInstanceService;
 
-    @MockBean
+    @Mock
     private TrainingInstanceRepository trainingInstanceRepository;
 
-    @MockBean
+    @Mock
     private RestTemplate restTemplate;
+
+    @Mock
+    private PasswordRepository passwordRepository;
+
+    @Mock
+    private TrainingRunRepository trainingRunRepository;
 
     private TrainingInstance trainingInstance1, trainingInstance2;
 
-    @SpringBootApplication
-    static class TestConfiguration {
-    }
-
     @Before
     public void init() {
+        MockitoAnnotations.initMocks(this);
+        trainingInstanceService = new TrainingInstanceServiceImpl(trainingInstanceRepository, passwordRepository, restTemplate, trainingRunRepository);
 
         trainingInstance1 = new TrainingInstance();
         trainingInstance1.setId(1L);

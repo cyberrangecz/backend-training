@@ -29,6 +29,7 @@ import cz.muni.ics.kypo.training.rest.exceptions.ServiceUnavailableException;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -65,14 +66,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = TrainingRunsRestController.class)
-@ComponentScan(basePackages = "cz.muni.ics.kypo.rest")
+//@SpringBootTest(classes = TrainingRunsRestController.class)
+//@ComponentScan(basePackages = "cz.muni.ics.kypo.rest")
 public class TrainingRunsRestControllerTest {
 
-	@Autowired
 	private TrainingRunsRestController trainingRunsRestController;
 
-	@MockBean
+	@Mock
 	private TrainingRunFacade trainingRunFacade;
 
 	private MockMvc mockMvc;
@@ -163,6 +163,7 @@ public class TrainingRunsRestControllerTest {
 		trainingRunDTOPageResultResource = bM.mapToPageResultDTO(p, TrainingRunDTO.class);
 
 		MockitoAnnotations.initMocks(this);
+		trainingRunsRestController = new TrainingRunsRestController(trainingRunFacade, objectMapper);
 		this.mockMvc = MockMvcBuilders.standaloneSetup(trainingRunsRestController)
 				.setCustomArgumentResolvers(new PageableHandlerMethodArgumentResolver(),
 						new QuerydslPredicateArgumentResolver(new QuerydslBindingsFactory(SimpleEntityPathResolver.INSTANCE), Optional.empty()))

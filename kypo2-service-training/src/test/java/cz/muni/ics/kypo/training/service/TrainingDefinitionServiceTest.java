@@ -2,29 +2,25 @@ package cz.muni.ics.kypo.training.service;
 
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.PathBuilder;
-import cz.muni.ics.kypo.training.config.ServiceTrainingConfigTest;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.model.enums.TDState;
 import cz.muni.ics.kypo.training.persistence.repository.*;
 
+import cz.muni.ics.kypo.training.service.impl.TrainingDefinitionServiceImpl;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.Import;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,32 +32,26 @@ import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest
-@Import(ServiceTrainingConfigTest.class)
 public class TrainingDefinitionServiceTest {
 
     @Rule
     public ExpectedException thrown = ExpectedException.none();
 
-    @Autowired
     private TrainingDefinitionService trainingDefinitionService;
 
-    @MockBean
+    @Mock
     private TrainingDefinitionRepository trainingDefinitionRepository;
 
-    @MockBean
-    private RestTemplate restTemplate;
-
-    @MockBean
+    @Mock
     private AbstractLevelRepository abstractLevelRepository;
 
-    @MockBean
+    @Mock
     private GameLevelRepository gameLevelRepository;
 
-    @MockBean
+    @Mock
     private InfoLevelRepository infoLevelRepository;
 
-    @MockBean
+    @Mock
     private AssessmentLevelRepository assessmentLevelRepository;
 
     private TrainingDefinition trainingDefinition1, trainingDefinition2, unreleasedDefinition, releasedDefinition, definitionWithoutLevels;
@@ -72,13 +62,12 @@ public class TrainingDefinitionServiceTest {
 
     private InfoLevel infoLevel, newInfoLevel;
 
-
-    @SpringBootApplication
-    static class TestConfiguration{
-    }
-
     @Before
     public void init(){
+        MockitoAnnotations.initMocks(this);
+        trainingDefinitionService = new TrainingDefinitionServiceImpl(trainingDefinitionRepository, abstractLevelRepository,
+            infoLevelRepository, gameLevelRepository, assessmentLevelRepository);
+
         level3 = new AssessmentLevel();
         level3.setId(3L);
         level3.setNextLevel(null);

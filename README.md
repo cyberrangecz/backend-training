@@ -161,6 +161,21 @@ In Intellij Idea:
 3. Add into "**Program arguments**" --path.to.config.file="{path to your config properties}".
 4. Run WebConfigRestTraining
 
+## Clover
+Should be used for testing purposes only, before every merge perform:
+```
+$ mvn clean install
+```
+To instrument code and create clover snapshot use:
+```
+$ mvn clover:setup clover:snapshot
+```  
+To run optimized build use:
+```
+$ mvn clover:optimize clean install -Dansi.color=true
+```
+-Dansi.color does not work on all OS and is not necessary, it only prints info about time saving in color.
+
 ## Used Technologies
 The project was built and tested with these technologies, so if you have any unexpected troubles let us know.
 
