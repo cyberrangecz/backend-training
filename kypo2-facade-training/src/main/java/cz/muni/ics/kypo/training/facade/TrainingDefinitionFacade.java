@@ -18,12 +18,10 @@ import java.util.Set;
 import java.util.logging.Level;
 
 /**
- * 
  * @author Pavel Seda (441048)
- *
  */
 public interface TrainingDefinitionFacade {
-
+  
   /**
    * Finds specific Training Definition by id
    * 

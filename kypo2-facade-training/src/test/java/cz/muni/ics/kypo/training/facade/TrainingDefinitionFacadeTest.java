@@ -84,6 +84,7 @@ public class TrainingDefinitionFacadeTest {
 		gameLevel = new GameLevel();
 		gameLevel.setId(2L);
 		gameLevel.setNextLevel(null);
+		gameLevel.setSolution("solution");
 
 		gameLevelUpdate = new GameLevelUpdateDTO();
 		gameLevelUpdate.setId(2L);
@@ -94,6 +95,7 @@ public class TrainingDefinitionFacadeTest {
 		gameLevelUpdate.setFlag("flag1");
 		gameLevelUpdate.setIncorrectFlagLimit(4);
 		gameLevelUpdate.setSolutionPenalized(true);
+		gameLevelUpdate.setSolution("solution");
 
 		infoLevel = new InfoLevel();
 		infoLevel.setId(3L);

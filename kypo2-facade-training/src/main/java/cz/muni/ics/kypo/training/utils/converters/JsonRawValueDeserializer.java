@@ -8,12 +8,11 @@ import java.io.IOException;
 
 /**
  * @author Pavel Šeda
- *
  */
 public class JsonRawValueDeserializer extends JsonDeserializer<String> {
 
-	@Override
-	public String deserialize(JsonParser jp, DeserializationContext context) throws IOException {
-		return jp.readValueAsTree().toString();
-	}
+    @Override
+    public String deserialize(JsonParser jp, DeserializationContext context) throws IOException {
+        return jp.readValueAsTree().toString();
+    }
 }

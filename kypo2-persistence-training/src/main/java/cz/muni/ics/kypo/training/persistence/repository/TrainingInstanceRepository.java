@@ -7,9 +7,7 @@ import org.springframework.stereotype.Repository;
 import cz.muni.ics.kypo.training.persistence.model.TrainingInstance;
 
 /**
- * 
  * @author Pavel Seda (441048)
- *
  */
 @Repository
 public interface TrainingInstanceRepository extends JpaRepository<TrainingInstance, Long>, QuerydslPredicateExecutor<TrainingInstance> {

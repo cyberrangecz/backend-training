@@ -17,7 +17,7 @@
 	<dependencies>
 		<dependency>
 			<groupId>cz.muni.ics.kypo</groupId>
-			<artifactId>kypo2-security-commons-rest</artifactId>
+			<artifactId>kypo2-security-commons</artifactId>
 			<version>1.0.0</version>
 		</dependency>
 		<dependency>

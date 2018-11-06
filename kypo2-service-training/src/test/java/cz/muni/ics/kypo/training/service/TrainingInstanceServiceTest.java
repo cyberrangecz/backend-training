@@ -7,6 +7,7 @@ import cz.muni.ics.kypo.training.persistence.model.TrainingInstance;
 import cz.muni.ics.kypo.training.persistence.repository.PasswordRepository;
 import cz.muni.ics.kypo.training.persistence.repository.TrainingInstanceRepository;
 
+import cz.muni.ics.kypo.training.persistence.repository.TrainingRunRepository;
 import cz.muni.ics.kypo.training.service.impl.TrainingInstanceServiceImpl;
 import org.junit.After;
 import org.junit.Before;
@@ -47,12 +48,15 @@ public class TrainingInstanceServiceTest {
     @Mock
     private PasswordRepository passwordRepository;
 
+    @Mock
+    private TrainingRunRepository trainingRunRepository;
+
     private TrainingInstance trainingInstance1, trainingInstance2;
 
     @Before
     public void init() {
         MockitoAnnotations.initMocks(this);
-        trainingInstanceService = new TrainingInstanceServiceImpl(trainingInstanceRepository, passwordRepository, restTemplate);
+        trainingInstanceService = new TrainingInstanceServiceImpl(trainingInstanceRepository, passwordRepository, restTemplate, trainingRunRepository);
 
         trainingInstance1 = new TrainingInstance();
         trainingInstance1.setId(1L);

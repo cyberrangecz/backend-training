@@ -22,6 +22,7 @@ public class AccessTrainingRunDTO {
     public List<BasicLevelInfoDTO> getInfoAboutLevels() {
         return infoAboutLevels;
     }
+
     public void setInfoAboutLevels(List<BasicLevelInfoDTO> infoAboutLevels) {
         this.infoAboutLevels = infoAboutLevels;
     }
