@@ -171,7 +171,7 @@ $ mvn clover:setup clover:snapshot
 ```  
 To run optimized build use:
 ```
-mvn clover:optimize clean install -Dansi.color=true
+$ mvn clover:optimize clean install -Dansi.color=true
 ```
 -Dansi.color does not work on all OS and is not necessary, it only prints info about time saving in color.
 
