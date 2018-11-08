@@ -50,7 +50,7 @@ public class StringJsonUserType implements UserType {
    * @return boolean
    */
   @Override
-  public boolean equals(Object x, Object y) throws HibernateException {
+  public boolean equals(Object x, Object y) {
 
     if (x == null) {
 
@@ -64,7 +64,7 @@ public class StringJsonUserType implements UserType {
    * Get a hashcode for the instance, consistent with persistence "equality"
    */
   @Override
-  public int hashCode(Object x) throws HibernateException {
+  public int hashCode(Object x) {
 
     return x.hashCode();
   }
@@ -80,7 +80,7 @@ public class StringJsonUserType implements UserType {
    * @return Object a copy
    */
   @Override
-  public Object deepCopy(Object value) throws HibernateException {
+  public Object deepCopy(Object value) {
 
     return value;
   }
@@ -106,7 +106,7 @@ public class StringJsonUserType implements UserType {
    *
    */
   @Override
-  public Serializable disassemble(Object value) throws HibernateException {
+  public Serializable disassemble(Object value) {
     return (String) this.deepCopy(value);
   }
 
@@ -121,7 +121,7 @@ public class StringJsonUserType implements UserType {
    *
    */
   @Override
-  public Object assemble(Serializable cached, Object owner) throws HibernateException {
+  public Object assemble(Serializable cached, Object owner) {
     return this.deepCopy(cached);
   }
 
@@ -137,7 +137,7 @@ public class StringJsonUserType implements UserType {
    * @return the value to be merged
    */
   @Override
-  public Object replace(Object original, Object target, Object owner) throws HibernateException {
+  public Object replace(Object original, Object target, Object owner) {
     return original;
   }
 
@@ -154,7 +154,7 @@ public class StringJsonUserType implements UserType {
    * @throws java.sql.SQLException
    */
   @Override
-  public Object nullSafeGet(ResultSet rs, String[] names, SharedSessionContractImplementor session, Object owner) throws HibernateException, SQLException {
+  public Object nullSafeGet(ResultSet rs, String[] names, SharedSessionContractImplementor session, Object owner) throws SQLException {
     if (rs.getString(names[0]) == null) {
       return null;
     }
@@ -175,7 +175,7 @@ public class StringJsonUserType implements UserType {
    * @throws java.sql.SQLException
    */
   @Override
-  public void nullSafeSet(PreparedStatement st, Object value, int index, SharedSessionContractImplementor session) throws HibernateException, SQLException {
+  public void nullSafeSet(PreparedStatement st, Object value, int index, SharedSessionContractImplementor session) throws SQLException {
     if (value == null) {
       st.setNull(index, Types.OTHER);
       return;

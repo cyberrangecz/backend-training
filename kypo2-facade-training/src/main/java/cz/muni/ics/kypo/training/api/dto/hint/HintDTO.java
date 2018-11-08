@@ -1,7 +1,5 @@
 package cz.muni.ics.kypo.training.api.dto.hint;
 
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.PositiveOrZero;
 import java.util.Objects;
 
 public class HintDTO {
@@ -9,8 +7,6 @@ public class HintDTO {
     private String title;
     private String content;
     private Integer hintPenalty;
-
-    public HintDTO(){}
 
     public Long getId() {
         return id;

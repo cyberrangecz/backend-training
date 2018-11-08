@@ -6,7 +6,7 @@ The main project is [REST module] (https://gitlab.ics.muni.cz/kypo2/services-and
 
 Role         | UCO          | Name 
 ------------ | ------------ | -------------
-Developer    |   441048     | Šeda Pavel
+Lead Developer    |   441048     | Šeda Pavel
 Developer    |   445537     | Dominik Pilár
 Developer    |   445343     | Boris Jaduš
 
@@ -73,6 +73,13 @@ roles:
 
 After step 1 you have to create properties file according to format below and save it.
 ```properties
+
+# Environment DEV or PROD
+### DEV environment does not need kypo2-user-and-group project but assign authority as GUEST by default
+spring.profiles.active=DEV
+spring.profiles.dev.roles=ADMINISTRATOR
+
+
 server.port={port for service}
 server.servlet.context-path=/{context path for service}
 

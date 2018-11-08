@@ -157,7 +157,7 @@ public class TrainingDefinitionServiceTest {
     public void getNonexistentTrainingDefinitionById() {
         Long id = 6L;
         thrown.expect(ServiceLayerException.class);
-        thrown.expectMessage("Training definition with id: " + id + " cannot be found.");
+        thrown.expectMessage("Training definition with id: " + id + " not found.");
         trainingDefinitionService.findById(id);
     }
 
@@ -765,7 +765,7 @@ public class TrainingDefinitionServiceTest {
         expected.add(infoLevel);
         expected.add(gameLevel);
 
-        ArrayList<AbstractLevel> actual = trainingDefinitionService.findAllLevelsFromDefinition(trainingDefinition2.getId());
+        List<AbstractLevel> actual = trainingDefinitionService.findAllLevelsFromDefinition(trainingDefinition2.getId());
 
         assertEquals(expected, actual);
         then(abstractLevelRepository).should(times(2)).findById(any(Long.class));

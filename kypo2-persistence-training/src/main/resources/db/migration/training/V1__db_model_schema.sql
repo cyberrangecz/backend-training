@@ -501,6 +501,13 @@ ALTER TABLE training_instance_sandbox_instance_ref OWNER TO postgres;
 -- Name: training_run; Type: TABLE; Schema: public; Owner: postgres
 --
 
+CREATE TABLE training_definition_sandbox_definition_ref (
+    training_definition_id bigint NOT NULL,
+    sandbox_definition_ref_id bigint NOT NULL
+);
+
+ALTER TABLE training_definition_sandbox_definition_ref OWNER TO postgres;
+
 CREATE TABLE training_run (
     id bigint NOT NULL,
     end_time timestamp without time zone NOT NULL,
@@ -544,7 +551,7 @@ ALTER SEQUENCE training_run_id_seq OWNED BY training_run.id;
 
 CREATE TABLE user_ref (
     id bigint NOT NULL,
-    user_ref_id bigint
+    user_ref_login character varying(255) NOT NULL
 );
 
 
@@ -908,7 +915,8 @@ COPY training_instance_organizers (training_instance_id, organizers_id) FROM std
 COPY training_instance_sandbox_instance_ref (training_instance_id, sandbox_instance_ref_id) FROM stdin;
 \.
 
-
+COPY training_definition_sandbox_definition_ref (training_definition_id, sandbox_definition_ref_id) FROM stdin;
+\.
 --
 -- TOC entry 2296 (class 0 OID 24381)
 -- Dependencies: 210
@@ -934,7 +942,7 @@ SELECT pg_catalog.setval('training_run_id_seq', 1, false);
 -- Data for Name: user_ref; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY user_ref (id, user_ref_id) FROM stdin;
+COPY user_ref (id, user_ref_login) FROM stdin;
 \.
 
 
@@ -1081,6 +1089,8 @@ ALTER TABLE ONLY training_instance
 ALTER TABLE ONLY training_instance_sandbox_instance_ref
     ADD CONSTRAINT training_instance_sandbox_instance_ref_pkey PRIMARY KEY (training_instance_id, sandbox_instance_ref_id);
 
+ALTER TABLE ONLY training_definition_sandbox_definition_ref
+    ADD CONSTRAINT training_definition_sandbox_definition_ref_pkey PRIMARY KEY (training_definition_id, sandbox_definition_ref_id);
 
 --
 -- TOC entry 2133 (class 2606 OID 24386)
@@ -1161,6 +1171,8 @@ ALTER TABLE ONLY training_definition_author_ref
 ALTER TABLE ONLY training_instance_sandbox_instance_ref
     ADD CONSTRAINT fk93ieg5ncp2jgxdn4b6ufty1wg FOREIGN KEY (sandbox_instance_ref_id) REFERENCES sandbox_instance_ref(id);
 
+ALTER TABLE ONLY training_definition_sandbox_definition_ref
+    ADD CONSTRAINT FK_sandbox_definition_ref FOREIGN KEY (sandbox_definition_ref_id) REFERENCES sandbox_definition_ref(id);
 
 --
 -- TOC entry 2142 (class 2606 OID 24425)
@@ -1179,6 +1191,9 @@ ALTER TABLE ONLY info_level
 ALTER TABLE ONLY training_instance_sandbox_instance_ref
     ADD CONSTRAINT fkayuh2k5x6e1dwssc29p3jl58y FOREIGN KEY (training_instance_id) REFERENCES training_instance(id);
 
+
+ALTER TABLE ONLY training_definition_sandbox_definition_ref
+    ADD CONSTRAINT FK_training_definition FOREIGN KEY (training_definition_id) REFERENCES training_definition(id);
 
 --
 -- TOC entry 2151 (class 2606 OID 24470)
