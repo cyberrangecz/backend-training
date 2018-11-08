@@ -32,13 +32,11 @@ import io.swagger.annotations.ApiParam;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -63,14 +61,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = TrainingDefinitionsRestController.class)
-@ComponentScan(basePackages = "cz.muni.ics.kypo")
 public class TrainingDefinitionsRestControllerTest {
 
-	@Autowired
 	private TrainingDefinitionsRestController trainingDefinitionsRestController;
 
-	@MockBean
+	@Mock
 	private TrainingDefinitionFacade trainingDefinitionFacade;
 
 	private MockMvc mockMvc;
@@ -108,6 +103,7 @@ public class TrainingDefinitionsRestControllerTest {
 	@Before
 	public void init() {
 		MockitoAnnotations.initMocks(this);
+		trainingDefinitionsRestController = new TrainingDefinitionsRestController(trainingDefinitionFacade, objectMapper);
 		this.mockMvc = MockMvcBuilders.standaloneSetup(trainingDefinitionsRestController)
 				.setCustomArgumentResolvers(new PageableHandlerMethodArgumentResolver(),
 						new QuerydslPredicateArgumentResolver(new QuerydslBindingsFactory(SimpleEntityPathResolver.INSTANCE), Optional.empty()))
@@ -134,15 +130,15 @@ public class TrainingDefinitionsRestControllerTest {
 		gameLevelUpdateDTO.setSolutionPenalized(true);
 		gameLevelUpdateDTO.setMaxScore(20);
 
-		infoLevelUpdateDTO = new InfoLevelUpdateDTO();
-		infoLevelUpdateDTO.setId(3L);
-		infoLevelUpdateDTO.setTitle("some title");
-		infoLevelUpdateDTO.setContent("some content");
-
 		infoLevel = new InfoLevel();
 		infoLevel.setId(2L);
 		infoLevel.setTitle("InfoTest");
 		infoLevel.setContent("content");
+
+		infoLevelUpdateDTO = new InfoLevelUpdateDTO();
+		infoLevelUpdateDTO.setId(3L);
+		infoLevelUpdateDTO.setTitle("some title");
+		infoLevelUpdateDTO.setContent("some content");
 
 		assessmentLevel = new AssessmentLevel();
 		assessmentLevel.setId(3L);
@@ -288,16 +284,6 @@ public class TrainingDefinitionsRestControllerTest {
 				.andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
 				.andReturn().getResponse();
 		assertEquals(convertObjectToJsonBytes(convertObjectToJsonBytes(trainingDefinitionDTOPageResultResource)), result.getContentAsString());
-	}
-
-		@Test
-	public void findAllTrainingDefinitionsBySandboxDefinitionId_withFecadeException() throws Exception {
-		Exception exceptionThrow = new ServiceLayerException("message", ErrorCode.RESOURCE_NOT_FOUND);
-		willThrow(new FacadeLayerException(exceptionThrow)).given(trainingDefinitionFacade).findAllBySandboxDefinitionId(any(Long.class), any(Pageable.class));
-		Exception resultException = mockMvc.perform(get("/training-definitions/sandbox-definitions" + "/{id}", 5L))
-				.andExpect(status().isNotFound())
-				.andReturn().getResolvedException();
-		assertEquals(ResourceNotFoundException.class, resultException.getClass());
 	}
 
 	@Test

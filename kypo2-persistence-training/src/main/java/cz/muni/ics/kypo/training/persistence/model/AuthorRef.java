@@ -3,6 +3,7 @@ package cz.muni.ics.kypo.training.persistence.model;
 import javax.persistence.*;
 import java.io.Serializable;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -45,25 +46,22 @@ public class AuthorRef implements Serializable {
         this.trainingDefinition = trainingDefinition;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o)
-            return true;
-        if (!(o instanceof AuthorRef))
-            return false;
+	@Override public boolean equals(Object o) {
+		if (this == o)
+			return true;
+		if (o == null || getClass() != o.getClass())
+			return false;
+		AuthorRef authorRef = (AuthorRef) o;
+		return Objects.equals(id, authorRef.id) && Objects.equals(authorRefLogin, authorRef.authorRefLogin) && Objects
+				.equals(trainingDefinition, authorRef.trainingDefinition);
+	}
 
-        AuthorRef authorRef = (AuthorRef) o;
+	@Override public int hashCode() {
+		return Objects.hash(id, authorRefLogin, trainingDefinition);
+	}
 
-        return getAuthorRefLogin().equals(authorRef.getAuthorRefLogin());
-    }
-
-    @Override
-    public int hashCode() {
-        return getAuthorRefLogin().hashCode();
-    }
-
-    @Override
-    public String toString() {
-        return "AuthorRef{" + "id=" + id + ", authorRefLogin='" + authorRefLogin + '\'' + ", trainingDefinition=" + trainingDefinition + '}';
-    }
+	@Override
+	public String toString() {
+		return "AuthorRef{" + "id=" + id + ", authorRefLogin='" + authorRefLogin + '\'' + ", trainingDefinition=" + trainingDefinition + '}';
+	}
 }

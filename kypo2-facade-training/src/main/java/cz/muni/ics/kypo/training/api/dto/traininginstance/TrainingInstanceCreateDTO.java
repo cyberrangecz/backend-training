@@ -23,11 +23,11 @@ public class TrainingInstanceCreateDTO {
 
     @NotNull(message = "{traininginstancecreate.startTime.NotNull.message}")
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)
-		@JsonFormat(shape = JsonFormat.Shape.STRING)
+		//@JsonFormat(shape = JsonFormat.Shape.STRING)
     private LocalDateTime startTime;
     @NotNull(message = "{traininginstancecreate.endTime.NotNull.message}")
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)
-		@JsonFormat(shape = JsonFormat.Shape.STRING)
+		//@JsonFormat(shape = JsonFormat.Shape.STRING)
 		private LocalDateTime endTime;
     @NotEmpty(message = "{traininginstancecreate.title.NotEmpty.message}")
     private String title;

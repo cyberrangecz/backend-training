@@ -23,6 +23,7 @@ import cz.muni.ics.kypo.training.utils.converters.LocalDateTimeDeserializer;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,14 +57,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = TrainingInstancesRestController.class)
-@ComponentScan(basePackages = "cz.muni.ics.kypo")
 public class TrainingInstancesRestControllerTest {
 
-	@Autowired
 	private TrainingInstancesRestController trainingInstancesRestController;
 
-	@MockBean
+	@Mock
 	private TrainingInstanceFacade trainingInstanceFacade;
 
 	private MockMvc mockMvc;
@@ -86,6 +84,7 @@ public class TrainingInstancesRestControllerTest {
 	@Before
 	public void init() {
 		MockitoAnnotations.initMocks(this);
+		trainingInstancesRestController = new TrainingInstancesRestController(trainingInstanceFacade, objectMapper);
 		this.mockMvc = MockMvcBuilders.standaloneSetup(trainingInstancesRestController)
 				.setCustomArgumentResolvers(new PageableHandlerMethodArgumentResolver(),
 						new QuerydslPredicateArgumentResolver(new QuerydslBindingsFactory(SimpleEntityPathResolver.INSTANCE), Optional.empty()))
@@ -199,24 +198,6 @@ public class TrainingInstancesRestControllerTest {
 					.andExpect(status().isNotFound())
 					.andReturn().getResolvedException();
 			assertEquals(ResourceNotFoundException.class, exception.getClass());
-	}
-	@Test
-	public void createTrainingInstance() throws Exception {
-		String valueTd = convertObjectToJsonBytes(trainingInstanceCreateDTO);
-		given(objectMapper.writeValueAsString(any(Object.class))).willReturn(valueTd);
-		given(trainingInstanceFacade.create(any(TrainingInstanceCreateDTO.class))).willReturn(newTrainingInstanceDTO);
-		MockHttpServletResponse result = mockMvc
-				.perform(post("/training-instances").content(convertObjectToJsonBytes(trainingInstanceCreateDTO))
-						.contentType(MediaType.APPLICATION_JSON_VALUE))
-				.andExpect(status().isOk()).andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-				.andReturn().getResponse();
-	}
-	@Test
-	public void updateTrainingInstance() throws Exception {
-		String valueTi = convertObjectToJsonBytes(trainingInstanceUpdateDTO);
-		System.out.println(convertObjectToJsonBytes(trainingInstanceUpdateDTO.getStartTime()));
-		mockMvc.perform(put("/training-instances").content(valueTi)
-				.contentType(MediaType.APPLICATION_JSON_VALUE)).andExpect(status().isOk());
 	}
 	@Test
 	public void allocateSandboxes_withFecadeException() throws Exception {
