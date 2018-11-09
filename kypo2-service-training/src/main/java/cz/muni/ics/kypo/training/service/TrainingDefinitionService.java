@@ -183,4 +183,6 @@ public interface TrainingDefinitionService {
      */
     AbstractLevel findLevelById(Long levelId);
 
+    List<TrainingInstance> findAllTrainingInstancesByTrainingDefinitionId(Long id);
+
 }

@@ -30,6 +30,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     private static final Logger LOG = LoggerFactory.getLogger(TrainingDefinitionServiceImpl.class);
 
     private TrainingDefinitionRepository trainingDefinitionRepository;
+    private TrainingInstanceRepository trainingInstanceRepository;
 
     private AbstractLevelRepository abstractLevelRepository;
     private GameLevelRepository gameLevelRepository;
@@ -402,6 +403,10 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
         Assert.notNull(levelId, "Input level id must not be null.");
         return abstractLevelRepository.findById(levelId)
                 .orElseThrow(() -> new ServiceLayerException("Level with id: " + levelId + ", not found", ErrorCode.RESOURCE_NOT_FOUND));
+    }
+
+    @Override public List<TrainingInstance> findAllTrainingInstancesByTrainingDefinitionId(Long id) {
+        return trainingInstanceRepository.findAllByTrainingDefinitionId(id);
     }
 
     private AbstractLevel findLastLevel(Long levelId) {
