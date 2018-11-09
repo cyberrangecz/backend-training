@@ -3,7 +3,6 @@ package cz.muni.ics.kypo.training.api.dto.traininginstance;
 import java.time.LocalDateTime;
 import java.util.Set;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionDTO;
@@ -25,11 +24,9 @@ public class TrainingInstanceUpdateDTO {
     private Long id;
     @NotNull(message = "{traininginstanceupdate.startTime.NotNull.message}")
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)
-		//@JsonFormat(shape = JsonFormat.Shape.STRING)
     private LocalDateTime startTime;
     @NotNull(message = "{traininginstanceupdate.endTime.NotNull.message}")
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)
-		//@JsonFormat(shape = JsonFormat.Shape.STRING)
     private LocalDateTime endTime;
     @NotEmpty(message = "{traininginstanceupdate.title.NotEmpty.message}")
     private String title;
