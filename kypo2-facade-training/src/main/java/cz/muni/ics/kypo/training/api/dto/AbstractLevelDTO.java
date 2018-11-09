@@ -4,8 +4,7 @@ import com.fasterxml.jackson.annotation.JsonSubTypes;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.gamelevel.GameLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.infolevel.InfoLevelDTO;
-import cz.muni.ics.kypo.training.persistence.model.GameLevel;
-import cz.muni.ics.kypo.training.persistence.model.InfoLevel;
+import cz.muni.ics.kypo.training.persistence.model.enums.LevelType;
 import io.swagger.annotations.ApiModel;
 
 import java.util.Objects;
@@ -16,12 +15,12 @@ import cz.muni.ics.kypo.training.api.dto.prehook.PreHookDTO;
 /**
  * @author Pavel Šeda (441048)
  */
-@ApiModel(value = "AbstractLevelDTO",
+@ApiModel(value = "AbstractLevelDTO", subTypes = {GameLevelDTO.class, InfoLevelDTO.class, AssessmentLevelDTO.class},
         description = "Superclass for classes GameLevelDTO, AssessmentLevelDTO and InfoLevelDTO")
-//@JsonSubTypes({
-//        @JsonSubTypes.Type(value = GameLevelDTO.class, name = "GameLevelDTO"),
-//        @JsonSubTypes.Type(value = AssessmentLevelDTO.class, name = "AssessmentLevelDTO"),
-//        @JsonSubTypes.Type(value = InfoLevelDTO.class, name = "InfoLevelDTO")})
+@JsonSubTypes({
+        @JsonSubTypes.Type(value = GameLevelDTO.class, name = "GameLevelDTO"),
+        @JsonSubTypes.Type(value = AssessmentLevelDTO.class, name = "AssessmentLevelDTO"),
+        @JsonSubTypes.Type(value = InfoLevelDTO.class, name = "InfoLevelDTO")})
 public class AbstractLevelDTO {
 
     protected Long id;
@@ -30,7 +29,7 @@ public class AbstractLevelDTO {
     protected Long nextLevel;
     protected PreHookDTO preHook;
     protected PostHookDTO postHook;
-    //TODO type of level
+    protected LevelType levelType;
 
     public Long getId() {
         return id;
@@ -78,6 +77,14 @@ public class AbstractLevelDTO {
 
     public void setPostHook(PostHookDTO postHook) {
         this.postHook = postHook;
+    }
+
+    public LevelType getLevelType() {
+        return levelType;
+    }
+
+    public void setLevelType(LevelType levelType) {
+        this.levelType = levelType;
     }
 
     @Override

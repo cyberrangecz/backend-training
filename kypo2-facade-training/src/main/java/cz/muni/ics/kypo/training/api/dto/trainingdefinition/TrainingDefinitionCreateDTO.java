@@ -31,6 +31,8 @@ public class TrainingDefinitionCreateDTO {
     private boolean showStepperBar;
     @NotNull(message = "{trainingdefinitioncreate.sandboxDefinitionRef.NotNull.message}")
     private SandboxDefinitionRefDTO sandboxDefinitionRef;
+    @NotNull
+    private Long startingLevel;
     //TODO starting level atribute
 
     public String getTitle() {
@@ -95,6 +97,14 @@ public class TrainingDefinitionCreateDTO {
 
     public void setSandboxDefinitionRef(SandboxDefinitionRefDTO sandboxDefinitionRef) {
         this.sandboxDefinitionRef = sandboxDefinitionRef;
+    }
+
+    public Long getStartingLevel() {
+        return startingLevel;
+    }
+
+    public void setStartingLevel(Long startingLevel) {
+        this.startingLevel = startingLevel;
     }
 
     @Override

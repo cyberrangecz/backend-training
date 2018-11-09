@@ -87,16 +87,18 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
         AccessTrainingRunDTO accessTrainingRunDTO = new AccessTrainingRunDTO();
         try {
             AbstractLevel abstractLevel = trainingRunService.accessTrainingRun(password);
+            AbstractLevelDTO abstractLevelDTO;
             if (abstractLevel instanceof AssessmentLevel) {
                 AssessmentLevel assessmentLevel = (AssessmentLevel) abstractLevel;
-                accessTrainingRunDTO.setAbstractLevelDTO(beanMapping.mapTo(assessmentLevel, AssessmentLevelDTO.class));
+                abstractLevelDTO = beanMapping.mapTo(assessmentLevel, AssessmentLevelDTO.class);
             } else if (abstractLevel instanceof GameLevel) {
                 GameLevel gameLevel = (GameLevel) abstractLevel;
-                accessTrainingRunDTO.setAbstractLevelDTO(beanMapping.mapTo(gameLevel, GameLevelDTO.class));
+                abstractLevelDTO = beanMapping.mapTo(gameLevel, GameLevelDTO.class);
             } else {
                 InfoLevel infoLevel = (InfoLevel) abstractLevel;
-                accessTrainingRunDTO.setAbstractLevelDTO(beanMapping.mapTo(infoLevel, InfoLevelDTO.class));
+                abstractLevelDTO = beanMapping.mapTo(infoLevel, InfoLevelDTO.class);
             }
+            accessTrainingRunDTO.setAbstractLevelDTO(abstractLevelDTO);
 
             accessTrainingRunDTO.setInfoAboutLevels(getInfoAboutLevels(abstractLevel.getId()));
             return accessTrainingRunDTO;
@@ -146,13 +148,15 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
         } catch (ServiceLayerException ex) {
             throw new FacadeLayerException(ex);
         }
+        AbstractLevelDTO abstractLevelDTO;
         if (aL instanceof GameLevel) {
-            return beanMapping.mapTo(aL, GameLevelDTO.class);
+            abstractLevelDTO = beanMapping.mapTo(aL, GameLevelDTO.class);
         } else if (aL instanceof AssessmentLevel) {
-            return beanMapping.mapTo(aL, AssessmentLevelDTO.class);
+            abstractLevelDTO = beanMapping.mapTo(aL, AssessmentLevelDTO.class);
         } else {
-            return beanMapping.mapTo(aL, InfoLevelDTO.class);
+            abstractLevelDTO = beanMapping.mapTo(aL, InfoLevelDTO.class);
         }
+        return abstractLevelDTO;
     }
 
     @Override
