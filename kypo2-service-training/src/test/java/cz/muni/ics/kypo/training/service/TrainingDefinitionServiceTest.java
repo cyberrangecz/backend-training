@@ -54,6 +54,9 @@ public class TrainingDefinitionServiceTest {
     @Mock
     private AssessmentLevelRepository assessmentLevelRepository;
 
+    @Mock
+    private TrainingInstanceRepository trainingInstanceRepository;
+
     private TrainingDefinition trainingDefinition1, trainingDefinition2, unreleasedDefinition, releasedDefinition, definitionWithoutLevels;
 
     private AssessmentLevel level1, level2, level3, newAssessmentLevel;
@@ -66,7 +69,7 @@ public class TrainingDefinitionServiceTest {
     public void init(){
         MockitoAnnotations.initMocks(this);
         trainingDefinitionService = new TrainingDefinitionServiceImpl(trainingDefinitionRepository, abstractLevelRepository,
-            infoLevelRepository, gameLevelRepository, assessmentLevelRepository);
+            infoLevelRepository, gameLevelRepository, assessmentLevelRepository, trainingInstanceRepository);
 
         level3 = new AssessmentLevel();
         level3.setId(3L);

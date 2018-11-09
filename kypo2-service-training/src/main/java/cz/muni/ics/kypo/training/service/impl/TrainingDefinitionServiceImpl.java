@@ -42,12 +42,13 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     @Autowired
     public TrainingDefinitionServiceImpl(TrainingDefinitionRepository trainingDefinitionRepository,
                                          AbstractLevelRepository abstractLevelRepository, InfoLevelRepository infoLevelRepository, GameLevelRepository gameLevelRepository,
-                                         AssessmentLevelRepository assessmentLevelRepository) {
+                                         AssessmentLevelRepository assessmentLevelRepository, TrainingInstanceRepository trainingInstanceRepository) {
         this.trainingDefinitionRepository = trainingDefinitionRepository;
         this.abstractLevelRepository = abstractLevelRepository;
         this.gameLevelRepository = gameLevelRepository;
         this.infoLevelRepository = infoLevelRepository;
         this.assessmentLevelRepository = assessmentLevelRepository;
+        this.trainingInstanceRepository = trainingInstanceRepository;
     }
 
     @Override
