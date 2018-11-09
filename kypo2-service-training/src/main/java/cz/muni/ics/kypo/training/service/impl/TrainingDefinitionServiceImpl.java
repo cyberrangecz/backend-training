@@ -66,6 +66,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
 
     }
 
+    //TODO repair organizer role
     @Override
     @PreAuthorize("hasAuthority({'ADMINISTRATOR', T(cz.muni.ics.kypo.training.persistence.model.enums.RoleType).DESIGNER})")
     public TrainingDefinition create(TrainingDefinition trainingDefinition) {

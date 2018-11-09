@@ -4,6 +4,7 @@ import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.rest.exceptions.*;
 import org.springframework.security.access.AccessDeniedException;
 
+
 public class ExceptionSorter {
     private ExceptionSorter() {
         throw new IllegalStateException("Util class");

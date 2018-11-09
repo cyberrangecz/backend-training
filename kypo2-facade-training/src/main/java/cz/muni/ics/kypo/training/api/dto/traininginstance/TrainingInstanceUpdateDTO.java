@@ -19,6 +19,7 @@ import javax.validation.constraints.NotNull;
  */
 @ApiModel(value = "TrainingInstanceUpdateDTO", description = "Training Instance to update.")
 public class TrainingInstanceUpdateDTO {
+
     @NotNull(message = "{traininginstanceupdate.id.NotNull.message}")
     private Long id;
     @NotNull(message = "{traininginstanceupdate.startTime.NotNull.message}")

@@ -19,12 +19,13 @@ import javax.validation.constraints.NotNull;
  */
 @ApiModel(value = "TrainingInstanceCreateDTO", description = "Training Instance to create.")
 public class TrainingInstanceCreateDTO {
+
     @NotNull(message = "{traininginstancecreate.startTime.NotNull.message}")
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)
     private LocalDateTime startTime;
     @NotNull(message = "{traininginstancecreate.endTime.NotNull.message}")
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)
-    private LocalDateTime endTime;
+		private LocalDateTime endTime;
     @NotEmpty(message = "{traininginstancecreate.title.NotEmpty.message}")
     private String title;
     @NotNull(message = "{traininginstancecreate.poolSize.NotNull.message}")
