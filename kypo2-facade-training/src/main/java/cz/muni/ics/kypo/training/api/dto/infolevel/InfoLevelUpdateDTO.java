@@ -4,15 +4,17 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 
 /**
  * @author Pavel Šeda (441048)
  */
 @ApiModel(value = "InfoLevelUpdateDTO", description = "Info Level to update.")
 public class InfoLevelUpdateDTO {
-
+    @ApiModelProperty(required = true)
     @NotNull(message = "{infolevelupdate.id.NotNull.message}")
     protected Long id;
+    @ApiModelProperty(required = true)
     @NotEmpty(message = "{infolevelupdate.title.NotEmpty.message}")
     protected String title;
     private String content;

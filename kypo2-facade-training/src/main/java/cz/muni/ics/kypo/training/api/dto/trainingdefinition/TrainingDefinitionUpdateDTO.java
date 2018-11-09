@@ -11,6 +11,7 @@ import cz.muni.ics.kypo.training.api.dto.AuthorRefDTO;
 import cz.muni.ics.kypo.training.api.dto.SandboxDefinitionRefDTO;
 import cz.muni.ics.kypo.training.persistence.model.enums.TDState;
 import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 
 /**
  * @author Pavel Šeda (441048)
@@ -33,6 +34,9 @@ public class TrainingDefinitionUpdateDTO {
     private SandboxDefinitionRefDTO sandBoxDefinitionRef;
     @NotNull(message = "{trainingdefinitionupdate.showStepperBar.NotNull.message}")
     private boolean showStepperBar;
+    @NotNull
+    @ApiModelProperty(required = true)
+    private Long startingLevel;
 
     public Long getId() {
         return id;
@@ -104,6 +108,14 @@ public class TrainingDefinitionUpdateDTO {
 
     public void setShowStepperBar(boolean showStepperBar) {
         this.showStepperBar = showStepperBar;
+    }
+
+    public Long getStartingLevel() {
+        return startingLevel;
+    }
+
+    public void setStartingLevel(Long startingLevel) {
+        this.startingLevel = startingLevel;
     }
 
     @Override

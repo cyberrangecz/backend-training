@@ -17,22 +17,24 @@ import io.swagger.annotations.ApiModelProperty;
  */
 @ApiModel(value = "TrainingDefinitionCreateDTO", description = "Training Definition to create.")
 public class TrainingDefinitionCreateDTO {
-
+    @ApiModelProperty(required = true)
     @NotEmpty(message = "{trainingdefinitioncreate.title.NotEmpty.message}")
     private String title;
     private String description;
     private String[] prerequisities;
     private String[] outcomes;
+    @ApiModelProperty(required = true)
     @NotNull(message = "{trainingdefinitioncreate.state.NotNull.message}")
     private TDState state;
+    @ApiModelProperty(required = true)
     @NotNull(message = "{trainingdefinitioncreate.authorRef.NotNull.message}")
     private Set<AuthorRefDTO> authorRef;
+    @ApiModelProperty(required = true)
     @NotNull(message = "{trainingdefinitioncreate.showStepperBar.NotNull.message}")
     private boolean showStepperBar;
+    @ApiModelProperty(required = true)
     @NotNull(message = "{trainingdefinitioncreate.sandboxDefinitionRef.NotNull.message}")
     private SandboxDefinitionRefDTO sandboxDefinitionRef;
-    @NotNull
-    private Long startingLevel;
     //TODO starting level atribute
 
     public String getTitle() {
@@ -97,14 +99,6 @@ public class TrainingDefinitionCreateDTO {
 
     public void setSandboxDefinitionRef(SandboxDefinitionRefDTO sandboxDefinitionRef) {
         this.sandboxDefinitionRef = sandboxDefinitionRef;
-    }
-
-    public Long getStartingLevel() {
-        return startingLevel;
-    }
-
-    public void setStartingLevel(Long startingLevel) {
-        this.startingLevel = startingLevel;
     }
 
     @Override

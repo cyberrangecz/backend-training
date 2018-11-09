@@ -12,11 +12,11 @@ import io.swagger.annotations.ApiModelProperty;
 @ApiModel(value = "AssessmentLevelDTO", description = "Information about assessment level.", parent = AbstractLevelDTO.class)
 public class AssessmentLevelDTO extends AbstractLevelDTO {
 
-    @ApiModelProperty(value = "List of questions in this assessment as JSON.", required = true)
+    @ApiModelProperty(value = "List of questions in this assessment as JSON.")
     private String questions;
-    @ApiModelProperty(value = "Assessment instructions for trainees.", position = 1)
+    @ApiModelProperty(value = "Assessment instructions for trainees.")
     private String instructions;
-    @ApiModelProperty(value = "Type of assessment.", required = true)
+    @ApiModelProperty(value = "Type of assessment.")
     private AssessmentType assessmentType;
 
     public String getQuestions() {

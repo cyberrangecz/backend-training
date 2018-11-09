@@ -2,6 +2,7 @@ package cz.muni.ics.kypo.training.api.dto.gamelevel;
 
 import cz.muni.ics.kypo.training.api.dto.hint.HintDTO;
 import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 
 import javax.validation.constraints.*;
 import java.util.Arrays;
@@ -12,23 +13,29 @@ import java.util.Set;
  */
 @ApiModel(value = "GameLevelUpdateDTO", description = "Game Level to update.")
 public class GameLevelUpdateDTO {
+    @ApiModelProperty(required = true)
     @NotNull(message = "{gamelevelupdate.id.NotNull.message}")
     protected Long id;
+    @ApiModelProperty(required = true)
     @NotEmpty(message = "{gamelevelupdate.title.NotEmpty.message}")
     protected String title;
+    @ApiModelProperty(required = true)
     @NotNull(message = "{gamelevelupdate.maxScore.NotNull.message}")
     @Min(value = 0, message = "{gamelevelupdate.maxScore.Min.message}")
     @Max(value = 100, message = "{gamelevelupdate.maxScore.Max.message}")
     private Integer maxScore;
+    @ApiModelProperty(required = true)
     @NotEmpty(message = "{gamelevelupdate.flag.NotEmpty.message}")
     @Size(max = 50, message = "{gamelevelupdate.flag.Size.message}")
     private String flag;
     private String content;
     private String solution;
+    @ApiModelProperty(required = true)
     @NotNull(message = "{gamelevelupdate.solutionPenalized.NotNull.message}")
     private boolean solutionPenalized;
     private int estimatedDuration;
     private String[] attachments;//?
+    @ApiModelProperty(required = true)
     @NotNull(message = "{gamelevelupdate.incorrectFlagLimit.NotEmpty.message}")
     @Min(value = 0, message = "{gamelevelupdate.incorrectFlagLimit.Min.message}")
     private int incorrectFlagLimit;

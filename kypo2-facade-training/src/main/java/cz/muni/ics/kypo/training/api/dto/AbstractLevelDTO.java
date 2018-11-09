@@ -5,12 +5,12 @@ import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.gamelevel.GameLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.infolevel.InfoLevelDTO;
 import cz.muni.ics.kypo.training.persistence.model.enums.LevelType;
-import io.swagger.annotations.ApiModel;
 
 import java.util.Objects;
 
 import cz.muni.ics.kypo.training.api.dto.posthook.PostHookDTO;
 import cz.muni.ics.kypo.training.api.dto.prehook.PreHookDTO;
+import io.swagger.annotations.ApiModel;
 
 /**
  * @author Pavel Šeda (441048)
@@ -111,3 +111,4 @@ public class AbstractLevelDTO {
     }
 
 }
+
