@@ -7,7 +7,7 @@ import io.swagger.annotations.ApiModel;
 /**
  * @author Pavel Šeda (441048)
  */
-@ApiModel(value = "InfoLevelDTO", description = "Info Level.")
+@ApiModel(value = "InfoLevelDTO", description = "Info Level.", parent = AbstractLevelDTO.class)
 public class InfoLevelDTO extends AbstractLevelDTO {
 
     private String content;

@@ -123,15 +123,17 @@
 						<apiSource>
 							<springmvc>true</springmvc>
 							<locations>
-								<location>cz.muni.ics.kypo.training.rest.controllers</location>
+								<location>cz.muni.ics.kypo.training.rest.controllers.TrainingDefinitionsRestController</location>
+								<location>cz.muni.ics.kypo.training.rest.controllers.TrainingInstancesRestController</location>
+								<location>cz.muni.ics.kypo.training.rest.controllers.TrainingRunsRestController</location>
 							</locations>
 							<schemes>http,https</schemes>
 							<host>localhost:8080</host>
 							<basePath>/kypo2-rest-training/api/v1</basePath>
 							<info>
 								<title>KYPO2 Trainings - API Reference</title>
-								<version>v1</version>
-								<description>API Reference Description.</description>
+								<version>Version: 1.0.0</version>
+								<description>Kypo Training API Reference Description.</description>
 								<contact>
 									<email>pavelseda@email.cz</email>
 									<name>Pavel Seda</name>

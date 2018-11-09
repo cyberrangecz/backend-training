@@ -1,5 +1,11 @@
 package cz.muni.ics.kypo.training.api.dto;
 
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelDTO;
+import cz.muni.ics.kypo.training.api.dto.gamelevel.GameLevelDTO;
+import cz.muni.ics.kypo.training.api.dto.infolevel.InfoLevelDTO;
+import cz.muni.ics.kypo.training.persistence.model.GameLevel;
+import cz.muni.ics.kypo.training.persistence.model.InfoLevel;
 import io.swagger.annotations.ApiModel;
 
 import java.util.Objects;
@@ -10,7 +16,12 @@ import cz.muni.ics.kypo.training.api.dto.prehook.PreHookDTO;
 /**
  * @author Pavel Šeda (441048)
  */
-@ApiModel(value = "AbstractLevelDTO", description = ".")
+@ApiModel(value = "AbstractLevelDTO",
+        description = "Superclass for classes GameLevelDTO, AssessmentLevelDTO and InfoLevelDTO")
+//@JsonSubTypes({
+//        @JsonSubTypes.Type(value = GameLevelDTO.class, name = "GameLevelDTO"),
+//        @JsonSubTypes.Type(value = AssessmentLevelDTO.class, name = "AssessmentLevelDTO"),
+//        @JsonSubTypes.Type(value = InfoLevelDTO.class, name = "InfoLevelDTO")})
 public class AbstractLevelDTO {
 
     protected Long id;
@@ -19,6 +30,7 @@ public class AbstractLevelDTO {
     protected Long nextLevel;
     protected PreHookDTO preHook;
     protected PostHookDTO postHook;
+    //TODO type of level
 
     public Long getId() {
         return id;

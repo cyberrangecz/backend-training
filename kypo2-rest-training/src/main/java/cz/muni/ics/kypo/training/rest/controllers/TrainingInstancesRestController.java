@@ -41,18 +41,17 @@ import io.swagger.annotations.ApiResponses;
 
 import javax.validation.Valid;
 
+
 /**
  * @author Pavel Šeda
  */
-@Api(value = "/training-instances",
-        consumes = "application/json"
-)
 @ApiResponses(value = {
         @ApiResponse(code = 401, message = "Full authentication is required to access this resource."),
         @ApiResponse(code = 403, message = "The necessary permissions are required for a resource.")
 })
 @RestController
-@RequestMapping(value = "/training-instances")
+@RequestMapping(value = "/training-instances", produces = MediaType.APPLICATION_JSON_VALUE)
+@Api(value = "/training-instances", tags = "Training instances", consumes = "application/json")
 public class TrainingInstancesRestController {
 
     private static final Logger LOG = LoggerFactory.getLogger(cz.muni.ics.kypo.training.rest.controllers.TrainingInstancesRestController.class);
@@ -72,14 +71,18 @@ public class TrainingInstancesRestController {
      * @param id of Training Instance to return.
      * @return Requested Training Instance by id.
      */
-    @ApiOperation(httpMethod = "GET", value = "Get Training Instance by Id.", response = TrainingDefinitionDTO.class, nickname = "findTrainingInstanceById", notes = "This operation returns training instance by id. This training instance also contains particular Training Definition in it.", produces = "application/json")
-    @ApiResponses(value = {@ApiResponse(code = 200, message = "Training instance found", response = TrainingInstanceDTO.class), @ApiResponse(code = 404, message = "Training instance with given id not found."),
+    @ApiOperation(httpMethod = "GET", value = "Get training instance by Id.", response = TrainingDefinitionDTO.class,
+            nickname = "findTrainingInstanceById",
+            notes = "Returns training instance by id and also contains particular training definition in it.",
+            produces = "application/json")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Training instance found", response = TrainingInstanceDTO.class), @ApiResponse(code = 404, message = "Training instance with given id not found."),
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.")
 
     })
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> findTrainingInstanceById(
-            @ApiParam(value = "Training Instance ID") @PathVariable long id,
+            @ApiParam(value = "Training instance ID") @PathVariable long id,
             @ApiParam(value = "Fields which should be returned in REST API response", required = false) @RequestParam(value = "fields", required = false) String fields) {
         LOG.debug("findTrainingInstanceById({},{})", id, fields);
         try {
@@ -119,7 +122,7 @@ public class TrainingInstancesRestController {
      * @return all Training Instances.
      */
     @ApiOperation(httpMethod = "GET",
-            value = "Get all Training Instances.",
+            value = "Get all training instances.",
             response = TrainingInstanceRestResource.class,
             responseContainer = "Page",
             nickname = "findAllTrainingInstances",
@@ -145,7 +148,8 @@ public class TrainingInstancesRestController {
     }
 
     @ApiOperation(httpMethod = "POST",
-            value = "Create Training Instance",
+            value = "Create training instance",
+            notes = "This can only be done by the organizer or administrator",
             response = TrainingInstanceDTO.class,
             nickname = "createTrainingInstance",
             produces = "application/json",
@@ -171,7 +175,8 @@ public class TrainingInstancesRestController {
     }
 
     @ApiOperation(httpMethod = "PUT",
-            value = "Update Training Instance",
+            value = "Update training instance",
+            notes = "This can only be done by organizer of training instance or administrator",
             response = String.class,
             nickname = "updateTrainingInstance",
             consumes = "application/json")
@@ -190,7 +195,8 @@ public class TrainingInstancesRestController {
     }
 
     @ApiOperation(httpMethod = "DELETE",
-            value = "Delete TrainingInstance",
+            value = "Delete training instance",
+            notes = "This can only be done by organizer of training instance or administrator",
             nickname = "deleteTrainingInstance"
     )
     @ApiResponses(value = {
@@ -225,7 +231,7 @@ public class TrainingInstancesRestController {
     })
     @PostMapping(value = "/{instanceId}/sandbox-instances")
     public ResponseEntity<Void> allocateSandboxes(
-            @ApiParam(value = "Id of trainingInstance")
+            @ApiParam(value = "Id of training instance for which sandboxes are allocated")
             @PathVariable(value = "instanceId") Long instanceId) {
         try {
             return trainingInstanceFacade.allocateSandboxes(instanceId);
@@ -240,8 +246,9 @@ public class TrainingInstancesRestController {
      * @return all Training Runs in given Training Instance.
      */
     @ApiOperation(httpMethod = "GET",
-            value = "Get all Training Runs by Training Instance id.",
+            value = "Get all training runs of specific training instance",
             response = TrainingInstancesRestController.TrainingRunRestResource.class,
+            notes = "This can only be done by organizer of training instance or administrator",
             nickname = "findAllTrainingRunsByTrainingInstanceId",
             produces = "application/json"
     )
@@ -252,11 +259,11 @@ public class TrainingInstancesRestController {
     @GetMapping(value = "/{instanceId}/training-runs", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> findAllTrainingRunsByTrainingInstanceId(
             @ApiParam(value = "Training Instance Id", required = true) @PathVariable Long instanceId,
-            @ApiParam(value = "Pagination support.", required = false) Pageable pageable,
+            @ApiParam(value = "Pagination support.") Pageable pageable,
             @ApiParam(value = "Parameters for filtering the objects.", required = false)
             @RequestParam MultiValueMap<String, String> parameters,
             @ApiParam(value = "Fields which should be returned in REST API response", required = false)
-            @RequestParam(value = "fields", required = false) String fields) {
+            @RequestParam(value = "fields") String fields) {
 
         LOG.debug("findAllTrainingRunsByTrainingInstnceId({})", instanceId);
         PageResultResource<TrainingRunDTO> trainingRunResource = trainingInstanceFacade.findTrainingRunsByTrainingInstance(instanceId, pageable);

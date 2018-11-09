@@ -11,7 +11,7 @@ import io.swagger.annotations.ApiModel;
 /**
  * @author Pavel Šeda (441048)
  */
-@ApiModel(value = "GameLevelDTO", description = ".")
+@ApiModel(value = "GameLevelDTO", description = ".", parent = AbstractLevelDTO.class)
 public class GameLevelDTO extends AbstractLevelDTO {
 
     private String flag;

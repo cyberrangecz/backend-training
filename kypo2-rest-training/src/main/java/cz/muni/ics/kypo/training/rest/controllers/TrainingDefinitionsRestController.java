@@ -8,14 +8,18 @@ import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.training.api.PageResultResource;
 import cz.muni.ics.kypo.training.api.dto.AbstractLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.BasicLevelInfoDTO;
+import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelUpdateDTO;
+import cz.muni.ics.kypo.training.api.dto.gamelevel.GameLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.gamelevel.GameLevelUpdateDTO;
+import cz.muni.ics.kypo.training.api.dto.infolevel.InfoLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.infolevel.InfoLevelUpdateDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionCreateDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionUpdateDTO;
 import cz.muni.ics.kypo.training.exception.FacadeLayerException;
 import cz.muni.ics.kypo.training.facade.TrainingDefinitionFacade;
+import cz.muni.ics.kypo.training.persistence.model.GameLevel;
 import cz.muni.ics.kypo.training.persistence.model.TrainingDefinition;
 import cz.muni.ics.kypo.training.persistence.model.enums.LevelType;
 import cz.muni.ics.kypo.training.rest.ExceptionSorter;
@@ -43,15 +47,13 @@ import javax.validation.Valid;
 /**
  * @author Pavel Šeda
  */
-@Api(value = "/training-definitions",
-        consumes = "application/json"
-)
 @ApiResponses(value = {
         @ApiResponse(code = 401, message = "Full authentication is required to access this resource."),
         @ApiResponse(code = 403, message = "The necessary permissions are required for a resource.")
 })
 @RestController
-@RequestMapping(value = "/training-definitions")
+@RequestMapping(value = "/training-definitions", produces = MediaType.APPLICATION_JSON_VALUE)
+@Api(value = "/training-definitions", tags = "Training definitions", consumes = "application/json")
 public class TrainingDefinitionsRestController {
 
     private static final Logger LOG = LoggerFactory.getLogger(TrainingDefinitionsRestController.class);
@@ -187,6 +189,7 @@ public class TrainingDefinitionsRestController {
 
     @ApiOperation(httpMethod = "PUT",
             value = "Update Training Definition",
+            notes = "Only unreleased training definition can be updated",
             response = TrainingDefinitionDTO.class,
             nickname = "updateTrainingDefinition",
             produces = "application/json",
@@ -211,7 +214,8 @@ public class TrainingDefinitionsRestController {
     }
 
     @ApiOperation(httpMethod = "POST",
-            value = "Clone Training Definition",
+            value = "Clone training definition",
+            notes = "Only released and archived training definitions can be cloned",
             response = TrainingDefinitionDTO.class,
             nickname = "cloneTrainingDefinition",
             produces = "application/json")
@@ -236,6 +240,7 @@ public class TrainingDefinitionsRestController {
 
     @ApiOperation(httpMethod = "PUT",
             value = "Swap level to the left",
+            notes = "The first one level cannot be swapped to the left",
             nickname = "swapLeft",
             produces = "application/json",
             response = BasicLevelInfoDTO.class)
@@ -248,7 +253,7 @@ public class TrainingDefinitionsRestController {
     )
     @PutMapping(value = "/{definitionId}/levels/{levelId}/swap-left", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> swapLeft(
-            @ApiParam(value = "Id of definition")
+            @ApiParam(value = "Id of training definition")
             @PathVariable("definitionId") Long definitionId,
             @ApiParam(value = "Id of level to be swapped")
             @PathVariable("levelId") Long levelId) {
@@ -261,6 +266,7 @@ public class TrainingDefinitionsRestController {
 
     @ApiOperation(httpMethod = "PUT",
             value = "Swap level to the right",
+            notes = "The last one level cannot be swapped to the right",
             nickname = "swapRight",
             produces = "application/json",
             response = BasicLevelInfoDTO.class)
@@ -273,7 +279,7 @@ public class TrainingDefinitionsRestController {
     )
     @PutMapping(value = "/{definitionId}/levels/{levelId}/swap-right", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> swapRight(
-            @ApiParam(value = "Id of definition")
+            @ApiParam(value = "Id of training definition")
             @PathVariable("definitionId") Long definitionId,
             @ApiParam(value = "Id of level to be swapped")
             @PathVariable("levelId") Long levelId) {
@@ -286,8 +292,8 @@ public class TrainingDefinitionsRestController {
 
     @ApiOperation(httpMethod = "DELETE",
             value = "Delete training definition",
-            nickname = "deleteTrainingDefinition",
-            response = Void.class)
+            notes = "Released training definition canont be deleted",
+            nickname = "deleteTrainingDefinition")
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Training definition deleted."),
             @ApiResponse(code = 404, message = "Training definition or one of levels cannot be found."),
@@ -297,7 +303,7 @@ public class TrainingDefinitionsRestController {
     )
     @DeleteMapping(value = "/{id}")
     public ResponseEntity<Void> deleteTrainingDefinition(
-            @ApiParam(value = "Id of definition")
+            @ApiParam(value = "Id of training definition to be deleted")
             @PathVariable("id") Long id) {
         try {
             trainingDefinitionFacade.delete(id);
@@ -309,6 +315,7 @@ public class TrainingDefinitionsRestController {
 
     @ApiOperation(httpMethod = "DELETE",
             value = "Delete specific level from definition",
+            notes = "Level can be deleted only in unreleased training definition",
             nickname = "deleteOneLevel",
             produces = "application/json",
             response = BasicLevelInfoDTO.class)
@@ -321,7 +328,7 @@ public class TrainingDefinitionsRestController {
     )
     @DeleteMapping(value = "/{definitionId}/levels/{levelId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> deleteOneLevel(
-            @ApiParam(value = "Id of definition")
+            @ApiParam(value = "Id of training definition from which level is deleted")
             @PathVariable("definitionId") Long definitionId,
             @ApiParam(value = "Id of level to be deleted")
             @PathVariable("levelId") Long levelId) {
@@ -333,9 +340,9 @@ public class TrainingDefinitionsRestController {
     }
 
     @ApiOperation(httpMethod = "PUT",
-            value = "Update specific game level from definition",
+            value = "Update specific game level in given training definition",
+            notes = "Level can be updated only in unreleased training definition",
             nickname = "updateGameLevel",
-            response = Void.class,
             consumes = "application/json")
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Game level updated."),
@@ -347,7 +354,7 @@ public class TrainingDefinitionsRestController {
     )
     @PutMapping(value = "/{definitionId}/game-levels", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Void> updateGameLevel(
-            @ApiParam(value = "Id of definition")
+            @ApiParam(value = "Id of definition to which level is assigned")
             @PathVariable(value = "definitionId") Long definitionId,
             @ApiParam(value = "Game level to be updated")
             @RequestBody @Valid GameLevelUpdateDTO gameLevelUpdateDTO) {
@@ -360,9 +367,9 @@ public class TrainingDefinitionsRestController {
     }
 
     @ApiOperation(httpMethod = "PUT",
-            value = "Update specific info level from definition",
+            value = "Update specific info level in given training definition",
+            notes = "Level can be deleted only in unreleased training definition",
             nickname = "updateInfoLevel",
-            response = Void.class,
             consumes = "application/json")
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Info level updated."),
@@ -374,7 +381,7 @@ public class TrainingDefinitionsRestController {
     )
     @PutMapping(value = "/{definitionId}/info-levels", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Void> updateInfoLevel(
-            @ApiParam(value = "Id of definition")
+                @ApiParam(value = "Id of definition to which level is assigned")
             @PathVariable(value = "definitionId") Long definitionId,
             @ApiParam(value = "Info level to be updated")
             @RequestBody @Valid InfoLevelUpdateDTO infoLevelUpdateDTO) {
@@ -387,9 +394,9 @@ public class TrainingDefinitionsRestController {
     }
 
     @ApiOperation(httpMethod = "PUT",
-            value = "Update specific assessment level from definition",
+            value = "Update specific assessment level in given training definition",
+            notes = "Level can be deleted only in unreleased training definition",
             nickname = "updateAssessmentLevel",
-            response = Void.class,
             consumes = "application/json")
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Assessment level updated."),
@@ -401,7 +408,7 @@ public class TrainingDefinitionsRestController {
     )
     @PutMapping(value = "/{definitionId}/assessment-levels", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Void> updateAssessmentLevel(
-            @ApiParam(value = "Id of definition")
+            @ApiParam(value = "Id of definition to which level is assigned")
             @PathVariable(value = "definitionId") Long definitionId,
             @ApiParam(value = "Assessment level to be updated")
             @RequestBody @Valid AssessmentLevelUpdateDTO assessmentLevelUpdateDTO) {
@@ -414,12 +421,12 @@ public class TrainingDefinitionsRestController {
     }
 
     @ApiOperation(httpMethod = "GET",
-            value = "Find level by id",
+            value = "Find level by ID",
             response = AbstractLevelDTO.class,
             nickname = "findLevelById",
             produces = "application/json")
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Level has been found.", response = AbstractLevelDTO.class),
+            @ApiResponse(code = 200, message = "Game level has been found.", response = AbstractLevelDTO.class),
             @ApiResponse(code = 404, message = "Level with given id not found."),
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.")
     })
@@ -439,7 +446,8 @@ public class TrainingDefinitionsRestController {
     }
 
     @ApiOperation(httpMethod = "POST",
-            value = "Create Level",
+            value = "Create level",
+            notes = "Creates only default level for given training definition",
             response = BasicLevelInfoDTO.class,
             nickname = "createLevel",
             produces = "application/json")
@@ -451,9 +459,9 @@ public class TrainingDefinitionsRestController {
     })
     @PostMapping(value = "/{definitionId}/levels/{levelType}")
     public ResponseEntity<Object> createLevel(
-            @ApiParam(value = "Id of definition")
+            @ApiParam(value = "Id of definition for which is level created")
             @PathVariable(value = "definitionId") Long definitionId,
-            @ApiParam(value = "Level type")
+            @ApiParam(value = "Level type", allowableValues = "game, assessment, info")
             @PathVariable(value = "levelType") LevelType levelType,
             @ApiParam(value = "Fields which should be returned in REST API response", required = false)
             @RequestParam(value = "fields", required = false) String fields) {
