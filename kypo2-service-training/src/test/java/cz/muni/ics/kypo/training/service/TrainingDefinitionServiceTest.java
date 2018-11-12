@@ -422,6 +422,7 @@ public class TrainingDefinitionServiceTest {
         given(trainingDefinitionRepository.findById(unreleasedDefinition.getId())).willReturn(Optional.of(unreleasedDefinition));
         given(abstractLevelRepository.findById(level1.getId())).willReturn(Optional.of(level1));
         given(abstractLevelRepository.findById(level2.getId())).willReturn(Optional.of(level2));
+        given(assessmentLevelRepository.findById(any(Long.class))).willReturn(Optional.of(level2));
 
         trainingDefinitionService.updateAssessmentLevel(unreleasedDefinition.getId(), level2);
 
@@ -470,13 +471,13 @@ public class TrainingDefinitionServiceTest {
     @Test
     public void updateGameLevel() {
         given(trainingDefinitionRepository.findById(trainingDefinition2.getId())).willReturn(Optional.of(trainingDefinition2));
-        given(abstractLevelRepository.findById(infoLevel.getId())).willReturn(Optional.of(infoLevel));
-        given(abstractLevelRepository.findById(gameLevel.getId())).willReturn(Optional.of(gameLevel));
-
+        given(abstractLevelRepository.findById(any(Long.class))).willReturn(Optional.of(infoLevel));
+        given(abstractLevelRepository.findById(any(Long.class))).willReturn(Optional.of(gameLevel));
+        given(gameLevelRepository.findById(any(Long.class))).willReturn(Optional.of(gameLevel));
         trainingDefinitionService.updateGameLevel(trainingDefinition2.getId(), gameLevel);
 
         then(trainingDefinitionRepository).should().findById(trainingDefinition2.getId());
-        then(abstractLevelRepository).should(times(2)).findById(any(Long.class));
+        then(abstractLevelRepository).should().findById(any(Long.class));
         then(gameLevelRepository).should().save(gameLevel);
     }
 
@@ -519,6 +520,7 @@ public class TrainingDefinitionServiceTest {
     @Test
     public void updateInfoLevel() {
         given(trainingDefinitionRepository.findById(trainingDefinition2.getId())).willReturn(Optional.of(trainingDefinition2));
+        given(infoLevelRepository.findById(any(Long.class))).willReturn(Optional.of(infoLevel));
         trainingDefinitionService.updateInfoLevel(trainingDefinition2.getId(), infoLevel);
         then(trainingDefinitionRepository).should().findById(trainingDefinition2.getId());
         then(infoLevelRepository).should().save(infoLevel);

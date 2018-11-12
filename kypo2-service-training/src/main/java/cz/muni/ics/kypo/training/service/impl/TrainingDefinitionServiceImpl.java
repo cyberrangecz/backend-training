@@ -267,7 +267,6 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
                 ErrorCode.RESOURCE_NOT_FOUND));
         gameLevel.setNextLevel(gL.getNextLevel());
         gameLevelRepository.save(gameLevel);
-        gameLevelRepository.save(gameLevel);
     }
 
     @Override
