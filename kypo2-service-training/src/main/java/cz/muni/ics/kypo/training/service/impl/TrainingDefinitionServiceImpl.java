@@ -96,6 +96,8 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
         TrainingDefinition tD = findById(trainingDefinition.getId());
         if (!tD.getState().equals(TDState.UNRELEASED))
             throw new ServiceLayerException(ARCHIVED_OR_RELEASED, ErrorCode.RESOURCE_CONFLICT);
+
+        trainingDefinition.setStartingLevel(tD.getStartingLevel());
         trainingDefinitionRepository.save(trainingDefinition);
         LOG.info("Training definition with id: {} updated.", trainingDefinition.getId());
     }
