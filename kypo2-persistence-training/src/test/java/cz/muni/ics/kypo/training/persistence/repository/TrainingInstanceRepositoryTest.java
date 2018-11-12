@@ -1,7 +1,9 @@
 package cz.muni.ics.kypo.training.persistence.repository;
 
 import cz.muni.ics.kypo.training.persistence.config.PersistenceConfigTest;
+import cz.muni.ics.kypo.training.persistence.model.TrainingDefinition;
 import cz.muni.ics.kypo.training.persistence.model.TrainingInstance;
+import cz.muni.ics.kypo.training.persistence.model.enums.TDState;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -34,12 +36,18 @@ public class TrainingInstanceRepositoryTest {
 	private TrainingInstanceRepository trainingInstanceRepository;
 
 	private TrainingInstance trainingInstance1, trainingInstance2;
+	private TrainingDefinition trainingDefinition;
 
 	@SpringBootApplication
 	static class TestConfiguration { }
 
 	@Before
 	public void setUp() {
+		trainingDefinition = new TrainingDefinition();
+		//trainingDefinition.setSandBoxDefinitionRef(entityManager.persist(sandboxDefinitionRef1));
+		trainingDefinition.setTitle("test");
+		trainingDefinition.setState(TDState.RELEASED);
+
 		trainingInstance1 = new TrainingInstance();
 		trainingInstance2 = new TrainingInstance();
 		trainingInstance1.setStartTime(LocalDateTime.now());
@@ -47,11 +55,14 @@ public class TrainingInstanceRepositoryTest {
 		trainingInstance1.setTitle("Training instance 1");
 		trainingInstance1.setPoolSize(10);
 		trainingInstance1.setPasswordHash("1Eh9A5l7Op5As8s0h9");
+		trainingInstance1.setTrainingDefinition(entityManager.persist(trainingDefinition));
+
 		trainingInstance2.setStartTime(LocalDateTime.now());
 		trainingInstance2.setEndTime(LocalDateTime.now());
 		trainingInstance2.setTitle("Training instance 2");
 		trainingInstance2.setPoolSize(15);
 		trainingInstance2.setPasswordHash("R8a9C7B4a2c8A2cN1E");
+		trainingInstance2.setTrainingDefinition(entityManager.persist(trainingDefinition));
 	}
 
 	@Test
@@ -86,5 +97,15 @@ public class TrainingInstanceRepositoryTest {
 		assertNotNull(resultTrainingInstances);
 		assertEquals(expectedTrainingInstances.size(), resultTrainingInstances.size());
 		assertEquals(expectedTrainingInstances, resultTrainingInstances);
+	}
+
+	@Test
+	public void findAllInstancesByTrainingDefinitionId() {
+		entityManager.persist(trainingInstance1);
+		entityManager.persist(trainingInstance2);
+
+		List<TrainingInstance> instances = trainingInstanceRepository.findAllByTrainingDefinitionId(trainingDefinition.getId());
+		assertTrue(instances.contains(trainingInstance1));
+		assertTrue(instances.contains(trainingInstance2));
 	}
 }

@@ -30,6 +30,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     private static final Logger LOG = LoggerFactory.getLogger(TrainingDefinitionServiceImpl.class);
 
     private TrainingDefinitionRepository trainingDefinitionRepository;
+    private TrainingInstanceRepository trainingInstanceRepository;
 
     private AbstractLevelRepository abstractLevelRepository;
     private GameLevelRepository gameLevelRepository;
@@ -41,12 +42,13 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     @Autowired
     public TrainingDefinitionServiceImpl(TrainingDefinitionRepository trainingDefinitionRepository,
                                          AbstractLevelRepository abstractLevelRepository, InfoLevelRepository infoLevelRepository, GameLevelRepository gameLevelRepository,
-                                         AssessmentLevelRepository assessmentLevelRepository) {
+                                         AssessmentLevelRepository assessmentLevelRepository, TrainingInstanceRepository trainingInstanceRepository) {
         this.trainingDefinitionRepository = trainingDefinitionRepository;
         this.abstractLevelRepository = abstractLevelRepository;
         this.gameLevelRepository = gameLevelRepository;
         this.infoLevelRepository = infoLevelRepository;
         this.assessmentLevelRepository = assessmentLevelRepository;
+        this.trainingInstanceRepository = trainingInstanceRepository;
     }
 
     @Override
@@ -94,6 +96,8 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
         TrainingDefinition tD = findById(trainingDefinition.getId());
         if (!tD.getState().equals(TDState.UNRELEASED))
             throw new ServiceLayerException(ARCHIVED_OR_RELEASED, ErrorCode.RESOURCE_CONFLICT);
+
+        trainingDefinition.setStartingLevel(tD.getStartingLevel());
         trainingDefinitionRepository.save(trainingDefinition);
         LOG.info("Training definition with id: {} updated.", trainingDefinition.getId());
     }
@@ -257,6 +261,11 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
             throw new ServiceLayerException(ARCHIVED_OR_RELEASED, ErrorCode.RESOURCE_CONFLICT);
         if (!findLevelInDefinition(trainingDefinition, gameLevel.getId()))
             throw new ServiceLayerException("Level was not found in definition.", ErrorCode.RESOURCE_NOT_FOUND);
+
+        GameLevel gL = gameLevelRepository.findById(gameLevel.getId()).orElseThrow(() ->
+            new ServiceLayerException("Level with id: " + gameLevel.getId() + ", not found.",
+                ErrorCode.RESOURCE_NOT_FOUND));
+        gameLevel.setNextLevel(gL.getNextLevel());
         gameLevelRepository.save(gameLevel);
     }
 
@@ -270,6 +279,11 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
             throw new ServiceLayerException(ARCHIVED_OR_RELEASED, ErrorCode.RESOURCE_CONFLICT);
         if (!findLevelInDefinition(trainingDefinition, infoLevel.getId()))
             throw new ServiceLayerException("Level was not found in definition.", ErrorCode.RESOURCE_NOT_FOUND);
+
+        InfoLevel iL = infoLevelRepository.findById(infoLevel.getId()).orElseThrow(() ->
+            new ServiceLayerException("Level with id: " + infoLevel.getId() + ", not found.",
+                ErrorCode.RESOURCE_NOT_FOUND));
+        infoLevel.setNextLevel(iL.getNextLevel());
         infoLevelRepository.save(infoLevel);
     }
 
@@ -283,6 +297,11 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
             throw new ServiceLayerException(ARCHIVED_OR_RELEASED, ErrorCode.RESOURCE_CONFLICT);
         if (!findLevelInDefinition(trainingDefinition, assessmentLevel.getId()))
             throw new ServiceLayerException("Level was not found in definition", ErrorCode.RESOURCE_NOT_FOUND);
+
+        AssessmentLevel aL = assessmentLevelRepository.findById(assessmentLevel.getId()).orElseThrow(() ->
+            new ServiceLayerException("Level with id: " + assessmentLevel.getId() + ", not found.",
+            ErrorCode.RESOURCE_NOT_FOUND));
+        assessmentLevel.setNextLevel(aL.getNextLevel());
         assessmentLevelRepository.save(assessmentLevel);
     }
 
@@ -402,6 +421,11 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
         Assert.notNull(levelId, "Input level id must not be null.");
         return abstractLevelRepository.findById(levelId)
                 .orElseThrow(() -> new ServiceLayerException("Level with id: " + levelId + ", not found", ErrorCode.RESOURCE_NOT_FOUND));
+    }
+
+    @Override public List<TrainingInstance> findAllTrainingInstancesByTrainingDefinitionId(Long id) {
+        Assert.notNull(id, "Input definition id must not be null");
+        return trainingInstanceRepository.findAllByTrainingDefinitionId(id);
     }
 
     private AbstractLevel findLastLevel(Long levelId) {
