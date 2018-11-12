@@ -2,7 +2,7 @@ package cz.muni.ics.kypo.training.api.dto;
 
 public class UserRefDTO {
     private Long id;
-    private Long userRefId;
+    private String userRefLogin;
 
     public Long getId() {
         return id;
@@ -12,16 +12,15 @@ public class UserRefDTO {
         this.id = id;
     }
 
-    public Long getUserRefId() {
-        return userRefId;
+    public String getUserRefLogin() {
+        return userRefLogin;
     }
 
-    public void setUserRefId(Long userRefId) {
-        this.userRefId = userRefId;
+    public void setUserRefLogin(String userRefLogin) {
+        this.userRefLogin = userRefLogin;
     }
 
-    @Override
-    public String toString() {
-        return "UserRefDTO{" + "id=" + id + ", userRefId=" + userRefId + '}';
+    @Override public String toString() {
+        return "UserRefDTO{" + "id=" + id + ", userRefLogin='" + userRefLogin + '\'' + '}';
     }
 }
