@@ -45,7 +45,7 @@ public interface TrainingInstanceService {
      * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND given training instance is not found.
      *                               RESOURCE_CONFLICT cannot be updated for some reason.
      */
-    void update(TrainingInstance trainingInstance);
+    String update(TrainingInstance trainingInstance);
 
     /**
      * deletes training instance
@@ -55,16 +55,6 @@ public interface TrainingInstanceService {
      *                               RESOURCE_CONFLICT cannot be deleted for some reason.
      */
     void delete(Long id);
-
-    /**
-     * Generates password for training instance
-     *
-     * @param trainingInstance - Instance that wants to have new password
-     * @param password         - original string that is to be changed
-     * @return new password
-     */
-    String generatePassword(TrainingInstance trainingInstance, String password);
-
 
     /**
      * Allocates sandboxes for training instance

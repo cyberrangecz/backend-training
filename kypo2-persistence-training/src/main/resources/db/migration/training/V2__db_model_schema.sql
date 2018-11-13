@@ -436,7 +436,7 @@ ALTER SEQUENCE training_definition_id_seq OWNED BY training_definition.id;
 CREATE TABLE training_instance (
     id bigint NOT NULL,
     end_time timestamp without time zone NOT NULL,
-    password_hash character varying(255),
+    password character varying(255),
     pool_size integer NOT NULL,
     start_time timestamp without time zone NOT NULL,
     title character varying(255) NOT NULL,
@@ -571,7 +571,7 @@ CREATE SEQUENCE user_ref_id_seq
 
  CREATE TABLE password (
   id bigint NOT NULL PRIMARY KEY,
-  password_hash character varying(255)
+  password character varying(255)
 );
 
 
@@ -883,7 +883,7 @@ SELECT pg_catalog.setval('training_definition_id_seq', 1, false);
 -- Data for Name: training_instance; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY training_instance (id, end_time, password_hash, pool_size, start_time, title, training_definition_id) FROM stdin;
+COPY training_instance (id, end_time, password, pool_size, start_time, title, training_definition_id) FROM stdin;
 \.
 
 

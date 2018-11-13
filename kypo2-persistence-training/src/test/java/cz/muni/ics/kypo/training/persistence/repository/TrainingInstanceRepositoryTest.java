@@ -54,14 +54,14 @@ public class TrainingInstanceRepositoryTest {
 		trainingInstance1.setEndTime(LocalDateTime.now());
 		trainingInstance1.setTitle("Training instance 1");
 		trainingInstance1.setPoolSize(10);
-		trainingInstance1.setPasswordHash("1Eh9A5l7Op5As8s0h9");
+		trainingInstance1.setPassword("1Eh9A5l7Op5As8s0h9");
 		trainingInstance1.setTrainingDefinition(entityManager.persist(trainingDefinition));
 
 		trainingInstance2.setStartTime(LocalDateTime.now());
 		trainingInstance2.setEndTime(LocalDateTime.now());
 		trainingInstance2.setTitle("Training instance 2");
 		trainingInstance2.setPoolSize(15);
-		trainingInstance2.setPasswordHash("R8a9C7B4a2c8A2cN1E");
+		trainingInstance2.setPassword("R8a9C7B4a2c8A2cN1E");
 		trainingInstance2.setTrainingDefinition(entityManager.persist(trainingDefinition));
 	}
 

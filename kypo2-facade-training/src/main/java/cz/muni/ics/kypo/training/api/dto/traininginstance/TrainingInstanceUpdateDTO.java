@@ -34,8 +34,7 @@ public class TrainingInstanceUpdateDTO {
     @Min(value = 1, message = "{traininginstanceupdate.poolSize.Min.message}")
     @Max(value = 100, message = "{traininginstanceupdate.poolSize.Max.message}")
     private int poolSize;
-    //@NotEmpty(message = "{traininginstanceupdate.keyword.NotEmpty.message}")
-    private String keyword;
+    private String password;
     @NotNull(message = "{traininginstanceupdate.trainingDefinition.NotNull.message}")
     private TrainingDefinitionDTO trainingDefinition;
     @NotNull(message = "{traininginstanceupdate.organizers.NotNull.message}")
@@ -81,12 +80,12 @@ public class TrainingInstanceUpdateDTO {
         this.poolSize = poolSize;
     }
 
-    public String getKeyword() {
-        return keyword;
+    public String getPassword() {
+        return password;
     }
 
-    public void setKeyword(String keyword) {
-        this.keyword = keyword;
+    public void setPassword(String password) {
+        this.password = password;
     }
 
     public TrainingDefinitionDTO getTrainingDefinition() {
@@ -105,10 +104,9 @@ public class TrainingInstanceUpdateDTO {
         this.organizers = organizers;
     }
 
-    @Override
-    public String toString() {
+    @Override public String toString() {
         return "TrainingInstanceUpdateDTO{" + "id=" + id + ", startTime=" + startTime + ", endTime=" + endTime + ", title='" + title + '\''
-                + ", poolSize=" + poolSize + ", keyword='" + keyword + '\'' + ", trainingDefinition=" + trainingDefinition + ", organizers="
-                + organizers + '}';
+            + ", poolSize=" + poolSize + ", password='" + password + '\'' + ", trainingDefinition=" + trainingDefinition + ", organizers="
+            + organizers + '}';
     }
 }

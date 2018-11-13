@@ -10,6 +10,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.context.annotation.Import;
+import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import cz.muni.ics.kypo.training.persistence.config.PersistenceConfigTest;

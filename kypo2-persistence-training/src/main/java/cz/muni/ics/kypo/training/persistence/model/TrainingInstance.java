@@ -28,8 +28,8 @@ public class TrainingInstance implements Serializable {
     private String title;
     @Column(name = "pool_size", nullable = false)
     private int poolSize;
-    @Column(name = "password_hash")
-    private String passwordHash;
+    @Column(name = "password")
+    private String password;
     @ManyToOne(fetch = FetchType.LAZY)
     private TrainingDefinition trainingDefinition;
     @ManyToMany(fetch = FetchType.LAZY)
@@ -61,12 +61,12 @@ public class TrainingInstance implements Serializable {
         this.endTime = endTime;
     }
 
-    public String getPasswordHash() {
-        return passwordHash;
+    public String getPassword() {
+        return password;
     }
 
-    public void setPasswordHash(String passwordHash) {
-        this.passwordHash = passwordHash;
+    public void setPassword(String password) {
+        this.password = password;
     }
 
     public String getTitle() {
@@ -112,7 +112,7 @@ public class TrainingInstance implements Serializable {
 
     @Override
     public int hashCode() {
-        return Objects.hash(passwordHash, startTime, endTime, poolSize, title, trainingDefinition);
+        return Objects.hash(password, startTime, endTime, poolSize, title, trainingDefinition);
     }
 
     @Override
@@ -125,7 +125,7 @@ public class TrainingInstance implements Serializable {
             return false;
         TrainingInstance other = (TrainingInstance) obj;
         // @formatter:off
-        return Objects.equals(passwordHash, other.getPasswordHash())
+        return Objects.equals(password, other.getPassword())
                 && Objects.equals(startTime, other.getStartTime())
                 && Objects.equals(endTime, other.getEndTime())
                 && Objects.equals(poolSize, other.getPoolSize())
@@ -137,7 +137,7 @@ public class TrainingInstance implements Serializable {
     @Override
     public String toString() {
         return "TrainingInstance [id=" + id + ", startTime=" + startTime + ", endTime=" + endTime + ", title=" + title + ", poolSize="
-                + poolSize + ", password=" + passwordHash + ", trainingDefinition=" + trainingDefinition + ", toString()=" + super.toString() + "]";
+                + poolSize + ", password=" + password + ", trainingDefinition=" + trainingDefinition + ", toString()=" + super.toString() + "]";
     }
 
 }

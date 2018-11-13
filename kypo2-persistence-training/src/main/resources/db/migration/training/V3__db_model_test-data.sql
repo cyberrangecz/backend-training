@@ -50,13 +50,13 @@ INSERT INTO training_definition_author_ref(training_definition_id, author_ref_id
 INSERT INTO training_definition_sandbox_definition_ref(training_definition_id, sandbox_definition_ref_id) VALUES (2, 2);
 -- TRAINING INSTANCES
 
-INSERT INTO training_instance(id, end_time, password_hash, pool_size, start_time, title, training_definition_id) VALUES (1, '2017-10-19 10:23:54+02', 'b5f3dc27a09865be37cef07816c4f08cf5585b116a4e74b9387c3e43e3a25ec8', 5, '2016-10-19 10:23:54+02', 'Concluded Instance', 1);
-INSERT INTO training_instance(id, end_time, password_hash, pool_size, start_time, title, training_definition_id) VALUES (2, '2022-10-19 10:23:54+02', 'b1267cae4b2f139fea197d8c45918a124874e5b469d5dbba23257f3779e713f8', 8, '2016-10-19 10:23:54+02', 'Current Instance', 1);
-INSERT INTO training_instance(id, end_time, password_hash, pool_size, start_time, title, training_definition_id) VALUES (3, '2024-10-19 10:23:54+02', 'b97b9ce755d3b39024d2efee6e7a9529904caefb1024e41d782d8689e5c2a761', 25, '2020-10-19 10:23:54+02', 'Future Instance', 1);
+INSERT INTO training_instance(id, end_time, password, pool_size, start_time, title, training_definition_id) VALUES (1, '2017-10-19 10:23:54+02', 'pass-1235', 5, '2016-10-19 10:23:54+02', 'Concluded Instance', 1);
+INSERT INTO training_instance(id, end_time, password, pool_size, start_time, title, training_definition_id) VALUES (2, '2022-10-19 10:23:54+02', 'hello-6578', 8, '2016-10-19 10:23:54+02', 'Current Instance', 1);
+INSERT INTO training_instance(id, end_time, password, pool_size, start_time, title, training_definition_id) VALUES (3, '2024-10-19 10:23:54+02', 'keyword-9999', 25, '2020-10-19 10:23:54+02', 'Future Instance', 1);
 
-INSERT INTO password(id, password_hash) VALUES (1, 'b5f3dc27a09865be37cef07816c4f08cf5585b116a4e74b9387c3e43e3a25ec8');
-INSERT INTO password(id, password_hash) VALUES (2, 'b1267cae4b2f139fea197d8c45918a124874e5b469d5dbba23257f3779e713f8');
-INSERT INTO password(id, password_hash) VALUES (3, 'b97b9ce755d3b39024d2efee6e7a9529904caefb1024e41d782d8689e5c2a761');
+INSERT INTO password(id, password) VALUES (1, 'pass-1235');
+INSERT INTO password(id, password) VALUES (2, 'hello-6578');
+INSERT INTO password(id, password) VALUES (3, 'keyword-9999');
 
 INSERT INTO sandbox_instance_ref(id, sandbox_instance_ref, training_instance_id) VALUES (1, 1, 1);
 INSERT INTO sandbox_instance_ref(id, sandbox_instance_ref, training_instance_id) VALUES (2, 2, 3);

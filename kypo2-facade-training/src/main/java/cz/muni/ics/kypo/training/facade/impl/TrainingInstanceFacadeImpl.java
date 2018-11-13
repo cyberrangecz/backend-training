@@ -5,7 +5,6 @@ import java.util.Objects;
 import cz.muni.ics.kypo.training.api.dto.run.TrainingRunDTO;
 import cz.muni.ics.kypo.training.annotations.TransactionalRO;
 import cz.muni.ics.kypo.training.annotations.TransactionalWO;
-import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceCreateResponseDTO;
 import cz.muni.ics.kypo.training.persistence.model.TrainingRun;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -71,12 +70,7 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
         LOG.debug("update({})", trainingInstance);
         try {
             Objects.requireNonNull(trainingInstance);
-            TrainingInstance updatedTrainingInstance = beanMapping.mapTo(trainingInstance, TrainingInstance.class);
-            trainingInstanceService.update(updatedTrainingInstance);
-            if (!trainingInstance.getKeyword().isEmpty()) {
-                return trainingInstanceService.generatePassword(updatedTrainingInstance, trainingInstance.getKeyword());
-            }
-            return null;
+            return trainingInstanceService.update(beanMapping.mapTo(trainingInstance, TrainingInstance.class));
         } catch (ServiceLayerException ex) {
             throw new FacadeLayerException(ex);
         }
@@ -84,15 +78,12 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
 
     @Override
     @TransactionalWO
-    public TrainingInstanceCreateResponseDTO create(TrainingInstanceCreateDTO trainingInstance) {
+    public TrainingInstanceDTO create(TrainingInstanceCreateDTO trainingInstance) {
         LOG.debug("create({})", trainingInstance);
         try {
             Objects.requireNonNull(trainingInstance);
             TrainingInstance newTI = trainingInstanceService.create(beanMapping.mapTo(trainingInstance, TrainingInstance.class));
-            TrainingInstanceCreateResponseDTO newTIDTO = beanMapping.mapTo(newTI, TrainingInstanceCreateResponseDTO.class);
-            String newKeyword = trainingInstanceService.generatePassword(newTI, trainingInstance.getKeyword());
-            newTIDTO.setKeyword(newKeyword);
-            return newTIDTO;
+            return beanMapping.mapTo(newTI, TrainingInstanceDTO.class);
         } catch (ServiceLayerException ex) {
             throw new FacadeLayerException(ex);
         }
