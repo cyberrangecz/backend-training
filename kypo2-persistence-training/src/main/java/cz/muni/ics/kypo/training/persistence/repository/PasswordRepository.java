@@ -11,5 +11,5 @@ import java.util.Optional;
 @Repository
 public interface PasswordRepository extends JpaRepository<Password, Long>, QuerydslPredicateExecutor<Password> {
 
-    Optional<Password> findOneByPasswordHash(String passwordHash);
+    Optional<Password> findOneByPassword(String password);
 }

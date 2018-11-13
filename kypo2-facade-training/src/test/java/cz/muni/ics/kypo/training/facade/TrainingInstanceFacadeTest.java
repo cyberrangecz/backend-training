@@ -70,7 +70,7 @@ public class TrainingInstanceFacadeTest {
 		trainingInstanceUpdate = new TrainingInstanceUpdateDTO();
 		trainingInstanceUpdate.setId(1L);
 		trainingInstanceUpdate.setTitle("title");
-		trainingInstanceUpdate.setKeyword("hello");
+		trainingInstanceUpdate.setPassword("hello");
 		trainingInstanceUpdate.setPoolSize(20);
 		trainingInstanceUpdate.setEndTime(LocalDateTime.now());
 		trainingInstanceUpdate.setStartTime(LocalDateTime.now());
@@ -118,7 +118,6 @@ public class TrainingInstanceFacadeTest {
 	@Test
 	public void createTrainingInstance() {
 		given(trainingInstanceService.create(any(TrainingInstance.class))).willReturn(trainingInstance1);
-		given(trainingInstanceService.generatePassword(trainingInstance1, "hello")).willReturn("hello-1235");
 		trainingInstanceFacade.create(trainingInstanceCreate);
 		then(trainingInstanceService).should().create(trainingInstance1);
 	}

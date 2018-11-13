@@ -7,7 +7,6 @@ import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.training.api.PageResultResource;
 import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionDTO;
-import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceCreateResponseDTO;
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceCreateDTO;
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceDTO;
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceUpdateDTO;
@@ -26,11 +25,8 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -75,7 +71,6 @@ public class TrainingInstancesRestControllerTest {
 	private TrainingInstanceDTO trainingInstance1DTO, trainingInstance2DTO;
 	private TrainingInstanceCreateDTO trainingInstanceCreateDTO;
 	private TrainingInstanceUpdateDTO trainingInstanceUpdateDTO;
-	private TrainingInstanceCreateResponseDTO newTrainingInstanceDTO;
 
 	private Page p;
 
@@ -116,7 +111,7 @@ public class TrainingInstancesRestControllerTest {
 		trainingInstanceCreateDTO.setStartTime(startTime);
 		LocalDateTime endTime = LocalDateTime.now().plusHours(10);
 		trainingInstanceCreateDTO.setEndTime(endTime);
-		trainingInstanceCreateDTO.setKeyword("pass");
+		trainingInstanceCreateDTO.setPassword("pass");
 		trainingInstanceCreateDTO.setPoolSize(20);
 		trainingInstanceCreateDTO.setOrganizers(organizers);
 		trainingInstanceCreateDTO.setTrainingDefinition(new TrainingDefinitionDTO());
@@ -130,11 +125,6 @@ public class TrainingInstancesRestControllerTest {
 		//trainingInstanceUpdateDTO.setKeyword("pass-2586");
 		trainingInstanceUpdateDTO.setTrainingDefinition(new TrainingDefinitionDTO());
 		trainingInstanceUpdateDTO.setOrganizers(organizers);
-
-
-		newTrainingInstanceDTO = new TrainingInstanceCreateResponseDTO();
-		newTrainingInstanceDTO.setId(6L);
-		newTrainingInstanceDTO.setKeyword("pass-1325");
 
 		List<TrainingInstance> expected = new ArrayList<>();
 		expected.add(trainingInstance1);

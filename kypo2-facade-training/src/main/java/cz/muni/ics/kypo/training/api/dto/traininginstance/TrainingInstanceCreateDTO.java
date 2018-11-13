@@ -32,8 +32,8 @@ public class TrainingInstanceCreateDTO {
     @Min(value = 1, message = "{traininginstancecreate.poolSize.Min.message}")
     @Max(value = 100, message = "{traininginstancecreate.poolSize.Max.message}")
     private int poolSize;
-    @NotEmpty(message = "{traininginstancecreate.keyword.NotEmpty.message}")
-    private String keyword;
+    @NotEmpty(message = "{traininginstancecreate.password.NotEmpty.message}")
+    private String password;
     @NotNull(message = "{traininginstancecreate.trainingDefinition.NotNull.message}")
     private TrainingDefinitionDTO trainingDefinition;
     @NotNull(message = "{traininginstancecreate.organizers.NotNull.message}")
@@ -71,12 +71,12 @@ public class TrainingInstanceCreateDTO {
         this.poolSize = poolSize;
     }
 
-    public String getKeyword() {
-        return keyword;
+    public String getPassword() {
+        return password;
     }
 
-    public void setKeyword(String keyword) {
-        this.keyword = keyword;
+    public void setPassword(String password) {
+        this.password = password;
     }
 
     public TrainingDefinitionDTO getTrainingDefinition() {
@@ -95,9 +95,9 @@ public class TrainingInstanceCreateDTO {
         this.organizers = organizers;
     }
 
-    @Override
-    public String toString() {
+    @Override public String toString() {
         return "TrainingInstanceCreateDTO{" + "startTime=" + startTime + ", endTime=" + endTime + ", title='" + title + '\'' + ", poolSize="
-                + poolSize + ", keyword='" + keyword + '\'' + ", trainingDefinition=" + trainingDefinition + ", organizers=" + organizers + '}';
+            + poolSize + ", password='" + password + '\'' + ", trainingDefinition=" + trainingDefinition + ", organizers=" + organizers
+            + '}';
     }
 }

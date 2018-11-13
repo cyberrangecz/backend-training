@@ -22,7 +22,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.*;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
@@ -173,7 +172,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
 
 */
             //check hash of password not String
-            if (BCrypt.checkpw(password, ti.getPasswordHash())) {
+            if (ti.getPassword().equals(password)) {
                 Set<SandboxInstanceRef> sandboxInstancePool = ti.getSandboxInstanceRefs();
                 Set<SandboxInstanceRef> allocatedSandboxInstances = trainingRunRepository.findSandboxInstanceRefsOfTrainingInstance(ti.getId());
                 sandboxInstancePool.removeAll(allocatedSandboxInstances);
