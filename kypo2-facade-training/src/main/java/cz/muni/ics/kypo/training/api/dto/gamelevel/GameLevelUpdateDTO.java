@@ -13,34 +13,29 @@ import java.util.Set;
  */
 @ApiModel(value = "GameLevelUpdateDTO", description = "Game Level to update.")
 public class GameLevelUpdateDTO {
-    @ApiModelProperty(required = true)
     @NotNull(message = "{gamelevelupdate.id.NotNull.message}")
     protected Long id;
-    @ApiModelProperty(required = true)
     @NotEmpty(message = "{gamelevelupdate.title.NotEmpty.message}")
     protected String title;
-    @ApiModelProperty(required = true)
     @NotNull(message = "{gamelevelupdate.maxScore.NotNull.message}")
     @Min(value = 0, message = "{gamelevelupdate.maxScore.Min.message}")
     @Max(value = 100, message = "{gamelevelupdate.maxScore.Max.message}")
     private Integer maxScore;
-    @ApiModelProperty(required = true)
     @NotEmpty(message = "{gamelevelupdate.flag.NotEmpty.message}")
     @Size(max = 50, message = "{gamelevelupdate.flag.Size.message}")
     private String flag;
     private String content;
     private String solution;
-    @ApiModelProperty(required = true)
     @NotNull(message = "{gamelevelupdate.solutionPenalized.NotNull.message}")
     private boolean solutionPenalized;
     private int estimatedDuration;
     private String[] attachments;//?
-    @ApiModelProperty(required = true)
     @NotNull(message = "{gamelevelupdate.incorrectFlagLimit.NotEmpty.message}")
     @Min(value = 0, message = "{gamelevelupdate.incorrectFlagLimit.Min.message}")
     private int incorrectFlagLimit;
     private Set<HintDTO> hints;
 
+    @ApiModelProperty(value = "Main identifier of level.", required = true)
     public Long getId() {
         return id;
     }
@@ -49,6 +44,7 @@ public class GameLevelUpdateDTO {
         this.id = id;
     }
 
+    @ApiModelProperty(value = "Keyword found in game, used for access next level.", required = true)
     public String getFlag() {
         return flag;
     }
@@ -57,6 +53,7 @@ public class GameLevelUpdateDTO {
         this.flag = flag;
     }
 
+    @ApiModelProperty(value = "The information and experiences that are directed towards an player.")
     public String getContent() {
         return content;
     }
@@ -65,6 +62,7 @@ public class GameLevelUpdateDTO {
         this.content = content;
     }
 
+    @ApiModelProperty(value = "Instruction how to get flag in game.")
     public String getSolution() {
         return solution;
     }
@@ -73,6 +71,7 @@ public class GameLevelUpdateDTO {
         this.solution = solution;
     }
 
+    @ApiModelProperty(value = "Sign if displaying of solution is penalized.", required = true)
     public boolean isSolutionPenalized() {
         return solutionPenalized;
     }
@@ -81,6 +80,7 @@ public class GameLevelUpdateDTO {
         this.solutionPenalized = solutionPenalized;
     }
 
+    @ApiModelProperty(value = "Estimated time taken by the player to resolve the level.")
     public int getEstimatedDuration() {
         return estimatedDuration;
     }
@@ -89,6 +89,7 @@ public class GameLevelUpdateDTO {
         this.estimatedDuration = estimatedDuration;
     }
 
+    @ApiModelProperty(value = "Downloadable files for level (pictures, source code...)")
     public String[] getAttachments() {
         return attachments;
     }
@@ -97,6 +98,7 @@ public class GameLevelUpdateDTO {
         this.attachments = attachments;
     }
 
+    @ApiModelProperty(value = "Title of level.",required = true)
     public String getTitle() {
         return title;
     }
@@ -105,6 +107,7 @@ public class GameLevelUpdateDTO {
         this.title = title;
     }
 
+    @ApiModelProperty(value = "How many times player can submit incorrect flag before displaying solution.", required = true)
     public int getIncorrectFlagLimit() {
         return incorrectFlagLimit;
     }
@@ -113,6 +116,7 @@ public class GameLevelUpdateDTO {
         this.incorrectFlagLimit = incorrectFlagLimit;
     }
 
+    @ApiModelProperty(value = "The maximum score a player can achieve during a level.", required = true)
     public Integer getMaxScore() {
         return maxScore;
     }
@@ -121,6 +125,7 @@ public class GameLevelUpdateDTO {
         this.maxScore = maxScore;
     }
 
+    @ApiModelProperty(value = "Information which helps player resolve the level.")
     public Set<HintDTO> getHints() {
         return hints;
     }

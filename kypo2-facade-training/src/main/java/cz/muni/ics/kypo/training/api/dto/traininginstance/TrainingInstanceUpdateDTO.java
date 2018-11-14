@@ -8,6 +8,7 @@ import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionDTO;
 import cz.muni.ics.kypo.training.utils.converters.LocalDateTimeDeserializer;
 import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
@@ -19,24 +20,31 @@ import javax.validation.constraints.NotNull;
  */
 @ApiModel(value = "TrainingInstanceUpdateDTO", description = "Training Instance to update.")
 public class TrainingInstanceUpdateDTO {
+    @ApiModelProperty(required = true)
     @NotNull(message = "{traininginstanceupdate.id.NotNull.message}")
     private Long id;
+    @ApiModelProperty(required = true)
     @NotNull(message = "{traininginstanceupdate.startTime.NotNull.message}")
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)
     private LocalDateTime startTime;
+    @ApiModelProperty(required = true)
     @NotNull(message = "{traininginstanceupdate.endTime.NotNull.message}")
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)
     private LocalDateTime endTime;
+    @ApiModelProperty(required = true)
     @NotEmpty(message = "{traininginstanceupdate.title.NotEmpty.message}")
     private String title;
+    @ApiModelProperty(required = true)
     @NotNull(message = "{traininginstanceupdate.poolSize.NotNull.message}")
     @Min(value = 1, message = "{traininginstanceupdate.poolSize.Min.message}")
     @Max(value = 100, message = "{traininginstanceupdate.poolSize.Max.message}")
     private int poolSize;
     //@NotEmpty(message = "{traininginstanceupdate.keyword.NotEmpty.message}")
     private String keyword;
+    @ApiModelProperty(required = true)
     @NotNull(message = "{traininginstanceupdate.trainingDefinition.NotNull.message}")
     private TrainingDefinitionDTO trainingDefinition;
+    @ApiModelProperty(required = true)
     @NotNull(message = "{traininginstanceupdate.organizers.NotNull.message}")
     private Set<UserRefDTO> organizers;
 

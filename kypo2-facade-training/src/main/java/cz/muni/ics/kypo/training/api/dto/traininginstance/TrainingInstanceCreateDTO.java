@@ -8,6 +8,7 @@ import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionDTO;
 import cz.muni.ics.kypo.training.utils.converters.LocalDateTimeDeserializer;
 import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
@@ -19,22 +20,29 @@ import javax.validation.constraints.NotNull;
  */
 @ApiModel(value = "TrainingInstanceCreateDTO", description = "Training Instance to create.")
 public class TrainingInstanceCreateDTO {
+    @ApiModelProperty(required = true)
     @NotNull(message = "{traininginstancecreate.startTime.NotNull.message}")
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)
     private LocalDateTime startTime;
+    @ApiModelProperty(required = true)
     @NotNull(message = "{traininginstancecreate.endTime.NotNull.message}")
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)
     private LocalDateTime endTime;
+    @ApiModelProperty(required = true)
     @NotEmpty(message = "{traininginstancecreate.title.NotEmpty.message}")
     private String title;
+    @ApiModelProperty(required = true)
     @NotNull(message = "{traininginstancecreate.poolSize.NotNull.message}")
     @Min(value = 1, message = "{traininginstancecreate.poolSize.Min.message}")
     @Max(value = 100, message = "{traininginstancecreate.poolSize.Max.message}")
     private int poolSize;
+    @ApiModelProperty(required = true)
     @NotEmpty(message = "{traininginstancecreate.keyword.NotEmpty.message}")
     private String keyword;
+    @ApiModelProperty(required = true)
     @NotNull(message = "{traininginstancecreate.trainingDefinition.NotNull.message}")
     private TrainingDefinitionDTO trainingDefinition;
+    @ApiModelProperty(required = true)
     @NotNull(message = "{traininginstancecreate.organizers.NotNull.message}")
     private Set<UserRefDTO> organizers;
 

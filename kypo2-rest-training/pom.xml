@@ -16,6 +16,7 @@
 		<!-- REST API filtering responses -->
 		<squiggly.filter.jackson.version>1.3.11</squiggly.filter.jackson.version>
 		<!-- documentation -->
+		<swagger2markup.version>1.2.0</swagger2markup.version>
 		<swagger.directory>${project.build.directory}/generated-docs/swagger</swagger.directory>
 		<asciidoctor.directory>${project.build.directory}/generated-docs/asciidoc</asciidoctor.directory>
 	</properties>
@@ -110,6 +111,11 @@
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>io.github.swagger2markup</groupId>
+			<artifactId>swagger2markup-import-files-ext</artifactId>
+			<version>1.2.0</version>
+		</dependency>
 	</dependencies>
 
 	<build>
@@ -123,13 +129,11 @@
 						<apiSource>
 							<springmvc>true</springmvc>
 							<locations>
-								<location>cz.muni.ics.kypo.training.rest.controllers.TrainingDefinitionsRestController</location>
-								<location>cz.muni.ics.kypo.training.rest.controllers.TrainingInstancesRestController</location>
-								<location>cz.muni.ics.kypo.training.rest.controllers.TrainingRunsRestController</location>
+								<location>cz.muni.ics.kypo.training.rest.controllers</location>
 							</locations>
 							<schemes>http,https</schemes>
 							<host>localhost:8080</host>
-							<basePath>/kypo2-rest-training/api/v1</basePath>
+							<basePath>/kypo2-rest-training/</basePath>
 							<info>
 								<title>KYPO2 Trainings - API Reference</title>
 								<version>Version: 1.0.0</version>
@@ -159,12 +163,26 @@
 			<plugin>
 				<groupId>io.github.swagger2markup</groupId>
 				<artifactId>swagger2markup-maven-plugin</artifactId>
-				<version>1.0.1</version>
+				<version>${swagger2markup.version}</version>
+				<dependencies>
+					<dependency>
+						<groupId>io.github.swagger2markup</groupId>
+						<artifactId>swagger2markup-spring-restdocs-ext</artifactId>
+						<version>${swagger2markup.version}</version>
+					</dependency>
+					<dependency>
+						<groupId>io.github.swagger2markup</groupId>
+						<artifactId>swagger2markup-import-files-ext</artifactId>
+						<version>${swagger2markup.version}</version>
+					</dependency>
+				</dependencies>
 				<configuration>
 					<swaggerInput>${swagger.directory}/swagger.yaml</swaggerInput>
 					<outputFile>${asciidoctor.directory}/ApiDocumentation</outputFile>
 					<config>
 						<swagger2markup.markupLanguage>ASCIIDOC</swagger2markup.markupLanguage>
+						<swagger2markup.pathsGroupedBy>TAGS</swagger2markup.pathsGroupedBy>
+						<swagger2markup.generatedExamplesEnabled>true</swagger2markup.generatedExamplesEnabled>>
 					</config>
 				</configuration>
 				<executions>

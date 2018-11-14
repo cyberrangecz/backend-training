@@ -18,20 +18,25 @@ import io.swagger.annotations.ApiModelProperty;
  */
 @ApiModel(value = "TrainingDefinitionUpdateDTO", description = "Training Definition to update.")
 public class TrainingDefinitionUpdateDTO {
-
+    @ApiModelProperty(required = true)
     @NotNull(message = "{trainingdefinitionupdate.id.NotNull.message}")
     private Long id;
+    @ApiModelProperty(required = true)
     @NotEmpty(message = "{trainingdefinitionupdate.title.NotEmpty.message}")
     private String title;
     private String description;
     private String[] prerequisities;
     private String[] outcomes;
+    @ApiModelProperty(required = true)
     @NotNull(message = "{trainingdefinitionupdate.state.NotNull.message}")
     private TDState state;
+    @ApiModelProperty(required = true)
     @NotNull(message = "{trainingdefinitionupdate.authorRef.NotNull.message}")
     private Set<AuthorRefDTO> authorRef = new HashSet<>();
+    @ApiModelProperty(required = true)
     @NotNull(message = "{trainingdefinitionupdate.sandboxDefinitionRef.NotNull.message}")
     private SandboxDefinitionRefDTO sandBoxDefinitionRef;
+    @ApiModelProperty(required = true)
     @NotNull(message = "{trainingdefinitionupdate.showStepperBar.NotNull.message}")
     private boolean showStepperBar;
     @NotNull
