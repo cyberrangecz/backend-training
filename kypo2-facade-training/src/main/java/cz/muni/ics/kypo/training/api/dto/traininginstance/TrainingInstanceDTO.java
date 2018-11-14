@@ -71,6 +71,7 @@ public class TrainingInstanceDTO {
         this.poolSize = poolSize;
     }
 
+    @ApiModelProperty(value = "Reference to training definition from which is training instance created.")
     public TrainingDefinitionDTO getTrainingDefinition() {
         return trainingDefinition;
     }
@@ -79,6 +80,7 @@ public class TrainingInstanceDTO {
         this.trainingDefinition = trainingDefinition;
     }
 
+    @ApiModelProperty(value = "Reference to users which organize training instance.")
     public Set<UserRefDTO> getOrganizers() {
         return organizers;
     }

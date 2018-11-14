@@ -111,11 +111,6 @@
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
 		</dependency>
-		<dependency>
-			<groupId>io.github.swagger2markup</groupId>
-			<artifactId>swagger2markup-import-files-ext</artifactId>
-			<version>1.2.0</version>
-		</dependency>
 	</dependencies>
 
 	<build>
@@ -125,6 +120,7 @@
 				<artifactId>swagger-maven-plugin</artifactId>
 				<version>3.1.6</version>
 				<configuration>
+					<skipSwaggerGeneration>${skipSwagger}</skipSwaggerGeneration>
 					<apiSources>
 						<apiSource>
 							<springmvc>true</springmvc>
@@ -164,18 +160,6 @@
 				<groupId>io.github.swagger2markup</groupId>
 				<artifactId>swagger2markup-maven-plugin</artifactId>
 				<version>${swagger2markup.version}</version>
-				<dependencies>
-					<dependency>
-						<groupId>io.github.swagger2markup</groupId>
-						<artifactId>swagger2markup-spring-restdocs-ext</artifactId>
-						<version>${swagger2markup.version}</version>
-					</dependency>
-					<dependency>
-						<groupId>io.github.swagger2markup</groupId>
-						<artifactId>swagger2markup-import-files-ext</artifactId>
-						<version>${swagger2markup.version}</version>
-					</dependency>
-				</dependencies>
 				<configuration>
 					<swaggerInput>${swagger.directory}/swagger.yaml</swaggerInput>
 					<outputFile>${asciidoctor.directory}/ApiDocumentation</outputFile>
@@ -216,6 +200,7 @@
 					</dependency>
 				</dependencies>
 				<configuration>
+					<skip>${skipDocs}</skip>
 					<sourceDirectory>${asciidoctor.directory}</sourceDirectory>
 					<attributes>
 						<sourcedir>${project.build.sourceDirectory}</sourcedir>
