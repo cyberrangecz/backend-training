@@ -3,6 +3,8 @@ package cz.muni.ics.kypo.training.api.dto;
 import java.util.Objects;
 
 import cz.muni.ics.kypo.training.persistence.model.enums.LevelType;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiModelProperty;
 
 /**
  * @author Boris Jadus
@@ -25,6 +27,7 @@ public class BasicLevelInfoDTO {
         this.order = order;
     }
 
+    @ApiModelProperty(value = "Main identifier of level.")
     public Long getId() {
         return id;
     }
@@ -33,6 +36,7 @@ public class BasicLevelInfoDTO {
         this.id = id;
     }
 
+    @ApiModelProperty(value = "Short textual description of the level.")
     public String getTitle() {
         return title;
     }
@@ -41,6 +45,7 @@ public class BasicLevelInfoDTO {
         this.title = title;
     }
 
+    @ApiModelProperty(value = "Order of level among levels in training definition.")
     public int getOrder() {
         return order;
     }
@@ -49,6 +54,7 @@ public class BasicLevelInfoDTO {
         this.order = order;
     }
 
+    @ApiModelProperty(value = "Type of the level.")
     public LevelType getLevelType() {
         return levelType;
     }

@@ -15,28 +15,24 @@ import io.swagger.annotations.ApiModelProperty;
 /**
  * @author Pavel Šeda (441048)
  */
-@ApiModel(value = "TrainingDefinitionCreateDTO", description = "Training Definition to create.")
+@ApiModel(value = "TrainingDefinitionCreateDTO", description = "Training definition to create.")
 public class TrainingDefinitionCreateDTO {
-    @ApiModelProperty(required = true)
     @NotEmpty(message = "{trainingdefinitioncreate.title.NotEmpty.message}")
     private String title;
     private String description;
     private String[] prerequisities;
     private String[] outcomes;
-    @ApiModelProperty(required = true)
     @NotNull(message = "{trainingdefinitioncreate.state.NotNull.message}")
     private TDState state;
-    @ApiModelProperty(required = true)
     @NotNull(message = "{trainingdefinitioncreate.authorRef.NotNull.message}")
     private Set<AuthorRefDTO> authorRef;
-    @ApiModelProperty(required = true)
     @NotNull(message = "{trainingdefinitioncreate.showStepperBar.NotNull.message}")
     private boolean showStepperBar;
-    @ApiModelProperty(required = true)
     @NotNull(message = "{trainingdefinitioncreate.sandboxDefinitionRef.NotNull.message}")
     private SandboxDefinitionRefDTO sandboxDefinitionRef;
-    //TODO starting level atribute
 
+
+    @ApiModelProperty(value = "A name of the training/game (e.g., Photo Hunter) .", required = true)
     public String getTitle() {
         return title;
     }
@@ -45,6 +41,7 @@ public class TrainingDefinitionCreateDTO {
         this.title = title;
     }
 
+    @ApiModelProperty(value = "Description of training definition that is visible to the participant.")
     public String getDescription() {
         return description;
     }
@@ -53,6 +50,7 @@ public class TrainingDefinitionCreateDTO {
         this.description = description;
     }
 
+    @ApiModelProperty(value = "List of knowledge and skills necessary to complete the training.")
     public String[] getPrerequisities() {
         return prerequisities;
     }
@@ -60,7 +58,7 @@ public class TrainingDefinitionCreateDTO {
     public void setPrerequisities(String[] prerequisities) {
         this.prerequisities = prerequisities;
     }
-
+    @ApiModelProperty(value = "A list of knowledge and skills that the participant should learn by attending the training (if it is used for educational purposes) ")
     public String[] getOutcomes() {
         return outcomes;
     }
@@ -69,6 +67,7 @@ public class TrainingDefinitionCreateDTO {
         this.outcomes = outcomes;
     }
 
+    @ApiModelProperty(value = "Current state of training definition.", required = true)
     public TDState getState() {
         return state;
     }
@@ -77,6 +76,7 @@ public class TrainingDefinitionCreateDTO {
         this.state = state;
     }
 
+    @ApiModelProperty(value = "References to the authors of the training definition.", required = true)
     public Set<AuthorRefDTO> getAuthorRef() {
         return authorRef;
     }
@@ -85,6 +85,7 @@ public class TrainingDefinitionCreateDTO {
         this.authorRef = authorRef;
     }
 
+    @ApiModelProperty(value = "Sign if stepper bar should be displayed.", required = true)
     public boolean isShowStepperBar() {
         return showStepperBar;
     }
@@ -93,6 +94,7 @@ public class TrainingDefinitionCreateDTO {
         this.showStepperBar = showStepperBar;
     }
 
+    @ApiModelProperty(value = "Reference to the sandbox definition.", required = true)
     public SandboxDefinitionRefDTO getSandboxDefinitionRef() {
         return sandboxDefinitionRef;
     }

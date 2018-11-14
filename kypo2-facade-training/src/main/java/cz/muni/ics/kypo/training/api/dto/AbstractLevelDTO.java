@@ -11,6 +11,7 @@ import java.util.Objects;
 import cz.muni.ics.kypo.training.api.dto.posthook.PostHookDTO;
 import cz.muni.ics.kypo.training.api.dto.prehook.PreHookDTO;
 import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 
 /**
  * @author Pavel Šeda (441048)
@@ -31,6 +32,7 @@ public class AbstractLevelDTO {
     protected PostHookDTO postHook;
     protected LevelType levelType;
 
+    @ApiModelProperty(value = "Main identifier of level.")
     public Long getId() {
         return id;
     }
@@ -39,6 +41,7 @@ public class AbstractLevelDTO {
         this.id = id;
     }
 
+    @ApiModelProperty(value = "Short textual description of the level.")
     public String getTitle() {
         return title;
     }
@@ -47,6 +50,7 @@ public class AbstractLevelDTO {
         this.title = title;
     }
 
+    @ApiModelProperty(value = "The maximum score a participant can achieve during a level.")
     public int getMaxScore() {
         return maxScore;
     }
@@ -54,7 +58,7 @@ public class AbstractLevelDTO {
     public void setMaxScore(int maxScore) {
         this.maxScore = maxScore;
     }
-
+    @ApiModelProperty(value = "Reference to the next abstract level (if it is null, then it is the last level)")
     public Long getNextLevel() {
         return nextLevel;
     }
@@ -79,6 +83,7 @@ public class AbstractLevelDTO {
         this.postHook = postHook;
     }
 
+    @ApiModelProperty(value = "Type of the level.")
     public LevelType getLevelType() {
         return levelType;
     }

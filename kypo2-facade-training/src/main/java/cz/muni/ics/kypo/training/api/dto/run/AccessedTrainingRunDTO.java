@@ -4,10 +4,11 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import cz.muni.ics.kypo.training.api.enums.Actions;
 import cz.muni.ics.kypo.training.utils.converters.LocalDateTimeSerializer;
 import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 
 import java.time.LocalDateTime;
 
-@ApiModel(value = "AccessedTrainingRunDTO", description = ".")
+@ApiModel(value = "AccessedTrainingRunDTO", description = "Already accessed training run by some participant.")
 public class AccessedTrainingRunDTO {
 
     private Long id;
@@ -20,6 +21,7 @@ public class AccessedTrainingRunDTO {
     private int numberOfLevels;
     private Actions possibleAction;
 
+    @ApiModelProperty(value = "Main identifier of training run.")
     public Long getId() {
         return id;
     }
@@ -28,6 +30,7 @@ public class AccessedTrainingRunDTO {
         this.id = id;
     }
 
+    @ApiModelProperty(value = "Short textual description of the training instance.")
     public String getTitle() {
         return title;
     }
@@ -36,6 +39,7 @@ public class AccessedTrainingRunDTO {
         this.title = title;
     }
 
+    @ApiModelProperty(value = "Start date of training instance for which the training run was created.")
     public LocalDateTime getTrainingInstanceStartDate() {
         return trainingInstanceStartDate;
     }
@@ -44,6 +48,7 @@ public class AccessedTrainingRunDTO {
         this.trainingInstanceStartDate = trainingInstanceStartDate;
     }
 
+    @ApiModelProperty(value = "End date of training instance for which the training run was created.")
     public LocalDateTime getTrainingInstanceEndDate() {
         return trainingInstanceEndDate;
     }
@@ -52,6 +57,7 @@ public class AccessedTrainingRunDTO {
         this.trainingInstanceEndDate = trainingInstanceEndDate;
     }
 
+    @ApiModelProperty(value = "Current level order of training run.")
     public int getCurrentLevelOrder() {
         return currentLevelOrder;
     }
@@ -60,6 +66,7 @@ public class AccessedTrainingRunDTO {
         this.currentLevelOrder = currentLevelOrder;
     }
 
+    @ApiModelProperty(value = "The number of levels in the training instance.")
     public int getNumberOfLevels() {
         return numberOfLevels;
     }
@@ -68,6 +75,7 @@ public class AccessedTrainingRunDTO {
         this.numberOfLevels = numberOfLevels;
     }
 
+    @ApiModelProperty(value = "Possible action which can be executed with training Run.")
     public Actions getPossibleAction() {
         return possibleAction;
     }

@@ -234,7 +234,8 @@
 							<attributes>
 								<icons>font</icons>
 								<pagenums />
-								<toc />
+								<toc/>
+								<!--<stylesheet>./css/asciidoctor.css</stylesheet>-->
 								<idprefix />
 								<idseparator>-</idseparator>
 								<sectnums>true</sectnums>

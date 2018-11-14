@@ -1,13 +1,17 @@
 package cz.muni.ics.kypo.training.api.dto.hint;
 
-import java.util.Objects;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 
+import java.util.Objects;
+@ApiModel(value = "HintDTO", description = "A brief textual description to aid the participant.")
 public class HintDTO {
     private Long id;
     private String title;
     private String content;
     private Integer hintPenalty;
 
+    @ApiModelProperty(value = "Main identifier of hint.")
     public Long getId() {
         return id;
     }
@@ -16,6 +20,7 @@ public class HintDTO {
         this.id = id;
     }
 
+    @ApiModelProperty(value = "Short textual description of the hint.")
     public String getTitle() {
         return title;
     }
@@ -24,6 +29,7 @@ public class HintDTO {
         this.title = title;
     }
 
+    @ApiModelProperty(value = "The information and experiences that are directed towards a participant.")
     public String getContent() {
         return content;
     }
@@ -32,6 +38,7 @@ public class HintDTO {
         this.content = content;
     }
 
+    @ApiModelProperty(value = "The number of points the participant loses after receiving the hint.")
     public Integer getHintPenalty() {
         return hintPenalty;
     }

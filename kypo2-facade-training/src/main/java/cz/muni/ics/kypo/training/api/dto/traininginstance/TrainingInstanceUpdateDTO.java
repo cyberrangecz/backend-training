@@ -20,34 +20,28 @@ import javax.validation.constraints.NotNull;
  */
 @ApiModel(value = "TrainingInstanceUpdateDTO", description = "Training Instance to update.")
 public class TrainingInstanceUpdateDTO {
-    @ApiModelProperty(required = true)
     @NotNull(message = "{traininginstanceupdate.id.NotNull.message}")
     private Long id;
-    @ApiModelProperty(required = true)
     @NotNull(message = "{traininginstanceupdate.startTime.NotNull.message}")
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)
     private LocalDateTime startTime;
-    @ApiModelProperty(required = true)
     @NotNull(message = "{traininginstanceupdate.endTime.NotNull.message}")
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)
     private LocalDateTime endTime;
-    @ApiModelProperty(required = true)
     @NotEmpty(message = "{traininginstanceupdate.title.NotEmpty.message}")
     private String title;
-    @ApiModelProperty(required = true)
     @NotNull(message = "{traininginstanceupdate.poolSize.NotNull.message}")
     @Min(value = 1, message = "{traininginstanceupdate.poolSize.Min.message}")
     @Max(value = 100, message = "{traininginstanceupdate.poolSize.Max.message}")
     private int poolSize;
     //@NotEmpty(message = "{traininginstanceupdate.keyword.NotEmpty.message}")
     private String keyword;
-    @ApiModelProperty(required = true)
     @NotNull(message = "{traininginstanceupdate.trainingDefinition.NotNull.message}")
     private TrainingDefinitionDTO trainingDefinition;
-    @ApiModelProperty(required = true)
     @NotNull(message = "{traininginstanceupdate.organizers.NotNull.message}")
     private Set<UserRefDTO> organizers;
 
+    @ApiModelProperty(value = "Main identifier of training instance.", required = true)
     public Long getId() {
         return id;
     }
@@ -56,6 +50,7 @@ public class TrainingInstanceUpdateDTO {
         this.id = id;
     }
 
+    @ApiModelProperty(value = "Date when training instance starts.", required = true)
     public LocalDateTime getStartTime() {
         return startTime;
     }
@@ -64,6 +59,7 @@ public class TrainingInstanceUpdateDTO {
         this.startTime = startTime;
     }
 
+    @ApiModelProperty(value = "Date when training instance ends.", required = true)
     public LocalDateTime getEndTime() {
         return endTime;
     }
@@ -72,6 +68,7 @@ public class TrainingInstanceUpdateDTO {
         this.endTime = endTime;
     }
 
+    @ApiModelProperty(value = "Short textual description of the training instance.", required = true)
     public String getTitle() {
         return title;
     }
@@ -80,6 +77,7 @@ public class TrainingInstanceUpdateDTO {
         this.title = title;
     }
 
+    @ApiModelProperty(value = "Number of sandboxes that can be allocated.", required = true)
     public int getPoolSize() {
         return poolSize;
     }
@@ -88,6 +86,7 @@ public class TrainingInstanceUpdateDTO {
         this.poolSize = poolSize;
     }
 
+    @ApiModelProperty(value = "Keyword which will be modified and then used for accessing training run.", required = true)
     public String getKeyword() {
         return keyword;
     }
@@ -96,6 +95,7 @@ public class TrainingInstanceUpdateDTO {
         this.keyword = keyword;
     }
 
+    @ApiModelProperty(value = "Reference to training definition from which is training instance created.", required = true)
     public TrainingDefinitionDTO getTrainingDefinition() {
         return trainingDefinition;
     }
@@ -104,6 +104,7 @@ public class TrainingInstanceUpdateDTO {
         this.trainingDefinition = trainingDefinition;
     }
 
+    @ApiModelProperty(value = "Reference to users which organize training instance.", required = true)
     public Set<UserRefDTO> getOrganizers() {
         return organizers;
     }

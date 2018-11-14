@@ -9,7 +9,7 @@ import io.swagger.annotations.ApiModelProperty;
 /**
  * @author Dominik Pilár (445537)
  */
-@ApiModel(value = "AssessmentLevelDTO", description = "Information about assessment level.", parent = AbstractLevelDTO.class)
+@ApiModel(value = "AssessmentLevelDTO", description = "A questionnaire or a test that is displayed to the participant.", parent = AbstractLevelDTO.class)
 public class AssessmentLevelDTO extends AbstractLevelDTO {
 
     private String questions;
@@ -25,7 +25,7 @@ public class AssessmentLevelDTO extends AbstractLevelDTO {
         this.questions = questions;
     }
 
-    @ApiModelProperty(value = "Assessment instructions for trainees.")
+    @ApiModelProperty(value = "Assessment instructions for participant.")
     public String getInstructions() {
         return instructions;
     }

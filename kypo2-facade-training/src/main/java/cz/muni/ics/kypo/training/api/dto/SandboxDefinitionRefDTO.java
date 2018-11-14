@@ -1,10 +1,13 @@
 package cz.muni.ics.kypo.training.api.dto;
 
+import io.swagger.annotations.ApiModelProperty;
+
 public class SandboxDefinitionRefDTO {
 
     private Long id;
     private Long sandboxDefinitionRef;
 
+    @ApiModelProperty(value = "Main identifier of sandbox instance ref.")
     public Long getId() {
         return id;
     }
@@ -13,6 +16,7 @@ public class SandboxDefinitionRefDTO {
         this.id = id;
     }
 
+    @ApiModelProperty(value = "Reference to sandbox definition in another microservice.")
     public Long getSandboxDefinitionRef() {
         return sandboxDefinitionRef;
     }

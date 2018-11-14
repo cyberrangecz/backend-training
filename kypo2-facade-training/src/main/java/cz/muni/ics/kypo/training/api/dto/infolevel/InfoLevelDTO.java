@@ -8,12 +8,12 @@ import io.swagger.annotations.ApiModelProperty;
 /**
  * @author Pavel Šeda (441048)
  */
-@ApiModel(value = "InfoLevelDTO", description = "Info Level.", parent = AbstractLevelDTO.class)
+@ApiModel(value = "InfoLevelDTO", description = "A HTML content for the participant to read.", parent = AbstractLevelDTO.class)
 public class InfoLevelDTO extends AbstractLevelDTO {
 
     private String content;
 
-    @ApiModelProperty(value = "The information and experiences that are directed towards an player.")
+    @ApiModelProperty(value = "The information and experiences that are directed towards a participant.")
     public String getContent() {
         return content;
     }

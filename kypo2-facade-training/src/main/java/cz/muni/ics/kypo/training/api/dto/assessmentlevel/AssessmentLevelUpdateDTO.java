@@ -12,7 +12,7 @@ import io.swagger.annotations.ApiModelProperty;
 /**
  * @author Pavel Šeda (441048)
  */
-@ApiModel(value = "AssessmentLevelUpdateDTO", description = "Assessment Level to update.")
+@ApiModel(value = "AssessmentLevelUpdateDTO", description = "Assessment level to update.")
 public class AssessmentLevelUpdateDTO {
 
 
@@ -29,7 +29,7 @@ public class AssessmentLevelUpdateDTO {
     @NotNull(message = "{assessmentlevelupdate.type.NotNull.message}")
     private AssessmentType type;
 
-    @ApiModelProperty(value = "ID of assessment level to update. Have not be null.", required = true)
+    @ApiModelProperty(value = "Main identifier of level.", required = true)
     public Long getId() {
         return id;
     }
@@ -38,7 +38,7 @@ public class AssessmentLevelUpdateDTO {
         this.id = id;
     }
 
-    @ApiModelProperty(value = "Title of assessment level to update. Have to be filled." , required = true)
+    @ApiModelProperty(value = "Short textual description of the level.", required = true)
     public String getTitle() {
         return title;
     }

@@ -16,33 +16,27 @@ import io.swagger.annotations.ApiModelProperty;
 /**
  * @author Pavel Šeda (441048)
  */
-@ApiModel(value = "TrainingDefinitionUpdateDTO", description = "Training Definition to update.")
+@ApiModel(value = "TrainingDefinitionUpdateDTO", description = "Training definition to update.")
 public class TrainingDefinitionUpdateDTO {
-    @ApiModelProperty(required = true)
     @NotNull(message = "{trainingdefinitionupdate.id.NotNull.message}")
     private Long id;
-    @ApiModelProperty(required = true)
     @NotEmpty(message = "{trainingdefinitionupdate.title.NotEmpty.message}")
     private String title;
     private String description;
     private String[] prerequisities;
     private String[] outcomes;
-    @ApiModelProperty(required = true)
     @NotNull(message = "{trainingdefinitionupdate.state.NotNull.message}")
     private TDState state;
-    @ApiModelProperty(required = true)
     @NotNull(message = "{trainingdefinitionupdate.authorRef.NotNull.message}")
     private Set<AuthorRefDTO> authorRef = new HashSet<>();
-    @ApiModelProperty(required = true)
     @NotNull(message = "{trainingdefinitionupdate.sandboxDefinitionRef.NotNull.message}")
     private SandboxDefinitionRefDTO sandBoxDefinitionRef;
-    @ApiModelProperty(required = true)
     @NotNull(message = "{trainingdefinitionupdate.showStepperBar.NotNull.message}")
     private boolean showStepperBar;
     @NotNull
-    @ApiModelProperty(required = true)
     private Long startingLevel;
 
+    @ApiModelProperty(value = "Main identifier of training definition.", required = true)
     public Long getId() {
         return id;
     }
@@ -51,6 +45,7 @@ public class TrainingDefinitionUpdateDTO {
         this.id = id;
     }
 
+    @ApiModelProperty(value = "A name of the training/game (e.g., Photo Hunter) .", required = true)
     public String getTitle() {
         return title;
     }
@@ -59,6 +54,7 @@ public class TrainingDefinitionUpdateDTO {
         this.title = title;
     }
 
+    @ApiModelProperty(value = "Description of training definition that is visible to the participant.")
     public String getDescription() {
         return description;
     }
@@ -67,6 +63,7 @@ public class TrainingDefinitionUpdateDTO {
         this.description = description;
     }
 
+    @ApiModelProperty(value = "List of knowledge and skills necessary to complete the training.")
     public String[] getPrerequisities() {
         return prerequisities;
     }
@@ -75,6 +72,7 @@ public class TrainingDefinitionUpdateDTO {
         this.prerequisities = prerequisities;
     }
 
+    @ApiModelProperty(value = "A list of knowledge and skills that the participant should learn by attending the training (if it is used for educational purposes) ")
     public String[] getOutcomes() {
         return outcomes;
     }
@@ -83,6 +81,7 @@ public class TrainingDefinitionUpdateDTO {
         this.outcomes = outcomes;
     }
 
+    @ApiModelProperty(value = "Current state of training definition.", required = true)
     public TDState getState() {
         return state;
     }
@@ -91,6 +90,7 @@ public class TrainingDefinitionUpdateDTO {
         this.state = state;
     }
 
+    @ApiModelProperty(value = "References to the authors of the training definition.", required = true)
     public Set<AuthorRefDTO> getAuthorRef() {
         return authorRef;
     }
@@ -99,6 +99,7 @@ public class TrainingDefinitionUpdateDTO {
         this.authorRef = authorRef;
     }
 
+    @ApiModelProperty(value = "Reference to the sandbox definition.", required = true)
     public SandboxDefinitionRefDTO getSandBoxDefinitionRef() {
         return sandBoxDefinitionRef;
     }
@@ -107,6 +108,7 @@ public class TrainingDefinitionUpdateDTO {
         this.sandBoxDefinitionRef = sandBoxDefinitionRef;
     }
 
+    @ApiModelProperty(value = "Sign if stepper bar should be displayed.", required = true)
     public boolean isShowStepperBar() {
         return showStepperBar;
     }
@@ -115,6 +117,7 @@ public class TrainingDefinitionUpdateDTO {
         this.showStepperBar = showStepperBar;
     }
 
+    @ApiModelProperty(value = "Identifier of first level of training definition.", required = true)
     public Long getStartingLevel() {
         return startingLevel;
     }

@@ -9,7 +9,7 @@ import io.swagger.annotations.ApiModelProperty;
 /**
  * @author Pavel Šeda (441048)
  */
-@ApiModel(value = "InfoLevelUpdateDTO", description = "Info Level to update.")
+@ApiModel(value = "InfoLevelUpdateDTO", description = "Info level to update.")
 public class InfoLevelUpdateDTO {
     @NotNull(message = "{infolevelupdate.id.NotNull.message}")
     protected Long id;
@@ -26,7 +26,7 @@ public class InfoLevelUpdateDTO {
         this.id = id;
     }
 
-    @ApiModelProperty(value = "Title of level.",required = true)
+    @ApiModelProperty(value = "Short textual description of the level.", required = true)
     public String getTitle() {
         return title;
     }
@@ -35,7 +35,7 @@ public class InfoLevelUpdateDTO {
         this.title = title;
     }
 
-    @ApiModelProperty(value = "The information and experiences that are directed towards an player.")
+    @ApiModelProperty(value = "The information and experiences that are directed towards a participant.")
     public String getContent() {
         return content;
     }

@@ -20,32 +20,26 @@ import javax.validation.constraints.NotNull;
  */
 @ApiModel(value = "TrainingInstanceCreateDTO", description = "Training Instance to create.")
 public class TrainingInstanceCreateDTO {
-    @ApiModelProperty(required = true)
     @NotNull(message = "{traininginstancecreate.startTime.NotNull.message}")
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)
     private LocalDateTime startTime;
-    @ApiModelProperty(required = true)
     @NotNull(message = "{traininginstancecreate.endTime.NotNull.message}")
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)
     private LocalDateTime endTime;
-    @ApiModelProperty(required = true)
     @NotEmpty(message = "{traininginstancecreate.title.NotEmpty.message}")
     private String title;
-    @ApiModelProperty(required = true)
     @NotNull(message = "{traininginstancecreate.poolSize.NotNull.message}")
     @Min(value = 1, message = "{traininginstancecreate.poolSize.Min.message}")
     @Max(value = 100, message = "{traininginstancecreate.poolSize.Max.message}")
     private int poolSize;
-    @ApiModelProperty(required = true)
     @NotEmpty(message = "{traininginstancecreate.keyword.NotEmpty.message}")
     private String keyword;
-    @ApiModelProperty(required = true)
     @NotNull(message = "{traininginstancecreate.trainingDefinition.NotNull.message}")
     private TrainingDefinitionDTO trainingDefinition;
-    @ApiModelProperty(required = true)
     @NotNull(message = "{traininginstancecreate.organizers.NotNull.message}")
     private Set<UserRefDTO> organizers;
 
+    @ApiModelProperty(value = "Date when training instance starts.", required = true)
     public LocalDateTime getStartTime() {
         return startTime;
     }
@@ -54,6 +48,7 @@ public class TrainingInstanceCreateDTO {
         this.startTime = startTime;
     }
 
+    @ApiModelProperty(value = "Date when training instance ends.", required = true)
     public LocalDateTime getEndTime() {
         return endTime;
     }
@@ -62,6 +57,7 @@ public class TrainingInstanceCreateDTO {
         this.endTime = endTime;
     }
 
+    @ApiModelProperty(value = "Short textual description of the training instance.", required = true)
     public String getTitle() {
         return title;
     }
@@ -70,6 +66,7 @@ public class TrainingInstanceCreateDTO {
         this.title = title;
     }
 
+    @ApiModelProperty(value = "Number of sandboxes that can be allocated.", required = true)
     public int getPoolSize() {
         return poolSize;
     }
@@ -78,6 +75,7 @@ public class TrainingInstanceCreateDTO {
         this.poolSize = poolSize;
     }
 
+    @ApiModelProperty(value = "Keyword which will be modified and then used for accessing training run.", required = true)
     public String getKeyword() {
         return keyword;
     }
@@ -86,6 +84,7 @@ public class TrainingInstanceCreateDTO {
         this.keyword = keyword;
     }
 
+    @ApiModelProperty(value = "Reference to training definition from which is training instance created.", required = true)
     public TrainingDefinitionDTO getTrainingDefinition() {
         return trainingDefinition;
     }
@@ -93,7 +92,7 @@ public class TrainingInstanceCreateDTO {
     public void setTrainingDefinition(TrainingDefinitionDTO trainingDefinition) {
         this.trainingDefinition = trainingDefinition;
     }
-
+    @ApiModelProperty(value = "Reference to users which organize training instance.", required = true)
     public Set<UserRefDTO> getOrganizers() {
         return organizers;
     }

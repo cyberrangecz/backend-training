@@ -1,9 +1,12 @@
 package cz.muni.ics.kypo.training.api.dto;
 
+import io.swagger.annotations.ApiModelProperty;
+
 public class UserRefDTO {
     private Long id;
     private Long userRefId;
 
+    @ApiModelProperty(value = "Main identifier of user ref.")
     public Long getId() {
         return id;
     }
@@ -12,6 +15,7 @@ public class UserRefDTO {
         this.id = id;
     }
 
+    @ApiModelProperty(value = "Reference to user in another microservice.")
     public Long getUserRefId() {
         return userRefId;
     }

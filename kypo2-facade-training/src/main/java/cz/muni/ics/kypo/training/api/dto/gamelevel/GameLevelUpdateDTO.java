@@ -11,7 +11,7 @@ import java.util.Set;
 /**
  * @author Pavel Šeda (441048)
  */
-@ApiModel(value = "GameLevelUpdateDTO", description = "Game Level to update.")
+@ApiModel(value = "GameLevelUpdateDTO", description = "Game level to update.")
 public class GameLevelUpdateDTO {
     @NotNull(message = "{gamelevelupdate.id.NotNull.message}")
     protected Long id;
@@ -98,7 +98,7 @@ public class GameLevelUpdateDTO {
         this.attachments = attachments;
     }
 
-    @ApiModelProperty(value = "Title of level.",required = true)
+    @ApiModelProperty(value = "Short textual description of the level.", required = true)
     public String getTitle() {
         return title;
     }
@@ -107,7 +107,7 @@ public class GameLevelUpdateDTO {
         this.title = title;
     }
 
-    @ApiModelProperty(value = "How many times player can submit incorrect flag before displaying solution.", required = true)
+    @ApiModelProperty(value = "How many times participant can submit incorrect flag before displaying solution.", required = true)
     public int getIncorrectFlagLimit() {
         return incorrectFlagLimit;
     }
@@ -116,7 +116,7 @@ public class GameLevelUpdateDTO {
         this.incorrectFlagLimit = incorrectFlagLimit;
     }
 
-    @ApiModelProperty(value = "The maximum score a player can achieve during a level.", required = true)
+    @ApiModelProperty(value = "The maximum score a participant can achieve during a level.", required = true)
     public Integer getMaxScore() {
         return maxScore;
     }
@@ -125,7 +125,7 @@ public class GameLevelUpdateDTO {
         this.maxScore = maxScore;
     }
 
-    @ApiModelProperty(value = "Information which helps player resolve the level.")
+    @ApiModelProperty(value = "Information which helps participant resolve the level.")
     public Set<HintDTO> getHints() {
         return hints;
     }

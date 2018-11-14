@@ -12,7 +12,7 @@ import io.swagger.annotations.ApiModelProperty;
 /**
  * @author Pavel Šeda (441048)
  */
-@ApiModel(value = "GameLevelDTO", description = ".", parent = AbstractLevelDTO.class)
+@ApiModel(value = "GameLevelDTO", description = "An assignment containing security tasks whose completion yields a flag.", parent = AbstractLevelDTO.class)
 public class GameLevelDTO extends AbstractLevelDTO {
 
     private String flag;
@@ -32,7 +32,7 @@ public class GameLevelDTO extends AbstractLevelDTO {
         this.flag = flag;
     }
 
-    @ApiModelProperty(value = "The information and experiences that are directed towards an player.")
+    @ApiModelProperty(value = "The information and experiences that are directed towards a participant.")
     public String getContent() {
         return content;
     }
