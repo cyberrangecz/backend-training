@@ -10,17 +10,15 @@ import static java.lang.annotation.ElementType.*;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 /**
- * This class need to be fixed to include @ApiImplicitParams and do not throw error in swagger-maven-plugin for generation .adoc and .pdf file.
- *
  * @author Pavel Seda
  */
 @Target({METHOD, ANNOTATION_TYPE, TYPE})
 @Retention(RUNTIME)
-//@ApiImplicitParams({
-//        @ApiImplicitParam(name = "page", dataType = "int", paramType = "query", value = "Results page you want to retrieve (0..N)"),
-//        @ApiImplicitParam(name = "size", dataType = "int", paramType = "query", value = "Number of records per page."),
-//        @ApiImplicitParam(name = "sort", allowMultiple = true, dataType = "string", paramType = "query", value = "Sorting criteria in the format: property(,asc|desc). "
-//                + "Default sort order is ascending. " + "Multiple sort criteria are supported.")})
+@ApiImplicitParams({
+        @ApiImplicitParam(name = "page", dataType = "integer", paramType = "query", value = "Results page you want to retrieve (0..N)", example = "1"),
+        @ApiImplicitParam(name = "size", dataType = "integer", paramType = "query", value = "Number of records per page.", example = "20"),
+        @ApiImplicitParam(name = "sort", allowMultiple = true, dataType = "string", paramType = "query", value = "Sorting criteria in the format: property(,asc|desc). "
+                + "Default sort order is ascending. " + "Multiple sort criteria are supported.", example = "asc")})
 public @interface ApiPageableSwagger {
 }
 
