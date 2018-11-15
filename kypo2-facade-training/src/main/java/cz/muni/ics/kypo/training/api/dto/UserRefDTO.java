@@ -4,7 +4,7 @@ import io.swagger.annotations.ApiModelProperty;
 
 public class UserRefDTO {
     private Long id;
-    private Long userRefId;
+    private String userRefLogin;
 
     @ApiModelProperty(value = "Main identifier of user ref.", example = "1")
     public Long getId() {
@@ -15,17 +15,16 @@ public class UserRefDTO {
         this.id = id;
     }
 
-    @ApiModelProperty(value = "Reference to user in another microservice.", example = "1")
-    public Long getUserRefId() {
-        return userRefId;
+    @ApiModelProperty(value = "Reference to user in another microservice.", example = "Organizer1")
+    public String getUserRefLogin() {
+        return userRefLogin;
     }
 
-    public void setUserRefId(Long userRefId) {
-        this.userRefId = userRefId;
+    public void setUserRefLogin(String userRefLogin) {
+        this.userRefLogin = userRefLogin;
     }
 
-    @Override
-    public String toString() {
-        return "UserRefDTO{" + "id=" + id + ", userRefId=" + userRefId + '}';
+    @Override public String toString() {
+        return "UserRefDTO{" + "id=" + id + ", userRefLogin='" + userRefLogin + '\'' + '}';
     }
 }

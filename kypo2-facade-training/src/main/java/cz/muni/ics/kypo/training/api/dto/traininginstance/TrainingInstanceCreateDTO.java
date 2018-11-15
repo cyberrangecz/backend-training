@@ -20,20 +20,21 @@ import javax.validation.constraints.NotNull;
  */
 @ApiModel(value = "TrainingInstanceCreateDTO", description = "Training Instance to create.")
 public class TrainingInstanceCreateDTO {
+
     @NotNull(message = "{traininginstancecreate.startTime.NotNull.message}")
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)
     private LocalDateTime startTime;
     @NotNull(message = "{traininginstancecreate.endTime.NotNull.message}")
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)
-    private LocalDateTime endTime;
+		private LocalDateTime endTime;
     @NotEmpty(message = "{traininginstancecreate.title.NotEmpty.message}")
     private String title;
     @NotNull(message = "{traininginstancecreate.poolSize.NotNull.message}")
     @Min(value = 1, message = "{traininginstancecreate.poolSize.Min.message}")
     @Max(value = 100, message = "{traininginstancecreate.poolSize.Max.message}")
     private int poolSize;
-    @NotEmpty(message = "{traininginstancecreate.keyword.NotEmpty.message}")
-    private String keyword;
+    @NotEmpty(message = "{traininginstancecreate.password.NotEmpty.message}")
+    private String password;
     @NotNull(message = "{traininginstancecreate.trainingDefinition.NotNull.message}")
     private TrainingDefinitionDTO trainingDefinition;
     @NotNull(message = "{traininginstancecreate.organizers.NotNull.message}")
@@ -76,12 +77,12 @@ public class TrainingInstanceCreateDTO {
     }
 
     @ApiModelProperty(value = "Keyword which will be modified and then used for accessing training run.", required = true, example = "hunter")
-    public String getKeyword() {
-        return keyword;
+    public String getPassword() {
+        return password;
     }
 
-    public void setKeyword(String keyword) {
-        this.keyword = keyword;
+    public void setPassword(String password) {
+        this.password = password;
     }
 
     @ApiModelProperty(value = "Reference to training definition from which is training instance created.", required = true)
@@ -101,9 +102,9 @@ public class TrainingInstanceCreateDTO {
         this.organizers = organizers;
     }
 
-    @Override
-    public String toString() {
+    @Override public String toString() {
         return "TrainingInstanceCreateDTO{" + "startTime=" + startTime + ", endTime=" + endTime + ", title='" + title + '\'' + ", poolSize="
-                + poolSize + ", keyword='" + keyword + '\'' + ", trainingDefinition=" + trainingDefinition + ", organizers=" + organizers + '}';
+            + poolSize + ", password='" + password + '\'' + ", trainingDefinition=" + trainingDefinition + ", organizers=" + organizers
+            + '}';
     }
 }

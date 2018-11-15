@@ -25,6 +25,7 @@ public class TrainingInstanceDTO {
     private int poolSize;
     private TrainingDefinitionDTO trainingDefinition;
     private Set<UserRefDTO> organizers;
+    private String password;
 
     @ApiModelProperty(value = "Main identifier of training instance.", example = "1")
     public Long getId() {
@@ -89,9 +90,17 @@ public class TrainingInstanceDTO {
         this.organizers = organizers;
     }
 
-    @Override
-    public String toString() {
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    @Override public String toString() {
         return "TrainingInstanceDTO{" + "id=" + id + ", startTime=" + startTime + ", endTime=" + endTime + ", title='" + title + '\''
-                + ", poolSize=" + poolSize + ", trainingDefinition=" + trainingDefinition + ", organizers=" + organizers + '}';
+            + ", poolSize=" + poolSize + ", trainingDefinition=" + trainingDefinition + ", organizers=" + organizers + ", password='"
+            + password + '\'' + '}';
     }
 }

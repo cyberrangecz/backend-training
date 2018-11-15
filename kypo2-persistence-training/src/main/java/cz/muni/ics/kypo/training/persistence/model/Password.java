@@ -15,11 +15,11 @@ public class Password implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", unique = true, nullable = false, insertable = false)
     private Long id;
-    @Column(name = "password_hash", nullable = false)
-    private String passwordHash;
+    @Column(name = "password", nullable = false)
+    private String password;
 
-    public Password(Long id, String passwordHash) {
-        this.passwordHash = passwordHash;
+    public Password(Long id, String password) {
+        this.password = password;
         this.id = id;
     }
 
@@ -34,12 +34,12 @@ public class Password implements Serializable {
         this.id = id;
     }
 
-    public String getPasswordHash() {
-        return passwordHash;
+    public String getPassword() {
+        return password;
     }
 
-    public void setPasswordHash(String passwordHash) {
-        this.passwordHash = passwordHash;
+    public void setPassword(String password) {
+        this.password = password;
     }
 
     @Override
@@ -49,17 +49,16 @@ public class Password implements Serializable {
         if (!(o instanceof Password))
             return false;
         Password keyword = (Password) o;
-        return Objects.equals(id, keyword.getId()) && Objects.equals(this.passwordHash, keyword.getPasswordHash());
+        return Objects.equals(id, keyword.getId()) && Objects.equals(this.password, keyword.getPassword());
     }
 
     @Override
     public int hashCode() {
 
-        return Objects.hash(id, passwordHash);
+        return Objects.hash(id, password);
     }
 
-    @Override
-    public String toString() {
-        return "Keyword{" + "id=" + id + ", keywordHash=" + passwordHash + '}';
+    @Override public String toString() {
+        return "Password{" + "id=" + id + ", password='" + password + '\'' + '}';
     }
 }

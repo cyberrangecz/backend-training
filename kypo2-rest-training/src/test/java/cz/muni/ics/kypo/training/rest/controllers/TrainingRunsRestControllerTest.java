@@ -66,8 +66,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 
 @RunWith(SpringRunner.class)
-//@SpringBootTest(classes = TrainingRunsRestController.class)
-//@ComponentScan(basePackages = "cz.muni.ics.kypo.rest")
 public class TrainingRunsRestControllerTest {
 
 	private TrainingRunsRestController trainingRunsRestController;
@@ -146,13 +144,13 @@ public class TrainingRunsRestControllerTest {
 		accessedTrainingRunDTO.setTitle("accessed training run");
 		List<AccessedTrainingRunDTO> accessed = new ArrayList<>();
 		accessed.add(accessedTrainingRunDTO);
-		pAccessed = new PageImpl<AccessedTrainingRunDTO>(accessed);
+		pAccessed = new PageImpl<>(accessed);
 
 		List<TrainingRun> expected = new ArrayList<>();
 		expected.add(trainingRun1);
 		expected.add(trainingRun2);
 
-		p = new PageImpl<TrainingRun>(expected);
+		p = new PageImpl<>(expected);
 
 		ObjectMapper obj = new ObjectMapper();
 		obj.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);

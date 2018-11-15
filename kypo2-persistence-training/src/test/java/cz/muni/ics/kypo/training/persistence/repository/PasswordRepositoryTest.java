@@ -39,9 +39,9 @@ public class PasswordRepositoryTest {
 		passwordHash1 = "1Eh9A5l7Op5As8s0h9";
 		passwordHash2 = "R8a9C7B4a2c8A2cN1E";
 		password1 = new Password();
-		password1.setPasswordHash(passwordHash1);
+		password1.setPassword(passwordHash1);
 		password2 = new Password();
-		password2.setPasswordHash(passwordHash2);
+		password2.setPassword(passwordHash2);
 	}
 
 	@Test
@@ -67,14 +67,14 @@ public class PasswordRepositoryTest {
 	public void findOneByPasswordHash() {
 		entityManager.persist(password1);
 		entityManager.persist(password2);
-		Optional<Password> optionalPassword = passwordRepository.findOneByPasswordHash(passwordHash1);
+		Optional<Password> optionalPassword = passwordRepository.findOneByPassword(passwordHash1);
 		assertTrue(optionalPassword.isPresent());
 		assertEquals(password1, optionalPassword.get());
 	}
 
 	@Test
 	public void findOneByPasswordHash_unpresent_passwordHash() {
-		Optional<Password> optionalPassword = passwordRepository.findOneByPasswordHash("8W93invalid987As52s");
+		Optional<Password> optionalPassword = passwordRepository.findOneByPassword("8W93invalid987As52s");
 		assertFalse(optionalPassword.isPresent());
 	}
 }

@@ -23,7 +23,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -75,6 +74,7 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
     public TrainingInstance create(TrainingInstance trainingInstance) {
         LOG.debug("create({})", trainingInstance);
         Assert.notNull(trainingInstance, "Input training instance must not be null");
+        trainingInstance.setPassword(generatePassword(trainingInstance.getPassword()));
         TrainingInstance tI = trainingInstanceRepository.save(trainingInstance);
         LOG.info("Training instance with id: {} created.", trainingInstance.getId());
         return tI;
@@ -83,7 +83,7 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
     @Override
     @PreAuthorize("hasAuthority('ADMINISTRATOR')" +
             "or @securityService.isOrganizeOfGivenTrainingInstance(#trainingInstance.id)")
-    public void update(TrainingInstance trainingInstance) {
+    public String update(TrainingInstance trainingInstance) {
         LOG.debug("update({})", trainingInstance);
         Assert.notNull(trainingInstance, "Input training instance must not be null");
         TrainingInstance tI = trainingInstanceRepository.findById(trainingInstance.getId())
@@ -91,9 +91,15 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
         LocalDateTime currentDate = LocalDateTime.now();
         if (!currentDate.isBefore(trainingInstance.getStartTime()))
             throw new ServiceLayerException("Starting time of instance must be in future", ErrorCode.RESOURCE_CONFLICT);
-        trainingInstance.setPasswordHash(tI.getPasswordHash());
+
+        if(trainingInstance.getPassword() == null){
+            trainingInstance.setPassword(tI.getPassword());
+        } else {
+            trainingInstance.setPassword(generatePassword(trainingInstance.getPassword()));
+        }
         trainingInstanceRepository.save(trainingInstance);
         LOG.info("Training instance with id: {} updated.", trainingInstance.getId());
+        return trainingInstance.getPassword();
     }
 
     @Override
@@ -111,26 +117,20 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
         LOG.info("Training instance with id: {} deleted.", id);
     }
 
-    @Override
-    @PreAuthorize("hasAuthority({'ADMINISTRATOR', T(cz.muni.ics.kypo.training.persistence.model.enums.RoleType).ORGANIZER}) ")
-    public String generatePassword(TrainingInstance trainingInstance, String password) {
-        String newPasswordHash = "";
-        String newPassword = "";
+    private String generatePassword(String password) {
+        String newPass = "";
         boolean generated = false;
         while (!generated) {
             String numPart = RandomStringUtils.random(4, false, true);
-            newPassword = password + "-" + numPart;
-            newPasswordHash = BCrypt.hashpw(newPassword, BCrypt.gensalt(12));
-            Optional<Password> pW = passwordRepository.findOneByPasswordHash(newPasswordHash);
+            newPass = password + "-" + numPart;
+            Optional<Password> pW = passwordRepository.findOneByPassword(newPass);
             if (!pW.isPresent()) generated = true;
         }
         Password newPasswordInstance = new Password();
-        newPasswordInstance.setPasswordHash(newPasswordHash);
+        newPasswordInstance.setPassword(newPass);
         passwordRepository.saveAndFlush(newPasswordInstance);
 
-        trainingInstance.setPasswordHash(newPasswordHash);
-        trainingInstanceRepository.save(trainingInstance);
-        return newPassword;
+        return newPass;
     }
 
     @Override

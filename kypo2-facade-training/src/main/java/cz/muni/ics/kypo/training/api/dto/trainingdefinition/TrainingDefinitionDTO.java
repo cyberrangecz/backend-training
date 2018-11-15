@@ -28,6 +28,7 @@ public class TrainingDefinitionDTO {
     private Long startingLevel;
     private Set<BasicLevelInfoDTO> basicLevelInfoDTOs;
     private boolean showStepperBar;
+    private boolean canBeArchived;
 
     @ApiModelProperty(value = "Main identifier of training definition.", example = "1")
     public Long getId() {
@@ -128,11 +129,19 @@ public class TrainingDefinitionDTO {
         this.showStepperBar = showStepperBar;
     }
 
-    @Override
-    public String toString() {
-        return "TrainingDefinitionDTO{" + "id=" + id + ", title='" + title + '\'' + ", description='" + description + '\'' + ", prerequisities="
-                + Arrays.toString(prerequisities) + ", outcomes=" + Arrays.toString(outcomes) + ", state=" + state + ", authorRefDTO="
-                + authorRef + ", sandBoxDefinitionRefDTO=" + sandBoxDefinitionRef + ", startingLevel=" + startingLevel
-                + ", basicLevelInfoDTOs=" + basicLevelInfoDTOs + ", showStepperBar=" + showStepperBar + '}';
+    public boolean isCanBeArchived() {
+        return canBeArchived;
+    }
+
+    public void setCanBeArchived(boolean canBeArchived) {
+        this.canBeArchived = canBeArchived;
+    }
+
+    @Override public String toString() {
+        return "TrainingDefinitionDTO{" + "id=" + id + ", title='" + title + '\'' + ", description='" + description + '\''
+            + ", prerequisities=" + Arrays.toString(prerequisities) + ", outcomes=" + Arrays.toString(outcomes) + ", state=" + state
+            + ", authorRef=" + authorRef + ", sandBoxDefinitionRef=" + sandBoxDefinitionRef + ", startingLevel=" + startingLevel
+            + ", basicLevelInfoDTOs=" + basicLevelInfoDTOs + ", showStepperBar=" + showStepperBar + ", canBeArchived=" + canBeArchived
+            + '}';
     }
 }

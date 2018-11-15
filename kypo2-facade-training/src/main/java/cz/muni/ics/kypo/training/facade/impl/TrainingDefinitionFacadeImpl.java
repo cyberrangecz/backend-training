@@ -29,6 +29,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.*;
 
 /**
@@ -89,7 +90,21 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
     @TransactionalRO
     public PageResultResource<TrainingDefinitionDTO> findAll(Predicate predicate, Pageable pageable) {
         LOG.debug("findAll({},{})", predicate, pageable);
-        return beanMapping.mapToPageResultDTO(trainingDefinitionService.findAll(predicate, pageable), TrainingDefinitionDTO.class);
+        PageResultResource<TrainingDefinitionDTO> resource = beanMapping.mapToPageResultDTO(trainingDefinitionService.findAll(predicate, pageable), TrainingDefinitionDTO.class);
+        for (TrainingDefinitionDTO tD : resource.getContent()){
+            tD.setCanBeArchived(checkIfCanBeArchived(tD.getId()));
+        }
+
+        return resource;
+        //return beanMapping.mapToPageResultDTO(trainingDefinitionService.findAll(predicate, pageable), TrainingDefinitionDTO.class);
+    }
+
+    private boolean checkIfCanBeArchived(Long definitionId) {
+        List<TrainingInstance> instances = trainingDefinitionService.findAllTrainingInstancesByTrainingDefinitionId(definitionId);
+        for (TrainingInstance tI : instances) {
+            if (tI.getEndTime().isAfter(LocalDateTime.now())) return false;
+        }
+        return true;
     }
 
     @Override
