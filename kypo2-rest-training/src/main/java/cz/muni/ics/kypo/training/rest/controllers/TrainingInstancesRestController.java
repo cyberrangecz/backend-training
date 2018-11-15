@@ -160,7 +160,7 @@ public class TrainingInstancesRestController {
 
     })
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Object> createTrainingInstance(@ApiParam(name = "Training instance to be created") @Valid @RequestBody TrainingInstanceCreateDTO trainingInstanceCreateDTO,
+    public ResponseEntity<Object> createTrainingInstance(@ApiParam(value = "Training instance to be created") @Valid @RequestBody TrainingInstanceCreateDTO trainingInstanceCreateDTO,
                                                          @ApiParam(value = "Fields which should be returned in REST API response", required = false)
                                                          @RequestParam(value = "fields", required = false) String fields) {
         try {
@@ -184,7 +184,7 @@ public class TrainingInstancesRestController {
             @ApiResponse(code = 409, message = "The requested resource was not deleted because of its finish time")
     })
     @PutMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> updateTrainingInstance(@ApiParam(name = "Training instance to be updated") @RequestBody @Valid TrainingInstanceUpdateDTO trainingInstanceUpdateDTO) {
+    public ResponseEntity<String> updateTrainingInstance(@ApiParam(value = "Training instance to be updated") @RequestBody @Valid TrainingInstanceUpdateDTO trainingInstanceUpdateDTO) {
         try {
             return new ResponseEntity<>(trainingInstanceFacade.update(trainingInstanceUpdateDTO), HttpStatus.OK);
         } catch (FacadeLayerException ex) {
