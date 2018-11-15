@@ -177,7 +177,7 @@ public class TrainingDefinitionsRestController {
     })
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> createTrainingDefinition(
-            @ApiParam(name = "Training Definition to be created")
+            @ApiParam(value = "Training Definition to be created")
             @RequestBody @Valid TrainingDefinitionCreateDTO trainingDefinitionCreateDTO,
             @ApiParam(value = "Fields which should be returned in REST API response", required = false)
             @RequestParam(value = "fields", required = false) String fields) {
@@ -381,7 +381,7 @@ public class TrainingDefinitionsRestController {
     )
     @PutMapping(value = "/{definitionId}/info-levels", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Void> updateInfoLevel(
-                @ApiParam(value = "Id of definition to which level is assigned")
+            @ApiParam(value = "Id of definition to which level is assigned")
             @PathVariable(value = "definitionId") Long definitionId,
             @ApiParam(value = "Info level to be updated")
             @RequestBody @Valid InfoLevelUpdateDTO infoLevelUpdateDTO) {
