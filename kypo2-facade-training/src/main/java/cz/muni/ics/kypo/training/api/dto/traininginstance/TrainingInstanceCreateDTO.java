@@ -39,7 +39,7 @@ public class TrainingInstanceCreateDTO {
     @NotNull(message = "{traininginstancecreate.organizers.NotNull.message}")
     private Set<UserRefDTO> organizers;
 
-    @ApiModelProperty(value = "Date when training instance starts.", required = true)
+    @ApiModelProperty(value = "Date when training instance starts.", required = true, example = "2018-10-19 10:23:54+02")
     public LocalDateTime getStartTime() {
         return startTime;
     }
@@ -48,7 +48,7 @@ public class TrainingInstanceCreateDTO {
         this.startTime = startTime;
     }
 
-    @ApiModelProperty(value = "Date when training instance ends.", required = true)
+    @ApiModelProperty(value = "Date when training instance ends.", required = true, example = "2018-10-25 10:23:54+02")
     public LocalDateTime getEndTime() {
         return endTime;
     }
@@ -57,7 +57,7 @@ public class TrainingInstanceCreateDTO {
         this.endTime = endTime;
     }
 
-    @ApiModelProperty(value = "Short textual description of the training instance.", required = true)
+    @ApiModelProperty(value = "Short textual description of the training instance.", required = true, example = "December instance")
     public String getTitle() {
         return title;
     }
@@ -66,7 +66,7 @@ public class TrainingInstanceCreateDTO {
         this.title = title;
     }
 
-    @ApiModelProperty(value = "Number of sandboxes that can be allocated.", required = true)
+    @ApiModelProperty(value = "Number of sandboxes that can be allocated.", required = true, example = "20")
     public int getPoolSize() {
         return poolSize;
     }
@@ -75,7 +75,7 @@ public class TrainingInstanceCreateDTO {
         this.poolSize = poolSize;
     }
 
-    @ApiModelProperty(value = "Keyword which will be modified and then used for accessing training run.", required = true)
+    @ApiModelProperty(value = "Keyword which will be modified and then used for accessing training run.", required = true, example = "hunter")
     public String getKeyword() {
         return keyword;
     }

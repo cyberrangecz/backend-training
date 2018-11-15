@@ -11,7 +11,7 @@ public class HintDTO {
     private String content;
     private Integer hintPenalty;
 
-    @ApiModelProperty(value = "Main identifier of hint.")
+    @ApiModelProperty(value = "Main identifier of hint.", example = "1")
     public Long getId() {
         return id;
     }
@@ -20,7 +20,7 @@ public class HintDTO {
         this.id = id;
     }
 
-    @ApiModelProperty(value = "Short textual description of the hint.")
+    @ApiModelProperty(value = "Short textual description of the hint.", example = "Hint1")
     public String getTitle() {
         return title;
     }
@@ -29,7 +29,7 @@ public class HintDTO {
         this.title = title;
     }
 
-    @ApiModelProperty(value = "The information and experiences that are directed towards a participant.")
+    @ApiModelProperty(value = "The information and experiences that are directed towards a participant.", example = "Very good advice")
     public String getContent() {
         return content;
     }
@@ -38,7 +38,7 @@ public class HintDTO {
         this.content = content;
     }
 
-    @ApiModelProperty(value = "The number of points the participant loses after receiving the hint.")
+    @ApiModelProperty(value = "The number of points the participant loses after receiving the hint.", example = "10")
     public Integer getHintPenalty() {
         return hintPenalty;
     }

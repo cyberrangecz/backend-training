@@ -24,7 +24,7 @@ public class GameLevelDTO extends AbstractLevelDTO {
     private Set<HintDTO> hints = new HashSet<>();
     private int incorrectFlagLimit;
 
-    @ApiModelProperty(value = "Keyword found in game, used for access next level.")
+    @ApiModelProperty(value = "Keyword found in game, used for access next level.", example = "secretFlag")
     public String getFlag() {
         return flag;
     }
@@ -32,7 +32,7 @@ public class GameLevelDTO extends AbstractLevelDTO {
         this.flag = flag;
     }
 
-    @ApiModelProperty(value = "The information and experiences that are directed towards a participant.")
+    @ApiModelProperty(value = "The information and experiences that are directed towards a participant.", example = "Play me")
     public String getContent() {
         return content;
     }
@@ -41,7 +41,7 @@ public class GameLevelDTO extends AbstractLevelDTO {
         this.content = content;
     }
 
-    @ApiModelProperty(value = "Instruction how to get flag in game.")
+    @ApiModelProperty(value = "Instruction how to get flag in game.", example = "This is how you do it")
     public String getSolution() {
         return solution;
     }
@@ -50,7 +50,7 @@ public class GameLevelDTO extends AbstractLevelDTO {
         this.solution = solution;
     }
 
-    @ApiModelProperty(value = "Sign if displaying of solution is penalized.")
+    @ApiModelProperty(value = "Sign if displaying of solution is penalized.", example = "true")
     public boolean isSolutionPenalized() {
         return solutionPenalized;
     }
@@ -59,7 +59,7 @@ public class GameLevelDTO extends AbstractLevelDTO {
         this.solutionPenalized = solutionPenalized;
     }
 
-    @ApiModelProperty(value = "Estimated time taken by the player to resolve the level.")
+    @ApiModelProperty(value = "Estimated time taken by the player to resolve the level.", example = "25")
     public int getEstimatedDuration() {
         return estimatedDuration;
     }
@@ -68,7 +68,7 @@ public class GameLevelDTO extends AbstractLevelDTO {
         this.estimatedDuration = estimatedDuration;
     }
 
-    @ApiModelProperty(value = "Downloadable files for level (pictures, source code...)")
+    @ApiModelProperty(value = "Downloadable files for level (pictures, source code...)", example = "")
     public String[] getAttachments() {
         return attachments;
     }
@@ -86,7 +86,7 @@ public class GameLevelDTO extends AbstractLevelDTO {
         this.hints = hints;
     }
 
-    @ApiModelProperty(value = "How many times player can submit incorrect flag before displaying solution.")
+    @ApiModelProperty(value = "How many times player can submit incorrect flag before displaying solution.", example = "5")
     public int getIncorrectFlagLimit() {
         return incorrectFlagLimit;
     }

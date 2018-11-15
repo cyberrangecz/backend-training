@@ -41,7 +41,7 @@ public class TrainingInstanceUpdateDTO {
     @NotNull(message = "{traininginstanceupdate.organizers.NotNull.message}")
     private Set<UserRefDTO> organizers;
 
-    @ApiModelProperty(value = "Main identifier of training instance.", required = true)
+    @ApiModelProperty(value = "Main identifier of training instance.", required = true, example = "1")
     public Long getId() {
         return id;
     }
@@ -50,7 +50,7 @@ public class TrainingInstanceUpdateDTO {
         this.id = id;
     }
 
-    @ApiModelProperty(value = "Date when training instance starts.", required = true)
+    @ApiModelProperty(value = "Date when training instance starts.", required = true, example = "2016-10-19 10:23:54+02")
     public LocalDateTime getStartTime() {
         return startTime;
     }
@@ -59,7 +59,7 @@ public class TrainingInstanceUpdateDTO {
         this.startTime = startTime;
     }
 
-    @ApiModelProperty(value = "Date when training instance ends.", required = true)
+    @ApiModelProperty(value = "Date when training instance ends.", required = true, example = "2017-10-19 10:23:54+02")
     public LocalDateTime getEndTime() {
         return endTime;
     }
@@ -68,7 +68,7 @@ public class TrainingInstanceUpdateDTO {
         this.endTime = endTime;
     }
 
-    @ApiModelProperty(value = "Short textual description of the training instance.", required = true)
+    @ApiModelProperty(value = "Short textual description of the training instance.", required = true, example = "Concluded Instance")
     public String getTitle() {
         return title;
     }
@@ -77,7 +77,7 @@ public class TrainingInstanceUpdateDTO {
         this.title = title;
     }
 
-    @ApiModelProperty(value = "Number of sandboxes that can be allocated.", required = true)
+    @ApiModelProperty(value = "Number of sandboxes that can be allocated.", required = true, example = "10")
     public int getPoolSize() {
         return poolSize;
     }
@@ -86,7 +86,7 @@ public class TrainingInstanceUpdateDTO {
         this.poolSize = poolSize;
     }
 
-    @ApiModelProperty(value = "Keyword which will be modified and then used for accessing training run.", required = true)
+    @ApiModelProperty(value = "Keyword which will be modified and then used for accessing training run.", required = true, example = "hunter")
     public String getKeyword() {
         return keyword;
     }

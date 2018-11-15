@@ -32,7 +32,7 @@ public class AbstractLevelDTO {
     protected PostHookDTO postHook;
     protected LevelType levelType;
 
-    @ApiModelProperty(value = "Main identifier of level.")
+    @ApiModelProperty(value = "Main identifier of level.", example = "1")
     public Long getId() {
         return id;
     }
@@ -41,7 +41,7 @@ public class AbstractLevelDTO {
         this.id = id;
     }
 
-    @ApiModelProperty(value = "Short textual description of the level.")
+    @ApiModelProperty(value = "Short textual description of the level.", example = "Game Level1")
     public String getTitle() {
         return title;
     }
@@ -50,7 +50,7 @@ public class AbstractLevelDTO {
         this.title = title;
     }
 
-    @ApiModelProperty(value = "The maximum score a participant can achieve during a level.")
+    @ApiModelProperty(value = "The maximum score a participant can achieve during a level.", example = "20")
     public int getMaxScore() {
         return maxScore;
     }
@@ -58,7 +58,7 @@ public class AbstractLevelDTO {
     public void setMaxScore(int maxScore) {
         this.maxScore = maxScore;
     }
-    @ApiModelProperty(value = "Reference to the next abstract level (if it is null, then it is the last level)")
+    @ApiModelProperty(value = "Reference to the next abstract level (if it is null, then it is the last level)", example = "2")
     public Long getNextLevel() {
         return nextLevel;
     }
@@ -83,7 +83,7 @@ public class AbstractLevelDTO {
         this.postHook = postHook;
     }
 
-    @ApiModelProperty(value = "Type of the level.")
+    @ApiModelProperty(value = "Type of the level.", example = "GAME")
     public LevelType getLevelType() {
         return levelType;
     }

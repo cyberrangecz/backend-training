@@ -17,7 +17,7 @@ public class InfoLevelUpdateDTO {
     protected String title;
     private String content;
 
-    @ApiModelProperty(value = "Main identifier of level.", required = true)
+    @ApiModelProperty(value = "Main identifier of level.", required = true, example = "2")
     public Long getId() {
         return id;
     }
@@ -26,7 +26,7 @@ public class InfoLevelUpdateDTO {
         this.id = id;
     }
 
-    @ApiModelProperty(value = "Short textual description of the level.", required = true)
+    @ApiModelProperty(value = "Short textual description of the level.", required = true, example = "Info Level1")
     public String getTitle() {
         return title;
     }
@@ -35,7 +35,7 @@ public class InfoLevelUpdateDTO {
         this.title = title;
     }
 
-    @ApiModelProperty(value = "The information and experiences that are directed towards a participant.")
+    @ApiModelProperty(value = "The information and experiences that are directed towards a participant.", example = "Informational stuff")
     public String getContent() {
         return content;
     }

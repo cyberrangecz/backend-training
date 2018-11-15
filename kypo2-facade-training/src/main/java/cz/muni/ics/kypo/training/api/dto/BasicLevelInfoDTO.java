@@ -27,7 +27,7 @@ public class BasicLevelInfoDTO {
         this.order = order;
     }
 
-    @ApiModelProperty(value = "Main identifier of level.")
+    @ApiModelProperty(value = "Main identifier of level.", example = "1")
     public Long getId() {
         return id;
     }
@@ -36,7 +36,7 @@ public class BasicLevelInfoDTO {
         this.id = id;
     }
 
-    @ApiModelProperty(value = "Short textual description of the level.")
+    @ApiModelProperty(value = "Short textual description of the level.", example = "Game Level1")
     public String getTitle() {
         return title;
     }
@@ -45,7 +45,7 @@ public class BasicLevelInfoDTO {
         this.title = title;
     }
 
-    @ApiModelProperty(value = "Order of level among levels in training definition.")
+    @ApiModelProperty(value = "Order of level among levels in training definition.", example = "1")
     public int getOrder() {
         return order;
     }
@@ -54,7 +54,7 @@ public class BasicLevelInfoDTO {
         this.order = order;
     }
 
-    @ApiModelProperty(value = "Type of the level.")
+    @ApiModelProperty(value = "Type of the level.", example = "GAME")
     public LevelType getLevelType() {
         return levelType;
     }

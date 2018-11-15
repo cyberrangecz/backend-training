@@ -29,7 +29,7 @@ public class TrainingDefinitionDTO {
     private Set<BasicLevelInfoDTO> basicLevelInfoDTOs;
     private boolean showStepperBar;
 
-    @ApiModelProperty(value = "Main identifier of training definition.")
+    @ApiModelProperty(value = "Main identifier of training definition.", example = "1")
     public Long getId() {
         return id;
     }
@@ -38,7 +38,7 @@ public class TrainingDefinitionDTO {
         this.id = id;
     }
 
-    @ApiModelProperty(value = "A name of the training/game (e.g., Photo Hunter) .")
+    @ApiModelProperty(value = "A name of the training/game (e.g., Photo Hunter) .", example = "TrainingDefinition2")
     public String getTitle() {
         return title;
     }
@@ -47,7 +47,7 @@ public class TrainingDefinitionDTO {
         this.title = title;
     }
 
-    @ApiModelProperty(value = "Description of training definition that is visible to the participant.")
+    @ApiModelProperty(value = "Description of training definition that is visible to the participant.", example = "Unreleased training definition")
     public String getDescription() {
         return description;
     }
@@ -56,7 +56,7 @@ public class TrainingDefinitionDTO {
         this.description = description;
     }
 
-    @ApiModelProperty(value = "List of knowledge and skills necessary to complete the training.")
+    @ApiModelProperty(value = "List of knowledge and skills necessary to complete the training.", example = "")
     public String[] getPrerequisities() {
         return prerequisities;
     }
@@ -65,7 +65,7 @@ public class TrainingDefinitionDTO {
         this.prerequisities = prerequisities;
     }
 
-    @ApiModelProperty(value = "A list of knowledge and skills that the participant should learn by attending the training (if it is used for educational purposes) ")
+    @ApiModelProperty(value = "A list of knowledge and skills that the participant should learn by attending the training (if it is used for educational purposes) ", example = "")
     public String[] getOutcomes() {
         return outcomes;
     }
@@ -74,7 +74,7 @@ public class TrainingDefinitionDTO {
         this.outcomes = outcomes;
     }
 
-    @ApiModelProperty(value = "Current state of training definition.")
+    @ApiModelProperty(value = "Current state of training definition.", example = "UNRELEASED")
     public TDState getState() {
         return state;
     }
@@ -101,7 +101,7 @@ public class TrainingDefinitionDTO {
         this.sandBoxDefinitionRef = sandBoxDefinitionRef;
     }
 
-    @ApiModelProperty(value = "Identifier of first level of training definition.")
+    @ApiModelProperty(value = "Identifier of first level of training definition.", example = "4")
     public Long getStartingLevel() {
         return startingLevel;
     }
@@ -119,7 +119,7 @@ public class TrainingDefinitionDTO {
         this.basicLevelInfoDTOs = basicLevelInfoDTOs;
     }
 
-    @ApiModelProperty(value = "Sign if stepper bar should be displayed.")
+    @ApiModelProperty(value = "Sign if stepper bar should be displayed.", example = "false")
     public boolean isShowStepperBar() {
         return showStepperBar;
     }

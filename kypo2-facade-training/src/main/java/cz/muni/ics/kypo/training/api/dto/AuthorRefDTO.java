@@ -6,7 +6,7 @@ public class AuthorRefDTO {
     private Long id;
     private String authorRefLogin;
 
-    @ApiModelProperty(value = "Main identifier of author.")
+    @ApiModelProperty(value = "Main identifier of author.", example = "1")
     public Long getId() {
         return id;
     }
@@ -15,7 +15,7 @@ public class AuthorRefDTO {
         this.id = id;
     }
 
-    @ApiModelProperty(value = "Reference to user in another microservice.")
+    @ApiModelProperty(value = "Reference to user in another microservice.", example = "Designer1")
     public String getAuthorRefLogin() {
         return authorRefLogin;
     }

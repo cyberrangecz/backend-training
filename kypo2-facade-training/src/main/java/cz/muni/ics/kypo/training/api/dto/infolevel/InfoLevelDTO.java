@@ -13,7 +13,7 @@ public class InfoLevelDTO extends AbstractLevelDTO {
 
     private String content;
 
-    @ApiModelProperty(value = "The information and experiences that are directed towards a participant.")
+    @ApiModelProperty(value = "The information and experiences that are directed towards a participant.", example = "Informational stuff")
     public String getContent() {
         return content;
     }

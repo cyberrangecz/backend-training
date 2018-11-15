@@ -16,7 +16,7 @@ public class AssessmentLevelDTO extends AbstractLevelDTO {
     private String instructions;
     private AssessmentType assessmentType;
 
-    @ApiModelProperty(value = "List of questions in this assessment as JSON.")
+    @ApiModelProperty(value = "List of questions in this assessment as JSON.", example = "What is my mothers name?")
     public String getQuestions() {
         return questions;
     }
@@ -25,7 +25,7 @@ public class AssessmentLevelDTO extends AbstractLevelDTO {
         this.questions = questions;
     }
 
-    @ApiModelProperty(value = "Assessment instructions for participant.")
+    @ApiModelProperty(value = "Assessment instructions for participant.", example = "Fill me up")
     public String getInstructions() {
         return instructions;
     }
@@ -34,7 +34,7 @@ public class AssessmentLevelDTO extends AbstractLevelDTO {
         this.instructions = instructions;
     }
 
-    @ApiModelProperty(value = "Type of assessment.")
+    @ApiModelProperty(value = "Type of assessment.", example = "TEST")
     public AssessmentType getAssessmentType() {
         return assessmentType;
     }

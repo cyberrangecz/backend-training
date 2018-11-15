@@ -11,7 +11,7 @@ public class PreHookDTO {
 
     private Long id;
 
-    @ApiModelProperty(value = "Main identifier of preHook.")
+    @ApiModelProperty(value = "Main identifier of preHook.", example = "4")
     public Long getId() {
         return id;
     }

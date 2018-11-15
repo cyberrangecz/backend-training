@@ -32,7 +32,7 @@ public class TrainingDefinitionCreateDTO {
     private SandboxDefinitionRefDTO sandboxDefinitionRef;
 
 
-    @ApiModelProperty(value = "A name of the training/game (e.g., Photo Hunter) .", required = true)
+    @ApiModelProperty(value = "A name of the training/game (e.g., Photo Hunter) .", required = true, example = "Photo Hunter")
     public String getTitle() {
         return title;
     }
@@ -41,7 +41,7 @@ public class TrainingDefinitionCreateDTO {
         this.title = title;
     }
 
-    @ApiModelProperty(value = "Description of training definition that is visible to the participant.")
+    @ApiModelProperty(value = "Description of training definition that is visible to the participant.", example = "Description of Photo Hunter")
     public String getDescription() {
         return description;
     }
@@ -50,7 +50,7 @@ public class TrainingDefinitionCreateDTO {
         this.description = description;
     }
 
-    @ApiModelProperty(value = "List of knowledge and skills necessary to complete the training.")
+    @ApiModelProperty(value = "List of knowledge and skills necessary to complete the training.", example = "[HTML, http protocol]")
     public String[] getPrerequisities() {
         return prerequisities;
     }
@@ -58,7 +58,7 @@ public class TrainingDefinitionCreateDTO {
     public void setPrerequisities(String[] prerequisities) {
         this.prerequisities = prerequisities;
     }
-    @ApiModelProperty(value = "A list of knowledge and skills that the participant should learn by attending the training (if it is used for educational purposes) ")
+    @ApiModelProperty(value = "A list of knowledge and skills that the participant should learn by attending the training (if it is used for educational purposes) ", example = "[outcomes]")
     public String[] getOutcomes() {
         return outcomes;
     }
@@ -67,7 +67,7 @@ public class TrainingDefinitionCreateDTO {
         this.outcomes = outcomes;
     }
 
-    @ApiModelProperty(value = "Current state of training definition.", required = true)
+    @ApiModelProperty(value = "Current state of training definition.", required = true, example = "UNRELEASED")
     public TDState getState() {
         return state;
     }
@@ -85,7 +85,7 @@ public class TrainingDefinitionCreateDTO {
         this.authorRef = authorRef;
     }
 
-    @ApiModelProperty(value = "Sign if stepper bar should be displayed.", required = true)
+    @ApiModelProperty(value = "Sign if stepper bar should be displayed.", required = true, example = "true")
     public boolean isShowStepperBar() {
         return showStepperBar;
     }

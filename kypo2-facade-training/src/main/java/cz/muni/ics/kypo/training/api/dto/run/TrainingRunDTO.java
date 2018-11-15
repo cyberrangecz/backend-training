@@ -24,7 +24,7 @@ public class TrainingRunDTO {
     private TRState state;
     private SandboxInstanceRefDTO sandboxInstanceRef;
 
-    @ApiModelProperty(value = "Main identifier of training run.")
+    @ApiModelProperty(value = "Main identifier of training run.", example = "1")
     public Long getId() {
         return id;
     }
@@ -33,7 +33,7 @@ public class TrainingRunDTO {
         this.id = id;
     }
 
-    @ApiModelProperty(value = "Date when training run started.")
+    @ApiModelProperty(value = "Date when training run started.", example = "2016-10-19 10:23:54+02")
     public LocalDateTime getStartTime() {
         return startTime;
     }
@@ -42,7 +42,7 @@ public class TrainingRunDTO {
         this.startTime = startTime;
     }
 
-    @ApiModelProperty(value = "Date when training run ends.")
+    @ApiModelProperty(value = "Date when training run ends.", example = "2022-10-19 10:23:54+02")
     public LocalDateTime getEndTime() {
         return endTime;
     }
@@ -59,7 +59,7 @@ public class TrainingRunDTO {
         this.eventLogReference = eventLogReference;
     }
 
-    @ApiModelProperty(value = "Current state of training run.")
+    @ApiModelProperty(value = "Current state of training run.", example = "ALLOCATED")
     public TRState getState() {
         return state;
     }

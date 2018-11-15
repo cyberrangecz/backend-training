@@ -7,7 +7,7 @@ public class SandboxInstanceRefDTO {
     private Long id;
     private Long sandboxInstanceRef;
 
-    @ApiModelProperty(value = "Main identifier of sandbox instance ref.")
+    @ApiModelProperty(value = "Main identifier of sandbox instance ref.", example = "1")
     public Long getId() {
         return id;
     }
@@ -16,7 +16,7 @@ public class SandboxInstanceRefDTO {
         this.id = id;
     }
 
-    @ApiModelProperty(value = "Reference to sandbox instance in another microservice.")
+    @ApiModelProperty(value = "Reference to sandbox instance in another microservice.", example = "1")
     public Long getSandboxInstanceRef() {
         return sandboxInstanceRef;
     }

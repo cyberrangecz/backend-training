@@ -21,7 +21,7 @@ public class AccessedTrainingRunDTO {
     private int numberOfLevels;
     private Actions possibleAction;
 
-    @ApiModelProperty(value = "Main identifier of training run.")
+    @ApiModelProperty(value = "Main identifier of training run.", example = "1")
     public Long getId() {
         return id;
     }
@@ -30,7 +30,7 @@ public class AccessedTrainingRunDTO {
         this.id = id;
     }
 
-    @ApiModelProperty(value = "Short textual description of the training instance.")
+    @ApiModelProperty(value = "Short textual description of the training instance.", example = "Concluded Instance")
     public String getTitle() {
         return title;
     }
@@ -39,7 +39,7 @@ public class AccessedTrainingRunDTO {
         this.title = title;
     }
 
-    @ApiModelProperty(value = "Start date of training instance for which the training run was created.")
+    @ApiModelProperty(value = "Start date of training instance for which the training run was created.", example = "2016-10-19 10:23:54+02")
     public LocalDateTime getTrainingInstanceStartDate() {
         return trainingInstanceStartDate;
     }
@@ -48,7 +48,7 @@ public class AccessedTrainingRunDTO {
         this.trainingInstanceStartDate = trainingInstanceStartDate;
     }
 
-    @ApiModelProperty(value = "End date of training instance for which the training run was created.")
+    @ApiModelProperty(value = "End date of training instance for which the training run was created.", example = "2017-10-19 10:23:54+02")
     public LocalDateTime getTrainingInstanceEndDate() {
         return trainingInstanceEndDate;
     }
@@ -57,7 +57,7 @@ public class AccessedTrainingRunDTO {
         this.trainingInstanceEndDate = trainingInstanceEndDate;
     }
 
-    @ApiModelProperty(value = "Current level order of training run.")
+    @ApiModelProperty(value = "Current level order of training run.", example = "1")
     public int getCurrentLevelOrder() {
         return currentLevelOrder;
     }
@@ -66,7 +66,7 @@ public class AccessedTrainingRunDTO {
         this.currentLevelOrder = currentLevelOrder;
     }
 
-    @ApiModelProperty(value = "The number of levels in the training instance.")
+    @ApiModelProperty(value = "The number of levels in the training instance.", example = "3")
     public int getNumberOfLevels() {
         return numberOfLevels;
     }
@@ -75,7 +75,7 @@ public class AccessedTrainingRunDTO {
         this.numberOfLevels = numberOfLevels;
     }
 
-    @ApiModelProperty(value = "Possible action which can be executed with training Run.")
+    @ApiModelProperty(value = "Possible action which can be executed with training Run.", example = "RESULTS")
     public Actions getPossibleAction() {
         return possibleAction;
     }

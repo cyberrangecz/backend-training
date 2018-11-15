@@ -11,7 +11,7 @@ public class PostHookDTO {
 
     private Long id;
 
-    @ApiModelProperty(value = "Main identifier of postHook.")
+    @ApiModelProperty(value = "Main identifier of postHook.", example = "8")
     public Long getId() {
         return id;
     }

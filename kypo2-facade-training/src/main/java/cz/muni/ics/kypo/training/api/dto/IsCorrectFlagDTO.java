@@ -7,7 +7,7 @@ public class IsCorrectFlagDTO {
     private boolean isCorrect;
     private int remainingAttempts;
 
-    @ApiModelProperty(value = "True/false if flag has been correct/incorrect.")
+    @ApiModelProperty(value = "True/false if flag has been correct/incorrect.", example = "false")
     public boolean isCorrect() {
         return isCorrect;
     }
@@ -16,7 +16,7 @@ public class IsCorrectFlagDTO {
         isCorrect = correct;
     }
 
-    @ApiModelProperty(value = "Number of attempts to submit a bad flag.")
+    @ApiModelProperty(value = "Number of attempts to submit a bad flag.", example = "3")
     public int getRemainingAttempts() {
         return remainingAttempts;
     }

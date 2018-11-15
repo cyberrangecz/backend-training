@@ -6,7 +6,7 @@ public class UserRefDTO {
     private Long id;
     private Long userRefId;
 
-    @ApiModelProperty(value = "Main identifier of user ref.")
+    @ApiModelProperty(value = "Main identifier of user ref.", example = "1")
     public Long getId() {
         return id;
     }
@@ -15,7 +15,7 @@ public class UserRefDTO {
         this.id = id;
     }
 
-    @ApiModelProperty(value = "Reference to user in another microservice.")
+    @ApiModelProperty(value = "Reference to user in another microservice.", example = "1")
     public Long getUserRefId() {
         return userRefId;
     }

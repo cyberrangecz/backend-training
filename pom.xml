@@ -55,7 +55,7 @@
 		<flyway.version>5.0.7</flyway.version>
 
 		<!-- spring for swagger version -->
-		<swagger.version>2.8.0</swagger.version>
+		<swagger.version>2.9.2</swagger.version>
 		<!-- mitre version -->
 		<mitre.oidc.version>1.3.2</mitre.oidc.version>
 	</properties>

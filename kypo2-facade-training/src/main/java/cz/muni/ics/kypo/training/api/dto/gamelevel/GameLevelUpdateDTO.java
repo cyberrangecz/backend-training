@@ -35,7 +35,7 @@ public class GameLevelUpdateDTO {
     private int incorrectFlagLimit;
     private Set<HintDTO> hints;
 
-    @ApiModelProperty(value = "Main identifier of level.", required = true)
+    @ApiModelProperty(value = "Main identifier of level.", required = true, example = "1")
     public Long getId() {
         return id;
     }
@@ -44,7 +44,7 @@ public class GameLevelUpdateDTO {
         this.id = id;
     }
 
-    @ApiModelProperty(value = "Keyword found in game, used for access next level.", required = true)
+    @ApiModelProperty(value = "Keyword found in game, used for access next level.", required = true, example = "secretFlag")
     public String getFlag() {
         return flag;
     }
@@ -53,7 +53,7 @@ public class GameLevelUpdateDTO {
         this.flag = flag;
     }
 
-    @ApiModelProperty(value = "The information and experiences that are directed towards an player.")
+    @ApiModelProperty(value = "The information and experiences that are directed towards an player.", example = "Play me")
     public String getContent() {
         return content;
     }
@@ -62,7 +62,7 @@ public class GameLevelUpdateDTO {
         this.content = content;
     }
 
-    @ApiModelProperty(value = "Instruction how to get flag in game.")
+    @ApiModelProperty(value = "Instruction how to get flag in game.", example = "This is how you do it")
     public String getSolution() {
         return solution;
     }
@@ -71,7 +71,7 @@ public class GameLevelUpdateDTO {
         this.solution = solution;
     }
 
-    @ApiModelProperty(value = "Sign if displaying of solution is penalized.", required = true)
+    @ApiModelProperty(value = "Sign if displaying of solution is penalized.", required = true, example = "false")
     public boolean isSolutionPenalized() {
         return solutionPenalized;
     }
@@ -80,7 +80,7 @@ public class GameLevelUpdateDTO {
         this.solutionPenalized = solutionPenalized;
     }
 
-    @ApiModelProperty(value = "Estimated time taken by the player to resolve the level.")
+    @ApiModelProperty(value = "Estimated time taken by the player to resolve the level.", example = "20")
     public int getEstimatedDuration() {
         return estimatedDuration;
     }
@@ -89,7 +89,7 @@ public class GameLevelUpdateDTO {
         this.estimatedDuration = estimatedDuration;
     }
 
-    @ApiModelProperty(value = "Downloadable files for level (pictures, source code...)")
+    @ApiModelProperty(value = "Downloadable files for level (pictures, source code...)", example = "")
     public String[] getAttachments() {
         return attachments;
     }
@@ -98,7 +98,7 @@ public class GameLevelUpdateDTO {
         this.attachments = attachments;
     }
 
-    @ApiModelProperty(value = "Short textual description of the level.", required = true)
+    @ApiModelProperty(value = "Short textual description of the level.", required = true, example = "Game Level1")
     public String getTitle() {
         return title;
     }
@@ -107,7 +107,7 @@ public class GameLevelUpdateDTO {
         this.title = title;
     }
 
-    @ApiModelProperty(value = "How many times participant can submit incorrect flag before displaying solution.", required = true)
+    @ApiModelProperty(value = "How many times participant can submit incorrect flag before displaying solution.", required = true, example = "5")
     public int getIncorrectFlagLimit() {
         return incorrectFlagLimit;
     }
@@ -116,7 +116,7 @@ public class GameLevelUpdateDTO {
         this.incorrectFlagLimit = incorrectFlagLimit;
     }
 
-    @ApiModelProperty(value = "The maximum score a participant can achieve during a level.", required = true)
+    @ApiModelProperty(value = "The maximum score a participant can achieve during a level.", required = true, example = "20")
     public Integer getMaxScore() {
         return maxScore;
     }

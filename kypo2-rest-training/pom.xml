@@ -129,7 +129,7 @@
 							</locations>
 							<schemes>http,https</schemes>
 							<host>localhost:8080</host>
-							<basePath>/kypo2-rest-training/</basePath>
+							<basePath>/kypo2-rest-training</basePath>
 							<info>
 								<title>KYPO2 Trainings - API Reference</title>
 								<version>Version: 1.0.0</version>
@@ -166,7 +166,8 @@
 					<config>
 						<swagger2markup.markupLanguage>ASCIIDOC</swagger2markup.markupLanguage>
 						<swagger2markup.pathsGroupedBy>TAGS</swagger2markup.pathsGroupedBy>
-						<swagger2markup.generatedExamplesEnabled>true</swagger2markup.generatedExamplesEnabled>>
+						<swagger2markup.generatedExamplesEnabled>true</swagger2markup.generatedExamplesEnabled>
+						<swagger2markup.basePathPrefixEnabled>true</swagger2markup.basePathPrefixEnabled>
 					</config>
 				</configuration>
 				<executions>

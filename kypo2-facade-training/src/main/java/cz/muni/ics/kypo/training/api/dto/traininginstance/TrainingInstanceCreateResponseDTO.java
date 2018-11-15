@@ -9,7 +9,7 @@ public class TrainingInstanceCreateResponseDTO {
     private Long id;
     private String keyword;
 
-    @ApiModelProperty(value = "Main identifier of training instance.")
+    @ApiModelProperty(value = "Main identifier of training instance.", example = "1")
     public Long getId() {
         return id;
     }
@@ -18,7 +18,7 @@ public class TrainingInstanceCreateResponseDTO {
         this.id = id;
     }
 
-    @ApiModelProperty(value = "Generated keyword which will be used for accessing training run.")
+    @ApiModelProperty(value = "Generated keyword which will be used for accessing training run.", example = "hunter-1496")
     public String getKeyword() {
         return keyword;
     }
