@@ -3,15 +3,16 @@ package cz.muni.csirt.kypo.events.trainings;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonRootName;
 import cz.muni.csirt.kypo.elasticsearch.AbstractAuditPOJO;
+import cz.muni.csirt.kypo.events.trainings.enums.LevelType;
 import org.jsondoc.core.annotation.ApiObject;
 import org.jsondoc.core.annotation.ApiObjectField;
 
 /**
  * @author Pavel Šeda
  */
-@ApiObject(name = "Correct Flag Submitted", description = "Type of event from trainings.")
+@ApiObject(name = "Level Started", description = "Type of event from trainings (when level is started).")
 @JsonRootName(value = "event")
-public class CorrectFlagSubmitted extends AbstractAuditPOJO {
+public class LevelStarted extends AbstractAuditPOJO {
 
     @ApiObjectField(description = "Sandbox ID.")
     @JsonProperty(value = "sandbox_id", required = true)
@@ -31,18 +32,25 @@ public class CorrectFlagSubmitted extends AbstractAuditPOJO {
     @ApiObjectField(description = "Training run level.")
     @JsonProperty(value = "level", required = true)
     private long level;
-    @ApiObjectField(description = "Flag Content.")
-    @JsonProperty(value = "flag_content", required = true)
-    private String flagContent;
+    @ApiObjectField(description = "Level Type.")
+    @JsonProperty(value = "level_type", required = true)
+    private LevelType levelType;
+    @ApiObjectField(description = "Max Score.")
+    @JsonProperty(value = "max_score", required = true)
+    private int maxScore;
+    @JsonProperty(value = "level_title", required = true)
+    private String levelTitle;
 
-    public CorrectFlagSubmitted(long sandboxId, long trainingDefinitionId, long trainingInstanceId, long trainingRunId, String playerLogin, long level, String flagContent) {
+    public LevelStarted(long sandboxId, long trainingDefinitionId, long trainingInstanceId, long trainingRunId, String playerLogin, long level, LevelType levelType, int maxScore, String levelTitle) {
         this.sandboxId = sandboxId;
         this.trainingDefinitionId = trainingDefinitionId;
         this.trainingInstanceId = trainingInstanceId;
         this.trainingRunId = trainingRunId;
         this.playerLogin = playerLogin;
         this.level = level;
-        this.flagContent = flagContent;
+        this.levelType = levelType;
+        this.maxScore = maxScore;
+        this.levelTitle = levelTitle;
     }
 
     public long getSandboxId() {
@@ -93,24 +101,42 @@ public class CorrectFlagSubmitted extends AbstractAuditPOJO {
         this.level = level;
     }
 
-    public String getFlagContent() {
-        return flagContent;
+    public LevelType getLevelType() {
+        return levelType;
     }
 
-    public void setFlagContent(String flagContent) {
-        this.flagContent = flagContent;
+    public void setLevelType(LevelType levelType) {
+        this.levelType = levelType;
+    }
+
+    public int getMaxScore() {
+        return maxScore;
+    }
+
+    public void setMaxScore(int maxScore) {
+        this.maxScore = maxScore;
+    }
+
+    public String getLevelTitle() {
+        return levelTitle;
+    }
+
+    public void setLevelTitle(String levelTitle) {
+        this.levelTitle = levelTitle;
     }
 
     @Override
     public String toString() {
-        return "CorrectFlagSubmitted{" +
+        return "LevelStarted{" +
                 "sandboxId=" + sandboxId +
                 ", trainingDefinitionId=" + trainingDefinitionId +
                 ", trainingInstanceId=" + trainingInstanceId +
                 ", trainingRunId=" + trainingRunId +
                 ", playerLogin='" + playerLogin + '\'' +
                 ", level=" + level +
-                ", flagContent='" + flagContent + '\'' +
+                ", levelType=" + levelType +
+                ", maxScore=" + maxScore +
+                ", levelTitle='" + levelTitle + '\'' +
                 '}';
     }
 }

@@ -9,9 +9,9 @@ import org.jsondoc.core.annotation.ApiObjectField;
 /**
  * @author Pavel Šeda
  */
-@ApiObject(name = "Correct Flag Submitted", description = "Type of event from trainings.")
+@ApiObject(name = "Assessment Answers Started", description = "Type of event from trainings.")
 @JsonRootName(value = "event")
-public class CorrectFlagSubmitted extends AbstractAuditPOJO {
+public class AssessmentAnswers extends AbstractAuditPOJO {
 
     @ApiObjectField(description = "Sandbox ID.")
     @JsonProperty(value = "sandbox_id", required = true)
@@ -31,18 +31,18 @@ public class CorrectFlagSubmitted extends AbstractAuditPOJO {
     @ApiObjectField(description = "Training run level.")
     @JsonProperty(value = "level", required = true)
     private long level;
-    @ApiObjectField(description = "Flag Content.")
-    @JsonProperty(value = "flag_content", required = true)
-    private String flagContent;
+    @ApiObjectField(description = "Only on assessment lvel type, data format is JSON.")
+    @JsonProperty(value = "answers", required = false)
+    private String answers;
 
-    public CorrectFlagSubmitted(long sandboxId, long trainingDefinitionId, long trainingInstanceId, long trainingRunId, String playerLogin, long level, String flagContent) {
+    public AssessmentAnswers(long sandboxId, long trainingDefinitionId, long trainingInstanceId, long trainingRunId, String playerLogin, long level, String answers) {
         this.sandboxId = sandboxId;
         this.trainingDefinitionId = trainingDefinitionId;
         this.trainingInstanceId = trainingInstanceId;
         this.trainingRunId = trainingRunId;
         this.playerLogin = playerLogin;
         this.level = level;
-        this.flagContent = flagContent;
+        this.answers = answers;
     }
 
     public long getSandboxId() {
@@ -93,24 +93,24 @@ public class CorrectFlagSubmitted extends AbstractAuditPOJO {
         this.level = level;
     }
 
-    public String getFlagContent() {
-        return flagContent;
+    public String getAnswers() {
+        return answers;
     }
 
-    public void setFlagContent(String flagContent) {
-        this.flagContent = flagContent;
+    public void setAnswers(String answers) {
+        this.answers = answers;
     }
 
     @Override
     public String toString() {
-        return "CorrectFlagSubmitted{" +
+        return "AssessmentAnswers{" +
                 "sandboxId=" + sandboxId +
                 ", trainingDefinitionId=" + trainingDefinitionId +
                 ", trainingInstanceId=" + trainingInstanceId +
                 ", trainingRunId=" + trainingRunId +
                 ", playerLogin='" + playerLogin + '\'' +
                 ", level=" + level +
-                ", flagContent='" + flagContent + '\'' +
+                ", answers='" + answers + '\'' +
                 '}';
     }
 }
