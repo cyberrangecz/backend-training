@@ -301,13 +301,18 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
         LOG.debug("findLevelById({})", levelId);
         try {
             AbstractLevel aL = trainingDefinitionService.findLevelById(levelId);
+            AbstractLevelDTO aLDTO;
             if (aL instanceof GameLevel) {
-                return beanMapping.mapTo(aL, GameLevelDTO.class);
+                aLDTO = beanMapping.mapTo(aL, GameLevelDTO.class);
+                aLDTO.setLevelType(LevelType.GAME);
             } else if (aL instanceof AssessmentLevel) {
-                return beanMapping.mapTo(aL, AssessmentLevelDTO.class);
+                aLDTO = beanMapping.mapTo(aL, AssessmentLevelDTO.class);
+                aLDTO.setLevelType(LevelType.ASSESSMENT);
             } else {
-                return beanMapping.mapTo(aL, InfoLevelDTO.class);
+                aLDTO = beanMapping.mapTo(aL, InfoLevelDTO.class);
+                aLDTO.setLevelType(LevelType.INFO);
             }
+            return aLDTO;
         } catch (ServiceLayerException ex) {
             throw new FacadeLayerException(ex.getLocalizedMessage());
         }

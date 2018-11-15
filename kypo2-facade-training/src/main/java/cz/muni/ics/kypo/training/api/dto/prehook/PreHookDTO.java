@@ -1,6 +1,7 @@
 package cz.muni.ics.kypo.training.api.dto.prehook;
 
 import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 
 /**
  * @author Pavel Seda (441048)
@@ -10,6 +11,7 @@ public class PreHookDTO {
 
     private Long id;
 
+    @ApiModelProperty(value = "Main identifier of preHook.", example = "4")
     public Long getId() {
         return id;
     }

@@ -5,6 +5,7 @@ import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionDTO;
 import cz.muni.ics.kypo.training.utils.converters.LocalDateTimeSerializer;
 import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 
 import java.time.LocalDateTime;
 import java.util.Set;
@@ -12,7 +13,7 @@ import java.util.Set;
 /**
  * @author Pavel Seda (441048)
  */
-@ApiModel(value = "TrainingInstanceDTO", description = "Training Instance.")
+@ApiModel(value = "TrainingInstanceDTO", description = "A session of attending a concrete training, which involves a deployment of the training definition in one or more sandbox instances that are then assigned to participants. The instance comprises one or more game runs.")
 public class TrainingInstanceDTO {
 
     private Long id;
@@ -26,6 +27,7 @@ public class TrainingInstanceDTO {
     private Set<UserRefDTO> organizers;
     private String password;
 
+    @ApiModelProperty(value = "Main identifier of training instance.", example = "1")
     public Long getId() {
         return id;
     }
@@ -34,6 +36,7 @@ public class TrainingInstanceDTO {
         this.id = id;
     }
 
+    @ApiModelProperty(value = "Date when training instance starts.", example = "2016-10-19 10:23:54+02")
     public LocalDateTime getStartTime() {
         return startTime;
     }
@@ -42,6 +45,7 @@ public class TrainingInstanceDTO {
         this.startTime = startTime;
     }
 
+    @ApiModelProperty(value = "Date when training instance ends.", example = "2017-10-19 10:23:54+02")
     public LocalDateTime getEndTime() {
         return endTime;
     }
@@ -50,6 +54,7 @@ public class TrainingInstanceDTO {
         this.endTime = endTime;
     }
 
+    @ApiModelProperty(value = "Short textual description of the training instance.", example = "Concluded Instance")
     public String getTitle() {
         return title;
     }
@@ -58,6 +63,7 @@ public class TrainingInstanceDTO {
         this.title = title;
     }
 
+    @ApiModelProperty(value = "Number of sandboxes that can be allocated.", example = "5")
     public int getPoolSize() {
         return poolSize;
     }
@@ -66,6 +72,7 @@ public class TrainingInstanceDTO {
         this.poolSize = poolSize;
     }
 
+    @ApiModelProperty(value = "Reference to training definition from which is training instance created.")
     public TrainingDefinitionDTO getTrainingDefinition() {
         return trainingDefinition;
     }
@@ -74,6 +81,7 @@ public class TrainingInstanceDTO {
         this.trainingDefinition = trainingDefinition;
     }
 
+    @ApiModelProperty(value = "Reference to users which organize training instance.")
     public Set<UserRefDTO> getOrganizers() {
         return organizers;
     }

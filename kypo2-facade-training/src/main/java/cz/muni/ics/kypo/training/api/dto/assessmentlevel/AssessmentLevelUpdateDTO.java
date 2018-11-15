@@ -12,28 +12,24 @@ import io.swagger.annotations.ApiModelProperty;
 /**
  * @author Pavel Šeda (441048)
  */
-@ApiModel(value = "AssessmentLevelUpdateDTO", description = "Assessment Level to update.")
+@ApiModel(value = "AssessmentLevelUpdateDTO", description = "Assessment level to update.")
 public class AssessmentLevelUpdateDTO {
 
-    @ApiModelProperty(value = "ID of assessment level to update. Have not be null.")
+
     @NotNull(message = "{assessmentlevelupdate.id.NotNull.message}")
     protected Long id;
-    @ApiModelProperty(value = "Title of assessment level to update. Have to be filled.")
     @NotEmpty(message = "{assessmentlevelupdate.title.NotEmpty.message}")
     private String title;
-    @ApiModelProperty(value = "Maximum score of assessment level to update. Have to be filled in range from 0 to 100.")
     @NotNull(message = "{assessmentlevelupdate.maxScore.NotNull.message}")
     @Min(value = 0, message = "{assessmentlevelupdate.maxScore.Min.message}")
     @Max(value = 100, message = "{assessmentlevelupdate.maxScore.Max.message}")
     private Integer maxScore;
-    @ApiModelProperty(value = "Questions of assessment level to update.")
     private String questions;
-    @ApiModelProperty(value = "Instructions of assessment level to update.")
     private String instructions;
-    @ApiModelProperty(value = "Type of assessment level to update.")
     @NotNull(message = "{assessmentlevelupdate.type.NotNull.message}")
     private AssessmentType type;
 
+    @ApiModelProperty(value = "Main identifier of level.", required = true, example = "3")
     public Long getId() {
         return id;
     }
@@ -42,6 +38,7 @@ public class AssessmentLevelUpdateDTO {
         this.id = id;
     }
 
+    @ApiModelProperty(value = "Short textual description of the level.", required = true, example = "Assessment Level1")
     public String getTitle() {
         return title;
     }
@@ -50,6 +47,7 @@ public class AssessmentLevelUpdateDTO {
         this.title = title;
     }
 
+    @ApiModelProperty(value = "Maximum score of assessment level to update. Have to be filled in range from 0 to 100.", required = true, example = "40")
     public Integer getMaxScore() {
         return maxScore;
     }
@@ -58,6 +56,7 @@ public class AssessmentLevelUpdateDTO {
         this.maxScore = maxScore;
     }
 
+    @ApiModelProperty(value = "Questions of assessment level to update.", example = "What is my fathers name?")
     public String getQuestions() {
         return questions;
     }
@@ -66,6 +65,7 @@ public class AssessmentLevelUpdateDTO {
         this.questions = questions;
     }
 
+    @ApiModelProperty(value = "Instructions of assessment level to update.", example = "Fill me up fast")
     public String getInstructions() {
         return instructions;
     }
@@ -74,6 +74,7 @@ public class AssessmentLevelUpdateDTO {
         this.instructions = instructions;
     }
 
+    @ApiModelProperty(value = "Type of assessment level to update.", required = true, example = "TEST")
     public AssessmentType getType() {
         return type;
     }

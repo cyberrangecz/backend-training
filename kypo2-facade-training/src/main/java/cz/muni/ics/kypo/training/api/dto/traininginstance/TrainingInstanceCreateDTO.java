@@ -8,6 +8,7 @@ import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionDTO;
 import cz.muni.ics.kypo.training.utils.converters.LocalDateTimeDeserializer;
 import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
@@ -39,6 +40,7 @@ public class TrainingInstanceCreateDTO {
     @NotNull(message = "{traininginstancecreate.organizers.NotNull.message}")
     private Set<UserRefDTO> organizers;
 
+    @ApiModelProperty(value = "Date when training instance starts.", required = true, example = "2018-10-19 10:23:54+02")
     public LocalDateTime getStartTime() {
         return startTime;
     }
@@ -47,6 +49,7 @@ public class TrainingInstanceCreateDTO {
         this.startTime = startTime;
     }
 
+    @ApiModelProperty(value = "Date when training instance ends.", required = true, example = "2018-10-25 10:23:54+02")
     public LocalDateTime getEndTime() {
         return endTime;
     }
@@ -55,6 +58,7 @@ public class TrainingInstanceCreateDTO {
         this.endTime = endTime;
     }
 
+    @ApiModelProperty(value = "Short textual description of the training instance.", required = true, example = "December instance")
     public String getTitle() {
         return title;
     }
@@ -63,6 +67,7 @@ public class TrainingInstanceCreateDTO {
         this.title = title;
     }
 
+    @ApiModelProperty(value = "Number of sandboxes that can be allocated.", required = true, example = "20")
     public int getPoolSize() {
         return poolSize;
     }
@@ -71,6 +76,7 @@ public class TrainingInstanceCreateDTO {
         this.poolSize = poolSize;
     }
 
+    @ApiModelProperty(value = "Keyword which will be modified and then used for accessing training run.", required = true, example = "hunter")
     public String getPassword() {
         return password;
     }
@@ -79,6 +85,7 @@ public class TrainingInstanceCreateDTO {
         this.password = password;
     }
 
+    @ApiModelProperty(value = "Reference to training definition from which is training instance created.", required = true)
     public TrainingDefinitionDTO getTrainingDefinition() {
         return trainingDefinition;
     }
@@ -86,7 +93,7 @@ public class TrainingInstanceCreateDTO {
     public void setTrainingDefinition(TrainingDefinitionDTO trainingDefinition) {
         this.trainingDefinition = trainingDefinition;
     }
-
+    @ApiModelProperty(value = "Reference to users which organize training instance.", required = true)
     public Set<UserRefDTO> getOrganizers() {
         return organizers;
     }

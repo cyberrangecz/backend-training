@@ -1,16 +1,27 @@
 package cz.muni.ics.kypo.training.api.dto;
 
-import io.swagger.annotations.ApiModel;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelDTO;
+import cz.muni.ics.kypo.training.api.dto.gamelevel.GameLevelDTO;
+import cz.muni.ics.kypo.training.api.dto.infolevel.InfoLevelDTO;
+import cz.muni.ics.kypo.training.persistence.model.enums.LevelType;
 
 import java.util.Objects;
 
 import cz.muni.ics.kypo.training.api.dto.posthook.PostHookDTO;
 import cz.muni.ics.kypo.training.api.dto.prehook.PreHookDTO;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 
 /**
  * @author Pavel Šeda (441048)
  */
-@ApiModel(value = "AbstractLevelDTO", description = ".")
+@ApiModel(value = "AbstractLevelDTO", subTypes = {GameLevelDTO.class, InfoLevelDTO.class, AssessmentLevelDTO.class},
+        description = "Superclass for classes GameLevelDTO, AssessmentLevelDTO and InfoLevelDTO")
+@JsonSubTypes({
+        @JsonSubTypes.Type(value = GameLevelDTO.class, name = "GameLevelDTO"),
+        @JsonSubTypes.Type(value = AssessmentLevelDTO.class, name = "AssessmentLevelDTO"),
+        @JsonSubTypes.Type(value = InfoLevelDTO.class, name = "InfoLevelDTO")})
 public class AbstractLevelDTO {
 
     protected Long id;
@@ -19,7 +30,9 @@ public class AbstractLevelDTO {
     protected Long nextLevel;
     protected PreHookDTO preHook;
     protected PostHookDTO postHook;
+    protected LevelType levelType;
 
+    @ApiModelProperty(value = "Main identifier of level.", example = "1")
     public Long getId() {
         return id;
     }
@@ -28,6 +41,7 @@ public class AbstractLevelDTO {
         this.id = id;
     }
 
+    @ApiModelProperty(value = "Short textual description of the level.", example = "Game Level1")
     public String getTitle() {
         return title;
     }
@@ -36,6 +50,7 @@ public class AbstractLevelDTO {
         this.title = title;
     }
 
+    @ApiModelProperty(value = "The maximum score a participant can achieve during a level.", example = "20")
     public int getMaxScore() {
         return maxScore;
     }
@@ -43,7 +58,7 @@ public class AbstractLevelDTO {
     public void setMaxScore(int maxScore) {
         this.maxScore = maxScore;
     }
-
+    @ApiModelProperty(value = "Reference to the next abstract level (if it is null, then it is the last level)", example = "2")
     public Long getNextLevel() {
         return nextLevel;
     }
@@ -66,6 +81,15 @@ public class AbstractLevelDTO {
 
     public void setPostHook(PostHookDTO postHook) {
         this.postHook = postHook;
+    }
+
+    @ApiModelProperty(value = "Type of the level.", example = "GAME")
+    public LevelType getLevelType() {
+        return levelType;
+    }
+
+    public void setLevelType(LevelType levelType) {
+        this.levelType = levelType;
     }
 
     @Override
@@ -92,3 +116,4 @@ public class AbstractLevelDTO {
     }
 
 }
+

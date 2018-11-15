@@ -3,6 +3,7 @@ package cz.muni.ics.kypo.training.api.dto.run;
 import cz.muni.ics.kypo.training.api.dto.AbstractLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.BasicLevelInfoDTO;
 import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 
 import java.util.List;
 
@@ -11,6 +12,7 @@ public class AccessTrainingRunDTO {
     private AbstractLevelDTO abstractLevelDTO;
     private List<BasicLevelInfoDTO> infoAboutLevels;
 
+    @ApiModelProperty(value = "First level in the current training run.")
     public AbstractLevelDTO getAbstractLevelDTO() {
         return abstractLevelDTO;
     }
@@ -19,6 +21,7 @@ public class AccessTrainingRunDTO {
         this.abstractLevelDTO = abstractLevelDTO;
     }
 
+    @ApiModelProperty(value = "Information about all levels in training instance.")
     public List<BasicLevelInfoDTO> getInfoAboutLevels() {
         return infoAboutLevels;
     }

@@ -1,6 +1,7 @@
 package cz.muni.ics.kypo.training.api.dto.posthook;
 
 import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 
 /**
  * @author Pavel Seda (441048)
@@ -10,6 +11,7 @@ public class PostHookDTO {
 
     private Long id;
 
+    @ApiModelProperty(value = "Main identifier of postHook.", example = "8")
     public Long getId() {
         return id;
     }

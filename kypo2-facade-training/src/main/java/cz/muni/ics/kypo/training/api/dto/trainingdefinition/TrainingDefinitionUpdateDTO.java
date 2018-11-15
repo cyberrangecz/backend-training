@@ -11,13 +11,13 @@ import cz.muni.ics.kypo.training.api.dto.AuthorRefDTO;
 import cz.muni.ics.kypo.training.api.dto.SandboxDefinitionRefDTO;
 import cz.muni.ics.kypo.training.persistence.model.enums.TDState;
 import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 
 /**
  * @author Pavel Šeda (441048)
  */
-@ApiModel(value = "TrainingDefinitionUpdateDTO", description = "Training Definition to update.")
+@ApiModel(value = "TrainingDefinitionUpdateDTO", description = "Training definition to update.")
 public class TrainingDefinitionUpdateDTO {
-
     @NotNull(message = "{trainingdefinitionupdate.id.NotNull.message}")
     private Long id;
     @NotEmpty(message = "{trainingdefinitionupdate.title.NotEmpty.message}")
@@ -33,7 +33,10 @@ public class TrainingDefinitionUpdateDTO {
     private SandboxDefinitionRefDTO sandBoxDefinitionRef;
     @NotNull(message = "{trainingdefinitionupdate.showStepperBar.NotNull.message}")
     private boolean showStepperBar;
+    @NotNull
+    private Long startingLevel;
 
+    @ApiModelProperty(value = "Main identifier of training definition.", required = true, example = "1")
     public Long getId() {
         return id;
     }
@@ -42,6 +45,7 @@ public class TrainingDefinitionUpdateDTO {
         this.id = id;
     }
 
+    @ApiModelProperty(value = "A name of the training/game (e.g., Photo Hunter) .", required = true, example = "TrainingDefinition2")
     public String getTitle() {
         return title;
     }
@@ -50,6 +54,7 @@ public class TrainingDefinitionUpdateDTO {
         this.title = title;
     }
 
+    @ApiModelProperty(value = "Description of training definition that is visible to the participant.", example = "Unreleased training definition")
     public String getDescription() {
         return description;
     }
@@ -58,6 +63,7 @@ public class TrainingDefinitionUpdateDTO {
         this.description = description;
     }
 
+    @ApiModelProperty(value = "List of knowledge and skills necessary to complete the training.", example = "[phishing]")
     public String[] getPrerequisities() {
         return prerequisities;
     }
@@ -66,6 +72,7 @@ public class TrainingDefinitionUpdateDTO {
         this.prerequisities = prerequisities;
     }
 
+    @ApiModelProperty(value = "A list of knowledge and skills that the participant should learn by attending the training (if it is used for educational purposes) ", example = "")
     public String[] getOutcomes() {
         return outcomes;
     }
@@ -74,6 +81,7 @@ public class TrainingDefinitionUpdateDTO {
         this.outcomes = outcomes;
     }
 
+    @ApiModelProperty(value = "Current state of training definition.", required = true, example = "UNRELEASED")
     public TDState getState() {
         return state;
     }
@@ -82,6 +90,7 @@ public class TrainingDefinitionUpdateDTO {
         this.state = state;
     }
 
+    @ApiModelProperty(value = "References to the authors of the training definition.", required = true)
     public Set<AuthorRefDTO> getAuthorRef() {
         return authorRef;
     }
@@ -90,6 +99,7 @@ public class TrainingDefinitionUpdateDTO {
         this.authorRef = authorRef;
     }
 
+    @ApiModelProperty(value = "Reference to the sandbox definition.", required = true)
     public SandboxDefinitionRefDTO getSandBoxDefinitionRef() {
         return sandBoxDefinitionRef;
     }
@@ -98,12 +108,22 @@ public class TrainingDefinitionUpdateDTO {
         this.sandBoxDefinitionRef = sandBoxDefinitionRef;
     }
 
+    @ApiModelProperty(value = "Sign if stepper bar should be displayed.", required = true, example = "false")
     public boolean isShowStepperBar() {
         return showStepperBar;
     }
 
     public void setShowStepperBar(boolean showStepperBar) {
         this.showStepperBar = showStepperBar;
+    }
+
+    @ApiModelProperty(value = "Identifier of first level of training definition.", required = true, example = "4")
+    public Long getStartingLevel() {
+        return startingLevel;
+    }
+
+    public void setStartingLevel(Long startingLevel) {
+        this.startingLevel = startingLevel;
     }
 
     @Override

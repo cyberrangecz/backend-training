@@ -203,6 +203,7 @@ public class TrainingDefinitionsRestControllerTest {
 		trainingDefinitionUpdateDTO.setAuthorRef(authorRefSetDTO);
 		trainingDefinitionUpdateDTO.setSandBoxDefinitionRef(sandboxDefinitionRefDTO);
 		trainingDefinitionUpdateDTO.setShowStepperBar(false);
+		trainingDefinitionUpdateDTO.setStartingLevel(1L);
 
 		trainingDefinitionCreateDTO = new TrainingDefinitionCreateDTO();
 		trainingDefinitionCreateDTO.setDescription("TD desc");

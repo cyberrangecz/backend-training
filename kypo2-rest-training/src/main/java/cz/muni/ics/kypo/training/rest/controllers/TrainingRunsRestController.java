@@ -38,15 +38,14 @@ import org.springframework.web.bind.annotation.*;
 /**
  * @author Dominik Pilar (445537)
  */
-@Api(value = "/training-runs",
-        consumes = "application/json"
+@Api(value = "/training-runs", tags = "Training runs", consumes = "application/json"
 )
 @ApiResponses(value = {
         @ApiResponse(code = 401, message = "Full authentication is required to access this resource."),
         @ApiResponse(code = 403, message = "The necessary permissions are required for a resource.")
 })
 @RestController
-@RequestMapping(value = "/training-runs")
+@RequestMapping(value = "/training-runs", produces = MediaType.APPLICATION_JSON_VALUE)
 public class TrainingRunsRestController {
 
     private static final Logger LOG = LoggerFactory.getLogger(TrainingRunsRestController.class);
@@ -68,7 +67,7 @@ public class TrainingRunsRestController {
      */
     //@formatter:off
     @ApiOperation(httpMethod = "GET",
-            value = "Get Training Run by Id.",
+            value = "Get training run by Id.",
             response = TrainingRunDTO.class,
             nickname = "findTrainingRunById",
 
@@ -81,7 +80,7 @@ public class TrainingRunsRestController {
 
     })
     @GetMapping(value = "/{runId}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Object> findTrainingRunById(@ApiParam(value = "Training Run ID", required = true) @PathVariable Long runId,
+    public ResponseEntity<Object> findTrainingRunById(@ApiParam(value = "Training run Id", required = true) @PathVariable Long runId,
                                                       @ApiParam(value = "Fields which should be returned in REST API response", required = false)
                                                       @RequestParam(value = "fields", required = false) String fields) {
         LOG.debug("findTrainingRunById({},{})", runId, fields);
@@ -111,7 +110,7 @@ public class TrainingRunsRestController {
      * @return all Training Runs.
      */
     @ApiOperation(httpMethod = "GET",
-            value = "Get all Training Runs.",
+            value = "Get all training Runs.",
             response = TrainingRunRestResource.class,
             nickname = "findAllTrainingRuns",
             produces = "application/json"
@@ -181,7 +180,8 @@ public class TrainingRunsRestController {
      * @return all accessed Training Runs.
      */
     @ApiOperation(httpMethod = "GET",
-            value = "Get all accessed Training Runs.",
+            value = "Get all accessed training runs.",
+            notes = "Returns training run which was accessed by logged in user",
             response = AccessedTrainingRunRestResource.class,
             responseContainer = "Page",
             nickname = "findAllTrainingRuns",
@@ -209,12 +209,11 @@ public class TrainingRunsRestController {
      * @return Requested next level.
      */
     @ApiOperation(httpMethod = "GET",
-            value = "Get Level of given Training Run.",
+            value = "Get level of given training run.",
+            notes = "Returns (assessment, game, info) level if any next level exists and training run as well",
             response = AbstractLevelDTO.class,
             nickname = "getNextLevel",
-            produces = "application/json",
-            authorizations = {
-            }
+            produces = "application/json"
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Next level found.", response = AbstractLevelDTO.class),
@@ -222,7 +221,7 @@ public class TrainingRunsRestController {
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.")
     })
     @GetMapping(value = "/{runId}/next-levels", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Object> getNextLevel(@ApiParam(value = "Training Run ID", required = true) @PathVariable Long runId,
+    public ResponseEntity<Object> getNextLevel(@ApiParam(value = "Training run ID", required = true) @PathVariable Long runId,
                                                @ApiParam(value = "Fields which should be returned in REST API response", required = false)
                                                @RequestParam(value = "fields", required = false) String fields) {
         LOG.debug("getNextLevel({},{})", runId, fields);
@@ -243,6 +242,7 @@ public class TrainingRunsRestController {
      */
     @ApiOperation(httpMethod = "GET",
             value = "Get solution of game level.",
+            notes = "Returns solution if given training runs exists and current level is game level",
             response = String.class,
             nickname = "getSolution",
             produces = "application/json",
@@ -256,7 +256,7 @@ public class TrainingRunsRestController {
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.")
     })
     @GetMapping(value = "/{runId}/solutions", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> getSolution(@ApiParam(value = "Training Run ID", required = true) @PathVariable Long runId) {
+    public ResponseEntity<String> getSolution(@ApiParam(value = "Training run ID", required = true) @PathVariable Long runId) {
         LOG.debug("getSolution({})", runId);
         try {
             String solution = trainingRunFacade.getSolution(runId);
@@ -274,6 +274,7 @@ public class TrainingRunsRestController {
      */
     @ApiOperation(httpMethod = "GET",
             value = "Get hint of game level.",
+            notes = "Returns hint if given training runs exists and current level is game level",
             response = String.class,
             nickname = "getHint",
             produces = "application/json",
@@ -288,7 +289,7 @@ public class TrainingRunsRestController {
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.")
     })
     @GetMapping(value = "/{runId}/hints/{hintId}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> getHint(@ApiParam(value = "Training Run ID", required = true) @PathVariable Long runId,
+    public ResponseEntity<String> getHint(@ApiParam(value = "Training run ID", required = true) @PathVariable Long runId,
                                           @ApiParam(value = "Hint ID", required = true) @PathVariable Long hintId,
                                           @ApiParam(value = "Fields which should be returned in REST API response", required = false)
                                           @RequestParam(value = "fields", required = false) String fields) {
@@ -309,7 +310,8 @@ public class TrainingRunsRestController {
      * @return True if flag is correct, false if flag is wrong.
      */
     @ApiOperation(httpMethod = "GET",
-            value = "Get boolean about flag correctness .",
+            value = "Get boolean about flag correctness",
+            notes = "Current level of given training run must be game level",
             response = Boolean.class,
             nickname = "isCorrectFlag",
             produces = "application/json",
@@ -324,7 +326,7 @@ public class TrainingRunsRestController {
     })
     @GetMapping(value = "/{runId}/is-correct-flag", produces = MediaType.APPLICATION_JSON_VALUE)
 
-    public ResponseEntity<IsCorrectFlagDTO> isCorrectFlag(@ApiParam(value = "Training Run ID", required = true) @PathVariable Long runId,
+    public ResponseEntity<IsCorrectFlagDTO> isCorrectFlag(@ApiParam(value = "Training run ID", required = true) @PathVariable Long runId,
                                                           @ApiParam(value = "Submitted flag", required = true) @RequestParam(value = "flag") String flag) {
         LOG.debug("isCorrectFlag({}, {})", runId, flag);
         try {
