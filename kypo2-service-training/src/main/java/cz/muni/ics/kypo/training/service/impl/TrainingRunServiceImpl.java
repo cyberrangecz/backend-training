@@ -160,30 +160,21 @@ public class TrainingRunServiceImpl implements TrainingRunService {
         LOG.debug("accessTrainingRun({})", password);
         Assert.hasLength(password, "Password cannot be null or empty.");
         List<TrainingInstance> trainingInstances = trainingInstanceRepository.findAll();
-        for (TrainingInstance ti : trainingInstances) {
+        for (TrainingInstance trainingInstance : trainingInstances) {
 
-/*
-      long id = ti.getId();
-      long level = ti.getTrainingDefinition().getStartingLevel();
-      long logicalTime = 0; // we do not know how to retrieve this value ???
-      long playerId = participantId;
-      GameStarted gs = new GameStarted();
-      auditService.<GameStarted>save(gs);
-
-*/
             //check hash of password not String
-            if (ti.getPassword().equals(password)) {
-                Set<SandboxInstanceRef> sandboxInstancePool = ti.getSandboxInstanceRefs();
-                Set<SandboxInstanceRef> allocatedSandboxInstances = trainingRunRepository.findSandboxInstanceRefsOfTrainingInstance(ti.getId());
+            if (trainingInstance.getPassword().equals(password)) {
+                Set<SandboxInstanceRef> sandboxInstancePool = trainingInstance.getSandboxInstanceRefs();
+                Set<SandboxInstanceRef> allocatedSandboxInstances = trainingRunRepository.findSandboxInstanceRefsOfTrainingInstance(trainingInstance.getId());
                 sandboxInstancePool.removeAll(allocatedSandboxInstances);
                 if (!sandboxInstancePool.isEmpty()) {
                     SandboxInstanceRef sandboxInstanceRef = getReadySandboxInstanceRef(sandboxInstancePool);
-                    AbstractLevel al = abstractLevelRepository.findById(ti.getTrainingDefinition().getStartingLevel()).orElseThrow(() -> new ServiceLayerException("No starting level available for this training definition", ErrorCode.RESOURCE_NOT_FOUND));
-                    TrainingRun tr =
-                            getNewTrainingRun(al, getSubOfLoggedInUser(), ti, TRState.NEW, LocalDateTime.now(), ti.getEndTime(), sandboxInstanceRef);
-                    create(tr);
+                    AbstractLevel al = abstractLevelRepository.findById(trainingInstance.getTrainingDefinition().getStartingLevel()).orElseThrow(() -> new ServiceLayerException("No starting level available for this training definition", ErrorCode.RESOURCE_NOT_FOUND));
+                    TrainingRun trainingRun =
+                            getNewTrainingRun(al, getSubOfLoggedInUser(), trainingInstance, TRState.NEW, LocalDateTime.now(), trainingInstance.getEndTime(), sandboxInstanceRef);
+                    create(trainingRun);
                     // audit this action to the Elasticsearch
-                    auditTrainingRunStartedAction(ti, tr);
+                    auditTrainingRunStartedAction(trainingInstance, trainingRun);
                     return al;
                 } else {
                     throw new ServiceLayerException("There is no available sandbox, wait a minute and try again.", ErrorCode.NO_AVAILABLE_SANDBOX);
@@ -332,7 +323,6 @@ public class TrainingRunServiceImpl implements TrainingRunService {
 
         }
         return order;
-
     }
 
     @Override
@@ -353,7 +343,10 @@ public class TrainingRunServiceImpl implements TrainingRunService {
 
     private void auditTrainingRunStartedAction(TrainingInstance trainingInstance, TrainingRun trainingRun) {
         if (trainingInstance != null) {
-            TrainingRunStarted trainingRunStarted = new TrainingRunStarted(trainingInstance.getId(), trainingRun.getId(), getSubOfLoggedInUser(),
+            TrainingDefinition trainingDefinition = trainingInstance.getTrainingDefinition();
+            Long trainingDefinitionId = trainingDefinition.getId();
+            Long sandboxId = trainingDefinition.getSandBoxDefinitionRef().getId();
+            TrainingRunStarted trainingRunStarted = new TrainingRunStarted(sandboxId, trainingDefinitionId, trainingInstance.getId(), trainingRun.getId(), getSubOfLoggedInUser(),
                     trainingRun.getCurrentLevel().getId());
             auditService.<TrainingRunStarted>save(trainingRunStarted);
         }
