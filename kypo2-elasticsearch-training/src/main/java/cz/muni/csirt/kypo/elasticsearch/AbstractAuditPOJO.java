@@ -23,7 +23,7 @@ public abstract class AbstractAuditPOJO {
     @JsonProperty(value = "timestamp", required = true)
     private long timestamp;
     @ApiObjectField(
-            description = "Type of event, e.g. cz.muni.csirt.kypo.WrongFlagSubmitted (this type is derived from the name of the package and the class name).")
+            description = "Type of event.")
     @JsonProperty(value = "type", required = true)
     private String type;
 

@@ -13,8 +13,7 @@ public interface AuditDAO {
     /**
      * Method for saving general class into Elasticsearch under specific index and type. Index is
      * derived from package and class name lower case, and type is the same expect the class name is
-     * in it's origin e.g. index = cz.muni.csirt.kypo.game.events.wrongflagsubmitted and type =
-     * cz.muni.csirt.kypo.game.events.WrongFlagSubmitted
+     * in it's origin
      *
      * @param pojoClass class saving to Elasticsearch
      * @throws IOException

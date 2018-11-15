@@ -28,25 +28,22 @@ public class EsAvroSchemaGenerator {
      */
     public static void main(String[] args) {
         EsAvroSchemaGenerator gen = new EsAvroSchemaGenerator();
-        gen.runGenerateAVROSchemas("cz.muni.csirt.kypo.events.game", "src/main/resources/validation-schemas/events/avro",
+        gen.runGenerateAVROSchemas("cz.muni.csirt.kypo.events.trainings", "src/main/resources/validation-schemas/events/trainings/avro",
                 Arrays.asList("common"));
     }
 
     /**
      * Generates avro serialization files.
      *
-     * @param objectMapper
      */
     private final void runGenerateAVROSchemas(String topLevelClasses, String validationFolderName, List<String> excludes) {
         try {
-            // @formatter:off
             Set<ClassPath.ClassInfo> classInfo = ClassPath.from(getClass().getClassLoader())
                     .getTopLevelClassesRecursive(topLevelClasses).stream()
                     .filter(clazz -> Objects.nonNull(clazz) && Objects.nonNull(clazz.getName()) && Objects.nonNull(excludes))
                     .limit(Long.MAX_VALUE) // to prevent infinite loop
                     .filter(clazz -> !excludes.stream().anyMatch(str -> clazz.getName().contains(str)))
                     .collect(Collectors.toCollection(HashSet::new));
-            // @formatter:on
             classInfo.forEach(c -> {
                 try {
                     Class<?> clazz = Class.forName(c.getName());

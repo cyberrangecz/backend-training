@@ -9,9 +9,9 @@ import org.jsondoc.core.annotation.ApiObjectField;
 /**
  * @author Pavel Šeda
  */
-@ApiObject(name = "Correct Flag Submitted", description = "Type of event from trainings.")
+@ApiObject(name = "Training Run Resumed", description = "Type of event from trainings.")
 @JsonRootName(value = "event")
-public class CorrectFlagSubmitted extends AbstractAuditPOJO {
+public class TrainingRunResumed extends AbstractAuditPOJO {
 
     @ApiObjectField(description = "Sandbox ID.")
     @JsonProperty(value = "sandbox_id", required = true)
@@ -31,18 +31,14 @@ public class CorrectFlagSubmitted extends AbstractAuditPOJO {
     @ApiObjectField(description = "Training run level.")
     @JsonProperty(value = "level", required = true)
     private long level;
-    @ApiObjectField(description = "Flag Content.")
-    @JsonProperty(value = "flag_content", required = true)
-    private String flagContent;
 
-    public CorrectFlagSubmitted(long sandboxId, long trainingDefinitionId, long trainingInstanceId, long trainingRunId, String playerLogin, long level, String flagContent) {
+    public TrainingRunResumed(long sandboxId, long trainingDefinitionId, long trainingInstanceId, long trainingRunId, String playerLogin, long level) {
         this.sandboxId = sandboxId;
         this.trainingDefinitionId = trainingDefinitionId;
         this.trainingInstanceId = trainingInstanceId;
         this.trainingRunId = trainingRunId;
         this.playerLogin = playerLogin;
         this.level = level;
-        this.flagContent = flagContent;
     }
 
     public long getSandboxId() {
@@ -93,24 +89,15 @@ public class CorrectFlagSubmitted extends AbstractAuditPOJO {
         this.level = level;
     }
 
-    public String getFlagContent() {
-        return flagContent;
-    }
-
-    public void setFlagContent(String flagContent) {
-        this.flagContent = flagContent;
-    }
-
     @Override
     public String toString() {
-        return "CorrectFlagSubmitted{" +
+        return "TrainingRunResumed{" +
                 "sandboxId=" + sandboxId +
                 ", trainingDefinitionId=" + trainingDefinitionId +
                 ", trainingInstanceId=" + trainingInstanceId +
                 ", trainingRunId=" + trainingRunId +
                 ", playerLogin='" + playerLogin + '\'' +
                 ", level=" + level +
-                ", flagContent='" + flagContent + '\'' +
                 '}';
     }
 }

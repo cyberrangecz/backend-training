@@ -13,6 +13,12 @@ import org.jsondoc.core.annotation.ApiObjectField;
 @JsonRootName(value = "event")
 public class TrainingRunStarted extends AbstractAuditPOJO {
 
+    @ApiObjectField(description = "Sandbox ID.")
+    @JsonProperty(value = "sandbox_id", required = true)
+    private long sandboxId;
+    @ApiObjectField(description = "Training definition ID.")
+    @JsonProperty(value = "training_definition_id", required = true)
+    private long trainingDefinitionId;
     @ApiObjectField(description = "Training instance ID.")
     @JsonProperty(value = "training_instance_id", required = true)
     private long trainingInstanceId;
@@ -26,12 +32,29 @@ public class TrainingRunStarted extends AbstractAuditPOJO {
     @JsonProperty(value = "level", required = true)
     private long level;
 
-    public TrainingRunStarted(long trainingInstanceId, long trainingRunId, String playerLogin, long level) {
-        super();
+    public TrainingRunStarted(long sandboxId, long trainingDefinitionId, long trainingInstanceId, long trainingRunId, String playerLogin, long level) {
+        this.sandboxId = sandboxId;
+        this.trainingDefinitionId = trainingDefinitionId;
         this.trainingInstanceId = trainingInstanceId;
         this.trainingRunId = trainingRunId;
         this.playerLogin = playerLogin;
         this.level = level;
+    }
+
+    public long getSandboxId() {
+        return sandboxId;
+    }
+
+    public void setSandboxId(long sandboxId) {
+        this.sandboxId = sandboxId;
+    }
+
+    public long getTrainingDefinitionId() {
+        return trainingDefinitionId;
+    }
+
+    public void setTrainingDefinitionId(long trainingDefinitionId) {
+        this.trainingDefinitionId = trainingDefinitionId;
     }
 
     public long getTrainingInstanceId() {
@@ -68,17 +91,13 @@ public class TrainingRunStarted extends AbstractAuditPOJO {
 
     @Override
     public String toString() {
-        StringBuilder builder = new StringBuilder();
-        builder.append("GameStarted [trainingInstanceId=");
-        builder.append(trainingInstanceId);
-        builder.append(", trainingRunId=");
-        builder.append(trainingRunId);
-        builder.append(", playerLogin=");
-        builder.append(playerLogin);
-        builder.append(", level=");
-        builder.append(level);
-        builder.append("]");
-        return builder.toString();
+        return "TrainingRunStarted{" +
+                "sandboxId=" + sandboxId +
+                ", trainingDefinitionId=" + trainingDefinitionId +
+                ", trainingInstanceId=" + trainingInstanceId +
+                ", trainingRunId=" + trainingRunId +
+                ", playerLogin='" + playerLogin + '\'' +
+                ", level=" + level +
+                '}';
     }
-
 }
