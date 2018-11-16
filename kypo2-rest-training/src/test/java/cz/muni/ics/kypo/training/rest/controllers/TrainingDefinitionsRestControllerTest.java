@@ -163,6 +163,9 @@ public class TrainingDefinitionsRestControllerTest {
 		Set<AuthorRefDTO> authorRefSetDTO = new HashSet<>();
 		authorRefSetDTO.add(authorRefDTO);
 
+		Set<Long> autIds = new HashSet<>();
+		autIds.add(1L);
+
 		SandboxDefinitionRef sandboxDefinitionRef = new SandboxDefinitionRef();
 		sandboxDefinitionRef.setId(1L);
 		SandboxDefinitionRefDTO sandboxDefinitionRefDTO = new SandboxDefinitionRefDTO();
@@ -200,10 +203,9 @@ public class TrainingDefinitionsRestControllerTest {
 		trainingDefinitionUpdateDTO.setId(4L);
 		trainingDefinitionUpdateDTO.setState(TDState.UNRELEASED);
 		trainingDefinitionUpdateDTO.setTitle("training definition title");
-		trainingDefinitionUpdateDTO.setAuthorRef(authorRefSetDTO);
-		trainingDefinitionUpdateDTO.setSandBoxDefinitionRef(sandboxDefinitionRefDTO);
+		trainingDefinitionUpdateDTO.setAutIds(autIds);
+		trainingDefinitionUpdateDTO.setSandBoxDefinitionRef(1L);
 		trainingDefinitionUpdateDTO.setShowStepperBar(false);
-		trainingDefinitionUpdateDTO.setStartingLevel(1L);
 
 		trainingDefinitionCreateDTO = new TrainingDefinitionCreateDTO();
 		trainingDefinitionCreateDTO.setDescription("TD desc");
@@ -211,9 +213,9 @@ public class TrainingDefinitionsRestControllerTest {
 		trainingDefinitionCreateDTO.setPrerequisities(new String[0]);
 		trainingDefinitionCreateDTO.setState(TDState.ARCHIVED);
 		trainingDefinitionCreateDTO.setTitle("TD some title");
-		trainingDefinitionCreateDTO.setAuthorRef(authorRefSetDTO);
+		trainingDefinitionCreateDTO.setAutIds(autIds);
 		trainingDefinitionCreateDTO.setShowStepperBar(true);
-		trainingDefinitionCreateDTO.setSandboxDefinitionRef(sandboxDefinitionRefDTO);
+		trainingDefinitionCreateDTO.setSandboxDefinitionRef(1L);
 
 		abstractLevelDTO = new AbstractLevelDTO();
 		abstractLevelDTO.setId(1L);

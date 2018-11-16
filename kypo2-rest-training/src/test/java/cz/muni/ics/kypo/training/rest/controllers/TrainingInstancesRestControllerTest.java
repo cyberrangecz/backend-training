@@ -85,8 +85,8 @@ public class TrainingInstancesRestControllerTest {
 						new QuerydslPredicateArgumentResolver(new QuerydslBindingsFactory(SimpleEntityPathResolver.INSTANCE), Optional.empty()))
 				.setMessageConverters(new MappingJackson2HttpMessageConverter()).build();
 
-		Set<UserRefDTO> organizers = new HashSet<>();
-		organizers.add(new UserRefDTO());
+		Set<Long> organizers = new HashSet<>();
+		organizers.add(1L);
 
 		trainingInstance1 = new TrainingInstance();
 		trainingInstance1.setId(1L);
@@ -113,8 +113,9 @@ public class TrainingInstancesRestControllerTest {
 		trainingInstanceCreateDTO.setEndTime(endTime);
 		trainingInstanceCreateDTO.setPassword("pass");
 		trainingInstanceCreateDTO.setPoolSize(20);
-		trainingInstanceCreateDTO.setOrganizers(organizers);
-		trainingInstanceCreateDTO.setTrainingDefinition(new TrainingDefinitionDTO());
+		//trainingInstanceCreateDTO.setOrganizersIds(organizers);
+		trainingInstanceCreateDTO.setOrgIds(organizers);
+		trainingInstanceCreateDTO.setTrainingDefinitionId(1L);
 
 		trainingInstanceUpdateDTO = new TrainingInstanceUpdateDTO();
 		trainingInstanceUpdateDTO.setId(5L);
@@ -123,8 +124,8 @@ public class TrainingInstancesRestControllerTest {
 		trainingInstanceUpdateDTO.setEndTime(endTime);
 		trainingInstanceUpdateDTO.setPoolSize(5);
 		//trainingInstanceUpdateDTO.setKeyword("pass-2586");
-		trainingInstanceUpdateDTO.setTrainingDefinition(new TrainingDefinitionDTO());
-		trainingInstanceUpdateDTO.setOrganizers(organizers);
+		trainingInstanceUpdateDTO.setTrainingDefinitionId(1L);
+		trainingInstanceUpdateDTO.setOrgIds(organizers);
 
 		List<TrainingInstance> expected = new ArrayList<>();
 		expected.add(trainingInstance1);

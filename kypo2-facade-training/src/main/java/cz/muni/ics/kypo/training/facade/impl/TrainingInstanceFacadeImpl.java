@@ -1,11 +1,15 @@
 package cz.muni.ics.kypo.training.facade.impl;
 
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 
 import cz.muni.ics.kypo.training.api.dto.run.TrainingRunDTO;
 import cz.muni.ics.kypo.training.annotations.TransactionalRO;
 import cz.muni.ics.kypo.training.annotations.TransactionalWO;
 import cz.muni.ics.kypo.training.persistence.model.TrainingRun;
+import cz.muni.ics.kypo.training.persistence.model.UserRef;
+import cz.muni.ics.kypo.training.service.TrainingDefinitionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,11 +40,14 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
     private static final Logger LOG = LoggerFactory.getLogger(TrainingInstanceFacadeImpl.class);
 
     private TrainingInstanceService trainingInstanceService;
+    private TrainingDefinitionService trainingDefinitionService;
     private BeanMapping beanMapping;
 
     @Autowired
-    public TrainingInstanceFacadeImpl(TrainingInstanceService trainingInstanceService, BeanMapping beanMapping) {
+    public TrainingInstanceFacadeImpl(TrainingInstanceService trainingInstanceService, TrainingDefinitionService trainingDefinitionService,
+        BeanMapping beanMapping) {
         this.trainingInstanceService = trainingInstanceService;
+        this.trainingDefinitionService = trainingDefinitionService;
         this.beanMapping = beanMapping;
     }
 
@@ -70,7 +77,14 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
         LOG.debug("update({})", trainingInstance);
         try {
             Objects.requireNonNull(trainingInstance);
-            return trainingInstanceService.update(beanMapping.mapTo(trainingInstance, TrainingInstance.class));
+            TrainingInstance tI = beanMapping.mapTo(trainingInstance, TrainingInstance.class);
+            tI.setTrainingDefinition(trainingDefinitionService.findById(trainingInstance.getTrainingDefinitionId()));
+            Set<UserRef> organizers = new HashSet<>();
+            for (Long id : trainingInstance.getOrgIds()) {
+                organizers.add(trainingInstanceService.findUserRefById(id));
+            }
+            tI.setOrganizers(organizers);
+            return trainingInstanceService.update(tI);
         } catch (ServiceLayerException ex) {
             throw new FacadeLayerException(ex);
         }
@@ -82,13 +96,19 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
         LOG.debug("create({})", trainingInstance);
         try {
             Objects.requireNonNull(trainingInstance);
-            TrainingInstance newTI = trainingInstanceService.create(beanMapping.mapTo(trainingInstance, TrainingInstance.class));
-            return beanMapping.mapTo(newTI, TrainingInstanceDTO.class);
+            TrainingInstance tI = beanMapping.mapTo(trainingInstance, TrainingInstance.class);
+            tI.setTrainingDefinition(trainingDefinitionService.findById(trainingInstance.getTrainingDefinitionId()));
+            tI.setId(null);
+            Set<UserRef> organizers = new HashSet<>();
+            for (Long id : trainingInstance.getOrgIds()) {
+                organizers.add(trainingInstanceService.findUserRefById(id));
+            }
+            tI.setOrganizers(organizers);
+            return beanMapping.mapTo(trainingInstanceService.create(tI), TrainingInstanceDTO.class);
         } catch (ServiceLayerException ex) {
             throw new FacadeLayerException(ex);
         }
     }
-
 
     @Override
     @TransactionalWO

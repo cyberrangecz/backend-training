@@ -5,6 +5,7 @@ import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.persistence.model.TrainingInstance;
 
 import cz.muni.ics.kypo.training.persistence.model.TrainingRun;
+import cz.muni.ics.kypo.training.persistence.model.UserRef;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -71,5 +72,13 @@ public interface TrainingInstanceService {
      * @return Training Runs of specific Training Instance
      */
     Page<TrainingRun> findTrainingRunsByTrainingInstance(Long trainingInstanceId, Pageable pageable);
+
+    /**
+     * Find UserRef by id
+     * @param id of wanted UserRef
+     * @return UserRef with corresponding id
+     * @throws ServiceLayerException if UserRef is not found
+     */
+    UserRef findUserRefById(Long id) throws ServiceLayerException;
 
 }
