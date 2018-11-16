@@ -27,60 +27,61 @@ import static org.junit.Assert.assertNotNull;
 @Import(PersistenceConfigTest.class)
 public class InfoLevelRepositoryTest {
 
-	@Autowired
-	private TestEntityManager entityManager;
+    @Autowired
+    private TestEntityManager entityManager;
 
-	@Autowired
-	private InfoLevelRepository infoLevelRepository;
+    @Autowired
+    private InfoLevelRepository infoLevelRepository;
 
-	private InfoLevel infoLevel, infoLevel2;
+    private InfoLevel infoLevel, infoLevel2;
 
-	@SpringBootApplication
-	static class TestConfiguration { }
+    @SpringBootApplication
+    static class TestConfiguration {
+    }
 
-	@Before
-	public void init() {
-		infoLevel = new InfoLevel();
-		infoLevel.setTitle("infoLevel");
-		infoLevel.setContent("content for info level");
+    @Before
+    public void init() {
+        infoLevel = new InfoLevel();
+        infoLevel.setTitle("infoLevel");
+        infoLevel.setContent("content for info level");
 
-		infoLevel2 = new InfoLevel();
-		infoLevel2.setTitle("infolevel2");
-		infoLevel2.setContent("content for info level2");
-	}
+        infoLevel2 = new InfoLevel();
+        infoLevel2.setTitle("infolevel2");
+        infoLevel2.setContent("content for info level2");
+    }
 
-	@Test
-	public void findById() throws Exception {
-		long expectedId = entityManager.persist(infoLevel).getId();
-		Optional<InfoLevel> infoLevelOptional = infoLevelRepository.findById(expectedId);
-		InfoLevel iL = infoLevelOptional.orElseThrow(() -> new Exception("Training run should be found"));
-		assertNotNull(iL.getId());
-		assertEquals("content for info level", iL.getContent());
-	}
+    @Test
+    public void findById() throws Exception {
+        long expectedId = entityManager.persist(infoLevel).getId();
+        Optional<InfoLevel> infoLevelOptional = infoLevelRepository.findById(expectedId);
+        InfoLevel iL = infoLevelOptional.orElseThrow(() -> new Exception("Training run should be found"));
+        assertNotNull(iL.getId());
+        assertEquals("content for info level", iL.getContent());
+    }
 
-	@Test
-	public void findById_IdNotInTheDatabase() {
-		Optional<InfoLevel> infoLevelOptional = infoLevelRepository.findById(2L);
-		assertFalse(infoLevelOptional.isPresent());
-	}
+    @Test
+    public void findById_IdNotInTheDatabase() {
+        Optional<InfoLevel> infoLevelOptional = infoLevelRepository.findById(2L);
+        assertFalse(infoLevelOptional.isPresent());
+    }
 
-	@Test
-	public void findAll() {
-		List<InfoLevel> expectedInfoLevels = Arrays.asList(infoLevel, infoLevel2);
-		expectedInfoLevels.stream().forEach(i -> entityManager.persist(i));
-		List<InfoLevel> resultInfoLevels = infoLevelRepository.findAll();
-		assertNotNull(resultInfoLevels);
-		assertEquals(expectedInfoLevels, resultInfoLevels);
-		assertEquals(expectedInfoLevels.size(), resultInfoLevels.size());
-	}
+    @Test
+    public void findAll() {
+        List<InfoLevel> expectedInfoLevels = Arrays.asList(infoLevel, infoLevel2);
+        expectedInfoLevels.stream().forEach(i -> entityManager.persist(i));
+        List<InfoLevel> resultInfoLevels = infoLevelRepository.findAll();
+        assertNotNull(resultInfoLevels);
+        assertEquals(expectedInfoLevels, resultInfoLevels);
+        assertEquals(expectedInfoLevels.size(), resultInfoLevels.size());
+    }
 
-	@Test
-	public void findAll_emptyDatabase() {
-		List<InfoLevel> expectedInfoLevels = new ArrayList<>();
-		List<InfoLevel> resultInfoLevels = infoLevelRepository.findAll();
-		assertNotNull(resultInfoLevels);
-		assertEquals(expectedInfoLevels.size(), resultInfoLevels.size());
-		assertEquals(expectedInfoLevels, resultInfoLevels);
- 	}
+    @Test
+    public void findAll_emptyDatabase() {
+        List<InfoLevel> expectedInfoLevels = new ArrayList<>();
+        List<InfoLevel> resultInfoLevels = infoLevelRepository.findAll();
+        assertNotNull(resultInfoLevels);
+        assertEquals(expectedInfoLevels.size(), resultInfoLevels.size());
+        assertEquals(expectedInfoLevels, resultInfoLevels);
+    }
 
 }

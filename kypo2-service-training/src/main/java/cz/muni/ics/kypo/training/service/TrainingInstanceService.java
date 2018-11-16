@@ -75,6 +75,7 @@ public interface TrainingInstanceService {
 
     /**
      * Find UserRef by id
+     *
      * @param id of wanted UserRef
      * @return UserRef with corresponding id
      * @throws ServiceLayerException if UserRef is not found

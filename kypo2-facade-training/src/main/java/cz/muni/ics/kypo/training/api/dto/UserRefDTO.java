@@ -2,7 +2,11 @@ package cz.muni.ics.kypo.training.api.dto;
 
 import io.swagger.annotations.ApiModelProperty;
 
+/**
+ * @author Pavel Seda
+ */
 public class UserRefDTO {
+
     private Long id;
     private String userRefLogin;
 
@@ -24,7 +28,8 @@ public class UserRefDTO {
         this.userRefLogin = userRefLogin;
     }
 
-    @Override public String toString() {
+    @Override
+    public String toString() {
         return "UserRefDTO{" + "id=" + id + ", userRefLogin='" + userRefLogin + '\'' + '}';
     }
 }

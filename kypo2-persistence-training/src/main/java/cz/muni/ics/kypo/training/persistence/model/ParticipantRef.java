@@ -4,6 +4,9 @@ import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Objects;
 
+/**
+ * @author Pavel Seda
+ */
 @Entity(name = "ParticipantRef")
 @Table(name = "participant_ref")
 public class ParticipantRef implements Serializable {

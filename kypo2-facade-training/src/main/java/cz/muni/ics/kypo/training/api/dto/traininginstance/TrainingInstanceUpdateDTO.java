@@ -104,8 +104,8 @@ public class TrainingInstanceUpdateDTO {
         this.trainingDefinitionId = trainingDefinitionId;
     }
 
-        @ApiModelProperty(value = "Reference to users which organize training instance.", required = true, example = "[1]")
-        public Set<Long> getOrgIds() {
+    @ApiModelProperty(value = "Reference to users which organize training instance.", required = true, example = "[1]")
+    public Set<Long> getOrgIds() {
         return orgIds;
     }
 
@@ -113,9 +113,10 @@ public class TrainingInstanceUpdateDTO {
         this.orgIds = orgIds;
     }
 
-    @Override public String toString() {
+    @Override
+    public String toString() {
         return "TrainingInstanceUpdateDTO{" + "id=" + id + ", startTime=" + startTime + ", endTime=" + endTime + ", title='" + title + '\''
-            + ", poolSize=" + poolSize + ", password='" + password + '\'' + ", trainingDefinitionId=" + trainingDefinitionId + ", orgIds="
-            + orgIds + '}';
+                + ", poolSize=" + poolSize + ", password='" + password + '\'' + ", trainingDefinitionId=" + trainingDefinitionId + ", orgIds="
+                + orgIds + '}';
     }
 }

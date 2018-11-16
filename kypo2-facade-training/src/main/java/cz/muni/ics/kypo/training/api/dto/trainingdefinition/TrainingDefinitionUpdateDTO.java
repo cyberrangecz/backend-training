@@ -18,6 +18,7 @@ import io.swagger.annotations.ApiModelProperty;
  */
 @ApiModel(value = "TrainingDefinitionUpdateDTO", description = "Training definition to update.")
 public class TrainingDefinitionUpdateDTO {
+
     @NotNull(message = "{trainingdefinitionupdate.id.NotNull.message}")
     private Long id;
     @NotEmpty(message = "{trainingdefinitionupdate.title.NotEmpty.message}")
@@ -115,9 +116,10 @@ public class TrainingDefinitionUpdateDTO {
         this.showStepperBar = showStepperBar;
     }
 
-    @Override public String toString() {
+    @Override
+    public String toString() {
         return "TrainingDefinitionUpdateDTO{" + "id=" + id + ", title='" + title + '\'' + ", description='" + description + '\''
-            + ", prerequisities=" + Arrays.toString(prerequisities) + ", outcomes=" + Arrays.toString(outcomes) + ", state=" + state
-            + ", autIds=" + autIds + ", sandBoxDefinitionRef=" + sandBoxDefinitionRef + ", showStepperBar=" + showStepperBar + '}';
+                + ", prerequisities=" + Arrays.toString(prerequisities) + ", outcomes=" + Arrays.toString(outcomes) + ", state=" + state
+                + ", autIds=" + autIds + ", sandBoxDefinitionRef=" + sandBoxDefinitionRef + ", showStepperBar=" + showStepperBar + '}';
     }
 }

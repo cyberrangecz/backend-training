@@ -45,7 +45,7 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
 
     @Autowired
     public TrainingInstanceFacadeImpl(TrainingInstanceService trainingInstanceService, TrainingDefinitionService trainingDefinitionService,
-        BeanMapping beanMapping) {
+                                      BeanMapping beanMapping) {
         this.trainingInstanceService = trainingInstanceService;
         this.trainingDefinitionService = trainingDefinitionService;
         this.beanMapping = beanMapping;

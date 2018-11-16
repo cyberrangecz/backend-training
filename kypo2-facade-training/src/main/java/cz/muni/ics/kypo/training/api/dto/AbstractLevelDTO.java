@@ -58,6 +58,7 @@ public class AbstractLevelDTO {
     public void setMaxScore(int maxScore) {
         this.maxScore = maxScore;
     }
+
     @ApiModelProperty(value = "Reference to the next abstract level (if it is null, then it is the last level)", example = "2")
     public Long getNextLevel() {
         return nextLevel;

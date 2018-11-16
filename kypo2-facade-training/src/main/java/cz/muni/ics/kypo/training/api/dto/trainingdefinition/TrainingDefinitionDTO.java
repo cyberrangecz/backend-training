@@ -137,11 +137,12 @@ public class TrainingDefinitionDTO {
         this.canBeArchived = canBeArchived;
     }
 
-    @Override public String toString() {
+    @Override
+    public String toString() {
         return "TrainingDefinitionDTO{" + "id=" + id + ", title='" + title + '\'' + ", description='" + description + '\''
-            + ", prerequisities=" + Arrays.toString(prerequisities) + ", outcomes=" + Arrays.toString(outcomes) + ", state=" + state
-            + ", authorRef=" + authorRef + ", sandBoxDefinitionRef=" + sandBoxDefinitionRef + ", startingLevel=" + startingLevel
-            + ", basicLevelInfoDTOs=" + basicLevelInfoDTOs + ", showStepperBar=" + showStepperBar + ", canBeArchived=" + canBeArchived
-            + '}';
+                + ", prerequisities=" + Arrays.toString(prerequisities) + ", outcomes=" + Arrays.toString(outcomes) + ", state=" + state
+                + ", authorRef=" + authorRef + ", sandBoxDefinitionRef=" + sandBoxDefinitionRef + ", startingLevel=" + startingLevel
+                + ", basicLevelInfoDTOs=" + basicLevelInfoDTOs + ", showStepperBar=" + showStepperBar + ", canBeArchived=" + canBeArchived
+                + '}';
     }
 }

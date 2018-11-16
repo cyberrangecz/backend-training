@@ -9,7 +9,6 @@ import io.swagger.annotations.ApiModelProperty;
 /**
  * @author Boris Jadus
  */
-
 public class BasicLevelInfoDTO {
 
     private Long id;

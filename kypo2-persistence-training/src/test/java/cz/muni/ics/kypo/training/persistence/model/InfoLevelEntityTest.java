@@ -18,35 +18,38 @@ import cz.muni.ics.kypo.training.persistence.model.InfoLevel;
 
 import static org.junit.Assert.assertNotNull;
 
+/**
+ * @author Pavel Seda
+ */
 @RunWith(SpringRunner.class)
 @DataJpaTest
 @Import(PersistenceConfigTest.class)
 public class InfoLevelEntityTest {
 
-	@Rule
-	public ExpectedException thrown = ExpectedException.none();
+    @Rule
+    public ExpectedException thrown = ExpectedException.none();
 
-	@Autowired
-	private TestEntityManager entityManager;
+    @Autowired
+    private TestEntityManager entityManager;
 
-	private InfoLevel infoLevel;
+    private InfoLevel infoLevel;
 
-	@SpringBootApplication
-	static class TestConfiguration {
-	}
+    @SpringBootApplication
+    static class TestConfiguration {
+    }
 
-	@Before
-	public void init() {
-		infoLevel = new InfoLevel();
-		infoLevel.setTitle("infoLevel");
-		infoLevel.setContent("content for info level");
+    @Before
+    public void init() {
+        infoLevel = new InfoLevel();
+        infoLevel.setTitle("infoLevel");
+        infoLevel.setContent("content for info level");
 
-	}
+    }
 
-	@Test
-	public void saveShouldPersistData() {
-		InfoLevel iL = this.entityManager.persistFlushFind(infoLevel);
-		assertNotNull(iL.getId());
-	}
+    @Test
+    public void saveShouldPersistData() {
+        InfoLevel iL = this.entityManager.persistFlushFind(infoLevel);
+        assertNotNull(iL.getId());
+    }
 
 }

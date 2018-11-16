@@ -268,8 +268,8 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
             throw new ServiceLayerException("Level was not found in definition.", ErrorCode.RESOURCE_NOT_FOUND);
 
         GameLevel gL = gameLevelRepository.findById(gameLevel.getId()).orElseThrow(() ->
-            new ServiceLayerException("Level with id: " + gameLevel.getId() + ", not found.",
-                ErrorCode.RESOURCE_NOT_FOUND));
+                new ServiceLayerException("Level with id: " + gameLevel.getId() + ", not found.",
+                        ErrorCode.RESOURCE_NOT_FOUND));
         gameLevel.setNextLevel(gL.getNextLevel());
         gameLevelRepository.save(gameLevel);
     }
@@ -286,8 +286,8 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
             throw new ServiceLayerException("Level was not found in definition.", ErrorCode.RESOURCE_NOT_FOUND);
 
         InfoLevel iL = infoLevelRepository.findById(infoLevel.getId()).orElseThrow(() ->
-            new ServiceLayerException("Level with id: " + infoLevel.getId() + ", not found.",
-                ErrorCode.RESOURCE_NOT_FOUND));
+                new ServiceLayerException("Level with id: " + infoLevel.getId() + ", not found.",
+                        ErrorCode.RESOURCE_NOT_FOUND));
         infoLevel.setNextLevel(iL.getNextLevel());
         infoLevelRepository.save(infoLevel);
     }
@@ -304,8 +304,8 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
             throw new ServiceLayerException("Level was not found in definition", ErrorCode.RESOURCE_NOT_FOUND);
 
         AssessmentLevel aL = assessmentLevelRepository.findById(assessmentLevel.getId()).orElseThrow(() ->
-            new ServiceLayerException("Level with id: " + assessmentLevel.getId() + ", not found.",
-            ErrorCode.RESOURCE_NOT_FOUND));
+                new ServiceLayerException("Level with id: " + assessmentLevel.getId() + ", not found.",
+                        ErrorCode.RESOURCE_NOT_FOUND));
         assessmentLevel.setNextLevel(aL.getNextLevel());
         assessmentLevelRepository.save(assessmentLevel);
     }
@@ -428,7 +428,8 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
                 .orElseThrow(() -> new ServiceLayerException("Level with id: " + levelId + ", not found", ErrorCode.RESOURCE_NOT_FOUND));
     }
 
-    @Override public List<TrainingInstance> findAllTrainingInstancesByTrainingDefinitionId(Long id) {
+    @Override
+    public List<TrainingInstance> findAllTrainingInstancesByTrainingDefinitionId(Long id) {
         Assert.notNull(id, "Input definition id must not be null");
         return trainingInstanceRepository.findAllByTrainingDefinitionId(id);
     }
@@ -436,13 +437,13 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     @Override
     public AuthorRef findAuthorRefById(Long id) throws ServiceLayerException {
         return authorRefRepository.findById(id).orElseThrow(
-            () -> new ServiceLayerException("Author ref with id" + id + " not found.", ErrorCode.RESOURCE_NOT_FOUND));
+                () -> new ServiceLayerException("Author ref with id" + id + " not found.", ErrorCode.RESOURCE_NOT_FOUND));
     }
 
     @Override
     public SandboxDefinitionRef findSandboxDefinitionRefById(Long id) throws ServiceLayerException {
         return sandboxDefinitionRefRepository.findById(id).orElseThrow(
-            () -> new ServiceLayerException("Sandbox definition ref with id" + id + " not found.", ErrorCode.RESOURCE_NOT_FOUND));
+                () -> new ServiceLayerException("Sandbox definition ref with id" + id + " not found.", ErrorCode.RESOURCE_NOT_FOUND));
     }
 
     private AbstractLevel findLastLevel(Long levelId) {

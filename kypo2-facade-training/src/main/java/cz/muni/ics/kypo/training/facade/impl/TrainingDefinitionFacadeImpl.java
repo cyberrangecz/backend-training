@@ -91,7 +91,7 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
     public PageResultResource<TrainingDefinitionDTO> findAll(Predicate predicate, Pageable pageable) {
         LOG.debug("findAll({},{})", predicate, pageable);
         PageResultResource<TrainingDefinitionDTO> resource = beanMapping.mapToPageResultDTO(trainingDefinitionService.findAll(predicate, pageable), TrainingDefinitionDTO.class);
-        for (TrainingDefinitionDTO tD : resource.getContent()){
+        for (TrainingDefinitionDTO tD : resource.getContent()) {
             tD.setCanBeArchived(checkIfCanBeArchived(tD.getId()));
         }
         return resource;
@@ -122,7 +122,7 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
             newTD.setSandBoxDefinitionRef(trainingDefinitionService.findSandboxDefinitionRefById(trainingDefinition.getSandboxDefinitionRef()));
             newTD.setId(null);
             Set<AuthorRef> authors = new HashSet<>();
-            for (Long id : trainingDefinition.getAutIds()){
+            for (Long id : trainingDefinition.getAutIds()) {
                 authors.add(trainingDefinitionService.findAuthorRefById(id));
             }
             newTD.setAuthorRef(authors);
@@ -142,7 +142,7 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
             TrainingDefinition tD = beanMapping.mapTo(trainingDefinition, TrainingDefinition.class);
             tD.setSandBoxDefinitionRef(trainingDefinitionService.findSandboxDefinitionRefById(trainingDefinition.getSandBoxDefinitionRef()));
             Set<AuthorRef> authors = new HashSet<>();
-            for (Long id : trainingDefinition.getAutIds()){
+            for (Long id : trainingDefinition.getAutIds()) {
                 authors.add(trainingDefinitionService.findAuthorRefById(id));
             }
             tD.setAuthorRef(authors);

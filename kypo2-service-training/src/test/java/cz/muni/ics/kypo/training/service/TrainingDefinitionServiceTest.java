@@ -72,10 +72,10 @@ public class TrainingDefinitionServiceTest {
     private InfoLevel infoLevel, newInfoLevel;
 
     @Before
-    public void init(){
+    public void init() {
         MockitoAnnotations.initMocks(this);
         trainingDefinitionService = new TrainingDefinitionServiceImpl(trainingDefinitionRepository, abstractLevelRepository,
-            infoLevelRepository, gameLevelRepository, assessmentLevelRepository, trainingInstanceRepository, authorRefRepository, sandboxDefinitionRefRepository);
+                infoLevelRepository, gameLevelRepository, assessmentLevelRepository, trainingInstanceRepository, authorRefRepository, sandboxDefinitionRefRepository);
 
         level3 = new AssessmentLevel();
         level3.setId(3L);
@@ -171,14 +171,14 @@ public class TrainingDefinitionServiceTest {
 
         given(trainingDefinitionRepository.findAll(any(Predicate.class), any(Pageable.class))).willReturn(p);
 
-        Page pr = trainingDefinitionService.findAll(predicate, PageRequest.of(0,2));
+        Page pr = trainingDefinitionService.findAll(predicate, PageRequest.of(0, 2));
         assertEquals(2, pr.getTotalElements());
     }
 
     @Test
-    public void cloneTrainingDefinition(){
+    public void cloneTrainingDefinition() {
         TrainingDefinition tDcloned = new TrainingDefinition();
-        tDcloned.setTitle("Clone of "+ trainingDefinition1.getTitle());
+        tDcloned.setTitle("Clone of " + trainingDefinition1.getTitle());
         tDcloned.setId(3L);
         tDcloned.setState(TDState.UNRELEASED);
         tDcloned.setDescription(trainingDefinition1.getDescription());
@@ -188,7 +188,7 @@ public class TrainingDefinitionServiceTest {
 
         TrainingDefinition optionalNewClone = trainingDefinitionService.clone(trainingDefinition1.getId());
         assertNotNull(optionalNewClone);
-        assertEquals("Clone of "+ trainingDefinition1.getTitle(), optionalNewClone.getTitle());
+        assertEquals("Clone of " + trainingDefinition1.getTitle(), optionalNewClone.getTitle());
         assertNotEquals(trainingDefinition1.getId(), optionalNewClone.getId());
         assertNotEquals(trainingDefinition1.getState(), optionalNewClone.getState());
         assertEquals(trainingDefinition1.getDescription(), optionalNewClone.getDescription());
@@ -225,7 +225,7 @@ public class TrainingDefinitionServiceTest {
     }
 
     @Test
-    public void updateTrainingDefinitionWithCannotBeUpdatedException(){
+    public void updateTrainingDefinitionWithCannotBeUpdatedException() {
         given(trainingDefinitionRepository.findById(releasedDefinition.getId())).willReturn(Optional.of(releasedDefinition));
 
         thrown.expect(ServiceLayerException.class);
@@ -391,7 +391,7 @@ public class TrainingDefinitionServiceTest {
         given(abstractLevelRepository.findById(level1.getId())).willReturn(Optional.of(level1));
         given(abstractLevelRepository.findById(level2.getId())).willReturn(Optional.of(level2));
 
-        trainingDefinitionService.deleteOneLevel(unreleasedDefinition.getId(),level2.getId());
+        trainingDefinitionService.deleteOneLevel(unreleasedDefinition.getId(), level2.getId());
         assertEquals(level1.getNextLevel(), level3.getId());
 
         then(trainingDefinitionRepository).should().findById(unreleasedDefinition.getId());
@@ -406,7 +406,7 @@ public class TrainingDefinitionServiceTest {
         thrown.expect(ServiceLayerException.class);
         thrown.expectMessage("Cannot edit released or archived training definition");
 
-        trainingDefinitionService.deleteOneLevel(releasedDefinition.getId(),any(Long.class));
+        trainingDefinitionService.deleteOneLevel(releasedDefinition.getId(), any(Long.class));
     }
 
 
@@ -438,7 +438,7 @@ public class TrainingDefinitionServiceTest {
     }
 
     @Test
-    public void updateAssessmentLevelWithCannotBeUpdatedException(){
+    public void updateAssessmentLevelWithCannotBeUpdatedException() {
         given(trainingDefinitionRepository.findById(releasedDefinition.getId())).willReturn(Optional.of(releasedDefinition));
         thrown.expect(ServiceLayerException.class);
         thrown.expectMessage("Cannot edit released or archived training definition");
@@ -447,7 +447,7 @@ public class TrainingDefinitionServiceTest {
     }
 
     @Test
-    public void updateAssessmentLevelWithLevelNotInDefinition(){
+    public void updateAssessmentLevelWithLevelNotInDefinition() {
         AssessmentLevel level = new AssessmentLevel();
         level.setId(8L);
         level.setNextLevel(null);
@@ -468,7 +468,7 @@ public class TrainingDefinitionServiceTest {
     }
 
     @Test
-    public void updateAssessmentLevelWithNullLevel(){
+    public void updateAssessmentLevelWithNullLevel() {
         given(trainingDefinitionRepository.findById(unreleasedDefinition.getId())).willReturn(Optional.of(unreleasedDefinition));
         thrown.expect(NullPointerException.class);
         trainingDefinitionService.updateAssessmentLevel(unreleasedDefinition.getId(), null);
@@ -488,7 +488,7 @@ public class TrainingDefinitionServiceTest {
     }
 
     @Test
-    public void updateGameLevelWithCannotBeUpdatedException(){
+    public void updateGameLevelWithCannotBeUpdatedException() {
         given(trainingDefinitionRepository.findById(releasedDefinition.getId())).willReturn(Optional.of(releasedDefinition));
         thrown.expect(ServiceLayerException.class);
         thrown.expectMessage("Cannot edit released or archived training definition");
@@ -497,7 +497,7 @@ public class TrainingDefinitionServiceTest {
     }
 
     @Test
-    public void updateGameLevelWithLevelNotInDefinition(){
+    public void updateGameLevelWithLevelNotInDefinition() {
         GameLevel level = new GameLevel();
         level.setId(8L);
         level.setNextLevel(null);
@@ -517,7 +517,7 @@ public class TrainingDefinitionServiceTest {
     }
 
     @Test
-    public void updateGameLevelWithNullLevel(){
+    public void updateGameLevelWithNullLevel() {
         given(trainingDefinitionRepository.findById(trainingDefinition2.getId())).willReturn(Optional.of(trainingDefinition2));
         thrown.expect(NullPointerException.class);
         trainingDefinitionService.updateGameLevel(trainingDefinition2.getId(), null);
@@ -533,7 +533,7 @@ public class TrainingDefinitionServiceTest {
     }
 
     @Test
-    public void updateInfoLevelWithCannotBeUpdatedException(){
+    public void updateInfoLevelWithCannotBeUpdatedException() {
         given(trainingDefinitionRepository.findById(releasedDefinition.getId())).willReturn(Optional.of(releasedDefinition));
         thrown.expect(ServiceLayerException.class);
         thrown.expectMessage("Cannot edit released or archived training definition");
@@ -542,7 +542,7 @@ public class TrainingDefinitionServiceTest {
     }
 
     @Test
-    public void updateInfoLevelWithLevelNotInDefinition(){
+    public void updateInfoLevelWithLevelNotInDefinition() {
         InfoLevel level = new InfoLevel();
         level.setId(8L);
         level.setNextLevel(null);
@@ -562,11 +562,12 @@ public class TrainingDefinitionServiceTest {
     }
 
     @Test
-    public void updateInfoLevelWithNullLevel(){
+    public void updateInfoLevelWithNullLevel() {
         given(trainingDefinitionRepository.findById(trainingDefinition2.getId())).willReturn(Optional.of(trainingDefinition2));
         thrown.expect(NullPointerException.class);
         trainingDefinitionService.updateInfoLevel(trainingDefinition2.getId(), null);
     }
+
     /*
     @Test
     public void createGameLevel() {
@@ -780,7 +781,7 @@ public class TrainingDefinitionServiceTest {
     }
 
     @Test
-    public void createTrainingDefinition(){
+    public void createTrainingDefinition() {
         given(trainingDefinitionRepository.save(trainingDefinition1)).willReturn(trainingDefinition1);
         TrainingDefinition tD = trainingDefinitionService.create(trainingDefinition1);
         deepEquals(trainingDefinition1, tD);
@@ -788,18 +789,18 @@ public class TrainingDefinitionServiceTest {
     }
 
     @Test
-    public void createTrainingInstanceWithNull(){
+    public void createTrainingInstanceWithNull() {
         thrown.expect(IllegalArgumentException.class);
         thrown.expectMessage("Input training definition must not be null");
         trainingDefinitionService.create(null);
     }
 
     @After
-    public void after(){
+    public void after() {
         reset(trainingDefinitionRepository);
     }
 
-    private void deepEquals(TrainingDefinition expected, TrainingDefinition actual){
+    private void deepEquals(TrainingDefinition expected, TrainingDefinition actual) {
         assertEquals(expected.getId(), actual.getId());
         assertEquals(expected.getDescription(), actual.getDescription());
         assertEquals(expected.getState(), actual.getState());

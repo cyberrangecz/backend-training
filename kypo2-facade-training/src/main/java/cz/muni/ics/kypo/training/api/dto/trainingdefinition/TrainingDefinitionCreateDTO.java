@@ -17,6 +17,7 @@ import io.swagger.annotations.ApiModelProperty;
  */
 @ApiModel(value = "TrainingDefinitionCreateDTO", description = "Training definition to create.")
 public class TrainingDefinitionCreateDTO {
+
     @NotEmpty(message = "{trainingdefinitioncreate.title.NotEmpty.message}")
     private String title;
     private String description;
@@ -58,6 +59,7 @@ public class TrainingDefinitionCreateDTO {
     public void setPrerequisities(String[] prerequisities) {
         this.prerequisities = prerequisities;
     }
+
     @ApiModelProperty(value = "A list of knowledge and skills that the participant should learn by attending the training (if it is used for educational purposes) ", example = "[outcomes]")
     public String[] getOutcomes() {
         return outcomes;
@@ -103,9 +105,10 @@ public class TrainingDefinitionCreateDTO {
         this.sandboxDefinitionRef = sandboxDefinitionRef;
     }
 
-    @Override public String toString() {
+    @Override
+    public String toString() {
         return "TrainingDefinitionCreateDTO{" + "title='" + title + '\'' + ", description='" + description + '\'' + ", prerequisities="
-            + Arrays.toString(prerequisities) + ", outcomes=" + Arrays.toString(outcomes) + ", state=" + state + ", autIds=" + autIds
-            + ", showStepperBar=" + showStepperBar + ", sandboxDefinitionRef=" + sandboxDefinitionRef + '}';
+                + Arrays.toString(prerequisities) + ", outcomes=" + Arrays.toString(outcomes) + ", state=" + state + ", autIds=" + autIds
+                + ", showStepperBar=" + showStepperBar + ", sandboxDefinitionRef=" + sandboxDefinitionRef + '}';
     }
 }

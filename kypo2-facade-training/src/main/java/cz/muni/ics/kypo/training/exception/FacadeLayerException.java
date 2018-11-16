@@ -4,6 +4,7 @@ package cz.muni.ics.kypo.training.exception;
  * @author Pavel Šeda (441048)
  */
 public class FacadeLayerException extends RuntimeException {
+
     public FacadeLayerException() {
     }
 

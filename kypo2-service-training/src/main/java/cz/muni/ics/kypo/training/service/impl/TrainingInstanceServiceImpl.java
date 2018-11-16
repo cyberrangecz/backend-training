@@ -97,7 +97,7 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
         if (!currentDate.isBefore(trainingInstance.getStartTime()))
             throw new ServiceLayerException("Starting time of instance must be in future", ErrorCode.RESOURCE_CONFLICT);
 
-        if(trainingInstance.getPassword() == null){
+        if (trainingInstance.getPassword() == null) {
             trainingInstance.setPassword(tI.getPassword());
         } else {
             trainingInstance.setPassword(generatePassword(trainingInstance.getPassword()));
@@ -161,8 +161,8 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
     }
 
     @Override
-    public UserRef findUserRefById(Long id){
+    public UserRef findUserRefById(Long id) {
         return userRefRepository.findById(id).orElseThrow(
-            () -> new ServiceLayerException("User ref with id" + id + " not found.", ErrorCode.RESOURCE_NOT_FOUND));
+                () -> new ServiceLayerException("User ref with id" + id + " not found.", ErrorCode.RESOURCE_NOT_FOUND));
     }
 }
