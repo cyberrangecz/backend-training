@@ -346,8 +346,16 @@ public class TrainingRunServiceImpl implements TrainingRunService {
             TrainingDefinition trainingDefinition = trainingInstance.getTrainingDefinition();
             Long trainingDefinitionId = trainingDefinition.getId();
             Long sandboxId = trainingDefinition.getSandBoxDefinitionRef().getId();
-            TrainingRunStarted trainingRunStarted = new TrainingRunStarted(sandboxId, trainingDefinitionId, trainingInstance.getId(), trainingRun.getId(), getSubOfLoggedInUser(),
-                    trainingRun.getCurrentLevel().getId());
+
+            TrainingRunStarted trainingRunStarted = TrainingRunStarted.builder()
+                    .sandboxId(sandboxId)
+                    .trainingDefinitionId(trainingDefinitionId)
+                    .trainingInstanceId(trainingInstance.getId())
+                    .trainingRunId(trainingRun.getId())
+                    .playerLogin(getSubOfLoggedInUser())
+                    .level(trainingRun.getCurrentLevel().getId())
+                    .build();
+
             auditService.<TrainingRunStarted>save(trainingRunStarted);
         }
     }
