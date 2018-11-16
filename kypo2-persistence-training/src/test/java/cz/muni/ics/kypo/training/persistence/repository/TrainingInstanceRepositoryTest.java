@@ -29,83 +29,84 @@ import static org.junit.Assert.assertTrue;
 @Import(PersistenceConfigTest.class)
 public class TrainingInstanceRepositoryTest {
 
-	@Autowired
-	private TestEntityManager entityManager;
+    @Autowired
+    private TestEntityManager entityManager;
 
-	@Autowired
-	private TrainingInstanceRepository trainingInstanceRepository;
+    @Autowired
+    private TrainingInstanceRepository trainingInstanceRepository;
 
-	private TrainingInstance trainingInstance1, trainingInstance2;
-	private TrainingDefinition trainingDefinition;
+    private TrainingInstance trainingInstance1, trainingInstance2;
+    private TrainingDefinition trainingDefinition;
 
-	@SpringBootApplication
-	static class TestConfiguration { }
+    @SpringBootApplication
+    static class TestConfiguration {
+    }
 
-	@Before
-	public void setUp() {
-		trainingDefinition = new TrainingDefinition();
-		//trainingDefinition.setSandBoxDefinitionRef(entityManager.persist(sandboxDefinitionRef1));
-		trainingDefinition.setTitle("test");
-		trainingDefinition.setState(TDState.RELEASED);
+    @Before
+    public void setUp() {
+        trainingDefinition = new TrainingDefinition();
+        //trainingDefinition.setSandBoxDefinitionRef(entityManager.persist(sandboxDefinitionRef1));
+        trainingDefinition.setTitle("test");
+        trainingDefinition.setState(TDState.RELEASED);
 
-		trainingInstance1 = new TrainingInstance();
-		trainingInstance2 = new TrainingInstance();
-		trainingInstance1.setStartTime(LocalDateTime.now());
-		trainingInstance1.setEndTime(LocalDateTime.now());
-		trainingInstance1.setTitle("Training instance 1");
-		trainingInstance1.setPoolSize(10);
-		trainingInstance1.setPassword("1Eh9A5l7Op5As8s0h9");
-		trainingInstance1.setTrainingDefinition(entityManager.persist(trainingDefinition));
+        trainingInstance1 = new TrainingInstance();
+        trainingInstance2 = new TrainingInstance();
+        trainingInstance1.setStartTime(LocalDateTime.now());
+        trainingInstance1.setEndTime(LocalDateTime.now());
+        trainingInstance1.setTitle("Training instance 1");
+        trainingInstance1.setPoolSize(10);
+        trainingInstance1.setPassword("1Eh9A5l7Op5As8s0h9");
+        trainingInstance1.setTrainingDefinition(entityManager.persist(trainingDefinition));
 
-		trainingInstance2.setStartTime(LocalDateTime.now());
-		trainingInstance2.setEndTime(LocalDateTime.now());
-		trainingInstance2.setTitle("Training instance 2");
-		trainingInstance2.setPoolSize(15);
-		trainingInstance2.setPassword("R8a9C7B4a2c8A2cN1E");
-		trainingInstance2.setTrainingDefinition(entityManager.persist(trainingDefinition));
-	}
+        trainingInstance2.setStartTime(LocalDateTime.now());
+        trainingInstance2.setEndTime(LocalDateTime.now());
+        trainingInstance2.setTitle("Training instance 2");
+        trainingInstance2.setPoolSize(15);
+        trainingInstance2.setPassword("R8a9C7B4a2c8A2cN1E");
+        trainingInstance2.setTrainingDefinition(entityManager.persist(trainingDefinition));
+    }
 
-	@Test
-	public void findById() {
-		Long id = (Long) entityManager.persistAndGetId(trainingInstance1);
-		Optional<TrainingInstance> optionalTrainingInstance = trainingInstanceRepository.findById(id);
-		assertTrue(optionalTrainingInstance.isPresent());
-		assertEquals(trainingInstance1, optionalTrainingInstance.get());
-	}
+    @Test
+    public void findById() {
+        Long id = (Long) entityManager.persistAndGetId(trainingInstance1);
+        Optional<TrainingInstance> optionalTrainingInstance = trainingInstanceRepository.findById(id);
+        assertTrue(optionalTrainingInstance.isPresent());
+        assertEquals(trainingInstance1, optionalTrainingInstance.get());
+    }
 
-	@Test
-	public void findById_IdNotInTheDatabase() {
-			Optional<TrainingInstance> optionalTrainingInstance = trainingInstanceRepository.findById(5L);
-			assertFalse(optionalTrainingInstance.isPresent());
-	}
+    @Test
+    public void findById_IdNotInTheDatabase() {
+        Optional<TrainingInstance> optionalTrainingInstance = trainingInstanceRepository.findById(5L);
+        assertFalse(optionalTrainingInstance.isPresent());
+    }
 
-	@Test
-	public void findAll() {
-		entityManager.persist(trainingInstance1);
-		entityManager.persist(trainingInstance2);
-		List<TrainingInstance> resultTrainingInstance = trainingInstanceRepository.findAll();
-		assertNotNull(resultTrainingInstance);
-		assertEquals(2, resultTrainingInstance.size());
-		assertTrue(resultTrainingInstance.contains(trainingInstance1));
-		assertTrue(resultTrainingInstance.contains(trainingInstance2));
-	}
+    @Test
+    public void findAll() {
+        entityManager.persist(trainingInstance1);
+        entityManager.persist(trainingInstance2);
+        List<TrainingInstance> resultTrainingInstance = trainingInstanceRepository.findAll();
+        assertNotNull(resultTrainingInstance);
+        assertEquals(2, resultTrainingInstance.size());
+        assertTrue(resultTrainingInstance.contains(trainingInstance1));
+        assertTrue(resultTrainingInstance.contains(trainingInstance2));
+    }
 
-	@Test
-	public void findAll_emptyDatabase() {
-		List<TrainingInstance> expectedTrainingInstances = new ArrayList<>();
-		List<TrainingInstance> resultTrainingInstances = trainingInstanceRepository.findAll();
-		assertNotNull(resultTrainingInstances);
-		assertEquals(expectedTrainingInstances.size(), resultTrainingInstances.size());
-		assertEquals(expectedTrainingInstances, resultTrainingInstances);
-	}
+    @Test
+    public void findAll_emptyDatabase() {
+        List<TrainingInstance> expectedTrainingInstances = new ArrayList<>();
+        List<TrainingInstance> resultTrainingInstances = trainingInstanceRepository.findAll();
+        assertNotNull(resultTrainingInstances);
+        assertEquals(expectedTrainingInstances.size(), resultTrainingInstances.size());
+        assertEquals(expectedTrainingInstances, resultTrainingInstances);
+    }
 
-	@Test
-	public void findAllInstancesByTrainingDefinitionId() {
-		entityManager.persist(trainingInstance1);
-		entityManager.persist(trainingInstance2);
+    @Test
+    public void findAllInstancesByTrainingDefinitionId() {
+        entityManager.persist(trainingInstance1);
+        entityManager.persist(trainingInstance2);
 
-		List<TrainingInstance> instances = trainingInstanceRepository.findAllByTrainingDefinitionId(trainingDefinition.getId());
-		assertTrue(instances.contains(trainingInstance1));
-		assertTrue(instances.contains(trainingInstance2));
-	}
+        List<TrainingInstance> instances = trainingInstanceRepository.findAllByTrainingDefinitionId(trainingDefinition.getId());
+        assertTrue(instances.contains(trainingInstance1));
+        assertTrue(instances.contains(trainingInstance2));
+    }
 }

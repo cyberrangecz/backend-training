@@ -10,6 +10,11 @@ package cz.muni.ics.kypo.training.persistence.repository.custom;
  * public class AbstractLevelRepositoryImpl implements AbstractLevelRepositoryCustom {
  * <p>
  * }
+ * <p>
+ * <p>
+ * public class AbstractLevelRepositoryImpl implements AbstractLevelRepositoryCustom {
+ * <p>
+ * }
  */
 /**
  *

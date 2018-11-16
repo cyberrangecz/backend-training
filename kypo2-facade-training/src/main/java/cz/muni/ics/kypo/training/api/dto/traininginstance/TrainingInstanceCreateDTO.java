@@ -26,7 +26,7 @@ public class TrainingInstanceCreateDTO {
     private LocalDateTime startTime;
     @NotNull(message = "{traininginstancecreate.endTime.NotNull.message}")
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)
-		private LocalDateTime endTime;
+    private LocalDateTime endTime;
     @NotEmpty(message = "{traininginstancecreate.title.NotEmpty.message}")
     private String title;
     @NotNull(message = "{traininginstancecreate.poolSize.NotNull.message}")
@@ -93,6 +93,7 @@ public class TrainingInstanceCreateDTO {
     public void setTrainingDefinitionId(long trainingDefinitionId) {
         this.trainingDefinitionId = trainingDefinitionId;
     }
+
     @ApiModelProperty(value = "Reference to users which organize training instance.", required = true, example = "[1]")
     public Set<Long> getOrgIds() {
         return orgIds;
@@ -102,8 +103,9 @@ public class TrainingInstanceCreateDTO {
         this.orgIds = orgIds;
     }
 
-    @Override public String toString() {
+    @Override
+    public String toString() {
         return "TrainingInstanceCreateDTO{" + "startTime=" + startTime + ", endTime=" + endTime + ", title='" + title + '\'' + ", poolSize="
-            + poolSize + ", password='" + password + '\'' + ", trainingDefinitionId=" + trainingDefinitionId + ", orgIds=" + orgIds + '}';
+                + poolSize + ", password='" + password + '\'' + ", trainingDefinitionId=" + trainingDefinitionId + ", orgIds=" + orgIds + '}';
     }
 }

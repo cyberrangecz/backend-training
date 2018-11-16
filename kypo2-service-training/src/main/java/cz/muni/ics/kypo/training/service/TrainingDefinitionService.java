@@ -21,14 +21,14 @@ public interface TrainingDefinitionService {
      * @return specific Training Definition by id
      * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND training definition cannot be found
      */
-    public TrainingDefinition findById(long id);
+    TrainingDefinition findById(long id);
 
     /**
      * Find all Training Definitions.
      *
      * @return all Training Definitions
      */
-    public Page<TrainingDefinition> findAll(Predicate predicate, Pageable pageable);
+    Page<TrainingDefinition> findAll(Predicate predicate, Pageable pageable);
 
     /**
      * Find all training definition with same sandbox definition
@@ -36,7 +36,7 @@ public interface TrainingDefinitionService {
      * @param sandboxDefinitionId - id of sandbox definition
      * @return all training definition with same sandbox definition
      */
-    public Page<TrainingDefinition> findAllBySandboxDefinitionId(Long sandboxDefinitionId, Pageable pageable);
+    Page<TrainingDefinition> findAllBySandboxDefinitionId(Long sandboxDefinitionId, Pageable pageable);
 
     /**
      * Updates Training Definition
@@ -46,7 +46,7 @@ public interface TrainingDefinitionService {
      * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND given training definition or one of the levels is not found.
      *                               RESOURCE_CONFLICT released or archived training definition cannot be modified.
      */
-    public void update(TrainingDefinition trainingDefinition);
+    void update(TrainingDefinition trainingDefinition);
 
     /**
      * Creates new training definition by cloning existing one
@@ -56,7 +56,7 @@ public interface TrainingDefinitionService {
      * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND given training definition not found.
      *                               RESOURCE_CONFLICT cannot clone unreleased training definition.
      */
-    public TrainingDefinition clone(Long id);
+    TrainingDefinition clone(Long id);
 
     /**
      * Swaps level to the left
@@ -66,7 +66,7 @@ public interface TrainingDefinitionService {
      * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND given training definition or one of the levels is not found.
      *                               RESOURCE_CONFLICT released or archived training definition cannot be modified.
      */
-    public void swapLeft(Long definitionId, Long levelId);
+    void swapLeft(Long definitionId, Long levelId);
 
     /**
      * Swaps level to the right
@@ -76,7 +76,7 @@ public interface TrainingDefinitionService {
      * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND given training definition or one of the levels is not found.
      *                               RESOURCE_CONFLICT released or archived training definition cannot be modified.
      */
-    public void swapRight(Long definitionId, Long levelId);
+    void swapRight(Long definitionId, Long levelId);
 
     /**
      * Deletes specific training definition based on id
@@ -85,7 +85,7 @@ public interface TrainingDefinitionService {
      * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND given training definition or level is not found.
      *                               RESOURCE_CONFLICT released training definition cannot be deleted.
      */
-    public void delete(Long id);
+    void delete(Long id);
 
     /**
      * Deletes specific level based on id
@@ -95,7 +95,7 @@ public interface TrainingDefinitionService {
      * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND given training definition or level is not found.
      *                               RESOURCE_CONFLICT level cannot be deleted in released or archived training definition.
      */
-    public void deleteOneLevel(Long definitionId, Long levelId);
+    void deleteOneLevel(Long definitionId, Long levelId);
 
     /**
      * Updates game level in training definition
@@ -105,7 +105,7 @@ public interface TrainingDefinitionService {
      * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND given training definition is not found.
      *                               RESOURCE_CONFLICT level cannot be updated in released or archived training definition.
      */
-    public void updateGameLevel(Long definitionId, GameLevel gameLevel);
+    void updateGameLevel(Long definitionId, GameLevel gameLevel);
 
     /**
      * Updates info level in training definition
@@ -115,7 +115,7 @@ public interface TrainingDefinitionService {
      * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND given training definition is not found.
      *                               RESOURCE_CONFLICT level cannot be updated in released or archived training definition.
      */
-    public void updateInfoLevel(Long definitionId, InfoLevel infoLevel);
+    void updateInfoLevel(Long definitionId, InfoLevel infoLevel);
 
     /**
      * Updates assessment level in training definition
@@ -125,7 +125,7 @@ public interface TrainingDefinitionService {
      * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND given training definition is not found.
      *                               RESOURCE_CONFLICT level cannot be updated in released or archived training definition.
      */
-    public void updateAssessmentLevel(Long definitionId, AssessmentLevel assessmentLevel);
+    void updateAssessmentLevel(Long definitionId, AssessmentLevel assessmentLevel);
 
     /**
      * Creates new game level
@@ -135,7 +135,7 @@ public interface TrainingDefinitionService {
      * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND given training definition is not found.
      *                               RESOURCE_CONFLICT level cannot be created in released or archived training definition.
      */
-    public GameLevel createGameLevel(Long definitionId);
+    GameLevel createGameLevel(Long definitionId);
 
     /**
      * Creates new info level
@@ -145,7 +145,7 @@ public interface TrainingDefinitionService {
      * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND given training definition is not found.
      *                               RESOURCE_CONFLICT level cannot be created in released or archived training definition.
      */
-    public InfoLevel createInfoLevel(Long definitionId);
+    InfoLevel createInfoLevel(Long definitionId);
 
     /**
      * Creates new assessment level
@@ -155,7 +155,7 @@ public interface TrainingDefinitionService {
      * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND given training definition is not found.
      *                               RESOURCE_CONFLICT level cannot be created in released or archived training definition.
      */
-    public AssessmentLevel createAssessmentLevel(Long definitionId);
+    AssessmentLevel createAssessmentLevel(Long definitionId);
 
     /**
      * Finds all levels from single definition
@@ -163,7 +163,7 @@ public interface TrainingDefinitionService {
      * @param id of definition
      * @return set of levels
      */
-    public List<AbstractLevel> findAllLevelsFromDefinition(Long id);
+    List<AbstractLevel> findAllLevelsFromDefinition(Long id);
 
     /**
      * creates new training definition
@@ -171,7 +171,7 @@ public interface TrainingDefinitionService {
      * @param trainingDefinition to be created
      * @return new training definition
      */
-    public TrainingDefinition create(TrainingDefinition trainingDefinition);
+    TrainingDefinition create(TrainingDefinition trainingDefinition);
 
 
     /**
@@ -187,6 +187,7 @@ public interface TrainingDefinitionService {
 
     /**
      * Finds AuthorRef by id
+     *
      * @param id of wanted AuthorRef
      * @return AuthorRef with corresponding id
      * @throws ServiceLayerException if AuthorRef was not found
@@ -196,6 +197,7 @@ public interface TrainingDefinitionService {
 
     /**
      * Finds SandboxDefinitionRef by id
+     *
      * @param id of wanted SandboxDefinitionRef
      * @return SandboxDefinitionRef with corresponding id
      * @throws ServiceLayerException if SandboxDefinitionRef was not found

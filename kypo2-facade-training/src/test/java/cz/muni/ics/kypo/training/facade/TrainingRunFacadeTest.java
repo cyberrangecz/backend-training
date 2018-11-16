@@ -36,13 +36,13 @@ import static org.mockito.BDDMockito.*;
 @RunWith(SpringRunner.class)
 public class TrainingRunFacadeTest {
 
-	@Rule
-	public ExpectedException thrown = ExpectedException.none();
+    @Rule
+    public ExpectedException thrown = ExpectedException.none();
 
-	private TrainingRunFacade trainingRunFacade;
+    private TrainingRunFacade trainingRunFacade;
 
-	@Mock
-	private TrainingRunService trainingRunService;
+    @Mock
+    private TrainingRunService trainingRunService;
 
     private TrainingRun trainingRun1, trainingRun2;
     private Hint hint;
@@ -52,8 +52,8 @@ public class TrainingRunFacadeTest {
 
     @Before
     public void init() {
-    	MockitoAnnotations.initMocks(this);
-    	trainingRunFacade = new TrainingRunFacadeImpl(trainingRunService, new BeanMappingImpl(new ModelMapper()));
+        MockitoAnnotations.initMocks(this);
+        trainingRunFacade = new TrainingRunFacadeImpl(trainingRunService, new BeanMappingImpl(new ModelMapper()));
 
         trainingRun1 = new TrainingRun();
         trainingRun1.setId(1L);
@@ -84,94 +84,94 @@ public class TrainingRunFacadeTest {
         trainingRun2.setState(TRState.ARCHIVED);
     }
 
-	@Test
-	public void findTrainingRunById() {
-		given(trainingRunService.findById(any(Long.class))).willReturn(trainingRun1);
-		trainingRunFacade.findById(trainingRun1.getId());
-		then(trainingRunService).should().findById(trainingRun1.getId());
-	}
+    @Test
+    public void findTrainingRunById() {
+        given(trainingRunService.findById(any(Long.class))).willReturn(trainingRun1);
+        trainingRunFacade.findById(trainingRun1.getId());
+        then(trainingRunService).should().findById(trainingRun1.getId());
+    }
 
-	@Test
-	public void findTrainingRunByIdWithFacadeLayerException() {
-		thrown.expect(FacadeLayerException.class);
-		willThrow(ServiceLayerException.class).given(trainingRunService).findById(1L);
-		trainingRunFacade.findById(1L);
-	}
+    @Test
+    public void findTrainingRunByIdWithFacadeLayerException() {
+        thrown.expect(FacadeLayerException.class);
+        willThrow(ServiceLayerException.class).given(trainingRunService).findById(1L);
+        trainingRunFacade.findById(1L);
+    }
 
-	@Test
-	public void findAllTrainingRuns() {
-		List<TrainingRun> expected = new ArrayList<>();
-		expected.add(trainingRun1);
-		expected.add(trainingRun2);
+    @Test
+    public void findAllTrainingRuns() {
+        List<TrainingRun> expected = new ArrayList<>();
+        expected.add(trainingRun1);
+        expected.add(trainingRun2);
 
-		Page<TrainingRun> p = new PageImpl<TrainingRun>(expected);
+        Page<TrainingRun> p = new PageImpl<TrainingRun>(expected);
 
-		PathBuilder<TrainingRun> tR = new PathBuilder<TrainingRun>(TrainingRun.class, "trainingRun");
-		Predicate predicate = tR.isNotNull();
+        PathBuilder<TrainingRun> tR = new PathBuilder<TrainingRun>(TrainingRun.class, "trainingRun");
+        Predicate predicate = tR.isNotNull();
 
-		given(trainingRunService.findAll(any(Predicate.class), any(Pageable.class))).willReturn(p);
-	}
+        given(trainingRunService.findAll(any(Predicate.class), any(Pageable.class))).willReturn(p);
+    }
 
-	@Test
-	public void isCorrectFlagBeforeSolutionTaken() {
-		given(trainingRunService.isCorrectFlag(trainingRun1.getId(), "flag")).willReturn(true);
-		given(trainingRunService.getRemainingAttempts(trainingRun1.getId())).willReturn(1);
-		IsCorrectFlagDTO correctFlagDTO = trainingRunFacade.isCorrectFlag(trainingRun1.getId(), "flag");
-		assertEquals(true, correctFlagDTO.isCorrect());
-		assertEquals(1, correctFlagDTO.getRemainingAttempts());
-	}
+    @Test
+    public void isCorrectFlagBeforeSolutionTaken() {
+        given(trainingRunService.isCorrectFlag(trainingRun1.getId(), "flag")).willReturn(true);
+        given(trainingRunService.getRemainingAttempts(trainingRun1.getId())).willReturn(1);
+        IsCorrectFlagDTO correctFlagDTO = trainingRunFacade.isCorrectFlag(trainingRun1.getId(), "flag");
+        assertEquals(true, correctFlagDTO.isCorrect());
+        assertEquals(1, correctFlagDTO.getRemainingAttempts());
+    }
 
-	@Test
-	public void isCorrectFlagAfterSolutionTaken() {
-		given(trainingRunService.isCorrectFlag(trainingRun1.getId(), "flag")).willReturn(false);
-		IsCorrectFlagDTO correctFlagDTO = trainingRunFacade.isCorrectFlag(trainingRun1.getId(), "flag");
-		assertEquals(false, correctFlagDTO.isCorrect());
-		assertEquals(0, correctFlagDTO.getRemainingAttempts());
-	}
+    @Test
+    public void isCorrectFlagAfterSolutionTaken() {
+        given(trainingRunService.isCorrectFlag(trainingRun1.getId(), "flag")).willReturn(false);
+        IsCorrectFlagDTO correctFlagDTO = trainingRunFacade.isCorrectFlag(trainingRun1.getId(), "flag");
+        assertEquals(false, correctFlagDTO.isCorrect());
+        assertEquals(0, correctFlagDTO.getRemainingAttempts());
+    }
 
     @Test
     public void accessTrainingRun() {
         given(trainingRunService.accessTrainingRun("password")).willReturn(gameLevel);
-        given(trainingRunService.getLevels(1L)).willReturn(Arrays.asList(gameLevel,infoLevel,assessmentLevel));
+        given(trainingRunService.getLevels(1L)).willReturn(Arrays.asList(gameLevel, infoLevel, assessmentLevel));
         Object result = trainingRunFacade.accessTrainingRun("password");
         assertEquals(AccessTrainingRunDTO.class, result.getClass());
         then(trainingRunService).should().accessTrainingRun("password");
     }
 
     @Test
-		public void accessTrainingRunWithFacadeLayerException(){
-			thrown.expect(FacadeLayerException.class);
-			willThrow(ServiceLayerException.class).given(trainingRunService).accessTrainingRun("pass");
-			trainingRunFacade.accessTrainingRun("pass");
-		}
+    public void accessTrainingRunWithFacadeLayerException() {
+        thrown.expect(FacadeLayerException.class);
+        willThrow(ServiceLayerException.class).given(trainingRunService).accessTrainingRun("pass");
+        trainingRunFacade.accessTrainingRun("pass");
+    }
 
-		@Test
-		public void getNextLevel(){
-			given(trainingRunService.getNextLevel(1L)).willReturn((AbstractLevel) assessmentLevel);
-			trainingRunFacade.getNextLevel(1L);
-			then(trainingRunService).should().getNextLevel(1L);
-		}
+    @Test
+    public void getNextLevel() {
+        given(trainingRunService.getNextLevel(1L)).willReturn((AbstractLevel) assessmentLevel);
+        trainingRunFacade.getNextLevel(1L);
+        then(trainingRunService).should().getNextLevel(1L);
+    }
 
-		@Test
-		public void getNextLevelWithFacadeLayerException(){
-			thrown.expect(FacadeLayerException.class);
-			willThrow(ServiceLayerException.class).given(trainingRunService).getNextLevel(1L);
-			trainingRunFacade.getNextLevel(1L);
-		}
+    @Test
+    public void getNextLevelWithFacadeLayerException() {
+        thrown.expect(FacadeLayerException.class);
+        willThrow(ServiceLayerException.class).given(trainingRunService).getNextLevel(1L);
+        trainingRunFacade.getNextLevel(1L);
+    }
 
     @Test
     public void getHint() {
-			given(trainingRunService.getHint(anyLong(),anyLong())).willReturn(hint);
-      trainingRunFacade.getHint(1L,1L);
-			then(trainingRunService).should().getHint(1L,1L);
-		}
+        given(trainingRunService.getHint(anyLong(), anyLong())).willReturn(hint);
+        trainingRunFacade.getHint(1L, 1L);
+        then(trainingRunService).should().getHint(1L, 1L);
+    }
 
-		@Test
-		public void getHintWithFacadeLayerException() {
-			thrown.expect(FacadeLayerException.class);
-			willThrow(ServiceLayerException.class).given(trainingRunService).getHint(1L,1L);
-			trainingRunFacade.getHint(1L,1L);
-		}
+    @Test
+    public void getHintWithFacadeLayerException() {
+        thrown.expect(FacadeLayerException.class);
+        willThrow(ServiceLayerException.class).given(trainingRunService).getHint(1L, 1L);
+        trainingRunFacade.getHint(1L, 1L);
+    }
 
     @Test
     public void getSolution() {
@@ -181,16 +181,16 @@ public class TrainingRunFacadeTest {
     }
 
     @Test
-		public void getSolutionWithFacadeLayerException() {
-			thrown.expect(FacadeLayerException.class);
-			willThrow(ServiceLayerException.class).given(trainingRunService).getSolution(1L);
-			trainingRunFacade.getSolution(1L);
-		}
+    public void getSolutionWithFacadeLayerException() {
+        thrown.expect(FacadeLayerException.class);
+        willThrow(ServiceLayerException.class).given(trainingRunService).getSolution(1L);
+        trainingRunFacade.getSolution(1L);
+    }
 
     private void deepEquals(TrainingRun expected, TrainingRunDTO actual) {
         assertEquals(expected.getId(), actual.getId());
         assertEquals(expected.getState(), actual.getState());
-		}
+    }
 
 }
 

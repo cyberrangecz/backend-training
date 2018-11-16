@@ -2,6 +2,9 @@ package cz.muni.ics.kypo.training.api.dto;
 
 import io.swagger.annotations.ApiModelProperty;
 
+/**
+ * @author Pavel Seda
+ */
 public class SandboxInstanceRefDTO {
 
     private Long id;

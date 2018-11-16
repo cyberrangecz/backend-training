@@ -98,9 +98,10 @@ public class TrainingInstanceDTO {
         this.password = password;
     }
 
-    @Override public String toString() {
+    @Override
+    public String toString() {
         return "TrainingInstanceDTO{" + "id=" + id + ", startTime=" + startTime + ", endTime=" + endTime + ", title='" + title + '\''
-            + ", poolSize=" + poolSize + ", trainingDefinition=" + trainingDefinition + ", organizers=" + organizers + ", password='"
-            + password + '\'' + '}';
+                + ", poolSize=" + poolSize + ", trainingDefinition=" + trainingDefinition + ", organizers=" + organizers + ", password='"
+                + password + '\'' + '}';
     }
 }

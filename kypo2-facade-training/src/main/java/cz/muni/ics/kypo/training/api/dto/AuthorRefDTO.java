@@ -2,7 +2,11 @@ package cz.muni.ics.kypo.training.api.dto;
 
 import io.swagger.annotations.ApiModelProperty;
 
+/**
+ * @author Pavel Seda
+ */
 public class AuthorRefDTO {
+
     private Long id;
     private String authorRefLogin;
 

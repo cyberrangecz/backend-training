@@ -70,14 +70,12 @@ public class TrainingRunsRestController {
             value = "Get training run by Id.",
             response = TrainingRunDTO.class,
             nickname = "findTrainingRunById",
-
             produces = "application/json"
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Training run with given id found.", response = TrainingRunDTO.class),
             @ApiResponse(code = 404, message = "Training run with given id not found."),
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.")
-
     })
     @GetMapping(value = "/{runId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> findTrainingRunById(@ApiParam(value = "Training run Id", required = true) @PathVariable Long runId,
@@ -325,7 +323,6 @@ public class TrainingRunsRestController {
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.")
     })
     @GetMapping(value = "/{runId}/is-correct-flag", produces = MediaType.APPLICATION_JSON_VALUE)
-
     public ResponseEntity<IsCorrectFlagDTO> isCorrectFlag(@ApiParam(value = "Training run ID", required = true) @PathVariable Long runId,
                                                           @ApiParam(value = "Submitted flag", required = true) @RequestParam(value = "flag") String flag) {
         LOG.debug("isCorrectFlag({}, {})", runId, flag);

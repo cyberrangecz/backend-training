@@ -4,6 +4,9 @@ import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Objects;
 
+/**
+ * @author Pavel Seda
+ */
 @Entity(name = "AbstractLevel")
 @Table(name = "abstract_level")
 @Inheritance(strategy = InheritanceType.JOINED)
