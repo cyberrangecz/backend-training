@@ -8,7 +8,12 @@ import org.jsondoc.core.annotation.ApiObject;
 import org.jsondoc.core.annotation.ApiObjectField;
 
 /**
+ * This classes uses Builder pattern based on the following blog:
+ *
  * @author Pavel Šeda
+ * @see <a href="https://blog.jayway.com/2012/02/07/builder-pattern-with-a-twist/">https://blog.jayway.com/2012/02/07/builder-pattern-with-a-twist/</a>
+ * <p>
+ * Without that builder it is easy to mesh class parameters, e.g. trainingDefinitionId with trainingInstanceId.
  */
 @ApiObject(name = "Level Started", description = "Type of event from trainings (when level is started).")
 @JsonRootName(value = "event")
