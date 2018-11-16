@@ -185,4 +185,21 @@ public interface TrainingDefinitionService {
 
     List<TrainingInstance> findAllTrainingInstancesByTrainingDefinitionId(Long id);
 
+    /**
+     * Finds AuthorRef by id
+     * @param id of wanted AuthorRef
+     * @return AuthorRef with corresponding id
+     * @throws ServiceLayerException if AuthorRef was not found
+     */
+    AuthorRef findAuthorRefById(Long id) throws ServiceLayerException;
+
+
+    /**
+     * Finds SandboxDefinitionRef by id
+     * @param id of wanted SandboxDefinitionRef
+     * @return SandboxDefinitionRef with corresponding id
+     * @throws ServiceLayerException if SandboxDefinitionRef was not found
+     */
+    SandboxDefinitionRef findSandboxDefinitionRefById(Long id) throws ServiceLayerException;
+
 }

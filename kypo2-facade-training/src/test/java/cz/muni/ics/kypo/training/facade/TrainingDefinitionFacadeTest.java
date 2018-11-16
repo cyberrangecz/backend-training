@@ -127,18 +127,15 @@ public class TrainingDefinitionFacadeTest {
 		trainingDefinitionUpdate.setId(4L);
 		trainingDefinitionUpdate.setState(TDState.UNRELEASED);
 
-		AuthorRefDTO authorRef = new AuthorRefDTO();
-		authorRef.setId(1l);
-		authorRef.setAuthorRefLogin("test");
-		Set<AuthorRefDTO> authorRefSet = new HashSet<>();
-		authorRefSet.add(authorRef);
+		Set<Long> authorRefSet = new HashSet<>();
+		authorRefSet.add(1L);
 		trainingDefinitionCreate = new TrainingDefinitionCreateDTO();
 		trainingDefinitionCreate.setDescription("TD desc");
 		trainingDefinitionCreate.setOutcomes(new String[0]);
 		trainingDefinitionCreate.setPrerequisities(new String[0]);
 		trainingDefinitionCreate.setState(TDState.ARCHIVED);
 		trainingDefinitionCreate.setTitle("TD some title");
-		trainingDefinitionCreate.setAuthorRef(authorRefSet);
+		trainingDefinitionCreate.setAutIds(authorRefSet);
 	}
 
 	@Test

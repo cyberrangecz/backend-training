@@ -7,9 +7,11 @@ import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.persistence.model.Password;
 import cz.muni.ics.kypo.training.persistence.model.TrainingInstance;
 import cz.muni.ics.kypo.training.persistence.model.TrainingRun;
+import cz.muni.ics.kypo.training.persistence.model.UserRef;
 import cz.muni.ics.kypo.training.persistence.repository.PasswordRepository;
 import cz.muni.ics.kypo.training.persistence.repository.TrainingInstanceRepository;
 import cz.muni.ics.kypo.training.persistence.repository.TrainingRunRepository;
+import cz.muni.ics.kypo.training.persistence.repository.UserRefRepository;
 import cz.muni.ics.kypo.training.service.TrainingInstanceService;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
@@ -44,14 +46,17 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
     private TrainingInstanceRepository trainingInstanceRepository;
     private TrainingRunRepository trainingRunRepository;
     private PasswordRepository passwordRepository;
+    private UserRefRepository userRefRepository;
     private RestTemplate restTemplate;
 
     @Autowired
     public TrainingInstanceServiceImpl(TrainingInstanceRepository trainingInstanceRepository, PasswordRepository passwordRepository,
-                                       RestTemplate restTemplate, TrainingRunRepository trainingRunRepository) {
+                                       RestTemplate restTemplate, TrainingRunRepository trainingRunRepository,
+                                       UserRefRepository userRefRepository) {
         this.trainingInstanceRepository = trainingInstanceRepository;
         this.trainingRunRepository = trainingRunRepository;
         this.passwordRepository = passwordRepository;
+        this.userRefRepository = userRefRepository;
         this.restTemplate = restTemplate;
     }
 
@@ -70,7 +75,7 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
     }
 
     @Override
-    @PreAuthorize("hasAuthority({'ADMINISTRATOR', T(cz.muni.ics.kypo.training.persistence.model.enums.RoleType).ORGANIZER})")
+    @PreAuthorize("hasAuthority({'ADMINISTRATOR'})")
     public TrainingInstance create(TrainingInstance trainingInstance) {
         LOG.debug("create({})", trainingInstance);
         Assert.notNull(trainingInstance, "Input training instance must not be null");
@@ -153,5 +158,11 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
         LOG.debug("findTrainingRunsByTrainingInstance({})", trainingInstanceId);
         org.springframework.util.Assert.notNull(trainingInstanceId, "Input training instance id must not be null.");
         return trainingRunRepository.findAllByTrainingInstanceId(trainingInstanceId, pageable);
+    }
+
+    @Override
+    public UserRef findUserRefById(Long id){
+        return userRefRepository.findById(id).orElseThrow(
+            () -> new ServiceLayerException("User ref with id" + id + " not found.", ErrorCode.RESOURCE_NOT_FOUND));
     }
 }

@@ -27,14 +27,12 @@ public class TrainingDefinitionUpdateDTO {
     private String[] outcomes;
     @NotNull(message = "{trainingdefinitionupdate.state.NotNull.message}")
     private TDState state;
-    @NotNull(message = "{trainingdefinitionupdate.authorRef.NotNull.message}")
-    private Set<AuthorRefDTO> authorRef = new HashSet<>();
+    @NotNull(message = "{trainingdefinitionupdate.autIds.NotNull.message}")
+    private Set<Long> autIds = new HashSet<>();
     @NotNull(message = "{trainingdefinitionupdate.sandboxDefinitionRef.NotNull.message}")
-    private SandboxDefinitionRefDTO sandBoxDefinitionRef;
+    private Long sandBoxDefinitionRef;
     @NotNull(message = "{trainingdefinitionupdate.showStepperBar.NotNull.message}")
     private boolean showStepperBar;
-    @NotNull
-    private Long startingLevel;
 
     @ApiModelProperty(value = "Main identifier of training definition.", required = true, example = "1")
     public Long getId() {
@@ -90,21 +88,21 @@ public class TrainingDefinitionUpdateDTO {
         this.state = state;
     }
 
-    @ApiModelProperty(value = "References to the authors of the training definition.", required = true)
-    public Set<AuthorRefDTO> getAuthorRef() {
-        return authorRef;
+    @ApiModelProperty(value = "References to the authors of the training definition.", required = true, example = "[1]")
+    public Set<Long> getAutIds() {
+        return autIds;
     }
 
-    public void setAuthorRef(Set<AuthorRefDTO> authorRef) {
-        this.authorRef = authorRef;
+    public void setAutIds(Set<Long> autIds) {
+        this.autIds = autIds;
     }
 
-    @ApiModelProperty(value = "Reference to the sandbox definition.", required = true)
-    public SandboxDefinitionRefDTO getSandBoxDefinitionRef() {
+    @ApiModelProperty(value = "Reference to the sandbox definition.", required = true, example = "1")
+    public Long getSandBoxDefinitionRef() {
         return sandBoxDefinitionRef;
     }
 
-    public void setSandBoxDefinitionRef(SandboxDefinitionRefDTO sandBoxDefinitionRef) {
+    public void setSandBoxDefinitionRef(Long sandBoxDefinitionRef) {
         this.sandBoxDefinitionRef = sandBoxDefinitionRef;
     }
 
@@ -117,19 +115,9 @@ public class TrainingDefinitionUpdateDTO {
         this.showStepperBar = showStepperBar;
     }
 
-    @ApiModelProperty(value = "Identifier of first level of training definition.", required = true, example = "4")
-    public Long getStartingLevel() {
-        return startingLevel;
-    }
-
-    public void setStartingLevel(Long startingLevel) {
-        this.startingLevel = startingLevel;
-    }
-
-    @Override
-    public String toString() {
+    @Override public String toString() {
         return "TrainingDefinitionUpdateDTO{" + "id=" + id + ", title='" + title + '\'' + ", description='" + description + '\''
-                + ", prerequisities=" + Arrays.toString(prerequisities) + ", outcomes=" + Arrays.toString(outcomes) + ", state=" + state
-                + ", authorRef=" + authorRef + ", sandBoxDefinitionRef=" + sandBoxDefinitionRef + ", showStepperBar=" + showStepperBar + '}';
+            + ", prerequisities=" + Arrays.toString(prerequisities) + ", outcomes=" + Arrays.toString(outcomes) + ", state=" + state
+            + ", autIds=" + autIds + ", sandBoxDefinitionRef=" + sandBoxDefinitionRef + ", showStepperBar=" + showStepperBar + '}';
     }
 }

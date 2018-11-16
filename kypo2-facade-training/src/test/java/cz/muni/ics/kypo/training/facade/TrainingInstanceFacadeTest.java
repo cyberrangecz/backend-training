@@ -11,7 +11,10 @@ import cz.muni.ics.kypo.training.exception.FacadeLayerException;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.facade.impl.TrainingInstanceFacadeImpl;
 import cz.muni.ics.kypo.training.mapping.BeanMappingImpl;
+import cz.muni.ics.kypo.training.persistence.model.TrainingDefinition;
 import cz.muni.ics.kypo.training.persistence.model.TrainingInstance;
+import cz.muni.ics.kypo.training.persistence.model.UserRef;
+import cz.muni.ics.kypo.training.service.TrainingDefinitionService;
 import cz.muni.ics.kypo.training.service.TrainingInstanceService;
 import org.junit.Before;
 import org.junit.Rule;
@@ -47,6 +50,9 @@ public class TrainingInstanceFacadeTest {
 	@Mock
 	private TrainingInstanceService trainingInstanceService;
 
+	@Mock
+	private TrainingDefinitionService trainingDefinitionService;
+
 	private TrainingInstance trainingInstance1, trainingInstance2;
 	private TrainingInstanceCreateDTO trainingInstanceCreate;
 	private TrainingInstanceUpdateDTO trainingInstanceUpdate;
@@ -54,7 +60,7 @@ public class TrainingInstanceFacadeTest {
 	@Before
 	public void init() {
 		MockitoAnnotations.initMocks(this);
-		trainingInstanceFacade = new TrainingInstanceFacadeImpl(trainingInstanceService, new BeanMappingImpl(new ModelMapper()));
+		trainingInstanceFacade = new TrainingInstanceFacadeImpl(trainingInstanceService, trainingDefinitionService, new BeanMappingImpl(new ModelMapper()));
 
 		trainingInstance1 = new TrainingInstance();
 		trainingInstance1.setId(1L);
@@ -66,6 +72,8 @@ public class TrainingInstanceFacadeTest {
 
 		trainingInstanceCreate = new TrainingInstanceCreateDTO();
 		trainingInstanceCreate.setTitle("test");
+		trainingInstanceCreate.setOrgIds(new HashSet<>());
+		trainingInstanceCreate.setTrainingDefinitionId(1L);
 
 		trainingInstanceUpdate = new TrainingInstanceUpdateDTO();
 		trainingInstanceUpdate.setId(1L);
@@ -74,11 +82,9 @@ public class TrainingInstanceFacadeTest {
 		trainingInstanceUpdate.setPoolSize(20);
 		trainingInstanceUpdate.setEndTime(LocalDateTime.now());
 		trainingInstanceUpdate.setStartTime(LocalDateTime.now());
-		trainingInstanceUpdate.setTrainingDefinition(new TrainingDefinitionDTO());
-		trainingInstanceUpdate.setOrganizers(new HashSet<>());
+		trainingInstanceUpdate.setTrainingDefinitionId(1L);
+		trainingInstanceUpdate.setOrgIds(new HashSet<>());
 	}
-
-
 
 	@Test
 	public void findTrainingInstanceById() {
@@ -118,8 +124,10 @@ public class TrainingInstanceFacadeTest {
 	@Test
 	public void createTrainingInstance() {
 		given(trainingInstanceService.create(any(TrainingInstance.class))).willReturn(trainingInstance1);
+		given(trainingDefinitionService.findById(any(Long.class))).willReturn(new TrainingDefinition());
+		given(trainingInstanceService.findUserRefById(any(Long.class))).willReturn(new UserRef());
 		trainingInstanceFacade.create(trainingInstanceCreate);
-		then(trainingInstanceService).should().create(trainingInstance1);
+		then(trainingInstanceService).should().create(any(TrainingInstance.class));
 	}
 
 	@Test

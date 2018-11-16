@@ -24,12 +24,12 @@ public class TrainingDefinitionCreateDTO {
     private String[] outcomes;
     @NotNull(message = "{trainingdefinitioncreate.state.NotNull.message}")
     private TDState state;
-    @NotNull(message = "{trainingdefinitioncreate.authorRef.NotNull.message}")
-    private Set<AuthorRefDTO> authorRef;
+    @NotNull(message = "{trainingdefinitioncreate.autIds.NotNull.message}")
+    private Set<Long> autIds;
     @NotNull(message = "{trainingdefinitioncreate.showStepperBar.NotNull.message}")
     private boolean showStepperBar;
     @NotNull(message = "{trainingdefinitioncreate.sandboxDefinitionRef.NotNull.message}")
-    private SandboxDefinitionRefDTO sandboxDefinitionRef;
+    private Long sandboxDefinitionRef;
 
 
     @ApiModelProperty(value = "A name of the training/game (e.g., Photo Hunter) .", required = true, example = "Photo Hunter")
@@ -76,13 +76,13 @@ public class TrainingDefinitionCreateDTO {
         this.state = state;
     }
 
-    @ApiModelProperty(value = "References to the authors of the training definition.", required = true)
-    public Set<AuthorRefDTO> getAuthorRef() {
-        return authorRef;
+    @ApiModelProperty(value = "References to the authors of the training definition.", required = true, example = "[1]")
+    public Set<Long> getAutIds() {
+        return autIds;
     }
 
-    public void setAuthorRef(Set<AuthorRefDTO> authorRef) {
-        this.authorRef = authorRef;
+    public void setAutIds(Set<Long> autIds) {
+        this.autIds = autIds;
     }
 
     @ApiModelProperty(value = "Sign if stepper bar should be displayed.", required = true, example = "true")
@@ -94,26 +94,18 @@ public class TrainingDefinitionCreateDTO {
         this.showStepperBar = showStepperBar;
     }
 
-    @ApiModelProperty(value = "Reference to the sandbox definition.", required = true)
-    public SandboxDefinitionRefDTO getSandboxDefinitionRef() {
+    @ApiModelProperty(value = "Reference to the sandbox definition.", required = true, example = "1")
+    public Long getSandboxDefinitionRef() {
         return sandboxDefinitionRef;
     }
 
-    public void setSandboxDefinitionRef(SandboxDefinitionRefDTO sandboxDefinitionRef) {
+    public void setSandboxDefinitionRef(Long sandboxDefinitionRef) {
         this.sandboxDefinitionRef = sandboxDefinitionRef;
     }
 
-    @Override
-    public String toString() {
-        return "TrainingDefinitionCreateDTO{" +
-                "title='" + title + '\'' +
-                ", description='" + description + '\'' +
-                ", prerequisities=" + Arrays.toString(prerequisities) +
-                ", outcomes=" + Arrays.toString(outcomes) +
-                ", state=" + state +
-                ", authorRef=" + authorRef +
-                ", showStepperBar=" + showStepperBar +
-                ", sandboxDefinitionRef=" + sandboxDefinitionRef +
-                '}';
+    @Override public String toString() {
+        return "TrainingDefinitionCreateDTO{" + "title='" + title + '\'' + ", description='" + description + '\'' + ", prerequisities="
+            + Arrays.toString(prerequisities) + ", outcomes=" + Arrays.toString(outcomes) + ", state=" + state + ", autIds=" + autIds
+            + ", showStepperBar=" + showStepperBar + ", sandboxDefinitionRef=" + sandboxDefinitionRef + '}';
     }
 }

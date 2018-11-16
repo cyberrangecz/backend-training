@@ -94,9 +94,7 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
         for (TrainingDefinitionDTO tD : resource.getContent()){
             tD.setCanBeArchived(checkIfCanBeArchived(tD.getId()));
         }
-
         return resource;
-        //return beanMapping.mapToPageResultDTO(trainingDefinitionService.findAll(predicate, pageable), TrainingDefinitionDTO.class);
     }
 
     private boolean checkIfCanBeArchived(Long definitionId) {
@@ -120,8 +118,15 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
         LOG.debug("create({})", trainingDefinition);
         try {
             Objects.requireNonNull(trainingDefinition);
-            TrainingDefinition newTD = trainingDefinitionService.create(beanMapping.mapTo(trainingDefinition, TrainingDefinition.class));
-            return beanMapping.mapTo(newTD, TrainingDefinitionDTO.class);
+            TrainingDefinition newTD = beanMapping.mapTo(trainingDefinition, TrainingDefinition.class);
+            newTD.setSandBoxDefinitionRef(trainingDefinitionService.findSandboxDefinitionRefById(trainingDefinition.getSandboxDefinitionRef()));
+            newTD.setId(null);
+            Set<AuthorRef> authors = new HashSet<>();
+            for (Long id : trainingDefinition.getAutIds()){
+                authors.add(trainingDefinitionService.findAuthorRefById(id));
+            }
+            newTD.setAuthorRef(authors);
+            return beanMapping.mapTo(trainingDefinitionService.create(newTD), TrainingDefinitionDTO.class);
         } catch (ServiceLayerException ex) {
             throw new FacadeLayerException(ex);
         }
@@ -134,7 +139,14 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
         LOG.debug("update({})", trainingDefinition);
         try {
             Objects.requireNonNull(trainingDefinition);
-            trainingDefinitionService.update(beanMapping.mapTo(trainingDefinition, TrainingDefinition.class));
+            TrainingDefinition tD = beanMapping.mapTo(trainingDefinition, TrainingDefinition.class);
+            tD.setSandBoxDefinitionRef(trainingDefinitionService.findSandboxDefinitionRefById(trainingDefinition.getSandBoxDefinitionRef()));
+            Set<AuthorRef> authors = new HashSet<>();
+            for (Long id : trainingDefinition.getAutIds()){
+                authors.add(trainingDefinitionService.findAuthorRefById(id));
+            }
+            tD.setAuthorRef(authors);
+            trainingDefinitionService.update(tD);
         } catch (ServiceLayerException ex) {
             throw new FacadeLayerException(ex);
         }

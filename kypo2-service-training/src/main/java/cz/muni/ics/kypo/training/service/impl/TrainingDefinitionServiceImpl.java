@@ -36,19 +36,24 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     private GameLevelRepository gameLevelRepository;
     private InfoLevelRepository infoLevelRepository;
     private AssessmentLevelRepository assessmentLevelRepository;
+    private AuthorRefRepository authorRefRepository;
+    private SandboxDefinitionRefRepository sandboxDefinitionRefRepository;
     private static final String ARCHIVED_OR_RELEASED = "Cannot edit released or archived training definition.";
     private static final String LEVEL_NOT_FOUND = "Level not found.";
 
     @Autowired
     public TrainingDefinitionServiceImpl(TrainingDefinitionRepository trainingDefinitionRepository,
                                          AbstractLevelRepository abstractLevelRepository, InfoLevelRepository infoLevelRepository, GameLevelRepository gameLevelRepository,
-                                         AssessmentLevelRepository assessmentLevelRepository, TrainingInstanceRepository trainingInstanceRepository) {
+                                         AssessmentLevelRepository assessmentLevelRepository, TrainingInstanceRepository trainingInstanceRepository,
+                                         AuthorRefRepository authorRefRepository, SandboxDefinitionRefRepository sandboxDefinitionRefRepository) {
         this.trainingDefinitionRepository = trainingDefinitionRepository;
         this.abstractLevelRepository = abstractLevelRepository;
         this.gameLevelRepository = gameLevelRepository;
         this.infoLevelRepository = infoLevelRepository;
         this.assessmentLevelRepository = assessmentLevelRepository;
         this.trainingInstanceRepository = trainingInstanceRepository;
+        this.authorRefRepository = authorRefRepository;
+        this.sandboxDefinitionRefRepository = sandboxDefinitionRefRepository;
     }
 
     @Override
@@ -70,7 +75,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
 
     //TODO repair organizer role
     @Override
-    @PreAuthorize("hasAuthority({'ADMINISTRATOR', T(cz.muni.ics.kypo.training.persistence.model.enums.RoleType).DESIGNER})")
+    @PreAuthorize("hasAuthority({'ADMINISTRATOR'})")
     public TrainingDefinition create(TrainingDefinition trainingDefinition) {
         LOG.debug("create({})", trainingDefinition);
         Assert.notNull(trainingDefinition, "Input training definition must not be null");
@@ -426,6 +431,18 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     @Override public List<TrainingInstance> findAllTrainingInstancesByTrainingDefinitionId(Long id) {
         Assert.notNull(id, "Input definition id must not be null");
         return trainingInstanceRepository.findAllByTrainingDefinitionId(id);
+    }
+
+    @Override
+    public AuthorRef findAuthorRefById(Long id) throws ServiceLayerException {
+        return authorRefRepository.findById(id).orElseThrow(
+            () -> new ServiceLayerException("Author ref with id" + id + " not found.", ErrorCode.RESOURCE_NOT_FOUND));
+    }
+
+    @Override
+    public SandboxDefinitionRef findSandboxDefinitionRefById(Long id) throws ServiceLayerException {
+        return sandboxDefinitionRefRepository.findById(id).orElseThrow(
+            () -> new ServiceLayerException("Sandbox definition ref with id" + id + " not found.", ErrorCode.RESOURCE_NOT_FOUND));
     }
 
     private AbstractLevel findLastLevel(Long levelId) {

@@ -452,7 +452,7 @@ public class TrainingDefinitionsRestController {
             nickname = "createLevel",
             produces = "application/json")
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Level created.", response = AbstractLevelDTO.class),
+            @ApiResponse(code = 201, message = "Level created.", response = AbstractLevelDTO.class),
             @ApiResponse(code = 404, message = "Training definition with given id not found."),
             @ApiResponse(code = 409, message = "Cannot create level in released or archived training definition."),
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.")
