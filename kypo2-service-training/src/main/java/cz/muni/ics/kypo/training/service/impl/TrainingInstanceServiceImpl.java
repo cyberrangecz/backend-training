@@ -16,6 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpEntity;
@@ -45,6 +46,9 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
     private TrainingRunRepository trainingRunRepository;
     private PasswordRepository passwordRepository;
     private RestTemplate restTemplate;
+    @Lazy
+    @Autowired
+    private TrainingInstanceService trainingInstanceService;
 
     @Autowired
     public TrainingInstanceServiceImpl(TrainingInstanceRepository trainingInstanceRepository, PasswordRepository passwordRepository,
@@ -70,7 +74,7 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
     }
 
     @Override
-    @PreAuthorize("hasAuthority({'ADMINISTRATOR', T(cz.muni.ics.kypo.training.persistence.model.enums.RoleType).ORGANIZER})")
+    @PreAuthorize("hasAuthority({'ADMINISTRATOR'}) or hasAuthority({T(cz.muni.ics.kypo.training.persistence.model.enums.RoleType).ORGANIZER})")
     public TrainingInstance create(TrainingInstance trainingInstance) {
         LOG.debug("create({})", trainingInstance);
         Assert.notNull(trainingInstance, "Input training instance must not be null");
@@ -139,7 +143,7 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
     public ResponseEntity<Void> allocateSandboxes(Long instanceId) {
         LOG.debug("allocateSandboxes({})", instanceId);
         HttpHeaders httpHeaders = new HttpHeaders();
-        TrainingInstance trainingInstance = findById(instanceId);
+        TrainingInstance trainingInstance = trainingInstanceService.findById(instanceId);
         int count = trainingInstance.getPoolSize();
         Long sandboxId = trainingInstance.getTrainingDefinition().getSandBoxDefinitionRef().getId();
         String url = "kypo-openstack/api/v1/sandbox-definitions/" + sandboxId + "/build/" + count;

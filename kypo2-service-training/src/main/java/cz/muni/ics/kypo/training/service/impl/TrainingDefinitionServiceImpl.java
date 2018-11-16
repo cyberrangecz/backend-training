@@ -8,10 +8,12 @@ import cz.muni.ics.kypo.training.persistence.model.enums.AssessmentType;
 import cz.muni.ics.kypo.training.persistence.model.enums.TDState;
 import cz.muni.ics.kypo.training.persistence.repository.*;
 import cz.muni.ics.kypo.training.service.TrainingDefinitionService;
+import net.bytebuddy.asm.Advice;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -38,6 +40,9 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     private AssessmentLevelRepository assessmentLevelRepository;
     private static final String ARCHIVED_OR_RELEASED = "Cannot edit released or archived training definition.";
     private static final String LEVEL_NOT_FOUND = "Level not found.";
+    @Lazy
+    @Autowired
+    private TrainingDefinitionService trainingDefinitionService;
 
     @Autowired
     public TrainingDefinitionServiceImpl(TrainingDefinitionRepository trainingDefinitionRepository,
@@ -70,7 +75,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
 
     //TODO repair organizer role
     @Override
-    @PreAuthorize("hasAuthority({'ADMINISTRATOR', T(cz.muni.ics.kypo.training.persistence.model.enums.RoleType).DESIGNER})")
+    @PreAuthorize("hasAuthority({'ADMINISTRATOR'}) or hasAuthority({T(cz.muni.ics.kypo.training.persistence.model.enums.RoleType).DESIGNER})")
     public TrainingDefinition create(TrainingDefinition trainingDefinition) {
         LOG.debug("create({})", trainingDefinition);
         Assert.notNull(trainingDefinition, "Input training definition must not be null");
@@ -93,7 +98,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     public void update(TrainingDefinition trainingDefinition) {
         LOG.debug("update({})", trainingDefinition);
         Assert.notNull(trainingDefinition, "Input training definition must not be null");
-        TrainingDefinition tD = findById(trainingDefinition.getId());
+        TrainingDefinition tD = trainingDefinitionService.findById(trainingDefinition.getId());
         if (!tD.getState().equals(TDState.UNRELEASED))
             throw new ServiceLayerException(ARCHIVED_OR_RELEASED, ErrorCode.RESOURCE_CONFLICT);
 
@@ -103,11 +108,11 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     }
 
     @Override
-    @PreAuthorize("hasAuthority({'ADMINISTRATOR', T(cz.muni.ics.kypo.training.persistence.model.enums.RoleType).DESIGNER})")
+    @PreAuthorize("hasAuthority({'ADMINISTRATOR'}) or hasAuthority({T(cz.muni.ics.kypo.training.persistence.model.enums.RoleType).DESIGNER})")
     public TrainingDefinition clone(Long id) {
         LOG.debug("clone({})", id);
 
-        TrainingDefinition trainingDefinition = findById(id);
+        TrainingDefinition trainingDefinition = trainingDefinitionService.findById(id);
         if (trainingDefinition.getState().equals(TDState.UNRELEASED))
             throw new ServiceLayerException("Cannot copy unreleased training definition.", ErrorCode.RESOURCE_CONFLICT);
         TrainingDefinition tD = new TrainingDefinition();
@@ -129,7 +134,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
             "or @securityService.isDesignerOfGivenTrainingDefinition(#definitionId)")
     public void swapLeft(Long definitionId, Long levelId) {
         LOG.debug("swapLeft({}, {})", definitionId, levelId);
-        TrainingDefinition trainingDefinition = findById(definitionId);
+        TrainingDefinition trainingDefinition = trainingDefinitionService.findById(definitionId);
         if (!trainingDefinition.getState().equals(TDState.UNRELEASED))
             throw new ServiceLayerException(ARCHIVED_OR_RELEASED, ErrorCode.RESOURCE_CONFLICT);
         AbstractLevel swapLevel = abstractLevelRepository.findById(trainingDefinition.getStartingLevel())
@@ -160,7 +165,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
         }
         if (oneBeforeId.equals(trainingDefinition.getStartingLevel())) {
             trainingDefinition.setStartingLevel(swapLevel.getId());
-            update(trainingDefinition);
+            trainingDefinitionService.update(trainingDefinition);
         }
     }
 
@@ -169,7 +174,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
             "or @securityService.isDesignerOfGivenTrainingDefinition(#definitionId)")
     public void swapRight(Long definitionId, Long levelId) {
         LOG.debug("swapRight({}, {})", definitionId, levelId);
-        TrainingDefinition trainingDefinition = findById(definitionId);
+        TrainingDefinition trainingDefinition = trainingDefinitionService.findById(definitionId);
         if (!trainingDefinition.getState().equals(TDState.UNRELEASED))
             throw new ServiceLayerException(ARCHIVED_OR_RELEASED, ErrorCode.RESOURCE_CONFLICT);
         AbstractLevel swapLevel = abstractLevelRepository.findById(trainingDefinition.getStartingLevel())
@@ -195,7 +200,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
         updateLevel(swapLevel);
         if (trainingDefinition.getStartingLevel().equals(levelId)) {
             trainingDefinition.setStartingLevel(nextLevel.getId());
-            update(trainingDefinition);
+            trainingDefinitionService.update(trainingDefinition);
         }
     }
 
@@ -205,7 +210,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     public void delete(Long id) {
         LOG.debug("delete({})", id);
 
-        TrainingDefinition definition = findById(id);
+        TrainingDefinition definition = trainingDefinitionService.findById(id);
         if (definition.getState().equals(TDState.RELEASED))
             throw new ServiceLayerException("Cannot delete released training definition.", ErrorCode.RESOURCE_CONFLICT);
         if (definition.getStartingLevel() != null) {
@@ -226,7 +231,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
             "or @securityService.isDesignerOfGivenTrainingDefinition(#definitionId)")
     public void deleteOneLevel(Long definitionId, Long levelId) {
         LOG.debug("deleteOneLevel({}, {})", definitionId, levelId);
-        TrainingDefinition trainingDefinition = findById(definitionId);
+        TrainingDefinition trainingDefinition = trainingDefinitionService.findById(definitionId);
         if (!trainingDefinition.getState().equals(TDState.UNRELEASED))
             throw new ServiceLayerException(ARCHIVED_OR_RELEASED, ErrorCode.RESOURCE_CONFLICT);
         AbstractLevel level = abstractLevelRepository.findById(trainingDefinition.getStartingLevel())
@@ -256,7 +261,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
             "or @securityService.isDesignerOfGivenTrainingDefinition(#definitionId)")
     public void updateGameLevel(Long definitionId, GameLevel gameLevel) {
         LOG.debug("updateGameLevel({}, {})", definitionId, gameLevel);
-        TrainingDefinition trainingDefinition = findById(definitionId);
+        TrainingDefinition trainingDefinition = trainingDefinitionService.findById(definitionId);
         if (!trainingDefinition.getState().equals(TDState.UNRELEASED))
             throw new ServiceLayerException(ARCHIVED_OR_RELEASED, ErrorCode.RESOURCE_CONFLICT);
         if (!findLevelInDefinition(trainingDefinition, gameLevel.getId()))
@@ -274,7 +279,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
             "or @securityService.isDesignerOfGivenTrainingDefinition(#definitionId)")
     public void updateInfoLevel(Long definitionId, InfoLevel infoLevel) {
         LOG.debug("updateInfoLevel({}, {})", definitionId, infoLevel);
-        TrainingDefinition trainingDefinition = findById(definitionId);
+        TrainingDefinition trainingDefinition = trainingDefinitionService.findById(definitionId);
         if (!trainingDefinition.getState().equals(TDState.UNRELEASED))
             throw new ServiceLayerException(ARCHIVED_OR_RELEASED, ErrorCode.RESOURCE_CONFLICT);
         if (!findLevelInDefinition(trainingDefinition, infoLevel.getId()))
@@ -292,7 +297,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
             "or @securityService.isDesignerOfGivenTrainingDefinition(#definitionId)")
     public void updateAssessmentLevel(Long definitionId, AssessmentLevel assessmentLevel) {
         LOG.debug("updateAssessmentLevel({}, {})", definitionId, assessmentLevel);
-        TrainingDefinition trainingDefinition = findById(definitionId);
+        TrainingDefinition trainingDefinition = trainingDefinitionService.findById(definitionId);
         if (!trainingDefinition.getState().equals(TDState.UNRELEASED))
             throw new ServiceLayerException(ARCHIVED_OR_RELEASED, ErrorCode.RESOURCE_CONFLICT);
         if (!findLevelInDefinition(trainingDefinition, assessmentLevel.getId()))
@@ -311,7 +316,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     public GameLevel createGameLevel(Long definitionId) {
         LOG.debug("createGameLevel({})", definitionId);
         Assert.notNull(definitionId, "Definition id must not be null");
-        TrainingDefinition trainingDefinition = findById(definitionId);
+        TrainingDefinition trainingDefinition = trainingDefinitionService.findById(definitionId);
         if (!trainingDefinition.getState().equals(TDState.UNRELEASED))
             throw new ServiceLayerException("Cannot create level in released or archived training definition", ErrorCode.RESOURCE_CONFLICT);
 
@@ -327,7 +332,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
 
         if (trainingDefinition.getStartingLevel() == null) {
             trainingDefinition.setStartingLevel(gL.getId());
-            update(trainingDefinition);
+            trainingDefinitionService.update(trainingDefinition);
         } else {
             AbstractLevel lastLevel = findLastLevel(trainingDefinition.getStartingLevel());
             lastLevel.setNextLevel(gL.getId());
@@ -343,7 +348,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     public InfoLevel createInfoLevel(Long definitionId) {
         LOG.debug("createInfoLevel({})", definitionId);
         Assert.notNull(definitionId, "Definition id must not be null");
-        TrainingDefinition trainingDefinition = findById(definitionId);
+        TrainingDefinition trainingDefinition = trainingDefinitionService.findById(definitionId);
         if (!trainingDefinition.getState().equals(TDState.UNRELEASED))
             throw new ServiceLayerException("Cannot create level in released or archived training definition", ErrorCode.RESOURCE_CONFLICT);
 
@@ -355,7 +360,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
 
         if (trainingDefinition.getStartingLevel() == null) {
             trainingDefinition.setStartingLevel(iL.getId());
-            update(trainingDefinition);
+            trainingDefinitionService.update(trainingDefinition);
         } else {
             AbstractLevel lastLevel = findLastLevel(trainingDefinition.getStartingLevel());
             lastLevel.setNextLevel(iL.getId());
@@ -371,7 +376,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     public AssessmentLevel createAssessmentLevel(Long definitionId) {
         LOG.debug("createAssessmentLevel({})", definitionId);
         Assert.notNull(definitionId, "Definition id must not be null");
-        TrainingDefinition trainingDefinition = findById(definitionId);
+        TrainingDefinition trainingDefinition = trainingDefinitionService.findById(definitionId);
         if (!trainingDefinition.getState().equals(TDState.UNRELEASED))
             throw new ServiceLayerException("Cannot create level in released or archived training definition.", ErrorCode.RESOURCE_CONFLICT);
 
@@ -385,7 +390,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
 
         if (trainingDefinition.getStartingLevel() == null) {
             trainingDefinition.setStartingLevel(aL.getId());
-            update(trainingDefinition);
+            trainingDefinitionService.update(trainingDefinition);
         } else {
             AbstractLevel lastLevel = findLastLevel(trainingDefinition.getStartingLevel());
             lastLevel.setNextLevel(aL.getId());
@@ -401,7 +406,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     public List<AbstractLevel> findAllLevelsFromDefinition(Long id) {
         LOG.debug("findAllLevelsFromDefinition({})", id);
         Assert.notNull(id, "Definition id must not be null");
-        TrainingDefinition trainingDefinition = findById(id);
+        TrainingDefinition trainingDefinition = trainingDefinitionService.findById(id);
         ArrayList<AbstractLevel> levels = new ArrayList<>();
         Long levelId = trainingDefinition.getStartingLevel();
         AbstractLevel level = null;
@@ -415,7 +420,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     }
 
     @Override
-    @PreAuthorize("hasAuthority({'ADMINISTRATOR', T(cz.muni.ics.kypo.training.persistence.model.enums.RoleType).DESIGNER})")
+    @PreAuthorize("hasAuthority({'ADMINISTRATOR'}) or hasAuthority({T(cz.muni.ics.kypo.training.persistence.model.enums.RoleType).DESIGNER})")
     public AbstractLevel findLevelById(Long levelId) {
         LOG.debug("findLevelById({})", levelId);
         Assert.notNull(levelId, "Input level id must not be null.");
