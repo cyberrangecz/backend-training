@@ -38,15 +38,116 @@ public class WrongFlagSubmitted extends AbstractAuditPOJO {
     @JsonProperty(value = "count", required = true)
     private int count;
 
-    public WrongFlagSubmitted(long sandboxId, long trainingDefinitionId, long trainingInstanceId, long trainingRunId, String playerLogin, long level, String flagContent, int count) {
-        this.sandboxId = sandboxId;
-        this.trainingDefinitionId = trainingDefinitionId;
-        this.trainingInstanceId = trainingInstanceId;
-        this.trainingRunId = trainingRunId;
-        this.playerLogin = playerLogin;
-        this.level = level;
-        this.flagContent = flagContent;
-        this.count = count;
+    public static SandboxIdBuilder builder() {
+        return new WrongFlagSubmittedBuilder();
+    }
+
+    public static class WrongFlagSubmittedBuilder implements SandboxIdBuilder, TrainingDefinitionIdBuilder, TrainingInstanceIdBuilder, TrainingRunIdBuilder, PlayerLoginBuilder, LevelBuilder, FlagContentBuilder, CountBuilder {
+        private long sandboxId;
+        private long trainingDefinitionId;
+        private long trainingInstanceId;
+        private long trainingRunId;
+        private String playerLogin;
+        private long level;
+        private String flagContent;
+        private int count;
+
+        @Override
+        public TrainingDefinitionIdBuilder sandboxId(long sandboxId) {
+            this.sandboxId = sandboxId;
+            return this;
+        }
+
+        @Override
+        public TrainingInstanceIdBuilder trainingDefinitionId(long trainingDefinitionId) {
+            this.trainingDefinitionId = trainingDefinitionId;
+            return this;
+        }
+
+        @Override
+        public TrainingRunIdBuilder trainingInstanceId(long trainingInstanceId) {
+            this.trainingInstanceId = trainingInstanceId;
+            return this;
+        }
+
+        @Override
+        public PlayerLoginBuilder trainingRunId(long trainingRunId) {
+            this.trainingRunId = trainingRunId;
+            return this;
+        }
+
+        @Override
+        public LevelBuilder playerLogin(String playerLogin) {
+            this.playerLogin = playerLogin;
+            return this;
+        }
+
+        @Override
+        public FlagContentBuilder level(long level) {
+            this.level = level;
+            return this;
+        }
+
+        @Override
+        public CountBuilder flagContent(String flagContent) {
+            this.flagContent = flagContent;
+            return this;
+        }
+
+        @Override
+        public WrongFlagSubmittedBuilder count(int count) {
+            this.count = count;
+            return this;
+        }
+
+        public WrongFlagSubmitted build() {
+            return new WrongFlagSubmitted(this);
+        }
+
+    }
+
+    public interface SandboxIdBuilder {
+        TrainingDefinitionIdBuilder sandboxId(long sandboxId);
+    }
+
+    public interface TrainingDefinitionIdBuilder {
+        TrainingInstanceIdBuilder trainingDefinitionId(long trainingDefinitionId);
+    }
+
+    public interface TrainingInstanceIdBuilder {
+        TrainingRunIdBuilder trainingInstanceId(long trainingInstanceId);
+    }
+
+    public interface TrainingRunIdBuilder {
+        PlayerLoginBuilder trainingRunId(long trainingRunId);
+    }
+
+    public interface PlayerLoginBuilder {
+        LevelBuilder playerLogin(String playerLogin);
+    }
+
+    public interface LevelBuilder {
+        FlagContentBuilder level(long level);
+    }
+
+    public interface FlagContentBuilder {
+        CountBuilder flagContent(String flagContent);
+    }
+
+    public interface CountBuilder {
+        WrongFlagSubmittedBuilder count(int count);
+    }
+
+    private WrongFlagSubmitted(WrongFlagSubmittedBuilder builder) {
+        this.sandboxId = builder.sandboxId;
+        this.trainingDefinitionId = builder.trainingDefinitionId;
+        this.trainingInstanceId = builder.trainingInstanceId;
+        this.trainingRunId = builder.trainingRunId;
+        this.playerLogin = builder.playerLogin;
+        this.level = builder.level;
+        this.flagContent = builder.flagContent;
+        this.count = builder.count;
+
     }
 
     public long getSandboxId() {

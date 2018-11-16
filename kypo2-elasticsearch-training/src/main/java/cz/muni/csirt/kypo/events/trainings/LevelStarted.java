@@ -41,16 +41,128 @@ public class LevelStarted extends AbstractAuditPOJO {
     @JsonProperty(value = "level_title", required = true)
     private String levelTitle;
 
-    public LevelStarted(long sandboxId, long trainingDefinitionId, long trainingInstanceId, long trainingRunId, String playerLogin, long level, LevelType levelType, int maxScore, String levelTitle) {
-        this.sandboxId = sandboxId;
-        this.trainingDefinitionId = trainingDefinitionId;
-        this.trainingInstanceId = trainingInstanceId;
-        this.trainingRunId = trainingRunId;
-        this.playerLogin = playerLogin;
-        this.level = level;
-        this.levelType = levelType;
-        this.maxScore = maxScore;
-        this.levelTitle = levelTitle;
+    public static SandboxIdBuilder builder() {
+        return new LevelStartedBuilder();
+    }
+
+    public static class LevelStartedBuilder implements SandboxIdBuilder, TrainingDefinitionIdBuilder, TrainingInstanceIdBuilder, TrainingRunIdBuilder, PlayerLoginBuilder, LevelBuilder, LevelTypeBuilder, MaxScoreBuilder, LevelTitleBuilder {
+        private long sandboxId;
+        private long trainingDefinitionId;
+        private long trainingInstanceId;
+        private long trainingRunId;
+        private String playerLogin;
+        private long level;
+        private LevelType levelType;
+        private int maxScore;
+        private String levelTitle;
+
+        @Override
+        public TrainingDefinitionIdBuilder sandboxId(long sandboxId) {
+            this.sandboxId = sandboxId;
+            return this;
+        }
+
+        @Override
+        public TrainingInstanceIdBuilder trainingDefinitionId(long trainingDefinitionId) {
+            this.trainingDefinitionId = trainingDefinitionId;
+            return this;
+        }
+
+        @Override
+        public TrainingRunIdBuilder trainingInstanceId(long trainingInstanceId) {
+            this.trainingInstanceId = trainingInstanceId;
+            return this;
+        }
+
+        @Override
+        public PlayerLoginBuilder trainingRunId(long trainingRunId) {
+            this.trainingRunId = trainingRunId;
+            return this;
+        }
+
+        @Override
+        public LevelBuilder playerLogin(String playerLogin) {
+            this.playerLogin = playerLogin;
+            return this;
+        }
+
+        @Override
+        public LevelTypeBuilder level(long level) {
+            this.level = level;
+            return this;
+        }
+
+        @Override
+        public MaxScoreBuilder levelType(LevelType levelType) {
+            this.levelType = levelType;
+            return this;
+        }
+
+        @Override
+        public LevelTitleBuilder maxScore(int maxScore) {
+            this.maxScore = maxScore;
+            return this;
+        }
+
+        @Override
+        public LevelStartedBuilder levelTitle(String levelTitle) {
+            this.levelTitle = levelTitle;
+            return this;
+        }
+
+        public LevelStarted build() {
+            return new LevelStarted(this);
+        }
+
+    }
+
+    public interface SandboxIdBuilder {
+        TrainingDefinitionIdBuilder sandboxId(long sandboxId);
+    }
+
+    public interface TrainingDefinitionIdBuilder {
+        TrainingInstanceIdBuilder trainingDefinitionId(long trainingDefinitionId);
+    }
+
+    public interface TrainingInstanceIdBuilder {
+        TrainingRunIdBuilder trainingInstanceId(long trainingInstanceId);
+    }
+
+    public interface TrainingRunIdBuilder {
+        PlayerLoginBuilder trainingRunId(long trainingRunId);
+    }
+
+    public interface PlayerLoginBuilder {
+        LevelBuilder playerLogin(String playerLogin);
+    }
+
+    public interface LevelBuilder {
+        LevelTypeBuilder level(long level);
+    }
+
+    public interface LevelTypeBuilder {
+        MaxScoreBuilder levelType(LevelType levelType);
+    }
+
+    public interface MaxScoreBuilder {
+        LevelTitleBuilder maxScore(int maxScore);
+    }
+
+    public interface LevelTitleBuilder {
+        LevelStartedBuilder levelTitle(String levelTitle);
+    }
+
+    private LevelStarted(LevelStartedBuilder builder) {
+        this.sandboxId = builder.sandboxId;
+        this.trainingDefinitionId = builder.trainingDefinitionId;
+        this.trainingInstanceId = builder.trainingInstanceId;
+        this.trainingRunId = builder.trainingRunId;
+        this.playerLogin = builder.playerLogin;
+        this.level = builder.level;
+        this.levelType = builder.levelType;
+        this.maxScore = builder.maxScore;
+        this.levelTitle = builder.levelTitle;
+
     }
 
     public long getSandboxId() {
