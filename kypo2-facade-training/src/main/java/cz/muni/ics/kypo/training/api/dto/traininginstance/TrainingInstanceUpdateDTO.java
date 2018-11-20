@@ -37,9 +37,9 @@ public class TrainingInstanceUpdateDTO {
     private int poolSize;
     private String password;
     @NotNull(message = "{traininginstanceupdate.trainingDefinition.NotNull.message}")
-    private TrainingDefinitionDTO trainingDefinition;
-    @NotNull(message = "{traininginstanceupdate.organizers.NotNull.message}")
-    private Set<UserRefDTO> organizers;
+    private Long trainingDefinitionId;
+    @NotNull(message = "{traininginstanceupdate.orgIds.NotNull.message}")
+    private Set<Long> orgIds;
 
     @ApiModelProperty(value = "Main identifier of training instance.", required = true, example = "1")
     public Long getId() {
@@ -95,27 +95,28 @@ public class TrainingInstanceUpdateDTO {
         this.password = password;
     }
 
-    @ApiModelProperty(value = "Reference to training definition from which is training instance created.", required = true)
-    public TrainingDefinitionDTO getTrainingDefinition() {
-        return trainingDefinition;
+    @ApiModelProperty(value = "Reference to training definition from which is training instance created.", required = true, example = "[1]")
+    public Long getTrainingDefinitionId() {
+        return trainingDefinitionId;
     }
 
-    public void setTrainingDefinition(TrainingDefinitionDTO trainingDefinition) {
-        this.trainingDefinition = trainingDefinition;
+    public void setTrainingDefinitionId(Long trainingDefinitionId) {
+        this.trainingDefinitionId = trainingDefinitionId;
     }
 
-    @ApiModelProperty(value = "Reference to users which organize training instance.", required = true)
-    public Set<UserRefDTO> getOrganizers() {
-        return organizers;
+    @ApiModelProperty(value = "Reference to users which organize training instance.", required = true, example = "[1]")
+    public Set<Long> getOrgIds() {
+        return orgIds;
     }
 
-    public void setOrganizers(Set<UserRefDTO> organizers) {
-        this.organizers = organizers;
+    public void setOrgIds(Set<Long> orgIds) {
+        this.orgIds = orgIds;
     }
 
-    @Override public String toString() {
+    @Override
+    public String toString() {
         return "TrainingInstanceUpdateDTO{" + "id=" + id + ", startTime=" + startTime + ", endTime=" + endTime + ", title='" + title + '\''
-            + ", poolSize=" + poolSize + ", password='" + password + '\'' + ", trainingDefinition=" + trainingDefinition + ", organizers="
-            + organizers + '}';
+                + ", poolSize=" + poolSize + ", password='" + password + '\'' + ", trainingDefinitionId=" + trainingDefinitionId + ", orgIds="
+                + orgIds + '}';
     }
 }

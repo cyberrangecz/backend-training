@@ -57,14 +57,12 @@ public class KYPODateMathParser {
 
     // checks if String is composed only from digits
     private static final Pattern ONLY_DIGITS = Pattern.compile("(\\d+)");
-    // @formatter:off
     private static final DateTimeFormatter dateFormatter = new DateTimeFormatterBuilder().append(null, new DateTimeParser[]{
             DateTimeFormat.forPattern("dd/MM/yyyy").getParser(),
             DateTimeFormat.forPattern("yyyy-MM-dd").getParser(),
             DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss").getParser(),
             DateTimeFormat.longDateTime().getParser()
     }).toFormatter();
-    // @formatter:on
 
     private static final DateTimeFormatter parser = dateFormatter.withZone(DateTimeZone.forID(ZoneId.systemDefault().getId()));
     private static final DateMathParser dateMathParser = new DateMathParser(new FormatDateTimeFormatter("YYYY.mm.dd", parser, Locale.ROOT));

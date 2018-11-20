@@ -28,6 +28,7 @@ public class GameLevelDTO extends AbstractLevelDTO {
     public String getFlag() {
         return flag;
     }
+
     public void setFlag(String flag) {
         this.flag = flag;
     }

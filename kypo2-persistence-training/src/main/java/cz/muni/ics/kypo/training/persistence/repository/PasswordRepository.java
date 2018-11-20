@@ -8,6 +8,9 @@ import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
+/**
+ * @author Boris Jadus
+ */
 @Repository
 public interface PasswordRepository extends JpaRepository<Password, Long>, QuerydslPredicateExecutor<Password> {
 

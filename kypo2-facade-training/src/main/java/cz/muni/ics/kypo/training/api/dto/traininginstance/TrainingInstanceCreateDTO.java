@@ -26,7 +26,7 @@ public class TrainingInstanceCreateDTO {
     private LocalDateTime startTime;
     @NotNull(message = "{traininginstancecreate.endTime.NotNull.message}")
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)
-		private LocalDateTime endTime;
+    private LocalDateTime endTime;
     @NotEmpty(message = "{traininginstancecreate.title.NotEmpty.message}")
     private String title;
     @NotNull(message = "{traininginstancecreate.poolSize.NotNull.message}")
@@ -36,9 +36,9 @@ public class TrainingInstanceCreateDTO {
     @NotEmpty(message = "{traininginstancecreate.password.NotEmpty.message}")
     private String password;
     @NotNull(message = "{traininginstancecreate.trainingDefinition.NotNull.message}")
-    private TrainingDefinitionDTO trainingDefinition;
-    @NotNull(message = "{traininginstancecreate.organizers.NotNull.message}")
-    private Set<UserRefDTO> organizers;
+    private long trainingDefinitionId;
+    @NotNull(message = "{traininginstancecreate.orgIds.NotNull.message}")
+    private Set<Long> orgIds;
 
     @ApiModelProperty(value = "Date when training instance starts.", required = true, example = "2018-11-20T09:31:48")
     public LocalDateTime getStartTime() {
@@ -85,26 +85,27 @@ public class TrainingInstanceCreateDTO {
         this.password = password;
     }
 
-    @ApiModelProperty(value = "Reference to training definition from which is training instance created.", required = true)
-    public TrainingDefinitionDTO getTrainingDefinition() {
-        return trainingDefinition;
+    @ApiModelProperty(value = "Reference to training definition from which is training instance created.", required = true, example = "1")
+    public long getTrainingDefinitionId() {
+        return trainingDefinitionId;
     }
 
-    public void setTrainingDefinition(TrainingDefinitionDTO trainingDefinition) {
-        this.trainingDefinition = trainingDefinition;
-    }
-    @ApiModelProperty(value = "Reference to users which organize training instance.", required = true)
-    public Set<UserRefDTO> getOrganizers() {
-        return organizers;
+    public void setTrainingDefinitionId(long trainingDefinitionId) {
+        this.trainingDefinitionId = trainingDefinitionId;
     }
 
-    public void setOrganizers(Set<UserRefDTO> organizers) {
-        this.organizers = organizers;
+    @ApiModelProperty(value = "Reference to users which organize training instance.", required = true, example = "[1]")
+    public Set<Long> getOrgIds() {
+        return orgIds;
     }
 
-    @Override public String toString() {
+    public void setOrgIds(Set<Long> orgIds) {
+        this.orgIds = orgIds;
+    }
+
+    @Override
+    public String toString() {
         return "TrainingInstanceCreateDTO{" + "startTime=" + startTime + ", endTime=" + endTime + ", title='" + title + '\'' + ", poolSize="
-            + poolSize + ", password='" + password + '\'' + ", trainingDefinition=" + trainingDefinition + ", organizers=" + organizers
-            + '}';
+                + poolSize + ", password='" + password + '\'' + ", trainingDefinitionId=" + trainingDefinitionId + ", orgIds=" + orgIds + '}';
     }
 }

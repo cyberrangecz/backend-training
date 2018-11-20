@@ -13,6 +13,7 @@ import java.util.Set;
  */
 @ApiModel(value = "GameLevelUpdateDTO", description = "Game level to update.")
 public class GameLevelUpdateDTO {
+
     @NotNull(message = "{gamelevelupdate.id.NotNull.message}")
     protected Long id;
     @NotEmpty(message = "{gamelevelupdate.title.NotEmpty.message}")

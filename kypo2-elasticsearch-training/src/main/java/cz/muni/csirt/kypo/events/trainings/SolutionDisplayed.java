@@ -7,7 +7,12 @@ import org.jsondoc.core.annotation.ApiObject;
 import org.jsondoc.core.annotation.ApiObjectField;
 
 /**
+ * This classes uses Builder pattern based on the following blog:
+ *
  * @author Pavel Šeda
+ * @see <a href="https://blog.jayway.com/2012/02/07/builder-pattern-with-a-twist/">https://blog.jayway.com/2012/02/07/builder-pattern-with-a-twist/</a>
+ * <p>
+ * Without that builder it is easy to mesh class parameters, e.g. trainingDefinitionId with trainingInstanceId.
  */
 @ApiObject(name = "Solution Displayed", description = "Type of event from trainings.")
 @JsonRootName(value = "event")
@@ -35,14 +40,104 @@ public class SolutionDisplayed extends AbstractAuditPOJO {
     @JsonProperty(value = "penalty_points", required = true)
     private int penaltyPoints;
 
-    public SolutionDisplayed(long sandboxId, long trainingDefinitionId, long trainingInstanceId, long trainingRunId, String playerLogin, long level, int penaltyPoints) {
-        this.sandboxId = sandboxId;
-        this.trainingDefinitionId = trainingDefinitionId;
-        this.trainingInstanceId = trainingInstanceId;
-        this.trainingRunId = trainingRunId;
-        this.playerLogin = playerLogin;
-        this.level = level;
-        this.penaltyPoints = penaltyPoints;
+    public static SandboxIdBuilder builder() {
+        return new SolutionDisplayedBuilder();
+    }
+
+    public static class SolutionDisplayedBuilder implements SandboxIdBuilder, TrainingDefinitionIdBuilder, TrainingInstanceIdBuilder, TrainingRunIdBuilder, PlayerLoginBuilder, LevelBuilder, PenaltyPointsBuilder {
+        private long sandboxId;
+        private long trainingDefinitionId;
+        private long trainingInstanceId;
+        private long trainingRunId;
+        private String playerLogin;
+        private long level;
+        private int penaltyPoints;
+
+        @Override
+        public TrainingDefinitionIdBuilder sandboxId(long sandboxId) {
+            this.sandboxId = sandboxId;
+            return this;
+        }
+
+        @Override
+        public TrainingInstanceIdBuilder trainingDefinitionId(long trainingDefinitionId) {
+            this.trainingDefinitionId = trainingDefinitionId;
+            return this;
+        }
+
+        @Override
+        public TrainingRunIdBuilder trainingInstanceId(long trainingInstanceId) {
+            this.trainingInstanceId = trainingInstanceId;
+            return this;
+        }
+
+        @Override
+        public PlayerLoginBuilder trainingRunId(long trainingRunId) {
+            this.trainingRunId = trainingRunId;
+            return this;
+        }
+
+        @Override
+        public LevelBuilder playerLogin(String playerLogin) {
+            this.playerLogin = playerLogin;
+            return this;
+        }
+
+        @Override
+        public PenaltyPointsBuilder level(long level) {
+            this.level = level;
+            return this;
+        }
+
+        @Override
+        public SolutionDisplayedBuilder penaltyPoints(int penaltyPoints) {
+            this.penaltyPoints = penaltyPoints;
+            return this;
+        }
+
+        public SolutionDisplayed build() {
+            return new SolutionDisplayed(this);
+        }
+
+
+    }
+
+    public interface SandboxIdBuilder {
+        TrainingDefinitionIdBuilder sandboxId(long sandboxId);
+    }
+
+    public interface TrainingDefinitionIdBuilder {
+        TrainingInstanceIdBuilder trainingDefinitionId(long trainingDefinitionId);
+    }
+
+    public interface TrainingInstanceIdBuilder {
+        TrainingRunIdBuilder trainingInstanceId(long trainingInstanceId);
+    }
+
+    public interface TrainingRunIdBuilder {
+        PlayerLoginBuilder trainingRunId(long trainingRunId);
+    }
+
+    public interface PlayerLoginBuilder {
+        LevelBuilder playerLogin(String playerLogin);
+    }
+
+    public interface LevelBuilder {
+        PenaltyPointsBuilder level(long level);
+    }
+
+    public interface PenaltyPointsBuilder {
+        SolutionDisplayedBuilder penaltyPoints(int penaltyPoints);
+    }
+
+    private SolutionDisplayed(SolutionDisplayedBuilder builder) {
+        this.sandboxId = builder.sandboxId;
+        this.trainingDefinitionId = builder.trainingDefinitionId;
+        this.trainingInstanceId = builder.trainingInstanceId;
+        this.trainingRunId = builder.trainingRunId;
+        this.playerLogin = builder.playerLogin;
+        this.level = builder.level;
+        this.penaltyPoints = builder.penaltyPoints;
     }
 
     public long getSandboxId() {

@@ -1,5 +1,8 @@
 package cz.muni.ics.kypo.training.persistence.utils;
 
+/**
+ * @author Pavel Seda
+ */
 public class SandboxInfo {
 
     private Long id;

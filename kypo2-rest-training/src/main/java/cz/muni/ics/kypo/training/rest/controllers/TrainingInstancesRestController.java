@@ -77,7 +77,6 @@ public class TrainingInstancesRestController {
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Training instance found", response = TrainingInstanceDTO.class), @ApiResponse(code = 404, message = "Training instance with given id not found."),
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.")
-
     })
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> findTrainingInstanceById(
@@ -157,10 +156,9 @@ public class TrainingInstancesRestController {
             @ApiResponse(code = 201, message = "Training instance created.", response = TrainingInstanceCreateDTO.class),
             @ApiResponse(code = 400, message = "Given training instance is not valid."),
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.")
-
     })
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Object> createTrainingInstance(@ApiParam(name = "Training instance to be created") @Valid @RequestBody TrainingInstanceCreateDTO trainingInstanceCreateDTO,
+    public ResponseEntity<Object> createTrainingInstance(@ApiParam(value = "Training instance to be created") @Valid @RequestBody TrainingInstanceCreateDTO trainingInstanceCreateDTO,
                                                          @ApiParam(value = "Fields which should be returned in REST API response", required = false)
                                                          @RequestParam(value = "fields", required = false) String fields) {
         try {
@@ -169,7 +167,6 @@ public class TrainingInstancesRestController {
             return new ResponseEntity<>(SquigglyUtils.stringify(objectMapper, trainingInstanceResource), HttpStatus.OK);
         } catch (FacadeLayerException ex) {
             throw ExceptionSorter.throwException(ex);
-
         }
     }
 
@@ -184,7 +181,7 @@ public class TrainingInstancesRestController {
             @ApiResponse(code = 409, message = "The requested resource was not deleted because of its finish time")
     })
     @PutMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> updateTrainingInstance(@ApiParam(name = "Training instance to be updated") @RequestBody @Valid TrainingInstanceUpdateDTO trainingInstanceUpdateDTO) {
+    public ResponseEntity<String> updateTrainingInstance(@ApiParam(value = "Training instance to be updated") @RequestBody @Valid TrainingInstanceUpdateDTO trainingInstanceUpdateDTO) {
         try {
             return new ResponseEntity<>(trainingInstanceFacade.update(trainingInstanceUpdateDTO), HttpStatus.OK);
         } catch (FacadeLayerException ex) {
@@ -203,7 +200,6 @@ public class TrainingInstancesRestController {
             @ApiResponse(code = 404, message = "Training instance with given id not found."),
             @ApiResponse(code = 409, message = "Starting time of instance must be in future."),
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.")
-
     })
     @DeleteMapping(value = "/{id}")
     public ResponseEntity<Void> deleteTrainingInstance(@ApiParam(value = "Id of training instance to be deleted") @PathVariable(value = "id") Long id) {
@@ -212,9 +208,7 @@ public class TrainingInstancesRestController {
             return new ResponseEntity<>(HttpStatus.OK);
         } catch (FacadeLayerException ex) {
             throw ExceptionSorter.throwException(ex);
-
         }
-
     }
 
     @ApiOperation(httpMethod = "POST",
@@ -262,7 +256,6 @@ public class TrainingInstancesRestController {
             @RequestParam MultiValueMap<String, String> parameters,
             @ApiParam(value = "Fields which should be returned in REST API response", required = false)
             @RequestParam(value = "fields") String fields) {
-
         LOG.debug("findAllTrainingRunsByTrainingInstnceId({})", instanceId);
         PageResultResource<TrainingRunDTO> trainingRunResource = trainingInstanceFacade.findTrainingRunsByTrainingInstance(instanceId, pageable);
         Squiggly.init(objectMapper, fields);

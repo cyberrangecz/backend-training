@@ -9,6 +9,7 @@ import java.util.List;
 
 @ApiModel(value = "AccessTrainingRunDTO", description = ".")
 public class AccessTrainingRunDTO {
+
     private AbstractLevelDTO abstractLevelDTO;
     private List<BasicLevelInfoDTO> infoAboutLevels;
 

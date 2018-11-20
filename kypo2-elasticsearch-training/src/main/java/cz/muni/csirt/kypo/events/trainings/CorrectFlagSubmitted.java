@@ -7,7 +7,12 @@ import org.jsondoc.core.annotation.ApiObject;
 import org.jsondoc.core.annotation.ApiObjectField;
 
 /**
+ * This classes uses Builder pattern based on the following blog:
+ *
  * @author Pavel Šeda
+ * @see <a href="https://blog.jayway.com/2012/02/07/builder-pattern-with-a-twist/">https://blog.jayway.com/2012/02/07/builder-pattern-with-a-twist/</a>
+ * <p>
+ * Without that builder it is easy to mesh class parameters, e.g. trainingDefinitionId with trainingInstanceId.
  */
 @ApiObject(name = "Correct Flag Submitted", description = "Type of event from trainings.")
 @JsonRootName(value = "event")
@@ -35,14 +40,103 @@ public class CorrectFlagSubmitted extends AbstractAuditPOJO {
     @JsonProperty(value = "flag_content", required = true)
     private String flagContent;
 
-    public CorrectFlagSubmitted(long sandboxId, long trainingDefinitionId, long trainingInstanceId, long trainingRunId, String playerLogin, long level, String flagContent) {
-        this.sandboxId = sandboxId;
-        this.trainingDefinitionId = trainingDefinitionId;
-        this.trainingInstanceId = trainingInstanceId;
-        this.trainingRunId = trainingRunId;
-        this.playerLogin = playerLogin;
-        this.level = level;
-        this.flagContent = flagContent;
+    public static SandboxIdBuilder builder() {
+        return new CorrectFlagSubmittedBuilder();
+    }
+
+    public static class CorrectFlagSubmittedBuilder implements SandboxIdBuilder, TrainingDefinitionIdBuilder, TrainingInstanceIdBuilder, TrainingRunIdBuilder, PlayerLoginBuilder, LevelBuilder, FlagContentBuilder {
+        private long sandboxId;
+        private long trainingDefinitionId;
+        private long trainingInstanceId;
+        private long trainingRunId;
+        private String playerLogin;
+        private long level;
+        private String flagContent;
+
+        @Override
+        public TrainingDefinitionIdBuilder sandboxId(long sandboxId) {
+            this.sandboxId = sandboxId;
+            return this;
+        }
+
+        @Override
+        public TrainingInstanceIdBuilder trainingDefinitionId(long trainingDefinitionId) {
+            this.trainingDefinitionId = trainingDefinitionId;
+            return this;
+        }
+
+        @Override
+        public TrainingRunIdBuilder trainingInstanceId(long trainingInstanceId) {
+            this.trainingInstanceId = trainingInstanceId;
+            return this;
+        }
+
+        @Override
+        public PlayerLoginBuilder trainingRunId(long trainingRunId) {
+            this.trainingRunId = trainingRunId;
+            return this;
+        }
+
+        @Override
+        public LevelBuilder playerLogin(String playerLogin) {
+            this.playerLogin = playerLogin;
+            return this;
+        }
+
+        @Override
+        public FlagContentBuilder level(long level) {
+            this.level = level;
+            return this;
+        }
+
+        @Override
+        public CorrectFlagSubmittedBuilder flagContent(String flagContent) {
+            this.flagContent = flagContent;
+            return this;
+        }
+
+        public CorrectFlagSubmitted build() {
+            return new CorrectFlagSubmitted(this);
+        }
+    }
+
+    public interface SandboxIdBuilder {
+        TrainingDefinitionIdBuilder sandboxId(long sandboxId);
+    }
+
+    public interface TrainingDefinitionIdBuilder {
+        TrainingInstanceIdBuilder trainingDefinitionId(long trainingDefinitionId);
+    }
+
+    public interface TrainingInstanceIdBuilder {
+        TrainingRunIdBuilder trainingInstanceId(long trainingInstanceId);
+    }
+
+    public interface TrainingRunIdBuilder {
+        PlayerLoginBuilder trainingRunId(long trainingRunId);
+    }
+
+    public interface PlayerLoginBuilder {
+        LevelBuilder playerLogin(String playerLogin);
+    }
+
+    public interface LevelBuilder {
+        FlagContentBuilder level(long level);
+    }
+
+    public interface FlagContentBuilder {
+        CorrectFlagSubmittedBuilder flagContent(String flagContent);
+    }
+
+
+    private CorrectFlagSubmitted(CorrectFlagSubmittedBuilder builder) {
+        this.sandboxId = builder.sandboxId;
+        this.trainingDefinitionId = builder.trainingDefinitionId;
+        this.trainingInstanceId = builder.trainingInstanceId;
+        this.trainingRunId = builder.trainingRunId;
+        this.playerLogin = builder.playerLogin;
+        this.level = builder.level;
+        this.flagContent = builder.flagContent;
     }
 
     public long getSandboxId() {

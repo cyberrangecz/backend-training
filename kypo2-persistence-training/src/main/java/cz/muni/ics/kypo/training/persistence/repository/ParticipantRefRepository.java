@@ -8,6 +8,9 @@ import cz.muni.ics.kypo.training.persistence.model.ParticipantRef;
 
 import java.util.Optional;
 
+/**
+ * @author Pavel Seda
+ */
 @Repository
 public interface ParticipantRefRepository extends JpaRepository<ParticipantRef, Long>, QuerydslPredicateExecutor<ParticipantRef> {
 

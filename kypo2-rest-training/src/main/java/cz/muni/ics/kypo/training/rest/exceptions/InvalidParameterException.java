@@ -10,8 +10,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
         reason = "The requested resource is capable of generating only content not acceptable according to the Accept headers sent in the request.")
 public class InvalidParameterException extends RuntimeException {
 
-    private static final long serialVersionUID = -8624578151167634036L;
-
     public InvalidParameterException() {
     }
 

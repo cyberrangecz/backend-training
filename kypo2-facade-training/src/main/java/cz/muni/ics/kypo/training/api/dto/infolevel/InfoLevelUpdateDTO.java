@@ -11,6 +11,7 @@ import io.swagger.annotations.ApiModelProperty;
  */
 @ApiModel(value = "InfoLevelUpdateDTO", description = "Info level to update.")
 public class InfoLevelUpdateDTO {
+
     @NotNull(message = "{infolevelupdate.id.NotNull.message}")
     protected Long id;
     @NotEmpty(message = "{infolevelupdate.title.NotEmpty.message}")

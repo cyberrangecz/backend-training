@@ -34,7 +34,6 @@ public class EsAvroSchemaGenerator {
 
     /**
      * Generates avro serialization files.
-     *
      */
     private final void runGenerateAVROSchemas(String topLevelClasses, String validationFolderName, List<String> excludes) {
         try {

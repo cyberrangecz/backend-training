@@ -58,7 +58,8 @@ public class Password implements Serializable {
         return Objects.hash(id, password);
     }
 
-    @Override public String toString() {
+    @Override
+    public String toString() {
         return "Password{" + "id=" + id + ", password='" + password + '\'' + '}';
     }
 }

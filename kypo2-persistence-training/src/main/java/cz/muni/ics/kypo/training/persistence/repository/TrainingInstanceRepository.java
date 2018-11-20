@@ -16,6 +16,6 @@ import java.util.List;
 @Repository
 public interface TrainingInstanceRepository extends JpaRepository<TrainingInstance, Long>, QuerydslPredicateExecutor<TrainingInstance> {
 
-	@Query("SELECT ti FROM TrainingInstance ti INNER JOIN ti.trainingDefinition td WHERE td.id = :trainingDefId")
-	List<TrainingInstance> findAllByTrainingDefinitionId(@Param("trainingDefId") Long trainingDefId);
+    @Query("SELECT ti FROM TrainingInstance ti INNER JOIN ti.trainingDefinition td WHERE td.id = :trainingDefId")
+    List<TrainingInstance> findAllByTrainingDefinitionId(@Param("trainingDefId") Long trainingDefId);
 }

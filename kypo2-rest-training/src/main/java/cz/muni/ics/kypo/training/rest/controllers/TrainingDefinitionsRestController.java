@@ -140,7 +140,6 @@ public class TrainingDefinitionsRestController {
         PageResultResource<TrainingDefinitionDTO> trainingDefinitionResource = trainingDefinitionFacade.findAll(predicate, pageable);
         Squiggly.init(objectMapper, fields);
         return new ResponseEntity<>(SquigglyUtils.stringify(objectMapper, trainingDefinitionResource), HttpStatus.OK);
-
     }
 
     @ApiOperation(httpMethod = "GET",
@@ -224,8 +223,7 @@ public class TrainingDefinitionsRestController {
             @ApiResponse(code = 404, message = "Training definition with given id not found."),
             @ApiResponse(code = 409, message = "Cannot copy unreleased training definition."),
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.")
-    }
-    )
+    })
     @PostMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<TrainingDefinitionDTO> cloneTrainingDefinition(
             @ApiParam(value = "Id of training definition to be cloned")
@@ -249,8 +247,7 @@ public class TrainingDefinitionsRestController {
             @ApiResponse(code = 404, message = "Training definition with given id not found."),
             @ApiResponse(code = 409, message = "Cannot edit released or archived training definition or cannot swap first level to the left."),
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.")
-    }
-    )
+    })
     @PutMapping(value = "/{definitionId}/levels/{levelId}/swap-left", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> swapLeft(
             @ApiParam(value = "Id of training definition")
@@ -275,8 +272,7 @@ public class TrainingDefinitionsRestController {
             @ApiResponse(code = 404, message = "Training definition with given id not found."),
             @ApiResponse(code = 409, message = "Cannot edit released or archived training definition or cannot swap last level to the right."),
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.")
-    }
-    )
+    })
     @PutMapping(value = "/{definitionId}/levels/{levelId}/swap-right", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> swapRight(
             @ApiParam(value = "Id of training definition")
@@ -299,8 +295,7 @@ public class TrainingDefinitionsRestController {
             @ApiResponse(code = 404, message = "Training definition or one of levels cannot be found."),
             @ApiResponse(code = 409, message = "Cannot delete released training definition."),
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.")
-    }
-    )
+    })
     @DeleteMapping(value = "/{id}")
     public ResponseEntity<Void> deleteTrainingDefinition(
             @ApiParam(value = "Id of training definition to be deleted")
@@ -350,8 +345,7 @@ public class TrainingDefinitionsRestController {
             @ApiResponse(code = 409, message = "Cannot edit released or archived training definition."),
             @ApiResponse(code = 404, message = "Level not found in definition."),
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.")
-    }
-    )
+    })
     @PutMapping(value = "/{definitionId}/game-levels", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Void> updateGameLevel(
             @ApiParam(value = "Id of definition to which level is assigned")
@@ -377,8 +371,7 @@ public class TrainingDefinitionsRestController {
             @ApiResponse(code = 409, message = "Cannot edit released or archived training definition."),
             @ApiResponse(code = 404, message = "Level not found in definition."),
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.")
-    }
-    )
+    })
     @PutMapping(value = "/{definitionId}/info-levels", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Void> updateInfoLevel(
             @ApiParam(value = "Id of definition to which level is assigned")
@@ -404,8 +397,7 @@ public class TrainingDefinitionsRestController {
             @ApiResponse(code = 409, message = "Cannot edit released or archived training definition."),
             @ApiResponse(code = 404, message = "Level not found in definition."),
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.")
-    }
-    )
+    })
     @PutMapping(value = "/{definitionId}/assessment-levels", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Void> updateAssessmentLevel(
             @ApiParam(value = "Id of definition to which level is assigned")
@@ -452,7 +444,7 @@ public class TrainingDefinitionsRestController {
             nickname = "createLevel",
             produces = "application/json")
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Level created.", response = AbstractLevelDTO.class),
+            @ApiResponse(code = 201, message = "Level created.", response = AbstractLevelDTO.class),
             @ApiResponse(code = 404, message = "Training definition with given id not found."),
             @ApiResponse(code = 409, message = "Cannot create level in released or archived training definition."),
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.")

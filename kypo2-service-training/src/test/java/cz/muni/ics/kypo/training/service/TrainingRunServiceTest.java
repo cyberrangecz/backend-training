@@ -141,6 +141,7 @@ public class TrainingRunServiceTest {
 
 
     }
+
     @Test
     public void getTrainingRunById() {
         given(trainingRunRepository.findById(trainingRun1.getId())).willReturn(Optional.of(trainingRun1));
@@ -188,18 +189,18 @@ public class TrainingRunServiceTest {
         trainingRunService.accessTrainingRun("wrong");
 
     }
-/**
-    @Test
-    public void accessTrainingRunWithNoAvailableSandbox() {
-        thrown.expect(ServiceLayerException.class);
-        thrown.expectMessage("There is no available sandbox, wait a minute and try again.");
-        mockSpringSecurityContextForGet();
-        given(trainingInstanceRepository.findAll()).willReturn(Arrays.asList(trainingInstance));
-        given(trainingRunRepository.findSandboxInstanceRefsOfTrainingInstance(trainingInstance.getId())).willReturn(new HashSet<>(Arrays.asList(sandboxInstanceRef1, sandboxInstanceRef2)));
-        given(trainingRunRepository.save(any(TrainingRun.class))).willReturn(trainingRun1);
-        trainingRunService.accessTrainingRun("password");
-    }
-*/
+
+    /**
+     * @Test public void accessTrainingRunWithNoAvailableSandbox() {
+     * thrown.expect(ServiceLayerException.class);
+     * thrown.expectMessage("There is no available sandbox, wait a minute and try again.");
+     * mockSpringSecurityContextForGet();
+     * given(trainingInstanceRepository.findAll()).willReturn(Arrays.asList(trainingInstance));
+     * given(trainingRunRepository.findSandboxInstanceRefsOfTrainingInstance(trainingInstance.getId())).willReturn(new HashSet<>(Arrays.asList(sandboxInstanceRef1, sandboxInstanceRef2)));
+     * given(trainingRunRepository.save(any(TrainingRun.class))).willReturn(trainingRun1);
+     * trainingRunService.accessTrainingRun("password");
+     * }
+     */
     //TODO Boris Fix that test
 //    @Test
 //    public void accessTrainingRun() {
@@ -213,11 +214,9 @@ public class TrainingRunServiceTest {
 //        AbstractLevel level = trainingRunService.accessTrainingRun("b5f3dc27a09865be37cef07816c4f08cf5585b116a4e74b9387c3e43e3a25ec8");
 //        assertEquals(gameLevel, level);
 //    }
-
-
     private void mockSpringSecurityContextForGet() {
         JsonObject sub = new JsonObject();
-        sub.addProperty("sub","participant" );
+        sub.addProperty("sub", "participant");
         Authentication authentication = Mockito.mock(Authentication.class);
         OAuth2Authentication auth = Mockito.mock(OAuth2Authentication.class);
         SecurityContext securityContext = Mockito.mock(SecurityContext.class);
@@ -228,18 +227,18 @@ public class TrainingRunServiceTest {
         given(authentication.getDetails()).willReturn(auth);
     }
 
-     @Test
-     public void isCorrectFlag() {
+    @Test
+    public void isCorrectFlag() {
         given(trainingRunRepository.findByIdWithLevel(trainingRun1.getId())).willReturn(Optional.of(trainingRun1));
         Boolean isCorrect = trainingRunService.isCorrectFlag(trainingRun1.getId(), "flag");
         assertTrue(isCorrect);
-     }
+    }
 
-     @Test
-     public void isCorrectFlagOfNonGameLevel() {
+    @Test
+    public void isCorrectFlagOfNonGameLevel() {
         thrown.expect(ServiceLayerException.class);
-         thrown.expectMessage("Current level is not game level and does not have flag.");
-         given(trainingRunRepository.findByIdWithLevel(trainingRun2.getId())).willReturn(Optional.of(trainingRun2));
+        thrown.expectMessage("Current level is not game level and does not have flag.");
+        given(trainingRunRepository.findByIdWithLevel(trainingRun2.getId())).willReturn(Optional.of(trainingRun2));
         trainingRunService.isCorrectFlag(trainingRun2.getId(), "flag");
     }
 
@@ -263,19 +262,19 @@ public class TrainingRunServiceTest {
         given(trainingRunRepository.findByIdWithLevel(trainingRun1.getId())).willReturn(Optional.of(trainingRun1));
         given(hintRepository.findById(1L)).willReturn(Optional.ofNullable(hint1));
         Hint resultHint1 = trainingRunService.getHint(trainingRun1.getId(), 1L);
-        assertEquals(hint1,resultHint1);
+        assertEquals(hint1, resultHint1);
 
     }
 
-		@Test
-		public void getRemainingAttempts() {
-				given(trainingRunRepository.findByIdWithLevel(trainingRun1.getId())).willReturn(Optional.ofNullable(trainingRun1));
-				int attempts = trainingRunService.getRemainingAttempts(trainingRun1.getId());
-				assertEquals(5, attempts);
-		}
+    @Test
+    public void getRemainingAttempts() {
+        given(trainingRunRepository.findByIdWithLevel(trainingRun1.getId())).willReturn(Optional.ofNullable(trainingRun1));
+        int attempts = trainingRunService.getRemainingAttempts(trainingRun1.getId());
+        assertEquals(5, attempts);
+    }
 
 
-		@Test
+    @Test
     public void getHintOfNonGameLevel() {
         thrown.expect(ServiceLayerException.class);
         thrown.expectMessage("Current level is not game level and does not have hints.");
@@ -316,7 +315,7 @@ public class TrainingRunServiceTest {
 
         given(trainingRunRepository.findAll(any(Predicate.class), any(Pageable.class))).willReturn(p);
 
-        Page pr = trainingRunService.findAll(predicate, PageRequest.of(0,2));
+        Page pr = trainingRunService.findAll(predicate, PageRequest.of(0, 2));
         assertEquals(2, pr.getTotalElements());
     }
 
