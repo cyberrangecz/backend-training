@@ -40,7 +40,7 @@ public class TrainingInstanceCreateDTO {
     @NotNull(message = "{traininginstancecreate.organizers.NotNull.message}")
     private Set<UserRefDTO> organizers;
 
-    @ApiModelProperty(value = "Date when training instance starts.", required = true, example = "2018-10-19 10:23:54+02")
+    @ApiModelProperty(value = "Date when training instance starts.", required = true, example = "2018-11-20T09:31:48")
     public LocalDateTime getStartTime() {
         return startTime;
     }
@@ -49,7 +49,7 @@ public class TrainingInstanceCreateDTO {
         this.startTime = startTime;
     }
 
-    @ApiModelProperty(value = "Date when training instance ends.", required = true, example = "2018-10-25 10:23:54+02")
+    @ApiModelProperty(value = "Date when training instance ends.", required = true, example = "2018-11-25T09:31:48")
     public LocalDateTime getEndTime() {
         return endTime;
     }

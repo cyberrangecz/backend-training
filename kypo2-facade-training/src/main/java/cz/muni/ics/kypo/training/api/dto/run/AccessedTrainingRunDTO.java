@@ -39,7 +39,7 @@ public class AccessedTrainingRunDTO {
         this.title = title;
     }
 
-    @ApiModelProperty(value = "Start date of training instance for which the training run was created.", example = "2016-10-19 10:23:54+02")
+    @ApiModelProperty(value = "Start date of training instance for which the training run was created.", example = "2016-10-19T10:23:54")
     public LocalDateTime getTrainingInstanceStartDate() {
         return trainingInstanceStartDate;
     }
@@ -48,7 +48,7 @@ public class AccessedTrainingRunDTO {
         this.trainingInstanceStartDate = trainingInstanceStartDate;
     }
 
-    @ApiModelProperty(value = "End date of training instance for which the training run was created.", example = "2017-10-19 10:23:54+02")
+    @ApiModelProperty(value = "End date of training instance for which the training run was created.", example = "2017-10-19T10:23:54")
     public LocalDateTime getTrainingInstanceEndDate() {
         return trainingInstanceEndDate;
     }

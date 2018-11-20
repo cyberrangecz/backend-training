@@ -50,7 +50,7 @@ public class TrainingInstanceUpdateDTO {
         this.id = id;
     }
 
-    @ApiModelProperty(value = "Date when training instance starts.", required = true, example = "2016-10-19 10:23:54+02")
+    @ApiModelProperty(value = "Date when training instance starts.", required = true, example = "2019-10-19T10:23:54")
     public LocalDateTime getStartTime() {
         return startTime;
     }
@@ -59,7 +59,7 @@ public class TrainingInstanceUpdateDTO {
         this.startTime = startTime;
     }
 
-    @ApiModelProperty(value = "Date when training instance ends.", required = true, example = "2017-10-19 10:23:54+02")
+    @ApiModelProperty(value = "Date when training instance ends.", required = true, example = "2019-10-25T10:23:54")
     public LocalDateTime getEndTime() {
         return endTime;
     }
