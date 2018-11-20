@@ -40,20 +40,20 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     private AssessmentLevelRepository assessmentLevelRepository;
     private static final String ARCHIVED_OR_RELEASED = "Cannot edit released or archived training definition.";
     private static final String LEVEL_NOT_FOUND = "Level not found.";
-    @Lazy
-    @Autowired
     private TrainingDefinitionService trainingDefinitionService;
 
     @Autowired
     public TrainingDefinitionServiceImpl(TrainingDefinitionRepository trainingDefinitionRepository,
                                          AbstractLevelRepository abstractLevelRepository, InfoLevelRepository infoLevelRepository, GameLevelRepository gameLevelRepository,
-                                         AssessmentLevelRepository assessmentLevelRepository, TrainingInstanceRepository trainingInstanceRepository) {
+                                         AssessmentLevelRepository assessmentLevelRepository, TrainingInstanceRepository trainingInstanceRepository, @Lazy
+                                         TrainingDefinitionService trainingDefinitionService) {
         this.trainingDefinitionRepository = trainingDefinitionRepository;
         this.abstractLevelRepository = abstractLevelRepository;
         this.gameLevelRepository = gameLevelRepository;
         this.infoLevelRepository = infoLevelRepository;
         this.assessmentLevelRepository = assessmentLevelRepository;
         this.trainingInstanceRepository = trainingInstanceRepository;
+        this.trainingDefinitionService = trainingDefinitionService;
     }
 
     @Override
@@ -73,7 +73,6 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
 
     }
 
-    //TODO repair organizer role
     @Override
     @PreAuthorize("hasAuthority({'ADMINISTRATOR'}) or hasAuthority({T(cz.muni.ics.kypo.training.persistence.model.enums.RoleType).DESIGNER})")
     public TrainingDefinition create(TrainingDefinition trainingDefinition) {

@@ -46,17 +46,17 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
     private TrainingRunRepository trainingRunRepository;
     private PasswordRepository passwordRepository;
     private RestTemplate restTemplate;
-    @Lazy
-    @Autowired
     private TrainingInstanceService trainingInstanceService;
 
     @Autowired
     public TrainingInstanceServiceImpl(TrainingInstanceRepository trainingInstanceRepository, PasswordRepository passwordRepository,
-                                       RestTemplate restTemplate, TrainingRunRepository trainingRunRepository) {
+                                       RestTemplate restTemplate, TrainingRunRepository trainingRunRepository,
+                                       @Lazy TrainingInstanceService trainingInstanceService) {
         this.trainingInstanceRepository = trainingInstanceRepository;
         this.trainingRunRepository = trainingRunRepository;
         this.passwordRepository = passwordRepository;
         this.restTemplate = restTemplate;
+        this.trainingInstanceService = trainingInstanceService;
     }
 
     @Override
