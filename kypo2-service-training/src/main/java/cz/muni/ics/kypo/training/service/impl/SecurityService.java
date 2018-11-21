@@ -7,6 +7,8 @@ import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.repository.TrainingDefinitionRepository;
 import cz.muni.ics.kypo.training.persistence.repository.TrainingInstanceRepository;
 import cz.muni.ics.kypo.training.persistence.repository.TrainingRunRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
@@ -14,6 +16,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class SecurityService {
+    private static final Logger log = LoggerFactory.getLogger(SecurityService.class);
 
     private TrainingRunRepository trainingRunRepository;
     private TrainingDefinitionRepository trainingDefinitionRepository;
@@ -38,6 +41,7 @@ public class SecurityService {
     }
 
     public boolean isDesignerOfGivenTrainingDefinition(Long definitionId) {
+        log.info("AJ TU FUNGUJE ");
         TrainingDefinition trainingDefinition = trainingDefinitionRepository.findById(definitionId).orElseThrow(() -> new ServiceLayerException("The necessary permissions are required for a resource.", ErrorCode.SECURITY_RIGHTS));
         return trainingDefinition.getAuthorRef().stream().anyMatch(a -> a.getAuthorRefLogin().equals(getSubOfLoggedInUser()));
     }

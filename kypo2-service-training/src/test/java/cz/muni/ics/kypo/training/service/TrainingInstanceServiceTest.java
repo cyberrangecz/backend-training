@@ -44,9 +44,6 @@ public class TrainingInstanceServiceTest {
     private TrainingInstanceRepository trainingInstanceRepository;
 
     @Mock
-    private TrainingInstanceService lazyTrainingInstanceService;
-
-    @Mock
     private RestTemplate restTemplate;
 
     @Mock
@@ -64,7 +61,7 @@ public class TrainingInstanceServiceTest {
     public void init() {
         MockitoAnnotations.initMocks(this);
         trainingInstanceService = new TrainingInstanceServiceImpl(trainingInstanceRepository, passwordRepository, restTemplate,
-                trainingRunRepository, lazyTrainingInstanceService, userRefRepository);
+                trainingRunRepository, userRefRepository);
 
         trainingInstance1 = new TrainingInstance();
         trainingInstance1.setId(1L);

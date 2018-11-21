@@ -79,7 +79,7 @@ public class TrainingRunServiceTest {
     public void init() {
         MockitoAnnotations.initMocks(this);
         trainingRunService = new TrainingRunServiceImpl(trainingRunRepository, abstractLevelRepository, trainingInstanceRepository,
-            participantRefRepository, restTemplate, hintRepository, auditService, lazyTrainingRunService);
+            participantRefRepository, restTemplate, hintRepository, auditService);
 
         trainingDefinition = new TrainingDefinition();
         trainingDefinition.setId(1L);

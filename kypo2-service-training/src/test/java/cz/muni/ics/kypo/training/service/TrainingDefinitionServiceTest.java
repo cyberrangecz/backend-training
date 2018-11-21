@@ -16,7 +16,6 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.mockito.Spy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -39,9 +38,6 @@ public class TrainingDefinitionServiceTest {
     public ExpectedException thrown = ExpectedException.none();
 
     private TrainingDefinitionService trainingDefinitionService;
-
-    @Mock
-    private TrainingDefinitionService lazyTrainingDefinitionService;
 
     @Mock
     private TrainingDefinitionRepository trainingDefinitionRepository;
@@ -79,7 +75,7 @@ public class TrainingDefinitionServiceTest {
     public void init() {
         MockitoAnnotations.initMocks(this);
         trainingDefinitionService = new TrainingDefinitionServiceImpl(trainingDefinitionRepository, abstractLevelRepository,
-            infoLevelRepository, gameLevelRepository, assessmentLevelRepository, trainingInstanceRepository, lazyTrainingDefinitionService, authorRefRepository, sandboxDefinitionRefRepository);
+                infoLevelRepository, gameLevelRepository, assessmentLevelRepository, trainingInstanceRepository, authorRefRepository, sandboxDefinitionRefRepository);
 
         level3 = new AssessmentLevel();
         level3.setId(3L);
@@ -187,7 +183,7 @@ public class TrainingDefinitionServiceTest {
         tDcloned.setState(TDState.UNRELEASED);
         tDcloned.setDescription(trainingDefinition1.getDescription());
 
-        given(lazyTrainingDefinitionService.findById(trainingDefinition1.getId())).willReturn(trainingDefinition1);
+        given(trainingDefinitionRepository.findById(trainingDefinition1.getId())).willReturn(Optional.of(trainingDefinition1));
         given(trainingDefinitionRepository.save(any(TrainingDefinition.class))).willReturn(tDcloned);
 
         TrainingDefinition optionalNewClone = trainingDefinitionService.clone(trainingDefinition1.getId());
@@ -197,12 +193,13 @@ public class TrainingDefinitionServiceTest {
         assertNotEquals(trainingDefinition1.getState(), optionalNewClone.getState());
         assertEquals(trainingDefinition1.getDescription(), optionalNewClone.getDescription());
 
+        then(trainingDefinitionRepository).should().findById(trainingDefinition1.getId());
         then(trainingDefinitionRepository).should().save(any(TrainingDefinition.class));
     }
 
     @Test
     public void cloneTrainingDefinitionWithCannotBeClonedException() {
-        given(lazyTrainingDefinitionService.findById(unreleasedDefinition.getId())).willReturn(unreleasedDefinition);
+        given(trainingDefinitionRepository.findById(unreleasedDefinition.getId())).willReturn(Optional.of(unreleasedDefinition));
 
         thrown.expect(ServiceLayerException.class);
         thrown.expectMessage("Cannot copy unreleased training definition");
@@ -219,16 +216,17 @@ public class TrainingDefinitionServiceTest {
 
     @Test
     public void updateTrainingDefinition() {
-        given(lazyTrainingDefinitionService.findById(unreleasedDefinition.getId())).willReturn(unreleasedDefinition);
+        given(trainingDefinitionRepository.findById(unreleasedDefinition.getId())).willReturn(Optional.of(unreleasedDefinition));
 
         trainingDefinitionService.update(unreleasedDefinition);
 
+        then(trainingDefinitionRepository).should().findById(unreleasedDefinition.getId());
         then(trainingDefinitionRepository).should().save(unreleasedDefinition);
     }
 
     @Test
-    public void updateTrainingDefinitionWithCannotBeUpdatedException(){
-        given(lazyTrainingDefinitionService.findById(releasedDefinition.getId())).willReturn(releasedDefinition);
+    public void updateTrainingDefinitionWithCannotBeUpdatedException() {
+        given(trainingDefinitionRepository.findById(releasedDefinition.getId())).willReturn(Optional.of(releasedDefinition));
 
         thrown.expect(ServiceLayerException.class);
         thrown.expectMessage("Cannot edit released or archived training definition");
@@ -244,7 +242,7 @@ public class TrainingDefinitionServiceTest {
 
     @Test
     public void swapLeft() {
-        given(lazyTrainingDefinitionService.findById(unreleasedDefinition.getId())).willReturn(unreleasedDefinition);
+        given(trainingDefinitionRepository.findById(unreleasedDefinition.getId())).willReturn(Optional.of(unreleasedDefinition));
         given(abstractLevelRepository.findById(level1.getId())).willReturn(Optional.of(level1));
         given(abstractLevelRepository.findById(level2.getId())).willReturn(Optional.of(level2));
 
@@ -253,14 +251,15 @@ public class TrainingDefinitionServiceTest {
         assertEquals(level2.getNextLevel(), level1.getId());
         assertEquals(level1.getNextLevel(), level3.getId());
 
+        then(trainingDefinitionRepository).should(times(2)).findById(unreleasedDefinition.getId());
         then(abstractLevelRepository).should(times(3)).findById(any(Long.class));
-        then(lazyTrainingDefinitionService).should().update(unreleasedDefinition);
+        then(trainingDefinitionRepository).should().save(unreleasedDefinition);
         then(assessmentLevelRepository).should(times(2)).save(any(AssessmentLevel.class));
     }
 
     @Test
     public void swapLeftWithCannotBeUpdatedException() {
-        given(lazyTrainingDefinitionService.findById(releasedDefinition.getId())).willReturn(releasedDefinition);
+        given(trainingDefinitionRepository.findById(releasedDefinition.getId())).willReturn(Optional.of(releasedDefinition));
         thrown.expect(ServiceLayerException.class);
         thrown.expectMessage("Cannot edit released or archived training definition");
 
@@ -269,7 +268,7 @@ public class TrainingDefinitionServiceTest {
 
     @Test
     public void swapLeftOnFirstLevel() {
-        given(lazyTrainingDefinitionService.findById(unreleasedDefinition.getId())).willReturn(unreleasedDefinition);
+        given(trainingDefinitionRepository.findById(unreleasedDefinition.getId())).willReturn(Optional.of(unreleasedDefinition));
         given(abstractLevelRepository.findById(level1.getId())).willReturn(Optional.of(level1));
         thrown.expect(ServiceLayerException.class);
         thrown.expectMessage("Cannot swap left first level");
@@ -285,14 +284,14 @@ public class TrainingDefinitionServiceTest {
 
     @Test
     public void swapLeftWithNullLevel() {
-        given(lazyTrainingDefinitionService.findById(unreleasedDefinition.getId())).willReturn(unreleasedDefinition);
+        given(trainingDefinitionRepository.findById(unreleasedDefinition.getId())).willReturn(Optional.of(unreleasedDefinition));
         thrown.expect(ServiceLayerException.class);
         trainingDefinitionService.swapLeft(unreleasedDefinition.getId(), null);
     }
 
     @Test
     public void swapRight() {
-        given(lazyTrainingDefinitionService.findById(unreleasedDefinition.getId())).willReturn(unreleasedDefinition);
+        given(trainingDefinitionRepository.findById(unreleasedDefinition.getId())).willReturn(Optional.of(unreleasedDefinition));
         given(abstractLevelRepository.findById(level1.getId())).willReturn(Optional.of(level1));
         given(abstractLevelRepository.findById(level2.getId())).willReturn(Optional.of(level2));
 
@@ -301,14 +300,15 @@ public class TrainingDefinitionServiceTest {
         assertEquals(level2.getNextLevel(), level1.getId());
         assertEquals(level1.getNextLevel(), level3.getId());
 
+        then(trainingDefinitionRepository).should(times(2)).findById(unreleasedDefinition.getId());
         then(abstractLevelRepository).should(times(2)).findById(any(Long.class));
-        then(lazyTrainingDefinitionService).should().update(unreleasedDefinition);
+        then(trainingDefinitionRepository).should().save(unreleasedDefinition);
         then(assessmentLevelRepository).should(times(2)).save(any(AssessmentLevel.class));
     }
 
     @Test
     public void swapRightWithCannotBeUpdatedException() {
-        given(lazyTrainingDefinitionService.findById(releasedDefinition.getId())).willReturn(releasedDefinition);
+        given(trainingDefinitionRepository.findById(releasedDefinition.getId())).willReturn(Optional.of(releasedDefinition));
         thrown.expect(ServiceLayerException.class);
         thrown.expectMessage("Cannot edit released or archived training definition");
 
@@ -317,7 +317,7 @@ public class TrainingDefinitionServiceTest {
 
     @Test
     public void swapRightOnLastLevel() {
-        given(lazyTrainingDefinitionService.findById(unreleasedDefinition.getId())).willReturn(unreleasedDefinition);
+        given(trainingDefinitionRepository.findById(unreleasedDefinition.getId())).willReturn(Optional.of(unreleasedDefinition));
         given(abstractLevelRepository.findById(level3.getId())).willReturn(Optional.of(level3));
         given(abstractLevelRepository.findById(level1.getId())).willReturn(Optional.of(level1));
         given(abstractLevelRepository.findById(level2.getId())).willReturn(Optional.of(level2));
@@ -336,20 +336,21 @@ public class TrainingDefinitionServiceTest {
 
     @Test
     public void swapRightWithNullLevel() {
-        given(lazyTrainingDefinitionService.findById(unreleasedDefinition.getId())).willReturn(unreleasedDefinition);
+        given(trainingDefinitionRepository.findById(unreleasedDefinition.getId())).willReturn(Optional.of(unreleasedDefinition));
         thrown.expect(ServiceLayerException.class);
         trainingDefinitionService.swapRight(unreleasedDefinition.getId(), null);
     }
 
     @Test
     public void delete() {
-        given(lazyTrainingDefinitionService.findById(unreleasedDefinition.getId())).willReturn(unreleasedDefinition);
+        given(trainingDefinitionRepository.findById(unreleasedDefinition.getId())).willReturn(Optional.of(unreleasedDefinition));
         given(abstractLevelRepository.findById(level1.getId())).willReturn(Optional.of(level1));
         given(abstractLevelRepository.findById(level2.getId())).willReturn(Optional.of(level2));
         given(abstractLevelRepository.findById(level3.getId())).willReturn(Optional.of(level3));
 
         trainingDefinitionService.delete(unreleasedDefinition.getId());
 
+        then(trainingDefinitionRepository).should().findById(unreleasedDefinition.getId());
         then(abstractLevelRepository).should(times(3)).findById(any(Long.class));
         then(trainingDefinitionRepository).should().delete(unreleasedDefinition);
         then(assessmentLevelRepository).should(times(3)).delete(any(AssessmentLevel.class));
@@ -357,7 +358,7 @@ public class TrainingDefinitionServiceTest {
 
     @Test
     public void deleteWithCannotBeDeletedException() {
-        given(lazyTrainingDefinitionService.findById(releasedDefinition.getId())).willReturn(releasedDefinition);
+        given(trainingDefinitionRepository.findById(releasedDefinition.getId())).willReturn(Optional.of(releasedDefinition));
         thrown.expect(ServiceLayerException.class);
         thrown.expectMessage("Cannot delete released training definition");
 
@@ -372,12 +373,13 @@ public class TrainingDefinitionServiceTest {
 
     @Test
     public void deleteOneLevelOnFirstLevel() {
-        given(lazyTrainingDefinitionService.findById(unreleasedDefinition.getId())).willReturn(unreleasedDefinition);
+        given(trainingDefinitionRepository.findById(unreleasedDefinition.getId())).willReturn(Optional.of(unreleasedDefinition));
         given(abstractLevelRepository.findById(level1.getId())).willReturn(Optional.of(level1));
 
         trainingDefinitionService.deleteOneLevel(unreleasedDefinition.getId(), level1.getId());
         assertEquals(unreleasedDefinition.getStartingLevel(), level2.getId());
 
+        then(trainingDefinitionRepository).should().findById(unreleasedDefinition.getId());
         then(abstractLevelRepository).should().findById(any(Long.class));
         then(trainingDefinitionRepository).should().save(unreleasedDefinition);
         then(assessmentLevelRepository).should().delete(level1);
@@ -385,13 +387,14 @@ public class TrainingDefinitionServiceTest {
 
     @Test
     public void deleteOneLevelOnMiddleLevel() {
-        given(lazyTrainingDefinitionService.findById(unreleasedDefinition.getId())).willReturn(unreleasedDefinition);
+        given(trainingDefinitionRepository.findById(unreleasedDefinition.getId())).willReturn(Optional.of(unreleasedDefinition));
         given(abstractLevelRepository.findById(level1.getId())).willReturn(Optional.of(level1));
         given(abstractLevelRepository.findById(level2.getId())).willReturn(Optional.of(level2));
 
         trainingDefinitionService.deleteOneLevel(unreleasedDefinition.getId(), level2.getId());
         assertEquals(level1.getNextLevel(), level3.getId());
 
+        then(trainingDefinitionRepository).should().findById(unreleasedDefinition.getId());
         then(abstractLevelRepository).should(times(3)).findById(any(Long.class));
         then(assessmentLevelRepository).should().delete(level2);
         then(assessmentLevelRepository).should().save(level1);
@@ -399,7 +402,7 @@ public class TrainingDefinitionServiceTest {
 
     @Test
     public void deleteOneLevelWithCannotBeUpdatedException() {
-        given(lazyTrainingDefinitionService.findById(releasedDefinition.getId())).willReturn(releasedDefinition);
+        given(trainingDefinitionRepository.findById(releasedDefinition.getId())).willReturn(Optional.of(releasedDefinition));
         thrown.expect(ServiceLayerException.class);
         thrown.expectMessage("Cannot edit released or archived training definition");
 
@@ -415,27 +418,28 @@ public class TrainingDefinitionServiceTest {
 
     @Test
     public void deleteOneLevelWithNullLevel() {
-        given(lazyTrainingDefinitionService.findById(unreleasedDefinition.getId())).willReturn(unreleasedDefinition);
+        given(trainingDefinitionRepository.findById(unreleasedDefinition.getId())).willReturn(Optional.of(unreleasedDefinition));
         thrown.expect(ServiceLayerException.class);
         trainingDefinitionService.deleteOneLevel(unreleasedDefinition.getId(), null);
     }
 
     @Test
     public void updateAssessmentLevel() {
-        given(lazyTrainingDefinitionService.findById(unreleasedDefinition.getId())).willReturn(unreleasedDefinition);
+        given(trainingDefinitionRepository.findById(unreleasedDefinition.getId())).willReturn(Optional.of(unreleasedDefinition));
         given(abstractLevelRepository.findById(level1.getId())).willReturn(Optional.of(level1));
         given(abstractLevelRepository.findById(level2.getId())).willReturn(Optional.of(level2));
         given(assessmentLevelRepository.findById(any(Long.class))).willReturn(Optional.of(level2));
 
         trainingDefinitionService.updateAssessmentLevel(unreleasedDefinition.getId(), level2);
 
+        then(trainingDefinitionRepository).should().findById(unreleasedDefinition.getId());
         then(abstractLevelRepository).should(times(2)).findById(any(Long.class));
         then(assessmentLevelRepository).should().save(level2);
     }
 
     @Test
-    public void updateAssessmentLevelWithCannotBeUpdatedException(){
-        given(lazyTrainingDefinitionService.findById(releasedDefinition.getId())).willReturn(releasedDefinition);
+    public void updateAssessmentLevelWithCannotBeUpdatedException() {
+        given(trainingDefinitionRepository.findById(releasedDefinition.getId())).willReturn(Optional.of(releasedDefinition));
         thrown.expect(ServiceLayerException.class);
         thrown.expectMessage("Cannot edit released or archived training definition");
 
@@ -450,7 +454,7 @@ public class TrainingDefinitionServiceTest {
         given(abstractLevelRepository.findById(level1.getId())).willReturn(Optional.of(level1));
         given(abstractLevelRepository.findById(level2.getId())).willReturn(Optional.of(level2));
         given(abstractLevelRepository.findById(level3.getId())).willReturn(Optional.of(level3));
-        given(lazyTrainingDefinitionService.findById(unreleasedDefinition.getId())).willReturn(unreleasedDefinition);
+        given(trainingDefinitionRepository.findById(unreleasedDefinition.getId())).willReturn(Optional.of(unreleasedDefinition));
         thrown.expect(ServiceLayerException.class);
         thrown.expectMessage("Level was not found in definition");
 
@@ -472,20 +476,20 @@ public class TrainingDefinitionServiceTest {
 
     @Test
     public void updateGameLevel() {
+        given(trainingDefinitionRepository.findById(trainingDefinition2.getId())).willReturn(Optional.of(trainingDefinition2));
         given(abstractLevelRepository.findById(any(Long.class))).willReturn(Optional.of(infoLevel));
         given(abstractLevelRepository.findById(any(Long.class))).willReturn(Optional.of(gameLevel));
         given(gameLevelRepository.findById(any(Long.class))).willReturn(Optional.of(gameLevel));
-        given(lazyTrainingDefinitionService.findById(anyLong())).willReturn(trainingDefinition2);
-        given(trainingDefinitionRepository.findById(trainingDefinition2.getId())).willReturn(Optional.of(trainingDefinition2));
         trainingDefinitionService.updateGameLevel(trainingDefinition2.getId(), gameLevel);
 
+        then(trainingDefinitionRepository).should().findById(trainingDefinition2.getId());
         then(abstractLevelRepository).should().findById(any(Long.class));
         then(gameLevelRepository).should().save(gameLevel);
     }
 
     @Test
-    public void updateGameLevelWithCannotBeUpdatedException(){
-        given(lazyTrainingDefinitionService.findById(releasedDefinition.getId())).willReturn(releasedDefinition);
+    public void updateGameLevelWithCannotBeUpdatedException() {
+        given(trainingDefinitionRepository.findById(releasedDefinition.getId())).willReturn(Optional.of(releasedDefinition));
         thrown.expect(ServiceLayerException.class);
         thrown.expectMessage("Cannot edit released or archived training definition");
 
@@ -499,7 +503,7 @@ public class TrainingDefinitionServiceTest {
         level.setNextLevel(null);
         given(abstractLevelRepository.findById(infoLevel.getId())).willReturn(Optional.of(infoLevel));
         given(abstractLevelRepository.findById(gameLevel.getId())).willReturn(Optional.of(gameLevel));
-        given(lazyTrainingDefinitionService.findById(trainingDefinition2.getId())).willReturn(trainingDefinition2);
+        given(trainingDefinitionRepository.findById(trainingDefinition2.getId())).willReturn(Optional.of(trainingDefinition2));
         thrown.expect(ServiceLayerException.class);
         thrown.expectMessage("Level was not found in definition");
 
@@ -521,15 +525,16 @@ public class TrainingDefinitionServiceTest {
 
     @Test
     public void updateInfoLevel() {
-        given(lazyTrainingDefinitionService.findById(trainingDefinition2.getId())).willReturn(trainingDefinition2);
+        given(trainingDefinitionRepository.findById(trainingDefinition2.getId())).willReturn(Optional.of(trainingDefinition2));
         given(infoLevelRepository.findById(any(Long.class))).willReturn(Optional.of(infoLevel));
         trainingDefinitionService.updateInfoLevel(trainingDefinition2.getId(), infoLevel);
+        then(trainingDefinitionRepository).should().findById(trainingDefinition2.getId());
         then(infoLevelRepository).should().save(infoLevel);
     }
 
     @Test
-    public void updateInfoLevelWithCannotBeUpdatedException(){
-        given(lazyTrainingDefinitionService.findById(releasedDefinition.getId())).willReturn(releasedDefinition);
+    public void updateInfoLevelWithCannotBeUpdatedException() {
+        given(trainingDefinitionRepository.findById(releasedDefinition.getId())).willReturn(Optional.of(releasedDefinition));
         thrown.expect(ServiceLayerException.class);
         thrown.expectMessage("Cannot edit released or archived training definition");
 
@@ -543,7 +548,7 @@ public class TrainingDefinitionServiceTest {
         level.setNextLevel(null);
         given(abstractLevelRepository.findById(infoLevel.getId())).willReturn(Optional.of(infoLevel));
         given(abstractLevelRepository.findById(gameLevel.getId())).willReturn(Optional.of(gameLevel));
-        given(lazyTrainingDefinitionService.findById(trainingDefinition2.getId())).willReturn(trainingDefinition2);
+        given(trainingDefinitionRepository.findById(trainingDefinition2.getId())).willReturn(Optional.of(trainingDefinition2));
         thrown.expect(ServiceLayerException.class);
         thrown.expectMessage("Level was not found in definition");
 
@@ -754,7 +759,7 @@ public class TrainingDefinitionServiceTest {
     */
     @Test
     public void findAllLevelsFromDefinition() {
-        given(lazyTrainingDefinitionService.findById(trainingDefinition2.getId())).willReturn(trainingDefinition2);
+        given(trainingDefinitionRepository.findById(trainingDefinition2.getId())).willReturn(Optional.of(trainingDefinition2));
         given(abstractLevelRepository.findById(infoLevel.getId())).willReturn(Optional.of(infoLevel));
         given(abstractLevelRepository.findById(gameLevel.getId())).willReturn(Optional.of(gameLevel));
         ArrayList<AbstractLevel> expected = new ArrayList<>();
@@ -765,6 +770,7 @@ public class TrainingDefinitionServiceTest {
 
         assertEquals(expected, actual);
         then(abstractLevelRepository).should(times(2)).findById(any(Long.class));
+        then(trainingDefinitionRepository).should().findById(trainingDefinition2.getId());
     }
 
     @Test

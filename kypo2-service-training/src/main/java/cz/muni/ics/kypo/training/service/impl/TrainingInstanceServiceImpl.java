@@ -13,6 +13,7 @@ import cz.muni.ics.kypo.training.persistence.repository.TrainingInstanceReposito
 import cz.muni.ics.kypo.training.persistence.repository.TrainingRunRepository;
 import cz.muni.ics.kypo.training.persistence.repository.UserRefRepository;
 import cz.muni.ics.kypo.training.service.TrainingInstanceService;
+import net.bytebuddy.asm.Advice;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,18 +50,16 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
     private PasswordRepository passwordRepository;
     private UserRefRepository userRefRepository;
     private RestTemplate restTemplate;
-    private TrainingInstanceService trainingInstanceService;
 
     @Autowired
     public TrainingInstanceServiceImpl(TrainingInstanceRepository trainingInstanceRepository, PasswordRepository passwordRepository,
                                        RestTemplate restTemplate, TrainingRunRepository trainingRunRepository,
-                                       @Lazy TrainingInstanceService trainingInstanceService, UserRefRepository userRefRepository) {
+                                       UserRefRepository userRefRepository) {
         this.trainingInstanceRepository = trainingInstanceRepository;
         this.trainingRunRepository = trainingRunRepository;
         this.passwordRepository = passwordRepository;
         this.userRefRepository = userRefRepository;
         this.restTemplate = restTemplate;
-        this.trainingInstanceService = trainingInstanceService;
     }
 
     @Override
@@ -147,7 +146,7 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
     public ResponseEntity<Void> allocateSandboxes(Long instanceId) {
         LOG.debug("allocateSandboxes({})", instanceId);
         HttpHeaders httpHeaders = new HttpHeaders();
-        TrainingInstance trainingInstance = trainingInstanceService.findById(instanceId);
+        TrainingInstance trainingInstance = findById(instanceId);
         int count = trainingInstance.getPoolSize();
         Long sandboxId = trainingInstance.getTrainingDefinition().getSandBoxDefinitionRef().getId();
         String url = "kypo-openstack/api/v1/sandbox-definitions/" + sandboxId + "/build/" + count;
