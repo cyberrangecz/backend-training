@@ -7,6 +7,7 @@ import cz.muni.csirt.kypo.elasticsearch.service.audit.AuditService;
 
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.persistence.model.*;
+import cz.muni.ics.kypo.training.persistence.model.enums.TDState;
 import cz.muni.ics.kypo.training.persistence.model.enums.TRState;
 import cz.muni.ics.kypo.training.persistence.repository.*;
 import cz.muni.ics.kypo.training.persistence.utils.SandboxInfo;
@@ -21,6 +22,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -34,11 +36,14 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.web.client.RestTemplate;
 
 
+import java.time.LocalDateTime;
 import java.util.*;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.BDDMockito.*;
+
+import org.springframework.http.*;
 
 @RunWith(SpringRunner.class)
 public class TrainingRunServiceTest {
@@ -59,6 +64,8 @@ public class TrainingRunServiceTest {
     @Mock
     private TrainingInstanceRepository trainingInstanceRepository;
     @Mock
+    private TrainingDefinitionRepository trainingDefinitionRepository;
+    @Mock
     private ParticipantRefRepository participantRefRepository;
     @Mock
     private HintRepository hintRepository;
@@ -70,10 +77,11 @@ public class TrainingRunServiceTest {
     private InfoLevel infoLevel;
     private Hint hint1, hint2;
     private SandboxInstanceRef sandboxInstanceRef1, sandboxInstanceRef2;
-    private TrainingInstance trainingInstance;
+    private SandboxDefinitionRef sandBoxDefinitionRef;
+    private TrainingInstance trainingInstance1, trainingInstance2;
     private ParticipantRef participantRef;
     private SandboxInfo sandboxInfo;
-    private TrainingDefinition trainingDefinition;
+    private TrainingDefinition trainingDefinition, trainingDefinition2;
 
     @Before
     public void init() {
@@ -81,10 +89,23 @@ public class TrainingRunServiceTest {
         trainingRunService = new TrainingRunServiceImpl(trainingRunRepository, abstractLevelRepository, trainingInstanceRepository,
             participantRefRepository, restTemplate, hintRepository, auditService);
 
+        sandBoxDefinitionRef = new SandboxDefinitionRef();
+        sandBoxDefinitionRef.setId(1L);
+
         trainingDefinition = new TrainingDefinition();
         trainingDefinition.setId(1L);
-        trainingDefinition.setTitle("Title");
+        trainingDefinition.setTitle("Title TrainingDefinition");
         trainingDefinition.setStartingLevel(1L);
+        trainingDefinition.setState(TDState.RELEASED);
+        trainingDefinition.setAuthorRef(new HashSet<>());
+        trainingDefinition.setSandBoxDefinitionRef(sandBoxDefinitionRef);
+        trainingDefinition.setStartingLevel(1L);
+        trainingDefinition.setShowStepperBar(true);
+
+        trainingDefinition2 = new TrainingDefinition();
+        trainingDefinition2.setId(2L);
+        trainingDefinition2.setTitle("Title2");
+        trainingDefinition2.setStartingLevel(2L);
 
         sandboxInstanceRef1 = new SandboxInstanceRef();
         sandboxInstanceRef1.setId(1L);
@@ -94,19 +115,26 @@ public class TrainingRunServiceTest {
         sandboxInstanceRef2.setId(2L);
         sandboxInstanceRef2.setSandboxInstanceRef(5L);
 
-        trainingInstance = new TrainingInstance();
-        trainingInstance.setId(1L);
-        trainingInstance.setSandboxInstanceRefs(new HashSet<>(Arrays.asList(sandboxInstanceRef1, sandboxInstanceRef2)));
-        trainingInstance.setPassword("$2a$12$rhWNRfPDgxBX1Zv2/jg8DOWT97MIPVKPpXyjGcaCtEhQ0Z36H8y1y");
-        trainingInstance.setTrainingDefinition(trainingDefinition);
+        trainingInstance2 = new TrainingInstance();
+        trainingInstance2.setId(2L);
+        trainingInstance2.setSandboxInstanceRefs(new HashSet<>(Arrays.asList(sandboxInstanceRef2)));
+        trainingInstance2.setPassword("$5asdMmkskdm@365csadSD4fdF45fsdFSC54dw48WD7v7WD4fe254WEF54wd");
+        trainingInstance2.setTrainingDefinition(trainingDefinition2);
+
+        trainingInstance1 = new TrainingInstance();
+        trainingInstance1.setId(1L);
+        trainingInstance1.setStartTime(LocalDateTime.now());
+        trainingInstance1.setEndTime(LocalDateTime.now().plusHours(1L));
+        trainingInstance1.setTitle("TrainingInstance1");
+        trainingInstance1.setPoolSize(5);
+        trainingInstance1.setPassword("$2a$12$rhWNRfPDgxBX1Zv2/jg8DOWT97MIPVKPpXyjGcaCtEhQ0Z36H8y1y");
+        trainingInstance1.setTrainingDefinition(trainingDefinition);
+        trainingInstance1.setSandboxInstanceRefs(new HashSet<>(Arrays.asList(sandboxInstanceRef1, sandboxInstanceRef2)));
 
         participantRef = new ParticipantRef();
         participantRef.setId(1L);
         participantRef.setParticipantRefLogin("participant");
 
-        hint1 = new Hint();
-        hint1.setId(1L);
-        hint1.setContent("hint1 content");
 
         gameLevel = new GameLevel();
         gameLevel.setId(1L);
@@ -117,6 +145,10 @@ public class TrainingRunServiceTest {
         gameLevel.setHints(new HashSet<>(Arrays.asList(hint1, hint2)));
         gameLevel.setNextLevel(2L);
         gameLevel.setIncorrectFlagLimit(5);
+
+        hint1 = new Hint();
+        hint1.setId(1L);
+        hint1.setContent("hint1 content");
         hint1.setGameLevel(gameLevel);
 
         infoLevel = new InfoLevel();
@@ -129,17 +161,19 @@ public class TrainingRunServiceTest {
         trainingRun1.setState(TRState.NEW);
         trainingRun1.setCurrentLevel(gameLevel);
         trainingRun1.setSandboxInstanceRef(sandboxInstanceRef1);
+        trainingRun1.setParticipantRef(participantRef);
+        trainingRun1.setTrainingInstance(trainingInstance1);
 
         trainingRun2 = new TrainingRun();
         trainingRun2.setId(2L);
-        trainingRun2.setState(TRState.ARCHIVED);
+        trainingRun2.setState(TRState.READY);
         trainingRun2.setCurrentLevel(infoLevel);
+        trainingRun2.setParticipantRef(participantRef);
+        trainingRun2.setTrainingInstance(trainingInstance2);
 
         sandboxInfo = new SandboxInfo();
         sandboxInfo.setId(7L);
         sandboxInfo.setState("READY");
-
-
     }
 
     @Test
@@ -185,35 +219,29 @@ public class TrainingRunServiceTest {
     public void accessTrainingRunWithWrongPassword() {
         thrown.expect(ServiceLayerException.class);
         thrown.expectMessage("There is no training instance with password wrong.");
-        given(trainingInstanceRepository.findAll()).willReturn(Arrays.asList(trainingInstance));
+        given(trainingInstanceRepository.findAll()).willReturn(Arrays.asList(trainingInstance1));
         trainingRunService.accessTrainingRun("wrong");
 
     }
 
-    /**
-     * @Test public void accessTrainingRunWithNoAvailableSandbox() {
-     * thrown.expect(ServiceLayerException.class);
-     * thrown.expectMessage("There is no available sandbox, wait a minute and try again.");
-     * mockSpringSecurityContextForGet();
-     * given(trainingInstanceRepository.findAll()).willReturn(Arrays.asList(trainingInstance));
-     * given(trainingRunRepository.findSandboxInstanceRefsOfTrainingInstance(trainingInstance.getId())).willReturn(new HashSet<>(Arrays.asList(sandboxInstanceRef1, sandboxInstanceRef2)));
-     * given(trainingRunRepository.save(any(TrainingRun.class))).willReturn(trainingRun1);
-     * trainingRunService.accessTrainingRun("password");
-     * }
-     */
-    //TODO Boris Fix that test
-//    @Test
-//    public void accessTrainingRun() {
-//        mockSpringSecurityContextForGet();
-//        given(trainingInstanceRepository.findAll()).willReturn(Arrays.asList(trainingInstance));
-//        given(trainingRunRepository.findSandboxInstanceRefsOfTrainingInstance(trainingInstance.getId())).willReturn(new HashSet<>());
-//        given(abstractLevelRepository.findById(gameLevel.getId())).willReturn(Optional.of(gameLevel));
-//        given(participantRefRepository.findByParticipantRefLogin("participant")).willReturn(Optional.of(participantRef));
-//        given(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class), anyString())).willReturn(new ResponseEntity<List<SandboxInfo>>(new ArrayList<>(Arrays.asList(sandboxInfo)), HttpStatus.OK));
-//        given(trainingRunRepository.save(any(TrainingRun.class))).willReturn(trainingRun1);
-//        AbstractLevel level = trainingRunService.accessTrainingRun("b5f3dc27a09865be37cef07816c4f08cf5585b116a4e74b9387c3e43e3a25ec8");
-//        assertEquals(gameLevel, level);
-//    }
+    @Test
+    public void accessTrainingRun() {
+        mockSpringSecurityContextForGet();
+        System.out.println(trainingDefinition.getSandBoxDefinitionRef());
+        trainingInstance1.setTrainingDefinition(trainingDefinition);
+        System.out.println(trainingInstance1.getTrainingDefinition().getSandBoxDefinitionRef());
+        given(trainingDefinitionRepository.save(any(TrainingDefinition.class))).willReturn(trainingDefinition);
+        given(trainingInstanceRepository.findAll()).willReturn(Arrays.asList(trainingInstance1));
+        given(trainingRunRepository.findSandboxInstanceRefsOfTrainingInstance(trainingInstance1.getId())).willReturn(new HashSet<>());
+        given(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class), anyString())).willReturn(new ResponseEntity<List<SandboxInfo>>(new ArrayList<>(Arrays.asList(sandboxInfo)), HttpStatus.OK));
+        given(abstractLevelRepository.findById(trainingInstance1.getTrainingDefinition().getStartingLevel())).willReturn(Optional.of(gameLevel));
+        given(participantRefRepository.findByParticipantRefLogin(participantRef.getParticipantRefLogin())).willReturn(Optional.of(participantRef));
+        given(participantRefRepository.save(new ParticipantRef(participantRef.getParticipantRefLogin()))).willReturn(participantRef);
+        given(trainingRunRepository.save(any(TrainingRun.class))).willReturn(trainingRun1);
+        AbstractLevel level = trainingRunService.accessTrainingRun(trainingInstance1.getPassword());
+        assertEquals(trainingRun1.getCurrentLevel(), level);
+    }
+
     private void mockSpringSecurityContextForGet() {
         JsonObject sub = new JsonObject();
         sub.addProperty("sub", "participant");
@@ -259,28 +287,25 @@ public class TrainingRunServiceTest {
 
     @Test
     public void getHint() {
-        given(trainingRunRepository.findByIdWithLevel(trainingRun1.getId())).willReturn(Optional.of(trainingRun1));
-        given(hintRepository.findById(1L)).willReturn(Optional.ofNullable(hint1));
-        Hint resultHint1 = trainingRunService.getHint(trainingRun1.getId(), 1L);
-        assertEquals(hint1, resultHint1);
-
+        given(trainingRunRepository.findByIdWithLevel(any(Long.class))).willReturn(Optional.of(trainingRun1));
+        given(hintRepository.findById(any(Long.class))).willReturn(Optional.of(hint1));
+        System.out.println(hint1.getGameLevel());
+        Hint resultHint1 = trainingRunService.getHint(trainingRun1.getId(), hint1.getId());
+        assertEquals(hint1,resultHint1);
     }
 
-    @Test
-    public void getRemainingAttempts() {
-        given(trainingRunRepository.findByIdWithLevel(trainingRun1.getId())).willReturn(Optional.ofNullable(trainingRun1));
-        int attempts = trainingRunService.getRemainingAttempts(trainingRun1.getId());
-        assertEquals(5, attempts);
-    }
+	@Test
+	public void getRemainingAttempts() {
+		given(trainingRunRepository.findByIdWithLevel(trainingRun1.getId())).willReturn(Optional.ofNullable(trainingRun1));
+		int attempts = trainingRunService.getRemainingAttempts(trainingRun1.getId());
+		assertEquals(5, attempts);
+	}
 
-
-    @Test
     public void getHintOfNonGameLevel() {
         thrown.expect(ServiceLayerException.class);
         thrown.expectMessage("Current level is not game level and does not have hints.");
         given(trainingRunRepository.findByIdWithLevel(trainingRun2.getId())).willReturn(Optional.of(trainingRun2));
         trainingRunService.getHint(trainingRun2.getId(), hint1.getId());
-
     }
 
     @Test
@@ -290,7 +315,6 @@ public class TrainingRunServiceTest {
 
         int order = trainingRunService.getLevelOrder(1L, 2L);
         assertEquals(1, order);
-
     }
 
     @Test
@@ -299,8 +323,6 @@ public class TrainingRunServiceTest {
         thrown.expect(ServiceLayerException.class);
         thrown.expectMessage("Level with id " + 1L + " not found.");
         trainingRunService.getLevelOrder(1L, 2L);
-
-
     }
 
     @Test
@@ -317,6 +339,95 @@ public class TrainingRunServiceTest {
 
         Page pr = trainingRunService.findAll(predicate, PageRequest.of(0, 2));
         assertEquals(2, pr.getTotalElements());
+    }
+
+    @Test
+    public void findAll_empty() {
+        Page p = new PageImpl<>(new ArrayList<>());
+        PathBuilder<TrainingRun> t = new PathBuilder<>(TrainingRun.class, "trainingRun");
+        Predicate predicate = t.isNotNull();
+
+        given(trainingRunRepository.findAll(any(Predicate.class), any(Pageable.class))).willReturn(p);
+
+        Page pr = trainingRunRepository.findAll(predicate, PageRequest.of(0, 2));
+        assertEquals(0,pr.getTotalElements());
+    }
+
+    @Test
+    public void findAllByParticipantRefLogin() {
+        Page<TrainingRun> expectedPage = new PageImpl<>(Arrays.asList(trainingRun1, trainingRun2));
+
+        mockSpringSecurityContextForGet();
+        given(trainingRunRepository.findAllByParticipantRefLogin(any(String.class), any(PageRequest.class))).willReturn(expectedPage);
+
+        Page<TrainingRun> resultPage = trainingRunService.findAllByParticipantRefLogin(PageRequest.of(0, 2));
+
+        assertEquals(expectedPage, resultPage);
+
+        then(trainingRunRepository).should().findAllByParticipantRefLogin(participantRef.getParticipantRefLogin(), PageRequest.of(0 ,2));
+    }
+
+    @Test
+    public void findAllByTrainingDefinitionAndParticipant() {
+        Page<TrainingRun> expectedPage = new PageImpl<>(Arrays.asList(trainingRun2));
+        mockSpringSecurityContextForGet();
+        given(trainingRunRepository.findAllByTrainingDefinitionIdAndParticipantRefLogin(any(Long.class), any(String.class), any(Pageable.class))).willReturn(expectedPage);
+
+        Page<TrainingRun> resultPage = trainingRunService.findAllByTrainingDefinitionAndParticipant(trainingDefinition2.getId(), PageRequest.of(0, 2));
+
+        assertEquals(expectedPage, resultPage);
+
+        then(trainingRunRepository).should().findAllByTrainingDefinitionIdAndParticipantRefLogin(trainingDefinition2.getId(), participantRef.getParticipantRefLogin(), PageRequest.of(0, 2));
+    }
+
+    @Test
+    public void findAllByTrainingDefinition() {
+        Page<TrainingRun> expectedPage = new PageImpl<>(Arrays.asList(trainingRun1, trainingRun2));
+        given(trainingRunRepository.findAllByTrainingDefinitionId(any(Long.class), any(PageRequest.class))).willReturn(expectedPage);
+        Page<TrainingRun> resultPage = trainingRunService.findAllByTrainingDefinition(trainingDefinition.getId(), PageRequest.of(0, 2));
+        assertEquals(expectedPage, resultPage);
+        then(trainingRunRepository).should().findAllByTrainingDefinitionId(trainingDefinition.getId(), PageRequest.of(0, 2));
+    }
+
+    @Test
+    public void findByIdWithLevel() {
+        given(trainingRunRepository.findByIdWithLevel(any(Long.class))).willReturn(Optional.of(trainingRun1));
+
+        Optional<TrainingRun> optionalTrainingRun = trainingRunRepository.findByIdWithLevel(trainingRun1.getId());
+
+        assertTrue(optionalTrainingRun.isPresent());
+        assertTrue(optionalTrainingRun.get().getCurrentLevel() instanceof GameLevel);
+    }
+
+//    @Test
+//    public void createTrainingRun() {
+//        given(trainingRunRepository.save(trainingRun1)).willReturn(trainingRun1);
+//        TrainingRun tI = trainingRunService.create(trainingRun1);
+//        assertEquals(trainingRun1.getId(), tI.getId());
+//        then(trainingRunRepository).should().save(trainingRun1);
+//    }
+
+    @Test
+    public void getNextLevel() {
+        given(trainingRunRepository.findByIdWithLevel(any(Long.class))).willReturn(Optional.of(trainingRun1));
+        given(abstractLevelRepository.findById(any(Long.class))).willReturn(Optional.of(infoLevel));
+        given(trainingRunRepository.save(any(TrainingRun.class))).willReturn(trainingRun1);
+        AbstractLevel resultAbstractLevel = trainingRunService.getNextLevel(trainingRun1.getId());
+
+        assertEquals(trainingRun1.getCurrentLevel().getId(), resultAbstractLevel.getId());
+
+        then(trainingRunRepository).should().findByIdWithLevel(trainingRun1.getId());
+        then(abstractLevelRepository).should().findById(trainingRun1.getCurrentLevel().getId());
+        then(trainingRunRepository).should().save(trainingRun1);
+    }
+
+    @Test
+    public void getNextLevel_noNextLevel() {
+        given(trainingRunRepository.findById(any(Long.class))).willReturn(Optional.of(trainingRun2));
+        given(abstractLevelRepository.findById(any(Long.class))).willReturn(Optional.of(infoLevel));
+        thrown.expect(ServiceLayerException.class);
+        thrown.expectMessage("Training Run with id: " + trainingRun2.getId() + " not found.");
+        trainingRunService.getNextLevel(trainingRun2.getId());
     }
 
     @After

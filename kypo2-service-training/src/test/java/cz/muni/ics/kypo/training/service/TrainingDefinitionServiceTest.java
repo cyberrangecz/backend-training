@@ -71,6 +71,8 @@ public class TrainingDefinitionServiceTest {
 
     private InfoLevel infoLevel, newInfoLevel;
 
+    private SandboxDefinitionRef sandboxDefinitionRef;
+
     @Before
     public void init() {
         MockitoAnnotations.initMocks(this);
@@ -112,12 +114,15 @@ public class TrainingDefinitionServiceTest {
         newAssessmentLevel.setTitle("title");
         newAssessmentLevel.setMaxScore(20);
 
+        sandboxDefinitionRef = new SandboxDefinitionRef();
+        sandboxDefinitionRef.setId(1L);
 
         trainingDefinition1 = new TrainingDefinition();
         trainingDefinition1.setId(1L);
         trainingDefinition1.setDescription("test1");
         trainingDefinition1.setTitle("test1");
         trainingDefinition1.setState(TDState.RELEASED);
+        trainingDefinition1.setSandBoxDefinitionRef(sandboxDefinitionRef);
 
         trainingDefinition2 = new TrainingDefinition();
         trainingDefinition2.setId(2L);
@@ -125,6 +130,7 @@ public class TrainingDefinitionServiceTest {
         trainingDefinition2.setTitle("test2");
         trainingDefinition2.setState(TDState.UNRELEASED);
         trainingDefinition2.setStartingLevel(infoLevel.getId());
+        trainingDefinition2.setSandBoxDefinitionRef(sandboxDefinitionRef);
 
         unreleasedDefinition = new TrainingDefinition();
         unreleasedDefinition.setId(4L);
@@ -173,6 +179,21 @@ public class TrainingDefinitionServiceTest {
 
         Page pr = trainingDefinitionService.findAll(predicate, PageRequest.of(0, 2));
         assertEquals(2, pr.getTotalElements());
+    }
+
+    @Test
+    public void findAllBySandboxDefinitionId() {
+        List<TrainingDefinition> expected = new ArrayList<>();
+        expected.add(trainingDefinition1);
+        expected.add(trainingDefinition2);
+
+        Page p = new PageImpl<>(expected);
+
+        given(trainingDefinitionRepository.findAllBySandBoxDefinitionRefId(any(Long.class), any(Pageable.class))).willReturn(p);
+
+        Page pr = trainingDefinitionRepository.findAllBySandBoxDefinitionRefId(sandboxDefinitionRef.getId(), PageRequest.of(0, 2));
+        assertNotNull(pr);
+        assertEquals(expected.size(), pr.getTotalElements());
     }
 
     @Test
@@ -793,6 +814,21 @@ public class TrainingDefinitionServiceTest {
         thrown.expect(IllegalArgumentException.class);
         thrown.expectMessage("Input training definition must not be null");
         trainingDefinitionService.create(null);
+    }
+
+    @Test
+    public void findLevelById() {
+        given(abstractLevelRepository.findById(infoLevel.getId())).willReturn(Optional.of(infoLevel));
+        AbstractLevel abstractLevel = trainingDefinitionService.findLevelById(infoLevel.getId());
+        assertTrue(abstractLevel instanceof InfoLevel);
+        assertEquals(infoLevel.getId(), abstractLevel.getId());
+        then(abstractLevelRepository).should().findById(infoLevel.getId());
+    }
+
+    @Test
+    public void findLevelById_notExisting() {
+        thrown.expect(ServiceLayerException.class);
+        trainingDefinitionService.findLevelById(555L);
     }
 
     @After
