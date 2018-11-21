@@ -138,6 +138,16 @@ public interface TrainingRunService {
 
     int getRemainingAttempts(Long trainingRunId);
 
+    /**
+     * Access training run based on given password.
+     *
+     * @param trainingRunId id of training run to be resumed.
+     * @return Abstract Level
+     * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND cannot find training instance with given id or the password is wrong.
+     *
+     */
+    AbstractLevel resumeTrainingRun(Long trainingRunId);
+
 
 
 }

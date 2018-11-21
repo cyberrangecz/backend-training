@@ -100,4 +100,13 @@ public interface TrainingRunFacade {
      */
     IsCorrectFlagDTO isCorrectFlag(Long trainingRunId, String flag);
 
+    /**
+     * Resume given training run.
+     *
+     * @param trainingRunId id of Training Run to be resumed.
+     * @return current level of resumed training run
+     * @throws FacadeLayerException if something wrong happened in service.
+     */
+    AccessTrainingRunDTO resumeTrainingRun(Long trainingRunId);
+
 }
