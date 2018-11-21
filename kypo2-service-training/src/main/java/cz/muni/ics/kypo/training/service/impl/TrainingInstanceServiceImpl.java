@@ -13,11 +13,13 @@ import cz.muni.ics.kypo.training.persistence.repository.TrainingInstanceReposito
 import cz.muni.ics.kypo.training.persistence.repository.TrainingRunRepository;
 import cz.muni.ics.kypo.training.persistence.repository.UserRefRepository;
 import cz.muni.ics.kypo.training.service.TrainingInstanceService;
+import net.bytebuddy.asm.Advice;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpEntity;
@@ -75,7 +77,7 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
     }
 
     @Override
-    @PreAuthorize("hasAuthority({'ADMINISTRATOR'})")
+    @PreAuthorize("hasAuthority({'ADMINISTRATOR'}) or hasAuthority({T(cz.muni.ics.kypo.training.persistence.model.enums.RoleType).ORGANIZER})")
     public TrainingInstance create(TrainingInstance trainingInstance) {
         LOG.debug("create({})", trainingInstance);
         Assert.notNull(trainingInstance, "Input training instance must not be null");

@@ -55,13 +55,13 @@ public interface TrainingRunService {
      */
     Page<TrainingRun> findAllByTrainingDefinition(Long trainingDefinitionId, Pageable pageable);
 
-    /**
-     * Create given Training Run.
-     *
-     * @param trainingRun to be created in database.
-     * @return created Training Run
-     */
-    TrainingRun create(TrainingRun trainingRun);
+//    /**
+//     * Create given Training Run.
+//     *
+//     * @param trainingRun to be created in database.
+//     * @return created Training Run
+//     */
+//    TrainingRun create(TrainingRun trainingRun);
 
     /**
      * Gets next level of given Training Run and set new current level.
@@ -138,7 +138,6 @@ public interface TrainingRunService {
 
     int getRemainingAttempts(Long trainingRunId);
 
-    TrainingRun findByIdWithLevel(Long trainingRunId);
 
 
 }

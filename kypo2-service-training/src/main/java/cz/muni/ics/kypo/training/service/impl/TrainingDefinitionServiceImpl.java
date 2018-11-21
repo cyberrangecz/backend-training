@@ -8,10 +8,12 @@ import cz.muni.ics.kypo.training.persistence.model.enums.AssessmentType;
 import cz.muni.ics.kypo.training.persistence.model.enums.TDState;
 import cz.muni.ics.kypo.training.persistence.repository.*;
 import cz.muni.ics.kypo.training.service.TrainingDefinitionService;
+import net.bytebuddy.asm.Advice;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -44,7 +46,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     @Autowired
     public TrainingDefinitionServiceImpl(TrainingDefinitionRepository trainingDefinitionRepository,
                                          AbstractLevelRepository abstractLevelRepository, InfoLevelRepository infoLevelRepository, GameLevelRepository gameLevelRepository,
-                                         AssessmentLevelRepository assessmentLevelRepository, TrainingInstanceRepository trainingInstanceRepository,
+                                         AssessmentLevelRepository assessmentLevelRepository, TrainingInstanceRepository trainingInstanceRepository, @Lazy
                                          AuthorRefRepository authorRefRepository, SandboxDefinitionRefRepository sandboxDefinitionRefRepository) {
         this.trainingDefinitionRepository = trainingDefinitionRepository;
         this.abstractLevelRepository = abstractLevelRepository;
@@ -73,9 +75,8 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
 
     }
 
-    //TODO repair organizer role
     @Override
-    @PreAuthorize("hasAuthority({'ADMINISTRATOR'})")
+    @PreAuthorize("hasAuthority({'ADMINISTRATOR'}) or hasAuthority({T(cz.muni.ics.kypo.training.persistence.model.enums.RoleType).DESIGNER})")
     public TrainingDefinition create(TrainingDefinition trainingDefinition) {
         LOG.debug("create({})", trainingDefinition);
         Assert.notNull(trainingDefinition, "Input training definition must not be null");
@@ -108,11 +109,12 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     }
 
     @Override
-    @PreAuthorize("hasAuthority({'ADMINISTRATOR', T(cz.muni.ics.kypo.training.persistence.model.enums.RoleType).DESIGNER})")
+    @PreAuthorize("hasAuthority({'ADMINISTRATOR'}) or hasAuthority({T(cz.muni.ics.kypo.training.persistence.model.enums.RoleType).DESIGNER})")
     public TrainingDefinition clone(Long id) {
         LOG.debug("clone({})", id);
-
+        LOG.info("POTIALTO FUNGUJE");
         TrainingDefinition trainingDefinition = findById(id);
+        LOG.info("A TU NIE");
         if (trainingDefinition.getState().equals(TDState.UNRELEASED))
             throw new ServiceLayerException("Cannot copy unreleased training definition.", ErrorCode.RESOURCE_CONFLICT);
         TrainingDefinition tD = new TrainingDefinition();
@@ -420,7 +422,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     }
 
     @Override
-    @PreAuthorize("hasAuthority({'ADMINISTRATOR', T(cz.muni.ics.kypo.training.persistence.model.enums.RoleType).DESIGNER})")
+    @PreAuthorize("hasAuthority({'ADMINISTRATOR'}) or hasAuthority({T(cz.muni.ics.kypo.training.persistence.model.enums.RoleType).DESIGNER})")
     public AbstractLevel findLevelById(Long levelId) {
         LOG.debug("findLevelById({})", levelId);
         Assert.notNull(levelId, "Input level id must not be null.");

@@ -16,6 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -82,16 +83,15 @@ public class TrainingRunServiceImpl implements TrainingRunService {
     }
 
     @Override
-    @PreAuthorize("hasAuthority({'ADMINISTRATOR', T(cz.muni.ics.kypo.training.persistence.model.enums.RoleType).TRAINEE})")
+    @PreAuthorize("hasAuthority({'ADMINISTRATOR'}) or hasAuthority({T(cz.muni.ics.kypo.training.persistence.model.enums.RoleType).TRAINEE})")
     public Page<TrainingRun> findAllByParticipantRefLogin(Pageable pageable) {
         String login = getSubOfLoggedInUser();
         LOG.debug("findAllByParticipantRefLogin({})", login);
         return trainingRunRepository.findAllByParticipantRefLogin(login, pageable);
     }
 
-    @Override
-    @PreAuthorize("hasAuthority('ADMINISTRATOR')")
-    public TrainingRun create(TrainingRun trainingRun) {
+
+    private TrainingRun create(TrainingRun trainingRun) {
         LOG.debug("create({})", trainingRun);
         Assert.notNull(trainingRun, "Input training run must not be empty.");
         return trainingRunRepository.save(trainingRun);
@@ -104,7 +104,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
     public AbstractLevel getNextLevel(Long trainingRunId) {
         LOG.debug("getNextLevel({})", trainingRunId);
         Assert.notNull(trainingRunId, MUST_NOT_BE_NULL);
-        TrainingRun trainingRun = findById(trainingRunId);
+        TrainingRun trainingRun = findByIdWithLevel(trainingRunId);
         Long nextLevelId = trainingRun.getCurrentLevel().getNextLevel();
         if (nextLevelId == null) {
             throw new ServiceLayerException("There is no next level.", ErrorCode.NO_NEXT_LEVEL);
@@ -138,7 +138,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
     }
 
     @Override
-    //@PreAuthorize("hasAuthority('ADMINISTRATOR')")
+    @PreAuthorize("hasAuthority('ADMINISTRATOR') or hasAuthority('USER')")
     public List<AbstractLevel> getLevels(Long levelId) {
         Assert.notNull(levelId, "Id of first level must not be null.");
         List<AbstractLevel> levels = new ArrayList<>();
@@ -155,7 +155,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
 
 
     @Override
-    @PreAuthorize("hasAuthority({'ADMINISTRATOR', 'USER'})")
+    @PreAuthorize("hasAuthority({'ADMINISTRATOR'}) or hasAuthority('USER')")
     public AbstractLevel accessTrainingRun(String password) {
         LOG.debug("accessTrainingRun({})", password);
         Assert.hasLength(password, "Password cannot be null or empty.");
@@ -307,7 +307,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
     }
 
     @Override
-    //@PreAuthorize("hasAuthority('ADMINISTRATOR')")
+    @PreAuthorize("hasAuthority('ADMINISTRATOR') or hasAuthority({T(cz.muni.ics.kypo.training.persistence.model.enums.RoleType).TRAINEE})")
     public int getLevelOrder(Long idOfFirstLevel, Long actualLevel) {
         LOG.debug("getLevelOrder({}, {})", idOfFirstLevel, actualLevel);
         Assert.notNull(idOfFirstLevel, "Input id of first level must not be null.");
@@ -325,10 +325,8 @@ public class TrainingRunServiceImpl implements TrainingRunService {
         return order;
     }
 
-    @Override
-    @PreAuthorize("hasAuthority('ADMINISTRATOR')" +
-            "or @securityService.isTraineeOfGivenTrainingRun(#trainingRunId)")
-    public TrainingRun findByIdWithLevel(Long trainingRunId) {
+
+    private TrainingRun findByIdWithLevel(Long trainingRunId) {
         LOG.debug("findById({})", trainingRunId);
         Objects.requireNonNull(trainingRunId);
         return trainingRunRepository.findByIdWithLevel(trainingRunId).orElseThrow(() ->
