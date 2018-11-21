@@ -82,6 +82,13 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
         LOG.debug("create({})", trainingInstance);
         Assert.notNull(trainingInstance, "Input training instance must not be null");
         trainingInstance.setPassword(generatePassword(trainingInstance.getPassword()));
+        LocalDateTime currentDate = LocalDateTime.now();
+        if (!currentDate.isBefore(trainingInstance.getStartTime())) {
+            throw new ServiceLayerException("Starting time of instance must be in future", ErrorCode.RESOURCE_CONFLICT);
+        }
+        if(trainingInstance.getStartTime().isAfter(trainingInstance.getEndTime())) {
+            throw new ServiceLayerException("End time must be later than start time.", ErrorCode.RESOURCE_CONFLICT);
+        }
         TrainingInstance tI = trainingInstanceRepository.save(trainingInstance);
         LOG.info("Training instance with id: {} created.", trainingInstance.getId());
         return tI;
@@ -98,7 +105,9 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
         LocalDateTime currentDate = LocalDateTime.now();
         if (!currentDate.isBefore(trainingInstance.getStartTime()))
             throw new ServiceLayerException("Starting time of instance must be in future", ErrorCode.RESOURCE_CONFLICT);
-
+        if(trainingInstance.getStartTime().isAfter(trainingInstance.getEndTime())) {
+            throw new ServiceLayerException("End time must be later than start time.", ErrorCode.RESOURCE_CONFLICT);
+        }
         if (trainingInstance.getPassword() == null) {
             trainingInstance.setPassword(tI.getPassword());
         } else {
