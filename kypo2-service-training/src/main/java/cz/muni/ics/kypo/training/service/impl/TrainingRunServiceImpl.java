@@ -338,6 +338,21 @@ public class TrainingRunServiceImpl implements TrainingRunService {
         return order;
     }
 
+    @Override
+    @PreAuthorize("hasAuthority('ADMINISTRATOR')" +
+            "or @securityService.isTraineeOfGivenTrainingRun(#trainingRunId)")
+    public void archiveTrainingRun(Long trainingRunId) {
+        LOG.debug("archiveTrainingRun({})", trainingRunId);
+        Assert.notNull(trainingRunId, MUST_NOT_BE_NULL);
+        TrainingRun tR = findById(trainingRunId);
+        if(tR.getCurrentLevel().getNextLevel() != null) {
+            throw new ServiceLayerException("Cannot archive training run because current level is not last.", ErrorCode.RESOURCE_CONFLICT);
+        }
+
+        tR.setState(TRState.ARCHIVED);
+        //TODO audit LevelCompleted based on current level
+        //TODO audit TrainingRunCompleted
+    }
 
     private TrainingRun findByIdWithLevel(Long trainingRunId) {
         LOG.debug("findById({})", trainingRunId);

@@ -199,6 +199,17 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
         return correctFlagDTO;
     }
 
+    @Override
+    @TransactionalWO
+    public void archiveTrainingRun(Long trainingRunId) {
+        LOG.debug("archiveTrainingRun({})", trainingRunId);
+        try {
+            trainingRunService.archiveTrainingRun(trainingRunId);
+        } catch (ServiceLayerException ex) {
+            throw new FacadeLayerException(ex);
+        }
+    }
+
     private PageResultResource<AccessedTrainingRunDTO> convertToAccessedRunDTO(Page<TrainingRun> runs) {
         List<AccessedTrainingRunDTO> accessedTrainingRunDTOS = new ArrayList<>();
         for (TrainingRun run : runs) {
