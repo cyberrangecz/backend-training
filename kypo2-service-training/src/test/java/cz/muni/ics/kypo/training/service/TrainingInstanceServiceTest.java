@@ -2,8 +2,10 @@ package cz.muni.ics.kypo.training.service;
 
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.PathBuilder;
+import cz.muni.ics.kypo.training.exceptions.ErrorCode;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.persistence.model.TrainingInstance;
+import cz.muni.ics.kypo.training.persistence.model.TrainingRun;
 import cz.muni.ics.kypo.training.persistence.repository.PasswordRepository;
 import cz.muni.ics.kypo.training.persistence.repository.TrainingInstanceRepository;
 
@@ -25,11 +27,14 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.web.client.RestTemplate;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertThat;
 import static org.mockito.BDDMockito.*;
 
 @RunWith(SpringRunner.class)
@@ -52,10 +57,14 @@ public class TrainingInstanceServiceTest {
     @Mock
     private TrainingRunRepository trainingRunRepository;
 
+    private TrainingInstance trainingInstance1, trainingInstance2, trainingInstanceInvalid;
+
+    private TrainingRun trainingRun1, trainingRun2;
+
+    private String password = "1asd2sdASD12dSv5S5a4sd5sad45FFe54hLOFE4547fe54Fe5f";
+
     @Mock
     private UserRefRepository userRefRepository;
-
-    private TrainingInstance trainingInstance1, trainingInstance2;
 
     @Before
     public void init() {
@@ -65,13 +74,28 @@ public class TrainingInstanceServiceTest {
 
         trainingInstance1 = new TrainingInstance();
         trainingInstance1.setId(1L);
-        //trainingInstance1.setKeyword("test1");
         trainingInstance1.setTitle("test1");
+        trainingInstance1.setPassword(password);
+        trainingInstance1.setEndTime(LocalDateTime.now().minusHours(1L));
 
         trainingInstance2 = new TrainingInstance();
-        trainingInstance2.setId(1L);
-        //trainingInstance2.setKeyword("test2");
+        trainingInstance2.setId(2L);
         trainingInstance2.setTitle("test2");
+        trainingInstance2.setStartTime(LocalDateTime.now().plusHours(1L));
+
+        trainingInstanceInvalid = new TrainingInstance();
+        trainingInstanceInvalid.setId(3L);
+        trainingInstanceInvalid.setTitle("test3Invalid");
+        trainingInstanceInvalid.setStartTime(LocalDateTime.now().minusHours(1L));
+        trainingInstanceInvalid.setEndTime(LocalDateTime.now().plusHours(1L));
+
+        trainingRun1 = new TrainingRun();
+        trainingRun1.setId(1L);
+        trainingRun1.setTrainingInstance(trainingInstance1);
+
+        trainingRun2 = new TrainingRun();
+        trainingRun2.setId(2L);
+        trainingRun2.setTrainingInstance(trainingInstance1);
     }
 
     @Test
@@ -118,29 +142,80 @@ public class TrainingInstanceServiceTest {
 
     @Test
     public void createTrainingInstanceWithNull() {
-        thrown.expect(IllegalArgumentException.class);
-        thrown.expectMessage("Input training instance must not be null");
-        trainingInstanceService.create(null);
+      thrown.expect(IllegalArgumentException.class);
+      thrown.expectMessage("Input training instance must not be null");
+      trainingInstanceService.create(null);
     }
 
-    /**
-     * @Test public void updateTrainingInstance(){
-     * given(trainingInstanceRepository.saveAndFlush(trainingInstance1)).willReturn(trainingInstance1);
-     * TrainingInstance tI = trainingInstanceService.update(trainingInstance1).get();
-     * deepEquals(trainingInstance1, tI);
-     * }
-     * @Test public void updateTrainingInstanceWithNull(){
-     * thrown.expect(IllegalArgumentException.class);
-     * thrown.expectMessage("Input training instance must not be null");
-     * trainingInstanceService.update(null);
-     * }
-     **/
+    @Test
+    public void updateTrainingInstance() {
+        given(trainingInstanceRepository.findById(any(Long.class))).willReturn(Optional.of(trainingInstance2));
+
+        trainingInstanceService.update(trainingInstance2);
+
+        then(trainingInstanceRepository).should().findById(trainingInstance2.getId());
+        then(trainingInstanceRepository).should().save(trainingInstance2);
+    }
+
+    @Test(expected = ServiceLayerException.class)
+    public void updateTrainingInstance_withStartTimeInThePast() {
+        given(trainingInstanceRepository.findById(any(Long.class))).willReturn(Optional.of(trainingInstanceInvalid));
+
+        trainingInstanceService.update(trainingInstanceInvalid);
+
+        then(trainingInstanceRepository).should().findById(trainingInstanceInvalid.getId());
+        then(trainingInstanceRepository).should().save(trainingInstanceInvalid);
+    }
+
+    @Test
+    public void deleteTrainingInstance() {
+        given(trainingInstanceRepository.findById(any(Long.class))).willReturn(Optional.of(trainingInstance1));
+
+        trainingInstanceService.delete(trainingInstance1.getId());
+
+        then(trainingInstanceRepository).should().findById(trainingInstance1.getId());
+        then(trainingInstanceRepository).should().delete(trainingInstance1);
+    }
+
     @Test
     public void deleteTrainingInstaceWithNull() {
         thrown.expect(IllegalArgumentException.class);
         thrown.expectMessage("Input training instance id" +
                 " must not be null");
         trainingInstanceService.delete(null);
+    }
+
+    @Test(expected = ServiceLayerException.class)
+    public void deleteTrainingInstance_withEndTimeInTheFuture() {
+        given(trainingInstanceRepository.findById(any(Long.class))).willReturn(Optional.of(trainingInstanceInvalid));
+
+        trainingInstanceService.delete(trainingInstanceInvalid.getId());
+
+        then(trainingInstanceRepository).should().findById(trainingInstanceInvalid.getId());
+        then(trainingInstanceRepository).should().delete(trainingInstanceInvalid);
+    }
+
+    @Test
+    public void findTrainingRunsbyTrainingInstance() {
+        List<TrainingRun> expected = new ArrayList<>();
+        expected.add(trainingRun1);
+        expected.add(trainingRun2);
+
+        Page p = new PageImpl<>(expected);
+
+        given(trainingRunRepository.findAllByTrainingInstanceId(any(Long.class), any(Pageable.class))).willReturn(p);
+        Page pr = trainingInstanceService.findTrainingRunsByTrainingInstance(trainingInstance1.getId(), PageRequest.of(0, 2));
+        assertEquals(2, pr.getTotalElements());
+    }
+
+    @Test
+    public void findTrainingRunsbyTrainingInstance_notContainedId() {
+        Page p = new PageImpl<>(new ArrayList<>());
+
+        given(trainingRunRepository.findAllByTrainingInstanceId(any(Long.class), any(Pageable.class))).willReturn(p);
+
+        Page pr = trainingInstanceService.findTrainingRunsByTrainingInstance(10L, PageRequest.of(0, 2));
+        assertEquals(0, pr.getTotalElements());
     }
 
     @After
