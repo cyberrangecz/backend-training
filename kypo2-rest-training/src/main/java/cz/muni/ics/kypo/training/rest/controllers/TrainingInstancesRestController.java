@@ -255,7 +255,7 @@ public class TrainingInstancesRestController {
             @ApiParam(value = "Parameters for filtering the objects.", required = false)
             @RequestParam MultiValueMap<String, String> parameters,
             @ApiParam(value = "Fields which should be returned in REST API response", required = false)
-            @RequestParam(value = "fields") String fields) {
+            @RequestParam(value = "fields", required = false) String fields) {
         LOG.debug("findAllTrainingRunsByTrainingInstnceId({})", instanceId);
         PageResultResource<TrainingRunDTO> trainingRunResource = trainingInstanceFacade.findTrainingRunsByTrainingInstance(instanceId, pageable);
         Squiggly.init(objectMapper, fields);

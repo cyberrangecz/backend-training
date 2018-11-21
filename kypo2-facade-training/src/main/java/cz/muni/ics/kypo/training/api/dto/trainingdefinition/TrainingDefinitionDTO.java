@@ -24,7 +24,7 @@ public class TrainingDefinitionDTO {
     private String[] outcomes;
     private TDState state;
     private Set<AuthorRefDTO> authorRef = new HashSet<>();
-    private SandboxDefinitionRefDTO sandBoxDefinitionRef;
+    private SandboxDefinitionRefDTO sandboxDefinitionRef;
     private Long startingLevel;
     private Set<BasicLevelInfoDTO> basicLevelInfoDTOs;
     private boolean showStepperBar;
@@ -94,12 +94,12 @@ public class TrainingDefinitionDTO {
     }
 
     @ApiModelProperty(value = "Reference to the sandbox definition.")
-    public SandboxDefinitionRefDTO getSandBoxDefinitionRef() {
-        return sandBoxDefinitionRef;
+    public SandboxDefinitionRefDTO getSandboxDefinitionRef() {
+        return sandboxDefinitionRef;
     }
 
-    public void setSandBoxDefinitionRef(SandboxDefinitionRefDTO sandBoxDefinitionRef) {
-        this.sandBoxDefinitionRef = sandBoxDefinitionRef;
+    public void setSandboxDefinitionRef(SandboxDefinitionRefDTO sandBoxDefinitionRef) {
+        this.sandboxDefinitionRef = sandBoxDefinitionRef;
     }
 
     @ApiModelProperty(value = "Identifier of first level of training definition.", example = "4")
@@ -141,7 +141,7 @@ public class TrainingDefinitionDTO {
     public String toString() {
         return "TrainingDefinitionDTO{" + "id=" + id + ", title='" + title + '\'' + ", description='" + description + '\''
                 + ", prerequisities=" + Arrays.toString(prerequisities) + ", outcomes=" + Arrays.toString(outcomes) + ", state=" + state
-                + ", authorRef=" + authorRef + ", sandBoxDefinitionRef=" + sandBoxDefinitionRef + ", startingLevel=" + startingLevel
+                + ", authorRef=" + authorRef + ", sandBoxDefinitionRef=" + sandboxDefinitionRef + ", startingLevel=" + startingLevel
                 + ", basicLevelInfoDTOs=" + basicLevelInfoDTOs + ", showStepperBar=" + showStepperBar + ", canBeArchived=" + canBeArchived
                 + '}';
     }

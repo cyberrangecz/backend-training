@@ -112,9 +112,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     @PreAuthorize("hasAuthority({'ADMINISTRATOR'}) or hasAuthority({T(cz.muni.ics.kypo.training.persistence.model.enums.RoleType).DESIGNER})")
     public TrainingDefinition clone(Long id) {
         LOG.debug("clone({})", id);
-        LOG.info("POTIALTO FUNGUJE");
         TrainingDefinition trainingDefinition = findById(id);
-        LOG.info("A TU NIE");
         if (trainingDefinition.getState().equals(TDState.UNRELEASED))
             throw new ServiceLayerException("Cannot copy unreleased training definition.", ErrorCode.RESOURCE_CONFLICT);
         TrainingDefinition tD = new TrainingDefinition();

@@ -140,7 +140,7 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
         try {
             Objects.requireNonNull(trainingDefinition);
             TrainingDefinition tD = beanMapping.mapTo(trainingDefinition, TrainingDefinition.class);
-            tD.setSandBoxDefinitionRef(trainingDefinitionService.findSandboxDefinitionRefById(trainingDefinition.getSandBoxDefinitionRef()));
+            tD.setSandBoxDefinitionRef(trainingDefinitionService.findSandboxDefinitionRefById(trainingDefinition.getSandboxDefinitionRef()));
             Set<AuthorRef> authors = new HashSet<>();
             for (Long id : trainingDefinition.getAutIds()) {
                 authors.add(trainingDefinitionService.findAuthorRefById(id));

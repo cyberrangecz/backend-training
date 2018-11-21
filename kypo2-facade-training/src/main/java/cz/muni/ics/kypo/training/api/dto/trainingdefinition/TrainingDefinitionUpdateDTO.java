@@ -31,7 +31,7 @@ public class TrainingDefinitionUpdateDTO {
     @NotNull(message = "{trainingdefinitionupdate.autIds.NotNull.message}")
     private Set<Long> autIds = new HashSet<>();
     @NotNull(message = "{trainingdefinitionupdate.sandboxDefinitionRef.NotNull.message}")
-    private Long sandBoxDefinitionRef;
+    private Long sandboxDefinitionRef;
     @NotNull(message = "{trainingdefinitionupdate.showStepperBar.NotNull.message}")
     private boolean showStepperBar;
 
@@ -99,12 +99,12 @@ public class TrainingDefinitionUpdateDTO {
     }
 
     @ApiModelProperty(value = "Reference to the sandbox definition.", required = true, example = "1")
-    public Long getSandBoxDefinitionRef() {
-        return sandBoxDefinitionRef;
+    public Long getSandboxDefinitionRef() {
+        return sandboxDefinitionRef;
     }
 
-    public void setSandBoxDefinitionRef(Long sandBoxDefinitionRef) {
-        this.sandBoxDefinitionRef = sandBoxDefinitionRef;
+    public void setSandboxDefinitionRef(Long sandBoxDefinitionRef) {
+        this.sandboxDefinitionRef = sandBoxDefinitionRef;
     }
 
     @ApiModelProperty(value = "Sign if stepper bar should be displayed.", required = true, example = "false")
@@ -120,6 +120,6 @@ public class TrainingDefinitionUpdateDTO {
     public String toString() {
         return "TrainingDefinitionUpdateDTO{" + "id=" + id + ", title='" + title + '\'' + ", description='" + description + '\''
                 + ", prerequisities=" + Arrays.toString(prerequisities) + ", outcomes=" + Arrays.toString(outcomes) + ", state=" + state
-                + ", autIds=" + autIds + ", sandBoxDefinitionRef=" + sandBoxDefinitionRef + ", showStepperBar=" + showStepperBar + '}';
+                + ", autIds=" + autIds + ", sandBoxDefinitionRef=" + sandboxDefinitionRef + ", showStepperBar=" + showStepperBar + '}';
     }
 }

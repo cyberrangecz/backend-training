@@ -190,21 +190,21 @@ public class TrainingDefinitionsRestControllerTest {
         trainingDefinition1DTO.setState(TDState.UNRELEASED);
         trainingDefinition1DTO.setTitle("test");
         trainingDefinition1DTO.setAuthorRef(authorRefSetDTO);
-        trainingDefinition1DTO.setSandBoxDefinitionRef(sandboxDefinitionRefDTO);
+        trainingDefinition1DTO.setSandboxDefinitionRef(sandboxDefinitionRefDTO);
 
         trainingDefinition2DTO = new TrainingDefinitionDTO();
         trainingDefinition2DTO.setId(2L);
         trainingDefinition2DTO.setState(TDState.PRIVATED);
         trainingDefinition2DTO.setTitle("test");
         trainingDefinition2DTO.setAuthorRef(authorRefSetDTO);
-        trainingDefinition2DTO.setSandBoxDefinitionRef(sandboxDefinitionRefDTO);
+        trainingDefinition2DTO.setSandboxDefinitionRef(sandboxDefinitionRefDTO);
 
         trainingDefinitionUpdateDTO = new TrainingDefinitionUpdateDTO();
         trainingDefinitionUpdateDTO.setId(4L);
         trainingDefinitionUpdateDTO.setState(TDState.UNRELEASED);
         trainingDefinitionUpdateDTO.setTitle("training definition title");
         trainingDefinitionUpdateDTO.setAutIds(autIds);
-        trainingDefinitionUpdateDTO.setSandBoxDefinitionRef(1L);
+        trainingDefinitionUpdateDTO.setSandboxDefinitionRef(1L);
         trainingDefinitionUpdateDTO.setShowStepperBar(false);
 
         trainingDefinitionCreateDTO = new TrainingDefinitionCreateDTO();
