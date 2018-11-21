@@ -62,6 +62,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
         this.participantRefRepository = participantRefRepository;
         this.hintRepository = hintRepository;
         this.restTemplate = restTemplate;
+        this.auditService = auditService;
     }
 
     @Override
@@ -172,7 +173,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
                     AbstractLevel al = abstractLevelRepository.findById(trainingInstance.getTrainingDefinition().getStartingLevel()).orElseThrow(() -> new ServiceLayerException("No starting level available for this training definition", ErrorCode.RESOURCE_NOT_FOUND));
                     TrainingRun trainingRun =
                             getNewTrainingRun(al, getSubOfLoggedInUser(), trainingInstance, TRState.NEW, LocalDateTime.now(), trainingInstance.getEndTime(), sandboxInstanceRef);
-                    create(trainingRun);
+                    trainingRun = create(trainingRun);
                     // audit this action to the Elasticsearch
                     auditTrainingRunStartedAction(trainingInstance, trainingRun);
                     return al;
@@ -191,7 +192,6 @@ public class TrainingRunServiceImpl implements TrainingRunService {
         tR.setParticipantRef(participantRefRepository.findByParticipantRefLogin(participantRefLogin)
                 .orElse(participantRefRepository.save(new ParticipantRef(participantRefLogin))));
         tR.setTrainingInstance(trainingInstance);
-        tR.setState(state);
         tR.setStartTime(startTime);
         tR.setEndTime(endTime);
         tR.setSandboxInstanceRef(sandboxInstanceRef);
