@@ -333,4 +333,65 @@ public class TrainingRunsRestController {
             throw ExceptionSorter.throwException(ex);
         }
     }
+
+    /**
+     * Resume paused training run.
+     *
+     * @param runId id of training run.
+     * @return current level of training run.
+     */
+    @ApiOperation(httpMethod = "GET",
+            value = "Get current level of resumed training run",
+            response = AccessTrainingRunDTO.class,
+            nickname = "resumeTrainingRun",
+            produces = "application/json",
+            authorizations = {
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Training run resumed.", response = AccessTrainingRunDTO.class),
+            @ApiResponse(code = 404, message = "Training run with given id not found."),
+            @ApiResponse(code = 409, message = "Cannot resume archived training run."),
+            @ApiResponse(code = 500, message = "Unexpected condition was encountered.")
+    })
+    @GetMapping(value = "/{runId}/resume", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<AccessTrainingRunDTO> resumeTrainingRun(@ApiParam(value = "Training run ID", required = true) @PathVariable Long runId) {
+        LOG.debug("resumeTrainingRun({})", runId);
+        try {
+            AccessTrainingRunDTO resumedTrainingRunDTO = trainingRunFacade.resumeTrainingRun(runId);
+            return new ResponseEntity<>(resumedTrainingRunDTO, HttpStatus.OK);
+        } catch (FacadeLayerException ex) {
+            throw ExceptionSorter.throwException(ex);
+        }
+    }
+
+    /**
+     * Finish training run.
+     *
+     * @param runId id of training run.
+     */
+    @ApiOperation(httpMethod = "PUT",
+            value = "Finish given training run",
+            response = Void.class,
+            nickname = "finishTrainingRun",
+            produces = "application/json",
+            authorizations = {
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Training run resumed.", response = AccessTrainingRunDTO.class),
+            @ApiResponse(code = 404, message = "Training run with given id not found."),
+            @ApiResponse(code = 409, message = "Cannot resume archived training run."),
+            @ApiResponse(code = 500, message = "Unexpected condition was encountered.")
+    })
+    @PutMapping(value = "/{runId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Void> finishTrainingRun(@ApiParam(value = "Training run ID", required = true) @PathVariable Long runId) {
+        LOG.debug("finishTrainingRun({})", runId);
+        try {
+            trainingRunFacade.archiveTrainingRun(runId);
+            return new ResponseEntity<>(HttpStatus.OK);
+        } catch (FacadeLayerException ex) {
+            throw ExceptionSorter.throwException(ex);
+        }
+    }
 }

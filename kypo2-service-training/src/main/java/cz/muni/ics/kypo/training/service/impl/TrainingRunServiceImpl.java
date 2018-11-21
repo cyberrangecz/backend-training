@@ -185,6 +185,19 @@ public class TrainingRunServiceImpl implements TrainingRunService {
         throw new ServiceLayerException("There is no training instance with password " + password + ".", ErrorCode.RESOURCE_NOT_FOUND);
     }
 
+    @Override
+    @PreAuthorize("hasAuthority({'ADMINISTRATOR'}) or  @securityService.isTraineeOfGivenTrainingRun(#trainingRunId)")
+    public AbstractLevel resumeTrainingRun(Long trainingRunId) {
+        LOG.debug("resumeTrainingRun({})", trainingRunId);
+        Assert.notNull(trainingRunId, MUST_NOT_BE_NULL);
+        TrainingRun trainingRun = findByIdWithLevel(trainingRunId);
+        if (trainingRun.getState().equals(TRState.ARCHIVED)) {
+            throw new ServiceLayerException("Cannot resumed archived training run.", ErrorCode.RESOURCE_CONFLICT);
+        }
+        // TODO event log TrainingRunResumed
+        return trainingRun.getCurrentLevel();
+    }
+
     private TrainingRun getNewTrainingRun(AbstractLevel currentLevel, String participantRefLogin, TrainingInstance trainingInstance,
                                           TRState state, LocalDateTime startTime, LocalDateTime endTime, SandboxInstanceRef sandboxInstanceRef) {
         TrainingRun tR = new TrainingRun();
@@ -325,6 +338,21 @@ public class TrainingRunServiceImpl implements TrainingRunService {
         return order;
     }
 
+    @Override
+    @PreAuthorize("hasAuthority('ADMINISTRATOR')" +
+            "or @securityService.isTraineeOfGivenTrainingRun(#trainingRunId)")
+    public void archiveTrainingRun(Long trainingRunId) {
+        LOG.debug("archiveTrainingRun({})", trainingRunId);
+        Assert.notNull(trainingRunId, MUST_NOT_BE_NULL);
+        TrainingRun tR = findById(trainingRunId);
+        if(tR.getCurrentLevel().getNextLevel() != null) {
+            throw new ServiceLayerException("Cannot archive training run because current level is not last.", ErrorCode.RESOURCE_CONFLICT);
+        }
+
+        tR.setState(TRState.ARCHIVED);
+        //TODO audit LevelCompleted based on current level
+        //TODO audit TrainingRunCompleted
+    }
 
     private TrainingRun findByIdWithLevel(Long trainingRunId) {
         LOG.debug("findById({})", trainingRunId);

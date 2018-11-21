@@ -79,7 +79,7 @@ public class BeanMappingTest {
         tDDTO.setOutcomes(new String[]{"o1", "o2"});
         tDDTO.setState(TDState.RELEASED);
         tDDTO.setAuthorRef(new HashSet<>(Arrays.asList(aRDTO)));
-        tDDTO.setSandBoxDefinitionRef(sDRDTO);
+        tDDTO.setSandboxDefinitionRef(sDRDTO);
         tDDTO.setStartingLevel(1L);
         tDDTO.setShowStepperBar(true);
 
@@ -130,8 +130,8 @@ public class BeanMappingTest {
         assertEquals(tD.getState(), dto.getState());
         assertEquals(tD.getAuthorRef().size(), dto.getAuthorRef().size());
         assertEquals(tD.getAuthorRef().size(), dto.getAuthorRef().size());
-        assertEquals(tD.getSandBoxDefinitionRef().getId(), dto.getSandBoxDefinitionRef().getId());
-        assertEquals(tD.getSandBoxDefinitionRef().getSandboxDefinitionRef(), dto.getSandBoxDefinitionRef().getSandboxDefinitionRef());
+        assertEquals(tD.getSandBoxDefinitionRef().getId(), dto.getSandboxDefinitionRef().getId());
+        assertEquals(tD.getSandBoxDefinitionRef().getSandboxDefinitionRef(), dto.getSandboxDefinitionRef().getSandboxDefinitionRef());
         assertEquals(tD.getStartingLevel(), dto.getStartingLevel());
         assertEquals(tD.isShowStepperBar(), dto.isShowStepperBar());
     }
@@ -150,8 +150,8 @@ public class BeanMappingTest {
         assertEquals(tDDTO.getState(), tD.getState());
         assertEquals(tDDTO.getAuthorRef().size(), tD.getAuthorRef().size());
         assertEquals(tDDTO.getAuthorRef().size(), tD.getAuthorRef().size());
-        assertEquals(tDDTO.getSandBoxDefinitionRef().getId(), tD.getSandBoxDefinitionRef().getId());
-        assertEquals(tDDTO.getSandBoxDefinitionRef().getSandboxDefinitionRef(), tD.getSandBoxDefinitionRef().getSandboxDefinitionRef());
+        assertEquals(tDDTO.getSandboxDefinitionRef().getId(), tD.getSandBoxDefinitionRef().getId());
+        assertEquals(tDDTO.getSandboxDefinitionRef().getSandboxDefinitionRef(), tD.getSandBoxDefinitionRef().getSandboxDefinitionRef());
         assertEquals(tDDTO.getStartingLevel(), tD.getStartingLevel());
         assertEquals(tDDTO.isShowStepperBar(), tD.isShowStepperBar());
     }

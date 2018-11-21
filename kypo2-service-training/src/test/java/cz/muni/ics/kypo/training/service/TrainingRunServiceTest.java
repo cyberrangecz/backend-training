@@ -22,6 +22,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
+import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -227,9 +228,7 @@ public class TrainingRunServiceTest {
     @Test
     public void accessTrainingRun() {
         mockSpringSecurityContextForGet();
-        System.out.println(trainingDefinition.getSandBoxDefinitionRef());
         trainingInstance1.setTrainingDefinition(trainingDefinition);
-        System.out.println(trainingInstance1.getTrainingDefinition().getSandBoxDefinitionRef());
         given(trainingDefinitionRepository.save(any(TrainingDefinition.class))).willReturn(trainingDefinition);
         given(trainingInstanceRepository.findAll()).willReturn(Arrays.asList(trainingInstance1));
         given(trainingRunRepository.findSandboxInstanceRefsOfTrainingInstance(trainingInstance1.getId())).willReturn(new HashSet<>());
@@ -289,7 +288,6 @@ public class TrainingRunServiceTest {
     public void getHint() {
         given(trainingRunRepository.findByIdWithLevel(any(Long.class))).willReturn(Optional.of(trainingRun1));
         given(hintRepository.findById(any(Long.class))).willReturn(Optional.of(hint1));
-        System.out.println(hint1.getGameLevel());
         Hint resultHint1 = trainingRunService.getHint(trainingRun1.getId(), hint1.getId());
         assertEquals(hint1,resultHint1);
     }
@@ -429,6 +427,49 @@ public class TrainingRunServiceTest {
         thrown.expectMessage("Training Run with id: " + trainingRun2.getId() + " not found.");
         trainingRunService.getNextLevel(trainingRun2.getId());
     }
+
+    @Test
+    public void testArchiveTrainingRun() {
+        given(trainingRunRepository.findById(any(Long.class))).willReturn(Optional.of(trainingRun2));
+        trainingRunService.archiveTrainingRun(trainingRun2.getId());
+        assertEquals(trainingRun2.getState(), TRState.ARCHIVED);
+    }
+
+    @Test
+    public void testArchiveTrainingRunWithNullTrainingRunId() {
+        thrown.expect(IllegalArgumentException.class);
+        thrown.expectMessage("Input training run id must not be null.");
+        trainingRunService.archiveTrainingRun(null);
+    }
+
+    @Test
+    public void testArchiveTrainingRunWithNonLastLevel() {
+        given(trainingRunRepository.findById(any(Long.class))).willReturn(Optional.of(trainingRun1));
+        thrown.expect(ServiceLayerException.class);
+        thrown.expectMessage("Cannot archive training run because current level is not last.");
+
+        trainingRunService.archiveTrainingRun(trainingRun1.getId());
+    }
+
+    @Test
+    public void resumeTrainingRun() {
+        given(trainingRunRepository.findByIdWithLevel(any(Long.class))).willReturn(Optional.of(trainingRun1));
+        AbstractLevel level = trainingRunService.resumeTrainingRun(trainingRun1.getId());
+
+        assertTrue(level.getId().equals(1L));
+        assertTrue(level instanceof GameLevel);
+    }
+
+    @Test
+    public void resumeArchivedTrainingRun() {
+        trainingRun1.setState(TRState.ARCHIVED);
+        given(trainingRunRepository.findByIdWithLevel(any(Long.class))).willReturn(Optional.of(trainingRun1));
+        thrown.expect(ServiceLayerException.class);
+        thrown.expectMessage("Cannot resumed archived training run.");
+
+        trainingRunService.resumeTrainingRun(trainingRun1.getId());
+    }
+
 
     @After
     public void after() {

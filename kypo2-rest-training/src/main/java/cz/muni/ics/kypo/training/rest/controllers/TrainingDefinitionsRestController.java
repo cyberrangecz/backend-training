@@ -453,7 +453,7 @@ public class TrainingDefinitionsRestController {
     public ResponseEntity<Object> createLevel(
             @ApiParam(value = "Id of definition for which is level created")
             @PathVariable(value = "definitionId") Long definitionId,
-            @ApiParam(value = "Level type", allowableValues = "game, assessment, info")
+            @ApiParam(value = "Level type", allowableValues = "GAME, ASSESSMENT, INFO")
             @PathVariable(value = "levelType") LevelType levelType,
             @ApiParam(value = "Fields which should be returned in REST API response", required = false)
             @RequestParam(value = "fields", required = false) String fields) {

@@ -41,7 +41,6 @@ public class SecurityService {
     }
 
     public boolean isDesignerOfGivenTrainingDefinition(Long definitionId) {
-        log.info("AJ TU FUNGUJE ");
         TrainingDefinition trainingDefinition = trainingDefinitionRepository.findById(definitionId).orElseThrow(() -> new ServiceLayerException("The necessary permissions are required for a resource.", ErrorCode.SECURITY_RIGHTS));
         return trainingDefinition.getAuthorRef().stream().anyMatch(a -> a.getAuthorRefLogin().equals(getSubOfLoggedInUser()));
     }

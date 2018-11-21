@@ -95,7 +95,7 @@ public class TrainingInstanceUpdateDTO {
         this.password = password;
     }
 
-    @ApiModelProperty(value = "Reference to training definition from which is training instance created.", required = true, example = "[1]")
+    @ApiModelProperty(value = "Reference to training definition from which is training instance created.", required = true, example = "1")
     public Long getTrainingDefinitionId() {
         return trainingDefinitionId;
     }

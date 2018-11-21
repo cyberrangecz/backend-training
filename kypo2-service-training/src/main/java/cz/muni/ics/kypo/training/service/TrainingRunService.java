@@ -138,6 +138,25 @@ public interface TrainingRunService {
 
     int getRemainingAttempts(Long trainingRunId);
 
+    /**
+     * Access training run based on given password.
+     *
+     * @param trainingRunId id of training run to be resumed.
+     * @return Abstract Level
+     * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND cannot find training run.
+     *
+     */
+    AbstractLevel resumeTrainingRun(Long trainingRunId);
+
+    /**
+     * Archive training run.
+     *
+     * @param trainingRunId id of training run to be archived.
+     * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND cannot find training run.
+     *
+     */
+    void archiveTrainingRun(Long trainingRunId);
+
 
 
 }
