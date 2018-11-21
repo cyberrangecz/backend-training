@@ -82,6 +82,7 @@ public class TrainingInstanceServiceTest {
         trainingInstance2.setId(2L);
         trainingInstance2.setTitle("test2");
         trainingInstance2.setStartTime(LocalDateTime.now().plusHours(1L));
+        trainingInstance2.setEndTime(LocalDateTime.now().plusHours(5L));
 
         trainingInstanceInvalid = new TrainingInstance();
         trainingInstanceInvalid.setId(3L);
@@ -134,10 +135,10 @@ public class TrainingInstanceServiceTest {
 
     @Test
     public void createTrainingInstance() {
-        given(trainingInstanceRepository.save(trainingInstance1)).willReturn(trainingInstance1);
-        TrainingInstance tI = trainingInstanceService.create(trainingInstance1);
-        deepEquals(trainingInstance1, tI);
-        then(trainingInstanceRepository).should().save(trainingInstance1);
+        given(trainingInstanceRepository.save(trainingInstance2)).willReturn(trainingInstance2);
+        TrainingInstance tI = trainingInstanceService.create(trainingInstance2);
+        deepEquals(trainingInstance2, tI);
+        then(trainingInstanceRepository).should().save(trainingInstance2);
     }
 
     @Test
