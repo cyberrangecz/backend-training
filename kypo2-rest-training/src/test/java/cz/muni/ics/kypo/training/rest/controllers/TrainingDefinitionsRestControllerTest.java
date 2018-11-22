@@ -71,7 +71,6 @@ public class TrainingDefinitionsRestControllerTest {
     private MockMvc mockMvc;
 
     @MockBean
-    @Qualifier("objMapperRESTApi")
     private ObjectMapper objectMapper;
 
     private TrainingDefinition trainingDefinition1, trainingDefinition2;

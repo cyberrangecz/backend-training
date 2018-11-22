@@ -59,7 +59,7 @@ public class TrainingInstancesRestController {
     private ObjectMapper objectMapper;
 
     @Autowired
-    public TrainingInstancesRestController(TrainingInstanceFacade trainingInstanceFacade, @Qualifier("objMapperRESTApi") ObjectMapper objectMapper) {
+    public TrainingInstancesRestController(TrainingInstanceFacade trainingInstanceFacade, ObjectMapper objectMapper) {
         this.trainingInstanceFacade = trainingInstanceFacade;
         this.objectMapper = objectMapper;
     }
