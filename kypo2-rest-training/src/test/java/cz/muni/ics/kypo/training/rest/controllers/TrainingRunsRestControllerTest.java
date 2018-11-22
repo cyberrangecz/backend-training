@@ -76,7 +76,6 @@ public class TrainingRunsRestControllerTest {
     private MockMvc mockMvc;
 
     @MockBean
-    @Qualifier("objMapperRESTApi")
     private ObjectMapper objectMapper;
 
     private TrainingRun trainingRun1, trainingRun2;

@@ -40,7 +40,7 @@ import java.util.List;
 public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionHandler {
 
     private static final Logger LOG = LoggerFactory.getLogger(CustomRestExceptionHandlerTraining.class);
-    protected static final UrlPathHelper URLHELPER = new UrlPathHelper();
+    protected static final UrlPathHelper URL_PATH_HELPER = new UrlPathHelper();
 
     // 400
     @Override
@@ -166,7 +166,7 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
         final ApiErrorTraining apiError =
                 new ApiErrorTraining.ApiErrorBuilder(BadGatewayException.class.getAnnotation(ResponseStatus.class).value(),
                         ex.getLocalizedMessage()).setError(BadGatewayException.class.getAnnotation(ResponseStatus.class).reason())
-                        .setPath(URLHELPER.getRequestUri(req)).build();
+                        .setPath(URL_PATH_HELPER.getRequestUri(req)).build();
         return new ResponseEntity<>(apiError, new HttpHeaders(), apiError.getStatus());
     }
 
@@ -177,7 +177,7 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
         final ApiErrorTraining apiError =
                 new ApiErrorTraining.ApiErrorBuilder(BadRequestException.class.getAnnotation(ResponseStatus.class).value(),
                         ex.getLocalizedMessage()).setError(BadRequestException.class.getAnnotation(ResponseStatus.class).reason())
-                        .setPath(URLHELPER.getRequestUri(req)).build();
+                        .setPath(URL_PATH_HELPER.getRequestUri(req)).build();
         return new ResponseEntity<>(apiError, new HttpHeaders(), apiError.getStatus());
     }
 
@@ -187,7 +187,7 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
 
         final ApiErrorTraining apiError =
                 new ApiErrorTraining.ApiErrorBuilder(ForbiddenException.class.getAnnotation(ResponseStatus.class).value(), ex.getLocalizedMessage())
-                        .setError(ForbiddenException.class.getAnnotation(ResponseStatus.class).reason()).setPath(URLHELPER.getRequestUri(req)).build();
+                        .setError(ForbiddenException.class.getAnnotation(ResponseStatus.class).reason()).setPath(URL_PATH_HELPER.getRequestUri(req)).build();
         return new ResponseEntity<>(apiError, new HttpHeaders(), apiError.getStatus());
     }
 
@@ -199,7 +199,7 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
         final ApiErrorTraining apiError =
                 new ApiErrorTraining.ApiErrorBuilder(GatewayTimeoutException.class.getAnnotation(ResponseStatus.class).value(),
                         ex.getLocalizedMessage()).setError(GatewayTimeoutException.class.getAnnotation(ResponseStatus.class).reason())
-                        .setPath(URLHELPER.getRequestUri(req)).build();
+                        .setPath(URL_PATH_HELPER.getRequestUri(req)).build();
         return new ResponseEntity<>(apiError, new HttpHeaders(), apiError.getStatus());
     }
 
@@ -211,7 +211,7 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
         final ApiErrorTraining apiError =
                 new ApiErrorTraining.ApiErrorBuilder(HTTPVersionNotSupportedException.class.getAnnotation(ResponseStatus.class).value(),
                         ex.getLocalizedMessage()).setError(HTTPVersionNotSupportedException.class.getAnnotation(ResponseStatus.class).reason())
-                        .setPath(URLHELPER.getRequestUri(req)).build();
+                        .setPath(URL_PATH_HELPER.getRequestUri(req)).build();
         return new ResponseEntity<>(apiError, new HttpHeaders(), apiError.getStatus());
     }
 
@@ -223,7 +223,7 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
         final ApiErrorTraining apiError =
                 new ApiErrorTraining.ApiErrorBuilder(InsufficientStorageException.class.getAnnotation(ResponseStatus.class).value(),
                         ex.getLocalizedMessage()).setError(InsufficientStorageException.class.getAnnotation(ResponseStatus.class).reason())
-                        .setPath(URLHELPER.getRequestUri(req)).build();
+                        .setPath(URL_PATH_HELPER.getRequestUri(req)).build();
         return new ResponseEntity<>(apiError, new HttpHeaders(), apiError.getStatus());
     }
 
@@ -235,7 +235,7 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
         final ApiErrorTraining apiError =
                 new ApiErrorTraining.ApiErrorBuilder(InternalServerErrorException.class.getAnnotation(ResponseStatus.class).value(),
                         ex.getLocalizedMessage()).setError(InternalServerErrorException.class.getAnnotation(ResponseStatus.class).reason())
-                        .setPath(URLHELPER.getRequestUri(req)).build();
+                        .setPath(URL_PATH_HELPER.getRequestUri(req)).build();
         return new ResponseEntity<>(apiError, new HttpHeaders(), apiError.getStatus());
     }
 
@@ -247,7 +247,7 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
         final ApiErrorTraining apiError =
                 new ApiErrorTraining.ApiErrorBuilder(InvalidParameterException.class.getAnnotation(ResponseStatus.class).value(),
                         ex.getLocalizedMessage()).setError(InvalidParameterException.class.getAnnotation(ResponseStatus.class).reason())
-                        .setPath(URLHELPER.getRequestUri(req)).build();
+                        .setPath(URL_PATH_HELPER.getRequestUri(req)).build();
         return new ResponseEntity<>(apiError, new HttpHeaders(), apiError.getStatus());
     }
 
@@ -259,7 +259,7 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
         final ApiErrorTraining apiError =
                 new ApiErrorTraining.ApiErrorBuilder(LoopDetectedException.class.getAnnotation(ResponseStatus.class).value(),
                         ex.getLocalizedMessage()).setError(LoopDetectedException.class.getAnnotation(ResponseStatus.class).reason())
-                        .setPath(URLHELPER.getRequestUri(req)).build();
+                        .setPath(URL_PATH_HELPER.getRequestUri(req)).build();
         return new ResponseEntity<>(apiError, new HttpHeaders(), apiError.getStatus());
     }
 
@@ -271,7 +271,7 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
         final ApiErrorTraining apiError =
                 new ApiErrorTraining.ApiErrorBuilder(MethodNotAllowedException.class.getAnnotation(ResponseStatus.class).value(),
                         ex.getLocalizedMessage()).setError(MethodNotAllowedException.class.getAnnotation(ResponseStatus.class).reason())
-                        .setPath(URLHELPER.getRequestUri(req)).build();
+                        .setPath(URL_PATH_HELPER.getRequestUri(req)).build();
         return new ResponseEntity<>(apiError, new HttpHeaders(), apiError.getStatus());
     }
 
@@ -283,7 +283,7 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
         final ApiErrorTraining apiError =
                 new ApiErrorTraining.ApiErrorBuilder(MovedPermanentlyException.class.getAnnotation(ResponseStatus.class).value(),
                         ex.getLocalizedMessage()).setError(MovedPermanentlyException.class.getAnnotation(ResponseStatus.class).reason())
-                        .setPath(URLHELPER.getRequestUri(req)).build();
+                        .setPath(URL_PATH_HELPER.getRequestUri(req)).build();
         return new ResponseEntity<>(apiError, new HttpHeaders(), apiError.getStatus());
     }
 
@@ -295,7 +295,7 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
         final ApiErrorTraining apiError =
                 new ApiErrorTraining.ApiErrorBuilder(NetworkAuthenticationRequiredException.class.getAnnotation(ResponseStatus.class).value(),
                         ex.getLocalizedMessage()).setError(NetworkAuthenticationRequiredException.class.getAnnotation(ResponseStatus.class).reason())
-                        .setPath(URLHELPER.getRequestUri(req)).build();
+                        .setPath(URL_PATH_HELPER.getRequestUri(req)).build();
         return new ResponseEntity<>(apiError, new HttpHeaders(), apiError.getStatus());
     }
 
@@ -305,7 +305,7 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
 
         final ApiErrorTraining apiError =
                 new ApiErrorTraining.ApiErrorBuilder(NoContentException.class.getAnnotation(ResponseStatus.class).value(), ex.getLocalizedMessage())
-                        .setError(NoContentException.class.getAnnotation(ResponseStatus.class).reason()).setPath(URLHELPER.getRequestUri(req)).build();
+                        .setError(NoContentException.class.getAnnotation(ResponseStatus.class).reason()).setPath(URL_PATH_HELPER.getRequestUri(req)).build();
         return new ResponseEntity<>(apiError, new HttpHeaders(), apiError.getStatus());
     }
 
@@ -317,7 +317,7 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
         final ApiErrorTraining apiError =
                 new ApiErrorTraining.ApiErrorBuilder(NotExtendedException.class.getAnnotation(ResponseStatus.class).value(),
                         ex.getLocalizedMessage()).setError(NotExtendedException.class.getAnnotation(ResponseStatus.class).reason())
-                        .setPath(URLHELPER.getRequestUri(req)).build();
+                        .setPath(URL_PATH_HELPER.getRequestUri(req)).build();
         return new ResponseEntity<>(apiError, new HttpHeaders(), apiError.getStatus());
     }
 
@@ -329,7 +329,7 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
         final ApiErrorTraining apiError =
                 new ApiErrorTraining.ApiErrorBuilder(NotImplementedException.class.getAnnotation(ResponseStatus.class).value(),
                         ex.getLocalizedMessage()).setError(NotImplementedException.class.getAnnotation(ResponseStatus.class).reason())
-                        .setPath(URLHELPER.getRequestUri(req)).build();
+                        .setPath(URL_PATH_HELPER.getRequestUri(req)).build();
         return new ResponseEntity<>(apiError, new HttpHeaders(), apiError.getStatus());
     }
 
@@ -341,7 +341,7 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
         final ApiErrorTraining apiError =
                 new ApiErrorTraining.ApiErrorBuilder(PayloadTooLargeException.class.getAnnotation(ResponseStatus.class).value(),
                         ex.getLocalizedMessage()).setError(PayloadTooLargeException.class.getAnnotation(ResponseStatus.class).reason())
-                        .setPath(URLHELPER.getRequestUri(req)).build();
+                        .setPath(URL_PATH_HELPER.getRequestUri(req)).build();
         return new ResponseEntity<>(apiError, new HttpHeaders(), apiError.getStatus());
     }
 
@@ -353,7 +353,7 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
         final ApiErrorTraining apiError =
                 new ApiErrorTraining.ApiErrorBuilder(ProxyAuthenticationRequiredException.class.getAnnotation(ResponseStatus.class).value(),
                         ex.getLocalizedMessage()).setError(ProxyAuthenticationRequiredException.class.getAnnotation(ResponseStatus.class).reason())
-                        .setPath(URLHELPER.getRequestUri(req)).build();
+                        .setPath(URL_PATH_HELPER.getRequestUri(req)).build();
         return new ResponseEntity<>(apiError, new HttpHeaders(), apiError.getStatus());
     }
 
@@ -365,7 +365,7 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
         final ApiErrorTraining apiError =
                 new ApiErrorTraining.ApiErrorBuilder(RangeNotSatisfiableException.class.getAnnotation(ResponseStatus.class).value(),
                         ex.getLocalizedMessage()).setError(RangeNotSatisfiableException.class.getAnnotation(ResponseStatus.class).reason())
-                        .setPath(URLHELPER.getRequestUri(req)).build();
+                        .setPath(URL_PATH_HELPER.getRequestUri(req)).build();
         return new ResponseEntity<>(apiError, new HttpHeaders(), apiError.getStatus());
     }
 
@@ -377,7 +377,7 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
         final ApiErrorTraining apiError =
                 new ApiErrorTraining.ApiErrorBuilder(RequestTimeoutException.class.getAnnotation(ResponseStatus.class).value(),
                         ex.getLocalizedMessage()).setError(RequestTimeoutException.class.getAnnotation(ResponseStatus.class).reason())
-                        .setPath(URLHELPER.getRequestUri(req)).build();
+                        .setPath(URL_PATH_HELPER.getRequestUri(req)).build();
         return new ResponseEntity<>(apiError, new HttpHeaders(), apiError.getStatus());
     }
 
@@ -389,7 +389,7 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
         final ApiErrorTraining apiError =
                 new ApiErrorTraining.ApiErrorBuilder(ResourceAlreadyExistingException.class.getAnnotation(ResponseStatus.class).value(),
                         ex.getLocalizedMessage()).setError(ResourceAlreadyExistingException.class.getAnnotation(ResponseStatus.class).reason())
-                        .setPath(URLHELPER.getRequestUri(req)).build();
+                        .setPath(URL_PATH_HELPER.getRequestUri(req)).build();
         return new ResponseEntity<>(apiError, new HttpHeaders(), apiError.getStatus());
     }
 
@@ -402,7 +402,7 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
         final ApiErrorTraining apiError =
                 new ApiErrorTraining.ApiErrorBuilder(ResourceNotCreatedException.class.getAnnotation(ResponseStatus.class).value(),
                         ex.getLocalizedMessage()).setError(ResourceNotCreatedException.class.getAnnotation(ResponseStatus.class).reason())
-                        .setPath(URLHELPER.getRequestUri(req)).build();
+                        .setPath(URL_PATH_HELPER.getRequestUri(req)).build();
         return new ResponseEntity<>(apiError, new HttpHeaders(), apiError.getStatus());
     }
 
@@ -415,7 +415,7 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
         final ApiErrorTraining apiError =
                 new ApiErrorTraining.ApiErrorBuilder(ResourceNotFoundException.class.getAnnotation(ResponseStatus.class).value(),
                         ex.getLocalizedMessage()).setError(ResourceNotFoundException.class.getAnnotation(ResponseStatus.class).reason())
-                        .setPath(URLHELPER.getRequestUri(req)).build();
+                        .setPath(URL_PATH_HELPER.getRequestUri(req)).build();
         return new ResponseEntity<>(apiError, new HttpHeaders(), apiError.getStatus());
     }
 
@@ -428,7 +428,7 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
         final ApiErrorTraining apiError =
                 new ApiErrorTraining.ApiErrorBuilder(ResourceNotModifiedException.class.getAnnotation(ResponseStatus.class).value(),
                         ex.getLocalizedMessage()).setError(ResourceNotModifiedException.class.getAnnotation(ResponseStatus.class).reason())
-                        .setPath(URLHELPER.getRequestUri(req)).build();
+                        .setPath(URL_PATH_HELPER.getRequestUri(req)).build();
         return new ResponseEntity<>(apiError, new HttpHeaders(), apiError.getStatus());
     }
 
@@ -440,7 +440,7 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
         final ApiErrorTraining apiError =
                 new ApiErrorTraining.ApiErrorBuilder(ServiceUnavailableException.class.getAnnotation(ResponseStatus.class).value(),
                         ex.getLocalizedMessage()).setError(ServiceUnavailableException.class.getAnnotation(ResponseStatus.class).reason())
-                        .setPath(URLHELPER.getRequestUri(req)).build();
+                        .setPath(URL_PATH_HELPER.getRequestUri(req)).build();
         return new ResponseEntity<>(apiError, new HttpHeaders(), apiError.getStatus());
     }
 
@@ -452,7 +452,7 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
         final ApiErrorTraining apiError =
                 new ApiErrorTraining.ApiErrorBuilder(TooManyRequestsException.class.getAnnotation(ResponseStatus.class).value(),
                         ex.getLocalizedMessage()).setError(TooManyRequestsException.class.getAnnotation(ResponseStatus.class).reason())
-                        .setPath(URLHELPER.getRequestUri(req)).build();
+                        .setPath(URL_PATH_HELPER.getRequestUri(req)).build();
         return new ResponseEntity<>(apiError, new HttpHeaders(), apiError.getStatus());
     }
 
@@ -464,7 +464,7 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
         final ApiErrorTraining apiError =
                 new ApiErrorTraining.ApiErrorBuilder(UnauthorizedException.class.getAnnotation(ResponseStatus.class).value(),
                         ex.getLocalizedMessage()).setError(UnauthorizedException.class.getAnnotation(ResponseStatus.class).reason())
-                        .setPath(URLHELPER.getRequestUri(req)).build();
+                        .setPath(URL_PATH_HELPER.getRequestUri(req)).build();
         return new ResponseEntity<>(apiError, new HttpHeaders(), apiError.getStatus());
     }
 
@@ -476,7 +476,7 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
         final ApiErrorTraining apiError =
                 new ApiErrorTraining.ApiErrorBuilder(UnprocessableEntityException.class.getAnnotation(ResponseStatus.class).value(),
                         ex.getLocalizedMessage()).setError(UnprocessableEntityException.class.getAnnotation(ResponseStatus.class).reason())
-                        .setPath(URLHELPER.getRequestUri(req)).build();
+                        .setPath(URL_PATH_HELPER.getRequestUri(req)).build();
         return new ResponseEntity<>(apiError, new HttpHeaders(), apiError.getStatus());
     }
 
@@ -488,7 +488,7 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
         final ApiErrorTraining apiError =
                 new ApiErrorTraining.ApiErrorBuilder(UnsupportedMediaTypeException.class.getAnnotation(ResponseStatus.class).value(),
                         ex.getLocalizedMessage()).setError(UnsupportedMediaTypeException.class.getAnnotation(ResponseStatus.class).reason())
-                        .setPath(URLHELPER.getRequestUri(req)).build();
+                        .setPath(URL_PATH_HELPER.getRequestUri(req)).build();
         return new ResponseEntity<>(apiError, new HttpHeaders(), apiError.getStatus());
     }
 
@@ -499,7 +499,7 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
         final ApiErrorTraining apiError =
                 new ApiErrorTraining.ApiErrorBuilder(URITooLongException.class.getAnnotation(ResponseStatus.class).value(),
                         ex.getLocalizedMessage()).setError(URITooLongException.class.getAnnotation(ResponseStatus.class).reason())
-                        .setPath(URLHELPER.getRequestUri(req)).build();
+                        .setPath(URL_PATH_HELPER.getRequestUri(req)).build();
         return new ResponseEntity<>(apiError, new HttpHeaders(), apiError.getStatus());
     }
 
@@ -511,7 +511,7 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
         final ApiErrorTraining apiError =
                 new ApiErrorTraining.ApiErrorBuilder(VariantAlsoNegotiatesException.class.getAnnotation(ResponseStatus.class).value(),
                         ex.getLocalizedMessage()).setError(VariantAlsoNegotiatesException.class.getAnnotation(ResponseStatus.class).reason())
-                        .setPath(URLHELPER.getRequestUri(req)).build();
+                        .setPath(URL_PATH_HELPER.getRequestUri(req)).build();
         return new ResponseEntity<>(apiError, new HttpHeaders(), apiError.getStatus());
     }
 
@@ -530,7 +530,7 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
         LOG.info("handleAccessDeniedException({}, {})", ex, request);
 
         final ApiErrorTraining apiError = new ApiErrorTraining.ApiErrorBuilder(HttpStatus.FORBIDDEN, ex.getLocalizedMessage()).setError("Access denied")
-                .setPath(URLHELPER.getRequestUri(req)).build();
+                .setPath(URL_PATH_HELPER.getRequestUri(req)).build();
         return new ResponseEntity<>(apiError, new HttpHeaders(), apiError.getStatus());
     }
 
@@ -542,7 +542,7 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
         LOG.debug("handleIllegalArgumentException({}, {}, {})", new Object[]{ex, request, req});
 
         final ApiErrorTraining apiError = new ApiErrorTraining.ApiErrorBuilder(HttpStatus.NOT_ACCEPTABLE, ex.getLocalizedMessage())
-                .setError("Illegal Argument").setPath(URLHELPER.getRequestUri(req)).build();
+                .setError("Illegal Argument").setPath(URL_PATH_HELPER.getRequestUri(req)).build();
         return new ResponseEntity<>(apiError, new HttpHeaders(), apiError.getStatus());
     }
 
@@ -553,7 +553,7 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
 
         final String error = ex.getName() + " should be of type " + ex.getRequiredType().getName();
         final ApiErrorTraining apiError = new ApiErrorTraining.ApiErrorBuilder(HttpStatus.BAD_REQUEST, ex.getLocalizedMessage()).setError(error)
-                .setPath(URLHELPER.getRequestUri(req)).build();
+                .setPath(URL_PATH_HELPER.getRequestUri(req)).build();
         return new ResponseEntity<>(apiError, new HttpHeaders(), apiError.getStatus());
     }
 
@@ -568,7 +568,7 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
         }
 
         final ApiErrorTraining apiError = new ApiErrorTraining.ApiErrorBuilder(HttpStatus.BAD_REQUEST, ex.getLocalizedMessage())
-                .setErrors(errors).setPath(URLHELPER.getRequestUri(req)).build();
+                .setErrors(errors).setPath(URL_PATH_HELPER.getRequestUri(req)).build();
         return new ResponseEntity<>(apiError, new HttpHeaders(), apiError.getStatus());
     }
 
@@ -578,7 +578,7 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
         LOG.debug("handleAll({}, {}, {})", new Object[]{ex, request, req});
 
         final ApiErrorTraining apiError = new ApiErrorTraining.ApiErrorBuilder(HttpStatus.INTERNAL_SERVER_ERROR, ex.getLocalizedMessage())
-                .setError("error occurred").setPath(URLHELPER.getRequestUri(req)).build();
+                .setError("error occurred").setPath(URL_PATH_HELPER.getRequestUri(req)).build();
         return new ResponseEntity<>(apiError, new HttpHeaders(), apiError.getStatus());
     }
 

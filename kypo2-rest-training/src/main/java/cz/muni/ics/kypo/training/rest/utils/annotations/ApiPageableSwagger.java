@@ -1,4 +1,4 @@
-package cz.muni.ics.kypo.training.rest.interfaces;
+package cz.muni.ics.kypo.training.rest.utils.annotations;
 
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
