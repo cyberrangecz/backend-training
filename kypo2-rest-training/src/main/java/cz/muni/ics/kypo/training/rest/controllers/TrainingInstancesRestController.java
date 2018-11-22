@@ -49,7 +49,7 @@ import javax.validation.Valid;
         @ApiResponse(code = 403, message = "The necessary permissions are required for a resource.")
 })
 @RestController
-@RequestMapping(value = "/training-instances", produces = MediaType.APPLICATION_JSON_VALUE)
+@RequestMapping(path = "/training-instances", produces = MediaType.APPLICATION_JSON_VALUE)
 @Api(value = "/training-instances", tags = "Training instances", consumes = "application/json")
 public class TrainingInstancesRestController {
 
@@ -78,7 +78,7 @@ public class TrainingInstancesRestController {
             @ApiResponse(code = 200, message = "Training instance found", response = TrainingInstanceDTO.class), @ApiResponse(code = 404, message = "Training instance with given id not found."),
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.")
     })
-    @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(path = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> findTrainingInstanceById(
             @ApiParam(value = "Training instance ID") @PathVariable long id,
             @ApiParam(value = "Fields which should be returned in REST API response", required = false) @RequestParam(value = "fields", required = false) String fields) {
@@ -201,7 +201,7 @@ public class TrainingInstancesRestController {
             @ApiResponse(code = 409, message = "Starting time of instance must be in future."),
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.")
     })
-    @DeleteMapping(value = "/{id}")
+    @DeleteMapping(path = "/{id}")
     public ResponseEntity<Void> deleteTrainingInstance(@ApiParam(value = "Id of training instance to be deleted") @PathVariable(value = "id") Long id) {
         try {
             trainingInstanceFacade.delete(id);
@@ -219,9 +219,8 @@ public class TrainingInstancesRestController {
             @ApiResponse(code = 200, message = "Sandboxes have been allocated."),
             @ApiResponse(code = 404, message = "Training instance with given id not found."),
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.")
-
     })
-    @PostMapping(value = "/{instanceId}/sandbox-instances")
+    @PostMapping(path = "/{instanceId}/sandbox-instances")
     public ResponseEntity<Void> allocateSandboxes(
             @ApiParam(value = "Id of training instance for which sandboxes are allocated")
             @PathVariable(value = "instanceId") Long instanceId) {
@@ -248,7 +247,7 @@ public class TrainingInstancesRestController {
             @ApiResponse(code = 200, message = "All training runs in given training instance found.", response = TrainingRunDTO.class, responseContainer = "List"),
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.")
     })
-    @GetMapping(value = "/{instanceId}/training-runs", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(path = "/{instanceId}/training-runs", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> findAllTrainingRunsByTrainingInstanceId(
             @ApiParam(value = "Training Instance Id", required = true) @PathVariable Long instanceId,
             @ApiParam(value = "Pagination support.") Pageable pageable,
@@ -261,6 +260,5 @@ public class TrainingInstancesRestController {
         Squiggly.init(objectMapper, fields);
         return new ResponseEntity<>(SquigglyUtils.stringify(objectMapper, trainingRunResource), HttpStatus.OK);
     }
-
 
 }
