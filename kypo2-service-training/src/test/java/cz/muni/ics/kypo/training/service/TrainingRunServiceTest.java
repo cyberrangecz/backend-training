@@ -22,7 +22,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
-import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -107,6 +106,7 @@ public class TrainingRunServiceTest {
         trainingDefinition2.setId(2L);
         trainingDefinition2.setTitle("Title2");
         trainingDefinition2.setStartingLevel(2L);
+        trainingDefinition2.setSandBoxDefinitionRef(sandBoxDefinitionRef);
 
         sandboxInstanceRef1 = new SandboxInstanceRef();
         sandboxInstanceRef1.setId(1L);
@@ -151,6 +151,7 @@ public class TrainingRunServiceTest {
         hint1.setId(1L);
         hint1.setContent("hint1 content");
         hint1.setGameLevel(gameLevel);
+        hint1.setHintPenalty(5);
 
         infoLevel = new InfoLevel();
         infoLevel.setId(2L);
@@ -286,6 +287,7 @@ public class TrainingRunServiceTest {
 
     @Test
     public void getHint() {
+        mockSpringSecurityContextForGet();
         given(trainingRunRepository.findByIdWithLevel(any(Long.class))).willReturn(Optional.of(trainingRun1));
         given(hintRepository.findById(any(Long.class))).willReturn(Optional.of(hint1));
         Hint resultHint1 = trainingRunService.getHint(trainingRun1.getId(), hint1.getId());
@@ -430,6 +432,7 @@ public class TrainingRunServiceTest {
 
     @Test
     public void testArchiveTrainingRun() {
+        mockSpringSecurityContextForGet();
         given(trainingRunRepository.findById(any(Long.class))).willReturn(Optional.of(trainingRun2));
         trainingRunService.archiveTrainingRun(trainingRun2.getId());
         assertEquals(trainingRun2.getState(), TRState.ARCHIVED);
