@@ -384,6 +384,8 @@ public class TrainingRunServiceImpl implements TrainingRunService {
                     .trainingInstanceId(trainingInstance.getId())
                     .trainingRunId(trainingRun.getId())
                     .playerLogin(getSubOfLoggedInUser())
+                    .totalScore(0) //TODO requires to set total and actual score in level from training run entity
+                    .actualScoreInLevel(0)
                     .level(trainingRun.getCurrentLevel().getId())
                     .build();
 
@@ -404,6 +406,8 @@ public class TrainingRunServiceImpl implements TrainingRunService {
                     .trainingInstanceId(trainingInstance.getId())
                     .trainingRunId(trainingRun.getId())
                     .playerLogin(getSubOfLoggedInUser())
+                    .totalScore(0) //TODO requires to set total and actual score in level from training run entity
+                    .actualScoreInLevel(0)
                     .level(trainingRun.getCurrentLevel().getId())
                     .levelType(levelType)
                     .maxScore(trainingRun.getCurrentLevel().getMaxScore())
@@ -428,9 +432,10 @@ public class TrainingRunServiceImpl implements TrainingRunService {
                     .trainingInstanceId(trainingInstance.getId())
                     .trainingRunId(trainingRun.getId())
                     .playerLogin(getSubOfLoggedInUser())
+                    .totalScore(0) //TODO requires to set total and actual score in level from training run entity
+                    .actualScoreInLevel(0)
                     .level(trainingRun.getCurrentLevel().getId())
                     .levelType(levelType)
-                    .score(111)  //TODO no complete score attribute
                     .build();
 
             auditService.save(levelCompleted);
@@ -450,6 +455,8 @@ public class TrainingRunServiceImpl implements TrainingRunService {
                     .trainingInstanceId(trainingInstance.getId())
                     .trainingRunId(trainingRun.getId())
                     .playerLogin(getSubOfLoggedInUser())
+                    .totalScore(0) //TODO requires to set total and actual score in level from training run entity
+                    .actualScoreInLevel(0)
                     .level(trainingRun.getCurrentLevel().getId())
                     .hintId(hint.getId())
                     .hintPenaltyPoints(hint.getHintPenalty())
@@ -473,6 +480,8 @@ public class TrainingRunServiceImpl implements TrainingRunService {
                     .trainingInstanceId(trainingInstance.getId())
                     .trainingRunId(trainingRun.getId())
                     .playerLogin(getSubOfLoggedInUser())
+                    .totalScore(0) //TODO requires to set total and actual score in level from training run entity
+                    .actualScoreInLevel(0)
                     .level(trainingRun.getCurrentLevel().getId())
                     .penaltyPoints(111) //TODO repair, no attribute
                     .build();
@@ -493,6 +502,8 @@ public class TrainingRunServiceImpl implements TrainingRunService {
                     .trainingInstanceId(trainingInstance.getId())
                     .trainingRunId(trainingRun.getId())
                     .playerLogin(getSubOfLoggedInUser())
+                    .totalScore(0) // requires to set total and actual score in level from training run entity
+                    .actualScoreInLevel(0)
                     .level(trainingRun.getCurrentLevel().getId())
                     .flagContent(flag)
                     .build();
@@ -513,6 +524,8 @@ public class TrainingRunServiceImpl implements TrainingRunService {
                     .trainingInstanceId(trainingInstance.getId())
                     .trainingRunId(trainingRun.getId())
                     .playerLogin(getSubOfLoggedInUser())
+                    .totalScore(0) //TODO requires to set total and actual score in level from training run entity
+                    .actualScoreInLevel(0)
                     .level(trainingRun.getCurrentLevel().getId())
                     .flagContent(flag)
                     .count(trainingRun.getIncorrectFlagCount())
@@ -534,6 +547,8 @@ public class TrainingRunServiceImpl implements TrainingRunService {
                     .trainingInstanceId(trainingInstance.getId())
                     .trainingRunId(trainingRun.getId())
                     .playerLogin(getSubOfLoggedInUser())
+                    .totalScore(0) //TODO requires to set total and actual score in level from training run entity
+                    .actualScoreInLevel(0)
                     .level(trainingRun.getCurrentLevel().getId())
                     .answers(answers)
                     .build();
@@ -554,6 +569,8 @@ public class TrainingRunServiceImpl implements TrainingRunService {
                     .trainingInstanceId(trainingInstance.getId())
                     .trainingRunId(trainingRun.getId())
                     .playerLogin(getSubOfLoggedInUser())
+                    .totalScore(0) //TODO requires to set total and actual score in level from training run entity
+                    .actualScoreInLevel(0)
                     .level(trainingRun.getCurrentLevel().getId())
                     .build();
             auditService.save(assessmentAnswers);
@@ -573,6 +590,8 @@ public class TrainingRunServiceImpl implements TrainingRunService {
                     .trainingInstanceId(trainingInstance.getId())
                     .trainingRunId(trainingRun.getId())
                     .playerLogin(getSubOfLoggedInUser())
+                    .totalScore(0) //TODO requires to set total and actual score in level from training run entity
+                    .actualScoreInLevel(0)
                     .level(trainingRun.getCurrentLevel().getId())
                     .build();
             auditService.save(trainingRunResumed);

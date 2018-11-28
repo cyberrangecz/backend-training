@@ -34,29 +34,33 @@ public class LevelCompleted extends AbstractAuditPOJO {
     @ApiObjectField(description = "ID of a player in the training run.")
     @JsonProperty(value = "player_login", required = true)
     private String playerLogin;
+    @ApiObjectField(description = "Total score of the player in the level.")
+    @JsonProperty(value = "total_score", required = true)
+    private int totalScore;
+    @ApiObjectField(description = "Actual score of the player in the level.")
+    @JsonProperty(value = "actual_score_in_level", required = true)
+    private int actualScoreInLevel;
     @ApiObjectField(description = "Training run level.")
     @JsonProperty(value = "level", required = true)
     private long level;
     @ApiObjectField(description = "Level Type.")
     @JsonProperty(value = "level_type", required = true)
     private LevelType levelType;
-    @ApiObjectField(description = "The result score of player earned in particular level.")
-    @JsonProperty(value = "score", required = true)
-    private int score;
 
     public static SandboxIdBuilder builder() {
         return new LevelCompletedBuilder();
     }
 
-    public static class LevelCompletedBuilder implements SandboxIdBuilder, TrainingDefinitionIdBuilder, TrainingInstanceIdBuilder, TrainingRunIdBuilder, PlayerLoginBuilder, LevelBuilder, LevelTypeBuilder, ScoreBuilder {
+    public static class LevelCompletedBuilder implements SandboxIdBuilder, TrainingDefinitionIdBuilder, TrainingInstanceIdBuilder, TrainingRunIdBuilder, PlayerLoginBuilder, TotalScoreBuilder, ActualScoreInLevelBuilder, LevelBuilder, LevelTypeBuilder {
         private long sandboxId;
         private long trainingDefinitionId;
         private long trainingInstanceId;
         private long trainingRunId;
         private String playerLogin;
+        private int totalScore;
+        private int actualScoreInLevel;
         private long level;
         private LevelType levelType;
-        private int score;
 
         @Override
         public TrainingDefinitionIdBuilder sandboxId(long sandboxId) {
@@ -83,8 +87,20 @@ public class LevelCompleted extends AbstractAuditPOJO {
         }
 
         @Override
-        public LevelBuilder playerLogin(String playerLogin) {
+        public TotalScoreBuilder playerLogin(String playerLogin) {
             this.playerLogin = playerLogin;
+            return this;
+        }
+
+        @Override
+        public ActualScoreInLevelBuilder totalScore(int totalScore) {
+            this.totalScore = totalScore;
+            return this;
+        }
+
+        @Override
+        public LevelBuilder actualScoreInLevel(int actualScoreInLevel) {
+            this.actualScoreInLevel = actualScoreInLevel;
             return this;
         }
 
@@ -95,14 +111,8 @@ public class LevelCompleted extends AbstractAuditPOJO {
         }
 
         @Override
-        public ScoreBuilder levelType(LevelType levelType) {
+        public LevelCompletedBuilder levelType(LevelType levelType) {
             this.levelType = levelType;
-            return this;
-        }
-
-        @Override
-        public LevelCompletedBuilder score(int score) {
-            this.score = score;
             return this;
         }
 
@@ -129,7 +139,15 @@ public class LevelCompleted extends AbstractAuditPOJO {
     }
 
     public interface PlayerLoginBuilder {
-        LevelBuilder playerLogin(String playerLogin);
+        TotalScoreBuilder playerLogin(String playerLogin);
+    }
+
+    public interface TotalScoreBuilder {
+        ActualScoreInLevelBuilder totalScore(int totalScore);
+    }
+
+    public interface ActualScoreInLevelBuilder {
+        LevelBuilder actualScoreInLevel(int actualScoreInLevel);
     }
 
     public interface LevelBuilder {
@@ -137,11 +155,7 @@ public class LevelCompleted extends AbstractAuditPOJO {
     }
 
     public interface LevelTypeBuilder {
-        ScoreBuilder levelType(LevelType levelType);
-    }
-
-    public interface ScoreBuilder {
-        LevelCompletedBuilder score(int score);
+        LevelCompletedBuilder levelType(LevelType levelType);
     }
 
     private LevelCompleted(LevelCompletedBuilder builder) {
@@ -150,9 +164,10 @@ public class LevelCompleted extends AbstractAuditPOJO {
         this.trainingInstanceId = builder.trainingInstanceId;
         this.trainingRunId = builder.trainingRunId;
         this.playerLogin = builder.playerLogin;
+        this.totalScore = builder.totalScore;
+        this.actualScoreInLevel = builder.actualScoreInLevel;
         this.level = builder.level;
         this.levelType = builder.levelType;
-        this.score = builder.score;
     }
 
     public long getSandboxId() {
@@ -195,6 +210,22 @@ public class LevelCompleted extends AbstractAuditPOJO {
         this.playerLogin = playerLogin;
     }
 
+    public int getTotalScore() {
+        return totalScore;
+    }
+
+    public void setTotalScore(int totalScore) {
+        this.totalScore = totalScore;
+    }
+
+    public int getActualScoreInLevel() {
+        return actualScoreInLevel;
+    }
+
+    public void setActualScoreInLevel(int actualScoreInLevel) {
+        this.actualScoreInLevel = actualScoreInLevel;
+    }
+
     public long getLevel() {
         return level;
     }
@@ -211,13 +242,6 @@ public class LevelCompleted extends AbstractAuditPOJO {
         this.levelType = levelType;
     }
 
-    public int getScore() {
-        return score;
-    }
-
-    public void setScore(int score) {
-        this.score = score;
-    }
 
     @Override
     public String toString() {
@@ -229,7 +253,6 @@ public class LevelCompleted extends AbstractAuditPOJO {
                 ", playerLogin='" + playerLogin + '\'' +
                 ", level=" + level +
                 ", levelType=" + levelType +
-                ", score=" + score +
                 '}';
     }
 }
