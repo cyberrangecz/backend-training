@@ -33,6 +33,12 @@ public class TrainingRunEnded extends AbstractAuditPOJO {
     @ApiObjectField(description = "ID of a player in the training run.")
     @JsonProperty(value = "player_login", required = true)
     private String playerLogin;
+    @ApiObjectField(description = "Total score of the player in the level.")
+    @JsonProperty(value = "total_score", required = true)
+    private int totalScore;
+    @ApiObjectField(description = "Actual score of the player in the level.")
+    @JsonProperty(value = "actual_score_in_level", required = true)
+    private int actualScoreInLevel;
     @ApiObjectField(description = "Training run level.")
     @JsonProperty(value = "level", required = true)
     private long level;
@@ -41,12 +47,14 @@ public class TrainingRunEnded extends AbstractAuditPOJO {
         return new TrainingRunEndedBuilder();
     }
 
-    public static class TrainingRunEndedBuilder implements SandboxIdBuilder, TrainingDefinitionIdBuilder, TrainingInstanceIdBuilder, TrainingRunIdBuilder, PlayerLoginBuilder, LevelBuilder {
+    public static class TrainingRunEndedBuilder implements SandboxIdBuilder, TrainingDefinitionIdBuilder, TrainingInstanceIdBuilder, TrainingRunIdBuilder, PlayerLoginBuilder, TotalScoreBuilder, ActualScoreInLevelBuilder, LevelBuilder {
         private long sandboxId;
         private long trainingDefinitionId;
         private long trainingInstanceId;
         private long trainingRunId;
         private String playerLogin;
+        private int totalScore;
+        private int actualScoreInLevel;
         private long level;
 
         @Override
@@ -74,8 +82,20 @@ public class TrainingRunEnded extends AbstractAuditPOJO {
         }
 
         @Override
-        public LevelBuilder playerLogin(String playerLogin) {
+        public TotalScoreBuilder playerLogin(String playerLogin) {
             this.playerLogin = playerLogin;
+            return this;
+        }
+
+        @Override
+        public ActualScoreInLevelBuilder totalScore(int totalScore) {
+            this.totalScore = totalScore;
+            return this;
+        }
+
+        @Override
+        public LevelBuilder actualScoreInLevel(int actualScoreInLevel) {
+            this.actualScoreInLevel = actualScoreInLevel;
             return this;
         }
 
@@ -107,7 +127,15 @@ public class TrainingRunEnded extends AbstractAuditPOJO {
     }
 
     public interface PlayerLoginBuilder {
-        LevelBuilder playerLogin(String playerLogin);
+        TotalScoreBuilder playerLogin(String playerLogin);
+    }
+
+    public interface TotalScoreBuilder {
+        ActualScoreInLevelBuilder totalScore(int totalScore);
+    }
+
+    public interface ActualScoreInLevelBuilder {
+        LevelBuilder actualScoreInLevel(int actualScoreInLevel);
     }
 
     public interface LevelBuilder {
@@ -120,6 +148,8 @@ public class TrainingRunEnded extends AbstractAuditPOJO {
         this.trainingInstanceId = builder.trainingInstanceId;
         this.trainingRunId = builder.trainingRunId;
         this.playerLogin = builder.playerLogin;
+        this.totalScore = builder.totalScore;
+        this.actualScoreInLevel = builder.actualScoreInLevel;
         this.level = builder.level;
     }
 
@@ -161,6 +191,22 @@ public class TrainingRunEnded extends AbstractAuditPOJO {
 
     public void setPlayerLogin(String playerLogin) {
         this.playerLogin = playerLogin;
+    }
+
+    public int getTotalScore() {
+        return totalScore;
+    }
+
+    public void setTotalScore(int totalScore) {
+        this.totalScore = totalScore;
+    }
+
+    public int getActualScoreInLevel() {
+        return actualScoreInLevel;
+    }
+
+    public void setActualScoreInLevel(int actualScoreInLevel) {
+        this.actualScoreInLevel = actualScoreInLevel;
     }
 
     public long getLevel() {
