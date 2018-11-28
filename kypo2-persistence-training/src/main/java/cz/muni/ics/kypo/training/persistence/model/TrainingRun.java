@@ -3,6 +3,7 @@ package cz.muni.ics.kypo.training.persistence.model;
 import javax.persistence.*;
 
 import cz.muni.ics.kypo.training.persistence.model.enums.TRState;
+import org.hibernate.annotations.Type;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -42,6 +43,10 @@ public class TrainingRun implements Serializable {
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "participant_ref_id", nullable = false)
     private ParticipantRef participantRef;
+    @Lob
+    @Type(type = "org.hibernate.type.TextType")
+    @Column(name = "assessment_responses", nullable = true)
+    private String assessmentResponses;
 
     public Long getId() {
         return id;
@@ -121,6 +126,14 @@ public class TrainingRun implements Serializable {
 
     public void setSandboxInstanceRef(SandboxInstanceRef sandboxInstanceRef) {
         this.sandboxInstanceRef = sandboxInstanceRef;
+    }
+
+    public String getAssessmentResponses() {
+        return assessmentResponses;
+    }
+
+    public void setAssessmentResponses(String assessmentResponses) {
+        this.assessmentResponses = assessmentResponses;
     }
 
     public ParticipantRef getParticipantRef() {

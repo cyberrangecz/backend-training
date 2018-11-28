@@ -6,6 +6,8 @@ import cz.muni.ics.kypo.training.persistence.model.AbstractLevel;
 import cz.muni.ics.kypo.training.persistence.model.Hint;
 import cz.muni.ics.kypo.training.persistence.model.TrainingRun;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -156,6 +158,16 @@ public interface TrainingRunService {
      *
      */
     void archiveTrainingRun(Long trainingRunId);
+
+    /**
+     * Evaluate and store responses to assessment.
+     *
+     * @param trainingRunId id of training run to be archived.
+     * @param responsesAsString response to assessment to be evaluated
+     * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND cannot find training run.
+     *
+     */
+    void evaluateResponsesToAssessment(Long trainingRunId, String responsesAsString);
 
 
 

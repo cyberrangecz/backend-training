@@ -187,6 +187,12 @@ public class TrainingRunFacadeTest {
         trainingRunFacade.getSolution(1L);
     }
 
+    @Test
+    public void evaluateResponsesToAssessment() {
+        trainingRunFacade.evaluateResponsesToAssessment(trainingRun1.getId(), "response");
+        then(trainingRunService).should().evaluateResponsesToAssessment(trainingRun1.getId(), "response");
+    }
+
     private void deepEquals(TrainingRun expected, TrainingRunDTO actual) {
         assertEquals(expected.getId(), actual.getId());
         assertEquals(expected.getState(), actual.getState());

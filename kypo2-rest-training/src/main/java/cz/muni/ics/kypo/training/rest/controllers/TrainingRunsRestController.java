@@ -21,6 +21,9 @@ import cz.muni.ics.kypo.training.api.dto.hint.HintDTO;
 
 import java.util.List;
 
+import org.apache.avro.Schema;
+import org.apache.avro.SchemaBuilder;
+import org.json.JSONArray;
 import org.jsondoc.core.annotation.ApiObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -149,7 +152,7 @@ public class TrainingRunsRestController {
             @ApiResponse(code = 500, message = "Some error occurred during getting info about sandboxes."),
             @ApiResponse(code = 503, message = "There is no available sandbox, wait a minute and try again.")
     })
-    @PostMapping(path = "/access", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping( produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<AccessTrainingRunDTO> accessTrainingRun(@ApiParam(value = "password", required = true) @RequestParam(value = "password", required = false) String password) {
         LOG.debug("accessTrainingRun({})", password);
         try {
@@ -191,7 +194,7 @@ public class TrainingRunsRestController {
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.")
     })
     @ApiPageableSwagger
-    @GetMapping(path = "/accessed", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(path = "/accessible", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> getAllAccessedTrainingRuns(
             Pageable pageable,
             @ApiParam(value = "Fields which should be returned in REST API response", required = false)
@@ -356,7 +359,7 @@ public class TrainingRunsRestController {
             @ApiResponse(code = 409, message = "Cannot resume archived training run."),
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.")
     })
-    @GetMapping(path = "/{runId}/resume", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(path = "/{runId}/resumption", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<AccessTrainingRunDTO> resumeTrainingRun(@ApiParam(value = "Training run ID", required = true) @PathVariable Long runId) {
         LOG.debug("resumeTrainingRun({})", runId);
         try {
@@ -392,6 +395,38 @@ public class TrainingRunsRestController {
         try {
             trainingRunFacade.archiveTrainingRun(runId);
             return new ResponseEntity<>(HttpStatus.OK);
+        } catch (FacadeLayerException ex) {
+            throw ExceptionSorter.throwException(ex);
+        }
+    }
+
+    /**
+     * Evaluate responses to assessment.
+     *
+     * @param runId id of training run.
+     * @param responses to assessment
+     */
+    @ApiOperation(httpMethod = "PUT",
+            value = "Evaluate responses to assessment",
+            response = Void.class,
+            nickname = "evaluateResponsesToAssessment",
+            produces = "application/json",
+            authorizations = {
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 204, message = "Responses to assessment evaluated and stored ."),
+            @ApiResponse(code = 409, message = "Current level of training is not assessment level."),
+            @ApiResponse(code = 404, message = "Training run with given id not found."),
+            @ApiResponse(code = 500, message = "Unexpected condition was encountered.")
+    })
+    @PutMapping(value = "/{runId}/assessment-evaluations", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Void> evaluateResponsesToAssessment(@ApiParam(value = "Training run ID", required = true) @PathVariable Long runId,
+                                                              @ApiParam(value = "Responses to assessment", required = true) @RequestBody String responses) {
+        LOG.debug("evaluateResponsesToAssessment({})", runId);
+        try {
+            trainingRunFacade.evaluateResponsesToAssessment(runId, responses);
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         } catch (FacadeLayerException ex) {
             throw ExceptionSorter.throwException(ex);
         }
