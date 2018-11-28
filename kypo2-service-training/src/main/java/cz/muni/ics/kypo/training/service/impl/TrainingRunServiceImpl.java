@@ -1,5 +1,11 @@
 package cz.muni.ics.kypo.training.service.impl;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.github.fge.jackson.JsonLoader;
+import com.github.fge.jsonschema.core.exceptions.ProcessingException;
+import com.github.fge.jsonschema.core.report.ProcessingReport;
+import com.github.fge.jsonschema.main.JsonSchemaFactory;
+import com.github.fge.jsonschema.main.JsonValidator;
 import com.google.gson.JsonObject;
 import com.querydsl.core.types.Predicate;
 import cz.muni.csirt.kypo.elasticsearch.service.audit.AuditService;
@@ -7,12 +13,16 @@ import cz.muni.csirt.kypo.events.trainings.*;
 import cz.muni.csirt.kypo.events.trainings.enums.LevelType;
 import cz.muni.ics.kypo.training.exceptions.ErrorCode;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
+import cz.muni.ics.kypo.training.persistence.model.enums.AssessmentType;
 import cz.muni.ics.kypo.training.persistence.repository.*;
 import cz.muni.ics.kypo.training.service.TrainingRunService;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.model.enums.TRState;
 import cz.muni.ics.kypo.training.persistence.utils.SandboxInfo;
 
+import cz.muni.ics.kypo.training.utils.AssessmentUtil;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +38,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import org.springframework.web.client.RestTemplate;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -608,5 +619,55 @@ public class TrainingRunServiceImpl implements TrainingRunService {
             return LevelType.ASSESSMENT;
         }
         return LevelType.PVP; //no one knows what PVP is
+    }
+
+    @Override
+    public void evaluateResponsesToAssessment(Long trainingRunId, String responsesAsString) {
+        LOG.info("evaluateAndStoreResponse({})", trainingRunId);
+        Assert.notNull(responsesAsString, "Response to assessment must not be null.");
+        JSONArray responses = isResponseValid(responsesAsString);
+        Integer points = 0;
+        TrainingRun trainingRun = findByIdWithLevel(trainingRunId);
+        if(!(trainingRun.getCurrentLevel() instanceof AssessmentLevel)) {
+            throw new ServiceLayerException("Current level is not assessment level and cannot be evaluated.", ErrorCode.WRONG_LEVEL_TYPE);
+        }
+        if(trainingRun.getAssessmentResponses() == null) {
+            trainingRun.setAssessmentResponses("[]");
+        }
+        AssessmentLevel assessmentLevel = (AssessmentLevel) trainingRun.getCurrentLevel();
+        JSONArray responsesJSON = new JSONArray(trainingRun.getAssessmentResponses());
+        JSONObject responseToCurrentAssessment = new JSONObject();
+        responseToCurrentAssessment.put("assessmentLevelId", trainingRun.getCurrentLevel().getId());
+
+
+        AssessmentUtil util = new AssessmentUtil();
+        responseToCurrentAssessment.put("answers", "[" + responses.toString()  + "]");
+        if (assessmentLevel.getAssessmentType().equals(AssessmentType.QUESTIONNAIRE)) {
+            responseToCurrentAssessment.put("receivedPoints", 0);
+        } else {
+            points = util.evaluateTest(new JSONArray(assessmentLevel.getQuestions()), responses);
+            responseToCurrentAssessment.put("receivedPoints", points);
+            //TODO do something with points
+        }
+        responsesJSON.put(responseToCurrentAssessment);
+        trainingRun.setAssessmentResponses(responsesJSON.toString());
+    }
+
+    private JSONArray isResponseValid(String responses) {
+        try {
+            JsonNode n = JsonLoader.fromString(responses);
+            final JsonNode jsonSchema = JsonLoader.fromResource("/responses_schema.json");
+            final JsonSchemaFactory factory = JsonSchemaFactory.byDefault();
+            JsonValidator v = factory.getValidator();
+            ProcessingReport report = v.validate(jsonSchema, n);
+            if (report.toString().contains("success")) {
+                return new JSONArray(responses);
+            } else {
+                throw new IllegalArgumentException("Field is not valid.\n" +  report.iterator().next().toString());
+            }
+
+        } catch (IOException | ProcessingException ex) {
+            throw new ServiceLayerException(ex.getMessage(), ErrorCode.UNEXPECTED_ERROR);
+        }
     }
 }

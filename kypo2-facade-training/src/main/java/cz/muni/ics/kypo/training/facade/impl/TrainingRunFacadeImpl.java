@@ -22,6 +22,7 @@ import cz.muni.ics.kypo.training.mapping.BeanMapping;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.model.enums.LevelType;
 import cz.muni.ics.kypo.training.service.TrainingRunService;
+import org.json.JSONArray;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -205,6 +206,17 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
         LOG.debug("archiveTrainingRun({})", trainingRunId);
         try {
             trainingRunService.archiveTrainingRun(trainingRunId);
+        } catch (ServiceLayerException ex) {
+            throw new FacadeLayerException(ex);
+        }
+    }
+
+    @Override
+    @TransactionalWO
+    public void evaluateResponsesToAssessment(Long trainingRunId, String responsesAsString) {
+        LOG.debug("evaluateAndStoreAssessment({})", trainingRunId);
+        try {
+            trainingRunService.evaluateResponsesToAssessment(trainingRunId, responsesAsString);
         } catch (ServiceLayerException ex) {
             throw new FacadeLayerException(ex);
         }

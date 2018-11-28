@@ -9,6 +9,7 @@ import cz.muni.ics.kypo.training.api.dto.run.AccessTrainingRunDTO;
 import cz.muni.ics.kypo.training.api.dto.run.AccessedTrainingRunDTO;
 import cz.muni.ics.kypo.training.api.dto.run.TrainingRunDTO;
 import cz.muni.ics.kypo.training.exception.FacadeLayerException;
+import org.json.JSONArray;
 import org.springframework.data.domain.Pageable;
 
 /**
@@ -116,5 +117,14 @@ public interface TrainingRunFacade {
      * @throws FacadeLayerException if something wrong happened in service.
      */
     void archiveTrainingRun(Long trainingRunId);
+
+    /**
+     * Evaluate and store responses to assessment.
+     *
+     * @param trainingRunId id of Training Run to be archived.
+     * @param responsesAsString responses to assessment
+     * @throws FacadeLayerException if something wrong happened in service.
+     */
+    void evaluateResponsesToAssessment(Long trainingRunId, String responsesAsString);
 
 }

@@ -7,16 +7,15 @@ import cz.muni.csirt.kypo.elasticsearch.service.audit.AuditService;
 
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.persistence.model.*;
+import cz.muni.ics.kypo.training.persistence.model.enums.AssessmentType;
 import cz.muni.ics.kypo.training.persistence.model.enums.TDState;
 import cz.muni.ics.kypo.training.persistence.model.enums.TRState;
 import cz.muni.ics.kypo.training.persistence.repository.*;
 import cz.muni.ics.kypo.training.persistence.utils.SandboxInfo;
 
 import cz.muni.ics.kypo.training.service.impl.TrainingRunServiceImpl;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.json.simple.parser.ParseException;
+import org.junit.*;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -33,18 +32,18 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.util.ResourceUtils;
 import org.springframework.web.client.RestTemplate;
+import org.json.simple.parser.JSONParser;
 
-
+import java.io.FileReader;
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.*;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.BDDMockito.*;
-
 import org.springframework.http.*;
-
 @RunWith(SpringRunner.class)
 public class TrainingRunServiceTest {
 
@@ -53,8 +52,6 @@ public class TrainingRunServiceTest {
 
     private TrainingRunService trainingRunService;
 
-    @Mock
-    private TrainingRunService lazyTrainingRunService;
     @Mock
     private TrainingRunRepository trainingRunRepository;
     @Mock
@@ -74,6 +71,7 @@ public class TrainingRunServiceTest {
 
     private TrainingRun trainingRun1, trainingRun2;
     private GameLevel gameLevel;
+    private AssessmentLevel assessmentLevel;
     private InfoLevel infoLevel;
     private Hint hint1, hint2;
     private SandboxInstanceRef sandboxInstanceRef1, sandboxInstanceRef2;
@@ -82,12 +80,24 @@ public class TrainingRunServiceTest {
     private ParticipantRef participantRef;
     private SandboxInfo sandboxInfo;
     private TrainingDefinition trainingDefinition, trainingDefinition2;
+    private JSONParser parser = new JSONParser();
+    private String responses, questions;
 
     @Before
     public void init() {
         MockitoAnnotations.initMocks(this);
         trainingRunService = new TrainingRunServiceImpl(trainingRunRepository, abstractLevelRepository, trainingInstanceRepository,
             participantRefRepository, restTemplate, hintRepository, auditService);
+
+        parser = new JSONParser();
+        try {
+            questions = parser.parse(new FileReader(ResourceUtils.getFile("classpath:questions.json"))).toString();
+            responses = parser.parse(new FileReader(ResourceUtils.getFile("classpath:responses.json"))).toString();
+        } catch (IOException ex) {
+
+        } catch (ParseException ex) {
+
+        }
 
         sandBoxDefinitionRef = new SandboxDefinitionRef();
         sandBoxDefinitionRef.setId(1L);
@@ -176,6 +186,12 @@ public class TrainingRunServiceTest {
         sandboxInfo = new SandboxInfo();
         sandboxInfo.setId(7L);
         sandboxInfo.setState("READY");
+
+        assessmentLevel = new AssessmentLevel();
+        assessmentLevel.setId(3L);
+        assessmentLevel.setTitle("Assessment level");
+        assessmentLevel.setAssessmentType(AssessmentType.TEST);
+        assessmentLevel.setQuestions(questions);
     }
 
     @Test
@@ -471,6 +487,16 @@ public class TrainingRunServiceTest {
         thrown.expectMessage("Cannot resumed archived training run.");
 
         trainingRunService.resumeTrainingRun(trainingRun1.getId());
+    }
+
+    @Test
+    public void evaluateAndStoreResponses() {
+        trainingRun1.setCurrentLevel(assessmentLevel);
+        given(trainingRunRepository.findByIdWithLevel(any(Long.class))).willReturn(Optional.of(trainingRun1));
+        trainingRunService.evaluateResponsesToAssessment(trainingRun1.getId(), responses);
+
+        Assert.assertTrue(trainingRun1.getAssessmentResponses().contains("\"receivedPoints\":13"));
+
     }
 
 

@@ -61,6 +61,7 @@ import static org.junit.Assert.assertEquals;
 import static org.mockito.BDDMockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -213,7 +214,7 @@ public class TrainingRunsRestControllerTest {
         given(objectMapper.writeValueAsString(any(Object.class))).willReturn(valueTr);
         given(trainingRunFacade.findAllAccessedTrainingRuns(any(Pageable.class))).willReturn(accessedTrainingRunDTOPage);
 
-        MockHttpServletResponse result = mockMvc.perform(get("/training-runs/accessed"))
+        MockHttpServletResponse result = mockMvc.perform(get("/training-runs/accessible"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andReturn().getResponse();
@@ -223,7 +224,7 @@ public class TrainingRunsRestControllerTest {
     @Test
     public void accessTrainingRun() throws Exception {
         given(trainingRunFacade.accessTrainingRun("password")).willReturn(accessTrainingRunDTO);
-        MockHttpServletResponse result = mockMvc.perform(post("/training-runs/access").param("password", "password"))
+        MockHttpServletResponse result = mockMvc.perform(post("/training-runs").param("password", "password"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andReturn().getResponse();
@@ -233,7 +234,7 @@ public class TrainingRunsRestControllerTest {
     public void accessTrainingRunWithNoSandbox() throws Exception {
         Exception exceptionToThrow = new ServiceLayerException("message", ErrorCode.NO_AVAILABLE_SANDBOX);
         willThrow(new FacadeLayerException(exceptionToThrow)).given(trainingRunFacade).accessTrainingRun("password");
-        Exception exception = mockMvc.perform(post("/training-runs/access").param("password", "password"))
+        Exception exception = mockMvc.perform(post("/training-runs").param("password", "password"))
                 .andExpect(status().isServiceUnavailable())
                 .andReturn().getResolvedException();
         assertEquals(ServiceUnavailableException.class, exception.getClass());
@@ -243,7 +244,7 @@ public class TrainingRunsRestControllerTest {
     public void accessTrainingRunWithResourceNotFound() throws Exception {
         Exception exceptionToThrow = new ServiceLayerException("message", ErrorCode.RESOURCE_NOT_FOUND);
         willThrow(new FacadeLayerException(exceptionToThrow)).given(trainingRunFacade).accessTrainingRun("password");
-        Exception exception = mockMvc.perform(post("/training-runs/access").param("password", "password"))
+        Exception exception = mockMvc.perform(post("/training-runs").param("password", "password"))
                 .andExpect(status().isNotFound())
                 .andReturn().getResolvedException();
         assertEquals(ResourceNotFoundException.class, exception.getClass());
@@ -253,7 +254,7 @@ public class TrainingRunsRestControllerTest {
     public void accessTrainingRunWithUnexpectedError() throws Exception {
         Exception exceptionToThrow = new ServiceLayerException("message", ErrorCode.UNEXPECTED_ERROR);
         willThrow(new FacadeLayerException(exceptionToThrow)).given(trainingRunFacade).accessTrainingRun("password");
-        Exception exception = mockMvc.perform(post("/training-runs/access").param("password", "password"))
+        Exception exception = mockMvc.perform(post("/training-runs").param("password", "password"))
                 .andExpect(status().isInternalServerError())
                 .andReturn().getResolvedException();
         assertEquals(InternalServerErrorException.class, exception.getClass());
@@ -358,6 +359,14 @@ public class TrainingRunsRestControllerTest {
                 .andExpect(status().isBadRequest())
                 .andReturn().getResolvedException();
         assertEquals(BadRequestException.class, exception.getClass());
+    }
+
+    @Test
+    public void evaluateResponsesToAssessment() throws Exception {
+        mockMvc.perform(put("/training-runs/{runId}/assessment-evaluations", trainingRun1.getId())
+        .content("responses"))
+                .andExpect(status().isNoContent());
+        then(trainingRunFacade).should().evaluateResponsesToAssessment(trainingRun1.getId(), "responses");
     }
 
     private static String convertObjectToJsonBytes(Object object) throws IOException {

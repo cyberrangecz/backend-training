@@ -18,7 +18,7 @@ import java.util.Objects;
 public class AssessmentLevel extends AbstractLevel implements Serializable {
 
     @Lob
-    @Type(type = "org.hibernate.type.StringType")
+    @Type(type = "text")
     @Column(name = "questions", nullable = false)
     private String questions;
     @Column(name = "instructions", nullable = false)
