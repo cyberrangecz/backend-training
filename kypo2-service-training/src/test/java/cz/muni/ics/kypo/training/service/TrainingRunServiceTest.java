@@ -41,6 +41,7 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.*;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.BDDMockito.*;
 import org.springframework.http.*;
@@ -167,6 +168,7 @@ public class TrainingRunServiceTest {
         infoLevel.setId(2L);
         infoLevel.setContent("content");
         infoLevel.setTitle("title");
+        infoLevel.setMaxScore(10);
 
         trainingRun1 = new TrainingRun();
         trainingRun1.setId(1L);
@@ -273,9 +275,20 @@ public class TrainingRunServiceTest {
 
     @Test
     public void isCorrectFlag() {
+        mockSpringSecurityContextForGet();
         given(trainingRunRepository.findByIdWithLevel(trainingRun1.getId())).willReturn(Optional.of(trainingRun1));
         Boolean isCorrect = trainingRunService.isCorrectFlag(trainingRun1.getId(), "flag");
         assertTrue(isCorrect);
+        assertTrue(trainingRun1.isLevelAnswered());
+    }
+
+    @Test
+    public void isCorrectFlagNotCorrect() {
+        mockSpringSecurityContextForGet();
+        given(trainingRunRepository.findByIdWithLevel(trainingRun1.getId())).willReturn(Optional.of(trainingRun1));
+        Boolean isCorrect = trainingRunService.isCorrectFlag(trainingRun1.getId(), "wrong flag");
+        assertFalse(isCorrect);
+        assertFalse(trainingRun1.isLevelAnswered());
     }
 
     @Test
@@ -288,9 +301,13 @@ public class TrainingRunServiceTest {
 
     @Test
     public void getSolution() {
+        mockSpringSecurityContextForGet();
         given(trainingRunRepository.findByIdWithLevel(trainingRun1.getId())).willReturn(Optional.of(trainingRun1));
         String solution = trainingRunService.getSolution(trainingRun1.getId());
         assertEquals(solution, gameLevel.getSolution());
+        assertEquals(1, trainingRun1.getTotalScore());
+        assertEquals(1, trainingRun1.getCurrentScore());
+        assertFalse(trainingRun1.isLevelAnswered());
     }
 
     @Test
@@ -308,6 +325,9 @@ public class TrainingRunServiceTest {
         given(hintRepository.findById(any(Long.class))).willReturn(Optional.of(hint1));
         Hint resultHint1 = trainingRunService.getHint(trainingRun1.getId(), hint1.getId());
         assertEquals(hint1,resultHint1);
+        assertEquals(gameLevel.getMaxScore() - hint1.getHintPenalty(), trainingRun1.getCurrentScore());
+        assertEquals(gameLevel.getMaxScore() - hint1.getHintPenalty(), trainingRun1.getTotalScore());
+
     }
 
 	@Test
@@ -425,12 +445,17 @@ public class TrainingRunServiceTest {
 
     @Test
     public void getNextLevel() {
+        mockSpringSecurityContextForGet();
+        trainingRun1.setLevelAnswered(true);
         given(trainingRunRepository.findByIdWithLevel(any(Long.class))).willReturn(Optional.of(trainingRun1));
         given(abstractLevelRepository.findById(any(Long.class))).willReturn(Optional.of(infoLevel));
         given(trainingRunRepository.save(any(TrainingRun.class))).willReturn(trainingRun1);
         AbstractLevel resultAbstractLevel = trainingRunService.getNextLevel(trainingRun1.getId());
 
         assertEquals(trainingRun1.getCurrentLevel().getId(), resultAbstractLevel.getId());
+        assertEquals(trainingRun1.getCurrentScore(), infoLevel.getMaxScore());
+        assertEquals(gameLevel.getMaxScore() + infoLevel.getMaxScore(), trainingRun1.getTotalScore());
+        assertTrue(trainingRun1.isLevelAnswered()); // because next level is info and it is always set to true
 
         then(trainingRunRepository).should().findByIdWithLevel(trainingRun1.getId());
         then(abstractLevelRepository).should().findById(trainingRun1.getCurrentLevel().getId());
@@ -438,11 +463,19 @@ public class TrainingRunServiceTest {
     }
 
     @Test
-    public void getNextLevel_noNextLevel() {
-        given(trainingRunRepository.findById(any(Long.class))).willReturn(Optional.of(trainingRun2));
-        given(abstractLevelRepository.findById(any(Long.class))).willReturn(Optional.of(infoLevel));
+    public void getNextLevelNotAnswered() {
+        given(trainingRunRepository.findByIdWithLevel(trainingRun1.getId())).willReturn(Optional.of(trainingRun1));
         thrown.expect(ServiceLayerException.class);
-        thrown.expectMessage("Training Run with id: " + trainingRun2.getId() + " not found.");
+        thrown.expectMessage("At first you need to answer the level.");
+        trainingRunService.getNextLevel(trainingRun1.getId());
+    }
+
+    @Test
+    public void getNextLevel_noNextLevel() {
+        trainingRun2.setLevelAnswered(true);
+        given(trainingRunRepository.findByIdWithLevel(any(Long.class))).willReturn(Optional.of(trainingRun2));
+        thrown.expect(ServiceLayerException.class);
+        thrown.expectMessage("There is no next level.");
         trainingRunService.getNextLevel(trainingRun2.getId());
     }
 
@@ -463,9 +496,19 @@ public class TrainingRunServiceTest {
 
     @Test
     public void testArchiveTrainingRunWithNonLastLevel() {
+        trainingRun1.setLevelAnswered(true);
         given(trainingRunRepository.findById(any(Long.class))).willReturn(Optional.of(trainingRun1));
         thrown.expect(ServiceLayerException.class);
-        thrown.expectMessage("Cannot archive training run because current level is not last.");
+        thrown.expectMessage("Cannot archive training run because current level is not last or is not answered.");
+
+        trainingRunService.archiveTrainingRun(trainingRun1.getId());
+    }
+
+    @Test
+    public void testArchiveTrainingRunWithNotAnsweredLevel() {
+        given(trainingRunRepository.findById(any(Long.class))).willReturn(Optional.of(trainingRun1));
+        thrown.expect(ServiceLayerException.class);
+        thrown.expectMessage("Cannot archive training run because current level is not last or is not answered.");
 
         trainingRunService.archiveTrainingRun(trainingRun1.getId());
     }

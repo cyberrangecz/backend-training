@@ -520,7 +520,10 @@ CREATE TABLE training_run (
     solution_taken boolean NOT NULL,
     event_log_reference character varying(255),
     incorrect_flag_count integer,
-    assessment_responses text
+    assessment_responses text,
+    total_score integer,
+    current_score integer,
+    level_answered boolean NOT NULL
 );
 
 
