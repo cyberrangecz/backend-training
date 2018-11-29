@@ -57,14 +57,6 @@ public interface TrainingRunService {
      */
     Page<TrainingRun> findAllByTrainingDefinition(Long trainingDefinitionId, Pageable pageable);
 
-//    /**
-//     * Create given Training Run.
-//     *
-//     * @param trainingRun to be created in database.
-//     * @return created Training Run
-//     */
-//    TrainingRun create(TrainingRun trainingRun);
-
     /**
      * Gets next level of given Training Run and set new current level.
      *
@@ -146,7 +138,6 @@ public interface TrainingRunService {
      * @param trainingRunId id of training run to be resumed.
      * @return Abstract Level
      * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND cannot find training run.
-     *
      */
     AbstractLevel resumeTrainingRun(Long trainingRunId);
 
@@ -155,20 +146,17 @@ public interface TrainingRunService {
      *
      * @param trainingRunId id of training run to be archived.
      * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND cannot find training run.
-     *
      */
     void archiveTrainingRun(Long trainingRunId);
 
     /**
      * Evaluate and store responses to assessment.
      *
-     * @param trainingRunId id of training run to be archived.
+     * @param trainingRunId     id of training run to be archived.
      * @param responsesAsString response to assessment to be evaluated
      * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND cannot find training run.
-     *
      */
     void evaluateResponsesToAssessment(Long trainingRunId, String responsesAsString);
-
 
 
 }

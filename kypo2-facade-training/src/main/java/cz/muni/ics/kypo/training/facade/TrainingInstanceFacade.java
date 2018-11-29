@@ -22,7 +22,7 @@ public interface TrainingInstanceFacade {
      * @return specific Training Instance by id
      * @throws FacadeLayerException if training instance is not found
      */
-    TrainingInstanceDTO findById(long id) throws FacadeLayerException;
+    TrainingInstanceDTO findById(Long id) throws FacadeLayerException;
 
     /**
      * Find all Training Instances.

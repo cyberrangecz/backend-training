@@ -62,7 +62,7 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
 
     @Override
     @PreAuthorize("hasAuthority('ADMINISTRATOR')")
-    public TrainingInstance findById(long id) {
+    public TrainingInstance findById(Long id) {
         LOG.debug("findById({})", id);
         return trainingInstanceRepository.findById(id).orElseThrow(() -> new ServiceLayerException("Training instance with id: " + id + " not found.", ErrorCode.RESOURCE_NOT_FOUND));
     }

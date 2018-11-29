@@ -53,7 +53,7 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
 
     @Override
     @TransactionalRO
-    public TrainingInstanceDTO findById(long id) {
+    public TrainingInstanceDTO findById(Long id) {
         LOG.debug("findById({})", id);
         try {
             Objects.requireNonNull(id);

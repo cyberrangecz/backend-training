@@ -75,12 +75,13 @@ public class TrainingInstancesRestController {
             notes = "Returns training instance by id and also contains particular training definition in it.",
             produces = "application/json")
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Training instance found", response = TrainingInstanceDTO.class), @ApiResponse(code = 404, message = "Training instance with given id not found."),
+            @ApiResponse(code = 200, message = "Training instance found", response = TrainingInstanceDTO.class),
+            @ApiResponse(code = 404, message = "Training instance with given id not found."),
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.")
     })
     @GetMapping(path = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> findTrainingInstanceById(
-            @ApiParam(value = "Training instance ID") @PathVariable long id,
+            @ApiParam(value = "Training instance ID") @PathVariable Long id,
             @ApiParam(value = "Fields which should be returned in REST API response", required = false) @RequestParam(value = "fields", required = false) String fields) {
         LOG.debug("findTrainingInstanceById({},{})", id, fields);
         try {

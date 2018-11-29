@@ -28,7 +28,7 @@ public interface TrainingDefinitionFacade {
      * @param id of a Training Definition that would be returned
      * @return specific Training Definition by id
      */
-    TrainingDefinitionDTO findById(long id);
+    TrainingDefinitionDTO findById(Long id);
 
     /**
      * Find all Training Definitions.
