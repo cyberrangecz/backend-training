@@ -231,7 +231,7 @@ public class TrainingDefinitionServiceTest {
 
     @Test
     public void cloneTrainingDefinitionWithNull() {
-        thrown.expect(NullPointerException.class);
+        thrown.expect(ServiceLayerException.class);
         trainingDefinitionService.clone(null);
     }
 
@@ -299,7 +299,7 @@ public class TrainingDefinitionServiceTest {
 
     @Test
     public void swapLeftWithNullDefinition() {
-        thrown.expect(NullPointerException.class);
+        thrown.expect(ServiceLayerException.class);
         trainingDefinitionService.swapLeft(null, level2.getId());
     }
 
@@ -351,7 +351,7 @@ public class TrainingDefinitionServiceTest {
 
     @Test
     public void swapRightWithNullDefinition() {
-        thrown.expect(NullPointerException.class);
+        thrown.expect(ServiceLayerException.class);
         trainingDefinitionService.swapRight(null, level2.getId());
     }
 
@@ -388,7 +388,7 @@ public class TrainingDefinitionServiceTest {
 
     @Test
     public void deleteWithNull() {
-        thrown.expect(NullPointerException.class);
+        thrown.expect(ServiceLayerException.class);
         trainingDefinitionService.delete(null);
     }
 
@@ -433,7 +433,7 @@ public class TrainingDefinitionServiceTest {
 
     @Test
     public void deleteOneLevelWithNullDefinition() {
-        thrown.expect(NullPointerException.class);
+        thrown.expect(ServiceLayerException.class);
         trainingDefinitionService.deleteOneLevel(null, level2.getId());
     }
 
@@ -484,7 +484,7 @@ public class TrainingDefinitionServiceTest {
 
     @Test
     public void updateAssessmentLevelWithNullDefinition() {
-        thrown.expect(NullPointerException.class);
+        thrown.expect(ServiceLayerException.class);
         trainingDefinitionService.updateAssessmentLevel(null, level2);
     }
 
@@ -533,7 +533,7 @@ public class TrainingDefinitionServiceTest {
 
     @Test
     public void updateGameLevelWithNullDefinition() {
-        thrown.expect(NullPointerException.class);
+        thrown.expect(ServiceLayerException.class);
         trainingDefinitionService.updateGameLevel(null, gameLevel);
     }
 
@@ -578,7 +578,7 @@ public class TrainingDefinitionServiceTest {
 
     @Test
     public void updateInfoLevelWithNullDefinition() {
-        thrown.expect(NullPointerException.class);
+        thrown.expect(ServiceLayerException.class);
         trainingDefinitionService.updateInfoLevel(null, infoLevel);
     }
 
