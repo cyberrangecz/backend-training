@@ -21,6 +21,7 @@ import cz.muni.ics.kypo.training.persistence.model.enums.TRState;
 import cz.muni.ics.kypo.training.persistence.utils.SandboxInfo;
 
 import cz.muni.ics.kypo.training.utils.AssessmentUtil;
+import io.swagger.models.auth.In;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -118,17 +119,22 @@ public class TrainingRunServiceImpl implements TrainingRunService {
         Assert.notNull(trainingRunId, MUST_NOT_BE_NULL);
         TrainingRun trainingRun = findByIdWithLevel(trainingRunId);
         Long nextLevelId = trainingRun.getCurrentLevel().getNextLevel();
+        if(!trainingRun.isLevelAnswered()) {
+            throw new ServiceLayerException("At first you need to answer the level.", ErrorCode.RESOURCE_CONFLICT);
+        }
         if (nextLevelId == null) {
             throw new ServiceLayerException("There is no next level.", ErrorCode.NO_NEXT_LEVEL);
         }
         AbstractLevel abstractLevel = abstractLevelRepository.findById(nextLevelId).orElseThrow(() ->
                 new ServiceLayerException("Level with id: " + nextLevelId + " not found.", ErrorCode.RESOURCE_NOT_FOUND));
+        if(trainingRun.getCurrentLevel() instanceof InfoLevel) {
+            auditLevelCompletedAction(trainingRun);
+        }
         trainingRun.setCurrentLevel(abstractLevel);
-        trainingRun.setSolutionTaken(false);
         trainingRunRepository.save(trainingRun);
         //audit this action to theElasticSearch
         auditLevelStartedAction(trainingRun.getTrainingInstance(), trainingRun);
-        auditLevelCompletedAction(trainingRun);
+
         return abstractLevel;
 
     }
@@ -263,7 +269,9 @@ public class TrainingRunServiceImpl implements TrainingRunService {
             if (((GameLevel) level).getFlag().equals(flag)) {
                 //tR.setIncorrectFlagCount(0);
                 trainingRunRepository.save(trainingRun);
+                trainingRun.setLevelAnswered(true);
                 auditCorrectFlagSubmittedAction(trainingRun, flag);
+                auditLevelCompletedAction(trainingRun);
                 return true;
             } else {
                 trainingRun.setIncorrectFlagCount(trainingRun.getIncorrectFlagCount() + 1);
@@ -304,8 +312,10 @@ public class TrainingRunServiceImpl implements TrainingRunService {
         AbstractLevel level = trainingRun.getCurrentLevel();
         if (level instanceof GameLevel) {
             //audit
-            auditSolutionDisplayedAction(trainingRun, (GameLevel) level);
             trainingRun.setSolutionTaken(true);
+            trainingRun.decreaseTotalScore(trainingRun.getCurrentScore()-1);
+            trainingRun.setCurrentScore(1);
+            auditSolutionDisplayedAction(trainingRun, (GameLevel) level);
             trainingRunRepository.save(trainingRun);
             return ((GameLevel) level).getSolution();
         } else {
@@ -325,7 +335,8 @@ public class TrainingRunServiceImpl implements TrainingRunService {
         if (level instanceof GameLevel) {
             Hint hint = hintRepository.findById(hintId).orElseThrow(() -> new ServiceLayerException("Hint with id " + hintId + " not found.", ErrorCode.RESOURCE_NOT_FOUND));
             if (hint.getGameLevel().getId().equals(level.getId())) {
-                // audit this action to the Elasticsearch
+                trainingRun.decreaseCurrentScore(hint.getHintPenalty());
+                trainingRun.decreaseTotalScore(hint.getHintPenalty());
                 auditHintTakenAction(trainingRun, hint);
                 return hint;
             }
@@ -361,8 +372,8 @@ public class TrainingRunServiceImpl implements TrainingRunService {
         LOG.debug("archiveTrainingRun({})", trainingRunId);
         Assert.notNull(trainingRunId, MUST_NOT_BE_NULL);
         TrainingRun trainingRun = findById(trainingRunId);
-        if(trainingRun.getCurrentLevel().getNextLevel() != null) {
-            throw new ServiceLayerException("Cannot archive training run because current level is not last.", ErrorCode.RESOURCE_CONFLICT);
+        if(trainingRun.getCurrentLevel().getNextLevel() != null || !trainingRun.isLevelAnswered()) {
+            throw new ServiceLayerException("Cannot archive training run because current level is not last or is not answered.", ErrorCode.RESOURCE_CONFLICT);
         }
 
         trainingRun.setState(TRState.ARCHIVED);
@@ -395,8 +406,8 @@ public class TrainingRunServiceImpl implements TrainingRunService {
                     .trainingInstanceId(trainingInstance.getId())
                     .trainingRunId(trainingRun.getId())
                     .playerLogin(getSubOfLoggedInUser())
-                    .totalScore(0) //TODO requires to set total and actual score in level from training run entity
-                    .actualScoreInLevel(0)
+                    .totalScore(trainingRun.getTotalScore())
+                    .actualScoreInLevel(trainingRun.getCurrentScore())
                     .level(trainingRun.getCurrentLevel().getId())
                     .build();
 
@@ -417,8 +428,8 @@ public class TrainingRunServiceImpl implements TrainingRunService {
                     .trainingInstanceId(trainingInstance.getId())
                     .trainingRunId(trainingRun.getId())
                     .playerLogin(getSubOfLoggedInUser())
-                    .totalScore(0) //TODO requires to set total and actual score in level from training run entity
-                    .actualScoreInLevel(0)
+                    .totalScore(trainingRun.getTotalScore())
+                    .actualScoreInLevel(trainingRun.getCurrentScore())
                     .level(trainingRun.getCurrentLevel().getId())
                     .levelType(levelType)
                     .maxScore(trainingRun.getCurrentLevel().getMaxScore())
@@ -443,8 +454,8 @@ public class TrainingRunServiceImpl implements TrainingRunService {
                     .trainingInstanceId(trainingInstance.getId())
                     .trainingRunId(trainingRun.getId())
                     .playerLogin(getSubOfLoggedInUser())
-                    .totalScore(0) //TODO requires to set total and actual score in level from training run entity
-                    .actualScoreInLevel(0)
+                    .totalScore(trainingRun.getTotalScore())
+                    .actualScoreInLevel(trainingRun.getCurrentScore())
                     .level(trainingRun.getCurrentLevel().getId())
                     .levelType(levelType)
                     .build();
@@ -466,8 +477,8 @@ public class TrainingRunServiceImpl implements TrainingRunService {
                     .trainingInstanceId(trainingInstance.getId())
                     .trainingRunId(trainingRun.getId())
                     .playerLogin(getSubOfLoggedInUser())
-                    .totalScore(0) //TODO requires to set total and actual score in level from training run entity
-                    .actualScoreInLevel(0)
+                    .totalScore(trainingRun.getTotalScore())
+                    .actualScoreInLevel(trainingRun.getCurrentScore())
                     .level(trainingRun.getCurrentLevel().getId())
                     .hintId(hint.getId())
                     .hintPenaltyPoints(hint.getHintPenalty())
@@ -491,10 +502,10 @@ public class TrainingRunServiceImpl implements TrainingRunService {
                     .trainingInstanceId(trainingInstance.getId())
                     .trainingRunId(trainingRun.getId())
                     .playerLogin(getSubOfLoggedInUser())
-                    .totalScore(0) //TODO requires to set total and actual score in level from training run entity
-                    .actualScoreInLevel(0)
+                    .totalScore(trainingRun.getTotalScore())
+                    .actualScoreInLevel(trainingRun.getCurrentScore())
                     .level(trainingRun.getCurrentLevel().getId())
-                    .penaltyPoints(111) //TODO repair, no attribute
+                    .penaltyPoints(gameLevel.getMaxScore() - trainingRun.getCurrentScore())
                     .build();
             auditService.save(solutionDisplayed);
         }
@@ -513,8 +524,8 @@ public class TrainingRunServiceImpl implements TrainingRunService {
                     .trainingInstanceId(trainingInstance.getId())
                     .trainingRunId(trainingRun.getId())
                     .playerLogin(getSubOfLoggedInUser())
-                    .totalScore(0) // requires to set total and actual score in level from training run entity
-                    .actualScoreInLevel(0)
+                    .totalScore(trainingRun.getTotalScore()) // requires to set total and actual score in level from training run entity
+                    .actualScoreInLevel(trainingRun.getCurrentScore())
                     .level(trainingRun.getCurrentLevel().getId())
                     .flagContent(flag)
                     .build();
@@ -535,8 +546,8 @@ public class TrainingRunServiceImpl implements TrainingRunService {
                     .trainingInstanceId(trainingInstance.getId())
                     .trainingRunId(trainingRun.getId())
                     .playerLogin(getSubOfLoggedInUser())
-                    .totalScore(0) //TODO requires to set total and actual score in level from training run entity
-                    .actualScoreInLevel(0)
+                    .totalScore(trainingRun.getTotalScore())
+                    .actualScoreInLevel(trainingRun.getCurrentScore())
                     .level(trainingRun.getCurrentLevel().getId())
                     .flagContent(flag)
                     .count(trainingRun.getIncorrectFlagCount())
@@ -558,8 +569,8 @@ public class TrainingRunServiceImpl implements TrainingRunService {
                     .trainingInstanceId(trainingInstance.getId())
                     .trainingRunId(trainingRun.getId())
                     .playerLogin(getSubOfLoggedInUser())
-                    .totalScore(0) //TODO requires to set total and actual score in level from training run entity
-                    .actualScoreInLevel(0)
+                    .totalScore(trainingRun.getTotalScore())
+                    .actualScoreInLevel(trainingRun.getCurrentScore())
                     .level(trainingRun.getCurrentLevel().getId())
                     .answers(answers)
                     .build();
@@ -580,8 +591,8 @@ public class TrainingRunServiceImpl implements TrainingRunService {
                     .trainingInstanceId(trainingInstance.getId())
                     .trainingRunId(trainingRun.getId())
                     .playerLogin(getSubOfLoggedInUser())
-                    .totalScore(0) //TODO requires to set total and actual score in level from training run entity
-                    .actualScoreInLevel(0)
+                    .totalScore(trainingRun.getTotalScore())
+                    .actualScoreInLevel(trainingRun.getCurrentScore())
                     .level(trainingRun.getCurrentLevel().getId())
                     .build();
             auditService.save(assessmentAnswers);
@@ -601,8 +612,8 @@ public class TrainingRunServiceImpl implements TrainingRunService {
                     .trainingInstanceId(trainingInstance.getId())
                     .trainingRunId(trainingRun.getId())
                     .playerLogin(getSubOfLoggedInUser())
-                    .totalScore(0) //TODO requires to set total and actual score in level from training run entity
-                    .actualScoreInLevel(0)
+                    .totalScore(trainingRun.getTotalScore())
+                    .actualScoreInLevel(trainingRun.getCurrentScore())
                     .level(trainingRun.getCurrentLevel().getId())
                     .build();
             auditService.save(trainingRunResumed);
@@ -647,10 +658,15 @@ public class TrainingRunServiceImpl implements TrainingRunService {
         } else {
             points = util.evaluateTest(new JSONArray(assessmentLevel.getQuestions()), responses);
             responseToCurrentAssessment.put("receivedPoints", points);
-            //TODO do something with points
+            trainingRun.setCurrentScore(points);
+            trainingRun.setTotalScore(trainingRun.getTotalScore() - (trainingRun.getCurrentLevel().getMaxScore() - trainingRun.getCurrentScore()));
         }
         responsesJSON.put(responseToCurrentAssessment);
         trainingRun.setAssessmentResponses(responsesJSON.toString());
+        trainingRun.setLevelAnswered(true);
+        //TODO what is answers in audit action
+        auditAssessmentAnswersAction(trainingRun, responsesAsString);
+        auditLevelCompletedAction(trainingRun);
     }
 
     private JSONArray isResponseValid(String responses) {

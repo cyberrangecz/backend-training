@@ -44,9 +44,15 @@ public class TrainingRun implements Serializable {
     @JoinColumn(name = "participant_ref_id", nullable = false)
     private ParticipantRef participantRef;
     @Lob
-    @Type(type = "org.hibernate.type.TextType")
+    @Type(type ="org.hibernate.type.TextType")
     @Column(name = "assessment_responses", nullable = true)
     private String assessmentResponses;
+    @Column(name = "total_score")
+    private int totalScore;
+    @Column(name = "current_score")
+    private int currentScore;
+    @Column(name = "level_answered")
+    private boolean levelAnswered;
 
     public Long getId() {
         return id;
@@ -93,6 +99,10 @@ public class TrainingRun implements Serializable {
     }
 
     public void setCurrentLevel(AbstractLevel currentLevel) {
+        this.totalScore += currentLevel.getMaxScore();
+        this.currentScore = currentLevel.getMaxScore();
+        this.levelAnswered = currentLevel instanceof InfoLevel;
+        this.solutionTaken = false;
         this.currentLevel = currentLevel;
     }
 
@@ -142,6 +152,39 @@ public class TrainingRun implements Serializable {
 
     public void setParticipantRef(ParticipantRef participantRef) {
         this.participantRef = participantRef;
+    }
+
+    public int getTotalScore() {
+        return totalScore;
+    }
+
+    public void setTotalScore(int totalScore) {
+        this.totalScore = totalScore;
+    }
+
+    public void decreaseTotalScore(int penalty) {
+        this.totalScore -= penalty;
+
+    }
+
+    public int getCurrentScore() {
+        return currentScore;
+    }
+
+    public void setCurrentScore(int currentScore) {
+        this.currentScore = currentScore;
+    }
+
+    public void decreaseCurrentScore(int penalty) {
+        this.currentScore -= penalty;
+    }
+
+    public boolean isLevelAnswered() {
+        return levelAnswered;
+    }
+
+    public void setLevelAnswered(boolean levelAnswered) {
+        this.levelAnswered = levelAnswered;
     }
 
     @Override
