@@ -1,4 +1,4 @@
-package cz.muni.ics.kypo.training.aop;
+package cz.muni.ics.kypo.training.rest.aop;
 
 import org.aspectj.lang.annotation.Pointcut;
 
