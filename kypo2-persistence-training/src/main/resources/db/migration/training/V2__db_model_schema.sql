@@ -87,7 +87,7 @@ CREATE TABLE assessment_level (
     id bigint NOT NULL,
     assessment_type character varying(128) NOT NULL,
     instructions text NOT NULL,
-    questions character varying(255) NOT NULL
+    questions text NOT NULL
 );
 ALTER TABLE assessment_level OWNER TO postgres;
 
@@ -519,7 +519,8 @@ CREATE TABLE training_run (
     participant_ref_id bigint,
     solution_taken boolean NOT NULL,
     event_log_reference character varying(255),
-    incorrect_flag_count integer
+    incorrect_flag_count integer,
+    assessment_responses text
 );
 
 
