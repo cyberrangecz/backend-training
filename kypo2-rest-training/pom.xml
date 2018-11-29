@@ -173,7 +173,7 @@
 				<version>${swagger2markup.version}</version>
 				<configuration>
 					<swaggerInput>${swagger.directory}/swagger.yaml</swaggerInput>
-					<outputFile>${asciidoctor.directory}/ApiDocumentation</outputFile>
+					<outputFile>${asciidoctor.directory}/KYPO2-trainings-documentation</outputFile>
 					<config>
 						<swagger2markup.markupLanguage>ASCIIDOC</swagger2markup.markupLanguage>
 						<swagger2markup.pathsGroupedBy>TAGS</swagger2markup.pathsGroupedBy>

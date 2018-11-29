@@ -22,7 +22,7 @@ public interface TrainingInstanceService {
      * @return specific Training Instance by id
      * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND given training instance is not found.
      */
-    TrainingInstance findById(long id);
+    TrainingInstance findById(Long id);
 
     /**
      * Find all Training Instances.

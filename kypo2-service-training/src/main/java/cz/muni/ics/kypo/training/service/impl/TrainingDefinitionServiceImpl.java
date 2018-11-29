@@ -61,7 +61,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     @Override
     @PreAuthorize("hasAuthority('ADMINISTRATOR')" +
             "or @securityService.isDesignerOfGivenTrainingDefinition(#id)")
-    public TrainingDefinition findById(long id) {
+    public TrainingDefinition findById(Long id) {
         LOG.debug("findById({})", id);
         return trainingDefinitionRepository.findById(id).orElseThrow(
                 () -> new ServiceLayerException("Training definition with id: " + id + " not found.", ErrorCode.RESOURCE_NOT_FOUND));

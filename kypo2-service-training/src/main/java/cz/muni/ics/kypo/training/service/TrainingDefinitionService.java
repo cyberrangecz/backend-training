@@ -21,7 +21,7 @@ public interface TrainingDefinitionService {
      * @return specific Training Definition by id
      * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND training definition cannot be found
      */
-    TrainingDefinition findById(long id);
+    TrainingDefinition findById(Long id);
 
     /**
      * Find all Training Definitions.
