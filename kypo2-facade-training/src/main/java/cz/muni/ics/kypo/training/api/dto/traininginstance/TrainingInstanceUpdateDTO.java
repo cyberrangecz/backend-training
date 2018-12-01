@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionDTO;
 import cz.muni.ics.kypo.training.utils.converters.LocalDateTimeDeserializer;
+import cz.muni.ics.kypo.training.utils.converters.LocalDateTimeUTCDeserializer;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
@@ -24,10 +25,10 @@ public class TrainingInstanceUpdateDTO {
     @NotNull(message = "{traininginstanceupdate.id.NotNull.message}")
     private Long id;
     @NotNull(message = "{traininginstanceupdate.startTime.NotNull.message}")
-    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+    @JsonDeserialize(using = LocalDateTimeUTCDeserializer.class)
     private LocalDateTime startTime;
     @NotNull(message = "{traininginstanceupdate.endTime.NotNull.message}")
-    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+    @JsonDeserialize(using = LocalDateTimeUTCDeserializer.class)
     private LocalDateTime endTime;
     @NotEmpty(message = "{traininginstanceupdate.title.NotEmpty.message}")
     private String title;
@@ -50,7 +51,7 @@ public class TrainingInstanceUpdateDTO {
         this.id = id;
     }
 
-    @ApiModelProperty(value = "Date when training instance starts.", required = true, example = "2019-10-19T10:23:54")
+    @ApiModelProperty(value = "Date when training instance starts.", required = true, example = "2019-10-19T10:28:02.727Z")
     public LocalDateTime getStartTime() {
         return startTime;
     }
@@ -59,7 +60,7 @@ public class TrainingInstanceUpdateDTO {
         this.startTime = startTime;
     }
 
-    @ApiModelProperty(value = "Date when training instance ends.", required = true, example = "2019-10-25T10:23:54")
+    @ApiModelProperty(value = "Date when training instance ends.", required = true, example = "2019-10-25T10:28:02.727Z")
     public LocalDateTime getEndTime() {
         return endTime;
     }
