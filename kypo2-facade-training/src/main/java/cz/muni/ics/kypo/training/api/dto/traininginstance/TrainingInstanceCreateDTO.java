@@ -3,10 +3,12 @@ package cz.muni.ics.kypo.training.api.dto.traininginstance;
 import java.time.LocalDateTime;
 import java.util.Set;
 
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionDTO;
 import cz.muni.ics.kypo.training.utils.converters.LocalDateTimeDeserializer;
+import cz.muni.ics.kypo.training.utils.converters.LocalDateTimeUTCDeserializer;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
@@ -22,10 +24,10 @@ import javax.validation.constraints.NotNull;
 public class TrainingInstanceCreateDTO {
 
     @NotNull(message = "{traininginstancecreate.startTime.NotNull.message}")
-    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+    @JsonDeserialize(using = LocalDateTimeUTCDeserializer.class)
     private LocalDateTime startTime;
     @NotNull(message = "{traininginstancecreate.endTime.NotNull.message}")
-    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+    @JsonDeserialize(using = LocalDateTimeUTCDeserializer.class)
     private LocalDateTime endTime;
     @NotEmpty(message = "{traininginstancecreate.title.NotEmpty.message}")
     private String title;
@@ -40,7 +42,7 @@ public class TrainingInstanceCreateDTO {
     @NotNull(message = "{traininginstancecreate.orgIds.NotNull.message}")
     private Set<Long> orgIds;
 
-    @ApiModelProperty(value = "Date when training instance starts.", required = true, example = "2018-11-20T09:31:48")
+    @ApiModelProperty(value = "Date when training instance starts.", required = true, example = "2020-11-20T10:28:02.727Z")
     public LocalDateTime getStartTime() {
         return startTime;
     }
@@ -49,7 +51,7 @@ public class TrainingInstanceCreateDTO {
         this.startTime = startTime;
     }
 
-    @ApiModelProperty(value = "Date when training instance ends.", required = true, example = "2018-11-25T09:31:48")
+    @ApiModelProperty(value = "Date when training instance ends.", required = true, example = "2020-11-25T10:26:02.727Z")
     public LocalDateTime getEndTime() {
         return endTime;
     }
