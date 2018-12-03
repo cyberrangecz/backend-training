@@ -18,9 +18,7 @@ import cz.muni.ics.kypo.training.rest.ExceptionSorter;
 import cz.muni.ics.kypo.training.rest.utils.annotations.ApiPageableSwagger;
 import io.swagger.annotations.*;
 import cz.muni.ics.kypo.training.api.dto.hint.HintDTO;
-
 import java.util.List;
-
 import org.apache.avro.Schema;
 import org.apache.avro.SchemaBuilder;
 import org.json.JSONArray;
@@ -416,7 +414,7 @@ public class TrainingRunsRestController {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 204, message = "Responses to assessment evaluated and stored ."),
-            @ApiResponse(code = 409, message = "Current level of training is not assessment level."),
+            @ApiResponse(code = 409, message = "Current level of training is not assessment level or level has been already answered."),
             @ApiResponse(code = 404, message = "Training run with given id not found."),
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.")
     })

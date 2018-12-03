@@ -23,26 +23,26 @@ public class AssessmentUtil {
         //Get list of individual responses to questions
         for (int i = 0; i < responses.length(); i++) {
             //Get question from question array
-            JSONObject question = getQuestionWithOrder(questions, responses.getJSONObject(i).getInt("questionOrder"));
+            JSONObject question = getQuestionWithOrder(questions, responses.getJSONObject(i).getInt("question_order"));
             if (question == null) {
                 continue;
             }
             //Evaluate FFQ question
-            if (question.get("type").equals("FFQ")) {
+            if (question.get("question_type").equals("FFQ")) {
                 LOG.info("Evaluating FFQ question");
                 String answer = responses.getJSONObject(i).getString("text");
                 receivedPoints += evaluateFFQQuestion(question,answer);
             }
 
             //Evaluate MCQ questions
-            else if (question.get("type").equals("MCQ")) {
+            else if (question.get("question_type").equals("MCQ")) {
                 LOG.info("Evaluating MCQ question");
                 JSONArray answers = responses.getJSONObject(i).getJSONArray("choices");
                 receivedPoints += evaluateMCQQuestion(question, answers);
             }
 
             //Evaluate EMI question
-            else if (question.get("type").equals("EMI")) {
+            else if (question.get("question_type").equals("EMI")) {
                 LOG.info("Evaluating EMI question");
                 JSONArray answers = responses.getJSONObject(i).getJSONArray("pairs");
                 receivedPoints += evaluateEMIQuestion(question,answers);
@@ -101,7 +101,7 @@ public class AssessmentUtil {
         JSONArray allChoices = question.getJSONArray("choices");
         List<Integer> correctChoices = new ArrayList<>();
         for (int k = 0; k < allChoices.length(); k++) {
-            if(allChoices.getJSONObject(k).getBoolean("isCorrect")) {
+            if(allChoices.getJSONObject(k).getBoolean("is_correct")) {
                 correctChoices.add(allChoices.getJSONObject(k).getInt("order"));
             }
         }
@@ -114,7 +114,7 @@ public class AssessmentUtil {
      * @return list of correct choices text
      */
     public List<String> getCorrectChoicesForFFQ (JSONObject question) {
-        JSONArray allChoices = question.getJSONArray("correctChoices");
+        JSONArray allChoices = question.getJSONArray("correct_choices");
         List<String> correctChoices = new ArrayList<>();
         for (int k = 0; k < allChoices.length(); k++) {
             correctChoices.add(allChoices.get(k).toString().toLowerCase());
@@ -241,8 +241,8 @@ public class AssessmentUtil {
     public void putAnswersToQuestions(JSONArray answers, JSONArray questions, String userName) {
         for (int a = 0; a < answers.length(); a++) {
             //single response
-            int questionOrder = answers.getJSONObject(a).getInt("questionOrder");
-            answers.getJSONObject(a).remove("questionOrder");
+            int questionOrder = answers.getJSONObject(a).getInt("question_order");
+            answers.getJSONObject(a).remove("question_order");
             answers.getJSONObject(a).put("userName", userName);
             if (questions.getJSONObject(questionOrder).isNull("answers")) {
                 questions.getJSONObject(questionOrder).put("answers", new JSONArray("[" + answers.getJSONObject(a).toString() + "]"));

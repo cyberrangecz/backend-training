@@ -8,6 +8,8 @@ import cz.muni.ics.kypo.training.persistence.model.enums.TDState;
 import cz.muni.ics.kypo.training.persistence.repository.*;
 
 import cz.muni.ics.kypo.training.service.impl.TrainingDefinitionServiceImpl;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -21,11 +23,12 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.junit4.SpringRunner;
-
+import org.springframework.util.ResourceUtils;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
 import static org.junit.Assert.*;
 import static org.mockito.BDDMockito.*;
 import static org.mockito.Mockito.reset;
@@ -72,12 +75,20 @@ public class TrainingDefinitionServiceTest {
     private InfoLevel infoLevel, newInfoLevel;
 
     private SandboxDefinitionRef sandboxDefinitionRef;
+    private JSONParser parser = new JSONParser();
+    private String questions;
 
     @Before
     public void init() {
         MockitoAnnotations.initMocks(this);
         trainingDefinitionService = new TrainingDefinitionServiceImpl(trainingDefinitionRepository, abstractLevelRepository,
                 infoLevelRepository, gameLevelRepository, assessmentLevelRepository, trainingInstanceRepository, authorRefRepository, sandboxDefinitionRefRepository);
+
+        parser = new JSONParser();
+        try {
+            questions = parser.parse(new FileReader(ResourceUtils.getFile("classpath:questions.json"))).toString();
+        } catch (IOException | ParseException ex) {
+        }
 
         level3 = new AssessmentLevel();
         level3.setId(3L);
@@ -86,6 +97,7 @@ public class TrainingDefinitionServiceTest {
         level2 = new AssessmentLevel();
         level2.setId(2L);
         level2.setNextLevel(level3.getId());
+        level2.setQuestions(questions);
 
         level1 = new AssessmentLevel();
         level1.setId(1L);
