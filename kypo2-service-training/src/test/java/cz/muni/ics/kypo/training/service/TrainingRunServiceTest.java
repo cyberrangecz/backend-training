@@ -4,7 +4,6 @@ import com.google.gson.JsonObject;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.PathBuilder;
 import cz.muni.csirt.kypo.elasticsearch.service.audit.AuditService;
-
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.model.enums.AssessmentType;
@@ -12,7 +11,6 @@ import cz.muni.ics.kypo.training.persistence.model.enums.TDState;
 import cz.muni.ics.kypo.training.persistence.model.enums.TRState;
 import cz.muni.ics.kypo.training.persistence.repository.*;
 import cz.muni.ics.kypo.training.persistence.utils.SandboxInfo;
-
 import cz.muni.ics.kypo.training.service.impl.TrainingRunServiceImpl;
 import org.json.simple.parser.ParseException;
 import org.junit.*;
@@ -26,7 +24,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -35,7 +32,6 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.ResourceUtils;
 import org.springframework.web.client.RestTemplate;
 import org.json.simple.parser.JSONParser;
-
 import java.io.FileReader;
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -45,6 +41,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.BDDMockito.*;
 import org.springframework.http.*;
+
 @RunWith(SpringRunner.class)
 public class TrainingRunServiceTest {
 
@@ -94,10 +91,7 @@ public class TrainingRunServiceTest {
         try {
             questions = parser.parse(new FileReader(ResourceUtils.getFile("classpath:questions.json"))).toString();
             responses = parser.parse(new FileReader(ResourceUtils.getFile("classpath:responses.json"))).toString();
-        } catch (IOException ex) {
-
-        } catch (ParseException ex) {
-
+        } catch (IOException | ParseException ex) {
         }
 
         sandBoxDefinitionRef = new SandboxDefinitionRef();
@@ -534,6 +528,7 @@ public class TrainingRunServiceTest {
 
     @Test
     public void evaluateAndStoreResponses() {
+        mockSpringSecurityContextForGet();
         trainingRun1.setCurrentLevel(assessmentLevel);
         given(trainingRunRepository.findByIdWithLevel(any(Long.class))).willReturn(Optional.of(trainingRun1));
         trainingRunService.evaluateResponsesToAssessment(trainingRun1.getId(), responses);

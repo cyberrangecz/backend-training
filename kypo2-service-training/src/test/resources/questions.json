@@ -1,13 +1,13 @@
 
 [
   {
-    "type":             "FFQ",
+    "question_type":             "FFQ",
     "text":             "Write name of one malicious software?",
     "points":           6,
     "penalty":          3,
     "order":            0,
-    "required":         true,
-    "correctChoices":  [
+    "answer_required":         true,
+    "correct_choices":  [
                         "viruses",
                         "trojans",
                         "worms",
@@ -15,42 +15,42 @@
                       ]
   },
   {
-    "type":             "MCQ",
+    "question_type":             "MCQ",
     "text":             "Among the following choices, select all the possible methods of prevention against an unwanted file upload.",
     "points":           4,
     "penalty":          2,
     "order":            1,
-    "required":         true,
+    "answer_required":         true,
     "choices":          [
                           {
                             "order":        0,
                             "text":         "whitelisting file extensions",
-                            "isCorrect":    true
+                            "is_correct":    true
                           },
                           {
                             "order":         1,
                             "text":         "limiting maximum file size",
-                            "isCorrect":    true
+                            "is_correct":    true
                           },
                           {
                             "order":        2,
                             "text":        "using database triggers",
-                            "isCorrect":   false
+                            "is_correct":   false
                           },
                           {
                             "order":        3,
                             "text":         "saving data to an NTFS volume",
-                            "isCorrect":    false
+                            "is_correct":    false
                           }
                         ]
   },
   {
-    "type":             "EMI",
+    "question_type":             "EMI",
     "text":             "Connect the following exemplary situations with the corresponding type of password attack.",
     "points":           3,
     "penalty":          1,
     "order":            2,
-    "required":         true,
+    "answer_required":         true,
     "choices":          [
                           {
                             "order":        0,

@@ -1,0 +1,66 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "array",
+  "items": {
+    "type": "object",
+        "required": [ "question_type", "text", "points", "penalty", "order", "answer_required"],
+        "properties": {
+          "question_type": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          },
+          "points": {
+            "type": "integer"
+          },
+          "penalty": {
+            "type": "integer"
+          },
+          "order": {
+            "type": "integer"
+          },
+          "answer_required": {
+            "type": "boolean"
+          },
+          "correct_choices": {
+            "type": "array",
+            "items": [
+              {
+                "type": "string"
+              }
+            ]
+          },
+          "choices": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["order", "text"],
+              "properties": {
+                "order": {
+                  "type": "integer"
+                },
+                "text": {
+                  "type": "string"
+                },
+                "is_correct": {
+                  "type": "boolean"
+                },
+                "pair": {
+                  "type": "integer"
+                }
+              },
+              "oneOf": [
+                {"required": [ "pair" ]},
+                {"required": [ "is_correct" ]}],
+              "additionalProperties": false
+            }
+          }
+        },
+      "additionalProperties": false,
+        "oneOf": [
+          {"required": [ "choices" ]},
+          {"required": [ "correct_choices" ]}
+        ]
+  }
+}

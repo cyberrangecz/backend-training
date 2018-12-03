@@ -19,9 +19,7 @@ import cz.muni.ics.kypo.training.service.TrainingRunService;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.model.enums.TRState;
 import cz.muni.ics.kypo.training.persistence.utils.SandboxInfo;
-
 import cz.muni.ics.kypo.training.utils.AssessmentUtil;
-import io.swagger.models.auth.In;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -38,7 +36,6 @@ import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import org.springframework.web.client.RestTemplate;
-
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -637,11 +634,12 @@ public class TrainingRunServiceImpl implements TrainingRunService {
         LOG.info("evaluateAndStoreResponse({})", trainingRunId);
         Assert.notNull(responsesAsString, "Response to assessment must not be null.");
         JSONArray responses = isResponseValid(responsesAsString);
-        Integer points = 0;
+        int points = 0;
         TrainingRun trainingRun = findByIdWithLevel(trainingRunId);
         if(!(trainingRun.getCurrentLevel() instanceof AssessmentLevel)) {
             throw new ServiceLayerException("Current level is not assessment level and cannot be evaluated.", ErrorCode.WRONG_LEVEL_TYPE);
         }
+        if(trainingRun.isLevelAnswered()) throw new ServiceLayerException("Current level has been already answered.", ErrorCode.RESOURCE_CONFLICT);
         if(trainingRun.getAssessmentResponses() == null) {
             trainingRun.setAssessmentResponses("[]");
         }
@@ -672,14 +670,14 @@ public class TrainingRunServiceImpl implements TrainingRunService {
     private JSONArray isResponseValid(String responses) {
         try {
             JsonNode n = JsonLoader.fromString(responses);
-            final JsonNode jsonSchema = JsonLoader.fromResource("/responses_schema.json");
+            final JsonNode jsonSchema = JsonLoader.fromResource("/responses-schema.json");
             final JsonSchemaFactory factory = JsonSchemaFactory.byDefault();
             JsonValidator v = factory.getValidator();
             ProcessingReport report = v.validate(jsonSchema, n);
             if (report.toString().contains("success")) {
                 return new JSONArray(responses);
             } else {
-                throw new IllegalArgumentException("Field is not valid.\n" +  report.iterator().next().toString());
+                throw new IllegalArgumentException("Given responses are not valid. \n" +  report.iterator().next().toString());
             }
 
         } catch (IOException | ProcessingException ex) {
