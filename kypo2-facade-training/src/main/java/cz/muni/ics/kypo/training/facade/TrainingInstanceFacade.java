@@ -35,10 +35,9 @@ public interface TrainingInstanceFacade {
      * Updates training instance
      *
      * @param trainingInstance to be updated
-     * @return newly generated password
      * @throws FacadeLayerException if instance is not found
      */
-    String update(TrainingInstanceUpdateDTO trainingInstance);
+    void update(TrainingInstanceUpdateDTO trainingInstance);
 
     /**
      * Creates new training instance

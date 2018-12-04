@@ -73,7 +73,7 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
 
     @Override
     @TransactionalWO
-    public String update(TrainingInstanceUpdateDTO trainingInstance) {
+    public void update(TrainingInstanceUpdateDTO trainingInstance) {
         LOG.debug("update({})", trainingInstance);
         try {
             Objects.requireNonNull(trainingInstance);
@@ -84,7 +84,7 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
                 organizers.add(trainingInstanceService.findUserRefById(id));
             }
             tI.setOrganizers(organizers);
-            return trainingInstanceService.update(tI);
+            trainingInstanceService.update(tI);
         } catch (ServiceLayerException ex) {
             throw new FacadeLayerException(ex);
         }

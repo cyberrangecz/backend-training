@@ -46,7 +46,7 @@ public interface TrainingInstanceService {
      * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND given training instance is not found.
      *                               RESOURCE_CONFLICT cannot be updated for some reason.
      */
-    String update(TrainingInstance trainingInstance);
+    void update(TrainingInstance trainingInstance);
 
     /**
      * deletes training instance

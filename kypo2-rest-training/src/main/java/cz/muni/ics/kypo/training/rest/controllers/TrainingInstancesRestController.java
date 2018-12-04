@@ -184,7 +184,8 @@ public class TrainingInstancesRestController {
     @PutMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> updateTrainingInstance(@ApiParam(value = "Training instance to be updated") @RequestBody @Valid TrainingInstanceUpdateDTO trainingInstanceUpdateDTO) {
         try {
-            return new ResponseEntity<>(trainingInstanceFacade.update(trainingInstanceUpdateDTO), HttpStatus.OK);
+            trainingInstanceFacade.update(trainingInstanceUpdateDTO);
+            return new ResponseEntity<>(HttpStatus.OK);
         } catch (FacadeLayerException ex) {
             throw ExceptionSorter.throwException(ex);
         }
