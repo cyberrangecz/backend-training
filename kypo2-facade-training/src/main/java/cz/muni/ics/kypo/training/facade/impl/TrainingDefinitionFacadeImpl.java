@@ -58,7 +58,7 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
         try {
             Objects.requireNonNull(id);
             TrainingDefinitionDTO trainingDefinitionDTO = beanMapping.mapTo(trainingDefinitionService.findById(id), TrainingDefinitionDTO.class);
-            trainingDefinitionDTO.setBasicLevelInfoDTOs(gatherBasicLevelInfo(id));
+            trainingDefinitionDTO.setLevels( gatherLevels(id));
             return trainingDefinitionDTO;
         } catch (ServiceLayerException ex) {
             throw new FacadeLayerException(ex);
@@ -68,7 +68,6 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
     private Set<BasicLevelInfoDTO> gatherBasicLevelInfo(Long definitionId) {
         List<AbstractLevel> levels = trainingDefinitionService.findAllLevelsFromDefinition(definitionId);
         Set<BasicLevelInfoDTO> levelInfoDTOs = new HashSet<>();
-
 
         for (int i = 0; i < levels.size(); i++) {
             BasicLevelInfoDTO basicLevelInfoDTO = new BasicLevelInfoDTO();
@@ -84,6 +83,30 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
             levelInfoDTOs.add(basicLevelInfoDTO);
         }
         return levelInfoDTOs;
+    }
+
+    private Set<AbstractLevelDTO> gatherLevels(Long definitionId) {
+        List<AbstractLevel> levels = trainingDefinitionService.findAllLevelsFromDefinition(definitionId);
+        Set<AbstractLevelDTO> levelDTOS = new HashSet<>();
+
+        for(AbstractLevel l : levels){
+            if (l instanceof GameLevel) {
+                GameLevelDTO lDTO = beanMapping.mapTo(l, GameLevelDTO.class);
+                lDTO.setLevelType(LevelType.GAME);
+                levelDTOS.add(lDTO);
+            }
+            else if (l instanceof InfoLevel) {
+                InfoLevelDTO lDTO = beanMapping.mapTo(l, InfoLevelDTO.class);
+                lDTO.setLevelType(LevelType.INFO);
+                levelDTOS.add(lDTO);
+            }
+                else {
+                AssessmentLevelDTO lDTO = beanMapping.mapTo(l, AssessmentLevelDTO.class);
+                lDTO.setLevelType(LevelType.ASSESSMENT);
+                levelDTOS.add(lDTO);
+                }
+            }
+        return levelDTOS;
     }
 
     @Override

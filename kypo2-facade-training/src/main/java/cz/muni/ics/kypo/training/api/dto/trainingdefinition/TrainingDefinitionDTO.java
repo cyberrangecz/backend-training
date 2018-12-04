@@ -1,5 +1,7 @@
 package cz.muni.ics.kypo.training.api.dto.trainingdefinition;
 
+import cz.muni.ics.kypo.training.api.dto.AbstractLevelDTO;
+import cz.muni.ics.kypo.training.persistence.model.AbstractLevel;
 import io.swagger.annotations.ApiModel;
 import cz.muni.ics.kypo.training.api.dto.AuthorRefDTO;
 import cz.muni.ics.kypo.training.api.dto.SandboxDefinitionRefDTO;
@@ -26,7 +28,7 @@ public class TrainingDefinitionDTO {
     private Set<AuthorRefDTO> authorRef = new HashSet<>();
     private SandboxDefinitionRefDTO sandboxDefinitionRef;
     private Long startingLevel;
-    private Set<BasicLevelInfoDTO> basicLevelInfoDTOs;
+    private Set<AbstractLevelDTO> levels;
     private boolean showStepperBar;
     private boolean canBeArchived;
 
@@ -112,12 +114,12 @@ public class TrainingDefinitionDTO {
     }
 
     @ApiModelProperty(value = "Information about all levels in training definition.")
-    public Set<BasicLevelInfoDTO> getBasicLevelInfoDTOs() {
-        return basicLevelInfoDTOs;
+    public Set<AbstractLevelDTO> getLevels() {
+        return levels;
     }
 
-    public void setBasicLevelInfoDTOs(Set<BasicLevelInfoDTO> basicLevelInfoDTOs) {
-        this.basicLevelInfoDTOs = basicLevelInfoDTOs;
+    public void setLevels(Set<AbstractLevelDTO> levels) {
+        this.levels = levels;
     }
 
     @ApiModelProperty(value = "Sign if stepper bar should be displayed.", example = "false")
@@ -137,12 +139,10 @@ public class TrainingDefinitionDTO {
         this.canBeArchived = canBeArchived;
     }
 
-    @Override
-    public String toString() {
+    @Override public String toString() {
         return "TrainingDefinitionDTO{" + "id=" + id + ", title='" + title + '\'' + ", description='" + description + '\''
-                + ", prerequisities=" + Arrays.toString(prerequisities) + ", outcomes=" + Arrays.toString(outcomes) + ", state=" + state
-                + ", authorRef=" + authorRef + ", sandBoxDefinitionRef=" + sandboxDefinitionRef + ", startingLevel=" + startingLevel
-                + ", basicLevelInfoDTOs=" + basicLevelInfoDTOs + ", showStepperBar=" + showStepperBar + ", canBeArchived=" + canBeArchived
-                + '}';
+            + ", prerequisities=" + Arrays.toString(prerequisities) + ", outcomes=" + Arrays.toString(outcomes) + ", state=" + state
+            + ", authorRef=" + authorRef + ", sandboxDefinitionRef=" + sandboxDefinitionRef + ", startingLevel=" + startingLevel
+            + ", levels=" + levels + ", showStepperBar=" + showStepperBar + ", canBeArchived=" + canBeArchived + '}';
     }
 }

@@ -415,7 +415,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
         LOG.debug("findAllLevelsFromDefinition({})", id);
         Assert.notNull(id, "Definition id must not be null");
         TrainingDefinition trainingDefinition = findById(id);
-        ArrayList<AbstractLevel> levels = new ArrayList<>();
+        List<AbstractLevel> levels = new ArrayList<>();
         Long levelId = trainingDefinition.getStartingLevel();
         AbstractLevel level = null;
         while (levelId != null) {
