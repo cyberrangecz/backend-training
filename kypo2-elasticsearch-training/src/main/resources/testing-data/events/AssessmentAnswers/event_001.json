@@ -1,0 +1,13 @@
+{
+	"type": "cz.muni.csirt.kypo.events.trainings.AssessmentAnswers",  
+	"timestamp": 1499692955,
+	"sandbox_id": 1,
+	"training_definition_id": 1,
+	"training_instance_id": 2,
+	"training_run_id": 1,
+	"player_login": "545698@muni.cz",
+	"total_score": 0,
+	"actual_score_in_level": 0,
+	"level": 2,
+	"answers": "Turn off your computer."
+}

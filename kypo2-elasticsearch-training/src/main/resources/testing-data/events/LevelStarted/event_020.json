@@ -1,0 +1,15 @@
+{
+	"type": "cz.muni.csirt.kypo.events.trainings.LevelStarted",
+	"timestamp": 154753247334,
+	"sandbox_id": 1,
+	"training_definition_id": 1,
+	"training_instance_id": 1,
+	"training_run_id": 5,
+	"player_login": "798416@muni.cz",
+	"total_score": 0,
+	"actual_score_in_level": 0,
+	"level": 2,
+	"level_type": "INFO",
+	"max_score": 70,
+	"level_title": "Info Level1"
+}

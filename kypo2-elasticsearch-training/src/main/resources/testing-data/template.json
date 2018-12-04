@@ -1,0 +1,16 @@
+{
+  "template": "*",
+  "mappings": {
+    "default": {
+      "properties": {
+        "timestamp": {
+          "type": "date",
+          "format": "strict_date_time||epoch_millis"
+        }
+      }
+    }
+  },
+  "settings": {
+    "index.refresh_interval": "5s"
+  }
+}

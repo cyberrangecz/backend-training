@@ -1,0 +1,13 @@
+{
+	"type": "cz.muni.csirt.kypo.events.trainings.SolutionDisplayed",
+	"timestamp": 161035791901,
+	"sandbox_id": 1,
+	"training_definition_id": 1,
+	"training_instance_id": 2,
+	"training_run_id": 6,
+	"player_login": "712447@muni.cz",
+	"total_score": 0,
+	"actual_score_in_level": 0,
+	"level": 7,
+	"penalty_points": 0
+}
