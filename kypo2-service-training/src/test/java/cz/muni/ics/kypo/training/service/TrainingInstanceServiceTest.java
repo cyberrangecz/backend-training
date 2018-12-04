@@ -83,6 +83,7 @@ public class TrainingInstanceServiceTest {
         trainingInstance2.setTitle("test2");
         trainingInstance2.setStartTime(LocalDateTime.now().plusHours(1L));
         trainingInstance2.setEndTime(LocalDateTime.now().plusHours(5L));
+        trainingInstance2.setPassword("pass-1253");
 
         trainingInstanceInvalid = new TrainingInstance();
         trainingInstanceInvalid.setId(3L);
