@@ -1,5 +1,11 @@
 package cz.muni.ics.kypo.training.service.impl;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.github.fge.jackson.JsonLoader;
+import com.github.fge.jsonschema.core.exceptions.ProcessingException;
+import com.github.fge.jsonschema.core.report.ProcessingReport;
+import com.github.fge.jsonschema.main.JsonSchemaFactory;
+import com.github.fge.jsonschema.main.JsonValidator;
 import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.training.exceptions.ErrorCode;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
@@ -8,7 +14,6 @@ import cz.muni.ics.kypo.training.persistence.model.enums.AssessmentType;
 import cz.muni.ics.kypo.training.persistence.model.enums.TDState;
 import cz.muni.ics.kypo.training.persistence.repository.*;
 import cz.muni.ics.kypo.training.service.TrainingDefinitionService;
-import net.bytebuddy.asm.Advice;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -19,7 +24,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
-
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -307,6 +312,9 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
                 new ServiceLayerException("Level with id: " + assessmentLevel.getId() + ", not found.",
                         ErrorCode.RESOURCE_NOT_FOUND));
         assessmentLevel.setNextLevel(aL.getNextLevel());
+        if(!assessmentLevel.getQuestions().equals(aL.getQuestions())) {
+            validQuestions(assessmentLevel.getQuestions());
+        }
         assessmentLevelRepository.save(assessmentLevel);
     }
 
@@ -385,7 +393,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
         newAssessmentLevel.setMaxScore(0);
         newAssessmentLevel.setAssessmentType(AssessmentType.QUESTIONNAIRE);
         newAssessmentLevel.setInstructions("");
-        newAssessmentLevel.setQuestions("");
+        newAssessmentLevel.setQuestions("[]");
         AssessmentLevel aL = assessmentLevelRepository.save(newAssessmentLevel);
 
         if (trainingDefinition.getStartingLevel() == null) {
@@ -407,7 +415,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
         LOG.debug("findAllLevelsFromDefinition({})", id);
         Assert.notNull(id, "Definition id must not be null");
         TrainingDefinition trainingDefinition = findById(id);
-        ArrayList<AbstractLevel> levels = new ArrayList<>();
+        List<AbstractLevel> levels = new ArrayList<>();
         Long levelId = trainingDefinition.getStartingLevel();
         AbstractLevel level = null;
         while (levelId != null) {
@@ -526,6 +534,22 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
             infoLevelRepository.save((InfoLevel) level);
         } else {
             gameLevelRepository.save((GameLevel) level);
+        }
+    }
+
+    private void validQuestions(String questions) {
+        try {
+            JsonNode n = JsonLoader.fromString(questions);
+            final JsonNode jsonSchema = JsonLoader.fromResource("/questions-schema.json");
+            final JsonSchemaFactory factory = JsonSchemaFactory.byDefault();
+            JsonValidator v = factory.getValidator();
+            ProcessingReport report = v.validate(jsonSchema, n);
+            if (!report.toString().contains("success")) {
+                throw new IllegalArgumentException("Given questions are not not valid .\n" +  report.iterator().next());
+            }
+
+        } catch (IOException | ProcessingException ex) {
+            throw new ServiceLayerException(ex.getMessage(), ErrorCode.UNEXPECTED_ERROR);
         }
     }
 }

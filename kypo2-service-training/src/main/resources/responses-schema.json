@@ -1,0 +1,51 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "required": ["question_order"],
+    "properties": {
+      "question_order": {
+        "type": "integer"
+      },
+      "text": {
+        "type": "string"
+      },
+      "choices": {
+        "type": "array",
+        "items": [
+          {
+            "type": "integer"
+          },
+          {
+            "type": "integer"
+          }
+        ]
+      },
+      "pairs": {
+        "type": "array",
+        "items": [
+          {
+            "type": "array",
+            "items": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "integer"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "additionalProperties": false,
+    "oneOf": [
+      { "required": [ "text" ] },
+      { "required": [ "choices" ] },
+      { "required": [ "pairs" ] }
+    ]
+  }
+
+
+}

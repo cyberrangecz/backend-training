@@ -1,0 +1,14 @@
+{
+	"type": "cz.muni.csirt.kypo.events.trainings.WrongFlagSubmitted",
+	"timestamp": 17344512639,
+	"sandbox_id": 1,
+	"training_definition_id": 1,
+	"training_instance_id": 3,
+	"training_run_id": 10,
+	"player_login": "631463@muni.cz",
+	"total_score": 0,
+	"actual_score_in_level": 0,
+	"level": 6,
+	"flag_content": "",
+	"count": 5
+}

@@ -36,6 +36,7 @@ public class TrainingInstanceUpdateDTO {
     @Min(value = 1, message = "{traininginstanceupdate.poolSize.Min.message}")
     @Max(value = 100, message = "{traininginstanceupdate.poolSize.Max.message}")
     private int poolSize;
+    @NotEmpty(message = "{traininginstanceupdate.password.NotEmpty.message}")
     private String password;
     @NotNull(message = "{traininginstanceupdate.trainingDefinition.NotNull.message}")
     private Long trainingDefinitionId;

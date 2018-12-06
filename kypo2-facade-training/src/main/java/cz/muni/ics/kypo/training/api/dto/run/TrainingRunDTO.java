@@ -1,7 +1,9 @@
 package cz.muni.ics.kypo.training.api.dto.run;
 
+import cz.muni.ics.kypo.training.api.dto.ParticipantRefDTO;
 import cz.muni.ics.kypo.training.api.dto.SandboxInstanceRefDTO;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import cz.muni.ics.kypo.training.persistence.model.ParticipantRef;
 import cz.muni.ics.kypo.training.persistence.model.enums.TRState;
 import cz.muni.ics.kypo.training.utils.converters.LocalDateTimeSerializer;
 import io.swagger.annotations.ApiModel;
@@ -23,6 +25,7 @@ public class TrainingRunDTO {
     private String eventLogReference;
     private TRState state;
     private SandboxInstanceRefDTO sandboxInstanceRef;
+    private ParticipantRefDTO participantRef;
 
     @ApiModelProperty(value = "Main identifier of training run.", example = "1")
     public Long getId() {
@@ -75,6 +78,15 @@ public class TrainingRunDTO {
 
     public void setSandboxInstanceRef(SandboxInstanceRefDTO sandboxInstanceRef) {
         this.sandboxInstanceRef = sandboxInstanceRef;
+    }
+
+    @ApiModelProperty(value = "Reference to participant of training run.")
+    public ParticipantRefDTO getParticipantRef() {
+        return participantRef;
+    }
+
+    public void setParticipantRef(ParticipantRefDTO participantRef) {
+        this.participantRef = participantRef;
     }
 
     @Override
