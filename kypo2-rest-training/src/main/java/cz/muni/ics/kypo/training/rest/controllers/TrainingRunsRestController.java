@@ -384,9 +384,9 @@ public class TrainingRunsRestController {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Training run resumed.", response = AccessTrainingRunDTO.class),
+            @ApiResponse(code = 200, message = "Training run finished."),
             @ApiResponse(code = 404, message = "Training run with given id not found."),
-            @ApiResponse(code = 409, message = "Cannot resume archived training run."),
+            @ApiResponse(code = 409, message = "Cannot finish archived training run."),
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.")
     })
     @PutMapping(path = "/{runId}", produces = MediaType.APPLICATION_JSON_VALUE)
