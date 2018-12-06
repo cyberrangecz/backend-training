@@ -195,11 +195,11 @@ public class TrainingRunsRestController {
     })
     @ApiPageableSwagger
     @GetMapping(path = "/accessible", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Object> getAllAccessedTrainingRuns(
-            Pageable pageable,
-            @ApiParam(value = "Fields which should be returned in REST API response", required = false)
-            @RequestParam(value = "fields", required = false) String fields) {
-        LOG.debug("findAllAccessedTrainingRuns()");
+    public ResponseEntity<Object> getAllAccessedTrainingRuns(@ApiParam(value = "Pagination support.", required = false) Pageable pageable,
+                                                            @ApiParam(value = "Parameters for filtering the objects.", required = false)
+                                                            @RequestParam MultiValueMap<String, String> parameters,
+                                                            @ApiParam(value = "Fields which should be returned in REST API response", required = false)
+                                                            @RequestParam(value = "fields", required = false) String fields) {
         PageResultResource<AccessedTrainingRunDTO> accessedTrainingRunDTOS = trainingRunFacade.findAllAccessedTrainingRuns(pageable);
         Squiggly.init(objectMapper, fields);
         return new ResponseEntity<>(SquigglyUtils.stringify(objectMapper, accessedTrainingRunDTOS), HttpStatus.OK);

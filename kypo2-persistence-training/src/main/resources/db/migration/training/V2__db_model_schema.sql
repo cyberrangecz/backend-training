@@ -115,6 +115,9 @@ ALTER TABLE participant_ref_id_seq OWNER TO postgres;
 --
 
 ALTER SEQUENCE participant_ref_id_seq OWNED BY participant_ref.id;
+
+ALTER TABLE ONLY participant_ref
+    ADD CONSTRAINT participant_ref_pkey PRIMARY KEY (id);
 --
 -- TOC entry 189 (class 1259 OID 24277)
 -- Name: author_ref; Type: TABLE; Schema: public; Owner: postgres

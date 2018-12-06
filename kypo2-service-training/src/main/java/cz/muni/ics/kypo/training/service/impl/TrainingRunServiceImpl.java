@@ -21,14 +21,12 @@ import cz.muni.ics.kypo.training.persistence.model.enums.TRState;
 import cz.muni.ics.kypo.training.persistence.utils.SandboxInfo;
 
 import cz.muni.ics.kypo.training.utils.AssessmentUtil;
-import io.swagger.models.auth.In;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Profile;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -129,12 +127,12 @@ public class TrainingRunServiceImpl implements TrainingRunService {
         AbstractLevel abstractLevel = abstractLevelRepository.findById(nextLevelId).orElseThrow(() ->
                 new ServiceLayerException("Level with id: " + nextLevelId + " not found.", ErrorCode.RESOURCE_NOT_FOUND));
         if(trainingRun.getCurrentLevel() instanceof InfoLevel) {
-            //auditLevelCompletedAction(trainingRun);
+            auditLevelCompletedAction(trainingRun);
         }
         trainingRun.setCurrentLevel(abstractLevel);
         trainingRunRepository.save(trainingRun);
         //audit this action to theElasticSearch
-        //auditLevelStartedAction(trainingRun.getTrainingInstance(), trainingRun);
+        auditLevelStartedAction(trainingRun.getTrainingInstance(), trainingRun);
 
         return abstractLevel;
 
@@ -195,8 +193,8 @@ public class TrainingRunServiceImpl implements TrainingRunService {
                             getNewTrainingRun(al, getSubOfLoggedInUser(), trainingInstance, TRState.NEW, LocalDateTime.now(), trainingInstance.getEndTime(), sandboxInstanceRef);
                     trainingRun = create(trainingRun);
                     // audit this action to the Elasticsearch
-                    //auditTrainingRunStartedAction(trainingInstance, trainingRun);
-                    //auditLevelStartedAction(trainingInstance, trainingRun);
+                    auditTrainingRunStartedAction(trainingInstance, trainingRun);
+                    auditLevelStartedAction(trainingInstance, trainingRun);
                     return al;
                 } else {
                     throw new ServiceLayerException("There is no available sandbox, wait a minute and try again.", ErrorCode.NO_AVAILABLE_SANDBOX);
@@ -215,7 +213,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
         if (trainingRun.getState().equals(TRState.ARCHIVED)) {
             throw new ServiceLayerException("Cannot resumed archived training run.", ErrorCode.RESOURCE_CONFLICT);
         }
-        //auditTrainingRunResumedAction(trainingRun);
+        auditTrainingRunResumedAction(trainingRun);
         return trainingRun.getCurrentLevel();
     }
 
@@ -271,13 +269,13 @@ public class TrainingRunServiceImpl implements TrainingRunService {
                 //tR.setIncorrectFlagCount(0);
                 trainingRunRepository.save(trainingRun);
                 trainingRun.setLevelAnswered(true);
-                //auditCorrectFlagSubmittedAction(trainingRun, flag);
-                //auditLevelCompletedAction(trainingRun);
+                auditCorrectFlagSubmittedAction(trainingRun, flag);
+                auditLevelCompletedAction(trainingRun);
                 return true;
             } else {
                 trainingRun.setIncorrectFlagCount(trainingRun.getIncorrectFlagCount() + 1);
                 trainingRunRepository.save(trainingRun);
-                //auditWrongFlagSubmittedAction(trainingRun, flag);
+                auditWrongFlagSubmittedAction(trainingRun, flag);
                 return false;
             }
         } else {
@@ -316,7 +314,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
             trainingRun.setSolutionTaken(true);
             trainingRun.decreaseTotalScore(trainingRun.getCurrentScore()-1);
             trainingRun.setCurrentScore(1);
-            ///auditSolutionDisplayedAction(trainingRun, (GameLevel) level);
+            auditSolutionDisplayedAction(trainingRun, (GameLevel) level);
             trainingRunRepository.save(trainingRun);
             return ((GameLevel) level).getSolution();
         } else {
@@ -338,7 +336,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
             if (hint.getGameLevel().getId().equals(level.getId())) {
                 trainingRun.decreaseCurrentScore(hint.getHintPenalty());
                 trainingRun.decreaseTotalScore(hint.getHintPenalty());
-                //auditHintTakenAction(trainingRun, hint);
+                auditHintTakenAction(trainingRun, hint);
                 return hint;
             }
             throw new ServiceLayerException("Hint with id " + hintId + " is not in current level of training run: " + trainingRunId + ".", ErrorCode.RESOURCE_CONFLICT);
@@ -378,8 +376,8 @@ public class TrainingRunServiceImpl implements TrainingRunService {
         }
 
         trainingRun.setState(TRState.ARCHIVED);
-        //auditLevelCompletedAction(trainingRun);
-        //auditTrainingRunEndedAction(trainingRun);
+        auditLevelCompletedAction(trainingRun);
+        auditTrainingRunEndedAction(trainingRun);
     }
 
     private TrainingRun findByIdWithLevel(Long trainingRunId) {
@@ -666,8 +664,8 @@ public class TrainingRunServiceImpl implements TrainingRunService {
         trainingRun.setAssessmentResponses(responsesJSON.toString());
         trainingRun.setLevelAnswered(true);
         //TODO what is answers in audit action
-        //auditAssessmentAnswersAction(trainingRun, responsesAsString);
-        //auditLevelCompletedAction(trainingRun);
+        auditAssessmentAnswersAction(trainingRun, responsesAsString);
+        auditLevelCompletedAction(trainingRun);
     }
 
     private JSONArray isResponseValid(String responses) {

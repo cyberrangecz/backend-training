@@ -238,6 +238,7 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
             } else {
                 aTRD.setPossibleAction(Actions.TRY_AGAIN);
             }
+            accessedTrainingRunDTOS.add(aTRD);
         }
         return new PageResultResource<>(accessedTrainingRunDTOS, createPagination(runs));
     }
