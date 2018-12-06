@@ -84,15 +84,18 @@ public abstract class AbstractLevel implements Serializable {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof AbstractLevel)) return false;
+
+        AbstractLevel that = (AbstractLevel) o;
+
+        if (getMaxScore() != that.getMaxScore()) return false;
+        if (getTitle() != null ? !getTitle().equals(that.getTitle()) : that.getTitle() != null) return false;
+        if (getNextLevel() != null ? !getNextLevel().equals(that.getNextLevel()) : that.getNextLevel() != null)
             return false;
-        if (!(obj instanceof AbstractLevel))
-            return false;
-        AbstractLevel other = (AbstractLevel) obj;
-        return Objects.equals(id, other.getId());
+        if (getPreHook() != null ? !getPreHook().equals(that.getPreHook()) : that.getPreHook() != null) return false;
+        return getPostHook() != null ? getPostHook().equals(that.getPostHook()) : that.getPostHook() == null;
     }
 
     @Override

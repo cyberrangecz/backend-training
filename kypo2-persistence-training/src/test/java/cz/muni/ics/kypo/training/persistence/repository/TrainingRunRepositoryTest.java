@@ -124,7 +124,7 @@ public class TrainingRunRepositoryTest {
     }
 
     @Test
-    public void findAllByParticipantRefId() throws Exception {
+    public void findAllByParticipantRefLogin() throws Exception {
         entityManager.persist(trainingRun1);
         entityManager.persist(trainingRun2);
         List<TrainingRun> trainingRuns = trainingRunRepository.findAllByParticipantRefLogin("user", pageable).getContent();
