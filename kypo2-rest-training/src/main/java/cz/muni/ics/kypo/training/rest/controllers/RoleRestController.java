@@ -30,7 +30,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping(path = "/roles")
 public class RoleRestController {
 
-    private static Logger LOG = LoggerFactory.getLogger(RoleRestController.class);
+    private static final Logger LOG = LoggerFactory.getLogger(RoleRestController.class);
 
     private RoleFacade roleFacade;
     private ObjectMapper objectMapper;

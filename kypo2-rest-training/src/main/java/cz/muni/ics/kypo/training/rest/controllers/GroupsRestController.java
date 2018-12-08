@@ -36,7 +36,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping(path = "/groups")
 public class GroupsRestController {
 
-    private static Logger LOG = LoggerFactory.getLogger(GroupsRestController.class);
+    private static final Logger LOG = LoggerFactory.getLogger(GroupsRestController.class);
 
     private IDMGroupRefFacade groupFacade;
     private ObjectMapper objectMapper;
