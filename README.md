@@ -112,6 +112,10 @@ spring.datasource.username={user in DB}
 spring.datasource.password={password for user to DB}
 spring.jpa.properties.hibernate.temp.use_jdbc_metadata_defaults = false
 spring.jpa.database-platform=org.hibernate.dialect.PostgreSQL9Dialect
+spring.jpa.hibernate.ddl-auto=validate
+spring.jpa.show-sql=true
+spring.jpa.properties.hibernate.format_sql=true
+
 
 # FLYWAY
 spring.flyway.url=jdbc:postgresql://{url to DB}

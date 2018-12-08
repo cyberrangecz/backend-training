@@ -2,6 +2,7 @@ package cz.muni.ics.kypo.training.persistence.model;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -39,7 +40,7 @@ public class AuthorRef implements Serializable {
     }
 
     public Set<TrainingDefinition> getTrainingDefinition() {
-        return trainingDefinition;
+        return Collections.unmodifiableSet(trainingDefinition);
     }
 
     public void setTrainingDefinition(Set<TrainingDefinition> trainingDefinition) {

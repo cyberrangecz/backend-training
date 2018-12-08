@@ -558,10 +558,12 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
     }
 
     @ExceptionHandler({ConstraintViolationException.class})
-    public ResponseEntity<Object> handleConstraintViolation(final ConstraintViolationException ex, final WebRequest request,
+    public ResponseEntity<Object> handleConstraintViolation(final ConstraintViolationException ex,
                                                             HttpServletRequest req) {
-        LOG.debug("handleConstraintViolation({}, {}, {})", new Object[]{ex, request, req});
+        LOG.debug("handleConstraintViolation({}, {})", new Object[]{ex, req});
 
+
+        System.out.println("Constraint violation reached..." + System.lineSeparator() + System.lineSeparator() + System.lineSeparator());
         final List<String> errors = new ArrayList<>();
         for (final ConstraintViolation<?> violation : ex.getConstraintViolations()) {
             errors.add(violation.getRootBeanClass().getName() + " " + violation.getPropertyPath() + ": " + violation.getMessage());

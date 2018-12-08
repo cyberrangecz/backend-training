@@ -19,7 +19,7 @@ public class IDMGroupRef {
     @Column(name = "group_id", unique = true, nullable = false)
     private long idmGroupId;
 
-    @OneToMany(fetch = FetchType.EAGER)
+    @OneToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "idm_group_role", joinColumns = @JoinColumn(name = "idm_group_ref_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
     private Set<Role> roles = new HashSet<>();
 

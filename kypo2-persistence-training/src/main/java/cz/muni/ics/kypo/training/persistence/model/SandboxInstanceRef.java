@@ -16,7 +16,7 @@ public class SandboxInstanceRef implements Serializable {
     private Long id;
     @Column(name = "sandbox_instance_ref")
     private Long sandboxInstanceRefId;
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "training_instance_id", nullable = false)
     private TrainingInstance trainingInstance;
 
