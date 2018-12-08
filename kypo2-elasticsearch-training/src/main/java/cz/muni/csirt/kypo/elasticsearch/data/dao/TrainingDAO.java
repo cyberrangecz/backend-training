@@ -7,7 +7,7 @@ import java.util.Map;
 /**
  * @author Pavel Šeda
  */
-public interface GamesDAO {
+public interface TrainingDAO {
 
     /**
      * Find all events in particular game.
