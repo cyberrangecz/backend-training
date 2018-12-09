@@ -40,7 +40,7 @@ public class TrainingRun implements Serializable {
     @OneToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "sandbox_instance_ref_id")
     private SandboxInstanceRef sandboxInstanceRef;
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "participant_ref_id", nullable = false)
     private ParticipantRef participantRef;
     @Lob

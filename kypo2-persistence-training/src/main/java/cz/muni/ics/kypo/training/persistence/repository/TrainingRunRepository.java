@@ -1,7 +1,9 @@
 package cz.muni.ics.kypo.training.persistence.repository;
 
+import com.querydsl.core.types.Predicate;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
@@ -20,6 +22,9 @@ import java.util.Set;
  */
 @Repository
 public interface TrainingRunRepository extends JpaRepository<TrainingRun, Long>, QuerydslPredicateExecutor<TrainingRun> {
+
+    @EntityGraph(attributePaths = {"participantRef", "sandboxInstanceRef"})
+    Page<TrainingRun> findAll(Predicate predicate, Pageable pageable);
 
     @Query("SELECT DISTINCT tr FROM TrainingRun tr INNER JOIN tr.participantRef pr WHERE pr.participantRefLogin = :participantRef")
     Page<TrainingRun> findAllByParticipantRefLogin(@Param("participantRef") String participantRefLogin, Pageable pageable);

@@ -84,7 +84,7 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
         if (!currentDate.isBefore(trainingInstance.getStartTime())) {
             throw new ServiceLayerException("Starting time of instance must be in future", ErrorCode.RESOURCE_CONFLICT);
         }
-        if(trainingInstance.getStartTime().isAfter(trainingInstance.getEndTime())) {
+        if (trainingInstance.getStartTime().isAfter(trainingInstance.getEndTime())) {
             throw new ServiceLayerException("End time must be later than start time.", ErrorCode.RESOURCE_CONFLICT);
         }
         TrainingInstance tI = trainingInstanceRepository.save(trainingInstance);
@@ -103,10 +103,10 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
         LocalDateTime currentDate = LocalDateTime.now();
         if (!currentDate.isBefore(trainingInstance.getStartTime()))
             throw new ServiceLayerException("Starting time of instance must be in future", ErrorCode.RESOURCE_CONFLICT);
-        if(trainingInstance.getStartTime().isAfter(trainingInstance.getEndTime())) {
+        if (trainingInstance.getStartTime().isAfter(trainingInstance.getEndTime())) {
             throw new ServiceLayerException("End time must be later than start time.", ErrorCode.RESOURCE_CONFLICT);
         }
-        String shortPass = tI.getPassword().substring(0, tI.getPassword().length() -5);
+        String shortPass = tI.getPassword().substring(0, tI.getPassword().length() - 5);
         if (trainingInstance.getPassword().equals(shortPass) || trainingInstance.getPassword().equals(tI.getPassword())) {
             trainingInstance.setPassword(tI.getPassword());
         } else {

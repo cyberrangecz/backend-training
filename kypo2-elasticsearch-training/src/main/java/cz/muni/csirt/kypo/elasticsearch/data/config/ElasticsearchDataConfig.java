@@ -1,6 +1,5 @@
 package cz.muni.csirt.kypo.elasticsearch.data.config;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.http.HttpHost;
 import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestHighLevelClient;
@@ -26,27 +25,20 @@ public class ElasticsearchDataConfig {
     private String ipaddress;
     @Value("${elasticsearch.protocol}")
     private String protocol;
-    @Value("${elasticsearch.port1}")
-    private int esPort1;
-    @Value("${elasticsearch.port2}")
-    private int esPort2;
+    @Value("${elasticsearch.port}")
+    private int port;
 
     @Primary
     @Bean
     public RestClient lowLevelClient() {
         return RestClient
-                .builder(new HttpHost(ipaddress, esPort1, protocol), new HttpHost(ipaddress, esPort2, protocol))
+                .builder(new HttpHost(ipaddress, port, protocol))
                 .build();
     }
 
     @Bean
     public RestHighLevelClient highLevelClient() {
         return new RestHighLevelClient(lowLevelClient());
-    }
-
-    @Bean(name = "objMapperESClient")
-    public ObjectMapper objectMapper() {
-        return new ObjectMapper();
     }
 
     // To resolve ${} in @Value

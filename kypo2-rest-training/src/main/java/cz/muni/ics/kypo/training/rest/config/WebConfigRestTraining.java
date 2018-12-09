@@ -6,15 +6,8 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
-import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.*;
-import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.data.web.config.EnableSpringDataWebSupport;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.PropertyNamingStrategy;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import cz.muni.ics.kypo.training.config.FacadeConfiguration;
 
@@ -56,7 +49,7 @@ import cz.muni.ics.kypo.training.config.FacadeConfiguration;
  */
 @SpringBootApplication(scanBasePackages = "cz.muni.ics.kypo.training.rest")
 @EnableSpringDataWebSupport
-@Import({FacadeConfiguration.class})
+@Import({FacadeConfiguration.class, SwaggerConfig.class})
 public class WebConfigRestTraining extends SpringBootServletInitializer {
 
     private static final Logger LOG = LoggerFactory.getLogger(WebConfigRestTraining.class);

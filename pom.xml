@@ -1,170 +1,233 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
-	<groupId>cz.muni.ics.kypo</groupId>
-	<artifactId>kypo2-training</artifactId>
-	<version>1.0.0</version>
-	<packaging>pom</packaging>
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>cz.muni.ics.kypo</groupId>
+    <artifactId>kypo2-training</artifactId>
+    <version>1.0.0</version>
+    <packaging>pom</packaging>
 
-	<name>KYPO2 Training</name>
+    <name>KYPO2 Training</name>
 
-	<parent>
-		<groupId>org.springframework.boot</groupId>
-		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>2.0.5.RELEASE</version>
-	</parent>
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>2.1.1.RELEASE</version>
+    </parent>
 
-	<developers>
-		<developer>
-			<name>Pavel Šeda</name>
-			<email>441048@mail.muni.cz</email>
-			<organization>CSIRT</organization>
-			<organizationUrl>https://csirt.muni.cz/</organizationUrl>
-			<roles>
-				<role>developer</role>
-			</roles>
-			<timezone>CET/Central European Time - offset: UTC +1</timezone>
-		</developer>
-	</developers>
+    <developers>
+        <developer>
+            <name>Pavel Šeda</name>
+            <email>441048@mail.muni.cz</email>
+            <organization>CSIRT</organization>
+            <organizationUrl>https://csirt.muni.cz/</organizationUrl>
+            <roles>
+                <role>developer</role>
+            </roles>
+            <timezone>CET/Central European Time - offset: UTC +1</timezone>
+        </developer>
+    </developers>
 
-	<repositories>
-		<repository>
-			<id>spring-releases</id>
-			<url>https://repo.spring.io/libs-release</url>
-		</repository>
-	</repositories>
-	<pluginRepositories>
-		<pluginRepository>
-			<id>spring-releases</id>
-			<url>https://repo.spring.io/libs-release</url>
-		</pluginRepository>
-	</pluginRepositories>
+    <repositories>
+        <repository>
+            <id>spring-releases</id>
+            <url>https://repo.spring.io/libs-release</url>
+        </repository>
+    </repositories>
+    <pluginRepositories>
+        <pluginRepository>
+            <id>spring-releases</id>
+            <url>https://repo.spring.io/libs-release</url>
+        </pluginRepository>
+    </pluginRepositories>
 
-	<properties>
+    <properties>
+        <java.version>1.8</java.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
 
-		<java.version>1.8</java.version>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-		<maven.compiler.source>1.8</maven.compiler.source>
-		<maven.compiler.target>1.8</maven.compiler.target>
+        <!-- maven compiler -->
+        <maven.compiler.version>3.8.0</maven.compiler.version>
 
-		<!-- maven compiler -->
-		<maven.compiler.version>3.7.0</maven.compiler.version>
+        <slf4j.version>1.6.4</slf4j.version>
+        <flyway.version>5.0.7</flyway.version>
 
-		<slf4j.version>1.6.4</slf4j.version>
-		<flyway.version>5.0.7</flyway.version>
+        <!-- spring for swagger version -->
+        <swagger.version>2.9.2</swagger.version>
+        <!-- mitre version -->
+        <mitre.oidc.version>1.3.2</mitre.oidc.version>
+        <spring.cloud.starter.oauth2.version>2.0.1.RELEASE</spring.cloud.starter.oauth2.version>
 
-		<!-- spring for swagger version -->
-		<swagger.version>2.9.2</swagger.version>
-		<!-- mitre version -->
-		<mitre.oidc.version>1.3.2</mitre.oidc.version>
-	</properties>
+        <!-- fast tests compilation -->
+        <openclover.version>4.2.0</openclover.version>
 
-	<!-- specifies versions not defined by the Spring boot platform -->
-	<dependencyManagement>
-		<dependencies>
-			<!--Others -->
-			<dependency>
-				<groupId>com.fasterxml.jackson.core</groupId>
-				<artifactId>jackson-databind</artifactId>
-				<version>2.9.5</version>
-			</dependency>
-			<dependency>
-				<groupId>org.jsondoc</groupId>
-				<artifactId>jsondoc-core</artifactId>
-				<version>1.0.3</version>
-				<exclusions>
-					<exclusion>
-						<artifactId>log4j</artifactId>
-						<groupId>log4j</groupId>
-					</exclusion>
-					<exclusion>
-						<artifactId>servlet-api</artifactId>
-						<groupId>javax.servlet</groupId>
-					</exclusion>
-				</exclusions>
-			</dependency>
-			<dependency>
-				<groupId>org.mitre</groupId>
-				<artifactId>openid-connect-client</artifactId>
-				<version>${mitre.oidc.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>io.springfox</groupId>
-				<artifactId>springfox-swagger2</artifactId>
-				<version>${swagger.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>io.springfox</groupId>
-				<artifactId>springfox-swagger-ui</artifactId>
-				<version>${swagger.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>io.springfox</groupId>
-				<artifactId>springfox-bean-validators</artifactId>
-				<version>${swagger.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>io.springfox</groupId>
-				<artifactId>springfox-core</artifactId>
-				<version>${swagger.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>io.springfox</groupId>
-				<artifactId>springfox-schema</artifactId>
-				<version>${swagger.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>io.springfox</groupId>
-				<artifactId>springfox-spi</artifactId>
-				<version>${swagger.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>io.springfox</groupId>
-				<artifactId>springfox-spring-web</artifactId>
-				<version>${swagger.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.openclover</groupId>
-				<artifactId>clover</artifactId>
-				<version>4.2.0</version>
-			</dependency>
-		</dependencies>
-	</dependencyManagement>
+        <jackson.databind.version>2.9.5</jackson.databind.version>
+        <jsondoc.version>1.0.3</jsondoc.version>
+        <json.version>20170516</json.version>
+        <mknor.jackson.jsonschema.version>1.0.25</mknor.jackson.jsonschema.version>
+        <jackson-schema-validator.version>2.2.8</jackson-schema-validator.version>
 
-	<build>
-		<pluginManagement>
-			<plugins>
-				<plugin>
-					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-compiler-plugin</artifactId>
-					<version>${maven.compiler.version}</version>
-					<configuration>
-						<source>${java.version}</source>
-						<target>${java.version}</target>
-						<encoding>${project.build.sourceEncoding}</encoding>
-					</configuration>
-				</plugin>
-				<plugin>
-					<groupId>org.openclover</groupId>
-					<artifactId>clover-maven-plugin</artifactId>
-					<configuration>
-						<snapshot>${user.home}/.clover/atlassian-plugins-clover.snapshot</snapshot>
-						<cloverMergeDatabase>${user.home}/clover/cloverMerge.db</cloverMergeDatabase>
-						<cloverDatabase>${user.home}/clover/clover.db</cloverDatabase>
-						<singleCloverDatabase>true</singleCloverDatabase>
-					</configuration>
-				</plugin>
-			</plugins>
-		</pluginManagement>
-	</build>
+        <org.mapstruct.version>1.2.0.Final</org.mapstruct.version>
+        <!--elasticsearch client -->
+        <elasticsearch.client.version>5.6.1</elasticsearch.client.version>
 
-	<modules>
-		<module>kypo2-persistence-training</module>
-		<module>kypo2-service-training</module>
-		<module>kypo2-rest-training</module>
-		<module>kypo2-elasticsearch-training</module>
-		<module>kypo2-facade-training</module>
+        <!-- model mappers -->
+        <modelmapper.version>2.3.2</modelmapper.version>
+    </properties>
 
-	</modules>
+    <!-- specifies versions not defined by the Spring boot platform -->
+    <dependencyManagement>
+        <dependencies>
+            <!-- High level REST Client -->
+            <dependency>
+                <groupId>org.elasticsearch.client</groupId>
+                <artifactId>elasticsearch-rest-high-level-client</artifactId>
+                <version>${elasticsearch.client.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.json</groupId>
+                <artifactId>json</artifactId>
+                <version>${json.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.github.java-json-tools</groupId>
+                <artifactId>json-schema-validator</artifactId>
+                <version>${jackson-schema-validator.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.kjetland</groupId>
+                <artifactId>mbknor-jackson-jsonschema_2.12</artifactId>
+                <version>${mknor.jackson.jsonschema.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-databind</artifactId>
+                <version>${jackson.databind.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jsondoc</groupId>
+                <artifactId>jsondoc-core</artifactId>
+                <version>${jsondoc.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <artifactId>log4j</artifactId>
+                        <groupId>log4j</groupId>
+                    </exclusion>
+                    <exclusion>
+                        <artifactId>servlet-api</artifactId>
+                        <groupId>javax.servlet</groupId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.mitre</groupId>
+                <artifactId>openid-connect-client</artifactId>
+                <version>${mitre.oidc.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.mitre</groupId>
+                <artifactId>openid-connect-server</artifactId>
+                <version>${mitre.oidc.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.mitre</groupId>
+                <artifactId>openid-connect-common</artifactId>
+                <version>${mitre.oidc.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-starter-oauth2</artifactId>
+                <version>${spring.cloud.starter.oauth2.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.springfox</groupId>
+                <artifactId>springfox-swagger2</artifactId>
+                <version>${swagger.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.springfox</groupId>
+                <artifactId>springfox-swagger-ui</artifactId>
+                <version>${swagger.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.springfox</groupId>
+                <artifactId>springfox-bean-validators</artifactId>
+                <version>${swagger.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.springfox</groupId>
+                <artifactId>springfox-core</artifactId>
+                <version>${swagger.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.springfox</groupId>
+                <artifactId>springfox-schema</artifactId>
+                <version>${swagger.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.springfox</groupId>
+                <artifactId>springfox-spi</artifactId>
+                <version>${swagger.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.springfox</groupId>
+                <artifactId>springfox-spring-web</artifactId>
+                <version>${swagger.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.openclover</groupId>
+                <artifactId>clover</artifactId>
+                <version>${openclover.version}</version>
+            </dependency>
+            <!--mapping entities to DTO -->
+            <dependency>
+                <groupId>org.mapstruct</groupId>
+                <artifactId>mapstruct-jdk8</artifactId>
+                <version>${org.mapstruct.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.modelmapper</groupId>
+                <artifactId>modelmapper</artifactId>
+                <version>${modelmapper.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>${maven.compiler.version}</version>
+                    <configuration>
+                        <source>${java.version}</source>
+                        <target>${java.version}</target>
+                        <encoding>${project.build.sourceEncoding}</encoding>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.openclover</groupId>
+                    <artifactId>clover-maven-plugin</artifactId>
+                    <configuration>
+                        <snapshot>${user.home}/.clover/atlassian-plugins-clover.snapshot</snapshot>
+                        <cloverMergeDatabase>${user.home}/clover/cloverMerge.db</cloverMergeDatabase>
+                        <cloverDatabase>${user.home}/clover/clover.db</cloverDatabase>
+                        <singleCloverDatabase>true</singleCloverDatabase>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+
+    <modules>
+        <module>kypo2-persistence-training</module>
+        <module>kypo2-service-training</module>
+        <module>kypo2-rest-training</module>
+        <module>kypo2-elasticsearch-training</module>
+        <module>kypo2-facade-training</module>
+        <module>kypo2-security-training</module>
+    </modules>
+
 </project>

@@ -22,7 +22,7 @@ import java.io.IOException;
 public class AuditDAOImpl extends AbstractElasticClientDAO implements AuditDAO {
 
     @Autowired
-    public AuditDAOImpl(RestHighLevelClient client, RestClient lowLevelClient, @Qualifier("objMapperESClient") ObjectMapper mapper) {
+    public AuditDAOImpl(RestHighLevelClient client, RestClient lowLevelClient, ObjectMapper mapper) {
         super(client, lowLevelClient, mapper);
     }
 

@@ -83,11 +83,13 @@ spring.profiles.dev.roles=ADMINISTRATOR
 server.port={port for service}
 server.servlet.context-path=/{context path for service}
 
+# calling user-and-group project
+server.url={user-and-group server.url}
+
 # Elasticsearch
 elasticsearch.ipaddress=localhost
 elasticsearch.protocol=http
-elasticsearch.port1=9200
-elasticsearch.port2=9201
+elasticsearch.port=9200
 
 # OpenID Connect
 kypo.idp.4oauth.introspectionURI=https://oidc.ics.muni.cz/oidc/introspect
@@ -101,12 +103,19 @@ path.to.file.with.initial.roles={path to your yaml file with roles}
 
 # you can add more scopes according to settings from step 1.
 
+# spring cloud
+spring.cloud.refresh.enabled = false
+
 # DATASOURCE
 spring.datasource.url=jdbc:postgresql://{url to DB}
 spring.datasource.username={user in DB}
 spring.datasource.password={password for user to DB}
 spring.jpa.properties.hibernate.temp.use_jdbc_metadata_defaults = false
 spring.jpa.database-platform=org.hibernate.dialect.PostgreSQL9Dialect
+spring.jpa.hibernate.ddl-auto=validate
+spring.jpa.show-sql=true
+spring.jpa.properties.hibernate.format_sql=true
+
 
 # FLYWAY
 spring.flyway.url=jdbc:postgresql://{url to DB}
@@ -182,10 +191,10 @@ The project was built and tested with these technologies, so if you have any une
 ```
 Maven         : 3.3.9
 Java          : 1.8.0_144, vendor: Oracle Corporation
-Spring boot   : 2.0.2.RELEASE
-Swagger       : 2.7.0
+Spring Boot   : 2.1.1.RELEASE
+Swagger       : 2.9.2
 Hibernate     : 5.2.8.Final
-Jackson       : 2.9.0
+Jackson       : 2.9.7
 Tomcat        : 8
 PostgreSQL    : 9.5
 Elasticsearch : 5.5.0
