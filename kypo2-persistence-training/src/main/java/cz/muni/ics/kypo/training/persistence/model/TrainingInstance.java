@@ -92,8 +92,7 @@ public class TrainingInstance implements Serializable {
     public void setTrainingDefinition(TrainingDefinition trainingDefinition) {
         this.trainingDefinition = trainingDefinition;
     }
-
-
+    
     public Set<UserRef> getOrganizers() {
         return Collections.unmodifiableSet(organizers);
     }
@@ -103,7 +102,7 @@ public class TrainingInstance implements Serializable {
     }
 
     public Set<SandboxInstanceRef> getSandboxInstanceRefs() {
-        return sandboxInstanceRef.stream().collect(Collectors.toSet());
+        return Collections.unmodifiableSet(sandboxInstanceRef);
     }
 
     public void setSandboxInstanceRefs(Set<SandboxInstanceRef> sandboxInstanceRef) {
