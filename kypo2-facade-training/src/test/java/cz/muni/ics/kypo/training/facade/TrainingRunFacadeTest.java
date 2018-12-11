@@ -11,6 +11,7 @@ import cz.muni.ics.kypo.training.facade.impl.TrainingRunFacadeImpl;
 import cz.muni.ics.kypo.training.mapping.BeanMappingImpl;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.model.enums.AssessmentType;
+import cz.muni.ics.kypo.training.persistence.model.enums.TDState;
 import cz.muni.ics.kypo.training.persistence.model.enums.TRState;
 import cz.muni.ics.kypo.training.service.TrainingRunService;
 import org.junit.Before;
@@ -45,6 +46,8 @@ public class TrainingRunFacadeTest {
     private TrainingRunService trainingRunService;
 
     private TrainingRun trainingRun1, trainingRun2;
+    private TrainingDefinition trainingDefinition;
+    private TrainingInstance trainingInstance;
     private Hint hint;
     private GameLevel gameLevel;
     private InfoLevel infoLevel;
@@ -78,10 +81,24 @@ public class TrainingRunFacadeTest {
         infoLevel = new InfoLevel();
         infoLevel.setId(3L);
         infoLevel.setContent("content");
+        trainingRun1.setCurrentLevel(gameLevel);
 
         trainingRun2 = new TrainingRun();
         trainingRun2.setId(2L);
         trainingRun2.setState(TRState.ARCHIVED);
+
+        trainingDefinition = new TrainingDefinition();
+        trainingDefinition.setId(1L);
+        trainingDefinition.setState(TDState.RELEASED);
+        trainingDefinition.setShowStepperBar(true);
+
+        trainingInstance = new TrainingInstance();
+        trainingInstance.setId(1L);
+        trainingInstance.setTitle("test");
+        trainingInstance.setTrainingDefinition(trainingDefinition);
+        trainingRun1.setTrainingInstance(trainingInstance);
+
+
     }
 
     @Test
@@ -131,7 +148,7 @@ public class TrainingRunFacadeTest {
 
     @Test
     public void accessTrainingRun() {
-        given(trainingRunService.accessTrainingRun("password")).willReturn(gameLevel);
+        given(trainingRunService.accessTrainingRun("password")).willReturn(trainingRun1);
         given(trainingRunService.getLevels(1L)).willReturn(Arrays.asList(gameLevel, infoLevel, assessmentLevel));
         Object result = trainingRunFacade.accessTrainingRun("password");
         assertEquals(AccessTrainingRunDTO.class, result.getClass());

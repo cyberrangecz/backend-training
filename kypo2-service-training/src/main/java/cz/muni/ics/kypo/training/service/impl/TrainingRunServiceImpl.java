@@ -173,15 +173,14 @@ public class TrainingRunServiceImpl implements TrainingRunService {
 
     @Override
     @PreAuthorize("hasAuthority({'ADMINISTRATOR'}) or hasAuthority('USER')")
-    public AbstractLevel accessTrainingRun(String password) {
+    public TrainingRun accessTrainingRun(String password) {
         LOG.debug("accessTrainingRun({})", password);
         Assert.hasLength(password, "Password cannot be null or empty.");
         List<TrainingInstance> trainingInstances = trainingInstanceRepository.findAll();
         for (TrainingInstance trainingInstance : trainingInstances) {
 
-            //check hash of password not String
             if (trainingInstance.getPassword().equals(password)) {
-                Set<SandboxInstanceRef> sandboxInstancePool = trainingInstance.getSandboxInstanceRefs();
+                Set<SandboxInstanceRef> sandboxInstancePool = new HashSet<>(trainingInstance.getSandboxInstanceRefs());
                 Set<SandboxInstanceRef> allocatedSandboxInstances = trainingRunRepository.findSandboxInstanceRefsOfTrainingInstance(trainingInstance.getId());
                 sandboxInstancePool.removeAll(allocatedSandboxInstances);
                 if (!sandboxInstancePool.isEmpty()) {
@@ -193,7 +192,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
                     // audit this action to the Elasticsearch
                     auditTrainingRunStartedAction(trainingInstance, trainingRun);
                     auditLevelStartedAction(trainingInstance, trainingRun);
-                    return al;
+                    return trainingRun;
                 } else {
                     throw new ServiceLayerException("There is no available sandbox, wait a minute and try again.", ErrorCode.NO_AVAILABLE_SANDBOX);
                 }
@@ -221,6 +220,9 @@ public class TrainingRunServiceImpl implements TrainingRunService {
         tR.setCurrentLevel(currentLevel);
         tR.setParticipantRef(participantRefRepository.findByParticipantRefLogin(participantRefLogin)
                 .orElse(participantRefRepository.save(new ParticipantRef(participantRefLogin))));
+        tR.setAssessmentResponses("[]");
+        //TODO what state set at the begining
+        tR.setState(TRState.NEW);
         tR.setTrainingInstance(trainingInstance);
         tR.setStartTime(startTime);
         tR.setEndTime(endTime);

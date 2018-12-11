@@ -250,8 +250,8 @@ public class TrainingRunServiceTest {
         given(participantRefRepository.findByParticipantRefLogin(participantRef.getParticipantRefLogin())).willReturn(Optional.of(participantRef));
         given(participantRefRepository.save(new ParticipantRef(participantRef.getParticipantRefLogin()))).willReturn(participantRef);
         given(trainingRunRepository.save(any(TrainingRun.class))).willReturn(trainingRun1);
-        AbstractLevel level = trainingRunService.accessTrainingRun(trainingInstance1.getPassword());
-        assertEquals(trainingRun1.getCurrentLevel(), level);
+        TrainingRun trainingRun = trainingRunService.accessTrainingRun(trainingInstance1.getPassword());
+        assertEquals(trainingRun1, trainingRun);
     }
 
     private void mockSpringSecurityContextForGet() {

@@ -85,7 +85,9 @@ INSERT INTO training_run(id, end_time, start_time, state, current_level_id, sand
 -- ENTIRE COURSE OF TRAINING RUN
 INSERT INTO sandbox_definition_ref(id, sandbox_definition_ref) VALUES (3, 3);
 INSERT INTO training_definition(id, description, outcomes, prerequisities, state, title, sand_box_definition_ref_id, starting_level, show_stepper_bar) VALUES (3, 'Released training definition2', null, null, 'RELEASED', 'TrainingDefinition2', 3, 7, true);
-INSERT INTO training_instance(id, end_time, password, pool_size, start_time, title, training_definition_id) VALUES (4, '2024-10-19 10:23:54+02', 'keyword-9999', 25, '2020-10-19 10:23:54+02', 'Future Instance', 3);
+INSERT INTO training_instance(id, end_time, password, pool_size, start_time, title, training_definition_id) VALUES (4, '2024-10-19 10:23:54+02', 'keyword-1111', 25, '2020-10-19 10:23:54+02', 'Future Instance', 3);
+INSERT INTO sandbox_instance_ref(id, sandbox_instance_ref, training_instance_id) VALUES (4, 4, 4);
+INSERT INTO training_instance_sandbox_instance_ref(training_instance_id, sandbox_instance_ref_id) VALUES (4, 4);
 
 INSERT INTO abstract_level(id, max_score, next_level, title, post_hook_id, pre_hook_id) VALUES (7, 0, 8, 'Info Level Test', 3, 3);
 INSERT INTO abstract_level(id, max_score, next_level, title, post_hook_id, pre_hook_id) VALUES (8, 70, 9, 'Game Level Test', 2, 2);
