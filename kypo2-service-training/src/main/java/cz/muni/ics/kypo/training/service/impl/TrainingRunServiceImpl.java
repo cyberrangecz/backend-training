@@ -180,7 +180,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
         for (TrainingInstance trainingInstance : trainingInstances) {
 
             if (trainingInstance.getPassword().equals(password)) {
-                Set<SandboxInstanceRef> sandboxInstancePool = trainingInstance.getSandboxInstanceRefs();
+                Set<SandboxInstanceRef> sandboxInstancePool = new HashSet<>(trainingInstance.getSandboxInstanceRefs());
                 Set<SandboxInstanceRef> allocatedSandboxInstances = trainingRunRepository.findSandboxInstanceRefsOfTrainingInstance(trainingInstance.getId());
                 sandboxInstancePool.removeAll(allocatedSandboxInstances);
                 if (!sandboxInstancePool.isEmpty()) {
