@@ -10,8 +10,28 @@ import java.util.List;
 @ApiModel(value = "AccessTrainingRunDTO", description = ".")
 public class AccessTrainingRunDTO {
 
+    private Long trainingRunID;
+    private boolean showStepperBar;
     private AbstractLevelDTO abstractLevelDTO;
     private List<BasicLevelInfoDTO> infoAboutLevels;
+
+    @ApiModelProperty(value = "Main identifier of training run.", example = "1")
+    public Long getTrainingRunID() {
+        return trainingRunID;
+    }
+
+    public void setTrainingRunID(Long trainingRunID) {
+        this.trainingRunID = trainingRunID;
+    }
+
+    @ApiModelProperty(value = "Sign if stepper bar should be displayed.", example = "false")
+    public boolean isShowStepperBar() {
+        return showStepperBar;
+    }
+
+    public void setShowStepperBar(boolean showStepperBar) {
+        this.showStepperBar = showStepperBar;
+    }
 
     @ApiModelProperty(value = "First level in the current training run.")
     public AbstractLevelDTO getAbstractLevelDTO() {

@@ -103,9 +103,11 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
         LOG.debug("accessTrainingRun({})", password);
         AccessTrainingRunDTO accessTrainingRunDTO = new AccessTrainingRunDTO();
         try {
-            AbstractLevel abstractLevel = trainingRunService.accessTrainingRun(password);
-            accessTrainingRunDTO.setAbstractLevelDTO(getCorrectAbstractLevelDTO(abstractLevel));
-            accessTrainingRunDTO.setInfoAboutLevels(getInfoAboutLevels(abstractLevel.getId()));
+            TrainingRun trainingRun = trainingRunService.accessTrainingRun(password);
+            accessTrainingRunDTO.setTrainingRunID(trainingRun.getId());
+            accessTrainingRunDTO.setShowStepperBar(trainingRun.getTrainingInstance().getTrainingDefinition().isShowStepperBar());
+            accessTrainingRunDTO.setAbstractLevelDTO(getCorrectAbstractLevelDTO(trainingRun.getCurrentLevel()));
+            accessTrainingRunDTO.setInfoAboutLevels(getInfoAboutLevels(trainingRun.getCurrentLevel().getId()));
             return accessTrainingRunDTO;
         } catch (ServiceLayerException ex) {
             throw new FacadeLayerException(ex);
@@ -258,12 +260,15 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
         if (abstractLevel instanceof AssessmentLevel) {
             AssessmentLevel assessmentLevel = (AssessmentLevel) abstractLevel;
             abstractLevelDTO = beanMapping.mapTo(assessmentLevel, AssessmentLevelDTO.class);
+            abstractLevelDTO.setLevelType(LevelType.ASSESSMENT);
         } else if (abstractLevel instanceof GameLevel) {
             GameLevel gameLevel = (GameLevel) abstractLevel;
             abstractLevelDTO = beanMapping.mapTo(gameLevel, GameLevelDTO.class);
+            abstractLevelDTO.setLevelType(LevelType.GAME);
         } else {
             InfoLevel infoLevel = (InfoLevel) abstractLevel;
             abstractLevelDTO = beanMapping.mapTo(infoLevel, InfoLevelDTO.class);
+            abstractLevelDTO.setLevelType(LevelType.INFO);
         }
         return abstractLevelDTO;
 

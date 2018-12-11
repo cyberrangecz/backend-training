@@ -76,7 +76,7 @@ public interface TrainingRunService {
      *                               UNEXPECTED_ERROR there is error while getting info about sandboxes.
      *                               NO_AVAILABLE_SANDBOX there is no free or ready sandbox
      */
-    AbstractLevel accessTrainingRun(String password);
+    TrainingRun accessTrainingRun(String password);
 
     /**
      * Gets list of all levels in Training Definition.
