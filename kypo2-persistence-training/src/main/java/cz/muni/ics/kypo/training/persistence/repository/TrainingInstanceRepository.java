@@ -25,7 +25,7 @@ public interface TrainingInstanceRepository extends JpaRepository<TrainingInstan
     @Query("SELECT ti FROM TrainingInstance ti INNER JOIN ti.trainingDefinition td WHERE td.id = :trainingDefId")
     List<TrainingInstance> findAllByTrainingDefinitionId(@Param("trainingDefId") Long trainingDefId);
 
-    @EntityGraph(attributePaths = {"organizers", "trainingDefinition", "sandboxInstanceRef"})
+    @EntityGraph(attributePaths = {"trainingDefinition.authorRef", "trainingDefinition.sandBoxDefinitionRef", "organizers", "sandboxInstanceRef"})
     Page<TrainingInstance> findAll(Predicate predicate, Pageable pageable);
 
 }
