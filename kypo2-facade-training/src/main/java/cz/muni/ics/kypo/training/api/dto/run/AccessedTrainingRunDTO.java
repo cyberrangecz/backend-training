@@ -2,20 +2,23 @@ package cz.muni.ics.kypo.training.api.dto.run;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import cz.muni.ics.kypo.training.api.enums.Actions;
-import cz.muni.ics.kypo.training.utils.converters.LocalDateTimeSerializer;
+import cz.muni.ics.kypo.training.utils.converters.LocalDateTimeUTCSerializer;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
 import java.time.LocalDateTime;
 
+/**
+ * @author Dominik Pilar & Pavel Seda
+ */
 @ApiModel(value = "AccessedTrainingRunDTO", description = "Already accessed training run by some participant.")
 public class AccessedTrainingRunDTO {
 
     private Long id;
     private String title;
-    @JsonSerialize(using = LocalDateTimeSerializer.class)
+    @JsonSerialize(using = LocalDateTimeUTCSerializer.class)
     private LocalDateTime trainingInstanceStartDate;
-    @JsonSerialize(using = LocalDateTimeSerializer.class)
+    @JsonSerialize(using = LocalDateTimeUTCSerializer.class)
     private LocalDateTime trainingInstanceEndDate;
     private int currentLevelOrder;
     private int numberOfLevels;

@@ -3,9 +3,9 @@ package cz.muni.ics.kypo.training.api.dto.run;
 import cz.muni.ics.kypo.training.api.dto.ParticipantRefDTO;
 import cz.muni.ics.kypo.training.api.dto.SandboxInstanceRefDTO;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import cz.muni.ics.kypo.training.persistence.model.ParticipantRef;
 import cz.muni.ics.kypo.training.persistence.model.enums.TRState;
 import cz.muni.ics.kypo.training.utils.converters.LocalDateTimeSerializer;
+import cz.muni.ics.kypo.training.utils.converters.LocalDateTimeUTCSerializer;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
@@ -18,9 +18,9 @@ import java.time.LocalDateTime;
 public class TrainingRunDTO {
 
     private Long id;
-    @JsonSerialize(using = LocalDateTimeSerializer.class)
+    @JsonSerialize(using = LocalDateTimeUTCSerializer.class)
     private LocalDateTime startTime;
-    @JsonSerialize(using = LocalDateTimeSerializer.class)
+    @JsonSerialize(using = LocalDateTimeUTCSerializer.class)
     private LocalDateTime endTime;
     private String eventLogReference;
     private TRState state;

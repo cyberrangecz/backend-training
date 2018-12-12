@@ -159,16 +159,6 @@ public class TrainingInstanceServiceTest {
         then(trainingInstanceRepository).should().save(trainingInstance2);
     }
 
-    @Test(expected = ServiceLayerException.class)
-    public void updateTrainingInstance_withStartTimeInThePast() {
-        given(trainingInstanceRepository.findById(any(Long.class))).willReturn(Optional.of(trainingInstanceInvalid));
-
-        trainingInstanceService.update(trainingInstanceInvalid);
-
-        then(trainingInstanceRepository).should().findById(trainingInstanceInvalid.getId());
-        then(trainingInstanceRepository).should().save(trainingInstanceInvalid);
-    }
-
     @Test
     public void deleteTrainingInstance() {
         given(trainingInstanceRepository.findById(any(Long.class))).willReturn(Optional.of(trainingInstance1));

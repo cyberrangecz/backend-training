@@ -12,8 +12,6 @@ import java.time.LocalTime;
  */
 public class LocalTimeDeserializer extends StdDeserializer<LocalTime> {
 
-    private static final long serialVersionUID = -7109214569997590716L;
-
     public LocalTimeDeserializer() {
         super(LocalTime.class);
     }

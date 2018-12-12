@@ -32,7 +32,6 @@ public class TrainingDefinitionCreateDTO {
     @NotNull(message = "{trainingdefinitioncreate.sandboxDefinitionRef.NotNull.message}")
     private Long sandboxDefinitionRef;
 
-
     @ApiModelProperty(value = "A name of the training/game (e.g., Photo Hunter) .", required = true, example = "Photo Hunter")
     public String getTitle() {
         return title;
