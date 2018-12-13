@@ -19,6 +19,7 @@
         <swagger2markup.version>1.2.0</swagger2markup.version>
         <swagger.directory>${project.build.directory}/generated-docs/swagger</swagger.directory>
         <asciidoctor.directory>${project.build.directory}/generated-docs/asciidoc</asciidoctor.directory>
+        <skipDocs>true</skipDocs>
     </properties>
 
     <pluginRepositories>
@@ -137,7 +138,6 @@
                 <artifactId>swagger-maven-plugin</artifactId>
                 <version>3.1.6</version>
                 <configuration>
-                    <skipSwaggerGeneration>${skipSwagger}</skipSwaggerGeneration>
                     <apiSources>
                         <apiSource>
                             <springmvc>true</springmvc>
