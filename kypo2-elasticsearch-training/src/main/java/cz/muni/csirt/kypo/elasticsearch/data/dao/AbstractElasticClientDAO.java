@@ -10,12 +10,10 @@ import org.elasticsearch.client.RestHighLevelClient;
 public abstract class AbstractElasticClientDAO {
 
     private RestHighLevelClient client;
-    private RestClient lowLevelClient;
     private ObjectMapper mapper;
 
-    protected AbstractElasticClientDAO(RestHighLevelClient client, RestClient lowLevelClient, ObjectMapper mapper) {
+    protected AbstractElasticClientDAO(RestHighLevelClient client, ObjectMapper mapper) {
         this.client = client;
-        this.lowLevelClient = lowLevelClient;
         this.mapper = mapper;
     }
 
@@ -25,14 +23,6 @@ public abstract class AbstractElasticClientDAO {
 
     protected void setClient(RestHighLevelClient client) {
         this.client = client;
-    }
-
-    protected RestClient getLowLevelClient() {
-        return lowLevelClient;
-    }
-
-    protected void setLowLevelClient(RestClient lowLevelClient) {
-        this.lowLevelClient = lowLevelClient;
     }
 
     protected ObjectMapper getMapper() {

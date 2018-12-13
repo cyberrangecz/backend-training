@@ -89,4 +89,3 @@ INSERT INTO training_run(id, start_time, end_time, state, current_level_id, sand
 INSERT INTO training_run(id, start_time, end_time, state, current_level_id, sandbox_instance_ref_id, training_instance_id, participant_ref_id, solution_taken, event_log_reference, incorrect_flag_count, assessment_responses, total_score, current_score, level_answered) VALUES (3, '2019-10-19 10:23:54+02', '2024-10-19 10:23:54+02', 'NEW', 7, 2, 4, 1, false, null, 4, '[]', 0, 0, true);
 
 
-

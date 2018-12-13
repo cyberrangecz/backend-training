@@ -81,7 +81,7 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
         Assert.notNull(trainingInstance, "Input training instance must not be null");
         trainingInstance.setPassword(generatePassword(trainingInstance.getPassword()));
         if (trainingInstance.getStartTime().isAfter(trainingInstance.getEndTime())) {
-            throw new ServiceLayerException("End time must be later than start time.", ErrorCode.RESOURCE_CONFLICT);
+            throw new ServiceLayerException("End time must be latfindAllByParticipantRefLoginer than start time.", ErrorCode.RESOURCE_CONFLICT);
         }
         TrainingInstance tI = trainingInstanceRepository.save(trainingInstance);
         LOG.info("Training instance with id: {} created.", trainingInstance.getId());
