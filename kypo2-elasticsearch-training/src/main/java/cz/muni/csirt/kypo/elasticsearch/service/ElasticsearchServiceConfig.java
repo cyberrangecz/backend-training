@@ -7,7 +7,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
-import cz.muni.csirt.kypo.elasticsearch.data.config.ElasticsearchDataConfig;
+import cz.muni.csirt.kypo.elasticsearch.data.ElasticsearchDataConfig;
 
 /**
  * @author Pavel Šeda
@@ -15,8 +15,8 @@ import cz.muni.csirt.kypo.elasticsearch.data.config.ElasticsearchDataConfig;
 @Configuration
 @Import({ElasticsearchDataConfig.class})
 @ComponentScan(basePackages = {"cz.muni.csirt.kypo.elasticsearch.service"})
-public class TrainingElasticsearchServiceConfig {
+public class ElasticsearchServiceConfig {
 
-    private static final Logger LOG = LoggerFactory.getLogger(TrainingElasticsearchServiceConfig.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ElasticsearchServiceConfig.class);
 
 }

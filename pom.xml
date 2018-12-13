@@ -70,7 +70,7 @@
 
         <org.mapstruct.version>1.2.0.Final</org.mapstruct.version>
         <!--elasticsearch client -->
-        <elasticsearch.client.version>5.6.1</elasticsearch.client.version>
+        <elasticsearch.client.version>5.6.3</elasticsearch.client.version>
 
         <!-- model mappers -->
         <modelmapper.version>2.3.2</modelmapper.version>
@@ -79,12 +79,6 @@
     <!-- specifies versions not defined by the Spring boot platform -->
     <dependencyManagement>
         <dependencies>
-            <!-- High level REST Client -->
-            <dependency>
-                <groupId>org.elasticsearch.client</groupId>
-                <artifactId>elasticsearch-rest-high-level-client</artifactId>
-                <version>${elasticsearch.client.version}</version>
-            </dependency>
             <dependency>
                 <groupId>org.json</groupId>
                 <artifactId>json</artifactId>
