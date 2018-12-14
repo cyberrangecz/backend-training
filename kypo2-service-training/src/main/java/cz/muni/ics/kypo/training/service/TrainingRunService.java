@@ -139,7 +139,7 @@ public interface TrainingRunService {
      * @return Abstract Level
      * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND cannot find training run.
      */
-    AbstractLevel resumeTrainingRun(Long trainingRunId);
+    TrainingRun resumeTrainingRun(Long trainingRunId);
 
     /**
      * Archive training run.

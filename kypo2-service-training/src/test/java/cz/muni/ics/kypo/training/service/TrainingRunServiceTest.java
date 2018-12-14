@@ -510,10 +510,10 @@ public class TrainingRunServiceTest {
     @Test
     public void resumeTrainingRun() {
         given(trainingRunRepository.findByIdWithLevel(any(Long.class))).willReturn(Optional.of(trainingRun1));
-        AbstractLevel level = trainingRunService.resumeTrainingRun(trainingRun1.getId());
+        TrainingRun trainingRun = trainingRunService.resumeTrainingRun(trainingRun1.getId());
 
-        assertTrue(level.getId().equals(1L));
-        assertTrue(level instanceof GameLevel);
+        assertTrue(trainingRun.getId().equals(trainingRun1.getId()));
+        assertTrue(trainingRun.getCurrentLevel() instanceof GameLevel);
     }
 
     @Test

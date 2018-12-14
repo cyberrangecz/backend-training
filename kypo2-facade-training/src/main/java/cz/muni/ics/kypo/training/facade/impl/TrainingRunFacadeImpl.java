@@ -87,10 +87,11 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
         LOG.debug("resumeTrainingRun({})", trainingRunId);
         AccessTrainingRunDTO accessTrainingRunDTO = new AccessTrainingRunDTO();
         try {
-            AbstractLevel abstractLevel = trainingRunService.resumeTrainingRun(trainingRunId);
-            accessTrainingRunDTO.setAbstractLevelDTO(getCorrectAbstractLevelDTO(abstractLevel));
-
-            accessTrainingRunDTO.setInfoAboutLevels(getInfoAboutLevels(abstractLevel.getId()));
+            TrainingRun trainingRun = trainingRunService.resumeTrainingRun(trainingRunId);
+            accessTrainingRunDTO.setTrainingRunID(trainingRun.getId());
+            accessTrainingRunDTO.setAbstractLevelDTO(getCorrectAbstractLevelDTO(trainingRun.getCurrentLevel()));
+            accessTrainingRunDTO.setShowStepperBar(trainingRun.getTrainingInstance().getTrainingDefinition().isShowStepperBar());
+            accessTrainingRunDTO.setInfoAboutLevels(getInfoAboutLevels(trainingRun.getCurrentLevel().getId()));
             return accessTrainingRunDTO;
         } catch (ServiceLayerException ex) {
             throw new FacadeLayerException(ex);
@@ -155,15 +156,7 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
         } catch (ServiceLayerException ex) {
             throw new FacadeLayerException(ex);
         }
-        AbstractLevelDTO abstractLevelDTO;
-        if (aL instanceof GameLevel) {
-            abstractLevelDTO = beanMapping.mapTo(aL, GameLevelDTO.class);
-        } else if (aL instanceof AssessmentLevel) {
-            abstractLevelDTO = beanMapping.mapTo(aL, AssessmentLevelDTO.class);
-        } else {
-            abstractLevelDTO = beanMapping.mapTo(aL, InfoLevelDTO.class);
-        }
-        return abstractLevelDTO;
+        return getCorrectAbstractLevelDTO(aL);
     }
 
     @Override
