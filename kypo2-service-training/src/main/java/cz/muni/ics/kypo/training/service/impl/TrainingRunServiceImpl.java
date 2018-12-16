@@ -203,7 +203,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
 
     @Override
     @PreAuthorize("hasAuthority({'ADMINISTRATOR'}) or  @securityService.isTraineeOfGivenTrainingRun(#trainingRunId)")
-    public AbstractLevel resumeTrainingRun(Long trainingRunId) {
+    public TrainingRun resumeTrainingRun(Long trainingRunId) {
         LOG.debug("resumeTrainingRun({})", trainingRunId);
         Assert.notNull(trainingRunId, MUST_NOT_BE_NULL);
         TrainingRun trainingRun = findByIdWithLevel(trainingRunId);
@@ -211,7 +211,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
             throw new ServiceLayerException("Cannot resumed archived training run.", ErrorCode.RESOURCE_CONFLICT);
         }
         auditTrainingRunResumedAction(trainingRun);
-        return trainingRun.getCurrentLevel();
+        return trainingRun;
     }
 
     private TrainingRun getNewTrainingRun(AbstractLevel currentLevel, String participantRefLogin, TrainingInstance trainingInstance,
