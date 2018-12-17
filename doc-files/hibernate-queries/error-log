@@ -1,0 +1,190 @@
+____________________________________________________________________________
+3. training-definitions
+
+HTTP PUT /training-definitions
+____________________________________________________________________________
+//entry data
+{
+  "aut_ids": [
+    1
+  ],
+  "description": "Unreleased training definition",
+  "id": 1,
+  "outcomes": [
+    "string"
+  ],
+  "prerequisities": [
+    "phishing"
+  ],
+  "sandbox_definition_ref": 1,
+  "show_stepper_bar": false,
+  "state": "UNRELEASED",
+  "title": "TrainingDefinition2"
+}
+
+//response body
+{
+  "timestamp": 1545039780913,
+  "status": "INTERNAL_SERVER_ERROR",
+  "message": "ServiceLayerException : Cannot edit released or archived training definition.",
+  "errors": [
+    "error occurred"
+  ],
+  "path": "/kypo2-training/training-definitions"
+}
+
+_____________________________________________________________________________________
+4. training-definitions
+
+HTTP PUT /training-definitions/{definitionId}/assessment-levels
+HTTP PUT /training-definitions/3/assessment-levels
+_____________________________________________________________________________________
+//entry data
+{
+  "id": 7,
+  "instructions": "Fill me up fast",
+  "max_score": 40,
+  "questions": "What is my fathers name?",
+  "title": "Assessment Level1",
+  "type": "TEST"
+}
+
+//response body
+{
+  "timestamp": 1545045876531,
+  "status": "INTERNAL_SERVER_ERROR",
+  "message": "ServiceLayerException : Cannot edit released or archived training definition.",
+  "errors": [
+    "error occurred"
+  ],
+  "path": "/kypo2-training/training-definitions/3/assessment-levels"
+}
+
+_____________________________________________________________________________________
+5. training-definitions
+
+HTTP PUT /training-definitions/{definitionId}/game-levels
+HTTP PUT /training-definitions/1/game-levels
+_____________________________________________________________________________________
+//entry data
+{
+  "attachments": [
+    "string"
+  ],
+  "content": "Play me",
+  "estimated_duration": 20,
+  "flag": "secretFlag",
+  "hints": [
+    {
+      "content": "Very good advice",
+      "hint_penalty": 10,
+      "id": 1,
+      "title": "Hint1"
+    }
+  ],
+  "id": 1,
+  "incorrect_flag_limit": 5,
+  "max_score": 20,
+  "solution": "This is how you do it",
+  "solution_penalized": false,
+  "title": "Game Level1"
+}
+
+//response body
+{
+  "timestamp": 1545045553354,
+  "status": "INTERNAL_SERVER_ERROR",
+  "message": "ServiceLayerException : Cannot edit released or archived training definition.",
+  "errors": [
+    "error occurred"
+  ],
+  "path": "/kypo2-training/training-definitions/1/game-levels"
+}
+________________________________________________________________________
+19. training-instances
+
+HTTP DELETE /training-instances/{id}
+HTTP DELETE /training-instances/1
+________________________________________________________________________
+//response body
+{
+  "timestamp": 1545050728512,
+  "status": "INTERNAL_SERVER_ERROR",
+  "message": "could not execute statement; SQL [n/a]; constraint [fk2j5jmin6ht1fl42nyd5wiqsjd]; nested exception is org.hibernate.exception.ConstraintViolationException: could not execute statement",
+  "errors": [
+    "error occurred"
+  ],
+  "path": "/kypo2-training/training-instances/1"
+}
+________________________________________________________________________
+20. training-instances
+
+HTTP POST /training-instances/{instanceId}/sandbox_instances
+HTTP POST /training-instances/1/sandbox_instances
+________________________________________________________________________
+//error code 406
+
+//response body
+{
+  "timestamp": 1545051272559,
+  "status": "NOT_ACCEPTABLE",
+  "message": "URI is not absolute",
+  "errors": [
+    "Illegal Argument"
+  ],
+  "path": "/kypo2-training/training-instances/1/sandbox-instances"
+}
+______________________________________________________________________________
+23. training-instances
+
+HTTP POST /training-runs
+______________________________________________________________________________
+//entry data
+pass-1235
+
+//error code 406
+
+//response body
+{
+  "timestamp": 1545052354671,
+  "status": "NOT_ACCEPTABLE",
+  "message": "URI is not absolute",
+  "errors": [
+    "Illegal Argument"
+  ],
+  "path": "/kypo2-training/training-runs"
+}
+______________________________________________________________________________
+25. training-instances
+
+HTTP PUT /training-runs/{runId}
+HTTP PUT /training-runs/1
+______________________________________________________________________________
+//response body
+{
+  "timestamp": 1545053248515,
+  "status": "INTERNAL_SERVER_ERROR",
+  "message": "ServiceLayerException : Cannot archive training run because current level is not last or is not answered.",
+  "errors": [
+    "error occurred"
+  ],
+  "path": "/kypo2-training/training-runs/1"
+}
+
+______________________________________________________________________________
+26. training-runs
+
+HTTP PUT /training-runs/{runId}/assessment-evaluations
+HTTP PUT /training-runs/3/assessment-evaluations
+______________________________________________________________________________
+//response body
+{
+  "timestamp": 1545053603560,
+  "status": "INTERNAL_SERVER_ERROR",
+  "message": "ServiceLayerException : Current level has been already answered.",
+  "errors": [
+    "error occurred"
+  ],
+  "path": "/kypo2-training/training-runs/3/assessment-evaluations"
+}
+_______________________________________________________________________________
