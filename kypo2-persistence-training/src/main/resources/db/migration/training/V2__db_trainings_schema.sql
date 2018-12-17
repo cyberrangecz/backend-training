@@ -43,18 +43,6 @@ CREATE TABLE hint (
     PRIMARY KEY (id)
 );
 
-CREATE TABLE idm_group_ref (
-   id  bigserial NOT NULL,
-    group_id int8 NOT NULL,
-    PRIMARY KEY (id)
-);
-
-CREATE TABLE idm_group_role (
-   idm_group_ref_id int8 NOT NULL,
-    role_id int8 NOT NULL,
-    PRIMARY KEY (idm_group_ref_id, role_id)
-);
-
 CREATE TABLE info_level (
    content text NOT NULL,
     id int8 NOT NULL,
@@ -80,12 +68,6 @@ CREATE TABLE post_hook (
 
 CREATE TABLE pre_hook (
    id  bigserial NOT NULL,
-    PRIMARY KEY (id)
-);
-
-CREATE TABLE role (
-   id  bigserial NOT NULL,
-    role_type varchar(255) NOT NULL,
     PRIMARY KEY (id)
 );
 
@@ -169,15 +151,6 @@ CREATE TABLE user_ref (
     PRIMARY KEY (id)
 );
 
-ALTER TABLE idm_group_ref
-   ADD CONSTRAINT UK_cum6t9ga29a0pjbvvg3e3435h UNIQUE (group_id);
-
-ALTER TABLE idm_group_role
-   ADD CONSTRAINT UK_jaamncwipvab1t2v463s7ebop UNIQUE (role_id);
-
-ALTER TABLE role
-   ADD CONSTRAINT UK_8nhufvk7ufr23s4xoqglqtbdx UNIQUE (role_type);
-
 ALTER TABLE training_instance_sandbox_instance_ref
    ADD CONSTRAINT UK_qxd0j7mfffie0m8rfsjpqrlrv UNIQUE (sandbox_instance_ref_id);
 
@@ -208,16 +181,6 @@ ALTER TABLE hint
    ADD CONSTRAINT FKikeediy8uqdf22egpfmdaboor
    FOREIGN KEY (game_level_id)
    REFERENCES game_level;
-
-ALTER TABLE idm_group_role
-   ADD CONSTRAINT FKiog03cjidd3okuw45q78j4vce
-   FOREIGN KEY (role_id)
-   REFERENCES role;
-
-ALTER TABLE idm_group_role
-   ADD CONSTRAINT FKmx7cry936x4u9u2i4j6p1g6p0
-   FOREIGN KEY (idm_group_ref_id)
-   REFERENCES idm_group_ref;
 
 ALTER TABLE info_level
    ADD CONSTRAINT FKa9ssogmfce6duhtlm8chrqcc4
