@@ -3,7 +3,6 @@ package cz.muni.ics.kypo.training.facade;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.PathBuilder;
 import cz.muni.ics.kypo.training.api.PageResultResource;
-import cz.muni.ics.kypo.training.api.dto.AuthorRefDTO;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelUpdateDTO;
 import cz.muni.ics.kypo.training.api.dto.gamelevel.GameLevelUpdateDTO;
 import cz.muni.ics.kypo.training.api.dto.infolevel.InfoLevelUpdateDTO;
@@ -13,8 +12,9 @@ import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionUp
 import cz.muni.ics.kypo.training.exception.FacadeLayerException;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.facade.impl.TrainingDefinitionFacadeImpl;
-import cz.muni.ics.kypo.training.mapping.BeanMapping;
-import cz.muni.ics.kypo.training.mapping.BeanMappingImpl;
+import cz.muni.ics.kypo.training.mapping.modelmapper.BeanMapping;
+import cz.muni.ics.kypo.training.mapping.modelmapper.BeanMappingImpl;
+import cz.muni.ics.kypo.training.mapping.mapstruct.*;
 import cz.muni.ics.kypo.training.persistence.model.AssessmentLevel;
 import cz.muni.ics.kypo.training.persistence.model.GameLevel;
 import cz.muni.ics.kypo.training.persistence.model.InfoLevel;
@@ -30,6 +30,8 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -45,12 +47,27 @@ import static org.junit.Assert.assertEquals;
 import static org.mockito.BDDMockito.*;
 
 @RunWith(SpringRunner.class)
+@SpringBootTest(classes = {InfoLevelMapperImpl.class, PreHookMapperImpl.class,
+        PostHookMapper.class, PostHookMapperImpl.class, TrainingDefinitionMapperImpl.class,
+        AuthorRefMapperImpl.class, SandboxDefinitionRefMapperImpl.class, GameLevelMapperImpl.class,
+        InfoLevelMapperImpl.class, AssessmentLevelMapperImpl.class, HintMapperImpl.class, BasicLevelInfoMapperImpl.class})
 public class TrainingDefinitionFacadeTest {
 
     @Rule
     public ExpectedException thrown = ExpectedException.none();
 
     private TrainingDefinitionFacade trainingDefinitionFacade;
+
+    @Autowired
+    private TrainingDefinitionMapperImpl trainingDefinitionMapper;
+    @Autowired
+    private GameLevelMapperImpl gameLevelMapper;
+    @Autowired
+    private InfoLevelMapperImpl infoLevelMapper;
+    @Autowired
+    private AssessmentLevelMapperImpl assessmentLevelMapper;
+    @Autowired
+    private BasicLevelInfoMapperImpl basicLevelInfoMapper;
 
     @Mock
     private TrainingDefinitionService trainingDefinitionService;
@@ -73,7 +90,8 @@ public class TrainingDefinitionFacadeTest {
     @Before
     public void init() {
         MockitoAnnotations.initMocks(this);
-        trainingDefinitionFacade = new TrainingDefinitionFacadeImpl(trainingDefinitionService, new BeanMappingImpl(new ModelMapper()));
+        trainingDefinitionFacade = new TrainingDefinitionFacadeImpl(trainingDefinitionService,
+                trainingDefinitionMapper, gameLevelMapper, infoLevelMapper, assessmentLevelMapper, basicLevelInfoMapper);
         beanMapping = new BeanMappingImpl(new ModelMapper());
         assessmentLevel = new AssessmentLevel();
         assessmentLevel.setId(1L);
@@ -174,7 +192,7 @@ public class TrainingDefinitionFacadeTest {
     @Test
     public void updateTrainingDefinition() {
         trainingDefinitionFacade.update(trainingDefinitionUpdate);
-        then(trainingDefinitionService).should().update(beanMapping.mapTo(trainingDefinitionUpdate, TrainingDefinition.class));
+        then(trainingDefinitionService).should().update(trainingDefinitionMapper.mapUpdateToEntity(trainingDefinitionUpdate));
     }
 
     @Test
@@ -193,10 +211,10 @@ public class TrainingDefinitionFacadeTest {
 
     @Test
     public void createTrainingDefinition() {
-        given(trainingDefinitionService.create(beanMapping.mapTo(trainingDefinitionCreate, TrainingDefinition.class)))
-                .willReturn(beanMapping.mapTo(trainingDefinitionCreate, TrainingDefinition.class));
+        given(trainingDefinitionService.create(trainingDefinitionMapper.mapCreateToEntity(trainingDefinitionCreate)))
+                .willReturn(trainingDefinitionMapper.mapCreateToEntity(trainingDefinitionCreate));
         trainingDefinitionFacade.create(trainingDefinitionCreate);
-        then(trainingDefinitionService).should().create(beanMapping.mapTo(trainingDefinitionCreate, TrainingDefinition.class));
+        then(trainingDefinitionService).should().create(trainingDefinitionMapper.mapCreateToEntity(trainingDefinitionCreate));
     }
 
     @Test
@@ -323,7 +341,7 @@ public class TrainingDefinitionFacadeTest {
     public void updateAssessmentLevel() {
         trainingDefinitionFacade.updateAssessmentLevel(trainingDefinition1.getId(), alUpdate);
         then(trainingDefinitionService).should().updateAssessmentLevel(trainingDefinition1.getId(),
-                beanMapping.mapTo(alUpdate, AssessmentLevel.class));
+                assessmentLevelMapper.mapUpdateToEntity(alUpdate));
     }
 
     @Test
@@ -348,7 +366,8 @@ public class TrainingDefinitionFacadeTest {
     @Test
     public void updateGameLevel() {
         trainingDefinitionFacade.updateGameLevel(trainingDefinition2.getId(), gameLevelUpdate);
-        then(trainingDefinitionService).should().updateGameLevel(trainingDefinition2.getId(), beanMapping.mapTo(gameLevelUpdate, GameLevel.class));
+        then(trainingDefinitionService).should().updateGameLevel(trainingDefinition2.getId(),
+                gameLevelMapper.mapUpdateToEntity(gameLevelUpdate));
     }
 
     @Test
@@ -374,7 +393,7 @@ public class TrainingDefinitionFacadeTest {
     public void updateInfoLevel() {
         trainingDefinitionFacade.updateInfoLevel(trainingDefinition2.getId(), infoLevelUpdate);
         then(trainingDefinitionService).should().updateInfoLevel(trainingDefinition2.getId(),
-                beanMapping.mapTo(infoLevelUpdate, InfoLevel.class));
+                infoLevelMapper.mapUpdateToEntity(infoLevelUpdate));
     }
 
     @Test

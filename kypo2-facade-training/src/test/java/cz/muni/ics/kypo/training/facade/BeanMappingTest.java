@@ -5,8 +5,7 @@ import cz.muni.ics.kypo.training.api.dto.AuthorRefDTO;
 import cz.muni.ics.kypo.training.api.dto.SandboxDefinitionRefDTO;
 import cz.muni.ics.kypo.training.api.dto.infolevel.InfoLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionDTO;
-import cz.muni.ics.kypo.training.mapping.BeanMapping;
-import cz.muni.ics.kypo.training.mapping.BeanMappingImpl;
+import cz.muni.ics.kypo.training.mapping.mapstruct.*;
 import cz.muni.ics.kypo.training.persistence.model.AuthorRef;
 import cz.muni.ics.kypo.training.persistence.model.InfoLevel;
 import cz.muni.ics.kypo.training.persistence.model.SandboxDefinitionRef;
@@ -14,18 +13,28 @@ import cz.muni.ics.kypo.training.persistence.model.TrainingDefinition;
 import cz.muni.ics.kypo.training.persistence.model.enums.TDState;
 import org.junit.Before;
 import org.junit.Test;
-import org.modelmapper.ModelMapper;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.*;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+@RunWith(SpringRunner.class)
+@SpringBootTest(classes = {InfoLevelMapperImpl.class, PreHookMapperImpl.class,
+        PostHookMapper.class, PostHookMapperImpl.class, TrainingDefinitionMapperImpl.class,
+        AuthorRefMapperImpl.class, SandboxDefinitionRefMapperImpl.class})
 public class BeanMappingTest {
 
-    private BeanMapping beanMapping;
+    @Autowired
+    private InfoLevelMapperImpl infoLevelMapper;
+    @Autowired
+    private TrainingDefinitionMapperImpl trainingDefinitionMapper;
 
     private TrainingDefinition tD;
     private TrainingDefinitionDTO tDDTO;
@@ -40,7 +49,6 @@ public class BeanMappingTest {
 
     @Before
     public void init() {
-        beanMapping = new BeanMappingImpl(new ModelMapper());
 
         sDR = new SandboxDefinitionRef();
         sDR.setId(1L);
@@ -118,7 +126,7 @@ public class BeanMappingTest {
 
     @Test
     public void testMapEntityToDTO() {
-        TrainingDefinitionDTO dto = beanMapping.mapTo(tD, TrainingDefinitionDTO.class);
+        TrainingDefinitionDTO dto = trainingDefinitionMapper.mapToDTO(tD);
 
         assertEquals(tD.getId(), dto.getId());
         assertEquals(tD.getTitle(), dto.getTitle());
@@ -138,7 +146,7 @@ public class BeanMappingTest {
 
     @Test
     public void testMapDTOToEntity() {
-        TrainingDefinition tD = beanMapping.mapTo(tDDTO, TrainingDefinition.class);
+        TrainingDefinition tD = trainingDefinitionMapper.mapToEntity(tDDTO);
 
         assertEquals(tDDTO.getId(), tD.getId());
         assertEquals(tDDTO.getTitle(), tD.getTitle());
@@ -158,7 +166,7 @@ public class BeanMappingTest {
 
     @Test
     public void testMapListOfEntitiesToListOfDTO() {
-        List<InfoLevelDTO> dtos = beanMapping.mapTo(levels, InfoLevelDTO.class);
+        List<InfoLevelDTO> dtos = infoLevelMapper.mapToListDTO(levels);
 
         assertEquals(iL1.getId(), dtos.get(0).getId());
         assertEquals(iL1.getContent(), dtos.get(0).getContent());
@@ -172,7 +180,7 @@ public class BeanMappingTest {
 
     @Test
     public void testMapListOfDTOToListOfEntities() {
-        List<InfoLevel> infoLevelList = beanMapping.mapTo(levelsDTO, InfoLevel.class);
+        List<InfoLevel> infoLevelList = infoLevelMapper.mapToList(levelsDTO);
 
         assertEquals(iLDTO1.getId(), infoLevelList.get(0).getId());
         assertEquals(iLDTO1.getContent(), infoLevelList.get(0).getContent());
@@ -186,8 +194,8 @@ public class BeanMappingTest {
 
     @Test
     public void testMapPageToDTO() {
-        Page p = new PageImpl<InfoLevel>(levels);
-        Page pDTO = beanMapping.mapTo(p, InfoLevelDTO.class);
+        Page p = new PageImpl<>(levels);
+        Page pDTO = infoLevelMapper.mapToPageDTO(p);
         InfoLevelDTO iLDTO1 = (InfoLevelDTO) pDTO.getContent().get(0);
         InfoLevelDTO iLDTO2 = (InfoLevelDTO) pDTO.getContent().get(1);
 
@@ -204,8 +212,8 @@ public class BeanMappingTest {
 
     @Test
     public void testMapDTOPageToEntity() {
-        Page pDTO = new PageImpl<InfoLevelDTO>(levelsDTO);
-        Page p = beanMapping.mapTo(pDTO, InfoLevel.class);
+        Page pDTO = new PageImpl<>(levelsDTO);
+        Page p = infoLevelMapper.mapToPage(pDTO);
         InfoLevel iL1 = (InfoLevel) p.getContent().get(0);
         InfoLevel iL2 = (InfoLevel) p.getContent().get(1);
 
@@ -222,7 +230,7 @@ public class BeanMappingTest {
 
     @Test
     public void testMapEntityToOptional() {
-        Optional<InfoLevelDTO> dto = beanMapping.mapToOptional(iL1, InfoLevelDTO.class);
+        Optional<InfoLevelDTO> dto = infoLevelMapper.mapToOptional(iL1);
 
         assertTrue(dto.isPresent());
         assertEquals(iL1.getId(), dto.get().getId());
@@ -233,7 +241,7 @@ public class BeanMappingTest {
 
     @Test
     public void testMapDTOToOptional() {
-        Optional<InfoLevel> iL = beanMapping.mapToOptional(iL1, InfoLevel.class);
+        Optional<InfoLevel> iL = infoLevelMapper.mapToOptional(iLDTO1);
 
         assertTrue(iL.isPresent());
         assertEquals(iLDTO1.getId(), iL.get().getId());
@@ -245,7 +253,7 @@ public class BeanMappingTest {
     @Test
     public void testMapToPageResultDTO() {
         Page p = new PageImpl<InfoLevel>(levels);
-        PageResultResource<InfoLevelDTO> pRR = beanMapping.mapToPageResultDTO(p, InfoLevelDTO.class);
+        PageResultResource<InfoLevelDTO> pRR = infoLevelMapper.mapToPageResultResource(p);
         InfoLevelDTO dto1 = pRR.getContent().get(0);
         InfoLevelDTO dto2 = pRR.getContent().get(1);
 
@@ -262,7 +270,7 @@ public class BeanMappingTest {
 
     @Test
     public void testMapEntityToDTOSet() {
-        Set<InfoLevelDTO> dtos = beanMapping.mapToSet(levels, InfoLevelDTO.class);
+        Set<InfoLevelDTO> dtos = infoLevelMapper.mapToSetDTO(levels);
         InfoLevelDTO dto1 = (InfoLevelDTO) dtos.toArray()[0];
         InfoLevelDTO dto2 = (InfoLevelDTO) dtos.toArray()[1];
 
@@ -279,7 +287,7 @@ public class BeanMappingTest {
 
     @Test
     public void testMapDTOToEntitySet() {
-        Set<InfoLevel> levels = beanMapping.mapToSet(levelsDTO, InfoLevel.class);
+        Set<InfoLevel> levels = infoLevelMapper.mapToSet(levelsDTO);
         InfoLevel level1 = (InfoLevel) levels.toArray()[1];
         InfoLevel level2 = (InfoLevel) levels.toArray()[0];
 

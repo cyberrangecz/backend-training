@@ -17,8 +17,7 @@ import cz.muni.ics.kypo.training.exception.FacadeLayerException;
 import cz.muni.ics.kypo.training.exceptions.ErrorCode;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.facade.TrainingRunFacade;
-import cz.muni.ics.kypo.training.mapping.BeanMapping;
-import cz.muni.ics.kypo.training.mapping.BeanMappingImpl;
+import cz.muni.ics.kypo.training.mapping.mapstruct.*;
 import cz.muni.ics.kypo.training.persistence.model.TrainingRun;
 import cz.muni.ics.kypo.training.persistence.model.enums.AssessmentType;
 import cz.muni.ics.kypo.training.persistence.model.enums.TRState;
@@ -31,12 +30,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -59,14 +55,16 @@ import java.util.Optional;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.BDDMockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 
 @RunWith(SpringRunner.class)
+@SpringBootTest(classes = {InfoLevelMapperImpl.class, PreHookMapperImpl.class,
+        PostHookMapper.class, PostHookMapperImpl.class, TrainingInstanceMapperImpl.class,
+        AuthorRefMapperImpl.class, SandboxDefinitionRefMapperImpl.class, TrainingDefinitionMapperImpl.class,
+        UserRefMapperImpl.class, TrainingRunMapperImpl.class, SandboxInstanceRefMapperImpl.class})
 public class TrainingRunsRestControllerTest {
 
     private TrainingRunsRestController trainingRunsRestController;
@@ -75,6 +73,9 @@ public class TrainingRunsRestControllerTest {
     private TrainingRunFacade trainingRunFacade;
 
     private MockMvc mockMvc;
+
+    @Autowired
+    TrainingRunMapper trainingRunMapper;
 
     @MockBean
     private ObjectMapper objectMapper;
@@ -157,8 +158,7 @@ public class TrainingRunsRestControllerTest {
         obj.registerModule(new JavaTimeModule());
         given(objectMapper.getSerializationConfig()).willReturn(obj.getSerializationConfig());
 
-        BeanMapping bM = new BeanMappingImpl(new ModelMapper());
-        trainingRunDTOPageResultResource = bM.mapToPageResultDTO(p, TrainingRunDTO.class);
+        trainingRunDTOPageResultResource = trainingRunMapper.mapToPageResultResource(p);
 
         MockitoAnnotations.initMocks(this);
         trainingRunsRestController = new TrainingRunsRestController(trainingRunFacade, objectMapper);
@@ -207,8 +207,7 @@ public class TrainingRunsRestControllerTest {
 
     @Test
     public void getAllAccessedTrainingRuns() throws Exception {
-        BeanMapping bM = new BeanMappingImpl(new ModelMapper());
-        accessedTrainingRunDTOPage = bM.mapToPageResultDTO(pAccessed, AccessedTrainingRunDTO.class);
+        accessedTrainingRunDTOPage = trainingRunMapper.mapToPageResultResourceAccessed(pAccessed);
 
         String valueTr = convertObjectToJsonBytes(trainingRunDTOPageResultResource);
         given(objectMapper.writeValueAsString(any(Object.class))).willReturn(valueTr);

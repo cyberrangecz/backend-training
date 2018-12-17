@@ -20,8 +20,7 @@ import cz.muni.ics.kypo.training.exception.FacadeLayerException;
 import cz.muni.ics.kypo.training.exceptions.ErrorCode;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.facade.TrainingDefinitionFacade;
-import cz.muni.ics.kypo.training.mapping.BeanMapping;
-import cz.muni.ics.kypo.training.mapping.BeanMappingImpl;
+import cz.muni.ics.kypo.training.mapping.mapstruct.*;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.model.enums.AssessmentType;
 import cz.muni.ics.kypo.training.persistence.model.enums.LevelType;
@@ -34,8 +33,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -61,9 +60,15 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
+@SpringBootTest(classes = {InfoLevelMapperImpl.class, PreHookMapperImpl.class,
+        PostHookMapper.class, PostHookMapperImpl.class, TrainingDefinitionMapperImpl.class,
+        AuthorRefMapperImpl.class, SandboxDefinitionRefMapperImpl.class})
 public class TrainingDefinitionsRestControllerTest {
 
     private TrainingDefinitionsRestController trainingDefinitionsRestController;
+
+    @Autowired
+    TrainingDefinitionMapper trainingDefinitionMapper;
 
     @Mock
     private TrainingDefinitionFacade trainingDefinitionFacade;
@@ -240,8 +245,7 @@ public class TrainingDefinitionsRestControllerTest {
         obj.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
         given(objectMapper.getSerializationConfig()).willReturn(obj.getSerializationConfig());
 
-        BeanMapping bM = new BeanMappingImpl(new ModelMapper());
-        trainingDefinitionDTOPageResultResource = bM.mapToPageResultDTO(p, TrainingDefinitionDTO.class);
+        trainingDefinitionDTOPageResultResource = trainingDefinitionMapper.mapToPageResultResource(p);
 
     }
 

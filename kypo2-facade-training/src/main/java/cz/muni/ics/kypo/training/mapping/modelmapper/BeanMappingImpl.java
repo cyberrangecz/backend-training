@@ -1,4 +1,4 @@
-package cz.muni.ics.kypo.training.mapping;
+package cz.muni.ics.kypo.training.mapping.modelmapper;
 
 import cz.muni.ics.kypo.training.api.PageResultResource;
 import cz.muni.ics.kypo.training.api.PageResultResource.Pagination;
