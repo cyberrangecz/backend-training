@@ -12,14 +12,14 @@ INSERT INTO post_hook(id) VALUES (nextval('post_hook_id_seq'));
 INSERT INTO post_hook(id) VALUES (nextval('post_hook_id_seq'));
 INSERT INTO post_hook(id) VALUES (nextval('post_hook_id_seq'));
 
-INSERT INTO abstract_level(id, max_score, next_level, title, post_hook_id, pre_hook_id) VALUES (nextval('abstract_level_id_seq'), 20, 2, 'Game Level1', 1, 1);
-INSERT INTO abstract_level(id, max_score, next_level, title, post_hook_id, pre_hook_id) VALUES (nextval('abstract_level_id_seq'), 70, 3, 'Info Level1', 2, 2);
-INSERT INTO abstract_level(id, max_score, next_level, title, post_hook_id, pre_hook_id) VALUES (nextval('abstract_level_id_seq'), 50, null, 'Assessment Level1', 3, 3);
-INSERT INTO abstract_level(id, max_score, next_level, title, post_hook_id, pre_hook_id) VALUES (nextval('abstract_level_id_seq'), 55, 5, 'Game Level2', 4, 4);
-INSERT INTO abstract_level(id, max_score, next_level, title, post_hook_id, pre_hook_id) VALUES (nextval('abstract_level_id_seq'), 13, 6, 'Info Level2', 5, 5);
-INSERT INTO abstract_level(id, max_score, next_level, title, post_hook_id, pre_hook_id) VALUES (nextval('abstract_level_id_seq'), 75, null, 'Assessment Level2', 6, 6);
-INSERT INTO abstract_level(id, max_score, next_level, title, post_hook_id, pre_hook_id) VALUES (nextval('abstract_level_id_seq'), 0, 8, 'Info Level Test', 3, 3);
+INSERT INTO abstract_level(id, max_score, next_level, title, post_hook_id, pre_hook_id) VALUES (nextval('abstract_level_id_seq'), 20, 7, 'Game Level1', 1, 1);
+INSERT INTO abstract_level(id, max_score, next_level, title, post_hook_id, pre_hook_id) VALUES (nextval('abstract_level_id_seq'), 55, 8, 'Game Level2', 4, 4);
 INSERT INTO abstract_level(id, max_score, next_level, title, post_hook_id, pre_hook_id) VALUES (nextval('abstract_level_id_seq'), 70, 9, 'Game Level Test', 2, 2);
+INSERT INTO abstract_level(id, max_score, next_level, title, post_hook_id, pre_hook_id) VALUES (nextval('abstract_level_id_seq'), 70, 1, 'Info Level1', 2, 2);
+INSERT INTO abstract_level(id, max_score, next_level, title, post_hook_id, pre_hook_id) VALUES (nextval('abstract_level_id_seq'), 13, 6, 'Info Level2', 5, 5);
+INSERT INTO abstract_level(id, max_score, next_level, title, post_hook_id, pre_hook_id) VALUES (nextval('abstract_level_id_seq'), 0, 3, 'Info Level Test', 3, 3);
+INSERT INTO abstract_level(id, max_score, next_level, title, post_hook_id, pre_hook_id) VALUES (nextval('abstract_level_id_seq'), 50, null, 'Assessment Level1', 3, 3);
+INSERT INTO abstract_level(id, max_score, next_level, title, post_hook_id, pre_hook_id) VALUES (nextval('abstract_level_id_seq'), 75, null, 'Assessment Level2', 6, 6);
 INSERT INTO abstract_level(id, max_score, next_level, title, post_hook_id, pre_hook_id) VALUES (nextval('abstract_level_id_seq'), 100, null, 'Assessment Level Test', 1, 1);
 
 INSERT INTO game_level(id, attachments, estimated_duration, incorrect_flag_limit, content, flag, solution, solution_penalized) VALUES (1, null, 25, 5, 'Play me', 'secretFlag', 'This is how you do it', true );
@@ -47,15 +47,11 @@ INSERT INTO author_ref(id, author_ref_login) VALUES (nextval('author_ref_id_seq'
 
 INSERT INTO training_definition(id, description, outcomes, prerequisities, state, title, sand_box_definition_ref_id, starting_level, show_stepper_bar) VALUES (nextval('training_definition_id_seq'), 'Released training definition', null, null, 'RELEASED', 'TrainingDefinition1', 1, 1, true);
 INSERT INTO training_definition(id, description, outcomes, prerequisities, state, title, sand_box_definition_ref_id, starting_level, show_stepper_bar) VALUES (nextval('training_definition_id_seq'), 'Unreleased training definition', null, null, 'UNRELEASED', 'TrainingDefinition2', 2, 4, false);
-INSERT INTO training_definition(id, description, outcomes, prerequisities, state, title, sand_box_definition_ref_id, starting_level, show_stepper_bar) VALUES (nextval('training_definition_id_seq'), 'Released training definition2', null, null, 'RELEASED', 'TrainingDefinition2', 3, 7, true);
+INSERT INTO training_definition(id, description, outcomes, prerequisities, state, title, sand_box_definition_ref_id, starting_level, show_stepper_bar) VALUES (nextval('training_definition_id_seq'), 'Released training definition2', null, null, 'RELEASED', 'TrainingDefinition2', 3, 6, true);
 
 INSERT INTO training_definition_author_ref(training_definition_id, author_ref_id) VALUES (1, 1);
 INSERT INTO training_definition_author_ref(training_definition_id, author_ref_id) VALUES (2, 2);
 INSERT INTO training_definition_author_ref(training_definition_id, author_ref_id) VALUES (3, 3);
-
--- this table does not exists in the hibernate entities, please check what does it mean (Dominik or Boris please)
--- INSERT INTO training_definition_sandbox_definition_ref(training_definition_id, sandbox_definition_ref_id) VALUES (1, 1);
--- INSERT INTO training_definition_sandbox_definition_ref(training_definition_id, sandbox_definition_ref_id) VALUES (2, 2);
 
 INSERT INTO training_instance(id, pool_size, training_definition_id, start_time, end_time, password, title) VALUES (nextval('training_instance_id_seq'), 5, 1, '2016-10-19 10:23:54+02', '2017-10-19 10:23:54+02', 'pass-1235', 'Concluded Instance');
 INSERT INTO training_instance(id, pool_size, training_definition_id, start_time, end_time, password, title) VALUES (nextval('training_instance_id_seq'), 8, 1, '2016-10-19 10:23:54+02', '2022-10-19 10:23:54+02', 'hello-6578', 'Current Instance');
@@ -88,4 +84,4 @@ INSERT INTO participant_ref(id, participant_ref_login) VALUES (nextval('particip
 
 INSERT INTO training_run(id, start_time, end_time, state, current_level_id, sandbox_instance_ref_id, training_instance_id, participant_ref_id, solution_taken, event_log_reference, incorrect_flag_count, assessment_responses, total_score, current_score, level_answered) VALUES (nextval('training_run_id_seq'),'2016-10-19 10:23:54+02', '2022-10-19 10:23:54+02', 'ALLOCATED', 2, 1, 2, 1, false, null, 5, '[]',30, 20, false);
 INSERT INTO training_run(id, start_time, end_time, state, current_level_id, sandbox_instance_ref_id, training_instance_id, participant_ref_id, solution_taken, event_log_reference, incorrect_flag_count, assessment_responses, total_score, current_score, level_answered) VALUES (nextval('training_run_id_seq'),'2020-10-19 10:23:54+02', '2024-10-19 10:23:54+02', 'NEW', 1, 3, 3, 2, false, null, 4, '[]', 100, 10, false);
-INSERT INTO training_run(id, start_time, end_time, state, current_level_id, sandbox_instance_ref_id, training_instance_id, participant_ref_id, solution_taken, event_log_reference, incorrect_flag_count, assessment_responses, total_score, current_score, level_answered) VALUES (nextval('training_run_id_seq'),'2019-10-19 10:23:54+02', '2024-10-19 10:23:54+02', 'NEW', 7, 2, 4, 1, false, null, 4, '[]', 0, 0, true);
+INSERT INTO training_run(id, start_time, end_time, state, current_level_id, sandbox_instance_ref_id, training_instance_id, participant_ref_id, solution_taken, event_log_reference, incorrect_flag_count, assessment_responses, total_score, current_score, level_answered) VALUES (nextval('training_run_id_seq'),'2019-10-19 10:23:54+02', '2024-10-19 10:23:54+02', 'NEW', 6, 2, 4, 1, false, null, 4, '[]', 0, 0, true);

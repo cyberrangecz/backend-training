@@ -18,7 +18,7 @@ public class InfoLevelUpdateDTO {
     protected String title;
     private String content;
 
-    @ApiModelProperty(value = "Main identifier of level.", required = true, example = "2")
+    @ApiModelProperty(value = "Main identifier of level.", required = true, example = "4")
     public Long getId() {
         return id;
     }
