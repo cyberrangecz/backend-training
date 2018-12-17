@@ -7,6 +7,8 @@ import java.util.Set;
 import cz.muni.ics.kypo.training.api.dto.run.TrainingRunDTO;
 import cz.muni.ics.kypo.training.annotations.TransactionalRO;
 import cz.muni.ics.kypo.training.annotations.TransactionalWO;
+import cz.muni.ics.kypo.training.mapping.mapstruct.TrainingInstanceMapper;
+import cz.muni.ics.kypo.training.mapping.mapstruct.TrainingRunMapper;
 import cz.muni.ics.kypo.training.persistence.model.TrainingRun;
 import cz.muni.ics.kypo.training.persistence.model.UserRef;
 import cz.muni.ics.kypo.training.service.TrainingDefinitionService;
@@ -26,7 +28,6 @@ import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceUpdate
 import cz.muni.ics.kypo.training.exception.FacadeLayerException;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.facade.TrainingInstanceFacade;
-import cz.muni.ics.kypo.training.mapping.BeanMapping;
 import cz.muni.ics.kypo.training.persistence.model.TrainingInstance;
 import cz.muni.ics.kypo.training.service.TrainingInstanceService;
 
@@ -41,14 +42,16 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
 
     private TrainingInstanceService trainingInstanceService;
     private TrainingDefinitionService trainingDefinitionService;
-    private BeanMapping beanMapping;
+    private TrainingInstanceMapper trainingInstanceMapper;
+    private TrainingRunMapper trainingRunMapper;
 
     @Autowired
     public TrainingInstanceFacadeImpl(TrainingInstanceService trainingInstanceService, TrainingDefinitionService trainingDefinitionService,
-                                      BeanMapping beanMapping) {
+                                      TrainingInstanceMapper trainingInstanceMapper, TrainingRunMapper trainingRunMapper) {
         this.trainingInstanceService = trainingInstanceService;
         this.trainingDefinitionService = trainingDefinitionService;
-        this.beanMapping = beanMapping;
+        this.trainingInstanceMapper = trainingInstanceMapper;
+        this.trainingRunMapper = trainingRunMapper;
     }
 
     @Override
@@ -57,7 +60,7 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
         LOG.debug("findById({})", id);
         try {
             Objects.requireNonNull(id);
-            return beanMapping.mapTo(trainingInstanceService.findById(id), TrainingInstanceDTO.class);
+            return trainingInstanceMapper.mapToDTO(trainingInstanceService.findById(id));
         } catch (ServiceLayerException ex) {
             throw new FacadeLayerException(ex);
         }
@@ -67,7 +70,7 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
     @TransactionalRO
     public PageResultResource<TrainingInstanceDTO> findAll(Predicate predicate, Pageable pageable) {
         LOG.debug("findAll({},{})", predicate, pageable);
-        return beanMapping.mapToPageResultDTO(trainingInstanceService.findAll(predicate, pageable), TrainingInstanceDTO.class);
+        return trainingInstanceMapper.mapToPageResultResource(trainingInstanceService.findAll(predicate, pageable));
     }
 
 
@@ -77,7 +80,7 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
         LOG.debug("update({})", trainingInstance);
         try {
             Objects.requireNonNull(trainingInstance);
-            TrainingInstance tI = beanMapping.mapTo(trainingInstance, TrainingInstance.class);
+            TrainingInstance tI = trainingInstanceMapper.mapUpdateToEntity(trainingInstance);
             tI.setTrainingDefinition(trainingDefinitionService.findById(trainingInstance.getTrainingDefinitionId()));
             Set<UserRef> organizers = new HashSet<>();
             for (Long id : trainingInstance.getOrgIds()) {
@@ -96,7 +99,7 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
         LOG.debug("create({})", trainingInstance);
         try {
             Objects.requireNonNull(trainingInstance);
-            TrainingInstance tI = beanMapping.mapTo(trainingInstance, TrainingInstance.class);
+            TrainingInstance tI = trainingInstanceMapper.mapCreateToEntity(trainingInstance);
             tI.setTrainingDefinition(trainingDefinitionService.findById(trainingInstance.getTrainingDefinitionId()));
             tI.setId(null);
             Set<UserRef> organizers = new HashSet<>();
@@ -104,7 +107,7 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
                 organizers.add(trainingInstanceService.findUserRefById(id));
             }
             tI.setOrganizers(organizers);
-            return beanMapping.mapTo(trainingInstanceService.create(tI), TrainingInstanceDTO.class);
+            return trainingInstanceMapper.mapToDTO(trainingInstanceService.create(tI));
         } catch (ServiceLayerException ex) {
             throw new FacadeLayerException(ex);
         }
@@ -139,6 +142,6 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
     public PageResultResource<TrainingRunDTO> findTrainingRunsByTrainingInstance(Long trainingInstanceId, Pageable pageable) {
         LOG.debug("findAllTrainingRunsByTrainingInstance({})", trainingInstanceId);
         Page<TrainingRun> trainingRuns = trainingInstanceService.findTrainingRunsByTrainingInstance(trainingInstanceId, pageable);
-        return beanMapping.mapToPageResultDTO(trainingRuns, TrainingRunDTO.class);
+        return trainingRunMapper.mapToPageResultResource(trainingRuns);
     }
 }

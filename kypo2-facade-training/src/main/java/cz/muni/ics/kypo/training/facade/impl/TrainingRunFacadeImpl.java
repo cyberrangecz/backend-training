@@ -6,11 +6,8 @@ import cz.muni.ics.kypo.training.annotations.TransactionalWO;
 import cz.muni.ics.kypo.training.api.PageResultResource;
 import cz.muni.ics.kypo.training.api.dto.AbstractLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.IsCorrectFlagDTO;
-import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelDTO;
-import cz.muni.ics.kypo.training.api.dto.gamelevel.GameLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.hint.HintDTO;
 import cz.muni.ics.kypo.training.api.dto.BasicLevelInfoDTO;
-import cz.muni.ics.kypo.training.api.dto.infolevel.InfoLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.run.AccessTrainingRunDTO;
 import cz.muni.ics.kypo.training.api.dto.run.AccessedTrainingRunDTO;
 import cz.muni.ics.kypo.training.api.dto.run.TrainingRunDTO;
@@ -18,11 +15,10 @@ import cz.muni.ics.kypo.training.api.enums.Actions;
 import cz.muni.ics.kypo.training.exception.FacadeLayerException;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.facade.TrainingRunFacade;
-import cz.muni.ics.kypo.training.mapping.BeanMapping;
+import cz.muni.ics.kypo.training.mapping.mapstruct.*;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.model.enums.LevelType;
 import cz.muni.ics.kypo.training.service.TrainingRunService;
-import org.json.JSONArray;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,12 +41,22 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
     private static final Logger LOG = LoggerFactory.getLogger(TrainingRunFacadeImpl.class);
 
     private TrainingRunService trainingRunService;
-    private BeanMapping beanMapping;
+    private TrainingRunMapper trainingRunMapper;
+    private GameLevelMapper gameLevelMapper;
+    private AssessmentLevelMapper assessmentLevelMapper;
+    private InfoLevelMapper infoLevelMapper;
+    private HintMapper hintMapper;
 
     @Autowired
-    public TrainingRunFacadeImpl(TrainingRunService trainingRunService, BeanMapping beanMapping) {
+    public TrainingRunFacadeImpl(TrainingRunService trainingRunService, TrainingRunMapper trainingRunMapper,
+                                 GameLevelMapper gameLevelMapper, AssessmentLevelMapper assessmentLevelMapper,
+                                 InfoLevelMapper infoLevelMapper, HintMapper hintMapper) {
         this.trainingRunService = trainingRunService;
-        this.beanMapping = beanMapping;
+        this.trainingRunMapper = trainingRunMapper;
+        this.gameLevelMapper = gameLevelMapper;
+        this.assessmentLevelMapper = assessmentLevelMapper;
+        this.infoLevelMapper = infoLevelMapper;
+        this.hintMapper = hintMapper;
     }
 
     @Override
@@ -59,7 +65,7 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
         LOG.debug("findById({})", id);
         try {
             TrainingRun trainingRun = trainingRunService.findById(id);
-            return beanMapping.mapTo(trainingRun, TrainingRunDTO.class);
+            return trainingRunMapper.mapToDTO(trainingRun);
         } catch (ServiceLayerException ex) {
             throw new FacadeLayerException(ex);
         }
@@ -69,7 +75,7 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
     @TransactionalRO
     public PageResultResource<TrainingRunDTO> findAll(Predicate predicate, Pageable pageable) {
         LOG.debug("findAll({},{})", predicate, pageable);
-        return beanMapping.mapToPageResultDTO(trainingRunService.findAll(predicate, pageable), TrainingRunDTO.class);
+        return trainingRunMapper.mapToPageResultResource(trainingRunService.findAll(predicate, pageable));
     }
 
     @Override
@@ -135,7 +141,7 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
     public PageResultResource<TrainingRunDTO> findAllByTrainingDefinitionAndParticipant(Long trainingDefinitionId, Pageable pageable) {
         LOG.debug("findAllByTrainingDefinitionAndParticipant({})", trainingDefinitionId);
         Page<TrainingRun> trainingRuns = trainingRunService.findAllByTrainingDefinitionAndParticipant(trainingDefinitionId, pageable);
-        return beanMapping.mapToPageResultDTO(trainingRuns, TrainingRunDTO.class);
+        return trainingRunMapper.mapToPageResultResource(trainingRuns);
     }
 
     @Override
@@ -143,7 +149,7 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
     public PageResultResource<TrainingRunDTO> findAllByTrainingDefinition(Long trainingDefinitionId, Pageable pageable) {
         LOG.debug("findAllByTrainingDefinition({})", trainingDefinitionId);
         Page<TrainingRun> trainingRuns = trainingRunService.findAllByTrainingDefinition(trainingDefinitionId, pageable);
-        return beanMapping.mapToPageResultDTO(trainingRuns, TrainingRunDTO.class);
+        return trainingRunMapper.mapToPageResultResource(trainingRuns);
     }
 
     @Override
@@ -175,7 +181,7 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
     public HintDTO getHint(Long trainingRunId, Long hintId) {
         LOG.debug("getHint({},{})", trainingRunId, hintId);
         try {
-            return beanMapping.mapTo(trainingRunService.getHint(trainingRunId, hintId), HintDTO.class);
+            return hintMapper.mapToDTO(trainingRunService.getHint(trainingRunId, hintId));
         } catch (ServiceLayerException ex) {
             throw new FacadeLayerException(ex);
         }
@@ -252,16 +258,16 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
         AbstractLevelDTO abstractLevelDTO;
         if (abstractLevel instanceof AssessmentLevel) {
             AssessmentLevel assessmentLevel = (AssessmentLevel) abstractLevel;
-            abstractLevelDTO = beanMapping.mapTo(assessmentLevel, AssessmentLevelDTO.class);
-            abstractLevelDTO.setLevelType(LevelType.ASSESSMENT);
+            abstractLevelDTO = assessmentLevelMapper.mapToDTO(assessmentLevel);
+	    abstractLevelDTO.setLevelType(LevelType.ASSESSMENT);
         } else if (abstractLevel instanceof GameLevel) {
             GameLevel gameLevel = (GameLevel) abstractLevel;
-            abstractLevelDTO = beanMapping.mapTo(gameLevel, GameLevelDTO.class);
-            abstractLevelDTO.setLevelType(LevelType.GAME);
+            abstractLevelDTO = gameLevelMapper.mapToDTO(gameLevel);
+	    abstractLevelDTO.setLevelType(LevelType.GAME);
         } else {
             InfoLevel infoLevel = (InfoLevel) abstractLevel;
-            abstractLevelDTO = beanMapping.mapTo(infoLevel, InfoLevelDTO.class);
-            abstractLevelDTO.setLevelType(LevelType.INFO);
+            abstractLevelDTO = infoLevelMapper.mapToDTO(infoLevel);
+	    abstractLevelDTO.setLevelType(LevelType.INFO);
         }
         return abstractLevelDTO;
 

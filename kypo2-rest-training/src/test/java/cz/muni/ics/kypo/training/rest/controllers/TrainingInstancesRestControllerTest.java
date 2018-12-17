@@ -5,8 +5,6 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.training.api.PageResultResource;
-import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
-import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionDTO;
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceCreateDTO;
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceDTO;
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceUpdateDTO;
@@ -14,8 +12,7 @@ import cz.muni.ics.kypo.training.exception.FacadeLayerException;
 import cz.muni.ics.kypo.training.exceptions.ErrorCode;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.facade.TrainingInstanceFacade;
-import cz.muni.ics.kypo.training.mapping.BeanMapping;
-import cz.muni.ics.kypo.training.mapping.BeanMappingImpl;
+import cz.muni.ics.kypo.training.mapping.mapstruct.*;
 import cz.muni.ics.kypo.training.persistence.model.TrainingInstance;
 import cz.muni.ics.kypo.training.rest.exceptions.ResourceNotFoundException;
 import cz.muni.ics.kypo.training.utils.converters.LocalDateTimeDeserializer;
@@ -24,8 +21,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -53,9 +50,16 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
+@SpringBootTest(classes = {InfoLevelMapperImpl.class, PreHookMapperImpl.class,
+        PostHookMapper.class, PostHookMapperImpl.class, TrainingInstanceMapperImpl.class,
+        AuthorRefMapperImpl.class, SandboxDefinitionRefMapperImpl.class, TrainingDefinitionMapperImpl.class,
+        UserRefMapperImpl.class})
 public class TrainingInstancesRestControllerTest {
 
     private TrainingInstancesRestController trainingInstancesRestController;
+
+    @Autowired
+    TrainingInstanceMapper trainingInstanceMapper;
 
     @Mock
     private TrainingInstanceFacade trainingInstanceFacade;
@@ -136,8 +140,7 @@ public class TrainingInstancesRestControllerTest {
         obj.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
         given(objectMapper.getSerializationConfig()).willReturn(obj.getSerializationConfig());
 
-        BeanMapping bM = new BeanMappingImpl(new ModelMapper());
-        trainingInstanceDTOPageResultResource = bM.mapToPageResultDTO(p, TrainingInstanceDTO.class);
+        trainingInstanceDTOPageResultResource = trainingInstanceMapper.mapToPageResultResource(p);
     }
 
     @Test

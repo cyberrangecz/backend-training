@@ -38,3 +38,5 @@ ansible/roles/*
 /dist/
 /nbdist/
 /.nb-gradle/
+
+application.properties

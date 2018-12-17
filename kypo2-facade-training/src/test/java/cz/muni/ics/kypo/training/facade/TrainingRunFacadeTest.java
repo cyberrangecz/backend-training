@@ -8,7 +8,7 @@ import cz.muni.ics.kypo.training.api.dto.run.TrainingRunDTO;
 import cz.muni.ics.kypo.training.exception.FacadeLayerException;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.facade.impl.TrainingRunFacadeImpl;
-import cz.muni.ics.kypo.training.mapping.BeanMappingImpl;
+import cz.muni.ics.kypo.training.mapping.mapstruct.*;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.model.enums.AssessmentType;
 import cz.muni.ics.kypo.training.persistence.model.enums.TDState;
@@ -21,7 +21,8 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -35,7 +36,23 @@ import static org.junit.Assert.assertEquals;
 import static org.mockito.BDDMockito.*;
 
 @RunWith(SpringRunner.class)
+@SpringBootTest(classes = {InfoLevelMapperImpl.class, PreHookMapperImpl.class,
+        PostHookMapper.class, PostHookMapperImpl.class, TrainingDefinitionMapperImpl.class,
+        AuthorRefMapperImpl.class, SandboxDefinitionRefMapperImpl.class, SandboxInstanceRefMapperImpl.class,
+        GameLevelMapperImpl.class, InfoLevelMapperImpl.class, AssessmentLevelMapperImpl.class, HintMapperImpl.class,
+        BasicLevelInfoMapperImpl.class, TrainingRunMapperImpl.class})
 public class TrainingRunFacadeTest {
+
+    @Autowired
+    TrainingRunMapperImpl trainingRunMapper;
+    @Autowired
+    GameLevelMapperImpl gameLevelMapper;
+    @Autowired
+    AssessmentLevelMapperImpl assessmentLevelMapper;
+    @Autowired
+    InfoLevelMapperImpl infoLevelMapper;
+    @Autowired
+    HintMapperImpl hintMapper;
 
     @Rule
     public ExpectedException thrown = ExpectedException.none();
@@ -56,7 +73,8 @@ public class TrainingRunFacadeTest {
     @Before
     public void init() {
         MockitoAnnotations.initMocks(this);
-        trainingRunFacade = new TrainingRunFacadeImpl(trainingRunService, new BeanMappingImpl(new ModelMapper()));
+        trainingRunFacade = new TrainingRunFacadeImpl(trainingRunService, trainingRunMapper, gameLevelMapper,
+                assessmentLevelMapper, infoLevelMapper, hintMapper);
 
         trainingRun1 = new TrainingRun();
         trainingRun1.setId(1L);

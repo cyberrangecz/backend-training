@@ -248,7 +248,7 @@ Hibernate:
     FROM
         TrainingDefinition td 
     INNER JOIN
-        td.sandBoxDefinitionRef sbd 
+        td.sandBoxDefinitionRef sbd
     WHERE
         sbd.sandboxDefinitionRefId = :sandboxDefId */ 
         select
@@ -274,7 +274,7 @@ Hibernate:
     FROM
         TrainingDefinition td 
     INNER JOIN
-        td.sandBoxDefinitionRef sbd 
+        td.sandBoxDefinitionRef sbd
     WHERE
         sbd.sandboxDefinitionRefId = :sandboxDefId */ select
             count(trainingde0_.id) as col_0_0_ 
