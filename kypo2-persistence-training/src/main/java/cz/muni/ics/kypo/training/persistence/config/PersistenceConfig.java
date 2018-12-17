@@ -13,7 +13,6 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
  */
 @Configuration
 @EnableTransactionManagement
-@Import(StartUpRunner.class)
 @ComponentScan(basePackages = {"cz.muni.ics.kypo.training.persistence.model", "cz.muni.ics.kypo.training.persistence.repository"})
 @EntityScan(basePackages = "cz.muni.ics.kypo.training.persistence.model")
 @EnableJpaRepositories(basePackages = "cz.muni.ics.kypo.training.persistence.repository")

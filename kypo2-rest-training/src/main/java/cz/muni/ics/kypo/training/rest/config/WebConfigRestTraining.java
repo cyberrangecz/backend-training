@@ -1,5 +1,7 @@
 package cz.muni.ics.kypo.training.rest.config;
 
+import cz.muni.ics.kypo.commons.rest.config.SwaggerConfig;
+import cz.muni.ics.kypo.commons.rest.config.WebConfigRestSecurityCommons;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
@@ -53,7 +55,7 @@ import cz.muni.ics.kypo.training.config.FacadeConfiguration;
  */
 @SpringBootApplication(scanBasePackages = "cz.muni.ics.kypo.training.rest")
 @EnableSpringDataWebSupport
-@Import({FacadeConfiguration.class, SwaggerConfig.class})
+@Import({FacadeConfiguration.class, SwaggerConfig.class, WebConfigRestSecurityCommons.class})
 public class WebConfigRestTraining extends SpringBootServletInitializer {
 
     private static final Logger LOG = LoggerFactory.getLogger(WebConfigRestTraining.class);

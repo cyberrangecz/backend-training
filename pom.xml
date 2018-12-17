@@ -220,7 +220,6 @@
         <module>kypo2-rest-training</module>
         <module>kypo2-elasticsearch-training</module>
         <module>kypo2-facade-training</module>
-        <module>kypo2-security-training</module>
     </modules>
 
 </project>
