@@ -35,7 +35,7 @@ public class TrainingDefinitionUpdateDTO {
     @NotNull(message = "{trainingdefinitionupdate.showStepperBar.NotNull.message}")
     private boolean showStepperBar;
 
-    @ApiModelProperty(value = "Main identifier of training definition.", required = true, example = "1")
+    @ApiModelProperty(value = "Main identifier of training definition.", required = true, example = "2")
     public Long getId() {
         return id;
     }

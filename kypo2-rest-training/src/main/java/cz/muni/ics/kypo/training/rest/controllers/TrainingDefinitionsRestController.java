@@ -284,7 +284,8 @@ public class TrainingDefinitionsRestController {
     @ApiOperation(httpMethod = "DELETE",
             value = "Delete training definition",
             notes = "Released training definition canont be deleted",
-            nickname = "deleteTrainingDefinition")
+            nickname = "deleteTrainingDefinition",
+            response = Void.class)
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Training definition deleted."),
             @ApiResponse(code = 404, message = "Training definition or one of levels cannot be found."),
@@ -308,7 +309,7 @@ public class TrainingDefinitionsRestController {
             notes = "Level can be deleted only in unreleased training definition",
             nickname = "deleteOneLevel",
             produces = "application/json",
-            response = BasicLevelInfoDTO.class)
+            response = Void.class)
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "The level deleted."),
             @ApiResponse(code = 404, message = "Level with given id not found."),
@@ -334,7 +335,7 @@ public class TrainingDefinitionsRestController {
             nickname = "updateGameLevel",
             consumes = "application/json")
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Game level updated."),
+            @ApiResponse(code = 204, message = "Game level updated."),
             @ApiResponse(code = 400, message = "Given game level is not valid."),
             @ApiResponse(code = 409, message = "Cannot edit released or archived training definition."),
             @ApiResponse(code = 404, message = "Level not found in definition."),
@@ -360,7 +361,7 @@ public class TrainingDefinitionsRestController {
             nickname = "updateInfoLevel",
             consumes = "application/json")
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Info level updated."),
+            @ApiResponse(code = 204, message = "Info level updated."),
             @ApiResponse(code = 400, message = "Given info level is not valid."),
             @ApiResponse(code = 409, message = "Cannot edit released or archived training definition."),
             @ApiResponse(code = 404, message = "Level not found in definition."),
@@ -386,7 +387,7 @@ public class TrainingDefinitionsRestController {
             nickname = "updateAssessmentLevel",
             consumes = "application/json")
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Assessment level updated."),
+            @ApiResponse(code = 204, message = "Assessment level updated."),
             @ApiResponse(code = 400, message = "Given assessment level is not valid."),
             @ApiResponse(code = 409, message = "Cannot edit released or archived training definition."),
             @ApiResponse(code = 404, message = "Level not found in definition."),

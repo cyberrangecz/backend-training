@@ -28,7 +28,7 @@ public class AssessmentLevelUpdateDTO {
     @NotNull(message = "{assessmentlevelupdate.type.NotNull.message}")
     private AssessmentType type;
 
-    @ApiModelProperty(value = "Main identifier of level.", required = true, example = "3")
+    @ApiModelProperty(value = "Main identifier of level.", required = true, example = "7")
     public Long getId() {
         return id;
     }
@@ -55,7 +55,7 @@ public class AssessmentLevelUpdateDTO {
         this.maxScore = maxScore;
     }
 
-    @ApiModelProperty(value = "Questions of assessment level to update.", example = "What is my fathers name?")
+    @ApiModelProperty(value = "Questions of assessment level to update.", example = "\"[]\"")
     public String getQuestions() {
         return questions;
     }
@@ -64,7 +64,7 @@ public class AssessmentLevelUpdateDTO {
         this.questions = questions;
     }
 
-    @ApiModelProperty(value = "Instructions of assessment level to update.", example = "Fill me up fast")
+    @ApiModelProperty(value = "Instructions of assessment level to update.", example = "Fill me up slowly")
     public String getInstructions() {
         return instructions;
     }
