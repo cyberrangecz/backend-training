@@ -244,7 +244,7 @@ public class TrainingRunServiceTest {
         trainingInstance1.setTrainingDefinition(trainingDefinition);
         given(trainingDefinitionRepository.save(any(TrainingDefinition.class))).willReturn(trainingDefinition);
         given(trainingInstanceRepository.findAllByStartTimeAfterAndEndTimeBefore(any(LocalDateTime.class))).willReturn(Arrays.asList(trainingInstance1));
-        given(trainingRunRepository.findSandboxInstanceRefsOfTrainingInstance(trainingInstance1.getId())).willReturn(new HashSet<>());
+        given(trainingRunRepository.findFreeSandboxesOfTrainingInstance(trainingInstance1.getId())).willReturn(new HashSet<SandboxInstanceRef>(Arrays.asList(sandboxInstanceRef1)));
         given(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class), anyString())).willReturn(new ResponseEntity<List<SandboxInfo>>(new ArrayList<>(Arrays.asList(sandboxInfo)), HttpStatus.OK));
         given(abstractLevelRepository.findById(trainingInstance1.getTrainingDefinition().getStartingLevel())).willReturn(Optional.of(gameLevel));
         given(participantRefRepository.findByParticipantRefLogin(participantRef.getParticipantRefLogin())).willReturn(Optional.of(participantRef));
