@@ -182,9 +182,9 @@ public class TrainingRunFacadeTest {
 
     @Test
     public void getNextLevel() {
-        given(trainingRunService.getNextLevel(1L)).willReturn((AbstractLevel) assessmentLevel);
-        trainingRunFacade.getNextLevel(1L);
-        then(trainingRunService).should().getNextLevel(1L);
+        given(trainingRunService.getNextLevel(3L)).willReturn((AbstractLevel) infoLevel);
+        trainingRunFacade.getNextLevel(3L);
+        then(trainingRunService).should().getNextLevel(3L);
     }
 
     @Test

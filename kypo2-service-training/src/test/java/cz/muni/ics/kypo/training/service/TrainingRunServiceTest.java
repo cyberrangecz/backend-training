@@ -124,7 +124,7 @@ public class TrainingRunServiceTest {
         trainingInstance2 = new TrainingInstance();
         trainingInstance2.setId(2L);
         trainingInstance2.setSandboxInstanceRefs(new HashSet<>(Arrays.asList(sandboxInstanceRef2)));
-        trainingInstance2.setPassword("$5asdMmkskdm@365csadSD4fdF45fsdFSC54dw48WD7v7WD4fe254WEF54wd");
+        trainingInstance2.setPassword("keyword-1234");
         trainingInstance2.setTrainingDefinition(trainingDefinition2);
 
         trainingInstance1 = new TrainingInstance();
@@ -133,7 +133,7 @@ public class TrainingRunServiceTest {
         trainingInstance1.setEndTime(LocalDateTime.now().plusHours(1L));
         trainingInstance1.setTitle("TrainingInstance1");
         trainingInstance1.setPoolSize(5);
-        trainingInstance1.setPassword("$2a$12$rhWNRfPDgxBX1Zv2/jg8DOWT97MIPVKPpXyjGcaCtEhQ0Z36H8y1y");
+        trainingInstance1.setPassword("keyword-5678");
         trainingInstance1.setTrainingDefinition(trainingDefinition);
         trainingInstance1.setSandboxInstanceRefs(new HashSet<>(Arrays.asList(sandboxInstanceRef1, sandboxInstanceRef2)));
 
@@ -243,7 +243,7 @@ public class TrainingRunServiceTest {
         mockSpringSecurityContextForGet();
         trainingInstance1.setTrainingDefinition(trainingDefinition);
         given(trainingDefinitionRepository.save(any(TrainingDefinition.class))).willReturn(trainingDefinition);
-        given(trainingInstanceRepository.findAll()).willReturn(Arrays.asList(trainingInstance1));
+        given(trainingInstanceRepository.findAllByStartTimeAfterAndEndTimeBefore(any(LocalDateTime.class))).willReturn(Arrays.asList(trainingInstance1));
         given(trainingRunRepository.findSandboxInstanceRefsOfTrainingInstance(trainingInstance1.getId())).willReturn(new HashSet<>());
         given(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class), anyString())).willReturn(new ResponseEntity<List<SandboxInfo>>(new ArrayList<>(Arrays.asList(sandboxInfo)), HttpStatus.OK));
         given(abstractLevelRepository.findById(trainingInstance1.getTrainingDefinition().getStartingLevel())).willReturn(Optional.of(gameLevel));

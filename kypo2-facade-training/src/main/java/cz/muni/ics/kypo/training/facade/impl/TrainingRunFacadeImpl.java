@@ -1,11 +1,15 @@
 package cz.muni.ics.kypo.training.facade.impl;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.github.fge.jackson.JsonLoader;
 import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.training.annotations.TransactionalRO;
 import cz.muni.ics.kypo.training.annotations.TransactionalWO;
 import cz.muni.ics.kypo.training.api.PageResultResource;
 import cz.muni.ics.kypo.training.api.dto.AbstractLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.IsCorrectFlagDTO;
+import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.hint.HintDTO;
 import cz.muni.ics.kypo.training.api.dto.BasicLevelInfoDTO;
 import cz.muni.ics.kypo.training.api.dto.run.AccessTrainingRunDTO;
@@ -27,6 +31,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -259,17 +264,37 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
         if (abstractLevel instanceof AssessmentLevel) {
             AssessmentLevel assessmentLevel = (AssessmentLevel) abstractLevel;
             abstractLevelDTO = assessmentLevelMapper.mapToDTO(assessmentLevel);
-	    abstractLevelDTO.setLevelType(LevelType.ASSESSMENT);
+            abstractLevelDTO.setLevelType(LevelType.ASSESSMENT);
+            deleteInfoAboutCorrectnessFromQuestions((AssessmentLevelDTO) abstractLevelDTO);
         } else if (abstractLevel instanceof GameLevel) {
             GameLevel gameLevel = (GameLevel) abstractLevel;
-            abstractLevelDTO = gameLevelMapper.mapToDTO(gameLevel);
-	    abstractLevelDTO.setLevelType(LevelType.GAME);
+            abstractLevelDTO = gameLevelMapper.mapToViewDTO(gameLevel);
+            abstractLevelDTO.setLevelType(LevelType.GAME);
         } else {
             InfoLevel infoLevel = (InfoLevel) abstractLevel;
             abstractLevelDTO = infoLevelMapper.mapToDTO(infoLevel);
 	    abstractLevelDTO.setLevelType(LevelType.INFO);
         }
         return abstractLevelDTO;
+    }
+
+    private void deleteInfoAboutCorrectnessFromQuestions(AssessmentLevelDTO assessmentLevelDTO) {
+        try {
+            JsonNode n = JsonLoader.fromString(assessmentLevelDTO.getQuestions());
+            for (JsonNode question : n) {
+                ((ObjectNode) question).remove("correct_choices");
+                if(question.has("choices")) {
+                    for (JsonNode choices : question.get("choices")) {
+                        ((ObjectNode) choices).remove("pair");
+                        ((ObjectNode) choices).remove("is_correct");
+
+                        }
+                    }
+                }
+            assessmentLevelDTO.setQuestions(n.toString());
+        }catch (IOException ex) {
+
+        }
 
     }
 }

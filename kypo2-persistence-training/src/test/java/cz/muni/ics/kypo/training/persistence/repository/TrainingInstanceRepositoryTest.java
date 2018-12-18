@@ -51,15 +51,15 @@ public class TrainingInstanceRepositoryTest {
 
         trainingInstance1 = new TrainingInstance();
         trainingInstance2 = new TrainingInstance();
-        trainingInstance1.setStartTime(LocalDateTime.now());
-        trainingInstance1.setEndTime(LocalDateTime.now());
+        trainingInstance1.setStartTime(LocalDateTime.now().minusMinutes(1));
+        trainingInstance1.setEndTime(LocalDateTime.now().plusMinutes(1));
         trainingInstance1.setTitle("Training instance 1");
         trainingInstance1.setPoolSize(10);
         trainingInstance1.setPassword("1Eh9A5l7Op5As8s0h9");
         trainingInstance1.setTrainingDefinition(entityManager.persist(trainingDefinition));
 
-        trainingInstance2.setStartTime(LocalDateTime.now());
-        trainingInstance2.setEndTime(LocalDateTime.now());
+        trainingInstance2.setStartTime(LocalDateTime.now().minusMinutes(2));
+        trainingInstance2.setEndTime(LocalDateTime.now().minusMinutes(1));
         trainingInstance2.setTitle("Training instance 2");
         trainingInstance2.setPoolSize(15);
         trainingInstance2.setPassword("R8a9C7B4a2c8A2cN1E");
@@ -89,6 +89,16 @@ public class TrainingInstanceRepositoryTest {
         assertEquals(2, resultTrainingInstance.size());
         assertTrue(resultTrainingInstance.contains(trainingInstance1));
         assertTrue(resultTrainingInstance.contains(trainingInstance2));
+    }
+
+    @Test
+    public void findAllByStartTimeAfterAndEndTimeBefore() {
+        entityManager.persist(trainingInstance1);
+        entityManager.persist(trainingInstance2);
+        List<TrainingInstance> resultTrainingInstance = trainingInstanceRepository.findAllByStartTimeAfterAndEndTimeBefore(LocalDateTime.now());
+        assertNotNull(resultTrainingInstance);
+        assertEquals(1, resultTrainingInstance.size());
+        assertTrue(resultTrainingInstance.contains(trainingInstance1));
     }
 
     @Test
