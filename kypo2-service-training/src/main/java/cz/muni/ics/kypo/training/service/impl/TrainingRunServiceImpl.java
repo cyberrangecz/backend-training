@@ -176,7 +176,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
     public TrainingRun accessTrainingRun(String password) {
         LOG.debug("accessTrainingRun({})", password);
         Assert.hasLength(password, "Password cannot be null or empty.");
-        List<TrainingInstance> trainingInstances = trainingInstanceRepository.findAll();
+        List<TrainingInstance> trainingInstances = trainingInstanceRepository.findAllByStartTimeAfterAndEndTimeBefore(LocalDateTime.now());
         for (TrainingInstance trainingInstance : trainingInstances) {
 
             if (trainingInstance.getPassword().equals(password)) {
