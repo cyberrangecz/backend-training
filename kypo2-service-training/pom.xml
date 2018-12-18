@@ -40,11 +40,6 @@
             <artifactId>kypo2-elasticsearch-training</artifactId>
             <version>1.0.0</version>
         </dependency>
-        <dependency>
-            <groupId>cz.muni.ics.kypo</groupId>
-            <artifactId>kypo2-security-training</artifactId>
-            <version>1.0.0</version>
-        </dependency>
         <!-- spring web dependencies are necessary for swagger codegen classes -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
