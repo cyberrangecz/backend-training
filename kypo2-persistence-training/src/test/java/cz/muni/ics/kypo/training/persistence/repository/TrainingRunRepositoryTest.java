@@ -42,7 +42,7 @@ public class TrainingRunRepositoryTest {
 
     private TrainingRun trainingRun1, trainingRun2;
     private TrainingInstance trainingInstance;
-    private SandboxInstanceRef sandboxInstanceRef1, sandboxInstanceRef2;
+    private SandboxInstanceRef sandboxInstanceRef1, sandboxInstanceRef2, sandboxInstanceRef3;
     private TrainingDefinition trainingDefinition;
     private InfoLevel infoLevel;
     private ParticipantRef participantRef;
@@ -55,26 +55,41 @@ public class TrainingRunRepositoryTest {
 
     @Before
     public void init() {
-        trainingInstance = new TrainingInstance();
+
         sandboxInstanceRef1 = new SandboxInstanceRef();
         sandboxInstanceRef1.setSandboxInstanceRef(1L);
         sandboxInstanceRef2 = new SandboxInstanceRef();
         sandboxInstanceRef2.setSandboxInstanceRef(2L);
+        sandboxInstanceRef3 = new SandboxInstanceRef();
+        sandboxInstanceRef3.setSandboxInstanceRef(3L);
+
         trainingDefinition = new TrainingDefinition();
         trainingDefinition.setState(TDState.ARCHIVED);
         trainingDefinition.setTitle("training definition title");
+
         infoLevel = new InfoLevel();
         infoLevel.setTitle("infoLevel");
         infoLevel.setContent("content for info level");
+
         participantRef = new ParticipantRef();
         participantRef.setParticipantRefLogin("user");
+
+        trainingInstance = new TrainingInstance();
         trainingInstance.setPassword("b5f3dc27a09865be37cef07816c4f08cf5585b116a4e74b9387c3e43e3a25ec8");
         trainingInstance.setStartTime(LocalDateTime.now());
         trainingInstance.setEndTime(LocalDateTime.now());
         trainingInstance.setTitle("title");
         trainingInstance.setTrainingDefinition(entityManager.persist(trainingDefinition));
-        sandboxInstanceRef1.setTrainingInstance(trainingInstance);
+
+        trainingRun2 = new TrainingRun();
+        trainingRun2.setStartTime(LocalDateTime.now());
+        trainingRun2.setEndTime(LocalDateTime.now());
+        trainingRun2.setState(TRState.ALLOCATED);
+        trainingRun2.setCurrentLevel(entityManager.persist(infoLevel));
+        trainingRun2.setParticipantRef(entityManager.persist(participantRef));
+        trainingRun2.setTrainingInstance(entityManager.persist(trainingInstance));
         sandboxInstanceRef2.setTrainingInstance(trainingInstance);
+        trainingRun2.setSandboxInstanceRef(entityManager.persist(sandboxInstanceRef2));
 
         trainingRun1 = new TrainingRun();
         trainingRun1.setStartTime(LocalDateTime.now());
@@ -83,16 +98,13 @@ public class TrainingRunRepositoryTest {
         trainingRun1.setCurrentLevel(entityManager.persist(infoLevel));
         trainingRun1.setParticipantRef(entityManager.persist(participantRef));
         trainingRun1.setTrainingInstance(entityManager.persist(trainingInstance));
+        sandboxInstanceRef1.setTrainingInstance(trainingInstance);
         trainingRun1.setSandboxInstanceRef(entityManager.persist(sandboxInstanceRef1));
 
-        trainingRun2 = new TrainingRun();
-        trainingRun2.setStartTime(LocalDateTime.now());
-        trainingRun2.setEndTime(LocalDateTime.now());
-        trainingRun2.setState(TRState.READY);
-        trainingRun2.setCurrentLevel(infoLevel);
-        trainingRun2.setParticipantRef(participantRef);
-        trainingRun2.setTrainingInstance(trainingInstance);
-        trainingRun2.setSandboxInstanceRef(entityManager.persist(sandboxInstanceRef2));
+        sandboxInstanceRef2.setTrainingInstance(trainingInstance);
+        entityManager.persist(sandboxInstanceRef2);
+        sandboxInstanceRef3.setTrainingInstance(trainingInstance);
+        entityManager.persist(sandboxInstanceRef3);
 
         pageable = PageRequest.of(0, 10);
     }
@@ -166,8 +178,7 @@ public class TrainingRunRepositoryTest {
     @Test
     public void getAllocatedSandboxInstanceRefsOfTrainingInstance() throws Exception {
         entityManager.persist(trainingRun1);
-        entityManager.persist(trainingRun2);
-        Set<SandboxInstanceRef> sandboxInstanceRefs = trainingRunRepository.findSandboxInstanceRefsOfTrainingInstance(trainingInstance.getId());
+        Set<SandboxInstanceRef> sandboxInstanceRefs = trainingRunRepository.findFreeSandboxesOfTrainingInstance(trainingInstance.getId());
         assertEquals(2, sandboxInstanceRefs.size());
     }
 }

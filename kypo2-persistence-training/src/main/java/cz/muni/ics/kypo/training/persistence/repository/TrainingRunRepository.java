@@ -26,22 +26,32 @@ public interface TrainingRunRepository extends JpaRepository<TrainingRun, Long>,
     @EntityGraph(attributePaths = {"participantRef", "sandboxInstanceRef"})
     Page<TrainingRun> findAll(Predicate predicate, Pageable pageable);
 
-    @Query("SELECT DISTINCT tr FROM TrainingRun tr INNER JOIN tr.participantRef pr WHERE pr.participantRefLogin = :participantRef")
+    @EntityGraph(attributePaths = {"participantRef", "sandboxInstanceRef"})
+    Optional<TrainingRun> findById(Long id);
+
+    @Query(value = "SELECT tr FROM TrainingRun tr JOIN FETCH tr.participantRef pr JOIN FETCH tr.trainingInstance ti " +
+            "JOIN FETCH ti.trainingDefinition WHERE pr.participantRefLogin = :participantRef",
+            countQuery = "SELECT COUNT(tr) FROM TrainingRun tr INNER JOIN tr.participantRef pr INNER JOIN tr.trainingInstance ti " +
+                    "INNER JOIN ti.trainingDefinition WHERE pr.participantRefLogin = :participantRef")
     Page<TrainingRun> findAllByParticipantRefLogin(@Param("participantRef") String participantRefLogin, Pageable pageable);
 
-    @Query("SELECT tr FROM TrainingRun tr JOIN FETCH tr.currentLevel WHERE tr.id= :trainingRunId")
+    @Query("SELECT tr FROM TrainingRun tr JOIN FETCH tr.currentLevel JOIN FETCH tr.trainingInstance ti JOIN FETCH ti.trainingDefinition WHERE tr.id= :trainingRunId")
     Optional<TrainingRun> findByIdWithLevel(@Param("trainingRunId") Long trainingRunId);
 
-    @Query("SELECT tr FROM TrainingRun tr INNER JOIN tr.participantRef pr INNER JOIN tr.trainingInstance ti INNER JOIN "
-            + "ti.trainingDefinition td WHERE td.id = :trainingDefinitionId AND pr.participantRefLogin = :participantRefLogin")
+    @Query(value = "SELECT tr FROM TrainingRun tr JOIN FETCH tr.participantRef pr JOIN FETCH tr.trainingInstance ti JOIN FETCH "
+            + "ti.trainingDefinition td WHERE td.id = :trainingDefinitionId AND pr.participantRefLogin = :participantRefLogin",
+            countQuery = "SELECT tr FROM TrainingRun tr INNER JOIN tr.participantRef pr INNER JOIN tr.trainingInstance ti INNER JOIN " +
+                    "ti.trainingDefinition td WHERE td.id = :trainingDefinitionId AND pr.participantRefLogin = :participantRefLogin")
     Page<TrainingRun> findAllByTrainingDefinitionIdAndParticipantRefLogin(@Param("trainingDefinitionId") Long trainingDefinitionId,
                                                                           @Param("participantRefLogin") String participantRefLogin, Pageable pageable);
 
     Page<TrainingRun> findAllByTrainingInstanceId(Long trainingInstanceId, Pageable pageable);
 
-    @Query("SELECT tr FROM TrainingRun tr INNER JOIN tr.trainingInstance ti INNER JOIN ti.trainingDefinition td WHERE td.id = :trainingDefinitionId")
+    @Query(value = "SELECT tr FROM TrainingRun tr JOIN FETCH tr.trainingInstance ti JOIN FETCH ti.trainingDefinition td WHERE td.id = :trainingDefinitionId",
+    countQuery = "SELECT tr FROM TrainingRun tr INNER JOIN tr.trainingInstance ti INNER JOIN ti.trainingDefinition td WHERE td.id = :trainingDefinitionId")
     Page<TrainingRun> findAllByTrainingDefinitionId(@Param("trainingDefinitionId") Long trainingDefinitionId, Pageable pageable);
 
-    @Query("SELECT sir FROM TrainingRun tr INNER JOIN tr.sandboxInstanceRef sir INNER JOIN tr.trainingInstance ti WHERE ti.id = :trainingInstanceId")
-    Set<SandboxInstanceRef> findSandboxInstanceRefsOfTrainingInstance(@Param("trainingInstanceId") Long trainingInstanceId);
+    @Query("SELECT sir FROM SandboxInstanceRef sir JOIN FETCH sir.trainingInstance ti WHERE ti.id = :trainingInstanceId AND sir NOT IN " +
+            "(SELECT si FROM TrainingRun tr INNER JOIN tr.sandboxInstanceRef si WHERE tr.trainingInstance.id = :trainingInstanceId)")
+    Set<SandboxInstanceRef> findFreeSandboxesOfTrainingInstance(@Param("trainingInstanceId") Long trainingInstanceId);
 }

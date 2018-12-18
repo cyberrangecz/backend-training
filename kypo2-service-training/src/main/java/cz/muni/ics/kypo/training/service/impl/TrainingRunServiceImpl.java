@@ -160,6 +160,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
         Assert.notNull(levelId, "Id of first level must not be null.");
         List<AbstractLevel> levels = new ArrayList<>();
         do {
+
             Optional<AbstractLevel> optionalAbstractLevel = abstractLevelRepository.findById(levelId);
             if (!optionalAbstractLevel.isPresent()) {
                 throw new ServiceLayerException("Level with id: " + levelId + " not found.", ErrorCode.RESOURCE_NOT_FOUND);
@@ -178,16 +179,12 @@ public class TrainingRunServiceImpl implements TrainingRunService {
         Assert.hasLength(password, "Password cannot be null or empty.");
         List<TrainingInstance> trainingInstances = trainingInstanceRepository.findAllByStartTimeAfterAndEndTimeBefore(LocalDateTime.now());
         for (TrainingInstance trainingInstance : trainingInstances) {
-
             if (trainingInstance.getPassword().equals(password)) {
-                Set<SandboxInstanceRef> sandboxInstancePool = new HashSet<>(trainingInstance.getSandboxInstanceRefs());
-                Set<SandboxInstanceRef> allocatedSandboxInstances = trainingRunRepository.findSandboxInstanceRefsOfTrainingInstance(trainingInstance.getId());
-                sandboxInstancePool.removeAll(allocatedSandboxInstances);
-                if (!sandboxInstancePool.isEmpty()) {
-                    SandboxInstanceRef sandboxInstanceRef = getReadySandboxInstanceRef(sandboxInstancePool);
+                Set<SandboxInstanceRef> freeSandboxes= trainingRunRepository.findFreeSandboxesOfTrainingInstance(trainingInstance.getId());
+                if (!freeSandboxes.isEmpty()) {
+                    SandboxInstanceRef sandboxInstanceRef = getReadySandboxInstanceRef(freeSandboxes);
                     AbstractLevel al = abstractLevelRepository.findById(trainingInstance.getTrainingDefinition().getStartingLevel()).orElseThrow(() -> new ServiceLayerException("No starting level available for this training definition", ErrorCode.RESOURCE_NOT_FOUND));
-                    TrainingRun trainingRun =
-                            getNewTrainingRun(al, getSubOfLoggedInUser(), trainingInstance, TRState.NEW, LocalDateTime.now(), trainingInstance.getEndTime(), sandboxInstanceRef);
+                    TrainingRun trainingRun = getNewTrainingRun(al, getSubOfLoggedInUser(), trainingInstance, TRState.NEW, LocalDateTime.now(), trainingInstance.getEndTime(), sandboxInstanceRef);
                     trainingRun = create(trainingRun);
                     // audit this action to the Elasticsearch
                     auditTrainingRunStartedAction(trainingInstance, trainingRun);
@@ -266,15 +263,12 @@ public class TrainingRunServiceImpl implements TrainingRunService {
         AbstractLevel level = trainingRun.getCurrentLevel();
         if (level instanceof GameLevel) {
             if (((GameLevel) level).getFlag().equals(flag)) {
-                //tR.setIncorrectFlagCount(0);
-                trainingRunRepository.save(trainingRun);
                 trainingRun.setLevelAnswered(true);
                 auditCorrectFlagSubmittedAction(trainingRun, flag);
                 auditLevelCompletedAction(trainingRun);
                 return true;
             } else {
                 trainingRun.setIncorrectFlagCount(trainingRun.getIncorrectFlagCount() + 1);
-                trainingRunRepository.save(trainingRun);
                 auditWrongFlagSubmittedAction(trainingRun, flag);
                 return false;
             }
@@ -469,7 +463,6 @@ public class TrainingRunServiceImpl implements TrainingRunService {
             TrainingDefinition trainingDefinition = trainingInstance.getTrainingDefinition();
             Long trainingDefinitionId = trainingDefinition.getId();
             Long sandboxId = trainingDefinition.getSandBoxDefinitionRef().getId();
-
             HintTaken hintTaken = HintTaken.builder()
                     .sandboxId(sandboxId)
                     .trainingDefinitionId(trainingDefinitionId)
@@ -483,7 +476,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
                     .hintPenaltyPoints(hint.getHintPenalty())
                     .hintTitle(hint.getTitle())
                     .build();
-
+            LOG.info("AUDIT AFT");
             auditService.save(hintTaken);
         }
     }
