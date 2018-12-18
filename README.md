@@ -185,6 +185,10 @@ $ mvn clover:optimize clean install -Dansi.color=true
 ```
 -Dansi.color does not work on all OS and is not necessary, it only prints info about time saving in color.
 
+## ER Diagram
+ER diagram generated from model in persistence module
+![alt text](doc-files/er_diagram_training.jpg)
+
 ## Used Technologies
 The project was built and tested with these technologies, so if you have any unexpected troubles let us know.
 
@@ -200,6 +204,31 @@ PostgreSQL    : 9.5
 Elasticsearch : 5.5.0
 ```
 
-## ER Diagram
-ER diagram generated from model in persistence module
-![alt text](doc-files/er_diagram_training.jpg)
+## Installing technologies on Debian based system
+### Installing Java
+```
+$ sudo apt-add-repository ppa:webupd8team/java
+$ sudo apt-get
+$ sudo apt-get install oracle-java8-installer
+```
+Verify the installation:
+```
+$ java -version
+```
+Set JAVA_HOME and JRE_HOME environment variables:
+```
+$ JAVA_HOME=/usr/lib/jvm/java-8-oracle
+$ JRE_HOME=/usr/lib/jvm/java-8-oracle/jre
+```
+### Installing Maven
+```
+$ apt-cache search maven
+$ sudo apt-get install maven
+```
+Verify the installation:
+```
+$ mvn -v
+```
+
+### PostgreSQL installation 
+Follow the steps in the following link: [https://www.digitalocean.com/community/tutorials/how-to-install-and-use-postgresql-on-ubuntu-16-04]
