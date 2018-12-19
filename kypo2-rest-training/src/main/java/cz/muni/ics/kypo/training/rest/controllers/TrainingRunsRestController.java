@@ -18,7 +18,9 @@ import cz.muni.ics.kypo.training.rest.ExceptionSorter;
 import cz.muni.ics.kypo.training.rest.utils.annotations.ApiPageableSwagger;
 import io.swagger.annotations.*;
 import cz.muni.ics.kypo.training.api.dto.hint.HintDTO;
+
 import java.util.List;
+
 import org.jsondoc.core.annotation.ApiObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,8 +36,7 @@ import org.springframework.web.bind.annotation.*;
 /**
  * @author Dominik Pilar (445537)
  */
-@Api(value = "/training-runs", tags = "Training runs", consumes = "application/json"
-)
+@Api(value = "/training-runs", tags = "Training runs", consumes = MediaType.APPLICATION_JSON_VALUE)
 @ApiResponses(value = {
         @ApiResponse(code = 401, message = "Full authentication is required to access this resource."),
         @ApiResponse(code = 403, message = "The necessary permissions are required for a resource.")
@@ -65,7 +66,7 @@ public class TrainingRunsRestController {
             value = "Get training run by Id.",
             response = TrainingRunDTO.class,
             nickname = "findTrainingRunById",
-            produces = "application/json"
+            produces = MediaType.APPLICATION_JSON_VALUE
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Training run with given id found.", response = TrainingRunDTO.class),
@@ -86,7 +87,7 @@ public class TrainingRunsRestController {
         }
     }
 
-    @ApiObject(name = "Result info (Page)",
+    @ApiModel(value = "TrainingRunRestResource",
             description = "Content (Retrieved data) and meta information about REST API result page. Including page number, number of elements in page, size of elements, total number of elements and total number of pages")
     private static class TrainingRunRestResource extends PageResultResource<TrainingRunDTO> {
         @JsonProperty(required = true)
@@ -106,7 +107,7 @@ public class TrainingRunsRestController {
             value = "Get all training Runs.",
             response = TrainingRunRestResource.class,
             nickname = "findAllTrainingRuns",
-            produces = "application/json"
+            produces = MediaType.APPLICATION_JSON_VALUE
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "All training runs found.", response = TrainingRunDTO.class, responseContainer = "List"),
@@ -135,9 +136,7 @@ public class TrainingRunsRestController {
             value = "Access training run.",
             response = AccessTrainingRunDTO.class,
             nickname = "accessTrainingRun",
-            produces = "application/json",
-            authorizations = {
-            }
+            produces = MediaType.APPLICATION_JSON_VALUE
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Training run accessed.", response = AccessTrainingRunDTO.class),
@@ -145,7 +144,7 @@ public class TrainingRunsRestController {
             @ApiResponse(code = 500, message = "Some error occurred during getting info about sandboxes."),
             @ApiResponse(code = 503, message = "There is no available sandbox, wait a minute and try again.")
     })
-    @PostMapping( produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<AccessTrainingRunDTO> accessTrainingRun(@ApiParam(value = "password", required = true) @RequestParam(value = "password", required = false) String password) {
         LOG.debug("accessTrainingRun({})", password);
         try {
@@ -156,8 +155,7 @@ public class TrainingRunsRestController {
         }
     }
 
-    @ApiObject(name = "Result info (Page)",
-            description = "Content (Retrieved data) and meta information about REST API result page. Including page number, number of elements in page, size of elements, total number of elements and total number of pages")
+    @ApiModel(description = "Content (Retrieved data) and meta information about REST API result page. Including page number, number of elements in page, size of elements, total number of elements and total number of pages")
     private static class AccessedTrainingRunRestResource extends PageResultResource<AccessedTrainingRunDTO> {
         @JsonProperty(required = true)
         @ApiModelProperty(value = "Retrieved Accessed Training Runs from databases.")
@@ -178,9 +176,7 @@ public class TrainingRunsRestController {
             response = AccessedTrainingRunRestResource.class,
             responseContainer = "Page",
             nickname = "findAllTrainingRuns",
-            produces = "application/json",
-            authorizations = {
-            }
+            produces = MediaType.APPLICATION_JSON_VALUE
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "All accessed training runs found.", response = AccessedTrainingRunDTO.class, responseContainer = "List"),
@@ -189,10 +185,10 @@ public class TrainingRunsRestController {
     @ApiPageableSwagger
     @GetMapping(path = "/accessible", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> getAllAccessedTrainingRuns(@ApiParam(value = "Pagination support.", required = false) Pageable pageable,
-                                                            @ApiParam(value = "Parameters for filtering the objects.", required = false)
-                                                            @RequestParam MultiValueMap<String, String> parameters,
-                                                            @ApiParam(value = "Fields which should be returned in REST API response", required = false)
-                                                            @RequestParam(value = "fields", required = false) String fields) {
+                                                             @ApiParam(value = "Parameters for filtering the objects.", required = false)
+                                                             @RequestParam MultiValueMap<String, String> parameters,
+                                                             @ApiParam(value = "Fields which should be returned in REST API response", required = false)
+                                                             @RequestParam(value = "fields", required = false) String fields) {
         PageResultResource<AccessedTrainingRunDTO> accessedTrainingRunDTOS = trainingRunFacade.findAllAccessedTrainingRuns(pageable);
         Squiggly.init(objectMapper, fields);
         return new ResponseEntity<>(SquigglyUtils.stringify(objectMapper, accessedTrainingRunDTOS), HttpStatus.OK);
@@ -209,7 +205,7 @@ public class TrainingRunsRestController {
             notes = "Returns (assessment, game, info) level if any next level exists and training run as well",
             response = AbstractLevelDTO.class,
             nickname = "getNextLevel",
-            produces = "application/json"
+            produces = MediaType.APPLICATION_JSON_VALUE
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Next level found.", response = AbstractLevelDTO.class),
@@ -224,7 +220,7 @@ public class TrainingRunsRestController {
         try {
             AbstractLevelDTO levelDTO = trainingRunFacade.getNextLevel(runId);
             Squiggly.init(objectMapper, fields);
-            return new ResponseEntity<>(SquigglyUtils.stringify(objectMapper, levelDTO), HttpStatus.OK);
+            return ResponseEntity.ok(SquigglyUtils.stringify(objectMapper, levelDTO));
         } catch (FacadeLayerException ex) {
             throw ExceptionSorter.throwException(ex);
         }
@@ -241,9 +237,7 @@ public class TrainingRunsRestController {
             notes = "Returns solution if given training runs exists and current level is game level",
             response = String.class,
             nickname = "getSolution",
-            produces = "application/json",
-            authorizations = {
-            }
+            produces = MediaType.APPLICATION_JSON_VALUE
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Solution found.", response = String.class),
@@ -255,8 +249,7 @@ public class TrainingRunsRestController {
     public ResponseEntity<String> getSolution(@ApiParam(value = "Training run ID", required = true) @PathVariable Long runId) {
         LOG.debug("getSolution({})", runId);
         try {
-            String solution = trainingRunFacade.getSolution(runId);
-            return new ResponseEntity<>(solution, HttpStatus.OK);
+            return ResponseEntity.ok(trainingRunFacade.getSolution(runId));
         } catch (FacadeLayerException ex) {
             throw ExceptionSorter.throwException(ex);
         }
@@ -273,9 +266,7 @@ public class TrainingRunsRestController {
             notes = "Returns hint if given training runs exists and current level is game level",
             response = String.class,
             nickname = "getHint",
-            produces = "application/json",
-            authorizations = {
-            }
+            produces = MediaType.APPLICATION_JSON_VALUE
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Hint found.", response = HintDTO.class),
@@ -293,7 +284,7 @@ public class TrainingRunsRestController {
         try {
             HintDTO hintDTO = trainingRunFacade.getHint(runId, hintId);
             Squiggly.init(objectMapper, fields);
-            return new ResponseEntity<>(SquigglyUtils.stringify(objectMapper, hintDTO), HttpStatus.OK);
+            return ResponseEntity.ok(SquigglyUtils.stringify(objectMapper, hintDTO));
         } catch (FacadeLayerException ex) {
             throw ExceptionSorter.throwException(ex);
         }
@@ -310,9 +301,7 @@ public class TrainingRunsRestController {
             notes = "Current level of given training run must be game level",
             response = Boolean.class,
             nickname = "isCorrectFlag",
-            produces = "application/json",
-            authorizations = {
-            }
+            produces = MediaType.APPLICATION_JSON_VALUE
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Flag checked.", response = IsCorrectFlagDTO.class),
@@ -325,8 +314,7 @@ public class TrainingRunsRestController {
                                                           @ApiParam(value = "Submitted flag", required = true) @RequestParam(value = "flag") String flag) {
         LOG.debug("isCorrectFlag({}, {})", runId, flag);
         try {
-            IsCorrectFlagDTO isCorrectFlagDTO = trainingRunFacade.isCorrectFlag(runId, flag);
-            return new ResponseEntity<>(isCorrectFlagDTO, HttpStatus.OK);
+            return ResponseEntity.ok(trainingRunFacade.isCorrectFlag(runId, flag));
         } catch (FacadeLayerException ex) {
             throw ExceptionSorter.throwException(ex);
         }
@@ -342,9 +330,7 @@ public class TrainingRunsRestController {
             value = "Get current level of resumed training run",
             response = AccessTrainingRunDTO.class,
             nickname = "resumeTrainingRun",
-            produces = "application/json",
-            authorizations = {
-            }
+            produces = MediaType.APPLICATION_JSON_VALUE
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Training run resumed.", response = AccessTrainingRunDTO.class),
@@ -357,7 +343,7 @@ public class TrainingRunsRestController {
         LOG.debug("resumeTrainingRun({})", runId);
         try {
             AccessTrainingRunDTO resumedTrainingRunDTO = trainingRunFacade.resumeTrainingRun(runId);
-            return new ResponseEntity<>(resumedTrainingRunDTO, HttpStatus.OK);
+            return ResponseEntity.ok(resumedTrainingRunDTO);
         } catch (FacadeLayerException ex) {
             throw ExceptionSorter.throwException(ex);
         }
@@ -372,9 +358,7 @@ public class TrainingRunsRestController {
             value = "Finish given training run",
             response = Void.class,
             nickname = "finishTrainingRun",
-            produces = "application/json",
-            authorizations = {
-            }
+            produces = MediaType.APPLICATION_JSON_VALUE
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Training run finished."),
@@ -387,7 +371,7 @@ public class TrainingRunsRestController {
         LOG.debug("finishTrainingRun({})", runId);
         try {
             trainingRunFacade.archiveTrainingRun(runId);
-            return new ResponseEntity<>(HttpStatus.OK);
+            return ResponseEntity.ok().build();
         } catch (FacadeLayerException ex) {
             throw ExceptionSorter.throwException(ex);
         }
@@ -396,16 +380,14 @@ public class TrainingRunsRestController {
     /**
      * Evaluate responses to assessment.
      *
-     * @param runId id of training run.
+     * @param runId     id of training run.
      * @param responses to assessment
      */
     @ApiOperation(httpMethod = "PUT",
             value = "Evaluate responses to assessment",
             response = Void.class,
             nickname = "evaluateResponsesToAssessment",
-            produces = "application/json",
-            authorizations = {
-            }
+            produces = MediaType.APPLICATION_JSON_VALUE
     )
     @ApiResponses(value = {
             @ApiResponse(code = 204, message = "Responses to assessment evaluated and stored ."),
@@ -419,7 +401,7 @@ public class TrainingRunsRestController {
         LOG.debug("evaluateResponsesToAssessment({})", runId);
         try {
             trainingRunFacade.evaluateResponsesToAssessment(runId, responses);
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+            return ResponseEntity.noContent().build();
         } catch (FacadeLayerException ex) {
             throw ExceptionSorter.throwException(ex);
         }

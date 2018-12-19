@@ -55,9 +55,7 @@
 
         <!-- spring for swagger version -->
         <swagger.version>2.9.2</swagger.version>
-        <!-- mitre version -->
-        <mitre.oidc.version>1.3.2</mitre.oidc.version>
-        <spring.cloud.starter.oauth2.version>2.0.1.RELEASE</spring.cloud.starter.oauth2.version>
+        <swagger-annotations.version>1.5.21</swagger-annotations.version>
 
         <!-- fast tests compilation -->
         <openclover.version>4.2.0</openclover.version>
@@ -73,11 +71,36 @@
         <!-- model mappers -->
         <modelmapper.version>2.3.2</modelmapper.version>
 
+        <com.googlecode.json-simple.version>1.1.1</com.googlecode.json-simple.version>
+        <json-schema-validator>2.2.6</json-schema-validator>
+
+        <!-- spring cloud -->
+        <spring-cloud.version>Finchley.RELEASE</spring-cloud.version>
+        <!-- mitre version -->
+        <mitre.oidc.version>1.3.2</mitre.oidc.version>
+        <spring.cloud.starter.oauth2.version>2.0.1.RELEASE</spring.cloud.starter.oauth2.version>
     </properties>
 
     <!-- specifies versions not defined by the Spring boot platform -->
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-dependencies</artifactId>
+                <version>${spring-cloud.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.googlecode.json-simple</groupId>
+                <artifactId>json-simple</artifactId>
+                <version>${com.googlecode.json-simple.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.github.fge</groupId>
+                <artifactId>json-schema-validator</artifactId>
+                <version>${json-schema-validator}</version>
+            </dependency>
             <dependency>
                 <groupId>org.json</groupId>
                 <artifactId>json</artifactId>
@@ -97,6 +120,16 @@
                 <groupId>com.fasterxml.jackson.core</groupId>
                 <artifactId>jackson-databind</artifactId>
                 <version>${jackson.databind.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.swagger</groupId>
+                <artifactId>swagger-annotations</artifactId>
+                <version>${swagger-annotations.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.swagger</groupId>
+                <artifactId>swagger-models</artifactId>
+                <version>${swagger-annotations.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.jsondoc</groupId>

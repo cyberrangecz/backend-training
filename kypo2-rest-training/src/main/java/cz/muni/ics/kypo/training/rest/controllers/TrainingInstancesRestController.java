@@ -17,6 +17,7 @@ import cz.muni.ics.kypo.training.rest.ExceptionSorter;
 
 import java.util.List;
 
+import io.swagger.annotations.*;
 import org.jsondoc.core.annotation.ApiObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,12 +31,6 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import cz.muni.ics.kypo.training.rest.exceptions.ResourceNotFoundException;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiModelProperty;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
 
 import javax.validation.Valid;
 
@@ -43,13 +38,13 @@ import javax.validation.Valid;
 /**
  * @author Pavel Šeda
  */
+@Api(value = "/training-instances", tags = "Training instances", consumes = MediaType.APPLICATION_JSON_VALUE)
 @ApiResponses(value = {
         @ApiResponse(code = 401, message = "Full authentication is required to access this resource."),
         @ApiResponse(code = 403, message = "The necessary permissions are required for a resource.")
 })
 @RestController
 @RequestMapping(path = "/training-instances", produces = MediaType.APPLICATION_JSON_VALUE)
-@Api(value = "/training-instances", tags = "Training instances", consumes = "application/json")
 public class TrainingInstancesRestController {
 
     private static final Logger LOG = LoggerFactory.getLogger(cz.muni.ics.kypo.training.rest.controllers.TrainingInstancesRestController.class);
@@ -69,10 +64,13 @@ public class TrainingInstancesRestController {
      * @param id of Training Instance to return.
      * @return Requested Training Instance by id.
      */
-    @ApiOperation(httpMethod = "GET", value = "Get training instance by Id.", response = TrainingDefinitionDTO.class,
+    @ApiOperation(httpMethod = "GET",
+            value = "Get training instance by Id.",
+            response = TrainingDefinitionDTO.class,
             nickname = "findTrainingInstanceById",
             notes = "Returns training instance by id and also contains particular training definition in it.",
-            produces = "application/json")
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Training instance found", response = TrainingInstanceDTO.class),
             @ApiResponse(code = 404, message = "Training instance with given id not found."),
@@ -86,13 +84,13 @@ public class TrainingInstancesRestController {
         try {
             TrainingInstanceDTO trainingInstanceResource = trainingInstanceFacade.findById(id);
             Squiggly.init(objectMapper, fields);
-            return new ResponseEntity<>(SquigglyUtils.stringify(objectMapper, trainingInstanceResource), HttpStatus.OK);
+            return ResponseEntity.ok(SquigglyUtils.stringify(objectMapper, trainingInstanceResource));
         } catch (FacadeLayerException ex) {
             throw ExceptionSorter.throwException(ex);
         }
     }
 
-    @ApiObject(name = "Result info (Page)",
+    @ApiModel(value = "TrainingInstanceRestResource",
             description = "Content (Retrieved data) and meta information about REST API result page. Including page number, number of elements in page, size of elements, total number of elements and total number of pages")
     private static class TrainingInstanceRestResource extends PageResultResource<TrainingInstanceDTO> {
         @JsonProperty(required = true)
@@ -103,16 +101,6 @@ public class TrainingInstancesRestController {
         private Pagination pagination;
     }
 
-    @ApiObject(name = "Result info (Page)",
-            description = "Content (Retrieved data) and meta information about REST API result page. Including page number, number of elements in page, size of elements, total number of elements and total number of pages")
-    private static class TrainingRunRestResource extends PageResultResource<TrainingRunDTO> {
-        @JsonProperty(required = true)
-        @ApiModelProperty(value = "Retrieved Training Runs from databases.")
-        private List<TrainingRunDTO> content;
-        @JsonProperty(required = true)
-        @ApiModelProperty(value = "Pagination including: page number, number of elements in page, size, total elements and total pages.")
-        private Pagination pagination;
-    }
 
     /**
      * Get all Training Instances.
@@ -124,7 +112,7 @@ public class TrainingInstancesRestController {
             response = TrainingInstanceRestResource.class,
             responseContainer = "Page",
             nickname = "findAllTrainingInstances",
-            produces = "application/json"
+            produces = MediaType.APPLICATION_JSON_VALUE
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "All training instances found.", response = TrainingInstanceDTO.class, responseContainer = "List"),
@@ -142,7 +130,7 @@ public class TrainingInstancesRestController {
         LOG.debug("findAllTrainingInstances({},{})", parameters, fields);
         PageResultResource<TrainingInstanceDTO> trainingInstanceResource = trainingInstanceFacade.findAll(predicate, pageable);
         Squiggly.init(objectMapper, fields);
-        return new ResponseEntity<>(SquigglyUtils.stringify(objectMapper, trainingInstanceResource), HttpStatus.OK);
+        return ResponseEntity.ok(SquigglyUtils.stringify(objectMapper, trainingInstanceResource));
     }
 
     @ApiOperation(httpMethod = "POST",
@@ -150,8 +138,9 @@ public class TrainingInstancesRestController {
             notes = "This can only be done by the organizer or administrator",
             response = TrainingInstanceDTO.class,
             nickname = "createTrainingInstance",
-            produces = "application/json",
-            consumes = "application/json")
+            produces = MediaType.APPLICATION_JSON_VALUE,
+            consumes = MediaType.APPLICATION_JSON_VALUE
+    )
     @ApiResponses(value = {
             @ApiResponse(code = 201, message = "Training instance created.", response = TrainingInstanceCreateDTO.class),
             @ApiResponse(code = 400, message = "Given training instance is not valid."),
@@ -164,7 +153,7 @@ public class TrainingInstancesRestController {
         try {
             TrainingInstanceDTO trainingInstanceResource = trainingInstanceFacade.create(trainingInstanceCreateDTO);
             Squiggly.init(objectMapper, fields);
-            return new ResponseEntity<>(SquigglyUtils.stringify(objectMapper, trainingInstanceResource), HttpStatus.OK);
+            return ResponseEntity.ok(SquigglyUtils.stringify(objectMapper, trainingInstanceResource));
         } catch (FacadeLayerException ex) {
             throw ExceptionSorter.throwException(ex);
         }
@@ -175,7 +164,8 @@ public class TrainingInstancesRestController {
             notes = "This can only be done by organizer of training instance or administrator",
             response = String.class,
             nickname = "updateTrainingInstance",
-            consumes = "application/json")
+            consumes = MediaType.APPLICATION_JSON_VALUE
+    )
     @ApiResponses(value = {
             @ApiResponse(code = 404, message = "The requested resource was not found"),
             @ApiResponse(code = 409, message = "The requested resource was not deleted because of its finish time")
@@ -184,7 +174,7 @@ public class TrainingInstancesRestController {
     public ResponseEntity<String> updateTrainingInstance(@ApiParam(value = "Training instance to be updated") @RequestBody @Valid TrainingInstanceUpdateDTO trainingInstanceUpdateDTO) {
         try {
             trainingInstanceFacade.update(trainingInstanceUpdateDTO);
-            return new ResponseEntity<>(HttpStatus.OK);
+            return ResponseEntity.ok().build();
         } catch (FacadeLayerException ex) {
             throw ExceptionSorter.throwException(ex);
         }
@@ -206,7 +196,7 @@ public class TrainingInstancesRestController {
     public ResponseEntity<Void> deleteTrainingInstance(@ApiParam(value = "Id of training instance to be deleted") @PathVariable(value = "id") Long id) {
         try {
             trainingInstanceFacade.delete(id);
-            return new ResponseEntity<>(HttpStatus.OK);
+            return ResponseEntity.ok().build();
         } catch (FacadeLayerException ex) {
             throw ExceptionSorter.throwException(ex);
         }
@@ -215,7 +205,8 @@ public class TrainingInstancesRestController {
     @ApiOperation(httpMethod = "POST",
             value = "Allocate sandboxes",
             response = Void.class,
-            nickname = "allocateSandboxes")
+            nickname = "allocateSandboxes"
+    )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Sandboxes have been allocated."),
             @ApiResponse(code = 404, message = "Training instance with given id not found."),
@@ -232,6 +223,16 @@ public class TrainingInstancesRestController {
         }
     }
 
+    @ApiModel(description = "Content (Retrieved data) and meta information about REST API result page. Including page number, number of elements in page, size of elements, total number of elements and total number of pages")
+    private static class TrainingRunRestResource extends PageResultResource<TrainingRunDTO> {
+        @JsonProperty(required = true)
+        @ApiModelProperty(value = "Retrieved Training Runs from databases.")
+        private List<TrainingRunDTO> content;
+        @JsonProperty(required = true)
+        @ApiModelProperty(value = "Pagination including: page number, number of elements in page, size, total elements and total pages.")
+        private Pagination pagination;
+    }
+
     /**
      * Get all Training Runs by Training Instance id.
      *
@@ -242,7 +243,7 @@ public class TrainingInstancesRestController {
             response = TrainingInstancesRestController.TrainingRunRestResource.class,
             notes = "This can only be done by organizer of training instance or administrator",
             nickname = "findAllTrainingRunsByTrainingInstanceId",
-            produces = "application/json"
+            produces = MediaType.APPLICATION_JSON_VALUE
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "All training runs in given training instance found.", response = TrainingRunDTO.class, responseContainer = "List"),
@@ -259,7 +260,7 @@ public class TrainingInstancesRestController {
         LOG.debug("findAllTrainingRunsByTrainingInstnceId({})", instanceId);
         PageResultResource<TrainingRunDTO> trainingRunResource = trainingInstanceFacade.findTrainingRunsByTrainingInstance(instanceId, pageable);
         Squiggly.init(objectMapper, fields);
-        return new ResponseEntity<>(SquigglyUtils.stringify(objectMapper, trainingRunResource), HttpStatus.OK);
+        return ResponseEntity.ok(SquigglyUtils.stringify(objectMapper, trainingRunResource));
     }
 
 }

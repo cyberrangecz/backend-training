@@ -38,17 +38,18 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 import javax.validation.Valid;
+import javax.xml.ws.Response;
 
 /**
  * @author Pavel Šeda
  */
+@Api(value = "/training-definitions", tags = "Training definitions", consumes = MediaType.APPLICATION_JSON_VALUE)
 @ApiResponses(value = {
         @ApiResponse(code = 401, message = "Full authentication is required to access this resource."),
         @ApiResponse(code = 403, message = "The necessary permissions are required for a resource.")
 })
 @RestController
 @RequestMapping(path = "/training-definitions", produces = MediaType.APPLICATION_JSON_VALUE)
-@Api(value = "/training-definitions", tags = "Training definitions", consumes = "application/json")
 public class TrainingDefinitionsRestController {
 
     private static final Logger LOG = LoggerFactory.getLogger(TrainingDefinitionsRestController.class);
@@ -72,7 +73,7 @@ public class TrainingDefinitionsRestController {
             value = "Get Training Definition by Id.",
             response = TrainingDefinitionDTO.class,
             nickname = "findTrainingDefinitionById",
-            produces = "application/json"
+            produces = MediaType.APPLICATION_JSON_VALUE
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Training definition found.", response = TrainingDefinitionDTO.class),
@@ -90,14 +91,13 @@ public class TrainingDefinitionsRestController {
         try {
             TrainingDefinitionDTO trainingDefinitionResource = trainingDefinitionFacade.findById(id);
             Squiggly.init(objectMapper, fields);
-            return new ResponseEntity<>(SquigglyUtils.stringify(objectMapper, trainingDefinitionResource), HttpStatus.OK);
+            return ResponseEntity.ok(SquigglyUtils.stringify(objectMapper, trainingDefinitionResource));
         } catch (FacadeLayerException ex) {
             throw new ResourceNotFoundException(ex.getLocalizedMessage());
         }
     }
 
-    @ApiObject(name = "Result info (Page)",
-            description = "Content (Retrieved data) and meta information about REST API result page. Including page number, number of elements in page, size of elements, total number of elements and total number of pages")
+    @ApiModel(description = "Content (Retrieved data) and meta information about REST API result page. Including page number, number of elements in page, size of elements, total number of elements and total number of pages")
     private static class TrainingDefinitionRestResource extends PageResultResource<TrainingDefinitionDTO> {
         @JsonProperty(required = true)
         @ApiModelProperty(value = "Retrieved Training Definitions from databases.")
@@ -116,7 +116,7 @@ public class TrainingDefinitionsRestController {
             value = "Get all Training Definitions.",
             response = TrainingDefinitionRestResource.class,
             nickname = "findAllTrainingDefinitions",
-            produces = "application/json"
+            produces = MediaType.APPLICATION_JSON_VALUE
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "All training definitions found.", response = TrainingDefinitionDTO.class, responseContainer = "List"),
@@ -134,14 +134,14 @@ public class TrainingDefinitionsRestController {
         LOG.debug("findAllTrainingDefinitions({},{})", parameters, fields);
         PageResultResource<TrainingDefinitionDTO> trainingDefinitionResource = trainingDefinitionFacade.findAll(predicate, pageable);
         Squiggly.init(objectMapper, fields);
-        return new ResponseEntity<>(SquigglyUtils.stringify(objectMapper, trainingDefinitionResource), HttpStatus.OK);
+        return ResponseEntity.ok(SquigglyUtils.stringify(objectMapper, trainingDefinitionResource));
     }
 
     @ApiOperation(httpMethod = "GET",
             value = "Get all training definition by sandbox definition id",
             response = TrainingDefinitionRestResource.class,
             nickname = "findAllTrainingDefinitionsBySandboxDefinitionId",
-            produces = "application/json"
+            produces = MediaType.APPLICATION_JSON_VALUE
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "All training definitions by sandbox definition found.", response = TrainingDefinitionDTO.class, responseContainer = "List"),
@@ -155,15 +155,16 @@ public class TrainingDefinitionsRestController {
             Pageable pageable) {
         LOG.debug("findAllTrainingDefinitionsBySandboxDefinitionId({}, {})", sandboxDefinitionId, pageable);
         PageResultResource<TrainingDefinitionDTO> trainingDefinitionResource = trainingDefinitionFacade.findAllBySandboxDefinitionId(sandboxDefinitionId, pageable);
-        return new ResponseEntity<>(SquigglyUtils.stringify(objectMapper, trainingDefinitionResource), HttpStatus.OK);
+        return ResponseEntity.ok(SquigglyUtils.stringify(objectMapper, trainingDefinitionResource));
     }
 
     @ApiOperation(httpMethod = "POST",
             value = "Create Training Definition",
             response = TrainingDefinitionDTO.class,
             nickname = "createTrainingDefinition",
-            produces = "application/json",
-            consumes = "application/json")
+            produces = MediaType.APPLICATION_JSON_VALUE,
+            consumes = MediaType.APPLICATION_JSON_VALUE
+    )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "The requested resource has been created.", response = TrainingDefinitionCreateDTO.class),
             @ApiResponse(code = 400, message = "Given training definition is not valid"),
@@ -178,7 +179,7 @@ public class TrainingDefinitionsRestController {
 
         TrainingDefinitionDTO trainingDefinitionResource = trainingDefinitionFacade.create(trainingDefinitionCreateDTO);
         Squiggly.init(objectMapper, fields);
-        return new ResponseEntity<>(SquigglyUtils.stringify(objectMapper, trainingDefinitionResource), HttpStatus.OK);
+        return ResponseEntity.ok(SquigglyUtils.stringify(objectMapper, trainingDefinitionResource));
     }
 
     @ApiOperation(httpMethod = "PUT",
@@ -186,8 +187,9 @@ public class TrainingDefinitionsRestController {
             notes = "Only unreleased training definition can be updated",
             response = TrainingDefinitionDTO.class,
             nickname = "updateTrainingDefinition",
-            produces = "application/json",
-            consumes = "application/json")
+            produces = MediaType.APPLICATION_JSON_VALUE,
+            consumes = MediaType.APPLICATION_JSON_VALUE
+    )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "The requested resource has been updated."),
             @ApiResponse(code = 400, message = "Given training definition is not valid"),
@@ -201,7 +203,7 @@ public class TrainingDefinitionsRestController {
             @RequestBody @Valid TrainingDefinitionUpdateDTO trainingDefinitionUpdateDTO) {
         try {
             trainingDefinitionFacade.update(trainingDefinitionUpdateDTO);
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+            return ResponseEntity.noContent().build();
         } catch (FacadeLayerException ex) {
             throw ExceptionSorter.throwException(ex);
         }
@@ -212,7 +214,8 @@ public class TrainingDefinitionsRestController {
             notes = "Only released and archived training definitions can be cloned",
             response = TrainingDefinitionDTO.class,
             nickname = "cloneTrainingDefinition",
-            produces = "application/json")
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Training definition cloned.", response = TrainingDefinitionDTO.class),
             @ApiResponse(code = 404, message = "Training definition with given id not found."),
@@ -225,7 +228,7 @@ public class TrainingDefinitionsRestController {
             @PathVariable("id") Long id) {
         try {
             TrainingDefinitionDTO trainingDefinitionDTO = trainingDefinitionFacade.clone(id);
-            return new ResponseEntity<>(trainingDefinitionDTO, HttpStatus.OK);
+            return ResponseEntity.ok(trainingDefinitionDTO);
         } catch (FacadeLayerException ex) {
             throw ExceptionSorter.throwException(ex);
         }
@@ -235,8 +238,9 @@ public class TrainingDefinitionsRestController {
             value = "Swap level to the left",
             notes = "The first one level cannot be swapped to the left",
             nickname = "swapLeft",
-            produces = "application/json",
-            response = BasicLevelInfoDTO.class)
+            produces = MediaType.APPLICATION_JSON_VALUE,
+            response = BasicLevelInfoDTO.class
+    )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "The level has been swapped to the left."),
             @ApiResponse(code = 404, message = "Training definition with given id not found."),
@@ -250,7 +254,7 @@ public class TrainingDefinitionsRestController {
             @ApiParam(value = "Id of level to be swapped")
             @PathVariable("levelId") Long levelId) {
         try {
-            return new ResponseEntity<>(trainingDefinitionFacade.swapLeft(definitionId, levelId), HttpStatus.OK);
+            return ResponseEntity.ok(trainingDefinitionFacade.swapLeft(definitionId, levelId));
         } catch (FacadeLayerException ex) {
             throw ExceptionSorter.throwException(ex);
         }
@@ -260,8 +264,9 @@ public class TrainingDefinitionsRestController {
             value = "Swap level to the right",
             notes = "The last one level cannot be swapped to the right",
             nickname = "swapRight",
-            produces = "application/json",
-            response = BasicLevelInfoDTO.class)
+            produces = MediaType.APPLICATION_JSON_VALUE,
+            response = BasicLevelInfoDTO.class
+    )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "The level has been swapped to the right."),
             @ApiResponse(code = 404, message = "Training definition with given id not found."),
@@ -275,7 +280,7 @@ public class TrainingDefinitionsRestController {
             @ApiParam(value = "Id of level to be swapped")
             @PathVariable("levelId") Long levelId) {
         try {
-            return new ResponseEntity<>(trainingDefinitionFacade.swapRight(definitionId, levelId), HttpStatus.OK);
+            return ResponseEntity.ok(trainingDefinitionFacade.swapRight(definitionId, levelId));
         } catch (FacadeLayerException ex) {
             throw ExceptionSorter.throwException(ex);
         }
@@ -285,7 +290,8 @@ public class TrainingDefinitionsRestController {
             value = "Delete training definition",
             notes = "Released training definition canont be deleted",
             nickname = "deleteTrainingDefinition",
-            response = Void.class)
+            response = Void.class
+    )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Training definition deleted."),
             @ApiResponse(code = 404, message = "Training definition or one of levels cannot be found."),
@@ -298,7 +304,7 @@ public class TrainingDefinitionsRestController {
             @PathVariable("id") Long id) {
         try {
             trainingDefinitionFacade.delete(id);
-            return new ResponseEntity<>(HttpStatus.OK);
+            return ResponseEntity.ok().build();
         } catch (FacadeLayerException ex) {
             throw ExceptionSorter.throwException(ex);
         }
@@ -308,8 +314,9 @@ public class TrainingDefinitionsRestController {
             value = "Delete specific level from definition",
             notes = "Level can be deleted only in unreleased training definition",
             nickname = "deleteOneLevel",
-            produces = "application/json",
-            response = Void.class)
+            produces = MediaType.APPLICATION_JSON_VALUE,
+            response = Void.class
+    )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "The level deleted."),
             @ApiResponse(code = 404, message = "Level with given id not found."),
@@ -323,7 +330,7 @@ public class TrainingDefinitionsRestController {
             @ApiParam(value = "Id of level to be deleted")
             @PathVariable("levelId") Long levelId) {
         try {
-            return new ResponseEntity<>(trainingDefinitionFacade.deleteOneLevel(definitionId, levelId), HttpStatus.OK);
+            return ResponseEntity.ok(trainingDefinitionFacade.deleteOneLevel(definitionId, levelId));
         } catch (FacadeLayerException ex) {
             throw ExceptionSorter.throwException(ex);
         }
@@ -333,7 +340,8 @@ public class TrainingDefinitionsRestController {
             value = "Update specific game level in given training definition",
             notes = "Level can be updated only in unreleased training definition",
             nickname = "updateGameLevel",
-            consumes = "application/json")
+            consumes = MediaType.APPLICATION_JSON_VALUE
+    )
     @ApiResponses(value = {
             @ApiResponse(code = 204, message = "Game level updated."),
             @ApiResponse(code = 400, message = "Given game level is not valid."),
@@ -349,7 +357,7 @@ public class TrainingDefinitionsRestController {
             @RequestBody @Valid GameLevelUpdateDTO gameLevelUpdateDTO) {
         try {
             trainingDefinitionFacade.updateGameLevel(definitionId, gameLevelUpdateDTO);
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+            return ResponseEntity.noContent().build();
         } catch (FacadeLayerException ex) {
             throw ExceptionSorter.throwException(ex);
         }
@@ -359,7 +367,8 @@ public class TrainingDefinitionsRestController {
             value = "Update specific info level in given training definition",
             notes = "Level can be deleted only in unreleased training definition",
             nickname = "updateInfoLevel",
-            consumes = "application/json")
+            consumes = MediaType.APPLICATION_JSON_VALUE
+    )
     @ApiResponses(value = {
             @ApiResponse(code = 204, message = "Info level updated."),
             @ApiResponse(code = 400, message = "Given info level is not valid."),
@@ -375,7 +384,7 @@ public class TrainingDefinitionsRestController {
             @RequestBody @Valid InfoLevelUpdateDTO infoLevelUpdateDTO) {
         try {
             trainingDefinitionFacade.updateInfoLevel(definitionId, infoLevelUpdateDTO);
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+            return ResponseEntity.noContent().build();
         } catch (FacadeLayerException ex) {
             throw ExceptionSorter.throwException(ex);
         }
@@ -385,7 +394,8 @@ public class TrainingDefinitionsRestController {
             value = "Update specific assessment level in given training definition",
             notes = "Level can be deleted only in unreleased training definition",
             nickname = "updateAssessmentLevel",
-            consumes = "application/json")
+            consumes = MediaType.APPLICATION_JSON_VALUE
+    )
     @ApiResponses(value = {
             @ApiResponse(code = 204, message = "Assessment level updated."),
             @ApiResponse(code = 400, message = "Given assessment level is not valid."),
@@ -401,7 +411,7 @@ public class TrainingDefinitionsRestController {
             @RequestBody @Valid AssessmentLevelUpdateDTO assessmentLevelUpdateDTO) {
         try {
             trainingDefinitionFacade.updateAssessmentLevel(definitionId, assessmentLevelUpdateDTO);
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+            return ResponseEntity.noContent().build();
         } catch (FacadeLayerException ex) {
             throw ExceptionSorter.throwException(ex);
         }
@@ -411,7 +421,8 @@ public class TrainingDefinitionsRestController {
             value = "Find level by ID",
             response = AbstractLevelDTO.class,
             nickname = "findLevelById",
-            produces = "application/json")
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Game level has been found.", response = AbstractLevelDTO.class),
             @ApiResponse(code = 404, message = "Level with given id not found."),
@@ -426,7 +437,7 @@ public class TrainingDefinitionsRestController {
         try {
             AbstractLevelDTO level = trainingDefinitionFacade.findLevelById(levelId);
             Squiggly.init(objectMapper, fields);
-            return new ResponseEntity<>(SquigglyUtils.stringify(objectMapper, level), HttpStatus.OK);
+            return ResponseEntity.ok(SquigglyUtils.stringify(objectMapper, level));
         } catch (FacadeLayerException ex) {
             throw new ResourceNotFoundException(ex.getLocalizedMessage());
         }
@@ -437,7 +448,8 @@ public class TrainingDefinitionsRestController {
             notes = "Creates only default level for given training definition",
             response = BasicLevelInfoDTO.class,
             nickname = "createLevel",
-            produces = "application/json")
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
     @ApiResponses(value = {
             @ApiResponse(code = 201, message = "Level created.", response = AbstractLevelDTO.class),
             @ApiResponse(code = 404, message = "Training definition with given id not found."),

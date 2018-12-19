@@ -1,6 +1,7 @@
 package cz.muni.ics.kypo.training.api;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.jsondoc.core.annotation.ApiObject;
 
@@ -13,8 +14,7 @@ import java.util.List;
  *
  * @author Pavel Šeda (441048)
  */
-@ApiObject(name = "Result info (Page)",
-        description = "Content (Retrieved data) and meta information about REST API result page. Including page number, number of elements in page, size of elements, total number of elements and total number of pages")
+@ApiModel(value = "PageResultResouce", description = "Content (Retrieved data) and meta information about REST API result page. Including page number, number of elements in page, size of elements, total number of elements and total number of pages")
 public class PageResultResource<E> {
 
     @JsonProperty(required = true)
