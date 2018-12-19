@@ -105,7 +105,6 @@ public class TrainingRunServiceImpl implements TrainingRunService {
         LOG.debug("create({})", trainingRun);
         Assert.notNull(trainingRun, "Input training run must not be empty.");
         return trainingRunRepository.save(trainingRun);
-
     }
 
     @Override
@@ -133,7 +132,6 @@ public class TrainingRunServiceImpl implements TrainingRunService {
         auditLevelStartedAction(trainingRun.getTrainingInstance(), trainingRun);
 
         return abstractLevel;
-
     }
 
     @Override
@@ -249,7 +247,6 @@ public class TrainingRunServiceImpl implements TrainingRunService {
             sandboxInstancePool.removeIf(sandboxInstanceRef -> sandboxInstanceRef.getSandboxInstanceRef() != sandboxInfoList.get(0).getId());
             return sandboxInstancePool.iterator().next();
         }
-
     }
 
     @Override
@@ -611,7 +608,6 @@ public class TrainingRunServiceImpl implements TrainingRunService {
             auditService.save(trainingRunResumed);
         }
     }
-
 
     private LevelType getLevelType(AbstractLevel abstractLevel) {
         if (abstractLevel instanceof GameLevel) {

@@ -16,6 +16,7 @@ import com.querydsl.core.types.Predicate;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * @author Pavel Seda (441048)
@@ -28,6 +29,9 @@ public interface TrainingInstanceRepository extends JpaRepository<TrainingInstan
 
     @EntityGraph(attributePaths = {"trainingDefinition.authorRef", "trainingDefinition.sandBoxDefinitionRef", "organizers", "sandboxInstanceRef"})
     Page<TrainingInstance> findAll(Predicate predicate, Pageable pageable);
+
+    @EntityGraph(attributePaths = {"trainingDefinition.authorRef", "trainingDefinition.sandBoxDefinitionRef", "organizers", "sandboxInstanceRef"})
+    Optional<TrainingInstance> findById(@Param("id") Long id);
 
     @Query("SELECT ti FROM TrainingInstance ti JOIN FETCH ti.trainingDefinition WHERE ti.startTime < :date AND ti.endTime > :date ")
     List<TrainingInstance> findAllByStartTimeAfterAndEndTimeBefore(@Param("date") LocalDateTime time);
