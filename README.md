@@ -22,7 +22,7 @@ Now check that documentation on the following section is reachable.
 NOTE: This command will also insert some testing data to data storages.
 
 ## Documentation 
-Documentation is done in Swagger framework. It is possible to reach it on the following page:
+Documentation is done in the Swagger framework. It is possible to reach it on the following page:
 
 ```
 ~/kypo2-rest-training/api/v1/swagger-ui.html
