@@ -23,7 +23,6 @@ import cz.muni.ics.kypo.training.rest.exceptions.ResourceNotFoundException;
 import cz.muni.ics.kypo.training.rest.utils.annotations.ApiPageableSwagger;
 import io.swagger.annotations.*;
 
-import org.jsondoc.core.annotation.ApiObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,7 +37,6 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 import javax.validation.Valid;
-import javax.xml.ws.Response;
 
 /**
  * @author Pavel Šeda
