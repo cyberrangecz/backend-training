@@ -82,7 +82,7 @@ spring.profiles.dev.roles=ADMINISTRATOR
 
 server.address={server address}, e.g., localhost (127.0.0.1)
 server.port={port for service}, e.g., 8080
-server.servlet.context-path=/{context path for service}, e.g. /kypo2-rest-training/api/v1
+server.servlet.context-path=/{context path for service}, e.g., /kypo2-rest-training/api/v1
 
 # calling user-and-group project
 user-and-group-server.protocol={communication protocol}, e.g., http
