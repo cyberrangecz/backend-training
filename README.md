@@ -198,32 +198,26 @@ The project was built and tested with these technologies, so if you have any une
 
 ```
 Maven         : 3.3.9
-Java          : 1.8.0_144, vendor: Oracle Corporation
+Java          : OpenJDK 11
 Spring Boot   : 2.1.1.RELEASE
 Swagger       : 2.9.2
-Hibernate     : 5.2.8.Final
+Hibernate     : 5.3.7.Final
 Jackson       : 2.9.7
-Tomcat        : 8
-PostgreSQL    : 9.5
+Tomcat        : 9
+PostgreSQL    : 11
 Elasticsearch : 5.5.0
 ```
 
 ## Installing technologies on Debian based system
 ### Installing Java
-```
-$ sudo apt-add-repository ppa:webupd8team/java
-$ sudo apt-get
-$ sudo apt-get install oracle-java8-installer
-```
+Follow the steps in the following link: https://dzone.com/articles/installing-openjdk-11-on-ubuntu-1804-for-real
+
 Verify the installation:
 ```
 $ java -version
 ```
-Set JAVA_HOME and JRE_HOME environment variables:
-```
-$ JAVA_HOME=/usr/lib/jvm/java-8-oracle
-$ JRE_HOME=/usr/lib/jvm/java-8-oracle/jre
-```
+
+Do not forget to set OpenJDK in IntelliJ IDEA in all the places. The tutorial for setting OpenJDK in IntelliJ IDEA in all the places is shown in the following link: [https://stackoverflow.com/a/26009627/2892314].
 ### Installing Maven
 ```
 $ apt-cache search maven

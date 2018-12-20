@@ -18,13 +18,11 @@ import cz.muni.ics.kypo.training.rest.ExceptionSorter;
 import java.util.List;
 
 import io.swagger.annotations.*;
-import org.jsondoc.core.annotation.ApiObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.querydsl.binding.QuerydslPredicate;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.MultiValueMap;
@@ -33,7 +31,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import cz.muni.ics.kypo.training.rest.exceptions.ResourceNotFoundException;
 
 import javax.validation.Valid;
-
 
 /**
  * @author Pavel Šeda
