@@ -45,6 +45,7 @@ public interface TrainingRunRepository extends JpaRepository<TrainingRun, Long>,
     Page<TrainingRun> findAllByTrainingDefinitionIdAndParticipantRefLogin(@Param("trainingDefinitionId") Long trainingDefinitionId,
                                                                           @Param("participantRefLogin") String participantRefLogin, Pageable pageable);
 
+    @EntityGraph(attributePaths = {"participantRef", "sandboxInstanceRef"})
     Page<TrainingRun> findAllByTrainingInstanceId(Long trainingInstanceId, Pageable pageable);
 
     @Query(value = "SELECT tr FROM TrainingRun tr JOIN FETCH tr.trainingInstance ti JOIN FETCH ti.trainingDefinition td WHERE td.id = :trainingDefinitionId",

@@ -10,6 +10,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 
+import java.util.List;
+import java.util.Set;
+
 /**
  * @author Pavel Seda (441048)
  */
@@ -74,12 +77,11 @@ public interface TrainingInstanceService {
     Page<TrainingRun> findTrainingRunsByTrainingInstance(Long trainingInstanceId, Pageable pageable);
 
     /**
-     * Find UserRef by id
+     * Find UserRefs by ids
      *
-     * @param id of wanted UserRef
-     * @return UserRef with corresponding id
-     * @throws ServiceLayerException if UserRef is not found
+     * @param ids of wanted UserRefs
+     * @return UserRefs with corresponding ids
      */
-    UserRef findUserRefById(Long id) throws ServiceLayerException;
+    Set<UserRef> findUserRefsByIds(Set<Long> ids);
 
 }

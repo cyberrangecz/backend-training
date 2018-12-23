@@ -34,6 +34,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.BDDMockito.*;
@@ -133,7 +134,7 @@ public class TrainingInstanceFacadeTest {
     public void createTrainingInstance() {
         given(trainingInstanceService.create(any(TrainingInstance.class))).willReturn(trainingInstance1);
         given(trainingDefinitionService.findById(any(Long.class))).willReturn(new TrainingDefinition());
-        given(trainingInstanceService.findUserRefById(any(Long.class))).willReturn(new UserRef());
+        given(trainingInstanceService.findUserRefsByIds(any(Set.class))).willReturn(new HashSet());
         trainingInstanceFacade.create(trainingInstanceCreate);
         then(trainingInstanceService).should().create(any(TrainingInstance.class));
     }
