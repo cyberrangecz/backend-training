@@ -110,7 +110,7 @@ CREATE TABLE training_instance (
     pool_size int4 NOT NULL,
     start_time timestamp NOT NULL,
     title varchar(255) NOT NULL,
-    training_definition_id int8,
+    training_definition_id int8 NOT NULL,
     PRIMARY KEY (id)
 );
 

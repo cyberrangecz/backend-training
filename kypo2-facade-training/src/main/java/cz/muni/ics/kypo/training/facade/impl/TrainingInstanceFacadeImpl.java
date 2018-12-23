@@ -81,12 +81,9 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
         try {
             Objects.requireNonNull(trainingInstance);
             TrainingInstance tI = trainingInstanceMapper.mapUpdateToEntity(trainingInstance);
+            //TODO why is allowed change training definition ??
             tI.setTrainingDefinition(trainingDefinitionService.findById(trainingInstance.getTrainingDefinitionId()));
-            Set<UserRef> organizers = new HashSet<>();
-            for (Long id : trainingInstance.getOrgIds()) {
-                organizers.add(trainingInstanceService.findUserRefById(id));
-            }
-            tI.setOrganizers(organizers);
+            tI.setOrganizers(trainingInstanceService.findUserRefsByIds(trainingInstance.getOrgIds()));
             trainingInstanceService.update(tI);
         } catch (ServiceLayerException ex) {
             throw new FacadeLayerException(ex);
@@ -102,11 +99,7 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
             TrainingInstance tI = trainingInstanceMapper.mapCreateToEntity(trainingInstance);
             tI.setTrainingDefinition(trainingDefinitionService.findById(trainingInstance.getTrainingDefinitionId()));
             tI.setId(null);
-            Set<UserRef> organizers = new HashSet<>();
-            for (Long id : trainingInstance.getOrgIds()) {
-                organizers.add(trainingInstanceService.findUserRefById(id));
-            }
-            tI.setOrganizers(organizers);
+            tI.setOrganizers(trainingInstanceService.findUserRefsByIds(trainingInstance.getOrgIds()));
             return trainingInstanceMapper.mapToDTO(trainingInstanceService.create(tI));
         } catch (ServiceLayerException ex) {
             throw new FacadeLayerException(ex);

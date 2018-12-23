@@ -28,7 +28,9 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import org.springframework.web.client.RestTemplate;
 
@@ -163,8 +165,7 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
     }
 
     @Override
-    public UserRef findUserRefById(Long id) {
-        return userRefRepository.findById(id).orElseThrow(
-                () -> new ServiceLayerException("User ref with id" + id + " not found.", ErrorCode.RESOURCE_NOT_FOUND));
+    public Set<UserRef> findUserRefsByIds(Set<Long> ids) {
+        return userRefRepository.findUsers(ids);
     }
 }
