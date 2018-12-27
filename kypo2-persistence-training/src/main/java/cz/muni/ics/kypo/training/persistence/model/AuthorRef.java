@@ -47,6 +47,14 @@ public class AuthorRef implements Serializable {
         this.trainingDefinition = trainingDefinition;
     }
 
+    public void addTrainingDefinition(TrainingDefinition trainingDefinition) {
+        this.trainingDefinition.add(trainingDefinition);
+    }
+
+    public void removeTrainingDefinition(TrainingDefinition trainingDefinition) {
+        this.trainingDefinition.remove(trainingDefinition);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o)
@@ -54,17 +62,16 @@ public class AuthorRef implements Serializable {
         if (o == null || getClass() != o.getClass())
             return false;
         AuthorRef authorRef = (AuthorRef) o;
-        return Objects.equals(id, authorRef.id) && Objects.equals(authorRefLogin, authorRef.authorRefLogin) && Objects
-                .equals(trainingDefinition, authorRef.trainingDefinition);
+        return Objects.equals(id, authorRef.id) && Objects.equals(authorRefLogin, authorRef.authorRefLogin);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, authorRefLogin, trainingDefinition);
+        return Objects.hash(id, authorRefLogin);
     }
 
     @Override
     public String toString() {
-        return "AuthorRef{" + "id=" + id + ", authorRefLogin='" + authorRefLogin + '\'' + ", trainingDefinition=" + trainingDefinition + '}';
+        return "AuthorRef{" + "id=" + id + ", authorRefLogin='" + authorRefLogin + '}';
     }
 }

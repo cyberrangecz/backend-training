@@ -94,6 +94,16 @@ public class TrainingDefinition implements Serializable {
         this.authorRef = authorRef;
     }
 
+    public void addAuthor(AuthorRef authorRef) {
+        this.authorRef.add(authorRef);
+        authorRef.addTrainingDefinition(this);
+    }
+
+    public void removeAuthor(AuthorRef authorRef) {
+        this.authorRef.remove(authorRef);
+        authorRef.removeTrainingDefinition(this);
+    }
+
     public SandboxDefinitionRef getSandBoxDefinitionRef() {
         return sandBoxDefinitionRef;
     }
