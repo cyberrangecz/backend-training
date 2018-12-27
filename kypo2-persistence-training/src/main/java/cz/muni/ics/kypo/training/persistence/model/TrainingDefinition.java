@@ -30,9 +30,13 @@ public class TrainingDefinition implements Serializable {
     @Enumerated(EnumType.STRING)
     private TDState state;
     @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(name = "training_definition_author_ref",
+            joinColumns = @JoinColumn(name = "training_definition_id"),
+            inverseJoinColumns = @JoinColumn(name = "author_ref_id")
+    )
     private Set<AuthorRef> authorRef = new HashSet<>();
-    @ManyToOne(fetch = FetchType.LAZY)
-    private SandboxDefinitionRef sandBoxDefinitionRef;
+    @Column(name = "sandbox_definition_ref_id", nullable = false)
+    private Long sandboxDefinitionRefId;
     @Column(name = "starting_level")
     private Long startingLevel;
     @Column(name = "show_stepper_bar", nullable = false)
@@ -104,12 +108,12 @@ public class TrainingDefinition implements Serializable {
         authorRef.removeTrainingDefinition(this);
     }
 
-    public SandboxDefinitionRef getSandBoxDefinitionRef() {
-        return sandBoxDefinitionRef;
+    public Long getSandboxDefinitionRefId() {
+        return sandboxDefinitionRefId;
     }
 
-    public void setSandBoxDefinitionRef(SandboxDefinitionRef sandBoxDefinitionRef) {
-        this.sandBoxDefinitionRef = sandBoxDefinitionRef;
+    public void setSandboxDefinitionRefId(Long sandboxDefinitionRefId) {
+        this.sandboxDefinitionRefId = sandboxDefinitionRefId;
     }
 
     public Long getStartingLevel() {
@@ -155,7 +159,7 @@ public class TrainingDefinition implements Serializable {
     public String toString() {
         return "TrainingDefinition{" + "id=" + id + ", title='" + title + '\'' + ", description='" + description + '\'' + ", prerequisities="
                 + Arrays.toString(prerequisities) + ", outcomes=" + Arrays.toString(outcomes) + ", state=" + state + ", authorRef=" + authorRef
-                + ", sandBoxDefinitionRef=" + sandBoxDefinitionRef + ", startingLevel=" + startingLevel + ", showStepperBar=" + showStepperBar
+                + ", sandboxDefinitionRefId=" + sandboxDefinitionRefId + ", startingLevel=" + startingLevel + ", showStepperBar=" + showStepperBar
                 + '}';
     }
 }

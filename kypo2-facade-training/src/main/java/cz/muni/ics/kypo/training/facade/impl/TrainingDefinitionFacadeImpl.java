@@ -156,13 +156,9 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
         try {
             Objects.requireNonNull(trainingDefinition);
             TrainingDefinition newTD = trainingDefinitionMapper.mapCreateToEntity(trainingDefinition);
-            newTD.setSandBoxDefinitionRef(trainingDefinitionService.findSandboxDefinitionRefById(trainingDefinition.getSandboxDefinitionRef()));
-            newTD.setId(null);
-            Set<AuthorRef> authors = new HashSet<>();
             for (Long id : trainingDefinition.getAutIds()) {
-                authors.add(trainingDefinitionService.findAuthorRefById(id));
+                newTD.addAuthor(trainingDefinitionService.findAuthorRefById(id));
             }
-            newTD.setAuthorRef(authors);
             return trainingDefinitionMapper.mapToDTO(trainingDefinitionService.create(newTD));
         } catch (ServiceLayerException ex) {
             throw new FacadeLayerException(ex);
@@ -177,12 +173,9 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
         try {
             Objects.requireNonNull(trainingDefinition);
             TrainingDefinition tD = trainingDefinitionMapper.mapUpdateToEntity(trainingDefinition);
-            tD.setSandBoxDefinitionRef(trainingDefinitionService.findSandboxDefinitionRefById(trainingDefinition.getSandboxDefinitionRef()));
-            Set<AuthorRef> authors = new HashSet<>();
             for (Long id : trainingDefinition.getAutIds()) {
-                authors.add(trainingDefinitionService.findAuthorRefById(id));
+                tD.addAuthor(trainingDefinitionService.findAuthorRefById(id));
             }
-            tD.setAuthorRef(authors);
             trainingDefinitionService.update(tD);
         } catch (ServiceLayerException ex) {
             throw new FacadeLayerException(ex);

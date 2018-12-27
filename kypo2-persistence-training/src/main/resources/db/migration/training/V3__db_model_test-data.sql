@@ -37,17 +37,13 @@ INSERT INTO assessment_level(id, assessment_type, instructions, questions) VALUE
 INSERT INTO hint(id, content, title, hint_penalty, game_level_id) VALUES (nextval('hint_id_seq'), 'Very good advice', 'Hint1', 10, 1);
 INSERT INTO hint(id, content, title, hint_penalty, game_level_id) VALUES (nextval('hint_id_seq'), 'Very bad advice', 'Hint2', 6, 2);
 
-INSERT INTO sandbox_definition_ref(id, sandbox_definition_ref) VALUES (nextval('sandbox_definition_ref_id_seq'), 1);
-INSERT INTO sandbox_definition_ref(id, sandbox_definition_ref) VALUES (nextval('sandbox_definition_ref_id_seq'), 2);
-INSERT INTO sandbox_definition_ref(id, sandbox_definition_ref) VALUES (nextval('sandbox_definition_ref_id_seq'), 3);
-
 INSERT INTO author_ref(id, author_ref_login) VALUES (nextval('author_ref_id_seq'), 'Designer1');
 INSERT INTO author_ref(id, author_ref_login) VALUES (nextval('author_ref_id_seq'), 'Designer2');
 INSERT INTO author_ref(id, author_ref_login) VALUES (nextval('author_ref_id_seq'), 'Designer3');
 
-INSERT INTO training_definition(id, description, outcomes, prerequisities, state, title, sand_box_definition_ref_id, starting_level, show_stepper_bar) VALUES (nextval('training_definition_id_seq'), 'Released training definition', null, null, 'RELEASED', 'TrainingDefinition1', 1, 4, true);
-INSERT INTO training_definition(id, description, outcomes, prerequisities, state, title, sand_box_definition_ref_id, starting_level, show_stepper_bar) VALUES (nextval('training_definition_id_seq'), 'Unreleased training definition', null, null, 'UNRELEASED', 'TrainingDefinition2', 2, 5, false);
-INSERT INTO training_definition(id, description, outcomes, prerequisities, state, title, sand_box_definition_ref_id, starting_level, show_stepper_bar) VALUES (nextval('training_definition_id_seq'), 'Released training definition2', null, null, 'RELEASED', 'TrainingDefinition2', 3, 6, true);
+INSERT INTO training_definition(id, description, outcomes, prerequisities, state, title, sandbox_definition_ref_id, starting_level, show_stepper_bar) VALUES (nextval('training_definition_id_seq'), 'Released training definition', null, null, 'RELEASED', 'TrainingDefinition1', 1, 4, true);
+INSERT INTO training_definition(id, description, outcomes, prerequisities, state, title, sandbox_definition_ref_id, starting_level, show_stepper_bar) VALUES (nextval('training_definition_id_seq'), 'Unreleased training definition', null, null, 'UNRELEASED', 'TrainingDefinition2', 2, 5, false);
+INSERT INTO training_definition(id, description, outcomes, prerequisities, state, title, sandbox_definition_ref_id, starting_level, show_stepper_bar) VALUES (nextval('training_definition_id_seq'), 'Released training definition2', null, null, 'RELEASED', 'TrainingDefinition2', 3, 6, true);
 
 INSERT INTO training_definition_author_ref(training_definition_id, author_ref_id) VALUES (1, 1);
 INSERT INTO training_definition_author_ref(training_definition_id, author_ref_id) VALUES (2, 2);

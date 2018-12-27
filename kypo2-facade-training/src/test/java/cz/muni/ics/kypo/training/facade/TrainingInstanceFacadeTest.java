@@ -42,7 +42,7 @@ import static org.mockito.BDDMockito.*;
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = {TrainingInstanceMapperImpl.class, TrainingRunMapperImpl.class, SandboxInstanceRefMapperImpl.class,
         TrainingDefinitionMapper.class, UserRefMapper.class, TrainingDefinitionMapperImpl.class,
-        SandboxDefinitionRefMapperImpl.class, AuthorRefMapperImpl.class, UserRefMapperImpl.class})
+        AuthorRefMapperImpl.class, UserRefMapperImpl.class})
 public class TrainingInstanceFacadeTest {
 
     @Rule

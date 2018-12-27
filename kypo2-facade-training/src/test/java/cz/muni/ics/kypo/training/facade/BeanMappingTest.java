@@ -2,13 +2,11 @@ package cz.muni.ics.kypo.training.facade;
 
 import cz.muni.ics.kypo.training.api.PageResultResource;
 import cz.muni.ics.kypo.training.api.dto.AuthorRefDTO;
-import cz.muni.ics.kypo.training.api.dto.SandboxDefinitionRefDTO;
 import cz.muni.ics.kypo.training.api.dto.infolevel.InfoLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionDTO;
 import cz.muni.ics.kypo.training.mapping.mapstruct.*;
 import cz.muni.ics.kypo.training.persistence.model.AuthorRef;
 import cz.muni.ics.kypo.training.persistence.model.InfoLevel;
-import cz.muni.ics.kypo.training.persistence.model.SandboxDefinitionRef;
 import cz.muni.ics.kypo.training.persistence.model.TrainingDefinition;
 import cz.muni.ics.kypo.training.persistence.model.enums.TDState;
 import org.junit.Before;
@@ -28,7 +26,7 @@ import static org.junit.Assert.assertTrue;
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = {InfoLevelMapperImpl.class, PreHookMapperImpl.class,
         PostHookMapper.class, PostHookMapperImpl.class, TrainingDefinitionMapperImpl.class,
-        AuthorRefMapperImpl.class, SandboxDefinitionRefMapperImpl.class})
+        AuthorRefMapperImpl.class})
 public class BeanMappingTest {
 
     @Autowired
@@ -40,8 +38,6 @@ public class BeanMappingTest {
     private TrainingDefinitionDTO tDDTO;
     private AuthorRef aR;
     private AuthorRefDTO aRDTO;
-    private SandboxDefinitionRef sDR;
-    private SandboxDefinitionRefDTO sDRDTO;
     private InfoLevel iL1, iL2;
     private InfoLevelDTO iLDTO1, iLDTO2;
     private List<InfoLevel> levels;
@@ -49,14 +45,6 @@ public class BeanMappingTest {
 
     @Before
     public void init() {
-
-        sDR = new SandboxDefinitionRef();
-        sDR.setId(1L);
-        sDR.setSandboxDefinitionRef(1L);
-
-        sDRDTO = new SandboxDefinitionRefDTO();
-        sDRDTO.setId(1L);
-        sDRDTO.setSandboxDefinitionRef(1L);
 
         aR = new AuthorRef();
         aR.setId(1L);
@@ -75,7 +63,7 @@ public class BeanMappingTest {
         tD.setOutcomes(new String[]{"o1", "o2"});
         tD.setState(TDState.RELEASED);
         tD.setAuthorRef(new HashSet<>(Arrays.asList(aR)));
-        tD.setSandBoxDefinitionRef(sDR);
+        tD.setSandboxDefinitionRefId(1L);
         tD.setStartingLevel(1L);
         tD.setShowStepperBar(true);
 
@@ -87,7 +75,7 @@ public class BeanMappingTest {
         tDDTO.setOutcomes(new String[]{"o1", "o2"});
         tDDTO.setState(TDState.RELEASED);
         tDDTO.setAuthorRef(new HashSet<>(Arrays.asList(aRDTO)));
-        tDDTO.setSandboxDefinitionRef(sDRDTO);
+        tDDTO.setSandboxDefinitionRefId(1L);
         tDDTO.setStartingLevel(1L);
         tDDTO.setShowStepperBar(true);
 
@@ -138,8 +126,7 @@ public class BeanMappingTest {
         assertEquals(tD.getState(), dto.getState());
         assertEquals(tD.getAuthorRef().size(), dto.getAuthorRef().size());
         assertEquals(tD.getAuthorRef().size(), dto.getAuthorRef().size());
-        assertEquals(tD.getSandBoxDefinitionRef().getId(), dto.getSandboxDefinitionRef().getId());
-        assertEquals(tD.getSandBoxDefinitionRef().getSandboxDefinitionRef(), dto.getSandboxDefinitionRef().getSandboxDefinitionRef());
+        assertEquals(tD.getSandboxDefinitionRefId(), dto.getSandboxDefinitionRefId());
         assertEquals(tD.getStartingLevel(), dto.getStartingLevel());
         assertEquals(tD.isShowStepperBar(), dto.isShowStepperBar());
     }
@@ -147,6 +134,7 @@ public class BeanMappingTest {
     @Test
     public void testMapDTOToEntity() {
         TrainingDefinition tD = trainingDefinitionMapper.mapToEntity(tDDTO);
+        System.out.println(tD.toString());
 
         assertEquals(tDDTO.getId(), tD.getId());
         assertEquals(tDDTO.getTitle(), tD.getTitle());
@@ -158,8 +146,7 @@ public class BeanMappingTest {
         assertEquals(tDDTO.getState(), tD.getState());
         assertEquals(tDDTO.getAuthorRef().size(), tD.getAuthorRef().size());
         assertEquals(tDDTO.getAuthorRef().size(), tD.getAuthorRef().size());
-        assertEquals(tDDTO.getSandboxDefinitionRef().getId(), tD.getSandBoxDefinitionRef().getId());
-        assertEquals(tDDTO.getSandboxDefinitionRef().getSandboxDefinitionRef(), tD.getSandBoxDefinitionRef().getSandboxDefinitionRef());
+        assertEquals(tDDTO.getSandboxDefinitionRefId(), tD.getSandboxDefinitionRefId());
         assertEquals(tDDTO.getStartingLevel(), tD.getStartingLevel());
         assertEquals(tDDTO.isShowStepperBar(), tD.isShowStepperBar());
     }

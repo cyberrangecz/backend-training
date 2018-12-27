@@ -21,16 +21,14 @@ import cz.muni.ics.kypo.training.persistence.model.TrainingDefinition;
 public interface TrainingDefinitionRepository
         extends JpaRepository<TrainingDefinition, Long>, QuerydslPredicateExecutor<TrainingDefinition> {
 
-    @Query("SELECT td FROM TrainingDefinition td INNER JOIN td.sandBoxDefinitionRef sbd WHERE sbd.sandboxDefinitionRefId = :sandboxDefId")
+    @Query("SELECT td FROM TrainingDefinition td WHERE td.sandboxDefinitionRefId = :sandboxDefId")
     Page<TrainingDefinition> findAllBySandBoxDefinitionRefId(@Param("sandboxDefId") Long sandboxDefId, Pageable pageable);
 
-    @EntityGraph(attributePaths = {"authorRef", "sandBoxDefinitionRef"})
+    @EntityGraph(attributePaths = {"authorRef"})
     Page<TrainingDefinition> findAll(Predicate predicate, Pageable pageable);
 
-    @Query(value = "SELECT td FROM TrainingDefinition td JOIN FETCH td.authorRef ar JOIN FETCH td.sandBoxDefinitionRef sr " +
-            "WHERE ar.authorRefLogin = :authorLogin",
-            countQuery = "SELECT COUNT(td) FROM TrainingDefinition td INNER JOIN td.authorRef ar INNER JOIN td.sandBoxDefinitionRef sr " +
-                    "WHERE ar.authorRefLogin = :authorLogin")
+    @Query(value = "SELECT td FROM TrainingDefinition td JOIN FETCH td.authorRef ar WHERE ar.authorRefLogin = :authorLogin",
+            countQuery = "SELECT COUNT(td) FROM TrainingDefinition td INNER JOIN td.authorRef ar WHERE ar.authorRefLogin = :authorLogin")
     Page<TrainingDefinition> findAllByLoggedInAuthor(@Param("authorLogin") String authorLogin, Pageable pageable);
 
 }

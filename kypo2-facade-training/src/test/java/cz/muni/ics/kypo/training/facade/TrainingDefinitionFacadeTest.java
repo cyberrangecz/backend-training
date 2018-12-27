@@ -15,10 +15,7 @@ import cz.muni.ics.kypo.training.facade.impl.TrainingDefinitionFacadeImpl;
 import cz.muni.ics.kypo.training.mapping.modelmapper.BeanMapping;
 import cz.muni.ics.kypo.training.mapping.modelmapper.BeanMappingImpl;
 import cz.muni.ics.kypo.training.mapping.mapstruct.*;
-import cz.muni.ics.kypo.training.persistence.model.AssessmentLevel;
-import cz.muni.ics.kypo.training.persistence.model.GameLevel;
-import cz.muni.ics.kypo.training.persistence.model.InfoLevel;
-import cz.muni.ics.kypo.training.persistence.model.TrainingDefinition;
+import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.model.enums.AssessmentType;
 import cz.muni.ics.kypo.training.persistence.model.enums.TDState;
 import cz.muni.ics.kypo.training.service.TrainingDefinitionService;
@@ -49,7 +46,7 @@ import static org.mockito.BDDMockito.*;
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = {InfoLevelMapperImpl.class, PreHookMapperImpl.class,
         PostHookMapper.class, PostHookMapperImpl.class, TrainingDefinitionMapperImpl.class,
-        AuthorRefMapperImpl.class, SandboxDefinitionRefMapperImpl.class, GameLevelMapperImpl.class,
+        AuthorRefMapperImpl.class, GameLevelMapperImpl.class,
         InfoLevelMapperImpl.class, AssessmentLevelMapperImpl.class, HintMapperImpl.class, BasicLevelInfoMapperImpl.class})
 public class TrainingDefinitionFacadeTest {
 
@@ -86,6 +83,8 @@ public class TrainingDefinitionFacadeTest {
 
     private InfoLevel infoLevel;
     private InfoLevelUpdateDTO infoLevelUpdate;
+
+    private AuthorRef authorRef;
 
     @Before
     public void init() {
@@ -144,6 +143,9 @@ public class TrainingDefinitionFacadeTest {
         trainingDefinitionUpdate = new TrainingDefinitionUpdateDTO();
         trainingDefinitionUpdate.setId(4L);
         trainingDefinitionUpdate.setState(TDState.UNRELEASED);
+
+        authorRef = new AuthorRef();
+        authorRef.setAuthorRefLogin("author");
 
         Set<Long> authorRefSet = new HashSet<>();
         authorRefSet.add(1L);
@@ -213,6 +215,7 @@ public class TrainingDefinitionFacadeTest {
     public void createTrainingDefinition() {
         given(trainingDefinitionService.create(trainingDefinitionMapper.mapCreateToEntity(trainingDefinitionCreate)))
                 .willReturn(trainingDefinitionMapper.mapCreateToEntity(trainingDefinitionCreate));
+        given(trainingDefinitionService.findAuthorRefById(anyLong())).willReturn(authorRef);
         trainingDefinitionFacade.create(trainingDefinitionCreate);
         then(trainingDefinitionService).should().create(trainingDefinitionMapper.mapCreateToEntity(trainingDefinitionCreate));
     }
