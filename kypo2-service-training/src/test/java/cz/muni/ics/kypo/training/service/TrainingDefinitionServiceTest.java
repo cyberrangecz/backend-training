@@ -1,5 +1,6 @@
 package cz.muni.ics.kypo.training.service;
 
+import com.google.gson.JsonObject;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.PathBuilder;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
@@ -17,16 +18,24 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.ResourceUtils;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import static org.junit.Assert.*;
@@ -179,6 +188,7 @@ public class TrainingDefinitionServiceTest {
 
     @Test
     public void findAll() {
+        mockSpringSecurityContextForGet();
         List<TrainingDefinition> expected = new ArrayList<>();
         expected.add(trainingDefinition1);
         expected.add(trainingDefinition2);
@@ -790,6 +800,7 @@ public class TrainingDefinitionServiceTest {
         trainingDefinitionService.createAssessmentLevel(definitionWithoutLevels.getId(), null);
     }
     */
+
     @Test
     public void findAllLevelsFromDefinition() {
         given(trainingDefinitionRepository.findById(trainingDefinition2.getId())).willReturn(Optional.of(trainingDefinition2));
@@ -805,7 +816,6 @@ public class TrainingDefinitionServiceTest {
         then(abstractLevelRepository).should(times(2)).findById(any(Long.class));
         then(trainingDefinitionRepository).should().findById(trainingDefinition2.getId());
     }
-
     @Test
     public void findAllLevelsFromDefinitionWithNullDefinitionId() {
         thrown.expect(IllegalArgumentException.class);
@@ -854,4 +864,18 @@ public class TrainingDefinitionServiceTest {
         assertEquals(expected.getState(), actual.getState());
     }
 
+
+    private void mockSpringSecurityContextForGet() {
+        JsonObject sub = new JsonObject();
+        sub.addProperty("sub", "participant");
+        Authentication authentication = Mockito.mock(Authentication.class);
+        OAuth2Authentication auth = Mockito.mock(OAuth2Authentication.class);
+        SecurityContext securityContext = Mockito.mock(SecurityContext.class);
+        SecurityContextHolder.setContext(securityContext);
+        given(securityContext.getAuthentication()).willReturn(auth);
+        given(auth.getUserAuthentication()).willReturn(auth);
+        given(auth.getCredentials()).willReturn(sub);
+        given(auth.getAuthorities()).willReturn(Arrays.asList(new SimpleGrantedAuthority("ADMINISTRATOR")));
+        given(authentication.getDetails()).willReturn(auth);
+    }
 }

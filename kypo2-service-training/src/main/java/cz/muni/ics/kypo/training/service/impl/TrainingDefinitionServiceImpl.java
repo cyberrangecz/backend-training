@@ -6,6 +6,7 @@ import com.github.fge.jsonschema.core.exceptions.ProcessingException;
 import com.github.fge.jsonschema.core.report.ProcessingReport;
 import com.github.fge.jsonschema.main.JsonSchemaFactory;
 import com.github.fge.jsonschema.main.JsonValidator;
+import com.google.gson.JsonObject;
 import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.training.exceptions.ErrorCode;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
@@ -22,6 +23,9 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import java.io.IOException;
@@ -73,11 +77,27 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     }
 
     @Override
-    @PreAuthorize("hasAuthority('ADMINISTRATOR')")
+    @PreAuthorize("hasAuthority('ADMINISTRATOR') or hasAuthority({T(cz.muni.ics.kypo.training.persistence.model.enums.RoleType).DESIGNER})")
     public Page<TrainingDefinition> findAll(Predicate predicate, Pageable pageable) {
         LOG.debug("findAll({},{})", predicate, pageable);
-        return trainingDefinitionRepository.findAll(predicate, pageable);
+        if(isAdmin()) {
+            return trainingDefinitionRepository.findAll(predicate, pageable);
+        }
+        return trainingDefinitionRepository.findAllByLoggedInAuthor(getSubOfLoggedInUser(), pageable);
 
+    }
+
+    private String getSubOfLoggedInUser() {
+        OAuth2Authentication authentication = (OAuth2Authentication) SecurityContextHolder.getContext().getAuthentication();
+        JsonObject credentials = (JsonObject) authentication.getUserAuthentication().getCredentials();
+        return credentials.get("sub").getAsString();
+    }
+    private boolean isAdmin() {
+        OAuth2Authentication authentication = (OAuth2Authentication) SecurityContextHolder.getContext().getAuthentication();
+        for (GrantedAuthority gA: authentication.getUserAuthentication().getAuthorities()) {
+            if(gA.getAuthority().equals("ADMINISTRATOR")) return true;
+        }
+        return false;
     }
 
     @Override

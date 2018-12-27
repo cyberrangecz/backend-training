@@ -27,4 +27,10 @@ public interface TrainingDefinitionRepository
     @EntityGraph(attributePaths = {"authorRef", "sandBoxDefinitionRef"})
     Page<TrainingDefinition> findAll(Predicate predicate, Pageable pageable);
 
+    @Query(value = "SELECT td FROM TrainingDefinition td JOIN FETCH td.authorRef ar JOIN FETCH td.sandBoxDefinitionRef sr " +
+            "WHERE ar.authorRefLogin = :authorLogin",
+            countQuery = "SELECT COUNT(td) FROM TrainingDefinition td INNER JOIN td.authorRef ar INNER JOIN td.sandBoxDefinitionRef sr " +
+                    "WHERE ar.authorRefLogin = :authorLogin")
+    Page<TrainingDefinition> findAllByLoggedInAuthor(@Param("authorLogin") String authorLogin, Pageable pageable);
+
 }
