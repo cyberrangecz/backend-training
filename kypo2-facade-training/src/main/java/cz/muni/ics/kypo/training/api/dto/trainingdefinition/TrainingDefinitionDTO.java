@@ -1,11 +1,8 @@
 package cz.muni.ics.kypo.training.api.dto.trainingdefinition;
 
 import cz.muni.ics.kypo.training.api.dto.AbstractLevelDTO;
-import cz.muni.ics.kypo.training.persistence.model.AbstractLevel;
 import io.swagger.annotations.ApiModel;
 import cz.muni.ics.kypo.training.api.dto.AuthorRefDTO;
-import cz.muni.ics.kypo.training.api.dto.SandboxDefinitionRefDTO;
-import cz.muni.ics.kypo.training.api.dto.BasicLevelInfoDTO;
 import cz.muni.ics.kypo.training.persistence.model.enums.TDState;
 import io.swagger.annotations.ApiModelProperty;
 
@@ -26,7 +23,7 @@ public class TrainingDefinitionDTO {
     private String[] outcomes;
     private TDState state;
     private Set<AuthorRefDTO> authorRef = new HashSet<>();
-    private SandboxDefinitionRefDTO sandboxDefinitionRef;
+    private Long sandboxDefinitionRefId;
     private Long startingLevel;
     private Set<AbstractLevelDTO> levels;
     private boolean showStepperBar;
@@ -96,12 +93,12 @@ public class TrainingDefinitionDTO {
     }
 
     @ApiModelProperty(value = "Reference to the sandbox definition.")
-    public SandboxDefinitionRefDTO getSandboxDefinitionRef() {
-        return sandboxDefinitionRef;
+    public Long getSandboxDefinitionRefId() {
+        return sandboxDefinitionRefId;
     }
 
-    public void setSandboxDefinitionRef(SandboxDefinitionRefDTO sandBoxDefinitionRef) {
-        this.sandboxDefinitionRef = sandBoxDefinitionRef;
+    public void setSandboxDefinitionRefId(Long sandBoxDefinitionRefId) {
+        this.sandboxDefinitionRefId = sandBoxDefinitionRefId;
     }
 
     @ApiModelProperty(value = "Identifier of first level of training definition.", example = "4")
@@ -142,7 +139,7 @@ public class TrainingDefinitionDTO {
     @Override public String toString() {
         return "TrainingDefinitionDTO{" + "id=" + id + ", title='" + title + '\'' + ", description='" + description + '\''
             + ", prerequisities=" + Arrays.toString(prerequisities) + ", outcomes=" + Arrays.toString(outcomes) + ", state=" + state
-            + ", authorRef=" + authorRef + ", sandboxDefinitionRef=" + sandboxDefinitionRef + ", startingLevel=" + startingLevel
+            + ", authorRef=" + authorRef + ", sandboxDefinitionRefId=" + sandboxDefinitionRefId + ", startingLevel=" + startingLevel
             + ", levels=" + levels + ", showStepperBar=" + showStepperBar + ", canBeArchived=" + canBeArchived + '}';
     }
 }

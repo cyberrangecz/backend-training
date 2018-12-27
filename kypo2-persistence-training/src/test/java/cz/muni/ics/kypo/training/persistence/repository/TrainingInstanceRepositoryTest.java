@@ -45,7 +45,7 @@ public class TrainingInstanceRepositoryTest {
     @Before
     public void setUp() {
         trainingDefinition = new TrainingDefinition();
-        //trainingDefinition.setSandBoxDefinitionRef(entityManager.persist(sandboxDefinitionRef1));
+        trainingDefinition.setSandboxDefinitionRefId(1L);
         trainingDefinition.setTitle("test");
         trainingDefinition.setState(TDState.RELEASED);
 

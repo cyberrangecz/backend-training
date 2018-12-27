@@ -150,7 +150,7 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
         HttpHeaders httpHeaders = new HttpHeaders();
         TrainingInstance trainingInstance = findById(instanceId);
         int count = trainingInstance.getPoolSize();
-        Long sandboxId = trainingInstance.getTrainingDefinition().getSandBoxDefinitionRef().getId();
+        Long sandboxId = trainingInstance.getTrainingDefinition().getSandboxDefinitionRefId();
         String url = "kypo-openstack/api/v1/sandbox-definitions/" + sandboxId + "/build/" + count;
         return restTemplate.exchange(serverUrl + url, HttpMethod.POST, new HttpEntity<>(httpHeaders), Void.class);
     }

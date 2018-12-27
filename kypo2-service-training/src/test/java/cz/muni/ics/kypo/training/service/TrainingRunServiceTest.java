@@ -73,7 +73,6 @@ public class TrainingRunServiceTest {
     private InfoLevel infoLevel;
     private Hint hint1, hint2;
     private SandboxInstanceRef sandboxInstanceRef1, sandboxInstanceRef2;
-    private SandboxDefinitionRef sandBoxDefinitionRef;
     private TrainingInstance trainingInstance1, trainingInstance2;
     private ParticipantRef participantRef;
     private SandboxInfo sandboxInfo;
@@ -94,8 +93,6 @@ public class TrainingRunServiceTest {
         } catch (IOException | ParseException ex) {
         }
 
-        sandBoxDefinitionRef = new SandboxDefinitionRef();
-        sandBoxDefinitionRef.setId(1L);
 
         trainingDefinition = new TrainingDefinition();
         trainingDefinition.setId(1L);
@@ -103,7 +100,7 @@ public class TrainingRunServiceTest {
         trainingDefinition.setStartingLevel(1L);
         trainingDefinition.setState(TDState.RELEASED);
         trainingDefinition.setAuthorRef(new HashSet<>());
-        trainingDefinition.setSandBoxDefinitionRef(sandBoxDefinitionRef);
+        trainingDefinition.setSandboxDefinitionRefId(1L);
         trainingDefinition.setStartingLevel(1L);
         trainingDefinition.setShowStepperBar(true);
 
@@ -111,7 +108,7 @@ public class TrainingRunServiceTest {
         trainingDefinition2.setId(2L);
         trainingDefinition2.setTitle("Title2");
         trainingDefinition2.setStartingLevel(2L);
-        trainingDefinition2.setSandBoxDefinitionRef(sandBoxDefinitionRef);
+        trainingDefinition2.setSandboxDefinitionRefId(1L);
 
         sandboxInstanceRef1 = new SandboxInstanceRef();
         sandboxInstanceRef1.setId(1L);

@@ -72,9 +72,6 @@ public class TrainingDefinitionServiceTest {
     @Mock
     private AuthorRefRepository authorRefRepository;
 
-    @Mock
-    private SandboxDefinitionRefRepository sandboxDefinitionRefRepository;
-
     private TrainingDefinition trainingDefinition1, trainingDefinition2, unreleasedDefinition, releasedDefinition, definitionWithoutLevels;
 
     private AssessmentLevel level1, level2, level3, newAssessmentLevel;
@@ -83,7 +80,6 @@ public class TrainingDefinitionServiceTest {
 
     private InfoLevel infoLevel, newInfoLevel;
 
-    private SandboxDefinitionRef sandboxDefinitionRef;
     private JSONParser parser = new JSONParser();
     private String questions;
 
@@ -91,7 +87,7 @@ public class TrainingDefinitionServiceTest {
     public void init() {
         MockitoAnnotations.initMocks(this);
         trainingDefinitionService = new TrainingDefinitionServiceImpl(trainingDefinitionRepository, abstractLevelRepository,
-                infoLevelRepository, gameLevelRepository, assessmentLevelRepository, trainingInstanceRepository, authorRefRepository, sandboxDefinitionRefRepository);
+                infoLevelRepository, gameLevelRepository, assessmentLevelRepository, trainingInstanceRepository, authorRefRepository);
 
         parser = new JSONParser();
         try {
@@ -135,15 +131,12 @@ public class TrainingDefinitionServiceTest {
         newAssessmentLevel.setTitle("title");
         newAssessmentLevel.setMaxScore(20);
 
-        sandboxDefinitionRef = new SandboxDefinitionRef();
-        sandboxDefinitionRef.setId(1L);
-
         trainingDefinition1 = new TrainingDefinition();
         trainingDefinition1.setId(1L);
         trainingDefinition1.setDescription("test1");
         trainingDefinition1.setTitle("test1");
         trainingDefinition1.setState(TDState.RELEASED);
-        trainingDefinition1.setSandBoxDefinitionRef(sandboxDefinitionRef);
+        trainingDefinition1.setSandboxDefinitionRefId(1L);
 
         trainingDefinition2 = new TrainingDefinition();
         trainingDefinition2.setId(2L);
@@ -151,7 +144,7 @@ public class TrainingDefinitionServiceTest {
         trainingDefinition2.setTitle("test2");
         trainingDefinition2.setState(TDState.UNRELEASED);
         trainingDefinition2.setStartingLevel(infoLevel.getId());
-        trainingDefinition2.setSandBoxDefinitionRef(sandboxDefinitionRef);
+        trainingDefinition2.setSandboxDefinitionRefId(1L);
 
         unreleasedDefinition = new TrainingDefinition();
         unreleasedDefinition.setId(4L);
@@ -213,7 +206,7 @@ public class TrainingDefinitionServiceTest {
 
         given(trainingDefinitionRepository.findAllBySandBoxDefinitionRefId(any(Long.class), any(Pageable.class))).willReturn(p);
 
-        Page pr = trainingDefinitionRepository.findAllBySandBoxDefinitionRefId(sandboxDefinitionRef.getId(), PageRequest.of(0, 2));
+        Page pr = trainingDefinitionRepository.findAllBySandBoxDefinitionRefId(1L, PageRequest.of(0, 2));
         assertNotNull(pr);
         assertEquals(expected.size(), pr.getTotalElements());
     }

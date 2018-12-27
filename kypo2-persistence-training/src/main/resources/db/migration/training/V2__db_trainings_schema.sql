@@ -71,12 +71,6 @@ CREATE TABLE pre_hook (
     PRIMARY KEY (id)
 );
 
-CREATE TABLE sandbox_definition_ref (
-   id  bigserial NOT NULL,
-    sandbox_definition_ref int8,
-    PRIMARY KEY (id)
-);
-
 CREATE TABLE sandbox_instance_ref (
    id  bigserial NOT NULL,
     sandbox_instance_ref int8,
@@ -93,7 +87,7 @@ CREATE TABLE training_definition (
     starting_level int8,
     state varchar(128) NOT NULL,
     title varchar(255) NOT NULL,
-    sand_box_definition_ref_id int8,
+    sandbox_definition_ref_id int8,
     PRIMARY KEY (id)
 );
 
@@ -191,11 +185,6 @@ ALTER TABLE sandbox_instance_ref
    ADD CONSTRAINT FK2j5jmin6ht1fl42nyd5wiqsjd
    FOREIGN KEY (training_instance_id)
    REFERENCES training_instance;
-
-ALTER TABLE training_definition
-   ADD CONSTRAINT FKlpslmg909yvgsihw6ribpcjee
-   FOREIGN KEY (sand_box_definition_ref_id)
-   REFERENCES sandbox_definition_ref;
 
 ALTER TABLE training_definition_author_ref
    ADD CONSTRAINT FK76ifve9d4sreenamcmrwsh9tm

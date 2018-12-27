@@ -6,8 +6,6 @@ import java.util.Set;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
-import cz.muni.ics.kypo.training.api.dto.AuthorRefDTO;
-import cz.muni.ics.kypo.training.api.dto.SandboxDefinitionRefDTO;
 import cz.muni.ics.kypo.training.persistence.model.enums.TDState;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -30,7 +28,7 @@ public class TrainingDefinitionCreateDTO {
     @NotNull(message = "{trainingdefinitioncreate.showStepperBar.NotNull.message}")
     private boolean showStepperBar;
     @NotNull(message = "{trainingdefinitioncreate.sandboxDefinitionRef.NotNull.message}")
-    private Long sandboxDefinitionRef;
+    private Long sandboxDefinitionRefId;
 
     @ApiModelProperty(value = "A name of the training/game (e.g., Photo Hunter) .", required = true, example = "Photo Hunter")
     public String getTitle() {
@@ -96,18 +94,18 @@ public class TrainingDefinitionCreateDTO {
     }
 
     @ApiModelProperty(value = "Reference to the sandbox definition.", required = true, example = "1")
-    public Long getSandboxDefinitionRef() {
-        return sandboxDefinitionRef;
+    public Long getSandboxDefinitionRefId() {
+        return sandboxDefinitionRefId;
     }
 
-    public void setSandboxDefinitionRef(Long sandboxDefinitionRef) {
-        this.sandboxDefinitionRef = sandboxDefinitionRef;
+    public void setSandboxDefinitionRefId(Long sandboxDefinitionRef) {
+        this.sandboxDefinitionRefId = sandboxDefinitionRef;
     }
 
     @Override
     public String toString() {
         return "TrainingDefinitionCreateDTO{" + "title='" + title + '\'' + ", description='" + description + '\'' + ", prerequisities="
                 + Arrays.toString(prerequisities) + ", outcomes=" + Arrays.toString(outcomes) + ", state=" + state + ", autIds=" + autIds
-                + ", showStepperBar=" + showStepperBar + ", sandboxDefinitionRef=" + sandboxDefinitionRef + '}';
+                + ", showStepperBar=" + showStepperBar + ", sandboxDefinitionRefId=" + sandboxDefinitionRefId + '}';
     }
 }

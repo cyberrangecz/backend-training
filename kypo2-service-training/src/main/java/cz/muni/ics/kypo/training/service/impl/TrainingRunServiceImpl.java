@@ -388,7 +388,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
         if (trainingInstance != null) {
             TrainingDefinition trainingDefinition = trainingInstance.getTrainingDefinition();
             Long trainingDefinitionId = trainingDefinition.getId();
-            Long sandboxId = trainingDefinition.getSandBoxDefinitionRef().getId();
+            Long sandboxId = trainingDefinition.getSandboxDefinitionRefId();
 
             TrainingRunStarted trainingRunStarted = TrainingRunStarted.builder()
                     .sandboxId(sandboxId)
@@ -409,7 +409,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
         if (trainingInstance != null) {
             TrainingDefinition trainingDefinition = trainingInstance.getTrainingDefinition();
             Long trainingDefinitionId = trainingDefinition.getId();
-            Long sandboxId = trainingDefinition.getSandBoxDefinitionRef().getId();
+            Long sandboxId = trainingDefinition.getSandboxDefinitionRefId();
             LevelType levelType = getLevelType(trainingRun.getCurrentLevel());
 
             LevelStarted levelStarted = LevelStarted.builder()
@@ -435,7 +435,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
         if (trainingInstance != null) {
             TrainingDefinition trainingDefinition = trainingInstance.getTrainingDefinition();
             Long trainingDefinitionId = trainingDefinition.getId();
-            Long sandboxId = trainingDefinition.getSandBoxDefinitionRef().getId();
+            Long sandboxId = trainingDefinition.getSandboxDefinitionRefId();
             LevelType levelType = getLevelType(trainingRun.getCurrentLevel());
 
             LevelCompleted levelCompleted = LevelCompleted.builder()
@@ -459,7 +459,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
         if (trainingInstance != null) {
             TrainingDefinition trainingDefinition = trainingInstance.getTrainingDefinition();
             Long trainingDefinitionId = trainingDefinition.getId();
-            Long sandboxId = trainingDefinition.getSandBoxDefinitionRef().getId();
+            Long sandboxId = trainingDefinition.getSandboxDefinitionRefId();
             HintTaken hintTaken = HintTaken.builder()
                     .sandboxId(sandboxId)
                     .trainingDefinitionId(trainingDefinitionId)
@@ -483,7 +483,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
         if (trainingInstance != null) {
             TrainingDefinition trainingDefinition = trainingInstance.getTrainingDefinition();
             Long trainingDefinitionId = trainingDefinition.getId();
-            Long sandboxId = trainingDefinition.getSandBoxDefinitionRef().getId();
+            Long sandboxId = trainingDefinition.getSandboxDefinitionRefId();
 
             SolutionDisplayed solutionDisplayed = SolutionDisplayed.builder()
                     .sandboxId(sandboxId)
@@ -505,7 +505,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
         if (trainingInstance != null) {
             TrainingDefinition trainingDefinition = trainingInstance.getTrainingDefinition();
             Long trainingDefinitionId = trainingDefinition.getId();
-            Long sandboxId = trainingDefinition.getSandBoxDefinitionRef().getId();
+            Long sandboxId = trainingDefinition.getSandboxDefinitionRefId();
 
             CorrectFlagSubmitted correctFlagSubmitted = CorrectFlagSubmitted.builder()
                     .sandboxId(sandboxId)
@@ -527,7 +527,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
         if (trainingInstance != null) {
             TrainingDefinition trainingDefinition = trainingInstance.getTrainingDefinition();
             Long trainingDefinitionId = trainingDefinition.getId();
-            Long sandboxId = trainingDefinition.getSandBoxDefinitionRef().getId();
+            Long sandboxId = trainingDefinition.getSandboxDefinitionRefId();
 
             WrongFlagSubmitted wrongFlagSubmitted = WrongFlagSubmitted.builder()
                     .sandboxId(sandboxId)
@@ -550,7 +550,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
         if (trainingInstance != null) {
             TrainingDefinition trainingDefinition = trainingInstance.getTrainingDefinition();
             Long trainingDefinitionId = trainingDefinition.getId();
-            Long sandboxId = trainingDefinition.getSandBoxDefinitionRef().getId();
+            Long sandboxId = trainingDefinition.getSandboxDefinitionRefId();
 
             AssessmentAnswers assessmentAnswers = AssessmentAnswers.builder()
                     .sandboxId(sandboxId)
@@ -572,7 +572,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
         if (trainingInstance != null) {
             TrainingDefinition trainingDefinition = trainingInstance.getTrainingDefinition();
             Long trainingDefinitionId = trainingDefinition.getId();
-            Long sandboxId = trainingDefinition.getSandBoxDefinitionRef().getId();
+            Long sandboxId = trainingDefinition.getSandboxDefinitionRefId();
 
             TrainingRunEnded assessmentAnswers = TrainingRunEnded.builder()
                     .sandboxId(sandboxId)
@@ -593,7 +593,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
         if (trainingInstance != null) {
             TrainingDefinition trainingDefinition = trainingInstance.getTrainingDefinition();
             Long trainingDefinitionId = trainingDefinition.getId();
-            Long sandboxId = trainingDefinition.getSandBoxDefinitionRef().getId();
+            Long sandboxId = trainingDefinition.getSandboxDefinitionRefId();
 
             TrainingRunResumed trainingRunResumed = TrainingRunResumed.builder()
                     .sandboxId(sandboxId)

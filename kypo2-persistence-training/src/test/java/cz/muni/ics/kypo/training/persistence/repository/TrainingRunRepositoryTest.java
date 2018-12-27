@@ -66,6 +66,7 @@ public class TrainingRunRepositoryTest {
         trainingDefinition = new TrainingDefinition();
         trainingDefinition.setState(TDState.ARCHIVED);
         trainingDefinition.setTitle("training definition title");
+        trainingDefinition.setSandboxDefinitionRefId(1L);
 
         infoLevel = new InfoLevel();
         infoLevel.setTitle("infoLevel");

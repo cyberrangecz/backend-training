@@ -7,8 +7,6 @@ import java.util.Set;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
-import cz.muni.ics.kypo.training.api.dto.AuthorRefDTO;
-import cz.muni.ics.kypo.training.api.dto.SandboxDefinitionRefDTO;
 import cz.muni.ics.kypo.training.persistence.model.enums.TDState;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -31,7 +29,7 @@ public class TrainingDefinitionUpdateDTO {
     @NotNull(message = "{trainingdefinitionupdate.autIds.NotNull.message}")
     private Set<Long> autIds = new HashSet<>();
     @NotNull(message = "{trainingdefinitionupdate.sandboxDefinitionRef.NotNull.message}")
-    private Long sandboxDefinitionRef;
+    private Long sandboxDefinitionRefId;
     @NotNull(message = "{trainingdefinitionupdate.showStepperBar.NotNull.message}")
     private boolean showStepperBar;
 
@@ -99,12 +97,12 @@ public class TrainingDefinitionUpdateDTO {
     }
 
     @ApiModelProperty(value = "Reference to the sandbox definition.", required = true, example = "1")
-    public Long getSandboxDefinitionRef() {
-        return sandboxDefinitionRef;
+    public Long getSandboxDefinitionRefId() {
+        return sandboxDefinitionRefId;
     }
 
-    public void setSandboxDefinitionRef(Long sandBoxDefinitionRef) {
-        this.sandboxDefinitionRef = sandBoxDefinitionRef;
+    public void setSandboxDefinitionRefId(Long sandBoxDefinitionRef) {
+        this.sandboxDefinitionRefId = sandBoxDefinitionRef;
     }
 
     @ApiModelProperty(value = "Sign if stepper bar should be displayed.", required = true, example = "false")
@@ -120,6 +118,6 @@ public class TrainingDefinitionUpdateDTO {
     public String toString() {
         return "TrainingDefinitionUpdateDTO{" + "id=" + id + ", title='" + title + '\'' + ", description='" + description + '\''
                 + ", prerequisities=" + Arrays.toString(prerequisities) + ", outcomes=" + Arrays.toString(outcomes) + ", state=" + state
-                + ", autIds=" + autIds + ", sandBoxDefinitionRef=" + sandboxDefinitionRef + ", showStepperBar=" + showStepperBar + '}';
+                + ", autIds=" + autIds + ", sandBoxDefinitionRefId=" + sandboxDefinitionRefId + ", showStepperBar=" + showStepperBar + '}';
     }
 }
