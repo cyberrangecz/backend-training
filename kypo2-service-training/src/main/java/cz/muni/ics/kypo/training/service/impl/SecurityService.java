@@ -37,7 +37,7 @@ public class SecurityService {
 
     public boolean isOrganizeOfGivenTrainingInstance(Long instanceId) {
         TrainingInstance trainingInstance = trainingInstanceRepository.findById(instanceId).orElseThrow(() -> new ServiceLayerException("The necessary permissions are required for a resource.", ErrorCode.SECURITY_RIGHTS));
-        return trainingInstance.getOrganizers().stream().anyMatch(o -> o.getUserRefLogin().equals(getSubOfLoggedInUser()));
+        return trainingInstance.getOrganizers().stream().anyMatch(o -> o.getOrganizersRefLogin().equals(getSubOfLoggedInUser()));
     }
 
     public boolean isDesignerOfGivenTrainingDefinition(Long definitionId) {

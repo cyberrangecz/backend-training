@@ -7,7 +7,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * @author Pavel Seda (441048)
@@ -33,7 +32,7 @@ public class TrainingInstance implements Serializable {
     @ManyToOne(fetch = FetchType.LAZY)
     private TrainingDefinition trainingDefinition;
     @ManyToMany(fetch = FetchType.LAZY)
-    private Set<UserRef> organizers = new HashSet<>();
+    private Set<OrganizerRef> organizers = new HashSet<>();
     @OneToMany(fetch = FetchType.LAZY, orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "trainingInstance")
     private Set<SandboxInstanceRef> sandboxInstanceRef = new HashSet<>();
 
@@ -93,11 +92,11 @@ public class TrainingInstance implements Serializable {
         this.trainingDefinition = trainingDefinition;
     }
     
-    public Set<UserRef> getOrganizers() {
+    public Set<OrganizerRef> getOrganizers() {
         return Collections.unmodifiableSet(organizers);
     }
 
-    public void setOrganizers(Set<UserRef> organizers) {
+    public void setOrganizers(Set<OrganizerRef> organizers) {
         this.organizers = organizers;
     }
 

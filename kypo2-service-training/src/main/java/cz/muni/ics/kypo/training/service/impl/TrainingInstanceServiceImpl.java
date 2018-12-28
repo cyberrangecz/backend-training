@@ -4,14 +4,14 @@ import com.mysema.commons.lang.Assert;
 import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.training.exceptions.ErrorCode;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
+import cz.muni.ics.kypo.training.persistence.model.OrganizerRef;
 import cz.muni.ics.kypo.training.persistence.model.Password;
 import cz.muni.ics.kypo.training.persistence.model.TrainingInstance;
 import cz.muni.ics.kypo.training.persistence.model.TrainingRun;
-import cz.muni.ics.kypo.training.persistence.model.UserRef;
 import cz.muni.ics.kypo.training.persistence.repository.PasswordRepository;
 import cz.muni.ics.kypo.training.persistence.repository.TrainingInstanceRepository;
 import cz.muni.ics.kypo.training.persistence.repository.TrainingRunRepository;
-import cz.muni.ics.kypo.training.persistence.repository.UserRefRepository;
+import cz.muni.ics.kypo.training.persistence.repository.OrganizerRefRepository;
 import cz.muni.ics.kypo.training.service.TrainingInstanceService;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
@@ -28,7 +28,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -48,17 +47,17 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
     private TrainingInstanceRepository trainingInstanceRepository;
     private TrainingRunRepository trainingRunRepository;
     private PasswordRepository passwordRepository;
-    private UserRefRepository userRefRepository;
+    private OrganizerRefRepository organizerRefRepository;
     private RestTemplate restTemplate;
 
     @Autowired
     public TrainingInstanceServiceImpl(TrainingInstanceRepository trainingInstanceRepository, PasswordRepository passwordRepository,
                                        RestTemplate restTemplate, TrainingRunRepository trainingRunRepository,
-                                       UserRefRepository userRefRepository) {
+                                       OrganizerRefRepository organizerRefRepository) {
         this.trainingInstanceRepository = trainingInstanceRepository;
         this.trainingRunRepository = trainingRunRepository;
         this.passwordRepository = passwordRepository;
-        this.userRefRepository = userRefRepository;
+        this.organizerRefRepository = organizerRefRepository;
         this.restTemplate = restTemplate;
     }
 
@@ -166,7 +165,7 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
     }
 
     @Override
-    public Set<UserRef> findUserRefsByIds(Set<Long> ids) {
-        return userRefRepository.findUsers(ids);
+    public Set<OrganizerRef> findUserRefsByIds(Set<Long> ids) {
+        return organizerRefRepository.findUsers(ids);
     }
 }

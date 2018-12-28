@@ -1,6 +1,6 @@
 package cz.muni.ics.kypo.training.persistence.repository;
 
-import cz.muni.ics.kypo.training.persistence.model.UserRef;
+import cz.muni.ics.kypo.training.persistence.model.OrganizerRef;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
@@ -13,9 +13,8 @@ import java.util.Set;
  * @author Pavel Seda
  */
 @Repository
-public interface UserRefRepository extends JpaRepository<UserRef, Long>, QuerydslPredicateExecutor<UserRef> {
+public interface OrganizerRefRepository extends JpaRepository<OrganizerRef, Long>, QuerydslPredicateExecutor<OrganizerRef> {
 
-
-    @Query("SELECT DISTINCT ur FROM UserRef ur WHERE ur.id IN :usersIds")
-    Set<UserRef> findUsers(@Param("usersIds") Set<Long> usersIds);
+    @Query("SELECT DISTINCT orgRef FROM OrganizerRef orgRef WHERE orgRef.id IN :organizersIds")
+    Set<OrganizerRef> findUsers(@Param("organizersIds") Set<Long> organizersIds);
 }

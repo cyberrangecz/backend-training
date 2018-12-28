@@ -4,24 +4,24 @@ import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 /**
  * @author Pavel Seda (441048)
  */
-@Entity(name = "UserRef")
-@Table(name = "user_ref")
-public class UserRef implements Serializable {
+@Entity(name = "OrganizerRef")
+@Table(name = "organizer_ref")
+public class OrganizerRef implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", unique = true, nullable = false, insertable = false)
     private Long id;
-    @Column(name = "user_ref_login")
-    private String userRefLogin;
+    @Column(name = "organizer_ref_login")
+    private String organizersRefLogin;
     @ManyToMany(mappedBy = "organizers", fetch = FetchType.LAZY)
     private Set<TrainingInstance> trainingInstance = new HashSet<>();
-
 
     public Long getId() {
         return id;
@@ -31,12 +31,12 @@ public class UserRef implements Serializable {
         this.id = id;
     }
 
-    public String getUserRefLogin() {
-        return userRefLogin;
+    public String getOrganizersRefLogin() {
+        return organizersRefLogin;
     }
 
-    public void setUserRefLogin(String userRefLogin) {
-        this.userRefLogin = userRefLogin;
+    public void setOrganizersRefLogin(String organizersRefLogin) {
+        this.organizersRefLogin = organizersRefLogin;
     }
 
     public Set<TrainingInstance> getTrainingInstance() {
@@ -49,24 +49,23 @@ public class UserRef implements Serializable {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o)
-            return true;
-        if (!(o instanceof UserRef))
-            return false;
-
-        UserRef userRef = (UserRef) o;
-
-        return getUserRefLogin().equals(userRef.getUserRefLogin());
+        if (this == o) return true;
+        if (!(o instanceof OrganizerRef)) return false;
+        OrganizerRef organizerRef = (OrganizerRef) o;
+        return Objects.equals(getOrganizersRefLogin(), organizerRef.getOrganizersRefLogin());
     }
 
     @Override
     public int hashCode() {
-        return getUserRefLogin().hashCode();
+        return Objects.hash(getOrganizersRefLogin());
     }
 
     @Override
     public String toString() {
-        return "UserRef [id=" + id + ", userRefLogin=" + userRefLogin + ", trainingInstance=" + trainingInstance + ", toString()=" + super.toString() + "]";
+        return "OrganizerRef{" +
+                "id=" + id +
+                ", organizersRefLogin='" + organizersRefLogin + '\'' +
+                ", trainingInstance=" + trainingInstance +
+                '}';
     }
-
 }

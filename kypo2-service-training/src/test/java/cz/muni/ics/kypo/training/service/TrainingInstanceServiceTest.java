@@ -2,7 +2,6 @@ package cz.muni.ics.kypo.training.service;
 
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.PathBuilder;
-import cz.muni.ics.kypo.training.exceptions.ErrorCode;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.persistence.model.TrainingInstance;
 import cz.muni.ics.kypo.training.persistence.model.TrainingRun;
@@ -10,7 +9,7 @@ import cz.muni.ics.kypo.training.persistence.repository.PasswordRepository;
 import cz.muni.ics.kypo.training.persistence.repository.TrainingInstanceRepository;
 
 import cz.muni.ics.kypo.training.persistence.repository.TrainingRunRepository;
-import cz.muni.ics.kypo.training.persistence.repository.UserRefRepository;
+import cz.muni.ics.kypo.training.persistence.repository.OrganizerRefRepository;
 import cz.muni.ics.kypo.training.service.impl.TrainingInstanceServiceImpl;
 import org.junit.After;
 import org.junit.Before;
@@ -64,13 +63,13 @@ public class TrainingInstanceServiceTest {
     private String password = "1asd2sdASD12dSv5S5a4sd5sad45FFe54hLOFE4547fe54Fe5f";
 
     @Mock
-    private UserRefRepository userRefRepository;
+    private OrganizerRefRepository organizerRefRepository;
 
     @Before
     public void init() {
         MockitoAnnotations.initMocks(this);
         trainingInstanceService = new TrainingInstanceServiceImpl(trainingInstanceRepository, passwordRepository, restTemplate,
-                trainingRunRepository, userRefRepository);
+                trainingRunRepository, organizerRefRepository);
 
         trainingInstance1 = new TrainingInstance();
         trainingInstance1.setId(1L);
