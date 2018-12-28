@@ -348,12 +348,13 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
 
         GameLevel newGameLevel = new GameLevel();
         newGameLevel.setMaxScore(100);
-        newGameLevel.setTitle("New Game Level");
+        newGameLevel.setTitle("Title of game level");
         newGameLevel.setIncorrectFlagLimit(5);
-        newGameLevel.setFlag("");
+        newGameLevel.setFlag("Secret flag");
         newGameLevel.setSolutionPenalized(true);
-        newGameLevel.setSolution("");
-        newGameLevel.setContent("");
+        newGameLevel.setSolution("Solution of the game should be here");
+        newGameLevel.setContent("The test entry should be here");
+        newGameLevel.setEstimatedDuration(1);
         GameLevel gL = gameLevelRepository.save(newGameLevel);
 
         if (trainingDefinition.getStartingLevel() == null) {
@@ -379,9 +380,8 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
             throw new ServiceLayerException("Cannot create level in released or archived training definition", ErrorCode.RESOURCE_CONFLICT);
 
         InfoLevel newInfoLevel = new InfoLevel();
-        newInfoLevel.setTitle("New Info Level");
-        newInfoLevel.setContent("");
-        newInfoLevel.setMaxScore(0);
+        newInfoLevel.setTitle("Title of info Level");
+        newInfoLevel.setContent("Content of info level should be here.");
         InfoLevel iL = infoLevelRepository.save(newInfoLevel);
 
         if (trainingDefinition.getStartingLevel() == null) {
@@ -407,10 +407,10 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
             throw new ServiceLayerException("Cannot create level in released or archived training definition.", ErrorCode.RESOURCE_CONFLICT);
 
         AssessmentLevel newAssessmentLevel = new AssessmentLevel();
-        newAssessmentLevel.setTitle("New Assessment Level");
+        newAssessmentLevel.setTitle("Title of assessment level");
         newAssessmentLevel.setMaxScore(0);
         newAssessmentLevel.setAssessmentType(AssessmentType.QUESTIONNAIRE);
-        newAssessmentLevel.setInstructions("");
+        newAssessmentLevel.setInstructions("Instructions should be here");
         newAssessmentLevel.setQuestions("[]");
         AssessmentLevel aL = assessmentLevelRepository.save(newAssessmentLevel);
 
@@ -503,11 +503,14 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
         }
         Long newId = null;
         for (int i = levels.size() - 1; i >= 0; i--) {
+            //TODO clone post and pre hook ?
             if (levels.get(i) instanceof AssessmentLevel) {
                 AssessmentLevel newAL = new AssessmentLevel();
                 BeanUtils.copyProperties(levels.get(i), newAL);
                 newAL.setId(null);
                 newAL.setNextLevel(newId);
+                newAL.setPostHook(null);
+                newAL.setPreHook(null);
                 AssessmentLevel newLevel = assessmentLevelRepository.save(newAL);
                 newId = newLevel.getId();
             } else if (levels.get(i) instanceof InfoLevel) {
@@ -515,6 +518,8 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
                 BeanUtils.copyProperties(levels.get(i), newIL);
                 newIL.setId(null);
                 newIL.setNextLevel(newId);
+                newIL.setPostHook(null);
+                newIL.setPreHook(null);
                 InfoLevel newLevel = infoLevelRepository.save(newIL);
                 newId = newLevel.getId();
             } else {
@@ -522,6 +527,8 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
                 BeanUtils.copyProperties(levels.get(i), newGL);
                 newGL.setId(null);
                 newGL.setNextLevel(newId);
+                newGL.setPostHook(null);
+                newGL.setPreHook(null);
                 GameLevel newLevel = gameLevelRepository.save(newGL);
                 newId = newLevel.getId();
             }

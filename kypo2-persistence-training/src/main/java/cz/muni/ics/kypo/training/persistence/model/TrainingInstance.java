@@ -34,7 +34,7 @@ public class TrainingInstance implements Serializable {
     private TrainingDefinition trainingDefinition;
     @ManyToMany(fetch = FetchType.LAZY)
     private Set<UserRef> organizers = new HashSet<>();
-    @OneToMany(fetch = FetchType.LAZY)
+    @OneToMany(fetch = FetchType.LAZY, orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "trainingInstance")
     private Set<SandboxInstanceRef> sandboxInstanceRef = new HashSet<>();
 
     public Long getId() {
