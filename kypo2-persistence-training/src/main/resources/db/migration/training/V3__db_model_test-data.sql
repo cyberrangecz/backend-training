@@ -67,8 +67,8 @@ INSERT INTO sandbox_instance_ref(id, sandbox_instance_ref, training_instance_id)
 INSERT INTO sandbox_instance_ref(id, sandbox_instance_ref, training_instance_id) VALUES (nextval('sandbox_instance_ref_id_seq'), 7, 4);
 INSERT INTO sandbox_instance_ref(id, sandbox_instance_ref, training_instance_id) VALUES (nextval('sandbox_instance_ref_id_seq'), 8, 4);
 
-INSERT INTO user_ref(id, user_ref_login) VALUES (nextval('user_ref_id_seq'),'Organizer1');
-INSERT INTO user_ref(id, user_ref_login) VALUES (nextval('user_ref_id_seq'),'Organizer2');
+INSERT INTO organizer_ref(id, organizer_ref_login) VALUES (nextval('organizer_ref_id_seq'),'Organizer1');
+INSERT INTO organizer_ref(id, organizer_ref_login) VALUES (nextval('organizer_ref_id_seq'),'Organizer2');
 
 INSERT INTO training_instance_organizers(training_instance_id, organizers_id) VALUES (1, 1);
 INSERT INTO training_instance_organizers(training_instance_id, organizers_id) VALUES (2, 1);

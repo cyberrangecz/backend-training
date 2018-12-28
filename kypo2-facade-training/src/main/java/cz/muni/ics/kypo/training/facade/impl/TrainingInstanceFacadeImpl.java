@@ -1,8 +1,6 @@
 package cz.muni.ics.kypo.training.facade.impl;
 
-import java.util.HashSet;
 import java.util.Objects;
-import java.util.Set;
 
 import cz.muni.ics.kypo.training.api.dto.run.TrainingRunDTO;
 import cz.muni.ics.kypo.training.annotations.TransactionalRO;
@@ -10,7 +8,6 @@ import cz.muni.ics.kypo.training.annotations.TransactionalWO;
 import cz.muni.ics.kypo.training.mapping.mapstruct.TrainingInstanceMapper;
 import cz.muni.ics.kypo.training.mapping.mapstruct.TrainingRunMapper;
 import cz.muni.ics.kypo.training.persistence.model.TrainingRun;
-import cz.muni.ics.kypo.training.persistence.model.UserRef;
 import cz.muni.ics.kypo.training.service.TrainingDefinitionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -133,9 +133,9 @@ CREATE TABLE training_run (
     PRIMARY KEY (id)
 );
 
-CREATE TABLE user_ref (
+CREATE TABLE organizer_ref (
    id  bigserial NOT NULL,
-    user_ref_login varchar(255),
+    organizer_ref_login varchar(255),
     PRIMARY KEY (id)
 );
 
@@ -195,7 +195,7 @@ ALTER TABLE training_instance
 ALTER TABLE training_instance_organizers
    ADD CONSTRAINT FKofnq5p3x5u0o0c15a1oj9ckpx
    FOREIGN KEY (organizers_id)
-   REFERENCES user_ref;
+   REFERENCES organizer_ref;
 
 ALTER TABLE training_instance_organizers
    ADD CONSTRAINT FKe4qmx0nnbqxvg66wwt0si91vr

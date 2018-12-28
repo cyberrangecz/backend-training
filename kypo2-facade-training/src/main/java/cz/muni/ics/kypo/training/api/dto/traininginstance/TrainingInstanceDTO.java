@@ -1,9 +1,8 @@
 package cz.muni.ics.kypo.training.api.dto.traininginstance;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
+import cz.muni.ics.kypo.training.api.dto.OrganizerRefDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionDTO;
-import cz.muni.ics.kypo.training.utils.converters.LocalDateTimeSerializer;
 import cz.muni.ics.kypo.training.utils.converters.LocalDateTimeUTCSerializer;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -25,7 +24,7 @@ public class TrainingInstanceDTO {
     private String title;
     private int poolSize;
     private TrainingDefinitionDTO trainingDefinition;
-    private Set<UserRefDTO> organizers;
+    private Set<OrganizerRefDTO> organizers;
     private String password;
 
     @ApiModelProperty(value = "Main identifier of training instance.", example = "1")
@@ -83,11 +82,11 @@ public class TrainingInstanceDTO {
     }
 
     @ApiModelProperty(value = "Reference to users which organize training instance.")
-    public Set<UserRefDTO> getOrganizers() {
+    public Set<OrganizerRefDTO> getOrganizers() {
         return organizers;
     }
 
-    public void setOrganizers(Set<UserRefDTO> organizers) {
+    public void setOrganizers(Set<OrganizerRefDTO> organizers) {
         this.organizers = organizers;
     }
 

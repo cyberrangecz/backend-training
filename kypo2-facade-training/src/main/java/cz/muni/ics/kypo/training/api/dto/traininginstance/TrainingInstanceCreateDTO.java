@@ -3,11 +3,7 @@ package cz.muni.ics.kypo.training.api.dto.traininginstance;
 import java.time.LocalDateTime;
 import java.util.Set;
 
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
-import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionDTO;
-import cz.muni.ics.kypo.training.utils.converters.LocalDateTimeDeserializer;
 import cz.muni.ics.kypo.training.utils.converters.LocalDateTimeUTCDeserializer;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;

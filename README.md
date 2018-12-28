@@ -191,7 +191,7 @@ $ mvn clover:optimize clean install -Dansi.color=true
 
 ## ER Diagram
 ER diagram generated from model in persistence module
-![alt text](doc-files/er_diagram_training.jpg)
+![alt text](doc-files/kypo2-training-ERD.png)
 
 ## Used Technologies
 The project was built and tested with these technologies, so if you have any unexpected troubles let us know.

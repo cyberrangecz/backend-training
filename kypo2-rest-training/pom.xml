@@ -17,7 +17,7 @@
         <swagger2markup.version>1.2.0</swagger2markup.version>
         <swagger.directory>${project.build.directory}/generated-docs/swagger</swagger.directory>
         <asciidoctor.directory>${project.build.directory}/generated-docs/asciidoc</asciidoctor.directory>
-        <skipDocs>true</skipDocs>
+        <skipDocs>false</skipDocs>
     </properties>
 
     <pluginRepositories>
