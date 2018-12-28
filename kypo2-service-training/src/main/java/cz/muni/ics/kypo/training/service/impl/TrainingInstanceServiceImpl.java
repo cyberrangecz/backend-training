@@ -122,6 +122,7 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
         LocalDateTime currentDate = LocalDateTime.now();
         if (!currentDate.isAfter(trainingInstance.getEndTime()))
             throw new ServiceLayerException("Only finished instances can be deleted.", ErrorCode.RESOURCE_CONFLICT);
+        trainingRunRepository.deleteTrainingRunsByTrainingInstance(trainingInstance.getId());
         trainingInstanceRepository.delete(trainingInstance);
         LOG.info("Training instance with id: {} deleted.", id);
     }

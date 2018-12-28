@@ -1,10 +1,12 @@
 package cz.muni.ics.kypo.training.persistence.repository;
 
 import com.querydsl.core.types.Predicate;
+import cz.muni.ics.kypo.training.persistence.model.TrainingInstance;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.repository.query.Param;
@@ -55,4 +57,8 @@ public interface TrainingRunRepository extends JpaRepository<TrainingRun, Long>,
     @Query("SELECT sir FROM SandboxInstanceRef sir JOIN FETCH sir.trainingInstance ti WHERE ti.id = :trainingInstanceId AND sir NOT IN " +
             "(SELECT si FROM TrainingRun tr INNER JOIN tr.sandboxInstanceRef si WHERE tr.trainingInstance.id = :trainingInstanceId)")
     Set<SandboxInstanceRef> findFreeSandboxesOfTrainingInstance(@Param("trainingInstanceId") Long trainingInstanceId);
+
+    @Modifying
+    @Query("DELETE FROM TrainingRun tr WHERE tr.trainingInstance.id = :trainingInstanceId")
+    void deleteTrainingRunsByTrainingInstance(@Param("trainingInstanceId") Long trainingInstanceId);
 }

@@ -114,12 +114,6 @@ CREATE TABLE training_instance_organizers (
     PRIMARY KEY (training_instance_id, organizers_id)
 );
 
-CREATE TABLE training_instance_sandbox_instance_ref (
-   training_instance_id int8 NOT NULL,
-    sandbox_instance_ref_id int8 NOT NULL,
-    PRIMARY KEY (training_instance_id, sandbox_instance_ref_id)
-);
-
 CREATE TABLE training_run (
    id  bigserial NOT NULL,
     assessment_responses text,
@@ -144,9 +138,6 @@ CREATE TABLE user_ref (
     user_ref_login varchar(255),
     PRIMARY KEY (id)
 );
-
-ALTER TABLE training_instance_sandbox_instance_ref
-   ADD CONSTRAINT UK_qxd0j7mfffie0m8rfsjpqrlrv UNIQUE (sandbox_instance_ref_id);
 
 ALTER TABLE training_run
    ADD CONSTRAINT UK_8g0gumb9rcvd0fscfxv1wb24c UNIQUE (sandbox_instance_ref_id);
@@ -208,16 +199,6 @@ ALTER TABLE training_instance_organizers
 
 ALTER TABLE training_instance_organizers
    ADD CONSTRAINT FKe4qmx0nnbqxvg66wwt0si91vr
-   FOREIGN KEY (training_instance_id)
-   REFERENCES training_instance;
-
-ALTER TABLE training_instance_sandbox_instance_ref
-   ADD CONSTRAINT FK93ieg5ncp2jgxdn4b6ufty1wg
-   FOREIGN KEY (sandbox_instance_ref_id)
-   REFERENCES sandbox_instance_ref;
-
-ALTER TABLE training_instance_sandbox_instance_ref
-   ADD CONSTRAINT FKayuh2k5x6e1dwssc29p3jl58y
    FOREIGN KEY (training_instance_id)
    REFERENCES training_instance;
 
