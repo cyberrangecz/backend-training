@@ -19,7 +19,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -28,6 +27,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -47,15 +47,15 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     private GameLevelRepository gameLevelRepository;
     private InfoLevelRepository infoLevelRepository;
     private AssessmentLevelRepository assessmentLevelRepository;
-    private AuthorRefRepository authorRefRepository;
+    private UserRefRepository authorRefRepository;
     private static final String ARCHIVED_OR_RELEASED = "Cannot edit released or archived training definition.";
     private static final String LEVEL_NOT_FOUND = "Level not found.";
 
     @Autowired
     public TrainingDefinitionServiceImpl(TrainingDefinitionRepository trainingDefinitionRepository,
                                          AbstractLevelRepository abstractLevelRepository, InfoLevelRepository infoLevelRepository, GameLevelRepository gameLevelRepository,
-                                         AssessmentLevelRepository assessmentLevelRepository, TrainingInstanceRepository trainingInstanceRepository, @Lazy
-                                         AuthorRefRepository authorRefRepository) {
+                                         AssessmentLevelRepository assessmentLevelRepository, TrainingInstanceRepository trainingInstanceRepository,
+                                         UserRefRepository authorRefRepository) {
         this.trainingDefinitionRepository = trainingDefinitionRepository;
         this.abstractLevelRepository = abstractLevelRepository;
         this.gameLevelRepository = gameLevelRepository;
@@ -78,10 +78,10 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     @PreAuthorize("hasAuthority('ADMINISTRATOR') or hasAuthority({T(cz.muni.ics.kypo.training.persistence.model.enums.RoleType).DESIGNER})")
     public Page<TrainingDefinition> findAll(Predicate predicate, Pageable pageable) {
         LOG.debug("findAll({},{})", predicate, pageable);
-        if(isAdmin()) {
+        if (isAdmin()) {
             return trainingDefinitionRepository.findAll(predicate, pageable);
         }
-        return trainingDefinitionRepository.findAllByLoggedInAuthor(getSubOfLoggedInUser(), pageable);
+        return trainingDefinitionRepository.findAllByLoggedInUser(getSubOfLoggedInUser(), pageable);
 
     }
 
@@ -90,10 +90,11 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
         JsonObject credentials = (JsonObject) authentication.getUserAuthentication().getCredentials();
         return credentials.get("sub").getAsString();
     }
+
     private boolean isAdmin() {
         OAuth2Authentication authentication = (OAuth2Authentication) SecurityContextHolder.getContext().getAuthentication();
-        for (GrantedAuthority gA: authentication.getUserAuthentication().getAuthorities()) {
-            if(gA.getAuthority().equals("ADMINISTRATOR")) return true;
+        for (GrantedAuthority gA : authentication.getUserAuthentication().getAuthorities()) {
+            if (gA.getAuthority().equals("ADMINISTRATOR")) return true;
         }
         return false;
     }
@@ -330,7 +331,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
                 new ServiceLayerException("Level with id: " + assessmentLevel.getId() + ", not found.",
                         ErrorCode.RESOURCE_NOT_FOUND));
         assessmentLevel.setNextLevel(aL.getNextLevel());
-        if(!assessmentLevel.getQuestions().equals(aL.getQuestions())) {
+        if (!assessmentLevel.getQuestions().equals(aL.getQuestions())) {
             validQuestions(assessmentLevel.getQuestions());
         }
         assessmentLevelRepository.save(assessmentLevel);
@@ -461,9 +462,9 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     }
 
     @Override
-    public AuthorRef findAuthorRefById(Long id) throws ServiceLayerException {
+    public UserRef findAuthorRefById(Long id) throws ServiceLayerException {
         return authorRefRepository.findById(id).orElseThrow(
-                () -> new ServiceLayerException("Author ref with id" + id + " not found.", ErrorCode.RESOURCE_NOT_FOUND));
+                () -> new ServiceLayerException("UserRef with id" + id + " not found.", ErrorCode.RESOURCE_NOT_FOUND));
     }
 
     private AbstractLevel findLastLevel(Long levelId) {
@@ -564,7 +565,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
             JsonValidator v = factory.getValidator();
             ProcessingReport report = v.validate(jsonSchema, n);
             if (!report.toString().contains("success")) {
-                throw new IllegalArgumentException("Given questions are not not valid .\n" +  report.iterator().next());
+                throw new IllegalArgumentException("Given questions are not not valid .\n" + report.iterator().next());
             }
 
         } catch (IOException | ProcessingException ex) {

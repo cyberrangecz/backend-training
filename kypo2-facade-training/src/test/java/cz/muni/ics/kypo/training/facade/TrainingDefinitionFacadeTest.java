@@ -46,7 +46,7 @@ import static org.mockito.BDDMockito.*;
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = {InfoLevelMapperImpl.class, PreHookMapperImpl.class,
         PostHookMapper.class, PostHookMapperImpl.class, TrainingDefinitionMapperImpl.class,
-        AuthorRefMapperImpl.class, GameLevelMapperImpl.class,
+        UserRefMapperImpl.class, GameLevelMapperImpl.class,
         InfoLevelMapperImpl.class, AssessmentLevelMapperImpl.class, HintMapperImpl.class, BasicLevelInfoMapperImpl.class})
 public class TrainingDefinitionFacadeTest {
 
@@ -84,7 +84,7 @@ public class TrainingDefinitionFacadeTest {
     private InfoLevel infoLevel;
     private InfoLevelUpdateDTO infoLevelUpdate;
 
-    private AuthorRef authorRef;
+    private UserRef authorRef;
 
     @Before
     public void init() {
@@ -144,8 +144,8 @@ public class TrainingDefinitionFacadeTest {
         trainingDefinitionUpdate.setId(4L);
         trainingDefinitionUpdate.setState(TDState.UNRELEASED);
 
-        authorRef = new AuthorRef();
-        authorRef.setAuthorRefLogin("author");
+        authorRef = new UserRef();
+        authorRef.setUserRefLogin("author");
 
         Set<Long> authorRefSet = new HashSet<>();
         authorRefSet.add(1L);

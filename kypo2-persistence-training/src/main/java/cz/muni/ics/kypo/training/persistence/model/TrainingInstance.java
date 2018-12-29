@@ -27,12 +27,16 @@ public class TrainingInstance implements Serializable {
     private String title;
     @Column(name = "pool_size", nullable = false)
     private int poolSize;
-    @Column(name = "access_token")
+    @Column(name = "access_token", nullable = false, unique = true)
     private String accessToken;
     @ManyToOne(fetch = FetchType.LAZY)
     private TrainingDefinition trainingDefinition;
     @ManyToMany(fetch = FetchType.LAZY)
-    private Set<OrganizerRef> organizers = new HashSet<>();
+    @JoinTable(name = "training_instance_user_ref",
+            joinColumns = @JoinColumn(name = "training_instance_id"),
+            inverseJoinColumns = @JoinColumn(name = "user_ref_id")
+    )
+    private Set<UserRef> organizers = new HashSet<>();
     @OneToMany(fetch = FetchType.LAZY, orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "trainingInstance")
     private Set<SandboxInstanceRef> sandboxInstanceRef = new HashSet<>();
 
@@ -91,12 +95,12 @@ public class TrainingInstance implements Serializable {
     public void setTrainingDefinition(TrainingDefinition trainingDefinition) {
         this.trainingDefinition = trainingDefinition;
     }
-    
-    public Set<OrganizerRef> getOrganizers() {
+
+    public Set<UserRef> getOrganizers() {
         return Collections.unmodifiableSet(organizers);
     }
 
-    public void setOrganizers(Set<OrganizerRef> organizers) {
+    public void setOrganizers(Set<UserRef> organizers) {
         this.organizers = organizers;
     }
 
@@ -122,20 +126,26 @@ public class TrainingInstance implements Serializable {
         if (!(obj instanceof TrainingInstance))
             return false;
         TrainingInstance other = (TrainingInstance) obj;
-        // @formatter:off
         return Objects.equals(accessToken, other.getAccessToken())
                 && Objects.equals(startTime, other.getStartTime())
                 && Objects.equals(endTime, other.getEndTime())
                 && Objects.equals(poolSize, other.getPoolSize())
                 && Objects.equals(title, other.getTitle())
                 && Objects.equals(trainingDefinition, other.getTrainingDefinition());
-        // @formatter:on
     }
 
     @Override
     public String toString() {
-        return "TrainingInstance [id=" + id + ", startTime=" + startTime + ", endTime=" + endTime + ", title=" + title + ", poolSize="
-                + poolSize + ", accessToken=" + accessToken + ", trainingDefinition=" + trainingDefinition + ", toString()=" + super.toString() + "]";
+        return "TrainingInstance{" +
+                "id=" + id +
+                ", startTime=" + startTime +
+                ", endTime=" + endTime +
+                ", title='" + title + '\'' +
+                ", poolSize=" + poolSize +
+                ", accessToken='" + accessToken + '\'' +
+                ", trainingDefinition=" + trainingDefinition +
+                ", organizers=" + organizers +
+                ", sandboxInstanceRef=" + sandboxInstanceRef +
+                '}';
     }
-
 }

@@ -41,10 +41,10 @@ public class TrainingRun implements Serializable {
     @JoinColumn(name = "sandbox_instance_ref_id")
     private SandboxInstanceRef sandboxInstanceRef;
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "participant_ref_id", nullable = false)
-    private ParticipantRef participantRef;
+    @JoinColumn(name = "user_ref_id", nullable = false)
+    private UserRef participantRef;
     @Lob
-    @Type(type ="org.hibernate.type.TextType")
+    @Type(type = "org.hibernate.type.TextType")
     @Column(name = "assessment_responses", nullable = true)
     private String assessmentResponses;
     @Column(name = "total_score")
@@ -146,11 +146,11 @@ public class TrainingRun implements Serializable {
         this.assessmentResponses = assessmentResponses;
     }
 
-    public ParticipantRef getParticipantRef() {
+    public UserRef getParticipantRef() {
         return participantRef;
     }
 
-    public void setParticipantRef(ParticipantRef participantRef) {
+    public void setParticipantRef(UserRef participantRef) {
         this.participantRef = participantRef;
     }
 
@@ -201,7 +201,6 @@ public class TrainingRun implements Serializable {
         if (!(obj instanceof TrainingRun))
             return false;
         TrainingRun other = (TrainingRun) obj;
-        // @formatter:off
         return Objects.equals(currentLevel, other.getCurrentLevel())
                 && Objects.equals(eventLogReference, other.getEventLogReference())
                 && Objects.equals(startTime, other.getStartTime())
@@ -211,14 +210,26 @@ public class TrainingRun implements Serializable {
                 && Objects.equals(trainingInstance, other.getTrainingInstance())
                 && Objects.equals(participantRef, other.getParticipantRef())
                 && Objects.equals(solutionTaken, other.isSolutionTaken());
-        // @formatter:on
     }
 
     @Override
     public String toString() {
-        return "TrainingRun [id=" + id + ", startTime=" + startTime + ", endTime=" + endTime + ", eventLogReference=" + eventLogReference
-                + ", state=" + state + ", incorrectFlagCount=" + incorrectFlagCount + ", currentLevel=" + currentLevel + ", trainingInstance="
-                + trainingInstance + ", solutionTaken=" + solutionTaken + ", participantRef=" + participantRef + ", getClass()=" + getClass() + ", toString()=" + super.toString() + "]";
+        return "TrainingRun{" +
+                "id=" + id +
+                ", startTime=" + startTime +
+                ", endTime=" + endTime +
+                ", eventLogReference='" + eventLogReference + '\'' +
+                ", state=" + state +
+                ", incorrectFlagCount=" + incorrectFlagCount +
+                ", solutionTaken=" + solutionTaken +
+                ", currentLevel=" + currentLevel +
+                ", trainingInstance=" + trainingInstance +
+                ", sandboxInstanceRef=" + sandboxInstanceRef +
+                ", participantRef=" + participantRef +
+                ", assessmentResponses='" + assessmentResponses + '\'' +
+                ", totalScore=" + totalScore +
+                ", currentScore=" + currentScore +
+                ", levelAnswered=" + levelAnswered +
+                '}';
     }
-
 }

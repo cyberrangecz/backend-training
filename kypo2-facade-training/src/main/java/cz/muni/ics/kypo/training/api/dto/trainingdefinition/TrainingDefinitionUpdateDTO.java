@@ -116,8 +116,16 @@ public class TrainingDefinitionUpdateDTO {
 
     @Override
     public String toString() {
-        return "TrainingDefinitionUpdateDTO{" + "id=" + id + ", title='" + title + '\'' + ", description='" + description + '\''
-                + ", prerequisities=" + Arrays.toString(prerequisities) + ", outcomes=" + Arrays.toString(outcomes) + ", state=" + state
-                + ", autIds=" + autIds + ", sandBoxDefinitionRefId=" + sandboxDefinitionRefId + ", showStepperBar=" + showStepperBar + '}';
+        return "TrainingDefinitionUpdateDTO{" +
+                "id=" + id +
+                ", title='" + title + '\'' +
+                ", description='" + description + '\'' +
+                ", prerequisities=" + Arrays.toString(prerequisities) +
+                ", outcomes=" + Arrays.toString(outcomes) +
+                ", state=" + state +
+                ", autIds=" + autIds +
+                ", sandboxDefinitionRefId=" + sandboxDefinitionRefId +
+                ", showStepperBar=" + showStepperBar +
+                '}';
     }
 }

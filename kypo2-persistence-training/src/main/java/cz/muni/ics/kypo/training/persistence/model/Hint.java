@@ -95,18 +95,20 @@ public class Hint implements Serializable {
         if (!(obj instanceof Hint))
             return false;
         Hint other = (Hint) obj;
-        // @formatter:off
         return Objects.equals(content, other.getContent())
                 && Objects.equals(gameLevel, other.getGameLevel())
                 && Objects.equals(hintPenalty, other.getHintPenalty())
                 && Objects.equals(title, other.getTitle());
-        // @formatter:on
     }
 
     @Override
     public String toString() {
-        return "Hint [id=" + id + ", title=" + title + ", content=" + content + ", hintPenalty=" + hintPenalty + ", gameLevel=" + gameLevel
-                + ", toString()=" + super.toString() + "]";
+        return "Hint{" +
+                "id=" + id +
+                ", title='" + title + '\'' +
+                ", content='" + content + '\'' +
+                ", hintPenalty=" + hintPenalty +
+                ", gameLevel=" + gameLevel +
+                '}';
     }
-
 }

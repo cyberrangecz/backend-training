@@ -30,11 +30,14 @@ public class TrainingDefinition implements Serializable {
     @Enumerated(EnumType.STRING)
     private TDState state;
     @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(name = "training_definition_author_ref",
+    @JoinTable(name = "training_definition_user_ref",
             joinColumns = @JoinColumn(name = "training_definition_id"),
-            inverseJoinColumns = @JoinColumn(name = "author_ref_id")
+            inverseJoinColumns = @JoinColumn(name = "user_ref_id")
     )
-    private Set<AuthorRef> authorRef = new HashSet<>();
+    private Set<UserRef> authors = new HashSet<>();
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "td_view_group_id")
+    private TDViewGroup tdViewGroup;
     @Column(name = "sandbox_definition_ref_id", nullable = false)
     private Long sandboxDefinitionRefId;
     @Column(name = "starting_level")
@@ -90,22 +93,30 @@ public class TrainingDefinition implements Serializable {
         this.state = state;
     }
 
-    public Set<AuthorRef> getAuthorRef() {
-        return Collections.unmodifiableSet(authorRef);
+    public Set<UserRef> getAuthors() {
+        return Collections.unmodifiableSet(authors);
     }
 
-    public void setAuthorRef(Set<AuthorRef> authorRef) {
-        this.authorRef = authorRef;
+    public void setAuthors(Set<UserRef> authors) {
+        this.authors = authors;
     }
 
-    public void addAuthor(AuthorRef authorRef) {
-        this.authorRef.add(authorRef);
+    public void addAuthor(UserRef authorRef) {
+        this.authors.add(authorRef);
         authorRef.addTrainingDefinition(this);
     }
 
-    public void removeAuthor(AuthorRef authorRef) {
-        this.authorRef.remove(authorRef);
+    public void removeAuthor(UserRef authorRef) {
+        this.authors.remove(authorRef);
         authorRef.removeTrainingDefinition(this);
+    }
+
+    public TDViewGroup getTdViewGroup() {
+        return tdViewGroup;
+    }
+
+    public void setTdViewGroup(TDViewGroup tdViewGroup) {
+        this.tdViewGroup = tdViewGroup;
     }
 
     public Long getSandboxDefinitionRefId() {
@@ -146,20 +157,27 @@ public class TrainingDefinition implements Serializable {
         if (!(obj instanceof TrainingDefinition))
             return false;
         TrainingDefinition other = (TrainingDefinition) obj;
-        // @formatter:off
         return Objects.equals(description, other.getDescription())
                 && Arrays.equals(outcomes, other.getOutcomes())
                 && Arrays.equals(prerequisities, other.getPrerequisities())
                 && Objects.equals(state, other.getState())
                 && Objects.equals(title, other.getTitle());
-        // @formatter:on
     }
 
     @Override
     public String toString() {
-        return "TrainingDefinition{" + "id=" + id + ", title='" + title + '\'' + ", description='" + description + '\'' + ", prerequisities="
-                + Arrays.toString(prerequisities) + ", outcomes=" + Arrays.toString(outcomes) + ", state=" + state + ", authorRef=" + authorRef
-                + ", sandboxDefinitionRefId=" + sandboxDefinitionRefId + ", startingLevel=" + startingLevel + ", showStepperBar=" + showStepperBar
-                + '}';
+        return "TrainingDefinition{" +
+                "id=" + id +
+                ", title='" + title + '\'' +
+                ", description='" + description + '\'' +
+                ", prerequisities=" + Arrays.toString(prerequisities) +
+                ", outcomes=" + Arrays.toString(outcomes) +
+                ", state=" + state +
+                ", authors=" + authors +
+                ", tdViewGroup=" + tdViewGroup +
+                ", sandboxDefinitionRefId=" + sandboxDefinitionRefId +
+                ", startingLevel=" + startingLevel +
+                ", showStepperBar=" + showStepperBar +
+                '}';
     }
 }

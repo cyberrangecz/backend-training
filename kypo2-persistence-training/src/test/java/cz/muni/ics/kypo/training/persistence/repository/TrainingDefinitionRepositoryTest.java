@@ -1,6 +1,6 @@
 package cz.muni.ics.kypo.training.persistence.repository;
 
-import cz.muni.ics.kypo.training.persistence.model.AuthorRef;
+import cz.muni.ics.kypo.training.persistence.model.UserRef;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -31,7 +31,7 @@ public class TrainingDefinitionRepositoryTest {
     private TrainingDefinitionRepository trainingDefinitionRepository;
 
     private TrainingDefinition trainingDefinition1, trainingDefinition2, trainingDefinition3;
-    private AuthorRef author1, author2;
+    private UserRef author1, author2;
     private Pageable pageable;
 
     @SpringBootApplication
@@ -61,12 +61,12 @@ public class TrainingDefinitionRepositoryTest {
     @Test
     public void findAllByLoggedInAuthor() {
 
-        author1 = new AuthorRef();
-        author1.setAuthorRefLogin("author1");
+        author1 = new UserRef();
+        author1.setUserRefLogin("author1");
         entityManager.persist(author1);
 
-        author2 = new AuthorRef();
-        author2.setAuthorRefLogin("author2");
+        author2 = new UserRef();
+        author2.setUserRefLogin("author2");
         entityManager.persist(author2);
 
         trainingDefinition1.addAuthor(author1);
@@ -77,7 +77,7 @@ public class TrainingDefinitionRepositoryTest {
         entityManager.persist(trainingDefinition3);
 
         List<TrainingDefinition> trainingDefinitions = trainingDefinitionRepository
-                .findAllByLoggedInAuthor("author1", pageable).getContent();
+                .findAllByLoggedInUser("author1", pageable).getContent();
         assertTrue(trainingDefinitions.contains(trainingDefinition1));
         assertTrue(trainingDefinitions.contains(trainingDefinition2));
         assertEquals(2, trainingDefinitions.size());

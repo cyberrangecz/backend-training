@@ -6,8 +6,6 @@ import cz.muni.ics.kypo.training.persistence.model.AbstractLevel;
 import cz.muni.ics.kypo.training.persistence.model.Hint;
 import cz.muni.ics.kypo.training.persistence.model.TrainingRun;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 

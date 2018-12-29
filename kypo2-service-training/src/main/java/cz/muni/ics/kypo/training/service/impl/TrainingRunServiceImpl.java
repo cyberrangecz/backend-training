@@ -36,6 +36,7 @@ import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import org.springframework.web.client.RestTemplate;
+
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -56,14 +57,14 @@ public class TrainingRunServiceImpl implements TrainingRunService {
     private TrainingRunRepository trainingRunRepository;
     private AbstractLevelRepository abstractLevelRepository;
     private TrainingInstanceRepository trainingInstanceRepository;
-    private ParticipantRefRepository participantRefRepository;
+    private UserRefRepository participantRefRepository;
     private HintRepository hintRepository;
     private RestTemplate restTemplate;
     private AuditService auditService;
 
     @Autowired
     public TrainingRunServiceImpl(TrainingRunRepository trainingRunRepository, AbstractLevelRepository abstractLevelRepository,
-                                  TrainingInstanceRepository trainingInstanceRepository, ParticipantRefRepository participantRefRepository,
+                                  TrainingInstanceRepository trainingInstanceRepository, UserRefRepository participantRefRepository,
                                   RestTemplate restTemplate, HintRepository hintRepository, AuditService auditService) {
         this.trainingRunRepository = trainingRunRepository;
         this.abstractLevelRepository = abstractLevelRepository;
@@ -115,7 +116,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
         Assert.notNull(trainingRunId, MUST_NOT_BE_NULL);
         TrainingRun trainingRun = findByIdWithLevel(trainingRunId);
         Long nextLevelId = trainingRun.getCurrentLevel().getNextLevel();
-        if(!trainingRun.isLevelAnswered()) {
+        if (!trainingRun.isLevelAnswered()) {
             throw new ServiceLayerException("At first you need to answer the level.", ErrorCode.RESOURCE_CONFLICT);
         }
         if (nextLevelId == null) {
@@ -123,7 +124,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
         }
         AbstractLevel abstractLevel = abstractLevelRepository.findById(nextLevelId).orElseThrow(() ->
                 new ServiceLayerException("Level with id: " + nextLevelId + " not found.", ErrorCode.RESOURCE_NOT_FOUND));
-        if(trainingRun.getCurrentLevel() instanceof InfoLevel) {
+        if (trainingRun.getCurrentLevel() instanceof InfoLevel) {
             auditLevelCompletedAction(trainingRun);
         }
         trainingRun.setCurrentLevel(abstractLevel);
@@ -178,7 +179,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
         List<TrainingInstance> trainingInstances = trainingInstanceRepository.findAllByStartTimeAfterAndEndTimeBefore(LocalDateTime.now());
         for (TrainingInstance trainingInstance : trainingInstances) {
             if (trainingInstance.getAccessToken().equals(accessToken)) {
-                Set<SandboxInstanceRef> freeSandboxes= trainingRunRepository.findFreeSandboxesOfTrainingInstance(trainingInstance.getId());
+                Set<SandboxInstanceRef> freeSandboxes = trainingRunRepository.findFreeSandboxesOfTrainingInstance(trainingInstance.getId());
                 if (!freeSandboxes.isEmpty()) {
                     SandboxInstanceRef sandboxInstanceRef = getReadySandboxInstanceRef(freeSandboxes);
                     AbstractLevel al = abstractLevelRepository.findById(trainingInstance.getTrainingDefinition().getStartingLevel()).orElseThrow(() -> new ServiceLayerException("No starting level available for this training definition", ErrorCode.RESOURCE_NOT_FOUND));
@@ -213,8 +214,8 @@ public class TrainingRunServiceImpl implements TrainingRunService {
                                           TRState state, LocalDateTime startTime, LocalDateTime endTime, SandboxInstanceRef sandboxInstanceRef) {
         TrainingRun tR = new TrainingRun();
         tR.setCurrentLevel(currentLevel);
-        tR.setParticipantRef(participantRefRepository.findByParticipantRefLogin(participantRefLogin)
-                .orElse(participantRefRepository.save(new ParticipantRef(participantRefLogin))));
+        tR.setParticipantRef(participantRefRepository.findByUserRefLogin(participantRefLogin)
+                .orElse(participantRefRepository.save(new UserRef(participantRefLogin))));
         tR.setAssessmentResponses("[]");
         //TODO what state set at the begining
         tR.setState(TRState.NEW);
@@ -303,7 +304,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
         if (level instanceof GameLevel) {
             //audit
             trainingRun.setSolutionTaken(true);
-            trainingRun.decreaseTotalScore(trainingRun.getCurrentScore()-1);
+            trainingRun.decreaseTotalScore(trainingRun.getCurrentScore() - 1);
             trainingRun.setCurrentScore(1);
             auditSolutionDisplayedAction(trainingRun, (GameLevel) level);
             trainingRunRepository.save(trainingRun);
@@ -362,7 +363,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
         LOG.debug("archiveTrainingRun({})", trainingRunId);
         Assert.notNull(trainingRunId, MUST_NOT_BE_NULL);
         TrainingRun trainingRun = findById(trainingRunId);
-        if(trainingRun.getCurrentLevel().getNextLevel() != null || !trainingRun.isLevelAnswered()) {
+        if (trainingRun.getCurrentLevel().getNextLevel() != null || !trainingRun.isLevelAnswered()) {
             throw new ServiceLayerException("Cannot archive training run because current level is not last or is not answered.", ErrorCode.RESOURCE_CONFLICT);
         }
 
@@ -627,11 +628,12 @@ public class TrainingRunServiceImpl implements TrainingRunService {
         JSONArray responses = isResponseValid(responsesAsString);
         int points = 0;
         TrainingRun trainingRun = findByIdWithLevel(trainingRunId);
-        if(!(trainingRun.getCurrentLevel() instanceof AssessmentLevel)) {
+        if (!(trainingRun.getCurrentLevel() instanceof AssessmentLevel)) {
             throw new ServiceLayerException("Current level is not assessment level and cannot be evaluated.", ErrorCode.WRONG_LEVEL_TYPE);
         }
-        if(trainingRun.isLevelAnswered()) throw new ServiceLayerException("Current level has been already answered.", ErrorCode.RESOURCE_CONFLICT);
-        if(trainingRun.getAssessmentResponses() == null) {
+        if (trainingRun.isLevelAnswered())
+            throw new ServiceLayerException("Current level has been already answered.", ErrorCode.RESOURCE_CONFLICT);
+        if (trainingRun.getAssessmentResponses() == null) {
             trainingRun.setAssessmentResponses("[]");
         }
         AssessmentLevel assessmentLevel = (AssessmentLevel) trainingRun.getCurrentLevel();
@@ -641,7 +643,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
 
 
         AssessmentUtil util = new AssessmentUtil();
-        responseToCurrentAssessment.put("answers", "[" + responses.toString()  + "]");
+        responseToCurrentAssessment.put("answers", "[" + responses.toString() + "]");
         if (assessmentLevel.getAssessmentType().equals(AssessmentType.QUESTIONNAIRE)) {
             responseToCurrentAssessment.put("receivedPoints", 0);
         } else {
@@ -668,7 +670,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
             if (report.toString().contains("success")) {
                 return new JSONArray(responses);
             } else {
-                throw new IllegalArgumentException("Given responses are not valid. \n" +  report.iterator().next().toString());
+                throw new IllegalArgumentException("Given responses are not valid. \n" + report.iterator().next().toString());
             }
 
         } catch (IOException | ProcessingException ex) {

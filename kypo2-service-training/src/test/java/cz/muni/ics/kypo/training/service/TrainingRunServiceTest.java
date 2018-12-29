@@ -61,7 +61,7 @@ public class TrainingRunServiceTest {
     @Mock
     private TrainingDefinitionRepository trainingDefinitionRepository;
     @Mock
-    private ParticipantRefRepository participantRefRepository;
+    private UserRefRepository participantRefRepository;
     @Mock
     private HintRepository hintRepository;
     @Mock
@@ -74,7 +74,7 @@ public class TrainingRunServiceTest {
     private Hint hint1, hint2;
     private SandboxInstanceRef sandboxInstanceRef1, sandboxInstanceRef2;
     private TrainingInstance trainingInstance1, trainingInstance2;
-    private ParticipantRef participantRef;
+    private UserRef participantRef;
     private SandboxInfo sandboxInfo;
     private TrainingDefinition trainingDefinition, trainingDefinition2;
     private JSONParser parser = new JSONParser();
@@ -99,7 +99,7 @@ public class TrainingRunServiceTest {
         trainingDefinition.setTitle("Title TrainingDefinition");
         trainingDefinition.setStartingLevel(1L);
         trainingDefinition.setState(TDState.RELEASED);
-        trainingDefinition.setAuthorRef(new HashSet<>());
+        trainingDefinition.setAuthors(new HashSet<>());
         trainingDefinition.setSandboxDefinitionRefId(1L);
         trainingDefinition.setStartingLevel(1L);
         trainingDefinition.setShowStepperBar(true);
@@ -134,9 +134,9 @@ public class TrainingRunServiceTest {
         trainingInstance1.setTrainingDefinition(trainingDefinition);
         trainingInstance1.setSandboxInstanceRefs(new HashSet<>(Arrays.asList(sandboxInstanceRef1, sandboxInstanceRef2)));
 
-        participantRef = new ParticipantRef();
+        participantRef = new UserRef();
         participantRef.setId(1L);
-        participantRef.setParticipantRefLogin("participant");
+        participantRef.setUserRefLogin("participant");
 
 
         gameLevel = new GameLevel();
@@ -241,11 +241,11 @@ public class TrainingRunServiceTest {
         trainingInstance1.setTrainingDefinition(trainingDefinition);
         given(trainingDefinitionRepository.save(any(TrainingDefinition.class))).willReturn(trainingDefinition);
         given(trainingInstanceRepository.findAllByStartTimeAfterAndEndTimeBefore(any(LocalDateTime.class))).willReturn(Arrays.asList(trainingInstance1));
-        given(trainingRunRepository.findFreeSandboxesOfTrainingInstance(trainingInstance1.getId())).willReturn(new HashSet<SandboxInstanceRef>(Arrays.asList(sandboxInstanceRef1)));
+        given(trainingRunRepository.findFreeSandboxesOfTrainingInstance(trainingInstance1.getId())).willReturn(new HashSet<>(Arrays.asList(sandboxInstanceRef1)));
         given(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class), anyString())).willReturn(new ResponseEntity<List<SandboxInfo>>(new ArrayList<>(Arrays.asList(sandboxInfo)), HttpStatus.OK));
         given(abstractLevelRepository.findById(trainingInstance1.getTrainingDefinition().getStartingLevel())).willReturn(Optional.of(gameLevel));
-        given(participantRefRepository.findByParticipantRefLogin(participantRef.getParticipantRefLogin())).willReturn(Optional.of(participantRef));
-        given(participantRefRepository.save(new ParticipantRef(participantRef.getParticipantRefLogin()))).willReturn(participantRef);
+        given(participantRefRepository.findByUserRefLogin(participantRef.getUserRefLogin())).willReturn(Optional.of(participantRef));
+        given(participantRefRepository.save(new UserRef(participantRef.getUserRefLogin()))).willReturn(participantRef);
         given(trainingRunRepository.save(any(TrainingRun.class))).willReturn(trainingRun1);
         TrainingRun trainingRun = trainingRunService.accessTrainingRun(trainingInstance1.getAccessToken());
         assertEquals(trainingRun1, trainingRun);
@@ -391,7 +391,7 @@ public class TrainingRunServiceTest {
 
         assertEquals(expectedPage, resultPage);
 
-        then(trainingRunRepository).should().findAllByParticipantRefLogin(participantRef.getParticipantRefLogin(), PageRequest.of(0 ,2));
+        then(trainingRunRepository).should().findAllByParticipantRefLogin(participantRef.getUserRefLogin(), PageRequest.of(0 ,2));
     }
 
     @Test
@@ -404,7 +404,7 @@ public class TrainingRunServiceTest {
 
         assertEquals(expectedPage, resultPage);
 
-        then(trainingRunRepository).should().findAllByTrainingDefinitionIdAndParticipantRefLogin(trainingDefinition2.getId(), participantRef.getParticipantRefLogin(), PageRequest.of(0, 2));
+        then(trainingRunRepository).should().findAllByTrainingDefinitionIdAndParticipantRefLogin(trainingDefinition2.getId(), participantRef.getUserRefLogin(), PageRequest.of(0, 2));
     }
 
     @Test

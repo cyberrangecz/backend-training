@@ -9,7 +9,7 @@ import cz.muni.ics.kypo.training.persistence.repository.AccessTokenRepository;
 import cz.muni.ics.kypo.training.persistence.repository.TrainingInstanceRepository;
 
 import cz.muni.ics.kypo.training.persistence.repository.TrainingRunRepository;
-import cz.muni.ics.kypo.training.persistence.repository.OrganizerRefRepository;
+import cz.muni.ics.kypo.training.persistence.repository.UserRefRepository;
 import cz.muni.ics.kypo.training.service.impl.TrainingInstanceServiceImpl;
 import org.junit.After;
 import org.junit.Before;
@@ -63,7 +63,7 @@ public class TrainingInstanceServiceTest {
     private String accessToken = "1asd2sdASD12dSv5S5a4sd5sad45FFe54hLOFE4547fe54Fe5f";
 
     @Mock
-    private OrganizerRefRepository organizerRefRepository;
+    private UserRefRepository organizerRefRepository;
 
     @Before
     public void init() {

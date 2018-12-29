@@ -1,8 +1,8 @@
 package cz.muni.ics.kypo.training.mapping.mapstruct;
 
 import cz.muni.ics.kypo.training.api.PageResultResource;
-import cz.muni.ics.kypo.training.api.dto.OrganizerRefDTO;
-import cz.muni.ics.kypo.training.persistence.model.OrganizerRef;
+import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
+import cz.muni.ics.kypo.training.persistence.model.UserRef;
 import org.mapstruct.Mapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -10,42 +10,43 @@ import org.springframework.data.domain.PageImpl;
 import java.util.*;
 
 /**
- * @author Roman Oravec
+ * @author Pavel Seda
  */
 @Mapper(componentModel = "spring", uses = {TrainingInstanceMapper.class})
-public interface UserRefMapper extends ParentMapper{
-    OrganizerRef mapToEntity(OrganizerRefDTO dto);
+public interface UserRefMapper extends ParentMapper {
 
-    OrganizerRefDTO mapToDTO(OrganizerRef entity);
+    UserRef mapToEntity(UserRefDTO dto);
 
-    List<OrganizerRef> mapToList(Collection<OrganizerRefDTO> dtos);
+    UserRefDTO mapToDTO(UserRef entity);
 
-    List<OrganizerRefDTO> mapToListDTO(Collection<OrganizerRef> entities);
+    List<UserRef> mapToList(Collection<UserRefDTO> dtos);
 
-    Set<OrganizerRef> mapToSet(Collection<OrganizerRefDTO> dtos);
+    List<UserRefDTO> mapToListDTO(Collection<UserRef> entities);
 
-    Set<OrganizerRefDTO> mapToSetDTO(Collection<OrganizerRef> entities);
+    Set<UserRef> mapToSet(Collection<UserRefDTO> dtos);
 
-    default Optional<OrganizerRef> mapToOptional(OrganizerRefDTO dto){
+    Set<UserRefDTO> mapToSetDTO(Collection<UserRef> entities);
+
+    default Optional<UserRef> mapToOptional(UserRefDTO dto) {
         return Optional.ofNullable(mapToEntity(dto));
     }
 
-    default Optional<OrganizerRefDTO> mapToOptional(OrganizerRef entity){
+    default Optional<UserRefDTO> mapToOptional(UserRef entity) {
         return Optional.ofNullable(mapToDTO(entity));
     }
 
-    default Page<OrganizerRefDTO> mapToPageDTO(Page<OrganizerRef> objects){
-        List<OrganizerRefDTO> mapped = mapToListDTO(objects.getContent());
+    default Page<UserRefDTO> mapToPageDTO(Page<UserRef> objects) {
+        List<UserRefDTO> mapped = mapToListDTO(objects.getContent());
         return new PageImpl<>(mapped, objects.getPageable(), mapped.size());
     }
 
-    default Page<OrganizerRef> mapToPage(Page<OrganizerRefDTO> objects){
-        List<OrganizerRef> mapped = mapToList(objects.getContent());
+    default Page<UserRef> mapToPage(Page<UserRefDTO> objects) {
+        List<UserRef> mapped = mapToList(objects.getContent());
         return new PageImpl<>(mapped, objects.getPageable(), mapped.size());
     }
 
-    default PageResultResource<OrganizerRefDTO> mapToPageResultResource(Page<OrganizerRef> objects){
-        List<OrganizerRefDTO> mapped = new ArrayList<>();
+    default PageResultResource<UserRefDTO> mapToPageResultResource(Page<UserRef> objects) {
+        List<UserRefDTO> mapped = new ArrayList<>();
         objects.forEach(object -> mapped.add(mapToDTO(object)));
         return new PageResultResource<>(mapped, createPagination(objects));
     }

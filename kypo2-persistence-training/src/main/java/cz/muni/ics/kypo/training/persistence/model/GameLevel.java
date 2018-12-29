@@ -104,33 +104,31 @@ public class GameLevel extends AbstractLevel implements Serializable {
     }
 
     @Override
-    public String toString() {
-        return "GameLevel{" + "flag='" + flag + '\'' + ", content='" + content + '\'' + ", solution='" + solution + '\''
-                + ", solutionPenalized=" + solutionPenalized + ", estimatedDuration=" + estimatedDuration + ", attachments="
-                + Arrays.toString(attachments) + ", hints=" + hints + ", incorrectFlagLimit=" + incorrectFlagLimit + '}';
-    }
-
-    @Override
     public boolean equals(Object o) {
-        if (this == o)
-            return true;
-        if (!(o instanceof GameLevel))
-            return false;
-        if (!super.equals(o))
-            return false;
-
+        if (this == o) return true;
+        if (!(o instanceof GameLevel)) return false;
+        if (!super.equals(o)) return false;
         GameLevel gameLevel = (GameLevel) o;
-
-        if (!getContent().equals(gameLevel.getContent()))
-            return false;
-        return getSolution().equals(gameLevel.getSolution());
+        return Objects.equals(getContent(), gameLevel.getContent()) &&
+                Objects.equals(getSolution(), gameLevel.getSolution());
     }
 
     @Override
     public int hashCode() {
-        int result = super.hashCode();
-        result = 31 * result + getContent().hashCode();
-        result = 31 * result + getSolution().hashCode();
-        return result;
+        return Objects.hash(super.hashCode(), getContent(), getSolution());
+    }
+
+    @Override
+    public String toString() {
+        return "GameLevel{" +
+                "flag='" + flag + '\'' +
+                ", content='" + content + '\'' +
+                ", solution='" + solution + '\'' +
+                ", solutionPenalized=" + solutionPenalized +
+                ", estimatedDuration=" + estimatedDuration +
+                ", attachments=" + Arrays.toString(attachments) +
+                ", hints=" + hints +
+                ", incorrectFlagLimit=" + incorrectFlagLimit +
+                '}';
     }
 }

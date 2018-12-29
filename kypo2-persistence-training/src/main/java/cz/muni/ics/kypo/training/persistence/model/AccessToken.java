@@ -15,15 +15,15 @@ public class AccessToken implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", unique = true, nullable = false, insertable = false)
     private Long id;
-    @Column(name = "access_token", nullable = false)
+    @Column(name = "access_token", nullable = false, unique = true)
     private String accessToken;
+
+    public AccessToken() {
+    }
 
     public AccessToken(Long id, String accessToken) {
         this.accessToken = accessToken;
         this.id = id;
-    }
-
-    public AccessToken() {
     }
 
     public Long getId() {
@@ -54,12 +54,14 @@ public class AccessToken implements Serializable {
 
     @Override
     public int hashCode() {
-
         return Objects.hash(id, accessToken);
     }
 
     @Override
     public String toString() {
-        return "AccessToken{" + "id=" + id + ", accessToken='" + accessToken + '\'' + '}';
+        return "AccessToken{" +
+                "id=" + id +
+                ", accessToken='" + accessToken + '\'' +
+                '}';
     }
 }

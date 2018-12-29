@@ -8,17 +8,17 @@ CREATE TABLE abstract_level (
     PRIMARY KEY (id)
 );
 
+CREATE TABLE access_token (
+   id  bigserial NOT NULL,
+    access_token varchar(255) NOT NULL,
+    PRIMARY KEY (id)
+);
+
 CREATE TABLE assessment_level (
    assessment_type varchar(128) NOT NULL,
     instructions varchar(255) NOT NULL,
     questions text NOT NULL,
     id int8 NOT NULL,
-    PRIMARY KEY (id)
-);
-
-CREATE TABLE author_ref (
-   id  bigserial NOT NULL,
-    author_ref_login varchar(255) NOT NULL,
     PRIMARY KEY (id)
 );
 
@@ -49,18 +49,6 @@ CREATE TABLE info_level (
     PRIMARY KEY (id)
 );
 
-CREATE TABLE participant_ref (
-   id  bigserial NOT NULL,
-    participant_ref_login varchar(255) NOT NULL,
-    PRIMARY KEY (id)
-);
-
-CREATE TABLE access_token (
-   id  bigserial NOT NULL,
-    access_token varchar(255) NOT NULL,
-    PRIMARY KEY (id)
-);
-
 CREATE TABLE post_hook (
    id  bigserial NOT NULL,
     PRIMARY KEY (id)
@@ -78,40 +66,52 @@ CREATE TABLE sandbox_instance_ref (
     PRIMARY KEY (id)
 );
 
+CREATE TABLE td_view_group (
+   id  bigserial NOT NULL,
+    PRIMARY KEY (id)
+);
+
+CREATE TABLE td_view_group_user_ref (
+   td_view_group_id int8 NOT NULL,
+    user_ref_id int8 NOT NULL,
+    PRIMARY KEY (td_view_group_id, user_ref_id)
+);
+
 CREATE TABLE training_definition (
    id  bigserial NOT NULL,
     description varchar(255),
     outcomes bytea,
     prerequisities bytea,
+    sandbox_definition_ref_id int8 NOT NULL,
     show_stepper_bar boolean NOT NULL,
     starting_level int8,
     state varchar(128) NOT NULL,
     title varchar(255) NOT NULL,
-    sandbox_definition_ref_id int8,
+    td_view_group_id int8,
     PRIMARY KEY (id)
 );
 
-CREATE TABLE training_definition_author_ref (
+CREATE TABLE training_definition_user_ref (
    training_definition_id int8 NOT NULL,
-    author_ref_id int8 NOT NULL,
-    PRIMARY KEY (training_definition_id, author_ref_id)
+    user_ref_id int8 NOT NULL,
+    PRIMARY KEY (training_definition_id, user_ref_id)
 );
 
 CREATE TABLE training_instance (
    id  bigserial NOT NULL,
-    end_time timestamp NOT NULL,
     access_token varchar(255),
+    end_time timestamp NOT NULL,
     pool_size int4 NOT NULL,
     start_time timestamp NOT NULL,
     title varchar(255) NOT NULL,
-    training_definition_id int8 NOT NULL,
+    training_definition_id int8,
     PRIMARY KEY (id)
 );
 
-CREATE TABLE training_instance_organizers (
+CREATE TABLE training_instance_user_ref (
    training_instance_id int8 NOT NULL,
-    organizers_id int8 NOT NULL,
-    PRIMARY KEY (training_instance_id, organizers_id)
+    user_ref_id int8 NOT NULL,
+    PRIMARY KEY (training_instance_id, user_ref_id)
 );
 
 CREATE TABLE training_run (
@@ -127,20 +127,26 @@ CREATE TABLE training_run (
     state varchar(128) NOT NULL,
     total_score int4,
     current_level_id int8 NOT NULL,
-    participant_ref_id int8 NOT NULL,
+    user_ref_id int8 NOT NULL,
     sandbox_instance_ref_id int8 NOT NULL,
     training_instance_id int8 NOT NULL,
     PRIMARY KEY (id)
 );
 
-CREATE TABLE organizer_ref (
+CREATE TABLE user_ref (
    id  bigserial NOT NULL,
-    organizer_ref_login varchar(255),
+    user_ref_login varchar(255),
     PRIMARY KEY (id)
 );
 
+ALTER TABLE access_token
+   ADD CONSTRAINT UK_qglhb4xi0iwstguebaliifr1n unique (access_token);
+
 ALTER TABLE training_run
-   ADD CONSTRAINT UK_8g0gumb9rcvd0fscfxv1wb24c UNIQUE (sandbox_instance_ref_id);
+   ADD CONSTRAINT UK_8g0gumb9rcvd0fscfxv1wb24c unique (sandbox_instance_ref_id);
+
+ALTER TABLE user_ref
+   ADD CONSTRAINT UK_iajf018nptidl085leng237xl unique (user_ref_login);
 
 ALTER TABLE abstract_level
    ADD CONSTRAINT FKfur32sh4k57g53x45w3d9mrv6
@@ -177,13 +183,28 @@ ALTER TABLE sandbox_instance_ref
    FOREIGN KEY (training_instance_id)
    REFERENCES training_instance;
 
-ALTER TABLE training_definition_author_ref
-   ADD CONSTRAINT FK76ifve9d4sreenamcmrwsh9tm
-   FOREIGN KEY (author_ref_id)
-   REFERENCES author_ref;
+ALTER TABLE td_view_group_user_ref
+   ADD CONSTRAINT FKh2gwvi7oxr8uqcs9yf6352bo0
+   FOREIGN KEY (user_ref_id)
+   REFERENCES user_ref;
 
-ALTER TABLE training_definition_author_ref
-   ADD CONSTRAINT FK83b30979dnp5kade6m4600h7n
+ALTER TABLE td_view_group_user_ref
+   ADD CONSTRAINT FKk97tvstrwj10cnic68e9i5bjd
+   FOREIGN KEY (td_view_group_id)
+   REFERENCES td_view_group;
+
+ALTER TABLE training_definition
+   ADD CONSTRAINT FKb7vjqot5ntr08c948ttkg20f0
+   FOREIGN KEY (td_view_group_id)
+   REFERENCES td_view_group;
+
+ALTER TABLE training_definition_user_ref
+   ADD CONSTRAINT FKq5ejeyb8ced1s2t9lv4ld1uyl
+   FOREIGN KEY (user_ref_id)
+   REFERENCES user_ref;
+
+ALTER TABLE training_definition_user_ref
+   ADD CONSTRAINT FK99adq71p6nym0emx1xvr4qk4
    FOREIGN KEY (training_definition_id)
    REFERENCES training_definition;
 
@@ -192,13 +213,13 @@ ALTER TABLE training_instance
    FOREIGN KEY (training_definition_id)
    REFERENCES training_definition;
 
-ALTER TABLE training_instance_organizers
-   ADD CONSTRAINT FKofnq5p3x5u0o0c15a1oj9ckpx
-   FOREIGN KEY (organizers_id)
-   REFERENCES organizer_ref;
+ALTER TABLE training_instance_user_ref
+   ADD CONSTRAINT FK53k0sdbkfgu7ddn902b3x0fsy
+   FOREIGN KEY (user_ref_id)
+   REFERENCES user_ref;
 
-ALTER TABLE training_instance_organizers
-   ADD CONSTRAINT FKe4qmx0nnbqxvg66wwt0si91vr
+ALTER TABLE training_instance_user_ref
+   ADD CONSTRAINT FKj92s3xyn59494b3kwxbmbs9ct
    FOREIGN KEY (training_instance_id)
    REFERENCES training_instance;
 
@@ -208,9 +229,9 @@ ALTER TABLE training_run
    REFERENCES abstract_level;
 
 ALTER TABLE training_run
-   ADD CONSTRAINT FKoseiqv9maacgplxk1xbriigw0
-   FOREIGN KEY (participant_ref_id)
-   REFERENCES participant_ref;
+   ADD CONSTRAINT FKmfyx8wi2fu400w1h6gikyp9cy
+   FOREIGN KEY (user_ref_id)
+   REFERENCES user_ref;
 
 ALTER TABLE training_run
    ADD CONSTRAINT FK6yn4e9w78a454vegxipn3cmvf

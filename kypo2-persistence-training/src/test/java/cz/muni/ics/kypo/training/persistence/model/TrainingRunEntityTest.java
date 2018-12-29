@@ -13,12 +13,6 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import cz.muni.ics.kypo.training.persistence.config.PersistenceConfigTest;
-import cz.muni.ics.kypo.training.persistence.model.InfoLevel;
-import cz.muni.ics.kypo.training.persistence.model.ParticipantRef;
-import cz.muni.ics.kypo.training.persistence.model.SandboxInstanceRef;
-import cz.muni.ics.kypo.training.persistence.model.TrainingDefinition;
-import cz.muni.ics.kypo.training.persistence.model.TrainingInstance;
-import cz.muni.ics.kypo.training.persistence.model.TrainingRun;
 import cz.muni.ics.kypo.training.persistence.model.enums.TRState;
 
 import java.time.LocalDateTime;
@@ -44,7 +38,7 @@ public class TrainingRunEntityTest {
     private SandboxInstanceRef sandboxInstanceRef;
     private TrainingDefinition trainingDefinition;
     private InfoLevel infoLevel;
-    private ParticipantRef participantRef;
+    private UserRef participantRef;
 
     @SpringBootApplication
     static class TestConfiguration {
@@ -58,8 +52,8 @@ public class TrainingRunEntityTest {
         infoLevel = new InfoLevel();
         infoLevel.setTitle("infoLevel");
         infoLevel.setContent("content for info level");
-        participantRef = new ParticipantRef();
-        participantRef.setParticipantRefLogin("user");
+        participantRef = new UserRef();
+        participantRef.setUserRefLogin("user");
         trainingInstance.setAccessToken("b5f3dc27a09865be37cef07816c4f08cf5585b116a4e74b9387c3e43e3a25ec8");
         trainingInstance.setStartTime(LocalDateTime.now());
         trainingInstance.setEndTime(LocalDateTime.now());

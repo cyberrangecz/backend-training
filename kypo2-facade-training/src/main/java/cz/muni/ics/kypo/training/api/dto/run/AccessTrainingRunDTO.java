@@ -50,4 +50,14 @@ public class AccessTrainingRunDTO {
     public void setInfoAboutLevels(List<BasicLevelInfoDTO> infoAboutLevels) {
         this.infoAboutLevels = infoAboutLevels;
     }
+
+    @Override
+    public String toString() {
+        return "AccessTrainingRunDTO{" +
+                "trainingRunID=" + trainingRunID +
+                ", showStepperBar=" + showStepperBar +
+                ", abstractLevelDTO=" + abstractLevelDTO +
+                ", infoAboutLevels=" + infoAboutLevels +
+                '}';
+    }
 }

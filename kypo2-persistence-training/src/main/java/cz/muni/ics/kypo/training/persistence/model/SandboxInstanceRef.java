@@ -46,8 +46,10 @@ public class SandboxInstanceRef implements Serializable {
 
     @Override
     public String toString() {
-        return "SandboxInstanceRef [id=" + id + ", sandboxInstanceRef=" + sandboxInstanceRefId + ", trainingInstance=" + trainingInstance
-                + ", toString()=" + super.toString() + "]";
+        return "SandboxInstanceRef{" +
+                "id=" + id +
+                ", sandboxInstanceRefId=" + sandboxInstanceRefId +
+                ", trainingInstance=" + trainingInstance +
+                '}';
     }
-
 }

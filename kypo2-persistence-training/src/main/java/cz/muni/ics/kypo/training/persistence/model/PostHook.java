@@ -35,7 +35,9 @@ public class PostHook implements Serializable {
 
     @Override
     public String toString() {
-        return "PostHook [id=" + id + ", abstractLevel=" + abstractLevel + "]";
+        return "PostHook{" +
+                "id=" + id +
+                ", abstractLevel=" + abstractLevel +
+                '}';
     }
-
 }
