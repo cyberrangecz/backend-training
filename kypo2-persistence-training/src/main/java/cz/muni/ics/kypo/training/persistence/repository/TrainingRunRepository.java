@@ -32,18 +32,18 @@ public interface TrainingRunRepository extends JpaRepository<TrainingRun, Long>,
     Optional<TrainingRun> findById(Long id);
 
     @Query(value = "SELECT tr FROM TrainingRun tr JOIN FETCH tr.participantRef pr JOIN FETCH tr.trainingInstance ti " +
-            "JOIN FETCH ti.trainingDefinition WHERE pr.participantRefLogin = :participantRef",
+            "JOIN FETCH ti.trainingDefinition WHERE pr.userRefLogin = :participantRefLogin",
             countQuery = "SELECT COUNT(tr) FROM TrainingRun tr INNER JOIN tr.participantRef pr INNER JOIN tr.trainingInstance ti " +
-                    "INNER JOIN ti.trainingDefinition WHERE pr.participantRefLogin = :participantRef")
-    Page<TrainingRun> findAllByParticipantRefLogin(@Param("participantRef") String participantRefLogin, Pageable pageable);
+                    "INNER JOIN ti.trainingDefinition WHERE pr.userRefLogin = :participantRefLogin")
+    Page<TrainingRun> findAllByParticipantRefLogin(@Param("participantRefLogin") String participantRefLogin, Pageable pageable);
 
     @Query("SELECT tr FROM TrainingRun tr JOIN FETCH tr.currentLevel JOIN FETCH tr.trainingInstance ti JOIN FETCH ti.trainingDefinition WHERE tr.id= :trainingRunId")
     Optional<TrainingRun> findByIdWithLevel(@Param("trainingRunId") Long trainingRunId);
 
     @Query(value = "SELECT tr FROM TrainingRun tr JOIN FETCH tr.participantRef pr JOIN FETCH tr.trainingInstance ti JOIN FETCH "
-            + "ti.trainingDefinition td WHERE td.id = :trainingDefinitionId AND pr.participantRefLogin = :participantRefLogin",
+            + "ti.trainingDefinition td WHERE td.id = :trainingDefinitionId AND pr.userRefLogin = :participantRefLogin",
             countQuery = "SELECT tr FROM TrainingRun tr INNER JOIN tr.participantRef pr INNER JOIN tr.trainingInstance ti INNER JOIN " +
-                    "ti.trainingDefinition td WHERE td.id = :trainingDefinitionId AND pr.participantRefLogin = :participantRefLogin")
+                    "ti.trainingDefinition td WHERE td.id = :trainingDefinitionId AND pr.userRefLogin = :participantRefLogin")
     Page<TrainingRun> findAllByTrainingDefinitionIdAndParticipantRefLogin(@Param("trainingDefinitionId") Long trainingDefinitionId,
                                                                           @Param("participantRefLogin") String participantRefLogin, Pageable pageable);
 

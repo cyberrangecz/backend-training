@@ -1,13 +1,13 @@
 package cz.muni.ics.kypo.training.facade;
 
 import cz.muni.ics.kypo.training.api.PageResultResource;
-import cz.muni.ics.kypo.training.api.dto.AuthorRefDTO;
+import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
 import cz.muni.ics.kypo.training.api.dto.infolevel.InfoLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionDTO;
 import cz.muni.ics.kypo.training.mapping.mapstruct.*;
-import cz.muni.ics.kypo.training.persistence.model.AuthorRef;
 import cz.muni.ics.kypo.training.persistence.model.InfoLevel;
 import cz.muni.ics.kypo.training.persistence.model.TrainingDefinition;
+import cz.muni.ics.kypo.training.persistence.model.UserRef;
 import cz.muni.ics.kypo.training.persistence.model.enums.TDState;
 import org.junit.Before;
 import org.junit.Test;
@@ -26,7 +26,7 @@ import static org.junit.Assert.assertTrue;
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = {InfoLevelMapperImpl.class, PreHookMapperImpl.class,
         PostHookMapper.class, PostHookMapperImpl.class, TrainingDefinitionMapperImpl.class,
-        AuthorRefMapperImpl.class})
+        UserRefMapperImpl.class})
 public class BeanMappingTest {
 
     @Autowired
@@ -36,8 +36,8 @@ public class BeanMappingTest {
 
     private TrainingDefinition tD;
     private TrainingDefinitionDTO tDDTO;
-    private AuthorRef aR;
-    private AuthorRefDTO aRDTO;
+    private UserRef aR;
+    private UserRefDTO aRDTO;
     private InfoLevel iL1, iL2;
     private InfoLevelDTO iLDTO1, iLDTO2;
     private List<InfoLevel> levels;
@@ -46,14 +46,14 @@ public class BeanMappingTest {
     @Before
     public void init() {
 
-        aR = new AuthorRef();
+        aR = new UserRef();
         aR.setId(1L);
-        aR.setAuthorRefLogin("login");
-        aR.setTrainingDefinition(new HashSet<>(Arrays.asList(tD)));
+        aR.setUserRefLogin("login");
+        aR.setTrainingDefinitions(new HashSet<>(Arrays.asList(tD)));
 
-        aRDTO = new AuthorRefDTO();
+        aRDTO = new UserRefDTO();
         aRDTO.setId(1L);
-        aRDTO.setAuthorRefLogin("login");
+        aRDTO.setUserRefLogin("login");
 
         tD = new TrainingDefinition();
         tD.setId(1L);
@@ -62,7 +62,7 @@ public class BeanMappingTest {
         tD.setPrerequisities(new String[]{"p1", "p2"});
         tD.setOutcomes(new String[]{"o1", "o2"});
         tD.setState(TDState.RELEASED);
-        tD.setAuthorRef(new HashSet<>(Arrays.asList(aR)));
+        tD.setAuthors(new HashSet<>(Arrays.asList(aR)));
         tD.setSandboxDefinitionRefId(1L);
         tD.setStartingLevel(1L);
         tD.setShowStepperBar(true);
@@ -74,7 +74,7 @@ public class BeanMappingTest {
         tDDTO.setPrerequisities(new String[]{"p1", "p2"});
         tDDTO.setOutcomes(new String[]{"o1", "o2"});
         tDDTO.setState(TDState.RELEASED);
-        tDDTO.setAuthorRef(new HashSet<>(Arrays.asList(aRDTO)));
+        tDDTO.setAuthors(new HashSet<>(Arrays.asList(aRDTO)));
         tDDTO.setSandboxDefinitionRefId(1L);
         tDDTO.setStartingLevel(1L);
         tDDTO.setShowStepperBar(true);
@@ -124,8 +124,8 @@ public class BeanMappingTest {
         assertEquals(tD.getOutcomes()[0], dto.getOutcomes()[0]);
         assertEquals(tD.getOutcomes()[1], dto.getOutcomes()[1]);
         assertEquals(tD.getState(), dto.getState());
-        assertEquals(tD.getAuthorRef().size(), dto.getAuthorRef().size());
-        assertEquals(tD.getAuthorRef().size(), dto.getAuthorRef().size());
+        assertEquals(tD.getAuthors().size(), dto.getAuthors().size());
+        assertEquals(tD.getAuthors().size(), dto.getAuthors().size());
         assertEquals(tD.getSandboxDefinitionRefId(), dto.getSandboxDefinitionRefId());
         assertEquals(tD.getStartingLevel(), dto.getStartingLevel());
         assertEquals(tD.isShowStepperBar(), dto.isShowStepperBar());
@@ -144,8 +144,8 @@ public class BeanMappingTest {
         assertEquals(tDDTO.getOutcomes()[0], tD.getOutcomes()[0]);
         assertEquals(tDDTO.getOutcomes()[1], tD.getOutcomes()[1]);
         assertEquals(tDDTO.getState(), tD.getState());
-        assertEquals(tDDTO.getAuthorRef().size(), tD.getAuthorRef().size());
-        assertEquals(tDDTO.getAuthorRef().size(), tD.getAuthorRef().size());
+        assertEquals(tDDTO.getAuthors().size(), tD.getAuthors().size());
+        assertEquals(tDDTO.getAuthors().size(), tD.getAuthors().size());
         assertEquals(tDDTO.getSandboxDefinitionRefId(), tD.getSandboxDefinitionRefId());
         assertEquals(tDDTO.getStartingLevel(), tD.getStartingLevel());
         assertEquals(tDDTO.isShowStepperBar(), tD.isShowStepperBar());

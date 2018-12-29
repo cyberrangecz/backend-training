@@ -186,12 +186,12 @@ public interface TrainingDefinitionService {
     List<TrainingInstance> findAllTrainingInstancesByTrainingDefinitionId(Long id);
 
     /**
-     * Finds AuthorRef by id
+     * Finds UserRef by id
      *
-     * @param id of wanted AuthorRef
-     * @return AuthorRef with corresponding id
-     * @throws ServiceLayerException if AuthorRef was not found
+     * @param id of wanted UserRef
+     * @return UserRef with corresponding id
+     * @throws ServiceLayerException if UserRef was not found
      */
-    AuthorRef findAuthorRefById(Long id) throws ServiceLayerException;
+    UserRef findAuthorRefById(Long id) throws ServiceLayerException;
 
 }

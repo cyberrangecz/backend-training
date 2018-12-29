@@ -16,7 +16,7 @@ public class InfoLevel extends AbstractLevel implements Serializable {
 
     @Lob
     @Type(type = "org.hibernate.type.TextType")
-    @Column(name = "content", nullable = false) // maybe should be unique?
+    @Column(name = "content", nullable = false, unique = true)
     private String content;
 
     public InfoLevel() {
@@ -55,9 +55,8 @@ public class InfoLevel extends AbstractLevel implements Serializable {
 
     @Override
     public String toString() {
-        return "InfoLevel [content=" + content + ", getId()=" + getId() + ", getTitle()=" + getTitle() + ", getMaxScore()=" + getMaxScore()
-                + ", getPreHook()=" + getPreHook() + ", getPostHook()=" + getPostHook() + ", getNextLevel()=" + getNextLevel() + ", toString()="
-                + super.toString() + "]";
+        return "InfoLevel{" +
+                "content='" + content + '\'' +
+                '}';
     }
-
 }

@@ -35,7 +35,9 @@ public class PreHook implements Serializable {
 
     @Override
     public String toString() {
-        return "PreHook [id=" + id + ", abstractLevel=" + abstractLevel + "]";
+        return "PreHook{" +
+                "id=" + id +
+                ", abstractLevel=" + abstractLevel +
+                '}';
     }
-
 }

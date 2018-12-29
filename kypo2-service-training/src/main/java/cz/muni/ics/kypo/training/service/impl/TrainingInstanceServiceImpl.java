@@ -5,13 +5,13 @@ import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.training.exceptions.ErrorCode;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.persistence.model.AccessToken;
-import cz.muni.ics.kypo.training.persistence.model.OrganizerRef;
 import cz.muni.ics.kypo.training.persistence.model.TrainingInstance;
 import cz.muni.ics.kypo.training.persistence.model.TrainingRun;
+import cz.muni.ics.kypo.training.persistence.model.UserRef;
 import cz.muni.ics.kypo.training.persistence.repository.AccessTokenRepository;
 import cz.muni.ics.kypo.training.persistence.repository.TrainingInstanceRepository;
 import cz.muni.ics.kypo.training.persistence.repository.TrainingRunRepository;
-import cz.muni.ics.kypo.training.persistence.repository.OrganizerRefRepository;
+import cz.muni.ics.kypo.training.persistence.repository.UserRefRepository;
 import cz.muni.ics.kypo.training.service.TrainingInstanceService;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
@@ -47,13 +47,13 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
     private TrainingInstanceRepository trainingInstanceRepository;
     private TrainingRunRepository trainingRunRepository;
     private AccessTokenRepository accessTokenRepository;
-    private OrganizerRefRepository organizerRefRepository;
+    private UserRefRepository organizerRefRepository;
     private RestTemplate restTemplate;
 
     @Autowired
     public TrainingInstanceServiceImpl(TrainingInstanceRepository trainingInstanceRepository, AccessTokenRepository accessTokenRepository,
                                        RestTemplate restTemplate, TrainingRunRepository trainingRunRepository,
-                                       OrganizerRefRepository organizerRefRepository) {
+                                       UserRefRepository organizerRefRepository) {
         this.trainingInstanceRepository = trainingInstanceRepository;
         this.trainingRunRepository = trainingRunRepository;
         this.accessTokenRepository = accessTokenRepository;
@@ -165,7 +165,7 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
     }
 
     @Override
-    public Set<OrganizerRef> findUserRefsByIds(Set<Long> ids) {
+    public Set<UserRef> findUserRefsByIds(Set<Long> ids) {
         return organizerRefRepository.findUsers(ids);
     }
 }

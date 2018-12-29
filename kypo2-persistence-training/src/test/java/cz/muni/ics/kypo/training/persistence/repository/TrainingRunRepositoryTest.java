@@ -45,7 +45,7 @@ public class TrainingRunRepositoryTest {
     private SandboxInstanceRef sandboxInstanceRef1, sandboxInstanceRef2, sandboxInstanceRef3;
     private TrainingDefinition trainingDefinition;
     private InfoLevel infoLevel;
-    private ParticipantRef participantRef;
+    private UserRef participantRef;
     private Pageable pageable;
     private Predicate predicate;
 
@@ -72,8 +72,8 @@ public class TrainingRunRepositoryTest {
         infoLevel.setTitle("infoLevel");
         infoLevel.setContent("content for info level");
 
-        participantRef = new ParticipantRef();
-        participantRef.setParticipantRefLogin("user");
+        participantRef = new UserRef();
+        participantRef.setUserRefLogin("user");
 
         trainingInstance = new TrainingInstance();
         trainingInstance.setAccessToken("b5f3dc27a09865be37cef07816c4f08cf5585b116a4e74b9387c3e43e3a25ec8");
@@ -150,7 +150,7 @@ public class TrainingRunRepositoryTest {
     public void findAllByTrainingDefinitionIdAndParticipantRefId() throws Exception {
         entityManager.persistAndFlush(trainingRun1);
         List<TrainingRun> trainingRuns = trainingRunRepository
-                .findAllByTrainingDefinitionIdAndParticipantRefLogin(trainingDefinition.getId(), participantRef.getParticipantRefLogin(), pageable)
+                .findAllByTrainingDefinitionIdAndParticipantRefLogin(trainingDefinition.getId(), participantRef.getUserRefLogin(), pageable)
                 .getContent();
         assertEquals(1, trainingRuns.size());
 

@@ -1,7 +1,7 @@
 package cz.muni.ics.kypo.training.api.dto.traininginstance;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import cz.muni.ics.kypo.training.api.dto.OrganizerRefDTO;
+import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionDTO;
 import cz.muni.ics.kypo.training.utils.converters.LocalDateTimeUTCSerializer;
 import io.swagger.annotations.ApiModel;
@@ -24,7 +24,7 @@ public class TrainingInstanceDTO {
     private String title;
     private int poolSize;
     private TrainingDefinitionDTO trainingDefinition;
-    private Set<OrganizerRefDTO> organizers;
+    private Set<UserRefDTO> organizers;
     private String accessToken;
 
     @ApiModelProperty(value = "Main identifier of training instance.", example = "1")
@@ -81,12 +81,12 @@ public class TrainingInstanceDTO {
         this.trainingDefinition = trainingDefinition;
     }
 
-    @ApiModelProperty(value = "Reference to users which organize training instance.")
-    public Set<OrganizerRefDTO> getOrganizers() {
+    @ApiModelProperty(value = "Reference to organizers which organize training instance.")
+    public Set<UserRefDTO> getOrganizers() {
         return organizers;
     }
 
-    public void setOrganizers(Set<OrganizerRefDTO> organizers) {
+    public void setOrganizers(Set<UserRefDTO> organizers) {
         this.organizers = organizers;
     }
 
@@ -98,9 +98,10 @@ public class TrainingInstanceDTO {
         this.accessToken = accessToken;
     }
 
-    @Override public String toString() {
+    @Override
+    public String toString() {
         return "TrainingInstanceDTO{" + "id=" + id + ", startTime=" + startTime + ", endTime=" + endTime + ", title='" + title + '\''
-            + ", poolSize=" + poolSize + ", trainingDefinition=" + trainingDefinition + ", organizers=" + organizers + ", accessToken='"
-            + accessToken + '\'' + '}';
+                + ", poolSize=" + poolSize + ", trainingDefinition=" + trainingDefinition + ", organizers=" + organizers + ", accessToken='"
+                + accessToken + '\'' + '}';
     }
 }

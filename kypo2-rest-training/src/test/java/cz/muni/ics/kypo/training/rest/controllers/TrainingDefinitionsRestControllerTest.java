@@ -5,8 +5,8 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.training.api.PageResultResource;
 import cz.muni.ics.kypo.training.api.dto.AbstractLevelDTO;
-import cz.muni.ics.kypo.training.api.dto.AuthorRefDTO;
 import cz.muni.ics.kypo.training.api.dto.BasicLevelInfoDTO;
+import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelUpdateDTO;
 import cz.muni.ics.kypo.training.api.dto.gamelevel.GameLevelUpdateDTO;
 import cz.muni.ics.kypo.training.api.dto.infolevel.InfoLevelUpdateDTO;
@@ -61,7 +61,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = {InfoLevelMapperImpl.class, PreHookMapperImpl.class,
         PostHookMapper.class, PostHookMapperImpl.class, TrainingDefinitionMapperImpl.class,
-        AuthorRefMapperImpl.class})
+        UserRefMapperImpl.class})
 public class TrainingDefinitionsRestControllerTest {
 
     private TrainingDefinitionsRestController trainingDefinitionsRestController;
@@ -157,13 +157,13 @@ public class TrainingDefinitionsRestControllerTest {
         assessmentLevelUpdateDTO.setTitle("Some title");
         assessmentLevelUpdateDTO.setType(AssessmentType.QUESTIONNAIRE);
 
-        AuthorRef authorRef = new AuthorRef();
-        authorRef.setAuthorRefLogin("Author");
-        Set<AuthorRef> authorRefSet = new HashSet<>();
+        UserRef authorRef = new UserRef();
+        authorRef.setUserRefLogin("Author");
+        Set<UserRef> authorRefSet = new HashSet<>();
         authorRefSet.add(authorRef);
 
-        AuthorRefDTO authorRefDTO = new AuthorRefDTO();
-        Set<AuthorRefDTO> authorRefSetDTO = new HashSet<>();
+        UserRefDTO authorRefDTO = new UserRefDTO();
+        Set<UserRefDTO> authorRefSetDTO = new HashSet<>();
         authorRefSetDTO.add(authorRefDTO);
 
         Set<Long> autIds = new HashSet<>();
@@ -174,28 +174,28 @@ public class TrainingDefinitionsRestControllerTest {
         trainingDefinition1.setState(TDState.UNRELEASED);
         trainingDefinition1.setStartingLevel(1L);
         trainingDefinition1.setTitle("test");
-        trainingDefinition1.setAuthorRef(authorRefSet);
+        trainingDefinition1.setAuthors(authorRefSet);
         trainingDefinition1.setSandboxDefinitionRefId(1L);
 
         trainingDefinition2 = new TrainingDefinition();
         trainingDefinition2.setId(2L);
         trainingDefinition2.setState(TDState.PRIVATED);
         trainingDefinition2.setTitle("test");
-        trainingDefinition2.setAuthorRef(authorRefSet);
+        trainingDefinition2.setAuthors(authorRefSet);
         trainingDefinition2.setSandboxDefinitionRefId(1L);
 
         trainingDefinition1DTO = new TrainingDefinitionDTO();
         trainingDefinition1DTO.setId(1L);
         trainingDefinition1DTO.setState(TDState.UNRELEASED);
         trainingDefinition1DTO.setTitle("test");
-        trainingDefinition1DTO.setAuthorRef(authorRefSetDTO);
+        trainingDefinition1DTO.setAuthors(authorRefSetDTO);
         trainingDefinition1DTO.setSandboxDefinitionRefId(1L);
 
         trainingDefinition2DTO = new TrainingDefinitionDTO();
         trainingDefinition2DTO.setId(2L);
         trainingDefinition2DTO.setState(TDState.PRIVATED);
         trainingDefinition2DTO.setTitle("test");
-        trainingDefinition2DTO.setAuthorRef(authorRefSetDTO);
+        trainingDefinition2DTO.setAuthors(authorRefSetDTO);
         trainingDefinition2DTO.setSandboxDefinitionRefId(1L);
 
         trainingDefinitionUpdateDTO = new TrainingDefinitionUpdateDTO();

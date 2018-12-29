@@ -79,29 +79,16 @@ public abstract class AbstractLevel implements Serializable {
     }
 
     @Override
-    public int hashCode() {
-        return Objects.hashCode(id);
-    }
-
-    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof AbstractLevel)) return false;
-
         AbstractLevel that = (AbstractLevel) o;
-
-        if (getMaxScore() != that.getMaxScore()) return false;
-        if (getTitle() != null ? !getTitle().equals(that.getTitle()) : that.getTitle() != null) return false;
-        if (getNextLevel() != null ? !getNextLevel().equals(that.getNextLevel()) : that.getNextLevel() != null)
-            return false;
-        if (getPreHook() != null ? !getPreHook().equals(that.getPreHook()) : that.getPreHook() != null) return false;
-        return getPostHook() != null ? getPostHook().equals(that.getPostHook()) : that.getPostHook() == null;
+        return getMaxScore() == that.getMaxScore() &&
+                Objects.equals(getId(), that.getId());
     }
 
     @Override
-    public String toString() {
-        return "AbstractLevel [id=" + id + ", title=" + title + ", maxScore=" + maxScore + ", nextLevel=" + nextLevel + ", preHook=" + preHook
-                + ", postHook=" + postHook + ", toString()=" + super.toString() + "]";
+    public int hashCode() {
+        return Objects.hash(getId(), getMaxScore());
     }
-
 }

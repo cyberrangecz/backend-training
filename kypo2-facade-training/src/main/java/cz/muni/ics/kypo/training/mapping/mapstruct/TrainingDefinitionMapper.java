@@ -6,7 +6,6 @@ import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionDT
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionUpdateDTO;
 import cz.muni.ics.kypo.training.persistence.model.TrainingDefinition;
 import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
 import org.mapstruct.NullValueCheckStrategy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -17,9 +16,9 @@ import java.util.*;
  * @author Roman Oravec
  */
 @Mapper(componentModel = "spring",
-        uses = {AuthorRefMapper.class},
+        uses = {UserRefMapper.class},
         nullValueCheckStrategy =  NullValueCheckStrategy.ALWAYS)
-public interface TrainingDefinitionMapper extends ParentMapper{
+public interface TrainingDefinitionMapper extends ParentMapper {
 
     TrainingDefinition mapToEntity(TrainingDefinitionDTO dto);
 

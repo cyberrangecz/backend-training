@@ -24,11 +24,11 @@ public interface TrainingDefinitionRepository
     @Query("SELECT td FROM TrainingDefinition td WHERE td.sandboxDefinitionRefId = :sandboxDefId")
     Page<TrainingDefinition> findAllBySandBoxDefinitionRefId(@Param("sandboxDefId") Long sandboxDefId, Pageable pageable);
 
-    @EntityGraph(attributePaths = {"authorRef"})
+    @EntityGraph(attributePaths = {"authors"})
     Page<TrainingDefinition> findAll(Predicate predicate, Pageable pageable);
 
-    @Query(value = "SELECT td FROM TrainingDefinition td JOIN FETCH td.authorRef ar WHERE ar.authorRefLogin = :authorLogin",
-            countQuery = "SELECT COUNT(td) FROM TrainingDefinition td INNER JOIN td.authorRef ar WHERE ar.authorRefLogin = :authorLogin")
-    Page<TrainingDefinition> findAllByLoggedInAuthor(@Param("authorLogin") String authorLogin, Pageable pageable);
+    @Query(value = "SELECT td FROM TrainingDefinition td JOIN FETCH td.authors a WHERE a.userRefLogin = :userRefLogin",
+            countQuery = "SELECT COUNT(td) FROM TrainingDefinition td INNER JOIN td.authors a WHERE a.userRefLogin = :userRefLogin")
+    Page<TrainingDefinition> findAllByLoggedInUser(@Param("userRefLogin") String userRefLogin, Pageable pageable);
 
 }

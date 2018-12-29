@@ -104,8 +104,15 @@ public class TrainingDefinitionCreateDTO {
 
     @Override
     public String toString() {
-        return "TrainingDefinitionCreateDTO{" + "title='" + title + '\'' + ", description='" + description + '\'' + ", prerequisities="
-                + Arrays.toString(prerequisities) + ", outcomes=" + Arrays.toString(outcomes) + ", state=" + state + ", autIds=" + autIds
-                + ", showStepperBar=" + showStepperBar + ", sandboxDefinitionRefId=" + sandboxDefinitionRefId + '}';
+        return "TrainingDefinitionCreateDTO{" +
+                "title='" + title + '\'' +
+                ", description='" + description + '\'' +
+                ", prerequisities=" + Arrays.toString(prerequisities) +
+                ", outcomes=" + Arrays.toString(outcomes) +
+                ", state=" + state +
+                ", autIds=" + autIds +
+                ", showStepperBar=" + showStepperBar +
+                ", sandboxDefinitionRefId=" + sandboxDefinitionRefId +
+                '}';
     }
 }

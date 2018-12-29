@@ -10,6 +10,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import cz.muni.ics.kypo.training.persistence.model.TrainingInstance;
 import com.querydsl.core.types.Predicate;
+
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -24,14 +25,14 @@ public interface TrainingInstanceRepository extends JpaRepository<TrainingInstan
     @Query("SELECT ti FROM TrainingInstance ti JOIN FETCH ti.trainingDefinition td WHERE td.id = :trainingDefId")
     List<TrainingInstance> findAllByTrainingDefinitionId(@Param("trainingDefId") Long trainingDefId);
 
-    @EntityGraph(attributePaths = {"trainingDefinition.authorRef", "organizers", "sandboxInstanceRef"})
+    @EntityGraph(attributePaths = {"trainingDefinition.authors", "organizers", "sandboxInstanceRef"})
     Page<TrainingInstance> findAll(Predicate predicate, Pageable pageable);
 
     @Query("SELECT ti FROM TrainingInstance ti JOIN FETCH ti.trainingDefinition WHERE ti.startTime < :date AND ti.endTime > :date ")
     List<TrainingInstance> findAllByStartTimeAfterAndEndTimeBefore(@Param("date") LocalDateTime time);
 
 
-    @EntityGraph(attributePaths = {"trainingDefinition.authorRef", "organizers", "sandboxInstanceRef"})
+    @EntityGraph(attributePaths = {"trainingDefinition.authors", "organizers", "sandboxInstanceRef"})
     Optional<TrainingInstance> findById(Long id);
 
 }

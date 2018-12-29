@@ -62,31 +62,27 @@ public class AssessmentLevel extends AbstractLevel implements Serializable {
     }
 
     @Override
-    public int hashCode() {
-        return Objects.hash(questions, instructions, assessmentType);
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof AssessmentLevel)) return false;
+        if (!super.equals(o)) return false;
+        AssessmentLevel that = (AssessmentLevel) o;
+        return Objects.equals(getQuestions(), that.getQuestions()) &&
+                Objects.equals(getInstructions(), that.getInstructions()) &&
+                getAssessmentType() == that.getAssessmentType();
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (!super.equals(obj))
-            return false;
-        if (!(obj instanceof AssessmentLevel))
-            return false;
-        AssessmentLevel other = (AssessmentLevel) obj;
-        // @formatter:off
-        return Objects.equals(assessmentType, other.getAssessmentType())
-                && Objects.equals(instructions, other.getInstructions())
-                && Objects.equals(questions, other.getQuestions());
-        // @formatter:on
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), getQuestions(), getInstructions(), getAssessmentType());
     }
 
     @Override
     public String toString() {
-        return "AssessmentLevel [questions=" + questions + ", instructions=" + instructions + ", assessmentType=" + assessmentType
-                + ", getId()=" + getId() + ", getTitle()=" + getTitle() + ", getMaxScore()=" + getMaxScore() + ", getNextLevel()=" + getNextLevel()
-                + ", toString()=" + super.toString() + "]";
+        return "AssessmentLevel{" +
+                "questions='" + questions + '\'' +
+                ", instructions='" + instructions + '\'' +
+                ", assessmentType=" + assessmentType +
+                '}';
     }
-
 }

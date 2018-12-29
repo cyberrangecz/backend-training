@@ -1,8 +1,8 @@
 package cz.muni.ics.kypo.training.api.dto.trainingdefinition;
 
 import cz.muni.ics.kypo.training.api.dto.AbstractLevelDTO;
+import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
 import io.swagger.annotations.ApiModel;
-import cz.muni.ics.kypo.training.api.dto.AuthorRefDTO;
 import cz.muni.ics.kypo.training.persistence.model.enums.TDState;
 import io.swagger.annotations.ApiModelProperty;
 
@@ -22,7 +22,7 @@ public class TrainingDefinitionDTO {
     private String[] prerequisities;
     private String[] outcomes;
     private TDState state;
-    private Set<AuthorRefDTO> authorRef = new HashSet<>();
+    private Set<UserRefDTO> authors = new HashSet<>();
     private Long sandboxDefinitionRefId;
     private Long startingLevel;
     private Set<AbstractLevelDTO> levels;
@@ -84,13 +84,14 @@ public class TrainingDefinitionDTO {
     }
 
     @ApiModelProperty(value = "References to the authors of the training definition.")
-    public Set<AuthorRefDTO> getAuthorRef() {
-        return authorRef;
+    public Set<UserRefDTO> getAuthors() {
+        return authors;
     }
 
-    public void setAuthorRef(Set<AuthorRefDTO> authorRef) {
-        this.authorRef = authorRef;
+    public void setAuthors(Set<UserRefDTO> authors) {
+        this.authors = authors;
     }
+
 
     @ApiModelProperty(value = "Reference to the sandbox definition.")
     public Long getSandboxDefinitionRefId() {
@@ -139,7 +140,7 @@ public class TrainingDefinitionDTO {
     @Override public String toString() {
         return "TrainingDefinitionDTO{" + "id=" + id + ", title='" + title + '\'' + ", description='" + description + '\''
             + ", prerequisities=" + Arrays.toString(prerequisities) + ", outcomes=" + Arrays.toString(outcomes) + ", state=" + state
-            + ", authorRef=" + authorRef + ", sandboxDefinitionRefId=" + sandboxDefinitionRefId + ", startingLevel=" + startingLevel
+            + ", authors=" + authors + ", sandboxDefinitionRefId=" + sandboxDefinitionRefId + ", startingLevel=" + startingLevel
             + ", levels=" + levels + ", showStepperBar=" + showStepperBar + ", canBeArchived=" + canBeArchived + '}';
     }
 }

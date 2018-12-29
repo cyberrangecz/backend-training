@@ -37,17 +37,10 @@ INSERT INTO assessment_level(id, assessment_type, instructions, questions) VALUE
 INSERT INTO hint(id, content, title, hint_penalty, game_level_id) VALUES (nextval('hint_id_seq'), 'Very good advice', 'Hint1', 10, 1);
 INSERT INTO hint(id, content, title, hint_penalty, game_level_id) VALUES (nextval('hint_id_seq'), 'Very bad advice', 'Hint2', 6, 2);
 
-INSERT INTO author_ref(id, author_ref_login) VALUES (nextval('author_ref_id_seq'), 'Designer1');
-INSERT INTO author_ref(id, author_ref_login) VALUES (nextval('author_ref_id_seq'), 'Designer2');
-INSERT INTO author_ref(id, author_ref_login) VALUES (nextval('author_ref_id_seq'), 'Designer3');
-
 INSERT INTO training_definition(id, description, outcomes, prerequisities, state, title, sandbox_definition_ref_id, starting_level, show_stepper_bar) VALUES (nextval('training_definition_id_seq'), 'Released training definition', null, null, 'RELEASED', 'TrainingDefinition1', 1, 4, true);
 INSERT INTO training_definition(id, description, outcomes, prerequisities, state, title, sandbox_definition_ref_id, starting_level, show_stepper_bar) VALUES (nextval('training_definition_id_seq'), 'Unreleased training definition', null, null, 'UNRELEASED', 'TrainingDefinition2', 2, 5, false);
 INSERT INTO training_definition(id, description, outcomes, prerequisities, state, title, sandbox_definition_ref_id, starting_level, show_stepper_bar) VALUES (nextval('training_definition_id_seq'), 'Released training definition2', null, null, 'RELEASED', 'TrainingDefinition2', 3, 6, true);
 
-INSERT INTO training_definition_author_ref(training_definition_id, author_ref_id) VALUES (1, 1);
-INSERT INTO training_definition_author_ref(training_definition_id, author_ref_id) VALUES (2, 2);
-INSERT INTO training_definition_author_ref(training_definition_id, author_ref_id) VALUES (3, 3);
 
 INSERT INTO training_instance(id, pool_size, training_definition_id, start_time, end_time, access_token, title) VALUES (nextval('training_instance_id_seq'), 5, 1, '2016-10-19 10:23:54+02', '2017-10-19 10:23:54+02', 'pass-1235', 'Concluded Instance');
 INSERT INTO training_instance(id, pool_size, training_definition_id, start_time, end_time, access_token, title) VALUES (nextval('training_instance_id_seq'), 8, 1, '2016-10-19 10:23:54+02', '2022-10-19 10:23:54+02', 'hello-6578', 'Current Instance');
@@ -67,16 +60,22 @@ INSERT INTO sandbox_instance_ref(id, sandbox_instance_ref, training_instance_id)
 INSERT INTO sandbox_instance_ref(id, sandbox_instance_ref, training_instance_id) VALUES (nextval('sandbox_instance_ref_id_seq'), 7, 4);
 INSERT INTO sandbox_instance_ref(id, sandbox_instance_ref, training_instance_id) VALUES (nextval('sandbox_instance_ref_id_seq'), 8, 4);
 
-INSERT INTO organizer_ref(id, organizer_ref_login) VALUES (nextval('organizer_ref_id_seq'),'Organizer1');
-INSERT INTO organizer_ref(id, organizer_ref_login) VALUES (nextval('organizer_ref_id_seq'),'Organizer2');
+INSERT INTO user_ref(id, user_ref_login) VALUES (nextval('user_ref_id_seq'),'Organizer1');
+INSERT INTO user_ref(id, user_ref_login) VALUES (nextval('user_ref_id_seq'),'Organizer2');
+INSERT INTO user_ref(id, user_ref_login) VALUES (nextval('user_ref_id_seq'),'Participant1');
+INSERT INTO user_ref(id, user_ref_login) VALUES (nextval('user_ref_id_seq'),'Participant2');
+INSERT INTO user_ref(id, user_ref_login) VALUES (nextval('user_ref_id_seq'), 'Designer1');
+INSERT INTO user_ref(id, user_ref_login) VALUES (nextval('user_ref_id_seq'), 'Designer2');
+INSERT INTO user_ref(id, user_ref_login) VALUES (nextval('user_ref_id_seq'), 'Designer3');
 
-INSERT INTO training_instance_organizers(training_instance_id, organizers_id) VALUES (1, 1);
-INSERT INTO training_instance_organizers(training_instance_id, organizers_id) VALUES (2, 1);
-INSERT INTO training_instance_organizers(training_instance_id, organizers_id) VALUES (3, 2);
+INSERT INTO training_instance_user_ref(training_instance_id, user_ref_id) VALUES (1, 1);
+INSERT INTO training_instance_user_ref(training_instance_id, user_ref_id) VALUES (2, 1);
+INSERT INTO training_instance_user_ref(training_instance_id, user_ref_id) VALUES (3, 2);
+INSERT INTO training_definition_user_ref(training_definition_id, user_ref_id) VALUES (1, 5);
+INSERT INTO training_definition_user_ref(training_definition_id, user_ref_id) VALUES (2, 6);
+INSERT INTO training_definition_user_ref(training_definition_id, user_ref_id) VALUES (3, 7);
 
-INSERT INTO participant_ref(id, participant_ref_login) VALUES (nextval('participant_ref_id_seq'),'Participant1');
-INSERT INTO participant_ref(id, participant_ref_login) VALUES (nextval('participant_ref_id_seq'),'Participant2');
 
-INSERT INTO training_run(id, start_time, end_time, state, current_level_id, sandbox_instance_ref_id, training_instance_id, participant_ref_id, solution_taken, event_log_reference, incorrect_flag_count, assessment_responses, total_score, current_score, level_answered) VALUES (nextval('training_run_id_seq'),'2016-10-19 10:23:54+02', '2022-10-19 10:23:54+02', 'ALLOCATED', 4, 1, 1, 1, false, null, 0, '[]',30, 20, false);
-INSERT INTO training_run(id, start_time, end_time, state, current_level_id, sandbox_instance_ref_id, training_instance_id, participant_ref_id, solution_taken, event_log_reference, incorrect_flag_count, assessment_responses, total_score, current_score, level_answered) VALUES (nextval('training_run_id_seq'),'2020-10-19 10:23:54+02', '2024-10-19 10:23:54+02', 'NEW', 4, 5, 3, 2, false, null, 0, '[]', 100, 10, false);
-INSERT INTO training_run(id, start_time, end_time, state, current_level_id, sandbox_instance_ref_id, training_instance_id, participant_ref_id, solution_taken, event_log_reference, incorrect_flag_count, assessment_responses, total_score, current_score, level_answered) VALUES (nextval('training_run_id_seq'),'2019-10-19 10:23:54+02', '2024-10-19 10:23:54+02', 'NEW', 6, 7, 4, 1, false, null, 0, '[]', 0, 0, true);
+INSERT INTO training_run(id, start_time, end_time, state, current_level_id, sandbox_instance_ref_id, training_instance_id, user_ref_id, solution_taken, event_log_reference, incorrect_flag_count, assessment_responses, total_score, current_score, level_answered) VALUES (nextval('training_run_id_seq'),'2016-10-19 10:23:54+02', '2022-10-19 10:23:54+02', 'ALLOCATED', 4, 1, 1, 3, false, null, 0, '[]',30, 20, false);
+INSERT INTO training_run(id, start_time, end_time, state, current_level_id, sandbox_instance_ref_id, training_instance_id, user_ref_id, solution_taken, event_log_reference, incorrect_flag_count, assessment_responses, total_score, current_score, level_answered) VALUES (nextval('training_run_id_seq'),'2020-10-19 10:23:54+02', '2024-10-19 10:23:54+02', 'NEW', 4, 5, 3, 4, false, null, 0, '[]', 100, 10, false);
+INSERT INTO training_run(id, start_time, end_time, state, current_level_id, sandbox_instance_ref_id, training_instance_id, user_ref_id, solution_taken, event_log_reference, incorrect_flag_count, assessment_responses, total_score, current_score, level_answered) VALUES (nextval('training_run_id_seq'),'2019-10-19 10:23:54+02', '2024-10-19 10:23:54+02', 'NEW', 6, 7, 4, 3, false, null, 0, '[]', 0, 0, true);

@@ -1,10 +1,9 @@
 package cz.muni.ics.kypo.training.api.dto.run;
 
-import cz.muni.ics.kypo.training.api.dto.ParticipantRefDTO;
 import cz.muni.ics.kypo.training.api.dto.SandboxInstanceRefDTO;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
 import cz.muni.ics.kypo.training.persistence.model.enums.TRState;
-import cz.muni.ics.kypo.training.utils.converters.LocalDateTimeSerializer;
 import cz.muni.ics.kypo.training.utils.converters.LocalDateTimeUTCSerializer;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -25,7 +24,7 @@ public class TrainingRunDTO {
     private String eventLogReference;
     private TRState state;
     private SandboxInstanceRefDTO sandboxInstanceRef;
-    private ParticipantRefDTO participantRef;
+    private UserRefDTO participantRef;
 
     @ApiModelProperty(value = "Main identifier of training run.", example = "1")
     public Long getId() {
@@ -81,17 +80,24 @@ public class TrainingRunDTO {
     }
 
     @ApiModelProperty(value = "Reference to participant of training run.")
-    public ParticipantRefDTO getParticipantRef() {
+    public UserRefDTO getParticipantRef() {
         return participantRef;
     }
 
-    public void setParticipantRef(ParticipantRefDTO participantRef) {
+    public void setParticipantRef(UserRefDTO participantRef) {
         this.participantRef = participantRef;
     }
 
     @Override
     public String toString() {
-        return "TrainingRunDTO{" + "id=" + id + ", startTime=" + startTime + ", endTime=" + endTime + ", eventLogReference='"
-                + eventLogReference + '\'' + ", state=" + state + ", sandboxInstanceRef=" + sandboxInstanceRef + '}';
+        return "TrainingRunDTO{" +
+                "id=" + id +
+                ", startTime=" + startTime +
+                ", endTime=" + endTime +
+                ", eventLogReference='" + eventLogReference + '\'' +
+                ", state=" + state +
+                ", sandboxInstanceRef=" + sandboxInstanceRef +
+                ", participantRef=" + participantRef +
+                '}';
     }
 }

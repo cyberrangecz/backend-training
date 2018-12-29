@@ -32,17 +32,17 @@ public class SecurityService {
 
     public boolean isTraineeOfGivenTrainingRun(Long trainingRunId) {
         TrainingRun trainingRun = trainingRunRepository.findById(trainingRunId).orElseThrow(() -> new ServiceLayerException("The necessary permissions are required for a resource.", ErrorCode.SECURITY_RIGHTS));
-        return trainingRun.getParticipantRef().getParticipantRefLogin().equals(getSubOfLoggedInUser());
+        return trainingRun.getParticipantRef().getUserRefLogin().equals(getSubOfLoggedInUser());
     }
 
     public boolean isOrganizeOfGivenTrainingInstance(Long instanceId) {
         TrainingInstance trainingInstance = trainingInstanceRepository.findById(instanceId).orElseThrow(() -> new ServiceLayerException("The necessary permissions are required for a resource.", ErrorCode.SECURITY_RIGHTS));
-        return trainingInstance.getOrganizers().stream().anyMatch(o -> o.getOrganizersRefLogin().equals(getSubOfLoggedInUser()));
+        return trainingInstance.getOrganizers().stream().anyMatch(o -> o.getUserRefLogin().equals(getSubOfLoggedInUser()));
     }
 
     public boolean isDesignerOfGivenTrainingDefinition(Long definitionId) {
         TrainingDefinition trainingDefinition = trainingDefinitionRepository.findById(definitionId).orElseThrow(() -> new ServiceLayerException("The necessary permissions are required for a resource.", ErrorCode.SECURITY_RIGHTS));
-        return trainingDefinition.getAuthorRef().stream().anyMatch(a -> a.getAuthorRefLogin().equals(getSubOfLoggedInUser()));
+        return trainingDefinition.getAuthors().stream().anyMatch(a -> a.getUserRefLogin().equals(getSubOfLoggedInUser()));
     }
 
     private String getSubOfLoggedInUser() {
