@@ -222,8 +222,8 @@ public class TrainingRunsRestControllerTest {
 
     @Test
     public void accessTrainingRun() throws Exception {
-        given(trainingRunFacade.accessTrainingRun("password")).willReturn(accessTrainingRunDTO);
-        MockHttpServletResponse result = mockMvc.perform(post("/training-runs").param("password", "password"))
+        given(trainingRunFacade.accessTrainingRun("accessToken")).willReturn(accessTrainingRunDTO);
+        MockHttpServletResponse result = mockMvc.perform(post("/training-runs").param("accessToken", "accessToken"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andReturn().getResponse();
@@ -232,8 +232,8 @@ public class TrainingRunsRestControllerTest {
     @Test
     public void accessTrainingRunWithNoSandbox() throws Exception {
         Exception exceptionToThrow = new ServiceLayerException("message", ErrorCode.NO_AVAILABLE_SANDBOX);
-        willThrow(new FacadeLayerException(exceptionToThrow)).given(trainingRunFacade).accessTrainingRun("password");
-        Exception exception = mockMvc.perform(post("/training-runs").param("password", "password"))
+        willThrow(new FacadeLayerException(exceptionToThrow)).given(trainingRunFacade).accessTrainingRun("accessToken");
+        Exception exception = mockMvc.perform(post("/training-runs").param("accessToken", "accessToken"))
                 .andExpect(status().isServiceUnavailable())
                 .andReturn().getResolvedException();
         assertEquals(ServiceUnavailableException.class, exception.getClass());
@@ -242,8 +242,8 @@ public class TrainingRunsRestControllerTest {
     @Test
     public void accessTrainingRunWithResourceNotFound() throws Exception {
         Exception exceptionToThrow = new ServiceLayerException("message", ErrorCode.RESOURCE_NOT_FOUND);
-        willThrow(new FacadeLayerException(exceptionToThrow)).given(trainingRunFacade).accessTrainingRun("password");
-        Exception exception = mockMvc.perform(post("/training-runs").param("password", "password"))
+        willThrow(new FacadeLayerException(exceptionToThrow)).given(trainingRunFacade).accessTrainingRun("accessToken");
+        Exception exception = mockMvc.perform(post("/training-runs").param("accessToken", "accessToken"))
                 .andExpect(status().isNotFound())
                 .andReturn().getResolvedException();
         assertEquals(ResourceNotFoundException.class, exception.getClass());
@@ -252,8 +252,8 @@ public class TrainingRunsRestControllerTest {
     @Test
     public void accessTrainingRunWithUnexpectedError() throws Exception {
         Exception exceptionToThrow = new ServiceLayerException("message", ErrorCode.UNEXPECTED_ERROR);
-        willThrow(new FacadeLayerException(exceptionToThrow)).given(trainingRunFacade).accessTrainingRun("password");
-        Exception exception = mockMvc.perform(post("/training-runs").param("password", "password"))
+        willThrow(new FacadeLayerException(exceptionToThrow)).given(trainingRunFacade).accessTrainingRun("accessToken");
+        Exception exception = mockMvc.perform(post("/training-runs").param("accessToken", "accessToken"))
                 .andExpect(status().isInternalServerError())
                 .andReturn().getResolvedException();
         assertEquals(InternalServerErrorException.class, exception.getClass());

@@ -139,15 +139,15 @@ public class TrainingRunsRestController {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Training run accessed.", response = AccessTrainingRunDTO.class),
-            @ApiResponse(code = 404, message = "There is no training instance with given password or first level not found in database."),
+            @ApiResponse(code = 404, message = "There is no training instance with given accessToken or first level not found in database."),
             @ApiResponse(code = 500, message = "Some error occurred during getting info about sandboxes."),
             @ApiResponse(code = 503, message = "There is no available sandbox, wait a minute and try again.")
     })
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<AccessTrainingRunDTO> accessTrainingRun(@ApiParam(value = "password", required = true) @RequestParam(value = "password", required = false) String password) {
-        LOG.debug("accessTrainingRun({})", password);
+    public ResponseEntity<AccessTrainingRunDTO> accessTrainingRun(@ApiParam(value = "accessToken", required = true) @RequestParam(value = "accessToken", required = false) String accessToken) {
+        LOG.debug("accessTrainingRun({})", accessToken);
         try {
-            AccessTrainingRunDTO accessTrainingRunDTO = trainingRunFacade.accessTrainingRun(password);
+            AccessTrainingRunDTO accessTrainingRunDTO = trainingRunFacade.accessTrainingRun(accessToken);
             return new ResponseEntity<>(accessTrainingRunDTO, HttpStatus.OK);
         } catch (FacadeLayerException ex) {
             throw ExceptionSorter.throwException(ex);

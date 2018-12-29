@@ -55,9 +55,9 @@ CREATE TABLE participant_ref (
     PRIMARY KEY (id)
 );
 
-CREATE TABLE password (
+CREATE TABLE access_token (
    id  bigserial NOT NULL,
-    password varchar(255) NOT NULL,
+    access_token varchar(255) NOT NULL,
     PRIMARY KEY (id)
 );
 
@@ -100,7 +100,7 @@ CREATE TABLE training_definition_author_ref (
 CREATE TABLE training_instance (
    id  bigserial NOT NULL,
     end_time timestamp NOT NULL,
-    password varchar(255),
+    access_token varchar(255),
     pool_size int4 NOT NULL,
     start_time timestamp NOT NULL,
     title varchar(255) NOT NULL,

@@ -68,15 +68,15 @@ public interface TrainingRunService {
     AbstractLevel getNextLevel(Long trainingRunId);
 
     /**
-     * Access training run based on given password.
+     * Access training run based on given accessToken.
      *
-     * @param password of Training Instance.
+     * @param accessToken of Training Instance.
      * @return Abstract Level
-     * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND cannot find training instance with given id or the password is wrong.
+     * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND cannot find training instance with given id or the accessToken is wrong.
      *                               UNEXPECTED_ERROR there is error while getting info about sandboxes.
      *                               NO_AVAILABLE_SANDBOX there is no free or ready sandbox
      */
-    TrainingRun accessTrainingRun(String password);
+    TrainingRun accessTrainingRun(String accessToken);
 
     /**
      * Gets list of all levels in Training Definition.
@@ -133,7 +133,7 @@ public interface TrainingRunService {
     int getRemainingAttempts(Long trainingRunId);
 
     /**
-     * Access training run based on given password.
+     * Access training run based on given accessToken.
      *
      * @param trainingRunId id of training run to be resumed.
      * @return Abstract Level

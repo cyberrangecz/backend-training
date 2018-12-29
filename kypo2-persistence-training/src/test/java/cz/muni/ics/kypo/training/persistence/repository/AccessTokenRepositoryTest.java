@@ -1,7 +1,7 @@
 package cz.muni.ics.kypo.training.persistence.repository;
 
 import cz.muni.ics.kypo.training.persistence.config.PersistenceConfigTest;
-import cz.muni.ics.kypo.training.persistence.model.Password;
+import cz.muni.ics.kypo.training.persistence.model.AccessToken;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -20,15 +20,15 @@ import static org.junit.Assert.*;
 @RunWith(SpringRunner.class)
 @DataJpaTest
 @Import(PersistenceConfigTest.class)
-public class PasswordRepositoryTest {
+public class AccessTokenRepositoryTest {
 
     @Autowired
     private TestEntityManager entityManager;
 
     @Autowired
-    private PasswordRepository passwordRepository;
+    private AccessTokenRepository accessTokenRepository;
 
-    private Password password1, password2;
+    private AccessToken password1, password2;
     private String passwordHash1, passwordHash2;
 
     @SpringBootApplication
@@ -39,16 +39,16 @@ public class PasswordRepositoryTest {
     public void setUp() {
         passwordHash1 = "1Eh9A5l7Op5As8s0h9";
         passwordHash2 = "R8a9C7B4a2c8A2cN1E";
-        password1 = new Password();
-        password1.setPassword(passwordHash1);
-        password2 = new Password();
-        password2.setPassword(passwordHash2);
+        password1 = new AccessToken();
+        password1.setAccessToken(passwordHash1);
+        password2 = new AccessToken();
+        password2.setAccessToken(passwordHash2);
     }
 
     @Test
     public void findById() {
         Long id = entityManager.persist(password2).getId();
-        Optional<Password> optionalPassword = passwordRepository.findById(id);
+        Optional<AccessToken> optionalPassword = accessTokenRepository.findById(id);
         assertTrue(optionalPassword.isPresent());
         assertEquals(password2, optionalPassword.get());
     }
@@ -57,7 +57,7 @@ public class PasswordRepositoryTest {
     public void findAll() {
         entityManager.persist(password2);
         entityManager.persist(password1);
-        List<Password> resultPasswords = passwordRepository.findAll();
+        List<AccessToken> resultPasswords = accessTokenRepository.findAll();
         assertNotNull(resultPasswords);
         assertEquals(2, resultPasswords.size());
         assertTrue(resultPasswords.contains(password1));
@@ -68,14 +68,14 @@ public class PasswordRepositoryTest {
     public void findOneByPasswordHash() {
         entityManager.persist(password1);
         entityManager.persist(password2);
-        Optional<Password> optionalPassword = passwordRepository.findOneByPassword(passwordHash1);
+        Optional<AccessToken> optionalPassword = accessTokenRepository.findOneByAccessToken(passwordHash1);
         assertTrue(optionalPassword.isPresent());
         assertEquals(password1, optionalPassword.get());
     }
 
     @Test
     public void findOneByPasswordHash_unpresent_passwordHash() {
-        Optional<Password> optionalPassword = passwordRepository.findOneByPassword("8W93invalid987As52s");
+        Optional<AccessToken> optionalPassword = accessTokenRepository.findOneByAccessToken("8W93invalid987As52s");
         assertFalse(optionalPassword.isPresent());
     }
 }

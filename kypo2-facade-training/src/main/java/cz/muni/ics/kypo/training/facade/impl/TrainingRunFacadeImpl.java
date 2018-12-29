@@ -111,11 +111,11 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
 
     @Override
     @TransactionalWO
-    public AccessTrainingRunDTO accessTrainingRun(String password) {
-        LOG.debug("accessTrainingRun({})", password);
+    public AccessTrainingRunDTO accessTrainingRun(String accessToken) {
+        LOG.debug("accessTrainingRun({})", accessToken);
         AccessTrainingRunDTO accessTrainingRunDTO = new AccessTrainingRunDTO();
         try {
-            TrainingRun trainingRun = trainingRunService.accessTrainingRun(password);
+            TrainingRun trainingRun = trainingRunService.accessTrainingRun(accessToken);
             accessTrainingRunDTO.setTrainingRunID(trainingRun.getId());
             accessTrainingRunDTO.setShowStepperBar(trainingRun.getTrainingInstance().getTrainingDefinition().isShowStepperBar());
             accessTrainingRunDTO.setAbstractLevelDTO(getCorrectAbstractLevelDTO(trainingRun.getCurrentLevel()));

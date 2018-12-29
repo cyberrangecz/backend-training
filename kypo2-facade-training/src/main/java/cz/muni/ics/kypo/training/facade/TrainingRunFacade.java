@@ -40,12 +40,12 @@ public interface TrainingRunFacade {
     PageResultResource<AccessedTrainingRunDTO> findAllAccessedTrainingRuns(Pageable pageable);
 
     /**
-     * Access Training Run by logged in user based on given password.
+     * Access Training Run by logged in user based on given accessToken.
      *
-     * @param password of one training instance
+     * @param accessToken of one training instance
      * @return first level of training run and info about all levels in training definition.
      */
-    AccessTrainingRunDTO accessTrainingRun(String password);
+    AccessTrainingRunDTO accessTrainingRun(String accessToken);
 
     /**
      * Finds all Training Runs by specific Training Definition and logged in user.

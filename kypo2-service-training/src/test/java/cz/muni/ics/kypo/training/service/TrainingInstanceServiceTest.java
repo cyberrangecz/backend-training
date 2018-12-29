@@ -5,7 +5,7 @@ import com.querydsl.core.types.dsl.PathBuilder;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.persistence.model.TrainingInstance;
 import cz.muni.ics.kypo.training.persistence.model.TrainingRun;
-import cz.muni.ics.kypo.training.persistence.repository.PasswordRepository;
+import cz.muni.ics.kypo.training.persistence.repository.AccessTokenRepository;
 import cz.muni.ics.kypo.training.persistence.repository.TrainingInstanceRepository;
 
 import cz.muni.ics.kypo.training.persistence.repository.TrainingRunRepository;
@@ -51,7 +51,7 @@ public class TrainingInstanceServiceTest {
     private RestTemplate restTemplate;
 
     @Mock
-    private PasswordRepository passwordRepository;
+    private AccessTokenRepository accessTokenRepository;
 
     @Mock
     private TrainingRunRepository trainingRunRepository;
@@ -60,7 +60,7 @@ public class TrainingInstanceServiceTest {
 
     private TrainingRun trainingRun1, trainingRun2;
 
-    private String password = "1asd2sdASD12dSv5S5a4sd5sad45FFe54hLOFE4547fe54Fe5f";
+    private String accessToken = "1asd2sdASD12dSv5S5a4sd5sad45FFe54hLOFE4547fe54Fe5f";
 
     @Mock
     private OrganizerRefRepository organizerRefRepository;
@@ -68,13 +68,13 @@ public class TrainingInstanceServiceTest {
     @Before
     public void init() {
         MockitoAnnotations.initMocks(this);
-        trainingInstanceService = new TrainingInstanceServiceImpl(trainingInstanceRepository, passwordRepository, restTemplate,
+        trainingInstanceService = new TrainingInstanceServiceImpl(trainingInstanceRepository, accessTokenRepository, restTemplate,
                 trainingRunRepository, organizerRefRepository);
 
         trainingInstance1 = new TrainingInstance();
         trainingInstance1.setId(1L);
         trainingInstance1.setTitle("test1");
-        trainingInstance1.setPassword(password);
+        trainingInstance1.setAccessToken(accessToken);
         trainingInstance1.setEndTime(LocalDateTime.now().minusHours(1L));
 
         trainingInstance2 = new TrainingInstance();
@@ -82,7 +82,7 @@ public class TrainingInstanceServiceTest {
         trainingInstance2.setTitle("test2");
         trainingInstance2.setStartTime(LocalDateTime.now().plusHours(1L));
         trainingInstance2.setEndTime(LocalDateTime.now().plusHours(5L));
-        trainingInstance2.setPassword("pass-1253");
+        trainingInstance2.setAccessToken("pass-1253");
 
         trainingInstanceInvalid = new TrainingInstance();
         trainingInstanceInvalid.setId(3L);

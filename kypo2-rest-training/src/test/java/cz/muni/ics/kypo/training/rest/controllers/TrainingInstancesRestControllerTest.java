@@ -114,7 +114,7 @@ public class TrainingInstancesRestControllerTest {
         trainingInstanceCreateDTO.setStartTime(startTime);
         LocalDateTime endTime = LocalDateTime.now().plusHours(10);
         trainingInstanceCreateDTO.setEndTime(endTime);
-        trainingInstanceCreateDTO.setPassword("pass");
+        trainingInstanceCreateDTO.setAccessToken("pass");
         trainingInstanceCreateDTO.setPoolSize(20);
         //trainingInstanceCreateDTO.setOrganizersIds(organizers);
         trainingInstanceCreateDTO.setOrgIds(organizers);
