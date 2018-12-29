@@ -121,7 +121,7 @@ public class TrainingRunServiceTest {
         trainingInstance2 = new TrainingInstance();
         trainingInstance2.setId(2L);
         trainingInstance2.setSandboxInstanceRefs(new HashSet<>(Arrays.asList(sandboxInstanceRef2)));
-        trainingInstance2.setPassword("keyword-1234");
+        trainingInstance2.setAccessToken("keyword-1234");
         trainingInstance2.setTrainingDefinition(trainingDefinition2);
 
         trainingInstance1 = new TrainingInstance();
@@ -130,7 +130,7 @@ public class TrainingRunServiceTest {
         trainingInstance1.setEndTime(LocalDateTime.now().plusHours(1L));
         trainingInstance1.setTitle("TrainingInstance1");
         trainingInstance1.setPoolSize(5);
-        trainingInstance1.setPassword("keyword-5678");
+        trainingInstance1.setAccessToken("keyword-5678");
         trainingInstance1.setTrainingDefinition(trainingDefinition);
         trainingInstance1.setSandboxInstanceRefs(new HashSet<>(Arrays.asList(sandboxInstanceRef1, sandboxInstanceRef2)));
 
@@ -227,9 +227,9 @@ public class TrainingRunServiceTest {
     }
 
     @Test
-    public void accessTrainingRunWithWrongPassword() {
+    public void accessTrainingRunWithWrongAccessToken() {
         thrown.expect(ServiceLayerException.class);
-        thrown.expectMessage("There is no training instance with password wrong.");
+        thrown.expectMessage("There is no training instance with accessToken wrong.");
         given(trainingInstanceRepository.findAll()).willReturn(Arrays.asList(trainingInstance1));
         trainingRunService.accessTrainingRun("wrong");
 
@@ -247,7 +247,7 @@ public class TrainingRunServiceTest {
         given(participantRefRepository.findByParticipantRefLogin(participantRef.getParticipantRefLogin())).willReturn(Optional.of(participantRef));
         given(participantRefRepository.save(new ParticipantRef(participantRef.getParticipantRefLogin()))).willReturn(participantRef);
         given(trainingRunRepository.save(any(TrainingRun.class))).willReturn(trainingRun1);
-        TrainingRun trainingRun = trainingRunService.accessTrainingRun(trainingInstance1.getPassword());
+        TrainingRun trainingRun = trainingRunService.accessTrainingRun(trainingInstance1.getAccessToken());
         assertEquals(trainingRun1, trainingRun);
     }
 

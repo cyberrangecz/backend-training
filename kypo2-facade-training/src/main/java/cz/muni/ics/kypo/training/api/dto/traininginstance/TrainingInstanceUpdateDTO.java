@@ -33,8 +33,8 @@ public class TrainingInstanceUpdateDTO {
     @Min(value = 1, message = "{traininginstanceupdate.poolSize.Min.message}")
     @Max(value = 100, message = "{traininginstanceupdate.poolSize.Max.message}")
     private int poolSize;
-    @NotEmpty(message = "{traininginstanceupdate.password.NotEmpty.message}")
-    private String password;
+    @NotEmpty(message = "{traininginstanceupdate.accessToken.NotEmpty.message}")
+    private String accessToken;
     @NotNull(message = "{traininginstanceupdate.trainingDefinition.NotNull.message}")
     private Long trainingDefinitionId;
     @NotNull(message = "{traininginstanceupdate.orgIds.NotNull.message}")
@@ -85,13 +85,13 @@ public class TrainingInstanceUpdateDTO {
         this.poolSize = poolSize;
     }
 
-    @ApiModelProperty(value = "Keyword which will be modified and then used for accessing training run.", required = true, example = "hunter")
-    public String getPassword() {
-        return password;
+    @ApiModelProperty(value = "AccessToken which will be modified and then used for accessing training run.", required = true, example = "hunter")
+    public String getAccessToken() {
+        return accessToken;
     }
 
-    public void setPassword(String password) {
-        this.password = password;
+    public void setAccessToken(String accessToken) {
+        this.accessToken = accessToken;
     }
 
     @ApiModelProperty(value = "Reference to training definition from which is training instance created.", required = true, example = "1")
@@ -115,7 +115,7 @@ public class TrainingInstanceUpdateDTO {
     @Override
     public String toString() {
         return "TrainingInstanceUpdateDTO{" + "id=" + id + ", startTime=" + startTime + ", endTime=" + endTime + ", title='" + title + '\''
-                + ", poolSize=" + poolSize + ", password='" + password + '\'' + ", trainingDefinitionId=" + trainingDefinitionId + ", orgIds="
+                + ", poolSize=" + poolSize + ", accessToken='" + accessToken + '\'' + ", trainingDefinitionId=" + trainingDefinitionId + ", orgIds="
                 + orgIds + '}';
     }
 }

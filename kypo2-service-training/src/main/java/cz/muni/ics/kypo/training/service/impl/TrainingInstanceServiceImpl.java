@@ -4,11 +4,11 @@ import com.mysema.commons.lang.Assert;
 import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.training.exceptions.ErrorCode;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
+import cz.muni.ics.kypo.training.persistence.model.AccessToken;
 import cz.muni.ics.kypo.training.persistence.model.OrganizerRef;
-import cz.muni.ics.kypo.training.persistence.model.Password;
 import cz.muni.ics.kypo.training.persistence.model.TrainingInstance;
 import cz.muni.ics.kypo.training.persistence.model.TrainingRun;
-import cz.muni.ics.kypo.training.persistence.repository.PasswordRepository;
+import cz.muni.ics.kypo.training.persistence.repository.AccessTokenRepository;
 import cz.muni.ics.kypo.training.persistence.repository.TrainingInstanceRepository;
 import cz.muni.ics.kypo.training.persistence.repository.TrainingRunRepository;
 import cz.muni.ics.kypo.training.persistence.repository.OrganizerRefRepository;
@@ -46,17 +46,17 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
 
     private TrainingInstanceRepository trainingInstanceRepository;
     private TrainingRunRepository trainingRunRepository;
-    private PasswordRepository passwordRepository;
+    private AccessTokenRepository accessTokenRepository;
     private OrganizerRefRepository organizerRefRepository;
     private RestTemplate restTemplate;
 
     @Autowired
-    public TrainingInstanceServiceImpl(TrainingInstanceRepository trainingInstanceRepository, PasswordRepository passwordRepository,
+    public TrainingInstanceServiceImpl(TrainingInstanceRepository trainingInstanceRepository, AccessTokenRepository accessTokenRepository,
                                        RestTemplate restTemplate, TrainingRunRepository trainingRunRepository,
                                        OrganizerRefRepository organizerRefRepository) {
         this.trainingInstanceRepository = trainingInstanceRepository;
         this.trainingRunRepository = trainingRunRepository;
-        this.passwordRepository = passwordRepository;
+        this.accessTokenRepository = accessTokenRepository;
         this.organizerRefRepository = organizerRefRepository;
         this.restTemplate = restTemplate;
     }
@@ -80,7 +80,7 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
     public TrainingInstance create(TrainingInstance trainingInstance) {
         LOG.debug("create({})", trainingInstance);
         Assert.notNull(trainingInstance, "Input training instance must not be null");
-        trainingInstance.setPassword(generatePassword(trainingInstance.getPassword()));
+        trainingInstance.setAccessToken(generateAccessToken(trainingInstance.getAccessToken()));
         if (trainingInstance.getStartTime().isAfter(trainingInstance.getEndTime())) {
             throw new ServiceLayerException("End time must be latfindAllByParticipantRefLoginer than start time.", ErrorCode.RESOURCE_CONFLICT);
         }
@@ -100,11 +100,11 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
         if (trainingInstance.getStartTime().isAfter(trainingInstance.getEndTime())) {
             throw new ServiceLayerException("End time must be later than start time.", ErrorCode.RESOURCE_CONFLICT);
         }
-        String shortPass = tI.getPassword().substring(0, tI.getPassword().length() - 5);
-        if (trainingInstance.getPassword().equals(shortPass) || trainingInstance.getPassword().equals(tI.getPassword())) {
-            trainingInstance.setPassword(tI.getPassword());
+        String shortPass = tI.getAccessToken().substring(0, tI.getAccessToken().length() - 5);
+        if (trainingInstance.getAccessToken().equals(shortPass) || trainingInstance.getAccessToken().equals(tI.getAccessToken())) {
+            trainingInstance.setAccessToken(tI.getAccessToken());
         } else {
-            trainingInstance.setPassword(generatePassword(trainingInstance.getPassword()));
+            trainingInstance.setAccessToken(generateAccessToken(trainingInstance.getAccessToken()));
         }
         trainingInstanceRepository.save(trainingInstance);
         LOG.info("Training instance with id: {} updated.", trainingInstance.getId());
@@ -126,18 +126,18 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
         LOG.info("Training instance with id: {} deleted.", id);
     }
 
-    private String generatePassword(String password) {
+    private String generateAccessToken(String accessToken) {
         String newPass = "";
         boolean generated = false;
         while (!generated) {
             String numPart = RandomStringUtils.random(4, false, true);
-            newPass = password + "-" + numPart;
-            Optional<Password> pW = passwordRepository.findOneByPassword(newPass);
+            newPass = accessToken + "-" + numPart;
+            Optional<AccessToken> pW = accessTokenRepository.findOneByAccessToken(newPass);
             if (!pW.isPresent()) generated = true;
         }
-        Password newPasswordInstance = new Password();
-        newPasswordInstance.setPassword(newPass);
-        passwordRepository.saveAndFlush(newPasswordInstance);
+        AccessToken newTokenInstance = new AccessToken();
+        newTokenInstance.setAccessToken(newPass);
+        accessTokenRepository.saveAndFlush(newTokenInstance);
 
         return newPass;
     }

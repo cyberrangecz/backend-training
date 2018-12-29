@@ -172,12 +172,12 @@ public class TrainingRunServiceImpl implements TrainingRunService {
 
     @Override
     @PreAuthorize("hasAuthority({'ADMINISTRATOR'}) or hasAuthority('USER')")
-    public TrainingRun accessTrainingRun(String password) {
-        LOG.debug("accessTrainingRun({})", password);
-        Assert.hasLength(password, "Password cannot be null or empty.");
+    public TrainingRun accessTrainingRun(String accessToken) {
+        LOG.debug("accessTrainingRun({})", accessToken);
+        Assert.hasLength(accessToken, "AccessToken cannot be null or empty.");
         List<TrainingInstance> trainingInstances = trainingInstanceRepository.findAllByStartTimeAfterAndEndTimeBefore(LocalDateTime.now());
         for (TrainingInstance trainingInstance : trainingInstances) {
-            if (trainingInstance.getPassword().equals(password)) {
+            if (trainingInstance.getAccessToken().equals(accessToken)) {
                 Set<SandboxInstanceRef> freeSandboxes= trainingRunRepository.findFreeSandboxesOfTrainingInstance(trainingInstance.getId());
                 if (!freeSandboxes.isEmpty()) {
                     SandboxInstanceRef sandboxInstanceRef = getReadySandboxInstanceRef(freeSandboxes);
@@ -193,7 +193,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
                 }
             }
         }
-        throw new ServiceLayerException("There is no training instance with password " + password + ".", ErrorCode.RESOURCE_NOT_FOUND);
+        throw new ServiceLayerException("There is no training instance with accessToken " + accessToken + ".", ErrorCode.RESOURCE_NOT_FOUND);
     }
 
     @Override

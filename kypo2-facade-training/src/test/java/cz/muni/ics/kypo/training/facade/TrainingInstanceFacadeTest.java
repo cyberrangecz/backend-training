@@ -86,7 +86,7 @@ public class TrainingInstanceFacadeTest {
         trainingInstanceUpdate = new TrainingInstanceUpdateDTO();
         trainingInstanceUpdate.setId(1L);
         trainingInstanceUpdate.setTitle("title");
-        trainingInstanceUpdate.setPassword("hello");
+        trainingInstanceUpdate.setAccessToken("hello");
         trainingInstanceUpdate.setPoolSize(20);
         trainingInstanceUpdate.setEndTime(LocalDateTime.now());
         trainingInstanceUpdate.setStartTime(LocalDateTime.now());

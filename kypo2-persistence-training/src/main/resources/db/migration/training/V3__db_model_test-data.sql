@@ -49,14 +49,14 @@ INSERT INTO training_definition_author_ref(training_definition_id, author_ref_id
 INSERT INTO training_definition_author_ref(training_definition_id, author_ref_id) VALUES (2, 2);
 INSERT INTO training_definition_author_ref(training_definition_id, author_ref_id) VALUES (3, 3);
 
-INSERT INTO training_instance(id, pool_size, training_definition_id, start_time, end_time, password, title) VALUES (nextval('training_instance_id_seq'), 5, 1, '2016-10-19 10:23:54+02', '2017-10-19 10:23:54+02', 'pass-1235', 'Concluded Instance');
-INSERT INTO training_instance(id, pool_size, training_definition_id, start_time, end_time, password, title) VALUES (nextval('training_instance_id_seq'), 8, 1, '2016-10-19 10:23:54+02', '2022-10-19 10:23:54+02', 'hello-6578', 'Current Instance');
-INSERT INTO training_instance(id, pool_size, training_definition_id, start_time, end_time, password, title) VALUES (nextval('training_instance_id_seq'), 25, 1, '2020-10-19 10:23:54+02', '2024-10-19 10:23:54+02', 'keyword-9999', 'Future Instance');
-INSERT INTO training_instance(id, pool_size, training_definition_id, start_time, end_time, password, title) VALUES (nextval('training_instance_id_seq'), 25, 3, '2017-10-19 10:23:54+02', '2024-10-19 10:23:54+02', 'keyword-1111', 'Future Instance');
+INSERT INTO training_instance(id, pool_size, training_definition_id, start_time, end_time, access_token, title) VALUES (nextval('training_instance_id_seq'), 5, 1, '2016-10-19 10:23:54+02', '2017-10-19 10:23:54+02', 'pass-1235', 'Concluded Instance');
+INSERT INTO training_instance(id, pool_size, training_definition_id, start_time, end_time, access_token, title) VALUES (nextval('training_instance_id_seq'), 8, 1, '2016-10-19 10:23:54+02', '2022-10-19 10:23:54+02', 'hello-6578', 'Current Instance');
+INSERT INTO training_instance(id, pool_size, training_definition_id, start_time, end_time, access_token, title) VALUES (nextval('training_instance_id_seq'), 25, 1, '2020-10-19 10:23:54+02', '2024-10-19 10:23:54+02', 'keyword-9999', 'Future Instance');
+INSERT INTO training_instance(id, pool_size, training_definition_id, start_time, end_time, access_token, title) VALUES (nextval('training_instance_id_seq'), 25, 3, '2017-10-19 10:23:54+02', '2024-10-19 10:23:54+02', 'keyword-1111', 'Future Instance');
 
-INSERT INTO password(id, password) VALUES (nextval('password_id_seq'), 'pass-1235');
-INSERT INTO password(id, password) VALUES (nextval('password_id_seq'), 'hello-6578');
-INSERT INTO password(id, password) VALUES (nextval('password_id_seq'), 'keyword-9999');
+INSERT INTO access_token(id, access_token) VALUES (nextval('access_token_id_seq'), 'pass-1235');
+INSERT INTO access_token(id, access_token) VALUES (nextval('access_token_id_seq'), 'hello-6578');
+INSERT INTO access_token(id, access_token) VALUES (nextval('access_token_id_seq'), 'keyword-9999');
 
 INSERT INTO sandbox_instance_ref(id, sandbox_instance_ref, training_instance_id) VALUES (nextval('sandbox_instance_ref_id_seq'), 1, 1);
 INSERT INTO sandbox_instance_ref(id, sandbox_instance_ref, training_instance_id) VALUES (nextval('sandbox_instance_ref_id_seq'), 2, 1);
