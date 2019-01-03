@@ -13,6 +13,8 @@ import org.springframework.stereotype.Repository;
 
 import cz.muni.ics.kypo.training.persistence.model.TrainingDefinition;
 
+import java.util.List;
+
 
 /**
  * @author Pavel Seda (441048)
@@ -26,6 +28,8 @@ public interface TrainingDefinitionRepository
 
     @EntityGraph(attributePaths = {"authors"})
     Page<TrainingDefinition> findAll(Predicate predicate, Pageable pageable);
+
+    List<TrainingDefinition> findAll();
 
     @Query(value = "SELECT td FROM TrainingDefinition td JOIN FETCH td.authors a WHERE a.userRefLogin = :userRefLogin",
             countQuery = "SELECT COUNT(td) FROM TrainingDefinition td INNER JOIN td.authors a WHERE a.userRefLogin = :userRefLogin")
