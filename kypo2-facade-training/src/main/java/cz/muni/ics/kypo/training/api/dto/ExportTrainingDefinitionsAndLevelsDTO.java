@@ -1,8 +1,5 @@
-package cz.muni.ics.kypo.training.api.dto.trainingdefinition;
+package cz.muni.ics.kypo.training.api.dto;
 
-import cz.muni.ics.kypo.training.api.dto.AbstractLevelDTO;
-import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
-import io.swagger.annotations.ApiModel;
 import cz.muni.ics.kypo.training.persistence.model.enums.TDState;
 import io.swagger.annotations.ApiModelProperty;
 
@@ -11,32 +8,18 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * @author Pavel Seda (441048)
+ * @author Pavel Seda
  */
-@ApiModel(value = "TrainingDefinitionDTO", description = "A blueprint of abstract levels.")
-public class TrainingDefinitionDTO {
+public class ExportTrainingDefinitionsAndLevelsDTO {
 
-    private Long id;
     private String title;
     private String description;
     private String[] prerequisities;
     private String[] outcomes;
     private TDState state;
-    private Set<UserRefDTO> authors = new HashSet<>();
-    private Long sandboxDefinitionRefId;
     private Long startingLevel;
     private Set<AbstractLevelDTO> levels = new HashSet<>();
     private boolean showStepperBar;
-    private boolean canBeArchived;
-
-    @ApiModelProperty(value = "Main identifier of training definition.", example = "1")
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
 
     @ApiModelProperty(value = "A name of the training/game (e.g., Photo Hunter) .", example = "TrainingDefinition2")
     public String getTitle() {
@@ -83,25 +66,6 @@ public class TrainingDefinitionDTO {
         this.state = state;
     }
 
-    @ApiModelProperty(value = "References to the authors of the training definition.")
-    public Set<UserRefDTO> getAuthors() {
-        return authors;
-    }
-
-    public void setAuthors(Set<UserRefDTO> authors) {
-        this.authors = authors;
-    }
-
-
-    @ApiModelProperty(value = "Reference to the sandbox definition.")
-    public Long getSandboxDefinitionRefId() {
-        return sandboxDefinitionRefId;
-    }
-
-    public void setSandboxDefinitionRefId(Long sandBoxDefinitionRefId) {
-        this.sandboxDefinitionRefId = sandBoxDefinitionRefId;
-    }
-
     @ApiModelProperty(value = "Identifier of first level of training definition.", example = "4")
     public Long getStartingLevel() {
         return startingLevel;
@@ -129,18 +93,17 @@ public class TrainingDefinitionDTO {
         this.showStepperBar = showStepperBar;
     }
 
-    public boolean isCanBeArchived() {
-        return canBeArchived;
-    }
-
-    public void setCanBeArchived(boolean canBeArchived) {
-        this.canBeArchived = canBeArchived;
-    }
-
-    @Override public String toString() {
-        return "TrainingDefinitionDTO{" + "id=" + id + ", title='" + title + '\'' + ", description='" + description + '\''
-            + ", prerequisities=" + Arrays.toString(prerequisities) + ", outcomes=" + Arrays.toString(outcomes) + ", state=" + state
-            + ", authors=" + authors + ", sandboxDefinitionRefId=" + sandboxDefinitionRefId + ", startingLevel=" + startingLevel
-            + ", levels=" + levels + ", showStepperBar=" + showStepperBar + ", canBeArchived=" + canBeArchived + '}';
+    @Override
+    public String toString() {
+        return "ExportTrainingDefinitionsAndLevelsDTO{" +
+                ", title='" + title + '\'' +
+                ", description='" + description + '\'' +
+                ", prerequisities=" + Arrays.toString(prerequisities) +
+                ", outcomes=" + Arrays.toString(outcomes) +
+                ", state=" + state +
+                ", startingLevel=" + startingLevel +
+                ", levels=" + levels +
+                ", showStepperBar=" + showStepperBar +
+                '}';
     }
 }
