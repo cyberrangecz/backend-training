@@ -14,11 +14,14 @@ import java.util.Set;
  * @author Pavel Seda
  */
 @Repository
-public interface UserRefRepository extends JpaRepository<UserRef, Long>, QuerydslPredicateExecutor<UserRef> {
+public interface UserRefRepository extends JpaRepository<UserRef, Long>,
+        QuerydslPredicateExecutor<UserRef> {
 
     @Query("SELECT DISTINCT ur FROM UserRef ur WHERE ur.id IN :organizersIds")
     Set<UserRef> findUsers(@Param("organizersIds") Set<Long> organizersIds);
 
-    Optional<UserRef> findByUserRefLogin(@Param("userRefLogin") String userRefLogin);
+    @Query("SELECT ur FROM UserRef ur WHERE userRefLogin = :userLogin")
+    Optional<UserRef> findUserByUserRefLogin(@Param("userLogin") String
+                                                     userLogin);
 
 }

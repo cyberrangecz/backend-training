@@ -95,7 +95,7 @@ public class TrainingRunRepositoryTest {
         trainingRun1 = new TrainingRun();
         trainingRun1.setStartTime(LocalDateTime.now());
         trainingRun1.setEndTime(LocalDateTime.now());
-        trainingRun1.setState(TRState.NEW);
+        trainingRun1.setState(TRState.ALLOCATED);
         trainingRun1.setCurrentLevel(entityManager.persist(infoLevel));
         trainingRun1.setParticipantRef(entityManager.persist(participantRef));
         trainingRun1.setTrainingInstance(entityManager.persist(trainingInstance));

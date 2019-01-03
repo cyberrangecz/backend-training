@@ -183,7 +183,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
                 if (!freeSandboxes.isEmpty()) {
                     SandboxInstanceRef sandboxInstanceRef = getReadySandboxInstanceRef(freeSandboxes);
                     AbstractLevel al = abstractLevelRepository.findById(trainingInstance.getTrainingDefinition().getStartingLevel()).orElseThrow(() -> new ServiceLayerException("No starting level available for this training definition", ErrorCode.RESOURCE_NOT_FOUND));
-                    TrainingRun trainingRun = getNewTrainingRun(al, getSubOfLoggedInUser(), trainingInstance, TRState.NEW, LocalDateTime.now(), trainingInstance.getEndTime(), sandboxInstanceRef);
+                    TrainingRun trainingRun = getNewTrainingRun(al, getSubOfLoggedInUser(), trainingInstance, TRState.ALLOCATED, LocalDateTime.now(), trainingInstance.getEndTime(), sandboxInstanceRef);
                     trainingRun = create(trainingRun);
                     // audit this action to the Elasticsearch
                     auditTrainingRunStartedAction(trainingInstance, trainingRun);
@@ -214,11 +214,16 @@ public class TrainingRunServiceImpl implements TrainingRunService {
                                           TRState state, LocalDateTime startTime, LocalDateTime endTime, SandboxInstanceRef sandboxInstanceRef) {
         TrainingRun tR = new TrainingRun();
         tR.setCurrentLevel(currentLevel);
-        tR.setParticipantRef(participantRefRepository.findByUserRefLogin(participantRefLogin)
-                .orElse(participantRefRepository.save(new UserRef(participantRefLogin))));
+
+        Optional<UserRef> userRef = participantRefRepository.findUserByUserRefLogin(participantRefLogin);
+        if (userRef.isPresent()) {
+            tR.setParticipantRef(userRef.get());
+        } else {
+            tR.setParticipantRef(participantRefRepository.save(new UserRef(participantRefLogin)));
+        }
         tR.setAssessmentResponses("[]");
         //TODO what state set at the begining
-        tR.setState(TRState.NEW);
+        tR.setState(TRState.ALLOCATED);
         tR.setTrainingInstance(trainingInstance);
         tR.setStartTime(startTime);
         tR.setEndTime(endTime);
