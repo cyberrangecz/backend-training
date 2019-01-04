@@ -118,7 +118,6 @@ spring.jpa.hibernate.ddl-auto=validate
 spring.jpa.show-sql=true
 spring.jpa.properties.hibernate.format_sql=true
 
-
 # FLYWAY
 spring.flyway.url=jdbc:postgresql://{url to DB}
 spring.flyway.user={user in DB}
@@ -142,7 +141,7 @@ spring.jackson.property-naming-strategy=SNAKE_CASE
 spring.jmx.enabled = false
 
 ```
-## Installing project and database migration
+## 3. Installing project and database migration
 Installing by maven:
 
 ```
@@ -150,7 +149,7 @@ mvn clean install
 ```
 NOTE: Before installing this project you must download (git clone) and install (mvn clean install) [security-commons project] (https://gitlab.ics.muni.cz/kypo2/services-and-portlets/kypo2-security-commons)
 
-## 3. Database migration
+### Database migration
 Prerequisites running PostgreSQL and created the database named 'training' with schema 'public'.
 To migrate database data it is necessary to run these two scripts:
 
@@ -165,7 +164,7 @@ $ mvn flyway:migrate -Djdbc.url=jdbc:postgresql://localhost:5432/training -Djdbc
 
 NOTE: This script must be run in [kypo2-training-persistence] (https://gitlab.ics.muni.cz/kypo2/services-and-portlets/kypo2-training/tree/master/kypo2-persistence-training) module.
 
-## Run project
+### Run project
 In Intellij Idea:
 1. Click on "**Run**" -> "**Edit configurations**".
 2. Choose "**WebConfigRestTraining**" configuration.
@@ -193,6 +192,9 @@ To run optimized build use:
 $ mvn clover:optimize clean install -Dansi.color=true
 ```
 -Dansi.color does not work on all OS and is not necessary, it only prints info about time saving in color.
+
+
+# Following part is for informative purposes (documentation, technologies, and installing particular technologies)
 
 ## ER Diagram
 ER diagram generated from model in persistence module
