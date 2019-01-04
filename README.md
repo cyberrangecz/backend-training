@@ -35,31 +35,31 @@ http://localhost:8080/kypo2-rest-training/api/v1/swagger-ui.html
 ```
 
 NOTE: please note that client for that REST API could be generated using [Swagger codegen] (https://swagger.io/tools/swagger-codegen/). It is crucial to annotate each RestController method properly!
+
 # Following steps are necessary for manual starting up project
 
-### 1. Getting Masaryk University OpenID Connect credentials 
+## 1. Getting Masaryk University OpenID Connect credentials 
 
 1. Go to `https://oidc.ics.muni.cz/oidc/` and log in.
 2. Click on "**Self-service Client Registration**" -> "**New Client**".
 3. Set Client name.
 4. Add at least one custom Redirect URI and `http://localhost:8080/{context path from external properties file}/webjars/springfox-swagger-ui/oauth2-redirect.html` (IMPORTANT for Swagger UI).
 5. In tab "**Access**":
-    1. choose which information about user you will be getting, so called `scopes`.
+    1. choose which information about the user you will be getting, so-called `scopes`.
     2. select just *implicit* in **Grand Types**
     3. select *token* and *code id_toke* in **Responses Types**
 6. Hit **Save** button.
 7. Then got to tab "**JSON**", copy the JSON file and save it to file. **IMPORTANT STEP**
 8. Now create new Resource in "**Self-service Protected Resource Registration**".
-9. Again insert client Name and save JSON to external file in "**JSON**" tab.
-10. In tab "**Access**" again choose which information about user you will be getting, so called `scopes`.
+9. Again insert client Name and save JSON to an external file in "**JSON**" tab.
+10. In tab "**Access**" again choose which information about the user you will be getting, so-called `scopes`.
 11. Hit **Save** button.
 
 
 ### Creating YAML file with roles 
 
-If you want to insert initial roles to the system you have to specify them in external YAML file (e.g., roles.yml) and then insert its path to 
-properties file which is describe in next step. For each role you only need to specify role type which will be used in your project. 
-Roles are stored as string in DB but they are rewritten to upperCase. So roles in example below are stored as GUEST, ADMINISTRATOR and
+If you want to insert initial roles to the system you have to specify them in external YAML file (e.g., roles.yml) and then insert its path to properties file which is described in next step. For each role, you only need to specify role type which will be used in your project. 
+Roles are stored as a string in DB but they are rewritten to upperCase. So roles in the example below are stored as GUEST, ADMINISTRATOR and
 USER.  
  
 ```yaml
@@ -69,9 +69,8 @@ roles:
     - GUEST
 ```
 
-### 2. Properties file
-
-After step 1 you have to create properties file according to format below and save it.
+## 2. Create a property file with necessary configuration details
+After step 1 you have to create properties file according to the format below and save it.
 ```properties
 
 # Environment DEV or PROD
@@ -102,10 +101,9 @@ kypo.idp.4oauth.resource.clientId={your client ID from Self-service protected re
 kypo.idp.4oauth.resource.clientSecret={your client secret from Self-service protected resource}
 kypo.idp.4oauth.client.clientId={your client ID from Self-service client}
 kypo.idp.4oauth.scopes=openid, email
+# you can add more scopes according to settings from step 1.
 
 path.to.file.with.initial.roles={path to your yaml file with roles}
-
-# you can add more scopes according to settings from step 1.
 
 # spring cloud
 spring.cloud.refresh.enabled = false
@@ -144,8 +142,7 @@ spring.jackson.property-naming-strategy=SNAKE_CASE
 spring.jmx.enabled = false
 
 ```
-
-## Installing project
+## Installing project and database migration
 Installing by maven:
 
 ```
@@ -153,8 +150,8 @@ mvn clean install
 ```
 NOTE: Before installing this project you must download (git clone) and install (mvn clean install) [security-commons project] (https://gitlab.ics.muni.cz/kypo2/services-and-portlets/kypo2-security-commons)
 
-## Database migration
-Prerequisities running PostgreSQL and created database named 'training' with schema 'public'.
+## 3. Database migration
+Prerequisites running PostgreSQL and created the database named 'training' with schema 'public'.
 To migrate database data it is necessary to run these two scripts:
 
 ```
