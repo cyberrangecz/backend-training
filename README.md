@@ -1,6 +1,35 @@
 # KYPO2 Trainings
-This is parent project representing back-end for Trainings. It is divided into several modules as [REST] (https://gitlab.ics.muni.cz/kypo2/services-and-portlets/kypo2-training/tree/master/kypo2-rest-training), [facade] (https://gitlab.ics.muni.cz/kypo2/services-and-portlets/kypo2-training/tree/master/kypo2-facade-training), [service] (https://gitlab.ics.muni.cz/kypo2/services-and-portlets/kypo2-training/tree/master/kypo2-service-training), [persistence] (https://gitlab.ics.muni.cz/kypo2/services-and-portlets/kypo2-training/tree/master/kypo2-persistence-training), [Elasticsearch] (https://gitlab.ics.muni.cz/kypo2/services-and-portlets/kypo2-training/tree/master/kypo2-elasticsearch-training). 
-The main project is [REST module] (https://gitlab.ics.muni.cz/kypo2/services-and-portlets/kypo2-training/tree/master/kypo2-rest-training).
+This is parent project representing back-end for Training. 
+
+It is divided into several modules as:
+* `kypo2-rest`
+  * Provides REST layer for communication with front-end.
+  * Based on HTTP REST without HATEOAS.
+  * Documented with Swagger.
+* `kypo2-facade`
+  * Contains API (DTO classes)
+    * These are annotated with proprietary converters for DateTime processing.
+    * Localized Bean validations are set (messages are localized).
+    * Annotations for Swagger documentation are included.
+  * Map Entities to DTO classes and vice versa with MapStruct framework.
+  * Contains @Transactional annotations.
+* `kypo2-service`
+    * Provides business logic of the application:
+      * Calls persistence layer for database queries and combining the results as necessary.
+      * Calls another microservices.
+* `kypo2-persistence`
+  * Provides data layer of the application (Database queries).
+  * Uses Spring Data JPA (Spring wrapper layer over JPA implemented with Hibernate framework).
+  * Communicates with PostgreSQL database.
+  * Uses QueryDSL for filtering the data.
+* `kypo2-elasticsearch`
+  * Used for auditing and retrieving data from Elasticsearch storage.
+  * Contains Event classes describing particular events.
+
+And the main project (parent maven project with packaging pom):
+* `kypo2-training`
+  * Contains configurations for all modules as dependency versions, dependency for spring boot parent project etc.
+  
 
 ## Authors
 
