@@ -175,6 +175,13 @@ In Intellij Idea:
 3. Add into "**Program arguments**" --path.to.config.file="{path to your config properties}".
 4. Run WebConfigRestTraining
 
+In command line:
+You have to go to module `kypo2-rest-training` and start it:
+```
+cd kypo2-rest-training/
+mvn spring-boot:run -Dpath-to-config-file={path to properties file from step 2}
+```
+
 ## Clover
 Should be used for testing purposes only, before every merge perform:
 ```
