@@ -145,7 +145,15 @@ spring.jmx.enabled = false
 
 ```
 
-## 3. Database migration
+## Installing project
+Installing by maven:
+
+```
+mvn clean install
+```
+NOTE: Before installing this project you must download (git clone) and install (mvn clean install) [security-commons project] (https://gitlab.ics.muni.cz/kypo2/services-and-portlets/kypo2-security-commons)
+
+## Database migration
 Prerequisities running PostgreSQL and created database named 'training' with schema 'public'.
 To migrate database data it is necessary to run these two scripts:
 
@@ -159,13 +167,6 @@ $ mvn flyway:migrate -Djdbc.url=jdbc:postgresql://localhost:5432/training -Djdbc
 ```
 
 NOTE: This script must be run in [kypo2-training-persistence] (https://gitlab.ics.muni.cz/kypo2/services-and-portlets/kypo2-training/tree/master/kypo2-persistence-training) module.
-
-## Installing project
-Installing by maven:
-
-```
-mvn clean install -Dpath.to.config.file={path to properties file from step 2}
-```
 
 ## Run project
 In Intellij Idea:
