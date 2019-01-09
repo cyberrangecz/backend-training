@@ -88,7 +88,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
     @Override
     @PreAuthorize("hasAuthority('ADMINISTRATOR')")
     public Page<TrainingRun> findAll(Predicate predicate, Pageable pageable) {
-        LOG.debug("findAll({},{})", predicate, pageable);
+        LOG.debug("findAllTrainingDefinitions({},{})", predicate, pageable);
         return trainingRunRepository.findAll(predicate, pageable);
 
     }

@@ -21,7 +21,7 @@ import java.util.Set;
  *
  * &#64;Override
  * public List&lt;UserDTO&gt; getAllUsers() {
- * return beanMapping.mapTo(userService.findAll(), UserDTO.class);
+ * return beanMapping.mapTo(userService.findAllTrainingDefinitions(), UserDTO.class);
  * }
  * }
  * </code>

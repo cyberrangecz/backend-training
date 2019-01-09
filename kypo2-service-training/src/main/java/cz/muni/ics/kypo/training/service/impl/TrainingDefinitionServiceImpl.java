@@ -77,7 +77,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     @Override
     @PreAuthorize("hasAuthority('ADMINISTRATOR') or hasAuthority({T(cz.muni.ics.kypo.training.persistence.model.enums.RoleType).DESIGNER})")
     public Page<TrainingDefinition> findAll(Predicate predicate, Pageable pageable) {
-        LOG.debug("findAll({},{})", predicate, pageable);
+        LOG.debug("findAllTrainingDefinitions({},{})", predicate, pageable);
         if (isAdmin()) {
             return trainingDefinitionRepository.findAll(predicate, pageable);
         }

@@ -24,8 +24,6 @@ public class ExportImportServiceImpl implements ExportImportService {
     private TrainingDefinitionRepository trainingDefinitionRepository;
     private AbstractLevelRepository abstractLevelRepository;
 
-    private static final String LEVEL_NOT_FOUND = "Level not found.";
-
     @Autowired
     public ExportImportServiceImpl(TrainingDefinitionRepository trainingDefinitionRepository, AbstractLevelRepository abstractLevelRepository) {
         this.trainingDefinitionRepository = trainingDefinitionRepository;
@@ -34,33 +32,14 @@ public class ExportImportServiceImpl implements ExportImportService {
 
     @Override
     @PreAuthorize("hasAuthority('ADMINISTRATOR')")
-    public List<TrainingDefinition> findAll() {
+    public List<TrainingDefinition> findAllTrainingDefinitions() {
         return trainingDefinitionRepository.findAll();
     }
 
     @Override
-    @PreAuthorize("hasAuthority('ADMINISTRATOR')" +
-            "or @securityService.isDesignerOfGivenTrainingDefinition(#id)")
-    public List<AbstractLevel> findAllLevelsFromDefinition(Long id) {
-        Assert.notNull(id, "Definition id must not be null");
-        TrainingDefinition trainingDefinition = findById(id);
-        List<AbstractLevel> levels = new ArrayList<>();
-        Long levelId = trainingDefinition.getStartingLevel();
-        AbstractLevel level = null;
-        while (levelId != null) {
-            level = abstractLevelRepository.findById(levelId)
-                    .orElseThrow(() -> new ServiceLayerException(LEVEL_NOT_FOUND, ErrorCode.RESOURCE_NOT_FOUND));
-            levels.add(level);
-            levelId = level.getNextLevel();
-        }
-        return levels;
-    }
-
-    @PreAuthorize("hasAuthority('ADMINISTRATOR')" +
-            "or @securityService.isDesignerOfGivenTrainingDefinition(#id)")
-    private TrainingDefinition findById(Long id) {
-        return trainingDefinitionRepository.findById(id).orElseThrow(
-                () -> new ServiceLayerException("Training definition with id: " + id + " not found.", ErrorCode.RESOURCE_NOT_FOUND));
+    @PreAuthorize("hasAuthority('ADMINISTRATOR')")
+    public List<AbstractLevel> findAllLevels() {
+        return abstractLevelRepository.findAll();
     }
 
 }

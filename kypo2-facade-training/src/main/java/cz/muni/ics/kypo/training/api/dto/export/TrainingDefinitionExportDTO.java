@@ -1,16 +1,17 @@
-package cz.muni.ics.kypo.training.api.dto;
+package cz.muni.ics.kypo.training.api.dto.export;
 
 import cz.muni.ics.kypo.training.persistence.model.enums.TDState;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
 import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
+
 
 /**
- * @author Pavel Seda
+ * @author Pavel Seda (441048)
  */
-public class ExportTrainingDefinitionsAndLevelsDTO {
+@ApiModel(value = "TrainingDefinitionExportDTO")
+public class TrainingDefinitionExportDTO {
 
     private String title;
     private String description;
@@ -18,8 +19,14 @@ public class ExportTrainingDefinitionsAndLevelsDTO {
     private String[] outcomes;
     private TDState state;
     private Long startingLevel;
-    private Set<AbstractLevelDTO> levels = new HashSet<>();
     private boolean showStepperBar;
+
+    public TrainingDefinitionExportDTO() {
+        this.title = "";
+        this.description = "";
+        this.startingLevel = 0L;
+        this.showStepperBar = false;
+    }
 
     @ApiModelProperty(value = "A name of the training/game (e.g., Photo Hunter) .", example = "TrainingDefinition2")
     public String getTitle() {
@@ -75,15 +82,6 @@ public class ExportTrainingDefinitionsAndLevelsDTO {
         this.startingLevel = startingLevel;
     }
 
-    @ApiModelProperty(value = "Information about all levels in training definition.")
-    public Set<AbstractLevelDTO> getLevels() {
-        return levels;
-    }
-
-    public void setLevels(Set<AbstractLevelDTO> levels) {
-        this.levels = levels;
-    }
-
     @ApiModelProperty(value = "Sign if stepper bar should be displayed.", example = "false")
     public boolean isShowStepperBar() {
         return showStepperBar;
@@ -95,14 +93,13 @@ public class ExportTrainingDefinitionsAndLevelsDTO {
 
     @Override
     public String toString() {
-        return "ExportTrainingDefinitionsAndLevelsDTO{" +
-                ", title='" + title + '\'' +
+        return "TrainingDefinitionExportDTO{" +
+                "title='" + title + '\'' +
                 ", description='" + description + '\'' +
                 ", prerequisities=" + Arrays.toString(prerequisities) +
                 ", outcomes=" + Arrays.toString(outcomes) +
                 ", state=" + state +
                 ", startingLevel=" + startingLevel +
-                ", levels=" + levels +
                 ", showStepperBar=" + showStepperBar +
                 '}';
     }

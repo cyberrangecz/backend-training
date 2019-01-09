@@ -1,14 +1,12 @@
 package cz.muni.ics.kypo.training.facade;
 
-import cz.muni.ics.kypo.training.api.dto.ExportTrainingDefinitionsAndLevelsDTO;
-
-import java.util.List;
+import cz.muni.ics.kypo.training.api.dto.export.ExportTrainingDefinitionsAndLevelsDTO;
 
 /**
  * @author Pavel Seda
  */
 public interface ExportImportFacade {
 
-    List<ExportTrainingDefinitionsAndLevelsDTO> dbExport();
+    ExportTrainingDefinitionsAndLevelsDTO dbExport();
 
 }
