@@ -10,7 +10,7 @@ import java.util.List;
  */
 public interface ExportImportService {
 
-    List<TrainingDefinition> findAll();
+    List<TrainingDefinition> findAllTrainingDefinitions();
 
-    List<AbstractLevel> findAllLevelsFromDefinition(Long id);
+    List<AbstractLevel> findAllLevels();
 }

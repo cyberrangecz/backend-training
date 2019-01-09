@@ -79,7 +79,7 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
     @Override
     @TransactionalRO
     public PageResultResource<TrainingRunDTO> findAll(Predicate predicate, Pageable pageable) {
-        LOG.debug("findAll({},{})", predicate, pageable);
+        LOG.debug("findAllTrainingDefinitions({},{})", predicate, pageable);
         return trainingRunMapper.mapToPageResultResource(trainingRunService.findAll(predicate, pageable));
     }
 

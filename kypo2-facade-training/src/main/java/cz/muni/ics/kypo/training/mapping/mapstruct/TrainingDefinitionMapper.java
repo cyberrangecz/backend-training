@@ -1,6 +1,7 @@
 package cz.muni.ics.kypo.training.mapping.mapstruct;
 
 import cz.muni.ics.kypo.training.api.PageResultResource;
+import cz.muni.ics.kypo.training.api.dto.export.TrainingDefinitionExportDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionCreateDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionUpdateDTO;
@@ -13,16 +14,18 @@ import org.springframework.data.domain.PageImpl;
 import java.util.*;
 
 /**
- * @author Roman Oravec
+ * @author Roman Oravec & Pavel Seda
  */
 @Mapper(componentModel = "spring",
         uses = {UserRefMapper.class},
-        nullValueCheckStrategy =  NullValueCheckStrategy.ALWAYS)
+        nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS)
 public interface TrainingDefinitionMapper extends ParentMapper {
 
     TrainingDefinition mapToEntity(TrainingDefinitionDTO dto);
 
     TrainingDefinitionDTO mapToDTO(TrainingDefinition entity);
+
+    TrainingDefinitionExportDTO mapToTrainingDefinitionExportDTO(TrainingDefinition entity);
 
     TrainingDefinition mapCreateToEntity(TrainingDefinitionCreateDTO dto);
 
@@ -32,29 +35,31 @@ public interface TrainingDefinitionMapper extends ParentMapper {
 
     List<TrainingDefinitionDTO> mapToListDTO(Collection<TrainingDefinition> entities);
 
+    List<TrainingDefinitionExportDTO> mapToTrainingDefinitionExportDTOList(Collection<TrainingDefinition> entities);
+
     Set<TrainingDefinition> mapToSet(Collection<TrainingDefinitionDTO> dtos);
 
     Set<TrainingDefinitionDTO> mapToSetDTO(Collection<TrainingDefinition> entities);
 
-    default Optional<TrainingDefinition> mapToOptional(TrainingDefinitionDTO dto){
+    default Optional<TrainingDefinition> mapToOptional(TrainingDefinitionDTO dto) {
         return Optional.ofNullable(mapToEntity(dto));
     }
 
-    default Optional<TrainingDefinitionDTO> mapToOptional(TrainingDefinition entity){
+    default Optional<TrainingDefinitionDTO> mapToOptional(TrainingDefinition entity) {
         return Optional.ofNullable(mapToDTO(entity));
     }
 
-    default Page<TrainingDefinitionDTO> mapToPageDTO(Page<TrainingDefinition> objects){
+    default Page<TrainingDefinitionDTO> mapToPageDTO(Page<TrainingDefinition> objects) {
         List<TrainingDefinitionDTO> mapped = mapToListDTO(objects.getContent());
         return new PageImpl<>(mapped, objects.getPageable(), mapped.size());
     }
 
-    default Page<TrainingDefinition> mapToPage(Page<TrainingDefinitionDTO> objects){
+    default Page<TrainingDefinition> mapToPage(Page<TrainingDefinitionDTO> objects) {
         List<TrainingDefinition> mapped = mapToList(objects.getContent());
         return new PageImpl<>(mapped, objects.getPageable(), mapped.size());
     }
 
-    default PageResultResource<TrainingDefinitionDTO> mapToPageResultResource(Page<TrainingDefinition> objects){
+    default PageResultResource<TrainingDefinitionDTO> mapToPageResultResource(Page<TrainingDefinition> objects) {
         List<TrainingDefinitionDTO> mapped = new ArrayList<>();
         objects.forEach(object -> mapped.add(mapToDTO(object)));
         return new PageResultResource<>(mapped, createPagination(objects));

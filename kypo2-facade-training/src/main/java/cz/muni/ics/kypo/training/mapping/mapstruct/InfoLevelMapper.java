@@ -1,6 +1,7 @@
 package cz.muni.ics.kypo.training.mapping.mapstruct;
 
 import cz.muni.ics.kypo.training.api.PageResultResource;
+import cz.muni.ics.kypo.training.api.dto.export.InfoLevelExportDTO;
 import cz.muni.ics.kypo.training.api.dto.infolevel.InfoLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.infolevel.InfoLevelUpdateDTO;
 import cz.muni.ics.kypo.training.persistence.model.InfoLevel;
@@ -12,17 +13,20 @@ import org.springframework.data.domain.PageImpl;
 import java.util.*;
 
 /**
- * @author Roman Oravec
+ * @author Roman Oravec & Pavel Seda
  */
 @Mapper(componentModel = "spring",
         uses = {PreHookMapper.class, PostHookMapper.class, SandboxInstanceRefMapper.class},
-        nullValueCheckStrategy =  NullValueCheckStrategy.ALWAYS)
-public interface InfoLevelMapper extends ParentMapper{
+        nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS)
+public interface InfoLevelMapper extends ParentMapper {
+
     InfoLevel mapToEntity(InfoLevelDTO dto);
 
     InfoLevel mapUpdateToEntity(InfoLevelUpdateDTO dto);
 
     InfoLevelDTO mapToDTO(InfoLevel entity);
+
+    InfoLevelExportDTO mapToInfoLevelExportDTO(InfoLevel entity);
 
     List<InfoLevel> mapToList(Collection<InfoLevelDTO> dtos);
 
@@ -32,25 +36,25 @@ public interface InfoLevelMapper extends ParentMapper{
 
     Set<InfoLevelDTO> mapToSetDTO(Collection<InfoLevel> entities);
 
-    default Optional<InfoLevel> mapToOptional(InfoLevelDTO dto){
+    default Optional<InfoLevel> mapToOptional(InfoLevelDTO dto) {
         return Optional.ofNullable(mapToEntity(dto));
     }
 
-    default Optional<InfoLevelDTO> mapToOptional(InfoLevel entity){
+    default Optional<InfoLevelDTO> mapToOptional(InfoLevel entity) {
         return Optional.ofNullable(mapToDTO(entity));
     }
 
-    default Page<InfoLevelDTO> mapToPageDTO(Page<InfoLevel> objects){
+    default Page<InfoLevelDTO> mapToPageDTO(Page<InfoLevel> objects) {
         List<InfoLevelDTO> mapped = mapToListDTO(objects.getContent());
         return new PageImpl<>(mapped, objects.getPageable(), mapped.size());
     }
 
-    default Page<InfoLevel> mapToPage(Page<InfoLevelDTO> objects){
+    default Page<InfoLevel> mapToPage(Page<InfoLevelDTO> objects) {
         List<InfoLevel> mapped = mapToList(objects.getContent());
         return new PageImpl<>(mapped, objects.getPageable(), mapped.size());
     }
 
-    default PageResultResource<InfoLevelDTO> mapToPageResultResource(Page<InfoLevel> objects){
+    default PageResultResource<InfoLevelDTO> mapToPageResultResource(Page<InfoLevel> objects) {
         List<InfoLevelDTO> mapped = new ArrayList<>();
         objects.forEach(object -> mapped.add(mapToDTO(object)));
         return new PageResultResource<>(mapped, createPagination(objects));

@@ -3,7 +3,7 @@ package cz.muni.ics.kypo.training.rest.controllers;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.bohnman.squiggly.Squiggly;
 import com.github.bohnman.squiggly.util.SquigglyUtils;
-import cz.muni.ics.kypo.training.api.dto.ExportTrainingDefinitionsAndLevelsDTO;
+import cz.muni.ics.kypo.training.api.dto.export.ExportTrainingDefinitionsAndLevelsDTO;
 import cz.muni.ics.kypo.training.exception.FacadeLayerException;
 import cz.muni.ics.kypo.training.facade.ExportImportFacade;
 import cz.muni.ics.kypo.training.rest.exceptions.ResourceNotFoundException;

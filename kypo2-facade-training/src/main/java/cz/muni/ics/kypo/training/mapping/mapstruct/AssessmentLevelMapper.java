@@ -3,6 +3,7 @@ package cz.muni.ics.kypo.training.mapping.mapstruct;
 import cz.muni.ics.kypo.training.api.PageResultResource;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelUpdateDTO;
+import cz.muni.ics.kypo.training.api.dto.export.AssessmentLevelExportDTO;
 import cz.muni.ics.kypo.training.persistence.model.AssessmentLevel;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -24,6 +25,8 @@ public interface AssessmentLevelMapper extends ParentMapper {
 
     AssessmentLevelDTO mapToDTO(AssessmentLevel entity);
 
+    AssessmentLevelExportDTO mapToAssessmentLevelExportDTO(AssessmentLevel entity);
+
     List<AssessmentLevel> mapToList(Collection<AssessmentLevelDTO> dtos);
 
     List<AssessmentLevelDTO> mapToListDTO(Collection<AssessmentLevel> entities);
@@ -32,25 +35,25 @@ public interface AssessmentLevelMapper extends ParentMapper {
 
     Set<AssessmentLevelDTO> mapToSetDTO(Collection<AssessmentLevel> entities);
 
-    default Optional<AssessmentLevel> mapToOptional(AssessmentLevelDTO dto){
+    default Optional<AssessmentLevel> mapToOptional(AssessmentLevelDTO dto) {
         return Optional.ofNullable(mapToEntity(dto));
     }
 
-    default Optional<AssessmentLevelDTO> mapToOptional(AssessmentLevel entity){
+    default Optional<AssessmentLevelDTO> mapToOptional(AssessmentLevel entity) {
         return Optional.ofNullable(mapToDTO(entity));
     }
 
-    default Page<AssessmentLevelDTO> mapToPageDTO(Page<AssessmentLevel> objects){
+    default Page<AssessmentLevelDTO> mapToPageDTO(Page<AssessmentLevel> objects) {
         List<AssessmentLevelDTO> mapped = mapToListDTO(objects.getContent());
         return new PageImpl<>(mapped, objects.getPageable(), mapped.size());
     }
 
-    default Page<AssessmentLevel> mapToPage(Page<AssessmentLevelDTO> objects){
+    default Page<AssessmentLevel> mapToPage(Page<AssessmentLevelDTO> objects) {
         List<AssessmentLevel> mapped = mapToList(objects.getContent());
         return new PageImpl<>(mapped, objects.getPageable(), mapped.size());
     }
 
-    default PageResultResource<AssessmentLevelDTO> mapToPageResultResource(Page<AssessmentLevel> objects){
+    default PageResultResource<AssessmentLevelDTO> mapToPageResultResource(Page<AssessmentLevel> objects) {
         List<AssessmentLevelDTO> mapped = new ArrayList<>();
         objects.forEach(object -> mapped.add(mapToDTO(object)));
         return new PageResultResource<>(mapped, createPagination(objects));

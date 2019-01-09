@@ -125,7 +125,7 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
     @Override
     @TransactionalRO
     public PageResultResource<TrainingDefinitionDTO> findAll(Predicate predicate, Pageable pageable) {
-        LOG.debug("findAll({},{})", predicate, pageable);
+        LOG.debug("findAllTrainingDefinitions({},{})", predicate, pageable);
         PageResultResource<TrainingDefinitionDTO> resource = trainingDefinitionMapper.mapToPageResultResource(trainingDefinitionService.findAll(predicate, pageable));
         for (TrainingDefinitionDTO tD : resource.getContent()) {
             tD.setCanBeArchived(checkIfCanBeArchived(tD.getId()));

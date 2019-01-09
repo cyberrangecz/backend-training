@@ -71,7 +71,7 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
     @Override
     @PreAuthorize("hasAuthority('ADMINISTRATOR')")
     public Page<TrainingInstance> findAll(Predicate predicate, Pageable pageable) {
-        LOG.debug("findAll({},{})", predicate, pageable);
+        LOG.debug("findAllTrainingDefinitions({},{})", predicate, pageable);
         return trainingInstanceRepository.findAll(predicate, pageable);
     }
 

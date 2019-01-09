@@ -66,7 +66,7 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
     @Override
     @TransactionalRO
     public PageResultResource<TrainingInstanceDTO> findAll(Predicate predicate, Pageable pageable) {
-        LOG.debug("findAll({},{})", predicate, pageable);
+        LOG.debug("findAllTrainingDefinitions({},{})", predicate, pageable);
         return trainingInstanceMapper.mapToPageResultResource(trainingInstanceService.findAll(predicate, pageable));
     }
 
