@@ -1,5 +1,6 @@
 package cz.muni.ics.kypo.training.persistence.model;
 
+import org.hibernate.annotations.Cascade;
 import org.hibernate.annotations.Type;
 
 import javax.persistence.*;
@@ -30,7 +31,11 @@ public class GameLevel extends AbstractLevel implements Serializable {
     private int estimatedDuration;
     @Column(name = "attachments")
     private String[] attachments;
-    @OneToMany(fetch = FetchType.LAZY, targetEntity = Hint.class, mappedBy = "gameLevel", cascade = CascadeType.ALL)
+    @OneToMany(
+            mappedBy = "gameLevel",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
     private Set<Hint> hints = new HashSet<>();
     @Column(name = "incorrect_flag_limit")
     private int incorrectFlagLimit;
@@ -109,13 +114,21 @@ public class GameLevel extends AbstractLevel implements Serializable {
         if (!(o instanceof GameLevel)) return false;
         if (!super.equals(o)) return false;
         GameLevel gameLevel = (GameLevel) o;
-        return Objects.equals(getContent(), gameLevel.getContent()) &&
-                Objects.equals(getSolution(), gameLevel.getSolution());
+        return isSolutionPenalized() == gameLevel.isSolutionPenalized() &&
+                getEstimatedDuration() == gameLevel.getEstimatedDuration() &&
+                getIncorrectFlagLimit() == gameLevel.getIncorrectFlagLimit() &&
+                Objects.equals(getFlag(), gameLevel.getFlag()) &&
+                Objects.equals(getContent(), gameLevel.getContent()) &&
+                Objects.equals(getSolution(), gameLevel.getSolution()) &&
+                Arrays.equals(getAttachments(), gameLevel.getAttachments()) &&
+                Objects.equals(getHints(), gameLevel.getHints());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), getContent(), getSolution());
+        int result = Objects.hash(super.hashCode(), getFlag(), getContent(), getSolution(), isSolutionPenalized(), getEstimatedDuration(), getHints(), getIncorrectFlagLimit());
+        result = 31 * result + Arrays.hashCode(getAttachments());
+        return result;
     }
 
     @Override

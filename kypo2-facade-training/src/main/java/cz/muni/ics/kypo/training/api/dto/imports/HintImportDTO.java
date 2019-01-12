@@ -30,7 +30,12 @@ public class HintImportDTO {
 		this.hintPenalty = hintPenalty;
 	}
 
-	@Override public String toString() {
-		return "HintImportDTO{" + "title='" + title + '\'' + ", content='" + content + '\'' + ", hintPenalty=" + hintPenalty + '}';
+	@Override
+	public String toString() {
+		return "HintImportDTO{" +
+				"title='" + title + '\'' +
+				", content='" + content + '\'' +
+				", hintPenalty=" + hintPenalty +
+				'}';
 	}
 }

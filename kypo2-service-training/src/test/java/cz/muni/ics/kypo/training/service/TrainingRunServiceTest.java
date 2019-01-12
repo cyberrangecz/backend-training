@@ -152,7 +152,7 @@ public class TrainingRunServiceTest {
         hint1 = new Hint();
         hint1.setId(1L);
         hint1.setContent("hint1 content");
-        hint1.setGameLevel(gameLevel);
+//        hint1.setGameLevel(gameLevel);
         hint1.setHintPenalty(5);
 
         infoLevel = new InfoLevel();

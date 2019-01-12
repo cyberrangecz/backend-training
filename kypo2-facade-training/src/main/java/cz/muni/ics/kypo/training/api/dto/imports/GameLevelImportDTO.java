@@ -22,7 +22,7 @@ public class GameLevelImportDTO extends AbstractLevelImportDTO{
 	private boolean solutionPenalized;
 	private int estimatedDuration;
 	private String[] attachments;
-	private Set<HintDTO> hints;
+	private Set<HintDTO> hints = new HashSet<>();
 	@NotNull(message = "{gamelevelimport.incorrectFlagLimit.NotEmpty.message}")
 	@Min(value = 0, message = "{gamelevelimport.incorrectFlagLimit.Min.message}")
 	private int incorrectFlagLimit;

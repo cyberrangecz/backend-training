@@ -27,14 +27,13 @@ public class Hint implements Serializable {
     @Column(name = "hint_penalty", nullable = false)
     private Integer hintPenalty;
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "game_level_id")
     private GameLevel gameLevel;
 
     public Hint() {
     }
 
-    public Hint(Long id, String title, String content, Integer hintPenalty, GameLevel gameLevel) {
-        super();
-        this.id = id;
+    public Hint(String title, String content, Integer hintPenalty, GameLevel gameLevel) {
         this.title = title;
         this.content = content;
         this.hintPenalty = hintPenalty;
@@ -82,23 +81,18 @@ public class Hint implements Serializable {
     }
 
     @Override
-    public int hashCode() {
-        return Objects.hash(content, gameLevel, hintPenalty, title);
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Hint)) return false;
+        Hint hint = (Hint) o;
+        return Objects.equals(getTitle(), hint.getTitle()) &&
+                Objects.equals(getContent(), hint.getContent()) &&
+                Objects.equals(getHintPenalty(), hint.getHintPenalty());
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (!(obj instanceof Hint))
-            return false;
-        Hint other = (Hint) obj;
-        return Objects.equals(content, other.getContent())
-                && Objects.equals(gameLevel, other.getGameLevel())
-                && Objects.equals(hintPenalty, other.getHintPenalty())
-                && Objects.equals(title, other.getTitle());
+    public int hashCode() {
+        return Objects.hash(getTitle(), getContent(), getHintPenalty());
     }
 
     @Override
@@ -108,7 +102,6 @@ public class Hint implements Serializable {
                 ", title='" + title + '\'' +
                 ", content='" + content + '\'' +
                 ", hintPenalty=" + hintPenalty +
-                ", gameLevel=" + gameLevel +
                 '}';
     }
 }
