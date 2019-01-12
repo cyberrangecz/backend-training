@@ -1,7 +1,6 @@
 package cz.muni.ics.kypo.training.mapping.mapstruct;
 
 import cz.muni.ics.kypo.training.api.PageResultResource;
-import cz.muni.ics.kypo.training.api.dto.export.TrainingDefinitionExportDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionCreateDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionUpdateDTO;
@@ -25,8 +24,6 @@ public interface TrainingDefinitionMapper extends ParentMapper {
 
     TrainingDefinitionDTO mapToDTO(TrainingDefinition entity);
 
-    TrainingDefinitionExportDTO mapToTrainingDefinitionExportDTO(TrainingDefinition entity);
-
     TrainingDefinition mapCreateToEntity(TrainingDefinitionCreateDTO dto);
 
     TrainingDefinition mapUpdateToEntity(TrainingDefinitionUpdateDTO dto);
@@ -34,8 +31,6 @@ public interface TrainingDefinitionMapper extends ParentMapper {
     List<TrainingDefinition> mapToList(Collection<TrainingDefinitionDTO> dtos);
 
     List<TrainingDefinitionDTO> mapToListDTO(Collection<TrainingDefinition> entities);
-
-    List<TrainingDefinitionExportDTO> mapToTrainingDefinitionExportDTOList(Collection<TrainingDefinition> entities);
 
     Set<TrainingDefinition> mapToSet(Collection<TrainingDefinitionDTO> dtos);
 

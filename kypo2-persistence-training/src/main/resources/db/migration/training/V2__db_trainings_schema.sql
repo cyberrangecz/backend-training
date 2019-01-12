@@ -82,7 +82,7 @@ CREATE TABLE training_definition (
     description varchar(255),
     outcomes bytea,
     prerequisities bytea,
-    sandbox_definition_ref_id int8 NOT NULL,
+    sandbox_definition_ref_id int8,
     show_stepper_bar boolean NOT NULL,
     starting_level int8,
     state varchar(128) NOT NULL,

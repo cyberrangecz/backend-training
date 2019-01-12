@@ -2,6 +2,7 @@ package cz.muni.ics.kypo.training.mapping.mapstruct;
 
 import cz.muni.ics.kypo.training.api.PageResultResource;
 import cz.muni.ics.kypo.training.api.dto.export.InfoLevelExportDTO;
+import cz.muni.ics.kypo.training.api.dto.imports.InfoLevelImportDTO;
 import cz.muni.ics.kypo.training.api.dto.infolevel.InfoLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.infolevel.InfoLevelUpdateDTO;
 import cz.muni.ics.kypo.training.persistence.model.InfoLevel;
@@ -21,6 +22,8 @@ import java.util.*;
 public interface InfoLevelMapper extends ParentMapper {
 
     InfoLevel mapToEntity(InfoLevelDTO dto);
+
+    InfoLevel mapImportToEntity(InfoLevelImportDTO dto);
 
     InfoLevel mapUpdateToEntity(InfoLevelUpdateDTO dto);
 

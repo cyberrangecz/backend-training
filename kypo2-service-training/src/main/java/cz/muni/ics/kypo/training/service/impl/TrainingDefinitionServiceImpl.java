@@ -15,6 +15,7 @@ import cz.muni.ics.kypo.training.persistence.model.enums.AssessmentType;
 import cz.muni.ics.kypo.training.persistence.model.enums.TDState;
 import cz.muni.ics.kypo.training.persistence.repository.*;
 import cz.muni.ics.kypo.training.service.TrainingDefinitionService;
+import org.apache.catalina.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -31,7 +32,7 @@ import org.springframework.util.Assert;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
+import java.util.Optional;
 /**
  * @author Pavel Seda (441048)
  */
@@ -104,9 +105,21 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     public TrainingDefinition create(TrainingDefinition trainingDefinition) {
         LOG.debug("create({})", trainingDefinition);
         Assert.notNull(trainingDefinition, "Input training definition must not be null");
+        String userSub = getSubOfLoggedInUser();
         TrainingDefinition tD = trainingDefinitionRepository.save(trainingDefinition);
+
+        Optional<UserRef> user = authorRefRepository.findUserByUserRefLogin(userSub);
+        if (user.isPresent()){
+            user.get().addTrainingDefinition(trainingDefinition);
+            tD.addAuthor(user.get());
+        } else{
+            UserRef newUser = new UserRef();
+            newUser.setUserRefLogin(userSub);
+            newUser.addTrainingDefinition(tD);
+            tD.addAuthor(authorRefRepository.save(newUser));
+        }
         LOG.info("Training definition with id: {} created.", trainingDefinition.getId());
-        return tD;
+        return trainingDefinitionRepository.save(tD);
     }
 
     @Override
