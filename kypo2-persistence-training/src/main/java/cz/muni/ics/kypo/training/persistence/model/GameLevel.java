@@ -40,6 +40,16 @@ public class GameLevel extends AbstractLevel implements Serializable {
     @Column(name = "incorrect_flag_limit")
     private int incorrectFlagLimit;
 
+    /**
+     * Used to fix missing foreign key in the child (Hint) of @OneToMany association.
+     *
+     * Hint entity was missing foreign key to GameLevel after persisting it.
+     */
+    @PrePersist
+    private void prePersist() {
+        hints.forEach(hint -> hint.setGameLevel(this));
+    }
+
     public String getFlag() {
         return flag;
     }
@@ -114,22 +124,15 @@ public class GameLevel extends AbstractLevel implements Serializable {
         if (!(o instanceof GameLevel)) return false;
         if (!super.equals(o)) return false;
         GameLevel gameLevel = (GameLevel) o;
-        return isSolutionPenalized() == gameLevel.isSolutionPenalized() &&
-                getEstimatedDuration() == gameLevel.getEstimatedDuration() &&
-                getIncorrectFlagLimit() == gameLevel.getIncorrectFlagLimit() &&
-                Objects.equals(getFlag(), gameLevel.getFlag()) &&
-                Objects.equals(getContent(), gameLevel.getContent()) &&
-                Objects.equals(getSolution(), gameLevel.getSolution()) &&
-                Arrays.equals(getAttachments(), gameLevel.getAttachments()) &&
-                Objects.equals(getHints(), gameLevel.getHints());
+        return Objects.equals(getContent(), gameLevel.getContent()) &&
+                Objects.equals(getSolution(), gameLevel.getSolution());
     }
 
     @Override
     public int hashCode() {
-        int result = Objects.hash(super.hashCode(), getFlag(), getContent(), getSolution(), isSolutionPenalized(), getEstimatedDuration(), getHints(), getIncorrectFlagLimit());
-        result = 31 * result + Arrays.hashCode(getAttachments());
-        return result;
+        return Objects.hash(super.hashCode(), getContent(), getSolution());
     }
+
 
     @Override
     public String toString() {
