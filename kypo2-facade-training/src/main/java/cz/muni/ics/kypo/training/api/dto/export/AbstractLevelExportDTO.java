@@ -1,17 +1,24 @@
 package cz.muni.ics.kypo.training.api.dto.export;
 
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import cz.muni.ics.kypo.training.persistence.model.enums.LevelType;
 import io.swagger.annotations.ApiModelProperty;
 
 /**
  * @author Pavel Seda
  */
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
+@JsonSubTypes({
+    @JsonSubTypes.Type(value = GameLevelExportDTO.class, name = "GameLevelImportDTO"),
+    @JsonSubTypes.Type(value = AssessmentLevelExportDTO.class, name = "AssessmentLevelImportDTO"),
+    @JsonSubTypes.Type(value = InfoLevelExportDTO.class, name = "InfoLevelImportDTO")})
 public class AbstractLevelExportDTO {
 
     protected String title;
     protected int maxScore;
-    protected Long nextLevel;
     protected LevelType levelType;
+    protected int order;
 
     public AbstractLevelExportDTO(){}
 
@@ -33,15 +40,6 @@ public class AbstractLevelExportDTO {
         this.maxScore = maxScore;
     }
 
-    @ApiModelProperty(value = "Reference to the next abstract level (if it is null, then it is the last level)", example = "2")
-    public Long getNextLevel() {
-        return nextLevel;
-    }
-
-    public void setNextLevel(Long nextLevel) {
-        this.nextLevel = nextLevel;
-    }
-
     @ApiModelProperty(value = "Type of the level.", example = "GAME")
     public LevelType getLevelType() {
         return levelType;
@@ -51,13 +49,17 @@ public class AbstractLevelExportDTO {
         this.levelType = levelType;
     }
 
-    @Override
-    public String toString() {
-        return "AbstractLevelExportDTO{" +
-                "title='" + title + '\'' +
-                ", maxScore=" + maxScore +
-                ", nextLevel=" + nextLevel +
-                ", levelType=" + levelType +
-                '}';
+    @ApiModelProperty(value = "Order of level, starts with 0", example = "2")
+    public int getOrder() {
+        return order;
+    }
+
+    public void setOrder(int order) {
+        this.order = order;
+    }
+
+    @Override public String toString() {
+        return "AbstractLevelExportDTO{" + "title='" + title + '\'' + ", maxScore=" + maxScore + ", levelType=" + levelType + ", order="
+            + order + '}';
     }
 }

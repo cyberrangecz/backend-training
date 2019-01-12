@@ -27,7 +27,6 @@ public class TrainingDefinitionCreateDTO {
     private Set<Long> autIds;
     @NotNull(message = "{trainingdefinitioncreate.showStepperBar.NotNull.message}")
     private boolean showStepperBar;
-    @NotNull(message = "{trainingdefinitioncreate.sandboxDefinitionRef.NotNull.message}")
     private Long sandboxDefinitionRefId;
 
     @ApiModelProperty(value = "A name of the training/game (e.g., Photo Hunter) .", required = true, example = "Photo Hunter")

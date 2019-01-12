@@ -112,7 +112,6 @@ public class GameLevelExportDTO extends AbstractLevelExportDTO {
                 ", incorrectFlagLimit=" + incorrectFlagLimit +
                 ", title='" + title + '\'' +
                 ", maxScore=" + maxScore +
-                ", nextLevel=" + nextLevel +
                 ", levelType=" + levelType +
                 '}';
     }

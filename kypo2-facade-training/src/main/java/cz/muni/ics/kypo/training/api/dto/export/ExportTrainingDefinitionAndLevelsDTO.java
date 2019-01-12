@@ -1,17 +1,16 @@
 package cz.muni.ics.kypo.training.api.dto.export;
 
 import cz.muni.ics.kypo.training.persistence.model.enums.TDState;
-import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
+import java.util.ArrayList;
 import java.util.Arrays;
-
+import java.util.List;
 
 /**
- * @author Pavel Seda (441048)
+ * @author Pavel Seda
  */
-@ApiModel(value = "TrainingDefinitionExportDTO")
-public class TrainingDefinitionExportDTO {
+public class ExportTrainingDefinitionAndLevelsDTO {
 
     private String title;
     private String description;
@@ -20,12 +19,9 @@ public class TrainingDefinitionExportDTO {
     private TDState state;
     private Long startingLevel;
     private boolean showStepperBar;
+    private List<AbstractLevelExportDTO> levels = new ArrayList<>();
 
-    public TrainingDefinitionExportDTO() {
-        this.title = "";
-        this.description = "";
-        this.startingLevel = 0L;
-        this.showStepperBar = false;
+    public ExportTrainingDefinitionAndLevelsDTO() {
     }
 
     @ApiModelProperty(value = "A name of the training/game (e.g., Photo Hunter) .", example = "TrainingDefinition2")
@@ -91,9 +87,17 @@ public class TrainingDefinitionExportDTO {
         this.showStepperBar = showStepperBar;
     }
 
+    public List<AbstractLevelExportDTO> getLevels() {
+        return levels;
+    }
+
+    public void setLevels(List<AbstractLevelExportDTO> levels) {
+        this.levels = levels;
+    }
+
     @Override
     public String toString() {
-        return "TrainingDefinitionExportDTO{" +
+        return "ExportTrainingDefinitionAndLevelsDTO{" +
                 "title='" + title + '\'' +
                 ", description='" + description + '\'' +
                 ", prerequisities=" + Arrays.toString(prerequisities) +
@@ -101,6 +105,7 @@ public class TrainingDefinitionExportDTO {
                 ", state=" + state +
                 ", startingLevel=" + startingLevel +
                 ", showStepperBar=" + showStepperBar +
+                ", levels=" + levels +
                 '}';
     }
 }

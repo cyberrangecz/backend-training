@@ -4,6 +4,7 @@ import cz.muni.ics.kypo.training.api.PageResultResource;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelUpdateDTO;
 import cz.muni.ics.kypo.training.api.dto.export.AssessmentLevelExportDTO;
+import cz.muni.ics.kypo.training.api.dto.imports.AssessmentLevelImportDTO;
 import cz.muni.ics.kypo.training.persistence.model.AssessmentLevel;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -22,6 +23,8 @@ public interface AssessmentLevelMapper extends ParentMapper {
 
     @Mapping(source = "type", target = "assessmentType")
     AssessmentLevel mapUpdateToEntity(AssessmentLevelUpdateDTO dto);
+
+    AssessmentLevel mapImportToEntity(AssessmentLevelImportDTO dto);
 
     AssessmentLevelDTO mapToDTO(AssessmentLevel entity);
 

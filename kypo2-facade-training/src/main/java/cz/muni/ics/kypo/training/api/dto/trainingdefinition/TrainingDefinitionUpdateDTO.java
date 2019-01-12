@@ -28,7 +28,6 @@ public class TrainingDefinitionUpdateDTO {
     private TDState state;
     @NotNull(message = "{trainingdefinitionupdate.autIds.NotNull.message}")
     private Set<Long> autIds = new HashSet<>();
-    @NotNull(message = "{trainingdefinitionupdate.sandboxDefinitionRef.NotNull.message}")
     private Long sandboxDefinitionRefId;
     @NotNull(message = "{trainingdefinitionupdate.showStepperBar.NotNull.message}")
     private boolean showStepperBar;
