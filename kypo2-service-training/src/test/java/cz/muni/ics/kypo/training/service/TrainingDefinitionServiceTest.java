@@ -9,6 +9,7 @@ import cz.muni.ics.kypo.training.persistence.model.enums.TDState;
 import cz.muni.ics.kypo.training.persistence.repository.*;
 
 import cz.muni.ics.kypo.training.service.impl.TrainingDefinitionServiceImpl;
+import org.apache.catalina.User;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.junit.After;
@@ -817,10 +818,14 @@ public class TrainingDefinitionServiceTest {
 
     @Test
     public void createTrainingDefinition() {
+        mockSpringSecurityContextForGet();
+        UserRef user= new UserRef();
+        user.setUserRefLogin("userSub");
         given(trainingDefinitionRepository.save(trainingDefinition1)).willReturn(trainingDefinition1);
+        given(authorRefRepository.findUserByUserRefLogin(anyString())).willReturn(Optional.of(user));
         TrainingDefinition tD = trainingDefinitionService.create(trainingDefinition1);
         deepEquals(trainingDefinition1, tD);
-        then(trainingDefinitionRepository).should().save(trainingDefinition1);
+        then(trainingDefinitionRepository).should(times(2)).save(trainingDefinition1);
     }
 
     @Test
