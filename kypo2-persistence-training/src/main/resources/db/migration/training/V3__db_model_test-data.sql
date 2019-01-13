@@ -31,6 +31,12 @@ INSERT INTO abstract_level(id, max_score, next_level, title, post_hook_id, pre_h
 INSERT INTO abstract_level(id, max_score, next_level, title, post_hook_id, pre_hook_id) VALUES (nextval('abstract_level_id_seq'), 0, 17, 'Disable Passwords - Info', null, null);
 INSERT INTO abstract_level(id, max_score, next_level, title, post_hook_id, pre_hook_id) VALUES (nextval('abstract_level_id_seq'), 25, null, 'Disable Passwords', null, null);
 
+INSERT INTO abstract_level(id, max_score, next_level, title, post_hook_id, pre_hook_id) VALUES (nextval('abstract_level_id_seq'), 0, 19, 'Finding the Vulnerability - Info', null, null);
+INSERT INTO abstract_level(id, max_score, next_level, title, post_hook_id, pre_hook_id) VALUES (nextval('abstract_level_id_seq'), 3, 20, 'Finding the Vulnerability', null, null);
+INSERT INTO abstract_level(id, max_score, next_level, title, post_hook_id, pre_hook_id) VALUES (nextval('abstract_level_id_seq'), 0, 21, 'This Will Not Keep You Out - Info', null, null);
+INSERT INTO abstract_level(id, max_score, next_level, title, post_hook_id, pre_hook_id) VALUES (nextval('abstract_level_id_seq'), 5, 22, 'This Will Not Keep You Out', null, null);
+INSERT INTO abstract_level(id, max_score, next_level, title, post_hook_id, pre_hook_id) VALUES (nextval('abstract_level_id_seq'), 0, 23, 'Gaining the Document - Info', null, null);
+INSERT INTO abstract_level(id, max_score, next_level, title, post_hook_id, pre_hook_id) VALUES (nextval('abstract_level_id_seq'), 3, null, 'Gaining the Document', null, null);
 
 
 INSERT INTO game_level(id, attachments, estimated_duration, incorrect_flag_limit, content, flag, solution, solution_penalized) VALUES (1, null, 25, 5, 'Play me', 'secretFlag', 'This is how you do it', true );
@@ -109,6 +115,37 @@ INSERT INTO game_level(id, attachments, estimated_duration, incorrect_flag_limit
 <span class="prompt">bnovak@workstation:~$ </span><span class="command">ssh bnovak@database.bigbroker.ex</span>
 <span class="prompt">bnovak@database:~$ </span><span class="command">cat ~/.ssh/authorized_keys</span></pre>
 </ol>', 'SSHKeys', 'SSHKeys', true );
+
+INSERT INTO game_level(id, attachments, estimated_duration, incorrect_flag_limit, content, flag, solution, solution_penalized) VALUES (19, null, 8, 5, '<p>
+  <b>Come on, this is really easy!</b>
+</p>
+
+<ol>
+  <li>Register yourself on the website.</li>
+  <li>On the left side, click on Documents and click on "Browse". Select the Web Shell script located in "/root/c99.php". Then click on upload.</li>
+  <li>The hash will appear in green box. Use it''s first 5 characters as the flag.</li>
+</ol>', '61a92', '61a92', true );
+INSERT INTO game_level(id, attachments, estimated_duration, incorrect_flag_limit, content, flag, solution, solution_penalized) VALUES (21, null, 15, 5, '<p>
+  <b>it is little tricky!</b>
+</p>
+
+<ol>
+  <li>Open the page with file upload. You should already have Web Shell uploaded there.</li>
+  <li>Right click delete button and then click "Inspect element".</li>
+  <li>One line above the "active" line there should be line with parameter NAME="path" and value="XXXX". Change the value parameter to "documents/.htaccess" and press delete button back on website itself.</li>
+  <li>Click the C99.php Web Shell. You should be able to run it and see the flag.</li>
+</ol>', '0x6a8', '0x6a8', true );
+INSERT INTO game_level(id, attachments, estimated_duration, incorrect_flag_limit, content, flag, solution, solution_penalized) VALUES (23, null, 5, 5, '<p>
+  <b>Now its is easy!</b>
+</p>
+
+<ol>
+  <li>In documents, click on file c99.php. It should open the Web Shell.</li>
+  <li>In the Web Shell, you can see file structure of the server. Use ".." to go one folder up until you arrive on the very highest level.</li>
+  <li>Click on home and then on msramek. You should see FranksPanamasStocks file.</li>
+  <li>Click on "text" icon to open file as text. (It is next to icon that looks like Internet Explorer icon).</li>
+</ol>', '8342538', '8342538', true );
+
 
 INSERT INTO info_level(id, content) VALUES (4, 'Informational stuff');
 INSERT INTO info_level(id, content) VALUES (5, 'Potatoes are not poisonous');
@@ -230,6 +267,57 @@ Best regards,
   </ul>
 </p>');
 
+INSERT INTO info_level(id, content) VALUES (18, '<p>
+  At first look, the website of BigBroker (http://bigbroker.ex) does not contain any input that can be exploited. <b>But what about the authenticated part?</b> Closed parts of websites often contain hidden vulnerabilities that are not fixed. It is also often that you can <b>upload some malicious files</b>. In your system is a <a href="https://attack.mitre.org/wiki/Technique/T1100" target="_blank"><b>Web Shell</b></a> script that is an <span style="color: #008000">excellent tool to upload and gain an access to the website</span>.
+</p>
+
+<p>
+  If you manage to upload the Web Shell to the website, the server will tell you its hash. <b>Use the first 5 characters of the hash as a flag.</b>
+</p>
+
+<img src="https://is.muni.cz/www/cermmik/bigbroker-login.png" style="display: block; margin-left: auto; margin-right: auto; width: 40%;">
+
+<p style="margin-top: 3em">
+  <b>If you are stuck and need help, use the following hints:</b>
+  <ul>
+    <li><b>Hint 1:</b> How to get an access to the authenticated part of the website</li>
+    <li><b>Hint 2:</b> Where is the Web Shell script located</li>
+  </ul>
+</p>');
+INSERT INTO info_level(id, content) VALUES (20, '<p>
+  Unfortunately, although you have been able to upload the Web Shell, you are <b>unable to run it</b>. It seems the creator of this site knew what he was doing, so you cannot execute that PHP code. However, you know that there is some <a href="https://httpd.apache.org/docs/current/configuring.html" target="_blank"><b>configuration file</b></a> located on the web server that is used to forbid things like that. <span style="color: #008000">Try to find out which file it is and somehow make the server run your PHP code.</span>
+</p>
+
+<p>
+  If you are successful, you will be able to get to Web Shell. Right after accessing the Web Shell, you will see the directory with name FLAG-XXXXX. <b>Use XXXXX as the flag.</b>
+</p>
+
+<img src="https://is.muni.cz/www/cermmik/bigbroker-no-run.png" style="display: block; margin-left: auto; margin-right: auto; width: 40%;">
+
+<p style="margin-top: 3em">
+  <b>If you are stuck and need help, use the following hints:</b>
+  <ul>
+    <li><b>Hint 1:</b> What configuration file to look for</li>
+    <li><b>Hint 2:</b> Where to look for possibility to delete the configuration file</li>
+    <li><b>Hint 3:</b> How to delete the configuration file</li>
+  </ul>
+</p>');
+INSERT INTO info_level(id, content) VALUES (22, '<p>
+  Now you have access to the target server! The C99 Web Shell is a very powerful tool. Use it and try to find what you are looking for – <b>a file with the evidence of tax evasion</b>.  In the BigBroker  Inc. company is one person that is responsible for Panamas Stocks. <span style="color: #008000">Try to find out if he has something interesting stored on the server.</span>
+</p>
+
+<p>
+  The flag is <b>an amount of dollars that Frank owns</b> in form of stocks in Panama (number without spaces).
+</p>
+
+<img src="https://is.muni.cz/www/cermmik/bigbroker-shell.png" style="display: block; margin-left: auto; margin-right: auto; width: 40%;">
+
+<p style="margin-top: 3em">
+  <b>If you are stuck and need help, use the following hints:</b>
+  <ul>
+    <li><b>Hint 1:</b> Name of the person responsible for the Panamas Stocks</li>
+  </ul>
+</p>');
 
 INSERT INTO assessment_level(id, assessment_type, instructions, questions) VALUES (7, 'TEST', 'Fill me up', 'What is my mothers name?');
 INSERT INTO assessment_level(id, assessment_type, instructions, questions) VALUES (8, 'QUESTIONNAIRE', 'No rush', '...?');
@@ -243,6 +331,14 @@ INSERT INTO hint(id, content, title, hint_penalty, game_level_id) VALUES (nextva
 INSERT INTO hint(id, content, title, hint_penalty, game_level_id) VALUES (nextval('hint_id_seq'), 'The same case as yours... His username is a combination of the first letter of the name and surname: <span style="color: #008000"><b>vondrus</b></span>.', 'Hint1', 15, 15);
 INSERT INTO hint(id, content, title, hint_penalty, game_level_id) VALUES (nextval('hint_id_seq'), 'Use default settings of the THC-Hydra and <span style="color: #008000"><b>do not use "-t" option</b></span>.', 'Hint2', 5, 15);
 INSERT INTO hint(id, content, title, hint_penalty, game_level_id) VALUES (nextval('hint_id_seq'), 'Your <b>private SSH key</b> must be securely stored so that no one has access to it. Therefore the keys need to be <span style="color: #008000"><b>generated on your workstation</b></span>.', 'Hint1', 10, 17);
+
+INSERT INTO hint(id, content, title, hint_penalty, game_level_id) VALUES (nextval('hint_id_seq'), 'Create a new account using the "Register" page.', 'Hint1', 1, 19);
+INSERT INTO hint(id, content, title, hint_penalty, game_level_id) VALUES (nextval('hint_id_seq'), 'Just look into the /root/ directory.', 'Hint2', 1, 19);
+INSERT INTO hint(id, content, title, hint_penalty, game_level_id) VALUES (nextval('hint_id_seq'), 'Look at what .htaccess file is: <a href="https://httpd.apache.org/docs/current/howto/htaccess.html" target="_blank">https://httpd.apache.org/docs/current/howto/htaccess.html</a>.', 'Hint1', 1, 21);
+INSERT INTO hint(id, content, title, hint_penalty, game_level_id) VALUES (nextval('hint_id_seq'), 'Try to upload other file and check how form for delete looks in "Developer tools".', 'Hint2', 1, 21);
+INSERT INTO hint(id, content, title, hint_penalty, game_level_id) VALUES (nextval('hint_id_seq'), 'Replace path of the file that is being deleted in delete form using "Developer tools".', 'Hint3', 2, 21);
+INSERT INTO hint(id, content, title, hint_penalty, game_level_id) VALUES (nextval('hint_id_seq'), 'Martin Sramek', 'Hint1', 2, 23);
+
 
 INSERT INTO training_definition(id, description, outcomes, prerequisities, state, title, sandbox_definition_ref_id, starting_level, show_stepper_bar) VALUES (nextval('training_definition_id_seq'), 'Released training definition', null, null, 'RELEASED', 'TrainingDefinition1', 1, 4, true);
 INSERT INTO training_definition(id, description, outcomes, prerequisities, state, title, sandbox_definition_ref_id, starting_level, show_stepper_bar) VALUES (nextval('training_definition_id_seq'), 'Unreleased training definition', null, null, 'UNRELEASED', 'TrainingDefinition2', 2, 5, false);
@@ -296,7 +392,59 @@ The game contains four levels. In each level, you will have to complete a specif
 <p style="margin-bottom: 4em;">
   If you are unable to complete a level, you can use a <b>hint</b> which will give a little help, but you will lose some points. After using all the hints, there is <b>help level</b> prepared. It''s a guided solution which will tell you exactly what to do. The last option is to skip level entirely by clicking on the skip level, but this is not recommended – you won''t be able to complete the next levels without performing tasks in the current one.
 </p>', null, null, 'RELEASED', 'CTF-1: No Secure Connection', null, 10, true);
+INSERT INTO training_definition(id, description, outcomes, prerequisities, state, title, sandbox_definition_ref_id, starting_level, show_stepper_bar) VALUES (nextval('training_definition_id_seq'), 'Introduction
+============
+<p>
+  The presidential election in Pilsneria is really close. There are some speculations, that one candidate, let''s call him <b>Frank</b> (his name has been carefully anonymized), evaded paying taxes by buying <b>stocks in Panama through BigBroker Inc.</b> Coincidentally, you are not really a fan of this politician and you think people should learn about his deeds. Therefore, you decided to get some evidence. <span style="color: #008000">Website of BigBroker seems safe, but is it?</span>
+</p>
 
+<img src="https://is.muni.cz/www/cermmik/bigbroker-page.png" style="display: block; margin-left: auto; margin-right: auto; width: 40%;">
+
+<p style="margin-top: 2em;">
+  Your web browser has a cool functionality called <b>"Developer Tools"</b> that you can use to view and edit source code of a web page. <span style="color: #008000">Try to figure out how you can use these tools to hack it and get the required evidence.</span>
+</p>
+
+<p style="margin-top: 3em; margin-bottom: 2em;">
+  <i>Note: The game was created within the course <a href="https://www.kypo.cz/en/kypolab" target="_blank">PV177 – KYPOlab: Seminar on Cyber Attack Simulation</a> by Patrik Nemeček and Jan Čech.</i>
+</p>
+
+
+Rules
+=====
+<p>
+  <b>WARNING: You should never use these techniques and skills to gain unauthorized access. This is illegal. This game is only for educational purposes. To show you that absolute security does not exist and also how can you defend yourself.</b>
+</p>
+
+<p>
+  When you click on Topology button in the blue panel on the top, you should see the given network topology. When you double-click on the node called Internet, you should see one node: Attacker. Attacker represents the attacker''s computer; it contains all hacking tools you will need.
+</p>
+
+<p>
+  Now if you want to have an access to attacker computer click on attacker and select <b>Remote connection</b>. New tab appears with access to attacker''s computer. You can try any program you want. If you will need to <b>login</b>, the default credentials are <b>username: <span style="color: #008000">root</span></b>, <b>password: <span style="color: #008000">toor</span></b>.
+</p>
+
+<p>
+  The game consists of three levels. In each level, you will have to complete some specified task. To prove that you complete the task and can go to the next level you will have to submit a flag. Every level has a description of what to do and how to get the flag.
+</p>
+
+<p>
+  General note: <span style="color: #008000">All programs you will need to complete the tasks are installed, and also you don''t have access to the Internet.</span>
+</p>
+
+
+<h4 class="well well-small">Help System:</h4>
+
+<p>
+  If you are unable to complete a level, you can either use <b>hint</b> which will give a little help, but you will lose some points. After using all the hints if you still don''t know how to complete the task use <b>help level</b>. It''s a guided solution which will tell you exactly what to do. The last option is to skip level entirely by clicking on the skip level, but this is not recommended - you won''t be able to complete following levels without doing what is in your current one. It is better to ask someone for help
+</p>
+
+<p>
+  Each level has a passphrase, so you can go to any level you know passphrase for, but you won''t get any points for any previous levels. So the good advice is to write down the passphrases as you go through levels.
+</p>
+
+<p style="margin-bottom: 4em;">
+  <b> DO NOT USE SKIP LEVEL - HIGHER LEVELS CANNOT BE DONE WITHOUT COMPLETING PRECEDING LEVELS </b>
+</p>', null, null, 'RELEASED', 'CTF-2: Rigging the Election', null, 18, true);
 
 INSERT INTO training_instance(id, pool_size, training_definition_id, start_time, end_time, access_token, title) VALUES (nextval('training_instance_id_seq'), 5, 1, '2016-10-19 10:23:54+02', '2017-10-19 10:23:54+02', 'pass-1235', 'Concluded Instance');
 INSERT INTO training_instance(id, pool_size, training_definition_id, start_time, end_time, access_token, title) VALUES (nextval('training_instance_id_seq'), 8, 1, '2016-10-19 10:23:54+02', '2022-10-19 10:23:54+02', 'hello-6578', 'Current Instance');
