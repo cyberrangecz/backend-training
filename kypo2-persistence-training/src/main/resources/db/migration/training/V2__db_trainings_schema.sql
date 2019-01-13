@@ -24,7 +24,7 @@ CREATE TABLE assessment_level (
 
 CREATE TABLE game_level (
    attachments bytea,
-    content varchar(255) NOT NULL,
+    content text NOT NULL,
     estimated_duration int4,
     flag varchar(255) NOT NULL,
     incorrect_flag_limit int4,
@@ -79,7 +79,7 @@ CREATE TABLE td_view_group_user_ref (
 
 CREATE TABLE training_definition (
    id  bigserial NOT NULL,
-    description varchar(255),
+    description text,
     outcomes bytea,
     prerequisities bytea,
     sandbox_definition_ref_id int8,
