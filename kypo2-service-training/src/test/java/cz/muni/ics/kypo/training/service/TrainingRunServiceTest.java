@@ -141,6 +141,10 @@ public class TrainingRunServiceTest {
         participantRef.setId(1L);
         participantRef.setUserRefLogin("participant");
 
+        hint1 = new Hint();
+        hint1.setId(1L);
+        hint1.setContent("hint1 content");
+        hint1.setHintPenalty(5);
 
         gameLevel = new GameLevel();
         gameLevel.setId(1L);
@@ -151,11 +155,7 @@ public class TrainingRunServiceTest {
         gameLevel.setHints(new HashSet<>(Arrays.asList(hint1, hint2)));
         gameLevel.setNextLevel(2L);
         gameLevel.setIncorrectFlagLimit(5);
-
-        hint1 = new Hint();
-        hint1.setId(1L);
-        hint1.setContent("hint1 content");
-        hint1.setHintPenalty(5);
+        hint1.setGameLevel(gameLevel);
 
         infoLevel = new InfoLevel();
         infoLevel.setId(2L);
@@ -314,16 +314,16 @@ public class TrainingRunServiceTest {
     }
 
     //TODO Boris please fix this test find out why it does not work..
-//    @Test
-//    public void getHint() {
-//        mockSpringSecurityContextForGet();
-//        given(trainingRunRepository.findByIdWithLevel(any(Long.class))).willReturn(Optional.of(trainingRun1));
-//        given(hintRepository.findById(any(Long.class))).willReturn(Optional.of(hint1));
-//        Hint resultHint1 = trainingRunService.getHint(trainingRun1.getId(), hint1.getId());
-//        assertEquals(hint1, resultHint1);
-//        assertEquals(gameLevel.getMaxScore() - hint1.getHintPenalty(), trainingRun1.getCurrentScore());
-//        assertEquals(gameLevel.getMaxScore() - hint1.getHintPenalty(), trainingRun1.getTotalScore());
-//    }
+    @Test
+    public void getHint() {
+        mockSpringSecurityContextForGet();
+        given(trainingRunRepository.findByIdWithLevel(any(Long.class))).willReturn(Optional.of(trainingRun1));
+        given(hintRepository.findById(any(Long.class))).willReturn(Optional.of(hint1));
+        Hint resultHint1 = trainingRunService.getHint(trainingRun1.getId(), hint1.getId());
+        assertEquals(hint1, resultHint1);
+        assertEquals(gameLevel.getMaxScore() - hint1.getHintPenalty(), trainingRun1.getCurrentScore());
+        assertEquals(gameLevel.getMaxScore() - hint1.getHintPenalty(), trainingRun1.getTotalScore());
+    }
 
     @Test
     public void getRemainingAttempts() {
