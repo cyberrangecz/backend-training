@@ -15,7 +15,6 @@ import cz.muni.ics.kypo.training.persistence.model.enums.AssessmentType;
 import cz.muni.ics.kypo.training.persistence.model.enums.TDState;
 import cz.muni.ics.kypo.training.persistence.repository.*;
 import cz.muni.ics.kypo.training.service.TrainingDefinitionService;
-import org.apache.catalina.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -524,7 +523,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
                 newAL.setId(null);
                 newAL.setNextLevel(newId);
                 newAL.setPostHook(null);
-                newAL.setPreHook(null);
+                newAL.setSnapshotHook(null);
                 AssessmentLevel newLevel = assessmentLevelRepository.save(newAL);
                 newId = newLevel.getId();
             } else if (levels.get(i) instanceof InfoLevel) {
@@ -533,7 +532,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
                 newIL.setId(null);
                 newIL.setNextLevel(newId);
                 newIL.setPostHook(null);
-                newIL.setPreHook(null);
+                newIL.setSnapshotHook(null);
                 InfoLevel newLevel = infoLevelRepository.save(newIL);
                 newId = newLevel.getId();
             } else {
@@ -542,7 +541,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
                 newGL.setId(null);
                 newGL.setNextLevel(newId);
                 newGL.setPostHook(null);
-                newGL.setPreHook(null);
+                newGL.setSnapshotHook(null);
                 GameLevel newLevel = gameLevelRepository.save(newGL);
                 newId = newLevel.getId();
             }

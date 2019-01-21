@@ -2,7 +2,7 @@ package cz.muni.ics.kypo.training.mapping.mapstruct;
 
 import cz.muni.ics.kypo.training.api.PageResultResource;
 import cz.muni.ics.kypo.training.api.dto.prehook.PreHookDTO;
-import cz.muni.ics.kypo.training.persistence.model.PreHook;
+import cz.muni.ics.kypo.training.persistence.model.SnapshotHook;
 import org.mapstruct.Mapper;
 import org.mapstruct.NullValueCheckStrategy;
 import org.springframework.data.domain.Page;
@@ -17,37 +17,37 @@ import java.util.*;
         nullValueCheckStrategy =  NullValueCheckStrategy.ALWAYS)
 public interface PreHookMapper extends ParentMapper {
 
-    PreHook mapToEntity(PreHookDTO dto);
+    SnapshotHook mapToEntity(PreHookDTO dto);
 
-    PreHookDTO mapToDTO(PreHook entity);
+    PreHookDTO mapToDTO(SnapshotHook entity);
 
-    List<PreHook> mapToList(Collection<PreHookDTO> dtos);
+    List<SnapshotHook> mapToList(Collection<PreHookDTO> dtos);
 
-    List<PreHookDTO> mapToListDTO(Collection<PreHook> entities);
+    List<PreHookDTO> mapToListDTO(Collection<SnapshotHook> entities);
 
-    Set<PreHook> mapToSet(Collection<PreHookDTO> dtos);
+    Set<SnapshotHook> mapToSet(Collection<PreHookDTO> dtos);
 
-    Set<PreHookDTO> mapToSetDTO(Collection<PreHook> entities);
+    Set<PreHookDTO> mapToSetDTO(Collection<SnapshotHook> entities);
 
-    default Optional<PreHook> mapToOptional(PreHookDTO dto){
+    default Optional<SnapshotHook> mapToOptional(PreHookDTO dto){
         return Optional.ofNullable(mapToEntity(dto));
     }
 
-    default Optional<PreHookDTO> mapToOptional(PreHook entity){
+    default Optional<PreHookDTO> mapToOptional(SnapshotHook entity){
         return Optional.ofNullable(mapToDTO(entity));
     }
 
-    default Page<PreHookDTO> mapToPageDTO(Page<PreHook> objects){
+    default Page<PreHookDTO> mapToPageDTO(Page<SnapshotHook> objects){
         List<PreHookDTO> mapped = mapToListDTO(objects.getContent());
         return new PageImpl<>(mapped, objects.getPageable(), mapped.size());
     }
 
-    default Page<PreHook> mapToPage(Page<PreHookDTO> objects){
-        List<PreHook> mapped = mapToList(objects.getContent());
+    default Page<SnapshotHook> mapToPage(Page<PreHookDTO> objects){
+        List<SnapshotHook> mapped = mapToList(objects.getContent());
         return new PageImpl<>(mapped, objects.getPageable(), mapped.size());
     }
 
-    default PageResultResource<PreHookDTO> mapToPageResultResource(Page<PreHook> objects){
+    default PageResultResource<PreHookDTO> mapToPageResultResource(Page<SnapshotHook> objects){
         List<PreHookDTO> mapped = new ArrayList<>();
         objects.forEach(object -> mapped.add(mapToDTO(object)));
         return new PageResultResource<>(mapped, createPagination(objects));

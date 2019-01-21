@@ -1,20 +1,26 @@
 package cz.muni.ics.kypo.training.persistence.model;
 
+import org.hibernate.annotations.Type;
+
 import javax.persistence.*;
 import java.io.Serializable;
 
 /**
  * @author Pavel Seda (441048)
  */
-@Entity(name = "PreHook")
-@Table(name = "pre_hook")
-public class PreHook implements Serializable {
+@Entity(name = "SnapshotHook")
+@Table(name = "snapshot_hook")
+public class SnapshotHook implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", unique = true, nullable = false, insertable = false)
     private Long id;
-    @OneToOne(mappedBy = "preHook", fetch = FetchType.LAZY)
+    @Lob
+    @Type(type = "org.hibernate.type.TextType")
+    @Column(name = "snapshot", nullable = false)
+    private String snapshot;
+    @OneToOne(mappedBy = "snapshotHook", fetch = FetchType.LAZY)
     private AbstractLevel abstractLevel;
 
     public Long getId() {
@@ -35,7 +41,7 @@ public class PreHook implements Serializable {
 
     @Override
     public String toString() {
-        return "PreHook{" +
+        return "SnapshotHook{" +
                 "id=" + id +
                 ", abstractLevel=" + abstractLevel +
                 '}';

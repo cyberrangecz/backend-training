@@ -23,9 +23,7 @@ public abstract class AbstractLevel implements Serializable {
     @Column(name = "next_level")
     private Long nextLevel;
     @OneToOne(fetch = FetchType.LAZY, optional = true, cascade = CascadeType.ALL)
-    private PreHook preHook;
-    @OneToOne(fetch = FetchType.LAZY, optional = true, cascade = CascadeType.ALL)
-    private PostHook postHook;
+    private SnapshotHook snapshotHook;
 
     public AbstractLevel() {
     }
@@ -54,20 +52,12 @@ public abstract class AbstractLevel implements Serializable {
         this.maxScore = maxScore;
     }
 
-    public PreHook getPreHook() {
-        return preHook;
+    public SnapshotHook getSnapshotHook() {
+        return snapshotHook;
     }
 
-    public void setPreHook(PreHook preHook) {
-        this.preHook = preHook;
-    }
-
-    public PostHook getPostHook() {
-        return postHook;
-    }
-
-    public void setPostHook(PostHook postHook) {
-        this.postHook = postHook;
+    public void setSnapshotHook(SnapshotHook snapshotHook) {
+        this.snapshotHook = snapshotHook;
     }
 
     public Long getNextLevel() {

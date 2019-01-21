@@ -3,8 +3,7 @@ CREATE TABLE abstract_level (
     max_score int4 NOT NULL,
     next_level int8,
     title varchar(255) NOT NULL,
-    post_hook_id int8,
-    pre_hook_id int8,
+    snapshot_hook_id int8,
     PRIMARY KEY (id)
 );
 
@@ -49,13 +48,9 @@ CREATE TABLE info_level (
     PRIMARY KEY (id)
 );
 
-CREATE TABLE post_hook (
+CREATE TABLE snapshot_hook (
    id  bigserial NOT NULL,
-    PRIMARY KEY (id)
-);
-
-CREATE TABLE pre_hook (
-   id  bigserial NOT NULL,
+   snapshot text NOT NULL,
     PRIMARY KEY (id)
 );
 
@@ -149,14 +144,9 @@ ALTER TABLE user_ref
    ADD CONSTRAINT UK_iajf018nptidl085leng237xl unique (user_ref_login);
 
 ALTER TABLE abstract_level
-   ADD CONSTRAINT FKfur32sh4k57g53x45w3d9mrv6
-   FOREIGN KEY (post_hook_id)
-   REFERENCES post_hook;
-
-ALTER TABLE abstract_level
    ADD CONSTRAINT FKh97onob6w74379lvjq8jjiy1b
-   FOREIGN KEY (pre_hook_id)
-   REFERENCES pre_hook;
+   FOREIGN KEY (snapshot_hook_id)
+   REFERENCES snapshot_hook;
 
 ALTER TABLE assessment_level
    ADD CONSTRAINT FK7jxec7ef838ovnrnfw73kh95
