@@ -39,11 +39,19 @@ public class SnapshotHook implements Serializable {
         this.abstractLevel = abstractLevel;
     }
 
+    public String getSnapshot() {
+        return snapshot;
+    }
+
+    public void setSnapshot(String snapshot) {
+        this.snapshot = snapshot;
+    }
+
     @Override
     public String toString() {
         return "SnapshotHook{" +
                 "id=" + id +
-                ", abstractLevel=" + abstractLevel +
+                ", snapshot=" + snapshot +
                 '}';
     }
 }

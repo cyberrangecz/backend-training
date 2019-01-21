@@ -72,6 +72,7 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
             Objects.requireNonNull(id);
             TrainingDefinitionDTO trainingDefinitionDTO = trainingDefinitionMapper.mapToDTO(trainingDefinitionService.findById(id));
             trainingDefinitionDTO.setLevels( gatherLevels(id));
+            LOG.info(trainingDefinitionDTO.getLevels().toString());
             return trainingDefinitionDTO;
         } catch (ServiceLayerException ex) {
             throw new FacadeLayerException(ex);
