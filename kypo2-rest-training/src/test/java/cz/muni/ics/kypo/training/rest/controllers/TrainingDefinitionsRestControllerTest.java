@@ -10,8 +10,7 @@ import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelUpdateDTO;
 import cz.muni.ics.kypo.training.api.dto.gamelevel.GameLevelUpdateDTO;
 import cz.muni.ics.kypo.training.api.dto.infolevel.InfoLevelUpdateDTO;
-import cz.muni.ics.kypo.training.api.dto.posthook.PostHookDTO;
-import cz.muni.ics.kypo.training.api.dto.prehook.PreHookDTO;
+import cz.muni.ics.kypo.training.api.dto.snapshothook.SnapshotHookDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionCreateDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionUpdateDTO;
@@ -59,9 +58,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = {InfoLevelMapperImpl.class, PreHookMapperImpl.class,
-        PostHookMapper.class, PostHookMapperImpl.class, TrainingDefinitionMapperImpl.class,
-        UserRefMapperImpl.class})
+@SpringBootTest(classes = {InfoLevelMapperImpl.class, SnapshotHookMapperImpl.class,
+        TrainingDefinitionMapperImpl.class, UserRefMapperImpl.class})
 public class TrainingDefinitionsRestControllerTest {
 
     private TrainingDefinitionsRestController trainingDefinitionsRestController;
@@ -221,8 +219,7 @@ public class TrainingDefinitionsRestControllerTest {
         abstractLevelDTO.setTitle("title");
         abstractLevelDTO.setMaxScore(1000);
         abstractLevelDTO.setNextLevel(5L);
-        abstractLevelDTO.setPreHook(new PreHookDTO());
-        abstractLevelDTO.setPostHook(new PostHookDTO());
+        abstractLevelDTO.setSnapshotHook(new SnapshotHookDTO());
 
         basicLevelInfoDTO = new BasicLevelInfoDTO();
         basicLevelInfoDTO.setId(1L);

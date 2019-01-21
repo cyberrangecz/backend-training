@@ -45,8 +45,8 @@ public class AssessmentLevelDTO extends AbstractLevelDTO {
 
     @Override
     public String toString() {
-        return "AssessmentLevelDTO [id=" + id + ", title=" + title + ", maxScore=" + maxScore + ", nextLevel=" + nextLevel + ", preHook="
-                + preHook + ", postHook=" + postHook + ", questions=" + questions + ", instructions=" + instructions + ", type="
+        return "AssessmentLevelDTO [id=" + id + ", title=" + title + ", maxScore=" + maxScore + ", nextLevel=" + nextLevel + ", snapshotHook="
+                + snapshotHook + ", questions=" + questions + ", instructions=" + instructions + ", type="
                 + assessmentType.name() + "]";
     }
 

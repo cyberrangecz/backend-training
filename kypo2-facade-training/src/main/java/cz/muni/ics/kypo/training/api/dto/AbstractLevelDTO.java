@@ -8,8 +8,7 @@ import cz.muni.ics.kypo.training.persistence.model.enums.LevelType;
 
 import java.util.Objects;
 
-import cz.muni.ics.kypo.training.api.dto.posthook.PostHookDTO;
-import cz.muni.ics.kypo.training.api.dto.prehook.PreHookDTO;
+import cz.muni.ics.kypo.training.api.dto.snapshothook.SnapshotHookDTO;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
@@ -28,8 +27,7 @@ public class AbstractLevelDTO {
     protected String title;
     protected int maxScore;
     protected Long nextLevel;
-    protected PreHookDTO preHook;
-    protected PostHookDTO postHook;
+    protected SnapshotHookDTO snapshotHook;
     protected LevelType levelType;
 
     @ApiModelProperty(value = "Main identifier of level.", example = "1")
@@ -68,20 +66,12 @@ public class AbstractLevelDTO {
         this.nextLevel = nextLevel;
     }
 
-    public PreHookDTO getPreHook() {
-        return preHook;
+    public SnapshotHookDTO getSnapshotHook() {
+        return snapshotHook;
     }
 
-    public void setPreHook(PreHookDTO preHook) {
-        this.preHook = preHook;
-    }
-
-    public PostHookDTO getPostHook() {
-        return postHook;
-    }
-
-    public void setPostHook(PostHookDTO postHook) {
-        this.postHook = postHook;
+    public void setSnapshotHook(SnapshotHookDTO snapshotHook) {
+        this.snapshotHook = snapshotHook;
     }
 
     @ApiModelProperty(value = "Type of the level.", example = "GAME")
@@ -112,8 +102,8 @@ public class AbstractLevelDTO {
 
     @Override
     public String toString() {
-        return "AbstractLevelDTO [id=" + id + ", title=" + title + ", maxScore=" + maxScore + ", nextLevel=" + nextLevel + ", preHook="
-                + preHook + ", postHook=" + postHook + "]";
+        return "AbstractLevelDTO [id=" + id + ", title=" + title + ", maxScore=" + maxScore + ", nextLevel=" + nextLevel +
+                ", snapshotHook=" + snapshotHook+ "]";
     }
 
 }
