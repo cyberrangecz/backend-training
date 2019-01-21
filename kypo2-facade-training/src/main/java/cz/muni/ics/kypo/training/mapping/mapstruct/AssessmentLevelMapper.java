@@ -16,7 +16,7 @@ import java.util.*;
 /**
  * @author Roman Oravec
  */
-@Mapper(componentModel = "spring", uses = {PostHookMapper.class, PreHookMapper.class})
+@Mapper(componentModel = "spring", uses = {SnapshotHookMapper.class})
 public interface AssessmentLevelMapper extends ParentMapper {
 
     AssessmentLevel mapToEntity(AssessmentLevelDTO dto);

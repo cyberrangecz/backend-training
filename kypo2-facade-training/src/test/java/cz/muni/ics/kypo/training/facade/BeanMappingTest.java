@@ -24,8 +24,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = {InfoLevelMapperImpl.class, PreHookMapperImpl.class,
-        PostHookMapper.class, PostHookMapperImpl.class, TrainingDefinitionMapperImpl.class,
+@SpringBootTest(classes = {InfoLevelMapperImpl.class, SnapshotHookMapperImpl.class, TrainingDefinitionMapperImpl.class,
         UserRefMapperImpl.class})
 public class BeanMappingTest {
 

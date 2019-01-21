@@ -36,10 +36,9 @@ import static org.junit.Assert.assertEquals;
 import static org.mockito.BDDMockito.*;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = {InfoLevelMapperImpl.class, PreHookMapperImpl.class,
-        PostHookMapper.class, PostHookMapperImpl.class, TrainingDefinitionMapperImpl.class,
-        UserRefMapperImpl.class, SandboxInstanceRefMapperImpl.class,
-        GameLevelMapperImpl.class, InfoLevelMapperImpl.class, AssessmentLevelMapperImpl.class, HintMapperImpl.class,
+@SpringBootTest(classes = {InfoLevelMapperImpl.class, SnapshotHookMapperImpl.class, TrainingDefinitionMapperImpl.class,
+        UserRefMapperImpl.class, SandboxInstanceRefMapperImpl.class, GameLevelMapperImpl.class,
+        InfoLevelMapperImpl.class, AssessmentLevelMapperImpl.class, HintMapperImpl.class,
         BasicLevelInfoMapperImpl.class, TrainingRunMapperImpl.class})
 public class TrainingRunFacadeTest {
 

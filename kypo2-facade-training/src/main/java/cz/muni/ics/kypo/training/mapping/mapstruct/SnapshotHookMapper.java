@@ -15,7 +15,7 @@ import java.util.*;
  */
 @Mapper(componentModel = "spring",
         nullValueCheckStrategy =  NullValueCheckStrategy.ALWAYS)
-public interface PreHookMapper extends ParentMapper {
+public interface SnapshotHookMapper extends ParentMapper {
 
     SnapshotHook mapToEntity(PreHookDTO dto);
 
