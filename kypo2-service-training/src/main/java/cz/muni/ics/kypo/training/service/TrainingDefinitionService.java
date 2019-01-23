@@ -4,6 +4,7 @@ import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.persistence.model.*;
 
+import org.apache.catalina.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -192,6 +193,50 @@ public interface TrainingDefinitionService {
      * @return UserRef with corresponding id
      * @throws ServiceLayerException if UserRef was not found
      */
-    UserRef findAuthorRefById(Long id) throws ServiceLayerException;
+    UserRef findUserRefById(Long id) throws ServiceLayerException;
+
+    /**
+     * Finds UserRef by login
+     *
+     * @param login of wanted UserRef
+     * @return UserRef with corresponding login
+     * @throws ServiceLayerException if UserRef was not found
+     */
+    UserRef findUserRefByLogin(String login) throws ServiceLayerException;
+
+    /**
+     * Find out if view group with given title already exists
+     *
+     * @param title of view group
+     * @return true if view group with given title is present, false otherwise
+     */
+    boolean isViewGroupAlreadyPresent(String title);
+
+    /**
+     * Finds ViewGroup by title
+     *
+     * @param title of wanted ViewGroup
+     * @return TDViewGroup with corresponding title
+     * @throws ServiceLayerException if UserRef was not found
+     */
+    TDViewGroup findTDViewGroupByTitle(String title);
+
+    /**
+     * Finds designers
+     * @return list of UserRefs which are designers
+     */
+    Page<UserRef> findDesigners();
+
+    /**
+     * Finds organizers
+     * @return list of UserRefs which are organizers
+     */
+    Page<UserRef> findOrganizers();
+
+    /**
+     * Finds participants
+     * @return list of UserRefs which are participants
+     */
+    Page<UserRef> findParticipants();
 
 }

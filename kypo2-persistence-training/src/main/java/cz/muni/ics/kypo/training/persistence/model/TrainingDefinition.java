@@ -29,14 +29,14 @@ public class TrainingDefinition implements Serializable {
     @Column(name = "state", length = 128, nullable = false)
     @Enumerated(EnumType.STRING)
     private TDState state;
-    @ManyToMany(fetch = FetchType.LAZY)
+    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     @JoinTable(name = "training_definition_user_ref",
             joinColumns = @JoinColumn(name = "training_definition_id"),
             inverseJoinColumns = @JoinColumn(name = "user_ref_id")
     )
     private Set<UserRef> authors = new HashSet<>();
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "td_view_group_id")
+    @OneToOne(fetch = FetchType.LAZY, orphanRemoval = true, optional = false, cascade = CascadeType.ALL)
+    @JoinColumn(name = "td_view_group_id", unique = true)
     private TDViewGroup tdViewGroup;
     @Column(name = "sandbox_definition_ref_id", nullable = false)
     private Long sandboxDefinitionRefId;
@@ -174,7 +174,6 @@ public class TrainingDefinition implements Serializable {
                 ", outcomes=" + Arrays.toString(outcomes) +
                 ", state=" + state +
                 ", authors=" + authors +
-                ", tdViewGroup=" + tdViewGroup +
                 ", sandboxDefinitionRefId=" + sandboxDefinitionRefId +
                 ", startingLevel=" + startingLevel +
                 ", showStepperBar=" + showStepperBar +

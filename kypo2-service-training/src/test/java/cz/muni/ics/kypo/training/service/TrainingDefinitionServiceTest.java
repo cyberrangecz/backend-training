@@ -70,6 +70,9 @@ public class TrainingDefinitionServiceTest {
     private TrainingInstanceRepository trainingInstanceRepository;
 
     @Mock
+    private TDViewGroupRepository viewGroupRepository;
+
+    @Mock
     private UserRefRepository authorRefRepository;
 
     private TrainingDefinition trainingDefinition1, trainingDefinition2, unreleasedDefinition, releasedDefinition, definitionWithoutLevels;
@@ -87,7 +90,7 @@ public class TrainingDefinitionServiceTest {
     public void init() {
         MockitoAnnotations.initMocks(this);
         trainingDefinitionService = new TrainingDefinitionServiceImpl(trainingDefinitionRepository, abstractLevelRepository,
-                infoLevelRepository, gameLevelRepository, assessmentLevelRepository, trainingInstanceRepository, authorRefRepository);
+                infoLevelRepository, gameLevelRepository, assessmentLevelRepository, trainingInstanceRepository, authorRefRepository, viewGroupRepository);
 
         parser = new JSONParser();
         try {

@@ -6,6 +6,7 @@ import java.util.Set;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
+import cz.muni.ics.kypo.training.api.dto.viewgroup.TDViewGroupCreateDTO;
 import cz.muni.ics.kypo.training.persistence.model.enums.TDState;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -23,8 +24,10 @@ public class TrainingDefinitionCreateDTO {
     private String[] outcomes;
     @NotNull(message = "{trainingdefinitioncreate.state.NotNull.message}")
     private TDState state;
-    @NotNull(message = "{trainingdefinitioncreate.autIds.NotNull.message}")
-    private Set<Long> autIds;
+    @NotNull(message = "{trainingdefinitioncreate.authorLogins.NotNull.message}")
+    private Set<String> authorLogins;
+    @NotNull(message = "{trainingdefinitioncreate.viewGroup.NotNull.message}")
+    private TDViewGroupCreateDTO tdViewGroup;
     @NotNull(message = "{trainingdefinitioncreate.showStepperBar.NotNull.message}")
     private boolean showStepperBar;
     private Long sandboxDefinitionRefId;
@@ -74,13 +77,22 @@ public class TrainingDefinitionCreateDTO {
         this.state = state;
     }
 
-    @ApiModelProperty(value = "References to the authors of the training definition.", required = true, example = "[1]")
-    public Set<Long> getAutIds() {
-        return autIds;
+    @ApiModelProperty(value = "References to the authors of the training definition.", required = true, example = "[johny]")
+    public Set<String> getAuthorLogins() {
+        return authorLogins;
     }
 
-    public void setAutIds(Set<Long> autIds) {
-        this.autIds = autIds;
+    public void setAuthorLogins(Set<String> authorLogins) {
+        this.authorLogins = authorLogins;
+    }
+
+    @ApiModelProperty(value = "Group of organizers who is allowed to see the training definition.", required = true)
+    public TDViewGroupCreateDTO getTdViewGroup() {
+        return tdViewGroup;
+    }
+
+    public void setTdViewGroup(TDViewGroupCreateDTO tdViewGroup) {
+        this.tdViewGroup = tdViewGroup;
     }
 
     @ApiModelProperty(value = "Sign if stepper bar should be displayed.", required = true, example = "true")
@@ -109,7 +121,7 @@ public class TrainingDefinitionCreateDTO {
                 ", prerequisities=" + Arrays.toString(prerequisities) +
                 ", outcomes=" + Arrays.toString(outcomes) +
                 ", state=" + state +
-                ", autIds=" + autIds +
+                ", authorLogins=" + authorLogins +
                 ", showStepperBar=" + showStepperBar +
                 ", sandboxDefinitionRefId=" + sandboxDefinitionRefId +
                 '}';

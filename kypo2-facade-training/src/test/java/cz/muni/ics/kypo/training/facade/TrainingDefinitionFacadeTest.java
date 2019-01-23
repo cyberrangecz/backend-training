@@ -9,6 +9,8 @@ import cz.muni.ics.kypo.training.api.dto.infolevel.InfoLevelUpdateDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionCreateDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionUpdateDTO;
+import cz.muni.ics.kypo.training.api.dto.viewgroup.TDViewGroupCreateDTO;
+import cz.muni.ics.kypo.training.api.dto.viewgroup.TDViewGroupUpdateDTO;
 import cz.muni.ics.kypo.training.exception.FacadeLayerException;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.facade.impl.TrainingDefinitionFacadeImpl;
@@ -45,7 +47,7 @@ import static org.mockito.BDDMockito.*;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = {InfoLevelMapperImpl.class, SnapshotHookMapperImpl.class, TrainingDefinitionMapperImpl.class,
-        UserRefMapperImpl.class, GameLevelMapperImpl.class, InfoLevelMapperImpl.class,
+        UserRefMapperImpl.class, GameLevelMapperImpl.class, InfoLevelMapperImpl.class, TDViewGroupMapperImpl.class,
         AssessmentLevelMapperImpl.class, HintMapperImpl.class, BasicLevelInfoMapperImpl.class})
 public class TrainingDefinitionFacadeTest {
 
@@ -82,6 +84,9 @@ public class TrainingDefinitionFacadeTest {
 
     private InfoLevel infoLevel;
     private InfoLevelUpdateDTO infoLevelUpdate;
+
+    private TDViewGroupCreateDTO tdViewGroupCreateDTO;
+    private TDViewGroupUpdateDTO tdViewGroupUpdateDTO;
 
     private UserRef authorRef;
 
@@ -139,22 +144,33 @@ public class TrainingDefinitionFacadeTest {
         trainingDefinition2.setState(TDState.UNRELEASED);
         trainingDefinition2.setStartingLevel(infoLevel.getId());
 
+        tdViewGroupUpdateDTO = new TDViewGroupUpdateDTO();
+        tdViewGroupUpdateDTO.setId(1L);
+        tdViewGroupUpdateDTO.setTitle("Title update");
+        tdViewGroupUpdateDTO.setOrganizerLogins(Set.of());
+
         trainingDefinitionUpdate = new TrainingDefinitionUpdateDTO();
-        trainingDefinitionUpdate.setId(4L);
+        trainingDefinitionUpdate.setId(1L);
         trainingDefinitionUpdate.setState(TDState.UNRELEASED);
+        trainingDefinitionUpdate.setTdViewGroup(tdViewGroupUpdateDTO);
 
         authorRef = new UserRef();
         authorRef.setUserRefLogin("author");
 
-        Set<Long> authorRefSet = new HashSet<>();
-        authorRefSet.add(1L);
+        tdViewGroupCreateDTO = new TDViewGroupCreateDTO();
+        tdViewGroupCreateDTO.setTitle("Title create");
+        tdViewGroupCreateDTO.setOrganizerLogins(Set.of());
+
+        Set<String> authorRefSet = new HashSet<>();
+        authorRefSet.add("author");
         trainingDefinitionCreate = new TrainingDefinitionCreateDTO();
         trainingDefinitionCreate.setDescription("TD desc");
         trainingDefinitionCreate.setOutcomes(new String[0]);
         trainingDefinitionCreate.setPrerequisities(new String[0]);
         trainingDefinitionCreate.setState(TDState.ARCHIVED);
         trainingDefinitionCreate.setTitle("TD some title");
-        trainingDefinitionCreate.setAutIds(authorRefSet);
+        trainingDefinitionCreate.setAuthorLogins(authorRefSet);
+        trainingDefinitionCreate.setTdViewGroup(tdViewGroupCreateDTO);
     }
 
     @Test
@@ -192,6 +208,11 @@ public class TrainingDefinitionFacadeTest {
 
     @Test
     public void updateTrainingDefinition() {
+        TDViewGroup viewGroup = new TDViewGroup();
+        viewGroup.setTitle("Title");
+        viewGroup.setTrainingDefinition(trainingDefinition1);
+        viewGroup.setId(1L);
+        given(trainingDefinitionService.findTDViewGroupByTitle(anyString())).willReturn(viewGroup);
         trainingDefinitionFacade.update(trainingDefinitionUpdate);
         then(trainingDefinitionService).should().update(trainingDefinitionMapper.mapUpdateToEntity(trainingDefinitionUpdate));
     }
@@ -204,6 +225,11 @@ public class TrainingDefinitionFacadeTest {
 
     @Test
     public void updateTrainingDefinitionWithFacadeLayerException() {
+        TDViewGroup viewGroup = new TDViewGroup();
+        viewGroup.setTitle("Title");
+        viewGroup.setTrainingDefinition(trainingDefinition1);
+        viewGroup.setId(1L);
+        given(trainingDefinitionService.findTDViewGroupByTitle(anyString())).willReturn(viewGroup);
         willThrow(ServiceLayerException.class).given(trainingDefinitionService)
                 .update(any(TrainingDefinition.class));
         thrown.expect(FacadeLayerException.class);
@@ -214,7 +240,7 @@ public class TrainingDefinitionFacadeTest {
     public void createTrainingDefinition() {
         given(trainingDefinitionService.create(trainingDefinitionMapper.mapCreateToEntity(trainingDefinitionCreate)))
                 .willReturn(trainingDefinitionMapper.mapCreateToEntity(trainingDefinitionCreate));
-        given(trainingDefinitionService.findAuthorRefById(anyLong())).willReturn(authorRef);
+        given(trainingDefinitionService.findUserRefByLogin(anyString())).willReturn(authorRef);
         trainingDefinitionFacade.create(trainingDefinitionCreate);
         then(trainingDefinitionService).should().create(trainingDefinitionMapper.mapCreateToEntity(trainingDefinitionCreate));
     }

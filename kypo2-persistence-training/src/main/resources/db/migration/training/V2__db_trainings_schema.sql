@@ -63,11 +63,13 @@ CREATE TABLE sandbox_instance_ref (
 
 CREATE TABLE td_view_group (
    id  bigserial NOT NULL,
+   title varchar(255) NOT NULL,
+   description text,
     PRIMARY KEY (id)
 );
 
 CREATE TABLE td_view_group_user_ref (
-   td_view_group_id int8 NOT NULL,
+    td_view_group_id int8 NOT NULL,
     user_ref_id int8 NOT NULL,
     PRIMARY KEY (td_view_group_id, user_ref_id)
 );
@@ -82,7 +84,7 @@ CREATE TABLE training_definition (
     starting_level int8,
     state varchar(128) NOT NULL,
     title varchar(255) NOT NULL,
-    td_view_group_id int8,
+    td_view_group_id int8 NOT NULL,
     PRIMARY KEY (id)
 );
 
@@ -142,6 +144,12 @@ ALTER TABLE training_run
 
 ALTER TABLE user_ref
    ADD CONSTRAINT UK_iajf018nptidl085leng237xl unique (user_ref_login);
+
+ALTER TABLE td_view_group
+   ADD CONSTRAINT UK_iajf018npqwdl085leng259xl unique (title);
+
+ALTER TABLE training_definition
+   ADD CONSTRAINT UK_iajf018npqbvl143leng259xl unique (td_view_group_id);
 
 ALTER TABLE abstract_level
    ADD CONSTRAINT FKh97onob6w74379lvjq8jjiy1b
