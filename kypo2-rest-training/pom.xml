@@ -20,22 +20,6 @@
         <skipDocs>false</skipDocs>
     </properties>
 
-    <pluginRepositories>
-        <pluginRepository>
-            <id>jcenter-snapshots</id>
-            <name>jcenter</name>
-            <url>http://oss.jfrog.org/artifactory/oss-snapshot-local/</url>
-        </pluginRepository>
-        <pluginRepository>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-            <id>jcenter-releases</id>
-            <name>jcenter</name>
-            <url>http://jcenter.bintray.com</url>
-        </pluginRepository>
-    </pluginRepositories>
-
     <developers>
         <developer>
             <name>Pavel Šeda</name>
@@ -48,6 +32,7 @@
             <timezone>CET/Central European Time - offset: UTC +1</timezone>
         </developer>
     </developers>
+
     <dependencies>
         <dependency>
             <groupId>cz.muni.ics.kypo</groupId>
@@ -126,6 +111,12 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/nl.jworks.markdown_to_asciidoc/markdown_to_asciidoc -->
+        <dependency>
+            <groupId>nl.jworks.markdown_to_asciidoc</groupId>
+            <artifactId>markdown_to_asciidoc</artifactId>
+            <version>1.0</version>
         </dependency>
     </dependencies>
 
