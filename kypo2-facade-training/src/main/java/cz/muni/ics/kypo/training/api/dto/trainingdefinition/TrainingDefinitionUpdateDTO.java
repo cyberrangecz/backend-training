@@ -7,6 +7,8 @@ import java.util.Set;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
+import cz.muni.ics.kypo.training.api.dto.viewgroup.TDViewGroupCreateDTO;
+import cz.muni.ics.kypo.training.api.dto.viewgroup.TDViewGroupUpdateDTO;
 import cz.muni.ics.kypo.training.persistence.model.enums.TDState;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -26,8 +28,10 @@ public class TrainingDefinitionUpdateDTO {
     private String[] outcomes;
     @NotNull(message = "{trainingdefinitionupdate.state.NotNull.message}")
     private TDState state;
-    @NotNull(message = "{trainingdefinitionupdate.autIds.NotNull.message}")
-    private Set<Long> autIds = new HashSet<>();
+    @NotNull(message = "{trainingdefinitioncreate.authorLogins.NotNull.message}")
+    private Set<String> authorLogins = new HashSet<>();
+    @NotNull(message = "{trainingdefinitionupdate.viewGroup.NotNull.message}")
+    private TDViewGroupUpdateDTO tdViewGroup;
     private Long sandboxDefinitionRefId;
     @NotNull(message = "{trainingdefinitionupdate.showStepperBar.NotNull.message}")
     private boolean showStepperBar;
@@ -86,13 +90,22 @@ public class TrainingDefinitionUpdateDTO {
         this.state = state;
     }
 
-    @ApiModelProperty(value = "References to the authors of the training definition.", required = true, example = "[1]")
-    public Set<Long> getAutIds() {
-        return autIds;
+    @ApiModelProperty(value = "References to the authors of the training definition.", required = true, example = "[john]")
+    public Set<String> getAuthorLogins() {
+        return authorLogins;
     }
 
-    public void setAutIds(Set<Long> autIds) {
-        this.autIds = autIds;
+    public void setAuthorLogins(Set<String> authorLogins) {
+        this.authorLogins = authorLogins;
+    }
+
+    @ApiModelProperty(value = "Group of organizers who is allowed to see the training definition.", required = true)
+    public TDViewGroupUpdateDTO getTdViewGroup() {
+        return tdViewGroup;
+    }
+
+    public void setTdViewGroup(TDViewGroupUpdateDTO tdViewGroup) {
+        this.tdViewGroup = tdViewGroup;
     }
 
     @ApiModelProperty(value = "Reference to the sandbox definition.", required = true, example = "1")
@@ -122,7 +135,7 @@ public class TrainingDefinitionUpdateDTO {
                 ", prerequisities=" + Arrays.toString(prerequisities) +
                 ", outcomes=" + Arrays.toString(outcomes) +
                 ", state=" + state +
-                ", autIds=" + autIds +
+                ", authorLogins=" + authorLogins +
                 ", sandboxDefinitionRefId=" + sandboxDefinitionRefId +
                 ", showStepperBar=" + showStepperBar +
                 '}';

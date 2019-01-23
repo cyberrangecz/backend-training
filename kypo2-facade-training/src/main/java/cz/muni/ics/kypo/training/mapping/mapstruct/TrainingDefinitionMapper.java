@@ -16,7 +16,7 @@ import java.util.*;
  * @author Roman Oravec & Pavel Seda
  */
 @Mapper(componentModel = "spring",
-        uses = {UserRefMapper.class},
+        uses = {UserRefMapper.class, TDViewGroupMapper.class},
         nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS)
 public interface TrainingDefinitionMapper extends ParentMapper {
 

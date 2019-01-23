@@ -1,6 +1,7 @@
 package cz.muni.ics.kypo.training.persistence.repository;
 
 import cz.muni.ics.kypo.training.persistence.config.PersistenceConfigTest;
+import cz.muni.ics.kypo.training.persistence.model.TDViewGroup;
 import cz.muni.ics.kypo.training.persistence.model.TrainingDefinition;
 import cz.muni.ics.kypo.training.persistence.model.TrainingInstance;
 import cz.muni.ics.kypo.training.persistence.model.enums.TDState;
@@ -37,6 +38,7 @@ public class TrainingInstanceRepositoryTest {
 
     private TrainingInstance trainingInstance1, trainingInstance2;
     private TrainingDefinition trainingDefinition;
+    private TDViewGroup tdViewGroup;
 
     @SpringBootApplication
     static class TestConfiguration {
@@ -44,10 +46,14 @@ public class TrainingInstanceRepositoryTest {
 
     @Before
     public void setUp() {
+        tdViewGroup = new TDViewGroup();
+        tdViewGroup.setTitle("title1");
+
         trainingDefinition = new TrainingDefinition();
         trainingDefinition.setSandboxDefinitionRefId(1L);
         trainingDefinition.setTitle("test");
         trainingDefinition.setState(TDState.RELEASED);
+        trainingDefinition.setTdViewGroup(tdViewGroup);
 
         trainingInstance1 = new TrainingInstance();
         trainingInstance2 = new TrainingInstance();

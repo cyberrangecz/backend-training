@@ -1,5 +1,6 @@
 package cz.muni.ics.kypo.training.persistence.repository;
 
+import cz.muni.ics.kypo.training.persistence.model.TDViewGroup;
 import cz.muni.ics.kypo.training.persistence.model.UserRef;
 import org.junit.Before;
 import org.junit.Test;
@@ -31,7 +32,8 @@ public class TrainingDefinitionRepositoryTest {
     private TrainingDefinitionRepository trainingDefinitionRepository;
 
     private TrainingDefinition trainingDefinition1, trainingDefinition2, trainingDefinition3;
-    private UserRef author1, author2;
+    private UserRef author1, author2, organizer1;
+    private TDViewGroup viewGroup1, viewGroup2;
     private Pageable pageable;
 
     @SpringBootApplication
@@ -55,6 +57,23 @@ public class TrainingDefinitionRepositoryTest {
         trainingDefinition3.setTitle("test");
         trainingDefinition3.setState(TDState.UNRELEASED);
 
+        viewGroup1 = new TDViewGroup();
+        viewGroup1.setTitle("title1");
+
+        viewGroup2 = new TDViewGroup();
+        viewGroup2.setTitle("title2");
+
+        organizer1 = new UserRef();
+        organizer1.setUserRefLogin("Organizer");
+
+        entityManager.persist(viewGroup1);
+        entityManager.persist(viewGroup2);
+        trainingDefinition1.setTdViewGroup(viewGroup1);
+        trainingDefinition2.setTdViewGroup(viewGroup2);
+
+        entityManager.persist(trainingDefinition1);
+        entityManager.persist(trainingDefinition2);
+
         pageable = PageRequest.of(0, 10);
     }
 
@@ -71,30 +90,37 @@ public class TrainingDefinitionRepositoryTest {
 
         trainingDefinition1.addAuthor(author1);
         trainingDefinition1.addAuthor(author2);
-        entityManager.persist(trainingDefinition1);
+        entityManager.merge(trainingDefinition1);
         trainingDefinition2.addAuthor(author1);
-        entityManager.persist(trainingDefinition2);
-        entityManager.persist(trainingDefinition3);
+        entityManager.merge(trainingDefinition2);
 
         List<TrainingDefinition> trainingDefinitions = trainingDefinitionRepository
                 .findAllByLoggedInUser("author1", pageable).getContent();
         assertTrue(trainingDefinitions.contains(trainingDefinition1));
         assertTrue(trainingDefinitions.contains(trainingDefinition2));
         assertEquals(2, trainingDefinitions.size());
-        System.out.println(author1.toString());
-        System.out.println(trainingDefinition1.toString());
     }
 
     @Test
     public void findAllBySandboxDefinitionRefId() {
-        entityManager.persist(trainingDefinition1);
-        entityManager.persist(trainingDefinition2);
-        entityManager.persist(trainingDefinition3);
-
         List<TrainingDefinition> trainingDefinitions = trainingDefinitionRepository
                 .findAllBySandBoxDefinitionRefId(1L, pageable).getContent();
         assertTrue(trainingDefinitions.contains(trainingDefinition1));
         assertTrue(trainingDefinitions.contains(trainingDefinition2));
+        assertEquals(2, trainingDefinitions.size());
+    }
+
+    @Test
+    public void findAllByViewGroup() {
+        entityManager.persist(trainingDefinition1);
+        entityManager.persist(trainingDefinition2);
+        entityManager.persist(organizer1);
+        viewGroup1.addOrganizer(organizer1);
+        viewGroup2.addOrganizer(organizer1);
+
+        List<TrainingDefinition> trainingDefinitions = trainingDefinitionRepository
+                .findAllByViewGroup("Organizer", pageable).getContent();
+        assertTrue(trainingDefinitions.contains(trainingDefinition1));
         assertEquals(2, trainingDefinitions.size());
     }
 

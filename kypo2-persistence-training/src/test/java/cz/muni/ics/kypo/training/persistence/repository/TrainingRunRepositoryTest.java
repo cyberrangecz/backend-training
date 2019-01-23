@@ -46,6 +46,7 @@ public class TrainingRunRepositoryTest {
     private TrainingDefinition trainingDefinition;
     private InfoLevel infoLevel;
     private UserRef participantRef;
+    private TDViewGroup tdViewGroup;
     private Pageable pageable;
     private Predicate predicate;
 
@@ -55,6 +56,8 @@ public class TrainingRunRepositoryTest {
 
     @Before
     public void init() {
+        tdViewGroup = new TDViewGroup();
+        tdViewGroup.setTitle("title1");
 
         sandboxInstanceRef1 = new SandboxInstanceRef();
         sandboxInstanceRef1.setSandboxInstanceRef(1L);
@@ -67,6 +70,7 @@ public class TrainingRunRepositoryTest {
         trainingDefinition.setState(TDState.ARCHIVED);
         trainingDefinition.setTitle("training definition title");
         trainingDefinition.setSandboxDefinitionRefId(1L);
+        trainingDefinition.setTdViewGroup(tdViewGroup);
 
         infoLevel = new InfoLevel();
         infoLevel.setTitle("infoLevel");

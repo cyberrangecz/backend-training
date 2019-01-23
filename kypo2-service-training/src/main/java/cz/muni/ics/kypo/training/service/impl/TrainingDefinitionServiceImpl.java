@@ -8,6 +8,7 @@ import com.github.fge.jsonschema.main.JsonSchemaFactory;
 import com.github.fge.jsonschema.main.JsonValidator;
 import com.google.gson.JsonObject;
 import com.querydsl.core.types.Predicate;
+import cz.muni.ics.kypo.commons.security.mapping.UserBasicInfoDTO;
 import cz.muni.ics.kypo.training.exceptions.ErrorCode;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.persistence.model.*;
@@ -15,19 +16,28 @@ import cz.muni.ics.kypo.training.persistence.model.enums.AssessmentType;
 import cz.muni.ics.kypo.training.persistence.model.enums.TDState;
 import cz.muni.ics.kypo.training.persistence.repository.*;
 import cz.muni.ics.kypo.training.service.TrainingDefinitionService;
+import org.apache.catalina.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
+import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -47,7 +57,8 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     private GameLevelRepository gameLevelRepository;
     private InfoLevelRepository infoLevelRepository;
     private AssessmentLevelRepository assessmentLevelRepository;
-    private UserRefRepository authorRefRepository;
+    private UserRefRepository userRefRepository;
+    private TDViewGroupRepository viewGroupRepository;
     private static final String ARCHIVED_OR_RELEASED = "Cannot edit released or archived training definition.";
     private static final String LEVEL_NOT_FOUND = "Level not found.";
 
@@ -55,19 +66,20 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     public TrainingDefinitionServiceImpl(TrainingDefinitionRepository trainingDefinitionRepository,
                                          AbstractLevelRepository abstractLevelRepository, InfoLevelRepository infoLevelRepository, GameLevelRepository gameLevelRepository,
                                          AssessmentLevelRepository assessmentLevelRepository, TrainingInstanceRepository trainingInstanceRepository,
-                                         UserRefRepository authorRefRepository) {
+                                         UserRefRepository userRefRepository, TDViewGroupRepository viewGroupRepository) {
         this.trainingDefinitionRepository = trainingDefinitionRepository;
         this.abstractLevelRepository = abstractLevelRepository;
         this.gameLevelRepository = gameLevelRepository;
         this.infoLevelRepository = infoLevelRepository;
         this.assessmentLevelRepository = assessmentLevelRepository;
         this.trainingInstanceRepository = trainingInstanceRepository;
-        this.authorRefRepository = authorRefRepository;
+        this.userRefRepository = userRefRepository;
+        this.viewGroupRepository = viewGroupRepository;
     }
 
     @Override
-    @PreAuthorize("hasAuthority('ADMINISTRATOR')" +
-            "or @securityService.isDesignerOfGivenTrainingDefinition(#id)")
+    @PreAuthorize("hasAuthority('ADMINISTRATOR')" + "or @securityService.isDesignerOfGivenTrainingDefinition(#id)" +
+            "or @securityService.isInViewGroup(#id)")
     public TrainingDefinition findById(Long id) {
         LOG.debug("findById({})", id);
         return trainingDefinitionRepository.findById(id).orElseThrow(
@@ -75,14 +87,24 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     }
 
     @Override
-    @PreAuthorize("hasAuthority('ADMINISTRATOR') or hasAuthority({T(cz.muni.ics.kypo.training.persistence.model.enums.RoleType).DESIGNER})")
+    @PreAuthorize("hasAuthority('ADMINISTRATOR') or hasAuthority({T(cz.muni.ics.kypo.training.persistence.model.enums.RoleType).DESIGNER}) or " +
+            "hasAuthority ({T(cz.muni.ics.kypo.training.persistence.model.enums.RoleType).ORGANIZER})")
     public Page<TrainingDefinition> findAll(Predicate predicate, Pageable pageable) {
         LOG.debug("findAllTrainingDefinitions({},{})", predicate, pageable);
         if (isAdmin()) {
             return trainingDefinitionRepository.findAll(predicate, pageable);
         }
-        return trainingDefinitionRepository.findAllByLoggedInUser(getSubOfLoggedInUser(), pageable);
+        List<TrainingDefinition> trainingDefinitions = new ArrayList<>();
+        if (isDesigner()) {
+            trainingDefinitions.addAll(trainingDefinitionRepository.findAllByLoggedInUser(getSubOfLoggedInUser(), pageable).getContent());
 
+        }
+        if(isOrganizer()) {
+            trainingDefinitions.addAll(trainingDefinitionRepository.findAllByViewGroup(getSubOfLoggedInUser(), pageable).getContent());
+
+        }
+        return new PageImpl<>(trainingDefinitions, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), pageable.getSort()),
+                trainingDefinitions.size());
     }
 
     private String getSubOfLoggedInUser() {
@@ -99,6 +121,22 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
         return false;
     }
 
+    private boolean isDesigner() {
+        OAuth2Authentication authentication = (OAuth2Authentication) SecurityContextHolder.getContext().getAuthentication();
+        for (GrantedAuthority gA : authentication.getUserAuthentication().getAuthorities()) {
+            if (gA.getAuthority().equals("DESIGNER")) return true;
+        }
+        return false;
+    }
+
+    private boolean isOrganizer() {
+        OAuth2Authentication authentication = (OAuth2Authentication) SecurityContextHolder.getContext().getAuthentication();
+        for (GrantedAuthority gA : authentication.getUserAuthentication().getAuthorities()) {
+            if (gA.getAuthority().equals("ORGANIZER")) return true;
+        }
+        return false;
+    }
+
     @Override
     @PreAuthorize("hasAuthority({'ADMINISTRATOR'}) or hasAuthority({T(cz.muni.ics.kypo.training.persistence.model.enums.RoleType).DESIGNER})")
     public TrainingDefinition create(TrainingDefinition trainingDefinition) {
@@ -107,16 +145,15 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
         String userSub = getSubOfLoggedInUser();
         TrainingDefinition tD = trainingDefinitionRepository.save(trainingDefinition);
 
-        Optional<UserRef> user = authorRefRepository.findUserByUserRefLogin(userSub);
+        Optional<UserRef> user = userRefRepository.findUserByUserRefLogin(userSub);
         if (user.isPresent()){
-            user.get().addTrainingDefinition(trainingDefinition);
             tD.addAuthor(user.get());
         } else{
             UserRef newUser = new UserRef();
             newUser.setUserRefLogin(userSub);
-            newUser.addTrainingDefinition(tD);
-            tD.addAuthor(authorRefRepository.save(newUser));
+            tD.addAuthor(userRefRepository.save(newUser));
         }
+
         LOG.info("Training definition with id: {} created.", trainingDefinition.getId());
         return trainingDefinitionRepository.save(tD);
     }
@@ -474,9 +511,44 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     }
 
     @Override
-    public UserRef findAuthorRefById(Long id) throws ServiceLayerException {
-        return authorRefRepository.findById(id).orElseThrow(
+    public UserRef findUserRefById(Long id) {
+        return userRefRepository.findById(id).orElseThrow(
                 () -> new ServiceLayerException("UserRef with id" + id + " not found.", ErrorCode.RESOURCE_NOT_FOUND));
+    }
+
+    @Override
+    public UserRef findUserRefByLogin(String login) {
+        return userRefRepository.findUserByUserRefLogin(login).orElseThrow(
+                () -> new ServiceLayerException("UserRef with login" + login + " not found.", ErrorCode.RESOURCE_NOT_FOUND));
+    }
+
+    @Override
+    public boolean isViewGroupAlreadyPresent(String title) {
+        return viewGroupRepository.existsTDViewGroupByTitle(title);
+    }
+
+    @Override
+    public TDViewGroup findTDViewGroupByTitle(String title) {
+        LOG.debug("findTDViewGroupByTitle({})", title);
+        Assert.notNull(title, "Input view group title must not be null.");
+        return viewGroupRepository.findByTitle(title).orElseThrow(() -> new ServiceLayerException
+                ("View group with title: " + title + " not found.", ErrorCode.RESOURCE_NOT_FOUND));
+    }
+
+    //TODO - implement these methods
+    @Override
+    public Page<UserRef> findDesigners() {
+        return null;
+    }
+
+    @Override
+    public Page<UserRef> findOrganizers() {
+        return null;
+    }
+
+    @Override
+    public Page<UserRef> findParticipants() {
+        return null;
     }
 
     private AbstractLevel findLastLevel(Long levelId) {

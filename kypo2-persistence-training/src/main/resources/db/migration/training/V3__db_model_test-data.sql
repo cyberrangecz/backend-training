@@ -5,6 +5,14 @@ INSERT INTO snapshot_hook(id, snapshot) VALUES (nextval('snapshot_hook_id_seq'),
 INSERT INTO snapshot_hook(id, snapshot) VALUES (nextval('snapshot_hook_id_seq'), 'Snapshot 5');
 INSERT INTO snapshot_hook(id, snapshot) VALUES (nextval('snapshot_hook_id_seq'), 'Snapshot 6');
 
+INSERT INTO td_view_group(id,title,description) VALUES (nextval('td_view_group_id_seq'), 'Group of definition 1', 'description1');
+INSERT INTO td_view_group(id,title,description) VALUES (nextval('td_view_group_id_seq'), 'Group of definition 2', 'description2');
+INSERT INTO td_view_group(id,title,description) VALUES (nextval('td_view_group_id_seq'), 'Group of definition 3', 'description3');
+INSERT INTO td_view_group(id,title,description) VALUES (nextval('td_view_group_id_seq'), 'Group of definition 4', 'description4');
+INSERT INTO td_view_group(id,title,description) VALUES (nextval('td_view_group_id_seq'), 'Group of definition 5', 'description5');
+INSERT INTO td_view_group(id,title,description) VALUES (nextval('td_view_group_id_seq'), 'Group of definition 6', 'description6');
+INSERT INTO td_view_group(id,title,description) VALUES (nextval('td_view_group_id_seq'), 'Group of definition 7', 'description7');
+
 INSERT INTO abstract_level(id, max_score, next_level, title, snapshot_hook_id) VALUES (nextval('abstract_level_id_seq'), 20, 7, 'Game Level1', 1);
 INSERT INTO abstract_level(id, max_score, next_level, title, snapshot_hook_id) VALUES (nextval('abstract_level_id_seq'), 55, 8, 'Game Level2', 4);
 INSERT INTO abstract_level(id, max_score, next_level, title, snapshot_hook_id) VALUES (nextval('abstract_level_id_seq'), 70, null, 'Game Level Test', 2);
@@ -539,10 +547,10 @@ INSERT INTO hint(id, content, title, hint_penalty, game_level_id) VALUES (nextva
 INSERT INTO hint(id, content, title, hint_penalty, game_level_id) VALUES (nextval('hint_id_seq'), 'Use <a href="https://google.com" target="_blank">Google</a>! There are definitely some interesting guides on the net.', 'Hint2', 5, 31);
 INSERT INTO hint(id, content, title, hint_penalty, game_level_id) VALUES (nextval('hint_id_seq'), 'Check this guide with a lot of great ideas: <a href="https://github.com/cermmik/security/blob/master/privilege_escalation_-_linux.md" target="_blank">https://github.com/cermmik/security/blob/master/privilege_escalation_-_linux.md</a>.', 'Hint3', 13, 31);
 
-INSERT INTO training_definition(id, description, outcomes, prerequisities, state, title, sandbox_definition_ref_id, starting_level, show_stepper_bar) VALUES (nextval('training_definition_id_seq'), 'Released training definition', null, null, 'RELEASED', 'TrainingDefinition1', 1, 4, true);
-INSERT INTO training_definition(id, description, outcomes, prerequisities, state, title, sandbox_definition_ref_id, starting_level, show_stepper_bar) VALUES (nextval('training_definition_id_seq'), 'Unreleased training definition', null, null, 'UNRELEASED', 'TrainingDefinition2', 2, 5, false);
-INSERT INTO training_definition(id, description, outcomes, prerequisities, state, title, sandbox_definition_ref_id, starting_level, show_stepper_bar) VALUES (nextval('training_definition_id_seq'), 'Released training definition2', null, null, 'RELEASED', 'TrainingDefinition2', 3, 6, true);
-INSERT INTO training_definition(id, description, outcomes, prerequisities, state, title, sandbox_definition_ref_id, starting_level, show_stepper_bar) VALUES (nextval('training_definition_id_seq'), 'Introduction
+INSERT INTO training_definition(id, description, outcomes, prerequisities, state, title, sandbox_definition_ref_id, starting_level, show_stepper_bar, td_view_group_id) VALUES (nextval('training_definition_id_seq'), 'Released training definition', null, null, 'RELEASED', 'TrainingDefinition1', 1, 4, true, 1);
+INSERT INTO training_definition(id, description, outcomes, prerequisities, state, title, sandbox_definition_ref_id, starting_level, show_stepper_bar, td_view_group_id) VALUES (nextval('training_definition_id_seq'), 'Unreleased training definition', null, null, 'UNRELEASED', 'TrainingDefinition2', 2, 5, false, 2);
+INSERT INTO training_definition(id, description, outcomes, prerequisities, state, title, sandbox_definition_ref_id, starting_level, show_stepper_bar, td_view_group_id) VALUES (nextval('training_definition_id_seq'), 'Released training definition2', null, null, 'RELEASED', 'TrainingDefinition2', 3, 6, true, 3);
+INSERT INTO training_definition(id, description, outcomes, prerequisities, state, title, sandbox_definition_ref_id, starting_level, show_stepper_bar, td_view_group_id) VALUES (nextval('training_definition_id_seq'), 'Introduction
 ============
 <p>
   You are <b>a long-term employee of Big Broker Inc.</b>, one of the biggest trading companies in the world. After so many years, you are one of the main stock traders. <b>Stock trading is your life!</b> Reliable computer and fast Internet connection are essential premises of your success. Nevertheless, a computer is just a powerful working tool for you. You don''t know much about the technology and "cyber-security" is a strange word only. <b>However, it will change very quickly...</b>
@@ -590,8 +598,8 @@ The game contains four levels. In each level, you will have to complete a specif
 
 <p style="margin-bottom: 4em;">
   If you are unable to complete a level, you can use a <b>hint</b> which will give a little help, but you will lose some points. After using all the hints, there is <b>help level</b> prepared. It''s a guided solution which will tell you exactly what to do. The last option is to skip level entirely by clicking on the skip level, but this is not recommended – you won''t be able to complete the next levels without performing tasks in the current one.
-</p>', null, null, 'RELEASED', 'CTF-1: No Secure Connection', null, 10, true);
-INSERT INTO training_definition(id, description, outcomes, prerequisities, state, title, sandbox_definition_ref_id, starting_level, show_stepper_bar) VALUES (nextval('training_definition_id_seq'), 'Introduction
+</p>', null, null, 'RELEASED', 'CTF-1: No Secure Connection', null, 10, true, 4);
+INSERT INTO training_definition(id, description, outcomes, prerequisities, state, title, sandbox_definition_ref_id, starting_level, show_stepper_bar, td_view_group_id) VALUES (nextval('training_definition_id_seq'), 'Introduction
 ============
 <p>
   The presidential election in Pilsneria is really close. There are some speculations, that one candidate, let''s call him <b>Frank</b> (his name has been carefully anonymized), evaded paying taxes by buying <b>stocks in Panama through BigBroker Inc.</b> Coincidentally, you are not really a fan of this politician and you think people should learn about his deeds. Therefore, you decided to get some evidence. <span style="color: #008000">Website of BigBroker seems safe, but is it?</span>
@@ -643,8 +651,8 @@ Rules
 
 <p style="margin-bottom: 4em;">
   <b> DO NOT USE SKIP LEVEL - HIGHER LEVELS CANNOT BE DONE WITHOUT COMPLETING PRECEDING LEVELS </b>
-</p>', null, null, 'RELEASED', 'CTF-2: Rigging the Election', null, 18, true);
-INSERT INTO training_definition(id, description, outcomes, prerequisities, state, title, sandbox_definition_ref_id, starting_level, show_stepper_bar) VALUES (nextval('training_definition_id_seq'), 'Introduction
+</p>', null, null, 'RELEASED', 'CTF-2: Rigging the Election', null, 18, true,5);
+INSERT INTO training_definition(id, description, outcomes, prerequisities, state, title, sandbox_definition_ref_id, starting_level, show_stepper_bar, td_view_group_id) VALUES (nextval('training_definition_id_seq'), 'Introduction
 ============
 <p style="margin-bottom: 2em">
   You are <b>a former employee of Big Broker Inc.</b> one of the biggest stock trading companies. Recently, although you have been working for them for ten years, you have been fired without giving any reason. But you know the reason very well... It happened because you refused a request of your boss to falsify earnings reports of <b>Pear Inc.</b> stocks. A week ago, you read in the newspapers that <b>Pear Inc. achieved record gains</b>, and thanks to that, the shareholders got a lot of money. You know it''s a big scam, and you have evidence of the manipulation of earnings reports! But what you do not know is <b>who is behind it?</b>
@@ -696,8 +704,8 @@ Rules
 
 <p style="margin-bottom: 4em;">
   <b> DO NOT USE SKIP LEVEL – HIGHER LEVELS CANNOT BE DONE WITHOUT COMPLETING PRECEDING LEVELS. </b>
-</p>', null, null, 'RELEASED', 'CTF-3: The Biggest Stock Scam Of All Time', null, 24, true);
-INSERT INTO training_definition(id, description, outcomes, prerequisities, state, title, sandbox_definition_ref_id, starting_level, show_stepper_bar) VALUES (nextval('training_definition_id_seq'), 'Definition with test assessments', null, null, 'RELEASED', 'TrainingDefinition1', null, 9, true);
+</p>', null, null, 'RELEASED', 'CTF-3: The Biggest Stock Scam Of All Time', null, 24, true, 6);
+INSERT INTO training_definition(id, description, outcomes, prerequisities, state, title, sandbox_definition_ref_id, starting_level, show_stepper_bar, td_view_group_id) VALUES (nextval('training_definition_id_seq'), 'Definition with test assessments', null, null, 'RELEASED', 'TrainingDefinition1', null, 9, true, 7);
 
 INSERT INTO training_instance(id, pool_size, training_definition_id, start_time, end_time, access_token, title) VALUES (nextval('training_instance_id_seq'), 5, 1, '2016-10-19 10:23:54+02', '2017-10-19 10:23:54+02', 'pass-1235', 'Concluded Instance');
 INSERT INTO training_instance(id, pool_size, training_definition_id, start_time, end_time, access_token, title) VALUES (nextval('training_instance_id_seq'), 8, 1, '2016-10-19 10:23:54+02', '2022-10-19 10:23:54+02', 'hello-6578', 'Current Instance');

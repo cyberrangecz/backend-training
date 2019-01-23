@@ -74,6 +74,14 @@ public class UserRef implements Serializable {
         this.trainingDefinitions.remove(trainingDefinition);
     }
 
+    public void addViewGroup(TDViewGroup viewGroup) {
+        this.tdViewGroups.add(viewGroup);
+    }
+
+    public void removeViewGroup(TDViewGroup viewGroup) {
+        this.tdViewGroups.remove(viewGroup);
+    }
+
     public Set<TDViewGroup> getTdViewGroups() {
         return Collections.unmodifiableSet(tdViewGroups);
     }
@@ -99,8 +107,7 @@ public class UserRef implements Serializable {
     public String toString() {
         return "UserRef{" +
                 "id=" + id +
-                ", userRefLogin='" + userRefLogin + '\'' +
-                ", tdViewGroups=" + tdViewGroups +
+                ", userRefLogin='" + userRefLogin + '\''+
                 '}';
     }
 }
