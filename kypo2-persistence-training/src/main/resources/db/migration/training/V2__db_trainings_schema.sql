@@ -99,6 +99,7 @@ CREATE TABLE training_instance (
     access_token varchar(255),
     end_time timestamp NOT NULL,
     pool_size int4 NOT NULL,
+    pool_id bigserial,
     start_time timestamp NOT NULL,
     title varchar(255) NOT NULL,
     training_definition_id int8,
@@ -150,6 +151,10 @@ ALTER TABLE td_view_group
 
 ALTER TABLE training_definition
    ADD CONSTRAINT UK_iajf018npqbvl143leng259xl unique (td_view_group_id);
+
+ALTER TABLE training_instance
+   ADD CONSTRAINT UK_iajf018nvcwdl452leng079xl unique (pool_id);
+
 
 ALTER TABLE abstract_level
    ADD CONSTRAINT FKh97onob6w74379lvjq8jjiy1b

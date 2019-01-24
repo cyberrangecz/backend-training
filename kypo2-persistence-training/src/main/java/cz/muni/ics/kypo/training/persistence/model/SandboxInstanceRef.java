@@ -49,7 +49,6 @@ public class SandboxInstanceRef implements Serializable {
         return "SandboxInstanceRef{" +
                 "id=" + id +
                 ", sandboxInstanceRefId=" + sandboxInstanceRefId +
-                ", trainingInstance=" + trainingInstance +
                 '}';
     }
 }

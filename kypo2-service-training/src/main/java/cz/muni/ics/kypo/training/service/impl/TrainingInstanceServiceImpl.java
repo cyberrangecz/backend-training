@@ -4,30 +4,28 @@ import com.mysema.commons.lang.Assert;
 import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.training.exceptions.ErrorCode;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
-import cz.muni.ics.kypo.training.persistence.model.AccessToken;
-import cz.muni.ics.kypo.training.persistence.model.TrainingInstance;
-import cz.muni.ics.kypo.training.persistence.model.TrainingRun;
-import cz.muni.ics.kypo.training.persistence.model.UserRef;
+import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.repository.AccessTokenRepository;
 import cz.muni.ics.kypo.training.persistence.repository.TrainingInstanceRepository;
 import cz.muni.ics.kypo.training.persistence.repository.TrainingRunRepository;
 import cz.muni.ics.kypo.training.persistence.repository.UserRefRepository;
 import cz.muni.ics.kypo.training.service.TrainingInstanceService;
+import cz.muni.ics.kypo.training.utils.SandboxInfo;
+import cz.muni.ics.kypo.training.utils.SandboxPoolInfo;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -41,8 +39,10 @@ import org.springframework.web.client.RestTemplate;
 public class TrainingInstanceServiceImpl implements TrainingInstanceService {
 
     private static final Logger LOG = LoggerFactory.getLogger(TrainingInstanceServiceImpl.class);
-    @Value("${openstack-server.uri}")
-    private String openstackServerURI;
+    @Value("${openstack-server.url}")
+    private String kypoOpenStackURI;
+    private static final String CREATE_POOL = "/pools/";
+
 
     private TrainingInstanceRepository trainingInstanceRepository;
     private TrainingRunRepository trainingRunRepository;
@@ -145,14 +145,32 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
     @Override
     @PreAuthorize("hasAuthority('ADMINISTRATOR')" +
             "or @securityService.isOrganizeOfGivenTrainingInstance(#instanceId)")
-    public ResponseEntity<Void> allocateSandboxes(Long instanceId) {
+    public void allocateSandboxes(Long instanceId) {
         LOG.debug("allocateSandboxes({})", instanceId);
-        HttpHeaders httpHeaders = new HttpHeaders();
         TrainingInstance trainingInstance = findById(instanceId);
-        int count = trainingInstance.getPoolSize();
-        Long sandboxId = trainingInstance.getTrainingDefinition().getSandboxDefinitionRefId();
-        String url = "kypo-openstack/api/v1/sandbox-definitions/" + sandboxId + "/build/" + count;
-        return restTemplate.exchange(openstackServerURI + url, HttpMethod.POST, new HttpEntity<>(httpHeaders), Void.class);
+
+        //Create pool with given size
+        HttpHeaders httpHeaders = new HttpHeaders();
+        httpHeaders.setContentType(MediaType.APPLICATION_JSON);
+        String requestJson = "{\"definition\": " + trainingInstance.getTrainingDefinition().getSandboxDefinitionRefId() +
+                ", \"max_size\": " + trainingInstance.getPoolSize() + "}";
+        ResponseEntity<SandboxPoolInfo> poolResponse = restTemplate.exchange(kypoOpenStackURI + CREATE_POOL, HttpMethod.POST, new HttpEntity<>(requestJson, httpHeaders), SandboxPoolInfo.class);
+        if(poolResponse.getStatusCode().isError() || poolResponse.getBody() == null) {
+            throw new ServiceLayerException("Error from openstack while creating pool.", ErrorCode.UNEXPECTED_ERROR);
+        }
+        trainingInstance.setPoolId(poolResponse.getBody().getId());
+
+        //Allocate sandboxes in pool
+        ResponseEntity<List<SandboxInfo>> sandboxResponse = restTemplate.exchange(kypoOpenStackURI + "/pools/" + poolResponse.getBody().getId() + "/", HttpMethod.POST, new HttpEntity<>(httpHeaders), new ParameterizedTypeReference<List<SandboxInfo>>() {});
+        if(sandboxResponse.getStatusCode().isError() || sandboxResponse.getBody() == null) {
+            throw new ServiceLayerException("Error from openstack while allocate sandboxes", ErrorCode.UNEXPECTED_ERROR);
+        }
+        for (SandboxInfo sandboxInfo : sandboxResponse.getBody()) {
+            SandboxInstanceRef s = new SandboxInstanceRef();
+            s.setSandboxInstanceRef(sandboxInfo.getId());
+            trainingInstance.addSandboxInstanceRef(s);
+        }
+
     }
 
     @Override

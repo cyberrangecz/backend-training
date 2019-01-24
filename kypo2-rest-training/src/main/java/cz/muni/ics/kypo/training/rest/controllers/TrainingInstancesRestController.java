@@ -23,6 +23,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.querydsl.binding.QuerydslPredicate;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.MultiValueMap;
@@ -214,9 +215,10 @@ public class TrainingInstancesRestController {
             @ApiParam(value = "Id of training instance for which sandboxes are allocated")
             @PathVariable(value = "instanceId") Long instanceId) {
         try {
-            return trainingInstanceFacade.allocateSandboxes(instanceId);
+            trainingInstanceFacade.allocateSandboxes(instanceId);
+            return new ResponseEntity<>(HttpStatus.OK);
         } catch (FacadeLayerException ex) {
-            throw new ResourceNotFoundException(ex.getLocalizedMessage());
+            throw ExceptionSorter.throwException(ex);
         }
     }
 
