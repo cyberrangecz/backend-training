@@ -112,12 +112,6 @@
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
-        <!-- https://mvnrepository.com/artifact/nl.jworks.markdown_to_asciidoc/markdown_to_asciidoc -->
-        <dependency>
-            <groupId>nl.jworks.markdown_to_asciidoc</groupId>
-            <artifactId>markdown_to_asciidoc</artifactId>
-            <version>1.0</version>
-        </dependency>
     </dependencies>
 
     <build>
@@ -232,7 +226,6 @@
                                 <icons>font</icons>
                                 <pagenums/>
                                 <toc/>
-                                <!--<stylesheet>./css/asciidoctor.css</stylesheet>-->
                                 <idprefix/>
                                 <idseparator>-</idseparator>
                                 <sectnums>true</sectnums>
