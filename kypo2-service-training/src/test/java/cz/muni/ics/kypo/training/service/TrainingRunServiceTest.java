@@ -10,8 +10,8 @@ import cz.muni.ics.kypo.training.persistence.model.enums.AssessmentType;
 import cz.muni.ics.kypo.training.persistence.model.enums.TDState;
 import cz.muni.ics.kypo.training.persistence.model.enums.TRState;
 import cz.muni.ics.kypo.training.persistence.repository.*;
-import cz.muni.ics.kypo.training.persistence.utils.SandboxInfo;
 import cz.muni.ics.kypo.training.service.impl.TrainingRunServiceImpl;
+import cz.muni.ics.kypo.training.utils.SandboxInfo;
 import org.json.simple.parser.ParseException;
 import org.junit.*;
 import org.junit.rules.ExpectedException;
@@ -19,7 +19,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
-import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -180,7 +179,7 @@ public class TrainingRunServiceTest {
 
         sandboxInfo = new SandboxInfo();
         sandboxInfo.setId(7L);
-        sandboxInfo.setState("READY");
+        sandboxInfo.setStatus("READY");
 
         assessmentLevel = new AssessmentLevel();
         assessmentLevel.setId(3L);

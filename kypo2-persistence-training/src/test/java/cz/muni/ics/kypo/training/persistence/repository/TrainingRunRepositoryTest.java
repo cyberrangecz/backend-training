@@ -133,7 +133,7 @@ public class TrainingRunRepositoryTest {
     @Test
     public void findAll() {
         List<TrainingRun> expectedTrainingRuns = Arrays.asList(trainingRun1, trainingRun2);
-        expectedTrainingRuns.stream().forEach(t -> entityManager.persist(t));
+        expectedTrainingRuns.forEach(t -> entityManager.persist(t));
         List<TrainingRun> resultTrainingRuns = trainingRunRepository.findAll();
         assertNotNull(resultTrainingRuns);
         assertEquals(expectedTrainingRuns, resultTrainingRuns);

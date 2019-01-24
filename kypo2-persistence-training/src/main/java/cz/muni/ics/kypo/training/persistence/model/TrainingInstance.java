@@ -27,6 +27,8 @@ public class TrainingInstance implements Serializable {
     private String title;
     @Column(name = "pool_size", nullable = false)
     private int poolSize;
+    @Column(name = "pool_id")
+    private Long poolId;
     @Column(name = "access_token", nullable = false, unique = true)
     private String accessToken;
     @ManyToOne(fetch = FetchType.LAZY)
@@ -38,7 +40,7 @@ public class TrainingInstance implements Serializable {
     )
     private Set<UserRef> organizers = new HashSet<>();
     @OneToMany(fetch = FetchType.LAZY, orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "trainingInstance")
-    private Set<SandboxInstanceRef> sandboxInstanceRef = new HashSet<>();
+    private Set<SandboxInstanceRef> sandboxInstanceRefs = new HashSet<>();
 
     public Long getId() {
         return id;
@@ -88,6 +90,14 @@ public class TrainingInstance implements Serializable {
         this.poolSize = poolSize;
     }
 
+    public Long getPoolId() {
+        return poolId;
+    }
+
+    public void setPoolId(Long poolId) {
+        this.poolId = poolId;
+    }
+
     public TrainingDefinition getTrainingDefinition() {
         return trainingDefinition;
     }
@@ -105,11 +115,16 @@ public class TrainingInstance implements Serializable {
     }
 
     public Set<SandboxInstanceRef> getSandboxInstanceRefs() {
-        return Collections.unmodifiableSet(sandboxInstanceRef);
+        return Collections.unmodifiableSet(sandboxInstanceRefs);
     }
 
-    public void setSandboxInstanceRefs(Set<SandboxInstanceRef> sandboxInstanceRef) {
-        this.sandboxInstanceRef = sandboxInstanceRef;
+    public void setSandboxInstanceRefs(Set<SandboxInstanceRef> sandboxInstanceRefs) {
+        this.sandboxInstanceRefs = sandboxInstanceRefs;
+    }
+
+    public void addSandboxInstanceRef(SandboxInstanceRef sandboxInstanceRef) {
+        this.sandboxInstanceRefs.add(sandboxInstanceRef);
+        sandboxInstanceRef.setTrainingInstance(this);
     }
 
     @Override
@@ -145,7 +160,7 @@ public class TrainingInstance implements Serializable {
                 ", accessToken='" + accessToken + '\'' +
                 ", trainingDefinition=" + trainingDefinition +
                 ", organizers=" + organizers +
-                ", sandboxInstanceRef=" + sandboxInstanceRef +
+                ", sandboxInstanceRefs=" + sandboxInstanceRefs +
                 '}';
     }
 }

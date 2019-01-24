@@ -65,7 +65,7 @@ public interface TrainingInstanceService {
      * @param instanceId of training instance
      * @throws ServiceLayerException if instance is not found
      */
-    ResponseEntity<Void> allocateSandboxes(Long instanceId);
+    void allocateSandboxes(Long instanceId);
 
     /**
      * Finds all Training Runs of specific Training Instance.

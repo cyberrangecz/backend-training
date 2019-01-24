@@ -118,6 +118,9 @@ user-and-group-server.uri={URI}, e.g., http://localhost:8081/kypo2-rest-user-and
 # calling openstack project
 openstack-server.uri={URI}, e.g., http://147.251.55.18:8081/kypo2-openstack/api/v1 
 
+# calling kypo2-openstack
+openstack-server.url={openstack URI}, e.g., http://localhost:8081/kypo2-openstack/api/v1
+
 # Elasticsearch
 elasticsearch.ipaddress=localhost
 elasticsearch.protocol=http

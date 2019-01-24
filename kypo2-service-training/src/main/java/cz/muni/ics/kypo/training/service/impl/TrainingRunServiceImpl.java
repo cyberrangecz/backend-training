@@ -18,8 +18,8 @@ import cz.muni.ics.kypo.training.persistence.repository.*;
 import cz.muni.ics.kypo.training.service.TrainingRunService;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.model.enums.TRState;
-import cz.muni.ics.kypo.training.persistence.utils.SandboxInfo;
 import cz.muni.ics.kypo.training.utils.AssessmentUtil;
+import cz.muni.ics.kypo.training.utils.SandboxInfo;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -40,7 +40,6 @@ import org.springframework.web.client.RestTemplate;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * @author Dominik Pilar (445537)
@@ -50,10 +49,10 @@ public class TrainingRunServiceImpl implements TrainingRunService {
 
     private static final Logger LOG = LoggerFactory.getLogger(TrainingRunServiceImpl.class);
     private static final String MUST_NOT_BE_NULL = "Input training run id must not be null.";
+    @Value("${openstack-server.url}")
+    private String kypoOpenStackURI;
+    private static final String SANDBOX_INFO_ENDPOINT = "/pools/{id}/sandboxes";
 
-    private static final String SANDBOX_INFO_ENDPOINT = "/sandboxes?ids={ids}";
-    @Value("${openstack-server.uri}")
-    private String openstackServerURI;
 
     private TrainingRunRepository trainingRunRepository;
     private AbstractLevelRepository abstractLevelRepository;
@@ -180,9 +179,12 @@ public class TrainingRunServiceImpl implements TrainingRunService {
         List<TrainingInstance> trainingInstances = trainingInstanceRepository.findAllByStartTimeAfterAndEndTimeBefore(LocalDateTime.now());
         for (TrainingInstance trainingInstance : trainingInstances) {
             if (trainingInstance.getAccessToken().equals(accessToken)) {
+                if(trainingInstance.getPoolId() == null) {
+                    throw new ServiceLayerException("At first designer must allocate sandboxes for training instance.", ErrorCode.RESOURCE_CONFLICT);
+                }
                 Set<SandboxInstanceRef> freeSandboxes = trainingRunRepository.findFreeSandboxesOfTrainingInstance(trainingInstance.getId());
                 if (!freeSandboxes.isEmpty()) {
-                    SandboxInstanceRef sandboxInstanceRef = getReadySandboxInstanceRef(freeSandboxes);
+                    SandboxInstanceRef sandboxInstanceRef = getReadySandboxInstanceRef(freeSandboxes, trainingInstance.getPoolId());
                     AbstractLevel al = abstractLevelRepository.findById(trainingInstance.getTrainingDefinition().getStartingLevel()).orElseThrow(() -> new ServiceLayerException("No starting level available for this training definition", ErrorCode.RESOURCE_NOT_FOUND));
                     TrainingRun trainingRun = getNewTrainingRun(al, getSubOfLoggedInUser(), trainingInstance, TRState.ALLOCATED, LocalDateTime.now(), trainingInstance.getEndTime(), sandboxInstanceRef);
                     trainingRun = create(trainingRun);
@@ -232,27 +234,23 @@ public class TrainingRunServiceImpl implements TrainingRunService {
         return tR;
     }
 
-    private SandboxInstanceRef getReadySandboxInstanceRef(Set<SandboxInstanceRef> sandboxInstancePool) {
-        List<Long> idsOfNotAllocatedSandboxes = new ArrayList<>();
-        for (SandboxInstanceRef sIR : sandboxInstancePool) {
-            idsOfNotAllocatedSandboxes.add(sIR.getSandboxInstanceRef());
-        }
+    private SandboxInstanceRef getReadySandboxInstanceRef(Set<SandboxInstanceRef> sandboxInstancePool, Long poolId) {
+        List<Long> idsOfUnoccupiedSandboxes = new ArrayList<>();
+        sandboxInstancePool.forEach(sIR -> idsOfUnoccupiedSandboxes.add(sIR.getSandboxInstanceRef()));
 
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.set("Accept", MediaType.APPLICATION_JSON_VALUE);
-        String listOfIds = idsOfNotAllocatedSandboxes.stream().map(Object::toString).collect(Collectors.joining(","));
-        ResponseEntity<List<SandboxInfo>> response = restTemplate.exchange(openstackServerURI + SANDBOX_INFO_ENDPOINT, HttpMethod.GET, new HttpEntity<>(httpHeaders), new ParameterizedTypeReference<List<SandboxInfo>>() {
-        }, listOfIds);
-        if (response.getStatusCode().isError()) {
+        ResponseEntity<List<SandboxInfo>> response = restTemplate.exchange(kypoOpenStackURI + "/pools/" + poolId + "/sandboxes/", HttpMethod.GET, new HttpEntity<>(httpHeaders),
+                new ParameterizedTypeReference<List<SandboxInfo>>() {});
+        if (response.getStatusCode().isError() || response.getBody() == null) {
             throw new ServiceLayerException("Some error occurred during getting info about sandboxes.", ErrorCode.UNEXPECTED_ERROR);
         }
         List<SandboxInfo> sandboxInfoList = response.getBody();
-        sandboxInfoList.removeIf(s -> !s.getState().equals("READY"));
+        sandboxInfoList.removeIf(s -> !s.getStatus().contains("COMPLETE") || !idsOfUnoccupiedSandboxes.contains(s.getId()));
         if (sandboxInfoList.isEmpty()) {
             throw new ServiceLayerException("There is no available sandbox, wait a minute and try again.", ErrorCode.NO_AVAILABLE_SANDBOX);
         } else {
-            sandboxInstancePool.removeIf(sandboxInstanceRef -> sandboxInstanceRef.getSandboxInstanceRef() != sandboxInfoList.get(0).getId());
-            return sandboxInstancePool.iterator().next();
+            return sandboxInstancePool.stream().filter(sir -> sir.getSandboxInstanceRef().equals(sandboxInfoList.get(0).getId())).findFirst().get();
         }
     }
 

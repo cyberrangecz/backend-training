@@ -63,7 +63,7 @@ public interface TrainingInstanceFacade {
      * @return
      * @throws FacadeLayerException
      */
-    ResponseEntity<Void> allocateSandboxes(Long instanceId);
+    void allocateSandboxes(Long instanceId);
 
     /**
      * Finds all Training Runs by specific Training Instance.

@@ -117,10 +117,10 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
 
     @Override
     @TransactionalWO
-    public ResponseEntity<Void> allocateSandboxes(Long instanceId) {
+    public void allocateSandboxes(Long instanceId) {
         LOG.debug("allocateSandboxes({})", instanceId);
         try {
-            return trainingInstanceService.allocateSandboxes(instanceId);
+            trainingInstanceService.allocateSandboxes(instanceId);
         } catch (ServiceLayerException ex) {
             throw new FacadeLayerException(ex.getLocalizedMessage());
         }
