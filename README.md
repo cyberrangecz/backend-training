@@ -115,6 +115,9 @@ server.servlet.context-path=/{context path for service}, e.g., /kypo2-rest-train
 # calling user-and-group project
 user-and-group-server.uri={URI}, e.g., http://localhost:8081/kypo2-rest-user-and-group/api/v1
 
+# calling openstack project
+openstack-server.uri={URI}, e.g., http://147.251.55.18:8081/kypo2-openstack/api/v1 
+
 # Elasticsearch
 elasticsearch.ipaddress=localhost
 elasticsearch.protocol=http

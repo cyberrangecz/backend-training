@@ -41,8 +41,8 @@ import org.springframework.web.client.RestTemplate;
 public class TrainingInstanceServiceImpl implements TrainingInstanceService {
 
     private static final Logger LOG = LoggerFactory.getLogger(TrainingInstanceServiceImpl.class);
-    @Value("${server.url}")
-    private String serverUrl;
+    @Value("${openstack-server.uri}")
+    private String openstackServerURI;
 
     private TrainingInstanceRepository trainingInstanceRepository;
     private TrainingRunRepository trainingRunRepository;
@@ -152,7 +152,7 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
         int count = trainingInstance.getPoolSize();
         Long sandboxId = trainingInstance.getTrainingDefinition().getSandboxDefinitionRefId();
         String url = "kypo-openstack/api/v1/sandbox-definitions/" + sandboxId + "/build/" + count;
-        return restTemplate.exchange(serverUrl + url, HttpMethod.POST, new HttpEntity<>(httpHeaders), Void.class);
+        return restTemplate.exchange(openstackServerURI + url, HttpMethod.POST, new HttpEntity<>(httpHeaders), Void.class);
     }
 
     @Override

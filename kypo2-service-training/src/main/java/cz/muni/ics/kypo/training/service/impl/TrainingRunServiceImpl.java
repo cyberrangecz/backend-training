@@ -49,10 +49,11 @@ import java.util.stream.Collectors;
 public class TrainingRunServiceImpl implements TrainingRunService {
 
     private static final Logger LOG = LoggerFactory.getLogger(TrainingRunServiceImpl.class);
-    private static final String SANDBOX_INFO_ENDPOINT = "kypo-openstack/api/v1/sandboxes?ids={ids}";
     private static final String MUST_NOT_BE_NULL = "Input training run id must not be null.";
-    @Value("${server.url}")
-    private String serverUrl;
+
+    private static final String SANDBOX_INFO_ENDPOINT = "/sandboxes?ids={ids}";
+    @Value("${openstack-server.uri}")
+    private String openstackServerURI;
 
     private TrainingRunRepository trainingRunRepository;
     private AbstractLevelRepository abstractLevelRepository;
@@ -240,7 +241,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.set("Accept", MediaType.APPLICATION_JSON_VALUE);
         String listOfIds = idsOfNotAllocatedSandboxes.stream().map(Object::toString).collect(Collectors.joining(","));
-        ResponseEntity<List<SandboxInfo>> response = restTemplate.exchange(serverUrl + SANDBOX_INFO_ENDPOINT, HttpMethod.GET, new HttpEntity<>(httpHeaders), new ParameterizedTypeReference<List<SandboxInfo>>() {
+        ResponseEntity<List<SandboxInfo>> response = restTemplate.exchange(openstackServerURI + SANDBOX_INFO_ENDPOINT, HttpMethod.GET, new HttpEntity<>(httpHeaders), new ParameterizedTypeReference<List<SandboxInfo>>() {
         }, listOfIds);
         if (response.getStatusCode().isError()) {
             throw new ServiceLayerException("Some error occurred during getting info about sandboxes.", ErrorCode.UNEXPECTED_ERROR);
