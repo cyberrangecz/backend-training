@@ -25,6 +25,7 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.data.domain.Page;
@@ -59,19 +60,20 @@ public class TrainingRunServiceImpl implements TrainingRunService {
     private TrainingInstanceRepository trainingInstanceRepository;
     private UserRefRepository participantRefRepository;
     private HintRepository hintRepository;
-    private RestTemplate restTemplate;
     private AuditService auditService;
+
+    @Autowired
+    private RestTemplate restTemplate;
 
     @Autowired
     public TrainingRunServiceImpl(TrainingRunRepository trainingRunRepository, AbstractLevelRepository abstractLevelRepository,
                                   TrainingInstanceRepository trainingInstanceRepository, UserRefRepository participantRefRepository,
-                                  RestTemplate restTemplate, HintRepository hintRepository, AuditService auditService) {
+                                  HintRepository hintRepository, AuditService auditService) {
         this.trainingRunRepository = trainingRunRepository;
         this.abstractLevelRepository = abstractLevelRepository;
         this.trainingInstanceRepository = trainingInstanceRepository;
         this.participantRefRepository = participantRefRepository;
         this.hintRepository = hintRepository;
-        this.restTemplate = restTemplate;
         this.auditService = auditService;
     }
 

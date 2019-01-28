@@ -3,6 +3,7 @@ package cz.muni.ics.kypo.training.service;
 import com.google.gson.JsonObject;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.PathBuilder;
+import cz.muni.ics.kypo.commons.persistence.repository.IDMGroupRefRepository;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.model.enums.TDState;
@@ -73,6 +74,10 @@ public class TrainingDefinitionServiceTest {
     private TDViewGroupRepository viewGroupRepository;
 
     @Mock
+    private IDMGroupRefRepository idmGroupRefRepository;
+
+
+    @Mock
     private UserRefRepository authorRefRepository;
 
     private TrainingDefinition trainingDefinition1, trainingDefinition2, unreleasedDefinition, releasedDefinition, definitionWithoutLevels;
@@ -90,7 +95,8 @@ public class TrainingDefinitionServiceTest {
     public void init() {
         MockitoAnnotations.initMocks(this);
         trainingDefinitionService = new TrainingDefinitionServiceImpl(trainingDefinitionRepository, abstractLevelRepository,
-                infoLevelRepository, gameLevelRepository, assessmentLevelRepository, trainingInstanceRepository, authorRefRepository, viewGroupRepository);
+                infoLevelRepository, gameLevelRepository, assessmentLevelRepository, trainingInstanceRepository, authorRefRepository,
+                viewGroupRepository, idmGroupRefRepository);
 
         parser = new JSONParser();
         try {

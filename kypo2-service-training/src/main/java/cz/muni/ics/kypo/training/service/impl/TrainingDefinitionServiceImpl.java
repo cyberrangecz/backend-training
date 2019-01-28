@@ -8,7 +8,10 @@ import com.github.fge.jsonschema.main.JsonSchemaFactory;
 import com.github.fge.jsonschema.main.JsonValidator;
 import com.google.gson.JsonObject;
 import com.querydsl.core.types.Predicate;
-import cz.muni.ics.kypo.commons.security.mapping.UserBasicInfoDTO;
+import cz.muni.ics.kypo.commons.facade.api.PageResultResource;
+import cz.muni.ics.kypo.commons.persistence.repository.IDMGroupRefRepository;
+import cz.muni.ics.kypo.training.datadto.RoleType;
+import cz.muni.ics.kypo.training.datadto.UserInfoDTO;
 import cz.muni.ics.kypo.training.exceptions.ErrorCode;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.persistence.model.*;
@@ -16,11 +19,13 @@ import cz.muni.ics.kypo.training.persistence.model.enums.AssessmentType;
 import cz.muni.ics.kypo.training.persistence.model.enums.TDState;
 import cz.muni.ics.kypo.training.persistence.repository.*;
 import cz.muni.ics.kypo.training.service.TrainingDefinitionService;
-import org.apache.catalina.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -31,17 +36,20 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
+import org.springframework.web.client.RestTemplate;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+
 /**
  * @author Pavel Seda (441048)
  */
@@ -49,16 +57,26 @@ import java.util.Optional;
 public class TrainingDefinitionServiceImpl implements TrainingDefinitionService {
 
     private static final Logger LOG = LoggerFactory.getLogger(TrainingDefinitionServiceImpl.class);
+    @Value("${user-and-group-server.uri}")
+    private String userAndGroupUrl;
+
+
+    @Autowired
+    private HttpServletRequest servletRequest;
+
+    @Autowired
+    private RestTemplate restTemplate;
 
     private TrainingDefinitionRepository trainingDefinitionRepository;
     private TrainingInstanceRepository trainingInstanceRepository;
-
     private AbstractLevelRepository abstractLevelRepository;
     private GameLevelRepository gameLevelRepository;
     private InfoLevelRepository infoLevelRepository;
     private AssessmentLevelRepository assessmentLevelRepository;
     private UserRefRepository userRefRepository;
+    private IDMGroupRefRepository idmGroupRefRepository;
     private TDViewGroupRepository viewGroupRepository;
+
     private static final String ARCHIVED_OR_RELEASED = "Cannot edit released or archived training definition.";
     private static final String LEVEL_NOT_FOUND = "Level not found.";
 
@@ -66,7 +84,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     public TrainingDefinitionServiceImpl(TrainingDefinitionRepository trainingDefinitionRepository,
                                          AbstractLevelRepository abstractLevelRepository, InfoLevelRepository infoLevelRepository, GameLevelRepository gameLevelRepository,
                                          AssessmentLevelRepository assessmentLevelRepository, TrainingInstanceRepository trainingInstanceRepository,
-                                         UserRefRepository userRefRepository, TDViewGroupRepository viewGroupRepository) {
+                                         UserRefRepository userRefRepository, TDViewGroupRepository viewGroupRepository, IDMGroupRefRepository idmGroupRefRepository) {
         this.trainingDefinitionRepository = trainingDefinitionRepository;
         this.abstractLevelRepository = abstractLevelRepository;
         this.gameLevelRepository = gameLevelRepository;
@@ -75,6 +93,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
         this.trainingInstanceRepository = trainingInstanceRepository;
         this.userRefRepository = userRefRepository;
         this.viewGroupRepository = viewGroupRepository;
+        this.idmGroupRefRepository = idmGroupRefRepository;
     }
 
     @Override
@@ -99,7 +118,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
             trainingDefinitions.addAll(trainingDefinitionRepository.findAllByLoggedInUser(getSubOfLoggedInUser(), pageable).getContent());
 
         }
-        if(isOrganizer()) {
+        if (isOrganizer()) {
             trainingDefinitions.addAll(trainingDefinitionRepository.findAllByViewGroup(getSubOfLoggedInUser(), pageable).getContent());
 
         }
@@ -146,9 +165,9 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
         TrainingDefinition tD = trainingDefinitionRepository.save(trainingDefinition);
 
         Optional<UserRef> user = userRefRepository.findUserByUserRefLogin(userSub);
-        if (user.isPresent()){
+        if (user.isPresent()) {
             tD.addAuthor(user.get());
-        } else{
+        } else {
             UserRef newUser = new UserRef();
             newUser.setUserRefLogin(userSub);
             tD.addAuthor(userRefRepository.save(newUser));
@@ -535,20 +554,26 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
                 ("View group with title: " + title + " not found.", ErrorCode.RESOURCE_NOT_FOUND));
     }
 
-    //TODO - implement these methods
     @Override
-    public Page<UserRef> findDesigners() {
-        return null;
-    }
-
-    @Override
-    public Page<UserRef> findOrganizers() {
-        return null;
-    }
-
-    @Override
-    public Page<UserRef> findParticipants() {
-        return null;
+    public List<String> getUsersWithGivenRole(RoleType roleType, Pageable pageable) {
+        List<String> logins = new ArrayList<>();
+        List<Long> groupsIds = new ArrayList<>();
+        idmGroupRefRepository.findAllByRoleType(roleType.toString()).forEach(g -> groupsIds.add(g.getIdmGroupId()));
+        if (groupsIds.isEmpty()) {
+            return Collections.emptyList();
+        }
+        HttpHeaders httpHeaders = new HttpHeaders();
+        httpHeaders.set("Authorization", servletRequest.getHeader("Authorization"));
+        String url = userAndGroupUrl + "/users/groups?ids=" + groupsIds.stream().map(Object::toString).collect(Collectors.joining(","))
+                + "&page=" + pageable.getPageNumber() + "&size=" + pageable.getPageSize() + "&fields=content[id,login]";
+        ResponseEntity<PageResultResource<UserInfoDTO>> usersResponse = restTemplate.exchange(url, HttpMethod.GET, new HttpEntity<>(httpHeaders),
+                new ParameterizedTypeReference<PageResultResource<UserInfoDTO>>() {
+                });
+        if (usersResponse.getStatusCode().isError() || usersResponse.getBody() == null) {
+            throw new ServiceLayerException("Error while obtaining info about users in designers groups.", ErrorCode.UNEXPECTED_ERROR);
+        }
+        usersResponse.getBody().getContent().forEach(u -> logins.add(u.getLogin()));
+        return logins;
     }
 
     private AbstractLevel findLastLevel(Long levelId) {

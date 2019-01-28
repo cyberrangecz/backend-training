@@ -30,6 +30,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -580,7 +581,7 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
         LOG.debug("handleAll({}, {}, {})", new Object[]{ex, request, req});
 
         final ApiErrorTraining apiError = new ApiErrorTraining.ApiErrorBuilder(HttpStatus.INTERNAL_SERVER_ERROR, ex.getLocalizedMessage())
-                .setError("error occurred").setPath(URL_PATH_HELPER.getRequestUri(req)).build();
+                .setError(Arrays.toString(ex.getStackTrace())).setPath(URL_PATH_HELPER.getRequestUri(req)).build();
         return new ResponseEntity<>(apiError, new HttpHeaders(), apiError.getStatus());
     }
 

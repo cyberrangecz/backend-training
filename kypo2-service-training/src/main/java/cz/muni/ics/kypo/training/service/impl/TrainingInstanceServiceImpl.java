@@ -16,6 +16,7 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.data.domain.Page;
@@ -23,13 +24,13 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.*;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-import org.springframework.web.client.RestTemplate;
 
 
 /**
@@ -48,17 +49,17 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
     private TrainingRunRepository trainingRunRepository;
     private AccessTokenRepository accessTokenRepository;
     private UserRefRepository organizerRefRepository;
+
+    @Autowired
     private RestTemplate restTemplate;
 
     @Autowired
     public TrainingInstanceServiceImpl(TrainingInstanceRepository trainingInstanceRepository, AccessTokenRepository accessTokenRepository,
-                                       RestTemplate restTemplate, TrainingRunRepository trainingRunRepository,
-                                       UserRefRepository organizerRefRepository) {
+                                       TrainingRunRepository trainingRunRepository, UserRefRepository organizerRefRepository) {
         this.trainingInstanceRepository = trainingInstanceRepository;
         this.trainingRunRepository = trainingRunRepository;
         this.accessTokenRepository = accessTokenRepository;
         this.organizerRefRepository = organizerRefRepository;
-        this.restTemplate = restTemplate;
     }
 
     @Override

@@ -2,6 +2,7 @@ package cz.muni.ics.kypo.training.facade;
 
 import cz.muni.ics.kypo.training.api.dto.AbstractLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.BasicLevelInfoDTO;
+import cz.muni.ics.kypo.training.datadto.RoleType;
 import cz.muni.ics.kypo.training.exception.FacadeLayerException;
 import org.springframework.data.domain.Pageable;
 
@@ -14,6 +15,7 @@ import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionCr
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionUpdateDTO;
 
+import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 
@@ -178,5 +180,14 @@ public interface TrainingDefinitionFacade {
      * @throws FacadeLayerException if level is not found
      */
     AbstractLevelDTO findLevelById(Long levelId) throws FacadeLayerException;
+
+
+    /**
+     * Get designers
+     *
+     * @return list of logins of designers
+     * @throws FacadeLayerException some error encountered when obtaining info about users
+     */
+    List<String> getUsersWithGivenRole(RoleType roleType, Pageable pageable);
 
 }
