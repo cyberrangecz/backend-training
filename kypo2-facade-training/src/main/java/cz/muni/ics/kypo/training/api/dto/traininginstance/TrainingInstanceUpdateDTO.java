@@ -40,7 +40,7 @@ public class TrainingInstanceUpdateDTO {
     @NotNull(message = "{traininginstanceupdate.orgIds.NotNull.message}")
     private Set<Long> orgIds;
 
-    @ApiModelProperty(value = "Main identifier of training instance.", required = true, example = "1")
+    @ApiModelProperty(value = "Main identifier of training instance.", required = true, example = "2")
     public Long getId() {
         return id;
     }
@@ -67,7 +67,7 @@ public class TrainingInstanceUpdateDTO {
         this.endTime = endTime;
     }
 
-    @ApiModelProperty(value = "Short textual description of the training instance.", required = true, example = "Concluded Instance")
+    @ApiModelProperty(value = "Short textual description of the training instance.", required = true, example = "Current Instance")
     public String getTitle() {
         return title;
     }
@@ -76,7 +76,7 @@ public class TrainingInstanceUpdateDTO {
         this.title = title;
     }
 
-    @ApiModelProperty(value = "Number of sandboxes that can be allocated.", required = true, example = "10")
+    @ApiModelProperty(value = "Number of sandboxes that can be allocated.", required = true, example = "8")
     public int getPoolSize() {
         return poolSize;
     }
@@ -85,7 +85,7 @@ public class TrainingInstanceUpdateDTO {
         this.poolSize = poolSize;
     }
 
-    @ApiModelProperty(value = "AccessToken which will be modified and then used for accessing training run.", required = true, example = "hunter")
+    @ApiModelProperty(value = "AccessToken which will be modified and then used for accessing training run.", required = true, example = "hello-6578")
     public String getAccessToken() {
         return accessToken;
     }

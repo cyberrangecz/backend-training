@@ -48,6 +48,10 @@ INSERT INTO abstract_level(id, max_score, next_level, title, snapshot_hook_id) V
 INSERT INTO abstract_level(id, max_score, next_level, title, snapshot_hook_id) VALUES (nextval('abstract_level_id_seq'), 0, 31, 'Make Me Root - Info', null);
 INSERT INTO abstract_level(id, max_score, next_level, title, snapshot_hook_id) VALUES (nextval('abstract_level_id_seq'), 30, null, 'Make Me Root', null);
 
+INSERT INTO abstract_level(id, max_score, next_level, title, snapshot_hook_id) VALUES (nextval('abstract_level_id_seq'), 0, 10, 'Base info for No Secure Connection', null);
+INSERT INTO abstract_level(id, max_score, next_level, title, snapshot_hook_id) VALUES (nextval('abstract_level_id_seq'), 0, 18, 'Base info for Rigging the Election', null);
+INSERT INTO abstract_level(id, max_score, next_level, title, snapshot_hook_id) VALUES (nextval('abstract_level_id_seq'), 0, 24, 'Base info for The Biggest Stock Scam Of All Time', null);
+
 
 INSERT INTO game_level(id, attachments, estimated_duration, incorrect_flag_limit, content, flag, solution, solution_penalized) VALUES (1, null, 25, 5, 'Play me', 'secretFlag', 'This is how you do it', true );
 INSERT INTO game_level(id, attachments, estimated_duration, incorrect_flag_limit, content, flag, solution, solution_penalized) VALUES (2, null, 60, 3, 'Unsolvable problem', 'jibberish', 'Not sure yet', false);
@@ -516,48 +520,14 @@ INSERT INTO info_level(id, content) VALUES (30, '<style type="text/css">
   </ul>
 </p>');
 
-INSERT INTO assessment_level(id, assessment_type, instructions, questions) VALUES (7, 'TEST', 'Fill me up', 'What is my mothers name?');
-INSERT INTO assessment_level(id, assessment_type, instructions, questions) VALUES (8, 'QUESTIONNAIRE', 'No rush', '...?');
-INSERT INTO assessment_level(id, assessment_type, instructions, questions) VALUES (9, 'TEST', 'Fill me up', '[{"question_type":"FFQ","text":"Which tool would you use to scan the open ports of a server?","points":6,"penalty":3,"order":0,"answer_required":true,"correct_choices":["nmap","Nmap"]},{"question_type":"MCQ","text":"Among the following choices, select all the possible methods of prevention against an unwanted file upload.","points":4,"penalty":2,"order":1,"answer_required":true,"choices":[{"order":0,"text":"whitelisting file extensions","is_correct":true},{"order":1,"text":"limiting maximum file size","is_correct":true},{"order":2,"text":"using database triggers","is_correct":false},{"order":3,"text":"saving data to an NTFS volume","is_correct":false}]},{"question_type":"EMI","text":"Connect the following exemplary situations with the corresponding type of password attack.","points":3,"penalty":1,"order":2,"answer_required":true,"choices":[{"order":0,"text":"trying all possible alphanumeric combinations of 8 characters","pair":6},{"order":1,"text":"trying common words of English language","pair":4},{"order":2,"text":"looking up the value of a hashed password","pair":7},{"order":3,"text":"tricking a user into giving away his password by posing as a service administrator","pair":5},{"order":4,"text":"dictionary attack","pair":1},{"order":5,"text":"social engineering","pair":3},{"order":6,"text":"brute force attack","pair":0},{"order":7,"text":"rainbow table attack","pair":2}]}]');
-
-INSERT INTO hint(id, content, title, hint_penalty, game_level_id) VALUES (nextval('hint_id_seq'), 'Very good advice', 'Hint1', 10, 1);
-INSERT INTO hint(id, content, title, hint_penalty, game_level_id) VALUES (nextval('hint_id_seq'), 'Very bad advice', 'Hint2', 6, 2);
-
-INSERT INTO hint(id, content, title, hint_penalty, game_level_id) VALUES (nextval('hint_id_seq'), 'Right-click on any TELNET packet and select option <span style="color: #008000"><b>"Follow → TCP stream"</b></span>.', 'Hint1', 10, 11);
-INSERT INTO hint(id, content, title, hint_penalty, game_level_id) VALUES (nextval('hint_id_seq'), 'Use the following command: <span style="color: #008000"><b>$ ssh bnovak@database.bigbroker.ex</b></span>.', 'Hint1', 10, 13);
-INSERT INTO hint(id, content, title, hint_penalty, game_level_id) VALUES (nextval('hint_id_seq'), 'The same case as yours... His username is a combination of the first letter of the name and surname: <span style="color: #008000"><b>vondrus</b></span>.', 'Hint1', 15, 15);
-INSERT INTO hint(id, content, title, hint_penalty, game_level_id) VALUES (nextval('hint_id_seq'), 'Use default settings of the THC-Hydra and <span style="color: #008000"><b>do not use "-t" option</b></span>.', 'Hint2', 5, 15);
-INSERT INTO hint(id, content, title, hint_penalty, game_level_id) VALUES (nextval('hint_id_seq'), 'Your <b>private SSH key</b> must be securely stored so that no one has access to it. Therefore the keys need to be <span style="color: #008000"><b>generated on your workstation</b></span>.', 'Hint1', 10, 17);
-
-INSERT INTO hint(id, content, title, hint_penalty, game_level_id) VALUES (nextval('hint_id_seq'), 'Create a new account using the "Register" page.', 'Hint1', 1, 19);
-INSERT INTO hint(id, content, title, hint_penalty, game_level_id) VALUES (nextval('hint_id_seq'), 'Just look into the /root/ directory.', 'Hint2', 1, 19);
-INSERT INTO hint(id, content, title, hint_penalty, game_level_id) VALUES (nextval('hint_id_seq'), 'Look at what .htaccess file is: <a href="https://httpd.apache.org/docs/current/howto/htaccess.html" target="_blank">https://httpd.apache.org/docs/current/howto/htaccess.html</a>.', 'Hint1', 1, 21);
-INSERT INTO hint(id, content, title, hint_penalty, game_level_id) VALUES (nextval('hint_id_seq'), 'Try to upload other file and check how form for delete looks in "Developer tools".', 'Hint2', 1, 21);
-INSERT INTO hint(id, content, title, hint_penalty, game_level_id) VALUES (nextval('hint_id_seq'), 'Replace path of the file that is being deleted in delete form using "Developer tools".', 'Hint3', 2, 21);
-INSERT INTO hint(id, content, title, hint_penalty, game_level_id) VALUES (nextval('hint_id_seq'), 'Martin Sramek', 'Hint1', 2, 23);
-
-INSERT INTO hint(id, content, title, hint_penalty, game_level_id) VALUES (nextval('hint_id_seq'), 'Use <b style="color: #008000">nmap</b> tool to detect open services.', 'Hint1', 5, 25);
-INSERT INTO hint(id, content, title, hint_penalty, game_level_id) VALUES (nextval('hint_id_seq'), 'You can use <b style="color: #008000">hydra</b> or <b style="color: #008000">ncrack</b> tool.', 'Hint2', 10, 25);
-INSERT INTO hint(id, content, title, hint_penalty, game_level_id) VALUES (nextval('hint_id_seq'), 'Come on, that was easy! Just look to your desktop directory <b style="color: #008000">/root/Desktop/Tools/</b>.', 'Hint3', 3, 25);
-INSERT INTO hint(id, content, title, hint_penalty, game_level_id) VALUES (nextval('hint_id_seq'), 'Copy required <b>Tools</b> packages (<b>/root/Desktop/Tools/</b>) from the Kali linux to the workstation using <span style="color: #008000"><b>scp</b></span> command.', 'Hint1', 7, 27);
-INSERT INTO hint(id, content, title, hint_penalty, game_level_id) VALUES (nextval('hint_id_seq'), 'WordPress <b>plugins</b> vulnerability scanner <span style="color: #008000"><b>wpscan</b></span>. For more information, see the <a href="https://wpscan.org/" target="_blank"><b>project page</b></a>.', 'Hint2', 8, 27);
-INSERT INTO hint(id, content, title, hint_penalty, game_level_id) VALUES (nextval('hint_id_seq'), '<span style="color: #008000"><b>Metasploit</b></span>, this is a really classic tool.', 'Hint1', 8, 29);
-INSERT INTO hint(id, content, title, hint_penalty, game_level_id) VALUES (nextval('hint_id_seq'), 'Use the <span style="color: #008000"><b>exploit/unix/webapp/wp_wpshop_ecommerce_file_upload</b></span> plugin.', 'Hint2', 10, 29);
-INSERT INTO hint(id, content, title, hint_penalty, game_level_id) VALUES (nextval('hint_id_seq'), 'The administrator allowed to run some of the installed tools using the sudo command. Use <span style="color: #008000"><b>sudo -l</b></span> to see these tools.', 'Hint1', 10, 31);
-INSERT INTO hint(id, content, title, hint_penalty, game_level_id) VALUES (nextval('hint_id_seq'), 'Use <a href="https://google.com" target="_blank">Google</a>! There are definitely some interesting guides on the net.', 'Hint2', 5, 31);
-INSERT INTO hint(id, content, title, hint_penalty, game_level_id) VALUES (nextval('hint_id_seq'), 'Check this guide with a lot of great ideas: <a href="https://github.com/cermmik/security/blob/master/privilege_escalation_-_linux.md" target="_blank">https://github.com/cermmik/security/blob/master/privilege_escalation_-_linux.md</a>.', 'Hint3', 13, 31);
-
-INSERT INTO training_definition(id, description, outcomes, prerequisities, state, title, sandbox_definition_ref_id, starting_level, show_stepper_bar, td_view_group_id) VALUES (nextval('training_definition_id_seq'), 'Released training definition', null, null, 'RELEASED', 'TrainingDefinition1', 1, 4, true, 1);
-INSERT INTO training_definition(id, description, outcomes, prerequisities, state, title, sandbox_definition_ref_id, starting_level, show_stepper_bar, td_view_group_id) VALUES (nextval('training_definition_id_seq'), 'Unreleased training definition', null, null, 'UNRELEASED', 'TrainingDefinition2', 2, 5, false, 2);
-INSERT INTO training_definition(id, description, outcomes, prerequisities, state, title, sandbox_definition_ref_id, starting_level, show_stepper_bar, td_view_group_id) VALUES (nextval('training_definition_id_seq'), 'Released training definition2', null, null, 'RELEASED', 'TrainingDefinition2', 3, 6, true, 3);
-INSERT INTO training_definition(id, description, outcomes, prerequisities, state, title, sandbox_definition_ref_id, starting_level, show_stepper_bar, td_view_group_id) VALUES (nextval('training_definition_id_seq'), 'Introduction
+INSERT INTO info_level(id, content) VALUES (32, 'Introduction
 ============
 <p>
-  You are <b>a long-term employee of Big Broker Inc.</b>, one of the biggest trading companies in the world. After so many years, you are one of the main stock traders. <b>Stock trading is your life!</b> Reliable computer and fast Internet connection are essential premises of your success. Nevertheless, a computer is just a powerful working tool for you. You don''t know much about the technology and "cyber-security" is a strange word only. <b>However, it will change very quickly...</b>
+  You are <b>a long-term employee of Big Broker Inc.</b>, one of the biggest trading companies in the world. After so many years, you are one of the main stock traders. <b>Stock trading is your life!</b> Reliable computer and fast Internet connection are essential premises of your success. Nevertheless, a computer is just a powerful working tool for you. You don''''t know much about the technology and "cyber-security" is a strange word only. <b>However, it will change very quickly...</b>
 </p>
 
 <p>
-  Your path to understanding the importance of cyber-security has started when your <b>computer broke</b>, and you were not able to sell your stocks in time. Money is the most important thing for you, and now <b>you''ve lost a lot of them</b> because of the stupid error! <span style="color: #008000">It''s time to take it into your own hands and fix it!</span>
+  Your path to understanding the importance of cyber-security has started when your <b>computer broke</b>, and you were not able to sell your stocks in time. Money is the most important thing for you, and now <b>you''''ve lost a lot of them</b> because of the stupid error! <span style="color: #008000">It''''s time to take it into your own hands and fix it!</span>
 </p>
 
 <img src="https://is.muni.cz/www/cermmik/CTF-1-intro.jpg" style="display: block; margin-left: auto; margin-right: auto; width: 40%;">
@@ -597,12 +567,12 @@ The game contains four levels. In each level, you will have to complete a specif
 <h4 class="well well-small">Help System:</h4>
 
 <p style="margin-bottom: 4em;">
-  If you are unable to complete a level, you can use a <b>hint</b> which will give a little help, but you will lose some points. After using all the hints, there is <b>help level</b> prepared. It''s a guided solution which will tell you exactly what to do. The last option is to skip level entirely by clicking on the skip level, but this is not recommended – you won''t be able to complete the next levels without performing tasks in the current one.
-</p>', null, null, 'RELEASED', 'CTF-1: No Secure Connection', null, 10, true, 4);
-INSERT INTO training_definition(id, description, outcomes, prerequisities, state, title, sandbox_definition_ref_id, starting_level, show_stepper_bar, td_view_group_id) VALUES (nextval('training_definition_id_seq'), 'Introduction
+  If you are unable to complete a level, you can use a <b>hint</b> which will give a little help, but you will lose some points. After using all the hints, there is <b>help level</b> prepared. It''''s a guided solution which will tell you exactly what to do. The last option is to skip level entirely by clicking on the skip level, but this is not recommended – you won''''t be able to complete the next levels without performing tasks in the current one.
+</p>');
+INSERT INTO info_level(id, content) VALUES (33, 'Introduction
 ============
 <p>
-  The presidential election in Pilsneria is really close. There are some speculations, that one candidate, let''s call him <b>Frank</b> (his name has been carefully anonymized), evaded paying taxes by buying <b>stocks in Panama through BigBroker Inc.</b> Coincidentally, you are not really a fan of this politician and you think people should learn about his deeds. Therefore, you decided to get some evidence. <span style="color: #008000">Website of BigBroker seems safe, but is it?</span>
+  The presidential election in Pilsneria is really close. There are some speculations, that one candidate, let''''s call him <b>Frank</b> (his name has been carefully anonymized), evaded paying taxes by buying <b>stocks in Panama through BigBroker Inc.</b> Coincidentally, you are not really a fan of this politician and you think people should learn about his deeds. Therefore, you decided to get some evidence. <span style="color: #008000">Website of BigBroker seems safe, but is it?</span>
 </p>
 
 <img src="https://is.muni.cz/www/cermmik/bigbroker-page.png" style="display: block; margin-left: auto; margin-right: auto; width: 40%;">
@@ -623,11 +593,11 @@ Rules
 </p>
 
 <p>
-  When you click on Topology button in the blue panel on the top, you should see the given network topology. When you double-click on the node called Internet, you should see one node: Attacker. Attacker represents the attacker''s computer; it contains all hacking tools you will need.
+  When you click on Topology button in the blue panel on the top, you should see the given network topology. When you double-click on the node called Internet, you should see one node: Attacker. Attacker represents the attacker''''s computer; it contains all hacking tools you will need.
 </p>
 
 <p>
-  Now if you want to have an access to attacker computer click on attacker and select <b>Remote connection</b>. New tab appears with access to attacker''s computer. You can try any program you want. If you will need to <b>login</b>, the default credentials are <b>username: <span style="color: #008000">root</span></b>, <b>password: <span style="color: #008000">toor</span></b>.
+  Now if you want to have an access to attacker computer click on attacker and select <b>Remote connection</b>. New tab appears with access to attacker''''s computer. You can try any program you want. If you will need to <b>login</b>, the default credentials are <b>username: <span style="color: #008000">root</span></b>, <b>password: <span style="color: #008000">toor</span></b>.
 </p>
 
 <p>
@@ -635,24 +605,24 @@ Rules
 </p>
 
 <p>
-  General note: <span style="color: #008000">All programs you will need to complete the tasks are installed, and also you don''t have access to the Internet.</span>
+  General note: <span style="color: #008000">All programs you will need to complete the tasks are installed, and also you don''''t have access to the Internet.</span>
 </p>
 
 
 <h4 class="well well-small">Help System:</h4>
 
 <p>
-  If you are unable to complete a level, you can either use <b>hint</b> which will give a little help, but you will lose some points. After using all the hints if you still don''t know how to complete the task use <b>help level</b>. It''s a guided solution which will tell you exactly what to do. The last option is to skip level entirely by clicking on the skip level, but this is not recommended - you won''t be able to complete following levels without doing what is in your current one. It is better to ask someone for help
+  If you are unable to complete a level, you can either use <b>hint</b> which will give a little help, but you will lose some points. After using all the hints if you still don''''t know how to complete the task use <b>help level</b>. It''''s a guided solution which will tell you exactly what to do. The last option is to skip level entirely by clicking on the skip level, but this is not recommended - you won''''t be able to complete following levels without doing what is in your current one. It is better to ask someone for help
 </p>
 
 <p>
-  Each level has a passphrase, so you can go to any level you know passphrase for, but you won''t get any points for any previous levels. So the good advice is to write down the passphrases as you go through levels.
+  Each level has a passphrase, so you can go to any level you know passphrase for, but you won''''t get any points for any previous levels. So the good advice is to write down the passphrases as you go through levels.
 </p>
 
 <p style="margin-bottom: 4em;">
   <b> DO NOT USE SKIP LEVEL - HIGHER LEVELS CANNOT BE DONE WITHOUT COMPLETING PRECEDING LEVELS </b>
-</p>', null, null, 'RELEASED', 'CTF-2: Rigging the Election', null, 18, true,5);
-INSERT INTO training_definition(id, description, outcomes, prerequisities, state, title, sandbox_definition_ref_id, starting_level, show_stepper_bar, td_view_group_id) VALUES (nextval('training_definition_id_seq'), 'Introduction
+</p>');
+INSERT INTO info_level(id, content) VALUES (34, 'Introduction
 ============
 <p style="margin-bottom: 2em">
   You are <b>a former employee of Big Broker Inc.</b> one of the biggest stock trading companies. Recently, although you have been working for them for ten years, you have been fired without giving any reason. But you know the reason very well... It happened because you refused a request of your boss to falsify earnings reports of <b>Pear Inc.</b> stocks. A week ago, you read in the newspapers that <b>Pear Inc. achieved record gains</b>, and thanks to that, the shareholders got a lot of money. You know it''s a big scam, and you have evidence of the manipulation of earnings reports! But what you do not know is <b>who is behind it?</b>
@@ -704,7 +674,46 @@ Rules
 
 <p style="margin-bottom: 4em;">
   <b> DO NOT USE SKIP LEVEL – HIGHER LEVELS CANNOT BE DONE WITHOUT COMPLETING PRECEDING LEVELS. </b>
-</p>', null, null, 'RELEASED', 'CTF-3: The Biggest Stock Scam Of All Time', null, 24, true, 6);
+</p>');
+
+
+INSERT INTO assessment_level(id, assessment_type, instructions, questions) VALUES (7, 'TEST', 'Fill me up', '[{"question_type":"FFQ","text":"Which tool would you use to scan the open ports of a server?","points":6,"penalty":3,"order":0,"answer_required":true,"correct_choices":["nmap","Nmap"]},{"question_type":"MCQ","text":"Among the following choices, select all the possible methods of prevention against an unwanted file upload.","points":4,"penalty":2,"order":1,"answer_required":true,"choices":[{"order":0,"text":"whitelisting file extensions","is_correct":true},{"order":1,"text":"limiting maximum file size","is_correct":true},{"order":2,"text":"using database triggers","is_correct":false},{"order":3,"text":"saving data to an NTFS volume","is_correct":false}]},{"question_type":"EMI","text":"Connect the following exemplary situations with the corresponding type of password attack.","points":3,"penalty":1,"order":2,"answer_required":true,"choices":[{"order":0,"text":"trying all possible alphanumeric combinations of 8 characters","pair":6},{"order":1,"text":"trying common words of English language","pair":4},{"order":2,"text":"looking up the value of a hashed password","pair":7},{"order":3,"text":"tricking a user into giving away his password by posing as a service administrator","pair":5},{"order":4,"text":"dictionary attack","pair":1},{"order":5,"text":"social engineering","pair":3},{"order":6,"text":"brute force attack","pair":0},{"order":7,"text":"rainbow table attack","pair":2}]}]');
+INSERT INTO assessment_level(id, assessment_type, instructions, questions) VALUES (8, 'QUESTIONNAIRE', 'No rush', '[{"question_type":"FFQ","text":"Which tool would you use to scan the open ports of a server?","points":6,"penalty":3,"order":0,"answer_required":true,"correct_choices":["nmap","Nmap"]},{"question_type":"MCQ","text":"Among the following choices, select all the possible methods of prevention against an unwanted file upload.","points":4,"penalty":2,"order":1,"answer_required":true,"choices":[{"order":0,"text":"whitelisting file extensions","is_correct":true},{"order":1,"text":"limiting maximum file size","is_correct":true},{"order":2,"text":"using database triggers","is_correct":false},{"order":3,"text":"saving data to an NTFS volume","is_correct":false}]},{"question_type":"EMI","text":"Connect the following exemplary situations with the corresponding type of password attack.","points":3,"penalty":1,"order":2,"answer_required":true,"choices":[{"order":0,"text":"trying all possible alphanumeric combinations of 8 characters","pair":6},{"order":1,"text":"trying common words of English language","pair":4},{"order":2,"text":"looking up the value of a hashed password","pair":7},{"order":3,"text":"tricking a user into giving away his password by posing as a service administrator","pair":5},{"order":4,"text":"dictionary attack","pair":1},{"order":5,"text":"social engineering","pair":3},{"order":6,"text":"brute force attack","pair":0},{"order":7,"text":"rainbow table attack","pair":2}]}]');
+INSERT INTO assessment_level(id, assessment_type, instructions, questions) VALUES (9, 'TEST', 'Fill me up', '[{"question_type":"FFQ","text":"Which tool would you use to scan the open ports of a server?","points":6,"penalty":3,"order":0,"answer_required":true,"correct_choices":["nmap","Nmap"]},{"question_type":"MCQ","text":"Among the following choices, select all the possible methods of prevention against an unwanted file upload.","points":4,"penalty":2,"order":1,"answer_required":true,"choices":[{"order":0,"text":"whitelisting file extensions","is_correct":true},{"order":1,"text":"limiting maximum file size","is_correct":true},{"order":2,"text":"using database triggers","is_correct":false},{"order":3,"text":"saving data to an NTFS volume","is_correct":false}]},{"question_type":"EMI","text":"Connect the following exemplary situations with the corresponding type of password attack.","points":3,"penalty":1,"order":2,"answer_required":true,"choices":[{"order":0,"text":"trying all possible alphanumeric combinations of 8 characters","pair":6},{"order":1,"text":"trying common words of English language","pair":4},{"order":2,"text":"looking up the value of a hashed password","pair":7},{"order":3,"text":"tricking a user into giving away his password by posing as a service administrator","pair":5},{"order":4,"text":"dictionary attack","pair":1},{"order":5,"text":"social engineering","pair":3},{"order":6,"text":"brute force attack","pair":0},{"order":7,"text":"rainbow table attack","pair":2}]}]');
+
+INSERT INTO hint(id, content, title, hint_penalty, game_level_id) VALUES (nextval('hint_id_seq'), 'Very good advice', 'Hint1', 10, 1);
+INSERT INTO hint(id, content, title, hint_penalty, game_level_id) VALUES (nextval('hint_id_seq'), 'Very bad advice', 'Hint2', 6, 2);
+
+INSERT INTO hint(id, content, title, hint_penalty, game_level_id) VALUES (nextval('hint_id_seq'), 'Right-click on any TELNET packet and select option <span style="color: #008000"><b>"Follow → TCP stream"</b></span>.', 'Hint1', 10, 11);
+INSERT INTO hint(id, content, title, hint_penalty, game_level_id) VALUES (nextval('hint_id_seq'), 'Use the following command: <span style="color: #008000"><b>$ ssh bnovak@database.bigbroker.ex</b></span>.', 'Hint1', 10, 13);
+INSERT INTO hint(id, content, title, hint_penalty, game_level_id) VALUES (nextval('hint_id_seq'), 'The same case as yours... His username is a combination of the first letter of the name and surname: <span style="color: #008000"><b>vondrus</b></span>.', 'Hint1', 15, 15);
+INSERT INTO hint(id, content, title, hint_penalty, game_level_id) VALUES (nextval('hint_id_seq'), 'Use default settings of the THC-Hydra and <span style="color: #008000"><b>do not use "-t" option</b></span>.', 'Hint2', 5, 15);
+INSERT INTO hint(id, content, title, hint_penalty, game_level_id) VALUES (nextval('hint_id_seq'), 'Your <b>private SSH key</b> must be securely stored so that no one has access to it. Therefore the keys need to be <span style="color: #008000"><b>generated on your workstation</b></span>.', 'Hint1', 10, 17);
+
+INSERT INTO hint(id, content, title, hint_penalty, game_level_id) VALUES (nextval('hint_id_seq'), 'Create a new account using the "Register" page.', 'Hint1', 1, 19);
+INSERT INTO hint(id, content, title, hint_penalty, game_level_id) VALUES (nextval('hint_id_seq'), 'Just look into the /root/ directory.', 'Hint2', 1, 19);
+INSERT INTO hint(id, content, title, hint_penalty, game_level_id) VALUES (nextval('hint_id_seq'), 'Look at what .htaccess file is: <a href="https://httpd.apache.org/docs/current/howto/htaccess.html" target="_blank">https://httpd.apache.org/docs/current/howto/htaccess.html</a>.', 'Hint1', 1, 21);
+INSERT INTO hint(id, content, title, hint_penalty, game_level_id) VALUES (nextval('hint_id_seq'), 'Try to upload other file and check how form for delete looks in "Developer tools".', 'Hint2', 1, 21);
+INSERT INTO hint(id, content, title, hint_penalty, game_level_id) VALUES (nextval('hint_id_seq'), 'Replace path of the file that is being deleted in delete form using "Developer tools".', 'Hint3', 2, 21);
+INSERT INTO hint(id, content, title, hint_penalty, game_level_id) VALUES (nextval('hint_id_seq'), 'Martin Sramek', 'Hint1', 2, 23);
+
+INSERT INTO hint(id, content, title, hint_penalty, game_level_id) VALUES (nextval('hint_id_seq'), 'Use <b style="color: #008000">nmap</b> tool to detect open services.', 'Hint1', 5, 25);
+INSERT INTO hint(id, content, title, hint_penalty, game_level_id) VALUES (nextval('hint_id_seq'), 'You can use <b style="color: #008000">hydra</b> or <b style="color: #008000">ncrack</b> tool.', 'Hint2', 10, 25);
+INSERT INTO hint(id, content, title, hint_penalty, game_level_id) VALUES (nextval('hint_id_seq'), 'Come on, that was easy! Just look to your desktop directory <b style="color: #008000">/root/Desktop/Tools/</b>.', 'Hint3', 3, 25);
+INSERT INTO hint(id, content, title, hint_penalty, game_level_id) VALUES (nextval('hint_id_seq'), 'Copy required <b>Tools</b> packages (<b>/root/Desktop/Tools/</b>) from the Kali linux to the workstation using <span style="color: #008000"><b>scp</b></span> command.', 'Hint1', 7, 27);
+INSERT INTO hint(id, content, title, hint_penalty, game_level_id) VALUES (nextval('hint_id_seq'), 'WordPress <b>plugins</b> vulnerability scanner <span style="color: #008000"><b>wpscan</b></span>. For more information, see the <a href="https://wpscan.org/" target="_blank"><b>project page</b></a>.', 'Hint2', 8, 27);
+INSERT INTO hint(id, content, title, hint_penalty, game_level_id) VALUES (nextval('hint_id_seq'), '<span style="color: #008000"><b>Metasploit</b></span>, this is a really classic tool.', 'Hint1', 8, 29);
+INSERT INTO hint(id, content, title, hint_penalty, game_level_id) VALUES (nextval('hint_id_seq'), 'Use the <span style="color: #008000"><b>exploit/unix/webapp/wp_wpshop_ecommerce_file_upload</b></span> plugin.', 'Hint2', 10, 29);
+INSERT INTO hint(id, content, title, hint_penalty, game_level_id) VALUES (nextval('hint_id_seq'), 'The administrator allowed to run some of the installed tools using the sudo command. Use <span style="color: #008000"><b>sudo -l</b></span> to see these tools.', 'Hint1', 10, 31);
+INSERT INTO hint(id, content, title, hint_penalty, game_level_id) VALUES (nextval('hint_id_seq'), 'Use <a href="https://google.com" target="_blank">Google</a>! There are definitely some interesting guides on the net.', 'Hint2', 5, 31);
+INSERT INTO hint(id, content, title, hint_penalty, game_level_id) VALUES (nextval('hint_id_seq'), 'Check this guide with a lot of great ideas: <a href="https://github.com/cermmik/security/blob/master/privilege_escalation_-_linux.md" target="_blank">https://github.com/cermmik/security/blob/master/privilege_escalation_-_linux.md</a>.', 'Hint3', 13, 31);
+
+INSERT INTO training_definition(id, description, outcomes, prerequisities, state, title, sandbox_definition_ref_id, starting_level, show_stepper_bar, td_view_group_id) VALUES (nextval('training_definition_id_seq'), 'Released training definition', null, null, 'RELEASED', 'TrainingDefinition1', 1, 4, true, 1);
+INSERT INTO training_definition(id, description, outcomes, prerequisities, state, title, sandbox_definition_ref_id, starting_level, show_stepper_bar, td_view_group_id) VALUES (nextval('training_definition_id_seq'), 'Unreleased training definition', null, null, 'UNRELEASED', 'TrainingDefinition2', 2, 5, false, 2);
+INSERT INTO training_definition(id, description, outcomes, prerequisities, state, title, sandbox_definition_ref_id, starting_level, show_stepper_bar, td_view_group_id) VALUES (nextval('training_definition_id_seq'), 'Released training definition2', null, null, 'RELEASED', 'TrainingDefinition2', 3, 6, true, 3);
+INSERT INTO training_definition(id, description, outcomes, prerequisities, state, title, sandbox_definition_ref_id, starting_level, show_stepper_bar, td_view_group_id) VALUES (nextval('training_definition_id_seq'), 'Training definition - securing connection', null, null, 'RELEASED', 'CTF-1: No Secure Connection', null, 32, true, 4);
+INSERT INTO training_definition(id, description, outcomes, prerequisities, state, title, sandbox_definition_ref_id, starting_level, show_stepper_bar, td_view_group_id) VALUES (nextval('training_definition_id_seq'), 'Training definition - rigging the election', null, null, 'RELEASED', 'CTF-2: Rigging the Election', null, 33, true,5);
+INSERT INTO training_definition(id, description, outcomes, prerequisities, state, title, sandbox_definition_ref_id, starting_level, show_stepper_bar, td_view_group_id) VALUES (nextval('training_definition_id_seq'), 'Training definition - biggest stock scam', null, null, 'RELEASED', 'CTF-3: The Biggest Stock Scam Of All Time', null, 34, true, 6);
 INSERT INTO training_definition(id, description, outcomes, prerequisities, state, title, sandbox_definition_ref_id, starting_level, show_stepper_bar, td_view_group_id) VALUES (nextval('training_definition_id_seq'), 'Definition with test assessments', null, null, 'RELEASED', 'TrainingDefinition1', null, 9, true, 7);
 
 INSERT INTO training_instance(id, pool_size, pool_id, training_definition_id, start_time, end_time, access_token, title) VALUES (nextval('training_instance_id_seq'), 5, 1, 1, '2016-10-19 10:23:54+02', '2017-10-19 10:23:54+02', 'pass-1235', 'Concluded Instance');
