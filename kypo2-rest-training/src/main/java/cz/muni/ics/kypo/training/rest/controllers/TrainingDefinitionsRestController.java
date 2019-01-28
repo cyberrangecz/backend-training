@@ -14,6 +14,7 @@ import cz.muni.ics.kypo.training.api.dto.infolevel.InfoLevelUpdateDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionCreateDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionUpdateDTO;
+import cz.muni.ics.kypo.training.datadto.RoleType;
 import cz.muni.ics.kypo.training.exception.FacadeLayerException;
 import cz.muni.ics.kypo.training.facade.TrainingDefinitionFacade;
 import cz.muni.ics.kypo.training.persistence.model.TrainingDefinition;
@@ -476,6 +477,61 @@ public class TrainingDefinitionsRestController {
         } catch (FacadeLayerException ex) {
             throw ExceptionSorter.throwException(ex);
         }
+    }
+
+    /**
+     * Get requested designers.
+     *
+     * @return List of users login with role designer.
+     */
+    @ApiOperation(httpMethod = "GET",
+            value = "Get designers.",
+            response = String[].class,
+            nickname = "findTrainingDefinitionById",
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Designers found.", response = String[].class),
+            @ApiResponse(code = 500, message = "Unexpected condition was encountered.")
+
+    })
+    @GetMapping(path = "/designers", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Object> getDesigners(@QuerydslPredicate(root = TrainingDefinition.class) Predicate predicate,
+                                               Pageable pageable) {
+        LOG.debug("getDesigners()");
+        try {
+            List<String> designers = trainingDefinitionFacade.getUsersWithGivenRole(RoleType.DESIGNER, pageable);
+            return ResponseEntity.ok(SquigglyUtils.stringify(objectMapper, designers));
+        } catch (FacadeLayerException ex) {
+            throw ExceptionSorter.throwException(ex);
+        }
+    }
+
+    /**
+     * Get requested designers.
+     *
+     * @return List of users login with role designer.
+     */
+    @ApiOperation(httpMethod = "GET",
+            value = "Get organizers.",
+            response = String[].class,
+            nickname = "getOrganizers",
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Organizers found.", response = String[].class),
+            @ApiResponse(code = 500, message = "Unexpected condition was encountered.")
+
+    })
+    @GetMapping(path = "/organizers", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Object> getOrganizers(@QuerydslPredicate(root = TrainingDefinition.class) Predicate predicate,
+                                               Pageable pageable) {
+        LOG.debug("getOrganizers()");
+        try {
+            List<String> designers = trainingDefinitionFacade.getUsersWithGivenRole(RoleType.ORGANIZER, pageable);
+            return ResponseEntity.ok(SquigglyUtils.stringify(objectMapper, designers));
+        } catch (FacadeLayerException ex) {
+            throw ExceptionSorter.throwException(ex);        }
     }
 
 

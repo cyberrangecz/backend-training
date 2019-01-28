@@ -86,7 +86,7 @@ public class TrainingRunServiceTest {
     public void init() {
         MockitoAnnotations.initMocks(this);
         trainingRunService = new TrainingRunServiceImpl(trainingRunRepository, abstractLevelRepository, trainingInstanceRepository,
-                participantRefRepository, restTemplate, hintRepository, auditService);
+                participantRefRepository, hintRepository, auditService);
 
         parser = new JSONParser();
         try {

@@ -68,7 +68,7 @@ public class TrainingInstanceServiceTest {
     @Before
     public void init() {
         MockitoAnnotations.initMocks(this);
-        trainingInstanceService = new TrainingInstanceServiceImpl(trainingInstanceRepository, accessTokenRepository, restTemplate,
+        trainingInstanceService = new TrainingInstanceServiceImpl(trainingInstanceRepository, accessTokenRepository,
                 trainingRunRepository, organizerRefRepository);
 
         trainingInstance1 = new TrainingInstance();

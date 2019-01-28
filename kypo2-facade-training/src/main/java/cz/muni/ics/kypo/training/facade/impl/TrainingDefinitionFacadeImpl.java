@@ -15,6 +15,7 @@ import cz.muni.ics.kypo.training.api.dto.infolevel.InfoLevelUpdateDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionCreateDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionUpdateDTO;
+import cz.muni.ics.kypo.training.datadto.RoleType;
 import cz.muni.ics.kypo.training.exception.FacadeLayerException;
 import cz.muni.ics.kypo.training.exceptions.ErrorCode;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
@@ -391,6 +392,16 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
             return aLDTO;
         } catch (ServiceLayerException ex) {
             throw new FacadeLayerException(ex.getLocalizedMessage());
+        }
+    }
+
+    @Override
+    @TransactionalRO
+    public List<String> getUsersWithGivenRole(RoleType roleType, Pageable pageable) throws FacadeLayerException {
+        try {
+            return trainingDefinitionService.getUsersWithGivenRole(roleType, pageable);
+        }catch (ServiceLayerException ex) {
+            throw new FacadeLayerException(ex);
         }
     }
 }

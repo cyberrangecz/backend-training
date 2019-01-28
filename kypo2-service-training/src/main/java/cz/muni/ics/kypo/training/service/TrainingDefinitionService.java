@@ -1,10 +1,9 @@
 package cz.muni.ics.kypo.training.service;
 
 import com.querydsl.core.types.Predicate;
+import cz.muni.ics.kypo.training.datadto.RoleType;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.persistence.model.*;
-
-import org.apache.catalina.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -223,20 +222,9 @@ public interface TrainingDefinitionService {
 
     /**
      * Finds designers
-     * @return list of UserRefs which are designers
+     *
+     * @return list of logins of users which are designers
      */
-    Page<UserRef> findDesigners();
-
-    /**
-     * Finds organizers
-     * @return list of UserRefs which are organizers
-     */
-    Page<UserRef> findOrganizers();
-
-    /**
-     * Finds participants
-     * @return list of UserRefs which are participants
-     */
-    Page<UserRef> findParticipants();
+    List<String> getUsersWithGivenRole(RoleType roleType, Pageable pageable);
 
 }
