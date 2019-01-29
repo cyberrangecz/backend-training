@@ -580,7 +580,10 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
     public ResponseEntity<Object> handleAll(final Exception ex, final WebRequest request, HttpServletRequest req) {
         LOG.error("handleAll({}, {}, {})", new Object[]{ex, request, req});
 
-        String err = Arrays.stream(ex.getStackTrace()).skip(0).map(StackTraceElement::toString).reduce((s1, s2) -> s1 + "\n" + s2).get();
+        String err = Arrays.stream(ex.getStackTrace())
+                .map(StackTraceElement::toString)
+                .reduce((s1, s2) -> s1 + System.lineSeparator() + s2)
+                .get();
 
         final ApiErrorTraining apiError = new ApiErrorTraining.ApiErrorBuilder(HttpStatus.INTERNAL_SERVER_ERROR, ex.getLocalizedMessage())
                 .setError(err).setPath(URL_PATH_HELPER.getRequestUri(req)).build();
