@@ -171,7 +171,6 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
             s.setSandboxInstanceRef(sandboxInfo.getId());
             trainingInstance.addSandboxInstanceRef(s);
         }
-
     }
 
     @Override
