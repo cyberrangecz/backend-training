@@ -16,7 +16,6 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.data.domain.Page;
@@ -42,8 +41,6 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
     private static final Logger LOG = LoggerFactory.getLogger(TrainingInstanceServiceImpl.class);
     @Value("${openstack-server.url}")
     private String kypoOpenStackURI;
-    private static final String CREATE_POOL = "/pools/";
-
 
     private TrainingInstanceRepository trainingInstanceRepository;
     private TrainingRunRepository trainingRunRepository;
@@ -155,7 +152,7 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
         httpHeaders.setContentType(MediaType.APPLICATION_JSON);
         String requestJson = "{\"definition\": " + trainingInstance.getTrainingDefinition().getSandboxDefinitionRefId() +
                 ", \"max_size\": " + trainingInstance.getPoolSize() + "}";
-        ResponseEntity<SandboxPoolInfo> poolResponse = restTemplate.exchange(kypoOpenStackURI + CREATE_POOL, HttpMethod.POST, new HttpEntity<>(requestJson, httpHeaders), SandboxPoolInfo.class);
+        ResponseEntity<SandboxPoolInfo> poolResponse = restTemplate.exchange(kypoOpenStackURI + "/pools/", HttpMethod.POST, new HttpEntity<>(requestJson, httpHeaders), SandboxPoolInfo.class);
         if(poolResponse.getStatusCode().isError() || poolResponse.getBody() == null) {
             throw new ServiceLayerException("Error from openstack while creating pool.", ErrorCode.UNEXPECTED_ERROR);
         }
