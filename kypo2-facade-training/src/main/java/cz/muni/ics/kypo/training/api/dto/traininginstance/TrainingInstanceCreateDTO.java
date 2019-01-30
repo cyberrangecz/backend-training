@@ -35,8 +35,8 @@ public class TrainingInstanceCreateDTO {
     private String accessToken;
     @NotNull(message = "{traininginstancecreate.trainingDefinition.NotNull.message}")
     private long trainingDefinitionId;
-    @NotNull(message = "{traininginstancecreate.orgIds.NotNull.message}")
-    private Set<Long> orgIds;
+    @NotNull(message = "{traininginstancecreate.organizerLogins.NotNull.message}")
+    private Set<String> organizerLogins;
 
     @ApiModelProperty(value = "Date when training instance starts.", required = true, example = "2020-11-20T10:28:02.727Z")
     public LocalDateTime getStartTime() {
@@ -93,17 +93,24 @@ public class TrainingInstanceCreateDTO {
     }
 
     @ApiModelProperty(value = "Reference to users which organize training instance.", required = true, example = "[1]")
-    public Set<Long> getOrgIds() {
-        return orgIds;
+    public Set<String> getOrganizerLogins() {
+        return organizerLogins;
     }
 
-    public void setOrgIds(Set<Long> orgIds) {
-        this.orgIds = orgIds;
+    public void setOrganizerLogins(Set<String> organizerLogins) {
+        this.organizerLogins = organizerLogins;
     }
 
     @Override
     public String toString() {
-        return "TrainingInstanceCreateDTO{" + "startTime=" + startTime + ", endTime=" + endTime + ", title='" + title + '\'' + ", poolSize="
-                + poolSize + ", accessToken='" + accessToken + '\'' + ", trainingDefinitionId=" + trainingDefinitionId + ", orgIds=" + orgIds + '}';
+        return "TrainingInstanceCreateDTO{" +
+                "startTime=" + startTime +
+                ", endTime=" + endTime +
+                ", title='" + title + '\'' +
+                ", poolSize=" + poolSize +
+                ", accessToken='" + accessToken + '\'' +
+                ", trainingDefinitionId=" + trainingDefinitionId +
+                ", organizerLogins=" + organizerLogins +
+                '}';
     }
 }

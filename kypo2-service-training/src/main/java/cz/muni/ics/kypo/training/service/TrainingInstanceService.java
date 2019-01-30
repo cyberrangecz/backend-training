@@ -76,11 +76,11 @@ public interface TrainingInstanceService {
     Page<TrainingRun> findTrainingRunsByTrainingInstance(Long trainingInstanceId, Pageable pageable);
 
     /**
-     * Find UserRefs by ids
+     * Find UserRefs by logins
      *
-     * @param ids of wanted UserRefs
-     * @return UserRefs with corresponding ids
+     * @param logins of wanted UserRefs
+     * @return UserRefs with corresponding logins
      */
-    Set<UserRef> findUserRefsByIds(Set<Long> ids);
+    Set<UserRef> findUserRefsByLogins(Set<String> logins);
 
 }

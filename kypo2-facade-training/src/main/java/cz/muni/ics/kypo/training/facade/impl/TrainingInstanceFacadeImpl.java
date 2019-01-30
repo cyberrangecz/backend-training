@@ -14,7 +14,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.querydsl.core.types.Predicate;
@@ -80,7 +79,7 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
             TrainingInstance tI = trainingInstanceMapper.mapUpdateToEntity(trainingInstance);
             //TODO why is allowed change training definition ??
             tI.setTrainingDefinition(trainingDefinitionService.findById(trainingInstance.getTrainingDefinitionId()));
-            tI.setOrganizers(trainingInstanceService.findUserRefsByIds(trainingInstance.getOrgIds()));
+            tI.setOrganizers(trainingInstanceService.findUserRefsByLogins(trainingInstance.getOrganizerLogins()));
             trainingInstanceService.update(tI);
         } catch (ServiceLayerException ex) {
             throw new FacadeLayerException(ex);
@@ -96,7 +95,7 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
             TrainingInstance tI = trainingInstanceMapper.mapCreateToEntity(trainingInstance);
             tI.setTrainingDefinition(trainingDefinitionService.findById(trainingInstance.getTrainingDefinitionId()));
             tI.setId(null);
-            tI.setOrganizers(trainingInstanceService.findUserRefsByIds(trainingInstance.getOrgIds()));
+            tI.setOrganizers(trainingInstanceService.findUserRefsByLogins(trainingInstance.getOrganizerLogins()));
             return trainingInstanceMapper.mapToDTO(trainingInstanceService.create(tI));
         } catch (ServiceLayerException ex) {
             throw new FacadeLayerException(ex);

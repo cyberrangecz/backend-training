@@ -37,8 +37,8 @@ public class TrainingInstanceUpdateDTO {
     private String accessToken;
     @NotNull(message = "{traininginstanceupdate.trainingDefinition.NotNull.message}")
     private Long trainingDefinitionId;
-    @NotNull(message = "{traininginstanceupdate.orgIds.NotNull.message}")
-    private Set<Long> orgIds;
+    @NotNull(message = "{traininginstanceupdate.organizerLogins.NotNull.message}")
+    private Set<String> organizerLogins;
 
     @ApiModelProperty(value = "Main identifier of training instance.", required = true, example = "2")
     public Long getId() {
@@ -104,18 +104,25 @@ public class TrainingInstanceUpdateDTO {
     }
 
     @ApiModelProperty(value = "Reference to users which organize training instance.", required = true, example = "[1]")
-    public Set<Long> getOrgIds() {
-        return orgIds;
+    public Set<String> getOrganizerLogins() {
+        return organizerLogins;
     }
 
-    public void setOrgIds(Set<Long> orgIds) {
-        this.orgIds = orgIds;
+    public void setOrganizerLogins(Set<String> organizerLogins) {
+        this.organizerLogins = organizerLogins;
     }
 
     @Override
     public String toString() {
-        return "TrainingInstanceUpdateDTO{" + "id=" + id + ", startTime=" + startTime + ", endTime=" + endTime + ", title='" + title + '\''
-                + ", poolSize=" + poolSize + ", accessToken='" + accessToken + '\'' + ", trainingDefinitionId=" + trainingDefinitionId + ", orgIds="
-                + orgIds + '}';
+        return "TrainingInstanceUpdateDTO{" +
+                "id=" + id +
+                ", startTime=" + startTime +
+                ", endTime=" + endTime +
+                ", title='" + title + '\'' +
+                ", poolSize=" + poolSize +
+                ", accessToken='" + accessToken + '\'' +
+                ", trainingDefinitionId=" + trainingDefinitionId +
+                ", organizerLogins=" + organizerLogins +
+                '}';
     }
 }

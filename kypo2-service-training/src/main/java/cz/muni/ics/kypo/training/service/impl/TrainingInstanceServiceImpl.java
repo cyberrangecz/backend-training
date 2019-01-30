@@ -31,7 +31,6 @@ import java.util.Optional;
 import java.util.Set;
 
 
-
 /**
  * @author Pavel Seda (441048)
  */
@@ -153,14 +152,15 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
         String requestJson = "{\"definition\": " + trainingInstance.getTrainingDefinition().getSandboxDefinitionRefId() +
                 ", \"max_size\": " + trainingInstance.getPoolSize() + "}";
         ResponseEntity<SandboxPoolInfo> poolResponse = restTemplate.exchange(kypoOpenStackURI + "/pools/", HttpMethod.POST, new HttpEntity<>(requestJson, httpHeaders), SandboxPoolInfo.class);
-        if(poolResponse.getStatusCode().isError() || poolResponse.getBody() == null) {
+        if (poolResponse.getStatusCode().isError() || poolResponse.getBody() == null) {
             throw new ServiceLayerException("Error from openstack while creating pool.", ErrorCode.UNEXPECTED_ERROR);
         }
         trainingInstance.setPoolId(poolResponse.getBody().getId());
 
         //Allocate sandboxes in pool
-        ResponseEntity<List<SandboxInfo>> sandboxResponse = restTemplate.exchange(kypoOpenStackURI + "/pools/" + poolResponse.getBody().getId() + "/", HttpMethod.POST, new HttpEntity<>(httpHeaders), new ParameterizedTypeReference<List<SandboxInfo>>() {});
-        if(sandboxResponse.getStatusCode().isError() || sandboxResponse.getBody() == null) {
+        ResponseEntity<List<SandboxInfo>> sandboxResponse = restTemplate.exchange(kypoOpenStackURI + "/pools/" + poolResponse.getBody().getId() + "/", HttpMethod.POST, new HttpEntity<>(httpHeaders), new ParameterizedTypeReference<List<SandboxInfo>>() {
+        });
+        if (sandboxResponse.getStatusCode().isError() || sandboxResponse.getBody() == null) {
             throw new ServiceLayerException("Error from openstack while allocate sandboxes", ErrorCode.UNEXPECTED_ERROR);
         }
         for (SandboxInfo sandboxInfo : sandboxResponse.getBody()) {
@@ -180,7 +180,7 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
     }
 
     @Override
-    public Set<UserRef> findUserRefsByIds(Set<Long> ids) {
-        return organizerRefRepository.findUsers(ids);
+    public Set<UserRef> findUserRefsByLogins(Set<String> logins) {
+        return organizerRefRepository.findUsers(logins);
     }
 }

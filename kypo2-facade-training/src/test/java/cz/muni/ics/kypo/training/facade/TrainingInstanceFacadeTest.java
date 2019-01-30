@@ -80,7 +80,7 @@ public class TrainingInstanceFacadeTest {
 
         trainingInstanceCreate = new TrainingInstanceCreateDTO();
         trainingInstanceCreate.setTitle("test");
-        trainingInstanceCreate.setOrgIds(new HashSet<>());
+        trainingInstanceCreate.setOrganizerLogins(new HashSet<>());
         trainingInstanceCreate.setTrainingDefinitionId(1L);
 
         trainingInstanceUpdate = new TrainingInstanceUpdateDTO();
@@ -91,7 +91,7 @@ public class TrainingInstanceFacadeTest {
         trainingInstanceUpdate.setEndTime(LocalDateTime.now());
         trainingInstanceUpdate.setStartTime(LocalDateTime.now());
         trainingInstanceUpdate.setTrainingDefinitionId(1L);
-        trainingInstanceUpdate.setOrgIds(new HashSet<>());
+        trainingInstanceUpdate.setOrganizerLogins(new HashSet<>());
     }
 
     @Test
@@ -133,7 +133,7 @@ public class TrainingInstanceFacadeTest {
     public void createTrainingInstance() {
         given(trainingInstanceService.create(any(TrainingInstance.class))).willReturn(trainingInstance1);
         given(trainingDefinitionService.findById(any(Long.class))).willReturn(new TrainingDefinition());
-        given(trainingInstanceService.findUserRefsByIds(any(Set.class))).willReturn(new HashSet());
+        given(trainingInstanceService.findUserRefsByLogins(any(Set.class))).willReturn(new HashSet());
         trainingInstanceFacade.create(trainingInstanceCreate);
         then(trainingInstanceService).should().create(any(TrainingInstance.class));
     }
