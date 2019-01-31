@@ -14,8 +14,8 @@ import cz.muni.ics.kypo.training.api.dto.infolevel.InfoLevelUpdateDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionCreateDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionUpdateDTO;
-import cz.muni.ics.kypo.training.datadto.RoleType;
-import cz.muni.ics.kypo.training.exception.FacadeLayerException;
+import cz.muni.ics.kypo.training.api.enums.RoleType;
+import cz.muni.ics.kypo.training.exceptions.FacadeLayerException;
 import cz.muni.ics.kypo.training.facade.TrainingDefinitionFacade;
 import cz.muni.ics.kypo.training.persistence.model.TrainingDefinition;
 import cz.muni.ics.kypo.training.persistence.model.enums.LevelType;
@@ -525,14 +525,14 @@ public class TrainingDefinitionsRestController {
     })
     @GetMapping(path = "/organizers", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> getOrganizers(@QuerydslPredicate(root = TrainingDefinition.class) Predicate predicate,
-                                               Pageable pageable) {
+                                                Pageable pageable) {
         LOG.debug("getOrganizers()");
         try {
             List<String> designers = trainingDefinitionFacade.getUsersWithGivenRole(RoleType.ORGANIZER, pageable);
             return ResponseEntity.ok(SquigglyUtils.stringify(objectMapper, designers));
         } catch (FacadeLayerException ex) {
-            throw ExceptionSorter.throwException(ex);        }
+            throw ExceptionSorter.throwException(ex);
+        }
     }
-
 
 }

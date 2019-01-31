@@ -38,7 +38,7 @@ import java.util.Set;
 public class TrainingInstanceServiceImpl implements TrainingInstanceService {
 
     private static final Logger LOG = LoggerFactory.getLogger(TrainingInstanceServiceImpl.class);
-    @Value("${openstack-server.url}")
+    @Value("${openstack-server.uri}")
     private String kypoOpenStackURI;
 
     private TrainingInstanceRepository trainingInstanceRepository;
