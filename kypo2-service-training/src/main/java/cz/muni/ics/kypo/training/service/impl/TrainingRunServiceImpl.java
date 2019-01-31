@@ -58,20 +58,19 @@ public class TrainingRunServiceImpl implements TrainingRunService {
     private UserRefRepository participantRefRepository;
     private HintRepository hintRepository;
     private AuditService auditService;
-
-    @Autowired
     private RestTemplate restTemplate;
 
     @Autowired
     public TrainingRunServiceImpl(TrainingRunRepository trainingRunRepository, AbstractLevelRepository abstractLevelRepository,
                                   TrainingInstanceRepository trainingInstanceRepository, UserRefRepository participantRefRepository,
-                                  HintRepository hintRepository, AuditService auditService) {
+                                  HintRepository hintRepository, AuditService auditService, RestTemplate restTemplate) {
         this.trainingRunRepository = trainingRunRepository;
         this.abstractLevelRepository = abstractLevelRepository;
         this.trainingInstanceRepository = trainingInstanceRepository;
         this.participantRefRepository = participantRefRepository;
         this.hintRepository = hintRepository;
         this.auditService = auditService;
+        this.restTemplate = restTemplate;
     }
 
     @Override

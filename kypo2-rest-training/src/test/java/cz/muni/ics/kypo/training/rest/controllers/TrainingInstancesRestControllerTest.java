@@ -193,7 +193,7 @@ public class TrainingInstancesRestControllerTest {
     }
 
     @Test
-    public void allocateSandboxes_withFecadeException() throws Exception {
+    public void allocateSandboxesWithFacadeException() throws Exception {
         Exception exceptionThrow = new ServiceLayerException("message", ErrorCode.RESOURCE_NOT_FOUND);
         willThrow(new FacadeLayerException(exceptionThrow)).given(trainingInstanceFacade).allocateSandboxes(any(Long.class));
         Exception exception =

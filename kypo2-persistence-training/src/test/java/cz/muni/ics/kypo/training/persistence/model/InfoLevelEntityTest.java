@@ -1,5 +1,6 @@
 package cz.muni.ics.kypo.training.persistence.model;
 
+import org.h2.jdbc.JdbcSQLException;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -10,9 +11,12 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.context.annotation.Import;
+import org.springframework.dao.DataAccessException;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import cz.muni.ics.kypo.training.persistence.config.PersistenceConfigTest;
+
+import javax.persistence.PersistenceException;
 
 import static org.junit.Assert.assertNotNull;
 
@@ -40,7 +44,7 @@ public class InfoLevelEntityTest {
     public void init() {
         infoLevel = new InfoLevel();
         infoLevel.setTitle("infoLevel");
-        infoLevel.setContent("content for info level");
+        infoLevel.setContent("Some content, even markdown language possible.");
 
     }
 
@@ -48,6 +52,19 @@ public class InfoLevelEntityTest {
     public void saveShouldPersistData() {
         InfoLevel iL = this.entityManager.persistFlushFind(infoLevel);
         assertNotNull(iL.getId());
+    }
+
+    @Test
+    public void testUniquenessOfInfoLevelContent() {
+        this.entityManager.persistFlushFind(infoLevel);
+
+        InfoLevel notUniqueContent = new InfoLevel();
+        notUniqueContent.setTitle("Not unique info level");
+        notUniqueContent.setContent("Some content, even markdown language possible.");
+
+        thrown.expect(PersistenceException.class);
+        this.entityManager.persistAndFlush(notUniqueContent);
+
     }
 
 }

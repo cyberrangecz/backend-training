@@ -3,6 +3,7 @@ package cz.muni.ics.kypo.training.service;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.PathBuilder;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
+import cz.muni.ics.kypo.training.persistence.model.TrainingDefinition;
 import cz.muni.ics.kypo.training.persistence.model.TrainingInstance;
 import cz.muni.ics.kypo.training.persistence.model.TrainingRun;
 import cz.muni.ics.kypo.training.persistence.repository.AccessTokenRepository;
@@ -11,6 +12,8 @@ import cz.muni.ics.kypo.training.persistence.repository.TrainingInstanceReposito
 import cz.muni.ics.kypo.training.persistence.repository.TrainingRunRepository;
 import cz.muni.ics.kypo.training.persistence.repository.UserRefRepository;
 import cz.muni.ics.kypo.training.service.impl.TrainingInstanceServiceImpl;
+import cz.muni.ics.kypo.training.utils.SandboxInfo;
+import cz.muni.ics.kypo.training.utils.SandboxPoolInfo;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -19,21 +22,22 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.*;
 import static org.mockito.BDDMockito.*;
 
 @RunWith(SpringRunner.class)
@@ -46,36 +50,36 @@ public class TrainingInstanceServiceTest {
 
     @Mock
     private TrainingInstanceRepository trainingInstanceRepository;
-
     @Mock
     private RestTemplate restTemplate;
-
     @Mock
     private AccessTokenRepository accessTokenRepository;
-
     @Mock
     private TrainingRunRepository trainingRunRepository;
-
-    private TrainingInstance trainingInstance1, trainingInstance2, trainingInstanceInvalid;
-
-    private TrainingRun trainingRun1, trainingRun2;
-
-    private String accessToken = "1asd2sdASD12dSv5S5a4sd5sad45FFe54hLOFE4547fe54Fe5f";
-
     @Mock
     private UserRefRepository organizerRefRepository;
+
+    @Mock
+    private TrainingDefinition trainingDefinition;
+    @Mock
+    private SandboxPoolInfo sandboxPoolInfo;
+    @Mock
+    private SandboxInfo sandboxInfo;
+    private TrainingInstance trainingInstance1, trainingInstance2, trainingInstanceInvalid;
+    private TrainingRun trainingRun1, trainingRun2;
 
     @Before
     public void init() {
         MockitoAnnotations.initMocks(this);
         trainingInstanceService = new TrainingInstanceServiceImpl(trainingInstanceRepository, accessTokenRepository,
-                trainingRunRepository, organizerRefRepository);
+                trainingRunRepository, organizerRefRepository, restTemplate);
 
         trainingInstance1 = new TrainingInstance();
         trainingInstance1.setId(1L);
         trainingInstance1.setTitle("test1");
-        trainingInstance1.setAccessToken(accessToken);
+        trainingInstance1.setAccessToken("pass-9876");
         trainingInstance1.setEndTime(LocalDateTime.now().minusHours(1L));
+        trainingInstance1.setTrainingDefinition(trainingDefinition);
 
         trainingInstance2 = new TrainingInstance();
         trainingInstance2.setId(2L);
@@ -111,10 +115,9 @@ public class TrainingInstanceServiceTest {
 
     @Test
     public void getNonexistentTrainingInstanceById() {
-        Long id = 6L;
         thrown.expect(ServiceLayerException.class);
-        thrown.expectMessage("Training instance with id: " + id + " not found.");
-        trainingInstanceService.findById(id);
+        thrown.expectMessage("Training instance with id: " + 10L + " not found.");
+        trainingInstanceService.findById(10L);
     }
 
     @Test
@@ -187,7 +190,7 @@ public class TrainingInstanceServiceTest {
     }
 
     @Test
-    public void findTrainingRunsbyTrainingInstance() {
+    public void findTrainingRunsByTrainingInstance() {
         List<TrainingRun> expected = new ArrayList<>();
         expected.add(trainingRun1);
         expected.add(trainingRun2);
@@ -200,13 +203,57 @@ public class TrainingInstanceServiceTest {
     }
 
     @Test
-    public void findTrainingRunsbyTrainingInstance_notContainedId() {
+    public void findTrainingRunsByTrainingInstance_notContainedId() {
         Page p = new PageImpl<>(new ArrayList<>());
 
         given(trainingRunRepository.findAllByTrainingInstanceId(any(Long.class), any(Pageable.class))).willReturn(p);
 
         Page pr = trainingInstanceService.findTrainingRunsByTrainingInstance(10L, PageRequest.of(0, 2));
         assertEquals(0, pr.getTotalElements());
+    }
+
+    @Test
+    public void allocateSandboxes() {
+        when(trainingDefinition.getSandboxDefinitionRefId()).thenReturn(1L);
+        when(sandboxPoolInfo.getId()).thenReturn(4L);
+        when(sandboxInfo.getId()).thenReturn(2L);
+
+        given(trainingInstanceRepository.findById(trainingInstance1.getId())).willReturn(Optional.ofNullable(trainingInstance1));
+        given(restTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(SandboxPoolInfo.class))).
+                willReturn(new ResponseEntity<SandboxPoolInfo>(sandboxPoolInfo, HttpStatus.OK));
+        given(restTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
+                willReturn(new ResponseEntity<List<SandboxInfo>>(new ArrayList<>(Collections.singletonList(sandboxInfo)), HttpStatus.OK));
+
+        trainingInstanceService.allocateSandboxes(trainingInstance1.getId());
+        assertTrue(trainingInstance1.getSandboxInstanceRefs().stream().anyMatch(s -> s.getSandboxInstanceRef().equals(2L)));
+    }
+
+    @Test
+    public void allocateSandboxesWithErrorFromOpenStackPool() {
+        when(trainingDefinition.getSandboxDefinitionRefId()).thenReturn(1L);
+
+        given(trainingInstanceRepository.findById(trainingInstance1.getId())).willReturn(Optional.ofNullable(trainingInstance1));
+        given(restTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(SandboxPoolInfo.class))).
+                willReturn(new ResponseEntity<SandboxPoolInfo>(sandboxPoolInfo, HttpStatus.NOT_FOUND));
+
+        thrown.expect(ServiceLayerException.class);
+        thrown.expectMessage("Error from openstack while creating pool.");
+        trainingInstanceService.allocateSandboxes(trainingInstance1.getId());
+    }
+
+    @Test
+    public void allocateSandboxesWithErrorFromOpenStackSandboxes() {
+        when(trainingDefinition.getSandboxDefinitionRefId()).thenReturn(1L);
+        when(sandboxPoolInfo.getId()).thenReturn(4L);
+
+        given(trainingInstanceRepository.findById(trainingInstance1.getId())).willReturn(Optional.ofNullable(trainingInstance1));
+        given(restTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(SandboxPoolInfo.class))).
+                willReturn(new ResponseEntity<SandboxPoolInfo>(sandboxPoolInfo, HttpStatus.OK));
+        given(restTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
+                willReturn(new ResponseEntity<List<SandboxInfo>>(new ArrayList<>(Collections.singletonList(sandboxInfo)), HttpStatus.CONFLICT));
+        thrown.expect(ServiceLayerException.class);
+        thrown.expectMessage("Error from openstack while allocate sandboxes.");
+        trainingInstanceService.allocateSandboxes(trainingInstance1.getId());
     }
 
     @After

@@ -1,3 +1,5 @@
+package cz.muni.ics.kypo.training.facade;
+
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.PathBuilder;
 import cz.muni.ics.kypo.training.api.dto.IsCorrectFlagDTO;
@@ -31,7 +33,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 import static org.mockito.BDDMockito.*;
 
 @RunWith(SpringRunner.class)
@@ -150,7 +152,7 @@ public class TrainingRunFacadeTest {
         given(trainingRunService.isCorrectFlag(trainingRun1.getId(), "flag")).willReturn(true);
         given(trainingRunService.getRemainingAttempts(trainingRun1.getId())).willReturn(1);
         IsCorrectFlagDTO correctFlagDTO = trainingRunFacade.isCorrectFlag(trainingRun1.getId(), "flag");
-        assertEquals(true, correctFlagDTO.isCorrect());
+        assertTrue(correctFlagDTO.isCorrect());
         assertEquals(1, correctFlagDTO.getRemainingAttempts());
     }
 
@@ -158,7 +160,7 @@ public class TrainingRunFacadeTest {
     public void isCorrectFlagAfterSolutionTaken() {
         given(trainingRunService.isCorrectFlag(trainingRun1.getId(), "flag")).willReturn(false);
         IsCorrectFlagDTO correctFlagDTO = trainingRunFacade.isCorrectFlag(trainingRun1.getId(), "flag");
-        assertEquals(false, correctFlagDTO.isCorrect());
+        assertFalse(correctFlagDTO.isCorrect());
         assertEquals(0, correctFlagDTO.getRemainingAttempts());
     }
 
@@ -180,7 +182,7 @@ public class TrainingRunFacadeTest {
 
     @Test
     public void getNextLevel() {
-        given(trainingRunService.getNextLevel(3L)).willReturn((AbstractLevel) infoLevel);
+        given(trainingRunService.getNextLevel(3L)).willReturn(infoLevel);
         trainingRunFacade.getNextLevel(3L);
         then(trainingRunService).should().getNextLevel(3L);
     }
@@ -224,6 +226,19 @@ public class TrainingRunFacadeTest {
     public void evaluateResponsesToAssessment() {
         trainingRunFacade.evaluateResponsesToAssessment(trainingRun1.getId(), "response");
         then(trainingRunService).should().evaluateResponsesToAssessment(trainingRun1.getId(), "response");
+    }
+
+    @Test
+    public void archiveTrainingRun() {
+        trainingRunFacade.archiveTrainingRun(trainingRun1.getId());
+        then(trainingRunService).should().archiveTrainingRun(trainingRun1.getId());
+    }
+
+    @Test
+    public void archiveTrainingRunWithServiceException() {
+        willThrow(ServiceLayerException.class).given(trainingRunService).archiveTrainingRun(trainingRun1.getId());
+        thrown.expect(FacadeLayerException.class);
+        trainingRunFacade.archiveTrainingRun(trainingRun1.getId());
     }
 
     private void deepEquals(TrainingRun expected, TrainingRunDTO actual) {

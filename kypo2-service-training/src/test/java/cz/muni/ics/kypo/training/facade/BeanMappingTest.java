@@ -1,3 +1,5 @@
+package cz.muni.ics.kypo.training.facade;
+
 import cz.muni.ics.kypo.training.api.PageResultResource;
 import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
 import cz.muni.ics.kypo.training.api.dto.infolevel.InfoLevelDTO;

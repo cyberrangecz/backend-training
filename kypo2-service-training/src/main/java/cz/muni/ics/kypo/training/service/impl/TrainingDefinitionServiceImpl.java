@@ -61,12 +61,8 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     private String userAndGroupUrl;
 
 
-    @Autowired
     private HttpServletRequest servletRequest;
-
-    @Autowired
     private RestTemplate restTemplate;
-
     private TrainingDefinitionRepository trainingDefinitionRepository;
     private TrainingInstanceRepository trainingInstanceRepository;
     private AbstractLevelRepository abstractLevelRepository;
@@ -84,7 +80,8 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     public TrainingDefinitionServiceImpl(TrainingDefinitionRepository trainingDefinitionRepository,
                                          AbstractLevelRepository abstractLevelRepository, InfoLevelRepository infoLevelRepository, GameLevelRepository gameLevelRepository,
                                          AssessmentLevelRepository assessmentLevelRepository, TrainingInstanceRepository trainingInstanceRepository,
-                                         UserRefRepository userRefRepository, TDViewGroupRepository viewGroupRepository, IDMGroupRefRepository idmGroupRefRepository) {
+                                         UserRefRepository userRefRepository, TDViewGroupRepository viewGroupRepository, IDMGroupRefRepository idmGroupRefRepository,
+                                         RestTemplate restTemplate, HttpServletRequest servletRequest) {
         this.trainingDefinitionRepository = trainingDefinitionRepository;
         this.abstractLevelRepository = abstractLevelRepository;
         this.gameLevelRepository = gameLevelRepository;
@@ -94,6 +91,8 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
         this.userRefRepository = userRefRepository;
         this.viewGroupRepository = viewGroupRepository;
         this.idmGroupRefRepository = idmGroupRefRepository;
+        this.restTemplate = restTemplate;
+        this.servletRequest = servletRequest;
     }
 
     @Override
@@ -532,13 +531,13 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     @Override
     public UserRef findUserRefById(Long id) {
         return userRefRepository.findById(id).orElseThrow(
-                () -> new ServiceLayerException("UserRef with id" + id + " not found.", ErrorCode.RESOURCE_NOT_FOUND));
+                () -> new ServiceLayerException("UserRef with id " + id + " not found.", ErrorCode.RESOURCE_NOT_FOUND));
     }
 
     @Override
     public UserRef findUserRefByLogin(String login) {
         return userRefRepository.findUserByUserRefLogin(login).orElseThrow(
-                () -> new ServiceLayerException("UserRef with login" + login + " not found.", ErrorCode.RESOURCE_NOT_FOUND));
+                () -> new ServiceLayerException("UserRef with login " + login + " not found.", ErrorCode.RESOURCE_NOT_FOUND));
     }
 
     @Override
@@ -556,7 +555,6 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
 
     @Override
     public List<String> getUsersWithGivenRole(RoleType roleType, Pageable pageable) {
-        List<String> logins = new ArrayList<>();
         List<Long> groupsIds = new ArrayList<>();
         idmGroupRefRepository.findAllByRoleType(roleType.toString()).forEach(g -> groupsIds.add(g.getIdmGroupId()));
         if (groupsIds.isEmpty()) {
@@ -572,8 +570,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
         if (usersResponse.getStatusCode().isError() || usersResponse.getBody() == null) {
             throw new ServiceLayerException("Error while obtaining info about users in designers groups.", ErrorCode.UNEXPECTED_ERROR);
         }
-        usersResponse.getBody().getContent().forEach(u -> logins.add(u.getLogin()));
-        return logins;
+        return usersResponse.getBody().getContent().stream().map(UserInfoDTO::getLogin).collect(Collectors.toList());
     }
 
     private AbstractLevel findLastLevel(Long levelId) {

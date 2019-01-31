@@ -16,9 +16,12 @@ import org.json.simple.parser.ParseException;
 import org.junit.*;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -86,8 +89,7 @@ public class TrainingRunServiceTest {
     public void init() {
         MockitoAnnotations.initMocks(this);
         trainingRunService = new TrainingRunServiceImpl(trainingRunRepository, abstractLevelRepository, trainingInstanceRepository,
-                participantRefRepository, hintRepository, auditService);
-
+                participantRefRepository, hintRepository, auditService, restTemplate);
         parser = new JSONParser();
         try {
             questions = parser.parse(new FileReader(ResourceUtils.getFile("classpath:questions.json"))).toString();
@@ -122,7 +124,7 @@ public class TrainingRunServiceTest {
 
         trainingInstance2 = new TrainingInstance();
         trainingInstance2.setId(2L);
-        trainingInstance2.setSandboxInstanceRefs(new HashSet<>(Arrays.asList(sandboxInstanceRef2)));
+        trainingInstance2.setSandboxInstanceRefs(new HashSet<>(Collections.singletonList(sandboxInstanceRef2)));
         trainingInstance2.setAccessToken("keyword-1234");
         trainingInstance2.setTrainingDefinition(trainingDefinition2);
 
@@ -132,6 +134,7 @@ public class TrainingRunServiceTest {
         trainingInstance1.setEndTime(LocalDateTime.now().plusHours(1L));
         trainingInstance1.setTitle("TrainingInstance1");
         trainingInstance1.setPoolSize(5);
+        trainingInstance1.setPoolId(1L);
         trainingInstance1.setAccessToken("keyword-5678");
         trainingInstance1.setTrainingDefinition(trainingDefinition);
         trainingInstance1.setSandboxInstanceRefs(new HashSet<>(Arrays.asList(sandboxInstanceRef1, sandboxInstanceRef2)));
@@ -179,7 +182,7 @@ public class TrainingRunServiceTest {
 
         sandboxInfo = new SandboxInfo();
         sandboxInfo.setId(7L);
-        sandboxInfo.setStatus("READY");
+        sandboxInfo.setStatus("COMPLETE");
 
         assessmentLevel = new AssessmentLevel();
         assessmentLevel.setId(3L);
@@ -238,21 +241,23 @@ public class TrainingRunServiceTest {
 
     //TODO FIX error with allocating sandboxed
 
-//    @Test
-//    public void accessTrainingRun() {
-//        mockSpringSecurityContextForGet();
-//        trainingInstance1.setTrainingDefinition(trainingDefinition);
-//        given(trainingDefinitionRepository.save(any(TrainingDefinition.class))).willReturn(trainingDefinition);
-//        given(trainingInstanceRepository.findAllByStartTimeAfterAndEndTimeBefore(any(LocalDateTime.class))).willReturn(Arrays.asList(trainingInstance1));
-//        given(trainingRunRepository.findFreeSandboxesOfTrainingInstance(trainingInstance1.getId())).willReturn(new HashSet<>(Arrays.asList(sandboxInstanceRef1)));
-//        given(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class), anyString())).willReturn(new ResponseEntity<List<SandboxInfo>>(new ArrayList<>(Arrays.asList(sandboxInfo)), HttpStatus.OK));
-//        given(abstractLevelRepository.findById(trainingInstance1.getTrainingDefinition().getStartingLevel())).willReturn(Optional.of(gameLevel));
-//        given(participantRefRepository.findUserByUserRefLogin(participantRef.getUserRefLogin())).willReturn(Optional.of(participantRef));
-//        given(participantRefRepository.save(new UserRef(participantRef.getUserRefLogin()))).willReturn(participantRef);
-//        given(trainingRunRepository.save(any(TrainingRun.class))).willReturn(trainingRun1);
-//        TrainingRun trainingRun = trainingRunService.accessTrainingRun(trainingInstance1.getAccessToken());
-//        assertEquals(trainingRun1, trainingRun);
-//    }
+    @Test
+    public void accessTrainingRun() {
+        mockSpringSecurityContextForGet();
+
+        trainingInstance1.setTrainingDefinition(trainingDefinition);
+        given(trainingDefinitionRepository.save(any(TrainingDefinition.class))).willReturn(trainingDefinition);
+        given(trainingInstanceRepository.findAllByStartTimeAfterAndEndTimeBefore(any(LocalDateTime.class))).willReturn(Arrays.asList(trainingInstance1));
+        given(trainingRunRepository.findFreeSandboxesOfTrainingInstance(trainingInstance1.getId())).willReturn(new HashSet<>(Arrays.asList(sandboxInstanceRef1)));
+        given(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
+                willReturn(new ResponseEntity<List<SandboxInfo>>(new ArrayList<>(Arrays.asList(sandboxInfo)), HttpStatus.OK));
+        given(abstractLevelRepository.findById(trainingInstance1.getTrainingDefinition().getStartingLevel())).willReturn(Optional.of(gameLevel));
+        given(participantRefRepository.findUserByUserRefLogin(participantRef.getUserRefLogin())).willReturn(Optional.of(participantRef));
+        given(participantRefRepository.save(new UserRef(participantRef.getUserRefLogin()))).willReturn(participantRef);
+        given(trainingRunRepository.save(any(TrainingRun.class))).willReturn(trainingRun1);
+        TrainingRun trainingRun = trainingRunService.accessTrainingRun(trainingInstance1.getAccessToken());
+        assertEquals(trainingRun1, trainingRun);
+    }
 
     private void mockSpringSecurityContextForGet() {
         JsonObject sub = new JsonObject();
@@ -271,7 +276,7 @@ public class TrainingRunServiceTest {
     public void isCorrectFlag() {
         mockSpringSecurityContextForGet();
         given(trainingRunRepository.findByIdWithLevel(trainingRun1.getId())).willReturn(Optional.of(trainingRun1));
-        Boolean isCorrect = trainingRunService.isCorrectFlag(trainingRun1.getId(), "flag");
+        boolean isCorrect = trainingRunService.isCorrectFlag(trainingRun1.getId(), "flag");
         assertTrue(isCorrect);
         assertTrue(trainingRun1.isLevelAnswered());
     }
@@ -280,7 +285,7 @@ public class TrainingRunServiceTest {
     public void isCorrectFlagNotCorrect() {
         mockSpringSecurityContextForGet();
         given(trainingRunRepository.findByIdWithLevel(trainingRun1.getId())).willReturn(Optional.of(trainingRun1));
-        Boolean isCorrect = trainingRunService.isCorrectFlag(trainingRun1.getId(), "wrong flag");
+        boolean isCorrect = trainingRunService.isCorrectFlag(trainingRun1.getId(), "wrong flag");
         assertFalse(isCorrect);
         assertFalse(trainingRun1.isLevelAnswered());
     }
@@ -349,7 +354,7 @@ public class TrainingRunServiceTest {
 
     @Test
     public void getLevelOrderWrongFirstLevel() {
-        given(abstractLevelRepository.findById(1L)).willReturn(Optional.ofNullable(null));
+        given(abstractLevelRepository.findById(1L)).willReturn(Optional.empty());
         thrown.expect(ServiceLayerException.class);
         thrown.expectMessage("Level with id " + 1L + " not found.");
         trainingRunService.getLevelOrder(1L, 2L);
@@ -399,7 +404,7 @@ public class TrainingRunServiceTest {
 
     @Test
     public void findAllByTrainingDefinitionAndParticipant() {
-        Page<TrainingRun> expectedPage = new PageImpl<>(Arrays.asList(trainingRun2));
+        Page<TrainingRun> expectedPage = new PageImpl<>(Collections.singletonList(trainingRun2));
         mockSpringSecurityContextForGet();
         given(trainingRunRepository.findAllByTrainingDefinitionIdAndParticipantRefLogin(any(Long.class), any(String.class), any(Pageable.class))).willReturn(expectedPage);
 
@@ -428,14 +433,6 @@ public class TrainingRunServiceTest {
         assertTrue(optionalTrainingRun.isPresent());
         assertTrue(optionalTrainingRun.get().getCurrentLevel() instanceof GameLevel);
     }
-
-//    @Test
-//    public void createTrainingRun() {
-//        given(trainingRunRepository.save(trainingRun1)).willReturn(trainingRun1);
-//        TrainingRun tI = trainingRunService.create(trainingRun1);
-//        assertEquals(trainingRun1.getId(), tI.getId());
-//        then(trainingRunRepository).should().save(trainingRun1);
-//    }
 
     @Test
     public void getNextLevel() {
@@ -512,7 +509,7 @@ public class TrainingRunServiceTest {
         given(trainingRunRepository.findByIdWithLevel(any(Long.class))).willReturn(Optional.of(trainingRun1));
         TrainingRun trainingRun = trainingRunService.resumeTrainingRun(trainingRun1.getId());
 
-        assertTrue(trainingRun.getId().equals(trainingRun1.getId()));
+        assertEquals(trainingRun.getId(), trainingRun1.getId());
         assertTrue(trainingRun.getCurrentLevel() instanceof GameLevel);
     }
 
