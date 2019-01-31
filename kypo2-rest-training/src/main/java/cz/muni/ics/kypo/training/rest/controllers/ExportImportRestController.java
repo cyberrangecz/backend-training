@@ -69,7 +69,7 @@ public class ExportImportRestController {
             Squiggly.init(objectMapper, fields);
             return ResponseEntity.ok(SquigglyUtils.stringify(objectMapper, exportImportFacade.dbExport(trainingDefinitionId)));
         } catch (FacadeLayerException ex) {
-            throw new ResourceNotFoundException(ex.getLocalizedMessage());
+            throw new ResourceNotFoundException(ex);
         }
     }
 
@@ -103,21 +103,20 @@ public class ExportImportRestController {
             value = "POST Sandbox Definition.",
             response = Void.class,
             nickname = "createSandboxDefinitionInOpenStack",
-            produces = "application/yaml",
-            consumes = "application/yaml"
+            produces = "text/yaml",
+            consumes = "text/yaml"
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Sandbox definition created.", response = SandboxDefinitionCreateDTO.class),
             @ApiResponse(code = 404, message = "Training definition with given id not found."),
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.")
     })
-    @PostMapping(path = "/imports/sandbox-definitions", consumes = "text/yaml")
-    public ResponseEntity<Object> createSandboxDefinitionInOpenStack(@RequestBody TextNode sandboxDefinitionCreateDTO) {
+    @PostMapping(path = "/imports/sandbox-definitions", consumes = "text/yaml", produces = "text/yaml")
+    public ResponseEntity<Object> createSandboxDefinitionInOpenStack(@RequestBody SandboxDefinitionCreateDTO sandboxDefinitionCreateDTO) {
         try {
-            SandboxDefinitionCreateDTO sandboxDefintion = objectMapper.readValue(sandboxDefinitionCreateDTO.asText(), SandboxDefinitionCreateDTO.class);
-            return ResponseEntity.ok(exportImportFacade.createSandboxDefinitionInOpenStack(sandboxDefintion));
-        } catch (FacadeLayerException | IOException ex) {
-            throw new ResourceNotFoundException(ex.getLocalizedMessage());
+            return ResponseEntity.ok(exportImportFacade.createSandboxDefinitionInOpenStack(sandboxDefinitionCreateDTO));
+        } catch (FacadeLayerException ex) {
+            throw new ResourceNotFoundException(ex);
         }
     }
 

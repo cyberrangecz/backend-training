@@ -17,7 +17,7 @@
         <swagger2markup.version>1.2.0</swagger2markup.version>
         <swagger.directory>${project.build.directory}/generated-docs/swagger</swagger.directory>
         <asciidoctor.directory>${project.build.directory}/generated-docs/asciidoc</asciidoctor.directory>
-        <skipDocs>true</skipDocs>
+        <skipDocs>false</skipDocs>
     </properties>
 
     <developers>
@@ -115,6 +115,7 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
             </plugin>
+            <!--
             <plugin>
                 <groupId>com.github.kongchen</groupId>
                 <artifactId>swagger-maven-plugin</artifactId>
@@ -228,6 +229,7 @@
                     </execution>
                 </executions>
             </plugin>
+            -->
         </plugins>
     </build>
 
