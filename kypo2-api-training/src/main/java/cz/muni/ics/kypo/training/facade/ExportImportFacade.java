@@ -14,6 +14,4 @@ public interface ExportImportFacade {
     ExportTrainingDefinitionAndLevelsDTO dbExport(Long trainingDefinitionId);
 
     TrainingDefinitionDTO dbImport(ImportTrainingDefinitionDTO importTrainingDefinitionDTO);
-
-    ResponseEntity<SandboxDefinitionCreateDTO> createSandboxDefinitionInOpenStack(SandboxDefinitionCreateDTO sandboxDefinitionCreateDTO);
 }

@@ -127,18 +127,4 @@ public class ExportImportFacadeImpl implements ExportImportFacade {
         return trainingDefinitionMapper.mapToDTO(trainingDefinitionService.create(newDefinition));
     }
 
-    @Override
-    public ResponseEntity<SandboxDefinitionCreateDTO> createSandboxDefinitionInOpenStack(SandboxDefinitionCreateDTO sandboxDefinitionCreateDTO) {
-        HttpHeaders httpHeaders = new HttpHeaders();
-        httpHeaders.setAccept(List.of(MediaType.APPLICATION_JSON));
-        httpHeaders.set("Content-Type", "application/yaml");
-//        return restTemplate.exchange(kypoOpenStackURI + "/definitions/",
-//                HttpMethod.POST,
-//                new HttpEntity<>(sandboxDefinitionCreateDTO, httpHeaders),
-//                new ParameterizedTypeReference<SandboxDefinitionCreateDTO>() {
-//                });
-
-        sandboxDefinitionCreateDTO.toString();
-        return null;
-    }
 }

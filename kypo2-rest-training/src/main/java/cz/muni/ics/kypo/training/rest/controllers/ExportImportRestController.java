@@ -94,30 +94,4 @@ public class ExportImportRestController {
         return ResponseEntity.ok(SquigglyUtils.stringify(objectMapper, trainingDefinitionResource));
     }
 
-    /**
-     * Create Sandbox definition in OpenStack.
-     *
-     * @return Created Sandbox Definition
-     */
-    @ApiOperation(httpMethod = "POST",
-            value = "POST Sandbox Definition.",
-            response = Void.class,
-            nickname = "createSandboxDefinitionInOpenStack",
-            produces = "text/yaml",
-            consumes = "text/yaml"
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Sandbox definition created.", response = SandboxDefinitionCreateDTO.class),
-            @ApiResponse(code = 404, message = "Training definition with given id not found."),
-            @ApiResponse(code = 500, message = "Unexpected condition was encountered.")
-    })
-    @PostMapping(path = "/imports/sandbox-definitions", consumes = "text/yaml", produces = "text/yaml")
-    public ResponseEntity<Object> createSandboxDefinitionInOpenStack(@RequestBody SandboxDefinitionCreateDTO sandboxDefinitionCreateDTO) {
-        try {
-            return ResponseEntity.ok(exportImportFacade.createSandboxDefinitionInOpenStack(sandboxDefinitionCreateDTO));
-        } catch (FacadeLayerException ex) {
-            throw new ResourceNotFoundException(ex);
-        }
-    }
-
 }
