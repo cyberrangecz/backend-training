@@ -45,17 +45,17 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
     private TrainingRunRepository trainingRunRepository;
     private AccessTokenRepository accessTokenRepository;
     private UserRefRepository organizerRefRepository;
-
-    @Autowired
     private RestTemplate restTemplate;
 
     @Autowired
     public TrainingInstanceServiceImpl(TrainingInstanceRepository trainingInstanceRepository, AccessTokenRepository accessTokenRepository,
-                                       TrainingRunRepository trainingRunRepository, UserRefRepository organizerRefRepository) {
+                                       TrainingRunRepository trainingRunRepository, UserRefRepository organizerRefRepository,
+                                       RestTemplate restTemplate) {
         this.trainingInstanceRepository = trainingInstanceRepository;
         this.trainingRunRepository = trainingRunRepository;
         this.accessTokenRepository = accessTokenRepository;
         this.organizerRefRepository = organizerRefRepository;
+        this.restTemplate = restTemplate;
     }
 
     @Override
@@ -158,10 +158,9 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
         trainingInstance.setPoolId(poolResponse.getBody().getId());
 
         //Allocate sandboxes in pool
-        ResponseEntity<List<SandboxInfo>> sandboxResponse = restTemplate.exchange(kypoOpenStackURI + "/pools/" + poolResponse.getBody().getId() + "/", HttpMethod.POST, new HttpEntity<>(httpHeaders), new ParameterizedTypeReference<List<SandboxInfo>>() {
-        });
-        if (sandboxResponse.getStatusCode().isError() || sandboxResponse.getBody() == null) {
-            throw new ServiceLayerException("Error from openstack while allocate sandboxes", ErrorCode.UNEXPECTED_ERROR);
+        ResponseEntity<List<SandboxInfo>> sandboxResponse = restTemplate.exchange(kypoOpenStackURI + "/pools/" + poolResponse.getBody().getId() + "/", HttpMethod.POST, new HttpEntity<>(httpHeaders), new ParameterizedTypeReference<List<SandboxInfo>>() {});
+        if(sandboxResponse.getStatusCode().isError() || sandboxResponse.getBody() == null) {
+            throw new ServiceLayerException("Error from openstack while allocate sandboxes.", ErrorCode.UNEXPECTED_ERROR);
         }
         for (SandboxInfo sandboxInfo : sandboxResponse.getBody()) {
             SandboxInstanceRef s = new SandboxInstanceRef();

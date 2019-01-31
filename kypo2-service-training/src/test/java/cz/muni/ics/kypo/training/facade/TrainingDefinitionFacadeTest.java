@@ -1,6 +1,9 @@
+package cz.muni.ics.kypo.training.facade;
+
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.PathBuilder;
 import cz.muni.ics.kypo.training.api.PageResultResource;
+import cz.muni.ics.kypo.training.api.dto.AbstractLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelUpdateDTO;
 import cz.muni.ics.kypo.training.api.dto.gamelevel.GameLevelUpdateDTO;
 import cz.muni.ics.kypo.training.api.dto.infolevel.InfoLevelUpdateDTO;
@@ -10,10 +13,9 @@ import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionUp
 import cz.muni.ics.kypo.training.api.dto.viewgroup.TDViewGroupCreateDTO;
 import cz.muni.ics.kypo.training.api.dto.viewgroup.TDViewGroupUpdateDTO;
 import cz.muni.ics.kypo.training.api.enums.AssessmentType;
+import cz.muni.ics.kypo.training.api.enums.LevelType;
 import cz.muni.ics.kypo.training.exceptions.FacadeLayerException;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
-import cz.muni.ics.kypo.training.facade.TrainingDefinitionFacade;
-import cz.muni.ics.kypo.training.facade.TrainingDefinitionFacadeImpl;
 import cz.muni.ics.kypo.training.mapping.mapstruct.*;
 import cz.muni.ics.kypo.training.mapping.modelmapper.BeanMapping;
 import cz.muni.ics.kypo.training.mapping.modelmapper.BeanMappingImpl;
@@ -501,6 +503,41 @@ public class TrainingDefinitionFacadeTest {
         thrown.expect(FacadeLayerException.class);
         given(trainingDefinitionService.createAssessmentLevel(any(Long.class))).willThrow(ServiceLayerException.class);
         trainingDefinitionFacade.createAssessmentLevel(any(Long.class));
+    }
+
+    @Test
+    public void findLevelByIdGameLevel() {
+        given(trainingDefinitionService.findLevelById(gameLevel.getId())).willReturn(gameLevel);
+        AbstractLevelDTO g = trainingDefinitionFacade.findLevelById(gameLevel.getId());
+
+        assertEquals(gameLevelMapper.mapToDTO(gameLevel), g);
+        assertEquals(cz.muni.ics.kypo.training.api.enums.LevelType.GAME_LEVEL, g.getLevelType());
+    }
+
+    @Test
+    public void findLevelByIdInfoLevel() {
+        given(trainingDefinitionService.findLevelById(infoLevel.getId())).willReturn(infoLevel);
+        AbstractLevelDTO i = trainingDefinitionFacade.findLevelById(infoLevel.getId());
+
+        assertEquals(infoLevelMapper.mapToDTO(infoLevel), i);
+        assertEquals(LevelType.INFO_LEVEL, i.getLevelType());
+
+    }
+
+    @Test
+    public void findLevelByIdAssessmentLevel() {
+        given(trainingDefinitionService.findLevelById(assessmentLevel.getId())).willReturn(assessmentLevel);
+        AbstractLevelDTO a = trainingDefinitionFacade.findLevelById(assessmentLevel.getId());
+
+        assertEquals(assessmentLevelMapper.mapToDTO(assessmentLevel), a);
+        assertEquals(cz.muni.ics.kypo.training.api.enums.LevelType.ASSESSMENT_LEVEL, a.getLevelType());
+    }
+
+    @Test
+    public void findLevelByIdWithServiceException() {
+        given(trainingDefinitionService.findLevelById(infoLevel.getId())).willThrow(ServiceLayerException.class);
+        thrown.expect(FacadeLayerException.class);
+        trainingDefinitionFacade.findLevelById(infoLevel.getId());
     }
 
     private void deepEquals(TrainingDefinition expected, TrainingDefinitionDTO actual) {

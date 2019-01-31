@@ -1,3 +1,5 @@
+package cz.muni.ics.kypo.training.facade;
+
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.PathBuilder;
 import cz.muni.ics.kypo.training.api.PageResultResource;
@@ -6,8 +8,6 @@ import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceDTO;
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceUpdateDTO;
 import cz.muni.ics.kypo.training.exceptions.FacadeLayerException;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
-import cz.muni.ics.kypo.training.facade.TrainingInstanceFacade;
-import cz.muni.ics.kypo.training.facade.TrainingInstanceFacadeImpl;
 import cz.muni.ics.kypo.training.mapping.mapstruct.*;
 import cz.muni.ics.kypo.training.persistence.model.TrainingDefinition;
 import cz.muni.ics.kypo.training.persistence.model.TrainingInstance;
@@ -34,7 +34,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import static java.util.Objects.deepEquals;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.BDDMockito.*;
 
@@ -180,6 +179,24 @@ public class TrainingInstanceFacadeTest {
         thrown.expect(FacadeLayerException.class);
         willThrow(ServiceLayerException.class).given(trainingInstanceService).delete(1L);
         trainingInstanceFacade.delete(1L);
+    }
+
+    @Test
+    public void allocateSandboxes() {
+        trainingInstanceFacade.allocateSandboxes(trainingInstance1.getId());
+        then(trainingInstanceService).should().allocateSandboxes(trainingInstance1.getId());
+    }
+
+    @Test
+    public void allocateSandboxesWithServiceException() {
+        willThrow(ServiceLayerException.class).given(trainingInstanceService).allocateSandboxes(trainingInstance1.getId());
+        thrown.expect(FacadeLayerException.class);
+        trainingInstanceFacade.allocateSandboxes(trainingInstance1.getId());
+    }
+
+    private void deepEquals(TrainingInstance expected, TrainingInstanceDTO actual) {
+        assertEquals(expected.getId(), actual.getId());
+        assertEquals(expected.getTitle(), actual.getTitle());
     }
 
 }

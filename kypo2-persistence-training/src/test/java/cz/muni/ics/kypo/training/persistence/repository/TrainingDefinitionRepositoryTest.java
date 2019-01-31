@@ -66,8 +66,6 @@ public class TrainingDefinitionRepositoryTest {
         organizer1 = new UserRef();
         organizer1.setUserRefLogin("Organizer");
 
-        entityManager.persist(viewGroup1);
-        entityManager.persist(viewGroup2);
         trainingDefinition1.setTdViewGroup(viewGroup1);
         trainingDefinition2.setTdViewGroup(viewGroup2);
 
@@ -78,7 +76,7 @@ public class TrainingDefinitionRepositoryTest {
     }
 
     @Test
-    public void findAllByLoggedInAuthor() {
+    public void findAllByLoggedInUser() {
 
         author1 = new UserRef();
         author1.setUserRefLogin("author1");

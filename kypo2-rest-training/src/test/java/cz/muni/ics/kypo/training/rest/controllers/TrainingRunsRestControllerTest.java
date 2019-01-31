@@ -21,10 +21,7 @@ import cz.muni.ics.kypo.training.mapping.mapstruct.*;
 import cz.muni.ics.kypo.training.persistence.model.TrainingRun;
 import cz.muni.ics.kypo.training.persistence.model.enums.AssessmentType;
 import cz.muni.ics.kypo.training.persistence.model.enums.TRState;
-import cz.muni.ics.kypo.training.rest.exceptions.BadRequestException;
-import cz.muni.ics.kypo.training.rest.exceptions.InternalServerErrorException;
-import cz.muni.ics.kypo.training.rest.exceptions.ResourceNotFoundException;
-import cz.muni.ics.kypo.training.rest.exceptions.ServiceUnavailableException;
+import cz.muni.ics.kypo.training.rest.exceptions.*;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -226,6 +223,7 @@ public class TrainingRunsRestControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andReturn().getResponse();
+        assertEquals(convertObjectToJsonBytes(accessTrainingRunDTO), result.getContentAsString());
     }
 
     @Test
@@ -365,6 +363,67 @@ public class TrainingRunsRestControllerTest {
         .content("responses"))
                 .andExpect(status().isNoContent());
         then(trainingRunFacade).should().evaluateResponsesToAssessment(trainingRun1.getId(), "responses");
+    }
+
+    @Test
+    public void finishTrainingRun() throws Exception {
+        mockMvc.perform(put("/training-runs/{runId}", trainingRun1.getId()))
+                .andExpect(status().isOk());
+        then(trainingRunFacade).should().archiveTrainingRun(trainingRun1.getId());
+    }
+
+    @Test
+    public void finishTrainingRunCannotFinish() throws Exception {
+        willThrow(new FacadeLayerException(new ServiceLayerException("Cannot finish given training run.",
+                ErrorCode.RESOURCE_CONFLICT))).given(trainingRunFacade).archiveTrainingRun(trainingRun1.getId());
+        Exception ex = mockMvc.perform(put("/training-runs/{runId}", trainingRun1.getId()))
+                .andExpect(status().isConflict())
+                .andReturn().getResolvedException();
+        assertEquals(ConflictException.class, ex.getClass());
+        assertEquals("ServiceLayerException : Cannot finish given training run.", ex.getLocalizedMessage());
+    }
+
+    @Test
+    public void finishTrainingRunNotFound() throws Exception {
+        willThrow(new FacadeLayerException(new ServiceLayerException("Training run not found.",
+                ErrorCode.RESOURCE_NOT_FOUND))).given(trainingRunFacade).archiveTrainingRun(trainingRun1.getId());
+        Exception ex = mockMvc.perform(put("/training-runs/{runId}", trainingRun1.getId()))
+                .andExpect(status().isNotFound())
+                .andReturn().getResolvedException();
+        assertEquals(ResourceNotFoundException.class, ex.getClass());
+        assertEquals("ServiceLayerException : Training run not found.", ex.getLocalizedMessage());
+    }
+
+
+    @Test
+    public void resumeTrainingRun() throws Exception {
+        given(trainingRunFacade.resumeTrainingRun(trainingRun1.getId())).willReturn(accessTrainingRunDTO);
+        MockHttpServletResponse result = mockMvc.perform(get("/training-runs/{runId}/resumption", trainingRun1.getId()))
+                .andExpect(status().isOk())
+                .andReturn().getResponse();
+        assertEquals(convertObjectToJsonBytes(accessTrainingRunDTO), result.getContentAsString());
+    }
+
+    @Test
+    public void resumeTrainingRunCannotFinish() throws Exception {
+        willThrow(new FacadeLayerException(new ServiceLayerException("Cannot finish given training run.",
+                ErrorCode.RESOURCE_CONFLICT))).given(trainingRunFacade).resumeTrainingRun(trainingRun1.getId());
+        Exception ex = mockMvc.perform(get("/training-runs/{runId}/resumption", trainingRun1.getId()))
+                .andExpect(status().isConflict())
+                .andReturn().getResolvedException();
+        assertEquals(ConflictException.class, ex.getClass());
+        assertEquals("ServiceLayerException : Cannot finish given training run.", ex.getLocalizedMessage());
+    }
+
+    @Test
+    public void resumeTrainingRunNotFound() throws Exception {
+        willThrow(new FacadeLayerException(new ServiceLayerException("Training run not found.",
+                ErrorCode.RESOURCE_NOT_FOUND))).given(trainingRunFacade).resumeTrainingRun(trainingRun1.getId());
+        Exception ex = mockMvc.perform(get("/training-runs/{runId}/resumption", trainingRun1.getId()))
+                .andExpect(status().isNotFound())
+                .andReturn().getResolvedException();
+        assertEquals(ResourceNotFoundException.class, ex.getClass());
+        assertEquals("ServiceLayerException : Training run not found.", ex.getLocalizedMessage());
     }
 
     private static String convertObjectToJsonBytes(Object object) throws IOException {

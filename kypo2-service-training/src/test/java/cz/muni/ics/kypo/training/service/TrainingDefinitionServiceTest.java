@@ -3,14 +3,18 @@ package cz.muni.ics.kypo.training.service;
 import com.google.gson.JsonObject;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.PathBuilder;
+import cz.muni.ics.kypo.commons.facade.api.PageResultResource;
+import cz.muni.ics.kypo.commons.persistence.model.IDMGroupRef;
 import cz.muni.ics.kypo.commons.persistence.repository.IDMGroupRefRepository;
+import cz.muni.ics.kypo.training.api.dto.UserInfoDTO;
+import cz.muni.ics.kypo.training.api.enums.RoleType;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.persistence.model.*;
+import cz.muni.ics.kypo.training.persistence.model.enums.AssessmentType;
 import cz.muni.ics.kypo.training.persistence.model.enums.TDState;
 import cz.muni.ics.kypo.training.persistence.repository.*;
-
 import cz.muni.ics.kypo.training.service.impl.TrainingDefinitionServiceImpl;
-import org.apache.catalina.User;
+import cz.muni.ics.kypo.training.utils.SandboxInfo;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.junit.After;
@@ -22,10 +26,15 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
@@ -33,12 +42,13 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.ResourceUtils;
+import org.springframework.web.client.RestTemplate;
+
+import javax.servlet.http.HttpServletRequest;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+
 import static org.junit.Assert.*;
 import static org.mockito.BDDMockito.*;
 import static org.mockito.Mockito.reset;
@@ -54,49 +64,49 @@ public class TrainingDefinitionServiceTest {
 
     @Mock
     private TrainingDefinitionRepository trainingDefinitionRepository;
-
     @Mock
     private AbstractLevelRepository abstractLevelRepository;
-
     @Mock
     private GameLevelRepository gameLevelRepository;
-
     @Mock
     private InfoLevelRepository infoLevelRepository;
-
     @Mock
     private AssessmentLevelRepository assessmentLevelRepository;
-
     @Mock
     private TrainingInstanceRepository trainingInstanceRepository;
-
     @Mock
     private TDViewGroupRepository viewGroupRepository;
-
     @Mock
     private IDMGroupRefRepository idmGroupRefRepository;
-
-
     @Mock
-    private UserRefRepository authorRefRepository;
+    private UserRefRepository userRefRepository;
+    @Mock
+    private RestTemplate restTemplate;
+    @Mock
+    private HttpServletRequest servletRequest;
 
     private TrainingDefinition trainingDefinition1, trainingDefinition2, unreleasedDefinition, releasedDefinition, definitionWithoutLevels;
-
     private AssessmentLevel level1, level2, level3, newAssessmentLevel;
-
     private GameLevel gameLevel, newGameLevel;
-
     private InfoLevel infoLevel, newInfoLevel;
+    @Mock
+    private IDMGroupRef groupRef1, groupRef2;
+    @Mock
+    private UserInfoDTO userInfoDTO1, userInfoDTO2;
+    @Mock
+    private TDViewGroup viewGroup;
+
 
     private JSONParser parser = new JSONParser();
     private String questions;
+    private Pageable pageable;
 
     @Before
     public void init() {
         MockitoAnnotations.initMocks(this);
         trainingDefinitionService = new TrainingDefinitionServiceImpl(trainingDefinitionRepository, abstractLevelRepository,
-                infoLevelRepository, gameLevelRepository, assessmentLevelRepository, trainingInstanceRepository, authorRefRepository,
-                viewGroupRepository, idmGroupRefRepository);
+                infoLevelRepository, gameLevelRepository, assessmentLevelRepository, trainingInstanceRepository, userRefRepository,
+                viewGroupRepository, idmGroupRefRepository, restTemplate, servletRequest);
 
         parser = new JSONParser();
         try {
@@ -127,18 +137,28 @@ public class TrainingDefinitionServiceTest {
 
         newGameLevel = new GameLevel();
         newGameLevel.setId(10L);
-        newGameLevel.setTitle("title");
-        newGameLevel.setMaxScore(20);
+        newGameLevel.setMaxScore(100);
+        newGameLevel.setTitle("Title of game level");
+        newGameLevel.setIncorrectFlagLimit(5);
+        newGameLevel.setFlag("Secret flag");
+        newGameLevel.setSolution("Solution of the game should be here");
+        newGameLevel.setSolutionPenalized(true);
+        newGameLevel.setEstimatedDuration(1);
+        newGameLevel.setContent("The test entry should be here");
 
         newInfoLevel = new InfoLevel();
         newInfoLevel.setId(11L);
-        newInfoLevel.setTitle("title");
+        newInfoLevel.setTitle("Title of info Level");
         newInfoLevel.setMaxScore(20);
+        newInfoLevel.setContent("Content of info level should be here.");
 
         newAssessmentLevel = new AssessmentLevel();
         newAssessmentLevel.setId(12L);
-        newAssessmentLevel.setTitle("title");
-        newAssessmentLevel.setMaxScore(20);
+        newAssessmentLevel.setTitle("Title of assessment level");
+        newAssessmentLevel.setAssessmentType(AssessmentType.QUESTIONNAIRE);
+        newAssessmentLevel.setMaxScore(0);
+        newAssessmentLevel.setInstructions("Instructions should be here");
+        newAssessmentLevel.setQuestions("[]");
 
         trainingDefinition1 = new TrainingDefinition();
         trainingDefinition1.setId(1L);
@@ -168,6 +188,8 @@ public class TrainingDefinitionServiceTest {
         definitionWithoutLevels.setId(8L);
         definitionWithoutLevels.setState(TDState.UNRELEASED);
         definitionWithoutLevels.setStartingLevel(null);
+
+        pageable = PageRequest.of(0, 10);
     }
 
     @Test
@@ -613,22 +635,17 @@ public class TrainingDefinitionServiceTest {
         trainingDefinitionService.updateInfoLevel(trainingDefinition2.getId(), null);
     }
 
-    /*
     @Test
     public void createGameLevel() {
         given(trainingDefinitionRepository.findById(trainingDefinition2.getId())).willReturn(Optional.of(trainingDefinition2));
         given(abstractLevelRepository.findById(gameLevel.getId())).willReturn(Optional.of(gameLevel));
         given(abstractLevelRepository.findById(infoLevel.getId())).willReturn(Optional.of(infoLevel));
-        given(gameLevelRepository.save(newGameLevel)).willReturn(newGameLevel);
-        GameLevel createdLevel = trainingDefinitionService.createGameLevel(trainingDefinition2.getId(), newGameLevel);
+        given(gameLevelRepository.save(any(GameLevel.class))).willReturn(newGameLevel);
+        GameLevel createdLevel = trainingDefinitionService.createGameLevel(trainingDefinition2.getId());
 
-        assertNotNull(createdLevel);
-        assertEquals(newGameLevel.getTitle(), createdLevel.getTitle());
-        assertEquals(newGameLevel.getMaxScore(), createdLevel.getMaxScore());
-        assertEquals(newGameLevel.getId(), createdLevel.getId());
+        assertEquals(newGameLevel, createdLevel);
         assertEquals(gameLevel.getNextLevel(), createdLevel.getId());
 
-        then(gameLevelRepository).should().save(newGameLevel);
         then(abstractLevelRepository).should(times(2)).findById(any(Long.class));
         then(trainingDefinitionRepository).should().findById(trainingDefinition2.getId());
     }
@@ -636,17 +653,14 @@ public class TrainingDefinitionServiceTest {
     @Test
     public void createGameLevelAsFirstLevel() {
         given(trainingDefinitionRepository.findById(definitionWithoutLevels.getId())).willReturn(Optional.of(definitionWithoutLevels));
-        given(gameLevelRepository.save(newGameLevel)).willReturn(newGameLevel);
+        given(gameLevelRepository.save(any(GameLevel.class))).willReturn(newGameLevel);
 
-        GameLevel createdLevel = trainingDefinitionService.createGameLevel(definitionWithoutLevels.getId(), newGameLevel);
+        GameLevel createdLevel = trainingDefinitionService.createGameLevel(definitionWithoutLevels.getId());
 
         assertNotNull(createdLevel);
-        assertEquals(newGameLevel.getTitle(), createdLevel.getTitle());
-        assertEquals(newGameLevel.getMaxScore(), createdLevel.getMaxScore());
-        assertEquals(newGameLevel.getId(), createdLevel.getId());
+        assertEquals(newGameLevel, createdLevel);
         assertEquals(definitionWithoutLevels.getStartingLevel(), createdLevel.getId());
 
-        then(gameLevelRepository).should().save(newGameLevel);
         then(trainingDefinitionRepository).should(times(2)).findById(definitionWithoutLevels.getId());
         then(trainingDefinitionRepository).should().save(definitionWithoutLevels);
     }
@@ -657,41 +671,32 @@ public class TrainingDefinitionServiceTest {
         thrown.expect(ServiceLayerException.class);
         thrown.expectMessage("Cannot create level in released or archived training definition");
 
-        trainingDefinitionService.createGameLevel(releasedDefinition.getId(), any(GameLevel.class));
+        trainingDefinitionService.createGameLevel(releasedDefinition.getId());
     }
 
     @Test
     public void createGameLevelWithNullDefinitionId() {
         thrown.expect(IllegalArgumentException.class);
         thrown.expectMessage("Definition id must not be null");
-        trainingDefinitionService.createGameLevel(null, newGameLevel);
+        trainingDefinitionService.createGameLevel(null);
 
     }
 
-    @Test
-    public void createGameLevelWithNullLevel() {
-        given(trainingDefinitionRepository.findById(definitionWithoutLevels.getId())).willReturn(Optional.of(definitionWithoutLevels));
-        thrown.expect(IllegalArgumentException.class);
-        thrown.expectMessage("Game level must not be null");
-        trainingDefinitionService.createGameLevel(definitionWithoutLevels.getId(), null);
-    }
+
 
     @Test
     public void createInfoLevel() {
         given(trainingDefinitionRepository.findById(trainingDefinition2.getId())).willReturn(Optional.of(trainingDefinition2));
         given(abstractLevelRepository.findById(gameLevel.getId())).willReturn(Optional.of(gameLevel));
         given(abstractLevelRepository.findById(infoLevel.getId())).willReturn(Optional.of(infoLevel));
-        given(infoLevelRepository.save(newInfoLevel)).willReturn(newInfoLevel);
+        given(infoLevelRepository.save(any(InfoLevel.class))).willReturn(newInfoLevel);
 
-        InfoLevel createdLevel = trainingDefinitionService.createInfoLevel(trainingDefinition2.getId(), newInfoLevel);
+        InfoLevel createdLevel = trainingDefinitionService.createInfoLevel(trainingDefinition2.getId());
 
         assertNotNull(createdLevel);
-        assertEquals(newInfoLevel.getTitle(), createdLevel.getTitle());
-        assertEquals(newInfoLevel.getMaxScore(), createdLevel.getMaxScore());
-        assertEquals(newInfoLevel.getId(), createdLevel.getId());
+        assertEquals(newInfoLevel, createdLevel);
         assertEquals(gameLevel.getNextLevel(), createdLevel.getId());
 
-        then(infoLevelRepository).should().save(newInfoLevel);
         then(abstractLevelRepository).should(times(2)).findById(any(Long.class));
         then(trainingDefinitionRepository).should().findById(trainingDefinition2.getId());
     }
@@ -699,17 +704,14 @@ public class TrainingDefinitionServiceTest {
     @Test
     public void createInfoLevelAsFirstLevel() {
         given(trainingDefinitionRepository.findById(definitionWithoutLevels.getId())).willReturn(Optional.of(definitionWithoutLevels));
-        given(infoLevelRepository.save(newInfoLevel)).willReturn(newInfoLevel);
+        given(infoLevelRepository.save(any(InfoLevel.class))).willReturn(newInfoLevel);
 
-        InfoLevel createdLevel = trainingDefinitionService.createInfoLevel(definitionWithoutLevels.getId(), newInfoLevel);
+        InfoLevel createdLevel = trainingDefinitionService.createInfoLevel(definitionWithoutLevels.getId());
 
         assertNotNull(createdLevel);
-        assertEquals(newInfoLevel.getTitle(), createdLevel.getTitle());
-        assertEquals(newInfoLevel.getMaxScore(), createdLevel.getMaxScore());
-        assertEquals(newInfoLevel.getId(), createdLevel.getId());
+        assertEquals(newInfoLevel, createdLevel);
         assertEquals(definitionWithoutLevels.getStartingLevel(), createdLevel.getId());
 
-        then(infoLevelRepository).should().save(newInfoLevel);
         then(trainingDefinitionRepository).should(times(2)).findById(definitionWithoutLevels.getId());
         then(trainingDefinitionRepository).should().save(definitionWithoutLevels);
     }
@@ -720,41 +722,31 @@ public class TrainingDefinitionServiceTest {
         thrown.expect(ServiceLayerException.class);
         thrown.expectMessage("Cannot create level in released or archived training definition");
 
-        trainingDefinitionService.createInfoLevel(releasedDefinition.getId(), any(InfoLevel.class));
+        trainingDefinitionService.createInfoLevel(releasedDefinition.getId());
     }
 
     @Test
     public void createInfoLevelWithNullDefinitionId() {
         thrown.expect(IllegalArgumentException.class);
         thrown.expectMessage("Definition id must not be null");
-        trainingDefinitionService.createInfoLevel(null, newInfoLevel);
+        trainingDefinitionService.createInfoLevel(null);
 
     }
 
-    @Test
-    public void createInfoLevelWithNullLevel() {
-        given(trainingDefinitionRepository.findById(definitionWithoutLevels.getId())).willReturn(Optional.of(definitionWithoutLevels));
-        thrown.expect(IllegalArgumentException.class);
-        thrown.expectMessage("Info level must not be null");
-        trainingDefinitionService.createInfoLevel(definitionWithoutLevels.getId(), null);
-    }
 
     @Test
     public void createAssessmentLevel() {
         given(trainingDefinitionRepository.findById(trainingDefinition2.getId())).willReturn(Optional.of(trainingDefinition2));
         given(abstractLevelRepository.findById(gameLevel.getId())).willReturn(Optional.of(gameLevel));
         given(abstractLevelRepository.findById(infoLevel.getId())).willReturn(Optional.of(infoLevel));
-        given(assessmentLevelRepository.save(newAssessmentLevel)).willReturn(newAssessmentLevel);
+        given(assessmentLevelRepository.save(any(AssessmentLevel.class))).willReturn(newAssessmentLevel);
 
-        AssessmentLevel createdLevel = trainingDefinitionService.createAssessmentLevel(trainingDefinition2.getId(), newAssessmentLevel);
+        AssessmentLevel createdLevel = trainingDefinitionService.createAssessmentLevel(trainingDefinition2.getId());
 
         assertNotNull(createdLevel);
-        assertEquals(newAssessmentLevel.getTitle(), createdLevel.getTitle());
-        assertEquals(newAssessmentLevel.getMaxScore(), createdLevel.getMaxScore());
-        assertEquals(newAssessmentLevel.getId(), createdLevel.getId());
+        assertEquals(newAssessmentLevel, createdLevel);
         assertEquals(gameLevel.getNextLevel(), createdLevel.getId());
 
-        then(assessmentLevelRepository).should().save(newAssessmentLevel);
         then(abstractLevelRepository).should(times(2)).findById(any(Long.class));
         then(trainingDefinitionRepository).should().findById(trainingDefinition2.getId());
     }
@@ -762,17 +754,14 @@ public class TrainingDefinitionServiceTest {
     @Test
     public void createAssessmentLevelAsFirstLevel() {
         given(trainingDefinitionRepository.findById(definitionWithoutLevels.getId())).willReturn(Optional.of(definitionWithoutLevels));
-        given(assessmentLevelRepository.save(newAssessmentLevel)).willReturn(newAssessmentLevel);
+        given(assessmentLevelRepository.save(any(AssessmentLevel.class))).willReturn(newAssessmentLevel);
 
-        AssessmentLevel createdLevel = trainingDefinitionService.createAssessmentLevel(definitionWithoutLevels.getId(), newAssessmentLevel);
+        AssessmentLevel createdLevel = trainingDefinitionService.createAssessmentLevel(definitionWithoutLevels.getId());
 
         assertNotNull(createdLevel);
-        assertEquals(newAssessmentLevel.getTitle(), createdLevel.getTitle());
-        assertEquals(newAssessmentLevel.getMaxScore(), createdLevel.getMaxScore());
-        assertEquals(newAssessmentLevel.getId(), createdLevel.getId());
+        assertEquals(newAssessmentLevel, createdLevel);
         assertEquals(definitionWithoutLevels.getStartingLevel(), createdLevel.getId());
 
-        then(assessmentLevelRepository).should().save(newAssessmentLevel);
         then(trainingDefinitionRepository).should(times(2)).findById(definitionWithoutLevels.getId());
         then(trainingDefinitionRepository).should().save(definitionWithoutLevels);
     }
@@ -783,25 +772,17 @@ public class TrainingDefinitionServiceTest {
         thrown.expect(ServiceLayerException.class);
         thrown.expectMessage("Cannot create level in released or archived training definition");
 
-        trainingDefinitionService.createAssessmentLevel(releasedDefinition.getId(), any(AssessmentLevel.class));
+        trainingDefinitionService.createAssessmentLevel(releasedDefinition.getId());
     }
 
     @Test
     public void createAssessmentLevelWithNullDefinitionId() {
         thrown.expect(IllegalArgumentException.class);
         thrown.expectMessage("Definition id must not be null");
-        trainingDefinitionService.createAssessmentLevel(null, newAssessmentLevel);
+        trainingDefinitionService.createAssessmentLevel(null);
 
     }
 
-    @Test
-    public void createAssessmentLevelWithNullLevel() {
-        given(trainingDefinitionRepository.findById(definitionWithoutLevels.getId())).willReturn(Optional.of(definitionWithoutLevels));
-        thrown.expect(IllegalArgumentException.class);
-        thrown.expectMessage("Assessment level must not be null");
-        trainingDefinitionService.createAssessmentLevel(definitionWithoutLevels.getId(), null);
-    }
-    */
 
     @Test
     public void findAllLevelsFromDefinition() {
@@ -818,6 +799,7 @@ public class TrainingDefinitionServiceTest {
         then(abstractLevelRepository).should(times(2)).findById(any(Long.class));
         then(trainingDefinitionRepository).should().findById(trainingDefinition2.getId());
     }
+
     @Test
     public void findAllLevelsFromDefinitionWithNullDefinitionId() {
         thrown.expect(IllegalArgumentException.class);
@@ -828,10 +810,10 @@ public class TrainingDefinitionServiceTest {
     @Test
     public void createTrainingDefinition() {
         mockSpringSecurityContextForGet();
-        UserRef user= new UserRef();
+        UserRef user = new UserRef();
         user.setUserRefLogin("userSub");
         given(trainingDefinitionRepository.save(trainingDefinition1)).willReturn(trainingDefinition1);
-        given(authorRefRepository.findUserByUserRefLogin(anyString())).willReturn(Optional.of(user));
+        given(userRefRepository.findUserByUserRefLogin(anyString())).willReturn(Optional.of(user));
         TrainingDefinition tD = trainingDefinitionService.create(trainingDefinition1);
         deepEquals(trainingDefinition1, tD);
         then(trainingDefinitionRepository).should(times(2)).save(trainingDefinition1);
@@ -858,6 +840,101 @@ public class TrainingDefinitionServiceTest {
         thrown.expect(ServiceLayerException.class);
         trainingDefinitionService.findLevelById(555L);
     }
+
+    @Test
+    public void getUsersWithGivenRole() {
+        when(groupRef1.getIdmGroupId()).thenReturn(1L);
+        when(groupRef2.getIdmGroupId()).thenReturn(2L);
+        when(userInfoDTO1.getLogin()).thenReturn("Peter");
+        when(userInfoDTO2.getLogin()).thenReturn("Dave");
+        given(idmGroupRefRepository.findAllByRoleType(anyString())).willReturn(Arrays.asList(groupRef1, groupRef2));
+        given(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
+                willReturn(new ResponseEntity<PageResultResource<UserInfoDTO>>(new PageResultResource<>(Arrays.asList(userInfoDTO1, userInfoDTO2)), HttpStatus.OK));
+
+        List<String> usersLogins = trainingDefinitionService.getUsersWithGivenRole(RoleType.DESIGNER, pageable);
+
+        assertEquals(2, usersLogins.size());
+        assertTrue(usersLogins.contains("Peter"));
+        assertTrue(usersLogins.contains("Dave"));
+    }
+
+    @Test
+    public void getUsersWithGivenRoleWithUserAndGroupError() {
+        when(groupRef1.getIdmGroupId()).thenReturn(1L);
+        when(groupRef2.getIdmGroupId()).thenReturn(2L);
+        given(idmGroupRefRepository.findAllByRoleType(anyString())).willReturn(Arrays.asList(groupRef1, groupRef2));
+        given(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
+                willReturn(new ResponseEntity<PageResultResource<UserInfoDTO>>(new PageResultResource<>(Arrays.asList()), HttpStatus.NOT_FOUND));
+        thrown.expect(ServiceLayerException.class);
+        thrown.expectMessage("Error while obtaining info about users in designers groups.");
+        List<String> usersLogins = trainingDefinitionService.getUsersWithGivenRole(RoleType.DESIGNER, pageable);
+
+    }
+
+    @Test
+    public void getUsersWithGivenRoleWithEmptyListOfIdmGroupRefs() {
+        given(idmGroupRefRepository.findAllByRoleType(anyString())).willReturn(Collections.emptyList());
+
+        List<String> usersLogins = trainingDefinitionService.getUsersWithGivenRole(RoleType.DESIGNER, pageable);
+        assertEquals(0, usersLogins.size());
+    }
+
+    @Test
+    public void findTDViewGroupByTitle() {
+        given(viewGroupRepository.findByTitle(anyString())).willReturn(Optional.ofNullable(viewGroup));
+        TDViewGroup group = trainingDefinitionService.findTDViewGroupByTitle("title");
+
+        assertEquals(group, viewGroup);
+    }
+
+    @Test
+    public void findTDViewGroupByTitleNotFound() {
+        given(viewGroupRepository.findByTitle(anyString())).willReturn(Optional.empty());
+
+        thrown.expect(ServiceLayerException.class);
+        thrown.expectMessage("View group with title: view not found.");
+        TDViewGroup group = trainingDefinitionService.findTDViewGroupByTitle("view");
+    }
+
+    @Test
+    public void findUserRefByLogin() {
+        UserRef userRef = new UserRef();
+        userRef.setUserRefLogin("Dave");
+        given(userRefRepository.findUserByUserRefLogin(userRef.getUserRefLogin())).willReturn(Optional.of(userRef));
+
+        UserRef u = trainingDefinitionService.findUserRefByLogin(userRef.getUserRefLogin());
+
+        assertEquals(userRef.getUserRefLogin(), u.getUserRefLogin());
+    }
+
+    @Test
+    public void findUserRefByLoginNotFound() {
+        given(userRefRepository.findUserByUserRefLogin("Herkules")).willReturn(Optional.empty());
+
+        thrown.expect(ServiceLayerException.class);
+        thrown.expectMessage("UserRef with login Herkules not found.");
+        UserRef u = trainingDefinitionService.findUserRefByLogin("Herkules");
+    }
+
+    @Test
+    public void findUserRefById() {
+        UserRef userRef = new UserRef();
+        userRef.setId(1L);
+        given(userRefRepository.findById(userRef.getId())).willReturn(Optional.of(userRef));
+
+        UserRef u = trainingDefinitionService.findUserRefById(userRef.getId());
+        assertEquals(userRef.getId(), u.getId());
+    }
+
+    @Test
+    public void findUserRefByIdNotFound() {
+        given(userRefRepository.findById(1L)).willReturn(Optional.empty());
+
+        thrown.expect(ServiceLayerException.class);
+        thrown.expectMessage("UserRef with id 1 not found.");
+        UserRef u = trainingDefinitionService.findUserRefById(1L);
+    }
+
 
     @After
     public void after() {

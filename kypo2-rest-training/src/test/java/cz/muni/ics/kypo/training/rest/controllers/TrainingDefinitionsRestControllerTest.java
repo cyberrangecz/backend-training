@@ -17,6 +17,7 @@ import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionUp
 import cz.muni.ics.kypo.training.api.dto.viewgroup.TDViewGroupCreateDTO;
 import cz.muni.ics.kypo.training.api.dto.viewgroup.TDViewGroupUpdateDTO;
 import cz.muni.ics.kypo.training.api.enums.LevelType;
+import cz.muni.ics.kypo.training.api.enums.RoleType;
 import cz.muni.ics.kypo.training.exceptions.FacadeLayerException;
 import cz.muni.ics.kypo.training.exceptions.ErrorCode;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
@@ -26,6 +27,7 @@ import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.model.enums.AssessmentType;
 import cz.muni.ics.kypo.training.persistence.model.enums.TDState;
 import cz.muni.ics.kypo.training.rest.exceptions.ConflictException;
+import cz.muni.ics.kypo.training.rest.exceptions.InternalServerErrorException;
 import cz.muni.ics.kypo.training.rest.exceptions.ResourceNotFoundException;
 import io.swagger.annotations.ApiParam;
 import org.junit.Before;
@@ -49,6 +51,7 @@ import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.client.HttpServerErrorException;
 
 import java.io.IOException;
 import java.util.*;
@@ -538,6 +541,34 @@ public class TrainingDefinitionsRestControllerTest {
                 .perform(post("/training-definitions").content(convertObjectToJsonBytes(trainingDefinitionCreateDTO))
                         .contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isOk()).andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON)).andReturn().getResponse();
+    }
+
+    @Test
+    public void getDesigners() throws Exception {
+        List<String> designers = Arrays.asList("Dave", "Peter");
+        String value = convertObjectToJsonBytes(designers);
+        given(objectMapper.writeValueAsString(any(Object.class))).willReturn(value);
+        given(trainingDefinitionFacade.getUsersWithGivenRole(any(RoleType.class), any(Pageable.class))).willReturn(designers);
+        MockHttpServletResponse result = mockMvc
+                .perform(get("/training-definitions/designers")
+                        .contentType(MediaType.APPLICATION_JSON_VALUE))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andReturn().getResponse();
+        assertEquals(convertObjectToJsonBytes(value), result.getContentAsString());
+    }
+
+    @Test
+    public void getDesignersWithUnexpectedError() throws Exception {
+        Exception exceptionThrow = new ServiceLayerException("Error while getting users from user and group microservice.", ErrorCode.UNEXPECTED_ERROR);
+        willThrow(new FacadeLayerException(exceptionThrow))
+                .given(trainingDefinitionFacade).getUsersWithGivenRole(any(RoleType.class), any(Pageable.class));
+        Exception ex = mockMvc.perform(get("/training-definitions/designers")
+                        .contentType(MediaType.APPLICATION_JSON_VALUE))
+                        .andExpect(status().isInternalServerError())
+                        .andReturn().getResolvedException();
+        assertEquals(InternalServerErrorException.class, ex.getClass());
+        assertEquals("ServiceLayerException : Error while getting users from user and group microservice.", ex.getLocalizedMessage());
     }
 
 

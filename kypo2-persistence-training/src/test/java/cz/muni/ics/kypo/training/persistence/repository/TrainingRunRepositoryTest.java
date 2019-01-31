@@ -15,6 +15,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.context.annotation.Import;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -25,9 +26,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 @RunWith(SpringRunner.class)
 @DataJpaTest
@@ -141,7 +140,7 @@ public class TrainingRunRepositoryTest {
     }
 
     @Test
-    public void findAllByParticipantRefLogin() throws Exception {
+    public void findAllByParticipantRefLogin() {
         entityManager.persist(trainingRun1);
         entityManager.persist(trainingRun2);
         List<TrainingRun> trainingRuns = trainingRunRepository.findAllByParticipantRefLogin("user", pageable).getContent();
@@ -151,7 +150,7 @@ public class TrainingRunRepositoryTest {
     }
 
     @Test
-    public void findAllByTrainingDefinitionIdAndParticipantRefId() throws Exception {
+    public void findAllByTrainingDefinitionIdAndParticipantRefId() {
         entityManager.persistAndFlush(trainingRun1);
         List<TrainingRun> trainingRuns = trainingRunRepository
                 .findAllByTrainingDefinitionIdAndParticipantRefLogin(trainingDefinition.getId(), participantRef.getUserRefLogin(), pageable)
@@ -161,7 +160,7 @@ public class TrainingRunRepositoryTest {
     }
 
     @Test
-    public void findAllByTrainingInstanceId() throws Exception {
+    public void findAllByTrainingInstanceId() {
         entityManager.persist(trainingRun1);
         entityManager.persist(trainingRun2);
         List<TrainingRun> trainingRuns = trainingRunRepository.findAllByTrainingInstanceId(trainingInstance.getId(), pageable).getContent();
@@ -171,7 +170,7 @@ public class TrainingRunRepositoryTest {
     }
 
     @Test
-    public void findAllByTrainingDefinitionId() throws Exception {
+    public void findAllByTrainingDefinitionId() {
         entityManager.persist(trainingRun1);
         entityManager.persist(trainingRun2);
         List<TrainingRun> trainingRuns = trainingRunRepository.findAllByTrainingDefinitionId(trainingDefinition.getId(), pageable).getContent();
@@ -181,9 +180,20 @@ public class TrainingRunRepositoryTest {
     }
 
     @Test
-    public void getAllocatedSandboxInstanceRefsOfTrainingInstance() throws Exception {
+    public void getAllocatedSandboxInstanceRefsOfTrainingInstance() {
         entityManager.persist(trainingRun1);
         Set<SandboxInstanceRef> sandboxInstanceRefs = trainingRunRepository.findFreeSandboxesOfTrainingInstance(trainingInstance.getId());
         assertEquals(2, sandboxInstanceRefs.size());
+    }
+
+    @Test
+    public void deleteTrainingRunsByTrainingInstance() {
+        entityManager.persist(trainingRun1);
+        entityManager.persist(trainingRun2);
+        trainingRunRepository.deleteTrainingRunsByTrainingInstance(trainingInstance.getId());
+        Page<TrainingRun> trainingRunsAfterDelete = trainingRunRepository.findAllByTrainingInstanceId(trainingInstance.getId(), pageable);
+        assertEquals(0, trainingRunsAfterDelete.getContent().size());
+        assertFalse(trainingRunsAfterDelete.getContent().contains(trainingRun1));
+        assertFalse(trainingRunsAfterDelete.getContent().contains(trainingRun2));
     }
 }

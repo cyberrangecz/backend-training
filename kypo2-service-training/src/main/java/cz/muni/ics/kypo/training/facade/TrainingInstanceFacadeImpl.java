@@ -121,7 +121,7 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
         try {
             trainingInstanceService.allocateSandboxes(instanceId);
         } catch (ServiceLayerException ex) {
-            throw new FacadeLayerException(ex.getLocalizedMessage());
+            throw new FacadeLayerException(ex);
         }
     }
 

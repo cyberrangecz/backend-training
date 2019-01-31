@@ -29,7 +29,7 @@ public class AccessTokenRepositoryTest {
     private AccessTokenRepository accessTokenRepository;
 
     private AccessToken password1, password2;
-    private String passwordHash1, passwordHash2;
+    private String accessToken1, accessToken2;
 
     @SpringBootApplication
     static class TestConfiguration {
@@ -37,12 +37,12 @@ public class AccessTokenRepositoryTest {
 
     @Before
     public void setUp() {
-        passwordHash1 = "1Eh9A5l7Op5As8s0h9";
-        passwordHash2 = "R8a9C7B4a2c8A2cN1E";
+        accessToken1 = "pass-1234";
+        accessToken2 = "pass-5678";
         password1 = new AccessToken();
-        password1.setAccessToken(passwordHash1);
+        password1.setAccessToken(accessToken1);
         password2 = new AccessToken();
-        password2.setAccessToken(passwordHash2);
+        password2.setAccessToken(accessToken2);
     }
 
     @Test
@@ -65,17 +65,17 @@ public class AccessTokenRepositoryTest {
     }
 
     @Test
-    public void findOneByPasswordHash() {
+    public void findOneByAccessToken() {
         entityManager.persist(password1);
         entityManager.persist(password2);
-        Optional<AccessToken> optionalPassword = accessTokenRepository.findOneByAccessToken(passwordHash1);
+        Optional<AccessToken> optionalPassword = accessTokenRepository.findOneByAccessToken(accessToken1);
         assertTrue(optionalPassword.isPresent());
         assertEquals(password1, optionalPassword.get());
     }
 
     @Test
     public void findOneByPasswordHash_unpresent_passwordHash() {
-        Optional<AccessToken> optionalPassword = accessTokenRepository.findOneByAccessToken("8W93invalid987As52s");
+        Optional<AccessToken> optionalPassword = accessTokenRepository.findOneByAccessToken("word-1111");
         assertFalse(optionalPassword.isPresent());
     }
 }
