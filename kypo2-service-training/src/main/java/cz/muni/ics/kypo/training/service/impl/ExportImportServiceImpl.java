@@ -8,6 +8,7 @@ import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.repository.*;
 import cz.muni.ics.kypo.training.service.ExportImportService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
@@ -24,13 +25,16 @@ import java.util.List;
 @Service
 public class ExportImportServiceImpl implements ExportImportService {
 
+    @Value("${openstack-server.uri}")
+    private String kypoOpenStackURI;
+
+    private static final String LEVEL_NOT_FOUND = "Level not found.";
+
     private TrainingDefinitionRepository trainingDefinitionRepository;
     private AbstractLevelRepository abstractLevelRepository;
     private AssessmentLevelRepository assessmentLevelRepository;
     private InfoLevelRepository infoLevelRepository;
     private GameLevelRepository gameLevelRepository;
-
-    private static final String LEVEL_NOT_FOUND = "Level not found.";
 
     @Autowired
     public ExportImportServiceImpl(TrainingDefinitionRepository trainingDefinitionRepository, AbstractLevelRepository abstractLevelRepository,

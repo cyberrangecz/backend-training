@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>cz.muni.ics.kypo</groupId>
     <artifactId>kypo2-training</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.1</version>
     <packaging>pom</packaging>
 
     <name>KYPO2 Training</name>
@@ -289,7 +289,7 @@
         <module>kypo2-service-training</module>
         <module>kypo2-rest-training</module>
         <module>kypo2-elasticsearch-training</module>
-        <module>kypo2-facade-training</module>
+        <module>kypo2-api-training</module>
     </modules>
 
 </project>

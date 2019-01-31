@@ -49,7 +49,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
 
     private static final Logger LOG = LoggerFactory.getLogger(TrainingRunServiceImpl.class);
     private static final String MUST_NOT_BE_NULL = "Input training run id must not be null.";
-    @Value("${openstack-server.url}")
+    @Value("${openstack-server.uri}")
     private String kypoOpenStackURI;
 
     private TrainingRunRepository trainingRunRepository;

@@ -13,7 +13,7 @@ import cz.muni.ics.kypo.training.api.dto.infolevel.InfoLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.run.AccessTrainingRunDTO;
 import cz.muni.ics.kypo.training.api.dto.run.AccessedTrainingRunDTO;
 import cz.muni.ics.kypo.training.api.dto.run.TrainingRunDTO;
-import cz.muni.ics.kypo.training.exception.FacadeLayerException;
+import cz.muni.ics.kypo.training.exceptions.FacadeLayerException;
 import cz.muni.ics.kypo.training.exceptions.ErrorCode;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.facade.TrainingRunFacade;
@@ -105,11 +105,11 @@ public class TrainingRunsRestControllerTest {
 
         trainingRun1DTO = new TrainingRunDTO();
         trainingRun1DTO.setId(1L);
-        trainingRun1DTO.setState(TRState.ARCHIVED);
+        trainingRun1DTO.setState(cz.muni.ics.kypo.training.api.enums.TRState.ARCHIVED);
 
         trainingRun2DTO = new TrainingRunDTO();
         trainingRun2DTO.setId(2L);
-        trainingRun2DTO.setState(TRState.READY);
+        trainingRun2DTO.setState(cz.muni.ics.kypo.training.api.enums.TRState.READY);
 
         accessTrainingRunDTO = new AccessTrainingRunDTO();
 
@@ -124,7 +124,7 @@ public class TrainingRunsRestControllerTest {
 
         assessmentLevelDTO = new AssessmentLevelDTO();
         assessmentLevelDTO.setId(3L);
-        assessmentLevelDTO.setAssessmentType(AssessmentType.TEST);
+        assessmentLevelDTO.setAssessmentType(cz.muni.ics.kypo.training.api.enums.AssessmentType.TEST);
         assessmentLevelDTO.setInstructions("instructions");
         assessmentLevelDTO.setQuestions("questions");
 

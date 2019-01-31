@@ -1,64 +1,22 @@
 package cz.muni.ics.kypo.training.rest.config;
 
-import cz.muni.ics.kypo.commons.rest.config.SwaggerConfig;
-import cz.muni.ics.kypo.commons.rest.config.WebConfigRestSecurityCommons;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.data.elasticsearch.ElasticsearchAutoConfiguration;
-import org.springframework.boot.autoconfigure.data.elasticsearch.ElasticsearchDataAutoConfiguration;
-import org.springframework.boot.autoconfigure.data.elasticsearch.ElasticsearchRepositoriesAutoConfiguration;
-import org.springframework.boot.builder.SpringApplicationBuilder;
-import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
-import org.springframework.context.annotation.*;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
-import org.springframework.data.web.config.EnableSpringDataWebSupport;
-
-import cz.muni.ics.kypo.training.config.FacadeConfiguration;
+import org.springframework.http.MediaType;
+import org.springframework.web.servlet.config.annotation.ContentNegotiationConfigurer;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 /**
- * <p>
- * To run with external property file add following to:
- * <p>
- * Eclipse example:
+ * @author Pavel Seda
  *
- * <pre>
- * <code>
- *  Run Configuration -> tab: Arguments -> Program arguments
- * </code>
- * </pre>
- * </p>
- *
- * <pre>
- * <code>
- *  --path.to.config.file="C:/CSIRT/property-files/training.properties"
- * </code>
- * </pre>
- * <p>
- * Intellij idea example:
- *
- * <pre>
- *  <code>
- *   Run Configuration -> tab: Arguments -> Program arguments
- *  </code>
- * </pre>
- * </p>
- *
- * <pre>
- *  <code>
- *   --path.to.config.file="/etc/kypo2/training/application.properties"
- *  </code>
- * </pre>
- *
- * @author Pavel Seda (441048)
+ * Supported media types for .yml files -> https://stackoverflow.com/a/38000954/2892314
  */
-@SpringBootApplication(scanBasePackages = "cz.muni.ics.kypo.training.rest")
-@EnableSpringDataWebSupport
-@Import({FacadeConfiguration.class, SwaggerConfig.class, WebConfigRestSecurityCommons.class})
-public class WebConfigRestTraining extends SpringBootServletInitializer {
+@Configuration
+public class WebConfigRestTraining implements WebMvcConfigurer {
 
-    private static final Logger LOG = LoggerFactory.getLogger(WebConfigRestTraining.class);
+    private static final MediaType MEDIA_TYPE_YAML = MediaType.valueOf("text/yaml");
+    private static final MediaType MEDIA_TYPE_YML = MediaType.valueOf("text/yml");
 
     // To resolve ${} in @Value
     @Bean
@@ -69,12 +27,16 @@ public class WebConfigRestTraining extends SpringBootServletInitializer {
     }
 
     @Override
-    protected SpringApplicationBuilder configure(SpringApplicationBuilder application) {
-        return application.sources(WebConfigRestTraining.class);
-    }
-
-    public static void main(String[] args) {
-        SpringApplication.run(WebConfigRestTraining.class, args);
+    public void configureContentNegotiation(ContentNegotiationConfigurer configurer) {
+        configurer
+                .favorPathExtension(true)
+                .favorParameter(false)
+                .ignoreAcceptHeader(false)
+                .defaultContentType(MediaType.APPLICATION_JSON)
+                .mediaType(MediaType.APPLICATION_JSON.getSubtype(),
+                        MediaType.APPLICATION_JSON)
+                .mediaType(MEDIA_TYPE_YML.getSubtype(), MEDIA_TYPE_YML)
+                .mediaType(MEDIA_TYPE_YAML.getSubtype(), MEDIA_TYPE_YAML);
     }
 
 }

@@ -1,22 +1,25 @@
 package cz.muni.ics.kypo.training.rest.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.TextNode;
 import com.github.bohnman.squiggly.Squiggly;
 import com.github.bohnman.squiggly.util.SquigglyUtils;
 import cz.muni.ics.kypo.training.api.dto.export.ExportTrainingDefinitionAndLevelsDTO;
 import cz.muni.ics.kypo.training.api.dto.imports.ImportTrainingDefinitionDTO;
+import cz.muni.ics.kypo.training.api.dto.sandboxdefinition.SandboxDefinitionCreateDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionDTO;
-import cz.muni.ics.kypo.training.exception.FacadeLayerException;
+import cz.muni.ics.kypo.training.exceptions.FacadeLayerException;
 import cz.muni.ics.kypo.training.facade.ExportImportFacade;
-import cz.muni.ics.kypo.training.persistence.model.TrainingDefinition;
 import cz.muni.ics.kypo.training.rest.exceptions.ResourceNotFoundException;
 import io.swagger.annotations.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.io.IOException;
 
 /**
  * @author Pavel Seda
@@ -77,18 +80,45 @@ public class ExportImportRestController {
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Training definition imported.", response = TrainingDefinitionDTO.class)
+            @ApiResponse(code = 200, message = "Training definition imported.", response = TrainingDefinitionDTO.class)
     })
-    @PostMapping(path = "/import/training-definitions", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(path = "/imports/training-definitions", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> importTrainingDefinition(
-        @ApiParam(value = "Training definition to be imported")
-        @RequestBody @Valid ImportTrainingDefinitionDTO importTrainingDefinitionDTO,
-        @ApiParam(value = "Fields which should be returned in REST API response", required = false)
-        @RequestParam(value = "fields", required = false) String fields){
+            @ApiParam(value = "Training definition to be imported")
+            @RequestBody @Valid ImportTrainingDefinitionDTO importTrainingDefinitionDTO,
+            @ApiParam(value = "Fields which should be returned in REST API response", required = false)
+            @RequestParam(value = "fields", required = false) String fields) {
 
         TrainingDefinitionDTO trainingDefinitionResource = exportImportFacade.dbImport(importTrainingDefinitionDTO);
         Squiggly.init(objectMapper, fields);
         return ResponseEntity.ok(SquigglyUtils.stringify(objectMapper, trainingDefinitionResource));
+    }
+
+    /**
+     * Create Sandbox definition in OpenStack.
+     *
+     * @return Created Sandbox Definition
+     */
+    @ApiOperation(httpMethod = "POST",
+            value = "POST Sandbox Definition.",
+            response = Void.class,
+            nickname = "createSandboxDefinitionInOpenStack",
+            produces = "application/yaml",
+            consumes = "application/yaml"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Sandbox definition created.", response = SandboxDefinitionCreateDTO.class),
+            @ApiResponse(code = 404, message = "Training definition with given id not found."),
+            @ApiResponse(code = 500, message = "Unexpected condition was encountered.")
+    })
+    @PostMapping(path = "/imports/sandbox-definitions", consumes = "text/yaml")
+    public ResponseEntity<Object> createSandboxDefinitionInOpenStack(@RequestBody TextNode sandboxDefinitionCreateDTO) {
+        try {
+            SandboxDefinitionCreateDTO sandboxDefintion = objectMapper.readValue(sandboxDefinitionCreateDTO.asText(), SandboxDefinitionCreateDTO.class);
+            return ResponseEntity.ok(exportImportFacade.createSandboxDefinitionInOpenStack(sandboxDefintion));
+        } catch (FacadeLayerException | IOException ex) {
+            throw new ResourceNotFoundException(ex.getLocalizedMessage());
+        }
     }
 
 }

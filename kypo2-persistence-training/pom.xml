@@ -5,7 +5,7 @@
     <parent>
         <groupId>cz.muni.ics.kypo</groupId>
         <artifactId>kypo2-training</artifactId>
-        <version>1.0.0</version>
+        <version>1.0.1</version>
     </parent>
     <artifactId>kypo2-persistence-training</artifactId>
     <packaging>jar</packaging>
@@ -17,8 +17,18 @@
     <dependencies>
         <dependency>
             <groupId>cz.muni.ics.kypo</groupId>
+            <artifactId>kypo2-api-training</artifactId>
+            <version>1.0.1</version>
+        </dependency>
+        <dependency>
+            <groupId>cz.muni.ics.kypo</groupId>
             <artifactId>kypo2-security-commons</artifactId>
             <version>1.0.0</version>
+        </dependency>
+        <!-- necessary for OpenJDK 11-->
+        <dependency>
+            <groupId>org.glassfish.jaxb</groupId>
+            <artifactId>jaxb-runtime</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
