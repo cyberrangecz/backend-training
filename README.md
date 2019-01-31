@@ -132,7 +132,6 @@ kypo.idp.4oauth.client.clientId={your client ID from Self-service client}
 kypo.idp.4oauth.scopes=openid, email
 # you can add more scopes according to settings from step 1.
 
-path.to.file.with.initial.roles={path to your yaml file with roles}
 
 # spring cloud
 spring.cloud.refresh.enabled = false
@@ -161,10 +160,6 @@ logging.level.org.springframework.web= ERROR
 logging.level.org.apache.commons.dbcp2= DEBUG  
 logging.level.org.hibernate=ERROR
 logging.file = logs/kypo2-training.log  
-
-# Jackson (e.g. converting Java 8 dates to ISO format
-spring.jackson.serialization.write_dates_as_timestamps=false 
-spring.jackson.property-naming-strategy=SNAKE_CASE
 
 # to fix: Method jmxMBeanExporter in org.springframework.boot.actuate.autoconfigure.endpoint.jmx.JmxEndpointAutoConfiguration required a single bean, but 2 were found: (objMapperESClient,objectMapperForRestAPI)
 spring.jmx.enabled = false
