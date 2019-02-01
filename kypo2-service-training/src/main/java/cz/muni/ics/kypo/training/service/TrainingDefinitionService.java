@@ -216,7 +216,7 @@ public interface TrainingDefinitionService {
      *
      * @param title of wanted ViewGroup
      * @return TDViewGroup with corresponding title
-     * @throws ServiceLayerException if UserRef was not found
+     * @throws ServiceLayerException if ViewGroup was not found
      */
     TDViewGroup findTDViewGroupByTitle(String title);
 

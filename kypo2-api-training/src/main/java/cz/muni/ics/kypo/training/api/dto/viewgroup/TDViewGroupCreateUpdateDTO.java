@@ -3,23 +3,13 @@ package cz.muni.ics.kypo.training.api.dto.viewgroup;
 import javax.validation.constraints.NotNull;
 import java.util.Set;
 
-public class TDViewGroupUpdateDTO {
+public class TDViewGroupCreateUpdateDTO {
 
-    @NotNull(message = "{viewGroup.id.NotNull.message}")
-    private Long id;
     @NotNull(message = "{viewGroup.title.NotNull.message}")
     private String title;
     private String description;
     @NotNull(message = "{viewGroup.orgIds.NotNull.message}")
     private Set<String> organizerLogins;
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
 
     public String getTitle() {
         return title;
@@ -47,9 +37,8 @@ public class TDViewGroupUpdateDTO {
 
     @Override
     public String toString() {
-        return "TDViewGroupUpdateDTO{" +
-                "id=" + id +
-                ", title='" + title + '\'' +
+        return "TDViewGroupCreateUpdateDTO{" +
+                "title='" + title + '\'' +
                 ", description='" + description + '\'' +
                 ", organizerLogins=" + organizerLogins +
                 '}';

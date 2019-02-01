@@ -154,11 +154,14 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
         try {
             Objects.requireNonNull(trainingDefinition);
             TrainingDefinition newTD = trainingDefinitionMapper.mapCreateToEntity(trainingDefinition);
-            if (trainingDefinitionService.isViewGroupAlreadyPresent(trainingDefinition.getTdViewGroup().getTitle())) {
-                throw new FacadeLayerException(new ServiceLayerException("View group with title: \'" + trainingDefinition.getTdViewGroup().getTitle()
-                        + "\' already exists in database.", ErrorCode.RESOURCE_CONFLICT));
+            if(trainingDefinition.getTdViewGroup() != null) {
+                if (trainingDefinitionService.isViewGroupAlreadyPresent(trainingDefinition.getTdViewGroup().getTitle())) {
+                    throw new FacadeLayerException(new ServiceLayerException("View group with title: \'" + trainingDefinition.getTdViewGroup().getTitle()
+                            + "\' already exists in database.", ErrorCode.RESOURCE_CONFLICT));
+                }
+                addOrganizersToTrainingDefinition(newTD, trainingDefinition.getTdViewGroup().getOrganizerLogins());
             }
-            addAuthorsAndOrganizersToTrainingDefinition(newTD, trainingDefinition.getAuthorLogins(), trainingDefinition.getTdViewGroup().getOrganizerLogins());
+            addAuthorsToTrainingDefinition(newTD, trainingDefinition.getAuthorLogins());
             return trainingDefinitionMapper.mapToDTO(trainingDefinitionService.create(newTD));
         } catch (ServiceLayerException ex) {
             throw new FacadeLayerException(ex);
@@ -173,26 +176,17 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
         try {
             Objects.requireNonNull(trainingDefinition);
             TrainingDefinition tD = trainingDefinitionMapper.mapUpdateToEntity(trainingDefinition);
-            TDViewGroup viewGroup = null;
-
-            try {
-                viewGroup = trainingDefinitionService.findTDViewGroupByTitle(trainingDefinition.getTdViewGroup().getTitle());
-                if (!viewGroup.getTrainingDefinition().getId().equals(trainingDefinition.getId())) {
-                    throw new FacadeLayerException(new ServiceLayerException("View group with title: \'" + viewGroup.getTitle() +
-                            "\' already exists in database", ErrorCode.RESOURCE_CONFLICT));
-                }
-            } catch (ServiceLayerException ex) {
-                //OK
+            if(trainingDefinition.getTdViewGroup() != null) {
+                addOrganizersToTrainingDefinition(tD,trainingDefinition.getTdViewGroup().getOrganizerLogins());
             }
-
-            addAuthorsAndOrganizersToTrainingDefinition(tD, trainingDefinition.getAuthorLogins(), trainingDefinition.getTdViewGroup().getOrganizerLogins());
+            addAuthorsToTrainingDefinition(tD, trainingDefinition.getAuthorLogins());
             trainingDefinitionService.update(tD);
         } catch (ServiceLayerException ex) {
             throw new FacadeLayerException(ex);
         }
     }
 
-    private void addAuthorsAndOrganizersToTrainingDefinition(TrainingDefinition td, Set<String> authors, Set<String> organizers) {
+    private void addAuthorsToTrainingDefinition(TrainingDefinition td, Set<String> authors) {
         for (String autLogin : authors) {
             try {
                 td.addAuthor(trainingDefinitionService.findUserRefByLogin(autLogin));
@@ -202,7 +196,9 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
                 td.addAuthor(u);
             }
         }
+    }
 
+    private void addOrganizersToTrainingDefinition(TrainingDefinition td, Set<String> organizers) {
         for (String orgLogin : organizers) {
             try {
                 td.getTdViewGroup().addOrganizer(trainingDefinitionService.findUserRefByLogin(orgLogin));
