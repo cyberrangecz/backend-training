@@ -10,8 +10,7 @@ import cz.muni.ics.kypo.training.api.dto.infolevel.InfoLevelUpdateDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionCreateDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionUpdateDTO;
-import cz.muni.ics.kypo.training.api.dto.viewgroup.TDViewGroupCreateDTO;
-import cz.muni.ics.kypo.training.api.dto.viewgroup.TDViewGroupUpdateDTO;
+import cz.muni.ics.kypo.training.api.dto.viewgroup.TDViewGroupCreateUpdateDTO;
 import cz.muni.ics.kypo.training.api.enums.AssessmentType;
 import cz.muni.ics.kypo.training.api.enums.LevelType;
 import cz.muni.ics.kypo.training.exceptions.FacadeLayerException;
@@ -86,8 +85,7 @@ public class TrainingDefinitionFacadeTest {
     private InfoLevel infoLevel;
     private InfoLevelUpdateDTO infoLevelUpdate;
 
-    private TDViewGroupCreateDTO tdViewGroupCreateDTO;
-    private TDViewGroupUpdateDTO tdViewGroupUpdateDTO;
+    private TDViewGroupCreateUpdateDTO tdViewGroupCreateDTO;
 
     private UserRef authorRef;
 
@@ -145,20 +143,16 @@ public class TrainingDefinitionFacadeTest {
         trainingDefinition2.setState(TDState.UNRELEASED);
         trainingDefinition2.setStartingLevel(infoLevel.getId());
 
-        tdViewGroupUpdateDTO = new TDViewGroupUpdateDTO();
-        tdViewGroupUpdateDTO.setId(1L);
-        tdViewGroupUpdateDTO.setTitle("Title update");
-        tdViewGroupUpdateDTO.setOrganizerLogins(Set.of());
 
         trainingDefinitionUpdate = new TrainingDefinitionUpdateDTO();
         trainingDefinitionUpdate.setId(1L);
         trainingDefinitionUpdate.setState(cz.muni.ics.kypo.training.api.enums.TDState.UNRELEASED);
-        trainingDefinitionUpdate.setTdViewGroup(tdViewGroupUpdateDTO);
+        trainingDefinitionUpdate.setTdViewGroup(tdViewGroupCreateDTO);
 
         authorRef = new UserRef();
         authorRef.setUserRefLogin("author");
 
-        tdViewGroupCreateDTO = new TDViewGroupCreateDTO();
+        tdViewGroupCreateDTO = new TDViewGroupCreateUpdateDTO();
         tdViewGroupCreateDTO.setTitle("Title create");
         tdViewGroupCreateDTO.setOrganizerLogins(Set.of());
 

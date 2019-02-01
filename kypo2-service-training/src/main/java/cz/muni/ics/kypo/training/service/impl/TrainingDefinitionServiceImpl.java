@@ -13,6 +13,7 @@ import cz.muni.ics.kypo.commons.persistence.repository.IDMGroupRefRepository;
 import cz.muni.ics.kypo.training.api.dto.UserInfoDTO;
 import cz.muni.ics.kypo.training.api.enums.RoleType;
 import cz.muni.ics.kypo.training.exceptions.ErrorCode;
+import cz.muni.ics.kypo.training.exceptions.FacadeLayerException;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.model.enums.AssessmentType;
@@ -191,10 +192,31 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
         LOG.debug("update({})", trainingDefinition);
         Assert.notNull(trainingDefinition, "Input training definition must not be null");
         TrainingDefinition tD = findById(trainingDefinition.getId());
-        if (!tD.getState().equals(TDState.UNRELEASED))
+        if (!tD.getState().equals(TDState.UNRELEASED)) {
             throw new ServiceLayerException(ARCHIVED_OR_RELEASED, ErrorCode.RESOURCE_CONFLICT);
-
+        }
+        if(trainingInstanceRepository.existsAnyForTrainingDefinition(tD.getId())) {
+            throw new ServiceLayerException("Cannot update training definition with already created training instance. " +
+                    "Remove training intance/s before updating training definition.", ErrorCode.RESOURCE_CONFLICT);
+        }
         trainingDefinition.setStartingLevel(tD.getStartingLevel());
+        if(trainingDefinition.getTdViewGroup() != null && tD.getTdViewGroup() != null) {
+            if(!tD.getTdViewGroup().getTitle().equals(trainingDefinition.getTdViewGroup().getTitle())) {
+                if(isViewGroupAlreadyPresent(trainingDefinition.getTdViewGroup().getTitle())) {
+                    throw new ServiceLayerException("View group with title: \'" + trainingDefinition.getTdViewGroup().getTitle() +
+                            "\' already exists in database", ErrorCode.RESOURCE_CONFLICT);
+                }
+            }
+            tD.getTdViewGroup().setId(tD.getTdViewGroup().getId());
+        } else if(trainingDefinition.getTdViewGroup() != null && tD.getTdViewGroup() == null) {
+            if(isViewGroupAlreadyPresent(trainingDefinition.getTdViewGroup().getTitle())) {
+                throw new ServiceLayerException("View group with title: \'" + trainingDefinition.getTdViewGroup().getTitle() +
+                        "\' already exists in database", ErrorCode.RESOURCE_CONFLICT);
+            }
+        } else if(tD.getTdViewGroup() != null) {
+            throw new ServiceLayerException("Cannot delete training definition view group: \'" + tD.getTdViewGroup().getTitle() +
+                    "\' which is already in DB.", ErrorCode.RESOURCE_CONFLICT);
+        }
         trainingDefinitionRepository.save(trainingDefinition);
         LOG.info("Training definition with id: {} updated.", trainingDefinition.getId());
     }
@@ -209,6 +231,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
         TrainingDefinition tD = new TrainingDefinition();
         BeanUtils.copyProperties(trainingDefinition, tD);
         tD.setId(null);
+        tD.setTdViewGroup(null);
         tD.setTitle("Clone of " + tD.getTitle());
         tD.setState(TDState.UNRELEASED);
         if (tD.getStartingLevel() != null) {
@@ -625,6 +648,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
                 newIL.setId(null);
                 newIL.setNextLevel(newId);
                 newIL.setSnapshotHook(null);
+                newIL.setContent(null);
                 InfoLevel newLevel = infoLevelRepository.save(newIL);
                 newId = newLevel.getId();
             } else {

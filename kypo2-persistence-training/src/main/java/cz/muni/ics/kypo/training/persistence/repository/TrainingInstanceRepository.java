@@ -35,4 +35,8 @@ public interface TrainingInstanceRepository extends JpaRepository<TrainingInstan
     @EntityGraph(attributePaths = {"trainingDefinition.authors", "organizers", "sandboxInstanceRefs"})
     Optional<TrainingInstance> findById(Long id);
 
+    @Query("SELECT (COUNT(ti) > 0) FROM TrainingInstance ti INNER JOIN ti.trainingDefinition td WHERE td.id = :trainingDefinitionId")
+    boolean existsAnyForTrainingDefinition(@Param("trainingDefinitionId") Long trainingDefinitionId);
+
+
 }

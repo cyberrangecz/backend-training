@@ -43,7 +43,7 @@ CREATE TABLE hint (
 );
 
 CREATE TABLE info_level (
-   content text NOT NULL,
+   content text NULL,
     id int8 NOT NULL,
     PRIMARY KEY (id)
 );
@@ -84,7 +84,7 @@ CREATE TABLE training_definition (
     starting_level int8,
     state varchar(128) NOT NULL,
     title varchar(255) NOT NULL,
-    td_view_group_id int8 NOT NULL,
+    td_view_group_id int8 NULL,
     PRIMARY KEY (id)
 );
 
