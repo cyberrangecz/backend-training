@@ -433,6 +433,19 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
         return new ResponseEntity<>(apiError, new HttpHeaders(), apiError.getStatus());
     }
 
+    // 409 - Conflict
+    @ExceptionHandler({ConflictException.class})
+    public ResponseEntity<Object> handleConflictException(final ConflictException ex, final WebRequest request,
+                                                                     HttpServletRequest req) {
+        LOG.debug("handleConflictException({}, {}, {})", new Object[]{ex, request, req});
+
+        final ApiErrorTraining apiError =
+                new ApiErrorTraining.ApiErrorBuilder(ConflictException.class.getAnnotation(ResponseStatus.class).value(),
+                        ex.getLocalizedMessage()).setError(ConflictException.class.getAnnotation(ResponseStatus.class).reason())
+                        .setPath(URL_PATH_HELPER.getRequestUri(req)).build();
+        return new ResponseEntity<>(apiError, new HttpHeaders(), apiError.getStatus());
+    }
+
     @ExceptionHandler({ServiceUnavailableException.class})
     public ResponseEntity<Object> handleServiceUnavailableException(final ServiceUnavailableException ex, final WebRequest request,
                                                                     HttpServletRequest req) {
