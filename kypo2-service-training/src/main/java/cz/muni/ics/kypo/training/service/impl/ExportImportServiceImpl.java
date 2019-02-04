@@ -5,6 +5,7 @@ import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.repository.*;
 import cz.muni.ics.kypo.training.service.ExportImportService;
+import cz.muni.ics.kypo.training.utils.AssessmentUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -72,6 +73,7 @@ public class ExportImportServiceImpl implements ExportImportService {
     public Long createLevel(AbstractLevel level) {
         Assert.notNull(level, "Input Level cannot be null");
         if (level instanceof AssessmentLevel) {
+            AssessmentUtil.validQuestions(((AssessmentLevel) level).getQuestions());
             AbstractLevel newLevel = assessmentLevelRepository.save((AssessmentLevel) level);
             return newLevel.getId();
         } else if (level instanceof InfoLevel) {

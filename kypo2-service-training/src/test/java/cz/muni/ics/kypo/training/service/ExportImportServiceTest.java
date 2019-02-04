@@ -5,6 +5,9 @@ import cz.muni.ics.kypo.training.persistence.model.GameLevel;
 import cz.muni.ics.kypo.training.persistence.model.InfoLevel;
 import cz.muni.ics.kypo.training.persistence.repository.*;
 import cz.muni.ics.kypo.training.service.impl.ExportImportServiceImpl;
+import cz.muni.ics.kypo.training.utils.AssessmentUtil;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -13,10 +16,15 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.util.ResourceUtils;
+
+import java.io.FileReader;
+import java.io.IOException;
 
 import static org.junit.Assert.assertEquals;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.BDDMockito.then;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.BDDMockito.*;
+import static org.mockito.Mockito.when;
 
 @RunWith(SpringRunner.class)
 public class ExportImportServiceTest {
@@ -51,6 +59,7 @@ public class ExportImportServiceTest {
                 infoLevelRepository, gameLevelRepository);
 
         given(assessmentLevel.getId()).willReturn(1L);
+        given(assessmentLevel.getQuestions()).willReturn("[]");
         given(gameLevel.getId()).willReturn(2L);
         given(infoLevel.getId()).willReturn(3L);
 

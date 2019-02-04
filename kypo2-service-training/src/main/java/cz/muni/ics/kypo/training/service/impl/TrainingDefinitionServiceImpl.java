@@ -20,6 +20,7 @@ import cz.muni.ics.kypo.training.persistence.model.enums.AssessmentType;
 import cz.muni.ics.kypo.training.persistence.model.enums.TDState;
 import cz.muni.ics.kypo.training.persistence.repository.*;
 import cz.muni.ics.kypo.training.service.TrainingDefinitionService;
+import cz.muni.ics.kypo.training.utils.AssessmentUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -421,7 +422,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
                         ErrorCode.RESOURCE_NOT_FOUND));
         assessmentLevel.setNextLevel(aL.getNextLevel());
         if (!assessmentLevel.getQuestions().equals(aL.getQuestions())) {
-            validQuestions(assessmentLevel.getQuestions());
+            AssessmentUtil.validQuestions(assessmentLevel.getQuestions());
         }
         assessmentLevelRepository.save(assessmentLevel);
     }
@@ -683,19 +684,5 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
         }
     }
 
-    private void validQuestions(String questions) {
-        try {
-            JsonNode n = JsonLoader.fromString(questions);
-            final JsonNode jsonSchema = JsonLoader.fromResource("/questions-schema.json");
-            final JsonSchemaFactory factory = JsonSchemaFactory.byDefault();
-            JsonValidator v = factory.getValidator();
-            ProcessingReport report = v.validate(jsonSchema, n);
-            if (!report.toString().contains("success")) {
-                throw new IllegalArgumentException("Given questions are not not valid .\n" + report.iterator().next());
-            }
 
-        } catch (IOException | ProcessingException ex) {
-            throw new ServiceLayerException(ex.getMessage(), ErrorCode.UNEXPECTED_ERROR);
-        }
-    }
 }
