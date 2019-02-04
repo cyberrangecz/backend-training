@@ -26,9 +26,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 
 /**
@@ -145,6 +148,10 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
     public void allocateSandboxes(Long instanceId) {
         LOG.debug("allocateSandboxes({})", instanceId);
         TrainingInstance trainingInstance = findById(instanceId);
+        //Check if sandbox can be allocated
+        if (trainingInstance.getSandboxInstanceRefs().size() >= trainingInstance.getPoolSize()) {
+            throw new ServiceLayerException("Pool of sandboxes of training instance with id: " + trainingInstance.getId() + " is full.", ErrorCode.RESOURCE_CONFLICT);
+        }
 
         //Create pool with given size
         HttpHeaders httpHeaders = new HttpHeaders();
@@ -157,14 +164,51 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
         }
         trainingInstance.setPoolId(poolResponse.getBody().getId());
 
-        //Allocate sandboxes in pool
-        ResponseEntity<List<SandboxInfo>> sandboxResponse = restTemplate.exchange(kypoOpenStackURI + "/pools/" + poolResponse.getBody().getId() + "/", HttpMethod.POST, new HttpEntity<>(httpHeaders), new ParameterizedTypeReference<List<SandboxInfo>>() {});
-        if(sandboxResponse.getStatusCode().isError() || sandboxResponse.getBody() == null) {
-            throw new ServiceLayerException("Error from openstack while allocate sandboxes.", ErrorCode.UNEXPECTED_ERROR);
+        Set<Long> idsOfNewSandboxes = new HashSet<>();
+        for (int i = 0; i < 3; i++) {
+            //Allocate sandboxes in pool
+            ResponseEntity<List<SandboxInfo>> sandboxResponse = restTemplate.exchange(kypoOpenStackURI + "/pools/" + poolResponse.getBody().getId() + "/", HttpMethod.POST, new HttpEntity<>(httpHeaders), new ParameterizedTypeReference<List<SandboxInfo>>() {
+            });
+            if (sandboxResponse.getStatusCode().isError() || sandboxResponse.getBody() == null) {
+                throw new ServiceLayerException("Error from openstack while allocate sandboxes.", ErrorCode.UNEXPECTED_ERROR);
+            }
+            sandboxResponse.getBody().forEach(s -> idsOfNewSandboxes.add(s.getId()));
+            try {
+                TimeUnit.SECONDS.sleep(20);
+            } catch (InterruptedException ex) {
+                Thread.currentThread().interrupt();
+                throw new RuntimeException(ex);
+            }
+            //Get state of sandboxes
+            ResponseEntity<List<SandboxInfo>> allocatedSandboxes = restTemplate.exchange(kypoOpenStackURI + "/pools/" + poolResponse.getBody().getId() + "/sandboxes/", HttpMethod.GET, new HttpEntity<>(httpHeaders), new ParameterizedTypeReference<List<SandboxInfo>>() {
+            });
+            if (allocatedSandboxes.getStatusCode().isError() || allocatedSandboxes.getBody() == null) {
+                throw new ServiceLayerException("Error from openstack while obtaining states of sandboxes.", ErrorCode.UNEXPECTED_ERROR);
+            }
+
+            //Remove failed sandboxes, also from open stack
+            Set<Long> idsOfFailedSandboxes = allocatedSandboxes.getBody().stream().filter(f -> f.getStatus().contains("FAILED")).map(SandboxInfo::getId).collect(Collectors.toSet());
+            if (idsOfFailedSandboxes.size() == 0) {
+                break;
+            }
+            for (Long idOfSandboxInstance : idsOfFailedSandboxes) {
+                ResponseEntity<String> responseOnDelete = restTemplate.exchange(kypoOpenStackURI + "/sandboxes/" + idOfSandboxInstance + "/", HttpMethod.DELETE, new HttpEntity<>(httpHeaders), String.class);
+                if (!responseOnDelete.getStatusCode().is2xxSuccessful()) {
+                    throw new ServiceLayerException("Error from openstack while deleting sandboxes.", ErrorCode.UNEXPECTED_ERROR);
+                }
+            }
+            try {
+                TimeUnit.SECONDS.sleep(5);
+            } catch (InterruptedException ex) {
+                Thread.currentThread().interrupt();
+                throw new RuntimeException(ex);
+            }
+
+            idsOfNewSandboxes.removeAll(idsOfFailedSandboxes);
         }
-        for (SandboxInfo sandboxInfo : sandboxResponse.getBody()) {
+        for (Long sandboxInstanceRefId : idsOfNewSandboxes) {
             SandboxInstanceRef s = new SandboxInstanceRef();
-            s.setSandboxInstanceRef(sandboxInfo.getId());
+            s.setSandboxInstanceRef(sandboxInstanceRefId);
             trainingInstance.addSandboxInstanceRef(s);
         }
     }

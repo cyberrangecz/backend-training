@@ -13,11 +13,11 @@ import cz.muni.csirt.kypo.events.trainings.*;
 import cz.muni.csirt.kypo.events.trainings.enums.LevelType;
 import cz.muni.ics.kypo.training.exceptions.ErrorCode;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
+import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.model.enums.AssessmentType;
+import cz.muni.ics.kypo.training.persistence.model.enums.TRState;
 import cz.muni.ics.kypo.training.persistence.repository.*;
 import cz.muni.ics.kypo.training.service.TrainingRunService;
-import cz.muni.ics.kypo.training.persistence.model.*;
-import cz.muni.ics.kypo.training.persistence.model.enums.TRState;
 import cz.muni.ics.kypo.training.utils.AssessmentUtil;
 import cz.muni.ics.kypo.training.utils.SandboxInfo;
 import org.json.JSONArray;
@@ -177,7 +177,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
         List<TrainingInstance> trainingInstances = trainingInstanceRepository.findAllByStartTimeAfterAndEndTimeBefore(LocalDateTime.now());
         for (TrainingInstance trainingInstance : trainingInstances) {
             if (trainingInstance.getAccessToken().equals(accessToken)) {
-                if(trainingInstance.getPoolId() == null) {
+                if (trainingInstance.getPoolId() == null) {
                     throw new ServiceLayerException("At first designer must allocate sandboxes for training instance.", ErrorCode.RESOURCE_CONFLICT);
                 }
                 Set<SandboxInstanceRef> freeSandboxes = trainingRunRepository.findFreeSandboxesOfTrainingInstance(trainingInstance.getId());
@@ -239,7 +239,8 @@ public class TrainingRunServiceImpl implements TrainingRunService {
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.set("Accept", MediaType.APPLICATION_JSON_VALUE);
         ResponseEntity<List<SandboxInfo>> response = restTemplate.exchange(kypoOpenStackURI + "/pools/" + poolId + "/sandboxes/", HttpMethod.GET, new HttpEntity<>(httpHeaders),
-                new ParameterizedTypeReference<List<SandboxInfo>>() {});
+                new ParameterizedTypeReference<List<SandboxInfo>>() {
+                });
         if (response.getStatusCode().isError() || response.getBody() == null) {
             throw new ServiceLayerException("Some error occurred during getting info about sandboxes.", ErrorCode.UNEXPECTED_ERROR);
         }

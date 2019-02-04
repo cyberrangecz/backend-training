@@ -1,7 +1,5 @@
 package cz.muni.ics.kypo.training.service.impl;
 
-import com.google.common.collect.Lists;
-import com.google.gson.JsonObject;
 import cz.muni.ics.kypo.training.exceptions.ErrorCode;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.persistence.model.*;
@@ -10,13 +8,10 @@ import cz.muni.ics.kypo.training.service.ExportImportService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 
 /**
@@ -38,7 +33,7 @@ public class ExportImportServiceImpl implements ExportImportService {
 
     @Autowired
     public ExportImportServiceImpl(TrainingDefinitionRepository trainingDefinitionRepository, AbstractLevelRepository abstractLevelRepository,
-        AssessmentLevelRepository assessmentLevelRepository, InfoLevelRepository infoLevelRepository, GameLevelRepository gameLevelRepository) {
+                                   AssessmentLevelRepository assessmentLevelRepository, InfoLevelRepository infoLevelRepository, GameLevelRepository gameLevelRepository) {
         this.trainingDefinitionRepository = trainingDefinitionRepository;
         this.abstractLevelRepository = abstractLevelRepository;
         this.assessmentLevelRepository = assessmentLevelRepository;
