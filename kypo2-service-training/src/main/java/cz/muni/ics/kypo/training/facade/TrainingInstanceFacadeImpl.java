@@ -77,8 +77,6 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
         try {
             Objects.requireNonNull(trainingInstance);
             TrainingInstance tI = trainingInstanceMapper.mapUpdateToEntity(trainingInstance);
-            //TODO why is allowed change training definition ??
-            tI.setTrainingDefinition(trainingDefinitionService.findById(trainingInstance.getTrainingDefinitionId()));
             tI.setOrganizers(trainingInstanceService.findUserRefsByLogins(trainingInstance.getOrganizerLogins()));
             trainingInstanceService.update(tI);
         } catch (ServiceLayerException ex) {
