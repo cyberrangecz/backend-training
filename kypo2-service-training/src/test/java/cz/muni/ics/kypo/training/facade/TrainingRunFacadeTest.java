@@ -69,6 +69,7 @@ public class TrainingRunFacadeTest {
     private GameLevel gameLevel;
     private InfoLevel infoLevel;
     private AssessmentLevel assessmentLevel;
+    private SandboxInstanceRef sandboxInstanceRef;
 
     @Before
     public void init() {
@@ -76,10 +77,15 @@ public class TrainingRunFacadeTest {
         trainingRunFacade = new TrainingRunFacadeImpl(trainingRunService, trainingRunMapper, gameLevelMapper,
                 assessmentLevelMapper, infoLevelMapper, hintMapper);
 
+        sandboxInstanceRef = new SandboxInstanceRef();
+        sandboxInstanceRef.setId(1L);
+        sandboxInstanceRef.setSandboxInstanceRef(5L);
+
         trainingRun1 = new TrainingRun();
         trainingRun1.setId(1L);
         trainingRun1.setState(TRState.READY);
         trainingRun1.setSolutionTaken(false);
+        trainingRun1.setSandboxInstanceRef(sandboxInstanceRef);
 
         hint = new Hint();
         hint.setId(1L);

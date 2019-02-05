@@ -12,6 +12,7 @@ public class AccessTrainingRunDTO {
 
     private Long trainingRunID;
     private boolean showStepperBar;
+    private Long sandboxInstanceId;
     private AbstractLevelDTO abstractLevelDTO;
     private List<BasicLevelInfoDTO> infoAboutLevels;
 
@@ -31,6 +32,15 @@ public class AccessTrainingRunDTO {
 
     public void setShowStepperBar(boolean showStepperBar) {
         this.showStepperBar = showStepperBar;
+    }
+
+    @ApiModelProperty(value = "Main identifier of sandbox which is assigned to training run.", example = "2")
+    public Long getSandboxInstanceId() {
+        return sandboxInstanceId;
+    }
+
+    public void setSandboxInstanceId(Long sandboxInstanceId) {
+        this.sandboxInstanceId = sandboxInstanceId;
     }
 
     @ApiModelProperty(value = "First level in the current training run.")
@@ -56,6 +66,7 @@ public class AccessTrainingRunDTO {
         return "AccessTrainingRunDTO{" +
                 "trainingRunID=" + trainingRunID +
                 ", showStepperBar=" + showStepperBar +
+                ", sandboxInstanceId=" + sandboxInstanceId +
                 ", abstractLevelDTO=" + abstractLevelDTO +
                 ", infoAboutLevels=" + infoAboutLevels +
                 '}';
