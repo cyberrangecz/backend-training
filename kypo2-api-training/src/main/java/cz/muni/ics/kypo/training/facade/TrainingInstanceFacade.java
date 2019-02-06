@@ -72,4 +72,12 @@ public interface TrainingInstanceFacade {
      */
     PageResultResource<TrainingRunDTO> findTrainingRunsByTrainingInstance(Long trainingInstanceId, Pageable pageable);
 
+    /**
+     * Create pool for sandboxes in open stack for given training instance
+     *
+     * @param instanceId id of training instance for which to create pool
+     * @return id of created pool
+     */
+    Long createPoolForSandboxes(Long instanceId);
+
 }

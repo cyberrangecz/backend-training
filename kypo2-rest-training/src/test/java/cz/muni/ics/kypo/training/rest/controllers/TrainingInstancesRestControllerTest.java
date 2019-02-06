@@ -15,6 +15,7 @@ import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.facade.TrainingInstanceFacade;
 import cz.muni.ics.kypo.training.mapping.mapstruct.*;
 import cz.muni.ics.kypo.training.persistence.model.TrainingInstance;
+import cz.muni.ics.kypo.training.rest.exceptions.ConflictException;
 import cz.muni.ics.kypo.training.rest.exceptions.ResourceNotFoundException;
 import org.junit.Before;
 import org.junit.Test;
@@ -200,6 +201,26 @@ public class TrainingInstancesRestControllerTest {
                 mockMvc.perform(post("/training-instances" + "/{instanceId}/" + "sandbox-instances", 698L))
                         .andExpect(status().isNotFound()).andReturn().getResolvedException();
         assertEquals(ResourceNotFoundException.class, exception.getClass());
+    }
+
+    @Test
+    public void createPoolForSandboxes() throws Exception {
+        given(trainingInstanceFacade.createPoolForSandboxes(1L)).willReturn(5L);
+        MockHttpServletResponse result = mockMvc.perform(post("/training-instances/{instanceId}/pools", 1L))
+                .andExpect(status().isCreated())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andReturn().getResponse();
+        assertEquals(result.getContentAsString(), "5");
+    }
+
+    @Test
+    public void createPoolForSandboxesWithFacadeException() throws Exception {
+        Exception exceptionThrow = new ServiceLayerException("message", ErrorCode.RESOURCE_CONFLICT);
+        willThrow(new FacadeLayerException(exceptionThrow)).given(trainingInstanceFacade).createPoolForSandboxes(any(Long.class));
+        Exception exception =
+                mockMvc.perform(post("/training-instances/{instanceId}/pools", 698L))
+                        .andExpect(status().isConflict()).andReturn().getResolvedException();
+        assertEquals(ConflictException.class, exception.getClass());
     }
 
     private static String convertObjectToJsonBytes(Object object) throws IOException {
