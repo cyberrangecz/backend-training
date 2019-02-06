@@ -3,10 +3,12 @@ package cz.muni.ics.kypo.training.api.dto.trainingdefinition;
 import java.util.Arrays;
 import java.util.Set;
 
+import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
-import cz.muni.ics.kypo.training.api.dto.viewgroup.TDViewGroupCreateUpdateDTO;
+import cz.muni.ics.kypo.training.api.dto.viewgroup.TDViewGroupCreateDTO;
+import cz.muni.ics.kypo.training.api.dto.viewgroup.TDViewGroupUpdateDTO;
 import cz.muni.ics.kypo.training.api.enums.TDState;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -26,7 +28,9 @@ public class TrainingDefinitionCreateDTO {
     private TDState state;
     @NotNull(message = "{trainingdefinitioncreate.authorLogins.NotNull.message}")
     private Set<String> authorLogins;
-    private TDViewGroupCreateUpdateDTO tdViewGroup;
+    @Valid
+    @NotNull(message = "{trainingdefinitioncreate.viewGroup.NotNull.message}")
+    private TDViewGroupCreateDTO tdViewGroup;
     @NotNull(message = "{trainingdefinitioncreate.showStepperBar.NotNull.message}")
     private boolean showStepperBar;
     private Long sandboxDefinitionRefId;
@@ -86,11 +90,11 @@ public class TrainingDefinitionCreateDTO {
     }
 
     @ApiModelProperty(value = "Group of organizers who is allowed to see the training definition.", required = true)
-    public TDViewGroupCreateUpdateDTO getTdViewGroup() {
+    public TDViewGroupCreateDTO getTdViewGroup() {
         return tdViewGroup;
     }
 
-    public void setTdViewGroup(TDViewGroupCreateUpdateDTO tdViewGroup) {
+    public void setTdViewGroup(TDViewGroupCreateDTO tdViewGroup) {
         this.tdViewGroup = tdViewGroup;
     }
 
