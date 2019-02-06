@@ -221,6 +221,29 @@ public class TrainingInstancesRestController {
         }
     }
 
+    @ApiOperation(httpMethod = "POST",
+            value = "Create pool",
+            response = Long.class,
+            nickname = "createPool"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 201, message = "Pool has been created."),
+            @ApiResponse(code = 404, message = "Training instance with given id not found."),
+            @ApiResponse(code = 409, message = "Pool has been already created before."),
+            @ApiResponse(code = 500, message = "Unexpected condition was encountered.")
+    })
+    @PostMapping(path = "/{instanceId}/pools")
+    public ResponseEntity<Long> createPoolForSandboxes(
+            @ApiParam(value = "Id of training instance for which pool is created")
+            @PathVariable(value = "instanceId") Long instanceId) {
+        try {
+            Long poolId = trainingInstanceFacade.createPoolForSandboxes(instanceId);
+            return new ResponseEntity<>(poolId, HttpStatus.CREATED);
+        } catch (FacadeLayerException ex) {
+            throw ExceptionSorter.throwException(ex);
+        }
+    }
+
     @ApiModel(description = "Content (Retrieved data) and meta information about REST API result page. Including page number, number of elements in page, size of elements, total number of elements and total number of pages")
     private static class TrainingRunRestResource extends PageResultResource<TrainingRunDTO> {
         @JsonProperty(required = true)

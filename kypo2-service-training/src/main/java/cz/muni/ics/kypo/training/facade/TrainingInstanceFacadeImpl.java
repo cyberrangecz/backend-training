@@ -111,6 +111,16 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
         }
     }
 
+    @Override
+    @TransactionalWO
+    public Long createPoolForSandboxes(Long instanceId) {
+        LOG.debug("createPoolForSandboxes({})", instanceId);
+        try {
+            return trainingInstanceService.createPoolForSandboxes(instanceId);
+        } catch (ServiceLayerException ex) {
+            throw new FacadeLayerException(ex);
+        }
+    }
 
     @Override
     @TransactionalWO

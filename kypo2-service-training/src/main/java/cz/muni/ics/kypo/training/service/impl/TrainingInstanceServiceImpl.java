@@ -145,12 +145,12 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
     @Override
     @PreAuthorize("hasAuthority('ADMINISTRATOR')" +
             "or @securityService.isOrganizeOfGivenTrainingInstance(#instanceId)")
-    public void allocateSandboxes(Long instanceId) {
-        LOG.debug("allocateSandboxes({})", instanceId);
+    public Long createPoolForSandboxes(Long instanceId) {
+        LOG.debug("createPoolForSandboxes({})", instanceId);
         TrainingInstance trainingInstance = findById(instanceId);
-        //Check if sandbox can be allocated
-        if (trainingInstance.getSandboxInstanceRefs().size() >= trainingInstance.getPoolSize()) {
-            throw new ServiceLayerException("Pool of sandboxes of training instance with id: " + trainingInstance.getId() + " is full.", ErrorCode.RESOURCE_CONFLICT);
+        //Check if pool can be created
+        if (trainingInstance.getPoolId() != null) {
+            throw new ServiceLayerException("Pool is already created for training instance with id: " + trainingInstance.getId() + ".", ErrorCode.RESOURCE_CONFLICT);
         }
 
         //Create pool with given size
@@ -163,11 +163,30 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
             throw new ServiceLayerException("Error from openstack while creating pool.", ErrorCode.UNEXPECTED_ERROR);
         }
         trainingInstance.setPoolId(poolResponse.getBody().getId());
+        return poolResponse.getBody().getId();
+    }
 
+    @Override
+    @PreAuthorize("hasAuthority('ADMINISTRATOR')" +
+            "or @securityService.isOrganizeOfGivenTrainingInstance(#instanceId)")
+    public void allocateSandboxes(Long instanceId) {
+        LOG.debug("allocateSandboxes({})", instanceId);
+        TrainingInstance trainingInstance = findById(instanceId);
+        //Check if pool exist
+        if (trainingInstance.getPoolId() == null) {
+            throw new ServiceLayerException("Pool for sandboxes is not created yet. Please create pool before allocating sandboxes.", ErrorCode.RESOURCE_CONFLICT);
+        }
+        //Check if sandbox can be allocated
+        if (trainingInstance.getSandboxInstanceRefs().size() >= trainingInstance.getPoolSize()) {
+            throw new ServiceLayerException("Pool of sandboxes of training instance with id: " + trainingInstance.getId() + " is full.", ErrorCode.RESOURCE_CONFLICT);
+        }
+
+        HttpHeaders httpHeaders = new HttpHeaders();
+        httpHeaders.setContentType(MediaType.APPLICATION_JSON);
         Set<Long> idsOfNewSandboxes = new HashSet<>();
         for (int i = 0; i < 3; i++) {
             //Allocate sandboxes in pool
-            ResponseEntity<List<SandboxInfo>> sandboxResponse = restTemplate.exchange(kypoOpenStackURI + "/pools/" + poolResponse.getBody().getId() + "/", HttpMethod.POST, new HttpEntity<>(httpHeaders), new ParameterizedTypeReference<List<SandboxInfo>>() {
+            ResponseEntity<List<SandboxInfo>> sandboxResponse = restTemplate.exchange(kypoOpenStackURI + "/pools/" + trainingInstance.getPoolId()+ "/", HttpMethod.POST, new HttpEntity<>(httpHeaders), new ParameterizedTypeReference<List<SandboxInfo>>() {
             });
             if (sandboxResponse.getStatusCode().isError() || sandboxResponse.getBody() == null) {
                 throw new ServiceLayerException("Error from openstack while allocate sandboxes.", ErrorCode.UNEXPECTED_ERROR);
@@ -180,7 +199,7 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
                 throw new RuntimeException(ex);
             }
             //Get state of sandboxes
-            ResponseEntity<List<SandboxInfo>> allocatedSandboxes = restTemplate.exchange(kypoOpenStackURI + "/pools/" + poolResponse.getBody().getId() + "/sandboxes/", HttpMethod.GET, new HttpEntity<>(httpHeaders), new ParameterizedTypeReference<List<SandboxInfo>>() {
+            ResponseEntity<List<SandboxInfo>> allocatedSandboxes = restTemplate.exchange(kypoOpenStackURI + "/pools/" + trainingInstance.getPoolId() + "/sandboxes/", HttpMethod.GET, new HttpEntity<>(httpHeaders), new ParameterizedTypeReference<List<SandboxInfo>>() {
             });
             if (allocatedSandboxes.getStatusCode().isError() || allocatedSandboxes.getBody() == null) {
                 throw new ServiceLayerException("Error from openstack while obtaining states of sandboxes.", ErrorCode.UNEXPECTED_ERROR);
@@ -198,7 +217,7 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
                 }
             }
             try {
-                TimeUnit.SECONDS.sleep(5);
+                TimeUnit.SECONDS.sleep(15);
             } catch (InterruptedException ex) {
                 Thread.currentThread().interrupt();
                 throw new RuntimeException(ex);

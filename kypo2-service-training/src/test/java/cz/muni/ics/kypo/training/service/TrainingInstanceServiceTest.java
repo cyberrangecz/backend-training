@@ -3,6 +3,7 @@ package cz.muni.ics.kypo.training.service;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.PathBuilder;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
+import cz.muni.ics.kypo.training.persistence.model.SandboxInstanceRef;
 import cz.muni.ics.kypo.training.persistence.model.TrainingDefinition;
 import cz.muni.ics.kypo.training.persistence.model.TrainingInstance;
 import cz.muni.ics.kypo.training.persistence.model.TrainingRun;
@@ -63,6 +64,8 @@ public class TrainingInstanceServiceTest {
     private TrainingDefinition trainingDefinition;
     @Mock
     private SandboxPoolInfo sandboxPoolInfo;
+    @Mock
+    private SandboxInstanceRef sandboxInstanceRef1, sandboxInstanceRef2;
     private SandboxInfo sandboxInfo;
     private TrainingInstance trainingInstance1, trainingInstance2, trainingInstanceInvalid;
     private TrainingRun trainingRun1, trainingRun2;
@@ -80,6 +83,7 @@ public class TrainingInstanceServiceTest {
         trainingInstance1.setEndTime(LocalDateTime.now().minusHours(1L));
         trainingInstance1.setTrainingDefinition(trainingDefinition);
         trainingInstance1.setPoolSize(2);
+        trainingInstance1.setPoolId(1L);
 
         trainingInstance2 = new TrainingInstance();
         trainingInstance2.setId(2L);
@@ -87,6 +91,7 @@ public class TrainingInstanceServiceTest {
         trainingInstance2.setStartTime(LocalDateTime.now().plusHours(1L));
         trainingInstance2.setEndTime(LocalDateTime.now().plusHours(5L));
         trainingInstance2.setAccessToken("pass-1253");
+        trainingInstance2.setTrainingDefinition(trainingDefinition);
 
         trainingInstanceInvalid = new TrainingInstance();
         trainingInstanceInvalid.setId(3L);
@@ -235,31 +240,52 @@ public class TrainingInstanceServiceTest {
 //    }
 
     @Test
-    public void allocateSandboxesWithErrorFromOpenStackPool() {
-        when(trainingDefinition.getSandboxDefinitionRefId()).thenReturn(1L);
-
-        given(trainingInstanceRepository.findById(trainingInstance1.getId())).willReturn(Optional.ofNullable(trainingInstance1));
-        given(restTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(SandboxPoolInfo.class))).
-                willReturn(new ResponseEntity<SandboxPoolInfo>(sandboxPoolInfo, HttpStatus.NOT_FOUND));
-
+    public void allocateSandboxesWithNotCreatedPool() {
+        given(trainingInstanceRepository.findById(trainingInstance2.getId())).willReturn(Optional.ofNullable(trainingInstance2));
         thrown.expect(ServiceLayerException.class);
-        thrown.expectMessage("Error from openstack while creating pool.");
+        thrown.expectMessage("Pool for sandboxes is not created yet. Please create pool before allocating sandboxes.");
+        trainingInstanceService.allocateSandboxes(trainingInstance2.getId());
+    }
+
+
+    @Test
+    public void allocateSandboxesWithFullPool() {
+        trainingInstance1.addSandboxInstanceRef(sandboxInstanceRef1);
+        trainingInstance1.addSandboxInstanceRef(sandboxInstanceRef2);
+        given(trainingInstanceRepository.findById(trainingInstance1.getId())).willReturn(Optional.ofNullable(trainingInstance1));
+        thrown.expect(ServiceLayerException.class);
+        thrown.expectMessage("Pool of sandboxes of training instance with id: " + trainingInstance1.getId() + " is full.");
         trainingInstanceService.allocateSandboxes(trainingInstance1.getId());
     }
 
     @Test
-    public void allocateSandboxesWithErrorFromOpenStackSandboxes() {
-        when(trainingDefinition.getSandboxDefinitionRefId()).thenReturn(1L);
+    public void createPoolForSandboxes() {
         when(sandboxPoolInfo.getId()).thenReturn(4L);
 
-        given(trainingInstanceRepository.findById(trainingInstance1.getId())).willReturn(Optional.ofNullable(trainingInstance1));
+        given(trainingInstanceRepository.findById(trainingInstance2.getId())).willReturn(Optional.ofNullable(trainingInstance2));
         given(restTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(SandboxPoolInfo.class))).
                 willReturn(new ResponseEntity<SandboxPoolInfo>(sandboxPoolInfo, HttpStatus.OK));
-        given(restTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
-                willReturn(new ResponseEntity<List<SandboxInfo>>(new ArrayList<>(Collections.singletonList(sandboxInfo)), HttpStatus.CONFLICT));
+        Long poolId = trainingInstanceService.createPoolForSandboxes(trainingInstance2.getId());
+
+        assertEquals(sandboxPoolInfo.getId(), poolId);
+    }
+
+    @Test
+    public void createPoolInInstanceWithAlreadyCreatedPool() {
+        given(trainingInstanceRepository.findById(trainingInstance1.getId())).willReturn(Optional.ofNullable(trainingInstance1));
         thrown.expect(ServiceLayerException.class);
-        thrown.expectMessage("Error from openstack while allocate sandboxes.");
-        trainingInstanceService.allocateSandboxes(trainingInstance1.getId());
+        thrown.expectMessage("Pool is already created for training instance with id: " + trainingInstance1.getId() + ".");
+        trainingInstanceService.createPoolForSandboxes(trainingInstance1.getId());
+    }
+
+    @Test
+    public void createPoolWithErrorFromOpenStack() {
+        given(trainingInstanceRepository.findById(trainingInstance2.getId())).willReturn(Optional.ofNullable(trainingInstance2));
+        given(restTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(SandboxPoolInfo.class))).
+                willReturn(new ResponseEntity<SandboxPoolInfo>(sandboxPoolInfo, HttpStatus.CONFLICT));
+        thrown.expect(ServiceLayerException.class);
+        thrown.expectMessage("Error from openstack while creating pool.");
+        trainingInstanceService.createPoolForSandboxes(trainingInstance2.getId());
     }
 
     @After

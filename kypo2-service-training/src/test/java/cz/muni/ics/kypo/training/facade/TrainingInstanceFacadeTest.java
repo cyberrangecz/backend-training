@@ -194,6 +194,21 @@ public class TrainingInstanceFacadeTest {
         trainingInstanceFacade.allocateSandboxes(trainingInstance1.getId());
     }
 
+    @Test
+    public void createPool() {
+        given(trainingInstanceService.createPoolForSandboxes(trainingInstance1.getId())).willReturn(5L);
+        long poolId = trainingInstanceFacade.createPoolForSandboxes(trainingInstance1.getId());
+
+        assertEquals(5L, poolId);
+    }
+
+    @Test
+    public void createPoolWithServiceException() {
+        willThrow(ServiceLayerException.class).given(trainingInstanceService).createPoolForSandboxes(trainingInstance1.getId());
+        thrown.expect(FacadeLayerException.class);
+        trainingInstanceFacade.createPoolForSandboxes(trainingInstance1.getId());
+    }
+
     private void deepEquals(TrainingInstance expected, TrainingInstanceDTO actual) {
         assertEquals(expected.getId(), actual.getId());
         assertEquals(expected.getTitle(), actual.getTitle());
