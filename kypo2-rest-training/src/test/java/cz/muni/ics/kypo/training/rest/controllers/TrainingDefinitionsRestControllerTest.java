@@ -14,7 +14,8 @@ import cz.muni.ics.kypo.training.api.dto.snapshothook.SnapshotHookDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionCreateDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionUpdateDTO;
-import cz.muni.ics.kypo.training.api.dto.viewgroup.TDViewGroupCreateUpdateDTO;
+import cz.muni.ics.kypo.training.api.dto.viewgroup.TDViewGroupCreateDTO;
+import cz.muni.ics.kypo.training.api.dto.viewgroup.TDViewGroupUpdateDTO;
 import cz.muni.ics.kypo.training.api.enums.LevelType;
 import cz.muni.ics.kypo.training.api.enums.RoleType;
 import cz.muni.ics.kypo.training.exceptions.FacadeLayerException;
@@ -84,7 +85,8 @@ public class TrainingDefinitionsRestControllerTest {
     private TrainingDefinitionCreateDTO trainingDefinitionCreateDTO;
     private TrainingDefinitionUpdateDTO trainingDefinitionUpdateDTO;
 
-    private TDViewGroupCreateUpdateDTO tdViewGroupCreateDTO;
+    private TDViewGroupCreateDTO tdViewGroupCreateDTO;
+    private TDViewGroupUpdateDTO tdViewGroupUpdateDTO;
 
     private GameLevel gameLevel;
     private GameLevelUpdateDTO gameLevelUpdateDTO;
@@ -172,9 +174,16 @@ public class TrainingDefinitionsRestControllerTest {
         Set<String> authorLogins = new HashSet<>();
         authorLogins.add("Author");
 
-        tdViewGroupCreateDTO = new TDViewGroupCreateUpdateDTO();
+        tdViewGroupCreateDTO = new TDViewGroupCreateDTO();
         tdViewGroupCreateDTO.setTitle("Title create");
         tdViewGroupCreateDTO.setOrganizerLogins(Set.of());
+        tdViewGroupCreateDTO.setDescription("Create description");
+
+        tdViewGroupUpdateDTO = new TDViewGroupUpdateDTO();
+        tdViewGroupUpdateDTO.setId(5L);
+        tdViewGroupUpdateDTO.setTitle("Title update");
+        tdViewGroupUpdateDTO.setDescription("Update description");
+        tdViewGroupUpdateDTO.setOrganizerLogins(Set.of());
 
         trainingDefinition1 = new TrainingDefinition();
         trainingDefinition1.setId(1L);
@@ -212,7 +221,7 @@ public class TrainingDefinitionsRestControllerTest {
         trainingDefinitionUpdateDTO.setAuthorLogins(authorLogins);
         trainingDefinitionUpdateDTO.setSandboxDefinitionRefId(1L);
         trainingDefinitionUpdateDTO.setShowStepperBar(false);
-        trainingDefinitionUpdateDTO.setTdViewGroup(tdViewGroupCreateDTO);
+        trainingDefinitionUpdateDTO.setTdViewGroup(tdViewGroupUpdateDTO);
 
         trainingDefinitionCreateDTO = new TrainingDefinitionCreateDTO();
         trainingDefinitionCreateDTO.setDescription("TD desc");

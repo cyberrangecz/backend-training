@@ -44,6 +44,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.ResourceUtils;
 import org.springframework.web.client.RestTemplate;
 
+import javax.persistence.EntityManager;
 import javax.servlet.http.HttpServletRequest;
 import java.io.FileReader;
 import java.io.IOException;
@@ -83,6 +84,8 @@ public class TrainingDefinitionServiceTest {
     @Mock
     private RestTemplate restTemplate;
     @Mock
+    private EntityManager entityManager;
+    @Mock
     private HttpServletRequest servletRequest;
 
     private TrainingDefinition trainingDefinition1, trainingDefinition2, unreleasedDefinition, releasedDefinition, definitionWithoutLevels;
@@ -106,7 +109,7 @@ public class TrainingDefinitionServiceTest {
         MockitoAnnotations.initMocks(this);
         trainingDefinitionService = new TrainingDefinitionServiceImpl(trainingDefinitionRepository, abstractLevelRepository,
                 infoLevelRepository, gameLevelRepository, assessmentLevelRepository, trainingInstanceRepository, userRefRepository,
-                viewGroupRepository, idmGroupRefRepository, restTemplate, servletRequest);
+                viewGroupRepository, idmGroupRefRepository, restTemplate, servletRequest, entityManager);
 
         parser = new JSONParser();
         try {
@@ -166,6 +169,7 @@ public class TrainingDefinitionServiceTest {
         trainingDefinition1.setTitle("test1");
         trainingDefinition1.setState(TDState.RELEASED);
         trainingDefinition1.setSandboxDefinitionRefId(1L);
+        trainingDefinition1.setTdViewGroup(viewGroup);
 
         trainingDefinition2 = new TrainingDefinition();
         trainingDefinition2.setId(2L);
@@ -179,6 +183,7 @@ public class TrainingDefinitionServiceTest {
         unreleasedDefinition.setId(4L);
         unreleasedDefinition.setState(TDState.UNRELEASED);
         unreleasedDefinition.setStartingLevel(level1.getId());
+        unreleasedDefinition.setTdViewGroup(viewGroup);
 
         releasedDefinition = new TrainingDefinition();
         releasedDefinition.setState(TDState.RELEASED);
@@ -188,6 +193,7 @@ public class TrainingDefinitionServiceTest {
         definitionWithoutLevels.setId(8L);
         definitionWithoutLevels.setState(TDState.UNRELEASED);
         definitionWithoutLevels.setStartingLevel(null);
+        definitionWithoutLevels.setTdViewGroup(viewGroup);
 
         pageable = PageRequest.of(0, 10);
     }

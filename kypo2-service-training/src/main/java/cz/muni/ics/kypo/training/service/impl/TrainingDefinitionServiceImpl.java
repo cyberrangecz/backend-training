@@ -43,6 +43,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import org.springframework.web.client.RestTemplate;
 
+import javax.persistence.EntityManager;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -73,6 +74,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     private UserRefRepository userRefRepository;
     private IDMGroupRefRepository idmGroupRefRepository;
     private TDViewGroupRepository viewGroupRepository;
+    private EntityManager entityManager;
 
     private static final String ARCHIVED_OR_RELEASED = "Cannot edit released or archived training definition.";
     private static final String LEVEL_NOT_FOUND = "Level not found.";
@@ -82,7 +84,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
                                          AbstractLevelRepository abstractLevelRepository, InfoLevelRepository infoLevelRepository, GameLevelRepository gameLevelRepository,
                                          AssessmentLevelRepository assessmentLevelRepository, TrainingInstanceRepository trainingInstanceRepository,
                                          UserRefRepository userRefRepository, TDViewGroupRepository viewGroupRepository, IDMGroupRefRepository idmGroupRefRepository,
-                                         RestTemplate restTemplate, HttpServletRequest servletRequest) {
+                                         RestTemplate restTemplate, HttpServletRequest servletRequest, EntityManager entityManager) {
         this.trainingDefinitionRepository = trainingDefinitionRepository;
         this.abstractLevelRepository = abstractLevelRepository;
         this.gameLevelRepository = gameLevelRepository;
@@ -94,6 +96,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
         this.idmGroupRefRepository = idmGroupRefRepository;
         this.restTemplate = restTemplate;
         this.servletRequest = servletRequest;
+        this.entityManager = entityManager;
     }
 
     @Override
@@ -200,22 +203,15 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
                     "Remove training intance/s before updating training definition.", ErrorCode.RESOURCE_CONFLICT);
         }
         trainingDefinition.setStartingLevel(tD.getStartingLevel());
-        if(trainingDefinition.getTdViewGroup() != null && tD.getTdViewGroup() != null) {
-            if(!tD.getTdViewGroup().getTitle().equals(trainingDefinition.getTdViewGroup().getTitle())) {
-                if(isViewGroupAlreadyPresent(trainingDefinition.getTdViewGroup().getTitle())) {
-                    throw new ServiceLayerException("View group with title: \'" + trainingDefinition.getTdViewGroup().getTitle() +
-                            "\' already exists in database", ErrorCode.RESOURCE_CONFLICT);
-                }
-            }
-            tD.getTdViewGroup().setId(tD.getTdViewGroup().getId());
-        } else if(trainingDefinition.getTdViewGroup() != null && tD.getTdViewGroup() == null) {
-            if(isViewGroupAlreadyPresent(trainingDefinition.getTdViewGroup().getTitle())) {
-                throw new ServiceLayerException("View group with title: \'" + trainingDefinition.getTdViewGroup().getTitle() +
-                        "\' already exists in database", ErrorCode.RESOURCE_CONFLICT);
-            }
-        } else if(tD.getTdViewGroup() != null) {
-            throw new ServiceLayerException("Cannot delete training definition view group: \'" + tD.getTdViewGroup().getTitle() +
-                    "\' which is already in DB.", ErrorCode.RESOURCE_CONFLICT);
+        if(!trainingDefinition.getTdViewGroup().getId().equals(tD.getTdViewGroup().getId())) {
+            throw new ServiceLayerException("Wrong id of training definition view group provided.", ErrorCode.RESOURCE_CONFLICT);
+        }
+        //TODO try to repair it something, not work with cascade persist
+        for (UserRef author : trainingDefinition.getAuthors()) {
+            userRefRepository.save(author);
+        }
+        for (UserRef organizer : trainingDefinition.getTdViewGroup().getOrganizers()) {
+            userRefRepository.save(organizer);
         }
         trainingDefinitionRepository.save(trainingDefinition);
         LOG.info("Training definition with id: {} updated.", trainingDefinition.getId());
@@ -231,7 +227,12 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
         TrainingDefinition tD = new TrainingDefinition();
         BeanUtils.copyProperties(trainingDefinition, tD);
         tD.setId(null);
-        tD.setTdViewGroup(null);
+
+        TDViewGroup vG = new TDViewGroup();
+        BeanUtils.copyProperties(tD.getTdViewGroup(), vG);
+        vG.setId(null);
+
+        tD.setTdViewGroup(vG);
         tD.setTitle("Clone of " + tD.getTitle());
         tD.setState(TDState.UNRELEASED);
         if (tD.getStartingLevel() != null) {

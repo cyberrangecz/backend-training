@@ -146,9 +146,6 @@ ALTER TABLE training_run
 ALTER TABLE user_ref
    ADD CONSTRAINT UK_iajf018nptidl085leng237xl unique (user_ref_login);
 
-ALTER TABLE td_view_group
-   ADD CONSTRAINT UK_iajf018npqwdl085leng259xl unique (title);
-
 ALTER TABLE training_definition
    ADD CONSTRAINT UK_iajf018npqbvl143leng259xl unique (td_view_group_id);
 
