@@ -185,7 +185,7 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
             } catch (ServiceLayerException ex) {
                 UserRef u = new UserRef();
                 u.setUserRefLogin(autLogin);
-                td.addAuthor(u);
+                td.addAuthor(trainingDefinitionService.createUserRef(u));
             }
         }
     }
@@ -197,7 +197,7 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
             } catch (ServiceLayerException ex) {
                 UserRef u = new UserRef();
                 u.setUserRefLogin(orgLogin);
-                td.getTdViewGroup().addOrganizer(u);
+                td.getTdViewGroup().addOrganizer(trainingDefinitionService.createUserRef(u));
             }
         }
     }

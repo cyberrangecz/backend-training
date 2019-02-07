@@ -227,4 +227,11 @@ public interface TrainingDefinitionService {
      */
     List<String> getUsersWithGivenRole(RoleType roleType, Pageable pageable);
 
+    /**
+     * Create userRef
+     * @param userRef user ref to be created
+     * @return created userRef
+     */
+    UserRef createUserRef(UserRef userRef);
+
 }
