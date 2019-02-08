@@ -10,6 +10,7 @@ import com.google.gson.JsonObject;
 import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.commons.facade.api.PageResultResource;
 import cz.muni.ics.kypo.commons.persistence.repository.IDMGroupRefRepository;
+import cz.muni.ics.kypo.training.annotations.TransactionalWO;
 import cz.muni.ics.kypo.training.api.dto.UserInfoDTO;
 import cz.muni.ics.kypo.training.api.enums.RoleType;
 import cz.muni.ics.kypo.training.exceptions.ErrorCode;
@@ -165,19 +166,18 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
         LOG.debug("create({})", trainingDefinition);
         Assert.notNull(trainingDefinition, "Input training definition must not be null");
         String userSub = getSubOfLoggedInUser();
-        TrainingDefinition tD = trainingDefinitionRepository.save(trainingDefinition);
 
         Optional<UserRef> user = userRefRepository.findUserByUserRefLogin(userSub);
         if (user.isPresent()) {
-            tD.addAuthor(user.get());
+            trainingDefinition.addAuthor(user.get());
         } else {
             UserRef newUser = new UserRef();
             newUser.setUserRefLogin(userSub);
-            tD.addAuthor(userRefRepository.save(newUser));
+            trainingDefinition.addAuthor(newUser);
         }
 
         LOG.info("Training definition with id: {} created.", trainingDefinition.getId());
-        return trainingDefinitionRepository.save(tD);
+        return trainingDefinitionRepository.save(trainingDefinition);
     }
 
     @Override
@@ -205,13 +205,6 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
         trainingDefinition.setStartingLevel(tD.getStartingLevel());
         if(!trainingDefinition.getTdViewGroup().getId().equals(tD.getTdViewGroup().getId())) {
             throw new ServiceLayerException("Wrong id of training definition view group provided.", ErrorCode.RESOURCE_CONFLICT);
-        }
-        //TODO try to repair it something, not work with cascade persist
-        for (UserRef author : trainingDefinition.getAuthors()) {
-            userRefRepository.save(author);
-        }
-        for (UserRef organizer : trainingDefinition.getTdViewGroup().getOrganizers()) {
-            userRefRepository.save(organizer);
         }
         trainingDefinitionRepository.save(trainingDefinition);
         LOG.info("Training definition with id: {} updated.", trainingDefinition.getId());
@@ -595,6 +588,16 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
             throw new ServiceLayerException("Error while obtaining info about users in designers groups.", ErrorCode.UNEXPECTED_ERROR);
         }
         return usersResponse.getBody().getContent().stream().map(UserInfoDTO::getLogin).collect(Collectors.toList());
+    }
+
+    @Override
+    @TransactionalWO
+    public UserRef createUserRef(UserRef userRef) {
+        LOG.debug("createUserRef({})", userRef.getUserRefLogin());
+        Assert.notNull(userRef, "User ref must not be null");
+        UserRef u = userRefRepository.save(userRef);
+        LOG.info("User ref with login: {} created.", u.getUserRefLogin());
+        return u;
     }
 
     private AbstractLevel findLastLevel(Long levelId) {

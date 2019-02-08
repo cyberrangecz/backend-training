@@ -822,7 +822,7 @@ public class TrainingDefinitionServiceTest {
         given(userRefRepository.findUserByUserRefLogin(anyString())).willReturn(Optional.of(user));
         TrainingDefinition tD = trainingDefinitionService.create(trainingDefinition1);
         deepEquals(trainingDefinition1, tD);
-        then(trainingDefinitionRepository).should(times(2)).save(trainingDefinition1);
+        then(trainingDefinitionRepository).should(times(1)).save(trainingDefinition1);
     }
 
     @Test

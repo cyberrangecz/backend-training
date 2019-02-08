@@ -721,11 +721,25 @@ INSERT INTO training_instance(id, pool_size, pool_id, training_definition_id, st
 INSERT INTO training_instance(id, pool_size, pool_id, training_definition_id, start_time, end_time, access_token, title) VALUES (nextval('training_instance_id_seq'), 25, 3, 1, '2020-10-19 10:23:54+02', '2024-10-19 10:23:54+02', 'keyword-9999', 'Future Instance');
 INSERT INTO training_instance(id, pool_size, pool_id, training_definition_id, start_time, end_time, access_token, title) VALUES (nextval('training_instance_id_seq'), 25, 4, 3, '2017-10-19 10:23:54+02', '2024-10-19 10:23:54+02', 'keyword-1111', 'Future Instance');
 INSERT INTO training_instance(id, pool_size, pool_id, training_definition_id, start_time, end_time, access_token, title) VALUES (nextval('training_instance_id_seq'), 1, null, 4, '2019-02-01 10:00:00+02', '2019-03-30 10:00:00+02', 'keyword-0000', 'Test Instance KYPO');
+INSERT INTO training_instance(id, pool_size, pool_id, training_definition_id, start_time, end_time, access_token, title) VALUES (nextval('training_instance_id_seq'), 1, null, 4, '2019-02-01 10:00:00+02', '2019-03-30 10:00:00+02', 'keyword-0001', 'Test Instance KYPO');
+INSERT INTO training_instance(id, pool_size, pool_id, training_definition_id, start_time, end_time, access_token, title) VALUES (nextval('training_instance_id_seq'), 2, null, 4, '2019-02-01 10:00:00+02', '2019-03-30 10:00:00+02', 'keyword-0002', 'Test Instance KYPO');
+INSERT INTO training_instance(id, pool_size, pool_id, training_definition_id, start_time, end_time, access_token, title) VALUES (nextval('training_instance_id_seq'), 2, null, 4, '2019-02-01 10:00:00+02', '2019-03-30 10:00:00+02', 'keyword-0003', 'Test Instance KYPO');
+INSERT INTO training_instance(id, pool_size, pool_id, training_definition_id, start_time, end_time, access_token, title) VALUES (nextval('training_instance_id_seq'), 3, null, 4, '2019-02-01 10:00:00+02', '2019-03-30 10:00:00+02', 'keyword-0004', 'Test Instance KYPO');
+INSERT INTO training_instance(id, pool_size, pool_id, training_definition_id, start_time, end_time, access_token, title) VALUES (nextval('training_instance_id_seq'), 3, null, 4, '2019-02-01 10:00:00+02', '2019-03-30 10:00:00+02', 'keyword-0005', 'Test Instance KYPO');
+INSERT INTO training_instance(id, pool_size, pool_id, training_definition_id, start_time, end_time, access_token, title) VALUES (nextval('training_instance_id_seq'), 4, null, 4, '2019-02-01 10:00:00+02', '2019-03-30 10:00:00+02', 'keyword-0006', 'Test Instance KYPO');
+INSERT INTO training_instance(id, pool_size, pool_id, training_definition_id, start_time, end_time, access_token, title) VALUES (nextval('training_instance_id_seq'), 4, null, 4, '2019-02-01 10:00:00+02', '2019-03-30 10:00:00+02', 'keyword-0007', 'Test Instance KYPO');
 
 INSERT INTO access_token(id, access_token) VALUES (nextval('access_token_id_seq'), 'pass-1235');
 INSERT INTO access_token(id, access_token) VALUES (nextval('access_token_id_seq'), 'hello-6578');
 INSERT INTO access_token(id, access_token) VALUES (nextval('access_token_id_seq'), 'keyword-9999');
 INSERT INTO access_token(id, access_token) VALUES (nextval('access_token_id_seq'), 'keyword-0000');
+INSERT INTO access_token(id, access_token) VALUES (nextval('access_token_id_seq'), 'keyword-0001');
+INSERT INTO access_token(id, access_token) VALUES (nextval('access_token_id_seq'), 'keyword-0002');
+INSERT INTO access_token(id, access_token) VALUES (nextval('access_token_id_seq'), 'keyword-0003');
+INSERT INTO access_token(id, access_token) VALUES (nextval('access_token_id_seq'), 'keyword-0004');
+INSERT INTO access_token(id, access_token) VALUES (nextval('access_token_id_seq'), 'keyword-0005');
+INSERT INTO access_token(id, access_token) VALUES (nextval('access_token_id_seq'), 'keyword-0006');
+INSERT INTO access_token(id, access_token) VALUES (nextval('access_token_id_seq'), 'keyword-0007');
 
 INSERT INTO sandbox_instance_ref(id, sandbox_instance_ref, training_instance_id) VALUES (nextval('sandbox_instance_ref_id_seq'), 1, 1);
 INSERT INTO sandbox_instance_ref(id, sandbox_instance_ref, training_instance_id) VALUES (nextval('sandbox_instance_ref_id_seq'), 2, 1);

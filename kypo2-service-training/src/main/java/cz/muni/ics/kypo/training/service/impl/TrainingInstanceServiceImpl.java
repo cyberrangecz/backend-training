@@ -191,7 +191,11 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
             if (sandboxResponse.getStatusCode().isError() || sandboxResponse.getBody() == null) {
                 throw new ServiceLayerException("Error from openstack while allocate sandboxes.", ErrorCode.UNEXPECTED_ERROR);
             }
-            sandboxResponse.getBody().forEach(s -> idsOfNewSandboxes.add(s.getId()));
+            sandboxResponse.getBody().forEach(s -> {
+                if(s.getStatus().contains("CREATE")) {
+                    idsOfNewSandboxes.add(s.getId());
+                }
+            });
             try {
                 TimeUnit.SECONDS.sleep(20);
             } catch (InterruptedException ex) {
