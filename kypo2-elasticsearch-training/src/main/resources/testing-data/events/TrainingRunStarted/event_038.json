@@ -1,12 +1,12 @@
 {
 	"type": "cz.muni.csirt.kypo.events.trainings.TrainingRunStarted",
 	"timestamp": 17144147072,
-	"sandbox_id": 1,
-	"training_definition_id": 1,
-	"training_instance_id": 1,
+	"sandbox_id": 3,
+	"training_definition_id": 3,
+	"training_instance_id": 4,
 	"training_run_id": 3,
-	"player_login": "614441@muni.cz",
+	"player_login": "Participant1",
 	"total_score": 0,
 	"actual_score_in_level": 0,
-	"level": 1
+	"level": 6
 }

@@ -3,12 +3,12 @@
 	"timestamp": 17543447117,
 	"sandbox_id": 1,
 	"training_definition_id": 1,
-	"training_instance_id": 2,
-	"training_run_id": 9,
-	"player_login": "614471@muni.cz",
-	"total_score": 0,
-	"actual_score_in_level": 0,
-	"level": 5,
-	"flag_content": "",
-	"count": 5
+	"training_instance_id": 1,
+	"training_run_id": 6,
+	"player_login": "Participant1",
+	"total_score": 40,
+	"actual_score_in_level": 15,
+	"level": 7,
+	"flag_content": "...",
+	"count": 0
 }

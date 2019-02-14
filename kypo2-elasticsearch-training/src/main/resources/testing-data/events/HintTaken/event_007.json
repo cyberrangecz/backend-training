@@ -4,13 +4,13 @@
 	"sandbox_id": 1,
 	"training_definition_id": 1,
 	"training_instance_id": 1,
-	"training_run_id": 3,
-	"player_login": "634873@muni.cz",
-	"total_score": 0,
-	"actual_score_in_level": 0,
-	"level": 1,
-	"hint_id": 1,
-	"hint_penalty_points": 10,
-	"hint_title": "Hint1"
+	"training_run_id": 7,
+	"player_login": "Participant1",
+	"total_score": 30,
+	"actual_score_in_level": 5,
+	"level": 2,
+	"hint_id": 2,
+	"hint_penalty_points": 6,
+	"hint_title": "Hint2"
 }
 

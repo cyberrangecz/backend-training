@@ -4,10 +4,10 @@
 	"sandbox_id": 1,
 	"training_definition_id": 1,
 	"training_instance_id": 3,
-	"training_run_id": 2,
-	"player_login": "665476@muni.cz",
-	"total_score": 0,
-	"actual_score_in_level": 0,
+	"training_run_id": 4,
+	"player_login": "Participant2",
+	"total_score": 60,
+	"actual_score_in_level": 10,
 	"level": 1,
-	"flag_content": "secretFlag",
+	"flag_content": "secretFlag"
 }
