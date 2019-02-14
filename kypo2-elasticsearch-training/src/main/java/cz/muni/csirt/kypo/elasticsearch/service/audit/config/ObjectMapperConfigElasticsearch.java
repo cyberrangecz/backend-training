@@ -1,5 +1,4 @@
-package cz.muni.ics.kypo.training.rest.config;
-
+package cz.muni.csirt.kypo.elasticsearch.service.audit.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
@@ -7,13 +6,11 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
 
 @Configuration
-public class ObjectMapperConfiguration {
+public class ObjectMapperConfigElasticsearch {
 
-    @Bean
-    @Primary
+    @Bean("objMapperForElasticsearch")
     public ObjectMapper objectMapper() {
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
