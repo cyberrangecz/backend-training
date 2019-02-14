@@ -1,32 +1,24 @@
 package cz.muni.ics.kypo.training.facade;
 
-import cz.muni.ics.kypo.training.annotations.TransactionalRO;
-import cz.muni.ics.kypo.training.annotations.TransactionalWO;
+import cz.muni.ics.kypo.training.annotations.transactions.TransactionalRO;
+import cz.muni.ics.kypo.training.annotations.transactions.TransactionalWO;
 import cz.muni.ics.kypo.training.api.dto.export.*;
 import cz.muni.ics.kypo.training.api.dto.imports.*;
-import cz.muni.ics.kypo.training.api.dto.sandboxdefinition.SandboxDefinitionCreateDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionDTO;
 import cz.muni.ics.kypo.training.api.enums.LevelType;
-import cz.muni.ics.kypo.training.exceptions.ErrorCode;
-import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.mapping.mapstruct.*;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.service.ExportImportService;
 import cz.muni.ics.kypo.training.service.TrainingDefinitionService;
-import cz.muni.ics.kypo.training.service.impl.TrainingInstanceServiceImpl;
-import cz.muni.ics.kypo.training.utils.SandboxInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**

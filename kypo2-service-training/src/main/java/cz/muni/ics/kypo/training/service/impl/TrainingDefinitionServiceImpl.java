@@ -1,20 +1,14 @@
 package cz.muni.ics.kypo.training.service.impl;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.github.fge.jackson.JsonLoader;
-import com.github.fge.jsonschema.core.exceptions.ProcessingException;
-import com.github.fge.jsonschema.core.report.ProcessingReport;
-import com.github.fge.jsonschema.main.JsonSchemaFactory;
-import com.github.fge.jsonschema.main.JsonValidator;
 import com.google.gson.JsonObject;
 import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.commons.facade.api.PageResultResource;
 import cz.muni.ics.kypo.commons.persistence.repository.IDMGroupRefRepository;
-import cz.muni.ics.kypo.training.annotations.TransactionalWO;
+import cz.muni.ics.kypo.training.annotations.security.IsAdminOrDesigner;
+import cz.muni.ics.kypo.training.annotations.transactions.TransactionalWO;
 import cz.muni.ics.kypo.training.api.dto.UserInfoDTO;
 import cz.muni.ics.kypo.training.api.enums.RoleType;
 import cz.muni.ics.kypo.training.exceptions.ErrorCode;
-import cz.muni.ics.kypo.training.exceptions.FacadeLayerException;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.model.enums.AssessmentType;
@@ -44,9 +38,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import org.springframework.web.client.RestTemplate;
 
-import javax.persistence.EntityManager;
 import javax.servlet.http.HttpServletRequest;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -75,7 +67,6 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     private UserRefRepository userRefRepository;
     private IDMGroupRefRepository idmGroupRefRepository;
     private TDViewGroupRepository viewGroupRepository;
-    private EntityManager entityManager;
 
     private static final String ARCHIVED_OR_RELEASED = "Cannot edit released or archived training definition.";
     private static final String LEVEL_NOT_FOUND = "Level not found.";
@@ -85,7 +76,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
                                          AbstractLevelRepository abstractLevelRepository, InfoLevelRepository infoLevelRepository, GameLevelRepository gameLevelRepository,
                                          AssessmentLevelRepository assessmentLevelRepository, TrainingInstanceRepository trainingInstanceRepository,
                                          UserRefRepository userRefRepository, TDViewGroupRepository viewGroupRepository, IDMGroupRefRepository idmGroupRefRepository,
-                                         RestTemplate restTemplate, HttpServletRequest servletRequest, EntityManager entityManager) {
+                                         RestTemplate restTemplate, HttpServletRequest servletRequest) {
         this.trainingDefinitionRepository = trainingDefinitionRepository;
         this.abstractLevelRepository = abstractLevelRepository;
         this.gameLevelRepository = gameLevelRepository;
@@ -97,7 +88,6 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
         this.idmGroupRefRepository = idmGroupRefRepository;
         this.restTemplate = restTemplate;
         this.servletRequest = servletRequest;
-        this.entityManager = entityManager;
     }
 
     @Override
@@ -161,7 +151,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     }
 
     @Override
-    @PreAuthorize("hasAuthority({'ADMINISTRATOR'}) or hasAuthority({T(cz.muni.ics.kypo.training.persistence.model.enums.RoleType).DESIGNER})")
+    @IsAdminOrDesigner
     public TrainingDefinition create(TrainingDefinition trainingDefinition) {
         LOG.debug("create({})", trainingDefinition);
         Assert.notNull(trainingDefinition, "Input training definition must not be null");
