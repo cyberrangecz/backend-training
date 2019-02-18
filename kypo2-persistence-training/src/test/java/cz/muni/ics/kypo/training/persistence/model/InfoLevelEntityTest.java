@@ -54,17 +54,4 @@ public class InfoLevelEntityTest {
         assertNotNull(iL.getId());
     }
 
-    @Test
-    public void testUniquenessOfInfoLevelContent() {
-        this.entityManager.persistFlushFind(infoLevel);
-
-        InfoLevel notUniqueContent = new InfoLevel();
-        notUniqueContent.setTitle("Not unique info level");
-        notUniqueContent.setContent("Some content, even markdown language possible.");
-
-        thrown.expect(PersistenceException.class);
-        this.entityManager.persistAndFlush(notUniqueContent);
-
-    }
-
 }
