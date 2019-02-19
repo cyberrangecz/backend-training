@@ -16,7 +16,7 @@ public class InfoLevel extends AbstractLevel implements Serializable {
 
     @Lob
     @Type(type = "org.hibernate.type.TextType")
-    @Column(name = "content", nullable = true, unique = true)
+    @Column(name = "content", nullable = false)
     private String content;
 
     public InfoLevel() {

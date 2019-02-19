@@ -43,7 +43,7 @@ CREATE TABLE hint (
 );
 
 CREATE TABLE info_level (
-   content text NULL,
+   content text NOT NULL,
     id int8 NOT NULL,
     PRIMARY KEY (id)
 );
@@ -148,9 +148,6 @@ ALTER TABLE user_ref
 
 ALTER TABLE training_definition
    ADD CONSTRAINT UK_iajf018npqbvl143leng259xl unique (td_view_group_id);
-
-ALTER TABLE info_level
-   ADD CONSTRAINT UK_byjx079npqsdl143lenh259xl unique (content);
 
 ALTER TABLE training_instance
    ADD CONSTRAINT UK_iajf643ipqbfl143leng248xl unique (access_token);
