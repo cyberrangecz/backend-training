@@ -21,7 +21,7 @@ public class GameLevelUpdateDTO {
     @NotNull(message = "{gamelevelupdate.maxScore.NotNull.message}")
     @Min(value = 0, message = "{gamelevelupdate.maxScore.Min.message}")
     @Max(value = 100, message = "{gamelevelupdate.maxScore.Max.message}")
-    private Integer maxScore;
+    private int maxScore;
     @NotEmpty(message = "{gamelevelupdate.flag.NotEmpty.message}")
     @Size(max = 50, message = "{gamelevelupdate.flag.Size.message}")
     private String flag;
@@ -118,11 +118,11 @@ public class GameLevelUpdateDTO {
     }
 
     @ApiModelProperty(value = "The maximum score a participant can achieve during a level.", required = true, example = "20")
-    public Integer getMaxScore() {
+    public int getMaxScore() {
         return maxScore;
     }
 
-    public void setMaxScore(Integer maxScore) {
+    public void setMaxScore(int maxScore) {
         this.maxScore = maxScore;
     }
 
