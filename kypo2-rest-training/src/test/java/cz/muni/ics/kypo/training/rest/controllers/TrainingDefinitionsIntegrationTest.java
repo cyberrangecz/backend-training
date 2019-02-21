@@ -17,7 +17,6 @@ import cz.muni.ics.kypo.training.api.dto.viewgroup.TDViewGroupUpdateDTO;
 import cz.muni.ics.kypo.training.api.enums.AssessmentType;
 import cz.muni.ics.kypo.training.mapping.modelmapper.BeanMapping;
 import cz.muni.ics.kypo.training.mapping.modelmapper.BeanMappingImpl;
-//import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.api.enums.LevelType;
 import cz.muni.ics.kypo.training.api.enums.TDState;
 import cz.muni.ics.kypo.training.persistence.model.*;
@@ -34,7 +33,6 @@ import org.mockito.Mockito;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Import;
@@ -97,10 +95,7 @@ public class TrainingDefinitionsIntegrationTest {
 
 	@Autowired
 	private AssessmentLevelRepository assessmentLevelRepository;
-/*
-	@Autowired
-	private SandboxDefinitionRefRepository sandboxDefinitionRefRepository;
-*/
+
 	private TrainingDefinitionUpdateDTO trainingDefinitionUpdateDTO, invalidDefinitionUpdateDTO, updateForNonexistingDefinition;
 	private TrainingDefinitionCreateDTO trainingDefinitionCreateDTO;
 	private TrainingDefinitionDTO invalidDefinitionDTO;
@@ -124,11 +119,7 @@ public class TrainingDefinitionsIntegrationTest {
 				.setMessageConverters(new MappingJackson2HttpMessageConverter()).build();
 
 		beanMapping = new BeanMappingImpl(new ModelMapper());
-/*
-		SandboxDefinitionRef sandboxDefinitionRef = new SandboxDefinitionRef();
-		sandboxDefinitionRef.setSandboxDefinitionRef(1L);
-		SandboxDefinitionRef sB = sandboxDefinitionRefRepository.save(sandboxDefinitionRef);
-*/
+
 		UserRef userRef = new UserRef();
 		userRef.setUserRefLogin("testDesigner");
 		UserRef uR = userRefRepository.save(userRef);
@@ -261,7 +252,7 @@ public class TrainingDefinitionsIntegrationTest {
 		DBTestUtil.resetAutoIncrementColumns(applicationContext, "training_definition", "abstract_level");
 
 	}
-/*TODO poriesit canBeArchived
+
 	@Test
 	public void findTrainingDefinitionById() throws Exception {
 		TrainingDefinition expected = trainingDefinitionRepository.save(releasedTrainingDefinition);
@@ -280,7 +271,7 @@ public class TrainingDefinitionsIntegrationTest {
 		definitionDTO.setLevels(new HashSet<>(Arrays.asList(gLDTO)));
 		assertEquals(convertObjectToJsonBytes(convertObjectToJsonBytes(definitionDTO)), result.getContentAsString());
 	}
-*/
+
 	@Test
 	public void findTrainingDefinitionByIdWithDefinitionNotFound() throws Exception {
 		Exception ex = mvc.perform(get("/training-definitions" + "/{id}", 100L))
@@ -290,7 +281,7 @@ public class TrainingDefinitionsIntegrationTest {
 		assertEquals(ex.getClass(), ResourceNotFoundException.class);
 		assertTrue(ex.getMessage().contains("Training definition with id: 100 not found"));
 	}
-
+/*TODO poriesit canBeArchived
 	@Test
 	public void findAllTrainingDefinitions() throws Exception {
 		TrainingDefinition tD1 = trainingDefinitionRepository.save(releasedTrainingDefinition);
@@ -314,7 +305,7 @@ public class TrainingDefinitionsIntegrationTest {
 				.andReturn().getResponse();
 		assertEquals(convertObjectToJsonBytes(convertObjectToJsonBytes(trainingDefinitionDTOPageResultResource)), result.getContentAsString());
 	}
-
+*/
 	@Test
 	public void createTrainingDefinition() throws Exception {
 		mockSpringSecurityContextForGet();
