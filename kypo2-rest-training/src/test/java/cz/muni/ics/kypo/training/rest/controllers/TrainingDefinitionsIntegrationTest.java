@@ -1,6 +1,7 @@
 package cz.muni.ics.kypo.training.rest.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.JsonObject;
 import cz.muni.ics.kypo.training.api.PageResultResource;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelUpdateDTO;
@@ -11,6 +12,8 @@ import cz.muni.ics.kypo.training.api.dto.infolevel.InfoLevelUpdateDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionCreateDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionUpdateDTO;
+import cz.muni.ics.kypo.training.api.dto.viewgroup.TDViewGroupCreateDTO;
+import cz.muni.ics.kypo.training.api.dto.viewgroup.TDViewGroupUpdateDTO;
 import cz.muni.ics.kypo.training.api.enums.AssessmentType;
 import cz.muni.ics.kypo.training.mapping.modelmapper.BeanMapping;
 import cz.muni.ics.kypo.training.mapping.modelmapper.BeanMappingImpl;
@@ -27,6 +30,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mockito;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -43,6 +47,11 @@ import org.springframework.data.web.querydsl.QuerydslPredicateArgumentResolver;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.mock.web.MockHttpServletResponse;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
@@ -54,6 +63,7 @@ import java.sql.SQLException;
 import java.util.*;
 
 import static org.junit.Assert.*;
+import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -123,6 +133,27 @@ public class TrainingDefinitionsIntegrationTest {
 		userRef.setUserRefLogin("testDesigner");
 		UserRef uR = userRefRepository.save(userRef);
 
+		TDViewGroup tdViewGroup = new TDViewGroup();
+		tdViewGroup.setTitle("testGroup");
+		tdViewGroup.setDescription("test");
+		tdViewGroup.setOrganizers(new HashSet<>(Arrays.asList(uR)));
+
+		TDViewGroup tdViewGroup2 = new TDViewGroup();
+		tdViewGroup2.setTitle("testGroup2");
+		tdViewGroup2.setDescription("test2");
+		tdViewGroup2.setOrganizers(new HashSet<>(Arrays.asList(uR)));
+
+		TDViewGroupCreateDTO tdViewGroupCreateDTO = new TDViewGroupCreateDTO();
+		tdViewGroupCreateDTO.setTitle("testGroup");
+		tdViewGroupCreateDTO.setDescription("test");
+		tdViewGroupCreateDTO.setOrganizerLogins(new HashSet<>(Arrays.asList("testDesigner")));
+
+		TDViewGroupUpdateDTO tdViewGroupUpdateDTO = new TDViewGroupUpdateDTO();
+		tdViewGroupUpdateDTO.setId(1L);
+		tdViewGroupUpdateDTO.setTitle("testGroup");
+		tdViewGroupUpdateDTO.setDescription("test");
+		tdViewGroupUpdateDTO.setOrganizerLogins(new HashSet<>(Arrays.asList("testDesigner")));
+
 		gameLevel1 = new GameLevel();
 		gameLevel1.setTitle("testTitle");
 		gameLevel1.setContent("testContent");
@@ -182,14 +213,16 @@ public class TrainingDefinitionsIntegrationTest {
 		trainingDefinitionCreateDTO.setShowStepperBar(true);
 		trainingDefinitionCreateDTO.setState(TDState.UNRELEASED);
 		trainingDefinitionCreateDTO.setSandboxDefinitionRefId(1L);
+		trainingDefinitionCreateDTO.setTdViewGroup(tdViewGroupCreateDTO);
 		trainingDefinitionCreateDTO.setAuthorLogins(new HashSet<>(Arrays.asList(uR.getUserRefLogin())));;
 
 		releasedTrainingDefinition = new TrainingDefinition();
-		releasedTrainingDefinition.setTitle("testTitle");
-		releasedTrainingDefinition.setDescription("testDescription");
-		releasedTrainingDefinition.setShowStepperBar(false);
+		releasedTrainingDefinition.setTitle("released");
+		releasedTrainingDefinition.setDescription("released");
+		releasedTrainingDefinition.setShowStepperBar(true);
 		releasedTrainingDefinition.setState(cz.muni.ics.kypo.training.persistence.model.enums.TDState.RELEASED);
-		releasedTrainingDefinition.setSandboxDefinitionRefId(1L);
+		releasedTrainingDefinition.setSandboxDefinitionRefId(2L);
+		releasedTrainingDefinition.setTdViewGroup(tdViewGroup);
 		releasedTrainingDefinition.setAuthors(new HashSet<>(Arrays.asList(uR)));
 
 		invalidDefinitionDTO = new TrainingDefinitionDTO();
@@ -200,6 +233,7 @@ public class TrainingDefinitionsIntegrationTest {
 		unreleasedDefinition.setShowStepperBar(false);
 		unreleasedDefinition.setState(cz.muni.ics.kypo.training.persistence.model.enums.TDState.UNRELEASED);
 		unreleasedDefinition.setSandboxDefinitionRefId(1L);
+		unreleasedDefinition.setTdViewGroup(tdViewGroup2);
 		unreleasedDefinition.setAuthors(new HashSet<>(Arrays.asList(uR)));
 
 		trainingDefinitionUpdateDTO = new TrainingDefinitionUpdateDTO();
@@ -208,6 +242,7 @@ public class TrainingDefinitionsIntegrationTest {
 		trainingDefinitionUpdateDTO.setShowStepperBar(true);
 		trainingDefinitionUpdateDTO.setState(TDState.UNRELEASED);
 		trainingDefinitionUpdateDTO.setSandboxDefinitionRefId(1L);
+		trainingDefinitionUpdateDTO.setTdViewGroup(tdViewGroupUpdateDTO);
 		trainingDefinitionUpdateDTO.setAuthorLogins(new HashSet<>(Arrays.asList(uR.getUserRefLogin())));
 
 		invalidDefinitionUpdateDTO = new TrainingDefinitionUpdateDTO();
@@ -217,6 +252,7 @@ public class TrainingDefinitionsIntegrationTest {
 		updateForNonexistingDefinition.setTitle("test");
 		updateForNonexistingDefinition.setState(TDState.UNRELEASED);
 		updateForNonexistingDefinition.setSandboxDefinitionRefId(1L);
+		updateForNonexistingDefinition.setTdViewGroup(tdViewGroupUpdateDTO);
 		updateForNonexistingDefinition.setAuthorLogins(new HashSet<>(Arrays.asList(uR.getUserRefLogin())));
 	}
 
@@ -225,7 +261,7 @@ public class TrainingDefinitionsIntegrationTest {
 		DBTestUtil.resetAutoIncrementColumns(applicationContext, "training_definition", "abstract_level");
 
 	}
-
+/*TODO poriesit canBeArchived
 	@Test
 	public void findTrainingDefinitionById() throws Exception {
 		TrainingDefinition expected = trainingDefinitionRepository.save(releasedTrainingDefinition);
@@ -244,7 +280,7 @@ public class TrainingDefinitionsIntegrationTest {
 		definitionDTO.setLevels(new HashSet<>(Arrays.asList(gLDTO)));
 		assertEquals(convertObjectToJsonBytes(convertObjectToJsonBytes(definitionDTO)), result.getContentAsString());
 	}
-
+*/
 	@Test
 	public void findTrainingDefinitionByIdWithDefinitionNotFound() throws Exception {
 		Exception ex = mvc.perform(get("/training-definitions" + "/{id}", 100L))
@@ -254,9 +290,9 @@ public class TrainingDefinitionsIntegrationTest {
 		assertEquals(ex.getClass(), ResourceNotFoundException.class);
 		assertTrue(ex.getMessage().contains("Training definition with id: 100 not found"));
 	}
-	/*TODO -> canBeArchived doriesit
+
 	@Test
-	public void findAllTrainingInstances() throws Exception {
+	public void findAllTrainingDefinitions() throws Exception {
 		TrainingDefinition tD1 = trainingDefinitionRepository.save(releasedTrainingDefinition);
 		TrainingDefinition tD2 = trainingDefinitionRepository.save(unreleasedDefinition);
 
@@ -278,9 +314,10 @@ public class TrainingDefinitionsIntegrationTest {
 				.andReturn().getResponse();
 		assertEquals(convertObjectToJsonBytes(convertObjectToJsonBytes(trainingDefinitionDTOPageResultResource)), result.getContentAsString());
 	}
-	*/
+
 	@Test
 	public void createTrainingDefinition() throws Exception {
+		mockSpringSecurityContextForGet();
 		MockHttpServletResponse result = mvc.perform(post("/training-definitions").content(convertObjectToJsonBytes(trainingDefinitionCreateDTO))
 						.contentType(MediaType.APPLICATION_JSON_VALUE))
 				.andExpect(status().isOk())
@@ -291,6 +328,18 @@ public class TrainingDefinitionsIntegrationTest {
 		assertTrue(newDefinition.isPresent());
 		TrainingDefinitionDTO newDefinitionDTO = beanMapping.mapTo(newDefinition.get(), TrainingDefinitionDTO.class);
 		assertEquals(convertObjectToJsonBytes(convertObjectToJsonBytes(newDefinitionDTO)), result.getContentAsString());
+	}
+
+	@Test
+	public void deleteReleasedTrainingDefinition() throws Exception {
+		TrainingDefinition tD = trainingDefinitionRepository.save(releasedTrainingDefinition);
+
+		Exception ex = mvc.perform(delete("/training-definitions/{Id}", tD.getId()))
+				.andExpect(status().isConflict())
+				.andReturn().getResolvedException();
+		System.out.println(tD);
+		assertEquals(ex.getClass(), ConflictException.class);
+		assertTrue(ex.getMessage().contains("Cannot delete released training definition"));
 	}
 
 	@Test
@@ -307,6 +356,8 @@ public class TrainingDefinitionsIntegrationTest {
 	public void updateTrainingDefinition() throws Exception {
 		TrainingDefinition tD = trainingDefinitionRepository.save(unreleasedDefinition);
 		trainingDefinitionUpdateDTO.setId(tD.getId());
+		trainingDefinitionUpdateDTO.getTdViewGroup().setId(tD.getTdViewGroup().getId());
+		System.out.println(tD);
 		mvc.perform(put("/training-definitions").content(convertObjectToJsonBytes(trainingDefinitionUpdateDTO))
 		.contentType(MediaType.APPLICATION_JSON_VALUE))
 				.andExpect(status().isNoContent());
@@ -315,7 +366,7 @@ public class TrainingDefinitionsIntegrationTest {
 		TrainingDefinition updatedDefinition = optionalDefinition.get();
 		assertEquals(updatedDefinition.getTitle(), trainingDefinitionUpdateDTO.getTitle());
 		assertEquals(updatedDefinition.getDescription(), trainingDefinitionUpdateDTO.getDescription());
-		assertEquals(updatedDefinition.getState(), trainingDefinitionUpdateDTO.getState());
+		assertEquals(updatedDefinition.getState().toString(), trainingDefinitionUpdateDTO.getState().toString());
 		assertEquals(updatedDefinition.isShowStepperBar(), trainingDefinitionUpdateDTO.isShowStepperBar());
 		assertEquals(updatedDefinition.getStartingLevel(), unreleasedDefinition.getStartingLevel());
 		assertEquals(updatedDefinition.getAuthors(), unreleasedDefinition.getAuthors());
@@ -333,7 +384,7 @@ public class TrainingDefinitionsIntegrationTest {
 	}
 
 	@Test
-	public void updateTrainingDefinitionWithNonexistenDefinition() throws Exception{
+	public void updateTrainingDefinitionWithNonexistentDefinition() throws Exception{
 		Exception ex = mvc.perform(put("/training-definitions").content(convertObjectToJsonBytes(updateForNonexistingDefinition))
 				.contentType(MediaType.APPLICATION_JSON_VALUE))
 				.andExpect(status().isNotFound())
@@ -369,7 +420,7 @@ public class TrainingDefinitionsIntegrationTest {
 		assertTrue(opt.isPresent());
 		TrainingDefinition clonedTD = opt.get();
 		assertEquals(clonedTD.getTitle(), "Clone of " + tD.getTitle());
-		assertTrue(clonedTD.getState().equals(TDState.UNRELEASED));
+		assertEquals(clonedTD.getState().toString(), TDState.UNRELEASED.toString());
 		assertEquals(clonedTD.isShowStepperBar(), tD.isShowStepperBar());
 		assertFalse(clonedTD.getStartingLevel().equals(tD.getStartingLevel()));
 	}
@@ -382,6 +433,7 @@ public class TrainingDefinitionsIntegrationTest {
 		assertEquals(ex.getClass(), ResourceNotFoundException.class);
 		assertTrue(ex.getMessage().contains("Training definition with id: 100 not found"));
 	}
+
 
 	@Test
 	public void cloneUnreleasedTrainingDefinition() throws Exception {
@@ -518,7 +570,6 @@ public class TrainingDefinitionsIntegrationTest {
 		assertTrue(ex.getMessage().contains("Cannot edit released or archived training"));
 	}
 
-
 	@Test
 	public void swapRightOnLastLevel() throws Exception{
 		TrainingDefinition tD = trainingDefinitionRepository.save(unreleasedDefinition);
@@ -538,7 +589,6 @@ public class TrainingDefinitionsIntegrationTest {
 		assertEquals(ex.getClass(), ConflictException.class);
 		assertTrue(ex.getMessage().contains("Cannot swap right last level"));
 	}
-
 
 	@Test
 	public void swapRightOnNonexistentDefinition() throws Exception{
@@ -575,18 +625,6 @@ public class TrainingDefinitionsIntegrationTest {
 		assertFalse(optAL.isPresent());
 		assertFalse(optGL.isPresent());
 		assertFalse(optIL.isPresent());
-	}
-
-	@Test
-	public void deleteReleasedTrainingDefinition() throws Exception {
-		TrainingDefinition tD = trainingDefinitionRepository.save(releasedTrainingDefinition);
-
-		Exception ex = mvc.perform(delete("/training-definitions/{Id}", tD.getId()))
-				.andExpect(status().isConflict())
-				.andReturn().getResolvedException();
-
-		assertEquals(ex.getClass(), ConflictException.class);
-		assertTrue(ex.getMessage().contains("Cannot delete released training definition"));
 	}
 
 	@Test
@@ -745,7 +783,7 @@ public class TrainingDefinitionsIntegrationTest {
 				.andReturn().getResolvedException();
 
 		assertEquals(ex.getClass(), ResourceNotFoundException.class);
-		assertTrue(ex.getMessage().contains("Level not found"));
+		assertTrue(ex.getMessage().contains("Level was not found"));
 	}
 
 	@Test
@@ -813,7 +851,7 @@ public class TrainingDefinitionsIntegrationTest {
 				.andReturn().getResolvedException();
 
 		assertEquals(ex.getClass(), ResourceNotFoundException.class);
-		assertTrue(ex.getMessage().contains("Level not found"));
+		assertTrue(ex.getMessage().contains("Level was not found"));
 	}
 
 	@Test
@@ -832,7 +870,7 @@ public class TrainingDefinitionsIntegrationTest {
 		assertTrue(optAL.isPresent());
 		AssessmentLevel updatedAL = optAL.get();
 		assertEquals(updatedAL.getTitle(), assessmentLevelUpdateDTO.getTitle());
-		assertEquals(updatedAL.getAssessmentType(), assessmentLevelUpdateDTO.getType());
+		assertEquals(updatedAL.getAssessmentType().toString(), assessmentLevelUpdateDTO.getType().toString());
 		assertEquals(updatedAL.getQuestions(), assessmentLevelUpdateDTO.getQuestions());
 		assertEquals(updatedAL.getInstructions(), assessmentLevelUpdateDTO.getInstructions());
 		assertEquals(updatedAL.getMaxScore(), assessmentLevelUpdateDTO.getMaxScore());
@@ -884,7 +922,7 @@ public class TrainingDefinitionsIntegrationTest {
 				.andReturn().getResolvedException();
 
 		assertEquals(ex.getClass(), ResourceNotFoundException.class);
-		assertTrue(ex.getMessage().contains("Level not found"));
+		assertTrue(ex.getMessage().contains("Level was not found"));
 	}
 
 	@Test
@@ -936,7 +974,7 @@ public class TrainingDefinitionsIntegrationTest {
 	@Test
 	public void createGameLevel() throws Exception{
 		TrainingDefinition tD = trainingDefinitionRepository.save(unreleasedDefinition);
-		mvc.perform(post("/training-definitions/{definitionId}/levels/{levelType}",tD.getId(), LevelType.GAME_LEVEL))
+		mvc.perform(post("/training-definitions/{definitionId}/levels/{levelType}",tD.getId(), cz.muni.ics.kypo.training.persistence.model.enums.LevelType.GAME))
 				.andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON_VALUE))
 				.andExpect(status().isCreated());
 
@@ -945,18 +983,18 @@ public class TrainingDefinitionsIntegrationTest {
 		GameLevel gL = optGL.get();
 		assertEquals(tD.getStartingLevel(), gL.getId());
 		assertEquals(gL.getMaxScore(), 100);
-		assertEquals(gL.getTitle(), "New Game Level");
+		assertEquals(gL.getTitle(), "Title of game level");
 		assertEquals(gL.getIncorrectFlagLimit(), 5);
-		assertEquals(gL.getFlag(), "");
+		assertEquals(gL.getFlag(), "Secret flag");
 		assertTrue(gL.isSolutionPenalized());
-		assertEquals(gL.getSolution(), "");
-		assertEquals(gL.getContent(), "");
+		assertEquals(gL.getSolution(), "Solution of the game should be here");
+		assertEquals(gL.getContent(), "The test entry should be here");
 	}
 
 	@Test
 	public void createInfoLevel() throws Exception{
 		TrainingDefinition tD = trainingDefinitionRepository.save(unreleasedDefinition);
-		mvc.perform(post("/training-definitions/{definitionId}/levels/{levelType}",tD.getId(), LevelType.INFO_LEVEL))
+		mvc.perform(post("/training-definitions/{definitionId}/levels/{levelType}",tD.getId(), cz.muni.ics.kypo.training.persistence.model.enums.LevelType.INFO))
 				.andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON_VALUE))
 				.andExpect(status().isCreated());
 
@@ -965,14 +1003,14 @@ public class TrainingDefinitionsIntegrationTest {
 		InfoLevel iL = optIL.get();
 		assertEquals(tD.getStartingLevel(), iL.getId());
 		assertEquals(iL.getMaxScore(), 0);
-		assertEquals(iL.getTitle(), "New Info Level");
-		assertEquals(iL.getContent(), "");
+		assertEquals(iL.getTitle(), "Title of info level");
+		assertEquals(iL.getContent(), "Content of info level should be here.");
 	}
 
 	@Test
 	public void createAssessmentLevel() throws Exception{
 		TrainingDefinition tD = trainingDefinitionRepository.save(unreleasedDefinition);
-		mvc.perform(post("/training-definitions/{definitionId}/levels/{levelType}",tD.getId(), LevelType.ASSESSMENT_LEVEL))
+		mvc.perform(post("/training-definitions/{definitionId}/levels/{levelType}",tD.getId(), cz.muni.ics.kypo.training.persistence.model.enums.LevelType.ASSESSMENT))
 				.andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON_VALUE))
 				.andExpect(status().isCreated());
 
@@ -981,16 +1019,16 @@ public class TrainingDefinitionsIntegrationTest {
 		AssessmentLevel aL = optAL.get();
 		assertEquals(tD.getStartingLevel(), aL.getId());
 		assertEquals(aL.getMaxScore(), 0);
-		assertEquals(aL.getTitle(), "New Assessment Level");
-		assertEquals(aL.getAssessmentType(), AssessmentType.QUESTIONNAIRE);
-		assertEquals(aL.getInstructions(), "");
+		assertEquals(aL.getTitle(), "Title of assessment level");
+		assertEquals(aL.getAssessmentType().toString(), AssessmentType.QUESTIONNAIRE.toString());
+		assertEquals(aL.getInstructions(), "Instructions should be here");
 		assertEquals(aL.getQuestions(), "[]");
 	}
 
 	@Test
 	public void createLevelOnReleasedDefinition()throws Exception{
 		TrainingDefinition tD  = trainingDefinitionRepository.save(releasedTrainingDefinition);
-		Exception ex = mvc.perform(post("/training-definitions/{definitionId}/levels/{levelType}",tD.getId(), LevelType.ASSESSMENT_LEVEL))
+		Exception ex = mvc.perform(post("/training-definitions/{definitionId}/levels/{levelType}",tD.getId(), cz.muni.ics.kypo.training.persistence.model.enums.LevelType.ASSESSMENT))
 				.andExpect(status().isConflict())
 				.andReturn().getResolvedException();
 		assertEquals(ex.getClass(), ConflictException.class);
@@ -999,7 +1037,7 @@ public class TrainingDefinitionsIntegrationTest {
 
 	@Test
 	public void createLevelOnNonexistingDefinition()throws Exception{
-		Exception ex = mvc.perform(post("/training-definitions/{definitionId}/levels/{levelType}", 100L, LevelType.ASSESSMENT_LEVEL))
+		Exception ex = mvc.perform(post("/training-definitions/{definitionId}/levels/{levelType}", 100L, cz.muni.ics.kypo.training.persistence.model.enums.LevelType.ASSESSMENT))
 				.andExpect(status().isNotFound())
 				.andReturn().getResolvedException();
 		assertEquals(ex.getClass(), ResourceNotFoundException.class);
@@ -1010,6 +1048,20 @@ public class TrainingDefinitionsIntegrationTest {
 	private static String convertObjectToJsonBytes(Object object) throws IOException {
 		ObjectMapper mapper = new ObjectMapper();
 		return mapper.writeValueAsString(object);
+	}
+
+	private void mockSpringSecurityContextForGet() {
+		JsonObject sub = new JsonObject();
+		sub.addProperty("sub", "testDesigner");
+		Authentication authentication = Mockito.mock(Authentication.class);
+		OAuth2Authentication auth = Mockito.mock(OAuth2Authentication.class);
+		SecurityContext securityContext = Mockito.mock(SecurityContext.class);
+		SecurityContextHolder.setContext(securityContext);
+		given(securityContext.getAuthentication()).willReturn(auth);
+		given(auth.getUserAuthentication()).willReturn(auth);
+		given(auth.getCredentials()).willReturn(sub);
+		given(auth.getAuthorities()).willReturn(Arrays.asList(new SimpleGrantedAuthority("ADMINISTRATOR")));
+		given(authentication.getDetails()).willReturn(auth);
 	}
 
 }
