@@ -235,8 +235,8 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
             AccessedTrainingRunDTO aTRD = new AccessedTrainingRunDTO();
             aTRD.setId(run.getId());
             aTRD.setTitle(run.getTrainingInstance().getTitle());
-            aTRD.setTrainingInstanceStartDate(run.getStartTime());
-            aTRD.setTrainingInstanceEndDate(run.getEndTime());
+            aTRD.setTrainingInstanceStartDate(run.getTrainingInstance().getStartTime());
+            aTRD.setTrainingInstanceEndDate(run.getTrainingInstance().getEndTime());
             aTRD.setCurrentLevelOrder(trainingRunService.getLevelOrder(run.getTrainingInstance().getTrainingDefinition().getStartingLevel(), run.getCurrentLevel().getId()));
             aTRD.setNumberOfLevels(trainingRunService.getLevels(run.getTrainingInstance().getTrainingDefinition().getStartingLevel()).size());
             if (aTRD.getCurrentLevelOrder() == aTRD.getNumberOfLevels() || LocalDateTime.now().isAfter(aTRD.getTrainingInstanceEndDate())) {
