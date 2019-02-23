@@ -1,42 +1,11 @@
-target/*
-*/target/*
+# Created by .ignore support plugin (hsz.mobi)
+
 target/
-!target/generated-sources/java
-*/logs/*
-*/log/*
-logs/
-
-!.mvn/wrapper/maven-wrapper.jar
-
-*/kypo2-facade-training/$*
-
-### Vagrant ###
-.directory
-.vagrant
-ansible/gitlab/*
-ansible/roles/*
-
-### STS & Eclipse ###
-.apt_generated
+.settings/
 .classpath
-.factorypath
 .project
-.settings
-.springBeans
-.sts4-cache
-
-### IntelliJ IDEA ###
-.idea
-*.iws
+nb-configuration.xml
 *.iml
-*.ipr
-
-### NetBeans ###
-/nbproject/private/
-/build/
-/nbbuild/
-/dist/
-/nbdist/
-/.nb-gradle/
-
-application.properties
+*.log
+logs/
+.idea/

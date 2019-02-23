@@ -126,6 +126,12 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
         return credentials.get("sub").getAsString();
     }
 
+    private String getFullNameOfLoggedInUser(){
+        OAuth2Authentication authentication = (OAuth2Authentication) SecurityContextHolder.getContext().getAuthentication();
+        JsonObject credentials = (JsonObject) authentication.getUserAuthentication().getCredentials();
+        return credentials.get("name").getAsString();
+    }
+
     private boolean isAdmin() {
         OAuth2Authentication authentication = (OAuth2Authentication) SecurityContextHolder.getContext().getAuthentication();
         for (GrantedAuthority gA : authentication.getUserAuthentication().getAuthorities()) {
@@ -163,6 +169,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
         } else {
             UserRef newUser = new UserRef();
             newUser.setUserRefLogin(userSub);
+            newUser.setUserRefFullName(getFullNameOfLoggedInUser());
             trainingDefinition.addAuthor(newUser);
         }
 

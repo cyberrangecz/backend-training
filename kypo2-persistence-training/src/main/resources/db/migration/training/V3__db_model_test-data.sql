@@ -748,13 +748,13 @@ INSERT INTO sandbox_instance_ref(id, sandbox_instance_ref, training_instance_id)
 INSERT INTO sandbox_instance_ref(id, sandbox_instance_ref, training_instance_id) VALUES (nextval('sandbox_instance_ref_id_seq'), 5, 4);
 INSERT INTO sandbox_instance_ref(id, sandbox_instance_ref, training_instance_id) VALUES (nextval('sandbox_instance_ref_id_seq'), 6, 4);
 
-INSERT INTO user_ref(id, user_ref_login) VALUES (nextval('user_ref_id_seq'),'Organizer1');
-INSERT INTO user_ref(id, user_ref_login) VALUES (nextval('user_ref_id_seq'),'Organizer2');
-INSERT INTO user_ref(id, user_ref_login) VALUES (nextval('user_ref_id_seq'),'Participant1');
-INSERT INTO user_ref(id, user_ref_login) VALUES (nextval('user_ref_id_seq'),'Participant2');
-INSERT INTO user_ref(id, user_ref_login) VALUES (nextval('user_ref_id_seq'), 'Designer1');
-INSERT INTO user_ref(id, user_ref_login) VALUES (nextval('user_ref_id_seq'), 'Designer2');
-INSERT INTO user_ref(id, user_ref_login) VALUES (nextval('user_ref_id_seq'), 'Designer3');
+INSERT INTO user_ref(id, user_ref_login, user_ref_full_name) VALUES (nextval('user_ref_id_seq'),'Organizer1', 'Mgr. Ing. Pavel Šeda');
+INSERT INTO user_ref(id, user_ref_login, user_ref_full_name) VALUES (nextval('user_ref_id_seq'),'Organizer2', 'RNDr. Čermák');
+INSERT INTO user_ref(id, user_ref_login, user_ref_full_name) VALUES (nextval('user_ref_id_seq'),'Participant1', 'Bc. Martin Hamerník');
+INSERT INTO user_ref(id, user_ref_login, user_ref_full_name) VALUES (nextval('user_ref_id_seq'),'Participant2', 'Bc. Boris Jaduš');
+INSERT INTO user_ref(id, user_ref_login, user_ref_full_name) VALUES (nextval('user_ref_id_seq'), 'Designer1', 'Bc. Dominik Pilár');
+INSERT INTO user_ref(id, user_ref_login, user_ref_full_name) VALUES (nextval('user_ref_id_seq'), 'Designer2', 'Mgr. Ing. Jakub Čegan');
+INSERT INTO user_ref(id, user_ref_login, user_ref_full_name) VALUES (nextval('user_ref_id_seq'), 'Designer3', 'Mgr. Ing. Pavel Šeda');
 
 INSERT INTO training_instance_user_ref(training_instance_id, user_ref_id) VALUES (1, 1);
 INSERT INTO training_instance_user_ref(training_instance_id, user_ref_id) VALUES (2, 1);

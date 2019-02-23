@@ -220,7 +220,9 @@ public class TrainingRunServiceImpl implements TrainingRunService {
         if (userRef.isPresent()) {
             tR.setParticipantRef(userRef.get());
         } else {
-            tR.setParticipantRef(participantRefRepository.save(new UserRef(participantRefLogin)));
+            tR.setParticipantRef(participantRefRepository.save(
+                    new UserRef(participantRefLogin, getFullNameOfLoggedInUser())
+            ));
         }
         tR.setAssessmentResponses("[]");
         //TODO what state set at the begining
@@ -680,4 +682,11 @@ public class TrainingRunServiceImpl implements TrainingRunService {
             throw new ServiceLayerException(ex.getMessage(), ErrorCode.UNEXPECTED_ERROR);
         }
     }
+
+    private String getFullNameOfLoggedInUser() {
+        OAuth2Authentication authentication = (OAuth2Authentication) SecurityContextHolder.getContext().getAuthentication();
+        JsonObject credentials = (JsonObject) authentication.getUserAuthentication().getCredentials();
+        return credentials.get("name").getAsString();
+    }
+
 }
