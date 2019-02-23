@@ -18,8 +18,10 @@ public class UserRef implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", unique = true, nullable = false, insertable = false)
     private Long id;
-    @Column(name = "user_ref_login", unique = true)
+    @Column(name = "user_ref_login", nullable = false, unique = true)
     private String userRefLogin;
+    @Column(name = "user_ref_full_name")
+    private String userRefFullName;
     @ManyToMany(mappedBy = "organizers", fetch = FetchType.LAZY)
     private Set<TrainingInstance> trainingInstances = new HashSet<>();
     @ManyToMany(mappedBy = "authors", fetch = FetchType.LAZY)
@@ -31,7 +33,12 @@ public class UserRef implements Serializable {
     }
 
     public UserRef(String userRefLogin) {
-        this.userRefLogin = userRefLogin;
+        setUserRefLogin(userRefLogin);
+    }
+
+    public UserRef(String userRefLogin, String userRefFullName) {
+        setUserRefLogin(userRefLogin);
+        setUserRefFullName(userRefFullName);
     }
 
     public Long getId() {
@@ -48,6 +55,14 @@ public class UserRef implements Serializable {
 
     public void setUserRefLogin(String userRefLogin) {
         this.userRefLogin = userRefLogin;
+    }
+
+    public String getUserRefFullName() {
+        return userRefFullName;
+    }
+
+    public void setUserRefFullName(String userRefFullName) {
+        this.userRefFullName = userRefFullName;
     }
 
     public Set<TrainingInstance> getTrainingInstances() {

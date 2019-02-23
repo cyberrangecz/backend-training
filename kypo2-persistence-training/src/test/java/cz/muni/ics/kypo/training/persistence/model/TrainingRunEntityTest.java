@@ -53,7 +53,8 @@ public class TrainingRunEntityTest {
         infoLevel.setTitle("infoLevel");
         infoLevel.setContent("content for info level");
         participantRef = new UserRef();
-        participantRef.setUserRefLogin("user");
+        participantRef.setUserRefLogin("441048@mail.muni.cz");
+        participantRef.setUserRefFullName("Pavel Seda");
         trainingInstance.setAccessToken("b5f3dc27a09865be37cef07816c4f08cf5585b116a4e74b9387c3e43e3a25ec8");
         trainingInstance.setStartTime(LocalDateTime.now());
         trainingInstance.setEndTime(LocalDateTime.now());

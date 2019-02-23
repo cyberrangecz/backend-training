@@ -132,7 +132,6 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
         }
     }
 
-
     @Override
     @TransactionalRO
     public PageResultResource<TrainingRunDTO> findTrainingRunsByTrainingInstance(Long trainingInstanceId, Pageable pageable) {
