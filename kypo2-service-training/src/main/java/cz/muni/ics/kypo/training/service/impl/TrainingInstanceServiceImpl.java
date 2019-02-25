@@ -119,7 +119,7 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
         TrainingInstance trainingInstance = trainingInstanceRepository.findById(id)
                 .orElseThrow(() -> new ServiceLayerException("Training instance with id: " + id + ", not found.", ErrorCode.RESOURCE_NOT_FOUND));
         LocalDateTime currentDate = LocalDateTime.now();
-        if (!currentDate.isAfter(trainingInstance.getEndTime()))
+        if (currentDate.isAfter(trainingInstance.getEndTime()) || currentDate.isAfter(trainingInstance.getStartTime()))
             throw new ServiceLayerException("Only finished instances can be deleted.", ErrorCode.RESOURCE_CONFLICT);
         trainingRunRepository.deleteTrainingRunsByTrainingInstance(trainingInstance.getId());
         trainingInstanceRepository.delete(trainingInstance);
