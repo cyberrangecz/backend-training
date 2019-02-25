@@ -136,7 +136,11 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
     @TransactionalRO
     public PageResultResource<TrainingRunDTO> findTrainingRunsByTrainingInstance(Long trainingInstanceId, Pageable pageable) {
         LOG.debug("findAllTrainingRunsByTrainingInstance({})", trainingInstanceId);
-        Page<TrainingRun> trainingRuns = trainingInstanceService.findTrainingRunsByTrainingInstance(trainingInstanceId, pageable);
-        return trainingRunMapper.mapToPageResultResource(trainingRuns);
+        try{
+            Page<TrainingRun> trainingRuns = trainingInstanceService.findTrainingRunsByTrainingInstance(trainingInstanceId, pageable);
+            return trainingRunMapper.mapToPageResultResource(trainingRuns);
+        }catch(ServiceLayerException ex){
+            throw new FacadeLayerException(ex);
+        }
     }
 }

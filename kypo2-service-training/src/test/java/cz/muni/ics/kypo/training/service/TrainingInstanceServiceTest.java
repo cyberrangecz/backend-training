@@ -174,12 +174,12 @@ public class TrainingInstanceServiceTest {
 
     @Test
     public void deleteTrainingInstance() {
-        given(trainingInstanceRepository.findById(any(Long.class))).willReturn(Optional.of(trainingInstance1));
+        given(trainingInstanceRepository.findById(any(Long.class))).willReturn(Optional.of(trainingInstance2));
 
-        trainingInstanceService.delete(trainingInstance1.getId());
+        trainingInstanceService.delete(trainingInstance2.getId());
 
-        then(trainingInstanceRepository).should().findById(trainingInstance1.getId());
-        then(trainingInstanceRepository).should().delete(trainingInstance1);
+        then(trainingInstanceRepository).should().findById(trainingInstance2.getId());
+        then(trainingInstanceRepository).should().delete(trainingInstance2);
     }
 
     @Test
@@ -208,6 +208,7 @@ public class TrainingInstanceServiceTest {
 
         Page p = new PageImpl<>(expected);
 
+        given(trainingInstanceRepository.findById(anyLong())).willReturn(Optional.of(trainingInstance1));
         given(trainingRunRepository.findAllByTrainingInstanceId(any(Long.class), any(Pageable.class))).willReturn(p);
         Page pr = trainingInstanceService.findTrainingRunsByTrainingInstance(trainingInstance1.getId(), PageRequest.of(0, 2));
         assertEquals(2, pr.getTotalElements());
@@ -215,12 +216,15 @@ public class TrainingInstanceServiceTest {
 
     @Test
     public void findTrainingRunsByTrainingInstance_notContainedId() {
-        Page p = new PageImpl<>(new ArrayList<>());
+        thrown.expect(ServiceLayerException.class);
+        thrown.expectMessage("Training instance with id: 10 not found.");
+        //Page p = new PageImpl<>(new ArrayList<>());
 
-        given(trainingRunRepository.findAllByTrainingInstanceId(any(Long.class), any(Pageable.class))).willReturn(p);
+        //given(trainingRunRepository.findAllByTrainingInstanceId(any(Long.class), any(Pageable.class))).willReturn(p);
 
-        Page pr = trainingInstanceService.findTrainingRunsByTrainingInstance(10L, PageRequest.of(0, 2));
-        assertEquals(0, pr.getTotalElements());
+        //Page pr = trainingInstanceService.findTrainingRunsByTrainingInstance(10L, PageRequest.of(0, 2));
+        //assertEquals(0, pr.getTotalElements());
+        trainingInstanceService.findTrainingRunsByTrainingInstance(10L, PageRequest.of(0, 2));
     }
 
     //TODO deal with Thread.sleep maybe with PowerMock

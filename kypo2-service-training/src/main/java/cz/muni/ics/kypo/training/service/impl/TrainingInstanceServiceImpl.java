@@ -122,7 +122,7 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
         TrainingInstance trainingInstance = trainingInstanceRepository.findById(instanceId)
                 .orElseThrow(() -> new ServiceLayerException("Training instance with id: " + instanceId + ", not found.", ErrorCode.RESOURCE_NOT_FOUND));
         LocalDateTime currentDate = LocalDateTime.now();
-        if (!currentDate.isAfter(trainingInstance.getEndTime()))
+        if (currentDate.isAfter(trainingInstance.getEndTime()) || currentDate.isAfter(trainingInstance.getStartTime()))
             throw new ServiceLayerException("Only finished instances can be deleted.", ErrorCode.RESOURCE_CONFLICT);
         trainingRunRepository.deleteTrainingRunsByTrainingInstance(trainingInstance.getId());
         trainingInstanceRepository.delete(trainingInstance);
@@ -241,11 +241,13 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
 
     @Override
     @PreAuthorize("hasAuthority('ADMINISTRATOR')" +
-            "or @securityService.isOrganizeOfGivenTrainingInstance(#instanceId)")
-    public Page<TrainingRun> findTrainingRunsByTrainingInstance(Long instanceId, Pageable pageable) {
-        LOG.debug("findTrainingRunsByTrainingInstance({})", instanceId);
-        org.springframework.util.Assert.notNull(instanceId, "Input training instance id must not be null.");
-        return trainingRunRepository.findAllByTrainingInstanceId(instanceId, pageable);
+            "or @securityService.isOrganizeOfGivenTrainingInstance(#trainingInstanceId)")
+    public Page<TrainingRun> findTrainingRunsByTrainingInstance(Long trainingInstanceId, Pageable pageable) {
+        LOG.debug("findTrainingRunsByTrainingInstance({})", trainingInstanceId);
+        org.springframework.util.Assert.notNull(trainingInstanceId, "Input training instance id must not be null.");
+        trainingInstanceRepository.findById(trainingInstanceId)
+            .orElseThrow( () -> new ServiceLayerException("Training instance with id: " + trainingInstanceId + " not found.", ErrorCode.RESOURCE_NOT_FOUND));
+        return trainingRunRepository.findAllByTrainingInstanceId(trainingInstanceId, pageable);
     }
 
     @Override

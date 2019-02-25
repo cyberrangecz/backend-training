@@ -285,12 +285,14 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
         AbstractLevel swapLevel = abstractLevelRepository.findById(trainingDefinition.getStartingLevel())
                 .orElseThrow(() -> new ServiceLayerException("Level with id: " + trainingDefinition.getStartingLevel() + ", not found.",
                         ErrorCode.RESOURCE_NOT_FOUND));
+
         Long oneBeforeId = null;
         while (!swapLevel.getId().equals(levelId)) {
             oneBeforeId = swapLevel.getId();
             swapLevel = abstractLevelRepository.findById(swapLevel.getNextLevel())
                     .orElseThrow(() -> new ServiceLayerException(LEVEL_NOT_FOUND, ErrorCode.RESOURCE_NOT_FOUND));
         }
+        if (swapLevel.getNextLevel() == null) throw new ServiceLayerException("Cannot swap right last level.", ErrorCode.RESOURCE_CONFLICT);
         if (oneBeforeId != null) {
             AbstractLevel oneBefore = abstractLevelRepository.findById(oneBeforeId)
                     .orElseThrow(() -> new ServiceLayerException(LEVEL_NOT_FOUND, ErrorCode.RESOURCE_NOT_FOUND));
@@ -298,7 +300,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
             updateLevel(oneBefore);
         }
         AbstractLevel nextLevel = abstractLevelRepository.findById(swapLevel.getNextLevel())
-                .orElseThrow(() -> new ServiceLayerException("Cannot swap right last level.", ErrorCode.RESOURCE_CONFLICT));
+                .orElseThrow(() -> new ServiceLayerException(LEVEL_NOT_FOUND, ErrorCode.RESOURCE_NOT_FOUND));
         swapLevel.setNextLevel(nextLevel.getNextLevel());
         nextLevel.setNextLevel(swapLevel.getId());
         updateLevel(nextLevel);
@@ -339,6 +341,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
         TrainingDefinition trainingDefinition = findById(definitionId);
         if (!trainingDefinition.getState().equals(TDState.UNRELEASED))
             throw new ServiceLayerException(ARCHIVED_OR_RELEASED, ErrorCode.RESOURCE_CONFLICT);
+        if (trainingDefinition.getStartingLevel() == null) throw new ServiceLayerException(LEVEL_NOT_FOUND, ErrorCode.RESOURCE_NOT_FOUND);
         AbstractLevel level = abstractLevelRepository.findById(trainingDefinition.getStartingLevel())
                 .orElseThrow(() -> new ServiceLayerException("Level with id: " + trainingDefinition.getStartingLevel() + ", not found.",
                         ErrorCode.RESOURCE_NOT_FOUND));
@@ -462,7 +465,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
             throw new ServiceLayerException("Cannot create level in released or archived training definition", ErrorCode.RESOURCE_CONFLICT);
 
         InfoLevel newInfoLevel = new InfoLevel();
-        newInfoLevel.setTitle("Title of info Level");
+        newInfoLevel.setTitle("Title of info level");
         newInfoLevel.setContent("Content of info level should be here.");
         InfoLevel iL = infoLevelRepository.save(newInfoLevel);
 
@@ -596,8 +599,9 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     private boolean findLevelInDefinition(TrainingDefinition definition, Long levelId) {
         Long nextId = definition.getStartingLevel();
         Boolean found = false;
-        if (nextId.equals(levelId))
+        if (nextId == levelId)
             found = true;
+
         while (nextId != null && !found) {
             AbstractLevel nextLevel = abstractLevelRepository.findById(nextId)
                     .orElseThrow(() -> new ServiceLayerException(LEVEL_NOT_FOUND, ErrorCode.RESOURCE_NOT_FOUND));

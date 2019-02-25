@@ -22,7 +22,7 @@ public class AssessmentLevelUpdateDTO {
     @NotNull(message = "{assessmentlevelupdate.maxScore.NotNull.message}")
     @Min(value = 0, message = "{assessmentlevelupdate.maxScore.Min.message}")
     @Max(value = 100, message = "{assessmentlevelupdate.maxScore.Max.message}")
-    private Integer maxScore;
+    private int maxScore;
     private String questions;
     private String instructions;
     @NotNull(message = "{assessmentlevelupdate.type.NotNull.message}")
@@ -47,11 +47,11 @@ public class AssessmentLevelUpdateDTO {
     }
 
     @ApiModelProperty(value = "Maximum score of assessment level to update. Have to be filled in range from 0 to 100.", required = true, example = "40")
-    public Integer getMaxScore() {
+    public int getMaxScore() {
         return maxScore;
     }
 
-    public void setMaxScore(Integer maxScore) {
+    public void setMaxScore(int maxScore) {
         this.maxScore = maxScore;
     }
 

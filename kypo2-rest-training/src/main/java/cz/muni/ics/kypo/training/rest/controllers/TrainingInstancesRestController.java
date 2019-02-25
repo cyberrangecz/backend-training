@@ -279,9 +279,14 @@ public class TrainingInstancesRestController {
             @ApiParam(value = "Fields which should be returned in REST API response", required = false)
             @RequestParam(value = "fields", required = false) String fields) {
         LOG.debug("findAllTrainingRunsByTrainingInstnceId({})", instanceId);
-        PageResultResource<TrainingRunDTO> trainingRunResource = trainingInstanceFacade.findTrainingRunsByTrainingInstance(instanceId, pageable);
-        Squiggly.init(objectMapper, fields);
-        return ResponseEntity.ok(SquigglyUtils.stringify(objectMapper, trainingRunResource));
+        try {
+            PageResultResource<TrainingRunDTO> trainingRunResource =
+                trainingInstanceFacade.findTrainingRunsByTrainingInstance(instanceId, pageable);
+            Squiggly.init(objectMapper, fields);
+            return ResponseEntity.ok(SquigglyUtils.stringify(objectMapper, trainingRunResource));
+        } catch (FacadeLayerException ex) {
+            throw ExceptionSorter.throwException(ex);
+        }
     }
 
 }
