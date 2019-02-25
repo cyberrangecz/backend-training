@@ -1,6 +1,7 @@
 package cz.muni.ics.kypo.training.service;
 
 import com.querydsl.core.types.Predicate;
+import cz.muni.ics.kypo.training.api.dto.UserInfoDTO;
 import cz.muni.ics.kypo.training.api.enums.RoleType;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.persistence.model.*;
@@ -197,9 +198,9 @@ public interface TrainingDefinitionService {
     /**
      * Finds designers
      *
-     * @return list of logins of users which are designers
+     * @return list of logins and full names of users with given role
      */
-    List<String> getUsersWithGivenRole(RoleType roleType, Pageable pageable);
+    List<UserInfoDTO> getUsersWithGivenRole(RoleType roleType, Pageable pageable);
 
     /**
      * Create userRef
