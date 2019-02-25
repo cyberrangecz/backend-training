@@ -318,7 +318,7 @@ public class TrainingInstancesIntegrationTest {
 				.andExpect(status().isNotFound())
 				.andReturn().getResolvedException();
 		assertEquals(ex.getClass(), ResourceNotFoundException.class);
-		assertTrue(ex.getMessage().contains("Training instance with id: 100, not found."));
+		assertTrue(ex.getMessage().contains("Training instance with id: 100 not found."));
 	}
 
 	private static String convertObjectToJsonBytes(Object object) throws IOException {

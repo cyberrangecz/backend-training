@@ -242,6 +242,8 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
     public Page<TrainingRun> findTrainingRunsByTrainingInstance(Long trainingInstanceId, Pageable pageable) {
         LOG.debug("findTrainingRunsByTrainingInstance({})", trainingInstanceId);
         org.springframework.util.Assert.notNull(trainingInstanceId, "Input training instance id must not be null.");
+        trainingInstanceRepository.findById(trainingInstanceId)
+            .orElseThrow( () -> new ServiceLayerException("Training instance with id: " + trainingInstanceId + " not found.", ErrorCode.RESOURCE_NOT_FOUND));
         return trainingRunRepository.findAllByTrainingInstanceId(trainingInstanceId, pageable);
     }
 
