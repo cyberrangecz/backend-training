@@ -2,6 +2,7 @@ package cz.muni.ics.kypo.training.facade;
 
 import cz.muni.ics.kypo.training.api.dto.AbstractLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.BasicLevelInfoDTO;
+import cz.muni.ics.kypo.training.api.dto.UserInfoDTO;
 import cz.muni.ics.kypo.training.api.enums.RoleType;
 import cz.muni.ics.kypo.training.exceptions.FacadeLayerException;
 
@@ -184,9 +185,9 @@ public interface TrainingDefinitionFacade {
     /**
      * Get designers
      *
-     * @return list of logins of designers
+     * @return list of logins and full names of designers
      * @throws FacadeLayerException some error encountered when obtaining info about users
      */
-    List<String> getUsersWithGivenRole(RoleType roleType, Pageable pageable);
+    List<UserInfoDTO> getUsersWithGivenRole(RoleType roleType, Pageable pageable);
 
 }

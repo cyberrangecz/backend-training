@@ -849,17 +849,19 @@ public class TrainingDefinitionServiceTest {
     public void getUsersWithGivenRole() {
         when(groupRef1.getIdmGroupId()).thenReturn(1L);
         when(groupRef2.getIdmGroupId()).thenReturn(2L);
-        when(userInfoDTO1.getLogin()).thenReturn("Peter");
-        when(userInfoDTO2.getLogin()).thenReturn("Dave");
+        when(userInfoDTO1.getLogin()).thenReturn("peter@mail.muni.cz");
+        when(userInfoDTO2.getLogin()).thenReturn("dave@mail.muni.cz");
+        when(userInfoDTO1.getFullName()).thenReturn("Peter Parker");
+        when(userInfoDTO2.getFullName()).thenReturn("David Holman");
         given(idmGroupRefRepository.findAllByRoleType(anyString())).willReturn(Arrays.asList(groupRef1, groupRef2));
         given(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
                 willReturn(new ResponseEntity<PageResultResource<UserInfoDTO>>(new PageResultResource<>(Arrays.asList(userInfoDTO1, userInfoDTO2)), HttpStatus.OK));
 
-        List<String> usersLogins = trainingDefinitionService.getUsersWithGivenRole(RoleType.DESIGNER, pageable);
+        List<UserInfoDTO> users = trainingDefinitionService.getUsersWithGivenRole(RoleType.DESIGNER, pageable);
 
-        assertEquals(2, usersLogins.size());
-        assertTrue(usersLogins.contains("Peter"));
-        assertTrue(usersLogins.contains("Dave"));
+        assertEquals(2, users.size());
+        assertTrue(users.contains(userInfoDTO1));
+        assertTrue(users.contains(userInfoDTO2));
     }
 
     @Test
@@ -871,7 +873,7 @@ public class TrainingDefinitionServiceTest {
                 willReturn(new ResponseEntity<PageResultResource<UserInfoDTO>>(new PageResultResource<>(Arrays.asList()), HttpStatus.NOT_FOUND));
         thrown.expect(ServiceLayerException.class);
         thrown.expectMessage("Error while obtaining info about users in designers groups.");
-        List<String> usersLogins = trainingDefinitionService.getUsersWithGivenRole(RoleType.DESIGNER, pageable);
+        List<UserInfoDTO> users = trainingDefinitionService.getUsersWithGivenRole(RoleType.DESIGNER, pageable);
 
     }
 
@@ -879,25 +881,8 @@ public class TrainingDefinitionServiceTest {
     public void getUsersWithGivenRoleWithEmptyListOfIdmGroupRefs() {
         given(idmGroupRefRepository.findAllByRoleType(anyString())).willReturn(Collections.emptyList());
 
-        List<String> usersLogins = trainingDefinitionService.getUsersWithGivenRole(RoleType.DESIGNER, pageable);
-        assertEquals(0, usersLogins.size());
-    }
-
-    @Test
-    public void findTDViewGroupByTitle() {
-        given(viewGroupRepository.findByTitle(anyString())).willReturn(Optional.ofNullable(viewGroup));
-        TDViewGroup group = trainingDefinitionService.findTDViewGroupByTitle("title");
-
-        assertEquals(group, viewGroup);
-    }
-
-    @Test
-    public void findTDViewGroupByTitleNotFound() {
-        given(viewGroupRepository.findByTitle(anyString())).willReturn(Optional.empty());
-
-        thrown.expect(ServiceLayerException.class);
-        thrown.expectMessage("View group with title: view not found.");
-        TDViewGroup group = trainingDefinitionService.findTDViewGroupByTitle("view");
+        List<UserInfoDTO> users = trainingDefinitionService.getUsersWithGivenRole(RoleType.DESIGNER, pageable);
+        assertEquals(0, users.size());
     }
 
     @Test
@@ -919,26 +904,6 @@ public class TrainingDefinitionServiceTest {
         thrown.expectMessage("UserRef with login Herkules not found.");
         UserRef u = trainingDefinitionService.findUserRefByLogin("Herkules");
     }
-
-    @Test
-    public void findUserRefById() {
-        UserRef userRef = new UserRef();
-        userRef.setId(1L);
-        given(userRefRepository.findById(userRef.getId())).willReturn(Optional.of(userRef));
-
-        UserRef u = trainingDefinitionService.findUserRefById(userRef.getId());
-        assertEquals(userRef.getId(), u.getId());
-    }
-
-    @Test
-    public void findUserRefByIdNotFound() {
-        given(userRefRepository.findById(1L)).willReturn(Optional.empty());
-
-        thrown.expect(ServiceLayerException.class);
-        thrown.expectMessage("UserRef with id 1 not found.");
-        UserRef u = trainingDefinitionService.findUserRefById(1L);
-    }
-
 
     @After
     public void after() {

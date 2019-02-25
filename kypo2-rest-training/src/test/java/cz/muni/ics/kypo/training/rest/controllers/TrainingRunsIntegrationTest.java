@@ -212,8 +212,9 @@ public class TrainingRunsIntegrationTest {
 				.andExpect(status().isNotFound())
 				.andReturn().getResolvedException();
 
+		System.out.println(ex.getLocalizedMessage());
 		assertEquals(ex.getClass(), ResourceNotFoundException.class);
-		assertTrue(ex.getMessage().contains("Training Run with id: 100 not found"));
+		assertTrue(ex.getMessage().contains("Training Run with runId: 100 not found."));
 	}
 
 	private static String convertObjectToJsonBytes(Object object) throws IOException {

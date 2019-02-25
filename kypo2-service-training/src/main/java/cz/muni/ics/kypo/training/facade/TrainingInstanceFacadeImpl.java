@@ -71,13 +71,13 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
 
     @Override
     @TransactionalWO
-    public void update(TrainingInstanceUpdateDTO trainingInstance) {
+    public String update(TrainingInstanceUpdateDTO trainingInstance) {
         LOG.debug("update({})", trainingInstance);
         try {
             Objects.requireNonNull(trainingInstance);
             TrainingInstance tI = trainingInstanceMapper.mapUpdateToEntity(trainingInstance);
             tI.setOrganizers(trainingInstanceService.findUserRefsByLogins(trainingInstance.getOrganizerLogins()));
-            trainingInstanceService.update(tI);
+            return trainingInstanceService.update(tI);
         } catch (ServiceLayerException ex) {
             throw new FacadeLayerException(ex);
         }
@@ -131,7 +131,6 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
             throw new FacadeLayerException(ex);
         }
     }
-
 
     @Override
     @TransactionalRO

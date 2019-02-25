@@ -1,11 +1,13 @@
 package cz.muni.ics.kypo.training.facade;
 
+import com.google.gson.JsonObject;
 import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalRO;
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalWO;
 import cz.muni.ics.kypo.training.api.PageResultResource;
 import cz.muni.ics.kypo.training.api.dto.AbstractLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.BasicLevelInfoDTO;
+import cz.muni.ics.kypo.training.api.dto.UserInfoDTO;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelUpdateDTO;
 import cz.muni.ics.kypo.training.api.dto.gamelevel.GameLevelDTO;
@@ -26,6 +28,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -169,7 +173,7 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
         try {
             Objects.requireNonNull(trainingDefinition);
             TrainingDefinition tD = trainingDefinitionMapper.mapUpdateToEntity(trainingDefinition);
-            addOrganizersToTrainingDefinition(tD,trainingDefinition.getTdViewGroup().getOrganizerLogins());
+            addOrganizersToTrainingDefinition(tD, trainingDefinition.getTdViewGroup().getOrganizerLogins());
             addAuthorsToTrainingDefinition(tD, trainingDefinition.getAuthorLogins());
             trainingDefinitionService.update(tD);
         } catch (ServiceLayerException ex) {
@@ -184,6 +188,7 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
             } catch (ServiceLayerException ex) {
                 UserRef u = new UserRef();
                 u.setUserRefLogin(autLogin);
+                u.setUserRefFullName(getFullNameOfLoggedInUser());
                 td.addAuthor(trainingDefinitionService.createUserRef(u));
             }
         }
@@ -196,6 +201,7 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
             } catch (ServiceLayerException ex) {
                 UserRef u = new UserRef();
                 u.setUserRefLogin(orgLogin);
+                u.setUserRefFullName(getFullNameOfLoggedInUser());
                 td.getTdViewGroup().addOrganizer(trainingDefinitionService.createUserRef(u));
             }
         }
@@ -381,12 +387,18 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
 
     @Override
     @TransactionalRO
-    public List<String> getUsersWithGivenRole(RoleType roleType, Pageable pageable) throws FacadeLayerException {
+    public List<UserInfoDTO> getUsersWithGivenRole(RoleType roleType, Pageable pageable) throws FacadeLayerException {
         try {
             return trainingDefinitionService.getUsersWithGivenRole(roleType, pageable);
         } catch (ServiceLayerException ex) {
             throw new FacadeLayerException(ex);
         }
+    }
+
+    private String getFullNameOfLoggedInUser() {
+        OAuth2Authentication authentication = (OAuth2Authentication) SecurityContextHolder.getContext().getAuthentication();
+        JsonObject credentials = (JsonObject) authentication.getUserAuthentication().getCredentials();
+        return credentials.get("name").getAsString();
     }
 
 

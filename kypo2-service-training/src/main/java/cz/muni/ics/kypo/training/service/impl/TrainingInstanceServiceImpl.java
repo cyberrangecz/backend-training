@@ -2,6 +2,7 @@ package cz.muni.ics.kypo.training.service.impl;
 
 import com.mysema.commons.lang.Assert;
 import com.querydsl.core.types.Predicate;
+import cz.muni.ics.kypo.training.annotations.security.IsOrganizerOrAdmin;
 import cz.muni.ics.kypo.training.exceptions.ErrorCode;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.persistence.model.*;
@@ -76,7 +77,7 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
     }
 
     @Override
-    @PreAuthorize("hasAuthority({'ADMINISTRATOR'}) or hasAuthority({T(cz.muni.ics.kypo.training.persistence.model.enums.RoleType).ORGANIZER})")
+    @IsOrganizerOrAdmin
     public TrainingInstance create(TrainingInstance trainingInstance) {
         LOG.debug("create({})", trainingInstance);
         Assert.notNull(trainingInstance, "Input training instance must not be null");
@@ -92,7 +93,7 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
     @Override
     @PreAuthorize("hasAuthority('ADMINISTRATOR')" +
             "or @securityService.isOrganizeOfGivenTrainingInstance(#trainingInstance.id)")
-    public void update(TrainingInstance trainingInstance) {
+    public String update(TrainingInstance trainingInstance) {
         LOG.debug("update({})", trainingInstance);
         Assert.notNull(trainingInstance, "Input training instance must not be null");
         TrainingInstance tI = trainingInstanceRepository.findById(trainingInstance.getId())
@@ -106,24 +107,26 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
         } else {
             trainingInstance.setAccessToken(generateAccessToken(trainingInstance.getAccessToken()));
         }
+        trainingInstance.setTrainingDefinition(tI.getTrainingDefinition());
         trainingInstanceRepository.save(trainingInstance);
         LOG.info("Training instance with id: {} updated.", trainingInstance.getId());
+        return trainingInstance.getAccessToken();
     }
 
     @Override
     @PreAuthorize("hasAuthority('ADMINISTRATOR')" +
-            "or @securityService.isOrganizeOfGivenTrainingInstance(#id)")
-    public void delete(Long id) {
-        LOG.debug("delete({})", id);
-        Assert.notNull(id, "Input training instance id must not be null");
-        TrainingInstance trainingInstance = trainingInstanceRepository.findById(id)
-                .orElseThrow(() -> new ServiceLayerException("Training instance with id: " + id + ", not found.", ErrorCode.RESOURCE_NOT_FOUND));
+            "or @securityService.isOrganizeOfGivenTrainingInstance(#instanceId)")
+    public void delete(Long instanceId) {
+        LOG.debug("delete({})", instanceId);
+        Assert.notNull(instanceId, "Input training instance id must not be null");
+        TrainingInstance trainingInstance = trainingInstanceRepository.findById(instanceId)
+                .orElseThrow(() -> new ServiceLayerException("Training instance with id: " + instanceId + ", not found.", ErrorCode.RESOURCE_NOT_FOUND));
         LocalDateTime currentDate = LocalDateTime.now();
         if (currentDate.isAfter(trainingInstance.getEndTime()) || currentDate.isAfter(trainingInstance.getStartTime()))
             throw new ServiceLayerException("Only finished instances can be deleted.", ErrorCode.RESOURCE_CONFLICT);
         trainingRunRepository.deleteTrainingRunsByTrainingInstance(trainingInstance.getId());
         trainingInstanceRepository.delete(trainingInstance);
-        LOG.info("Training instance with id: {} deleted.", id);
+        LOG.info("Training instance with id: {} deleted.", instanceId);
     }
 
     private String generateAccessToken(String accessToken) {
@@ -150,7 +153,7 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
         TrainingInstance trainingInstance = findById(instanceId);
         //Check if pool can be created
         if (trainingInstance.getPoolId() != null) {
-            throw new ServiceLayerException("Pool is already created for training instance with id: " + trainingInstance.getId() + ".", ErrorCode.RESOURCE_CONFLICT);
+            return trainingInstance.getPoolId();
         }
 
         //Create pool with given size
@@ -248,6 +251,7 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
     }
 
     @Override
+    @IsOrganizerOrAdmin
     public Set<UserRef> findUserRefsByLogins(Set<String> logins) {
         return organizerRefRepository.findUsers(logins);
     }

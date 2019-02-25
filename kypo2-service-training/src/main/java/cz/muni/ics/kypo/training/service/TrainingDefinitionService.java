@@ -1,6 +1,7 @@
 package cz.muni.ics.kypo.training.service;
 
 import com.querydsl.core.types.Predicate;
+import cz.muni.ics.kypo.training.api.dto.UserInfoDTO;
 import cz.muni.ics.kypo.training.api.enums.RoleType;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.persistence.model.*;
@@ -186,15 +187,6 @@ public interface TrainingDefinitionService {
     List<TrainingInstance> findAllTrainingInstancesByTrainingDefinitionId(Long id);
 
     /**
-     * Finds UserRef by id
-     *
-     * @param id of wanted UserRef
-     * @return UserRef with corresponding id
-     * @throws ServiceLayerException if UserRef was not found
-     */
-    UserRef findUserRefById(Long id) throws ServiceLayerException;
-
-    /**
      * Finds UserRef by login
      *
      * @param login of wanted UserRef
@@ -204,28 +196,11 @@ public interface TrainingDefinitionService {
     UserRef findUserRefByLogin(String login) throws ServiceLayerException;
 
     /**
-     * Find out if view group with given title already exists
-     *
-     * @param title of view group
-     * @return true if view group with given title is present, false otherwise
-     */
-    boolean isViewGroupAlreadyPresent(String title);
-
-    /**
-     * Finds ViewGroup by title
-     *
-     * @param title of wanted ViewGroup
-     * @return TDViewGroup with corresponding title
-     * @throws ServiceLayerException if ViewGroup was not found
-     */
-    TDViewGroup findTDViewGroupByTitle(String title);
-
-    /**
      * Finds designers
      *
-     * @return list of logins of users which are designers
+     * @return list of logins and full names of users with given role
      */
-    List<String> getUsersWithGivenRole(RoleType roleType, Pageable pageable);
+    List<UserInfoDTO> getUsersWithGivenRole(RoleType roleType, Pageable pageable);
 
     /**
      * Create userRef

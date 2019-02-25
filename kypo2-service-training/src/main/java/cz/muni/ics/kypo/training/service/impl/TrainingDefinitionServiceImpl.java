@@ -4,7 +4,8 @@ import com.google.gson.JsonObject;
 import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.commons.facade.api.PageResultResource;
 import cz.muni.ics.kypo.commons.persistence.repository.IDMGroupRefRepository;
-import cz.muni.ics.kypo.training.annotations.security.IsAdminOrDesigner;
+import cz.muni.ics.kypo.training.annotations.security.IsDesignerOrAdmin;
+import cz.muni.ics.kypo.training.annotations.security.IsAdminOrDesignerOrOrganizer;
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalWO;
 import cz.muni.ics.kypo.training.api.dto.UserInfoDTO;
 import cz.muni.ics.kypo.training.api.enums.RoleType;
@@ -100,8 +101,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     }
 
     @Override
-    @PreAuthorize("hasAuthority('ADMINISTRATOR') or hasAuthority({T(cz.muni.ics.kypo.training.persistence.model.enums.RoleType).DESIGNER}) or " +
-            "hasAuthority ({T(cz.muni.ics.kypo.training.persistence.model.enums.RoleType).ORGANIZER})")
+    @IsAdminOrDesignerOrOrganizer
     public Page<TrainingDefinition> findAll(Predicate predicate, Pageable pageable) {
         LOG.debug("findAllTrainingDefinitions({},{})", predicate, pageable);
         if (isAdmin()) {
@@ -124,6 +124,12 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
         OAuth2Authentication authentication = (OAuth2Authentication) SecurityContextHolder.getContext().getAuthentication();
         JsonObject credentials = (JsonObject) authentication.getUserAuthentication().getCredentials();
         return credentials.get("sub").getAsString();
+    }
+
+    private String getFullNameOfLoggedInUser(){
+        OAuth2Authentication authentication = (OAuth2Authentication) SecurityContextHolder.getContext().getAuthentication();
+        JsonObject credentials = (JsonObject) authentication.getUserAuthentication().getCredentials();
+        return credentials.get("name").getAsString();
     }
 
     private boolean isAdmin() {
@@ -151,7 +157,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     }
 
     @Override
-    @IsAdminOrDesigner
+    @IsDesignerOrAdmin
     public TrainingDefinition create(TrainingDefinition trainingDefinition) {
         LOG.debug("create({})", trainingDefinition);
         Assert.notNull(trainingDefinition, "Input training definition must not be null");
@@ -163,6 +169,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
         } else {
             UserRef newUser = new UserRef();
             newUser.setUserRefLogin(userSub);
+            newUser.setUserRefFullName(getFullNameOfLoggedInUser());
             trainingDefinition.addAuthor(newUser);
         }
 
@@ -201,7 +208,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     }
 
     @Override
-    @PreAuthorize("hasAuthority({'ADMINISTRATOR'}) or hasAuthority({T(cz.muni.ics.kypo.training.persistence.model.enums.RoleType).DESIGNER})")
+    @IsDesignerOrAdmin
     public TrainingDefinition clone(Long id) {
         LOG.debug("clone({})", id);
         TrainingDefinition trainingDefinition = findById(id);
@@ -306,11 +313,11 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
 
     @Override
     @PreAuthorize("hasAuthority('ADMINISTRATOR')" +
-            "or @securityService.isDesignerOfGivenTrainingDefinition(#id)")
-    public void delete(Long id) {
-        LOG.debug("delete({})", id);
+            "or @securityService.isDesignerOfGivenTrainingDefinition(#definitionId)")
+    public void delete(Long definitionId) {
+        LOG.debug("delete({})", definitionId);
 
-        TrainingDefinition definition = findById(id);
+        TrainingDefinition definition = findById(definitionId);
         if (definition.getState().equals(TDState.RELEASED))
             throw new ServiceLayerException("Cannot delete released training definition.", ErrorCode.RESOURCE_CONFLICT);
         if (definition.getStartingLevel() != null) {
@@ -506,11 +513,11 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
 
     @Override
     @PreAuthorize("hasAuthority('ADMINISTRATOR')" +
-            "or @securityService.isDesignerOfGivenTrainingDefinition(#id)")
-    public List<AbstractLevel> findAllLevelsFromDefinition(Long id) {
-        LOG.debug("findAllLevelsFromDefinition({})", id);
-        Assert.notNull(id, "Definition id must not be null");
-        TrainingDefinition trainingDefinition = findById(id);
+            "or @securityService.isDesignerOfGivenTrainingDefinition(#definitionId)")
+    public List<AbstractLevel> findAllLevelsFromDefinition(Long definitionId) {
+        LOG.debug("findAllLevelsFromDefinition({})", definitionId);
+        Assert.notNull(definitionId, "Definition id must not be null");
+        TrainingDefinition trainingDefinition = findById(definitionId);
         List<AbstractLevel> levels = new ArrayList<>();
         Long levelId = trainingDefinition.getStartingLevel();
         AbstractLevel level = null;
@@ -524,7 +531,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     }
 
     @Override
-    @PreAuthorize("hasAuthority({'ADMINISTRATOR'}) or hasAuthority({T(cz.muni.ics.kypo.training.persistence.model.enums.RoleType).DESIGNER})")
+    @IsDesignerOrAdmin
     public AbstractLevel findLevelById(Long levelId) {
         LOG.debug("findLevelById({})", levelId);
         Assert.notNull(levelId, "Input level id must not be null.");
@@ -533,38 +540,22 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     }
 
     @Override
+    @PreAuthorize("hasAuthority('ADMINISTRATOR')")
     public List<TrainingInstance> findAllTrainingInstancesByTrainingDefinitionId(Long id) {
         Assert.notNull(id, "Input definition id must not be null");
         return trainingInstanceRepository.findAllByTrainingDefinitionId(id);
     }
 
     @Override
-    public UserRef findUserRefById(Long id) {
-        return userRefRepository.findById(id).orElseThrow(
-                () -> new ServiceLayerException("UserRef with id " + id + " not found.", ErrorCode.RESOURCE_NOT_FOUND));
-    }
-
-    @Override
+    @IsDesignerOrAdmin
     public UserRef findUserRefByLogin(String login) {
         return userRefRepository.findUserByUserRefLogin(login).orElseThrow(
                 () -> new ServiceLayerException("UserRef with login " + login + " not found.", ErrorCode.RESOURCE_NOT_FOUND));
     }
 
     @Override
-    public boolean isViewGroupAlreadyPresent(String title) {
-        return viewGroupRepository.existsTDViewGroupByTitle(title);
-    }
-
-    @Override
-    public TDViewGroup findTDViewGroupByTitle(String title) {
-        LOG.debug("findTDViewGroupByTitle({})", title);
-        Assert.notNull(title, "Input view group title must not be null.");
-        return viewGroupRepository.findByTitle(title).orElseThrow(() -> new ServiceLayerException
-                ("View group with title: " + title + " not found.", ErrorCode.RESOURCE_NOT_FOUND));
-    }
-
-    @Override
-    public List<String> getUsersWithGivenRole(RoleType roleType, Pageable pageable) {
+    @IsDesignerOrAdmin
+    public List<UserInfoDTO> getUsersWithGivenRole(RoleType roleType, Pageable pageable) {
         List<Long> groupsIds = new ArrayList<>();
         idmGroupRefRepository.findAllByRoleType(roleType.toString()).forEach(g -> groupsIds.add(g.getIdmGroupId()));
         if (groupsIds.isEmpty()) {
@@ -573,14 +564,14 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.set("Authorization", servletRequest.getHeader("Authorization"));
         String url = userAndGroupUrl + "/users/groups?ids=" + groupsIds.stream().map(Object::toString).collect(Collectors.joining(","))
-                + "&page=" + pageable.getPageNumber() + "&size=" + pageable.getPageSize() + "&fields=content[id,login]";
+                + "&page=" + pageable.getPageNumber() + "&size=" + pageable.getPageSize() + "&fields=content[login,full_name]";
         ResponseEntity<PageResultResource<UserInfoDTO>> usersResponse = restTemplate.exchange(url, HttpMethod.GET, new HttpEntity<>(httpHeaders),
                 new ParameterizedTypeReference<PageResultResource<UserInfoDTO>>() {
                 });
         if (usersResponse.getStatusCode().isError() || usersResponse.getBody() == null) {
             throw new ServiceLayerException("Error while obtaining info about users in designers groups.", ErrorCode.UNEXPECTED_ERROR);
         }
-        return usersResponse.getBody().getContent().stream().map(UserInfoDTO::getLogin).collect(Collectors.toList());
+        return usersResponse.getBody().getContent();
     }
 
     @Override

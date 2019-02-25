@@ -165,10 +165,11 @@ public class TrainingInstanceServiceTest {
     public void updateTrainingInstance() {
         given(trainingInstanceRepository.findById(any(Long.class))).willReturn(Optional.of(trainingInstance2));
 
-        trainingInstanceService.update(trainingInstance2);
+        String token = trainingInstanceService.update(trainingInstance2);
 
         then(trainingInstanceRepository).should().findById(trainingInstance2.getId());
         then(trainingInstanceRepository).should().save(trainingInstance2);
+        assertEquals(trainingInstance2.getAccessToken(), token);
     }
 
     @Test
@@ -272,14 +273,6 @@ public class TrainingInstanceServiceTest {
         Long poolId = trainingInstanceService.createPoolForSandboxes(trainingInstance2.getId());
 
         assertEquals(sandboxPoolInfo.getId(), poolId);
-    }
-
-    @Test
-    public void createPoolInInstanceWithAlreadyCreatedPool() {
-        given(trainingInstanceRepository.findById(trainingInstance1.getId())).willReturn(Optional.ofNullable(trainingInstance1));
-        thrown.expect(ServiceLayerException.class);
-        thrown.expectMessage("Pool is already created for training instance with id: " + trainingInstance1.getId() + ".");
-        trainingInstanceService.createPoolForSandboxes(trainingInstance1.getId());
     }
 
     @Test
