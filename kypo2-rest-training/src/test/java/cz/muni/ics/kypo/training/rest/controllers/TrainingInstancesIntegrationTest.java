@@ -107,6 +107,11 @@ public class TrainingInstancesIntegrationTest {
 
 		beanMapping = new BeanMappingImpl(new ModelMapper());
 
+		SandboxInstanceRef sIR1 = new SandboxInstanceRef();
+		sIR1.setSandboxInstanceRef(1L);
+		SandboxInstanceRef sIR2 = new SandboxInstanceRef();
+		sIR2.setSandboxInstanceRef(2L);
+
 		UserRef userRef = new UserRef();
 		userRef.setUserRefLogin("testUser");
 		UserRef uR = userRefRepository.save(userRef);
@@ -132,6 +137,7 @@ public class TrainingInstancesIntegrationTest {
 		futureTrainingInstance.setAccessToken("pass-1234");
 		futureTrainingInstance.setTrainingDefinition(tD);
 		futureTrainingInstance.setOrganizers(new HashSet<>(Arrays.asList(uR)));
+		//futureTrainingInstance.setSandboxInstanceRefs(new HashSet<>(Arrays.asList(sIR1, sIR2)));
 
 		notConcludedTrainingInstance = new TrainingInstance();
 		notConcludedTrainingInstance.setStartTime(LocalDateTime.now().minusHours(24));
@@ -155,10 +161,7 @@ public class TrainingInstancesIntegrationTest {
 		pR.setParticipantRefLogin("login");
 		ParticipantRef participantRef = participantRefRepository.save(pR);
 */
-		SandboxInstanceRef sIR1 = new SandboxInstanceRef();
-		sIR1.setSandboxInstanceRef(1L);
-		SandboxInstanceRef sIR2 = new SandboxInstanceRef();
-		sIR2.setSandboxInstanceRef(2L);
+
 		/*
 		SandboxInstanceRef sandboxInstanceRef1 = sandboxInstanceRefRepository.save(sIR1);
 		SandboxInstanceRef sandboxInstanceRef2 = sandboxInstanceRefRepository.save(sIR2);
@@ -291,7 +294,13 @@ public class TrainingInstancesIntegrationTest {
 
 	@Test
 	public void findAllTrainingRunsByTrainingInstanceId() throws Exception {
+
 		TrainingInstance tI = trainingInstanceRepository.save(futureTrainingInstance);
+		tI.addSandboxInstanceRef(trainingRun1.getSandboxInstanceRef());
+		tI.addSandboxInstanceRef(trainingRun2.getSandboxInstanceRef());
+		tI = trainingInstanceRepository.save(tI);
+		trainingRun1.getSandboxInstanceRef().setId(1L);
+		trainingRun2.getSandboxInstanceRef().setId(2L);
 		TrainingRun tR1 = trainingRunRepository.save(trainingRun1);
 		TrainingRun tR2 = trainingRunRepository.save(trainingRun2);
 
