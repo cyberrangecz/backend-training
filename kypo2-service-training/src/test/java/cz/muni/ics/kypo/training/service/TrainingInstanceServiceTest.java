@@ -271,14 +271,6 @@ public class TrainingInstanceServiceTest {
     }
 
     @Test
-    public void createPoolInInstanceWithAlreadyCreatedPool() {
-        given(trainingInstanceRepository.findById(trainingInstance1.getId())).willReturn(Optional.ofNullable(trainingInstance1));
-        thrown.expect(ServiceLayerException.class);
-        thrown.expectMessage("Pool is already created for training instance with id: " + trainingInstance1.getId() + ".");
-        trainingInstanceService.createPoolForSandboxes(trainingInstance1.getId());
-    }
-
-    @Test
     public void createPoolWithErrorFromOpenStack() {
         given(trainingInstanceRepository.findById(trainingInstance2.getId())).willReturn(Optional.ofNullable(trainingInstance2));
         given(restTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(SandboxPoolInfo.class))).

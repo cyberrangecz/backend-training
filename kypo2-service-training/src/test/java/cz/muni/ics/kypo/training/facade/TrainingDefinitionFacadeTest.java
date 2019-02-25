@@ -232,7 +232,6 @@ public class TrainingDefinitionFacadeTest {
         viewGroup.setTitle("Title");
         viewGroup.setTrainingDefinition(trainingDefinition1);
         viewGroup.setId(1L);
-        given(trainingDefinitionService.findTDViewGroupByTitle(anyString())).willReturn(viewGroup);
         willThrow(ServiceLayerException.class).given(trainingDefinitionService)
                 .update(any(TrainingDefinition.class));
         thrown.expect(FacadeLayerException.class);

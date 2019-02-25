@@ -11,6 +11,7 @@ import com.querydsl.core.types.Predicate;
 import cz.muni.csirt.kypo.elasticsearch.service.audit.AuditService;
 import cz.muni.csirt.kypo.events.trainings.*;
 import cz.muni.csirt.kypo.events.trainings.enums.LevelType;
+import cz.muni.ics.kypo.training.annotations.security.IsTraineeOrAdmin;
 import cz.muni.ics.kypo.training.exceptions.ErrorCode;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.persistence.model.*;
@@ -75,12 +76,12 @@ public class TrainingRunServiceImpl implements TrainingRunService {
 
     @Override
     @PreAuthorize("hasAuthority('ADMINISTRATOR')" +
-            "or @securityService.isTraineeOfGivenTrainingRun(#id)")
-    public TrainingRun findById(Long id) {
-        LOG.debug("findById({})", id);
-        Objects.requireNonNull(id);
-        return trainingRunRepository.findById(id)
-                .orElseThrow(() -> new ServiceLayerException("Training Run with id: " + id + " not found.", ErrorCode.RESOURCE_NOT_FOUND));
+            "or @securityService.isTraineeOfGivenTrainingRun(#runId)")
+    public TrainingRun findById(Long runId) {
+        LOG.debug("findById({})", runId);
+        Objects.requireNonNull(runId);
+        return trainingRunRepository.findById(runId)
+                .orElseThrow(() -> new ServiceLayerException("Training Run with runId: " + runId + " not found.", ErrorCode.RESOURCE_NOT_FOUND));
     }
 
     @Override
@@ -92,7 +93,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
     }
 
     @Override
-    @PreAuthorize("hasAuthority({'ADMINISTRATOR'}) or hasAuthority({T(cz.muni.ics.kypo.training.persistence.model.enums.RoleType).TRAINEE})")
+    @IsTraineeOrAdmin
     public Page<TrainingRun> findAllByParticipantRefLogin(Pageable pageable) {
         String login = getSubOfLoggedInUser();
         LOG.debug("findAllByParticipantRefLogin({})", login);
@@ -108,11 +109,11 @@ public class TrainingRunServiceImpl implements TrainingRunService {
 
     @Override
     @PreAuthorize("hasAuthority('ADMINISTRATOR')" +
-            "or @securityService.isTraineeOfGivenTrainingRun(#trainingRunId)")
-    public AbstractLevel getNextLevel(Long trainingRunId) {
-        LOG.debug("getNextLevel({})", trainingRunId);
-        Assert.notNull(trainingRunId, MUST_NOT_BE_NULL);
-        TrainingRun trainingRun = findByIdWithLevel(trainingRunId);
+            "or @securityService.isTraineeOfGivenTrainingRun(#runId)")
+    public AbstractLevel getNextLevel(Long runId) {
+        LOG.debug("getNextLevel({})", runId);
+        Assert.notNull(runId, MUST_NOT_BE_NULL);
+        TrainingRun trainingRun = findByIdWithLevel(runId);
         Long nextLevelId = trainingRun.getCurrentLevel().getNextLevel();
         if (!trainingRun.isLevelAnswered()) {
             throw new ServiceLayerException("At first you need to answer the level.", ErrorCode.RESOURCE_CONFLICT);
@@ -134,25 +135,21 @@ public class TrainingRunServiceImpl implements TrainingRunService {
     }
 
     @Override
-    @PreAuthorize("hasAuthority('ADMINISTRATOR')" +
-            "or @securityService.isDesignerOfGivenTrainingDefinition(#trainingDefinitionId)")
-    public Page<TrainingRun> findAllByTrainingDefinitionAndParticipant(Long trainingDefinitionId, Pageable pageable) {
-        LOG.debug("findAllByTrainingDefinitionAndParticipant({})", trainingDefinitionId);
-        Assert.notNull(trainingDefinitionId, "Input training definition id must not be null.");
-        return trainingRunRepository.findAllByTrainingDefinitionIdAndParticipantRefLogin(trainingDefinitionId, getSubOfLoggedInUser(), pageable);
+    public Page<TrainingRun> findAllByTrainingDefinitionAndParticipant(Long definitionId, Pageable pageable) {
+        LOG.debug("findAllByTrainingDefinitionAndParticipant({})", definitionId);
+        Assert.notNull(definitionId, "Input training definition id must not be null.");
+        return trainingRunRepository.findAllByTrainingDefinitionIdAndParticipantRefLogin(definitionId, getSubOfLoggedInUser(), pageable);
     }
 
     @Override
-    @PreAuthorize("hasAuthority('ADMINISTRATOR')" +
-            "or @securityService.isDesignerOfGivenTrainingDefinition(#trainingDefinitionId)")
-    public Page<TrainingRun> findAllByTrainingDefinition(Long trainingDefinitionId, Pageable pageable) {
-        LOG.debug("findAllByTrainingDefinition({},{})", trainingDefinitionId, pageable);
-        Assert.notNull(trainingDefinitionId, "Input training definition id must not be null.");
-        return trainingRunRepository.findAllByTrainingDefinitionId(trainingDefinitionId, pageable);
+    public Page<TrainingRun> findAllByTrainingDefinition(Long definitionId, Pageable pageable) {
+        LOG.debug("findAllByTrainingDefinition({},{})", definitionId, pageable);
+        Assert.notNull(definitionId, "Input training definition id must not be null.");
+        return trainingRunRepository.findAllByTrainingDefinitionId(definitionId, pageable);
     }
 
     @Override
-    @PreAuthorize("hasAuthority('ADMINISTRATOR') or hasAuthority('USER')")
+    @IsTraineeOrAdmin
     public List<AbstractLevel> getLevels(Long levelId) {
         Assert.notNull(levelId, "Id of first level must not be null.");
         List<AbstractLevel> levels = new ArrayList<>();
@@ -170,7 +167,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
 
 
     @Override
-    @PreAuthorize("hasAuthority({'ADMINISTRATOR'}) or hasAuthority('USER')")
+    @IsTraineeOrAdmin
     public TrainingRun accessTrainingRun(String accessToken) {
         LOG.debug("accessTrainingRun({})", accessToken);
         Assert.hasLength(accessToken, "AccessToken cannot be null or empty.");
@@ -199,11 +196,12 @@ public class TrainingRunServiceImpl implements TrainingRunService {
     }
 
     @Override
-    @PreAuthorize("hasAuthority({'ADMINISTRATOR'}) or  @securityService.isTraineeOfGivenTrainingRun(#trainingRunId)")
-    public TrainingRun resumeTrainingRun(Long trainingRunId) {
-        LOG.debug("resumeTrainingRun({})", trainingRunId);
-        Assert.notNull(trainingRunId, MUST_NOT_BE_NULL);
-        TrainingRun trainingRun = findByIdWithLevel(trainingRunId);
+    @PreAuthorize("hasAuthority('ADMINISTRATOR')" +
+            "or @securityService.isTraineeOfGivenTrainingRun(#runId)")
+    public TrainingRun resumeTrainingRun(Long runId) {
+        LOG.debug("resumeTrainingRun({})", runId);
+        Assert.notNull(runId, MUST_NOT_BE_NULL);
+        TrainingRun trainingRun = findByIdWithLevel(runId);
         if (trainingRun.getState().equals(TRState.ARCHIVED)) {
             throw new ServiceLayerException("Cannot resumed archived training run.", ErrorCode.RESOURCE_CONFLICT);
         }
@@ -257,12 +255,12 @@ public class TrainingRunServiceImpl implements TrainingRunService {
 
     @Override
     @PreAuthorize("hasAuthority('ADMINISTRATOR')" +
-            "or @securityService.isTraineeOfGivenTrainingRun(#trainingRunId)")
-    public boolean isCorrectFlag(Long trainingRunId, String flag) {
-        LOG.debug("isCorrectFlag({})", trainingRunId);
-        Assert.notNull(trainingRunId, MUST_NOT_BE_NULL);
+            "or @securityService.isTraineeOfGivenTrainingRun(#runId)")
+    public boolean isCorrectFlag(Long runId, String flag) {
+        LOG.debug("isCorrectFlag({})", runId);
+        Assert.notNull(runId, MUST_NOT_BE_NULL);
         Assert.hasLength(flag, "Submitted flag must not be nul nor empty.");
-        TrainingRun trainingRun = findByIdWithLevel(trainingRunId);
+        TrainingRun trainingRun = findByIdWithLevel(runId);
         AbstractLevel level = trainingRun.getCurrentLevel();
         if (level instanceof GameLevel) {
             if (((GameLevel) level).getFlag().equals(flag)) {
@@ -282,11 +280,11 @@ public class TrainingRunServiceImpl implements TrainingRunService {
 
     @Override
     @PreAuthorize("hasAuthority('ADMINISTRATOR')" +
-            "or @securityService.isTraineeOfGivenTrainingRun(#trainingRunId)")
-    public int getRemainingAttempts(Long trainingRunId) {
-        LOG.debug("getRemainingAttempts({})", trainingRunId);
-        Assert.notNull(trainingRunId, MUST_NOT_BE_NULL);
-        TrainingRun tR = findByIdWithLevel(trainingRunId);
+            "or @securityService.isTraineeOfGivenTrainingRun(#runId)")
+    public int getRemainingAttempts(Long runId) {
+        LOG.debug("getRemainingAttempts({})", runId);
+        Assert.notNull(runId, MUST_NOT_BE_NULL);
+        TrainingRun tR = findByIdWithLevel(runId);
         AbstractLevel level = tR.getCurrentLevel();
         if (level instanceof GameLevel) {
             if (tR.isSolutionTaken()) {
@@ -300,11 +298,11 @@ public class TrainingRunServiceImpl implements TrainingRunService {
 
     @Override
     @PreAuthorize("hasAuthority('ADMINISTRATOR')" +
-            "or @securityService.isTraineeOfGivenTrainingRun(#trainingRunId)")
-    public String getSolution(Long trainingRunId) {
-        LOG.debug("getSolution({})", trainingRunId);
-        Assert.notNull(trainingRunId, MUST_NOT_BE_NULL);
-        TrainingRun trainingRun = findByIdWithLevel(trainingRunId);
+            "or @securityService.isTraineeOfGivenTrainingRun(#runId)")
+    public String getSolution(Long runId) {
+        LOG.debug("getSolution({})", runId);
+        Assert.notNull(runId, MUST_NOT_BE_NULL);
+        TrainingRun trainingRun = findByIdWithLevel(runId);
         AbstractLevel level = trainingRun.getCurrentLevel();
         if (level instanceof GameLevel) {
             //audit
@@ -321,12 +319,12 @@ public class TrainingRunServiceImpl implements TrainingRunService {
 
     @Override
     @PreAuthorize("hasAuthority('ADMINISTRATOR')" +
-            "or @securityService.isTraineeOfGivenTrainingRun(#trainingRunId)")
-    public Hint getHint(Long trainingRunId, Long hintId) {
-        LOG.debug("getHint({},{})", trainingRunId, hintId);
-        Assert.notNull(trainingRunId, MUST_NOT_BE_NULL);
+            "or @securityService.isTraineeOfGivenTrainingRun(#runId)")
+    public Hint getHint(Long runId, Long hintId) {
+        LOG.debug("getHint({},{})", runId, hintId);
+        Assert.notNull(runId, MUST_NOT_BE_NULL);
         Assert.notNull(hintId, "Input hint id must not be null.");
-        TrainingRun trainingRun = findByIdWithLevel(trainingRunId);
+        TrainingRun trainingRun = findByIdWithLevel(runId);
         AbstractLevel level = trainingRun.getCurrentLevel();
         if (level instanceof GameLevel) {
             Hint hint = hintRepository.findById(hintId).orElseThrow(() -> new ServiceLayerException("Hint with id " + hintId + " not found.", ErrorCode.RESOURCE_NOT_FOUND));
@@ -336,14 +334,14 @@ public class TrainingRunServiceImpl implements TrainingRunService {
                 auditHintTakenAction(trainingRun, hint);
                 return hint;
             }
-            throw new ServiceLayerException("Hint with id " + hintId + " is not in current level of training run: " + trainingRunId + ".", ErrorCode.RESOURCE_CONFLICT);
+            throw new ServiceLayerException("Hint with id " + hintId + " is not in current level of training run: " + runId + ".", ErrorCode.RESOURCE_CONFLICT);
         } else {
             throw new ServiceLayerException("Current level is not game level and does not have hints.", ErrorCode.WRONG_LEVEL_TYPE);
         }
     }
 
     @Override
-    @PreAuthorize("hasAuthority('ADMINISTRATOR') or hasAuthority({T(cz.muni.ics.kypo.training.persistence.model.enums.RoleType).TRAINEE})")
+    @IsTraineeOrAdmin
     public int getLevelOrder(Long idOfFirstLevel, Long actualLevel) {
         LOG.debug("getLevelOrder({}, {})", idOfFirstLevel, actualLevel);
         Assert.notNull(idOfFirstLevel, "Input id of first level must not be null.");
@@ -363,11 +361,11 @@ public class TrainingRunServiceImpl implements TrainingRunService {
 
     @Override
     @PreAuthorize("hasAuthority('ADMINISTRATOR')" +
-            "or @securityService.isTraineeOfGivenTrainingRun(#trainingRunId)")
-    public void archiveTrainingRun(Long trainingRunId) {
-        LOG.debug("archiveTrainingRun({})", trainingRunId);
-        Assert.notNull(trainingRunId, MUST_NOT_BE_NULL);
-        TrainingRun trainingRun = findById(trainingRunId);
+            "or @securityService.isTraineeOfGivenTrainingRun(#runId)")
+    public void archiveTrainingRun(Long runId) {
+        LOG.debug("archiveTrainingRun({})", runId);
+        Assert.notNull(runId, MUST_NOT_BE_NULL);
+        TrainingRun trainingRun = findById(runId);
         if (trainingRun.getCurrentLevel().getNextLevel() != null || !trainingRun.isLevelAnswered()) {
             throw new ServiceLayerException("Cannot archive training run because current level is not last or is not answered.", ErrorCode.RESOURCE_CONFLICT);
         }

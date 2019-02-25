@@ -206,7 +206,7 @@ public class TrainingRunServiceTest {
     public void getNonExistTrainingRunById() {
         Long id = 6L;
         thrown.expect(ServiceLayerException.class);
-        thrown.expectMessage("Training Run with id: " + id + " not found.");
+        thrown.expectMessage("Training Run with runId: " + id + " not found.");
         trainingRunService.findById(id);
     }
 
