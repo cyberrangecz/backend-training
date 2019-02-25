@@ -884,23 +884,6 @@ public class TrainingDefinitionServiceTest {
     }
 
     @Test
-    public void findTDViewGroupByTitle() {
-        given(viewGroupRepository.findByTitle(anyString())).willReturn(Optional.ofNullable(viewGroup));
-        TDViewGroup group = trainingDefinitionService.findTDViewGroupByTitle("title");
-
-        assertEquals(group, viewGroup);
-    }
-
-    @Test
-    public void findTDViewGroupByTitleNotFound() {
-        given(viewGroupRepository.findByTitle(anyString())).willReturn(Optional.empty());
-
-        thrown.expect(ServiceLayerException.class);
-        thrown.expectMessage("View group with title: view not found.");
-        TDViewGroup group = trainingDefinitionService.findTDViewGroupByTitle("view");
-    }
-
-    @Test
     public void findUserRefByLogin() {
         UserRef userRef = new UserRef();
         userRef.setUserRefLogin("Dave");
@@ -919,26 +902,6 @@ public class TrainingDefinitionServiceTest {
         thrown.expectMessage("UserRef with login Herkules not found.");
         UserRef u = trainingDefinitionService.findUserRefByLogin("Herkules");
     }
-
-    @Test
-    public void findUserRefById() {
-        UserRef userRef = new UserRef();
-        userRef.setId(1L);
-        given(userRefRepository.findById(userRef.getId())).willReturn(Optional.of(userRef));
-
-        UserRef u = trainingDefinitionService.findUserRefById(userRef.getId());
-        assertEquals(userRef.getId(), u.getId());
-    }
-
-    @Test
-    public void findUserRefByIdNotFound() {
-        given(userRefRepository.findById(1L)).willReturn(Optional.empty());
-
-        thrown.expect(ServiceLayerException.class);
-        thrown.expectMessage("UserRef with id 1 not found.");
-        UserRef u = trainingDefinitionService.findUserRefById(1L);
-    }
-
 
     @After
     public void after() {
