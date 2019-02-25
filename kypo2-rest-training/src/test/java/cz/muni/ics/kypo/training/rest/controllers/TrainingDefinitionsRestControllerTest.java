@@ -6,6 +6,7 @@ import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.training.api.PageResultResource;
 import cz.muni.ics.kypo.training.api.dto.AbstractLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.BasicLevelInfoDTO;
+import cz.muni.ics.kypo.training.api.dto.UserInfoDTO;
 import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelUpdateDTO;
 import cz.muni.ics.kypo.training.api.dto.gamelevel.GameLevelUpdateDTO;
@@ -546,7 +547,13 @@ public class TrainingDefinitionsRestControllerTest {
 
     @Test
     public void getDesigners() throws Exception {
-        List<String> designers = Arrays.asList("Dave", "Peter");
+        UserInfoDTO user1 = new UserInfoDTO();
+        user1.setLogin("peter@mail.muni.cz");
+        user1.setFullName("Peter Parker");
+        UserInfoDTO user2 = new UserInfoDTO();
+        user2.setLogin("dave@mail.muni.cz");
+        user2.setFullName("David Holman");
+        List<UserInfoDTO> designers = Arrays.asList(user1, user2);
         String value = convertObjectToJsonBytes(designers);
         given(objectMapper.writeValueAsString(any(Object.class))).willReturn(value);
         given(trainingDefinitionFacade.getUsersWithGivenRole(any(RoleType.class), any(Pageable.class))).willReturn(designers);

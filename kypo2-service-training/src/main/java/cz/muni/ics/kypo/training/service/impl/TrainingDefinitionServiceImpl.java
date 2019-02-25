@@ -552,7 +552,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
 
     @Override
     @IsDesignerOrAdmin
-    public List<String> getUsersWithGivenRole(RoleType roleType, Pageable pageable) {
+    public List<UserInfoDTO> getUsersWithGivenRole(RoleType roleType, Pageable pageable) {
         List<Long> groupsIds = new ArrayList<>();
         idmGroupRefRepository.findAllByRoleType(roleType.toString()).forEach(g -> groupsIds.add(g.getIdmGroupId()));
         if (groupsIds.isEmpty()) {
@@ -561,14 +561,14 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.set("Authorization", servletRequest.getHeader("Authorization"));
         String url = userAndGroupUrl + "/users/groups?ids=" + groupsIds.stream().map(Object::toString).collect(Collectors.joining(","))
-                + "&page=" + pageable.getPageNumber() + "&size=" + pageable.getPageSize() + "&fields=content[id,login]";
+                + "&page=" + pageable.getPageNumber() + "&size=" + pageable.getPageSize() + "&fields=content[login,full_name]";
         ResponseEntity<PageResultResource<UserInfoDTO>> usersResponse = restTemplate.exchange(url, HttpMethod.GET, new HttpEntity<>(httpHeaders),
                 new ParameterizedTypeReference<PageResultResource<UserInfoDTO>>() {
                 });
         if (usersResponse.getStatusCode().isError() || usersResponse.getBody() == null) {
             throw new ServiceLayerException("Error while obtaining info about users in designers groups.", ErrorCode.UNEXPECTED_ERROR);
         }
-        return usersResponse.getBody().getContent().stream().map(UserInfoDTO::getLogin).collect(Collectors.toList());
+        return usersResponse.getBody().getContent();
     }
 
     @Override

@@ -8,6 +8,7 @@ import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.training.api.PageResultResource;
 import cz.muni.ics.kypo.training.api.dto.AbstractLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.BasicLevelInfoDTO;
+import cz.muni.ics.kypo.training.api.dto.UserInfoDTO;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelUpdateDTO;
 import cz.muni.ics.kypo.training.api.dto.gamelevel.GameLevelUpdateDTO;
 import cz.muni.ics.kypo.training.api.dto.infolevel.InfoLevelUpdateDTO;
@@ -482,7 +483,7 @@ public class TrainingDefinitionsRestController {
     /**
      * Get requested designers.
      *
-     * @return List of users login with role designer.
+     * @return List of users login and full name with role designer.
      */
     @ApiOperation(httpMethod = "GET",
             value = "Get designers.",
@@ -500,7 +501,7 @@ public class TrainingDefinitionsRestController {
                                                Pageable pageable) {
         LOG.debug("getDesigners()");
         try {
-            List<String> designers = trainingDefinitionFacade.getUsersWithGivenRole(RoleType.DESIGNER, pageable);
+            List<UserInfoDTO> designers = trainingDefinitionFacade.getUsersWithGivenRole(RoleType.DESIGNER, pageable);
             return ResponseEntity.ok(SquigglyUtils.stringify(objectMapper, designers));
         } catch (FacadeLayerException ex) {
             throw ExceptionSorter.throwException(ex);
@@ -510,7 +511,7 @@ public class TrainingDefinitionsRestController {
     /**
      * Get requested designers.
      *
-     * @return List of users login with role designer.
+     * @return List of users login and full name with role designer.
      */
     @ApiOperation(httpMethod = "GET",
             value = "Get organizers.",
@@ -528,7 +529,7 @@ public class TrainingDefinitionsRestController {
                                                 Pageable pageable) {
         LOG.debug("getOrganizers()");
         try {
-            List<String> designers = trainingDefinitionFacade.getUsersWithGivenRole(RoleType.ORGANIZER, pageable);
+            List<UserInfoDTO> designers = trainingDefinitionFacade.getUsersWithGivenRole(RoleType.ORGANIZER, pageable);
             return ResponseEntity.ok(SquigglyUtils.stringify(objectMapper, designers));
         } catch (FacadeLayerException ex) {
             throw ExceptionSorter.throwException(ex);

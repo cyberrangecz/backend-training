@@ -7,6 +7,7 @@ import cz.muni.ics.kypo.training.annotations.transactions.TransactionalWO;
 import cz.muni.ics.kypo.training.api.PageResultResource;
 import cz.muni.ics.kypo.training.api.dto.AbstractLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.BasicLevelInfoDTO;
+import cz.muni.ics.kypo.training.api.dto.UserInfoDTO;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelUpdateDTO;
 import cz.muni.ics.kypo.training.api.dto.gamelevel.GameLevelDTO;
@@ -386,7 +387,7 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
 
     @Override
     @TransactionalRO
-    public List<String> getUsersWithGivenRole(RoleType roleType, Pageable pageable) throws FacadeLayerException {
+    public List<UserInfoDTO> getUsersWithGivenRole(RoleType roleType, Pageable pageable) throws FacadeLayerException {
         try {
             return trainingDefinitionService.getUsersWithGivenRole(roleType, pageable);
         } catch (ServiceLayerException ex) {
