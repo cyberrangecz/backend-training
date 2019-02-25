@@ -93,7 +93,7 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
     @Override
     @PreAuthorize("hasAuthority('ADMINISTRATOR')" +
             "or @securityService.isOrganizeOfGivenTrainingInstance(#trainingInstance.id)")
-    public void update(TrainingInstance trainingInstance) {
+    public String update(TrainingInstance trainingInstance) {
         LOG.debug("update({})", trainingInstance);
         Assert.notNull(trainingInstance, "Input training instance must not be null");
         TrainingInstance tI = trainingInstanceRepository.findById(trainingInstance.getId())
@@ -110,6 +110,7 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
         trainingInstance.setTrainingDefinition(tI.getTrainingDefinition());
         trainingInstanceRepository.save(trainingInstance);
         LOG.info("Training instance with id: {} updated.", trainingInstance.getId());
+        return trainingInstance.getAccessToken();
     }
 
     @Override
