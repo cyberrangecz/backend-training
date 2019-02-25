@@ -2,10 +2,14 @@ package cz.muni.ics.kypo.training.rest.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
+import com.fasterxml.jackson.databind.SerializationConfig;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import cz.muni.ics.kypo.training.api.PageResultResource;
 import cz.muni.ics.kypo.training.api.dto.run.TrainingRunDTO;
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceCreateDTO;
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceDTO;
+import cz.muni.ics.kypo.training.converters.LocalDateTimeSerializer;
+import cz.muni.ics.kypo.training.converters.LocalDateTimeUTCSerializer;
 import cz.muni.ics.kypo.training.mapping.modelmapper.BeanMapping;
 import cz.muni.ics.kypo.training.mapping.modelmapper.BeanMappingImpl;
 import cz.muni.ics.kypo.training.persistence.model.*;
@@ -137,7 +141,6 @@ public class TrainingInstancesIntegrationTest {
 		futureTrainingInstance.setAccessToken("pass-1234");
 		futureTrainingInstance.setTrainingDefinition(tD);
 		futureTrainingInstance.setOrganizers(new HashSet<>(Arrays.asList(uR)));
-		//futureTrainingInstance.setSandboxInstanceRefs(new HashSet<>(Arrays.asList(sIR1, sIR2)));
 
 		notConcludedTrainingInstance = new TrainingInstance();
 		notConcludedTrainingInstance.setStartTime(LocalDateTime.now().minusHours(24));
@@ -150,11 +153,12 @@ public class TrainingInstancesIntegrationTest {
 
 		trainingInstanceCreateDTO = new TrainingInstanceCreateDTO();
 		trainingInstanceCreateDTO.setStartTime(LocalDateTime.now(ZoneOffset.UTC).plusHours(24));
-		trainingInstanceCreateDTO.setEndTime(LocalDateTime.now(Clock.systemUTC()).plusHours(80));
+		trainingInstanceCreateDTO.setEndTime(LocalDateTime.now().plusHours(80));
 		//trainingInstanceCreateDTO.setEndTime((LocalDateTime) "2020-11-20T10:28:02.727Z");
 		trainingInstanceCreateDTO.setTrainingDefinitionId(tD.getId());
 		trainingInstanceCreateDTO.setTitle("newInstance");
 		trainingInstanceCreateDTO.setPoolSize(50);
+		trainingInstanceCreateDTO.setAccessToken("pass-1235");
 		trainingInstanceCreateDTO.setOrganizerLogins(new HashSet<>(Arrays.asList("TestUser")));
 /*
 		ParticipantRef pR = new ParticipantRef();
@@ -249,6 +253,7 @@ public class TrainingInstancesIntegrationTest {
 	@Test
 	public void createTrainingInstance() throws Exception {
 
+		System.out.println(trainingInstanceCreateDTO);
 		System.out.println(trainingInstanceCreateDTO.getStartTime());
 		MockHttpServletResponse result = mvc.perform(post("/training-instances").content(convertObjectToJsonBytes(trainingInstanceCreateDTO))
 				.contentType(MediaType.APPLICATION_JSON_VALUE))
@@ -256,6 +261,7 @@ public class TrainingInstancesIntegrationTest {
 				//.andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
 				.andReturn().getResponse();
 
+		System.out.println(result.getContentAsString());
 		Optional<TrainingInstance> newInstance= trainingInstanceRepository.findById(1L);
 		assertTrue(newInstance.isPresent());
 		TrainingInstanceDTO newInstanceDTO = beanMapping.mapTo(newInstance.get(), TrainingInstanceDTO.class);
@@ -332,6 +338,8 @@ public class TrainingInstancesIntegrationTest {
 
 	private static String convertObjectToJsonBytes(Object object) throws IOException {
 		ObjectMapper mapper = new ObjectMapper();
+		SimpleModule simpleModule = new SimpleModule("SimpleModule").addSerializer(new LocalDateTimeUTCSerializer());
+		mapper.registerModule(simpleModule);
 		return mapper.writeValueAsString(object);
 	}
 }
