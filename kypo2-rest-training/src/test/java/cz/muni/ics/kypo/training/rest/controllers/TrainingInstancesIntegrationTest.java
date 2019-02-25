@@ -120,6 +120,8 @@ public class TrainingInstancesIntegrationTest {
 		definition.setTitle("definition");
 		definition.setState(TDState.RELEASED);
 		definition.setShowStepperBar(true);
+		definition.setTdViewGroup(tdViewGroup);
+		definition.setSandboxDefinitionRefId(1L);
 		TrainingDefinition tD = trainingDefinitionRepository.save(definition);
 
 		futureTrainingInstance = new TrainingInstance();
