@@ -45,10 +45,11 @@ public interface TrainingInstanceService {
      * updates training instance
      *
      * @param trainingInstance to be updated
+     * @return new access token if it was changed
      * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND given training instance is not found.
      *                               RESOURCE_CONFLICT cannot be updated for some reason.
      */
-    void update(TrainingInstance trainingInstance);
+    String update(TrainingInstance trainingInstance);
 
     /**
      * deletes training instance

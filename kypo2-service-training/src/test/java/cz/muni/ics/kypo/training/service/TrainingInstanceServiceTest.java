@@ -165,10 +165,11 @@ public class TrainingInstanceServiceTest {
     public void updateTrainingInstance() {
         given(trainingInstanceRepository.findById(any(Long.class))).willReturn(Optional.of(trainingInstance2));
 
-        trainingInstanceService.update(trainingInstance2);
+        String token = trainingInstanceService.update(trainingInstance2);
 
         then(trainingInstanceRepository).should().findById(trainingInstance2.getId());
         then(trainingInstanceRepository).should().save(trainingInstance2);
+        assertEquals(trainingInstance2.getAccessToken(), token);
     }
 
     @Test
