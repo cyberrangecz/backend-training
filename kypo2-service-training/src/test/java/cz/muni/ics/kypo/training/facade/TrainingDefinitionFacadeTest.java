@@ -4,6 +4,7 @@ import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.PathBuilder;
 import cz.muni.ics.kypo.training.api.PageResultResource;
 import cz.muni.ics.kypo.training.api.dto.AbstractLevelDTO;
+import cz.muni.ics.kypo.training.api.dto.UserInfoDTO;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelUpdateDTO;
 import cz.muni.ics.kypo.training.api.dto.gamelevel.GameLevelUpdateDTO;
 import cz.muni.ics.kypo.training.api.dto.infolevel.InfoLevelUpdateDTO;
@@ -91,6 +92,8 @@ public class TrainingDefinitionFacadeTest {
 
     private UserRef authorRef;
 
+    private UserInfoDTO userInfoDTO1, userInfoDTO2;
+
     @Before
     public void init() {
         MockitoAnnotations.initMocks(this);
@@ -102,6 +105,14 @@ public class TrainingDefinitionFacadeTest {
 
         alUpdate = new AssessmentLevelUpdateDTO();
         alUpdate.setId(2L);
+
+        userInfoDTO1 = new UserInfoDTO();
+        userInfoDTO1.setLogin("peter@mail.muni.cz");
+        userInfoDTO1.setFullName("Peter");
+
+        userInfoDTO2 = new UserInfoDTO();
+        userInfoDTO2.setLogin("david@mail.muni.cz");
+        userInfoDTO2.setFullName("David");
 
         gameLevel = new GameLevel();
         gameLevel.setId(2L);
@@ -149,7 +160,7 @@ public class TrainingDefinitionFacadeTest {
         tdViewGroupUpdateDTO.setId(1L);
         tdViewGroupUpdateDTO.setTitle("title of view group");
         tdViewGroupUpdateDTO.setDescription("my best group");
-        tdViewGroupUpdateDTO.setOrganizerLogins(Set.of());
+        tdViewGroupUpdateDTO.setOrganizers(Set.of());
 
         trainingDefinitionUpdate = new TrainingDefinitionUpdateDTO();
         trainingDefinitionUpdate.setId(1L);
@@ -162,17 +173,15 @@ public class TrainingDefinitionFacadeTest {
         tdViewGroupCreateDTO = new TDViewGroupCreateDTO();
         tdViewGroupCreateDTO.setDescription("Good group");
         tdViewGroupCreateDTO.setTitle("Title create");
-        tdViewGroupCreateDTO.setOrganizerLogins(Set.of());
+        tdViewGroupCreateDTO.setOrganizers(Set.of());
 
-        Set<String> authorRefSet = new HashSet<>();
-        authorRefSet.add("author");
         trainingDefinitionCreate = new TrainingDefinitionCreateDTO();
         trainingDefinitionCreate.setDescription("TD desc");
         trainingDefinitionCreate.setOutcomes(new String[0]);
         trainingDefinitionCreate.setPrerequisities(new String[0]);
         trainingDefinitionCreate.setState(cz.muni.ics.kypo.training.api.enums.TDState.ARCHIVED);
         trainingDefinitionCreate.setTitle("TD some title");
-        trainingDefinitionCreate.setAuthorLogins(authorRefSet);
+        trainingDefinitionCreate.setAuthors(Set.of(userInfoDTO1));
         trainingDefinitionCreate.setTdViewGroup(tdViewGroupCreateDTO);
     }
 

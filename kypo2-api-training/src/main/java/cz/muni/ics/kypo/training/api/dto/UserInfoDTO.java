@@ -8,18 +8,9 @@ import io.swagger.annotations.ApiModelProperty;
  */
 public class UserInfoDTO {
 
-    //private Long id;
     private String login;
     @JsonProperty(value = "full_name")
     private String fullName;
-
-//    public Long getId() {
-//        return id;
-//    }
-//
-//    public void setId(Long id) {
-//        this.id = id;
-//    }
 
     public String getLogin() {
         return login;
@@ -41,7 +32,6 @@ public class UserInfoDTO {
     @Override
     public String toString() {
         return "UserInfoDTO{" +
-              //  "id=" + id +
                 ", login='" + login + '\'' +
                 '}';
     }

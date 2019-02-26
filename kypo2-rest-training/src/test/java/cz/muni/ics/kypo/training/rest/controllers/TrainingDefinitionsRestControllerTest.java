@@ -177,14 +177,14 @@ public class TrainingDefinitionsRestControllerTest {
 
         tdViewGroupCreateDTO = new TDViewGroupCreateDTO();
         tdViewGroupCreateDTO.setTitle("Title create");
-        tdViewGroupCreateDTO.setOrganizerLogins(Set.of());
+        tdViewGroupCreateDTO.setOrganizers(Set.of());
         tdViewGroupCreateDTO.setDescription("Create description");
 
         tdViewGroupUpdateDTO = new TDViewGroupUpdateDTO();
         tdViewGroupUpdateDTO.setId(5L);
         tdViewGroupUpdateDTO.setTitle("Title update");
         tdViewGroupUpdateDTO.setDescription("Update description");
-        tdViewGroupUpdateDTO.setOrganizerLogins(Set.of());
+        tdViewGroupUpdateDTO.setOrganizers(Set.of());
 
         trainingDefinition1 = new TrainingDefinition();
         trainingDefinition1.setId(1L);
@@ -219,7 +219,7 @@ public class TrainingDefinitionsRestControllerTest {
         trainingDefinitionUpdateDTO.setId(4L);
         trainingDefinitionUpdateDTO.setState(cz.muni.ics.kypo.training.api.enums.TDState.UNRELEASED);
         trainingDefinitionUpdateDTO.setTitle("training definition title");
-        trainingDefinitionUpdateDTO.setAuthorLogins(authorLogins);
+        trainingDefinitionUpdateDTO.setAuthors(Set.of());
         trainingDefinitionUpdateDTO.setSandboxDefinitionRefId(1L);
         trainingDefinitionUpdateDTO.setShowStepperBar(false);
         trainingDefinitionUpdateDTO.setTdViewGroup(tdViewGroupUpdateDTO);
@@ -230,7 +230,7 @@ public class TrainingDefinitionsRestControllerTest {
         trainingDefinitionCreateDTO.setPrerequisities(new String[0]);
         trainingDefinitionCreateDTO.setState(cz.muni.ics.kypo.training.api.enums.TDState.ARCHIVED);
         trainingDefinitionCreateDTO.setTitle("TD some title");
-        trainingDefinitionCreateDTO.setAuthorLogins(authorLogins);
+        trainingDefinitionCreateDTO.setAuthors(Set.of());
         trainingDefinitionCreateDTO.setShowStepperBar(true);
         trainingDefinitionCreateDTO.setSandboxDefinitionRefId(1L);
         trainingDefinitionCreateDTO.setTdViewGroup(tdViewGroupCreateDTO);
