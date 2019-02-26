@@ -1,5 +1,6 @@
 package cz.muni.ics.kypo.training.api.dto.viewgroup;
 
+import cz.muni.ics.kypo.training.api.dto.UserInfoDTO;
 import io.swagger.annotations.ApiModelProperty;
 
 import javax.validation.constraints.NotEmpty;
@@ -14,8 +15,8 @@ public class TDViewGroupUpdateDTO {
     private String title;
     @NotEmpty(message = "{viewGroup.description.NotEmpty.message}")
     private String description;
-    @NotNull(message = "{viewGroup.orgIds.NotNull.message}")
-    private Set<String> organizerLogins;
+    @NotNull(message = "{viewGroup.organizers.NotNull.message}")
+    private Set<UserInfoDTO> organizers;
 
     @ApiModelProperty(value = "Main identifier of view group.", required = true, example = "2")
     public Long getId() {
@@ -44,13 +45,13 @@ public class TDViewGroupUpdateDTO {
         this.description = description;
     }
 
-    @ApiModelProperty(value = "Logins of users who is allowed to see training definition.", required = true, example = "[bruce]")
-    public Set<String> getOrganizerLogins() {
-        return organizerLogins;
+    @ApiModelProperty(value = "Logins of users who is allowed to see training definition.", required = true)
+    public Set<UserInfoDTO> getOrganizers() {
+        return organizers;
     }
 
-    public void setOrganizerLogins(Set<String> organizerLogins) {
-        this.organizerLogins = organizerLogins;
+    public void setOrganizers(Set<UserInfoDTO> organizers) {
+        this.organizers = organizers;
     }
 
     @Override
@@ -59,7 +60,7 @@ public class TDViewGroupUpdateDTO {
                 "id=" + id +
                 ", title='" + title + '\'' +
                 ", description='" + description + '\'' +
-                ", organizerLogins=" + organizerLogins +
+                ", organizers=" + organizers +
                 '}';
     }
 }

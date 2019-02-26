@@ -137,13 +137,13 @@ public class TrainingDefinitionsIntegrationTest {
 		TDViewGroupCreateDTO tdViewGroupCreateDTO = new TDViewGroupCreateDTO();
 		tdViewGroupCreateDTO.setTitle("testGroup");
 		tdViewGroupCreateDTO.setDescription("test");
-		tdViewGroupCreateDTO.setOrganizerLogins(new HashSet<>(Arrays.asList("testDesigner")));
+		tdViewGroupCreateDTO.setOrganizers(Set.of());
 
 		TDViewGroupUpdateDTO tdViewGroupUpdateDTO = new TDViewGroupUpdateDTO();
 		tdViewGroupUpdateDTO.setId(1L);
 		tdViewGroupUpdateDTO.setTitle("testGroup");
 		tdViewGroupUpdateDTO.setDescription("test");
-		tdViewGroupUpdateDTO.setOrganizerLogins(new HashSet<>(Arrays.asList("testDesigner")));
+		tdViewGroupUpdateDTO.setOrganizers(Set.of());
 
 		gameLevel1 = new GameLevel();
 		gameLevel1.setTitle("testTitle");
@@ -205,7 +205,7 @@ public class TrainingDefinitionsIntegrationTest {
 		trainingDefinitionCreateDTO.setState(TDState.UNRELEASED);
 		trainingDefinitionCreateDTO.setSandboxDefinitionRefId(1L);
 		trainingDefinitionCreateDTO.setTdViewGroup(tdViewGroupCreateDTO);
-		trainingDefinitionCreateDTO.setAuthorLogins(new HashSet<>(Arrays.asList(uR.getUserRefLogin())));;
+		trainingDefinitionCreateDTO.setAuthors(Set.of());
 
 		releasedTrainingDefinition = new TrainingDefinition();
 		releasedTrainingDefinition.setTitle("released");
@@ -234,7 +234,7 @@ public class TrainingDefinitionsIntegrationTest {
 		trainingDefinitionUpdateDTO.setState(TDState.UNRELEASED);
 		trainingDefinitionUpdateDTO.setSandboxDefinitionRefId(1L);
 		trainingDefinitionUpdateDTO.setTdViewGroup(tdViewGroupUpdateDTO);
-		trainingDefinitionUpdateDTO.setAuthorLogins(new HashSet<>(Arrays.asList(uR.getUserRefLogin())));
+		trainingDefinitionUpdateDTO.setAuthors(Set.of());
 
 		invalidDefinitionUpdateDTO = new TrainingDefinitionUpdateDTO();
 
@@ -244,7 +244,7 @@ public class TrainingDefinitionsIntegrationTest {
 		updateForNonexistingDefinition.setState(TDState.UNRELEASED);
 		updateForNonexistingDefinition.setSandboxDefinitionRefId(1L);
 		updateForNonexistingDefinition.setTdViewGroup(tdViewGroupUpdateDTO);
-		updateForNonexistingDefinition.setAuthorLogins(new HashSet<>(Arrays.asList(uR.getUserRefLogin())));
+		updateForNonexistingDefinition.setAuthors(Set.of());
 	}
 
 	@After

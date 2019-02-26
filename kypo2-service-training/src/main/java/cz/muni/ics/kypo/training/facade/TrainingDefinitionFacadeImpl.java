@@ -76,7 +76,6 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
             Objects.requireNonNull(id);
             TrainingDefinitionDTO trainingDefinitionDTO = trainingDefinitionMapper.mapToDTO(trainingDefinitionService.findById(id));
             trainingDefinitionDTO.setLevels(gatherLevels(id));
-            LOG.info(trainingDefinitionDTO.getLevels().toString());
             return trainingDefinitionDTO;
         } catch (ServiceLayerException ex) {
             throw new FacadeLayerException(ex);
@@ -157,8 +156,8 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
         try {
             Objects.requireNonNull(trainingDefinition);
             TrainingDefinition newTD = trainingDefinitionMapper.mapCreateToEntity(trainingDefinition);
-            addOrganizersToTrainingDefinition(newTD, trainingDefinition.getTdViewGroup().getOrganizerLogins());
-            addAuthorsToTrainingDefinition(newTD, trainingDefinition.getAuthorLogins());
+            addOrganizersToTrainingDefinition(newTD, trainingDefinition.getTdViewGroup().getOrganizers());
+            addAuthorsToTrainingDefinition(newTD, trainingDefinition.getAuthors());
             return trainingDefinitionMapper.mapToDTO(trainingDefinitionService.create(newTD));
         } catch (ServiceLayerException ex) {
             throw new FacadeLayerException(ex);
@@ -173,35 +172,35 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
         try {
             Objects.requireNonNull(trainingDefinition);
             TrainingDefinition tD = trainingDefinitionMapper.mapUpdateToEntity(trainingDefinition);
-            addOrganizersToTrainingDefinition(tD, trainingDefinition.getTdViewGroup().getOrganizerLogins());
-            addAuthorsToTrainingDefinition(tD, trainingDefinition.getAuthorLogins());
+            addOrganizersToTrainingDefinition(tD, trainingDefinition.getTdViewGroup().getOrganizers());
+            addAuthorsToTrainingDefinition(tD, trainingDefinition.getAuthors());
             trainingDefinitionService.update(tD);
         } catch (ServiceLayerException ex) {
             throw new FacadeLayerException(ex);
         }
     }
 
-    private void addAuthorsToTrainingDefinition(TrainingDefinition td, Set<String> authors) {
-        for (String autLogin : authors) {
+    private void addAuthorsToTrainingDefinition(TrainingDefinition td, Set<UserInfoDTO> authors) {
+        for (UserInfoDTO a: authors) {
             try {
-                td.addAuthor(trainingDefinitionService.findUserRefByLogin(autLogin));
+                td.addAuthor(trainingDefinitionService.findUserRefByLogin(a.getLogin()));
             } catch (ServiceLayerException ex) {
                 UserRef u = new UserRef();
-                u.setUserRefLogin(autLogin);
-                u.setUserRefFullName(getFullNameOfLoggedInUser());
+                u.setUserRefLogin(a.getLogin());
+                u.setUserRefFullName(a.getFullName());
                 td.addAuthor(trainingDefinitionService.createUserRef(u));
             }
         }
     }
 
-    private void addOrganizersToTrainingDefinition(TrainingDefinition td, Set<String> organizers) {
-        for (String orgLogin : organizers) {
+    private void addOrganizersToTrainingDefinition(TrainingDefinition td, Set<UserInfoDTO> organizers) {
+        for (UserInfoDTO o : organizers) {
             try {
-                td.getTdViewGroup().addOrganizer(trainingDefinitionService.findUserRefByLogin(orgLogin));
+                td.getTdViewGroup().addOrganizer(trainingDefinitionService.findUserRefByLogin(o.getLogin()));
             } catch (ServiceLayerException ex) {
                 UserRef u = new UserRef();
-                u.setUserRefLogin(orgLogin);
-                u.setUserRefFullName(getFullNameOfLoggedInUser());
+                u.setUserRefLogin(o.getLogin());
+                u.setUserRefFullName(o.getFullName());
                 td.getTdViewGroup().addOrganizer(trainingDefinitionService.createUserRef(u));
             }
         }

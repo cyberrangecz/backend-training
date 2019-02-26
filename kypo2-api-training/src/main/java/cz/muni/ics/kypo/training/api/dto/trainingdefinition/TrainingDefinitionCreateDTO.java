@@ -7,6 +7,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
+import cz.muni.ics.kypo.training.api.dto.UserInfoDTO;
 import cz.muni.ics.kypo.training.api.dto.viewgroup.TDViewGroupCreateDTO;
 import cz.muni.ics.kypo.training.api.dto.viewgroup.TDViewGroupUpdateDTO;
 import cz.muni.ics.kypo.training.api.enums.TDState;
@@ -26,8 +27,8 @@ public class TrainingDefinitionCreateDTO {
     private String[] outcomes;
     @NotNull(message = "{trainingdefinitioncreate.state.NotNull.message}")
     private TDState state;
-    @NotNull(message = "{trainingdefinitioncreate.authorLogins.NotNull.message}")
-    private Set<String> authorLogins;
+    @NotNull(message = "{trainingdefinitioncreate.authors.NotNull.message}")
+    private Set<UserInfoDTO> authors;
     @Valid
     @NotNull(message = "{trainingdefinitioncreate.viewGroup.NotNull.message}")
     private TDViewGroupCreateDTO tdViewGroup;
@@ -80,13 +81,13 @@ public class TrainingDefinitionCreateDTO {
         this.state = state;
     }
 
-    @ApiModelProperty(value = "References to the authors of the training definition.", required = true, example = "[johny]")
-    public Set<String> getAuthorLogins() {
-        return authorLogins;
+    @ApiModelProperty(value = "References to the authors of the training definition.", required = true)
+    public Set<UserInfoDTO> getAuthors() {
+        return authors;
     }
 
-    public void setAuthorLogins(Set<String> authorLogins) {
-        this.authorLogins = authorLogins;
+    public void setAuthors(Set<UserInfoDTO> authors) {
+        this.authors = authors;
     }
 
     @ApiModelProperty(value = "Group of organizers who is allowed to see the training definition.", required = true)
@@ -124,7 +125,7 @@ public class TrainingDefinitionCreateDTO {
                 ", prerequisities=" + Arrays.toString(prerequisities) +
                 ", outcomes=" + Arrays.toString(outcomes) +
                 ", state=" + state +
-                ", authorLogins=" + authorLogins +
+                ", authors=" + authors +
                 ", showStepperBar=" + showStepperBar +
                 ", sandboxDefinitionRefId=" + sandboxDefinitionRefId +
                 '}';
