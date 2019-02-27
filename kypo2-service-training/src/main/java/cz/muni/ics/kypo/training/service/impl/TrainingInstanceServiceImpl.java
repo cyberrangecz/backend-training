@@ -1,5 +1,6 @@
 package cz.muni.ics.kypo.training.service.impl;
 
+import com.google.gson.JsonObject;
 import com.mysema.commons.lang.Assert;
 import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.training.annotations.security.IsOrganizerOrAdmin;
@@ -23,6 +24,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.*;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -63,10 +66,11 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
     }
 
     @Override
-    @PreAuthorize("hasAuthority('ADMINISTRATOR')")
-    public TrainingInstance findById(Long id) {
-        LOG.debug("findById({})", id);
-        return trainingInstanceRepository.findById(id).orElseThrow(() -> new ServiceLayerException("Training instance with id: " + id + " not found.", ErrorCode.RESOURCE_NOT_FOUND));
+    @PreAuthorize("hasAuthority('ADMINISTRATOR')" +
+            "or @securityService.isOrganizerOfGivenTrainingInstance(#instanceId)")
+    public TrainingInstance findById(Long instanceId) {
+        LOG.debug("findById({})", instanceId);
+        return trainingInstanceRepository.findById(instanceId).orElseThrow(() -> new ServiceLayerException("Training instance with id: " + instanceId + " not found.", ErrorCode.RESOURCE_NOT_FOUND));
     }
 
     @Override
@@ -85,6 +89,16 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
         if (trainingInstance.getStartTime().isAfter(trainingInstance.getEndTime())) {
             throw new ServiceLayerException("End time must be latfindAllByParticipantRefLoginer than start time.", ErrorCode.RESOURCE_CONFLICT);
         }
+        Optional<UserRef> authorOfTrainingInstance = organizerRefRepository.findUserByUserRefLogin(getSubOfLoggedInUser());
+        if(authorOfTrainingInstance.isPresent()) {
+            trainingInstance.addOrganizer(authorOfTrainingInstance.get());
+        } else {
+            UserRef u = new UserRef();
+            u.setUserRefLogin(getSubOfLoggedInUser());
+            u.setUserRefFullName(getFullNameOfLoggedInUser());
+            trainingInstance.addOrganizer(organizerRefRepository.save(u));
+
+        }
         TrainingInstance tI = trainingInstanceRepository.save(trainingInstance);
         LOG.info("Training instance with id: {} created.", trainingInstance.getId());
         return tI;
@@ -92,7 +106,7 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
 
     @Override
     @PreAuthorize("hasAuthority('ADMINISTRATOR')" +
-            "or @securityService.isOrganizeOfGivenTrainingInstance(#trainingInstance.id)")
+            "or @securityService.isOrganizerOfGivenTrainingInstance(#trainingInstance.id)")
     public String update(TrainingInstance trainingInstance) {
         LOG.debug("update({})", trainingInstance);
         Assert.notNull(trainingInstance, "Input training instance must not be null");
@@ -115,7 +129,7 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
 
     @Override
     @PreAuthorize("hasAuthority('ADMINISTRATOR')" +
-            "or @securityService.isOrganizeOfGivenTrainingInstance(#instanceId)")
+            "or @securityService.isOrganizerOfGivenTrainingInstance(#instanceId)")
     public void delete(Long instanceId) {
         LOG.debug("delete({})", instanceId);
         Assert.notNull(instanceId, "Input training instance id must not be null");
@@ -147,7 +161,7 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
 
     @Override
     @PreAuthorize("hasAuthority('ADMINISTRATOR')" +
-            "or @securityService.isOrganizeOfGivenTrainingInstance(#instanceId)")
+            "or @securityService.isOrganizerOfGivenTrainingInstance(#instanceId)")
     public Long createPoolForSandboxes(Long instanceId) {
         LOG.debug("createPoolForSandboxes({})", instanceId);
         TrainingInstance trainingInstance = findById(instanceId);
@@ -171,7 +185,7 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
 
     @Override
     @PreAuthorize("hasAuthority('ADMINISTRATOR')" +
-            "or @securityService.isOrganizeOfGivenTrainingInstance(#instanceId)")
+            "or @securityService.isOrganizerOfGivenTrainingInstance(#instanceId)")
     public void allocateSandboxes(Long instanceId) {
         LOG.debug("allocateSandboxes({})", instanceId);
         TrainingInstance trainingInstance = findById(instanceId);
@@ -241,18 +255,30 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
 
     @Override
     @PreAuthorize("hasAuthority('ADMINISTRATOR')" +
-            "or @securityService.isOrganizeOfGivenTrainingInstance(#trainingInstanceId)")
-    public Page<TrainingRun> findTrainingRunsByTrainingInstance(Long trainingInstanceId, Pageable pageable) {
-        LOG.debug("findTrainingRunsByTrainingInstance({})", trainingInstanceId);
-        org.springframework.util.Assert.notNull(trainingInstanceId, "Input training instance id must not be null.");
-        trainingInstanceRepository.findById(trainingInstanceId)
-            .orElseThrow( () -> new ServiceLayerException("Training instance with id: " + trainingInstanceId + " not found.", ErrorCode.RESOURCE_NOT_FOUND));
-        return trainingRunRepository.findAllByTrainingInstanceId(trainingInstanceId, pageable);
+            "or @securityService.isOrganizerOfGivenTrainingInstance(#instanceId)")
+    public Page<TrainingRun> findTrainingRunsByTrainingInstance(Long instanceId, Pageable pageable) {
+        LOG.debug("findTrainingRunsByTrainingInstance({})", instanceId);
+        org.springframework.util.Assert.notNull(instanceId, "Input training instance id must not be null.");
+        trainingInstanceRepository.findById(instanceId)
+                .orElseThrow( () -> new ServiceLayerException("Training instance with id: " + instanceId + " not found.", ErrorCode.RESOURCE_NOT_FOUND));
+        return trainingRunRepository.findAllByTrainingInstanceId(instanceId, pageable);
     }
 
     @Override
     @IsOrganizerOrAdmin
     public Set<UserRef> findUserRefsByLogins(Set<String> logins) {
         return organizerRefRepository.findUsers(logins);
+    }
+
+    private String getSubOfLoggedInUser() {
+        OAuth2Authentication authentication = (OAuth2Authentication) SecurityContextHolder.getContext().getAuthentication();
+        JsonObject credentials = (JsonObject) authentication.getUserAuthentication().getCredentials();
+        return credentials.get("sub").getAsString();
+    }
+
+    private String getFullNameOfLoggedInUser(){
+        OAuth2Authentication authentication = (OAuth2Authentication) SecurityContextHolder.getContext().getAuthentication();
+        JsonObject credentials = (JsonObject) authentication.getUserAuthentication().getCredentials();
+        return credentials.get("name").getAsString();
     }
 }

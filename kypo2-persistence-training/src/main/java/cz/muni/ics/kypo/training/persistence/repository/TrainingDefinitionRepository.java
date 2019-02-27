@@ -2,6 +2,7 @@ package cz.muni.ics.kypo.training.persistence.repository;
 
 import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.training.persistence.model.TrainingInstance;
+import cz.muni.ics.kypo.training.persistence.model.enums.TDState;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
@@ -28,6 +29,10 @@ public interface TrainingDefinitionRepository
 
     @EntityGraph(attributePaths = {"authors"})
     Page<TrainingDefinition> findAll(Predicate predicate, Pageable pageable);
+
+//    @Query(value = "SELECT td FROM TrainingDefinition td WHERE td.state = :state",
+//            countQuery = "SELECT COUNT(td) FROM TrainingDefinition td INNER JOIN td.authors a WHERE a.userRefLogin = :userRefLogin")
+//    Page<TrainingDefinition> findAllByTDState(@Param("state") TDState state, Predicate predicate, Pageable pageable);
 
     List<TrainingDefinition> findAll();
 

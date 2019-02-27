@@ -92,7 +92,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     }
 
     @Override
-    @PreAuthorize("hasAuthority('ADMINISTRATOR')" + "or @securityService.isDesignerOfGivenTrainingDefinition(#id)" +
+    @PreAuthorize("hasAnyAuthority('ADMINISTRATOR', 'ORGANIZER')" + "or @securityService.isDesignerOfGivenTrainingDefinition(#id)" +
             "or @securityService.isInViewGroup(#id)")
     public TrainingDefinition findById(Long id) {
         LOG.debug("findById({})", id);
@@ -110,11 +110,10 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
         List<TrainingDefinition> trainingDefinitions = new ArrayList<>();
         if (isDesigner()) {
             trainingDefinitions.addAll(trainingDefinitionRepository.findAllByLoggedInUser(getSubOfLoggedInUser(), pageable).getContent());
-
         }
         if (isOrganizer()) {
             trainingDefinitions.addAll(trainingDefinitionRepository.findAllByViewGroup(getSubOfLoggedInUser(), pageable).getContent());
-
+            trainingDefinitions.addAll(trainingDefinitionRepository.findAll(QTrainingDefinition.trainingDefinition.state.eq(TDState.RELEASED), pageable).getContent());
         }
         return new PageImpl<>(trainingDefinitions, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), pageable.getSort()),
                 trainingDefinitions.size());
@@ -227,6 +226,15 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
         tD.setState(TDState.UNRELEASED);
         if (tD.getStartingLevel() != null) {
             tD.setStartingLevel(createLevels(tD.getStartingLevel()));
+        }
+        Optional<UserRef> user = userRefRepository.findUserByUserRefLogin(getSubOfLoggedInUser());
+        if (user.isPresent()) {
+            trainingDefinition.addAuthor(user.get());
+        } else {
+            UserRef newUser = new UserRef();
+            newUser.setUserRefLogin(getSubOfLoggedInUser());
+            newUser.setUserRefFullName(getFullNameOfLoggedInUser());
+            trainingDefinition.addAuthor(newUser);
         }
         tD = trainingDefinitionRepository.save(tD);
         LOG.info("Training definition with id: {} cloned.", trainingDefinition.getId());
@@ -512,7 +520,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     }
 
     @Override
-    @PreAuthorize("hasAuthority('ADMINISTRATOR')" +
+    @PreAuthorize("hasAnyAuthority('ADMINISTRATOR', 'ORGANIZER')" +
             "or @securityService.isDesignerOfGivenTrainingDefinition(#definitionId)")
     public List<AbstractLevel> findAllLevelsFromDefinition(Long definitionId) {
         LOG.debug("findAllLevelsFromDefinition({})", definitionId);
@@ -540,14 +548,14 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     }
 
     @Override
-    @PreAuthorize("hasAuthority('ADMINISTRATOR')")
+    @IsAdminOrDesignerOrOrganizer
     public List<TrainingInstance> findAllTrainingInstancesByTrainingDefinitionId(Long id) {
         Assert.notNull(id, "Input definition id must not be null");
         return trainingInstanceRepository.findAllByTrainingDefinitionId(id);
     }
 
     @Override
-    @IsDesignerOrAdmin
+    @IsAdminOrDesignerOrOrganizer
     public UserRef findUserRefByLogin(String login) {
         return userRefRepository.findUserByUserRefLogin(login).orElseThrow(
                 () -> new ServiceLayerException("UserRef with login " + login + " not found.", ErrorCode.RESOURCE_NOT_FOUND));
@@ -637,7 +645,6 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
                 newIL.setId(null);
                 newIL.setNextLevel(newId);
                 newIL.setSnapshotHook(null);
-                newIL.setContent(null);
                 InfoLevel newLevel = infoLevelRepository.save(newIL);
                 newId = newLevel.getId();
             } else {

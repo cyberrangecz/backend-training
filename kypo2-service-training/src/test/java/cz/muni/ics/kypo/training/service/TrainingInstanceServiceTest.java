@@ -3,10 +3,7 @@ package cz.muni.ics.kypo.training.service;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.PathBuilder;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
-import cz.muni.ics.kypo.training.persistence.model.SandboxInstanceRef;
-import cz.muni.ics.kypo.training.persistence.model.TrainingDefinition;
-import cz.muni.ics.kypo.training.persistence.model.TrainingInstance;
-import cz.muni.ics.kypo.training.persistence.model.TrainingRun;
+import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.repository.AccessTokenRepository;
 import cz.muni.ics.kypo.training.persistence.repository.TrainingInstanceRepository;
 
@@ -69,6 +66,7 @@ public class TrainingInstanceServiceTest {
     private SandboxInfo sandboxInfo;
     private TrainingInstance trainingInstance1, trainingInstance2, trainingInstanceInvalid;
     private TrainingRun trainingRun1, trainingRun2;
+    private UserRef user;
 
     @Before
     public void init() {
@@ -84,6 +82,10 @@ public class TrainingInstanceServiceTest {
         trainingInstance1.setTrainingDefinition(trainingDefinition);
         trainingInstance1.setPoolSize(2);
         trainingInstance1.setPoolId(1L);
+
+        user = new UserRef();
+        user.setUserRefLogin("login");
+        user.setUserRefFullName("Dave Holman");
 
         trainingInstance2 = new TrainingInstance();
         trainingInstance2.setId(2L);
@@ -149,6 +151,7 @@ public class TrainingInstanceServiceTest {
     @Test
     public void createTrainingInstance() {
         given(trainingInstanceRepository.save(trainingInstance2)).willReturn(trainingInstance2);
+        given(organizerRefRepository.save(any(UserRef.class))).willReturn(user);
         TrainingInstance tI = trainingInstanceService.create(trainingInstance2);
         deepEquals(trainingInstance2, tI);
         then(trainingInstanceRepository).should().save(trainingInstance2);
@@ -218,12 +221,6 @@ public class TrainingInstanceServiceTest {
     public void findTrainingRunsByTrainingInstance_notContainedId() {
         thrown.expect(ServiceLayerException.class);
         thrown.expectMessage("Training instance with id: 10 not found.");
-        //Page p = new PageImpl<>(new ArrayList<>());
-
-        //given(trainingRunRepository.findAllByTrainingInstanceId(any(Long.class), any(Pageable.class))).willReturn(p);
-
-        //Page pr = trainingInstanceService.findTrainingRunsByTrainingInstance(10L, PageRequest.of(0, 2));
-        //assertEquals(0, pr.getTotalElements());
         trainingInstanceService.findTrainingRunsByTrainingInstance(10L, PageRequest.of(0, 2));
     }
 

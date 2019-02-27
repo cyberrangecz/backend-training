@@ -3,6 +3,8 @@ package cz.muni.ics.kypo.training.api.dto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModelProperty;
 
+import java.util.Objects;
+
 /**
  * @author Pavel Seda
  */
@@ -32,7 +34,22 @@ public class UserInfoDTO {
     @Override
     public String toString() {
         return "UserInfoDTO{" +
+                "fullName=" + fullName + '\'' +
                 ", login='" + login + '\'' +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        UserInfoDTO that = (UserInfoDTO) o;
+        return Objects.equals(login, that.login) &&
+                Objects.equals(fullName, that.fullName);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(login, fullName);
     }
 }

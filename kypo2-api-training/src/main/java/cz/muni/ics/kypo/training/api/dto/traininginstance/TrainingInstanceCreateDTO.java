@@ -4,6 +4,8 @@ import java.time.LocalDateTime;
 import java.util.Set;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import cz.muni.ics.kypo.training.api.dto.UserInfoDTO;
+import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
 import cz.muni.ics.kypo.training.converters.LocalDateTimeUTCDeserializer;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -36,7 +38,7 @@ public class TrainingInstanceCreateDTO {
     @NotNull(message = "{traininginstancecreate.trainingDefinition.NotNull.message}")
     private long trainingDefinitionId;
     @NotNull(message = "{traininginstancecreate.organizerLogins.NotNull.message}")
-    private Set<String> organizerLogins;
+    private Set<UserInfoDTO> organizers;
 
     @ApiModelProperty(value = "Date when training instance starts.", required = true, example = "2020-11-20T10:28:02.727Z")
     public LocalDateTime getStartTime() {
@@ -92,13 +94,13 @@ public class TrainingInstanceCreateDTO {
         this.trainingDefinitionId = trainingDefinitionId;
     }
 
-    @ApiModelProperty(value = "Reference to users which organize training instance.", required = true, example = "[1]")
-    public Set<String> getOrganizerLogins() {
-        return organizerLogins;
+    @ApiModelProperty(value = "Reference to users which organize training instance.", required = true)
+    public Set<UserInfoDTO> getOrganizers() {
+        return organizers;
     }
 
-    public void setOrganizerLogins(Set<String> organizerLogins) {
-        this.organizerLogins = organizerLogins;
+    public void setOrganizers(Set<UserInfoDTO> organizers) {
+        this.organizers = organizers;
     }
 
     @Override
@@ -110,7 +112,6 @@ public class TrainingInstanceCreateDTO {
                 ", poolSize=" + poolSize +
                 ", accessToken='" + accessToken + '\'' +
                 ", trainingDefinitionId=" + trainingDefinitionId +
-                ", organizerLogins=" + organizerLogins +
                 '}';
     }
 }
