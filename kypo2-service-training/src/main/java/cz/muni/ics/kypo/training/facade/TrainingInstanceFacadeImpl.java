@@ -4,6 +4,7 @@ import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalRO;
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalWO;
 import cz.muni.ics.kypo.training.api.PageResultResource;
+import cz.muni.ics.kypo.training.api.dto.UserInfoDTO;
 import cz.muni.ics.kypo.training.api.dto.run.TrainingRunDTO;
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceCreateDTO;
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceDTO;
@@ -14,6 +15,7 @@ import cz.muni.ics.kypo.training.mapping.mapstruct.TrainingInstanceMapper;
 import cz.muni.ics.kypo.training.mapping.mapstruct.TrainingRunMapper;
 import cz.muni.ics.kypo.training.persistence.model.TrainingInstance;
 import cz.muni.ics.kypo.training.persistence.model.TrainingRun;
+import cz.muni.ics.kypo.training.persistence.model.UserRef;
 import cz.muni.ics.kypo.training.service.TrainingDefinitionService;
 import cz.muni.ics.kypo.training.service.TrainingInstanceService;
 import org.slf4j.Logger;
@@ -24,7 +26,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 
 /**
  * @author Pavel Šeda
@@ -76,7 +80,7 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
         try {
             Objects.requireNonNull(trainingInstance);
             TrainingInstance tI = trainingInstanceMapper.mapUpdateToEntity(trainingInstance);
-            tI.setOrganizers(trainingInstanceService.findUserRefsByLogins(trainingInstance.getOrganizerLogins()));
+            addOrganizersToTrainingInstance(tI, trainingInstance.getOrganizers());
             return trainingInstanceService.update(tI);
         } catch (ServiceLayerException ex) {
             throw new FacadeLayerException(ex);
@@ -92,10 +96,24 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
             TrainingInstance tI = trainingInstanceMapper.mapCreateToEntity(trainingInstance);
             tI.setTrainingDefinition(trainingDefinitionService.findById(trainingInstance.getTrainingDefinitionId()));
             tI.setId(null);
-            tI.setOrganizers(trainingInstanceService.findUserRefsByLogins(trainingInstance.getOrganizerLogins()));
+            addOrganizersToTrainingInstance(tI, trainingInstance.getOrganizers());
             return trainingInstanceMapper.mapToDTO(trainingInstanceService.create(tI));
         } catch (ServiceLayerException ex) {
             throw new FacadeLayerException(ex);
+        }
+    }
+
+    private void addOrganizersToTrainingInstance(TrainingInstance ti, Set<UserInfoDTO> organizers) {
+        ti.setOrganizers(new HashSet<>());
+        for (UserInfoDTO org : organizers) {
+            try {
+                ti.addOrganizer(trainingDefinitionService.findUserRefByLogin(org.getLogin()));
+            } catch (ServiceLayerException ex) {
+                UserRef u = new UserRef();
+                u.setUserRefLogin(org.getLogin());
+                u.setUserRefFullName(org.getFullName());
+                ti.addOrganizer(trainingDefinitionService.createUserRef(u));
+            }
         }
     }
 

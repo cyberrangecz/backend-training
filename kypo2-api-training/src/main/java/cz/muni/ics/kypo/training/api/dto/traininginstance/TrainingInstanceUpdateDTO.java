@@ -1,9 +1,7 @@
 package cz.muni.ics.kypo.training.api.dto.traininginstance;
 
-import java.time.LocalDateTime;
-import java.util.Set;
-
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import cz.muni.ics.kypo.training.api.dto.UserInfoDTO;
 import cz.muni.ics.kypo.training.converters.LocalDateTimeUTCDeserializer;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -12,6 +10,8 @@ import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
+import java.time.LocalDateTime;
+import java.util.Set;
 
 /**
  * @author Pavel Seda (441048)
@@ -37,8 +37,8 @@ public class TrainingInstanceUpdateDTO {
     private String accessToken;
     @NotNull(message = "{traininginstanceupdate.trainingDefinition.NotNull.message}")
     private Long trainingDefinitionId;
-    @NotNull(message = "{traininginstanceupdate.organizerLogins.NotNull.message}")
-    private Set<String> organizerLogins;
+    @NotNull(message = "{traininginstanceupdate.organizers.NotNull.message}")
+    private Set<UserInfoDTO> organizers;
 
     @ApiModelProperty(value = "Main identifier of training instance.", required = true, example = "2")
     public Long getId() {
@@ -103,13 +103,13 @@ public class TrainingInstanceUpdateDTO {
         this.trainingDefinitionId = trainingDefinitionId;
     }
 
-    @ApiModelProperty(value = "Reference to users which organize training instance.", required = true, example = "[1]")
-    public Set<String> getOrganizerLogins() {
-        return organizerLogins;
+    @ApiModelProperty(value = "Reference to users which organize training instance.", required = true)
+    public Set<UserInfoDTO> getOrganizers() {
+        return organizers;
     }
 
-    public void setOrganizerLogins(Set<String> organizerLogins) {
-        this.organizerLogins = organizerLogins;
+    public void setOrganizers(Set<UserInfoDTO> organizers) {
+        this.organizers = organizers;
     }
 
     @Override
@@ -122,7 +122,7 @@ public class TrainingInstanceUpdateDTO {
                 ", poolSize=" + poolSize +
                 ", accessToken='" + accessToken + '\'' +
                 ", trainingDefinitionId=" + trainingDefinitionId +
-                ", organizerLogins=" + organizerLogins +
+                ", organizers=" + organizers +
                 '}';
     }
 }

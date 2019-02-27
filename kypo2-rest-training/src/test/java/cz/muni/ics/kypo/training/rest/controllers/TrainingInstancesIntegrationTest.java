@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.SerializationConfig;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.google.gson.JsonObject;
 import cz.muni.ics.kypo.training.api.PageResultResource;
 import cz.muni.ics.kypo.training.api.dto.run.TrainingRunDTO;
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceCreateDTO;
@@ -24,6 +25,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mockito;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -40,6 +42,11 @@ import org.springframework.data.web.querydsl.QuerydslPredicateArgumentResolver;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.mock.web.MockHttpServletResponse;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
@@ -55,6 +62,7 @@ import java.util.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -159,7 +167,7 @@ public class TrainingInstancesIntegrationTest {
 		trainingInstanceCreateDTO.setTitle("newInstance");
 		trainingInstanceCreateDTO.setPoolSize(50);
 		trainingInstanceCreateDTO.setAccessToken("pass-1235");
-		trainingInstanceCreateDTO.setOrganizerLogins(new HashSet<>(Arrays.asList("TestUser")));
+		trainingInstanceCreateDTO.setOrganizers(Set.of());
 /*
 		ParticipantRef pR = new ParticipantRef();
 		pR.setParticipantRefLogin("login");
@@ -252,16 +260,13 @@ public class TrainingInstancesIntegrationTest {
 
 	@Test
 	public void createTrainingInstance() throws Exception {
-
-		System.out.println(trainingInstanceCreateDTO);
-		System.out.println(trainingInstanceCreateDTO.getStartTime());
+		mockSpringSecurityContextForGet();
 		MockHttpServletResponse result = mvc.perform(post("/training-instances").content(convertObjectToJsonBytes(trainingInstanceCreateDTO))
 				.contentType(MediaType.APPLICATION_JSON_VALUE))
 				//.andExpect(status().isOk())
 				//.andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
 				.andReturn().getResponse();
 
-		System.out.println(result.getContentAsString());
 		Optional<TrainingInstance> newInstance= trainingInstanceRepository.findById(1L);
 		assertTrue(newInstance.isPresent());
 		TrainingInstanceDTO newInstanceDTO = beanMapping.mapTo(newInstance.get(), TrainingInstanceDTO.class);
@@ -341,6 +346,21 @@ public class TrainingInstancesIntegrationTest {
 		SimpleModule simpleModule = new SimpleModule("SimpleModule").addSerializer(new LocalDateTimeUTCSerializer());
 		mapper.registerModule(simpleModule);
 		return mapper.writeValueAsString(object);
+	}
+
+	private void mockSpringSecurityContextForGet() {
+		JsonObject sub = new JsonObject();
+		sub.addProperty("sub", "testDesigner");
+		sub.addProperty("name", "designer name");
+		Authentication authentication = Mockito.mock(Authentication.class);
+		OAuth2Authentication auth = Mockito.mock(OAuth2Authentication.class);
+		SecurityContext securityContext = Mockito.mock(SecurityContext.class);
+		SecurityContextHolder.setContext(securityContext);
+		given(securityContext.getAuthentication()).willReturn(auth);
+		given(auth.getUserAuthentication()).willReturn(auth);
+		given(auth.getCredentials()).willReturn(sub);
+		given(auth.getAuthorities()).willReturn(Arrays.asList(new SimpleGrantedAuthority("ADMINISTRATOR")));
+		given(authentication.getDetails()).willReturn(auth);
 	}
 }
 

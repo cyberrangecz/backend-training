@@ -33,7 +33,7 @@ public class TrainingInstance implements Serializable {
     private String accessToken;
     @ManyToOne(fetch = FetchType.LAZY)
     private TrainingDefinition trainingDefinition;
-    @ManyToMany(fetch = FetchType.LAZY)
+    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     @JoinTable(name = "training_instance_user_ref",
             joinColumns = @JoinColumn(name = "training_instance_id"),
             inverseJoinColumns = @JoinColumn(name = "user_ref_id")
@@ -112,6 +112,11 @@ public class TrainingInstance implements Serializable {
 
     public void setOrganizers(Set<UserRef> organizers) {
         this.organizers = organizers;
+    }
+
+    public void addOrganizer(UserRef userRef) {
+        this.organizers.add(userRef);
+        userRef.addTrainingInstance(this);
     }
 
     public Set<SandboxInstanceRef> getSandboxInstanceRefs() {

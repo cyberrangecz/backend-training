@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.training.api.PageResultResource;
+import cz.muni.ics.kypo.training.api.dto.UserInfoDTO;
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceCreateDTO;
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceDTO;
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceUpdateDTO;
@@ -73,6 +74,7 @@ public class TrainingInstancesRestControllerTest {
     private TrainingInstanceDTO trainingInstance1DTO, trainingInstance2DTO;
     private TrainingInstanceCreateDTO trainingInstanceCreateDTO;
     private TrainingInstanceUpdateDTO trainingInstanceUpdateDTO;
+    private UserInfoDTO userInfoDTO1;
 
     private Page p;
 
@@ -87,8 +89,9 @@ public class TrainingInstancesRestControllerTest {
                         new QuerydslPredicateArgumentResolver(new QuerydslBindingsFactory(SimpleEntityPathResolver.INSTANCE), Optional.empty()))
                 .setMessageConverters(new MappingJackson2HttpMessageConverter()).build();
 
-        Set<String> organizers = new HashSet<>();
-        organizers.add("441048@mail.muni.cz");
+        userInfoDTO1 = new UserInfoDTO();
+        userInfoDTO1.setLogin("441048@mail.muni.cz");
+        userInfoDTO1.setFullName("Mgr. Ing. Pavel Šeda");
 
         trainingInstance1 = new TrainingInstance();
         trainingInstance1.setId(1L);
@@ -115,7 +118,7 @@ public class TrainingInstancesRestControllerTest {
         trainingInstanceCreateDTO.setEndTime(endTime);
         trainingInstanceCreateDTO.setAccessToken("pass");
         trainingInstanceCreateDTO.setPoolSize(20);
-        trainingInstanceCreateDTO.setOrganizerLogins(organizers);
+        trainingInstanceCreateDTO.setOrganizers(Set.of(userInfoDTO1));
         trainingInstanceCreateDTO.setTrainingDefinitionId(1L);
 
         trainingInstanceUpdateDTO = new TrainingInstanceUpdateDTO();
@@ -126,7 +129,7 @@ public class TrainingInstancesRestControllerTest {
         trainingInstanceUpdateDTO.setPoolSize(5);
         //trainingInstanceUpdateDTO.setKeyword("pass-2586");
         trainingInstanceUpdateDTO.setTrainingDefinitionId(1L);
-        trainingInstanceUpdateDTO.setOrganizerLogins(organizers);
+        trainingInstanceUpdateDTO.setOrganizers(Set.of(userInfoDTO1));
 
         List<TrainingInstance> expected = new ArrayList<>();
         expected.add(trainingInstance1);

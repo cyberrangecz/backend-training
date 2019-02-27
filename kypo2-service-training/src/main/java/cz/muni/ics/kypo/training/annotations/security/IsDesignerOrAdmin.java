@@ -12,6 +12,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
  */
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
-@PreAuthorize("hasAnyAuthority('ADMINISTRATOR','DESIGNER')")
+@PreAuthorize("hasAnyAuthority('DESIGNER', 'ADMINISTRATOR')")
 public @interface IsDesignerOrAdmin {
 }

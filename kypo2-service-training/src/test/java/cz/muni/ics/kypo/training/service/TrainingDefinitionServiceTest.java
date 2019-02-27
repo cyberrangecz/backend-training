@@ -248,6 +248,7 @@ public class TrainingDefinitionServiceTest {
 
     @Test
     public void cloneTrainingDefinition() {
+        mockSpringSecurityContextForGet();
         TrainingDefinition tDcloned = new TrainingDefinition();
         tDcloned.setTitle("Clone of " + trainingDefinition1.getTitle());
         tDcloned.setId(3L);
@@ -920,6 +921,7 @@ public class TrainingDefinitionServiceTest {
     private void mockSpringSecurityContextForGet() {
         JsonObject sub = new JsonObject();
         sub.addProperty("sub", "participant");
+        sub.addProperty("name", "Pavel");
         Authentication authentication = Mockito.mock(Authentication.class);
         OAuth2Authentication auth = Mockito.mock(OAuth2Authentication.class);
         SecurityContext securityContext = Mockito.mock(SecurityContext.class);

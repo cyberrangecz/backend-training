@@ -97,6 +97,14 @@ public class UserRef implements Serializable {
         this.tdViewGroups.remove(viewGroup);
     }
 
+    public void addTrainingInstance(TrainingInstance trainingInstance) {
+        this.trainingInstances.add(trainingInstance);
+    }
+
+    public void removeTrainingInstance(TrainingInstance trainingInstance) {
+        this.trainingInstances.remove(trainingInstance);
+    }
+
     public Set<TDViewGroup> getTdViewGroups() {
         return Collections.unmodifiableSet(tdViewGroups);
     }
