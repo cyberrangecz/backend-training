@@ -1,5 +1,6 @@
 package cz.muni.ics.kypo.training.service;
 
+import com.google.gson.JsonObject;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.PathBuilder;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
@@ -19,6 +20,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.data.domain.Page;
@@ -29,6 +31,11 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.web.client.RestTemplate;
 
@@ -150,6 +157,7 @@ public class TrainingInstanceServiceTest {
 
     @Test
     public void createTrainingInstance() {
+        mockSpringSecurityContextForGet();
         given(trainingInstanceRepository.save(trainingInstance2)).willReturn(trainingInstance2);
         given(organizerRefRepository.save(any(UserRef.class))).willReturn(user);
         TrainingInstance tI = trainingInstanceService.create(trainingInstance2);
@@ -290,6 +298,21 @@ public class TrainingInstanceServiceTest {
     private void deepEquals(TrainingInstance expected, TrainingInstance actual) {
         assertEquals(expected.getId(), actual.getId());
         assertEquals(expected.getTitle(), actual.getTitle());
+    }
+
+    private void mockSpringSecurityContextForGet() {
+        JsonObject sub = new JsonObject();
+        sub.addProperty("sub", "participant");
+        sub.addProperty("name", "Pavel");
+        Authentication authentication = Mockito.mock(Authentication.class);
+        OAuth2Authentication auth = Mockito.mock(OAuth2Authentication.class);
+        SecurityContext securityContext = Mockito.mock(SecurityContext.class);
+        SecurityContextHolder.setContext(securityContext);
+        given(securityContext.getAuthentication()).willReturn(auth);
+        given(auth.getUserAuthentication()).willReturn(auth);
+        given(auth.getCredentials()).willReturn(sub);
+        given(auth.getAuthorities()).willReturn(Arrays.asList(new SimpleGrantedAuthority("ADMINISTRATOR")));
+        given(authentication.getDetails()).willReturn(auth);
     }
 
 }

@@ -507,6 +507,8 @@ public class TrainingRunServiceTest {
     @Test
     public void resumeTrainingRun() {
         given(trainingRunRepository.findByIdWithLevel(any(Long.class))).willReturn(Optional.of(trainingRun1));
+        given(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
+                willReturn(new ResponseEntity<SandboxInfo>((sandboxInfo), HttpStatus.OK));
         TrainingRun trainingRun = trainingRunService.resumeTrainingRun(trainingRun1.getId());
 
         assertEquals(trainingRun.getId(), trainingRun1.getId());

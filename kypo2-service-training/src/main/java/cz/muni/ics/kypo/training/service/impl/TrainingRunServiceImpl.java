@@ -36,6 +36,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
@@ -204,6 +205,19 @@ public class TrainingRunServiceImpl implements TrainingRunService {
         TrainingRun trainingRun = findByIdWithLevel(runId);
         if (trainingRun.getState().equals(TRState.ARCHIVED)) {
             throw new ServiceLayerException("Cannot resumed archived training run.", ErrorCode.RESOURCE_CONFLICT);
+        }
+
+        HttpHeaders httpHeaders = new HttpHeaders();
+        httpHeaders.set("Accept", MediaType.APPLICATION_JSON_VALUE);
+        try {
+            ResponseEntity<SandboxInfo> response = restTemplate.exchange(kypoOpenStackURI + "/sandboxes/" + trainingRun.getSandboxInstanceRef().getSandboxInstanceRef() + "/", HttpMethod.GET, new HttpEntity<>(httpHeaders),
+                    new ParameterizedTypeReference<SandboxInfo>() {
+                    });
+            if(!response.getBody().getStatus().equals("CREATE_COMPLETE")) {
+                throw new ServiceLayerException("Something happened with sandbox. Please contact organizer of training instance or administrator", ErrorCode.RESOURCE_CONFLICT);
+            }
+        } catch (HttpClientErrorException ex) {
+            throw new ServiceLayerException("Some error occurred during getting info about sandbox: " + ex.getStatusCode() + ". Please try later or contact administrator.", ErrorCode.UNEXPECTED_ERROR);
         }
         auditTrainingRunResumedAction(trainingRun);
         return trainingRun;
