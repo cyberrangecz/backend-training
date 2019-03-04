@@ -182,7 +182,7 @@ public class TrainingRunServiceTest {
 
         sandboxInfo = new SandboxInfo();
         sandboxInfo.setId(7L);
-        sandboxInfo.setStatus("COMPLETE");
+        sandboxInfo.setStatus("CREATE_COMPLETE");
 
         assessmentLevel = new AssessmentLevel();
         assessmentLevel.setId(3L);
