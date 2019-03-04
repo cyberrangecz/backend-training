@@ -132,6 +132,7 @@ public class TrainingDefinitionsRestController {
             @ApiParam(value = "Fields which should be returned in REST API response", required = false)
             @RequestParam(value = "fields", required = false) String fields) {
         LOG.debug("findAllTrainingDefinitions({},{})", parameters, fields);
+
         PageResultResource<TrainingDefinitionDTO> trainingDefinitionResource = trainingDefinitionFacade.findAll(predicate, pageable);
         Squiggly.init(objectMapper, fields);
         return ResponseEntity.ok(SquigglyUtils.stringify(objectMapper, trainingDefinitionResource));
