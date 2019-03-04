@@ -15,6 +15,7 @@ import cz.muni.ics.kypo.training.rest.exceptions.ResourceNotFoundException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -54,7 +55,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ContextConfiguration(classes = TrainingRunsRestController.class)
 @DataJpaTest
 @Import(RestConfigTest.class)
-public class TrainingRunsIntegrationTest {
+public class TrainingRunsIT {
 
 	private MockMvc mvc;
 	private BeanMapping beanMapping;
@@ -211,8 +212,6 @@ public class TrainingRunsIntegrationTest {
 		Exception ex = mvc.perform(get("/training-runs/{id}", 100L))
 				.andExpect(status().isNotFound())
 				.andReturn().getResolvedException();
-
-		System.out.println(ex.getLocalizedMessage());
 		assertEquals(ex.getClass(), ResourceNotFoundException.class);
 		assertTrue(ex.getMessage().contains("Training Run with runId: 100 not found."));
 	}

@@ -172,7 +172,7 @@ Installing by maven:
 mvn clean install
 ```
 NOTE: Before installing this project you must download (git clone) and install (mvn clean install) [security-commons project] (https://gitlab.ics.muni.cz/kypo2/services-and-portlets/kypo2-security-commons)
-
+NOTE: To skip integration tests use -DskipITs 
 ### Database migration
 Prerequisites running PostgreSQL and created the database named 'training' with schema 'public'.
 To migrate database data it is necessary to run these two scripts:
