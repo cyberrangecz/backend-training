@@ -1,15 +1,12 @@
 package cz.muni.ics.kypo.training.rest.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.PropertyNamingStrategy;
-import com.fasterxml.jackson.databind.SerializationConfig;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.google.gson.JsonObject;
 import cz.muni.ics.kypo.training.api.PageResultResource;
 import cz.muni.ics.kypo.training.api.dto.run.TrainingRunDTO;
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceCreateDTO;
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceDTO;
-import cz.muni.ics.kypo.training.converters.LocalDateTimeSerializer;
 import cz.muni.ics.kypo.training.converters.LocalDateTimeUTCSerializer;
 import cz.muni.ics.kypo.training.mapping.modelmapper.BeanMapping;
 import cz.muni.ics.kypo.training.mapping.modelmapper.BeanMappingImpl;
@@ -24,12 +21,12 @@ import cz.muni.ics.kypo.training.rest.exceptions.ResourceNotFoundException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Import;
@@ -54,7 +51,6 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.io.IOException;
 import java.sql.SQLException;
-import java.time.Clock;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.*;
@@ -73,7 +69,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ContextConfiguration(classes = TrainingInstancesRestController.class)
 @DataJpaTest
 @Import(RestConfigTest.class)
-public class TrainingInstancesIntegrationTest {
+public class TrainingInstancesIT {
 
 	private MockMvc mvc;
 	private BeanMapping beanMapping;
@@ -98,10 +94,7 @@ public class TrainingInstancesIntegrationTest {
 
 	@Autowired
 	private InfoLevelRepository infoLevelRepository;
-/*
-	@Autowired
-	private SandboxInstanceRefRepository sandboxInstanceRefRepository;
-*/
+
 	private TrainingInstance futureTrainingInstance, notConcludedTrainingInstance;
 	private TrainingInstanceCreateDTO trainingInstanceCreateDTO;
 	private TrainingRun trainingRun1, trainingRun2;
@@ -162,22 +155,12 @@ public class TrainingInstancesIntegrationTest {
 		trainingInstanceCreateDTO = new TrainingInstanceCreateDTO();
 		trainingInstanceCreateDTO.setStartTime(LocalDateTime.now(ZoneOffset.UTC).plusHours(24));
 		trainingInstanceCreateDTO.setEndTime(LocalDateTime.now().plusHours(80));
-		//trainingInstanceCreateDTO.setEndTime((LocalDateTime) "2020-11-20T10:28:02.727Z");
 		trainingInstanceCreateDTO.setTrainingDefinitionId(tD.getId());
 		trainingInstanceCreateDTO.setTitle("newInstance");
 		trainingInstanceCreateDTO.setPoolSize(50);
 		trainingInstanceCreateDTO.setAccessToken("pass-1235");
 		trainingInstanceCreateDTO.setOrganizers(Set.of());
-/*
-		ParticipantRef pR = new ParticipantRef();
-		pR.setParticipantRefLogin("login");
-		ParticipantRef participantRef = participantRefRepository.save(pR);
-*/
 
-		/*
-		SandboxInstanceRef sandboxInstanceRef1 = sandboxInstanceRefRepository.save(sIR1);
-		SandboxInstanceRef sandboxInstanceRef2 = sandboxInstanceRefRepository.save(sIR2);
-		*/
 		InfoLevel iL = new InfoLevel();
 		iL.setContent("content");
 		iL.setTitle("title");
@@ -260,11 +243,12 @@ public class TrainingInstancesIntegrationTest {
 
 	@Test
 	public void createTrainingInstance() throws Exception {
+
 		mockSpringSecurityContextForGet();
 		MockHttpServletResponse result = mvc.perform(post("/training-instances").content(convertObjectToJsonBytes(trainingInstanceCreateDTO))
 				.contentType(MediaType.APPLICATION_JSON_VALUE))
-				//.andExpect(status().isOk())
-				//.andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+				.andExpect(status().isOk())
+				.andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
 				.andReturn().getResponse();
 
 		Optional<TrainingInstance> newInstance= trainingInstanceRepository.findById(1L);
@@ -277,7 +261,6 @@ public class TrainingInstancesIntegrationTest {
 	@Test
 	public void deleteTrainingInstance() throws Exception {
 		TrainingInstance tI = trainingInstanceRepository.save(futureTrainingInstance);
-		System.out.println(tI.getStartTime());
 		mvc.perform(delete("/training-instances/{id}", tI.getId()))
 				.andExpect(status().isOk());
 		Optional<TrainingInstance> optTI = trainingInstanceRepository.findById(tI.getId());
