@@ -21,6 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.*;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -136,9 +137,11 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
         TrainingInstance trainingInstance = trainingInstanceRepository.findById(instanceId)
                 .orElseThrow(() -> new ServiceLayerException("Training instance with id: " + instanceId + ", not found.", ErrorCode.RESOURCE_NOT_FOUND));
         LocalDateTime currentDate = LocalDateTime.now();
-        if (currentDate.isAfter(trainingInstance.getEndTime()) || currentDate.isAfter(trainingInstance.getStartTime()))
-            throw new ServiceLayerException("Only finished instances can be deleted.", ErrorCode.RESOURCE_CONFLICT);
-        trainingRunRepository.deleteTrainingRunsByTrainingInstance(trainingInstance.getId());
+        if (currentDate.isAfter(trainingInstance.getStartTime()) && currentDate.isBefore(trainingInstance.getEndTime()))
+            throw new ServiceLayerException("The training instance which is running cannot be deleted.", ErrorCode.RESOURCE_CONFLICT);
+        if (currentDate.isAfter(trainingInstance.getEndTime()) && trainingRunRepository.findAllByTrainingInstanceId(
+                trainingInstance.getId(), PageRequest.of(0, 5)).getTotalElements() > 0)
+            throw new ServiceLayerException("Finished training instance with already assigned training runs cannot be deleted.", ErrorCode.RESOURCE_CONFLICT);
         trainingInstanceRepository.delete(trainingInstance);
         LOG.info("Training instance with id: {} deleted.", instanceId);
     }

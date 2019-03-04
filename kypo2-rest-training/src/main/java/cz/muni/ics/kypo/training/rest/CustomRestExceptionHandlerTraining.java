@@ -37,7 +37,7 @@ import java.util.List;
  * @author Pavel Seda (441048)
  */
 @Order(Ordered.HIGHEST_PRECEDENCE)
-@RestControllerAdvice
+@RestControllerAdvice(basePackages = "cz.muni.ics.kypo.training")
 public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionHandler {
 
     private static final Logger LOG = LoggerFactory.getLogger(CustomRestExceptionHandlerTraining.class);
