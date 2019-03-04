@@ -300,7 +300,7 @@ public class TrainingInstancesIntegrationTest {
 				.andExpect(status().isConflict())
 				.andReturn().getResolvedException();
 		assertEquals(ex.getClass(), ConflictException.class);
-		assertTrue(ex.getMessage().contains("Only finished instances can be deleted"));
+		assertTrue(ex.getMessage().contains("The training instance which is running cannot be deleted."));
 	}
 
 	@Test
