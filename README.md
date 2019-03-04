@@ -152,15 +152,6 @@ spring.flyway.user={user in DB}
 spring.flyway.password={password for user to DB}
 spring.flyway.table=schema_version
 
-# Logging
-logging.level.org.mitre.openid.connect.binder.service=DEBUG
-logging.level.root= WARN
-logging.level.org.springframework.security= DEBUG
-logging.level.org.springframework.web= ERROR
-logging.level.org.apache.commons.dbcp2= DEBUG  
-logging.level.org.hibernate=ERROR
-logging.file = logs/kypo2-training.log  
-
 # to fix: Method jmxMBeanExporter in org.springframework.boot.actuate.autoconfigure.endpoint.jmx.JmxEndpointAutoConfiguration required a single bean, but 2 were found: (objMapperESClient,objectMapperForRestAPI)
 spring.jmx.enabled = false
 
