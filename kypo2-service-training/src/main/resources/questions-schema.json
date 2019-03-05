@@ -47,7 +47,7 @@
                   "type": "boolean"
                 },
                 "pair": {
-                  "type": "integer"
+                  "type":  ["integer", "null"]
                 }
               },
               "oneOf": [
