@@ -181,6 +181,7 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
     }
 
     private void addAuthorsToTrainingDefinition(TrainingDefinition td, Set<UserInfoDTO> authors) {
+        td.setAuthors(new HashSet<>());
         for (UserInfoDTO a: authors) {
             try {
                 td.addAuthor(trainingDefinitionService.findUserRefByLogin(a.getLogin()));
@@ -194,6 +195,7 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
     }
 
     private void addOrganizersToTrainingDefinition(TrainingDefinition td, Set<UserInfoDTO> organizers) {
+        td.getTdViewGroup().setOrganizers(new HashSet<>());
         for (UserInfoDTO o : organizers) {
             try {
                 td.getTdViewGroup().addOrganizer(trainingDefinitionService.findUserRefByLogin(o.getLogin()));
