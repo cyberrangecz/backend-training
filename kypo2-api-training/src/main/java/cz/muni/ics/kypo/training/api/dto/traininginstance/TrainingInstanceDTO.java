@@ -26,6 +26,7 @@ public class TrainingInstanceDTO {
     private TrainingDefinitionDTO trainingDefinition;
     private Set<UserRefDTO> organizers;
     private String accessToken;
+    private Long poolId;
 
     @ApiModelProperty(value = "Main identifier of training instance.", example = "1")
     public Long getId() {
@@ -98,10 +99,18 @@ public class TrainingInstanceDTO {
         this.accessToken = accessToken;
     }
 
-    @Override
-    public String toString() {
+    @ApiModelProperty(value = "Id of sandbox pool belonging to training instance", example = "1")
+    public Long getPoolId() {
+        return poolId;
+    }
+
+    public void setPoolId(Long poolId) {
+        this.poolId = poolId;
+    }
+
+    @Override public String toString() {
         return "TrainingInstanceDTO{" + "id=" + id + ", startTime=" + startTime + ", endTime=" + endTime + ", title='" + title + '\''
-                + ", poolSize=" + poolSize + ", trainingDefinition=" + trainingDefinition + ", organizers=" + organizers + ", accessToken='"
-                + accessToken + '\'' + '}';
+            + ", poolSize=" + poolSize + ", trainingDefinition=" + trainingDefinition + ", organizers=" + organizers + ", accessToken='"
+            + accessToken + '\'' + ", poolId=" + poolId + '}';
     }
 }
