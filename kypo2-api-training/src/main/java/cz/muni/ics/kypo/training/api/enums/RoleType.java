@@ -5,5 +5,5 @@ package cz.muni.ics.kypo.training.api.enums;
  */
 public enum RoleType {
 
-    DESIGNER, ORGANIZER, TRAINEE;
+    ROLE_TRAINING_ADMINISTRATOR, ROLE_TRAINING_DESIGNER, ROLE_TRAINING_ORGANIZER, ROLE_TRAINING_TRAINEE;
 }

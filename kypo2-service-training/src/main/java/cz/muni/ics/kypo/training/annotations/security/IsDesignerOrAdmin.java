@@ -12,6 +12,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
  */
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
-@PreAuthorize("hasAnyAuthority('DESIGNER', 'ADMINISTRATOR')")
+@PreAuthorize("hasAnyAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR, " +
+        "T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_DESIGNER)")
 public @interface IsDesignerOrAdmin {
 }

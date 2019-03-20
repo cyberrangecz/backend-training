@@ -1,0 +1,19 @@
+[
+  {
+    "role_type": "ROLE_TRAINING_ADMINISTRATOR",
+    "default": false
+  },
+  {
+    "role_type": "ROLE_TRAINING_DESIGNER",
+    "default": false
+  },
+  {
+    "role_type": "ROLE_TRAINING_ORGANIZER",
+    "default": false
+  },
+  {
+    "role_type": "ROLE_TRAINING_TRAINEE",
+    "default": true
+  }
+
+]

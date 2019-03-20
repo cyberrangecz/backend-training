@@ -106,17 +106,17 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
         List<AbstractLevel> levels = trainingDefinitionService.findAllLevelsFromDefinition(definitionId);
         Set<AbstractLevelDTO> levelDTOS = new HashSet<>();
 
-        for (AbstractLevel l : levels) {
-            if (l instanceof GameLevel) {
-                GameLevelDTO lDTO = gameLevelMapper.mapToDTO((GameLevel) l);
+        for (AbstractLevel abstractLevel : levels) {
+            if (abstractLevel instanceof GameLevel) {
+                GameLevelDTO lDTO = gameLevelMapper.mapToDTO((GameLevel) abstractLevel);
                 lDTO.setLevelType(LevelType.GAME_LEVEL);
                 levelDTOS.add(lDTO);
-            } else if (l instanceof InfoLevel) {
-                InfoLevelDTO lDTO = infoLevelMapper.mapToDTO((InfoLevel) l);
+            } else if (abstractLevel instanceof InfoLevel) {
+                InfoLevelDTO lDTO = infoLevelMapper.mapToDTO((InfoLevel) abstractLevel);
                 lDTO.setLevelType(LevelType.INFO_LEVEL);
                 levelDTOS.add(lDTO);
             } else {
-                AssessmentLevelDTO lDTO = assessmentLevelMapper.mapToDTO((AssessmentLevel) l);
+                AssessmentLevelDTO lDTO = assessmentLevelMapper.mapToDTO((AssessmentLevel) abstractLevel);
                 lDTO.setLevelType(LevelType.ASSESSMENT_LEVEL);
                 levelDTOS.add(lDTO);
             }
@@ -129,16 +129,16 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
     public PageResultResource<TrainingDefinitionDTO> findAll(Predicate predicate, Pageable pageable) {
         LOG.debug("findAllTrainingDefinitions({},{})", predicate, pageable);
         PageResultResource<TrainingDefinitionDTO> resource = trainingDefinitionMapper.mapToPageResultResource(trainingDefinitionService.findAll(predicate, pageable));
-        for (TrainingDefinitionDTO tD : resource.getContent()) {
-            tD.setCanBeArchived(checkIfCanBeArchived(tD.getId()));
+        for (TrainingDefinitionDTO trainingDefinitionDTO : resource.getContent()) {
+            trainingDefinitionDTO.setCanBeArchived(checkIfCanBeArchived(trainingDefinitionDTO.getId()));
         }
         return resource;
     }
 
     private boolean checkIfCanBeArchived(Long definitionId) {
         List<TrainingInstance> instances = trainingDefinitionService.findAllTrainingInstancesByTrainingDefinitionId(definitionId);
-        for (TrainingInstance tI : instances) {
-            if (tI.getEndTime().isAfter(LocalDateTime.now())) return false;
+        for (TrainingInstance trainingInstance : instances) {
+            if (trainingInstance.getEndTime().isAfter(LocalDateTime.now())) return false;
         }
         return true;
     }
@@ -155,10 +155,10 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
         LOG.debug("create({})", trainingDefinition);
         try {
             Objects.requireNonNull(trainingDefinition);
-            TrainingDefinition newTD = trainingDefinitionMapper.mapCreateToEntity(trainingDefinition);
-            addOrganizersToTrainingDefinition(newTD, trainingDefinition.getTdViewGroup().getOrganizers());
-            addAuthorsToTrainingDefinition(newTD, trainingDefinition.getAuthors());
-            return trainingDefinitionMapper.mapToDTO(trainingDefinitionService.create(newTD));
+            TrainingDefinition newTrainingDefinition = trainingDefinitionMapper.mapCreateToEntity(trainingDefinition);
+            addOrganizersToTrainingDefinition(newTrainingDefinition, trainingDefinition.getTdViewGroup().getOrganizers());
+            addAuthorsToTrainingDefinition(newTrainingDefinition, trainingDefinition.getAuthors());
+            return trainingDefinitionMapper.mapToDTO(trainingDefinitionService.create(newTrainingDefinition));
         } catch (ServiceLayerException ex) {
             throw new FacadeLayerException(ex);
         }
@@ -167,43 +167,41 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
 
     @Override
     @TransactionalWO
-    public void update(TrainingDefinitionUpdateDTO trainingDefinition) {
-        LOG.debug("update({})", trainingDefinition);
+    public void update(TrainingDefinitionUpdateDTO trainingDefinitionUpdateDTO) {
+        LOG.debug("update({})", trainingDefinitionUpdateDTO);
         try {
-            Objects.requireNonNull(trainingDefinition);
-            TrainingDefinition tD = trainingDefinitionMapper.mapUpdateToEntity(trainingDefinition);
-            addOrganizersToTrainingDefinition(tD, trainingDefinition.getTdViewGroup().getOrganizers());
-            addAuthorsToTrainingDefinition(tD, trainingDefinition.getAuthors());
-            trainingDefinitionService.update(tD);
+            Objects.requireNonNull(trainingDefinitionUpdateDTO);
+            TrainingDefinition trainingDefinition = trainingDefinitionMapper.mapUpdateToEntity(trainingDefinitionUpdateDTO);
+            addOrganizersToTrainingDefinition(trainingDefinition, trainingDefinitionUpdateDTO.getTdViewGroup().getOrganizers());
+            addAuthorsToTrainingDefinition(trainingDefinition, trainingDefinitionUpdateDTO.getAuthors());
+            trainingDefinitionService.update(trainingDefinition);
         } catch (ServiceLayerException ex) {
             throw new FacadeLayerException(ex);
         }
     }
 
-    private void addAuthorsToTrainingDefinition(TrainingDefinition td, Set<UserInfoDTO> authors) {
-        td.setAuthors(new HashSet<>());
-        for (UserInfoDTO a: authors) {
+    private void addAuthorsToTrainingDefinition(TrainingDefinition trainingDefinition, Set<UserInfoDTO> authors) {
+        for (UserInfoDTO author: authors) {
             try {
-                td.addAuthor(trainingDefinitionService.findUserRefByLogin(a.getLogin()));
+                trainingDefinition.addAuthor(trainingDefinitionService.findUserRefByLogin(author.getLogin()));
             } catch (ServiceLayerException ex) {
-                UserRef u = new UserRef();
-                u.setUserRefLogin(a.getLogin());
-                u.setUserRefFullName(a.getFullName());
-                td.addAuthor(trainingDefinitionService.createUserRef(u));
+                UserRef userRef = new UserRef();
+                userRef.setUserRefLogin(author.getLogin());
+                userRef.setUserRefFullName(author.getFullName());
+                trainingDefinition.addAuthor(trainingDefinitionService.createUserRef(userRef));
             }
         }
     }
 
-    private void addOrganizersToTrainingDefinition(TrainingDefinition td, Set<UserInfoDTO> organizers) {
-        td.getTdViewGroup().setOrganizers(new HashSet<>());
-        for (UserInfoDTO o : organizers) {
+    private void addOrganizersToTrainingDefinition(TrainingDefinition trainingDefinition, Set<UserInfoDTO> organizers) {
+        for (UserInfoDTO organizer : organizers) {
             try {
-                td.getTdViewGroup().addOrganizer(trainingDefinitionService.findUserRefByLogin(o.getLogin()));
+                trainingDefinition.getTdViewGroup().addOrganizer(trainingDefinitionService.findUserRefByLogin(organizer.getLogin()));
             } catch (ServiceLayerException ex) {
-                UserRef u = new UserRef();
-                u.setUserRefLogin(o.getLogin());
-                u.setUserRefFullName(o.getFullName());
-                td.getTdViewGroup().addOrganizer(trainingDefinitionService.createUserRef(u));
+                UserRef userRef = new UserRef();
+                userRef.setUserRefLogin(organizer.getLogin());
+                userRef.setUserRefFullName(organizer.getFullName());
+                trainingDefinition.getTdViewGroup().addOrganizer(trainingDefinitionService.createUserRef(userRef));
             }
         }
     }
@@ -368,19 +366,19 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
     public AbstractLevelDTO findLevelById(Long levelId) {
         LOG.debug("findLevelById({})", levelId);
         try {
-            AbstractLevel aL = trainingDefinitionService.findLevelById(levelId);
-            AbstractLevelDTO aLDTO;
-            if (aL instanceof GameLevel) {
-                aLDTO = gameLevelMapper.mapToDTO((GameLevel) aL);
-                aLDTO.setLevelType(LevelType.GAME_LEVEL);
-            } else if (aL instanceof AssessmentLevel) {
-                aLDTO = assessmentLevelMapper.mapToDTO((AssessmentLevel) aL);
-                aLDTO.setLevelType(LevelType.ASSESSMENT_LEVEL);
+            AbstractLevel abstractLevel = trainingDefinitionService.findLevelById(levelId);
+            AbstractLevelDTO abstractLevelDTO;
+            if (abstractLevel instanceof GameLevel) {
+                abstractLevelDTO = gameLevelMapper.mapToDTO((GameLevel) abstractLevel);
+                abstractLevelDTO.setLevelType(LevelType.GAME_LEVEL);
+            } else if (abstractLevel instanceof AssessmentLevel) {
+                abstractLevelDTO = assessmentLevelMapper.mapToDTO((AssessmentLevel) abstractLevel);
+                abstractLevelDTO.setLevelType(LevelType.ASSESSMENT_LEVEL);
             } else {
-                aLDTO = infoLevelMapper.mapToDTO((InfoLevel) aL);
-                aLDTO.setLevelType(LevelType.INFO_LEVEL);
+                abstractLevelDTO = infoLevelMapper.mapToDTO((InfoLevel) abstractLevel);
+                abstractLevelDTO.setLevelType(LevelType.INFO_LEVEL);
             }
-            return aLDTO;
+            return abstractLevelDTO;
         } catch (ServiceLayerException ex) {
             throw new FacadeLayerException(ex.getLocalizedMessage());
         }
@@ -388,7 +386,7 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
 
     @Override
     @TransactionalRO
-    public List<UserInfoDTO> getUsersWithGivenRole(RoleType roleType, Pageable pageable) throws FacadeLayerException {
+    public List<UserInfoDTO> getUsersWithGivenRole(RoleType roleType, Pageable pageable) {
         try {
             return trainingDefinitionService.getUsersWithGivenRole(roleType, pageable);
         } catch (ServiceLayerException ex) {
