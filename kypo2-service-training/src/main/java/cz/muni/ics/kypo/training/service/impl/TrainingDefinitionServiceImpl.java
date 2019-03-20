@@ -40,10 +40,7 @@ import org.springframework.util.Assert;
 import org.springframework.web.client.RestTemplate;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -227,14 +224,15 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
         if (tD.getStartingLevel() != null) {
             tD.setStartingLevel(createLevels(tD.getStartingLevel()));
         }
+        tD.setAuthors(new HashSet<>());
         Optional<UserRef> user = userRefRepository.findUserByUserRefLogin(getSubOfLoggedInUser());
         if (user.isPresent()) {
-            trainingDefinition.addAuthor(user.get());
+            tD.addAuthor(user.get());
         } else {
             UserRef newUser = new UserRef();
             newUser.setUserRefLogin(getSubOfLoggedInUser());
             newUser.setUserRefFullName(getFullNameOfLoggedInUser());
-            trainingDefinition.addAuthor(newUser);
+            tD.addAuthor(newUser);
         }
         tD = trainingDefinitionRepository.save(tD);
         LOG.info("Training definition with id: {} cloned.", trainingDefinition.getId());
