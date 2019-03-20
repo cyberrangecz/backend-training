@@ -502,7 +502,7 @@ public class TrainingDefinitionsRestController {
                                                Pageable pageable) {
         LOG.debug("getDesigners()");
         try {
-            List<UserInfoDTO> designers = trainingDefinitionFacade.getUsersWithGivenRole(RoleType.DESIGNER, pageable);
+            List<UserInfoDTO> designers = trainingDefinitionFacade.getUsersWithGivenRole(cz.muni.ics.kypo.training.api.enums.RoleType.ROLE_TRAINING_DESIGNER, pageable);
             return ResponseEntity.ok(SquigglyUtils.stringify(objectMapper, designers));
         } catch (FacadeLayerException ex) {
             throw ExceptionSorter.throwException(ex);
@@ -530,7 +530,7 @@ public class TrainingDefinitionsRestController {
                                                 Pageable pageable) {
         LOG.debug("getOrganizers()");
         try {
-            List<UserInfoDTO> designers = trainingDefinitionFacade.getUsersWithGivenRole(RoleType.ORGANIZER, pageable);
+            List<UserInfoDTO> designers = trainingDefinitionFacade.getUsersWithGivenRole(RoleType.ROLE_TRAINING_ORGANIZER, pageable);
             return ResponseEntity.ok(SquigglyUtils.stringify(objectMapper, designers));
         } catch (FacadeLayerException ex) {
             throw ExceptionSorter.throwException(ex);

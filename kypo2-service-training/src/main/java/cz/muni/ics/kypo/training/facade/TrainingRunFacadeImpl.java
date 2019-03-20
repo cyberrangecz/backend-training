@@ -130,13 +130,13 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
     private List<BasicLevelInfoDTO> getInfoAboutLevels(Long firstLevelId) {
         List<BasicLevelInfoDTO> infoAboutLevels = new ArrayList<>();
         List<AbstractLevel> levels = trainingRunService.getLevels(firstLevelId);
-        for (AbstractLevel al : levels) {
-            if (al instanceof AssessmentLevel) {
-                infoAboutLevels.add(new BasicLevelInfoDTO(al.getId(), al.getTitle(), LevelType.ASSESSMENT_LEVEL, levels.indexOf(al)));
-            } else if (al instanceof GameLevel) {
-                infoAboutLevels.add(new BasicLevelInfoDTO(al.getId(), al.getTitle(), LevelType.GAME_LEVEL, levels.indexOf(al)));
+        for (AbstractLevel abstractLevel : levels) {
+            if (abstractLevel instanceof AssessmentLevel) {
+                infoAboutLevels.add(new BasicLevelInfoDTO(abstractLevel.getId(), abstractLevel.getTitle(), LevelType.ASSESSMENT_LEVEL, levels.indexOf(abstractLevel)));
+            } else if (abstractLevel instanceof GameLevel) {
+                infoAboutLevels.add(new BasicLevelInfoDTO(abstractLevel.getId(), abstractLevel.getTitle(), LevelType.GAME_LEVEL, levels.indexOf(abstractLevel)));
             } else {
-                infoAboutLevels.add(new BasicLevelInfoDTO(al.getId(), al.getTitle(), LevelType.INFO_LEVEL, levels.indexOf(al)));
+                infoAboutLevels.add(new BasicLevelInfoDTO(abstractLevel.getId(), abstractLevel.getTitle(), LevelType.INFO_LEVEL, levels.indexOf(abstractLevel)));
             }
         }
         return infoAboutLevels;
@@ -162,13 +162,13 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
     @TransactionalWO
     public AbstractLevelDTO getNextLevel(Long trainingRunId) {
         LOG.debug("getNextLevel({})", trainingRunId);
-        AbstractLevel aL;
+        AbstractLevel abstractLevel;
         try {
-            aL = trainingRunService.getNextLevel(trainingRunId);
+            abstractLevel = trainingRunService.getNextLevel(trainingRunId);
         } catch (ServiceLayerException ex) {
             throw new FacadeLayerException(ex);
         }
-        return getCorrectAbstractLevelDTO(aL);
+        return getCorrectAbstractLevelDTO(abstractLevel);
     }
 
     @Override
@@ -229,25 +229,25 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
         }
     }
 
-    private PageResultResource<AccessedTrainingRunDTO> convertToAccessedRunDTO(Page<TrainingRun> runs) {
+    private PageResultResource<AccessedTrainingRunDTO> convertToAccessedRunDTO(Page<TrainingRun> trainingRuns) {
         List<AccessedTrainingRunDTO> accessedTrainingRunDTOS = new ArrayList<>();
-        for (TrainingRun run : runs) {
-            AccessedTrainingRunDTO aTRD = new AccessedTrainingRunDTO();
-            aTRD.setId(run.getId());
-            aTRD.setTitle(run.getTrainingInstance().getTitle());
-            aTRD.setTrainingInstanceStartDate(run.getTrainingInstance().getStartTime());
-            aTRD.setTrainingInstanceEndDate(run.getTrainingInstance().getEndTime());
-            aTRD.setCurrentLevelOrder(trainingRunService.getLevelOrder(run.getTrainingInstance().getTrainingDefinition().getStartingLevel(), run.getCurrentLevel().getId()));
-            aTRD.setNumberOfLevels(trainingRunService.getLevels(run.getTrainingInstance().getTrainingDefinition().getStartingLevel()).size());
-            if (aTRD.getCurrentLevelOrder() == aTRD.getNumberOfLevels() || LocalDateTime.now().isAfter(aTRD.getTrainingInstanceEndDate())) {
-                aTRD.setPossibleAction(Actions.RESULTS);
+        for (TrainingRun trainingRun : trainingRuns) {
+            AccessedTrainingRunDTO accessedTrainingRunDTO = new AccessedTrainingRunDTO();
+            accessedTrainingRunDTO.setId(trainingRun.getId());
+            accessedTrainingRunDTO.setTitle(trainingRun.getTrainingInstance().getTitle());
+            accessedTrainingRunDTO.setTrainingInstanceStartDate(trainingRun.getTrainingInstance().getStartTime());
+            accessedTrainingRunDTO.setTrainingInstanceEndDate(trainingRun.getTrainingInstance().getEndTime());
+            accessedTrainingRunDTO.setCurrentLevelOrder(trainingRunService.getLevelOrder(trainingRun.getTrainingInstance().getTrainingDefinition().getStartingLevel(), trainingRun.getCurrentLevel().getId()));
+            accessedTrainingRunDTO.setNumberOfLevels(trainingRunService.getLevels(trainingRun.getTrainingInstance().getTrainingDefinition().getStartingLevel()).size());
+            if (accessedTrainingRunDTO.getCurrentLevelOrder() == accessedTrainingRunDTO.getNumberOfLevels() || LocalDateTime.now().isAfter(accessedTrainingRunDTO.getTrainingInstanceEndDate())) {
+                accessedTrainingRunDTO.setPossibleAction(Actions.RESULTS);
 
             } else {
-                aTRD.setPossibleAction(Actions.TRY_AGAIN);
+                accessedTrainingRunDTO.setPossibleAction(Actions.TRY_AGAIN);
             }
-            accessedTrainingRunDTOS.add(aTRD);
+            accessedTrainingRunDTOS.add(accessedTrainingRunDTO);
         }
-        return new PageResultResource<>(accessedTrainingRunDTOS, createPagination(runs));
+        return new PageResultResource<>(accessedTrainingRunDTOS, createPagination(trainingRuns));
     }
 
     private PageResultResource.Pagination createPagination(Page<?> objects) {
@@ -281,8 +281,8 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
 
     private void deleteInfoAboutCorrectnessFromQuestions(AssessmentLevelDTO assessmentLevelDTO) {
         try {
-            JsonNode n = JsonLoader.fromString(assessmentLevelDTO.getQuestions());
-            for (JsonNode question : n) {
+            JsonNode jsonNode = JsonLoader.fromString(assessmentLevelDTO.getQuestions());
+            for (JsonNode question : jsonNode) {
                 ((ObjectNode) question).remove("correct_choices");
                 if(question.has("choices")) {
                     for (JsonNode choices : question.get("choices")) {
@@ -292,7 +292,7 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
                         }
                     }
                 }
-            assessmentLevelDTO.setQuestions(n.toString());
+            assessmentLevelDTO.setQuestions(jsonNode.toString());
         }catch (IOException ex) {
 
         }

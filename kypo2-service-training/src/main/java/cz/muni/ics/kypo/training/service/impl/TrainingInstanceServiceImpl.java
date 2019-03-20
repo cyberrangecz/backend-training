@@ -3,6 +3,7 @@ package cz.muni.ics.kypo.training.service.impl;
 import com.google.gson.JsonObject;
 import com.mysema.commons.lang.Assert;
 import com.querydsl.core.types.Predicate;
+import cz.muni.ics.kypo.training.annotations.security.IsAdmin;
 import cz.muni.ics.kypo.training.annotations.security.IsOrganizerOrAdmin;
 import cz.muni.ics.kypo.training.exceptions.ErrorCode;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
@@ -68,7 +69,7 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
     }
 
     @Override
-    @PreAuthorize("hasAuthority('ADMINISTRATOR')" +
+    @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
             "or @securityService.isOrganizerOfGivenTrainingInstance(#instanceId)")
     public TrainingInstance findById(Long instanceId) {
         LOG.debug("findById({})", instanceId);
@@ -76,7 +77,7 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
     }
 
     @Override
-    @PreAuthorize("hasAuthority('ADMINISTRATOR')")
+    @IsAdmin
     public Page<TrainingInstance> findAll(Predicate predicate, Pageable pageable) {
         LOG.debug("findAllTrainingDefinitions({},{})", predicate, pageable);
         return trainingInstanceRepository.findAll(predicate, pageable);
@@ -95,42 +96,39 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
         if(authorOfTrainingInstance.isPresent()) {
             trainingInstance.addOrganizer(authorOfTrainingInstance.get());
         } else {
-            UserRef u = new UserRef();
-            u.setUserRefLogin(getSubOfLoggedInUser());
-            u.setUserRefFullName(getFullNameOfLoggedInUser());
-            trainingInstance.addOrganizer(organizerRefRepository.save(u));
+            UserRef userRef = new UserRef();
+            userRef.setUserRefLogin(getSubOfLoggedInUser());
+            userRef.setUserRefFullName(getFullNameOfLoggedInUser());
+            trainingInstance.addOrganizer(organizerRefRepository.save(userRef));
 
         }
-        TrainingInstance tI = trainingInstanceRepository.save(trainingInstance);
-        LOG.info("Training instance with id: {} created.", trainingInstance.getId());
-        return tI;
+        return trainingInstanceRepository.save(trainingInstance);
     }
 
     @Override
-    @PreAuthorize("hasAuthority('ADMINISTRATOR')" +
-            "or @securityService.isOrganizerOfGivenTrainingInstance(#trainingInstance.id)")
-    public String update(TrainingInstance trainingInstance) {
-        LOG.debug("update({})", trainingInstance);
-        Assert.notNull(trainingInstance, "Input training instance must not be null");
-        TrainingInstance tI = trainingInstanceRepository.findById(trainingInstance.getId())
-                .orElseThrow(() -> new ServiceLayerException("Training instance with id: " + trainingInstance.getId() + ", not found.", ErrorCode.RESOURCE_NOT_FOUND));
-        if (trainingInstance.getStartTime().isAfter(trainingInstance.getEndTime())) {
+    @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
+            "or @securityService.isOrganizerOfGivenTrainingInstance(#trainingInstanceToUpdate.id)")
+    public String update(TrainingInstance trainingInstanceToUpdate) {
+        LOG.debug("update({})", trainingInstanceToUpdate);
+        Assert.notNull(trainingInstanceToUpdate, "Input training instance must not be null");
+        TrainingInstance trainingInstance = trainingInstanceRepository.findById(trainingInstanceToUpdate.getId())
+                .orElseThrow(() -> new ServiceLayerException("Training instance with id: " + trainingInstanceToUpdate.getId() + ", not found.", ErrorCode.RESOURCE_NOT_FOUND));
+        if (trainingInstanceToUpdate.getStartTime().isAfter(trainingInstanceToUpdate.getEndTime())) {
             throw new ServiceLayerException("End time must be later than start time.", ErrorCode.RESOURCE_CONFLICT);
         }
-        String shortPass = tI.getAccessToken().substring(0, tI.getAccessToken().length() - 5);
-        if (trainingInstance.getAccessToken().equals(shortPass) || trainingInstance.getAccessToken().equals(tI.getAccessToken())) {
-            trainingInstance.setAccessToken(tI.getAccessToken());
+        String shortPass = trainingInstance.getAccessToken().substring(0, trainingInstance.getAccessToken().length() - 5);
+        if (trainingInstanceToUpdate.getAccessToken().equals(shortPass) || trainingInstanceToUpdate.getAccessToken().equals(trainingInstance.getAccessToken())) {
+            trainingInstanceToUpdate.setAccessToken(trainingInstance.getAccessToken());
         } else {
-            trainingInstance.setAccessToken(generateAccessToken(trainingInstance.getAccessToken()));
+            trainingInstanceToUpdate.setAccessToken(generateAccessToken(trainingInstanceToUpdate.getAccessToken()));
         }
-        trainingInstance.setTrainingDefinition(tI.getTrainingDefinition());
-        trainingInstanceRepository.save(trainingInstance);
-        LOG.info("Training instance with id: {} updated.", trainingInstance.getId());
-        return trainingInstance.getAccessToken();
+        trainingInstanceToUpdate.setTrainingDefinition(trainingInstance.getTrainingDefinition());
+        trainingInstanceRepository.save(trainingInstanceToUpdate);
+        return trainingInstanceToUpdate.getAccessToken();
     }
 
     @Override
-    @PreAuthorize("hasAuthority('ADMINISTRATOR')" +
+    @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
             "or @securityService.isOrganizerOfGivenTrainingInstance(#instanceId)")
     public void delete(Long instanceId) {
         LOG.debug("delete({})", instanceId);
@@ -164,7 +162,7 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
     }
 
     @Override
-    @PreAuthorize("hasAuthority('ADMINISTRATOR')" +
+    @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
             "or @securityService.isOrganizerOfGivenTrainingInstance(#instanceId)")
     public Long createPoolForSandboxes(Long instanceId) {
         LOG.debug("createPoolForSandboxes({})", instanceId);
@@ -188,7 +186,7 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
     }
 
     @Override
-    @PreAuthorize("hasAuthority('ADMINISTRATOR')" +
+    @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
             "or @securityService.isOrganizerOfGivenTrainingInstance(#instanceId)")
     public void allocateSandboxes(Long instanceId) {
         LOG.debug("allocateSandboxes({})", instanceId);
@@ -213,9 +211,9 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
                 if (sandboxResponse.getStatusCode().isError() || sandboxResponse.getBody() == null) {
                     throw new ServiceLayerException("Error from openstack while allocate sandboxes.", ErrorCode.UNEXPECTED_ERROR);
                 }
-                sandboxResponse.getBody().forEach(s -> {
-                    if (s.getStatus().contains("CREATE")) {
-                        idsOfNewSandboxes.add(s.getId());
+                sandboxResponse.getBody().forEach(sandboxInfo -> {
+                    if (sandboxInfo.getStatus().contains("CREATE")) {
+                        idsOfNewSandboxes.add(sandboxInfo.getId());
                     }
                 });
                 try {
@@ -255,14 +253,14 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
             }
         }
         for (Long sandboxInstanceRefId : idsOfNewSandboxes) {
-            SandboxInstanceRef s = new SandboxInstanceRef();
-            s.setSandboxInstanceRef(sandboxInstanceRefId);
-            trainingInstance.addSandboxInstanceRef(s);
+            SandboxInstanceRef sandboxInstanceRef = new SandboxInstanceRef();
+            sandboxInstanceRef.setSandboxInstanceRef(sandboxInstanceRefId);
+            trainingInstance.addSandboxInstanceRef(sandboxInstanceRef);
         }
     }
 
     @Override
-    @PreAuthorize("hasAuthority('ADMINISTRATOR')" +
+    @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
             "or @securityService.isOrganizerOfGivenTrainingInstance(#instanceId)")
     public Page<TrainingRun> findTrainingRunsByTrainingInstance(Long instanceId, Pageable pageable) {
         LOG.debug("findTrainingRunsByTrainingInstance({})", instanceId);

@@ -76,7 +76,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
     }
 
     @Override
-    @PreAuthorize("hasAuthority('ADMINISTRATOR')" +
+    @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
             "or @securityService.isTraineeOfGivenTrainingRun(#runId)")
     public TrainingRun findById(Long runId) {
         LOG.debug("findById({})", runId);
@@ -86,7 +86,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
     }
 
     @Override
-    @PreAuthorize("hasAuthority('ADMINISTRATOR')")
+    @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)")
     public Page<TrainingRun> findAll(Predicate predicate, Pageable pageable) {
         LOG.debug("findAllTrainingDefinitions({},{})", predicate, pageable);
         return trainingRunRepository.findAll(predicate, pageable);
@@ -109,7 +109,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
     }
 
     @Override
-    @PreAuthorize("hasAuthority('ADMINISTRATOR')" +
+    @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
             "or @securityService.isTraineeOfGivenTrainingRun(#runId)")
     public AbstractLevel getNextLevel(Long runId) {
         LOG.debug("getNextLevel({})", runId);
@@ -181,8 +181,8 @@ public class TrainingRunServiceImpl implements TrainingRunService {
                 Set<SandboxInstanceRef> freeSandboxes = trainingRunRepository.findFreeSandboxesOfTrainingInstance(trainingInstance.getId());
                 if (!freeSandboxes.isEmpty()) {
                     SandboxInstanceRef sandboxInstanceRef = getReadySandboxInstanceRef(freeSandboxes, trainingInstance.getPoolId());
-                    AbstractLevel al = abstractLevelRepository.findById(trainingInstance.getTrainingDefinition().getStartingLevel()).orElseThrow(() -> new ServiceLayerException("No starting level available for this training definition", ErrorCode.RESOURCE_NOT_FOUND));
-                    TrainingRun trainingRun = getNewTrainingRun(al, getSubOfLoggedInUser(), trainingInstance, TRState.ALLOCATED, LocalDateTime.now(), trainingInstance.getEndTime(), sandboxInstanceRef);
+                    AbstractLevel abstractLevel = abstractLevelRepository.findById(trainingInstance.getTrainingDefinition().getStartingLevel()).orElseThrow(() -> new ServiceLayerException("No starting level available for this training definition", ErrorCode.RESOURCE_NOT_FOUND));
+                    TrainingRun trainingRun = getNewTrainingRun(abstractLevel, getSubOfLoggedInUser(), trainingInstance, TRState.ALLOCATED, LocalDateTime.now(), trainingInstance.getEndTime(), sandboxInstanceRef);
                     trainingRun = create(trainingRun);
                     // audit this action to the Elasticsearch
                     auditTrainingRunStartedAction(trainingInstance, trainingRun);
@@ -197,12 +197,12 @@ public class TrainingRunServiceImpl implements TrainingRunService {
     }
 
     @Override
-    @PreAuthorize("hasAuthority('ADMINISTRATOR')" +
-            "or @securityService.isTraineeOfGivenTrainingRun(#runId)")
-    public TrainingRun resumeTrainingRun(Long runId) {
-        LOG.debug("resumeTrainingRun({})", runId);
-        Assert.notNull(runId, MUST_NOT_BE_NULL);
-        TrainingRun trainingRun = findByIdWithLevel(runId);
+    @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
+            "or @securityService.isTraineeOfGivenTrainingRun(#trainingRunId)")
+    public TrainingRun resumeTrainingRun(Long trainingRunId) {
+        LOG.debug("resumeTrainingRun({})", trainingRunId);
+        Assert.notNull(trainingRunId, MUST_NOT_BE_NULL);
+        TrainingRun trainingRun = findByIdWithLevel(trainingRunId);
         if (trainingRun.getState().equals(TRState.ARCHIVED)) {
             throw new ServiceLayerException("Cannot resumed archived training run.", ErrorCode.RESOURCE_CONFLICT);
         }
@@ -225,30 +225,30 @@ public class TrainingRunServiceImpl implements TrainingRunService {
 
     private TrainingRun getNewTrainingRun(AbstractLevel currentLevel, String participantRefLogin, TrainingInstance trainingInstance,
                                           TRState state, LocalDateTime startTime, LocalDateTime endTime, SandboxInstanceRef sandboxInstanceRef) {
-        TrainingRun tR = new TrainingRun();
-        tR.setCurrentLevel(currentLevel);
+        TrainingRun newTrainingRun = new TrainingRun();
+        newTrainingRun.setCurrentLevel(currentLevel);
 
         Optional<UserRef> userRef = participantRefRepository.findUserByUserRefLogin(participantRefLogin);
         if (userRef.isPresent()) {
-            tR.setParticipantRef(userRef.get());
+            newTrainingRun.setParticipantRef(userRef.get());
         } else {
-            tR.setParticipantRef(participantRefRepository.save(
+            newTrainingRun.setParticipantRef(participantRefRepository.save(
                     new UserRef(participantRefLogin, getFullNameOfLoggedInUser())
             ));
         }
-        tR.setAssessmentResponses("[]");
+        newTrainingRun.setAssessmentResponses("[]");
         //TODO what state set at the begining
-        tR.setState(TRState.ALLOCATED);
-        tR.setTrainingInstance(trainingInstance);
-        tR.setStartTime(startTime);
-        tR.setEndTime(endTime);
-        tR.setSandboxInstanceRef(sandboxInstanceRef);
-        return tR;
+        newTrainingRun.setState(TRState.ALLOCATED);
+        newTrainingRun.setTrainingInstance(trainingInstance);
+        newTrainingRun.setStartTime(startTime);
+        newTrainingRun.setEndTime(endTime);
+        newTrainingRun.setSandboxInstanceRef(sandboxInstanceRef);
+        return newTrainingRun;
     }
 
     private SandboxInstanceRef getReadySandboxInstanceRef(Set<SandboxInstanceRef> sandboxInstancePool, Long poolId) {
         List<Long> idsOfUnoccupiedSandboxes = new ArrayList<>();
-        sandboxInstancePool.forEach(sIR -> idsOfUnoccupiedSandboxes.add(sIR.getSandboxInstanceRef()));
+        sandboxInstancePool.forEach(sandboxInstanceRef -> idsOfUnoccupiedSandboxes.add(sandboxInstanceRef.getSandboxInstanceRef()));
 
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.set("Accept", MediaType.APPLICATION_JSON_VALUE);
@@ -259,16 +259,16 @@ public class TrainingRunServiceImpl implements TrainingRunService {
             throw new ServiceLayerException("Some error occurred during getting info about sandboxes.", ErrorCode.UNEXPECTED_ERROR);
         }
         List<SandboxInfo> sandboxInfoList = response.getBody();
-        sandboxInfoList.removeIf(s -> !s.getStatus().contains("COMPLETE") || !idsOfUnoccupiedSandboxes.contains(s.getId()));
+        sandboxInfoList.removeIf(sandboxInfo -> !sandboxInfo.getStatus().contains("COMPLETE") || !idsOfUnoccupiedSandboxes.contains(sandboxInfo.getId()));
         if (sandboxInfoList.isEmpty()) {
             throw new ServiceLayerException("There is no available sandbox, wait a minute and try again.", ErrorCode.NO_AVAILABLE_SANDBOX);
         } else {
-            return sandboxInstancePool.stream().filter(sir -> sir.getSandboxInstanceRef().equals(sandboxInfoList.get(0).getId())).findFirst().get();
+            return sandboxInstancePool.stream().filter(sandboxInstanceRef -> sandboxInstanceRef.getSandboxInstanceRef().equals(sandboxInfoList.get(0).getId())).findFirst().get();
         }
     }
 
     @Override
-    @PreAuthorize("hasAuthority('ADMINISTRATOR')" +
+    @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
             "or @securityService.isTraineeOfGivenTrainingRun(#runId)")
     public boolean isCorrectFlag(Long runId, String flag) {
         LOG.debug("isCorrectFlag({})", runId);
@@ -293,30 +293,30 @@ public class TrainingRunServiceImpl implements TrainingRunService {
     }
 
     @Override
-    @PreAuthorize("hasAuthority('ADMINISTRATOR')" +
-            "or @securityService.isTraineeOfGivenTrainingRun(#runId)")
-    public int getRemainingAttempts(Long runId) {
-        LOG.debug("getRemainingAttempts({})", runId);
-        Assert.notNull(runId, MUST_NOT_BE_NULL);
-        TrainingRun tR = findByIdWithLevel(runId);
-        AbstractLevel level = tR.getCurrentLevel();
+    @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
+            "or @securityService.isTraineeOfGivenTrainingRun(#trainingRunId)")
+    public int getRemainingAttempts(Long trainingRunId) {
+        LOG.debug("getRemainingAttempts({})", trainingRunId);
+        Assert.notNull(trainingRunId, MUST_NOT_BE_NULL);
+        TrainingRun trainingRun = findByIdWithLevel(trainingRunId);
+        AbstractLevel level = trainingRun.getCurrentLevel();
         if (level instanceof GameLevel) {
-            if (tR.isSolutionTaken()) {
+            if (trainingRun.isSolutionTaken()) {
                 return 0;
             }
-            return ((GameLevel) level).getIncorrectFlagLimit() - tR.getIncorrectFlagCount();
+            return ((GameLevel) level).getIncorrectFlagLimit() - trainingRun.getIncorrectFlagCount();
         }
         throw new ServiceLayerException("Current level is not game level and does not have flag.", ErrorCode.WRONG_LEVEL_TYPE);
     }
 
 
     @Override
-    @PreAuthorize("hasAuthority('ADMINISTRATOR')" +
-            "or @securityService.isTraineeOfGivenTrainingRun(#runId)")
-    public String getSolution(Long runId) {
-        LOG.debug("getSolution({})", runId);
-        Assert.notNull(runId, MUST_NOT_BE_NULL);
-        TrainingRun trainingRun = findByIdWithLevel(runId);
+    @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
+            "or @securityService.isTraineeOfGivenTrainingRun(#trainingRunId)")
+    public String getSolution(Long trainingRunId) {
+        LOG.debug("getSolution({})", trainingRunId);
+        Assert.notNull(trainingRunId, MUST_NOT_BE_NULL);
+        TrainingRun trainingRun = findByIdWithLevel(trainingRunId);
         AbstractLevel level = trainingRun.getCurrentLevel();
         if (level instanceof GameLevel) {
             //audit
@@ -332,13 +332,13 @@ public class TrainingRunServiceImpl implements TrainingRunService {
     }
 
     @Override
-    @PreAuthorize("hasAuthority('ADMINISTRATOR')" +
-            "or @securityService.isTraineeOfGivenTrainingRun(#runId)")
-    public Hint getHint(Long runId, Long hintId) {
-        LOG.debug("getHint({},{})", runId, hintId);
-        Assert.notNull(runId, MUST_NOT_BE_NULL);
+    @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
+            "or @securityService.isTraineeOfGivenTrainingRun(#trainingRunId)")
+    public Hint getHint(Long trainingRunId, Long hintId) {
+        LOG.debug("getHint({},{})", trainingRunId, hintId);
+        Assert.notNull(trainingRunId, MUST_NOT_BE_NULL);
         Assert.notNull(hintId, "Input hint id must not be null.");
-        TrainingRun trainingRun = findByIdWithLevel(runId);
+        TrainingRun trainingRun = findByIdWithLevel(trainingRunId);
         AbstractLevel level = trainingRun.getCurrentLevel();
         if (level instanceof GameLevel) {
             Hint hint = hintRepository.findById(hintId).orElseThrow(() -> new ServiceLayerException("Hint with id " + hintId + " not found.", ErrorCode.RESOURCE_NOT_FOUND));
@@ -348,7 +348,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
                 auditHintTakenAction(trainingRun, hint);
                 return hint;
             }
-            throw new ServiceLayerException("Hint with id " + hintId + " is not in current level of training run: " + runId + ".", ErrorCode.RESOURCE_CONFLICT);
+            throw new ServiceLayerException("Hint with id " + hintId + " is not in current level of training run: " + trainingRunId + ".", ErrorCode.RESOURCE_CONFLICT);
         } else {
             throw new ServiceLayerException("Current level is not game level and does not have hints.", ErrorCode.WRONG_LEVEL_TYPE);
         }
@@ -374,12 +374,12 @@ public class TrainingRunServiceImpl implements TrainingRunService {
     }
 
     @Override
-    @PreAuthorize("hasAuthority('ADMINISTRATOR')" +
-            "or @securityService.isTraineeOfGivenTrainingRun(#runId)")
-    public void archiveTrainingRun(Long runId) {
-        LOG.debug("archiveTrainingRun({})", runId);
-        Assert.notNull(runId, MUST_NOT_BE_NULL);
-        TrainingRun trainingRun = findById(runId);
+    @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
+            "or @securityService.isTraineeOfGivenTrainingRun(#trainingRunId)")
+    public void archiveTrainingRun(Long trainingRunId) {
+        LOG.debug("archiveTrainingRun({})", trainingRunId);
+        Assert.notNull(trainingRunId, MUST_NOT_BE_NULL);
+        TrainingRun trainingRun = findById(trainingRunId);
         if (trainingRun.getCurrentLevel().getNextLevel() != null || !trainingRun.isLevelAnswered()) {
             throw new ServiceLayerException("Cannot archive training run because current level is not last or is not answered.", ErrorCode.RESOURCE_CONFLICT);
         }

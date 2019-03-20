@@ -75,13 +75,13 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
 
     @Override
     @TransactionalWO
-    public String update(TrainingInstanceUpdateDTO trainingInstance) {
-        LOG.debug("update({})", trainingInstance);
+    public String update(TrainingInstanceUpdateDTO trainingInstanceUpdateDTO) {
+        LOG.debug("update({})", trainingInstanceUpdateDTO);
         try {
-            Objects.requireNonNull(trainingInstance);
-            TrainingInstance tI = trainingInstanceMapper.mapUpdateToEntity(trainingInstance);
-            addOrganizersToTrainingInstance(tI, trainingInstance.getOrganizers());
-            return trainingInstanceService.update(tI);
+            Objects.requireNonNull(trainingInstanceUpdateDTO);
+            TrainingInstance trainingInstance = trainingInstanceMapper.mapUpdateToEntity(trainingInstanceUpdateDTO);
+            addOrganizersToTrainingInstance(trainingInstance, trainingInstanceUpdateDTO.getOrganizers());
+            return trainingInstanceService.update(trainingInstance);
         } catch (ServiceLayerException ex) {
             throw new FacadeLayerException(ex);
         }
@@ -89,30 +89,30 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
 
     @Override
     @TransactionalWO
-    public TrainingInstanceDTO create(TrainingInstanceCreateDTO trainingInstance) {
-        LOG.debug("create({})", trainingInstance);
+    public TrainingInstanceDTO create(TrainingInstanceCreateDTO trainingInstanceCreateDTO) {
+        LOG.debug("create({})", trainingInstanceCreateDTO);
         try {
-            Objects.requireNonNull(trainingInstance);
-            TrainingInstance tI = trainingInstanceMapper.mapCreateToEntity(trainingInstance);
-            tI.setTrainingDefinition(trainingDefinitionService.findById(trainingInstance.getTrainingDefinitionId()));
-            tI.setId(null);
-            addOrganizersToTrainingInstance(tI, trainingInstance.getOrganizers());
-            return trainingInstanceMapper.mapToDTO(trainingInstanceService.create(tI));
+            Objects.requireNonNull(trainingInstanceCreateDTO);
+            TrainingInstance trainingInstance = trainingInstanceMapper.mapCreateToEntity(trainingInstanceCreateDTO);
+            trainingInstance.setTrainingDefinition(trainingDefinitionService.findById(trainingInstanceCreateDTO.getTrainingDefinitionId()));
+            trainingInstance.setId(null);
+            addOrganizersToTrainingInstance(trainingInstance, trainingInstanceCreateDTO.getOrganizers());
+            return trainingInstanceMapper.mapToDTO(trainingInstanceService.create(trainingInstance));
         } catch (ServiceLayerException ex) {
             throw new FacadeLayerException(ex);
         }
     }
 
-    private void addOrganizersToTrainingInstance(TrainingInstance ti, Set<UserInfoDTO> organizers) {
-        ti.setOrganizers(new HashSet<>());
-        for (UserInfoDTO org : organizers) {
+    private void addOrganizersToTrainingInstance(TrainingInstance trainingInstance, Set<UserInfoDTO> organizers) {
+        trainingInstance.setOrganizers(new HashSet<>());
+        for (UserInfoDTO organizer : organizers) {
             try {
-                ti.addOrganizer(trainingDefinitionService.findUserRefByLogin(org.getLogin()));
+                trainingInstance.addOrganizer(trainingDefinitionService.findUserRefByLogin(organizer.getLogin()));
             } catch (ServiceLayerException ex) {
-                UserRef u = new UserRef();
-                u.setUserRefLogin(org.getLogin());
-                u.setUserRefFullName(org.getFullName());
-                ti.addOrganizer(trainingDefinitionService.createUserRef(u));
+                UserRef userRef = new UserRef();
+                userRef.setUserRefLogin(organizer.getLogin());
+                userRef.setUserRefFullName(organizer.getFullName());
+                trainingInstance.addOrganizer(trainingDefinitionService.createUserRef(userRef));
             }
         }
     }

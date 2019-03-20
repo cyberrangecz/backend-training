@@ -85,19 +85,6 @@ NOTE: please note that client for that REST API could be generated using [Swagge
 11. Hit **Save** button.
 
 
-### Creating YAML file with roles 
-
-If you want to insert initial roles to the system you have to specify them in external YAML file (e.g., roles.yml) and then insert its path to properties file which is described in next step. For each role, you only need to specify role type which will be used in your project. 
-Roles are stored as a string in DB but they are rewritten to upperCase. So roles in the example below are stored as GUEST, ADMINISTRATOR and
-USER.  
- 
-```yaml
-roles:
-    - ADMINISTRATOR
-    - USER
-    - GUEST
-```
-
 ## 2. Create a property file with necessary configuration details
 After step 1 you have to create properties file according to the format below and save it.
 ```properties
@@ -108,9 +95,11 @@ spring.profiles.active=DEV
 spring.profiles.dev.roles=ADMINISTRATOR
 
 
-server.address={server address}, e.g., localhost (127.0.0.1)
+server.ipaddress={server address}, e.g., localhost (127.0.0.1)
 server.port={port for service}, e.g., 8080
 server.servlet.context-path=/{context path for service}, e.g., /kypo2-rest-training/api/v1
+server.protocol={protocol for service}, e.g., http
+microservice.name={name for your microservice}, e.g., kypo2-training
 
 # calling user-and-group project
 user-and-group-server.uri={URI}, e.g., http://localhost:8081/kypo2-rest-user-and-group/api/v1
