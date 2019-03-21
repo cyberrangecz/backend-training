@@ -410,7 +410,7 @@ public class TrainingRunsIT {
 				.andReturn().getResolvedException();
 
 		assertEquals(ConflictException.class, ex.getClass());
-		assertEquals("ServiceLayerException : Cannot resumed archived training run.", ex.getLocalizedMessage());
+		assertEquals("ServiceLayerException : Cannot resume archived training run.", ex.getLocalizedMessage());
 	}
 
 	@Test
