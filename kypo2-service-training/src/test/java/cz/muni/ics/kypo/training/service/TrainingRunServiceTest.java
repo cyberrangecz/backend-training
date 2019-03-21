@@ -520,7 +520,7 @@ public class TrainingRunServiceTest {
         trainingRun1.setState(TRState.ARCHIVED);
         given(trainingRunRepository.findByIdWithLevel(any(Long.class))).willReturn(Optional.of(trainingRun1));
         thrown.expect(ServiceLayerException.class);
-        thrown.expectMessage("Cannot resumed archived training run.");
+        thrown.expectMessage("Cannot resume archived training run.");
 
         trainingRunService.resumeTrainingRun(trainingRun1.getId());
     }

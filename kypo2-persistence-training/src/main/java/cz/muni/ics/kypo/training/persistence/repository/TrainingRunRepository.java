@@ -61,4 +61,8 @@ public interface TrainingRunRepository extends JpaRepository<TrainingRun, Long>,
     @Modifying
     @Query("DELETE FROM TrainingRun tr WHERE tr.trainingInstance.id = :trainingInstanceId")
     void deleteTrainingRunsByTrainingInstance(@Param("trainingInstanceId") Long trainingInstanceId);
+
+    @Query("SELECT tr FROM TrainingRun tr JOIN FETCH tr.trainingInstance ti JOIN FETCH tr.participantRef pr WHERE ti.accessToken = :accessToken " +
+            "AND pr.userRefLogin = :userLogin")
+    Optional<TrainingRun> findByUserAndAccessToken(@Param("accessToken") String accessToken, @Param("userLogin") String userLogin );
 }

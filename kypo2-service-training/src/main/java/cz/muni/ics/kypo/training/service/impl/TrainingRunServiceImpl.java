@@ -172,6 +172,11 @@ public class TrainingRunServiceImpl implements TrainingRunService {
     public TrainingRun accessTrainingRun(String accessToken) {
         LOG.debug("accessTrainingRun({})", accessToken);
         Assert.hasLength(accessToken, "AccessToken cannot be null or empty.");
+        Optional<TrainingRun> alreadyAccessedTrainingRun = trainingRunRepository.findByUserAndAccessToken(accessToken, getSubOfLoggedInUser());
+        if(alreadyAccessedTrainingRun.isPresent() && !alreadyAccessedTrainingRun.get().getState().equals(TRState.ARCHIVED)) {
+            resumeTrainingRun(alreadyAccessedTrainingRun.get().getId());
+            return alreadyAccessedTrainingRun.get();
+        }
         List<TrainingInstance> trainingInstances = trainingInstanceRepository.findAllByStartTimeAfterAndEndTimeBefore(LocalDateTime.now());
         for (TrainingInstance trainingInstance : trainingInstances) {
             if (trainingInstance.getAccessToken().equals(accessToken)) {
@@ -204,7 +209,10 @@ public class TrainingRunServiceImpl implements TrainingRunService {
         Assert.notNull(trainingRunId, MUST_NOT_BE_NULL);
         TrainingRun trainingRun = findByIdWithLevel(trainingRunId);
         if (trainingRun.getState().equals(TRState.ARCHIVED)) {
-            throw new ServiceLayerException("Cannot resumed archived training run.", ErrorCode.RESOURCE_CONFLICT);
+            throw new ServiceLayerException("Cannot resume archived training run.", ErrorCode.RESOURCE_CONFLICT);
+        }
+        if(trainingRun.getTrainingInstance().getEndTime().isBefore(LocalDateTime.now())) {
+            throw new ServiceLayerException("Cannot resume training run after end of training instance.", ErrorCode.RESOURCE_CONFLICT);
         }
 
         HttpHeaders httpHeaders = new HttpHeaders();

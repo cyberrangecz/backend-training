@@ -21,6 +21,7 @@ import cz.muni.ics.kypo.training.exceptions.FacadeLayerException;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.mapping.mapstruct.*;
 import cz.muni.ics.kypo.training.persistence.model.*;
+import cz.muni.ics.kypo.training.persistence.model.enums.TRState;
 import cz.muni.ics.kypo.training.service.TrainingRunService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -237,7 +238,11 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
             accessedTrainingRunDTO.setTitle(trainingRun.getTrainingInstance().getTitle());
             accessedTrainingRunDTO.setTrainingInstanceStartDate(trainingRun.getTrainingInstance().getStartTime());
             accessedTrainingRunDTO.setTrainingInstanceEndDate(trainingRun.getTrainingInstance().getEndTime());
-            accessedTrainingRunDTO.setCurrentLevelOrder(trainingRunService.getLevelOrder(trainingRun.getTrainingInstance().getTrainingDefinition().getStartingLevel(), trainingRun.getCurrentLevel().getId()));
+            int levelOrder = trainingRunService.getLevelOrder(trainingRun.getTrainingInstance().getTrainingDefinition().getStartingLevel(), trainingRun.getCurrentLevel().getId());
+            accessedTrainingRunDTO.setCurrentLevelOrder(levelOrder);
+            if(trainingRun.getState().equals(TRState.ARCHIVED)) {
+                accessedTrainingRunDTO.setCurrentLevelOrder(levelOrder + 1 );
+            }
             accessedTrainingRunDTO.setNumberOfLevels(trainingRunService.getLevels(trainingRun.getTrainingInstance().getTrainingDefinition().getStartingLevel()).size());
             if (accessedTrainingRunDTO.getCurrentLevelOrder() == accessedTrainingRunDTO.getNumberOfLevels() || LocalDateTime.now().isAfter(accessedTrainingRunDTO.getTrainingInstanceEndDate())) {
                 accessedTrainingRunDTO.setPossibleAction(Actions.RESULTS);
