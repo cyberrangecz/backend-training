@@ -77,7 +77,7 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
     }
 
     @Override
-    @IsAdmin
+    @IsOrganizerOrAdmin
     public Page<TrainingInstance> findAll(Predicate predicate, Pageable pageable) {
         LOG.debug("findAllTrainingDefinitions({},{})", predicate, pageable);
         return trainingInstanceRepository.findAll(predicate, pageable);
