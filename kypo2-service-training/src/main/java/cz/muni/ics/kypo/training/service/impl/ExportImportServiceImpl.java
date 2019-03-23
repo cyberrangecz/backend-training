@@ -1,5 +1,6 @@
 package cz.muni.ics.kypo.training.service.impl;
 
+import cz.muni.ics.kypo.training.annotations.security.IsDesignerOrAdmin;
 import cz.muni.ics.kypo.training.exceptions.ErrorCode;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.persistence.model.*;
@@ -43,16 +44,14 @@ public class ExportImportServiceImpl implements ExportImportService {
     }
 
     @Override
-    @PreAuthorize("hasAuthority('ADMINISTRATOR')" +
-            "or @securityService.isDesignerOfGivenTrainingDefinition(#id)")
+    @IsDesignerOrAdmin
     public TrainingDefinition findById(Long trainingDefinitionId) {
         return trainingDefinitionRepository.findById(trainingDefinitionId).orElseThrow(
                 () -> new ServiceLayerException("Training definition with id: " + trainingDefinitionId + " not found.", ErrorCode.RESOURCE_NOT_FOUND));
     }
 
     @Override
-    @PreAuthorize("hasAuthority('ADMINISTRATOR')" +
-            "or @securityService.isDesignerOfGivenTrainingDefinition(#id)")
+    @IsDesignerOrAdmin
     public List<AbstractLevel> findAllLevelsFromDefinition(Long id) {
         Assert.notNull(id, "Definition id must not be null");
         TrainingDefinition trainingDefinition = findById(id);
@@ -69,7 +68,7 @@ public class ExportImportServiceImpl implements ExportImportService {
     }
 
     @Override
-    @PreAuthorize("hasAuthority({'ADMINISTRATOR'}) or hasAuthority({T(cz.muni.ics.kypo.training.persistence.model.enums.RoleType).DESIGNER})")
+    @IsDesignerOrAdmin
     public Long createLevel(AbstractLevel level) {
         Assert.notNull(level, "Input Level cannot be null");
         if (level instanceof AssessmentLevel) {
