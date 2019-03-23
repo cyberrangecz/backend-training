@@ -301,10 +301,24 @@ public class TrainingRunServiceTest {
     @Test
     public void getSolution() {
         mockSpringSecurityContextForGet();
+        trainingRun1.setTotalScore(40);
         given(trainingRunRepository.findByIdWithLevel(trainingRun1.getId())).willReturn(Optional.of(trainingRun1));
         String solution = trainingRunService.getSolution(trainingRun1.getId());
         assertEquals(solution, gameLevel.getSolution());
-        assertEquals(1, trainingRun1.getTotalScore());
+        assertEquals(21, trainingRun1.getTotalScore());
+        assertEquals(1, trainingRun1.getCurrentScore());
+        assertFalse(trainingRun1.isLevelAnswered());
+    }
+
+    @Test
+    public void getAlreadyTakenSolution() {
+        mockSpringSecurityContextForGet();
+        trainingRun1.setSolutionTaken(true);
+        trainingRun1.setCurrentScore(1);
+        given(trainingRunRepository.findByIdWithLevel(trainingRun1.getId())).willReturn(Optional.of(trainingRun1));
+        String solution = trainingRunService.getSolution(trainingRun1.getId());
+        assertEquals(solution, gameLevel.getSolution());
+        assertEquals(20, trainingRun1.getTotalScore());
         assertEquals(1, trainingRun1.getCurrentScore());
         assertFalse(trainingRun1.isLevelAnswered());
     }
