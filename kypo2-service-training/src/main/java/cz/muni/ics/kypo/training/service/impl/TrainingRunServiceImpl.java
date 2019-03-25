@@ -327,12 +327,13 @@ public class TrainingRunServiceImpl implements TrainingRunService {
         TrainingRun trainingRun = findByIdWithLevel(trainingRunId);
         AbstractLevel level = trainingRun.getCurrentLevel();
         if (level instanceof GameLevel) {
-            //audit
-            trainingRun.setSolutionTaken(true);
-            trainingRun.decreaseTotalScore(trainingRun.getCurrentScore() - 1);
-            trainingRun.setCurrentScore(1);
-            auditSolutionDisplayedAction(trainingRun, (GameLevel) level);
-            trainingRunRepository.save(trainingRun);
+            if(!trainingRun.isSolutionTaken()) {
+                trainingRun.setSolutionTaken(true);
+                trainingRun.decreaseTotalScore(trainingRun.getCurrentScore() - 1);
+                trainingRun.setCurrentScore(1);
+                auditSolutionDisplayedAction(trainingRun, (GameLevel) level);
+                trainingRunRepository.save(trainingRun);
+            }
             return ((GameLevel) level).getSolution();
         } else {
             throw new ServiceLayerException("Current level is not game level and does not have solution.", ErrorCode.WRONG_LEVEL_TYPE);
