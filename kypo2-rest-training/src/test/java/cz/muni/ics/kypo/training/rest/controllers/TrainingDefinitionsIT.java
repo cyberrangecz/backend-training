@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.JsonObject;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelUpdateDTO;
+import cz.muni.ics.kypo.training.api.dto.betatestinggroup.BetaTestingGroupUpdateDTO;
 import cz.muni.ics.kypo.training.api.dto.gamelevel.GameLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.gamelevel.GameLevelUpdateDTO;
 import cz.muni.ics.kypo.training.api.dto.infolevel.InfoLevelDTO;
@@ -11,8 +12,7 @@ import cz.muni.ics.kypo.training.api.dto.infolevel.InfoLevelUpdateDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionCreateDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionUpdateDTO;
-import cz.muni.ics.kypo.training.api.dto.viewgroup.TDViewGroupCreateDTO;
-import cz.muni.ics.kypo.training.api.dto.viewgroup.TDViewGroupUpdateDTO;
+import cz.muni.ics.kypo.training.api.dto.betatestinggroup.BetaTestingGroupCreateDTO;
 import cz.muni.ics.kypo.training.api.enums.AssessmentType;
 import cz.muni.ics.kypo.training.mapping.modelmapper.BeanMapping;
 import cz.muni.ics.kypo.training.mapping.modelmapper.BeanMappingImpl;
@@ -27,7 +27,6 @@ import cz.muni.ics.kypo.training.rest.exceptions.ResourceNotFoundException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.modelmapper.ModelMapper;
@@ -122,26 +121,17 @@ public class TrainingDefinitionsIT {
 		userRef.setUserRefLogin("testDesigner");
 		UserRef uR = userRefRepository.save(userRef);
 
-		TDViewGroup tdViewGroup = new TDViewGroup();
-		tdViewGroup.setTitle("testGroup");
-		tdViewGroup.setDescription("test");
-		tdViewGroup.setOrganizers(new HashSet<>(Arrays.asList(uR)));
+		BetaTestingGroup betaTestingGroup = new BetaTestingGroup();
+		betaTestingGroup.setOrganizers(new HashSet<>(Arrays.asList(uR)));
 
-		TDViewGroup tdViewGroup2 = new TDViewGroup();
-		tdViewGroup2.setTitle("testGroup2");
-		tdViewGroup2.setDescription("test2");
-		tdViewGroup2.setOrganizers(new HashSet<>(Arrays.asList(uR)));
+		BetaTestingGroup betaTestingGroup2 = new BetaTestingGroup();
+		betaTestingGroup2.setOrganizers(new HashSet<>(Arrays.asList(uR)));
 
-		TDViewGroupCreateDTO tdViewGroupCreateDTO = new TDViewGroupCreateDTO();
-		tdViewGroupCreateDTO.setTitle("testGroup");
-		tdViewGroupCreateDTO.setDescription("test");
-		tdViewGroupCreateDTO.setOrganizers(Set.of());
+		BetaTestingGroupCreateDTO betaTestingGroupCreateDTO = new BetaTestingGroupCreateDTO();
+		betaTestingGroupCreateDTO.setOrganizers(Set.of());
 
-		TDViewGroupUpdateDTO tdViewGroupUpdateDTO = new TDViewGroupUpdateDTO();
-		tdViewGroupUpdateDTO.setId(1L);
-		tdViewGroupUpdateDTO.setTitle("testGroup");
-		tdViewGroupUpdateDTO.setDescription("test");
-		tdViewGroupUpdateDTO.setOrganizers(Set.of());
+		BetaTestingGroupUpdateDTO betaTestingGroupUpdateDTO = new BetaTestingGroupUpdateDTO();
+		betaTestingGroupUpdateDTO.setOrganizers(Set.of());
 
 		gameLevel1 = new GameLevel();
 		gameLevel1.setTitle("testTitle");
@@ -202,7 +192,7 @@ public class TrainingDefinitionsIT {
 		trainingDefinitionCreateDTO.setShowStepperBar(true);
 		trainingDefinitionCreateDTO.setState(TDState.UNRELEASED);
 		trainingDefinitionCreateDTO.setSandboxDefinitionRefId(1L);
-		trainingDefinitionCreateDTO.setTdViewGroup(tdViewGroupCreateDTO);
+		trainingDefinitionCreateDTO.setBetaTestingGroup(betaTestingGroupCreateDTO);
 		trainingDefinitionCreateDTO.setAuthors(Set.of());
 
 		releasedTrainingDefinition = new TrainingDefinition();
@@ -211,7 +201,7 @@ public class TrainingDefinitionsIT {
 		releasedTrainingDefinition.setShowStepperBar(true);
 		releasedTrainingDefinition.setState(cz.muni.ics.kypo.training.persistence.model.enums.TDState.RELEASED);
 		releasedTrainingDefinition.setSandboxDefinitionRefId(2L);
-		releasedTrainingDefinition.setTdViewGroup(tdViewGroup);
+		releasedTrainingDefinition.setBetaTestingGroup(betaTestingGroup);
 		releasedTrainingDefinition.setAuthors(new HashSet<>(Arrays.asList(uR)));
 
 		invalidDefinitionDTO = new TrainingDefinitionDTO();
@@ -222,7 +212,7 @@ public class TrainingDefinitionsIT {
 		unreleasedDefinition.setShowStepperBar(false);
 		unreleasedDefinition.setState(cz.muni.ics.kypo.training.persistence.model.enums.TDState.UNRELEASED);
 		unreleasedDefinition.setSandboxDefinitionRefId(1L);
-		unreleasedDefinition.setTdViewGroup(tdViewGroup2);
+		unreleasedDefinition.setBetaTestingGroup(betaTestingGroup2);
 		unreleasedDefinition.setAuthors(new HashSet<>(Arrays.asList(uR)));
 
 		trainingDefinitionUpdateDTO = new TrainingDefinitionUpdateDTO();
@@ -231,7 +221,7 @@ public class TrainingDefinitionsIT {
 		trainingDefinitionUpdateDTO.setShowStepperBar(true);
 		trainingDefinitionUpdateDTO.setState(TDState.UNRELEASED);
 		trainingDefinitionUpdateDTO.setSandboxDefinitionRefId(1L);
-		trainingDefinitionUpdateDTO.setTdViewGroup(tdViewGroupUpdateDTO);
+		trainingDefinitionUpdateDTO.setBetaTestingGroup(betaTestingGroupUpdateDTO);
 		trainingDefinitionUpdateDTO.setAuthors(Set.of());
 
 		invalidDefinitionUpdateDTO = new TrainingDefinitionUpdateDTO();
@@ -241,7 +231,7 @@ public class TrainingDefinitionsIT {
 		updateForNonexistingDefinition.setTitle("test");
 		updateForNonexistingDefinition.setState(TDState.UNRELEASED);
 		updateForNonexistingDefinition.setSandboxDefinitionRefId(1L);
-		updateForNonexistingDefinition.setTdViewGroup(tdViewGroupUpdateDTO);
+		updateForNonexistingDefinition.setBetaTestingGroup(betaTestingGroupUpdateDTO);
 		updateForNonexistingDefinition.setAuthors(Set.of());
 	}
 
@@ -345,7 +335,6 @@ public class TrainingDefinitionsIT {
 	public void updateTrainingDefinition() throws Exception {
 		TrainingDefinition tD = trainingDefinitionRepository.save(unreleasedDefinition);
 		trainingDefinitionUpdateDTO.setId(tD.getId());
-		trainingDefinitionUpdateDTO.getTdViewGroup().setId(tD.getTdViewGroup().getId());
 		System.out.println(tD);
 		mvc.perform(put("/training-definitions").content(convertObjectToJsonBytes(trainingDefinitionUpdateDTO))
 		.contentType(MediaType.APPLICATION_JSON_VALUE))

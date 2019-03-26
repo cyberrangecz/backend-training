@@ -11,24 +11,20 @@ import java.util.Set;
  * @author Pavel Seda
  */
 @Entity
-@Table(name = "td_view_group")
-public class TDViewGroup implements Serializable {
+@Table(name = "beta_testing_group")
+public class BetaTestingGroup implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", unique = true, nullable = false, insertable = false)
     private Long id;
-    @Column(name = "title", nullable = false)
-    private String title;
-    @Column(name = "description")
-    private String description;
     @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
-    @JoinTable(name = "td_view_group_user_ref",
-            joinColumns = @JoinColumn(name = "td_view_group_id"),
+    @JoinTable(name = "beta_testing_group_user_ref",
+            joinColumns = @JoinColumn(name = "beta_testing_group_id"),
             inverseJoinColumns = @JoinColumn(name = "user_ref_id")
     )
     private Set<UserRef> organizers = new HashSet<>();
-    @OneToOne(mappedBy = "tdViewGroup", fetch = FetchType.LAZY)
+    @OneToOne(mappedBy = "betaTestingGroup", fetch = FetchType.LAZY)
     private TrainingDefinition trainingDefinition;
 
     public Long getId() {
@@ -65,41 +61,23 @@ public class TDViewGroup implements Serializable {
         this.trainingDefinition = trainingDefinition;
     }
 
-    public String getTitle() {
-        return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof TDViewGroup)) return false;
-        TDViewGroup that = (TDViewGroup) o;
-        return Objects.equals(getOrganizers(), that.getOrganizers()) &&
-                Objects.equals(getTitle(), that.getTitle());
+        if (!(o instanceof BetaTestingGroup)) return false;
+        BetaTestingGroup that = (BetaTestingGroup) o;
+        return Objects.equals(getOrganizers(), that.getOrganizers());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getOrganizers(), getTitle());
+        return Objects.hash(getOrganizers());
     }
 
     @Override
     public String toString() {
-        return "TDViewGroup{" +
+        return "BetaTestingGroup{" +
                 "id=" + id +
-                ", title=" + title +
                 ", organizers=" + organizers +
                 '}';
     }

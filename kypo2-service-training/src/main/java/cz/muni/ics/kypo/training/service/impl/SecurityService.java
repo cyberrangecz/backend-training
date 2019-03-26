@@ -47,9 +47,12 @@ public class SecurityService {
         return trainingDefinition.getAuthors().stream().anyMatch(a -> a.getUserRefLogin().equals(getSubOfLoggedInUser()));
     }
 
-    public boolean isInViewGroup(Long definitionId) {
+    public boolean isInBetaTestingGroup(Long definitionId) {
         TrainingDefinition trainingDefinition = trainingDefinitionRepository.findById(definitionId).orElseThrow(() -> new ServiceLayerException("The necessary permissions are required for a resource.", ErrorCode.SECURITY_RIGHTS));
-        return trainingDefinition.getTdViewGroup().getOrganizers().stream().anyMatch(a -> a.getUserRefLogin().equals(getSubOfLoggedInUser()));
+        if (trainingDefinition.getBetaTestingGroup() == null) {
+            throw new ServiceLayerException("The necessary permissions are required for a resource.", ErrorCode.SECURITY_RIGHTS);
+        }
+        return trainingDefinition.getBetaTestingGroup().getOrganizers().stream().anyMatch(a -> a.getUserRefLogin().equals(getSubOfLoggedInUser()));
     }
 
     private String getSubOfLoggedInUser() {

@@ -6,13 +6,13 @@ import cz.muni.ics.kypo.training.api.PageResultResource;
 import cz.muni.ics.kypo.training.api.dto.AbstractLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.UserInfoDTO;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelUpdateDTO;
+import cz.muni.ics.kypo.training.api.dto.betatestinggroup.BetaTestingGroupCreateDTO;
+import cz.muni.ics.kypo.training.api.dto.betatestinggroup.BetaTestingGroupUpdateDTO;
 import cz.muni.ics.kypo.training.api.dto.gamelevel.GameLevelUpdateDTO;
 import cz.muni.ics.kypo.training.api.dto.infolevel.InfoLevelUpdateDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionCreateDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionUpdateDTO;
-import cz.muni.ics.kypo.training.api.dto.viewgroup.TDViewGroupCreateDTO;
-import cz.muni.ics.kypo.training.api.dto.viewgroup.TDViewGroupUpdateDTO;
 import cz.muni.ics.kypo.training.api.enums.AssessmentType;
 import cz.muni.ics.kypo.training.api.enums.LevelType;
 import cz.muni.ics.kypo.training.exceptions.FacadeLayerException;
@@ -40,7 +40,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -49,7 +48,7 @@ import static org.mockito.BDDMockito.*;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = {InfoLevelMapperImpl.class, SnapshotHookMapperImpl.class, TrainingDefinitionMapperImpl.class,
-        UserRefMapperImpl.class, GameLevelMapperImpl.class, InfoLevelMapperImpl.class, TDViewGroupMapperImpl.class,
+        UserRefMapperImpl.class, GameLevelMapperImpl.class, InfoLevelMapperImpl.class, BetaTestingGroupMapperImpl.class,
         AssessmentLevelMapperImpl.class, HintMapperImpl.class, BasicLevelInfoMapperImpl.class})
 public class TrainingDefinitionFacadeTest {
 
@@ -87,8 +86,8 @@ public class TrainingDefinitionFacadeTest {
     private InfoLevel infoLevel;
     private InfoLevelUpdateDTO infoLevelUpdate;
 
-    private TDViewGroupUpdateDTO tdViewGroupUpdateDTO;
-    private TDViewGroupCreateDTO tdViewGroupCreateDTO;
+    private BetaTestingGroupUpdateDTO betaTestingGroupUpdateDTO;
+    private BetaTestingGroupCreateDTO betaTestingGroupCreateDTO;
 
     private UserRef authorRef;
 
@@ -156,24 +155,19 @@ public class TrainingDefinitionFacadeTest {
         trainingDefinition2.setState(TDState.UNRELEASED);
         trainingDefinition2.setStartingLevel(infoLevel.getId());
 
-        tdViewGroupUpdateDTO = new TDViewGroupUpdateDTO();
-        tdViewGroupUpdateDTO.setId(1L);
-        tdViewGroupUpdateDTO.setTitle("title of view group");
-        tdViewGroupUpdateDTO.setDescription("my best group");
-        tdViewGroupUpdateDTO.setOrganizers(Set.of());
+        betaTestingGroupUpdateDTO = new BetaTestingGroupUpdateDTO();
+        betaTestingGroupUpdateDTO.setOrganizers(Set.of());
 
         trainingDefinitionUpdate = new TrainingDefinitionUpdateDTO();
         trainingDefinitionUpdate.setId(1L);
         trainingDefinitionUpdate.setState(cz.muni.ics.kypo.training.api.enums.TDState.UNRELEASED);
-        trainingDefinitionUpdate.setTdViewGroup(tdViewGroupUpdateDTO);
+        trainingDefinitionUpdate.setBetaTestingGroup(betaTestingGroupUpdateDTO);
 
         authorRef = new UserRef();
         authorRef.setUserRefLogin("author");
 
-        tdViewGroupCreateDTO = new TDViewGroupCreateDTO();
-        tdViewGroupCreateDTO.setDescription("Good group");
-        tdViewGroupCreateDTO.setTitle("Title create");
-        tdViewGroupCreateDTO.setOrganizers(Set.of());
+        betaTestingGroupCreateDTO = new BetaTestingGroupCreateDTO();
+        betaTestingGroupCreateDTO.setOrganizers(Set.of());
 
         trainingDefinitionCreate = new TrainingDefinitionCreateDTO();
         trainingDefinitionCreate.setDescription("TD desc");
@@ -182,7 +176,7 @@ public class TrainingDefinitionFacadeTest {
         trainingDefinitionCreate.setState(cz.muni.ics.kypo.training.api.enums.TDState.ARCHIVED);
         trainingDefinitionCreate.setTitle("TD some title");
         trainingDefinitionCreate.setAuthors(Set.of(userInfoDTO1));
-        trainingDefinitionCreate.setTdViewGroup(tdViewGroupCreateDTO);
+        trainingDefinitionCreate.setBetaTestingGroup(betaTestingGroupCreateDTO);
     }
 
     @Test
@@ -220,11 +214,11 @@ public class TrainingDefinitionFacadeTest {
 
     @Test
     public void updateTrainingDefinition() {
-        TDViewGroup viewGroup = new TDViewGroup();
-        viewGroup.setTitle("Title");
+        BetaTestingGroup viewGroup = new BetaTestingGroup();
         viewGroup.setTrainingDefinition(trainingDefinition1);
         viewGroup.setId(1L);
         viewGroup.setOrganizers(Set.of());
+        given(trainingDefinitionService.findById(anyLong())).willReturn(trainingDefinition1);
         trainingDefinitionFacade.update(trainingDefinitionUpdate);
         then(trainingDefinitionService).should().update(trainingDefinitionMapper.mapUpdateToEntity(trainingDefinitionUpdate));
     }
@@ -237,10 +231,10 @@ public class TrainingDefinitionFacadeTest {
 
     @Test
     public void updateTrainingDefinitionWithFacadeLayerException() {
-        TDViewGroup viewGroup = new TDViewGroup();
-        viewGroup.setTitle("Title");
+        BetaTestingGroup viewGroup = new BetaTestingGroup();
         viewGroup.setTrainingDefinition(trainingDefinition1);
         viewGroup.setId(1L);
+        given(trainingDefinitionService.findById(anyLong())).willReturn(trainingDefinition1);
         willThrow(ServiceLayerException.class).given(trainingDefinitionService)
                 .update(any(TrainingDefinition.class));
         thrown.expect(FacadeLayerException.class);

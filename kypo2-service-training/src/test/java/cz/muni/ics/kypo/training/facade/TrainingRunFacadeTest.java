@@ -7,8 +7,6 @@ import cz.muni.ics.kypo.training.api.dto.run.AccessTrainingRunDTO;
 import cz.muni.ics.kypo.training.api.dto.run.TrainingRunDTO;
 import cz.muni.ics.kypo.training.exceptions.FacadeLayerException;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
-import cz.muni.ics.kypo.training.facade.TrainingRunFacade;
-import cz.muni.ics.kypo.training.facade.TrainingRunFacadeImpl;
 import cz.muni.ics.kypo.training.mapping.mapstruct.*;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.model.enums.AssessmentType;
@@ -40,7 +38,7 @@ import static org.mockito.BDDMockito.*;
 @SpringBootTest(classes = {InfoLevelMapperImpl.class, SnapshotHookMapperImpl.class, TrainingDefinitionMapperImpl.class,
         UserRefMapperImpl.class, SandboxInstanceRefMapperImpl.class, GameLevelMapperImpl.class,
         InfoLevelMapperImpl.class, AssessmentLevelMapperImpl.class, HintMapperImpl.class,
-        BasicLevelInfoMapperImpl.class, TrainingRunMapperImpl.class, TDViewGroupMapperImpl.class})
+        BasicLevelInfoMapperImpl.class, TrainingRunMapperImpl.class, BetaTestingGroupMapperImpl.class})
 public class TrainingRunFacadeTest {
 
     @Autowired

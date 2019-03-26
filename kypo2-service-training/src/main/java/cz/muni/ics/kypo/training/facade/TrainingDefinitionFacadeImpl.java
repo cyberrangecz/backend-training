@@ -19,6 +19,7 @@ import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionDT
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionUpdateDTO;
 import cz.muni.ics.kypo.training.api.enums.LevelType;
 import cz.muni.ics.kypo.training.api.enums.RoleType;
+import cz.muni.ics.kypo.training.exceptions.ErrorCode;
 import cz.muni.ics.kypo.training.exceptions.FacadeLayerException;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.mapping.mapstruct.*;
@@ -156,7 +157,9 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
         try {
             Objects.requireNonNull(trainingDefinition);
             TrainingDefinition newTrainingDefinition = trainingDefinitionMapper.mapCreateToEntity(trainingDefinition);
-            addOrganizersToTrainingDefinition(newTrainingDefinition, trainingDefinition.getTdViewGroup().getOrganizers());
+            if(trainingDefinition.getBetaTestingGroup() != null) {
+                addOrganizersToTrainingDefinition(newTrainingDefinition, trainingDefinition.getBetaTestingGroup().getOrganizers());
+            }
             addAuthorsToTrainingDefinition(newTrainingDefinition, trainingDefinition.getAuthors());
             return trainingDefinitionMapper.mapToDTO(trainingDefinitionService.create(newTrainingDefinition));
         } catch (ServiceLayerException ex) {
@@ -171,16 +174,25 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
         LOG.debug("update({})", trainingDefinitionUpdateDTO);
         try {
             Objects.requireNonNull(trainingDefinitionUpdateDTO);
-            TrainingDefinition trainingDefinition = trainingDefinitionMapper.mapUpdateToEntity(trainingDefinitionUpdateDTO);
-            addOrganizersToTrainingDefinition(trainingDefinition, trainingDefinitionUpdateDTO.getTdViewGroup().getOrganizers());
-            addAuthorsToTrainingDefinition(trainingDefinition, trainingDefinitionUpdateDTO.getAuthors());
-            trainingDefinitionService.update(trainingDefinition);
+            TrainingDefinition mappedTrainingDefinition = trainingDefinitionMapper.mapUpdateToEntity(trainingDefinitionUpdateDTO);
+            TrainingDefinition trainingDefinition = trainingDefinitionService.findById(trainingDefinitionUpdateDTO.getId());
+            if(trainingDefinition.getBetaTestingGroup() != null) {
+                if(trainingDefinitionUpdateDTO.getBetaTestingGroup() != null) {
+                    trainingDefinition.getBetaTestingGroup().setId(trainingDefinition.getBetaTestingGroup().getId());
+                    addOrganizersToTrainingDefinition(mappedTrainingDefinition, trainingDefinitionUpdateDTO.getBetaTestingGroup().getOrganizers());
+                } else {
+                    throw new FacadeLayerException(new ServiceLayerException("Cannot delete beta testing group. You only can remove organizers from group.", ErrorCode.RESOURCE_CONFLICT));
+                }
+            }
+            addAuthorsToTrainingDefinition(mappedTrainingDefinition, trainingDefinitionUpdateDTO.getAuthors());
+            trainingDefinitionService.update(mappedTrainingDefinition);
         } catch (ServiceLayerException ex) {
             throw new FacadeLayerException(ex);
         }
     }
 
     private void addAuthorsToTrainingDefinition(TrainingDefinition trainingDefinition, Set<UserInfoDTO> authors) {
+        trainingDefinition.setAuthors(new HashSet<>());
         for (UserInfoDTO author: authors) {
             try {
                 trainingDefinition.addAuthor(trainingDefinitionService.findUserRefByLogin(author.getLogin()));
@@ -194,14 +206,15 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
     }
 
     private void addOrganizersToTrainingDefinition(TrainingDefinition trainingDefinition, Set<UserInfoDTO> organizers) {
+        trainingDefinition.getBetaTestingGroup().setOrganizers(new HashSet<>());
         for (UserInfoDTO organizer : organizers) {
             try {
-                trainingDefinition.getTdViewGroup().addOrganizer(trainingDefinitionService.findUserRefByLogin(organizer.getLogin()));
+                trainingDefinition.getBetaTestingGroup().addOrganizer(trainingDefinitionService.findUserRefByLogin(organizer.getLogin()));
             } catch (ServiceLayerException ex) {
                 UserRef userRef = new UserRef();
                 userRef.setUserRefLogin(organizer.getLogin());
                 userRef.setUserRefFullName(organizer.getFullName());
-                trainingDefinition.getTdViewGroup().addOrganizer(trainingDefinitionService.createUserRef(userRef));
+                trainingDefinition.getBetaTestingGroup().addOrganizer(trainingDefinitionService.createUserRef(userRef));
             }
         }
     }

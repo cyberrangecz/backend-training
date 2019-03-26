@@ -35,9 +35,9 @@ public class TrainingDefinition implements Serializable {
             inverseJoinColumns = @JoinColumn(name = "user_ref_id")
     )
     private Set<UserRef> authors = new HashSet<>();
-    @OneToOne(fetch = FetchType.LAZY, orphanRemoval = true, optional = false, cascade = CascadeType.ALL)
-    @JoinColumn(name = "td_view_group_id", unique = true)
-    private TDViewGroup tdViewGroup;
+    @OneToOne(fetch = FetchType.LAZY, orphanRemoval = true, optional = true, cascade = CascadeType.ALL)
+    @JoinColumn(name = "beta_testing_group_id", unique = true)
+    private BetaTestingGroup betaTestingGroup;
     @Column(name = "sandbox_definition_ref_id", nullable = false)
     private Long sandboxDefinitionRefId;
     @Column(name = "starting_level")
@@ -111,12 +111,12 @@ public class TrainingDefinition implements Serializable {
         authorRef.removeTrainingDefinition(this);
     }
 
-    public TDViewGroup getTdViewGroup() {
-        return tdViewGroup;
+    public BetaTestingGroup getBetaTestingGroup() {
+        return betaTestingGroup;
     }
 
-    public void setTdViewGroup(TDViewGroup tdViewGroup) {
-        this.tdViewGroup = tdViewGroup;
+    public void setBetaTestingGroup(BetaTestingGroup betaTestingGroup) {
+        this.betaTestingGroup = betaTestingGroup;
     }
 
     public Long getSandboxDefinitionRefId() {

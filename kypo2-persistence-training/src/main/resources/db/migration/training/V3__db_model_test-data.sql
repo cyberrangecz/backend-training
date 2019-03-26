@@ -5,13 +5,13 @@ INSERT INTO snapshot_hook(id, snapshot) VALUES (nextval('snapshot_hook_id_seq'),
 INSERT INTO snapshot_hook(id, snapshot) VALUES (nextval('snapshot_hook_id_seq'), 'Snapshot 5');
 INSERT INTO snapshot_hook(id, snapshot) VALUES (nextval('snapshot_hook_id_seq'), 'Snapshot 6');
 
-INSERT INTO td_view_group(id,title,description) VALUES (nextval('td_view_group_id_seq'), 'Group of definition 1', 'description1');
-INSERT INTO td_view_group(id,title,description) VALUES (nextval('td_view_group_id_seq'), 'Group of definition 2', 'description2');
-INSERT INTO td_view_group(id,title,description) VALUES (nextval('td_view_group_id_seq'), 'Group of definition 3', 'description3');
-INSERT INTO td_view_group(id,title,description) VALUES (nextval('td_view_group_id_seq'), 'Group of definition 4', 'description4');
-INSERT INTO td_view_group(id,title,description) VALUES (nextval('td_view_group_id_seq'), 'Group of definition 5', 'description5');
-INSERT INTO td_view_group(id,title,description) VALUES (nextval('td_view_group_id_seq'), 'Group of definition 6', 'description6');
-INSERT INTO td_view_group(id,title,description) VALUES (nextval('td_view_group_id_seq'), 'Group of definition 7', 'description7');
+INSERT INTO beta_testing_group(id) VALUES (nextval('beta_testing_group_id_seq'));
+INSERT INTO beta_testing_group(id) VALUES (nextval('beta_testing_group_id_seq'));
+INSERT INTO beta_testing_group(id) VALUES (nextval('beta_testing_group_id_seq'));
+INSERT INTO beta_testing_group(id) VALUES (nextval('beta_testing_group_id_seq'));
+INSERT INTO beta_testing_group(id) VALUES (nextval('beta_testing_group_id_seq'));
+INSERT INTO beta_testing_group(id) VALUES (nextval('beta_testing_group_id_seq'));
+INSERT INTO beta_testing_group(id) VALUES (nextval('beta_testing_group_id_seq'));
 
 INSERT INTO abstract_level(id, max_score, next_level, title, snapshot_hook_id) VALUES (nextval('abstract_level_id_seq'), 20, 7, 'Game Level1', 1);
 INSERT INTO abstract_level(id, max_score, next_level, title, snapshot_hook_id) VALUES (nextval('abstract_level_id_seq'), 55, 8, 'Game Level2', 4);
@@ -708,13 +708,13 @@ INSERT INTO hint(id, content, title, hint_penalty, game_level_id) VALUES (nextva
 INSERT INTO hint(id, content, title, hint_penalty, game_level_id) VALUES (nextval('hint_id_seq'), 'Use <a href="https://google.com" target="_blank">Google</a>! There are definitely some interesting guides on the net.', 'Hint2', 5, 31);
 INSERT INTO hint(id, content, title, hint_penalty, game_level_id) VALUES (nextval('hint_id_seq'), 'Check this guide with a lot of great ideas: <a href="https://github.com/cermmik/security/blob/master/privilege_escalation_-_linux.md" target="_blank">https://github.com/cermmik/security/blob/master/privilege_escalation_-_linux.md</a>.', 'Hint3', 13, 31);
 
-INSERT INTO training_definition(id, description, outcomes, prerequisities, state, title, sandbox_definition_ref_id, starting_level, show_stepper_bar, td_view_group_id) VALUES (nextval('training_definition_id_seq'), 'Released training definition', null, null, 'RELEASED', 'TrainingDefinition1', 1, 4, true, 1);
-INSERT INTO training_definition(id, description, outcomes, prerequisities, state, title, sandbox_definition_ref_id, starting_level, show_stepper_bar, td_view_group_id) VALUES (nextval('training_definition_id_seq'), 'Unreleased training definition', null, null, 'UNRELEASED', 'TrainingDefinition2', 2, 5, false, 2);
-INSERT INTO training_definition(id, description, outcomes, prerequisities, state, title, sandbox_definition_ref_id, starting_level, show_stepper_bar, td_view_group_id) VALUES (nextval('training_definition_id_seq'), 'Released training definition2', null, null, 'RELEASED', 'TrainingDefinition2', 3, 6, true, 3);
-INSERT INTO training_definition(id, description, outcomes, prerequisities, state, title, sandbox_definition_ref_id, starting_level, show_stepper_bar, td_view_group_id) VALUES (nextval('training_definition_id_seq'), 'Training definition - securing connection', null, null, 'RELEASED', 'CTF-1: No Secure Connection', 1, 32, true, 4);
-INSERT INTO training_definition(id, description, outcomes, prerequisities, state, title, sandbox_definition_ref_id, starting_level, show_stepper_bar, td_view_group_id) VALUES (nextval('training_definition_id_seq'), 'Training definition - rigging the election', null, null, 'RELEASED', 'CTF-2: Rigging the Election', null, 33, true,5);
-INSERT INTO training_definition(id, description, outcomes, prerequisities, state, title, sandbox_definition_ref_id, starting_level, show_stepper_bar, td_view_group_id) VALUES (nextval('training_definition_id_seq'), 'Training definition - biggest stock scam', null, null, 'RELEASED', 'CTF-3: The Biggest Stock Scam Of All Time', null, 34, true, 6);
-INSERT INTO training_definition(id, description, outcomes, prerequisities, state, title, sandbox_definition_ref_id, starting_level, show_stepper_bar, td_view_group_id) VALUES (nextval('training_definition_id_seq'), 'Definition with test assessments', null, null, 'RELEASED', 'TrainingDefinition1', null, 9, true, 7);
+INSERT INTO training_definition(id, description, outcomes, prerequisities, state, title, sandbox_definition_ref_id, starting_level, show_stepper_bar, beta_testing_group_id) VALUES (nextval('training_definition_id_seq'), 'Released training definition', null, null, 'RELEASED', 'TrainingDefinition1', 1, 4, true, 1);
+INSERT INTO training_definition(id, description, outcomes, prerequisities, state, title, sandbox_definition_ref_id, starting_level, show_stepper_bar, beta_testing_group_id) VALUES (nextval('training_definition_id_seq'), 'Unreleased training definition', null, null, 'UNRELEASED', 'TrainingDefinition2', 2, 5, false, 2);
+INSERT INTO training_definition(id, description, outcomes, prerequisities, state, title, sandbox_definition_ref_id, starting_level, show_stepper_bar, beta_testing_group_id) VALUES (nextval('training_definition_id_seq'), 'Released training definition2', null, null, 'RELEASED', 'TrainingDefinition2', 3, 6, true, 3);
+INSERT INTO training_definition(id, description, outcomes, prerequisities, state, title, sandbox_definition_ref_id, starting_level, show_stepper_bar, beta_testing_group_id) VALUES (nextval('training_definition_id_seq'), 'Training definition - securing connection', null, null, 'RELEASED', 'CTF-1: No Secure Connection', 1, 32, true, 4);
+INSERT INTO training_definition(id, description, outcomes, prerequisities, state, title, sandbox_definition_ref_id, starting_level, show_stepper_bar, beta_testing_group_id) VALUES (nextval('training_definition_id_seq'), 'Training definition - rigging the election', null, null, 'RELEASED', 'CTF-2: Rigging the Election', null, 33, true,5);
+INSERT INTO training_definition(id, description, outcomes, prerequisities, state, title, sandbox_definition_ref_id, starting_level, show_stepper_bar, beta_testing_group_id) VALUES (nextval('training_definition_id_seq'), 'Training definition - biggest stock scam', null, null, 'RELEASED', 'CTF-3: The Biggest Stock Scam Of All Time', null, 34, true, 6);
+INSERT INTO training_definition(id, description, outcomes, prerequisities, state, title, sandbox_definition_ref_id, starting_level, show_stepper_bar, beta_testing_group_id) VALUES (nextval('training_definition_id_seq'), 'Definition with test assessments', null, null, 'RELEASED', 'TrainingDefinition1', null, 9, true, 7);
 
 INSERT INTO training_instance(id, pool_size, pool_id, training_definition_id, start_time, end_time, access_token, title) VALUES (nextval('training_instance_id_seq'), 5, 1, 1, '2016-10-19 10:23:54+02', '2017-10-19 10:23:54+02', 'pass-1235', 'Concluded Instance');
 INSERT INTO training_instance(id, pool_size, pool_id, training_definition_id, start_time, end_time, access_token, title) VALUES (nextval('training_instance_id_seq'), 2, null, 1, '2016-10-19 10:23:54+02', '2022-10-19 10:23:54+02', 'hello-6578', 'Current Instance');

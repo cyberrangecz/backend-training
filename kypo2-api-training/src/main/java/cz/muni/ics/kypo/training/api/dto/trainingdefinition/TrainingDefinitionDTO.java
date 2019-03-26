@@ -2,7 +2,7 @@ package cz.muni.ics.kypo.training.api.dto.trainingdefinition;
 
 import cz.muni.ics.kypo.training.api.dto.AbstractLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
-import cz.muni.ics.kypo.training.api.dto.viewgroup.TDViewGroupDTO;
+import cz.muni.ics.kypo.training.api.dto.betatestinggroup.BetaTestingGroupDTO;
 import cz.muni.ics.kypo.training.api.enums.TDState;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -24,7 +24,7 @@ public class TrainingDefinitionDTO {
     private String[] outcomes;
     private TDState state;
     private Set<UserRefDTO> authors = new HashSet<>();
-    private TDViewGroupDTO tdViewGroup;
+    private BetaTestingGroupDTO betaTestingGroup;
     private Long sandboxDefinitionRefId;
     private Long startingLevel;
     private Set<AbstractLevelDTO> levels = new HashSet<>();
@@ -95,12 +95,12 @@ public class TrainingDefinitionDTO {
     }
 
     @ApiModelProperty(value = "Group of organizers who is allowed to see the training definition.")
-    public TDViewGroupDTO getTdViewGroup() {
-        return tdViewGroup;
+    public BetaTestingGroupDTO getBetaTestingGroup() {
+        return betaTestingGroup;
     }
 
-    public void setTdViewGroup(TDViewGroupDTO tdViewGroup) {
-        this.tdViewGroup = tdViewGroup;
+    public void setBetaTestingGroup(BetaTestingGroupDTO betaTestingGroup) {
+        this.betaTestingGroup = betaTestingGroup;
     }
 
     @ApiModelProperty(value = "Reference to the sandbox definition.")

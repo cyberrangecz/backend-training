@@ -9,7 +9,7 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 import cz.muni.ics.kypo.training.api.dto.UserInfoDTO;
-import cz.muni.ics.kypo.training.api.dto.viewgroup.TDViewGroupUpdateDTO;
+import cz.muni.ics.kypo.training.api.dto.betatestinggroup.BetaTestingGroupUpdateDTO;
 import cz.muni.ics.kypo.training.api.enums.TDState;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -32,8 +32,7 @@ public class TrainingDefinitionUpdateDTO {
     @NotNull(message = "{trainingdefinitioncreate.authors.NotNull.message}")
     private Set<UserInfoDTO> authors = new HashSet<>();
     @Valid
-    @NotNull(message = "{trainingdefinitionupdate.viewGroup.NotNull.message}")
-    private TDViewGroupUpdateDTO tdViewGroup;
+    private BetaTestingGroupUpdateDTO betaTestingGroup;
     private Long sandboxDefinitionRefId;
     @NotNull(message = "{trainingdefinitionupdate.showStepperBar.NotNull.message}")
     private boolean showStepperBar;
@@ -102,12 +101,12 @@ public class TrainingDefinitionUpdateDTO {
     }
 
     @ApiModelProperty(value = "Group of organizers who is allowed to see the training definition.", required = true)
-    public TDViewGroupUpdateDTO getTdViewGroup() {
-        return tdViewGroup;
+    public BetaTestingGroupUpdateDTO getBetaTestingGroup() {
+        return betaTestingGroup;
     }
 
-    public void setTdViewGroup(TDViewGroupUpdateDTO tdViewGroup) {
-        this.tdViewGroup = tdViewGroup;
+    public void setBetaTestingGroup(BetaTestingGroupUpdateDTO betaTestingGroup) {
+        this.betaTestingGroup = betaTestingGroup;
     }
 
     @ApiModelProperty(value = "Reference to the sandbox definition.", required = true, example = "1")

@@ -66,7 +66,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     private InfoLevelRepository infoLevelRepository;
     private AssessmentLevelRepository assessmentLevelRepository;
     private UserRefRepository userRefRepository;
-    private TDViewGroupRepository viewGroupRepository;
+    private BetaTestingGroupRepository betaTestingGroupRepository;
 
     private static final String ARCHIVED_OR_RELEASED = "Cannot edit released or archived training definition.";
     private static final String LEVEL_NOT_FOUND = "Level not found.";
@@ -75,7 +75,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     public TrainingDefinitionServiceImpl(TrainingDefinitionRepository trainingDefinitionRepository,
                                          AbstractLevelRepository abstractLevelRepository, InfoLevelRepository infoLevelRepository, GameLevelRepository gameLevelRepository,
                                          AssessmentLevelRepository assessmentLevelRepository, TrainingInstanceRepository trainingInstanceRepository,
-                                         UserRefRepository userRefRepository, TDViewGroupRepository viewGroupRepository,
+                                         UserRefRepository userRefRepository, BetaTestingGroupRepository betaTestingGroupRepository,
                                          RestTemplate restTemplate, HttpServletRequest servletRequest) {
         this.trainingDefinitionRepository = trainingDefinitionRepository;
         this.abstractLevelRepository = abstractLevelRepository;
@@ -84,7 +84,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
         this.assessmentLevelRepository = assessmentLevelRepository;
         this.trainingInstanceRepository = trainingInstanceRepository;
         this.userRefRepository = userRefRepository;
-        this.viewGroupRepository = viewGroupRepository;
+        this.betaTestingGroupRepository = betaTestingGroupRepository;
         this.restTemplate = restTemplate;
         this.servletRequest = servletRequest;
     }
@@ -92,7 +92,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     @Override
     @PreAuthorize("hasAnyAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR, " +
             "T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ORGANIZER)" + "or @securityService.isDesignerOfGivenTrainingDefinition(#id)" +
-            "or @securityService.isInViewGroup(#id)")
+            "or @securityService.isInBetaTestingGroup(#id)")
     public TrainingDefinition findById(Long id) {
         LOG.debug("findById({})", id);
         return trainingDefinitionRepository.findById(id).orElseThrow(
@@ -111,7 +111,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
             trainingDefinitions.addAll(trainingDefinitionRepository.findAllByLoggedInUser(getSubOfLoggedInUser(), pageable).getContent());
         }
         if (isOrganizer()) {
-            trainingDefinitions.addAll(trainingDefinitionRepository.findAllByViewGroup(getSubOfLoggedInUser(), pageable).getContent());
+            trainingDefinitions.addAll(trainingDefinitionRepository.findAllByBetaTesters(getSubOfLoggedInUser(), pageable).getContent());
             trainingDefinitions.addAll(trainingDefinitionRepository.findAll(QTrainingDefinition.trainingDefinition.state.eq(TDState.RELEASED), pageable).getContent());
         }
         return new PageImpl<>(trainingDefinitions, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), pageable.getSort()),
@@ -195,12 +195,19 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
         }
         if(trainingInstanceRepository.existsAnyForTrainingDefinition(trainingDefinition.getId())) {
             throw new ServiceLayerException("Cannot update training definition with already created training instance. " +
-                    "Remove training intance/s before updating training definition.", ErrorCode.RESOURCE_CONFLICT);
+                    "Remove training instance/s before updating training definition.", ErrorCode.RESOURCE_CONFLICT);
+        }
+        String userSub = getSubOfLoggedInUser();
+        Optional<UserRef> user = userRefRepository.findUserByUserRefLogin(userSub);
+        if (user.isPresent()) {
+            trainingDefinitionToUpdate.addAuthor(user.get());
+        } else {
+            UserRef newUser = new UserRef();
+            newUser.setUserRefLogin(userSub);
+            newUser.setUserRefFullName(getFullNameOfLoggedInUser());
+            trainingDefinitionToUpdate.addAuthor(newUser);
         }
         trainingDefinitionToUpdate.setStartingLevel(trainingDefinition.getStartingLevel());
-        if(!trainingDefinitionToUpdate.getTdViewGroup().getId().equals(trainingDefinition.getTdViewGroup().getId())) {
-            throw new ServiceLayerException("Wrong id of training definition view group provided.", ErrorCode.RESOURCE_CONFLICT);
-        }
         trainingDefinitionRepository.save(trainingDefinitionToUpdate);
         LOG.info("Training definition with id: {} updated.", trainingDefinitionToUpdate.getId());
     }
@@ -216,11 +223,11 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
         BeanUtils.copyProperties(trainingDefinition, clonedTrainingDefinition);
         clonedTrainingDefinition.setId(null);
 
-        TDViewGroup vG = new TDViewGroup();
-        BeanUtils.copyProperties(clonedTrainingDefinition.getTdViewGroup(), vG);
+        BetaTestingGroup vG = new BetaTestingGroup();
+        BeanUtils.copyProperties(clonedTrainingDefinition.getBetaTestingGroup(), vG);
         vG.setId(null);
 
-        clonedTrainingDefinition.setTdViewGroup(vG);
+        clonedTrainingDefinition.setBetaTestingGroup(vG);
         clonedTrainingDefinition.setTitle("Clone of " + clonedTrainingDefinition.getTitle());
         clonedTrainingDefinition.setState(TDState.UNRELEASED);
         if (clonedTrainingDefinition.getStartingLevel() != null) {
@@ -567,7 +574,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     public List<UserInfoDTO> getUsersWithGivenRole(RoleType roleType, Pageable pageable) {
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.set("Authorization", servletRequest.getHeader("Authorization"));
-        String url = userAndGroupUrl + "/users/roles" + "?roleType=" + roleType
+        String url = userAndGroupUrl + "/roles/users" + "?roleType=" + roleType
                 + "&page=" + pageable.getPageNumber() + "&size=" + pageable.getPageSize() + "&fields=content[login,full_name]";
         ResponseEntity<PageResultResource<UserInfoDTO>> usersResponse = restTemplate.exchange(url, HttpMethod.GET, new HttpEntity<>(httpHeaders),
                 new ParameterizedTypeReference<PageResultResource<UserInfoDTO>>() {
