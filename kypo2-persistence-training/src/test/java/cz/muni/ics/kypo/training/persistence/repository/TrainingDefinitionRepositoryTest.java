@@ -1,6 +1,6 @@
 package cz.muni.ics.kypo.training.persistence.repository;
 
-import cz.muni.ics.kypo.training.persistence.model.TDViewGroup;
+import cz.muni.ics.kypo.training.persistence.model.BetaTestingGroup;
 import cz.muni.ics.kypo.training.persistence.model.UserRef;
 import org.junit.Before;
 import org.junit.Test;
@@ -33,7 +33,7 @@ public class TrainingDefinitionRepositoryTest {
 
     private TrainingDefinition trainingDefinition1, trainingDefinition2, trainingDefinition3;
     private UserRef author1, author2, organizer1;
-    private TDViewGroup viewGroup1, viewGroup2;
+    private BetaTestingGroup viewGroup1, viewGroup2;
     private Pageable pageable;
 
     @SpringBootApplication
@@ -57,17 +57,14 @@ public class TrainingDefinitionRepositoryTest {
         trainingDefinition3.setTitle("test");
         trainingDefinition3.setState(TDState.UNRELEASED);
 
-        viewGroup1 = new TDViewGroup();
-        viewGroup1.setTitle("title1");
-
-        viewGroup2 = new TDViewGroup();
-        viewGroup2.setTitle("title2");
+        viewGroup1 = new BetaTestingGroup();
+        viewGroup2 = new BetaTestingGroup();
 
         organizer1 = new UserRef();
         organizer1.setUserRefLogin("Organizer");
 
-        trainingDefinition1.setTdViewGroup(viewGroup1);
-        trainingDefinition2.setTdViewGroup(viewGroup2);
+        trainingDefinition1.setBetaTestingGroup(viewGroup1);
+        trainingDefinition2.setBetaTestingGroup(viewGroup2);
 
         entityManager.persist(trainingDefinition1);
         entityManager.persist(trainingDefinition2);
@@ -117,7 +114,7 @@ public class TrainingDefinitionRepositoryTest {
         viewGroup2.addOrganizer(organizer1);
 
         List<TrainingDefinition> trainingDefinitions = trainingDefinitionRepository
-                .findAllByViewGroup("Organizer", pageable).getContent();
+                .findAllByBetaTesters("Organizer", pageable).getContent();
         assertTrue(trainingDefinitions.contains(trainingDefinition1));
         assertEquals(2, trainingDefinitions.size());
     }

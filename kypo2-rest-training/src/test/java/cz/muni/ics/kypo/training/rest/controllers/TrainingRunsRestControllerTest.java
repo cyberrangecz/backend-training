@@ -19,7 +19,6 @@ import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.facade.TrainingRunFacade;
 import cz.muni.ics.kypo.training.mapping.mapstruct.*;
 import cz.muni.ics.kypo.training.persistence.model.TrainingRun;
-import cz.muni.ics.kypo.training.persistence.model.enums.AssessmentType;
 import cz.muni.ics.kypo.training.persistence.model.enums.TRState;
 import cz.muni.ics.kypo.training.rest.exceptions.*;
 import org.junit.Before;
@@ -60,7 +59,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = {InfoLevelMapperImpl.class, SnapshotHookMapperImpl.class,
         TrainingInstanceMapperImpl.class, UserRefMapperImpl.class, TrainingDefinitionMapperImpl.class,
-        UserRefMapperImpl.class, TrainingRunMapperImpl.class, SandboxInstanceRefMapperImpl.class, TDViewGroupMapperImpl.class})
+        UserRefMapperImpl.class, TrainingRunMapperImpl.class, SandboxInstanceRefMapperImpl.class, BetaTestingGroupMapperImpl.class})
 public class TrainingRunsRestControllerTest {
 
     private TrainingRunsRestController trainingRunsRestController;

@@ -11,7 +11,6 @@ import cz.muni.ics.kypo.training.persistence.model.enums.AssessmentType;
 import cz.muni.ics.kypo.training.persistence.model.enums.TDState;
 import cz.muni.ics.kypo.training.persistence.repository.*;
 import cz.muni.ics.kypo.training.service.impl.TrainingDefinitionServiceImpl;
-import cz.muni.ics.kypo.training.utils.SandboxInfo;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.junit.After;
@@ -23,15 +22,10 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
-import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
@@ -41,7 +35,6 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.ResourceUtils;
 import org.springframework.web.client.RestTemplate;
 
-import javax.persistence.EntityManager;
 import javax.servlet.http.HttpServletRequest;
 import java.io.FileReader;
 import java.io.IOException;
@@ -73,7 +66,7 @@ public class TrainingDefinitionServiceTest {
     @Mock
     private TrainingInstanceRepository trainingInstanceRepository;
     @Mock
-    private TDViewGroupRepository viewGroupRepository;
+    private BetaTestingGroupRepository viewGroupRepository;
     @Mock
     private UserRefRepository userRefRepository;
     @Mock
@@ -88,7 +81,7 @@ public class TrainingDefinitionServiceTest {
     @Mock
     private UserInfoDTO userInfoDTO1, userInfoDTO2;
     @Mock
-    private TDViewGroup viewGroup;
+    private BetaTestingGroup viewGroup;
 
 
     private JSONParser parser = new JSONParser();
@@ -161,7 +154,7 @@ public class TrainingDefinitionServiceTest {
         trainingDefinition1.setTitle("test1");
         trainingDefinition1.setState(TDState.RELEASED);
         trainingDefinition1.setSandboxDefinitionRefId(1L);
-        trainingDefinition1.setTdViewGroup(viewGroup);
+        trainingDefinition1.setBetaTestingGroup(viewGroup);
 
         trainingDefinition2 = new TrainingDefinition();
         trainingDefinition2.setId(2L);
@@ -175,7 +168,7 @@ public class TrainingDefinitionServiceTest {
         unreleasedDefinition.setId(4L);
         unreleasedDefinition.setState(TDState.UNRELEASED);
         unreleasedDefinition.setStartingLevel(level1.getId());
-        unreleasedDefinition.setTdViewGroup(viewGroup);
+        unreleasedDefinition.setBetaTestingGroup(viewGroup);
 
         releasedDefinition = new TrainingDefinition();
         releasedDefinition.setState(TDState.RELEASED);
@@ -185,7 +178,7 @@ public class TrainingDefinitionServiceTest {
         definitionWithoutLevels.setId(8L);
         definitionWithoutLevels.setState(TDState.UNRELEASED);
         definitionWithoutLevels.setStartingLevel(null);
-        definitionWithoutLevels.setTdViewGroup(viewGroup);
+        definitionWithoutLevels.setBetaTestingGroup(viewGroup);
 
         pageable = PageRequest.of(0, 10);
     }

@@ -25,7 +25,7 @@ import static org.junit.Assert.assertTrue;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = {InfoLevelMapperImpl.class, SnapshotHookMapperImpl.class, TrainingDefinitionMapperImpl.class,
-        UserRefMapperImpl.class, TDViewGroupMapperImpl.class})
+        UserRefMapperImpl.class, BetaTestingGroupMapperImpl.class})
 public class BeanMappingTest {
 
     @Autowired

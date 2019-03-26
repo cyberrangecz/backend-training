@@ -165,16 +165,14 @@ public class TrainingRunsIT {
 		userRef.setUserRefLogin("testDesigner");
 		UserRef uR = userRefRepository.save(userRef);
 
-		TDViewGroup tdViewGroup = new TDViewGroup();
-		tdViewGroup.setTitle("testGroup");
-		tdViewGroup.setDescription("test");
-		tdViewGroup.setOrganizers(new HashSet<>(Arrays.asList(uR)));
+		BetaTestingGroup betaTestingGroup = new BetaTestingGroup();
+		betaTestingGroup.setOrganizers(new HashSet<>(Arrays.asList(uR)));
 
 		TrainingDefinition definition = new TrainingDefinition();
 		definition.setTitle("definition");
 		definition.setState(TDState.RELEASED);
 		definition.setShowStepperBar(true);
-		definition.setTdViewGroup(tdViewGroup);
+		definition.setBetaTestingGroup(betaTestingGroup);
 		definition.setSandboxDefinitionRefId(1L);
 		definition.setStartingLevel(1L);
 		TrainingDefinition tD = trainingDefinitionRepository.save(definition);

@@ -35,7 +35,7 @@ import static org.mockito.BDDMockito.given;
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = {InfoLevelMapperImpl.class, ExportImportMapperImpl.class, TrainingDefinitionMapperImpl.class,
         GameLevelMapperImpl.class, InfoLevelMapperImpl.class, AssessmentLevelMapperImpl.class, SnapshotHookMapperImpl.class,
-        UserRefMapperImpl.class, TDViewGroupMapperImpl.class, HintMapperImpl.class})
+        UserRefMapperImpl.class, BetaTestingGroupMapperImpl.class, HintMapperImpl.class})
 public class ExportImportFacadeTest {
 
     @Rule
@@ -169,7 +169,7 @@ public class ExportImportFacadeTest {
         assertEquals(t1.getDescription(), t2.getDescription());
         assertEquals(t1.getStartingLevel(), t2.getStartingLevel());
         assertEquals(t1.getTitle(), t2.getTitle());
-        assertEquals(t1.getTdViewGroup(), t2.getTdViewGroup());
+        assertEquals(t1.getBetaTestingGroup(), t2.getBetaTestingGroup());
         assertEquals(t1.getLevels(), t2.getLevels());
 
 

@@ -8,8 +8,7 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 import cz.muni.ics.kypo.training.api.dto.UserInfoDTO;
-import cz.muni.ics.kypo.training.api.dto.viewgroup.TDViewGroupCreateDTO;
-import cz.muni.ics.kypo.training.api.dto.viewgroup.TDViewGroupUpdateDTO;
+import cz.muni.ics.kypo.training.api.dto.betatestinggroup.BetaTestingGroupCreateDTO;
 import cz.muni.ics.kypo.training.api.enums.TDState;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -30,8 +29,7 @@ public class TrainingDefinitionCreateDTO {
     @NotNull(message = "{trainingdefinitioncreate.authors.NotNull.message}")
     private Set<UserInfoDTO> authors;
     @Valid
-    @NotNull(message = "{trainingdefinitioncreate.viewGroup.NotNull.message}")
-    private TDViewGroupCreateDTO tdViewGroup;
+    private BetaTestingGroupCreateDTO betaTestingGroup;
     @NotNull(message = "{trainingdefinitioncreate.showStepperBar.NotNull.message}")
     private boolean showStepperBar;
     private Long sandboxDefinitionRefId;
@@ -91,12 +89,12 @@ public class TrainingDefinitionCreateDTO {
     }
 
     @ApiModelProperty(value = "Group of organizers who is allowed to see the training definition.", required = true)
-    public TDViewGroupCreateDTO getTdViewGroup() {
-        return tdViewGroup;
+    public BetaTestingGroupCreateDTO getBetaTestingGroup() {
+        return betaTestingGroup;
     }
 
-    public void setTdViewGroup(TDViewGroupCreateDTO tdViewGroup) {
-        this.tdViewGroup = tdViewGroup;
+    public void setBetaTestingGroup(BetaTestingGroupCreateDTO betaTestingGroup) {
+        this.betaTestingGroup = betaTestingGroup;
     }
 
     @ApiModelProperty(value = "Sign if stepper bar should be displayed.", required = true, example = "true")

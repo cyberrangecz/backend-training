@@ -15,8 +15,8 @@ import cz.muni.ics.kypo.training.api.dto.snapshothook.SnapshotHookDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionCreateDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionUpdateDTO;
-import cz.muni.ics.kypo.training.api.dto.viewgroup.TDViewGroupCreateDTO;
-import cz.muni.ics.kypo.training.api.dto.viewgroup.TDViewGroupUpdateDTO;
+import cz.muni.ics.kypo.training.api.dto.betatestinggroup.BetaTestingGroupCreateDTO;
+import cz.muni.ics.kypo.training.api.dto.betatestinggroup.BetaTestingGroupUpdateDTO;
 import cz.muni.ics.kypo.training.api.enums.LevelType;
 import cz.muni.ics.kypo.training.api.enums.RoleType;
 import cz.muni.ics.kypo.training.exceptions.FacadeLayerException;
@@ -64,7 +64,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = {InfoLevelMapperImpl.class, SnapshotHookMapperImpl.class,
-        TrainingDefinitionMapperImpl.class, UserRefMapperImpl.class, TDViewGroupMapperImpl.class})
+        TrainingDefinitionMapperImpl.class, UserRefMapperImpl.class, BetaTestingGroupMapperImpl.class})
 public class TrainingDefinitionsRestControllerTest {
 
     private TrainingDefinitionsRestController trainingDefinitionsRestController;
@@ -86,8 +86,8 @@ public class TrainingDefinitionsRestControllerTest {
     private TrainingDefinitionCreateDTO trainingDefinitionCreateDTO;
     private TrainingDefinitionUpdateDTO trainingDefinitionUpdateDTO;
 
-    private TDViewGroupCreateDTO tdViewGroupCreateDTO;
-    private TDViewGroupUpdateDTO tdViewGroupUpdateDTO;
+    private BetaTestingGroupCreateDTO betaTestingGroupCreateDTO;
+    private BetaTestingGroupUpdateDTO betaTestingGroupUpdateDTO;
 
     private GameLevel gameLevel;
     private GameLevelUpdateDTO gameLevelUpdateDTO;
@@ -175,16 +175,11 @@ public class TrainingDefinitionsRestControllerTest {
         Set<String> authorLogins = new HashSet<>();
         authorLogins.add("Author");
 
-        tdViewGroupCreateDTO = new TDViewGroupCreateDTO();
-        tdViewGroupCreateDTO.setTitle("Title create");
-        tdViewGroupCreateDTO.setOrganizers(Set.of());
-        tdViewGroupCreateDTO.setDescription("Create description");
+        betaTestingGroupCreateDTO = new BetaTestingGroupCreateDTO();
+        betaTestingGroupCreateDTO.setOrganizers(Set.of());
 
-        tdViewGroupUpdateDTO = new TDViewGroupUpdateDTO();
-        tdViewGroupUpdateDTO.setId(5L);
-        tdViewGroupUpdateDTO.setTitle("Title update");
-        tdViewGroupUpdateDTO.setDescription("Update description");
-        tdViewGroupUpdateDTO.setOrganizers(Set.of());
+        betaTestingGroupUpdateDTO = new BetaTestingGroupUpdateDTO();
+        betaTestingGroupUpdateDTO.setOrganizers(Set.of());
 
         trainingDefinition1 = new TrainingDefinition();
         trainingDefinition1.setId(1L);
@@ -222,7 +217,7 @@ public class TrainingDefinitionsRestControllerTest {
         trainingDefinitionUpdateDTO.setAuthors(Set.of());
         trainingDefinitionUpdateDTO.setSandboxDefinitionRefId(1L);
         trainingDefinitionUpdateDTO.setShowStepperBar(false);
-        trainingDefinitionUpdateDTO.setTdViewGroup(tdViewGroupUpdateDTO);
+        trainingDefinitionUpdateDTO.setBetaTestingGroup(betaTestingGroupUpdateDTO);
 
         trainingDefinitionCreateDTO = new TrainingDefinitionCreateDTO();
         trainingDefinitionCreateDTO.setDescription("TD desc");
@@ -233,7 +228,7 @@ public class TrainingDefinitionsRestControllerTest {
         trainingDefinitionCreateDTO.setAuthors(Set.of());
         trainingDefinitionCreateDTO.setShowStepperBar(true);
         trainingDefinitionCreateDTO.setSandboxDefinitionRefId(1L);
-        trainingDefinitionCreateDTO.setTdViewGroup(tdViewGroupCreateDTO);
+        trainingDefinitionCreateDTO.setBetaTestingGroup(betaTestingGroupCreateDTO);
 
         abstractLevelDTO = new AbstractLevelDTO();
         abstractLevelDTO.setId(1L);

@@ -27,7 +27,7 @@ public class UserRef implements Serializable {
     @ManyToMany(mappedBy = "authors", fetch = FetchType.LAZY)
     private Set<TrainingDefinition> trainingDefinitions = new HashSet<>();
     @ManyToMany(mappedBy = "organizers", fetch = FetchType.LAZY)
-    private Set<TDViewGroup> tdViewGroups = new HashSet<>();
+    private Set<BetaTestingGroup> betaTesters = new HashSet<>();
 
     public UserRef() {
     }
@@ -89,12 +89,12 @@ public class UserRef implements Serializable {
         this.trainingDefinitions.remove(trainingDefinition);
     }
 
-    public void addViewGroup(TDViewGroup viewGroup) {
-        this.tdViewGroups.add(viewGroup);
+    public void addViewGroup(BetaTestingGroup viewGroup) {
+        this.betaTesters.add(viewGroup);
     }
 
-    public void removeViewGroup(TDViewGroup viewGroup) {
-        this.tdViewGroups.remove(viewGroup);
+    public void removeViewGroup(BetaTestingGroup viewGroup) {
+        this.betaTesters.remove(viewGroup);
     }
 
     public void addTrainingInstance(TrainingInstance trainingInstance) {
@@ -105,12 +105,12 @@ public class UserRef implements Serializable {
         this.trainingInstances.remove(trainingInstance);
     }
 
-    public Set<TDViewGroup> getTdViewGroups() {
-        return Collections.unmodifiableSet(tdViewGroups);
+    public Set<BetaTestingGroup> getBetaTesters() {
+        return Collections.unmodifiableSet(betaTesters);
     }
 
-    public void setTdViewGroups(Set<TDViewGroup> tdViewGroups) {
-        this.tdViewGroups = tdViewGroups;
+    public void setBetaTesters(Set<BetaTestingGroup> betaTesters) {
+        this.betaTesters = betaTesters;
     }
 
     @Override

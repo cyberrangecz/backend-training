@@ -61,17 +61,15 @@ CREATE TABLE sandbox_instance_ref (
     PRIMARY KEY (id)
 );
 
-CREATE TABLE td_view_group (
+CREATE TABLE beta_testing_group (
    id  bigserial NOT NULL,
-   title varchar(255) NOT NULL,
-   description text,
     PRIMARY KEY (id)
 );
 
-CREATE TABLE td_view_group_user_ref (
-    td_view_group_id int8 NOT NULL,
+CREATE TABLE beta_testing_group_user_ref (
+    beta_testing_group_id int8 NOT NULL,
     user_ref_id int8 NOT NULL,
-    PRIMARY KEY (td_view_group_id, user_ref_id)
+    PRIMARY KEY (beta_testing_group_id, user_ref_id)
 );
 
 CREATE TABLE training_definition (
@@ -84,12 +82,12 @@ CREATE TABLE training_definition (
     starting_level int8,
     state varchar(128) NOT NULL,
     title varchar(255) NOT NULL,
-    td_view_group_id int8 NULL,
+     beta_testing_group_id int8 NULL,
     PRIMARY KEY (id)
 );
 
 CREATE TABLE training_definition_user_ref (
-   training_definition_id int8 NOT NULL,
+    training_definition_id int8 NOT NULL,
     user_ref_id int8 NOT NULL,
     PRIMARY KEY (training_definition_id, user_ref_id)
 );
@@ -148,7 +146,7 @@ ALTER TABLE user_ref
    ADD CONSTRAINT UK_iajf018nptidl085leng237xl unique (user_ref_login);
 
 ALTER TABLE training_definition
-   ADD CONSTRAINT UK_iajf018npqbvl143leng259xl unique (td_view_group_id);
+   ADD CONSTRAINT UK_iajf018npqbvl143leng259xl unique (beta_testing_group_id);
 
 ALTER TABLE training_instance
    ADD CONSTRAINT UK_iajf643ipqbfl143leng248xl unique (access_token);
@@ -187,20 +185,20 @@ ALTER TABLE sandbox_instance_ref
    FOREIGN KEY (training_instance_id)
    REFERENCES training_instance;
 
-ALTER TABLE td_view_group_user_ref
+ALTER TABLE beta_testing_group_user_ref
    ADD CONSTRAINT FKh2gwvi7oxr8uqcs9yf6352bo0
    FOREIGN KEY (user_ref_id)
    REFERENCES user_ref;
 
-ALTER TABLE td_view_group_user_ref
+ALTER TABLE beta_testing_group_user_ref
    ADD CONSTRAINT FKk97tvstrwj10cnic68e9i5bjd
-   FOREIGN KEY (td_view_group_id)
-   REFERENCES td_view_group;
+   FOREIGN KEY (beta_testing_group_id)
+   REFERENCES beta_testing_group;
 
 ALTER TABLE training_definition
    ADD CONSTRAINT FKb7vjqot5ntr08c948ttkg20f0
-   FOREIGN KEY (td_view_group_id)
-   REFERENCES td_view_group;
+   FOREIGN KEY (beta_testing_group_id)
+   REFERENCES beta_testing_group;
 
 ALTER TABLE training_definition_user_ref
    ADD CONSTRAINT FKq5ejeyb8ced1s2t9lv4ld1uyl
