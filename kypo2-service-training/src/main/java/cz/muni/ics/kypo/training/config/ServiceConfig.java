@@ -1,6 +1,6 @@
 package cz.muni.ics.kypo.training.config;
 
-import cz.muni.csirt.kypo.elasticsearch.service.ElasticsearchServiceConfig;
+import cz.muni.csirt.kypo.elasticsearch.service.config.ElasticsearchServiceConfig;
 import cz.muni.ics.kypo.commons.security.config.ResourceServerSecurityConfig;
 import cz.muni.ics.kypo.training.persistence.config.PersistenceConfig;
 

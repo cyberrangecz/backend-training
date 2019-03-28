@@ -1,4 +1,4 @@
-package cz.muni.csirt.kypo.elasticsearch.service.audit.config;
+package cz.muni.csirt.kypo.elasticsearch.service.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
