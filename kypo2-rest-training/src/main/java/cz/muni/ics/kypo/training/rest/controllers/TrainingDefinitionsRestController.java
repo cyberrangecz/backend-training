@@ -93,6 +93,7 @@ public class TrainingDefinitionsRestController {
             Squiggly.init(objectMapper, fields);
             return ResponseEntity.ok(SquigglyUtils.stringify(objectMapper, trainingDefinitionResource));
         } catch (FacadeLayerException ex) {
+            LOG.error("Training definition with id {} not found.", id);
             throw new ResourceNotFoundException(ex.getLocalizedMessage());
         }
     }

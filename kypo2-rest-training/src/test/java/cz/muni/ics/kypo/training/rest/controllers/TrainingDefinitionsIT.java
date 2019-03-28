@@ -1,5 +1,10 @@
 package cz.muni.ics.kypo.training.rest.controllers;
 
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.Appender;
+import ch.qos.logback.core.read.ListAppender;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.JsonObject;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelDTO;
@@ -28,8 +33,10 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.modelmapper.ModelMapper;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
@@ -69,8 +76,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Import(RestConfigTest.class)
 public class TrainingDefinitionsIT {
 
-	private MockMvc mvc;
-	private BeanMapping beanMapping;
+    @Mock
+    private Appender<ILoggingEvent> mockAppender;
+
+    private MockMvc mvc;
+    private BeanMapping beanMapping;
+    private static final Logger logger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(TrainingDefinitionsRestController.class);
 
 	@Autowired
 	private ApplicationContext applicationContext;
@@ -260,15 +271,22 @@ public class TrainingDefinitionsIT {
 		assertEquals(convertObjectToJsonBytes(convertObjectToJsonBytes(definitionDTO)), result.getContentAsString());
 	}
 
-	@Test
-	public void findTrainingDefinitionByIdWithDefinitionNotFound() throws Exception {
-		Exception ex = mvc.perform(get("/training-definitions" + "/{id}", 100L))
-				.andExpect(status().isNotFound())
-				.andReturn().getResolvedException();
+    @Test
+    public void findTrainingDefinitionByIdWithDefinitionNotFound() throws Exception {
+        ListAppender<ILoggingEvent> listAppender = new ListAppender<>();
+        listAppender.start();
+        logger.addAppender(listAppender);
 
-		assertEquals(ex.getClass(), ResourceNotFoundException.class);
-		assertTrue(ex.getMessage().contains("Training definition with id: 100 not found"));
-	}
+        Exception ex = mvc.perform(get("/training-definitions" + "/{id}", 100L))
+                .andExpect(status().isNotFound())
+                .andReturn().getResolvedException();
+
+        assertEquals(ex.getClass(), ResourceNotFoundException.class);
+        assertTrue(ex.getMessage().contains("Training definition with id: 100 not found"));
+
+        assertEquals("Training definition with id {} not found.", listAppender.list.get(0).getMessage());
+        assertEquals(Level.ERROR, listAppender.list.get(0).getLevel());
+    }
 /*TODO poriesit canBeArchived
 	@Test
 	public void findAllTrainingDefinitions() throws Exception {
