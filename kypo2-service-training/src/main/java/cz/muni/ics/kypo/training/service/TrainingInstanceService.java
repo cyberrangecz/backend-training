@@ -92,4 +92,21 @@ public interface TrainingInstanceService {
      */
     Long createPoolForSandboxes(Long trainingInstanceId);
 
+    /**
+     * Deletes sandboxes from training instance
+     *
+     * @param instanceId id of training instance for which sandboxes will be deleted
+     * @param listOfSandBoxIds ids of sandboxes to be deleted
+     * @throws ServiceLayerException
+     */
+    void deleteSandboxes(Long instanceId, Set<Long> listOfSandBoxIds);
+
+    /**
+     * Reallocate sandboxe in training instance
+     *
+     * @param instanceId id of training instance for which sandboxes will be reallocated
+     * @param sandboxId id of sandbox that will be reallocated
+     * @throws ServiceLayerException
+     */
+    void reallocateSandbox(Long instanceId, Long sandboxId);
 }

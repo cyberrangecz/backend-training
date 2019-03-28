@@ -9,6 +9,8 @@ import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceCreate
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceDTO;
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceUpdateDTO;
 
+import java.util.Set;
+
 /**
  * @author Pavel Seda (441048)
  */
@@ -60,7 +62,6 @@ public interface TrainingInstanceFacade {
      * Allocates sandboxes for training instance
      *
      * @param instanceId
-     * @return
      * @throws FacadeLayerException
      */
     void allocateSandboxes(Long instanceId);
@@ -80,5 +81,22 @@ public interface TrainingInstanceFacade {
      * @return id of created pool
      */
     Long createPoolForSandboxes(Long instanceId);
+
+    /**
+     * Deletes all failed sandboxes from training instance
+     *
+     * @param instanceId id of training instance for which failed sandboxes will be deleted and reallocated
+     * @param sandboxIds ids of sandboxes that will be deleted
+     * @throws FacadeLayerException
+     */
+    void deleteSandboxes(Long instanceId, Set<Long> sandboxIds);
+
+    /**
+     * Reallocates sandboxes in training instance
+     *
+     * @param instanceId id of training instance
+     * @param sandboxId id of sandbox that will be reallocated
+     */
+    void reallocateSandbox(Long instanceId, Long sandboxId);
 
 }

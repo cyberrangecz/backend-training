@@ -120,7 +120,7 @@ public class TrainingInstance implements Serializable {
     }
 
     public Set<SandboxInstanceRef> getSandboxInstanceRefs() {
-        return Collections.unmodifiableSet(sandboxInstanceRefs);
+        return sandboxInstanceRefs;
     }
 
     public void setSandboxInstanceRefs(Set<SandboxInstanceRef> sandboxInstanceRefs) {

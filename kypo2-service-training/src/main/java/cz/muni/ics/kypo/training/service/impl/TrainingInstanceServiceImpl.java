@@ -31,6 +31,7 @@ import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
@@ -186,11 +187,14 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
     }
 
     @Override
-    @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
-            "or @securityService.isOrganizerOfGivenTrainingInstance(#instanceId)")
+    @PreAuthorize("hasAuthority('ADMINISTRATOR')" +
+        "or @securityService.isOrganizerOfGivenTrainingInstance(#instanceId)")
     public void allocateSandboxes(Long instanceId) {
         LOG.debug("allocateSandboxes({})", instanceId);
         TrainingInstance trainingInstance = findById(instanceId);
+        if (trainingInstance == null){
+            throw new ServiceLayerException("Training instance with id: "+  instanceId +", was not found.", ErrorCode.RESOURCE_NOT_FOUND);
+        }
         //Check if pool exist
         if (trainingInstance.getPoolId() == null) {
             throw new ServiceLayerException("Pool for sandboxes is not created yet. Please create pool before allocating sandboxes.", ErrorCode.RESOURCE_CONFLICT);
@@ -202,60 +206,92 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
 
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.setContentType(MediaType.APPLICATION_JSON);
-        Set<Long> idsOfNewSandboxes = new HashSet<>();
-        for (int i = 0; i < 3; i++) {
-            try {
-                //Allocate sandboxes in pool
-                ResponseEntity<List<SandboxInfo>> sandboxResponse = restTemplate.exchange(kypoOpenStackURI + "/pools/" + trainingInstance.getPoolId() + "/sandboxes/", HttpMethod.POST, new HttpEntity<>(httpHeaders), new ParameterizedTypeReference<List<SandboxInfo>>() {
-                });
-                if (sandboxResponse.getStatusCode().isError() || sandboxResponse.getBody() == null) {
-                    throw new ServiceLayerException("Error from openstack while allocate sandboxes.", ErrorCode.UNEXPECTED_ERROR);
-                }
-                sandboxResponse.getBody().forEach(sandboxInfo -> {
-                    if (sandboxInfo.getStatus().contains("CREATE")) {
-                        idsOfNewSandboxes.add(sandboxInfo.getId());
-                    }
-                });
-                try {
-                    TimeUnit.SECONDS.sleep(20);
-                } catch (InterruptedException ex) {
-                    Thread.currentThread().interrupt();
-                    throw new RuntimeException(ex);
-                }
-                //Get state of sandboxes
-                ResponseEntity<List<SandboxInfo>> allocatedSandboxes = restTemplate.exchange(kypoOpenStackURI + "/pools/" + trainingInstance.getPoolId() + "/sandboxes/", HttpMethod.GET, new HttpEntity<>(httpHeaders), new ParameterizedTypeReference<List<SandboxInfo>>() {
-                });
-                if (allocatedSandboxes.getStatusCode().isError() || allocatedSandboxes.getBody() == null) {
-                    throw new ServiceLayerException("Error from openstack while obtaining states of sandboxes.", ErrorCode.UNEXPECTED_ERROR);
-                }
+        try {
+            //Allocate sandboxes in pool
+            ResponseEntity<List<SandboxInfo>> sandboxResponse = restTemplate.exchange(kypoOpenStackURI + "/pools/" + trainingInstance.getPoolId() + "/sandboxes/", HttpMethod.POST, new HttpEntity<>(httpHeaders), new ParameterizedTypeReference<List<SandboxInfo>>() {
+            });
+            if (sandboxResponse.getStatusCode().isError() || sandboxResponse.getBody() == null) {
+                throw new ServiceLayerException("Error from openstack while allocate sandboxes.", ErrorCode.UNEXPECTED_ERROR);
+            }
+            sandboxResponse.getBody().forEach(s -> {
+                SandboxInstanceRef sIR = new SandboxInstanceRef();
+                sIR.setSandboxInstanceRef(s.getId());
+                trainingInstance.addSandboxInstanceRef(sIR);
+            });
+        } catch (HttpClientErrorException ex) {
+            throw new ServiceLayerException("Client side error when calling OpenStack:" + ex.getMessage() + ". Probably wrong URL of service.", ErrorCode.UNEXPECTED_ERROR);
+        }
+    }
 
-                //Remove failed sandboxes, also from open stack
-                Set<Long> idsOfFailedSandboxes = allocatedSandboxes.getBody().stream().filter(f -> f.getStatus().contains("FAILED")).map(SandboxInfo::getId).collect(Collectors.toSet());
-                if (idsOfFailedSandboxes.size() == 0) {
-                    break;
+    @Override
+    @PreAuthorize("hasAuthority('ADMINISTRATOR')" +
+        "or @securityService.isOrganizerOfGivenTrainingInstance(#instanceId)")
+    public void deleteSandboxes(Long instanceId, Set<Long> listOfSandBoxIds) {
+        LOG.debug("deleteSandboxes ({},{}))", instanceId, listOfSandBoxIds);
+        TrainingInstance trainingInstance = findById(instanceId);
+        if (trainingInstance == null){
+            throw new ServiceLayerException("Training instance with id: "+  instanceId +", was not found.", ErrorCode.RESOURCE_NOT_FOUND);
+        }
+
+        HttpHeaders httpHeaders = new HttpHeaders();
+        httpHeaders.setContentType(MediaType.APPLICATION_JSON);
+        try{
+            for (Long id : listOfSandBoxIds){
+                for (SandboxInstanceRef sIR : trainingInstance.getSandboxInstanceRefs()){
+                    if (sIR.getSandboxInstanceRef().equals(id)){
+                        trainingInstance.getSandboxInstanceRefs().remove(sIR);
+                        ResponseEntity<String> responseOnDelete = restTemplate.exchange(kypoOpenStackURI + "/sandboxes/" + sIR.getSandboxInstanceRef() + "/",
+                            HttpMethod.DELETE, new HttpEntity<>(httpHeaders), String.class);
+                        if (!responseOnDelete.getStatusCode().is2xxSuccessful()){
+                            throw new ServiceLayerException("Error from openstack while deleting sandboxes.", ErrorCode.UNEXPECTED_ERROR);
+                        }
+                        break;
+                    }
                 }
-                for (Long idOfSandboxInstance : idsOfFailedSandboxes) {
-                    ResponseEntity<String> responseOnDelete = restTemplate.exchange(kypoOpenStackURI + "/sandboxes/" + idOfSandboxInstance + "/", HttpMethod.DELETE, new HttpEntity<>(httpHeaders), String.class);
-                    if (!responseOnDelete.getStatusCode().is2xxSuccessful()) {
+            }
+        } catch (HttpClientErrorException ex){
+            throw new ServiceLayerException("Client side error when calling OpenStack: " + ex.getMessage()+ ". Probably wrong URL of service.", ErrorCode.UNEXPECTED_ERROR);
+        }
+    }
+
+    @Override
+    @PreAuthorize("hasAuthority('ADMINISTRATOR')" +
+        "or @securityService.isOrganizerOfGivenTrainingInstance(#instanceId)")
+    public void reallocateSandbox(Long instanceId, Long sandboxId){
+        LOG.debug("reallocateSandboxes({}, {})", instanceId, sandboxId);
+        TrainingInstance trainingInstance = findById(instanceId);
+        if (trainingInstance == null){
+            throw new ServiceLayerException("Training instance with id: "+  instanceId +", was not found.", ErrorCode.RESOURCE_NOT_FOUND);
+        }
+        HttpHeaders httpHeaders = new HttpHeaders();
+        httpHeaders.setContentType(MediaType.APPLICATION_JSON);
+        try {
+            //Delete sandbox
+            for (SandboxInstanceRef sIR : trainingInstance.getSandboxInstanceRefs()){
+                if (sIR.getSandboxInstanceRef().equals(sandboxId)){
+                    trainingInstance.getSandboxInstanceRefs().remove(sIR);
+                    ResponseEntity<String> responseOnDelete = restTemplate.exchange(kypoOpenStackURI + "/sandboxes/" + sIR.getSandboxInstanceRef() + "/",
+                        HttpMethod.DELETE, new HttpEntity<>(httpHeaders), String.class);
+                    if (!responseOnDelete.getStatusCode().is2xxSuccessful()){
                         throw new ServiceLayerException("Error from openstack while deleting sandboxes.", ErrorCode.UNEXPECTED_ERROR);
                     }
+                    break;
                 }
-                try {
-                    TimeUnit.SECONDS.sleep(15);
-                } catch (InterruptedException ex) {
-                    Thread.currentThread().interrupt();
-                    throw new RuntimeException(ex);
-                }
-
-                idsOfNewSandboxes.removeAll(idsOfFailedSandboxes);
-            } catch (HttpClientErrorException ex) {
-                throw new ServiceLayerException("Client side error when calling OpenStack:" + ex.getMessage() + ". Probably wrong URL of service.", ErrorCode.UNEXPECTED_ERROR);
             }
-        }
-        for (Long sandboxInstanceRefId : idsOfNewSandboxes) {
-            SandboxInstanceRef sandboxInstanceRef = new SandboxInstanceRef();
-            sandboxInstanceRef.setSandboxInstanceRef(sandboxInstanceRefId);
-            trainingInstance.addSandboxInstanceRef(sandboxInstanceRef);
+            //Allocate sandbox in pool
+            ResponseEntity<List<SandboxInfo>> sandboxResponse = restTemplate.exchange(kypoOpenStackURI + "/pools/" + trainingInstance.getPoolId() + "/sandboxes/",
+                HttpMethod.POST, new HttpEntity<>(httpHeaders), new ParameterizedTypeReference<List<SandboxInfo>>() {
+            });
+            if (sandboxResponse.getStatusCode().isError() || sandboxResponse.getBody() == null) {
+                throw new ServiceLayerException("Error from openstack while allocate sandboxes.", ErrorCode.UNEXPECTED_ERROR);
+            }
+            sandboxResponse.getBody().forEach(s -> {
+                SandboxInstanceRef sIR = new SandboxInstanceRef();
+                sIR.setSandboxInstanceRef(s.getId());
+                trainingInstance.addSandboxInstanceRef(sIR);
+            });
+        } catch (HttpClientErrorException ex) {
+            throw new ServiceLayerException("Client side error when calling OpenStack:" + ex.getMessage() + ". Probably wrong URL of service.", ErrorCode.UNEXPECTED_ERROR);
         }
     }
 
@@ -276,6 +312,8 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
         return organizerRefRepository.findUsers(logins);
     }
 
+
+
     private String getSubOfLoggedInUser() {
         OAuth2Authentication authentication = (OAuth2Authentication) SecurityContextHolder.getContext().getAuthentication();
         JsonObject credentials = (JsonObject) authentication.getUserAuthentication().getCredentials();
@@ -287,4 +325,5 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
         JsonObject credentials = (JsonObject) authentication.getUserAuthentication().getCredentials();
         return credentials.get("name").getAsString();
     }
+
 }

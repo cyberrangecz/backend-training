@@ -161,4 +161,26 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
             throw new FacadeLayerException(ex);
         }
     }
+
+    @Override
+    @TransactionalWO
+    public void deleteSandboxes(Long instanceId, Set<Long> sandboxIds) {
+        LOG.debug("deleteFailedSandboxes({}, {})", instanceId, sandboxIds);
+        try{
+            trainingInstanceService.deleteSandboxes(instanceId, sandboxIds);
+        } catch (ServiceLayerException ex) {
+            throw new FacadeLayerException(ex);
+        }
+    }
+
+    @Override
+    @TransactionalWO
+    public void reallocateSandbox(Long instanceId, Long sandboxId){
+        LOG.debug("reallocateSandboxes({}, {})", instanceId, sandboxId);
+        try{
+            trainingInstanceService.reallocateSandbox(instanceId, sandboxId);
+        } catch (ServiceLayerException ex) {
+            throw new FacadeLayerException(ex);
+        }
+    }
 }

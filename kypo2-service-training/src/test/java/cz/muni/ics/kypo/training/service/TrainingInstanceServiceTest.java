@@ -39,6 +39,7 @@ import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.web.client.RestTemplate;
 
+import javax.validation.constraints.AssertTrue;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -120,6 +121,12 @@ public class TrainingInstanceServiceTest {
         sandboxInfo.setId(2L);
         sandboxInfo.setStatus("CREATE_COMPLETE");
         sandboxInfo.setPool(5L);
+
+        sandboxInstanceRef1 = new SandboxInstanceRef();
+        sandboxInstanceRef1.setSandboxInstanceRef(1L);
+        sandboxInstanceRef2 = new SandboxInstanceRef();
+        sandboxInstanceRef2.setSandboxInstanceRef(2L);
+
     }
 
     @Test
@@ -194,7 +201,7 @@ public class TrainingInstanceServiceTest {
     }
 
     @Test
-    public void deleteTrainingInstaceWithNull() {
+    public void deleteTrainingInstanceWithNull() {
         thrown.expect(IllegalArgumentException.class);
         thrown.expectMessage("Input training instance id" +
                 " must not be null");
@@ -232,22 +239,17 @@ public class TrainingInstanceServiceTest {
         trainingInstanceService.findTrainingRunsByTrainingInstance(10L, PageRequest.of(0, 2));
     }
 
-    //TODO deal with Thread.sleep maybe with PowerMock
-//    @Test
-//    public void allocateSandboxes() {
-//        when(trainingDefinition.getSandboxDefinitionRefId()).thenReturn(1L);
-//        when(sandboxPoolInfo.getId()).thenReturn(4L);
-//
-//        given(trainingInstanceRepository.findById(trainingInstance1.getId())).willReturn(Optional.ofNullable(trainingInstance1));
-//        given(restTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(SandboxPoolInfo.class))).
-//                willReturn(new ResponseEntity<SandboxPoolInfo>(sandboxPoolInfo, HttpStatus.OK));
-//        given(restTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
-//                willReturn(new ResponseEntity<List<SandboxInfo>>(new ArrayList<>(Collections.singletonList(sandboxInfo)), HttpStatus.OK));
-//        given(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
-//                willReturn(new ResponseEntity<List<SandboxInfo>>(new ArrayList<>(Collections.singletonList(sandboxInfo)), HttpStatus.OK));
-//        trainingInstanceService.allocateSandboxes(trainingInstance1.getId());
-//        assertTrue(trainingInstance1.getSandboxInstanceRefs().stream().anyMatch(s -> s.getSandboxInstanceRef().equals(2L)));
-//    }
+    @Test
+    public void allocateSandboxes() {
+        when(trainingDefinition.getSandboxDefinitionRefId()).thenReturn(1L);
+        when(sandboxPoolInfo.getId()).thenReturn(4L);
+
+        given(trainingInstanceRepository.findById(trainingInstance1.getId())).willReturn(Optional.ofNullable(trainingInstance1));
+        given(restTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
+                willReturn(new ResponseEntity<List<SandboxInfo>>(new ArrayList<>(Collections.singletonList(sandboxInfo)), HttpStatus.OK));
+        trainingInstanceService.allocateSandboxes(trainingInstance1.getId());
+        assertTrue(trainingInstance1.getSandboxInstanceRefs().stream().anyMatch(s -> s.getSandboxInstanceRef().equals(2L)));
+    }
 
     @Test
     public void allocateSandboxesWithNotCreatedPool() {
@@ -266,6 +268,32 @@ public class TrainingInstanceServiceTest {
         thrown.expect(ServiceLayerException.class);
         thrown.expectMessage("Pool of sandboxes of training instance with id: " + trainingInstance1.getId() + " is full.");
         trainingInstanceService.allocateSandboxes(trainingInstance1.getId());
+    }
+
+    @Test
+    public void deleteSandboxes() {
+        trainingInstance1.addSandboxInstanceRef(sandboxInstanceRef1);
+        trainingInstance1.addSandboxInstanceRef(sandboxInstanceRef2);
+        given(trainingInstanceRepository.findById(trainingInstance1.getId())).willReturn(Optional.ofNullable(trainingInstance1));
+
+        given(restTemplate.exchange(anyString(), eq(HttpMethod.DELETE), any(HttpEntity.class), eq(String.class))).
+            willReturn(new ResponseEntity<String>("", HttpStatus.OK));
+        Set<Long> ids = new HashSet<>();
+        ids.add(sandboxInstanceRef1.getSandboxInstanceRef());
+        trainingInstanceService.deleteSandboxes(trainingInstance1.getId(), new HashSet<Long>(ids));
+        assertTrue(!trainingInstance1.getSandboxInstanceRefs().contains(sandboxInstanceRef1));
+    }
+
+    @Test
+    public void reallocateSandbox() {
+        when(trainingDefinition.getSandboxDefinitionRefId()).thenReturn(1L);
+        when(sandboxPoolInfo.getId()).thenReturn(4L);
+
+        given(trainingInstanceRepository.findById(trainingInstance1.getId())).willReturn(Optional.ofNullable(trainingInstance1));
+        given(restTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
+            willReturn(new ResponseEntity<List<SandboxInfo>>(new ArrayList<>(Collections.singletonList(sandboxInfo)), HttpStatus.OK));
+        trainingInstanceService.reallocateSandbox(trainingInstance1.getId(),sandboxInstanceRef1.getId());
+        assertTrue(trainingInstance1.getSandboxInstanceRefs().stream().anyMatch(s -> s.getSandboxInstanceRef().equals(2L)));
     }
 
     @Test

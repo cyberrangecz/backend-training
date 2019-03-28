@@ -29,10 +29,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.BDDMockito.*;
@@ -182,6 +179,21 @@ public class TrainingInstanceFacadeTest {
     }
 
     @Test
+    public void createPool() {
+        given(trainingInstanceService.createPoolForSandboxes(trainingInstance1.getId())).willReturn(5L);
+        long poolId = trainingInstanceFacade.createPoolForSandboxes(trainingInstance1.getId());
+
+        assertEquals(5L, poolId);
+    }
+
+    @Test
+    public void createPoolWithServiceException() {
+        willThrow(ServiceLayerException.class).given(trainingInstanceService).createPoolForSandboxes(trainingInstance1.getId());
+        thrown.expect(FacadeLayerException.class);
+        trainingInstanceFacade.createPoolForSandboxes(trainingInstance1.getId());
+    }
+
+    @Test
     public void allocateSandboxes() {
         trainingInstanceFacade.allocateSandboxes(trainingInstance1.getId());
         then(trainingInstanceService).should().allocateSandboxes(trainingInstance1.getId());
@@ -195,18 +207,33 @@ public class TrainingInstanceFacadeTest {
     }
 
     @Test
-    public void createPool() {
-        given(trainingInstanceService.createPoolForSandboxes(trainingInstance1.getId())).willReturn(5L);
-        long poolId = trainingInstanceFacade.createPoolForSandboxes(trainingInstance1.getId());
-
-        assertEquals(5L, poolId);
+    public void deleteSandboxes() {
+        Set<Long> ids = new HashSet<>();
+        ids.add(1L);
+        trainingInstanceFacade.deleteSandboxes(trainingInstance1.getId(), ids);
+        then(trainingInstanceService).should().deleteSandboxes(trainingInstance1.getId(), ids);
     }
 
     @Test
-    public void createPoolWithServiceException() {
-        willThrow(ServiceLayerException.class).given(trainingInstanceService).createPoolForSandboxes(trainingInstance1.getId());
+    public void reallocateSandbox() {
+        trainingInstanceFacade.reallocateSandbox(trainingInstance1.getId(),1L);
+        then(trainingInstanceService).should().reallocateSandbox(trainingInstance1.getId(), 1L);
+    }
+
+    @Test
+    public void reallocateSandboxWithServiceException() {
+        willThrow(ServiceLayerException.class).given(trainingInstanceService).reallocateSandbox(trainingInstance1.getId(), 1L);
         thrown.expect(FacadeLayerException.class);
-        trainingInstanceFacade.createPoolForSandboxes(trainingInstance1.getId());
+        trainingInstanceFacade.reallocateSandbox(trainingInstance1.getId(), 1L);
+    }
+
+    @Test
+    public void deleteSandboxesWithServiceException() {
+        Set<Long> ids = new HashSet<>();
+        ids.add(1L);
+        willThrow(ServiceLayerException.class).given(trainingInstanceService).deleteSandboxes(trainingInstance1.getId(), ids);
+        thrown.expect(FacadeLayerException.class);
+        trainingInstanceFacade.deleteSandboxes(trainingInstance1.getId(), ids);
     }
 
     private void deepEquals(TrainingInstance expected, TrainingInstanceDTO actual) {
