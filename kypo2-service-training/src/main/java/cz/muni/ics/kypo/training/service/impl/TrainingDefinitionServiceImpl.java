@@ -176,7 +176,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     }
 
     @Override
-    @IsAdmin
+    @IsDesignerOrAdmin
     public Page<TrainingDefinition> findAllBySandboxDefinitionId(Long sandboxDefinitionId, Pageable pageable) {
         LOG.debug("findAllBySandboxDefinitionId({}, {})", sandboxDefinitionId, pageable);
         return trainingDefinitionRepository.findAllBySandBoxDefinitionRefId(sandboxDefinitionId, pageable);
