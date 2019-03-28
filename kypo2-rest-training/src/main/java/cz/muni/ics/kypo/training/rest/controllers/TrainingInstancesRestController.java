@@ -16,6 +16,7 @@ import cz.muni.ics.kypo.training.persistence.model.TrainingInstance;
 import cz.muni.ics.kypo.training.rest.ExceptionSorter;
 
 import java.util.List;
+import java.util.Set;
 
 import io.swagger.annotations.*;
 import org.slf4j.Logger;
@@ -286,6 +287,52 @@ public class TrainingInstancesRestController {
             Squiggly.init(objectMapper, fields);
             return ResponseEntity.ok(SquigglyUtils.stringify(objectMapper, trainingRunResource));
         } catch (FacadeLayerException ex) {
+            throw ExceptionSorter.throwException(ex);
+        }
+    }
+
+    @ApiOperation(httpMethod = "DELETE",
+            value = "Delete sandboxes from training instance",
+            response = Void.class,
+            nickname = "deleteSandboxes")
+    @ApiResponses(value = {
+            @ApiResponse(code = 202, message = "Sandboxes were removed from training instance"),
+            @ApiResponse(code = 404, message = "Training instance with given id not found."),
+            @ApiResponse(code = 500, message = "Unexpected condition was encountered")
+    })
+    @DeleteMapping(path = "/{instanceId}/sandbox-instances")
+    public ResponseEntity<Void> deleteSandboxes(
+        @ApiParam(value = "Id of training instance for which sandboxes are deleted", required = true)
+        @PathVariable(value = "instanceId") Long instanceId,
+        @ApiParam(value = "Ids of sandboxes that will be deleted", required = true)
+        @RequestParam (value = "sandboxIds", required = true) Set<Long> sandboxIds){
+        try{
+            trainingInstanceFacade.deleteSandboxes(instanceId, sandboxIds);
+            return new ResponseEntity<>(HttpStatus.OK);
+        } catch(FacadeLayerException ex) {
+            throw ExceptionSorter.throwException(ex);
+        }
+    }
+
+    @ApiOperation(httpMethod = "POST",
+            value = "Reallocate sandbox in training instance",
+            response = Void.class,
+            nickname = "reallocateSandbox")
+    @ApiResponses(value = {
+            @ApiResponse(code = 202, message = "Sandbox was reallocated"),
+            @ApiResponse(code = 404, message = "Training instance with given id not found."),
+            @ApiResponse(code = 500, message = "Unexpected condition was encountered")
+    })
+    @PostMapping(path = "/{instanceId}/sandbox-instances/{sandboxId}")
+    public ResponseEntity<Void> reallocateSandbox(
+        @ApiParam(value = "Id of training instance for which sandbox is reallocated", required = true)
+        @PathVariable(value = "instanceId") Long instanceId,
+        @ApiParam(value = "id of sandbox that will be reallocated", required = true)
+        @PathVariable(value = "sandboxId") Long sandboxId){
+        try{
+            trainingInstanceFacade.reallocateSandbox(instanceId, sandboxId);
+            return new ResponseEntity<>(HttpStatus.OK);
+        } catch (FacadeLayerException ex){
             throw ExceptionSorter.throwException(ex);
         }
     }

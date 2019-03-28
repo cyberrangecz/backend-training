@@ -197,16 +197,6 @@ public class TrainingInstancesRestControllerTest {
     }
 
     @Test
-    public void allocateSandboxesWithFacadeException() throws Exception {
-        Exception exceptionThrow = new ServiceLayerException("message", ErrorCode.RESOURCE_NOT_FOUND);
-        willThrow(new FacadeLayerException(exceptionThrow)).given(trainingInstanceFacade).allocateSandboxes(any(Long.class));
-        Exception exception =
-                mockMvc.perform(post("/training-instances" + "/{instanceId}/" + "sandbox-instances", 698L))
-                        .andExpect(status().isNotFound()).andReturn().getResolvedException();
-        assertEquals(ResourceNotFoundException.class, exception.getClass());
-    }
-
-    @Test
     public void createPoolForSandboxes() throws Exception {
         given(trainingInstanceFacade.createPoolForSandboxes(1L)).willReturn(5L);
         MockHttpServletResponse result = mockMvc.perform(post("/training-instances/{instanceId}/pools", 1L))
@@ -224,6 +214,59 @@ public class TrainingInstancesRestControllerTest {
                 mockMvc.perform(post("/training-instances/{instanceId}/pools", 698L))
                         .andExpect(status().isConflict()).andReturn().getResolvedException();
         assertEquals(ConflictException.class, exception.getClass());
+    }
+
+    @Test
+    public void allocateSandboxes() throws Exception {
+        mockMvc.perform(post("/training-instances" + "/{instanceId}/" + "sandbox-instances", 1L))
+            .andExpect(status().isOk());
+    }
+
+    @Test
+    public void allocateSandboxesWithFacadeException() throws Exception {
+        Exception exceptionThrow = new ServiceLayerException("message", ErrorCode.RESOURCE_NOT_FOUND);
+        willThrow(new FacadeLayerException(exceptionThrow)).given(trainingInstanceFacade).allocateSandboxes(any(Long.class));
+        Exception exception =
+            mockMvc.perform(post("/training-instances" + "/{instanceId}/" + "sandbox-instances", 698L))
+                .andExpect(status().isNotFound()).andReturn().getResolvedException();
+        assertEquals(ResourceNotFoundException.class, exception.getClass());
+    }
+
+    @Test
+    public void deleteSandboxes() throws Exception {
+        mockMvc.perform(delete("/training-instances" + "/{instanceId}/sandbox-instances", 1L)
+            .param("sandboxIds", "1")
+            .param("sandboxIds", "2"))
+            .andExpect(status().isOk());
+    }
+
+    @Test
+    public void deleteSandboxesWithFacadeException() throws Exception {
+        Exception exceptionThrow = new ServiceLayerException("message", ErrorCode.RESOURCE_NOT_FOUND);
+        willThrow(new FacadeLayerException(exceptionThrow)).given(trainingInstanceFacade).deleteSandboxes(any(Long.class), any(Set.class));
+        Exception exception =
+            mockMvc.perform(delete("/training-instances" + "/{instanceId}/" + "sandbox-instances", 698L)
+                .param("sandboxIds", "1")
+                .param("sandboxIds", "2"))
+                .andExpect(status().isNotFound()).andReturn().getResolvedException();
+        assertEquals(ResourceNotFoundException.class, exception.getClass());
+    }
+
+    @Test
+    public void reallocateSandbox() throws Exception {
+        mockMvc.perform(post("/training-instances" + "/{instanceId}/" + "sandbox-instances" + "/1", 1L))
+            .andExpect(status().isOk());
+    }
+
+
+    @Test
+    public void reallocateSandboxWithFacadeException() throws Exception {
+        Exception exceptionThrow = new ServiceLayerException("message", ErrorCode.RESOURCE_NOT_FOUND);
+        willThrow(new FacadeLayerException(exceptionThrow)).given(trainingInstanceFacade).reallocateSandbox(any(Long.class), any(Long.class));
+        Exception exception =
+            mockMvc.perform(post("/training-instances" + "/{instanceId}/" + "sandbox-instances" +"/1", 698L))
+                .andExpect(status().isNotFound()).andReturn().getResolvedException();
+        assertEquals(ResourceNotFoundException.class, exception.getClass());
     }
 
     private static String convertObjectToJsonBytes(Object object) throws IOException {
