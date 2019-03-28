@@ -8,7 +8,7 @@ import com.github.fge.jsonschema.main.JsonSchemaFactory;
 import com.github.fge.jsonschema.main.JsonValidator;
 import com.google.gson.JsonObject;
 import com.querydsl.core.types.Predicate;
-import cz.muni.csirt.kypo.elasticsearch.service.audit.AuditService;
+import cz.muni.csirt.kypo.elasticsearch.service.AuditService;
 import cz.muni.csirt.kypo.events.trainings.*;
 import cz.muni.csirt.kypo.events.trainings.enums.LevelType;
 import cz.muni.ics.kypo.training.annotations.security.IsTraineeOrAdmin;

@@ -1,4 +1,4 @@
-package cz.muni.csirt.kypo.elasticsearch.data;
+package cz.muni.csirt.kypo.elasticsearch.data.config;
 
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;

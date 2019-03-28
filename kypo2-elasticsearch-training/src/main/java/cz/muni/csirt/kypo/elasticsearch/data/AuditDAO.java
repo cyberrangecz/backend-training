@@ -1,9 +1,8 @@
-package cz.muni.csirt.kypo.elasticsearch.data.dao.impl;
+package cz.muni.csirt.kypo.elasticsearch.data;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import cz.muni.csirt.kypo.elasticsearch.AbstractAuditPOJO;
-import cz.muni.csirt.kypo.elasticsearch.data.dao.AbstractElasticClientDAO;
-import cz.muni.csirt.kypo.elasticsearch.data.dao.AuditDAO;
+import cz.muni.csirt.kypo.elasticsearch.data.exceptions.ElasticsearchTrainingDataLayerException;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.update.UpdateRequest;
 
@@ -19,14 +18,22 @@ import java.io.IOException;
  * @author Pavel Šeda
  */
 @Repository
-public class AuditDAOImpl extends AbstractElasticClientDAO implements AuditDAO {
+public class AuditDAO extends AbstractElasticClientDAO {
 
     @Autowired
-    public AuditDAOImpl(RestHighLevelClient client, ObjectMapper mapper) {
-        super(client, mapper);
+    public AuditDAO(RestHighLevelClient restHighLevelClient, ObjectMapper objectMapper) {
+        super(restHighLevelClient, objectMapper);
     }
 
-    @Override
+    /**
+     * Method for saving general class into Elasticsearch under specific index and type. Index is
+     * derived from package and class name lower case, and type is the same expect the class name is
+     * in it's origin
+     *
+     * @param pojoClass class saving to Elasticsearch
+     * @throws IOException
+     * @throws ElasticsearchTrainingDataLayerException
+     */
     public <T extends AbstractAuditPOJO> void save(T pojoClass) throws IOException {
         String type = pojoClass.getClass().getName();
         String index = type.toLowerCase();
@@ -37,7 +44,13 @@ public class AuditDAOImpl extends AbstractElasticClientDAO implements AuditDAO {
         getClient().index(indexRequest, RequestOptions.DEFAULT);
     }
 
-    @Override
+    /**
+     * Update particular document.
+     *
+     * @param pojoClass class updating in Elasticsearch
+     * @throws IOException
+     * @throws ElasticsearchTrainingDataLayerException
+     */
     public <T extends AbstractAuditPOJO> void update(T pojoClass) throws IOException {
         String type = pojoClass.getClass().getName();
         String index = type.toLowerCase();

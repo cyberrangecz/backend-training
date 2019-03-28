@@ -3,38 +3,38 @@ package cz.muni.csirt.kypo.events.trainings;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonRootName;
 import cz.muni.csirt.kypo.elasticsearch.AbstractAuditPOJO;
-import org.jsondoc.core.annotation.ApiObject;
-import org.jsondoc.core.annotation.ApiObjectField;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 
 /**
  * @author Pavel Šeda
  */
-@ApiObject(name = "Training Run Started", description = "Type of event from trainings (when training run is started).")
+@ApiModel(value = "Training Run Started", description = "Type of event from trainings (when training run is started).")
 @JsonRootName(value = "event")
 public class TrainingRunStarted extends AbstractAuditPOJO {
 
-    @ApiObjectField(description = "Sandbox ID.")
+    @ApiModelProperty(value = "Sandbox ID.", required = true)
     @JsonProperty(value = "sandbox_id", required = true)
     private long sandboxId;
-    @ApiObjectField(description = "Training definition ID.")
+    @ApiModelProperty(value = "Training definition ID.", required = true)
     @JsonProperty(value = "training_definition_id", required = true)
     private long trainingDefinitionId;
-    @ApiObjectField(description = "Training instance ID.")
+    @ApiModelProperty(value = "Training instance ID.", required = true)
     @JsonProperty(value = "training_instance_id", required = true)
     private long trainingInstanceId;
-    @ApiObjectField(description = "Training run ID.")
+    @ApiModelProperty(value = "Training run ID.", required = true)
     @JsonProperty(value = "training_run_id", required = true)
     private long trainingRunId;
-    @ApiObjectField(description = "ID of a player in the training run.")
+    @ApiModelProperty(value = "ID of a player in the training run.", required = true)
     @JsonProperty(value = "player_login", required = true)
     private String playerLogin;
-    @ApiObjectField(description = "Total score of the player in the level.")
+    @ApiModelProperty(value = "Total score of the player in the level.", required = true)
     @JsonProperty(value = "total_score", required = true)
     private int totalScore;
-    @ApiObjectField(description = "Actual score of the player in the level.")
+    @ApiModelProperty(value = "Actual score of the player in the level.", required = true)
     @JsonProperty(value = "actual_score_in_level", required = true)
     private int actualScoreInLevel;
-    @ApiObjectField(description = "Training run level.")
+    @ApiModelProperty(value = "Training run level.", required = true)
     @JsonProperty(value = "level", required = true)
     private long level;
 
