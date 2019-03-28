@@ -75,7 +75,7 @@ public class TrainingInstancesRestController {
     })
     @GetMapping(path = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> findTrainingInstanceById(
-            @ApiParam(value = "Training instance ID") @PathVariable Long id,
+            @ApiParam(value = "Training instance ID", required = true) @PathVariable Long id,
             @ApiParam(value = "Fields which should be returned in REST API response", required = false) @RequestParam(value = "fields", required = false) String fields) {
         LOG.debug("findTrainingInstanceById({},{})", id, fields);
         try {
@@ -144,7 +144,7 @@ public class TrainingInstancesRestController {
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.")
     })
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Object> createTrainingInstance(@ApiParam(value = "Training instance to be created") @Valid @RequestBody TrainingInstanceCreateDTO trainingInstanceCreateDTO,
+    public ResponseEntity<Object> createTrainingInstance(@ApiParam(value = "Training instance to be created", required = true) @Valid @RequestBody TrainingInstanceCreateDTO trainingInstanceCreateDTO,
                                                          @ApiParam(value = "Fields which should be returned in REST API response", required = false)
                                                          @RequestParam(value = "fields", required = false) String fields) {
         try {
@@ -190,7 +190,8 @@ public class TrainingInstancesRestController {
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.")
     })
     @DeleteMapping(path = "/{id}")
-    public ResponseEntity<Void> deleteTrainingInstance(@ApiParam(value = "Id of training instance to be deleted") @PathVariable(value = "id") Long id) {
+    public ResponseEntity<Void> deleteTrainingInstance(@ApiParam(value = "Id of training instance to be deleted", required = true)
+                                                       @PathVariable(value = "id") Long id) {
         try {
             trainingInstanceFacade.delete(id);
             return ResponseEntity.ok().build();
@@ -211,7 +212,7 @@ public class TrainingInstancesRestController {
     })
     @PostMapping(path = "/{instanceId}/sandbox-instances")
     public ResponseEntity<Void> allocateSandboxes(
-            @ApiParam(value = "Id of training instance for which sandboxes are allocated")
+            @ApiParam(value = "Id of training instance for which sandboxes are allocated", required = true)
             @PathVariable(value = "instanceId") Long instanceId) {
         try {
             trainingInstanceFacade.allocateSandboxes(instanceId);
@@ -234,7 +235,7 @@ public class TrainingInstancesRestController {
     })
     @PostMapping(path = "/{instanceId}/pools")
     public ResponseEntity<Long> createPoolForSandboxes(
-            @ApiParam(value = "Id of training instance for which pool is created")
+            @ApiParam(value = "Id of training instance for which pool is created", required = true)
             @PathVariable(value = "instanceId") Long instanceId) {
         try {
             Long poolId = trainingInstanceFacade.createPoolForSandboxes(instanceId);
@@ -281,7 +282,7 @@ public class TrainingInstancesRestController {
         LOG.debug("findAllTrainingRunsByTrainingInstnceId({})", instanceId);
         try {
             PageResultResource<TrainingRunDTO> trainingRunResource =
-                trainingInstanceFacade.findTrainingRunsByTrainingInstance(instanceId, pageable);
+                    trainingInstanceFacade.findTrainingRunsByTrainingInstance(instanceId, pageable);
             Squiggly.init(objectMapper, fields);
             return ResponseEntity.ok(SquigglyUtils.stringify(objectMapper, trainingRunResource));
         } catch (FacadeLayerException ex) {

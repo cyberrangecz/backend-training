@@ -57,7 +57,7 @@ public class ExportImportRestController {
     })
     @GetMapping(path = "/exports/training-definitions/{trainingDefinitionId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> getExportedTrainingDefinitionAndLevels(
-            @ApiParam(value = "Id of training definition")
+            @ApiParam(value = "Id of training definition", required = true)
             @PathVariable(value = "trainingDefinitionId") Long trainingDefinitionId,
             @ApiParam(value = "Fields which should be returned in REST API response", required = false)
             @RequestParam(value = "fields", required = false) String fields) {
@@ -80,8 +80,8 @@ public class ExportImportRestController {
     })
     @PostMapping(path = "/imports/training-definitions", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> importTrainingDefinition(
-            @ApiParam(value = "Training definition to be imported")
-            @RequestBody @Valid ImportTrainingDefinitionDTO importTrainingDefinitionDTO,
+            @ApiParam(value = "Training definition to be imported", required = true)
+            @Valid @RequestBody ImportTrainingDefinitionDTO importTrainingDefinitionDTO,
             @ApiParam(value = "Fields which should be returned in REST API response", required = false)
             @RequestParam(value = "fields", required = false) String fields) {
 

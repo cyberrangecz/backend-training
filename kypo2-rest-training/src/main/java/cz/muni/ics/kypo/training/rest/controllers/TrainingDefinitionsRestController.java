@@ -83,7 +83,7 @@ public class TrainingDefinitionsRestController {
     })
     @GetMapping(path = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> findTrainingDefinitionById(
-            @ApiParam(value = "ID of training definition to be retrieved.")
+            @ApiParam(value = "ID of training definition to be retrieved.", required = true)
             @PathVariable Long id,
             @ApiParam(value = "Fields which should be returned in REST API response", required = false)
             @RequestParam(value = "fields", required = false) String fields) {
@@ -152,7 +152,7 @@ public class TrainingDefinitionsRestController {
     @ApiPageableSwagger
     @GetMapping(path = "/sandbox-definitions/{sandboxDefinitionId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> findAllTrainingDefinitionsBySandboxDefinitionId(
-            @ApiParam(value = "Id of sandbox definition")
+            @ApiParam(value = "Id of sandbox definition", required = true)
             @PathVariable(value = "sandboxDefinitionId") Long sandboxDefinitionId,
             Pageable pageable) {
         LOG.debug("findAllTrainingDefinitionsBySandboxDefinitionId({}, {})", sandboxDefinitionId, pageable);
@@ -226,7 +226,7 @@ public class TrainingDefinitionsRestController {
     })
     @PostMapping(path = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<TrainingDefinitionDTO> cloneTrainingDefinition(
-            @ApiParam(value = "Id of training definition to be cloned")
+            @ApiParam(value = "Id of training definition to be cloned", required = true)
             @PathVariable("id") Long id) {
         try {
             TrainingDefinitionDTO trainingDefinitionDTO = trainingDefinitionFacade.clone(id);
@@ -251,9 +251,9 @@ public class TrainingDefinitionsRestController {
     })
     @PutMapping(path = "/{definitionId}/levels/{levelId}/swap-left", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> swapLeft(
-            @ApiParam(value = "Id of training definition")
+            @ApiParam(value = "Id of training definition", required = true)
             @PathVariable("definitionId") Long definitionId,
-            @ApiParam(value = "Id of level to be swapped")
+            @ApiParam(value = "Id of level to be swapped", required = true)
             @PathVariable("levelId") Long levelId) {
         try {
             return ResponseEntity.ok(trainingDefinitionFacade.swapLeft(definitionId, levelId));
@@ -277,9 +277,9 @@ public class TrainingDefinitionsRestController {
     })
     @PutMapping(path = "/{definitionId}/levels/{levelId}/swap-right", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> swapRight(
-            @ApiParam(value = "Id of training definition")
+            @ApiParam(value = "Id of training definition", required = true)
             @PathVariable("definitionId") Long definitionId,
-            @ApiParam(value = "Id of level to be swapped")
+            @ApiParam(value = "Id of level to be swapped", required = true)
             @PathVariable("levelId") Long levelId) {
         try {
             return ResponseEntity.ok(trainingDefinitionFacade.swapRight(definitionId, levelId));
@@ -353,7 +353,7 @@ public class TrainingDefinitionsRestController {
     })
     @PutMapping(path = "/{definitionId}/game-levels", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Void> updateGameLevel(
-            @ApiParam(value = "Id of definition to which level is assigned")
+            @ApiParam(value = "Id of definition to which level is assigned", required = true)
             @PathVariable(value = "definitionId") Long definitionId,
             @ApiParam(value = "Game level to be updated")
             @RequestBody @Valid GameLevelUpdateDTO gameLevelUpdateDTO) {
@@ -380,7 +380,7 @@ public class TrainingDefinitionsRestController {
     })
     @PutMapping(path = "/{definitionId}/info-levels", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Void> updateInfoLevel(
-            @ApiParam(value = "Id of definition to which level is assigned")
+            @ApiParam(value = "Id of definition to which level is assigned", required = true)
             @PathVariable(value = "definitionId") Long definitionId,
             @ApiParam(value = "Info level to be updated")
             @RequestBody @Valid InfoLevelUpdateDTO infoLevelUpdateDTO) {
@@ -407,7 +407,7 @@ public class TrainingDefinitionsRestController {
     })
     @PutMapping(path = "/{definitionId}/assessment-levels", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Void> updateAssessmentLevel(
-            @ApiParam(value = "Id of definition to which level is assigned")
+            @ApiParam(value = "Id of definition to which level is assigned", required = true)
             @PathVariable(value = "definitionId") Long definitionId,
             @ApiParam(value = "Assessment level to be updated")
             @RequestBody @Valid AssessmentLevelUpdateDTO assessmentLevelUpdateDTO) {
@@ -432,7 +432,7 @@ public class TrainingDefinitionsRestController {
     })
     @GetMapping(path = "/levels/{levelId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> findLevelById(
-            @ApiParam(value = "Id of wanted level")
+            @ApiParam(value = "Id of wanted level", required = true)
             @PathVariable(value = "levelId") Long levelId,
             @ApiParam(value = "Fields which should be returned in REST API response", required = false)
             @RequestParam(value = "fields", required = false) String fields) {
@@ -460,9 +460,9 @@ public class TrainingDefinitionsRestController {
     })
     @PostMapping(path = "/{definitionId}/levels/{levelType}")
     public ResponseEntity<Object> createLevel(
-            @ApiParam(value = "Id of definition for which is level created")
+            @ApiParam(value = "Id of definition for which is level created", required = true)
             @PathVariable(value = "definitionId") Long definitionId,
-            @ApiParam(value = "Level type", allowableValues = "GAME, ASSESSMENT, INFO")
+            @ApiParam(value = "Level type", allowableValues = "GAME, ASSESSMENT, INFO", required = true)
             @PathVariable(value = "levelType") LevelType levelType,
             @ApiParam(value = "Fields which should be returned in REST API response", required = false)
             @RequestParam(value = "fields", required = false) String fields) {
