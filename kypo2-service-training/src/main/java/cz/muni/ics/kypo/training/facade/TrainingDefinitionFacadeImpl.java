@@ -176,13 +176,13 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
             Objects.requireNonNull(trainingDefinitionUpdateDTO);
             TrainingDefinition mappedTrainingDefinition = trainingDefinitionMapper.mapUpdateToEntity(trainingDefinitionUpdateDTO);
             TrainingDefinition trainingDefinition = trainingDefinitionService.findById(trainingDefinitionUpdateDTO.getId());
-            if(trainingDefinition.getBetaTestingGroup() != null) {
-                if(trainingDefinitionUpdateDTO.getBetaTestingGroup() != null) {
+            if(trainingDefinitionUpdateDTO.getBetaTestingGroup() != null) {
+                addOrganizersToTrainingDefinition(mappedTrainingDefinition, trainingDefinitionUpdateDTO.getBetaTestingGroup().getOrganizers());
+                if(trainingDefinition.getBetaTestingGroup() != null) {
                     trainingDefinition.getBetaTestingGroup().setId(trainingDefinition.getBetaTestingGroup().getId());
-                    addOrganizersToTrainingDefinition(mappedTrainingDefinition, trainingDefinitionUpdateDTO.getBetaTestingGroup().getOrganizers());
-                } else {
-                    throw new FacadeLayerException(new ServiceLayerException("Cannot delete beta testing group. You only can remove organizers from group.", ErrorCode.RESOURCE_CONFLICT));
                 }
+            } else if(trainingDefinition.getBetaTestingGroup() != null) {
+                throw new FacadeLayerException(new ServiceLayerException("Cannot delete beta testing group. You only can remove organizers from group.", ErrorCode.RESOURCE_CONFLICT));
             }
             addAuthorsToTrainingDefinition(mappedTrainingDefinition, trainingDefinitionUpdateDTO.getAuthors());
             trainingDefinitionService.update(mappedTrainingDefinition);
