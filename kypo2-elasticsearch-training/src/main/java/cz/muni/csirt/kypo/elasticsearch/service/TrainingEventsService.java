@@ -21,10 +21,8 @@ public class TrainingEventsService {
         this.trainingEventsDAO = trainingEventsDAO;
     }
 
-    public List<Map<String, Object>> findAllEventsByTrainingRunId(String trainingRunId) throws IOException {
-        var result = trainingEventsDAO.findAllEventsByTrainingRunId(trainingRunId);
-        System.out.println(result.toArray().length);
-        return result;
+    public List<Map<String, Object>> findAllEventsByTrainingDefinitionAndTrainingInstanceId(Long trainingDefinitionId, Long trainingInstanceId) throws IOException {
+        return trainingEventsDAO.findAllEventsByTrainingDefinitionAndTrainingInstanceId(trainingDefinitionId, trainingInstanceId);
     }
 
 }
