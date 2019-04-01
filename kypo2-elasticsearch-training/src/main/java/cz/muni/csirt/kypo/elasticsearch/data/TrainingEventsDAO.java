@@ -7,8 +7,8 @@ import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.unit.TimeValue;
+import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
-import org.elasticsearch.index.query.TermQueryBuilder;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
@@ -32,10 +32,18 @@ public class TrainingEventsDAO extends AbstractElasticClientDAO {
         super(restHighLevelClient, objectMapper);
     }
 
-    public List<Map<String, Object>> findAllEventsByTrainingRunId(String trainingRunId) throws IOException {
+    public List<Map<String, Object>> findAllEventsByTrainingDefinitionAndTrainingInstanceId(Long trainingDefinitionId, Long trainingInstanceId) throws IOException {
         List<Map<String, Object>> events = new ArrayList<>();
 
-        TermQueryBuilder queryBuilder = QueryBuilders.termQuery("training_run_id", trainingRunId);
+        BoolQueryBuilder queryBuilder =
+                QueryBuilders
+                        .boolQuery()
+                        .must(
+                                QueryBuilders.termQuery("training_definition_id", trainingDefinitionId)
+                        )
+                        .must(
+                                QueryBuilders.termQuery("training_instance_id", trainingInstanceId)
+                        );
 
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
         searchSourceBuilder.query(queryBuilder);

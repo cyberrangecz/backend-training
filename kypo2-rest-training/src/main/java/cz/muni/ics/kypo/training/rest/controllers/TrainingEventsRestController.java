@@ -11,8 +11,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
-import java.util.List;
-import java.util.Map;
 
 /**
  * @author Pavel Seda
@@ -36,25 +34,26 @@ public class TrainingEventsRestController {
     }
 
     /**
-     * Get all events in particular training run.
+     * Get all events in particular training instance.
      *
-     * @return all events in selected training run.
+     * @return all events in selected training instance.
      */
     @ApiOperation(httpMethod = "GET",
-            value = "Get all events in particular training run.",
-            nickname = "getAllEventsByTrainingRunID",
+            value = "Get all events in particular training definition and training instance.",
+            nickname = "getAllEventsByTrainingDefinitionAndTrainingInstanceId",
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "All events in particular training run by id was found.", responseContainer = "List"),
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.")
     })
-    @GetMapping(path = "training-runs/{trainingRunId}/events", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Object> getAllEventsByTrainingRunID(
-            @ApiParam(value = "Training run ID", required = true) @PathVariable(value = "trainingRunId") String trainingRunId) {
-        LOG.debug("getAllEventsByTrainingRunID({},{})", trainingRunId);
+    @GetMapping(path = "/training-definitions/{trainingDefinitionId}/training-instances/{trainingInstanceId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Object> getAllEventsByTrainingDefinitionAndTrainingInstanceId(
+            @ApiParam(value = "Training definition ID", required = true) @PathVariable(value = "trainingDefinitionId") Long trainingDefinitionId,
+            @ApiParam(value = "Training instance ID", required = true) @PathVariable(value = "trainingInstanceId") Long trainingInstanceId) {
+        LOG.debug("getAllEventsByTrainingDefinitionAndTrainingInstanceId({},{})", trainingDefinitionId, trainingInstanceId);
         try {
-            return ResponseEntity.ok(trainingEventsService.findAllEventsByTrainingRunId(trainingRunId));
+            return ResponseEntity.ok(trainingEventsService.findAllEventsByTrainingDefinitionAndTrainingInstanceId(trainingDefinitionId, trainingInstanceId));
         } catch (IOException ex) {
             throw new ElasticsearchTrainingDataLayerException("It is not possible to retrieve events from particular game.", ex);
         }
