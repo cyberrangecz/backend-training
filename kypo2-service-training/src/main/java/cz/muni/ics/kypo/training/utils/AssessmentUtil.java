@@ -139,11 +139,11 @@ public class AssessmentUtil {
      * @return map of correct choice mapping
      */
     public Map<Integer, Integer> getCorrectChoicesForEMI (JSONObject question) {
-        JSONArray allChoices = question.getJSONArray("choices");
+        JSONArray allChoices = question.getJSONArray("correct_answers");
         Map<Integer,Integer> correctMapping = new HashMap<>();
         for (int k = 0; k < allChoices.length(); k++) {
-            int key = allChoices.getJSONObject(k).getInt("order");
-            int value = allChoices.getJSONObject(k).getInt("pair");
+            int key = allChoices.getJSONObject(k).getInt("x");
+            int value = allChoices.getJSONObject(k).getInt("y");
             if (!correctMapping.containsKey(key) && !correctMapping.containsValue(key)) {
                 correctMapping.put(key,value);
             }
