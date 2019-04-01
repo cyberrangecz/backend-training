@@ -51,47 +51,23 @@
     "penalty":          1,
     "order":            2,
     "answer_required":         true,
-    "choices":          [
-                          {
-                            "order":        0,
-                            "text":         "trying all possible alphanumeric combinations of 8 characters",
-                            "pair":         6
-                          },
-                          {
-                            "order":        1,
-                            "text":         "trying common words of English language",
-                            "pair":         4
-                          },
-                          {
-                            "order":        2,
-                            "text":         "looking up the value of a hashed password",
-                            "pair":         7
-                          },
-                          {
-                            "order":        3,
-                            "text":         "tricking a user into giving away his password by posing as a service administrator",
-                            "pair":         5
-                          },
-                          {
-                            "order":        4,
-                            "text":         "dictionary attack",
-                            "pair":         1
-                          },
-                          {
-                            "order":        5,
-                            "text":         "social engineering",
-                            "pair":         3
-                          },
-                          {
-                            "order":        6,
-                            "text":         "brute force attack",
-                            "pair":         0
-                          },
-                          {
-                            "order":        7,
-                            "text":         "rainbow table attack",
-                            "pair":         2
-                          }
-                        ]
+    "rows": ["trying all possible alphanumeric combinations of 8 characters", "trying common words of English language",
+      "looking up the value of a hashed password", "tricking a user into giving away his password by posing as a service administrator"],
+    "cols": ["dictionary attack", "social engineering", "brute force attack", "rainbow table attack"],
+    "correct_answers": [
+      { "x": 0,
+        "y": 6
+      },
+      { "x": 1,
+        "y": 4
+      },
+      { "x": 2,
+        "y": 7
+      },
+      { "x": 3,
+        "y": 5
+      }
+    ]
+
   }
 ]
