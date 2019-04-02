@@ -36,11 +36,11 @@ public interface TrainingDefinitionRepository
 
     List<TrainingDefinition> findAll();
 
-    @Query(value = "SELECT td FROM TrainingDefinition td JOIN FETCH td.authors a WHERE a.userRefLogin = :userRefLogin",
+    @Query(value = "SELECT td FROM TrainingDefinition td INNER JOIN td.authors a WHERE a.userRefLogin = :userRefLogin",
             countQuery = "SELECT COUNT(td) FROM TrainingDefinition td INNER JOIN td.authors a WHERE a.userRefLogin = :userRefLogin")
     Page<TrainingDefinition> findAllByLoggedInUser(@Param("userRefLogin") String userRefLogin, Pageable pageable);
 
-    @Query(value = "SELECT DISTINCT td FROM TrainingDefinition td JOIN FETCH td.betaTestingGroup bt JOIN FETCH bt.organizers org WHERE org.userRefLogin = :userRefLogin",
+    @Query(value = "SELECT DISTINCT td FROM TrainingDefinition td JOIN FETCH td.betaTestingGroup bt INNER JOIN bt.organizers org WHERE org.userRefLogin = :userRefLogin",
             countQuery = "SELECT COUNT(td) FROM TrainingDefinition td INNER JOIN td.betaTestingGroup bt INNER JOIN bt.organizers org WHERE org.userRefLogin = :userRefLogin")
     Page<TrainingDefinition> findAllByBetaTesters(@Param("userRefLogin") String userRefLogin, Pageable pageable);
 

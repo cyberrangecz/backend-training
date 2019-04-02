@@ -112,6 +112,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
         }
         if (isOrganizer()) {
             trainingDefinitions.addAll(trainingDefinitionRepository.findAllByBetaTesters(getSubOfLoggedInUser(), pageable).getContent());
+            LOG.info(trainingDefinitions.get(0).getBetaTestingGroup().getOrganizers().toString());
             trainingDefinitions.addAll(trainingDefinitionRepository.findAll(QTrainingDefinition.trainingDefinition.state.eq(TDState.RELEASED), pageable).getContent());
         }
         return new PageImpl<>(trainingDefinitions, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), pageable.getSort()),
