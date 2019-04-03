@@ -1,8 +1,10 @@
 package cz.muni.ics.kypo.training.service;
 
+import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.persistence.model.AssessmentLevel;
 import cz.muni.ics.kypo.training.persistence.model.GameLevel;
 import cz.muni.ics.kypo.training.persistence.model.InfoLevel;
+import cz.muni.ics.kypo.training.persistence.model.TrainingInstance;
 import cz.muni.ics.kypo.training.persistence.repository.*;
 import cz.muni.ics.kypo.training.service.impl.ExportImportServiceImpl;
 import cz.muni.ics.kypo.training.utils.AssessmentUtil;
@@ -20,6 +22,8 @@ import org.springframework.util.ResourceUtils;
 
 import java.io.FileReader;
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.util.Optional;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -55,6 +59,8 @@ public class ExportImportServiceTest {
     private static GameLevel gameLevel;
     @Mock
     private static InfoLevel infoLevel;
+    @Mock
+    private static TrainingInstance trainingInstance;
 
     @Before
     public void init() {
@@ -86,6 +92,22 @@ public class ExportImportServiceTest {
         then(assessmentLevelRepository).should().save(assessmentLevel);
         then(gameLevelRepository).should().save(gameLevel);
         then(infoLevelRepository).should().save(infoLevel);
+    }
+
+    @Test
+    public void getTrainingInstanceById() {
+        given(trainingInstanceRepository.findById(any(Long.class))).willReturn(Optional.of(trainingInstance));
+        given(trainingInstance.getId()).willReturn(1L);
+        TrainingInstance tI = exportImportService.findInstanceById(trainingInstance.getId());
+
+        then(trainingInstanceRepository).should().findById(trainingInstance.getId());
+    }
+
+    @Test
+    public void failIfInstanceNotFinished() {
+        thrown.expect(ServiceLayerException.class);
+        thrown.expectMessage("The training instance is not finished.");
+        exportImportService.failIfInstanceIsNotFinished(LocalDateTime.now().plusHours(25));
     }
 
 }

@@ -108,6 +108,7 @@ public class ExportImportServiceImpl implements ExportImportService {
     }
 
     @Override
+    @IsOrganizerOrAdmin
     public void failIfInstanceIsNotFinished(LocalDateTime endTime) {
         LocalDateTime currentTime = LocalDateTime.now();
         if (currentTime.isBefore(endTime))
