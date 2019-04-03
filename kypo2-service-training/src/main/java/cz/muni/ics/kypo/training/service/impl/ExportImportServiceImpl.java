@@ -15,6 +15,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -104,5 +105,12 @@ public class ExportImportServiceImpl implements ExportImportService {
     @IsOrganizerOrAdmin
     public Set<TrainingRun> findRunsByInstanceId(Long trainingInstanceId) {
         return trainingRunRepository.findAllByTrainingInstanceId(trainingInstanceId);
+    }
+
+    @Override
+    public void failIfInstanceIsNotFinished(LocalDateTime endTime) {
+        LocalDateTime currentTime = LocalDateTime.now();
+        if (currentTime.isBefore(endTime))
+            throw new ServiceLayerException("The training instance is not finished.", ErrorCode.RESOURCE_CONFLICT);
     }
 }

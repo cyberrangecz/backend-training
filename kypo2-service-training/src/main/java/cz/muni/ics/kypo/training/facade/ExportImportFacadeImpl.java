@@ -7,6 +7,9 @@ import cz.muni.ics.kypo.training.api.dto.export.*;
 import cz.muni.ics.kypo.training.api.dto.imports.*;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionDTO;
 import cz.muni.ics.kypo.training.api.enums.LevelType;
+import cz.muni.ics.kypo.training.exceptions.ErrorCode;
+import cz.muni.ics.kypo.training.exceptions.FacadeLayerException;
+import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.mapping.mapstruct.*;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.service.ExportImportService;
@@ -19,6 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -124,15 +128,20 @@ public class ExportImportFacadeImpl implements ExportImportFacade {
     @Override
     @TransactionalRO
     public TrainingInstanceArchiveDTO archiveTrainingInstance(Long trainingInstanceId) {
-        TrainingInstance trainingInstance = exportImportService.findInstanceById(trainingInstanceId);
-        TrainingInstanceArchiveDTO archivedInstance = exportImportMapper.mapToDTO(trainingInstance);
-        if (archivedInstance != null){
-            archivedInstance.setExportTrainingDefinitionAndLevelsDTO(dbExport(trainingInstance.getTrainingDefinition().getId()));
-            Set<TrainingRun> runs = exportImportService.findRunsByInstanceId(trainingInstanceId);
-            for (TrainingRun run : runs) {
-                archivedInstance.getTrainingRuns().add(exportImportMapper.mapToDTO(run));
+        try {
+            TrainingInstance trainingInstance = exportImportService.findInstanceById(trainingInstanceId);
+            exportImportService.failIfInstanceIsNotFinished(trainingInstance.getEndTime());
+            TrainingInstanceArchiveDTO archivedInstance = exportImportMapper.mapToDTO(trainingInstance);
+            if (archivedInstance != null) {
+                archivedInstance.setExportTrainingDefinitionAndLevelsDTO(dbExport(trainingInstance.getTrainingDefinition().getId()));
+                Set<TrainingRun> runs = exportImportService.findRunsByInstanceId(trainingInstanceId);
+                for (TrainingRun run : runs) {
+                    archivedInstance.getTrainingRuns().add(exportImportMapper.mapToDTO(run));
+                }
             }
+            return archivedInstance;
+        } catch(ServiceLayerException ex){
+            throw new FacadeLayerException(ex);
         }
-        return archivedInstance;
     }
 }
