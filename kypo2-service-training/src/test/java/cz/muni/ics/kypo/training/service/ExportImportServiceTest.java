@@ -44,6 +44,10 @@ public class ExportImportServiceTest {
     private static InfoLevelRepository infoLevelRepository;
     @Mock
     private static GameLevelRepository gameLevelRepository;
+    @Mock
+    private static TrainingInstanceRepository trainingInstanceRepository;
+    @Mock
+    private static TrainingRunRepository trainingRunRepository;
 
     @Mock
     private static AssessmentLevel assessmentLevel;
@@ -52,13 +56,11 @@ public class ExportImportServiceTest {
     @Mock
     private static InfoLevel infoLevel;
 
-    @Mock
-    private static TrainingInstanceRepository trainingInstanceRepository;
     @Before
     public void init() {
         MockitoAnnotations.initMocks(this);
         exportImportService = new ExportImportServiceImpl(trainingDefinitionRepository, abstractLevelRepository, assessmentLevelRepository,
-                infoLevelRepository, gameLevelRepository, trainingInstanceRepository);
+                infoLevelRepository, gameLevelRepository, trainingInstanceRepository, trainingRunRepository);
 
         given(assessmentLevel.getId()).willReturn(1L);
         given(assessmentLevel.getQuestions()).willReturn("[]");

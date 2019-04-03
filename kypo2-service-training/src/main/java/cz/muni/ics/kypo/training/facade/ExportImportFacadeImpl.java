@@ -21,6 +21,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author Pavel Seda
@@ -127,6 +128,10 @@ public class ExportImportFacadeImpl implements ExportImportFacade {
         TrainingInstanceArchiveDTO archivedInstance = exportImportMapper.mapToDTO(trainingInstance);
         if (archivedInstance != null){
             archivedInstance.setExportTrainingDefinitionAndLevelsDTO(dbExport(trainingInstance.getTrainingDefinition().getId()));
+            Set<TrainingRun> runs = exportImportService.findRunsByInstanceId(trainingInstanceId);
+            for (TrainingRun run : runs) {
+                archivedInstance.getTrainingRuns().add(exportImportMapper.mapToDTO(run));
+            }
         }
         return archivedInstance;
     }

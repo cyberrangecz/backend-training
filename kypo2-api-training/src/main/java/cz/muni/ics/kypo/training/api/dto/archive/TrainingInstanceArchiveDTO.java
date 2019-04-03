@@ -1,15 +1,14 @@
 package cz.muni.ics.kypo.training.api.dto.archive;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
 import cz.muni.ics.kypo.training.api.dto.export.ExportTrainingDefinitionAndLevelsDTO;
 import cz.muni.ics.kypo.training.api.dto.export.TrainingRunExportDTO;
 import cz.muni.ics.kypo.training.api.dto.export.UserRefExportDTO;
-import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionDTO;
 import cz.muni.ics.kypo.training.converters.LocalDateTimeUTCSerializer;
 import io.swagger.annotations.ApiModelProperty;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.Set;
 
 public class TrainingInstanceArchiveDTO {
@@ -20,12 +19,10 @@ public class TrainingInstanceArchiveDTO {
 	private LocalDateTime endTime;
 	private String title;
 	private int poolSize;
-	//private TrainingDefinitionDTO trainingDefinition;
 	private Set<UserRefExportDTO> organizers;
 	private String accessToken;
-	//private Long poolId;
 	private ExportTrainingDefinitionAndLevelsDTO exportTrainingDefinitionAndLevelsDTO;
-	private Set<TrainingRunExportDTO> trainingRuns;
+	private Set<TrainingRunExportDTO> trainingRuns = new HashSet<>();
 
 	@ApiModelProperty(value = "Date when training instance starts.", example = "2016-10-19 10:23:54+02")
 	public LocalDateTime getStartTime() {
