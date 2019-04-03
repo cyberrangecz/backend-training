@@ -279,8 +279,10 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
                 }
             }
             //Allocate sandbox in pool
-            ResponseEntity<List<SandboxInfo>> sandboxResponse = restTemplate.exchange(kypoOpenStackURI + "/pools/" + trainingInstance.getPoolId() + "/sandboxes/",
-                HttpMethod.POST, new HttpEntity<>(httpHeaders), new ParameterizedTypeReference<List<SandboxInfo>>() {
+            String url = kypoOpenStackURI + "/pools/" + trainingInstance.getPoolId() + "/sandboxes/";
+            UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(url).queryParam("count", 1);
+            ResponseEntity<List<SandboxInfo>> sandboxResponse = restTemplate.exchange(builder.toUriString(), HttpMethod.POST,
+                new HttpEntity<>(httpHeaders), new ParameterizedTypeReference<List<SandboxInfo>>() {
             });
             if (sandboxResponse.getStatusCode().isError() || sandboxResponse.getBody() == null) {
                 throw new ServiceLayerException("Error from openstack while allocate sandboxes.", ErrorCode.UNEXPECTED_ERROR);
