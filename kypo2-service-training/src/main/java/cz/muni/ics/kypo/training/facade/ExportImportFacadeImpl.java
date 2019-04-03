@@ -2,6 +2,7 @@ package cz.muni.ics.kypo.training.facade;
 
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalRO;
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalWO;
+import cz.muni.ics.kypo.training.api.dto.archive.TrainingInstanceArchiveDTO;
 import cz.muni.ics.kypo.training.api.dto.export.*;
 import cz.muni.ics.kypo.training.api.dto.imports.*;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionDTO;
@@ -119,4 +120,14 @@ public class ExportImportFacadeImpl implements ExportImportFacade {
         return trainingDefinitionMapper.mapToDTO(trainingDefinitionService.create(newDefinition));
     }
 
+    @Override
+    @TransactionalRO
+    public TrainingInstanceArchiveDTO archiveTrainingInstance(Long trainingInstanceId) {
+        TrainingInstance trainingInstance = exportImportService.findInstanceById(trainingInstanceId);
+        TrainingInstanceArchiveDTO archivedInstance = exportImportMapper.mapToDTO(trainingInstance);
+        if (archivedInstance != null){
+            archivedInstance.setExportTrainingDefinitionAndLevelsDTO(dbExport(trainingInstance.getTrainingDefinition().getId()));
+        }
+        return archivedInstance;
+    }
 }

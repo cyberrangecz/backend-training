@@ -2,6 +2,7 @@ package cz.muni.ics.kypo.training.service;
 
 import cz.muni.ics.kypo.training.persistence.model.AbstractLevel;
 import cz.muni.ics.kypo.training.persistence.model.TrainingDefinition;
+import cz.muni.ics.kypo.training.persistence.model.TrainingInstance;
 
 import java.util.List;
 
@@ -15,5 +16,7 @@ public interface ExportImportService {
     List<AbstractLevel> findAllLevelsFromDefinition(Long levelId);
 
     Long createLevel(AbstractLevel level);
+
+    TrainingInstance findInstanceById(Long trainingInstanceId);
 
 }

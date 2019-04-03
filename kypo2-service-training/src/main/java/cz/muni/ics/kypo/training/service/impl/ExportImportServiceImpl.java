@@ -1,6 +1,7 @@
 package cz.muni.ics.kypo.training.service.impl;
 
 import cz.muni.ics.kypo.training.annotations.security.IsDesignerOrAdmin;
+import cz.muni.ics.kypo.training.annotations.security.IsOrganizerOrAdmin;
 import cz.muni.ics.kypo.training.exceptions.ErrorCode;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.persistence.model.*;
@@ -32,15 +33,18 @@ public class ExportImportServiceImpl implements ExportImportService {
     private AssessmentLevelRepository assessmentLevelRepository;
     private InfoLevelRepository infoLevelRepository;
     private GameLevelRepository gameLevelRepository;
+    private TrainingInstanceRepository trainingInstanceRepository;
 
     @Autowired
     public ExportImportServiceImpl(TrainingDefinitionRepository trainingDefinitionRepository, AbstractLevelRepository abstractLevelRepository,
-                                   AssessmentLevelRepository assessmentLevelRepository, InfoLevelRepository infoLevelRepository, GameLevelRepository gameLevelRepository) {
+                                   AssessmentLevelRepository assessmentLevelRepository, InfoLevelRepository infoLevelRepository,
+                                   GameLevelRepository gameLevelRepository, TrainingInstanceRepository trainingInstanceRepository) {
         this.trainingDefinitionRepository = trainingDefinitionRepository;
         this.abstractLevelRepository = abstractLevelRepository;
         this.assessmentLevelRepository = assessmentLevelRepository;
         this.gameLevelRepository = gameLevelRepository;
         this.infoLevelRepository = infoLevelRepository;
+        this.trainingInstanceRepository = trainingInstanceRepository;
     }
 
     @Override
@@ -84,4 +88,10 @@ public class ExportImportServiceImpl implements ExportImportService {
         }
     }
 
+    @Override
+    @IsOrganizerOrAdmin
+    public TrainingInstance findInstanceById(Long trainingInstanceId) {
+        return trainingInstanceRepository.findById(trainingInstanceId).orElseThrow(
+            () -> new ServiceLayerException("Training instance with id: " + trainingInstanceId + " not found.", ErrorCode.RESOURCE_NOT_FOUND));
+    }
 }
