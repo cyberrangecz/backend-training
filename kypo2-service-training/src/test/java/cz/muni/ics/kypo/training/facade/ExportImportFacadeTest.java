@@ -1,6 +1,8 @@
 package cz.muni.ics.kypo.training.facade;
 
+import cz.muni.ics.kypo.training.api.dto.archive.TrainingInstanceArchiveDTO;
 import cz.muni.ics.kypo.training.api.dto.export.ExportTrainingDefinitionAndLevelsDTO;
+import cz.muni.ics.kypo.training.api.dto.export.TrainingRunExportDTO;
 import cz.muni.ics.kypo.training.api.dto.imports.AssessmentLevelImportDTO;
 import cz.muni.ics.kypo.training.api.dto.imports.GameLevelImportDTO;
 import cz.muni.ics.kypo.training.api.dto.imports.ImportTrainingDefinitionDTO;
@@ -8,12 +10,12 @@ import cz.muni.ics.kypo.training.api.dto.imports.InfoLevelImportDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionDTO;
 import cz.muni.ics.kypo.training.api.enums.AssessmentType;
 import cz.muni.ics.kypo.training.api.enums.LevelType;
+import cz.muni.ics.kypo.training.exceptions.FacadeLayerException;
+import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.mapping.mapstruct.*;
-import cz.muni.ics.kypo.training.persistence.model.AssessmentLevel;
-import cz.muni.ics.kypo.training.persistence.model.GameLevel;
-import cz.muni.ics.kypo.training.persistence.model.InfoLevel;
-import cz.muni.ics.kypo.training.persistence.model.TrainingDefinition;
+import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.model.enums.TDState;
+import cz.muni.ics.kypo.training.persistence.model.enums.TRState;
 import cz.muni.ics.kypo.training.service.ExportImportService;
 import cz.muni.ics.kypo.training.service.TrainingDefinitionService;
 import org.junit.Before;
@@ -27,10 +29,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import java.util.Arrays;
+import java.time.LocalDateTime;
+import java.util.*;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.willThrow;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = {InfoLevelMapperImpl.class, ExportImportMapperImpl.class, TrainingDefinitionMapperImpl.class,
@@ -67,7 +73,8 @@ public class ExportImportFacadeTest {
     private InfoLevelImportDTO importInfoLevelDTO;
     private AssessmentLevelImportDTO importAssessmentLevelDTO;
     private GameLevelImportDTO importGameLevelDTO;
-
+    private TrainingInstance trainingInstance;
+    private TrainingRun trainingRun;
 
     @Before
     public void init() {
@@ -127,6 +134,21 @@ public class ExportImportFacadeTest {
         importTrainingDefinitionDTO.setState(cz.muni.ics.kypo.training.api.enums.TDState.UNRELEASED);
         importTrainingDefinitionDTO.setLevels(Arrays.asList(importInfoLevelDTO, importGameLevelDTO, importAssessmentLevelDTO));
         importTrainingDefinitionDTO.setStartingLevel(infoLevel.getId());
+
+        trainingInstance = new TrainingInstance();
+        trainingInstance.setAccessToken("pass-1234");
+        trainingInstance.setTrainingDefinition(trainingDefinition);
+        trainingInstance.setPoolSize(10);
+        trainingInstance.setTitle("title");
+        LocalDateTime time = LocalDateTime.now();
+        trainingInstance.setEndTime(time.minusHours(10));
+        trainingInstance.setStartTime(time.minusHours(20));
+
+        trainingRun = new TrainingRun();
+        trainingRun.setTrainingInstance(trainingInstance);
+        trainingRun.setEndTime(time.minusHours(10));
+        trainingRun.setStartTime(time.minusHours(20));
+        trainingRun.setState(TRState.READY);
     }
     //TODO write better tests to check all attributes
     @Test
@@ -157,8 +179,39 @@ public class ExportImportFacadeTest {
         TrainingDefinitionDTO trainingDefinitionDTO = exportImportFacade.dbImport(importTrainingDefinitionDTO);
 
         deepEqualsTrainingDefinitionDTO(trainingDefinitionMapper.mapToDTO(trainingDefinition), trainingDefinitionDTO);
+    }
 
+    @Test
+    public void archiveTrainingRun(){
+        given(exportImportService.findInstanceById(anyLong())).willReturn(trainingInstance);
+        given(exportImportService.findById(trainingDefinition.getId())).willReturn(trainingDefinition);
+        given(trainingDefinitionService.findLevelById(infoLevel.getId())).willReturn(infoLevel);
+        given(trainingDefinitionService.findLevelById(gameLevel.getId())).willReturn(gameLevel);
+        given(trainingDefinitionService.findLevelById(assessmentLevel.getId())).willReturn(assessmentLevel);
+        given(exportImportService.findRunsByInstanceId(anyLong())).willReturn(Set.of(trainingRun));
 
+        TrainingInstanceArchiveDTO trainingInstanceArchiveDTO = exportImportFacade.archiveTrainingInstance(1L);
+
+        System.out.println(trainingInstanceArchiveDTO);
+        assertEquals(trainingInstance.getEndTime(), trainingInstanceArchiveDTO.getEndTime());
+        assertEquals(trainingInstance.getStartTime(), trainingInstanceArchiveDTO.getStartTime());
+        assertEquals(trainingInstance.getPoolSize(), trainingInstanceArchiveDTO.getPoolSize());
+        assertEquals(trainingInstance.getAccessToken(), trainingInstanceArchiveDTO.getAccessToken());
+        assertEquals(trainingInstance.getTitle(), trainingInstanceArchiveDTO.getTitle());
+        assertEquals(trainingDefinition.getTitle(), trainingInstanceArchiveDTO.getExportTrainingDefinitionAndLevelsDTO().getTitle());
+        assertEquals(trainingDefinition.getDescription(), trainingInstanceArchiveDTO.getExportTrainingDefinitionAndLevelsDTO().getDescription());
+        TrainingRunExportDTO trainingRunExportDTO = (TrainingRunExportDTO) trainingInstanceArchiveDTO.getTrainingRuns().toArray()[0];
+        assertEquals(trainingRun.getEndTime(), trainingRunExportDTO.getEndTime());
+        assertEquals(trainingRun.getStartTime(), trainingRunExportDTO.getStartTime());
+        assertEquals(3, trainingInstanceArchiveDTO.getExportTrainingDefinitionAndLevelsDTO().getLevels().size());
+    }
+
+    @Test
+    public void createInfoLevelWithFacadeLayerException() {
+        thrown.expect(FacadeLayerException.class);
+        given(exportImportService.findInstanceById(anyLong())).willReturn(trainingInstance);
+        willThrow(ServiceLayerException.class).given(exportImportService).failIfInstanceIsNotFinished(any(LocalDateTime.class));
+        exportImportFacade.archiveTrainingInstance(1L);
     }
 
     private void deepEqualsTrainingDefinitionDTO(TrainingDefinitionDTO t1, TrainingDefinitionDTO t2) {
