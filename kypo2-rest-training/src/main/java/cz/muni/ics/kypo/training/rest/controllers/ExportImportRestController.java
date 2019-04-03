@@ -10,6 +10,7 @@ import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionDT
 import cz.muni.ics.kypo.training.exceptions.FacadeLayerException;
 import cz.muni.ics.kypo.training.facade.ExportImportFacade;
 import cz.muni.ics.kypo.training.persistence.model.TrainingInstance;
+import cz.muni.ics.kypo.training.rest.ExceptionSorter;
 import cz.muni.ics.kypo.training.rest.exceptions.ResourceNotFoundException;
 import io.swagger.annotations.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -101,6 +102,7 @@ public class ExportImportRestController {
     @ApiResponses(value = {
         @ApiResponse(code = 200, message = "Training instance archived.", response = TrainingInstanceArchiveDTO.class),
         @ApiResponse(code = 404, message = "Training instance not found."),
+        @ApiResponse(code = 409, message = "Cannot archive instance that is not finished."),
         @ApiResponse(code = 500, message = "Unexpected condition was encountered.")
 
     })
@@ -114,7 +116,7 @@ public class ExportImportRestController {
             Squiggly.init(objectMapper, fields);
             return ResponseEntity.ok(SquigglyUtils.stringify(objectMapper, exportImportFacade.archiveTrainingInstance(trainingInstanceId)));
         } catch (FacadeLayerException ex){
-            throw new ResourceNotFoundException(ex);
+            throw ExceptionSorter.throwException(ex);
         }
 
     }
