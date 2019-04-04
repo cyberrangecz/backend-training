@@ -106,7 +106,7 @@ public class ExportImportRestController {
         @ApiResponse(code = 500, message = "Unexpected condition was encountered.")
 
     })
-    @GetMapping(path = "/exports/training-instance/{trainingInstanceId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(path = "/exports/training-instances/{trainingInstanceId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> archiveTrainingInstance(
             @ApiParam(value = "Id of training instance", required = true)
             @PathVariable(value = "trainingInstanceId") Long trainingInstanceId,
