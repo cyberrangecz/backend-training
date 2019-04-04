@@ -81,7 +81,7 @@ public class ExportImportRestControllerTest {
 		String valueTi = convertObjectToJsonBytes(trainingInstanceArchiveDTO);
 		given(objectMapper.writeValueAsString(any(Object.class))).willReturn(valueTi);
 
-		MockHttpServletResponse result = mockMvc.perform(get("/exports/training-instance" + "/{id}", 1L))
+		MockHttpServletResponse result = mockMvc.perform(get("/exports/training-instances" + "/{id}", 1L))
 				.andExpect(status().isOk())
 				.andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
 				.andReturn().getResponse();
@@ -92,7 +92,7 @@ public class ExportImportRestControllerTest {
 	public void archiveTrainingInstanceWithFacadeException() throws Exception{
 		Exception exceptionThrow = new ServiceLayerException("message", ErrorCode.RESOURCE_NOT_FOUND);
 		willThrow(new FacadeLayerException(exceptionThrow)).given(exportImportFacade).archiveTrainingInstance(any(Long.class));
-		Exception exception = mockMvc.perform(get("/exports/training-instance" + "/{id}", 600l))
+		Exception exception = mockMvc.perform(get("/exports/training-instances" + "/{id}", 600l))
 				.andExpect(status().isNotFound())
 				.andReturn().getResolvedException();
 		assertEquals(ResourceNotFoundException.class, exception.getClass());
