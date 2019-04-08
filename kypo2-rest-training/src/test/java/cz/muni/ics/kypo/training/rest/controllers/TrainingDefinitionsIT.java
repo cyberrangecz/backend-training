@@ -430,17 +430,6 @@ public class TrainingDefinitionsIT {
 		assertTrue(ex.getMessage().contains("Training definition with id: 100 not found"));
 	}
 
-
-	@Test
-	public void cloneUnreleasedTrainingDefinition() throws Exception {
-		TrainingDefinition tD = trainingDefinitionRepository.save(unreleasedDefinition);
-		Exception ex = mvc.perform(post("/training-definitions" + "/{id}", tD.getId()))
-				.andExpect(status().isConflict())
-				.andReturn().getResolvedException();
-		assertEquals(ex.getClass(), ConflictException.class);
-		assertTrue(ex.getMessage().contains("Cannot copy unreleased training definition"));
-	}
-
 	@Test
 	public void swapLeft() throws Exception {
 		TrainingDefinition tD = trainingDefinitionRepository.save(unreleasedDefinition);

@@ -257,17 +257,6 @@ public class TrainingDefinitionServiceTest {
     }
 
     @Test
-    public void cloneTrainingDefinitionWithCannotBeClonedException() {
-        given(trainingDefinitionRepository.findById(unreleasedDefinition.getId())).willReturn(Optional.of(unreleasedDefinition));
-
-        thrown.expect(ServiceLayerException.class);
-        thrown.expectMessage("Cannot copy unreleased training definition");
-        trainingDefinitionService.clone(unreleasedDefinition.getId());
-
-        then(trainingDefinitionRepository).should().findById(unreleasedDefinition.getId());
-    }
-
-    @Test
     public void cloneTrainingDefinitionWithNull() {
         thrown.expect(ServiceLayerException.class);
         trainingDefinitionService.clone(null);
