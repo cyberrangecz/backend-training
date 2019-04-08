@@ -295,7 +295,11 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
         try {
             Objects.requireNonNull(gameLevel);
             Objects.requireNonNull(definitionId);
-            trainingDefinitionService.updateGameLevel(definitionId, gameLevelMapper.mapUpdateToEntity(gameLevel));
+            GameLevel gameLevelToUpdate = gameLevelMapper.mapUpdateToEntity(gameLevel);
+            //Connecting game level with hints
+            for (Hint hint : gameLevelToUpdate.getHints())
+                hint.setGameLevel(gameLevelToUpdate);
+            trainingDefinitionService.updateGameLevel(definitionId, gameLevelToUpdate);
         } catch (ServiceLayerException ex) {
             throw new FacadeLayerException(ex);
         }
