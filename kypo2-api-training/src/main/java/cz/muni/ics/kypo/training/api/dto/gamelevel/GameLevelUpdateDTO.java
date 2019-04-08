@@ -6,6 +6,7 @@ import io.swagger.annotations.ApiModelProperty;
 
 import javax.validation.constraints.*;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -34,7 +35,7 @@ public class GameLevelUpdateDTO {
     @NotNull(message = "{gamelevelupdate.incorrectFlagLimit.NotEmpty.message}")
     @Min(value = 0, message = "{gamelevelupdate.incorrectFlagLimit.Min.message}")
     private int incorrectFlagLimit;
-    private Set<HintDTO> hints;
+    private Set<HintDTO> hints = new HashSet<>();
 
     @ApiModelProperty(value = "Main identifier of level.", required = true, example = "1")
     public Long getId() {
