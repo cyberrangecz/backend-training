@@ -221,7 +221,6 @@ public class TrainingDefinitionsRestController {
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Training definition cloned.", response = TrainingDefinitionDTO.class),
             @ApiResponse(code = 404, message = "Training definition with given id not found."),
-            @ApiResponse(code = 409, message = "Cannot copy unreleased training definition."),
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.")
     })
     @PostMapping(path = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)

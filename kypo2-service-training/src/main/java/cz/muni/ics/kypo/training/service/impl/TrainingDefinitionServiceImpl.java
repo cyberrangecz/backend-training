@@ -218,8 +218,6 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     public TrainingDefinition clone(Long id) {
         LOG.debug("clone({})", id);
         TrainingDefinition trainingDefinition = findById(id);
-        if (trainingDefinition.getState().equals(TDState.UNRELEASED))
-            throw new ServiceLayerException("Cannot copy unreleased training definition.", ErrorCode.RESOURCE_CONFLICT);
         TrainingDefinition clonedTrainingDefinition = new TrainingDefinition();
         BeanUtils.copyProperties(trainingDefinition, clonedTrainingDefinition);
         clonedTrainingDefinition.setId(null);
