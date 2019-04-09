@@ -105,18 +105,13 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
         LOG.debug("findAllTrainingDefinitions({},{})", predicate, pageable);
         if (isAdmin()) {
             return trainingDefinitionRepository.findAll(predicate, pageable);
+        } else if (isDesigner() && isOrganizer()) {
+            return trainingDefinitionRepository.findAllForDesignersAndOrganizers(getSubOfLoggedInUser(), pageable);
+        } else if (isDesigner()) {
+            return trainingDefinitionRepository.findAllByLoggedInUser(getSubOfLoggedInUser(), pageable);
+        } else {
+            return trainingDefinitionRepository.findAllForOrganizers(getSubOfLoggedInUser(), pageable);
         }
-        List<TrainingDefinition> trainingDefinitions = new ArrayList<>();
-        if (isDesigner()) {
-            trainingDefinitions.addAll(trainingDefinitionRepository.findAllByLoggedInUser(getSubOfLoggedInUser(), pageable).getContent());
-        }
-        if (isOrganizer()) {
-            trainingDefinitions.addAll(trainingDefinitionRepository.findAllByBetaTesters(getSubOfLoggedInUser(), pageable).getContent());
-            LOG.info(trainingDefinitions.get(0).getBetaTestingGroup().getOrganizers().toString());
-            trainingDefinitions.addAll(trainingDefinitionRepository.findAll(QTrainingDefinition.trainingDefinition.state.eq(TDState.RELEASED), pageable).getContent());
-        }
-        return new PageImpl<>(trainingDefinitions, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), pageable.getSort()),
-                trainingDefinitions.size());
     }
 
     private String getSubOfLoggedInUser() {
