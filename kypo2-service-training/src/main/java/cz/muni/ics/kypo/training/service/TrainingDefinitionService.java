@@ -3,6 +3,7 @@ package cz.muni.ics.kypo.training.service;
 import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.training.api.dto.UserInfoDTO;
 import cz.muni.ics.kypo.training.api.enums.RoleType;
+import cz.muni.ics.kypo.training.api.enums.TDState;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import org.springframework.data.domain.Page;
@@ -209,4 +210,10 @@ public interface TrainingDefinitionService {
      */
     UserRef createUserRef(UserRef userRef);
 
+    /**
+     * Switch state of definition to unreleased
+     * @param definitionId - id of training definition
+     * @param state - new state of TD
+     */
+    void switchState(Long definitionId, cz.muni.ics.kypo.training.api.enums.TDState state);
 }

@@ -594,6 +594,34 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
         return userRef;
     }
 
+    @Override
+    @TransactionalWO
+    @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
+        "or @securityService.isDesignerOfGivenTrainingDefinition(#definitionId)")
+    public void switchState(Long definitionId, cz.muni.ics.kypo.training.api.enums.TDState state) {
+        LOG.debug("unreleaseDefinition({})", definitionId);
+        TrainingDefinition trainingDefinition = findById(definitionId);
+
+        switch (trainingDefinition.getState()){
+            case UNRELEASED:
+                if (state.equals(cz.muni.ics.kypo.training.api.enums.TDState.RELEASED)) trainingDefinition.setState(TDState.RELEASED);
+                else throw new ServiceLayerException("Cannot switch from" + trainingDefinition.getState() + " to "+ state, ErrorCode.RESOURCE_CONFLICT);
+                break;
+            case RELEASED:
+                if (state.equals(cz.muni.ics.kypo.training.api.enums.TDState.ARCHIVED)) trainingDefinition.setState(TDState.ARCHIVED);
+                else if (state.equals(cz.muni.ics.kypo.training.api.enums.TDState.UNRELEASED)){
+                    if(trainingInstanceRepository.existsAnyForTrainingDefinition(definitionId)) {
+                        throw new ServiceLayerException("Cannot update training definition with already created training instance. " +
+                            "Remove training instance/s before updating training definition.", ErrorCode.RESOURCE_CONFLICT);
+                    }
+                    trainingDefinition.setState(TDState.UNRELEASED);
+                } else throw new ServiceLayerException("Cannot switch from" + trainingDefinition.getState() + " to "+ state, ErrorCode.RESOURCE_CONFLICT);
+                break;
+            default:
+                throw new ServiceLayerException("Cannot switch from" + trainingDefinition.getState() + " to "+ state, ErrorCode.RESOURCE_CONFLICT);
+        }
+    }
+
     private AbstractLevel findLastLevel(Long levelId) {
         AbstractLevel lastLevel = abstractLevelRepository.findById(levelId)
                 .orElseThrow(() -> new ServiceLayerException(LEVEL_NOT_FOUND, ErrorCode.RESOURCE_NOT_FOUND));

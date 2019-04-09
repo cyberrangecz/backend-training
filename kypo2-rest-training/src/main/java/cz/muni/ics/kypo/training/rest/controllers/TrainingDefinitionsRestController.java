@@ -16,6 +16,7 @@ import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionCr
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionUpdateDTO;
 import cz.muni.ics.kypo.training.api.enums.RoleType;
+import cz.muni.ics.kypo.training.api.enums.TDState;
 import cz.muni.ics.kypo.training.exceptions.FacadeLayerException;
 import cz.muni.ics.kypo.training.facade.TrainingDefinitionFacade;
 import cz.muni.ics.kypo.training.persistence.model.TrainingDefinition;
@@ -523,7 +524,6 @@ public class TrainingDefinitionsRestController {
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Organizers found.", response = String[].class),
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.")
-
     })
     @GetMapping(path = "/organizers", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> getOrganizers(@QuerydslPredicate(root = TrainingDefinition.class) Predicate predicate,
@@ -533,6 +533,30 @@ public class TrainingDefinitionsRestController {
             List<UserInfoDTO> designers = trainingDefinitionFacade.getUsersWithGivenRole(RoleType.ROLE_TRAINING_ORGANIZER, pageable);
             return ResponseEntity.ok(SquigglyUtils.stringify(objectMapper, designers));
         } catch (FacadeLayerException ex) {
+            throw ExceptionSorter.throwException(ex);
+        }
+    }
+
+    @ApiOperation(httpMethod = "PUT",
+        value = "Switch state of training definition",
+        response = Void.class,
+        nickname = "switchDefinitionState")
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Training definition updated."),
+        @ApiResponse(code = 404, message = "Training definition with given id not found."),
+        @ApiResponse(code = 409, message = "Cannot edit definition with created instances."),
+        @ApiResponse(code = 500, message = "Unexpected condition was encountered.")
+    })
+    @PutMapping(path = "/{definitionId}/states/{state}")
+    public ResponseEntity<Void> switchState(
+        @ApiParam(value = "Id of definition", required = true)
+        @PathVariable(value = "definitionId") Long definitionId,
+        @ApiParam(value = "New state of definition", allowableValues = "RELEASED, UNRELEASED, ARCHIVED", required = true)
+        @PathVariable(value = "state") TDState state){
+        try {
+            trainingDefinitionFacade.switchState(definitionId, state);
+            return ResponseEntity.noContent().build();
+        } catch(FacadeLayerException ex){
             throw ExceptionSorter.throwException(ex);
         }
     }

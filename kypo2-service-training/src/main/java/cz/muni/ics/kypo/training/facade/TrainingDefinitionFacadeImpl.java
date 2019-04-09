@@ -19,6 +19,7 @@ import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionDT
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionUpdateDTO;
 import cz.muni.ics.kypo.training.api.enums.LevelType;
 import cz.muni.ics.kypo.training.api.enums.RoleType;
+import cz.muni.ics.kypo.training.api.enums.TDState;
 import cz.muni.ics.kypo.training.exceptions.ErrorCode;
 import cz.muni.ics.kypo.training.exceptions.FacadeLayerException;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
@@ -39,6 +40,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+
+import static cz.muni.ics.kypo.training.persistence.model.enums.TDState.UNRELEASED;
 
 /**
  * @author Pavel Šeda
@@ -407,6 +410,17 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
         try {
             return trainingDefinitionService.getUsersWithGivenRole(roleType, pageable);
         } catch (ServiceLayerException ex) {
+            throw new FacadeLayerException(ex);
+        }
+    }
+
+    @Override
+    public void switchState(Long definitionId, TDState state) {
+        LOG.debug("unreleaseDefinition({})", definitionId, state);
+        try{
+            Objects.requireNonNull(definitionId);
+            trainingDefinitionService.switchState(definitionId, state);
+        } catch (ServiceLayerException ex){
             throw new FacadeLayerException(ex);
         }
     }
