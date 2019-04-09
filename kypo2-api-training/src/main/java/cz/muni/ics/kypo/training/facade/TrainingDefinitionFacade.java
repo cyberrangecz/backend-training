@@ -4,6 +4,7 @@ import cz.muni.ics.kypo.training.api.dto.AbstractLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.BasicLevelInfoDTO;
 import cz.muni.ics.kypo.training.api.dto.UserInfoDTO;
 import cz.muni.ics.kypo.training.api.enums.RoleType;
+import cz.muni.ics.kypo.training.api.enums.TDState;
 import cz.muni.ics.kypo.training.exceptions.FacadeLayerException;
 
 import com.querydsl.core.types.Predicate;
@@ -190,4 +191,10 @@ public interface TrainingDefinitionFacade {
      */
     List<UserInfoDTO> getUsersWithGivenRole(RoleType roleType, Pageable pageable);
 
+    /**
+     * Switch state of definition to unreleased
+     * @param definitionId - id of training definition
+     * @param state - new state of TD
+     */
+    void switchState(Long definitionId, TDState state);
 }

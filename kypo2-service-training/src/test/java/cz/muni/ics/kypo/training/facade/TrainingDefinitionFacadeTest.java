@@ -544,6 +544,19 @@ public class TrainingDefinitionFacadeTest {
         trainingDefinitionFacade.findLevelById(infoLevel.getId());
     }
 
+    @Test
+    public void switchState() {
+        trainingDefinitionFacade.switchState(trainingDefinition2.getId(), cz.muni.ics.kypo.training.api.enums.TDState.UNRELEASED);
+        then(trainingDefinitionService).should().switchState(trainingDefinition2.getId(), cz.muni.ics.kypo.training.api.enums.TDState.UNRELEASED);
+    }
+
+    @Test
+    public void switchStateWithServiceException() {
+        willThrow(ServiceLayerException.class).given(trainingDefinitionService).switchState(any(Long.class), any(cz.muni.ics.kypo.training.api.enums.TDState.class));
+        thrown.expect(FacadeLayerException.class);
+        trainingDefinitionFacade.switchState(trainingDefinition1.getId(), cz.muni.ics.kypo.training.api.enums.TDState.ARCHIVED);
+    }
+
     private void deepEquals(TrainingDefinition expected, TrainingDefinitionDTO actual) {
         assertEquals(expected.getId(), actual.getId());
         assertEquals(expected.getTitle(), actual.getTitle());

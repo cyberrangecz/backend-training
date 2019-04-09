@@ -882,6 +882,37 @@ public class TrainingDefinitionServiceTest {
         UserRef u = trainingDefinitionService.findUserRefByLogin("Herkules");
     }
 
+    @Test
+    public void switchState_UNRELEASEDtoRELEASED(){
+        given(trainingDefinitionRepository.findById(anyLong())).willReturn(Optional.of(unreleasedDefinition));
+        trainingDefinitionService.switchState(unreleasedDefinition.getId(), cz.muni.ics.kypo.training.api.enums.TDState.RELEASED);
+        assertEquals(TDState.RELEASED, unreleasedDefinition.getState());
+    }
+
+    @Test
+    public void switchState_RELEASEDtoARCHIVED(){
+        given(trainingDefinitionRepository.findById(anyLong())).willReturn(Optional.of(releasedDefinition));
+        trainingDefinitionService.switchState(releasedDefinition.getId(), cz.muni.ics.kypo.training.api.enums.TDState.ARCHIVED);
+        assertEquals(TDState.ARCHIVED, releasedDefinition.getState());
+    }
+
+    @Test
+    public void switchState_RELEASEDtoUNRELEASED(){
+        given(trainingDefinitionRepository.findById(anyLong())).willReturn(Optional.of(releasedDefinition));
+        given(trainingInstanceRepository.existsAnyForTrainingDefinition(anyLong())).willReturn(false);
+        trainingDefinitionService.switchState(releasedDefinition.getId(), cz.muni.ics.kypo.training.api.enums.TDState.UNRELEASED);
+        assertEquals(TDState.UNRELEASED, releasedDefinition.getState());
+    }
+    @Test
+    public void switchState_RELEASEDtoUNRELEASED_withCreatedInstances(){
+        given(trainingDefinitionRepository.findById(anyLong())).willReturn(Optional.of(releasedDefinition));
+        given(trainingInstanceRepository.existsAnyForTrainingDefinition(anyLong())).willReturn(true);
+        thrown.expect(ServiceLayerException.class);
+        thrown.expectMessage("Cannot update training definition with already created training instance. " +
+            "Remove training instance/s before updating training definition.");
+        trainingDefinitionService.switchState(releasedDefinition.getId(), cz.muni.ics.kypo.training.api.enums.TDState.UNRELEASED);
+    }
+
     @After
     public void after() {
         reset(trainingDefinitionRepository);

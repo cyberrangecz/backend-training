@@ -574,7 +574,24 @@ public class TrainingDefinitionsRestControllerTest {
         assertEquals("ServiceLayerException : Error while getting users from user and group microservice.", ex.getLocalizedMessage());
     }
 
+    @Test
+    public void switchState() throws Exception {
+        mockMvc.perform(put("/training-definitions/{definitionId}/states/{state}", trainingDefinition1.getId(),
+						cz.muni.ics.kypo.training.api.enums.TDState.ARCHIVED))
+            .andExpect(status().isNoContent());
+    }
 
+    @Test
+    public void switchStateWithConflict() throws Exception {
+        Exception exceptionToThrow = new ServiceLayerException("message", ErrorCode.RESOURCE_CONFLICT);
+        willThrow(new FacadeLayerException(exceptionToThrow)).given(trainingDefinitionFacade).switchState(any(Long.class), any(cz.muni.ics.kypo.training.api.enums.TDState.class));
+        Exception exception =
+            mockMvc.perform(put("/training-definitions/{definitionId}/states/{state}", trainingDefinition2.getId(),
+								cz.muni.ics.kypo.training.api.enums.TDState.ARCHIVED))
+                .andExpect(status().isConflict())
+                .andReturn().getResolvedException();
+        assertEquals(ConflictException.class, exception.getClass());
+    }
     private static String convertObjectToJsonBytes(Object object) throws IOException {
         ObjectMapper mapper = new ObjectMapper();
         return mapper.writeValueAsString(object);
