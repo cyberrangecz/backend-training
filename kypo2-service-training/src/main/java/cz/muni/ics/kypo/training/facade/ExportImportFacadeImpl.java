@@ -26,6 +26,7 @@ import org.springframework.web.client.RestTemplate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -103,11 +104,12 @@ public class ExportImportFacadeImpl implements ExportImportFacade {
     @Override
     @TransactionalWO
     public TrainingDefinitionDTO dbImport(ImportTrainingDefinitionDTO importTrainingDefinitionDTO) {
+        Objects.requireNonNull(importTrainingDefinitionDTO, "In dbImport() method the input parameter for ImportTrainingDefinitionDTO must not be empty.");
         // by default set uploaded training definition to unrelease state
         importTrainingDefinitionDTO.setState(TDState.UNRELEASED);
         // uploaded training definitions have title started with 'Uploaded 'prefix
-        if(!importTrainingDefinitionDTO.getTitle().startsWith("Uploaded")) {
-            importTrainingDefinitionDTO.setTitle("Uploaded " + importTrainingDefinitionDTO.getTitle());
+        if (importTrainingDefinitionDTO.getTitle() != null && !importTrainingDefinitionDTO.getTitle().startsWith("Uploaded")) {
+//            importTrainingDefinitionDTO.setTitle("Uploaded " + importTrainingDefinitionDTO.getTitle());
         }
         int levelOrder = importTrainingDefinitionDTO.getLevels().size() - 1;
         Long newLevelId = null;
@@ -147,7 +149,7 @@ public class ExportImportFacadeImpl implements ExportImportFacade {
                 }
             }
             return archivedInstance;
-        } catch(ServiceLayerException ex){
+        } catch (ServiceLayerException ex) {
             throw new FacadeLayerException(ex);
         }
     }
