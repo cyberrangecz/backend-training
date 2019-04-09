@@ -7,6 +7,7 @@ import cz.muni.ics.kypo.training.api.dto.export.*;
 import cz.muni.ics.kypo.training.api.dto.imports.*;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionDTO;
 import cz.muni.ics.kypo.training.api.enums.LevelType;
+import cz.muni.ics.kypo.training.api.enums.TDState;
 import cz.muni.ics.kypo.training.exceptions.ErrorCode;
 import cz.muni.ics.kypo.training.exceptions.FacadeLayerException;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
@@ -102,6 +103,12 @@ public class ExportImportFacadeImpl implements ExportImportFacade {
     @Override
     @TransactionalWO
     public TrainingDefinitionDTO dbImport(ImportTrainingDefinitionDTO importTrainingDefinitionDTO) {
+        // by default set uploaded training definition to unrelease state
+        importTrainingDefinitionDTO.setState(TDState.UNRELEASED);
+        // uploaded training definitions have title started with 'Uploaded 'prefix
+        if(!importTrainingDefinitionDTO.getTitle().startsWith("Uploaded")) {
+            importTrainingDefinitionDTO.setTitle("Uploaded " + importTrainingDefinitionDTO.getTitle());
+        }
         int levelOrder = importTrainingDefinitionDTO.getLevels().size() - 1;
         Long newLevelId = null;
         AbstractLevel newLevel;
