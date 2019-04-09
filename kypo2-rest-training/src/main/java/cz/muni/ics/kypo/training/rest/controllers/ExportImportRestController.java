@@ -7,6 +7,7 @@ import cz.muni.ics.kypo.training.api.dto.archive.TrainingInstanceArchiveDTO;
 import cz.muni.ics.kypo.training.api.dto.export.ExportTrainingDefinitionAndLevelsDTO;
 import cz.muni.ics.kypo.training.api.dto.imports.ImportTrainingDefinitionDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionDTO;
+import cz.muni.ics.kypo.training.api.enums.TDState;
 import cz.muni.ics.kypo.training.exceptions.FacadeLayerException;
 import cz.muni.ics.kypo.training.facade.ExportImportFacade;
 import cz.muni.ics.kypo.training.persistence.model.TrainingInstance;
@@ -57,7 +58,6 @@ public class ExportImportRestController {
             @ApiResponse(code = 200, message = "Training definitions and levels found.", response = ExportTrainingDefinitionAndLevelsDTO.class),
             @ApiResponse(code = 404, message = "Training definition and levels not found."),
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.")
-
     })
     @GetMapping(path = "/exports/training-definitions/{trainingDefinitionId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> getExportedTrainingDefinitionAndLevels(
@@ -88,8 +88,10 @@ public class ExportImportRestController {
             @Valid @RequestBody ImportTrainingDefinitionDTO importTrainingDefinitionDTO,
             @ApiParam(value = "Fields which should be returned in REST API response", required = false)
             @RequestParam(value = "fields", required = false) String fields) {
-
+        // by default set uploaded training definition to unrelease state
+        importTrainingDefinitionDTO.setState(TDState.UNRELEASED);
         TrainingDefinitionDTO trainingDefinitionResource = exportImportFacade.dbImport(importTrainingDefinitionDTO);
+        trainingDefinitionResource.setState(TDState.UNRELEASED);
         Squiggly.init(objectMapper, fields);
         return ResponseEntity.ok(SquigglyUtils.stringify(objectMapper, trainingDefinitionResource));
     }
