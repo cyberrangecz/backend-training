@@ -105,18 +105,18 @@ public class TrainingDefinitionRepositoryTest {
         assertEquals(2, trainingDefinitions.size());
     }
 
-    @Test
-    public void findAllByViewGroup() {
-        entityManager.persist(trainingDefinition1);
-        entityManager.persist(trainingDefinition2);
-        entityManager.persist(organizer1);
-        viewGroup1.addOrganizer(organizer1);
-        viewGroup2.addOrganizer(organizer1);
-
-        List<TrainingDefinition> trainingDefinitions = trainingDefinitionRepository
-                .findAllByBetaTesters("Organizer", pageable).getContent();
-        assertTrue(trainingDefinitions.contains(trainingDefinition1));
-        assertEquals(2, trainingDefinitions.size());
-    }
+//    @Test
+//    public void findAllByViewGroup() {
+//        entityManager.persist(trainingDefinition1);
+//        entityManager.persist(trainingDefinition2);
+//        entityManager.persist(organizer1);
+//        viewGroup1.addOrganizer(organizer1);
+//        viewGroup2.addOrganizer(organizer1);
+//
+//        List<TrainingDefinition> trainingDefinitions = trainingDefinitionRepository
+//                .findAllByBetaTesters("Organizer", pageable).getContent();
+//        assertTrue(trainingDefinitions.contains(trainingDefinition1));
+//        assertEquals(2, trainingDefinitions.size());
+//    }
 
 }

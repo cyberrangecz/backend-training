@@ -40,8 +40,14 @@ public interface TrainingDefinitionRepository
             countQuery = "SELECT COUNT(td) FROM TrainingDefinition td INNER JOIN td.authors a WHERE a.userRefLogin = :userRefLogin")
     Page<TrainingDefinition> findAllByLoggedInUser(@Param("userRefLogin") String userRefLogin, Pageable pageable);
 
-    @Query(value = "SELECT DISTINCT td FROM TrainingDefinition td JOIN FETCH td.betaTestingGroup bt INNER JOIN bt.organizers org WHERE org.userRefLogin = :userRefLogin",
-            countQuery = "SELECT COUNT(td) FROM TrainingDefinition td INNER JOIN td.betaTestingGroup bt INNER JOIN bt.organizers org WHERE org.userRefLogin = :userRefLogin")
-    Page<TrainingDefinition> findAllByBetaTesters(@Param("userRefLogin") String userRefLogin, Pageable pageable);
+    @Query(value = "SELECT DISTINCT td FROM TrainingDefinition td LEFT JOIN td.betaTestingGroup bt LEFT JOIN bt.organizers org WHERE org.userRefLogin = :userRefLogin OR td.state = 'RELEASED'",
+            countQuery = "SELECT COUNT(DISTINCT td) FROM TrainingDefinition td LEFT JOIN td.betaTestingGroup bt LEFT JOIN bt.organizers org WHERE org.userRefLogin = :userRefLogin OR td.state = 'RELEASED'")
+    Page<TrainingDefinition> findAllForOrganizers(@Param("userRefLogin") String userRefLogin, Pageable pageable);
+
+    @Query(value = "SELECT DISTINCT td FROM TrainingDefinition td LEFT JOIN td.betaTestingGroup bt LEFT JOIN bt.organizers org " +
+            "LEFT JOIN td.authors aut WHERE aut.userRefLogin = :userRefLogin OR org.userRefLogin = :userRefLogin OR td.state = 'RELEASED'",
+            countQuery = "SELECT COUNT(DISTINCT td) FROM TrainingDefinition td LEFT JOIN td.betaTestingGroup bt LEFT JOIN bt.organizers org " +
+                    "LEFT JOIN td.authors aut WHERE aut.userRefLogin = :userRefLogin OR org.userRefLogin = :userRefLogin OR td.state = 'RELEASED'")
+    Page<TrainingDefinition> findAllForDesignersAndOrganizers(@Param("userRefLogin") String userRefLogin, Pageable pageable);
 
 }
