@@ -88,15 +88,8 @@ public class AssessmentUtil {
     public Map<Integer,Integer> getEMIAnswersFromUser(JSONArray pairs) {
         Map<Integer, Integer> userMapping = new HashMap<>();
         for (int k = 0; k < pairs.length(); k++) {
-            if (!pairs.getJSONArray(k).toList().isEmpty()) {
-                pairs.getJSONArray(k).getInt(0);
-                int key = pairs.getJSONArray(k).getInt(0);
-                int value = pairs.getJSONArray(k).getInt(1);
-                if (!userMapping.containsKey(key) || !userMapping.containsValue(value) ) {
-                    userMapping.put(key,value);
-                }
-            }
-
+            JSONObject pairsXY = pairs.getJSONObject(k);
+            userMapping.put(pairsXY.getInt("x"),pairsXY.getInt("y"));
         }
         return userMapping;
     }
