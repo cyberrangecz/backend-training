@@ -290,8 +290,8 @@ public class TrainingDefinitionsIT {
 /*TODO poriesit canBeArchived
 	@Test
 	public void findAllTrainingDefinitions() throws Exception {
-		TrainingDefinition tD1 = trainingDefinitionRepository.save(releasedTrainingDefinition);
-		TrainingDefinition tD2 = trainingDefinitionRepository.save(unreleasedDefinition);
+		TrainingDefinition tD1 = trainingDefinitionRepository.saveTrainingRunEvent(releasedTrainingDefinition);
+		TrainingDefinition tD2 = trainingDefinitionRepository.saveTrainingRunEvent(unreleasedDefinition);
 
 		List<TrainingDefinition> expected = new ArrayList<>();
 		expected.add(tD1);

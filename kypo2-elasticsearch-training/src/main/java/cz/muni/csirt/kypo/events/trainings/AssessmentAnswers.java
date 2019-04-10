@@ -51,7 +51,6 @@ public class AssessmentAnswers extends AbstractAuditPOJO {
         return new AssessmentAnswersBuilder();
     }
 
-
     public static class AssessmentAnswersBuilder implements SandboxIdBuilder, TrainingDefinitionIdBuilder, TrainingInstanceIdBuilder, TrainingRunIdBuilder, PlayerLoginBuilder, TotalScoreBuilder, ActualScoreInLevelBuilder, LevelBuilder, AnswersBuilder {
         private long sandboxId;
         private long trainingDefinitionId;

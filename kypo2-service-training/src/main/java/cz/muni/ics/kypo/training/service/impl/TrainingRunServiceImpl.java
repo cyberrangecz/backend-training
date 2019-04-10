@@ -44,7 +44,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 
 /**
- * @author Dominik Pilar (445537)
+ * @author Dominik Pilar (445537) & Pavel Seda (441048)
  */
 @Service
 public class TrainingRunServiceImpl implements TrainingRunService {
@@ -90,7 +90,6 @@ public class TrainingRunServiceImpl implements TrainingRunService {
     public Page<TrainingRun> findAll(Predicate predicate, Pageable pageable) {
         LOG.debug("findAllTrainingDefinitions({},{})", predicate, pageable);
         return trainingRunRepository.findAll(predicate, pageable);
-
     }
 
     @Override
@@ -173,7 +172,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
         LOG.debug("accessTrainingRun({})", accessToken);
         Assert.hasLength(accessToken, "AccessToken cannot be null or empty.");
         Optional<TrainingRun> alreadyAccessedTrainingRun = trainingRunRepository.findByUserAndAccessToken(accessToken, getSubOfLoggedInUser());
-        if(alreadyAccessedTrainingRun.isPresent() && !alreadyAccessedTrainingRun.get().getState().equals(TRState.ARCHIVED)) {
+        if (alreadyAccessedTrainingRun.isPresent() && !alreadyAccessedTrainingRun.get().getState().equals(TRState.ARCHIVED)) {
             resumeTrainingRun(alreadyAccessedTrainingRun.get().getId());
             return alreadyAccessedTrainingRun.get();
         }
@@ -211,7 +210,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
         if (trainingRun.getState().equals(TRState.ARCHIVED)) {
             throw new ServiceLayerException("Cannot resume archived training run.", ErrorCode.RESOURCE_CONFLICT);
         }
-        if(trainingRun.getTrainingInstance().getEndTime().isBefore(LocalDateTime.now())) {
+        if (trainingRun.getTrainingInstance().getEndTime().isBefore(LocalDateTime.now())) {
             throw new ServiceLayerException("Cannot resume training run after end of training instance.", ErrorCode.RESOURCE_CONFLICT);
         }
 
@@ -221,7 +220,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
             ResponseEntity<SandboxInfo> response = restTemplate.exchange(kypoOpenStackURI + "/sandboxes/" + trainingRun.getSandboxInstanceRef().getSandboxInstanceRef() + "/", HttpMethod.GET, new HttpEntity<>(httpHeaders),
                     new ParameterizedTypeReference<SandboxInfo>() {
                     });
-            if(!response.getBody().getStatus().equals("CREATE_COMPLETE")) {
+            if (!response.getBody().getStatus().equals("CREATE_COMPLETE")) {
                 throw new ServiceLayerException("Something happened with sandbox. Please contact organizer of training instance or administrator", ErrorCode.RESOURCE_CONFLICT);
             }
         } catch (HttpClientErrorException ex) {
@@ -327,7 +326,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
         TrainingRun trainingRun = findByIdWithLevel(trainingRunId);
         AbstractLevel level = trainingRun.getCurrentLevel();
         if (level instanceof GameLevel) {
-            if(!trainingRun.isSolutionTaken()) {
+            if (!trainingRun.isSolutionTaken()) {
                 trainingRun.setSolutionTaken(true);
                 trainingRun.decreaseTotalScore(trainingRun.getCurrentScore() - 1);
                 trainingRun.setCurrentScore(1);
@@ -428,7 +427,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
                     .level(trainingRun.getCurrentLevel().getId())
                     .build();
 
-            auditService.save(trainingRunStarted);
+            auditService.saveTrainingRunEvent(trainingRunStarted, trainingDefinitionId, trainingInstance.getId());
         }
     }
 
@@ -453,7 +452,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
                     .levelTitle(trainingInstance.getTitle())
                     .build();
 
-            auditService.save(levelStarted);
+            auditService.saveTrainingRunEvent(levelStarted, trainingDefinitionId, trainingInstance.getId());
         }
     }
 
@@ -477,7 +476,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
                     .levelType(levelType)
                     .build();
 
-            auditService.save(levelCompleted);
+            auditService.saveTrainingRunEvent(levelCompleted, trainingDefinitionId, trainingInstance.getId());
         }
     }
 
@@ -501,7 +500,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
                     .hintTitle(hint.getTitle())
                     .build();
             LOG.info("AUDIT AFT");
-            auditService.save(hintTaken);
+            auditService.saveTrainingRunEvent(hintTaken, trainingDefinitionId, trainingInstance.getId());
         }
     }
 
@@ -523,7 +522,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
                     .level(trainingRun.getCurrentLevel().getId())
                     .penaltyPoints(gameLevel.getMaxScore() - trainingRun.getCurrentScore())
                     .build();
-            auditService.save(solutionDisplayed);
+            auditService.saveTrainingRunEvent(solutionDisplayed, trainingDefinitionId, trainingInstance.getId());
         }
     }
 
@@ -545,7 +544,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
                     .level(trainingRun.getCurrentLevel().getId())
                     .flagContent(flag)
                     .build();
-            auditService.save(correctFlagSubmitted);
+            auditService.saveTrainingRunEvent(correctFlagSubmitted, trainingDefinitionId, trainingInstance.getId());
         }
     }
 
@@ -568,7 +567,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
                     .flagContent(flag)
                     .count(trainingRun.getIncorrectFlagCount())
                     .build();
-            auditService.save(wrongFlagSubmitted);
+            auditService.saveTrainingRunEvent(wrongFlagSubmitted, trainingDefinitionId, trainingInstance.getId());
         }
     }
 
@@ -590,7 +589,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
                     .level(trainingRun.getCurrentLevel().getId())
                     .answers(answers)
                     .build();
-            auditService.save(assessmentAnswers);
+            auditService.saveTrainingRunEvent(assessmentAnswers, trainingDefinitionId, trainingInstance.getId());
         }
     }
 
@@ -611,7 +610,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
                     .actualScoreInLevel(trainingRun.getCurrentScore())
                     .level(trainingRun.getCurrentLevel().getId())
                     .build();
-            auditService.save(assessmentAnswers);
+            auditService.saveTrainingRunEvent(assessmentAnswers, trainingDefinitionId, trainingInstance.getId());
         }
     }
 
@@ -632,7 +631,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
                     .actualScoreInLevel(trainingRun.getCurrentScore())
                     .level(trainingRun.getCurrentLevel().getId())
                     .build();
-            auditService.save(trainingRunResumed);
+            auditService.saveTrainingRunEvent(trainingRunResumed, trainingDefinitionId, trainingInstance.getId());
         }
     }
 
