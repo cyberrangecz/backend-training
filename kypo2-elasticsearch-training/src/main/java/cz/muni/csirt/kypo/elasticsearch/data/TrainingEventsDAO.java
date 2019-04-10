@@ -15,6 +15,8 @@ import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
+import org.elasticsearch.search.sort.SortBuilders;
+import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
@@ -41,13 +43,14 @@ public class TrainingEventsDAO extends AbstractElasticClientDAO {
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
         // returns all documents under given index
         searchSourceBuilder.query(QueryBuilders.matchAllQuery());
+        // events are sorted based on timestamp attribute
+        searchSourceBuilder.sort("timestamp", SortOrder.ASC);
         searchSourceBuilder.timeout(new TimeValue(60, TimeUnit.SECONDS));
 
         SearchRequest searchRequest = new SearchRequest("kypo2-cz.muni.csirt.kypo.events.trainings.definition-" + trainingDefinitionId + ".instance-" + trainingInstanceId + ".*");
         searchRequest.source(searchSourceBuilder);
 
         SearchResponse response = getClient().search(searchRequest, RequestOptions.DEFAULT);
-
         if (response != null) {
             SearchHits responseHits = response.getHits();
             if (responseHits != null) {
