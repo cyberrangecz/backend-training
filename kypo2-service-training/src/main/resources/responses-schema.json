@@ -26,15 +26,16 @@
         "type": "array",
         "items": [
           {
-            "type": "array",
-            "items": [
-              {
+            "type": "object",
+            "required": ["x", "y"],
+            "properties": {
+              "x": {
                 "type": "integer"
               },
-              {
+              "y": {
                 "type": "integer"
               }
-            ]
+            }
           }
         ]
       }
