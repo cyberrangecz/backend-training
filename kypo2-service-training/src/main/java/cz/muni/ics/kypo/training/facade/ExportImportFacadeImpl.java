@@ -109,7 +109,7 @@ public class ExportImportFacadeImpl implements ExportImportFacade {
         importTrainingDefinitionDTO.setState(TDState.UNRELEASED);
         // uploaded training definitions have title started with 'Uploaded 'prefix
         if (importTrainingDefinitionDTO.getTitle() != null && !importTrainingDefinitionDTO.getTitle().startsWith("Uploaded")) {
-//            importTrainingDefinitionDTO.setTitle("Uploaded " + importTrainingDefinitionDTO.getTitle());
+            importTrainingDefinitionDTO.setTitle("Uploaded " + importTrainingDefinitionDTO.getTitle());
         }
         int levelOrder = importTrainingDefinitionDTO.getLevels().size() - 1;
         Long newLevelId = null;

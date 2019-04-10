@@ -183,7 +183,7 @@ public class ExportImportFacadeTest {
         given(exportImportService.createLevel(infoLevelMapper.mapImportToEntity(importInfoLevelDTO))).willReturn(3L);
         given(exportImportService.createLevel(gameLevelMapper.mapImportToEntity(importGameLevelDTO))).willReturn(2L);
         given(exportImportService.createLevel(assessmentLevelMapper.mapImportToEntity(importAssessmentLevelDTO))).willReturn(1L);
-        given(trainingDefinitionService.create(exportImportMapper.mapToEntity(importTrainingDefinitionDTO))).willReturn(trainingDefinitionImported);
+        given(trainingDefinitionService.create(any(TrainingDefinition.class))).willReturn(trainingDefinitionImported);
 
         TrainingDefinitionDTO trainingDefinitionDTO = exportImportFacade.dbImport(importTrainingDefinitionDTO);
         System.out.println(trainingDefinitionDTO);
