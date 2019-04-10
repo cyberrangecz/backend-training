@@ -29,6 +29,7 @@ before_script:
     - echo $DEBIAN_PACKAGE
     # Set additional Apt repository
     - echo "$APT_SOURCE_LIST" > /etc/apt/sources.list.d/kypo.list
+    - git clone https://$SECURITY_COMMONS_USER:$SECURITY_COMMONS_TOKEN@gitlab.ics.muni.cz/kypo2/services-and-portlets/kypo2-security-commons.git && cd kypo2-security-commons && mvn clean install
 
 
 unitTests:
