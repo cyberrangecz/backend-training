@@ -244,7 +244,7 @@ public class SolutionDisplayed extends AbstractAuditPOJO {
 
     @Override
     public String toString() {
-        return "SolutionDisplayed{" +
+        return "SolutionDisplayedDto{" +
                 "sandboxId=" + sandboxId +
                 ", trainingDefinitionId=" + trainingDefinitionId +
                 ", trainingInstanceId=" + trainingInstanceId +

@@ -267,7 +267,7 @@ public class WrongFlagSubmitted extends AbstractAuditPOJO {
 
     @Override
     public String toString() {
-        return "WrongFlagSubmitted{" +
+        return "WrongFlagSubmittedDto{" +
                 "sandboxId=" + sandboxId +
                 ", trainingDefinitionId=" + trainingDefinitionId +
                 ", trainingInstanceId=" + trainingInstanceId +

@@ -291,7 +291,7 @@ public class LevelStarted extends AbstractAuditPOJO {
 
     @Override
     public String toString() {
-        return "LevelStarted{" +
+        return "LevelStartedDto{" +
                 "sandboxId=" + sandboxId +
                 ", trainingDefinitionId=" + trainingDefinitionId +
                 ", trainingInstanceId=" + trainingInstanceId +

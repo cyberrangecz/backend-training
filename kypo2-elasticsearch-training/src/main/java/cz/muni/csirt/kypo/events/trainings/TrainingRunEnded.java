@@ -219,7 +219,7 @@ public class TrainingRunEnded extends AbstractAuditPOJO {
 
     @Override
     public String toString() {
-        return "TrainingRunEnded{" +
+        return "TrainingRunEndedDto{" +
                 "sandboxId=" + sandboxId +
                 ", trainingDefinitionId=" + trainingDefinitionId +
                 ", trainingInstanceId=" + trainingInstanceId +
