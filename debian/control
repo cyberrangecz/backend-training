@@ -1,0 +1,13 @@
+Source: kypo2-training
+Maintainer: Martin Machac <machacm@ics.muni.cz>
+Build-depends: debhelper (>= 8.0.0)
+Section: misc
+Standards-Version: 3.9.8
+
+Package: kypo2-training
+Architecture: any
+Depends: kypo2-security-commons, ${misc:Depends}
+Priority: optional
+Description: KYPO training project
+ This is parent project representing back-end for Training.
+
