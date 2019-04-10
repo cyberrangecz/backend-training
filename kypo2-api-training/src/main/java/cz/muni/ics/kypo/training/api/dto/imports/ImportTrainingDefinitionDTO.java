@@ -86,12 +86,20 @@ public class ImportTrainingDefinitionDTO {
 	}
 
 	public void setLevels(List<AbstractLevelImportDTO> levels) {
-		this.levels = levels;
+		this.levels = new ArrayList<>(levels);
 	}
 
-	@Override public String toString() {
-		return "ImportTrainingDefinitionDTO{" + "title='" + title + '\'' + ", description='" + description + '\'' + ", prerequisities=" + Arrays
-				.toString(prerequisities) + ", outcomes=" + Arrays.toString(outcomes) + ", state=" + state + ", startingLevel=" + startingLevel
-				+ ", showStepperBar=" + showStepperBar + ", levels=" + levels + '}';
+	@Override
+	public String toString() {
+		return "ImportTrainingDefinitionDTO{" +
+				"title='" + title + '\'' +
+				", description='" + description + '\'' +
+				", prerequisities=" + Arrays.toString(prerequisities) +
+				", outcomes=" + Arrays.toString(outcomes) +
+				", state=" + state +
+				", startingLevel=" + startingLevel +
+				", showStepperBar=" + showStepperBar +
+				", levels=" + levels +
+				'}';
 	}
 }

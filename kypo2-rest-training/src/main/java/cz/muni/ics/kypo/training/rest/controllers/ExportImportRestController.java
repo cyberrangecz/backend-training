@@ -88,10 +88,7 @@ public class ExportImportRestController {
             @Valid @RequestBody ImportTrainingDefinitionDTO importTrainingDefinitionDTO,
             @ApiParam(value = "Fields which should be returned in REST API response", required = false)
             @RequestParam(value = "fields", required = false) String fields) {
-        // by default set uploaded training definition to unrelease state
-        importTrainingDefinitionDTO.setState(TDState.UNRELEASED);
         TrainingDefinitionDTO trainingDefinitionResource = exportImportFacade.dbImport(importTrainingDefinitionDTO);
-        trainingDefinitionResource.setState(TDState.UNRELEASED);
         Squiggly.init(objectMapper, fields);
         return ResponseEntity.ok(SquigglyUtils.stringify(objectMapper, trainingDefinitionResource));
     }
@@ -106,7 +103,6 @@ public class ExportImportRestController {
         @ApiResponse(code = 404, message = "Training instance not found."),
         @ApiResponse(code = 409, message = "Cannot archive instance that is not finished."),
         @ApiResponse(code = 500, message = "Unexpected condition was encountered.")
-
     })
     @GetMapping(path = "/exports/training-instances/{trainingInstanceId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> archiveTrainingInstance(
@@ -120,7 +116,6 @@ public class ExportImportRestController {
         } catch (FacadeLayerException ex){
             throw ExceptionSorter.throwException(ex);
         }
-
     }
 
 }

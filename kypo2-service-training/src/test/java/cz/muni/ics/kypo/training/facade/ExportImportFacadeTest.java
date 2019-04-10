@@ -66,6 +66,7 @@ public class ExportImportFacadeTest {
     private ExportImportService exportImportService;
 
     private TrainingDefinition trainingDefinition;
+    private TrainingDefinition trainingDefinitionImported;
     private AssessmentLevel assessmentLevel;
     private GameLevel gameLevel;
     private InfoLevel infoLevel;
@@ -128,6 +129,14 @@ public class ExportImportFacadeTest {
         trainingDefinition.setState(TDState.RELEASED);
         trainingDefinition.setStartingLevel(infoLevel.getId());
 
+        trainingDefinitionImported = new TrainingDefinition();
+        trainingDefinitionImported.setId(1L);
+        trainingDefinitionImported.setTitle("Uploaded " + "Training definition");
+        trainingDefinitionImported.setDescription("description");
+        trainingDefinitionImported.setState(TDState.UNRELEASED);
+        trainingDefinitionImported.setStartingLevel(infoLevel.getId());
+
+
         importTrainingDefinitionDTO = new ImportTrainingDefinitionDTO();
         importTrainingDefinitionDTO.setTitle("Training definition");
         importTrainingDefinitionDTO.setDescription("description");
@@ -150,6 +159,7 @@ public class ExportImportFacadeTest {
         trainingRun.setStartTime(time.minusHours(20));
         trainingRun.setState(TRState.READY);
     }
+
     //TODO write better tests to check all attributes
     @Test
     public void dbExport() {
@@ -166,7 +176,6 @@ public class ExportImportFacadeTest {
         assertEquals(LevelType.INFO_LEVEL, export.getLevels().get(0).getLevelType());
         assertEquals(LevelType.GAME_LEVEL, export.getLevels().get(1).getLevelType());
         assertEquals(LevelType.ASSESSMENT_LEVEL, export.getLevels().get(2).getLevelType());
-
     }
 
     @Test
@@ -174,15 +183,18 @@ public class ExportImportFacadeTest {
         given(exportImportService.createLevel(infoLevelMapper.mapImportToEntity(importInfoLevelDTO))).willReturn(3L);
         given(exportImportService.createLevel(gameLevelMapper.mapImportToEntity(importGameLevelDTO))).willReturn(2L);
         given(exportImportService.createLevel(assessmentLevelMapper.mapImportToEntity(importAssessmentLevelDTO))).willReturn(1L);
-        given(trainingDefinitionService.create(exportImportMapper.mapToEntity(importTrainingDefinitionDTO))).willReturn(trainingDefinition);
+        given(trainingDefinitionService.create(any(TrainingDefinition.class))).willReturn(trainingDefinitionImported);
 
         TrainingDefinitionDTO trainingDefinitionDTO = exportImportFacade.dbImport(importTrainingDefinitionDTO);
+        System.out.println(trainingDefinitionDTO);
+        TrainingDefinitionDTO trainingDefinitionDTOImported = trainingDefinitionMapper.mapToDTO(trainingDefinitionImported);
+        System.out.println(trainingDefinitionDTOImported);
 
-        deepEqualsTrainingDefinitionDTO(trainingDefinitionMapper.mapToDTO(trainingDefinition), trainingDefinitionDTO);
+        deepEqualsTrainingDefinitionDTO(trainingDefinitionDTOImported, trainingDefinitionDTO);
     }
 
     @Test
-    public void archiveTrainingRun(){
+    public void archiveTrainingRun() {
         given(exportImportService.findInstanceById(anyLong())).willReturn(trainingInstance);
         given(exportImportService.findById(trainingDefinition.getId())).willReturn(trainingDefinition);
         given(trainingDefinitionService.findLevelById(infoLevel.getId())).willReturn(infoLevel);
@@ -224,8 +236,6 @@ public class ExportImportFacadeTest {
         assertEquals(t1.getTitle(), t2.getTitle());
         assertEquals(t1.getBetaTestingGroup(), t2.getBetaTestingGroup());
         assertEquals(t1.getLevels(), t2.getLevels());
-
-
     }
 
 }
