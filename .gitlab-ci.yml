@@ -29,11 +29,11 @@ before_script:
     - echo $DEBIAN_PACKAGE
     # Set additional Apt repository
     - echo "$APT_SOURCE_LIST" > /etc/apt/sources.list.d/kypo.list
-    - git clone https://$SECURITY_COMMONS_USER:$SECURITY_COMMONS_TOKEN@gitlab.ics.muni.cz/kypo2/services-and-portlets/kypo2-security-commons.git && cd kypo2-security-commons && mvn clean install
-
 
 unitTests:
     stage: unitTests
+    before_script:
+        - git clone https://$SECURITY_COMMONS_USER:$SECURITY_COMMONS_TOKEN@gitlab.ics.muni.cz/kypo2/services-and-portlets/kypo2-security-commons.git && cd kypo2-security-commons && mvn clean install
     script:
         - mvn test
     only:
@@ -43,6 +43,8 @@ unitTests:
 
 installJava:
     stage: installJava
+    before_script:     
+        - git clone https://$SECURITY_COMMONS_USER:$SECURITY_COMMONS_TOKEN@gitlab.ics.muni.cz/kypo2/services-and-portlets/kypo2-security-commons.git && cd kypo2-security-commons && mvn clean install
     script:
         - mvn clean install
     only:
@@ -52,6 +54,8 @@ installJava:
         
 deployJava:
     image: javadeploy
+    before_script:     
+        - git clone https://$SECURITY_COMMONS_USER:$SECURITY_COMMONS_TOKEN@gitlab.ics.muni.cz/kypo2/services-and-portlets/kypo2-security-commons.git && cd kypo2-security-commons && mvn clean install
     stage: deployJava
     script:
         - mvn deploy
