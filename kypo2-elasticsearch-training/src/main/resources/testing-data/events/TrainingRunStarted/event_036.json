@@ -4,6 +4,7 @@
 	"sandbox_id": 1,
 	"training_definition_id": 1,
 	"training_instance_id": 1,
+	"game_time": 0,
 	"training_run_id": 1,
 	"player_login": "Participant1",
 	"total_score": 30,

@@ -36,6 +36,7 @@ import org.json.simple.parser.JSONParser;
 import java.io.FileReader;
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.time.Month;
 import java.util.*;
 
 import static org.junit.Assert.assertEquals;
@@ -170,6 +171,8 @@ public class TrainingRunServiceTest {
         trainingRun1.setSandboxInstanceRef(sandboxInstanceRef1);
         trainingRun1.setParticipantRef(participantRef);
         trainingRun1.setTrainingInstance(trainingInstance1);
+        trainingRun1.setStartTime(LocalDateTime.of(2019, Month.JANUARY, 3, 1, 1, 1));
+        trainingRun1.setEndTime(LocalDateTime.of(2019, Month.JANUARY, 3, 2, 1, 1));
 
         trainingRun2 = new TrainingRun();
         trainingRun2.setId(2L);
@@ -177,6 +180,8 @@ public class TrainingRunServiceTest {
         trainingRun2.setCurrentLevel(infoLevel);
         trainingRun2.setParticipantRef(participantRef);
         trainingRun2.setTrainingInstance(trainingInstance2);
+        trainingRun2.setStartTime(LocalDateTime.of(2019, Month.JANUARY, 3, 1, 1, 1));
+        trainingRun2.setEndTime(LocalDateTime.of(2019, Month.JANUARY, 3, 2, 1, 1));
 
         sandboxInfo = new SandboxInfo();
         sandboxInfo.setId(7L);
