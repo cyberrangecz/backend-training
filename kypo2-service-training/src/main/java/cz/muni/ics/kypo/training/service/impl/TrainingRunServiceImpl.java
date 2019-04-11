@@ -40,7 +40,8 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
-import java.time.LocalDateTime;
+import java.time.*;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 /**
@@ -176,7 +177,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
             resumeTrainingRun(alreadyAccessedTrainingRun.get().getId());
             return alreadyAccessedTrainingRun.get();
         }
-        List<TrainingInstance> trainingInstances = trainingInstanceRepository.findAllByStartTimeAfterAndEndTimeBefore(LocalDateTime.now());
+        List<TrainingInstance> trainingInstances = trainingInstanceRepository.findAllByStartTimeAfterAndEndTimeBefore(LocalDateTime.now(Clock.systemUTC()));
         for (TrainingInstance trainingInstance : trainingInstances) {
             if (trainingInstance.getAccessToken().equals(accessToken)) {
                 if (trainingInstance.getPoolId() == null) {
@@ -186,7 +187,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
                 if (!freeSandboxes.isEmpty()) {
                     SandboxInstanceRef sandboxInstanceRef = getReadySandboxInstanceRef(freeSandboxes, trainingInstance.getPoolId());
                     AbstractLevel abstractLevel = abstractLevelRepository.findById(trainingInstance.getTrainingDefinition().getStartingLevel()).orElseThrow(() -> new ServiceLayerException("No starting level available for this training definition", ErrorCode.RESOURCE_NOT_FOUND));
-                    TrainingRun trainingRun = getNewTrainingRun(abstractLevel, getSubOfLoggedInUser(), trainingInstance, TRState.ALLOCATED, LocalDateTime.now(), trainingInstance.getEndTime(), sandboxInstanceRef);
+                    TrainingRun trainingRun = getNewTrainingRun(abstractLevel, getSubOfLoggedInUser(), trainingInstance, TRState.ALLOCATED, LocalDateTime.now(Clock.systemUTC()), trainingInstance.getEndTime(), sandboxInstanceRef);
                     trainingRun = create(trainingRun);
                     // audit this action to the Elasticsearch
                     auditTrainingRunStartedAction(trainingInstance, trainingRun);
@@ -210,7 +211,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
         if (trainingRun.getState().equals(TRState.ARCHIVED)) {
             throw new ServiceLayerException("Cannot resume archived training run.", ErrorCode.RESOURCE_CONFLICT);
         }
-        if (trainingRun.getTrainingInstance().getEndTime().isBefore(LocalDateTime.now())) {
+        if (trainingRun.getTrainingInstance().getEndTime().isBefore(LocalDateTime.now(Clock.systemUTC()))) {
             throw new ServiceLayerException("Cannot resume training run after end of training instance.", ErrorCode.RESOURCE_CONFLICT);
         }
 
@@ -393,6 +394,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
         }
 
         trainingRun.setState(TRState.ARCHIVED);
+        trainingRun.setEndTime(LocalDateTime.now(Clock.systemUTC()));
         auditLevelCompletedAction(trainingRun);
         auditTrainingRunEndedAction(trainingRun);
     }
@@ -416,11 +418,12 @@ public class TrainingRunServiceImpl implements TrainingRunService {
             Long trainingDefinitionId = trainingDefinition.getId();
             Long sandboxId = trainingDefinition.getSandboxDefinitionRefId();
 
-            TrainingRunStarted trainingRunStarted = TrainingRunStarted.builder()
+            TrainingRunStarted trainingRunStarted = new TrainingRunStarted.TrainingRunStartedBuilder()
                     .sandboxId(sandboxId)
                     .trainingDefinitionId(trainingDefinitionId)
                     .trainingInstanceId(trainingInstance.getId())
                     .trainingRunId(trainingRun.getId())
+                    .gameTime(0L)
                     .playerLogin(getSubOfLoggedInUser())
                     .totalScore(trainingRun.getTotalScore())
                     .actualScoreInLevel(trainingRun.getCurrentScore())
@@ -438,11 +441,12 @@ public class TrainingRunServiceImpl implements TrainingRunService {
             Long sandboxId = trainingDefinition.getSandboxDefinitionRefId();
             LevelType levelType = getLevelType(trainingRun.getCurrentLevel());
 
-            LevelStarted levelStarted = LevelStarted.builder()
+            LevelStarted levelStarted = new LevelStarted.LevelStartedBuilder()
                     .sandboxId(sandboxId)
                     .trainingDefinitionId(trainingDefinitionId)
                     .trainingInstanceId(trainingInstance.getId())
                     .trainingRunId(trainingRun.getId())
+                    .gameTime(computeGameTime(trainingRun.getStartTime()))
                     .playerLogin(getSubOfLoggedInUser())
                     .totalScore(trainingRun.getTotalScore())
                     .actualScoreInLevel(trainingRun.getCurrentScore())
@@ -464,11 +468,12 @@ public class TrainingRunServiceImpl implements TrainingRunService {
             Long sandboxId = trainingDefinition.getSandboxDefinitionRefId();
             LevelType levelType = getLevelType(trainingRun.getCurrentLevel());
 
-            LevelCompleted levelCompleted = LevelCompleted.builder()
+            LevelCompleted levelCompleted = new LevelCompleted.LevelCompletedBuilder()
                     .sandboxId(sandboxId)
                     .trainingDefinitionId(trainingDefinitionId)
                     .trainingInstanceId(trainingInstance.getId())
                     .trainingRunId(trainingRun.getId())
+                    .gameTime(computeGameTime(trainingRun.getStartTime()))
                     .playerLogin(getSubOfLoggedInUser())
                     .totalScore(trainingRun.getTotalScore())
                     .actualScoreInLevel(trainingRun.getCurrentScore())
@@ -486,11 +491,12 @@ public class TrainingRunServiceImpl implements TrainingRunService {
             TrainingDefinition trainingDefinition = trainingInstance.getTrainingDefinition();
             Long trainingDefinitionId = trainingDefinition.getId();
             Long sandboxId = trainingDefinition.getSandboxDefinitionRefId();
-            HintTaken hintTaken = HintTaken.builder()
+            HintTaken hintTaken = new HintTaken.HintTakenBuilder()
                     .sandboxId(sandboxId)
                     .trainingDefinitionId(trainingDefinitionId)
                     .trainingInstanceId(trainingInstance.getId())
                     .trainingRunId(trainingRun.getId())
+                    .gameTime(computeGameTime(trainingRun.getStartTime()))
                     .playerLogin(getSubOfLoggedInUser())
                     .totalScore(trainingRun.getTotalScore())
                     .actualScoreInLevel(trainingRun.getCurrentScore())
@@ -511,11 +517,12 @@ public class TrainingRunServiceImpl implements TrainingRunService {
             Long trainingDefinitionId = trainingDefinition.getId();
             Long sandboxId = trainingDefinition.getSandboxDefinitionRefId();
 
-            SolutionDisplayed solutionDisplayed = SolutionDisplayed.builder()
+            SolutionDisplayed solutionDisplayed = new SolutionDisplayed.SolutionDisplayedBuilder()
                     .sandboxId(sandboxId)
                     .trainingDefinitionId(trainingDefinitionId)
                     .trainingInstanceId(trainingInstance.getId())
                     .trainingRunId(trainingRun.getId())
+                    .gameTime(computeGameTime(trainingRun.getStartTime()))
                     .playerLogin(getSubOfLoggedInUser())
                     .totalScore(trainingRun.getTotalScore())
                     .actualScoreInLevel(trainingRun.getCurrentScore())
@@ -533,11 +540,12 @@ public class TrainingRunServiceImpl implements TrainingRunService {
             Long trainingDefinitionId = trainingDefinition.getId();
             Long sandboxId = trainingDefinition.getSandboxDefinitionRefId();
 
-            CorrectFlagSubmitted correctFlagSubmitted = CorrectFlagSubmitted.builder()
+            CorrectFlagSubmitted correctFlagSubmitted = new CorrectFlagSubmitted.CorrectFlagSubmittedBuilder()
                     .sandboxId(sandboxId)
                     .trainingDefinitionId(trainingDefinitionId)
                     .trainingInstanceId(trainingInstance.getId())
                     .trainingRunId(trainingRun.getId())
+                    .gameTime(computeGameTime(trainingRun.getStartTime()))
                     .playerLogin(getSubOfLoggedInUser())
                     .totalScore(trainingRun.getTotalScore()) // requires to set total and actual score in level from training run entity
                     .actualScoreInLevel(trainingRun.getCurrentScore())
@@ -555,11 +563,12 @@ public class TrainingRunServiceImpl implements TrainingRunService {
             Long trainingDefinitionId = trainingDefinition.getId();
             Long sandboxId = trainingDefinition.getSandboxDefinitionRefId();
 
-            WrongFlagSubmitted wrongFlagSubmitted = WrongFlagSubmitted.builder()
+            WrongFlagSubmitted wrongFlagSubmitted = new WrongFlagSubmitted.WrongFlagSubmittedBuilder()
                     .sandboxId(sandboxId)
                     .trainingDefinitionId(trainingDefinitionId)
                     .trainingInstanceId(trainingInstance.getId())
                     .trainingRunId(trainingRun.getId())
+                    .gameTime(computeGameTime(trainingRun.getStartTime()))
                     .playerLogin(getSubOfLoggedInUser())
                     .totalScore(trainingRun.getTotalScore())
                     .actualScoreInLevel(trainingRun.getCurrentScore())
@@ -578,11 +587,12 @@ public class TrainingRunServiceImpl implements TrainingRunService {
             Long trainingDefinitionId = trainingDefinition.getId();
             Long sandboxId = trainingDefinition.getSandboxDefinitionRefId();
 
-            AssessmentAnswers assessmentAnswers = AssessmentAnswers.builder()
+            AssessmentAnswers assessmentAnswers = new AssessmentAnswers.AssessmentAnswersBuilder()
                     .sandboxId(sandboxId)
                     .trainingDefinitionId(trainingDefinitionId)
                     .trainingInstanceId(trainingInstance.getId())
                     .trainingRunId(trainingRun.getId())
+                    .gameTime(computeGameTime(trainingRun.getStartTime()))
                     .playerLogin(getSubOfLoggedInUser())
                     .totalScore(trainingRun.getTotalScore())
                     .actualScoreInLevel(trainingRun.getCurrentScore())
@@ -600,16 +610,20 @@ public class TrainingRunServiceImpl implements TrainingRunService {
             Long trainingDefinitionId = trainingDefinition.getId();
             Long sandboxId = trainingDefinition.getSandboxDefinitionRefId();
 
-            TrainingRunEnded assessmentAnswers = TrainingRunEnded.builder()
+            TrainingRunEnded assessmentAnswers = new TrainingRunEnded.TrainingRunEndedBuilder()
                     .sandboxId(sandboxId)
                     .trainingDefinitionId(trainingDefinitionId)
                     .trainingInstanceId(trainingInstance.getId())
                     .trainingRunId(trainingRun.getId())
+                    .gameTime(computeGameTime(trainingRun.getStartTime()))
                     .playerLogin(getSubOfLoggedInUser())
                     .totalScore(trainingRun.getTotalScore())
                     .actualScoreInLevel(trainingRun.getCurrentScore())
                     .level(trainingRun.getCurrentLevel().getId())
+                    .startTime(trainingRun.getStartTime().atOffset(ZoneOffset.UTC).toInstant().toEpochMilli())
+                    .endTime(System.currentTimeMillis())
                     .build();
+
             auditService.saveTrainingRunEvent(assessmentAnswers, trainingDefinitionId, trainingInstance.getId());
         }
     }
@@ -621,11 +635,12 @@ public class TrainingRunServiceImpl implements TrainingRunService {
             Long trainingDefinitionId = trainingDefinition.getId();
             Long sandboxId = trainingDefinition.getSandboxDefinitionRefId();
 
-            TrainingRunResumed trainingRunResumed = TrainingRunResumed.builder()
+            TrainingRunResumed trainingRunResumed = new TrainingRunResumed.TrainingRunResumedBuilder()
                     .sandboxId(sandboxId)
                     .trainingDefinitionId(trainingDefinitionId)
                     .trainingInstanceId(trainingInstance.getId())
                     .trainingRunId(trainingRun.getId())
+                    .gameTime(computeGameTime(trainingRun.getStartTime()))
                     .playerLogin(getSubOfLoggedInUser())
                     .totalScore(trainingRun.getTotalScore())
                     .actualScoreInLevel(trainingRun.getCurrentScore())
@@ -707,6 +722,10 @@ public class TrainingRunServiceImpl implements TrainingRunService {
         OAuth2Authentication authentication = (OAuth2Authentication) SecurityContextHolder.getContext().getAuthentication();
         JsonObject credentials = (JsonObject) authentication.getUserAuthentication().getCredentials();
         return credentials.get("name").getAsString();
+    }
+
+    private long computeGameTime(LocalDateTime gameStartedTime) {
+        return ChronoUnit.MILLIS.between(gameStartedTime, LocalDateTime.now(Clock.systemUTC()));
     }
 
 }

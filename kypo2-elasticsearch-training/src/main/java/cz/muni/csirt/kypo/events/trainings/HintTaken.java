@@ -30,6 +30,9 @@ public class HintTaken extends AbstractAuditPOJO {
     @ApiModelProperty(value = "Training run ID.", required = true)
     @JsonProperty(value = "training_run_id", required = true)
     private long trainingRunId;
+    @ApiModelProperty(value = "The time in particular training run (in particular game).", required = true)
+    @JsonProperty(value = "game_time", required = true)
+    private long gameTime;
     @ApiModelProperty(value = "ID of a player in the training run.", required = true)
     @JsonProperty(value = "player_login", required = true)
     private String playerLogin;
@@ -52,15 +55,27 @@ public class HintTaken extends AbstractAuditPOJO {
     @JsonProperty(value = "hint_title", required = true)
     private String hintTitle;
 
-    public static SandboxIdBuilder builder() {
-        return new HintTakenBuilder();
+    private HintTaken(HintTakenBuilder builder) {
+        this.sandboxId = builder.sandboxId;
+        this.trainingDefinitionId = builder.trainingDefinitionId;
+        this.trainingInstanceId = builder.trainingInstanceId;
+        this.trainingRunId = builder.trainingRunId;
+        this.gameTime = builder.gameTime;
+        this.playerLogin = builder.playerLogin;
+        this.totalScore = builder.totalScore;
+        this.actualScoreInLevel = builder.actualScoreInLevel;
+        this.level = builder.level;
+        this.hintId = builder.hintId;
+        this.hintPenaltyPoints = builder.hintPenaltyPoints;
+        this.hintTitle = builder.hintTitle;
     }
 
-    public static class HintTakenBuilder implements SandboxIdBuilder, TrainingDefinitionIdBuilder, TrainingInstanceIdBuilder, TrainingRunIdBuilder, PlayerLoginBuilder, TotalScoreBuilder, ActualScoreInLevelBuilder, LevelBuilder, HintIdBuilder, HintPenaltyPointsBuilder, HintTitleBuilder {
+    public static class HintTakenBuilder {
         private long sandboxId;
         private long trainingDefinitionId;
         private long trainingInstanceId;
         private long trainingRunId;
+        private long gameTime;
         private String playerLogin;
         private int totalScore;
         private int actualScoreInLevel;
@@ -69,67 +84,61 @@ public class HintTaken extends AbstractAuditPOJO {
         private int hintPenaltyPoints;
         private String hintTitle;
 
-        @Override
-        public TrainingDefinitionIdBuilder sandboxId(long sandboxId) {
+        public HintTakenBuilder sandboxId(long sandboxId) {
             this.sandboxId = sandboxId;
             return this;
         }
 
-        @Override
-        public TrainingInstanceIdBuilder trainingDefinitionId(long trainingDefinitionId) {
+        public HintTakenBuilder trainingDefinitionId(long trainingDefinitionId) {
             this.trainingDefinitionId = trainingDefinitionId;
             return this;
         }
 
-        @Override
-        public TrainingRunIdBuilder trainingInstanceId(long trainingInstanceId) {
+        public HintTakenBuilder trainingInstanceId(long trainingInstanceId) {
             this.trainingInstanceId = trainingInstanceId;
             return this;
         }
 
-        @Override
-        public PlayerLoginBuilder trainingRunId(long trainingRunId) {
+        public HintTakenBuilder trainingRunId(long trainingRunId) {
             this.trainingRunId = trainingRunId;
             return this;
         }
 
-        @Override
-        public TotalScoreBuilder playerLogin(String playerLogin) {
+        public HintTakenBuilder gameTime(long gameTime) {
+            this.gameTime = gameTime;
+            return this;
+        }
+
+        public HintTakenBuilder playerLogin(String playerLogin) {
             this.playerLogin = playerLogin;
             return this;
         }
 
-        @Override
-        public ActualScoreInLevelBuilder totalScore(int totalScore) {
+        public HintTakenBuilder totalScore(int totalScore) {
             this.totalScore = totalScore;
             return this;
         }
 
-        @Override
-        public LevelBuilder actualScoreInLevel(int actualScoreInLevel) {
+        public HintTakenBuilder actualScoreInLevel(int actualScoreInLevel) {
             this.actualScoreInLevel = actualScoreInLevel;
             return this;
         }
 
-        @Override
-        public HintIdBuilder level(long level) {
+        public HintTakenBuilder level(long level) {
             this.level = level;
             return this;
         }
 
-        @Override
-        public HintPenaltyPointsBuilder hintId(long hintId) {
+        public HintTakenBuilder hintId(long hintId) {
             this.hintId = hintId;
             return this;
         }
 
-        @Override
-        public HintTitleBuilder hintPenaltyPoints(int penaltyPoints) {
+        public HintTakenBuilder hintPenaltyPoints(int penaltyPoints) {
             this.hintPenaltyPoints = penaltyPoints;
             return this;
         }
 
-        @Override
         public HintTakenBuilder hintTitle(String hintTitle) {
             this.hintTitle = hintTitle;
             return this;
@@ -141,152 +150,6 @@ public class HintTaken extends AbstractAuditPOJO {
 
     }
 
-    public interface SandboxIdBuilder {
-        TrainingDefinitionIdBuilder sandboxId(long sandboxId);
-    }
-
-    public interface TrainingDefinitionIdBuilder {
-        TrainingInstanceIdBuilder trainingDefinitionId(long trainingDefinitionId);
-    }
-
-    public interface TrainingInstanceIdBuilder {
-        TrainingRunIdBuilder trainingInstanceId(long trainingInstanceId);
-    }
-
-    public interface TrainingRunIdBuilder {
-        PlayerLoginBuilder trainingRunId(long trainingRunId);
-    }
-
-    public interface PlayerLoginBuilder {
-        TotalScoreBuilder playerLogin(String playerLogin);
-    }
-
-    public interface TotalScoreBuilder {
-        ActualScoreInLevelBuilder totalScore(int totalScore);
-    }
-
-    public interface ActualScoreInLevelBuilder {
-        LevelBuilder actualScoreInLevel(int actualScoreInLevel);
-    }
-
-    public interface LevelBuilder {
-        HintIdBuilder level(long level);
-    }
-
-    public interface HintIdBuilder {
-        HintPenaltyPointsBuilder hintId(long hintId);
-    }
-
-    public interface HintPenaltyPointsBuilder {
-        HintTitleBuilder hintPenaltyPoints(int penaltyPoints);
-    }
-
-    public interface HintTitleBuilder {
-        HintTakenBuilder hintTitle(String hintTitle);
-    }
-
-    private HintTaken(HintTakenBuilder builder) {
-        this.sandboxId = builder.sandboxId;
-        this.trainingDefinitionId = builder.trainingDefinitionId;
-        this.trainingInstanceId = builder.trainingInstanceId;
-        this.trainingRunId = builder.trainingRunId;
-        this.playerLogin = builder.playerLogin;
-        this.totalScore = builder.totalScore;
-        this.actualScoreInLevel = builder.actualScoreInLevel;
-        this.level = builder.level;
-        this.hintId = builder.hintId;
-        this.hintPenaltyPoints = builder.hintPenaltyPoints;
-        this.hintTitle = builder.hintTitle;
-    }
-
-    public long getSandboxId() {
-        return sandboxId;
-    }
-
-    public void setSandboxId(long sandboxId) {
-        this.sandboxId = sandboxId;
-    }
-
-    public long getTrainingDefinitionId() {
-        return trainingDefinitionId;
-    }
-
-    public void setTrainingDefinitionId(long trainingDefinitionId) {
-        this.trainingDefinitionId = trainingDefinitionId;
-    }
-
-    public long getTrainingInstanceId() {
-        return trainingInstanceId;
-    }
-
-    public void setTrainingInstanceId(long trainingInstanceId) {
-        this.trainingInstanceId = trainingInstanceId;
-    }
-
-    public long getTrainingRunId() {
-        return trainingRunId;
-    }
-
-    public void setTrainingRunId(long trainingRunId) {
-        this.trainingRunId = trainingRunId;
-    }
-
-    public String getPlayerLogin() {
-        return playerLogin;
-    }
-
-    public void setPlayerLogin(String playerLogin) {
-        this.playerLogin = playerLogin;
-    }
-
-    public int getTotalScore() {
-        return totalScore;
-    }
-
-    public void setTotalScore(int totalScore) {
-        this.totalScore = totalScore;
-    }
-
-    public int getActualScoreInLevel() {
-        return actualScoreInLevel;
-    }
-
-    public void setActualScoreInLevel(int actualScoreInLevel) {
-        this.actualScoreInLevel = actualScoreInLevel;
-    }
-
-    public long getLevel() {
-        return level;
-    }
-
-    public void setLevel(long level) {
-        this.level = level;
-    }
-
-    public long getHintId() {
-        return hintId;
-    }
-
-    public void setHintId(long hintId) {
-        this.hintId = hintId;
-    }
-
-    public int getHintPenaltyPoints() {
-        return hintPenaltyPoints;
-    }
-
-    public void setHintPenaltyPoints(int hintPenaltyPoints) {
-        this.hintPenaltyPoints = hintPenaltyPoints;
-    }
-
-    public String getHintTitle() {
-        return hintTitle;
-    }
-
-    public void setHintTitle(String hintTitle) {
-        this.hintTitle = hintTitle;
-    }
-
     @Override
     public String toString() {
         return "HintTaken{" +
@@ -294,7 +157,10 @@ public class HintTaken extends AbstractAuditPOJO {
                 ", trainingDefinitionId=" + trainingDefinitionId +
                 ", trainingInstanceId=" + trainingInstanceId +
                 ", trainingRunId=" + trainingRunId +
+                ", gameTime=" + gameTime +
                 ", playerLogin='" + playerLogin + '\'' +
+                ", totalScore=" + totalScore +
+                ", actualScoreInLevel=" + actualScoreInLevel +
                 ", level=" + level +
                 ", hintId=" + hintId +
                 ", hintPenaltyPoints=" + hintPenaltyPoints +

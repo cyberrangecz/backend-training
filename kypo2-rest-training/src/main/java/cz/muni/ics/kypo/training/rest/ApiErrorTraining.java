@@ -57,7 +57,7 @@ public class ApiErrorTraining {
         }
     }
 
-    protected ApiErrorTraining(ApiErrorBuilder builder) {
+    private ApiErrorTraining(ApiErrorBuilder builder) {
         super();
         this.timestamp = System.currentTimeMillis();
         this.status = builder.status;

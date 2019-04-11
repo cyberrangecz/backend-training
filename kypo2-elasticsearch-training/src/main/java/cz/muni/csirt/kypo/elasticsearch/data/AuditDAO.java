@@ -73,23 +73,4 @@ public class AuditDAO extends AbstractElasticClientDAO {
         return super.getMapper();
     }
 
-
-    public static void main(String[] args) {
-        TrainingRunStarted trainingRunStarted = TrainingRunStarted.builder()
-                .sandboxId(1)
-                .trainingDefinitionId(1)
-                .trainingInstanceId(1)
-                .trainingRunId(1)
-                .playerLogin("test")
-                .totalScore(50)
-                .actualScoreInLevel(50)
-                .level(1)
-                .build();
-
-        String packageName = trainingRunStarted.getClass().getPackageName().toLowerCase();
-        String className = trainingRunStarted.getClass().getSimpleName().toLowerCase();
-        String index = "kypo2-" + packageName + ".definition-" + 18 + ".instance-" + 8 + "." + className + "_evt";
-        System.out.println(index);
-    }
-
 }

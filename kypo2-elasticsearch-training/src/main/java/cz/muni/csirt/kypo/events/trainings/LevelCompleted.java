@@ -31,6 +31,9 @@ public class LevelCompleted extends AbstractAuditPOJO {
     @ApiModelProperty(value = "Training run ID.", required = true)
     @JsonProperty(value = "training_run_id", required = true)
     private long trainingRunId;
+    @ApiModelProperty(value = "The time in particular training run (in particular game).", required = true)
+    @JsonProperty(value = "game_time", required = true)
+    private long gameTime;
     @ApiModelProperty(value = "ID of a player in the training run.", required = true)
     @JsonProperty(value = "player_login", required = true)
     private String playerLogin;
@@ -47,70 +50,76 @@ public class LevelCompleted extends AbstractAuditPOJO {
     @JsonProperty(value = "level_type", required = true)
     private LevelType levelType;
 
-    public static SandboxIdBuilder builder() {
-        return new LevelCompletedBuilder();
+    private LevelCompleted(LevelCompletedBuilder builder) {
+        this.sandboxId = builder.sandboxId;
+        this.trainingDefinitionId = builder.trainingDefinitionId;
+        this.trainingInstanceId = builder.trainingInstanceId;
+        this.trainingRunId = builder.trainingRunId;
+        this.gameTime = builder.gameTime;
+        this.playerLogin = builder.playerLogin;
+        this.totalScore = builder.totalScore;
+        this.actualScoreInLevel = builder.actualScoreInLevel;
+        this.level = builder.level;
+        this.levelType = builder.levelType;
     }
 
-    public static class LevelCompletedBuilder implements SandboxIdBuilder, TrainingDefinitionIdBuilder, TrainingInstanceIdBuilder, TrainingRunIdBuilder, PlayerLoginBuilder, TotalScoreBuilder, ActualScoreInLevelBuilder, LevelBuilder, LevelTypeBuilder {
+    public static class LevelCompletedBuilder {
         private long sandboxId;
         private long trainingDefinitionId;
         private long trainingInstanceId;
         private long trainingRunId;
+        private long gameTime;
         private String playerLogin;
         private int totalScore;
         private int actualScoreInLevel;
         private long level;
         private LevelType levelType;
 
-        @Override
-        public TrainingDefinitionIdBuilder sandboxId(long sandboxId) {
+        public LevelCompletedBuilder sandboxId(long sandboxId) {
             this.sandboxId = sandboxId;
             return this;
         }
 
-        @Override
-        public TrainingInstanceIdBuilder trainingDefinitionId(long trainingDefinitionId) {
+        public LevelCompletedBuilder trainingDefinitionId(long trainingDefinitionId) {
             this.trainingDefinitionId = trainingDefinitionId;
             return this;
         }
 
-        @Override
-        public TrainingRunIdBuilder trainingInstanceId(long trainingInstanceId) {
+        public LevelCompletedBuilder trainingInstanceId(long trainingInstanceId) {
             this.trainingInstanceId = trainingInstanceId;
             return this;
         }
 
-        @Override
-        public PlayerLoginBuilder trainingRunId(long trainingRunId) {
+        public LevelCompletedBuilder trainingRunId(long trainingRunId) {
             this.trainingRunId = trainingRunId;
             return this;
         }
 
-        @Override
-        public TotalScoreBuilder playerLogin(String playerLogin) {
+        public LevelCompletedBuilder gameTime(long gameTime) {
+            this.gameTime = gameTime;
+            return this;
+        }
+
+        public LevelCompletedBuilder playerLogin(String playerLogin) {
             this.playerLogin = playerLogin;
             return this;
         }
 
-        @Override
-        public ActualScoreInLevelBuilder totalScore(int totalScore) {
+        public LevelCompletedBuilder totalScore(int totalScore) {
             this.totalScore = totalScore;
             return this;
         }
 
-        @Override
-        public LevelBuilder actualScoreInLevel(int actualScoreInLevel) {
+        public LevelCompletedBuilder actualScoreInLevel(int actualScoreInLevel) {
             this.actualScoreInLevel = actualScoreInLevel;
             return this;
         }
 
-        @Override
-        public LevelTypeBuilder level(long level) {
+        public LevelCompletedBuilder level(long level) {
             this.level = level;
             return this;
         }
 
-        @Override
         public LevelCompletedBuilder levelType(LevelType levelType) {
             this.levelType = levelType;
             return this;
@@ -122,127 +131,6 @@ public class LevelCompleted extends AbstractAuditPOJO {
 
     }
 
-    public interface SandboxIdBuilder {
-        TrainingDefinitionIdBuilder sandboxId(long sandboxId);
-    }
-
-    public interface TrainingDefinitionIdBuilder {
-        TrainingInstanceIdBuilder trainingDefinitionId(long trainingDefinitionId);
-    }
-
-    public interface TrainingInstanceIdBuilder {
-        TrainingRunIdBuilder trainingInstanceId(long trainingInstanceId);
-    }
-
-    public interface TrainingRunIdBuilder {
-        PlayerLoginBuilder trainingRunId(long trainingRunId);
-    }
-
-    public interface PlayerLoginBuilder {
-        TotalScoreBuilder playerLogin(String playerLogin);
-    }
-
-    public interface TotalScoreBuilder {
-        ActualScoreInLevelBuilder totalScore(int totalScore);
-    }
-
-    public interface ActualScoreInLevelBuilder {
-        LevelBuilder actualScoreInLevel(int actualScoreInLevel);
-    }
-
-    public interface LevelBuilder {
-        LevelTypeBuilder level(long level);
-    }
-
-    public interface LevelTypeBuilder {
-        LevelCompletedBuilder levelType(LevelType levelType);
-    }
-
-    private LevelCompleted(LevelCompletedBuilder builder) {
-        this.sandboxId = builder.sandboxId;
-        this.trainingDefinitionId = builder.trainingDefinitionId;
-        this.trainingInstanceId = builder.trainingInstanceId;
-        this.trainingRunId = builder.trainingRunId;
-        this.playerLogin = builder.playerLogin;
-        this.totalScore = builder.totalScore;
-        this.actualScoreInLevel = builder.actualScoreInLevel;
-        this.level = builder.level;
-        this.levelType = builder.levelType;
-    }
-
-    public long getSandboxId() {
-        return sandboxId;
-    }
-
-    public void setSandboxId(long sandboxId) {
-        this.sandboxId = sandboxId;
-    }
-
-    public long getTrainingDefinitionId() {
-        return trainingDefinitionId;
-    }
-
-    public void setTrainingDefinitionId(long trainingDefinitionId) {
-        this.trainingDefinitionId = trainingDefinitionId;
-    }
-
-    public long getTrainingInstanceId() {
-        return trainingInstanceId;
-    }
-
-    public void setTrainingInstanceId(long trainingInstanceId) {
-        this.trainingInstanceId = trainingInstanceId;
-    }
-
-    public long getTrainingRunId() {
-        return trainingRunId;
-    }
-
-    public void setTrainingRunId(long trainingRunId) {
-        this.trainingRunId = trainingRunId;
-    }
-
-    public String getPlayerLogin() {
-        return playerLogin;
-    }
-
-    public void setPlayerLogin(String playerLogin) {
-        this.playerLogin = playerLogin;
-    }
-
-    public int getTotalScore() {
-        return totalScore;
-    }
-
-    public void setTotalScore(int totalScore) {
-        this.totalScore = totalScore;
-    }
-
-    public int getActualScoreInLevel() {
-        return actualScoreInLevel;
-    }
-
-    public void setActualScoreInLevel(int actualScoreInLevel) {
-        this.actualScoreInLevel = actualScoreInLevel;
-    }
-
-    public long getLevel() {
-        return level;
-    }
-
-    public void setLevel(long level) {
-        this.level = level;
-    }
-
-    public LevelType getLevelType() {
-        return levelType;
-    }
-
-    public void setLevelType(LevelType levelType) {
-        this.levelType = levelType;
-    }
-
-
     @Override
     public String toString() {
         return "LevelCompleted{" +
@@ -250,7 +138,10 @@ public class LevelCompleted extends AbstractAuditPOJO {
                 ", trainingDefinitionId=" + trainingDefinitionId +
                 ", trainingInstanceId=" + trainingInstanceId +
                 ", trainingRunId=" + trainingRunId +
+                ", gameTime=" + gameTime +
                 ", playerLogin='" + playerLogin + '\'' +
+                ", totalScore=" + totalScore +
+                ", actualScoreInLevel=" + actualScoreInLevel +
                 ", level=" + level +
                 ", levelType=" + levelType +
                 '}';
