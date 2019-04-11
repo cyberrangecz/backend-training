@@ -36,10 +36,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 import static cz.muni.ics.kypo.training.persistence.model.enums.TDState.UNRELEASED;
 
@@ -106,9 +103,9 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
         return levelInfoDTOs;
     }
 
-    private Set<AbstractLevelDTO> gatherLevels(Long definitionId) {
+    private List<AbstractLevelDTO> gatherLevels(Long definitionId) {
         List<AbstractLevel> levels = trainingDefinitionService.findAllLevelsFromDefinition(definitionId);
-        Set<AbstractLevelDTO> levelDTOS = new HashSet<>();
+        List<AbstractLevelDTO> levelDTOS = new ArrayList<>();
 
         for (AbstractLevel abstractLevel : levels) {
             if (abstractLevel instanceof GameLevel) {

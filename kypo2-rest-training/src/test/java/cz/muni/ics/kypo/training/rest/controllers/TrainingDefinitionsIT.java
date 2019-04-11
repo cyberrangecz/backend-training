@@ -267,7 +267,7 @@ public class TrainingDefinitionsIT {
 		TrainingDefinitionDTO definitionDTO = beanMapping.mapTo(expected, TrainingDefinitionDTO.class);
 		GameLevelDTO gLDTO = beanMapping.mapTo(gameLevel1, GameLevelDTO.class);
 		gLDTO.setLevelType(LevelType.GAME_LEVEL);
-		definitionDTO.setLevels(new HashSet<>(Arrays.asList(gLDTO)));
+		definitionDTO.setLevels(new ArrayList<>(Arrays.asList(gLDTO)));
 		assertEquals(convertObjectToJsonBytes(convertObjectToJsonBytes(definitionDTO)), result.getContentAsString());
 	}
 
