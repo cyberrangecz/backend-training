@@ -39,7 +39,7 @@ import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.web.client.RestTemplate;
 
-import javax.validation.constraints.AssertTrue;
+import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -86,7 +86,7 @@ public class TrainingInstanceServiceTest {
         trainingInstance1.setId(1L);
         trainingInstance1.setTitle("test1");
         trainingInstance1.setAccessToken("pass-9876");
-        trainingInstance1.setEndTime(LocalDateTime.now().minusHours(1L));
+        trainingInstance1.setEndTime(LocalDateTime.now(Clock.systemUTC()).minusHours(1L));
         trainingInstance1.setTrainingDefinition(trainingDefinition);
         trainingInstance1.setPoolSize(2);
         trainingInstance1.setPoolId(1L);
@@ -98,16 +98,16 @@ public class TrainingInstanceServiceTest {
         trainingInstance2 = new TrainingInstance();
         trainingInstance2.setId(2L);
         trainingInstance2.setTitle("test2");
-        trainingInstance2.setStartTime(LocalDateTime.now().plusHours(1L));
-        trainingInstance2.setEndTime(LocalDateTime.now().plusHours(5L));
+        trainingInstance2.setStartTime(LocalDateTime.now(Clock.systemUTC()).plusHours(1L));
+        trainingInstance2.setEndTime(LocalDateTime.now(Clock.systemUTC()).plusHours(5L));
         trainingInstance2.setAccessToken("pass-1253");
         trainingInstance2.setTrainingDefinition(trainingDefinition);
 
         trainingInstanceInvalid = new TrainingInstance();
         trainingInstanceInvalid.setId(3L);
         trainingInstanceInvalid.setTitle("test3Invalid");
-        trainingInstanceInvalid.setStartTime(LocalDateTime.now().minusHours(1L));
-        trainingInstanceInvalid.setEndTime(LocalDateTime.now().plusHours(1L));
+        trainingInstanceInvalid.setStartTime(LocalDateTime.now(Clock.systemUTC()).minusHours(1L));
+        trainingInstanceInvalid.setEndTime(LocalDateTime.now(Clock.systemUTC()).plusHours(1L));
 
         trainingRun1 = new TrainingRun();
         trainingRun1.setId(1L);

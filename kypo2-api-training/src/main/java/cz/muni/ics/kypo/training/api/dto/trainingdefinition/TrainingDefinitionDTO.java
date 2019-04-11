@@ -7,9 +7,7 @@ import cz.muni.ics.kypo.training.api.enums.TDState;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author Pavel Seda (441048)
@@ -27,7 +25,7 @@ public class TrainingDefinitionDTO {
     private BetaTestingGroupDTO betaTestingGroup;
     private Long sandboxDefinitionRefId;
     private Long startingLevel;
-    private Set<AbstractLevelDTO> levels = new HashSet<>();
+    private List<AbstractLevelDTO> levels = new ArrayList<>();
     private boolean showStepperBar;
     private boolean canBeArchived;
 
@@ -122,11 +120,11 @@ public class TrainingDefinitionDTO {
     }
 
     @ApiModelProperty(value = "Information about all levels in training definition.")
-    public Set<AbstractLevelDTO> getLevels() {
+    public List<AbstractLevelDTO> getLevels() {
         return levels;
     }
 
-    public void setLevels(Set<AbstractLevelDTO> levels) {
+    public void setLevels(List<AbstractLevelDTO> levels) {
         this.levels = levels;
     }
 
@@ -147,10 +145,22 @@ public class TrainingDefinitionDTO {
         this.canBeArchived = canBeArchived;
     }
 
-    @Override public String toString() {
-        return "TrainingDefinitionDTO{" + "id=" + id + ", title='" + title + '\'' + ", description='" + description + '\''
-            + ", prerequisities=" + Arrays.toString(prerequisities) + ", outcomes=" + Arrays.toString(outcomes) + ", state=" + state
-            + ", authors=" + authors + ", sandboxDefinitionRefId=" + sandboxDefinitionRefId + ", startingLevel=" + startingLevel
-            + ", levels=" + levels + ", showStepperBar=" + showStepperBar + ", canBeArchived=" + canBeArchived + '}';
+    @Override
+    public String toString() {
+        return "TrainingDefinitionDTO{" +
+                "id=" + id +
+                ", title='" + title + '\'' +
+                ", description='" + description + '\'' +
+                ", prerequisities=" + Arrays.toString(prerequisities) +
+                ", outcomes=" + Arrays.toString(outcomes) +
+                ", state=" + state +
+                ", authors=" + authors +
+                ", betaTestingGroup=" + betaTestingGroup +
+                ", sandboxDefinitionRefId=" + sandboxDefinitionRefId +
+                ", startingLevel=" + startingLevel +
+                ", levels=" + levels +
+                ", showStepperBar=" + showStepperBar +
+                ", canBeArchived=" + canBeArchived +
+                '}';
     }
 }
