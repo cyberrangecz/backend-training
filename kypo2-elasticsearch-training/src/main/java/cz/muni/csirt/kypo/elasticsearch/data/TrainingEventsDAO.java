@@ -30,6 +30,8 @@ import java.util.concurrent.TimeUnit;
 @Repository
 public class TrainingEventsDAO extends AbstractElasticClientDAO {
 
+    private static final int INDEX_DOCUMENTS_MAX_RETURN_NUMBER = 10_000;
+
     @Autowired
     public TrainingEventsDAO(RestHighLevelClient restHighLevelClient, ObjectMapper objectMapper) {
         super(restHighLevelClient, objectMapper);
@@ -43,7 +45,8 @@ public class TrainingEventsDAO extends AbstractElasticClientDAO {
         searchSourceBuilder.query(QueryBuilders.matchAllQuery());
         // events are sorted based on timestamp attribute
         searchSourceBuilder.sort("timestamp", SortOrder.ASC);
-        searchSourceBuilder.timeout(new TimeValue(60, TimeUnit.SECONDS));
+        searchSourceBuilder.size(INDEX_DOCUMENTS_MAX_RETURN_NUMBER);
+        searchSourceBuilder.timeout(new TimeValue(5, TimeUnit.MINUTES));
 
         SearchRequest searchRequest = new SearchRequest("kypo2-cz.muni.csirt.kypo.events.trainings.definition-" + trainingDefinitionId + ".instance-" + trainingInstanceId + ".*");
         searchRequest.source(searchSourceBuilder);
