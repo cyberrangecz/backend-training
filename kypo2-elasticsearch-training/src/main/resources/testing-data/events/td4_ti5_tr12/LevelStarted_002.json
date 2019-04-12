@@ -1,0 +1,16 @@
+{
+  "type": "cz.muni.csirt.kypo.events.trainings.LevelStarted",
+  "timestamp": 1552647660000,
+  "sandbox_id": 1,
+  "training_definition_id": 4,
+  "training_instance_id": 5,
+  "training_run_id": 12,
+  "player_login": "Participant2",
+  "total_score": 0,
+  "actual_score_in_level": 0,
+  "level": 10,
+  "level_type": "INFO",
+  "max_score": 0,
+  "level_title": "Network Error - Info",
+  "game_time": 60000
+}

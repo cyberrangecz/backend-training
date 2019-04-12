@@ -1,0 +1,14 @@
+{
+  "type": "cz.muni.csirt.kypo.events.trainings.LevelCompleted",
+  "timestamp": 1552647780000,
+  "sandbox_id": 1,
+  "training_definition_id": 4,
+  "training_instance_id": 5,
+  "training_run_id": 13,
+  "player_login": "Participant3",
+  "total_score": 0,
+  "actual_score_in_level": 0,
+  "level": 32,
+  "level_type": "INFO",
+  "game_time": 180000
+}

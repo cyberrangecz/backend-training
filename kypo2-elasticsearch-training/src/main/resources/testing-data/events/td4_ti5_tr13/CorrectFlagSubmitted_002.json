@@ -1,0 +1,14 @@
+{
+  "type": "cz.muni.csirt.kypo.events.trainings.CorrectFlagSubmitted",
+  "timestamp": 1552648500000,
+  "sandbox_id": 1,
+  "training_definition_id": 4,
+  "training_instance_id": 5,
+  "training_run_id": 13,
+  "player_login": "Participant3",
+  "total_score": 40,
+  "actual_score_in_level": 20,
+  "level": 13,
+  "flag_content": "SetAndSafe",
+  "game_time": 900000
+}
