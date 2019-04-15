@@ -188,7 +188,7 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
     }
 
     @Override
-    @PreAuthorize("hasAuthority('ADMINISTRATOR')" +
+    @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
         "or @securityService.isOrganizerOfGivenTrainingInstance(#instanceId)")
     public void allocateSandboxes(Long instanceId) {
         LOG.debug("allocateSandboxes({})", instanceId);
@@ -225,7 +225,7 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
     }
 
     @Override
-    @PreAuthorize("hasAuthority('ADMINISTRATOR')" +
+    @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
         "or @securityService.isOrganizerOfGivenTrainingInstance(#instanceId)")
     public void deleteSandboxes(Long instanceId, Set<Long> listOfSandBoxIds) {
         LOG.debug("deleteSandboxes ({},{}))", instanceId, listOfSandBoxIds);
@@ -256,7 +256,7 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
     }
 
     @Override
-    @PreAuthorize("hasAuthority('ADMINISTRATOR')" +
+    @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
         "or @securityService.isOrganizerOfGivenTrainingInstance(#instanceId)")
     public void reallocateSandbox(Long instanceId, Long sandboxId){
         LOG.debug("reallocateSandboxes({}, {})", instanceId, sandboxId);
