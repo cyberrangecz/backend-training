@@ -25,6 +25,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.*;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
@@ -188,6 +189,7 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
     }
 
     @Override
+    @Async
     @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
         "or @securityService.isOrganizerOfGivenTrainingInstance(#instanceId)")
     public void allocateSandboxes(Long instanceId) {
@@ -256,6 +258,7 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
     }
 
     @Override
+    @Async
     @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
         "or @securityService.isOrganizerOfGivenTrainingInstance(#instanceId)")
     public void reallocateSandbox(Long instanceId, Long sandboxId){
