@@ -1,5 +1,7 @@
 package cz.muni.ics.kypo.training.facade;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalRO;
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalWO;
 import cz.muni.ics.kypo.training.api.dto.archive.TrainingInstanceArchiveDTO;
@@ -23,6 +25,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -66,12 +73,22 @@ public class ExportImportFacadeImpl implements ExportImportFacade {
 
     @Override
     @TransactionalRO
-    public ExportTrainingDefinitionAndLevelsDTO dbExport(Long trainingDefinitionId) {
+    public FileToReturnDTO dbExport(Long trainingDefinitionId) {
         ExportTrainingDefinitionAndLevelsDTO dbExport = exportImportMapper.mapToDTO(exportImportService.findById(trainingDefinitionId));
         if (dbExport != null) {
             dbExport.setLevels(mapAbstractLevelToAbstractLevelDTO(dbExport.getStartingLevel()));
         }
-        return dbExport;
+        try {
+            File fileToReturn = File.createTempFile(dbExport.getTitle() + System.currentTimeMillis(), ".json");
+            Files.write(Paths.get(fileToReturn.getName()), convertObjectToJsonBytes(dbExport).getBytes());
+            FileToReturnDTO fileToReturnDTO = new FileToReturnDTO();
+            fileToReturnDTO.setContent(Files.readAllBytes(Paths.get(fileToReturn.getName())));
+            fileToReturnDTO.setTitle(dbExport.getTitle());
+            fileToReturn.deleteOnExit();
+            return fileToReturnDTO;
+        } catch (IOException ex){
+            throw new FacadeLayerException(ex);
+        }
     }
 
     private List<AbstractLevelExportDTO> mapAbstractLevelToAbstractLevelDTO(Long levelId) {
@@ -136,21 +153,38 @@ public class ExportImportFacadeImpl implements ExportImportFacade {
 
     @Override
     @TransactionalRO
-    public TrainingInstanceArchiveDTO archiveTrainingInstance(Long trainingInstanceId) {
+    public FileToReturnDTO archiveTrainingInstance(Long trainingInstanceId) {
         try {
             TrainingInstance trainingInstance = exportImportService.findInstanceById(trainingInstanceId);
             exportImportService.failIfInstanceIsNotFinished(trainingInstance.getEndTime());
             TrainingInstanceArchiveDTO archivedInstance = exportImportMapper.mapToDTO(trainingInstance);
             if (archivedInstance != null) {
-                archivedInstance.setExportTrainingDefinitionAndLevelsDTO(dbExport(trainingInstance.getTrainingDefinition().getId()));
+                ExportTrainingDefinitionAndLevelsDTO tD = exportImportMapper.mapToDTO(exportImportService.findById(trainingInstance.getTrainingDefinition().getId()));
+                if (tD != null) {
+                    tD.setLevels(mapAbstractLevelToAbstractLevelDTO(tD.getStartingLevel()));
+                }
+                archivedInstance.setExportTrainingDefinitionAndLevelsDTO(tD);
                 Set<TrainingRun> runs = exportImportService.findRunsByInstanceId(trainingInstanceId);
                 for (TrainingRun run : runs) {
                     archivedInstance.getTrainingRuns().add(exportImportMapper.mapToDTO(run));
                 }
             }
-            return archivedInstance;
-        } catch (ServiceLayerException ex) {
+
+            File fileToReturn = File.createTempFile(archivedInstance.getTitle() + System.currentTimeMillis() , ".json");
+            Files.write(Paths.get(fileToReturn.getName()), convertObjectToJsonBytes(archivedInstance).getBytes());
+            FileToReturnDTO fileToReturnDTO = new FileToReturnDTO();
+            fileToReturnDTO.setContent(Files.readAllBytes(Paths.get(fileToReturn.getName())));
+            fileToReturnDTO.setTitle(trainingInstance.getTitle());
+            fileToReturn.deleteOnExit();
+            return fileToReturnDTO;
+
+        } catch (ServiceLayerException | IOException ex) {
             throw new FacadeLayerException(ex);
         }
+    }
+
+    private static String convertObjectToJsonBytes(Object object) throws IOException {
+        ObjectWriter writer = new ObjectMapper().writer().withDefaultPrettyPrinter();
+        return writer.writeValueAsString(object);
     }
 }
