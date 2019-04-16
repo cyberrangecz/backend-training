@@ -219,7 +219,7 @@ public class TrainingInstancesRestControllerTest {
     @Test
     public void allocateSandboxes() throws Exception {
         mockMvc.perform(post("/training-instances" + "/{instanceId}/" + "sandbox-instances", 1L))
-            .andExpect(status().isOk());
+            .andExpect(status().isAccepted());
     }
 
     @Test
@@ -255,7 +255,7 @@ public class TrainingInstancesRestControllerTest {
     @Test
     public void reallocateSandbox() throws Exception {
         mockMvc.perform(post("/training-instances" + "/{instanceId}/" + "sandbox-instances" + "/1", 1L))
-            .andExpect(status().isOk());
+            .andExpect(status().isAccepted());
     }
 
 

@@ -217,7 +217,7 @@ public class TrainingInstancesRestController {
             @PathVariable(value = "instanceId") Long instanceId) {
         try {
             trainingInstanceFacade.allocateSandboxes(instanceId);
-            return new ResponseEntity<>(HttpStatus.OK);
+            return new ResponseEntity<>(HttpStatus.ACCEPTED);
         } catch (FacadeLayerException ex) {
             throw ExceptionSorter.throwException(ex);
         }
@@ -331,7 +331,7 @@ public class TrainingInstancesRestController {
         @PathVariable(value = "sandboxId") Long sandboxId){
         try{
             trainingInstanceFacade.reallocateSandbox(instanceId, sandboxId);
-            return new ResponseEntity<>(HttpStatus.OK);
+            return new ResponseEntity<>(HttpStatus.ACCEPTED);
         } catch (FacadeLayerException ex){
             throw ExceptionSorter.throwException(ex);
         }
