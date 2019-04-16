@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import cz.muni.ics.kypo.training.api.dto.archive.TrainingInstanceArchiveDTO;
 import cz.muni.ics.kypo.training.api.dto.export.ExportTrainingDefinitionAndLevelsDTO;
+import cz.muni.ics.kypo.training.api.dto.export.FileToReturnDTO;
 import cz.muni.ics.kypo.training.converters.LocalDateTimeDeserializer;
 import cz.muni.ics.kypo.training.exceptions.ErrorCode;
 import cz.muni.ics.kypo.training.exceptions.FacadeLayerException;
@@ -21,6 +22,7 @@ import org.springframework.data.querydsl.binding.QuerydslBindingsFactory;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.data.web.querydsl.QuerydslPredicateArgumentResolver;
 import org.springframework.http.MediaType;
+import org.springframework.http.converter.ByteArrayHttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -59,7 +61,7 @@ public class ExportImportRestControllerTest {
 		this.mockMvc = MockMvcBuilders.standaloneSetup(exportImportRestController)
 				.setCustomArgumentResolvers(new PageableHandlerMethodArgumentResolver(),
 						new QuerydslPredicateArgumentResolver(new QuerydslBindingsFactory(SimpleEntityPathResolver.INSTANCE), Optional.empty()))
-				.setMessageConverters(new MappingJackson2HttpMessageConverter()).build();
+				.setMessageConverters(new MappingJackson2HttpMessageConverter(), new ByteArrayHttpMessageConverter()).build();
 
 		trainingInstanceArchiveDTO = new TrainingInstanceArchiveDTO();
 		trainingInstanceArchiveDTO.setExportTrainingDefinitionAndLevelsDTO(new ExportTrainingDefinitionAndLevelsDTO());
@@ -77,15 +79,16 @@ public class ExportImportRestControllerTest {
 
 	@Test
 	public void archiveTrainingInstance() throws Exception{
-		given(exportImportFacade.archiveTrainingInstance(any(Long.class))).willReturn(trainingInstanceArchiveDTO);
+		FileToReturnDTO file = new FileToReturnDTO();
+		file.setContent(convertObjectToJsonBytes(trainingInstanceArchiveDTO).getBytes());
+		file.setTitle(trainingInstanceArchiveDTO.getTitle());
+		given(exportImportFacade.archiveTrainingInstance(any(Long.class))).willReturn(file);
 		String valueTi = convertObjectToJsonBytes(trainingInstanceArchiveDTO);
 		given(objectMapper.writeValueAsString(any(Object.class))).willReturn(valueTi);
-
-		MockHttpServletResponse result = mockMvc.perform(get("/exports/training-instances" + "/{id}", 1L))
+		
+		mockMvc.perform(get("/exports/training-instances" + "/{id}", 1L))
 				.andExpect(status().isOk())
-				.andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-				.andReturn().getResponse();
-		assertEquals(convertObjectToJsonBytes(convertObjectToJsonBytes(trainingInstanceArchiveDTO)), result.getContentAsString());
+				.andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_OCTET_STREAM));
 	}
 
 	@Test
