@@ -2,6 +2,7 @@ package cz.muni.ics.kypo.training.facade;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalRO;
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalWO;
 import cz.muni.ics.kypo.training.api.dto.archive.TrainingInstanceArchiveDTO;
@@ -29,7 +30,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -56,7 +59,7 @@ public class ExportImportFacadeImpl implements ExportImportFacade {
     private TrainingDefinitionMapper trainingDefinitionMapper;
 
     @Autowired
-    private RestTemplate restTemplate;
+    private ObjectMapper objectMapper;
 
     @Autowired
     public ExportImportFacadeImpl(ExportImportService exportImportService, ExportImportMapper exportImportMapper, GameLevelMapper gameLevelMapper,
@@ -79,12 +82,9 @@ public class ExportImportFacadeImpl implements ExportImportFacade {
             dbExport.setLevels(mapAbstractLevelToAbstractLevelDTO(dbExport.getStartingLevel()));
         }
         try {
-            File fileToReturn = File.createTempFile(dbExport.getTitle() + System.currentTimeMillis(), ".json");
-            Files.write(Paths.get(fileToReturn.getName()), convertObjectToJsonBytes(dbExport).getBytes());
             FileToReturnDTO fileToReturnDTO = new FileToReturnDTO();
-            fileToReturnDTO.setContent(Files.readAllBytes(Paths.get(fileToReturn.getName())));
+            fileToReturnDTO.setContent(objectMapper.writeValueAsBytes(dbExport));
             fileToReturnDTO.setTitle(dbExport.getTitle());
-            fileToReturn.deleteOnExit();
             return fileToReturnDTO;
         } catch (IOException ex){
             throw new FacadeLayerException(ex);
@@ -169,13 +169,9 @@ public class ExportImportFacadeImpl implements ExportImportFacade {
                     archivedInstance.getTrainingRuns().add(exportImportMapper.mapToDTO(run));
                 }
             }
-
-            File fileToReturn = File.createTempFile(archivedInstance.getTitle() + System.currentTimeMillis() , ".json");
-            Files.write(Paths.get(fileToReturn.getName()), convertObjectToJsonBytes(archivedInstance).getBytes());
             FileToReturnDTO fileToReturnDTO = new FileToReturnDTO();
-            fileToReturnDTO.setContent(Files.readAllBytes(Paths.get(fileToReturn.getName())));
+            fileToReturnDTO.setContent(objectMapper.writeValueAsBytes(fileToReturnDTO));
             fileToReturnDTO.setTitle(trainingInstance.getTitle());
-            fileToReturn.deleteOnExit();
             return fileToReturnDTO;
 
         } catch (ServiceLayerException | IOException ex) {
@@ -183,8 +179,4 @@ public class ExportImportFacadeImpl implements ExportImportFacade {
         }
     }
 
-    private static String convertObjectToJsonBytes(Object object) throws IOException {
-        ObjectWriter writer = new ObjectMapper().writer().withDefaultPrettyPrinter();
-        return writer.writeValueAsString(object);
-    }
 }
