@@ -2,7 +2,6 @@ package cz.muni.ics.kypo.training.service.impl;
 
 import com.google.gson.JsonObject;
 import com.querydsl.core.types.Predicate;
-import cz.muni.ics.kypo.training.annotations.security.IsAdmin;
 import cz.muni.ics.kypo.training.annotations.security.IsDesignerOrAdmin;
 import cz.muni.ics.kypo.training.annotations.security.IsAdminOrDesignerOrOrganizer;
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalWO;
@@ -25,8 +24,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -58,7 +55,6 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     private String userAndGroupUrl;
 
 
-    private HttpServletRequest servletRequest;
     private RestTemplate restTemplate;
     private TrainingDefinitionRepository trainingDefinitionRepository;
     private TrainingInstanceRepository trainingInstanceRepository;
@@ -67,7 +63,6 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     private InfoLevelRepository infoLevelRepository;
     private AssessmentLevelRepository assessmentLevelRepository;
     private UserRefRepository userRefRepository;
-    private BetaTestingGroupRepository betaTestingGroupRepository;
 
     private static final String ARCHIVED_OR_RELEASED = "Cannot edit released or archived training definition.";
     private static final String LEVEL_NOT_FOUND = "Level not found.";
@@ -76,8 +71,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     public TrainingDefinitionServiceImpl(TrainingDefinitionRepository trainingDefinitionRepository,
                                          AbstractLevelRepository abstractLevelRepository, InfoLevelRepository infoLevelRepository, GameLevelRepository gameLevelRepository,
                                          AssessmentLevelRepository assessmentLevelRepository, TrainingInstanceRepository trainingInstanceRepository,
-                                         UserRefRepository userRefRepository, BetaTestingGroupRepository betaTestingGroupRepository,
-                                         RestTemplate restTemplate, HttpServletRequest servletRequest) {
+                                         UserRefRepository userRefRepository, RestTemplate restTemplate) {
         this.trainingDefinitionRepository = trainingDefinitionRepository;
         this.abstractLevelRepository = abstractLevelRepository;
         this.gameLevelRepository = gameLevelRepository;
@@ -85,9 +79,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
         this.assessmentLevelRepository = assessmentLevelRepository;
         this.trainingInstanceRepository = trainingInstanceRepository;
         this.userRefRepository = userRefRepository;
-        this.betaTestingGroupRepository = betaTestingGroupRepository;
         this.restTemplate = restTemplate;
-        this.servletRequest = servletRequest;
     }
 
     @Override
@@ -578,7 +570,6 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     @IsDesignerOrAdmin
     public List<UserInfoDTO> getUsersWithGivenRole(RoleType roleType, Pageable pageable) {
         HttpHeaders httpHeaders = new HttpHeaders();
-        httpHeaders.set("Authorization", servletRequest.getHeader("Authorization"));
         String url = userAndGroupUrl + "/roles/users" + "?roleType=" + roleType
                 + "&page=" + pageable.getPageNumber() + "&size=" + pageable.getPageSize() + "&fields=content[login,full_name]";
         ResponseEntity<PageResultResource<UserInfoDTO>> usersResponse = restTemplate.exchange(url, HttpMethod.GET, new HttpEntity<>(httpHeaders),
