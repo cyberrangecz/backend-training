@@ -9,10 +9,12 @@ import cz.muni.ics.kypo.training.api.dto.run.TrainingRunDTO;
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceCreateDTO;
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceDTO;
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceUpdateDTO;
+import cz.muni.ics.kypo.training.exceptions.ErrorCode;
 import cz.muni.ics.kypo.training.exceptions.FacadeLayerException;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.mapping.mapstruct.TrainingInstanceMapper;
 import cz.muni.ics.kypo.training.mapping.mapstruct.TrainingRunMapper;
+import cz.muni.ics.kypo.training.persistence.model.SandboxInstanceRef;
 import cz.muni.ics.kypo.training.persistence.model.TrainingInstance;
 import cz.muni.ics.kypo.training.persistence.model.TrainingRun;
 import cz.muni.ics.kypo.training.persistence.model.UserRef;
@@ -29,12 +31,14 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 /**
  * @author Pavel Šeda
  */
 @Service
-@Transactional
 public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
 
     private static final Logger LOG = LoggerFactory.getLogger(TrainingInstanceFacadeImpl.class);
@@ -143,11 +147,16 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
     @TransactionalWO
     public void allocateSandboxes(Long instanceId) {
         LOG.debug("allocateSandboxes({})", instanceId);
-        try {
-            trainingInstanceService.allocateSandboxes(instanceId);
-        } catch (ServiceLayerException ex) {
-            throw new FacadeLayerException(ex);
+        TrainingInstance trainingInstance = trainingInstanceService.findById(instanceId);
+        //Check if pool exist
+        if (trainingInstance.getPoolId() == null) {
+            throw new FacadeLayerException(new ServiceLayerException("Pool for sandboxes is not created yet. Please create pool before allocating sandboxes.", ErrorCode.RESOURCE_CONFLICT));
         }
+        //Check if sandbox can be allocated
+        if (trainingInstance.getSandboxInstanceRefs().size() >= trainingInstance.getPoolSize()) {
+            throw new FacadeLayerException(new ServiceLayerException("Pool of sandboxes of training instance with id: " + trainingInstance.getId() + " is full.", ErrorCode.RESOURCE_CONFLICT));
+        }
+        trainingInstanceService.allocateSandboxes(trainingInstance, null);
     }
 
     @Override
@@ -167,18 +176,33 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
     public void deleteSandboxes(Long instanceId, Set<Long> sandboxIds) {
         LOG.debug("deleteFailedSandboxes({}, {})", instanceId, sandboxIds);
         try{
-            trainingInstanceService.deleteSandboxes(instanceId, sandboxIds);
+            TrainingInstance trainingInstance = trainingInstanceService.findById(instanceId);
+            for (Long sandboxId : sandboxIds) {
+                SandboxInstanceRef sandboxRefToDelete = trainingInstance.getSandboxInstanceRefs().stream().filter(sIR ->
+                        sIR.getSandboxInstanceRef().equals(sandboxId)).findFirst().orElseThrow(() -> new ServiceLayerException("Given sandbox with id:" + sandboxId
+                        + " is not in DB or is not assigned to given training instance.", ErrorCode.RESOURCE_NOT_FOUND));
+                trainingInstanceService.deleteSandbox(trainingInstance, sandboxRefToDelete);
+            }
         } catch (ServiceLayerException ex) {
             throw new FacadeLayerException(ex);
         }
     }
 
     @Override
-    @TransactionalWO
     public void reallocateSandbox(Long instanceId, Long sandboxId){
         LOG.debug("reallocateSandboxes({}, {})", instanceId, sandboxId);
         try{
-            trainingInstanceService.reallocateSandbox(instanceId, sandboxId);
+            TrainingInstance trainingInstance = trainingInstanceService.findById(instanceId);
+            SandboxInstanceRef sandboxRefToDelete = trainingInstance.getSandboxInstanceRefs().stream().filter(sIR ->
+                    sIR.getSandboxInstanceRef().equals(sandboxId)).findFirst().orElseThrow(() -> new FacadeLayerException(new ServiceLayerException("Given sandbox with id: " + sandboxId
+                    + " is not in DB or is not assigned to given training instance.", ErrorCode.RESOURCE_NOT_FOUND)));
+            trainingInstanceService.deleteSandbox(trainingInstance, sandboxRefToDelete);
+            trainingInstanceService.allocateSandboxes(trainingInstance, 1);
+            //Check if sandbox can be allocated
+            if (trainingInstance.getSandboxInstanceRefs().size() >= trainingInstance.getPoolSize()) {
+                throw new FacadeLayerException(new ServiceLayerException("Sandbox cannot be reallocated because pool of training instance with id: " + trainingInstance.getId() + " is full. " +
+                        "Given sandbox with id: " + sandboxId + " is probably in the process of removing right now. Please wait and try allocate new sandbox later or contact administrator.", ErrorCode.RESOURCE_CONFLICT));
+            }
         } catch (ServiceLayerException ex) {
             throw new FacadeLayerException(ex);
         }

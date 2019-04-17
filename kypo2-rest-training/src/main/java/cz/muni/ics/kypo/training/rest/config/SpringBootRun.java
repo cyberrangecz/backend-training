@@ -9,6 +9,7 @@ import org.springframework.context.annotation.*;
 import org.springframework.data.web.config.EnableSpringDataWebSupport;
 
 import cz.muni.ics.kypo.training.config.FacadeConfiguration;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 /**
  * <p>

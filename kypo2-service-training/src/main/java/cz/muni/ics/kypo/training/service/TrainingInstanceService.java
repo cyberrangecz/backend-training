@@ -2,6 +2,7 @@ package cz.muni.ics.kypo.training.service;
 
 import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
+import cz.muni.ics.kypo.training.persistence.model.SandboxInstanceRef;
 import cz.muni.ics.kypo.training.persistence.model.TrainingInstance;
 
 import cz.muni.ics.kypo.training.persistence.model.TrainingRun;
@@ -11,6 +12,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 
 import java.util.Set;
+import java.util.concurrent.Future;
 
 /**
  * @author Pavel Seda (441048)
@@ -62,11 +64,13 @@ public interface TrainingInstanceService {
 
     /**
      * Allocates sandboxes for training instance
+     * This method is annotated with @Transactional
      *
-     * @param instanceId of training instance
+     * @param trainingInstance for which allocate sandboxes
+     * @param count number of sandboxes to allocate
      * @throws ServiceLayerException if instance is not found
      */
-    void allocateSandboxes(Long instanceId);
+    void allocateSandboxes(TrainingInstance trainingInstance, Integer count);
 
     /**
      * Finds all Training Runs of specific Training Instance.
@@ -93,20 +97,14 @@ public interface TrainingInstanceService {
     Long createPoolForSandboxes(Long trainingInstanceId);
 
     /**
-     * Deletes sandboxes from training instance
+     * Delete sandbox from training instance
+     * This method is annotated with @Transactional
      *
-     * @param instanceId id of training instance for which sandboxes will be deleted
-     * @param listOfSandBoxIds ids of sandboxes to be deleted
-     * @throws ServiceLayerException
+     * @param trainingInstance which sandbox should be deleted
+     * @param sandboxInstanceRef sandbox to be removed from training instance and deleted from open stack
+     * @throws ServiceLayerException if instance is not found
      */
-    void deleteSandboxes(Long instanceId, Set<Long> listOfSandBoxIds);
+    void deleteSandbox(TrainingInstance trainingInstance, SandboxInstanceRef sandboxInstanceRef);
 
-    /**
-     * Reallocate sandboxe in training instance
-     *
-     * @param instanceId id of training instance for which sandboxes will be reallocated
-     * @param sandboxId id of sandbox that will be reallocated
-     * @throws ServiceLayerException
-     */
-    void reallocateSandbox(Long instanceId, Long sandboxId);
+
 }

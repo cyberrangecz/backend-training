@@ -9,6 +9,7 @@ import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceUpdate
 import cz.muni.ics.kypo.training.exceptions.FacadeLayerException;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.mapping.mapstruct.*;
+import cz.muni.ics.kypo.training.persistence.model.SandboxInstanceRef;
 import cz.muni.ics.kypo.training.persistence.model.TrainingDefinition;
 import cz.muni.ics.kypo.training.persistence.model.TrainingInstance;
 import cz.muni.ics.kypo.training.service.TrainingDefinitionService;
@@ -58,6 +59,7 @@ public class TrainingInstanceFacadeTest {
     private TrainingDefinitionService trainingDefinitionService;
 
     private TrainingInstance trainingInstance1, trainingInstance2;
+    private SandboxInstanceRef sandboxInstanceRef1, sandboxInstanceRef2;
     private TrainingInstanceCreateDTO trainingInstanceCreate;
     private TrainingInstanceUpdateDTO trainingInstanceUpdate;
 
@@ -66,9 +68,21 @@ public class TrainingInstanceFacadeTest {
         MockitoAnnotations.initMocks(this);
         trainingInstanceFacade = new TrainingInstanceFacadeImpl(trainingInstanceService, trainingDefinitionService, trainingInstanceMapper, trainingRunMapper);
 
+        sandboxInstanceRef1 = new SandboxInstanceRef();
+        sandboxInstanceRef1.setSandboxInstanceRef(5L);
+        sandboxInstanceRef1.setId(1L);
+
+        sandboxInstanceRef2 = new SandboxInstanceRef();
+        sandboxInstanceRef2.setSandboxInstanceRef(6L);
+        sandboxInstanceRef2.setId(2L);
+
         trainingInstance1 = new TrainingInstance();
         trainingInstance1.setId(1L);
         trainingInstance1.setTitle("test");
+        trainingInstance1.addSandboxInstanceRef(sandboxInstanceRef1);
+        trainingInstance1.addSandboxInstanceRef(sandboxInstanceRef2);
+        trainingInstance1.setPoolId(1L);
+        trainingInstance1.setPoolSize(2);
 
         trainingInstance2 = new TrainingInstance();
         trainingInstance2.setId(2L);
@@ -195,13 +209,26 @@ public class TrainingInstanceFacadeTest {
 
     @Test
     public void allocateSandboxes() {
+        trainingInstance1.setSandboxInstanceRefs(Set.of(sandboxInstanceRef1));
+        given(trainingInstanceService.findById(anyLong())).willReturn(trainingInstance1);
         trainingInstanceFacade.allocateSandboxes(trainingInstance1.getId());
-        then(trainingInstanceService).should().allocateSandboxes(trainingInstance1.getId());
+        then(trainingInstanceService).should().allocateSandboxes(trainingInstance1, null);
+    }
+
+    @Test
+    public void allocateSandboxesWithFullPool() {
+        given(trainingInstanceService.findById(anyLong())).willReturn(trainingInstance1);
+        thrown.expect(FacadeLayerException.class);
+        thrown.expectMessage("cz.muni.ics.kypo.training.exceptions.ServiceLayerException: Pool of sandboxes of training instance with " +
+                "id: " + trainingInstance1.getId() + " is full.");
+        trainingInstanceFacade.allocateSandboxes(trainingInstance1.getId());
+        then(trainingInstanceService).should().allocateSandboxes(trainingInstance1, null);
     }
 
     @Test
     public void allocateSandboxesWithServiceException() {
-        willThrow(ServiceLayerException.class).given(trainingInstanceService).allocateSandboxes(trainingInstance1.getId());
+        given(trainingInstanceService.findById(anyLong())).willReturn(trainingInstance1);
+        willThrow(ServiceLayerException.class).given(trainingInstanceService).allocateSandboxes(trainingInstance1, null);
         thrown.expect(FacadeLayerException.class);
         trainingInstanceFacade.allocateSandboxes(trainingInstance1.getId());
     }
@@ -209,29 +236,48 @@ public class TrainingInstanceFacadeTest {
     @Test
     public void deleteSandboxes() {
         Set<Long> ids = new HashSet<>();
-        ids.add(1L);
+        ids.add(sandboxInstanceRef1.getSandboxInstanceRef());
+        ids.add(sandboxInstanceRef2.getSandboxInstanceRef());
+        given(trainingInstanceService.findById(anyLong())).willReturn(trainingInstance1);
         trainingInstanceFacade.deleteSandboxes(trainingInstance1.getId(), ids);
-        then(trainingInstanceService).should().deleteSandboxes(trainingInstance1.getId(), ids);
+        then(trainingInstanceService).should().deleteSandbox(trainingInstance1, sandboxInstanceRef1);
+        then(trainingInstanceService).should().deleteSandbox(trainingInstance1, sandboxInstanceRef2);
     }
 
     @Test
-    public void reallocateSandbox() {
-        trainingInstanceFacade.reallocateSandbox(trainingInstance1.getId(),1L);
-        then(trainingInstanceService).should().reallocateSandbox(trainingInstance1.getId(), 1L);
-    }
-
-    @Test
-    public void reallocateSandboxWithServiceException() {
-        willThrow(ServiceLayerException.class).given(trainingInstanceService).reallocateSandbox(trainingInstance1.getId(), 1L);
+    public void reallocateSandboxWhenPoolIsFull() {
+        given(trainingInstanceService.findById(anyLong())).willReturn(trainingInstance1);
         thrown.expect(FacadeLayerException.class);
-        trainingInstanceFacade.reallocateSandbox(trainingInstance1.getId(), 1L);
+        thrown.expectMessage("cz.muni.ics.kypo.training.exceptions.ServiceLayerException: Sandbox cannot be reallocated because pool of training instance with id: " + trainingInstance1.getId() + " is full. Given sandbox with " +
+                "id: " + sandboxInstanceRef1.getSandboxInstanceRef() + " is probably in the process of removing right now. " +
+                "Please wait and try allocate new sandbox later or contact administrator.");
+        trainingInstanceFacade.reallocateSandbox(trainingInstance1.getId(),sandboxInstanceRef1.getSandboxInstanceRef());
+        then(trainingInstanceService).should().deleteSandbox(trainingInstance1, sandboxInstanceRef1);
+        then(trainingInstanceService).should().allocateSandboxes(trainingInstance1, 1);
+    }
+
+    @Test
+    public void reallocateSandboxWhenPoolIsNotFull() {
+        trainingInstance1.setSandboxInstanceRefs(new HashSet<>(Set.of(sandboxInstanceRef1)));
+        given(trainingInstanceService.findById(anyLong())).willReturn(trainingInstance1);
+        trainingInstanceFacade.reallocateSandbox(trainingInstance1.getId(),sandboxInstanceRef1.getSandboxInstanceRef());
+        then(trainingInstanceService).should().deleteSandbox(trainingInstance1, sandboxInstanceRef1);
+        then(trainingInstanceService).should().allocateSandboxes(trainingInstance1, 1);
+    }
+
+    @Test
+    public void reallocateSandboxWithTrainingInstanceNotFound() {
+        willThrow(ServiceLayerException.class).given(trainingInstanceService).findById(trainingInstance1.getId());
+        thrown.expect(FacadeLayerException.class);
+        trainingInstanceFacade.reallocateSandbox(trainingInstance1.getId(), sandboxInstanceRef1.getSandboxInstanceRef());
     }
 
     @Test
     public void deleteSandboxesWithServiceException() {
         Set<Long> ids = new HashSet<>();
-        ids.add(1L);
-        willThrow(ServiceLayerException.class).given(trainingInstanceService).deleteSandboxes(trainingInstance1.getId(), ids);
+        ids.add(sandboxInstanceRef1.getSandboxInstanceRef());
+        given(trainingInstanceService.findById(anyLong())).willReturn(trainingInstance1);
+        willThrow(ServiceLayerException.class).given(trainingInstanceService).deleteSandbox(trainingInstance1, sandboxInstanceRef1);
         thrown.expect(FacadeLayerException.class);
         trainingInstanceFacade.deleteSandboxes(trainingInstance1.getId(), ids);
     }
