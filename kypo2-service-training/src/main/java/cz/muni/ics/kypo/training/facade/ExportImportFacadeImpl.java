@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalRO;
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalWO;
+import cz.muni.ics.kypo.training.api.dto.AbstractLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.archive.TrainingInstanceArchiveDTO;
 import cz.muni.ics.kypo.training.api.dto.export.*;
 import cz.muni.ics.kypo.training.api.dto.imports.*;
@@ -77,9 +78,11 @@ public class ExportImportFacadeImpl implements ExportImportFacade {
     @Override
     @TransactionalRO
     public FileToReturnDTO dbExport(Long trainingDefinitionId) {
+        TrainingDefinition td = exportImportService.findById(trainingDefinitionId);
         ExportTrainingDefinitionAndLevelsDTO dbExport = exportImportMapper.mapToDTO(exportImportService.findById(trainingDefinitionId));
         if (dbExport != null) {
             dbExport.setLevels(mapAbstractLevelToAbstractLevelDTO(dbExport.getStartingLevel()));
+            dbExport.setEstimatedDuration(calculateEstimatedDuration(dbExport.getLevels()));
         }
         try {
             FileToReturnDTO fileToReturnDTO = new FileToReturnDTO();
@@ -89,6 +92,12 @@ public class ExportImportFacadeImpl implements ExportImportFacade {
         } catch (IOException ex){
             throw new FacadeLayerException(ex);
         }
+    }
+
+    private int calculateEstimatedDuration(List<AbstractLevelExportDTO> levels){
+        int duration = 0;
+        for (AbstractLevelExportDTO level : levels) duration += level.getEstimatedDuration();
+        return duration;
     }
 
     private List<AbstractLevelExportDTO> mapAbstractLevelToAbstractLevelDTO(Long levelId) {
@@ -162,6 +171,7 @@ public class ExportImportFacadeImpl implements ExportImportFacade {
                 ExportTrainingDefinitionAndLevelsDTO tD = exportImportMapper.mapToDTO(exportImportService.findById(trainingInstance.getTrainingDefinition().getId()));
                 if (tD != null) {
                     tD.setLevels(mapAbstractLevelToAbstractLevelDTO(tD.getStartingLevel()));
+                    tD.setEstimatedDuration(calculateEstimatedDuration(tD.getLevels()));
                 }
                 archivedInstance.setExportTrainingDefinitionAndLevelsDTO(tD);
                 Set<TrainingRun> runs = exportImportService.findRunsByInstanceId(trainingInstanceId);
@@ -170,7 +180,7 @@ public class ExportImportFacadeImpl implements ExportImportFacade {
                 }
             }
             FileToReturnDTO fileToReturnDTO = new FileToReturnDTO();
-            fileToReturnDTO.setContent(objectMapper.writeValueAsBytes(fileToReturnDTO));
+            fileToReturnDTO.setContent(objectMapper.writeValueAsBytes(archivedInstance));
             fileToReturnDTO.setTitle(trainingInstance.getTitle());
             return fileToReturnDTO;
 

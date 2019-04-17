@@ -29,6 +29,7 @@ public class AbstractLevelDTO {
     protected Long nextLevel;
     protected SnapshotHookDTO snapshotHook;
     protected LevelType levelType;
+    protected int estimatedDuration;
 
     @ApiModelProperty(value = "Main identifier of level.", example = "1")
     public Long getId() {
@@ -83,6 +84,15 @@ public class AbstractLevelDTO {
         this.levelType = levelType;
     }
 
+    @ApiModelProperty(value = "Estimated time taken by the player to resolve the level.", example = "5")
+    public int getEstimatedDuration() {
+        return estimatedDuration;
+    }
+
+    public void setEstimatedDuration(int estimatedDuration) {
+        this.estimatedDuration = estimatedDuration;
+    }
+
     @Override
     public int hashCode() {
         return Objects.hashCode(id);
@@ -100,11 +110,9 @@ public class AbstractLevelDTO {
         return Objects.equals(id, other.getId());
     }
 
-    @Override
-    public String toString() {
-        return "AbstractLevelDTO [id=" + id + ", title=" + title + ", maxScore=" + maxScore + ", nextLevel=" + nextLevel +
-                ", snapshotHook=" + snapshotHook+ "]";
+    @Override public String toString() {
+        return "AbstractLevelDTO{" + "id=" + id + ", title='" + title + '\'' + ", maxScore=" + maxScore + ", nextLevel=" + nextLevel
+            + ", snapshotHook=" + snapshotHook + ", levelType=" + levelType + ", estimatedDuration=" + estimatedDuration + '}';
     }
-
 }
 

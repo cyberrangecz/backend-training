@@ -31,8 +31,10 @@ public class TrainingDefinitionDTO {
     private List<AbstractLevelDTO> levels = new ArrayList<>();
     private boolean showStepperBar;
     private boolean canBeArchived;
+    private int estimatedDuration;
     @JsonSerialize(using = LocalDateTimeUTCSerializer.class)
     private LocalDateTime lastEdited;
+
 
     @ApiModelProperty(value = "Main identifier of training definition.", example = "1")
     public Long getId() {
@@ -150,6 +152,13 @@ public class TrainingDefinitionDTO {
         this.canBeArchived = canBeArchived;
     }
 
+    public int getEstimatedDuration() {
+        return estimatedDuration;
+    }
+
+    public void setEstimatedDuration(int estimatedDuration) {
+        this.estimatedDuration = estimatedDuration;
+    }
     @ApiModelProperty(value = "Time of last edit done to definition.", example = "2017-10-19 10:23:54+02")
     public LocalDateTime getLastEdited() {
         return lastEdited;
@@ -164,6 +173,6 @@ public class TrainingDefinitionDTO {
             + ", prerequisities=" + Arrays.toString(prerequisities) + ", outcomes=" + Arrays.toString(outcomes) + ", state=" + state
             + ", authors=" + authors + ", betaTestingGroup=" + betaTestingGroup + ", sandboxDefinitionRefId=" + sandboxDefinitionRefId
             + ", startingLevel=" + startingLevel + ", levels=" + levels + ", showStepperBar=" + showStepperBar + ", canBeArchived="
-            + canBeArchived + ", lastEdited=" + lastEdited + '}';
+            + canBeArchived + ", estimatedDuration=" + estimatedDuration + ", lastEdited=" + lastEdited + '}';
     }
 }

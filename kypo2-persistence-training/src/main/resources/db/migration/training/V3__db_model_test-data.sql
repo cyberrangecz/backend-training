@@ -13,51 +13,51 @@ INSERT INTO beta_testing_group(id) VALUES (nextval('beta_testing_group_id_seq'))
 INSERT INTO beta_testing_group(id) VALUES (nextval('beta_testing_group_id_seq'));
 INSERT INTO beta_testing_group(id) VALUES (nextval('beta_testing_group_id_seq'));
 
-INSERT INTO abstract_level(id, max_score, next_level, title, snapshot_hook_id) VALUES (nextval('abstract_level_id_seq'), 20, 7, 'Game Level1', 1);
-INSERT INTO abstract_level(id, max_score, next_level, title, snapshot_hook_id) VALUES (nextval('abstract_level_id_seq'), 55, 8, 'Game Level2', 4);
-INSERT INTO abstract_level(id, max_score, next_level, title, snapshot_hook_id) VALUES (nextval('abstract_level_id_seq'), 70, null, 'Game Level Test', 2);
-INSERT INTO abstract_level(id, max_score, next_level, title, snapshot_hook_id) VALUES (nextval('abstract_level_id_seq'), 70, 1, 'Info Level1', null);
-INSERT INTO abstract_level(id, max_score, next_level, title, snapshot_hook_id) VALUES (nextval('abstract_level_id_seq'), 13, 2, 'Info Level2', 5);
-INSERT INTO abstract_level(id, max_score, next_level, title, snapshot_hook_id) VALUES (nextval('abstract_level_id_seq'), 0, 3, 'Info Level Test', 3);
-INSERT INTO abstract_level(id, max_score, next_level, title, snapshot_hook_id) VALUES (nextval('abstract_level_id_seq'), 50, null, 'Assessment Level1', null);
-INSERT INTO abstract_level(id, max_score, next_level, title, snapshot_hook_id) VALUES (nextval('abstract_level_id_seq'), 75, null, 'Assessment Level2', 6);
-INSERT INTO abstract_level(id, max_score, next_level, title, snapshot_hook_id) VALUES (nextval('abstract_level_id_seq'), 100, null, 'Assessment Level Test', null);
+INSERT INTO abstract_level(id, max_score, next_level, title, snapshot_hook_id, estimated_duration) VALUES (nextval('abstract_level_id_seq'), 20, 7, 'Game Level1', 1, 25);
+INSERT INTO abstract_level(id, max_score, next_level, title, snapshot_hook_id, estimated_duration) VALUES (nextval('abstract_level_id_seq'), 55, 8, 'Game Level2', 4, 60);
+INSERT INTO abstract_level(id, max_score, next_level, title, snapshot_hook_id, estimated_duration) VALUES (nextval('abstract_level_id_seq'), 70, null, 'Game Level Test', 2, 25);
+INSERT INTO abstract_level(id, max_score, next_level, title, snapshot_hook_id, estimated_duration) VALUES (nextval('abstract_level_id_seq'), 70, 1, 'Info Level1', null, 0);
+INSERT INTO abstract_level(id, max_score, next_level, title, snapshot_hook_id, estimated_duration) VALUES (nextval('abstract_level_id_seq'), 13, 2, 'Info Level2', 5, 0);
+INSERT INTO abstract_level(id, max_score, next_level, title, snapshot_hook_id, estimated_duration) VALUES (nextval('abstract_level_id_seq'), 0, 3, 'Info Level Test', 3, 0);
+INSERT INTO abstract_level(id, max_score, next_level, title, snapshot_hook_id, estimated_duration) VALUES (nextval('abstract_level_id_seq'), 50, null, 'Assessment Level1', null, 10);
+INSERT INTO abstract_level(id, max_score, next_level, title, snapshot_hook_id, estimated_duration) VALUES (nextval('abstract_level_id_seq'), 75, null, 'Assessment Level2', 6, 10);
+INSERT INTO abstract_level(id, max_score, next_level, title, snapshot_hook_id, estimated_duration) VALUES (nextval('abstract_level_id_seq'), 100, null, 'Assessment Level Test', null, 10);
 
-INSERT INTO abstract_level(id, max_score, next_level, title, snapshot_hook_id) VALUES (nextval('abstract_level_id_seq'), 0, 11, 'Network Error - Info', null);
-INSERT INTO abstract_level(id, max_score, next_level, title, snapshot_hook_id) VALUES (nextval('abstract_level_id_seq'), 20, 12, 'Network Error', null);
-INSERT INTO abstract_level(id, max_score, next_level, title, snapshot_hook_id) VALUES (nextval('abstract_level_id_seq'), 0, 13, 'New Secure Connection - Info', null);
-INSERT INTO abstract_level(id, max_score, next_level, title, snapshot_hook_id) VALUES (nextval('abstract_level_id_seq'), 20, 14, 'New Secure Connection', null);
-INSERT INTO abstract_level(id, max_score, next_level, title, snapshot_hook_id) VALUES (nextval('abstract_level_id_seq'), 0, 15, 'Unavailable Document - Info', null);
-INSERT INTO abstract_level(id, max_score, next_level, title, snapshot_hook_id) VALUES (nextval('abstract_level_id_seq'), 35, 16, 'Unavailable Document', null);
-INSERT INTO abstract_level(id, max_score, next_level, title, snapshot_hook_id) VALUES (nextval('abstract_level_id_seq'), 0, 17, 'Disable Passwords - Info', null);
-INSERT INTO abstract_level(id, max_score, next_level, title, snapshot_hook_id) VALUES (nextval('abstract_level_id_seq'), 25, null, 'Disable Passwords', null);
+INSERT INTO abstract_level(id, max_score, next_level, title, snapshot_hook_id, estimated_duration) VALUES (nextval('abstract_level_id_seq'), 0, 11, 'Network Error - Info', null, 0);
+INSERT INTO abstract_level(id, max_score, next_level, title, snapshot_hook_id, estimated_duration) VALUES (nextval('abstract_level_id_seq'), 20, 12, 'Network Error', null, 5);
+INSERT INTO abstract_level(id, max_score, next_level, title, snapshot_hook_id, estimated_duration) VALUES (nextval('abstract_level_id_seq'), 0, 13, 'New Secure Connection - Info', null, 0);
+INSERT INTO abstract_level(id, max_score, next_level, title, snapshot_hook_id, estimated_duration) VALUES (nextval('abstract_level_id_seq'), 20, 14, 'New Secure Connection', null, 5);
+INSERT INTO abstract_level(id, max_score, next_level, title, snapshot_hook_id, estimated_duration) VALUES (nextval('abstract_level_id_seq'), 0, 15, 'Unavailable Document - Info', null, 0);
+INSERT INTO abstract_level(id, max_score, next_level, title, snapshot_hook_id, estimated_duration) VALUES (nextval('abstract_level_id_seq'), 35, 16, 'Unavailable Document', null, 15);
+INSERT INTO abstract_level(id, max_score, next_level, title, snapshot_hook_id, estimated_duration) VALUES (nextval('abstract_level_id_seq'), 0, 17, 'Disable Passwords - Info', null, 0);
+INSERT INTO abstract_level(id, max_score, next_level, title, snapshot_hook_id, estimated_duration) VALUES (nextval('abstract_level_id_seq'), 25, null, 'Disable Passwords', null, 15);
 
-INSERT INTO abstract_level(id, max_score, next_level, title, snapshot_hook_id) VALUES (nextval('abstract_level_id_seq'), 0, 19, 'Finding the Vulnerability - Info', null);
-INSERT INTO abstract_level(id, max_score, next_level, title, snapshot_hook_id) VALUES (nextval('abstract_level_id_seq'), 3, 20, 'Finding the Vulnerability', null);
-INSERT INTO abstract_level(id, max_score, next_level, title, snapshot_hook_id) VALUES (nextval('abstract_level_id_seq'), 0, 21, 'This Will Not Keep You Out - Info', null);
-INSERT INTO abstract_level(id, max_score, next_level, title, snapshot_hook_id) VALUES (nextval('abstract_level_id_seq'), 5, 22, 'This Will Not Keep You Out', null);
-INSERT INTO abstract_level(id, max_score, next_level, title, snapshot_hook_id) VALUES (nextval('abstract_level_id_seq'), 0, 23, 'Gaining the Document - Info', null);
-INSERT INTO abstract_level(id, max_score, next_level, title, snapshot_hook_id) VALUES (nextval('abstract_level_id_seq'), 3, null, 'Gaining the Document', null);
+INSERT INTO abstract_level(id, max_score, next_level, title, snapshot_hook_id, estimated_duration) VALUES (nextval('abstract_level_id_seq'), 0, 19, 'Finding the Vulnerability - Info', null, 0);
+INSERT INTO abstract_level(id, max_score, next_level, title, snapshot_hook_id, estimated_duration) VALUES (nextval('abstract_level_id_seq'), 3, 20, 'Finding the Vulnerability', null, 5);
+INSERT INTO abstract_level(id, max_score, next_level, title, snapshot_hook_id, estimated_duration) VALUES (nextval('abstract_level_id_seq'), 0, 21, 'This Will Not Keep You Out - Info', null, 0);
+INSERT INTO abstract_level(id, max_score, next_level, title, snapshot_hook_id, estimated_duration) VALUES (nextval('abstract_level_id_seq'), 5, 22, 'This Will Not Keep You Out', null, 15);
+INSERT INTO abstract_level(id, max_score, next_level, title, snapshot_hook_id, estimated_duration) VALUES (nextval('abstract_level_id_seq'), 0, 23, 'Gaining the Document - Info', null, 0);
+INSERT INTO abstract_level(id, max_score, next_level, title, snapshot_hook_id, estimated_duration) VALUES (nextval('abstract_level_id_seq'), 3, null, 'Gaining the Document', null, 5);
 
-INSERT INTO abstract_level(id, max_score, next_level, title, snapshot_hook_id) VALUES (nextval('abstract_level_id_seq'), 0, 25, 'Gaining Access - Info', null);
-INSERT INTO abstract_level(id, max_score, next_level, title, snapshot_hook_id) VALUES (nextval('abstract_level_id_seq'), 20, 26, 'Gaining Access', null);
-INSERT INTO abstract_level(id, max_score, next_level, title, snapshot_hook_id) VALUES (nextval('abstract_level_id_seq'), 0, 27, 'There Must be Some Vulnerability - Info', null);
-INSERT INTO abstract_level(id, max_score, next_level, title, snapshot_hook_id) VALUES (nextval('abstract_level_id_seq'), 25, 28, 'There Must be Some Vulnerability', null);
-INSERT INTO abstract_level(id, max_score, next_level, title, snapshot_hook_id) VALUES (nextval('abstract_level_id_seq'), 0, 29, 'Hack This Site - Info', null);
-INSERT INTO abstract_level(id, max_score, next_level, title, snapshot_hook_id) VALUES (nextval('abstract_level_id_seq'), 25, 30, 'Hack This Site', null);
-INSERT INTO abstract_level(id, max_score, next_level, title, snapshot_hook_id) VALUES (nextval('abstract_level_id_seq'), 0, 31, 'Make Me Root - Info', null);
-INSERT INTO abstract_level(id, max_score, next_level, title, snapshot_hook_id) VALUES (nextval('abstract_level_id_seq'), 30, null, 'Make Me Root', null);
+INSERT INTO abstract_level(id, max_score, next_level, title, snapshot_hook_id, estimated_duration) VALUES (nextval('abstract_level_id_seq'), 0, 25, 'Gaining Access - Info', null, 0);
+INSERT INTO abstract_level(id, max_score, next_level, title, snapshot_hook_id, estimated_duration) VALUES (nextval('abstract_level_id_seq'), 20, 26, 'Gaining Access', null, 15);
+INSERT INTO abstract_level(id, max_score, next_level, title, snapshot_hook_id, estimated_duration) VALUES (nextval('abstract_level_id_seq'), 0, 27, 'There Must be Some Vulnerability - Info', null, 0);
+INSERT INTO abstract_level(id, max_score, next_level, title, snapshot_hook_id, estimated_duration) VALUES (nextval('abstract_level_id_seq'), 25, 28, 'There Must be Some Vulnerability', null, 15);
+INSERT INTO abstract_level(id, max_score, next_level, title, snapshot_hook_id, estimated_duration) VALUES (nextval('abstract_level_id_seq'), 0, 29, 'Hack This Site - Info', null, 0);
+INSERT INTO abstract_level(id, max_score, next_level, title, snapshot_hook_id, estimated_duration) VALUES (nextval('abstract_level_id_seq'), 25, 30, 'Hack This Site', null, 15);
+INSERT INTO abstract_level(id, max_score, next_level, title, snapshot_hook_id, estimated_duration) VALUES (nextval('abstract_level_id_seq'), 0, 31, 'Make Me Root - Info', null, 0);
+INSERT INTO abstract_level(id, max_score, next_level, title, snapshot_hook_id, estimated_duration) VALUES (nextval('abstract_level_id_seq'), 30, null, 'Make Me Root', null, 15);
 
-INSERT INTO abstract_level(id, max_score, next_level, title, snapshot_hook_id) VALUES (nextval('abstract_level_id_seq'), 0, 10, 'Base info for No Secure Connection', null);
-INSERT INTO abstract_level(id, max_score, next_level, title, snapshot_hook_id) VALUES (nextval('abstract_level_id_seq'), 0, 18, 'Base info for Rigging the Election', null);
-INSERT INTO abstract_level(id, max_score, next_level, title, snapshot_hook_id) VALUES (nextval('abstract_level_id_seq'), 0, 24, 'Base info for The Biggest Stock Scam Of All Time', null);
+INSERT INTO abstract_level(id, max_score, next_level, title, snapshot_hook_id, estimated_duration) VALUES (nextval('abstract_level_id_seq'), 0, 10, 'Base info for No Secure Connection', null, 0);
+INSERT INTO abstract_level(id, max_score, next_level, title, snapshot_hook_id, estimated_duration) VALUES (nextval('abstract_level_id_seq'), 0, 18, 'Base info for Rigging the Election', null, 0);
+INSERT INTO abstract_level(id, max_score, next_level, title, snapshot_hook_id, estimated_duration) VALUES (nextval('abstract_level_id_seq'), 0, 24, 'Base info for The Biggest Stock Scam Of All Time', null, 0);
 
 
-INSERT INTO game_level(id, attachments, estimated_duration, incorrect_flag_limit, content, flag, solution, solution_penalized) VALUES (1, null, 25, 5, 'Play me', 'secretFlag', 'This is how you do it', true );
-INSERT INTO game_level(id, attachments, estimated_duration, incorrect_flag_limit, content, flag, solution, solution_penalized) VALUES (2, null, 60, 3, 'Unsolvable problem', 'jibberish', 'Not sure yet', false);
-INSERT INTO game_level(id, attachments, estimated_duration, incorrect_flag_limit, content, flag, solution, solution_penalized) VALUES (3, null, 25, 5, 'Play me', 'secretFlag', 'correct flag', true);
+INSERT INTO game_level(id, attachments, incorrect_flag_limit, content, flag, solution, solution_penalized) VALUES (1, null, 5, 'Play me', 'secretFlag', 'This is how you do it', true );
+INSERT INTO game_level(id, attachments, incorrect_flag_limit, content, flag, solution, solution_penalized) VALUES (2, null, 3, 'Unsolvable problem', 'jibberish', 'Not sure yet', false);
+INSERT INTO game_level(id, attachments, incorrect_flag_limit, content, flag, solution, solution_penalized) VALUES (3, null, 5, 'Play me', 'secretFlag', 'correct flag', true);
 
-INSERT INTO game_level(id, attachments, estimated_duration, incorrect_flag_limit, content, flag, solution, solution_penalized) VALUES (11, null, 5, 5, '<style type="text/css">
+INSERT INTO game_level(id, attachments, incorrect_flag_limit, content, flag, solution, solution_penalized) VALUES (11, null, 5, '<style type="text/css">
   .prompt {color: #B7B7B7; font-weight: bold;}
   .command {color:white;}
 </style>
@@ -70,7 +70,7 @@ INSERT INTO game_level(id, attachments, estimated_duration, incorrect_flag_limit
   <li>Right-click on any TELNET packet and select option <b>"Follow → TCP stream"</b>.</li>
   <li>Read the conversation and search for "FLAG".</li>
 </ol>', 'NoMoreTelnet', 'NoMoreTelnet', true );
-INSERT INTO game_level(id, attachments, estimated_duration, incorrect_flag_limit, content, flag, solution, solution_penalized) VALUES (13, null, 5, 5, '<style type="text/css">
+INSERT INTO game_level(id, attachments,  incorrect_flag_limit, content, flag, solution, solution_penalized) VALUES (13, null, 5, '<style type="text/css">
   .prompt {color: #B7B7B7; font-weight: bold;}
   .command {color:white;}
 </style>
@@ -89,7 +89,7 @@ INSERT INTO game_level(id, attachments, estimated_duration, incorrect_flag_limit
   <li>Follow instructions...</li>
 </ol>
 ', 'SetAndSafe', 'SetAndSafe', true );
-INSERT INTO game_level(id, attachments, estimated_duration, incorrect_flag_limit, content, flag, solution, solution_penalized) VALUES (15, null, 15, 5, '<style type="text/css">
+INSERT INTO game_level(id, attachments, incorrect_flag_limit, content, flag, solution, solution_penalized) VALUES (15, null, 5, '<style type="text/css">
   .prompt {color: #B7B7B7; font-weight: bold;}
   .command {color:white;}
 </style>
@@ -107,7 +107,7 @@ INSERT INTO game_level(id, attachments, estimated_duration, incorrect_flag_limit
 <span class="prompt">bnovak@workstation:~$ </span><span class="command">ssh vondrus@database.bigbroker.ex</span>
 <span class="prompt">vondrus@database:~$ </span><span class="command">cat ~/Documents/company_employees.xml</span></pre>
 </ol>', 'WhatAHacker', 'WhatAHacker', true );
-INSERT INTO game_level(id, attachments, estimated_duration, incorrect_flag_limit, content, flag, solution, solution_penalized) VALUES (17, null, 5, 5, '<style type="text/css">
+INSERT INTO game_level(id, attachments, incorrect_flag_limit, content, flag, solution, solution_penalized) VALUES (17, null, 5, '<style type="text/css">
   .prompt {color: #B7B7B7; font-weight: bold;}
   .command {color:white;}
 </style>
@@ -130,7 +130,7 @@ INSERT INTO game_level(id, attachments, estimated_duration, incorrect_flag_limit
 <span class="prompt">bnovak@database:~$ </span><span class="command">cat ~/.ssh/authorized_keys</span></pre>
 </ol>', 'SSHKeys', 'SSHKeys', true );
 
-INSERT INTO game_level(id, attachments, estimated_duration, incorrect_flag_limit, content, flag, solution, solution_penalized) VALUES (19, null, 8, 5, '<p>
+INSERT INTO game_level(id, attachments, incorrect_flag_limit, content, flag, solution, solution_penalized) VALUES (19, null, 8, '<p>
   <b>Come on, this is really easy!</b>
 </p>
 
@@ -139,7 +139,7 @@ INSERT INTO game_level(id, attachments, estimated_duration, incorrect_flag_limit
   <li>On the left side, click on Documents and click on "Browse". Select the Web Shell script located in "/root/c99.php". Then click on upload.</li>
   <li>The hash will appear in green box. Use it''s first 5 characters as the flag.</li>
 </ol>', '61a92', '61a92', true );
-INSERT INTO game_level(id, attachments, estimated_duration, incorrect_flag_limit, content, flag, solution, solution_penalized) VALUES (21, null, 15, 5, '<p>
+INSERT INTO game_level(id, attachments, incorrect_flag_limit, content, flag, solution, solution_penalized) VALUES (21, null, 5, '<p>
   <b>it is little tricky!</b>
 </p>
 
@@ -149,7 +149,7 @@ INSERT INTO game_level(id, attachments, estimated_duration, incorrect_flag_limit
   <li>One line above the "active" line there should be line with parameter NAME="path" and value="XXXX". Change the value parameter to "documents/.htaccess" and press delete button back on website itself.</li>
   <li>Click the C99.php Web Shell. You should be able to run it and see the flag.</li>
 </ol>', '0x6a8', '0x6a8', true );
-INSERT INTO game_level(id, attachments, estimated_duration, incorrect_flag_limit, content, flag, solution, solution_penalized) VALUES (23, null, 5, 5, '<p>
+INSERT INTO game_level(id, attachments, incorrect_flag_limit, content, flag, solution, solution_penalized) VALUES (23, null, 5, '<p>
   <b>Now its is easy!</b>
 </p>
 
@@ -159,7 +159,7 @@ INSERT INTO game_level(id, attachments, estimated_duration, incorrect_flag_limit
   <li>Click on home and then on msramek. You should see FranksPanamasStocks file.</li>
   <li>Click on "text" icon to open file as text. (It is next to icon that looks like Internet Explorer icon).</li>
 </ol>', '8342538', '8342538', true );
-INSERT INTO game_level(id, attachments, estimated_duration, incorrect_flag_limit, content, flag, solution, solution_penalized) VALUES (25, null, 15, 5, '<style type="text/css">
+INSERT INTO game_level(id, attachments, incorrect_flag_limit, content, flag, solution, solution_penalized) VALUES (25, null, 5, '<style type="text/css">
   .prompt {color: #FF5555; font-weight: bold;}
   .command {color:white;}
 </style>
@@ -178,7 +178,7 @@ INSERT INTO game_level(id, attachments, estimated_duration, incorrect_flag_limit
 <span class="prompt">root@attacker:~# </span><span class="command">hydra -V -L /root/usernames.txt -P /root/passwords.txt 172.18.1.132 ssh</span>
 <span class="prompt">root@attacker:~# </span><span class="command">ncrack -v -U /root/usernames.txt -P /root/passwords.txt 172.18.1.132:22</span></pre>
 </ol>', 'starwars', 'starwars', true );
-INSERT INTO game_level(id, attachments, estimated_duration, incorrect_flag_limit, content, flag, solution, solution_penalized) VALUES (27, null, 15, 5, '<style type="text/css">
+INSERT INTO game_level(id, attachments, incorrect_flag_limit, content, flag, solution, solution_penalized) VALUES (27, null, 5, '<style type="text/css">
   .prompt {color: #FF5555; font-weight: bold;}
   .command {color:white;}
 </style>
@@ -202,7 +202,7 @@ INSERT INTO game_level(id, attachments, estimated_duration, incorrect_flag_limit
     <pre style="background-color:black; margin-top: 1em"><span class="prompt" style="color: #55FF55;">vondrus@workstation:~$ </span><span class="command">cd ./wpscan</span>
 <span class="prompt" style="color: #55FF55;">vondrus@workstation:~$ </span><span class="command">./wpscan --url http://bigbroker.ex --enumerate vp</span></pre>
 </ol>', '7830', '7830', true );
-INSERT INTO game_level(id, attachments, estimated_duration, incorrect_flag_limit, content, flag, solution, solution_penalized) VALUES (29, null, 15, 5, '<style type="text/css">
+INSERT INTO game_level(id, attachments, incorrect_flag_limit, content, flag, solution, solution_penalized) VALUES (29, null, 5, '<style type="text/css">
   .prompt {color: #FF5555; font-weight: bold;}
   .command {color:white;}
 </style>
@@ -230,7 +230,7 @@ INSERT INTO game_level(id, attachments, estimated_duration, incorrect_flag_limit
 <span class="prompt" style="color: white;">&gt; </span><span class="command">shell</span>
 <span class="command">whoami</span></pre>
 </ol>', 'www-data', 'www-data', true );
-INSERT INTO game_level(id, attachments, estimated_duration, incorrect_flag_limit, content, flag, solution, solution_penalized) VALUES (31, null, 15, 5, '<style type="text/css">
+INSERT INTO game_level(id, attachments, incorrect_flag_limit, content, flag, solution, solution_penalized) VALUES (31, null, 5, '<style type="text/css">
   .prompt {color: #FF5555; font-weight: bold;}
   .command {color:white;}
 </style>

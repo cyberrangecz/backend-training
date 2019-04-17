@@ -1,8 +1,11 @@
 package cz.muni.ics.kypo.training.api.dto.export;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import cz.muni.ics.kypo.training.api.enums.TDState;
+import cz.muni.ics.kypo.training.converters.LocalDateTimeUTCSerializer;
 import io.swagger.annotations.ApiModelProperty;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -20,6 +23,7 @@ public class ExportTrainingDefinitionAndLevelsDTO {
     private Long startingLevel;
     private boolean showStepperBar;
     private List<AbstractLevelExportDTO> levels = new ArrayList<>();
+    private int estimatedDuration;
 
     public ExportTrainingDefinitionAndLevelsDTO() {
     }
@@ -95,17 +99,18 @@ public class ExportTrainingDefinitionAndLevelsDTO {
         this.levels = levels;
     }
 
-    @Override
-    public String toString() {
-        return "ExportTrainingDefinitionAndLevelsDTO{" +
-                "title='" + title + '\'' +
-                ", description='" + description + '\'' +
-                ", prerequisities=" + Arrays.toString(prerequisities) +
-                ", outcomes=" + Arrays.toString(outcomes) +
-                ", state=" + state +
-                ", startingLevel=" + startingLevel +
-                ", showStepperBar=" + showStepperBar +
-                ", levels=" + levels +
-                '}';
+    public int getEstimatedDuration() {
+        return estimatedDuration;
+    }
+
+    public void setEstimatedDuration(int estimatedDuration) {
+        this.estimatedDuration = estimatedDuration;
+    }
+
+    @Override public String toString() {
+        return "ExportTrainingDefinitionAndLevelsDTO{" + "title='" + title + '\'' + ", description='" + description + '\''
+            + ", prerequisities=" + Arrays.toString(prerequisities) + ", outcomes=" + Arrays.toString(outcomes) + ", state=" + state
+            + ", startingLevel=" + startingLevel + ", showStepperBar=" + showStepperBar + ", levels=" + levels + ", estimatedDuration="
+            + estimatedDuration + '}';
     }
 }

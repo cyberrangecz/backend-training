@@ -19,6 +19,7 @@ public class AbstractLevelExportDTO {
     protected int maxScore;
     protected LevelType levelType;
     protected int order;
+    protected int estimatedDuration;
 
     public AbstractLevelExportDTO(){}
 
@@ -58,13 +59,17 @@ public class AbstractLevelExportDTO {
         this.order = order;
     }
 
-    @Override
-    public String toString() {
-        return "AbstractLevelExportDTO{" +
-                "title='" + title + '\'' +
-                ", maxScore=" + maxScore +
-                ", levelType=" + levelType +
-                ", order=" + order +
-                '}';
+    @ApiModelProperty(value = "Estimated time taken by the player to resolve the level.", example = "5")
+    public int getEstimatedDuration() {
+        return estimatedDuration;
+    }
+
+    public void setEstimatedDuration(int estimatedDuration) {
+        this.estimatedDuration = estimatedDuration;
+    }
+
+    @Override public String toString() {
+        return "AbstractLevelExportDTO{" + "title='" + title + '\'' + ", maxScore=" + maxScore + ", levelType=" + levelType + ", order="
+            + order + ", estimatedDuration=" + estimatedDuration + '}';
     }
 }
