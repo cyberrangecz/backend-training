@@ -71,8 +71,6 @@ public class TrainingDefinitionServiceTest {
     private UserRefRepository userRefRepository;
     @Mock
     private RestTemplate restTemplate;
-    @Mock
-    private HttpServletRequest servletRequest;
 
     private TrainingDefinition trainingDefinition1, trainingDefinition2, unreleasedDefinition, releasedDefinition, definitionWithoutLevels;
     private AssessmentLevel level1, level2, level3, newAssessmentLevel;
@@ -94,7 +92,7 @@ public class TrainingDefinitionServiceTest {
         MockitoAnnotations.initMocks(this);
         trainingDefinitionService = new TrainingDefinitionServiceImpl(trainingDefinitionRepository, abstractLevelRepository,
                 infoLevelRepository, gameLevelRepository, assessmentLevelRepository, trainingInstanceRepository, userRefRepository,
-                viewGroupRepository, restTemplate, servletRequest);
+                restTemplate);
 
         parser = new JSONParser();
         try {

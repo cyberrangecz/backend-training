@@ -46,6 +46,8 @@ import static org.mockito.BDDMockito.*;
 
 import org.springframework.http.*;
 
+import javax.servlet.http.HttpServletRequest;
+
 @RunWith(SpringRunner.class)
 public class TrainingRunServiceTest {
 
