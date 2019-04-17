@@ -16,6 +16,8 @@ import org.springframework.test.context.junit4.SpringRunner;
 import cz.muni.ics.kypo.training.persistence.config.PersistenceConfigTest;
 import cz.muni.ics.kypo.training.persistence.model.TrainingDefinition;
 import cz.muni.ics.kypo.training.persistence.model.enums.TDState;
+
+import java.time.LocalDateTime;
 import java.util.List;
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertTrue;
@@ -46,16 +48,19 @@ public class TrainingDefinitionRepositoryTest {
         trainingDefinition1.setSandboxDefinitionRefId(1L);
         trainingDefinition1.setTitle("test");
         trainingDefinition1.setState(TDState.UNRELEASED);
+        trainingDefinition1.setLastEdited(LocalDateTime.now());
 
         trainingDefinition2 = new TrainingDefinition();
         trainingDefinition2.setSandboxDefinitionRefId(1L);
         trainingDefinition2.setTitle("test");
         trainingDefinition2.setState(TDState.UNRELEASED);
+        trainingDefinition2.setLastEdited(LocalDateTime.now());
 
         trainingDefinition3 = new TrainingDefinition();
         trainingDefinition3.setSandboxDefinitionRefId(2L);
         trainingDefinition3.setTitle("test");
         trainingDefinition3.setState(TDState.UNRELEASED);
+        trainingDefinition3.setLastEdited(LocalDateTime.now());
 
         viewGroup1 = new BetaTestingGroup();
         viewGroup2 = new BetaTestingGroup();

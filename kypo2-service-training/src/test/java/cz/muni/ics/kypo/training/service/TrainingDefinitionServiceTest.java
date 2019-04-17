@@ -299,9 +299,8 @@ public class TrainingDefinitionServiceTest {
         assertEquals(level2.getNextLevel(), level1.getId());
         assertEquals(level1.getNextLevel(), level3.getId());
 
-        then(trainingDefinitionRepository).should(times(2)).findById(unreleasedDefinition.getId());
+        then(trainingDefinitionRepository).should().findById(unreleasedDefinition.getId());
         then(abstractLevelRepository).should(times(3)).findById(any(Long.class));
-        then(trainingDefinitionRepository).should().save(unreleasedDefinition);
         then(assessmentLevelRepository).should(times(2)).save(any(AssessmentLevel.class));
     }
 
@@ -348,9 +347,8 @@ public class TrainingDefinitionServiceTest {
         assertEquals(level2.getNextLevel(), level1.getId());
         assertEquals(level1.getNextLevel(), level3.getId());
 
-        then(trainingDefinitionRepository).should(times(2)).findById(unreleasedDefinition.getId());
+        then(trainingDefinitionRepository).should().findById(unreleasedDefinition.getId());
         then(abstractLevelRepository).should(times(2)).findById(any(Long.class));
-        then(trainingDefinitionRepository).should().save(unreleasedDefinition);
         then(assessmentLevelRepository).should(times(2)).save(any(AssessmentLevel.class));
     }
 

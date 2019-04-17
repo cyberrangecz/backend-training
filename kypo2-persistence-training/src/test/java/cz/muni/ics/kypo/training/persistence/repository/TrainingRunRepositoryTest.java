@@ -69,6 +69,7 @@ public class TrainingRunRepositoryTest {
         trainingDefinition.setTitle("training definition title");
         trainingDefinition.setSandboxDefinitionRefId(1L);
         trainingDefinition.setBetaTestingGroup(betaTestingGroup);
+        trainingDefinition.setLastEdited(LocalDateTime.now());
 
         infoLevel = new InfoLevel();
         infoLevel.setTitle("infoLevel");

@@ -14,6 +14,7 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 import static org.junit.Assert.*;
@@ -45,6 +46,7 @@ public class BetaTestingGroupRepositoryTest {
         trainingDefinition1.setTitle("Best training definition");
         trainingDefinition1.setState(TDState.UNRELEASED);
         trainingDefinition1.setBetaTestingGroup(viewGroup1);
+        trainingDefinition1.setLastEdited(LocalDateTime.now());
 
         viewGroup2 = new BetaTestingGroup();
 
@@ -53,6 +55,7 @@ public class BetaTestingGroupRepositoryTest {
         trainingDefinition2.setTitle("Very good training definition");
         trainingDefinition2.setState(TDState.UNRELEASED);
         trainingDefinition2.setBetaTestingGroup(viewGroup2);
+        trainingDefinition2.setLastEdited(LocalDateTime.now());
 
         entityManager.persist(trainingDefinition1);
         entityManager.persist(trainingDefinition2);

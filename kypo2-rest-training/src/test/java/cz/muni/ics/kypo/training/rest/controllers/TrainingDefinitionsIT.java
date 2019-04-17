@@ -62,6 +62,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.time.LocalDateTime;
 import java.util.*;
 
 import static org.junit.Assert.*;
@@ -214,6 +215,7 @@ public class TrainingDefinitionsIT {
 		releasedTrainingDefinition.setSandboxDefinitionRefId(2L);
 		releasedTrainingDefinition.setBetaTestingGroup(betaTestingGroup);
 		releasedTrainingDefinition.setAuthors(new HashSet<>(Arrays.asList(uR)));
+		releasedTrainingDefinition.setLastEdited(LocalDateTime.now());
 
 		invalidDefinitionDTO = new TrainingDefinitionDTO();
 
@@ -225,6 +227,7 @@ public class TrainingDefinitionsIT {
 		unreleasedDefinition.setSandboxDefinitionRefId(1L);
 		unreleasedDefinition.setBetaTestingGroup(betaTestingGroup2);
 		unreleasedDefinition.setAuthors(new HashSet<>(Arrays.asList(uR)));
+		unreleasedDefinition.setLastEdited(LocalDateTime.now());
 
 		trainingDefinitionUpdateDTO = new TrainingDefinitionUpdateDTO();
 		trainingDefinitionUpdateDTO.setTitle("newTitle");

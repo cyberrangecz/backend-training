@@ -1,12 +1,15 @@
 package cz.muni.ics.kypo.training.api.dto.trainingdefinition;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import cz.muni.ics.kypo.training.api.dto.AbstractLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
 import cz.muni.ics.kypo.training.api.dto.betatestinggroup.BetaTestingGroupDTO;
 import cz.muni.ics.kypo.training.api.enums.TDState;
+import cz.muni.ics.kypo.training.converters.LocalDateTimeUTCSerializer;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
+import java.time.LocalDateTime;
 import java.util.*;
 
 /**
@@ -28,6 +31,8 @@ public class TrainingDefinitionDTO {
     private List<AbstractLevelDTO> levels = new ArrayList<>();
     private boolean showStepperBar;
     private boolean canBeArchived;
+    @JsonSerialize(using = LocalDateTimeUTCSerializer.class)
+    private LocalDateTime lastEdited;
 
     @ApiModelProperty(value = "Main identifier of training definition.", example = "1")
     public Long getId() {
@@ -145,22 +150,20 @@ public class TrainingDefinitionDTO {
         this.canBeArchived = canBeArchived;
     }
 
-    @Override
-    public String toString() {
-        return "TrainingDefinitionDTO{" +
-                "id=" + id +
-                ", title='" + title + '\'' +
-                ", description='" + description + '\'' +
-                ", prerequisities=" + Arrays.toString(prerequisities) +
-                ", outcomes=" + Arrays.toString(outcomes) +
-                ", state=" + state +
-                ", authors=" + authors +
-                ", betaTestingGroup=" + betaTestingGroup +
-                ", sandboxDefinitionRefId=" + sandboxDefinitionRefId +
-                ", startingLevel=" + startingLevel +
-                ", levels=" + levels +
-                ", showStepperBar=" + showStepperBar +
-                ", canBeArchived=" + canBeArchived +
-                '}';
+    @ApiModelProperty(value = "Time of last edit done to definition.", example = "2017-10-19 10:23:54+02")
+    public LocalDateTime getLastEdited() {
+        return lastEdited;
+    }
+
+    public void setLastEdited(LocalDateTime lastEdited) {
+        this.lastEdited = lastEdited;
+    }
+
+    @Override public String toString() {
+        return "TrainingDefinitionDTO{" + "id=" + id + ", title='" + title + '\'' + ", description='" + description + '\''
+            + ", prerequisities=" + Arrays.toString(prerequisities) + ", outcomes=" + Arrays.toString(outcomes) + ", state=" + state
+            + ", authors=" + authors + ", betaTestingGroup=" + betaTestingGroup + ", sandboxDefinitionRefId=" + sandboxDefinitionRefId
+            + ", startingLevel=" + startingLevel + ", levels=" + levels + ", showStepperBar=" + showStepperBar + ", canBeArchived="
+            + canBeArchived + ", lastEdited=" + lastEdited + '}';
     }
 }

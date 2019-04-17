@@ -5,6 +5,7 @@ import javax.persistence.*;
 import cz.muni.ics.kypo.training.persistence.model.enums.TDState;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
 import java.util.*;
 
 /**
@@ -44,6 +45,8 @@ public class TrainingDefinition implements Serializable {
     private Long startingLevel;
     @Column(name = "show_stepper_bar", nullable = false)
     private boolean showStepperBar;
+    @Column(name = "last_edited", nullable = false)
+    private LocalDateTime lastEdited;
 
     public Long getId() {
         return id;
@@ -143,6 +146,14 @@ public class TrainingDefinition implements Serializable {
         this.showStepperBar = showStepperBar;
     }
 
+    public LocalDateTime getLastEdited() {
+        return lastEdited;
+    }
+
+    public void setLastEdited(LocalDateTime lastEdited) {
+        this.lastEdited = lastEdited;
+    }
+
     @Override
     public int hashCode() {
         return Objects.hash(description, outcomes, prerequisities, state, title);
@@ -164,19 +175,10 @@ public class TrainingDefinition implements Serializable {
                 && Objects.equals(title, other.getTitle());
     }
 
-    @Override
-    public String toString() {
-        return "TrainingDefinition{" +
-                "id=" + id +
-                ", title='" + title + '\'' +
-                ", description='" + description + '\'' +
-                ", prerequisities=" + Arrays.toString(prerequisities) +
-                ", outcomes=" + Arrays.toString(outcomes) +
-                ", state=" + state +
-                ", authors=" + authors +
-                ", sandboxDefinitionRefId=" + sandboxDefinitionRefId +
-                ", startingLevel=" + startingLevel +
-                ", showStepperBar=" + showStepperBar +
-                '}';
+    @Override public String toString() {
+        return "TrainingDefinition{" + "id=" + id + ", title='" + title + '\'' + ", description='" + description + '\''
+            + ", prerequisities=" + Arrays.toString(prerequisities) + ", outcomes=" + Arrays.toString(outcomes) + ", state=" + state
+            + ", authors=" + authors + ", betaTestingGroup=" + betaTestingGroup + ", sandboxDefinitionRefId=" + sandboxDefinitionRefId
+            + ", startingLevel=" + startingLevel + ", showStepperBar=" + showStepperBar + ", lastEdited=" + lastEdited + '}';
     }
 }

@@ -129,6 +129,7 @@ public class TrainingInstancesIT {
 		definition.setShowStepperBar(true);
 		definition.setBetaTestingGroup(betaTestingGroup);
 		definition.setSandboxDefinitionRefId(1L);
+		definition.setLastEdited(LocalDateTime.now());
 		TrainingDefinition tD = trainingDefinitionRepository.save(definition);
 
 		futureTrainingInstance = new TrainingInstance();

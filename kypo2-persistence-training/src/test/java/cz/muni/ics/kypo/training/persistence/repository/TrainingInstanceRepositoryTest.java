@@ -53,6 +53,7 @@ public class TrainingInstanceRepositoryTest {
         trainingDefinition.setTitle("test");
         trainingDefinition.setState(TDState.RELEASED);
         trainingDefinition.setBetaTestingGroup(betaTestingGroup);
+        trainingDefinition.setLastEdited(LocalDateTime.now());
 
         trainingInstance1 = new TrainingInstance();
         trainingInstance2 = new TrainingInstance();

@@ -41,6 +41,7 @@ import org.springframework.util.Assert;
 import org.springframework.web.client.RestTemplate;
 
 import javax.servlet.http.HttpServletRequest;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -166,6 +167,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
             newUser.setUserRefFullName(getFullNameOfLoggedInUser());
             trainingDefinition.addAuthor(newUser);
         }
+        trainingDefinition.setLastEdited(LocalDateTime.now());
 
         LOG.info("Training definition with id: {} created.", trainingDefinition.getId());
         return trainingDefinitionRepository.save(trainingDefinition);
@@ -203,6 +205,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
             newUser.setUserRefFullName(getFullNameOfLoggedInUser());
             trainingDefinitionToUpdate.addAuthor(newUser);
         }
+        trainingDefinitionToUpdate.setLastEdited(LocalDateTime.now());
         trainingDefinitionToUpdate.setStartingLevel(trainingDefinition.getStartingLevel());
         trainingDefinitionRepository.save(trainingDefinitionToUpdate);
         LOG.info("Training definition with id: {} updated.", trainingDefinitionToUpdate.getId());
@@ -237,6 +240,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
             newUser.setUserRefFullName(getFullNameOfLoggedInUser());
             clonedTrainingDefinition.addAuthor(newUser);
         }
+        clonedTrainingDefinition.setLastEdited(LocalDateTime.now());
         clonedTrainingDefinition = trainingDefinitionRepository.save(clonedTrainingDefinition);
         LOG.info("Training definition with id: {} cloned.", trainingDefinition.getId());
         return clonedTrainingDefinition;
@@ -279,8 +283,8 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
         }
         if (oneBeforeId.equals(trainingDefinition.getStartingLevel())) {
             trainingDefinition.setStartingLevel(swapLevel.getId());
-            update(trainingDefinition);
         }
+        trainingDefinition.setLastEdited(LocalDateTime.now());
     }
 
     @Override
@@ -316,8 +320,8 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
         updateLevel(swapLevel);
         if (trainingDefinition.getStartingLevel().equals(levelId)) {
             trainingDefinition.setStartingLevel(nextLevel.getId());
-            update(trainingDefinition);
         }
+        trainingDefinition.setLastEdited(LocalDateTime.now());
     }
 
     @Override
@@ -370,6 +374,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
             oneBefore.setNextLevel(level.getNextLevel());
             updateLevel(oneBefore);
         }
+        trainingDefinition.setLastEdited(LocalDateTime.now());
         deleteLevel(level);
     }
 
@@ -388,6 +393,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
                 new ServiceLayerException("Level with id: " + gameLevelToUpdate.getId() + ", not found.",
                         ErrorCode.RESOURCE_NOT_FOUND));
         gameLevelToUpdate.setNextLevel(gameLevel.getNextLevel());
+        trainingDefinition.setLastEdited(LocalDateTime.now());
         gameLevelRepository.save(gameLevelToUpdate);
     }
 
@@ -406,6 +412,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
                 new ServiceLayerException("Level with id: " + infoLevelToUpdate.getId() + ", not found.",
                         ErrorCode.RESOURCE_NOT_FOUND));
         infoLevelToUpdate.setNextLevel(infoLevel.getNextLevel());
+        trainingDefinition.setLastEdited(LocalDateTime.now());
         infoLevelRepository.save(infoLevelToUpdate);
     }
 
@@ -427,6 +434,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
         if (!assessmentLevelToUpdate.getQuestions().equals(assessmentLevel.getQuestions())) {
             AssessmentUtil.validQuestions(assessmentLevelToUpdate.getQuestions());
         }
+        trainingDefinition.setLastEdited(LocalDateTime.now());
         assessmentLevelRepository.save(assessmentLevelToUpdate);
     }
 
@@ -459,6 +467,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
             lastLevel.setNextLevel(gameLevel.getId());
             updateLevel(lastLevel);
         }
+        trainingDefinition.setLastEdited(LocalDateTime.now());
         LOG.info("Game level with id: {} created", gameLevel.getId());
         return gameLevel;
     }
@@ -486,6 +495,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
             lastLevel.setNextLevel(infoLevel.getId());
             updateLevel(lastLevel);
         }
+        trainingDefinition.setLastEdited(LocalDateTime.now());
         LOG.info("Info level with id: {} created.", infoLevel.getId());
         return infoLevel;
     }
@@ -516,6 +526,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
             lastLevel.setNextLevel(assessmentLevel.getId());
             updateLevel(lastLevel);
         }
+        trainingDefinition.setLastEdited(LocalDateTime.now());
         LOG.info("Assessment level with id: {} created.", assessmentLevel.getId());
         return assessmentLevel;
     }
@@ -615,6 +626,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
             default:
                 throw new ServiceLayerException("Cannot switch from" + trainingDefinition.getState() + " to "+ state, ErrorCode.RESOURCE_CONFLICT);
         }
+        trainingDefinition.setLastEdited(LocalDateTime.now());
     }
 
     private AbstractLevel findLastLevel(Long levelId) {
