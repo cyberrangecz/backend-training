@@ -24,6 +24,8 @@ public abstract class AbstractLevel implements Serializable {
     private Long nextLevel;
     @OneToOne(fetch = FetchType.LAZY, optional = true, cascade = CascadeType.ALL)
     private SnapshotHook snapshotHook;
+    @Column(name = "estimated_duration")
+    private int estimatedDuration;
 
     public AbstractLevel() {
     }
@@ -66,6 +68,14 @@ public abstract class AbstractLevel implements Serializable {
 
     public void setNextLevel(Long nextLevel) {
         this.nextLevel = nextLevel;
+    }
+
+    public int getEstimatedDuration() {
+        return estimatedDuration;
+    }
+
+    public void setEstimatedDuration(int estimatedDuration) {
+        this.estimatedDuration = estimatedDuration;
     }
 
     @Override

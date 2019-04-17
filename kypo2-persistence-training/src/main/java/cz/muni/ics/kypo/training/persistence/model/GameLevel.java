@@ -27,8 +27,6 @@ public class GameLevel extends AbstractLevel implements Serializable {
     private String solution;
     @Column(name = "solution_penalized", nullable = false)
     private boolean solutionPenalized;
-    @Column(name = "estimated_duration")
-    private int estimatedDuration;
     @Column(name = "attachments")
     private String[] attachments;
     @OneToMany(
@@ -82,14 +80,6 @@ public class GameLevel extends AbstractLevel implements Serializable {
         this.solutionPenalized = solutionPenalized;
     }
 
-    public int getEstimatedDuration() {
-        return estimatedDuration;
-    }
-
-    public void setEstimatedDuration(int estimatedDuration) {
-        this.estimatedDuration = estimatedDuration;
-    }
-
     public String[] getAttachments() {
         return attachments;
     }
@@ -133,18 +123,9 @@ public class GameLevel extends AbstractLevel implements Serializable {
         return Objects.hash(super.hashCode(), getContent(), getSolution());
     }
 
-
-    @Override
-    public String toString() {
-        return "GameLevel{" +
-                "flag='" + flag + '\'' +
-                ", content='" + content + '\'' +
-                ", solution='" + solution + '\'' +
-                ", solutionPenalized=" + solutionPenalized +
-                ", estimatedDuration=" + estimatedDuration +
-                ", attachments=" + Arrays.toString(attachments) +
-                ", hints=" + hints +
-                ", incorrectFlagLimit=" + incorrectFlagLimit +
-                '}';
+    @Override public String toString() {
+        return "GameLevel{" + "flag='" + flag + '\'' + ", content='" + content + '\'' + ", solution='" + solution + '\''
+            + ", solutionPenalized=" + solutionPenalized + ", attachments=" + Arrays.toString(attachments) + ", hints=" + hints
+            + ", incorrectFlagLimit=" + incorrectFlagLimit + '}';
     }
 }

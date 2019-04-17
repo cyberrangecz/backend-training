@@ -19,7 +19,6 @@ public class GameLevelDTO extends AbstractLevelDTO {
     private String content;
     private String solution;
     private boolean solutionPenalized;
-    private int estimatedDuration;
     private String[] attachments;
     private Set<HintDTO> hints = new HashSet<>();
     private int incorrectFlagLimit;
@@ -60,15 +59,6 @@ public class GameLevelDTO extends AbstractLevelDTO {
         this.solutionPenalized = solutionPenalized;
     }
 
-    @ApiModelProperty(value = "Estimated time taken by the player to resolve the level.", example = "25")
-    public int getEstimatedDuration() {
-        return estimatedDuration;
-    }
-
-    public void setEstimatedDuration(int estimatedDuration) {
-        this.estimatedDuration = estimatedDuration;
-    }
-
     @ApiModelProperty(value = "Downloadable files for level (pictures, source code...)", example = "")
     public String[] getAttachments() {
         return attachments;
@@ -99,7 +89,7 @@ public class GameLevelDTO extends AbstractLevelDTO {
     @Override
     public String toString() {
         return "GameLevelDTO{" + "flag='" + flag + '\'' + ", content='" + content + '\'' + ", solution='" + solution + '\''
-                + ", solutionPenalized=" + solutionPenalized + ", estimatedDuration=" + estimatedDuration + ", attachments="
+                + ", solutionPenalized=" + solutionPenalized + ", attachments="
                 + Arrays.toString(attachments) + ", hints=" + hints + ", incorrectFlagLimit=" + incorrectFlagLimit + '}';
     }
 }

@@ -4,6 +4,7 @@ CREATE TABLE abstract_level (
     next_level int8,
     title varchar(255) NOT NULL,
     snapshot_hook_id int8,
+    estimated_duration int4,
     PRIMARY KEY (id)
 );
 
@@ -24,7 +25,6 @@ CREATE TABLE assessment_level (
 CREATE TABLE game_level (
    attachments bytea,
     content text NOT NULL,
-    estimated_duration int4,
     flag varchar(255) NOT NULL,
     incorrect_flag_limit int4,
     solution varchar(255) NOT NULL,

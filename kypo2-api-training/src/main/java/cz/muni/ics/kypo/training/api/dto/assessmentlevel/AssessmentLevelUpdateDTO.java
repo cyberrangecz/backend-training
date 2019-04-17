@@ -27,6 +27,7 @@ public class AssessmentLevelUpdateDTO {
     private String instructions;
     @NotNull(message = "{assessmentlevelupdate.type.NotNull.message}")
     private AssessmentType type;
+    private int estimatedDuration;
 
     @ApiModelProperty(value = "Main identifier of level.", required = true, example = "8")
     public Long getId() {
@@ -82,23 +83,17 @@ public class AssessmentLevelUpdateDTO {
         this.type = type;
     }
 
-    @Override
-    public String toString() {
-        StringBuilder builder = new StringBuilder();
-        builder.append("AssessmentLevelUpdateDTO [id=");
-        builder.append(id);
-        builder.append(", title=");
-        builder.append(title);
-        builder.append(", maxScore=");
-        builder.append(maxScore);
-        builder.append(", questions=");
-        builder.append(questions);
-        builder.append(", instructions=");
-        builder.append(instructions);
-        builder.append(", type=");
-        builder.append(type);
-        builder.append("]");
-        return builder.toString();
+    public int getEstimatedDuration() {
+        return estimatedDuration;
     }
 
+    public void setEstimatedDuration(int estimatedDuration) {
+        this.estimatedDuration = estimatedDuration;
+    }
+
+    @Override public String toString() {
+        return "AssessmentLevelUpdateDTO{" + "id=" + id + ", title='" + title + '\'' + ", maxScore=" + maxScore + ", questions='"
+            + questions + '\'' + ", instructions='" + instructions + '\'' + ", type=" + type + ", estimatedDuration=" + estimatedDuration
+            + '}';
+    }
 }
