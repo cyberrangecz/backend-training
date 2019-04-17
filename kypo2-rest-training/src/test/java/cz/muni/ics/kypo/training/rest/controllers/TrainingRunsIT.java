@@ -175,6 +175,7 @@ public class TrainingRunsIT {
 		definition.setBetaTestingGroup(betaTestingGroup);
 		definition.setSandboxDefinitionRefId(1L);
 		definition.setStartingLevel(1L);
+		definition.setLastEdited(LocalDateTime.now());
 		TrainingDefinition tD = trainingDefinitionRepository.save(definition);
 
 		TrainingInstance trainingInstance = new TrainingInstance();

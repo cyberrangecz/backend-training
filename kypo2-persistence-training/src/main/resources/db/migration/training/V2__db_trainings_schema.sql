@@ -83,6 +83,7 @@ CREATE TABLE training_definition (
     state varchar(128) NOT NULL,
     title varchar(255) NOT NULL,
      beta_testing_group_id int8 NULL,
+     last_edited timestamp NOT NULL,
     PRIMARY KEY (id)
 );
 
