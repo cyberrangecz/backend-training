@@ -12,6 +12,7 @@ import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelUpdateDT
 import cz.muni.ics.kypo.training.api.dto.gamelevel.GameLevelUpdateDTO;
 import cz.muni.ics.kypo.training.api.dto.infolevel.InfoLevelUpdateDTO;
 import cz.muni.ics.kypo.training.api.dto.snapshothook.SnapshotHookDTO;
+import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionByIdDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionCreateDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionUpdateDTO;
@@ -82,7 +83,7 @@ public class TrainingDefinitionsRestControllerTest {
 
     private TrainingDefinition trainingDefinition1, trainingDefinition2;
 
-    private TrainingDefinitionDTO trainingDefinition1DTO, trainingDefinition2DTO;
+    private TrainingDefinitionByIdDTO trainingDefinition1DTO, trainingDefinition2DTO;
     private TrainingDefinitionCreateDTO trainingDefinitionCreateDTO;
     private TrainingDefinitionUpdateDTO trainingDefinitionUpdateDTO;
 
@@ -196,14 +197,14 @@ public class TrainingDefinitionsRestControllerTest {
         trainingDefinition2.setAuthors(authorRefSet);
         trainingDefinition2.setSandboxDefinitionRefId(1L);
 
-        trainingDefinition1DTO = new TrainingDefinitionDTO();
+        trainingDefinition1DTO = new TrainingDefinitionByIdDTO();
         trainingDefinition1DTO.setId(1L);
         trainingDefinition1DTO.setState(cz.muni.ics.kypo.training.api.enums.TDState.UNRELEASED);
         trainingDefinition1DTO.setTitle("test");
         trainingDefinition1DTO.setAuthors(authorRefSetDTO);
         trainingDefinition1DTO.setSandboxDefinitionRefId(1L);
 
-        trainingDefinition2DTO = new TrainingDefinitionDTO();
+        trainingDefinition2DTO = new TrainingDefinitionByIdDTO();
         trainingDefinition2DTO.setId(2L);
         trainingDefinition2DTO.setState(cz.muni.ics.kypo.training.api.enums.TDState.PRIVATED);
         trainingDefinition2DTO.setTitle("test");

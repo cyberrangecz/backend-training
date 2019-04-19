@@ -1,6 +1,7 @@
 package cz.muni.ics.kypo.training.mapping.mapstruct;
 
 import cz.muni.ics.kypo.training.api.PageResultResource;
+import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionByIdDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionCreateDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionUpdateDTO;
@@ -20,7 +21,9 @@ import java.util.*;
         nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS)
 public interface TrainingDefinitionMapper extends ParentMapper {
 
-    TrainingDefinition mapToEntity(TrainingDefinitionDTO dto);
+    TrainingDefinition mapToEntity(TrainingDefinitionByIdDTO dto);
+
+    TrainingDefinitionByIdDTO mapToDTOById(TrainingDefinition entity);
 
     TrainingDefinitionDTO mapToDTO(TrainingDefinition entity);
 
@@ -28,28 +31,28 @@ public interface TrainingDefinitionMapper extends ParentMapper {
 
     TrainingDefinition mapUpdateToEntity(TrainingDefinitionUpdateDTO dto);
 
-    List<TrainingDefinition> mapToList(Collection<TrainingDefinitionDTO> dtos);
+    List<TrainingDefinition> mapToList(Collection<TrainingDefinitionByIdDTO> dtos);
 
-    List<TrainingDefinitionDTO> mapToListDTO(Collection<TrainingDefinition> entities);
+    List<TrainingDefinitionByIdDTO> mapToListDTO(Collection<TrainingDefinition> entities);
 
-    Set<TrainingDefinition> mapToSet(Collection<TrainingDefinitionDTO> dtos);
+    Set<TrainingDefinition> mapToSet(Collection<TrainingDefinitionByIdDTO> dtos);
 
-    Set<TrainingDefinitionDTO> mapToSetDTO(Collection<TrainingDefinition> entities);
+    Set<TrainingDefinitionByIdDTO> mapToSetDTO(Collection<TrainingDefinition> entities);
 
-    default Optional<TrainingDefinition> mapToOptional(TrainingDefinitionDTO dto) {
+    default Optional<TrainingDefinition> mapToOptional(TrainingDefinitionByIdDTO dto) {
         return Optional.ofNullable(mapToEntity(dto));
     }
 
-    default Optional<TrainingDefinitionDTO> mapToOptional(TrainingDefinition entity) {
-        return Optional.ofNullable(mapToDTO(entity));
+    default Optional<TrainingDefinitionByIdDTO> mapToOptional(TrainingDefinition entity) {
+        return Optional.ofNullable(mapToDTOById(entity));
     }
 
-    default Page<TrainingDefinitionDTO> mapToPageDTO(Page<TrainingDefinition> objects) {
-        List<TrainingDefinitionDTO> mapped = mapToListDTO(objects.getContent());
+    default Page<TrainingDefinitionByIdDTO> mapToPageDTO(Page<TrainingDefinition> objects) {
+        List<TrainingDefinitionByIdDTO> mapped = mapToListDTO(objects.getContent());
         return new PageImpl<>(mapped, objects.getPageable(), mapped.size());
     }
 
-    default Page<TrainingDefinition> mapToPage(Page<TrainingDefinitionDTO> objects) {
+    default Page<TrainingDefinition> mapToPage(Page<TrainingDefinitionByIdDTO> objects) {
         List<TrainingDefinition> mapped = mapToList(objects.getContent());
         return new PageImpl<>(mapped, objects.getPageable(), mapped.size());
     }
@@ -59,4 +62,5 @@ public interface TrainingDefinitionMapper extends ParentMapper {
         objects.forEach(object -> mapped.add(mapToDTO(object)));
         return new PageResultResource<>(mapped, createPagination(objects));
     }
+
 }

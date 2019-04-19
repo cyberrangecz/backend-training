@@ -15,7 +15,7 @@ import cz.muni.ics.kypo.training.api.dto.gamelevel.GameLevelUpdateDTO;
 import cz.muni.ics.kypo.training.api.dto.infolevel.InfoLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.infolevel.InfoLevelUpdateDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionCreateDTO;
-import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionDTO;
+import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionByIdDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionUpdateDTO;
 import cz.muni.ics.kypo.training.api.dto.betatestinggroup.BetaTestingGroupCreateDTO;
 import cz.muni.ics.kypo.training.api.enums.AssessmentType;
@@ -107,7 +107,7 @@ public class TrainingDefinitionsIT {
 
 	private TrainingDefinitionUpdateDTO trainingDefinitionUpdateDTO, invalidDefinitionUpdateDTO, updateForNonexistingDefinition;
 	private TrainingDefinitionCreateDTO trainingDefinitionCreateDTO;
-	private TrainingDefinitionDTO invalidDefinitionDTO;
+	private TrainingDefinitionByIdDTO invalidDefinitionDTO;
 	private TrainingDefinition releasedTrainingDefinition, unreleasedDefinition;
 	private GameLevel gameLevel1, gameLevel2;
 	private GameLevelUpdateDTO gameLevelUpdateDTO, invalidGameLevelUpdateDTO;
@@ -217,7 +217,7 @@ public class TrainingDefinitionsIT {
 		releasedTrainingDefinition.setAuthors(new HashSet<>(Arrays.asList(uR)));
 		releasedTrainingDefinition.setLastEdited(LocalDateTime.now());
 
-		invalidDefinitionDTO = new TrainingDefinitionDTO();
+		invalidDefinitionDTO = new TrainingDefinitionByIdDTO();
 
 		unreleasedDefinition = new TrainingDefinition();
 		unreleasedDefinition.setTitle("testTitle");
@@ -267,7 +267,7 @@ public class TrainingDefinitionsIT {
 				.andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
 				.andReturn().getResponse();
 
-		TrainingDefinitionDTO definitionDTO = beanMapping.mapTo(expected, TrainingDefinitionDTO.class);
+		TrainingDefinitionByIdDTO definitionDTO = beanMapping.mapTo(expected, TrainingDefinitionByIdDTO.class);
 		GameLevelDTO gLDTO = beanMapping.mapTo(gameLevel1, GameLevelDTO.class);
 		gLDTO.setLevelType(LevelType.GAME_LEVEL);
 		definitionDTO.setLevels(new ArrayList<>(Arrays.asList(gLDTO)));
@@ -299,11 +299,11 @@ public class TrainingDefinitionsIT {
 		List<TrainingDefinition> expected = new ArrayList<>();
 		expected.add(tD1);
 		expected.add(tD2);
-		System.out.println(beanMapping.mapTo(tD1, TrainingDefinitionDTO.class));
+		System.out.println(beanMapping.mapTo(tD1, TrainingDefinitionByIdDTO.class));
 
 		Page p = new PageImpl<TrainingDefinition>(expected);
 
-		PageResultResource<TrainingDefinitionDTO> trainingDefinitionDTOPageResultResource = beanMapping.mapToPageResultDTO(p, TrainingDefinitionDTO.class);
+		PageResultResource<TrainingDefinitionByIdDTO> trainingDefinitionDTOPageResultResource = beanMapping.mapToPageResultDTO(p, TrainingDefinitionByIdDTO.class);
 		PageResultResource.Pagination pagination = trainingDefinitionDTOPageResultResource.getPagination();
 		pagination.setSize(20);
 		trainingDefinitionDTOPageResultResource.setPagination(pagination);
@@ -326,7 +326,7 @@ public class TrainingDefinitionsIT {
 
 		Optional<TrainingDefinition> newDefinition = trainingDefinitionRepository.findById(1L);
 		assertTrue(newDefinition.isPresent());
-		TrainingDefinitionDTO newDefinitionDTO = beanMapping.mapTo(newDefinition.get(), TrainingDefinitionDTO.class);
+		TrainingDefinitionByIdDTO newDefinitionDTO = beanMapping.mapTo(newDefinition.get(), TrainingDefinitionByIdDTO.class);
 		assertEquals(convertObjectToJsonBytes(convertObjectToJsonBytes(newDefinitionDTO)), result.getContentAsString());
 	}
 

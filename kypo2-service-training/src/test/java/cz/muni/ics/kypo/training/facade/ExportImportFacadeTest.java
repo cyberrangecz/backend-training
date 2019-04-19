@@ -1,14 +1,10 @@
 package cz.muni.ics.kypo.training.facade;
 
-import cz.muni.ics.kypo.training.api.dto.archive.TrainingInstanceArchiveDTO;
-import cz.muni.ics.kypo.training.api.dto.export.ExportTrainingDefinitionAndLevelsDTO;
-import cz.muni.ics.kypo.training.api.dto.export.FileToReturnDTO;
-import cz.muni.ics.kypo.training.api.dto.export.TrainingRunExportDTO;
 import cz.muni.ics.kypo.training.api.dto.imports.AssessmentLevelImportDTO;
 import cz.muni.ics.kypo.training.api.dto.imports.GameLevelImportDTO;
 import cz.muni.ics.kypo.training.api.dto.imports.ImportTrainingDefinitionDTO;
 import cz.muni.ics.kypo.training.api.dto.imports.InfoLevelImportDTO;
-import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionDTO;
+import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionByIdDTO;
 import cz.muni.ics.kypo.training.api.enums.AssessmentType;
 import cz.muni.ics.kypo.training.api.enums.LevelType;
 import cz.muni.ics.kypo.training.exceptions.FacadeLayerException;
@@ -181,12 +177,12 @@ public class ExportImportFacadeTest {
         given(exportImportService.createLevel(assessmentLevelMapper.mapImportToEntity(importAssessmentLevelDTO))).willReturn(1L);
         given(trainingDefinitionService.create(any(TrainingDefinition.class))).willReturn(trainingDefinitionImported);
 
-        TrainingDefinitionDTO trainingDefinitionDTO = exportImportFacade.dbImport(importTrainingDefinitionDTO);
-        System.out.println(trainingDefinitionDTO);
-        TrainingDefinitionDTO trainingDefinitionDTOImported = trainingDefinitionMapper.mapToDTO(trainingDefinitionImported);
-        System.out.println(trainingDefinitionDTOImported);
+        TrainingDefinitionByIdDTO trainingDefinitionByIdDTO = exportImportFacade.dbImport(importTrainingDefinitionDTO);
+        System.out.println(trainingDefinitionByIdDTO);
+        TrainingDefinitionByIdDTO trainingDefinitionByIdDTOImported = trainingDefinitionMapper.mapToDTOById(trainingDefinitionImported);
+        System.out.println(trainingDefinitionByIdDTOImported);
 
-        deepEqualsTrainingDefinitionDTO(trainingDefinitionDTOImported, trainingDefinitionDTO);
+        deepEqualsTrainingDefinitionDTO(trainingDefinitionByIdDTOImported, trainingDefinitionByIdDTO);
     }
 /*
     @Test
@@ -211,7 +207,7 @@ public class ExportImportFacadeTest {
         exportImportFacade.archiveTrainingInstance(1L);
     }
 
-    private void deepEqualsTrainingDefinitionDTO(TrainingDefinitionDTO t1, TrainingDefinitionDTO t2) {
+    private void deepEqualsTrainingDefinitionDTO(TrainingDefinitionByIdDTO t1, TrainingDefinitionByIdDTO t2) {
         assertEquals(t1.getId(), t2.getId());
         assertEquals(t1.getSandboxDefinitionRefId(), t2.getSandboxDefinitionRefId());
         assertEquals(t1.getAuthors(), t2.getAuthors());
