@@ -175,10 +175,11 @@ public class TrainingDefinition implements Serializable {
                 && Objects.equals(title, other.getTitle());
     }
 
-    @Override public String toString() {
+    @Override
+    public String toString() {
         return "TrainingDefinition{" + "id=" + id + ", title='" + title + '\'' + ", description='" + description + '\''
-            + ", prerequisities=" + Arrays.toString(prerequisities) + ", outcomes=" + Arrays.toString(outcomes) + ", state=" + state
-            + ", authors=" + authors + ", betaTestingGroup=" + betaTestingGroup + ", sandboxDefinitionRefId=" + sandboxDefinitionRefId
-            + ", startingLevel=" + startingLevel + ", showStepperBar=" + showStepperBar + ", lastEdited=" + lastEdited + '}';
+                + ", prerequisities=" + Arrays.toString(prerequisities) + ", outcomes=" + Arrays.toString(outcomes) + ", state=" + state
+                + ", authors=" + authors + ", betaTestingGroup=" + betaTestingGroup + ", sandboxDefinitionRefId=" + sandboxDefinitionRefId
+                + ", startingLevel=" + startingLevel + ", showStepperBar=" + showStepperBar + ", lastEdited=" + lastEdited + '}';
     }
 }

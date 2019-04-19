@@ -3,7 +3,7 @@ package cz.muni.ics.kypo.training.facade;
 import cz.muni.ics.kypo.training.api.PageResultResource;
 import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
 import cz.muni.ics.kypo.training.api.dto.infolevel.InfoLevelDTO;
-import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionDTO;
+import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionByIdDTO;
 import cz.muni.ics.kypo.training.mapping.mapstruct.*;
 import cz.muni.ics.kypo.training.persistence.model.InfoLevel;
 import cz.muni.ics.kypo.training.persistence.model.TrainingDefinition;
@@ -34,7 +34,7 @@ public class BeanMappingTest {
     private TrainingDefinitionMapperImpl trainingDefinitionMapper;
 
     private TrainingDefinition tD;
-    private TrainingDefinitionDTO tDDTO;
+    private TrainingDefinitionByIdDTO tDDTO;
     private UserRef aR;
     private UserRefDTO aRDTO;
     private InfoLevel iL1, iL2;
@@ -66,7 +66,7 @@ public class BeanMappingTest {
         tD.setStartingLevel(1L);
         tD.setShowStepperBar(true);
 
-        tDDTO = new TrainingDefinitionDTO();
+        tDDTO = new TrainingDefinitionByIdDTO();
         tDDTO.setId(1L);
         tDDTO.setTitle("TrainingDefinition");
         tDDTO.setDescription("description");
@@ -113,7 +113,7 @@ public class BeanMappingTest {
 
     @Test
     public void testMapEntityToDTO() {
-        TrainingDefinitionDTO dto = trainingDefinitionMapper.mapToDTO(tD);
+        TrainingDefinitionByIdDTO dto = trainingDefinitionMapper.mapToDTOById(tD);
 
         assertEquals(tD.getId(), dto.getId());
         assertEquals(tD.getTitle(), dto.getTitle());

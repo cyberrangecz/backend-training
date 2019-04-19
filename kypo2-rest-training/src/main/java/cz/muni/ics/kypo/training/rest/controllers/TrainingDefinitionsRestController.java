@@ -13,6 +13,7 @@ import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelUpdateDT
 import cz.muni.ics.kypo.training.api.dto.gamelevel.GameLevelUpdateDTO;
 import cz.muni.ics.kypo.training.api.dto.infolevel.InfoLevelUpdateDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionCreateDTO;
+import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionByIdDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionUpdateDTO;
 import cz.muni.ics.kypo.training.api.enums.RoleType;
@@ -72,12 +73,12 @@ public class TrainingDefinitionsRestController {
      */
     @ApiOperation(httpMethod = "GET",
             value = "Get Training Definition by Id.",
-            response = TrainingDefinitionDTO.class,
+            response = TrainingDefinitionByIdDTO.class,
             nickname = "findTrainingDefinitionById",
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Training definition found.", response = TrainingDefinitionDTO.class),
+            @ApiResponse(code = 200, message = "Training definition found.", response = TrainingDefinitionByIdDTO.class),
             @ApiResponse(code = 404, message = "Training definition with given id not found."),
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.")
 
@@ -90,7 +91,7 @@ public class TrainingDefinitionsRestController {
             @RequestParam(value = "fields", required = false) String fields) {
         LOG.debug("findTrainingDefinitionById({},{})", id, fields);
         try {
-            TrainingDefinitionDTO trainingDefinitionResource = trainingDefinitionFacade.findById(id);
+            TrainingDefinitionByIdDTO trainingDefinitionResource = trainingDefinitionFacade.findById(id);
             Squiggly.init(objectMapper, fields);
             return ResponseEntity.ok(SquigglyUtils.stringify(objectMapper, trainingDefinitionResource));
         } catch (FacadeLayerException ex) {
@@ -100,10 +101,10 @@ public class TrainingDefinitionsRestController {
     }
 
     @ApiModel(description = "Content (Retrieved data) and meta information about REST API result page. Including page number, number of elements in page, size of elements, total number of elements and total number of pages")
-    private static class TrainingDefinitionRestResource extends PageResultResource<TrainingDefinitionDTO> {
+    private static class TrainingDefinitionRestResource extends PageResultResource<TrainingDefinitionByIdDTO> {
         @JsonProperty(required = true)
         @ApiModelProperty(value = "Retrieved Training Definitions from databases.")
-        private List<TrainingDefinitionDTO> content;
+        private List<TrainingDefinitionByIdDTO> content;
         @JsonProperty(required = true)
         @ApiModelProperty(value = "Pagination including: page number, number of elements in page, size, total elements and total pages.")
         private Pagination pagination;
@@ -121,7 +122,7 @@ public class TrainingDefinitionsRestController {
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "All training definitions found.", response = TrainingDefinitionDTO.class, responseContainer = "List"),
+            @ApiResponse(code = 200, message = "All training definitions found.", response = TrainingDefinitionByIdDTO.class, responseContainer = "List"),
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.")
     })
     @ApiPageableSwagger
@@ -147,7 +148,7 @@ public class TrainingDefinitionsRestController {
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "All training definitions by sandbox definition found.", response = TrainingDefinitionDTO.class, responseContainer = "List"),
+            @ApiResponse(code = 200, message = "All training definitions by sandbox definition found.", response = TrainingDefinitionByIdDTO.class, responseContainer = "List"),
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.")
     })
     @ApiPageableSwagger
@@ -163,7 +164,7 @@ public class TrainingDefinitionsRestController {
 
     @ApiOperation(httpMethod = "POST",
             value = "Create Training Definition",
-            response = TrainingDefinitionDTO.class,
+            response = TrainingDefinitionByIdDTO.class,
             nickname = "createTrainingDefinition",
             produces = MediaType.APPLICATION_JSON_VALUE,
             consumes = MediaType.APPLICATION_JSON_VALUE
@@ -180,7 +181,7 @@ public class TrainingDefinitionsRestController {
             @ApiParam(value = "Fields which should be returned in REST API response", required = false)
             @RequestParam(value = "fields", required = false) String fields) {
 
-        TrainingDefinitionDTO trainingDefinitionResource = trainingDefinitionFacade.create(trainingDefinitionCreateDTO);
+        TrainingDefinitionByIdDTO trainingDefinitionResource = trainingDefinitionFacade.create(trainingDefinitionCreateDTO);
         Squiggly.init(objectMapper, fields);
         return ResponseEntity.ok(SquigglyUtils.stringify(objectMapper, trainingDefinitionResource));
     }
@@ -188,7 +189,7 @@ public class TrainingDefinitionsRestController {
     @ApiOperation(httpMethod = "PUT",
             value = "Update Training Definition",
             notes = "Only unreleased training definition can be updated",
-            response = TrainingDefinitionDTO.class,
+            response = TrainingDefinitionByIdDTO.class,
             nickname = "updateTrainingDefinition",
             produces = MediaType.APPLICATION_JSON_VALUE,
             consumes = MediaType.APPLICATION_JSON_VALUE
@@ -215,22 +216,22 @@ public class TrainingDefinitionsRestController {
     @ApiOperation(httpMethod = "POST",
             value = "Clone training definition",
             notes = "Only released and archived training definitions can be cloned",
-            response = TrainingDefinitionDTO.class,
+            response = TrainingDefinitionByIdDTO.class,
             nickname = "cloneTrainingDefinition",
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Training definition cloned.", response = TrainingDefinitionDTO.class),
+            @ApiResponse(code = 200, message = "Training definition cloned.", response = TrainingDefinitionByIdDTO.class),
             @ApiResponse(code = 404, message = "Training definition with given id not found."),
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.")
     })
     @PostMapping(path = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<TrainingDefinitionDTO> cloneTrainingDefinition(
+    public ResponseEntity<TrainingDefinitionByIdDTO> cloneTrainingDefinition(
             @ApiParam(value = "Id of training definition to be cloned", required = true)
             @PathVariable("id") Long id) {
         try {
-            TrainingDefinitionDTO trainingDefinitionDTO = trainingDefinitionFacade.clone(id);
-            return ResponseEntity.ok(trainingDefinitionDTO);
+            TrainingDefinitionByIdDTO trainingDefinitionByIdDTO = trainingDefinitionFacade.clone(id);
+            return ResponseEntity.ok(trainingDefinitionByIdDTO);
         } catch (FacadeLayerException ex) {
             throw ExceptionSorter.throwException(ex);
         }
@@ -538,25 +539,25 @@ public class TrainingDefinitionsRestController {
     }
 
     @ApiOperation(httpMethod = "PUT",
-        value = "Switch state of training definition",
-        response = Void.class,
-        nickname = "switchDefinitionState")
+            value = "Switch state of training definition",
+            response = Void.class,
+            nickname = "switchDefinitionState")
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Training definition updated."),
-        @ApiResponse(code = 404, message = "Training definition with given id not found."),
-        @ApiResponse(code = 409, message = "Cannot edit definition with created instances."),
-        @ApiResponse(code = 500, message = "Unexpected condition was encountered.")
+            @ApiResponse(code = 200, message = "Training definition updated."),
+            @ApiResponse(code = 404, message = "Training definition with given id not found."),
+            @ApiResponse(code = 409, message = "Cannot edit definition with created instances."),
+            @ApiResponse(code = 500, message = "Unexpected condition was encountered.")
     })
     @PutMapping(path = "/{definitionId}/states/{state}")
     public ResponseEntity<Void> switchState(
-        @ApiParam(value = "Id of definition", required = true)
-        @PathVariable(value = "definitionId") Long definitionId,
-        @ApiParam(value = "New state of definition", allowableValues = "RELEASED, UNRELEASED, ARCHIVED", required = true)
-        @PathVariable(value = "state") TDState state){
+            @ApiParam(value = "Id of definition", required = true)
+            @PathVariable(value = "definitionId") Long definitionId,
+            @ApiParam(value = "New state of definition", allowableValues = "RELEASED, UNRELEASED, ARCHIVED", required = true)
+            @PathVariable(value = "state") TDState state) {
         try {
             trainingDefinitionFacade.switchState(definitionId, state);
             return ResponseEntity.noContent().build();
-        } catch(FacadeLayerException ex){
+        } catch (FacadeLayerException ex) {
             throw ExceptionSorter.throwException(ex);
         }
     }

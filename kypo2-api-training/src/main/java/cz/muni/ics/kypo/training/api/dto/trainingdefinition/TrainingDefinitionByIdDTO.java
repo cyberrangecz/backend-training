@@ -1,6 +1,7 @@
 package cz.muni.ics.kypo.training.api.dto.trainingdefinition;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import cz.muni.ics.kypo.training.api.dto.AbstractLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
 import cz.muni.ics.kypo.training.api.dto.betatestinggroup.BetaTestingGroupDTO;
 import cz.muni.ics.kypo.training.api.enums.TDState;
@@ -14,8 +15,8 @@ import java.util.*;
 /**
  * @author Pavel Seda (441048)
  */
-@ApiModel(value = "TrainingDefinitionDTO", description = "A blueprint of abstract levels.")
-public class TrainingDefinitionDTO {
+@ApiModel(value = "TrainingDefinitionByIdDTO", description = "A blueprint of abstract levels.")
+public class TrainingDefinitionByIdDTO {
 
     private Long id;
     private String title;
@@ -27,12 +28,12 @@ public class TrainingDefinitionDTO {
     private BetaTestingGroupDTO betaTestingGroup;
     private Long sandboxDefinitionRefId;
     private Long startingLevel;
+    private List<AbstractLevelDTO> levels = new ArrayList<>();
     private boolean showStepperBar;
     private boolean canBeArchived;
     private long estimatedDuration;
     @JsonSerialize(using = LocalDateTimeUTCSerializer.class)
     private LocalDateTime lastEdited;
-
 
     @ApiModelProperty(value = "Main identifier of training definition.", example = "1")
     public Long getId() {
@@ -124,6 +125,15 @@ public class TrainingDefinitionDTO {
         this.startingLevel = startingLevel;
     }
 
+    @ApiModelProperty(value = "Information about all levels in training definition.")
+    public List<AbstractLevelDTO> getLevels() {
+        return levels;
+    }
+
+    public void setLevels(List<AbstractLevelDTO> levels) {
+        this.levels = levels;
+    }
+
     @ApiModelProperty(value = "Sign if stepper bar should be displayed.", example = "false")
     public boolean isShowStepperBar() {
         return showStepperBar;
@@ -154,27 +164,12 @@ public class TrainingDefinitionDTO {
         return lastEdited;
     }
 
-    public void setLastEdited(LocalDateTime lastEdited) {
-        this.lastEdited = lastEdited;
-    }
-
     @Override
     public String toString() {
-        return "TrainingDefinitionDTO{" +
-                "id=" + id +
-                ", title='" + title + '\'' +
-                ", description='" + description + '\'' +
-                ", prerequisities=" + Arrays.toString(prerequisities) +
-                ", outcomes=" + Arrays.toString(outcomes) +
-                ", state=" + state +
-                ", authors=" + authors +
-                ", betaTestingGroup=" + betaTestingGroup +
-                ", sandboxDefinitionRefId=" + sandboxDefinitionRefId +
-                ", startingLevel=" + startingLevel +
-                ", showStepperBar=" + showStepperBar +
-                ", canBeArchived=" + canBeArchived +
-                ", estimatedDuration=" + estimatedDuration +
-                ", lastEdited=" + lastEdited +
-                '}';
+        return "TrainingDefinitionByIdDTO{" + "id=" + id + ", title='" + title + '\'' + ", description='" + description + '\''
+                + ", prerequisities=" + Arrays.toString(prerequisities) + ", outcomes=" + Arrays.toString(outcomes) + ", state=" + state
+                + ", authors=" + authors + ", betaTestingGroup=" + betaTestingGroup + ", sandboxDefinitionRefId=" + sandboxDefinitionRefId
+                + ", startingLevel=" + startingLevel + ", levels=" + levels + ", showStepperBar=" + showStepperBar + ", canBeArchived="
+                + canBeArchived + ", estimatedDuration=" + estimatedDuration + ", lastEdited=" + lastEdited + '}';
     }
 }

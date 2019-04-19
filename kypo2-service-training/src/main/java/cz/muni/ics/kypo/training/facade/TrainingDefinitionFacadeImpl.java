@@ -14,6 +14,7 @@ import cz.muni.ics.kypo.training.api.dto.gamelevel.GameLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.gamelevel.GameLevelUpdateDTO;
 import cz.muni.ics.kypo.training.api.dto.infolevel.InfoLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.infolevel.InfoLevelUpdateDTO;
+import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionByIdDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionCreateDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionUpdateDTO;
@@ -35,10 +36,9 @@ import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.*;
-
-import static cz.muni.ics.kypo.training.persistence.model.enums.TDState.UNRELEASED;
 
 /**
  * @author Pavel Šeda
@@ -71,14 +71,13 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
 
     @Override
     @TransactionalRO
-    public TrainingDefinitionDTO findById(Long id) {
+    public TrainingDefinitionByIdDTO findById(Long id) {
         LOG.debug("findById({})", id);
         try {
             Objects.requireNonNull(id);
-            TrainingDefinitionDTO trainingDefinitionDTO = trainingDefinitionMapper.mapToDTO(trainingDefinitionService.findById(id));
-            trainingDefinitionDTO.setLevels(gatherLevels(id));
-            trainingDefinitionDTO.setEstimatedDuration(calculateEstimatedDuration(id));
-            return trainingDefinitionDTO;
+            TrainingDefinitionByIdDTO trainingDefinitionByIdDTO = trainingDefinitionMapper.mapToDTOById(trainingDefinitionService.findById(id));
+            trainingDefinitionByIdDTO.setLevels(gatherLevels(id));
+            return trainingDefinitionByIdDTO;
         } catch (ServiceLayerException ex) {
             throw new FacadeLayerException(ex);
         }
@@ -138,8 +137,8 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
         return resource;
     }
 
-    private int calculateEstimatedDuration(Long id){
-        int duration = 0;
+    private long calculateEstimatedDuration(Long id){
+        long duration = 0;
         List<AbstractLevel> levels = trainingDefinitionService.findAllLevelsFromDefinition(id);
         for(AbstractLevel level : levels){
             duration += level.getEstimatedDuration();
@@ -150,7 +149,7 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
     private boolean checkIfCanBeArchived(Long definitionId) {
         List<TrainingInstance> instances = trainingDefinitionService.findAllTrainingInstancesByTrainingDefinitionId(definitionId);
         for (TrainingInstance trainingInstance : instances) {
-            if (trainingInstance.getEndTime().isAfter(LocalDateTime.now())) return false;
+            if (trainingInstance.getEndTime().isAfter(LocalDateTime.now(Clock.systemUTC()))) return false;
         }
         return true;
     }
@@ -163,7 +162,7 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
 
     @Override
     @TransactionalWO
-    public TrainingDefinitionDTO create(TrainingDefinitionCreateDTO trainingDefinition) {
+    public TrainingDefinitionByIdDTO create(TrainingDefinitionCreateDTO trainingDefinition) {
         LOG.debug("create({})", trainingDefinition);
         try {
             Objects.requireNonNull(trainingDefinition);
@@ -172,7 +171,7 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
                 addOrganizersToTrainingDefinition(newTrainingDefinition, trainingDefinition.getBetaTestingGroup().getOrganizers());
             }
             addAuthorsToTrainingDefinition(newTrainingDefinition, trainingDefinition.getAuthors());
-            return trainingDefinitionMapper.mapToDTO(trainingDefinitionService.create(newTrainingDefinition));
+            return trainingDefinitionMapper.mapToDTOById(trainingDefinitionService.create(newTrainingDefinition));
         } catch (ServiceLayerException ex) {
             throw new FacadeLayerException(ex);
         }
@@ -232,11 +231,11 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
 
     @Override
     @TransactionalWO
-    public TrainingDefinitionDTO clone(Long id) {
+    public TrainingDefinitionByIdDTO clone(Long id) {
         LOG.debug("clone({})", id);
         try {
             Objects.requireNonNull(id);
-            return trainingDefinitionMapper.mapToDTO(trainingDefinitionService.clone(id));
+            return trainingDefinitionMapper.mapToDTOById(trainingDefinitionService.clone(id));
         } catch (ServiceLayerException ex) {
             throw new FacadeLayerException(ex);
         }

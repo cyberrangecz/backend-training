@@ -6,7 +6,7 @@ import com.github.bohnman.squiggly.util.SquigglyUtils;
 import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.training.api.PageResultResource;
 import cz.muni.ics.kypo.training.api.dto.run.TrainingRunDTO;
-import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionDTO;
+import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionByIdDTO;
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceCreateDTO;
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceDTO;
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceUpdateDTO;
@@ -64,7 +64,7 @@ public class TrainingInstancesRestController {
      */
     @ApiOperation(httpMethod = "GET",
             value = "Get training instance by Id.",
-            response = TrainingDefinitionDTO.class,
+            response = TrainingDefinitionByIdDTO.class,
             nickname = "findTrainingInstanceById",
             notes = "Returns training instance by id and also contains particular training definition in it.",
             produces = MediaType.APPLICATION_JSON_VALUE

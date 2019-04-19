@@ -54,7 +54,6 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     @Value("${user-and-group-server.uri}")
     private String userAndGroupUrl;
 
-
     private RestTemplate restTemplate;
     private TrainingDefinitionRepository trainingDefinitionRepository;
     private TrainingInstanceRepository trainingInstanceRepository;

@@ -1,12 +1,8 @@
 package cz.muni.ics.kypo.training.facade;
 
-import cz.muni.ics.kypo.training.api.dto.archive.TrainingInstanceArchiveDTO;
-import cz.muni.ics.kypo.training.api.dto.export.ExportTrainingDefinitionAndLevelsDTO;
 import cz.muni.ics.kypo.training.api.dto.export.FileToReturnDTO;
 import cz.muni.ics.kypo.training.api.dto.imports.ImportTrainingDefinitionDTO;
-import cz.muni.ics.kypo.training.api.dto.sandboxdefinition.SandboxDefinitionCreateDTO;
-import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionDTO;
-import org.springframework.http.ResponseEntity;
+import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionByIdDTO;
 
 /**
  * @author Pavel Seda
@@ -15,7 +11,7 @@ public interface ExportImportFacade {
 
     FileToReturnDTO dbExport(Long trainingDefinitionId);
 
-    TrainingDefinitionDTO dbImport(ImportTrainingDefinitionDTO importTrainingDefinitionDTO);
+    TrainingDefinitionByIdDTO dbImport(ImportTrainingDefinitionDTO importTrainingDefinitionDTO);
 
     FileToReturnDTO archiveTrainingInstance(Long trainingInstanceId);
 }

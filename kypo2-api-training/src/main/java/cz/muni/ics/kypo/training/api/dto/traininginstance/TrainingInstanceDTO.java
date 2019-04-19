@@ -2,7 +2,7 @@ package cz.muni.ics.kypo.training.api.dto.traininginstance;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
-import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionDTO;
+import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionByIdDTO;
 import cz.muni.ics.kypo.training.converters.LocalDateTimeUTCSerializer;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -23,7 +23,7 @@ public class TrainingInstanceDTO {
     private LocalDateTime endTime;
     private String title;
     private int poolSize;
-    private TrainingDefinitionDTO trainingDefinition;
+    private TrainingDefinitionByIdDTO trainingDefinition;
     private Set<UserRefDTO> organizers;
     private String accessToken;
     private Long poolId;
@@ -74,11 +74,11 @@ public class TrainingInstanceDTO {
     }
 
     @ApiModelProperty(value = "Reference to training definition from which is training instance created.")
-    public TrainingDefinitionDTO getTrainingDefinition() {
+    public TrainingDefinitionByIdDTO getTrainingDefinition() {
         return trainingDefinition;
     }
 
-    public void setTrainingDefinition(TrainingDefinitionDTO trainingDefinition) {
+    public void setTrainingDefinition(TrainingDefinitionByIdDTO trainingDefinition) {
         this.trainingDefinition = trainingDefinition;
     }
 

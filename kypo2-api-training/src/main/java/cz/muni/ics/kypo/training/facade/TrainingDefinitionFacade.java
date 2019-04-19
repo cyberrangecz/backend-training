@@ -3,6 +3,8 @@ package cz.muni.ics.kypo.training.facade;
 import cz.muni.ics.kypo.training.api.dto.AbstractLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.BasicLevelInfoDTO;
 import cz.muni.ics.kypo.training.api.dto.UserInfoDTO;
+import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionByIdDTO;
+import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionDTO;
 import cz.muni.ics.kypo.training.api.enums.RoleType;
 import cz.muni.ics.kypo.training.api.enums.TDState;
 import cz.muni.ics.kypo.training.exceptions.FacadeLayerException;
@@ -13,7 +15,6 @@ import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelUpdateDT
 import cz.muni.ics.kypo.training.api.dto.gamelevel.GameLevelUpdateDTO;
 import cz.muni.ics.kypo.training.api.dto.infolevel.InfoLevelUpdateDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionCreateDTO;
-import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionUpdateDTO;
 import org.springframework.data.domain.Pageable;
 
@@ -31,7 +32,7 @@ public interface TrainingDefinitionFacade {
      * @param id of a Training Definition that would be returned
      * @return specific Training Definition by id
      */
-    TrainingDefinitionDTO findById(Long id);
+    TrainingDefinitionByIdDTO findById(Long id);
 
     /**
      * Find all Training Definitions.
@@ -63,7 +64,7 @@ public interface TrainingDefinitionFacade {
      * @param trainingDefinition to be created
      * @return DTO of created definition
      */
-    TrainingDefinitionDTO create(TrainingDefinitionCreateDTO trainingDefinition);
+    TrainingDefinitionByIdDTO create(TrainingDefinitionCreateDTO trainingDefinition);
 
     /**
      * Clones Training Definition by id
@@ -72,7 +73,7 @@ public interface TrainingDefinitionFacade {
      * @return DTO of cloned definition
      * @throws FacadeLayerException if training definition is not found
      */
-    TrainingDefinitionDTO clone(Long id) throws FacadeLayerException;
+    TrainingDefinitionByIdDTO clone(Long id) throws FacadeLayerException;
 
 
     /**
