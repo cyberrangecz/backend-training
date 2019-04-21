@@ -17,6 +17,7 @@ import cz.muni.ics.kypo.training.api.dto.infolevel.InfoLevelUpdateDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionByIdDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionCreateDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionDTO;
+import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionInfoDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionUpdateDTO;
 import cz.muni.ics.kypo.training.api.enums.LevelType;
 import cz.muni.ics.kypo.training.api.enums.RoleType;
@@ -30,6 +31,7 @@ import cz.muni.ics.kypo.training.service.TrainingDefinitionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
@@ -137,27 +139,27 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
         return resource;
     }
 
-    private long calculateEstimatedDuration(Long id){
-        long duration = 0;
-        List<AbstractLevel> levels = trainingDefinitionService.findAllLevelsFromDefinition(id);
-        for(AbstractLevel level : levels){
-            duration += level.getEstimatedDuration();
-        }
-        return duration;
-    }
-
-    private boolean checkIfCanBeArchived(Long definitionId) {
-        List<TrainingInstance> instances = trainingDefinitionService.findAllTrainingInstancesByTrainingDefinitionId(definitionId);
-        for (TrainingInstance trainingInstance : instances) {
-            if (trainingInstance.getEndTime().isAfter(LocalDateTime.now(Clock.systemUTC()))) return false;
-        }
-        return true;
+    @Override
+    public PageResultResource<TrainingDefinitionInfoDTO> findAllForOrganizers(Predicate predicate, Pageable pageable) {
+        LOG.debug("findAllForOrganizers({},{})", predicate, pageable);
+        return trainingDefinitionMapper.mapToPageResultResourceInfoDTO(trainingDefinitionService.findAllForOrganizers(predicate, pageable));
     }
 
     @Override
-    public PageResultResource<TrainingDefinitionDTO> findAllBySandboxDefinitionId(Long sandboxDefinitionId, Pageable pageable) {
+    public PageResultResource<TrainingDefinitionInfoDTO> findAllBySandboxDefinitionId(Long sandboxDefinitionId, Pageable pageable) {
         LOG.debug("findAllBySandboxDefinitionId({}, {})", sandboxDefinitionId, pageable);
-        return trainingDefinitionMapper.mapToPageResultResource(trainingDefinitionService.findAllBySandboxDefinitionId(sandboxDefinitionId, pageable));
+        Page<TrainingDefinition> trainingDefinitionsPage = trainingDefinitionService.findAllBySandboxDefinitionId(sandboxDefinitionId, pageable);
+        List<TrainingDefinitionInfoDTO> trainingDefinitionInfoDTOS = new ArrayList<>();
+        for (TrainingDefinition trainingDefinition : trainingDefinitionsPage.getContent()) {
+            TrainingDefinitionInfoDTO trainingDefinitionInfoDTO = trainingDefinitionMapper.mapToInfoDTO(trainingDefinition);
+            if(trainingDefinition.getAuthors().stream().anyMatch(author -> author.getUserRefLogin().equals(getSubOfLoggedInUser()))) {
+                trainingDefinitionInfoDTO.setCanEdit(true);
+            } else {
+                trainingDefinitionInfoDTO.setCanEdit(false);
+            }
+            trainingDefinitionInfoDTOS.add(trainingDefinitionInfoDTO);
+        }
+        return new PageResultResource<>(trainingDefinitionInfoDTOS, trainingDefinitionMapper.createPagination(trainingDefinitionsPage));
     }
 
     @Override
@@ -432,10 +434,27 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
         }
     }
 
-    private String getFullNameOfLoggedInUser() {
+    private String getSubOfLoggedInUser() {
         OAuth2Authentication authentication = (OAuth2Authentication) SecurityContextHolder.getContext().getAuthentication();
         JsonObject credentials = (JsonObject) authentication.getUserAuthentication().getCredentials();
-        return credentials.get("name").getAsString();
+        return credentials.get("sub").getAsString();
+    }
+
+    private long calculateEstimatedDuration(Long id){
+        long duration = 0;
+        List<AbstractLevel> levels = trainingDefinitionService.findAllLevelsFromDefinition(id);
+        for(AbstractLevel level : levels){
+            duration += level.getEstimatedDuration();
+        }
+        return duration;
+    }
+
+    private boolean checkIfCanBeArchived(Long definitionId) {
+        List<TrainingInstance> instances = trainingDefinitionService.findAllTrainingInstancesByTrainingDefinitionId(definitionId);
+        for (TrainingInstance trainingInstance : instances) {
+            if (trainingInstance.getEndTime().isAfter(LocalDateTime.now(Clock.systemUTC()))) return false;
+        }
+        return true;
     }
 
 

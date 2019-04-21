@@ -289,17 +289,17 @@ public class TrainingDefinitionsRestControllerTest {
         assertEquals(convertObjectToJsonBytes(convertObjectToJsonBytes(trainingDefinitionDTOPageResultResource)), result.getContentAsString());
     }
 
-    @Test
-    public void findAllTrainingDefinitionsBySandboxDefinitionId() throws Exception {
-        String valueTi = convertObjectToJsonBytes(trainingDefinitionDTOPageResultResource);
-        given(objectMapper.writeValueAsString(any(Object.class))).willReturn(valueTi);
-        given(trainingDefinitionFacade.findAllBySandboxDefinitionId(any(Long.class), any(Pageable.class))).willReturn(trainingDefinitionDTOPageResultResource);
-        MockHttpServletResponse result = mockMvc.perform(get("/training-definitions/sandbox-definitions" + "/{id}", 1L))
-                .andExpect(status().isOk())
-                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-                .andReturn().getResponse();
-        assertEquals(convertObjectToJsonBytes(convertObjectToJsonBytes(trainingDefinitionDTOPageResultResource)), result.getContentAsString());
-    }
+//    @Test
+//    public void findAllTrainingDefinitionsBySandboxDefinitionId() throws Exception {
+//        String valueTi = convertObjectToJsonBytes(trainingDefinitionDTOPageResultResource);
+//        given(objectMapper.writeValueAsString(any(Object.class))).willReturn(valueTi);
+//        given(trainingDefinitionFacade.findAllBySandboxDefinitionId(any(Long.class), any(Pageable.class))).willReturn(trainingDefinitionDTOPageResultResource);
+//        MockHttpServletResponse result = mockMvc.perform(get("/training-definitions/sandbox-definitions" + "/{id}", 1L))
+//                .andExpect(status().isOk())
+//                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+//                .andReturn().getResponse();
+//        assertEquals(convertObjectToJsonBytes(convertObjectToJsonBytes(trainingDefinitionDTOPageResultResource)), result.getContentAsString());
+//    }
 
     @Test
     public void updateTrainingDefinition() throws Exception {

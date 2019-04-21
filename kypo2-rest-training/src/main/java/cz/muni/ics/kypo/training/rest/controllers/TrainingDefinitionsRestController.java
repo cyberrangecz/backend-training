@@ -15,6 +15,7 @@ import cz.muni.ics.kypo.training.api.dto.infolevel.InfoLevelUpdateDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionCreateDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionByIdDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionDTO;
+import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionInfoDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionUpdateDTO;
 import cz.muni.ics.kypo.training.api.enums.RoleType;
 import cz.muni.ics.kypo.training.api.enums.TDState;
@@ -141,6 +142,37 @@ public class TrainingDefinitionsRestController {
         return ResponseEntity.ok(SquigglyUtils.stringify(objectMapper, trainingDefinitionResource));
     }
 
+    /**
+     * Get all Training Definitions for organizers.
+     *
+     * @return all Training Definitions for organizers.
+     */
+    @ApiOperation(httpMethod = "GET",
+            value = "Get all Training Definitions for organizers.",
+            response = TrainingDefinitionRestResource.class,
+            nickname = "findAllTrainingDefinitionsForOrganizers",
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "All training definitions for organizers found.", response = TrainingDefinitionInfoDTO.class, responseContainer = "List"),
+            @ApiResponse(code = 500, message = "Unexpected condition was encountered.")
+    })
+    @ApiPageableSwagger
+    @GetMapping(path = "/for-organizers", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Object> findAllTrainingDefinitionsForOrganizers(
+            @QuerydslPredicate(root = TrainingDefinition.class) Predicate predicate,
+            Pageable pageable,
+            @ApiParam(value = "Parameters for filtering the objects.", required = false)
+            @RequestParam MultiValueMap<String, String> parameters,
+            @ApiParam(value = "Fields which should be returned in REST API response", required = false)
+            @RequestParam(value = "fields", required = false) String fields) {
+        LOG.debug("findAllTrainingDefinitionsForOrganizers({},{})", parameters, fields);
+
+        PageResultResource<TrainingDefinitionInfoDTO> trainingDefinitionResource = trainingDefinitionFacade.findAllForOrganizers(predicate, pageable);
+        Squiggly.init(objectMapper, fields);
+        return ResponseEntity.ok(SquigglyUtils.stringify(objectMapper, trainingDefinitionResource));
+    }
+
     @ApiOperation(httpMethod = "GET",
             value = "Get all training definition by sandbox definition id",
             response = TrainingDefinitionRestResource.class,
@@ -158,7 +190,7 @@ public class TrainingDefinitionsRestController {
             @PathVariable(value = "sandboxDefinitionId") Long sandboxDefinitionId,
             Pageable pageable) {
         LOG.debug("findAllTrainingDefinitionsBySandboxDefinitionId({}, {})", sandboxDefinitionId, pageable);
-        PageResultResource<TrainingDefinitionDTO> trainingDefinitionResource = trainingDefinitionFacade.findAllBySandboxDefinitionId(sandboxDefinitionId, pageable);
+        PageResultResource<TrainingDefinitionInfoDTO> trainingDefinitionResource = trainingDefinitionFacade.findAllBySandboxDefinitionId(sandboxDefinitionId, pageable);
         return ResponseEntity.ok(SquigglyUtils.stringify(objectMapper, trainingDefinitionResource));
     }
 

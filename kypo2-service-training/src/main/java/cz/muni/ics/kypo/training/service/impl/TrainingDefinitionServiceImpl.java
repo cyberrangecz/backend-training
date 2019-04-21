@@ -4,6 +4,7 @@ import com.google.gson.JsonObject;
 import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.training.annotations.security.IsDesignerOrAdmin;
 import cz.muni.ics.kypo.training.annotations.security.IsAdminOrDesignerOrOrganizer;
+import cz.muni.ics.kypo.training.annotations.security.IsOrganizerOrAdmin;
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalWO;
 import cz.muni.ics.kypo.training.api.PageResultResource;
 import cz.muni.ics.kypo.training.api.dto.UserInfoDTO;
@@ -92,19 +93,29 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     }
 
     @Override
-    @IsAdminOrDesignerOrOrganizer
+    @IsDesignerOrAdmin
     public Page<TrainingDefinition> findAll(Predicate predicate, Pageable pageable) {
+        LOG.debug("findAllTrainingDefinitions({},{})", predicate, pageable);
+        if (isAdmin()) {
+            return trainingDefinitionRepository.findAll(predicate, pageable);
+        }
+        return trainingDefinitionRepository.findAllByLoggedInUser(getSubOfLoggedInUser(), pageable);
+    }
+
+    @Override
+    @IsOrganizerOrAdmin
+    public Page<TrainingDefinition> findAllForOrganizers(Predicate predicate, Pageable pageable) {
         LOG.debug("findAllTrainingDefinitions({},{})", predicate, pageable);
         if (isAdmin()) {
             return trainingDefinitionRepository.findAll(predicate, pageable);
         } else if (isDesigner() && isOrganizer()) {
             return trainingDefinitionRepository.findAllForDesignersAndOrganizers(getSubOfLoggedInUser(), pageable);
-        } else if (isDesigner()) {
-            return trainingDefinitionRepository.findAllByLoggedInUser(getSubOfLoggedInUser(), pageable);
         } else {
             return trainingDefinitionRepository.findAllForOrganizers(getSubOfLoggedInUser(), pageable);
         }
+
     }
+
 
     private String getSubOfLoggedInUser() {
         OAuth2Authentication authentication = (OAuth2Authentication) SecurityContextHolder.getContext().getAuthentication();

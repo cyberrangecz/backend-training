@@ -26,7 +26,7 @@ public interface TrainingDefinitionService {
     TrainingDefinition findById(Long id);
 
     /**
-     * Find all Training Definitions.
+     * Find all Training Definitions by author if user is designer or all Training Definitions if user is admin.
      *
      * @return all Training Definitions
      */
@@ -194,7 +194,7 @@ public interface TrainingDefinitionService {
      * @return UserRef with corresponding login
      * @throws ServiceLayerException if UserRef was not found
      */
-    UserRef findUserRefByLogin(String login) throws ServiceLayerException;
+    UserRef findUserRefByLogin(String login);
 
     /**
      * Finds designers
@@ -216,4 +216,11 @@ public interface TrainingDefinitionService {
      * @param state - new state of TD
      */
     void switchState(Long definitionId, cz.muni.ics.kypo.training.api.enums.TDState state);
+
+    /**
+     * Find all Training Definitions for organizers.
+     *
+     * @return all Training Definitions for organizers
+     */
+    Page<TrainingDefinition> findAllForOrganizers(Predicate predicate, Pageable pageable);
 }
