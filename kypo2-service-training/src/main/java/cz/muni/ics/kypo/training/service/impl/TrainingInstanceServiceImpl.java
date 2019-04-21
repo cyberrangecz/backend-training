@@ -5,6 +5,7 @@ import com.mysema.commons.lang.Assert;
 import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.training.annotations.security.IsOrganizerOrAdmin;
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalWO;
+import cz.muni.ics.kypo.training.enums.RoleTypeSecurity;
 import cz.muni.ics.kypo.training.exceptions.ErrorCode;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.persistence.model.*;
@@ -28,6 +29,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.*;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.stereotype.Service;
@@ -82,7 +84,11 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
     @IsOrganizerOrAdmin
     public Page<TrainingInstance> findAll(Predicate predicate, Pageable pageable) {
         LOG.debug("findAllTrainingDefinitions({},{})", predicate, pageable);
-        return trainingInstanceRepository.findAll(predicate, pageable);
+        if(isAdmin()) {
+            return trainingInstanceRepository.findAll(predicate, pageable);
+        }
+        Predicate loggedInUser = QTrainingInstance.trainingInstance.organizers.any().userRefLogin.eq(getSubOfLoggedInUser());
+        return trainingInstanceRepository.findAll(loggedInUser, pageable);
     }
 
     @Override
@@ -284,6 +290,13 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
         OAuth2Authentication authentication = (OAuth2Authentication) SecurityContextHolder.getContext().getAuthentication();
         JsonObject credentials = (JsonObject) authentication.getUserAuthentication().getCredentials();
         return credentials.get("name").getAsString();
+    }
+    private boolean isAdmin() {
+        OAuth2Authentication authentication = (OAuth2Authentication) SecurityContextHolder.getContext().getAuthentication();
+        for (GrantedAuthority gA : authentication.getUserAuthentication().getAuthorities()) {
+            if (gA.getAuthority().equals(RoleTypeSecurity.ROLE_TRAINING_ADMINISTRATOR.name())) return true;
+        }
+        return false;
     }
 
 }

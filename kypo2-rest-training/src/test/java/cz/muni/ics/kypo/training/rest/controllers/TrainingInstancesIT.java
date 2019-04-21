@@ -195,9 +195,10 @@ public class TrainingInstancesIT {
 	}
 
 	@Test
-	public void findAllTrainingInstances() throws Exception {
+	public void findAllTrainingInstancesAsAdmin() throws Exception {
 		TrainingInstance tI1 = trainingInstanceRepository.save(notConcludedTrainingInstance);
 		TrainingInstance tI2 = trainingInstanceRepository.save(futureTrainingInstance);
+		mockSpringSecurityContextForGet();
 
 		List<TrainingInstance> expected = new ArrayList<>();
 		expected.add(tI1);
@@ -340,7 +341,7 @@ public class TrainingInstancesIT {
 		given(securityContext.getAuthentication()).willReturn(auth);
 		given(auth.getUserAuthentication()).willReturn(auth);
 		given(auth.getCredentials()).willReturn(sub);
-		given(auth.getAuthorities()).willReturn(Arrays.asList(new SimpleGrantedAuthority("ADMINISTRATOR")));
+		given(auth.getAuthorities()).willReturn(Arrays.asList(new SimpleGrantedAuthority("ROLE_TRAINING_ADMINISTRATOR")));
 		given(authentication.getDetails()).willReturn(auth);
 	}
 }
