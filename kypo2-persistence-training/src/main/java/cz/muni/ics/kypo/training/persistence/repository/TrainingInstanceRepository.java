@@ -1,5 +1,6 @@
 package cz.muni.ics.kypo.training.persistence.repository;
 
+import cz.muni.ics.kypo.training.persistence.model.TrainingDefinition;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
