@@ -3,6 +3,7 @@ package cz.muni.ics.kypo.training.facade;
 import cz.muni.ics.kypo.training.api.dto.AbstractLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.BasicLevelInfoDTO;
 import cz.muni.ics.kypo.training.api.dto.UserInfoDTO;
+import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionInfoDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionByIdDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionDTO;
 import cz.muni.ics.kypo.training.api.enums.RoleType;
@@ -42,12 +43,12 @@ public interface TrainingDefinitionFacade {
     PageResultResource<TrainingDefinitionDTO> findAll(Predicate predicate, Pageable pageable);
 
     /**
-     * Find all training definition with same sandbox definition
+     * Find all info(id, title, canEdit) about training definition with given sandbox definition
      *
      * @param sandboxDefinitionId - id of sandbox definition
-     * @return all training definition with same sandbox definition
+     * @return all training definition with given sandbox definition
      */
-    PageResultResource<TrainingDefinitionDTO> findAllBySandboxDefinitionId(Long sandboxDefinitionId, Pageable pageable);
+    PageResultResource<TrainingDefinitionInfoDTO> findAllBySandboxDefinitionId(Long sandboxDefinitionId, Pageable pageable);
 
     /**
      * Updates training definition
@@ -198,4 +199,11 @@ public interface TrainingDefinitionFacade {
      * @param state - new state of TD
      */
     void switchState(Long definitionId, TDState state);
+
+    /**
+     * Find all Training Definitions.
+     *
+     * @return all Training Definitions
+     */
+    PageResultResource<TrainingDefinitionInfoDTO> findAllForOrganizers(Predicate predicate, Pageable pageable);
 }

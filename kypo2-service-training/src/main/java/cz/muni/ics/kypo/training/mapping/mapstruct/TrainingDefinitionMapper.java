@@ -4,6 +4,7 @@ import cz.muni.ics.kypo.training.api.PageResultResource;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionByIdDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionCreateDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionDTO;
+import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionInfoDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionUpdateDTO;
 import cz.muni.ics.kypo.training.persistence.model.TrainingDefinition;
 import org.mapstruct.Mapper;
@@ -26,6 +27,8 @@ public interface TrainingDefinitionMapper extends ParentMapper {
     TrainingDefinitionByIdDTO mapToDTOById(TrainingDefinition entity);
 
     TrainingDefinitionDTO mapToDTO(TrainingDefinition entity);
+
+    TrainingDefinitionInfoDTO mapToInfoDTO(TrainingDefinition entity);
 
     TrainingDefinition mapCreateToEntity(TrainingDefinitionCreateDTO dto);
 
@@ -63,4 +66,9 @@ public interface TrainingDefinitionMapper extends ParentMapper {
         return new PageResultResource<>(mapped, createPagination(objects));
     }
 
+    default PageResultResource<TrainingDefinitionInfoDTO> mapToPageResultResourceInfoDTO(Page<TrainingDefinition> objects) {
+        List<TrainingDefinitionInfoDTO> mapped = new ArrayList<>();
+        objects.forEach(object -> mapped.add(mapToInfoDTO(object)));
+        return new PageResultResource<>(mapped, createPagination(objects));
+    }
 }
