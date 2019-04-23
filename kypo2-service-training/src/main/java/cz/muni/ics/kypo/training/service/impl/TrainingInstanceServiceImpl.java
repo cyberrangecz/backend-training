@@ -130,7 +130,6 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
         } else {
             trainingInstanceToUpdate.setAccessToken(generateAccessToken(trainingInstanceToUpdate.getAccessToken()));
         }
-        trainingInstanceToUpdate.setTrainingDefinition(trainingInstance.getTrainingDefinition());
         trainingInstanceRepository.save(trainingInstanceToUpdate);
         return trainingInstanceToUpdate.getAccessToken();
     }
