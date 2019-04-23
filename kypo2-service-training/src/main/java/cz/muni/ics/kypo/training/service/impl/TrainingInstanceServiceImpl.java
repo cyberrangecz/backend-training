@@ -200,10 +200,8 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
         "or @securityService.isOrganizerOfGivenTrainingInstance(#trainingInstance.id)")
     public void allocateSandboxes(TrainingInstance trainingInstance, Integer count) {
         LOG.debug("allocateSandboxes({}, {})", trainingInstance.getId(), count);
-        if(count == null) {
-            count = trainingInstance.getPoolSize();
-        } else if (count > trainingInstance.getPoolSize()) {
-            count = trainingInstance.getPoolSize();
+        if (count != null && count > trainingInstance.getPoolSize()) {
+            count = null;
         }
         //Check if pool exist
         if (trainingInstance.getPoolId() == null) {
@@ -219,7 +217,10 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
         try {
             //Allocate sandboxes in pool
             String url = kypoOpenStackURI + "/pools/" + trainingInstance.getPoolId() + "/sandboxes/";
-            UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(url).queryParam("count", count);
+            UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(url);
+            if(count != null) {
+                 builder.queryParam("count", count);
+            }
             ResponseEntity<List<SandboxInfo>> sandboxResponse = restTemplate.exchange(builder.toUriString(), HttpMethod.POST,
                     new HttpEntity<>(httpHeaders), new ParameterizedTypeReference<List<SandboxInfo>>() {
                     });
@@ -233,8 +234,38 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
             });
             trainingInstanceRepository.save(trainingInstance);
         } catch (HttpClientErrorException ex) {
+            if(new JSONObject(ex.getResponseBodyAsString()).get("detail").toString().contains("You have reached the maximum stacks per tenant")) {
+                synchronizeSandboxesWithPythonApi(trainingInstance);
+            }
             LOG.error("Client side error when calling OpenStack: {}." , new JSONObject(ex.getResponseBodyAsString()).get("detail"));
         }
+    }
+
+    private void synchronizeSandboxesWithPythonApi(TrainingInstance trainingInstance) {
+        HttpHeaders httpHeaders = new HttpHeaders();
+        httpHeaders.setContentType(MediaType.APPLICATION_JSON);
+        try {
+            //Get sandboxes
+            String url = kypoOpenStackURI + "/pools/" + trainingInstance.getPoolId() + "/sandboxes/";
+            UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(url);
+            ResponseEntity<List<SandboxInfo>> sandboxResponse = restTemplate.exchange(builder.toUriString(), HttpMethod.GET,
+                    new HttpEntity<>(httpHeaders), new ParameterizedTypeReference<List<SandboxInfo>>() {
+                    });
+            if (sandboxResponse.getStatusCode().isError() || sandboxResponse.getBody() == null) {
+                LOG.error("Error from OpenStack while getting info about sandboxes.");
+            }
+            sandboxResponse.getBody().forEach(s -> {
+                if(trainingInstance.getSandboxInstanceRefs().stream().noneMatch((sandboxInstanceRef -> sandboxInstanceRef.getSandboxInstanceRef().equals(s.getId())))) {
+                    SandboxInstanceRef sIR = new SandboxInstanceRef();
+                    sIR.setSandboxInstanceRef(s.getId());
+                    trainingInstance.addSandboxInstanceRef(sIR);
+                }
+            });
+            trainingInstanceRepository.save(trainingInstance);
+        } catch (HttpClientErrorException ex) {
+            LOG.error("Client side error when calling OpenStack: {}." , new JSONObject(ex.getResponseBodyAsString()).get("detail"));
+        }
+
     }
 
     @Override
