@@ -335,6 +335,10 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
         TrainingDefinition definition = findById(definitionId);
         if (definition.getState().equals(TDState.RELEASED))
             throw new ServiceLayerException("Cannot delete released training definition.", ErrorCode.RESOURCE_CONFLICT);
+        if(trainingInstanceRepository.existsAnyForTrainingDefinition(definitionId)) {
+            throw new ServiceLayerException("Cannot delete training definition with already created training instance. " +
+                "Remove training instance/s before deleting training definition.", ErrorCode.RESOURCE_CONFLICT);
+        }
         if (definition.getStartingLevel() != null) {
             Long levelId = definition.getStartingLevel();
             while (levelId != null) {
