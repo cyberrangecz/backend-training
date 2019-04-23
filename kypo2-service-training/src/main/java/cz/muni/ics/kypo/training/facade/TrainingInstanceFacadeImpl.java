@@ -84,6 +84,7 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
         try {
             Objects.requireNonNull(trainingInstanceUpdateDTO);
             TrainingInstance trainingInstance = trainingInstanceMapper.mapUpdateToEntity(trainingInstanceUpdateDTO);
+            trainingInstance.setTrainingDefinition(trainingDefinitionService.findById(trainingInstanceUpdateDTO.getTrainingDefinitionId()));
             addOrganizersToTrainingInstance(trainingInstance, trainingInstanceUpdateDTO.getOrganizers());
             return trainingInstanceService.update(trainingInstance);
         } catch (ServiceLayerException ex) {
