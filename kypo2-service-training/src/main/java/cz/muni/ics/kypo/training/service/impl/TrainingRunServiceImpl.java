@@ -61,19 +61,19 @@ public class TrainingRunServiceImpl implements TrainingRunService {
     private TrainingInstanceRepository trainingInstanceRepository;
     private UserRefRepository participantRefRepository;
     private HintRepository hintRepository;
-    private AuditService auditService;
+    private AuditEventsService auditEventsService;
     private RestTemplate restTemplate;
 
     @Autowired
     public TrainingRunServiceImpl(TrainingRunRepository trainingRunRepository, AbstractLevelRepository abstractLevelRepository,
                                   TrainingInstanceRepository trainingInstanceRepository, UserRefRepository participantRefRepository,
-                                  HintRepository hintRepository, AuditService auditService, RestTemplate restTemplate) {
+                                  HintRepository hintRepository, AuditEventsService auditEventsService, RestTemplate restTemplate) {
         this.trainingRunRepository = trainingRunRepository;
         this.abstractLevelRepository = abstractLevelRepository;
         this.trainingInstanceRepository = trainingInstanceRepository;
         this.participantRefRepository = participantRefRepository;
         this.hintRepository = hintRepository;
-        this.auditService = auditService;
+        this.auditEventsService = auditEventsService;
         this.restTemplate = restTemplate;
     }
 
@@ -126,12 +126,12 @@ public class TrainingRunServiceImpl implements TrainingRunService {
         AbstractLevel abstractLevel = abstractLevelRepository.findById(nextLevelId).orElseThrow(() ->
                 new ServiceLayerException("Level with id: " + nextLevelId + " not found.", ErrorCode.RESOURCE_NOT_FOUND));
         if (trainingRun.getCurrentLevel() instanceof InfoLevel) {
-            auditLevelCompletedAction(trainingRun);
+            auditEventsService.auditLevelCompletedAction(trainingRun);
         }
         trainingRun.setCurrentLevel(abstractLevel);
         trainingRunRepository.save(trainingRun);
         //audit this action to theElasticSearch
-        auditLevelStartedAction(trainingRun.getTrainingInstance(), trainingRun);
+        auditEventsService.auditLevelStartedAction(trainingRun);
 
         return abstractLevel;
     }
@@ -191,8 +191,8 @@ public class TrainingRunServiceImpl implements TrainingRunService {
                     TrainingRun trainingRun = getNewTrainingRun(abstractLevel, getSubOfLoggedInUser(), trainingInstance, TRState.ALLOCATED, LocalDateTime.now(Clock.systemUTC()), trainingInstance.getEndTime(), sandboxInstanceRef);
                     trainingRun = create(trainingRun);
                     // audit this action to the Elasticsearch
-                    auditTrainingRunStartedAction(trainingInstance, trainingRun);
-                    auditLevelStartedAction(trainingInstance, trainingRun);
+                    auditEventsService.auditTrainingRunStartedAction(trainingRun);
+                    auditEventsService.auditLevelStartedAction(trainingRun);
                     return trainingRun;
                 } else {
                     throw new ServiceLayerException("There is no available sandbox, wait a minute and try again.", ErrorCode.NO_AVAILABLE_SANDBOX);
@@ -228,7 +228,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
         } catch (HttpClientErrorException ex) {
             throw new ServiceLayerException("Some error occurred during getting info about sandbox: " + ex.getStatusCode() + ". Please try later or contact administrator.", ErrorCode.UNEXPECTED_ERROR);
         }
-        auditTrainingRunResumedAction(trainingRun);
+        auditEventsService.auditTrainingRunResumedAction(trainingRun);
         return trainingRun;
     }
 
@@ -288,12 +288,12 @@ public class TrainingRunServiceImpl implements TrainingRunService {
         if (level instanceof GameLevel) {
             if (((GameLevel) level).getFlag().equals(flag)) {
                 trainingRun.setLevelAnswered(true);
-                auditCorrectFlagSubmittedAction(trainingRun, flag);
-                auditLevelCompletedAction(trainingRun);
+                auditEventsService.auditCorrectFlagSubmittedAction(trainingRun, flag);
+                auditEventsService.auditLevelCompletedAction(trainingRun);
                 return true;
             } else {
                 trainingRun.setIncorrectFlagCount(trainingRun.getIncorrectFlagCount() + 1);
-                auditWrongFlagSubmittedAction(trainingRun, flag);
+                auditEventsService.auditWrongFlagSubmittedAction(trainingRun, flag);
                 return false;
             }
         } else {
@@ -332,7 +332,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
                 trainingRun.setSolutionTaken(true);
                 trainingRun.decreaseTotalScore(trainingRun.getCurrentScore() - 1);
                 trainingRun.setCurrentScore(1);
-                auditSolutionDisplayedAction(trainingRun, (GameLevel) level);
+                auditEventsService.auditSolutionDisplayedAction(trainingRun, (GameLevel) level);
                 trainingRunRepository.save(trainingRun);
             }
             return ((GameLevel) level).getSolution();
@@ -355,7 +355,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
             if (hint.getGameLevel().getId().equals(level.getId())) {
                 trainingRun.decreaseCurrentScore(hint.getHintPenalty());
                 trainingRun.decreaseTotalScore(hint.getHintPenalty());
-                auditHintTakenAction(trainingRun, hint);
+                auditEventsService.auditHintTakenAction(trainingRun, hint);
                 return hint;
             }
             throw new ServiceLayerException("Hint with id " + hintId + " is not in current level of training run: " + trainingRunId + ".", ErrorCode.RESOURCE_CONFLICT);
@@ -396,8 +396,10 @@ public class TrainingRunServiceImpl implements TrainingRunService {
 
         trainingRun.setState(TRState.ARCHIVED);
         trainingRun.setEndTime(LocalDateTime.now(Clock.systemUTC()));
-        auditLevelCompletedAction(trainingRun);
-        auditTrainingRunEndedAction(trainingRun);
+        if(trainingRun.getCurrentLevel() instanceof InfoLevel) {
+            auditEventsService.auditLevelCompletedAction(trainingRun);
+        }
+        auditEventsService.auditTrainingRunEndedAction(trainingRun);
     }
 
     private TrainingRun findByIdWithLevel(Long trainingRunId) {
@@ -411,255 +413,6 @@ public class TrainingRunServiceImpl implements TrainingRunService {
         OAuth2Authentication authentication = (OAuth2Authentication) SecurityContextHolder.getContext().getAuthentication();
         JsonObject credentials = (JsonObject) authentication.getUserAuthentication().getCredentials();
         return credentials.get("sub").getAsString();
-    }
-
-    private void auditTrainingRunStartedAction(TrainingInstance trainingInstance, TrainingRun trainingRun) {
-        if (trainingInstance != null) {
-            TrainingDefinition trainingDefinition = trainingInstance.getTrainingDefinition();
-            Long trainingDefinitionId = trainingDefinition.getId();
-            Long sandboxId = trainingDefinition.getSandboxDefinitionRefId();
-
-            TrainingRunStarted trainingRunStarted = new TrainingRunStarted.TrainingRunStartedBuilder()
-                    .sandboxId(sandboxId)
-                    .trainingDefinitionId(trainingDefinitionId)
-                    .trainingInstanceId(trainingInstance.getId())
-                    .trainingRunId(trainingRun.getId())
-                    .gameTime(0L)
-                    .playerLogin(getSubOfLoggedInUser())
-                    .totalScore(trainingRun.getTotalScore())
-                    .actualScoreInLevel(trainingRun.getCurrentScore())
-                    .level(trainingRun.getCurrentLevel().getId())
-                    .build();
-
-            auditService.saveTrainingRunEvent(trainingRunStarted, trainingDefinitionId, trainingInstance.getId());
-        }
-    }
-
-    private void auditLevelStartedAction(TrainingInstance trainingInstance, TrainingRun trainingRun) {
-        if (trainingInstance != null) {
-            TrainingDefinition trainingDefinition = trainingInstance.getTrainingDefinition();
-            Long trainingDefinitionId = trainingDefinition.getId();
-            Long sandboxId = trainingDefinition.getSandboxDefinitionRefId();
-            LevelType levelType = getLevelType(trainingRun.getCurrentLevel());
-
-            LevelStarted levelStarted = new LevelStarted.LevelStartedBuilder()
-                    .sandboxId(sandboxId)
-                    .trainingDefinitionId(trainingDefinitionId)
-                    .trainingInstanceId(trainingInstance.getId())
-                    .trainingRunId(trainingRun.getId())
-                    .gameTime(computeGameTime(trainingRun.getStartTime()))
-                    .playerLogin(getSubOfLoggedInUser())
-                    .totalScore(trainingRun.getTotalScore())
-                    .actualScoreInLevel(trainingRun.getCurrentScore())
-                    .level(trainingRun.getCurrentLevel().getId())
-                    .levelType(levelType)
-                    .maxScore(trainingRun.getCurrentLevel().getMaxScore())
-                    .levelTitle(trainingInstance.getTitle())
-                    .build();
-
-            auditService.saveTrainingRunEvent(levelStarted, trainingDefinitionId, trainingInstance.getId());
-        }
-    }
-
-    private void auditLevelCompletedAction(TrainingRun trainingRun) {
-        TrainingInstance trainingInstance = trainingRun.getTrainingInstance();
-        if (trainingInstance != null) {
-            TrainingDefinition trainingDefinition = trainingInstance.getTrainingDefinition();
-            Long trainingDefinitionId = trainingDefinition.getId();
-            Long sandboxId = trainingDefinition.getSandboxDefinitionRefId();
-            LevelType levelType = getLevelType(trainingRun.getCurrentLevel());
-
-            LevelCompleted levelCompleted = new LevelCompleted.LevelCompletedBuilder()
-                    .sandboxId(sandboxId)
-                    .trainingDefinitionId(trainingDefinitionId)
-                    .trainingInstanceId(trainingInstance.getId())
-                    .trainingRunId(trainingRun.getId())
-                    .gameTime(computeGameTime(trainingRun.getStartTime()))
-                    .playerLogin(getSubOfLoggedInUser())
-                    .totalScore(trainingRun.getTotalScore())
-                    .actualScoreInLevel(trainingRun.getCurrentScore())
-                    .level(trainingRun.getCurrentLevel().getId())
-                    .levelType(levelType)
-                    .build();
-
-            auditService.saveTrainingRunEvent(levelCompleted, trainingDefinitionId, trainingInstance.getId());
-        }
-    }
-
-    private void auditHintTakenAction(TrainingRun trainingRun, Hint hint) {
-        TrainingInstance trainingInstance = trainingRun.getTrainingInstance();
-        if (trainingInstance != null) {
-            TrainingDefinition trainingDefinition = trainingInstance.getTrainingDefinition();
-            Long trainingDefinitionId = trainingDefinition.getId();
-            Long sandboxId = trainingDefinition.getSandboxDefinitionRefId();
-            HintTaken hintTaken = new HintTaken.HintTakenBuilder()
-                    .sandboxId(sandboxId)
-                    .trainingDefinitionId(trainingDefinitionId)
-                    .trainingInstanceId(trainingInstance.getId())
-                    .trainingRunId(trainingRun.getId())
-                    .gameTime(computeGameTime(trainingRun.getStartTime()))
-                    .playerLogin(getSubOfLoggedInUser())
-                    .totalScore(trainingRun.getTotalScore())
-                    .actualScoreInLevel(trainingRun.getCurrentScore())
-                    .level(trainingRun.getCurrentLevel().getId())
-                    .hintId(hint.getId())
-                    .hintPenaltyPoints(hint.getHintPenalty())
-                    .hintTitle(hint.getTitle())
-                    .build();
-            LOG.info("AUDIT AFT");
-            auditService.saveTrainingRunEvent(hintTaken, trainingDefinitionId, trainingInstance.getId());
-        }
-    }
-
-    private void auditSolutionDisplayedAction(TrainingRun trainingRun, GameLevel gameLevel) {
-        TrainingInstance trainingInstance = trainingRun.getTrainingInstance();
-        if (trainingInstance != null) {
-            TrainingDefinition trainingDefinition = trainingInstance.getTrainingDefinition();
-            Long trainingDefinitionId = trainingDefinition.getId();
-            Long sandboxId = trainingDefinition.getSandboxDefinitionRefId();
-
-            SolutionDisplayed solutionDisplayed = new SolutionDisplayed.SolutionDisplayedBuilder()
-                    .sandboxId(sandboxId)
-                    .trainingDefinitionId(trainingDefinitionId)
-                    .trainingInstanceId(trainingInstance.getId())
-                    .trainingRunId(trainingRun.getId())
-                    .gameTime(computeGameTime(trainingRun.getStartTime()))
-                    .playerLogin(getSubOfLoggedInUser())
-                    .totalScore(trainingRun.getTotalScore())
-                    .actualScoreInLevel(trainingRun.getCurrentScore())
-                    .level(trainingRun.getCurrentLevel().getId())
-                    .penaltyPoints(gameLevel.getMaxScore() - trainingRun.getCurrentScore())
-                    .build();
-            auditService.saveTrainingRunEvent(solutionDisplayed, trainingDefinitionId, trainingInstance.getId());
-        }
-    }
-
-    private void auditCorrectFlagSubmittedAction(TrainingRun trainingRun, String flag) {
-        TrainingInstance trainingInstance = trainingRun.getTrainingInstance();
-        if (trainingInstance != null) {
-            TrainingDefinition trainingDefinition = trainingInstance.getTrainingDefinition();
-            Long trainingDefinitionId = trainingDefinition.getId();
-            Long sandboxId = trainingDefinition.getSandboxDefinitionRefId();
-
-            CorrectFlagSubmitted correctFlagSubmitted = new CorrectFlagSubmitted.CorrectFlagSubmittedBuilder()
-                    .sandboxId(sandboxId)
-                    .trainingDefinitionId(trainingDefinitionId)
-                    .trainingInstanceId(trainingInstance.getId())
-                    .trainingRunId(trainingRun.getId())
-                    .gameTime(computeGameTime(trainingRun.getStartTime()))
-                    .playerLogin(getSubOfLoggedInUser())
-                    .totalScore(trainingRun.getTotalScore()) // requires to set total and actual score in level from training run entity
-                    .actualScoreInLevel(trainingRun.getCurrentScore())
-                    .level(trainingRun.getCurrentLevel().getId())
-                    .flagContent(flag)
-                    .build();
-            auditService.saveTrainingRunEvent(correctFlagSubmitted, trainingDefinitionId, trainingInstance.getId());
-        }
-    }
-
-    private void auditWrongFlagSubmittedAction(TrainingRun trainingRun, String flag) {
-        TrainingInstance trainingInstance = trainingRun.getTrainingInstance();
-        if (trainingInstance != null) {
-            TrainingDefinition trainingDefinition = trainingInstance.getTrainingDefinition();
-            Long trainingDefinitionId = trainingDefinition.getId();
-            Long sandboxId = trainingDefinition.getSandboxDefinitionRefId();
-
-            WrongFlagSubmitted wrongFlagSubmitted = new WrongFlagSubmitted.WrongFlagSubmittedBuilder()
-                    .sandboxId(sandboxId)
-                    .trainingDefinitionId(trainingDefinitionId)
-                    .trainingInstanceId(trainingInstance.getId())
-                    .trainingRunId(trainingRun.getId())
-                    .gameTime(computeGameTime(trainingRun.getStartTime()))
-                    .playerLogin(getSubOfLoggedInUser())
-                    .totalScore(trainingRun.getTotalScore())
-                    .actualScoreInLevel(trainingRun.getCurrentScore())
-                    .level(trainingRun.getCurrentLevel().getId())
-                    .flagContent(flag)
-                    .count(trainingRun.getIncorrectFlagCount())
-                    .build();
-            auditService.saveTrainingRunEvent(wrongFlagSubmitted, trainingDefinitionId, trainingInstance.getId());
-        }
-    }
-
-    private void auditAssessmentAnswersAction(TrainingRun trainingRun, String answers) {
-        TrainingInstance trainingInstance = trainingRun.getTrainingInstance();
-        if (trainingInstance != null) {
-            TrainingDefinition trainingDefinition = trainingInstance.getTrainingDefinition();
-            Long trainingDefinitionId = trainingDefinition.getId();
-            Long sandboxId = trainingDefinition.getSandboxDefinitionRefId();
-
-            AssessmentAnswers assessmentAnswers = new AssessmentAnswers.AssessmentAnswersBuilder()
-                    .sandboxId(sandboxId)
-                    .trainingDefinitionId(trainingDefinitionId)
-                    .trainingInstanceId(trainingInstance.getId())
-                    .trainingRunId(trainingRun.getId())
-                    .gameTime(computeGameTime(trainingRun.getStartTime()))
-                    .playerLogin(getSubOfLoggedInUser())
-                    .totalScore(trainingRun.getTotalScore())
-                    .actualScoreInLevel(trainingRun.getCurrentScore())
-                    .level(trainingRun.getCurrentLevel().getId())
-                    .answers(answers)
-                    .build();
-            auditService.saveTrainingRunEvent(assessmentAnswers, trainingDefinitionId, trainingInstance.getId());
-        }
-    }
-
-    private void auditTrainingRunEndedAction(TrainingRun trainingRun) {
-        TrainingInstance trainingInstance = trainingRun.getTrainingInstance();
-        if (trainingInstance != null) {
-            TrainingDefinition trainingDefinition = trainingInstance.getTrainingDefinition();
-            Long trainingDefinitionId = trainingDefinition.getId();
-            Long sandboxId = trainingDefinition.getSandboxDefinitionRefId();
-
-            TrainingRunEnded assessmentAnswers = new TrainingRunEnded.TrainingRunEndedBuilder()
-                    .sandboxId(sandboxId)
-                    .trainingDefinitionId(trainingDefinitionId)
-                    .trainingInstanceId(trainingInstance.getId())
-                    .trainingRunId(trainingRun.getId())
-                    .gameTime(computeGameTime(trainingRun.getStartTime()))
-                    .playerLogin(getSubOfLoggedInUser())
-                    .totalScore(trainingRun.getTotalScore())
-                    .actualScoreInLevel(trainingRun.getCurrentScore())
-                    .level(trainingRun.getCurrentLevel().getId())
-                    .startTime(trainingRun.getStartTime().atOffset(ZoneOffset.UTC).toInstant().toEpochMilli())
-                    .endTime(System.currentTimeMillis())
-                    .build();
-
-            auditService.saveTrainingRunEvent(assessmentAnswers, trainingDefinitionId, trainingInstance.getId());
-        }
-    }
-
-    private void auditTrainingRunResumedAction(TrainingRun trainingRun) {
-        TrainingInstance trainingInstance = trainingRun.getTrainingInstance();
-        if (trainingInstance != null) {
-            TrainingDefinition trainingDefinition = trainingInstance.getTrainingDefinition();
-            Long trainingDefinitionId = trainingDefinition.getId();
-            Long sandboxId = trainingDefinition.getSandboxDefinitionRefId();
-
-            TrainingRunResumed trainingRunResumed = new TrainingRunResumed.TrainingRunResumedBuilder()
-                    .sandboxId(sandboxId)
-                    .trainingDefinitionId(trainingDefinitionId)
-                    .trainingInstanceId(trainingInstance.getId())
-                    .trainingRunId(trainingRun.getId())
-                    .gameTime(computeGameTime(trainingRun.getStartTime()))
-                    .playerLogin(getSubOfLoggedInUser())
-                    .totalScore(trainingRun.getTotalScore())
-                    .actualScoreInLevel(trainingRun.getCurrentScore())
-                    .level(trainingRun.getCurrentLevel().getId())
-                    .build();
-            auditService.saveTrainingRunEvent(trainingRunResumed, trainingDefinitionId, trainingInstance.getId());
-        }
-    }
-
-    private LevelType getLevelType(AbstractLevel abstractLevel) {
-        if (abstractLevel instanceof GameLevel) {
-            return LevelType.GAME;
-        } else if (abstractLevel instanceof InfoLevel) {
-            return LevelType.INFO;
-        } else if (abstractLevel instanceof AssessmentLevel) {
-            return LevelType.ASSESSMENT;
-        }
-        return LevelType.PVP; //no one knows what PVP is
     }
 
     @Override
@@ -697,8 +450,8 @@ public class TrainingRunServiceImpl implements TrainingRunService {
         trainingRun.setAssessmentResponses(responsesJSON.toString());
         trainingRun.setLevelAnswered(true);
         //TODO what is answers in audit action
-        auditAssessmentAnswersAction(trainingRun, responsesAsString);
-        auditLevelCompletedAction(trainingRun);
+        auditEventsService.auditAssessmentAnswersAction(trainingRun, responsesAsString);
+        auditEventsService.auditLevelCompletedAction(trainingRun);
     }
 
     private JSONArray isResponseValid(String responses) {
@@ -725,8 +478,6 @@ public class TrainingRunServiceImpl implements TrainingRunService {
         return credentials.get("name").getAsString();
     }
 
-    private long computeGameTime(LocalDateTime gameStartedTime) {
-        return ChronoUnit.MILLIS.between(gameStartedTime, LocalDateTime.now(Clock.systemUTC()));
-    }
+
 
 }

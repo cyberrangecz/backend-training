@@ -10,6 +10,7 @@ import cz.muni.ics.kypo.training.persistence.model.enums.AssessmentType;
 import cz.muni.ics.kypo.training.persistence.model.enums.TDState;
 import cz.muni.ics.kypo.training.persistence.model.enums.TRState;
 import cz.muni.ics.kypo.training.persistence.repository.*;
+import cz.muni.ics.kypo.training.service.impl.AuditEventsService;
 import cz.muni.ics.kypo.training.service.impl.TrainingRunServiceImpl;
 import cz.muni.ics.kypo.training.utils.SandboxInfo;
 import org.json.simple.parser.ParseException;
@@ -59,7 +60,7 @@ public class TrainingRunServiceTest {
     @Mock
     private TrainingRunRepository trainingRunRepository;
     @Mock
-    private AuditService auditService;
+    private AuditEventsService auditEventService;
     @Mock
     private AbstractLevelRepository abstractLevelRepository;
     @Mock
@@ -90,7 +91,7 @@ public class TrainingRunServiceTest {
     public void init() {
         MockitoAnnotations.initMocks(this);
         trainingRunService = new TrainingRunServiceImpl(trainingRunRepository, abstractLevelRepository, trainingInstanceRepository,
-                participantRefRepository, hintRepository, auditService, restTemplate);
+                participantRefRepository, hintRepository, auditEventService, restTemplate);
         parser = new JSONParser();
         try {
             questions = parser.parse(new FileReader(ResourceUtils.getFile("classpath:questions.json"))).toString();
