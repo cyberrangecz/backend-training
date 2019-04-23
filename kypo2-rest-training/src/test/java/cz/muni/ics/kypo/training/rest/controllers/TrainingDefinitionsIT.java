@@ -972,7 +972,7 @@ public class TrainingDefinitionsIT {
 		assertEquals(tD.getStartingLevel(), gL.getId());
 		assertEquals(gL.getMaxScore(), 100);
 		assertEquals(gL.getTitle(), "Title of game level");
-		assertEquals(gL.getIncorrectFlagLimit(), 5);
+		assertEquals(gL.getIncorrectFlagLimit(), 0);
 		assertEquals(gL.getFlag(), "Secret flag");
 		assertTrue(gL.isSolutionPenalized());
 		assertEquals(gL.getSolution(), "Solution of the game should be here");
