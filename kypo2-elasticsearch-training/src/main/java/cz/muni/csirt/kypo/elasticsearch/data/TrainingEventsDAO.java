@@ -48,7 +48,7 @@ public class TrainingEventsDAO extends AbstractElasticClientDAO {
         searchSourceBuilder.size(INDEX_DOCUMENTS_MAX_RETURN_NUMBER);
         searchSourceBuilder.timeout(new TimeValue(5, TimeUnit.MINUTES));
 
-        SearchRequest searchRequest = new SearchRequest("kypo2-cz.muni.csirt.kypo.events.trainings.definition-" + trainingDefinitionId + ".instance-" + trainingInstanceId + ".*");
+        SearchRequest searchRequest = new SearchRequest("kypo3.cz.muni.csirt.kypo.events.trainings.*" + "_evt" + "%definition=" + trainingDefinitionId + "%instance=" + trainingInstanceId);
         searchRequest.source(searchSourceBuilder);
 
         SearchResponse response = getClient().search(searchRequest, RequestOptions.DEFAULT);
