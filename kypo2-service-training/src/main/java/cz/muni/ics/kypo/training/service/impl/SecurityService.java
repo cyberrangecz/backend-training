@@ -1,6 +1,7 @@
 package cz.muni.ics.kypo.training.service.impl;
 
 import com.google.gson.JsonObject;
+import cz.muni.ics.kypo.training.enums.RoleTypeSecurity;
 import cz.muni.ics.kypo.training.exceptions.ErrorCode;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.persistence.model.TrainingDefinition;
@@ -12,6 +13,7 @@ import cz.muni.ics.kypo.training.persistence.repository.TrainingRunRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.stereotype.Service;
@@ -55,9 +57,39 @@ public class SecurityService {
         return trainingDefinition.getBetaTestingGroup().getOrganizers().stream().anyMatch(a -> a.getUserRefLogin().equals(getSubOfLoggedInUser()));
     }
 
-    private String getSubOfLoggedInUser() {
+    public boolean isAdmin() {
+        OAuth2Authentication authentication = (OAuth2Authentication) SecurityContextHolder.getContext().getAuthentication();
+        for (GrantedAuthority gA : authentication.getUserAuthentication().getAuthorities()) {
+            if (gA.getAuthority().equals(RoleTypeSecurity.ROLE_TRAINING_ADMINISTRATOR.name())) return true;
+        }
+        return false;
+    }
+
+    public boolean isDesigner() {
+        OAuth2Authentication authentication = (OAuth2Authentication) SecurityContextHolder.getContext().getAuthentication();
+        for (GrantedAuthority gA : authentication.getUserAuthentication().getAuthorities()) {
+            if (gA.getAuthority().equals(RoleTypeSecurity.ROLE_TRAINING_DESIGNER.name())) return true;
+        }
+        return false;
+    }
+
+    public boolean isOrganizer() {
+        OAuth2Authentication authentication = (OAuth2Authentication) SecurityContextHolder.getContext().getAuthentication();
+        for (GrantedAuthority gA : authentication.getUserAuthentication().getAuthorities()) {
+            if (gA.getAuthority().equals(RoleTypeSecurity.ROLE_TRAINING_ORGANIZER.name())) return true;
+        }
+        return false;
+    }
+
+    public String getSubOfLoggedInUser() {
         OAuth2Authentication authentication = (OAuth2Authentication) SecurityContextHolder.getContext().getAuthentication();
         JsonObject credentials = (JsonObject) authentication.getUserAuthentication().getCredentials();
         return credentials.get("sub").getAsString();
+    }
+
+    public String getFullNameOfLoggedInUser() {
+        OAuth2Authentication authentication = (OAuth2Authentication) SecurityContextHolder.getContext().getAuthentication();
+        JsonObject credentials = (JsonObject) authentication.getUserAuthentication().getCredentials();
+        return credentials.get("name").getAsString();
     }
 }

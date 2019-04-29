@@ -24,6 +24,7 @@ import cz.muni.ics.kypo.training.mapping.modelmapper.BeanMappingImpl;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.model.enums.TDState;
 import cz.muni.ics.kypo.training.service.TrainingDefinitionService;
+import cz.muni.ics.kypo.training.service.impl.SecurityService;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -70,6 +71,8 @@ public class TrainingDefinitionFacadeTest {
     private BasicLevelInfoMapperImpl basicLevelInfoMapper;
 
     @Mock
+    private SecurityService securityService;
+    @Mock
     private TrainingDefinitionService trainingDefinitionService;
 
     private BeanMapping beanMapping;
@@ -98,7 +101,7 @@ public class TrainingDefinitionFacadeTest {
     public void init() {
         MockitoAnnotations.initMocks(this);
         trainingDefinitionFacade = new TrainingDefinitionFacadeImpl(trainingDefinitionService,
-                trainingDefinitionMapper, gameLevelMapper, infoLevelMapper, assessmentLevelMapper, basicLevelInfoMapper);
+                trainingDefinitionMapper, gameLevelMapper, infoLevelMapper, assessmentLevelMapper, basicLevelInfoMapper, securityService);
         beanMapping = new BeanMappingImpl(new ModelMapper());
         assessmentLevel = new AssessmentLevel();
         assessmentLevel.setId(1L);
@@ -266,7 +269,7 @@ public class TrainingDefinitionFacadeTest {
 
     @Test
     public void cloneTrainingDefinitionWithNull() {
-        thrown.expect(NullPointerException.class);
+        thrown.expect(IllegalArgumentException.class);
         trainingDefinitionFacade.clone(null);
     }
 

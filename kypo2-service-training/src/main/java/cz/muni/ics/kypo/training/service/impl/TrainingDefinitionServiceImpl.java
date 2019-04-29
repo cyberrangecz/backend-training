@@ -1,6 +1,5 @@
 package cz.muni.ics.kypo.training.service.impl;
 
-import com.google.gson.JsonObject;
 import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.training.annotations.security.IsDesignerOrAdmin;
 import cz.muni.ics.kypo.training.annotations.security.IsAdminOrDesignerOrOrganizer;
@@ -9,7 +8,6 @@ import cz.muni.ics.kypo.training.annotations.transactions.TransactionalWO;
 import cz.muni.ics.kypo.training.api.PageResultResource;
 import cz.muni.ics.kypo.training.api.dto.UserInfoDTO;
 import cz.muni.ics.kypo.training.api.enums.RoleType;
-import cz.muni.ics.kypo.training.enums.RoleTypeSecurity;
 import cz.muni.ics.kypo.training.exceptions.ErrorCode;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.persistence.model.*;
@@ -31,14 +29,10 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import org.springframework.web.client.RestTemplate;
 
-import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -63,6 +57,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     private InfoLevelRepository infoLevelRepository;
     private AssessmentLevelRepository assessmentLevelRepository;
     private UserRefRepository userRefRepository;
+    private SecurityService securityService;
 
     private static final String ARCHIVED_OR_RELEASED = "Cannot edit released or archived training definition.";
     private static final String LEVEL_NOT_FOUND = "Level not found.";
@@ -71,7 +66,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     public TrainingDefinitionServiceImpl(TrainingDefinitionRepository trainingDefinitionRepository,
                                          AbstractLevelRepository abstractLevelRepository, InfoLevelRepository infoLevelRepository, GameLevelRepository gameLevelRepository,
                                          AssessmentLevelRepository assessmentLevelRepository, TrainingInstanceRepository trainingInstanceRepository,
-                                         UserRefRepository userRefRepository, RestTemplate restTemplate) {
+                                         UserRefRepository userRefRepository, RestTemplate restTemplate, SecurityService securityService) {
         this.trainingDefinitionRepository = trainingDefinitionRepository;
         this.abstractLevelRepository = abstractLevelRepository;
         this.gameLevelRepository = gameLevelRepository;
@@ -80,6 +75,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
         this.trainingInstanceRepository = trainingInstanceRepository;
         this.userRefRepository = userRefRepository;
         this.restTemplate = restTemplate;
+        this.securityService = securityService;
     }
 
     @Override
@@ -96,61 +92,24 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     @IsDesignerOrAdmin
     public Page<TrainingDefinition> findAll(Predicate predicate, Pageable pageable) {
         LOG.debug("findAllTrainingDefinitions({},{})", predicate, pageable);
-        if (isAdmin()) {
+        if (securityService.isAdmin()) {
             return trainingDefinitionRepository.findAll(predicate, pageable);
         }
-        return trainingDefinitionRepository.findAllByLoggedInUser(getSubOfLoggedInUser(), pageable);
+        return trainingDefinitionRepository.findAllByLoggedInUser(securityService.getSubOfLoggedInUser(), pageable);
     }
 
     @Override
     @IsOrganizerOrAdmin
     public Page<TrainingDefinition> findAllForOrganizers(Predicate predicate, Pageable pageable) {
         LOG.debug("findAllTrainingDefinitions({},{})", predicate, pageable);
-        if (isAdmin()) {
+        if (securityService.isAdmin()) {
             return trainingDefinitionRepository.findAll(predicate, pageable);
-        } else if (isDesigner() && isOrganizer()) {
-            return trainingDefinitionRepository.findAllForDesignersAndOrganizers(getSubOfLoggedInUser(), pageable);
+        } else if (securityService.isDesigner() && securityService.isOrganizer()) {
+            return trainingDefinitionRepository.findAllForDesignersAndOrganizers(securityService.getSubOfLoggedInUser(), pageable);
         } else {
-            return trainingDefinitionRepository.findAllForOrganizers(getSubOfLoggedInUser(), pageable);
+            return trainingDefinitionRepository.findAllForOrganizers(securityService.getSubOfLoggedInUser(), pageable);
         }
 
-    }
-
-
-    private String getSubOfLoggedInUser() {
-        OAuth2Authentication authentication = (OAuth2Authentication) SecurityContextHolder.getContext().getAuthentication();
-        JsonObject credentials = (JsonObject) authentication.getUserAuthentication().getCredentials();
-        return credentials.get("sub").getAsString();
-    }
-
-    private String getFullNameOfLoggedInUser(){
-        OAuth2Authentication authentication = (OAuth2Authentication) SecurityContextHolder.getContext().getAuthentication();
-        JsonObject credentials = (JsonObject) authentication.getUserAuthentication().getCredentials();
-        return credentials.get("name").getAsString();
-    }
-
-    private boolean isAdmin() {
-        OAuth2Authentication authentication = (OAuth2Authentication) SecurityContextHolder.getContext().getAuthentication();
-        for (GrantedAuthority gA : authentication.getUserAuthentication().getAuthorities()) {
-            if (gA.getAuthority().equals(RoleTypeSecurity.ROLE_TRAINING_ADMINISTRATOR.name())) return true;
-        }
-        return false;
-    }
-
-    private boolean isDesigner() {
-        OAuth2Authentication authentication = (OAuth2Authentication) SecurityContextHolder.getContext().getAuthentication();
-        for (GrantedAuthority gA : authentication.getUserAuthentication().getAuthorities()) {
-            if (gA.getAuthority().equals(RoleTypeSecurity.ROLE_TRAINING_DESIGNER.name())) return true;
-        }
-        return false;
-    }
-
-    private boolean isOrganizer() {
-        OAuth2Authentication authentication = (OAuth2Authentication) SecurityContextHolder.getContext().getAuthentication();
-        for (GrantedAuthority gA : authentication.getUserAuthentication().getAuthorities()) {
-            if (gA.getAuthority().equals(RoleTypeSecurity.ROLE_TRAINING_ORGANIZER.name())) return true;
-        }
-        return false;
     }
 
     @Override
@@ -158,7 +117,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     public TrainingDefinition create(TrainingDefinition trainingDefinition) {
         LOG.debug("create({})", trainingDefinition);
         Assert.notNull(trainingDefinition, "Input training definition must not be null");
-        String userSub = getSubOfLoggedInUser();
+        String userSub = securityService.getSubOfLoggedInUser();
 
         Optional<UserRef> user = userRefRepository.findUserByUserRefLogin(userSub);
         if (user.isPresent()) {
@@ -166,7 +125,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
         } else {
             UserRef newUser = new UserRef();
             newUser.setUserRefLogin(userSub);
-            newUser.setUserRefFullName(getFullNameOfLoggedInUser());
+            newUser.setUserRefFullName(securityService.getFullNameOfLoggedInUser());
             trainingDefinition.addAuthor(newUser);
         }
         trainingDefinition.setLastEdited(LocalDateTime.now());
@@ -197,14 +156,14 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
             throw new ServiceLayerException("Cannot update training definition with already created training instance. " +
                     "Remove training instance/s before updating training definition.", ErrorCode.RESOURCE_CONFLICT);
         }
-        String userSub = getSubOfLoggedInUser();
+        String userSub = securityService.getSubOfLoggedInUser();
         Optional<UserRef> user = userRefRepository.findUserByUserRefLogin(userSub);
         if (user.isPresent()) {
             trainingDefinitionToUpdate.addAuthor(user.get());
         } else {
             UserRef newUser = new UserRef();
             newUser.setUserRefLogin(userSub);
-            newUser.setUserRefFullName(getFullNameOfLoggedInUser());
+            newUser.setUserRefFullName(securityService.getFullNameOfLoggedInUser());
             trainingDefinitionToUpdate.addAuthor(newUser);
         }
         trainingDefinitionToUpdate.setLastEdited(LocalDateTime.now());
@@ -229,13 +188,13 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
             clonedTrainingDefinition.setStartingLevel(createLevels(clonedTrainingDefinition.getStartingLevel()));
         }
         clonedTrainingDefinition.setAuthors(new HashSet<>());
-        Optional<UserRef> user = userRefRepository.findUserByUserRefLogin(getSubOfLoggedInUser());
+        Optional<UserRef> user = userRefRepository.findUserByUserRefLogin(securityService.getSubOfLoggedInUser());
         if (user.isPresent()) {
             clonedTrainingDefinition.addAuthor(user.get());
         } else {
             UserRef newUser = new UserRef();
-            newUser.setUserRefLogin(getSubOfLoggedInUser());
-            newUser.setUserRefFullName(getFullNameOfLoggedInUser());
+            newUser.setUserRefLogin(securityService.getSubOfLoggedInUser());
+            newUser.setUserRefFullName(securityService.getFullNameOfLoggedInUser());
             clonedTrainingDefinition.addAuthor(newUser);
         }
         clonedTrainingDefinition.setLastEdited(LocalDateTime.now());

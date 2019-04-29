@@ -10,6 +10,7 @@ import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.model.enums.AssessmentType;
 import cz.muni.ics.kypo.training.persistence.model.enums.TDState;
 import cz.muni.ics.kypo.training.persistence.repository.*;
+import cz.muni.ics.kypo.training.service.impl.SecurityService;
 import cz.muni.ics.kypo.training.service.impl.TrainingDefinitionServiceImpl;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -66,11 +67,11 @@ public class TrainingDefinitionServiceTest {
     @Mock
     private TrainingInstanceRepository trainingInstanceRepository;
     @Mock
-    private BetaTestingGroupRepository viewGroupRepository;
-    @Mock
     private UserRefRepository userRefRepository;
     @Mock
     private RestTemplate restTemplate;
+    @Mock
+    private SecurityService securityService;
 
     private TrainingDefinition trainingDefinition1, trainingDefinition2, unreleasedDefinition, releasedDefinition, definitionWithoutLevels;
     private AssessmentLevel level1, level2, level3, newAssessmentLevel;
@@ -92,7 +93,7 @@ public class TrainingDefinitionServiceTest {
         MockitoAnnotations.initMocks(this);
         trainingDefinitionService = new TrainingDefinitionServiceImpl(trainingDefinitionRepository, abstractLevelRepository,
                 infoLevelRepository, gameLevelRepository, assessmentLevelRepository, trainingInstanceRepository, userRefRepository,
-                restTemplate);
+                restTemplate, securityService);
 
         parser = new JSONParser();
         try {
@@ -201,7 +202,7 @@ public class TrainingDefinitionServiceTest {
 
     @Test
     public void findAll() {
-        mockSpringSecurityContextForGet();
+        given(securityService.isAdmin()).willReturn(true);
         List<TrainingDefinition> expected = new ArrayList<>();
         expected.add(trainingDefinition1);
         expected.add(trainingDefinition2);

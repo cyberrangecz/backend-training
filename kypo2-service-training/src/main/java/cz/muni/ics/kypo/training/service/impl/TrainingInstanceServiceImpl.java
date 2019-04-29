@@ -1,11 +1,9 @@
 package cz.muni.ics.kypo.training.service.impl;
 
-import com.google.gson.JsonObject;
 import com.mysema.commons.lang.Assert;
 import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.training.annotations.security.IsOrganizerOrAdmin;
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalWO;
-import cz.muni.ics.kypo.training.enums.RoleTypeSecurity;
 import cz.muni.ics.kypo.training.exceptions.ErrorCode;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.persistence.model.*;
@@ -29,9 +27,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.*;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
@@ -59,16 +54,18 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
     private AccessTokenRepository accessTokenRepository;
     private UserRefRepository organizerRefRepository;
     private RestTemplate restTemplate;
+    private SecurityService securityService;
 
     @Autowired
     public TrainingInstanceServiceImpl(TrainingInstanceRepository trainingInstanceRepository, AccessTokenRepository accessTokenRepository,
                                        TrainingRunRepository trainingRunRepository, UserRefRepository organizerRefRepository,
-                                       RestTemplate restTemplate) {
+                                       RestTemplate restTemplate, SecurityService securityService) {
         this.trainingInstanceRepository = trainingInstanceRepository;
         this.trainingRunRepository = trainingRunRepository;
         this.accessTokenRepository = accessTokenRepository;
         this.organizerRefRepository = organizerRefRepository;
         this.restTemplate = restTemplate;
+        this.securityService = securityService;
     }
 
     @Override
@@ -83,10 +80,10 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
     @IsOrganizerOrAdmin
     public Page<TrainingInstance> findAll(Predicate predicate, Pageable pageable) {
         LOG.debug("findAllTrainingDefinitions({},{})", predicate, pageable);
-        if(isAdmin()) {
+        if(securityService.isAdmin()) {
             return trainingInstanceRepository.findAll(predicate, pageable);
         }
-        Predicate loggedInUser = QTrainingInstance.trainingInstance.organizers.any().userRefLogin.eq(getSubOfLoggedInUser());
+        Predicate loggedInUser = QTrainingInstance.trainingInstance.organizers.any().userRefLogin.eq(securityService.getSubOfLoggedInUser());
         return trainingInstanceRepository.findAll(loggedInUser, pageable);
     }
 
@@ -99,13 +96,13 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
         if (trainingInstance.getStartTime().isAfter(trainingInstance.getEndTime())) {
             throw new ServiceLayerException("End time must be latfindAllByParticipantRefLoginer than start time.", ErrorCode.RESOURCE_CONFLICT);
         }
-        Optional<UserRef> authorOfTrainingInstance = organizerRefRepository.findUserByUserRefLogin(getSubOfLoggedInUser());
+        Optional<UserRef> authorOfTrainingInstance = organizerRefRepository.findUserByUserRefLogin(securityService.getSubOfLoggedInUser());
         if(authorOfTrainingInstance.isPresent()) {
             trainingInstance.addOrganizer(authorOfTrainingInstance.get());
         } else {
             UserRef userRef = new UserRef();
-            userRef.setUserRefLogin(getSubOfLoggedInUser());
-            userRef.setUserRefFullName(getFullNameOfLoggedInUser());
+            userRef.setUserRefLogin(securityService.getSubOfLoggedInUser());
+            userRef.setUserRefFullName(securityService.getFullNameOfLoggedInUser());
             trainingInstance.addOrganizer(organizerRefRepository.save(userRef));
 
         }
@@ -321,26 +318,4 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
     public Set<UserRef> findUserRefsByLogins(Set<String> logins) {
         return organizerRefRepository.findUsers(logins);
     }
-
-
-
-    private String getSubOfLoggedInUser() {
-        OAuth2Authentication authentication = (OAuth2Authentication) SecurityContextHolder.getContext().getAuthentication();
-        JsonObject credentials = (JsonObject) authentication.getUserAuthentication().getCredentials();
-        return credentials.get("sub").getAsString();
-    }
-
-    private String getFullNameOfLoggedInUser(){
-        OAuth2Authentication authentication = (OAuth2Authentication) SecurityContextHolder.getContext().getAuthentication();
-        JsonObject credentials = (JsonObject) authentication.getUserAuthentication().getCredentials();
-        return credentials.get("name").getAsString();
-    }
-    private boolean isAdmin() {
-        OAuth2Authentication authentication = (OAuth2Authentication) SecurityContextHolder.getContext().getAuthentication();
-        for (GrantedAuthority gA : authentication.getUserAuthentication().getAuthorities()) {
-            if (gA.getAuthority().equals(RoleTypeSecurity.ROLE_TRAINING_ADMINISTRATOR.name())) return true;
-        }
-        return false;
-    }
-
 }
