@@ -19,9 +19,9 @@ stages:
 
 before_script:
     # Get version.
-    #     Variable CI_COMMIT_TAG is set only when tag was pushed.
+    # Variable CI_COMMIT_TAG is set only when tag was pushed.
     - export VERSION=$(if [[ "$CI_COMMIT_TAG" == "" ]]; then echo $(dpkg-parsechangelog --show-field version); else echo $CI_COMMIT_TAG | cut -c 2-; fi)
-    - echo VERSION
+    - echo $VERSION
     # Get machine distribution
     - export DEBIAN_DISTRIBUTION=$(cat /etc/os-release | grep VERSION | grep -Po "(?<=\().*(?=\))")
     - echo $DEBIAN_DISTRIBUTION
