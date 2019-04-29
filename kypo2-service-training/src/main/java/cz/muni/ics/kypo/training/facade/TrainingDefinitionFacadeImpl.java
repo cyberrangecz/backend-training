@@ -28,6 +28,7 @@ import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.mapping.mapstruct.*;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.service.TrainingDefinitionService;
+import org.modelmapper.internal.util.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,6 +39,7 @@ import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.validation.constraints.NotNull;
 import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -236,7 +238,7 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
     public TrainingDefinitionByIdDTO clone(Long id) {
         LOG.debug("clone({})", id);
         try {
-            Objects.requireNonNull(id);
+            Assert.notNull(id, "Given id of training definition to be cloned");
             return trainingDefinitionMapper.mapToDTOById(trainingDefinitionService.clone(id));
         } catch (ServiceLayerException ex) {
             throw new FacadeLayerException(ex);

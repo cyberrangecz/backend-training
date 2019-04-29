@@ -221,12 +221,8 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
         TrainingDefinition clonedTrainingDefinition = new TrainingDefinition();
         BeanUtils.copyProperties(trainingDefinition, clonedTrainingDefinition);
         clonedTrainingDefinition.setId(null);
+        clonedTrainingDefinition.setBetaTestingGroup(null);
 
-        BetaTestingGroup vG = new BetaTestingGroup();
-        BeanUtils.copyProperties(clonedTrainingDefinition.getBetaTestingGroup(), vG);
-        vG.setId(null);
-
-        clonedTrainingDefinition.setBetaTestingGroup(vG);
         clonedTrainingDefinition.setTitle("Clone of " + clonedTrainingDefinition.getTitle());
         clonedTrainingDefinition.setState(TDState.UNRELEASED);
         if (clonedTrainingDefinition.getStartingLevel() != null) {
