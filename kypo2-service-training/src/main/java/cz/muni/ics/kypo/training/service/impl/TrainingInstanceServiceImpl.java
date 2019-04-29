@@ -37,7 +37,6 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import javax.servlet.http.HttpServletRequest;
 import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -148,8 +147,23 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
         if (currentDate.isAfter(trainingInstance.getEndTime()) && trainingRunRepository.findAllByTrainingInstanceId(
                 trainingInstance.getId(), PageRequest.of(0, 5)).getTotalElements() > 0)
             throw new ServiceLayerException("Finished training instance with already assigned training runs cannot be deleted.", ErrorCode.RESOURCE_CONFLICT);
+        if(trainingInstance.getPoolId() != null  && trainingInstance.getSandboxInstanceRefs().isEmpty()) {
+            removePoolOfSandboxesFromOpenStack(trainingInstance.getPoolId());
+        } else if(trainingInstance.getPoolId() != null) {
+            throw new ServiceLayerException("Cannot delete training instance because it contains some sandboxes. Please delete sandboxes and try again.", ErrorCode.RESOURCE_CONFLICT);
+        }
         trainingInstanceRepository.delete(trainingInstance);
-        LOG.info("Training instance with id: {} deleted.", instanceId);
+        LOG.debug("Training instance with id: {} deleted.", instanceId);
+    }
+
+    private void removePoolOfSandboxesFromOpenStack(Long poolId) {
+        //Delete pool
+        String url = kypoOpenStackURI + "/pools/" + poolId + "/";
+        try {
+            restTemplate.delete(UriComponentsBuilder.fromUriString(url).toUriString());
+        } catch (HttpClientErrorException ex) {
+            LOG.error("Client side error when calling OpenStack: {}." , ex.getResponseBodyAsString());
+        }
     }
 
     private String generateAccessToken(String accessToken) {
@@ -233,10 +247,10 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
             });
             trainingInstanceRepository.save(trainingInstance);
         } catch (HttpClientErrorException ex) {
-            if(new JSONObject(ex.getResponseBodyAsString()).get("detail").toString().contains("You have reached the maximum stacks per tenant")) {
-                synchronizeSandboxesWithPythonApi(trainingInstance);
-            }
-            LOG.error("Client side error when calling OpenStack: {}." , new JSONObject(ex.getResponseBodyAsString()).get("detail"));
+            //if(new JSONObject(ex.getResponseBodyAsString()).get("detail").toString().contains("You have reached the maximum stacks per tenant")) {
+              //  synchronizeSandboxesWithPythonApi(trainingInstance);
+            //}
+            LOG.error("Client side error when calling OpenStack: {}." , ex.getResponseBodyAsString());
         }
     }
 
