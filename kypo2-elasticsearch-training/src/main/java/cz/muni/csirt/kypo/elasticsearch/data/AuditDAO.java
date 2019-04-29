@@ -51,23 +51,6 @@ public class AuditDAO extends AbstractElasticClientDAO {
         return index;
     }
 
-    /**
-     * Update particular document.
-     *
-     * @param pojoClass class updating in Elasticsearch
-     * @throws IOException
-     * @throws ElasticsearchTrainingDataLayerException
-     */
-    public <T extends AbstractAuditPOJO> void update(T pojoClass) throws IOException {
-        String type = pojoClass.getClass().getName();
-        String index = type.toLowerCase();
-        UpdateRequest updateRequest = new UpdateRequest();
-        updateRequest.index("kypo2-" + index);
-        updateRequest.doc(getMapper().writeValueAsString(pojoClass), XContentType.JSON);
-        // send update request to Elastic
-        getClient().update(updateRequest, RequestOptions.DEFAULT);
-    }
-
     public ObjectMapper getMapper() {
         return super.getMapper();
     }
