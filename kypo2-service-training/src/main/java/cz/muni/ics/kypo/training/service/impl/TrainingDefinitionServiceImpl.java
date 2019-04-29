@@ -522,6 +522,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
         newAssessmentLevel.setAssessmentType(AssessmentType.QUESTIONNAIRE);
         newAssessmentLevel.setInstructions("Instructions should be here");
         newAssessmentLevel.setQuestions("[]");
+        newAssessmentLevel.setEstimatedDuration(1);
         AssessmentLevel assessmentLevel = assessmentLevelRepository.save(newAssessmentLevel);
 
         if (trainingDefinition.getStartingLevel() == null) {
