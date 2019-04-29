@@ -8,9 +8,6 @@ import com.github.fge.jsonschema.main.JsonSchemaFactory;
 import com.github.fge.jsonschema.main.JsonValidator;
 import com.google.gson.JsonObject;
 import com.querydsl.core.types.Predicate;
-import cz.muni.csirt.kypo.elasticsearch.service.AuditService;
-import cz.muni.csirt.kypo.events.trainings.*;
-import cz.muni.csirt.kypo.events.trainings.enums.LevelType;
 import cz.muni.ics.kypo.training.annotations.security.IsTraineeOrAdmin;
 import cz.muni.ics.kypo.training.exceptions.ErrorCode;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
@@ -63,11 +60,13 @@ public class TrainingRunServiceImpl implements TrainingRunService {
     private HintRepository hintRepository;
     private AuditEventsService auditEventsService;
     private RestTemplate restTemplate;
+    private SecurityService securityService;
 
     @Autowired
     public TrainingRunServiceImpl(TrainingRunRepository trainingRunRepository, AbstractLevelRepository abstractLevelRepository,
                                   TrainingInstanceRepository trainingInstanceRepository, UserRefRepository participantRefRepository,
-                                  HintRepository hintRepository, AuditEventsService auditEventsService, RestTemplate restTemplate) {
+                                  HintRepository hintRepository, AuditEventsService auditEventsService, RestTemplate restTemplate,
+                                  SecurityService securityService) {
         this.trainingRunRepository = trainingRunRepository;
         this.abstractLevelRepository = abstractLevelRepository;
         this.trainingInstanceRepository = trainingInstanceRepository;
@@ -75,6 +74,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
         this.hintRepository = hintRepository;
         this.auditEventsService = auditEventsService;
         this.restTemplate = restTemplate;
+        this.securityService = securityService;
     }
 
     @Override
@@ -97,7 +97,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
     @Override
     @IsTraineeOrAdmin
     public Page<TrainingRun> findAllByParticipantRefLogin(Pageable pageable) {
-        String login = getSubOfLoggedInUser();
+        String login = securityService.getSubOfLoggedInUser();
         LOG.debug("findAllByParticipantRefLogin({})", login);
         return trainingRunRepository.findAllByParticipantRefLogin(login, pageable);
     }
@@ -140,7 +140,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
     public Page<TrainingRun> findAllByTrainingDefinitionAndParticipant(Long definitionId, Pageable pageable) {
         LOG.debug("findAllByTrainingDefinitionAndParticipant({})", definitionId);
         Assert.notNull(definitionId, "Input training definition id must not be null.");
-        return trainingRunRepository.findAllByTrainingDefinitionIdAndParticipantRefLogin(definitionId, getSubOfLoggedInUser(), pageable);
+        return trainingRunRepository.findAllByTrainingDefinitionIdAndParticipantRefLogin(definitionId, securityService.getSubOfLoggedInUser(), pageable);
     }
 
     @Override
@@ -173,7 +173,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
     public TrainingRun accessTrainingRun(String accessToken) {
         LOG.debug("accessTrainingRun({})", accessToken);
         Assert.hasLength(accessToken, "AccessToken cannot be null or empty.");
-        Optional<TrainingRun> alreadyAccessedTrainingRun = trainingRunRepository.findByUserAndAccessToken(accessToken, getSubOfLoggedInUser());
+        Optional<TrainingRun> alreadyAccessedTrainingRun = trainingRunRepository.findByUserAndAccessToken(accessToken, securityService.getSubOfLoggedInUser());
         if (alreadyAccessedTrainingRun.isPresent() && !alreadyAccessedTrainingRun.get().getState().equals(TRState.ARCHIVED)) {
             resumeTrainingRun(alreadyAccessedTrainingRun.get().getId());
             return alreadyAccessedTrainingRun.get();
@@ -188,7 +188,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
                 if (!freeSandboxes.isEmpty()) {
                     SandboxInstanceRef sandboxInstanceRef = getReadySandboxInstanceRef(freeSandboxes, trainingInstance.getPoolId());
                     AbstractLevel abstractLevel = abstractLevelRepository.findById(trainingInstance.getTrainingDefinition().getStartingLevel()).orElseThrow(() -> new ServiceLayerException("No starting level available for this training definition", ErrorCode.RESOURCE_NOT_FOUND));
-                    TrainingRun trainingRun = getNewTrainingRun(abstractLevel, getSubOfLoggedInUser(), trainingInstance, TRState.ALLOCATED, LocalDateTime.now(Clock.systemUTC()), trainingInstance.getEndTime(), sandboxInstanceRef);
+                    TrainingRun trainingRun = getNewTrainingRun(abstractLevel, securityService.getSubOfLoggedInUser(), trainingInstance, TRState.ALLOCATED, LocalDateTime.now(Clock.systemUTC()), trainingInstance.getEndTime(), sandboxInstanceRef);
                     trainingRun = create(trainingRun);
                     // audit this action to the Elasticsearch
                     auditEventsService.auditTrainingRunStartedAction(trainingRun);
@@ -242,7 +242,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
             newTrainingRun.setParticipantRef(userRef.get());
         } else {
             newTrainingRun.setParticipantRef(participantRefRepository.save(
-                    new UserRef(participantRefLogin, getFullNameOfLoggedInUser())
+                    new UserRef(participantRefLogin, securityService.getFullNameOfLoggedInUser())
             ));
         }
         newTrainingRun.setAssessmentResponses("[]");
@@ -409,12 +409,6 @@ public class TrainingRunServiceImpl implements TrainingRunService {
                 new ServiceLayerException("Training Run with id: " + trainingRunId + " not found.", ErrorCode.RESOURCE_NOT_FOUND));
     }
 
-    private String getSubOfLoggedInUser() {
-        OAuth2Authentication authentication = (OAuth2Authentication) SecurityContextHolder.getContext().getAuthentication();
-        JsonObject credentials = (JsonObject) authentication.getUserAuthentication().getCredentials();
-        return credentials.get("sub").getAsString();
-    }
-
     @Override
     public void evaluateResponsesToAssessment(Long trainingRunId, String responsesAsString) {
         LOG.info("evaluateAndStoreResponse({})", trainingRunId);
@@ -471,13 +465,4 @@ public class TrainingRunServiceImpl implements TrainingRunService {
             throw new ServiceLayerException(ex.getMessage(), ErrorCode.UNEXPECTED_ERROR);
         }
     }
-
-    private String getFullNameOfLoggedInUser() {
-        OAuth2Authentication authentication = (OAuth2Authentication) SecurityContextHolder.getContext().getAuthentication();
-        JsonObject credentials = (JsonObject) authentication.getUserAuthentication().getCredentials();
-        return credentials.get("name").getAsString();
-    }
-
-
-
 }

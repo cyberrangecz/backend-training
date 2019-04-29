@@ -10,6 +10,7 @@ import cz.muni.ics.kypo.training.persistence.repository.TrainingInstanceReposito
 
 import cz.muni.ics.kypo.training.persistence.repository.TrainingRunRepository;
 import cz.muni.ics.kypo.training.persistence.repository.UserRefRepository;
+import cz.muni.ics.kypo.training.service.impl.SecurityService;
 import cz.muni.ics.kypo.training.service.impl.TrainingInstanceServiceImpl;
 import cz.muni.ics.kypo.training.utils.SandboxInfo;
 import cz.muni.ics.kypo.training.utils.SandboxPoolInfo;
@@ -66,6 +67,8 @@ public class TrainingInstanceServiceTest {
     private TrainingRunRepository trainingRunRepository;
     @Mock
     private UserRefRepository organizerRefRepository;
+    @Mock
+    private SecurityService securityService;
 
     @Mock
     private TrainingDefinition trainingDefinition;
@@ -82,7 +85,7 @@ public class TrainingInstanceServiceTest {
     public void init() {
         MockitoAnnotations.initMocks(this);
         trainingInstanceService = new TrainingInstanceServiceImpl(trainingInstanceRepository, accessTokenRepository,
-                trainingRunRepository, organizerRefRepository, restTemplate);
+                trainingRunRepository, organizerRefRepository, restTemplate, securityService);
 
         trainingInstance1 = new TrainingInstance();
         trainingInstance1.setId(1L);
@@ -153,6 +156,7 @@ public class TrainingInstanceServiceTest {
         List<TrainingInstance> expected = new ArrayList<>();
         expected.add(trainingInstance1);
         expected.add(trainingInstance2);
+        given(securityService.getSubOfLoggedInUser()).willReturn("participant");
 
         Page p = new PageImpl<TrainingInstance>(expected);
         PathBuilder<TrainingInstance> tI = new PathBuilder<TrainingInstance>(TrainingInstance.class, "trainingInstance");

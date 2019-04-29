@@ -11,6 +11,7 @@ import cz.muni.ics.kypo.training.persistence.model.enums.TDState;
 import cz.muni.ics.kypo.training.persistence.model.enums.TRState;
 import cz.muni.ics.kypo.training.persistence.repository.*;
 import cz.muni.ics.kypo.training.service.impl.AuditEventsService;
+import cz.muni.ics.kypo.training.service.impl.SecurityService;
 import cz.muni.ics.kypo.training.service.impl.TrainingRunServiceImpl;
 import cz.muni.ics.kypo.training.utils.SandboxInfo;
 import org.json.simple.parser.ParseException;
@@ -73,6 +74,8 @@ public class TrainingRunServiceTest {
     private HintRepository hintRepository;
     @Mock
     private RestTemplate restTemplate;
+    @Mock
+    private SecurityService securityService;
 
     private TrainingRun trainingRun1, trainingRun2;
     private GameLevel gameLevel;
@@ -91,7 +94,7 @@ public class TrainingRunServiceTest {
     public void init() {
         MockitoAnnotations.initMocks(this);
         trainingRunService = new TrainingRunServiceImpl(trainingRunRepository, abstractLevelRepository, trainingInstanceRepository,
-                participantRefRepository, hintRepository, auditEventService, restTemplate);
+                participantRefRepository, hintRepository, auditEventService, restTemplate, securityService);
         parser = new JSONParser();
         try {
             questions = parser.parse(new FileReader(ResourceUtils.getFile("classpath:questions.json"))).toString();
@@ -412,8 +415,8 @@ public class TrainingRunServiceTest {
     public void findAllByParticipantRefLogin() {
         Page<TrainingRun> expectedPage = new PageImpl<>(Arrays.asList(trainingRun1, trainingRun2));
 
-        mockSpringSecurityContextForGet();
-        given(trainingRunRepository.findAllByParticipantRefLogin(any(String.class), any(PageRequest.class))).willReturn(expectedPage);
+        given(securityService.getSubOfLoggedInUser()).willReturn(participantRef.getUserRefLogin());
+        given(trainingRunRepository.findAllByParticipantRefLogin(eq(participantRef.getUserRefLogin()), any(PageRequest.class))).willReturn(expectedPage);
 
         Page<TrainingRun> resultPage = trainingRunService.findAllByParticipantRefLogin(PageRequest.of(0, 2));
 
@@ -425,8 +428,8 @@ public class TrainingRunServiceTest {
     @Test
     public void findAllByTrainingDefinitionAndParticipant() {
         Page<TrainingRun> expectedPage = new PageImpl<>(Collections.singletonList(trainingRun2));
-        mockSpringSecurityContextForGet();
-        given(trainingRunRepository.findAllByTrainingDefinitionIdAndParticipantRefLogin(any(Long.class), any(String.class), any(Pageable.class))).willReturn(expectedPage);
+        given(securityService.getSubOfLoggedInUser()).willReturn(participantRef.getUserRefLogin());
+        given(trainingRunRepository.findAllByTrainingDefinitionIdAndParticipantRefLogin(any(Long.class), eq(participantRef.getUserRefLogin()), any(Pageable.class))).willReturn(expectedPage);
 
         Page<TrainingRun> resultPage = trainingRunService.findAllByTrainingDefinitionAndParticipant(trainingDefinition2.getId(), PageRequest.of(0, 2));
 

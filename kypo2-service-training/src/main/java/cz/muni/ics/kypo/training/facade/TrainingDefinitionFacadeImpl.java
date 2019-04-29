@@ -28,6 +28,7 @@ import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.mapping.mapstruct.*;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.service.TrainingDefinitionService;
+import cz.muni.ics.kypo.training.service.impl.SecurityService;
 import org.modelmapper.internal.util.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,18 +60,20 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
     private InfoLevelMapper infoLevelMapper;
     private AssessmentLevelMapper assessmentLevelMapper;
     private BasicLevelInfoMapper basicLevelInfoMapper;
+    private SecurityService securityService;
 
     @Autowired
     public TrainingDefinitionFacadeImpl(TrainingDefinitionService trainingDefinitionService,
                                         TrainingDefinitionMapper trainingDefMapper, GameLevelMapper gameLevelMapper,
                                         InfoLevelMapper infoLevelMapper, AssessmentLevelMapper assessmentLevelMapper,
-                                        BasicLevelInfoMapper basicLevelInfoMapper) {
+                                        BasicLevelInfoMapper basicLevelInfoMapper, SecurityService securityService) {
         this.trainingDefinitionService = trainingDefinitionService;
         this.trainingDefinitionMapper = trainingDefMapper;
         this.gameLevelMapper = gameLevelMapper;
         this.infoLevelMapper = infoLevelMapper;
         this.assessmentLevelMapper = assessmentLevelMapper;
         this.basicLevelInfoMapper = basicLevelInfoMapper;
+        this.securityService = securityService;
     }
 
     @Override
@@ -154,7 +157,7 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
         List<TrainingDefinitionInfoDTO> trainingDefinitionInfoDTOS = new ArrayList<>();
         for (TrainingDefinition trainingDefinition : trainingDefinitionsPage.getContent()) {
             TrainingDefinitionInfoDTO trainingDefinitionInfoDTO = trainingDefinitionMapper.mapToInfoDTO(trainingDefinition);
-            if(trainingDefinition.getAuthors().stream().anyMatch(author -> author.getUserRefLogin().equals(getSubOfLoggedInUser()))) {
+            if(trainingDefinition.getAuthors().stream().anyMatch(author -> author.getUserRefLogin().equals(securityService.getSubOfLoggedInUser()))) {
                 trainingDefinitionInfoDTO.setCanEdit(true);
             } else {
                 trainingDefinitionInfoDTO.setCanEdit(false);
@@ -427,19 +430,13 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
 
     @Override
     public void switchState(Long definitionId, TDState state) {
-        LOG.debug("unreleaseDefinition({})", definitionId, state);
+        LOG.debug("unreleasedDefinition({}, {})", definitionId, state);
         try{
             Objects.requireNonNull(definitionId);
             trainingDefinitionService.switchState(definitionId, state);
         } catch (ServiceLayerException ex){
             throw new FacadeLayerException(ex);
         }
-    }
-
-    private String getSubOfLoggedInUser() {
-        OAuth2Authentication authentication = (OAuth2Authentication) SecurityContextHolder.getContext().getAuthentication();
-        JsonObject credentials = (JsonObject) authentication.getUserAuthentication().getCredentials();
-        return credentials.get("sub").getAsString();
     }
 
     private long calculateEstimatedDuration(Long id){
