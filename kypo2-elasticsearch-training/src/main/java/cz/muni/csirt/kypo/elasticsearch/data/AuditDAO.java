@@ -46,8 +46,9 @@ public class AuditDAO extends AbstractElasticClientDAO {
     }
 
     private <T extends AbstractAuditPOJO> String createIndexForTrainingRunEvents(T pojoClass, Long trainingDefinitionID, Long trainingInstanceID) {
-        String packageNamePlusClassName = pojoClass.getClass().toString().toLowerCase();
-        String index = "kypo3." + packageNamePlusClassName + "_evt" + "%definition=" + trainingDefinitionID + "%instance=" + trainingInstanceID;
+        String packageName = pojoClass.getClass().getPackageName().toLowerCase();
+        String className = pojoClass.getClass().getSimpleName().toLowerCase();
+        String index = "kypo3." + packageName + "." + className + "_evt" + ".definition=" + trainingDefinitionID + ".instance=" + trainingInstanceID;
         return index;
     }
 
