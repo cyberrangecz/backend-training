@@ -23,6 +23,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
+import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -39,6 +40,7 @@ import org.springframework.web.client.RestTemplate;
 import javax.servlet.http.HttpServletRequest;
 import java.io.FileReader;
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.*;
 
 import static org.junit.Assert.*;
@@ -154,6 +156,7 @@ public class TrainingDefinitionServiceTest {
         trainingDefinition1.setState(TDState.RELEASED);
         trainingDefinition1.setSandboxDefinitionRefId(1L);
         trainingDefinition1.setBetaTestingGroup(viewGroup);
+        trainingDefinition1.setLastEdited(LocalDateTime.now().minusHours(24));
 
         trainingDefinition2 = new TrainingDefinition();
         trainingDefinition2.setId(2L);
@@ -237,22 +240,16 @@ public class TrainingDefinitionServiceTest {
         mockSpringSecurityContextForGet();
         TrainingDefinition tDcloned = new TrainingDefinition();
         tDcloned.setTitle("Clone of " + trainingDefinition1.getTitle());
-        tDcloned.setId(3L);
+        tDcloned.setId(null);
         tDcloned.setState(TDState.UNRELEASED);
         tDcloned.setDescription(trainingDefinition1.getDescription());
+        tDcloned.setBetaTestingGroup(null);
+        tDcloned.setLastEdited(LocalDateTime.now());
 
         given(trainingDefinitionRepository.findById(trainingDefinition1.getId())).willReturn(Optional.of(trainingDefinition1));
-        given(trainingDefinitionRepository.save(any(TrainingDefinition.class))).willReturn(tDcloned);
-
-        TrainingDefinition optionalNewClone = trainingDefinitionService.clone(trainingDefinition1.getId());
-        assertNotNull(optionalNewClone);
-        assertEquals("Clone of " + trainingDefinition1.getTitle(), optionalNewClone.getTitle());
-        assertNotEquals(trainingDefinition1.getId(), optionalNewClone.getId());
-        assertNotEquals(trainingDefinition1.getState(), optionalNewClone.getState());
-        assertEquals(trainingDefinition1.getDescription(), optionalNewClone.getDescription());
-
+        trainingDefinitionService.clone(trainingDefinition1.getId());
         then(trainingDefinitionRepository).should().findById(trainingDefinition1.getId());
-        then(trainingDefinitionRepository).should().save(any(TrainingDefinition.class));
+        then(trainingDefinitionRepository).should().save(tDcloned);
     }
 
     @Test
@@ -263,12 +260,16 @@ public class TrainingDefinitionServiceTest {
 
     @Test
     public void updateTrainingDefinition() {
+        mockSpringSecurityContextForGet();
         given(trainingDefinitionRepository.findById(unreleasedDefinition.getId())).willReturn(Optional.of(unreleasedDefinition));
 
+        TrainingDefinition updatedDefinition = new TrainingDefinition();
+        BeanUtils.copyProperties(unreleasedDefinition, updatedDefinition);
+        updatedDefinition.setLastEdited(LocalDateTime.now());
         trainingDefinitionService.update(unreleasedDefinition);
 
         then(trainingDefinitionRepository).should().findById(unreleasedDefinition.getId());
-        then(trainingDefinitionRepository).should().save(unreleasedDefinition);
+        then(trainingDefinitionRepository).should().save(updatedDefinition);
     }
 
     @Test
@@ -278,6 +279,16 @@ public class TrainingDefinitionServiceTest {
         thrown.expect(ServiceLayerException.class);
         thrown.expectMessage("Cannot edit released or archived training definition");
         trainingDefinitionService.update(releasedDefinition);
+    }
+
+    @Test
+    public void updateTrainingDefinitionWithCreatedInstances(){
+        given(trainingDefinitionRepository.findById(unreleasedDefinition.getId())).willReturn(Optional.of(unreleasedDefinition));
+        given(trainingInstanceRepository.existsAnyForTrainingDefinition(unreleasedDefinition.getId())).willReturn(true);
+        thrown.expect(ServiceLayerException.class);
+        thrown.expectMessage("Cannot update training definition with already created training instance. " +
+            "Remove training instance/s before updating training definition.");
+        trainingDefinitionService.update(unreleasedDefinition);
     }
 
     @Test
@@ -328,11 +339,23 @@ public class TrainingDefinitionServiceTest {
         trainingDefinitionService.swapLeft(null, level2.getId());
     }
 
+
+
     @Test
     public void swapLeftWithNullLevel() {
         given(trainingDefinitionRepository.findById(unreleasedDefinition.getId())).willReturn(Optional.of(unreleasedDefinition));
         thrown.expect(ServiceLayerException.class);
         trainingDefinitionService.swapLeft(unreleasedDefinition.getId(), null);
+    }
+
+    @Test
+    public void swapLeftWithCreatedInstances() {
+        given(trainingDefinitionRepository.findById(unreleasedDefinition.getId())).willReturn(Optional.of(unreleasedDefinition));
+        given(trainingInstanceRepository.existsAnyForTrainingDefinition(unreleasedDefinition.getId())).willReturn(true);
+        thrown.expect(ServiceLayerException.class);
+        thrown.expectMessage("Cannot update training definition with already created training instance. " +
+            "Remove training instance/s before updating training definition.");
+        trainingDefinitionService.swapLeft(unreleasedDefinition.getId(), level2.getId());
     }
 
     @Test
@@ -371,6 +394,16 @@ public class TrainingDefinitionServiceTest {
         thrown.expectMessage("Cannot swap right last level");
 
         trainingDefinitionService.swapRight(unreleasedDefinition.getId(), level3.getId());
+    }
+
+    @Test
+    public void swapRightWithCreatedInstances() {
+        given(trainingDefinitionRepository.findById(unreleasedDefinition.getId())).willReturn(Optional.of(unreleasedDefinition));
+        given(trainingInstanceRepository.existsAnyForTrainingDefinition(unreleasedDefinition.getId())).willReturn(true);
+        thrown.expect(ServiceLayerException.class);
+        thrown.expectMessage("Cannot update training definition with already created training instance. " +
+            "Remove training instance/s before updating training definition.");
+        trainingDefinitionService.swapRight(unreleasedDefinition.getId(), level2.getId());
     }
 
     @Test
@@ -414,6 +447,16 @@ public class TrainingDefinitionServiceTest {
     public void deleteWithNull() {
         thrown.expect(ServiceLayerException.class);
         trainingDefinitionService.delete(null);
+    }
+
+    @Test
+    public void deleteWithCreatedInstances() {
+        given(trainingDefinitionRepository.findById(unreleasedDefinition.getId())).willReturn(Optional.of(unreleasedDefinition));
+        given(trainingInstanceRepository.existsAnyForTrainingDefinition(unreleasedDefinition.getId())).willReturn(true);
+        thrown.expect(ServiceLayerException.class);
+        thrown.expectMessage("Cannot delete training definition with already created training instance. " +
+            "Remove training instance/s before deleting training definition.");
+        trainingDefinitionService.delete(unreleasedDefinition.getId());
     }
 
     @Test
@@ -469,6 +512,16 @@ public class TrainingDefinitionServiceTest {
     }
 
     @Test
+    public void deleteOneLevelWithCreatedInstances() {
+        given(trainingDefinitionRepository.findById(unreleasedDefinition.getId())).willReturn(Optional.of(unreleasedDefinition));
+        given(trainingInstanceRepository.existsAnyForTrainingDefinition(unreleasedDefinition.getId())).willReturn(true);
+        thrown.expect(ServiceLayerException.class);
+        thrown.expectMessage("Cannot update training definition with already created training instance. " +
+            "Remove training instance/s before updating training definition.");
+        trainingDefinitionService.deleteOneLevel(unreleasedDefinition.getId(), level2.getId());
+    }
+
+    @Test
     public void updateAssessmentLevel() {
         given(trainingDefinitionRepository.findById(unreleasedDefinition.getId())).willReturn(Optional.of(unreleasedDefinition));
         given(abstractLevelRepository.findById(level1.getId())).willReturn(Optional.of(level1));
@@ -517,6 +570,16 @@ public class TrainingDefinitionServiceTest {
         given(trainingDefinitionRepository.findById(unreleasedDefinition.getId())).willReturn(Optional.of(unreleasedDefinition));
         thrown.expect(NullPointerException.class);
         trainingDefinitionService.updateAssessmentLevel(unreleasedDefinition.getId(), null);
+    }
+
+    @Test
+    public void updateAssessmentLevelWithCreatedInstances() {
+        given(trainingDefinitionRepository.findById(unreleasedDefinition.getId())).willReturn(Optional.of(unreleasedDefinition));
+        given(trainingInstanceRepository.existsAnyForTrainingDefinition(unreleasedDefinition.getId())).willReturn(true);
+        thrown.expect(ServiceLayerException.class);
+        thrown.expectMessage("Cannot update training definition with already created training instance. " +
+            "Remove training instance/s before updating training definition.");
+        trainingDefinitionService.updateAssessmentLevel(unreleasedDefinition.getId(), level2);
     }
 
     @Test
@@ -569,6 +632,16 @@ public class TrainingDefinitionServiceTest {
     }
 
     @Test
+    public void updateGameLevelWithCreatedInstances() {
+        given(trainingDefinitionRepository.findById(unreleasedDefinition.getId())).willReturn(Optional.of(unreleasedDefinition));
+        given(trainingInstanceRepository.existsAnyForTrainingDefinition(unreleasedDefinition.getId())).willReturn(true);
+        thrown.expect(ServiceLayerException.class);
+        thrown.expectMessage("Cannot update training definition with already created training instance. " +
+            "Remove training instance/s before updating training definition.");
+        trainingDefinitionService.updateGameLevel(unreleasedDefinition.getId(), gameLevel);
+    }
+
+    @Test
     public void updateInfoLevel() {
         given(trainingDefinitionRepository.findById(trainingDefinition2.getId())).willReturn(Optional.of(trainingDefinition2));
         given(infoLevelRepository.findById(any(Long.class))).willReturn(Optional.of(infoLevel));
@@ -611,6 +684,16 @@ public class TrainingDefinitionServiceTest {
         given(trainingDefinitionRepository.findById(trainingDefinition2.getId())).willReturn(Optional.of(trainingDefinition2));
         thrown.expect(NullPointerException.class);
         trainingDefinitionService.updateInfoLevel(trainingDefinition2.getId(), null);
+    }
+
+    @Test
+    public void updateInfoLevelWithCreatedInstances() {
+        given(trainingDefinitionRepository.findById(unreleasedDefinition.getId())).willReturn(Optional.of(unreleasedDefinition));
+        given(trainingInstanceRepository.existsAnyForTrainingDefinition(unreleasedDefinition.getId())).willReturn(true);
+        thrown.expect(ServiceLayerException.class);
+        thrown.expectMessage("Cannot update training definition with already created training instance. " +
+            "Remove training instance/s before updating training definition.");
+        trainingDefinitionService.updateInfoLevel(unreleasedDefinition.getId(), infoLevel);
     }
 
     @Test
@@ -660,6 +743,15 @@ public class TrainingDefinitionServiceTest {
 
     }
 
+    @Test
+    public void createGameLevelWithCreatedInstances() {
+        given(trainingDefinitionRepository.findById(unreleasedDefinition.getId())).willReturn(Optional.of(unreleasedDefinition));
+        given(trainingInstanceRepository.existsAnyForTrainingDefinition(unreleasedDefinition.getId())).willReturn(true);
+        thrown.expect(ServiceLayerException.class);
+        thrown.expectMessage("Cannot update training definition with already created training instance. " +
+            "Remove training instance/s before updating training definition.");
+        trainingDefinitionService.createGameLevel(unreleasedDefinition.getId());
+    }
 
 
     @Test
@@ -711,6 +803,15 @@ public class TrainingDefinitionServiceTest {
 
     }
 
+    @Test
+    public void createInfoLevelWithCreatedInstances() {
+        given(trainingDefinitionRepository.findById(unreleasedDefinition.getId())).willReturn(Optional.of(unreleasedDefinition));
+        given(trainingInstanceRepository.existsAnyForTrainingDefinition(unreleasedDefinition.getId())).willReturn(true);
+        thrown.expect(ServiceLayerException.class);
+        thrown.expectMessage("Cannot update training definition with already created training instance. " +
+            "Remove training instance/s before updating training definition.");
+        trainingDefinitionService.createInfoLevel(unreleasedDefinition.getId());
+    }
 
     @Test
     public void createAssessmentLevel() {
@@ -761,6 +862,15 @@ public class TrainingDefinitionServiceTest {
 
     }
 
+    @Test
+    public void createAssessmentLevelWithCreatedInstances() {
+        given(trainingDefinitionRepository.findById(unreleasedDefinition.getId())).willReturn(Optional.of(unreleasedDefinition));
+        given(trainingInstanceRepository.existsAnyForTrainingDefinition(unreleasedDefinition.getId())).willReturn(true);
+        thrown.expect(ServiceLayerException.class);
+        thrown.expectMessage("Cannot update training definition with already created training instance. " +
+            "Remove training instance/s before updating training definition.");
+        trainingDefinitionService.createAssessmentLevel(unreleasedDefinition.getId());
+    }
 
     @Test
     public void findAllLevelsFromDefinition() {
@@ -917,8 +1027,14 @@ public class TrainingDefinitionServiceTest {
 
     private void deepEquals(TrainingDefinition expected, TrainingDefinition actual) {
         assertEquals(expected.getId(), actual.getId());
+        assertEquals(expected.getTitle(), actual.getTitle());
         assertEquals(expected.getDescription(), actual.getDescription());
+        assertArrayEquals(expected.getOutcomes(), actual.getOutcomes());
+        assertArrayEquals(expected.getPrerequisities(), actual.getPrerequisities());
         assertEquals(expected.getState(), actual.getState());
+        assertEquals(expected.getBetaTestingGroup(), actual.getBetaTestingGroup());
+        assertEquals(expected.getSandboxDefinitionRefId(), actual.getSandboxDefinitionRefId());
+        assertEquals(expected.isShowStepperBar(), actual.isShowStepperBar());
     }
 
 

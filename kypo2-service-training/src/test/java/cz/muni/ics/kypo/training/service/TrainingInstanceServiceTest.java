@@ -77,7 +77,8 @@ public class TrainingInstanceServiceTest {
     @Mock
     private SandboxInstanceRef sandboxInstanceRef1, sandboxInstanceRef2;
     private SandboxInfo sandboxInfo;
-    private TrainingInstance trainingInstance1, trainingInstance2, trainingInstanceInvalid;
+    private TrainingInstance trainingInstance1, trainingInstance2, trainingInstanceInvalid, trainingInstanceInvalidTime, currentInstance,
+            instanceWithSB;
     private TrainingRun trainingRun1, trainingRun2;
     private UserRef user;
 
@@ -91,10 +92,22 @@ public class TrainingInstanceServiceTest {
         trainingInstance1.setId(1L);
         trainingInstance1.setTitle("test1");
         trainingInstance1.setAccessToken("pass-9876");
+        trainingInstance1.setStartTime(LocalDateTime.now(Clock.systemUTC()).minusHours(5L));
         trainingInstance1.setEndTime(LocalDateTime.now(Clock.systemUTC()).minusHours(1L));
         trainingInstance1.setTrainingDefinition(trainingDefinition);
         trainingInstance1.setPoolSize(2);
         trainingInstance1.setPoolId(1L);
+
+        instanceWithSB = new TrainingInstance();
+        instanceWithSB.setId(5L);
+        instanceWithSB.setTitle("test5");
+        instanceWithSB.setAccessToken("pass-9999");
+        instanceWithSB.setStartTime(LocalDateTime.now(Clock.systemUTC()).minusHours(5L));
+        instanceWithSB.setEndTime(LocalDateTime.now(Clock.systemUTC()).minusHours(1L));
+        instanceWithSB.setTrainingDefinition(trainingDefinition);
+        instanceWithSB.setPoolSize(2);
+        instanceWithSB.setPoolId(1L);
+        instanceWithSB.setSandboxInstanceRefs(new HashSet<>(Arrays.asList(sandboxInstanceRef1, sandboxInstanceRef2)));
 
         user = new UserRef();
         user.setUserRefLogin("login");
@@ -113,6 +126,17 @@ public class TrainingInstanceServiceTest {
         trainingInstanceInvalid.setTitle("test3Invalid");
         trainingInstanceInvalid.setStartTime(LocalDateTime.now(Clock.systemUTC()).minusHours(1L));
         trainingInstanceInvalid.setEndTime(LocalDateTime.now(Clock.systemUTC()).plusHours(1L));
+
+        trainingInstanceInvalidTime = new TrainingInstance();
+        trainingInstanceInvalidTime.setId(4L);
+        trainingInstanceInvalidTime.setTitle("test4InvalidTime");
+        trainingInstanceInvalidTime.setStartTime(LocalDateTime.now(Clock.systemUTC()).minusHours(1L));
+        trainingInstanceInvalidTime.setEndTime(LocalDateTime.now(Clock.systemUTC()).minusHours(10L));
+
+        currentInstance = new TrainingInstance();
+        currentInstance.setId(5L);
+        currentInstance.setStartTime(LocalDateTime.now(Clock.systemUTC()).minusHours(5L));
+        currentInstance.setEndTime(LocalDateTime.now(Clock.systemUTC()).plusHours(5L));
 
         trainingRun1 = new TrainingRun();
         trainingRun1.setId(1L);
@@ -186,6 +210,13 @@ public class TrainingInstanceServiceTest {
     }
 
     @Test
+    public void createTrainingInstanceWithInvalidTimes(){
+        thrown.expect(ServiceLayerException.class);
+        thrown.expectMessage("End time must be later than start time.");
+        trainingInstanceService.create(trainingInstanceInvalidTime);
+    }
+
+    @Test
     public void updateTrainingInstance() {
         given(trainingInstanceRepository.findById(any(Long.class))).willReturn(Optional.of(trainingInstance2));
 
@@ -194,6 +225,14 @@ public class TrainingInstanceServiceTest {
         then(trainingInstanceRepository).should().findById(trainingInstance2.getId());
         then(trainingInstanceRepository).should().save(trainingInstance2);
         assertEquals(trainingInstance2.getAccessToken(), token);
+    }
+
+    @Test
+    public void updateTrainingInstanceWithInvalidTimes(){
+        given(trainingInstanceRepository.findById(anyLong())).willReturn(Optional.of(trainingInstanceInvalidTime));
+        thrown.expect(ServiceLayerException.class);
+        thrown.expectMessage("End time must be later than start time.");
+        trainingInstanceService.update(trainingInstanceInvalidTime);
     }
 
     @Test
@@ -222,6 +261,38 @@ public class TrainingInstanceServiceTest {
 
         then(trainingInstanceRepository).should().findById(trainingInstanceInvalid.getId());
         then(trainingInstanceRepository).should().delete(trainingInstanceInvalid);
+    }
+
+    @Test
+    public void deleteTrainingInstanceWithAssignedTrainingRuns(){
+        List<TrainingRun> runs = new ArrayList<>();
+        runs.add(trainingRun1);
+        runs.add(trainingRun2);
+        Page p = new PageImpl<>(runs);
+
+        given(trainingInstanceRepository.findById(anyLong())).willReturn(Optional.of(trainingInstance1));
+        given(trainingRunRepository.findAllByTrainingInstanceId(trainingInstance1.getId(), PageRequest.of(0, 5))).willReturn(p);
+
+        thrown.expect(ServiceLayerException.class);
+        thrown.expectMessage("Finished training instance with already assigned training runs cannot be deleted.");
+        trainingInstanceService.delete(trainingInstance1.getId());
+    }
+
+    @Test
+    public void deleteRunningInstance(){
+        given(trainingInstanceRepository.findById(anyLong())).willReturn(Optional.of(currentInstance));
+        thrown.expect(ServiceLayerException.class);
+        thrown.expectMessage("The training instance which is running cannot be deleted.");
+        trainingInstanceService.delete(currentInstance.getId());
+    }
+
+    @Test
+    public void deleteInstanceWithAssignedSandboxes(){
+        given(trainingInstanceRepository.findById(anyLong())).willReturn(Optional.of(instanceWithSB));
+        given(trainingRunRepository.findAllByTrainingInstanceId(instanceWithSB.getId(),  PageRequest.of(0, 5))).willReturn(new PageImpl<TrainingRun>(new ArrayList<>()));
+        thrown.expect(ServiceLayerException.class);
+        thrown.expectMessage("Cannot delete training instance because it contains some sandboxes. Please delete sandboxes and try again.");
+        trainingInstanceService.delete(instanceWithSB.getId());
     }
 
     @Test
@@ -268,12 +339,10 @@ public class TrainingInstanceServiceTest {
 
     @Test
     public void allocateSandboxesWithFullPool() {
-        trainingInstance1.addSandboxInstanceRef(sandboxInstanceRef1);
-        trainingInstance1.addSandboxInstanceRef(sandboxInstanceRef2);
-        given(trainingInstanceRepository.findById(trainingInstance1.getId())).willReturn(Optional.ofNullable(trainingInstance1));
+        given(trainingInstanceRepository.findById(instanceWithSB.getId())).willReturn(Optional.ofNullable(instanceWithSB));
         thrown.expect(ServiceLayerException.class);
-        thrown.expectMessage("Pool of sandboxes of training instance with id: " + trainingInstance1.getId() + " is full.");
-        trainingInstanceService.allocateSandboxes(trainingInstance1, 1);
+        thrown.expectMessage("Pool of sandboxes of training instance with id: " + instanceWithSB.getId() + " is full.");
+        trainingInstanceService.allocateSandboxes(instanceWithSB, 1);
     }
 
     @Test
