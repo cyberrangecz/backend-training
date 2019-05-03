@@ -6,7 +6,6 @@ public class TrainingDefinitionInfoDTO {
 
     private Long id;
     private String title;
-    private Boolean canEdit;
 
     public Long getId() {
         return id;
@@ -24,27 +23,18 @@ public class TrainingDefinitionInfoDTO {
         this.title = title;
     }
 
-    public Boolean getCanEdit() {
-        return canEdit;
-    }
-
-    public void setCanEdit(Boolean canEdit) {
-        this.canEdit = canEdit;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         TrainingDefinitionInfoDTO that = (TrainingDefinitionInfoDTO) o;
         return Objects.equals(id, that.id) &&
-                Objects.equals(title, that.title) &&
-                Objects.equals(canEdit, that.canEdit);
+                Objects.equals(title, that.title);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, title, canEdit);
+        return Objects.hash(id, title);
     }
 
     @Override
@@ -52,7 +42,6 @@ public class TrainingDefinitionInfoDTO {
         return "TrainingDefinitionInfoDTO{" +
                 "id=" + id +
                 ", title='" + title + '\'' +
-                ", canEdit=" + canEdit +
                 '}';
     }
 }
