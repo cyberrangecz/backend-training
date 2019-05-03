@@ -1,6 +1,5 @@
 package cz.muni.ics.kypo.training.facade;
 
-import com.google.gson.JsonObject;
 import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalRO;
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalWO;
@@ -35,12 +34,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.validation.constraints.NotNull;
 import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -157,11 +153,6 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
         List<TrainingDefinitionInfoDTO> trainingDefinitionInfoDTOS = new ArrayList<>();
         for (TrainingDefinition trainingDefinition : trainingDefinitionsPage.getContent()) {
             TrainingDefinitionInfoDTO trainingDefinitionInfoDTO = trainingDefinitionMapper.mapToInfoDTO(trainingDefinition);
-            if(trainingDefinition.getAuthors().stream().anyMatch(author -> author.getUserRefLogin().equals(securityService.getSubOfLoggedInUser()))) {
-                trainingDefinitionInfoDTO.setCanEdit(true);
-            } else {
-                trainingDefinitionInfoDTO.setCanEdit(false);
-            }
             trainingDefinitionInfoDTOS.add(trainingDefinitionInfoDTO);
         }
         return new PageResultResource<>(trainingDefinitionInfoDTOS, trainingDefinitionMapper.createPagination(trainingDefinitionsPage));
