@@ -284,6 +284,7 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
     @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
             "or @securityService.isOrganizerOfGivenTrainingInstance(#trainingInstance.id)")
     public void deleteSandbox(TrainingInstance trainingInstance, SandboxInstanceRef sandboxRefToDelete) {
+        trainingRunRepository.deleteSandboxInstanceFromTrainingRun(sandboxRefToDelete);
         trainingInstance.getSandboxInstanceRefs().remove(sandboxRefToDelete);
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.setContentType(MediaType.APPLICATION_JSON);

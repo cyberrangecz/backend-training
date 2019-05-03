@@ -68,4 +68,8 @@ public interface TrainingRunRepository extends JpaRepository<TrainingRun, Long>,
     @Query("SELECT tr FROM TrainingRun tr JOIN FETCH tr.trainingInstance ti JOIN FETCH tr.participantRef pr WHERE ti.accessToken = :accessToken " +
             "AND pr.userRefLogin = :userLogin")
     Optional<TrainingRun> findByUserAndAccessToken(@Param("accessToken") String accessToken, @Param("userLogin") String userLogin );
+
+    @Modifying
+    @Query("UPDATE TrainingRun tr SET tr.sandboxInstanceRef = null WHERE tr.sandboxInstanceRef = :sandboxInstance")
+    void deleteSandboxInstanceFromTrainingRun(@Param("sandboxInstance") SandboxInstanceRef sandboxInstance);
 }

@@ -37,7 +37,7 @@ public class TrainingRun implements Serializable {
     private AbstractLevel currentLevel;
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     private TrainingInstance trainingInstance;
-    @OneToOne(fetch = FetchType.LAZY, optional = false)
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "sandbox_instance_ref_id")
     private SandboxInstanceRef sandboxInstanceRef;
     @ManyToOne(fetch = FetchType.LAZY)
