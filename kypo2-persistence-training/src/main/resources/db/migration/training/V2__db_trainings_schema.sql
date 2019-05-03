@@ -125,7 +125,7 @@ CREATE TABLE training_run (
     total_score int4,
     current_level_id int8 NOT NULL,
     user_ref_id int8 NOT NULL,
-    sandbox_instance_ref_id int8 NOT NULL,
+    sandbox_instance_ref_id int8 NULL,
     training_instance_id int8 NOT NULL,
     PRIMARY KEY (id)
 );

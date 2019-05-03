@@ -292,8 +292,6 @@ public class TrainingInstancesIT {
 		tI.addSandboxInstanceRef(trainingRun1.getSandboxInstanceRef());
 		tI.addSandboxInstanceRef(trainingRun2.getSandboxInstanceRef());
 		tI = trainingInstanceRepository.save(tI);
-		trainingRun1.getSandboxInstanceRef().setId(1L);
-		trainingRun2.getSandboxInstanceRef().setId(2L);
 		TrainingRun tR1 = trainingRunRepository.save(trainingRun1);
 		TrainingRun tR2 = trainingRunRepository.save(trainingRun2);
 
