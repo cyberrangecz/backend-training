@@ -1,10 +1,14 @@
 package cz.muni.ics.kypo.training.api.dto.gamelevel;
 
 import cz.muni.ics.kypo.training.api.dto.AbstractLevelDTO;
+import cz.muni.ics.kypo.training.api.dto.hint.HintDTO;
+import cz.muni.ics.kypo.training.api.dto.hint.HintForGameLevelViewDTO;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 @ApiModel(value = "GameLevelDTO", description = "An assignment containing security tasks whose completion yields a flag.", parent = AbstractLevelDTO.class)
 public class GameLevelViewDTO extends AbstractLevelDTO {
@@ -14,6 +18,8 @@ public class GameLevelViewDTO extends AbstractLevelDTO {
     private int estimatedDuration;
     private String[] attachments;
     private int incorrectFlagLimit;
+    private Set<HintForGameLevelViewDTO> hints = new HashSet<>();
+
 
 
     @ApiModelProperty(value = "The information and experiences that are directed towards a participant.", example = "Play me")
@@ -59,6 +65,15 @@ public class GameLevelViewDTO extends AbstractLevelDTO {
 
     public void setIncorrectFlagLimit(int incorrectFlagLimit) {
         this.incorrectFlagLimit = incorrectFlagLimit;
+    }
+
+    @ApiModelProperty(value = "Information which helps player resolve the level.")
+    public Set<HintForGameLevelViewDTO> getHints() {
+        return hints;
+    }
+
+    public void setHints(Set<HintForGameLevelViewDTO> hints) {
+        this.hints = hints;
     }
 
     @Override
