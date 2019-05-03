@@ -94,7 +94,7 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
         Assert.notNull(trainingInstance, "Input training instance must not be null");
         trainingInstance.setAccessToken(generateAccessToken(trainingInstance.getAccessToken()));
         if (trainingInstance.getStartTime().isAfter(trainingInstance.getEndTime())) {
-            throw new ServiceLayerException("End time must be latfindAllByParticipantRefLoginer than start time.", ErrorCode.RESOURCE_CONFLICT);
+            throw new ServiceLayerException("End time must be later than start time.", ErrorCode.RESOURCE_CONFLICT);
         }
         Optional<UserRef> authorOfTrainingInstance = organizerRefRepository.findUserByUserRefLogin(securityService.getSubOfLoggedInUser());
         if(authorOfTrainingInstance.isPresent()) {

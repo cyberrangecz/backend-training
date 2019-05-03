@@ -212,6 +212,10 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
         TrainingDefinition trainingDefinition = findById(definitionId);
         if (!trainingDefinition.getState().equals(TDState.UNRELEASED))
             throw new ServiceLayerException(ARCHIVED_OR_RELEASED, ErrorCode.RESOURCE_CONFLICT);
+        if(trainingInstanceRepository.existsAnyForTrainingDefinition(trainingDefinition.getId())) {
+            throw new ServiceLayerException("Cannot update training definition with already created training instance. " +
+                "Remove training instance/s before updating training definition.", ErrorCode.RESOURCE_CONFLICT);
+        }
         AbstractLevel swapLevel = abstractLevelRepository.findById(trainingDefinition.getStartingLevel())
                 .orElseThrow(() -> new ServiceLayerException("Level with id: " + trainingDefinition.getStartingLevel() + ", not found.",
                         ErrorCode.RESOURCE_NOT_FOUND));
@@ -252,6 +256,10 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
         TrainingDefinition trainingDefinition = findById(definitionId);
         if (!trainingDefinition.getState().equals(TDState.UNRELEASED))
             throw new ServiceLayerException(ARCHIVED_OR_RELEASED, ErrorCode.RESOURCE_CONFLICT);
+        if(trainingInstanceRepository.existsAnyForTrainingDefinition(trainingDefinition.getId())) {
+            throw new ServiceLayerException("Cannot update training definition with already created training instance. " +
+                "Remove training instance/s before updating training definition.", ErrorCode.RESOURCE_CONFLICT);
+        }
         AbstractLevel swapLevel = abstractLevelRepository.findById(trainingDefinition.getStartingLevel())
                 .orElseThrow(() -> new ServiceLayerException("Level with id: " + trainingDefinition.getStartingLevel() + ", not found.",
                         ErrorCode.RESOURCE_NOT_FOUND));
@@ -315,6 +323,10 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
         TrainingDefinition trainingDefinition = findById(definitionId);
         if (!trainingDefinition.getState().equals(TDState.UNRELEASED))
             throw new ServiceLayerException(ARCHIVED_OR_RELEASED, ErrorCode.RESOURCE_CONFLICT);
+        if(trainingInstanceRepository.existsAnyForTrainingDefinition(trainingDefinition.getId())) {
+            throw new ServiceLayerException("Cannot update training definition with already created training instance. " +
+                "Remove training instance/s before updating training definition.", ErrorCode.RESOURCE_CONFLICT);
+        }
         if (trainingDefinition.getStartingLevel() == null) throw new ServiceLayerException(LEVEL_NOT_FOUND, ErrorCode.RESOURCE_NOT_FOUND);
         AbstractLevel level = abstractLevelRepository.findById(trainingDefinition.getStartingLevel())
                 .orElseThrow(() -> new ServiceLayerException("Level with id: " + trainingDefinition.getStartingLevel() + ", not found.",
@@ -347,6 +359,10 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
         TrainingDefinition trainingDefinition = findById(definitionId);
         if (!trainingDefinition.getState().equals(TDState.UNRELEASED))
             throw new ServiceLayerException(ARCHIVED_OR_RELEASED, ErrorCode.RESOURCE_CONFLICT);
+        if(trainingInstanceRepository.existsAnyForTrainingDefinition(trainingDefinition.getId())) {
+            throw new ServiceLayerException("Cannot update training definition with already created training instance. " +
+                "Remove training instance/s before updating training definition.", ErrorCode.RESOURCE_CONFLICT);
+        }
         if (!findLevelInDefinition(trainingDefinition, gameLevelToUpdate.getId()))
             throw new ServiceLayerException("Level was not found in definition.", ErrorCode.RESOURCE_NOT_FOUND);
 
@@ -366,6 +382,10 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
         TrainingDefinition trainingDefinition = findById(definitionId);
         if (!trainingDefinition.getState().equals(TDState.UNRELEASED))
             throw new ServiceLayerException(ARCHIVED_OR_RELEASED, ErrorCode.RESOURCE_CONFLICT);
+        if(trainingInstanceRepository.existsAnyForTrainingDefinition(trainingDefinition.getId())) {
+            throw new ServiceLayerException("Cannot update training definition with already created training instance. " +
+                "Remove training instance/s before updating training definition.", ErrorCode.RESOURCE_CONFLICT);
+        }
         if (!findLevelInDefinition(trainingDefinition, infoLevelToUpdate.getId()))
             throw new ServiceLayerException("Level was not found in definition.", ErrorCode.RESOURCE_NOT_FOUND);
 
@@ -385,6 +405,10 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
         TrainingDefinition trainingDefinition = findById(definitionId);
         if (!trainingDefinition.getState().equals(TDState.UNRELEASED))
             throw new ServiceLayerException(ARCHIVED_OR_RELEASED, ErrorCode.RESOURCE_CONFLICT);
+        if(trainingInstanceRepository.existsAnyForTrainingDefinition(trainingDefinition.getId())) {
+            throw new ServiceLayerException("Cannot update training definition with already created training instance. " +
+                "Remove training instance/s before updating training definition.", ErrorCode.RESOURCE_CONFLICT);
+        }
         if (!findLevelInDefinition(trainingDefinition, assessmentLevelToUpdate.getId()))
             throw new ServiceLayerException("Level was not found in definition", ErrorCode.RESOURCE_NOT_FOUND);
 
@@ -408,6 +432,10 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
         TrainingDefinition trainingDefinition = findById(definitionId);
         if (!trainingDefinition.getState().equals(TDState.UNRELEASED))
             throw new ServiceLayerException("Cannot create level in released or archived training definition", ErrorCode.RESOURCE_CONFLICT);
+        if(trainingInstanceRepository.existsAnyForTrainingDefinition(trainingDefinition.getId())) {
+            throw new ServiceLayerException("Cannot update training definition with already created training instance. " +
+                "Remove training instance/s before updating training definition.", ErrorCode.RESOURCE_CONFLICT);
+        }
 
         GameLevel newGameLevel = new GameLevel();
         newGameLevel.setMaxScore(100);
@@ -442,6 +470,10 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
         TrainingDefinition trainingDefinition = findById(definitionId);
         if (!trainingDefinition.getState().equals(TDState.UNRELEASED))
             throw new ServiceLayerException("Cannot create level in released or archived training definition", ErrorCode.RESOURCE_CONFLICT);
+        if(trainingInstanceRepository.existsAnyForTrainingDefinition(trainingDefinition.getId())) {
+            throw new ServiceLayerException("Cannot update training definition with already created training instance. " +
+                "Remove training instance/s before updating training definition.", ErrorCode.RESOURCE_CONFLICT);
+        }
 
         InfoLevel newInfoLevel = new InfoLevel();
         newInfoLevel.setTitle("Title of info level");
@@ -470,6 +502,10 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
         TrainingDefinition trainingDefinition = findById(definitionId);
         if (!trainingDefinition.getState().equals(TDState.UNRELEASED))
             throw new ServiceLayerException("Cannot create level in released or archived training definition.", ErrorCode.RESOURCE_CONFLICT);
+        if(trainingInstanceRepository.existsAnyForTrainingDefinition(trainingDefinition.getId())) {
+            throw new ServiceLayerException("Cannot update training definition with already created training instance. " +
+                "Remove training instance/s before updating training definition.", ErrorCode.RESOURCE_CONFLICT);
+        }
 
         AssessmentLevel newAssessmentLevel = new AssessmentLevel();
         newAssessmentLevel.setTitle("Title of assessment level");
@@ -568,6 +604,10 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     public void switchState(Long definitionId, cz.muni.ics.kypo.training.api.enums.TDState state) {
         LOG.debug("unreleaseDefinition({})", definitionId);
         TrainingDefinition trainingDefinition = findById(definitionId);
+        if(trainingInstanceRepository.existsAnyForTrainingDefinition(definitionId)) {
+            throw new ServiceLayerException("Cannot update training definition with already created training instance. " +
+                "Remove training instance/s before updating training definition.", ErrorCode.RESOURCE_CONFLICT);
+        }
 
         switch (trainingDefinition.getState()){
             case UNRELEASED:
@@ -575,14 +615,11 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
                 else throw new ServiceLayerException("Cannot switch from" + trainingDefinition.getState() + " to "+ state, ErrorCode.RESOURCE_CONFLICT);
                 break;
             case RELEASED:
-                if (state.equals(cz.muni.ics.kypo.training.api.enums.TDState.ARCHIVED)) trainingDefinition.setState(TDState.ARCHIVED);
-                else if (state.equals(cz.muni.ics.kypo.training.api.enums.TDState.UNRELEASED)){
-                    if(trainingInstanceRepository.existsAnyForTrainingDefinition(definitionId)) {
-                        throw new ServiceLayerException("Cannot update training definition with already created training instance. " +
-                            "Remove training instance/s before updating training definition.", ErrorCode.RESOURCE_CONFLICT);
-                    }
+                if (state.equals(cz.muni.ics.kypo.training.api.enums.TDState.ARCHIVED))
+                    trainingDefinition.setState(TDState.ARCHIVED);
+                else if (state.equals(cz.muni.ics.kypo.training.api.enums.TDState.UNRELEASED))
                     trainingDefinition.setState(TDState.UNRELEASED);
-                } else throw new ServiceLayerException("Cannot switch from" + trainingDefinition.getState() + " to "+ state, ErrorCode.RESOURCE_CONFLICT);
+                else throw new ServiceLayerException("Cannot switch from" + trainingDefinition.getState() + " to "+ state, ErrorCode.RESOURCE_CONFLICT);
                 break;
             default:
                 throw new ServiceLayerException("Cannot switch from" + trainingDefinition.getState() + " to "+ state, ErrorCode.RESOURCE_CONFLICT);
