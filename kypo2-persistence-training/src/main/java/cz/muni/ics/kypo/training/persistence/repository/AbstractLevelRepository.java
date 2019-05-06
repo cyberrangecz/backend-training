@@ -17,7 +17,7 @@ import java.util.Optional;
 @Repository
 public interface AbstractLevelRepository extends JpaRepository<AbstractLevel, Long>, QuerydslPredicateExecutor<AbstractLevel> {
 
-    @Query("SELECT l FROM AbstractLevel l WHERE l.trainingDefinition.id = :trainingDefinitionId")
+    @Query("SELECT l FROM AbstractLevel l WHERE l.trainingDefinition.id = :trainingDefinitionId ORDER BY l.order")
     List<AbstractLevel> findAllLevelsByTrainingDefinitionId(@Param("trainingDefinitionId") Long trainingDefinitionId);
 
     @Query("SELECT COALESCE(MAX(l.order), -1) FROM AbstractLevel l WHERE l.trainingDefinition.id = :trainingDefinitionId")
