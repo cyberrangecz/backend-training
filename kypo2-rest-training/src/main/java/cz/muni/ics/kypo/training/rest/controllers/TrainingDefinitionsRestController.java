@@ -270,9 +270,9 @@ public class TrainingDefinitionsRestController {
     }
 
     @ApiOperation(httpMethod = "PUT",
-            value = "Swap level to the left",
+            value = "Swap levels",
             notes = "The first one level cannot be swapped to the left",
-            nickname = "swapLeft",
+            nickname = "swapLevels",
             produces = MediaType.APPLICATION_JSON_VALUE,
             response = BasicLevelInfoDTO.class
     )
@@ -282,40 +282,16 @@ public class TrainingDefinitionsRestController {
             @ApiResponse(code = 409, message = "Cannot edit released or archived training definition or cannot swap first level to the left."),
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.")
     })
-    @PutMapping(path = "/{definitionId}/levels/{levelId}/swap-left", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Object> swapLeft(
+    @PutMapping(path = "/{definitionId}/levels/{levelIdFrom}/swap-with/{levelIdTo}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Object> swapLevels(
             @ApiParam(value = "Id of training definition", required = true)
             @PathVariable("definitionId") Long definitionId,
-            @ApiParam(value = "Id of level to be swapped", required = true)
-            @PathVariable("levelId") Long levelId) {
-        try {
-            return ResponseEntity.ok(trainingDefinitionFacade.swapLeft(definitionId, levelId));
-        } catch (FacadeLayerException ex) {
-            throw ExceptionSorter.throwException(ex);
-        }
-    }
-
-    @ApiOperation(httpMethod = "PUT",
-            value = "Swap level to the right",
-            notes = "The last one level cannot be swapped to the right",
-            nickname = "swapRight",
-            produces = MediaType.APPLICATION_JSON_VALUE,
-            response = BasicLevelInfoDTO.class
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "The level has been swapped to the right."),
-            @ApiResponse(code = 404, message = "Training definition with given id not found."),
-            @ApiResponse(code = 409, message = "Cannot edit released or archived training definition or cannot swap last level to the right."),
-            @ApiResponse(code = 500, message = "Unexpected condition was encountered.")
-    })
-    @PutMapping(path = "/{definitionId}/levels/{levelId}/swap-right", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Object> swapRight(
             @ApiParam(value = "Id of training definition", required = true)
-            @PathVariable("definitionId") Long definitionId,
-            @ApiParam(value = "Id of level to be swapped", required = true)
-            @PathVariable("levelId") Long levelId) {
+            @PathVariable("levelIdFrom") Long levelIdFrom,
+            @ApiParam(value = "Id of training definition", required = true)
+            @PathVariable("levelIdTo") Long levelIdTo) {
         try {
-            return ResponseEntity.ok(trainingDefinitionFacade.swapRight(definitionId, levelId));
+            return ResponseEntity.ok(trainingDefinitionFacade.swapLevels(definitionId, levelIdFrom, levelIdTo));
         } catch (FacadeLayerException ex) {
             throw ExceptionSorter.throwException(ex);
         }

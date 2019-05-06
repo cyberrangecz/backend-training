@@ -118,15 +118,12 @@ public interface TrainingRunService {
     Hint getHint(Long trainingRunId, Long hintId);
 
     /**
-     * Gets level order of given level.
+     * Gets max level order of levels from defintion.
      *
-     * @param idOfFirstLevel must be the first level in training definition.
-     * @param actualLevel    id of actual level to get order.
-     * @return order of actual level.
-     * @throws IllegalArgumentException id of first level or actual level is wrong.
-     * @throws ServiceLayerException    one of the level cannot be found.
+     * @param definitionId id of training definition.
+     * @return max order of levels.
      */
-    int getLevelOrder(Long idOfFirstLevel, Long actualLevel);
+    int getMaxLevelOrder(Long definitionId);
 
     int getRemainingAttempts(Long trainingRunId);
 

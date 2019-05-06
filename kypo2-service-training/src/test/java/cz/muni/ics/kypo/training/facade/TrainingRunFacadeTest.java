@@ -90,20 +90,8 @@ public class TrainingRunFacadeTest {
         hint.setContent("Hint");
         hint.setTitle("Hint Title");
 
-        gameLevel = new GameLevel();
-        gameLevel.setId(1L);
-        gameLevel.setFlag("game flag");
-        gameLevel.setContent("game content");
 
-        assessmentLevel = new AssessmentLevel();
-        assessmentLevel.setId(2L);
-        assessmentLevel.setInstructions("Instructions");
-        assessmentLevel.setAssessmentType(AssessmentType.TEST);
 
-        infoLevel = new InfoLevel();
-        infoLevel.setId(3L);
-        infoLevel.setContent("content");
-        trainingRun1.setCurrentLevel(gameLevel);
 
         trainingRun2 = new TrainingRun();
         trainingRun2.setId(2L);
@@ -113,6 +101,27 @@ public class TrainingRunFacadeTest {
         trainingDefinition.setId(1L);
         trainingDefinition.setState(TDState.RELEASED);
         trainingDefinition.setShowStepperBar(true);
+
+        gameLevel = new GameLevel();
+        gameLevel.setId(1L);
+        gameLevel.setFlag("game flag");
+        gameLevel.setContent("game content");
+        gameLevel.setTrainingDefinition(trainingDefinition);
+        gameLevel.setOrder(0);
+        trainingRun1.setCurrentLevel(gameLevel);
+
+        assessmentLevel = new AssessmentLevel();
+        assessmentLevel.setId(2L);
+        assessmentLevel.setInstructions("Instructions");
+        assessmentLevel.setAssessmentType(AssessmentType.TEST);
+        assessmentLevel.setOrder(1);
+        assessmentLevel.setTrainingDefinition(trainingDefinition);
+
+        infoLevel = new InfoLevel();
+        infoLevel.setId(3L);
+        infoLevel.setContent("content");
+        infoLevel.setOrder(2);
+        infoLevel.setTrainingDefinition(trainingDefinition);
 
         trainingInstance = new TrainingInstance();
         trainingInstance.setId(1L);
@@ -172,6 +181,7 @@ public class TrainingRunFacadeTest {
     public void accessTrainingRun() {
         given(trainingRunService.accessTrainingRun("password")).willReturn(trainingRun1);
         given(trainingRunService.getLevels(1L)).willReturn(Arrays.asList(gameLevel, infoLevel, assessmentLevel));
+        given(trainingRunService.getMaxLevelOrder(anyLong())).willReturn(2);
         Object result = trainingRunFacade.accessTrainingRun("password");
         assertEquals(AccessTrainingRunDTO.class, result.getClass());
         then(trainingRunService).should().accessTrainingRun("password");

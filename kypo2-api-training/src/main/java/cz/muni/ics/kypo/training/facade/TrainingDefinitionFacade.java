@@ -76,25 +76,15 @@ public interface TrainingDefinitionFacade {
      */
     TrainingDefinitionByIdDTO clone(Long id) throws FacadeLayerException;
 
-
     /**
-     * swaps level to the left
+     * Swaps between levels. Swap basically means swapping the order attribute between these two levels.
      *
-     * @param definitionId - id of definition containing level to be swapped
-     * @param levelId      - id of level to be swapped
-     * @throws FacadeLayerException if training definition or level is not found
+     * @param definitionId  - Id of definition containing levels, this training definition is updating its last edited column.
+     * @param swapLevelFrom - Id of a first level to be swapped.
+     * @param swapLevelTo   - Id of a second level to be swapped.
+     * @throws FacadeLayerException if training definition is not found
      */
-    Set<BasicLevelInfoDTO> swapLeft(Long definitionId, Long levelId) throws FacadeLayerException;
-
-
-    /**
-     * swaps level to the right
-     *
-     * @param definitionId - id of definition containing level to be swapped
-     * @param levelId      - id of level to be swapped
-     * @throws FacadeLayerException if training definition or level is not found
-     */
-    Set<BasicLevelInfoDTO> swapRight(Long definitionId, Long levelId) throws FacadeLayerException;
+    List<BasicLevelInfoDTO> swapLevels(Long definitionId, Long swapLevelFrom, Long swapLevelTo);
 
 
     /**
@@ -113,8 +103,7 @@ public interface TrainingDefinitionFacade {
      * @param levelId      - id of level to be deleted
      * @throws FacadeLayerException if training definition or level is not found
      */
-    Set<BasicLevelInfoDTO> deleteOneLevel(Long definitionId, Long levelId) throws FacadeLayerException;
-
+    List<BasicLevelInfoDTO> deleteOneLevel(Long definitionId, Long levelId) throws FacadeLayerException;
 
     /**
      * updates game level from training definition
@@ -195,8 +184,9 @@ public interface TrainingDefinitionFacade {
 
     /**
      * Switch state of definition to unreleased
+     *
      * @param definitionId - id of training definition
-     * @param state - new state of TD
+     * @param state        - new state of TD
      */
     void switchState(Long definitionId, TDState state);
 

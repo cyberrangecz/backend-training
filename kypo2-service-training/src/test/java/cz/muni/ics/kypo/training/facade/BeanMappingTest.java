@@ -63,7 +63,6 @@ public class BeanMappingTest {
         tD.setState(TDState.RELEASED);
         tD.setAuthors(new HashSet<>(Arrays.asList(aR)));
         tD.setSandboxDefinitionRefId(1L);
-        tD.setStartingLevel(1L);
         tD.setShowStepperBar(true);
 
         tDDTO = new TrainingDefinitionByIdDTO();
@@ -75,7 +74,6 @@ public class BeanMappingTest {
         tDDTO.setState(cz.muni.ics.kypo.training.api.enums.TDState.UNRELEASED);
         tDDTO.setAuthors(new HashSet<>(Arrays.asList(aRDTO)));
         tDDTO.setSandboxDefinitionRefId(1L);
-        tDDTO.setStartingLevel(1L);
         tDDTO.setShowStepperBar(true);
 
         iL1 = new InfoLevel();
@@ -125,7 +123,6 @@ public class BeanMappingTest {
         assertEquals(tD.getAuthors().size(), dto.getAuthors().size());
         assertEquals(tD.getAuthors().size(), dto.getAuthors().size());
         assertEquals(tD.getSandboxDefinitionRefId(), dto.getSandboxDefinitionRefId());
-        assertEquals(tD.getStartingLevel(), dto.getStartingLevel());
         assertEquals(tD.isShowStepperBar(), dto.isShowStepperBar());
     }
 
@@ -144,7 +141,6 @@ public class BeanMappingTest {
         assertEquals(tDDTO.getAuthors().size(), tD.getAuthors().size());
         assertEquals(tDDTO.getAuthors().size(), tD.getAuthors().size());
         assertEquals(tDDTO.getSandboxDefinitionRefId(), tD.getSandboxDefinitionRefId());
-        assertEquals(tDDTO.getStartingLevel(), tD.getStartingLevel());
         assertEquals(tDDTO.isShowStepperBar(), tD.isShowStepperBar());
     }
 

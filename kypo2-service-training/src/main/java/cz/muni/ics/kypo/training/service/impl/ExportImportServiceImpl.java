@@ -62,25 +62,17 @@ public class ExportImportServiceImpl implements ExportImportService {
 
     @Override
     @IsAdminOrDesignerOrOrganizer
-    public List<AbstractLevel> findAllLevelsFromDefinition(Long id) {
-        Assert.notNull(id, "Definition id must not be null");
-        TrainingDefinition trainingDefinition = findById(id);
-        List<AbstractLevel> levels = new ArrayList<>();
-        Long levelId = trainingDefinition.getStartingLevel();
-        AbstractLevel level = null;
-        while (levelId != null) {
-            level = abstractLevelRepository.findById(levelId)
-                    .orElseThrow(() -> new ServiceLayerException(LEVEL_NOT_FOUND, ErrorCode.RESOURCE_NOT_FOUND));
-            levels.add(level);
-            levelId = level.getNextLevel();
-        }
-        return levels;
+    public List<AbstractLevel> findAllLevelsFromDefinition(Long trainingDefinitionId) {
+        Assert.notNull(trainingDefinitionId, "Definition id must not be null");
+        return abstractLevelRepository.findAllLevelsByTrainingDefinitionId(trainingDefinitionId);
     }
 
     @Override
     @IsDesignerOrAdmin
-    public Long createLevel(AbstractLevel level) {
+    public Long createLevel(AbstractLevel level, Long definitionId) {
         Assert.notNull(level, "Input Level cannot be null");
+        Assert.notNull(definitionId, "Input definition if cannot be null");
+        level.setOrder(abstractLevelRepository.getCurrentMaxOrder(definitionId) + 1);
         if (level instanceof AssessmentLevel) {
             AssessmentUtil.validQuestions(((AssessmentLevel) level).getQuestions());
             AbstractLevel newLevel = assessmentLevelRepository.save((AssessmentLevel) level);
@@ -98,7 +90,7 @@ public class ExportImportServiceImpl implements ExportImportService {
     @IsOrganizerOrAdmin
     public TrainingInstance findInstanceById(Long trainingInstanceId) {
         return trainingInstanceRepository.findById(trainingInstanceId).orElseThrow(
-            () -> new ServiceLayerException("Training instance with id: " + trainingInstanceId + " not found.", ErrorCode.RESOURCE_NOT_FOUND));
+                () -> new ServiceLayerException("Training instance with id: " + trainingInstanceId + " not found.", ErrorCode.RESOURCE_NOT_FOUND));
     }
 
     @Override

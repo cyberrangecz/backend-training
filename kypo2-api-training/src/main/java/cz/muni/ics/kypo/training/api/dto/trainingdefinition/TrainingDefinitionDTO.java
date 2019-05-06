@@ -26,7 +26,6 @@ public class TrainingDefinitionDTO {
     private Set<UserRefDTO> authors = new HashSet<>();
     private BetaTestingGroupDTO betaTestingGroup;
     private Long sandboxDefinitionRefId;
-    private Long startingLevel;
     private boolean showStepperBar;
     private boolean canBeArchived;
     private long estimatedDuration;
@@ -115,15 +114,6 @@ public class TrainingDefinitionDTO {
         this.sandboxDefinitionRefId = sandBoxDefinitionRefId;
     }
 
-    @ApiModelProperty(value = "Identifier of first level of training definition.", example = "4")
-    public Long getStartingLevel() {
-        return startingLevel;
-    }
-
-    public void setStartingLevel(Long startingLevel) {
-        this.startingLevel = startingLevel;
-    }
-
     @ApiModelProperty(value = "Sign if stepper bar should be displayed.", example = "false")
     public boolean isShowStepperBar() {
         return showStepperBar;
@@ -170,7 +160,6 @@ public class TrainingDefinitionDTO {
                 ", authors=" + authors +
                 ", betaTestingGroup=" + betaTestingGroup +
                 ", sandboxDefinitionRefId=" + sandboxDefinitionRefId +
-                ", startingLevel=" + startingLevel +
                 ", showStepperBar=" + showStepperBar +
                 ", canBeArchived=" + canBeArchived +
                 ", estimatedDuration=" + estimatedDuration +

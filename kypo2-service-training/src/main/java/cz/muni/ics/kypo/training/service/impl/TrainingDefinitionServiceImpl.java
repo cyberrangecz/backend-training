@@ -33,8 +33,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import org.springframework.web.client.RestTemplate;
 
+import java.time.Clock;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.*;
@@ -128,7 +128,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
             newUser.setUserRefFullName(securityService.getFullNameOfLoggedInUser());
             trainingDefinition.addAuthor(newUser);
         }
-        trainingDefinition.setLastEdited(LocalDateTime.now());
+        trainingDefinition.setLastEdited(LocalDateTime.now(Clock.systemUTC()));
 
         LOG.info("Training definition with id: {} created.", trainingDefinition.getId());
         return trainingDefinitionRepository.save(trainingDefinition);
@@ -152,7 +152,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
         if (!trainingDefinition.getState().equals(TDState.UNRELEASED)) {
             throw new ServiceLayerException(ARCHIVED_OR_RELEASED, ErrorCode.RESOURCE_CONFLICT);
         }
-        if(trainingInstanceRepository.existsAnyForTrainingDefinition(trainingDefinition.getId())) {
+        if (trainingInstanceRepository.existsAnyForTrainingDefinition(trainingDefinition.getId())) {
             throw new ServiceLayerException("Cannot update training definition with already created training instance. " +
                     "Remove training instance/s before updating training definition.", ErrorCode.RESOURCE_CONFLICT);
         }
@@ -166,8 +166,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
             newUser.setUserRefFullName(securityService.getFullNameOfLoggedInUser());
             trainingDefinitionToUpdate.addAuthor(newUser);
         }
-        trainingDefinitionToUpdate.setLastEdited(LocalDateTime.now());
-        trainingDefinitionToUpdate.setStartingLevel(trainingDefinition.getStartingLevel());
+        trainingDefinitionToUpdate.setLastEdited(LocalDateTime.now(Clock.systemUTC()));
         trainingDefinitionRepository.save(trainingDefinitionToUpdate);
         LOG.info("Training definition with id: {} updated.", trainingDefinitionToUpdate.getId());
     }
@@ -184,9 +183,6 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
 
         clonedTrainingDefinition.setTitle("Clone of " + clonedTrainingDefinition.getTitle());
         clonedTrainingDefinition.setState(TDState.UNRELEASED);
-        if (clonedTrainingDefinition.getStartingLevel() != null) {
-            clonedTrainingDefinition.setStartingLevel(createLevels(clonedTrainingDefinition.getStartingLevel()));
-        }
         clonedTrainingDefinition.setAuthors(new HashSet<>());
         Optional<UserRef> user = userRefRepository.findUserByUserRefLogin(securityService.getSubOfLoggedInUser());
         if (user.isPresent()) {
@@ -197,96 +193,32 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
             newUser.setUserRefFullName(securityService.getFullNameOfLoggedInUser());
             clonedTrainingDefinition.addAuthor(newUser);
         }
-        clonedTrainingDefinition.setLastEdited(LocalDateTime.now());
+        clonedTrainingDefinition.setLastEdited(LocalDateTime.now(Clock.systemUTC()));
         clonedTrainingDefinition = trainingDefinitionRepository.save(clonedTrainingDefinition);
+        // clone all levels which are assigned to the particular training definition and set
+        cloneLevelsFromTrainingDefinition(trainingDefinition, clonedTrainingDefinition);
+
         LOG.info("Training definition with id: {} cloned.", trainingDefinition.getId());
         return clonedTrainingDefinition;
-
     }
+
 
     @Override
     @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
             "or @securityService.isDesignerOfGivenTrainingDefinition(#definitionId)")
-    public void swapLeft(Long definitionId, Long levelId) {
-        LOG.debug("swapLeft({}, {})", definitionId, levelId);
+    public void swapLevels(Long definitionId, Long swapLevelFrom, Long swapLevelTo) {
+        LOG.debug("swapByOne({}, {}, {})", definitionId, swapLevelFrom, swapLevelTo);
         TrainingDefinition trainingDefinition = findById(definitionId);
         if (!trainingDefinition.getState().equals(TDState.UNRELEASED))
             throw new ServiceLayerException(ARCHIVED_OR_RELEASED, ErrorCode.RESOURCE_CONFLICT);
-        if(trainingInstanceRepository.existsAnyForTrainingDefinition(trainingDefinition.getId())) {
-            throw new ServiceLayerException("Cannot update training definition with already created training instance. " +
-                "Remove training instance/s before updating training definition.", ErrorCode.RESOURCE_CONFLICT);
-        }
-        AbstractLevel swapLevel = abstractLevelRepository.findById(trainingDefinition.getStartingLevel())
-                .orElseThrow(() -> new ServiceLayerException("Level with id: " + trainingDefinition.getStartingLevel() + ", not found.",
-                        ErrorCode.RESOURCE_NOT_FOUND));
-        Long oneBeforeId = null;
-        Long twoBeforeId = null;
-        while (!swapLevel.getId().equals(levelId)) {
-            twoBeforeId = oneBeforeId;
-            oneBeforeId = swapLevel.getId();
-            swapLevel = abstractLevelRepository.findById(swapLevel.getNextLevel())
-                    .orElseThrow(() -> new ServiceLayerException(LEVEL_NOT_FOUND, ErrorCode.RESOURCE_NOT_FOUND));
-        }
-        if (oneBeforeId == null) {
-            throw new ServiceLayerException("Cannot swap left first level.", ErrorCode.RESOURCE_CONFLICT);
-        }
-        AbstractLevel oneBefore = abstractLevelRepository.findById(oneBeforeId)
-                .orElseThrow(() -> new ServiceLayerException(LEVEL_NOT_FOUND, ErrorCode.RESOURCE_NOT_FOUND));
-        oneBefore.setNextLevel(swapLevel.getNextLevel());
-        swapLevel.setNextLevel(oneBeforeId);
-        updateLevel(swapLevel);
-        updateLevel(oneBefore);
-        if (twoBeforeId != null) {
-            AbstractLevel twoBefore = abstractLevelRepository.findById(twoBeforeId)
-                    .orElseThrow(() -> new ServiceLayerException(LEVEL_NOT_FOUND, ErrorCode.RESOURCE_NOT_FOUND));
-            twoBefore.setNextLevel(swapLevel.getId());
-            updateLevel(twoBefore);
-        }
-        if (oneBeforeId.equals(trainingDefinition.getStartingLevel())) {
-            trainingDefinition.setStartingLevel(swapLevel.getId());
-        }
-        trainingDefinition.setLastEdited(LocalDateTime.now());
-    }
+        AbstractLevel swapAbstractLevelFrom = abstractLevelRepository.findById(swapLevelFrom).orElseThrow(() -> new ServiceLayerException(LEVEL_NOT_FOUND, ErrorCode.RESOURCE_NOT_FOUND));
+        AbstractLevel swapAbstractLevelTo = abstractLevelRepository.findById(swapLevelTo).orElseThrow(() -> new ServiceLayerException(LEVEL_NOT_FOUND, ErrorCode.RESOURCE_NOT_FOUND));
+        int orderFromLevel = swapAbstractLevelFrom.getOrder();
+        int orderToLevel = swapAbstractLevelTo.getOrder();
+        swapAbstractLevelFrom.setOrder(orderToLevel);
+        swapAbstractLevelTo.setOrder(orderFromLevel);
 
-    @Override
-    @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
-            "or @securityService.isDesignerOfGivenTrainingDefinition(#definitionId)")
-    public void swapRight(Long definitionId, Long levelId) {
-        LOG.debug("swapRight({}, {})", definitionId, levelId);
-        TrainingDefinition trainingDefinition = findById(definitionId);
-        if (!trainingDefinition.getState().equals(TDState.UNRELEASED))
-            throw new ServiceLayerException(ARCHIVED_OR_RELEASED, ErrorCode.RESOURCE_CONFLICT);
-        if(trainingInstanceRepository.existsAnyForTrainingDefinition(trainingDefinition.getId())) {
-            throw new ServiceLayerException("Cannot update training definition with already created training instance. " +
-                "Remove training instance/s before updating training definition.", ErrorCode.RESOURCE_CONFLICT);
-        }
-        AbstractLevel swapLevel = abstractLevelRepository.findById(trainingDefinition.getStartingLevel())
-                .orElseThrow(() -> new ServiceLayerException("Level with id: " + trainingDefinition.getStartingLevel() + ", not found.",
-                        ErrorCode.RESOURCE_NOT_FOUND));
-
-        Long oneBeforeId = null;
-        while (!swapLevel.getId().equals(levelId)) {
-            oneBeforeId = swapLevel.getId();
-            swapLevel = abstractLevelRepository.findById(swapLevel.getNextLevel())
-                    .orElseThrow(() -> new ServiceLayerException(LEVEL_NOT_FOUND, ErrorCode.RESOURCE_NOT_FOUND));
-        }
-        if (swapLevel.getNextLevel() == null) throw new ServiceLayerException("Cannot swap right last level.", ErrorCode.RESOURCE_CONFLICT);
-        if (oneBeforeId != null) {
-            AbstractLevel oneBefore = abstractLevelRepository.findById(oneBeforeId)
-                    .orElseThrow(() -> new ServiceLayerException(LEVEL_NOT_FOUND, ErrorCode.RESOURCE_NOT_FOUND));
-            oneBefore.setNextLevel(swapLevel.getNextLevel());
-            updateLevel(oneBefore);
-        }
-        AbstractLevel nextLevel = abstractLevelRepository.findById(swapLevel.getNextLevel())
-                .orElseThrow(() -> new ServiceLayerException(LEVEL_NOT_FOUND, ErrorCode.RESOURCE_NOT_FOUND));
-        swapLevel.setNextLevel(nextLevel.getNextLevel());
-        nextLevel.setNextLevel(swapLevel.getId());
-        updateLevel(nextLevel);
-        updateLevel(swapLevel);
-        if (trainingDefinition.getStartingLevel().equals(levelId)) {
-            trainingDefinition.setStartingLevel(nextLevel.getId());
-        }
-        trainingDefinition.setLastEdited(LocalDateTime.now());
+        trainingDefinition.setLastEdited(LocalDateTime.now(Clock.systemUTC()));
     }
 
     @Override
@@ -298,21 +230,15 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
         TrainingDefinition definition = findById(definitionId);
         if (definition.getState().equals(TDState.RELEASED))
             throw new ServiceLayerException("Cannot delete released training definition.", ErrorCode.RESOURCE_CONFLICT);
-        if(trainingInstanceRepository.existsAnyForTrainingDefinition(definitionId)) {
+        if (trainingInstanceRepository.existsAnyForTrainingDefinition(definitionId)) {
             throw new ServiceLayerException("Cannot delete training definition with already created training instance. " +
-                "Remove training instance/s before deleting training definition.", ErrorCode.RESOURCE_CONFLICT);
+                    "Remove training instance/s before deleting training definition.", ErrorCode.RESOURCE_CONFLICT);
         }
-        if (definition.getStartingLevel() != null) {
-            Long levelId = definition.getStartingLevel();
-            while (levelId != null) {
-                AbstractLevel level = abstractLevelRepository.findById(levelId)
-                        .orElseThrow(() -> new ServiceLayerException(LEVEL_NOT_FOUND, ErrorCode.RESOURCE_NOT_FOUND));
-                levelId = level.getNextLevel();
-                deleteLevel(level);
-            }
-        }
+        List<AbstractLevel> abstractLevels = abstractLevelRepository.findAllLevelsByTrainingDefinitionId(definitionId);
+        abstractLevels.forEach(abstractLevel -> {
+            deleteLevel(abstractLevel);
+        });
         trainingDefinitionRepository.delete(definition);
-
     }
 
     @Override
@@ -323,32 +249,13 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
         TrainingDefinition trainingDefinition = findById(definitionId);
         if (!trainingDefinition.getState().equals(TDState.UNRELEASED))
             throw new ServiceLayerException(ARCHIVED_OR_RELEASED, ErrorCode.RESOURCE_CONFLICT);
-        if(trainingInstanceRepository.existsAnyForTrainingDefinition(trainingDefinition.getId())) {
-            throw new ServiceLayerException("Cannot update training definition with already created training instance. " +
-                "Remove training instance/s before updating training definition.", ErrorCode.RESOURCE_CONFLICT);
+        Optional<AbstractLevel> abstractLevelToDelete = abstractLevelRepository.findById(levelId);
+        if (abstractLevelToDelete.isPresent())
+            deleteLevel(abstractLevelToDelete.get());
+        else {
+            throw new ServiceLayerException(LEVEL_NOT_FOUND, ErrorCode.RESOURCE_NOT_FOUND);
         }
-        if (trainingDefinition.getStartingLevel() == null) throw new ServiceLayerException(LEVEL_NOT_FOUND, ErrorCode.RESOURCE_NOT_FOUND);
-        AbstractLevel level = abstractLevelRepository.findById(trainingDefinition.getStartingLevel())
-                .orElseThrow(() -> new ServiceLayerException("Level with id: " + trainingDefinition.getStartingLevel() + ", not found.",
-                        ErrorCode.RESOURCE_NOT_FOUND));
-        Long oneIdBefore = null;
-        while (!level.getId().equals(levelId)) {
-            oneIdBefore = level.getId();
-            level = abstractLevelRepository.findById(level.getNextLevel())
-                    .orElseThrow(() -> new ServiceLayerException(LEVEL_NOT_FOUND, ErrorCode.RESOURCE_NOT_FOUND));
-        }
-
-        if (trainingDefinition.getStartingLevel().equals(level.getId())) {
-            trainingDefinition.setStartingLevel(level.getNextLevel());
-            trainingDefinitionRepository.save(trainingDefinition);
-        } else {
-            AbstractLevel oneBefore = abstractLevelRepository.findById(oneIdBefore)
-                    .orElseThrow(() -> new ServiceLayerException(LEVEL_NOT_FOUND, ErrorCode.RESOURCE_NOT_FOUND));
-            oneBefore.setNextLevel(level.getNextLevel());
-            updateLevel(oneBefore);
-        }
-        trainingDefinition.setLastEdited(LocalDateTime.now());
-        deleteLevel(level);
+        trainingDefinition.setLastEdited(LocalDateTime.now(Clock.systemUTC()));
     }
 
     @Override
@@ -369,8 +276,9 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
         GameLevel gameLevel = gameLevelRepository.findById(gameLevelToUpdate.getId()).orElseThrow(() ->
                 new ServiceLayerException("Level with id: " + gameLevelToUpdate.getId() + ", not found.",
                         ErrorCode.RESOURCE_NOT_FOUND));
-        gameLevelToUpdate.setNextLevel(gameLevel.getNextLevel());
-        trainingDefinition.setLastEdited(LocalDateTime.now());
+        gameLevelToUpdate.setOrder(gameLevel.getOrder());
+        trainingDefinition.setLastEdited(LocalDateTime.now(Clock.systemUTC()));
+        gameLevelToUpdate.setTrainingDefinition(trainingDefinition);
         gameLevelRepository.save(gameLevelToUpdate);
     }
 
@@ -392,8 +300,9 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
         InfoLevel infoLevel = infoLevelRepository.findById(infoLevelToUpdate.getId()).orElseThrow(() ->
                 new ServiceLayerException("Level with id: " + infoLevelToUpdate.getId() + ", not found.",
                         ErrorCode.RESOURCE_NOT_FOUND));
-        infoLevelToUpdate.setNextLevel(infoLevel.getNextLevel());
-        trainingDefinition.setLastEdited(LocalDateTime.now());
+        infoLevelToUpdate.setOrder(infoLevel.getOrder());
+        trainingDefinition.setLastEdited(LocalDateTime.now(Clock.systemUTC()));
+        infoLevelToUpdate.setTrainingDefinition(trainingDefinition);
         infoLevelRepository.save(infoLevelToUpdate);
     }
 
@@ -415,11 +324,12 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
         AssessmentLevel assessmentLevel = assessmentLevelRepository.findById(assessmentLevelToUpdate.getId()).orElseThrow(() ->
                 new ServiceLayerException("Level with id: " + assessmentLevelToUpdate.getId() + ", not found.",
                         ErrorCode.RESOURCE_NOT_FOUND));
-        assessmentLevelToUpdate.setNextLevel(assessmentLevel.getNextLevel());
         if (!assessmentLevelToUpdate.getQuestions().equals(assessmentLevel.getQuestions())) {
             AssessmentUtil.validQuestions(assessmentLevelToUpdate.getQuestions());
         }
-        trainingDefinition.setLastEdited(LocalDateTime.now());
+        assessmentLevelToUpdate.setOrder(assessmentLevel.getOrder());
+        trainingDefinition.setLastEdited(LocalDateTime.now(Clock.systemUTC()));
+        assessmentLevelToUpdate.setTrainingDefinition(trainingDefinition);
         assessmentLevelRepository.save(assessmentLevelToUpdate);
     }
 
@@ -446,19 +356,16 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
         newGameLevel.setSolution("Solution of the game should be here");
         newGameLevel.setContent("The test entry should be here");
         newGameLevel.setEstimatedDuration(1);
+        newGameLevel.setOrder(getNextOrder(definitionId));
+        newGameLevel.setTrainingDefinition(trainingDefinition);
         GameLevel gameLevel = gameLevelRepository.save(newGameLevel);
-
-        if (trainingDefinition.getStartingLevel() == null) {
-            trainingDefinition.setStartingLevel(gameLevel.getId());
-            update(trainingDefinition);
-        } else {
-            AbstractLevel lastLevel = findLastLevel(trainingDefinition.getStartingLevel());
-            lastLevel.setNextLevel(gameLevel.getId());
-            updateLevel(lastLevel);
-        }
-        trainingDefinition.setLastEdited(LocalDateTime.now());
+        trainingDefinition.setLastEdited(LocalDateTime.now(Clock.systemUTC()));
         LOG.info("Game level with id: {} created", gameLevel.getId());
         return gameLevel;
+    }
+
+    private int getNextOrder(Long definitionId) {
+        return abstractLevelRepository.getCurrentMaxOrder(definitionId) + 1;
     }
 
     @Override
@@ -478,17 +385,10 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
         InfoLevel newInfoLevel = new InfoLevel();
         newInfoLevel.setTitle("Title of info level");
         newInfoLevel.setContent("Content of info level should be here.");
+        newInfoLevel.setOrder(getNextOrder(definitionId));
+        newInfoLevel.setTrainingDefinition(trainingDefinition);
         InfoLevel infoLevel = infoLevelRepository.save(newInfoLevel);
-
-        if (trainingDefinition.getStartingLevel() == null) {
-            trainingDefinition.setStartingLevel(infoLevel.getId());
-            update(trainingDefinition);
-        } else {
-            AbstractLevel lastLevel = findLastLevel(trainingDefinition.getStartingLevel());
-            lastLevel.setNextLevel(infoLevel.getId());
-            updateLevel(lastLevel);
-        }
-        trainingDefinition.setLastEdited(LocalDateTime.now());
+        trainingDefinition.setLastEdited(LocalDateTime.now(Clock.systemUTC()));
         LOG.info("Info level with id: {} created.", infoLevel.getId());
         return infoLevel;
     }
@@ -514,17 +414,10 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
         newAssessmentLevel.setInstructions("Instructions should be here");
         newAssessmentLevel.setQuestions("[]");
         newAssessmentLevel.setEstimatedDuration(1);
+        newAssessmentLevel.setOrder(getNextOrder(definitionId));
+        newAssessmentLevel.setTrainingDefinition(trainingDefinition);
         AssessmentLevel assessmentLevel = assessmentLevelRepository.save(newAssessmentLevel);
-
-        if (trainingDefinition.getStartingLevel() == null) {
-            trainingDefinition.setStartingLevel(assessmentLevel.getId());
-            update(trainingDefinition);
-        } else {
-            AbstractLevel lastLevel = findLastLevel(trainingDefinition.getStartingLevel());
-            lastLevel.setNextLevel(assessmentLevel.getId());
-            updateLevel(lastLevel);
-        }
-        trainingDefinition.setLastEdited(LocalDateTime.now());
+        trainingDefinition.setLastEdited(LocalDateTime.now(Clock.systemUTC()));
         LOG.info("Assessment level with id: {} created.", assessmentLevel.getId());
         return assessmentLevel;
     }
@@ -536,17 +429,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     public List<AbstractLevel> findAllLevelsFromDefinition(Long definitionId) {
         LOG.debug("findAllLevelsFromDefinition({})", definitionId);
         Assert.notNull(definitionId, "Definition id must not be null");
-        TrainingDefinition trainingDefinition = findById(definitionId);
-        List<AbstractLevel> levels = new ArrayList<>();
-        Long levelId = trainingDefinition.getStartingLevel();
-        AbstractLevel level = null;
-        while (levelId != null) {
-            level = abstractLevelRepository.findById(levelId)
-                    .orElseThrow(() -> new ServiceLayerException(LEVEL_NOT_FOUND, ErrorCode.RESOURCE_NOT_FOUND));
-            levels.add(level);
-            levelId = level.getNextLevel();
-        }
-        return levels;
+        return abstractLevelRepository.findAllLevelsByTrainingDefinitionId(definitionId);
     }
 
     @Override
@@ -600,7 +483,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     @Override
     @TransactionalWO
     @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
-        "or @securityService.isDesignerOfGivenTrainingDefinition(#definitionId)")
+            "or @securityService.isDesignerOfGivenTrainingDefinition(#definitionId)")
     public void switchState(Long definitionId, cz.muni.ics.kypo.training.api.enums.TDState state) {
         LOG.debug("unreleaseDefinition({})", definitionId);
         TrainingDefinition trainingDefinition = findById(definitionId);
@@ -609,87 +492,75 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
                 "Remove training instance/s before updating training definition.", ErrorCode.RESOURCE_CONFLICT);
         }
 
-        switch (trainingDefinition.getState()){
+        switch (trainingDefinition.getState()) {
             case UNRELEASED:
-                if (state.equals(cz.muni.ics.kypo.training.api.enums.TDState.RELEASED)) trainingDefinition.setState(TDState.RELEASED);
-                else throw new ServiceLayerException("Cannot switch from" + trainingDefinition.getState() + " to "+ state, ErrorCode.RESOURCE_CONFLICT);
+                if (state.equals(cz.muni.ics.kypo.training.api.enums.TDState.RELEASED))
+                    trainingDefinition.setState(TDState.RELEASED);
+                else
+                    throw new ServiceLayerException("Cannot switch from" + trainingDefinition.getState() + " to " + state, ErrorCode.RESOURCE_CONFLICT);
                 break;
             case RELEASED:
                 if (state.equals(cz.muni.ics.kypo.training.api.enums.TDState.ARCHIVED))
                     trainingDefinition.setState(TDState.ARCHIVED);
                 else if (state.equals(cz.muni.ics.kypo.training.api.enums.TDState.UNRELEASED))
-                    trainingDefinition.setState(TDState.UNRELEASED);
-                else throw new ServiceLayerException("Cannot switch from" + trainingDefinition.getState() + " to "+ state, ErrorCode.RESOURCE_CONFLICT);
+                    trainingDefinition.setState((TDState.UNRELEASED));
                 break;
             default:
-                throw new ServiceLayerException("Cannot switch from" + trainingDefinition.getState() + " to "+ state, ErrorCode.RESOURCE_CONFLICT);
+                throw new ServiceLayerException("Cannot switch from" + trainingDefinition.getState() + " to " + state, ErrorCode.RESOURCE_CONFLICT);
         }
-        trainingDefinition.setLastEdited(LocalDateTime.now());
-    }
-
-    private AbstractLevel findLastLevel(Long levelId) {
-        AbstractLevel lastLevel = abstractLevelRepository.findById(levelId)
-                .orElseThrow(() -> new ServiceLayerException(LEVEL_NOT_FOUND, ErrorCode.RESOURCE_NOT_FOUND));
-        levelId = lastLevel.getNextLevel();
-        while (levelId != null) {
-            lastLevel = abstractLevelRepository.findById(lastLevel.getNextLevel())
-                    .orElseThrow(() -> new ServiceLayerException(LEVEL_NOT_FOUND, ErrorCode.RESOURCE_NOT_FOUND));
-            levelId = lastLevel.getNextLevel();
-        }
-        return lastLevel;
+        trainingDefinition.setLastEdited(LocalDateTime.now(Clock.systemUTC()));
     }
 
     private boolean findLevelInDefinition(TrainingDefinition trainingDefinition, Long levelId) {
-        Long nextId = trainingDefinition.getStartingLevel();
-        Boolean found = false;
-        if (nextId == levelId)
-            found = true;
-
-        while (nextId != null && !found) {
-            AbstractLevel nextLevel = abstractLevelRepository.findById(nextId)
-                    .orElseThrow(() -> new ServiceLayerException(LEVEL_NOT_FOUND, ErrorCode.RESOURCE_NOT_FOUND));
-            if (nextLevel.getId().equals(levelId))
-                found = true;
-            nextId = nextLevel.getNextLevel();
+        Optional<AbstractLevel> abstractLevel = abstractLevelRepository.findLevelInDefinition(trainingDefinition.getId(), levelId);
+        if (abstractLevel.isPresent()) {
+            return true;
+        } else {
+            return false;
         }
-        return found;
     }
 
-    private Long createLevels(Long id) {
-        List<AbstractLevel> levels = new ArrayList<>();
-        while (id != null) {
-            AbstractLevel nextLevel = abstractLevelRepository.findById(id)
-                    .orElseThrow(() -> new ServiceLayerException(LEVEL_NOT_FOUND, ErrorCode.RESOURCE_NOT_FOUND));
-            id = nextLevel.getNextLevel();
-            levels.add(nextLevel);
+    private void cloneLevelsFromTrainingDefinition(TrainingDefinition trainingDefinition, TrainingDefinition clonedTrainingDefinition) {
+        List<AbstractLevel> levels = abstractLevelRepository.findAllLevelsByTrainingDefinitionId(trainingDefinition.getId());
+        if (levels == null || levels.size() == 0) {
+            return;
         }
-        Long newId = null;
-        for (int i = levels.size() - 1; i >= 0; i--) {
-            //TODO clone post and pre hook ?
-            if (levels.get(i) instanceof AssessmentLevel) {
+        levels.forEach(level -> {
+            if (level instanceof AssessmentLevel) {
+//                AssessmentUtil.validQuestions(((AssessmentLevel) level).getQuestions());
                 AssessmentLevel newAssessmentLevel = new AssessmentLevel();
-                BeanUtils.copyProperties(levels.get(i), newAssessmentLevel);
+                BeanUtils.copyProperties(level, newAssessmentLevel);
                 newAssessmentLevel.setId(null);
-                newAssessmentLevel.setNextLevel(newId);
                 newAssessmentLevel.setSnapshotHook(null);
-                newId = assessmentLevelRepository.save(newAssessmentLevel).getId();
-            } else if (levels.get(i) instanceof InfoLevel) {
-                InfoLevel newInfoLevel = new InfoLevel();
-                BeanUtils.copyProperties(levels.get(i), newInfoLevel);
-                newInfoLevel.setId(null);
-                newInfoLevel.setNextLevel(newId);
-                newInfoLevel.setSnapshotHook(null);
-                newId = infoLevelRepository.save(newInfoLevel).getId();
-            } else {
-                GameLevel newGameLevel = new GameLevel();
-                BeanUtils.copyProperties(levels.get(i), newGameLevel);
-                newGameLevel.setId(null);
-                newGameLevel.setNextLevel(newId);
-                newGameLevel.setSnapshotHook(null);
-                newId = gameLevelRepository.save(newGameLevel).getId();
+                newAssessmentLevel.setTrainingDefinition(clonedTrainingDefinition);
+                assessmentLevelRepository.save(newAssessmentLevel);
             }
-        }
-        return newId;
+            if (level instanceof InfoLevel) {
+                InfoLevel newInfoLevel = new InfoLevel();
+                BeanUtils.copyProperties(level, newInfoLevel);
+                newInfoLevel.setId(null);
+                newInfoLevel.setSnapshotHook(null);
+                newInfoLevel.setTrainingDefinition(clonedTrainingDefinition);
+                infoLevelRepository.save(newInfoLevel);
+            }
+            if (level instanceof GameLevel) {
+                GameLevel newGameLevel = new GameLevel();
+                BeanUtils.copyProperties(level, newGameLevel);
+                newGameLevel.setId(null);
+                newGameLevel.setSnapshotHook(null);
+                newGameLevel.setHints(null);
+                Set<Hint> hints = new HashSet<>();
+                for (Hint hint : ((GameLevel) level).getHints()){
+                    Hint newHint = new Hint();
+                    BeanUtils.copyProperties(hint, newHint);
+                    newHint.setId(null);
+                    hints.add(newHint);
+                }
+                newGameLevel.setHints(hints);
+                newGameLevel.setTrainingDefinition(clonedTrainingDefinition);
+                gameLevelRepository.save(newGameLevel);
+            }
+        });
     }
 
     private void deleteLevel(AbstractLevel level) {
@@ -701,16 +572,5 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
             gameLevelRepository.delete((GameLevel) level);
         }
     }
-
-    private void updateLevel(AbstractLevel level) {
-        if (level instanceof AssessmentLevel) {
-            assessmentLevelRepository.save((AssessmentLevel) level);
-        } else if (level instanceof InfoLevel) {
-            infoLevelRepository.save((InfoLevel) level);
-        } else {
-            gameLevelRepository.save((GameLevel) level);
-        }
-    }
-
 
 }

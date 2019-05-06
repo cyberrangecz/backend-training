@@ -142,7 +142,6 @@ public class TrainingRunsIT {
 		iL.setContent("content");
 		iL.setTitle("title");
 		iL.setMaxScore(50);
-		iL.setNextLevel(2L);
 		InfoLevel infoLevel = infoLevelRepository.save(iL);
 
 		GameLevel gL = new GameLevel();
@@ -151,7 +150,6 @@ public class TrainingRunsIT {
 		gL.setSolution("gameSolution");
 		gL.setFlag("gameFlag");
 		gL.setSolutionPenalized(true);
-		gL.setNextLevel(3L);
 		GameLevel gameLevel = gameLevelRepository.save(gL);
 
 		AssessmentLevel aL = new AssessmentLevel();
@@ -174,7 +172,7 @@ public class TrainingRunsIT {
 		definition.setShowStepperBar(true);
 		definition.setBetaTestingGroup(betaTestingGroup);
 		definition.setSandboxDefinitionRefId(1L);
-		definition.setStartingLevel(1L);
+		//definition.setStartingLevel(1L);
 		definition.setLastEdited(LocalDateTime.now());
 		TrainingDefinition tD = trainingDefinitionRepository.save(definition);
 

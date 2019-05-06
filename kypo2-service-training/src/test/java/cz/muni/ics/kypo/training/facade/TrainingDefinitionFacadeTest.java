@@ -105,6 +105,7 @@ public class TrainingDefinitionFacadeTest {
         beanMapping = new BeanMappingImpl(new ModelMapper());
         assessmentLevel = new AssessmentLevel();
         assessmentLevel.setId(1L);
+        assessmentLevel.setOrder(1);
 
         alUpdate = new AssessmentLevelUpdateDTO();
         alUpdate.setId(2L);
@@ -119,7 +120,7 @@ public class TrainingDefinitionFacadeTest {
 
         gameLevel = new GameLevel();
         gameLevel.setId(2L);
-        gameLevel.setNextLevel(null);
+        gameLevel.setOrder(2);
         gameLevel.setSolution("solution");
 
         gameLevelUpdate = new GameLevelUpdateDTO();
@@ -135,7 +136,7 @@ public class TrainingDefinitionFacadeTest {
 
         infoLevel = new InfoLevel();
         infoLevel.setId(3L);
-        infoLevel.setNextLevel(gameLevel.getId());
+        infoLevel.setOrder(3);
 
         infoLevelUpdate = new InfoLevelUpdateDTO();
         infoLevelUpdate.setId(3L);
@@ -152,12 +153,10 @@ public class TrainingDefinitionFacadeTest {
         trainingDefinition1 = new TrainingDefinition();
         trainingDefinition1.setId(1L);
         trainingDefinition1.setState(TDState.RELEASED);
-        trainingDefinition1.setStartingLevel(infoLevel.getId());
 
         trainingDefinition2 = new TrainingDefinition();
         trainingDefinition2.setId(2L);
         trainingDefinition2.setState(TDState.UNRELEASED);
-        trainingDefinition2.setStartingLevel(infoLevel.getId());
 
         betaTestingGroupUpdateDTO = new BetaTestingGroupUpdateDTO();
         betaTestingGroupUpdateDTO.setOrganizers(Set.of());
@@ -278,56 +277,6 @@ public class TrainingDefinitionFacadeTest {
         thrown.expect(FacadeLayerException.class);
         willThrow(ServiceLayerException.class).given(trainingDefinitionService).clone(any(Long.class));
         trainingDefinitionFacade.clone(any(Long.class));
-    }
-
-    @Test
-    public void swapLeft() {
-        trainingDefinitionFacade.swapLeft(trainingDefinition1.getId(), assessmentLevel.getId());
-        then(trainingDefinitionService).should().swapLeft(trainingDefinition1.getId(), assessmentLevel.getId());
-    }
-
-    @Test
-    public void swapLeftWithNullTrainingDefinitionId() {
-        thrown.expect(NullPointerException.class);
-        trainingDefinitionFacade.swapLeft(null, 1L);
-    }
-
-    @Test
-    public void swapLeftWithNullLevelId() {
-        thrown.expect(NullPointerException.class);
-        trainingDefinitionFacade.swapLeft(1L, null);
-    }
-
-    @Test
-    public void swapLeftWithFacadeLayerException() {
-        thrown.expect(FacadeLayerException.class);
-        willThrow(ServiceLayerException.class).given(trainingDefinitionService).swapLeft(any(Long.class), any(Long.class));
-        trainingDefinitionFacade.swapLeft(any(Long.class), any(Long.class));
-    }
-
-    @Test
-    public void swapRight() {
-        trainingDefinitionFacade.swapRight(trainingDefinition1.getId(), assessmentLevel.getId());
-        then(trainingDefinitionService).should().swapRight(trainingDefinition1.getId(), assessmentLevel.getId());
-    }
-
-    @Test
-    public void swapRightWithNullTrainingDefinitionId() {
-        thrown.expect(NullPointerException.class);
-        trainingDefinitionFacade.swapRight(null, 1L);
-    }
-
-    @Test
-    public void swapRightWithNullLevelId() {
-        thrown.expect(NullPointerException.class);
-        trainingDefinitionFacade.swapRight(1L, null);
-    }
-
-    @Test
-    public void swapRightWithFacadeLayerException() {
-        thrown.expect(FacadeLayerException.class);
-        willThrow(ServiceLayerException.class).given(trainingDefinitionService).swapRight(any(Long.class), any(Long.class));
-        trainingDefinitionFacade.swapRight(any(Long.class), any(Long.class));
     }
 
     @Test

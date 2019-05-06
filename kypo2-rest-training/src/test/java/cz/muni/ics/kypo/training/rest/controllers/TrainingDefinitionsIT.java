@@ -259,7 +259,7 @@ public class TrainingDefinitionsIT {
 	public void findTrainingDefinitionById() throws Exception {
 		TrainingDefinition expected = trainingDefinitionRepository.save(releasedTrainingDefinition);
 		GameLevel gL1 = gameLevelRepository.save(gameLevel1);
-		expected.setStartingLevel(gL1.getId());
+		gL1.setTrainingDefinition(expected);
 		trainingDefinitionRepository.save(expected);
 
 		MockHttpServletResponse result = mvc.perform(get("/training-definitions" + "/{id}", expected.getId()))
@@ -367,7 +367,6 @@ public class TrainingDefinitionsIT {
 		assertEquals(updatedDefinition.getDescription(), trainingDefinitionUpdateDTO.getDescription());
 		assertEquals(updatedDefinition.getState().toString(), trainingDefinitionUpdateDTO.getState().toString());
 		assertEquals(updatedDefinition.isShowStepperBar(), trainingDefinitionUpdateDTO.isShowStepperBar());
-		assertEquals(updatedDefinition.getStartingLevel(), unreleasedDefinition.getStartingLevel());
 		assertEquals(updatedDefinition.getAuthors(), unreleasedDefinition.getAuthors());
 		assertEquals(updatedDefinition.getSandboxDefinitionRefId(), unreleasedDefinition.getSandboxDefinitionRefId());
 	}
@@ -408,7 +407,7 @@ public class TrainingDefinitionsIT {
 	public void cloneTrainingDefinition() throws Exception{
 		TrainingDefinition tD = trainingDefinitionRepository.save(releasedTrainingDefinition);
 		GameLevel gL1 = gameLevelRepository.save(gameLevel1);
-		tD.setStartingLevel(gL1.getId());
+		//tD.setStartingLevel(gL1.getId());
 		trainingDefinitionRepository.save(tD);
 
 		mvc.perform(post("/training-definitions" + "/{id}", tD.getId()))
@@ -421,7 +420,7 @@ public class TrainingDefinitionsIT {
 		assertEquals(clonedTD.getTitle(), "Clone of " + tD.getTitle());
 		assertEquals(clonedTD.getState().toString(), TDState.UNRELEASED.toString());
 		assertEquals(clonedTD.isShowStepperBar(), tD.isShowStepperBar());
-		assertFalse(clonedTD.getStartingLevel().equals(tD.getStartingLevel()));
+		//assertFalse(clonedTD.getStartingLevel().equals(tD.getStartingLevel()));
 	}
 
 	@Test
@@ -434,174 +433,14 @@ public class TrainingDefinitionsIT {
 	}
 
 	@Test
-	public void swapLeft() throws Exception {
-		TrainingDefinition tD = trainingDefinitionRepository.save(unreleasedDefinition);
-		AssessmentLevel aL = assessmentLevelRepository.save(assessmentLevel1);
-		GameLevel gL = gameLevelRepository.save(gameLevel1);
-		InfoLevel iL = infoLevelRepository.save(infoLevel1);
-		tD.setStartingLevel(aL.getId());
-		aL.setNextLevel(gL.getId());
-		gL.setNextLevel(iL.getId());
-		trainingDefinitionRepository.save(tD);
-		assessmentLevelRepository.save(aL);
-		gameLevelRepository.save(gL);
-
-		mvc.perform(put("/training-definitions/{definitionId}/levels/{levelId}/swap-left", tD.getId(),  gL.getId()))
-				.andExpect(status().isOk())
-				.andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON_VALUE));
-
-		Optional<TrainingDefinition> optTD = trainingDefinitionRepository.findById(tD.getId());
-		Optional<AssessmentLevel> optAL = assessmentLevelRepository.findById(aL.getId());
-		Optional<GameLevel> optGL = gameLevelRepository.findById(gL.getId());
-		Optional<InfoLevel> optIL = infoLevelRepository.findById(iL.getId());
-		assertTrue(optTD.isPresent());
-		assertTrue(optAL.isPresent());
-		assertTrue(optGL.isPresent());
-		assertTrue(optIL.isPresent());
-		assertEquals(optTD.get().getStartingLevel(), gL.getId());
-		assertEquals(optGL.get().getNextLevel(), aL.getId());
-		assertEquals(optAL.get().getNextLevel(), iL.getId());
-		assertNull(optIL.get().getNextLevel());
-	}
-
-	@Test
-	public void swapLeftOnReleasedDefinition() throws Exception{
-		TrainingDefinition tD = trainingDefinitionRepository.save(releasedTrainingDefinition);
-		AssessmentLevel aL = assessmentLevelRepository.save(assessmentLevel1);
-		GameLevel gL = gameLevelRepository.save(gameLevel1);
-		tD.setStartingLevel(aL.getId());
-		aL.setNextLevel(gL.getId());
-		trainingDefinitionRepository.save(tD);
-		assessmentLevelRepository.save(aL);
-
-		Exception ex = mvc.perform(put("/training-definitions/{definitionId}/levels/{levelId}/swap-left", tD.getId(),  gL.getId()))
-				.andExpect(status().isConflict())
-				.andReturn().getResolvedException();
-
-		assertEquals(ex.getClass(), ConflictException.class);
-		assertTrue(ex.getMessage().contains("Cannot edit released or archived training"));
-	}
-
-	@Test
-	public void swapLeftOnFirstLevel() throws Exception{
-		TrainingDefinition tD = trainingDefinitionRepository.save(unreleasedDefinition);
-		AssessmentLevel aL = assessmentLevelRepository.save(assessmentLevel1);
-		tD.setStartingLevel(aL.getId());
-		trainingDefinitionRepository.save(tD);
-
-		Exception ex = mvc.perform(put("/training-definitions/{definitionId}/levels/{levelId}/swap-left", tD.getId(),  aL.getId()))
-				.andExpect(status().isConflict())
-				.andReturn().getResolvedException();
-
-		assertEquals(ex.getClass(), ConflictException.class);
-		assertTrue(ex.getMessage().contains("Cannot swap left first level"));
-	}
-
-	@Test
-	public void swapLeftOnNonexistentDefinition() throws Exception{
-		AssessmentLevel aL = assessmentLevelRepository.save(assessmentLevel1);
-
-		Exception ex = mvc.perform(put("/training-definitions/{definitionId}/levels/{levelId}/swap-left", 100L,  aL.getId()))
-				.andExpect(status().isNotFound())
-				.andReturn().getResolvedException();
-
-		assertEquals(ex.getClass(), ResourceNotFoundException.class);
-		assertTrue(ex.getMessage().contains("Training definition with id: 100 not found"));
-	}
-
-	@Test
-	public void swapRight() throws Exception {
-		TrainingDefinition tD = trainingDefinitionRepository.save(unreleasedDefinition);
-		AssessmentLevel aL = assessmentLevelRepository.save(assessmentLevel1);
-		GameLevel gL = gameLevelRepository.save(gameLevel1);
-		InfoLevel iL = infoLevelRepository.save(infoLevel1);
-		tD.setStartingLevel(aL.getId());
-		aL.setNextLevel(gL.getId());
-		gL.setNextLevel(iL.getId());
-		trainingDefinitionRepository.save(tD);
-		assessmentLevelRepository.save(aL);
-		gameLevelRepository.save(gL);
-
-		mvc.perform(put("/training-definitions/{definitionId}/levels/{levelId}/swap-right", tD.getId(),  aL.getId()))
-				.andExpect(status().isOk())
-				.andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON_VALUE));
-
-		Optional<TrainingDefinition> optTD = trainingDefinitionRepository.findById(tD.getId());
-		Optional<AssessmentLevel> optAL = assessmentLevelRepository.findById(aL.getId());
-		Optional<GameLevel> optGL = gameLevelRepository.findById(gL.getId());
-		Optional<InfoLevel> optIL = infoLevelRepository.findById(iL.getId());
-		assertTrue(optTD.isPresent());
-		assertTrue(optAL.isPresent());
-		assertTrue(optGL.isPresent());
-		assertTrue(optIL.isPresent());
-		assertEquals(optTD.get().getStartingLevel(), gL.getId());
-		assertEquals(optGL.get().getNextLevel(), aL.getId());
-		assertEquals(optAL.get().getNextLevel(), iL.getId());
-		assertNull(optIL.get().getNextLevel());
-	}
-
-	@Test
-	public void swapRightOnReleasedDefinition() throws Exception{
-		TrainingDefinition tD = trainingDefinitionRepository.save(releasedTrainingDefinition);
-		AssessmentLevel aL = assessmentLevelRepository.save(assessmentLevel1);
-		GameLevel gL = gameLevelRepository.save(gameLevel1);
-		tD.setStartingLevel(aL.getId());
-		aL.setNextLevel(gL.getId());
-		trainingDefinitionRepository.save(tD);
-		assessmentLevelRepository.save(aL);
-
-		Exception ex = mvc.perform(put("/training-definitions/{definitionId}/levels/{levelId}/swap-right", tD.getId(),  aL.getId()))
-				.andExpect(status().isConflict())
-				.andReturn().getResolvedException();
-
-		assertEquals(ex.getClass(), ConflictException.class);
-		assertTrue(ex.getMessage().contains("Cannot edit released or archived training"));
-	}
-
-	@Test
-	public void swapRightOnLastLevel() throws Exception{
-		TrainingDefinition tD = trainingDefinitionRepository.save(unreleasedDefinition);
-		AssessmentLevel aL = assessmentLevelRepository.save(assessmentLevel1);
-		GameLevel gL = gameLevelRepository.save(gameLevel1);
-		InfoLevel iL = infoLevelRepository.save(infoLevel1);
-		tD.setStartingLevel(gL.getId());
-		gL.setNextLevel(aL.getId());
-		aL.setNextLevel(iL.getId());
-		trainingDefinitionRepository.save(tD);
-		gameLevelRepository.save(gL);
-		assessmentLevelRepository.save(aL);
-		Exception ex = mvc.perform(put("/training-definitions/{definitionId}/levels/{levelId}/swap-right", tD.getId(),  iL.getId()))
-				.andExpect(status().isConflict())
-				.andReturn().getResolvedException();
-
-		assertEquals(ex.getClass(), ConflictException.class);
-		assertTrue(ex.getMessage().contains("Cannot swap right last level"));
-	}
-
-	@Test
-	public void swapRightOnNonexistentDefinition() throws Exception{
-		AssessmentLevel aL = assessmentLevelRepository.save(assessmentLevel1);
-
-		Exception ex = mvc.perform(put("/training-definitions/{definitionId}/levels/{levelId}/swap-right", 100L,  aL.getId()))
-				.andExpect(status().isNotFound())
-				.andReturn().getResolvedException();
-
-		assertEquals(ex.getClass(), ResourceNotFoundException.class);
-		assertTrue(ex.getMessage().contains("Training definition with id: 100 not found"));
-	}
-
-	@Test
 	public void deleteTrainingDefinition() throws Exception {
 		TrainingDefinition tD = trainingDefinitionRepository.save(unreleasedDefinition);
 		AssessmentLevel aL = assessmentLevelRepository.save(assessmentLevel1);
 		GameLevel gL = gameLevelRepository.save(gameLevel1);
 		InfoLevel iL = infoLevelRepository.save(infoLevel1);
-		tD.setStartingLevel(aL.getId());
-		aL.setNextLevel(gL.getId());
-		gL.setNextLevel(iL.getId());
-		trainingDefinitionRepository.save(tD);
-		assessmentLevelRepository.save(aL);
-		gameLevelRepository.save(gL);
+		aL.setTrainingDefinition(tD);
+		gL.setTrainingDefinition(tD);
+		iL.setTrainingDefinition(tD);
 
 		mvc.perform(delete("/training-definitions" + "/{id}", tD.getId()))
 				.andExpect(status().isOk());
@@ -626,14 +465,12 @@ public class TrainingDefinitionsIT {
 	}
 
 	@Test
-	public void deleteOneLevelOnFirstLevel() throws Exception{
+	public void deleteOneLevel() throws Exception{
 		TrainingDefinition tD = trainingDefinitionRepository.save(unreleasedDefinition);
 		GameLevel gL = gameLevelRepository.save(gameLevel1);
 		InfoLevel iL = infoLevelRepository.save(infoLevel1);
-		tD.setStartingLevel(gL.getId());
-		gL.setNextLevel(iL.getId());
-		trainingDefinitionRepository.save(tD);
-		gameLevelRepository.save(gL);
+		gL.setTrainingDefinition(tD);
+		iL.setTrainingDefinition(tD);
 
 		mvc.perform(delete("/training-definitions/{definitionId}/levels/{levelId}", tD.getId(), gL.getId()))
 				.andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON_VALUE))
@@ -641,33 +478,10 @@ public class TrainingDefinitionsIT {
 
 		Optional<TrainingDefinition> optTD = trainingDefinitionRepository.findById(tD.getId());
 		Optional<GameLevel> optGL = gameLevelRepository.findById(gL.getId());
+		Optional<InfoLevel> optIl = infoLevelRepository.findById(iL.getId());
 		assertTrue(optTD.isPresent());
 		assertFalse(optGL.isPresent());
-		assertEquals(optTD.get().getStartingLevel(), iL.getId());
-	}
-
-	@Test
-	public void deleteOneLevelOnMiddleLevel() throws Exception{
-		TrainingDefinition tD = trainingDefinitionRepository.save(unreleasedDefinition);
-		GameLevel gL = gameLevelRepository.save(gameLevel1);
-		InfoLevel iL = infoLevelRepository.save(infoLevel1);
-		AssessmentLevel aL = assessmentLevelRepository.save(assessmentLevel1);
-		tD.setStartingLevel(gL.getId());
-		gL.setNextLevel(iL.getId());
-		iL.setNextLevel(aL.getId());
-		trainingDefinitionRepository.save(tD);
-		gameLevelRepository.save(gL);
-		infoLevelRepository.save(iL);
-
-		mvc.perform(delete("/training-definitions/{definitionId}/levels/{levelId}", tD.getId(), iL.getId()))
-				.andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON_VALUE))
-				.andExpect(status().isOk());
-
-		Optional<GameLevel> optGL = gameLevelRepository.findById(gL.getId());
-		Optional<InfoLevel> optIL = infoLevelRepository.findById(iL.getId());
-		assertTrue(optGL.isPresent());
-		assertFalse(optIL.isPresent());
-		assertEquals(optGL.get().getNextLevel(), aL.getId());
+		assertTrue(optIl.isPresent());
 	}
 
 	@Test
@@ -706,8 +520,7 @@ public class TrainingDefinitionsIT {
 	public void updateGameLevel() throws Exception {
 		TrainingDefinition tD = trainingDefinitionRepository.save(unreleasedDefinition);
 		GameLevel gL = gameLevelRepository.save(gameLevel1);
-		tD.setStartingLevel(gL.getId());
-		trainingDefinitionRepository.save(tD);
+		gL.setTrainingDefinition(tD);
 		gameLevelUpdateDTO.setId(gL.getId());
 
 		mvc.perform(put("/training-definitions/{definitionId}/game-levels", tD.getId()).content(convertObjectToJsonBytes(gameLevelUpdateDTO))
@@ -778,8 +591,7 @@ public class TrainingDefinitionsIT {
 	public void updateInfoLevel() throws Exception {
 		TrainingDefinition tD = trainingDefinitionRepository.save(unreleasedDefinition);
 		InfoLevel iL = infoLevelRepository.save(infoLevel1);
-		tD.setStartingLevel(iL.getId());
-		trainingDefinitionRepository.save(tD);
+		iL.setTrainingDefinition(tD);
 		infoLevelUpdateDTO.setId(iL.getId());
 
 		mvc.perform(put("/training-definitions/{definitionId}/info-levels", tD.getId()).content(convertObjectToJsonBytes(infoLevelUpdateDTO))
@@ -846,8 +658,7 @@ public class TrainingDefinitionsIT {
 	public void updateAssessmentLevel() throws Exception {
 		TrainingDefinition tD = trainingDefinitionRepository.save(unreleasedDefinition);
 		AssessmentLevel aL = assessmentLevelRepository.save(assessmentLevel1);
-		tD.setStartingLevel(aL.getId());
-		trainingDefinitionRepository.save(tD);
+		aL.setTrainingDefinition(tD);
 		assessmentLevelUpdateDTO.setId(aL.getId());
 
 		mvc.perform(put("/training-definitions/{definitionId}/assessment-levels", tD.getId()).content(convertObjectToJsonBytes(assessmentLevelUpdateDTO))
@@ -969,7 +780,6 @@ public class TrainingDefinitionsIT {
 		Optional<GameLevel> optGL = gameLevelRepository.findById(1L);
 		assertTrue(optGL.isPresent());
 		GameLevel gL = optGL.get();
-		assertEquals(tD.getStartingLevel(), gL.getId());
 		assertEquals(gL.getMaxScore(), 100);
 		assertEquals(gL.getTitle(), "Title of game level");
 		assertEquals(gL.getIncorrectFlagLimit(), 0);
@@ -989,7 +799,6 @@ public class TrainingDefinitionsIT {
 		Optional<InfoLevel> optIL = infoLevelRepository.findById(1L);
 		assertTrue(optIL.isPresent());
 		InfoLevel iL = optIL.get();
-		assertEquals(tD.getStartingLevel(), iL.getId());
 		assertEquals(iL.getMaxScore(), 0);
 		assertEquals(iL.getTitle(), "Title of info level");
 		assertEquals(iL.getContent(), "Content of info level should be here.");
@@ -1005,7 +814,6 @@ public class TrainingDefinitionsIT {
 		Optional<AssessmentLevel> optAL = assessmentLevelRepository.findById(1L);
 		assertTrue(optAL.isPresent());
 		AssessmentLevel aL = optAL.get();
-		assertEquals(tD.getStartingLevel(), aL.getId());
 		assertEquals(aL.getMaxScore(), 0);
 		assertEquals(aL.getTitle(), "Title of assessment level");
 		assertEquals(aL.getAssessmentType().toString(), AssessmentType.QUESTIONNAIRE.toString());

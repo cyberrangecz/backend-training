@@ -41,8 +41,6 @@ public class TrainingDefinition implements Serializable {
     private BetaTestingGroup betaTestingGroup;
     @Column(name = "sandbox_definition_ref_id", nullable = false)
     private Long sandboxDefinitionRefId;
-    @Column(name = "starting_level")
-    private Long startingLevel;
     @Column(name = "show_stepper_bar", nullable = false)
     private boolean showStepperBar;
     @Column(name = "last_edited", nullable = false)
@@ -130,14 +128,6 @@ public class TrainingDefinition implements Serializable {
         this.sandboxDefinitionRefId = sandboxDefinitionRefId;
     }
 
-    public Long getStartingLevel() {
-        return startingLevel;
-    }
-
-    public void setStartingLevel(Long startingLevel) {
-        this.startingLevel = startingLevel;
-    }
-
     public boolean isShowStepperBar() {
         return showStepperBar;
     }
@@ -180,6 +170,6 @@ public class TrainingDefinition implements Serializable {
         return "TrainingDefinition{" + "id=" + id + ", title='" + title + '\'' + ", description='" + description + '\''
                 + ", prerequisities=" + Arrays.toString(prerequisities) + ", outcomes=" + Arrays.toString(outcomes) + ", state=" + state
                 + ", authors=" + authors + ", betaTestingGroup=" + betaTestingGroup + ", sandboxDefinitionRefId=" + sandboxDefinitionRefId
-                + ", startingLevel=" + startingLevel + ", showStepperBar=" + showStepperBar + ", lastEdited=" + lastEdited + '}';
+                + ", showStepperBar=" + showStepperBar + ", lastEdited=" + lastEdited + '}';
     }
 }

@@ -120,7 +120,7 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
             accessTrainingRunDTO.setTrainingRunID(trainingRun.getId());
             accessTrainingRunDTO.setShowStepperBar(trainingRun.getTrainingInstance().getTrainingDefinition().isShowStepperBar());
             accessTrainingRunDTO.setAbstractLevelDTO(getCorrectAbstractLevelDTO(trainingRun.getCurrentLevel()));
-            accessTrainingRunDTO.setInfoAboutLevels(getInfoAboutLevels(trainingRun.getCurrentLevel().getId()));
+            accessTrainingRunDTO.setInfoAboutLevels(getInfoAboutLevels(trainingRun.getCurrentLevel().getTrainingDefinition().getId()));
             accessTrainingRunDTO.setSandboxInstanceId(trainingRun.getSandboxInstanceRef().getSandboxInstanceRef());
             return accessTrainingRunDTO;
         } catch (ServiceLayerException ex) {
@@ -128,16 +128,16 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
         }
     }
 
-    private List<BasicLevelInfoDTO> getInfoAboutLevels(Long firstLevelId) {
+    private List<BasicLevelInfoDTO> getInfoAboutLevels(Long definitionId) {
         List<BasicLevelInfoDTO> infoAboutLevels = new ArrayList<>();
-        List<AbstractLevel> levels = trainingRunService.getLevels(firstLevelId);
+        List<AbstractLevel> levels = trainingRunService.getLevels(definitionId);
         for (AbstractLevel abstractLevel : levels) {
             if (abstractLevel instanceof AssessmentLevel) {
-                infoAboutLevels.add(new BasicLevelInfoDTO(abstractLevel.getId(), abstractLevel.getTitle(), LevelType.ASSESSMENT_LEVEL, levels.indexOf(abstractLevel)));
+                infoAboutLevels.add(new BasicLevelInfoDTO(abstractLevel.getId(), abstractLevel.getTitle(), LevelType.ASSESSMENT_LEVEL, abstractLevel.getOrder()));
             } else if (abstractLevel instanceof GameLevel) {
-                infoAboutLevels.add(new BasicLevelInfoDTO(abstractLevel.getId(), abstractLevel.getTitle(), LevelType.GAME_LEVEL, levels.indexOf(abstractLevel)));
+                infoAboutLevels.add(new BasicLevelInfoDTO(abstractLevel.getId(), abstractLevel.getTitle(), LevelType.GAME_LEVEL, abstractLevel.getOrder()));
             } else {
-                infoAboutLevels.add(new BasicLevelInfoDTO(abstractLevel.getId(), abstractLevel.getTitle(), LevelType.INFO_LEVEL, levels.indexOf(abstractLevel)));
+                infoAboutLevels.add(new BasicLevelInfoDTO(abstractLevel.getId(), abstractLevel.getTitle(), LevelType.INFO_LEVEL, abstractLevel.getOrder()));
             }
         }
         return infoAboutLevels;
@@ -238,12 +238,9 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
             accessedTrainingRunDTO.setTitle(trainingRun.getTrainingInstance().getTitle());
             accessedTrainingRunDTO.setTrainingInstanceStartDate(trainingRun.getTrainingInstance().getStartTime());
             accessedTrainingRunDTO.setTrainingInstanceEndDate(trainingRun.getTrainingInstance().getEndTime());
-            int levelOrder = trainingRunService.getLevelOrder(trainingRun.getTrainingInstance().getTrainingDefinition().getStartingLevel(), trainingRun.getCurrentLevel().getId());
-            accessedTrainingRunDTO.setCurrentLevelOrder(levelOrder);
-            if(trainingRun.getState().equals(TRState.ARCHIVED)) {
-                accessedTrainingRunDTO.setCurrentLevelOrder(levelOrder + 1 );
-            }
-            accessedTrainingRunDTO.setNumberOfLevels(trainingRunService.getLevels(trainingRun.getTrainingInstance().getTrainingDefinition().getStartingLevel()).size());
+            accessedTrainingRunDTO.setCurrentLevelOrder(trainingRun.getCurrentLevel().getOrder());
+            //number of levels equals maxOrder of definition
+            accessedTrainingRunDTO.setNumberOfLevels(trainingRunService.getMaxLevelOrder(trainingRun.getTrainingInstance().getTrainingDefinition().getId()));
             if (accessedTrainingRunDTO.getCurrentLevelOrder() == accessedTrainingRunDTO.getNumberOfLevels() || LocalDateTime.now().isAfter(accessedTrainingRunDTO.getTrainingInstanceEndDate())) {
                 accessedTrainingRunDTO.setPossibleAction(Actions.RESULTS);
 
