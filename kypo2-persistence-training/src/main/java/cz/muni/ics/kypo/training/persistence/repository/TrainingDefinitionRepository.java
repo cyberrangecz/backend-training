@@ -30,12 +30,6 @@ public interface TrainingDefinitionRepository
     @EntityGraph(attributePaths = {"authors"})
     Page<TrainingDefinition> findAll(Predicate predicate, Pageable pageable);
 
-//    @Query(value = "SELECT td FROM TrainingDefinition td WHERE td.state = :state",
-//            countQuery = "SELECT COUNT(td) FROM TrainingDefinition td INNER JOIN td.authors a WHERE a.userRefLogin = :userRefLogin")
-//    Page<TrainingDefinition> findAllByTDState(@Param("state") TDState state, Predicate predicate, Pageable pageable);
-
-    List<TrainingDefinition> findAll();
-
     @Query(value = "SELECT td FROM TrainingDefinition td INNER JOIN td.authors a WHERE a.userRefLogin = :userRefLogin",
             countQuery = "SELECT COUNT(td) FROM TrainingDefinition td INNER JOIN td.authors a WHERE a.userRefLogin = :userRefLogin")
     Page<TrainingDefinition> findAllByLoggedInUser(@Param("userRefLogin") String userRefLogin, Pageable pageable);

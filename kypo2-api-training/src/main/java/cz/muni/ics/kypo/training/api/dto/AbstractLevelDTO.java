@@ -8,6 +8,7 @@ import cz.muni.ics.kypo.training.api.dto.infolevel.InfoLevelDTO;
 import java.util.Objects;
 
 import cz.muni.ics.kypo.training.api.dto.snapshothook.SnapshotHookDTO;
+import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionDTO;
 import cz.muni.ics.kypo.training.api.enums.LevelType;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -26,10 +27,11 @@ public class AbstractLevelDTO {
     protected Long id;
     protected String title;
     protected int maxScore;
-    protected Long nextLevel;
     protected SnapshotHookDTO snapshotHook;
     protected LevelType levelType;
     protected int estimatedDuration;
+    protected TrainingDefinitionDTO trainingDefinition;
+    protected int order;
 
     @ApiModelProperty(value = "Main identifier of level.", example = "1")
     public Long getId() {
@@ -58,15 +60,6 @@ public class AbstractLevelDTO {
         this.maxScore = maxScore;
     }
 
-    @ApiModelProperty(value = "Reference to the next abstract level (if it is null, then it is the last level)", example = "2")
-    public Long getNextLevel() {
-        return nextLevel;
-    }
-
-    public void setNextLevel(Long nextLevel) {
-        this.nextLevel = nextLevel;
-    }
-
     public SnapshotHookDTO getSnapshotHook() {
         return snapshotHook;
     }
@@ -93,6 +86,22 @@ public class AbstractLevelDTO {
         this.estimatedDuration = estimatedDuration;
     }
 
+    public TrainingDefinitionDTO getTrainingDefinition() {
+        return trainingDefinition;
+    }
+
+    public void setTrainingDefinition(TrainingDefinitionDTO trainingDefinition) {
+        this.trainingDefinition = trainingDefinition;
+    }
+
+    public int getOrder() {
+        return order;
+    }
+
+    public void setOrder(int order) {
+        this.order = order;
+    }
+
     @Override
     public int hashCode() {
         return Objects.hashCode(id);
@@ -111,8 +120,9 @@ public class AbstractLevelDTO {
     }
 
     @Override public String toString() {
-        return "AbstractLevelDTO{" + "id=" + id + ", title='" + title + '\'' + ", maxScore=" + maxScore + ", nextLevel=" + nextLevel
-            + ", snapshotHook=" + snapshotHook + ", levelType=" + levelType + ", estimatedDuration=" + estimatedDuration + '}';
+        return "AbstractLevelDTO{" + "id=" + id + ", title='" + title + '\'' + ", maxScore=" + maxScore + ", snapshotHook=" + snapshotHook
+            + ", levelType=" + levelType + ", estimatedDuration=" + estimatedDuration + ", trainingDefinition=" + trainingDefinition
+            + ", order=" + order + '}';
     }
 }
 

@@ -1,247 +1,246 @@
-CREATE TABLE abstract_level (
-   id  bigserial NOT NULL,
-    max_score int4 NOT NULL,
-    next_level int8,
-    title varchar(255) NOT NULL,
-    snapshot_hook_id int8,
-    estimated_duration int4,
-    PRIMARY KEY (id)
-);
 
-CREATE TABLE access_token (
-   id  bigserial NOT NULL,
-    access_token varchar(255) NOT NULL,
-    PRIMARY KEY (id)
-);
+    create table abstract_level (
+       id  bigserial not null,
+        estimated_duration int4,
+        max_score int4 not null,
+        order_in_training_definition int4 not null,
+        title varchar(255) not null,
+        snapshot_hook_id int8,
+        training_definition_id int8,
+        primary key (id)
+    );
 
-CREATE TABLE assessment_level (
-   assessment_type varchar(128) NOT NULL,
-    instructions varchar(255) NOT NULL,
-    questions text NOT NULL,
-    id int8 NOT NULL,
-    PRIMARY KEY (id)
-);
+    create table access_token (
+       id  bigserial not null,
+        access_token varchar(255) not null,
+        primary key (id)
+    );
 
-CREATE TABLE game_level (
-   attachments bytea,
-    content text NOT NULL,
-    flag varchar(255) NOT NULL,
-    incorrect_flag_limit int4,
-    solution varchar(255) NOT NULL,
-    solution_penalized boolean NOT NULL,
-    id int8 NOT NULL,
-    PRIMARY KEY (id)
-);
+    create table assessment_level (
+       assessment_type varchar(128) not null,
+        instructions varchar(255) not null,
+        questions text not null,
+        id int8 not null,
+        primary key (id)
+    );
 
-CREATE TABLE hint (
-   id  bigserial NOT NULL,
-    content varchar(255) NOT NULL,
-    hint_penalty int4 NOT NULL,
-    title varchar(255) NOT NULL,
-    game_level_id int8,
-    PRIMARY KEY (id)
-);
+    create table beta_testing_group (
+       id  bigserial not null,
+        primary key (id)
+    );
 
-CREATE TABLE info_level (
-   content text NOT NULL,
-    id int8 NOT NULL,
-    PRIMARY KEY (id)
-);
+    create table beta_testing_group_user_ref (
+       beta_testing_group_id int8 not null,
+        user_ref_id int8 not null,
+        primary key (beta_testing_group_id, user_ref_id)
+    );
 
-CREATE TABLE snapshot_hook (
-   id  bigserial NOT NULL,
-   snapshot text NOT NULL,
-    PRIMARY KEY (id)
-);
+    create table game_level (
+       attachments bytea,
+        content text not null,
+        flag varchar(255) not null,
+        incorrect_flag_limit int4,
+        solution varchar(255) not null,
+        solution_penalized boolean not null,
+        id int8 not null,
+        primary key (id)
+    );
 
-CREATE TABLE sandbox_instance_ref (
-   id  bigserial NOT NULL,
-    sandbox_instance_ref int8,
-    training_instance_id int8 NOT NULL,
-    PRIMARY KEY (id)
-);
+    create table hint (
+       id  bigserial not null,
+        content varchar(255) not null,
+        hint_penalty int4 not null,
+        title varchar(255) not null,
+        game_level_id int8,
+        primary key (id)
+    );
 
-CREATE TABLE beta_testing_group (
-   id  bigserial NOT NULL,
-    PRIMARY KEY (id)
-);
+    create table info_level (
+       content text not null,
+        id int8 not null,
+        primary key (id)
+    );
 
-CREATE TABLE beta_testing_group_user_ref (
-    beta_testing_group_id int8 NOT NULL,
-    user_ref_id int8 NOT NULL,
-    PRIMARY KEY (beta_testing_group_id, user_ref_id)
-);
+    create table sandbox_instance_ref (
+       id  bigserial not null,
+        sandbox_instance_ref int8,
+        training_instance_id int8 not null,
+        primary key (id)
+    );
 
-CREATE TABLE training_definition (
-   id  bigserial NOT NULL,
-    description text,
-    outcomes bytea,
-    prerequisities bytea,
-    sandbox_definition_ref_id int8,
-    show_stepper_bar boolean NOT NULL,
-    starting_level int8,
-    state varchar(128) NOT NULL,
-    title varchar(255) NOT NULL,
-     beta_testing_group_id int8 NULL,
-     last_edited timestamp NOT NULL,
-    PRIMARY KEY (id)
-);
+    create table snapshot_hook (
+       id  bigserial not null,
+        snapshot text not null,
+        primary key (id)
+    );
 
-CREATE TABLE training_definition_user_ref (
-    training_definition_id int8 NOT NULL,
-    user_ref_id int8 NOT NULL,
-    PRIMARY KEY (training_definition_id, user_ref_id)
-);
+    create table training_definition (
+       id  bigserial not null,
+        description text,
+        last_edited timestamp not null,
+        outcomes bytea,
+        prerequisities bytea,
+        sandbox_definition_ref_id int8 not null,
+        show_stepper_bar boolean not null,
+        state varchar(128) not null,
+        title varchar(255) not null,
+        beta_testing_group_id int8,
+        primary key (id)
+    );
 
-CREATE TABLE training_instance (
-   id  bigserial NOT NULL,
-    access_token varchar(255),
-    end_time timestamp NOT NULL,
-    pool_size int4 NOT NULL,
-    pool_id int8 NULL,
-    start_time timestamp NOT NULL,
-    title varchar(255) NOT NULL,
-    training_definition_id int8,
-    PRIMARY KEY (id)
-);
+    create table training_definition_user_ref (
+       training_definition_id int8 not null,
+        user_ref_id int8 not null,
+        primary key (training_definition_id, user_ref_id)
+    );
 
-CREATE TABLE training_instance_user_ref (
-   training_instance_id int8 NOT NULL,
-    user_ref_id int8 NOT NULL,
-    PRIMARY KEY (training_instance_id, user_ref_id)
-);
+    create table training_instance (
+       id  bigserial not null,
+        access_token varchar(255) not null,
+        end_time timestamp not null,
+        pool_id int8,
+        pool_size int4 not null,
+        start_time timestamp not null,
+        title varchar(255) not null,
+        training_definition_id int8,
+        primary key (id)
+    );
 
-CREATE TABLE training_run (
-   id  bigserial NOT NULL,
-    assessment_responses text,
-    current_score int4,
-    end_time timestamp NOT NULL,
-    event_log_reference varchar(255),
-    incorrect_flag_count int4 NOT NULL,
-    level_answered boolean,
-    solution_taken boolean NOT NULL,
-    start_time timestamp NOT NULL,
-    state varchar(128) NOT NULL,
-    total_score int4,
-    current_level_id int8 NOT NULL,
-    user_ref_id int8 NOT NULL,
-    sandbox_instance_ref_id int8 NULL,
-    training_instance_id int8 NOT NULL,
-    PRIMARY KEY (id)
-);
+    create table training_instance_user_ref (
+       training_instance_id int8 not null,
+        user_ref_id int8 not null,
+        primary key (training_instance_id, user_ref_id)
+    );
 
-CREATE TABLE user_ref (
-   id  bigserial NOT NULL,
-    user_ref_login varchar(255),
-    user_ref_full_name varchar(255),
-    PRIMARY KEY (id)
-);
+    create table training_run (
+       id  bigserial not null,
+        assessment_responses text,
+        current_score int4,
+        end_time timestamp not null,
+        event_log_reference varchar(255),
+        incorrect_flag_count int4 not null,
+        level_answered boolean,
+        solution_taken boolean not null,
+        start_time timestamp not null,
+        state varchar(128) not null,
+        total_score int4,
+        current_level_id int8 not null,
+        user_ref_id int8 not null,
+        sandbox_instance_ref_id int8 null,
+        training_instance_id int8 not null,
+        primary key (id)
+    );
 
-ALTER TABLE access_token
-   ADD CONSTRAINT UK_qglhb4xi0iwstguebaliifr1n unique (access_token);
+    create table user_ref (
+       id  bigserial not null,
+        user_ref_full_name varchar(255),
+        user_ref_login varchar(255) not null,
+        primary key (id)
+    );
 
-ALTER TABLE training_run
-   ADD CONSTRAINT UK_8g0gumb9rcvd0fscfxv1wb24c unique (sandbox_instance_ref_id);
+    alter table access_token
+       add constraint UK_qglhb4xi0iwstguebaliifr1n unique (access_token);
 
-ALTER TABLE user_ref
-   ADD CONSTRAINT UK_iajf018nptidl085leng237xl unique (user_ref_login);
+    alter table training_definition
+       add constraint UK_8k8if9s1vogmedxasdadcr4tb unique (beta_testing_group_id);
 
-ALTER TABLE training_definition
-   ADD CONSTRAINT UK_iajf018npqbvl143leng259xl unique (beta_testing_group_id);
+    alter table training_instance
+       add constraint UK_b81w12g91hiuhdvsmoanyel6m unique (access_token);
 
-ALTER TABLE training_instance
-   ADD CONSTRAINT UK_iajf643ipqbfl143leng248xl unique (access_token);
+    alter table user_ref
+       add constraint UK_iajf018nptidl085leng237xl unique (user_ref_login);
 
-ALTER TABLE training_instance
-   ADD CONSTRAINT UK_iajf018nvcwdl452leng079xl unique (pool_id);
+    alter table abstract_level
+       add constraint FKi9sciy07av8pb1yv3fl4ycby0
+       foreign key (snapshot_hook_id)
+       references snapshot_hook;
 
+    alter table abstract_level
+       add constraint FK24361n3estpsxei7bx7sfvcxs
+       foreign key (training_definition_id)
+       references training_definition;
 
-ALTER TABLE abstract_level
-   ADD CONSTRAINT FKh97onob6w74379lvjq8jjiy1b
-   FOREIGN KEY (snapshot_hook_id)
-   REFERENCES snapshot_hook;
+    alter table assessment_level
+       add constraint FK7jxec7ef838ovnrnfw73kh95
+       foreign key (id)
+       references abstract_level;
 
-ALTER TABLE assessment_level
-   ADD CONSTRAINT FK7jxec7ef838ovnrnfw73kh95
-   FOREIGN KEY (id)
-   REFERENCES abstract_level;
+    alter table beta_testing_group_user_ref
+       add constraint FK4ph4xvdeggto33vg4g6cs18s1
+       foreign key (user_ref_id)
+       references user_ref;
 
-ALTER TABLE game_level
-   ADD CONSTRAINT FKrg7pvp6aqm4gxshunqq77noma
-   FOREIGN KEY (id)
-   REFERENCES abstract_level;
+    alter table beta_testing_group_user_ref
+       add constraint FKf01kbc9ae5599gnci7d0j2ldx
+       foreign key (beta_testing_group_id)
+       references beta_testing_group;
 
-ALTER TABLE hint
-   ADD CONSTRAINT FKikeediy8uqdf22egpfmdaboor
-   FOREIGN KEY (game_level_id)
-   REFERENCES game_level;
+    alter table game_level
+       add constraint FKrg7pvp6aqm4gxshunqq77noma
+       foreign key (id)
+       references abstract_level;
 
-ALTER TABLE info_level
-   ADD CONSTRAINT FKa9ssogmfce6duhtlm8chrqcc4
-   FOREIGN KEY (id)
-   REFERENCES abstract_level;
+    alter table hint
+       add constraint FKikeediy8uqdf22egpfmdaboor
+       foreign key (game_level_id)
+       references game_level;
 
-ALTER TABLE sandbox_instance_ref
-   ADD CONSTRAINT FK2j5jmin6ht1fl42nyd5wiqsjd
-   FOREIGN KEY (training_instance_id)
-   REFERENCES training_instance;
+    alter table info_level
+       add constraint FKa9ssogmfce6duhtlm8chrqcc4
+       foreign key (id)
+       references abstract_level;
 
-ALTER TABLE beta_testing_group_user_ref
-   ADD CONSTRAINT FKh2gwvi7oxr8uqcs9yf6352bo0
-   FOREIGN KEY (user_ref_id)
-   REFERENCES user_ref;
+    alter table sandbox_instance_ref
+       add constraint FK2j5jmin6ht1fl42nyd5wiqsjd
+       foreign key (training_instance_id)
+       references training_instance;
 
-ALTER TABLE beta_testing_group_user_ref
-   ADD CONSTRAINT FKk97tvstrwj10cnic68e9i5bjd
-   FOREIGN KEY (beta_testing_group_id)
-   REFERENCES beta_testing_group;
+    alter table training_definition
+       add constraint FKdps9cuy3u6c6v1n8igr9hnu1r
+       foreign key (beta_testing_group_id)
+       references beta_testing_group;
 
-ALTER TABLE training_definition
-   ADD CONSTRAINT FKb7vjqot5ntr08c948ttkg20f0
-   FOREIGN KEY (beta_testing_group_id)
-   REFERENCES beta_testing_group;
+    alter table training_definition_user_ref
+       add constraint FKq5ejeyb8ced1s2t9lv4ld1uyl
+       foreign key (user_ref_id)
+       references user_ref;
 
-ALTER TABLE training_definition_user_ref
-   ADD CONSTRAINT FKq5ejeyb8ced1s2t9lv4ld1uyl
-   FOREIGN KEY (user_ref_id)
-   REFERENCES user_ref;
+    alter table training_definition_user_ref
+       add constraint FK99adq71p6nym0emx1xvr4qk4
+       foreign key (training_definition_id)
+       references training_definition;
 
-ALTER TABLE training_definition_user_ref
-   ADD CONSTRAINT FK99adq71p6nym0emx1xvr4qk4
-   FOREIGN KEY (training_definition_id)
-   REFERENCES training_definition;
+    alter table training_instance
+       add constraint FK28s41pqjyqwrni7thb54tidru
+       foreign key (training_definition_id)
+       references training_definition;
 
-ALTER TABLE training_instance
-   ADD CONSTRAINT FK28s41pqjyqwrni7thb54tidru
-   FOREIGN KEY (training_definition_id)
-   REFERENCES training_definition;
+    alter table training_instance_user_ref
+       add constraint FK53k0sdbkfgu7ddn902b3x0fsy
+       foreign key (user_ref_id)
+       references user_ref;
 
-ALTER TABLE training_instance_user_ref
-   ADD CONSTRAINT FK53k0sdbkfgu7ddn902b3x0fsy
-   FOREIGN KEY (user_ref_id)
-   REFERENCES user_ref;
+    alter table training_instance_user_ref
+       add constraint FKj92s3xyn59494b3kwxbmbs9ct
+       foreign key (training_instance_id)
+       references training_instance;
 
-ALTER TABLE training_instance_user_ref
-   ADD CONSTRAINT FKj92s3xyn59494b3kwxbmbs9ct
-   FOREIGN KEY (training_instance_id)
-   REFERENCES training_instance;
+    alter table training_run
+       add constraint FKddva9h2olm0h0aj9veb6jfe9r
+       foreign key (current_level_id)
+       references abstract_level;
 
-ALTER TABLE training_run
-   ADD CONSTRAINT FKddva9h2olm0h0aj9veb6jfe9r
-   FOREIGN KEY (current_level_id)
-   REFERENCES abstract_level;
+    alter table training_run
+       add constraint FKmfyx8wi2fu400w1h6gikyp9cy
+       foreign key (user_ref_id)
+       references user_ref;
 
-ALTER TABLE training_run
-   ADD CONSTRAINT FKmfyx8wi2fu400w1h6gikyp9cy
-   FOREIGN KEY (user_ref_id)
-   REFERENCES user_ref;
+    alter table training_run
+       add constraint FK6yn4e9w78a454vegxipn3cmvf
+       foreign key (sandbox_instance_ref_id)
+       references sandbox_instance_ref;
 
-ALTER TABLE training_run
-   ADD CONSTRAINT FK6yn4e9w78a454vegxipn3cmvf
-   FOREIGN KEY (sandbox_instance_ref_id)
-   REFERENCES sandbox_instance_ref;
-
-ALTER TABLE training_run
-   ADD CONSTRAINT FK7vajehsxurugwfg363f4ppb0s
-   FOREIGN KEY (training_instance_id)
-   REFERENCES training_instance;
+    alter table training_run
+       add constraint FK7vajehsxurugwfg363f4ppb0s
+       foreign key (training_instance_id)
+       references training_instance;

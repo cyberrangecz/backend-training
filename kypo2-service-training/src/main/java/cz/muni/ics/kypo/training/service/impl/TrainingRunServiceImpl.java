@@ -9,6 +9,7 @@ import com.github.fge.jsonschema.main.JsonValidator;
 import com.google.gson.JsonObject;
 import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.training.annotations.security.IsTraineeOrAdmin;
+import cz.muni.ics.kypo.training.api.dto.imports.AbstractLevelImportDTO;
 import cz.muni.ics.kypo.training.exceptions.ErrorCode;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.persistence.model.*;
@@ -116,15 +117,19 @@ public class TrainingRunServiceImpl implements TrainingRunService {
         LOG.debug("getNextLevel({})", runId);
         Assert.notNull(runId, MUST_NOT_BE_NULL);
         TrainingRun trainingRun = findByIdWithLevel(runId);
-        Long nextLevelId = trainingRun.getCurrentLevel().getNextLevel();
+        int currentLevelOrder = trainingRun.getCurrentLevel().getOrder();
+        int maxLevelOrder = abstractLevelRepository.getCurrentMaxOrder(trainingRun.getCurrentLevel().getTrainingDefinition().getId());
         if (!trainingRun.isLevelAnswered()) {
             throw new ServiceLayerException("At first you need to answer the level.", ErrorCode.RESOURCE_CONFLICT);
         }
-        if (nextLevelId == null) {
+        if (currentLevelOrder == maxLevelOrder) {
             throw new ServiceLayerException("There is no next level.", ErrorCode.NO_NEXT_LEVEL);
         }
-        AbstractLevel abstractLevel = abstractLevelRepository.findById(nextLevelId).orElseThrow(() ->
-                new ServiceLayerException("Level with id: " + nextLevelId + " not found.", ErrorCode.RESOURCE_NOT_FOUND));
+        List<AbstractLevel> levels = abstractLevelRepository.findAllLevelsByTrainingDefinitionId(trainingRun.getCurrentLevel().getTrainingDefinition().getId());
+        Collections.sort(levels, Comparator.comparing(AbstractLevel::getOrder));
+        int nextLevelIndex = levels.indexOf(trainingRun.getCurrentLevel()) + 1;
+        AbstractLevel abstractLevel = levels.get(nextLevelIndex);
+
         if (trainingRun.getCurrentLevel() instanceof InfoLevel) {
             auditEventsService.auditLevelCompletedAction(trainingRun);
         }
@@ -152,19 +157,9 @@ public class TrainingRunServiceImpl implements TrainingRunService {
 
     @Override
     @IsTraineeOrAdmin
-    public List<AbstractLevel> getLevels(Long levelId) {
-        Assert.notNull(levelId, "Id of first level must not be null.");
-        List<AbstractLevel> levels = new ArrayList<>();
-        do {
-
-            Optional<AbstractLevel> optionalAbstractLevel = abstractLevelRepository.findById(levelId);
-            if (!optionalAbstractLevel.isPresent()) {
-                throw new ServiceLayerException("Level with id: " + levelId + " not found.", ErrorCode.RESOURCE_NOT_FOUND);
-            }
-            levelId = optionalAbstractLevel.get().getNextLevel();
-            levels.add(optionalAbstractLevel.get());
-        } while (levelId != null);
-        return levels;
+    public List<AbstractLevel> getLevels(Long definitionId) {
+        Assert.notNull(definitionId, "Id of training definition must not be null.");
+        return abstractLevelRepository.findAllLevelsByTrainingDefinitionId(definitionId);
     }
 
 
@@ -187,8 +182,12 @@ public class TrainingRunServiceImpl implements TrainingRunService {
                 Set<SandboxInstanceRef> freeSandboxes = trainingRunRepository.findFreeSandboxesOfTrainingInstance(trainingInstance.getId());
                 if (!freeSandboxes.isEmpty()) {
                     SandboxInstanceRef sandboxInstanceRef = getReadySandboxInstanceRef(freeSandboxes, trainingInstance.getPoolId());
-                    AbstractLevel abstractLevel = abstractLevelRepository.findById(trainingInstance.getTrainingDefinition().getStartingLevel()).orElseThrow(() -> new ServiceLayerException("No starting level available for this training definition", ErrorCode.RESOURCE_NOT_FOUND));
-                    TrainingRun trainingRun = getNewTrainingRun(abstractLevel, securityService.getSubOfLoggedInUser(), trainingInstance, TRState.ALLOCATED, LocalDateTime.now(Clock.systemUTC()), trainingInstance.getEndTime(), sandboxInstanceRef);
+                    List<AbstractLevel> levels = abstractLevelRepository.findAllLevelsByTrainingDefinitionId(trainingInstance.getTrainingDefinition().getId());
+                    if (levels.isEmpty()) throw new ServiceLayerException("No starting level available for this training definition", ErrorCode.RESOURCE_NOT_FOUND);
+                    Collections.sort(levels, Comparator.comparing(AbstractLevel::getOrder));
+
+                    TrainingRun trainingRun = getNewTrainingRun(levels.get(0), securityService.getSubOfLoggedInUser(), trainingInstance,
+                        TRState.ALLOCATED, LocalDateTime.now(Clock.systemUTC()), trainingInstance.getEndTime(), sandboxInstanceRef);
                     trainingRun = create(trainingRun);
                     // audit this action to the Elasticsearch
                     auditEventsService.auditTrainingRunStartedAction(trainingRun);
@@ -366,21 +365,9 @@ public class TrainingRunServiceImpl implements TrainingRunService {
 
     @Override
     @IsTraineeOrAdmin
-    public int getLevelOrder(Long idOfFirstLevel, Long actualLevel) {
-        LOG.debug("getLevelOrder({}, {})", idOfFirstLevel, actualLevel);
-        Assert.notNull(idOfFirstLevel, "Input id of first level must not be null.");
-        Assert.notNull(actualLevel, "Input id of actual level must not be null.");
-        int order = 0;
-        AbstractLevel abstractLevel = abstractLevelRepository.findById(idOfFirstLevel).orElseThrow(() -> new ServiceLayerException("Level with id " + idOfFirstLevel + " not found.", ErrorCode.RESOURCE_NOT_FOUND));
-        while (!abstractLevel.getId().equals(actualLevel)) {
-            order++;
-            if (abstractLevel.getNextLevel() == null) {
-                throw new IllegalArgumentException("Wrong parameters entered.");
-            }
-            abstractLevel = abstractLevelRepository.findById(abstractLevel.getNextLevel()).orElseThrow(() -> new ServiceLayerException("Level with id " + idOfFirstLevel + " not found.", ErrorCode.RESOURCE_NOT_FOUND));
-
-        }
-        return order;
+    public int getMaxLevelOrder(Long definitionId) {
+        LOG.debug("getMaxLevelOrder({})", definitionId);
+        return abstractLevelRepository.getCurrentMaxOrder(definitionId);
     }
 
     @Override
@@ -390,7 +377,8 @@ public class TrainingRunServiceImpl implements TrainingRunService {
         LOG.debug("archiveTrainingRun({})", trainingRunId);
         Assert.notNull(trainingRunId, MUST_NOT_BE_NULL);
         TrainingRun trainingRun = findById(trainingRunId);
-        if (trainingRun.getCurrentLevel().getNextLevel() != null || !trainingRun.isLevelAnswered()) {
+        int maxOrder = abstractLevelRepository.getCurrentMaxOrder(trainingRun.getCurrentLevel().getTrainingDefinition().getId());
+        if (trainingRun.getCurrentLevel().getOrder() != maxOrder|| !trainingRun.isLevelAnswered()) {
             throw new ServiceLayerException("Cannot archive training run because current level is not last or is not answered.", ErrorCode.RESOURCE_CONFLICT);
         }
 

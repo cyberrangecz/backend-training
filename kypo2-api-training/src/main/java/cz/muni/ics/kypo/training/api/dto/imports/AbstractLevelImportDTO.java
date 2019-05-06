@@ -27,7 +27,7 @@ public abstract class AbstractLevelImportDTO {
 	@NotNull(message = "{abstractlevelimport.type.NotNull.message}")
 	protected LevelType levelType;
 	@NotNull(message = "{abstractlevelimport.order.NotNull.message}")
-	protected int order;
+	protected Integer order;
 
 	public AbstractLevelImportDTO() {
 	}
@@ -56,11 +56,11 @@ public abstract class AbstractLevelImportDTO {
 		this.levelType = levelType;
 	}
 
-	public int getOrder() {
+	public Integer getOrder() {
 		return order;
 	}
 
-	public void setOrder(int order) {
+	public void setOrder(Integer order) {
 		this.order = order;
 	}
 

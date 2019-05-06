@@ -23,10 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author Pavel Seda
@@ -69,7 +66,7 @@ public class ExportImportFacadeImpl implements ExportImportFacade {
         TrainingDefinition td = exportImportService.findById(trainingDefinitionId);
         ExportTrainingDefinitionAndLevelsDTO dbExport = exportImportMapper.mapToDTO(exportImportService.findById(trainingDefinitionId));
         if (dbExport != null) {
-            dbExport.setLevels(mapAbstractLevelToAbstractLevelDTO(dbExport.getStartingLevel()));
+            dbExport.setLevels(mapAbstractLevelToAbstractLevelDTO(trainingDefinitionId));
             dbExport.setEstimatedDuration(calculateEstimatedDuration(dbExport.getLevels()));
         }
         try {
@@ -77,41 +74,35 @@ public class ExportImportFacadeImpl implements ExportImportFacade {
             fileToReturnDTO.setContent(objectMapper.writeValueAsBytes(dbExport));
             fileToReturnDTO.setTitle(dbExport.getTitle());
             return fileToReturnDTO;
-        } catch (IOException ex){
+        } catch (IOException ex) {
             throw new FacadeLayerException(ex);
         }
     }
 
-    private int calculateEstimatedDuration(List<AbstractLevelExportDTO> levels){
+    private int calculateEstimatedDuration(List<AbstractLevelExportDTO> levels) {
         int duration = 0;
         for (AbstractLevelExportDTO level : levels) duration += level.getEstimatedDuration();
         return duration;
     }
 
-    private List<AbstractLevelExportDTO> mapAbstractLevelToAbstractLevelDTO(Long levelId) {
+    private List<AbstractLevelExportDTO> mapAbstractLevelToAbstractLevelDTO(Long trainingDefinitionId) {
         List<AbstractLevelExportDTO> abstractLevelExportDTOs = new ArrayList<>();
-        int count = 0;
-        while (levelId != null) {
-            AbstractLevel abstractLevel = trainingDefinitionService.findLevelById(levelId);
-            if (abstractLevel instanceof GameLevel) {
-                GameLevelExportDTO gameLevelExportDTO = gameLevelMapper.mapToGamelevelExportDTO((GameLevel) abstractLevel);
+        List<AbstractLevel> abstractLevels = trainingDefinitionService.findAllLevelsFromDefinition(trainingDefinitionId);
+        abstractLevels.forEach(level -> {
+            if (level instanceof GameLevel) {
+                GameLevelExportDTO gameLevelExportDTO = gameLevelMapper.mapToGamelevelExportDTO((GameLevel) level);
                 gameLevelExportDTO.setLevelType(LevelType.GAME_LEVEL);
-                gameLevelExportDTO.setOrder(count);
                 abstractLevelExportDTOs.add(gameLevelExportDTO);
-            } else if (abstractLevel instanceof InfoLevel) {
-                InfoLevelExportDTO infoLevelExportDTO = infoLevelMapper.mapToInfoLevelExportDTO((InfoLevel) abstractLevel);
+            } else if (level instanceof InfoLevel) {
+                InfoLevelExportDTO infoLevelExportDTO = infoLevelMapper.mapToInfoLevelExportDTO((InfoLevel) level);
                 infoLevelExportDTO.setLevelType(LevelType.INFO_LEVEL);
-                infoLevelExportDTO.setOrder(count);
                 abstractLevelExportDTOs.add(infoLevelExportDTO);
             } else {
-                AssessmentLevelExportDTO assessmentLevelExportDTO = assessmentLevelMapper.mapToAssessmentLevelExportDTO((AssessmentLevel) abstractLevel);
+                AssessmentLevelExportDTO assessmentLevelExportDTO = assessmentLevelMapper.mapToAssessmentLevelExportDTO((AssessmentLevel) level);
                 assessmentLevelExportDTO.setLevelType(LevelType.ASSESSMENT_LEVEL);
-                assessmentLevelExportDTO.setOrder(count);
                 abstractLevelExportDTOs.add(assessmentLevelExportDTO);
             }
-            count++;
-            levelId = abstractLevel.getNextLevel();
-        }
+        });
         return abstractLevelExportDTOs;
     }
 
@@ -125,27 +116,22 @@ public class ExportImportFacadeImpl implements ExportImportFacade {
         if (importTrainingDefinitionDTO.getTitle() != null && !importTrainingDefinitionDTO.getTitle().startsWith("Uploaded")) {
             importTrainingDefinitionDTO.setTitle("Uploaded " + importTrainingDefinitionDTO.getTitle());
         }
-        int levelOrder = importTrainingDefinitionDTO.getLevels().size() - 1;
-        Long newLevelId = null;
-        AbstractLevel newLevel;
-        while (levelOrder != -1) {
-            for (AbstractLevelImportDTO level : importTrainingDefinitionDTO.getLevels()) {
-                if (level.getOrder() == levelOrder) {
-                    if (level.getLevelType().equals(LevelType.GAME_LEVEL))
-                        newLevel = gameLevelMapper.mapImportToEntity((GameLevelImportDTO) level);
-                    else if (level.getLevelType().equals(LevelType.INFO_LEVEL))
-                        newLevel = infoLevelMapper.mapImportToEntity((InfoLevelImportDTO) level);
-                    else newLevel = assessmentLevelMapper.mapImportToEntity((AssessmentLevelImportDTO) level);
 
-                    newLevel.setNextLevel(newLevelId);
-                    newLevelId = exportImportService.createLevel(newLevel);
-                }
-            }
-            levelOrder--;
-        }
         TrainingDefinition newDefinition = exportImportMapper.mapToEntity(importTrainingDefinitionDTO);
-        newDefinition.setStartingLevel(newLevelId);
-        return trainingDefinitionMapper.mapToDTOById(trainingDefinitionService.create(newDefinition));
+        TrainingDefinition newTrainingDefinition = trainingDefinitionService.create(newDefinition);
+        List<AbstractLevelImportDTO> levels = importTrainingDefinitionDTO.getLevels();
+        //sort levels by their order before creating in database
+        Collections.sort(levels, Comparator.comparing(AbstractLevelImportDTO::getOrder));
+        levels.forEach(level -> {
+            AbstractLevel newLevel;
+            if (level.getLevelType().equals(LevelType.GAME_LEVEL))
+                newLevel = gameLevelMapper.mapImportToEntity((GameLevelImportDTO) level);
+            else if (level.getLevelType().equals(LevelType.INFO_LEVEL))
+                newLevel = infoLevelMapper.mapImportToEntity((InfoLevelImportDTO) level);
+            else newLevel = assessmentLevelMapper.mapImportToEntity((AssessmentLevelImportDTO) level);
+            exportImportService.createLevel(newLevel, newDefinition.getId());
+        });
+        return trainingDefinitionMapper.mapToDTOById(newTrainingDefinition);
     }
 
     @Override
@@ -158,7 +144,7 @@ public class ExportImportFacadeImpl implements ExportImportFacade {
             if (archivedInstance != null) {
                 ExportTrainingDefinitionAndLevelsDTO tD = exportImportMapper.mapToDTO(exportImportService.findById(trainingInstance.getTrainingDefinition().getId()));
                 if (tD != null) {
-                    tD.setLevels(mapAbstractLevelToAbstractLevelDTO(tD.getStartingLevel()));
+                    tD.setLevels(mapAbstractLevelToAbstractLevelDTO(trainingInstance.getTrainingDefinition().getId()));
                     tD.setEstimatedDuration(calculateEstimatedDuration(tD.getLevels()));
                 }
                 archivedInstance.setExportTrainingDefinitionAndLevelsDTO(tD);

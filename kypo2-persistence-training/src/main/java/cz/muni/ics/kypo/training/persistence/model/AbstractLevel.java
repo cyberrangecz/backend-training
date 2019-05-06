@@ -20,12 +20,15 @@ public abstract class AbstractLevel implements Serializable {
     private String title;
     @Column(name = "max_score", nullable = false)
     private int maxScore;
-    @Column(name = "next_level")
-    private Long nextLevel;
     @OneToOne(fetch = FetchType.LAZY, optional = true, cascade = CascadeType.ALL)
     private SnapshotHook snapshotHook;
     @Column(name = "estimated_duration")
     private int estimatedDuration;
+    @Column(name = "order_in_training_definition", nullable = false)
+    private int order;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "training_definition_id")
+    private TrainingDefinition trainingDefinition;
 
     public AbstractLevel() {
     }
@@ -62,20 +65,28 @@ public abstract class AbstractLevel implements Serializable {
         this.snapshotHook = snapshotHook;
     }
 
-    public Long getNextLevel() {
-        return nextLevel;
-    }
-
-    public void setNextLevel(Long nextLevel) {
-        this.nextLevel = nextLevel;
-    }
-
     public int getEstimatedDuration() {
         return estimatedDuration;
     }
 
     public void setEstimatedDuration(int estimatedDuration) {
         this.estimatedDuration = estimatedDuration;
+    }
+
+    public int getOrder() {
+        return order;
+    }
+
+    public void setOrder(int order) {
+        this.order = order;
+    }
+
+    public TrainingDefinition getTrainingDefinition() {
+        return trainingDefinition;
+    }
+
+    public void setTrainingDefinition(TrainingDefinition trainingDefinition) {
+        this.trainingDefinition = trainingDefinition;
     }
 
     @Override

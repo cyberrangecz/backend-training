@@ -82,18 +82,14 @@ public class ExportImportFacadeTest {
 
         assessmentLevel = new AssessmentLevel();
         assessmentLevel.setId(1L);
-        assessmentLevel.setNextLevel(null);
         assessmentLevel.setTitle("Assessment title");
 
         gameLevel = new GameLevel();
         gameLevel.setId(2L);
-        gameLevel.setNextLevel(null);
         gameLevel.setSolution("solution");
-        gameLevel.setNextLevel(1L);
 
         infoLevel = new InfoLevel();
         infoLevel.setId(3L);
-        infoLevel.setNextLevel(gameLevel.getId());
 
         importAssessmentLevelDTO = new AssessmentLevelImportDTO();
         importAssessmentLevelDTO.setTitle("Assessment title");
@@ -124,22 +120,18 @@ public class ExportImportFacadeTest {
         trainingDefinition.setTitle("Training definition");
         trainingDefinition.setDescription("description");
         trainingDefinition.setState(TDState.RELEASED);
-        trainingDefinition.setStartingLevel(infoLevel.getId());
 
         trainingDefinitionImported = new TrainingDefinition();
         trainingDefinitionImported.setId(1L);
         trainingDefinitionImported.setTitle("Uploaded " + "Training definition");
         trainingDefinitionImported.setDescription("description");
         trainingDefinitionImported.setState(TDState.UNRELEASED);
-        trainingDefinitionImported.setStartingLevel(infoLevel.getId());
-
 
         importTrainingDefinitionDTO = new ImportTrainingDefinitionDTO();
         importTrainingDefinitionDTO.setTitle("Training definition");
         importTrainingDefinitionDTO.setDescription("description");
         importTrainingDefinitionDTO.setState(cz.muni.ics.kypo.training.api.enums.TDState.UNRELEASED);
         importTrainingDefinitionDTO.setLevels(Arrays.asList(importInfoLevelDTO, importGameLevelDTO, importAssessmentLevelDTO));
-        importTrainingDefinitionDTO.setStartingLevel(infoLevel.getId());
 
         trainingInstance = new TrainingInstance();
         trainingInstance.setAccessToken("pass-1234");
@@ -172,15 +164,13 @@ public class ExportImportFacadeTest {
    */
     @Test
     public void dbImport() {
-        given(exportImportService.createLevel(infoLevelMapper.mapImportToEntity(importInfoLevelDTO))).willReturn(3L);
-        given(exportImportService.createLevel(gameLevelMapper.mapImportToEntity(importGameLevelDTO))).willReturn(2L);
-        given(exportImportService.createLevel(assessmentLevelMapper.mapImportToEntity(importAssessmentLevelDTO))).willReturn(1L);
+        given(exportImportService.createLevel(infoLevelMapper.mapImportToEntity(importInfoLevelDTO), 1L)).willReturn(3L);
+        given(exportImportService.createLevel(gameLevelMapper.mapImportToEntity(importGameLevelDTO), 1L)).willReturn(2L);
+        given(exportImportService.createLevel(assessmentLevelMapper.mapImportToEntity(importAssessmentLevelDTO), 1L)).willReturn(1L);
         given(trainingDefinitionService.create(any(TrainingDefinition.class))).willReturn(trainingDefinitionImported);
 
         TrainingDefinitionByIdDTO trainingDefinitionByIdDTO = exportImportFacade.dbImport(importTrainingDefinitionDTO);
-        System.out.println(trainingDefinitionByIdDTO);
         TrainingDefinitionByIdDTO trainingDefinitionByIdDTOImported = trainingDefinitionMapper.mapToDTOById(trainingDefinitionImported);
-        System.out.println(trainingDefinitionByIdDTOImported);
 
         deepEqualsTrainingDefinitionDTO(trainingDefinitionByIdDTOImported, trainingDefinitionByIdDTO);
     }
@@ -213,7 +203,6 @@ public class ExportImportFacadeTest {
         assertEquals(t1.getAuthors(), t2.getAuthors());
         assertEquals(t1.getState(), t2.getState());
         assertEquals(t1.getDescription(), t2.getDescription());
-        assertEquals(t1.getStartingLevel(), t2.getStartingLevel());
         assertEquals(t1.getTitle(), t2.getTitle());
         assertEquals(t1.getBetaTestingGroup(), t2.getBetaTestingGroup());
         assertEquals(t1.getLevels(), t2.getLevels());

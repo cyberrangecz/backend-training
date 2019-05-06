@@ -61,24 +61,15 @@ public interface TrainingDefinitionService {
     TrainingDefinition clone(Long id);
 
     /**
-     * Swaps level to the left
+     * Swaps between levels. Swap basically means swapping the order attribute between these two levels.
      *
-     * @param definitionId - Id of definition containing level to be swapped
-     * @param levelId      - Id of level to be swapped
+     * @param definitionId  - Id of definition containing levels, this training definition is updating its last edited column.
+     * @param swapLevelFrom - Id of a first level to be swapped.
+     * @param swapLevelTo   - Id of a second level to be swapped.
      * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND given training definition or one of the levels is not found.
      *                               RESOURCE_CONFLICT released or archived training definition cannot be modified.
      */
-    void swapLeft(Long definitionId, Long levelId);
-
-    /**
-     * Swaps level to the right
-     *
-     * @param definitionId - Id of definition containing level to be swapped
-     * @param levelId      - Id of level to be swapped
-     * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND given training definition or one of the levels is not found.
-     *                               RESOURCE_CONFLICT released or archived training definition cannot be modified.
-     */
-    void swapRight(Long definitionId, Long levelId);
+    void swapLevels(Long definitionId, Long swapLevelFrom, Long swapLevelTo);
 
     /**
      * Deletes specific training definition based on id
@@ -205,6 +196,7 @@ public interface TrainingDefinitionService {
 
     /**
      * Create userRef
+     *
      * @param userRef user ref to be created
      * @return created userRef
      */
@@ -212,8 +204,9 @@ public interface TrainingDefinitionService {
 
     /**
      * Switch state of definition to unreleased
+     *
      * @param definitionId - id of training definition
-     * @param state - new state of TD
+     * @param state        - new state of TD
      */
     void switchState(Long definitionId, cz.muni.ics.kypo.training.api.enums.TDState state);
 

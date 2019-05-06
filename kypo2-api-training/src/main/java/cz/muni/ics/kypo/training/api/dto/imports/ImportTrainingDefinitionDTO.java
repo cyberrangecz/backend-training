@@ -17,7 +17,6 @@ public class ImportTrainingDefinitionDTO {
 	private String[] outcomes;
 	@NotNull(message = "{trainingdefinitionimport.state.NotNull.message}")
 	private TDState state;
-	private Long startingLevel;
 	@NotNull(message = "{trainingdefinitionimport.showStepperBar.NotNull.message}")
 	private boolean showStepperBar;
 	private List<AbstractLevelImportDTO> levels = new ArrayList<>();
@@ -65,14 +64,6 @@ public class ImportTrainingDefinitionDTO {
 		this.state = state;
 	}
 
-	public Long getStartingLevel() {
-		return startingLevel;
-	}
-
-	public void setStartingLevel(Long startingLevel) {
-		this.startingLevel = startingLevel;
-	}
-
 	public boolean isShowStepperBar() {
 		return showStepperBar;
 	}
@@ -97,7 +88,6 @@ public class ImportTrainingDefinitionDTO {
 				", prerequisities=" + Arrays.toString(prerequisities) +
 				", outcomes=" + Arrays.toString(outcomes) +
 				", state=" + state +
-				", startingLevel=" + startingLevel +
 				", showStepperBar=" + showStepperBar +
 				", levels=" + levels +
 				'}';

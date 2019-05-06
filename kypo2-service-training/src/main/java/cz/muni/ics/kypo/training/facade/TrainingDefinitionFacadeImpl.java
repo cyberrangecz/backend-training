@@ -80,29 +80,30 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
             Objects.requireNonNull(id);
             TrainingDefinitionByIdDTO trainingDefinitionByIdDTO = trainingDefinitionMapper.mapToDTOById(trainingDefinitionService.findById(id));
             trainingDefinitionByIdDTO.setLevels(gatherLevels(id));
+            trainingDefinitionByIdDTO.setEstimatedDuration(calculateEstimatedDuration(trainingDefinitionByIdDTO.getId()));
             return trainingDefinitionByIdDTO;
         } catch (ServiceLayerException ex) {
             throw new FacadeLayerException(ex);
         }
     }
 
-    private Set<BasicLevelInfoDTO> gatherBasicLevelInfo(Long definitionId) {
+    private List<BasicLevelInfoDTO> gatherBasicLevelInfo(Long definitionId) {
         List<AbstractLevel> levels = trainingDefinitionService.findAllLevelsFromDefinition(definitionId);
-        Set<BasicLevelInfoDTO> levelInfoDTOs = new HashSet<>();
+        List<BasicLevelInfoDTO> levelInfoDTOs = new ArrayList<>();
 
-        for (int i = 0; i < levels.size(); i++) {
+        levels.forEach(level -> {
             BasicLevelInfoDTO basicLevelInfoDTO = new BasicLevelInfoDTO();
-            basicLevelInfoDTO.setId(levels.get(i).getId());
-            basicLevelInfoDTO.setOrder(i);
-            basicLevelInfoDTO.setTitle(levels.get(i).getTitle());
-            if (levels.get(i) instanceof GameLevel)
+            basicLevelInfoDTO.setId(level.getId());
+            basicLevelInfoDTO.setTitle(level.getTitle());
+            basicLevelInfoDTO.setOrder(level.getOrder());
+            if (level instanceof GameLevel)
                 basicLevelInfoDTO.setLevelType(LevelType.GAME_LEVEL);
-            else if (levels.get(i) instanceof AssessmentLevel)
+            else if (level instanceof AssessmentLevel)
                 basicLevelInfoDTO.setLevelType(LevelType.ASSESSMENT_LEVEL);
             else
                 basicLevelInfoDTO.setLevelType(LevelType.INFO_LEVEL);
             levelInfoDTOs.add(basicLevelInfoDTO);
-        }
+        });
         return levelInfoDTOs;
     }
 
@@ -165,7 +166,7 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
         try {
             Objects.requireNonNull(trainingDefinition);
             TrainingDefinition newTrainingDefinition = trainingDefinitionMapper.mapCreateToEntity(trainingDefinition);
-            if(trainingDefinition.getBetaTestingGroup() != null) {
+            if (trainingDefinition.getBetaTestingGroup() != null) {
                 addOrganizersToTrainingDefinition(newTrainingDefinition, trainingDefinition.getBetaTestingGroup().getOrganizers());
             }
             addAuthorsToTrainingDefinition(newTrainingDefinition, trainingDefinition.getAuthors());
@@ -184,12 +185,12 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
             Objects.requireNonNull(trainingDefinitionUpdateDTO);
             TrainingDefinition mappedTrainingDefinition = trainingDefinitionMapper.mapUpdateToEntity(trainingDefinitionUpdateDTO);
             TrainingDefinition trainingDefinition = trainingDefinitionService.findById(trainingDefinitionUpdateDTO.getId());
-            if(trainingDefinitionUpdateDTO.getBetaTestingGroup() != null) {
+            if (trainingDefinitionUpdateDTO.getBetaTestingGroup() != null) {
                 addOrganizersToTrainingDefinition(mappedTrainingDefinition, trainingDefinitionUpdateDTO.getBetaTestingGroup().getOrganizers());
-                if(trainingDefinition.getBetaTestingGroup() != null) {
+                if (trainingDefinition.getBetaTestingGroup() != null) {
                     trainingDefinition.getBetaTestingGroup().setId(trainingDefinition.getBetaTestingGroup().getId());
                 }
-            } else if(trainingDefinition.getBetaTestingGroup() != null) {
+            } else if (trainingDefinition.getBetaTestingGroup() != null) {
                 throw new FacadeLayerException(new ServiceLayerException("Cannot delete beta testing group. You only can remove organizers from group.", ErrorCode.RESOURCE_CONFLICT));
             }
             addAuthorsToTrainingDefinition(mappedTrainingDefinition, trainingDefinitionUpdateDTO.getAuthors());
@@ -201,7 +202,7 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
 
     private void addAuthorsToTrainingDefinition(TrainingDefinition trainingDefinition, Set<UserInfoDTO> authors) {
         trainingDefinition.setAuthors(new HashSet<>());
-        for (UserInfoDTO author: authors) {
+        for (UserInfoDTO author : authors) {
             try {
                 trainingDefinition.addAuthor(trainingDefinitionService.findUserRefByLogin(author.getLogin()));
             } catch (ServiceLayerException ex) {
@@ -233,7 +234,10 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
         LOG.debug("clone({})", id);
         try {
             Assert.notNull(id, "Given id of training definition to be cloned");
-            return trainingDefinitionMapper.mapToDTOById(trainingDefinitionService.clone(id));
+
+            TrainingDefinitionByIdDTO clonedDefinition =  trainingDefinitionMapper.mapToDTOById(trainingDefinitionService.clone(id));
+            clonedDefinition.setLevels(gatherLevels(clonedDefinition.getId()));
+            return clonedDefinition;
         } catch (ServiceLayerException ex) {
             throw new FacadeLayerException(ex);
         }
@@ -241,33 +245,18 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
 
     @Override
     @TransactionalWO
-    public Set<BasicLevelInfoDTO> swapLeft(Long definitionId, Long levelId) {
-        LOG.debug("swapLeft({},{})", definitionId, levelId);
+    public List<BasicLevelInfoDTO> swapLevels(Long definitionId, Long swapLevelFrom, Long swapLevelTo) {
+        LOG.debug("swapLevels({},{})", definitionId, swapLevelFrom, swapLevelTo);
         try {
             Objects.requireNonNull(definitionId);
-            Objects.requireNonNull(levelId);
-            trainingDefinitionService.swapLeft(definitionId, levelId);
+            Objects.requireNonNull(swapLevelFrom);
+            Objects.requireNonNull(swapLevelTo);
+            trainingDefinitionService.swapLevels(definitionId, swapLevelFrom, swapLevelTo);
             return gatherBasicLevelInfo(definitionId);
         } catch (ServiceLayerException ex) {
             throw new FacadeLayerException(ex);
         }
     }
-
-
-    @Override
-    @TransactionalWO
-    public Set<BasicLevelInfoDTO> swapRight(Long definitionId, Long levelId) {
-        LOG.debug("swapRight({},{})", definitionId, levelId);
-        try {
-            Objects.requireNonNull(definitionId);
-            Objects.requireNonNull(levelId);
-            trainingDefinitionService.swapRight(definitionId, levelId);
-            return gatherBasicLevelInfo(definitionId);
-        } catch (ServiceLayerException ex) {
-            throw new FacadeLayerException(ex);
-        }
-    }
-
 
     @Override
     @TransactionalWO
@@ -283,7 +272,7 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
 
     @Override
     @TransactionalWO
-    public Set<BasicLevelInfoDTO> deleteOneLevel(Long definitionId, Long levelId) {
+    public List<BasicLevelInfoDTO> deleteOneLevel(Long definitionId, Long levelId) {
         LOG.debug("deleteOneLevel({}, {})", definitionId, levelId);
         try {
             Objects.requireNonNull(definitionId);
@@ -422,18 +411,18 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
     @Override
     public void switchState(Long definitionId, TDState state) {
         LOG.debug("unreleasedDefinition({}, {})", definitionId, state);
-        try{
+        try {
             Objects.requireNonNull(definitionId);
             trainingDefinitionService.switchState(definitionId, state);
-        } catch (ServiceLayerException ex){
+        } catch (ServiceLayerException ex) {
             throw new FacadeLayerException(ex);
         }
     }
 
-    private long calculateEstimatedDuration(Long id){
+    private long calculateEstimatedDuration(Long id) {
         long duration = 0;
         List<AbstractLevel> levels = trainingDefinitionService.findAllLevelsFromDefinition(id);
-        for(AbstractLevel level : levels){
+        for (AbstractLevel level : levels) {
             duration += level.getEstimatedDuration();
         }
         return duration;

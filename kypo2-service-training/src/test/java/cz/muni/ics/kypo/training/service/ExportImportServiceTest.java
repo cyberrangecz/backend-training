@@ -81,9 +81,9 @@ public class ExportImportServiceTest {
         given(gameLevelRepository.save(gameLevel)).willReturn(gameLevel);
         given(infoLevelRepository.save(infoLevel)).willReturn(infoLevel);
 
-        Long assessmentLevelId = exportImportService.createLevel(assessmentLevel);
-        Long gameLevelId = exportImportService.createLevel(gameLevel);
-        Long infoLevelId = exportImportService.createLevel(infoLevel);
+        Long assessmentLevelId = exportImportService.createLevel(assessmentLevel, 1L);
+        Long gameLevelId = exportImportService.createLevel(gameLevel, 1L);
+        Long infoLevelId = exportImportService.createLevel(infoLevel, 1L);
 
         assertEquals(1L, (long) assessmentLevelId);
         assertEquals(2L, (long) gameLevelId);

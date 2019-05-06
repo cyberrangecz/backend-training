@@ -27,7 +27,6 @@ public class TrainingDefinitionByIdDTO {
     private Set<UserRefDTO> authors = new HashSet<>();
     private BetaTestingGroupDTO betaTestingGroup;
     private Long sandboxDefinitionRefId;
-    private Long startingLevel;
     private List<AbstractLevelDTO> levels = new ArrayList<>();
     private boolean showStepperBar;
     private boolean canBeArchived;
@@ -116,15 +115,6 @@ public class TrainingDefinitionByIdDTO {
         this.sandboxDefinitionRefId = sandBoxDefinitionRefId;
     }
 
-    @ApiModelProperty(value = "Identifier of first level of training definition.", example = "4")
-    public Long getStartingLevel() {
-        return startingLevel;
-    }
-
-    public void setStartingLevel(Long startingLevel) {
-        this.startingLevel = startingLevel;
-    }
-
     @ApiModelProperty(value = "Information about all levels in training definition.")
     public List<AbstractLevelDTO> getLevels() {
         return levels;
@@ -164,12 +154,15 @@ public class TrainingDefinitionByIdDTO {
         return lastEdited;
     }
 
-    @Override
-    public String toString() {
+    public void setLastEdited(LocalDateTime lastEdited) {
+        this.lastEdited = lastEdited;
+    }
+
+    @Override public String toString() {
         return "TrainingDefinitionByIdDTO{" + "id=" + id + ", title='" + title + '\'' + ", description='" + description + '\''
-                + ", prerequisities=" + Arrays.toString(prerequisities) + ", outcomes=" + Arrays.toString(outcomes) + ", state=" + state
-                + ", authors=" + authors + ", betaTestingGroup=" + betaTestingGroup + ", sandboxDefinitionRefId=" + sandboxDefinitionRefId
-                + ", startingLevel=" + startingLevel + ", levels=" + levels + ", showStepperBar=" + showStepperBar + ", canBeArchived="
-                + canBeArchived + ", estimatedDuration=" + estimatedDuration + ", lastEdited=" + lastEdited + '}';
+            + ", prerequisities=" + Arrays.toString(prerequisities) + ", outcomes=" + Arrays.toString(outcomes) + ", state=" + state
+            + ", authors=" + authors + ", betaTestingGroup=" + betaTestingGroup + ", sandboxDefinitionRefId=" + sandboxDefinitionRefId
+            + ", levels=" + levels + ", showStepperBar=" + showStepperBar + ", canBeArchived=" + canBeArchived + ", estimatedDuration="
+            + estimatedDuration + ", lastEdited=" + lastEdited + '}';
     }
 }

@@ -20,7 +20,6 @@ public class ExportTrainingDefinitionAndLevelsDTO {
     private String[] prerequisities;
     private String[] outcomes;
     private TDState state;
-    private Long startingLevel;
     private boolean showStepperBar;
     private List<AbstractLevelExportDTO> levels = new ArrayList<>();
     private int estimatedDuration;
@@ -73,15 +72,6 @@ public class ExportTrainingDefinitionAndLevelsDTO {
         this.state = state;
     }
 
-    @ApiModelProperty(value = "Identifier of first level of training definition.", example = "4")
-    public Long getStartingLevel() {
-        return startingLevel;
-    }
-
-    public void setStartingLevel(Long startingLevel) {
-        this.startingLevel = startingLevel;
-    }
-
     @ApiModelProperty(value = "Sign if stepper bar should be displayed.", example = "false")
     public boolean isShowStepperBar() {
         return showStepperBar;
@@ -110,7 +100,6 @@ public class ExportTrainingDefinitionAndLevelsDTO {
     @Override public String toString() {
         return "ExportTrainingDefinitionAndLevelsDTO{" + "title='" + title + '\'' + ", description='" + description + '\''
             + ", prerequisities=" + Arrays.toString(prerequisities) + ", outcomes=" + Arrays.toString(outcomes) + ", state=" + state
-            + ", startingLevel=" + startingLevel + ", showStepperBar=" + showStepperBar + ", levels=" + levels + ", estimatedDuration="
-            + estimatedDuration + '}';
+            + ", showStepperBar=" + showStepperBar + ", levels=" + levels + ", estimatedDuration=" + estimatedDuration + '}';
     }
 }
