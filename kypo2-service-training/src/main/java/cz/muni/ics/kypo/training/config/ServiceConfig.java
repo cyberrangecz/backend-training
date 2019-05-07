@@ -53,7 +53,7 @@ public class ServiceConfig {
         RestTemplate restTemplate = new RestTemplate();
         restTemplate.getMessageConverters().add(0, new StringHttpMessageConverter(Charset.forName("UTF-8")));
         List<ClientHttpRequestInterceptor> interceptors = restTemplate.getInterceptors();
-        interceptors.add(new RestTemplateHeaderModifierInterceptor());
+//        interceptors.add(new RestTemplateHeaderModifierInterceptor());
         restTemplate.setInterceptors(interceptors);
         return restTemplate;
     }
@@ -66,37 +66,37 @@ public class ServiceConfig {
         threadPoolTaskExecutor.setMaxPoolSize(2);
         threadPoolTaskExecutor.setQueueCapacity(50);
         threadPoolTaskExecutor.afterPropertiesSet();
-        threadPoolTaskExecutor.setTaskDecorator(new ContextCopyingDecorator());
+//        threadPoolTaskExecutor.setTaskDecorator(new ContextCopyingDecorator());
         return threadPoolTaskExecutor;
     }
 
-    static class ContextCopyingDecorator implements TaskDecorator {
-        @Nonnull
-        @Override
-        public Runnable decorate(@Nonnull Runnable runnable) {
-            RequestAttributes context =
-                    RequestContextHolder.currentRequestAttributes();
-            Map<String, String> contextMap = MDC.getCopyOfContextMap();
-            return () -> {
-                try {
-                    RequestContextHolder.setRequestAttributes(context);
-                    MDC.setContextMap(contextMap);
-                    runnable.run();
-                } finally {
-                    MDC.clear();
-                    RequestContextHolder.resetRequestAttributes();
-                }
-            };
-        }
-    }
-
-    public class RestTemplateHeaderModifierInterceptor implements ClientHttpRequestInterceptor {
-
-        @Override
-        public ClientHttpResponse intercept(HttpRequest request, byte[] body, ClientHttpRequestExecution execution) throws IOException {
-            String token = servletRequest.getHeader("Authorization");
-            request.getHeaders().add("Authorization", token);
-            return execution.execute(request, body);
-        }
-    }
+//    static class ContextCopyingDecorator implements TaskDecorator {
+//        @Nonnull
+//        @Override
+//        public Runnable decorate(@Nonnull Runnable runnable) {
+//            RequestAttributes context =
+//                    RequestContextHolder.currentRequestAttributes();
+//            Map<String, String> contextMap = MDC.getCopyOfContextMap();
+//            return () -> {
+//                try {
+//                    RequestContextHolder.setRequestAttributes(context);
+//                    MDC.setContextMap(contextMap);
+//                    runnable.run();
+//                } finally {
+//                    MDC.clear();
+//                    RequestContextHolder.resetRequestAttributes();
+//                }
+//            };
+//        }
+//    }
+//
+//    public class RestTemplateHeaderModifierInterceptor implements ClientHttpRequestInterceptor {
+//
+//        @Override
+//        public ClientHttpResponse intercept(HttpRequest request, byte[] body, ClientHttpRequestExecution execution) throws IOException {
+//            String token = servletRequest.getHeader("Authorization");
+//            request.getHeaders().add("Authorization", token);
+//            return execution.execute(request, body);
+//        }
+//    }
 }

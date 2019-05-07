@@ -206,8 +206,6 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
     @Override
     @TransactionalWO
     @Async
-    @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
-        "or @securityService.isOrganizerOfGivenTrainingInstance(#trainingInstance.id)")
     public void allocateSandboxes(TrainingInstance trainingInstance, Integer count) {
         LOG.debug("allocateSandboxes({}, {})", trainingInstance.getId(), count);
         if (count != null && count > trainingInstance.getPoolSize()) {
