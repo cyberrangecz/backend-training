@@ -31,13 +31,14 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Executor;
 
 /**
  * @author Pavel Šeda
  */
 @Configuration
 @EnableAsync(proxyTargetClass = true)
-@Import({ElasticsearchServiceConfig.class, PersistenceConfig.class, ResourceServerSecurityConfig.class, ContextCopyingDecorator.class})
+@Import({ElasticsearchServiceConfig.class, PersistenceConfig.class, ResourceServerSecurityConfig.class, RestTemplateHeaderModifierInterceptor.class})
 @ComponentScan(basePackages = {"cz.muni.ics.kypo.training.service"})
 public class ServiceConfig {
 
@@ -46,7 +47,7 @@ public class ServiceConfig {
     }
 
     @Bean(name = "processExecutor")
-    public TaskExecutor workExecutor() {
+    public Executor workExecutor() {
         ThreadPoolTaskExecutor threadPoolTaskExecutor = new ThreadPoolTaskExecutor();
         threadPoolTaskExecutor.setThreadNamePrefix("Async-");
         threadPoolTaskExecutor.setCorePoolSize(2);
