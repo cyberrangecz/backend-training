@@ -36,26 +36,13 @@ import java.util.Map;
  * @author Pavel Šeda
  */
 @Configuration
-@EnableAsync
-@Import({ElasticsearchServiceConfig.class, PersistenceConfig.class, ResourceServerSecurityConfig.class})
+@EnableAsync(proxyTargetClass = true)
+@Import({ElasticsearchServiceConfig.class, PersistenceConfig.class, ResourceServerSecurityConfig.class, ContextCopyingDecorator.class})
 @ComponentScan(basePackages = {"cz.muni.ics.kypo.training.service"})
 public class ServiceConfig {
-    @Autowired
-    private HttpServletRequest servletRequest;
 
     public ServiceConfig() {
         SecurityContextHolder.setStrategyName(SecurityContextHolder.MODE_INHERITABLETHREADLOCAL);
-    }
-
-
-    @Bean
-    public RestTemplate restTemplate() {
-        RestTemplate restTemplate = new RestTemplate();
-        restTemplate.getMessageConverters().add(0, new StringHttpMessageConverter(Charset.forName("UTF-8")));
-        List<ClientHttpRequestInterceptor> interceptors = restTemplate.getInterceptors();
-        interceptors.add(new RestTemplateHeaderModifierInterceptor());
-        restTemplate.setInterceptors(interceptors);
-        return restTemplate;
     }
 
     @Bean(name = "processExecutor")
@@ -67,36 +54,18 @@ public class ServiceConfig {
         threadPoolTaskExecutor.setQueueCapacity(50);
         threadPoolTaskExecutor.afterPropertiesSet();
         threadPoolTaskExecutor.setTaskDecorator(new ContextCopyingDecorator());
+        threadPoolTaskExecutor.initialize();
         return threadPoolTaskExecutor;
     }
 
-    static class ContextCopyingDecorator implements TaskDecorator {
-        @Nonnull
-        @Override
-        public Runnable decorate(@Nonnull Runnable runnable) {
-            RequestAttributes context =
-                    RequestContextHolder.currentRequestAttributes();
-            Map<String, String> contextMap = MDC.getCopyOfContextMap();
-            return () -> {
-                try {
-                    RequestContextHolder.setRequestAttributes(context);
-                    MDC.setContextMap(contextMap);
-                    runnable.run();
-                } finally {
-                    MDC.clear();
-                    RequestContextHolder.resetRequestAttributes();
-                }
-            };
-        }
+    @Bean
+    public RestTemplate restTemplate() {
+        RestTemplate restTemplate = new RestTemplate();
+        restTemplate.getMessageConverters().add(0, new StringHttpMessageConverter(Charset.forName("UTF-8")));
+        List<ClientHttpRequestInterceptor> interceptors = restTemplate.getInterceptors();
+        interceptors.add(new RestTemplateHeaderModifierInterceptor());
+        restTemplate.setInterceptors(interceptors);
+        return restTemplate;
     }
 
-    public class RestTemplateHeaderModifierInterceptor implements ClientHttpRequestInterceptor {
-
-        @Override
-        public ClientHttpResponse intercept(HttpRequest request, byte[] body, ClientHttpRequestExecution execution) throws IOException {
-            String token = servletRequest.getHeader("Authorization");
-            request.getHeaders().add("Authorization", token);
-            return execution.execute(request, body);
-        }
-    }
 }
