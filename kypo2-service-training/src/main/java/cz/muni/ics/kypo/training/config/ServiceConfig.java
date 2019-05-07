@@ -38,9 +38,14 @@ import java.util.concurrent.Executor;
  */
 @Configuration
 @EnableAsync(proxyTargetClass = true)
-@Import({ElasticsearchServiceConfig.class, PersistenceConfig.class, ResourceServerSecurityConfig.class, RestTemplateHeaderModifierInterceptor.class})
-@ComponentScan(basePackages = {"cz.muni.ics.kypo.training.service"})
+@Import({ElasticsearchServiceConfig.class, PersistenceConfig.class, ResourceServerSecurityConfig.class})
+@ComponentScan(basePackages = {"cz.muni.ics.kypo.training.service", "cz.muni.ics.kypo.training.config"})
 public class ServiceConfig {
+
+    @Autowired
+    private RestTemplateHeaderModifierInterceptor restTemplateHeaderModifierInterceptor;
+    @Autowired
+    private ContextCopyingDecorator contextCopyingDecorator;
 
     public ServiceConfig() {
         SecurityContextHolder.setStrategyName(SecurityContextHolder.MODE_INHERITABLETHREADLOCAL);
@@ -54,7 +59,7 @@ public class ServiceConfig {
         threadPoolTaskExecutor.setMaxPoolSize(2);
         threadPoolTaskExecutor.setQueueCapacity(50);
         threadPoolTaskExecutor.afterPropertiesSet();
-        threadPoolTaskExecutor.setTaskDecorator(new ContextCopyingDecorator());
+        threadPoolTaskExecutor.setTaskDecorator(contextCopyingDecorator);
         threadPoolTaskExecutor.initialize();
         return threadPoolTaskExecutor;
     }
@@ -64,7 +69,7 @@ public class ServiceConfig {
         RestTemplate restTemplate = new RestTemplate();
         restTemplate.getMessageConverters().add(0, new StringHttpMessageConverter(Charset.forName("UTF-8")));
         List<ClientHttpRequestInterceptor> interceptors = restTemplate.getInterceptors();
-        interceptors.add(new RestTemplateHeaderModifierInterceptor());
+        interceptors.add(restTemplateHeaderModifierInterceptor);
         restTemplate.setInterceptors(interceptors);
         return restTemplate;
     }

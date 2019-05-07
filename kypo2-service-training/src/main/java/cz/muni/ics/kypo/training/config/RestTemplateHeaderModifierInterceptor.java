@@ -1,11 +1,11 @@
 package cz.muni.ics.kypo.training.config;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpRequest;
 import org.springframework.http.client.ClientHttpRequestExecution;
 import org.springframework.http.client.ClientHttpRequestInterceptor;
 import org.springframework.http.client.ClientHttpResponse;
+import org.springframework.stereotype.Component;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
@@ -13,7 +13,7 @@ import java.io.IOException;
 /**
  * @author Pavel Seda
  */
-@Configuration
+@Component
 public class RestTemplateHeaderModifierInterceptor implements ClientHttpRequestInterceptor {
 
     @Autowired

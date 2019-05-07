@@ -2,6 +2,7 @@ package cz.muni.ics.kypo.training.config;
 
 import org.slf4j.MDC;
 import org.springframework.core.task.TaskDecorator;
+import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 
@@ -11,6 +12,7 @@ import java.util.Map;
 /**
  * @author Pavel Seda
  */
+@Component
 public class ContextCopyingDecorator implements TaskDecorator {
 
     @Nonnull
