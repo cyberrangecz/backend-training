@@ -43,6 +43,8 @@ public class TrainingDefinition implements Serializable {
     private Long sandboxDefinitionRefId;
     @Column(name = "show_stepper_bar", nullable = false)
     private boolean showStepperBar;
+    @Column(name = "estimated_duration", nullable = true)
+    private long estimatedDuration;
     @Column(name = "last_edited", nullable = false)
     private LocalDateTime lastEdited;
 
@@ -134,6 +136,14 @@ public class TrainingDefinition implements Serializable {
 
     public void setShowStepperBar(boolean showStepperBar) {
         this.showStepperBar = showStepperBar;
+    }
+
+    public long getEstimatedDuration() {
+        return estimatedDuration;
+    }
+
+    public void setEstimatedDuration(long estimatedDuration) {
+        this.estimatedDuration = estimatedDuration;
     }
 
     public LocalDateTime getLastEdited() {

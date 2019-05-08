@@ -23,7 +23,7 @@ public abstract class AbstractLevel implements Serializable {
     @OneToOne(fetch = FetchType.LAZY, optional = true, cascade = CascadeType.ALL)
     private SnapshotHook snapshotHook;
     @Column(name = "estimated_duration")
-    private int estimatedDuration;
+    private long estimatedDuration;
     @Column(name = "order_in_training_definition", nullable = false)
     private int order;
     @ManyToOne(fetch = FetchType.LAZY)
@@ -65,11 +65,11 @@ public abstract class AbstractLevel implements Serializable {
         this.snapshotHook = snapshotHook;
     }
 
-    public int getEstimatedDuration() {
+    public long getEstimatedDuration() {
         return estimatedDuration;
     }
 
-    public void setEstimatedDuration(int estimatedDuration) {
+    public void setEstimatedDuration(long estimatedDuration) {
         this.estimatedDuration = estimatedDuration;
     }
 
