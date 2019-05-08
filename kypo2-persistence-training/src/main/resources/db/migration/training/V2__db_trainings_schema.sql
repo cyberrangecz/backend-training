@@ -1,7 +1,7 @@
 
     create table abstract_level (
        id  bigserial not null,
-        estimated_duration int4,
+        estimated_duration int8,
         max_score int4 not null,
         order_in_training_definition int4 not null,
         title varchar(255) not null,
@@ -78,6 +78,7 @@
        id  bigserial not null,
         description text,
         last_edited timestamp not null,
+        estimated_duration int8,
         outcomes bytea,
         prerequisities bytea,
         sandbox_definition_ref_id int8 not null,
