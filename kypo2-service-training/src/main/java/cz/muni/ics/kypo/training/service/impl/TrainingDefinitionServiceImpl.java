@@ -460,10 +460,6 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     public void switchState(Long definitionId, cz.muni.ics.kypo.training.api.enums.TDState state) {
         LOG.debug("unreleaseDefinition({})", definitionId);
         TrainingDefinition trainingDefinition = findById(definitionId);
-        if(trainingInstanceRepository.existsAnyForTrainingDefinition(definitionId)) {
-            throw new ServiceLayerException("Cannot update training definition with already created training instance. " +
-                "Remove training instance/s before updating training definition.", ErrorCode.RESOURCE_CONFLICT);
-        }
 
         switch (trainingDefinition.getState()) {
             case UNRELEASED:
