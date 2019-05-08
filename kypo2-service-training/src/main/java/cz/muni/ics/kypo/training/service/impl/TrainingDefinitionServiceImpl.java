@@ -320,9 +320,9 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
         TrainingDefinition trainingDefinition = findById(definitionId);
         if (!trainingDefinition.getState().equals(TDState.UNRELEASED))
             throw new ServiceLayerException("Cannot create level in released or archived training definition", ErrorCode.RESOURCE_CONFLICT);
-        if(trainingInstanceRepository.existsAnyForTrainingDefinition(trainingDefinition.getId())) {
+        if (trainingInstanceRepository.existsAnyForTrainingDefinition(trainingDefinition.getId())) {
             throw new ServiceLayerException("Cannot update training definition with already created training instance. " +
-                "Remove training instance/s before updating training definition.", ErrorCode.RESOURCE_CONFLICT);
+                    "Remove training instance/s before updating training definition.", ErrorCode.RESOURCE_CONFLICT);
         }
 
         GameLevel newGameLevel = new GameLevel();
@@ -375,9 +375,9 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
         TrainingDefinition trainingDefinition = findById(definitionId);
         if (!trainingDefinition.getState().equals(TDState.UNRELEASED))
             throw new ServiceLayerException("Cannot create level in released or archived training definition.", ErrorCode.RESOURCE_CONFLICT);
-        if(trainingInstanceRepository.existsAnyForTrainingDefinition(trainingDefinition.getId())) {
+        if (trainingInstanceRepository.existsAnyForTrainingDefinition(trainingDefinition.getId())) {
             throw new ServiceLayerException("Cannot update training definition with already created training instance. " +
-                "Remove training instance/s before updating training definition.", ErrorCode.RESOURCE_CONFLICT);
+                    "Remove training instance/s before updating training definition.", ErrorCode.RESOURCE_CONFLICT);
         }
 
         AssessmentLevel newAssessmentLevel = new AssessmentLevel();
@@ -472,7 +472,11 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
                 if (state.equals(cz.muni.ics.kypo.training.api.enums.TDState.ARCHIVED))
                     trainingDefinition.setState(TDState.ARCHIVED);
                 else if (state.equals(cz.muni.ics.kypo.training.api.enums.TDState.UNRELEASED))
-                    trainingDefinition.setState((TDState.UNRELEASED));
+                    if (trainingInstanceRepository.existsAnyForTrainingDefinition(definitionId)) {
+                        throw new ServiceLayerException("Cannot update training definition with already created training instance(s). " +
+                                "Remove training instance(s) before changing the state from released to unreleased training definition.", ErrorCode.RESOURCE_CONFLICT);
+                    }
+                trainingDefinition.setState((TDState.UNRELEASED));
                 break;
             default:
                 throw new ServiceLayerException("Cannot switch from" + trainingDefinition.getState() + " to " + state, ErrorCode.RESOURCE_CONFLICT);
@@ -519,7 +523,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
                 newGameLevel.setSnapshotHook(null);
                 newGameLevel.setHints(null);
                 Set<Hint> hints = new HashSet<>();
-                for (Hint hint : ((GameLevel) level).getHints()){
+                for (Hint hint : ((GameLevel) level).getHints()) {
                     Hint newHint = new Hint();
                     BeanUtils.copyProperties(hint, newHint);
                     newHint.setId(null);
