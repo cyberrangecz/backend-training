@@ -177,6 +177,8 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
 
     @Override
     @TransactionalWO
+    @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
+            "or @securityService.isOrganizerOfGivenTrainingInstance(#instanceId)")
     public void deleteSandboxes(Long instanceId, Set<Long> sandboxIds) {
         LOG.debug("deleteFailedSandboxes({}, {})", instanceId, sandboxIds);
         try{
