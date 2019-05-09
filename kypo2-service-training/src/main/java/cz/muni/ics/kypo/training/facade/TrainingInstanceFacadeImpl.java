@@ -25,16 +25,14 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 /**
  * @author Pavel Šeda
@@ -48,6 +46,9 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
     private TrainingDefinitionService trainingDefinitionService;
     private TrainingInstanceMapper trainingInstanceMapper;
     private TrainingRunMapper trainingRunMapper;
+
+    @Autowired
+    private HttpServletRequest httpServletRequest;
 
     @Autowired
     public TrainingInstanceFacadeImpl(TrainingInstanceService trainingInstanceService, TrainingDefinitionService trainingDefinitionService,
@@ -76,7 +77,6 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
         LOG.debug("findAllTrainingDefinitions({},{})", predicate, pageable);
         return trainingInstanceMapper.mapToPageResultResource(trainingInstanceService.findAll(predicate, pageable));
     }
-
 
     @Override
     @TransactionalWO
@@ -147,8 +147,6 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
 
     @Override
     @TransactionalWO
-    @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
-            "or @securityService.isOrganizerOfGivenTrainingInstance(#instanceId)")
     public void allocateSandboxes(Long instanceId) {
         LOG.debug("allocateSandboxes({})", instanceId);
         TrainingInstance trainingInstance = trainingInstanceService.findById(instanceId);
@@ -160,50 +158,55 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
         if (trainingInstance.getSandboxInstanceRefs().size() >= trainingInstance.getPoolSize()) {
             throw new FacadeLayerException(new ServiceLayerException("Pool of sandboxes of training instance with id: " + trainingInstance.getId() + " is full.", ErrorCode.RESOURCE_CONFLICT));
         }
-        trainingInstanceService.allocateSandboxes(trainingInstance, null);
-    }
-
-    @Override
-    @TransactionalRO
-    public PageResultResource<TrainingRunDTO> findTrainingRunsByTrainingInstance(Long trainingInstanceId, Pageable pageable) {
-        LOG.debug("findAllTrainingRunsByTrainingInstance({})", trainingInstanceId);
-        try{
-            Page<TrainingRun> trainingRuns = trainingInstanceService.findTrainingRunsByTrainingInstance(trainingInstanceId, pageable);
-            return trainingRunMapper.mapToPageResultResource(trainingRuns);
-        }catch(ServiceLayerException ex){
-            throw new FacadeLayerException(ex);
-        }
+        trainingInstanceService.allocateSandboxes(trainingInstance, null, prepareHttpHeaders());
     }
 
     @Override
     @TransactionalWO
-    @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
-            "or @securityService.isOrganizerOfGivenTrainingInstance(#instanceId)")
     public void deleteSandboxes(Long instanceId, Set<Long> sandboxIds) {
         LOG.debug("deleteFailedSandboxes({}, {})", instanceId, sandboxIds);
-        try{
+        try {
             TrainingInstance trainingInstance = trainingInstanceService.findById(instanceId);
             for (Long sandboxId : sandboxIds) {
                 SandboxInstanceRef sandboxRefToDelete = trainingInstance.getSandboxInstanceRefs().stream().filter(sIR ->
                         sIR.getSandboxInstanceRef().equals(sandboxId)).findFirst().orElseThrow(() -> new ServiceLayerException("Given sandbox with id:" + sandboxId
                         + " is not in DB or is not assigned to given training instance.", ErrorCode.RESOURCE_NOT_FOUND));
-                trainingInstanceService.deleteSandbox(trainingInstance, sandboxRefToDelete);
+                trainingInstanceService.deleteSandbox(trainingInstance, sandboxRefToDelete, prepareHttpHeaders());
             }
         } catch (ServiceLayerException ex) {
             throw new FacadeLayerException(ex);
         }
     }
 
+    private HttpHeaders prepareHttpHeaders() {
+        HttpHeaders httpHeaders = new HttpHeaders();
+        httpHeaders.setContentType(MediaType.APPLICATION_JSON);
+        httpHeaders.set("Authorization", "Bearer " + httpServletRequest.getHeader("Authorization"));
+        return httpHeaders;
+    }
+
     @Override
-    public void reallocateSandbox(Long instanceId, Long sandboxId){
+    @TransactionalRO
+    public PageResultResource<TrainingRunDTO> findTrainingRunsByTrainingInstance(Long trainingInstanceId, Pageable pageable) {
+        LOG.debug("findAllTrainingRunsByTrainingInstance({})", trainingInstanceId);
+        try {
+            Page<TrainingRun> trainingRuns = trainingInstanceService.findTrainingRunsByTrainingInstance(trainingInstanceId, pageable);
+            return trainingRunMapper.mapToPageResultResource(trainingRuns);
+        } catch (ServiceLayerException ex) {
+            throw new FacadeLayerException(ex);
+        }
+    }
+
+    @Override
+    public void reallocateSandbox(Long instanceId, Long sandboxId) {
         LOG.debug("reallocateSandboxes({}, {})", instanceId, sandboxId);
-        try{
+        try {
             TrainingInstance trainingInstance = trainingInstanceService.findById(instanceId);
             SandboxInstanceRef sandboxRefToDelete = trainingInstance.getSandboxInstanceRefs().stream().filter(sIR ->
                     sIR.getSandboxInstanceRef().equals(sandboxId)).findFirst().orElseThrow(() -> new FacadeLayerException(new ServiceLayerException("Given sandbox with id: " + sandboxId
                     + " is not in DB or is not assigned to given training instance.", ErrorCode.RESOURCE_NOT_FOUND)));
-            trainingInstanceService.deleteSandbox(trainingInstance, sandboxRefToDelete);
-            trainingInstanceService.allocateSandboxes(trainingInstance, 1);
+            trainingInstanceService.deleteSandbox(trainingInstance, sandboxRefToDelete, prepareHttpHeaders());
+            trainingInstanceService.allocateSandboxes(trainingInstance, 1, prepareHttpHeaders());
             //Check if sandbox can be allocated
             if (trainingInstance.getSandboxInstanceRefs().size() >= trainingInstance.getPoolSize()) {
                 throw new FacadeLayerException(new ServiceLayerException("Sandbox cannot be reallocated because pool of training instance with id: " + trainingInstance.getId() + " is full. " +

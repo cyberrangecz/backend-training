@@ -9,6 +9,7 @@ import cz.muni.ics.kypo.training.persistence.model.TrainingRun;
 import cz.muni.ics.kypo.training.persistence.model.UserRef;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 
 import java.util.Set;
@@ -67,10 +68,20 @@ public interface TrainingInstanceService {
      * This method is annotated with @Transactional
      *
      * @param trainingInstance for which allocate sandboxes
-     * @param count number of sandboxes to allocate
+     * @param count            number of sandboxes to allocate
      * @throws ServiceLayerException if instance is not found
      */
-    void allocateSandboxes(TrainingInstance trainingInstance, Integer count);
+    void allocateSandboxes(TrainingInstance trainingInstance, Integer count, HttpHeaders httpHeaders);
+
+    /**
+     * Delete sandbox from training instance
+     * This method is annotated with @Transactional
+     *
+     * @param trainingInstance   which sandbox should be deleted
+     * @param sandboxInstanceRef sandbox to be removed from training instance and deleted from open stack
+     * @throws ServiceLayerException if instance is not found
+     */
+    void deleteSandbox(TrainingInstance trainingInstance, SandboxInstanceRef sandboxInstanceRef, HttpHeaders httpHeaders);
 
     /**
      * Finds all Training Runs of specific Training Instance.
@@ -95,16 +106,5 @@ public interface TrainingInstanceService {
      * @return id of pool created in openstack
      */
     Long createPoolForSandboxes(Long trainingInstanceId);
-
-    /**
-     * Delete sandbox from training instance
-     * This method is annotated with @Transactional
-     *
-     * @param trainingInstance which sandbox should be deleted
-     * @param sandboxInstanceRef sandbox to be removed from training instance and deleted from open stack
-     * @throws ServiceLayerException if instance is not found
-     */
-    void deleteSandbox(TrainingInstance trainingInstance, SandboxInstanceRef sandboxInstanceRef);
-
 
 }

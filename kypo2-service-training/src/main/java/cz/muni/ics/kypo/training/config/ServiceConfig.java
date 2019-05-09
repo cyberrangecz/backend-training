@@ -44,24 +44,9 @@ public class ServiceConfig {
 
     @Autowired
     private RestTemplateHeaderModifierInterceptor restTemplateHeaderModifierInterceptor;
-    @Autowired
-    private ContextCopyingDecorator contextCopyingDecorator;
 
     public ServiceConfig() {
         SecurityContextHolder.setStrategyName(SecurityContextHolder.MODE_INHERITABLETHREADLOCAL);
-    }
-
-    @Bean(name = "processExecutor")
-    public Executor workExecutor() {
-        ThreadPoolTaskExecutor threadPoolTaskExecutor = new ThreadPoolTaskExecutor();
-        threadPoolTaskExecutor.setThreadNamePrefix("Async-");
-        threadPoolTaskExecutor.setCorePoolSize(2);
-        threadPoolTaskExecutor.setMaxPoolSize(2);
-        threadPoolTaskExecutor.setQueueCapacity(50);
-        threadPoolTaskExecutor.afterPropertiesSet();
-        threadPoolTaskExecutor.setTaskDecorator(contextCopyingDecorator);
-        threadPoolTaskExecutor.initialize();
-        return threadPoolTaskExecutor;
     }
 
     @Bean
