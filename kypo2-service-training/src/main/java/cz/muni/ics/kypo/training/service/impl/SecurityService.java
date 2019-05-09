@@ -1,6 +1,7 @@
 package cz.muni.ics.kypo.training.service.impl;
 
 import com.google.gson.JsonObject;
+import cz.muni.ics.kypo.training.annotations.transactions.TransactionalROPropagationRequiredNew;
 import cz.muni.ics.kypo.training.enums.RoleTypeSecurity;
 import cz.muni.ics.kypo.training.exceptions.ErrorCode;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
@@ -19,6 +20,7 @@ import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.stereotype.Service;
 
 @Service
+@TransactionalROPropagationRequiredNew
 public class SecurityService {
     private static final Logger log = LoggerFactory.getLogger(SecurityService.class);
 
