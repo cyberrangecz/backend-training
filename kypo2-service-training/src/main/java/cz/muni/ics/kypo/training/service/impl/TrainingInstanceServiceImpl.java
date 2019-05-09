@@ -204,8 +204,6 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
     }
 
     @Override
-    @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
-            "or @securityService.isOrganizerOfGivenTrainingInstance(#trainingInstance.id)")
     @Async
     public void allocateSandboxes(TrainingInstance trainingInstance, Integer count) {
         LOG.debug("allocateSandboxes({}, {})", trainingInstance.getId(), count);
@@ -277,8 +275,6 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
     }
 
     @Override
-    @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
-            "or @securityService.isOrganizerOfGivenTrainingInstance(#trainingInstance.id)")
     @Async
     public void deleteSandbox(TrainingInstance trainingInstance, SandboxInstanceRef sandboxRefToDelete) {
         trainingRunRepository.deleteSandboxInstanceFromTrainingRun(sandboxRefToDelete);

@@ -27,6 +27,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
@@ -146,6 +147,8 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
     }
 
     @Override
+    @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
+            "or @securityService.isOrganizerOfGivenTrainingInstance(#instanceId)")
     @TransactionalWO
     public void allocateSandboxes(Long instanceId) {
         LOG.debug("allocateSandboxes({})", instanceId);
@@ -162,6 +165,8 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
     }
 
     @Override
+    @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
+            "or @securityService.isOrganizerOfGivenTrainingInstance(#instanceId)")
     @TransactionalWO
     public void deleteSandboxes(Long instanceId, Set<Long> sandboxIds) {
         LOG.debug("deleteFailedSandboxes({}, {})", instanceId, sandboxIds);
