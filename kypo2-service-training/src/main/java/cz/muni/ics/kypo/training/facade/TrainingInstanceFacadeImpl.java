@@ -181,7 +181,7 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
     private HttpHeaders prepareHttpHeaders() {
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.setContentType(MediaType.APPLICATION_JSON);
-        httpHeaders.set("Authorization", httpServletRequest.getHeader("Authorization"));
+        httpHeaders.set("Authorization", new String(httpServletRequest.getHeader("Authorization")));
         return httpHeaders;
     }
 

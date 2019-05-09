@@ -22,7 +22,7 @@ public class RestTemplateHeaderModifierInterceptor implements ClientHttpRequestI
     @Override
     public ClientHttpResponse intercept(HttpRequest request, byte[] body, ClientHttpRequestExecution execution) throws IOException {
         String token = httpServletRequest.getHeader("Authorization");
-        request.getHeaders().add("Authorization", token);
+        request.getHeaders().add("Authorization", new String(token));
         return execution.execute(request, body);
     }
 }

@@ -204,9 +204,9 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
     }
 
     @Override
-    @Async
     @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
             "or @securityService.isOrganizerOfGivenTrainingInstance(#trainingInstance.id)")
+    @Async
     public void allocateSandboxes(TrainingInstance trainingInstance, Integer count, HttpHeaders httpHeaders) {
         LOG.debug("allocateSandboxes({}, {})", trainingInstance.getId(), count);
         if (count != null && count > trainingInstance.getPoolSize()) {
@@ -275,9 +275,9 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
     }
 
     @Override
-    @Async
     @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
             "or @securityService.isOrganizerOfGivenTrainingInstance(#trainingInstance.id)")
+    @Async
     public void deleteSandbox(TrainingInstance trainingInstance, SandboxInstanceRef sandboxRefToDelete, HttpHeaders httpHeaders) {
         trainingRunRepository.deleteSandboxInstanceFromTrainingRun(sandboxRefToDelete);
         trainingInstance.getSandboxInstanceRefs().remove(sandboxRefToDelete);
