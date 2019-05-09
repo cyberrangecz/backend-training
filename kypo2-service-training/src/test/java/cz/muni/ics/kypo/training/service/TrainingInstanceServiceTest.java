@@ -154,13 +154,6 @@ public class TrainingInstanceServiceTest {
         sandboxInstanceRef2.setSandboxInstanceRef(2L);
     }
 
-    private HttpHeaders prepareHttpHeaders() {
-        HttpHeaders httpHeaders = new HttpHeaders();
-        httpHeaders.setContentType(MediaType.APPLICATION_JSON);
-//        httpHeaders.set("Authorization", "Bearer " + httpServletRequest.getHeader("Authorization"));
-        return httpHeaders;
-    }
-
     @Test
     public void getTrainingInstanceById() {
         given(trainingInstanceRepository.findById(trainingInstance1.getId())).willReturn(Optional.of(trainingInstance1));
@@ -327,7 +320,7 @@ public class TrainingInstanceServiceTest {
        // given(trainingInstanceRepository.findById(trainingInstance1.getId())).willReturn(Optional.ofNullable(trainingInstance1));
         given(restTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
                 willReturn(new ResponseEntity<List<SandboxInfo>>(new ArrayList<>(Collections.singletonList(sandboxInfo)), HttpStatus.OK));
-        trainingInstanceService.allocateSandboxes(trainingInstance1, null,  prepareHttpHeaders());
+        trainingInstanceService.allocateSandboxes(trainingInstance1, null);
         assertTrue(trainingInstance1.getSandboxInstanceRefs().stream().anyMatch(s -> s.getSandboxInstanceRef().equals(2L)));
     }
 
@@ -336,7 +329,7 @@ public class TrainingInstanceServiceTest {
         given(trainingInstanceRepository.findById(trainingInstance2.getId())).willReturn(Optional.ofNullable(trainingInstance2));
         thrown.expect(ServiceLayerException.class);
         thrown.expectMessage("Pool for sandboxes is not created yet. Please create pool before allocating sandboxes.");
-        trainingInstanceService.allocateSandboxes(trainingInstance2, null,  prepareHttpHeaders());
+        trainingInstanceService.allocateSandboxes(trainingInstance2, null);
     }
 
 
@@ -345,7 +338,7 @@ public class TrainingInstanceServiceTest {
         given(trainingInstanceRepository.findById(instanceWithSB.getId())).willReturn(Optional.ofNullable(instanceWithSB));
         thrown.expect(ServiceLayerException.class);
         thrown.expectMessage("Pool of sandboxes of training instance with id: " + instanceWithSB.getId() + " is full.");
-        trainingInstanceService.allocateSandboxes(instanceWithSB, 1,  prepareHttpHeaders());
+        trainingInstanceService.allocateSandboxes(instanceWithSB, 1);
     }
 
     @Test
@@ -356,7 +349,7 @@ public class TrainingInstanceServiceTest {
 
         given(restTemplate.exchange(anyString(), eq(HttpMethod.DELETE), any(HttpEntity.class), eq(String.class))).
             willReturn(new ResponseEntity<String>("", HttpStatus.OK));
-        trainingInstanceService.deleteSandbox(trainingInstance1, sandboxInstanceRef1,  prepareHttpHeaders());
+        trainingInstanceService.deleteSandbox(trainingInstance1, sandboxInstanceRef1);
         assertTrue(!trainingInstance1.getSandboxInstanceRefs().contains(sandboxInstanceRef1));
     }
 

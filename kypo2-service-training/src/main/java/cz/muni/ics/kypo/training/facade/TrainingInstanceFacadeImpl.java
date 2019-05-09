@@ -158,7 +158,7 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
         if (trainingInstance.getSandboxInstanceRefs().size() >= trainingInstance.getPoolSize()) {
             throw new FacadeLayerException(new ServiceLayerException("Pool of sandboxes of training instance with id: " + trainingInstance.getId() + " is full.", ErrorCode.RESOURCE_CONFLICT));
         }
-        trainingInstanceService.allocateSandboxes(trainingInstance, null, prepareHttpHeaders());
+        trainingInstanceService.allocateSandboxes(trainingInstance, null);
     }
 
     @Override
@@ -171,18 +171,11 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
                 SandboxInstanceRef sandboxRefToDelete = trainingInstance.getSandboxInstanceRefs().stream().filter(sIR ->
                         sIR.getSandboxInstanceRef().equals(sandboxId)).findFirst().orElseThrow(() -> new ServiceLayerException("Given sandbox with id:" + sandboxId
                         + " is not in DB or is not assigned to given training instance.", ErrorCode.RESOURCE_NOT_FOUND));
-                trainingInstanceService.deleteSandbox(trainingInstance, sandboxRefToDelete, prepareHttpHeaders());
+                trainingInstanceService.deleteSandbox(trainingInstance, sandboxRefToDelete);
             }
         } catch (ServiceLayerException ex) {
             throw new FacadeLayerException(ex);
         }
-    }
-
-    private HttpHeaders prepareHttpHeaders() {
-        HttpHeaders httpHeaders = new HttpHeaders();
-        httpHeaders.setContentType(MediaType.APPLICATION_JSON);
-        httpHeaders.set("Authorization", new String(httpServletRequest.getHeader("Authorization")));
-        return httpHeaders;
     }
 
     @Override
@@ -205,8 +198,8 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
             SandboxInstanceRef sandboxRefToDelete = trainingInstance.getSandboxInstanceRefs().stream().filter(sIR ->
                     sIR.getSandboxInstanceRef().equals(sandboxId)).findFirst().orElseThrow(() -> new FacadeLayerException(new ServiceLayerException("Given sandbox with id: " + sandboxId
                     + " is not in DB or is not assigned to given training instance.", ErrorCode.RESOURCE_NOT_FOUND)));
-            trainingInstanceService.deleteSandbox(trainingInstance, sandboxRefToDelete, prepareHttpHeaders());
-            trainingInstanceService.allocateSandboxes(trainingInstance, 1, prepareHttpHeaders());
+            trainingInstanceService.deleteSandbox(trainingInstance, sandboxRefToDelete);
+            trainingInstanceService.allocateSandboxes(trainingInstance, 1);
             //Check if sandbox can be allocated
             if (trainingInstance.getSandboxInstanceRefs().size() >= trainingInstance.getPoolSize()) {
                 throw new FacadeLayerException(new ServiceLayerException("Sandbox cannot be reallocated because pool of training instance with id: " + trainingInstance.getId() + " is full. " +

@@ -207,7 +207,7 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
     @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
             "or @securityService.isOrganizerOfGivenTrainingInstance(#trainingInstance.id)")
     @Async
-    public void allocateSandboxes(TrainingInstance trainingInstance, Integer count, HttpHeaders httpHeaders) {
+    public void allocateSandboxes(TrainingInstance trainingInstance, Integer count) {
         LOG.debug("allocateSandboxes({}, {})", trainingInstance.getId(), count);
         if (count != null && count > trainingInstance.getPoolSize()) {
             count = null;
@@ -220,6 +220,8 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
         if (trainingInstance.getSandboxInstanceRefs().size() >= trainingInstance.getPoolSize()) {
             throw new ServiceLayerException("Pool of sandboxes of training instance with id: " + trainingInstance.getId() + " is full.", ErrorCode.RESOURCE_CONFLICT);
         }
+        HttpHeaders httpHeaders = new HttpHeaders();
+        httpHeaders.setContentType(MediaType.APPLICATION_JSON);
         try {
             //Allocate sandboxes in pool
             String url = kypoOpenStackURI + "/pools/" + trainingInstance.getPoolId() + "/sandboxes/";
@@ -278,9 +280,11 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
     @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
             "or @securityService.isOrganizerOfGivenTrainingInstance(#trainingInstance.id)")
     @Async
-    public void deleteSandbox(TrainingInstance trainingInstance, SandboxInstanceRef sandboxRefToDelete, HttpHeaders httpHeaders) {
+    public void deleteSandbox(TrainingInstance trainingInstance, SandboxInstanceRef sandboxRefToDelete) {
         trainingRunRepository.deleteSandboxInstanceFromTrainingRun(sandboxRefToDelete);
         trainingInstance.getSandboxInstanceRefs().remove(sandboxRefToDelete);
+        HttpHeaders httpHeaders = new HttpHeaders();
+        httpHeaders.setContentType(MediaType.APPLICATION_JSON);
         try {
             ResponseEntity<String> responseOnDelete = restTemplate.exchange(kypoOpenStackURI + "/sandboxes/" + sandboxRefToDelete.getSandboxInstanceRef() + "/",
                     HttpMethod.DELETE, new HttpEntity<>(httpHeaders), String.class);

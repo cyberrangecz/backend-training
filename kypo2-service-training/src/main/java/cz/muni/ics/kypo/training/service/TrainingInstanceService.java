@@ -71,7 +71,7 @@ public interface TrainingInstanceService {
      * @param count            number of sandboxes to allocate
      * @throws ServiceLayerException if instance is not found
      */
-    void allocateSandboxes(TrainingInstance trainingInstance, Integer count, HttpHeaders httpHeaders);
+    void allocateSandboxes(TrainingInstance trainingInstance, Integer count);
 
     /**
      * Delete sandbox from training instance
@@ -81,7 +81,7 @@ public interface TrainingInstanceService {
      * @param sandboxInstanceRef sandbox to be removed from training instance and deleted from open stack
      * @throws ServiceLayerException if instance is not found
      */
-    void deleteSandbox(TrainingInstance trainingInstance, SandboxInstanceRef sandboxInstanceRef, HttpHeaders httpHeaders);
+    void deleteSandbox(TrainingInstance trainingInstance, SandboxInstanceRef sandboxInstanceRef);
 
     /**
      * Finds all Training Runs of specific Training Instance.
