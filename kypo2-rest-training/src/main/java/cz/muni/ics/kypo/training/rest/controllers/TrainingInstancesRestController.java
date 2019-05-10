@@ -31,6 +31,7 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
 /**
@@ -302,14 +303,14 @@ public class TrainingInstancesRestController {
     })
     @DeleteMapping(path = "/{instanceId}/sandbox-instances")
     public ResponseEntity<Void> deleteSandboxes(
-        @ApiParam(value = "Id of training instance for which sandboxes are deleted", required = true)
-        @PathVariable(value = "instanceId") Long instanceId,
-        @ApiParam(value = "Ids of sandboxes that will be deleted", required = true)
-        @RequestParam (value = "sandboxIds", required = true) Set<Long> sandboxIds){
-        try{
+            @ApiParam(value = "Id of training instance for which sandboxes are deleted", required = true)
+            @PathVariable(value = "instanceId") Long instanceId,
+            @ApiParam(value = "Ids of sandboxes that will be deleted", required = true)
+            @RequestParam(value = "sandboxIds", required = true) Set<Long> sandboxIds) {
+        try {
             trainingInstanceFacade.deleteSandboxes(instanceId, sandboxIds);
             return new ResponseEntity<>(HttpStatus.OK);
-        } catch(FacadeLayerException ex) {
+        } catch (FacadeLayerException ex) {
             throw ExceptionSorter.throwException(ex);
         }
     }
@@ -325,14 +326,14 @@ public class TrainingInstancesRestController {
     })
     @PostMapping(path = "/{instanceId}/sandbox-instances/{sandboxId}")
     public ResponseEntity<Void> reallocateSandbox(
-        @ApiParam(value = "Id of training instance for which sandbox is reallocated", required = true)
-        @PathVariable(value = "instanceId") Long instanceId,
-        @ApiParam(value = "id of sandbox that will be reallocated", required = true)
-        @PathVariable(value = "sandboxId") Long sandboxId){
-        try{
+            @ApiParam(value = "Id of training instance for which sandbox is reallocated", required = true)
+            @PathVariable(value = "instanceId") Long instanceId,
+            @ApiParam(value = "id of sandbox that will be reallocated", required = true)
+            @PathVariable(value = "sandboxId") Long sandboxId) {
+        try {
             trainingInstanceFacade.reallocateSandbox(instanceId, sandboxId);
             return new ResponseEntity<>(HttpStatus.ACCEPTED);
-        } catch (FacadeLayerException ex){
+        } catch (FacadeLayerException ex) {
             throw ExceptionSorter.throwException(ex);
         }
     }

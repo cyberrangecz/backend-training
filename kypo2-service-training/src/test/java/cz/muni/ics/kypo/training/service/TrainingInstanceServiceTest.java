@@ -200,13 +200,13 @@ public class TrainingInstanceServiceTest {
 
     @Test
     public void createTrainingInstanceWithNull() {
-      thrown.expect(IllegalArgumentException.class);
-      thrown.expectMessage("Input training instance must not be null");
-      trainingInstanceService.create(null);
+        thrown.expect(IllegalArgumentException.class);
+        thrown.expectMessage("Input training instance must not be null");
+        trainingInstanceService.create(null);
     }
 
     @Test
-    public void createTrainingInstanceWithInvalidTimes(){
+    public void createTrainingInstanceWithInvalidTimes() {
         thrown.expect(ServiceLayerException.class);
         thrown.expectMessage("End time must be later than start time.");
         trainingInstanceService.create(trainingInstanceInvalidTime);
@@ -224,7 +224,7 @@ public class TrainingInstanceServiceTest {
     }
 
     @Test
-    public void updateTrainingInstanceWithInvalidTimes(){
+    public void updateTrainingInstanceWithInvalidTimes() {
         given(trainingInstanceRepository.findById(anyLong())).willReturn(Optional.of(trainingInstanceInvalidTime));
         thrown.expect(ServiceLayerException.class);
         thrown.expectMessage("End time must be later than start time.");
@@ -260,7 +260,7 @@ public class TrainingInstanceServiceTest {
     }
 
     @Test
-    public void deleteTrainingInstanceWithAssignedTrainingRuns(){
+    public void deleteTrainingInstanceWithAssignedTrainingRuns() {
         List<TrainingRun> runs = new ArrayList<>();
         runs.add(trainingRun1);
         runs.add(trainingRun2);
@@ -275,7 +275,7 @@ public class TrainingInstanceServiceTest {
     }
 
     @Test
-    public void deleteRunningInstance(){
+    public void deleteRunningInstance() {
         given(trainingInstanceRepository.findById(anyLong())).willReturn(Optional.of(currentInstance));
         thrown.expect(ServiceLayerException.class);
         thrown.expectMessage("The training instance which is running cannot be deleted.");
@@ -283,9 +283,9 @@ public class TrainingInstanceServiceTest {
     }
 
     @Test
-    public void deleteInstanceWithAssignedSandboxes(){
+    public void deleteInstanceWithAssignedSandboxes() {
         given(trainingInstanceRepository.findById(anyLong())).willReturn(Optional.of(instanceWithSB));
-        given(trainingRunRepository.findAllByTrainingInstanceId(instanceWithSB.getId(),  PageRequest.of(0, 5))).willReturn(new PageImpl<TrainingRun>(new ArrayList<>()));
+        given(trainingRunRepository.findAllByTrainingInstanceId(instanceWithSB.getId(), PageRequest.of(0, 5))).willReturn(new PageImpl<TrainingRun>(new ArrayList<>()));
         thrown.expect(ServiceLayerException.class);
         thrown.expectMessage("Cannot delete training instance because it contains some sandboxes. Please delete sandboxes and try again.");
         trainingInstanceService.delete(instanceWithSB.getId());
@@ -317,7 +317,7 @@ public class TrainingInstanceServiceTest {
         when(trainingDefinition.getSandboxDefinitionRefId()).thenReturn(1L);
         when(sandboxPoolInfo.getId()).thenReturn(4L);
 
-       // given(trainingInstanceRepository.findById(trainingInstance1.getId())).willReturn(Optional.ofNullable(trainingInstance1));
+        // given(trainingInstanceRepository.findById(trainingInstance1.getId())).willReturn(Optional.ofNullable(trainingInstance1));
         given(restTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
                 willReturn(new ResponseEntity<List<SandboxInfo>>(new ArrayList<>(Collections.singletonList(sandboxInfo)), HttpStatus.OK));
         trainingInstanceService.allocateSandboxes(trainingInstance1, null);
@@ -348,7 +348,7 @@ public class TrainingInstanceServiceTest {
         given(trainingInstanceRepository.findById(trainingInstance1.getId())).willReturn(Optional.ofNullable(trainingInstance1));
 
         given(restTemplate.exchange(anyString(), eq(HttpMethod.DELETE), any(HttpEntity.class), eq(String.class))).
-            willReturn(new ResponseEntity<String>("", HttpStatus.OK));
+                willReturn(new ResponseEntity<String>("", HttpStatus.OK));
         trainingInstanceService.deleteSandbox(trainingInstance1, sandboxInstanceRef1);
         assertTrue(!trainingInstance1.getSandboxInstanceRefs().contains(sandboxInstanceRef1));
     }

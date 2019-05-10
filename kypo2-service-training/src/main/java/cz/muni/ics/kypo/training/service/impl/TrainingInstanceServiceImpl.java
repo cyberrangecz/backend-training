@@ -3,7 +3,6 @@ package cz.muni.ics.kypo.training.service.impl;
 import com.mysema.commons.lang.Assert;
 import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.training.annotations.security.IsOrganizerOrAdmin;
-import cz.muni.ics.kypo.training.annotations.transactions.TransactionalWO;
 import cz.muni.ics.kypo.training.exceptions.ErrorCode;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.persistence.model.*;
@@ -25,6 +24,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.*;
+import org.springframework.http.client.ClientHttpRequestInterceptor;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
@@ -242,6 +242,28 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
         }
     }
 
+    @Override
+    @Async
+    public void deleteSandbox(TrainingInstance trainingInstance, SandboxInstanceRef sandboxRefToDelete) {
+        trainingRunRepository.deleteSandboxInstanceFromTrainingRun(sandboxRefToDelete);
+        trainingInstance.getSandboxInstanceRefs().remove(sandboxRefToDelete);
+        HttpHeaders httpHeaders = new HttpHeaders();
+        httpHeaders.setContentType(MediaType.APPLICATION_JSON);
+        try {
+            ResponseEntity<String> responseOnDelete = restTemplate.exchange(kypoOpenStackURI + "/sandboxes/" + sandboxRefToDelete.getSandboxInstanceRef() + "/",
+                    HttpMethod.DELETE, new HttpEntity<>(httpHeaders), String.class);
+            if (!responseOnDelete.getStatusCode().is2xxSuccessful()) {
+                LOG.error("Error from OpenStack while deleting sandbox.");
+            }
+
+        } catch (HttpClientErrorException ex) {
+            if (!ex.getMessage().contains("404")) {
+                LOG.error("Client side error when calling OpenStack: {}. Probably wrong URL of service.", new JSONObject(ex.getResponseBodyAsString()).get("detail"));
+            }
+        }
+        trainingInstanceRepository.save(trainingInstance);
+    }
+
     private void synchronizeSandboxesWithPythonApi(TrainingInstance trainingInstance) {
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.setContentType(MediaType.APPLICATION_JSON);
@@ -267,28 +289,6 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
             LOG.error("Client side error when calling OpenStack: {}.", new JSONObject(ex.getResponseBodyAsString()).get("detail"));
         }
 
-    }
-
-    @Override
-    @Async
-    public void deleteSandbox(TrainingInstance trainingInstance, SandboxInstanceRef sandboxRefToDelete) {
-        trainingRunRepository.deleteSandboxInstanceFromTrainingRun(sandboxRefToDelete);
-        trainingInstance.getSandboxInstanceRefs().remove(sandboxRefToDelete);
-        HttpHeaders httpHeaders = new HttpHeaders();
-        httpHeaders.setContentType(MediaType.APPLICATION_JSON);
-        try {
-            ResponseEntity<String> responseOnDelete = restTemplate.exchange(kypoOpenStackURI + "/sandboxes/" + sandboxRefToDelete.getSandboxInstanceRef() + "/",
-                    HttpMethod.DELETE, new HttpEntity<>(httpHeaders), String.class);
-            if (!responseOnDelete.getStatusCode().is2xxSuccessful()) {
-                LOG.error("Error from OpenStack while deleting sandbox.");
-            }
-
-        } catch (HttpClientErrorException ex) {
-            if (!ex.getMessage().contains("404")) {
-                LOG.error("Client side error when calling OpenStack: {}. Probably wrong URL of service.", new JSONObject(ex.getResponseBodyAsString()).get("detail"));
-            }
-        }
-        trainingInstanceRepository.save(trainingInstance);
     }
 
     @Override
