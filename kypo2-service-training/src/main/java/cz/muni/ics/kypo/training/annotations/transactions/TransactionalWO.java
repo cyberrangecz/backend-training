@@ -1,5 +1,6 @@
 package cz.muni.ics.kypo.training.annotations.transactions;
 
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.lang.annotation.*;
@@ -13,4 +14,5 @@ import java.lang.annotation.*;
 @Inherited
 @Documented
 public @interface TransactionalWO {
+    Propagation propagation() default Propagation.REQUIRED;
 }

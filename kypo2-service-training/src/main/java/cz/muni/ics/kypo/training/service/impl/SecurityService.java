@@ -1,7 +1,7 @@
 package cz.muni.ics.kypo.training.service.impl;
 
 import com.google.gson.JsonObject;
-import cz.muni.ics.kypo.training.annotations.transactions.TransactionalROPropagationRequiredNew;
+import cz.muni.ics.kypo.training.annotations.transactions.TransactionalRO;
 import cz.muni.ics.kypo.training.enums.RoleTypeSecurity;
 import cz.muni.ics.kypo.training.exceptions.ErrorCode;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
@@ -18,9 +18,13 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 
+/**
+ * @author Dominik Pilar & Pavel Seda
+ */
 @Service
-@TransactionalROPropagationRequiredNew
+@TransactionalRO(propagation = Propagation.REQUIRES_NEW)
 public class SecurityService {
     private static final Logger log = LoggerFactory.getLogger(SecurityService.class);
 

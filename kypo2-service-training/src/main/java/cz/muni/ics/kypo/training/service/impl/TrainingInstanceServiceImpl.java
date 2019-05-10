@@ -104,7 +104,6 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
             userRef.setUserRefLogin(securityService.getSubOfLoggedInUser());
             userRef.setUserRefFullName(securityService.getFullNameOfLoggedInUser());
             trainingInstance.addOrganizer(organizerRefRepository.save(userRef));
-
         }
         return trainingInstanceRepository.save(trainingInstance);
     }
@@ -175,7 +174,6 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
         AccessToken newTokenInstance = new AccessToken();
         newTokenInstance.setAccessToken(newPass);
         accessTokenRepository.saveAndFlush(newTokenInstance);
-
         return newPass;
     }
 
@@ -240,9 +238,6 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
             });
             trainingInstanceRepository.save(trainingInstance);
         } catch (HttpClientErrorException ex) {
-            //if(new JSONObject(ex.getResponseBodyAsString()).get("detail").toString().contains("You have reached the maximum stacks per tenant")) {
-            //  synchronizeSandboxesWithPythonApi(trainingInstance);
-            //}
             LOG.error("Client side error when calling OpenStack: {}.", ex.getResponseBodyAsString());
         }
     }
