@@ -105,7 +105,7 @@ public class TrainingInstanceFacadeTest {
         trainingInstanceUpdate.setTrainingDefinitionId(1L);
         trainingInstanceUpdate.setOrganizers(new HashSet<>());
     }
-
+    
     @Test
     public void findTrainingInstanceById() {
         given(trainingInstanceService.findById(any(Long.class))).willReturn(trainingInstance1);
