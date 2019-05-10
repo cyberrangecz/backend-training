@@ -3,14 +3,21 @@ package cz.muni.ics.kypo.training.rest.controllers;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.google.common.collect.Lists;
 import cz.muni.ics.kypo.training.api.dto.archive.TrainingInstanceArchiveDTO;
+import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.export.ExportTrainingDefinitionAndLevelsDTO;
 import cz.muni.ics.kypo.training.api.dto.export.FileToReturnDTO;
+import cz.muni.ics.kypo.training.api.dto.imports.*;
+import cz.muni.ics.kypo.training.api.enums.LevelType;
+import cz.muni.ics.kypo.training.api.enums.TDState;
 import cz.muni.ics.kypo.training.converters.LocalDateTimeDeserializer;
 import cz.muni.ics.kypo.training.exceptions.ErrorCode;
 import cz.muni.ics.kypo.training.exceptions.FacadeLayerException;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.facade.ExportImportFacade;
+import cz.muni.ics.kypo.training.persistence.model.AssessmentLevel;
+import cz.muni.ics.kypo.training.persistence.model.GameLevel;
 import cz.muni.ics.kypo.training.rest.exceptions.ResourceNotFoundException;
 import org.junit.Before;
 import org.junit.Test;
@@ -31,6 +38,9 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Optional;
 
 import static org.junit.Assert.assertEquals;
@@ -49,10 +59,12 @@ public class ExportImportRestControllerTest {
 
 	@Mock
 	private ObjectMapper objectMapper;
+
 	@Mock
 	private ExportImportFacade exportImportFacade;
 
 	private TrainingInstanceArchiveDTO trainingInstanceArchiveDTO;
+	private ImportTrainingDefinitionDTO importTrainingDefinitionDTO;
 
 	@Before
 	public void init(){
@@ -71,6 +83,49 @@ public class ExportImportRestControllerTest {
 		trainingInstanceArchiveDTO.setEndTime(startTime.minusHours(5));
 		trainingInstanceArchiveDTO.setPoolSize(10);
 		trainingInstanceArchiveDTO.setTitle("title");
+
+		InfoLevelImportDTO infoLevelImportDTO = new InfoLevelImportDTO();
+		infoLevelImportDTO.setContent("string");
+		infoLevelImportDTO.setLevelType(LevelType.INFO_LEVEL);
+		infoLevelImportDTO.setMaxScore(0);
+		infoLevelImportDTO.setOrder(0);
+		infoLevelImportDTO.setTitle("string");
+
+		AssessmentLevelImportDTO assessmentLevelDTO = new AssessmentLevelImportDTO();
+		assessmentLevelDTO.setLevelType(LevelType.ASSESSMENT_LEVEL);
+		assessmentLevelDTO.setMaxScore(0);
+		assessmentLevelDTO.setOrder(1);
+		assessmentLevelDTO.setTitle("string");
+
+		HintImportDTO hintImportDTO = new HintImportDTO();
+		hintImportDTO.setContent("string");
+		hintImportDTO.setTitle("title");
+
+		GameLevelImportDTO gameLevelImportDTO = new GameLevelImportDTO();
+		gameLevelImportDTO.setEstimatedDuration(20);
+		gameLevelImportDTO.setFlag("string");
+		gameLevelImportDTO.setIncorrectFlagLimit(2);
+		gameLevelImportDTO.setSolution("string");
+		gameLevelImportDTO.setSolutionPenalized(true);
+		gameLevelImportDTO.setLevelType(LevelType.GAME_LEVEL);
+		gameLevelImportDTO.setMaxScore(20);
+		gameLevelImportDTO.setTitle("string");
+		gameLevelImportDTO.setOrder(2);
+
+
+		String[] outcomes = {"string"};
+		String[] prerequisites = {"string"};
+
+		importTrainingDefinitionDTO = new ImportTrainingDefinitionDTO();
+		importTrainingDefinitionDTO.setTitle("string");
+		importTrainingDefinitionDTO.setState(TDState.PRIVATED);
+		importTrainingDefinitionDTO.setDescription("string");
+		importTrainingDefinitionDTO.setShowStepperBar(true);
+		importTrainingDefinitionDTO.setLevels(Arrays.asList(infoLevelImportDTO,assessmentLevelDTO,gameLevelImportDTO));
+		importTrainingDefinitionDTO.setOutcomes(outcomes);
+		importTrainingDefinitionDTO.setPrerequisities(prerequisites);
+		importTrainingDefinitionDTO.setSandboxDefinitionRefId(1L);
+
 
 		ObjectMapper obj = new ObjectMapper();
 		obj.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
@@ -101,10 +156,25 @@ public class ExportImportRestControllerTest {
 		assertEquals(ResourceNotFoundException.class, exception.getClass());
 	}
 
+	@Test
+	public void importTrainingDefinition() throws Exception{
+		System.out.println(convertObjectToJsonBytes(importTrainingDefinitionDTO));
+		mockMvc.perform(post("/imports/training-definitions")
+				.contentType(MediaType.APPLICATION_JSON_VALUE)
+				.content(convertObjectToJsonBytes(importTrainingDefinitionDTO)))
+				.andExpect(status().isOk());
+	}
+
+
 	private static String convertObjectToJsonBytes(Object object) throws IOException {
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.registerModule(new JavaTimeModule().addDeserializer(LocalDateTime.class, new LocalDateTimeDeserializer()));
 		return mapper.writeValueAsString(object);
 	}
 
+//	{"description":"string","levels":[],"outcomes":["string"],"prerequisities":["string"],"show_stepper_bar":true,"state":"PRIVATED","title":"string"}
+
+	//{"description":"string","levels":[{"type":"InfoLevelImportDTO","title":"string","max_score":0,"level_type":"INFO_LEVEL","order":0,"content":"string"}],"outcomes":["string"],"prerequisities":["string"],"show_stepper_bar":true,"state":"PRIVATED","title":"string"}
+
+//{"title":"string","description":"string","prerequisities":["string"],"outcomes":["string"],"state":"PRIVATED","show_stepper_bar":true,"sandbox_definition_ref_id":1,"levels":[{"type":"InfoLevelImportDTO","title":"string","max_score":0,"level_type":"INFO_LEVEL","order":0,"content":"string"}]}
 }

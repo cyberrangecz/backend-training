@@ -69,20 +69,18 @@ public class ExportImportServiceImpl implements ExportImportService {
 
     @Override
     @IsDesignerOrAdmin
-    public Long createLevel(AbstractLevel level, Long definitionId) {
+    public void createLevel(AbstractLevel level, TrainingDefinition definition) {
         Assert.notNull(level, "Input Level cannot be null");
-        Assert.notNull(definitionId, "Input definition if cannot be null");
-        level.setOrder(abstractLevelRepository.getCurrentMaxOrder(definitionId) + 1);
+        Assert.notNull(definition, "Input definition cannot be null");
+        level.setOrder(abstractLevelRepository.getCurrentMaxOrder(definition.getId()) + 1);
+        level.setTrainingDefinition(definition);
         if (level instanceof AssessmentLevel) {
             AssessmentUtil.validQuestions(((AssessmentLevel) level).getQuestions());
-            AbstractLevel newLevel = assessmentLevelRepository.save((AssessmentLevel) level);
-            return newLevel.getId();
+            assessmentLevelRepository.save((AssessmentLevel) level);
         } else if (level instanceof InfoLevel) {
-            AbstractLevel newLevel = infoLevelRepository.save((InfoLevel) level);
-            return newLevel.getId();
+            infoLevelRepository.save((InfoLevel) level);
         } else {
-            AbstractLevel newLevel = gameLevelRepository.save((GameLevel) level);
-            return newLevel.getId();
+            gameLevelRepository.save((GameLevel) level);
         }
     }
 

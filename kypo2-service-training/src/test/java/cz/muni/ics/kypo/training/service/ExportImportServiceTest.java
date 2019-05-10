@@ -1,10 +1,7 @@
 package cz.muni.ics.kypo.training.service;
 
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
-import cz.muni.ics.kypo.training.persistence.model.AssessmentLevel;
-import cz.muni.ics.kypo.training.persistence.model.GameLevel;
-import cz.muni.ics.kypo.training.persistence.model.InfoLevel;
-import cz.muni.ics.kypo.training.persistence.model.TrainingInstance;
+import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.repository.*;
 import cz.muni.ics.kypo.training.service.impl.ExportImportServiceImpl;
 import cz.muni.ics.kypo.training.utils.AssessmentUtil;
@@ -77,17 +74,11 @@ public class ExportImportServiceTest {
 
     @Test
     public void createLevel() {
-        given(assessmentLevelRepository.save(assessmentLevel)).willReturn(assessmentLevel);
-        given(gameLevelRepository.save(gameLevel)).willReturn(gameLevel);
-        given(infoLevelRepository.save(infoLevel)).willReturn(infoLevel);
+        TrainingDefinition trainingDefinition = new TrainingDefinition();
 
-        Long assessmentLevelId = exportImportService.createLevel(assessmentLevel, 1L);
-        Long gameLevelId = exportImportService.createLevel(gameLevel, 1L);
-        Long infoLevelId = exportImportService.createLevel(infoLevel, 1L);
-
-        assertEquals(1L, (long) assessmentLevelId);
-        assertEquals(2L, (long) gameLevelId);
-        assertEquals(3L, (long) infoLevelId);
+        exportImportService.createLevel(assessmentLevel, trainingDefinition);
+        exportImportService.createLevel(gameLevel, trainingDefinition);
+        exportImportService.createLevel(infoLevel, trainingDefinition);
 
         then(assessmentLevelRepository).should().save(assessmentLevel);
         then(gameLevelRepository).should().save(gameLevel);

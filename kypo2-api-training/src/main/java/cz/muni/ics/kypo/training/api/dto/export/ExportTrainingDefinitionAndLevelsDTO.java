@@ -23,6 +23,7 @@ public class ExportTrainingDefinitionAndLevelsDTO {
     private boolean showStepperBar;
     private List<AbstractLevelExportDTO> levels = new ArrayList<>();
     private int estimatedDuration;
+    private Long sandboxDefinitionRefId;
 
     public ExportTrainingDefinitionAndLevelsDTO() {
     }
@@ -97,9 +98,18 @@ public class ExportTrainingDefinitionAndLevelsDTO {
         this.estimatedDuration = estimatedDuration;
     }
 
+    public Long getSandboxDefinitionRefId() {
+        return sandboxDefinitionRefId;
+    }
+
+    public void setSandboxDefinitionRefId(Long sandboxDefinitionRefId) {
+        this.sandboxDefinitionRefId = sandboxDefinitionRefId;
+    }
+
     @Override public String toString() {
         return "ExportTrainingDefinitionAndLevelsDTO{" + "title='" + title + '\'' + ", description='" + description + '\''
             + ", prerequisities=" + Arrays.toString(prerequisities) + ", outcomes=" + Arrays.toString(outcomes) + ", state=" + state
-            + ", showStepperBar=" + showStepperBar + ", levels=" + levels + ", estimatedDuration=" + estimatedDuration + '}';
+            + ", showStepperBar=" + showStepperBar + ", levels=" + levels + ", estimatedDuration=" + estimatedDuration
+            + ", sandboxDefinitionRefId=" + sandboxDefinitionRefId + '}';
     }
 }

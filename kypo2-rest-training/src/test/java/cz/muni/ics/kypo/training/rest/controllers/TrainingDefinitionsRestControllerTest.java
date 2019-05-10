@@ -185,7 +185,6 @@ public class TrainingDefinitionsRestControllerTest {
         trainingDefinition1 = new TrainingDefinition();
         trainingDefinition1.setId(1L);
         trainingDefinition1.setState(TDState.UNRELEASED);
-        //trainingDefinition1.setStartingLevel(1L);
         trainingDefinition1.setTitle("test");
         trainingDefinition1.setAuthors(authorRefSet);
         trainingDefinition1.setSandboxDefinitionRefId(1L);

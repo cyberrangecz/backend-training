@@ -19,7 +19,10 @@ public class ImportTrainingDefinitionDTO {
 	private TDState state;
 	@NotNull(message = "{trainingdefinitionimport.showStepperBar.NotNull.message}")
 	private boolean showStepperBar;
+	@NotNull(message = "{trainingdefinitionimport.sandboxDefinitionRefId.NotNull.message}")
+  private Long sandboxDefinitionRefId;
 	private List<AbstractLevelImportDTO> levels = new ArrayList<>();
+	private Integer estimatedDuration;
 
 	public ImportTrainingDefinitionDTO() {
 	}
@@ -80,16 +83,25 @@ public class ImportTrainingDefinitionDTO {
 		this.levels = new ArrayList<>(levels);
 	}
 
-	@Override
-	public String toString() {
-		return "ImportTrainingDefinitionDTO{" +
-				"title='" + title + '\'' +
-				", description='" + description + '\'' +
-				", prerequisities=" + Arrays.toString(prerequisities) +
-				", outcomes=" + Arrays.toString(outcomes) +
-				", state=" + state +
-				", showStepperBar=" + showStepperBar +
-				", levels=" + levels +
-				'}';
+	public Long getSandboxDefinitionRefId() {
+		return sandboxDefinitionRefId;
+	}
+
+	public void setSandboxDefinitionRefId(Long sandboxDefinitionRefId) {
+		this.sandboxDefinitionRefId = sandboxDefinitionRefId;
+	}
+
+	public Integer getEstimatedDuration() {
+		return estimatedDuration;
+	}
+
+	public void setEstimatedDuration(Integer estimatedDuration) {
+		this.estimatedDuration = estimatedDuration;
+	}
+
+	@Override public String toString() {
+		return "ImportTrainingDefinitionDTO{" + "title='" + title + '\'' + ", description='" + description + '\'' + ", prerequisities=" + Arrays
+				.toString(prerequisities) + ", outcomes=" + Arrays.toString(outcomes) + ", state=" + state + ", showStepperBar=" + showStepperBar
+				+ ", sandboxDefinitionRefId=" + sandboxDefinitionRefId + ", levels=" + levels + ", estimatedDuration=" + estimatedDuration + '}';
 	}
 }

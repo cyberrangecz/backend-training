@@ -18,7 +18,7 @@ public interface ExportImportService {
 
     List<AbstractLevel> findAllLevelsFromDefinition(Long levelId);
 
-    Long createLevel(AbstractLevel level, Long definitionId);
+    void createLevel(AbstractLevel level, TrainingDefinition definition);
 
     TrainingInstance findInstanceById(Long trainingInstanceId);
 
