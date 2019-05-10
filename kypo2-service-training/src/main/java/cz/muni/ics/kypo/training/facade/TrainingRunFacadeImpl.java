@@ -102,7 +102,7 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
             accessTrainingRunDTO.setTrainingRunID(trainingRun.getId());
             accessTrainingRunDTO.setAbstractLevelDTO(getCorrectAbstractLevelDTO(trainingRun.getCurrentLevel()));
             accessTrainingRunDTO.setShowStepperBar(trainingRun.getTrainingInstance().getTrainingDefinition().isShowStepperBar());
-            accessTrainingRunDTO.setInfoAboutLevels(getInfoAboutLevels(trainingRun.getCurrentLevel().getId()));
+            accessTrainingRunDTO.setInfoAboutLevels(getInfoAboutLevels(trainingRun.getTrainingInstance().getTrainingDefinition().getId()));
             accessTrainingRunDTO.setSandboxInstanceId(trainingRun.getSandboxInstanceRef().getSandboxInstanceRef());
             return accessTrainingRunDTO;
         } catch (ServiceLayerException ex) {
