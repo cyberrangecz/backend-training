@@ -56,15 +56,15 @@ installJava:
 editVersion:
     stage: editVersion
     script:
-        - git checkout master
-        - git pull
-        - git remote set-url origin git@gitlab.ics.muni:410360/$CI_PROJECT_NAME.git
+        - export GIT_SSH_COMMAND='ssh -i ~/.ssh/kyposervicekey'
+        - ssh -o "StrictHostKeyChecking no" git@gitlab.ics.muni.cz && sleep 1
+        - git clone git@gitlab.ics.muni.cz:kypo2/services-and-portlets/kypo2-training.git
+        - cd $CI_PROJECT_NAME
         - git config --global user.name "KYPO CI" && git config --global user.email "410360@mail.muni.cz"
-        - grep -Rl '</version>' . --exclude-dir=.git --exclude-dir=debian | xargs sed -i "0,/<version>vTEST</version>
+        - grep -Rl '</version>' . --exclude-dir=.git --exclude-dir=debian --exclude=README.md --exclude=.gitlab-ci.yml | xargs sed -i "0,/<version>$VERSION</version>"
         - DEPSDIRS=$(sed '1,/<modules>/d;/modules/,$d' pom.xml | grep -o -P '(?<=>).*(?=<)')
         - for dir in $DEPSDIRS; do echo "Reading $dir/pom.xml" && for location in $DEPSDIRS; do LINENUMBER=$(grep -n "{$\|<artifactId>$location\|};$" $dir/pom.xml | cut -f1 -d:) && if [ -z "$LINENUMBER" ]; then continue; fi && LOWLIMIT=$(($LINENUMBER - 2 )) && HIGHLIMIT=$(($LINENUMBER + 2)) && echo "Editing dependency version of $location in $dir/pom.xml to $VERSION" && sed -i "$LOWLIMIT,$HIGHLIMIT{s:<version>.*:<version>$VERSION</version>:g}" $dir/pom.xml; done; done
         - git commit -am "Update pom.xml version based on GitLab tag. Done by CI"
-        - ssh -o "StrictHostKeyChecking no" git@gitlab.ics.muni.cz
         - git push
     only:
         - tags
@@ -75,7 +75,7 @@ deployJava:
         - git clone https://$SECURITY_COMMONS_USER:$SECURITY_COMMONS_TOKEN@gitlab.ics.muni.cz/kypo2/services-and-portlets/kypo2-security-commons.git && cd kypo2-security-commons && mvn clean install
     stage: deployJava
     script:
-        - mvn deploy
+        - mvn clean deploy -Dmaven.test.skip=true
     only:
         - tags
 
