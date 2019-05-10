@@ -71,8 +71,6 @@ public class TrainingDefinitionFacadeTest {
     private BasicLevelInfoMapperImpl basicLevelInfoMapper;
 
     @Mock
-    private SecurityService securityService;
-    @Mock
     private TrainingDefinitionService trainingDefinitionService;
 
     private BeanMapping beanMapping;
@@ -101,7 +99,7 @@ public class TrainingDefinitionFacadeTest {
     public void init() {
         MockitoAnnotations.initMocks(this);
         trainingDefinitionFacade = new TrainingDefinitionFacadeImpl(trainingDefinitionService,
-                trainingDefinitionMapper, gameLevelMapper, infoLevelMapper, assessmentLevelMapper, basicLevelInfoMapper, securityService);
+                trainingDefinitionMapper, gameLevelMapper, infoLevelMapper, assessmentLevelMapper, basicLevelInfoMapper);
         beanMapping = new BeanMappingImpl(new ModelMapper());
         assessmentLevel = new AssessmentLevel();
         assessmentLevel.setId(1L);

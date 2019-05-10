@@ -56,20 +56,18 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
     private InfoLevelMapper infoLevelMapper;
     private AssessmentLevelMapper assessmentLevelMapper;
     private BasicLevelInfoMapper basicLevelInfoMapper;
-    private SecurityService securityService;
 
     @Autowired
     public TrainingDefinitionFacadeImpl(TrainingDefinitionService trainingDefinitionService,
                                         TrainingDefinitionMapper trainingDefMapper, GameLevelMapper gameLevelMapper,
                                         InfoLevelMapper infoLevelMapper, AssessmentLevelMapper assessmentLevelMapper,
-                                        BasicLevelInfoMapper basicLevelInfoMapper, SecurityService securityService) {
+                                        BasicLevelInfoMapper basicLevelInfoMapper) {
         this.trainingDefinitionService = trainingDefinitionService;
         this.trainingDefinitionMapper = trainingDefMapper;
         this.gameLevelMapper = gameLevelMapper;
         this.infoLevelMapper = infoLevelMapper;
         this.assessmentLevelMapper = assessmentLevelMapper;
         this.basicLevelInfoMapper = basicLevelInfoMapper;
-        this.securityService = securityService;
     }
 
     @Override
@@ -80,7 +78,6 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
             Objects.requireNonNull(id);
             TrainingDefinitionByIdDTO trainingDefinitionByIdDTO = trainingDefinitionMapper.mapToDTOById(trainingDefinitionService.findById(id));
             trainingDefinitionByIdDTO.setLevels(gatherLevels(id));
-            trainingDefinitionByIdDTO.setEstimatedDuration(calculateEstimatedDuration(trainingDefinitionByIdDTO.getId()));
             return trainingDefinitionByIdDTO;
         } catch (ServiceLayerException ex) {
             throw new FacadeLayerException(ex);
@@ -136,7 +133,6 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
         PageResultResource<TrainingDefinitionDTO> resource = trainingDefinitionMapper.mapToPageResultResource(trainingDefinitionService.findAll(predicate, pageable));
         for (TrainingDefinitionDTO trainingDefinitionDTO : resource.getContent()) {
             trainingDefinitionDTO.setCanBeArchived(checkIfCanBeArchived(trainingDefinitionDTO.getId()));
-            trainingDefinitionDTO.setEstimatedDuration(calculateEstimatedDuration(trainingDefinitionDTO.getId()));
         }
         return resource;
     }
@@ -417,15 +413,6 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
         } catch (ServiceLayerException ex) {
             throw new FacadeLayerException(ex);
         }
-    }
-
-    private long calculateEstimatedDuration(Long id) {
-        long duration = 0;
-        List<AbstractLevel> levels = trainingDefinitionService.findAllLevelsFromDefinition(id);
-        for (AbstractLevel level : levels) {
-            duration += level.getEstimatedDuration();
-        }
-        return duration;
     }
 
     private boolean checkIfCanBeArchived(Long definitionId) {
