@@ -75,7 +75,7 @@ deployJava:
         - git clone https://$SECURITY_COMMONS_USER:$SECURITY_COMMONS_TOKEN@gitlab.ics.muni.cz/kypo2/services-and-portlets/kypo2-security-commons.git && cd kypo2-security-commons && mvn clean install
     stage: deployJava
     script:
-        - mvn deploy
+        - mvn clean deploy -Dmaven.test.skip=true
     only:
         - tags
 
