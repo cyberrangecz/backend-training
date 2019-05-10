@@ -130,6 +130,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
         }
         trainingDefinition.setLastEdited(LocalDateTime.now(Clock.systemUTC()));
 
+
         LOG.info("Training definition with id: {} created.", trainingDefinition.getId());
         return trainingDefinitionRepository.save(trainingDefinition);
     }
@@ -471,12 +472,13 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
             case RELEASED:
                 if (state.equals(cz.muni.ics.kypo.training.api.enums.TDState.ARCHIVED))
                     trainingDefinition.setState(TDState.ARCHIVED);
-                else if (state.equals(cz.muni.ics.kypo.training.api.enums.TDState.UNRELEASED))
+                else if (state.equals(cz.muni.ics.kypo.training.api.enums.TDState.UNRELEASED)){
                     if (trainingInstanceRepository.existsAnyForTrainingDefinition(definitionId)) {
                         throw new ServiceLayerException("Cannot update training definition with already created training instance(s). " +
                                 "Remove training instance(s) before changing the state from released to unreleased training definition.", ErrorCode.RESOURCE_CONFLICT);
                     }
-                trainingDefinition.setState((TDState.UNRELEASED));
+                    trainingDefinition.setState((TDState.UNRELEASED));
+                }
                 break;
             default:
                 throw new ServiceLayerException("Cannot switch from" + trainingDefinition.getState() + " to " + state, ErrorCode.RESOURCE_CONFLICT);

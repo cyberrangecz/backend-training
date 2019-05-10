@@ -603,7 +603,7 @@ public class TrainingDefinitionServiceTest {
     public void createInfoLevelWithCannotBeUpdatedException() {
         given(trainingDefinitionRepository.findById(releasedDefinition.getId())).willReturn(Optional.of(releasedDefinition));
         thrown.expect(ServiceLayerException.class);
-        thrown.expectMessage("Cannot create level in released or archived training definition");
+        thrown.expectMessage("Cannot edit released or archived training definition.");
 
         trainingDefinitionService.createInfoLevel(releasedDefinition.getId());
     }
@@ -754,8 +754,8 @@ public class TrainingDefinitionServiceTest {
         given(trainingDefinitionRepository.findById(anyLong())).willReturn(Optional.of(releasedDefinition));
         given(trainingInstanceRepository.existsAnyForTrainingDefinition(anyLong())).willReturn(true);
         thrown.expect(ServiceLayerException.class);
-        thrown.expectMessage("Cannot update training definition with already created training instance. " +
-                "Remove training instance/s before updating training definition.");
+        thrown.expectMessage("Cannot update training definition with already created training instance(s). " +
+            "Remove training instance(s) before changing the state from released to unreleased training definition.");
         trainingDefinitionService.switchState(releasedDefinition.getId(), cz.muni.ics.kypo.training.api.enums.TDState.UNRELEASED);
     }
 
