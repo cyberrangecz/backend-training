@@ -60,11 +60,11 @@ editVersion:
         - ssh -o "StrictHostKeyChecking no" git@gitlab.ics.muni.cz && sleep 1
         - git clone git@gitlab.ics.muni.cz:kypo2/services-and-portlets/kypo2-training.git
         - cd $CI_PROJECT_NAME
-        - git config --global user.name "KYPO CI" && git config --global user.email "410360@mail.muni.cz"
+        - git config --global user.name "KYPO CI" && git config --global user.email "kyposervice@ics.muni.cz"
         - grep -Rl '</version>' . --exclude-dir=.git --exclude=README.md --exclude=.gitlab-ci.yml | xargs sed -i "0,/<version>/{s:<version>.*:<version>$VERSION</version>:g}"
         - DEPSDIRS=$(sed '1,/<modules>/d;/modules/,$d' pom.xml | grep -o -P '(?<=>).*(?=<)')
         - for dir in $DEPSDIRS; do echo "Reading $dir/pom.xml" && for location in $DEPSDIRS; do LINENUMBER=$(grep -n "{$\|<artifactId>$location\|};$" $dir/pom.xml | cut -f1 -d:) && if [ -z "$LINENUMBER" ]; then continue; fi && LOWLIMIT=$(($LINENUMBER - 2 )) && HIGHLIMIT=$(($LINENUMBER + 2)) && echo "Editing dependency version of $location in $dir/pom.xml to $VERSION" && sed -i "$LOWLIMIT,$HIGHLIMIT{s:<version>.*:<version>$VERSION</version>:g}" $dir/pom.xml; done; done
-        - git commit -am "Update pom.xml version based on GitLab tag. Done by CI"
+        - git commit -am "Update pom.xml version based on GitLab tag. Done by CI" && sleep 1
         - git push
     only:
         - tags
@@ -75,6 +75,7 @@ deployJava:
         - git clone https://$SECURITY_COMMONS_USER:$SECURITY_COMMONS_TOKEN@gitlab.ics.muni.cz/kypo2/services-and-portlets/kypo2-security-commons.git && cd kypo2-security-commons && mvn clean install && cd ..
     stage: deployJava
     script:
+        - git checkout master && git pull
         - mvn clean deploy -Dmaven.test.skip=true
     only:
         - tags
