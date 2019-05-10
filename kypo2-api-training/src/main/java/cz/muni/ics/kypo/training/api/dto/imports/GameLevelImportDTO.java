@@ -19,7 +19,6 @@ public class GameLevelImportDTO extends AbstractLevelImportDTO{
 	private String solution;
 	@NotNull(message = "{gamelevelimport.solutionPenalized.NotNull.message}")
 	private boolean solutionPenalized;
-	private int estimatedDuration;
 	private String[] attachments;
 	private Set<HintDTO> hints = new HashSet<>();
 	@NotNull(message = "{gamelevelimport.incorrectFlagLimit.NotEmpty.message}")
@@ -58,14 +57,6 @@ public class GameLevelImportDTO extends AbstractLevelImportDTO{
 		this.solutionPenalized = solutionPenalized;
 	}
 
-	public int getEstimatedDuration() {
-		return estimatedDuration;
-	}
-
-	public void setEstimatedDuration(int estimatedDuration) {
-		this.estimatedDuration = estimatedDuration;
-	}
-
 	public String[] getAttachments() {
 		return attachments;
 	}
@@ -92,7 +83,7 @@ public class GameLevelImportDTO extends AbstractLevelImportDTO{
 
 	@Override public String toString() {
 		return "GameLevelImportDTO{" + "flag='" + flag + '\'' + ", content='" + content + '\'' + ", solution='" + solution + '\''
-				+ ", solutionPenalized=" + solutionPenalized + ", estimatedDuration=" + estimatedDuration + ", attachments=" + Arrays
+				+ ", solutionPenalized=" + solutionPenalized + ", attachments=" + Arrays
 				.toString(attachments) + ", hints=" + hints + ", incorrectFlagLimit=" + incorrectFlagLimit + '}';
 	}
 }

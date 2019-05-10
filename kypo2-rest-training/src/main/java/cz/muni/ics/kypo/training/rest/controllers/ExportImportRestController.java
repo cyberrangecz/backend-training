@@ -79,12 +79,13 @@ public class ExportImportRestController {
             value = "Import training definition with levels.",
             response = TrainingDefinitionByIdDTO.class,
             nickname = "importTrainingDefinition",
-            produces = MediaType.APPLICATION_JSON_VALUE
+            produces = MediaType.APPLICATION_JSON_VALUE,
+            consumes = MediaType.APPLICATION_JSON_VALUE
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Training definition imported.", response = TrainingDefinitionByIdDTO.class)
     })
-    @PostMapping(path = "/imports/training-definitions", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(path = "/imports/training-definitions", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> importTrainingDefinition(
             @ApiParam(value = "Training definition to be imported", required = true)
             @Valid @RequestBody ImportTrainingDefinitionDTO importTrainingDefinitionDTO,

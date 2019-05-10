@@ -17,7 +17,7 @@ import javax.validation.constraints.NotNull;
 		@JsonSubTypes.Type(value = GameLevelImportDTO.class, name = "GameLevelImportDTO"),
 		@JsonSubTypes.Type(value = AssessmentLevelImportDTO.class, name = "AssessmentLevelImportDTO"),
 		@JsonSubTypes.Type(value = InfoLevelImportDTO.class, name = "InfoLevelImportDTO")})
-public abstract class AbstractLevelImportDTO {
+public class AbstractLevelImportDTO {
 	@NotEmpty(message = "{abstractlevelimport.title.NotEmpty.message}")
 	protected String title;
 	@NotNull(message = "{abstractlevelimport.maxScore.NotNull.message}")
@@ -28,6 +28,7 @@ public abstract class AbstractLevelImportDTO {
 	protected LevelType levelType;
 	@NotNull(message = "{abstractlevelimport.order.NotNull.message}")
 	protected Integer order;
+	protected Integer estimatedDuration;
 
 	public AbstractLevelImportDTO() {
 	}
@@ -64,8 +65,16 @@ public abstract class AbstractLevelImportDTO {
 		this.order = order;
 	}
 
+	public Integer getEstimatedDuration() {
+		return estimatedDuration;
+	}
+
+	public void setEstimatedDuration(Integer estimatedDuration) {
+		this.estimatedDuration = estimatedDuration;
+	}
+
 	@Override public String toString() {
 		return "AbstractLevelImportDTO{" + "title='" + title + '\'' + ", maxScore=" + maxScore + ", levelType=" + levelType + ", order=" + order
-				+ '}';
+				+ ", estimatedDuration=" + estimatedDuration + '}';
 	}
 }

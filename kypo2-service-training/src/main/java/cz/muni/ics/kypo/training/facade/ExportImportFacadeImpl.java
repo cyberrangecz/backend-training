@@ -120,8 +120,6 @@ public class ExportImportFacadeImpl implements ExportImportFacade {
         TrainingDefinition newDefinition = exportImportMapper.mapToEntity(importTrainingDefinitionDTO);
         TrainingDefinition newTrainingDefinition = trainingDefinitionService.create(newDefinition);
         List<AbstractLevelImportDTO> levels = importTrainingDefinitionDTO.getLevels();
-        //sort levels by their order before creating in database
-        Collections.sort(levels, Comparator.comparing(AbstractLevelImportDTO::getOrder));
         levels.forEach(level -> {
             AbstractLevel newLevel;
             if (level.getLevelType().equals(LevelType.GAME_LEVEL))
@@ -129,7 +127,7 @@ public class ExportImportFacadeImpl implements ExportImportFacade {
             else if (level.getLevelType().equals(LevelType.INFO_LEVEL))
                 newLevel = infoLevelMapper.mapImportToEntity((InfoLevelImportDTO) level);
             else newLevel = assessmentLevelMapper.mapImportToEntity((AssessmentLevelImportDTO) level);
-            exportImportService.createLevel(newLevel, newDefinition.getId());
+            exportImportService.createLevel(newLevel, newTrainingDefinition);
         });
         return trainingDefinitionMapper.mapToDTOById(newTrainingDefinition);
     }
