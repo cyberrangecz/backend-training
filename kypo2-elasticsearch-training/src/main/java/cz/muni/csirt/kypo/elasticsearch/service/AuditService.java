@@ -47,7 +47,7 @@ public class AuditService {
 
             logger.info(objectMapper.writeValueAsString(pojoClass));
 
-            auditDAO.saveTrainingRunEvent(pojoClass, trainingDefinitionID, trainingInstanceId);
+            //auditDAO.saveTrainingRunEvent(pojoClass, trainingDefinitionID, trainingInstanceId);
         } catch (IOException | ElasticsearchTrainingDataLayerException ex) {
             throw new ElasticsearchTrainingServiceLayerException(ex);
         }
