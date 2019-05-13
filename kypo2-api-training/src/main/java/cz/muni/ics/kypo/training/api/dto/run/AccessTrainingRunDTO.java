@@ -15,6 +15,7 @@ public class AccessTrainingRunDTO {
     private Long sandboxInstanceId;
     private AbstractLevelDTO abstractLevelDTO;
     private List<BasicLevelInfoDTO> infoAboutLevels;
+    private Long instanceId;
 
     @ApiModelProperty(value = "Main identifier of training run.", example = "1")
     public Long getTrainingRunID() {
@@ -61,14 +62,18 @@ public class AccessTrainingRunDTO {
         this.infoAboutLevels = infoAboutLevels;
     }
 
-    @Override
-    public String toString() {
-        return "AccessTrainingRunDTO{" +
-                "trainingRunID=" + trainingRunID +
-                ", showStepperBar=" + showStepperBar +
-                ", sandboxInstanceId=" + sandboxInstanceId +
-                ", abstractLevelDTO=" + abstractLevelDTO +
-                ", infoAboutLevels=" + infoAboutLevels +
-                '}';
+    @ApiModelProperty(value = "Id of associated training instance", example = "1")
+    public Long getInstanceId() {
+        return instanceId;
+    }
+
+    public void setInstanceId(Long instanceId) {
+        this.instanceId = instanceId;
+    }
+
+    @Override public String toString() {
+        return "AccessTrainingRunDTO{" + "trainingRunID=" + trainingRunID + ", showStepperBar=" + showStepperBar + ", sandboxInstanceId="
+            + sandboxInstanceId + ", abstractLevelDTO=" + abstractLevelDTO + ", infoAboutLevels=" + infoAboutLevels + ", instanceId="
+            + instanceId + '}';
     }
 }

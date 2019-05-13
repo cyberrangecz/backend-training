@@ -23,6 +23,7 @@ public class AccessedTrainingRunDTO {
     private int currentLevelOrder;
     private int numberOfLevels;
     private Actions possibleAction;
+    private Long instanceId;
 
     @ApiModelProperty(value = "Main identifier of training run.", example = "1")
     public Long getId() {
@@ -87,25 +88,20 @@ public class AccessedTrainingRunDTO {
         this.possibleAction = possibleAction;
     }
 
-    @Override
-    public String toString() {
-        StringBuilder builder = new StringBuilder();
-        builder.append("AccessedTrainingRunDTO [id=");
-        builder.append(id);
-        builder.append(", title=");
-        builder.append(title);
-        builder.append(", trainingInstanceStartDate=");
-        builder.append(trainingInstanceStartDate);
-        builder.append(", trainingInstanceEndDate=");
-        builder.append(trainingInstanceEndDate);
-        builder.append(", currentLevelOrder=");
-        builder.append(currentLevelOrder);
-        builder.append(", numberOfLevels=");
-        builder.append(numberOfLevels);
-        builder.append(", possibleAction=");
-        builder.append(possibleAction);
-        builder.append("]");
-        return builder.toString();
+    @ApiModelProperty(value = "Id of associated training instance", example = "1")
+    public Long getInstanceId() {
+        return instanceId;
     }
 
+    public void setInstanceId(Long instanceId) {
+        this.instanceId = instanceId;
+    }
+
+    @Override
+    public String toString() {
+        return "AccessedTrainingRunDTO{" + "id=" + id + ", title='" + title + '\'' + ", trainingInstanceStartDate="
+            + trainingInstanceStartDate + ", trainingInstanceEndDate=" + trainingInstanceEndDate + ", currentLevelOrder="
+            + currentLevelOrder + ", numberOfLevels=" + numberOfLevels + ", possibleAction=" + possibleAction + ", instanceId=" + instanceId
+            + '}';
+    }
 }
