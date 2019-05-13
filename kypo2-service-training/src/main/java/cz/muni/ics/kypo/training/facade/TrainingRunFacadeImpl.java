@@ -104,6 +104,7 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
             accessTrainingRunDTO.setShowStepperBar(trainingRun.getTrainingInstance().getTrainingDefinition().isShowStepperBar());
             accessTrainingRunDTO.setInfoAboutLevels(getInfoAboutLevels(trainingRun.getTrainingInstance().getTrainingDefinition().getId()));
             accessTrainingRunDTO.setSandboxInstanceId(trainingRun.getSandboxInstanceRef().getSandboxInstanceRef());
+            accessTrainingRunDTO.setInstanceId(trainingRun.getTrainingInstance().getId());
             return accessTrainingRunDTO;
         } catch (ServiceLayerException ex) {
             throw new FacadeLayerException(ex);
@@ -122,6 +123,7 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
             accessTrainingRunDTO.setAbstractLevelDTO(getCorrectAbstractLevelDTO(trainingRun.getCurrentLevel()));
             accessTrainingRunDTO.setInfoAboutLevels(getInfoAboutLevels(trainingRun.getCurrentLevel().getTrainingDefinition().getId()));
             accessTrainingRunDTO.setSandboxInstanceId(trainingRun.getSandboxInstanceRef().getSandboxInstanceRef());
+            accessTrainingRunDTO.setInstanceId(trainingRun.getTrainingInstance().getId());
             return accessTrainingRunDTO;
         } catch (ServiceLayerException ex) {
             throw new FacadeLayerException(ex);
@@ -239,6 +241,7 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
             accessedTrainingRunDTO.setTrainingInstanceStartDate(trainingRun.getTrainingInstance().getStartTime());
             accessedTrainingRunDTO.setTrainingInstanceEndDate(trainingRun.getTrainingInstance().getEndTime());
             accessedTrainingRunDTO.setCurrentLevelOrder(trainingRun.getCurrentLevel().getOrder());
+            accessedTrainingRunDTO.setInstanceId(trainingRun.getTrainingInstance().getId());
             //number of levels equals maxOrder of definition
             accessedTrainingRunDTO.setNumberOfLevels(trainingRunService.getMaxLevelOrder(trainingRun.getTrainingInstance().getTrainingDefinition().getId()));
             if (accessedTrainingRunDTO.getCurrentLevelOrder() == accessedTrainingRunDTO.getNumberOfLevels() || LocalDateTime.now().isAfter(accessedTrainingRunDTO.getTrainingInstanceEndDate())) {
