@@ -169,7 +169,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
         LOG.debug("accessTrainingRun({})", accessToken);
         Assert.hasLength(accessToken, "AccessToken cannot be null or empty.");
         Optional<TrainingRun> alreadyAccessedTrainingRun = trainingRunRepository.findByUserAndAccessToken(accessToken, securityService.getSubOfLoggedInUser());
-        if (alreadyAccessedTrainingRun.isPresent() && !alreadyAccessedTrainingRun.get().getState().equals(TRState.ARCHIVED)) {
+        if (alreadyAccessedTrainingRun.isPresent() && !alreadyAccessedTrainingRun.get().getState().equals(TRState.FINISHED)) {
             resumeTrainingRun(alreadyAccessedTrainingRun.get().getId());
             return alreadyAccessedTrainingRun.get();
         }
@@ -208,8 +208,8 @@ public class TrainingRunServiceImpl implements TrainingRunService {
         LOG.debug("resumeTrainingRun({})", trainingRunId);
         Assert.notNull(trainingRunId, MUST_NOT_BE_NULL);
         TrainingRun trainingRun = findByIdWithLevel(trainingRunId);
-        if (trainingRun.getState().equals(TRState.ARCHIVED)) {
-            throw new ServiceLayerException("Cannot resume archived training run.", ErrorCode.RESOURCE_CONFLICT);
+        if (trainingRun.getState().equals(TRState.FINISHED)) {
+            throw new ServiceLayerException("Cannot resume finished training run.", ErrorCode.RESOURCE_CONFLICT);
         }
         if (trainingRun.getTrainingInstance().getEndTime().isBefore(LocalDateTime.now(Clock.systemUTC()))) {
             throw new ServiceLayerException("Cannot resume training run after end of training instance.", ErrorCode.RESOURCE_CONFLICT);
@@ -373,16 +373,16 @@ public class TrainingRunServiceImpl implements TrainingRunService {
     @Override
     @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
             "or @securityService.isTraineeOfGivenTrainingRun(#trainingRunId)")
-    public void archiveTrainingRun(Long trainingRunId) {
-        LOG.debug("archiveTrainingRun({})", trainingRunId);
+    public void finishTrainingRun(Long trainingRunId) {
+        LOG.debug("finishTrainingRun({})", trainingRunId);
         Assert.notNull(trainingRunId, MUST_NOT_BE_NULL);
         TrainingRun trainingRun = findById(trainingRunId);
         int maxOrder = abstractLevelRepository.getCurrentMaxOrder(trainingRun.getCurrentLevel().getTrainingDefinition().getId());
         if (trainingRun.getCurrentLevel().getOrder() != maxOrder|| !trainingRun.isLevelAnswered()) {
-            throw new ServiceLayerException("Cannot archive training run because current level is not last or is not answered.", ErrorCode.RESOURCE_CONFLICT);
+            throw new ServiceLayerException("Cannot finish training run because current level is not last or is not answered.", ErrorCode.RESOURCE_CONFLICT);
         }
 
-        trainingRun.setState(TRState.ARCHIVED);
+        trainingRun.setState(TRState.FINISHED);
         trainingRun.setEndTime(LocalDateTime.now(Clock.systemUTC()));
         if(trainingRun.getCurrentLevel() instanceof InfoLevel) {
             auditEventsService.auditLevelCompletedAction(trainingRun);

@@ -137,17 +137,17 @@ public interface TrainingRunService {
     TrainingRun resumeTrainingRun(Long trainingRunId);
 
     /**
-     * Archive training run.
+     * Finish training run.
      *
-     * @param trainingRunId id of training run to be archived.
+     * @param trainingRunId id of training run to be finished.
      * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND cannot find training run.
      */
-    void archiveTrainingRun(Long trainingRunId);
+    void finishTrainingRun(Long trainingRunId);
 
     /**
      * Evaluate and store responses to assessment.
      *
-     * @param trainingRunId     id of training run to be archived.
+     * @param trainingRunId     id of training run to be finished.
      * @param responsesAsString response to assessment to be evaluated
      * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND cannot find training run.
      */

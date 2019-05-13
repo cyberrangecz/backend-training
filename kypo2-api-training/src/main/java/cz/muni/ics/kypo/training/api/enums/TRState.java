@@ -7,5 +7,5 @@ package cz.muni.ics.kypo.training.api.enums;
  */
 public enum TRState {
 
-    ALLOCATED, READY, ARCHIVED;
+    ALLOCATED, READY, FINISHED;
 }

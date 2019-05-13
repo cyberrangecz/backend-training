@@ -93,7 +93,7 @@ public class TrainingRunsRestControllerTest {
     public void init() {
         trainingRun1 = new TrainingRun();
         trainingRun1.setId(1L);
-        trainingRun1.setState(TRState.ARCHIVED);
+        trainingRun1.setState(TRState.FINISHED);
 
         trainingRun2 = new TrainingRun();
         trainingRun2.setId(2L);
@@ -101,7 +101,7 @@ public class TrainingRunsRestControllerTest {
 
         trainingRun1DTO = new TrainingRunDTO();
         trainingRun1DTO.setId(1L);
-        trainingRun1DTO.setState(cz.muni.ics.kypo.training.api.enums.TRState.ARCHIVED);
+        trainingRun1DTO.setState(cz.muni.ics.kypo.training.api.enums.TRState.FINISHED);
 
         trainingRun2DTO = new TrainingRunDTO();
         trainingRun2DTO.setId(2L);
@@ -368,13 +368,13 @@ public class TrainingRunsRestControllerTest {
     public void finishTrainingRun() throws Exception {
         mockMvc.perform(put("/training-runs/{runId}", trainingRun1.getId()))
                 .andExpect(status().isOk());
-        then(trainingRunFacade).should().archiveTrainingRun(trainingRun1.getId());
+        then(trainingRunFacade).should().finishTrainingRun(trainingRun1.getId());
     }
 
     @Test
     public void finishTrainingRunCannotFinish() throws Exception {
         willThrow(new FacadeLayerException(new ServiceLayerException("Cannot finish given training run.",
-                ErrorCode.RESOURCE_CONFLICT))).given(trainingRunFacade).archiveTrainingRun(trainingRun1.getId());
+                ErrorCode.RESOURCE_CONFLICT))).given(trainingRunFacade).finishTrainingRun(trainingRun1.getId());
         Exception ex = mockMvc.perform(put("/training-runs/{runId}", trainingRun1.getId()))
                 .andExpect(status().isConflict())
                 .andReturn().getResolvedException();
@@ -385,7 +385,7 @@ public class TrainingRunsRestControllerTest {
     @Test
     public void finishTrainingRunNotFound() throws Exception {
         willThrow(new FacadeLayerException(new ServiceLayerException("Training run not found.",
-                ErrorCode.RESOURCE_NOT_FOUND))).given(trainingRunFacade).archiveTrainingRun(trainingRun1.getId());
+                ErrorCode.RESOURCE_NOT_FOUND))).given(trainingRunFacade).finishTrainingRun(trainingRun1.getId());
         Exception ex = mockMvc.perform(put("/training-runs/{runId}", trainingRun1.getId()))
                 .andExpect(status().isNotFound())
                 .andReturn().getResolvedException();
