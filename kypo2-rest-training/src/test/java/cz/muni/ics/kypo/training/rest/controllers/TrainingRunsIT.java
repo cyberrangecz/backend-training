@@ -244,7 +244,7 @@ public class TrainingRunsIT {
 		trainingRun2 = new TrainingRun();
 		trainingRun2.setStartTime(LocalDateTime.now().plusHours(2));
 		trainingRun2.setEndTime(LocalDateTime.now().plusHours(4));
-		trainingRun2.setState(TRState.ARCHIVED);
+		trainingRun2.setState(TRState.FINISHED);
 		trainingRun2.setIncorrectFlagCount(10);
 		trainingRun2.setSolutionTaken(true);
 		trainingRun2.setCurrentLevel(gameLevel);
@@ -399,7 +399,7 @@ public class TrainingRunsIT {
 	}
 
 	@Test
-	public void resumeTrainingRunCannotBeArchived() throws Exception {
+	public void resumeTrainingRunCannotBeFinished() throws Exception {
 		TrainingRun tR2 = trainingRunRepository.save(trainingRun2);
 
 		Exception ex = mvc.perform(get("/training-runs/{runId}/resumption", tR2.getId()))
@@ -407,7 +407,7 @@ public class TrainingRunsIT {
 				.andReturn().getResolvedException();
 
 		assertEquals(ConflictException.class, ex.getClass());
-		assertEquals("ServiceLayerException : Cannot resume archived training run.", ex.getLocalizedMessage());
+		assertEquals("ServiceLayerException : Cannot resume finished training run.", ex.getLocalizedMessage());
 	}
 
 	@Test

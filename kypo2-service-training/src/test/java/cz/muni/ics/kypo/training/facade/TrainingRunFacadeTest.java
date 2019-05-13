@@ -95,7 +95,7 @@ public class TrainingRunFacadeTest {
 
         trainingRun2 = new TrainingRun();
         trainingRun2.setId(2L);
-        trainingRun2.setState(TRState.ARCHIVED);
+        trainingRun2.setState(TRState.FINISHED);
 
         trainingDefinition = new TrainingDefinition();
         trainingDefinition.setId(1L);
@@ -243,16 +243,16 @@ public class TrainingRunFacadeTest {
     }
 
     @Test
-    public void archiveTrainingRun() {
-        trainingRunFacade.archiveTrainingRun(trainingRun1.getId());
-        then(trainingRunService).should().archiveTrainingRun(trainingRun1.getId());
+    public void finishTrainingRun() {
+        trainingRunFacade.finishTrainingRun(trainingRun1.getId());
+        then(trainingRunService).should().finishTrainingRun(trainingRun1.getId());
     }
 
     @Test
-    public void archiveTrainingRunWithServiceException() {
-        willThrow(ServiceLayerException.class).given(trainingRunService).archiveTrainingRun(trainingRun1.getId());
+    public void finishTrainingRunWithServiceException() {
+        willThrow(ServiceLayerException.class).given(trainingRunService).finishTrainingRun(trainingRun1.getId());
         thrown.expect(FacadeLayerException.class);
-        trainingRunFacade.archiveTrainingRun(trainingRun1.getId());
+        trainingRunFacade.finishTrainingRun(trainingRun1.getId());
     }
 
     private void deepEquals(TrainingRun expected, TrainingRunDTO actual) {

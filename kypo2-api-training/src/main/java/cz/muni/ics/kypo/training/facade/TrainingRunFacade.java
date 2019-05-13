@@ -110,17 +110,17 @@ public interface TrainingRunFacade {
     AccessTrainingRunDTO resumeTrainingRun(Long trainingRunId);
 
     /**
-     * Archive training run.
+     * Finish training run.
      *
-     * @param trainingRunId id of Training Run to be archived.
+     * @param trainingRunId id of Training Run to be finished.
      * @throws FacadeLayerException if something wrong happened in service.
      */
-    void archiveTrainingRun(Long trainingRunId);
+    void finishTrainingRun(Long trainingRunId);
 
     /**
      * Evaluate and store responses to assessment.
      *
-     * @param trainingRunId id of Training Run to be archived.
+     * @param trainingRunId id of Training Run to be finish.
      * @param responsesAsString responses to assessment
      * @throws FacadeLayerException if something wrong happened in service.
      */

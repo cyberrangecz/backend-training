@@ -212,10 +212,10 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
 
     @Override
     @TransactionalWO
-    public void archiveTrainingRun(Long trainingRunId) {
-        LOG.debug("archiveTrainingRun({})", trainingRunId);
+    public void finishTrainingRun(Long trainingRunId) {
+        LOG.debug("finishTrainingRun({})", trainingRunId);
         try {
-            trainingRunService.archiveTrainingRun(trainingRunId);
+            trainingRunService.finishTrainingRun(trainingRunId);
         } catch (ServiceLayerException ex) {
             throw new FacadeLayerException(ex);
         }

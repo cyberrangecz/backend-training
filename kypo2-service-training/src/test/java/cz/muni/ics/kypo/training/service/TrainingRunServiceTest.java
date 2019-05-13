@@ -541,39 +541,39 @@ public class TrainingRunServiceTest {
     }
 
     @Test
-    public void testArchiveTrainingRun() {
+    public void testFinishTrainingRun() {
         mockSpringSecurityContextForGet();
         given(trainingRunRepository.findById(any(Long.class))).willReturn(Optional.of(trainingRun2));
         given(abstractLevelRepository.getCurrentMaxOrder(anyLong())).willReturn(infoLevel2.getOrder());
-        trainingRunService.archiveTrainingRun(trainingRun2.getId());
-        assertEquals(trainingRun2.getState(), TRState.ARCHIVED);
+        trainingRunService.finishTrainingRun(trainingRun2.getId());
+        assertEquals(trainingRun2.getState(), TRState.FINISHED);
     }
 
     @Test
-    public void testArchiveTrainingRunWithNullTrainingRunId() {
+    public void testFinishTrainingRunWithNullTrainingRunId() {
         thrown.expect(IllegalArgumentException.class);
         thrown.expectMessage("Input training run id must not be null.");
-        trainingRunService.archiveTrainingRun(null);
+        trainingRunService.finishTrainingRun(null);
     }
 
     @Test
-    public void testArchiveTrainingRunWithNonLastLevel() {
+    public void testFinishTrainingRunWithNonLastLevel() {
         trainingRun1.setLevelAnswered(true);
         given(trainingRunRepository.findById(any(Long.class))).willReturn(Optional.of(trainingRun1));
         given(abstractLevelRepository.getCurrentMaxOrder(anyLong())).willReturn(infoLevel.getOrder());
         thrown.expect(ServiceLayerException.class);
-        thrown.expectMessage("Cannot archive training run because current level is not last or is not answered.");
+        thrown.expectMessage("Cannot finish training run because current level is not last or is not answered.");
 
-        trainingRunService.archiveTrainingRun(trainingRun1.getId());
+        trainingRunService.finishTrainingRun(trainingRun1.getId());
     }
 
     @Test
-    public void testArchiveTrainingRunWithNotAnsweredLevel() {
+    public void testFinishTrainingRunWithNotAnsweredLevel() {
         given(trainingRunRepository.findById(any(Long.class))).willReturn(Optional.of(trainingRun1));
         thrown.expect(ServiceLayerException.class);
-        thrown.expectMessage("Cannot archive training run because current level is not last or is not answered.");
+        thrown.expectMessage("Cannot finish training run because current level is not last or is not answered.");
 
-        trainingRunService.archiveTrainingRun(trainingRun1.getId());
+        trainingRunService.finishTrainingRun(trainingRun1.getId());
     }
 
     @Test
@@ -588,11 +588,11 @@ public class TrainingRunServiceTest {
     }
 
     @Test
-    public void resumeArchivedTrainingRun() {
-        trainingRun1.setState(TRState.ARCHIVED);
+    public void resumeFinishedTrainingRun() {
+        trainingRun1.setState(TRState.FINISHED);
         given(trainingRunRepository.findByIdWithLevel(any(Long.class))).willReturn(Optional.of(trainingRun1));
         thrown.expect(ServiceLayerException.class);
-        thrown.expectMessage("Cannot resume archived training run.");
+        thrown.expectMessage("Cannot resume finished training run.");
 
         trainingRunService.resumeTrainingRun(trainingRun1.getId());
     }
