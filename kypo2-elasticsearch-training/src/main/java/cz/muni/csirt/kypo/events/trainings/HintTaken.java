@@ -45,8 +45,8 @@ public class HintTaken extends AbstractAuditPOJO {
     @ApiModelProperty(value = "Training run level.", required = true)
     @JsonProperty(value = "level", required = true)
     private long level;
-    @ApiModelProperty(value = "hint_id", required = true)
-    @JsonProperty(value = "level", required = true)
+    @ApiModelProperty(value = "Id of hint that is being taken", required = true)
+    @JsonProperty(value = "hint_id", required = true)
     private long hintId;
     @ApiModelProperty(value = "Hint penalty points.", required = true)
     @JsonProperty(value = "hint_penalty_points", required = true)
