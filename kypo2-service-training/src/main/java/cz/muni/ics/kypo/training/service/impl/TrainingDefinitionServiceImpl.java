@@ -392,7 +392,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
         newAssessmentLevel.setMaxScore(0);
         newAssessmentLevel.setAssessmentType(AssessmentType.QUESTIONNAIRE);
         newAssessmentLevel.setInstructions("Instructions should be here");
-        newAssessmentLevel.setQuestions("[]");
+        newAssessmentLevel.setQuestions("[{\"answer_required\":false,\"order\":0,\"penalty\":0,\"points\":0,\"text\":\"Example Question\",\"question_type\":\"FFQ\",\"correct_choices\":[]}]");
         newAssessmentLevel.setEstimatedDuration(1);
         newAssessmentLevel.setOrder(getNextOrder(definitionId));
         newAssessmentLevel.setTrainingDefinition(trainingDefinition);

@@ -818,7 +818,7 @@ public class TrainingDefinitionsIT {
 		assertEquals(aL.getTitle(), "Title of assessment level");
 		assertEquals(aL.getAssessmentType().toString(), AssessmentType.QUESTIONNAIRE.toString());
 		assertEquals(aL.getInstructions(), "Instructions should be here");
-		assertEquals(aL.getQuestions(), "[]");
+		assertEquals(aL.getQuestions(), "[{\"answer_required\":false,\"order\":0,\"penalty\":0,\"points\":0,\"text\":\"Example Question\",\"question_type\":\"FFQ\",\"correct_choices\":[]}]");
 	}
 
 	@Test
