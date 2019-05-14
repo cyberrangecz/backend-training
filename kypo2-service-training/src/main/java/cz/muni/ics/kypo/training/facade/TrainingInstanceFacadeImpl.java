@@ -145,8 +145,6 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
     }
 
     @Override
-    @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
-            "or @securityService.isOrganizerOfGivenTrainingInstance(#instanceId)")
     @TransactionalWO
     public void allocateSandboxes(Long instanceId) {
         LOG.debug("allocateSandboxes({})", instanceId);
@@ -163,16 +161,17 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
     }
 
     @Override
-    @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
-            "or @securityService.isOrganizerOfGivenTrainingInstance(#instanceId)")
     @TransactionalWO
     public void deleteSandboxes(Long instanceId, Set<Long> sandboxIds) {
         LOG.debug("deleteFailedSandboxes({}, {})", instanceId, sandboxIds);
         try {
             TrainingInstance trainingInstance = trainingInstanceService.findById(instanceId);
             for (Long sandboxId : sandboxIds) {
-                SandboxInstanceRef sandboxRefToDelete = trainingInstance.getSandboxInstanceRefs().stream().filter(sIR ->
-                        sIR.getSandboxInstanceRef().equals(sandboxId)).findFirst().orElseThrow(() -> new ServiceLayerException("Given sandbox with id:" + sandboxId
+                SandboxInstanceRef sandboxRefToDelete = trainingInstance.getSandboxInstanceRefs()
+                        .stream()
+                        .filter(sIR -> sIR.getSandboxInstanceRef().equals(sandboxId))
+                        .findFirst()
+                        .orElseThrow(() -> new ServiceLayerException("Given sandbox with id:" + sandboxId
                         + " is not in DB or is not assigned to given training instance.", ErrorCode.RESOURCE_NOT_FOUND));
                 trainingInstanceService.deleteSandbox(trainingInstance, sandboxRefToDelete);
             }

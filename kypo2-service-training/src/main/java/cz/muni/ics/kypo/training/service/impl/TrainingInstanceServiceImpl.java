@@ -3,6 +3,7 @@ package cz.muni.ics.kypo.training.service.impl;
 import com.mysema.commons.lang.Assert;
 import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.training.annotations.security.IsOrganizerOrAdmin;
+import cz.muni.ics.kypo.training.annotations.transactions.TransactionalWO;
 import cz.muni.ics.kypo.training.exceptions.ErrorCode;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.persistence.model.*;
@@ -202,6 +203,9 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
     }
 
     @Override
+    @TransactionalWO
+    @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
+            "or @securityService.isOrganizerOfGivenTrainingInstance(#trainingInstance.id)")
     @Async
     public void allocateSandboxes(TrainingInstance trainingInstance, Integer count) {
         LOG.debug("allocateSandboxes({}, {})", trainingInstance.getId(), count);
@@ -243,6 +247,9 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
     }
 
     @Override
+    @TransactionalWO
+    @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
+            "or @securityService.isOrganizerOfGivenTrainingInstance(#trainingInstance.id)")
     @Async
     public void deleteSandbox(TrainingInstance trainingInstance, SandboxInstanceRef sandboxRefToDelete) {
         trainingRunRepository.deleteSandboxInstanceFromTrainingRun(sandboxRefToDelete);
