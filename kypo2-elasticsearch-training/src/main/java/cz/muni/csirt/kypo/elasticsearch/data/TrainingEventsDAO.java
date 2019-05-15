@@ -70,6 +70,40 @@ public class TrainingEventsDAO extends AbstractElasticClientDAO {
         return events;
     }
 
+    public List<Map<String, Object>> findAllEventsFromTrainingRun(Long trainingDefinitionId, Long trainingInstanceId, Long trainingRunId) throws IOException {
+        List<Map<String, Object>> events = new ArrayList<>();
+
+        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+        // returns all documents under specific index with specific training run id
+        searchSourceBuilder.query(QueryBuilders.termQuery("training_run_id", trainingRunId));
+        // events are sorted based on timestamp attribute
+        searchSourceBuilder.sort("timestamp", SortOrder.ASC);
+        searchSourceBuilder.size(INDEX_DOCUMENTS_MAX_RETURN_NUMBER);
+        searchSourceBuilder.timeout(new TimeValue(5, TimeUnit.MINUTES));
+
+        SearchRequest searchRequest = new SearchRequest("kypo3.cz.muni.csirt.kypo.events.trainings.*" + "_evt" + ".definition=" + trainingDefinitionId + ".instance=" + trainingInstanceId);
+        searchRequest.source(searchSourceBuilder);
+
+        SearchResponse response = getClient().search(searchRequest, RequestOptions.DEFAULT);
+        if (response != null) {
+            SearchHits responseHits = response.getHits();
+            if (responseHits != null) {
+                SearchHit[] results = responseHits.getHits();
+                for (SearchHit hit : results) {
+                    Map<String, Object> source = hit.getSourceAsMap();
+                    events.add(source);
+                }
+                if (events.size() == 0) {
+                    throw new ElasticsearchCorruptionException("There are no events in this game.");
+                }
+            }
+        } else {
+            throw new ElasticsearchCorruptionException("Client could not connect to Elastic.");
+        }
+        return events;
+    }
+
+
     /**
      * <p>
      * This method uses reflection to convert Map<String,Object> representing particular  events to AbstractAuditPojo.

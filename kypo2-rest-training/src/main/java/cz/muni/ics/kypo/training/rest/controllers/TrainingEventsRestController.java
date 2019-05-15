@@ -55,7 +55,34 @@ public class TrainingEventsRestController {
         try {
             return ResponseEntity.ok(trainingEventsService.findAllEventsByTrainingDefinitionAndTrainingInstanceId(trainingDefinitionId, trainingInstanceId));
         } catch (IOException ex) {
-            throw new ElasticsearchTrainingDataLayerException("It is not possible to retrieve events from particular game.", ex);
+            throw new ElasticsearchTrainingDataLayerException("It is not possible to retrieve Elasticsearch documents from this event.", ex);
+        }
+    }
+
+    /**
+     * Get all events in particular training run.
+     *
+     * @return all events in selected training run.
+     */
+    @ApiOperation(httpMethod = "GET",
+            value = "Get all events in particular training run.",
+            nickname = "getAllEventsFromTrainingRun",
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "All events in particular training run by id was found.", responseContainer = "List"),
+            @ApiResponse(code = 500, message = "Unexpected condition was encountered.")
+    })
+    @GetMapping(path = "/training-definitions/{trainingDefinitionId}/training-instances/{trainingInstanceId}/training-runs/{trainingRunId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Object> getAllEventsFromTrainingRun(
+            @ApiParam(value = "Training definition ID", required = true) @PathVariable(value = "trainingDefinitionId") Long trainingDefinitionId,
+            @ApiParam(value = "Training instance ID", required = true) @PathVariable(value = "trainingInstanceId") Long trainingInstanceId,
+            @ApiParam(value = "Training run ID", required = true) @PathVariable(value = "trainingRunId") Long trainingRunId) {
+        LOG.debug("getAllEventsFromTrainingRun({},{},{})", trainingDefinitionId, trainingInstanceId, trainingRunId);
+        try {
+            return ResponseEntity.ok(trainingEventsService.findAllEventsFromTrainingRun(trainingDefinitionId, trainingInstanceId, trainingRunId));
+        } catch (IOException ex) {
+            throw new ElasticsearchTrainingDataLayerException("It is not possible to retrieve Elasticsearch documents from this game.", ex);
         }
     }
 

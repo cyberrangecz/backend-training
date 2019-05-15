@@ -27,9 +27,13 @@ public class TrainingEventsService {
         List<Map<String, Object>> eventsFromElasticsearch = trainingEventsDAO.findAllEventsByTrainingDefinitionAndTrainingInstanceId(trainingDefinitionId, trainingInstanceId);
         //sort all events by  to be able to reduce the number of
         Collections.sort(eventsFromElasticsearch, (map1, map2) -> Long.valueOf(map1.get("timestamp").toString()).compareTo(Long.valueOf(map2.get("timestamp").toString())));
+        return eventsFromElasticsearch;
+    }
 
-
-
+    public List<Map<String, Object>> findAllEventsFromTrainingRun(Long trainingDefinitionId, Long trainingInstanceId, Long trainingRunId) throws IOException {
+        List<Map<String, Object>> eventsFromElasticsearch = trainingEventsDAO.findAllEventsFromTrainingRun(trainingDefinitionId, trainingInstanceId, trainingRunId);
+        //sort all events by  to be able to reduce the number of
+        Collections.sort(eventsFromElasticsearch, (map1, map2) -> Long.valueOf(map1.get("timestamp").toString()).compareTo(Long.valueOf(map2.get("timestamp").toString())));
         return eventsFromElasticsearch;
     }
 
