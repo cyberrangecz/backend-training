@@ -12,6 +12,7 @@ import cz.muni.ics.kypo.training.api.dto.hint.HintDTO;
 import cz.muni.ics.kypo.training.api.dto.infolevel.InfoLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.run.AccessTrainingRunDTO;
 import cz.muni.ics.kypo.training.api.dto.run.AccessedTrainingRunDTO;
+import cz.muni.ics.kypo.training.api.dto.run.TrainingRunByIdDTO;
 import cz.muni.ics.kypo.training.api.dto.run.TrainingRunDTO;
 import cz.muni.ics.kypo.training.exceptions.FacadeLayerException;
 import cz.muni.ics.kypo.training.exceptions.ErrorCode;
@@ -87,6 +88,7 @@ public class TrainingRunsRestControllerTest {
     private HintDTO hintDTO;
     private AccessedTrainingRunDTO accessedTrainingRunDTO;
     private IsCorrectFlagDTO isCorrectFlagDTO;
+    private TrainingRunByIdDTO trainingRunByIdDTO;
 
 
     @Before
@@ -94,6 +96,10 @@ public class TrainingRunsRestControllerTest {
         trainingRun1 = new TrainingRun();
         trainingRun1.setId(1L);
         trainingRun1.setState(TRState.FINISHED);
+
+        trainingRunByIdDTO = new TrainingRunByIdDTO();
+        trainingRunByIdDTO.setId(1L);
+        trainingRunByIdDTO.setState(cz.muni.ics.kypo.training.api.enums.TRState.FINISHED);
 
         trainingRun2 = new TrainingRun();
         trainingRun2.setId(2L);
@@ -167,7 +173,7 @@ public class TrainingRunsRestControllerTest {
 
     @Test
     public void findTrainingRunById() throws Exception {
-        given(trainingRunFacade.findById(any(Long.class))).willReturn(trainingRun1DTO);
+        given(trainingRunFacade.findById(any(Long.class))).willReturn(trainingRunByIdDTO);
         String valueTr = convertObjectToJsonBytes(trainingRun1DTO);
         given(objectMapper.writeValueAsString(any(Object.class))).willReturn(valueTr);
         MockHttpServletResponse result = mockMvc.perform(get("/training-runs" + "/{runId}", 1l))

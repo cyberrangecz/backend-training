@@ -2,6 +2,7 @@ package cz.muni.ics.kypo.training.mapping.mapstruct;
 
 import cz.muni.ics.kypo.training.api.PageResultResource;
 import cz.muni.ics.kypo.training.api.dto.run.AccessedTrainingRunDTO;
+import cz.muni.ics.kypo.training.api.dto.run.TrainingRunByIdDTO;
 import cz.muni.ics.kypo.training.api.dto.run.TrainingRunDTO;
 import cz.muni.ics.kypo.training.persistence.model.TrainingRun;
 import org.mapstruct.Mapper;
@@ -18,6 +19,8 @@ public interface TrainingRunMapper extends ParentMapper {
     TrainingRun mapToEntity(TrainingRunDTO dto);
 
     TrainingRunDTO mapToDTO(TrainingRun entity);
+
+    TrainingRunByIdDTO mapToFindByIdDTO(TrainingRun entity);
 
     List<TrainingRun> mapToList(Collection<TrainingRunDTO> dtos);
 

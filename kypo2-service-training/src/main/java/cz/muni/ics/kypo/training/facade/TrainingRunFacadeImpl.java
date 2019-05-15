@@ -14,6 +14,7 @@ import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.hint.HintDTO;
 import cz.muni.ics.kypo.training.api.dto.run.AccessTrainingRunDTO;
 import cz.muni.ics.kypo.training.api.dto.run.AccessedTrainingRunDTO;
+import cz.muni.ics.kypo.training.api.dto.run.TrainingRunByIdDTO;
 import cz.muni.ics.kypo.training.api.dto.run.TrainingRunDTO;
 import cz.muni.ics.kypo.training.api.enums.Actions;
 import cz.muni.ics.kypo.training.api.enums.LevelType;
@@ -66,11 +67,14 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
 
     @Override
     @TransactionalRO
-    public TrainingRunDTO findById(Long id) {
+    public TrainingRunByIdDTO findById(Long id) {
         LOG.debug("findById({})", id);
         try {
             TrainingRun trainingRun = trainingRunService.findById(id);
-            return trainingRunMapper.mapToDTO(trainingRun);
+            TrainingRunByIdDTO trainingRunByIdDTO = trainingRunMapper.mapToFindByIdDTO(trainingRun);
+            trainingRunByIdDTO.setDefinitionId(trainingRun.getTrainingInstance().getTrainingDefinition().getId());
+            trainingRunByIdDTO.setInstanceId(trainingRun.getTrainingInstance().getId());
+            return trainingRunByIdDTO;
         } catch (ServiceLayerException ex) {
             throw new FacadeLayerException(ex);
         }

@@ -7,6 +7,7 @@ import cz.muni.ics.kypo.training.api.dto.IsCorrectFlagDTO;
 import cz.muni.ics.kypo.training.api.dto.hint.HintDTO;
 import cz.muni.ics.kypo.training.api.dto.run.AccessTrainingRunDTO;
 import cz.muni.ics.kypo.training.api.dto.run.AccessedTrainingRunDTO;
+import cz.muni.ics.kypo.training.api.dto.run.TrainingRunByIdDTO;
 import cz.muni.ics.kypo.training.api.dto.run.TrainingRunDTO;
 import cz.muni.ics.kypo.training.exceptions.FacadeLayerException;
 import org.springframework.data.domain.Pageable;
@@ -22,7 +23,7 @@ public interface TrainingRunFacade {
      * @param id of a Training Run that would be returned
      * @return specific Training Run by id
      */
-    TrainingRunDTO findById(Long id);
+    TrainingRunByIdDTO findById(Long id);
 
     /**
      * Find all Training Runs.
