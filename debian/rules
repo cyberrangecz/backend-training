@@ -19,7 +19,7 @@ override_dh_auto_build override_dh_auto_install:
 
 override_dh_install:
 	@echo "pom.xml ${PROJECT_DIR}" > debian/install
-	@echo "training-project.properties ${CONFIG_DIR}" >> debian/install
+	@echo "debian/training-project.properties ${CONFIG_DIR}" >> debian/install
 	@echo '#!/bin/sh\ncd ${PROJECT_DIR}\nmvn clean install' > debian/postinst
 	dh_install
 
