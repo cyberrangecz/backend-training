@@ -7,16 +7,22 @@ USER=kypo
 PROJECT_NAME=$(shell dpkg-parsechangelog --show-field source)
 PACKAGE_NAME=$(subst -,_,${PROJECT_NAME})
 PROJECT_DIR=/opt/kypo2/${PROJECT_NAME}
+CONFIG_DIR=/etc/kypo2/java-projects/properties/training
 HTTPS_PORT=8443
 CWD=$(shell pwd)
 
 %:  
-	dh $@
+	dh $@ --with systemd
 
 override_dh_auto_build override_dh_auto_install:
 
 
 override_dh_install:
 	@echo "pom.xml ${PROJECT_DIR}" > debian/install
+	@echo "training-project.properties ${CONFIG_DIR}" >> debian/install
 	@echo '#!/bin/sh\ncd ${PROJECT_DIR}\nmvn clean install' > debian/postinst
 	dh_install
+
+override_dh_installinit:
+	dh_installinit --noscripts
+
