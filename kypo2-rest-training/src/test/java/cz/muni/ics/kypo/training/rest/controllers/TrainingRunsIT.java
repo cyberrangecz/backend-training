@@ -7,6 +7,7 @@ import cz.muni.ics.kypo.training.api.dto.IsCorrectFlagDTO;
 import cz.muni.ics.kypo.training.api.dto.hint.HintDTO;
 
 import cz.muni.ics.kypo.training.api.dto.run.AccessedTrainingRunDTO;
+import cz.muni.ics.kypo.training.api.dto.run.TrainingRunByIdDTO;
 import cz.muni.ics.kypo.training.api.dto.run.TrainingRunDTO;
 
 import cz.muni.ics.kypo.training.mapping.modelmapper.BeanMapping;
@@ -273,7 +274,9 @@ public class TrainingRunsIT {
 				.andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
 				.andReturn().getResponse();
 
-		TrainingRunDTO runDTO = beanMapping.mapTo(tR, TrainingRunDTO.class);
+		TrainingRunByIdDTO runDTO = beanMapping.mapTo(tR, TrainingRunByIdDTO.class);
+		runDTO.setDefinitionId(tR.getTrainingInstance().getTrainingDefinition().getId());
+		runDTO.setInstanceId(tR.getTrainingInstance().getId());
 		assertEquals(convertObjectToJsonBytes(convertObjectToJsonBytes(runDTO)), result.getContentAsString());
 	}
 

@@ -11,6 +11,7 @@ import cz.muni.ics.kypo.training.api.dto.AbstractLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.IsCorrectFlagDTO;
 import cz.muni.ics.kypo.training.api.dto.run.AccessTrainingRunDTO;
 import cz.muni.ics.kypo.training.api.dto.run.AccessedTrainingRunDTO;
+import cz.muni.ics.kypo.training.api.dto.run.TrainingRunByIdDTO;
 import cz.muni.ics.kypo.training.api.dto.run.TrainingRunDTO;
 import cz.muni.ics.kypo.training.exceptions.FacadeLayerException;
 import cz.muni.ics.kypo.training.facade.TrainingRunFacade;
@@ -66,7 +67,7 @@ public class TrainingRunsRestController {
      */
     @ApiOperation(httpMethod = "GET",
             value = "Get training run by Id.",
-            response = TrainingRunDTO.class,
+            response = TrainingRunByIdDTO.class,
             nickname = "findTrainingRunById",
             produces = MediaType.APPLICATION_JSON_VALUE
     )
@@ -81,7 +82,7 @@ public class TrainingRunsRestController {
                                                       @RequestParam(value = "fields", required = false) String fields) {
         LOG.debug("findTrainingRunById({},{})", runId, fields);
         try {
-            TrainingRunDTO trainingRunResource = trainingRunFacade.findById(runId);
+            TrainingRunByIdDTO trainingRunResource = trainingRunFacade.findById(runId);
             Squiggly.init(objectMapper, fields);
             return new ResponseEntity<>(SquigglyUtils.stringify(objectMapper, trainingRunResource), HttpStatus.OK);
         } catch (FacadeLayerException ex) {
