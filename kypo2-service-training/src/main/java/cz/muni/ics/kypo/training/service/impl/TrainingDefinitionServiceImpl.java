@@ -334,7 +334,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
         GameLevel newGameLevel = new GameLevel();
         newGameLevel.setMaxScore(100);
         newGameLevel.setTitle("Title of game level");
-        newGameLevel.setIncorrectFlagLimit(0);
+        newGameLevel.setIncorrectFlagLimit(100);
         newGameLevel.setFlag("Secret flag");
         newGameLevel.setSolutionPenalized(true);
         newGameLevel.setSolution("Solution of the game should be here");

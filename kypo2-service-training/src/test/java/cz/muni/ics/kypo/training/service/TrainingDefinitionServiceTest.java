@@ -129,7 +129,7 @@ public class TrainingDefinitionServiceTest {
         newGameLevel.setId(10L);
         newGameLevel.setMaxScore(100);
         newGameLevel.setTitle("Title of game level");
-        newGameLevel.setIncorrectFlagLimit(0);
+        newGameLevel.setIncorrectFlagLimit(100);
         newGameLevel.setFlag("Secret flag");
         newGameLevel.setSolution("Solution of the game should be here");
         newGameLevel.setSolutionPenalized(true);

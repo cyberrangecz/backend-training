@@ -782,7 +782,7 @@ public class TrainingDefinitionsIT {
 		GameLevel gL = optGL.get();
 		assertEquals(gL.getMaxScore(), 100);
 		assertEquals(gL.getTitle(), "Title of game level");
-		assertEquals(gL.getIncorrectFlagLimit(), 0);
+		assertEquals(gL.getIncorrectFlagLimit(), 100);
 		assertEquals(gL.getFlag(), "Secret flag");
 		assertTrue(gL.isSolutionPenalized());
 		assertEquals(gL.getSolution(), "Solution of the game should be here");
