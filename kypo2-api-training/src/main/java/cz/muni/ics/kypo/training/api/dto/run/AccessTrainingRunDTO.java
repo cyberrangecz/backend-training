@@ -1,10 +1,13 @@
 package cz.muni.ics.kypo.training.api.dto.run;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import cz.muni.ics.kypo.training.api.dto.AbstractLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.BasicLevelInfoDTO;
+import cz.muni.ics.kypo.training.converters.LocalDateTimeUTCSerializer;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @ApiModel(value = "AccessTrainingRunDTO", description = ".")
@@ -16,6 +19,8 @@ public class AccessTrainingRunDTO {
     private AbstractLevelDTO abstractLevelDTO;
     private List<BasicLevelInfoDTO> infoAboutLevels;
     private Long instanceId;
+    @JsonSerialize(using = LocalDateTimeUTCSerializer.class)
+    private LocalDateTime startTime;
 
     @ApiModelProperty(value = "Main identifier of training run.", example = "1")
     public Long getTrainingRunID() {
@@ -71,9 +76,18 @@ public class AccessTrainingRunDTO {
         this.instanceId = instanceId;
     }
 
+    @ApiModelProperty(value = "Date when training run started.", example = "2016-10-19 10:23:54+02")
+    public LocalDateTime getStartTime() {
+        return startTime;
+    }
+
+    public void setStartTime(LocalDateTime startTime) {
+        this.startTime = startTime;
+    }
+
     @Override public String toString() {
         return "AccessTrainingRunDTO{" + "trainingRunID=" + trainingRunID + ", showStepperBar=" + showStepperBar + ", sandboxInstanceId="
             + sandboxInstanceId + ", abstractLevelDTO=" + abstractLevelDTO + ", infoAboutLevels=" + infoAboutLevels + ", instanceId="
-            + instanceId + '}';
+            + instanceId + ", startTime=" + startTime + '}';
     }
 }
