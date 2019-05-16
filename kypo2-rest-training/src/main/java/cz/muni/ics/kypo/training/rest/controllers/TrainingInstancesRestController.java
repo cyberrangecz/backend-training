@@ -215,9 +215,11 @@ public class TrainingInstancesRestController {
     @PostMapping(path = "/{instanceId}/sandbox-instances")
     public ResponseEntity<Void> allocateSandboxes(
             @ApiParam(value = "Id of training instance for which sandboxes are allocated", required = true)
-            @PathVariable(value = "instanceId") Long instanceId) {
+            @PathVariable(value = "instanceId") Long instanceId,
+            @ApiParam(value = "Number of sandboxes that will be created", required = false)
+            @RequestParam(value = "count", required = false) Integer count) {
         try {
-            trainingInstanceFacade.allocateSandboxes(instanceId);
+            trainingInstanceFacade.allocateSandboxes(instanceId, count);
             return new ResponseEntity<>(HttpStatus.ACCEPTED);
         } catch (FacadeLayerException ex) {
             throw ExceptionSorter.throwException(ex);
