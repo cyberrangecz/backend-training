@@ -225,7 +225,7 @@ public class TrainingInstancesRestControllerTest {
     @Test
     public void allocateSandboxesWithFacadeException() throws Exception {
         Exception exceptionThrow = new ServiceLayerException("message", ErrorCode.RESOURCE_NOT_FOUND);
-        willThrow(new FacadeLayerException(exceptionThrow)).given(trainingInstanceFacade).allocateSandboxes(any(Long.class));
+        willThrow(new FacadeLayerException(exceptionThrow)).given(trainingInstanceFacade).allocateSandboxes(any(Long.class), null);
         Exception exception =
             mockMvc.perform(post("/training-instances" + "/{instanceId}/" + "sandbox-instances", 698L))
                 .andExpect(status().isNotFound()).andReturn().getResolvedException();

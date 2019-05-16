@@ -62,9 +62,10 @@ public interface TrainingInstanceFacade {
      * Allocates sandboxes for training instance
      *
      * @param instanceId
+     * @param count number of sandboxes that will be allocated
      * @throws FacadeLayerException
      */
-    void allocateSandboxes(Long instanceId);
+    void allocateSandboxes(Long instanceId, Integer count);
 
     /**
      * Finds all Training Runs by specific Training Instance.

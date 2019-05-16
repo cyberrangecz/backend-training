@@ -146,7 +146,7 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
 
     @Override
     @TransactionalWO
-    public void allocateSandboxes(Long instanceId) {
+    public void allocateSandboxes(Long instanceId, Integer count) {
         LOG.debug("allocateSandboxes({})", instanceId);
         TrainingInstance trainingInstance = trainingInstanceService.findById(instanceId);
         //Check if pool exist
@@ -157,7 +157,7 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
         if (trainingInstance.getSandboxInstanceRefs().size() >= trainingInstance.getPoolSize()) {
             throw new FacadeLayerException(new ServiceLayerException("Pool of sandboxes of training instance with id: " + trainingInstance.getId() + " is full.", ErrorCode.RESOURCE_CONFLICT));
         }
-        trainingInstanceService.allocateSandboxes(trainingInstance, null);
+        trainingInstanceService.allocateSandboxes(trainingInstance, count);
     }
 
     @Override

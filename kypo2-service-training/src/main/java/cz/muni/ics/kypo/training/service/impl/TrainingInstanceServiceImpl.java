@@ -212,6 +212,9 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
         if (count != null && count > trainingInstance.getPoolSize()) {
             count = null;
         }
+        if (count != null && count + trainingInstance.getSandboxInstanceRefs().size() > trainingInstance.getPoolSize()){
+            count = trainingInstance.getPoolSize() - trainingInstance.getSandboxInstanceRefs().size();
+        }
         //Check if pool exist
         if (trainingInstance.getPoolId() == null) {
             throw new ServiceLayerException("Pool for sandboxes is not created yet. Please create pool before allocating sandboxes.", ErrorCode.RESOURCE_CONFLICT);

@@ -213,7 +213,7 @@ public class TrainingInstanceFacadeTest {
     public void allocateSandboxes() {
         trainingInstance1.setSandboxInstanceRefs(Set.of(sandboxInstanceRef1));
         given(trainingInstanceService.findById(anyLong())).willReturn(trainingInstance1);
-        trainingInstanceFacade.allocateSandboxes(trainingInstance1.getId());
+        trainingInstanceFacade.allocateSandboxes(trainingInstance1.getId(), null);
         then(trainingInstanceService).should().allocateSandboxes(trainingInstance1, null);
     }
 
@@ -223,7 +223,7 @@ public class TrainingInstanceFacadeTest {
         thrown.expect(FacadeLayerException.class);
         thrown.expectMessage("cz.muni.ics.kypo.training.exceptions.ServiceLayerException: Pool of sandboxes of training instance with " +
                 "id: " + trainingInstance1.getId() + " is full.");
-        trainingInstanceFacade.allocateSandboxes(trainingInstance1.getId());
+        trainingInstanceFacade.allocateSandboxes(trainingInstance1.getId(), null);
         then(trainingInstanceService).should().allocateSandboxes(trainingInstance1, null);
     }
 
@@ -232,7 +232,7 @@ public class TrainingInstanceFacadeTest {
         given(trainingInstanceService.findById(anyLong())).willReturn(trainingInstance1);
         willThrow(ServiceLayerException.class).given(trainingInstanceService).allocateSandboxes(trainingInstance1, null);
         thrown.expect(FacadeLayerException.class);
-        trainingInstanceFacade.allocateSandboxes(trainingInstance1.getId());
+        trainingInstanceFacade.allocateSandboxes(trainingInstance1.getId(), null);
     }
 
     @Test
