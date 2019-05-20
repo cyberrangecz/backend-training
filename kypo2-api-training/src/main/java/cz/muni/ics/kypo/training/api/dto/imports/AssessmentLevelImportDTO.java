@@ -2,6 +2,10 @@ package cz.muni.ics.kypo.training.api.dto.imports;
 
 import cz.muni.ics.kypo.training.api.enums.AssessmentType;
 
+/**
+ * @author Boris Jadus(445343)
+ */
+
 public class AssessmentLevelImportDTO extends AbstractLevelImportDTO {
 
 	private String questions;

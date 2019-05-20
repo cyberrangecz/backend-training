@@ -42,7 +42,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 
 /**
- * @author Pavel Šeda
+ * @author Pavel Šeda & Boris Jadus (445343)
  */
 @Service
 @Transactional

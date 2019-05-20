@@ -49,6 +49,10 @@ import static org.mockito.BDDMockito.*;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
 
+/**
+ * @author Boris Jadus(445343)
+ */
+
 @RunWith(SpringRunner.class)
 public class TrainingDefinitionServiceTest {
 

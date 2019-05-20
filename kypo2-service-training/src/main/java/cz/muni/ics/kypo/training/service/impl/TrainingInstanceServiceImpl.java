@@ -41,7 +41,7 @@ import java.util.Set;
 
 
 /**
- * @author Pavel Seda (441048)
+ * @author Pavel Seda (441048) & Boris Jadus (445343)
  */
 @Service
 public class TrainingInstanceServiceImpl implements TrainingInstanceService {

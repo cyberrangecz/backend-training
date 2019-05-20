@@ -44,7 +44,7 @@ import java.util.List;
 import javax.validation.Valid;
 
 /**
- * @author Pavel Šeda
+ * @author Pavel Šeda & Boris Jadus
  */
 @Api(value = "/training-definitions", tags = "Training definitions", consumes = MediaType.APPLICATION_JSON_VALUE)
 @ApiResponses(value = {
