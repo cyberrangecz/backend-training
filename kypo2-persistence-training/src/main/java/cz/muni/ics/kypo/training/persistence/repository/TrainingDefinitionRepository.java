@@ -15,7 +15,7 @@ import org.springframework.stereotype.Repository;
 import cz.muni.ics.kypo.training.persistence.model.TrainingDefinition;
 
 import java.util.List;
-
+import java.util.Optional;
 
 /**
  * @author Pavel Seda (441048)
@@ -43,5 +43,8 @@ public interface TrainingDefinitionRepository
             countQuery = "SELECT COUNT(DISTINCT td) FROM TrainingDefinition td LEFT JOIN td.betaTestingGroup bt LEFT JOIN bt.organizers org " +
                     "LEFT JOIN td.authors aut WHERE aut.userRefLogin = :userRefLogin OR org.userRefLogin = :userRefLogin OR td.state = 'RELEASED'")
     Page<TrainingDefinition> findAllForDesignersAndOrganizers(@Param("userRefLogin") String userRefLogin, Pageable pageable);
+
+    @EntityGraph(attributePaths = {"authors", "betaTestingGroup", "betaTestingGroup.organizers"})
+    Optional<TrainingDefinition> findById(Long id);
 
 }
