@@ -1,5 +1,7 @@
 package cz.muni.ics.kypo.training.api.dto.imports;
-
+/**
+ * @author Boris Jadus(445343)
+ */
 public class HintImportDTO {
 
 	private String title;

@@ -50,6 +50,10 @@ import org.springframework.http.*;
 
 import javax.servlet.http.HttpServletRequest;
 
+/**
+ * @author Boris Jadus(445343)
+ */
+
 @RunWith(SpringRunner.class)
 public class TrainingRunServiceTest {
 

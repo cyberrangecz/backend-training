@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * @author Pavel Seda
+ * @author Pavel Seda & Boris Jadus (445343)
  */
 @Service
 public class ExportImportServiceImpl implements ExportImportService {

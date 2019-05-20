@@ -35,7 +35,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
 /**
- * @author Pavel Šeda
+ * @author Pavel Šeda & Boris Jadus
  */
 @Api(value = "/training-instances", tags = "Training instances", consumes = MediaType.APPLICATION_JSON_VALUE)
 @ApiResponses(value = {

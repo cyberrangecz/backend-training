@@ -23,7 +23,9 @@ import org.springframework.web.client.RestTemplate;
 
 import javax.servlet.http.*;
 import java.nio.charset.Charset;
-
+/**
+ * @author Boris Jadus(445343)
+ */
 @Configuration
 @ComponentScan(basePackages = {"cz.muni.ics.kypo.training.facade", "cz.muni.ics.kypo.training.mapping", "cz.muni.ics.kypo.training.service",
 		"cz.muni.csirt.kypo.elasticsearch.service",	"cz.muni.csirt.kypo.elasticsearch.data"})

@@ -40,7 +40,7 @@ import java.util.Optional;
 import java.util.*;
 
 /**
- * @author Pavel Seda (441048)
+ * @author Pavel Seda (441048) & Boris Jadus (445343)
  */
 @Service
 public class TrainingDefinitionServiceImpl implements TrainingDefinitionService {

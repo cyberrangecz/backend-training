@@ -56,7 +56,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-
+/**
+ * @author Boris Jadus(445343)
+ */
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = {InfoLevelMapperImpl.class, SnapshotHookMapperImpl.class,
         TrainingInstanceMapperImpl.class, UserRefMapperImpl.class, TrainingDefinitionMapperImpl.class,

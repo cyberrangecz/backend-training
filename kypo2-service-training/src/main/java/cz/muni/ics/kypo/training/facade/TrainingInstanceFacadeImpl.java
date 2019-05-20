@@ -34,7 +34,7 @@ import java.util.Objects;
 import java.util.Set;
 
 /**
- * @author Pavel Šeda
+ * @author Pavel Šeda & Boris Jadus (445343)
  */
 @Service
 public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
