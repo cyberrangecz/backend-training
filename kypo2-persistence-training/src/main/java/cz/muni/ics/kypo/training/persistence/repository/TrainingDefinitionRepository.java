@@ -27,7 +27,7 @@ public interface TrainingDefinitionRepository
     @Query("SELECT td FROM TrainingDefinition td WHERE td.sandboxDefinitionRefId = :sandboxDefId")
     Page<TrainingDefinition> findAllBySandBoxDefinitionRefId(@Param("sandboxDefId") Long sandboxDefId, Pageable pageable);
 
-    @EntityGraph(attributePaths = {"authors"})
+    @EntityGraph(attributePaths = {"authors", "betaTestingGroup", "betaTestingGroup.organizers"})
     Page<TrainingDefinition> findAll(Predicate predicate, Pageable pageable);
 
     @Query(value = "SELECT td FROM TrainingDefinition td INNER JOIN td.authors a WHERE a.userRefLogin = :userRefLogin",
