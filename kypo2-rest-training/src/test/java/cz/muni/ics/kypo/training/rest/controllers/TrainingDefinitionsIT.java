@@ -407,7 +407,6 @@ public class TrainingDefinitionsIT {
 	public void cloneTrainingDefinition() throws Exception{
 		TrainingDefinition tD = trainingDefinitionRepository.save(releasedTrainingDefinition);
 		GameLevel gL1 = gameLevelRepository.save(gameLevel1);
-		//tD.setStartingLevel(gL1.getId());
 		trainingDefinitionRepository.save(tD);
 
 		mvc.perform(post("/training-definitions" + "/{id}", tD.getId()))
@@ -420,7 +419,6 @@ public class TrainingDefinitionsIT {
 		assertEquals(clonedTD.getTitle(), "Clone of " + tD.getTitle());
 		assertEquals(clonedTD.getState().toString(), TDState.UNRELEASED.toString());
 		assertEquals(clonedTD.isShowStepperBar(), tD.isShowStepperBar());
-		//assertFalse(clonedTD.getStartingLevel().equals(tD.getStartingLevel()));
 	}
 
 	@Test
@@ -726,7 +724,9 @@ public class TrainingDefinitionsIT {
 
 	@Test
 	public void findGameLevelById() throws Exception{
+		TrainingDefinition td = trainingDefinitionRepository.save(unreleasedDefinition);
 		GameLevel gL = gameLevelRepository.save(gameLevel1);
+		gL.setTrainingDefinition(td);
 		MockHttpServletResponse result = mvc.perform(get("/training-definitions/levels/{id}", gL.getId()))
 				.andExpect(status().isOk())
 				.andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
@@ -738,7 +738,9 @@ public class TrainingDefinitionsIT {
 
 	@Test
 	public void findInfoLevelById() throws Exception{
+		TrainingDefinition td = trainingDefinitionRepository.save(unreleasedDefinition);
 		InfoLevel iL = infoLevelRepository.save(infoLevel1);
+		iL.setTrainingDefinition(td);
 		MockHttpServletResponse result = mvc.perform(get("/training-definitions/levels/{id}", iL.getId()))
 				.andExpect(status().isOk())
 				.andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
@@ -750,7 +752,9 @@ public class TrainingDefinitionsIT {
 
 	@Test
 	public void findAssessmentLevelById() throws Exception{
+		TrainingDefinition td = trainingDefinitionRepository.save(unreleasedDefinition);
 		AssessmentLevel aL = assessmentLevelRepository.save(assessmentLevel1);
+		aL.setTrainingDefinition(td);
 		MockHttpServletResponse result = mvc.perform(get("/training-definitions/levels/{id}", aL.getId()))
 				.andExpect(status().isOk())
 				.andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
