@@ -98,16 +98,6 @@ public class TrainingInstanceRepositoryTest {
     }
 
     @Test
-    public void findAllByStartTimeAfterAndEndTimeBefore() {
-        entityManager.persist(trainingInstance1);
-        entityManager.persist(trainingInstance2);
-        List<TrainingInstance> resultTrainingInstance = trainingInstanceRepository.findAllByStartTimeAfterAndEndTimeBefore(LocalDateTime.now());
-        assertNotNull(resultTrainingInstance);
-        assertEquals(1, resultTrainingInstance.size());
-        assertTrue(resultTrainingInstance.contains(trainingInstance1));
-    }
-
-    @Test
     public void findAll_emptyDatabase() {
         List<TrainingInstance> expectedTrainingInstances = new ArrayList<>();
         List<TrainingInstance> resultTrainingInstances = trainingInstanceRepository.findAll();

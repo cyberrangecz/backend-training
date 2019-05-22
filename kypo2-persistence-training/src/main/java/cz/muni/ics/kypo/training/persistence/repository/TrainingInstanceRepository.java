@@ -29,8 +29,8 @@ public interface TrainingInstanceRepository extends JpaRepository<TrainingInstan
     @EntityGraph(attributePaths = {"trainingDefinition.authors", "organizers", "sandboxInstanceRefs", "trainingDefinition.betaTestingGroup", "trainingDefinition.betaTestingGroup.organizers"})
     Page<TrainingInstance> findAll(Predicate predicate, Pageable pageable);
 
-    @Query("SELECT ti FROM TrainingInstance ti JOIN FETCH ti.trainingDefinition WHERE ti.startTime < :date AND ti.endTime > :date ")
-    List<TrainingInstance> findAllByStartTimeAfterAndEndTimeBefore(@Param("date") LocalDateTime time);
+    @Query("SELECT ti FROM TrainingInstance ti JOIN FETCH ti.trainingDefinition WHERE ti.startTime < :date AND ti.endTime > :date AND ti.accessToken = :accessToken ")
+    Optional<TrainingInstance> findAllByStartTimeAfterAndEndTimeBefore(@Param("date") LocalDateTime time, @Param("accessToken") String accessToken);
 
     @EntityGraph(attributePaths = {"trainingDefinition.authors", "organizers", "sandboxInstanceRefs"})
     Optional<TrainingInstance> findById(Long id);
