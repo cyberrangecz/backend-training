@@ -26,18 +26,20 @@ public interface TrainingInstanceRepository extends JpaRepository<TrainingInstan
     @Query("SELECT ti FROM TrainingInstance ti JOIN FETCH ti.trainingDefinition td WHERE td.id = :trainingDefId")
     List<TrainingInstance> findAllByTrainingDefinitionId(@Param("trainingDefId") Long trainingDefId);
 
-    @EntityGraph(attributePaths = {"trainingDefinition.authors", "organizers", "sandboxInstanceRefs"})
+    @EntityGraph(attributePaths = {"trainingDefinition.authors", "organizers", "sandboxInstanceRefs", "trainingDefinition.betaTestingGroup", "trainingDefinition.betaTestingGroup.organizers"})
     Page<TrainingInstance> findAll(Predicate predicate, Pageable pageable);
 
     @Query("SELECT ti FROM TrainingInstance ti JOIN FETCH ti.trainingDefinition WHERE ti.startTime < :date AND ti.endTime > :date ")
     List<TrainingInstance> findAllByStartTimeAfterAndEndTimeBefore(@Param("date") LocalDateTime time);
 
-
     @EntityGraph(attributePaths = {"trainingDefinition.authors", "organizers", "sandboxInstanceRefs"})
     Optional<TrainingInstance> findById(Long id);
 
-    @Query("SELECT (COUNT(ti) > 0) FROM TrainingInstance ti INNER JOIN ti.trainingDefinition td WHERE td.id = :trainingDefinitionId")
-    boolean existsAnyForTrainingDefinition(@Param("trainingDefinitionId") Long trainingDefinitionId);
+    @Query("SELECT (COUNT(ti) > 0) FROM TrainingInstance ti INNER JOIN ti.trainingDefinition td WHERE ti.id = :trainingInstanceId")
+    boolean existsAnyForTrainingDefinition(@Param("trainingInstanceId") Long trainingInstanceId);
 
+    @Query("SELECT ti FROM TrainingInstance ti LEFT OUTER JOIN FETCH ti.organizers LEFT OUTER JOIN FETCH ti.sandboxInstanceRefs JOIN FETCH"
+        + " ti.trainingDefinition td JOIN FETCH td.authors JOIN FETCH td.betaTestingGroup btg JOIN FETCH btg.organizers WHERE ti.id = :instanceId")
+    Optional<TrainingInstance> findByIdIncludingDefinition(@Param("instanceId") Long instanceId);
 
 }

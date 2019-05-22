@@ -78,9 +78,17 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
     }
 
     @Override
+    @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
+        "or @securityService.isOrganizerOfGivenTrainingInstance(#instanceId)")
+    public TrainingInstance findByIdIncludingDefinition(Long instanceId) {
+        LOG.debug("findByIdIncludingDefinition({})", instanceId);
+        return trainingInstanceRepository.findByIdIncludingDefinition(instanceId).orElseThrow(() -> new ServiceLayerException("Training instance with id: " + instanceId + " not found.", ErrorCode.RESOURCE_NOT_FOUND));
+    }
+
+    @Override
     @IsOrganizerOrAdmin
     public Page<TrainingInstance> findAll(Predicate predicate, Pageable pageable) {
-        LOG.debug("findAllTrainingDefinitions({},{})", predicate, pageable);
+        LOG.debug("findAllTrainingInstances({},{})", predicate, pageable);
         if (securityService.isAdmin()) {
             return trainingInstanceRepository.findAll(predicate, pageable);
         }
@@ -183,7 +191,7 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
             "or @securityService.isOrganizerOfGivenTrainingInstance(#instanceId)")
     public Long createPoolForSandboxes(Long instanceId) {
         LOG.debug("createPoolForSandboxes({})", instanceId);
-        TrainingInstance trainingInstance = findById(instanceId);
+        TrainingInstance trainingInstance = findByIdIncludingDefinition(instanceId);
         //Check if pool can be created
         if (trainingInstance.getPoolId() != null) {
             return trainingInstance.getPoolId();
