@@ -173,9 +173,9 @@ public class TrainingRunServiceImpl implements TrainingRunService {
             resumeTrainingRun(alreadyAccessedTrainingRun.get().getId());
             return alreadyAccessedTrainingRun.get();
         }
-        TrainingInstance trainingInstance = trainingInstanceRepository.findAllByStartTimeAfterAndEndTimeBefore(LocalDateTime.now(Clock.systemUTC()), accessToken)
+        TrainingInstance trainingInstance = trainingInstanceRepository.findByStartTimeAfterAndEndTimeBeforeAndAccessToken(LocalDateTime.now(Clock.systemUTC()), accessToken)
             .orElseThrow(() ->  new ServiceLayerException("There is no training instance with accessToken " + accessToken + ".", ErrorCode.RESOURCE_NOT_FOUND));
-        if (trainingInstance.getPoolId() != null) {
+        if (trainingInstance.getPoolId() == null) {
             throw new ServiceLayerException("At first designer must allocate sandboxes for training instance.", ErrorCode.RESOURCE_CONFLICT);
         }
         Set<SandboxInstanceRef> freeSandboxes = trainingRunRepository.findFreeSandboxesOfTrainingInstance(trainingInstance.getId());
