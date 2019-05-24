@@ -30,11 +30,11 @@ before_script:
     - echo $DEBIAN_PACKAGE
     # Set additional Apt repository
     - echo "$APT_SOURCE_LIST" > /etc/apt/sources.list.d/kypo.list
+    - git clone https://$SECURITY_COMMONS_USER:$SECURITY_COMMONS_TOKEN@gitlab.ics.muni.cz/kypo2/services-and-portlets/kypo2-security-commons.git && cd kypo2-security-commons && mvn clean install && cd ..
+
 
 unitTests:
     stage: unitTests
-    before_script:
-        - git clone https://$SECURITY_COMMONS_USER:$SECURITY_COMMONS_TOKEN@gitlab.ics.muni.cz/kypo2/services-and-portlets/kypo2-security-commons.git && cd kypo2-security-commons && mvn clean install && cd ..
     script:
         - mvn test
     only:
@@ -44,8 +44,6 @@ unitTests:
 
 installJava:
     stage: installJava
-    before_script:     
-        - git clone https://$SECURITY_COMMONS_USER:$SECURITY_COMMONS_TOKEN@gitlab.ics.muni.cz/kypo2/services-and-portlets/kypo2-security-commons.git && cd kypo2-security-commons && mvn clean install && cd ..
     script:
         - mvn clean install
     only:
@@ -71,8 +69,6 @@ editVersion:
 
 deployJava:
     image: javadeploy
-    before_script:     
-        - git clone https://$SECURITY_COMMONS_USER:$SECURITY_COMMONS_TOKEN@gitlab.ics.muni.cz/kypo2/services-and-portlets/kypo2-security-commons.git && cd kypo2-security-commons && mvn clean install && cd ..
     stage: deployJava
     script:
         - git checkout master && git pull
@@ -81,10 +77,11 @@ deployJava:
         - tags
 
 buildDebian:
-    image: gitbuildpackage
     stage: buildDebian
     script:
         # --distribution $DEBIAN_DISTRIBUTION
+        - git checkout master && git pull
+        - mvn clean package -Dmaven.test.skip=true
         - >
             gbp dch
             --debian-tag="v%(version)s"
