@@ -4,7 +4,7 @@ After=syslog.target
 
 [Service]
 User=seda
-ExecStart=/usr/bin/java -Dpath.to.config.file=/etc/kypo2/java-projects/properties/training/training-project.properties -jar /etc/kypo2/java-projects/kypo2-training/kypo2-rest-training/target/kypo2-rest-training-1.0.1.jar
+ExecStart=/usr/bin/java -Dpath.to.config.file=/etc/kypo2/java-projects/properties/training/training-project.properties -jar /opt/kypo2/java-projects/kypo2-training/kypo2-rest-training/target/kypo2-rest-training.jar
 StandardOutput=syslog
 StandardError=syslog
 SyslogIdentifier=/var/log/syslog
