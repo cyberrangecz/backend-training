@@ -8,6 +8,7 @@ PROJECT_NAME=$(shell dpkg-parsechangelog --show-field source)
 PACKAGE_NAME=$(subst -,_,${PROJECT_NAME})
 PROJECT_DIR=/opt/kypo2/${PROJECT_NAME}
 CONFIG_DIR=/etc/kypo2/java-projects/properties/training
+JARS_DIR=${PROJECT_DIR}/jars
 HTTPS_PORT=8443
 CWD=$(shell pwd)
 
@@ -20,7 +21,17 @@ override_dh_auto_build override_dh_auto_install:
 override_dh_install:
 	@echo "pom.xml ${PROJECT_DIR}" > debian/install
 	@echo "debian/training-project.properties ${CONFIG_DIR}" >> debian/install
+	@echo "kypo2-api-training/target/kypo2-api-training*.jar ${JARS_DIR}" >> debian/install
+	@echo "kypo2-persistence-training/target/kypo2-persistence-training*.jar ${JARS_DIR}" >> debian/install
+	@echo "kypo2-rest-training/target/kypo2-rest-training*.jar ${JARS_DIR}" >> debian/install
+	@echo "kypo2-elasticsearch-training/target/kypo2-elasticsearch-training*.jar ${JARS_DIR}" >> debian/install
+	@echo "kypo2-service-training/target/kypo2-service-training*.jar ${JARS_DIR}" >> debian/install
 	@echo '#!/bin/sh\ncd ${PROJECT_DIR}\nmvn clean install' > debian/postinst
+	@echo '\ncd ${JARS_DIR}\nAPI_JAR=$$(ls kypo2-api-training*.jar | tail -n 1)\nif ! [ "$$API_JAR" = "kypo2-api-training.jar" ]; then ln -sf $$API_JAR kypo2-api-training.jar; fi' >> debian/postinst
+	@echo '\nPERSISTENCE_JAR=$$(ls kypo2-persistence-training*.jar | tail -n 1)\nif ! [ "$$PERSISTENCE_JAR" = "kypo2-persistence-training" ]; then ln -sf $$PERSISTENCE_JAR kypo2-persistence-training.jar; fi' >> debian/postinst
+	@echo '\nREST_JAR=$$(ls kypo2-rest-training*.jar | tail -n 1)\nif ! [ "$$REST_JAR" = "kypo2-rest-training.jar" ]; then ln -sf $$REST_JAR kypo2-rest-training.jar; fi' >> debian/postinst
+	@echo '\nELASTIC_JAR=$$(ls kypo2-elasticsearch-training*.jar | tail -n 1)\nif ! [ "$$ELASTIC_JAR" = "kypo2-elasticsearch-training.jar" ]; then ln -sf $$ELASTIC_JAR kypo2-elasticsearch-training.jar; fi' >> debian/postinst
+	@echo '\nSERVICE_JAR=$$(ls kypo2-service-training*.jar | tail -n 1)\nif ! [ "$$SERVICE_JAR" = "kypo2-service-training.jar" ]; then ln -sf $$SERVICE_JAR kypo2-service-training.jar; fi' >> debian/postinst
 	dh_install
 
 override_dh_installinit:
