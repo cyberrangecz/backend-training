@@ -18,11 +18,9 @@ public class GameLevel extends AbstractLevel implements Serializable {
     @Column(name = "flag", nullable = false)
     private String flag;
     @Lob
-    @Type(type = "org.hibernate.type.StringType")
     @Column(name = "content", nullable = false)
     private String content;
     @Lob
-    @Type(type = "org.hibernate.type.StringType")
     @Column(name = "solution", nullable = false)
     private String solution;
     @Column(name = "solution_penalized", nullable = false)
