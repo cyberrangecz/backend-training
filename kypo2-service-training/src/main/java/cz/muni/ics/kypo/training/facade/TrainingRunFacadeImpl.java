@@ -93,7 +93,6 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
         LOG.debug("findAllAccessedTrainingRuns()");
         Page<TrainingRun> trainingRuns = trainingRunService.findAllByParticipantRefLogin(pageable);
         return convertToAccessedRunDTO(trainingRuns);
-
     }
 
     @Override
@@ -109,6 +108,7 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
             accessTrainingRunDTO.setInfoAboutLevels(getInfoAboutLevels(trainingRun.getTrainingInstance().getTrainingDefinition().getId()));
             accessTrainingRunDTO.setSandboxInstanceId(trainingRun.getSandboxInstanceRef().getSandboxInstanceRef());
             accessTrainingRunDTO.setInstanceId(trainingRun.getTrainingInstance().getId());
+            accessTrainingRunDTO.setStartTime(trainingRun.getStartTime());
             return accessTrainingRunDTO;
         } catch (ServiceLayerException ex) {
             throw new FacadeLayerException(ex);
@@ -123,8 +123,8 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
         try {
             TrainingRun trainingRun = trainingRunService.accessTrainingRun(accessToken);
             accessTrainingRunDTO.setTrainingRunID(trainingRun.getId());
-            accessTrainingRunDTO.setShowStepperBar(trainingRun.getTrainingInstance().getTrainingDefinition().isShowStepperBar());
             accessTrainingRunDTO.setAbstractLevelDTO(getCorrectAbstractLevelDTO(trainingRun.getCurrentLevel()));
+            accessTrainingRunDTO.setShowStepperBar(trainingRun.getTrainingInstance().getTrainingDefinition().isShowStepperBar());
             accessTrainingRunDTO.setInfoAboutLevels(getInfoAboutLevels(trainingRun.getCurrentLevel().getTrainingDefinition().getId()));
             accessTrainingRunDTO.setSandboxInstanceId(trainingRun.getSandboxInstanceRef().getSandboxInstanceRef());
             accessTrainingRunDTO.setInstanceId(trainingRun.getTrainingInstance().getId());
@@ -281,7 +281,7 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
         } else {
             InfoLevel infoLevel = (InfoLevel) abstractLevel;
             abstractLevelDTO = infoLevelMapper.mapToDTO(infoLevel);
-	    abstractLevelDTO.setLevelType(LevelType.INFO_LEVEL);
+            abstractLevelDTO.setLevelType(LevelType.INFO_LEVEL);
         }
         return abstractLevelDTO;
     }
@@ -291,16 +291,16 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
             JsonNode jsonNode = JsonLoader.fromString(assessmentLevelDTO.getQuestions());
             for (JsonNode question : jsonNode) {
                 ((ObjectNode) question).remove("correct_choices");
-                if(question.has("choices")) {
+                if (question.has("choices")) {
                     for (JsonNode choices : question.get("choices")) {
                         ((ObjectNode) choices).remove("pair");
                         ((ObjectNode) choices).remove("is_correct");
 
-                        }
                     }
                 }
+            }
             assessmentLevelDTO.setQuestions(jsonNode.toString());
-        }catch (IOException ex) {
+        } catch (IOException ex) {
 
         }
 
