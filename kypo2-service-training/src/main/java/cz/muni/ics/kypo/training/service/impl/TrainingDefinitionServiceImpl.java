@@ -160,6 +160,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
             trainingDefinitionToUpdate.addAuthor(newUser);
         }
         trainingDefinitionToUpdate.setLastEdited(getCurrentTimeInUTC());
+        trainingDefinitionToUpdate.setEstimatedDuration(trainingDefinition.getEstimatedDuration());
         trainingDefinitionRepository.save(trainingDefinitionToUpdate);
         LOG.info("Training definition with id: {} updated.", trainingDefinitionToUpdate.getId());
     }
