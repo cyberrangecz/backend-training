@@ -322,9 +322,9 @@ public class TrainingDefinitionsRestControllerTest {
     public void cloneTrainingDefinition() throws Exception {
         String valueTd = convertObjectToJsonBytes(trainingDefinition1DTO);
         given(objectMapper.writeValueAsString(any(Long.class))).willReturn(valueTd);
-        given(trainingDefinitionFacade.clone(any(Long.class))).willReturn(trainingDefinition1DTO);
+        given(trainingDefinitionFacade.clone(any(Long.class), anyString())).willReturn(trainingDefinition1DTO);
         MockHttpServletResponse result = mockMvc
-                .perform(post("/training-definitions/{id}", trainingDefinition1.getId())
+                .perform(post("/training-definitions/{id}", trainingDefinition1.getId()).param("title", "title")
                         .contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isOk()).andReturn().getResponse();
         assertEquals(convertObjectToJsonBytes(trainingDefinition1DTO), result.getContentAsString());
@@ -334,8 +334,8 @@ public class TrainingDefinitionsRestControllerTest {
     @Test
     public void cloneTrainingDefinitionWithFacadeException() throws Exception {
         Exception exceptionToThrow = new ServiceLayerException("message", ErrorCode.RESOURCE_CONFLICT);
-        willThrow(new FacadeLayerException(exceptionToThrow)).given(trainingDefinitionFacade).clone(any(Long.class));
-        Exception exception = mockMvc.perform(post("/training-definitions/1").contentType(MediaType.APPLICATION_JSON_VALUE))
+        willThrow(new FacadeLayerException(exceptionToThrow)).given(trainingDefinitionFacade).clone(any(Long.class), anyString());
+        Exception exception = mockMvc.perform(post("/training-definitions/1").param("title", "title").contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isConflict()).andReturn().getResolvedException();
         assertEquals(ConflictException.class, exception.getClass());
     }
