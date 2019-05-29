@@ -20,7 +20,6 @@ override_dh_auto_build override_dh_auto_install:
 
 override_dh_install:
 	@echo "pom.xml ${PROJECT_DIR}" > debian/install
-	@echo "debian/training-project.properties ${CONFIG_DIR}" >> debian/install
 	@echo "kypo2-api-training/target/kypo2-api-training*.jar ${JARS_DIR}" >> debian/install
 	@echo "kypo2-persistence-training/target/kypo2-persistence-training*.jar ${JARS_DIR}" >> debian/install
 	@echo "kypo2-rest-training/target/kypo2-rest-training*.jar ${JARS_DIR}" >> debian/install
