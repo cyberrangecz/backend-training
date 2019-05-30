@@ -58,7 +58,7 @@ public interface TrainingDefinitionService {
      * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND given training definition not found.
      *                               RESOURCE_CONFLICT cannot clone unreleased training definition.
      */
-    TrainingDefinition clone(Long id);
+    TrainingDefinition clone(Long id, String title);
 
     /**
      * Swaps between levels. Swap basically means swapping the order attribute between these two levels.

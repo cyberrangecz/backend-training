@@ -409,25 +409,23 @@ public class TrainingDefinitionsIT {
 	public void cloneTrainingDefinition() throws Exception{
 		TrainingDefinition tD = trainingDefinitionRepository.save(releasedTrainingDefinition);
 		GameLevel gL1 = gameLevelRepository.save(gameLevel1);
-		//tD.setStartingLevel(gL1.getId());
 		trainingDefinitionRepository.save(tD);
 
-		mvc.perform(post("/training-definitions" + "/{id}", tD.getId()))
+		mvc.perform(post("/training-definitions" + "/{id}", tD.getId()).param("title", "title"))
 				.andExpect(status().isOk())
 				.andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON_VALUE));
 
 		Optional<TrainingDefinition> opt = trainingDefinitionRepository.findById(2L);
 		assertTrue(opt.isPresent());
 		TrainingDefinition clonedTD = opt.get();
-		assertEquals(clonedTD.getTitle(), "Clone of " + tD.getTitle());
+		assertEquals(clonedTD.getTitle(), "title");
 		assertEquals(clonedTD.getState().toString(), TDState.UNRELEASED.toString());
 		assertEquals(clonedTD.isShowStepperBar(), tD.isShowStepperBar());
-		//assertFalse(clonedTD.getStartingLevel().equals(tD.getStartingLevel()));
 	}
 
 	@Test
 	public void cloneNonexistentTrainingDefinition() throws Exception {
-		Exception ex = mvc.perform(post("/training-definitions" + "/{id}", 100L))
+		Exception ex = mvc.perform(post("/training-definitions" + "/{id}", 100L).param("title", "title"))
 				.andExpect(status().isNotFound())
 				.andReturn().getResolvedException();
 		assertEquals(ex.getClass(), ResourceNotFoundException.class);

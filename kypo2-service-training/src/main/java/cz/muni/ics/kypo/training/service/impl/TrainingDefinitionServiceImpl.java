@@ -167,7 +167,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
 
     @Override
     @IsDesignerOrAdmin
-    public TrainingDefinition clone(Long id) {
+    public TrainingDefinition clone(Long id, String title) {
         LOG.debug("clone({})", id);
         TrainingDefinition trainingDefinition = findById(id);
         TrainingDefinition clonedTrainingDefinition = new TrainingDefinition();
@@ -175,7 +175,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
         clonedTrainingDefinition.setId(null);
         clonedTrainingDefinition.setBetaTestingGroup(null);
 
-        clonedTrainingDefinition.setTitle("Clone of " + clonedTrainingDefinition.getTitle());
+        clonedTrainingDefinition.setTitle(title);
         clonedTrainingDefinition.setState(TDState.UNRELEASED);
         clonedTrainingDefinition.setAuthors(new HashSet<>());
         Optional<UserRef> user = userRefRepository.findUserByUserRefLogin(securityService.getSubOfLoggedInUser());

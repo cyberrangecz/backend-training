@@ -226,12 +226,12 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
 
     @Override
     @TransactionalWO
-    public TrainingDefinitionByIdDTO clone(Long id) {
+    public TrainingDefinitionByIdDTO clone(Long id, String title) {
         LOG.debug("clone({})", id);
         try {
             Assert.notNull(id, "Given id of training definition to be cloned");
 
-            TrainingDefinitionByIdDTO clonedDefinition =  trainingDefinitionMapper.mapToDTOById(trainingDefinitionService.clone(id));
+            TrainingDefinitionByIdDTO clonedDefinition =  trainingDefinitionMapper.mapToDTOById(trainingDefinitionService.clone(id, title));
             clonedDefinition.setLevels(gatherLevels(clonedDefinition.getId()));
             return clonedDefinition;
         } catch (ServiceLayerException ex) {

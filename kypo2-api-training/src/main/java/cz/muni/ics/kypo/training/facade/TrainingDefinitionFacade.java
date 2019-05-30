@@ -74,7 +74,7 @@ public interface TrainingDefinitionFacade {
      * @return DTO of cloned definition
      * @throws FacadeLayerException if training definition is not found
      */
-    TrainingDefinitionByIdDTO clone(Long id) throws FacadeLayerException;
+    TrainingDefinitionByIdDTO clone(Long id, String title) throws FacadeLayerException;
 
     /**
      * Swaps between levels. Swap basically means swapping the order attribute between these two levels.

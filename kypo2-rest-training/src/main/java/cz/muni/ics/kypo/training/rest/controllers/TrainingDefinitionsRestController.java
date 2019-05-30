@@ -260,9 +260,11 @@ public class TrainingDefinitionsRestController {
     @PostMapping(path = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<TrainingDefinitionByIdDTO> cloneTrainingDefinition(
             @ApiParam(value = "Id of training definition to be cloned", required = true)
-            @PathVariable("id") Long id) {
+            @PathVariable("id") Long id,
+            @ApiParam(value = "Title of cloned definition", required = true)
+            @RequestParam(value = "title") String title) {
         try {
-            TrainingDefinitionByIdDTO trainingDefinitionByIdDTO = trainingDefinitionFacade.clone(id);
+            TrainingDefinitionByIdDTO trainingDefinitionByIdDTO = trainingDefinitionFacade.clone(id, title);
             return ResponseEntity.ok(trainingDefinitionByIdDTO);
         } catch (FacadeLayerException ex) {
             throw ExceptionSorter.throwException(ex);
