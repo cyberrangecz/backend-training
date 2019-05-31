@@ -134,6 +134,8 @@ create table training_run (
 create table user_ref (
    id  bigserial not null,
     user_ref_full_name varchar(255),
+    user_ref_given_name varchar(255),
+    user_ref_family_name varchar(255),
     user_ref_login varchar(255) not null,
     primary key (id)
 );

@@ -10,6 +10,8 @@ public class UserRefDTO {
     private Long id;
     private String userRefLogin;
     private String userRefFullName;
+    private String userRefGivenName;
+    private String userRefFamilyName;
 
     @ApiModelProperty(value = "Main identifier of participant ref.", example = "1")
     public Long getId() {
@@ -36,6 +38,24 @@ public class UserRefDTO {
 
     public void setUserRefFullName(String userRefFullName) {
         this.userRefFullName = userRefFullName;
+    }
+
+    @ApiModelProperty(value = "User given name", example = "Pavel")
+    public String getUserRefGivenName() {
+        return userRefGivenName;
+    }
+
+    public void setUserRefGivenName(String userRefGivenName) {
+        this.userRefGivenName = userRefGivenName;
+    }
+
+    @ApiModelProperty(value = "User family name", example = "Seda")
+    public String getUserRefFamilyName() {
+        return userRefFamilyName;
+    }
+
+    public void setUserRefFamilyName(String userRefFamilyName) {
+        this.userRefFamilyName = userRefFamilyName;
     }
 
     @Override

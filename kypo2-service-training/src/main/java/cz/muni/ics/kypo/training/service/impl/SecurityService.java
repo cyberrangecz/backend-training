@@ -98,4 +98,17 @@ public class SecurityService {
         JsonObject credentials = (JsonObject) authentication.getUserAuthentication().getCredentials();
         return credentials.get("name").getAsString();
     }
+
+    public String getGivenNameOfLoggedInUser(){
+        OAuth2Authentication authentication = (OAuth2Authentication) SecurityContextHolder.getContext().getAuthentication();
+        JsonObject credentials = (JsonObject) authentication.getUserAuthentication().getCredentials();
+        return credentials.get("given_name").getAsString();
+    }
+
+    public String getFamilyNameOfLoggedInuser(){
+        OAuth2Authentication authentication = (OAuth2Authentication) SecurityContextHolder.getContext().getAuthentication();
+        JsonObject credentials = (JsonObject) authentication.getUserAuthentication().getCredentials();
+        return credentials.get("family_name").getAsString();
+    }
+
 }
