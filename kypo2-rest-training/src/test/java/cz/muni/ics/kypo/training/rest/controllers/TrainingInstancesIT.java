@@ -333,7 +333,9 @@ public class TrainingInstancesIT {
 	private void mockSpringSecurityContextForGet() {
 		JsonObject sub = new JsonObject();
 		sub.addProperty("sub", "testDesigner");
-		sub.addProperty("name", "designer name");
+		sub.addProperty("name", "Ing. Michael Johnson");
+		sub.addProperty("given_name", "Michael");
+		sub.addProperty("family_name", "Johnson");
 		Authentication authentication = Mockito.mock(Authentication.class);
 		OAuth2Authentication auth = Mockito.mock(OAuth2Authentication.class);
 		SecurityContext securityContext = Mockito.mock(SecurityContext.class);

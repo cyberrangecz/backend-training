@@ -126,6 +126,8 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
             UserRef newUser = new UserRef();
             newUser.setUserRefLogin(userSub);
             newUser.setUserRefFullName(securityService.getFullNameOfLoggedInUser());
+            newUser.setUserRefFamilyName(securityService.getFamilyNameOfLoggedInuser());
+            newUser.setUserRefGivenName(securityService.getGivenNameOfLoggedInUser());
             trainingDefinition.addAuthor(newUser);
         }
         trainingDefinition.setLastEdited(getCurrentTimeInUTC());
@@ -157,6 +159,8 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
             UserRef newUser = new UserRef();
             newUser.setUserRefLogin(userSub);
             newUser.setUserRefFullName(securityService.getFullNameOfLoggedInUser());
+            newUser.setUserRefGivenName(securityService.getGivenNameOfLoggedInUser());
+            newUser.setUserRefFamilyName(securityService.getFamilyNameOfLoggedInuser());
             trainingDefinitionToUpdate.addAuthor(newUser);
         }
         trainingDefinitionToUpdate.setLastEdited(getCurrentTimeInUTC());
@@ -185,6 +189,8 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
             UserRef newUser = new UserRef();
             newUser.setUserRefLogin(securityService.getSubOfLoggedInUser());
             newUser.setUserRefFullName(securityService.getFullNameOfLoggedInUser());
+            newUser.setUserRefFamilyName(securityService.getFamilyNameOfLoggedInuser());
+            newUser.setUserRefGivenName(securityService.getGivenNameOfLoggedInUser());
             clonedTrainingDefinition.addAuthor(newUser);
         }
         clonedTrainingDefinition.setLastEdited(getCurrentTimeInUTC());

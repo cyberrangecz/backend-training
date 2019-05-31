@@ -27,7 +27,6 @@ import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.mapping.mapstruct.*;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.service.TrainingDefinitionService;
-import cz.muni.ics.kypo.training.service.impl.SecurityService;
 import org.modelmapper.internal.util.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,7 +41,8 @@ import java.time.LocalDateTime;
 import java.util.*;
 
 /**
- * @author Pavel Šeda & Boris Jadus (445343)
+ * @author Pavel Šeda
+ * @author Boris Jadus (445343)
  */
 @Service
 @Transactional
@@ -205,6 +205,8 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
                 UserRef userRef = new UserRef();
                 userRef.setUserRefLogin(author.getLogin());
                 userRef.setUserRefFullName(author.getFullName());
+                userRef.setUserRefFamilyName(author.getFamilyName());
+                userRef.setUserRefGivenName(author.getGivenName());
                 trainingDefinition.addAuthor(trainingDefinitionService.createUserRef(userRef));
             }
         }
@@ -219,6 +221,8 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
                 UserRef userRef = new UserRef();
                 userRef.setUserRefLogin(organizer.getLogin());
                 userRef.setUserRefFullName(organizer.getFullName());
+                userRef.setUserRefFamilyName(organizer.getFamilyName());
+                userRef.setUserRefGivenName(organizer.getGivenName());
                 trainingDefinition.getBetaTestingGroup().addOrganizer(trainingDefinitionService.createUserRef(userRef));
             }
         }
@@ -231,7 +235,7 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
         try {
             Assert.notNull(id, "Given id of training definition to be cloned");
 
-            TrainingDefinitionByIdDTO clonedDefinition =  trainingDefinitionMapper.mapToDTOById(trainingDefinitionService.clone(id, title));
+            TrainingDefinitionByIdDTO clonedDefinition = trainingDefinitionMapper.mapToDTOById(trainingDefinitionService.clone(id, title));
             clonedDefinition.setLevels(gatherLevels(clonedDefinition.getId()));
             return clonedDefinition;
         } catch (ServiceLayerException ex) {
@@ -422,6 +426,5 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
         }
         return true;
     }
-
 
 }

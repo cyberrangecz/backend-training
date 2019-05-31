@@ -183,11 +183,12 @@ public class TrainingRunServiceImpl implements TrainingRunService {
                 if (!freeSandboxes.isEmpty()) {
                     SandboxInstanceRef sandboxInstanceRef = getReadySandboxInstanceRef(freeSandboxes, trainingInstance.getPoolId());
                     List<AbstractLevel> levels = abstractLevelRepository.findAllLevelsByTrainingDefinitionId(trainingInstance.getTrainingDefinition().getId());
-                    if (levels.isEmpty()) throw new ServiceLayerException("No starting level available for this training definition", ErrorCode.RESOURCE_NOT_FOUND);
+                    if (levels.isEmpty())
+                        throw new ServiceLayerException("No starting level available for this training definition", ErrorCode.RESOURCE_NOT_FOUND);
                     Collections.sort(levels, Comparator.comparing(AbstractLevel::getOrder));
 
                     TrainingRun trainingRun = getNewTrainingRun(levels.get(0), securityService.getSubOfLoggedInUser(), trainingInstance,
-                        TRState.ALLOCATED, LocalDateTime.now(Clock.systemUTC()), trainingInstance.getEndTime(), sandboxInstanceRef);
+                            TRState.ALLOCATED, LocalDateTime.now(Clock.systemUTC()), trainingInstance.getEndTime(), sandboxInstanceRef);
                     trainingRun = create(trainingRun);
                     // audit this action to the Elasticsearch
                     auditEventsService.auditTrainingRunStartedAction(trainingRun);
@@ -241,7 +242,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
             newTrainingRun.setParticipantRef(userRef.get());
         } else {
             newTrainingRun.setParticipantRef(participantRefRepository.save(
-                    new UserRef(participantRefLogin, securityService.getFullNameOfLoggedInUser())
+                    new UserRef(participantRefLogin, securityService.getFullNameOfLoggedInUser(), securityService.getGivenNameOfLoggedInUser(), securityService.getFamilyNameOfLoggedInuser())
             ));
         }
         newTrainingRun.setAssessmentResponses("[]");
@@ -379,13 +380,13 @@ public class TrainingRunServiceImpl implements TrainingRunService {
         Assert.notNull(trainingRunId, MUST_NOT_BE_NULL);
         TrainingRun trainingRun = findById(trainingRunId);
         int maxOrder = abstractLevelRepository.getCurrentMaxOrder(trainingRun.getCurrentLevel().getTrainingDefinition().getId());
-        if (trainingRun.getCurrentLevel().getOrder() != maxOrder|| !trainingRun.isLevelAnswered()) {
+        if (trainingRun.getCurrentLevel().getOrder() != maxOrder || !trainingRun.isLevelAnswered()) {
             throw new ServiceLayerException("Cannot finish training run because current level is not last or is not answered.", ErrorCode.RESOURCE_CONFLICT);
         }
 
         trainingRun.setState(TRState.FINISHED);
         trainingRun.setEndTime(LocalDateTime.now(Clock.systemUTC()));
-        if(trainingRun.getCurrentLevel() instanceof InfoLevel) {
+        if (trainingRun.getCurrentLevel() instanceof InfoLevel) {
             auditEventsService.auditLevelCompletedAction(trainingRun);
         }
         auditEventsService.auditTrainingRunEndedAction(trainingRun);
