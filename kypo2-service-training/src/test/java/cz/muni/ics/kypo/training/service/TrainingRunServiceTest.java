@@ -592,6 +592,16 @@ public class TrainingRunServiceTest {
     }
 
     @Test
+    public void resumeTrainingRunWithDeletedSandbox() {
+        trainingRun1.setSandboxInstanceRef(null);
+        given(trainingRunRepository.findByIdWithLevel(any(Long.class))).willReturn(Optional.of(trainingRun1));
+        thrown.expect(ServiceLayerException.class);
+        thrown.expectMessage("Sandbox of this training run was already deleted, you have to start new game.");
+
+        trainingRunService.resumeTrainingRun(trainingRun1.getId());
+    }
+
+    @Test
     public void resumeFinishedTrainingRun() {
         trainingRun1.setState(TRState.FINISHED);
         given(trainingRunRepository.findByIdWithLevel(any(Long.class))).willReturn(Optional.of(trainingRun1));
