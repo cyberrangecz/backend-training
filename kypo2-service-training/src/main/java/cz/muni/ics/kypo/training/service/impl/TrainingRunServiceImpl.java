@@ -168,10 +168,9 @@ public class TrainingRunServiceImpl implements TrainingRunService {
     public TrainingRun accessTrainingRun(String accessToken) {
         LOG.debug("accessTrainingRun({})", accessToken);
         Assert.hasLength(accessToken, "AccessToken cannot be null or empty.");
-        Optional<TrainingRun> alreadyAccessedTrainingRun = trainingRunRepository.findByUserAndAccessToken(accessToken, securityService.getSubOfLoggedInUser());
-        if (alreadyAccessedTrainingRun.isPresent() && !alreadyAccessedTrainingRun.get().getState().equals(TRState.FINISHED)) {
-            resumeTrainingRun(alreadyAccessedTrainingRun.get().getId());
-            return alreadyAccessedTrainingRun.get();
+        Optional<TrainingRun> accessedTrainingRun = trainingRunRepository.findValidTrainingRunOfUser(accessToken, securityService.getSubOfLoggedInUser());
+        if (accessedTrainingRun.isPresent()) {
+            return resumeTrainingRun(accessedTrainingRun.get().getId());
         }
         List<TrainingInstance> trainingInstances = trainingInstanceRepository.findAllByStartTimeAfterAndEndTimeBefore(LocalDateTime.now(Clock.systemUTC()));
         for (TrainingInstance trainingInstance : trainingInstances) {
