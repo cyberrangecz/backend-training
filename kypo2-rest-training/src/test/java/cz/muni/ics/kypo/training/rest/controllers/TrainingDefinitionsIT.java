@@ -726,7 +726,9 @@ public class TrainingDefinitionsIT {
 
 	@Test
 	public void findGameLevelById() throws Exception{
+		TrainingDefinition td = trainingDefinitionRepository.save(unreleasedDefinition);
 		GameLevel gL = gameLevelRepository.save(gameLevel1);
+		gL.setTrainingDefinition(td);
 		MockHttpServletResponse result = mvc.perform(get("/training-definitions/levels/{id}", gL.getId()))
 				.andExpect(status().isOk())
 				.andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
@@ -738,7 +740,9 @@ public class TrainingDefinitionsIT {
 
 	@Test
 	public void findInfoLevelById() throws Exception{
+		TrainingDefinition td = trainingDefinitionRepository.save(unreleasedDefinition);
 		InfoLevel iL = infoLevelRepository.save(infoLevel1);
+		iL.setTrainingDefinition(td);
 		MockHttpServletResponse result = mvc.perform(get("/training-definitions/levels/{id}", iL.getId()))
 				.andExpect(status().isOk())
 				.andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
@@ -750,7 +754,9 @@ public class TrainingDefinitionsIT {
 
 	@Test
 	public void findAssessmentLevelById() throws Exception{
+		TrainingDefinition td = trainingDefinitionRepository.save(unreleasedDefinition);
 		AssessmentLevel aL = assessmentLevelRepository.save(assessmentLevel1);
+		aL.setTrainingDefinition(td);
 		MockHttpServletResponse result = mvc.perform(get("/training-definitions/levels/{id}", aL.getId()))
 				.andExpect(status().isOk())
 				.andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))

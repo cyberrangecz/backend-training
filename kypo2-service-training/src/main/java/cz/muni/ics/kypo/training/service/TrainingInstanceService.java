@@ -107,4 +107,6 @@ public interface TrainingInstanceService {
      */
     Long createPoolForSandboxes(Long trainingInstanceId);
 
+    TrainingInstance findByIdIncludingDefinition(Long instanceId);
+
 }

@@ -425,7 +425,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     public AbstractLevel findLevelById(Long levelId) {
         LOG.debug("findLevelById({})", levelId);
         Assert.notNull(levelId, "Input level id must not be null.");
-        return abstractLevelRepository.findById(levelId)
+        return abstractLevelRepository.findByIdIncludinDefinition(levelId)
                 .orElseThrow(() -> new ServiceLayerException("Level with id: " + levelId + ", not found", ErrorCode.RESOURCE_NOT_FOUND));
     }
 

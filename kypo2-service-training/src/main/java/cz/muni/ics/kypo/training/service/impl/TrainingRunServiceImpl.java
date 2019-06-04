@@ -172,33 +172,28 @@ public class TrainingRunServiceImpl implements TrainingRunService {
         if (accessedTrainingRun.isPresent()) {
             return resumeTrainingRun(accessedTrainingRun.get().getId());
         }
-        List<TrainingInstance> trainingInstances = trainingInstanceRepository.findAllByStartTimeAfterAndEndTimeBefore(LocalDateTime.now(Clock.systemUTC()));
-        for (TrainingInstance trainingInstance : trainingInstances) {
-            if (trainingInstance.getAccessToken().equals(accessToken)) {
-                if (trainingInstance.getPoolId() == null) {
-                    throw new ServiceLayerException("At first designer must allocate sandboxes for training instance.", ErrorCode.RESOURCE_CONFLICT);
-                }
-                Set<SandboxInstanceRef> freeSandboxes = trainingRunRepository.findFreeSandboxesOfTrainingInstance(trainingInstance.getId());
-                if (!freeSandboxes.isEmpty()) {
-                    SandboxInstanceRef sandboxInstanceRef = getReadySandboxInstanceRef(freeSandboxes, trainingInstance.getPoolId());
-                    List<AbstractLevel> levels = abstractLevelRepository.findAllLevelsByTrainingDefinitionId(trainingInstance.getTrainingDefinition().getId());
-                    if (levels.isEmpty())
-                        throw new ServiceLayerException("No starting level available for this training definition", ErrorCode.RESOURCE_NOT_FOUND);
-                    Collections.sort(levels, Comparator.comparing(AbstractLevel::getOrder));
-
-                    TrainingRun trainingRun = getNewTrainingRun(levels.get(0), securityService.getSubOfLoggedInUser(), trainingInstance,
-                            TRState.ALLOCATED, LocalDateTime.now(Clock.systemUTC()), trainingInstance.getEndTime(), sandboxInstanceRef);
-                    trainingRun = create(trainingRun);
-                    // audit this action to the Elasticsearch
-                    auditEventsService.auditTrainingRunStartedAction(trainingRun);
-                    auditEventsService.auditLevelStartedAction(trainingRun);
-                    return trainingRun;
-                } else {
-                    throw new ServiceLayerException("There is no available sandbox, wait a minute and try again.", ErrorCode.NO_AVAILABLE_SANDBOX);
-                }
-            }
+        TrainingInstance trainingInstance = trainingInstanceRepository.findByStartTimeAfterAndEndTimeBeforeAndAccessToken(LocalDateTime.now(Clock.systemUTC()), accessToken)
+            .orElseThrow(() ->  new ServiceLayerException("There is no training instance with accessToken " + accessToken + ".", ErrorCode.RESOURCE_NOT_FOUND));
+        if (trainingInstance.getPoolId() == null) {
+            throw new ServiceLayerException("At first designer must allocate sandboxes for training instance.", ErrorCode.RESOURCE_CONFLICT);
         }
-        throw new ServiceLayerException("There is no training instance with accessToken " + accessToken + ".", ErrorCode.RESOURCE_NOT_FOUND);
+        Set<SandboxInstanceRef> freeSandboxes = trainingRunRepository.findFreeSandboxesOfTrainingInstance(trainingInstance.getId());
+        if (!freeSandboxes.isEmpty()) {
+            SandboxInstanceRef sandboxInstanceRef = getReadySandboxInstanceRef(freeSandboxes, trainingInstance.getPoolId());
+            List<AbstractLevel> levels = abstractLevelRepository.findAllLevelsByTrainingDefinitionId(trainingInstance.getTrainingDefinition().getId());
+            if (levels.isEmpty()) throw new ServiceLayerException("No starting level available for this training definition", ErrorCode.RESOURCE_NOT_FOUND);
+            Collections.sort(levels, Comparator.comparing(AbstractLevel::getOrder));
+
+            TrainingRun trainingRun = getNewTrainingRun(levels.get(0), securityService.getSubOfLoggedInUser(), trainingInstance,
+                TRState.ALLOCATED, LocalDateTime.now(Clock.systemUTC()), trainingInstance.getEndTime(), sandboxInstanceRef);
+            trainingRun = create(trainingRun);
+            // audit this action to the Elasticsearch
+            auditEventsService.auditTrainingRunStartedAction(trainingRun);
+            auditEventsService.auditLevelStartedAction(trainingRun);
+            return trainingRun;
+        } else {
+            throw new ServiceLayerException("There is no available sandbox, wait a minute and try again.", ErrorCode.NO_AVAILABLE_SANDBOX);
+        }
     }
 
     @Override

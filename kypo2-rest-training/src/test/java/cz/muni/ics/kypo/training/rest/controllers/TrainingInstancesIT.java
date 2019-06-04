@@ -132,6 +132,7 @@ public class TrainingInstancesIT {
 		definition.setBetaTestingGroup(betaTestingGroup);
 		definition.setSandboxDefinitionRefId(1L);
 		definition.setLastEdited(LocalDateTime.now());
+		definition.setAuthors(new HashSet<>(Arrays.asList(uR)));
 		TrainingDefinition tD = trainingDefinitionRepository.save(definition);
 
 		futureTrainingInstance = new TrainingInstance();

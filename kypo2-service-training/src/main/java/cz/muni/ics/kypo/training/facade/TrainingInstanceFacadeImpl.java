@@ -63,7 +63,7 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
         LOG.debug("findById({})", id);
         try {
             Objects.requireNonNull(id);
-            return trainingInstanceMapper.mapToDTO(trainingInstanceService.findById(id));
+            return trainingInstanceMapper.mapToDTO(trainingInstanceService.findByIdIncludingDefinition(id));
         } catch (ServiceLayerException ex) {
             throw new FacadeLayerException(ex);
         }
