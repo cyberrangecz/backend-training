@@ -70,7 +70,9 @@ import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
+/**
+ * @author Boris Jadus(445343)
+ */
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = TrainingDefinitionsRestController.class)
 @DataJpaTest
@@ -409,21 +411,21 @@ public class TrainingDefinitionsIT {
 		GameLevel gL1 = gameLevelRepository.save(gameLevel1);
 		trainingDefinitionRepository.save(tD);
 
-		mvc.perform(post("/training-definitions" + "/{id}", tD.getId()))
+		mvc.perform(post("/training-definitions" + "/{id}", tD.getId()).param("title", "title"))
 				.andExpect(status().isOk())
 				.andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON_VALUE));
 
 		Optional<TrainingDefinition> opt = trainingDefinitionRepository.findById(2L);
 		assertTrue(opt.isPresent());
 		TrainingDefinition clonedTD = opt.get();
-		assertEquals(clonedTD.getTitle(), "Clone of " + tD.getTitle());
+		assertEquals(clonedTD.getTitle(), "title");
 		assertEquals(clonedTD.getState().toString(), TDState.UNRELEASED.toString());
 		assertEquals(clonedTD.isShowStepperBar(), tD.isShowStepperBar());
 	}
 
 	@Test
 	public void cloneNonexistentTrainingDefinition() throws Exception {
-		Exception ex = mvc.perform(post("/training-definitions" + "/{id}", 100L))
+		Exception ex = mvc.perform(post("/training-definitions" + "/{id}", 100L).param("title", "title"))
 				.andExpect(status().isNotFound())
 				.andReturn().getResolvedException();
 		assertEquals(ex.getClass(), ResourceNotFoundException.class);

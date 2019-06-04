@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 
 /**
- * @author Pavel Seda
+ * @author Pavel Seda & Boris Jadus
  */
 @Api(value = "/", tags = "Export Imports", consumes = MediaType.APPLICATION_JSON_VALUE)
 @ApiResponses(value = {

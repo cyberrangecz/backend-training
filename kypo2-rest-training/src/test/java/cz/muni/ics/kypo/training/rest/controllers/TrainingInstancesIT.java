@@ -63,7 +63,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
+/**
+ * @author Boris Jadus(445343)
+ */
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = TrainingInstancesRestController.class)
 @DataJpaTest
@@ -332,7 +334,9 @@ public class TrainingInstancesIT {
 	private void mockSpringSecurityContextForGet() {
 		JsonObject sub = new JsonObject();
 		sub.addProperty("sub", "testDesigner");
-		sub.addProperty("name", "designer name");
+		sub.addProperty("name", "Ing. Michael Johnson");
+		sub.addProperty("given_name", "Michael");
+		sub.addProperty("family_name", "Johnson");
 		Authentication authentication = Mockito.mock(Authentication.class);
 		OAuth2Authentication auth = Mockito.mock(OAuth2Authentication.class);
 		SecurityContext securityContext = Mockito.mock(SecurityContext.class);

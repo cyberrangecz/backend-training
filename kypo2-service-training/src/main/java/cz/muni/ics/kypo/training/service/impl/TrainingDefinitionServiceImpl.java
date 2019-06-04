@@ -40,7 +40,7 @@ import java.util.Optional;
 import java.util.*;
 
 /**
- * @author Pavel Seda (441048)
+ * @author Pavel Seda (441048) & Boris Jadus (445343)
  */
 @Service
 public class TrainingDefinitionServiceImpl implements TrainingDefinitionService {
@@ -126,6 +126,8 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
             UserRef newUser = new UserRef();
             newUser.setUserRefLogin(userSub);
             newUser.setUserRefFullName(securityService.getFullNameOfLoggedInUser());
+            newUser.setUserRefFamilyName(securityService.getFamilyNameOfLoggedInuser());
+            newUser.setUserRefGivenName(securityService.getGivenNameOfLoggedInUser());
             trainingDefinition.addAuthor(newUser);
         }
         trainingDefinition.setLastEdited(getCurrentTimeInUTC());
@@ -157,16 +159,19 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
             UserRef newUser = new UserRef();
             newUser.setUserRefLogin(userSub);
             newUser.setUserRefFullName(securityService.getFullNameOfLoggedInUser());
+            newUser.setUserRefGivenName(securityService.getGivenNameOfLoggedInUser());
+            newUser.setUserRefFamilyName(securityService.getFamilyNameOfLoggedInuser());
             trainingDefinitionToUpdate.addAuthor(newUser);
         }
         trainingDefinitionToUpdate.setLastEdited(getCurrentTimeInUTC());
+        trainingDefinitionToUpdate.setEstimatedDuration(trainingDefinition.getEstimatedDuration());
         trainingDefinitionRepository.save(trainingDefinitionToUpdate);
         LOG.info("Training definition with id: {} updated.", trainingDefinitionToUpdate.getId());
     }
 
     @Override
     @IsDesignerOrAdmin
-    public TrainingDefinition clone(Long id) {
+    public TrainingDefinition clone(Long id, String title) {
         LOG.debug("clone({})", id);
         TrainingDefinition trainingDefinition = findById(id);
         TrainingDefinition clonedTrainingDefinition = new TrainingDefinition();
@@ -174,7 +179,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
         clonedTrainingDefinition.setId(null);
         clonedTrainingDefinition.setBetaTestingGroup(null);
 
-        clonedTrainingDefinition.setTitle("Clone of " + clonedTrainingDefinition.getTitle());
+        clonedTrainingDefinition.setTitle(title);
         clonedTrainingDefinition.setState(TDState.UNRELEASED);
         clonedTrainingDefinition.setAuthors(new HashSet<>());
         Optional<UserRef> user = userRefRepository.findUserByUserRefLogin(securityService.getSubOfLoggedInUser());
@@ -184,6 +189,8 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
             UserRef newUser = new UserRef();
             newUser.setUserRefLogin(securityService.getSubOfLoggedInUser());
             newUser.setUserRefFullName(securityService.getFullNameOfLoggedInUser());
+            newUser.setUserRefFamilyName(securityService.getFamilyNameOfLoggedInuser());
+            newUser.setUserRefGivenName(securityService.getGivenNameOfLoggedInUser());
             clonedTrainingDefinition.addAuthor(newUser);
         }
         clonedTrainingDefinition.setLastEdited(getCurrentTimeInUTC());

@@ -50,6 +50,10 @@ import org.springframework.http.*;
 
 import javax.servlet.http.HttpServletRequest;
 
+/**
+ * @author Boris Jadus(445343)
+ */
+
 @RunWith(SpringRunner.class)
 public class TrainingRunServiceTest {
 
@@ -585,6 +589,16 @@ public class TrainingRunServiceTest {
 
         assertEquals(trainingRun.getId(), trainingRun1.getId());
         assertTrue(trainingRun.getCurrentLevel() instanceof GameLevel);
+    }
+
+    @Test
+    public void resumeTrainingRunWithDeletedSandbox() {
+        trainingRun1.setSandboxInstanceRef(null);
+        given(trainingRunRepository.findByIdWithLevel(any(Long.class))).willReturn(Optional.of(trainingRun1));
+        thrown.expect(ServiceLayerException.class);
+        thrown.expectMessage("Sandbox of this training run was already deleted, you have to start new game.");
+
+        trainingRunService.resumeTrainingRun(trainingRun1.getId());
     }
 
     @Test

@@ -25,7 +25,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
@@ -34,7 +33,7 @@ import java.util.Objects;
 import java.util.Set;
 
 /**
- * @author Pavel Šeda
+ * @author Pavel Šeda & Boris Jadus (445343)
  */
 @Service
 public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
@@ -117,6 +116,8 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
                 UserRef userRef = new UserRef();
                 userRef.setUserRefLogin(organizer.getLogin());
                 userRef.setUserRefFullName(organizer.getFullName());
+                userRef.setUserRefFamilyName(organizer.getFamilyName());
+                userRef.setUserRefGivenName(organizer.getGivenName());
                 trainingInstance.addOrganizer(trainingDefinitionService.createUserRef(userRef));
             }
         }

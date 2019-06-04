@@ -259,22 +259,22 @@ public class TrainingDefinitionFacadeTest {
 
     @Test
     public void cloneTrainingDefinition() {
-        given(trainingDefinitionService.clone(trainingDefinition1.getId())).willReturn(trainingDefinition1);
-        trainingDefinitionFacade.clone(trainingDefinition1.getId());
-        then(trainingDefinitionService).should().clone(trainingDefinition1.getId());
+        given(trainingDefinitionService.clone(trainingDefinition1.getId(), "title")).willReturn(trainingDefinition1);
+        trainingDefinitionFacade.clone(trainingDefinition1.getId(), "title");
+        then(trainingDefinitionService).should().clone(trainingDefinition1.getId(), "title");
     }
 
     @Test
     public void cloneTrainingDefinitionWithNull() {
         thrown.expect(IllegalArgumentException.class);
-        trainingDefinitionFacade.clone(null);
+        trainingDefinitionFacade.clone(null, "title");
     }
 
     @Test
     public void cloneTrainingDefinitionWithFacadeLayerException() {
         thrown.expect(FacadeLayerException.class);
-        willThrow(ServiceLayerException.class).given(trainingDefinitionService).clone(any(Long.class));
-        trainingDefinitionFacade.clone(any(Long.class));
+        willThrow(ServiceLayerException.class).given(trainingDefinitionService).clone(1L, "title");
+        trainingDefinitionFacade.clone(1L, "title");
     }
 
     @Test

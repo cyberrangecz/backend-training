@@ -41,7 +41,7 @@ import java.util.Set;
 
 
 /**
- * @author Pavel Seda (441048)
+ * @author Pavel Seda (441048) & Boris Jadus (445343)
  */
 @Service
 public class TrainingInstanceServiceImpl implements TrainingInstanceService {
@@ -112,6 +112,8 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
             UserRef userRef = new UserRef();
             userRef.setUserRefLogin(securityService.getSubOfLoggedInUser());
             userRef.setUserRefFullName(securityService.getFullNameOfLoggedInUser());
+            userRef.setUserRefGivenName(securityService.getGivenNameOfLoggedInUser());
+            userRef.setUserRefFamilyName(securityService.getFamilyNameOfLoggedInuser());
             trainingInstance.addOrganizer(organizerRefRepository.save(userRef));
         }
         return trainingInstanceRepository.save(trainingInstance);
@@ -220,7 +222,7 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
         if (count != null && count > trainingInstance.getPoolSize()) {
             count = null;
         }
-        if (count != null && count + trainingInstance.getSandboxInstanceRefs().size() > trainingInstance.getPoolSize()){
+        if (count != null && count + trainingInstance.getSandboxInstanceRefs().size() > trainingInstance.getPoolSize()) {
             count = trainingInstance.getPoolSize() - trainingInstance.getSandboxInstanceRefs().size();
         }
         //Check if pool exist

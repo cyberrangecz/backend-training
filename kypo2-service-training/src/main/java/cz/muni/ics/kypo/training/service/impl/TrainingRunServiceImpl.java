@@ -168,10 +168,9 @@ public class TrainingRunServiceImpl implements TrainingRunService {
     public TrainingRun accessTrainingRun(String accessToken) {
         LOG.debug("accessTrainingRun({})", accessToken);
         Assert.hasLength(accessToken, "AccessToken cannot be null or empty.");
-        Optional<TrainingRun> alreadyAccessedTrainingRun = trainingRunRepository.findByUserAndAccessToken(accessToken, securityService.getSubOfLoggedInUser());
-        if (alreadyAccessedTrainingRun.isPresent() && !alreadyAccessedTrainingRun.get().getState().equals(TRState.FINISHED)) {
-            resumeTrainingRun(alreadyAccessedTrainingRun.get().getId());
-            return alreadyAccessedTrainingRun.get();
+        Optional<TrainingRun> accessedTrainingRun = trainingRunRepository.findValidTrainingRunOfUser(accessToken, securityService.getSubOfLoggedInUser());
+        if (accessedTrainingRun.isPresent()) {
+            return resumeTrainingRun(accessedTrainingRun.get().getId());
         }
         TrainingInstance trainingInstance = trainingInstanceRepository.findByStartTimeAfterAndEndTimeBeforeAndAccessToken(LocalDateTime.now(Clock.systemUTC()), accessToken)
             .orElseThrow(() ->  new ServiceLayerException("There is no training instance with accessToken " + accessToken + ".", ErrorCode.RESOURCE_NOT_FOUND));
@@ -210,6 +209,9 @@ public class TrainingRunServiceImpl implements TrainingRunService {
         if (trainingRun.getTrainingInstance().getEndTime().isBefore(LocalDateTime.now(Clock.systemUTC()))) {
             throw new ServiceLayerException("Cannot resume training run after end of training instance.", ErrorCode.RESOURCE_CONFLICT);
         }
+        if (trainingRun.getSandboxInstanceRef() == null) {
+            throw new ServiceLayerException("Sandbox of this training run was already deleted, you have to start new game.", ErrorCode.RESOURCE_CONFLICT);
+        }
 
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.set("Accept", MediaType.APPLICATION_JSON_VALUE);
@@ -237,7 +239,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
             newTrainingRun.setParticipantRef(userRef.get());
         } else {
             newTrainingRun.setParticipantRef(participantRefRepository.save(
-                    new UserRef(participantRefLogin, securityService.getFullNameOfLoggedInUser())
+                    new UserRef(participantRefLogin, securityService.getFullNameOfLoggedInUser(), securityService.getGivenNameOfLoggedInUser(), securityService.getFamilyNameOfLoggedInuser())
             ));
         }
         newTrainingRun.setAssessmentResponses("[]");
@@ -375,13 +377,13 @@ public class TrainingRunServiceImpl implements TrainingRunService {
         Assert.notNull(trainingRunId, MUST_NOT_BE_NULL);
         TrainingRun trainingRun = findById(trainingRunId);
         int maxOrder = abstractLevelRepository.getCurrentMaxOrder(trainingRun.getCurrentLevel().getTrainingDefinition().getId());
-        if (trainingRun.getCurrentLevel().getOrder() != maxOrder|| !trainingRun.isLevelAnswered()) {
+        if (trainingRun.getCurrentLevel().getOrder() != maxOrder || !trainingRun.isLevelAnswered()) {
             throw new ServiceLayerException("Cannot finish training run because current level is not last or is not answered.", ErrorCode.RESOURCE_CONFLICT);
         }
 
         trainingRun.setState(TRState.FINISHED);
         trainingRun.setEndTime(LocalDateTime.now(Clock.systemUTC()));
-        if(trainingRun.getCurrentLevel() instanceof InfoLevel) {
+        if (trainingRun.getCurrentLevel() instanceof InfoLevel) {
             auditEventsService.auditLevelCompletedAction(trainingRun);
         }
         auditEventsService.auditTrainingRunEndedAction(trainingRun);

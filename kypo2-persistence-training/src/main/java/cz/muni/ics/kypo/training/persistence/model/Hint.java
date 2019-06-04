@@ -21,7 +21,6 @@ public class Hint implements Serializable {
     @Column(name = "title", nullable = false)
     private String title;
     @Lob
-    @Type(type = "org.hibernate.type.StringType")
     @Column(name = "content", nullable = false)
     private String content;
     @Column(name = "hint_penalty", nullable = false)

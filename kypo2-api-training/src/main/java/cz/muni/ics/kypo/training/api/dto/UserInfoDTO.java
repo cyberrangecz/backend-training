@@ -13,6 +13,10 @@ public class UserInfoDTO {
     private String login;
     @JsonProperty(value = "full_name")
     private String fullName;
+    @JsonProperty(value="given_name")
+    private String givenName;
+    @JsonProperty(value="family_name")
+    private String familyName;
 
     public String getLogin() {
         return login;
@@ -31,12 +35,22 @@ public class UserInfoDTO {
         this.fullName = fullName;
     }
 
-    @Override
-    public String toString() {
-        return "UserInfoDTO{" +
-                "fullName=" + fullName + '\'' +
-                ", login='" + login + '\'' +
-                '}';
+    @ApiModelProperty(value = "User given name", example = "Pavel")
+    public String getGivenName() {
+        return givenName;
+    }
+
+    public void setGivenName(String givenName) {
+        this.givenName = givenName;
+    }
+
+    @ApiModelProperty(value = "User family name", example = "Seda")
+    public String getFamilyName() {
+        return familyName;
+    }
+
+    public void setFamilyName(String familyName) {
+        this.familyName = familyName;
     }
 
     @Override
@@ -51,5 +65,15 @@ public class UserInfoDTO {
     @Override
     public int hashCode() {
         return Objects.hash(login, fullName);
+    }
+
+    @Override
+    public String toString() {
+        return "UserInfoDTO{" +
+                "login='" + login + '\'' +
+                ", fullName='" + fullName + '\'' +
+                ", givenName='" + givenName + '\'' +
+                ", familyName='" + familyName + '\'' +
+                '}';
     }
 }

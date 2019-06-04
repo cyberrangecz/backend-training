@@ -49,6 +49,10 @@ import static org.mockito.BDDMockito.*;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
 
+/**
+ * @author Boris Jadus(445343)
+ */
+
 @RunWith(SpringRunner.class)
 public class TrainingDefinitionServiceTest {
 
@@ -240,7 +244,7 @@ public class TrainingDefinitionServiceTest {
     public void cloneTrainingDefinition() {
         mockSpringSecurityContextForGet();
         TrainingDefinition tDcloned = new TrainingDefinition();
-        tDcloned.setTitle("Clone of " + trainingDefinition1.getTitle());
+        tDcloned.setTitle("Clone of tD");
         tDcloned.setId(null);
         tDcloned.setState(TDState.UNRELEASED);
         tDcloned.setDescription(trainingDefinition1.getDescription());
@@ -248,7 +252,7 @@ public class TrainingDefinitionServiceTest {
         tDcloned.setLastEdited(LocalDateTime.now());
 
         given(trainingDefinitionRepository.findById(trainingDefinition1.getId())).willReturn(Optional.of(trainingDefinition1));
-        trainingDefinitionService.clone(trainingDefinition1.getId());
+        trainingDefinitionService.clone(trainingDefinition1.getId(), "Clone of tD");
         then(trainingDefinitionRepository).should().findById(trainingDefinition1.getId());
         then(trainingDefinitionRepository).should().save(tDcloned);
     }
@@ -256,7 +260,7 @@ public class TrainingDefinitionServiceTest {
     @Test
     public void cloneTrainingDefinitionWithNull() {
         thrown.expect(ServiceLayerException.class);
-        trainingDefinitionService.clone(null);
+        trainingDefinitionService.clone(null, "Clone of tD");
     }
 
     @Test

@@ -22,6 +22,10 @@ public class UserRef implements Serializable {
     private String userRefLogin;
     @Column(name = "user_ref_full_name")
     private String userRefFullName;
+    @Column(name = "user_ref_given_name")
+    private String userRefGivenName;
+    @Column(name = "user_ref_family_name")
+    private String userRefFamilyName;
     @ManyToMany(mappedBy = "organizers", fetch = FetchType.LAZY)
     private Set<TrainingInstance> trainingInstances = new HashSet<>();
     @ManyToMany(mappedBy = "authors", fetch = FetchType.LAZY)
@@ -39,6 +43,12 @@ public class UserRef implements Serializable {
     public UserRef(String userRefLogin, String userRefFullName) {
         setUserRefLogin(userRefLogin);
         setUserRefFullName(userRefFullName);
+    }
+
+    public UserRef(String userRefLogin, String userRefFullName, String userRefGivenName, String userRefFamilyName) {
+        this(userRefLogin, userRefFullName);
+        setUserRefGivenName(userRefGivenName);
+        setUserRefFamilyName(userRefFamilyName);
     }
 
     public Long getId() {
@@ -105,6 +115,22 @@ public class UserRef implements Serializable {
         this.trainingInstances.remove(trainingInstance);
     }
 
+    public String getUserRefGivenName() {
+        return userRefGivenName;
+    }
+
+    public void setUserRefGivenName(String userRefGivenName) {
+        this.userRefGivenName = userRefGivenName;
+    }
+
+    public String getUserRefFamilyName() {
+        return userRefFamilyName;
+    }
+
+    public void setUserRefFamilyName(String userRefFamilyName) {
+        this.userRefFamilyName = userRefFamilyName;
+    }
+
     public Set<BetaTestingGroup> getBetaTesters() {
         return Collections.unmodifiableSet(betaTesters);
     }
@@ -126,11 +152,15 @@ public class UserRef implements Serializable {
         return Objects.hash(getUserRefLogin());
     }
 
+
     @Override
     public String toString() {
         return "UserRef{" +
                 "id=" + id +
-                ", userRefLogin='" + userRefLogin + '\''+
+                ", userRefLogin='" + userRefLogin + '\'' +
+                ", userRefFullName='" + userRefFullName + '\'' +
+                ", userRefGivenName='" + userRefGivenName + '\'' +
+                ", userRefFamilyName='" + userRefFamilyName + '\'' +
                 '}';
     }
 }
