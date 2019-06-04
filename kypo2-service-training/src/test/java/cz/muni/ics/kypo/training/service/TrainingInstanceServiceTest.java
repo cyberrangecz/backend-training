@@ -361,7 +361,7 @@ public class TrainingInstanceServiceTest {
     public void createPoolForSandboxes() {
         when(sandboxPoolInfo.getId()).thenReturn(4L);
 
-        given(trainingInstanceRepository.findById(trainingInstance2.getId())).willReturn(Optional.ofNullable(trainingInstance2));
+        given(trainingInstanceRepository.findByIdIncludingDefinition(trainingInstance2.getId())).willReturn(Optional.ofNullable(trainingInstance2));
         given(restTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(SandboxPoolInfo.class))).
                 willReturn(new ResponseEntity<SandboxPoolInfo>(sandboxPoolInfo, HttpStatus.OK));
         Long poolId = trainingInstanceService.createPoolForSandboxes(trainingInstance2.getId());
@@ -371,7 +371,7 @@ public class TrainingInstanceServiceTest {
 
     @Test
     public void createPoolWithErrorFromOpenStack() {
-        given(trainingInstanceRepository.findById(trainingInstance2.getId())).willReturn(Optional.ofNullable(trainingInstance2));
+        given(trainingInstanceRepository.findByIdIncludingDefinition(trainingInstance2.getId())).willReturn(Optional.ofNullable(trainingInstance2));
         given(restTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(SandboxPoolInfo.class))).
                 willReturn(new ResponseEntity<SandboxPoolInfo>(sandboxPoolInfo, HttpStatus.CONFLICT));
         thrown.expect(ServiceLayerException.class);

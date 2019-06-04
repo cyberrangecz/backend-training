@@ -110,12 +110,12 @@ public class TrainingInstanceFacadeTest {
     public void findTrainingInstanceById() {
         given(trainingInstanceService.findById(any(Long.class))).willReturn(trainingInstance1);
         trainingInstanceFacade.findById(trainingInstance1.getId());
-        then(trainingInstanceService).should().findById(trainingInstance1.getId());
+        then(trainingInstanceService).should().findByIdIncludingDefinition(trainingInstance1.getId());
     }
 
     @Test
     public void findNonexistentTrainingInstanceById() {
-        willThrow(ServiceLayerException.class).given(trainingInstanceService).findById(1L);
+        willThrow(ServiceLayerException.class).given(trainingInstanceService).findByIdIncludingDefinition(1L);
         thrown.expect(FacadeLayerException.class);
         trainingInstanceFacade.findById(1L);
     }

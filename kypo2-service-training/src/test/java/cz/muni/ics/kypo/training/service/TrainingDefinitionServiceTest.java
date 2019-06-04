@@ -698,11 +698,11 @@ public class TrainingDefinitionServiceTest {
 
     @Test
     public void findLevelById() {
-        given(abstractLevelRepository.findById(infoLevel.getId())).willReturn(Optional.of(infoLevel));
+        given(abstractLevelRepository.findByIdIncludinDefinition(infoLevel.getId())).willReturn(Optional.of(infoLevel));
         AbstractLevel abstractLevel = trainingDefinitionService.findLevelById(infoLevel.getId());
         assertTrue(abstractLevel instanceof InfoLevel);
         assertEquals(infoLevel.getId(), abstractLevel.getId());
-        then(abstractLevelRepository).should().findById(infoLevel.getId());
+        then(abstractLevelRepository).should().findByIdIncludinDefinition(infoLevel.getId());
     }
 
     @Test
