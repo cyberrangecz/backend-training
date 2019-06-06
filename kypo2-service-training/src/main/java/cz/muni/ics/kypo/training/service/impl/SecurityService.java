@@ -105,7 +105,7 @@ public class SecurityService {
         return credentials.get("given_name").getAsString();
     }
 
-    public String getFamilyNameOfLoggedInuser(){
+    public String getFamilyNameOfLoggedInUser(){
         OAuth2Authentication authentication = (OAuth2Authentication) SecurityContextHolder.getContext().getAuthentication();
         JsonObject credentials = (JsonObject) authentication.getUserAuthentication().getCredentials();
         return credentials.get("family_name").getAsString();

@@ -25,7 +25,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.*;
-import org.springframework.http.client.ClientHttpRequestInterceptor;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
@@ -113,7 +112,7 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
             userRef.setUserRefLogin(securityService.getSubOfLoggedInUser());
             userRef.setUserRefFullName(securityService.getFullNameOfLoggedInUser());
             userRef.setUserRefGivenName(securityService.getGivenNameOfLoggedInUser());
-            userRef.setUserRefFamilyName(securityService.getFamilyNameOfLoggedInuser());
+            userRef.setUserRefFamilyName(securityService.getFamilyNameOfLoggedInUser());
             trainingInstance.addOrganizer(organizerRefRepository.save(userRef));
         }
         return trainingInstanceRepository.save(trainingInstance);
