@@ -6,10 +6,8 @@ import com.github.fge.jsonschema.core.exceptions.ProcessingException;
 import com.github.fge.jsonschema.core.report.ProcessingReport;
 import com.github.fge.jsonschema.main.JsonSchemaFactory;
 import com.github.fge.jsonschema.main.JsonValidator;
-import com.google.gson.JsonObject;
 import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.training.annotations.security.IsTraineeOrAdmin;
-import cz.muni.ics.kypo.training.api.dto.imports.AbstractLevelImportDTO;
 import cz.muni.ics.kypo.training.exceptions.ErrorCode;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.persistence.model.*;
@@ -30,17 +28,13 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.*;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
-import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.time.*;
-import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 /**
@@ -236,10 +230,14 @@ public class TrainingRunServiceImpl implements TrainingRunService {
 
         Optional<UserRef> userRef = participantRefRepository.findUserByUserRefLogin(participantRefLogin);
         if (userRef.isPresent()) {
+            if(userRef.get().getUserRefGivenName() == null) {
+                userRef.get().setUserRefGivenName(securityService.getGivenNameOfLoggedInUser());
+                userRef.get().setUserRefFamilyName(securityService.getFamilyNameOfLoggedInUser());
+            }
             newTrainingRun.setParticipantRef(userRef.get());
         } else {
             newTrainingRun.setParticipantRef(participantRefRepository.save(
-                    new UserRef(participantRefLogin, securityService.getFullNameOfLoggedInUser(), securityService.getGivenNameOfLoggedInUser(), securityService.getFamilyNameOfLoggedInuser())
+                    new UserRef(participantRefLogin, securityService.getFullNameOfLoggedInUser(), securityService.getGivenNameOfLoggedInUser(), securityService.getFamilyNameOfLoggedInUser())
             ));
         }
         newTrainingRun.setAssessmentResponses("[]");

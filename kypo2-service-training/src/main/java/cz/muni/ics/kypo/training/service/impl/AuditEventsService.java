@@ -1,6 +1,5 @@
 package cz.muni.ics.kypo.training.service.impl;
 
-import com.google.gson.JsonObject;
 import cz.muni.csirt.kypo.elasticsearch.service.AuditService;
 import cz.muni.csirt.kypo.events.trainings.*;
 import cz.muni.csirt.kypo.events.trainings.enums.LevelType;
@@ -8,8 +7,6 @@ import cz.muni.ics.kypo.training.persistence.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.stereotype.Service;
 
 import java.time.Clock;
@@ -39,7 +36,9 @@ public class AuditEventsService {
                 .trainingInstanceId(trainingInstance.getId())
                 .trainingRunId(trainingRun.getId())
                 .gameTime(0L)
-                .playerLogin(getSubOfLoggedInUser())
+                .playerLogin(trainingRun.getParticipantRef().getUserRefLogin())
+                .fullName(trainingRun.getParticipantRef().getUserRefFullName())
+                .fullNameWithoutTitles(trainingRun.getParticipantRef().getUserRefGivenName() + " " + trainingRun.getParticipantRef().getUserRefFamilyName())
                 .totalScore(trainingRun.getTotalScore())
                 .actualScoreInLevel(trainingRun.getCurrentScore())
                 .level(trainingRun.getCurrentLevel().getId())
@@ -61,7 +60,9 @@ public class AuditEventsService {
                 .trainingInstanceId(trainingInstance.getId())
                 .trainingRunId(trainingRun.getId())
                 .gameTime(computeGameTime(trainingRun.getStartTime()))
-                .playerLogin(getSubOfLoggedInUser())
+                .playerLogin(trainingRun.getParticipantRef().getUserRefLogin())
+                .fullName(trainingRun.getParticipantRef().getUserRefFullName())
+                .fullNameWithoutTitles(trainingRun.getParticipantRef().getUserRefGivenName() + " " + trainingRun.getParticipantRef().getUserRefFamilyName())
                 .totalScore(trainingRun.getTotalScore())
                 .actualScoreInLevel(trainingRun.getCurrentScore())
                 .level(trainingRun.getCurrentLevel().getId())
@@ -86,7 +87,9 @@ public class AuditEventsService {
                 .trainingInstanceId(trainingInstance.getId())
                 .trainingRunId(trainingRun.getId())
                 .gameTime(computeGameTime(trainingRun.getStartTime()))
-                .playerLogin(getSubOfLoggedInUser())
+                .playerLogin(trainingRun.getParticipantRef().getUserRefLogin())
+                .fullName(trainingRun.getParticipantRef().getUserRefFullName())
+                .fullNameWithoutTitles(trainingRun.getParticipantRef().getUserRefGivenName() + " " + trainingRun.getParticipantRef().getUserRefFamilyName())
                 .totalScore(trainingRun.getTotalScore())
                 .actualScoreInLevel(trainingRun.getCurrentScore())
                 .level(trainingRun.getCurrentLevel().getId())
@@ -106,7 +109,9 @@ public class AuditEventsService {
                 .trainingInstanceId(trainingInstance.getId())
                 .trainingRunId(trainingRun.getId())
                 .gameTime(computeGameTime(trainingRun.getStartTime()))
-                .playerLogin(getSubOfLoggedInUser())
+                .playerLogin(trainingRun.getParticipantRef().getUserRefLogin())
+                .fullName(trainingRun.getParticipantRef().getUserRefFullName())
+                .fullNameWithoutTitles(trainingRun.getParticipantRef().getUserRefGivenName() + " " + trainingRun.getParticipantRef().getUserRefFamilyName())
                 .totalScore(trainingRun.getTotalScore())
                 .actualScoreInLevel(trainingRun.getCurrentScore())
                 .level(trainingRun.getCurrentLevel().getId())
@@ -127,7 +132,9 @@ public class AuditEventsService {
                 .trainingInstanceId(trainingInstance.getId())
                 .trainingRunId(trainingRun.getId())
                 .gameTime(computeGameTime(trainingRun.getStartTime()))
-                .playerLogin(getSubOfLoggedInUser())
+                .playerLogin(trainingRun.getParticipantRef().getUserRefLogin())
+                .fullName(trainingRun.getParticipantRef().getUserRefFullName())
+                .fullNameWithoutTitles(trainingRun.getParticipantRef().getUserRefGivenName() + " " + trainingRun.getParticipantRef().getUserRefFamilyName())
                 .totalScore(trainingRun.getTotalScore())
                 .actualScoreInLevel(trainingRun.getCurrentScore())
                 .level(trainingRun.getCurrentLevel().getId())
@@ -147,7 +154,9 @@ public class AuditEventsService {
                 .trainingInstanceId(trainingInstance.getId())
                 .trainingRunId(trainingRun.getId())
                 .gameTime(computeGameTime(trainingRun.getStartTime()))
-                .playerLogin(getSubOfLoggedInUser())
+                .playerLogin(trainingRun.getParticipantRef().getUserRefLogin())
+                .fullName(trainingRun.getParticipantRef().getUserRefFullName())
+                .fullNameWithoutTitles(trainingRun.getParticipantRef().getUserRefGivenName() + " " + trainingRun.getParticipantRef().getUserRefFamilyName())
                 .totalScore(trainingRun.getTotalScore()) // requires to set total and actual score in level from training run entity
                 .actualScoreInLevel(trainingRun.getCurrentScore())
                 .level(trainingRun.getCurrentLevel().getId())
@@ -167,7 +176,9 @@ public class AuditEventsService {
                 .trainingInstanceId(trainingInstance.getId())
                 .trainingRunId(trainingRun.getId())
                 .gameTime(computeGameTime(trainingRun.getStartTime()))
-                .playerLogin(getSubOfLoggedInUser())
+                .playerLogin(trainingRun.getParticipantRef().getUserRefLogin())
+                .fullName(trainingRun.getParticipantRef().getUserRefFullName())
+                .fullNameWithoutTitles(trainingRun.getParticipantRef().getUserRefGivenName() + " " + trainingRun.getParticipantRef().getUserRefFamilyName())
                 .totalScore(trainingRun.getTotalScore())
                 .actualScoreInLevel(trainingRun.getCurrentScore())
                 .level(trainingRun.getCurrentLevel().getId())
@@ -188,7 +199,9 @@ public class AuditEventsService {
                 .trainingInstanceId(trainingInstance.getId())
                 .trainingRunId(trainingRun.getId())
                 .gameTime(computeGameTime(trainingRun.getStartTime()))
-                .playerLogin(getSubOfLoggedInUser())
+                .playerLogin(trainingRun.getParticipantRef().getUserRefLogin())
+                .fullName(trainingRun.getParticipantRef().getUserRefFullName())
+                .fullNameWithoutTitles(trainingRun.getParticipantRef().getUserRefGivenName() + " " + trainingRun.getParticipantRef().getUserRefFamilyName())
                 .totalScore(trainingRun.getTotalScore())
                 .actualScoreInLevel(trainingRun.getCurrentScore())
                 .level(trainingRun.getCurrentLevel().getId())
@@ -208,7 +221,9 @@ public class AuditEventsService {
                 .trainingInstanceId(trainingInstance.getId())
                 .trainingRunId(trainingRun.getId())
                 .gameTime(computeGameTime(trainingRun.getStartTime()))
-                .playerLogin(getSubOfLoggedInUser())
+                .playerLogin(trainingRun.getParticipantRef().getUserRefLogin())
+                .fullName(trainingRun.getParticipantRef().getUserRefFullName())
+                .fullNameWithoutTitles(trainingRun.getParticipantRef().getUserRefGivenName() + " " + trainingRun.getParticipantRef().getUserRefFamilyName())
                 .totalScore(trainingRun.getTotalScore())
                 .actualScoreInLevel(trainingRun.getCurrentScore())
                 .level(trainingRun.getCurrentLevel().getId())
@@ -223,25 +238,20 @@ public class AuditEventsService {
         TrainingInstance trainingInstance = trainingRun.getTrainingInstance();
         Long trainingDefinitionId = trainingInstance.getTrainingDefinition().getId();
         Long sandboxId = trainingInstance.getTrainingDefinition().getSandboxDefinitionRefId();
-
         TrainingRunResumed trainingRunResumed = new TrainingRunResumed.TrainingRunResumedBuilder()
                 .sandboxId(sandboxId)
                 .trainingDefinitionId(trainingDefinitionId)
                 .trainingInstanceId(trainingInstance.getId())
                 .trainingRunId(trainingRun.getId())
                 .gameTime(computeGameTime(trainingRun.getStartTime()))
-                .playerLogin(getSubOfLoggedInUser())
+                .playerLogin(trainingRun.getParticipantRef().getUserRefLogin())
+                .fullName(trainingRun.getParticipantRef().getUserRefFullName())
+                .fullNameWithoutTitles(trainingRun.getParticipantRef().getUserRefGivenName() + " " + trainingRun.getParticipantRef().getUserRefFamilyName())
                 .totalScore(trainingRun.getTotalScore())
                 .actualScoreInLevel(trainingRun.getCurrentScore())
                 .level(trainingRun.getCurrentLevel().getId())
                 .build();
         auditService.saveTrainingRunEvent(trainingRunResumed, trainingDefinitionId, trainingInstance.getId());
-    }
-
-    private String getSubOfLoggedInUser() {
-        OAuth2Authentication authentication = (OAuth2Authentication) SecurityContextHolder.getContext().getAuthentication();
-        JsonObject credentials = (JsonObject) authentication.getUserAuthentication().getCredentials();
-        return credentials.get("sub").getAsString();
     }
 
     private long computeGameTime(LocalDateTime gameStartedTime) {

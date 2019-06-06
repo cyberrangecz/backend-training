@@ -36,6 +36,12 @@ public class HintTaken extends AbstractAuditPOJO {
     @ApiModelProperty(value = "ID of a player in the training run.", required = true)
     @JsonProperty(value = "player_login", required = true)
     private String playerLogin;
+    @ApiModelProperty(value = "Full name of a player in the training run with titles.", required = true)
+    @JsonProperty(value = "full_name", required = true)
+    private String fullName;
+    @ApiModelProperty(value = "Full name of a player in the training run without titles.", required = true)
+    @JsonProperty(value = "full_name_without_titles", required = true)
+    private String fullNameWithoutTitles;
     @ApiModelProperty(value = "Total score of the player in the level.", required = true)
     @JsonProperty(value = "total_score", required = true)
     private int totalScore;
@@ -62,6 +68,8 @@ public class HintTaken extends AbstractAuditPOJO {
         this.trainingRunId = builder.trainingRunId;
         this.gameTime = builder.gameTime;
         this.playerLogin = builder.playerLogin;
+        this.fullName = builder.fullName;
+        this.fullNameWithoutTitles = builder.fullNameWithoutTitles;
         this.totalScore = builder.totalScore;
         this.actualScoreInLevel = builder.actualScoreInLevel;
         this.level = builder.level;
@@ -77,6 +85,8 @@ public class HintTaken extends AbstractAuditPOJO {
         private long trainingRunId;
         private long gameTime;
         private String playerLogin;
+        private String fullName;
+        private String fullNameWithoutTitles;
         private int totalScore;
         private int actualScoreInLevel;
         private long level;
@@ -111,6 +121,16 @@ public class HintTaken extends AbstractAuditPOJO {
 
         public HintTakenBuilder playerLogin(String playerLogin) {
             this.playerLogin = playerLogin;
+            return this;
+        }
+
+        public HintTakenBuilder fullName(String fullName) {
+            this.fullName = fullName;
+            return this;
+        }
+
+        public HintTakenBuilder fullNameWithoutTitles(String fullNameWithoutTitles) {
+            this.fullNameWithoutTitles = fullNameWithoutTitles;
             return this;
         }
 
@@ -159,6 +179,8 @@ public class HintTaken extends AbstractAuditPOJO {
                 ", trainingRunId=" + trainingRunId +
                 ", gameTime=" + gameTime +
                 ", playerLogin='" + playerLogin + '\'' +
+                ", fullName='" + fullName + '\'' +
+                ", fullNameWithoutTitles='" + fullNameWithoutTitles + '\'' +
                 ", totalScore=" + totalScore +
                 ", actualScoreInLevel=" + actualScoreInLevel +
                 ", level=" + level +
