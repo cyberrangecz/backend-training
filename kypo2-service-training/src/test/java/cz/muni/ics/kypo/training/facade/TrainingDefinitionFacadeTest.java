@@ -49,7 +49,7 @@ import static org.junit.Assert.assertEquals;
 import static org.mockito.BDDMockito.*;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = {InfoLevelMapperImpl.class, SnapshotHookMapperImpl.class, TrainingDefinitionMapperImpl.class,
+@SpringBootTest(classes = {InfoLevelMapperImpl.class, TrainingDefinitionMapperImpl.class,
         UserRefMapperImpl.class, GameLevelMapperImpl.class, InfoLevelMapperImpl.class, BetaTestingGroupMapperImpl.class,
         AssessmentLevelMapperImpl.class, HintMapperImpl.class, BasicLevelInfoMapperImpl.class})
 public class TrainingDefinitionFacadeTest {

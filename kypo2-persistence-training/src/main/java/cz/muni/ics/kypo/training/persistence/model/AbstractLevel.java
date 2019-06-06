@@ -20,8 +20,6 @@ public abstract class AbstractLevel implements Serializable {
     private String title;
     @Column(name = "max_score", nullable = false)
     private int maxScore;
-    @OneToOne(fetch = FetchType.LAZY, optional = true, cascade = CascadeType.ALL)
-    private SnapshotHook snapshotHook;
     @Column(name = "estimated_duration")
     private long estimatedDuration;
     @Column(name = "order_in_training_definition", nullable = false)
@@ -55,14 +53,6 @@ public abstract class AbstractLevel implements Serializable {
 
     public void setMaxScore(int maxScore) {
         this.maxScore = maxScore;
-    }
-
-    public SnapshotHook getSnapshotHook() {
-        return snapshotHook;
-    }
-
-    public void setSnapshotHook(SnapshotHook snapshotHook) {
-        this.snapshotHook = snapshotHook;
     }
 
     public long getEstimatedDuration() {

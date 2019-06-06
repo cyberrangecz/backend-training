@@ -12,7 +12,7 @@ import java.util.*;
 /**
  * @author Roman Oravec
  */
-@Mapper(componentModel = "spring", uses = {SnapshotHookMapper.class, HintMapper.class})
+@Mapper(componentModel = "spring", uses = {HintMapper.class})
 public interface GameLevelUpdateMapper extends ParentMapper{
     GameLevel mapToEntity(GameLevelUpdateDTO dto);
 

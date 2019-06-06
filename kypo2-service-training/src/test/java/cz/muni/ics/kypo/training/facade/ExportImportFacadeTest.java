@@ -37,7 +37,7 @@ import static org.mockito.BDDMockito.willThrow;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = {InfoLevelMapperImpl.class, ExportImportMapperImpl.class, TrainingDefinitionMapperImpl.class,
-        GameLevelMapperImpl.class, InfoLevelMapperImpl.class, AssessmentLevelMapperImpl.class, SnapshotHookMapperImpl.class,
+        GameLevelMapperImpl.class, InfoLevelMapperImpl.class, AssessmentLevelMapperImpl.class,
         UserRefMapperImpl.class, BetaTestingGroupMapperImpl.class, HintMapperImpl.class})
 public class ExportImportFacadeTest {
 

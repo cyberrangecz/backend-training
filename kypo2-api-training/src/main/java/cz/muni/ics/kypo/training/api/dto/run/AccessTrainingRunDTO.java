@@ -3,11 +3,13 @@ package cz.muni.ics.kypo.training.api.dto.run;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import cz.muni.ics.kypo.training.api.dto.AbstractLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.BasicLevelInfoDTO;
+import cz.muni.ics.kypo.training.api.dto.hint.TakenHintDTO;
 import cz.muni.ics.kypo.training.converters.LocalDateTimeUTCSerializer;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @ApiModel(value = "AccessTrainingRunDTO", description = ".")
@@ -21,6 +23,8 @@ public class AccessTrainingRunDTO {
     private Long instanceId;
     @JsonSerialize(using = LocalDateTimeUTCSerializer.class)
     private LocalDateTime startTime;
+    private String takenSolution;
+    private List<TakenHintDTO> takenHints = new ArrayList<>();
 
     @ApiModelProperty(value = "Main identifier of training run.", example = "1")
     public Long getTrainingRunID() {
@@ -84,6 +88,27 @@ public class AccessTrainingRunDTO {
     public void setStartTime(LocalDateTime startTime) {
         this.startTime = startTime;
     }
+
+    public String getTakenSolution() {
+        return takenSolution;
+    }
+
+    public void setTakenSolution(String takenSolution) {
+        this.takenSolution = takenSolution;
+    }
+
+    public List<TakenHintDTO> getTakenHints() {
+        return takenHints;
+    }
+
+    public void setTakenHints(List<TakenHintDTO> takenHints) {
+        this.takenHints = takenHints;
+    }
+
+    public void addTakenHint(TakenHintDTO takenHintDTO) {
+        this.takenHints.add(takenHintDTO);
+    }
+
 
     @Override public String toString() {
         return "AccessTrainingRunDTO{" + "trainingRunID=" + trainingRunID + ", showStepperBar=" + showStepperBar + ", sandboxInstanceId="

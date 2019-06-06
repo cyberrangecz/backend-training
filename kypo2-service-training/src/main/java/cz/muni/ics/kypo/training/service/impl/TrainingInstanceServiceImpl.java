@@ -193,7 +193,7 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
             "or @securityService.isOrganizerOfGivenTrainingInstance(#instanceId)")
     public Long createPoolForSandboxes(Long instanceId) {
         LOG.debug("createPoolForSandboxes({})", instanceId);
-        TrainingInstance trainingInstance = findByIdIncludingDefinition(instanceId);
+        TrainingInstance trainingInstance = findById(instanceId);
         //Check if pool can be created
         if (trainingInstance.getPoolId() != null) {
             return trainingInstance.getPoolId();

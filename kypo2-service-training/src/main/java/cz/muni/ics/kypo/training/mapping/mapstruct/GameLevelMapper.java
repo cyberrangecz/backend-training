@@ -16,7 +16,7 @@ import java.util.*;
 /**
  * @author Roman Oravec
  */
-@Mapper(componentModel = "spring", uses = {SnapshotHookMapper.class, HintMapper.class})
+@Mapper(componentModel = "spring", uses = {HintMapper.class})
 public interface GameLevelMapper extends ParentMapper{
     GameLevel mapToEntity(GameLevelDTO dto);
 

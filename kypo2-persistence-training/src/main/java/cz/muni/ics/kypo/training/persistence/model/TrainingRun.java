@@ -7,7 +7,7 @@ import org.hibernate.annotations.Type;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * @author Pavel Seda (441048)
@@ -53,6 +53,9 @@ public class TrainingRun implements Serializable {
     private int currentScore;
     @Column(name = "level_answered")
     private boolean levelAnswered;
+    @ElementCollection(targetClass=HintInfo.class,fetch= FetchType.LAZY)
+    @CollectionTable(name="hint_info",joinColumns=@JoinColumn(name="training_run_id"))
+    private Set<HintInfo> hintInfoList = new HashSet<>();
 
     public Long getId() {
         return id;
@@ -185,6 +188,19 @@ public class TrainingRun implements Serializable {
 
     public void setLevelAnswered(boolean levelAnswered) {
         this.levelAnswered = levelAnswered;
+    }
+
+
+    public Set<HintInfo> getHintInfoList() {
+        return hintInfoList;
+    }
+
+    public void addHintInfo(HintInfo hintInfo) {
+        this.hintInfoList.add(hintInfo);
+    }
+
+    public void removeHintInfo(HintInfo hintInfo) {
+        this.hintInfoList.remove(hintInfo);
     }
 
     @Override

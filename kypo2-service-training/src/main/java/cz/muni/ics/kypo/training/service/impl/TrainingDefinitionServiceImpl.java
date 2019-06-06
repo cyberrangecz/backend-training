@@ -520,7 +520,6 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
                 AssessmentLevel newAssessmentLevel = new AssessmentLevel();
                 BeanUtils.copyProperties(level, newAssessmentLevel);
                 newAssessmentLevel.setId(null);
-                newAssessmentLevel.setSnapshotHook(null);
                 newAssessmentLevel.setTrainingDefinition(clonedTrainingDefinition);
                 assessmentLevelRepository.save(newAssessmentLevel);
             }
@@ -528,7 +527,6 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
                 InfoLevel newInfoLevel = new InfoLevel();
                 BeanUtils.copyProperties(level, newInfoLevel);
                 newInfoLevel.setId(null);
-                newInfoLevel.setSnapshotHook(null);
                 newInfoLevel.setTrainingDefinition(clonedTrainingDefinition);
                 infoLevelRepository.save(newInfoLevel);
             }
@@ -536,7 +534,6 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
                 GameLevel newGameLevel = new GameLevel();
                 BeanUtils.copyProperties(level, newGameLevel);
                 newGameLevel.setId(null);
-                newGameLevel.setSnapshotHook(null);
                 newGameLevel.setHints(null);
                 Set<Hint> hints = new HashSet<>();
                 for (Hint hint : ((GameLevel) level).getHints()) {
