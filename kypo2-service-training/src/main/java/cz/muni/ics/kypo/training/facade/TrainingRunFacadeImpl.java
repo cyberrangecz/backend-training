@@ -12,6 +12,7 @@ import cz.muni.ics.kypo.training.api.dto.BasicLevelInfoDTO;
 import cz.muni.ics.kypo.training.api.dto.IsCorrectFlagDTO;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.hint.HintDTO;
+import cz.muni.ics.kypo.training.api.dto.hint.TakenHintDTO;
 import cz.muni.ics.kypo.training.api.dto.run.AccessTrainingRunDTO;
 import cz.muni.ics.kypo.training.api.dto.run.AccessedTrainingRunDTO;
 import cz.muni.ics.kypo.training.api.dto.run.TrainingRunByIdDTO;
@@ -99,16 +100,20 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
     @TransactionalWO
     public AccessTrainingRunDTO resumeTrainingRun(Long trainingRunId) {
         LOG.debug("resumeTrainingRun({})", trainingRunId);
-        AccessTrainingRunDTO accessTrainingRunDTO = new AccessTrainingRunDTO();
         try {
             TrainingRun trainingRun = trainingRunService.resumeTrainingRun(trainingRunId);
-            accessTrainingRunDTO.setTrainingRunID(trainingRun.getId());
-            accessTrainingRunDTO.setAbstractLevelDTO(getCorrectAbstractLevelDTO(trainingRun.getCurrentLevel()));
-            accessTrainingRunDTO.setShowStepperBar(trainingRun.getTrainingInstance().getTrainingDefinition().isShowStepperBar());
-            accessTrainingRunDTO.setInfoAboutLevels(getInfoAboutLevels(trainingRun.getTrainingInstance().getTrainingDefinition().getId()));
-            accessTrainingRunDTO.setSandboxInstanceId(trainingRun.getSandboxInstanceRef().getSandboxInstanceRef());
-            accessTrainingRunDTO.setInstanceId(trainingRun.getTrainingInstance().getId());
-            accessTrainingRunDTO.setStartTime(trainingRun.getStartTime());
+            AccessTrainingRunDTO accessTrainingRunDTO = convertToAccessTrainingRunDTO(trainingRun);
+            if(trainingRun.getCurrentLevel() instanceof GameLevel) {
+                if(trainingRun.isSolutionTaken()) {
+                    accessTrainingRunDTO.setTakenSolution(((GameLevel) trainingRun.getCurrentLevel()).getSolution());
+                }
+                trainingRun.getHintInfoList().forEach(hintInfo -> {
+                                if(hintInfo.getGameLevelId().equals(trainingRun.getCurrentLevel().getId())) {
+                                    accessTrainingRunDTO.getTakenHints().add(convertToTakenHintDTO(hintInfo));
+                                }
+                        }
+                );
+            }
             return accessTrainingRunDTO;
         } catch (ServiceLayerException ex) {
             throw new FacadeLayerException(ex);
@@ -119,17 +124,9 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
     @TransactionalWO
     public AccessTrainingRunDTO accessTrainingRun(String accessToken) {
         LOG.debug("accessTrainingRun({})", accessToken);
-        AccessTrainingRunDTO accessTrainingRunDTO = new AccessTrainingRunDTO();
         try {
             TrainingRun trainingRun = trainingRunService.accessTrainingRun(accessToken);
-            accessTrainingRunDTO.setTrainingRunID(trainingRun.getId());
-            accessTrainingRunDTO.setAbstractLevelDTO(getCorrectAbstractLevelDTO(trainingRun.getCurrentLevel()));
-            accessTrainingRunDTO.setShowStepperBar(trainingRun.getTrainingInstance().getTrainingDefinition().isShowStepperBar());
-            accessTrainingRunDTO.setInfoAboutLevels(getInfoAboutLevels(trainingRun.getCurrentLevel().getTrainingDefinition().getId()));
-            accessTrainingRunDTO.setSandboxInstanceId(trainingRun.getSandboxInstanceRef().getSandboxInstanceRef());
-            accessTrainingRunDTO.setInstanceId(trainingRun.getTrainingInstance().getId());
-            accessTrainingRunDTO.setStartTime(trainingRun.getStartTime());
-            return accessTrainingRunDTO;
+            return convertToAccessTrainingRunDTO(trainingRun);
         } catch (ServiceLayerException ex) {
             throw new FacadeLayerException(ex);
         }
@@ -255,6 +252,26 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
             accessedTrainingRunDTOS.add(accessedTrainingRunDTO);
         }
         return new PageResultResource<>(accessedTrainingRunDTOS, createPagination(trainingRuns));
+    }
+
+    private TakenHintDTO convertToTakenHintDTO(HintInfo hintInfo) {
+        TakenHintDTO takenHintDTO = new TakenHintDTO();
+        takenHintDTO.setId(hintInfo.getHintId());
+        takenHintDTO.setContent(hintInfo.getHintContent());
+        takenHintDTO.setTitle(hintInfo.getHintTitle());
+        return takenHintDTO;
+    }
+
+    private AccessTrainingRunDTO convertToAccessTrainingRunDTO(TrainingRun trainingRun) {
+        AccessTrainingRunDTO accessTrainingRunDTO = new AccessTrainingRunDTO();
+        accessTrainingRunDTO.setTrainingRunID(trainingRun.getId());
+        accessTrainingRunDTO.setAbstractLevelDTO(getCorrectAbstractLevelDTO(trainingRun.getCurrentLevel()));
+        accessTrainingRunDTO.setShowStepperBar(trainingRun.getTrainingInstance().getTrainingDefinition().isShowStepperBar());
+        accessTrainingRunDTO.setInfoAboutLevels(getInfoAboutLevels(trainingRun.getCurrentLevel().getTrainingDefinition().getId()));
+        accessTrainingRunDTO.setSandboxInstanceId(trainingRun.getSandboxInstanceRef().getSandboxInstanceRef());
+        accessTrainingRunDTO.setInstanceId(trainingRun.getTrainingInstance().getId());
+        accessTrainingRunDTO.setStartTime(trainingRun.getStartTime());
+        return accessTrainingRunDTO;
     }
 
     private PageResultResource.Pagination createPagination(Page<?> objects) {

@@ -54,8 +54,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * @author Boris Jadus(445343)
  */
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = {InfoLevelMapperImpl.class, SnapshotHookMapperImpl.class,
-        TrainingInstanceMapperImpl.class, TrainingDefinitionMapperImpl.class, UserRefMapperImpl.class, BetaTestingGroupMapperImpl.class})
+@SpringBootTest(classes = {InfoLevelMapperImpl.class, TrainingInstanceMapperImpl.class, TrainingDefinitionMapperImpl.class,
+        UserRefMapperImpl.class, BetaTestingGroupMapperImpl.class})
 public class TrainingInstancesRestControllerTest {
 
     private TrainingInstancesRestController trainingInstancesRestController;

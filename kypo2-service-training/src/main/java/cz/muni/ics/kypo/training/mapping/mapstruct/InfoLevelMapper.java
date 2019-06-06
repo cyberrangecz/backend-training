@@ -17,7 +17,7 @@ import java.util.*;
  * @author Roman Oravec & Pavel Seda
  */
 @Mapper(componentModel = "spring",
-        uses = {SnapshotHookMapper.class,SandboxInstanceRefMapper.class},
+        uses = {SandboxInstanceRefMapper.class},
         nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS)
 public interface InfoLevelMapper extends ParentMapper {
 

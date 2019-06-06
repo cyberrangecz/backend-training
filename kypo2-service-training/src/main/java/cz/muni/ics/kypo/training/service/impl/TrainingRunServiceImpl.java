@@ -353,6 +353,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
             if (hint.getGameLevel().getId().equals(level.getId())) {
                 trainingRun.decreaseCurrentScore(hint.getHintPenalty());
                 trainingRun.decreaseTotalScore(hint.getHintPenalty());
+                trainingRun.addHintInfo(new HintInfo(level.getId(), hint.getId(), hint.getTitle(), hint.getContent()));
                 auditEventsService.auditHintTakenAction(trainingRun, hint);
                 return hint;
             }

@@ -4,7 +4,6 @@ create table abstract_level (
     max_score int4 not null,
     order_in_training_definition int4 not null,
     title varchar(255) not null,
-    snapshot_hook_id int8,
     training_definition_id int8,
     primary key (id)
 );
@@ -46,7 +45,7 @@ create table game_level (
 );
 
 create table hint (
-   id  bigserial not null,
+    id  bigserial not null,
     content text not null,
     hint_penalty int4 not null,
     title varchar(255) not null,
@@ -64,12 +63,6 @@ create table sandbox_instance_ref (
    id  bigserial not null,
     sandbox_instance_ref int8,
     training_instance_id int8 not null,
-    primary key (id)
-);
-
-create table snapshot_hook (
-   id  bigserial not null,
-    snapshot text not null,
     primary key (id)
 );
 
@@ -131,6 +124,18 @@ create table training_run (
     primary key (id)
 );
 
+
+
+create table hint_info(
+  training_run_id bigserial not null,
+  game_level_id bigserial not null,
+  hint_id bigserial not null,
+  hint_title varchar(128) not null,
+  hint_content text not null
+);
+
+
+
 create table user_ref (
    id  bigserial not null,
     user_ref_full_name varchar(255),
@@ -152,10 +157,11 @@ alter table training_instance
 alter table user_ref
    add constraint UK_iajf018nptidl085leng237xl unique (user_ref_login);
 
-alter table abstract_level
-   add constraint FKi9sciy07av8pb1yv3fl4ycby0
-   foreign key (snapshot_hook_id)
-   references snapshot_hook;
+
+alter table hint_info
+   add constraint FKi9smgl25av8pb1yv3fl4ycby0
+   foreign key (training_run_id)
+   references training_run;
 
 alter table abstract_level
    add constraint FK24361n3estpsxei7bx7sfvcxs
