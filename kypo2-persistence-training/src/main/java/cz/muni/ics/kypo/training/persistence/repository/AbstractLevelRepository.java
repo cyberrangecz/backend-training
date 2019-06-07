@@ -27,7 +27,6 @@ public interface AbstractLevelRepository extends JpaRepository<AbstractLevel, Lo
     @Query("SELECT l FROM AbstractLevel l WHERE l.trainingDefinition.id = :trainingDefinitionId AND l.id = :levelId")
     Optional<AbstractLevel> findLevelInDefinition(@Param("trainingDefinitionId") Long trainingDefinitionId, @Param("levelId") Long levelId);
 
-//    @EntityGraph(attributePaths = {"trainingDefinition","trainingDefinition.authors", "trainingDefinition.betaTestingGroup", "trainingDefinition.betaTestingGroup.organizers"})
-    @Query("SELECT l FROM AbstractLevel l JOIN FETCH l.trainingDefinition td JOIN FETCH td.authors JOIN FETCH td.betaTestingGroup btg JOIN FETCH btg.organizers WHERE l.id = :levelId")
+    @Query("SELECT l FROM AbstractLevel l JOIN FETCH l.trainingDefinition td JOIN FETCH td.authors LEFT OUTER JOIN FETCH td.betaTestingGroup btg LEFT OUTER JOIN FETCH btg.organizers WHERE l.id = :levelId")
     Optional<AbstractLevel> findByIdIncludinDefinition(@Param("levelId") Long levelId);
 }
