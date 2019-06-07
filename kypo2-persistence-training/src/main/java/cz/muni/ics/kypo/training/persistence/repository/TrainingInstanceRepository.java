@@ -39,7 +39,7 @@ public interface TrainingInstanceRepository extends JpaRepository<TrainingInstan
     boolean existsAnyForTrainingDefinition(@Param("trainingInstanceId") Long trainingInstanceId);
 
     @Query("SELECT ti FROM TrainingInstance ti LEFT OUTER JOIN FETCH ti.organizers LEFT OUTER JOIN FETCH ti.sandboxInstanceRefs JOIN FETCH"
-        + " ti.trainingDefinition td JOIN FETCH td.authors JOIN FETCH td.betaTestingGroup btg JOIN FETCH btg.organizers WHERE ti.id = :instanceId")
+        + " ti.trainingDefinition td JOIN FETCH td.authors LEFT OUTER JOIN FETCH td.betaTestingGroup btg LEFT OUTER JOIN FETCH btg.organizers WHERE ti.id = :instanceId")
     Optional<TrainingInstance> findByIdIncludingDefinition(@Param("instanceId") Long instanceId);
 
 }
