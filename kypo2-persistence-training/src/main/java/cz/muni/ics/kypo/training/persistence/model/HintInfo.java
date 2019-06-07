@@ -2,7 +2,6 @@ package cz.muni.ics.kypo.training.persistence.model;
 
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
-import javax.persistence.Lob;
 
 @Embeddable
 public class HintInfo {
@@ -12,7 +11,6 @@ public class HintInfo {
     private long hintId;
     @Column(name = "hint_title", nullable = false)
     private String hintTitle;
-    @Lob
     @Column(name = "hint_content", nullable = false)
     private String hintContent;
 

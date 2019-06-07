@@ -131,7 +131,7 @@ create table hint_info(
   game_level_id bigserial not null,
   hint_id bigserial not null,
   hint_title varchar(128) not null,
-  hint_content text not null
+  hint_content varchar(4096) not null
 );
 
 
