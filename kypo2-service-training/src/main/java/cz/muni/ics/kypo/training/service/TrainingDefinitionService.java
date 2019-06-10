@@ -10,6 +10,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author Pavel Seda (441048)
@@ -216,4 +217,6 @@ public interface TrainingDefinitionService {
      * @return all Training Definitions for organizers
      */
     Page<TrainingDefinition> findAllForOrganizers(Predicate predicate, Pageable pageable);
+
+    Set<UserInfoDTO> getUsersWithGivenLogins(Set<String> logins);
 }

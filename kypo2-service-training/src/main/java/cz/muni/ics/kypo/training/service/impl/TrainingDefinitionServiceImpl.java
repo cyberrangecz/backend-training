@@ -1,5 +1,6 @@
 package cz.muni.ics.kypo.training.service.impl;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.training.annotations.security.IsDesignerOrAdmin;
 import cz.muni.ics.kypo.training.annotations.security.IsAdminOrDesignerOrOrganizer;
@@ -32,7 +33,10 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 
+import java.io.IOException;
+import java.net.URI;
 import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -456,6 +460,23 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
             throw new ServiceLayerException("Error while obtaining info about users in designers groups.", ErrorCode.UNEXPECTED_ERROR);
         }
         return usersResponse.getBody().getContent();
+    }
+
+    @Override
+    @IsDesignerOrAdmin
+    public Set<UserInfoDTO> getUsersWithGivenLogins(Set<String> logins) {
+        HttpHeaders httpHeaders = new HttpHeaders();
+        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(userAndGroupUrl + "/users/logins");
+        builder.queryParam("logins", logins.toString().replace("[", "").replace("]", ""));
+        builder.queryParam("fields", "content[login,full_name,given_name,family_name]");
+        URI uri = builder.build().encode().toUri();
+        ResponseEntity<List<UserInfoDTO>> usersResponse = restTemplate.exchange(uri, HttpMethod.GET, new HttpEntity<>(httpHeaders),
+                new ParameterizedTypeReference<List<UserInfoDTO>>() {
+                });
+        if (usersResponse.getStatusCode().isError() || usersResponse.getBody() == null) {
+            throw new ServiceLayerException("Error while obtaining info about users in designers groups.", ErrorCode.UNEXPECTED_ERROR);
+        }
+        return new HashSet<>(usersResponse.getBody());
     }
 
     @Override

@@ -39,6 +39,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author Pavel Šeda
@@ -198,6 +199,7 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
 
     private void addAuthorsToTrainingDefinition(TrainingDefinition trainingDefinition, Set<UserInfoDTO> authors) {
         trainingDefinition.setAuthors(new HashSet<>());
+        authors = trainingDefinitionService.getUsersWithGivenLogins(authors.stream().map(UserInfoDTO::getLogin).collect(Collectors.toSet()));
         for (UserInfoDTO author : authors) {
             try {
                 trainingDefinition.addAuthor(trainingDefinitionService.findUserRefByLogin(author.getLogin()));
@@ -214,6 +216,7 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
 
     private void addOrganizersToTrainingDefinition(TrainingDefinition trainingDefinition, Set<UserInfoDTO> organizers) {
         trainingDefinition.getBetaTestingGroup().setOrganizers(new HashSet<>());
+        organizers= trainingDefinitionService.getUsersWithGivenLogins(organizers.stream().map(UserInfoDTO::getLogin).collect(Collectors.toSet()));
         for (UserInfoDTO organizer : organizers) {
             try {
                 trainingDefinition.getBetaTestingGroup().addOrganizer(trainingDefinitionService.findUserRefByLogin(organizer.getLogin()));
