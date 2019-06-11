@@ -4,6 +4,7 @@ import com.google.gson.JsonObject;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.PathBuilder;
 import cz.muni.csirt.kypo.elasticsearch.service.AuditService;
+import cz.muni.ics.kypo.commons.security.enums.AuthenticatedUserOIDCItems;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.model.enums.AssessmentType;
@@ -271,14 +272,14 @@ public class TrainingRunServiceTest {
 //    }
 
     @Test
-    public void accessTrainingRunWithEmptyAccessToken(){
+    public void accessTrainingRunWithEmptyAccessToken() {
         thrown.expect(IllegalArgumentException.class);
         thrown.expectMessage("AccessToken cannot be null or empty.");
         trainingRunService.accessTrainingRun("");
     }
 
     @Test
-    public void accessTrainingRunWithoutAllocatedSandboxes(){
+    public void accessTrainingRunWithoutAllocatedSandboxes() {
         given(trainingInstanceRepository.findByStartTimeAfterAndEndTimeBeforeAndAccessToken(any(LocalDateTime.class), any(String.class))).willReturn(Optional.of(trainingInstance2));
         thrown.expect(ServiceLayerException.class);
         thrown.expectMessage("At first designer must allocate sandboxes for training instance.");
@@ -286,7 +287,7 @@ public class TrainingRunServiceTest {
     }
 
     @Test
-    public void accessTrainingRunWithBadAccessToken(){
+    public void accessTrainingRunWithBadAccessToken() {
         given(trainingInstanceRepository.findByStartTimeAfterAndEndTimeBeforeAndAccessToken(any(LocalDateTime.class), any(String.class))).willReturn(Optional.empty());
         thrown.expect(ServiceLayerException.class);
         thrown.expectMessage("There is no training instance with accessToken " + "badToken" + ".");
@@ -303,11 +304,11 @@ public class TrainingRunServiceTest {
     }
 
     @Test
-    public void accessTrainingRunWithoutStartingLevel(){
+    public void accessTrainingRunWithoutStartingLevel() {
         given(trainingInstanceRepository.findByStartTimeAfterAndEndTimeBeforeAndAccessToken(any(LocalDateTime.class), any(String.class))).willReturn(Optional.of(trainingInstance1));
         given(trainingRunRepository.findFreeSandboxesOfTrainingInstance(anyLong())).willReturn(new HashSet<>(Arrays.asList(sandboxInstanceRef1)));
         given(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
-            willReturn(new ResponseEntity<List<SandboxInfo>>(new ArrayList<>(Arrays.asList(sandboxInfo)), HttpStatus.OK));
+                willReturn(new ResponseEntity<List<SandboxInfo>>(new ArrayList<>(Arrays.asList(sandboxInfo)), HttpStatus.OK));
         given(abstractLevelRepository.findById(anyLong())).willReturn(Optional.empty());
         thrown.expect(ServiceLayerException.class);
         thrown.expectMessage("No starting level available for this training definition");
@@ -316,7 +317,7 @@ public class TrainingRunServiceTest {
 
     private void mockSpringSecurityContextForGet() {
         JsonObject sub = new JsonObject();
-        sub.addProperty("sub", "participant");
+        sub.addProperty(AuthenticatedUserOIDCItems.SUB.getName(), "participant");
         Authentication authentication = Mockito.mock(Authentication.class);
         OAuth2Authentication auth = Mockito.mock(OAuth2Authentication.class);
         SecurityContext securityContext = Mockito.mock(SecurityContext.class);
