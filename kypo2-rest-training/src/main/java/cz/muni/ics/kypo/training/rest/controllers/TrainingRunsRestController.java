@@ -21,6 +21,9 @@ import cz.muni.ics.kypo.training.rest.utils.annotations.ApiPageableSwagger;
 import io.swagger.annotations.*;
 import cz.muni.ics.kypo.training.api.dto.hint.HintDTO;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -191,8 +194,20 @@ public class TrainingRunsRestController {
                                                              @ApiParam(value = "Parameters for filtering the objects.", required = false)
                                                              @RequestParam MultiValueMap<String, String> parameters,
                                                              @ApiParam(value = "Fields which should be returned in REST API response", required = false)
-                                                             @RequestParam(value = "fields", required = false) String fields) {
+                                                             @RequestParam(value = "fields", required = false) String fields,
+                                                             @ApiParam(value = "Sort by title attribute. As values us asc|desc", required = false, example = "asc")
+                                                             @RequestParam(value = "sortByTitle", required = false) String sortByTitle) {
         PageResultResource<AccessedTrainingRunDTO> accessedTrainingRunDTOS = trainingRunFacade.findAllAccessedTrainingRuns(pageable);
+        if (sortByTitle != null && !sortByTitle.isBlank()) {
+            List<AccessedTrainingRunDTO> accessedTRToSort = accessedTrainingRunDTOS.getContent();
+            if (accessedTRToSort != null && accessedTRToSort.size() > 0) {
+                if (sortByTitle.equals("asc")) {
+                    accessedTRToSort.sort(Comparator.comparing(AccessedTrainingRunDTO::getTitle));
+                } else if (sortByTitle.equals("desc")) {
+                    accessedTRToSort.sort(Comparator.comparing(AccessedTrainingRunDTO::getTitle).reversed());
+                }
+            }
+        }
         Squiggly.init(objectMapper, fields);
         return new ResponseEntity<>(SquigglyUtils.stringify(objectMapper, accessedTrainingRunDTOS), HttpStatus.OK);
     }
