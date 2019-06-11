@@ -3,6 +3,7 @@ package cz.muni.ics.kypo.training.service;
 import com.google.gson.JsonObject;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.PathBuilder;
+import cz.muni.ics.kypo.commons.security.enums.AuthenticatedUserOIDCItems;
 import cz.muni.ics.kypo.training.api.dto.UserInfoDTO;
 import cz.muni.ics.kypo.training.api.enums.RoleType;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
@@ -783,8 +784,8 @@ public class TrainingDefinitionServiceTest {
 
     private void mockSpringSecurityContextForGet() {
         JsonObject sub = new JsonObject();
-        sub.addProperty("sub", "participant");
-        sub.addProperty("name", "Pavel");
+        sub.addProperty(AuthenticatedUserOIDCItems.SUB.getName(), "participant");
+        sub.addProperty(AuthenticatedUserOIDCItems.NAME.getName(), "Pavel");
         Authentication authentication = Mockito.mock(Authentication.class);
         OAuth2Authentication auth = Mockito.mock(OAuth2Authentication.class);
         SecurityContext securityContext = Mockito.mock(SecurityContext.class);

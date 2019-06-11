@@ -1,6 +1,7 @@
 package cz.muni.ics.kypo.training.service.impl;
 
 import com.google.gson.JsonObject;
+import cz.muni.ics.kypo.commons.security.enums.AuthenticatedUserOIDCItems;
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalRO;
 import cz.muni.ics.kypo.training.enums.RoleTypeSecurity;
 import cz.muni.ics.kypo.training.exceptions.ErrorCode;
@@ -90,25 +91,25 @@ public class SecurityService {
     public String getSubOfLoggedInUser() {
         OAuth2Authentication authentication = (OAuth2Authentication) SecurityContextHolder.getContext().getAuthentication();
         JsonObject credentials = (JsonObject) authentication.getUserAuthentication().getCredentials();
-        return credentials.get("sub").getAsString();
+        return credentials.get(AuthenticatedUserOIDCItems.SUB.getName()).getAsString();
     }
 
     public String getFullNameOfLoggedInUser() {
         OAuth2Authentication authentication = (OAuth2Authentication) SecurityContextHolder.getContext().getAuthentication();
         JsonObject credentials = (JsonObject) authentication.getUserAuthentication().getCredentials();
-        return credentials.get("name").getAsString();
+        return credentials.get(AuthenticatedUserOIDCItems.NAME.getName()).getAsString();
     }
 
-    public String getGivenNameOfLoggedInUser(){
+    public String getGivenNameOfLoggedInUser() {
         OAuth2Authentication authentication = (OAuth2Authentication) SecurityContextHolder.getContext().getAuthentication();
         JsonObject credentials = (JsonObject) authentication.getUserAuthentication().getCredentials();
-        return credentials.get("given_name").getAsString();
+        return credentials.get(AuthenticatedUserOIDCItems.GIVEN_NAME.getName()).getAsString();
     }
 
-    public String getFamilyNameOfLoggedInUser(){
+    public String getFamilyNameOfLoggedInUser() {
         OAuth2Authentication authentication = (OAuth2Authentication) SecurityContextHolder.getContext().getAuthentication();
         JsonObject credentials = (JsonObject) authentication.getUserAuthentication().getCredentials();
-        return credentials.get("family_name").getAsString();
+        return credentials.get(AuthenticatedUserOIDCItems.FAMILY_NAME.getName()).getAsString();
     }
 
 }

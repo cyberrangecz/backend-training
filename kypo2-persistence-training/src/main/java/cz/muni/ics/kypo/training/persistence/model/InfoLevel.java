@@ -1,7 +1,5 @@
 package cz.muni.ics.kypo.training.persistence.model;
 
-import org.hibernate.annotations.Type;
-
 import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Objects;
