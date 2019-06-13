@@ -179,10 +179,10 @@ public class TrainingDefinitionsRestControllerTest {
         authorLogins.add("Author");
 
         betaTestingGroupCreateDTO = new BetaTestingGroupCreateDTO();
-        betaTestingGroupCreateDTO.setOrganizers(Set.of());
+        betaTestingGroupCreateDTO.setOrganizersLogin(Set.of());
 
         betaTestingGroupUpdateDTO = new BetaTestingGroupUpdateDTO();
-        betaTestingGroupUpdateDTO.setOrganizers(Set.of());
+        betaTestingGroupUpdateDTO.setOrganizersLogin(Set.of());
 
         trainingDefinition1 = new TrainingDefinition();
         trainingDefinition1.setId(1L);
@@ -216,7 +216,7 @@ public class TrainingDefinitionsRestControllerTest {
         trainingDefinitionUpdateDTO.setId(4L);
         trainingDefinitionUpdateDTO.setState(cz.muni.ics.kypo.training.api.enums.TDState.UNRELEASED);
         trainingDefinitionUpdateDTO.setTitle("training definition title");
-        trainingDefinitionUpdateDTO.setAuthors(Set.of());
+        trainingDefinitionUpdateDTO.setAuthorsLogin(Set.of());
         trainingDefinitionUpdateDTO.setSandboxDefinitionRefId(1L);
         trainingDefinitionUpdateDTO.setShowStepperBar(false);
         trainingDefinitionUpdateDTO.setBetaTestingGroup(betaTestingGroupUpdateDTO);
@@ -227,7 +227,7 @@ public class TrainingDefinitionsRestControllerTest {
         trainingDefinitionCreateDTO.setPrerequisities(new String[0]);
         trainingDefinitionCreateDTO.setState(cz.muni.ics.kypo.training.api.enums.TDState.ARCHIVED);
         trainingDefinitionCreateDTO.setTitle("TD some title");
-        trainingDefinitionCreateDTO.setAuthors(Set.of());
+        trainingDefinitionCreateDTO.setAuthorsLogin(Set.of());
         trainingDefinitionCreateDTO.setShowStepperBar(true);
         trainingDefinitionCreateDTO.setSandboxDefinitionRefId(1L);
         trainingDefinitionCreateDTO.setBetaTestingGroup(betaTestingGroupCreateDTO);

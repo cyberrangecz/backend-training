@@ -157,7 +157,7 @@ public class TrainingDefinitionFacadeTest {
         trainingDefinition2.setState(TDState.UNRELEASED);
 
         betaTestingGroupUpdateDTO = new BetaTestingGroupUpdateDTO();
-        betaTestingGroupUpdateDTO.setOrganizers(Set.of());
+        betaTestingGroupUpdateDTO.setOrganizersLogin(Set.of());
 
         trainingDefinitionUpdate = new TrainingDefinitionUpdateDTO();
         trainingDefinitionUpdate.setId(1L);
@@ -168,7 +168,7 @@ public class TrainingDefinitionFacadeTest {
         authorRef.setUserRefLogin("author");
 
         betaTestingGroupCreateDTO = new BetaTestingGroupCreateDTO();
-        betaTestingGroupCreateDTO.setOrganizers(Set.of());
+        betaTestingGroupCreateDTO.setOrganizersLogin(Set.of());
 
         trainingDefinitionCreate = new TrainingDefinitionCreateDTO();
         trainingDefinitionCreate.setDescription("TD desc");
@@ -176,7 +176,7 @@ public class TrainingDefinitionFacadeTest {
         trainingDefinitionCreate.setPrerequisities(new String[0]);
         trainingDefinitionCreate.setState(cz.muni.ics.kypo.training.api.enums.TDState.ARCHIVED);
         trainingDefinitionCreate.setTitle("TD some title");
-        trainingDefinitionCreate.setAuthors(Set.of(userInfoDTO1));
+        trainingDefinitionCreate.setAuthorsLogin(Set.of("peter@mail.muni.cz"));
         trainingDefinitionCreate.setBetaTestingGroup(betaTestingGroupCreateDTO);
     }
 
