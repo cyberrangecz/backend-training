@@ -12,6 +12,7 @@ import cz.muni.ics.kypo.training.api.dto.betatestinggroup.BetaTestingGroupCreate
 import cz.muni.ics.kypo.training.api.enums.TDState;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import org.mapstruct.Mapping;
 
 /**
  * @author Pavel Šeda (441048)
@@ -27,7 +28,7 @@ public class TrainingDefinitionCreateDTO {
     @NotNull(message = "{trainingdefinitioncreate.state.NotNull.message}")
     private TDState state;
     @NotNull(message = "{trainingdefinitioncreate.authors.NotNull.message}")
-    private Set<UserInfoDTO> authors;
+    private Set<String> authorsLogin;
     @Valid
     private BetaTestingGroupCreateDTO betaTestingGroup;
     @NotNull(message = "{trainingdefinitioncreate.showStepperBar.NotNull.message}")
@@ -80,12 +81,12 @@ public class TrainingDefinitionCreateDTO {
     }
 
     @ApiModelProperty(value = "References to the authors of the training definition.", required = true)
-    public Set<UserInfoDTO> getAuthors() {
-        return authors;
+    public Set<String> getAuthorsLogin() {
+        return authorsLogin;
     }
 
-    public void setAuthors(Set<UserInfoDTO> authors) {
-        this.authors = authors;
+    public void setAuthorsLogin(Set<String> authorsLogin) {
+        this.authorsLogin = authorsLogin;
     }
 
     @ApiModelProperty(value = "Group of organizers who is allowed to see the training definition.", required = true)
@@ -123,7 +124,7 @@ public class TrainingDefinitionCreateDTO {
                 ", prerequisities=" + Arrays.toString(prerequisities) +
                 ", outcomes=" + Arrays.toString(outcomes) +
                 ", state=" + state +
-                ", authors=" + authors +
+                ", authorsLogin=" + authorsLogin +
                 ", showStepperBar=" + showStepperBar +
                 ", sandboxDefinitionRefId=" + sandboxDefinitionRefId +
                 '}';

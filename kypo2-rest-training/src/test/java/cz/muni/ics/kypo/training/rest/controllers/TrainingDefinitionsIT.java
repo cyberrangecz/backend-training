@@ -151,10 +151,10 @@ public class TrainingDefinitionsIT {
         betaTestingGroup2.setOrganizers(new HashSet<>(Arrays.asList(uR)));
 
         BetaTestingGroupCreateDTO betaTestingGroupCreateDTO = new BetaTestingGroupCreateDTO();
-        betaTestingGroupCreateDTO.setOrganizers(Set.of());
+        betaTestingGroupCreateDTO.setOrganizersLogin(Set.of());
 
         BetaTestingGroupUpdateDTO betaTestingGroupUpdateDTO = new BetaTestingGroupUpdateDTO();
-        betaTestingGroupUpdateDTO.setOrganizers(Set.of());
+        betaTestingGroupUpdateDTO.setOrganizersLogin(Set.of());
 
         gameLevel1 = new GameLevel();
         gameLevel1.setTitle("testTitle");
@@ -216,7 +216,7 @@ public class TrainingDefinitionsIT {
         trainingDefinitionCreateDTO.setState(TDState.UNRELEASED);
         trainingDefinitionCreateDTO.setSandboxDefinitionRefId(1L);
         trainingDefinitionCreateDTO.setBetaTestingGroup(betaTestingGroupCreateDTO);
-        trainingDefinitionCreateDTO.setAuthors(Set.of());
+        trainingDefinitionCreateDTO.setAuthorsLogin(Set.of());
 
         releasedTrainingDefinition = new TrainingDefinition();
         releasedTrainingDefinition.setTitle("released");
@@ -247,7 +247,7 @@ public class TrainingDefinitionsIT {
         trainingDefinitionUpdateDTO.setState(TDState.UNRELEASED);
         trainingDefinitionUpdateDTO.setSandboxDefinitionRefId(1L);
         trainingDefinitionUpdateDTO.setBetaTestingGroup(betaTestingGroupUpdateDTO);
-        trainingDefinitionUpdateDTO.setAuthors(Set.of());
+        trainingDefinitionUpdateDTO.setAuthorsLogin(Set.of());
 
         invalidDefinitionUpdateDTO = new TrainingDefinitionUpdateDTO();
 
@@ -257,7 +257,7 @@ public class TrainingDefinitionsIT {
         updateForNonexistingDefinition.setState(TDState.UNRELEASED);
         updateForNonexistingDefinition.setSandboxDefinitionRefId(1L);
         updateForNonexistingDefinition.setBetaTestingGroup(betaTestingGroupUpdateDTO);
-        updateForNonexistingDefinition.setAuthors(Set.of());
+        updateForNonexistingDefinition.setAuthorsLogin(Set.of());
     }
 
     @After

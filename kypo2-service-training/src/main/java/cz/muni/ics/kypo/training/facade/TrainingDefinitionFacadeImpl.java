@@ -39,7 +39,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * @author Pavel Šeda
@@ -164,9 +163,9 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
             Objects.requireNonNull(trainingDefinition);
             TrainingDefinition newTrainingDefinition = trainingDefinitionMapper.mapCreateToEntity(trainingDefinition);
             if (trainingDefinition.getBetaTestingGroup() != null) {
-                addOrganizersToTrainingDefinition(newTrainingDefinition, trainingDefinition.getBetaTestingGroup().getOrganizers());
+                addOrganizersToTrainingDefinition(newTrainingDefinition, trainingDefinition.getBetaTestingGroup().getOrganizersLogin());
             }
-            addAuthorsToTrainingDefinition(newTrainingDefinition, trainingDefinition.getAuthors());
+            addAuthorsToTrainingDefinition(newTrainingDefinition, trainingDefinition.getAuthorsLogin());
             return trainingDefinitionMapper.mapToDTOById(trainingDefinitionService.create(newTrainingDefinition));
         } catch (ServiceLayerException ex) {
             throw new FacadeLayerException(ex);
@@ -183,23 +182,23 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
             TrainingDefinition mappedTrainingDefinition = trainingDefinitionMapper.mapUpdateToEntity(trainingDefinitionUpdateDTO);
             TrainingDefinition trainingDefinition = trainingDefinitionService.findById(trainingDefinitionUpdateDTO.getId());
             if (trainingDefinitionUpdateDTO.getBetaTestingGroup() != null) {
-                addOrganizersToTrainingDefinition(mappedTrainingDefinition, trainingDefinitionUpdateDTO.getBetaTestingGroup().getOrganizers());
+                addOrganizersToTrainingDefinition(mappedTrainingDefinition, trainingDefinitionUpdateDTO.getBetaTestingGroup().getOrganizersLogin());
                 if (trainingDefinition.getBetaTestingGroup() != null) {
                     trainingDefinition.getBetaTestingGroup().setId(trainingDefinition.getBetaTestingGroup().getId());
                 }
             } else if (trainingDefinition.getBetaTestingGroup() != null) {
                 throw new FacadeLayerException(new ServiceLayerException("Cannot delete beta testing group. You only can remove organizers from group.", ErrorCode.RESOURCE_CONFLICT));
             }
-            addAuthorsToTrainingDefinition(mappedTrainingDefinition, trainingDefinitionUpdateDTO.getAuthors());
+            addAuthorsToTrainingDefinition(mappedTrainingDefinition, trainingDefinitionUpdateDTO.getAuthorsLogin());
             trainingDefinitionService.update(mappedTrainingDefinition);
         } catch (ServiceLayerException ex) {
             throw new FacadeLayerException(ex);
         }
     }
 
-    private void addAuthorsToTrainingDefinition(TrainingDefinition trainingDefinition, Set<UserInfoDTO> authors) {
+    private void addAuthorsToTrainingDefinition(TrainingDefinition trainingDefinition, Set<String> loginsOfAuthors) {
         trainingDefinition.setAuthors(new HashSet<>());
-        authors = trainingDefinitionService.getUsersWithGivenLogins(authors.stream().map(UserInfoDTO::getLogin).collect(Collectors.toSet()));
+        Set<UserInfoDTO> authors  = trainingDefinitionService.getUsersWithGivenLogins(loginsOfAuthors);
         for (UserInfoDTO author : authors) {
             try {
                 trainingDefinition.addAuthor(trainingDefinitionService.findUserRefByLogin(author.getLogin()));
@@ -214,9 +213,9 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
         }
     }
 
-    private void addOrganizersToTrainingDefinition(TrainingDefinition trainingDefinition, Set<UserInfoDTO> organizers) {
+    private void addOrganizersToTrainingDefinition(TrainingDefinition trainingDefinition, Set<String> loginsOfOrganizers) {
         trainingDefinition.getBetaTestingGroup().setOrganizers(new HashSet<>());
-        organizers= trainingDefinitionService.getUsersWithGivenLogins(organizers.stream().map(UserInfoDTO::getLogin).collect(Collectors.toSet()));
+        Set<UserInfoDTO> organizers = trainingDefinitionService.getUsersWithGivenLogins(loginsOfOrganizers);
         for (UserInfoDTO organizer : organizers) {
             try {
                 trainingDefinition.getBetaTestingGroup().addOrganizer(trainingDefinitionService.findUserRefByLogin(organizer.getLogin()));

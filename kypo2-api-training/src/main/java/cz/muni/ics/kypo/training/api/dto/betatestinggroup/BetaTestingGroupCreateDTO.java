@@ -1,31 +1,28 @@
 package cz.muni.ics.kypo.training.api.dto.betatestinggroup;
 
-import cz.muni.ics.kypo.training.api.dto.UserInfoDTO;
 import io.swagger.annotations.ApiModelProperty;
 
-import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.util.Set;
 
 public class BetaTestingGroupCreateDTO {
 
     @NotNull(message = "{betaTestingGroup.organizers.NotNull.message}")
-    private Set<UserInfoDTO> organizers;
+    private Set<String> organizersLogin;
 
     @ApiModelProperty(value = "Logins of users who is allowed to see training definition.", required = true)
-    public Set<UserInfoDTO> getOrganizers() {
-        return organizers;
+    public Set<String> getOrganizersLogin() {
+        return organizersLogin;
     }
 
-    public void setOrganizers(Set<UserInfoDTO> organizers) {
-        this.organizers = organizers;
+    public void setOrganizersLogin(Set<String> organizersLogin) {
+        this.organizersLogin = organizersLogin;
     }
-
 
     @Override
     public String toString() {
         return "BetaTestingGroupUpdateDTO{" +
-                ", organizers=" + organizers +
+                ", organizersLogin=" + organizersLogin +
                 '}';
     }
 }

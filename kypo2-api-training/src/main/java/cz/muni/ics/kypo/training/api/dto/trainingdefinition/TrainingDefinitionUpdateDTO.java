@@ -30,7 +30,7 @@ public class TrainingDefinitionUpdateDTO {
     @NotNull(message = "{trainingdefinitionupdate.state.NotNull.message}")
     private TDState state;
     @NotNull(message = "{trainingdefinitioncreate.authors.NotNull.message}")
-    private Set<UserInfoDTO> authors = new HashSet<>();
+    private Set<String> authorsLogin = new HashSet<>();
     @Valid
     private BetaTestingGroupUpdateDTO betaTestingGroup;
     private Long sandboxDefinitionRefId;
@@ -92,12 +92,12 @@ public class TrainingDefinitionUpdateDTO {
     }
 
     @ApiModelProperty(value = "References to the authors of the training definition.", required = true)
-    public Set<UserInfoDTO> getAuthors() {
-        return authors;
+    public Set<String> getAuthorsLogin() {
+        return authorsLogin;
     }
 
-    public void setAuthors(Set<UserInfoDTO> authors) {
-        this.authors = authors;
+    public void setAuthorsLogin(Set<String> authorsLogin) {
+        this.authorsLogin = authorsLogin;
     }
 
     @ApiModelProperty(value = "Group of organizers who is allowed to see the training definition.", required = true)
@@ -136,7 +136,7 @@ public class TrainingDefinitionUpdateDTO {
                 ", prerequisities=" + Arrays.toString(prerequisities) +
                 ", outcomes=" + Arrays.toString(outcomes) +
                 ", state=" + state +
-                ", authors=" + authors +
+                ", authorsLogin=" + authorsLogin +
                 ", sandboxDefinitionRefId=" + sandboxDefinitionRefId +
                 ", showStepperBar=" + showStepperBar +
                 '}';
