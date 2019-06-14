@@ -81,7 +81,7 @@ public class TrainingRunFacadeTest {
 
         trainingRun1 = new TrainingRun();
         trainingRun1.setId(1L);
-        trainingRun1.setState(TRState.READY);
+        trainingRun1.setState(TRState.RUNNING);
         trainingRun1.setSolutionTaken(false);
         trainingRun1.setSandboxInstanceRef(sandboxInstanceRef);
 

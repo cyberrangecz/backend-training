@@ -146,7 +146,7 @@ public class ExportImportFacadeTest {
         trainingRun.setTrainingInstance(trainingInstance);
         trainingRun.setEndTime(time.minusHours(10));
         trainingRun.setStartTime(time.minusHours(20));
-        trainingRun.setState(TRState.READY);
+        trainingRun.setState(TRState.RUNNING);
     }
 
     //TODO write better tests to check all attributes

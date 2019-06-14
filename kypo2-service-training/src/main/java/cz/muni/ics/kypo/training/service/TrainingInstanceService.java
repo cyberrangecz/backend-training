@@ -75,7 +75,7 @@ public interface TrainingInstanceService {
 
     /**
      * Delete sandbox from training instance
-     * This method is annotated with @Transactional
+     * This method is annotated with @Transactional and is asynchronous
      *
      * @param trainingInstance   which sandbox should be deleted
      * @param sandboxInstanceRef sandbox to be removed from training instance and deleted from open stack

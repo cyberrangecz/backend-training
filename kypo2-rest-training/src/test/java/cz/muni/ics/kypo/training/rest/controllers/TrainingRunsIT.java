@@ -237,7 +237,7 @@ public class TrainingRunsIT {
         trainingRun1 = new TrainingRun();
         trainingRun1.setStartTime(LocalDateTime.now().minusHours(24));
         trainingRun1.setEndTime(LocalDateTime.now().plusHours(48));
-        trainingRun1.setState(TRState.READY);
+        trainingRun1.setState(TRState.RUNNING);
         trainingRun1.setIncorrectFlagCount(5);
         trainingRun1.setSolutionTaken(false);
         trainingRun1.setCurrentLevel(infoLevel);

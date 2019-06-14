@@ -7,5 +7,5 @@ package cz.muni.ics.kypo.training.persistence.model.enums;
  */
 public enum TRState {
 
-    ALLOCATED, READY, FINISHED;
+    RUNNING, FINISHED, ARCHIVED;
 }

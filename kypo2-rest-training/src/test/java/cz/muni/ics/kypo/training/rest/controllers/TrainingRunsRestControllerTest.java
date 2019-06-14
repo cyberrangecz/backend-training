@@ -105,7 +105,7 @@ public class TrainingRunsRestControllerTest {
 
         trainingRun2 = new TrainingRun();
         trainingRun2.setId(2L);
-        trainingRun2.setState(TRState.READY);
+        trainingRun2.setState(TRState.RUNNING);
 
         trainingRun1DTO = new TrainingRunDTO();
         trainingRun1DTO.setId(1L);
@@ -113,7 +113,7 @@ public class TrainingRunsRestControllerTest {
 
         trainingRun2DTO = new TrainingRunDTO();
         trainingRun2DTO.setId(2L);
-        trainingRun2DTO.setState(cz.muni.ics.kypo.training.api.enums.TRState.READY);
+        trainingRun2DTO.setState(cz.muni.ics.kypo.training.api.enums.TRState.RUNNING);
 
         accessTrainingRunDTO = new AccessTrainingRunDTO();
 

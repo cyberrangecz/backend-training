@@ -7,6 +7,7 @@ import cz.muni.ics.kypo.training.annotations.transactions.TransactionalWO;
 import cz.muni.ics.kypo.training.exceptions.ErrorCode;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.persistence.model.*;
+import cz.muni.ics.kypo.training.persistence.model.enums.TRState;
 import cz.muni.ics.kypo.training.persistence.repository.AccessTokenRepository;
 import cz.muni.ics.kypo.training.persistence.repository.TrainingInstanceRepository;
 import cz.muni.ics.kypo.training.persistence.repository.TrainingRunRepository;
@@ -264,7 +265,11 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
             "or @securityService.isOrganizerOfGivenTrainingInstance(#trainingInstance.id)")
     @Async
     public void deleteSandbox(TrainingInstance trainingInstance, SandboxInstanceRef sandboxRefToDelete) {
-        trainingRunRepository.deleteSandboxInstanceFromTrainingRun(sandboxRefToDelete);
+        Optional<TrainingRun> trainingRun = trainingRunRepository.findBySandboxInstanceRef(sandboxRefToDelete);
+        if(trainingRun.isPresent()) {
+            trainingRun.get().setState(TRState.ARCHIVED);
+            trainingRunRepository.deleteSandboxInstanceFromTrainingRun(sandboxRefToDelete);
+        }
         trainingInstance.getSandboxInstanceRefs().remove(sandboxRefToDelete);
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.setContentType(MediaType.APPLICATION_JSON);

@@ -179,7 +179,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
             Collections.sort(levels, Comparator.comparing(AbstractLevel::getOrder));
 
             TrainingRun trainingRun = getNewTrainingRun(levels.get(0), securityService.getSubOfLoggedInUser(), trainingInstance,
-                TRState.ALLOCATED, LocalDateTime.now(Clock.systemUTC()), trainingInstance.getEndTime(), sandboxInstanceRef);
+                TRState.RUNNING, LocalDateTime.now(Clock.systemUTC()), trainingInstance.getEndTime(), sandboxInstanceRef);
             trainingRun = create(trainingRun);
             // audit this action to the Elasticsearch
             auditEventsService.auditTrainingRunStartedAction(trainingRun);
@@ -242,7 +242,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
         }
         newTrainingRun.setAssessmentResponses("[]");
         //TODO what state set at the begining
-        newTrainingRun.setState(TRState.ALLOCATED);
+        newTrainingRun.setState(TRState.RUNNING);
         newTrainingRun.setTrainingInstance(trainingInstance);
         newTrainingRun.setStartTime(startTime);
         newTrainingRun.setEndTime(endTime);

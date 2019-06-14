@@ -18,6 +18,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.repository.query.Param;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.time.LocalDateTime;
@@ -88,7 +89,7 @@ public class TrainingRunRepositoryTest {
         trainingRun2 = new TrainingRun();
         trainingRun2.setStartTime(LocalDateTime.now());
         trainingRun2.setEndTime(LocalDateTime.now());
-        trainingRun2.setState(TRState.ALLOCATED);
+        trainingRun2.setState(TRState.RUNNING);
         trainingRun2.setCurrentLevel(entityManager.persist(infoLevel));
         trainingRun2.setParticipantRef(entityManager.persist(participantRef));
         trainingRun2.setTrainingInstance(entityManager.persist(trainingInstance));
@@ -98,7 +99,7 @@ public class TrainingRunRepositoryTest {
         trainingRun1 = new TrainingRun();
         trainingRun1.setStartTime(LocalDateTime.now());
         trainingRun1.setEndTime(LocalDateTime.now());
-        trainingRun1.setState(TRState.ALLOCATED);
+        trainingRun1.setState(TRState.RUNNING);
         trainingRun1.setCurrentLevel(entityManager.persist(infoLevel));
         trainingRun1.setParticipantRef(entityManager.persist(participantRef));
         trainingRun1.setTrainingInstance(entityManager.persist(trainingInstance));
@@ -195,5 +196,12 @@ public class TrainingRunRepositoryTest {
         assertEquals(0, trainingRunsAfterDelete.getContent().size());
         assertFalse(trainingRunsAfterDelete.getContent().contains(trainingRun1));
         assertFalse(trainingRunsAfterDelete.getContent().contains(trainingRun2));
+    }
+
+    @Test
+    public void findBySandboxInstanceRef() {
+        entityManager.persist(trainingRun1);
+        Optional<TrainingRun> trainingRun = trainingRunRepository.findBySandboxInstanceRef(sandboxInstanceRef1);
+        assertTrue(trainingRun.isPresent());
     }
 }
