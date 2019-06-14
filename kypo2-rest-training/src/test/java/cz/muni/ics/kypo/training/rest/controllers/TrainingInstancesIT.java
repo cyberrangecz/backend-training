@@ -173,7 +173,7 @@ public class TrainingInstancesIT {
         trainingRun1 = new TrainingRun();
         trainingRun1.setStartTime(LocalDateTime.now().plusHours(24));
         trainingRun1.setEndTime(LocalDateTime.now().plusHours(48));
-        trainingRun1.setState(TRState.READY);
+        trainingRun1.setState(TRState.RUNNING);
         trainingRun1.setIncorrectFlagCount(5);
         trainingRun1.setSolutionTaken(false);
         trainingRun1.setCurrentLevel(infoLevel);
@@ -184,7 +184,7 @@ public class TrainingInstancesIT {
         trainingRun2 = new TrainingRun();
         trainingRun2.setStartTime(LocalDateTime.now().plusHours(2));
         trainingRun2.setEndTime(LocalDateTime.now().plusHours(4));
-        trainingRun2.setState(TRState.READY);
+        trainingRun2.setState(TRState.RUNNING);
         trainingRun2.setIncorrectFlagCount(10);
         trainingRun2.setSolutionTaken(false);
         trainingRun2.setCurrentLevel(infoLevel);

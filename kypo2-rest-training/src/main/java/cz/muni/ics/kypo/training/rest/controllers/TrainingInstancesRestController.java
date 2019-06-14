@@ -317,6 +317,15 @@ public class TrainingInstancesRestController {
         }
     }
 
+    /**
+     * Reallocate sandbox of given training run.
+     * 1. sandbox is deleted
+     * 2. state of training run is changed to ARCHIVED
+     * 3. new sandbox is allocated
+     *
+     * @param sandboxId id of sandbox to be deleted.
+     * @param instanceId id of training instance in which training instance is allocated
+     */
     @ApiOperation(httpMethod = "POST",
             value = "Reallocate sandbox in training instance",
             response = Void.class,

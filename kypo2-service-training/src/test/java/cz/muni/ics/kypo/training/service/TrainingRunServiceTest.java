@@ -195,7 +195,7 @@ public class TrainingRunServiceTest {
 
         trainingRun1 = new TrainingRun();
         trainingRun1.setId(1L);
-        trainingRun1.setState(TRState.ALLOCATED);
+        trainingRun1.setState(TRState.RUNNING);
         trainingRun1.setCurrentLevel(gameLevel);
         trainingRun1.setSandboxInstanceRef(sandboxInstanceRef1);
         trainingRun1.setParticipantRef(participantRef);
@@ -205,7 +205,7 @@ public class TrainingRunServiceTest {
 
         trainingRun2 = new TrainingRun();
         trainingRun2.setId(2L);
-        trainingRun2.setState(TRState.READY);
+        trainingRun2.setState(TRState.RUNNING);
         trainingRun2.setCurrentLevel(infoLevel);
         trainingRun2.setParticipantRef(participantRef);
         trainingRun2.setTrainingInstance(trainingInstance2);

@@ -72,4 +72,7 @@ public interface TrainingRunRepository extends JpaRepository<TrainingRun, Long>,
     @Modifying
     @Query("UPDATE TrainingRun tr SET tr.sandboxInstanceRef = null WHERE tr.sandboxInstanceRef = :sandboxInstance")
     void deleteSandboxInstanceFromTrainingRun(@Param("sandboxInstance") SandboxInstanceRef sandboxInstance);
+
+    @Query("SELECT tr FROM TrainingRun tr WHERE tr.sandboxInstanceRef = :sandboxInstanceRef")
+    Optional<TrainingRun> findBySandboxInstanceRef(@Param("sandboxInstanceRef") SandboxInstanceRef sandboxInstanceRef);
 }
