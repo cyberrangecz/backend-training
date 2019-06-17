@@ -73,7 +73,7 @@ public interface TrainingInstanceFacade {
      * @param trainingInstanceId id of Training Instance whose Training Runs would be returned.
      * @return Training Runs of specific Training Instance
      */
-    PageResultResource<TrainingRunDTO> findTrainingRunsByTrainingInstance(Long trainingInstanceId, Pageable pageable);
+    PageResultResource<TrainingRunDTO> findTrainingRunsByTrainingInstance(Long trainingInstanceId, Boolean isActive, Pageable pageable);
 
     /**
      * Create pool for sandboxes in open stack for given training instance

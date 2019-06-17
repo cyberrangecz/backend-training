@@ -278,6 +278,8 @@ public class TrainingInstancesRestController {
     @GetMapping(path = "/{instanceId}/training-runs", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> findAllTrainingRunsByTrainingInstanceId(
             @ApiParam(value = "Training Instance Id", required = true) @PathVariable Long instanceId,
+            @ApiParam(value = "If only active or not active training runs should be returned.")
+            @RequestParam(value = "isActive", required = false) Boolean isActive,
             @ApiParam(value = "Pagination support.") Pageable pageable,
             @ApiParam(value = "Parameters for filtering the objects.", required = false)
             @RequestParam MultiValueMap<String, String> parameters,
@@ -286,7 +288,7 @@ public class TrainingInstancesRestController {
         LOG.debug("findAllTrainingRunsByTrainingInstnceId({})", instanceId);
         try {
             PageResultResource<TrainingRunDTO> trainingRunResource =
-                    trainingInstanceFacade.findTrainingRunsByTrainingInstance(instanceId, pageable);
+                    trainingInstanceFacade.findTrainingRunsByTrainingInstance(instanceId, isActive, pageable);
             Squiggly.init(objectMapper, fields);
             return ResponseEntity.ok(SquigglyUtils.stringify(objectMapper, trainingRunResource));
         } catch (FacadeLayerException ex) {
