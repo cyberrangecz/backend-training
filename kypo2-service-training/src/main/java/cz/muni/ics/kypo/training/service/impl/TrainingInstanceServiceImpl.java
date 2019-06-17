@@ -318,12 +318,19 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
     @Override
     @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
             "or @securityService.isOrganizerOfGivenTrainingInstance(#instanceId)")
-    public Page<TrainingRun> findTrainingRunsByTrainingInstance(Long instanceId, Pageable pageable) {
+    public Page<TrainingRun> findTrainingRunsByTrainingInstance(Long instanceId, Boolean isActive,  Pageable pageable) {
         LOG.debug("findTrainingRunsByTrainingInstance({})", instanceId);
         org.springframework.util.Assert.notNull(instanceId, "Input training instance id must not be null.");
         trainingInstanceRepository.findById(instanceId)
                 .orElseThrow(() -> new ServiceLayerException("Training instance with id: " + instanceId + " not found.", ErrorCode.RESOURCE_NOT_FOUND));
-        return trainingRunRepository.findAllByTrainingInstanceId(instanceId, pageable);
+        if(isActive == null) {
+            return trainingRunRepository.findAllByTrainingInstanceId(instanceId, pageable);
+
+        } else if( isActive) {
+            return trainingRunRepository.findAllActiveByTrainingInstanceId(instanceId, pageable);
+        } else {
+            return trainingRunRepository.findAllInactiveByTrainingInstanceId(instanceId, pageable);
+        }
     }
 
     @Override

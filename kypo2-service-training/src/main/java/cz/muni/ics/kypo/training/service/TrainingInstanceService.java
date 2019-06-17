@@ -89,7 +89,7 @@ public interface TrainingInstanceService {
      * @param trainingInstanceId id of Training Instance whose Training Runs would be returned.
      * @return Training Runs of specific Training Instance
      */
-    Page<TrainingRun> findTrainingRunsByTrainingInstance(Long trainingInstanceId, Pageable pageable);
+    Page<TrainingRun> findTrainingRunsByTrainingInstance(Long trainingInstanceId, Boolean isActive, Pageable pageable);
 
     /**
      * Find UserRefs by logins

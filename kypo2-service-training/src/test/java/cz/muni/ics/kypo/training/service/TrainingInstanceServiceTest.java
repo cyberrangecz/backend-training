@@ -306,7 +306,7 @@ public class TrainingInstanceServiceTest {
 
         given(trainingInstanceRepository.findById(anyLong())).willReturn(Optional.of(trainingInstance1));
         given(trainingRunRepository.findAllByTrainingInstanceId(any(Long.class), any(Pageable.class))).willReturn(p);
-        Page pr = trainingInstanceService.findTrainingRunsByTrainingInstance(trainingInstance1.getId(), PageRequest.of(0, 2));
+        Page pr = trainingInstanceService.findTrainingRunsByTrainingInstance(trainingInstance1.getId(), null, PageRequest.of(0, 2));
         assertEquals(2, pr.getTotalElements());
     }
 
@@ -314,7 +314,7 @@ public class TrainingInstanceServiceTest {
     public void findTrainingRunsByTrainingInstance_notContainedId() {
         thrown.expect(ServiceLayerException.class);
         thrown.expectMessage("Training instance with id: 10 not found.");
-        trainingInstanceService.findTrainingRunsByTrainingInstance(10L, PageRequest.of(0, 2));
+        trainingInstanceService.findTrainingRunsByTrainingInstance(10L, null, PageRequest.of(0, 2));
     }
 
     @Test
