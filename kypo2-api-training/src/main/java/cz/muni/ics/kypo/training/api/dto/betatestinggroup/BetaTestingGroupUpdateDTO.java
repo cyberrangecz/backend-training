@@ -7,7 +7,7 @@ import java.util.Set;
 
 public class BetaTestingGroupUpdateDTO {
 
-    @NotNull(message = "{betaTestingGroup.organizers.NotNull.message}")
+    @NotNull(message = "{betaTestingGroup.organizersLogin.NotNull.message}")
     private Set<String> organizersLogin;
 
     @ApiModelProperty(value = "Logins of users who is allowed to see training definition.", required = true)

@@ -92,7 +92,7 @@ public class TrainingInstanceFacadeTest {
 
         trainingInstanceCreate = new TrainingInstanceCreateDTO();
         trainingInstanceCreate.setTitle("test");
-        trainingInstanceCreate.setOrganizers(new HashSet<>());
+        trainingInstanceCreate.setOrganizersLogin(new HashSet<>());
         trainingInstanceCreate.setTrainingDefinitionId(1L);
 
         trainingInstanceUpdate = new TrainingInstanceUpdateDTO();
@@ -103,7 +103,7 @@ public class TrainingInstanceFacadeTest {
         trainingInstanceUpdate.setEndTime(LocalDateTime.now());
         trainingInstanceUpdate.setStartTime(LocalDateTime.now());
         trainingInstanceUpdate.setTrainingDefinitionId(1L);
-        trainingInstanceUpdate.setOrganizers(new HashSet<>());
+        trainingInstanceUpdate.setOrganizersLogin(new HashSet<>());
     }
     
     @Test
