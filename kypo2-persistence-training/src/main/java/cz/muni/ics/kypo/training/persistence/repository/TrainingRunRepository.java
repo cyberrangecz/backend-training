@@ -12,6 +12,7 @@ import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 import cz.muni.ics.kypo.training.persistence.model.SandboxInstanceRef;
@@ -83,4 +84,7 @@ public interface TrainingRunRepository extends JpaRepository<TrainingRun, Long>,
 
     @Query("SELECT tr FROM TrainingRun tr WHERE tr.sandboxInstanceRef = :sandboxInstanceRef")
     Optional<TrainingRun> findBySandboxInstanceRef(@Param("sandboxInstanceRef") SandboxInstanceRef sandboxInstanceRef);
+
+    @Query("SELECT si.sandboxInstanceRefId FROM TrainingRun tr INNER JOIN tr.sandboxInstanceRef si INNER JOIN tr.trainingInstance ti WHERE ti.id = :trainingInstanceId")
+    List<Long> findIdsOfAllOccupiedSandboxesByTrainingInstance(@Param("trainingInstanceId") Long trainingInstanceId);
 }

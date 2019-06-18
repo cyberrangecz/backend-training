@@ -98,6 +98,13 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
 
     @Override
     @IsOrganizerOrAdmin
+    public List<Long> findIdsOfAllOccupiedSandboxesByTrainingInstance(Long trainingInstanceId) {
+        LOG.debug("findIdsOfAllOccupiedSandboxes({})", trainingInstanceId);
+        return trainingRunRepository.findIdsOfAllOccupiedSandboxesByTrainingInstance(trainingInstanceId);
+    }
+
+    @Override
+    @IsOrganizerOrAdmin
     public TrainingInstance create(TrainingInstance trainingInstance) {
         LOG.debug("create({})", trainingInstance);
         Assert.notNull(trainingInstance, "Input training instance must not be null");

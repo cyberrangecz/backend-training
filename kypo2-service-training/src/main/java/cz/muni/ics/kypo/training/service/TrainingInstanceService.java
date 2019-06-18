@@ -12,6 +12,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Future;
 
@@ -108,5 +109,7 @@ public interface TrainingInstanceService {
     Long createPoolForSandboxes(Long trainingInstanceId);
 
     TrainingInstance findByIdIncludingDefinition(Long instanceId);
+
+    List<Long> findIdsOfAllOccupiedSandboxesByTrainingInstance(Long trainingInstanceId);
 
 }

@@ -30,6 +30,7 @@ import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
@@ -64,7 +65,9 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
         LOG.debug("findById({})", id);
         try {
             Objects.requireNonNull(id);
-            return trainingInstanceMapper.mapToDTO(trainingInstanceService.findByIdIncludingDefinition(id));
+            TrainingInstanceDTO trainingInstanceDTO = trainingInstanceMapper.mapToDTO(trainingInstanceService.findByIdIncludingDefinition(id));
+            trainingInstanceDTO.setSandboxesWithTrainingRun(trainingInstanceService.findIdsOfAllOccupiedSandboxesByTrainingInstance(trainingInstanceDTO.getId()));
+            return trainingInstanceDTO;
         } catch (ServiceLayerException ex) {
             throw new FacadeLayerException(ex);
         }
@@ -74,7 +77,9 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
     @TransactionalRO
     public PageResultResource<TrainingInstanceDTO> findAll(Predicate predicate, Pageable pageable) {
         LOG.debug("findAllTrainingDefinitions({},{})", predicate, pageable);
-        return trainingInstanceMapper.mapToPageResultResource(trainingInstanceService.findAll(predicate, pageable));
+        PageResultResource<TrainingInstanceDTO> trainingInstancePageResultResource = trainingInstanceMapper.mapToPageResultResource(trainingInstanceService.findAll(predicate, pageable));
+        trainingInstancePageResultResource.getContent().forEach(trainingInstanceDTO -> trainingInstanceDTO.setSandboxesWithTrainingRun(trainingInstanceService.findIdsOfAllOccupiedSandboxesByTrainingInstance(trainingInstanceDTO.getId())));
+        return trainingInstancePageResultResource;
     }
 
     @Override
