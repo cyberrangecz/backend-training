@@ -37,8 +37,8 @@ public class TrainingInstanceCreateDTO {
     private String accessToken;
     @NotNull(message = "{traininginstancecreate.trainingDefinition.NotNull.message}")
     private long trainingDefinitionId;
-    @NotNull(message = "{traininginstancecreate.organizerLogins.NotNull.message}")
-    private Set<UserInfoDTO> organizers;
+    @NotNull(message = "{traininginstancecreate.organizersLogin.NotNull.message}")
+    private Set<String> organizersLogin;
 
     @ApiModelProperty(value = "Date when training instance starts.", required = true, example = "2020-11-20T10:28:02.727Z")
     public LocalDateTime getStartTime() {
@@ -95,12 +95,12 @@ public class TrainingInstanceCreateDTO {
     }
 
     @ApiModelProperty(value = "Reference to users which organize training instance.", required = true)
-    public Set<UserInfoDTO> getOrganizers() {
-        return organizers;
+    public Set<String> getOrganizersLogin() {
+        return organizersLogin;
     }
 
-    public void setOrganizers(Set<UserInfoDTO> organizers) {
-        this.organizers = organizers;
+    public void setOrganizersLogin(Set<String> organizersLogin) {
+        this.organizersLogin = organizersLogin;
     }
 
     @Override

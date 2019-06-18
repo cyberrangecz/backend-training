@@ -90,7 +90,7 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
             Objects.requireNonNull(trainingInstanceUpdateDTO);
             TrainingInstance trainingInstance = trainingInstanceMapper.mapUpdateToEntity(trainingInstanceUpdateDTO);
             trainingInstance.setTrainingDefinition(trainingDefinitionService.findById(trainingInstanceUpdateDTO.getTrainingDefinitionId()));
-            addOrganizersToTrainingInstance(trainingInstance, trainingInstanceUpdateDTO.getOrganizers());
+            addOrganizersToTrainingInstance(trainingInstance, trainingInstanceUpdateDTO.getOrganizersLogin());
             return trainingInstanceService.update(trainingInstance);
         } catch (ServiceLayerException ex) {
             throw new FacadeLayerException(ex);
@@ -106,15 +106,16 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
             TrainingInstance trainingInstance = trainingInstanceMapper.mapCreateToEntity(trainingInstanceCreateDTO);
             trainingInstance.setTrainingDefinition(trainingDefinitionService.findById(trainingInstanceCreateDTO.getTrainingDefinitionId()));
             trainingInstance.setId(null);
-            addOrganizersToTrainingInstance(trainingInstance, trainingInstanceCreateDTO.getOrganizers());
+            addOrganizersToTrainingInstance(trainingInstance, trainingInstanceCreateDTO.getOrganizersLogin());
             return trainingInstanceMapper.mapToDTO(trainingInstanceService.create(trainingInstance));
         } catch (ServiceLayerException ex) {
             throw new FacadeLayerException(ex);
         }
     }
 
-    private void addOrganizersToTrainingInstance(TrainingInstance trainingInstance, Set<UserInfoDTO> organizers) {
+    private void addOrganizersToTrainingInstance(TrainingInstance trainingInstance, Set<String> loginsOfOrganizers) {
         trainingInstance.setOrganizers(new HashSet<>());
+        Set<UserInfoDTO> organizers = trainingDefinitionService.getUsersWithGivenLogins(loginsOfOrganizers);
         for (UserInfoDTO organizer : organizers) {
             try {
                 trainingInstance.addOrganizer(trainingDefinitionService.findUserRefByLogin(organizer.getLogin()));

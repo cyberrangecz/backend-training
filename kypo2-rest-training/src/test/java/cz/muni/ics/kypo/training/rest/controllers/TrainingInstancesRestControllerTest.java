@@ -120,7 +120,7 @@ public class TrainingInstancesRestControllerTest {
         trainingInstanceCreateDTO.setEndTime(endTime);
         trainingInstanceCreateDTO.setAccessToken("pass");
         trainingInstanceCreateDTO.setPoolSize(20);
-        trainingInstanceCreateDTO.setOrganizers(Set.of(userInfoDTO1));
+        trainingInstanceCreateDTO.setOrganizersLogin(Set.of(userInfoDTO1.getLogin()));
         trainingInstanceCreateDTO.setTrainingDefinitionId(1L);
 
         trainingInstanceUpdateDTO = new TrainingInstanceUpdateDTO();
@@ -131,7 +131,7 @@ public class TrainingInstancesRestControllerTest {
         trainingInstanceUpdateDTO.setPoolSize(5);
         //trainingInstanceUpdateDTO.setKeyword("pass-2586");
         trainingInstanceUpdateDTO.setTrainingDefinitionId(1L);
-        trainingInstanceUpdateDTO.setOrganizers(Set.of(userInfoDTO1));
+        trainingInstanceUpdateDTO.setOrganizersLogin(Set.of(userInfoDTO1.getLogin()));
 
         List<TrainingInstance> expected = new ArrayList<>();
         expected.add(trainingInstance1);
