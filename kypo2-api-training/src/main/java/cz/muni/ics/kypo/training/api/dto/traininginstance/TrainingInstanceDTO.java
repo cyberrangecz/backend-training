@@ -8,6 +8,8 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -27,6 +29,7 @@ public class TrainingInstanceDTO {
     private Set<UserRefDTO> organizers;
     private String accessToken;
     private Long poolId;
+    private List<Long> sandboxesWithTrainingRun = new ArrayList<>();
 
     @ApiModelProperty(value = "Main identifier of training instance.", example = "1")
     public Long getId() {
@@ -106,6 +109,15 @@ public class TrainingInstanceDTO {
 
     public void setPoolId(Long poolId) {
         this.poolId = poolId;
+    }
+
+    @ApiModelProperty(value = "Id of sandboxes which are assigned to training run.", example = "[3,15]")
+    public List<Long> getSandboxesWithTrainingRun() {
+        return sandboxesWithTrainingRun;
+    }
+
+    public void setSandboxesWithTrainingRun(List<Long> sandboxesWithTrainingRun) {
+        this.sandboxesWithTrainingRun = sandboxesWithTrainingRun;
     }
 
     @Override public String toString() {
