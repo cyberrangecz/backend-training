@@ -214,9 +214,10 @@ public class TrainingRunsRestControllerTest {
 
         String valueTr = convertObjectToJsonBytes(trainingRunDTOPageResultResource);
         given(objectMapper.writeValueAsString(any(Object.class))).willReturn(valueTr);
-        given(trainingRunFacade.findAllAccessedTrainingRuns(any(Pageable.class))).willReturn(accessedTrainingRunDTOPage);
+        given(trainingRunFacade.findAllAccessedTrainingRuns(any(Pageable.class), anyString())).willReturn(accessedTrainingRunDTOPage);
 
-        MockHttpServletResponse result = mockMvc.perform(get("/training-runs/accessible"))
+        MockHttpServletResponse result = mockMvc.perform(get("/training-runs/accessible")
+                .param("sortByTitle", ""))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andReturn().getResponse();

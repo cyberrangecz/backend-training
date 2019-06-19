@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.bohnman.squiggly.Squiggly;
 import com.github.bohnman.squiggly.util.SquigglyUtils;
-import com.google.gson.JsonObject;
 import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.training.api.PageResultResource;
 import cz.muni.ics.kypo.training.api.dto.AbstractLevelDTO;
@@ -21,9 +20,6 @@ import cz.muni.ics.kypo.training.rest.utils.annotations.ApiPageableSwagger;
 import io.swagger.annotations.*;
 import cz.muni.ics.kypo.training.api.dto.hint.HintDTO;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -34,8 +30,6 @@ import org.springframework.data.querydsl.binding.QuerydslPredicate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
 
@@ -197,17 +191,7 @@ public class TrainingRunsRestController {
                                                              @RequestParam(value = "fields", required = false) String fields,
                                                              @ApiParam(value = "Sort by title attribute. As values us asc|desc", required = false, example = "asc")
                                                              @RequestParam(value = "sortByTitle", required = false) String sortByTitle) {
-        PageResultResource<AccessedTrainingRunDTO> accessedTrainingRunDTOS = trainingRunFacade.findAllAccessedTrainingRuns(pageable);
-        if (sortByTitle != null && !sortByTitle.isBlank()) {
-            List<AccessedTrainingRunDTO> accessedTRToSort = accessedTrainingRunDTOS.getContent();
-            if (accessedTRToSort != null && accessedTRToSort.size() > 0) {
-                if (sortByTitle.equals("asc")) {
-                    accessedTRToSort.sort(Comparator.comparing(AccessedTrainingRunDTO::getTitle));
-                } else if (sortByTitle.equals("desc")) {
-                    accessedTRToSort.sort(Comparator.comparing(AccessedTrainingRunDTO::getTitle).reversed());
-                }
-            }
-        }
+        PageResultResource<AccessedTrainingRunDTO> accessedTrainingRunDTOS = trainingRunFacade.findAllAccessedTrainingRuns(pageable, sortByTitle);
         Squiggly.init(objectMapper, fields);
         return new ResponseEntity<>(SquigglyUtils.stringify(objectMapper, accessedTrainingRunDTOS), HttpStatus.OK);
     }

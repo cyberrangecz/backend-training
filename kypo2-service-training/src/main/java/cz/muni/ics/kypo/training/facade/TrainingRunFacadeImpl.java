@@ -36,6 +36,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -90,10 +91,10 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
 
     @Override
     @TransactionalRO
-    public PageResultResource<AccessedTrainingRunDTO> findAllAccessedTrainingRuns(Pageable pageable) {
+    public PageResultResource<AccessedTrainingRunDTO> findAllAccessedTrainingRuns(Pageable pageable, String sortByTitle) {
         LOG.debug("findAllAccessedTrainingRuns()");
         Page<TrainingRun> trainingRuns = trainingRunService.findAllByParticipantRefLogin(pageable);
-        return convertToAccessedRunDTO(trainingRuns);
+        return convertToAccessedRunDTO(trainingRuns, sortByTitle);
     }
 
     @Override
@@ -234,7 +235,7 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
         }
     }
 
-    private PageResultResource<AccessedTrainingRunDTO> convertToAccessedRunDTO(Page<TrainingRun> trainingRuns) {
+    private PageResultResource<AccessedTrainingRunDTO> convertToAccessedRunDTO(Page<TrainingRun> trainingRuns, String sortByTitle) {
         List<AccessedTrainingRunDTO> accessedTrainingRunDTOS = new ArrayList<>();
         for (TrainingRun trainingRun : trainingRuns) {
             AccessedTrainingRunDTO accessedTrainingRunDTO = new AccessedTrainingRunDTO();
@@ -250,6 +251,15 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
                 accessedTrainingRunDTO.setPossibleAction(Actions.RESULTS);
             }
             accessedTrainingRunDTOS.add(accessedTrainingRunDTO);
+        }
+        if (sortByTitle != null && !sortByTitle.isBlank()) {
+            if (accessedTrainingRunDTOS.size() > 0) {
+                if (sortByTitle.equals("asc")) {
+                    accessedTrainingRunDTOS.sort(Comparator.comparing(AccessedTrainingRunDTO::getTitle));
+                } else if (sortByTitle.equals("desc")) {
+                    accessedTrainingRunDTOS.sort(Comparator.comparing(AccessedTrainingRunDTO::getTitle).reversed());
+                }
+            }
         }
         return new PageResultResource<>(accessedTrainingRunDTOS, createPagination(trainingRuns));
     }
