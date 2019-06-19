@@ -7,5 +7,20 @@ package cz.muni.ics.kypo.training.persistence.model.enums;
  */
 public enum TDState {
 
-    PRIVATED, RELEASED, ARCHIVED, UNRELEASED;
+    /**
+     * Privated definition state.
+     */
+    PRIVATED,
+    /**
+     * Released definition state.
+     */
+    RELEASED,
+    /**
+     * Archived definition state.
+     */
+    ARCHIVED,
+    /**
+     * Unreleased definition state.
+     */
+    UNRELEASED;
 }

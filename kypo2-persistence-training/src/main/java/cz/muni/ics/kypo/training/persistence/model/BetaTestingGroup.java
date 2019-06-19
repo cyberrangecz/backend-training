@@ -8,6 +8,8 @@ import java.util.Objects;
 import java.util.Set;
 
 /**
+ * Group of users that can test Training runs created from unreleased Training Definition
+ *
  * @author Pavel Seda
  */
 @Entity
@@ -27,36 +29,76 @@ public class BetaTestingGroup implements Serializable {
     @OneToOne(mappedBy = "betaTestingGroup", fetch = FetchType.LAZY)
     private TrainingDefinition trainingDefinition;
 
+    /**
+     * Gets unique identification number of beta testing group
+     *
+     * @return the id
+     */
     public Long getId() {
         return id;
     }
 
+    /**
+     * Sets unique identification number of beta testing group
+     *
+     * @param id the id
+     */
     public void setId(Long id) {
         this.id = id;
     }
 
+    /**
+     * Gets set of users allowed to test associated Training Definition
+     *
+     * @return the organizers
+     */
     public Set<UserRef> getOrganizers() {
         return Collections.unmodifiableSet(organizers);
     }
 
+    /**
+     * Sets set of users allowed to test associated Training Definition
+     *
+     * @param organizers the organizers
+     */
     public void setOrganizers(Set<UserRef> organizers) {
         this.organizers = organizers;
     }
 
+    /**
+     * Adds organizer to set of users allowed to test associated Training Definition
+     *
+     * @param organizer to be added
+     */
     public void addOrganizer(UserRef organizer) {
         this.organizers.add(organizer);
         organizer.addViewGroup(this);
     }
 
+    /**
+     * Removes organizer from set of users allowed to test associated Training Definition
+     *
+     * @param organizer to be removed
+     */
     public void removeOrganizer(UserRef organizer) {
         this.organizers.remove(organizer);
         organizer.removeViewGroup(this);
     }
 
+    /**
+     * Gets associated Training Definition
+     *
+     * @return the training definition
+     */
     public TrainingDefinition getTrainingDefinition() {
         return trainingDefinition;
     }
 
+    /**
+     * Sets associated Training Definition
+     *
+     * @param trainingDefinition the training definition
+     */
     public void setTrainingDefinition(TrainingDefinition trainingDefinition) {
         this.trainingDefinition = trainingDefinition;
     }

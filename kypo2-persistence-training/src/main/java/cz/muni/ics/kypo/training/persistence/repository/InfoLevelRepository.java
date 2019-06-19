@@ -7,6 +7,8 @@ import org.springframework.stereotype.Repository;
 import cz.muni.ics.kypo.training.persistence.model.InfoLevel;
 
 /**
+ * The JPA repository interface to manage {@link InfoLevel} instances.
+ *
  * @author Pavel Seda (441048)
  */
 @Repository

@@ -5,6 +5,9 @@ import java.io.Serializable;
 import java.util.Objects;
 
 /**
+ * Class specifying Abstract level as Info level.
+ * Info levels contain information for trainees.
+ *
  * @author Pavel Seda (441048)
  */
 @Entity(name = "InfoLevel")
@@ -16,19 +19,37 @@ public class InfoLevel extends AbstractLevel implements Serializable {
     @Column(name = "content", nullable = false)
     private String content;
 
+    /**
+     * Instantiates a new Info level
+     */
     public InfoLevel() {
         super();
     }
 
+    /**
+     * Instantiates a new Info level
+     *
+     * @param content text content of Info level
+     */
     public InfoLevel(String content) {
         super();
         this.content = content;
     }
 
+    /**
+     * Gets text content of Info level.
+     *
+     * @return the content
+     */
     public String getContent() {
         return content;
     }
 
+    /**
+     * Sets text content of Info level.
+     *
+     * @param content the content
+     */
     public void setContent(String content) {
         this.content = content;
     }

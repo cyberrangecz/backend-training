@@ -5,6 +5,9 @@ import java.io.Serializable;
 import java.util.Objects;
 
 /**
+ * Class representing levels from Training definition.
+ * This class is extended by GameLevel, InfoLevel and AssessmentLevel.
+ *
  * @author Pavel Seda
  */
 @Entity(name = "AbstractLevel")
@@ -28,53 +31,118 @@ public abstract class AbstractLevel implements Serializable {
     @JoinColumn(name = "training_definition_id")
     private TrainingDefinition trainingDefinition;
 
+    /**
+     * Instantiates a new Abstract level
+     */
     public AbstractLevel() {
     }
 
+    /**
+     * Gets unique identification number of level
+     *
+     * @return the id
+     */
     public Long getId() {
         return id;
     }
 
+    /**
+     * Sets unique identification number of level
+     *
+     * @param id the id
+     */
     public void setId(Long id) {
         this.id = id;
     }
 
+    /**
+     * Gets title of level
+     *
+     * @return the title
+     */
     public String getTitle() {
         return title;
     }
 
+    /**
+     * Sets title of level
+     *
+     * @param title the title
+     */
     public void setTitle(String title) {
         this.title = title;
     }
 
+    /**
+     * Gets maximal number of points that player can score in level
+     *
+     * @return the max score
+     */
     public int getMaxScore() {
         return maxScore;
     }
 
+    /**
+     * Sets maximal number of points that player can score in level
+     *
+     * @param maxScore the max score
+     */
     public void setMaxScore(int maxScore) {
         this.maxScore = maxScore;
     }
 
+    /**
+     * Gets estimated time in minutes that it takes to solve level
+     *
+     * @return the estimated duration
+     */
     public long getEstimatedDuration() {
         return estimatedDuration;
     }
 
+    /**
+     * Sets estimated time in minutes that it takes to solve level
+     *
+     * @param estimatedDuration the estimated duration
+     */
     public void setEstimatedDuration(long estimatedDuration) {
         this.estimatedDuration = estimatedDuration;
     }
 
+    /**
+     * Gets order number of level that is compared with order numbers of other levels associated with same definition.
+     * First level from definition has order of 0
+     *
+     * @return the order
+     */
     public int getOrder() {
         return order;
     }
 
+    /**
+     * Sets order number of level that is compared with order numbers of other levels associated with same definition.
+     * First level from definition has order of 0
+     *
+     * @param order the order
+     */
     public void setOrder(int order) {
         this.order = order;
     }
 
+    /**
+     * Gets training definition that is associated with level
+     *
+     * @return the training definition
+     */
     public TrainingDefinition getTrainingDefinition() {
         return trainingDefinition;
     }
 
+    /**
+     * Sets training definition that is associated with level
+     *
+     * @param trainingDefinition the training definition
+     */
     public void setTrainingDefinition(TrainingDefinition trainingDefinition) {
         this.trainingDefinition = trainingDefinition;
     }

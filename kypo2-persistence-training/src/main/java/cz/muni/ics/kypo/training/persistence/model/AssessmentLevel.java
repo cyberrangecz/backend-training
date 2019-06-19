@@ -10,6 +10,9 @@ import java.util.Objects;
 
 
 /**
+ * Class specifying Abstract level as assessment level.
+ * Assessment levels contain questions for trainees to answer.
+ *
  * @author Pavel Seda (441048)
  */
 @Entity(name = "AssessmentLevel")
@@ -27,9 +30,19 @@ public class AssessmentLevel extends AbstractLevel implements Serializable {
     @Enumerated(EnumType.STRING)
     private AssessmentType assessmentType;
 
+    /**
+     * Instantiates a new Assessment level
+     */
     public AssessmentLevel() {
     }
 
+    /**
+     * Instantiates a new Assessment level
+     *
+     * @param questions      questions that trainee must answer
+     * @param instructions   instructions to help trainee understand the questions
+     * @param assessmentType type of assessment level. Types are QUESTIONNAIRE and TEST
+     */
     public AssessmentLevel(String questions, String instructions, AssessmentType assessmentType) {
         super();
         this.questions = questions;
@@ -37,26 +50,56 @@ public class AssessmentLevel extends AbstractLevel implements Serializable {
         this.assessmentType = assessmentType;
     }
 
+    /**
+     * Gets questions that trainee must answer
+     *
+     * @return the questions
+     */
     public String getQuestions() {
         return questions;
     }
 
+    /**
+     * Sets questions that trainee must answer
+     *
+     * @param questions the questions
+     */
     public void setQuestions(String questions) {
         this.questions = questions;
     }
 
+    /**
+     * Gets instructions to help trainee understand the questions
+     *
+     * @return the instructions
+     */
     public String getInstructions() {
         return instructions;
     }
 
+    /**
+     * Sets instructions to help trainee understand the questions
+     *
+     * @param instructions the instructions
+     */
     public void setInstructions(String instructions) {
         this.instructions = instructions;
     }
 
+    /**
+     * Gets type of assessment level. Types are QUESTIONNAIRE and TEST
+     *
+     * @return the assessment type
+     */
     public AssessmentType getAssessmentType() {
         return assessmentType;
     }
 
+    /**
+     * Sets type of assessment level. Types are QUESTIONNAIRE and TEST
+     *
+     * @param assessmentType the assessment type
+     */
     public void setAssessmentType(AssessmentType assessmentType) {
         this.assessmentType = assessmentType;
     }

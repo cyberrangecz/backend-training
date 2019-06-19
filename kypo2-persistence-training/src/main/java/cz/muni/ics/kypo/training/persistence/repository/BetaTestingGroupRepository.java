@@ -11,6 +11,8 @@ import java.util.Optional;
 
 
 /**
+ * The JPA repository interface to manage {@link BetaTestingGroup} instances.
+ *
  * @author Dominik Pilar (445537)
  */
 public interface BetaTestingGroupRepository extends JpaRepository<BetaTestingGroup, Long>, QuerydslPredicateExecutor<InfoLevel> {
