@@ -37,7 +37,7 @@ public interface TrainingRunFacade {
      *
      * @return Training Runs of logged in user.
      */
-    PageResultResource<AccessedTrainingRunDTO> findAllAccessedTrainingRuns(Pageable pageable);
+    PageResultResource<AccessedTrainingRunDTO> findAllAccessedTrainingRuns(Pageable pageable, String sortByTitle);
 
     /**
      * Access Training Run by logged in user based on given accessToken.
