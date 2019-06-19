@@ -9,6 +9,10 @@ import java.util.Objects;
 import java.util.Set;
 
 /**
+ * Class represents Training instance.
+ * Training instances can be created based on definitions.
+ * Training runs can be created based on instances.
+ *
  * @author Pavel Seda (441048)
  */
 @Entity(name = "TrainingInstance")
@@ -42,91 +46,201 @@ public class TrainingInstance implements Serializable {
     @OneToMany(fetch = FetchType.LAZY, orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "trainingInstance")
     private Set<SandboxInstanceRef> sandboxInstanceRefs = new HashSet<>();
 
+    /**
+     * Gets unique identification number of Training instance
+     *
+     * @return the id
+     */
     public Long getId() {
         return id;
     }
 
+    /**
+     * Sets unique identification number of Training instance
+     *
+     * @param id the id
+     */
     public void setId(Long id) {
         this.id = id;
     }
 
+    /**
+     * Gets initiation time of Training instance
+     *
+     * @return the start time
+     */
     public LocalDateTime getStartTime() {
         return startTime;
     }
 
+    /**
+     * Sets initiation time of Training instance
+     *
+     * @param startTime the start time
+     */
     public void setStartTime(LocalDateTime startTime) {
         this.startTime = startTime;
     }
 
+    /**
+     * Gets finish time of Training instance
+     *
+     * @return the end time
+     */
     public LocalDateTime getEndTime() {
         return endTime;
     }
 
+    /**
+     * Sets finish time of Training instance
+     *
+     * @param endTime the end time
+     */
     public void setEndTime(LocalDateTime endTime) {
         this.endTime = endTime;
     }
 
+    /**
+     * Gets access token needed to start Training runs associated with given Training Instance
+     *
+     * @return the access token
+     */
     public String getAccessToken() {
         return accessToken;
     }
 
+    /**
+     * Sets access token needed to start Training runs associated with given Training Instance
+     *
+     * @param accessToken the access token
+     */
     public void setAccessToken(String accessToken) {
         this.accessToken = accessToken;
     }
 
+    /**
+     * Gets title of Training Instance
+     *
+     * @return the title
+     */
     public String getTitle() {
         return title;
     }
 
+    /**
+     * Sets title of Training Instance
+     *
+     * @param title the title
+     */
     public void setTitle(String title) {
         this.title = title;
     }
 
+    /**
+     * Gets maximal size of pools that can be allocated for Training Instance
+     *
+     * @return the pool size
+     */
     public int getPoolSize() {
         return poolSize;
     }
 
+    /**
+     * Sets maximal size of pools that can be allocated for Training Instance
+     *
+     * @param poolSize the pool size
+     */
     public void setPoolSize(int poolSize) {
         this.poolSize = poolSize;
     }
 
+    /**
+     * Gets unique identification number of sandbox pool associated with given Training instance
+     *
+     * @return the pool id
+     */
     public Long getPoolId() {
         return poolId;
     }
 
+    /**
+     * Sets unique identification number of sandbox pool associated with given Training instance
+     *
+     * @param poolId the pool id
+     */
     public void setPoolId(Long poolId) {
         this.poolId = poolId;
     }
 
+    /**
+     * Gets Training definition associated with given Training instance
+     *
+     * @return the training definition
+     */
     public TrainingDefinition getTrainingDefinition() {
         return trainingDefinition;
     }
 
+    /**
+     * Sets Training definition associated with given Training instance
+     *
+     * @param trainingDefinition the training definition
+     */
     public void setTrainingDefinition(TrainingDefinition trainingDefinition) {
         this.trainingDefinition = trainingDefinition;
     }
 
+    /**
+     * Gets set of users that can make changes to the Training instance
+     *
+     * @return the organizers
+     */
     public Set<UserRef> getOrganizers() {
         return Collections.unmodifiableSet(organizers);
     }
 
+    /**
+     * Sets set of users that can make changes to the Training instance
+     *
+     * @param organizers the organizers
+     */
     public void setOrganizers(Set<UserRef> organizers) {
         this.organizers = organizers;
     }
 
+    /**
+     * Adds user to the set of users that can make changes to the Training instance
+     *
+     * @param userRef the user ref
+     */
     public void addOrganizer(UserRef userRef) {
         this.organizers.add(userRef);
         userRef.addTrainingInstance(this);
     }
 
+    /**
+     * Gets set of DB references of sandbox instances associated with Training instance
+     *
+     * @return the sandbox instance refs
+     */
     public Set<SandboxInstanceRef> getSandboxInstanceRefs() {
         return sandboxInstanceRefs;
     }
 
+    /**
+     * Sets set of DB references of sandbox instances associated with Training instance
+     *
+     * @param sandboxInstanceRefs the sandbox instance refs
+     */
     public void setSandboxInstanceRefs(Set<SandboxInstanceRef> sandboxInstanceRefs) {
         this.sandboxInstanceRefs = sandboxInstanceRefs;
     }
 
+    /**
+     * Adds DB reference of sandbox instance to the set of DB references of sandbox instances associated with Training instance
+     *
+     * @param sandboxInstanceRef the sandbox instance ref
+     */
     public void addSandboxInstanceRef(SandboxInstanceRef sandboxInstanceRef) {
         this.sandboxInstanceRefs.add(sandboxInstanceRef);
         sandboxInstanceRef.setTrainingInstance(this);

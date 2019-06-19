@@ -1,5 +1,6 @@
 package cz.muni.ics.kypo.training.persistence.repository;
 
+import com.sun.xml.bind.v2.TODO;
 import cz.muni.ics.kypo.training.persistence.model.TrainingDefinition;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -18,26 +19,60 @@ import java.util.Optional;
 
 
 /**
+ * The JPA repository interface to manage {@link TrainingInstance} instances.
+ *
  * @author Pavel Seda (441048)
  */
 @Repository
 public interface TrainingInstanceRepository extends JpaRepository<TrainingInstance, Long>, QuerydslPredicateExecutor<TrainingInstance> {
 
+    /**
+     * Find all training instances by id of associated training definition.
+     *
+     * @param trainingDefId the training def id
+     * @return the list of {@link TrainingInstance}s associated to {@link TrainingDefinition}
+     */
     @Query("SELECT ti FROM TrainingInstance ti JOIN FETCH ti.trainingDefinition td WHERE td.id = :trainingDefId")
     List<TrainingInstance> findAllByTrainingDefinitionId(@Param("trainingDefId") Long trainingDefId);
 
+    /**
+     * Find all training instances
+     *
+     * @param predicate the predicate
+     * @param pageable  the pageable
+     * @return page of all {@link TrainingInstance}
+     */
     @EntityGraph(attributePaths = {"trainingDefinition.authors", "organizers", "sandboxInstanceRefs", "trainingDefinition.betaTestingGroup", "trainingDefinition.betaTestingGroup.organizers"})
     Page<TrainingInstance> findAll(Predicate predicate, Pageable pageable);
 
+    /**
+     * Find training instance with start time in the past, end time in the future and by corresponding access token.
+     *
+     * @param time        the current time
+     * @param accessToken the access token
+     * @return {@link TrainingInstance} with start time in the past, end time in the future and by corresponding access token
+     */
     @Query("SELECT ti FROM TrainingInstance ti JOIN FETCH ti.trainingDefinition WHERE ti.startTime < :date AND ti.endTime > :date AND ti.accessToken = :accessToken ")
     Optional<TrainingInstance> findByStartTimeAfterAndEndTimeBeforeAndAccessToken(@Param("date") LocalDateTime time, @Param("accessToken") String accessToken);
 
+    /**
+     * Find training instance by id
+     *
+     * @param id id of training instance
+     * @return {@link TrainingInstance}
+     */
     @EntityGraph(attributePaths = {"trainingDefinition.authors", "organizers", "sandboxInstanceRefs"})
     Optional<TrainingInstance> findById(Long id);
 
     @Query("SELECT (COUNT(ti) > 0) FROM TrainingInstance ti INNER JOIN ti.trainingDefinition td WHERE ti.id = :trainingInstanceId")
     boolean existsAnyForTrainingDefinition(@Param("trainingInstanceId") Long trainingInstanceId);
 
+    /**
+     * Find training instance by id including its associated training definition.
+     *
+     * @param instanceId the instance id
+     * @return {@link TrainingInstance} including its associated {@link TrainingDefinition}
+     */
     @Query("SELECT ti FROM TrainingInstance ti LEFT OUTER JOIN FETCH ti.organizers LEFT OUTER JOIN FETCH ti.sandboxInstanceRefs JOIN FETCH"
         + " ti.trainingDefinition td JOIN FETCH td.authors LEFT OUTER JOIN FETCH td.betaTestingGroup btg LEFT OUTER JOIN FETCH btg.organizers WHERE ti.id = :instanceId")
     Optional<TrainingInstance> findByIdIncludingDefinition(@Param("instanceId") Long instanceId);

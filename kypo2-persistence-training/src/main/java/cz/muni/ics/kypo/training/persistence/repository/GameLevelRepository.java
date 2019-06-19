@@ -7,6 +7,8 @@ import org.springframework.stereotype.Repository;
 import cz.muni.ics.kypo.training.persistence.model.GameLevel;
 
 /**
+ * The JPA repository interface to manage {@link GameLevel} instances.
+ *
  * @author Pavel Seda (441048)
  */
 @Repository

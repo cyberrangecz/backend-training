@@ -18,32 +18,75 @@ import java.util.List;
 import java.util.Optional;
 
 /**
+ * The JPA repository interface to manage {@link TrainingDefinition} instances.
+ *
  * @author Pavel Seda (441048)
  */
 @Repository
 public interface TrainingDefinitionRepository
         extends JpaRepository<TrainingDefinition, Long>, QuerydslPredicateExecutor<TrainingDefinition> {
 
+    /**
+     * Find all training definitions by their associated sand box definition ref.
+     *
+     * @param sandboxDefId the sandbox def id
+     * @param pageable     the pageable
+     * @return page of {@link TrainingDefinition}s associated to given sandbox definition
+     */
     @Query("SELECT td FROM TrainingDefinition td WHERE td.sandboxDefinitionRefId = :sandboxDefId")
     Page<TrainingDefinition> findAllBySandBoxDefinitionRefId(@Param("sandboxDefId") Long sandboxDefId, Pageable pageable);
 
+    /**
+     * Find all training definitions
+     *
+     * @param predicate the predicate
+     * @param pageable  the pageable
+     * @return page of all {@link TrainingDefinition}
+     */
     @EntityGraph(attributePaths = {"authors", "betaTestingGroup", "betaTestingGroup.organizers"})
     Page<TrainingDefinition> findAll(Predicate predicate, Pageable pageable);
 
+    /**
+     * Find all training definitions accessible to logged in user.
+     *
+     * @param userRefLogin the user ref login
+     * @param pageable     the pageable
+     * @return the page of {@link TrainingDefinition} accessible to logged in user
+     */
     @Query(value = "SELECT td FROM TrainingDefinition td INNER JOIN td.authors a WHERE a.userRefLogin = :userRefLogin",
             countQuery = "SELECT COUNT(td) FROM TrainingDefinition td INNER JOIN td.authors a WHERE a.userRefLogin = :userRefLogin")
     Page<TrainingDefinition> findAllByLoggedInUser(@Param("userRefLogin") String userRefLogin, Pageable pageable);
 
+    /**
+     * Find all training definitions accessible to organizer.
+     *
+     * @param userRefLogin the user ref login
+     * @param pageable     the pageable
+     * @return the page of {@link TrainingDefinition} accessible to organizer
+     */
     @Query(value = "SELECT DISTINCT td FROM TrainingDefinition td LEFT JOIN td.betaTestingGroup bt LEFT JOIN bt.organizers org WHERE org.userRefLogin = :userRefLogin OR td.state = 'RELEASED'",
             countQuery = "SELECT COUNT(DISTINCT td) FROM TrainingDefinition td LEFT JOIN td.betaTestingGroup bt LEFT JOIN bt.organizers org WHERE org.userRefLogin = :userRefLogin OR td.state = 'RELEASED'")
     Page<TrainingDefinition> findAllForOrganizers(@Param("userRefLogin") String userRefLogin, Pageable pageable);
 
+    /**
+     * Find all training definitions accessible to organizer and designer.
+     *
+     * @param userRefLogin the user ref login
+     * @param pageable     the pageable
+     * @return the page of {@link TrainingDefinition} accessible to organizer and designer
+     */
     @Query(value = "SELECT DISTINCT td FROM TrainingDefinition td LEFT JOIN td.betaTestingGroup bt LEFT JOIN bt.organizers org " +
             "LEFT JOIN td.authors aut WHERE aut.userRefLogin = :userRefLogin OR org.userRefLogin = :userRefLogin OR td.state = 'RELEASED'",
             countQuery = "SELECT COUNT(DISTINCT td) FROM TrainingDefinition td LEFT JOIN td.betaTestingGroup bt LEFT JOIN bt.organizers org " +
                     "LEFT JOIN td.authors aut WHERE aut.userRefLogin = :userRefLogin OR org.userRefLogin = :userRefLogin OR td.state = 'RELEASED'")
     Page<TrainingDefinition> findAllForDesignersAndOrganizers(@Param("userRefLogin") String userRefLogin, Pageable pageable);
 
+    /**
+     * Find training definition by id
+     *
+     * @param id the id of training definition
+     * @return {@link TrainingDefinition}
+     */
     @EntityGraph(attributePaths = {"authors", "betaTestingGroup", "betaTestingGroup.organizers"})
     Optional<TrainingDefinition> findById(Long id);
 

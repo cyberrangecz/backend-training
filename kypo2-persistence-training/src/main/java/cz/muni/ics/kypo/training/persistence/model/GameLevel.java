@@ -8,6 +8,10 @@ import java.io.Serializable;
 import java.util.*;
 
 /**
+ * /**
+ * Class specifying Abstract level as game level.
+ * Game levels contain tasks for trainees to solve.
+ *
  * @author Pavel Seda (441048)
  */
 @Entity(name = "GameLevel")
@@ -46,62 +50,137 @@ public class GameLevel extends AbstractLevel implements Serializable {
         hints.forEach(hint -> hint.setGameLevel(this));
     }
 
+    /**
+     * Gets flag that needs to be found by trainee to complete level
+     *
+     * @return the flag
+     */
     public String getFlag() {
         return flag;
     }
 
+    /**
+     * Sets flag that needs to be found by trainee to complete level
+     *
+     * @param flag the flag
+     */
     public void setFlag(String flag) {
         this.flag = flag;
     }
 
+    /**
+     * Gets text assignment of task that needs to be performed by trainee
+     *
+     * @return the content
+     */
     public String getContent() {
         return content;
     }
 
+    /**
+     * Sets text assignment of task that needs to be performed by trainee
+     *
+     * @param content the content
+     */
     public void setContent(String content) {
         this.content = content;
     }
 
+    /**
+     * Gets solution to the level that is shown if trainee fails or if they request it
+     *
+     * @return the solution
+     */
     public String getSolution() {
         return solution;
     }
 
+    /**
+     * Sets solution to the level that is shown if trainee fails or if they request it
+     *
+     * @param solution the solution
+     */
     public void setSolution(String solution) {
         this.solution = solution;
     }
 
+    /**
+     * Gets if solution is penalized. If true, points for solving level will be decreased to 1 after trainee displays solution
+     *
+     * @return the boolean
+     */
     public boolean isSolutionPenalized() {
         return solutionPenalized;
     }
 
+    /**
+     * Sets if solution is penalized. If true, points for solving level will be decreased to 1 after trainee displays solution
+     *
+     * @param solutionPenalized the solution penalized
+     */
     public void setSolutionPenalized(boolean solutionPenalized) {
         this.solutionPenalized = solutionPenalized;
     }
 
+    /**
+     * Gets attachments to level, for example picture or script
+     *
+     * @return the string [ ]
+     */
     public String[] getAttachments() {
         return attachments;
     }
 
+    /**
+     * Sets attachments to level, for example picture or script
+     *
+     * @param attachments the attachments
+     */
     public void setAttachments(String[] attachments) {
         this.attachments = attachments;
     }
 
+    /**
+     * Gets hints associated with game level
+     *
+     * @return the hints
+     */
     public Set<Hint> getHints() {
         return Collections.unmodifiableSet(hints);
     }
 
+    /**
+     * Adds hint to be associated with game level
+     *
+     * @param hint the hint
+     */
     public void addHint(Hint hint) {
         this.hints.add(hint);
     }
 
+    /**
+     * Sets hints associated with game level
+     *
+     * @param hints the hints
+     */
     public void setHints(Set<Hint> hints) {
         this.hints = hints;
     }
 
+    /**
+     * Gets number of attempts available to trainee to input incorrect flag before the solution is displayed
+     *
+     * @return the incorrect flag limit
+     */
     public int getIncorrectFlagLimit() {
         return incorrectFlagLimit;
     }
 
+    /**
+     * Sets number of attempts available to trainee to input incorrect flag before the solution is displayed
+     *
+     * @param incorrectFlagLimit the incorrect flag limit
+     */
     public void setIncorrectFlagLimit(int incorrectFlagLimit) {
         this.incorrectFlagLimit = incorrectFlagLimit;
     }
