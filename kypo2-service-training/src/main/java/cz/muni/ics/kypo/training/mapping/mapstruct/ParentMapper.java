@@ -4,6 +4,8 @@ import cz.muni.ics.kypo.training.api.PageResultResource;
 import org.springframework.data.domain.Page;
 
 /**
+ * ParentMapper is parent class for mappers which contains only one method for creating pagination.
+ *
  * @author Roman Oravec
  */
 
