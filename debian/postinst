@@ -1,0 +1,29 @@
+#!/bin/sh
+set -e
+case "$1" in
+    configure)
+    cd /opt/kypo2/kypo2-training
+    mvn clean install
+    cd /opt/kypo2/kypo2-training/jars
+    API_JAR=$(ls kypo2-api-training*.jar | tail -n 1)
+    if ! [ "$API_JAR" = "kypo2-api-training.jar" ]; then ln -sf $API_JAR kypo2-api-training.jar; fi
+    PERSISTENCE_JAR=$(ls kypo2-persistence-training*.jar | tail -n 1)
+    if ! [ "$PERSISTENCE_JAR" = "kypo2-persistence-training" ]; then ln -sf $PERSISTENCE_JAR kypo2-persistence-training.jar; fi
+    REST_JAR=$(ls kypo2-rest-training*.jar | tail -n 1)
+    if ! [ "$REST_JAR" = "kypo2-rest-training.jar" ]; then ln -sf $REST_JAR kypo2-rest-training.jar; fi
+    ELASTIC_JAR=$(ls kypo2-elasticsearch-training*.jar | tail -n 1)
+    if ! [ "$ELASTIC_JAR" = "kypo2-elasticsearch-training.jar" ]; then ln -sf $ELASTIC_JAR kypo2-elasticsearch-training.jar; fi
+    SERVICE_JAR=$(ls kypo2-service-training*.jar | tail -n 1)
+    if ! [ "$SERVICE_JAR" = "kypo2-service-training.jar" ]; then ln -sf $SERVICE_JAR kypo2-service-training.jar; fi
+    ;;
+
+    abort-upgrade|abort-remove|abort-deconfigure)
+    ;;
+
+    *)
+        echo "postinst called with unknown argument \`$1'" >&2
+        exit 1
+    ;;    
+esac
+
+exit 0
