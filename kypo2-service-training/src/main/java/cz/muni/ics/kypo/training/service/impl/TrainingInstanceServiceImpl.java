@@ -248,9 +248,9 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
             UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(url);
             if (count != null) {
                 builder.queryParam("count", count);
-                // allocate sandboxes with appropriate ansible scripts (set up an environment etc.)
-                builder.queryParam("full", true);
             }
+            // allocate sandboxes with appropriate ansible scripts (set up an environment etc.)
+            builder.queryParam("full", true);
             ResponseEntity<List<SandboxInfo>> sandboxResponse = restTemplate.exchange(builder.toUriString(), HttpMethod.POST,
                     new HttpEntity<>(httpHeaders), new ParameterizedTypeReference<List<SandboxInfo>>() {
                     });
