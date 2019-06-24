@@ -13,6 +13,8 @@ import java.util.List;
 import java.util.Set;
 
 /**
+ * The interface for training definition service.
+ *
  * @author Pavel Seda (441048)
  */
 public interface TrainingDefinitionService {
@@ -21,7 +23,7 @@ public interface TrainingDefinitionService {
      * Finds specific Training Definition by id
      *
      * @param id of a Training Definition that would be returned
-     * @return specific Training Definition by id
+     * @return specific {@link TrainingDefinition} by id
      * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND training definition cannot be found
      */
     TrainingDefinition findById(Long id);
@@ -29,7 +31,9 @@ public interface TrainingDefinitionService {
     /**
      * Find all Training Definitions by author if user is designer or all Training Definitions if user is admin.
      *
-     * @return all Training Definitions
+     * @param predicate represents a predicate (boolean-valued function) of one argument.
+     * @param pageable  pageable parameter with information about pagination.
+     * @return all {@link TrainingDefinition}s
      */
     Page<TrainingDefinition> findAll(Predicate predicate, Pageable pageable);
 
@@ -37,27 +41,28 @@ public interface TrainingDefinitionService {
      * Find all training definition with same sandbox definition
      *
      * @param sandboxDefinitionId - id of sandbox definition
-     * @return all training definition with same sandbox definition
+     * @param pageable            pageable parameter with information about pagination.
+     * @return all {@link TrainingDefinition}s with same sandbox definition
      */
     Page<TrainingDefinition> findAllBySandboxDefinitionId(Long sandboxDefinitionId, Pageable pageable);
 
     /**
-     * Updates Training Definition
+     * Updates given Training Definition
      *
      * @param trainingDefinition to be updated
-     * @return updated definition
      * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND given training definition or one of the levels is not found.
-     *                               RESOURCE_CONFLICT released or archived training definition cannot be modified.
+     *                                               RESOURCE_CONFLICT released or archived training definition cannot be modified.
      */
     void update(TrainingDefinition trainingDefinition);
 
     /**
      * Creates new training definition by cloning existing one
      *
-     * @param id of definition to be cloned
-     * @return cloned definition
+     * @param id    of definition to be cloned
+     * @param title the title of the new cloned definition
+     * @return cloned {@link TrainingDefinition}
      * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND given training definition not found.
-     *                               RESOURCE_CONFLICT cannot clone unreleased training definition.
+     *                                               RESOURCE_CONFLICT cannot clone unreleased training definition.
      */
     TrainingDefinition clone(Long id, String title);
 
@@ -68,7 +73,7 @@ public interface TrainingDefinitionService {
      * @param swapLevelFrom - Id of a first level to be swapped.
      * @param swapLevelTo   - Id of a second level to be swapped.
      * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND given training definition or one of the levels is not found.
-     *                               RESOURCE_CONFLICT released or archived training definition cannot be modified.
+     *                                               RESOURCE_CONFLICT released or archived training definition cannot be modified.
      */
     void swapLevels(Long definitionId, Long swapLevelFrom, Long swapLevelTo);
 
@@ -77,7 +82,7 @@ public interface TrainingDefinitionService {
      *
      * @param id of definition to be deleted
      * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND given training definition or level is not found.
-     *                               RESOURCE_CONFLICT released training definition cannot be deleted.
+     *                                               RESOURCE_CONFLICT released training definition cannot be deleted.
      */
     void delete(Long id);
 
@@ -87,7 +92,7 @@ public interface TrainingDefinitionService {
      * @param definitionId - id of definition containing level to be deleted
      * @param levelId      - id of level to be deleted
      * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND given training definition or level is not found.
-     *                               RESOURCE_CONFLICT level cannot be deleted in released or archived training definition.
+     *                                               RESOURCE_CONFLICT level cannot be deleted in released or archived training definition.
      */
     void deleteOneLevel(Long definitionId, Long levelId);
 
@@ -97,7 +102,7 @@ public interface TrainingDefinitionService {
      * @param definitionId - id of training definition containing level to be updated
      * @param gameLevel    to be updated
      * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND given training definition is not found.
-     *                               RESOURCE_CONFLICT level cannot be updated in released or archived training definition.
+     *                                               RESOURCE_CONFLICT level cannot be updated in released or archived training definition.
      */
     void updateGameLevel(Long definitionId, GameLevel gameLevel);
 
@@ -107,7 +112,7 @@ public interface TrainingDefinitionService {
      * @param definitionId - id of training definition containing level to be updated
      * @param infoLevel    to be updated
      * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND given training definition is not found.
-     *                               RESOURCE_CONFLICT level cannot be updated in released or archived training definition.
+     *                                               RESOURCE_CONFLICT level cannot be updated in released or archived training definition.
      */
     void updateInfoLevel(Long definitionId, InfoLevel infoLevel);
 
@@ -117,7 +122,7 @@ public interface TrainingDefinitionService {
      * @param definitionId    - id of training definition containing level to be updated
      * @param assessmentLevel to be updated
      * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND given training definition is not found.
-     *                               RESOURCE_CONFLICT level cannot be updated in released or archived training definition.
+     *                                               RESOURCE_CONFLICT level cannot be updated in released or archived training definition.
      */
     void updateAssessmentLevel(Long definitionId, AssessmentLevel assessmentLevel);
 
@@ -125,9 +130,9 @@ public interface TrainingDefinitionService {
      * Creates new game level
      *
      * @param definitionId - id of definition in which level will be created
-     * @return new game level
+     * @return new {@link GameLevel}
      * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND given training definition is not found.
-     *                               RESOURCE_CONFLICT level cannot be created in released or archived training definition.
+     *                                               RESOURCE_CONFLICT level cannot be created in released or archived training definition.
      */
     GameLevel createGameLevel(Long definitionId);
 
@@ -135,9 +140,9 @@ public interface TrainingDefinitionService {
      * Creates new info level
      *
      * @param definitionId - id of definition in which level will be created
-     * @return new info level
+     * @return new {@link InfoLevel}
      * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND given training definition is not found.
-     *                               RESOURCE_CONFLICT level cannot be created in released or archived training definition.
+     *                                               RESOURCE_CONFLICT level cannot be created in released or archived training definition.
      */
     InfoLevel createInfoLevel(Long definitionId);
 
@@ -145,9 +150,9 @@ public interface TrainingDefinitionService {
      * Creates new assessment level
      *
      * @param definitionId - id of definition in which level will be created
-     * @return new assessment level
+     * @return new {@link AssessmentLevel}
      * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND given training definition is not found.
-     *                               RESOURCE_CONFLICT level cannot be created in released or archived training definition.
+     *                                               RESOURCE_CONFLICT level cannot be created in released or archived training definition.
      */
     AssessmentLevel createAssessmentLevel(Long definitionId);
 
@@ -155,7 +160,7 @@ public interface TrainingDefinitionService {
      * Finds all levels from single definition
      *
      * @param id of definition
-     * @return set of levels
+     * @return list of {@link AbstractLevel} associated with training definition
      */
     List<AbstractLevel> findAllLevelsFromDefinition(Long id);
 
@@ -163,7 +168,7 @@ public interface TrainingDefinitionService {
      * creates new training definition
      *
      * @param trainingDefinition to be created
-     * @return new training definition
+     * @return new {@link TrainingDefinition}
      */
     TrainingDefinition create(TrainingDefinition trainingDefinition);
 
@@ -172,51 +177,66 @@ public interface TrainingDefinitionService {
      * Finds specific level by id
      *
      * @param levelId - id of wanted level
-     * @return wanted level
+     * @return wanted {@link AbstractLevel}
      * @throws ServiceLayerException if level is not found
      */
     AbstractLevel findLevelById(Long levelId);
 
+    /**
+     * Find all training instances associated with training definition by id.
+     *
+     * @param id the id of training definition
+     * @return the list of all {@link TrainingInstance}s associated with wanted {@link TrainingDefinition}
+     */
     List<TrainingInstance> findAllTrainingInstancesByTrainingDefinitionId(Long id);
 
     /**
-     * Finds UserRef by login
+     * Finds specific User reference by login
      *
-     * @param login of wanted UserRef
-     * @return UserRef with corresponding login
+     * @param login of wanted User reference
+     * @return {@link UserRef} with corresponding login
      * @throws ServiceLayerException if UserRef was not found
      */
     UserRef findUserRefByLogin(String login);
 
     /**
-     * Finds designers
+     * Finds all logins of users that have role of designer
      *
+     * @param roleType the role type
+     * @param pageable the pageable
      * @return list of logins and full names of users with given role
      */
     List<UserInfoDTO> getUsersWithGivenRole(RoleType roleType, Pageable pageable);
 
     /**
-     * Create userRef
-     *
-     * @param userRef user ref to be created
-     * @return created userRef
+     * Create new user reference
+     * @param userRef user reference to be created
+     * @return created {@link UserRef}
      */
     UserRef createUserRef(UserRef userRef);
 
     /**
-     * Switch state of definition to unreleased
+     * Switch development state of definition from unreleased to released, or from released to archived or back to unreleased.
      *
      * @param definitionId - id of training definition
-     * @param state        - new state of TD
+     * @param state        - new state of training definition
      */
     void switchState(Long definitionId, cz.muni.ics.kypo.training.api.enums.TDState state);
 
     /**
-     * Find all Training Definitions for organizers.
+     * Finds all Training Definitions accessible to users with the role of organizer.
      *
+     * @param predicate represents a predicate (boolean-valued function) of one argument.
+     * @param pageable  pageable parameter with information about pagination.
      * @return all Training Definitions for organizers
      */
     Page<TrainingDefinition> findAllForOrganizers(Predicate predicate, Pageable pageable);
 
+    /**
+     * Gets users with given logins.
+     *
+     * @param logins the logins
+     * @return the users with given logins
+     */
     Set<UserInfoDTO> getUsersWithGivenLogins(Set<String> logins);
 }

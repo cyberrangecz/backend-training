@@ -12,7 +12,10 @@ import org.springframework.data.domain.PageImpl;
 import java.util.*;
 
 /**
- * @author Roman Oravec
+ * The TrainingRunMapper is an utility class to map items into data transfer objects. It provides the implementation of mappings between Java bean type TrainingRunMapper and
+ * DTOs classes. Code is generated during compile time.
+ *
+ *  @author Roman Oravec
  */
 @Mapper(componentModel = "spring", uses = {SandboxInstanceRefMapper.class})
 public interface TrainingRunMapper extends ParentMapper {
