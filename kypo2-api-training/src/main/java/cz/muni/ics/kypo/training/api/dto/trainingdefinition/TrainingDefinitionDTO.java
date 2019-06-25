@@ -166,4 +166,21 @@ public class TrainingDefinitionDTO {
                 ", lastEdited=" + lastEdited +
                 '}';
     }
+
+    @Override
+    public boolean equals(Object object) {
+        if (!(object instanceof TrainingDefinitionDTO)) return false;
+        TrainingDefinitionDTO that = (TrainingDefinitionDTO) object;
+        return isCanBeArchived() == that.isCanBeArchived() &&
+                Objects.equals(getId(), that.getId()) &&
+                Objects.equals(getTitle(), that.getTitle()) &&
+                Objects.equals(getDescription(), that.getDescription()) &&
+                Objects.equals(getState(), that.getState()) &&
+                Objects.equals(getSandboxDefinitionRefId(), that.getSandboxDefinitionRefId());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getId(), getTitle(), getDescription(), getState(), getSandboxDefinitionRefId(), isCanBeArchived());
+    }
 }

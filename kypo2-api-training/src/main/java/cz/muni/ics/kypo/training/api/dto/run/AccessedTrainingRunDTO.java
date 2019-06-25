@@ -7,6 +7,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 /**
  * @author Dominik Pilar & Pavel Seda
@@ -103,5 +104,21 @@ public class AccessedTrainingRunDTO {
             + trainingInstanceStartDate + ", trainingInstanceEndDate=" + trainingInstanceEndDate + ", currentLevelOrder="
             + currentLevelOrder + ", numberOfLevels=" + numberOfLevels + ", possibleAction=" + possibleAction + ", instanceId=" + instanceId
             + '}';
+    }
+
+    @Override
+    public boolean equals(Object object) {
+        if (!(object instanceof AccessedTrainingRunDTO)) return false;
+        AccessedTrainingRunDTO that = (AccessedTrainingRunDTO) object;
+        return Objects.equals(getCurrentLevelOrder(), that.getCurrentLevelOrder()) &&
+                Objects.equals(getNumberOfLevels(), that.getNumberOfLevels()) &&
+                Objects.equals(getId(), that.getId()) &&
+                Objects.equals(getTitle(), that.getTitle()) &&
+                Objects.equals(getInstanceId(), that.getInstanceId());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getId(), getTitle(), getCurrentLevelOrder(), getNumberOfLevels(), getInstanceId());
     }
 }

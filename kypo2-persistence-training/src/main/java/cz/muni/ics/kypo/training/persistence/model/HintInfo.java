@@ -2,6 +2,7 @@ package cz.muni.ics.kypo.training.persistence.model;
 
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
+import java.util.Objects;
 
 /**
  * Class represents information of hint associated with current level of training run
@@ -107,5 +108,19 @@ public class HintInfo {
      */
     public void setHintContent(String hintContent) {
         this.hintContent = hintContent;
+    }
+
+    @Override
+    public boolean equals(Object object) {
+        if (!(object instanceof HintInfo)) return false;
+        HintInfo hintInfo = (HintInfo) object;
+        return Objects.equals(getGameLevelId(),hintInfo.getGameLevelId()) &&
+                Objects.equals(getHintId(), hintInfo.getHintId()) &&
+                Objects.equals(getHintTitle(), hintInfo.getHintTitle());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getGameLevelId(), getHintId(), getHintTitle());
     }
 }

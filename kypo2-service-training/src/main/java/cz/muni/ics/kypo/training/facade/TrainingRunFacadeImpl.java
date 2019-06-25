@@ -206,6 +206,7 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
         IsCorrectFlagDTO correctFlagDTO = new IsCorrectFlagDTO();
         try {
             correctFlagDTO.setCorrect(trainingRunService.isCorrectFlag(trainingRunId, flag));
+            //TODO remaining attempts can be negative number, possible to change IsCorrectFlagDTO with solution field when incorrectFlagLimit is too high
             correctFlagDTO.setRemainingAttempts(trainingRunService.getRemainingAttempts(trainingRunId));
         } catch (ServiceLayerException ex) {
             throw new FacadeLayerException(ex);

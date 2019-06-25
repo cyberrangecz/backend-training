@@ -165,4 +165,19 @@ public class TrainingDefinitionByIdDTO {
             + ", levels=" + levels + ", showStepperBar=" + showStepperBar + ", canBeArchived=" + canBeArchived + ", estimatedDuration="
             + estimatedDuration + ", lastEdited=" + lastEdited + '}';
     }
+
+    @Override
+    public boolean equals(Object object) {
+        if (!(object instanceof TrainingDefinitionByIdDTO)) return false;
+        TrainingDefinitionByIdDTO that = (TrainingDefinitionByIdDTO) object;
+        return Objects.equals(getId(), that.getId()) &&
+                Objects.equals(getTitle(), that.getTitle()) &&
+                Objects.equals(getState(), that.getState()) &&
+                Objects.equals(getSandboxDefinitionRefId(), that.getSandboxDefinitionRefId());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getId(), getTitle(), getState(), getSandboxDefinitionRefId());
+    }
 }

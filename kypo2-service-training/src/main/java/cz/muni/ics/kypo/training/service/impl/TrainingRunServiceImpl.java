@@ -169,13 +169,13 @@ public class TrainingRunServiceImpl implements TrainingRunService {
         TrainingInstance trainingInstance = trainingInstanceRepository.findByStartTimeAfterAndEndTimeBeforeAndAccessToken(LocalDateTime.now(Clock.systemUTC()), accessToken)
             .orElseThrow(() ->  new ServiceLayerException("There is no training instance with accessToken " + accessToken + ".", ErrorCode.RESOURCE_NOT_FOUND));
         if (trainingInstance.getPoolId() == null) {
-            throw new ServiceLayerException("At first designer must allocate sandboxes for training instance.", ErrorCode.RESOURCE_CONFLICT);
+            throw new ServiceLayerException("At first organizer must allocate sandboxes for training instance.", ErrorCode.RESOURCE_CONFLICT);
         }
         Set<SandboxInstanceRef> freeSandboxes = trainingRunRepository.findFreeSandboxesOfTrainingInstance(trainingInstance.getId());
         if (!freeSandboxes.isEmpty()) {
             SandboxInstanceRef sandboxInstanceRef = getReadySandboxInstanceRef(freeSandboxes, trainingInstance.getPoolId());
             List<AbstractLevel> levels = abstractLevelRepository.findAllLevelsByTrainingDefinitionId(trainingInstance.getTrainingDefinition().getId());
-            if (levels.isEmpty()) throw new ServiceLayerException("No starting level available for this training definition", ErrorCode.RESOURCE_NOT_FOUND);
+            if (levels.isEmpty()) throw new ServiceLayerException("No starting level available for this training definition.", ErrorCode.RESOURCE_NOT_FOUND);
             Collections.sort(levels, Comparator.comparing(AbstractLevel::getOrder));
 
             TrainingRun trainingRun = getNewTrainingRun(levels.get(0), securityService.getSubOfLoggedInUser(), trainingInstance,
@@ -213,8 +213,8 @@ public class TrainingRunServiceImpl implements TrainingRunService {
             ResponseEntity<SandboxInfo> response = restTemplate.exchange(kypoOpenStackURI + "/sandboxes/" + trainingRun.getSandboxInstanceRef().getSandboxInstanceRef() + "/", HttpMethod.GET, new HttpEntity<>(httpHeaders),
                     new ParameterizedTypeReference<SandboxInfo>() {
                     });
-            if (!response.getBody().getStatus().equals("CREATE_COMPLETE")) {
-                throw new ServiceLayerException("Something happened with sandbox. Please contact organizer of training instance or administrator", ErrorCode.RESOURCE_CONFLICT);
+            if (!Objects.requireNonNull(response.getBody()).getStatus().equals("CREATE_COMPLETE")) {
+                throw new ServiceLayerException("Something happened with sandbox. Please contact organizer of training instance or administrator.", ErrorCode.RESOURCE_CONFLICT);
             }
         } catch (HttpClientErrorException ex) {
             throw new ServiceLayerException("Some error occurred during getting info about sandbox: " + ex.getStatusCode() + ". Please try later or contact administrator.", ErrorCode.UNEXPECTED_ERROR);
@@ -327,7 +327,6 @@ public class TrainingRunServiceImpl implements TrainingRunService {
                 trainingRun.setSolutionTaken(true);
                 trainingRun.decreaseTotalScore(trainingRun.getCurrentScore() - 1);
                 trainingRun.setCurrentScore(1);
-                //auditEventsService.auditSolutionDisplayedAction(trainingRun, (GameLevel) level);
                 trainingRunRepository.save(trainingRun);
             }
             auditEventsService.auditSolutionDisplayedAction(trainingRun, (GameLevel) level);
@@ -376,6 +375,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
         Assert.notNull(trainingRunId, MUST_NOT_BE_NULL);
         TrainingRun trainingRun = findById(trainingRunId);
         int maxOrder = abstractLevelRepository.getCurrentMaxOrder(trainingRun.getCurrentLevel().getTrainingDefinition().getId());
+        //TODO rozdelit na dva pripady
         if (trainingRun.getCurrentLevel().getOrder() != maxOrder || !trainingRun.isLevelAnswered()) {
             throw new ServiceLayerException("Cannot finish training run because current level is not last or is not answered.", ErrorCode.RESOURCE_CONFLICT);
         }

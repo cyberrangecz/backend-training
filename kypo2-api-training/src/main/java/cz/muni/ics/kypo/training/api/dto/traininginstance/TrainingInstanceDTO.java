@@ -10,6 +10,7 @@ import io.swagger.annotations.ApiModelProperty;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -124,5 +125,21 @@ public class TrainingInstanceDTO {
         return "TrainingInstanceDTO{" + "id=" + id + ", startTime=" + startTime + ", endTime=" + endTime + ", title='" + title + '\''
             + ", poolSize=" + poolSize + ", trainingDefinition=" + trainingDefinition + ", organizers=" + organizers + ", accessToken='"
             + accessToken + '\'' + ", poolId=" + poolId + '}';
+    }
+
+    @Override
+    public boolean equals(Object object) {
+        if (!(object instanceof TrainingInstanceDTO)) return false;
+        TrainingInstanceDTO that = (TrainingInstanceDTO) object;
+        return getPoolSize() == that.getPoolSize() &&
+                Objects.equals(getId(), that.getId()) &&
+                Objects.equals(getTitle(), that.getTitle()) &&
+                Objects.equals(getAccessToken(), that.getAccessToken()) &&
+                Objects.equals(getPoolId(), that.getPoolId());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getId(), getTitle(), getPoolSize(), getAccessToken(), getPoolId());
     }
 }

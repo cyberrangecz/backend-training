@@ -310,6 +310,7 @@ public class TrainingInstancesRestController {
             @ApiParam(value = "Id of training instance for which sandboxes are deleted", required = true)
             @PathVariable(value = "instanceId") Long instanceId,
             @ApiParam(value = "Ids of sandboxes that will be deleted", required = true)
+            //TODO zmenit Set na List pre lepsiu testovatelnost
             @RequestParam(value = "sandboxIds", required = true) Set<Long> sandboxIds) {
         try {
             trainingInstanceFacade.deleteSandboxes(instanceId, sandboxIds);

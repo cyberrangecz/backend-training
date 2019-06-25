@@ -238,9 +238,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
                     "Remove training instance/s before deleting training definition.", ErrorCode.RESOURCE_CONFLICT);
         }
         List<AbstractLevel> abstractLevels = abstractLevelRepository.findAllLevelsByTrainingDefinitionId(definitionId);
-        abstractLevels.forEach(abstractLevel -> {
-            deleteLevel(abstractLevel);
-        });
+        abstractLevels.forEach(this::deleteLevel);
         trainingDefinitionRepository.delete(definition);
     }
 
@@ -537,6 +535,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
         }
         levels.forEach(level -> {
             if (level instanceof AssessmentLevel) {
+                //TODO why it is commented
 //                AssessmentUtil.validQuestions(((AssessmentLevel) level).getQuestions());
                 AssessmentLevel newAssessmentLevel = new AssessmentLevel();
                 BeanUtils.copyProperties(level, newAssessmentLevel);

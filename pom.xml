@@ -90,7 +90,7 @@
         <!-- fast tests compilation -->
         <openclover.version>4.2.0</openclover.version>
 
-        <jackson.databind.version>2.9.5</jackson.databind.version>
+        <jackson.databind.version>2.9.9</jackson.databind.version>
         <jsondoc.version>1.0.3</jsondoc.version>
         <json.version>20170516</json.version>
         <mknor.jackson.jsonschema.version>1.0.25</mknor.jackson.jsonschema.version>
