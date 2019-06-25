@@ -125,7 +125,7 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
         }
         return trainingInstanceRepository.save(trainingInstance);
     }
-
+//TODO during update automatically add author as organizer of training instance, add login of logged in user in facade when calling user and group ;)
     @Override
     @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
             "or @securityService.isOrganizerOfGivenTrainingInstance(#trainingInstanceToUpdate.id)")
@@ -211,6 +211,7 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
         httpHeaders.setContentType(MediaType.APPLICATION_JSON);
         String requestJson = "{\"definition\": " + trainingInstance.getTrainingDefinition().getSandboxDefinitionRefId() +
                 ", \"max_size\": " + trainingInstance.getPoolSize() + "}";
+        //TODO modify catching errors from python API
         ResponseEntity<SandboxPoolInfo> poolResponse = restTemplate.exchange(kypoOpenStackURI + "/pools/", HttpMethod.POST, new HttpEntity<>(requestJson, httpHeaders), SandboxPoolInfo.class);
         if (poolResponse.getStatusCode().isError() || poolResponse.getBody() == null) {
             throw new ServiceLayerException("Error from openstack while creating pool.", ErrorCode.UNEXPECTED_ERROR);

@@ -179,7 +179,7 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
                         .stream()
                         .filter(sIR -> sIR.getSandboxInstanceRef().equals(sandboxId))
                         .findFirst()
-                        .orElseThrow(() -> new ServiceLayerException("Given sandbox with id:" + sandboxId
+                        .orElseThrow(() -> new ServiceLayerException("Given sandbox with id: " + sandboxId
                         + " is not in DB or is not assigned to given training instance.", ErrorCode.RESOURCE_NOT_FOUND));
                 trainingInstanceService.deleteSandbox(trainingInstance, sandboxRefToDelete);
             }

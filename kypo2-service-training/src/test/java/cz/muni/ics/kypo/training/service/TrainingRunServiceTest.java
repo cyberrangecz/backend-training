@@ -282,7 +282,7 @@ public class TrainingRunServiceTest {
     public void accessTrainingRunWithoutAllocatedSandboxes() {
         given(trainingInstanceRepository.findByStartTimeAfterAndEndTimeBeforeAndAccessToken(any(LocalDateTime.class), any(String.class))).willReturn(Optional.of(trainingInstance2));
         thrown.expect(ServiceLayerException.class);
-        thrown.expectMessage("At first designer must allocate sandboxes for training instance.");
+        thrown.expectMessage("At first organizer must allocate sandboxes for training instance.");
         trainingRunService.accessTrainingRun(trainingInstance2.getAccessToken());
     }
 

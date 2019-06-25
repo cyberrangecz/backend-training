@@ -25,22 +25,29 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.BeanUtils;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.util.ResourceUtils;
 import org.springframework.web.client.RestTemplate;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.FileReader;
 import java.io.IOException;
+import java.net.URI;
 import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -108,6 +115,8 @@ public class TrainingDefinitionServiceTest {
             questions = parser.parse(new FileReader(ResourceUtils.getFile("classpath:questions.json"))).toString();
         } catch (IOException | ParseException ex) {
         }
+
+        ReflectionTestUtils.setField(trainingDefinitionService, "userAndGroupUrl", "https://localhost:8083/kypo2/api/v1/");
 
         level3 = new AssessmentLevel();
         level3.setId(3L);
@@ -762,6 +771,13 @@ public class TrainingDefinitionServiceTest {
         thrown.expectMessage("Cannot update training definition with already created training instance(s). " +
             "Remove training instance(s) before changing the state from released to unreleased training definition.");
         trainingDefinitionService.switchState(releasedDefinition.getId(), cz.muni.ics.kypo.training.api.enums.TDState.UNRELEASED);
+    }
+
+    @Test
+    public void getUsersWithGivenLogins() {
+        given(restTemplate.exchange(any(URI.class), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
+                willReturn(new ResponseEntity<List<UserInfoDTO>>(new ArrayList<>(Collections.singletonList(userInfoDTO1)), HttpStatus.OK));
+        trainingDefinitionService.getUsersWithGivenLogins(Set.of("Dominik"));
     }
 
     @After

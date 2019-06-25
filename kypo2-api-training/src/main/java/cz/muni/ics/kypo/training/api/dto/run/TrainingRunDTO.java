@@ -9,6 +9,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 /**
  * @author Pavel Seda (441048)
@@ -99,5 +100,19 @@ public class TrainingRunDTO {
                 ", sandboxInstanceRef=" + sandboxInstanceRef +
                 ", participantRef=" + participantRef +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object object) {
+        if (!(object instanceof TrainingRunDTO)) return false;
+        TrainingRunDTO that = (TrainingRunDTO) object;
+        return Objects.equals(getId(), that.getId()) &&
+                Objects.equals(getState(), that.getState()) &&
+                Objects.equals(getParticipantRef(), that.getParticipantRef());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getId(), getState(), getParticipantRef());
     }
 }

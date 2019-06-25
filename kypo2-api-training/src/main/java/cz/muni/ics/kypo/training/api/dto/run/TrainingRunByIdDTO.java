@@ -105,4 +105,18 @@ public class TrainingRunByIdDTO {
 		this.instanceId = instanceId;
 	}
 
+	@Override
+	public String toString() {
+		return "TrainingRunByIdDTO{" +
+				"id=" + id +
+				", startTime=" + startTime +
+				", endTime=" + endTime +
+				", eventLogReference='" + eventLogReference + '\'' +
+				", state=" + state +
+				", sandboxInstanceRef=" + sandboxInstanceRef +
+				", participantRef=" + participantRef +
+				", definitionId=" + definitionId +
+				", instanceId=" + instanceId +
+				'}';
+	}
 }

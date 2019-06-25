@@ -1,6 +1,5 @@
 package cz.muni.ics.kypo.training.persistence.repository;
 
-import com.sun.xml.bind.v2.TODO;
 import cz.muni.ics.kypo.training.persistence.model.TrainingDefinition;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -63,6 +62,7 @@ public interface TrainingInstanceRepository extends JpaRepository<TrainingInstan
      */
     @EntityGraph(attributePaths = {"trainingDefinition.authors", "organizers", "sandboxInstanceRefs"})
     Optional<TrainingInstance> findById(Long id);
+
 
     /**
      * Check if any training instances are associated with training definition

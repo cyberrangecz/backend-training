@@ -12,6 +12,7 @@ import org.apache.http.HttpHost;
 import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestClientBuilder;
 import org.elasticsearch.client.RestHighLevelClient;
+import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
@@ -72,7 +73,7 @@ public class RestConfigTest {
 
 	@Bean
 	public RestTemplate restTemplate() {
-		RestTemplate rT = new RestTemplate();
+		RestTemplate rT = Mockito.mock(RestTemplate.class);//new RestTemplate();
 		rT.getMessageConverters().add(0, new StringHttpMessageConverter(Charset.forName("UTF-8")));
 		return rT;
 	}
@@ -81,7 +82,11 @@ public class RestConfigTest {
 	@Primary
 	@Qualifier("objMapperRESTApi")
 	public ObjectMapper objectMapper() {
-		return new ObjectMapper();
+		ObjectMapper mapper = new ObjectMapper();
+		mapper.registerModule(new JavaTimeModule());
+		mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+		mapper.enable(SerializationFeature.INDENT_OUTPUT);
+		return mapper;
 	}
 
 	@Bean

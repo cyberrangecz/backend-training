@@ -2,6 +2,8 @@ package cz.muni.ics.kypo.training.api.dto;
 
 import io.swagger.annotations.ApiModelProperty;
 
+import java.util.Objects;
+
 /**
  * @author Pavel Seda
  */
@@ -64,5 +66,19 @@ public class UserRefDTO {
                 "id=" + id +
                 ", userRefLogin='" + userRefLogin + '\'' +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object object) {
+        if (!(object instanceof UserRefDTO)) return false;
+        UserRefDTO that = (UserRefDTO) object;
+        return Objects.equals(getId(), that.getId()) &&
+                Objects.equals(getUserRefLogin(), that.getUserRefLogin()) &&
+                Objects.equals(getUserRefFullName(), that.getUserRefFullName());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getId(), getUserRefLogin(), getUserRefFullName());
     }
 }

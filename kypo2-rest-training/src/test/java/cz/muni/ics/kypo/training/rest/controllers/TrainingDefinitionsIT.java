@@ -5,9 +5,11 @@ import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.Appender;
 import ch.qos.logback.core.read.ListAppender;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.JsonObject;
 import cz.muni.ics.kypo.commons.security.enums.AuthenticatedUserOIDCItems;
+import cz.muni.ics.kypo.training.api.PageResultResource;
 import cz.muni.ics.kypo.training.api.dto.UserInfoDTO;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelUpdateDTO;
@@ -16,13 +18,11 @@ import cz.muni.ics.kypo.training.api.dto.gamelevel.GameLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.gamelevel.GameLevelUpdateDTO;
 import cz.muni.ics.kypo.training.api.dto.infolevel.InfoLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.infolevel.InfoLevelUpdateDTO;
-import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionCreateDTO;
-import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionByIdDTO;
-import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionUpdateDTO;
+import cz.muni.ics.kypo.training.api.dto.trainingdefinition.*;
 import cz.muni.ics.kypo.training.api.dto.betatestinggroup.BetaTestingGroupCreateDTO;
 import cz.muni.ics.kypo.training.api.enums.AssessmentType;
-import cz.muni.ics.kypo.training.mapping.modelmapper.BeanMapping;
-import cz.muni.ics.kypo.training.mapping.modelmapper.BeanMappingImpl;
+import cz.muni.ics.kypo.training.enums.RoleTypeSecurity;
+import cz.muni.ics.kypo.training.mapping.mapstruct.*;
 import cz.muni.ics.kypo.training.api.enums.LevelType;
 import cz.muni.ics.kypo.training.api.enums.TDState;
 import cz.muni.ics.kypo.training.persistence.model.*;
@@ -31,22 +31,24 @@ import cz.muni.ics.kypo.training.rest.controllers.config.DBTestUtil;
 import cz.muni.ics.kypo.training.rest.controllers.config.RestConfigTest;
 import cz.muni.ics.kypo.training.rest.exceptions.ConflictException;
 import cz.muni.ics.kypo.training.rest.exceptions.ResourceNotFoundException;
-import cz.muni.ics.kypo.training.utils.SandboxInfo;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
-import org.modelmapper.ModelMapper;
+import org.mockito.internal.util.StringUtil;
+import org.skyscreamer.jsonassert.JSONAssert;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.querydsl.SimpleEntityPathResolver;
 import org.springframework.data.querydsl.binding.QuerydslBindingsFactory;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
@@ -55,6 +57,7 @@ import org.springframework.http.*;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -67,6 +70,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
+import java.net.URI;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -74,13 +78,13 @@ import java.util.*;
 import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
  * @author Boris Jadus(445343)
+ * @author Dominik Pilar
  */
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = TrainingDefinitionsRestController.class)
@@ -92,40 +96,52 @@ public class TrainingDefinitionsIT {
     private Appender<ILoggingEvent> mockAppender;
 
     private MockMvc mvc;
-    private BeanMapping beanMapping;
     private static final Logger logger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(TrainingDefinitionsRestController.class);
 
     @Autowired
     private ApplicationContext applicationContext;
-
     @Autowired
     private TrainingDefinitionsRestController trainingDefinitionsRestController;
-
+    @Autowired
+    private GameLevelMapperImpl gameLevelMapper;
+    @Autowired
+    private InfoLevelMapperImpl infoLevelMapper;
+    @Autowired
+    private AssessmentLevelMapperImpl assessmentLevelMapper;
     @Autowired
     private TrainingDefinitionRepository trainingDefinitionRepository;
-
     @Autowired
     private UserRefRepository userRefRepository;
-
     @Autowired
     private GameLevelRepository gameLevelRepository;
-
     @Autowired
     private InfoLevelRepository infoLevelRepository;
-
     @Autowired
     private AssessmentLevelRepository assessmentLevelRepository;
+    @Autowired
+    private TrainingInstanceRepository trainingInstanceRepository;
+    @Autowired
+    private RestTemplate restTemplate;
+    @Autowired
+    @Qualifier("objMapperRESTApi")
+    private ObjectMapper mapper;
+
+    @Autowired
+    private TrainingDefinitionMapperImpl trainingDefinitionMapper;
 
     private TrainingDefinitionUpdateDTO trainingDefinitionUpdateDTO, invalidDefinitionUpdateDTO, updateForNonexistingDefinition;
     private TrainingDefinitionCreateDTO trainingDefinitionCreateDTO;
     private TrainingDefinitionByIdDTO invalidDefinitionDTO;
-    private TrainingDefinition releasedTrainingDefinition, unreleasedDefinition;
+    private TrainingDefinition releasedTrainingDefinition, unreleasedDefinition, archivedTrainingDefinition;
+    private TrainingInstance trainingInstance;
+    private UserRef organizer1, organizer2, author1, author2;
     private GameLevel gameLevel1, gameLevel2;
     private GameLevelUpdateDTO gameLevelUpdateDTO, invalidGameLevelUpdateDTO;
     private InfoLevel infoLevel1;
     private InfoLevelUpdateDTO infoLevelUpdateDTO, invalidInfoLevelUpdateDTO;
     private AssessmentLevel assessmentLevel1;
     private AssessmentLevelUpdateDTO assessmentLevelUpdateDTO, invalidAssessmentLevelUpdateDTO;
+    private UserInfoDTO userInfoDTO;
 
     @SpringBootApplication
     static class TestConfiguration {
@@ -138,23 +154,30 @@ public class TrainingDefinitionsIT {
                         new QuerydslPredicateArgumentResolver(new QuerydslBindingsFactory(SimpleEntityPathResolver.INSTANCE), Optional.empty()))
                 .setMessageConverters(new MappingJackson2HttpMessageConverter()).build();
 
-        beanMapping = new BeanMappingImpl(new ModelMapper());
+        organizer1 = createUserRef("778932@muni.cz", "Peter Černý", "Peter", "Černý");
+        organizer2 = createUserRef("773254@muni.cz", "Jakub Plátal", "Jakub", "Plátal");
+        author1 = createUserRef("672932@muni.cz", "Jozef Hajek", "Jozef", "Hajek");
+        author2 = createUserRef("347932@muni.cz", "Miroslav Drobný", "Miroslav", "Drobný");
+        userRefRepository.saveAll(List.of(organizer1, organizer2, author1, author2));
 
-        UserRef userRef = new UserRef();
-        userRef.setUserRefLogin("testDesigner");
-        UserRef uR = userRefRepository.save(userRef);
 
         BetaTestingGroup betaTestingGroup = new BetaTestingGroup();
-        betaTestingGroup.setOrganizers(new HashSet<>(Arrays.asList(uR)));
+        betaTestingGroup.setOrganizers(new HashSet<>(List.of(organizer1, organizer2)));
 
         BetaTestingGroup betaTestingGroup2 = new BetaTestingGroup();
-        betaTestingGroup2.setOrganizers(new HashSet<>(Arrays.asList(uR)));
+        betaTestingGroup2.setOrganizers(new HashSet<>(List.of(organizer2)));
 
         BetaTestingGroupCreateDTO betaTestingGroupCreateDTO = new BetaTestingGroupCreateDTO();
-        betaTestingGroupCreateDTO.setOrganizersLogin(Set.of());
+        betaTestingGroupCreateDTO.setOrganizersLogin(Set.of(organizer2.getUserRefLogin()));
 
         BetaTestingGroupUpdateDTO betaTestingGroupUpdateDTO = new BetaTestingGroupUpdateDTO();
         betaTestingGroupUpdateDTO.setOrganizersLogin(Set.of());
+
+        userInfoDTO = new UserInfoDTO();
+        userInfoDTO.setFullName("Ing. Mgr. MuDr. Boris Jadus");
+        userInfoDTO.setLogin("445469@muni.cz");
+        userInfoDTO.setGivenName("Boris");
+        userInfoDTO.setFamilyName("Jadus");
 
         gameLevel1 = new GameLevel();
         gameLevel1.setTitle("testTitle");
@@ -216,7 +239,7 @@ public class TrainingDefinitionsIT {
         trainingDefinitionCreateDTO.setState(TDState.UNRELEASED);
         trainingDefinitionCreateDTO.setSandboxDefinitionRefId(1L);
         trainingDefinitionCreateDTO.setBetaTestingGroup(betaTestingGroupCreateDTO);
-        trainingDefinitionCreateDTO.setAuthorsLogin(Set.of());
+        trainingDefinitionCreateDTO.setAuthorsLogin(Set.of(author1.getUserRefLogin()));
 
         releasedTrainingDefinition = new TrainingDefinition();
         releasedTrainingDefinition.setTitle("released");
@@ -225,7 +248,7 @@ public class TrainingDefinitionsIT {
         releasedTrainingDefinition.setState(cz.muni.ics.kypo.training.persistence.model.enums.TDState.RELEASED);
         releasedTrainingDefinition.setSandboxDefinitionRefId(2L);
         releasedTrainingDefinition.setBetaTestingGroup(betaTestingGroup);
-        releasedTrainingDefinition.setAuthors(new HashSet<>(Arrays.asList(uR)));
+        releasedTrainingDefinition.setAuthors(new HashSet<>(Arrays.asList(author1)));
         releasedTrainingDefinition.setLastEdited(LocalDateTime.now());
 
         invalidDefinitionDTO = new TrainingDefinitionByIdDTO();
@@ -237,8 +260,17 @@ public class TrainingDefinitionsIT {
         unreleasedDefinition.setState(cz.muni.ics.kypo.training.persistence.model.enums.TDState.UNRELEASED);
         unreleasedDefinition.setSandboxDefinitionRefId(1L);
         unreleasedDefinition.setBetaTestingGroup(betaTestingGroup2);
-        unreleasedDefinition.setAuthors(new HashSet<>(Arrays.asList(uR)));
+        unreleasedDefinition.setAuthors(new HashSet<>(Arrays.asList(author1)));
         unreleasedDefinition.setLastEdited(LocalDateTime.now());
+
+        archivedTrainingDefinition = new TrainingDefinition();
+        archivedTrainingDefinition.setTitle("testArchivedDefinition");
+        archivedTrainingDefinition.setDescription("archivedDefinitionDescription");
+        archivedTrainingDefinition.setShowStepperBar(true);
+        archivedTrainingDefinition.setState(cz.muni.ics.kypo.training.persistence.model.enums.TDState.ARCHIVED);
+        archivedTrainingDefinition.setSandboxDefinitionRefId(2L);
+        archivedTrainingDefinition.setAuthors(Set.of(author1));
+        archivedTrainingDefinition.setLastEdited(LocalDateTime.now());
 
         trainingDefinitionUpdateDTO = new TrainingDefinitionUpdateDTO();
         trainingDefinitionUpdateDTO.setTitle("newTitle");
@@ -258,6 +290,16 @@ public class TrainingDefinitionsIT {
         updateForNonexistingDefinition.setSandboxDefinitionRefId(1L);
         updateForNonexistingDefinition.setBetaTestingGroup(betaTestingGroupUpdateDTO);
         updateForNonexistingDefinition.setAuthorsLogin(Set.of());
+
+        trainingInstance = new TrainingInstance();
+        trainingInstance.setSandboxInstanceRefs(new HashSet<>());
+        trainingInstance.setPoolSize(5);
+        trainingInstance.setOrganizers(Set.of(author1));
+        trainingInstance.setAccessToken("pref-7895");
+        trainingInstance.setTitle("Port scanning");
+        trainingInstance.setStartTime(LocalDateTime.now().minusHours(2));
+        trainingInstance.setEndTime(LocalDateTime.now().plusHours(2));
+
     }
 
     @After
@@ -269,8 +311,8 @@ public class TrainingDefinitionsIT {
     @Test
     public void findTrainingDefinitionById() throws Exception {
         TrainingDefinition expected = trainingDefinitionRepository.save(releasedTrainingDefinition);
-        GameLevel gL1 = gameLevelRepository.save(gameLevel1);
-        gL1.setTrainingDefinition(expected);
+        GameLevel gameLevel = gameLevelRepository.save(gameLevel1);
+        gameLevel.setTrainingDefinition(expected);
         trainingDefinitionRepository.save(expected);
 
         MockHttpServletResponse result = mvc.perform(get("/training-definitions" + "/{id}", expected.getId()))
@@ -278,11 +320,11 @@ public class TrainingDefinitionsIT {
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andReturn().getResponse();
 
-        TrainingDefinitionByIdDTO definitionDTO = beanMapping.mapTo(expected, TrainingDefinitionByIdDTO.class);
-        GameLevelDTO gLDTO = beanMapping.mapTo(gameLevel1, GameLevelDTO.class);
-        gLDTO.setLevelType(LevelType.GAME_LEVEL);
-        definitionDTO.setLevels(new ArrayList<>(Arrays.asList(gLDTO)));
-        assertEquals(convertObjectToJsonBytes(convertObjectToJsonBytes(definitionDTO)), result.getContentAsString());
+        TrainingDefinitionByIdDTO definitionDTO = trainingDefinitionMapper.mapToDTOById(expected);
+        GameLevelDTO gameLevelDTO = gameLevelMapper.mapToDTO(gameLevel1);
+        gameLevelDTO.setLevelType(LevelType.GAME_LEVEL);
+        definitionDTO.setLevels(new ArrayList<>(Collections.singleton(gameLevelDTO)));
+        assertTwoJsons(convertObjectToJsonBytes(definitionDTO), convertJsonBytesToString(result.getContentAsString()));
     }
 
     @Test
@@ -295,62 +337,143 @@ public class TrainingDefinitionsIT {
                 .andExpect(status().isNotFound())
                 .andReturn().getResolvedException();
 
-        assertEquals(ex.getClass(), ResourceNotFoundException.class);
+        assertEquals(Objects.requireNonNull(ex).getClass(), ResourceNotFoundException.class);
         assertTrue(ex.getMessage().contains("Training definition with id: 100 not found"));
 
         assertEquals("Training definition with id {} not found.", listAppender.list.get(0).getMessage());
         assertEquals(Level.ERROR, listAppender.list.get(0).getLevel());
     }
-/*TODO poriesit canBeArchived
 	@Test
 	public void findAllTrainingDefinitions() throws Exception {
-		TrainingDefinition tD1 = trainingDefinitionRepository.saveTrainingRunEvent(releasedTrainingDefinition);
-		TrainingDefinition tD2 = trainingDefinitionRepository.saveTrainingRunEvent(unreleasedDefinition);
+		TrainingDefinition tD1 = trainingDefinitionRepository.save(releasedTrainingDefinition);
+		TrainingDefinition tD2 = trainingDefinitionRepository.save(unreleasedDefinition);
+        mockSpringSecurityContextForGet(List.of(RoleTypeSecurity.ROLE_TRAINING_ADMINISTRATOR.name()));
 
 		List<TrainingDefinition> expected = new ArrayList<>();
 		expected.add(tD1);
 		expected.add(tD2);
-		System.out.println(beanMapping.mapTo(tD1, TrainingDefinitionByIdDTO.class));
-
 		Page p = new PageImpl<TrainingDefinition>(expected);
-
-		PageResultResource<TrainingDefinitionByIdDTO> trainingDefinitionDTOPageResultResource = beanMapping.mapToPageResultDTO(p, TrainingDefinitionByIdDTO.class);
-		PageResultResource.Pagination pagination = trainingDefinitionDTOPageResultResource.getPagination();
-		pagination.setSize(20);
-		trainingDefinitionDTOPageResultResource.setPagination(pagination);
-
+		PageResultResource<TrainingDefinitionDTO> trainingDefinitionDTOPageResultResource = trainingDefinitionMapper.mapToPageResultResource(p);
+		for (TrainingDefinitionDTO trainingDefinitionDTO : trainingDefinitionDTOPageResultResource.getContent()) {
+		    trainingDefinitionDTO.setCanBeArchived(true);
+        }
+		trainingDefinitionDTOPageResultResource.getPagination().setSize(20);
 		MockHttpServletResponse result = mvc.perform(get("/training-definitions"))
 				.andExpect(status().isOk())
 				.andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
 				.andReturn().getResponse();
-		assertEquals(convertObjectToJsonBytes(convertObjectToJsonBytes(trainingDefinitionDTOPageResultResource)), result.getContentAsString());
+        PageResultResource<TrainingDefinitionDTO> trainingDefinitionsPage = mapper.readValue(convertJsonBytesToString(result.getContentAsString()), new TypeReference<PageResultResource<TrainingDefinitionDTO>>() {});
+
+        TrainingDefinitionDTO releasedTrainingDefinitionDTO = trainingDefinitionMapper.mapToDTO(releasedTrainingDefinition);
+        releasedTrainingDefinitionDTO.setCanBeArchived(true);
+        TrainingDefinitionDTO unreleasedTrainingDefinitionInfoDTO = trainingDefinitionMapper.mapToDTO(unreleasedDefinition);
+        unreleasedTrainingDefinitionInfoDTO.setCanBeArchived(true);
+        assertTrue(trainingDefinitionsPage.getContent().containsAll(Set.of(releasedTrainingDefinitionDTO, unreleasedTrainingDefinitionInfoDTO)));
 	}
-*/
-//	@Test
-//	public void createTrainingDefinition() throws Exception {
-//		mockSpringSecurityContextForGet();
-//		MockHttpServletResponse result = mvc.perform(post("/training-definitions").content(convertObjectToJsonBytes(trainingDefinitionCreateDTO))
-//						.contentType(MediaType.APPLICATION_JSON_VALUE))
-//				.andExpect(status().isOk())
-//				.andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-//				.andReturn().getResponse();
-//
-//		Optional<TrainingDefinition> newDefinition = trainingDefinitionRepository.findById(1L);
-//		assertTrue(newDefinition.isPresent());
-//		TrainingDefinitionByIdDTO newDefinitionDTO = beanMapping.mapTo(newDefinition.get(), TrainingDefinitionByIdDTO.class);
-//		assertEquals(convertObjectToJsonBytes(convertObjectToJsonBytes(newDefinitionDTO)), result.getContentAsString());
-//	}
 
     @Test
-    public void deleteReleasedTrainingDefinition() throws Exception {
-        TrainingDefinition tD = trainingDefinitionRepository.save(releasedTrainingDefinition);
+    public void findAllTrainingDefinitionsForOrganizersOrganizerRole() throws Exception {
+        trainingDefinitionRepository.save(releasedTrainingDefinition);
+        trainingDefinitionRepository.save(unreleasedDefinition);
+        mockSpringSecurityContextForGet(List.of(RoleTypeSecurity.ROLE_TRAINING_ORGANIZER.name()));
 
-        Exception ex = mvc.perform(delete("/training-definitions/{Id}", tD.getId()))
-                .andExpect(status().isConflict())
-                .andReturn().getResolvedException();
-        System.out.println(tD);
-        assertEquals(ex.getClass(), ConflictException.class);
-        assertTrue(ex.getMessage().contains("Cannot delete released training definition"));
+        MockHttpServletResponse result = mvc.perform(get("/training-definitions/for-organizers"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andReturn().getResponse();
+        PageResultResource<TrainingDefinitionInfoDTO> trainingDefinitionsPage = mapper.readValue(convertJsonBytesToString(result.getContentAsString()), new TypeReference<PageResultResource<TrainingDefinitionInfoDTO>>() {});
+
+        TrainingDefinitionInfoDTO releasedTrainingDefinitionInfoDTO = new TrainingDefinitionInfoDTO();
+        releasedTrainingDefinitionInfoDTO.setId(releasedTrainingDefinition.getId());
+        releasedTrainingDefinitionInfoDTO.setState(TDState.RELEASED);
+        releasedTrainingDefinitionInfoDTO.setTitle(releasedTrainingDefinition.getTitle());
+
+        assertTrue(trainingDefinitionsPage.getContent().contains(releasedTrainingDefinitionInfoDTO));
+    }
+
+    @Test
+    public void findAllTrainingDefinitionsForOrganizersOrganizerAndDesignerRole() throws Exception {
+        unreleasedDefinition.addAuthor(organizer1);
+        trainingDefinitionRepository.save(releasedTrainingDefinition);
+        trainingDefinitionRepository.save(unreleasedDefinition);
+        mockSpringSecurityContextForGet(List.of(RoleTypeSecurity.ROLE_TRAINING_ORGANIZER.name(),RoleTypeSecurity.ROLE_TRAINING_DESIGNER.name()));
+
+        MockHttpServletResponse result = mvc.perform(get("/training-definitions/for-organizers"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andReturn().getResponse();
+        PageResultResource<TrainingDefinitionInfoDTO> trainingDefinitionsPage = mapper.readValue(convertJsonBytesToString(result.getContentAsString()), new TypeReference<PageResultResource<TrainingDefinitionInfoDTO>>() {});
+
+        TrainingDefinitionInfoDTO releasedTrainingDefinitionInfoDTO = new TrainingDefinitionInfoDTO();
+        releasedTrainingDefinitionInfoDTO.setId(releasedTrainingDefinition.getId());
+        releasedTrainingDefinitionInfoDTO.setState(TDState.RELEASED);
+        releasedTrainingDefinitionInfoDTO.setTitle(releasedTrainingDefinition.getTitle());
+
+        TrainingDefinitionInfoDTO unreleasedTrainingDefinitionInfoDTO = new TrainingDefinitionInfoDTO();
+        unreleasedTrainingDefinitionInfoDTO.setId(unreleasedDefinition.getId());
+        unreleasedTrainingDefinitionInfoDTO.setState(TDState.UNRELEASED);
+        unreleasedTrainingDefinitionInfoDTO.setTitle(unreleasedDefinition.getTitle());
+        assertTrue(trainingDefinitionsPage.getContent().containsAll(Set.of(unreleasedTrainingDefinitionInfoDTO, releasedTrainingDefinitionInfoDTO)));
+    }
+
+    @Test
+    public void findAllTrainingDefinitionsBySandboxDefinitionId() throws Exception {
+        trainingDefinitionRepository.save(releasedTrainingDefinition);
+        trainingDefinitionRepository.save(archivedTrainingDefinition);
+        mockSpringSecurityContextForGet(List.of(RoleTypeSecurity.ROLE_TRAINING_ADMINISTRATOR.name()));
+
+        MockHttpServletResponse result = mvc.perform(get("/training-definitions/sandbox-definitions/" + releasedTrainingDefinition.getSandboxDefinitionRefId()))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andReturn().getResponse();
+        PageResultResource<TrainingDefinitionInfoDTO> trainingDefinitionsPage = mapper.readValue(convertJsonBytesToString(result.getContentAsString()), new TypeReference<PageResultResource<TrainingDefinitionInfoDTO>>() {});
+
+        TrainingDefinitionInfoDTO releasedTrainingDefinitionInfoDTO = new TrainingDefinitionInfoDTO();
+        releasedTrainingDefinitionInfoDTO.setId(releasedTrainingDefinition.getId());
+        releasedTrainingDefinitionInfoDTO.setState(TDState.RELEASED);
+        releasedTrainingDefinitionInfoDTO.setTitle(releasedTrainingDefinition.getTitle());
+
+        TrainingDefinitionInfoDTO archivedTrainingDefinitionInfoDTO = new TrainingDefinitionInfoDTO();
+        archivedTrainingDefinitionInfoDTO.setId(archivedTrainingDefinition.getId());
+        archivedTrainingDefinitionInfoDTO.setState(TDState.ARCHIVED);
+        archivedTrainingDefinitionInfoDTO.setTitle(archivedTrainingDefinition.getTitle());
+        assertTrue(trainingDefinitionsPage.getContent().containsAll(Set.of(archivedTrainingDefinitionInfoDTO, releasedTrainingDefinitionInfoDTO)));
+    }
+
+	@Test
+    public void createTrainingDefinition() throws Exception {
+        mockSpringSecurityContextForGet(List.of(RoleTypeSecurity.ROLE_TRAINING_DESIGNER.name()));
+        given(restTemplate.exchange(any(URI.class), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
+                willReturn(new ResponseEntity<List<UserInfoDTO>>(new ArrayList<>(Collections.singletonList(userInfoDTO)), HttpStatus.OK));
+
+        MockHttpServletResponse result = mvc.perform(post("/training-definitions").content(convertObjectToJsonBytes(trainingDefinitionCreateDTO))
+                .contentType(MediaType.APPLICATION_JSON_VALUE))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andReturn().getResponse();
+
+        Optional<TrainingDefinition> newDefinition = trainingDefinitionRepository.findById(1L);
+        assertTrue(newDefinition.isPresent());
+        TrainingDefinitionByIdDTO newDefinitionDTO = trainingDefinitionMapper.mapToDTOById(newDefinition.get());
+        assertEquals(newDefinitionDTO, mapper.readValue(convertJsonBytesToString(result.getContentAsString()), TrainingDefinitionByIdDTO.class));
+    }
+
+    @Test
+    public void createTrainingDefinitionWithoutBetaTestingGroup() throws Exception {
+        mockSpringSecurityContextForGet(List.of(RoleTypeSecurity.ROLE_TRAINING_DESIGNER.name()));
+        given(restTemplate.exchange(any(URI.class), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
+                willReturn(new ResponseEntity<List<UserInfoDTO>>(new ArrayList<>(Collections.singletonList(userInfoDTO)), HttpStatus.OK));
+        trainingDefinitionCreateDTO.setBetaTestingGroup(null);
+        MockHttpServletResponse result = mvc.perform(post("/training-definitions").content(convertObjectToJsonBytes(trainingDefinitionCreateDTO))
+                .contentType(MediaType.APPLICATION_JSON_VALUE))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andReturn().getResponse();
+
+        Optional<TrainingDefinition> newDefinition = trainingDefinitionRepository.findById(1L);
+        assertTrue(newDefinition.isPresent());
+        TrainingDefinitionByIdDTO newDefinitionDTO = trainingDefinitionMapper.mapToDTOById(newDefinition.get());
+        assertEquals(newDefinitionDTO, mapper.readValue(convertJsonBytesToString(result.getContentAsString()), TrainingDefinitionByIdDTO.class));
     }
 
     @Test
@@ -359,28 +482,29 @@ public class TrainingDefinitionsIT {
                 .contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isBadRequest())
                 .andReturn().getResolvedException();
-        assertTrue(ex.getMessage().contains("Validation failed for argument"));
+        assertTrue(Objects.requireNonNull(ex).getMessage().contains("Validation failed for argument"));
         assertEquals(ex.getClass(), MethodArgumentNotValidException.class);
     }
 
-//	@Test
-//	public void updateTrainingDefinition() throws Exception {
-//		TrainingDefinition tD = trainingDefinitionRepository.save(unreleasedDefinition);
-//		trainingDefinitionUpdateDTO.setId(tD.getId());
-//		System.out.println(tD);
-//		mvc.perform(put("/training-definitions").content(convertObjectToJsonBytes(trainingDefinitionUpdateDTO))
-//		.contentType(MediaType.APPLICATION_JSON_VALUE))
-//				.andExpect(status().isNoContent());
-//		Optional<TrainingDefinition> optionalDefinition = trainingDefinitionRepository.findById(tD.getId());
-//		assertTrue(optionalDefinition.isPresent());
-//		TrainingDefinition updatedDefinition = optionalDefinition.get();
-//		assertEquals(updatedDefinition.getTitle(), trainingDefinitionUpdateDTO.getTitle());
-//		assertEquals(updatedDefinition.getDescription(), trainingDefinitionUpdateDTO.getDescription());
-//		assertEquals(updatedDefinition.getState().toString(), trainingDefinitionUpdateDTO.getState().toString());
-//		assertEquals(updatedDefinition.isShowStepperBar(), trainingDefinitionUpdateDTO.isShowStepperBar());
-//		assertEquals(updatedDefinition.getAuthors(), unreleasedDefinition.getAuthors());
-//		assertEquals(updatedDefinition.getSandboxDefinitionRefId(), unreleasedDefinition.getSandboxDefinitionRefId());
-//	}
+	@Test
+	public void updateTrainingDefinition() throws Exception {
+		TrainingDefinition tD = trainingDefinitionRepository.save(unreleasedDefinition);
+		trainingDefinitionUpdateDTO.setId(tD.getId());
+        given(restTemplate.exchange(any(URI.class), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
+                willReturn(new ResponseEntity<List<UserInfoDTO>>(new ArrayList<>(Collections.singletonList(userInfoDTO)), HttpStatus.OK));
+		mvc.perform(put("/training-definitions").content(convertObjectToJsonBytes(trainingDefinitionUpdateDTO))
+		.contentType(MediaType.APPLICATION_JSON_VALUE))
+				.andExpect(status().isNoContent());
+		Optional<TrainingDefinition> optionalDefinition = trainingDefinitionRepository.findById(tD.getId());
+		assertTrue(optionalDefinition.isPresent());
+		TrainingDefinition updatedDefinition = optionalDefinition.get();
+		assertEquals(updatedDefinition.getTitle(), trainingDefinitionUpdateDTO.getTitle());
+		assertEquals(updatedDefinition.getDescription(), trainingDefinitionUpdateDTO.getDescription());
+		assertEquals(updatedDefinition.getState().toString(), trainingDefinitionUpdateDTO.getState().toString());
+		assertEquals(updatedDefinition.isShowStepperBar(), trainingDefinitionUpdateDTO.isShowStepperBar());
+		assertEquals(updatedDefinition.getAuthors(), unreleasedDefinition.getAuthors());
+		assertEquals(updatedDefinition.getSandboxDefinitionRefId(), unreleasedDefinition.getSandboxDefinitionRefId());
+	}
 
     @Test
     public void updateTrainingDefinitionWithInvalidDefinition() throws Exception {
@@ -388,7 +512,7 @@ public class TrainingDefinitionsIT {
                 .contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isBadRequest())
                 .andReturn().getResolvedException();
-        assertTrue(ex.getMessage().contains("Validation failed for argument"));
+        assertTrue(Objects.requireNonNull(ex).getMessage().contains("Validation failed for argument"));
         assertEquals(ex.getClass(), MethodArgumentNotValidException.class);
     }
 
@@ -398,39 +522,47 @@ public class TrainingDefinitionsIT {
                 .contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isNotFound())
                 .andReturn().getResolvedException();
-        assertEquals(ex.getClass(), ResourceNotFoundException.class);
+        assertEquals(Objects.requireNonNull(ex).getClass(), ResourceNotFoundException.class);
         assertTrue(ex.getMessage().contains("Training definition with id: 100 not found"));
     }
 
-//	@Test
-//	public void updateTrainingDefinitionWithReleasedDefinition() throws Exception{
-//		TrainingDefinition tD = trainingDefinitionRepository.save(releasedTrainingDefinition);
-//		trainingDefinitionUpdateDTO.setId(tD.getId());
-//		Exception ex = mvc.perform(put("/training-definitions").content(convertObjectToJsonBytes(trainingDefinitionUpdateDTO))
-//				.contentType(MediaType.APPLICATION_JSON_VALUE))
-//				.andExpect(status().isConflict())
-//				.andReturn().getResolvedException();
-//		assertEquals(ex.getClass(), ConflictException.class);
-//		assertTrue(ex.getMessage().contains("Cannot edit released or archived training definition"));
-//	}
+	@Test
+	public void updateTrainingDefinitionWithReleasedDefinition() throws Exception{
+		TrainingDefinition tD = trainingDefinitionRepository.save(releasedTrainingDefinition);
+		trainingDefinitionUpdateDTO.setId(tD.getId());
+		given(restTemplate.exchange(any(URI.class), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
+                willReturn(new ResponseEntity<List<UserInfoDTO>>(new ArrayList<>(Collections.singletonList(userInfoDTO)), HttpStatus.OK));
+
+		Exception ex = mvc.perform(put("/training-definitions").content(convertObjectToJsonBytes(trainingDefinitionUpdateDTO))
+				.contentType(MediaType.APPLICATION_JSON_VALUE))
+				.andExpect(status().isConflict())
+				.andReturn().getResolvedException();
+		assertEquals(Objects.requireNonNull(ex).getClass(), ConflictException.class);
+		assertTrue(ex.getMessage().contains("Cannot edit released or archived training definition"));
+	}
 
     @Test
     public void cloneTrainingDefinition() throws Exception {
-        TrainingDefinition tD = trainingDefinitionRepository.save(releasedTrainingDefinition);
-        GameLevel gL1 = gameLevelRepository.save(gameLevel1);
-        trainingDefinitionRepository.save(tD);
-        mockSpringSecurityContextForGet();
+        TrainingDefinition tD = trainingDefinitionRepository.save(unreleasedDefinition);
+        gameLevel1.setTrainingDefinition(tD);
+        gameLevelRepository.save(gameLevel1);
+        mockSpringSecurityContextForGet(List.of(RoleTypeSecurity.ROLE_TRAINING_DESIGNER.name()));
+        TrainingDefinitionByIdDTO trainingDefinitionByIdDTO = trainingDefinitionMapper.mapToDTOById(tD);
+        trainingDefinitionByIdDTO.setLevels(List.of(gameLevelMapper.mapToDTO(gameLevel1)));
 
-        mvc.perform(post("/training-definitions" + "/{id}", tD.getId()).param("title", "title"))
+
+        MockHttpServletResponse result = mvc.perform(post("/training-definitions" + "/{id}", tD.getId()).param("title", "title"))
                 .andExpect(status().isOk())
-                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON_VALUE));
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON_VALUE))
+                .andReturn().getResponse();
 
         Optional<TrainingDefinition> opt = trainingDefinitionRepository.findById(2L);
         assertTrue(opt.isPresent());
         TrainingDefinition clonedTD = opt.get();
-        assertEquals(clonedTD.getTitle(), "title");
+        assertEquals("title", clonedTD.getTitle());
         assertEquals(clonedTD.getState().toString(), TDState.UNRELEASED.toString());
         assertEquals(clonedTD.isShowStepperBar(), tD.isShowStepperBar());
+        assertNull(clonedTD.getBetaTestingGroup());
     }
 
     @Test
@@ -438,8 +570,62 @@ public class TrainingDefinitionsIT {
         Exception ex = mvc.perform(post("/training-definitions" + "/{id}", 100L).param("title", "title"))
                 .andExpect(status().isNotFound())
                 .andReturn().getResolvedException();
-        assertEquals(ex.getClass(), ResourceNotFoundException.class);
+        assertEquals(Objects.requireNonNull(ex).getClass(), ResourceNotFoundException.class);
         assertTrue(ex.getMessage().contains("Training definition with id: 100 not found"));
+    }
+
+    @Test
+    public void swapLevels() throws Exception {
+        trainingDefinitionRepository.save(unreleasedDefinition);
+        gameLevel1.setTrainingDefinition(unreleasedDefinition);
+        gameLevel1.setOrder(3);
+        infoLevel1.setTrainingDefinition(unreleasedDefinition);
+        infoLevel1.setOrder(1);
+        gameLevel2.setTrainingDefinition(unreleasedDefinition);
+        gameLevel2.setOrder(2);
+        gameLevelRepository.saveAll(Set.of(gameLevel1, gameLevel2));
+        infoLevelRepository.save(infoLevel1);
+
+        mvc.perform(put("/training-definitions/{definitionId}/levels/{levelIdFrom}/swap-with/{levelIdTo}",
+                unreleasedDefinition.getId(), infoLevel1.getId(), gameLevel1.getId()))
+                .andExpect(status().isOk())
+                .andReturn().getResponse();
+        Optional<GameLevel> optGameLevel = gameLevelRepository.findById(gameLevel1.getId());
+        Optional<InfoLevel> optInfoLevel = infoLevelRepository.findById(infoLevel1.getId());
+        assertTrue(optGameLevel.isPresent());
+        assertTrue(optInfoLevel.isPresent());
+        assertEquals(1, gameLevel1.getOrder());
+        assertEquals(3, infoLevel1.getOrder());
+    }
+
+    @Test
+    public void swapLevelsFirstLevelNotFound() throws Exception {
+        trainingDefinitionRepository.save(unreleasedDefinition);
+        infoLevel1.setTrainingDefinition(unreleasedDefinition);
+        infoLevel1.setOrder(1);
+        infoLevelRepository.save(infoLevel1);
+
+        Exception ex = mvc.perform(put("/training-definitions/{definitionId}/levels/{levelIdFrom}/swap-with/{levelIdTo}",
+                unreleasedDefinition.getId(), 50, infoLevel1.getId()))
+                .andExpect(status().isNotFound())
+                .andReturn().getResolvedException();
+        assertEquals(ResourceNotFoundException.class, Objects.requireNonNull(ex).getClass());
+        assertTrue(ex.getMessage().contains("Level not found."));
+    }
+
+    @Test
+    public void swapLevelsSecondLevelNotFound() throws Exception {
+        trainingDefinitionRepository.save(unreleasedDefinition);
+        infoLevel1.setTrainingDefinition(unreleasedDefinition);
+        infoLevel1.setOrder(1);
+        infoLevelRepository.save(infoLevel1);
+
+        Exception ex = mvc.perform(put("/training-definitions/{definitionId}/levels/{levelIdFrom}/swap-with/{levelIdTo}",
+                unreleasedDefinition.getId(), infoLevel1.getId(), 50))
+                .andExpect(status().isNotFound())
+                .andReturn().getResolvedException();
+        assertEquals(ResourceNotFoundException.class, Objects.requireNonNull(ex).getClass());
+        assertTrue(ex.getMessage().contains("Level not found."));
     }
 
     @Test
@@ -470,8 +656,32 @@ public class TrainingDefinitionsIT {
                 .andExpect(status().isNotFound())
                 .andReturn().getResolvedException();
 
-        assertEquals(ex.getClass(), ResourceNotFoundException.class);
+        assertEquals(Objects.requireNonNull(ex).getClass(), ResourceNotFoundException.class);
         assertTrue(ex.getMessage().contains("Training definition with id: 100 not found"));
+    }
+
+    @Test
+    public void deleteReleasedTrainingDefinition() throws Exception {
+        TrainingDefinition tD = trainingDefinitionRepository.save(releasedTrainingDefinition);
+        Exception ex = mvc.perform(delete("/training-definitions/{Id}", tD.getId()))
+                .andExpect(status().isConflict())
+                .andReturn().getResolvedException();
+        assertEquals(Objects.requireNonNull(ex).getClass(), ConflictException.class);
+        assertTrue(ex.getMessage().contains("Cannot delete released training definition"));
+    }
+
+    @Test
+    public void deleteDefinitionWithTrainingInstances() throws Exception {
+        trainingDefinitionRepository.save(unreleasedDefinition);
+        trainingInstance.setTrainingDefinition(unreleasedDefinition);
+        trainingInstanceRepository.save(trainingInstance);
+
+        Exception ex = mvc.perform(delete("/training-definitions/{id}", unreleasedDefinition.getId()))
+                .andExpect(status().isConflict())
+                .andReturn().getResolvedException();
+
+        assertEquals(Objects.requireNonNull(ex).getClass(), ConflictException.class);
+        assertTrue(ex.getMessage().contains("Cannot delete training definition with already created training instance. Remove training instance/s before deleting training definition."));
     }
 
     @Test
@@ -500,17 +710,17 @@ public class TrainingDefinitionsIT {
         Exception ex = mvc.perform(delete("/training-definitions/{definitionId}/levels/{levelId}", tD.getId(), 100L))
                 .andExpect(status().isNotFound())
                 .andReturn().getResolvedException();
-        assertEquals(ex.getClass(), ResourceNotFoundException.class);
+        assertEquals(Objects.requireNonNull(ex).getClass(), ResourceNotFoundException.class);
         assertTrue(ex.getMessage().contains("Level not found"));
     }
 
     @Test
-    public void deleteOneLevelWithNonexistentDefinition() throws Exception {
+    public void deleteOneLevelWithNonExistentDefinition() throws Exception {
         GameLevel gL = gameLevelRepository.save(gameLevel1);
         Exception ex = mvc.perform(delete("/training-definitions/{definitionId}/levels/{levelId}", 100L, gL.getId()))
                 .andExpect(status().isNotFound())
                 .andReturn().getResolvedException();
-        assertEquals(ex.getClass(), ResourceNotFoundException.class);
+        assertEquals(Objects.requireNonNull(ex).getClass(), ResourceNotFoundException.class);
         assertTrue(ex.getMessage().contains("Training definition with id: 100 not found"));
     }
 
@@ -522,7 +732,19 @@ public class TrainingDefinitionsIT {
                 .andExpect(status().isConflict())
                 .andReturn().getResolvedException();
 
-        assertEquals(ex.getClass(), ConflictException.class);
+        assertEquals(Objects.requireNonNull(ex).getClass(), ConflictException.class);
+        assertTrue(ex.getMessage().contains("Cannot edit released or archived training definition"));
+    }
+
+    @Test
+    public void deleteOneLevelWithArchivedDefinition() throws Exception {
+        TrainingDefinition tD = trainingDefinitionRepository.save(releasedTrainingDefinition);
+        GameLevel gL = gameLevelRepository.save(gameLevel1);
+        Exception ex = mvc.perform(delete("/training-definitions/{definitionId}/levels/{levelId}", tD.getId(), gL.getId()))
+                .andExpect(status().isConflict())
+                .andReturn().getResolvedException();
+
+        assertEquals(Objects.requireNonNull(ex).getClass(), ConflictException.class);
         assertTrue(ex.getMessage().contains("Cannot edit released or archived training definition"));
     }
 
@@ -554,7 +776,7 @@ public class TrainingDefinitionsIT {
                 .contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isBadRequest())
                 .andReturn().getResolvedException();
-        assertTrue(ex.getMessage().contains("Validation failed for argument"));
+        assertTrue(Objects.requireNonNull(ex).getMessage().contains("Validation failed for argument"));
         assertEquals(ex.getClass(), MethodArgumentNotValidException.class);
     }
 
@@ -568,7 +790,21 @@ public class TrainingDefinitionsIT {
                 .contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isConflict())
                 .andReturn().getResolvedException();
-        assertEquals(ex.getClass(), ConflictException.class);
+        assertEquals(Objects.requireNonNull(ex).getClass(), ConflictException.class);
+        assertTrue(ex.getMessage().contains("Cannot edit released or archived training"));
+    }
+
+    @Test
+    public void updateGameLevelWithArchivedDefinition() throws Exception {
+        TrainingDefinition tD = trainingDefinitionRepository.save(archivedTrainingDefinition);
+        GameLevel gL = gameLevelRepository.save(gameLevel1);
+        gameLevelUpdateDTO.setId(gL.getId());
+
+        Exception ex = mvc.perform(put("/training-definitions/{definitionId}/game-levels", tD.getId()).content(convertObjectToJsonBytes(gameLevelUpdateDTO))
+                .contentType(MediaType.APPLICATION_JSON_VALUE))
+                .andExpect(status().isConflict())
+                .andReturn().getResolvedException();
+        assertEquals(Objects.requireNonNull(ex).getClass(), ConflictException.class);
         assertTrue(ex.getMessage().contains("Cannot edit released or archived training"));
     }
 
@@ -580,12 +816,12 @@ public class TrainingDefinitionsIT {
                 .andExpect(status().isNotFound())
                 .andReturn().getResolvedException();
 
-        assertEquals(ex.getClass(), ResourceNotFoundException.class);
+        assertEquals(Objects.requireNonNull(ex).getClass(), ResourceNotFoundException.class);
         assertTrue(ex.getMessage().contains("Training definition with id: 100 not found"));
     }
 
     @Test
-    public void updateGameLevelWithNonexistentLevel() throws Exception {
+    public void updateGameLevelWithNonExistentLevel() throws Exception {
         TrainingDefinition tD = trainingDefinitionRepository.save(unreleasedDefinition);
         gameLevelUpdateDTO.setId(100L);
         Exception ex = mvc.perform(put("/training-definitions/{definitionId}/game-levels", tD.getId()).content(convertObjectToJsonBytes(gameLevelUpdateDTO))
@@ -593,7 +829,7 @@ public class TrainingDefinitionsIT {
                 .andExpect(status().isNotFound())
                 .andReturn().getResolvedException();
 
-        assertEquals(ex.getClass(), ResourceNotFoundException.class);
+        assertEquals(Objects.requireNonNull(ex).getClass(), ResourceNotFoundException.class);
         assertTrue(ex.getMessage().contains("Level was not found"));
     }
 
@@ -621,7 +857,7 @@ public class TrainingDefinitionsIT {
                 .contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isBadRequest())
                 .andReturn().getResolvedException();
-        assertTrue(ex.getMessage().contains("Validation failed for argument"));
+        assertTrue(Objects.requireNonNull(ex).getMessage().contains("Validation failed for argument"));
         assertEquals(ex.getClass(), MethodArgumentNotValidException.class);
     }
 
@@ -635,24 +871,38 @@ public class TrainingDefinitionsIT {
                 .contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isConflict())
                 .andReturn().getResolvedException();
-        assertEquals(ex.getClass(), ConflictException.class);
+        assertEquals(Objects.requireNonNull(ex).getClass(), ConflictException.class);
         assertTrue(ex.getMessage().contains("Cannot edit released or archived training"));
     }
 
     @Test
-    public void updateInfoLevelWithNonexistentDefinition() throws Exception {
+    public void updateInfoLevelWithArchivedDefinition() throws Exception {
+        TrainingDefinition tD = trainingDefinitionRepository.save(archivedTrainingDefinition);
+        InfoLevel iL = infoLevelRepository.save(infoLevel1);
+        infoLevelUpdateDTO.setId(iL.getId());
+
+        Exception ex = mvc.perform(put("/training-definitions/{definitionId}/info-levels", tD.getId()).content(convertObjectToJsonBytes(infoLevelUpdateDTO))
+                .contentType(MediaType.APPLICATION_JSON_VALUE))
+                .andExpect(status().isConflict())
+                .andReturn().getResolvedException();
+        assertEquals(Objects.requireNonNull(ex).getClass(), ConflictException.class);
+        assertTrue(ex.getMessage().contains("Cannot edit released or archived training"));
+    }
+
+    @Test
+    public void updateInfoLevelWithNonExistentDefinition() throws Exception {
         infoLevelUpdateDTO.setId(1L);
         Exception ex = mvc.perform(put("/training-definitions/{definitionId}/info-levels", 100L).content(convertObjectToJsonBytes(infoLevelUpdateDTO))
                 .contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isNotFound())
                 .andReturn().getResolvedException();
 
-        assertEquals(ex.getClass(), ResourceNotFoundException.class);
+        assertEquals(Objects.requireNonNull(ex).getClass(), ResourceNotFoundException.class);
         assertTrue(ex.getMessage().contains("Training definition with id: 100 not found"));
     }
 
     @Test
-    public void updateInfoLevelWithNonexistentLevel() throws Exception {
+    public void updateInfoLevelWithNonExistentLevel() throws Exception {
         TrainingDefinition tD = trainingDefinitionRepository.save(unreleasedDefinition);
         infoLevelUpdateDTO.setId(100L);
         Exception ex = mvc.perform(put("/training-definitions/{definitionId}/info-levels", tD.getId()).content(convertObjectToJsonBytes(infoLevelUpdateDTO))
@@ -660,7 +910,7 @@ public class TrainingDefinitionsIT {
                 .andExpect(status().isNotFound())
                 .andReturn().getResolvedException();
 
-        assertEquals(ex.getClass(), ResourceNotFoundException.class);
+        assertEquals(Objects.requireNonNull(ex).getClass(), ResourceNotFoundException.class);
         assertTrue(ex.getMessage().contains("Level was not found"));
     }
 
@@ -691,7 +941,7 @@ public class TrainingDefinitionsIT {
                 .contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isBadRequest())
                 .andReturn().getResolvedException();
-        assertTrue(ex.getMessage().contains("Validation failed for argument"));
+        assertTrue(Objects.requireNonNull(ex).getMessage().contains("Validation failed for argument"));
         assertEquals(ex.getClass(), MethodArgumentNotValidException.class);
     }
 
@@ -705,24 +955,38 @@ public class TrainingDefinitionsIT {
                 .contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isConflict())
                 .andReturn().getResolvedException();
-        assertEquals(ex.getClass(), ConflictException.class);
+        assertEquals(Objects.requireNonNull(ex).getClass(), ConflictException.class);
         assertTrue(ex.getMessage().contains("Cannot edit released or archived training"));
     }
 
     @Test
-    public void updateAssessmentLevelWithNonexistentDefinition() throws Exception {
+    public void updateAssessmentLevelWithArchivedDefinition() throws Exception {
+        TrainingDefinition tD = trainingDefinitionRepository.save(archivedTrainingDefinition);
+        AssessmentLevel aL = assessmentLevelRepository.save(assessmentLevel1);
+        assessmentLevelUpdateDTO.setId(aL.getId());
+
+        Exception ex = mvc.perform(put("/training-definitions/{definitionId}/assessment-levels", tD.getId()).content(convertObjectToJsonBytes(assessmentLevelUpdateDTO))
+                .contentType(MediaType.APPLICATION_JSON_VALUE))
+                .andExpect(status().isConflict())
+                .andReturn().getResolvedException();
+        assertEquals(Objects.requireNonNull(ex).getClass(), ConflictException.class);
+        assertTrue(ex.getMessage().contains("Cannot edit released or archived training"));
+    }
+
+    @Test
+    public void updateAssessmentLevelWithNonExistentDefinition() throws Exception {
         assessmentLevelUpdateDTO.setId(1L);
         Exception ex = mvc.perform(put("/training-definitions/{definitionId}/assessment-levels", 100L).content(convertObjectToJsonBytes(assessmentLevelUpdateDTO))
                 .contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isNotFound())
                 .andReturn().getResolvedException();
 
-        assertEquals(ex.getClass(), ResourceNotFoundException.class);
+        assertEquals(Objects.requireNonNull(ex).getClass(), ResourceNotFoundException.class);
         assertTrue(ex.getMessage().contains("Training definition with id: 100 not found"));
     }
 
     @Test
-    public void updateAssessmentLevelWithNonexistentLevel() throws Exception {
+    public void updateAssessmentLevelWithNonExistentLevel() throws Exception {
         TrainingDefinition tD = trainingDefinitionRepository.save(unreleasedDefinition);
         assessmentLevelUpdateDTO.setId(100L);
         Exception ex = mvc.perform(put("/training-definitions/{definitionId}/assessment-levels", tD.getId()).content(convertObjectToJsonBytes(assessmentLevelUpdateDTO))
@@ -730,111 +994,111 @@ public class TrainingDefinitionsIT {
                 .andExpect(status().isNotFound())
                 .andReturn().getResolvedException();
 
-        assertEquals(ex.getClass(), ResourceNotFoundException.class);
+        assertEquals(Objects.requireNonNull(ex).getClass(), ResourceNotFoundException.class);
         assertTrue(ex.getMessage().contains("Level was not found"));
     }
 
     @Test
     public void findGameLevelById() throws Exception {
-        TrainingDefinition td = trainingDefinitionRepository.save(unreleasedDefinition);
-        GameLevel gL = gameLevelRepository.save(gameLevel1);
-        gL.setTrainingDefinition(td);
-        MockHttpServletResponse result = mvc.perform(get("/training-definitions/levels/{id}", gL.getId()))
+        trainingDefinitionRepository.save(unreleasedDefinition);
+        gameLevel1.setTrainingDefinition(unreleasedDefinition);
+        gameLevelRepository.save(gameLevel1);
+        MockHttpServletResponse result = mvc.perform(get("/training-definitions/levels/{id}", gameLevel1.getId()))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andReturn().getResponse();
-        GameLevelDTO gLDTO = beanMapping.mapTo(gL, GameLevelDTO.class);
-        gLDTO.setLevelType(LevelType.GAME_LEVEL);
-        assertEquals(convertObjectToJsonBytes(convertObjectToJsonBytes(gLDTO)), result.getContentAsString());
+        GameLevelDTO gameLevelDTO = gameLevelMapper.mapToDTO(gameLevel1);
+        gameLevelDTO.setLevelType(LevelType.GAME_LEVEL);
+        assertEquals(gameLevelDTO, mapper.readValue(convertJsonBytesToString(result.getContentAsString()), GameLevelDTO.class));
     }
 
     @Test
     public void findInfoLevelById() throws Exception {
-        TrainingDefinition td = trainingDefinitionRepository.save(unreleasedDefinition);
-        InfoLevel iL = infoLevelRepository.save(infoLevel1);
-        iL.setTrainingDefinition(td);
-        MockHttpServletResponse result = mvc.perform(get("/training-definitions/levels/{id}", iL.getId()))
+        trainingDefinitionRepository.save(unreleasedDefinition);
+        infoLevel1.setTrainingDefinition(unreleasedDefinition);
+        infoLevelRepository.save(infoLevel1);
+        MockHttpServletResponse result = mvc.perform(get("/training-definitions/levels/{id}", infoLevel1.getId()))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andReturn().getResponse();
-        InfoLevelDTO iLDTO = beanMapping.mapTo(iL, InfoLevelDTO.class);
-        iLDTO.setLevelType(LevelType.INFO_LEVEL);
-        assertEquals(convertObjectToJsonBytes(convertObjectToJsonBytes(iLDTO)), result.getContentAsString());
+        InfoLevelDTO infoLevelDTO = infoLevelMapper.mapToDTO(infoLevel1);
+        infoLevelDTO.setLevelType(LevelType.INFO_LEVEL);
+        assertEquals(infoLevelDTO, mapper.readValue(convertJsonBytesToString(result.getContentAsString()), InfoLevelDTO.class));
     }
 
     @Test
     public void findAssessmentLevelById() throws Exception {
-        TrainingDefinition td = trainingDefinitionRepository.save(unreleasedDefinition);
-        AssessmentLevel aL = assessmentLevelRepository.save(assessmentLevel1);
-        aL.setTrainingDefinition(td);
-        MockHttpServletResponse result = mvc.perform(get("/training-definitions/levels/{id}", aL.getId()))
+        trainingDefinitionRepository.save(unreleasedDefinition);
+        assessmentLevel1.setTrainingDefinition(unreleasedDefinition);
+        assessmentLevelRepository.save(assessmentLevel1);
+        MockHttpServletResponse result = mvc.perform(get("/training-definitions/levels/{id}", assessmentLevel1.getId()))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andReturn().getResponse();
-        AssessmentLevelDTO aLDTO = beanMapping.mapTo(aL, AssessmentLevelDTO.class);
-        aLDTO.setLevelType(LevelType.ASSESSMENT_LEVEL);
-        assertEquals(convertObjectToJsonBytes(convertObjectToJsonBytes(aLDTO)), result.getContentAsString());
+        AssessmentLevelDTO assessmentLevelDTO = assessmentLevelMapper.mapToDTO(assessmentLevel1);
+        assessmentLevelDTO.setLevelType(LevelType.ASSESSMENT_LEVEL);
+        assertEquals(assessmentLevelDTO, mapper.readValue(convertJsonBytesToString(result.getContentAsString()), AssessmentLevelDTO.class));
     }
 
     @Test
-    public void findGameLevelByIdWithDefinitionNotFound() throws Exception {
+    public void findGameLevelByIdNotFound() throws Exception {
         Exception ex = mvc.perform(get("/training-definitions/levels/{id}", 100L))
                 .andExpect(status().isNotFound())
                 .andReturn().getResolvedException();
 
-        assertEquals(ex.getClass(), ResourceNotFoundException.class);
+        assertEquals(Objects.requireNonNull(ex).getClass(), ResourceNotFoundException.class);
         assertTrue(ex.getMessage().contains("Level with id: 100, not found"));
     }
 
     @Test
     public void createGameLevel() throws Exception {
-        TrainingDefinition tD = trainingDefinitionRepository.save(unreleasedDefinition);
-        mvc.perform(post("/training-definitions/{definitionId}/levels/{levelType}", tD.getId(), cz.muni.ics.kypo.training.persistence.model.enums.LevelType.GAME))
+        TrainingDefinition trainingDefinition = trainingDefinitionRepository.save(unreleasedDefinition);
+        mvc.perform(post("/training-definitions/{definitionId}/levels/{levelType}", trainingDefinition.getId(), cz.muni.ics.kypo.training.persistence.model.enums.LevelType.GAME))
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isCreated());
 
-        Optional<GameLevel> optGL = gameLevelRepository.findById(1L);
-        assertTrue(optGL.isPresent());
-        GameLevel gL = optGL.get();
-        assertEquals(gL.getMaxScore(), 100);
-        assertEquals(gL.getTitle(), "Title of game level");
-        assertEquals(gL.getIncorrectFlagLimit(), 100);
-        assertEquals(gL.getFlag(), "Secret flag");
-        assertTrue(gL.isSolutionPenalized());
-        assertEquals(gL.getSolution(), "Solution of the game should be here");
-        assertEquals(gL.getContent(), "The test entry should be here");
+        Optional<GameLevel> optionalGameLevel = gameLevelRepository.findById(1L);
+        assertTrue(optionalGameLevel.isPresent());
+        GameLevel gameLevel = optionalGameLevel.get();
+        assertEquals(gameLevel.getMaxScore(), 100);
+        assertEquals(gameLevel.getTitle(), "Title of game level");
+        assertEquals(gameLevel.getIncorrectFlagLimit(), 100);
+        assertEquals(gameLevel.getFlag(), "Secret flag");
+        assertTrue(gameLevel.isSolutionPenalized());
+        assertEquals(gameLevel.getSolution(), "Solution of the game should be here");
+        assertEquals(gameLevel.getContent(), "The test entry should be here");
     }
 
     @Test
     public void createInfoLevel() throws Exception {
-        TrainingDefinition tD = trainingDefinitionRepository.save(unreleasedDefinition);
-        mvc.perform(post("/training-definitions/{definitionId}/levels/{levelType}", tD.getId(), cz.muni.ics.kypo.training.persistence.model.enums.LevelType.INFO))
+        TrainingDefinition trainingDefinition = trainingDefinitionRepository.save(unreleasedDefinition);
+        mvc.perform(post("/training-definitions/{definitionId}/levels/{levelType}", trainingDefinition.getId(), cz.muni.ics.kypo.training.persistence.model.enums.LevelType.INFO))
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isCreated());
 
-        Optional<InfoLevel> optIL = infoLevelRepository.findById(1L);
-        assertTrue(optIL.isPresent());
-        InfoLevel iL = optIL.get();
-        assertEquals(iL.getMaxScore(), 0);
-        assertEquals(iL.getTitle(), "Title of info level");
-        assertEquals(iL.getContent(), "Content of info level should be here.");
+        Optional<InfoLevel> optionalInfoLevel = infoLevelRepository.findById(1L);
+        assertTrue(optionalInfoLevel.isPresent());
+        InfoLevel infoLevel = optionalInfoLevel.get();
+        assertEquals(infoLevel.getMaxScore(), 0);
+        assertEquals(infoLevel.getTitle(), "Title of info level");
+        assertEquals(infoLevel.getContent(), "Content of info level should be here.");
     }
 
     @Test
     public void createAssessmentLevel() throws Exception {
-        TrainingDefinition tD = trainingDefinitionRepository.save(unreleasedDefinition);
-        mvc.perform(post("/training-definitions/{definitionId}/levels/{levelType}", tD.getId(), cz.muni.ics.kypo.training.persistence.model.enums.LevelType.ASSESSMENT))
+        TrainingDefinition trainingDefinition = trainingDefinitionRepository.save(unreleasedDefinition);
+        mvc.perform(post("/training-definitions/{definitionId}/levels/{levelType}", trainingDefinition.getId(), cz.muni.ics.kypo.training.persistence.model.enums.LevelType.ASSESSMENT))
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isCreated());
 
-        Optional<AssessmentLevel> optAL = assessmentLevelRepository.findById(1L);
-        assertTrue(optAL.isPresent());
-        AssessmentLevel aL = optAL.get();
-        assertEquals(aL.getMaxScore(), 0);
-        assertEquals(aL.getTitle(), "Title of assessment level");
-        assertEquals(aL.getAssessmentType().toString(), AssessmentType.QUESTIONNAIRE.toString());
-        assertEquals(aL.getInstructions(), "Instructions should be here");
-        assertEquals(aL.getQuestions(), "[{\"answer_required\":false,\"order\":0,\"penalty\":0,\"points\":0,\"text\":\"Example Question\",\"question_type\":\"FFQ\",\"correct_choices\":[]}]");
+        Optional<AssessmentLevel> optionalAssessmentLevel = assessmentLevelRepository.findById(1L);
+        assertTrue(optionalAssessmentLevel.isPresent());
+        AssessmentLevel assessmentLevel = optionalAssessmentLevel.get();
+        assertEquals(assessmentLevel.getMaxScore(), 0);
+        assertEquals(assessmentLevel.getTitle(), "Title of assessment level");
+        assertEquals(assessmentLevel.getAssessmentType().toString(), AssessmentType.QUESTIONNAIRE.toString());
+        assertEquals(assessmentLevel.getInstructions(), "Instructions should be here");
+        assertEquals(assessmentLevel.getQuestions(), "[{\"answer_required\":false,\"order\":0,\"penalty\":0,\"points\":0,\"text\":\"Example Question\",\"question_type\":\"FFQ\",\"correct_choices\":[]}]");
     }
 
     @Test
@@ -843,18 +1107,94 @@ public class TrainingDefinitionsIT {
         Exception ex = mvc.perform(post("/training-definitions/{definitionId}/levels/{levelType}", tD.getId(), cz.muni.ics.kypo.training.persistence.model.enums.LevelType.ASSESSMENT))
                 .andExpect(status().isConflict())
                 .andReturn().getResolvedException();
-        assertEquals(ex.getClass(), ConflictException.class);
+        assertEquals(Objects.requireNonNull(ex).getClass(), ConflictException.class);
         assertTrue(ex.getMessage().contains("Cannot create level in released or archived training definition"));
     }
 
     @Test
-    public void createLevelOnNonexistingDefinition() throws Exception {
+    public void createLevelOnArchivedDefinition() throws Exception {
+        TrainingDefinition tD = trainingDefinitionRepository.save(archivedTrainingDefinition);
+        Exception ex = mvc.perform(post("/training-definitions/{definitionId}/levels/{levelType}", tD.getId(), cz.muni.ics.kypo.training.persistence.model.enums.LevelType.ASSESSMENT))
+                .andExpect(status().isConflict())
+                .andReturn().getResolvedException();
+        assertEquals(Objects.requireNonNull(ex).getClass(), ConflictException.class);
+        assertTrue(ex.getMessage().contains("Cannot create level in released or archived training definition"));
+    }
+
+    @Test
+    public void createLevelOnNonExistingDefinition() throws Exception {
         Exception ex = mvc.perform(post("/training-definitions/{definitionId}/levels/{levelType}", 100L, cz.muni.ics.kypo.training.persistence.model.enums.LevelType.ASSESSMENT))
                 .andExpect(status().isNotFound())
                 .andReturn().getResolvedException();
-        assertEquals(ex.getClass(), ResourceNotFoundException.class);
+        assertEquals(Objects.requireNonNull(ex).getClass(), ResourceNotFoundException.class);
         assertTrue(ex.getMessage().contains("Training definition with id: 100 not found"));
     }
+
+    @Test
+    public void switchStateOfDefinition_UNRELEASED_to_RELEASED() throws Exception {
+        trainingDefinitionRepository.save(unreleasedDefinition);
+        assertEquals(TDState.UNRELEASED.name(), unreleasedDefinition.getState().name());
+        mvc.perform(put("/training-definitions/{definitionId}/states/{state}", unreleasedDefinition.getId(), cz.muni.ics.kypo.training.persistence.model.enums.TDState.RELEASED))
+                .andExpect(status().isNoContent());
+        assertEquals(TDState.RELEASED.name(), unreleasedDefinition.getState().name());
+    }
+
+    @Test
+    public void switchStateOfDefinition_RELEASED_to_ARCHIVED() throws Exception {
+        trainingDefinitionRepository.save(releasedTrainingDefinition);
+        assertEquals(TDState.RELEASED.name(), releasedTrainingDefinition.getState().name());
+        mvc.perform(put("/training-definitions/{definitionId}/states/{state}", releasedTrainingDefinition.getId(), cz.muni.ics.kypo.training.persistence.model.enums.TDState.ARCHIVED))
+                .andExpect(status().isNoContent());
+        assertEquals(TDState.ARCHIVED.name(), releasedTrainingDefinition.getState().name());
+    }
+
+    @Test
+    public void switchStateOfDefinition_RELEASED_to_UNRELEASED_allowed() throws Exception {
+        trainingDefinitionRepository.save(releasedTrainingDefinition);
+        assertEquals(TDState.RELEASED.name(), releasedTrainingDefinition.getState().name());
+        mvc.perform(put("/training-definitions/{definitionId}/states/{state}", releasedTrainingDefinition.getId(), cz.muni.ics.kypo.training.persistence.model.enums.TDState.UNRELEASED))
+                .andExpect(status().isNoContent());
+        assertEquals(TDState.UNRELEASED.name(), releasedTrainingDefinition.getState().name());
+    }
+
+    @Test
+    public void switchStateOfDefinition_RELEASED_to_UNRELEASED_notAllowed() throws Exception {
+        trainingDefinitionRepository.save(releasedTrainingDefinition);
+        trainingInstance.setTrainingDefinition(releasedTrainingDefinition);
+        trainingInstanceRepository.save(trainingInstance);
+
+        assertEquals(TDState.RELEASED.name(), releasedTrainingDefinition.getState().name());
+        Exception ex =  mvc.perform(put("/training-definitions/{definitionId}/states/{state}", releasedTrainingDefinition.getId(), cz.muni.ics.kypo.training.persistence.model.enums.TDState.UNRELEASED))
+                .andExpect(status().isConflict())
+                .andReturn().getResolvedException();
+        assertEquals(TDState.RELEASED.name(), releasedTrainingDefinition.getState().name());
+        assertEquals(ConflictException.class, Objects.requireNonNull(ex).getClass());
+        assertTrue(ex.getMessage().contains("Cannot update training definition with already created training instance(s). Remove training " +
+                        "instance(s) before changing the state from released to unreleased training definition."));
+    }
+
+    @Test
+    public void switchStateOfDefinition_ARCHIVED_to_UNRELEASED() throws Exception {
+        trainingDefinitionRepository.save(archivedTrainingDefinition);
+
+        assertEquals(TDState.ARCHIVED.name(), archivedTrainingDefinition.getState().name());
+        Exception ex =  mvc.perform(put("/training-definitions/{definitionId}/states/{state}", archivedTrainingDefinition.getId(), cz.muni.ics.kypo.training.persistence.model.enums.TDState.UNRELEASED))
+                .andExpect(status().isConflict())
+                .andReturn().getResolvedException();
+        assertEquals(TDState.ARCHIVED.name(), archivedTrainingDefinition.getState().name());
+        assertEquals(ConflictException.class, Objects.requireNonNull(ex).getClass());
+        assertEquals("ServiceLayerException : Cannot switch from" + TDState.ARCHIVED.name() + " to " + TDState.UNRELEASED.name(), ex.getMessage());
+    }
+//TODO uncomment after repair of this error, change state from one to the same one will cause error, makes no sense
+//    @Test
+//    public void switchStateOfDefinition_UNRELEASED_to_UNRELEASED() throws Exception {
+//        trainingDefinitionRepository.save(unreleasedDefinition);
+//
+//        assertEquals(TDState.UNRELEASED.name(), unreleasedDefinition.getState().name());
+//        mvc.perform(put("/training-definitions/{definitionId}/states/{state}", unreleasedDefinition.getId(), cz.muni.ics.kypo.training.persistence.model.enums.TDState.UNRELEASED))
+//                .andExpect(status().isNoContent());
+//        assertEquals(TDState.UNRELEASED.name(), unreleasedDefinition.getState().name());
+//    }
 
 
     private static String convertObjectToJsonBytes(Object object) throws IOException {
@@ -862,9 +1202,25 @@ public class TrainingDefinitionsIT {
         return mapper.writeValueAsString(object);
     }
 
-    private void mockSpringSecurityContextForGet() {
+    private static String convertJsonBytesToString(String object) throws IOException {
+        ObjectMapper mapper = new ObjectMapper();
+        return mapper.readValue(object, String.class);
+    }
+
+    private static void assertTwoJsons(String object1, String object2) {
+        JSONAssert.assertEquals(object1, object2, false);
+    }
+
+    private void mockSpringSecurityContextForGet(List<String> roles) {
+        List<GrantedAuthority> authorities = new ArrayList<>();
+        for (String role: roles) {
+            authorities.add(new SimpleGrantedAuthority(role));
+        }
         JsonObject sub = new JsonObject();
-        sub.addProperty(AuthenticatedUserOIDCItems.SUB.getName(), "testDesigner");
+        sub.addProperty(AuthenticatedUserOIDCItems.SUB.getName(), "778932@muni.cz");
+        sub.addProperty(AuthenticatedUserOIDCItems.NAME.getName(), "Peter Černý");
+        sub.addProperty(AuthenticatedUserOIDCItems.FAMILY_NAME.getName(), "Černý");
+        sub.addProperty(AuthenticatedUserOIDCItems.GIVEN_NAME.getName(), "Peter");
         Authentication authentication = Mockito.mock(Authentication.class);
         OAuth2Authentication auth = Mockito.mock(OAuth2Authentication.class);
         SecurityContext securityContext = Mockito.mock(SecurityContext.class);
@@ -872,8 +1228,17 @@ public class TrainingDefinitionsIT {
         given(securityContext.getAuthentication()).willReturn(auth);
         given(auth.getUserAuthentication()).willReturn(auth);
         given(auth.getCredentials()).willReturn(sub);
-        given(auth.getAuthorities()).willReturn(Arrays.asList(new SimpleGrantedAuthority("ADMINISTRATOR")));
+        given(auth.getAuthorities()).willReturn(authorities);
         given(authentication.getDetails()).willReturn(auth);
+    }
+
+    private UserRef createUserRef(String login, String fullName, String givenName, String familyName) {
+        UserRef userRef = new UserRef();
+        userRef.setUserRefLogin(login);
+        userRef.setUserRefFullName(fullName);
+        userRef.setUserRefGivenName(givenName);
+        userRef.setUserRefFamilyName(familyName);
+        return userRef;
     }
 
 }
