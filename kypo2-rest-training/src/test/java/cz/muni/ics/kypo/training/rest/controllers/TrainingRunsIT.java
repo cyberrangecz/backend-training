@@ -2,9 +2,7 @@ package cz.muni.ics.kypo.training.rest.controllers;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import cz.muni.csirt.kypo.elasticsearch.service.AuditService;
 import cz.muni.ics.kypo.commons.security.enums.AuthenticatedUserOIDCItems;
 import cz.muni.ics.kypo.training.api.PageResultResource;
 import cz.muni.ics.kypo.training.api.dto.IsCorrectFlagDTO;
@@ -12,12 +10,10 @@ import cz.muni.ics.kypo.training.api.dto.hint.HintDTO;
 
 import cz.muni.ics.kypo.training.api.dto.hint.TakenHintDTO;
 import cz.muni.ics.kypo.training.api.dto.infolevel.InfoLevelDTO;
-import cz.muni.ics.kypo.training.api.dto.run.AccessTrainingRunDTO;
 import cz.muni.ics.kypo.training.api.dto.run.AccessedTrainingRunDTO;
 import cz.muni.ics.kypo.training.api.dto.run.TrainingRunByIdDTO;
 import cz.muni.ics.kypo.training.api.dto.run.TrainingRunDTO;
 
-import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceDTO;
 import cz.muni.ics.kypo.training.api.enums.RoleType;
 import cz.muni.ics.kypo.training.mapping.mapstruct.*;
 import cz.muni.ics.kypo.training.persistence.model.*;
@@ -31,7 +27,6 @@ import cz.muni.ics.kypo.training.rest.exceptions.BadRequestException;
 import cz.muni.ics.kypo.training.rest.exceptions.ConflictException;
 import cz.muni.ics.kypo.training.rest.exceptions.ResourceNotFoundException;
 import cz.muni.ics.kypo.training.rest.exceptions.ServiceUnavailableException;
-import cz.muni.ics.kypo.training.service.impl.AuditEventsService;
 import cz.muni.ics.kypo.training.utils.SandboxInfo;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -40,7 +35,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.*;
-import org.skyscreamer.jsonassert.JSONAssert;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -48,8 +42,6 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.querydsl.SimpleEntityPathResolver;
 import org.springframework.data.querydsl.binding.QuerydslBindingsFactory;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
@@ -82,8 +74,6 @@ import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.BDDMockito.then;
-import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -279,6 +269,7 @@ public class TrainingRunsIT {
         gameLevel1.setHints(Set.of(hint));
         gameLevel1.setTrainingDefinition(trainingDefinition);
         gameLevel1.setOrder(1);
+        gameLevel1.setIncorrectFlagLimit(4);
         gameLevelRepository.save(gameLevel1);
 
         trainingRun1 = new TrainingRun();
@@ -667,6 +658,42 @@ public class TrainingRunsIT {
     }
 
     @Test
+    public void isCorrectFlagWrongFlagFlagCountSameAsFlagLimit() throws Exception {
+        trainingRun1.setIncorrectFlagCount(gameLevel1.getIncorrectFlagLimit());
+        trainingRunRepository.save(trainingRun1);
+
+        isCorrectFlagDTO.setRemainingAttempts(0);
+        isCorrectFlagDTO.setCorrect(false);
+        mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_ADMINISTRATOR.name()));
+
+        assertFalse(trainingRun1.isLevelAnswered());
+        MockHttpServletResponse response = mvc.perform(get("/training-runs/{runId}/is-correct-flag", trainingRun1.getId())
+                .param("flag", "wrongFlag"))
+                .andExpect(status().isOk())
+                .andReturn().getResponse();
+        assertEquals(isCorrectFlagDTO, mapper.readValue(response.getContentAsString(), IsCorrectFlagDTO.class));
+        assertFalse(trainingRun1.isLevelAnswered());
+    }
+
+    @Test
+    public void isCorrectFlagWrongFlagFlagCountLessOneThanFlagCount() throws Exception {
+        trainingRun1.setIncorrectFlagCount(gameLevel1.getIncorrectFlagLimit()-1);
+        trainingRunRepository.save(trainingRun1);
+
+        isCorrectFlagDTO.setRemainingAttempts(0);
+        isCorrectFlagDTO.setCorrect(false);
+        mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_ADMINISTRATOR.name()));
+
+        assertFalse(trainingRun1.isLevelAnswered());
+        MockHttpServletResponse response = mvc.perform(get("/training-runs/{runId}/is-correct-flag", trainingRun1.getId())
+                .param("flag", "wrongFlag"))
+                .andExpect(status().isOk())
+                .andReturn().getResponse();
+        assertEquals(isCorrectFlagDTO, mapper.readValue(response.getContentAsString(), IsCorrectFlagDTO.class));
+        assertFalse(trainingRun1.isLevelAnswered());
+    }
+
+    @Test
     public void isCorrectFlagNoGameLevel() throws Exception {
         trainingRunRepository.save(trainingRun2);
         mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_ADMINISTRATOR.name()));
@@ -793,17 +820,16 @@ public class TrainingRunsIT {
     }
 
 
-    //-TODO check if training run is not archived when resume training run and then uncomment this test
-//    @Test
-//    public void resumeArchivedTrainingRun() throws Exception {
-//        trainingRun2.setState(TRState.ARCHIVED);
-//        trainingRunRepository.save(trainingRun2);
-//        Exception ex = mvc.perform(get("/training-runs/{runId}/resumption", trainingRun2.getId()))
-//                .andExpect(status().isConflict())
-//                .andReturn().getResolvedException();
-//        assertEquals(ConflictException.class, Objects.requireNonNull(ex).getClass());
-//        assertEquals("ServiceLayerException : Cannot resume finished training run.", ex.getLocalizedMessage());
-//    }
+    @Test
+    public void resumeArchivedTrainingRun() throws Exception {
+        trainingRun2.setState(TRState.ARCHIVED);
+        trainingRunRepository.save(trainingRun2);
+        Exception ex = mvc.perform(get("/training-runs/{runId}/resumption", trainingRun2.getId()))
+                .andExpect(status().isConflict())
+                .andReturn().getResolvedException();
+        assertEquals(ConflictException.class, Objects.requireNonNull(ex).getClass());
+        assertEquals("ServiceLayerException : Cannot resume finished training run.", ex.getLocalizedMessage());
+    }
 
     @Test
     public void resumeTrainingRunNotFound() throws Exception {
@@ -831,7 +857,7 @@ public class TrainingRunsIT {
                 .andExpect(status().isConflict())
                 .andReturn().getResolvedException();
         assertEquals(ConflictException.class, Objects.requireNonNull(ex).getClass());
-        assertEquals("ServiceLayerException : Cannot finish training run because current level is not last or is not answered.", ex.getLocalizedMessage());
+        assertEquals("ServiceLayerException : Cannot finish training run because current level is not last.", ex.getLocalizedMessage());
     }
 
     @Test
@@ -843,7 +869,7 @@ public class TrainingRunsIT {
                 .andExpect(status().isConflict())
                 .andReturn().getResolvedException();
         assertEquals(ConflictException.class, Objects.requireNonNull(ex).getClass());
-        assertEquals("ServiceLayerException : Cannot finish training run because current level is not last or is not answered.", ex.getLocalizedMessage());
+        assertEquals("ServiceLayerException : Cannot finish training run because current level is not answered.", ex.getLocalizedMessage());
     }
 
     @Test

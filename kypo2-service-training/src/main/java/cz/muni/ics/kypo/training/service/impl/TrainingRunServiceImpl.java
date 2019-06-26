@@ -198,7 +198,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
         LOG.debug("resumeTrainingRun({})", trainingRunId);
         Assert.notNull(trainingRunId, MUST_NOT_BE_NULL);
         TrainingRun trainingRun = findByIdWithLevel(trainingRunId);
-        if (trainingRun.getState().equals(TRState.FINISHED)) {
+        if (trainingRun.getState().equals(TRState.FINISHED) || trainingRun.getState().equals(TRState.ARCHIVED)) {
             throw new ServiceLayerException("Cannot resume finished training run.", ErrorCode.RESOURCE_CONFLICT);
         }
         if (trainingRun.getTrainingInstance().getEndTime().isBefore(LocalDateTime.now(Clock.systemUTC()))) {
@@ -286,11 +286,13 @@ public class TrainingRunServiceImpl implements TrainingRunService {
                 auditEventsService.auditCorrectFlagSubmittedAction(trainingRun, flag);
                 auditEventsService.auditLevelCompletedAction(trainingRun);
                 return true;
+            } else if (trainingRun.getIncorrectFlagCount() == ((GameLevel) level).getIncorrectFlagLimit()) {
+                auditEventsService.auditWrongFlagSubmittedAction(trainingRun, flag);
             } else {
                 trainingRun.setIncorrectFlagCount(trainingRun.getIncorrectFlagCount() + 1);
                 auditEventsService.auditWrongFlagSubmittedAction(trainingRun, flag);
-                return false;
             }
+            return false;
         } else {
             throw new ServiceLayerException("Current level is not game level and does not have flag.", ErrorCode.WRONG_LEVEL_TYPE);
         }
@@ -375,9 +377,11 @@ public class TrainingRunServiceImpl implements TrainingRunService {
         Assert.notNull(trainingRunId, MUST_NOT_BE_NULL);
         TrainingRun trainingRun = findById(trainingRunId);
         int maxOrder = abstractLevelRepository.getCurrentMaxOrder(trainingRun.getCurrentLevel().getTrainingDefinition().getId());
-        //TODO rozdelit na dva pripady
-        if (trainingRun.getCurrentLevel().getOrder() != maxOrder || !trainingRun.isLevelAnswered()) {
-            throw new ServiceLayerException("Cannot finish training run because current level is not last or is not answered.", ErrorCode.RESOURCE_CONFLICT);
+        if (trainingRun.getCurrentLevel().getOrder() != maxOrder) {
+            throw new ServiceLayerException("Cannot finish training run because current level is not last.", ErrorCode.RESOURCE_CONFLICT);
+        }
+        if(!trainingRun.isLevelAnswered()) {
+            throw new ServiceLayerException("Cannot finish training run because current level is not answered.", ErrorCode.RESOURCE_CONFLICT);
         }
 
         trainingRun.setState(TRState.FINISHED);
@@ -429,7 +433,6 @@ public class TrainingRunServiceImpl implements TrainingRunService {
         responsesJSON.put(responseToCurrentAssessment);
         trainingRun.setAssessmentResponses(responsesJSON.toString());
         trainingRun.setLevelAnswered(true);
-        //TODO what is answers in audit action
         auditEventsService.auditAssessmentAnswersAction(trainingRun, responsesAsString);
         auditEventsService.auditLevelCompletedAction(trainingRun);
     }

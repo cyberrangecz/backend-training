@@ -1,5 +1,10 @@
 package cz.muni.ics.kypo.training.facade;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import cz.muni.ics.kypo.training.api.dto.export.ExportTrainingDefinitionAndLevelsDTO;
+import cz.muni.ics.kypo.training.api.dto.export.FileToReturnDTO;
 import cz.muni.ics.kypo.training.api.dto.imports.AssessmentLevelImportDTO;
 import cz.muni.ics.kypo.training.api.dto.imports.GameLevelImportDTO;
 import cz.muni.ics.kypo.training.api.dto.imports.ImportTrainingDefinitionDTO;
@@ -20,12 +25,19 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Primary;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import javax.inject.Inject;
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -57,6 +69,9 @@ public class ExportImportFacadeTest {
     @Autowired
     private TrainingDefinitionMapperImpl trainingDefinitionMapper;
 
+
+    @Mock
+    private ObjectMapper objectMapper;
     @Mock
     private TrainingDefinitionService trainingDefinitionService;
     @Mock
@@ -78,8 +93,7 @@ public class ExportImportFacadeTest {
     public void init() {
         MockitoAnnotations.initMocks(this);
         exportImportFacade = new ExportImportFacadeImpl(exportImportService, exportImportMapper, gameLevelMapper,
-                infoLevelMapper, assessmentLevelMapper, trainingDefinitionService, trainingDefinitionMapper);
-
+                infoLevelMapper, assessmentLevelMapper, trainingDefinitionService, trainingDefinitionMapper, objectMapper);
         assessmentLevel = new AssessmentLevel();
         assessmentLevel.setId(1L);
         assessmentLevel.setTitle("Assessment title");
@@ -149,19 +163,30 @@ public class ExportImportFacadeTest {
         trainingRun.setState(TRState.RUNNING);
     }
 
-    //TODO write better tests to check all attributes
-  /*
 	@Test
-    public void dbExport() {
+    public void dbExport() throws Exception {
         given(exportImportService.findById(trainingDefinition.getId())).willReturn(trainingDefinition);
         given(trainingDefinitionService.findLevelById(infoLevel.getId())).willReturn(infoLevel);
         given(trainingDefinitionService.findLevelById(gameLevel.getId())).willReturn(gameLevel);
         given(trainingDefinitionService.findLevelById(assessmentLevel.getId())).willReturn(assessmentLevel);
+        ExportTrainingDefinitionAndLevelsDTO exportedTrainingDefinition = exportImportMapper.mapToDTO(trainingDefinition);
+        given(objectMapper.writeValueAsBytes(any(ExportTrainingDefinitionAndLevelsDTO.class))).willReturn(convertObjectToJsonBytes(exportedTrainingDefinition));
         FileToReturnDTO export = exportImportFacade.dbExport(trainingDefinition.getId());
 
+        assertEquals(exportedTrainingDefinition.toString(), convertJsonBytesToString(export.getContent()).toString());
         assertEquals(trainingDefinition.getTitle(), export.getTitle());
     }
-   */
+
+    private static ExportTrainingDefinitionAndLevelsDTO convertJsonBytesToString(byte[] object) throws IOException {
+        ObjectMapper mapper = new ObjectMapper();
+        return mapper.readValue(object, ExportTrainingDefinitionAndLevelsDTO.class);
+    }
+
+    private static byte[] convertObjectToJsonBytes(Object object) throws IOException {
+        ObjectMapper mapper = new ObjectMapper();
+        return mapper.writeValueAsBytes(object);
+    }
+
     @Test
     public void dbImport() {
         //given(exportImportService.createLevel(infoLevelMapper.mapImportToEntity(importInfoLevelDTO), any(TrainingDefinition.class))).willReturn(3L);

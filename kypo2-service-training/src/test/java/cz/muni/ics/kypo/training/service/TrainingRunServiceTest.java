@@ -251,25 +251,22 @@ public class TrainingRunServiceTest {
 
     }
 
-    //TODO FIX error with allocating sandboxed
+    @Test
+    public void accessTrainingRun() {
+        mockSpringSecurityContextForGet();
 
-//    @Test
-//    public void accessTrainingRun() {
-//        mockSpringSecurityContextForGet();
-//
-//        trainingInstance1.setTrainingDefinition(trainingDefinition);
-//        given(trainingDefinitionRepository.save(any(TrainingDefinition.class))).willReturn(trainingDefinition);
-//        given(trainingInstanceRepository.findAllByStartTimeAfterAndEndTimeBefore(any(LocalDateTime.class))).willReturn(Arrays.asList(trainingInstance1));
-//        given(trainingRunRepository.findFreeSandboxesOfTrainingInstance(trainingInstance1.getId())).willReturn(new HashSet<>(Arrays.asList(sandboxInstanceRef1)));
-//        given(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
-//                willReturn(new ResponseEntity<List<SandboxInfo>>(new ArrayList<>(Arrays.asList(sandboxInfo)), HttpStatus.OK));
-//        given(abstractLevelRepository.findById(trainingInstance1.getTrainingDefinition().getStartingLevel())).willReturn(Optional.of(gameLevel));
-//        given(participantRefRepository.findUserByUserRefLogin(participantRef.getUserRefLogin())).willReturn(Optional.of(participantRef));
-//        given(participantRefRepository.save(new UserRef(participantRef.getUserRefLogin()))).willReturn(participantRef);
-//        given(trainingRunRepository.save(any(TrainingRun.class))).willReturn(trainingRun1);
-//        TrainingRun trainingRun = trainingRunService.accessTrainingRun(trainingInstance1.getAccessToken());
-//        assertEquals(trainingRun1, trainingRun);
-//    }
+        trainingInstance1.setTrainingDefinition(trainingDefinition);
+        given(trainingDefinitionRepository.save(any(TrainingDefinition.class))).willReturn(trainingDefinition);
+        given(trainingInstanceRepository.findByStartTimeAfterAndEndTimeBeforeAndAccessToken(any(LocalDateTime.class), eq(trainingInstance1.getAccessToken()))).willReturn(Optional.ofNullable(trainingInstance1));
+        given(trainingRunRepository.findFreeSandboxesOfTrainingInstance(trainingInstance1.getId())).willReturn(new HashSet<>(Arrays.asList(sandboxInstanceRef1)));
+        given(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
+                willReturn(new ResponseEntity<List<SandboxInfo>>(new ArrayList<>(Arrays.asList(sandboxInfo)), HttpStatus.OK));
+        given(abstractLevelRepository.findAllLevelsByTrainingDefinitionId(trainingInstance1.getTrainingDefinition().getId())).willReturn(new ArrayList<>(List.of(gameLevel, infoLevel)));
+        given(participantRefRepository.save(new UserRef(participantRef.getUserRefLogin()))).willReturn(participantRef);
+        given(trainingRunRepository.save(any(TrainingRun.class))).willReturn(trainingRun1);
+        TrainingRun trainingRun = trainingRunService.accessTrainingRun(trainingInstance1.getAccessToken());
+        assertEquals(trainingRun1, trainingRun);
+    }
 
     @Test
     public void accessTrainingRunWithEmptyAccessToken() {
@@ -387,7 +384,6 @@ public class TrainingRunServiceTest {
         trainingRunService.getSolution(trainingRun2.getId());
     }
 
-    //TODO Boris please fix this test find out why it does not work..
     @Test
     public void getHint() {
         mockSpringSecurityContextForGet();
@@ -412,23 +408,6 @@ public class TrainingRunServiceTest {
         given(trainingRunRepository.findByIdWithLevel(trainingRun2.getId())).willReturn(Optional.of(trainingRun2));
         trainingRunService.getHint(trainingRun2.getId(), hint1.getId());
     }
-
-//    @Test
-//    public void getLevelOrder() {
-//        given(abstractLevelRepository.findById(1L)).willReturn(Optional.ofNullable(gameLevel));
-//        given(abstractLevelRepository.findById(2L)).willReturn(Optional.ofNullable(infoLevel));
-//
-//        int order = trainingRunService.getLevelOrder(1L, 2L);
-//        assertEquals(1, order);
-//    }
-//
-//    @Test
-//    public void getLevelOrderWrongFirstLevel() {
-//        given(abstractLevelRepository.findById(1L)).willReturn(Optional.empty());
-//        thrown.expect(ServiceLayerException.class);
-//        thrown.expectMessage("Level with id " + 1L + " not found.");
-//        trainingRunService.getLevelOrder(1L, 2L);
-//    }
 
     @Test
     public void findAll() {

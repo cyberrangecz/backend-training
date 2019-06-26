@@ -464,17 +464,17 @@ public class TrainingDefinitionsRestControllerTest {
         assertEquals(convertObjectToJsonBytes(valueTd), result.getContentAsString());
     }
 
-    //TODO check why this not work..
-//    @Test
-//    public void createLevel() throws Exception {
-//        given(trainingDefinitionFacade.createGameLevel(any(Long.class))).willReturn(basicLevelInfoDTO);
-//        String valueTd = convertObjectToJsonBytes(basicLevelInfoDTO);
-//        given(objectMapper.writeValueAsString(any(Object.class))).willReturn(valueTd);
-//        MockHttpServletResponse result = mockMvc.perform(post("/training-definitions/{definitionId}/levels/{levelType}", trainingDefinition1.getId(), LevelType.GAME_LEVEL)
-//                .contentType(MediaType.APPLICATION_JSON_VALUE))
-//                .andExpect(status().isCreated())
-//                .andReturn().getResponse();
-//    }
+    @Test
+    public void createLevel() throws Exception {
+        given(trainingDefinitionFacade.createGameLevel(any(Long.class))).willReturn(basicLevelInfoDTO);
+        String valueTd = convertObjectToJsonBytes(basicLevelInfoDTO);
+        given(objectMapper.writeValueAsString(any(Object.class))).willReturn(valueTd);
+        MockHttpServletResponse result = mockMvc.perform(post("/training-definitions/{definitionId}/levels/{levelType}", trainingDefinition1.getId(), cz.muni.ics.kypo.training.persistence.model.enums.LevelType.GAME)
+                .contentType(MediaType.APPLICATION_JSON_VALUE))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse();
+        assertEquals(convertObjectToJsonBytes(valueTd), result.getContentAsString());
+    }
 
 
     @Test

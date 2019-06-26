@@ -43,14 +43,12 @@ public class ExportImportFacadeImpl implements ExportImportFacade {
     private InfoLevelMapper infoLevelMapper;
     private TrainingDefinitionService trainingDefinitionService;
     private TrainingDefinitionMapper trainingDefinitionMapper;
-
-    @Autowired
     private ObjectMapper objectMapper;
 
     @Autowired
     public ExportImportFacadeImpl(ExportImportService exportImportService, ExportImportMapper exportImportMapper, GameLevelMapper gameLevelMapper,
                                   InfoLevelMapper infoLevelMapper, AssessmentLevelMapper assessmentLevelMapper, TrainingDefinitionService trainingDefinitionService,
-                                  TrainingDefinitionMapper trainingDefinitionMapper) {
+                                  TrainingDefinitionMapper trainingDefinitionMapper, ObjectMapper objectMapper) {
         this.exportImportService = exportImportService;
         this.exportImportMapper = exportImportMapper;
         this.gameLevelMapper = gameLevelMapper;
@@ -58,6 +56,7 @@ public class ExportImportFacadeImpl implements ExportImportFacade {
         this.assessmentLevelMapper = assessmentLevelMapper;
         this.trainingDefinitionService = trainingDefinitionService;
         this.trainingDefinitionMapper = trainingDefinitionMapper;
+        this.objectMapper = objectMapper;
     }
 
     @Override
