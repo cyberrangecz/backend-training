@@ -83,10 +83,9 @@ public interface TrainingInstanceService {
      * This method is annotated with @Transactional and is asynchronous
      *
      * @param trainingInstance   which sandbox should be deleted
-     * @param sandboxInstanceRef sandbox to be removed from training instance and deleted from open stack
-     * @throws ServiceLayerException if instance is not found
+     * @param idOfSandboxInstanceRefToDelete id of sandbox to be removed from training instance and deleted from open stack
      */
-    void deleteSandbox(TrainingInstance trainingInstance, SandboxInstanceRef sandboxInstanceRef);
+    void deleteSandbox(TrainingInstance trainingInstance, Long idOfSandboxInstanceRefToDelete);
 
     /**
      * Finds all Training Runs of specific Training Instance.

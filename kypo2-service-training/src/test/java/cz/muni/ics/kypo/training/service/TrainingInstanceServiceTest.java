@@ -6,11 +6,8 @@ import com.querydsl.core.types.dsl.PathBuilder;
 import cz.muni.ics.kypo.commons.security.enums.AuthenticatedUserOIDCItems;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.persistence.model.*;
-import cz.muni.ics.kypo.training.persistence.repository.AccessTokenRepository;
-import cz.muni.ics.kypo.training.persistence.repository.TrainingInstanceRepository;
+import cz.muni.ics.kypo.training.persistence.repository.*;
 
-import cz.muni.ics.kypo.training.persistence.repository.TrainingRunRepository;
-import cz.muni.ics.kypo.training.persistence.repository.UserRefRepository;
 import cz.muni.ics.kypo.training.service.impl.SecurityService;
 import cz.muni.ics.kypo.training.service.impl.TrainingInstanceServiceImpl;
 import cz.muni.ics.kypo.training.utils.SandboxInfo;
@@ -70,6 +67,8 @@ public class TrainingInstanceServiceTest {
     @Mock
     private UserRefRepository organizerRefRepository;
     @Mock
+    private SandboxInstanceRefRepository sandboxInstanceRefRepository;
+    @Mock
     private SecurityService securityService;
 
     @Mock
@@ -88,7 +87,7 @@ public class TrainingInstanceServiceTest {
     public void init() {
         MockitoAnnotations.initMocks(this);
         trainingInstanceService = new TrainingInstanceServiceImpl(trainingInstanceRepository, accessTokenRepository,
-                trainingRunRepository, organizerRefRepository, restTemplate, securityService);
+                trainingRunRepository, organizerRefRepository, restTemplate, securityService, sandboxInstanceRefRepository);
 
         trainingInstance1 = new TrainingInstance();
         trainingInstance1.setId(1L);
@@ -351,18 +350,18 @@ public class TrainingInstanceServiceTest {
         trainingInstance1.addSandboxInstanceRef(sandboxInstanceRef1);
         trainingInstance1.addSandboxInstanceRef(sandboxInstanceRef2);
         given(trainingInstanceRepository.findById(trainingInstance1.getId())).willReturn(Optional.ofNullable(trainingInstance1));
-
+        given(sandboxInstanceRefRepository.findBySandboxInstanceRefId(sandboxInstanceRef1.getSandboxInstanceRef())).willReturn(Optional.ofNullable(sandboxInstanceRef1));
         given(restTemplate.exchange(anyString(), eq(HttpMethod.DELETE), any(HttpEntity.class), eq(String.class))).
                 willReturn(new ResponseEntity<String>("", HttpStatus.OK));
-        trainingInstanceService.deleteSandbox(trainingInstance1, sandboxInstanceRef1);
-        assertTrue(!trainingInstance1.getSandboxInstanceRefs().contains(sandboxInstanceRef1));
+        trainingInstanceService.deleteSandbox(trainingInstance1, sandboxInstanceRef1.getSandboxInstanceRef());
+        assertFalse(trainingInstance1.getSandboxInstanceRefs().contains(sandboxInstanceRef1));
     }
 
     @Test
     public void createPoolForSandboxes() {
         when(sandboxPoolInfo.getId()).thenReturn(4L);
 
-        given(trainingInstanceRepository.findByIdIncludingDefinition(trainingInstance2.getId())).willReturn(Optional.ofNullable(trainingInstance2));
+        given(trainingInstanceRepository.findById(trainingInstance2.getId())).willReturn(Optional.ofNullable(trainingInstance2));
         given(restTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(SandboxPoolInfo.class))).
                 willReturn(new ResponseEntity<SandboxPoolInfo>(sandboxPoolInfo, HttpStatus.OK));
         Long poolId = trainingInstanceService.createPoolForSandboxes(trainingInstance2.getId());
@@ -372,7 +371,7 @@ public class TrainingInstanceServiceTest {
 
     @Test
     public void createPoolWithErrorFromOpenStack() {
-        given(trainingInstanceRepository.findByIdIncludingDefinition(trainingInstance2.getId())).willReturn(Optional.ofNullable(trainingInstance2));
+        given(trainingInstanceRepository.findById(trainingInstance2.getId())).willReturn(Optional.ofNullable(trainingInstance2));
         given(restTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(SandboxPoolInfo.class))).
                 willReturn(new ResponseEntity<SandboxPoolInfo>(sandboxPoolInfo, HttpStatus.CONFLICT));
         thrown.expect(ServiceLayerException.class);

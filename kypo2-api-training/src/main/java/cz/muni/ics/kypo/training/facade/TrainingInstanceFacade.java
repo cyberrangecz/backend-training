@@ -88,7 +88,7 @@ public interface TrainingInstanceFacade {
      *
      * @param instanceId id of training instance for which failed sandboxes will be deleted and reallocated
      * @param sandboxIds ids of sandboxes that will be deleted
-     * @throws FacadeLayerException
+     * @throws FacadeLayerException when Training Instance with instanceId is not found.
      */
     void deleteSandboxes(Long instanceId, Set<Long> sandboxIds);
 
