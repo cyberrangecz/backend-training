@@ -1189,16 +1189,16 @@ public class TrainingDefinitionsIT {
         assertEquals(ConflictException.class, Objects.requireNonNull(ex).getClass());
         assertEquals("ServiceLayerException : Cannot switch from" + TDState.ARCHIVED.name() + " to " + TDState.UNRELEASED.name(), ex.getMessage());
     }
-//TODO uncomment after repair of this error, change state from one to the same one will cause error, makes no sense
-//    @Test
-//    public void switchStateOfDefinition_UNRELEASED_to_UNRELEASED() throws Exception {
-//        trainingDefinitionRepository.save(unreleasedDefinition);
-//
-//        assertEquals(TDState.UNRELEASED.name(), unreleasedDefinition.getState().name());
-//        mvc.perform(put("/training-definitions/{definitionId}/states/{state}", unreleasedDefinition.getId(), cz.muni.ics.kypo.training.persistence.model.enums.TDState.UNRELEASED))
-//                .andExpect(status().isNoContent());
-//        assertEquals(TDState.UNRELEASED.name(), unreleasedDefinition.getState().name());
-//    }
+
+    @Test
+    public void switchStateOfDefinition_UNRELEASED_to_UNRELEASED() throws Exception {
+        trainingDefinitionRepository.save(unreleasedDefinition);
+
+        assertEquals(TDState.UNRELEASED.name(), unreleasedDefinition.getState().name());
+        mvc.perform(put("/training-definitions/{definitionId}/states/{state}", unreleasedDefinition.getId(), cz.muni.ics.kypo.training.persistence.model.enums.TDState.UNRELEASED))
+                .andExpect(status().isNoContent());
+        assertEquals(TDState.UNRELEASED.name(), unreleasedDefinition.getState().name());
+    }
 
 
     private static String convertObjectToJsonBytes(Object object) throws IOException {

@@ -494,7 +494,9 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     public void switchState(Long definitionId, cz.muni.ics.kypo.training.api.enums.TDState state) {
         LOG.debug("unreleaseDefinition({})", definitionId);
         TrainingDefinition trainingDefinition = findById(definitionId);
-
+        if(trainingDefinition.getState().name().equals(state.name())) {
+            return;
+        }
         switch (trainingDefinition.getState()) {
             case UNRELEASED:
                 if (state.equals(cz.muni.ics.kypo.training.api.enums.TDState.RELEASED))
