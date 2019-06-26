@@ -8,10 +8,7 @@ import cz.muni.ics.kypo.training.exceptions.ErrorCode;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.model.enums.TRState;
-import cz.muni.ics.kypo.training.persistence.repository.AccessTokenRepository;
-import cz.muni.ics.kypo.training.persistence.repository.TrainingInstanceRepository;
-import cz.muni.ics.kypo.training.persistence.repository.TrainingRunRepository;
-import cz.muni.ics.kypo.training.persistence.repository.UserRefRepository;
+import cz.muni.ics.kypo.training.persistence.repository.*;
 import cz.muni.ics.kypo.training.service.TrainingInstanceService;
 import cz.muni.ics.kypo.training.utils.SandboxInfo;
 import cz.muni.ics.kypo.training.utils.SandboxPoolInfo;
@@ -56,17 +53,19 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
     private UserRefRepository organizerRefRepository;
     private RestTemplate restTemplate;
     private SecurityService securityService;
+    private SandboxInstanceRefRepository sandboxInstanceRefRepository;
 
     @Autowired
     public TrainingInstanceServiceImpl(TrainingInstanceRepository trainingInstanceRepository, AccessTokenRepository accessTokenRepository,
                                        TrainingRunRepository trainingRunRepository, UserRefRepository organizerRefRepository,
-                                       RestTemplate restTemplate, SecurityService securityService) {
+                                       RestTemplate restTemplate, SecurityService securityService, SandboxInstanceRefRepository sandboxInstanceRefRepository) {
         this.trainingInstanceRepository = trainingInstanceRepository;
         this.trainingRunRepository = trainingRunRepository;
         this.accessTokenRepository = accessTokenRepository;
         this.organizerRefRepository = organizerRefRepository;
         this.restTemplate = restTemplate;
         this.securityService = securityService;
+        this.sandboxInstanceRefRepository = sandboxInstanceRefRepository;
     }
 
     @Override
@@ -274,17 +273,21 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
     @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
             "or @securityService.isOrganizerOfGivenTrainingInstance(#trainingInstance.id)")
     @Async
-    public void deleteSandbox(TrainingInstance trainingInstance, SandboxInstanceRef sandboxRefToDelete) {
-        Optional<TrainingRun> trainingRun = trainingRunRepository.findBySandboxInstanceRef(sandboxRefToDelete);
-        if(trainingRun.isPresent()) {
-            trainingRun.get().setState(TRState.ARCHIVED);
-            trainingRunRepository.deleteSandboxInstanceFromTrainingRun(sandboxRefToDelete);
+    public void deleteSandbox(TrainingInstance trainingInstance, Long idOfSandboxRefToDelete) {
+        trainingInstanceRepository.save(trainingInstance);
+        Optional<SandboxInstanceRef> optionalSandboxInstanceRefToDelete = sandboxInstanceRefRepository.findBySandboxInstanceRefId(idOfSandboxRefToDelete);
+        if(optionalSandboxInstanceRefToDelete.isPresent()) {
+            Optional<TrainingRun> trainingRun = trainingRunRepository.findBySandboxInstanceRef(optionalSandboxInstanceRefToDelete.get());
+            if(trainingRun.isPresent()) {
+                trainingRun.get().setState(TRState.ARCHIVED);
+                trainingRunRepository.deleteSandboxInstanceFromTrainingRun(optionalSandboxInstanceRefToDelete.get());
+            }
+            trainingInstance.removeSandboxInstanceRef(optionalSandboxInstanceRefToDelete.get());
         }
-        trainingInstance.getSandboxInstanceRefs().remove(sandboxRefToDelete);
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.setContentType(MediaType.APPLICATION_JSON);
         try {
-            ResponseEntity<String> responseOnDelete = restTemplate.exchange(kypoOpenStackURI + "/sandboxes/" + sandboxRefToDelete.getSandboxInstanceRef() + "/",
+            ResponseEntity<String> responseOnDelete = restTemplate.exchange(kypoOpenStackURI + "/sandboxes/" + idOfSandboxRefToDelete + "/",
                     HttpMethod.DELETE, new HttpEntity<>(httpHeaders), String.class);
             if (!responseOnDelete.getStatusCode().is2xxSuccessful()) {
                 LOG.error("Error from OpenStack while deleting sandbox.");

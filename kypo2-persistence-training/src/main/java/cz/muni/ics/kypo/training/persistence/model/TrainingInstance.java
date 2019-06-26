@@ -224,7 +224,7 @@ public class TrainingInstance implements Serializable {
      * @return the sandbox instance refs
      */
     public Set<SandboxInstanceRef> getSandboxInstanceRefs() {
-        return sandboxInstanceRefs;
+        return new HashSet<>(sandboxInstanceRefs);
     }
 
     /**
@@ -244,6 +244,15 @@ public class TrainingInstance implements Serializable {
     public void addSandboxInstanceRef(SandboxInstanceRef sandboxInstanceRef) {
         this.sandboxInstanceRefs.add(sandboxInstanceRef);
         sandboxInstanceRef.setTrainingInstance(this);
+    }
+
+    /**
+     * Remove DB reference of sandbox instance from the set of DB references of sandbox instances associated with Training instance
+     *
+     * @param sandboxInstanceRef the sandbox instance ref
+     */
+    public void removeSandboxInstanceRef(SandboxInstanceRef sandboxInstanceRef) {
+        this.sandboxInstanceRefs.remove(sandboxInstanceRef);
     }
 
     @Override

@@ -2,6 +2,7 @@ package cz.muni.ics.kypo.training.persistence.model;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.util.Objects;
 
 /**
  * Class representing DB reference for sandbox instance
@@ -82,5 +83,17 @@ public class SandboxInstanceRef implements Serializable {
                 "id=" + id +
                 ", sandboxInstanceRefId=" + sandboxInstanceRefId +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object object) {
+        if (!(object instanceof SandboxInstanceRef)) return false;
+        SandboxInstanceRef that = (SandboxInstanceRef) object;
+        return Objects.equals(sandboxInstanceRefId, that.sandboxInstanceRefId);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getId(), sandboxInstanceRefId);
     }
 }

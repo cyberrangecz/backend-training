@@ -76,7 +76,8 @@ import java.time.LocalDateTime;
 import java.util.*;
 
 import static org.junit.Assert.*;
-import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -116,6 +117,9 @@ public class TrainingDefinitionsIT {
     private GameLevelRepository gameLevelRepository;
     @Autowired
     private InfoLevelRepository infoLevelRepository;
+    @Autowired
+    private SandboxInstanceRefRepository sandboxInstanceRefRepository;
+
     @Autowired
     private AssessmentLevelRepository assessmentLevelRepository;
     @Autowired

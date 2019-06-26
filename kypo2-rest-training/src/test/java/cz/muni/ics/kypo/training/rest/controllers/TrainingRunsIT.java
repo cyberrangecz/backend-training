@@ -72,6 +72,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.client.RestTemplate;
 
+import javax.mail.Service;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
@@ -117,6 +118,8 @@ public class TrainingRunsIT {
     private GameLevelRepository gameLevelRepository;
     @Autowired
     private AssessmentLevelRepository assessmentLevelRepository;
+    @Autowired
+    private SandboxInstanceRefRepository sandboxInstanceRefRepository;
     @Autowired
     private HintRepository hintRepository;
     @Autowired
@@ -425,22 +428,20 @@ public class TrainingRunsIT {
         assertEquals("ServiceLayerException : No starting level available for this training definition.", exception.getMessage());
     }
 
-    //TODO fix test when create sandboxInstanceRefRepository
-//    @Test
-//    public void accessTrainingRunNoFreeSandboxes() throws Exception {
-//        trainingInstance.getSandboxInstanceRefs().remove(sandboxInstanceRef1);
-//        trainingInstance.getSandboxInstanceRefs().remove(sandboxInstanceRef2);
-//        trainingInstanceRepository.save(trainingInstance);
-//        given(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
-//                willReturn(new ResponseEntity<List<SandboxInfo>>(new ArrayList<>(List.of(sandboxInfo1)), HttpStatus.OK));
-//        mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_TRAINEE.name()));
-//        Exception exception = mvc.perform(post("/training-runs")
-//                .param("accessToken", "pass-1234"))
-//                .andExpect(status().isNotFound())
-//                .andReturn().getResolvedException();
-//        assertEquals(ResourceNotFoundException.class, Objects.requireNonNull(exception).getClass());
-//        assertEquals("ServiceLayerException : There is no available sandbox, wait a minute and try again.", exception.getMessage());
-//    }
+
+    @Test
+    public void accessTrainingRunNoFreeSandboxes() throws Exception {
+        sandboxInstanceRefRepository.deleteAllInBatch();
+        given(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
+                willReturn(new ResponseEntity<List<SandboxInfo>>(new ArrayList<>(List.of(sandboxInfo1)), HttpStatus.OK));
+        mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_TRAINEE.name()));
+        Exception exception = mvc.perform(post("/training-runs")
+                .param("accessToken", "pass-1234"))
+                .andExpect(status().isServiceUnavailable())
+                .andReturn().getResolvedException();
+        assertEquals(ServiceUnavailableException.class, Objects.requireNonNull(exception).getClass());
+        assertEquals("ServiceLayerException : There is no available sandbox, wait a minute and try again.", exception.getMessage());
+    }
 
         @Test
     public void accessTrainingRunNoAvailableSandbox() throws Exception {

@@ -171,6 +171,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
         if (trainingInstance.getPoolId() == null) {
             throw new ServiceLayerException("At first organizer must allocate sandboxes for training instance.", ErrorCode.RESOURCE_CONFLICT);
         }
+        Optional<TrainingRun> tr = trainingRunRepository.findById(1L);
         Set<SandboxInstanceRef> freeSandboxes = trainingRunRepository.findFreeSandboxesOfTrainingInstance(trainingInstance.getId());
         if (!freeSandboxes.isEmpty()) {
             SandboxInstanceRef sandboxInstanceRef = getReadySandboxInstanceRef(freeSandboxes, trainingInstance.getPoolId());
@@ -241,7 +242,6 @@ public class TrainingRunServiceImpl implements TrainingRunService {
             ));
         }
         newTrainingRun.setAssessmentResponses("[]");
-        //TODO what state set at the begining
         newTrainingRun.setState(TRState.RUNNING);
         newTrainingRun.setTrainingInstance(trainingInstance);
         newTrainingRun.setStartTime(startTime);

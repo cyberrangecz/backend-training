@@ -174,14 +174,8 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
         LOG.debug("deleteFailedSandboxes({}, {})", instanceId, sandboxIds);
         try {
             TrainingInstance trainingInstance = trainingInstanceService.findById(instanceId);
-            for (Long sandboxId : sandboxIds) {
-                SandboxInstanceRef sandboxRefToDelete = trainingInstance.getSandboxInstanceRefs()
-                        .stream()
-                        .filter(sIR -> sIR.getSandboxInstanceRef().equals(sandboxId))
-                        .findFirst()
-                        .orElseThrow(() -> new ServiceLayerException("Given sandbox with id: " + sandboxId
-                        + " is not in DB or is not assigned to given training instance.", ErrorCode.RESOURCE_NOT_FOUND));
-                trainingInstanceService.deleteSandbox(trainingInstance, sandboxRefToDelete);
+            for (Long idOfSandboxToDelete : sandboxIds) {
+                trainingInstanceService.deleteSandbox(trainingInstance, idOfSandboxToDelete);
             }
         } catch (ServiceLayerException ex) {
             throw new FacadeLayerException(ex);
@@ -208,7 +202,7 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
             SandboxInstanceRef sandboxRefToDelete = trainingInstance.getSandboxInstanceRefs().stream().filter(sIR ->
                     sIR.getSandboxInstanceRef().equals(sandboxId)).findFirst().orElseThrow(() -> new FacadeLayerException(new ServiceLayerException("Given sandbox with id: " + sandboxId
                     + " is not in DB or is not assigned to given training instance.", ErrorCode.RESOURCE_NOT_FOUND)));
-            trainingInstanceService.deleteSandbox(trainingInstance, sandboxRefToDelete);
+            trainingInstanceService.deleteSandbox(trainingInstance, sandboxRefToDelete.getSandboxInstanceRef());
             trainingInstanceService.allocateSandboxes(trainingInstance, 1);
             //Check if sandbox can be allocated
             if (trainingInstance.getSandboxInstanceRefs().size() >= trainingInstance.getPoolSize()) {

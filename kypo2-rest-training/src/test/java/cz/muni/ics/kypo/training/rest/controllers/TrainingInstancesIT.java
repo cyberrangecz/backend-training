@@ -561,18 +561,17 @@ public class TrainingInstancesIT {
 
     @Test
     public void deleteSandboxes() throws Exception {
-        sandboxInstanceRef1.setTrainingInstance(futureTrainingInstance);
-        sandboxInstanceRef2.setTrainingInstance(futureTrainingInstance);
         futureTrainingInstance.setPoolId(3L);
         futureTrainingInstance.setPoolSize(2);
-        futureTrainingInstance.setSandboxInstanceRefs(new HashSet<>(Set.of(sandboxInstanceRef1, sandboxInstanceRef2)));
+        futureTrainingInstance.addSandboxInstanceRef(sandboxInstanceRef1);
+        futureTrainingInstance.addSandboxInstanceRef(sandboxInstanceRef2);
 
         trainingInstanceRepository.save(futureTrainingInstance);
         given(restTemplate.exchange(anyString(), eq(HttpMethod.DELETE), any(HttpEntity.class), eq(String.class))).
                 willReturn(new ResponseEntity<String>("", HttpStatus.OK));
         mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_ORGANIZER.name()));
         mvc.perform(delete("/training-instances/{instanceId}/sandbox-instances", futureTrainingInstance.getId())
-                .param("sandboxIds", sandboxInstanceRef1.getSandboxInstanceRef().toString(), sandboxInstanceRef2.getSandboxInstanceRef().toString())
+                .param("sandboxIds", sandboxInstanceRef2.getSandboxInstanceRef().toString(), sandboxInstanceRef1.getSandboxInstanceRef().toString())
                 .contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isOk());
         assertTrue(futureTrainingInstance.getSandboxInstanceRefs().isEmpty());
@@ -590,14 +589,12 @@ public class TrainingInstancesIT {
         given(restTemplate.exchange(anyString(), eq(HttpMethod.DELETE), any(HttpEntity.class), eq(String.class))).
                 willReturn(new ResponseEntity<String>("", HttpStatus.OK));
         mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_ORGANIZER.name()));
-        Exception exception = mvc.perform(delete("/training-instances/{instanceId}/sandbox-instances", futureTrainingInstance.getId())
-                .param("sandboxIds", sandboxInstanceRef1.getSandboxInstanceRef().toString(), sandboxInstanceRef2.getSandboxInstanceRef().toString(), "156")
+        mvc.perform(delete("/training-instances/{instanceId}/sandbox-instances", futureTrainingInstance.getId())
+                .param("sandboxIds", sandboxInstanceRef1.getSandboxInstanceRef().toString(), "156")
                 .contentType(MediaType.APPLICATION_JSON_VALUE))
-                .andExpect(status().isNotFound())
-                .andReturn().getResolvedException();
-        assertEquals(ResourceNotFoundException.class, exception.getClass());
-        assertEquals("ServiceLayerException : Given sandbox with id: 156 is not in DB or is not assigned to given training instance.", exception.getMessage());
-        assertTrue(futureTrainingInstance.getSandboxInstanceRefs().isEmpty());
+                .andExpect(status().isOk());
+        assertEquals(1, futureTrainingInstance.getSandboxInstanceRefs().size());
+        assertTrue(futureTrainingInstance.getSandboxInstanceRefs().contains(sandboxInstanceRef2));
     }
 
     @Test
