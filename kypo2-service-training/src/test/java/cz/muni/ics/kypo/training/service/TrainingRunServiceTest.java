@@ -546,7 +546,6 @@ public class TrainingRunServiceTest {
         given(trainingRunRepository.findById(any(Long.class))).willReturn(Optional.of(trainingRun1));
         given(abstractLevelRepository.getCurrentMaxOrder(anyLong())).willReturn(infoLevel.getOrder());
         thrown.expect(ServiceLayerException.class);
-        thrown.expectMessage("Cannot finish training run because current level is not last or is not answered.");
 
         trainingRunService.finishTrainingRun(trainingRun1.getId());
     }
@@ -555,7 +554,6 @@ public class TrainingRunServiceTest {
     public void testFinishTrainingRunWithNotAnsweredLevel() {
         given(trainingRunRepository.findById(any(Long.class))).willReturn(Optional.of(trainingRun1));
         thrown.expect(ServiceLayerException.class);
-        thrown.expectMessage("Cannot finish training run because current level is not last or is not answered.");
 
         trainingRunService.finishTrainingRun(trainingRun1.getId());
     }
