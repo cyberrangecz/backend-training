@@ -7,5 +7,16 @@ package cz.muni.ics.kypo.training.api.enums;
  */
 public enum TRState {
 
-    RUNNING, FINISHED, ARCHIVED;
+    /**
+     * Running Training Run state.
+     */
+    RUNNING,
+    /**
+     * Finished Training Run state.
+     */
+    FINISHED,
+    /**
+     * Archived Training Run state.
+     */
+    ARCHIVED;
 }

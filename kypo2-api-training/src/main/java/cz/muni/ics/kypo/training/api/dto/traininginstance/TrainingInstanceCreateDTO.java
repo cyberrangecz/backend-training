@@ -16,6 +16,8 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 /**
+ * Encapsulates information about Training Instance, intended for creation of new instance.
+ *
  * @author Pavel Seda (441048)
  */
 @ApiModel(value = "TrainingInstanceCreateDTO", description = "Training Instance to create.")
@@ -40,65 +42,135 @@ public class TrainingInstanceCreateDTO {
     @NotNull(message = "{traininginstancecreate.organizersLogin.NotNull.message}")
     private Set<String> organizersLogin;
 
+    /**
+     * Gets start time.
+     *
+     * @return the start time
+     */
     @ApiModelProperty(value = "Date when training instance starts.", required = true, example = "2020-11-20T10:28:02.727Z")
     public LocalDateTime getStartTime() {
         return startTime;
     }
 
+    /**
+     * Sets start time.
+     *
+     * @param startTime the start time
+     */
     public void setStartTime(LocalDateTime startTime) {
         this.startTime = startTime;
     }
 
+    /**
+     * Gets end time.
+     *
+     * @return the end time
+     */
     @ApiModelProperty(value = "Date when training instance ends.", required = true, example = "2020-11-25T10:26:02.727Z")
     public LocalDateTime getEndTime() {
         return endTime;
     }
 
+    /**
+     * Sets end time.
+     *
+     * @param endTime the end time
+     */
     public void setEndTime(LocalDateTime endTime) {
         this.endTime = endTime;
     }
 
+    /**
+     * Gets title.
+     *
+     * @return the title
+     */
     @ApiModelProperty(value = "Short textual description of the training instance.", required = true, example = "December instance")
     public String getTitle() {
         return title;
     }
 
+    /**
+     * Sets title.
+     *
+     * @param title the title
+     */
     public void setTitle(String title) {
         this.title = title;
     }
 
+    /**
+     * Gets pool size.
+     *
+     * @return the pool size
+     */
     @ApiModelProperty(value = "Number of sandboxes that can be allocated.", required = true, example = "20")
     public int getPoolSize() {
         return poolSize;
     }
 
+    /**
+     * Sets pool size.
+     *
+     * @param poolSize the pool size
+     */
     public void setPoolSize(int poolSize) {
         this.poolSize = poolSize;
     }
 
+    /**
+     * Gets access token.
+     *
+     * @return the access token
+     */
     @ApiModelProperty(value = "AccessToken which will be modified and then used for accessing training run.", required = true, example = "hunter")
     public String getAccessToken() {
         return accessToken;
     }
 
+    /**
+     * Sets access token.
+     *
+     * @param accessToken the access token
+     */
     public void setAccessToken(String accessToken) {
         this.accessToken = accessToken;
     }
 
+    /**
+     * Gets training definition id.
+     *
+     * @return the training definition id
+     */
     @ApiModelProperty(value = "Reference to training definition from which is training instance created.", required = true, example = "1")
     public long getTrainingDefinitionId() {
         return trainingDefinitionId;
     }
 
+    /**
+     * Sets training definition id.
+     *
+     * @param trainingDefinitionId the training definition id
+     */
     public void setTrainingDefinitionId(long trainingDefinitionId) {
         this.trainingDefinitionId = trainingDefinitionId;
     }
 
+    /**
+     * Gets organizers login.
+     *
+     * @return the organizers login
+     */
     @ApiModelProperty(value = "Reference to users which organize training instance.", required = true)
     public Set<String> getOrganizersLogin() {
         return organizersLogin;
     }
 
+    /**
+     * Sets organizers login.
+     *
+     * @param organizersLogin the organizers login
+     */
     public void setOrganizersLogin(Set<String> organizersLogin) {
         this.organizersLogin = organizersLogin;
     }

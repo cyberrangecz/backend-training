@@ -7,6 +7,8 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
 /**
+ * Encapsulates information needed to update info level.
+ *
  * @author Pavel Šeda (441048)
  */
 @ApiModel(value = "InfoLevelUpdateDTO", description = "Info level to update.")
@@ -18,29 +20,59 @@ public class InfoLevelUpdateDTO {
     protected String title;
     private String content;
 
+    /**
+     * Gets id.
+     *
+     * @return the id
+     */
     @ApiModelProperty(value = "Main identifier of level.", required = true, example = "4")
     public Long getId() {
         return id;
     }
 
+    /**
+     * Sets id.
+     *
+     * @param id the id
+     */
     public void setId(Long id) {
         this.id = id;
     }
 
+    /**
+     * Gets title.
+     *
+     * @return the title
+     */
     @ApiModelProperty(value = "Short textual description of the level.", required = true, example = "Info Level1")
     public String getTitle() {
         return title;
     }
 
+    /**
+     * Sets title.
+     *
+     * @param title the title
+     */
     public void setTitle(String title) {
         this.title = title;
     }
 
+    /**
+     * Gets content.
+     *
+     * @return the content
+     */
     @ApiModelProperty(value = "The information and experiences that are directed towards a participant.", example = "Informational stuff")
     public String getContent() {
         return content;
     }
 
+    /**
+     * Sets content.
+     *
+     * @param content the content
+     */
     public void setContent(String content) {
         this.content = content;
     }

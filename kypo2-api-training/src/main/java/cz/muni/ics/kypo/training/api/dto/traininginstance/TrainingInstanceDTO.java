@@ -14,6 +14,8 @@ import java.util.Objects;
 import java.util.Set;
 
 /**
+ * Encapsulates information about Training Instance
+ *
  * @author Pavel Seda (441048)
  */
 @ApiModel(value = "TrainingInstanceDTO", description = "A session of attending a concrete training, which involves a deployment of the training definition in one or more sandbox instances that are then assigned to participants. The instance comprises one or more game runs.")
@@ -32,91 +34,191 @@ public class TrainingInstanceDTO {
     private Long poolId;
     private List<Long> sandboxesWithTrainingRun = new ArrayList<>();
 
+    /**
+     * Gets id.
+     *
+     * @return the id
+     */
     @ApiModelProperty(value = "Main identifier of training instance.", example = "1")
     public Long getId() {
         return id;
     }
 
+    /**
+     * Sets id.
+     *
+     * @param id the id
+     */
     public void setId(Long id) {
         this.id = id;
     }
 
+    /**
+     * Gets start time.
+     *
+     * @return the start time
+     */
     @ApiModelProperty(value = "Date when training instance starts.", example = "2016-10-19 10:23:54+02")
     public LocalDateTime getStartTime() {
         return startTime;
     }
 
+    /**
+     * Sets start time.
+     *
+     * @param startTime the start time
+     */
     public void setStartTime(LocalDateTime startTime) {
         this.startTime = startTime;
     }
 
+    /**
+     * Gets end time.
+     *
+     * @return the end time
+     */
     @ApiModelProperty(value = "Date when training instance ends.", example = "2017-10-19 10:23:54+02")
     public LocalDateTime getEndTime() {
         return endTime;
     }
 
+    /**
+     * Sets end time.
+     *
+     * @param endTime the end time
+     */
     public void setEndTime(LocalDateTime endTime) {
         this.endTime = endTime;
     }
 
+    /**
+     * Gets title.
+     *
+     * @return the title
+     */
     @ApiModelProperty(value = "Short textual description of the training instance.", example = "Concluded Instance")
     public String getTitle() {
         return title;
     }
 
+    /**
+     * Sets title.
+     *
+     * @param title the title
+     */
     public void setTitle(String title) {
         this.title = title;
     }
 
+    /**
+     * Gets pool size.
+     *
+     * @return the pool size
+     */
     @ApiModelProperty(value = "Number of sandboxes that can be allocated.", example = "5")
     public int getPoolSize() {
         return poolSize;
     }
 
+    /**
+     * Sets pool size.
+     *
+     * @param poolSize the pool size
+     */
     public void setPoolSize(int poolSize) {
         this.poolSize = poolSize;
     }
 
+    /**
+     * Gets training definition.
+     *
+     * @return the training definition
+     */
     @ApiModelProperty(value = "Reference to training definition from which is training instance created.")
     public TrainingDefinitionByIdDTO getTrainingDefinition() {
         return trainingDefinition;
     }
 
+    /**
+     * Sets training definition.
+     *
+     * @param trainingDefinition the training definition
+     */
     public void setTrainingDefinition(TrainingDefinitionByIdDTO trainingDefinition) {
         this.trainingDefinition = trainingDefinition;
     }
 
+    /**
+     * Gets organizers.
+     *
+     * @return the set of {@link UserRefDTO}
+     */
     @ApiModelProperty(value = "Reference to organizers which organize training instance.")
     public Set<UserRefDTO> getOrganizers() {
         return organizers;
     }
 
+    /**
+     * Sets organizers.
+     *
+     * @param organizers the set of {@link UserRefDTO}
+     */
     public void setOrganizers(Set<UserRefDTO> organizers) {
         this.organizers = organizers;
     }
 
+    /**
+     * Gets access token.
+     *
+     * @return the access token
+     */
     public String getAccessToken() {
         return accessToken;
     }
 
+    /**
+     * Sets access token.
+     *
+     * @param accessToken the access token
+     */
     public void setAccessToken(String accessToken) {
         this.accessToken = accessToken;
     }
 
+    /**
+     * Gets pool id.
+     *
+     * @return the pool id
+     */
     @ApiModelProperty(value = "Id of sandbox pool belonging to training instance", example = "1")
     public Long getPoolId() {
         return poolId;
     }
 
+    /**
+     * Sets pool id.
+     *
+     * @param poolId the pool id
+     */
     public void setPoolId(Long poolId) {
         this.poolId = poolId;
     }
 
+    /**
+     * Gets sandboxes with training run.
+     *
+     * @return the sandboxes with training run
+     */
     @ApiModelProperty(value = "Id of sandboxes which are assigned to training run.", example = "[3,15]")
     public List<Long> getSandboxesWithTrainingRun() {
         return sandboxesWithTrainingRun;
     }
 
+    /**
+     * Sets sandboxes with training run.
+     *
+     * @param sandboxesWithTrainingRun the sandboxes with training run
+     */
     public void setSandboxesWithTrainingRun(List<Long> sandboxesWithTrainingRun) {
         this.sandboxesWithTrainingRun = sandboxesWithTrainingRun;
     }

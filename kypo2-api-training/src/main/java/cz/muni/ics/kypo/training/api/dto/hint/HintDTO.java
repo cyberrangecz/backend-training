@@ -5,6 +5,9 @@ import io.swagger.annotations.ApiModelProperty;
 
 import java.util.Objects;
 
+/**
+ * Encapsulates information about Hint.
+ */
 @ApiModel(value = "HintDTO", description = "A brief textual description to aid the participant.")
 public class HintDTO {
 
@@ -13,38 +16,78 @@ public class HintDTO {
     private String content;
     private Integer hintPenalty;
 
+    /**
+     * Gets id.
+     *
+     * @return the id
+     */
     @ApiModelProperty(value = "Main identifier of hint.", example = "1")
     public Long getId() {
         return id;
     }
 
+    /**
+     * Sets id.
+     *
+     * @param id the id
+     */
     public void setId(Long id) {
         this.id = id;
     }
 
+    /**
+     * Gets title.
+     *
+     * @return the title
+     */
     @ApiModelProperty(value = "Short textual description of the hint.", example = "Hint1")
     public String getTitle() {
         return title;
     }
 
+    /**
+     * Sets title.
+     *
+     * @param title the title
+     */
     public void setTitle(String title) {
         this.title = title;
     }
 
+    /**
+     * Gets content.
+     *
+     * @return the content
+     */
     @ApiModelProperty(value = "The information and experiences that are directed towards a participant.", example = "Very good advice")
     public String getContent() {
         return content;
     }
 
+    /**
+     * Sets content.
+     *
+     * @param content the content
+     */
     public void setContent(String content) {
         this.content = content;
     }
 
+    /**
+     * Gets hint penalty.
+     *
+     * @return the hint penalty
+     */
     @ApiModelProperty(value = "The number of points the participant loses after receiving the hint.", example = "10")
     public Integer getHintPenalty() {
         return hintPenalty;
     }
 
+    /**
+     * Sets hint penalty.
+     *
+     * @param hintPenalty the hint penalty
+     */
     public void setHintPenalty(Integer hintPenalty) {
         this.hintPenalty = hintPenalty;
     }
