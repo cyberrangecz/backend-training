@@ -388,7 +388,7 @@ public class TrainingRunsRestControllerTest {
                 .andExpect(status().isConflict())
                 .andReturn().getResolvedException();
         assertEquals(ConflictException.class, ex.getClass());
-        assertEquals("ServiceLayerException : Cannot finish given training run.", ex.getLocalizedMessage());
+        assertEquals("Cannot finish given training run.", ex.getCause().getCause().getLocalizedMessage());
     }
 
     @Test
@@ -399,7 +399,7 @@ public class TrainingRunsRestControllerTest {
                 .andExpect(status().isNotFound())
                 .andReturn().getResolvedException();
         assertEquals(ResourceNotFoundException.class, ex.getClass());
-        assertEquals("ServiceLayerException : Training run not found.", ex.getLocalizedMessage());
+        assertEquals("Training run not found.", ex.getCause().getCause().getLocalizedMessage());
     }
 
 
@@ -420,7 +420,7 @@ public class TrainingRunsRestControllerTest {
                 .andExpect(status().isConflict())
                 .andReturn().getResolvedException();
         assertEquals(ConflictException.class, ex.getClass());
-        assertEquals("ServiceLayerException : Cannot finish given training run.", ex.getLocalizedMessage());
+        assertEquals("Cannot finish given training run.", ex.getCause().getCause().getLocalizedMessage());
     }
 
     @Test
@@ -431,7 +431,7 @@ public class TrainingRunsRestControllerTest {
                 .andExpect(status().isNotFound())
                 .andReturn().getResolvedException();
         assertEquals(ResourceNotFoundException.class, ex.getClass());
-        assertEquals("ServiceLayerException : Training run not found.", ex.getLocalizedMessage());
+        assertEquals("Training run not found.", ex.getCause().getCause().getLocalizedMessage());
     }
 
     private static String convertObjectToJsonBytes(Object object) throws IOException {

@@ -519,7 +519,7 @@ public class TrainingDefinitionsRestControllerTest {
                         .andExpect(status().isInternalServerError())
                         .andReturn().getResolvedException();
         assertEquals(InternalServerErrorException.class, ex.getClass());
-        assertEquals("ServiceLayerException : Error while getting users from user and group microservice.", ex.getLocalizedMessage());
+        assertEquals("Error while getting users from user and group microservice.", ex.getCause().getCause().getLocalizedMessage());
     }
 
     @Test

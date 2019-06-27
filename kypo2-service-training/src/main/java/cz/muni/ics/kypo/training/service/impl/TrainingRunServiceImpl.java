@@ -7,6 +7,7 @@ import com.github.fge.jsonschema.core.report.ProcessingReport;
 import com.github.fge.jsonschema.main.JsonSchemaFactory;
 import com.github.fge.jsonschema.main.JsonValidator;
 import com.querydsl.core.types.Predicate;
+import cz.muni.ics.kypo.training.annotations.aop.TrackTime;
 import cz.muni.ics.kypo.training.annotations.security.IsTraineeOrAdmin;
 import cz.muni.ics.kypo.training.exceptions.ErrorCode;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
@@ -76,7 +77,6 @@ public class TrainingRunServiceImpl implements TrainingRunService {
     @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
             "or @securityService.isTraineeOfGivenTrainingRun(#runId)")
     public TrainingRun findById(Long runId) {
-        LOG.debug("findById({})", runId);
         Objects.requireNonNull(runId);
         return trainingRunRepository.findById(runId)
                 .orElseThrow(() -> new ServiceLayerException("Training Run with runId: " + runId + " not found.", ErrorCode.RESOURCE_NOT_FOUND));
@@ -85,7 +85,6 @@ public class TrainingRunServiceImpl implements TrainingRunService {
     @Override
     @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)")
     public Page<TrainingRun> findAll(Predicate predicate, Pageable pageable) {
-        LOG.debug("findAllTrainingDefinitions({},{})", predicate, pageable);
         return trainingRunRepository.findAll(predicate, pageable);
     }
 
@@ -93,13 +92,11 @@ public class TrainingRunServiceImpl implements TrainingRunService {
     @IsTraineeOrAdmin
     public Page<TrainingRun> findAllByParticipantRefLogin(Pageable pageable) {
         String login = securityService.getSubOfLoggedInUser();
-        LOG.debug("findAllByParticipantRefLogin({})", login);
         return trainingRunRepository.findAllByParticipantRefLogin(login, pageable);
     }
 
 
     private TrainingRun create(TrainingRun trainingRun) {
-        LOG.debug("create({})", trainingRun);
         Assert.notNull(trainingRun, "Input training run must not be empty.");
         return trainingRunRepository.save(trainingRun);
     }
@@ -108,7 +105,6 @@ public class TrainingRunServiceImpl implements TrainingRunService {
     @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
             "or @securityService.isTraineeOfGivenTrainingRun(#runId)")
     public AbstractLevel getNextLevel(Long runId) {
-        LOG.debug("getNextLevel({})", runId);
         Assert.notNull(runId, MUST_NOT_BE_NULL);
         TrainingRun trainingRun = findByIdWithLevel(runId);
         int currentLevelOrder = trainingRun.getCurrentLevel().getOrder();
@@ -137,14 +133,12 @@ public class TrainingRunServiceImpl implements TrainingRunService {
 
     @Override
     public Page<TrainingRun> findAllByTrainingDefinitionAndParticipant(Long definitionId, Pageable pageable) {
-        LOG.debug("findAllByTrainingDefinitionAndParticipant({})", definitionId);
         Assert.notNull(definitionId, "Input training definition id must not be null.");
         return trainingRunRepository.findAllByTrainingDefinitionIdAndParticipantRefLogin(definitionId, securityService.getSubOfLoggedInUser(), pageable);
     }
 
     @Override
     public Page<TrainingRun> findAllByTrainingDefinition(Long definitionId, Pageable pageable) {
-        LOG.debug("findAllByTrainingDefinition({},{})", definitionId, pageable);
         Assert.notNull(definitionId, "Input training definition id must not be null.");
         return trainingRunRepository.findAllByTrainingDefinitionId(definitionId, pageable);
     }
@@ -159,8 +153,8 @@ public class TrainingRunServiceImpl implements TrainingRunService {
 
     @Override
     @IsTraineeOrAdmin
+    @TrackTime
     public TrainingRun accessTrainingRun(String accessToken) {
-        LOG.debug("accessTrainingRun({})", accessToken);
         Assert.hasLength(accessToken, "AccessToken cannot be null or empty.");
         Optional<TrainingRun> accessedTrainingRun = trainingRunRepository.findValidTrainingRunOfUser(accessToken, securityService.getSubOfLoggedInUser());
         if (accessedTrainingRun.isPresent()) {
@@ -194,8 +188,8 @@ public class TrainingRunServiceImpl implements TrainingRunService {
     @Override
     @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
             "or @securityService.isTraineeOfGivenTrainingRun(#trainingRunId)")
+    @TrackTime
     public TrainingRun resumeTrainingRun(Long trainingRunId) {
-        LOG.debug("resumeTrainingRun({})", trainingRunId);
         Assert.notNull(trainingRunId, MUST_NOT_BE_NULL);
         TrainingRun trainingRun = findByIdWithLevel(trainingRunId);
         if (trainingRun.getState().equals(TRState.FINISHED) || trainingRun.getState().equals(TRState.ARCHIVED)) {
@@ -275,7 +269,6 @@ public class TrainingRunServiceImpl implements TrainingRunService {
     @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
             "or @securityService.isTraineeOfGivenTrainingRun(#runId)")
     public boolean isCorrectFlag(Long runId, String flag) {
-        LOG.debug("isCorrectFlag({})", runId);
         Assert.notNull(runId, MUST_NOT_BE_NULL);
         Assert.hasLength(flag, "Submitted flag must not be nul nor empty.");
         TrainingRun trainingRun = findByIdWithLevel(runId);
@@ -302,7 +295,6 @@ public class TrainingRunServiceImpl implements TrainingRunService {
     @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
             "or @securityService.isTraineeOfGivenTrainingRun(#trainingRunId)")
     public int getRemainingAttempts(Long trainingRunId) {
-        LOG.debug("getRemainingAttempts({})", trainingRunId);
         Assert.notNull(trainingRunId, MUST_NOT_BE_NULL);
         TrainingRun trainingRun = findByIdWithLevel(trainingRunId);
         AbstractLevel level = trainingRun.getCurrentLevel();
@@ -320,7 +312,6 @@ public class TrainingRunServiceImpl implements TrainingRunService {
     @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
             "or @securityService.isTraineeOfGivenTrainingRun(#trainingRunId)")
     public String getSolution(Long trainingRunId) {
-        LOG.debug("getSolution({})", trainingRunId);
         Assert.notNull(trainingRunId, MUST_NOT_BE_NULL);
         TrainingRun trainingRun = findByIdWithLevel(trainingRunId);
         AbstractLevel level = trainingRun.getCurrentLevel();
@@ -342,7 +333,6 @@ public class TrainingRunServiceImpl implements TrainingRunService {
     @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
             "or @securityService.isTraineeOfGivenTrainingRun(#trainingRunId)")
     public Hint getHint(Long trainingRunId, Long hintId) {
-        LOG.debug("getHint({},{})", trainingRunId, hintId);
         Assert.notNull(trainingRunId, MUST_NOT_BE_NULL);
         Assert.notNull(hintId, "Input hint id must not be null.");
         TrainingRun trainingRun = findByIdWithLevel(trainingRunId);
@@ -365,7 +355,6 @@ public class TrainingRunServiceImpl implements TrainingRunService {
     @Override
     @IsTraineeOrAdmin
     public int getMaxLevelOrder(Long definitionId) {
-        LOG.debug("getMaxLevelOrder({})", definitionId);
         return abstractLevelRepository.getCurrentMaxOrder(definitionId);
     }
 
@@ -373,7 +362,6 @@ public class TrainingRunServiceImpl implements TrainingRunService {
     @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
             "or @securityService.isTraineeOfGivenTrainingRun(#trainingRunId)")
     public void finishTrainingRun(Long trainingRunId) {
-        LOG.debug("finishTrainingRun({})", trainingRunId);
         Assert.notNull(trainingRunId, MUST_NOT_BE_NULL);
         TrainingRun trainingRun = findById(trainingRunId);
         int maxOrder = abstractLevelRepository.getCurrentMaxOrder(trainingRun.getCurrentLevel().getTrainingDefinition().getId());
@@ -393,7 +381,6 @@ public class TrainingRunServiceImpl implements TrainingRunService {
     }
 
     private TrainingRun findByIdWithLevel(Long trainingRunId) {
-        LOG.debug("findById({})", trainingRunId);
         Objects.requireNonNull(trainingRunId);
         return trainingRunRepository.findByIdWithLevel(trainingRunId).orElseThrow(() ->
                 new ServiceLayerException("Training Run with id: " + trainingRunId + " not found.", ErrorCode.RESOURCE_NOT_FOUND));
@@ -401,7 +388,6 @@ public class TrainingRunServiceImpl implements TrainingRunService {
 
     @Override
     public void evaluateResponsesToAssessment(Long trainingRunId, String responsesAsString) {
-        LOG.info("evaluateAndStoreResponse({})", trainingRunId);
         Assert.notNull(responsesAsString, "Response to assessment must not be null.");
         JSONArray responses = isResponseValid(responsesAsString);
         int points = 0;

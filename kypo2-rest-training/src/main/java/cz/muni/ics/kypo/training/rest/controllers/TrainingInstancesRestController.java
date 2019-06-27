@@ -79,7 +79,6 @@ public class TrainingInstancesRestController {
     public ResponseEntity<Object> findTrainingInstanceById(
             @ApiParam(value = "Training instance ID", required = true) @PathVariable Long id,
             @ApiParam(value = "Fields which should be returned in REST API response", required = false) @RequestParam(value = "fields", required = false) String fields) {
-        LOG.debug("findTrainingInstanceById({},{})", id, fields);
         try {
             TrainingInstanceDTO trainingInstanceResource = trainingInstanceFacade.findById(id);
             Squiggly.init(objectMapper, fields);
@@ -126,7 +125,6 @@ public class TrainingInstancesRestController {
                                                            @RequestParam MultiValueMap<String, String> parameters,
                                                            @ApiParam(value = "Fields which should be returned in REST API response", required = false)
                                                            @RequestParam(value = "fields", required = false) String fields) {
-        LOG.debug("findAllTrainingInstances({},{})", parameters, fields);
         PageResultResource<TrainingInstanceDTO> trainingInstanceResource = trainingInstanceFacade.findAll(predicate, pageable);
         Squiggly.init(objectMapper, fields);
         return ResponseEntity.ok(SquigglyUtils.stringify(objectMapper, trainingInstanceResource));
@@ -285,7 +283,6 @@ public class TrainingInstancesRestController {
             @RequestParam MultiValueMap<String, String> parameters,
             @ApiParam(value = "Fields which should be returned in REST API response", required = false)
             @RequestParam(value = "fields", required = false) String fields) {
-        LOG.debug("findAllTrainingRunsByTrainingInstnceId({})", instanceId);
         try {
             PageResultResource<TrainingRunDTO> trainingRunResource =
                     trainingInstanceFacade.findTrainingRunsByTrainingInstance(instanceId, isActive, pageable);

@@ -2,6 +2,7 @@ package cz.muni.ics.kypo.training.service.impl;
 
 import com.mysema.commons.lang.Assert;
 import com.querydsl.core.types.Predicate;
+import cz.muni.ics.kypo.training.annotations.aop.TrackTime;
 import cz.muni.ics.kypo.training.annotations.security.IsOrganizerOrAdmin;
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalWO;
 import cz.muni.ics.kypo.training.exceptions.ErrorCode;
@@ -72,7 +73,6 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
     @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
             "or @securityService.isOrganizerOfGivenTrainingInstance(#instanceId)")
     public TrainingInstance findById(Long instanceId) {
-        LOG.debug("findById({})", instanceId);
         return trainingInstanceRepository.findById(instanceId).orElseThrow(() -> new ServiceLayerException("Training instance with id: " + instanceId + " not found.", ErrorCode.RESOURCE_NOT_FOUND));
     }
 
@@ -80,14 +80,12 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
     @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
         "or @securityService.isOrganizerOfGivenTrainingInstance(#instanceId)")
     public TrainingInstance findByIdIncludingDefinition(Long instanceId) {
-        LOG.debug("findByIdIncludingDefinition({})", instanceId);
         return trainingInstanceRepository.findByIdIncludingDefinition(instanceId).orElseThrow(() -> new ServiceLayerException("Training instance with id: " + instanceId + " not found.", ErrorCode.RESOURCE_NOT_FOUND));
     }
 
     @Override
     @IsOrganizerOrAdmin
     public Page<TrainingInstance> findAll(Predicate predicate, Pageable pageable) {
-        LOG.debug("findAllTrainingInstances({},{})", predicate, pageable);
         if (securityService.isAdmin()) {
             return trainingInstanceRepository.findAll(predicate, pageable);
         }
@@ -98,14 +96,12 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
     @Override
     @IsOrganizerOrAdmin
     public List<Long> findIdsOfAllOccupiedSandboxesByTrainingInstance(Long trainingInstanceId) {
-        LOG.debug("findIdsOfAllOccupiedSandboxes({})", trainingInstanceId);
         return trainingRunRepository.findIdsOfAllOccupiedSandboxesByTrainingInstance(trainingInstanceId);
     }
 
     @Override
     @IsOrganizerOrAdmin
     public TrainingInstance create(TrainingInstance trainingInstance) {
-        LOG.debug("create({})", trainingInstance);
         Assert.notNull(trainingInstance, "Input training instance must not be null");
         trainingInstance.setAccessToken(generateAccessToken(trainingInstance.getAccessToken()));
         if (trainingInstance.getStartTime().isAfter(trainingInstance.getEndTime())) {
@@ -129,7 +125,6 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
     @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
             "or @securityService.isOrganizerOfGivenTrainingInstance(#trainingInstanceToUpdate.id)")
     public String update(TrainingInstance trainingInstanceToUpdate) {
-        LOG.debug("update({})", trainingInstanceToUpdate);
         Assert.notNull(trainingInstanceToUpdate, "Input training instance must not be null");
         TrainingInstance trainingInstance = trainingInstanceRepository.findById(trainingInstanceToUpdate.getId())
                 .orElseThrow(() -> new ServiceLayerException("Training instance with id: " + trainingInstanceToUpdate.getId() + ", not found.", ErrorCode.RESOURCE_NOT_FOUND));
@@ -149,8 +144,8 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
     @Override
     @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
             "or @securityService.isOrganizerOfGivenTrainingInstance(#instanceId)")
+    @TrackTime
     public void delete(Long instanceId) {
-        LOG.debug("delete({})", instanceId);
         Assert.notNull(instanceId, "Input training instance id must not be null");
         TrainingInstance trainingInstance = trainingInstanceRepository.findById(instanceId)
                 .orElseThrow(() -> new ServiceLayerException("Training instance with id: " + instanceId + ", not found.", ErrorCode.RESOURCE_NOT_FOUND));
@@ -197,8 +192,8 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
     @Override
     @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
             "or @securityService.isOrganizerOfGivenTrainingInstance(#instanceId)")
+    @TrackTime
     public Long createPoolForSandboxes(Long instanceId) {
-        LOG.debug("createPoolForSandboxes({})", instanceId);
         TrainingInstance trainingInstance = findById(instanceId);
         //Check if pool can be created
         if (trainingInstance.getPoolId() != null) {
@@ -224,8 +219,8 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
     @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
             "or @securityService.isOrganizerOfGivenTrainingInstance(#trainingInstance.id)")
     @Async
+    @TrackTime
     public void allocateSandboxes(TrainingInstance trainingInstance, Integer count) {
-        LOG.debug("allocateSandboxes({}, {})", trainingInstance.getId(), count);
         if (count != null && count > trainingInstance.getPoolSize()) {
             count = null;
         }
@@ -273,6 +268,7 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
     @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
             "or @securityService.isOrganizerOfGivenTrainingInstance(#trainingInstance.id)")
     @Async
+    @TrackTime
     public void deleteSandbox(TrainingInstance trainingInstance, Long idOfSandboxRefToDelete) {
         trainingInstanceRepository.save(trainingInstance);
         Optional<SandboxInstanceRef> optionalSandboxInstanceRefToDelete = sandboxInstanceRefRepository.findBySandboxInstanceRefId(idOfSandboxRefToDelete);
@@ -332,7 +328,6 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
     @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
             "or @securityService.isOrganizerOfGivenTrainingInstance(#instanceId)")
     public Page<TrainingRun> findTrainingRunsByTrainingInstance(Long instanceId, Boolean isActive,  Pageable pageable) {
-        LOG.debug("findTrainingRunsByTrainingInstance({})", instanceId);
         org.springframework.util.Assert.notNull(instanceId, "Input training instance id must not be null.");
         trainingInstanceRepository.findById(instanceId)
                 .orElseThrow(() -> new ServiceLayerException("Training instance with id: " + instanceId + " not found.", ErrorCode.RESOURCE_NOT_FOUND));

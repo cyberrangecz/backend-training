@@ -13,20 +13,20 @@ public class ExceptionSorter {
     public static RuntimeException throwException(RuntimeException ex) {
         switch (((ServiceLayerException) ex.getCause()).getCode()) {
             case WRONG_LEVEL_TYPE:
-                return new BadRequestException(ex.getCause().getClass().getSimpleName() + " : " + ex.getCause().getLocalizedMessage());
+                return new BadRequestException(ex);
             case RESOURCE_NOT_FOUND:
-                return new ResourceNotFoundException(ex.getCause().getClass().getSimpleName() + " : " + ex.getCause().getLocalizedMessage());
+                return new ResourceNotFoundException(ex);
             case NO_NEXT_LEVEL:
-                return new ResourceNotFoundException(ex.getCause().getClass().getSimpleName() + " : " + ex.getCause().getLocalizedMessage());
+                return new ResourceNotFoundException(ex);
             case RESOURCE_CONFLICT:
-                return new ConflictException(ex.getCause().getClass().getSimpleName() + " : " + ex.getCause().getLocalizedMessage());
+                return new ConflictException(ex);
             case NO_AVAILABLE_SANDBOX:
-                return new ServiceUnavailableException(ex.getCause().getClass().getSimpleName() + " : " + ex.getCause().getLocalizedMessage());
+                return new ServiceUnavailableException(ex);
             case SECURITY_RIGHTS:
-                return new AccessDeniedException(ex.getCause().getClass().getSimpleName() + " : " + ex.getCause().getLocalizedMessage());
+                return new AccessDeniedException("Access is denied.");
             case UNEXPECTED_ERROR:
             default:
-                return new InternalServerErrorException(ex.getCause().getClass().getSimpleName() + " : " + ex.getCause().getLocalizedMessage());
+                return new InternalServerErrorException(ex);
         }
     }
 

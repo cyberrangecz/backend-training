@@ -90,7 +90,6 @@ public class TrainingDefinitionsRestController {
             @PathVariable Long id,
             @ApiParam(value = "Fields which should be returned in REST API response", required = false)
             @RequestParam(value = "fields", required = false) String fields) {
-        LOG.debug("findTrainingDefinitionById({},{})", id, fields);
         try {
             TrainingDefinitionByIdDTO trainingDefinitionResource = trainingDefinitionFacade.findById(id);
             Squiggly.init(objectMapper, fields);
@@ -135,7 +134,6 @@ public class TrainingDefinitionsRestController {
             @RequestParam MultiValueMap<String, String> parameters,
             @ApiParam(value = "Fields which should be returned in REST API response", required = false)
             @RequestParam(value = "fields", required = false) String fields) {
-        LOG.debug("findAllTrainingDefinitions({},{})", parameters, fields);
 
         PageResultResource<TrainingDefinitionDTO> trainingDefinitionResource = trainingDefinitionFacade.findAll(predicate, pageable);
         Squiggly.init(objectMapper, fields);
@@ -166,7 +164,6 @@ public class TrainingDefinitionsRestController {
             @RequestParam MultiValueMap<String, String> parameters,
             @ApiParam(value = "Fields which should be returned in REST API response", required = false)
             @RequestParam(value = "fields", required = false) String fields) {
-        LOG.debug("findAllTrainingDefinitionsForOrganizers({},{})", parameters, fields);
 
         PageResultResource<TrainingDefinitionInfoDTO> trainingDefinitionResource = trainingDefinitionFacade.findAllForOrganizers(predicate, pageable);
         Squiggly.init(objectMapper, fields);
@@ -189,7 +186,6 @@ public class TrainingDefinitionsRestController {
             @ApiParam(value = "Id of sandbox definition", required = true)
             @PathVariable(value = "sandboxDefinitionId") Long sandboxDefinitionId,
             Pageable pageable) {
-        LOG.debug("findAllTrainingDefinitionsBySandboxDefinitionId({}, {})", sandboxDefinitionId, pageable);
         PageResultResource<TrainingDefinitionInfoDTO> trainingDefinitionResource = trainingDefinitionFacade.findAllBySandboxDefinitionId(sandboxDefinitionId, pageable);
         return ResponseEntity.ok(SquigglyUtils.stringify(objectMapper, trainingDefinitionResource));
     }
@@ -512,7 +508,6 @@ public class TrainingDefinitionsRestController {
     @GetMapping(path = "/designers", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> getDesigners(@QuerydslPredicate(root = TrainingDefinition.class) Predicate predicate,
                                                Pageable pageable) {
-        LOG.debug("getDesigners()");
         try {
             List<UserInfoDTO> designers = trainingDefinitionFacade.getUsersWithGivenRole(cz.muni.ics.kypo.training.api.enums.RoleType.ROLE_TRAINING_DESIGNER, pageable);
             return ResponseEntity.ok(SquigglyUtils.stringify(objectMapper, designers));
@@ -539,7 +534,6 @@ public class TrainingDefinitionsRestController {
     @GetMapping(path = "/organizers", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> getOrganizers(@QuerydslPredicate(root = TrainingDefinition.class) Predicate predicate,
                                                 Pageable pageable) {
-        LOG.debug("getOrganizers()");
         try {
             List<UserInfoDTO> designers = trainingDefinitionFacade.getUsersWithGivenRole(RoleType.ROLE_TRAINING_ORGANIZER, pageable);
             return ResponseEntity.ok(SquigglyUtils.stringify(objectMapper, designers));
