@@ -6,6 +6,8 @@ import io.swagger.annotations.ApiModelProperty;
 import java.util.Objects;
 
 /**
+ *  Encapsulates information about Hint.
+ *
  * @author Pavel Seda
  */
 public class HintExportDTO {
@@ -14,32 +16,65 @@ public class HintExportDTO {
     private String content;
     private Integer hintPenalty;
 
+    /**
+     * Instantiates a new Hint export dto.
+     */
     public HintExportDTO() {
     }
 
+    /**
+     * Gets title.
+     *
+     * @return the title
+     */
     @ApiModelProperty(value = "Short textual description of the hint.", example = "Hint1")
     public String getTitle() {
         return title;
     }
 
+    /**
+     * Sets title.
+     *
+     * @param title the title
+     */
     public void setTitle(String title) {
         this.title = title;
     }
 
+    /**
+     * Gets content.
+     *
+     * @return the content
+     */
     @ApiModelProperty(value = "The information and experiences that are directed towards a participant.", example = "Very good advice")
     public String getContent() {
         return content;
     }
 
+    /**
+     * Sets content.
+     *
+     * @param content the content
+     */
     public void setContent(String content) {
         this.content = content;
     }
 
+    /**
+     * Gets hint penalty.
+     *
+     * @return the hint penalty
+     */
     @ApiModelProperty(value = "The number of points the participant loses after receiving the hint.", example = "10")
     public Integer getHintPenalty() {
         return hintPenalty;
     }
 
+    /**
+     * Sets hint penalty.
+     *
+     * @param hintPenalty the hint penalty
+     */
     public void setHintPenalty(Integer hintPenalty) {
         this.hintPenalty = hintPenalty;
     }

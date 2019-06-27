@@ -12,6 +12,8 @@ import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceUpdate
 import java.util.Set;
 
 /**
+ * The interface for Training instance facade.
+ *
  * @author Pavel Seda (441048)
  */
 public interface TrainingInstanceFacade {
@@ -20,15 +22,17 @@ public interface TrainingInstanceFacade {
      * Finds specific Training Instance by id
      *
      * @param id of a Training Instance that would be returned
-     * @return specific Training Instance by id
-     * @throws FacadeLayerException if training instance is not found
+     * @return specific {@link TrainingInstanceDTO} by id
+     * @throws FacadeLayerException with ErrorCode: RESOURCE_NOT_FOUND given training instance is not found.
      */
     TrainingInstanceDTO findById(Long id) throws FacadeLayerException;
 
     /**
      * Find all Training Instances.
      *
-     * @return all Training Instances
+     * @param predicate represents a predicate (boolean-valued function) of one argument.
+     * @param pageable  pageable parameter with information about pagination.
+     * @return page of all {@link TrainingInstanceDTO}
      */
     PageResultResource<TrainingInstanceDTO> findAll(Predicate predicate, Pageable pageable);
 
@@ -37,7 +41,8 @@ public interface TrainingInstanceFacade {
      *
      * @param trainingInstance to be updated
      * @return new access token if it was changed
-     * @throws FacadeLayerException if instance is not found
+     * @throws FacadeLayerException with ErrorCode: RESOURCE_NOT_FOUND given training instance is not found.
+     *                                              RESOURCE_CONFLICT cannot be updated for some reason.
      */
     String update(TrainingInstanceUpdateDTO trainingInstance);
 
@@ -45,8 +50,7 @@ public interface TrainingInstanceFacade {
      * Creates new training instance
      *
      * @param trainingInstance to be created
-     * @return DTO of created instance
-     * @throws FacadeLayerException
+     * @return created {@link TrainingInstanceDTO}
      */
     TrainingInstanceDTO create(TrainingInstanceCreateDTO trainingInstance);
 
@@ -54,16 +58,17 @@ public interface TrainingInstanceFacade {
      * Deletes specific training instance based on id
      *
      * @param id of training instance to be deleted
-     * @throws FacadeLayerException
+     * @throws FacadeLayerException with ErrorCode: RESOURCE_NOT_FOUND given training instance is not found.
+     *                                               RESOURCE_CONFLICT cannot be deleted for some reason.
      */
     void delete(Long id);
 
     /**
      * Allocates sandboxes for training instance
      *
-     * @param instanceId
-     * @param count number of sandboxes that will be allocated
-     * @throws FacadeLayerException
+     * @param instanceId the instance id
+     * @param count      number of sandboxes that will be allocated
+     * @throws FacadeLayerException with ErrorCode: RESOURCE_NOT_FOUND given training instance is not found.
      */
     void allocateSandboxes(Long instanceId, Integer count);
 
@@ -71,7 +76,9 @@ public interface TrainingInstanceFacade {
      * Finds all Training Runs by specific Training Instance.
      *
      * @param trainingInstanceId id of Training Instance whose Training Runs would be returned.
-     * @return Training Runs of specific Training Instance
+     * @param isActive           if isActive attribute is True, only active runs are returned
+     * @param pageable  pageable parameter with information about pagination.
+     * @return Page of {@link TrainingRunDTO} of specific Training Instance
      */
     PageResultResource<TrainingRunDTO> findTrainingRunsByTrainingInstance(Long trainingInstanceId, Boolean isActive, Pageable pageable);
 
@@ -88,7 +95,7 @@ public interface TrainingInstanceFacade {
      *
      * @param instanceId id of training instance for which failed sandboxes will be deleted and reallocated
      * @param sandboxIds ids of sandboxes that will be deleted
-     * @throws FacadeLayerException when Training Instance with instanceId is not found.
+     * @throws FacadeLayerException with ErrorCode: RESOURCE_NOT_FOUND given training instance is not found.
      */
     void deleteSandboxes(Long instanceId, Set<Long> sandboxIds);
 
@@ -96,7 +103,7 @@ public interface TrainingInstanceFacade {
      * Reallocates sandboxes in training instance
      *
      * @param instanceId id of training instance
-     * @param sandboxId id of sandbox that will be reallocated
+     * @param sandboxId  id of sandbox that will be reallocated
      */
     void reallocateSandbox(Long instanceId, Long sandboxId);
 

@@ -11,9 +11,11 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 /**
+ * Encapsulates information about abstract level.
+ * Extended by {@link AssessmentLevelImportDTO}, {@link GameLevelImportDTO} and {@link InfoLevelImportDTO}
+ *
  * @author Boris Jadus(445343)
  */
-
 @ApiModel(value = "AbstractLevelImportDTO", subTypes = {GameLevelImportDTO.class, InfoLevelImportDTO.class, AssessmentLevelImportDTO.class},
 		description = "Superclass for classes GameLevelImportDTO, AssessmentLevelImportDTO and InfoLevelImportDTO")
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
@@ -22,6 +24,7 @@ import javax.validation.constraints.NotNull;
 		@JsonSubTypes.Type(value = AssessmentLevelImportDTO.class, name = "AssessmentLevelImportDTO"),
 		@JsonSubTypes.Type(value = InfoLevelImportDTO.class, name = "InfoLevelImportDTO")})
 public class AbstractLevelImportDTO {
+
 	@NotEmpty(message = "{abstractlevelimport.title.NotEmpty.message}")
 	protected String title;
 	@NotNull(message = "{abstractlevelimport.maxScore.NotNull.message}")
@@ -34,45 +37,100 @@ public class AbstractLevelImportDTO {
 	protected Integer order;
 	protected Integer estimatedDuration;
 
+	/**
+	 * Instantiates a new Abstract level import dto.
+	 */
 	public AbstractLevelImportDTO() {
 	}
 
+	/**
+	 * Gets title.
+	 *
+	 * @return the title
+	 */
 	public String getTitle() {
 		return title;
 	}
 
+	/**
+	 * Sets title.
+	 *
+	 * @param title the title
+	 */
 	public void setTitle(String title) {
 		this.title = title;
 	}
 
+	/**
+	 * Gets max score.
+	 *
+	 * @return the max score
+	 */
 	public int getMaxScore() {
 		return maxScore;
 	}
 
+	/**
+	 * Sets max score.
+	 *
+	 * @param maxScore the max score
+	 */
 	public void setMaxScore(int maxScore) {
 		this.maxScore = maxScore;
 	}
 
+	/**
+	 * Gets level type.
+	 *
+	 * @return the {@link LevelType}
+	 */
 	public LevelType getLevelType() {
 		return levelType;
 	}
 
+	/**
+	 * Sets level type.
+	 *
+	 * @param levelType the {@link LevelType}
+	 */
 	public void setLevelType(LevelType levelType) {
 		this.levelType = levelType;
 	}
 
+	/**
+	 * Gets order number of level that is compared with order numbers of other levels associated with same definition.
+	 * First level from definition has order of 0
+	 *
+	 * @return the order
+	 */
 	public Integer getOrder() {
 		return order;
 	}
 
+	/**
+	 * Sets order number of level that is compared with order numbers of other levels associated with same definition.
+	 * First level from definition has order of 0
+	 *
+	 * @param order the order
+	 */
 	public void setOrder(Integer order) {
 		this.order = order;
 	}
 
+	/**
+	 * Gets estimated duration.
+	 *
+	 * @return the estimated duration
+	 */
 	public Integer getEstimatedDuration() {
 		return estimatedDuration;
 	}
 
+	/**
+	 * Sets estimated duration.
+	 *
+	 * @param estimatedDuration the estimated duration
+	 */
 	public void setEstimatedDuration(Integer estimatedDuration) {
 		this.estimatedDuration = estimatedDuration;
 	}

@@ -6,6 +6,8 @@ import io.swagger.annotations.ApiModelProperty;
 import java.util.Objects;
 
 /**
+ * Encapsulates information about User.
+ *
  * @author Pavel Seda
  */
 public class UserInfoDTO {
@@ -18,37 +20,77 @@ public class UserInfoDTO {
     @JsonProperty(value="family_name")
     private String familyName;
 
+    /**
+     * Gets login.
+     *
+     * @return the login
+     */
     public String getLogin() {
         return login;
     }
 
+    /**
+     * Sets login.
+     *
+     * @param login the login
+     */
     public void setLogin(String login) {
         this.login = login;
     }
 
+    /**
+     * Gets full name.
+     *
+     * @return the full name
+     */
     @ApiModelProperty(value = "Reference to user in another microservice and get his full name", example = "Mgr. Ing. Pavel Šeda")
     public String getFullName() {
         return fullName;
     }
 
+    /**
+     * Sets full name.
+     *
+     * @param fullName the full name
+     */
     public void setFullName(String fullName) {
         this.fullName = fullName;
     }
 
+    /**
+     * Gets given name.
+     *
+     * @return the given name
+     */
     @ApiModelProperty(value = "User given name", example = "Pavel")
     public String getGivenName() {
         return givenName;
     }
 
+    /**
+     * Sets given name.
+     *
+     * @param givenName the given name
+     */
     public void setGivenName(String givenName) {
         this.givenName = givenName;
     }
 
+    /**
+     * Gets family name.
+     *
+     * @return the family name
+     */
     @ApiModelProperty(value = "User family name", example = "Seda")
     public String getFamilyName() {
         return familyName;
     }
 
+    /**
+     * Sets family name.
+     *
+     * @param familyName the family name
+     */
     public void setFamilyName(String familyName) {
         this.familyName = familyName;
     }

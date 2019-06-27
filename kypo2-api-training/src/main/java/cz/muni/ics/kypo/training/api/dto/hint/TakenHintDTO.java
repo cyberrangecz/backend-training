@@ -5,6 +5,9 @@ import io.swagger.annotations.ApiModelProperty;
 
 import java.util.Objects;
 
+/**
+ * Encapsulates information about hint that was already taken
+ */
 @ApiModel(value = "TakenHintDTO", description = "A taken brief textual description to aid the participant.")
 public class TakenHintDTO {
 
@@ -12,29 +15,59 @@ public class TakenHintDTO {
     private String title;
     private String content;
 
+    /**
+     * Gets id.
+     *
+     * @return the id
+     */
     @ApiModelProperty(value = "Main identifier of hint.", example = "1")
     public Long getId() {
         return id;
     }
 
+    /**
+     * Sets id.
+     *
+     * @param id the id
+     */
     public void setId(Long id) {
         this.id = id;
     }
 
+    /**
+     * Gets title.
+     *
+     * @return the title
+     */
     @ApiModelProperty(value = "Short textual description of the hint.", example = "Hint1")
     public String getTitle() {
         return title;
     }
 
+    /**
+     * Sets title.
+     *
+     * @param title the title
+     */
     public void setTitle(String title) {
         this.title = title;
     }
 
+    /**
+     * Gets content.
+     *
+     * @return the content
+     */
     @ApiModelProperty(value = "The information and experiences that are directed towards a participant.", example = "Very good advice")
     public String getContent() {
         return content;
     }
 
+    /**
+     * Sets content.
+     *
+     * @param content the content
+     */
     public void setContent(String content) {
         this.content = content;
     }

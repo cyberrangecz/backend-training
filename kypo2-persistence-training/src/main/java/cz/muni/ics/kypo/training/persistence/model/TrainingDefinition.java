@@ -240,7 +240,7 @@ public class TrainingDefinition implements Serializable {
     /**
      * Gets if stepper bar is shown while in run.
      *
-     * @return the boolean
+     * @return true if bar is shown
      */
     public boolean isShowStepperBar() {
         return showStepperBar;
@@ -249,7 +249,7 @@ public class TrainingDefinition implements Serializable {
     /**
      * Sets if stepper bar is shown while in run.
      *
-     * @param showStepperBar the show stepper bar
+     * @param showStepperBar true if bar is shown
      */
     public void setShowStepperBar(boolean showStepperBar) {
         this.showStepperBar = showStepperBar;

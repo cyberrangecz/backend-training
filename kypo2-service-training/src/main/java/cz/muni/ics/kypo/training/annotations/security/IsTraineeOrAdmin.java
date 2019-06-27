@@ -6,9 +6,11 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+
 /**
  * The custom annotation <i>@IsTraineeOrAdmin<i/>. All methods annotated with this annotation expect the user has a role <strong>ROLE_TRAINING_ADMINISTRATOR<strong/>
  * or <strong>ROLE_TRAINING_TRAINEE<strong/>.
+ *
  * @author Dominik Pilar
  */
 @Target(ElementType.METHOD)

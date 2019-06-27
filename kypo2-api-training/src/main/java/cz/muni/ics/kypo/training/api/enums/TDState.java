@@ -7,5 +7,20 @@ package cz.muni.ics.kypo.training.api.enums;
  */
 public enum TDState {
 
-    PRIVATED, RELEASED, ARCHIVED, UNRELEASED;
+    /**
+     * Privated Training Definition state.
+     */
+    PRIVATED,
+    /**
+     * Released Training Definition state.
+     */
+    RELEASED,
+    /**
+     * Archived Training Definition state.
+     */
+    ARCHIVED,
+    /**
+     * Unreleased Training Definition state.
+     */
+    UNRELEASED;
 }

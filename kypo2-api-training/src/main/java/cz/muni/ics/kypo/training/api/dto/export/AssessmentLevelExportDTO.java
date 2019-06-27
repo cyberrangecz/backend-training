@@ -5,6 +5,8 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
 /**
+ * Encapsulates information about assessment level. Inherits from {@link AbstractLevelExportDTO}
+ *
  * @author Pavel Seda
  */
 @ApiModel(value = "AssessmentLevelExportDTO", description = "A questionnaire or a test that is displayed to the participant.", parent = AbstractLevelExportDTO.class)
@@ -14,29 +16,59 @@ public class AssessmentLevelExportDTO extends AbstractLevelExportDTO {
     private String instructions;
     private AssessmentType assessmentType;
 
+    /**
+     * Gets questions.
+     *
+     * @return the questions
+     */
     @ApiModelProperty(value = "List of questions in this assessment as JSON.", example = "What is my mothers name?")
     public String getQuestions() {
         return questions;
     }
 
+    /**
+     * Sets questions.
+     *
+     * @param questions the questions
+     */
     public void setQuestions(String questions) {
         this.questions = questions;
     }
 
+    /**
+     * Gets instructions.
+     *
+     * @return the instructions
+     */
     @ApiModelProperty(value = "Assessment instructions for participant.", example = "Fill me up")
     public String getInstructions() {
         return instructions;
     }
 
+    /**
+     * Sets instructions.
+     *
+     * @param instructions the instructions
+     */
     public void setInstructions(String instructions) {
         this.instructions = instructions;
     }
 
+    /**
+     * Gets assessment type.
+     *
+     * @return the {@link AssessmentType}
+     */
     @ApiModelProperty(value = "Type of assessment.", example = "TEST")
     public AssessmentType getAssessmentType() {
         return assessmentType;
     }
 
+    /**
+     * Sets assessment type.
+     *
+     * @param assessmentType {@link AssessmentType}
+     */
     public void setAssessmentType(AssessmentType assessmentType) {
         this.assessmentType = assessmentType;
     }
