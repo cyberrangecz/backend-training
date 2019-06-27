@@ -33,6 +33,7 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -371,12 +372,12 @@ public class TrainingInstanceServiceTest {
 
     @Test
     public void createPoolWithErrorFromOpenStack() {
+        HttpClientErrorException ex = new HttpClientErrorException(HttpStatus.CONFLICT, "CONFLICT");
         given(trainingInstanceRepository.findById(trainingInstance2.getId())).willReturn(Optional.ofNullable(trainingInstance2));
-        given(restTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(SandboxPoolInfo.class))).
-                willReturn(new ResponseEntity<SandboxPoolInfo>(sandboxPoolInfo, HttpStatus.CONFLICT));
+        willThrow(ex).given(restTemplate).exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(SandboxPoolInfo.class));
         thrown.expect(ServiceLayerException.class);
-        thrown.expectMessage("Error from openstack while creating pool.");
-        trainingInstanceService.createPoolForSandboxes(trainingInstance2.getId());
+        thrown.expectMessage("Error from OpenStack while creating pool: 409 CONFLICT");
+        Long id = trainingInstanceService.createPoolForSandboxes(trainingInstance2.getId());
     }
 
     @After
