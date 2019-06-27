@@ -35,6 +35,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
 /**
+ * The type Training instances rest controller.
+ *
  * @author Pavel Šeda & Boris Jadus
  */
 @Api(value = "/training-instances", tags = "Training instances", consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -51,6 +53,12 @@ public class TrainingInstancesRestController {
     private TrainingInstanceFacade trainingInstanceFacade;
     private ObjectMapper objectMapper;
 
+    /**
+     * Instantiates a new Training instances rest controller.
+     *
+     * @param trainingInstanceFacade the training instance facade
+     * @param objectMapper           the object mapper
+     */
     @Autowired
     public TrainingInstancesRestController(TrainingInstanceFacade trainingInstanceFacade, ObjectMapper objectMapper) {
         this.trainingInstanceFacade = trainingInstanceFacade;
@@ -60,7 +68,8 @@ public class TrainingInstancesRestController {
     /**
      * Get requested Training Instance by id.
      *
-     * @param id of Training Instance to return.
+     * @param id     of Training Instance to return.
+     * @param fields attributes of the object to be returned as the result.
      * @return Requested Training Instance by id.
      */
     @ApiOperation(httpMethod = "GET",
@@ -103,6 +112,10 @@ public class TrainingInstancesRestController {
     /**
      * Get all Training Instances.
      *
+     * @param predicate  specifies query to database.
+     * @param pageable   pageable parameter with information about pagination.
+     * @param parameters the parameters
+     * @param fields     attributes of the object to be returned as the result.
      * @return all Training Instances.
      */
     @ApiOperation(httpMethod = "GET",
@@ -130,6 +143,13 @@ public class TrainingInstancesRestController {
         return ResponseEntity.ok(SquigglyUtils.stringify(objectMapper, trainingInstanceResource));
     }
 
+    /**
+     * Create new training instance.
+     *
+     * @param trainingInstanceCreateDTO the training instance to be created
+     * @param fields                    attributes of the object to be returned as the result.
+     * @return the newly created instance
+     */
     @ApiOperation(httpMethod = "POST",
             value = "Create training instance",
             notes = "This can only be done by the organizer or administrator",
@@ -156,6 +176,11 @@ public class TrainingInstancesRestController {
         }
     }
 
+    /**
+     * Update training instance.
+     *
+     * @param trainingInstanceUpdateDTO the training instance to be updated
+     */
     @ApiOperation(httpMethod = "PUT",
             value = "Update training instance",
             notes = "This can only be done by organizer of training instance or administrator",
@@ -177,6 +202,11 @@ public class TrainingInstancesRestController {
         }
     }
 
+    /**
+     * Delete training instance.
+     *
+     * @param id the id of instance to be deleted
+     */
     @ApiOperation(httpMethod = "DELETE",
             value = "Delete training instance",
             notes = "This can only be done by organizer of training instance or administrator",
@@ -200,6 +230,12 @@ public class TrainingInstancesRestController {
         }
     }
 
+    /**
+     * Allocate sandboxes.
+     *
+     * @param instanceId the instance id
+     * @param count      the number of sandboxes tobe allocated
+     */
     @ApiOperation(httpMethod = "POST",
             value = "Allocate sandboxes",
             response = Void.class,
@@ -224,6 +260,12 @@ public class TrainingInstancesRestController {
         }
     }
 
+    /**
+     * Create pool for sandboxes.
+     *
+     * @param instanceId the instance id
+     * @return the id of new pool
+     */
     @ApiOperation(httpMethod = "POST",
             value = "Create pool",
             response = Long.class,
@@ -260,6 +302,11 @@ public class TrainingInstancesRestController {
     /**
      * Get all Training Runs by Training Instance id.
      *
+     * @param instanceId the instance id
+     * @param isActive   if true, only active runs are returned
+     * @param pageable   pageable parameter with information about pagination.
+     * @param parameters the parameters
+     * @param fields     attributes of the object to be returned as the result.
      * @return all Training Runs in given Training Instance.
      */
     @ApiOperation(httpMethod = "GET",
@@ -293,6 +340,12 @@ public class TrainingInstancesRestController {
         }
     }
 
+    /**
+     * Delete sandboxes.
+     *
+     * @param instanceId the instance id
+     * @param sandboxIds the sandbox ids
+     */
     @ApiOperation(httpMethod = "DELETE",
             value = "Delete sandboxes from training instance",
             response = Void.class,
@@ -322,8 +375,8 @@ public class TrainingInstancesRestController {
      * 2. state of training run is changed to ARCHIVED
      * 3. new sandbox is allocated
      *
-     * @param sandboxId id of sandbox to be deleted.
      * @param instanceId id of training instance in which training instance is allocated
+     * @param sandboxId  id of sandbox to be deleted.
      */
     @ApiOperation(httpMethod = "POST",
             value = "Reallocate sandbox in training instance",

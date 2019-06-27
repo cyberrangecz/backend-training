@@ -34,6 +34,8 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
 
 /**
+ * The type Training runs rest controller.
+ *
  * @author Dominik Pilar (445537)
  */
 @Api(value = "/training-runs", tags = "Training runs", consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -50,6 +52,12 @@ public class TrainingRunsRestController {
     private TrainingRunFacade trainingRunFacade;
     private ObjectMapper objectMapper;
 
+    /**
+     * Instantiates a new Training runs rest controller.
+     *
+     * @param trainingRunFacade the training run facade
+     * @param objectMapper      the object mapper
+     */
     @Autowired
     public TrainingRunsRestController(TrainingRunFacade trainingRunFacade, ObjectMapper objectMapper) {
         this.trainingRunFacade = trainingRunFacade;
@@ -59,7 +67,8 @@ public class TrainingRunsRestController {
     /**
      * Get requested Training Run by id.
      *
-     * @param runId of Training Run to return.
+     * @param runId  of Training Run to return.
+     * @param fields attributes of the object to be returned as the result.
      * @return Requested Training Run by id.
      */
     @ApiOperation(httpMethod = "GET",
@@ -100,6 +109,10 @@ public class TrainingRunsRestController {
     /**
      * Get all Training Runs.
      *
+     * @param predicate  specifies query to database.
+     * @param pageable   pageable parameter with information about pagination.
+     * @param parameters the parameters
+     * @param fields     attributes of the object to be returned as the result.
      * @return all Training Runs.
      */
     @ApiOperation(httpMethod = "GET",
@@ -128,6 +141,7 @@ public class TrainingRunsRestController {
     /**
      * Access training run.
      *
+     * @param accessToken the access token
      * @return first level of training run.
      */
     @ApiOperation(httpMethod = "POST",
@@ -165,6 +179,10 @@ public class TrainingRunsRestController {
     /**
      * Get all accessed Training Runs.
      *
+     * @param pageable   pageable parameter with information about pagination.
+     * @param parameters the parameters
+     * @param fields     attributes of the object to be returned as the result.
+     * @param sortByTitle "asc" for ascending alphabetical sort by title, "desc" for descending
      * @return all accessed Training Runs.
      */
     @ApiOperation(httpMethod = "GET",
@@ -196,7 +214,8 @@ public class TrainingRunsRestController {
     /**
      * Get next level of given Training Run.
      *
-     * @param runId of Training Run for which to get next level.
+     * @param runId  of Training Run for which to get next level.
+     * @param fields attributes of the object to be returned as the result.
      * @return Requested next level.
      */
     @ApiOperation(httpMethod = "GET",
@@ -255,7 +274,9 @@ public class TrainingRunsRestController {
     /**
      * Get hint of current game level.
      *
-     * @param runId of Training Run for which to get hint.
+     * @param runId  of Training Run for which to get hint.
+     * @param hintId the hint id
+     * @param fields attributes of the object to be returned as the result.
      * @return Requested hint of game level.
      */
     @ApiOperation(httpMethod = "GET",
@@ -287,9 +308,10 @@ public class TrainingRunsRestController {
     }
 
     /**
-     * Check if submited flag is correct.
+     * Check if submitted flag is correct.
      *
-     * @param flag submited string.
+     * @param runId the run id
+     * @param flag  submitted string.
      * @return True if flag is correct, false if flag is wrong.
      */
     @ApiOperation(httpMethod = "GET",
