@@ -253,10 +253,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
         ResponseEntity<List<SandboxInfo>> response = restTemplate.exchange(kypoOpenStackURI + "/pools/" + poolId + "/sandboxes/", HttpMethod.GET, new HttpEntity<>(httpHeaders),
                 new ParameterizedTypeReference<List<SandboxInfo>>() {
                 });
-        if (response.getStatusCode().isError() || response.getBody() == null) {
-            throw new ServiceLayerException("Some error occurred during getting info about sandboxes.", ErrorCode.UNEXPECTED_ERROR);
-        }
-        List<SandboxInfo> sandboxInfoList = response.getBody();
+        List<SandboxInfo> sandboxInfoList = Objects.requireNonNull(response.getBody());
         sandboxInfoList.removeIf(sandboxInfo -> !sandboxInfo.getStatus().contains("COMPLETE") || !idsOfUnoccupiedSandboxes.contains(sandboxInfo.getId()));
         if (sandboxInfoList.isEmpty()) {
             throw new ServiceLayerException("There is no available sandbox, wait a minute and try again.", ErrorCode.NO_AVAILABLE_SANDBOX);

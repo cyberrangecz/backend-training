@@ -32,6 +32,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -432,13 +433,15 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
         HttpHeaders httpHeaders = new HttpHeaders();
         String url = userAndGroupUrl + "/roles/users" + "?roleType=" + roleType
                 + "&page=" + pageable.getPageNumber() + "&size=" + pageable.getPageSize() + "&fields=content[login,full_name]";
-        ResponseEntity<PageResultResource<UserInfoDTO>> usersResponse = restTemplate.exchange(url, HttpMethod.GET, new HttpEntity<>(httpHeaders),
-                new ParameterizedTypeReference<PageResultResource<UserInfoDTO>>() {
-                });
-        if (usersResponse.getStatusCode().isError() || usersResponse.getBody() == null) {
-            throw new ServiceLayerException("Error while obtaining info about users in designers groups.", ErrorCode.UNEXPECTED_ERROR);
+        try {
+            ResponseEntity<PageResultResource<UserInfoDTO>> usersResponse = restTemplate.exchange(url, HttpMethod.GET, new HttpEntity<>(httpHeaders),
+                    new ParameterizedTypeReference<PageResultResource<UserInfoDTO>>() {
+                    });
+            return Objects.requireNonNull(usersResponse.getBody()).getContent();
+
+        } catch (HttpClientErrorException ex) {
+            throw new ServiceLayerException("Client side error when calling UserAndGroup: " + ex.getMessage() + " - " + ex.getResponseBodyAsString(), ErrorCode.UNEXPECTED_ERROR);
         }
-        return usersResponse.getBody().getContent();
     }
 
     @Override
@@ -450,13 +453,14 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
         builder.queryParam("logins", logins.toString().replace("[", "").replace("]", ""));
         builder.queryParam("fields", "content[login,full_name,given_name,family_name]");
         URI uri = builder.build().encode().toUri();
-        ResponseEntity<List<UserInfoDTO>> usersResponse = restTemplate.exchange(uri, HttpMethod.GET, new HttpEntity<>(httpHeaders),
-                new ParameterizedTypeReference<List<UserInfoDTO>>() {
-                });
-        if (usersResponse.getStatusCode().isError() || usersResponse.getBody() == null) {
-            throw new ServiceLayerException("Error while obtaining info about users in designers groups.", ErrorCode.UNEXPECTED_ERROR);
+        try {
+            ResponseEntity<List<UserInfoDTO>> usersResponse = restTemplate.exchange(uri, HttpMethod.GET, new HttpEntity<>(httpHeaders),
+                    new ParameterizedTypeReference<List<UserInfoDTO>>() {
+                    });
+            return new HashSet<>(Objects.requireNonNull(usersResponse.getBody()));
+        } catch (HttpClientErrorException ex) {
+            throw new ServiceLayerException("Client side error when calling UserAndGroup: " + ex.getMessage() + " - " + ex.getResponseBodyAsString(), ErrorCode.UNEXPECTED_ERROR);
         }
-        return new HashSet<>(usersResponse.getBody());
     }
 
     @Override

@@ -1,5 +1,6 @@
 package cz.muni.ics.kypo.training.service.impl;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mysema.commons.lang.Assert;
 import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.training.annotations.aop.TrackTime;
@@ -34,6 +35,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
@@ -170,7 +172,7 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
         try {
             restTemplate.delete(UriComponentsBuilder.fromUriString(url).toUriString());
         } catch (HttpClientErrorException ex) {
-            LOG.error("Client side error when calling OpenStack: {}.", ex.getResponseBodyAsString());
+            LOG.error("Client side error when calling OpenStack: {}.", ex.getMessage() + " - " + ex.getResponseBodyAsString());
         }
     }
 
@@ -203,15 +205,15 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
         //Create pool with given size
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.setContentType(MediaType.APPLICATION_JSON);
-        String requestJson = "{\"definition\": " + trainingInstance.getTrainingDefinition().getSandboxDefinitionRefId() +
+        String requestJson = "{\"defnition\": " + trainingInstance.getTrainingDefinition().getSandboxDefinitionRefId() +
                 ", \"max_size\": " + trainingInstance.getPoolSize() + "}";
-        //TODO modify catching errors from python API
-        ResponseEntity<SandboxPoolInfo> poolResponse = restTemplate.exchange(kypoOpenStackURI + "/pools/", HttpMethod.POST, new HttpEntity<>(requestJson, httpHeaders), SandboxPoolInfo.class);
-        if (poolResponse.getStatusCode().isError() || poolResponse.getBody() == null) {
-            throw new ServiceLayerException("Error from openstack while creating pool.", ErrorCode.UNEXPECTED_ERROR);
+        try {
+            ResponseEntity<SandboxPoolInfo> poolResponse = restTemplate.exchange(kypoOpenStackURI + "/pools/", HttpMethod.POST, new HttpEntity<>(requestJson, httpHeaders), SandboxPoolInfo.class);
+            trainingInstance.setPoolId(Objects.requireNonNull(poolResponse.getBody()).getId());
+            return poolResponse.getBody().getId();
+        } catch (HttpClientErrorException ex) {
+            throw new ServiceLayerException("Error from OpenStack while creating pool: " + ex.getMessage()  +  " - " + ex.getResponseBodyAsString(), ErrorCode.UNEXPECTED_ERROR);
         }
-        trainingInstance.setPoolId(poolResponse.getBody().getId());
-        return poolResponse.getBody().getId();
     }
 
     @Override
@@ -249,17 +251,14 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
             ResponseEntity<List<SandboxInfo>> sandboxResponse = restTemplate.exchange(builder.toUriString(), HttpMethod.POST,
                     new HttpEntity<>(httpHeaders), new ParameterizedTypeReference<List<SandboxInfo>>() {
                     });
-            if (sandboxResponse.getStatusCode().isError() || sandboxResponse.getBody() == null) {
-                LOG.error("Error from OpenStack while allocate sandboxes.");
-            }
-            sandboxResponse.getBody().forEach(s -> {
+            Objects.requireNonNull(sandboxResponse.getBody()).forEach(s -> {
                 SandboxInstanceRef sIR = new SandboxInstanceRef();
                 sIR.setSandboxInstanceRef(s.getId());
                 trainingInstance.addSandboxInstanceRef(sIR);
             });
             trainingInstanceRepository.save(trainingInstance);
         } catch (HttpClientErrorException ex) {
-            LOG.error("Client side error when calling OpenStack: {}.", ex.getResponseBodyAsString());
+            LOG.error("Client side error when calling OpenStack: {}.", ex.getMessage() + " - " + ex.getResponseBodyAsString());
         }
     }
 
@@ -285,13 +284,9 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
         try {
             ResponseEntity<String> responseOnDelete = restTemplate.exchange(kypoOpenStackURI + "/sandboxes/" + idOfSandboxRefToDelete + "/",
                     HttpMethod.DELETE, new HttpEntity<>(httpHeaders), String.class);
-            if (!responseOnDelete.getStatusCode().is2xxSuccessful()) {
-                LOG.error("Error from OpenStack while deleting sandbox.");
-            }
-
         } catch (HttpClientErrorException ex) {
-            if (!ex.getMessage().contains("404")) {
-                LOG.error("Client side error when calling OpenStack: {}. Probably wrong URL of service.", new JSONObject(ex.getResponseBodyAsString()).get("detail"));
+            if (!ex.getStatusCode().equals(HttpStatus.NOT_FOUND)) {
+                LOG.error("Client side error when calling OpenStack: {}. Probably wrong URL of service.", ex.getMessage() + " - " + ex.getResponseBodyAsString());
             }
         }
         trainingInstanceRepository.save(trainingInstance);
@@ -307,10 +302,7 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
             ResponseEntity<List<SandboxInfo>> sandboxResponse = restTemplate.exchange(builder.toUriString(), HttpMethod.GET,
                     new HttpEntity<>(httpHeaders), new ParameterizedTypeReference<List<SandboxInfo>>() {
                     });
-            if (sandboxResponse.getStatusCode().isError() || sandboxResponse.getBody() == null) {
-                LOG.error("Error from OpenStack while getting info about sandboxes.");
-            }
-            sandboxResponse.getBody().forEach(s -> {
+            Objects.requireNonNull(sandboxResponse.getBody()).forEach(s -> {
                 if (trainingInstance.getSandboxInstanceRefs().stream().noneMatch((sandboxInstanceRef -> sandboxInstanceRef.getSandboxInstanceRef().equals(s.getId())))) {
                     SandboxInstanceRef sIR = new SandboxInstanceRef();
                     sIR.setSandboxInstanceRef(s.getId());
