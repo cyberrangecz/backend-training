@@ -1,6 +1,5 @@
 package cz.muni.ics.kypo.training.service.impl;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mysema.commons.lang.Assert;
 import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.training.annotations.aop.TrackTime;
@@ -109,17 +108,7 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
         if (trainingInstance.getStartTime().isAfter(trainingInstance.getEndTime())) {
             throw new ServiceLayerException("End time must be later than start time.", ErrorCode.RESOURCE_CONFLICT);
         }
-        Optional<UserRef> authorOfTrainingInstance = organizerRefRepository.findUserByUserRefLogin(securityService.getSubOfLoggedInUser());
-        if (authorOfTrainingInstance.isPresent()) {
-            trainingInstance.addOrganizer(authorOfTrainingInstance.get());
-        } else {
-            UserRef userRef = new UserRef();
-            userRef.setUserRefLogin(securityService.getSubOfLoggedInUser());
-            userRef.setUserRefFullName(securityService.getFullNameOfLoggedInUser());
-            userRef.setUserRefGivenName(securityService.getGivenNameOfLoggedInUser());
-            userRef.setUserRefFamilyName(securityService.getFamilyNameOfLoggedInUser());
-            trainingInstance.addOrganizer(organizerRefRepository.save(userRef));
-        }
+        addLoggedInUserAsOrganizerToTrainingInstance(trainingInstance);
         return trainingInstanceRepository.save(trainingInstance);
     }
 //TODO during update automatically add author as organizer of training instance, add login of logged in user in facade when calling user and group ;)
@@ -140,7 +129,22 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
             trainingInstanceToUpdate.setAccessToken(generateAccessToken(trainingInstanceToUpdate.getAccessToken()));
         }
         trainingInstanceRepository.save(trainingInstanceToUpdate);
+        addLoggedInUserAsOrganizerToTrainingInstance(trainingInstance);
         return trainingInstanceToUpdate.getAccessToken();
+    }
+
+    private void addLoggedInUserAsOrganizerToTrainingInstance(TrainingInstance trainingInstance) {
+        Optional<UserRef> authorOfTrainingInstance = organizerRefRepository.findUserByUserRefLogin(securityService.getSubOfLoggedInUser());
+        if (authorOfTrainingInstance.isPresent()) {
+            trainingInstance.addOrganizer(authorOfTrainingInstance.get());
+        } else {
+            UserRef userRef = new UserRef();
+            userRef.setUserRefLogin(securityService.getSubOfLoggedInUser());
+            userRef.setUserRefFullName(securityService.getFullNameOfLoggedInUser());
+            userRef.setUserRefGivenName(securityService.getGivenNameOfLoggedInUser());
+            userRef.setUserRefFamilyName(securityService.getFamilyNameOfLoggedInUser());
+            trainingInstance.addOrganizer(organizerRefRepository.save(userRef));
+        }
     }
 
     @Override

@@ -80,12 +80,13 @@ public class LoggingAspect {
      * @throws Throwable the throwable
      */
     @Around("@annotation(cz.muni.ics.kypo.training.annotations.aop.TrackTime)")
-    public void trackTimeAround(ProceedingJoinPoint joinPoint) throws Throwable {
+    public Object trackTimeAround(ProceedingJoinPoint joinPoint) throws Throwable {
         Instant startTime = Instant.now();
         logJoinPoint(joinPoint, startTime);
-        joinPoint.proceed();
+        Object objectToReturn = joinPoint.proceed();
         logJoinPointEnd(joinPoint, startTime);
 
+        return objectToReturn;
     }
 
     private void logJoinPoint(JoinPoint joinPoint, Instant time) {
