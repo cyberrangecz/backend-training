@@ -22,6 +22,8 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 
 /**
+ * The controller for export/import.
+ *
  * @author Pavel Seda & Boris Jadus
  */
 @Api(value = "/", tags = "Export Imports", consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -36,6 +38,12 @@ public class ExportImportRestController {
     private ExportImportFacade exportImportFacade;
     private ObjectMapper objectMapper;
 
+    /**
+     * Instantiates a new Export import rest controller.
+     *
+     * @param exportImportFacade the export import facade
+     * @param objectMapper       the object mapper
+     */
     @Autowired
     public ExportImportRestController(ExportImportFacade exportImportFacade, ObjectMapper objectMapper) {
         this.exportImportFacade = exportImportFacade;
@@ -43,8 +51,9 @@ public class ExportImportRestController {
     }
 
     /**
-     * Get exported training definition and levels.
+     * Exportss training definition and levels.
      *
+     * @param trainingDefinitionId the training definition id
      * @return Exported training definition and levels.
      */
     @ApiOperation(httpMethod = "GET",
@@ -75,6 +84,13 @@ public class ExportImportRestController {
         }
     }
 
+    /**
+     * Import training definition response entity.
+     *
+     * @param importTrainingDefinitionDTO the training definition to be imported
+     * @param fields                      attributes of the object to be returned as the result.
+     * @return the new imported definition
+     */
     @ApiOperation(httpMethod = "POST",
             value = "Import training definition with levels.",
             response = TrainingDefinitionByIdDTO.class,
@@ -96,6 +112,12 @@ public class ExportImportRestController {
         return ResponseEntity.ok(SquigglyUtils.stringify(objectMapper, trainingDefinitionResource));
     }
 
+    /**
+     * Archive training instance.
+     *
+     * @param trainingInstanceId the training instance id
+     * @return file containing wanted training instance
+     */
     @ApiOperation(httpMethod = "GET",
             value = "Archive training instance",
             response = TrainingInstanceArchiveDTO.class,

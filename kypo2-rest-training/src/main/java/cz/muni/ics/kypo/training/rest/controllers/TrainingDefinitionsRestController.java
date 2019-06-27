@@ -44,6 +44,8 @@ import java.util.List;
 import javax.validation.Valid;
 
 /**
+ * The type Training definitions rest controller.
+ *
  * @author Pavel Šeda & Boris Jadus
  */
 @Api(value = "/training-definitions", tags = "Training definitions", consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -60,6 +62,12 @@ public class TrainingDefinitionsRestController {
     private TrainingDefinitionFacade trainingDefinitionFacade;
     private ObjectMapper objectMapper;
 
+    /**
+     * Instantiates a new Training definitions rest controller.
+     *
+     * @param trainingDefinitionFacade the training definition facade
+     * @param objectMapper             the object mapper
+     */
     @Autowired
     public TrainingDefinitionsRestController(TrainingDefinitionFacade trainingDefinitionFacade, ObjectMapper objectMapper) {
         this.trainingDefinitionFacade = trainingDefinitionFacade;
@@ -69,7 +77,8 @@ public class TrainingDefinitionsRestController {
     /**
      * Get requested Training Definition by id.
      *
-     * @param id of Training Definition to return.
+     * @param id     of Training Definition to return.
+     * @param fields attributes of the object to be returned as the result.
      * @return Requested Training Definition by id.
      */
     @ApiOperation(httpMethod = "GET",
@@ -113,6 +122,10 @@ public class TrainingDefinitionsRestController {
     /**
      * Get all Training Definitions.
      *
+     * @param predicate  specifies query to database.
+     * @param pageable   pageable parameter with information about pagination.
+     * @param parameters the parameters
+     * @param fields     attributes of the object to be returned as the result.
      * @return all Training Definitions.
      */
     @ApiOperation(httpMethod = "GET",
@@ -143,6 +156,10 @@ public class TrainingDefinitionsRestController {
     /**
      * Get all Training Definitions for organizers.
      *
+     * @param predicate  specifies query to database.
+     * @param pageable   pageable parameter with information about pagination.
+     * @param parameters the parameters
+     * @param fields     attributes of the object to be returned as the result.
      * @return all Training Definitions for organizers.
      */
     @ApiOperation(httpMethod = "GET",
@@ -170,6 +187,13 @@ public class TrainingDefinitionsRestController {
         return ResponseEntity.ok(SquigglyUtils.stringify(objectMapper, trainingDefinitionResource));
     }
 
+    /**
+     * Find all training definitions by sandbox definition id.
+     *
+     * @param sandboxDefinitionId the sandbox definition id
+     * @param pageable            pageable parameter with information about pagination.
+     * @return the all training definitions by sandbox definition.
+     */
     @ApiOperation(httpMethod = "GET",
             value = "Get all training definition by sandbox definition id",
             response = TrainingDefinitionRestResource.class,
@@ -190,6 +214,13 @@ public class TrainingDefinitionsRestController {
         return ResponseEntity.ok(SquigglyUtils.stringify(objectMapper, trainingDefinitionResource));
     }
 
+    /**
+     * Create training definition.
+     *
+     * @param trainingDefinitionCreateDTO the training definition to be create
+     * @param fields                      attributes of the object to be returned as the result.
+     * @return the new training definition
+     */
     @ApiOperation(httpMethod = "POST",
             value = "Create Training Definition",
             response = TrainingDefinitionByIdDTO.class,
@@ -214,10 +245,14 @@ public class TrainingDefinitionsRestController {
         return ResponseEntity.ok(SquigglyUtils.stringify(objectMapper, trainingDefinitionResource));
     }
 
+    /**
+     * Update training definition.
+     *
+     * @param trainingDefinitionUpdateDTO the training definition to be updated
+     */
     @ApiOperation(httpMethod = "PUT",
             value = "Update Training Definition",
             notes = "Only unreleased training definition can be updated",
-            response = TrainingDefinitionByIdDTO.class,
             nickname = "updateTrainingDefinition",
             produces = MediaType.APPLICATION_JSON_VALUE,
             consumes = MediaType.APPLICATION_JSON_VALUE
@@ -241,6 +276,13 @@ public class TrainingDefinitionsRestController {
         }
     }
 
+    /**
+     * Clone training definition response entity.
+     *
+     * @param id    the id of cloned definition
+     * @param title the title of new definition
+     * @return the new definition
+     */
     @ApiOperation(httpMethod = "POST",
             value = "Clone training definition",
             notes = "Only released and archived training definitions can be cloned",
@@ -267,6 +309,14 @@ public class TrainingDefinitionsRestController {
         }
     }
 
+    /**
+     * Swap levels.
+     *
+     * @param definitionId the definition id
+     * @param levelIdFrom  the level id from
+     * @param levelIdTo    the level id to
+     * @return the basic information about levels
+     */
     @ApiOperation(httpMethod = "PUT",
             value = "Swap levels",
             notes = "The first one level cannot be swapped to the left",
@@ -295,6 +345,11 @@ public class TrainingDefinitionsRestController {
         }
     }
 
+    /**
+     * Delete training definition.
+     *
+     * @param id the id of definition to be deleted
+     */
     @ApiOperation(httpMethod = "DELETE",
             value = "Delete training definition",
             notes = "Released training definition canont be deleted",
@@ -319,6 +374,13 @@ public class TrainingDefinitionsRestController {
         }
     }
 
+    /**
+     * Delete one level from definition.
+     *
+     * @param definitionId the definition id
+     * @param levelId      the level id
+     * @return the basic information about levels
+     */
     @ApiOperation(httpMethod = "DELETE",
             value = "Delete specific level from definition",
             notes = "Level can be deleted only in unreleased training definition",
@@ -345,6 +407,12 @@ public class TrainingDefinitionsRestController {
         }
     }
 
+    /**
+     * Update game level.
+     *
+     * @param definitionId       the definition id
+     * @param gameLevelUpdateDTO the game level to be updated
+     */
     @ApiOperation(httpMethod = "PUT",
             value = "Update specific game level in given training definition",
             notes = "Level can be updated only in unreleased training definition",
@@ -372,6 +440,12 @@ public class TrainingDefinitionsRestController {
         }
     }
 
+    /**
+     * Update info level.
+     *
+     * @param definitionId       the definition id
+     * @param infoLevelUpdateDTO the info level to be updated
+     */
     @ApiOperation(httpMethod = "PUT",
             value = "Update specific info level in given training definition",
             notes = "Level can be deleted only in unreleased training definition",
@@ -399,6 +473,12 @@ public class TrainingDefinitionsRestController {
         }
     }
 
+    /**
+     * Update assessment level.
+     *
+     * @param definitionId             the definition id
+     * @param assessmentLevelUpdateDTO the assessment level to be updated
+     */
     @ApiOperation(httpMethod = "PUT",
             value = "Update specific assessment level in given training definition",
             notes = "Level can be deleted only in unreleased training definition",
@@ -426,6 +506,13 @@ public class TrainingDefinitionsRestController {
         }
     }
 
+    /**
+     * Find level by id.
+     *
+     * @param levelId the id of wanted level
+     * @param fields  attributes of the object to be returned as the result.
+     * @return wanted level
+     */
     @ApiOperation(httpMethod = "GET",
             value = "Find level by ID",
             response = AbstractLevelDTO.class,
@@ -452,6 +539,14 @@ public class TrainingDefinitionsRestController {
         }
     }
 
+    /**
+     * Create level.
+     *
+     * @param definitionId the definition id
+     * @param levelType    the type of new level
+     * @param fields       attributes of the object to be returned as the result.
+     * @return the basic information about new level
+     */
     @ApiOperation(httpMethod = "POST",
             value = "Create level",
             notes = "Creates only default level for given training definition",
@@ -492,6 +587,8 @@ public class TrainingDefinitionsRestController {
     /**
      * Get requested designers.
      *
+     * @param predicate  specifies query to database.
+     * @param pageable   pageable parameter with information about pagination.
      * @return List of users login and full name with role designer.
      */
     @ApiOperation(httpMethod = "GET",
@@ -519,6 +616,8 @@ public class TrainingDefinitionsRestController {
     /**
      * Get requested designers.
      *
+     * @param predicate  specifies query to database.
+     * @param pageable   pageable parameter with information about pagination.
      * @return List of users login and full name with role designer.
      */
     @ApiOperation(httpMethod = "GET",
@@ -542,6 +641,12 @@ public class TrainingDefinitionsRestController {
         }
     }
 
+    /**
+     * Switch development state of given definition.
+     *
+     * @param definitionId the definition id
+     * @param state        the new development state
+     */
     @ApiOperation(httpMethod = "PUT",
             value = "Switch state of training definition",
             response = Void.class,
