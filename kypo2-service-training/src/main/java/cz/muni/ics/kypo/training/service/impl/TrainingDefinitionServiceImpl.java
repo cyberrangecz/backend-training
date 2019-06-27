@@ -1,7 +1,7 @@
 package cz.muni.ics.kypo.training.service.impl;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.querydsl.core.types.Predicate;
+import cz.muni.ics.kypo.training.annotations.aop.TrackTime;
 import cz.muni.ics.kypo.training.annotations.security.IsDesignerOrAdmin;
 import cz.muni.ics.kypo.training.annotations.security.IsAdminOrDesignerOrOrganizer;
 import cz.muni.ics.kypo.training.annotations.security.IsOrganizerOrAdmin;
@@ -35,7 +35,6 @@ import org.springframework.util.Assert;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.io.IOException;
 import java.net.URI;
 import java.time.Clock;
 import java.time.LocalDateTime;
@@ -87,7 +86,6 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
             "T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ORGANIZER)" + "or @securityService.isDesignerOfGivenTrainingDefinition(#id)" +
             "or @securityService.isInBetaTestingGroup(#id)")
     public TrainingDefinition findById(Long id) {
-        LOG.debug("findById({})", id);
         return trainingDefinitionRepository.findById(id).orElseThrow(
                 () -> new ServiceLayerException("Training definition with id: " + id + " not found.", ErrorCode.RESOURCE_NOT_FOUND));
     }
@@ -95,7 +93,6 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     @Override
     @IsDesignerOrAdmin
     public Page<TrainingDefinition> findAll(Predicate predicate, Pageable pageable) {
-        LOG.debug("findAllTrainingDefinitions({},{})", predicate, pageable);
         if (securityService.isAdmin()) {
             return trainingDefinitionRepository.findAll(predicate, pageable);
         }
@@ -105,7 +102,6 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     @Override
     @IsOrganizerOrAdmin
     public Page<TrainingDefinition> findAllForOrganizers(Predicate predicate, Pageable pageable) {
-        LOG.debug("findAllTrainingDefinitions({},{})", predicate, pageable);
         if (securityService.isAdmin()) {
             return trainingDefinitionRepository.findAll(predicate, pageable);
         } else if (securityService.isDesigner() && securityService.isOrganizer()) {
@@ -119,7 +115,6 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     @Override
     @IsDesignerOrAdmin
     public TrainingDefinition create(TrainingDefinition trainingDefinition) {
-        LOG.debug("create({})", trainingDefinition);
         Assert.notNull(trainingDefinition, "Input training definition must not be null");
         String userSub = securityService.getSubOfLoggedInUser();
 
@@ -143,7 +138,6 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     @Override
     @IsDesignerOrAdmin
     public Page<TrainingDefinition> findAllBySandboxDefinitionId(Long sandboxDefinitionId, Pageable pageable) {
-        LOG.debug("findAllBySandboxDefinitionId({}, {})", sandboxDefinitionId, pageable);
         return trainingDefinitionRepository.findAllBySandBoxDefinitionRefId(sandboxDefinitionId, pageable);
     }
 
@@ -151,7 +145,6 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
             "or @securityService.isDesignerOfGivenTrainingDefinition(#trainingDefinitionToUpdate.id)")
     public void update(TrainingDefinition trainingDefinitionToUpdate) {
-        LOG.debug("update({})", trainingDefinitionToUpdate);
         Assert.notNull(trainingDefinitionToUpdate, "Input training definition must not be null");
         TrainingDefinition trainingDefinition = findById(trainingDefinitionToUpdate.getId());
         checkIfCanBeUpdated(trainingDefinition);
@@ -176,7 +169,6 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     @Override
     @IsDesignerOrAdmin
     public TrainingDefinition clone(Long id, String title) {
-        LOG.debug("clone({})", id);
         TrainingDefinition trainingDefinition = findById(id);
         TrainingDefinition clonedTrainingDefinition = new TrainingDefinition();
         BeanUtils.copyProperties(trainingDefinition, clonedTrainingDefinition);
@@ -211,7 +203,6 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
             "or @securityService.isDesignerOfGivenTrainingDefinition(#definitionId)")
     public void swapLevels(Long definitionId, Long swapLevelFrom, Long swapLevelTo) {
-        LOG.debug("swapByOne({}, {}, {})", definitionId, swapLevelFrom, swapLevelTo);
         TrainingDefinition trainingDefinition = findById(definitionId);
         checkIfCanBeUpdated(trainingDefinition);
         AbstractLevel swapAbstractLevelFrom = abstractLevelRepository.findById(swapLevelFrom).orElseThrow(() -> new ServiceLayerException(LEVEL_NOT_FOUND, ErrorCode.RESOURCE_NOT_FOUND));
@@ -228,8 +219,6 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
             "or @securityService.isDesignerOfGivenTrainingDefinition(#definitionId)")
     public void delete(Long definitionId) {
-        LOG.debug("delete({})", definitionId);
-
         TrainingDefinition definition = findById(definitionId);
         if (definition.getState().equals(TDState.RELEASED))
             throw new ServiceLayerException("Cannot delete released training definition.", ErrorCode.RESOURCE_CONFLICT);
@@ -246,7 +235,6 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
             "or @securityService.isDesignerOfGivenTrainingDefinition(#definitionId)")
     public void deleteOneLevel(Long definitionId, Long levelId) {
-        LOG.debug("deleteOneLevel({}, {})", definitionId, levelId);
         TrainingDefinition trainingDefinition = findById(definitionId);
         if (!trainingDefinition.getState().equals(TDState.UNRELEASED))
             throw new ServiceLayerException(ARCHIVED_OR_RELEASED, ErrorCode.RESOURCE_CONFLICT);
@@ -264,7 +252,6 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
             "or @securityService.isDesignerOfGivenTrainingDefinition(#definitionId)")
     public void updateGameLevel(Long definitionId, GameLevel gameLevelToUpdate) {
-        LOG.debug("updateGameLevel({}, {})", definitionId, gameLevelToUpdate);
         TrainingDefinition trainingDefinition = findById(definitionId);
         checkIfCanBeUpdated(trainingDefinition);
         if (!findLevelInDefinition(trainingDefinition, gameLevelToUpdate.getId()))
@@ -285,7 +272,6 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
             "or @securityService.isDesignerOfGivenTrainingDefinition(#definitionId)")
     public void updateInfoLevel(Long definitionId, InfoLevel infoLevelToUpdate) {
-        LOG.debug("updateInfoLevel({}, {})", definitionId, infoLevelToUpdate);
         TrainingDefinition trainingDefinition = findById(definitionId);
         checkIfCanBeUpdated(trainingDefinition);
         if (!findLevelInDefinition(trainingDefinition, infoLevelToUpdate.getId()))
@@ -306,7 +292,6 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
             "or @securityService.isDesignerOfGivenTrainingDefinition(#definitionId)")
     public void updateAssessmentLevel(Long definitionId, AssessmentLevel assessmentLevelToUpdate) {
-        LOG.debug("updateAssessmentLevel({}, {})", definitionId, assessmentLevelToUpdate);
         TrainingDefinition trainingDefinition = findById(definitionId);
         checkIfCanBeUpdated(trainingDefinition);
         if (!findLevelInDefinition(trainingDefinition, assessmentLevelToUpdate.getId()))
@@ -330,7 +315,6 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
             "or @securityService.isDesignerOfGivenTrainingDefinition(#definitionId)")
     public GameLevel createGameLevel(Long definitionId) {
-        LOG.debug("createGameLevel({})", definitionId);
         Assert.notNull(definitionId, "Definition id must not be null");
         TrainingDefinition trainingDefinition = findById(definitionId);
         if (!trainingDefinition.getState().equals(TDState.UNRELEASED))
@@ -366,7 +350,6 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
             "or @securityService.isDesignerOfGivenTrainingDefinition(#definitionId)")
     public InfoLevel createInfoLevel(Long definitionId) {
-        LOG.debug("createInfoLevel({})", definitionId);
         Assert.notNull(definitionId, "Definition id must not be null");
         TrainingDefinition trainingDefinition = findById(definitionId);
         checkIfCanBeUpdated(trainingDefinition);
@@ -386,7 +369,6 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
             "or @securityService.isDesignerOfGivenTrainingDefinition(#definitionId)")
     public AssessmentLevel createAssessmentLevel(Long definitionId) {
-        LOG.debug("createAssessmentLevel({})", definitionId);
         Assert.notNull(definitionId, "Definition id must not be null");
         TrainingDefinition trainingDefinition = findById(definitionId);
         if (!trainingDefinition.getState().equals(TDState.UNRELEASED))
@@ -417,7 +399,6 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
             "T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ORGANIZER)" +
             "or @securityService.isDesignerOfGivenTrainingDefinition(#definitionId)")
     public List<AbstractLevel> findAllLevelsFromDefinition(Long definitionId) {
-        LOG.debug("findAllLevelsFromDefinition({})", definitionId);
         Assert.notNull(definitionId, "Definition id must not be null");
         return abstractLevelRepository.findAllLevelsByTrainingDefinitionId(definitionId);
     }
@@ -425,7 +406,6 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     @Override
     @IsDesignerOrAdmin
     public AbstractLevel findLevelById(Long levelId) {
-        LOG.debug("findLevelById({})", levelId);
         Assert.notNull(levelId, "Input level id must not be null.");
         return abstractLevelRepository.findByIdIncludinDefinition(levelId)
                 .orElseThrow(() -> new ServiceLayerException("Level with id: " + levelId + ", not found", ErrorCode.RESOURCE_NOT_FOUND));
@@ -447,6 +427,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
 
     @Override
     @IsDesignerOrAdmin
+    @TrackTime
     public List<UserInfoDTO> getUsersWithGivenRole(RoleType roleType, Pageable pageable) {
         HttpHeaders httpHeaders = new HttpHeaders();
         String url = userAndGroupUrl + "/roles/users" + "?roleType=" + roleType
@@ -462,6 +443,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
 
     @Override
     @IsDesignerOrAdmin
+    @TrackTime
     public Set<UserInfoDTO> getUsersWithGivenLogins(Set<String> logins) {
         HttpHeaders httpHeaders = new HttpHeaders();
         UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(userAndGroupUrl + "/users/logins");
@@ -480,7 +462,6 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     @Override
     @TransactionalWO
     public UserRef createUserRef(UserRef userRefToCreate) {
-        LOG.debug("createUserRef({})", userRefToCreate.getUserRefLogin());
         Assert.notNull(userRefToCreate, "User ref must not be null");
         UserRef userRef = userRefRepository.save(userRefToCreate);
         LOG.info("User ref with login: {} created.", userRef.getUserRefLogin());
@@ -492,7 +473,6 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
             "or @securityService.isDesignerOfGivenTrainingDefinition(#definitionId)")
     public void switchState(Long definitionId, cz.muni.ics.kypo.training.api.enums.TDState state) {
-        LOG.debug("unreleaseDefinition({})", definitionId);
         TrainingDefinition trainingDefinition = findById(definitionId);
         if(trainingDefinition.getState().name().equals(state.name())) {
             return;
@@ -516,7 +496,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
                 }
                 break;
             default:
-                throw new ServiceLayerException("Cannot switch from" + trainingDefinition.getState() + " to " + state, ErrorCode.RESOURCE_CONFLICT);
+                throw new ServiceLayerException("Cannot switch from " + trainingDefinition.getState() + " to " + state, ErrorCode.RESOURCE_CONFLICT);
         }
         trainingDefinition.setLastEdited(getCurrentTimeInUTC());
     }
@@ -537,8 +517,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
         }
         levels.forEach(level -> {
             if (level instanceof AssessmentLevel) {
-                //TODO why it is commented
-//                AssessmentUtil.validQuestions(((AssessmentLevel) level).getQuestions());
+                AssessmentUtil.validQuestions(((AssessmentLevel) level).getQuestions());
                 AssessmentLevel newAssessmentLevel = new AssessmentLevel();
                 BeanUtils.copyProperties(level, newAssessmentLevel);
                 newAssessmentLevel.setId(null);

@@ -1187,7 +1187,7 @@ public class TrainingDefinitionsIT {
                 .andReturn().getResolvedException();
         assertEquals(TDState.ARCHIVED.name(), archivedTrainingDefinition.getState().name());
         assertEquals(ConflictException.class, Objects.requireNonNull(ex).getClass());
-        assertEquals("ServiceLayerException : Cannot switch from" + TDState.ARCHIVED.name() + " to " + TDState.UNRELEASED.name(), ex.getMessage());
+        assertEquals("Cannot switch from " + TDState.ARCHIVED.name() + " to " + TDState.UNRELEASED.name(), ex.getCause().getCause().getMessage());
     }
 
     @Test

@@ -51,7 +51,6 @@ public class TrainingEventsRestController {
     public ResponseEntity<Object> getAllEventsByTrainingDefinitionAndTrainingInstanceId(
             @ApiParam(value = "Training definition ID", required = true) @PathVariable(value = "trainingDefinitionId") Long trainingDefinitionId,
             @ApiParam(value = "Training instance ID", required = true) @PathVariable(value = "trainingInstanceId") Long trainingInstanceId) {
-        LOG.debug("getAllEventsByTrainingDefinitionAndTrainingInstanceId({},{})", trainingDefinitionId, trainingInstanceId);
         try {
             return ResponseEntity.ok(trainingEventsService.findAllEventsByTrainingDefinitionAndTrainingInstanceId(trainingDefinitionId, trainingInstanceId));
         } catch (IOException ex) {
@@ -78,7 +77,6 @@ public class TrainingEventsRestController {
             @ApiParam(value = "Training definition ID", required = true) @PathVariable(value = "trainingDefinitionId") Long trainingDefinitionId,
             @ApiParam(value = "Training instance ID", required = true) @PathVariable(value = "trainingInstanceId") Long trainingInstanceId,
             @ApiParam(value = "Training run ID", required = true) @PathVariable(value = "trainingRunId") Long trainingRunId) {
-        LOG.debug("getAllEventsFromTrainingRun({},{},{})", trainingDefinitionId, trainingInstanceId, trainingRunId);
         try {
             return ResponseEntity.ok(trainingEventsService.findAllEventsFromTrainingRun(trainingDefinitionId, trainingInstanceId, trainingRunId));
         } catch (IOException ex) {

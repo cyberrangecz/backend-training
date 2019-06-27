@@ -401,7 +401,7 @@ public class TrainingRunsIT {
                 .andExpect(status().isConflict())
                 .andReturn().getResolvedException();
         assertEquals(ConflictException.class, Objects.requireNonNull(exception).getClass());
-        assertEquals("ServiceLayerException : At first organizer must allocate sandboxes for training instance.", exception.getMessage());
+        assertEquals("At first organizer must allocate sandboxes for training instance.", exception.getCause().getCause().getMessage());
     }
 
     @Test
@@ -416,7 +416,7 @@ public class TrainingRunsIT {
                 .andExpect(status().isNotFound())
                 .andReturn().getResolvedException();
         assertEquals(ResourceNotFoundException.class, Objects.requireNonNull(exception).getClass());
-        assertEquals("ServiceLayerException : No starting level available for this training definition.", exception.getMessage());
+        assertEquals("No starting level available for this training definition.", exception.getCause().getCause().getMessage());
     }
 
 
@@ -431,7 +431,7 @@ public class TrainingRunsIT {
                 .andExpect(status().isServiceUnavailable())
                 .andReturn().getResolvedException();
         assertEquals(ServiceUnavailableException.class, Objects.requireNonNull(exception).getClass());
-        assertEquals("ServiceLayerException : There is no available sandbox, wait a minute and try again.", exception.getMessage());
+        assertEquals("There is no available sandbox, wait a minute and try again.", exception.getCause().getCause().getMessage());
     }
 
         @Test
@@ -445,7 +445,7 @@ public class TrainingRunsIT {
                 .andExpect(status().isServiceUnavailable())
                 .andReturn().getResolvedException();
         assertEquals(ServiceUnavailableException.class, Objects.requireNonNull(exception).getClass());
-        assertEquals("ServiceLayerException : There is no available sandbox, wait a minute and try again.", exception.getMessage());
+        assertEquals("There is no available sandbox, wait a minute and try again.", exception.getCause().getCause().getMessage());
     }
 
     @Test
@@ -509,7 +509,7 @@ public class TrainingRunsIT {
                 .andExpect(status().isConflict())
                 .andReturn().getResolvedException();
         assertEquals(ConflictException.class, Objects.requireNonNull(ex).getClass());
-        assertEquals("ServiceLayerException : At first you need to answer the level.", ex.getMessage());
+        assertEquals("At first you need to answer the level.", ex.getCause().getCause().getMessage());
     }
 
     @Test
@@ -522,7 +522,7 @@ public class TrainingRunsIT {
                 .andExpect(status().isNotFound())
                 .andReturn().getResolvedException();
         assertEquals(ResourceNotFoundException.class, Objects.requireNonNull(ex).getClass());
-        assertEquals("ServiceLayerException : There is no next level.", ex.getMessage());
+        assertEquals("There is no next level.", ex.getCause().getCause().getMessage());
     }
 
     @Test
@@ -574,7 +574,7 @@ public class TrainingRunsIT {
                 .andExpect(status().isNotFound())
                 .andReturn().getResolvedException();
         assertEquals(ResourceNotFoundException.class, Objects.requireNonNull(ex).getClass());
-        assertEquals("ServiceLayerException : Training Run with id: " + nonExistentTrainingRunId +  " not found.", ex.getMessage());
+        assertEquals("Training Run with id: " + nonExistentTrainingRunId +  " not found.", ex.getCause().getCause().getMessage());
     }
 
     @Test
@@ -600,7 +600,7 @@ public class TrainingRunsIT {
                 .andExpect(status().isNotFound())
                 .andReturn().getResolvedException();
         assertEquals(Objects.requireNonNull(ex).getClass(), ResourceNotFoundException.class);
-        assertEquals("ServiceLayerException : Hint with id " + nonExistentHintId + " not found.", ex.getMessage());
+        assertEquals("Hint with id " + nonExistentHintId + " not found.", ex.getCause().getCause().getMessage());
     }
 
     @Test
@@ -610,7 +610,7 @@ public class TrainingRunsIT {
                 .andExpect(status().isNotFound())
                 .andReturn().getResolvedException();
         assertEquals(Objects.requireNonNull(ex).getClass(), ResourceNotFoundException.class);
-        assertEquals("ServiceLayerException : Training Run with id: " + nonExistentTrainingRunId + " not found.", ex.getMessage());
+        assertEquals("Training Run with id: " + nonExistentTrainingRunId + " not found.", ex.getCause().getCause().getMessage());
 
     }
 
@@ -779,7 +779,7 @@ public class TrainingRunsIT {
                 .andExpect(status().isConflict())
                 .andReturn().getResolvedException();
         assertEquals(ConflictException.class, Objects.requireNonNull(ex).getClass());
-        assertEquals("ServiceLayerException : Cannot resume finished training run.", ex.getLocalizedMessage());
+        assertEquals("Cannot resume finished training run.", ex.getCause().getCause().getLocalizedMessage());
     }
 
     @Test
@@ -792,7 +792,7 @@ public class TrainingRunsIT {
                 .andExpect(status().isConflict())
                 .andReturn().getResolvedException();
         assertEquals(ConflictException.class, Objects.requireNonNull(ex).getClass());
-        assertEquals("ServiceLayerException : Cannot resume training run after end of training instance.", ex.getLocalizedMessage());
+        assertEquals("Cannot resume training run after end of training instance.", ex.getCause().getCause().getLocalizedMessage());
     }
 
     @Test
@@ -803,7 +803,7 @@ public class TrainingRunsIT {
                 .andExpect(status().isConflict())
                 .andReturn().getResolvedException();
         assertEquals(ConflictException.class, Objects.requireNonNull(ex).getClass());
-        assertEquals("ServiceLayerException : Sandbox of this training run was already deleted, you have to start new game.", ex.getLocalizedMessage());
+        assertEquals("Sandbox of this training run was already deleted, you have to start new game.", ex.getCause().getCause().getLocalizedMessage());
     }
 
     @Test
@@ -816,7 +816,7 @@ public class TrainingRunsIT {
                 .andExpect(status().isConflict())
                 .andReturn().getResolvedException();
         assertEquals(ConflictException.class, Objects.requireNonNull(ex).getClass());
-        assertEquals("ServiceLayerException : Something happened with sandbox. Please contact organizer of training instance or administrator.", ex.getLocalizedMessage());
+        assertEquals("Something happened with sandbox. Please contact organizer of training instance or administrator.", ex.getCause().getCause().getLocalizedMessage());
     }
 
 
@@ -828,7 +828,7 @@ public class TrainingRunsIT {
                 .andExpect(status().isConflict())
                 .andReturn().getResolvedException();
         assertEquals(ConflictException.class, Objects.requireNonNull(ex).getClass());
-        assertEquals("ServiceLayerException : Cannot resume finished training run.", ex.getLocalizedMessage());
+        assertEquals("Cannot resume finished training run.", ex.getCause().getCause().getLocalizedMessage());
     }
 
     @Test
@@ -838,7 +838,7 @@ public class TrainingRunsIT {
                 .andReturn().getResolvedException();
 
         assertEquals(ResourceNotFoundException.class, Objects.requireNonNull(ex).getClass());
-        assertEquals("ServiceLayerException : Training Run with id: " + nonExistentTrainingRunId + " not found.", ex.getLocalizedMessage());
+        assertEquals("Training Run with id: " + nonExistentTrainingRunId + " not found.", ex.getCause().getCause().getLocalizedMessage());
     }
 
     @Test
@@ -857,7 +857,7 @@ public class TrainingRunsIT {
                 .andExpect(status().isConflict())
                 .andReturn().getResolvedException();
         assertEquals(ConflictException.class, Objects.requireNonNull(ex).getClass());
-        assertEquals("ServiceLayerException : Cannot finish training run because current level is not last.", ex.getLocalizedMessage());
+        assertEquals("Cannot finish training run because current level is not last.", ex.getCause().getCause().getLocalizedMessage());
     }
 
     @Test
@@ -869,7 +869,7 @@ public class TrainingRunsIT {
                 .andExpect(status().isConflict())
                 .andReturn().getResolvedException();
         assertEquals(ConflictException.class, Objects.requireNonNull(ex).getClass());
-        assertEquals("ServiceLayerException : Cannot finish training run because current level is not answered.", ex.getLocalizedMessage());
+        assertEquals("Cannot finish training run because current level is not answered.", ex.getCause().getCause().getLocalizedMessage());
     }
 
     @Test
@@ -878,7 +878,7 @@ public class TrainingRunsIT {
                 .andExpect(status().isNotFound())
                 .andReturn().getResolvedException();
         assertEquals(ResourceNotFoundException.class, ex.getClass());
-        assertEquals("ServiceLayerException : Training Run with runId: " + nonExistentTrainingRunId + " not found.", ex.getLocalizedMessage());
+        assertEquals("Training Run with runId: " + nonExistentTrainingRunId + " not found.", ex.getCause().getCause().getLocalizedMessage());
     }
 
     private static String convertObjectToJsonBytes(Object object) throws IOException {

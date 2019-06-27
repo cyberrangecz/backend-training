@@ -62,7 +62,6 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
     @Override
     @TransactionalRO
     public TrainingInstanceDTO findById(Long id) {
-        LOG.debug("findById({})", id);
         try {
             Objects.requireNonNull(id);
             TrainingInstanceDTO trainingInstanceDTO = trainingInstanceMapper.mapToDTO(trainingInstanceService.findByIdIncludingDefinition(id));
@@ -76,7 +75,6 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
     @Override
     @TransactionalRO
     public PageResultResource<TrainingInstanceDTO> findAll(Predicate predicate, Pageable pageable) {
-        LOG.debug("findAllTrainingDefinitions({},{})", predicate, pageable);
         PageResultResource<TrainingInstanceDTO> trainingInstancePageResultResource = trainingInstanceMapper.mapToPageResultResource(trainingInstanceService.findAll(predicate, pageable));
         trainingInstancePageResultResource.getContent().forEach(trainingInstanceDTO -> trainingInstanceDTO.setSandboxesWithTrainingRun(trainingInstanceService.findIdsOfAllOccupiedSandboxesByTrainingInstance(trainingInstanceDTO.getId())));
         return trainingInstancePageResultResource;
@@ -85,7 +83,6 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
     @Override
     @TransactionalWO
     public String update(TrainingInstanceUpdateDTO trainingInstanceUpdateDTO) {
-        LOG.debug("update({})", trainingInstanceUpdateDTO);
         try {
             Objects.requireNonNull(trainingInstanceUpdateDTO);
             TrainingInstance trainingInstance = trainingInstanceMapper.mapUpdateToEntity(trainingInstanceUpdateDTO);
@@ -100,7 +97,6 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
     @Override
     @TransactionalWO
     public TrainingInstanceDTO create(TrainingInstanceCreateDTO trainingInstanceCreateDTO) {
-        LOG.debug("create({})", trainingInstanceCreateDTO);
         try {
             Objects.requireNonNull(trainingInstanceCreateDTO);
             TrainingInstance trainingInstance = trainingInstanceMapper.mapCreateToEntity(trainingInstanceCreateDTO);
@@ -144,7 +140,6 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
     @Override
     @TransactionalWO
     public Long createPoolForSandboxes(Long instanceId) {
-        LOG.debug("createPoolForSandboxes({})", instanceId);
         try {
             return trainingInstanceService.createPoolForSandboxes(instanceId);
         } catch (ServiceLayerException ex) {
@@ -155,7 +150,6 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
     @Override
     @TransactionalWO
     public void allocateSandboxes(Long instanceId, Integer count) {
-        LOG.debug("allocateSandboxes({})", instanceId);
         TrainingInstance trainingInstance = trainingInstanceService.findById(instanceId);
         //Check if pool exist
         if (trainingInstance.getPoolId() == null) {
@@ -171,7 +165,6 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
     @Override
     @TransactionalWO
     public void deleteSandboxes(Long instanceId, Set<Long> sandboxIds) {
-        LOG.debug("deleteFailedSandboxes({}, {})", instanceId, sandboxIds);
         try {
             TrainingInstance trainingInstance = trainingInstanceService.findById(instanceId);
             for (Long idOfSandboxToDelete : sandboxIds) {
@@ -185,7 +178,6 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
     @Override
     @TransactionalRO
     public PageResultResource<TrainingRunDTO> findTrainingRunsByTrainingInstance(Long trainingInstanceId, Boolean isActive, Pageable pageable) {
-        LOG.debug("findAllTrainingRunsByTrainingInstance({})", trainingInstanceId);
         try {
             Page<TrainingRun> trainingRuns = trainingInstanceService.findTrainingRunsByTrainingInstance(trainingInstanceId, isActive, pageable);
             return trainingRunMapper.mapToPageResultResource(trainingRuns);
@@ -196,7 +188,6 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
 
     @Override
     public void reallocateSandbox(Long instanceId, Long sandboxId) {
-        LOG.debug("reallocateSandboxes({}, {})", instanceId, sandboxId);
         try {
             TrainingInstance trainingInstance = trainingInstanceService.findById(instanceId);
             SandboxInstanceRef sandboxRefToDelete = trainingInstance.getSandboxInstanceRefs().stream().filter(sIR ->

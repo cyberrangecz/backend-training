@@ -1,4 +1,4 @@
-package cz.muni.ics.kypo.training.rest.aop.annotations;
+package cz.muni.ics.kypo.training.annotations.aop;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

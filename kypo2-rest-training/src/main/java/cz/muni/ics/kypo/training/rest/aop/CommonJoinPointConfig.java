@@ -4,6 +4,7 @@ import org.aspectj.lang.annotation.Pointcut;
 
 /**
  * @author Pavel Seda (441048)
+ * @author Dominik Pilar (445537)
  */
 public class CommonJoinPointConfig {
 
@@ -11,7 +12,7 @@ public class CommonJoinPointConfig {
     public void dataLayerExecutionLoggingDebug() {
     }
 
-    @Pointcut("execution(* cz.muni.ics.kypo.training.service.*.*(..))")
+    @Pointcut("execution(* cz.muni.ics.kypo.training.service.*.*(..)) && !@annotation(cz.muni.ics.kypo.training.annotations.aop.TrackTime)")
     public void serviceLayerExecutionLoggingDebug() {
     }
 
@@ -19,11 +20,11 @@ public class CommonJoinPointConfig {
     public void facadeLayerExecutionLoggingDebug() {
     }
 
-    @Pointcut("execution(* cz.muni.ics.kypo.training.rest.*.*(..))")
+    @Pointcut("within(cz.muni.ics.kypo.training.rest.controllers.*)")
     public void restLayerExecutionLoggingDebug() {
     }
 
-    @Pointcut("execution(* cz.muni.ics.kypo.training.rest.controllers*.*(..))")
+    @Pointcut("execution(* cz.muni.ics.kypo.training.rest.CustomRestExceptionHandlerTraining.*(..))")
     public void restLayerExecutionLoggingError() {
     }
 

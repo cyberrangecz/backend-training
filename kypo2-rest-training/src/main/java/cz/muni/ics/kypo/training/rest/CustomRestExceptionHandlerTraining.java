@@ -47,7 +47,6 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
     @Override
     protected ResponseEntity<Object> handleMethodArgumentNotValid(final MethodArgumentNotValidException ex, final HttpHeaders headers,
                                                                   final HttpStatus status, final WebRequest request) {
-        LOG.error("handleMethodArgumentNotValid({}, {}, {}, {})", new Object[]{ex, headers, status, request});
 
         final List<String> errors = new ArrayList<>();
         for (final FieldError error : ex.getBindingResult().getFieldErrors()) {
@@ -65,7 +64,6 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
     @Override
     protected ResponseEntity<Object> handleBindException(final BindException ex, final HttpHeaders headers, final HttpStatus status,
                                                          final WebRequest request) {
-        LOG.error("handleBindException({}, {}, {}, {})", new Object[]{ex, headers, status, request});
 
         final List<String> errors = new ArrayList<>();
         for (final FieldError error : ex.getBindingResult().getFieldErrors()) {
@@ -82,7 +80,6 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
     @Override
     protected ResponseEntity<Object> handleTypeMismatch(final TypeMismatchException ex, final HttpHeaders headers, final HttpStatus status,
                                                         final WebRequest request) {
-        LOG.error("handleTypeMismatch({}, {}, {}, {})", new Object[]{ex, headers, status, request});
 
         final String error = ex.getValue() + " value for " + ex.getPropertyName() + " should be of type " + ex.getRequiredType();
 
@@ -94,7 +91,6 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
     @Override
     protected ResponseEntity<Object> handleMissingServletRequestPart(final MissingServletRequestPartException ex, final HttpHeaders headers,
                                                                      final HttpStatus status, final WebRequest request) {
-        LOG.error("handleMissingServletRequestPart({}, {}, {}, {})", new Object[]{ex, headers, status, request});
 
         final String error = ex.getRequestPartName() + " part is missing";
         final ApiErrorTraining apiError = new ApiErrorTraining.ApiErrorBuilder(HttpStatus.BAD_REQUEST, ex.getLocalizedMessage()).setError(error)
@@ -105,7 +101,6 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
     @Override
     protected ResponseEntity<Object> handleMissingServletRequestParameter(final MissingServletRequestParameterException ex,
                                                                           final HttpHeaders headers, final HttpStatus status, final WebRequest request) {
-        LOG.error("handleMissingServletRequestParameter({}, {}, {}, {})", new Object[]{ex, headers, status, request});
 
         final String error = ex.getParameterName() + " parameter is missing";
         final ApiErrorTraining apiError = new ApiErrorTraining.ApiErrorBuilder(HttpStatus.BAD_REQUEST, ex.getLocalizedMessage()).setError(error)
@@ -117,10 +112,9 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
     @Override
     protected ResponseEntity<Object> handleNoHandlerFoundException(final NoHandlerFoundException ex, final HttpHeaders headers,
                                                                    final HttpStatus status, final WebRequest request) {
-        LOG.error("handleNoHandlerFoundException({}, {}, {}, {})", new Object[]{ex, headers, status, request});
 
         final String error = "No handler found for " + ex.getHttpMethod() + " " + ex.getRequestURL();
-        final ApiErrorTraining apiError = new ApiErrorTraining.ApiErrorBuilder(HttpStatus.NOT_FOUND, ex.getLocalizedMessage()).setError(error)
+        final ApiErrorTraining apiError = new ApiErrorTraining.ApiErrorBuilder(HttpStatus.NOT_FOUND, getInitialException(ex).getLocalizedMessage()).setError(error)
                 .setPath(request.getContextPath()).build();
         return new ResponseEntity<>(apiError, new HttpHeaders(), apiError.getStatus());
     }
@@ -145,7 +139,6 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
     @Override
     protected ResponseEntity<Object> handleHttpMediaTypeNotSupported(final HttpMediaTypeNotSupportedException ex, final HttpHeaders headers,
                                                                      final HttpStatus status, final WebRequest request) {
-        LOG.error("handleHttpMediaTypeNotSupported({}, {}, {}, {})", new Object[]{ex, headers, status, request});
 
         final StringBuilder builder = new StringBuilder();
         builder.append(ex.getContentType());
@@ -162,32 +155,29 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
 
     @ExceptionHandler(BadGatewayException.class)
     public ResponseEntity<Object> handleBadGatewayException(final BadGatewayException ex, final WebRequest request, HttpServletRequest req) {
-        LOG.error("handleBadGatewayException({}, {}, {})", new Object[]{ex, request, req});
 
         final ApiErrorTraining apiError =
                 new ApiErrorTraining.ApiErrorBuilder(BadGatewayException.class.getAnnotation(ResponseStatus.class).value(),
-                        ex.getLocalizedMessage()).setError(BadGatewayException.class.getAnnotation(ResponseStatus.class).reason())
+                        getInitialException(ex).getLocalizedMessage()).setError(BadGatewayException.class.getAnnotation(ResponseStatus.class).reason())
                         .setPath(URL_PATH_HELPER.getRequestUri(req)).build();
         return new ResponseEntity<>(apiError, new HttpHeaders(), apiError.getStatus());
     }
 
     @ExceptionHandler(BadRequestException.class)
     public ResponseEntity<Object> handleBadRequestException(final BadRequestException ex, final WebRequest request, HttpServletRequest req) {
-        LOG.error("handleBadRequestException({}, {}, {})", new Object[]{ex, request, req});
 
         final ApiErrorTraining apiError =
                 new ApiErrorTraining.ApiErrorBuilder(BadRequestException.class.getAnnotation(ResponseStatus.class).value(),
-                        ex.getLocalizedMessage()).setError(BadRequestException.class.getAnnotation(ResponseStatus.class).reason())
+                        getInitialException(ex).getLocalizedMessage()).setError(BadRequestException.class.getAnnotation(ResponseStatus.class).reason())
                         .setPath(URL_PATH_HELPER.getRequestUri(req)).build();
         return new ResponseEntity<>(apiError, new HttpHeaders(), apiError.getStatus());
     }
 
     // @ExceptionHandler(ForbiddenException.class)
     public ResponseEntity<Object> handleForbiddenException(final ForbiddenException ex, final WebRequest request, HttpServletRequest req) {
-        LOG.error("handleForbiddenException({}, {}, {})", new Object[]{ex, request, req});
 
         final ApiErrorTraining apiError =
-                new ApiErrorTraining.ApiErrorBuilder(ForbiddenException.class.getAnnotation(ResponseStatus.class).value(), ex.getLocalizedMessage())
+                new ApiErrorTraining.ApiErrorBuilder(ForbiddenException.class.getAnnotation(ResponseStatus.class).value(), getInitialException(ex).getLocalizedMessage())
                         .setError(ForbiddenException.class.getAnnotation(ResponseStatus.class).reason()).setPath(URL_PATH_HELPER.getRequestUri(req)).build();
         return new ResponseEntity<>(apiError, new HttpHeaders(), apiError.getStatus());
     }
@@ -195,7 +185,6 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
     @ExceptionHandler(GatewayTimeoutException.class)
     public ResponseEntity<Object> handleGatewayTimeoutException(final GatewayTimeoutException ex, final WebRequest request,
                                                                 HttpServletRequest req) {
-        LOG.error("handleGatewayTimeoutException({}, {}, {})", new Object[]{ex, request, req});
 
         final ApiErrorTraining apiError =
                 new ApiErrorTraining.ApiErrorBuilder(GatewayTimeoutException.class.getAnnotation(ResponseStatus.class).value(),
@@ -207,11 +196,10 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
     @ExceptionHandler(HTTPVersionNotSupportedException.class)
     public ResponseEntity<Object> handleHTTPVersionNotSupportedException(final HTTPVersionNotSupportedException ex, final WebRequest request,
                                                                          HttpServletRequest req) {
-        LOG.error("handleHTTPVersionNotSupportedException({}, {}, {})", new Object[]{ex, request, req});
 
         final ApiErrorTraining apiError =
                 new ApiErrorTraining.ApiErrorBuilder(HTTPVersionNotSupportedException.class.getAnnotation(ResponseStatus.class).value(),
-                        ex.getLocalizedMessage()).setError(HTTPVersionNotSupportedException.class.getAnnotation(ResponseStatus.class).reason())
+                        getInitialException(ex).getLocalizedMessage()).setError(HTTPVersionNotSupportedException.class.getAnnotation(ResponseStatus.class).reason())
                         .setPath(URL_PATH_HELPER.getRequestUri(req)).build();
         return new ResponseEntity<>(apiError, new HttpHeaders(), apiError.getStatus());
     }
@@ -219,11 +207,10 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
     @ExceptionHandler(InsufficientStorageException.class)
     public ResponseEntity<Object> handleInsufficientStorageException(final InsufficientStorageException ex, final WebRequest request,
                                                                      HttpServletRequest req) {
-        LOG.error("handleInsufficientStorageException({}, {}, {})", new Object[]{ex, request, req});
 
         final ApiErrorTraining apiError =
                 new ApiErrorTraining.ApiErrorBuilder(InsufficientStorageException.class.getAnnotation(ResponseStatus.class).value(),
-                        ex.getLocalizedMessage()).setError(InsufficientStorageException.class.getAnnotation(ResponseStatus.class).reason())
+                        getInitialException(ex).getLocalizedMessage()).setError(InsufficientStorageException.class.getAnnotation(ResponseStatus.class).reason())
                         .setPath(URL_PATH_HELPER.getRequestUri(req)).build();
         return new ResponseEntity<>(apiError, new HttpHeaders(), apiError.getStatus());
     }
@@ -231,11 +218,10 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
     @ExceptionHandler(InternalServerErrorException.class)
     public ResponseEntity<Object> handleInternalServerErrorException(final InternalServerErrorException ex, final WebRequest request,
                                                                      HttpServletRequest req) {
-        LOG.error("handleInternalServerErrorException({}, {}, {})", new Object[]{ex, request, req});
 
         final ApiErrorTraining apiError =
                 new ApiErrorTraining.ApiErrorBuilder(InternalServerErrorException.class.getAnnotation(ResponseStatus.class).value(),
-                        ex.getLocalizedMessage()).setError(InternalServerErrorException.class.getAnnotation(ResponseStatus.class).reason())
+                        getInitialException(ex).getLocalizedMessage()).setError(InternalServerErrorException.class.getAnnotation(ResponseStatus.class).reason())
                         .setPath(URL_PATH_HELPER.getRequestUri(req)).build();
         return new ResponseEntity<>(apiError, new HttpHeaders(), apiError.getStatus());
     }
@@ -243,11 +229,10 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
     @ExceptionHandler(InvalidParameterException.class)
     public ResponseEntity<Object> handleInvalidParameterException(final InvalidParameterException ex, final WebRequest request,
                                                                   HttpServletRequest req) {
-        LOG.error("handleInvalidParameterException({}, {}, {})", new Object[]{ex, request, req});
 
         final ApiErrorTraining apiError =
                 new ApiErrorTraining.ApiErrorBuilder(InvalidParameterException.class.getAnnotation(ResponseStatus.class).value(),
-                        ex.getLocalizedMessage()).setError(InvalidParameterException.class.getAnnotation(ResponseStatus.class).reason())
+                        getInitialException(ex).getLocalizedMessage()).setError(InvalidParameterException.class.getAnnotation(ResponseStatus.class).reason())
                         .setPath(URL_PATH_HELPER.getRequestUri(req)).build();
         return new ResponseEntity<>(apiError, new HttpHeaders(), apiError.getStatus());
     }
@@ -255,11 +240,10 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
     @ExceptionHandler(LoopDetectedException.class)
     public ResponseEntity<Object> handleLoopDetectedException(final LoopDetectedException ex, final WebRequest request,
                                                               HttpServletRequest req) {
-        LOG.error("handleLoopDetectedException({}, {}, {})", new Object[]{ex, request, req});
 
         final ApiErrorTraining apiError =
                 new ApiErrorTraining.ApiErrorBuilder(LoopDetectedException.class.getAnnotation(ResponseStatus.class).value(),
-                        ex.getLocalizedMessage()).setError(LoopDetectedException.class.getAnnotation(ResponseStatus.class).reason())
+                        getInitialException(ex).getLocalizedMessage()).setError(LoopDetectedException.class.getAnnotation(ResponseStatus.class).reason())
                         .setPath(URL_PATH_HELPER.getRequestUri(req)).build();
         return new ResponseEntity<>(apiError, new HttpHeaders(), apiError.getStatus());
     }
@@ -267,11 +251,10 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
     @ExceptionHandler(MethodNotAllowedException.class)
     public ResponseEntity<Object> handleMethodNotAllowedException(final MethodNotAllowedException ex, final WebRequest request,
                                                                   HttpServletRequest req) {
-        LOG.error("handleMethodNotAllowedException({}, {}, {})", new Object[]{ex, request, req});
 
         final ApiErrorTraining apiError =
                 new ApiErrorTraining.ApiErrorBuilder(MethodNotAllowedException.class.getAnnotation(ResponseStatus.class).value(),
-                        ex.getLocalizedMessage()).setError(MethodNotAllowedException.class.getAnnotation(ResponseStatus.class).reason())
+                        getInitialException(ex).getLocalizedMessage()).setError(MethodNotAllowedException.class.getAnnotation(ResponseStatus.class).reason())
                         .setPath(URL_PATH_HELPER.getRequestUri(req)).build();
         return new ResponseEntity<>(apiError, new HttpHeaders(), apiError.getStatus());
     }
@@ -279,11 +262,10 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
     @ExceptionHandler(MovedPermanentlyException.class)
     public ResponseEntity<Object> handleMovedPermanentlyException(final MovedPermanentlyException ex, final WebRequest request,
                                                                   HttpServletRequest req) {
-        LOG.error("handleMovedPermanentlyException({}, {}, {})", new Object[]{ex, request, req});
 
         final ApiErrorTraining apiError =
                 new ApiErrorTraining.ApiErrorBuilder(MovedPermanentlyException.class.getAnnotation(ResponseStatus.class).value(),
-                        ex.getLocalizedMessage()).setError(MovedPermanentlyException.class.getAnnotation(ResponseStatus.class).reason())
+                        getInitialException(ex).getLocalizedMessage()).setError(MovedPermanentlyException.class.getAnnotation(ResponseStatus.class).reason())
                         .setPath(URL_PATH_HELPER.getRequestUri(req)).build();
         return new ResponseEntity<>(apiError, new HttpHeaders(), apiError.getStatus());
     }
@@ -291,21 +273,19 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
     @ExceptionHandler(NetworkAuthenticationRequiredException.class)
     public ResponseEntity<Object> handleNetworkAuthenticationRequiredException(final NetworkAuthenticationRequiredException ex,
                                                                                final WebRequest request, HttpServletRequest req) {
-        LOG.error("handleNetworkAuthenticationRequiredException({}, {}, {})", new Object[]{ex, request, req});
 
         final ApiErrorTraining apiError =
                 new ApiErrorTraining.ApiErrorBuilder(NetworkAuthenticationRequiredException.class.getAnnotation(ResponseStatus.class).value(),
-                        ex.getLocalizedMessage()).setError(NetworkAuthenticationRequiredException.class.getAnnotation(ResponseStatus.class).reason())
+                        getInitialException(ex).getLocalizedMessage()).setError(NetworkAuthenticationRequiredException.class.getAnnotation(ResponseStatus.class).reason())
                         .setPath(URL_PATH_HELPER.getRequestUri(req)).build();
         return new ResponseEntity<>(apiError, new HttpHeaders(), apiError.getStatus());
     }
 
     @ExceptionHandler(NoContentException.class)
     public ResponseEntity<Object> handleNoContentException(final NoContentException ex, final WebRequest request, HttpServletRequest req) {
-        LOG.error("handleNoContentException({}, {}, {})", new Object[]{ex, request, req});
 
         final ApiErrorTraining apiError =
-                new ApiErrorTraining.ApiErrorBuilder(NoContentException.class.getAnnotation(ResponseStatus.class).value(), ex.getLocalizedMessage())
+                new ApiErrorTraining.ApiErrorBuilder(NoContentException.class.getAnnotation(ResponseStatus.class).value(), getInitialException(ex).getLocalizedMessage())
                         .setError(NoContentException.class.getAnnotation(ResponseStatus.class).reason()).setPath(URL_PATH_HELPER.getRequestUri(req)).build();
         return new ResponseEntity<>(apiError, new HttpHeaders(), apiError.getStatus());
     }
@@ -313,11 +293,10 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
     @ExceptionHandler(NotExtendedException.class)
     public ResponseEntity<Object> handleNotExtendedException(final NotExtendedException ex, final WebRequest request,
                                                              HttpServletRequest req) {
-        LOG.error("handleNotExtendedException({}, {}, {})", new Object[]{ex, request, req});
 
         final ApiErrorTraining apiError =
                 new ApiErrorTraining.ApiErrorBuilder(NotExtendedException.class.getAnnotation(ResponseStatus.class).value(),
-                        ex.getLocalizedMessage()).setError(NotExtendedException.class.getAnnotation(ResponseStatus.class).reason())
+                        getInitialException(ex).getLocalizedMessage()).setError(NotExtendedException.class.getAnnotation(ResponseStatus.class).reason())
                         .setPath(URL_PATH_HELPER.getRequestUri(req)).build();
         return new ResponseEntity<>(apiError, new HttpHeaders(), apiError.getStatus());
     }
@@ -325,11 +304,10 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
     @ExceptionHandler(NotImplementedException.class)
     public ResponseEntity<Object> handleNotImplementedException(final NotImplementedException ex, final WebRequest request,
                                                                 HttpServletRequest req) {
-        LOG.error("handleNotImplementedException({}, {}, {})", new Object[]{ex, request, req});
 
         final ApiErrorTraining apiError =
                 new ApiErrorTraining.ApiErrorBuilder(NotImplementedException.class.getAnnotation(ResponseStatus.class).value(),
-                        ex.getLocalizedMessage()).setError(NotImplementedException.class.getAnnotation(ResponseStatus.class).reason())
+                        getInitialException(ex).getLocalizedMessage()).setError(NotImplementedException.class.getAnnotation(ResponseStatus.class).reason())
                         .setPath(URL_PATH_HELPER.getRequestUri(req)).build();
         return new ResponseEntity<>(apiError, new HttpHeaders(), apiError.getStatus());
     }
@@ -337,11 +315,10 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
     @ExceptionHandler(PayloadTooLargeException.class)
     public ResponseEntity<Object> handlePayloadTooLargeException(final PayloadTooLargeException ex, final WebRequest request,
                                                                  HttpServletRequest req) {
-        LOG.error("handlePayloadTooLargeException({}, {}, {})", new Object[]{ex, request, req});
 
         final ApiErrorTraining apiError =
                 new ApiErrorTraining.ApiErrorBuilder(PayloadTooLargeException.class.getAnnotation(ResponseStatus.class).value(),
-                        ex.getLocalizedMessage()).setError(PayloadTooLargeException.class.getAnnotation(ResponseStatus.class).reason())
+                        getInitialException(ex).getLocalizedMessage()).setError(PayloadTooLargeException.class.getAnnotation(ResponseStatus.class).reason())
                         .setPath(URL_PATH_HELPER.getRequestUri(req)).build();
         return new ResponseEntity<>(apiError, new HttpHeaders(), apiError.getStatus());
     }
@@ -349,11 +326,10 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
     @ExceptionHandler(ProxyAuthenticationRequiredException.class)
     public ResponseEntity<Object> handleProxyAuthenticationRequiredException(final ProxyAuthenticationRequiredException ex,
                                                                              final WebRequest request, HttpServletRequest req) {
-        LOG.error("handleProxyAuthenticationRequiredException({}, {}, {})", new Object[]{ex, request, req});
 
         final ApiErrorTraining apiError =
                 new ApiErrorTraining.ApiErrorBuilder(ProxyAuthenticationRequiredException.class.getAnnotation(ResponseStatus.class).value(),
-                        ex.getLocalizedMessage()).setError(ProxyAuthenticationRequiredException.class.getAnnotation(ResponseStatus.class).reason())
+                        getInitialException(ex).getLocalizedMessage()).setError(ProxyAuthenticationRequiredException.class.getAnnotation(ResponseStatus.class).reason())
                         .setPath(URL_PATH_HELPER.getRequestUri(req)).build();
         return new ResponseEntity<>(apiError, new HttpHeaders(), apiError.getStatus());
     }
@@ -361,11 +337,10 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
     @ExceptionHandler(RangeNotSatisfiableException.class)
     public ResponseEntity<Object> handleRangeNotSatisfiableException(final RangeNotSatisfiableException ex, final WebRequest request,
                                                                      HttpServletRequest req) {
-        LOG.error("handleRangeNotSatisfiableException({}, {}, {})", new Object[]{ex, request, req});
 
         final ApiErrorTraining apiError =
                 new ApiErrorTraining.ApiErrorBuilder(RangeNotSatisfiableException.class.getAnnotation(ResponseStatus.class).value(),
-                        ex.getLocalizedMessage()).setError(RangeNotSatisfiableException.class.getAnnotation(ResponseStatus.class).reason())
+                        getInitialException(ex).getLocalizedMessage()).setError(RangeNotSatisfiableException.class.getAnnotation(ResponseStatus.class).reason())
                         .setPath(URL_PATH_HELPER.getRequestUri(req)).build();
         return new ResponseEntity<>(apiError, new HttpHeaders(), apiError.getStatus());
     }
@@ -373,11 +348,10 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
     @ExceptionHandler(RequestTimeoutException.class)
     public ResponseEntity<Object> handleRequestTimeoutException(final RequestTimeoutException ex, final WebRequest request,
                                                                 HttpServletRequest req) {
-        LOG.error("handleRequestTimeoutException({}, {}, {})", new Object[]{ex, request, req});
 
         final ApiErrorTraining apiError =
                 new ApiErrorTraining.ApiErrorBuilder(RequestTimeoutException.class.getAnnotation(ResponseStatus.class).value(),
-                        ex.getLocalizedMessage()).setError(RequestTimeoutException.class.getAnnotation(ResponseStatus.class).reason())
+                        getInitialException(ex).getLocalizedMessage()).setError(RequestTimeoutException.class.getAnnotation(ResponseStatus.class).reason())
                         .setPath(URL_PATH_HELPER.getRequestUri(req)).build();
         return new ResponseEntity<>(apiError, new HttpHeaders(), apiError.getStatus());
     }
@@ -385,11 +359,10 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
     @ExceptionHandler(ResourceAlreadyExistingException.class)
     public ResponseEntity<Object> handleResourceAlreadyExistingException(final ResourceAlreadyExistingException ex, final WebRequest request,
                                                                          HttpServletRequest req) {
-        LOG.error("handleResourceAlreadyExistingException({}, {}, {})", new Object[]{ex, request, req});
 
         final ApiErrorTraining apiError =
                 new ApiErrorTraining.ApiErrorBuilder(ResourceAlreadyExistingException.class.getAnnotation(ResponseStatus.class).value(),
-                        ex.getLocalizedMessage()).setError(ResourceAlreadyExistingException.class.getAnnotation(ResponseStatus.class).reason())
+                        getInitialException(ex).getLocalizedMessage()).setError(ResourceAlreadyExistingException.class.getAnnotation(ResponseStatus.class).reason())
                         .setPath(URL_PATH_HELPER.getRequestUri(req)).build();
         return new ResponseEntity<>(apiError, new HttpHeaders(), apiError.getStatus());
     }
@@ -398,11 +371,10 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
     @ExceptionHandler({ResourceNotCreatedException.class})
     public ResponseEntity<Object> handleResourceNotCreatedException(final ResourceNotCreatedException ex, final WebRequest request,
                                                                     HttpServletRequest req) {
-        LOG.error("handleResourceNotCreatedException({}, {}, {})", new Object[]{ex, request, req});
 
         final ApiErrorTraining apiError =
                 new ApiErrorTraining.ApiErrorBuilder(ResourceNotCreatedException.class.getAnnotation(ResponseStatus.class).value(),
-                        ex.getLocalizedMessage()).setError(ResourceNotCreatedException.class.getAnnotation(ResponseStatus.class).reason())
+                        getInitialException(ex).getLocalizedMessage()).setError(ResourceNotCreatedException.class.getAnnotation(ResponseStatus.class).reason())
                         .setPath(URL_PATH_HELPER.getRequestUri(req)).build();
         return new ResponseEntity<>(apiError, new HttpHeaders(), apiError.getStatus());
     }
@@ -411,11 +383,10 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<Object> handleResourceNotFoundException(final ResourceNotFoundException ex, final WebRequest request,
                                                                   HttpServletRequest req) {
-        LOG.error("handleResourceNotFoundException({}, {}, {})", new Object[]{ex, request, req});
 
         final ApiErrorTraining apiError =
                 new ApiErrorTraining.ApiErrorBuilder(ResourceNotFoundException.class.getAnnotation(ResponseStatus.class).value(),
-                        ex.getLocalizedMessage()).setError(ResourceNotFoundException.class.getAnnotation(ResponseStatus.class).reason())
+                        getInitialException(ex).getLocalizedMessage()).setError(ResourceNotFoundException.class.getAnnotation(ResponseStatus.class).reason())
                         .setPath(URL_PATH_HELPER.getRequestUri(req)).build();
         return new ResponseEntity<>(apiError, new HttpHeaders(), apiError.getStatus());
     }
@@ -424,11 +395,10 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
     @ExceptionHandler({ResourceNotModifiedException.class})
     public ResponseEntity<Object> handleResourceNotModifiedException(final ResourceNotModifiedException ex, final WebRequest request,
                                                                      HttpServletRequest req) {
-        LOG.error("handleResourceNotModifiedException({}, {}, {})", new Object[]{ex, request, req});
 
         final ApiErrorTraining apiError =
                 new ApiErrorTraining.ApiErrorBuilder(ResourceNotModifiedException.class.getAnnotation(ResponseStatus.class).value(),
-                        ex.getLocalizedMessage()).setError(ResourceNotModifiedException.class.getAnnotation(ResponseStatus.class).reason())
+                        getInitialException(ex).getLocalizedMessage()).setError(ResourceNotModifiedException.class.getAnnotation(ResponseStatus.class).reason())
                         .setPath(URL_PATH_HELPER.getRequestUri(req)).build();
         return new ResponseEntity<>(apiError, new HttpHeaders(), apiError.getStatus());
     }
@@ -437,11 +407,9 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
     @ExceptionHandler({ConflictException.class})
     public ResponseEntity<Object> handleConflictException(final ConflictException ex, final WebRequest request,
                                                                      HttpServletRequest req) {
-        LOG.error("handleConflictException({}, {}, {})", new Object[]{ex, request, req});
-
         final ApiErrorTraining apiError =
                 new ApiErrorTraining.ApiErrorBuilder(ConflictException.class.getAnnotation(ResponseStatus.class).value(),
-                        ex.getLocalizedMessage()).setError(ConflictException.class.getAnnotation(ResponseStatus.class).reason())
+                        getInitialException(ex).getLocalizedMessage()).setError(ConflictException.class.getAnnotation(ResponseStatus.class).reason())
                         .setPath(URL_PATH_HELPER.getRequestUri(req)).build();
         return new ResponseEntity<>(apiError, new HttpHeaders(), apiError.getStatus());
     }
@@ -449,11 +417,10 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
     @ExceptionHandler({ServiceUnavailableException.class})
     public ResponseEntity<Object> handleServiceUnavailableException(final ServiceUnavailableException ex, final WebRequest request,
                                                                     HttpServletRequest req) {
-        LOG.error("handleServiceUnavailableException({}, {}, {})", new Object[]{ex, request, req});
 
         final ApiErrorTraining apiError =
                 new ApiErrorTraining.ApiErrorBuilder(ServiceUnavailableException.class.getAnnotation(ResponseStatus.class).value(),
-                        ex.getLocalizedMessage()).setError(ServiceUnavailableException.class.getAnnotation(ResponseStatus.class).reason())
+                        getInitialException(ex).getLocalizedMessage()).setError(ServiceUnavailableException.class.getAnnotation(ResponseStatus.class).reason())
                         .setPath(URL_PATH_HELPER.getRequestUri(req)).build();
         return new ResponseEntity<>(apiError, new HttpHeaders(), apiError.getStatus());
     }
@@ -461,11 +428,10 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
     @ExceptionHandler({TooManyRequestsException.class})
     public ResponseEntity<Object> handleTooManyRequestsException(final TooManyRequestsException ex, final WebRequest request,
                                                                  HttpServletRequest req) {
-        LOG.error("handleTooManyRequestsException({}, {}, {})", new Object[]{ex, request, req});
 
         final ApiErrorTraining apiError =
                 new ApiErrorTraining.ApiErrorBuilder(TooManyRequestsException.class.getAnnotation(ResponseStatus.class).value(),
-                        ex.getLocalizedMessage()).setError(TooManyRequestsException.class.getAnnotation(ResponseStatus.class).reason())
+                        getInitialException(ex).getLocalizedMessage()).setError(TooManyRequestsException.class.getAnnotation(ResponseStatus.class).reason())
                         .setPath(URL_PATH_HELPER.getRequestUri(req)).build();
         return new ResponseEntity<>(apiError, new HttpHeaders(), apiError.getStatus());
     }
@@ -473,11 +439,10 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
     @ExceptionHandler({UnauthorizedException.class})
     public ResponseEntity<Object> handleUnauthorizedException(final UnauthorizedException ex, final WebRequest request,
                                                               HttpServletRequest req) {
-        LOG.error("handleUnauthorizedException({}, {}, {})", new Object[]{ex, request, req});
 
         final ApiErrorTraining apiError =
                 new ApiErrorTraining.ApiErrorBuilder(UnauthorizedException.class.getAnnotation(ResponseStatus.class).value(),
-                        ex.getLocalizedMessage()).setError(UnauthorizedException.class.getAnnotation(ResponseStatus.class).reason())
+                        getInitialException(ex).getLocalizedMessage()).setError(UnauthorizedException.class.getAnnotation(ResponseStatus.class).reason())
                         .setPath(URL_PATH_HELPER.getRequestUri(req)).build();
         return new ResponseEntity<>(apiError, new HttpHeaders(), apiError.getStatus());
     }
@@ -485,11 +450,10 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
     @ExceptionHandler({UnprocessableEntityException.class})
     public ResponseEntity<Object> handleUnprocessableEntityException(final UnprocessableEntityException ex, final WebRequest request,
                                                                      HttpServletRequest req) {
-        LOG.error("handleUnprocessableEntityException({}, {}, {})", new Object[]{ex, request, req});
 
         final ApiErrorTraining apiError =
                 new ApiErrorTraining.ApiErrorBuilder(UnprocessableEntityException.class.getAnnotation(ResponseStatus.class).value(),
-                        ex.getLocalizedMessage()).setError(UnprocessableEntityException.class.getAnnotation(ResponseStatus.class).reason())
+                        getInitialException(ex).getLocalizedMessage()).setError(UnprocessableEntityException.class.getAnnotation(ResponseStatus.class).reason())
                         .setPath(URL_PATH_HELPER.getRequestUri(req)).build();
         return new ResponseEntity<>(apiError, new HttpHeaders(), apiError.getStatus());
     }
@@ -497,22 +461,20 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
     @ExceptionHandler({UnsupportedMediaTypeException.class})
     public ResponseEntity<Object> handleUnsupportedMediaTypeException(final UnsupportedMediaTypeException ex, final WebRequest request,
                                                                       HttpServletRequest req) {
-        LOG.error("handleUnsupportedMediaTypeException({}, {}, {})", new Object[]{ex, request, req});
 
         final ApiErrorTraining apiError =
                 new ApiErrorTraining.ApiErrorBuilder(UnsupportedMediaTypeException.class.getAnnotation(ResponseStatus.class).value(),
-                        ex.getLocalizedMessage()).setError(UnsupportedMediaTypeException.class.getAnnotation(ResponseStatus.class).reason())
+                        getInitialException(ex).getLocalizedMessage()).setError(UnsupportedMediaTypeException.class.getAnnotation(ResponseStatus.class).reason())
                         .setPath(URL_PATH_HELPER.getRequestUri(req)).build();
         return new ResponseEntity<>(apiError, new HttpHeaders(), apiError.getStatus());
     }
 
     @ExceptionHandler({URITooLongException.class})
     public ResponseEntity<Object> handleURITooLongException(final URITooLongException ex, final WebRequest request, HttpServletRequest req) {
-        LOG.error("handleURITooLongException({}, {}, {})", new Object[]{ex, request, req});
 
         final ApiErrorTraining apiError =
                 new ApiErrorTraining.ApiErrorBuilder(URITooLongException.class.getAnnotation(ResponseStatus.class).value(),
-                        ex.getLocalizedMessage()).setError(URITooLongException.class.getAnnotation(ResponseStatus.class).reason())
+                        getInitialException(ex).getLocalizedMessage()).setError(URITooLongException.class.getAnnotation(ResponseStatus.class).reason())
                         .setPath(URL_PATH_HELPER.getRequestUri(req)).build();
         return new ResponseEntity<>(apiError, new HttpHeaders(), apiError.getStatus());
     }
@@ -524,7 +486,7 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
 
         final ApiErrorTraining apiError =
                 new ApiErrorTraining.ApiErrorBuilder(VariantAlsoNegotiatesException.class.getAnnotation(ResponseStatus.class).value(),
-                        ex.getLocalizedMessage()).setError(VariantAlsoNegotiatesException.class.getAnnotation(ResponseStatus.class).reason())
+                        getInitialException(ex).getLocalizedMessage()).setError(VariantAlsoNegotiatesException.class.getAnnotation(ResponseStatus.class).reason())
                         .setPath(URL_PATH_HELPER.getRequestUri(req)).build();
         return new ResponseEntity<>(apiError, new HttpHeaders(), apiError.getStatus());
     }
@@ -534,14 +496,12 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
     // access denied
     @ExceptionHandler({java.nio.file.AccessDeniedException.class})
     public ResponseEntity<Object> handleAccessDeniedException(java.nio.file.AccessDeniedException ex, WebRequest request) {
-        LOG.error("handleAccessDeniedException({}, {})", new Object[]{ex, request});
 
         return new ResponseEntity<>("Access denied message here", new HttpHeaders(), HttpStatus.FORBIDDEN);
     }
 
     @ExceptionHandler({org.springframework.security.access.AccessDeniedException.class})
     public ResponseEntity<Object> handleSpringAccessDeniedException(org.springframework.security.access.AccessDeniedException ex, WebRequest request, HttpServletRequest req) {
-        LOG.error("handleAccessDeniedException({}, {})", new Object[] {ex, request, req});
 
         final ApiErrorTraining apiError = new ApiErrorTraining.ApiErrorBuilder(HttpStatus.FORBIDDEN, ex.getLocalizedMessage()).setError("Access denied")
                 .setPath(URL_PATH_HELPER.getRequestUri(req)).build();
@@ -553,9 +513,8 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<Object> handleIllegalArgumentException(final IllegalArgumentException ex, final WebRequest request,
                                                                  HttpServletRequest req) {
-        LOG.error("handleIllegalArgumentException({}, {}, {})", new Object[]{ex, request, req});
 
-        final ApiErrorTraining apiError = new ApiErrorTraining.ApiErrorBuilder(HttpStatus.NOT_ACCEPTABLE, ex.getLocalizedMessage())
+        final ApiErrorTraining apiError = new ApiErrorTraining.ApiErrorBuilder(HttpStatus.NOT_ACCEPTABLE, getInitialException(ex).getLocalizedMessage())
                 .setError("Illegal Argument").setPath(URL_PATH_HELPER.getRequestUri(req)).build();
         return new ResponseEntity<>(apiError, new HttpHeaders(), apiError.getStatus());
     }
@@ -563,10 +522,9 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
     @ExceptionHandler({MethodArgumentTypeMismatchException.class})
     public ResponseEntity<Object> handleMethodArgumentTypeMismatch(final MethodArgumentTypeMismatchException ex, final WebRequest request,
                                                                    HttpServletRequest req) {
-        LOG.error("handleMethodArgumentTypeMismatch({}, {}, {})", new Object[]{ex, request, req});
 
         final String error = ex.getName() + " should be of type " + ex.getRequiredType().getName();
-        final ApiErrorTraining apiError = new ApiErrorTraining.ApiErrorBuilder(HttpStatus.BAD_REQUEST, ex.getLocalizedMessage()).setError(error)
+        final ApiErrorTraining apiError = new ApiErrorTraining.ApiErrorBuilder(HttpStatus.BAD_REQUEST, getInitialException(ex).getLocalizedMessage()).setError(error)
                 .setPath(URL_PATH_HELPER.getRequestUri(req)).build();
         return new ResponseEntity<>(apiError, new HttpHeaders(), apiError.getStatus());
     }
@@ -574,7 +532,6 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
     @ExceptionHandler({ConstraintViolationException.class})
     public ResponseEntity<Object> handleConstraintViolation(final ConstraintViolationException ex,
                                                             HttpServletRequest req) {
-        LOG.error("handleConstraintViolation({}, {})", new Object[]{ex, req});
 
 
         System.out.println("Constraint violation reached..." + System.lineSeparator() + System.lineSeparator() + System.lineSeparator());
@@ -591,16 +548,20 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
     // 500
     @ExceptionHandler({Exception.class})
     public ResponseEntity<Object> handleAll(final Exception ex, final WebRequest request, HttpServletRequest req) {
-        LOG.error("handleAll({}, {}, {})", new Object[]{ex, request, req});
 
-        String err = Arrays.stream(ex.getStackTrace())
-                .map(StackTraceElement::toString)
-                .reduce((s1, s2) -> s1 + System.lineSeparator() + s2)
-                .get();
+        String err = "Some error occurred. Please try again or contact administrator.";
 
         final ApiErrorTraining apiError = new ApiErrorTraining.ApiErrorBuilder(HttpStatus.INTERNAL_SERVER_ERROR, ex.getLocalizedMessage())
                 .setError(err).setPath(URL_PATH_HELPER.getRequestUri(req)).build();
         return new ResponseEntity<>(apiError, new HttpHeaders(), apiError.getStatus());
+    }
+
+    private Exception getInitialException(Exception exception) {
+        while(exception.getCause() != null)  {
+            exception = (Exception) exception.getCause();
+        }
+        return exception;
+
     }
 
 }

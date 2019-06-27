@@ -73,7 +73,6 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
     @Override
     @TransactionalRO
     public TrainingDefinitionByIdDTO findById(Long id) {
-        LOG.debug("findById({})", id);
         try {
             Objects.requireNonNull(id);
             TrainingDefinitionByIdDTO trainingDefinitionByIdDTO = trainingDefinitionMapper.mapToDTOById(trainingDefinitionService.findById(id));
@@ -129,7 +128,6 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
     @Override
     @TransactionalRO
     public PageResultResource<TrainingDefinitionDTO> findAll(Predicate predicate, Pageable pageable) {
-        LOG.debug("findAllTrainingDefinitions({},{})", predicate, pageable);
         PageResultResource<TrainingDefinitionDTO> resource = trainingDefinitionMapper.mapToPageResultResource(trainingDefinitionService.findAll(predicate, pageable));
         for (TrainingDefinitionDTO trainingDefinitionDTO : resource.getContent()) {
             trainingDefinitionDTO.setCanBeArchived(checkIfCanBeArchived(trainingDefinitionDTO.getId()));
@@ -139,13 +137,11 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
 
     @Override
     public PageResultResource<TrainingDefinitionInfoDTO> findAllForOrganizers(Predicate predicate, Pageable pageable) {
-        LOG.debug("findAllForOrganizers({},{})", predicate, pageable);
         return trainingDefinitionMapper.mapToPageResultResourceInfoDTO(trainingDefinitionService.findAllForOrganizers(predicate, pageable));
     }
 
     @Override
     public PageResultResource<TrainingDefinitionInfoDTO> findAllBySandboxDefinitionId(Long sandboxDefinitionId, Pageable pageable) {
-        LOG.debug("findAllBySandboxDefinitionId({}, {})", sandboxDefinitionId, pageable);
         Page<TrainingDefinition> trainingDefinitionsPage = trainingDefinitionService.findAllBySandboxDefinitionId(sandboxDefinitionId, pageable);
         List<TrainingDefinitionInfoDTO> trainingDefinitionInfoDTOS = new ArrayList<>();
         for (TrainingDefinition trainingDefinition : trainingDefinitionsPage.getContent()) {
@@ -158,7 +154,6 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
     @Override
     @TransactionalWO
     public TrainingDefinitionByIdDTO create(TrainingDefinitionCreateDTO trainingDefinition) {
-        LOG.debug("create({})", trainingDefinition);
         try {
             Objects.requireNonNull(trainingDefinition);
             TrainingDefinition newTrainingDefinition = trainingDefinitionMapper.mapCreateToEntity(trainingDefinition);
@@ -176,7 +171,6 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
     @Override
     @TransactionalWO
     public void update(TrainingDefinitionUpdateDTO trainingDefinitionUpdateDTO) {
-        LOG.debug("update({})", trainingDefinitionUpdateDTO);
         try {
             Objects.requireNonNull(trainingDefinitionUpdateDTO);
             TrainingDefinition mappedTrainingDefinition = trainingDefinitionMapper.mapUpdateToEntity(trainingDefinitionUpdateDTO);
@@ -233,7 +227,6 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
     @Override
     @TransactionalWO
     public TrainingDefinitionByIdDTO clone(Long id, String title) {
-        LOG.debug("clone({})", id);
         try {
             Assert.notNull(id, "Given id of training definition to be cloned");
 
@@ -248,7 +241,6 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
     @Override
     @TransactionalWO
     public List<BasicLevelInfoDTO> swapLevels(Long definitionId, Long swapLevelFrom, Long swapLevelTo) {
-        LOG.debug("swapLevels({},{})", definitionId, swapLevelFrom, swapLevelTo);
         try {
             Objects.requireNonNull(definitionId);
             Objects.requireNonNull(swapLevelFrom);
@@ -263,7 +255,6 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
     @Override
     @TransactionalWO
     public void delete(Long id) {
-        LOG.debug("delete({})", id);
         try {
             Objects.requireNonNull(id);
             trainingDefinitionService.delete(id);
@@ -275,7 +266,6 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
     @Override
     @TransactionalWO
     public List<BasicLevelInfoDTO> deleteOneLevel(Long definitionId, Long levelId) {
-        LOG.debug("deleteOneLevel({}, {})", definitionId, levelId);
         try {
             Objects.requireNonNull(definitionId);
             Objects.requireNonNull(levelId);
@@ -290,7 +280,6 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
     @Override
     @TransactionalWO
     public void updateGameLevel(Long definitionId, GameLevelUpdateDTO gameLevel) {
-        LOG.debug("updateGameLevel({}, {})", definitionId, gameLevel);
         try {
             Objects.requireNonNull(gameLevel);
             Objects.requireNonNull(definitionId);
@@ -307,7 +296,6 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
     @Override
     @TransactionalWO
     public void updateInfoLevel(Long definitionId, InfoLevelUpdateDTO infoLevel) {
-        LOG.debug("updateInfoLevel({}, {})", definitionId, infoLevel);
         try {
             Objects.requireNonNull(infoLevel);
             Objects.requireNonNull(definitionId);
@@ -320,7 +308,6 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
     @Override
     @TransactionalWO
     public void updateAssessmentLevel(Long definitionId, AssessmentLevelUpdateDTO assessmentLevel) {
-        LOG.debug("updateAssessmentLevel({}, {})", definitionId, assessmentLevel);
         try {
             Objects.requireNonNull(assessmentLevel);
             Objects.requireNonNull(definitionId);
@@ -333,7 +320,6 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
     @Override
     @TransactionalWO
     public BasicLevelInfoDTO createInfoLevel(Long definitionId) {
-        LOG.debug("createInfoLevel({})", definitionId);
         try {
             Objects.requireNonNull(definitionId);
             InfoLevel newInfoLevel = trainingDefinitionService.createInfoLevel(definitionId);
@@ -349,7 +335,6 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
     @Override
     @TransactionalWO
     public BasicLevelInfoDTO createGameLevel(Long definitionId) {
-        LOG.debug("createGameLevel({})", definitionId);
         try {
             Objects.requireNonNull(definitionId);
             GameLevel newGameLevel = trainingDefinitionService.createGameLevel(definitionId);
@@ -365,7 +350,6 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
     @Override
     @TransactionalWO
     public BasicLevelInfoDTO createAssessmentLevel(Long definitionId) {
-        LOG.debug("assessmentInfoLevel({})", definitionId);
         try {
             Objects.requireNonNull(definitionId);
             AssessmentLevel newAssessmentLevel = trainingDefinitionService.createAssessmentLevel(definitionId);
@@ -380,7 +364,6 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
     @Override
     @TransactionalRO
     public AbstractLevelDTO findLevelById(Long levelId) {
-        LOG.debug("findLevelById({})", levelId);
         try {
             AbstractLevel abstractLevel = trainingDefinitionService.findLevelById(levelId);
             AbstractLevelDTO abstractLevelDTO;
@@ -412,7 +395,6 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
 
     @Override
     public void switchState(Long definitionId, TDState state) {
-        LOG.debug("unreleasedDefinition({}, {})", definitionId, state);
         try {
             Objects.requireNonNull(definitionId);
             trainingDefinitionService.switchState(definitionId, state);

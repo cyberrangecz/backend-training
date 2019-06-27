@@ -70,7 +70,6 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
     @Override
     @TransactionalRO
     public TrainingRunByIdDTO findById(Long id) {
-        LOG.debug("findById({})", id);
         try {
             TrainingRun trainingRun = trainingRunService.findById(id);
             TrainingRunByIdDTO trainingRunByIdDTO = trainingRunMapper.mapToFindByIdDTO(trainingRun);
@@ -85,14 +84,12 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
     @Override
     @TransactionalRO
     public PageResultResource<TrainingRunDTO> findAll(Predicate predicate, Pageable pageable) {
-        LOG.debug("findAllTrainingDefinitions({},{})", predicate, pageable);
         return trainingRunMapper.mapToPageResultResource(trainingRunService.findAll(predicate, pageable));
     }
 
     @Override
     @TransactionalRO
     public PageResultResource<AccessedTrainingRunDTO> findAllAccessedTrainingRuns(Pageable pageable, String sortByTitle) {
-        LOG.debug("findAllAccessedTrainingRuns()");
         Page<TrainingRun> trainingRuns = trainingRunService.findAllByParticipantRefLogin(pageable);
         return convertToAccessedRunDTO(trainingRuns, sortByTitle);
     }
@@ -100,7 +97,6 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
     @Override
     @TransactionalWO
     public AccessTrainingRunDTO resumeTrainingRun(Long trainingRunId) {
-        LOG.debug("resumeTrainingRun({})", trainingRunId);
         try {
             TrainingRun trainingRun = trainingRunService.resumeTrainingRun(trainingRunId);
             AccessTrainingRunDTO accessTrainingRunDTO = convertToAccessTrainingRunDTO(trainingRun);
@@ -124,7 +120,6 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
     @Override
     @TransactionalWO
     public AccessTrainingRunDTO accessTrainingRun(String accessToken) {
-        LOG.debug("accessTrainingRun({})", accessToken);
         try {
             TrainingRun trainingRun = trainingRunService.accessTrainingRun(accessToken);
             return convertToAccessTrainingRunDTO(trainingRun);
@@ -151,7 +146,6 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
     @Override
     @TransactionalRO
     public PageResultResource<TrainingRunDTO> findAllByTrainingDefinitionAndParticipant(Long trainingDefinitionId, Pageable pageable) {
-        LOG.debug("findAllByTrainingDefinitionAndParticipant({})", trainingDefinitionId);
         Page<TrainingRun> trainingRuns = trainingRunService.findAllByTrainingDefinitionAndParticipant(trainingDefinitionId, pageable);
         return trainingRunMapper.mapToPageResultResource(trainingRuns);
     }
@@ -159,7 +153,6 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
     @Override
     @TransactionalRO
     public PageResultResource<TrainingRunDTO> findAllByTrainingDefinition(Long trainingDefinitionId, Pageable pageable) {
-        LOG.debug("findAllByTrainingDefinition({})", trainingDefinitionId);
         Page<TrainingRun> trainingRuns = trainingRunService.findAllByTrainingDefinition(trainingDefinitionId, pageable);
         return trainingRunMapper.mapToPageResultResource(trainingRuns);
     }
@@ -167,7 +160,6 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
     @Override
     @TransactionalWO
     public AbstractLevelDTO getNextLevel(Long trainingRunId) {
-        LOG.debug("getNextLevel({})", trainingRunId);
         AbstractLevel abstractLevel;
         try {
             abstractLevel = trainingRunService.getNextLevel(trainingRunId);
@@ -180,7 +172,6 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
     @Override
     @TransactionalWO
     public String getSolution(Long trainingRunId) {
-        LOG.debug("getSolution({})", trainingRunId);
         try {
             return trainingRunService.getSolution(trainingRunId);
         } catch (ServiceLayerException ex) {
@@ -191,7 +182,6 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
     @Override
     @TransactionalWO
     public HintDTO getHint(Long trainingRunId, Long hintId) {
-        LOG.debug("getHint({},{})", trainingRunId, hintId);
         try {
             return hintMapper.mapToDTO(trainingRunService.getHint(trainingRunId, hintId));
         } catch (ServiceLayerException ex) {
@@ -202,7 +192,6 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
     @Override
     @TransactionalWO
     public IsCorrectFlagDTO isCorrectFlag(Long trainingRunId, String flag) {
-        LOG.debug("isCorrectFlag({},{})", trainingRunId, flag);
         IsCorrectFlagDTO correctFlagDTO = new IsCorrectFlagDTO();
         try {
             correctFlagDTO.setCorrect(trainingRunService.isCorrectFlag(trainingRunId, flag));
@@ -216,7 +205,6 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
     @Override
     @TransactionalWO
     public void finishTrainingRun(Long trainingRunId) {
-        LOG.debug("finishTrainingRun({})", trainingRunId);
         try {
             trainingRunService.finishTrainingRun(trainingRunId);
         } catch (ServiceLayerException ex) {
@@ -227,7 +215,6 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
     @Override
     @TransactionalWO
     public void evaluateResponsesToAssessment(Long trainingRunId, String responsesAsString) {
-        LOG.debug("evaluateAndStoreAssessment({})", trainingRunId);
         try {
             trainingRunService.evaluateResponsesToAssessment(trainingRunId, responsesAsString);
         } catch (ServiceLayerException ex) {

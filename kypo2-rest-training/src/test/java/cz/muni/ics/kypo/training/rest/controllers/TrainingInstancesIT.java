@@ -366,7 +366,7 @@ public class TrainingInstancesIT {
                 .andReturn().getResolvedException();
 
         assertEquals(ResourceNotFoundException.class, Objects.requireNonNull(ex).getClass());
-        assertEquals("ServiceLayerException : Training definition with id: 100 not found.", ex.getMessage());
+        assertEquals("Training definition with id: 100 not found.", ex.getCause().getCause().getMessage());
     }
 
     @Test
@@ -383,7 +383,7 @@ public class TrainingInstancesIT {
                 .andReturn().getResolvedException();
 
         assertEquals(ResourceNotFoundException.class, Objects.requireNonNull(ex).getClass());
-        assertEquals("ServiceLayerException : Training instance with id: 500, not found.", ex.getMessage());
+        assertEquals("Training instance with id: 500, not found.", ex.getCause().getCause().getMessage());
     }
 
     @Test
@@ -402,7 +402,7 @@ public class TrainingInstancesIT {
                 .andReturn().getResolvedException();
 
         assertEquals(ConflictException.class, Objects.requireNonNull(ex).getClass());
-        assertEquals("ServiceLayerException : End time must be later than start time.", ex.getMessage());
+        assertEquals("End time must be later than start time.", ex.getCause().getCause().getMessage());
     }
 
     @Test
@@ -483,7 +483,7 @@ public class TrainingInstancesIT {
                 .andExpect(status().isConflict())
                 .andReturn().getResolvedException();
         assertEquals(ConflictException.class, Objects.requireNonNull(exception).getClass());
-        assertEquals("ServiceLayerException : Pool for sandboxes is not created yet. Please create pool before allocating sandboxes.", exception.getMessage());
+        assertEquals("Pool for sandboxes is not created yet. Please create pool before allocating sandboxes.", exception.getCause().getCause().getMessage());
     }
 
     @Test
@@ -502,7 +502,7 @@ public class TrainingInstancesIT {
                 .andExpect(status().isConflict())
                 .andReturn().getResolvedException();
         assertEquals(ConflictException.class, exception.getClass());
-        assertEquals("ServiceLayerException : Pool of sandboxes of training instance with id: 1 is full.", exception.getMessage());
+        assertEquals("Pool of sandboxes of training instance with id: 1 is full.", exception.getCause().getCause().getMessage());
     }
 
     @Test
@@ -640,9 +640,9 @@ public class TrainingInstancesIT {
                 .andReturn().getResolvedException();
         assertTrue(futureTrainingInstance.getSandboxInstanceRefs().contains(sandboxInstanceRef2));
         assertFalse(futureTrainingInstance.getSandboxInstanceRefs().contains(sandboxInstanceRef1));
-        assertEquals("ServiceLayerException : Sandbox cannot be reallocated because pool of training instance with id: " + futureTrainingInstance.getId() + " is full. " +
+        assertEquals("Sandbox cannot be reallocated because pool of training instance with id: " + futureTrainingInstance.getId() + " is full. " +
                 "Given sandbox with id: " + sandboxInstanceRef1.getSandboxInstanceRef() + " is probably in the process of removing right now. Please wait and try allocate new sandbox later or contact administrator.",
-                Objects.requireNonNull(exception).getMessage());
+                Objects.requireNonNull(exception).getCause().getCause().getMessage());
     }
 
     @Test
@@ -660,8 +660,8 @@ public class TrainingInstancesIT {
                 .andExpect(status().isNotFound())
                 .andReturn().getResolvedException();
         assertEquals(ResourceNotFoundException.class, Objects.requireNonNull(exception).getClass());
-        assertEquals("ServiceLayerException : Given sandbox with id: 156 is not in DB or is not assigned to given training instance.",
-                exception.getMessage());
+        assertEquals("Given sandbox with id: 156 is not in DB or is not assigned to given training instance.",
+                exception.getCause().getCause().getMessage());
     }
 
     private static String convertObjectToJsonBytes(Object object) throws IOException {
