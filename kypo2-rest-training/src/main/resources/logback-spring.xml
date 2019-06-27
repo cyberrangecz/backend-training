@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
-    <include resource="org/springframework/boot/logging/logback/base.xml"/>
+    <!--    <include resource="org/springframework/boot/logging/logback/base.xml"/>-->
 
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
@@ -11,16 +11,13 @@
     <logger name="guru.springframework.controllers" level="WARN" additivity="false">
         <appender-ref ref="CONSOLE"/>
     </logger>
-
     <logger name="guru.springframework.helpers" level="WARN" additivity="false">
         <appender-ref ref="CONSOLE"/>
     </logger>
-
     <logger name="org.springframework.boot" level="WARN" additivity="false">
         <appender-ref ref="CONSOLE"/>
     </logger>
-
-    <logger name="cz.muni.ics" level="INFO" additivity="false">
+    <logger name="cz.muni.ics" level="WARN" additivity="false">
         <appender-ref ref="CONSOLE"/>
     </logger>
 
@@ -30,15 +27,13 @@
         </encoder>
     </appender>
 
-
     <logger name="cz.muni.csirt.kypo.elasticsearch.service" level="INFO" additivity="false">
         <appender-ref ref="AUDIT_CONSOLE"/>
     </logger>
-
-
     <logger name="org.springframework.boot" level="ERROR" additivity="false"/>
 
 </configuration>
+
 
 
 
