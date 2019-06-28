@@ -209,7 +209,7 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
         //Create pool with given size
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.setContentType(MediaType.APPLICATION_JSON);
-        String requestJson = "{\"defnition\": " + trainingInstance.getTrainingDefinition().getSandboxDefinitionRefId() +
+        String requestJson = "{\"definition\": " + trainingInstance.getTrainingDefinition().getSandboxDefinitionRefId() +
                 ", \"max_size\": " + trainingInstance.getPoolSize() + "}";
         try {
             ResponseEntity<SandboxPoolInfo> poolResponse = restTemplate.exchange(kypoOpenStackURI + "/pools/", HttpMethod.POST, new HttpEntity<>(requestJson, httpHeaders), SandboxPoolInfo.class);
