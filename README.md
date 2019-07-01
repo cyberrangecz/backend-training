@@ -69,7 +69,7 @@ NOTE: please note that client for that REST API could be generated using [Swagge
 
 ## 1. Getting Masaryk University OpenID Connect credentials 
 
-1. Go to `https://oidc.ics.muni.cz/oidc/` and log in.
+1. Go to `https://oidc.muni.cz/oidc/` and log in.
 2. Click on "**Self-service Client Registration**" -> "**New Client**".
 3. Set Client name.
 4. Add at least one custom Redirect URI and `http://localhost:8080/{context path from external properties file}/webjars/springfox-swagger-ui/oauth2-redirect.html` (IMPORTANT for Swagger UI).
@@ -113,8 +113,8 @@ elasticsearch.protocol=http
 elasticsearch.port=9200
 
 # OpenID Connect
-kypo.idp.4oauth.introspectionURI=https://oidc.ics.muni.cz/oidc/introspect
-kypo.idp.4oauth.authorizationURI=https://oidc.ics.muni.cz/oidc/authorize
+kypo.idp.4oauth.introspectionURI=https://oidc.muni.cz/oidc/introspect
+kypo.idp.4oauth.authorizationURI=https://oidc.muni.cz/oidc/authorize
 kypo.idp.4oauth.resource.clientId={your client ID from Self-service protected resource}
 kypo.idp.4oauth.resource.clientSecret={your client secret from Self-service protected resource}
 kypo.idp.4oauth.client.clientId={your client ID from Self-service client}
@@ -144,6 +144,25 @@ spring.flyway.table=schema_version
 # to fix: Method jmxMBeanExporter in org.springframework.boot.actuate.autoconfigure.endpoint.jmx.JmxEndpointAutoConfiguration required a single bean, but 2 were found: (objMapperESClient,objectMapperForRestAPI)
 spring.jmx.enabled = false
 
+
+## For more configuration about this part, see Section 4
+# The format used for the keystore. It could be set to JKS in case it is a JKS file
+server.ssl.key-store-type=PKCS12
+# The path to the keystore containing the certificate
+server.ssl.key-store=classpath:keystore/seda.p12
+# The password used to generate the certificate
+server.ssl.key-store-password=password
+# The alias mapped to the certificate
+server.ssl.key-alias=seda
+
+#security.require-ssl=true
+
+#trust store location
+trust.store=classpath:keystore/seda.p12
+#trust store password
+trust.store.password=password
+
+
 ```
 ## 3. Installing project and database migration
 Installing by maven:
@@ -167,6 +186,47 @@ $ mvn flyway:migrate -Djdbc.url=jdbc:postgresql://localhost:5432/training -Djdbc
 ```
 
 NOTE: This script must be run in [kypo2-training-persistence] (https://gitlab.ics.muni.cz/kypo2/services-and-portlets/kypo2-training/tree/master/kypo2-persistence-training) module.
+
+### 4. Configuration of HTTPS
+
+#### Generating a Self-Signed Certificate
+Here, we use the following certificate format:
+1. PKCS12: Public Key Cryptographic Standards is a password protected format that can contain multiple certificates and keys; it’s an industry-wide used format
+
+We use keytool to generate the certificates from the command line. Keytool is shipped with Java Runtime Environment.
+
+##### Generating a Keystore
+Now we’ll create a set of cryptographic keys and store it in a keystore.
+We can use the following command to generate our PKCS12 keystore format:
+```
+$ keytool -genkeypair -alias seda -keyalg RSA -keysize 2048 -storetype PKCS12 -keystore seda.p12 -validity 3650
+
+```
+
+##### Configuring SSL Properties
+Now, we’ll configure the SSL related properties:
+
+```
+# The format used for the keystore
+server.ssl.key-store-type=PKCS12
+# The path to the keystore containing the certificate
+server.ssl.key-store=classpath:keystore/seda.p12
+# The password used to generate the certificate
+server.ssl.key-store-password=password
+# The alias mapped to the certificate
+server.ssl.key-alias=seda
+
+security.require-ssl=true
+```
+
+##### Invoking an HTTPS URL
+Now that we have enabled HTTPS in our application, let’s move on into the client and let’s explore how to invoke an HTTPS endpoint with the self-signed certificate.
+```
+#trust store location
+trust.store=classpath:keystore/seda.p12
+#trust store password
+trust.store.password=password
+```
 
 ### Run project
 In Intellij Idea:

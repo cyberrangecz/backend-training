@@ -3,10 +3,12 @@ package cz.muni.ics.kypo.training.config;
 import cz.muni.csirt.kypo.elasticsearch.service.config.ElasticsearchServiceConfig;
 import cz.muni.ics.kypo.commons.security.config.ResourceServerSecurityConfig;
 import cz.muni.ics.kypo.training.persistence.config.PersistenceConfig;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.MethodInvokingFactoryBean;
-import org.springframework.context.annotation.*;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.client.ClientHttpRequestInterceptor;
 import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.scheduling.annotation.EnableAsync;
@@ -24,6 +26,7 @@ import java.util.List;
 @Import({ElasticsearchServiceConfig.class, PersistenceConfig.class, ResourceServerSecurityConfig.class})
 @ComponentScan(basePackages = {"cz.muni.ics.kypo.training.service", "cz.muni.ics.kypo.training.config"})
 public class ServiceConfig {
+
 
     @Autowired
     private RestTemplateHeaderModifierInterceptor restTemplateHeaderModifierInterceptor;
