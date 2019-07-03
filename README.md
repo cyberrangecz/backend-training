@@ -60,7 +60,7 @@ Documentation is done in the Swagger framework. It is possible to reach it on th
 e.g. on localhost it should be:
 
 ```
-http://localhost:8080/kypo2-rest-training/api/v1/swagger-ui.html
+https://localhost:8080/kypo2-rest-training/api/v1/swagger-ui.html
 ```
 
 NOTE: please note that client for that REST API could be generated using [Swagger codegen] (https://swagger.io/tools/swagger-codegen/). It is crucial to annotate each RestController method properly!
@@ -72,7 +72,7 @@ NOTE: please note that client for that REST API could be generated using [Swagge
 1. Go to `https://oidc.muni.cz/oidc/` and log in.
 2. Click on "**Self-service Client Registration**" -> "**New Client**".
 3. Set Client name.
-4. Add at least one custom Redirect URI and `http://localhost:8080/{context path from external properties file}/webjars/springfox-swagger-ui/oauth2-redirect.html` (IMPORTANT for Swagger UI).
+4. Add at least one custom Redirect URI and `https://localhost:8080/{context path from external properties file}/webjars/springfox-swagger-ui/oauth2-redirect.html` (IMPORTANT for Swagger UI).
 5. In tab "**Access**":
     1. choose which information about the user you will be getting, so-called `scopes`.
     2. select just *implicit* in **Grand Types**
@@ -84,8 +84,38 @@ NOTE: please note that client for that REST API could be generated using [Swagge
 10. In tab "**Access**" again choose which information about the user you will be getting, so-called `scopes`.
 11. Hit **Save** button.
 
+## 2. Generate CA for project 
+Use 'keytool' to generate KeyStore for client:
 
-## 2. Create a property file with necessary configuration details
+```
+keytool -genkeypair -alias {alias of KeyStore} -keyalg RSA -keysize 2048 -storetype PKCS12 -keystore {filename of KeyStore}.p12 -validity 3650
+```
+It will create file with private key, public key and certificate for client. During generating the KeyStore, use for 'first name and last name' domain name of server where your application is running, e.g., localhost.
+  
+Then export certificate from KeyStore to create *.crt file:
+```
+keytool -export -keystore {filename of created KeyStore}.p12 -alias {alias of certificate} -file {filename of certificate}.crt
+```
+
+After that import exported certificate into TrustStore:
+```
+keytool -importcert -trustcacerts -file {path to exported certificate} -alias {alias of exported certificate} -keystore {path to your TrustStore}
+```
+
+To remove certificate from TrustStore:
+```
+keytool -delete -alias {alias of certificate} -keystore {path to TrustStore}
+```
+
+To show all certificates in TrustStore: 
+```
+keytool -list -v -keystore {path to TrustStore}
+```
+
+For more information about 'How to enable communication over https between 2 spring boot applications using self signed certificate' visit http://www.littlebigextra.com/how-to-enable-communication-over-https-between-2-spring-boot-applications-using-self-signed-certificate
+
+
+## 3. Create a property file with necessary configuration details
 After step 1 you have to create properties file according to the format below and save it.
 ```properties
 
@@ -98,11 +128,11 @@ spring.profiles.dev.roles=ADMINISTRATOR
 server.ipaddress={server address}, e.g., localhost (127.0.0.1)
 server.port={port for service}, e.g., 8080
 server.servlet.context-path=/{context path for service}, e.g., /kypo2-rest-training/api/v1
-server.protocol={protocol for service}, e.g., http
+server.protocol={protocol for service}, e.g., https
 microservice.name={name for your microservice}, e.g., kypo2-training
 
 # calling user-and-group project
-user-and-group-server.uri={URI}, e.g., http://localhost:8081/kypo2-rest-user-and-group/api/v1
+user-and-group-server.uri={URI}, e.g., https://localhost:8081/kypo2-rest-user-and-group/api/v1
 
 # calling openstack project
 openstack-server.uri={URI}, e.g., http://147.251.55.18:8081/kypo-openstack/api/v1 
@@ -144,27 +174,20 @@ spring.flyway.table=schema_version
 # to fix: Method jmxMBeanExporter in org.springframework.boot.actuate.autoconfigure.endpoint.jmx.JmxEndpointAutoConfiguration required a single bean, but 2 were found: (objMapperESClient,objectMapperForRestAPI)
 spring.jmx.enabled = false
 
+# HTTPS and CA
+security.require-ssl=true
 
-## For more configuration about this part, see Section 4
-# The format used for the keystore. It could be set to JKS in case it is a JKS file
-server.ssl.key-store-type=PKCS12
-# The path to the keystore containing the certificate
-server.ssl.key-store=classpath:keystore/seda.p12
-# The password used to generate the certificate
-server.ssl.key-store-password=password
-# The alias mapped to the certificate
-server.ssl.key-alias=seda
+server.ssl.key-store-type={the format used for the KeyStore}, e.g, PKCS12
+server.ssl.key-store={path to KeyStore}, e.g., /etc/ssl/kypo2-keystore.p12
+server.ssl.key-store-password={password used when generate KeyStore}, e.g., changeit
+server.ssl.key-alias={alias of KeyStore}, e.g., kypo2-keystore
 
-#security.require-ssl=true
-
-#trust store location
-trust.store=classpath:keystore/seda.p12
-#trust store password
-trust.store.password=password
-
+server.ssl.trust-store={path to TrustStore}, e.g., default for Java app is in JDK $JAVA_HOME/lib/security/cacerts
+server.ssl.trust-store-password={password to TrustStore}, e.g., default for cacerts is changeit
+server.ssl.trust-store-type={the format used for the TrustStore}, e.g, JKS
 
 ```
-## 3. Installing project and database migration
+## 4. Installing project and database migration
 Installing by maven:
 
 ```
