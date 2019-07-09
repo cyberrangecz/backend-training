@@ -428,7 +428,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     public List<UserInfoDTO> getUsersWithGivenRole(RoleType roleType, Pageable pageable) {
         HttpHeaders httpHeaders = new HttpHeaders();
         String url = userAndGroupUrl + "/roles/users" + "?roleType=" + roleType
-                + "&page=" + pageable.getPageNumber() + "&size=" + pageable.getPageSize() + "&fields=content[login,full_name]";
+                + "&page=" + pageable.getPageNumber() + "&size=" + pageable.getPageSize() + "&fields=content[login,full_name,given_name,family_name]";
         try {
             ResponseEntity<PageResultResource<UserInfoDTO>> usersResponse = restTemplate.exchange(url, HttpMethod.GET, new HttpEntity<>(httpHeaders),
                     new ParameterizedTypeReference<PageResultResource<UserInfoDTO>>() {

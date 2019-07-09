@@ -15,9 +15,9 @@ public class UserInfoDTO {
     private String login;
     @JsonProperty(value = "full_name")
     private String fullName;
-    @JsonProperty(value="given_name")
+    @JsonProperty(value = "given_name")
     private String givenName;
-    @JsonProperty(value="family_name")
+    @JsonProperty(value = "family_name")
     private String familyName;
 
     /**
