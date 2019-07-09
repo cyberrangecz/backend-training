@@ -68,7 +68,7 @@ public class AuditEventsService {
                 .level(trainingRun.getCurrentLevel().getId())
                 .levelType(levelType)
                 .maxScore(trainingRun.getCurrentLevel().getMaxScore())
-                .levelTitle(trainingInstance.getTitle())
+                .levelTitle(trainingRun.getCurrentLevel().getTitle())
                 .build();
 
         auditService.saveTrainingRunEvent(levelStarted, trainingDefinitionId, trainingInstance.getId());
