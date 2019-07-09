@@ -13,6 +13,10 @@ import java.time.Clock;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
+
+/**
+ * @author Pavel Seda
+ */
 @Service
 public class AuditEventsService {
 
@@ -45,7 +49,6 @@ public class AuditEventsService {
                 .build();
 
         auditService.saveTrainingRunEvent(trainingRunStarted, trainingDefinitionId, trainingInstance.getId());
-
     }
 
     void auditLevelStartedAction(TrainingRun trainingRun) {
@@ -72,7 +75,6 @@ public class AuditEventsService {
                 .build();
 
         auditService.saveTrainingRunEvent(levelStarted, trainingDefinitionId, trainingInstance.getId());
-
     }
 
     void auditLevelCompletedAction(TrainingRun trainingRun) {
@@ -141,7 +143,6 @@ public class AuditEventsService {
                 .penaltyPoints(gameLevel.getMaxScore() - trainingRun.getCurrentScore())
                 .build();
         auditService.saveTrainingRunEvent(solutionDisplayed, trainingDefinitionId, trainingInstance.getId());
-
     }
 
     void auditCorrectFlagSubmittedAction(TrainingRun trainingRun, String flag) {
@@ -186,7 +187,6 @@ public class AuditEventsService {
                 .count(trainingRun.getIncorrectFlagCount())
                 .build();
         auditService.saveTrainingRunEvent(wrongFlagSubmitted, trainingDefinitionId, trainingInstance.getId());
-
     }
 
     void auditAssessmentAnswersAction(TrainingRun trainingRun, String answers) {
