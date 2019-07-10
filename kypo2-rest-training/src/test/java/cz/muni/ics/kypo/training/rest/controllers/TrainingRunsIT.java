@@ -15,6 +15,7 @@ import cz.muni.ics.kypo.training.api.dto.run.TrainingRunByIdDTO;
 import cz.muni.ics.kypo.training.api.dto.run.TrainingRunDTO;
 
 import cz.muni.ics.kypo.training.api.enums.RoleType;
+import cz.muni.ics.kypo.training.enums.SandboxStates;
 import cz.muni.ics.kypo.training.mapping.mapstruct.*;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.model.enums.AssessmentType;
@@ -161,11 +162,11 @@ public class TrainingRunsIT {
 
         sandboxInfo1 = new SandboxInfo();
         sandboxInfo1.setId(1L);
-        sandboxInfo1.setStatus("CREATE_COMPLETE");
+        sandboxInfo1.setStatus(SandboxStates.FULL_BUILD_COMPLETE.getName());
         sandboxInfo1.setPool(3L);
         sandboxInfo2 = new SandboxInfo();
         sandboxInfo2.setId(2L);
-        sandboxInfo2.setStatus("CREATE_COMPLETE");
+        sandboxInfo2.setStatus(SandboxStates.FULL_BUILD_COMPLETE.getName());
         sandboxInfo2.setPool(3L);
 
         participant = new UserRef();
@@ -298,7 +299,7 @@ public class TrainingRunsIT {
 
         sandboxInfo = new SandboxInfo();
         sandboxInfo.setId(1L);
-        sandboxInfo.setStatus("CREATE_COMPLETE");
+        sandboxInfo.setStatus(SandboxStates.FULL_BUILD_COMPLETE.getName());
 
     }
 
@@ -348,8 +349,8 @@ public class TrainingRunsIT {
 
     @Test
     public void accessTrainingRun() throws Exception {
-        sandboxInfo1.setStatus("CREATE_COMPLETE");
-        sandboxInfo2.setStatus("CREATE_COMPLETE");
+        sandboxInfo1.setStatus(SandboxStates.FULL_BUILD_COMPLETE.getName());
+        sandboxInfo2.setStatus(SandboxStates.FULL_BUILD_COMPLETE.getName());
 
         given(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
                 willReturn(new ResponseEntity<List<SandboxInfo>>(new ArrayList<>(List.of(sandboxInfo1)), HttpStatus.OK));
@@ -369,8 +370,8 @@ public class TrainingRunsIT {
 
     @Test
     public void accessTrainingRunWithAlreadyStartedTrainingRun() throws Exception {
-        sandboxInfo1.setStatus("CREATE_COMPLETE");
-        sandboxInfo2.setStatus("CREATE_COMPLETE");
+        sandboxInfo1.setStatus(SandboxStates.FULL_BUILD_COMPLETE.getName());
+        sandboxInfo2.setStatus(SandboxStates.FULL_BUILD_COMPLETE.getName());
         trainingRun1.setSandboxInstanceRef(sandboxInstanceRef1);
         trainingRun1.setParticipantRef(participant);
         trainingRunRepository.save(trainingRun1);
