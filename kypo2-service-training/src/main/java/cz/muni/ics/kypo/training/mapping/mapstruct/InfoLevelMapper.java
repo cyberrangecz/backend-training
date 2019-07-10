@@ -5,6 +5,7 @@ import cz.muni.ics.kypo.training.api.dto.export.InfoLevelExportDTO;
 import cz.muni.ics.kypo.training.api.dto.imports.InfoLevelImportDTO;
 import cz.muni.ics.kypo.training.api.dto.infolevel.InfoLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.infolevel.InfoLevelUpdateDTO;
+import cz.muni.ics.kypo.training.api.dto.visualization.InfoLevelVisualizationDTO;
 import cz.muni.ics.kypo.training.persistence.model.InfoLevel;
 import org.mapstruct.Mapper;
 import org.mapstruct.NullValueCheckStrategy;
@@ -31,6 +32,8 @@ public interface InfoLevelMapper extends ParentMapper {
     InfoLevel mapUpdateToEntity(InfoLevelUpdateDTO dto);
 
     InfoLevelDTO mapToDTO(InfoLevel entity);
+
+    InfoLevelVisualizationDTO mapToVisualizationInfoLevelDTO(InfoLevel entity);
 
     InfoLevelExportDTO mapToInfoLevelExportDTO(InfoLevel entity);
 

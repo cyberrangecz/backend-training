@@ -6,6 +6,7 @@ import cz.muni.ics.kypo.training.api.dto.gamelevel.GameLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.gamelevel.GameLevelUpdateDTO;
 import cz.muni.ics.kypo.training.api.dto.gamelevel.GameLevelViewDTO;
 import cz.muni.ics.kypo.training.api.dto.imports.GameLevelImportDTO;
+import cz.muni.ics.kypo.training.api.dto.visualization.GameLevelVisualizationDTO;
 import cz.muni.ics.kypo.training.persistence.model.GameLevel;
 import org.mapstruct.Mapper;
 import org.springframework.data.domain.Page;
@@ -28,6 +29,8 @@ public interface GameLevelMapper extends ParentMapper{
     GameLevel mapImportToEntity(GameLevelImportDTO dto);
 
     GameLevelDTO mapToDTO(GameLevel entity);
+
+    GameLevelVisualizationDTO mapToVisualizationGameLevelDTO(GameLevel entity);
 
     GameLevelExportDTO mapToGamelevelExportDTO(GameLevel entity);
 
