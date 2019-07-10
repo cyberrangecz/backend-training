@@ -3,8 +3,6 @@ package cz.muni.ics.kypo.training.rest.controllers;
 import cz.muni.csirt.kypo.elasticsearch.data.exceptions.ElasticsearchTrainingDataLayerException;
 import cz.muni.csirt.kypo.elasticsearch.service.TrainingEventsService;
 import io.swagger.annotations.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -23,8 +21,6 @@ import java.io.IOException;
 @RestController
 @RequestMapping(path = "/training-events", produces = MediaType.APPLICATION_JSON_VALUE)
 public class TrainingEventsRestController {
-
-    private static final Logger LOG = LoggerFactory.getLogger(TrainingEventsRestController.class);
 
     private TrainingEventsService trainingEventsService;
 

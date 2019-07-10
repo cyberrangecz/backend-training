@@ -8,6 +8,7 @@ import com.github.fge.jsonschema.main.JsonSchemaFactory;
 import com.github.fge.jsonschema.main.JsonValidator;
 import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.training.annotations.aop.TrackTime;
+import cz.muni.ics.kypo.training.annotations.security.IsOrganizerOrAdmin;
 import cz.muni.ics.kypo.training.annotations.security.IsTraineeOrAdmin;
 import cz.muni.ics.kypo.training.exceptions.ErrorCode;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
@@ -89,6 +90,24 @@ public class TrainingRunServiceImpl implements TrainingRunService {
     }
 
     @Override
+    @IsOrganizerOrAdmin
+    public void deleteTrainingRuns(List<Long> trainingRunIds) {
+        trainingRunIds.forEach(trainingRun ->
+                deleteTrainingRun(trainingRun));
+    }
+
+    @Override
+    @IsOrganizerOrAdmin
+    public void deleteTrainingRun(Long trainingRunId) {
+        TrainingRun trainingRun = trainingRunRepository.findById(trainingRunId).orElseThrow(() -> new ServiceLayerException("Training Run with runId: " + trainingRunId + " could not be deleted because it is not in the database.", ErrorCode.RESOURCE_NOT_FOUND));
+        if (trainingRun.getSandboxInstanceRef() == null) {
+            trainingRunRepository.delete(trainingRun);
+        } else {
+            throw new ServiceLayerException("Could not delete training run (id: " + trainingRunId + ") with associated sandbox. Please firstly, delete associated sandbox.", ErrorCode.RESOURCE_CONFLICT);
+        }
+    }
+
+    @Override
     @IsTraineeOrAdmin
     public Page<TrainingRun> findAllByParticipantRefLogin(Pageable pageable) {
         String login = securityService.getSubOfLoggedInUser();
@@ -100,6 +119,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
         Assert.notNull(trainingRun, "Input training run must not be empty.");
         return trainingRunRepository.save(trainingRun);
     }
+
 
     @Override
     @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +

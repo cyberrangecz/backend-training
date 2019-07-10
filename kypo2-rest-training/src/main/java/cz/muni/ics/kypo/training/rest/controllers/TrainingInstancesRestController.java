@@ -19,8 +19,6 @@ import java.util.List;
 import java.util.Set;
 
 import io.swagger.annotations.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.querydsl.binding.QuerydslPredicate;
@@ -31,7 +29,6 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
 /**
@@ -48,8 +45,6 @@ import javax.validation.Valid;
 @RestController
 @RequestMapping(path = "/training-instances", produces = MediaType.APPLICATION_JSON_VALUE)
 public class TrainingInstancesRestController {
-
-    private static final Logger LOG = LoggerFactory.getLogger(cz.muni.ics.kypo.training.rest.controllers.TrainingInstancesRestController.class);
 
     private TrainingInstanceFacade trainingInstanceFacade;
     private ObjectMapper objectMapper;
