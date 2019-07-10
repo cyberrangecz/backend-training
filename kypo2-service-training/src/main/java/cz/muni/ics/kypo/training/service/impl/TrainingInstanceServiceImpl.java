@@ -112,6 +112,7 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
         addLoggedInUserAsOrganizerToTrainingInstance(trainingInstance);
         return trainingInstanceRepository.save(trainingInstance);
     }
+
 //TODO during update automatically add author as organizer of training instance, add login of logged in user in facade when calling user and group ;)
     @Override
     @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +

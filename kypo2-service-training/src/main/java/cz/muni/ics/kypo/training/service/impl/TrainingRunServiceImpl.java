@@ -9,6 +9,7 @@ import com.github.fge.jsonschema.main.JsonValidator;
 import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.training.annotations.aop.TrackTime;
 import cz.muni.ics.kypo.training.annotations.security.IsTraineeOrAdmin;
+import cz.muni.ics.kypo.training.enums.SandboxStates;
 import cz.muni.ics.kypo.training.exceptions.ErrorCode;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.persistence.model.*;
@@ -165,7 +166,6 @@ public class TrainingRunServiceImpl implements TrainingRunService {
         if (trainingInstance.getPoolId() == null) {
             throw new ServiceLayerException("At first organizer must allocate sandboxes for training instance.", ErrorCode.RESOURCE_CONFLICT);
         }
-        Optional<TrainingRun> tr = trainingRunRepository.findById(1L);
         Set<SandboxInstanceRef> freeSandboxes = trainingRunRepository.findFreeSandboxesOfTrainingInstance(trainingInstance.getId());
         if (!freeSandboxes.isEmpty()) {
             SandboxInstanceRef sandboxInstanceRef = getReadySandboxInstanceRef(freeSandboxes, trainingInstance.getPoolId());
@@ -244,11 +244,15 @@ public class TrainingRunServiceImpl implements TrainingRunService {
                 new ParameterizedTypeReference<List<SandboxInfo>>() {
                 });
         List<SandboxInfo> sandboxInfoList = Objects.requireNonNull(response.getBody());
-        sandboxInfoList.removeIf(sandboxInfo -> !sandboxInfo.getStatus().contains("COMPLETE") || !idsOfUnoccupiedSandboxes.contains(sandboxInfo.getId()));
+        sandboxInfoList.removeIf(sandboxInfo -> !sandboxInfo.getStatus().contains(SandboxStates.FULL_BUILD_COMPLETE.getName()) || !idsOfUnoccupiedSandboxes.contains(sandboxInfo.getId()));
         if (sandboxInfoList.isEmpty()) {
             throw new ServiceLayerException("There is no available sandbox, wait a minute and try again.", ErrorCode.NO_AVAILABLE_SANDBOX);
         } else {
-            return sandboxInstancePool.stream().filter(sandboxInstanceRef -> sandboxInstanceRef.getSandboxInstanceRef().equals(sandboxInfoList.get(0).getId())).findFirst().get();
+            return sandboxInstancePool
+                    .stream()
+                    .filter(sandboxInstanceRef -> sandboxInstanceRef.getSandboxInstanceRef().equals(sandboxInfoList.get(0).getId()))
+                    .findFirst()
+                    .get();
         }
     }
 
