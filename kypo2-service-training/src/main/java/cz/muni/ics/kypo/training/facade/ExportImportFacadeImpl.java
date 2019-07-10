@@ -26,7 +26,8 @@ import java.io.IOException;
 import java.util.*;
 
 /**
- * @author Pavel Seda & Boris Jadus (445343)
+ * @author Pavel Seda
+ * @author Boris Jadus
  */
 @Service
 @Transactional

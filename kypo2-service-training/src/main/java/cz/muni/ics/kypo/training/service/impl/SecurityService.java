@@ -22,7 +22,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 
 /**
- * @author Dominik Pilar & Pavel Seda
+ * @author Dominik Pilar
+ * @author Pavel Seda
  */
 @Service
 @TransactionalRO(propagation = Propagation.REQUIRES_NEW)

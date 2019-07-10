@@ -25,17 +25,16 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
 /**
- * @author Pavel Šeda & Boris Jadus (445343)
+ * @author Pavel Šeda
+ * @author Boris Jadus
  */
 @Service
 public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {

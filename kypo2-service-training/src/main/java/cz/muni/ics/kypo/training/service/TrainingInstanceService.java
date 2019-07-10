@@ -2,19 +2,15 @@ package cz.muni.ics.kypo.training.service;
 
 import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
-import cz.muni.ics.kypo.training.persistence.model.SandboxInstanceRef;
 import cz.muni.ics.kypo.training.persistence.model.TrainingInstance;
 
 import cz.muni.ics.kypo.training.persistence.model.TrainingRun;
 import cz.muni.ics.kypo.training.persistence.model.UserRef;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.ResponseEntity;
 
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.Future;
 
 /**
  * The interface for Training instance service.

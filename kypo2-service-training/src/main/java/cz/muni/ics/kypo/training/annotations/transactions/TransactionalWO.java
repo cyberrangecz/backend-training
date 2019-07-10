@@ -10,7 +10,7 @@ import java.lang.annotation.*;
 /**
  * Extending of the class {@link Transactional} which has <i>read-only</i> set to false.
  *
- * @author Pavel Seda (441048)
+ * @author Pavel Seda
  */
 @Transactional(rollbackFor = Exception.class)
 @Target({ElementType.METHOD, ElementType.TYPE})

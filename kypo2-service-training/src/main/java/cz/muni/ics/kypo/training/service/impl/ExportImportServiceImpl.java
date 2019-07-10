@@ -11,17 +11,16 @@ import cz.muni.ics.kypo.training.service.ExportImportService;
 import cz.muni.ics.kypo.training.utils.AssessmentUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
 /**
- * @author Pavel Seda & Boris Jadus (445343)
+ * @author Pavel Seda
+ * @author Boris Jadus
  */
 @Service
 public class ExportImportServiceImpl implements ExportImportService {

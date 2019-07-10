@@ -23,7 +23,6 @@ import cz.muni.ics.kypo.training.exceptions.FacadeLayerException;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.mapping.mapstruct.*;
 import cz.muni.ics.kypo.training.persistence.model.*;
-import cz.muni.ics.kypo.training.persistence.model.enums.TRState;
 import cz.muni.ics.kypo.training.service.TrainingRunService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,7 +39,8 @@ import java.util.Comparator;
 import java.util.List;
 
 /**
- * @author Dominik Pilar (445537)
+ * @author Dominik Pilar
+ * @author Boris Jadus
  */
 @Service
 @Transactional
