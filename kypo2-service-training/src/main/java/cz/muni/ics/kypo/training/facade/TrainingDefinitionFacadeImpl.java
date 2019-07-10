@@ -42,13 +42,11 @@ import java.util.*;
 
 /**
  * @author Pavel Šeda
- * @author Boris Jadus (445343)
+ * @author Boris Jadus
  */
 @Service
 @Transactional
 public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
-
-    private static final Logger LOG = LoggerFactory.getLogger(TrainingDefinitionFacadeImpl.class);
 
     private TrainingDefinitionService trainingDefinitionService;
     private TrainingDefinitionMapper trainingDefinitionMapper;

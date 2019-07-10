@@ -4,8 +4,6 @@ import cz.muni.csirt.kypo.elasticsearch.service.AuditService;
 import cz.muni.csirt.kypo.events.trainings.*;
 import cz.muni.csirt.kypo.events.trainings.enums.LevelType;
 import cz.muni.ics.kypo.training.persistence.model.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -20,7 +18,6 @@ import java.time.temporal.ChronoUnit;
 @Service
 public class AuditEventsService {
 
-    private static final Logger LOG = LoggerFactory.getLogger(AuditEventsService.class);
     private AuditService auditService;
 
     @Autowired

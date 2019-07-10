@@ -46,7 +46,8 @@ import javax.validation.Valid;
 /**
  * The type Training definitions rest controller.
  *
- * @author Pavel Šeda & Boris Jadus
+ * @author Pavel Šeda
+ * @author Boris Jadus
  */
 @Api(value = "/training-definitions", tags = "Training definitions", consumes = MediaType.APPLICATION_JSON_VALUE)
 @ApiResponses(value = {

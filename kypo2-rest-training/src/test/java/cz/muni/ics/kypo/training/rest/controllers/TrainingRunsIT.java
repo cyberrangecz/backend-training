@@ -807,20 +807,6 @@ public class TrainingRunsIT {
     }
 
     @Test
-    public void resumeTrainingRunSomethingWentWrongWithAssignedSandbox() throws Exception {
-        sandboxInfo1.setStatus("DELETED");
-        given(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
-                willReturn(new ResponseEntity<SandboxInfo>(sandboxInfo1, HttpStatus.OK));
-        trainingRunRepository.save(trainingRun1);
-        Exception ex = mvc.perform(get("/training-runs/{runId}/resumption", trainingRun1.getId()))
-                .andExpect(status().isConflict())
-                .andReturn().getResolvedException();
-        assertEquals(ConflictException.class, Objects.requireNonNull(ex).getClass());
-        assertEquals("Something happened with sandbox. Please contact organizer of training instance or administrator.", ex.getCause().getCause().getLocalizedMessage());
-    }
-
-
-    @Test
     public void resumeArchivedTrainingRun() throws Exception {
         trainingRun2.setState(TRState.ARCHIVED);
         trainingRunRepository.save(trainingRun2);

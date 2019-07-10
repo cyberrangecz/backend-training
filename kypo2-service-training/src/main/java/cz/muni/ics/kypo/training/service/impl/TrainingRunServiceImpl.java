@@ -31,7 +31,6 @@ import org.springframework.http.*;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
-import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
@@ -39,7 +38,8 @@ import java.time.*;
 import java.util.*;
 
 /**
- * @author Dominik Pilar (445537) & Pavel Seda (441048)
+ * @author Pavel Seda
+ * @author Dominik Pilar
  */
 @Service
 public class TrainingRunServiceImpl implements TrainingRunService {
@@ -161,7 +161,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
             return resumeTrainingRun(accessedTrainingRun.get().getId());
         }
         TrainingInstance trainingInstance = trainingInstanceRepository.findByStartTimeAfterAndEndTimeBeforeAndAccessToken(LocalDateTime.now(Clock.systemUTC()), accessToken)
-            .orElseThrow(() ->  new ServiceLayerException("There is no training instance with accessToken " + accessToken + ".", ErrorCode.RESOURCE_NOT_FOUND));
+                .orElseThrow(() -> new ServiceLayerException("There is no training instance with accessToken " + accessToken + ".", ErrorCode.RESOURCE_NOT_FOUND));
         if (trainingInstance.getPoolId() == null) {
             throw new ServiceLayerException("At first organizer must allocate sandboxes for training instance.", ErrorCode.RESOURCE_CONFLICT);
         }
@@ -170,11 +170,12 @@ public class TrainingRunServiceImpl implements TrainingRunService {
         if (!freeSandboxes.isEmpty()) {
             SandboxInstanceRef sandboxInstanceRef = getReadySandboxInstanceRef(freeSandboxes, trainingInstance.getPoolId());
             List<AbstractLevel> levels = abstractLevelRepository.findAllLevelsByTrainingDefinitionId(trainingInstance.getTrainingDefinition().getId());
-            if (levels.isEmpty()) throw new ServiceLayerException("No starting level available for this training definition.", ErrorCode.RESOURCE_NOT_FOUND);
+            if (levels.isEmpty())
+                throw new ServiceLayerException("No starting level available for this training definition.", ErrorCode.RESOURCE_NOT_FOUND);
             Collections.sort(levels, Comparator.comparing(AbstractLevel::getOrder));
 
             TrainingRun trainingRun = getNewTrainingRun(levels.get(0), securityService.getSubOfLoggedInUser(), trainingInstance,
-                TRState.RUNNING, LocalDateTime.now(Clock.systemUTC()), trainingInstance.getEndTime(), sandboxInstanceRef);
+                    TRState.RUNNING, LocalDateTime.now(Clock.systemUTC()), trainingInstance.getEndTime(), sandboxInstanceRef);
             trainingRun = create(trainingRun);
             // audit this action to the Elasticsearch
             auditEventsService.auditTrainingRunStartedAction(trainingRun);
@@ -201,19 +202,6 @@ public class TrainingRunServiceImpl implements TrainingRunService {
         if (trainingRun.getSandboxInstanceRef() == null) {
             throw new ServiceLayerException("Sandbox of this training run was already deleted, you have to start new game.", ErrorCode.RESOURCE_CONFLICT);
         }
-
-        HttpHeaders httpHeaders = new HttpHeaders();
-        httpHeaders.set("Accept", MediaType.APPLICATION_JSON_VALUE);
-        try {
-            ResponseEntity<SandboxInfo> response = restTemplate.exchange(kypoOpenStackURI + "/sandboxes/" + trainingRun.getSandboxInstanceRef().getSandboxInstanceRef() + "/", HttpMethod.GET, new HttpEntity<>(httpHeaders),
-                    new ParameterizedTypeReference<SandboxInfo>() {
-                    });
-            if (!Objects.requireNonNull(response.getBody()).getStatus().equals("CREATE_COMPLETE")) {
-                throw new ServiceLayerException("Something happened with sandbox. Please contact organizer of training instance or administrator.", ErrorCode.RESOURCE_CONFLICT);
-            }
-        } catch (HttpClientErrorException ex) {
-            throw new ServiceLayerException("Some error occurred during getting info about sandbox: " + ex.getStatusCode() + ". Please try later or contact administrator.", ErrorCode.UNEXPECTED_ERROR);
-        }
         auditEventsService.auditTrainingRunResumedAction(trainingRun);
         return trainingRun;
     }
@@ -223,13 +211,15 @@ public class TrainingRunServiceImpl implements TrainingRunService {
         TrainingRun newTrainingRun = new TrainingRun();
         newTrainingRun.setCurrentLevel(currentLevel);
 
-        Optional<UserRef> userRef = participantRefRepository.findUserByUserRefLogin(participantRefLogin);
-        if (userRef.isPresent()) {
-            if(userRef.get().getUserRefGivenName() == null) {
-                userRef.get().setUserRefGivenName(securityService.getGivenNameOfLoggedInUser());
-                userRef.get().setUserRefFamilyName(securityService.getFamilyNameOfLoggedInUser());
+        Optional<UserRef> userRefOpt = participantRefRepository.findUserByUserRefLogin(participantRefLogin);
+        if (userRefOpt.isPresent()) {
+            UserRef userRef = userRefOpt.get();
+            if (userRef.getUserRefGivenName() == null) {
+                userRef.setUserRefGivenName(securityService.getGivenNameOfLoggedInUser());
+            } else if (userRefOpt.get().getUserRefFamilyName() == null) {
+                userRef.setUserRefFamilyName(securityService.getFamilyNameOfLoggedInUser());
             }
-            newTrainingRun.setParticipantRef(userRef.get());
+            newTrainingRun.setParticipantRef(userRef);
         } else {
             newTrainingRun.setParticipantRef(participantRefRepository.save(
                     new UserRef(participantRefLogin, securityService.getFullNameOfLoggedInUser(), securityService.getGivenNameOfLoggedInUser(), securityService.getFamilyNameOfLoggedInUser())
@@ -365,7 +355,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
         if (trainingRun.getCurrentLevel().getOrder() != maxOrder) {
             throw new ServiceLayerException("Cannot finish training run because current level is not last.", ErrorCode.RESOURCE_CONFLICT);
         }
-        if(!trainingRun.isLevelAnswered()) {
+        if (!trainingRun.isLevelAnswered()) {
             throw new ServiceLayerException("Cannot finish training run because current level is not answered.", ErrorCode.RESOURCE_CONFLICT);
         }
 
