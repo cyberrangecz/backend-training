@@ -28,8 +28,6 @@ import cz.muni.ics.kypo.training.rest.exceptions.ResourceNotFoundException;
 import cz.muni.ics.kypo.training.rest.utils.annotations.ApiPageableSwagger;
 import io.swagger.annotations.*;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.querydsl.binding.QuerydslPredicate;
@@ -57,8 +55,6 @@ import javax.validation.Valid;
 @RestController
 @RequestMapping(path = "/training-definitions", produces = MediaType.APPLICATION_JSON_VALUE)
 public class TrainingDefinitionsRestController {
-
-    private static final Logger LOG = LoggerFactory.getLogger(TrainingDefinitionsRestController.class);
 
     private TrainingDefinitionFacade trainingDefinitionFacade;
     private ObjectMapper objectMapper;
@@ -105,7 +101,6 @@ public class TrainingDefinitionsRestController {
             Squiggly.init(objectMapper, fields);
             return ResponseEntity.ok(SquigglyUtils.stringify(objectMapper, trainingDefinitionResource));
         } catch (FacadeLayerException ex) {
-            LOG.error("Training definition with id {} not found.", id);
             throw new ResourceNotFoundException(ex.getLocalizedMessage());
         }
     }

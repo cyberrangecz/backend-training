@@ -41,7 +41,7 @@ public class TrainingRun implements Serializable {
     private AbstractLevel currentLevel;
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     private TrainingInstance trainingInstance;
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @OneToOne(fetch = FetchType.LAZY, cascade = {CascadeType.ALL})
     @JoinColumn(name = "sandbox_instance_ref_id")
     private SandboxInstanceRef sandboxInstanceRef;
     @ManyToOne(fetch = FetchType.LAZY)
@@ -57,8 +57,8 @@ public class TrainingRun implements Serializable {
     private int currentScore;
     @Column(name = "level_answered")
     private boolean levelAnswered;
-    @ElementCollection(targetClass=HintInfo.class,fetch= FetchType.LAZY)
-    @CollectionTable(name="hint_info",joinColumns=@JoinColumn(name="training_run_id"))
+    @ElementCollection(targetClass = HintInfo.class, fetch = FetchType.LAZY)
+    @CollectionTable(name = "hint_info", joinColumns = @JoinColumn(name = "training_run_id"))
     private Set<HintInfo> hintInfoList = new HashSet<>();
 
     /**

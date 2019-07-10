@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.fge.jackson.JsonLoader;
 import com.querydsl.core.types.Predicate;
+import cz.muni.ics.kypo.training.annotations.security.IsOrganizerOrAdmin;
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalRO;
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalWO;
 import cz.muni.ics.kypo.training.api.PageResultResource;
@@ -88,6 +89,18 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
     }
 
     @Override
+    @TransactionalWO
+    public void deleteTrainingRuns(List<Long> trainingRunIds) {
+        trainingRunService.deleteTrainingRuns(trainingRunIds);
+    }
+
+    @Override
+    @TransactionalWO
+    public void deleteTrainingRun(Long trainingRunId) {
+        trainingRunService.deleteTrainingRun(trainingRunId);
+    }
+
+    @Override
     @TransactionalRO
     public PageResultResource<AccessedTrainingRunDTO> findAllAccessedTrainingRuns(Pageable pageable, String sortByTitle) {
         Page<TrainingRun> trainingRuns = trainingRunService.findAllByParticipantRefLogin(pageable);
@@ -100,14 +113,14 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
         try {
             TrainingRun trainingRun = trainingRunService.resumeTrainingRun(trainingRunId);
             AccessTrainingRunDTO accessTrainingRunDTO = convertToAccessTrainingRunDTO(trainingRun);
-            if(trainingRun.getCurrentLevel() instanceof GameLevel) {
-                if(trainingRun.isSolutionTaken()) {
+            if (trainingRun.getCurrentLevel() instanceof GameLevel) {
+                if (trainingRun.isSolutionTaken()) {
                     accessTrainingRunDTO.setTakenSolution(((GameLevel) trainingRun.getCurrentLevel()).getSolution());
                 }
                 trainingRun.getHintInfoList().forEach(hintInfo -> {
-                                if(hintInfo.getGameLevelId().equals(trainingRun.getCurrentLevel().getId())) {
-                                    accessTrainingRunDTO.getTakenHints().add(convertToTakenHintDTO(hintInfo));
-                                }
+                            if (hintInfo.getGameLevelId().equals(trainingRun.getCurrentLevel().getId())) {
+                                accessTrainingRunDTO.getTakenHints().add(convertToTakenHintDTO(hintInfo));
+                            }
                         }
                 );
             }

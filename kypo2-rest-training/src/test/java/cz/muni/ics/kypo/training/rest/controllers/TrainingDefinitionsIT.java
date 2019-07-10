@@ -333,20 +333,14 @@ public class TrainingDefinitionsIT {
 
     @Test
     public void findTrainingDefinitionByIdWithDefinitionNotFound() throws Exception {
-        ListAppender<ILoggingEvent> listAppender = new ListAppender<>();
-        listAppender.start();
-        logger.addAppender(listAppender);
-
         Exception ex = mvc.perform(get("/training-definitions" + "/{id}", 100L))
                 .andExpect(status().isNotFound())
                 .andReturn().getResolvedException();
 
         assertEquals(Objects.requireNonNull(ex).getClass(), ResourceNotFoundException.class);
         assertTrue(ex.getMessage().contains("Training definition with id: 100 not found"));
-
-        assertEquals("Training definition with id {} not found.", listAppender.list.get(0).getMessage());
-        assertEquals(Level.ERROR, listAppender.list.get(0).getLevel());
     }
+
 	@Test
 	public void findAllTrainingDefinitions() throws Exception {
 		TrainingDefinition tD1 = trainingDefinitionRepository.save(releasedTrainingDefinition);
