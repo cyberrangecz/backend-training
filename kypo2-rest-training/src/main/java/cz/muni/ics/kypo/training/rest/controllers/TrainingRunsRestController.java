@@ -22,8 +22,6 @@ import cz.muni.ics.kypo.training.api.dto.hint.HintDTO;
 
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.querydsl.binding.QuerydslPredicate;
@@ -37,6 +35,7 @@ import org.springframework.web.bind.annotation.*;
  * The type Training runs rest controller.
  *
  * @author Dominik Pilar
+ * @author Pavel Seda
  */
 @Api(value = "/training-runs", tags = "Training runs", consumes = MediaType.APPLICATION_JSON_VALUE)
 @ApiResponses(value = {
@@ -46,8 +45,6 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping(value = "/training-runs", produces = MediaType.APPLICATION_JSON_VALUE)
 public class TrainingRunsRestController {
-
-    private static final Logger LOG = LoggerFactory.getLogger(TrainingRunsRestController.class);
 
     private TrainingRunFacade trainingRunFacade;
     private ObjectMapper objectMapper;
@@ -62,6 +59,56 @@ public class TrainingRunsRestController {
     public TrainingRunsRestController(TrainingRunFacade trainingRunFacade, ObjectMapper objectMapper) {
         this.trainingRunFacade = trainingRunFacade;
         this.objectMapper = objectMapper;
+    }
+
+    /**
+     * Delete training runs.
+     *
+     * @param trainingRunIds the trainig run ids
+     */
+    @ApiOperation(httpMethod = "DELETE",
+            value = "Delete training runs",
+            response = Void.class,
+            nickname = "deleteTrainingRuns")
+    @ApiResponses(value = {
+            @ApiResponse(code = 202, message = "Training runs were deleted"),
+            @ApiResponse(code = 500, message = "Unexpected condition was encountered")
+    })
+    @DeleteMapping
+    public ResponseEntity<Void> deleteTrainingRuns(
+            @ApiParam(value = "Ids of training runs that will be deleted", required = true)
+            @RequestParam(value = "trainingRunIds", required = true) List<Long> trainingRunIds) {
+        try {
+            trainingRunFacade.deleteTrainingRuns(trainingRunIds);
+            return new ResponseEntity<>(HttpStatus.OK);
+        } catch (FacadeLayerException ex) {
+            throw ExceptionSorter.throwException(ex);
+        }
+    }
+
+    /**
+     * Delete a given training run.
+     *
+     * @param runId the training run id
+     */
+    @ApiOperation(httpMethod = "DELETE",
+            value = "Delete training run",
+            response = Void.class,
+            nickname = "deleteTrainingRun")
+    @ApiResponses(value = {
+            @ApiResponse(code = 202, message = "Training run was deleted"),
+            @ApiResponse(code = 500, message = "Unexpected condition was encountered")
+    })
+    @DeleteMapping(path = "/{runId}")
+    public ResponseEntity<Void> deleteTrainingRun(
+            @ApiParam(value = "Id of training run that will be deleted", required = true)
+            @PathVariable(value = "runId", required = true) Long runId) {
+        try {
+            trainingRunFacade.deleteTrainingRun(runId);
+            return new ResponseEntity<>(HttpStatus.OK);
+        } catch (FacadeLayerException ex) {
+            throw ExceptionSorter.throwException(ex);
+        }
     }
 
     /**
@@ -179,9 +226,9 @@ public class TrainingRunsRestController {
     /**
      * Get all accessed Training Runs.
      *
-     * @param pageable   pageable parameter with information about pagination.
-     * @param parameters the parameters
-     * @param fields     attributes of the object to be returned as the result.
+     * @param pageable    pageable parameter with information about pagination.
+     * @param parameters  the parameters
+     * @param fields      attributes of the object to be returned as the result.
      * @param sortByTitle "asc" for ascending alphabetical sort by title, "desc" for descending
      * @return all accessed Training Runs.
      */
@@ -420,4 +467,5 @@ public class TrainingRunsRestController {
             throw ExceptionSorter.throwException(ex);
         }
     }
+
 }

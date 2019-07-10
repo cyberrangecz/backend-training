@@ -37,9 +37,23 @@ public interface TrainingRunService {
     Page<TrainingRun> findAll(Predicate predicate, Pageable pageable);
 
     /**
+     * Delete selected training runs.
+     *
+     * @param trainingRunIds training runs to delete
+     */
+    void deleteTrainingRuns(List<Long> trainingRunIds);
+
+    /**
+     * Delete selected training run.
+     *
+     * @param trainingRunId training run to delete
+     */
+    void deleteTrainingRun(Long trainingRunId);
+
+    /**
      * Finds all Training Runs of logged in user.
      *
-     * @param pageable  pageable parameter with information about pagination.
+     * @param pageable pageable parameter with information about pagination.
      * @return {@link TrainingRun}s of logged in user.
      */
     Page<TrainingRun> findAllByParticipantRefLogin(Pageable pageable);
@@ -48,7 +62,7 @@ public interface TrainingRunService {
      * Finds all Training Runs of specific Training Definition of logged in user.
      *
      * @param trainingDefinitionId id of Training Definition
-     * @param pageable  pageable parameter with information about pagination.
+     * @param pageable             pageable parameter with information about pagination.
      * @return {@link TrainingRun}s of specific Training Definition of logged in user
      */
     Page<TrainingRun> findAllByTrainingDefinitionAndParticipant(Long trainingDefinitionId, Pageable pageable);
@@ -57,7 +71,7 @@ public interface TrainingRunService {
      * Finds all Training Runs of specific training definition.
      *
      * @param trainingDefinitionId id of Training Definition whose Training Runs would be returned.
-     * @param pageable  pageable parameter with information about pagination.
+     * @param pageable             pageable parameter with information about pagination.
      * @return {@link TrainingRun}s of specific Training Definition
      */
     Page<TrainingRun> findAllByTrainingDefinition(Long trainingDefinitionId, Pageable pageable);
@@ -68,7 +82,7 @@ public interface TrainingRunService {
      * @param trainingRunId id of Training Run whose next level should be returned.
      * @return {@link AbstractLevel}
      * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND hint is not found in DB.
-     *                                               NO_NEXT_LEVEL there is no next level.
+     *                               NO_NEXT_LEVEL there is no next level.
      */
     AbstractLevel getNextLevel(Long trainingRunId);
 
@@ -78,8 +92,8 @@ public interface TrainingRunService {
      * @param accessToken of Training Instance.
      * @return accessed {@link TrainingRun}
      * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND cannot find training instance with given id or the accessToken is wrong.
-     *                                               UNEXPECTED_ERROR there is error while getting info about sandboxes.
-     *                                               NO_AVAILABLE_SANDBOX there is no free or ready sandbox
+     *                               UNEXPECTED_ERROR there is error while getting info about sandboxes.
+     *                               NO_AVAILABLE_SANDBOX there is no free or ready sandbox
      */
     TrainingRun accessTrainingRun(String accessToken);
 
@@ -99,7 +113,7 @@ public interface TrainingRunService {
      * @param flag          string which player submit.
      * @return true if flag is correct, false if flag is wrong.
      * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND training run is not found in DB.
-     *                                               WRONG_LEVEL_TYPE the level is not game level.
+     *                               WRONG_LEVEL_TYPE the level is not game level.
      */
     boolean isCorrectFlag(Long trainingRunId, String flag);
 
@@ -109,7 +123,7 @@ public interface TrainingRunService {
      * @param trainingRunId id of Training Run which current level gets solution for.
      * @return solution of current level.
      * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND training run is not found in DB.
-     *                                               WRONG_LEVEL_TYPE the level is not game level.
+     *                               WRONG_LEVEL_TYPE the level is not game level.
      */
     String getSolution(Long trainingRunId);
 
@@ -120,7 +134,7 @@ public interface TrainingRunService {
      * @param hintId        id of hint to be returned.
      * @return {@link Hint}
      * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND when hint is not found in DB.
-     *                                               WRONG_LEVEL_TYPE when the level is not game level.
+     *                               WRONG_LEVEL_TYPE when the level is not game level.
      */
     Hint getHint(Long trainingRunId, Long hintId);
 

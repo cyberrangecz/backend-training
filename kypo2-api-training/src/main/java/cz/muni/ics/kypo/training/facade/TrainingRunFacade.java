@@ -12,6 +12,8 @@ import cz.muni.ics.kypo.training.api.dto.run.TrainingRunDTO;
 import cz.muni.ics.kypo.training.exceptions.FacadeLayerException;
 import org.springframework.data.domain.Pageable;
 
+import java.util.List;
+
 /**
  * The interface Training run facade.
  *
@@ -36,6 +38,20 @@ public interface TrainingRunFacade {
      * @return page of all {@link TrainingRunDTO}
      */
     PageResultResource<TrainingRunDTO> findAll(Predicate predicate, Pageable pageable);
+
+    /**
+     * Delete selected training runs.
+     *
+     * @param trainingRunIds training runs to delete
+     */
+    void deleteTrainingRuns(List<Long> trainingRunIds);
+
+    /**
+     * Delete selected training run.
+     *
+     * @param trainingRunId training run to delete
+     */
+    void deleteTrainingRun(Long trainingRunId);
 
     /**
      * Finds all Training Runs of logged in user.
