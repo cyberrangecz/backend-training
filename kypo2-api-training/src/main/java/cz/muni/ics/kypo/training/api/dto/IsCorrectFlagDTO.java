@@ -13,6 +13,7 @@ public class IsCorrectFlagDTO {
 
     private boolean isCorrect;
     private int remainingAttempts;
+    private String solution;
 
     /**
      * Is correct boolean.
@@ -52,19 +53,38 @@ public class IsCorrectFlagDTO {
         this.remainingAttempts = remainingAttempts;
     }
 
+    /**
+     * Gets solution.
+     *
+     * @return the solution
+     */
+    @ApiModelProperty(value = "Instruction how to get flag in game.", example = "This is how you do it")
+    public String getSolution() {
+        return solution;
+    }
+
+    /**
+     * Sets solution.
+     *
+     * @param solution the solution
+     */
+    public void setSolution(String solution) {
+        this.solution = solution;
+    }
+
     @Override
     public boolean equals(Object object) {
         if (!(object instanceof IsCorrectFlagDTO)) return false;
         IsCorrectFlagDTO that = (IsCorrectFlagDTO) object;
         return isCorrect() == that.isCorrect() &&
-                getRemainingAttempts() == that.getRemainingAttempts();
+                getRemainingAttempts() == that.getRemainingAttempts() &&
+                Objects.equals(getSolution(), that.getSolution());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(isCorrect(), getRemainingAttempts());
+        return Objects.hash(isCorrect(), getRemainingAttempts(), getSolution());
     }
-
 
     @Override
     public String toString() {

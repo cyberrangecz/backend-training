@@ -7,16 +7,17 @@ import cz.muni.ics.kypo.commons.security.enums.AuthenticatedUserOIDCItems;
 import cz.muni.ics.kypo.training.api.PageResultResource;
 import cz.muni.ics.kypo.training.api.dto.IsCorrectFlagDTO;
 import cz.muni.ics.kypo.training.api.dto.hint.HintDTO;
-
 import cz.muni.ics.kypo.training.api.dto.hint.TakenHintDTO;
 import cz.muni.ics.kypo.training.api.dto.infolevel.InfoLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.run.AccessedTrainingRunDTO;
 import cz.muni.ics.kypo.training.api.dto.run.TrainingRunByIdDTO;
 import cz.muni.ics.kypo.training.api.dto.run.TrainingRunDTO;
-
 import cz.muni.ics.kypo.training.api.enums.RoleType;
 import cz.muni.ics.kypo.training.enums.SandboxStates;
-import cz.muni.ics.kypo.training.mapping.mapstruct.*;
+import cz.muni.ics.kypo.training.mapping.mapstruct.GameLevelMapperImpl;
+import cz.muni.ics.kypo.training.mapping.mapstruct.HintMapperImpl;
+import cz.muni.ics.kypo.training.mapping.mapstruct.InfoLevelMapperImpl;
+import cz.muni.ics.kypo.training.mapping.mapstruct.TrainingRunMapperImpl;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.model.enums.AssessmentType;
 import cz.muni.ics.kypo.training.persistence.model.enums.TDState;
@@ -35,7 +36,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.*;
+import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -50,7 +52,6 @@ import org.springframework.data.web.querydsl.QuerydslPredicateArgumentResolver;
 import org.springframework.http.*;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.mock.web.MockHttpServletResponse;
-
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -60,12 +61,10 @@ import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
-
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.client.RestTemplate;
 
-import javax.mail.Service;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
@@ -73,7 +72,6 @@ import java.util.*;
 
 import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -665,6 +663,7 @@ public class TrainingRunsIT {
 
         isCorrectFlagDTO.setRemainingAttempts(0);
         isCorrectFlagDTO.setCorrect(false);
+        isCorrectFlagDTO.setSolution(gameLevel1.getSolution());
         mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_ADMINISTRATOR.name()));
 
         assertFalse(trainingRun1.isLevelAnswered());
@@ -674,6 +673,7 @@ public class TrainingRunsIT {
                 .andReturn().getResponse();
         assertEquals(isCorrectFlagDTO, mapper.readValue(response.getContentAsString(), IsCorrectFlagDTO.class));
         assertFalse(trainingRun1.isLevelAnswered());
+        assertTrue(trainingRun1.isSolutionTaken());
     }
 
     @Test
@@ -683,6 +683,7 @@ public class TrainingRunsIT {
 
         isCorrectFlagDTO.setRemainingAttempts(0);
         isCorrectFlagDTO.setCorrect(false);
+        isCorrectFlagDTO.setSolution(gameLevel1.getSolution());
         mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_ADMINISTRATOR.name()));
 
         assertFalse(trainingRun1.isLevelAnswered());
@@ -692,6 +693,7 @@ public class TrainingRunsIT {
                 .andReturn().getResponse();
         assertEquals(isCorrectFlagDTO, mapper.readValue(response.getContentAsString(), IsCorrectFlagDTO.class));
         assertFalse(trainingRun1.isLevelAnswered());
+        assertTrue(trainingRun1.isSolutionTaken());
     }
 
     @Test
