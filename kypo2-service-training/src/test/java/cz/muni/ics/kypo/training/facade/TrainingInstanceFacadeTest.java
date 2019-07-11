@@ -27,12 +27,13 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.BDDMockito.*;
@@ -243,8 +244,8 @@ public class TrainingInstanceFacadeTest {
         ids.add(sandboxInstanceRef2.getSandboxInstanceRef());
         given(trainingInstanceService.findById(anyLong())).willReturn(trainingInstance1);
         trainingInstanceFacade.deleteSandboxes(trainingInstance1.getId(), ids);
-        then(trainingInstanceService).should().deleteSandbox(trainingInstance1, sandboxInstanceRef1.getSandboxInstanceRef());
-        then(trainingInstanceService).should().deleteSandbox(trainingInstance1, sandboxInstanceRef2.getSandboxInstanceRef());
+        then(trainingInstanceService).should().deleteSandbox(trainingInstance1.getId(), sandboxInstanceRef1.getSandboxInstanceRef());
+        then(trainingInstanceService).should().deleteSandbox(trainingInstance1.getId(), sandboxInstanceRef2.getSandboxInstanceRef());
     }
 
     @Test
@@ -255,7 +256,7 @@ public class TrainingInstanceFacadeTest {
                 "id: " + sandboxInstanceRef1.getSandboxInstanceRef() + " is probably in the process of removing right now. " +
                 "Please wait and try allocate new sandbox later or contact administrator.");
         trainingInstanceFacade.reallocateSandbox(trainingInstance1.getId(), sandboxInstanceRef1.getSandboxInstanceRef());
-        then(trainingInstanceService).should().deleteSandbox(trainingInstance1, sandboxInstanceRef1.getSandboxInstanceRef());
+        then(trainingInstanceService).should().deleteSandbox(trainingInstance1.getId(), sandboxInstanceRef1.getSandboxInstanceRef());
         then(trainingInstanceService).should().allocateSandboxes(trainingInstance1, 1);
     }
 
@@ -264,7 +265,7 @@ public class TrainingInstanceFacadeTest {
         trainingInstance1.setSandboxInstanceRefs(new HashSet<>(Set.of(sandboxInstanceRef1)));
         given(trainingInstanceService.findById(anyLong())).willReturn(trainingInstance1);
         trainingInstanceFacade.reallocateSandbox(trainingInstance1.getId(), sandboxInstanceRef1.getSandboxInstanceRef());
-        then(trainingInstanceService).should().deleteSandbox(trainingInstance1, sandboxInstanceRef1.getSandboxInstanceRef());
+        then(trainingInstanceService).should().deleteSandbox(trainingInstance1.getId(), sandboxInstanceRef1.getSandboxInstanceRef());
         then(trainingInstanceService).should().allocateSandboxes(trainingInstance1, 1);
     }
 
@@ -280,7 +281,7 @@ public class TrainingInstanceFacadeTest {
         Set<Long> ids = new HashSet<>();
         ids.add(sandboxInstanceRef1.getSandboxInstanceRef());
         given(trainingInstanceService.findById(anyLong())).willReturn(trainingInstance1);
-        willThrow(ServiceLayerException.class).given(trainingInstanceService).deleteSandbox(trainingInstance1, sandboxInstanceRef1.getSandboxInstanceRef());
+        willThrow(ServiceLayerException.class).given(trainingInstanceService).deleteSandbox(trainingInstance1.getId(), sandboxInstanceRef1.getSandboxInstanceRef());
         thrown.expect(FacadeLayerException.class);
         trainingInstanceFacade.deleteSandboxes(trainingInstance1.getId(), ids);
     }
