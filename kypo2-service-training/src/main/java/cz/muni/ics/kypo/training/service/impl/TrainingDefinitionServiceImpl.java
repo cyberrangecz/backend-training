@@ -241,7 +241,12 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
         Optional<AbstractLevel> abstractLevelToDelete = abstractLevelRepository.findById(levelId);
         if (abstractLevelToDelete.isPresent()) {
             trainingDefinition.setEstimatedDuration(trainingDefinition.getEstimatedDuration() - abstractLevelToDelete.get().getEstimatedDuration());
+            int orderOfDeleted = abstractLevelToDelete.get().getOrder();
             deleteLevel(abstractLevelToDelete.get());
+            List<AbstractLevel> levels = abstractLevelRepository.findAllLevelsByTrainingDefinitionId(definitionId);
+            for (AbstractLevel level : levels){
+                if (level.getOrder() > orderOfDeleted) level.setOrder(level.getOrder()-1);
+            }
         } else {
             throw new ServiceLayerException(LEVEL_NOT_FOUND, ErrorCode.RESOURCE_NOT_FOUND);
         }
