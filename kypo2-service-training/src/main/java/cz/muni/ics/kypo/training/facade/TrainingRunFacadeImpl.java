@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.fge.jackson.JsonLoader;
 import com.querydsl.core.types.Predicate;
-import cz.muni.ics.kypo.training.annotations.security.IsOrganizerOrAdmin;
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalRO;
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalWO;
 import cz.muni.ics.kypo.training.api.PageResultResource;
@@ -209,6 +208,9 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
         try {
             correctFlagDTO.setCorrect(trainingRunService.isCorrectFlag(trainingRunId, flag));
             correctFlagDTO.setRemainingAttempts(trainingRunService.getRemainingAttempts(trainingRunId));
+            if(correctFlagDTO.getRemainingAttempts() == 0) {
+                correctFlagDTO.setSolution(getSolution(trainingRunId));
+            }
         } catch (ServiceLayerException ex) {
             throw new FacadeLayerException(ex);
         }
