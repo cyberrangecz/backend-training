@@ -167,15 +167,6 @@ public interface TrainingRunRepository extends JpaRepository<TrainingRun, Long>,
     Optional<TrainingRun> findValidTrainingRunOfUser(@Param("accessToken") String accessToken, @Param("userLogin") String userLogin );
 
     /**
-     * Delete sandbox instance from training run.
-     *
-     * @param sandboxInstance the sandbox instance
-     */
-    @Modifying
-    @Query("UPDATE TrainingRun tr SET tr.sandboxInstanceRef = null WHERE tr.sandboxInstanceRef = :sandboxInstance")
-    void deleteSandboxInstanceFromTrainingRun(@Param("sandboxInstance") SandboxInstanceRef sandboxInstance);
-
-    /**
      * Find by sandbox instance ref.
      *
      * @param sandboxInstanceRef the sandbox instance ref

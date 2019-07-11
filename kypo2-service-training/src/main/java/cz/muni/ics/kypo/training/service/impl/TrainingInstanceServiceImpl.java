@@ -267,7 +267,6 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
             LOG.error("Client side error when calling OpenStack: {}.", ex.getMessage() + " - " + ex.getResponseBodyAsString());
         }
     }
-
     @Override
     @TransactionalWO
     @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
@@ -277,18 +276,21 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
     public void deleteSandbox(TrainingInstance trainingInstance, Long idOfSandboxRefToDelete) {
         trainingInstanceRepository.save(trainingInstance);
         Optional<SandboxInstanceRef> optionalSandboxInstanceRefToDelete = sandboxInstanceRefRepository.findBySandboxInstanceRefId(idOfSandboxRefToDelete);
-        if(optionalSandboxInstanceRefToDelete.isPresent()) {
-            Optional<TrainingRun> trainingRun = trainingRunRepository.findBySandboxInstanceRef(optionalSandboxInstanceRefToDelete.get());
-            if(trainingRun.isPresent()) {
-                trainingRun.get().setState(TRState.ARCHIVED);
-                trainingRunRepository.deleteSandboxInstanceFromTrainingRun(optionalSandboxInstanceRefToDelete.get());
-            }
-            trainingInstance.removeSandboxInstanceRef(optionalSandboxInstanceRefToDelete.get());
-        }
+        optionalSandboxInstanceRefToDelete.ifPresent(sandboxInstanceRef -> {
+            if(trainingInstance.getSandboxInstanceRefs().contains(sandboxInstanceRef)) {
+                Optional<TrainingRun> trainingRun = trainingRunRepository.findBySandboxInstanceRef(sandboxInstanceRef);
+                if(trainingRun.isPresent()) {
+                    trainingRun.get().setState(TRState.ARCHIVED);
+                    trainingRun.get().setSandboxInstanceRef(null);
+                    trainingRunRepository.save(trainingRun.get());
+                }
+                trainingInstance.removeSandboxInstanceRef(sandboxInstanceRef);
+            } else return;
+        });
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.setContentType(MediaType.APPLICATION_JSON);
         try {
-            ResponseEntity<String> responseOnDelete = restTemplate.exchange(kypoOpenStackURI + "/sandboxes/" + idOfSandboxRefToDelete + "/",
+            restTemplate.exchange(kypoOpenStackURI + "/sandboxes/" + idOfSandboxRefToDelete + "/",
                     HttpMethod.DELETE, new HttpEntity<>(httpHeaders), String.class);
         } catch (HttpClientErrorException ex) {
             if (!ex.getStatusCode().equals(HttpStatus.NOT_FOUND)) {

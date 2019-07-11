@@ -3,8 +3,8 @@ package cz.muni.ics.kypo.training.service;
 import com.google.gson.JsonObject;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.PathBuilder;
-import cz.muni.csirt.kypo.elasticsearch.service.AuditService;
 import cz.muni.ics.kypo.commons.security.enums.AuthenticatedUserOIDCItems;
+import cz.muni.ics.kypo.training.enums.SandboxStates;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.model.enums.AssessmentType;
@@ -15,6 +15,7 @@ import cz.muni.ics.kypo.training.service.impl.AuditEventsService;
 import cz.muni.ics.kypo.training.service.impl.SecurityService;
 import cz.muni.ics.kypo.training.service.impl.TrainingRunServiceImpl;
 import cz.muni.ics.kypo.training.utils.SandboxInfo;
+import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.junit.*;
 import org.junit.rules.ExpectedException;
@@ -27,6 +28,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -34,7 +39,6 @@ import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.ResourceUtils;
 import org.springframework.web.client.RestTemplate;
-import org.json.simple.parser.JSONParser;
 
 import java.io.FileReader;
 import java.io.IOException;
@@ -42,14 +46,8 @@ import java.time.LocalDateTime;
 import java.time.Month;
 import java.util.*;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import static org.mockito.BDDMockito.*;
-
-import org.springframework.http.*;
-
-import javax.servlet.http.HttpServletRequest;
 
 /**
  * @author Boris Jadus(445343)
@@ -214,7 +212,7 @@ public class TrainingRunServiceTest {
 
         sandboxInfo = new SandboxInfo();
         sandboxInfo.setId(7L);
-        sandboxInfo.setStatus("CREATE_COMPLETE");
+        sandboxInfo.setStatus(SandboxStates.FULL_BUILD_COMPLETE.getName());
 
         assessmentLevel = new AssessmentLevel();
         assessmentLevel.setId(3L);
