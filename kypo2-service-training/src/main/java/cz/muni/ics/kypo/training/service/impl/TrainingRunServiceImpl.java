@@ -145,6 +145,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
             auditEventsService.auditLevelCompletedAction(trainingRun);
         }
         trainingRun.setCurrentLevel(abstractLevel);
+        trainingRun.setIncorrectFlagCount(0);
         trainingRunRepository.save(trainingRun);
         //audit this action to theElasticSearch
         auditEventsService.auditLevelStartedAction(trainingRun);
