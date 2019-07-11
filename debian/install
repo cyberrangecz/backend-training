@@ -1,11 +1,6 @@
-pom.xml /opt/kypo2/kypo2-training
-kypo2-api-training /opt/kypo2/kypo2-training
 kypo2-api-training/target/kypo2-api-training*.jar /opt/kypo2/kypo2-training/jars
-kypo2-persistence-training /opt/kypo2/kypo2-training
 kypo2-persistence-training/target/kypo2-persistence-training*.jar /opt/kypo2/kypo2-training/jars
-kypo2-rest-training /opt/kypo2/kypo2-training
 kypo2-rest-training/target/kypo2-rest-training*.jar /opt/kypo2/kypo2-training/jars
-kypo2-elasticsearch-training /opt/kypo2/kypo2-training
 kypo2-elasticsearch-training/target/kypo2-elasticsearch-training*.jar /opt/kypo2/kypo2-training/jars
-kypo2-service-training /opt/kypo2/kypo2-training
 kypo2-service-training/target/kypo2-service-training*.jar /opt/kypo2/kypo2-training/jars
+kypo2-persistence-training/src/main/resources/db/migration/training/*.sql /opt/kypo2/kypo2-training/migration
