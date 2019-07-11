@@ -270,23 +270,33 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
     @Override
     @TransactionalWO
     @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
-            "or @securityService.isOrganizerOfGivenTrainingInstance(#trainingInstance.id)")
+            "or @securityService.isOrganizerOfGivenTrainingInstance(#trainingInstanceId)")
     @Async
     @TrackTime
-    public void deleteSandbox(TrainingInstance trainingInstance, Long idOfSandboxRefToDelete) {
+    public void deleteSandbox(Long trainingInstanceId, Long idOfSandboxRefToDelete) {
+        Optional<TrainingInstance> trainingInstanceOptional = trainingInstanceRepository.findById(trainingInstanceId);
+        TrainingInstance trainingInstance;
+        if(trainingInstanceOptional.isPresent()) {
+            trainingInstance = trainingInstanceOptional.get();
+        } else {
+            LOG.error("Training Instance with id: " + trainingInstanceId + " not found.");
+            return;
+        }
         trainingInstanceRepository.save(trainingInstance);
         Optional<SandboxInstanceRef> optionalSandboxInstanceRefToDelete = sandboxInstanceRefRepository.findBySandboxInstanceRefId(idOfSandboxRefToDelete);
-        optionalSandboxInstanceRefToDelete.ifPresent(sandboxInstanceRef -> {
-            if(trainingInstance.getSandboxInstanceRefs().contains(sandboxInstanceRef)) {
-                Optional<TrainingRun> trainingRun = trainingRunRepository.findBySandboxInstanceRef(sandboxInstanceRef);
+        if(optionalSandboxInstanceRefToDelete.isPresent()) {
+            if(trainingInstance.getSandboxInstanceRefs().contains(optionalSandboxInstanceRefToDelete.get())) {
+                Optional<TrainingRun> trainingRun = trainingRunRepository.findBySandboxInstanceRef(optionalSandboxInstanceRefToDelete.get());
                 if(trainingRun.isPresent()) {
                     trainingRun.get().setState(TRState.ARCHIVED);
                     trainingRun.get().setSandboxInstanceRef(null);
                     trainingRunRepository.save(trainingRun.get());
                 }
-                trainingInstance.removeSandboxInstanceRef(sandboxInstanceRef);
-            } else return;
-        });
+                trainingInstance.removeSandboxInstanceRef(optionalSandboxInstanceRefToDelete.get());
+            } else {
+                return;
+            }
+        }
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.setContentType(MediaType.APPLICATION_JSON);
         try {

@@ -356,7 +356,7 @@ public class TrainingInstanceServiceTest {
         given(sandboxInstanceRefRepository.findBySandboxInstanceRefId(sandboxInstanceRef1.getSandboxInstanceRef())).willReturn(Optional.ofNullable(sandboxInstanceRef1));
         given(restTemplate.exchange(anyString(), eq(HttpMethod.DELETE), any(HttpEntity.class), eq(String.class))).
                 willReturn(new ResponseEntity<String>("", HttpStatus.OK));
-        trainingInstanceService.deleteSandbox(trainingInstance1, sandboxInstanceRef1.getSandboxInstanceRef());
+        trainingInstanceService.deleteSandbox(trainingInstance1.getId(), sandboxInstanceRef1.getSandboxInstanceRef());
         assertFalse(trainingInstance1.getSandboxInstanceRefs().contains(sandboxInstanceRef1));
     }
 
