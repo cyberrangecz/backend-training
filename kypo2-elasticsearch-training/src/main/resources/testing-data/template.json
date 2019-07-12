@@ -1,15 +1,22 @@
 {
   "template": "*",
-  "index_patterns": ["kypo.*"],
+  "index_patterns": ["kypo*"],
   "mappings": {
+    "default": {
       "properties": {
         "timestamp": {
-          "type": "long", "fields": {
-            "ts": {
-              "type": "date", "format": "epoch_millis"
-            }
-          }
+          "type": "date",
+          "format": "epoch_millis"
+        },
+        "start_time": {
+          "type": "date",
+          "format": "epoch_millis"
+        },
+        "end_time": {
+          "type": "date",
+          "format": "epoch_millis"
         }
+      }
     }
   },
   "settings": {
