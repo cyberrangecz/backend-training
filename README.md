@@ -119,72 +119,107 @@ For more information about 'How to enable communication over https between 2 spr
 After step 1 you have to create properties file according to the format below and save it.
 ```properties
 
-# Environment DEV or PROD
-### DEV environment does not need kypo2-user-and-group project but assign authority as GUEST by default
-spring.profiles.active=DEV
-spring.profiles.dev.roles=ADMINISTRATOR
+## active profiles DEV or PROD, DEV environment does not need kypo2-user-and-group project but assign authority as GUEST by default
+spring.profiles.active={PROFILE}
+## necessary only on DEV profile to set user ROLE 
+spring.profiles.dev.roles={ROLE}
 
 
-server.ipaddress={server address}, e.g., localhost (127.0.0.1)
-server.port={port for service}, e.g., 8080
-server.servlet.context-path=/{context path for service}, e.g., /kypo2-rest-training/api/v1
-server.protocol={protocol for service}, e.g., https
-microservice.name={name for your microservice}, e.g., kypo2-training
+## server ip address, e.g., localhost (127.0.0.1)
+server.ipaddress={service IP address}
+## server port for a given service, e.g., 8080
+server.port={port for this service}
+## server context path (the base url for the service), e.g., /kypo2-rest-training/api/v1
+server.servlet.context-path={context path for this service}
+## server protocol used for communication, e.g., http or https
+server.protocol={communication protocol for this service}
+## microservice name which is used in user management service for identification of this service, e.g. kypo2-training
+microservice.name={name for this microservice}
 
-# calling user-and-group project
-user-and-group-server.uri={URI}, e.g., https://localhost:8081/kypo2-rest-user-and-group/api/v1
+## calling user-and-group project, e.g., https://localhost:8084/kypo2-rest-user-and-group/api/v1
+user-and-group-server.uri={URI to user-and-group microservice}
 
-# calling openstack project
-openstack-server.uri={URI}, e.g., http://147.251.55.18:8081/kypo-openstack/api/v1 
+## calling openstack project, e.g., http://localhost:8080/kypo-openstack/api/v1 
+openstack-server.uri={URI to Openstack microservice}
 
-# Elasticsearch
-elasticsearch.ipaddress=localhost
-elasticsearch.protocol=http
-elasticsearch.port=9200
+# Elasticsearch settings
+## IP address where Elasticsearch is running, e.g. localhost
+elasticsearch.ipaddress={elasticsearch IP address}
+## communication protocol for Elasticsearch, e.g. http or https
+elasticsearch.protocol={protocol}
+## Port on which Elasticsearch is running, e.g. 9200 is default
+elasticsearch.port={port}
 
-# OpenID Connect
-kypo.idp.4oauth.introspectionURI=https://oidc.muni.cz/oidc/introspect
-kypo.idp.4oauth.authorizationURI=https://oidc.muni.cz/oidc/authorize
+# OpenID Connect configuration settings for a resource server configuration
+## the address of authorization server where the resource service is checking incoming token from a client, e.g. https://oidc.muni.cz/oidc/introspect
+kypo.idp.4oauth.introspectionURI={URL to authorization server introspect endpoint}
+## the identification of a resource service using client ID
 kypo.idp.4oauth.resource.clientId={your client ID from Self-service protected resource}
+## the identification of a resource service using client secret
 kypo.idp.4oauth.resource.clientSecret={your client secret from Self-service protected resource}
+
+
+# OpenID Connection configuration settings for a client configuration
+## the address of authorization server where the client is getting a token, e.g., https://oidc.muni.cz/oidc/authorize
+kypo.idp.4oauth.authorizationURI={URL to authorization server authorize endpoint}
+## the identification of client using his client ID
 kypo.idp.4oauth.client.clientId={your client ID from Self-service client}
-kypo.idp.4oauth.scopes=openid, email
-# you can add more scopes according to settings from step 1.
+## the scopes that authorization server will provide for a given user, e.g., openid, profile, email
+kypo.idp.4oauth.scopes={scopes}
 
 
 # spring cloud
 spring.cloud.refresh.enabled = false
 
-# DATASOURCE
-spring.datasource.url=jdbc:postgresql://{url to DB}
+# Datasource configuration
+## URL to the database, e.g., jdbc:postgresql://localhost:5432/training
+spring.datasource.url={database URL including port and database table name}
+## username in DB, e.g., postgres
 spring.datasource.username={user in DB}
-spring.datasource.password={password for user to DB}
-spring.jpa.properties.hibernate.temp.use_jdbc_metadata_defaults = false
-spring.jpa.database-platform=org.hibernate.dialect.PostgreSQL9Dialect
-spring.jpa.hibernate.ddl-auto=validate
-spring.jpa.show-sql=true
-spring.jpa.properties.hibernate.format_sql=true
+## password in DB, e.g., postgres
+spring.datasource.password={password for user in DB}
 
-# FLYWAY
-spring.flyway.url=jdbc:postgresql://{url to DB}
+# Java Persistence API settings
+spring.jpa.properties.hibernate.temp.use_jdbc_metadata_defaults = false
+## database platform (MySQL, PostgtreSQL etc.), e.g., org.hibernate.dialect.PostgreSQL9Dialect
+spring.jpa.database-platform={database dialect}
+## influence how the schema tool management will manipulate the database schema at startup, e.g., validate or none for production purposes
+spring.jpa.hibernate.ddl-auto={schema tool management}
+## show sql in console/file etc. that are invoked, e.g., false or true
+spring.jpa.show-sql={show sql}
+## possibility to format shown sql commands, if false it is shown in one line if true it is on more lines
+spring.jpa.properties.hibernate.format_sql={format sql}
+
+# Flyway settigs
+## URL to the database, e.g., jdbc:postgresql://localhost:5432/training
+spring.flyway.url={database URL including port and database table name}
+## username in DB, e.g., postgres
 spring.flyway.user={user in DB}
+## password in DB, e.g., postgres
 spring.flyway.password={password for user to DB}
+## schema version table used to store database versions
 spring.flyway.table=schema_version
 
-# to fix: Method jmxMBeanExporter in org.springframework.boot.actuate.autoconfigure.endpoint.jmx.JmxEndpointAutoConfiguration required a single bean, but 2 were found: (objMapperESClient,objectMapperForRestAPI)
-spring.jmx.enabled = false
+## disables the settings in application.properties in resource folder
+spring.jmx.enabled=false
 
 # HTTPS and CA
-security.require-ssl=true
-
-server.ssl.key-store-type={the format used for the KeyStore}, e.g, PKCS12
-server.ssl.key-store={path to KeyStore}, e.g., /etc/ssl/kypo2-keystore.p12
-server.ssl.key-store-password={password used when generate KeyStore}, e.g., changeit
-server.ssl.key-alias={alias of KeyStore}, e.g., kypo2-keystore
-
-server.ssl.trust-store={path to TrustStore}, e.g., default for Java app is in JDK $JAVA_HOME/lib/security/cacerts
-server.ssl.trust-store-password={password to TrustStore}, e.g., default for cacerts is changeit
-server.ssl.trust-store-type={the format used for the TrustStore}, e.g, JKS
+## the requirement for ssl
+security.require-ssl={ssl requirement}
+## the format used for the KeyStore, e.g. PKCS12
+server.ssl.key-store-type={the format used for the KeyStore}
+## path to KeyStore, e.g., /etc/ssl/kypo2-keystore.p12
+server.ssl.key-store={path to KeyStore}
+## password used when generate KeyStore , e.g., changeit
+server.ssl.key-store-password={password used when generate KeyStore}
+## alias of KeyStore, e.g., kypo2-keystore
+server.ssl.key-alias={alias of KeyStore}
+## path to TrustStore, e.g., default for Java app is in JDK $JAVA_HOME/lib/security/cacerts
+server.ssl.trust-store={path to TrustStore}
+## password to TrustStore, e.g., default for cacerts is changeit
+server.ssl.trust-store-password={password to TrustStore}
+## the format used for the TrustStore, e.g, JKS
+server.ssl.trust-store-type={the format used for the TrustStore}
 
 ```
 ## 4. Installing project and database migration
