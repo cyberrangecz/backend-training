@@ -6,7 +6,7 @@ Standards-Version: 3.9.8
 
 Package: kypo2-training
 Architecture: any
-Depends: maven, ${misc:Depends}
+Depends: ${misc:Depends}
 Priority: optional
 Description: KYPO training project
  This is parent project representing back-end for Training.
