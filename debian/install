@@ -1,7 +1,3 @@
-kypo2-api-training/target/kypo2-api-training*.jar /opt/kypo2/kypo2-training/jars
-kypo2-persistence-training/target/kypo2-persistence-training*.jar /opt/kypo2/kypo2-training/jars
 kypo2-rest-training/target/kypo2-rest-training*.jar /opt/kypo2/kypo2-training/jars
-kypo2-elasticsearch-training/target/kypo2-elasticsearch-training*.jar /opt/kypo2/kypo2-training/jars
-kypo2-service-training/target/kypo2-service-training*.jar /opt/kypo2/kypo2-training/jars
 kypo2-persistence-training/src/main/resources/db/migration/training/*.sql /opt/kypo2/kypo2-training/migration
 kypo2-training.properties /etc/kypo2
