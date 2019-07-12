@@ -1,7 +1,5 @@
 #!/bin/bash
 API_ROOT="http://localhost:9200/"
-TEMPLATE_INFO="_template/template_1"
-TEMPLATE_PATH="../template.json"
 
 for DIR in */
 do
