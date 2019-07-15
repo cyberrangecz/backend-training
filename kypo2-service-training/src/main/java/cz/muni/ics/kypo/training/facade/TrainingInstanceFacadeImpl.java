@@ -8,6 +8,7 @@ import cz.muni.ics.kypo.training.api.dto.UserInfoDTO;
 import cz.muni.ics.kypo.training.api.dto.run.TrainingRunDTO;
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceCreateDTO;
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceDTO;
+import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceIsFinishedInfoDTO;
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceUpdateDTO;
 import cz.muni.ics.kypo.training.exceptions.ErrorCode;
 import cz.muni.ics.kypo.training.exceptions.FacadeLayerException;
@@ -202,5 +203,19 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
         } catch (ServiceLayerException ex) {
             throw new FacadeLayerException(ex);
         }
+    }
+
+    @Override
+    @TransactionalRO
+    public TrainingInstanceIsFinishedInfoDTO checkIfInstanceCanBeDeleted(Long trainingInstanceId) {
+        TrainingInstanceIsFinishedInfoDTO infoDTO = new TrainingInstanceIsFinishedInfoDTO();
+        if (trainingInstanceService.checkIfInstanceIsFinished(trainingInstanceId)){
+            infoDTO.setHasFinished(true);
+            infoDTO.setMessage("Training instance has already finished and can be safely deleted.");
+        }else{
+            infoDTO.setHasFinished(false);
+            infoDTO.setMessage("WARNING: Training instance is still running! Are you sure you want to delete it?");
+        }
+        return infoDTO;
     }
 }

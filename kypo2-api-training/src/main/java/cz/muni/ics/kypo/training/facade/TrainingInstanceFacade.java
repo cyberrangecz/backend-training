@@ -1,6 +1,7 @@
 package cz.muni.ics.kypo.training.facade;
 
 import cz.muni.ics.kypo.training.api.dto.run.TrainingRunDTO;
+import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceIsFinishedInfoDTO;
 import cz.muni.ics.kypo.training.exceptions.FacadeLayerException;
 import org.springframework.data.domain.Pageable;
 import com.querydsl.core.types.Predicate;
@@ -41,8 +42,7 @@ public interface TrainingInstanceFacade {
      *
      * @param trainingInstance to be updated
      * @return new access token if it was changed
-     * @throws FacadeLayerException with ErrorCode: RESOURCE_NOT_FOUND given training instance is not found.
-     *                                              RESOURCE_CONFLICT cannot be updated for some reason.
+     * @throws FacadeLayerException with ErrorCode: RESOURCE_NOT_FOUND given training instance is not found.                                              RESOURCE_CONFLICT cannot be updated for some reason.
      */
     String update(TrainingInstanceUpdateDTO trainingInstance);
 
@@ -58,8 +58,7 @@ public interface TrainingInstanceFacade {
      * Deletes specific training instance based on id
      *
      * @param id of training instance to be deleted
-     * @throws FacadeLayerException with ErrorCode: RESOURCE_NOT_FOUND given training instance is not found.
-     *                                               RESOURCE_CONFLICT cannot be deleted for some reason.
+     * @throws FacadeLayerException with ErrorCode: RESOURCE_NOT_FOUND given training instance is not found.                                               RESOURCE_CONFLICT cannot be deleted for some reason.
      */
     void delete(Long id);
 
@@ -77,7 +76,7 @@ public interface TrainingInstanceFacade {
      *
      * @param trainingInstanceId id of Training Instance whose Training Runs would be returned.
      * @param isActive           if isActive attribute is True, only active runs are returned
-     * @param pageable  pageable parameter with information about pagination.
+     * @param pageable           pageable parameter with information about pagination.
      * @return Page of {@link TrainingRunDTO} of specific Training Instance
      */
     PageResultResource<TrainingRunDTO> findTrainingRunsByTrainingInstance(Long trainingInstanceId, Boolean isActive, Pageable pageable);
@@ -107,4 +106,12 @@ public interface TrainingInstanceFacade {
      */
     void reallocateSandbox(Long instanceId, Long sandboxId);
 
+
+    /**
+     * Check if instance can be deleted.
+     *
+     * @param trainingInstanceId the training instance id
+     * @return true if instance can be deleted, false if not and message. {@link TrainingInstanceIsFinishedInfoDTO}
+     */
+    TrainingInstanceIsFinishedInfoDTO checkIfInstanceCanBeDeleted(Long trainingInstanceId);
 }
