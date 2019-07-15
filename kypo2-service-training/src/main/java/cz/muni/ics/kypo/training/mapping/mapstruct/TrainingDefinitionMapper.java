@@ -9,6 +9,7 @@ import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionUp
 import cz.muni.ics.kypo.training.persistence.model.TrainingDefinition;
 import org.mapstruct.Mapper;
 import org.mapstruct.NullValueCheckStrategy;
+import org.mapstruct.ReportingPolicy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 
@@ -22,7 +23,7 @@ import java.util.*;
  */
 @Mapper(componentModel = "spring",
         uses = {UserRefMapper.class, BetaTestingGroupMapper.class},
-        nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS)
+        nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS, unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface TrainingDefinitionMapper extends ParentMapper {
 
     TrainingDefinition mapToEntity(TrainingDefinitionByIdDTO dto);

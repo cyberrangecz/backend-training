@@ -6,6 +6,7 @@ import cz.muni.ics.kypo.training.api.dto.run.TrainingRunByIdDTO;
 import cz.muni.ics.kypo.training.api.dto.run.TrainingRunDTO;
 import cz.muni.ics.kypo.training.persistence.model.TrainingRun;
 import org.mapstruct.Mapper;
+import org.mapstruct.ReportingPolicy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 
@@ -17,7 +18,7 @@ import java.util.*;
  *
  *  @author Roman Oravec
  */
-@Mapper(componentModel = "spring", uses = {SandboxInstanceRefMapper.class})
+@Mapper(componentModel = "spring", uses = {SandboxInstanceRefMapper.class}, unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface TrainingRunMapper extends ParentMapper {
     TrainingRun mapToEntity(TrainingRunDTO dto);
 
