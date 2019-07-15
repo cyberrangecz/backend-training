@@ -1,7 +1,7 @@
 package cz.muni.ics.kypo.training.rest.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import cz.muni.ics.kypo.training.api.dto.visualization.VisualizationInfoAboutTrainingRunDTO;
+import cz.muni.ics.kypo.training.api.dto.visualization.VisualizationInfoDTO;
 import cz.muni.ics.kypo.training.exceptions.FacadeLayerException;
 import cz.muni.ics.kypo.training.facade.VisualizationFacade;
 import cz.muni.ics.kypo.training.rest.ExceptionSorter;
@@ -55,21 +55,47 @@ public class VisualizationRestController {
      */
     @ApiOperation(httpMethod = "GET",
             value = "Get necessary info about levels for specific training run and additional info about training definition.",
-            response = VisualizationInfoAboutTrainingRunDTO.class,
+            response = VisualizationInfoDTO.class,
             nickname = "gatherVisualizationInfoForTrainingRun",
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Training run resumed.", response = VisualizationInfoAboutTrainingRunDTO.class),
+            @ApiResponse(code = 200, message = "Visualization info found.", response = VisualizationInfoDTO.class),
             @ApiResponse(code = 404, message = "Training run with given id not found."),
-            @ApiResponse(code = 409, message = "Cannot resume finished training run."),
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.")
     })
     @GetMapping(path = "/training-runs/{runId}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<VisualizationInfoAboutTrainingRunDTO> gatherVisualizationInfoForTrainingRun(@ApiParam(value = "Training run ID", required = true) @PathVariable Long runId) {
+    public ResponseEntity<VisualizationInfoDTO> gatherVisualizationInfoForTrainingRun(@ApiParam(value = "Training run ID", required = true) @PathVariable Long runId) {
         try {
-            VisualizationInfoAboutTrainingRunDTO visualizationInfoAboutTrainingRunDTO = visualizationFacade.getVisualizationInfoAboutTrainingRun(runId);
+            VisualizationInfoDTO visualizationInfoAboutTrainingRunDTO = visualizationFacade.getVisualizationInfoAboutTrainingRun(runId);
             return ResponseEntity.ok(visualizationInfoAboutTrainingRunDTO);
+        } catch (FacadeLayerException ex) {
+            throw ExceptionSorter.throwException(ex);
+        }
+    }
+
+    /**
+     * Gather all necessary information about levels of given training instance to visualize results of the training instance.
+     *
+     * @param trainingInstanceId id of training instance.
+     * @return necessary info about levels for specific training instance and additional info about training definition.
+     */
+    @ApiOperation(httpMethod = "GET",
+            value = "Get necessary info about levels for specific training instance and additional info about training definition.",
+            response = VisualizationInfoDTO.class,
+            nickname = "gatherVisualizationInfoForTrainingInstance",
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Visualization info found.", response = VisualizationInfoDTO.class),
+            @ApiResponse(code = 404, message = "Training instance with given id not found."),
+            @ApiResponse(code = 500, message = "Unexpected condition was encountered.")
+    })
+    @GetMapping(path = "/training-instances/{trainingInstanceId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<VisualizationInfoDTO> gatherVisualizationInfoForTrainingInstance(@ApiParam(value = "Training instance ID", required = true) @PathVariable Long trainingInstanceId) {
+        try {
+            VisualizationInfoDTO visualizationInfoDTO = visualizationFacade.getVisualizationInfoAboutTrainingInstance(trainingInstanceId);
+            return ResponseEntity.ok(visualizationInfoDTO);
         } catch (FacadeLayerException ex) {
             throw ExceptionSorter.throwException(ex);
         }

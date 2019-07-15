@@ -1,7 +1,9 @@
 package cz.muni.ics.kypo.training.persistence.repository;
 
 import com.querydsl.core.types.Predicate;
+import cz.muni.ics.kypo.training.persistence.model.SandboxInstanceRef;
 import cz.muni.ics.kypo.training.persistence.model.TrainingInstance;
+import cz.muni.ics.kypo.training.persistence.model.TrainingRun;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
@@ -14,10 +16,6 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
-
-import cz.muni.ics.kypo.training.persistence.model.SandboxInstanceRef;
-import cz.muni.ics.kypo.training.persistence.model.TrainingRun;
-
 import java.util.Set;
 
 /**

@@ -28,6 +28,15 @@ public interface TrainingRunService {
     TrainingRun findById(Long id);
 
     /**
+     * Finds specific Training Run by id including current level.
+     *
+     * @param id of a Training Run with level that would be returned
+     * @return specific {@link TrainingRun} by id
+     * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND training run is not found in DB.
+     */
+    TrainingRun findByIdWithLevel(Long id);
+
+    /**
      * Find all Training Runs.
      *
      * @param predicate specifies query to the database.

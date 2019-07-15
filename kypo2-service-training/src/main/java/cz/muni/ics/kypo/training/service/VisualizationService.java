@@ -2,6 +2,7 @@ package cz.muni.ics.kypo.training.service;
 
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.persistence.model.AbstractLevel;
+import cz.muni.ics.kypo.training.persistence.model.TrainingInstance;
 import cz.muni.ics.kypo.training.persistence.model.TrainingRun;
 
 import java.util.List;
@@ -14,14 +15,22 @@ import java.util.List;
 public interface VisualizationService {
 
     /**
-     * Gets list of all levels of given Training Run.
+     * Gets list of all levels for trainee of given Training Run.
      *
      * @param trainingRun the training run for which to find all levels.
      * @return List of {@link AbstractLevel}s
-     * @throws ServiceLayerException with ErrorCode: SECURITY_RIGHTS logged in user has either role organizer but is not in
-     * the list of organizers of training instance of the given training run or has only role trainee but it is not his training run.
-     *                                               RESOURCE_CONFLICT logged in user is trainee of given training run but training run is still running.
+     * @throws ServiceLayerException with ErrorCode: SECURITY_RIGHTS logged in user is not trainee of given training instance.
+     *                                               RESOURCE_CONFLICT training run is still running.
      */
-    List<AbstractLevel> getLevelsForVisualization(TrainingRun trainingRun);
+    List<AbstractLevel> getLevelsForTraineeVisualization(TrainingRun trainingRun);
+
+    /**
+     * Gets list of all levels for organizer of given Training Instance.
+     *
+     * @param trainingInstance the training instance for which to find all levels.
+     * @return List of {@link AbstractLevel}s
+     * @throws ServiceLayerException with ErrorCode: SECURITY_RIGHTS logged in user is not organizer of given training instance.
+     */
+    List<AbstractLevel> getLevelsForOrganizerVisualization(TrainingInstance trainingInstance);
 
 }
