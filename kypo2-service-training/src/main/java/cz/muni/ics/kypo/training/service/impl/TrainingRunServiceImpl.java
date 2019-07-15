@@ -87,6 +87,15 @@ public class TrainingRunServiceImpl implements TrainingRunService {
     }
 
     @Override
+    @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
+            "or @securityService.isTraineeOfGivenTrainingRun(#runId)")
+    public TrainingRun findByIdWithLevel(Long runId) {
+        Objects.requireNonNull(runId);
+        return trainingRunRepository.findByIdWithLevel(runId).orElseThrow(() ->
+                new ServiceLayerException("Training Run with id: " + runId + " not found.", ErrorCode.RESOURCE_NOT_FOUND));
+    }
+
+    @Override
     @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)")
     public Page<TrainingRun> findAll(Predicate predicate, Pageable pageable) {
         return trainingRunRepository.findAll(predicate, pageable);
@@ -408,12 +417,6 @@ public class TrainingRunServiceImpl implements TrainingRunService {
             auditEventsService.auditLevelCompletedAction(trainingRun);
         }
         auditEventsService.auditTrainingRunEndedAction(trainingRun);
-    }
-
-    private TrainingRun findByIdWithLevel(Long trainingRunId) {
-        Objects.requireNonNull(trainingRunId);
-        return trainingRunRepository.findByIdWithLevel(trainingRunId).orElseThrow(() ->
-                new ServiceLayerException("Training Run with id: " + trainingRunId + " not found.", ErrorCode.RESOURCE_NOT_FOUND));
     }
 
     @Override

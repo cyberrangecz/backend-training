@@ -1,6 +1,6 @@
 package cz.muni.ics.kypo.training.facade;
 
-import cz.muni.ics.kypo.training.annotations.transactions.TransactionalWO;
+import cz.muni.ics.kypo.training.annotations.transactions.TransactionalRO;
 import cz.muni.ics.kypo.training.api.dto.visualization.*;
 import cz.muni.ics.kypo.training.api.enums.LevelType;
 import cz.muni.ics.kypo.training.exceptions.ErrorCode;
@@ -11,6 +11,7 @@ import cz.muni.ics.kypo.training.mapping.mapstruct.GameLevelMapper;
 import cz.muni.ics.kypo.training.mapping.mapstruct.HintMapper;
 import cz.muni.ics.kypo.training.mapping.mapstruct.InfoLevelMapper;
 import cz.muni.ics.kypo.training.persistence.model.*;
+import cz.muni.ics.kypo.training.service.TrainingInstanceService;
 import cz.muni.ics.kypo.training.service.TrainingRunService;
 import cz.muni.ics.kypo.training.service.VisualizationService;
 import org.slf4j.Logger;
@@ -28,6 +29,7 @@ public class VisualizationFacadeImpl implements VisualizationFacade {
     private static final Logger LOG = LoggerFactory.getLogger(VisualizationFacadeImpl.class);
 
     private TrainingRunService trainingRunService;
+    private TrainingInstanceService trainingInstanceService;
     private VisualizationService visualizationService;
     private GameLevelMapper gameLevelMapper;
     private AssessmentLevelMapper assessmentLevelMapper;
@@ -35,10 +37,11 @@ public class VisualizationFacadeImpl implements VisualizationFacade {
     private HintMapper hintMapper;
 
     @Autowired
-    public VisualizationFacadeImpl(TrainingRunService trainingRunService, VisualizationService visualizationService,
+    public VisualizationFacadeImpl(TrainingRunService trainingRunService, TrainingInstanceService trainingInstanceService, VisualizationService visualizationService,
                                  HintMapper hintMapper, GameLevelMapper gameLevelMapper, InfoLevelMapper infoLevelMapper,
                                    AssessmentLevelMapper assessmentLevelMapper) {
         this.trainingRunService = trainingRunService;
+        this.trainingInstanceService = trainingInstanceService;
         this.visualizationService = visualizationService;
         this.gameLevelMapper = gameLevelMapper;
         this.assessmentLevelMapper = assessmentLevelMapper;
@@ -47,23 +50,34 @@ public class VisualizationFacadeImpl implements VisualizationFacade {
     }
 
     @Override
-    @TransactionalWO
-    public VisualizationInfoAboutTrainingRunDTO getVisualizationInfoAboutTrainingRun(Long trainingRunId) {
+    @TransactionalRO
+    public VisualizationInfoDTO getVisualizationInfoAboutTrainingRun(Long trainingRunId) {
         try {
-            TrainingRun trainingRun = trainingRunService.findById(trainingRunId);
+            TrainingRun trainingRun = trainingRunService.findByIdWithLevel(trainingRunId);
             TrainingDefinition trainingDefinitionOfTrainingRun = trainingRun.getTrainingInstance().getTrainingDefinition();
-            return new VisualizationInfoAboutTrainingRunDTO(trainingDefinitionOfTrainingRun.getId(), trainingDefinitionOfTrainingRun.getTitle(),
-                    trainingDefinitionOfTrainingRun.getEstimatedDuration(), gatherVisualizationLevelInfo(trainingRun));
+            return new VisualizationInfoDTO(trainingDefinitionOfTrainingRun.getId(), trainingDefinitionOfTrainingRun.getTitle(),
+                    trainingDefinitionOfTrainingRun.getEstimatedDuration(), convertToAbstractLevelVisualizationDTO(visualizationService.getLevelsForTraineeVisualization(trainingRun)));
         } catch (ServiceLayerException ex) {
             throw new FacadeLayerException(ex);
         }
     }
 
-    private List<AbstractLevelVisualizationDTO> gatherVisualizationLevelInfo(TrainingRun trainingRun) {
-        List<AbstractLevel> levels = visualizationService.getLevelsForVisualization(trainingRun);
-        List<AbstractLevelVisualizationDTO> visualizationLevelInfoDTOs = new ArrayList<>();
+    @Override
+    @TransactionalRO
+    public VisualizationInfoDTO getVisualizationInfoAboutTrainingInstance(Long trainingInstanceId) {
+        try {
+            TrainingInstance trainingInstance = trainingInstanceService.findById(trainingInstanceId);
+            TrainingDefinition trainingDefinitionOfTrainingRun = trainingInstance.getTrainingDefinition();
+            return new VisualizationInfoDTO(trainingDefinitionOfTrainingRun.getId(), trainingDefinitionOfTrainingRun.getTitle(),
+                    trainingDefinitionOfTrainingRun.getEstimatedDuration(),convertToAbstractLevelVisualizationDTO(visualizationService.getLevelsForOrganizerVisualization(trainingInstance)));
+        } catch (ServiceLayerException ex) {
+            throw new FacadeLayerException(ex);
+        }
+    }
 
-        levels.forEach(level -> {
+    private List<AbstractLevelVisualizationDTO> convertToAbstractLevelVisualizationDTO(List<AbstractLevel> abstractLevels) {
+        List<AbstractLevelVisualizationDTO> visualizationLevelInfoDTOs = new ArrayList<>();
+        abstractLevels.forEach(level -> {
             if(level instanceof GameLevel) {
                 GameLevelVisualizationDTO gameLevelVisualizationDTO = gameLevelMapper.mapToVisualizationGameLevelDTO((GameLevel) level);
                 gameLevelVisualizationDTO.setHints(hintMapper.mapToListDTO(((GameLevel) level).getHints()));
@@ -79,7 +93,7 @@ public class VisualizationFacadeImpl implements VisualizationFacade {
                 infoLevelVisualizationDTO.setLevelType(LevelType.INFO_LEVEL);
                 visualizationLevelInfoDTOs.add(infoLevelVisualizationDTO);
             } else {
-                throw new ServiceLayerException("Level with id: " + level.getId() + " in given training definition with id: " + trainingRun.getTrainingInstance().getTrainingDefinition().getId() +
+                throw new ServiceLayerException("Level with id: " + level.getId() + " in given training definition with id: " + level.getTrainingDefinition().getId() +
                         " is not instance of assessment, game or info level.", ErrorCode.UNEXPECTED_ERROR);
             }
         });

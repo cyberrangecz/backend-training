@@ -3,14 +3,14 @@ package cz.muni.ics.kypo.training.api.dto.visualization;
 import java.util.List;
 import java.util.Objects;
 
-public class VisualizationInfoAboutTrainingRunDTO {
+public class VisualizationInfoDTO {
 
     private Long trainingDefinitionId;
     private String trainingDefinitionTitle;
     private long trainingDefinitionEstimatedDuration;
     private List<AbstractLevelVisualizationDTO> levels;
 
-    public VisualizationInfoAboutTrainingRunDTO(Long trainingDefinitionId, String trainingDefinitionTitle, long trainingDefinitionEstimatedDuration, List<AbstractLevelVisualizationDTO> levels) {
+    public VisualizationInfoDTO(Long trainingDefinitionId, String trainingDefinitionTitle, long trainingDefinitionEstimatedDuration, List<AbstractLevelVisualizationDTO> levels) {
         this.trainingDefinitionId = trainingDefinitionId;
         this.trainingDefinitionTitle = trainingDefinitionTitle;
         this.trainingDefinitionEstimatedDuration = trainingDefinitionEstimatedDuration;
@@ -91,8 +91,8 @@ public class VisualizationInfoAboutTrainingRunDTO {
 
     @Override
     public boolean equals(Object object) {
-        if (!(object instanceof VisualizationInfoAboutTrainingRunDTO)) return false;
-        VisualizationInfoAboutTrainingRunDTO that = (VisualizationInfoAboutTrainingRunDTO) object;
+        if (!(object instanceof VisualizationInfoDTO)) return false;
+        VisualizationInfoDTO that = (VisualizationInfoDTO) object;
         return getTrainingDefinitionEstimatedDuration() == that.getTrainingDefinitionEstimatedDuration() &&
                 Objects.equals(getTrainingDefinitionId(), that.getTrainingDefinitionId()) &&
                 Objects.equals(getTrainingDefinitionTitle(), that.getTrainingDefinitionTitle());
