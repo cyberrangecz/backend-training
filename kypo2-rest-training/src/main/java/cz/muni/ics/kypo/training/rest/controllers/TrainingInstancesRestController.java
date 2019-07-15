@@ -1,5 +1,6 @@
 package cz.muni.ics.kypo.training.rest.controllers;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.bohnman.squiggly.Squiggly;
 import com.github.bohnman.squiggly.util.SquigglyUtils;
@@ -9,15 +10,12 @@ import cz.muni.ics.kypo.training.api.dto.run.TrainingRunDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionByIdDTO;
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceCreateDTO;
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceDTO;
+import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceIsFinishedInfoDTO;
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceUpdateDTO;
 import cz.muni.ics.kypo.training.exceptions.FacadeLayerException;
 import cz.muni.ics.kypo.training.facade.TrainingInstanceFacade;
 import cz.muni.ics.kypo.training.persistence.model.TrainingInstance;
 import cz.muni.ics.kypo.training.rest.ExceptionSorter;
-
-import java.util.List;
-import java.util.Set;
-
 import io.swagger.annotations.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
@@ -27,9 +25,10 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 import javax.validation.Valid;
+import java.util.List;
+import java.util.Set;
 
 /**
  * The type Training instances rest controller.
@@ -397,4 +396,18 @@ public class TrainingInstancesRestController {
         }
     }
 
+    @ApiOperation(httpMethod = "GET",
+            value = "Check if training instance can be safely deleted",
+            response = TrainingInstanceIsFinishedInfoDTO.class,
+            nickname = "checkIfInstanceCanBeDeleted")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Information about safe deletion was gathered"),
+            @ApiResponse(code = 500, message = "Unexpected condition was encountered")
+    })
+    @GetMapping(path = "/{instanceId}/deletion-info")
+    public ResponseEntity<TrainingInstanceIsFinishedInfoDTO> checkIfInstanceCanBeDeleted(
+            @ApiParam(value = "Id of training instance for which deletion info is gathered", required = true)
+            @PathVariable(value = "instanceId") Long instanceId){
+        return ResponseEntity.ok(trainingInstanceFacade.checkIfInstanceCanBeDeleted(instanceId));
+    }
 }

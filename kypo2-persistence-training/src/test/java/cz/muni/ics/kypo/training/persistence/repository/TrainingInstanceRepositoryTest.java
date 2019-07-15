@@ -15,6 +15,7 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -53,19 +54,19 @@ public class TrainingInstanceRepositoryTest {
         trainingDefinition.setTitle("test");
         trainingDefinition.setState(TDState.RELEASED);
         trainingDefinition.setBetaTestingGroup(betaTestingGroup);
-        trainingDefinition.setLastEdited(LocalDateTime.now());
+        trainingDefinition.setLastEdited(LocalDateTime.now(Clock.systemUTC()));
 
         trainingInstance1 = new TrainingInstance();
         trainingInstance2 = new TrainingInstance();
-        trainingInstance1.setStartTime(LocalDateTime.now().minusMinutes(1));
-        trainingInstance1.setEndTime(LocalDateTime.now().plusMinutes(1));
+        trainingInstance1.setStartTime(LocalDateTime.now(Clock.systemUTC()).minusMinutes(1));
+        trainingInstance1.setEndTime(LocalDateTime.now(Clock.systemUTC()).plusMinutes(1));
         trainingInstance1.setTitle("Training instance 1");
         trainingInstance1.setPoolSize(10);
         trainingInstance1.setAccessToken("1Eh9A5l7Op5As8s0h9");
         trainingInstance1.setTrainingDefinition(entityManager.persist(trainingDefinition));
 
-        trainingInstance2.setStartTime(LocalDateTime.now().minusMinutes(2));
-        trainingInstance2.setEndTime(LocalDateTime.now().minusMinutes(1));
+        trainingInstance2.setStartTime(LocalDateTime.now(Clock.systemUTC()).minusMinutes(2));
+        trainingInstance2.setEndTime(LocalDateTime.now(Clock.systemUTC()).minusMinutes(1));
         trainingInstance2.setTitle("Training instance 2");
         trainingInstance2.setPoolSize(15);
         trainingInstance2.setAccessToken("R8a9C7B4a2c8A2cN1E");
@@ -104,6 +105,18 @@ public class TrainingInstanceRepositoryTest {
         assertNotNull(resultTrainingInstances);
         assertEquals(expectedTrainingInstances.size(), resultTrainingInstances.size());
         assertEquals(expectedTrainingInstances, resultTrainingInstances);
+    }
+
+    @Test
+    public void isFinishedTest_returnTrue() {
+        TrainingInstance ti = entityManager.persist(trainingInstance2);
+        assertTrue(trainingInstanceRepository.isFinished(ti.getId(), LocalDateTime.now(Clock.systemUTC())));
+    }
+
+    @Test
+    public void isFinishedTest_returnFalse() {
+        TrainingInstance ti = entityManager.persist(trainingInstance1);
+        assertFalse(trainingInstanceRepository.isFinished(ti.getId(), LocalDateTime.now(Clock.systemUTC())));
     }
 
     @Test

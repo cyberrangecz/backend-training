@@ -419,16 +419,6 @@ public class TrainingInstancesIT {
     }
 
     @Test
-    public void deleteNotConcludedTrainingInstance() throws Exception {
-        TrainingInstance tI = trainingInstanceRepository.save(notConcludedTrainingInstance);
-        Exception ex = mvc.perform(delete("/training-instances/{id}", tI.getId()))
-                .andExpect(status().isConflict())
-                .andReturn().getResolvedException();
-        assertEquals(ConflictException.class, Objects.requireNonNull(ex).getClass());
-        assertTrue(ex.getMessage().contains("The training instance which is running cannot be deleted."));
-    }
-
-    @Test
     public void deleteFinishedTrainingInstanceWithTrainingRuns() throws Exception {
         trainingInstanceRepository.save(finishedTrainingInstance);
         trainingRun1.setTrainingInstance(finishedTrainingInstance);

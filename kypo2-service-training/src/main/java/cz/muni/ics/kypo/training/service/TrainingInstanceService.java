@@ -50,8 +50,7 @@ public interface TrainingInstanceService {
      *
      * @param trainingInstance to be updated
      * @return new access token if it was changed
-     * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND given training instance is not found.
-     *                                               RESOURCE_CONFLICT cannot be updated for some reason.
+     * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND given training instance is not found.                                               RESOURCE_CONFLICT cannot be updated for some reason.
      */
     String update(TrainingInstance trainingInstance);
 
@@ -59,8 +58,7 @@ public interface TrainingInstanceService {
      * deletes training instance
      *
      * @param id of training instance
-     * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND given training instance is not found.
-     *                                               RESOURCE_CONFLICT cannot be deleted for some reason.
+     * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND given training instance is not found.                                               RESOURCE_CONFLICT cannot be deleted for some reason.
      */
     void delete(Long id);
 
@@ -78,7 +76,7 @@ public interface TrainingInstanceService {
      * Delete sandbox from training instance
      * This method is annotated with @Transactional and is asynchronous
      *
-     * @param trainingInstanceId   id of Training Instnace from which to delete sandbox instance.
+     * @param trainingInstanceId             id of Training Instnace from which to delete sandbox instance.
      * @param idOfSandboxInstanceRefToDelete id of sandbox to be removed from training instance and deleted from open stack
      */
     void deleteSandbox(Long trainingInstanceId, Long idOfSandboxInstanceRefToDelete);
@@ -88,7 +86,7 @@ public interface TrainingInstanceService {
      *
      * @param trainingInstanceId id of Training Instance whose Training Runs would be returned.
      * @param isActive           if isActive attribute is True, only active runs are returned
-     * @param pageable  pageable parameter with information about pagination.
+     * @param pageable           pageable parameter with information about pagination.
      * @return {@link TrainingRun}s of specific {@link TrainingInstance}
      */
     Page<TrainingRun> findTrainingRunsByTrainingInstance(Long trainingInstanceId, Boolean isActive, Pageable pageable);
@@ -124,5 +122,14 @@ public interface TrainingInstanceService {
      * @return the list of ids of all occupied sandboxes
      */
     List<Long> findIdsOfAllOccupiedSandboxesByTrainingInstance(Long trainingInstanceId);
+
+
+    /**
+     * Check if instance is finished.
+     *
+     * @param trainingInstanceId the training instance id
+     * @return true if instance is finished, false if not
+     */
+    boolean checkIfInstanceIsFinished(Long trainingInstanceId);
 
 }

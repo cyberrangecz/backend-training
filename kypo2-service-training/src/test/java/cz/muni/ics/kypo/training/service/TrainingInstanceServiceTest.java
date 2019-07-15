@@ -256,16 +256,6 @@ public class TrainingInstanceServiceTest {
         trainingInstanceService.delete(null);
     }
 
-    @Test(expected = ServiceLayerException.class)
-    public void deleteTrainingInstance_withEndTimeInTheFuture() {
-        given(trainingInstanceRepository.findById(any(Long.class))).willReturn(Optional.of(trainingInstanceInvalid));
-
-        trainingInstanceService.delete(trainingInstanceInvalid.getId());
-
-        then(trainingInstanceRepository).should().findById(trainingInstanceInvalid.getId());
-        then(trainingInstanceRepository).should().delete(trainingInstanceInvalid);
-    }
-
     @Test
     public void deleteTrainingInstanceWithAssignedTrainingRuns() {
         List<TrainingRun> runs = new ArrayList<>();
@@ -279,14 +269,6 @@ public class TrainingInstanceServiceTest {
         thrown.expect(ServiceLayerException.class);
         thrown.expectMessage("Finished training instance with already assigned training runs cannot be deleted.");
         trainingInstanceService.delete(trainingInstance1.getId());
-    }
-
-    @Test
-    public void deleteRunningInstance() {
-        given(trainingInstanceRepository.findById(anyLong())).willReturn(Optional.of(currentInstance));
-        thrown.expect(ServiceLayerException.class);
-        thrown.expectMessage("The training instance which is running cannot be deleted.");
-        trainingInstanceService.delete(currentInstance.getId());
     }
 
     @Test

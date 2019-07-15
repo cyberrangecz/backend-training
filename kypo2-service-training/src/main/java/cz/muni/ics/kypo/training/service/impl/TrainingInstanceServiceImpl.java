@@ -158,8 +158,6 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
         TrainingInstance trainingInstance = trainingInstanceRepository.findById(instanceId)
                 .orElseThrow(() -> new ServiceLayerException("Training instance with id: " + instanceId + ", not found.", ErrorCode.RESOURCE_NOT_FOUND));
         LocalDateTime currentDate = LocalDateTime.now(Clock.systemUTC());
-        if (currentDate.isAfter(trainingInstance.getStartTime()) && currentDate.isBefore(trainingInstance.getEndTime()))
-            throw new ServiceLayerException("The training instance which is running cannot be deleted.", ErrorCode.RESOURCE_CONFLICT);
         if (currentDate.isAfter(trainingInstance.getEndTime()) && trainingRunRepository.findAllByTrainingInstanceId(
                 trainingInstance.getId(), PageRequest.of(0, 5)).getTotalElements() > 0)
             throw new ServiceLayerException("Finished training instance with already assigned training runs cannot be deleted.", ErrorCode.RESOURCE_CONFLICT);
@@ -356,5 +354,12 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
     @IsOrganizerOrAdmin
     public Set<UserRef> findUserRefsByLogins(Set<String> logins) {
         return organizerRefRepository.findUsers(logins);
+    }
+
+    @Override
+    @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
+            "or @securityService.isOrganizerOfGivenTrainingInstance(#instanceId)")
+    public boolean checkIfInstanceIsFinished(Long trainingInstanceId) {
+        return trainingInstanceRepository.isFinished(trainingInstanceId, LocalDateTime.now(Clock.systemUTC()));
     }
 }

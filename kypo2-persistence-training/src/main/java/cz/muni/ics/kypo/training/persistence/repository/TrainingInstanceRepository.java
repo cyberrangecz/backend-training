@@ -83,4 +83,14 @@ public interface TrainingInstanceRepository extends JpaRepository<TrainingInstan
             + " ti.trainingDefinition td LEFT OUTER JOIN FETCH td.authors LEFT OUTER JOIN FETCH td.betaTestingGroup btg LEFT OUTER JOIN FETCH btg.organizers WHERE ti.id = :instanceId")
     Optional<TrainingInstance> findByIdIncludingDefinition(@Param("instanceId") Long instanceId);
 
+
+    /**
+     * Checks if training instance finished.
+     *
+     * @param currentTime       the current time
+     * @param instanceId the instance id
+     * @return true if instance is finished, false if not
+     */
+    @Query("SELECT (COUNT(ti) > 0) FROM TrainingInstance ti WHERE ti.id = :instanceId AND ti.endTime < :currentTime")
+    boolean isFinished(@Param("instanceId") Long instanceId, @Param("currentTime") LocalDateTime currentTime);
 }
