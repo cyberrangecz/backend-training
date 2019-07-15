@@ -29,6 +29,7 @@ public class TrainingRunByIdDTO {
 	private UserRefDTO participantRef;
 	private Long definitionId;
 	private Long instanceId;
+	private Long previousSandboxInstanceRefId;
 
 	/**
 	 * Gets id.
@@ -200,6 +201,25 @@ public class TrainingRunByIdDTO {
 		this.instanceId = instanceId;
 	}
 
+	/**
+	 * Gets ID of previous used sandbox instance ref.
+	 *
+	 * @return the previous sandbox instance ref id
+	 */
+	@ApiModelProperty(value = "Id of a previous sandbox instance assigned to the training run.", example = "12")
+	public Long getPreviousSandboxInstanceRefId() {
+		return previousSandboxInstanceRefId;
+	}
+
+	/**
+	 * Sets ID of previous used sandbox instance ref.
+	 *
+	 * @param previousSandboxInstanceRefId the previous sandbox instance ref id
+	 */
+	public void setPreviousSandboxInstanceRefId(Long previousSandboxInstanceRefId) {
+		this.previousSandboxInstanceRefId = previousSandboxInstanceRefId;
+	}
+
 	@Override
 	public String toString() {
 		return "TrainingRunByIdDTO{" +
@@ -212,6 +232,7 @@ public class TrainingRunByIdDTO {
 				", participantRef=" + participantRef +
 				", definitionId=" + definitionId +
 				", instanceId=" + instanceId +
+				", previousSandboxInstanceRefId=" + previousSandboxInstanceRefId +
 				'}';
 	}
 }

@@ -121,6 +121,7 @@ create table training_run (
     user_ref_id int8 not null,
     sandbox_instance_ref_id int8 null,
     training_instance_id int8 not null,
+    previous_sandbox_instance_ref_id int8 null,
     primary key (id)
 );
 

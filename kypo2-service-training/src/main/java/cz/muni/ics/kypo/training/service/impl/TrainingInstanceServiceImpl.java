@@ -290,6 +290,7 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
                 if(trainingRun.isPresent()) {
                     trainingRun.get().setState(TRState.ARCHIVED);
                     trainingRun.get().setSandboxInstanceRef(null);
+                    trainingRun.get().setPreviousSandboxInstanceRefId(optionalSandboxInstanceRefToDelete.get().getSandboxInstanceRef());
                     trainingRunRepository.save(trainingRun.get());
                 }
                 trainingInstance.removeSandboxInstanceRef(optionalSandboxInstanceRefToDelete.get());
