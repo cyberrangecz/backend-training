@@ -6,6 +6,7 @@ import cz.muni.ics.kypo.training.api.PageResultResource;
 import cz.muni.ics.kypo.training.api.dto.SandboxInstanceRefDTO;
 import cz.muni.ics.kypo.training.persistence.model.SandboxInstanceRef;
 import org.mapstruct.Mapper;
+import org.mapstruct.ReportingPolicy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 
@@ -17,7 +18,7 @@ import java.util.*;
  *
  * @author Roman Oravec
  */
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface SandboxInstanceRefMapper extends ParentMapper {
     SandboxInstanceRef mapToEntity(SandboxInstanceRefDTO dto);
 

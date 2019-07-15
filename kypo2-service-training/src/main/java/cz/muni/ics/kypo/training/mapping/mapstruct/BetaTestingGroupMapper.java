@@ -5,6 +5,7 @@ import cz.muni.ics.kypo.training.api.dto.betatestinggroup.BetaTestingGroupDTO;
 import cz.muni.ics.kypo.training.api.dto.betatestinggroup.BetaTestingGroupUpdateDTO;
 import cz.muni.ics.kypo.training.persistence.model.BetaTestingGroup;
 import org.mapstruct.Mapper;
+import org.mapstruct.ReportingPolicy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 
@@ -16,7 +17,7 @@ import java.util.*;
  *
  * @author Boris Jadus
  */
-@Mapper(componentModel = "spring", uses = {UserRefMapper.class})
+@Mapper(componentModel = "spring", uses = {UserRefMapper.class}, unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface BetaTestingGroupMapper extends ParentMapper {
     BetaTestingGroup mapToEntity(BetaTestingGroupDTO dto);
 

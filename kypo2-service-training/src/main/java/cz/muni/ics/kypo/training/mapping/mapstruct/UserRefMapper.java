@@ -4,6 +4,7 @@ import cz.muni.ics.kypo.training.api.PageResultResource;
 import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
 import cz.muni.ics.kypo.training.persistence.model.UserRef;
 import org.mapstruct.Mapper;
+import org.mapstruct.ReportingPolicy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 
@@ -15,7 +16,7 @@ import java.util.*;
  *
  *  @author Pavel Seda
  */
-@Mapper(componentModel = "spring", uses = {TrainingInstanceMapper.class})
+@Mapper(componentModel = "spring", uses = {TrainingInstanceMapper.class}, unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface UserRefMapper extends ParentMapper {
 
     UserRef mapToEntity(UserRefDTO dto);

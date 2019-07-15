@@ -9,6 +9,7 @@ import cz.muni.ics.kypo.training.api.dto.visualization.InfoLevelVisualizationDTO
 import cz.muni.ics.kypo.training.persistence.model.InfoLevel;
 import org.mapstruct.Mapper;
 import org.mapstruct.NullValueCheckStrategy;
+import org.mapstruct.ReportingPolicy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 
@@ -22,7 +23,7 @@ import java.util.*;
  */
 @Mapper(componentModel = "spring",
         uses = {SandboxInstanceRefMapper.class},
-        nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS)
+        nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS, unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface InfoLevelMapper extends ParentMapper {
 
     InfoLevel mapToEntity(InfoLevelDTO dto);

@@ -4,6 +4,7 @@ import cz.muni.ics.kypo.training.api.PageResultResource;
 import cz.muni.ics.kypo.training.api.dto.gamelevel.GameLevelUpdateDTO;
 import cz.muni.ics.kypo.training.persistence.model.GameLevel;
 import org.mapstruct.Mapper;
+import org.mapstruct.ReportingPolicy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 
@@ -15,7 +16,7 @@ import java.util.*;
  *
  * @author Roman Oravec
  */
-@Mapper(componentModel = "spring", uses = {HintMapper.class})
+@Mapper(componentModel = "spring", uses = {HintMapper.class}, unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface GameLevelUpdateMapper extends ParentMapper{
     GameLevel mapToEntity(GameLevelUpdateDTO dto);
 

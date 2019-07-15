@@ -9,6 +9,7 @@ import cz.muni.ics.kypo.training.api.dto.visualization.AssessmentLevelVisualizat
 import cz.muni.ics.kypo.training.persistence.model.AssessmentLevel;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.ReportingPolicy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 
@@ -19,7 +20,7 @@ import java.util.*;
  * DTOs classes. Code is generated during compile time.
  * @author Roman Oravec
  */
-@Mapper(componentModel = "spring", uses = {})
+@Mapper(componentModel = "spring", uses = {}, unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface AssessmentLevelMapper extends ParentMapper {
 
     AssessmentLevel mapToEntity(AssessmentLevelDTO dto);

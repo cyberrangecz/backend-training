@@ -12,8 +12,9 @@ import cz.muni.ics.kypo.training.persistence.model.AssessmentLevel;
 import cz.muni.ics.kypo.training.persistence.model.GameLevel;
 import cz.muni.ics.kypo.training.persistence.model.InfoLevel;
 import org.mapstruct.Mapper;
+import org.mapstruct.ReportingPolicy;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface BasicLevelInfoMapper {
 
     BasicLevelInfoDTO mapTo(AssessmentLevel assesmentLevel);
