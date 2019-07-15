@@ -33,10 +33,12 @@ import org.springframework.http.*;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
-import java.time.*;
+import java.time.Clock;
+import java.time.LocalDateTime;
 import java.util.*;
 
 /**
@@ -102,9 +104,25 @@ public class TrainingRunServiceImpl implements TrainingRunService {
     public void deleteTrainingRun(Long trainingRunId) {
         TrainingRun trainingRun = trainingRunRepository.findById(trainingRunId).orElseThrow(() -> new ServiceLayerException("Training Run with runId: " + trainingRunId + " could not be deleted because it is not in the database.", ErrorCode.RESOURCE_NOT_FOUND));
         if (trainingRun.getSandboxInstanceRef() == null) {
+            try {
+                HttpHeaders httpHeaders = new HttpHeaders();
+                httpHeaders.set("Accept", MediaType.APPLICATION_JSON_VALUE);
+                ResponseEntity<SandboxInfo> response = restTemplate.exchange(kypoOpenStackURI + "/sandboxes/" + trainingRun.getPreviousSandboxInstanceRefId() + "/", HttpMethod.GET, new HttpEntity<>(httpHeaders),
+                        new ParameterizedTypeReference<SandboxInfo>() {
+                        });
+                if (response.getStatusCode().is2xxSuccessful()) {
+                    throw new ServiceLayerException("Sandbox (id:" + trainingRun.getPreviousSandboxInstanceRefId() + ") previously assigned to the training run (id: " + trainingRunId + ") was not deleted in OpenStack. Please delete sandbox in OpenStack before you delete training run.", ErrorCode.RESOURCE_CONFLICT);
+                }
+            } catch (HttpClientErrorException ex) {
+                if(!ex.getStatusCode().equals(HttpStatus.NOT_FOUND)) {
+                    throw new ServiceLayerException("Client side error when calling OpenStack: " + ex.getMessage() + " " + ex.getResponseBodyAsString() + ". Probably wrong URL of service.", ErrorCode.UNEXPECTED_ERROR);
+                }
+                LOG.debug("Sandbox (id:" + trainingRun.getPreviousSandboxInstanceRefId() + ") previously assigned to the training run (id: " + trainingRunId + ") is not found in OpenStack because it was successfully deleted.");
+            }
             trainingRunRepository.delete(trainingRun);
         } else {
-            throw new ServiceLayerException("Could not delete training run (id: " + trainingRunId + ") with associated sandbox. Please firstly, delete associated sandbox.", ErrorCode.RESOURCE_CONFLICT);
+            throw new ServiceLayerException("Could not delete training run (id: " + trainingRunId + ") with associated sandbox (id: " + trainingRun.getSandboxInstanceRef().getSandboxInstanceRef() +
+                    "). Please firstly, delete associated sandbox.", ErrorCode.RESOURCE_CONFLICT);
         }
     }
 

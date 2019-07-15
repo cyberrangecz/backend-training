@@ -1,13 +1,14 @@
 package cz.muni.ics.kypo.training.persistence.model;
 
-import javax.persistence.*;
-
 import cz.muni.ics.kypo.training.persistence.model.enums.TRState;
 import org.hibernate.annotations.Type;
 
+import javax.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.Set;
 
 /**
  * Class represents Training run.
@@ -60,6 +61,8 @@ public class TrainingRun implements Serializable {
     @ElementCollection(targetClass = HintInfo.class, fetch = FetchType.LAZY)
     @CollectionTable(name = "hint_info", joinColumns = @JoinColumn(name = "training_run_id"))
     private Set<HintInfo> hintInfoList = new HashSet<>();
+    @Column(name = "previous_sandbox_instance_ref_id")
+    private Long previousSandboxInstanceRefId;
 
     /**
      * Gets unique identification number of Training run
@@ -381,6 +384,24 @@ public class TrainingRun implements Serializable {
      */
     public void removeHintInfo(HintInfo hintInfo) {
         this.hintInfoList.remove(hintInfo);
+    }
+
+
+    /**
+     * Gets id of previous sandbox instance ref assigned by training run.
+     *
+     * @return the id of previous sandbox instance ref
+     */
+    public Long getPreviousSandboxInstanceRefId() {
+        return previousSandboxInstanceRefId;
+    }
+    /**
+     * Sets previous sandbox instance ref ID
+     *
+     * @param previousSandboxInstanceRefId the id of previous sandbox instance ref
+     */
+    public void setPreviousSandboxInstanceRefId(Long previousSandboxInstanceRefId) {
+        this.previousSandboxInstanceRefId = previousSandboxInstanceRefId;
     }
 
     @Override

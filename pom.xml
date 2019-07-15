@@ -85,7 +85,7 @@
 
         <!-- spring for swagger version -->
         <swagger.version>2.9.2</swagger.version>
-        <swagger-annotations.version>1.5.21</swagger-annotations.version>
+        <swagger-annotations.version>1.5.22</swagger-annotations.version>
 
         <!-- fast tests compilation -->
         <openclover.version>4.2.0</openclover.version>
@@ -99,7 +99,7 @@
         <org.mapstruct.version>1.2.0.Final</org.mapstruct.version>
 
         <!-- model mappers -->
-        <modelmapper.version>2.3.2</modelmapper.version>
+        <modelmapper.version>2.3.4</modelmapper.version>
 
         <com.googlecode.json-simple.version>1.1.1</com.googlecode.json-simple.version>
         <json-schema-validator>2.2.6</json-schema-validator>
