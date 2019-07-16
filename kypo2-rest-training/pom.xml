@@ -5,7 +5,7 @@
     <parent>
         <groupId>cz.muni.ics.kypo</groupId>
         <artifactId>kypo2-training</artifactId>
-        <version>1.0.10</version>
+        <version>1.0.11</version>
     </parent>
     <artifactId>kypo2-rest-training</artifactId>
     <packaging>jar</packaging>
@@ -37,7 +37,7 @@
         <dependency>
             <groupId>cz.muni.ics.kypo</groupId>
             <artifactId>kypo2-service-training</artifactId>
-            <version>1.0.10</version>
+            <version>1.0.11</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
