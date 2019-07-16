@@ -3,7 +3,7 @@ set -e
 case "$1" in
     configure)
     cd /opt/kypo2/kypo2-training/jars
-    REST_JAR=$(ls kypo2-rest-training*.jar | tail -n 1)
+    REST_JAR=$(ls -v kypo2-rest-training*.jar | tail -n 1)
     if ! [ "$REST_JAR" = "kypo2-rest-training.jar" ]; then ln -sf $REST_JAR kypo2-rest-training.jar; fi
     ;;
 
