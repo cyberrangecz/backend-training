@@ -3,10 +3,7 @@ package cz.muni.ics.kypo.training.rest.controllers;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.google.common.collect.Lists;
 import cz.muni.ics.kypo.training.api.dto.archive.TrainingInstanceArchiveDTO;
-import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelDTO;
-import cz.muni.ics.kypo.training.api.dto.export.ExportTrainingDefinitionAndLevelsDTO;
 import cz.muni.ics.kypo.training.api.dto.export.FileToReturnDTO;
 import cz.muni.ics.kypo.training.api.dto.imports.*;
 import cz.muni.ics.kypo.training.api.enums.LevelType;
@@ -16,8 +13,6 @@ import cz.muni.ics.kypo.training.exceptions.ErrorCode;
 import cz.muni.ics.kypo.training.exceptions.FacadeLayerException;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.facade.ExportImportFacade;
-import cz.muni.ics.kypo.training.persistence.model.AssessmentLevel;
-import cz.muni.ics.kypo.training.persistence.model.GameLevel;
 import cz.muni.ics.kypo.training.rest.exceptions.ResourceNotFoundException;
 import org.junit.Before;
 import org.junit.Test;
@@ -31,22 +26,21 @@ import org.springframework.data.web.querydsl.QuerydslPredicateArgumentResolver;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.ByteArrayHttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
-import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Optional;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.BDDMockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.willThrow;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 /**
@@ -78,7 +72,6 @@ public class ExportImportRestControllerTest {
 				.setMessageConverters(new MappingJackson2HttpMessageConverter(), new ByteArrayHttpMessageConverter()).build();
 
 		trainingInstanceArchiveDTO = new TrainingInstanceArchiveDTO();
-		trainingInstanceArchiveDTO.setExportTrainingDefinitionAndLevelsDTO(new ExportTrainingDefinitionAndLevelsDTO());
 		trainingInstanceArchiveDTO.setAccessToken("pass-123");
 		LocalDateTime startTime = LocalDateTime.now();
 		trainingInstanceArchiveDTO.setStartTime(startTime.minusHours(12));
@@ -173,10 +166,4 @@ public class ExportImportRestControllerTest {
 		mapper.registerModule(new JavaTimeModule().addDeserializer(LocalDateTime.class, new LocalDateTimeDeserializer()));
 		return mapper.writeValueAsString(object);
 	}
-
-//	{"description":"string","levels":[],"outcomes":["string"],"prerequisities":["string"],"show_stepper_bar":true,"state":"PRIVATED","title":"string"}
-
-	//{"description":"string","levels":[{"type":"InfoLevelImportDTO","title":"string","max_score":0,"level_type":"INFO_LEVEL","order":0,"content":"string"}],"outcomes":["string"],"prerequisities":["string"],"show_stepper_bar":true,"state":"PRIVATED","title":"string"}
-
-//{"title":"string","description":"string","prerequisities":["string"],"outcomes":["string"],"state":"PRIVATED","show_stepper_bar":true,"sandbox_definition_ref_id":1,"levels":[{"type":"InfoLevelImportDTO","title":"string","max_score":0,"level_type":"INFO_LEVEL","order":0,"content":"string"}]}
 }

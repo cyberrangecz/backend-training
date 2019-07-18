@@ -1,8 +1,7 @@
 package cz.muni.ics.kypo.training.facade;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import cz.muni.csirt.kypo.elasticsearch.service.TrainingEventsService;
 import cz.muni.ics.kypo.training.api.dto.export.ExportTrainingDefinitionAndLevelsDTO;
 import cz.muni.ics.kypo.training.api.dto.export.FileToReturnDTO;
 import cz.muni.ics.kypo.training.api.dto.imports.AssessmentLevelImportDTO;
@@ -25,21 +24,15 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Primary;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import javax.inject.Inject;
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.Arrays;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
@@ -88,12 +81,13 @@ public class ExportImportFacadeTest {
     private GameLevelImportDTO importGameLevelDTO;
     private TrainingInstance trainingInstance;
     private TrainingRun trainingRun;
+    private TrainingEventsService trainingEventsService;
 
     @Before
     public void init() {
         MockitoAnnotations.initMocks(this);
         exportImportFacade = new ExportImportFacadeImpl(exportImportService, exportImportMapper, gameLevelMapper,
-                infoLevelMapper, assessmentLevelMapper, trainingDefinitionService, trainingDefinitionMapper, objectMapper);
+                infoLevelMapper, assessmentLevelMapper, trainingDefinitionService, trainingDefinitionMapper, objectMapper, trainingEventsService);
         assessmentLevel = new AssessmentLevel();
         assessmentLevel.setId(1L);
         assessmentLevel.setTitle("Assessment title");

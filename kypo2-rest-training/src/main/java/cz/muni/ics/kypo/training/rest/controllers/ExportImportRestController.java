@@ -139,12 +139,12 @@ public class ExportImportRestController {
 
             HttpHeaders header = new HttpHeaders();
             header.setContentType(new MediaType("application", "octet-stream") );
-            header.set("Content-Disposition", "inline; filename=" + file.getTitle() + ".json" );
+            header.set("Content-Disposition", "inline; filename=" + file.getTitle() + ".zip" );
             header.setContentLength(file.getContent().length);
             return new ResponseEntity<>(file.getContent(), header, HttpStatus.OK);
         } catch (FacadeLayerException ex){
             throw ExceptionSorter.throwException(ex);
-        } 
+        }
     }
 
 }
