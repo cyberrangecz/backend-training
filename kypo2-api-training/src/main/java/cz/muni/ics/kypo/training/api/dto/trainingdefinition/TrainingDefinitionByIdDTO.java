@@ -268,6 +268,7 @@ public class TrainingDefinitionByIdDTO {
      *
      * @return the estimated duration
      */
+    @ApiModelProperty(value = "Estimated time it takes to finish runs created from this definition.", example = "5")
     public long getEstimatedDuration() {
         return estimatedDuration;
     }

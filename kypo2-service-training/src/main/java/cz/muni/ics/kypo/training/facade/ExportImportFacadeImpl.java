@@ -1,9 +1,11 @@
 package cz.muni.ics.kypo.training.facade;
 
+import com.fasterxml.jackson.core.util.MinimalPrettyPrinter;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import cz.muni.csirt.kypo.elasticsearch.service.TrainingEventsService;
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalRO;
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalWO;
-import cz.muni.ics.kypo.training.api.dto.archive.TrainingInstanceArchiveDTO;
+import cz.muni.ics.kypo.training.api.dto.archive.*;
 import cz.muni.ics.kypo.training.api.dto.export.*;
 import cz.muni.ics.kypo.training.api.dto.imports.*;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionByIdDTO;
@@ -22,8 +24,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.*;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 /**
  * @author Pavel Seda
@@ -45,11 +50,12 @@ public class ExportImportFacadeImpl implements ExportImportFacade {
     private TrainingDefinitionService trainingDefinitionService;
     private TrainingDefinitionMapper trainingDefinitionMapper;
     private ObjectMapper objectMapper;
+    private TrainingEventsService trainingEventsService;
 
     @Autowired
     public ExportImportFacadeImpl(ExportImportService exportImportService, ExportImportMapper exportImportMapper, GameLevelMapper gameLevelMapper,
                                   InfoLevelMapper infoLevelMapper, AssessmentLevelMapper assessmentLevelMapper, TrainingDefinitionService trainingDefinitionService,
-                                  TrainingDefinitionMapper trainingDefinitionMapper, ObjectMapper objectMapper) {
+                                  TrainingDefinitionMapper trainingDefinitionMapper, ObjectMapper objectMapper, TrainingEventsService trainingEventsService) {
         this.exportImportService = exportImportService;
         this.exportImportMapper = exportImportMapper;
         this.gameLevelMapper = gameLevelMapper;
@@ -58,6 +64,7 @@ public class ExportImportFacadeImpl implements ExportImportFacade {
         this.trainingDefinitionService = trainingDefinitionService;
         this.trainingDefinitionMapper = trainingDefinitionMapper;
         this.objectMapper = objectMapper;
+        this.trainingEventsService = trainingEventsService;
     }
 
     @Override
@@ -67,7 +74,6 @@ public class ExportImportFacadeImpl implements ExportImportFacade {
         ExportTrainingDefinitionAndLevelsDTO dbExport = exportImportMapper.mapToDTO(exportImportService.findById(trainingDefinitionId));
         if (dbExport != null) {
             dbExport.setLevels(mapAbstractLevelToAbstractLevelDTO(trainingDefinitionId));
-            dbExport.setEstimatedDuration(calculateEstimatedDuration(dbExport.getLevels()));
         }
         try {
             FileToReturnDTO fileToReturnDTO = new FileToReturnDTO();
@@ -77,12 +83,6 @@ public class ExportImportFacadeImpl implements ExportImportFacade {
         } catch (IOException ex) {
             throw new FacadeLayerException(ex);
         }
-    }
-
-    private int calculateEstimatedDuration(List<AbstractLevelExportDTO> levels) {
-        int duration = 0;
-        for (AbstractLevelExportDTO level : levels) duration += level.getEstimatedDuration();
-        return duration;
     }
 
     private List<AbstractLevelExportDTO> mapAbstractLevelToAbstractLevelDTO(Long trainingDefinitionId) {
@@ -104,6 +104,27 @@ public class ExportImportFacadeImpl implements ExportImportFacade {
             }
         });
         return abstractLevelExportDTOs;
+    }
+
+    private List<AbstractLevelArchiveDTO> mapAbstractLevelsToArchiveDTO(Long trainingDefinitionId){
+        List<AbstractLevelArchiveDTO> abstractLevelArchiveDTOs = new ArrayList<>();
+        List<AbstractLevel> abstractLevels = trainingDefinitionService.findAllLevelsFromDefinition(trainingDefinitionId);
+        abstractLevels.forEach(level -> {
+            if (level instanceof GameLevel) {
+                GameLevelArchiveDTO gameLevelArchiveDTO = gameLevelMapper.mapToArchiveDTO((GameLevel) level);
+                gameLevelArchiveDTO.setLevelType(LevelType.GAME_LEVEL);
+                abstractLevelArchiveDTOs.add(gameLevelArchiveDTO);
+            } else if (level instanceof InfoLevel) {
+                InfoLevelArchiveDTO infoLevelArchiveDTO = infoLevelMapper.mapToArchiveDTO((InfoLevel) level);
+                infoLevelArchiveDTO.setLevelType(LevelType.INFO_LEVEL);
+                abstractLevelArchiveDTOs.add(infoLevelArchiveDTO);
+            } else {
+                AssessmentLevelArchiveDTO assessmentLevelArchiveDTO = assessmentLevelMapper.mapToArchiveDTO((AssessmentLevel) level);
+                assessmentLevelArchiveDTO.setLevelType(LevelType.ASSESSMENT_LEVEL);
+                abstractLevelArchiveDTOs.add(assessmentLevelArchiveDTO);
+            }
+        });
+        return abstractLevelArchiveDTOs;
     }
 
     @Override
@@ -135,24 +156,45 @@ public class ExportImportFacadeImpl implements ExportImportFacade {
     @Override
     @TransactionalRO
     public FileToReturnDTO archiveTrainingInstance(Long trainingInstanceId) {
-        try {
+        try(ByteArrayOutputStream baos = new ByteArrayOutputStream(); ZipOutputStream zos = new ZipOutputStream(baos)) {
             TrainingInstance trainingInstance = exportImportService.findInstanceById(trainingInstanceId);
             exportImportService.failIfInstanceIsNotFinished(trainingInstance.getEndTime());
             TrainingInstanceArchiveDTO archivedInstance = exportImportMapper.mapToDTO(trainingInstance);
+            archivedInstance.setDefinitionId(trainingInstance.getTrainingDefinition().getId());
             if (archivedInstance != null) {
-                ExportTrainingDefinitionAndLevelsDTO tD = exportImportMapper.mapToDTO(exportImportService.findById(trainingInstance.getTrainingDefinition().getId()));
+                ZipEntry instanceEntry = new ZipEntry("training_instance-id" + trainingInstanceId + ".json" );
+                zos.putNextEntry(instanceEntry);
+                zos.write(objectMapper.writeValueAsBytes(archivedInstance));
+
+                TrainingDefinitionArchiveDTO tD = exportImportMapper.mapToArchiveDTO(exportImportService.findById(trainingInstance.getTrainingDefinition().getId()));
                 if (tD != null) {
-                    tD.setLevels(mapAbstractLevelToAbstractLevelDTO(trainingInstance.getTrainingDefinition().getId()));
-                    tD.setEstimatedDuration(calculateEstimatedDuration(tD.getLevels()));
+                    tD.setLevels(mapAbstractLevelsToArchiveDTO(trainingInstance.getTrainingDefinition().getId()));
+
+                    ZipEntry definitionEntry = new ZipEntry("training_definition-id" + trainingInstance.getTrainingDefinition().getId() + ".json" );
+                    zos.putNextEntry(definitionEntry);
+                    zos.write(objectMapper.writeValueAsBytes(tD));
                 }
-                archivedInstance.setExportTrainingDefinitionAndLevelsDTO(tD);
                 Set<TrainingRun> runs = exportImportService.findRunsByInstanceId(trainingInstanceId);
                 for (TrainingRun run : runs) {
-                    archivedInstance.getTrainingRuns().add(exportImportMapper.mapToDTO(run));
+                    TrainingRunArchiveDTO archivedRun = exportImportMapper.mapToArchiveDTO(run);
+                    archivedRun.setInstanceId(trainingInstanceId);
+                    ZipEntry runEntry = new ZipEntry("training_run-id" + run.getId() + ".json" );
+                    zos.putNextEntry(runEntry);
+                    zos.write(objectMapper.writeValueAsBytes(archivedRun));
+
+                    List<Map<String, Object>> events = trainingEventsService.findAllEventsFromTrainingRun(trainingInstance.getTrainingDefinition().getId(), trainingInstanceId, run.getId());
+                    ZipEntry eventsEntry = new ZipEntry("training_run-id" + run.getId() + "-events.json");
+                    zos.putNextEntry(eventsEntry);
+                    for (Map<String, Object> event : events) {
+                        zos.write(objectMapper.writer(new MinimalPrettyPrinter()).writeValueAsBytes(event));
+                        zos.write(System.lineSeparator().getBytes());
+                    }
                 }
             }
+            zos.closeEntry();
+            zos.close();
             FileToReturnDTO fileToReturnDTO = new FileToReturnDTO();
-            fileToReturnDTO.setContent(objectMapper.writeValueAsBytes(archivedInstance));
+            fileToReturnDTO.setContent(baos.toByteArray());
             fileToReturnDTO.setTitle(trainingInstance.getTitle());
             return fileToReturnDTO;
 

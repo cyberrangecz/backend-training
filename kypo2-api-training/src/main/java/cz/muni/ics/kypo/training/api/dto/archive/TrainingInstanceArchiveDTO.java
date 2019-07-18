@@ -1,23 +1,22 @@
 package cz.muni.ics.kypo.training.api.dto.archive;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import cz.muni.ics.kypo.training.api.dto.export.ExportTrainingDefinitionAndLevelsDTO;
-import cz.muni.ics.kypo.training.api.dto.export.TrainingRunExportDTO;
 import cz.muni.ics.kypo.training.api.dto.export.UserRefExportDTO;
 import cz.muni.ics.kypo.training.converters.LocalDateTimeUTCSerializer;
 import io.swagger.annotations.ApiModelProperty;
 
 import java.time.LocalDateTime;
-import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Encapsulates information about Training instance, its definition with levels and associated runs intended for export.
+ * Encapsulates information about Training instance intended for export.
  *
  * @author Boris Jadus
  */
 public class TrainingInstanceArchiveDTO {
 
+	private Long id;
+	private Long definitionId;
 	@JsonSerialize(using = LocalDateTimeUTCSerializer.class)
 	private LocalDateTime startTime;
 	@JsonSerialize(using = LocalDateTimeUTCSerializer.class)
@@ -26,8 +25,24 @@ public class TrainingInstanceArchiveDTO {
 	private int poolSize;
 	private Set<UserRefExportDTO> organizers;
 	private String accessToken;
-	private ExportTrainingDefinitionAndLevelsDTO exportTrainingDefinitionAndLevelsDTO;
-	private Set<TrainingRunExportDTO> trainingRuns = new HashSet<>();
+
+	@ApiModelProperty(value = "Main identifier of training instance.", example = "1")
+	public Long getId() {
+		return id;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
+	}
+
+	@ApiModelProperty(value = "Main identifier of training definition associated with this instance.", example = "1")
+	public Long getDefinitionId() {
+		return definitionId;
+	}
+
+	public void setDefinitionId(Long definitionId) {
+		this.definitionId = definitionId;
+	}
 
 	/**
 	 * Gets start time of training instance.
@@ -143,47 +158,17 @@ public class TrainingInstanceArchiveDTO {
 		this.accessToken = accessToken;
 	}
 
-	/**
-	 * Gets training definition and its levels associated with training instance.
-	 *
-	 * @return the {@link ExportTrainingDefinitionAndLevelsDTO}
-	 */
-	@ApiModelProperty(value = "Training definition with levels on which this instance is based")
-	public ExportTrainingDefinitionAndLevelsDTO getExportTrainingDefinitionAndLevelsDTO() {
-		return exportTrainingDefinitionAndLevelsDTO;
-	}
-
-	/**
-	 * Sets training definition and levels of training instance.
-	 *
-	 * @param exportTrainingDefinitionAndLevelsDTO a training definition and levels
-	 */
-	public void setExportTrainingDefinitionAndLevelsDTO(ExportTrainingDefinitionAndLevelsDTO exportTrainingDefinitionAndLevelsDTO) {
-		this.exportTrainingDefinitionAndLevelsDTO = exportTrainingDefinitionAndLevelsDTO;
-	}
-
-	/**
-	 * Gets training runs associated with training instance.
-	 *
-	 * @return the training runs
-	 */
-	@ApiModelProperty(value = "Training runs based on this instance")
-	public Set<TrainingRunExportDTO> getTrainingRuns() {
-		return trainingRuns;
-	}
-
-	/**
-	 * Sets training runs associated with training instance.
-	 *
-	 * @param trainingRuns the training runs
-	 */
-	public void setTrainingRuns(Set<TrainingRunExportDTO> trainingRuns) {
-		this.trainingRuns = trainingRuns;
-	}
-
-	@Override public String toString() {
-		return "TrainingInstanceArchiveDTO{" + "startTime=" + startTime + ", endTime=" + endTime + ", title='" + title + '\'' + ", poolSize="
-				+ poolSize + ", organizers=" + organizers + ", accessToken='" + accessToken + '\'' + ", exportTrainingDefinitionAndLevelsDTO="
-				+ exportTrainingDefinitionAndLevelsDTO + ", trainingRuns=" + trainingRuns + '}';
+	@Override
+	public String toString() {
+		return "TrainingInstanceArchiveDTO{" +
+				"id=" + id +
+				", definitionId=" + definitionId +
+				", startTime=" + startTime +
+				", endTime=" + endTime +
+				", title='" + title + '\'' +
+				", poolSize=" + poolSize +
+				", organizers=" + organizers +
+				", accessToken='" + accessToken + '\'' +
+				'}';
 	}
 }
