@@ -451,6 +451,8 @@ public class TrainingInstancesIT {
         futureTrainingInstance.setPoolId(3L);
         futureTrainingInstance.setPoolSize(2);
         trainingInstanceRepository.save(futureTrainingInstance);
+        given(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class)))
+                .willReturn(new ResponseEntity<List<SandboxInfo>>(new ArrayList<>(), HttpStatus.OK));
         given(restTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
                 willReturn(new ResponseEntity<List<SandboxInfo>>(new ArrayList<>(List.of(sandboxInfo1, sandboxInfo2)), HttpStatus.OK));
         mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_ORGANIZER.name()));
@@ -475,12 +477,15 @@ public class TrainingInstancesIT {
     public void allocateSandboxesWithFullPool() throws Exception {
         futureTrainingInstance.setPoolId(3L);
         futureTrainingInstance.setPoolSize(1);
+        SandboxInfo sandboxInfo = new SandboxInfo();
+        sandboxInfo.setId(sandboxInstanceRef1.getSandboxInstanceRef());
         sandboxInstanceRef1.setTrainingInstance(futureTrainingInstance);
-        futureTrainingInstance.setSandboxInstanceRefs(Set.of(sandboxInstanceRef1));
+        futureTrainingInstance.setSandboxInstanceRefs(new HashSet<>(Set.of(sandboxInstanceRef1)));
 
         trainingInstanceRepository.save(futureTrainingInstance);
-        given(restTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
-                willReturn(new ResponseEntity<List<SandboxInfo>>(new ArrayList<>(List.of(sandboxInfo1, sandboxInfo2)), HttpStatus.OK));
+        given(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class)))
+                .willReturn(new ResponseEntity<List<SandboxInfo>>(new ArrayList<>(List.of(sandboxInfo)), HttpStatus.OK));
+
         mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_ORGANIZER.name()));
         Exception exception = mvc.perform(post("/training-instances/{instanceId}/sandbox-instances", futureTrainingInstance.getId())
                 .contentType(MediaType.APPLICATION_JSON_VALUE))
