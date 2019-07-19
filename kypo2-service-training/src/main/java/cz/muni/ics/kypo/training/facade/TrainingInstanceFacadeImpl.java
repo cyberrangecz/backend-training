@@ -155,6 +155,7 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
         if (trainingInstance.getPoolId() == null) {
             throw new FacadeLayerException(new ServiceLayerException("Pool for sandboxes is not created yet. Please create pool before allocating sandboxes.", ErrorCode.RESOURCE_CONFLICT));
         }
+        trainingInstanceService.synchronizeSandboxesWithPythonApi(trainingInstance);
         //Check if sandbox can be allocated
         if (trainingInstance.getSandboxInstanceRefs().size() >= trainingInstance.getPoolSize()) {
             throw new FacadeLayerException(new ServiceLayerException("Pool of sandboxes of training instance with id: " + trainingInstance.getId() + " is full.", ErrorCode.RESOURCE_CONFLICT));

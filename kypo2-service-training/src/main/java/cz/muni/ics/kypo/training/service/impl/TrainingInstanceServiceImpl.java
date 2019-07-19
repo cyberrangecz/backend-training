@@ -33,10 +33,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.time.Clock;
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 
 /**
@@ -309,7 +306,10 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
         trainingInstanceRepository.save(trainingInstance);
     }
 
-    private void synchronizeSandboxesWithPythonApi(TrainingInstance trainingInstance) {
+    @Override
+    @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
+            "or @securityService.isOrganizerOfGivenTrainingInstance(#instanceId)")
+    public void synchronizeSandboxesWithPythonApi(TrainingInstance trainingInstance) {
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.setContentType(MediaType.APPLICATION_JSON);
         try {
@@ -324,6 +324,11 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
                     SandboxInstanceRef sIR = new SandboxInstanceRef();
                     sIR.setSandboxInstanceRef(s.getId());
                     trainingInstance.addSandboxInstanceRef(sIR);
+                }
+            });
+            trainingInstance.getSandboxInstanceRefs().forEach(s -> {
+                if (sandboxResponse.getBody().stream().noneMatch((sandboxInfo -> sandboxInfo.getId().equals(s.getSandboxInstanceRef())))) {
+                    trainingInstance.removeSandboxInstanceRef(s);
                 }
             });
             trainingInstanceRepository.save(trainingInstance);
