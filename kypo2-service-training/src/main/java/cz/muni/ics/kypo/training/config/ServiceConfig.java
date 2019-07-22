@@ -51,6 +51,7 @@ public class ServiceConfig {
     public RestTemplate restTemplate() throws Exception{
         SSLContext sslContext = new SSLContextBuilder()
                 .loadTrustMaterial(new File(trustStore), trustStorePassword.toCharArray())
+                .setProtocol("TLSv1.2")
                 .build();
         SSLConnectionSocketFactory socketFactory = new SSLConnectionSocketFactory(sslContext);
         HttpClient httpClient = HttpClients.custom()
