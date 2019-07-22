@@ -444,7 +444,7 @@ public class TrainingRunsIT {
                 .andExpect(status().isServiceUnavailable())
                 .andReturn().getResolvedException();
         assertEquals(ServiceUnavailableException.class, Objects.requireNonNull(exception).getClass());
-        assertEquals("There is no available sandbox, wait a minute and try again.", exception.getCause().getCause().getMessage());
+        assertEquals("There is no available sandbox, wait a minute and try again or ask organizer to allocate more sandboxes.", exception.getCause().getCause().getMessage());
     }
 
     @Test

@@ -57,10 +57,10 @@ public interface TrainingInstanceService {
     /**
      * deletes training instance
      *
-     * @param id of training instance
+     * @param trainingInstance the training instance to be deleted.
      * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND given training instance is not found.                                               RESOURCE_CONFLICT cannot be deleted for some reason.
      */
-    void delete(Long id);
+    void delete(TrainingInstance trainingInstance);
 
     /**
      * Allocates sandboxes for training instance

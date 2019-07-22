@@ -294,7 +294,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
         List<SandboxInfo> sandboxInfoList = Objects.requireNonNull(response.getBody());
         sandboxInfoList.removeIf(sandboxInfo -> !sandboxInfo.getStatus().contains(SandboxStates.FULL_BUILD_COMPLETE.getName()) || !idsOfUnoccupiedSandboxes.contains(sandboxInfo.getId()));
         if (sandboxInfoList.isEmpty()) {
-            throw new ServiceLayerException("There is no available sandbox, wait a minute and try again.", ErrorCode.NO_AVAILABLE_SANDBOX);
+            throw new ServiceLayerException("There is no available sandbox, wait a minute and try again or ask organizer to allocate more sandboxes.", ErrorCode.NO_AVAILABLE_SANDBOX);
         } else {
             return sandboxInstancePool
                     .stream()

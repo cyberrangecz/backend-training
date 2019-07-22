@@ -179,8 +179,9 @@ public class TrainingInstanceFacadeTest {
 
     @Test
     public void deleteTrainingInstance() {
-        trainingInstanceFacade.delete(1L);
-        then(trainingInstanceService).should().delete(1L);
+        given(trainingInstanceService.findById(trainingInstance1.getId())).willReturn(trainingInstance1);
+        trainingInstanceFacade.delete(trainingInstance1.getId());
+        then(trainingInstanceService).should().delete(trainingInstance1);
     }
 
     @Test
@@ -192,8 +193,8 @@ public class TrainingInstanceFacadeTest {
     @Test
     public void deleteTrainingInstanceWithFacadeLayerException() {
         thrown.expect(FacadeLayerException.class);
-        willThrow(ServiceLayerException.class).given(trainingInstanceService).delete(1L);
-        trainingInstanceFacade.delete(1L);
+        willThrow(ServiceLayerException.class).given(trainingInstanceService).findById(trainingInstance1.getId());
+        trainingInstanceFacade.delete(trainingInstance1.getId());
     }
 
     @Test

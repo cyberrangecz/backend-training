@@ -240,18 +240,14 @@ public class TrainingInstanceServiceTest {
 
     @Test
     public void deleteTrainingInstance() {
-        given(trainingInstanceRepository.findById(any(Long.class))).willReturn(Optional.of(trainingInstance2));
-
-        trainingInstanceService.delete(trainingInstance2.getId());
-
-        then(trainingInstanceRepository).should().findById(trainingInstance2.getId());
+        trainingInstanceService.delete(trainingInstance2);
         then(trainingInstanceRepository).should().delete(trainingInstance2);
     }
 
     @Test
     public void deleteTrainingInstanceWithNull() {
         thrown.expect(IllegalArgumentException.class);
-        thrown.expectMessage("Input training instance id" +
+        thrown.expectMessage("Input training instance" +
                 " must not be null");
         trainingInstanceService.delete(null);
     }
@@ -263,21 +259,19 @@ public class TrainingInstanceServiceTest {
         runs.add(trainingRun2);
         Page p = new PageImpl<>(runs);
 
-        given(trainingInstanceRepository.findById(anyLong())).willReturn(Optional.of(trainingInstance1));
-        given(trainingRunRepository.findAllByTrainingInstanceId(trainingInstance1.getId(), PageRequest.of(0, 5))).willReturn(p);
+        given(trainingRunRepository.existsAnyForTrainingInstance(trainingInstance1.getId())).willReturn(true);
 
         thrown.expect(ServiceLayerException.class);
-        thrown.expectMessage("Finished training instance with already assigned training runs cannot be deleted.");
-        trainingInstanceService.delete(trainingInstance1.getId());
+        thrown.expectMessage("Training instance with already assigned training runs cannot be deleted. Please delete training runs assigned to training instance and try again or contact administrator.");
+        trainingInstanceService.delete(trainingInstance1);
     }
 
     @Test
     public void deleteInstanceWithAssignedSandboxes() {
-        given(trainingInstanceRepository.findById(anyLong())).willReturn(Optional.of(instanceWithSB));
-        given(trainingRunRepository.findAllByTrainingInstanceId(instanceWithSB.getId(), PageRequest.of(0, 5))).willReturn(new PageImpl<TrainingRun>(new ArrayList<>()));
+        given(trainingRunRepository.existsAnyForTrainingInstance(instanceWithSB.getId())).willReturn(false);
         thrown.expect(ServiceLayerException.class);
-        thrown.expectMessage("Cannot delete training instance because it contains some sandboxes. Please delete sandboxes and try again.");
-        trainingInstanceService.delete(instanceWithSB.getId());
+        thrown.expectMessage("Cannot delete training instance because it contains some sandboxes. Please delete sandboxes and try again or wait until all sandboxes are deleted from OpenStack.");
+        trainingInstanceService.delete(instanceWithSB);
     }
 
     @Test
