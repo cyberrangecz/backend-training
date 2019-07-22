@@ -3,6 +3,7 @@ package cz.muni.ics.kypo.training.service;
 import com.google.gson.JsonObject;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.PathBuilder;
+import cz.muni.csirt.kypo.elasticsearch.service.TrainingEventsService;
 import cz.muni.ics.kypo.commons.security.enums.AuthenticatedUserOIDCItems;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.persistence.model.*;
@@ -71,7 +72,8 @@ public class TrainingInstanceServiceTest {
     private SandboxInstanceRefRepository sandboxInstanceRefRepository;
     @Mock
     private SecurityService securityService;
-
+    @Mock
+    private TrainingEventsService trainingEventsService;
     @Mock
     private TrainingDefinition trainingDefinition;
     @Mock
@@ -88,7 +90,7 @@ public class TrainingInstanceServiceTest {
     public void init() {
         MockitoAnnotations.initMocks(this);
         trainingInstanceService = new TrainingInstanceServiceImpl(trainingInstanceRepository, accessTokenRepository,
-                trainingRunRepository, organizerRefRepository, restTemplate, securityService, sandboxInstanceRefRepository);
+                trainingRunRepository, organizerRefRepository, restTemplate, securityService, sandboxInstanceRefRepository, trainingEventsService);
 
         trainingInstance1 = new TrainingInstance();
         trainingInstance1.setId(1L);

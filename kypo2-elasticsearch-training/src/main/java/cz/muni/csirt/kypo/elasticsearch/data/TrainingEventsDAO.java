@@ -108,19 +108,20 @@ public class TrainingEventsDAO extends AbstractElasticClientDAO {
     /**
      * DELETE /kypo3.cz.muni.csirt.kypo.events.trainings.*.instance={instanceId}
      *
-     * @param instanceId
+     * @param trainingInstanceId
      * @throws IOException
      */
-    public void deleteEventsByTrainingInstanceId(Long instanceId) throws IOException {
-        DeleteIndexRequest deleteIndexRequest = new DeleteIndexRequest("kypo3.cz.muni.csirt.kypo.events.trainings.*.instance=" + instanceId);
+    public void deleteEventsByTrainingInstanceId(Long trainingInstanceId) throws IOException {
+        DeleteIndexRequest deleteIndexRequest = new DeleteIndexRequest("kypo3.cz.muni.csirt.kypo.events.trainings.*.instance=" + trainingInstanceId);
         AcknowledgedResponse deleteIndexResponse = getClient().indices().delete(deleteIndexRequest, RequestOptions.DEFAULT);
 
-        if (!deleteIndexResponse.isAcknowledged())throw new ElasticsearchCorruptionException("Client could not connect to Elastic.");
+        if (!deleteIndexResponse.isAcknowledged()) {
+            throw new ElasticsearchCorruptionException("Client could not connect to Elastic.");
+        }
     }
 
 
     /**
-     *
      * This method is currently not used.
      *
      * <p>

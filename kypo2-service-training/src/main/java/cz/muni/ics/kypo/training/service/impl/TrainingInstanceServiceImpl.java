@@ -2,6 +2,7 @@ package cz.muni.ics.kypo.training.service.impl;
 
 import com.mysema.commons.lang.Assert;
 import com.querydsl.core.types.Predicate;
+import cz.muni.csirt.kypo.elasticsearch.service.TrainingEventsService;
 import cz.muni.ics.kypo.training.annotations.aop.TrackTime;
 import cz.muni.ics.kypo.training.annotations.security.IsOrganizerOrAdmin;
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalWO;
@@ -30,6 +31,7 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.io.IOException;
 import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -56,11 +58,13 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
     private RestTemplate restTemplate;
     private SecurityService securityService;
     private SandboxInstanceRefRepository sandboxInstanceRefRepository;
+    private TrainingEventsService trainingEventsService;
 
     @Autowired
     public TrainingInstanceServiceImpl(TrainingInstanceRepository trainingInstanceRepository, AccessTokenRepository accessTokenRepository,
                                        TrainingRunRepository trainingRunRepository, UserRefRepository organizerRefRepository,
-                                       RestTemplate restTemplate, SecurityService securityService, SandboxInstanceRefRepository sandboxInstanceRefRepository) {
+                                       RestTemplate restTemplate, SecurityService securityService, SandboxInstanceRefRepository sandboxInstanceRefRepository,
+                                       TrainingEventsService trainingEventsService) {
         this.trainingInstanceRepository = trainingInstanceRepository;
         this.trainingRunRepository = trainingRunRepository;
         this.accessTokenRepository = accessTokenRepository;
@@ -68,6 +72,7 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
         this.restTemplate = restTemplate;
         this.securityService = securityService;
         this.sandboxInstanceRefRepository = sandboxInstanceRefRepository;
+        this.trainingEventsService = trainingEventsService;
     }
 
     @Override
@@ -79,7 +84,7 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
 
     @Override
     @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
-        "or @securityService.isOrganizerOfGivenTrainingInstance(#instanceId)")
+            "or @securityService.isOrganizerOfGivenTrainingInstance(#instanceId)")
     public TrainingInstance findByIdIncludingDefinition(Long instanceId) {
         return trainingInstanceRepository.findByIdIncludingDefinition(instanceId).orElseThrow(() -> new ServiceLayerException("Training instance with id: " + instanceId + " not found.", ErrorCode.RESOURCE_NOT_FOUND));
     }
@@ -112,7 +117,7 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
         return trainingInstanceRepository.save(trainingInstance);
     }
 
-//TODO during update automatically add author as organizer of training instance, add login of logged in user in facade when calling user and group ;)
+    //TODO during update automatically add author as organizer of training instance, add login of logged in user in facade when calling user and group ;)
     @Override
     @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
             "or @securityService.isOrganizerOfGivenTrainingInstance(#trainingInstanceToUpdate.id)")
@@ -165,6 +170,12 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
                     "wait until all sandboxes are deleted from OpenStack.", ErrorCode.RESOURCE_CONFLICT);
         }
         trainingInstanceRepository.delete(trainingInstance);
+
+        try {
+            trainingEventsService.deleteEventsByTrainingInstanceId(trainingInstance.getId());
+        } catch (IOException io) {
+            throw new ServiceLayerException("Could not delete documents of this training instance from Elasticsearch. Please contact administrator to check if Elasticsearch is running.", io, ErrorCode.UNEXPECTED_ERROR);
+        }
         LOG.debug("Training instance with id: {} deleted.", trainingInstance.getId());
     }
 
@@ -214,7 +225,7 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
             trainingInstance.setPoolId(Objects.requireNonNull(poolResponse.getBody()).getId());
             return poolResponse.getBody().getId();
         } catch (HttpClientErrorException ex) {
-            throw new ServiceLayerException("Error from OpenStack while creating pool: " + ex.getMessage()  +  " - " + ex.getResponseBodyAsString(), ErrorCode.UNEXPECTED_ERROR);
+            throw new ServiceLayerException("Error from OpenStack while creating pool: " + ex.getMessage() + " - " + ex.getResponseBodyAsString(), ErrorCode.UNEXPECTED_ERROR);
         }
     }
 
@@ -263,6 +274,7 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
             LOG.error("Client side error when calling OpenStack: {}.", ex.getMessage() + " - " + ex.getResponseBodyAsString());
         }
     }
+
     @Override
     @TransactionalWO
     @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
@@ -272,7 +284,7 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
     public void deleteSandbox(Long trainingInstanceId, Long idOfSandboxRefToDelete) {
         Optional<TrainingInstance> trainingInstanceOptional = trainingInstanceRepository.findById(trainingInstanceId);
         TrainingInstance trainingInstance;
-        if(trainingInstanceOptional.isPresent()) {
+        if (trainingInstanceOptional.isPresent()) {
             trainingInstance = trainingInstanceOptional.get();
         } else {
             LOG.error("Training Instance with id: " + trainingInstanceId + " not found.");
@@ -280,10 +292,10 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
         }
         trainingInstanceRepository.save(trainingInstance);
         Optional<SandboxInstanceRef> optionalSandboxInstanceRefToDelete = sandboxInstanceRefRepository.findBySandboxInstanceRefId(idOfSandboxRefToDelete);
-        if(optionalSandboxInstanceRefToDelete.isPresent()) {
-            if(trainingInstance.getSandboxInstanceRefs().contains(optionalSandboxInstanceRefToDelete.get())) {
+        if (optionalSandboxInstanceRefToDelete.isPresent()) {
+            if (trainingInstance.getSandboxInstanceRefs().contains(optionalSandboxInstanceRefToDelete.get())) {
                 Optional<TrainingRun> trainingRun = trainingRunRepository.findBySandboxInstanceRef(optionalSandboxInstanceRefToDelete.get());
-                if(trainingRun.isPresent()) {
+                if (trainingRun.isPresent()) {
                     trainingRun.get().setState(TRState.ARCHIVED);
                     trainingRun.get().setSandboxInstanceRef(null);
                     trainingRun.get().setPreviousSandboxInstanceRefId(optionalSandboxInstanceRefToDelete.get().getSandboxInstanceRef());
@@ -338,20 +350,20 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
         } catch (HttpClientErrorException ex) {
             throw new ServiceLayerException("Client side error when checking a state of sandbox in OpenStack for pool with ID " + trainingInstance.getPoolId() + " : " +  ex.getMessage() + ". Please contact administrator", ErrorCode.UNEXPECTED_ERROR);
         }
-
     }
 
     @Override
     @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
             "or @securityService.isOrganizerOfGivenTrainingInstance(#instanceId)")
-    public Page<TrainingRun> findTrainingRunsByTrainingInstance(Long instanceId, Boolean isActive,  Pageable pageable) {
+    public Page<TrainingRun> findTrainingRunsByTrainingInstance(Long instanceId, Boolean isActive, Pageable
+            pageable) {
         org.springframework.util.Assert.notNull(instanceId, "Input training instance id must not be null.");
         trainingInstanceRepository.findById(instanceId)
                 .orElseThrow(() -> new ServiceLayerException("Training instance with id: " + instanceId + " not found.", ErrorCode.RESOURCE_NOT_FOUND));
-        if(isActive == null) {
+        if (isActive == null) {
             return trainingRunRepository.findAllByTrainingInstanceId(instanceId, pageable);
 
-        } else if( isActive) {
+        } else if (isActive) {
             return trainingRunRepository.findAllActiveByTrainingInstanceId(instanceId, pageable);
         } else {
             return trainingRunRepository.findAllInactiveByTrainingInstanceId(instanceId, pageable);

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.google.gson.JsonObject;
+import cz.muni.csirt.kypo.elasticsearch.data.TrainingEventsDAO;
 import cz.muni.ics.kypo.commons.security.enums.AuthenticatedUserOIDCItems;
 import cz.muni.ics.kypo.training.api.PageResultResource;
 import cz.muni.ics.kypo.training.api.dto.UserInfoDTO;
@@ -30,7 +31,9 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -105,6 +108,8 @@ public class TrainingInstancesIT {
     @Autowired
     @Qualifier("objMapperRESTApi")
     private ObjectMapper mapper;
+    @Mock
+    TrainingEventsDAO trainingEventsDAO;
 
     private TrainingInstance futureTrainingInstance, notConcludedTrainingInstance, finishedTrainingInstance;
     private TrainingInstanceCreateDTO trainingInstanceCreateDTO;
@@ -123,6 +128,7 @@ public class TrainingInstancesIT {
 
     @Before
     public void init() {
+        MockitoAnnotations.initMocks(this);
         this.mvc = MockMvcBuilders.standaloneSetup(trainingInstancesRestController)
                 .setCustomArgumentResolvers(new PageableHandlerMethodArgumentResolver(),
                         new QuerydslPredicateArgumentResolver(new QuerydslBindingsFactory(SimpleEntityPathResolver.INSTANCE), Optional.empty()))

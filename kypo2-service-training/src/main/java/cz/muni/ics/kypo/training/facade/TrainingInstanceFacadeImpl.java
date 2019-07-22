@@ -28,7 +28,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -46,9 +45,6 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
     private TrainingDefinitionService trainingDefinitionService;
     private TrainingInstanceMapper trainingInstanceMapper;
     private TrainingRunMapper trainingRunMapper;
-
-    @Autowired
-    private HttpServletRequest httpServletRequest;
 
     @Autowired
     public TrainingInstanceFacadeImpl(TrainingInstanceService trainingInstanceService, TrainingDefinitionService trainingDefinitionService,
