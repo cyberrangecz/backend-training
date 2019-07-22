@@ -196,6 +196,9 @@ public class ExportImportFacadeImpl implements ExportImportFacade {
             FileToReturnDTO fileToReturnDTO = new FileToReturnDTO();
             fileToReturnDTO.setContent(baos.toByteArray());
             fileToReturnDTO.setTitle(trainingInstance.getTitle());
+
+            trainingEventsService.deleteEventsByTrainingInstanceId(trainingInstanceId);
+
             return fileToReturnDTO;
 
         } catch (ServiceLayerException | IOException ex) {
