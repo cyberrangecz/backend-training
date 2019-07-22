@@ -3,8 +3,10 @@ package cz.muni.csirt.kypo.elasticsearch.data;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import cz.muni.csirt.kypo.elasticsearch.AbstractAuditPOJO;
 import org.elasticsearch.ElasticsearchCorruptionException;
+import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.action.support.master.AcknowledgedResponse;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.document.DocumentField;
@@ -103,8 +105,24 @@ public class TrainingEventsDAO extends AbstractElasticClientDAO {
         return events;
     }
 
+    /**
+     * DELETE /kypo3.cz.muni.csirt.kypo.events.trainings.*.instance={instanceId}
+     *
+     * @param instanceId
+     * @throws IOException
+     */
+    public void deleteEventsByTrainingInstanceId(Long instanceId) throws IOException {
+        DeleteIndexRequest deleteIndexRequest = new DeleteIndexRequest("kypo3.cz.muni.csirt.kypo.events.trainings.*.instance=" + instanceId);
+        AcknowledgedResponse deleteIndexResponse = getClient().indices().delete(deleteIndexRequest, RequestOptions.DEFAULT);
+
+        if (!deleteIndexResponse.isAcknowledged())throw new ElasticsearchCorruptionException("Client could not connect to Elastic.");
+    }
+
 
     /**
+     *
+     * This method is currently not used.
+     *
      * <p>
      * This method uses reflection to convert Map<String,Object> representing particular  events to AbstractAuditPojo.
      * <p>
@@ -164,6 +182,5 @@ public class TrainingEventsDAO extends AbstractElasticClientDAO {
         }
         return events;
     }
-
 
 }
