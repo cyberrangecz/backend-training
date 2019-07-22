@@ -131,7 +131,9 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
     public void delete(Long id) {
         try {
             Objects.requireNonNull(id);
-            trainingInstanceService.delete(id);
+            TrainingInstance trainingInstance = trainingInstanceService.findById(id);
+            trainingInstanceService.synchronizeSandboxesWithPythonApi(trainingInstance);
+            trainingInstanceService.delete(trainingInstance);
         } catch (ServiceLayerException ex) {
             throw new FacadeLayerException(ex);
         }
@@ -158,7 +160,8 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
         trainingInstanceService.synchronizeSandboxesWithPythonApi(trainingInstance);
         //Check if sandbox can be allocated
         if (trainingInstance.getSandboxInstanceRefs().size() >= trainingInstance.getPoolSize()) {
-            throw new FacadeLayerException(new ServiceLayerException("Pool of sandboxes of training instance with id: " + trainingInstance.getId() + " is full.", ErrorCode.RESOURCE_CONFLICT));
+            throw new FacadeLayerException(new ServiceLayerException("Pool of sandboxes of training instance with id: " + trainingInstance.getId() + " is full. " +
+                    "Some sandboxes may be in the state DELETE_IN_PROGRESS right now, please wait a minute and try again or contact the administrator if you are sure that the pool is not full and you still get this error.", ErrorCode.RESOURCE_CONFLICT));
         }
         trainingInstanceService.allocateSandboxes(trainingInstance, count);
     }

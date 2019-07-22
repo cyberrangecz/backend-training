@@ -175,4 +175,7 @@ public interface TrainingRunRepository extends JpaRepository<TrainingRun, Long>,
 
     @Query("SELECT si.sandboxInstanceRefId FROM TrainingRun tr INNER JOIN tr.sandboxInstanceRef si INNER JOIN tr.trainingInstance ti WHERE ti.id = :trainingInstanceId")
     List<Long> findIdsOfAllOccupiedSandboxesByTrainingInstance(@Param("trainingInstanceId") Long trainingInstanceId);
+
+    @Query("SELECT (COUNT(tr) > 0) FROM TrainingRun tr INNER JOIN tr.trainingInstance ti WHERE ti.id = :trainingInstanceId")
+    boolean existsAnyForTrainingInstance(@Param("trainingInstanceId") Long trainingInstanceId);
 }
