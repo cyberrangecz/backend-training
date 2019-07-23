@@ -228,6 +228,15 @@ public class TrainingInstance implements Serializable {
     }
 
     /**
+     * Gets set of DB references of sandbox instances associated with Training instance
+     *
+     * @return the sandbox instance refs
+     */
+    public void clearSetOfSandboxInstanceRefs() {
+        sandboxInstanceRefs.clear();
+    }
+
+    /**
      * Sets set of DB references of sandbox instances associated with Training instance
      *
      * @param sandboxInstanceRefs the sandbox instance refs
