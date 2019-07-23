@@ -295,12 +295,7 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
         if (optionalSandboxInstanceRefToDelete.isPresent()) {
             if (trainingInstance.getSandboxInstanceRefs().contains(optionalSandboxInstanceRefToDelete.get())) {
                 Optional<TrainingRun> trainingRun = trainingRunRepository.findBySandboxInstanceRef(optionalSandboxInstanceRefToDelete.get());
-                if (trainingRun.isPresent()) {
-                    trainingRun.get().setState(TRState.ARCHIVED);
-                    trainingRun.get().setSandboxInstanceRef(null);
-                    trainingRun.get().setPreviousSandboxInstanceRefId(optionalSandboxInstanceRefToDelete.get().getSandboxInstanceRef());
-                    trainingRunRepository.save(trainingRun.get());
-                }
+                removeSandboxFromTrainingRun(optionalSandboxInstanceRefToDelete.get());
                 trainingInstance.removeSandboxInstanceRef(optionalSandboxInstanceRefToDelete.get());
             } else {
                 return;
@@ -326,7 +321,28 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
     public void synchronizeSandboxesWithPythonApi(TrainingInstance trainingInstance) {
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.setContentType(MediaType.APPLICATION_JSON);
-        //TrainingInstance instance =  trainingInstanceRepository.findById(trainingInstance.getId()).get();
+        try {
+            //check if pool exists
+            String url = kypoOpenStackURI + "/pools/" + trainingInstance.getPoolId() + "/";
+            UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(url);
+            restTemplate.exchange(builder.toUriString(), HttpMethod.GET,
+                    new HttpEntity<>(httpHeaders), new ParameterizedTypeReference<SandboxPoolInfo>() {
+                    });
+        } catch (HttpClientErrorException ex) {
+            if(ex.getStatusCode().equals(HttpStatus.NOT_FOUND)) {
+                for (SandboxInstanceRef sandbox : trainingInstance.getSandboxInstanceRefs()) {
+                    removeSandboxFromTrainingRun(sandbox);
+                }
+                trainingInstance.clearSetOfSandboxInstanceRefs();
+                trainingInstance.setPoolId(null);
+                trainingInstanceRepository.save(trainingInstance);
+                return;
+            } else {
+                throw new ServiceLayerException("Client side error when checking a state of pool (id: " + trainingInstance.getPoolId() + ") in OpenStack" + " : "
+                        +  ex.getMessage() + ". Please contact administrator", ErrorCode.UNEXPECTED_ERROR);
+            }
+        }
+
         try {
             //Get sandboxes
             String url = kypoOpenStackURI + "/pools/" + trainingInstance.getPoolId() + "/sandboxes/";
@@ -341,14 +357,25 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
                     trainingInstance.addSandboxInstanceRef(sIR);
                 }
             });
-            trainingInstance.getSandboxInstanceRefs().forEach(s -> {
-                if (sandboxResponse.getBody().stream().noneMatch((sandboxInfo -> sandboxInfo.getId().equals(s.getSandboxInstanceRef())))) {
-                    trainingInstance.removeSandboxInstanceRef(s);
+            for (SandboxInstanceRef sandbox : trainingInstance.getSandboxInstanceRefs()) {
+                if(!sandboxResponse.getBody().stream().anyMatch(sandboxInfo -> sandboxInfo.getId().equals(sandbox.getSandboxInstanceRef()))) {
+                    removeSandboxFromTrainingRun(sandbox);
+                    trainingInstance.removeSandboxInstanceRef(sandbox);
                 }
-            });
+            }
             trainingInstanceRepository.save(trainingInstance);
         } catch (HttpClientErrorException ex) {
             throw new ServiceLayerException("Client side error when checking a state of sandbox in OpenStack for pool with ID " + trainingInstance.getPoolId() + " : " +  ex.getMessage() + ". Please contact administrator", ErrorCode.UNEXPECTED_ERROR);
+        }
+    }
+
+    private void removeSandboxFromTrainingRun(SandboxInstanceRef sandbox) {
+        Optional<TrainingRun> trainingRun = trainingRunRepository.findBySandboxInstanceRef(sandbox);
+        if (trainingRun.isPresent()) {
+            trainingRun.get().setState(TRState.ARCHIVED);
+            trainingRun.get().setSandboxInstanceRef(null);
+            trainingRun.get().setPreviousSandboxInstanceRefId(sandbox.getSandboxInstanceRef());
+            trainingRunRepository.save(trainingRun.get());
         }
     }
 
