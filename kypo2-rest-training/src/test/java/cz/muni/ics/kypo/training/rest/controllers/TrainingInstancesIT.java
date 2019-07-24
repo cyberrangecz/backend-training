@@ -509,16 +509,17 @@ public class TrainingInstancesIT {
 
     @Test
     public void createPoolInInstanceWithAlreadyCreatedPool() throws Exception {
-        futureTrainingInstance.setPoolId(3L);
+        futureTrainingInstance.setPoolId(sandboxPoolInfo.getId());
         futureTrainingInstance.setPoolSize(1);
-
         trainingInstanceRepository.save(futureTrainingInstance);
+        given(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
+                willReturn(new ResponseEntity<SandboxPoolInfo>(sandboxPoolInfo, HttpStatus.OK));
         mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_ORGANIZER.name()));
         MockHttpServletResponse result = mvc.perform(post("/training-instances/{instanceId}/pools", futureTrainingInstance.getId())
                 .contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isCreated())
                 .andReturn().getResponse();
-        assertEquals("3", result.getContentAsString());
+        assertEquals(sandboxPoolInfo.getId().toString(), result.getContentAsString());
     }
     @Test
     public void findAllTrainingRunsByTrainingInstanceId() throws Exception {

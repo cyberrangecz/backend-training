@@ -210,14 +210,26 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
     @TrackTime
     public Long createPoolForSandboxes(Long instanceId) {
         TrainingInstance trainingInstance = findById(instanceId);
-        //Check if pool can be created
-        if (trainingInstance.getPoolId() != null) {
-            return trainingInstance.getPoolId();
-        }
-
-        //Create pool with given size
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.setContentType(MediaType.APPLICATION_JSON);
+
+        try {
+            //Check if pool can be created
+            if (trainingInstance.getPoolId() != null) {
+                String url = kypoOpenStackURI + "/pools/" + trainingInstance.getPoolId() + "/";
+                UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(url);
+                ResponseEntity<SandboxPoolInfo> sandboxPool =  restTemplate.exchange(builder.toUriString(), HttpMethod.GET,
+                        new HttpEntity<>(httpHeaders), new ParameterizedTypeReference<SandboxPoolInfo>() {
+                        });
+                if (!sandboxPool.getBody().getId().equals(trainingInstance.getPoolId()))
+                    trainingInstance.setPoolId(sandboxPool.getBody().getId());
+                return trainingInstance.getPoolId();
+            }
+        } catch (HttpClientErrorException ex){
+            if (!ex.getStatusCode().equals(HttpStatus.NOT_FOUND))
+                LOG.error("Client side error when calling OpenStack: {}. Probably wrong URL of service.", ex.getMessage() + " - " + ex.getResponseBodyAsString());
+        }
+        //Create pool with given size
         String requestJson = "{\"definition\": " + trainingInstance.getTrainingDefinition().getSandboxDefinitionRefId() +
                 ", \"max_size\": " + trainingInstance.getPoolSize() + "}";
         try {
