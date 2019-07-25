@@ -12,6 +12,7 @@ import java.util.Objects;
  */
 public class UserInfoDTO {
 
+    private Long userRefId;
     private String login;
     @JsonProperty(value = "full_name")
     private String fullName;
@@ -19,6 +20,7 @@ public class UserInfoDTO {
     private String givenName;
     @JsonProperty(value = "family_name")
     private String familyName;
+    private String iss;
 
     /**
      * Gets login.
@@ -36,6 +38,47 @@ public class UserInfoDTO {
      */
     public void setLogin(String login) {
         this.login = login;
+    }
+
+
+    /**
+     * Gets iss.
+     *
+     * @return the iss
+     */
+    @ApiModelProperty(value = "Reference to user in another microservice and get his iss", example = "https://oidc.muni.cz")
+    public String getIss() {
+        return iss;
+    }
+
+    /**
+     * Sets iss.
+     *
+     * @param iss the iss
+     */
+    public void setIss(String iss) {
+        this.iss = iss;
+    }
+
+    /**
+     * Gets user ref id.
+     *
+     * @return the user ref id
+     */
+    @ApiModelProperty(value = "Reference to user in another microservice and get his id", example = "1")
+    @JsonProperty(value = "user_ref_id")
+    public Long getUserRefId() {
+        return userRefId;
+    }
+
+    /**
+     * Sets user ref id.
+     *
+     * @param userRefId the user ref id
+     */
+    @JsonProperty(value = "id")
+    public void setUserRefId(Long userRefId) {
+        this.userRefId = userRefId;
     }
 
     /**

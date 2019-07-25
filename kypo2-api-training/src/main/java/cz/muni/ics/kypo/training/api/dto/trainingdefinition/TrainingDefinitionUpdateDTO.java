@@ -8,11 +8,11 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
-import cz.muni.ics.kypo.training.api.dto.UserInfoDTO;
 import cz.muni.ics.kypo.training.api.dto.betatestinggroup.BetaTestingGroupUpdateDTO;
 import cz.muni.ics.kypo.training.api.enums.TDState;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+
 
 /**
  * Encapsulates information about Training Definition, intended for edit of the definition.
@@ -32,7 +32,7 @@ public class TrainingDefinitionUpdateDTO {
     @NotNull(message = "{trainingdefinitionupdate.state.NotNull.message}")
     private TDState state;
     @NotNull(message = "{trainingdefinitioncreate.authors.NotNull.message}")
-    private Set<String> authorsLogin = new HashSet<>();
+    private Set<Long> authorsRefIds = new HashSet<>();
     @Valid
     private BetaTestingGroupUpdateDTO betaTestingGroup;
     private Long sandboxDefinitionRefId;
@@ -154,22 +154,17 @@ public class TrainingDefinitionUpdateDTO {
     }
 
     /**
-     * Gets authors login.
+     * Gets authors ids.
      *
-     * @return the authors login
+     * @return the authors ids
      */
-    @ApiModelProperty(value = "References to the authors of the training definition.", required = true)
-    public Set<String> getAuthorsLogin() {
-        return authorsLogin;
+    @ApiModelProperty(value = "References (IDs) to the authors of the training definition.", required = true, example = "[1]")
+    public Set<Long> getAuthorsRefIds() {
+        return authorsRefIds;
     }
 
-    /**
-     * Sets authors login.
-     *
-     * @param authorsLogin the authors login
-     */
-    public void setAuthorsLogin(Set<String> authorsLogin) {
-        this.authorsLogin = authorsLogin;
+    public void setAuthorsRefIds(Set<Long> authorsRefIds) {
+        this.authorsRefIds = authorsRefIds;
     }
 
     /**
@@ -238,7 +233,7 @@ public class TrainingDefinitionUpdateDTO {
                 ", prerequisities=" + Arrays.toString(prerequisities) +
                 ", outcomes=" + Arrays.toString(outcomes) +
                 ", state=" + state +
-                ", authorsLogin=" + authorsLogin +
+                ", authorsRefIds=" + authorsRefIds +
                 ", sandboxDefinitionRefId=" + sandboxDefinitionRefId +
                 ", showStepperBar=" + showStepperBar +
                 '}';

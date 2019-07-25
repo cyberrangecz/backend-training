@@ -1,18 +1,16 @@
 package cz.muni.ics.kypo.training.api.dto.trainingdefinition;
 
-import java.util.Arrays;
-import java.util.Set;
-
-import javax.validation.Valid;
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
-
-import cz.muni.ics.kypo.training.api.dto.UserInfoDTO;
 import cz.muni.ics.kypo.training.api.dto.betatestinggroup.BetaTestingGroupCreateDTO;
 import cz.muni.ics.kypo.training.api.enums.TDState;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import org.mapstruct.Mapping;
+
+import javax.validation.Valid;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
+import java.util.Arrays;
+import java.util.Set;
+
 
 /**
  * Encapsulates information about Training definition, intended for creation of new definition.
@@ -30,7 +28,7 @@ public class TrainingDefinitionCreateDTO {
     @NotNull(message = "{trainingdefinitioncreate.state.NotNull.message}")
     private TDState state;
     @NotNull(message = "{trainingdefinitioncreate.authors.NotNull.message}")
-    private Set<String> authorsLogin;
+    private Set<Long> authorsRefIds;
     @Valid
     private BetaTestingGroupCreateDTO betaTestingGroup;
     @NotNull(message = "{trainingdefinitioncreate.showStepperBar.NotNull.message}")
@@ -133,22 +131,22 @@ public class TrainingDefinitionCreateDTO {
     }
 
     /**
-     * Gets authors login.
+     * Gets authors user ref ids.
      *
-     * @return the authors login
+     * @return the authors user ref ids
      */
     @ApiModelProperty(value = "References to the authors of the training definition.", required = true)
-    public Set<String> getAuthorsLogin() {
-        return authorsLogin;
+    public Set<Long> getAuthorsRefIds() {
+        return authorsRefIds;
     }
 
     /**
-     * Sets authors login.
+     * Sets authors user ref ids.
      *
-     * @param authorsLogin the authors login
+     * @param authorsRefIds the authors user ref ids
      */
-    public void setAuthorsLogin(Set<String> authorsLogin) {
-        this.authorsLogin = authorsLogin;
+    public void setAuthorsRefIds(Set<Long> authorsRefIds) {
+        this.authorsRefIds = authorsRefIds;
     }
 
     /**
@@ -216,7 +214,7 @@ public class TrainingDefinitionCreateDTO {
                 ", prerequisities=" + Arrays.toString(prerequisities) +
                 ", outcomes=" + Arrays.toString(outcomes) +
                 ", state=" + state +
-                ", authorsLogin=" + authorsLogin +
+                ", authorsRefIds=" + authorsRefIds +
                 ", showStepperBar=" + showStepperBar +
                 ", sandboxDefinitionRefId=" + sandboxDefinitionRefId +
                 '}';

@@ -32,7 +32,7 @@ public interface TrainingInstanceService {
      * Find all Training Instances.
      *
      * @param predicate represents a predicate (boolean-valued function) of one argument.
-     * @param pageable  pageable parameter with information about pagination.
+     * @param pageable
      * @return all {@link TrainingInstance}s
      */
     Page<TrainingInstance> findAll(Predicate predicate, Pageable pageable);
@@ -92,12 +92,12 @@ public interface TrainingInstanceService {
     Page<TrainingRun> findTrainingRunsByTrainingInstance(Long trainingInstanceId, Boolean isActive, Pageable pageable);
 
     /**
-     * Find UserRefs by logins
+     * Find UserRefs by userRefId
      *
-     * @param logins of wanted UserRefs
-     * @return {@link UserRef}s with corresponding logins
+     * @param usersRefId of wanted UserRefs
+     * @return {@link UserRef}s with corresponding userRefIds
      */
-    Set<UserRef> findUserRefsByLogins(Set<String> logins);
+    Set<UserRef> findUserRefsByUserRefIds(Set<Long> usersRefId);
 
     /**
      * Create pool in openstack for sandboxes

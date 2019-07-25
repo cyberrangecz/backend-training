@@ -16,5 +16,5 @@ ON training_definition (state);
 CREATE INDEX training_run_start_time_and_end_time_index
 ON training_run (start_time, end_time DESC);
 
-CREATE UNIQUE INDEX user_ref_user_ref_login_index
+CREATE INDEX user_ref_user_ref_login_index
 ON user_ref (user_ref_login);

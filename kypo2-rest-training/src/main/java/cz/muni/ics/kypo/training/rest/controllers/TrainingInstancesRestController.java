@@ -187,7 +187,7 @@ public class TrainingInstancesRestController {
             @ApiResponse(code = 404, message = "The requested resource was not found"),
             @ApiResponse(code = 409, message = "The requested resource was not deleted because of its finish time")
     })
-    @PutMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PutMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> updateTrainingInstance(@ApiParam(value = "Training instance to be updated") @RequestBody @Valid TrainingInstanceUpdateDTO trainingInstanceUpdateDTO) {
         try {
             String newToken = trainingInstanceFacade.update(trainingInstanceUpdateDTO);

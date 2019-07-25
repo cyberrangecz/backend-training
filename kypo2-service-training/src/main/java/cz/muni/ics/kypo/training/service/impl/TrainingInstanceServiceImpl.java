@@ -140,15 +140,11 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
     }
 
     private void addLoggedInUserAsOrganizerToTrainingInstance(TrainingInstance trainingInstance) {
-        Optional<UserRef> authorOfTrainingInstance = organizerRefRepository.findUserByUserRefLogin(securityService.getSubOfLoggedInUser());
+        Optional<UserRef> authorOfTrainingInstance = organizerRefRepository.findUserByUserRefId(securityService.getUserRefIdFromUserAndGroup());
         if (authorOfTrainingInstance.isPresent()) {
             trainingInstance.addOrganizer(authorOfTrainingInstance.get());
         } else {
-            UserRef userRef = new UserRef();
-            userRef.setUserRefLogin(securityService.getSubOfLoggedInUser());
-            userRef.setUserRefFullName(securityService.getFullNameOfLoggedInUser());
-            userRef.setUserRefGivenName(securityService.getGivenNameOfLoggedInUser());
-            userRef.setUserRefFamilyName(securityService.getFamilyNameOfLoggedInUser());
+            UserRef userRef = securityService.createUserRefEntityByInfoFromUserAndGroup();
             trainingInstance.addOrganizer(organizerRefRepository.save(userRef));
         }
     }
@@ -185,7 +181,7 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
         try {
             restTemplate.delete(UriComponentsBuilder.fromUriString(url).toUriString());
         } catch (HttpClientErrorException ex) {
-            throw new ServiceLayerException("Client side error when removing pool from OpenStack:  " + ex.getMessage() + " - " + ex.getResponseBodyAsString()+ ".", ErrorCode.UNEXPECTED_ERROR);
+            throw new ServiceLayerException("Client side error when removing pool from OpenStack:  " + ex.getMessage() + " - " + ex.getResponseBodyAsString() + ".", ErrorCode.UNEXPECTED_ERROR);
         }
     }
 
@@ -218,14 +214,14 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
             if (trainingInstance.getPoolId() != null) {
                 String url = kypoOpenStackURI + "/pools/" + trainingInstance.getPoolId() + "/";
                 UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(url);
-                ResponseEntity<SandboxPoolInfo> sandboxPool =  restTemplate.exchange(builder.toUriString(), HttpMethod.GET,
+                ResponseEntity<SandboxPoolInfo> sandboxPool = restTemplate.exchange(builder.toUriString(), HttpMethod.GET,
                         new HttpEntity<>(httpHeaders), new ParameterizedTypeReference<SandboxPoolInfo>() {
                         });
                 if (!sandboxPool.getBody().getId().equals(trainingInstance.getPoolId()))
                     trainingInstance.setPoolId(sandboxPool.getBody().getId());
                 return trainingInstance.getPoolId();
             }
-        } catch (HttpClientErrorException ex){
+        } catch (HttpClientErrorException ex) {
             if (!ex.getStatusCode().equals(HttpStatus.NOT_FOUND))
                 LOG.error("Client side error when calling OpenStack: {}. Probably wrong URL of service.", ex.getMessage() + " - " + ex.getResponseBodyAsString());
         }
@@ -341,7 +337,7 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
                     new HttpEntity<>(httpHeaders), new ParameterizedTypeReference<SandboxPoolInfo>() {
                     });
         } catch (HttpClientErrorException ex) {
-            if(ex.getStatusCode().equals(HttpStatus.NOT_FOUND)) {
+            if (ex.getStatusCode().equals(HttpStatus.NOT_FOUND)) {
                 for (SandboxInstanceRef sandbox : trainingInstance.getSandboxInstanceRefs()) {
                     removeSandboxFromTrainingRun(sandbox);
                 }
@@ -351,7 +347,7 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
                 return;
             } else {
                 throw new ServiceLayerException("Client side error when checking a state of pool (id: " + trainingInstance.getPoolId() + ") in OpenStack" + " : "
-                        +  ex.getMessage() + ". Please contact administrator", ErrorCode.UNEXPECTED_ERROR);
+                        + ex.getMessage() + ". Please contact administrator", ErrorCode.UNEXPECTED_ERROR);
             }
         }
 
@@ -370,14 +366,14 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
                 }
             });
             for (SandboxInstanceRef sandbox : trainingInstance.getSandboxInstanceRefs()) {
-                if(!sandboxResponse.getBody().stream().anyMatch(sandboxInfo -> sandboxInfo.getId().equals(sandbox.getSandboxInstanceRef()))) {
+                if (!sandboxResponse.getBody().stream().anyMatch(sandboxInfo -> sandboxInfo.getId().equals(sandbox.getSandboxInstanceRef()))) {
                     removeSandboxFromTrainingRun(sandbox);
                     trainingInstance.removeSandboxInstanceRef(sandbox);
                 }
             }
             trainingInstanceRepository.save(trainingInstance);
         } catch (HttpClientErrorException ex) {
-            throw new ServiceLayerException("Client side error when checking a state of sandbox in OpenStack for pool with ID " + trainingInstance.getPoolId() + " : " +  ex.getMessage() + ". Please contact administrator", ErrorCode.UNEXPECTED_ERROR);
+            throw new ServiceLayerException("Client side error when checking a state of sandbox in OpenStack for pool with ID " + trainingInstance.getPoolId() + " : " + ex.getMessage() + ". Please contact administrator", ErrorCode.UNEXPECTED_ERROR);
         }
     }
 
@@ -411,8 +407,8 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
 
     @Override
     @IsOrganizerOrAdmin
-    public Set<UserRef> findUserRefsByLogins(Set<String> logins) {
-        return organizerRefRepository.findUsers(logins);
+    public Set<UserRef> findUserRefsByUserRefIds(Set<Long> usersRefId) {
+        return organizerRefRepository.findUsers(usersRefId);
     }
 
     @Override

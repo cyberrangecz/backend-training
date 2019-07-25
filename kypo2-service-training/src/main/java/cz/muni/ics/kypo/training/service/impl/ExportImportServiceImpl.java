@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
+import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
@@ -27,8 +28,6 @@ public class ExportImportServiceImpl implements ExportImportService {
 
     @Value("${openstack-server.uri}")
     private String kypoOpenStackURI;
-
-    private static final String LEVEL_NOT_FOUND = "Level not found.";
 
     private TrainingDefinitionRepository trainingDefinitionRepository;
     private AbstractLevelRepository abstractLevelRepository;
@@ -99,7 +98,7 @@ public class ExportImportServiceImpl implements ExportImportService {
     @Override
     @IsOrganizerOrAdmin
     public void failIfInstanceIsNotFinished(LocalDateTime endTime) {
-        LocalDateTime currentTime = LocalDateTime.now();
+        LocalDateTime currentTime = LocalDateTime.now(Clock.systemUTC());
         if (currentTime.isBefore(endTime))
             throw new ServiceLayerException("The training instance is not finished.", ErrorCode.RESOURCE_CONFLICT);
     }

@@ -10,32 +10,32 @@ import java.util.Set;
  */
 public class BetaTestingGroupCreateDTO {
 
-    @NotNull(message = "{betaTestingGroup.organizersLogin.NotNull.message}")
-    private Set<String> organizersLogin;
+    @NotNull(message = "{betaTestingGroup.organizersRefIds.NotNull.message}")
+    private Set<Long> organizersRefIds;
 
     /**
-     * Gets organizers login.
+     * Gets organizers ref ids.
      *
-     * @return the organizers login
+     * @return the organizers ref ids
      */
     @ApiModelProperty(value = "Logins of users who is allowed to see training definition.", required = true)
-    public Set<String> getOrganizersLogin() {
-        return organizersLogin;
+    public Set<Long> getOrganizersRefIds() {
+        return organizersRefIds;
     }
 
     /**
-     * Sets organizers login.
+     * Sets organizers ref ids.
      *
-     * @param organizersLogin the organizers login
+     * @param organizersRefIds the organizers ref ids
      */
-    public void setOrganizersLogin(Set<String> organizersLogin) {
-        this.organizersLogin = organizersLogin;
+    public void setOrganizersRefIds(Set<Long> organizersRefIds) {
+        this.organizersRefIds = organizersRefIds;
     }
 
     @Override
     public String toString() {
         return "BetaTestingGroupUpdateDTO{" +
-                ", organizersLogin=" + organizersLogin +
+                ", organizersRefIds=" + organizersRefIds +
                 '}';
     }
 }

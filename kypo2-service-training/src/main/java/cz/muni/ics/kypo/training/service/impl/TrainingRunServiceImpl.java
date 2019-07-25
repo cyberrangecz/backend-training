@@ -123,7 +123,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
                     throw new ServiceLayerException("Sandbox (id:" + trainingRun.getPreviousSandboxInstanceRefId() + ") previously assigned to the training run (id: " + trainingRunId + ") was not deleted in OpenStack. Please delete sandbox in OpenStack before you delete training run.", ErrorCode.RESOURCE_CONFLICT);
                 }
             } catch (HttpClientErrorException ex) {
-                if(!ex.getStatusCode().equals(HttpStatus.NOT_FOUND)) {
+                if (!ex.getStatusCode().equals(HttpStatus.NOT_FOUND)) {
                     throw new ServiceLayerException("Client side error when calling OpenStack: " + ex.getMessage() + " " + ex.getResponseBodyAsString() + ". Probably wrong URL of service.", ErrorCode.UNEXPECTED_ERROR);
                 }
                 LOG.debug("Sandbox (id:" + trainingRun.getPreviousSandboxInstanceRefId() + ") previously assigned to the training run (id: " + trainingRunId + ") is not found in OpenStack because it was successfully deleted.");
@@ -137,17 +137,14 @@ public class TrainingRunServiceImpl implements TrainingRunService {
 
     @Override
     @IsTraineeOrAdmin
-    public Page<TrainingRun> findAllByParticipantRefLogin(Pageable pageable) {
-        String login = securityService.getSubOfLoggedInUser();
-        return trainingRunRepository.findAllByParticipantRefLogin(login, pageable);
+    public Page<TrainingRun> findAllByParticiparRefUserRefId(Pageable pageable) {
+        return trainingRunRepository.findAllByParticipantRefId(securityService.getUserRefIdFromUserAndGroup(), pageable);
     }
-
 
     private TrainingRun create(TrainingRun trainingRun) {
         Assert.notNull(trainingRun, "Input training run must not be empty.");
         return trainingRunRepository.save(trainingRun);
     }
-
 
     @Override
     @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
@@ -183,7 +180,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
     @Override
     public Page<TrainingRun> findAllByTrainingDefinitionAndParticipant(Long definitionId, Pageable pageable) {
         Assert.notNull(definitionId, "Input training definition id must not be null.");
-        return trainingRunRepository.findAllByTrainingDefinitionIdAndParticipantRefLogin(definitionId, securityService.getSubOfLoggedInUser(), pageable);
+        return trainingRunRepository.findAllByTrainingDefinitionIdAndParticipantUserRefId(definitionId, securityService.getUserRefIdFromUserAndGroup(), pageable);
     }
 
     @Override
@@ -205,7 +202,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
     @TrackTime
     public TrainingRun accessTrainingRun(String accessToken) {
         Assert.hasLength(accessToken, "AccessToken cannot be null or empty.");
-        Optional<TrainingRun> accessedTrainingRun = trainingRunRepository.findValidTrainingRunOfUser(accessToken, securityService.getSubOfLoggedInUser());
+        Optional<TrainingRun> accessedTrainingRun = trainingRunRepository.findValidTrainingRunOfUser(accessToken, securityService.getUserRefIdFromUserAndGroup());
         if (accessedTrainingRun.isPresent()) {
             return resumeTrainingRun(accessedTrainingRun.get().getId());
         }
@@ -222,7 +219,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
                 throw new ServiceLayerException("No starting level available for this training definition.", ErrorCode.RESOURCE_NOT_FOUND);
             Collections.sort(levels, Comparator.comparing(AbstractLevel::getOrder));
 
-            TrainingRun trainingRun = getNewTrainingRun(levels.get(0), securityService.getSubOfLoggedInUser(), trainingInstance,
+            TrainingRun trainingRun = getNewTrainingRun(levels.get(0), trainingInstance,
                     TRState.RUNNING, LocalDateTime.now(Clock.systemUTC()), trainingInstance.getEndTime(), sandboxInstanceRef);
             trainingRun = create(trainingRun);
             // audit this action to the Elasticsearch
@@ -254,24 +251,16 @@ public class TrainingRunServiceImpl implements TrainingRunService {
         return trainingRun;
     }
 
-    private TrainingRun getNewTrainingRun(AbstractLevel currentLevel, String participantRefLogin, TrainingInstance trainingInstance,
+    private TrainingRun getNewTrainingRun(AbstractLevel currentLevel, TrainingInstance trainingInstance,
                                           TRState state, LocalDateTime startTime, LocalDateTime endTime, SandboxInstanceRef sandboxInstanceRef) {
         TrainingRun newTrainingRun = new TrainingRun();
         newTrainingRun.setCurrentLevel(currentLevel);
 
-        Optional<UserRef> userRefOpt = participantRefRepository.findUserByUserRefLogin(participantRefLogin);
+        Optional<UserRef> userRefOpt = participantRefRepository.findUserByUserRefId(securityService.getUserRefIdFromUserAndGroup());
         if (userRefOpt.isPresent()) {
-            UserRef userRef = userRefOpt.get();
-            if (userRef.getUserRefGivenName() == null) {
-                userRef.setUserRefGivenName(securityService.getGivenNameOfLoggedInUser());
-            } else if (userRefOpt.get().getUserRefFamilyName() == null) {
-                userRef.setUserRefFamilyName(securityService.getFamilyNameOfLoggedInUser());
-            }
-            newTrainingRun.setParticipantRef(userRef);
+            newTrainingRun.setParticipantRef(userRefOpt.get());
         } else {
-            newTrainingRun.setParticipantRef(participantRefRepository.save(
-                    new UserRef(participantRefLogin, securityService.getFullNameOfLoggedInUser(), securityService.getGivenNameOfLoggedInUser(), securityService.getFamilyNameOfLoggedInUser())
-            ));
+            newTrainingRun.setParticipantRef(participantRefRepository.save(securityService.createUserRefEntityByInfoFromUserAndGroup()));
         }
         newTrainingRun.setAssessmentResponses("[]");
         newTrainingRun.setState(TRState.RUNNING);
@@ -345,7 +334,6 @@ public class TrainingRunServiceImpl implements TrainingRunService {
         }
         throw new ServiceLayerException("Current level is not game level and does not have flag.", ErrorCode.WRONG_LEVEL_TYPE);
     }
-
 
     @Override
     @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +

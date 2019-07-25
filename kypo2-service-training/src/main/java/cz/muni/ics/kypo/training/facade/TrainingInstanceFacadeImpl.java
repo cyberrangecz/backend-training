@@ -21,8 +21,7 @@ import cz.muni.ics.kypo.training.persistence.model.TrainingRun;
 import cz.muni.ics.kypo.training.persistence.model.UserRef;
 import cz.muni.ics.kypo.training.service.TrainingDefinitionService;
 import cz.muni.ics.kypo.training.service.TrainingInstanceService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import cz.muni.ics.kypo.training.service.impl.SecurityService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -39,20 +38,20 @@ import java.util.Set;
 @Service
 public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
 
-    private static final Logger LOG = LoggerFactory.getLogger(TrainingInstanceFacadeImpl.class);
-
     private TrainingInstanceService trainingInstanceService;
     private TrainingDefinitionService trainingDefinitionService;
     private TrainingInstanceMapper trainingInstanceMapper;
     private TrainingRunMapper trainingRunMapper;
+    private SecurityService securityService;
 
     @Autowired
     public TrainingInstanceFacadeImpl(TrainingInstanceService trainingInstanceService, TrainingDefinitionService trainingDefinitionService,
-                                      TrainingInstanceMapper trainingInstanceMapper, TrainingRunMapper trainingRunMapper) {
+                                      TrainingInstanceMapper trainingInstanceMapper, TrainingRunMapper trainingRunMapper, SecurityService securityService) {
         this.trainingInstanceService = trainingInstanceService;
         this.trainingDefinitionService = trainingDefinitionService;
         this.trainingInstanceMapper = trainingInstanceMapper;
         this.trainingRunMapper = trainingRunMapper;
+        this.securityService = securityService;
     }
 
     @Override
@@ -83,7 +82,7 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
             Objects.requireNonNull(trainingInstanceUpdateDTO);
             TrainingInstance trainingInstance = trainingInstanceMapper.mapUpdateToEntity(trainingInstanceUpdateDTO);
             trainingInstance.setTrainingDefinition(trainingDefinitionService.findById(trainingInstanceUpdateDTO.getTrainingDefinitionId()));
-            addOrganizersToTrainingInstance(trainingInstance, trainingInstanceUpdateDTO.getOrganizersLogin());
+            addOrganizersToTrainingInstance(trainingInstance, trainingInstanceUpdateDTO.getOrganizersRefIds());
             return trainingInstanceService.update(trainingInstance);
         } catch (ServiceLayerException ex) {
             throw new FacadeLayerException(ex);
@@ -98,28 +97,34 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
             TrainingInstance trainingInstance = trainingInstanceMapper.mapCreateToEntity(trainingInstanceCreateDTO);
             trainingInstance.setTrainingDefinition(trainingDefinitionService.findById(trainingInstanceCreateDTO.getTrainingDefinitionId()));
             trainingInstance.setId(null);
-            addOrganizersToTrainingInstance(trainingInstance, trainingInstanceCreateDTO.getOrganizersLogin());
+            addOrganizersToTrainingInstance(trainingInstance, trainingInstanceCreateDTO.getOrganizersRefIds());
             return trainingInstanceMapper.mapToDTO(trainingInstanceService.create(trainingInstance));
         } catch (ServiceLayerException ex) {
             throw new FacadeLayerException(ex);
         }
     }
 
-    private void addOrganizersToTrainingInstance(TrainingInstance trainingInstance, Set<String> loginsOfOrganizers) {
+    private void addOrganizersToTrainingInstance(TrainingInstance trainingInstance, Set<Long> userRefIdsOfOrganizers) {
         trainingInstance.setOrganizers(new HashSet<>());
-        Set<UserInfoDTO> organizers = trainingDefinitionService.getUsersWithGivenLogins(loginsOfOrganizers);
+        Set<UserInfoDTO> organizers = trainingDefinitionService.getUsersWithGivenUserRefIds(userRefIdsOfOrganizers);
         for (UserInfoDTO organizer : organizers) {
             try {
-                trainingInstance.addOrganizer(trainingDefinitionService.findUserRefByLogin(organizer.getLogin()));
+                trainingInstance.addOrganizer(trainingDefinitionService.findUserByRefId(organizer.getUserRefId()));
             } catch (ServiceLayerException ex) {
-                UserRef userRef = new UserRef();
-                userRef.setUserRefLogin(organizer.getLogin());
-                userRef.setUserRefFullName(organizer.getFullName());
-                userRef.setUserRefFamilyName(organizer.getFamilyName());
-                userRef.setUserRefGivenName(organizer.getGivenName());
-                trainingInstance.addOrganizer(trainingDefinitionService.createUserRef(userRef));
+                trainingInstance.addOrganizer(trainingDefinitionService.createUserRef(createUserRef(organizer)));
             }
         }
+    }
+
+    private UserRef createUserRef(UserInfoDTO userToBeCreated) {
+        UserRef userRef = new UserRef();
+        userRef.setUserRefId(userToBeCreated.getUserRefId());
+        userRef.setIss(userToBeCreated.getIss());
+        userRef.setUserRefFamilyName(userToBeCreated.getFamilyName());
+        userRef.setUserRefGivenName(userToBeCreated.getGivenName());
+        userRef.setUserRefFullName(userToBeCreated.getFullName());
+        userRef.setUserRefLogin(userToBeCreated.getLogin());
+        return userRef;
     }
 
     @Override

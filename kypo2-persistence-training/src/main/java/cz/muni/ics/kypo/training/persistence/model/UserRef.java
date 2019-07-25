@@ -13,15 +13,19 @@ import java.util.Set;
  * @author Pavel Seda
  */
 @Entity
-@Table(name = "user_ref")
+@Table(name = "user_ref", uniqueConstraints = @UniqueConstraint(columnNames = {"user_ref_login", "user_ref_id", "iss"}))
 public class UserRef implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", unique = true, nullable = false, insertable = false)
     private Long id;
-    @Column(name = "user_ref_login", nullable = false, unique = true)
+    @Column(name = "user_ref_login", nullable = false)
     private String userRefLogin;
+    @Column(name = "user_ref_id", nullable = false)
+    private Long userRefId;
+    @Column(name = "iss", nullable = false)
+    private String iss;
     @Column(name = "user_ref_full_name")
     private String userRefFullName;
     @Column(name = "user_ref_given_name")
@@ -76,6 +80,20 @@ public class UserRef implements Serializable {
     }
 
     /**
+     * Instantiates a new User ref.
+     *
+     * @param userRefLogin      the user ref login
+     * @param iss               the iss
+     * @param userRefFullName   the user ref full name
+     * @param userRefGivenName  the user ref given name
+     * @param userRefFamilyName the user ref family name
+     */
+    public UserRef(String userRefLogin, String userRefFullName, String userRefGivenName, String userRefFamilyName, String iss) {
+        this(userRefLogin, userRefFullName, userRefGivenName, userRefFamilyName);
+        setIss(iss);
+    }
+
+    /**
      * Gets unique identification number of user reference
      *
      * @return the id
@@ -91,6 +109,42 @@ public class UserRef implements Serializable {
      */
     public void setId(Long id) {
         this.id = id;
+    }
+
+    /**
+     * Gets user ref id.
+     *
+     * @return the user ref id
+     */
+    public Long getUserRefId() {
+        return userRefId;
+    }
+
+    /**
+     * Sets user ref id.
+     *
+     * @param userRefId the user ref id
+     */
+    public void setUserRefId(Long userRefId) {
+        this.userRefId = userRefId;
+    }
+
+    /**
+     * Gets iss.
+     *
+     * @return the iss
+     */
+    public String getIss() {
+        return iss;
+    }
+
+    /**
+     * Sets iss.
+     *
+     * @param iss the iss
+     */
+    public void setIss(String iss) {
+        this.iss = iss;
     }
 
     /**
@@ -278,20 +332,23 @@ public class UserRef implements Serializable {
         if (this == o) return true;
         if (!(o instanceof UserRef)) return false;
         UserRef userRef = (UserRef) o;
-        return Objects.equals(getUserRefLogin(), userRef.getUserRefLogin());
+        return Objects.equals(getUserRefLogin(), userRef.getUserRefLogin()) &&
+                Objects.equals(getUserRefId(), userRef.getUserRefId()) &&
+                Objects.equals(getIss(), userRef.getIss());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getUserRefLogin());
+        return Objects.hash(getUserRefLogin(), getUserRefId(), getIss());
     }
-
 
     @Override
     public String toString() {
         return "UserRef{" +
                 "id=" + id +
                 ", userRefLogin='" + userRefLogin + '\'' +
+                ", userRefId=" + userRefId +
+                ", iss='" + iss + '\'' +
                 ", userRefFullName='" + userRefFullName + '\'' +
                 ", userRefGivenName='" + userRefGivenName + '\'' +
                 ", userRefFamilyName='" + userRefFamilyName + '\'' +

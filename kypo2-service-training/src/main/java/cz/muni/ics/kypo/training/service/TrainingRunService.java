@@ -65,7 +65,7 @@ public interface TrainingRunService {
      * @param pageable pageable parameter with information about pagination.
      * @return {@link TrainingRun}s of logged in user.
      */
-    Page<TrainingRun> findAllByParticipantRefLogin(Pageable pageable);
+    Page<TrainingRun> findAllByParticiparRefUserRefId(Pageable pageable);
 
     /**
      * Finds all Training Runs of specific Training Definition of logged in user.
