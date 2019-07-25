@@ -23,6 +23,7 @@ import cz.muni.ics.kypo.training.exceptions.FacadeLayerException;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.mapping.mapstruct.*;
 import cz.muni.ics.kypo.training.persistence.model.*;
+import cz.muni.ics.kypo.training.service.TrainingInstanceService;
 import cz.muni.ics.kypo.training.service.TrainingRunService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,17 +55,19 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
     private AssessmentLevelMapper assessmentLevelMapper;
     private InfoLevelMapper infoLevelMapper;
     private HintMapper hintMapper;
+    private TrainingInstanceService trainingInstanceService;
 
     @Autowired
     public TrainingRunFacadeImpl(TrainingRunService trainingRunService, TrainingRunMapper trainingRunMapper,
                                  GameLevelMapper gameLevelMapper, AssessmentLevelMapper assessmentLevelMapper,
-                                 InfoLevelMapper infoLevelMapper, HintMapper hintMapper) {
+                                 InfoLevelMapper infoLevelMapper, HintMapper hintMapper, TrainingInstanceService trainingInstanceService) {
         this.trainingRunService = trainingRunService;
         this.trainingRunMapper = trainingRunMapper;
         this.gameLevelMapper = gameLevelMapper;
         this.assessmentLevelMapper = assessmentLevelMapper;
         this.infoLevelMapper = infoLevelMapper;
         this.hintMapper = hintMapper;
+        this.trainingInstanceService = trainingInstanceService;
     }
 
     @Override
@@ -133,7 +136,9 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
     @TransactionalWO
     public AccessTrainingRunDTO accessTrainingRun(String accessToken) {
         try {
-            TrainingRun trainingRun = trainingRunService.accessTrainingRun(accessToken);
+            TrainingInstance instance = trainingInstanceService.findByStartTimeAfterAndEndTimeBeforeAndAccessToken(accessToken);
+            trainingInstanceService.synchronizeSandboxesWithPythonApi(instance);
+            TrainingRun trainingRun = trainingRunService.accessTrainingRun(instance);
             return convertToAccessTrainingRunDTO(trainingRun);
         } catch (ServiceLayerException ex) {
             throw new FacadeLayerException(ex);

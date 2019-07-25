@@ -1,6 +1,5 @@
 package cz.muni.ics.kypo.training.service.impl;
 
-import com.mysema.commons.lang.Assert;
 import com.querydsl.core.types.Predicate;
 import cz.muni.csirt.kypo.elasticsearch.service.TrainingEventsService;
 import cz.muni.ics.kypo.training.annotations.aop.TrackTime;
@@ -27,6 +26,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
+import org.springframework.util.Assert;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -323,8 +323,6 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
     }
 
     @Override
-    @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
-            "or @securityService.isOrganizerOfGivenTrainingInstance(#trainingInstance.id)")
     @TransactionalWO(propagation = Propagation.REQUIRES_NEW)
     public void synchronizeSandboxesWithPythonApi(TrainingInstance trainingInstance) {
         HttpHeaders httpHeaders = new HttpHeaders();
@@ -392,7 +390,7 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
             "or @securityService.isOrganizerOfGivenTrainingInstance(#instanceId)")
     public Page<TrainingRun> findTrainingRunsByTrainingInstance(Long instanceId, Boolean isActive, Pageable
             pageable) {
-        org.springframework.util.Assert.notNull(instanceId, "Input training instance id must not be null.");
+        Assert.notNull(instanceId, "Input training instance id must not be null.");
         trainingInstanceRepository.findById(instanceId)
                 .orElseThrow(() -> new ServiceLayerException("Training instance with id: " + instanceId + " not found.", ErrorCode.RESOURCE_NOT_FOUND));
         if (isActive == null) {
@@ -416,5 +414,12 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
             "or @securityService.isOrganizerOfGivenTrainingInstance(#instanceId)")
     public boolean checkIfInstanceIsFinished(Long trainingInstanceId) {
         return trainingInstanceRepository.isFinished(trainingInstanceId, LocalDateTime.now(Clock.systemUTC()));
+    }
+
+    @Override
+    public TrainingInstance findByStartTimeAfterAndEndTimeBeforeAndAccessToken(String accessToken) {
+        Assert.hasLength(accessToken, "AccessToken cannot be null or empty.");
+        return trainingInstanceRepository.findByStartTimeAfterAndEndTimeBeforeAndAccessToken(LocalDateTime.now(Clock.systemUTC()), accessToken)
+                .orElseThrow(() -> new ServiceLayerException("Training instance with access token: " + accessToken + " not found.", ErrorCode.RESOURCE_NOT_FOUND));
     }
 }

@@ -379,7 +379,7 @@
 //        Long trainingRunId = jsonObject.getLong("trainingRunID");
 //        Optional<TrainingRun> trainingRun = trainingRunRepository.findById(trainingRunId);
 //        assertTrue(trainingRun.isPresent());
-//        System.out.println(result.getContentAsString());
+//        List<SandboxInstanceRef> list = sandboxInstanceRefRepository.findAll();
 //        assertEquals(gameLevel1, trainingRun.get().getCurrentLevel());
 //        assertEquals(trainingInstance, trainingRun.get().getTrainingInstance());
 //    }
@@ -475,6 +475,7 @@
 //                .andReturn().getResolvedException();
 //        assertEquals(ResourceNotFoundException.class, Objects.requireNonNull(ex).getClass());
 //    }
+
 //
 //    @Test
 //    public void getAllAccessedTrainingRuns() throws Exception {

@@ -138,4 +138,6 @@ public interface TrainingInstanceService {
      * @param trainingInstance which sandboxes will be synchronized
      */
     public void synchronizeSandboxesWithPythonApi(TrainingInstance trainingInstance);
+
+    TrainingInstance findByStartTimeAfterAndEndTimeBeforeAndAccessToken(String accessToken);
 }
