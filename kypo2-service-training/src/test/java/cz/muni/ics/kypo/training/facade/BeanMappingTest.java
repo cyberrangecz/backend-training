@@ -51,7 +51,7 @@ public class BeanMappingTest {
         aR.setTrainingDefinitions(new HashSet<>(Arrays.asList(tD)));
 
         aRDTO = new UserRefDTO();
-        aRDTO.setId(1L);
+        aRDTO.setUserRefId(1L);
         aRDTO.setUserRefLogin("login");
 
         tD = new TrainingDefinition();

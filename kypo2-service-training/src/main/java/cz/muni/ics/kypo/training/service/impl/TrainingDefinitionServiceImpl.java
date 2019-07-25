@@ -2,12 +2,14 @@ package cz.muni.ics.kypo.training.service.impl;
 
 import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.training.annotations.aop.TrackTime;
-import cz.muni.ics.kypo.training.annotations.security.IsDesignerOrAdmin;
 import cz.muni.ics.kypo.training.annotations.security.IsAdminOrDesignerOrOrganizer;
+import cz.muni.ics.kypo.training.annotations.security.IsDesignerOrAdmin;
 import cz.muni.ics.kypo.training.annotations.security.IsOrganizerOrAdmin;
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalWO;
 import cz.muni.ics.kypo.training.api.PageResultResource;
+import cz.muni.ics.kypo.training.api.dto.UserDTO;
 import cz.muni.ics.kypo.training.api.dto.UserInfoDTO;
+import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
 import cz.muni.ics.kypo.training.api.enums.RoleType;
 import cz.muni.ics.kypo.training.exceptions.ErrorCode;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
@@ -32,6 +34,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -39,8 +42,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.net.URI;
 import java.time.Clock;
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
 import java.util.*;
 
 /**
@@ -96,7 +97,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
         if (securityService.isAdmin()) {
             return trainingDefinitionRepository.findAll(predicate, pageable);
         }
-        return trainingDefinitionRepository.findAllByLoggedInUser(securityService.getSubOfLoggedInUser(), pageable);
+        return trainingDefinitionRepository.findAllByLoggedInUser(securityService.getUserRefIdFromUserAndGroup(), pageable);
     }
 
     @Override
@@ -107,7 +108,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
         } else if (securityService.isDesigner() && securityService.isOrganizer()) {
             return trainingDefinitionRepository.findAllForDesignersAndOrganizers(securityService.getSubOfLoggedInUser(), pageable);
         } else {
-            return trainingDefinitionRepository.findAllForOrganizers(securityService.getSubOfLoggedInUser(), pageable);
+            return trainingDefinitionRepository.findAllForOrganizers(securityService.getUserRefIdFromUserAndGroup(), pageable);
         }
 
     }
@@ -116,17 +117,12 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     @IsDesignerOrAdmin
     public TrainingDefinition create(TrainingDefinition trainingDefinition) {
         Assert.notNull(trainingDefinition, "Input training definition must not be null");
-        String userSub = securityService.getSubOfLoggedInUser();
 
-        Optional<UserRef> user = userRefRepository.findUserByUserRefLogin(userSub);
+        Optional<UserRef> user = userRefRepository.findUserByUserRefId(securityService.getUserRefIdFromUserAndGroup());
         if (user.isPresent()) {
             trainingDefinition.addAuthor(user.get());
         } else {
-            UserRef newUser = new UserRef();
-            newUser.setUserRefLogin(userSub);
-            newUser.setUserRefFullName(securityService.getFullNameOfLoggedInUser());
-            newUser.setUserRefFamilyName(securityService.getFamilyNameOfLoggedInUser());
-            newUser.setUserRefGivenName(securityService.getGivenNameOfLoggedInUser());
+            UserRef newUser = securityService.createUserRefEntityByInfoFromUserAndGroup();
             trainingDefinition.addAuthor(newUser);
         }
         trainingDefinition.setLastEdited(getCurrentTimeInUTC());
@@ -149,15 +145,11 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
         TrainingDefinition trainingDefinition = findById(trainingDefinitionToUpdate.getId());
         checkIfCanBeUpdated(trainingDefinition);
         String userSub = securityService.getSubOfLoggedInUser();
-        Optional<UserRef> user = userRefRepository.findUserByUserRefLogin(userSub);
+        Optional<UserRef> user = userRefRepository.findUserByUserRefId(securityService.getUserRefIdFromUserAndGroup());
         if (user.isPresent()) {
             trainingDefinitionToUpdate.addAuthor(user.get());
         } else {
-            UserRef newUser = new UserRef();
-            newUser.setUserRefLogin(userSub);
-            newUser.setUserRefFullName(securityService.getFullNameOfLoggedInUser());
-            newUser.setUserRefGivenName(securityService.getGivenNameOfLoggedInUser());
-            newUser.setUserRefFamilyName(securityService.getFamilyNameOfLoggedInUser());
+            UserRef newUser = securityService.createUserRefEntityByInfoFromUserAndGroup();
             trainingDefinitionToUpdate.addAuthor(newUser);
         }
         trainingDefinitionToUpdate.setLastEdited(getCurrentTimeInUTC());
@@ -178,15 +170,12 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
         clonedTrainingDefinition.setTitle(title);
         clonedTrainingDefinition.setState(TDState.UNRELEASED);
         clonedTrainingDefinition.setAuthors(new HashSet<>());
-        Optional<UserRef> user = userRefRepository.findUserByUserRefLogin(securityService.getSubOfLoggedInUser());
+
+        Optional<UserRef> user = userRefRepository.findUserByUserRefId(securityService.getUserRefIdFromUserAndGroup());
         if (user.isPresent()) {
             clonedTrainingDefinition.addAuthor(user.get());
         } else {
-            UserRef newUser = new UserRef();
-            newUser.setUserRefLogin(securityService.getSubOfLoggedInUser());
-            newUser.setUserRefFullName(securityService.getFullNameOfLoggedInUser());
-            newUser.setUserRefFamilyName(securityService.getFamilyNameOfLoggedInUser());
-            newUser.setUserRefGivenName(securityService.getGivenNameOfLoggedInUser());
+            UserRef newUser = securityService.createUserRefEntityByInfoFromUserAndGroup();
             clonedTrainingDefinition.addAuthor(newUser);
         }
         clonedTrainingDefinition.setLastEdited(getCurrentTimeInUTC());
@@ -244,8 +233,8 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
             int orderOfDeleted = abstractLevelToDelete.get().getOrder();
             deleteLevel(abstractLevelToDelete.get());
             List<AbstractLevel> levels = abstractLevelRepository.findAllLevelsByTrainingDefinitionId(definitionId);
-            for (AbstractLevel level : levels){
-                if (level.getOrder() > orderOfDeleted) level.setOrder(level.getOrder()-1);
+            for (AbstractLevel level : levels) {
+                if (level.getOrder() > orderOfDeleted) level.setOrder(level.getOrder() - 1);
             }
         } else {
             throw new ServiceLayerException(LEVEL_NOT_FOUND, ErrorCode.RESOURCE_NOT_FOUND);
@@ -423,9 +412,9 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
 
     @Override
     @IsAdminOrDesignerOrOrganizer
-    public UserRef findUserRefByLogin(String login) {
-        return userRefRepository.findUserByUserRefLogin(login).orElseThrow(
-                () -> new ServiceLayerException("UserRef with login " + login + " not found.", ErrorCode.RESOURCE_NOT_FOUND));
+    public UserRef findUserByRefId(Long userRefId) {
+        return userRefRepository.findUserByUserRefId(userRefId).orElseThrow(
+                () -> new ServiceLayerException("UserRef with userRefId " + userRefId + " not found.", ErrorCode.RESOURCE_NOT_FOUND));
     }
 
     @Override
@@ -434,11 +423,12 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     public List<UserInfoDTO> getUsersWithGivenRole(RoleType roleType, Pageable pageable) {
         HttpHeaders httpHeaders = new HttpHeaders();
         String url = userAndGroupUrl + "/roles/users" + "?roleType=" + roleType
-                + "&page=" + pageable.getPageNumber() + "&size=" + pageable.getPageSize() + "&fields=content[login,full_name,given_name,family_name]";
+                + "&page=" + pageable.getPageNumber() + "&size=" + pageable.getPageSize();
         try {
             ResponseEntity<PageResultResource<UserInfoDTO>> usersResponse = restTemplate.exchange(url, HttpMethod.GET, new HttpEntity<>(httpHeaders),
                     new ParameterizedTypeReference<PageResultResource<UserInfoDTO>>() {
                     });
+
             return Objects.requireNonNull(usersResponse.getBody()).getContent();
 
         } catch (HttpClientErrorException ex) {
@@ -449,11 +439,10 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     @Override
     @IsDesignerOrAdmin
     @TrackTime
-    public Set<UserInfoDTO> getUsersWithGivenLogins(Set<String> logins) {
+    public Set<UserInfoDTO> getUsersWithGivenUserRefIds(Set<Long> userRefIds) {
         HttpHeaders httpHeaders = new HttpHeaders();
-        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(userAndGroupUrl + "/users/logins");
-        builder.queryParam("logins", logins.toString().replace("[", "").replace("]", ""));
-        builder.queryParam("fields", "content[login,full_name,given_name,family_name]");
+        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(userAndGroupUrl + "/users/ids");
+        builder.queryParam("ids", StringUtils.collectionToDelimitedString(userRefIds, ","));
         URI uri = builder.build().encode().toUri();
         try {
             ResponseEntity<List<UserInfoDTO>> usersResponse = restTemplate.exchange(uri, HttpMethod.GET, new HttpEntity<>(httpHeaders),
@@ -480,7 +469,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
             "or @securityService.isDesignerOfGivenTrainingDefinition(#definitionId)")
     public void switchState(Long definitionId, cz.muni.ics.kypo.training.api.enums.TDState state) {
         TrainingDefinition trainingDefinition = findById(definitionId);
-        if(trainingDefinition.getState().name().equals(state.name())) {
+        if (trainingDefinition.getState().name().equals(state.name())) {
             return;
         }
         switch (trainingDefinition.getState()) {

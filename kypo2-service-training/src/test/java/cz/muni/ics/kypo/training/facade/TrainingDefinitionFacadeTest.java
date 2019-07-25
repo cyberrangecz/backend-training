@@ -10,7 +10,6 @@ import cz.muni.ics.kypo.training.api.dto.betatestinggroup.BetaTestingGroupCreate
 import cz.muni.ics.kypo.training.api.dto.betatestinggroup.BetaTestingGroupUpdateDTO;
 import cz.muni.ics.kypo.training.api.dto.gamelevel.GameLevelUpdateDTO;
 import cz.muni.ics.kypo.training.api.dto.infolevel.InfoLevelUpdateDTO;
-import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionByIdDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionCreateDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionUpdateDTO;
@@ -72,6 +71,8 @@ public class TrainingDefinitionFacadeTest {
 
     @Mock
     private TrainingDefinitionService trainingDefinitionService;
+    @Mock
+    private SecurityService securityService;
 
     private BeanMapping beanMapping;
 
@@ -99,7 +100,7 @@ public class TrainingDefinitionFacadeTest {
     public void init() {
         MockitoAnnotations.initMocks(this);
         trainingDefinitionFacade = new TrainingDefinitionFacadeImpl(trainingDefinitionService,
-                trainingDefinitionMapper, gameLevelMapper, infoLevelMapper, assessmentLevelMapper, basicLevelInfoMapper);
+                trainingDefinitionMapper, gameLevelMapper, infoLevelMapper, assessmentLevelMapper, basicLevelInfoMapper, securityService);
         beanMapping = new BeanMappingImpl(new ModelMapper());
         assessmentLevel = new AssessmentLevel();
         assessmentLevel.setId(1L);
@@ -157,7 +158,7 @@ public class TrainingDefinitionFacadeTest {
         trainingDefinition2.setState(TDState.UNRELEASED);
 
         betaTestingGroupUpdateDTO = new BetaTestingGroupUpdateDTO();
-        betaTestingGroupUpdateDTO.setOrganizersLogin(Set.of());
+        betaTestingGroupUpdateDTO.setOrganizersRefIds(Set.of());
 
         trainingDefinitionUpdate = new TrainingDefinitionUpdateDTO();
         trainingDefinitionUpdate.setId(1L);
@@ -168,7 +169,7 @@ public class TrainingDefinitionFacadeTest {
         authorRef.setUserRefLogin("author");
 
         betaTestingGroupCreateDTO = new BetaTestingGroupCreateDTO();
-        betaTestingGroupCreateDTO.setOrganizersLogin(Set.of());
+        betaTestingGroupCreateDTO.setOrganizersRefIds(Set.of());
 
         trainingDefinitionCreate = new TrainingDefinitionCreateDTO();
         trainingDefinitionCreate.setDescription("TD desc");
@@ -176,7 +177,7 @@ public class TrainingDefinitionFacadeTest {
         trainingDefinitionCreate.setPrerequisities(new String[0]);
         trainingDefinitionCreate.setState(cz.muni.ics.kypo.training.api.enums.TDState.ARCHIVED);
         trainingDefinitionCreate.setTitle("TD some title");
-        trainingDefinitionCreate.setAuthorsLogin(Set.of("peter@mail.muni.cz"));
+        trainingDefinitionCreate.setAuthorsRefIds(Set.of(1L));
         trainingDefinitionCreate.setBetaTestingGroup(betaTestingGroupCreateDTO);
     }
 
@@ -246,7 +247,7 @@ public class TrainingDefinitionFacadeTest {
     public void createTrainingDefinition() {
         given(trainingDefinitionService.create(trainingDefinitionMapper.mapCreateToEntity(trainingDefinitionCreate)))
                 .willReturn(trainingDefinitionMapper.mapCreateToEntity(trainingDefinitionCreate));
-        given(trainingDefinitionService.findUserRefByLogin(anyString())).willReturn(authorRef);
+        given(trainingDefinitionService.findUserByRefId(anyLong())).willReturn(authorRef);
         trainingDefinitionFacade.create(trainingDefinitionCreate);
         then(trainingDefinitionService).should().create(trainingDefinitionMapper.mapCreateToEntity(trainingDefinitionCreate));
     }

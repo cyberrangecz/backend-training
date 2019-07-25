@@ -4,10 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.training.api.PageResultResource;
-import cz.muni.ics.kypo.training.api.dto.AbstractLevelDTO;
-import cz.muni.ics.kypo.training.api.dto.BasicLevelInfoDTO;
-import cz.muni.ics.kypo.training.api.dto.UserInfoDTO;
-import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
+import cz.muni.ics.kypo.training.api.dto.*;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelUpdateDTO;
 import cz.muni.ics.kypo.training.api.dto.gamelevel.GameLevelUpdateDTO;
 import cz.muni.ics.kypo.training.api.dto.infolevel.InfoLevelUpdateDTO;
@@ -168,21 +165,31 @@ public class TrainingDefinitionsRestControllerTest {
 
         UserRef authorRef = new UserRef();
         authorRef.setUserRefLogin("Author");
+        authorRef.setUserRefId(1L);
+        authorRef.setIss("https://oidc.muni.cz");
+        authorRef.setUserRefGivenName("Pavel");
+        authorRef.setUserRefFamilyName("Seda");
+        authorRef.setUserRefFullName("Mgr. Ing. Pavel Seda");
+
+
         Set<UserRef> authorRefSet = new HashSet<>();
         authorRefSet.add(authorRef);
 
         UserRefDTO authorRefDTO = new UserRefDTO();
+        authorRefDTO.setUserRefId(2L);
+        authorRefDTO.setIss("https://oidc.muni.cz");
+        authorRefDTO.setUserRefGivenName("Pavel22");
+        authorRefDTO.setUserRefFamilyName("Seda33");
+        authorRefDTO.setUserRefFullName("Mgr. Ing. Pavel Seda");
+
         Set<UserRefDTO> authorRefSetDTO = new HashSet<>();
         authorRefSetDTO.add(authorRefDTO);
 
-        Set<String> authorLogins = new HashSet<>();
-        authorLogins.add("Author");
-
         betaTestingGroupCreateDTO = new BetaTestingGroupCreateDTO();
-        betaTestingGroupCreateDTO.setOrganizersLogin(Set.of());
+        betaTestingGroupCreateDTO.setOrganizersRefIds(Set.of());
 
         betaTestingGroupUpdateDTO = new BetaTestingGroupUpdateDTO();
-        betaTestingGroupUpdateDTO.setOrganizersLogin(Set.of());
+        betaTestingGroupUpdateDTO.setOrganizersRefIds(Set.of());
 
         trainingDefinition1 = new TrainingDefinition();
         trainingDefinition1.setId(1L);
@@ -216,7 +223,7 @@ public class TrainingDefinitionsRestControllerTest {
         trainingDefinitionUpdateDTO.setId(4L);
         trainingDefinitionUpdateDTO.setState(cz.muni.ics.kypo.training.api.enums.TDState.UNRELEASED);
         trainingDefinitionUpdateDTO.setTitle("training definition title");
-        trainingDefinitionUpdateDTO.setAuthorsLogin(Set.of());
+        trainingDefinitionUpdateDTO.setAuthorsRefIds(Set.of());
         trainingDefinitionUpdateDTO.setSandboxDefinitionRefId(1L);
         trainingDefinitionUpdateDTO.setShowStepperBar(false);
         trainingDefinitionUpdateDTO.setBetaTestingGroup(betaTestingGroupUpdateDTO);
@@ -227,7 +234,7 @@ public class TrainingDefinitionsRestControllerTest {
         trainingDefinitionCreateDTO.setPrerequisities(new String[0]);
         trainingDefinitionCreateDTO.setState(cz.muni.ics.kypo.training.api.enums.TDState.ARCHIVED);
         trainingDefinitionCreateDTO.setTitle("TD some title");
-        trainingDefinitionCreateDTO.setAuthorsLogin(Set.of());
+        trainingDefinitionCreateDTO.setAuthorsRefIds(Set.of());
         trainingDefinitionCreateDTO.setShowStepperBar(true);
         trainingDefinitionCreateDTO.setSandboxDefinitionRefId(1L);
         trainingDefinitionCreateDTO.setBetaTestingGroup(betaTestingGroupCreateDTO);

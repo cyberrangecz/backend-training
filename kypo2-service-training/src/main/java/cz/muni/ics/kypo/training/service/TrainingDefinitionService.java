@@ -1,9 +1,10 @@
 package cz.muni.ics.kypo.training.service;
 
 import com.querydsl.core.types.Predicate;
+import cz.muni.ics.kypo.training.api.dto.UserDTO;
 import cz.muni.ics.kypo.training.api.dto.UserInfoDTO;
+import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
 import cz.muni.ics.kypo.training.api.enums.RoleType;
-import cz.muni.ics.kypo.training.api.enums.TDState;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import org.springframework.data.domain.Page;
@@ -193,18 +194,18 @@ public interface TrainingDefinitionService {
     /**
      * Finds specific User reference by login
      *
-     * @param login of wanted User reference
+     * @param userRefId of wanted User reference
      * @return {@link UserRef} with corresponding login
      * @throws ServiceLayerException if UserRef was not found
      */
-    UserRef findUserRefByLogin(String login);
+    UserRef findUserByRefId(Long userRefId);
 
     /**
      * Finds all logins of users that have role of designer
      *
      * @param roleType the role type
      * @param pageable the pageable
-     * @return list of logins and full names of users with given role
+     * @return list of users with given role
      */
     List<UserInfoDTO> getUsersWithGivenRole(RoleType roleType, Pageable pageable);
 
@@ -233,10 +234,10 @@ public interface TrainingDefinitionService {
     Page<TrainingDefinition> findAllForOrganizers(Predicate predicate, Pageable pageable);
 
     /**
-     * Gets users with given logins.
+     * Gets users with given user ref ids.
      *
-     * @param logins the logins
-     * @return the users with given logins
+     * @param userRefIds the user ref ids
+     * @return the users with given user ref ids
      */
-    Set<UserInfoDTO> getUsersWithGivenLogins(Set<String> logins);
+    Set<UserInfoDTO> getUsersWithGivenUserRefIds(Set<Long> userRefIds);
 }

@@ -436,30 +436,30 @@ public class TrainingRunServiceTest {
     }
 
     @Test
-    public void findAllByParticipantRefLogin() {
+    public void findAllByParticipantUserRefId() {
         Page<TrainingRun> expectedPage = new PageImpl<>(Arrays.asList(trainingRun1, trainingRun2));
 
         given(securityService.getSubOfLoggedInUser()).willReturn(participantRef.getUserRefLogin());
-        given(trainingRunRepository.findAllByParticipantRefLogin(eq(participantRef.getUserRefLogin()), any(PageRequest.class))).willReturn(expectedPage);
+        given(trainingRunRepository.findAllByParticipantRefId(eq(participantRef.getUserRefId()), any(PageRequest.class))).willReturn(expectedPage);
 
-        Page<TrainingRun> resultPage = trainingRunService.findAllByParticipantRefLogin(PageRequest.of(0, 2));
+        Page<TrainingRun> resultPage = trainingRunService.findAllByParticiparRefUserRefId(PageRequest.of(0, 2));
 
         assertEquals(expectedPage, resultPage);
 
-        then(trainingRunRepository).should().findAllByParticipantRefLogin(participantRef.getUserRefLogin(), PageRequest.of(0, 2));
+        then(trainingRunRepository).should().findAllByParticipantRefId(participantRef.getUserRefId(), PageRequest.of(0, 2));
     }
 
     @Test
     public void findAllByTrainingDefinitionAndParticipant() {
         Page<TrainingRun> expectedPage = new PageImpl<>(Collections.singletonList(trainingRun2));
         given(securityService.getSubOfLoggedInUser()).willReturn(participantRef.getUserRefLogin());
-        given(trainingRunRepository.findAllByTrainingDefinitionIdAndParticipantRefLogin(any(Long.class), eq(participantRef.getUserRefLogin()), any(Pageable.class))).willReturn(expectedPage);
+        given(trainingRunRepository.findAllByTrainingDefinitionIdAndParticipantUserRefId(any(Long.class), eq(participantRef.getUserRefId()), any(Pageable.class))).willReturn(expectedPage);
 
         Page<TrainingRun> resultPage = trainingRunService.findAllByTrainingDefinitionAndParticipant(trainingDefinition2.getId(), PageRequest.of(0, 2));
 
         assertEquals(expectedPage, resultPage);
 
-        then(trainingRunRepository).should().findAllByTrainingDefinitionIdAndParticipantRefLogin(trainingDefinition2.getId(), participantRef.getUserRefLogin(), PageRequest.of(0, 2));
+        then(trainingRunRepository).should().findAllByTrainingDefinitionIdAndParticipantUserRefId(trainingDefinition2.getId(), participantRef.getUserRefId(), PageRequest.of(0, 2));
     }
 
     @Test

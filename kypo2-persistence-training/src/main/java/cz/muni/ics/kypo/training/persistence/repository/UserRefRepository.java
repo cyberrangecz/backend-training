@@ -1,6 +1,8 @@
 package cz.muni.ics.kypo.training.persistence.repository;
 
 import cz.muni.ics.kypo.training.persistence.model.UserRef;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
@@ -20,22 +22,21 @@ public interface UserRefRepository extends JpaRepository<UserRef, Long>,
         QuerydslPredicateExecutor<UserRef> {
 
     /**
-     * Find all users.
+     * Find all users by userRefIds.
      *
-     * @param userRefLogin the user ref login
+     * @param userRefId the user ref id
      * @return the set of {@link UserRef}
      */
-    @Query("SELECT DISTINCT ur FROM UserRef ur WHERE ur.userRefLogin IN :userRefLogin")
-    Set<UserRef> findUsers(@Param("userRefLogin") Set<String> userRefLogin);
+    @Query("SELECT ur FROM UserRef ur WHERE ur.userRefId IN :userRefId")
+    Set<UserRef> findUsers(@Param("userRefId") Set<Long> userRefId);
 
     /**
-     * Find user by user ref login.
+     * Find user by user ref id.
      *
-     * @param userLogin the user login
+     * @param userRefId the user id
      * @return the {@link UserRef}
      */
-    @Query("SELECT ur FROM UserRef ur WHERE userRefLogin = :userLogin")
-    Optional<UserRef> findUserByUserRefLogin(@Param("userLogin") String
-                                                     userLogin);
+    @Query("SELECT ur FROM UserRef ur WHERE ur.userRefId = :userRefId")
+    Optional<UserRef> findUserByUserRefId(@Param("userRefId") Long userRefId);
 
 }

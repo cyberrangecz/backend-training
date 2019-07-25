@@ -143,8 +143,14 @@ create table user_ref (
     user_ref_given_name varchar(255),
     user_ref_family_name varchar(255),
     user_ref_login varchar(255) not null,
+    user_ref_id int8 not null,
+    iss varchar(255) not null,
     primary key (id)
 );
+
+
+alter table user_ref
+   add constraint UK_KYPO_PRINCIPAL unique (user_ref_login,user_ref_id,iss);
 
 alter table access_token
    add constraint UK_qglhb4xi0iwstguebaliifr1n unique (access_token);
@@ -154,9 +160,6 @@ alter table training_definition
 
 alter table training_instance
    add constraint UK_b81w12g91hiuhdvsmoanyel6m unique (access_token);
-
-alter table user_ref
-   add constraint UK_iajf018nptidl085leng237xl unique (user_ref_login);
 
 
 alter table hint_info

@@ -1,26 +1,18 @@
 package cz.muni.ics.kypo.training.facade;
 
-import cz.muni.ics.kypo.training.api.dto.AbstractLevelDTO;
-import cz.muni.ics.kypo.training.api.dto.BasicLevelInfoDTO;
-import cz.muni.ics.kypo.training.api.dto.UserInfoDTO;
-import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionInfoDTO;
-import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionByIdDTO;
-import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionDTO;
-import cz.muni.ics.kypo.training.api.enums.RoleType;
-import cz.muni.ics.kypo.training.api.enums.TDState;
-import cz.muni.ics.kypo.training.exceptions.FacadeLayerException;
-
 import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.training.api.PageResultResource;
+import cz.muni.ics.kypo.training.api.dto.*;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelUpdateDTO;
 import cz.muni.ics.kypo.training.api.dto.gamelevel.GameLevelUpdateDTO;
 import cz.muni.ics.kypo.training.api.dto.infolevel.InfoLevelUpdateDTO;
-import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionCreateDTO;
-import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionUpdateDTO;
+import cz.muni.ics.kypo.training.api.dto.trainingdefinition.*;
+import cz.muni.ics.kypo.training.api.enums.RoleType;
+import cz.muni.ics.kypo.training.api.enums.TDState;
+import cz.muni.ics.kypo.training.exceptions.FacadeLayerException;
 import org.springframework.data.domain.Pageable;
 
 import java.util.List;
-import java.util.Set;
 
 /**
  * The interface for training definition facade.
@@ -198,7 +190,7 @@ public interface TrainingDefinitionFacade {
      *
      * @param roleType the wanted role type
      * @param pageable pageable parameter with information about pagination.
-     * @return list of logins and full names of users with given {@link RoleType}
+     * @return list of users {@link UserRefDTO}
      * @throws FacadeLayerException some error encountered when obtaining info about users
      */
     List<UserInfoDTO> getUsersWithGivenRole(RoleType roleType, Pageable pageable);

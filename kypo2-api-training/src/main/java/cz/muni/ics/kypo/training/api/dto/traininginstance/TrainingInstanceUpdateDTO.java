@@ -1,7 +1,6 @@
 package cz.muni.ics.kypo.training.api.dto.traininginstance;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import cz.muni.ics.kypo.training.api.dto.UserInfoDTO;
 import cz.muni.ics.kypo.training.converters.LocalDateTimeUTCDeserializer;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -39,8 +38,8 @@ public class TrainingInstanceUpdateDTO {
     private String accessToken;
     @NotNull(message = "{traininginstanceupdate.trainingDefinition.NotNull.message}")
     private Long trainingDefinitionId;
-    @NotNull(message = "{traininginstanceupdate.organizersLogin.NotNull.message}")
-    private Set<String> organizersLogin;
+    @NotNull(message = "{traininginstanceupdate.organizersRefIds.NotNull.message}")
+    private Set<Long> organizersRefIds;
 
     /**
      * Gets id.
@@ -176,22 +175,22 @@ public class TrainingInstanceUpdateDTO {
     }
 
     /**
-     * Gets organizers login.
+     * Gets organizers ids.
      *
-     * @return the organizers login
+     * @return the organizers ids
      */
     @ApiModelProperty(value = "Reference to users which organize training instance.", required = true)
-    public Set<String> getOrganizersLogin() {
-        return organizersLogin;
+    public Set<Long> getOrganizersRefIds() {
+        return organizersRefIds;
     }
 
     /**
-     * Sets organizers login.
+     * Sets organizers ids.
      *
-     * @param organizersLogin the organizers login
+     * @param organizersRefIds the organizers user ref ids
      */
-    public void setOrganizersLogin(Set<String> organizersLogin) {
-        this.organizersLogin = organizersLogin;
+    public void setOrganizersRefIds(Set<Long> organizersRefIds) {
+        this.organizersRefIds = organizersRefIds;
     }
 
     @Override
@@ -204,7 +203,7 @@ public class TrainingInstanceUpdateDTO {
                 ", poolSize=" + poolSize +
                 ", accessToken='" + accessToken + '\'' +
                 ", trainingDefinitionId=" + trainingDefinitionId +
-                ", organizersLogin=" + organizersLogin +
+                ", organizersUserRefIds=" + organizersRefIds +
                 '}';
     }
 }

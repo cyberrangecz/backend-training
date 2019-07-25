@@ -4,20 +4,14 @@ import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalRO;
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalWO;
 import cz.muni.ics.kypo.training.api.PageResultResource;
-import cz.muni.ics.kypo.training.api.dto.AbstractLevelDTO;
-import cz.muni.ics.kypo.training.api.dto.BasicLevelInfoDTO;
-import cz.muni.ics.kypo.training.api.dto.UserInfoDTO;
+import cz.muni.ics.kypo.training.api.dto.*;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelUpdateDTO;
 import cz.muni.ics.kypo.training.api.dto.gamelevel.GameLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.gamelevel.GameLevelUpdateDTO;
 import cz.muni.ics.kypo.training.api.dto.infolevel.InfoLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.infolevel.InfoLevelUpdateDTO;
-import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionByIdDTO;
-import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionCreateDTO;
-import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionDTO;
-import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionInfoDTO;
-import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionUpdateDTO;
+import cz.muni.ics.kypo.training.api.dto.trainingdefinition.*;
 import cz.muni.ics.kypo.training.api.enums.LevelType;
 import cz.muni.ics.kypo.training.api.enums.RoleType;
 import cz.muni.ics.kypo.training.api.enums.TDState;
@@ -27,9 +21,8 @@ import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.mapping.mapstruct.*;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.service.TrainingDefinitionService;
+import cz.muni.ics.kypo.training.service.impl.SecurityService;
 import org.modelmapper.internal.util.Assert;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -54,18 +47,20 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
     private InfoLevelMapper infoLevelMapper;
     private AssessmentLevelMapper assessmentLevelMapper;
     private BasicLevelInfoMapper basicLevelInfoMapper;
+    private SecurityService securityService;
 
     @Autowired
     public TrainingDefinitionFacadeImpl(TrainingDefinitionService trainingDefinitionService,
                                         TrainingDefinitionMapper trainingDefMapper, GameLevelMapper gameLevelMapper,
                                         InfoLevelMapper infoLevelMapper, AssessmentLevelMapper assessmentLevelMapper,
-                                        BasicLevelInfoMapper basicLevelInfoMapper) {
+                                        BasicLevelInfoMapper basicLevelInfoMapper, SecurityService securityService) {
         this.trainingDefinitionService = trainingDefinitionService;
         this.trainingDefinitionMapper = trainingDefMapper;
         this.gameLevelMapper = gameLevelMapper;
         this.infoLevelMapper = infoLevelMapper;
         this.assessmentLevelMapper = assessmentLevelMapper;
         this.basicLevelInfoMapper = basicLevelInfoMapper;
+        this.securityService = securityService;
     }
 
     @Override
@@ -156,9 +151,9 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
             Objects.requireNonNull(trainingDefinition);
             TrainingDefinition newTrainingDefinition = trainingDefinitionMapper.mapCreateToEntity(trainingDefinition);
             if (trainingDefinition.getBetaTestingGroup() != null) {
-                addOrganizersToTrainingDefinition(newTrainingDefinition, trainingDefinition.getBetaTestingGroup().getOrganizersLogin());
+                addOrganizersToTrainingDefinition(newTrainingDefinition, trainingDefinition.getBetaTestingGroup().getOrganizersRefIds());
             }
-            addAuthorsToTrainingDefinition(newTrainingDefinition, trainingDefinition.getAuthorsLogin());
+            addAuthorsToTrainingDefinition(newTrainingDefinition, trainingDefinition.getAuthorsRefIds());
             return trainingDefinitionMapper.mapToDTOById(trainingDefinitionService.create(newTrainingDefinition));
         } catch (ServiceLayerException ex) {
             throw new FacadeLayerException(ex);
@@ -174,52 +169,53 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
             TrainingDefinition mappedTrainingDefinition = trainingDefinitionMapper.mapUpdateToEntity(trainingDefinitionUpdateDTO);
             TrainingDefinition trainingDefinition = trainingDefinitionService.findById(trainingDefinitionUpdateDTO.getId());
             if (trainingDefinitionUpdateDTO.getBetaTestingGroup() != null) {
-                addOrganizersToTrainingDefinition(mappedTrainingDefinition, trainingDefinitionUpdateDTO.getBetaTestingGroup().getOrganizersLogin());
+                addOrganizersToTrainingDefinition(mappedTrainingDefinition, trainingDefinitionUpdateDTO.getBetaTestingGroup().getOrganizersRefIds());
                 if (trainingDefinition.getBetaTestingGroup() != null) {
                     trainingDefinition.getBetaTestingGroup().setId(trainingDefinition.getBetaTestingGroup().getId());
                 }
             } else if (trainingDefinition.getBetaTestingGroup() != null) {
                 throw new FacadeLayerException(new ServiceLayerException("Cannot delete beta testing group. You only can remove organizers from group.", ErrorCode.RESOURCE_CONFLICT));
             }
-            addAuthorsToTrainingDefinition(mappedTrainingDefinition, trainingDefinitionUpdateDTO.getAuthorsLogin());
+            addAuthorsToTrainingDefinition(mappedTrainingDefinition, trainingDefinitionUpdateDTO.getAuthorsRefIds());
             trainingDefinitionService.update(mappedTrainingDefinition);
         } catch (ServiceLayerException ex) {
             throw new FacadeLayerException(ex);
         }
     }
 
-    private void addAuthorsToTrainingDefinition(TrainingDefinition trainingDefinition, Set<String> loginsOfAuthors) {
+    private void addAuthorsToTrainingDefinition(TrainingDefinition trainingDefinition, Set<Long> userRefIds) {
         trainingDefinition.setAuthors(new HashSet<>());
-        Set<UserInfoDTO> authors  = trainingDefinitionService.getUsersWithGivenLogins(loginsOfAuthors);
+        Set<UserInfoDTO> authors = trainingDefinitionService.getUsersWithGivenUserRefIds(userRefIds);
         for (UserInfoDTO author : authors) {
             try {
-                trainingDefinition.addAuthor(trainingDefinitionService.findUserRefByLogin(author.getLogin()));
+                trainingDefinition.addAuthor(trainingDefinitionService.findUserByRefId(author.getUserRefId()));
             } catch (ServiceLayerException ex) {
-                UserRef userRef = new UserRef();
-                userRef.setUserRefLogin(author.getLogin());
-                userRef.setUserRefFullName(author.getFullName());
-                userRef.setUserRefFamilyName(author.getFamilyName());
-                userRef.setUserRefGivenName(author.getGivenName());
-                trainingDefinition.addAuthor(trainingDefinitionService.createUserRef(userRef));
+                trainingDefinition.addAuthor(trainingDefinitionService.createUserRef(createUserRef(author)));
             }
         }
     }
 
-    private void addOrganizersToTrainingDefinition(TrainingDefinition trainingDefinition, Set<String> loginsOfOrganizers) {
+    private void addOrganizersToTrainingDefinition(TrainingDefinition trainingDefinition, Set<Long> userRefIds) {
         trainingDefinition.getBetaTestingGroup().setOrganizers(new HashSet<>());
-        Set<UserInfoDTO> organizers = trainingDefinitionService.getUsersWithGivenLogins(loginsOfOrganizers);
+        Set<UserInfoDTO> organizers = trainingDefinitionService.getUsersWithGivenUserRefIds(userRefIds);
         for (UserInfoDTO organizer : organizers) {
             try {
-                trainingDefinition.getBetaTestingGroup().addOrganizer(trainingDefinitionService.findUserRefByLogin(organizer.getLogin()));
+                trainingDefinition.getBetaTestingGroup().addOrganizer(trainingDefinitionService.findUserByRefId(organizer.getUserRefId()));
             } catch (ServiceLayerException ex) {
-                UserRef userRef = new UserRef();
-                userRef.setUserRefLogin(organizer.getLogin());
-                userRef.setUserRefFullName(organizer.getFullName());
-                userRef.setUserRefFamilyName(organizer.getFamilyName());
-                userRef.setUserRefGivenName(organizer.getGivenName());
-                trainingDefinition.getBetaTestingGroup().addOrganizer(trainingDefinitionService.createUserRef(userRef));
+                trainingDefinition.getBetaTestingGroup().addOrganizer(trainingDefinitionService.createUserRef(createUserRef(organizer)));
             }
         }
+    }
+
+    private UserRef createUserRef(UserInfoDTO userToBeCreated) {
+        UserRef userRef = new UserRef();
+        userRef.setUserRefId(userToBeCreated.getUserRefId());
+        userRef.setIss(userToBeCreated.getIss());
+        userRef.setUserRefFamilyName(userToBeCreated.getFamilyName());
+        userRef.setUserRefGivenName(userToBeCreated.getGivenName());
+        userRef.setUserRefFullName(userToBeCreated.getFullName());
+        userRef.setUserRefLogin(userToBeCreated.getLogin());
+        return userRef;
     }
 
     @Override
@@ -273,7 +269,6 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
             throw new FacadeLayerException(ex);
         }
     }
-
 
     @Override
     @TransactionalWO

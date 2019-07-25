@@ -44,7 +44,6 @@ import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.util.ResourceUtils;
 import org.springframework.web.client.RestTemplate;
 
-import javax.servlet.http.HttpServletRequest;
 import java.io.FileReader;
 import java.io.IOException;
 import java.net.URI;
@@ -297,12 +296,12 @@ public class TrainingDefinitionServiceTest {
     }
 
     @Test
-    public void updateTrainingDefinitionWithCreatedInstances(){
+    public void updateTrainingDefinitionWithCreatedInstances() {
         given(trainingDefinitionRepository.findById(unreleasedDefinition.getId())).willReturn(Optional.of(unreleasedDefinition));
         given(trainingInstanceRepository.existsAnyForTrainingDefinition(unreleasedDefinition.getId())).willReturn(true);
         thrown.expect(ServiceLayerException.class);
         thrown.expectMessage("Cannot update training definition with already created training instance. " +
-            "Remove training instance/s before updating training definition.");
+                "Remove training instance/s before updating training definition.");
         trainingDefinitionService.update(unreleasedDefinition);
     }
 
@@ -348,7 +347,7 @@ public class TrainingDefinitionServiceTest {
         given(trainingInstanceRepository.existsAnyForTrainingDefinition(unreleasedDefinition.getId())).willReturn(true);
         thrown.expect(ServiceLayerException.class);
         thrown.expectMessage("Cannot delete training definition with already created training instance. " +
-            "Remove training instance/s before deleting training definition.");
+                "Remove training instance/s before deleting training definition.");
         trainingDefinitionService.delete(unreleasedDefinition.getId());
     }
 
@@ -443,7 +442,7 @@ public class TrainingDefinitionServiceTest {
         given(trainingInstanceRepository.existsAnyForTrainingDefinition(unreleasedDefinition.getId())).willReturn(true);
         thrown.expect(ServiceLayerException.class);
         thrown.expectMessage("Cannot update training definition with already created training instance. " +
-            "Remove training instance/s before updating training definition.");
+                "Remove training instance/s before updating training definition.");
         trainingDefinitionService.updateAssessmentLevel(unreleasedDefinition.getId(), level2);
     }
 
@@ -501,7 +500,7 @@ public class TrainingDefinitionServiceTest {
         given(trainingInstanceRepository.existsAnyForTrainingDefinition(unreleasedDefinition.getId())).willReturn(true);
         thrown.expect(ServiceLayerException.class);
         thrown.expectMessage("Cannot update training definition with already created training instance. " +
-            "Remove training instance/s before updating training definition.");
+                "Remove training instance/s before updating training definition.");
         trainingDefinitionService.updateGameLevel(unreleasedDefinition.getId(), gameLevel);
     }
 
@@ -558,7 +557,7 @@ public class TrainingDefinitionServiceTest {
         given(trainingInstanceRepository.existsAnyForTrainingDefinition(unreleasedDefinition.getId())).willReturn(true);
         thrown.expect(ServiceLayerException.class);
         thrown.expectMessage("Cannot update training definition with already created training instance. " +
-            "Remove training instance/s before updating training definition.");
+                "Remove training instance/s before updating training definition.");
         trainingDefinitionService.updateInfoLevel(unreleasedDefinition.getId(), infoLevel);
     }
 
@@ -596,7 +595,7 @@ public class TrainingDefinitionServiceTest {
         given(trainingInstanceRepository.existsAnyForTrainingDefinition(unreleasedDefinition.getId())).willReturn(true);
         thrown.expect(ServiceLayerException.class);
         thrown.expectMessage("Cannot update training definition with already created training instance. " +
-            "Remove training instance/s before updating training definition.");
+                "Remove training instance/s before updating training definition.");
         trainingDefinitionService.createGameLevel(unreleasedDefinition.getId());
     }
 
@@ -636,7 +635,7 @@ public class TrainingDefinitionServiceTest {
         given(trainingInstanceRepository.existsAnyForTrainingDefinition(unreleasedDefinition.getId())).willReturn(true);
         thrown.expect(ServiceLayerException.class);
         thrown.expectMessage("Cannot update training definition with already created training instance. " +
-            "Remove training instance/s before updating training definition.");
+                "Remove training instance/s before updating training definition.");
         trainingDefinitionService.createInfoLevel(unreleasedDefinition.getId());
     }
 
@@ -676,7 +675,7 @@ public class TrainingDefinitionServiceTest {
         given(trainingInstanceRepository.existsAnyForTrainingDefinition(unreleasedDefinition.getId())).willReturn(true);
         thrown.expect(ServiceLayerException.class);
         thrown.expectMessage("Cannot update training definition with already created training instance. " +
-            "Remove training instance/s before updating training definition.");
+                "Remove training instance/s before updating training definition.");
         trainingDefinitionService.createAssessmentLevel(unreleasedDefinition.getId());
     }
 
@@ -693,7 +692,7 @@ public class TrainingDefinitionServiceTest {
         UserRef user = new UserRef();
         user.setUserRefLogin("userSub");
         given(trainingDefinitionRepository.save(trainingDefinition1)).willReturn(trainingDefinition1);
-        given(userRefRepository.findUserByUserRefLogin(anyString())).willReturn(Optional.of(user));
+        given(userRefRepository.findUserByUserRefId(anyLong())).willReturn(Optional.of(user));
         TrainingDefinition tD = trainingDefinitionService.create(trainingDefinition1);
         deepEquals(trainingDefinition1, tD);
         then(trainingDefinitionRepository).should(times(1)).save(trainingDefinition1);
@@ -719,26 +718,6 @@ public class TrainingDefinitionServiceTest {
     public void findLevelById_notExisting() {
         thrown.expect(ServiceLayerException.class);
         trainingDefinitionService.findLevelById(555L);
-    }
-
-    @Test
-    public void findUserRefByLogin() {
-        UserRef userRef = new UserRef();
-        userRef.setUserRefLogin("Dave");
-        given(userRefRepository.findUserByUserRefLogin(userRef.getUserRefLogin())).willReturn(Optional.of(userRef));
-
-        UserRef u = trainingDefinitionService.findUserRefByLogin(userRef.getUserRefLogin());
-
-        assertEquals(userRef.getUserRefLogin(), u.getUserRefLogin());
-    }
-
-    @Test
-    public void findUserRefByLoginNotFound() {
-        given(userRefRepository.findUserByUserRefLogin("Herkules")).willReturn(Optional.empty());
-
-        thrown.expect(ServiceLayerException.class);
-        thrown.expectMessage("UserRef with login Herkules not found.");
-        UserRef u = trainingDefinitionService.findUserRefByLogin("Herkules");
     }
 
     @Test
@@ -769,7 +748,7 @@ public class TrainingDefinitionServiceTest {
         given(trainingInstanceRepository.existsAnyForTrainingDefinition(anyLong())).willReturn(true);
         thrown.expect(ServiceLayerException.class);
         thrown.expectMessage("Cannot update training definition with already created training instance(s). " +
-            "Remove training instance(s) before changing the state from released to unreleased training definition.");
+                "Remove training instance(s) before changing the state from released to unreleased training definition.");
         trainingDefinitionService.switchState(releasedDefinition.getId(), cz.muni.ics.kypo.training.api.enums.TDState.UNRELEASED);
     }
 
@@ -777,7 +756,7 @@ public class TrainingDefinitionServiceTest {
     public void getUsersWithGivenLogins() {
         given(restTemplate.exchange(any(URI.class), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
                 willReturn(new ResponseEntity<List<UserInfoDTO>>(new ArrayList<>(Collections.singletonList(userInfoDTO1)), HttpStatus.OK));
-        trainingDefinitionService.getUsersWithGivenLogins(Set.of("Dominik"));
+        trainingDefinitionService.getUsersWithGivenUserRefIds(Set.of(1L));
     }
 
     @After
@@ -802,6 +781,7 @@ public class TrainingDefinitionServiceTest {
         JsonObject sub = new JsonObject();
         sub.addProperty(AuthenticatedUserOIDCItems.SUB.getName(), "participant");
         sub.addProperty(AuthenticatedUserOIDCItems.NAME.getName(), "Pavel");
+        sub.addProperty(AuthenticatedUserOIDCItems.ISS.getName(), "https://oidc.muni.cz");
         Authentication authentication = Mockito.mock(Authentication.class);
         OAuth2Authentication auth = Mockito.mock(OAuth2Authentication.class);
         SecurityContext securityContext = Mockito.mock(SecurityContext.class);

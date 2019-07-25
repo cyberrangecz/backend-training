@@ -41,6 +41,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.io.IOException;
+import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -50,6 +51,7 @@ import static org.mockito.BDDMockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 /**
  * @author Boris Jadus(445343)
  */
@@ -94,6 +96,8 @@ public class TrainingInstancesRestControllerTest {
         userInfoDTO1 = new UserInfoDTO();
         userInfoDTO1.setLogin("441048@mail.muni.cz");
         userInfoDTO1.setFullName("Mgr. Ing. Pavel Šeda");
+        userInfoDTO1.setIss("https://oidc.muni.cz");
+        userInfoDTO1.setUserRefId(1000L);
 
         trainingInstance1 = new TrainingInstance();
         trainingInstance1.setId(1L);
@@ -114,13 +118,13 @@ public class TrainingInstancesRestControllerTest {
 
         trainingInstanceCreateDTO = new TrainingInstanceCreateDTO();
         trainingInstanceCreateDTO.setTitle("create instance title");
-        LocalDateTime startTime = LocalDateTime.now();
-        trainingInstanceCreateDTO.setStartTime(startTime);
-        LocalDateTime endTime = LocalDateTime.now().plusHours(10);
+        LocalDateTime startTime = LocalDateTime.now(Clock.systemUTC());
+        trainingInstanceCreateDTO.setStartTime(LocalDateTime.now(Clock.systemUTC()));
+        LocalDateTime endTime = LocalDateTime.now(Clock.systemUTC()).plusHours(10);
         trainingInstanceCreateDTO.setEndTime(endTime);
         trainingInstanceCreateDTO.setAccessToken("pass");
         trainingInstanceCreateDTO.setPoolSize(20);
-        trainingInstanceCreateDTO.setOrganizersLogin(Set.of(userInfoDTO1.getLogin()));
+        trainingInstanceCreateDTO.setOrganizersRefIds(Set.of(userInfoDTO1.getUserRefId()));
         trainingInstanceCreateDTO.setTrainingDefinitionId(1L);
 
         trainingInstanceUpdateDTO = new TrainingInstanceUpdateDTO();
@@ -131,7 +135,7 @@ public class TrainingInstancesRestControllerTest {
         trainingInstanceUpdateDTO.setPoolSize(5);
         //trainingInstanceUpdateDTO.setKeyword("pass-2586");
         trainingInstanceUpdateDTO.setTrainingDefinitionId(1L);
-        trainingInstanceUpdateDTO.setOrganizersLogin(Set.of(userInfoDTO1.getLogin()));
+        trainingInstanceUpdateDTO.setOrganizersRefIds(Set.of(userInfoDTO1.getUserRefId()));
 
         List<TrainingInstance> expected = new ArrayList<>();
         expected.add(trainingInstance1);
@@ -221,7 +225,7 @@ public class TrainingInstancesRestControllerTest {
     @Test
     public void allocateSandboxes() throws Exception {
         mockMvc.perform(post("/training-instances" + "/{instanceId}/" + "sandbox-instances", 1L))
-            .andExpect(status().isAccepted());
+                .andExpect(status().isAccepted());
     }
 
     @Test
@@ -229,17 +233,17 @@ public class TrainingInstancesRestControllerTest {
         Exception exceptionThrow = new ServiceLayerException("message", ErrorCode.RESOURCE_NOT_FOUND);
         willThrow(new FacadeLayerException(exceptionThrow)).given(trainingInstanceFacade).allocateSandboxes(any(Long.class), isNull());
         Exception exception =
-            mockMvc.perform(post("/training-instances" + "/{instanceId}/" + "sandbox-instances", 698L))
-                .andExpect(status().isNotFound()).andReturn().getResolvedException();
+                mockMvc.perform(post("/training-instances" + "/{instanceId}/" + "sandbox-instances", 698L))
+                        .andExpect(status().isNotFound()).andReturn().getResolvedException();
         assertEquals(ResourceNotFoundException.class, exception.getClass());
     }
 
     @Test
     public void deleteSandboxes() throws Exception {
         mockMvc.perform(delete("/training-instances" + "/{instanceId}/sandbox-instances", 1L)
-            .param("sandboxIds", "1")
-            .param("sandboxIds", "2"))
-            .andExpect(status().isOk());
+                .param("sandboxIds", "1")
+                .param("sandboxIds", "2"))
+                .andExpect(status().isOk());
     }
 
     @Test
@@ -247,17 +251,17 @@ public class TrainingInstancesRestControllerTest {
         Exception exceptionThrow = new ServiceLayerException("message", ErrorCode.RESOURCE_NOT_FOUND);
         willThrow(new FacadeLayerException(exceptionThrow)).given(trainingInstanceFacade).deleteSandboxes(any(Long.class), any(Set.class));
         Exception exception =
-            mockMvc.perform(delete("/training-instances" + "/{instanceId}/" + "sandbox-instances", 698L)
-                .param("sandboxIds", "1")
-                .param("sandboxIds", "2"))
-                .andExpect(status().isNotFound()).andReturn().getResolvedException();
+                mockMvc.perform(delete("/training-instances" + "/{instanceId}/" + "sandbox-instances", 698L)
+                        .param("sandboxIds", "1")
+                        .param("sandboxIds", "2"))
+                        .andExpect(status().isNotFound()).andReturn().getResolvedException();
         assertEquals(ResourceNotFoundException.class, exception.getClass());
     }
 
     @Test
     public void reallocateSandbox() throws Exception {
         mockMvc.perform(post("/training-instances" + "/{instanceId}/" + "sandbox-instances" + "/1", 1L))
-            .andExpect(status().isAccepted());
+                .andExpect(status().isAccepted());
     }
 
 
@@ -266,8 +270,8 @@ public class TrainingInstancesRestControllerTest {
         Exception exceptionThrow = new ServiceLayerException("message", ErrorCode.RESOURCE_NOT_FOUND);
         willThrow(new FacadeLayerException(exceptionThrow)).given(trainingInstanceFacade).reallocateSandbox(any(Long.class), any(Long.class));
         Exception exception =
-            mockMvc.perform(post("/training-instances" + "/{instanceId}/" + "sandbox-instances" +"/1", 698L))
-                .andExpect(status().isNotFound()).andReturn().getResolvedException();
+                mockMvc.perform(post("/training-instances" + "/{instanceId}/" + "sandbox-instances" + "/1", 698L))
+                        .andExpect(status().isNotFound()).andReturn().getResolvedException();
         assertEquals(ResourceNotFoundException.class, exception.getClass());
     }
 

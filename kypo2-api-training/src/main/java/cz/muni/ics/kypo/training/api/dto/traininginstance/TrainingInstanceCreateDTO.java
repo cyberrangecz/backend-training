@@ -1,11 +1,6 @@
 package cz.muni.ics.kypo.training.api.dto.traininginstance;
 
-import java.time.LocalDateTime;
-import java.util.Set;
-
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import cz.muni.ics.kypo.training.api.dto.UserInfoDTO;
-import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
 import cz.muni.ics.kypo.training.converters.LocalDateTimeUTCDeserializer;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -14,6 +9,8 @@ import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
+import java.time.LocalDateTime;
+import java.util.Set;
 
 /**
  * Encapsulates information about Training Instance, intended for creation of new instance.
@@ -39,8 +36,8 @@ public class TrainingInstanceCreateDTO {
     private String accessToken;
     @NotNull(message = "{traininginstancecreate.trainingDefinition.NotNull.message}")
     private long trainingDefinitionId;
-    @NotNull(message = "{traininginstancecreate.organizersLogin.NotNull.message}")
-    private Set<String> organizersLogin;
+    @NotNull(message = "{traininginstancecreate.organizersRefIds.NotNull.message}")
+    private Set<Long> organizersRefIds;
 
     /**
      * Gets start time.
@@ -157,22 +154,22 @@ public class TrainingInstanceCreateDTO {
     }
 
     /**
-     * Gets organizers login.
+     * Gets organizers ids.
      *
-     * @return the organizers login
+     * @return the organizers ids
      */
     @ApiModelProperty(value = "Reference to users which organize training instance.", required = true)
-    public Set<String> getOrganizersLogin() {
-        return organizersLogin;
+    public Set<Long> getOrganizersRefIds() {
+        return organizersRefIds;
     }
 
     /**
-     * Sets organizers login.
+     * Sets organizers user ref ids.
      *
-     * @param organizersLogin the organizers login
+     * @param organizersRefIds the organizers user ref ids
      */
-    public void setOrganizersLogin(Set<String> organizersLogin) {
-        this.organizersLogin = organizersLogin;
+    public void setOrganizersRefIds(Set<Long> organizersRefIds) {
+        this.organizersRefIds = organizersRefIds;
     }
 
     @Override

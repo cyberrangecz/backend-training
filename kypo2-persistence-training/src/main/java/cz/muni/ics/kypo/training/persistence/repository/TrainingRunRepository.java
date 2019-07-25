@@ -46,17 +46,17 @@ public interface TrainingRunRepository extends JpaRepository<TrainingRun, Long>,
     Optional<TrainingRun> findById(Long id);
 
     /**
-     * Find all training runs accessed by participant by their login.
+     * Find all training runs accessed by participant by their user ref id.
      *
-     * @param participantRefLogin the participant ref login
-     * @param pageable            the pageable
+     * @param userRefId the participant ref id
+     * @param pageable  the pageable
      * @return the page of all {@link TrainingRun}s accessed by participant
      */
     @Query(value = "SELECT tr FROM TrainingRun tr JOIN FETCH tr.participantRef pr JOIN FETCH tr.trainingInstance ti " +
-            "JOIN FETCH ti.trainingDefinition WHERE pr.userRefLogin = :participantRefLogin",
+            "JOIN FETCH ti.trainingDefinition WHERE pr.userRefId = :userRefId",
             countQuery = "SELECT COUNT(tr) FROM TrainingRun tr INNER JOIN tr.participantRef pr INNER JOIN tr.trainingInstance ti " +
-                    "INNER JOIN ti.trainingDefinition WHERE pr.userRefLogin = :participantRefLogin")
-    Page<TrainingRun> findAllByParticipantRefLogin(@Param("participantRefLogin") String participantRefLogin, Pageable pageable);
+                    "INNER JOIN ti.trainingDefinition WHERE pr.userRefId = :userRefId")
+    Page<TrainingRun> findAllByParticipantRefId(@Param("userRefId") Long userRefId, Pageable pageable);
 
     /**
      * Find training run by id including current level
@@ -68,19 +68,19 @@ public interface TrainingRunRepository extends JpaRepository<TrainingRun, Long>,
     Optional<TrainingRun> findByIdWithLevel(@Param("trainingRunId") Long trainingRunId);
 
     /**
-     * Find all training runs by id of associated training definition that are accessible to participant by login.
+     * Find all training runs by id of associated training definition that are accessible to participant by user ref id.
      *
      * @param trainingDefinitionId the training definition id
-     * @param participantRefLogin  the participant ref login
+     * @param userRefId            the participant user ref id
      * @param pageable             the pageable
      * @return the page of all {@link TrainingRun}s by id of associated {@link cz.muni.ics.kypo.training.persistence.model.TrainingDefinition} that are accessible to participant
      */
     @Query(value = "SELECT tr FROM TrainingRun tr JOIN FETCH tr.participantRef pr JOIN FETCH tr.trainingInstance ti JOIN FETCH "
-            + "ti.trainingDefinition td WHERE td.id = :trainingDefinitionId AND pr.userRefLogin = :participantRefLogin",
+            + "ti.trainingDefinition td WHERE td.id = :trainingDefinitionId AND pr.userRefId = :userRefId",
             countQuery = "SELECT tr FROM TrainingRun tr INNER JOIN tr.participantRef pr INNER JOIN tr.trainingInstance ti INNER JOIN " +
-                    "ti.trainingDefinition td WHERE td.id = :trainingDefinitionId AND pr.userRefLogin = :participantRefLogin")
-    Page<TrainingRun> findAllByTrainingDefinitionIdAndParticipantRefLogin(@Param("trainingDefinitionId") Long trainingDefinitionId,
-                                                                          @Param("participantRefLogin") String participantRefLogin, Pageable pageable);
+                    "ti.trainingDefinition td WHERE td.id = :trainingDefinitionId AND pr.userRefId = :userRefId")
+    Page<TrainingRun> findAllByTrainingDefinitionIdAndParticipantUserRefId(@Param("trainingDefinitionId") Long trainingDefinitionId,
+                                                                           @Param("userRefId") Long userRefId, Pageable pageable);
 
     /**
      * Find all training runs associated with training instance.
@@ -127,11 +127,11 @@ public interface TrainingRunRepository extends JpaRepository<TrainingRun, Long>,
      * Find all training runs associated with training definition.
      *
      * @param trainingDefinitionId the training definition id
-     * @param pageable           the pageable
+     * @param pageable             the pageable
      * @return the page of all {@link TrainingRun}s associated with {@link cz.muni.ics.kypo.training.persistence.model.TrainingDefinition}
      */
     @Query(value = "SELECT tr FROM TrainingRun tr JOIN FETCH tr.trainingInstance ti JOIN FETCH ti.trainingDefinition td WHERE td.id = :trainingDefinitionId",
-    countQuery = "SELECT tr FROM TrainingRun tr INNER JOIN tr.trainingInstance ti INNER JOIN ti.trainingDefinition td WHERE td.id = :trainingDefinitionId")
+            countQuery = "SELECT tr FROM TrainingRun tr INNER JOIN tr.trainingInstance ti INNER JOIN ti.trainingDefinition td WHERE td.id = :trainingDefinitionId")
     Page<TrainingRun> findAllByTrainingDefinitionId(@Param("trainingDefinitionId") Long trainingDefinitionId, Pageable pageable);
 
     /**
@@ -157,12 +157,12 @@ public interface TrainingRunRepository extends JpaRepository<TrainingRun, Long>,
      * Find valid training run by user and access token.
      *
      * @param accessToken the access token
-     * @param userLogin   the user login
+     * @param userRefId   the user ref id
      * @return the {@link TrainingRun} by user and access token
      */
     @Query("SELECT tr FROM TrainingRun tr JOIN FETCH tr.trainingInstance ti JOIN FETCH tr.participantRef pr JOIN FETCH tr.currentLevel WHERE ti.accessToken = :accessToken " +
-            "AND pr.userRefLogin = :userLogin AND tr.sandboxInstanceRef  IS NOT NULL AND tr.state NOT LIKE 'FINISHED' ")
-    Optional<TrainingRun> findValidTrainingRunOfUser(@Param("accessToken") String accessToken, @Param("userLogin") String userLogin );
+            "AND pr.userRefId = :userRefId AND tr.sandboxInstanceRef  IS NOT NULL AND tr.state NOT LIKE 'FINISHED' ")
+    Optional<TrainingRun> findValidTrainingRunOfUser(@Param("accessToken") String accessToken, @Param("userRefId") Long userRefId);
 
     /**
      * Find by sandbox instance ref.
@@ -178,4 +178,5 @@ public interface TrainingRunRepository extends JpaRepository<TrainingRun, Long>,
 
     @Query("SELECT (COUNT(tr) > 0) FROM TrainingRun tr INNER JOIN tr.trainingInstance ti WHERE ti.id = :trainingInstanceId")
     boolean existsAnyForTrainingInstance(@Param("trainingInstanceId") Long trainingInstanceId);
+
 }

@@ -1,5 +1,6 @@
 package cz.muni.ics.kypo.training.api.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModelProperty;
 
 import java.util.Objects;
@@ -11,30 +12,17 @@ import java.util.Objects;
  */
 public class UserRefDTO {
 
-    private Long id;
+    @JsonProperty("user_ref_id")
+    private Long userRefId;
+    @JsonProperty("login")
     private String userRefLogin;
+    @JsonProperty("full_name")
     private String userRefFullName;
+    @JsonProperty("given_name")
     private String userRefGivenName;
+    @JsonProperty("family_name")
     private String userRefFamilyName;
-
-    /**
-     * Gets id.
-     *
-     * @return the id
-     */
-    @ApiModelProperty(value = "Main identifier of participant ref.", example = "1")
-    public Long getId() {
-        return id;
-    }
-
-    /**
-     * Sets id.
-     *
-     * @param id the id
-     */
-    public void setId(Long id) {
-        this.id = id;
-    }
+    private String iss;
 
     /**
      * Gets user ref login.
@@ -53,6 +41,44 @@ public class UserRefDTO {
      */
     public void setUserRefLogin(String userRefLogin) {
         this.userRefLogin = userRefLogin;
+    }
+
+    /**
+     * Gets iss.
+     *
+     * @return the iss
+     */
+    @ApiModelProperty(value = "Reference to user in another microservice and get his iss", example = "https://oidc.muni.cz")
+    public String getIss() {
+        return iss;
+    }
+
+    /**
+     * Sets iss.
+     *
+     * @param iss the iss
+     */
+    public void setIss(String iss) {
+        this.iss = iss;
+    }
+
+    /**
+     * Gets user ref id.
+     *
+     * @return the user ref id
+     */
+    @ApiModelProperty(value = "Reference to user in another microservice and get his id", example = "1")
+    public Long getUserRefId() {
+        return userRefId;
+    }
+
+    /**
+     * Sets user ref id.
+     *
+     * @param userRefId the user ref id
+     */
+    public void setUserRefId(Long userRefId) {
+        this.userRefId = userRefId;
     }
 
     /**
@@ -115,22 +141,30 @@ public class UserRefDTO {
     @Override
     public String toString() {
         return "UserRefDTO{" +
-                "id=" + id +
                 ", userRefLogin='" + userRefLogin + '\'' +
+                ", userRefFullName='" + userRefFullName + '\'' +
+                ", userRefGivenName='" + userRefGivenName + '\'' +
+                ", userRefFamilyName='" + userRefFamilyName + '\'' +
+                ", iss='" + iss + '\'' +
+                ", userRefId=" + userRefId +
                 '}';
     }
 
     @Override
-    public boolean equals(Object object) {
-        if (!(object instanceof UserRefDTO)) return false;
-        UserRefDTO that = (UserRefDTO) object;
-        return Objects.equals(getId(), that.getId()) &&
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof UserRefDTO)) return false;
+        UserRefDTO that = (UserRefDTO) o;
+        return Objects.equals(getUserRefId(), that.getUserRefId()) &&
                 Objects.equals(getUserRefLogin(), that.getUserRefLogin()) &&
-                Objects.equals(getUserRefFullName(), that.getUserRefFullName());
+                Objects.equals(getUserRefFullName(), that.getUserRefFullName()) &&
+                Objects.equals(getUserRefGivenName(), that.getUserRefGivenName()) &&
+                Objects.equals(getUserRefFamilyName(), that.getUserRefFamilyName()) &&
+                Objects.equals(getIss(), that.getIss());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getId(), getUserRefLogin(), getUserRefFullName());
+        return Objects.hash(getUserRefId(), getUserRefLogin(), getUserRefFullName(), getUserRefGivenName(), getUserRefFamilyName(), getIss());
     }
 }

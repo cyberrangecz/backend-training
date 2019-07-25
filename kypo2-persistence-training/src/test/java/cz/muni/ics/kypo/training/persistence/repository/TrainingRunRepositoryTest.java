@@ -18,7 +18,6 @@ import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.repository.query.Param;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.time.LocalDateTime;
@@ -48,7 +47,6 @@ public class TrainingRunRepositoryTest {
     private UserRef participantRef;
     private BetaTestingGroup betaTestingGroup;
     private Pageable pageable;
-    private Predicate predicate;
 
     @SpringBootApplication
     static class TestConfiguration {
@@ -78,6 +76,11 @@ public class TrainingRunRepositoryTest {
 
         participantRef = new UserRef();
         participantRef.setUserRefLogin("user");
+        participantRef.setUserRefFullName("Mgr. Ing. Pavel Seda");
+        participantRef.setUserRefId(1L);
+        participantRef.setUserRefFamilyName("Seda");
+        participantRef.setUserRefGivenName("Pavel");
+        participantRef.setIss("https://oidc.muni.cz");
 
         trainingInstance = new TrainingInstance();
         trainingInstance.setAccessToken("b5f3dc27a09865be37cef07816c4f08cf5585b116a4e74b9387c3e43e3a25ec8");
@@ -144,7 +147,7 @@ public class TrainingRunRepositoryTest {
     public void findAllByParticipantRefLogin() {
         entityManager.persist(trainingRun1);
         entityManager.persist(trainingRun2);
-        List<TrainingRun> trainingRuns = trainingRunRepository.findAllByParticipantRefLogin("user", pageable).getContent();
+        List<TrainingRun> trainingRuns = trainingRunRepository.findAllByParticipantRefId(1L, pageable).getContent();
         assertTrue(trainingRuns.contains(trainingRun1));
         assertTrue(trainingRuns.contains(trainingRun2));
         assertEquals(2, trainingRuns.size());
@@ -154,7 +157,7 @@ public class TrainingRunRepositoryTest {
     public void findAllByTrainingDefinitionIdAndParticipantRefId() {
         entityManager.persistAndFlush(trainingRun1);
         List<TrainingRun> trainingRuns = trainingRunRepository
-                .findAllByTrainingDefinitionIdAndParticipantRefLogin(trainingDefinition.getId(), participantRef.getUserRefLogin(), pageable)
+                .findAllByTrainingDefinitionIdAndParticipantUserRefId(trainingDefinition.getId(), participantRef.getUserRefId(), pageable)
                 .getContent();
         assertEquals(1, trainingRuns.size());
 
