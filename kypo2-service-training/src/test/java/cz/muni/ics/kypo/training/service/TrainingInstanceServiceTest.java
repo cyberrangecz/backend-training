@@ -200,6 +200,8 @@ public class TrainingInstanceServiceTest {
         mockSpringSecurityContextForGet();
         given(trainingInstanceRepository.save(trainingInstance2)).willReturn(trainingInstance2);
         given(organizerRefRepository.save(any(UserRef.class))).willReturn(user);
+        given(securityService.createUserRefEntityByInfoFromUserAndGroup()).willReturn(user);
+
         TrainingInstance tI = trainingInstanceService.create(trainingInstance2);
         deepEquals(trainingInstance2, tI);
         then(trainingInstanceRepository).should().save(trainingInstance2);
@@ -224,6 +226,7 @@ public class TrainingInstanceServiceTest {
         mockSpringSecurityContextForGet();
         given(trainingInstanceRepository.findById(any(Long.class))).willReturn(Optional.of(trainingInstance2));
         given(organizerRefRepository.save(any(UserRef.class))).willReturn(user);
+        given(securityService.createUserRefEntityByInfoFromUserAndGroup()).willReturn(user);
 
         String token = trainingInstanceService.update(trainingInstance2);
 
