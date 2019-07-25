@@ -260,6 +260,7 @@ public class TrainingDefinitionServiceTest {
         tDcloned.setBetaTestingGroup(null);
         tDcloned.setLastEdited(LocalDateTime.now());
 
+        given(securityService.createUserRefEntityByInfoFromUserAndGroup()).willReturn(new UserRef());
         given(trainingDefinitionRepository.findById(trainingDefinition1.getId())).willReturn(Optional.of(trainingDefinition1));
         trainingDefinitionService.clone(trainingDefinition1.getId(), "Clone of tD");
         then(trainingDefinitionRepository).should().findById(trainingDefinition1.getId());
@@ -276,6 +277,7 @@ public class TrainingDefinitionServiceTest {
     public void updateTrainingDefinition() {
         mockSpringSecurityContextForGet();
         given(trainingDefinitionRepository.findById(unreleasedDefinition.getId())).willReturn(Optional.of(unreleasedDefinition));
+        given(securityService.createUserRefEntityByInfoFromUserAndGroup()).willReturn(new UserRef());
 
         TrainingDefinition updatedDefinition = new TrainingDefinition();
         BeanUtils.copyProperties(unreleasedDefinition, updatedDefinition);

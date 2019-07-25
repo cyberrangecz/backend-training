@@ -439,9 +439,8 @@ public class TrainingRunServiceTest {
     public void findAllByParticipantUserRefId() {
         Page<TrainingRun> expectedPage = new PageImpl<>(Arrays.asList(trainingRun1, trainingRun2));
 
-        given(securityService.getSubOfLoggedInUser()).willReturn(participantRef.getUserRefLogin());
+        given(securityService.getUserRefIdFromUserAndGroup()).willReturn(participantRef.getUserRefId());
         given(trainingRunRepository.findAllByParticipantRefId(eq(participantRef.getUserRefId()), any(PageRequest.class))).willReturn(expectedPage);
-
         Page<TrainingRun> resultPage = trainingRunService.findAllByParticiparRefUserRefId(PageRequest.of(0, 2));
 
         assertEquals(expectedPage, resultPage);
@@ -452,7 +451,7 @@ public class TrainingRunServiceTest {
     @Test
     public void findAllByTrainingDefinitionAndParticipant() {
         Page<TrainingRun> expectedPage = new PageImpl<>(Collections.singletonList(trainingRun2));
-        given(securityService.getSubOfLoggedInUser()).willReturn(participantRef.getUserRefLogin());
+        given(securityService.getUserRefIdFromUserAndGroup()).willReturn(participantRef.getUserRefId());
         given(trainingRunRepository.findAllByTrainingDefinitionIdAndParticipantUserRefId(any(Long.class), eq(participantRef.getUserRefId()), any(Pageable.class))).willReturn(expectedPage);
 
         Page<TrainingRun> resultPage = trainingRunService.findAllByTrainingDefinitionAndParticipant(trainingDefinition2.getId(), PageRequest.of(0, 2));
