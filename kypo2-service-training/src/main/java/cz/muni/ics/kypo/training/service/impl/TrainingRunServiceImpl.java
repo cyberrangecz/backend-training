@@ -200,14 +200,12 @@ public class TrainingRunServiceImpl implements TrainingRunService {
     @Override
     @IsTraineeOrAdmin
     @TrackTime
-    public TrainingRun accessTrainingRun(String accessToken) {
-        Assert.hasLength(accessToken, "AccessToken cannot be null or empty.");
-        Optional<TrainingRun> accessedTrainingRun = trainingRunRepository.findValidTrainingRunOfUser(accessToken, securityService.getUserRefIdFromUserAndGroup());
+    public TrainingRun accessTrainingRun(TrainingInstance trainingInstance) {
+        Optional<TrainingRun> accessedTrainingRun = trainingRunRepository.findValidTrainingRunOfUser(trainingInstance.getAccessToken(), securityService.getUserRefIdFromUserAndGroup());
+
         if (accessedTrainingRun.isPresent()) {
             return resumeTrainingRun(accessedTrainingRun.get().getId());
         }
-        TrainingInstance trainingInstance = trainingInstanceRepository.findByStartTimeAfterAndEndTimeBeforeAndAccessToken(LocalDateTime.now(Clock.systemUTC()), accessToken)
-                .orElseThrow(() -> new ServiceLayerException("There is no training instance with accessToken " + accessToken + ".", ErrorCode.RESOURCE_NOT_FOUND));
         if (trainingInstance.getPoolId() == null) {
             throw new ServiceLayerException("At first organizer must allocate sandboxes for training instance.", ErrorCode.RESOURCE_CONFLICT);
         }

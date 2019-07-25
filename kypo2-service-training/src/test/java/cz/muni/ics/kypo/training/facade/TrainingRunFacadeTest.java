@@ -12,6 +12,7 @@ import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.model.enums.AssessmentType;
 import cz.muni.ics.kypo.training.persistence.model.enums.TDState;
 import cz.muni.ics.kypo.training.persistence.model.enums.TRState;
+import cz.muni.ics.kypo.training.service.TrainingInstanceService;
 import cz.muni.ics.kypo.training.service.TrainingRunService;
 import org.junit.Before;
 import org.junit.Rule;
@@ -60,6 +61,9 @@ public class TrainingRunFacadeTest {
     @Mock
     private TrainingRunService trainingRunService;
 
+    @Mock
+    private TrainingInstanceService trainingInstanceService;
+
     private TrainingRun trainingRun1, trainingRun2;
     private TrainingDefinition trainingDefinition;
     private TrainingInstance trainingInstance;
@@ -73,7 +77,7 @@ public class TrainingRunFacadeTest {
     public void init() {
         MockitoAnnotations.initMocks(this);
         trainingRunFacade = new TrainingRunFacadeImpl(trainingRunService, trainingRunMapper, gameLevelMapper,
-                assessmentLevelMapper, infoLevelMapper, hintMapper);
+                assessmentLevelMapper, infoLevelMapper, hintMapper, trainingInstanceService);
 
         sandboxInstanceRef = new SandboxInstanceRef();
         sandboxInstanceRef.setId(1L);
@@ -179,18 +183,20 @@ public class TrainingRunFacadeTest {
 
     @Test
     public void accessTrainingRun() {
-        given(trainingRunService.accessTrainingRun("password")).willReturn(trainingRun1);
+        given(trainingRunService.accessTrainingRun(trainingInstance)).willReturn(trainingRun1);
         given(trainingRunService.getLevels(1L)).willReturn(Arrays.asList(gameLevel, infoLevel, assessmentLevel));
         given(trainingRunService.getMaxLevelOrder(anyLong())).willReturn(2);
+        given(trainingInstanceService.findByStartTimeAfterAndEndTimeBeforeAndAccessToken(anyString())).willReturn(trainingInstance);
         Object result = trainingRunFacade.accessTrainingRun("password");
         assertEquals(AccessTrainingRunDTO.class, result.getClass());
-        then(trainingRunService).should().accessTrainingRun("password");
+        then(trainingRunService).should().accessTrainingRun(trainingInstance);
     }
 
     @Test
     public void accessTrainingRunWithFacadeLayerException() {
         thrown.expect(FacadeLayerException.class);
-        willThrow(ServiceLayerException.class).given(trainingRunService).accessTrainingRun("pass");
+        given(trainingInstanceService.findByStartTimeAfterAndEndTimeBeforeAndAccessToken(anyString())).willReturn(trainingInstance);
+        willThrow(ServiceLayerException.class).given(trainingRunService).accessTrainingRun(trainingInstance);
         trainingRunFacade.accessTrainingRun("pass");
     }
 
