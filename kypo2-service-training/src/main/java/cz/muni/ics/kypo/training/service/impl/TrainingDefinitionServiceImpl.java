@@ -106,7 +106,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
         if (securityService.isAdmin()) {
             return trainingDefinitionRepository.findAll(predicate, pageable);
         } else if (securityService.isDesigner() && securityService.isOrganizer()) {
-            return trainingDefinitionRepository.findAllForDesignersAndOrganizers(securityService.getSubOfLoggedInUser(), pageable);
+            return trainingDefinitionRepository.findAllForDesignersAndOrganizers(securityService.getUserRefIdFromUserAndGroup(), pageable);
         } else {
             return trainingDefinitionRepository.findAllForOrganizers(securityService.getUserRefIdFromUserAndGroup(), pageable);
         }
@@ -144,7 +144,6 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
         Assert.notNull(trainingDefinitionToUpdate, "Input training definition must not be null");
         TrainingDefinition trainingDefinition = findById(trainingDefinitionToUpdate.getId());
         checkIfCanBeUpdated(trainingDefinition);
-        String userSub = securityService.getSubOfLoggedInUser();
         Optional<UserRef> user = userRefRepository.findUserByUserRefId(securityService.getUserRefIdFromUserAndGroup());
         if (user.isPresent()) {
             trainingDefinitionToUpdate.addAuthor(user.get());

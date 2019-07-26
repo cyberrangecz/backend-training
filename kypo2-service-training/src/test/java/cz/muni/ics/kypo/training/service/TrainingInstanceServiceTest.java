@@ -183,7 +183,7 @@ public class TrainingInstanceServiceTest {
         List<TrainingInstance> expected = new ArrayList<>();
         expected.add(trainingInstance1);
         expected.add(trainingInstance2);
-        given(securityService.getSubOfLoggedInUser()).willReturn("participant");
+        given(securityService.getUserRefIdFromUserAndGroup()).willReturn(1L);
 
         Page p = new PageImpl<TrainingInstance>(expected);
         PathBuilder<TrainingInstance> tI = new PathBuilder<TrainingInstance>(TrainingInstance.class, "trainingInstance");
