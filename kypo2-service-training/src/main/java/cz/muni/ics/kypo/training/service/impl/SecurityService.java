@@ -53,7 +53,7 @@ public class SecurityService {
         this.trainingRunRepository = trainingRunRepository;
         this.restTemplate = restTemplate;
     }
-
+    //TODO repair, replace getSubOfLoggedInUser
     public boolean isTraineeOfGivenTrainingRun(Long trainingRunId) {
         TrainingRun trainingRun = trainingRunRepository.findById(trainingRunId).orElseThrow(() -> new ServiceLayerException("The necessary permissions are required for a resource.", ErrorCode.SECURITY_RIGHTS));
         return trainingRun.getParticipantRef().getUserRefLogin().equals(getSubOfLoggedInUser());

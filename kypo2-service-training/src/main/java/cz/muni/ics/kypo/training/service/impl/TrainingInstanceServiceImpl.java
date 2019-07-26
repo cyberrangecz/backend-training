@@ -95,7 +95,7 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
         if (securityService.isAdmin()) {
             return trainingInstanceRepository.findAll(predicate, pageable);
         }
-        Predicate loggedInUser = QTrainingInstance.trainingInstance.organizers.any().userRefLogin.eq(securityService.getSubOfLoggedInUser());
+        Predicate loggedInUser = QTrainingInstance.trainingInstance.organizers.any().userRefId.eq(securityService.getUserRefIdFromUserAndGroup());
         return trainingInstanceRepository.findAll(loggedInUser, pageable);
     }
 

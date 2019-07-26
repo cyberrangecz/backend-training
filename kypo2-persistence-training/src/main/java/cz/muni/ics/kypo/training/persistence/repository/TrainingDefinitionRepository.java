@@ -79,7 +79,7 @@ public interface TrainingDefinitionRepository
             "LEFT JOIN td.authors aut WHERE aut.userRefId = :userRefId OR org.userRefId = :userRefId OR td.state = 'RELEASED'",
             countQuery = "SELECT COUNT(DISTINCT td) FROM TrainingDefinition td LEFT JOIN td.betaTestingGroup bt LEFT JOIN bt.organizers org " +
                     "LEFT JOIN td.authors aut WHERE aut.userRefId = :userRefId OR org.userRefId = :userRefId OR td.state = 'RELEASED'")
-    Page<TrainingDefinition> findAllForDesignersAndOrganizers(@Param("userRefId") String userRefId, Pageable pageable);
+    Page<TrainingDefinition> findAllForDesignersAndOrganizers(@Param("userRefId") Long userRefId, Pageable pageable);
 
     /**
      * Find training definition by id
