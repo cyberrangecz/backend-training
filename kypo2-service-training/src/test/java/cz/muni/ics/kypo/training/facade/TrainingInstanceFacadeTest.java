@@ -72,7 +72,7 @@ public class TrainingInstanceFacadeTest {
     @Before
     public void init() {
         MockitoAnnotations.initMocks(this);
-        trainingInstanceFacade = new TrainingInstanceFacadeImpl(trainingInstanceService, trainingDefinitionService, trainingInstanceMapper, trainingRunMapper, securityService);
+        trainingInstanceFacade = new TrainingInstanceFacadeImpl(trainingInstanceService, trainingDefinitionService, trainingInstanceMapper, trainingRunMapper);
 
         sandboxInstanceRef1 = new SandboxInstanceRef();
         sandboxInstanceRef1.setSandboxInstanceRef(5L);

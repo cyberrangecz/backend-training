@@ -118,14 +118,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     public TrainingDefinition create(TrainingDefinition trainingDefinition) {
         Assert.notNull(trainingDefinition, "Input training definition must not be null");
 
-        Optional<UserRef> user = userRefRepository.findUserByUserRefId(securityService.getUserRefIdFromUserAndGroup());
-        if (user.isPresent()) {
-            trainingDefinition.addAuthor(user.get());
-        } else {
-            UserRef newUser = securityService.createUserRefEntityByInfoFromUserAndGroup();
-            trainingDefinition.addAuthor(newUser);
-        }
-        trainingDefinition.setLastEdited(getCurrentTimeInUTC());
+        addLoggedInUserToTrainingDefinitionAsAuthor(trainingDefinition);
 
         LOG.info("Training definition with id: {} created.", trainingDefinition.getId());
         return trainingDefinitionRepository.save(trainingDefinition);
@@ -144,14 +137,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
         Assert.notNull(trainingDefinitionToUpdate, "Input training definition must not be null");
         TrainingDefinition trainingDefinition = findById(trainingDefinitionToUpdate.getId());
         checkIfCanBeUpdated(trainingDefinition);
-        Optional<UserRef> user = userRefRepository.findUserByUserRefId(securityService.getUserRefIdFromUserAndGroup());
-        if (user.isPresent()) {
-            trainingDefinitionToUpdate.addAuthor(user.get());
-        } else {
-            UserRef newUser = securityService.createUserRefEntityByInfoFromUserAndGroup();
-            trainingDefinitionToUpdate.addAuthor(newUser);
-        }
-        trainingDefinitionToUpdate.setLastEdited(getCurrentTimeInUTC());
+        addLoggedInUserToTrainingDefinitionAsAuthor(trainingDefinitionToUpdate);
         trainingDefinitionToUpdate.setEstimatedDuration(trainingDefinition.getEstimatedDuration());
         trainingDefinitionRepository.save(trainingDefinitionToUpdate);
         LOG.info("Training definition with id: {} updated.", trainingDefinitionToUpdate.getId());
@@ -170,14 +156,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
         clonedTrainingDefinition.setState(TDState.UNRELEASED);
         clonedTrainingDefinition.setAuthors(new HashSet<>());
 
-        Optional<UserRef> user = userRefRepository.findUserByUserRefId(securityService.getUserRefIdFromUserAndGroup());
-        if (user.isPresent()) {
-            clonedTrainingDefinition.addAuthor(user.get());
-        } else {
-            UserRef newUser = securityService.createUserRefEntityByInfoFromUserAndGroup();
-            clonedTrainingDefinition.addAuthor(newUser);
-        }
-        clonedTrainingDefinition.setLastEdited(getCurrentTimeInUTC());
+        addLoggedInUserToTrainingDefinitionAsAuthor(clonedTrainingDefinition);
         clonedTrainingDefinition = trainingDefinitionRepository.save(clonedTrainingDefinition);
         // clone all levels which are assigned to the particular training definition and set
         cloneLevelsFromTrainingDefinition(trainingDefinition, clonedTrainingDefinition);
@@ -567,6 +546,17 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
 
     private LocalDateTime getCurrentTimeInUTC() {
         return LocalDateTime.now(Clock.systemUTC());
+    }
+
+    private void addLoggedInUserToTrainingDefinitionAsAuthor(TrainingDefinition trainingDefinition) {
+        Optional<UserRef> user = userRefRepository.findUserByUserRefId(securityService.getUserRefIdFromUserAndGroup());
+        if (user.isPresent()) {
+            trainingDefinition.addAuthor(user.get());
+        } else {
+            UserRef newUser = securityService.createUserRefEntityByInfoFromUserAndGroup();
+            trainingDefinition.addAuthor(newUser);
+        }
+        trainingDefinition.setLastEdited(getCurrentTimeInUTC());
     }
 
 }

@@ -47,20 +47,18 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
     private InfoLevelMapper infoLevelMapper;
     private AssessmentLevelMapper assessmentLevelMapper;
     private BasicLevelInfoMapper basicLevelInfoMapper;
-    private SecurityService securityService;
 
     @Autowired
     public TrainingDefinitionFacadeImpl(TrainingDefinitionService trainingDefinitionService,
                                         TrainingDefinitionMapper trainingDefMapper, GameLevelMapper gameLevelMapper,
                                         InfoLevelMapper infoLevelMapper, AssessmentLevelMapper assessmentLevelMapper,
-                                        BasicLevelInfoMapper basicLevelInfoMapper, SecurityService securityService) {
+                                        BasicLevelInfoMapper basicLevelInfoMapper) {
         this.trainingDefinitionService = trainingDefinitionService;
         this.trainingDefinitionMapper = trainingDefMapper;
         this.gameLevelMapper = gameLevelMapper;
         this.infoLevelMapper = infoLevelMapper;
         this.assessmentLevelMapper = assessmentLevelMapper;
         this.basicLevelInfoMapper = basicLevelInfoMapper;
-        this.securityService = securityService;
     }
 
     @Override
