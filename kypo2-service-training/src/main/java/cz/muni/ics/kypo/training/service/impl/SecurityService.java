@@ -15,6 +15,7 @@ import cz.muni.ics.kypo.training.persistence.model.UserRef;
 import cz.muni.ics.kypo.training.persistence.repository.TrainingDefinitionRepository;
 import cz.muni.ics.kypo.training.persistence.repository.TrainingInstanceRepository;
 import cz.muni.ics.kypo.training.persistence.repository.TrainingRunRepository;
+import cz.muni.ics.kypo.training.persistence.repository.UserRefRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
@@ -26,6 +27,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
+
+import java.util.Optional;
 
 /**
  * @author Dominik Pilar
@@ -53,20 +56,19 @@ public class SecurityService {
         this.trainingRunRepository = trainingRunRepository;
         this.restTemplate = restTemplate;
     }
-    //TODO repair, replace getSubOfLoggedInUser
     public boolean isTraineeOfGivenTrainingRun(Long trainingRunId) {
         TrainingRun trainingRun = trainingRunRepository.findById(trainingRunId).orElseThrow(() -> new ServiceLayerException("The necessary permissions are required for a resource.", ErrorCode.SECURITY_RIGHTS));
-        return trainingRun.getParticipantRef().getUserRefLogin().equals(getSubOfLoggedInUser());
+        return trainingRun.getParticipantRef().getUserRefId().equals(getUserRefIdFromUserAndGroup());
     }
 
     public boolean isOrganizerOfGivenTrainingInstance(Long instanceId) {
         TrainingInstance trainingInstance = trainingInstanceRepository.findById(instanceId).orElseThrow(() -> new ServiceLayerException("The necessary permissions are required for a resource.", ErrorCode.SECURITY_RIGHTS));
-        return trainingInstance.getOrganizers().stream().anyMatch(o -> o.getUserRefLogin().equals(getSubOfLoggedInUser()));
+        return trainingInstance.getOrganizers().stream().anyMatch(o -> o.getUserRefId().equals(getUserRefIdFromUserAndGroup()));
     }
 
     public boolean isDesignerOfGivenTrainingDefinition(Long definitionId) {
         TrainingDefinition trainingDefinition = trainingDefinitionRepository.findById(definitionId).orElseThrow(() -> new ServiceLayerException("The necessary permissions are required for a resource.", ErrorCode.SECURITY_RIGHTS));
-        return trainingDefinition.getAuthors().stream().anyMatch(a -> a.getUserRefLogin().equals(getSubOfLoggedInUser()));
+        return trainingDefinition.getAuthors().stream().anyMatch(a -> a.getUserRefId().equals(getUserRefIdFromUserAndGroup()));
     }
 
     public boolean isInBetaTestingGroup(Long definitionId) {
@@ -74,7 +76,7 @@ public class SecurityService {
         if (trainingDefinition.getBetaTestingGroup() == null) {
             throw new ServiceLayerException("The necessary permissions are required for a resource.", ErrorCode.SECURITY_RIGHTS);
         }
-        return trainingDefinition.getBetaTestingGroup().getOrganizers().stream().anyMatch(a -> a.getUserRefLogin().equals(getSubOfLoggedInUser()));
+        return trainingDefinition.getBetaTestingGroup().getOrganizers().stream().anyMatch(o -> o.getUserRefId().equals(getUserRefIdFromUserAndGroup()));
     }
 
     public boolean isAdmin() {

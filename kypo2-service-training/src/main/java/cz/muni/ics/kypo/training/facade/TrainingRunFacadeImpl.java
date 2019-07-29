@@ -105,7 +105,7 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
     @Override
     @TransactionalRO
     public PageResultResource<AccessedTrainingRunDTO> findAllAccessedTrainingRuns(Pageable pageable, String sortByTitle) {
-        Page<TrainingRun> trainingRuns = trainingRunService.findAllByParticiparRefUserRefId(pageable);
+        Page<TrainingRun> trainingRuns = trainingRunService.findAllByParticipantRefUserRefId(pageable);
         return convertToAccessedRunDTO(trainingRuns, sortByTitle);
     }
 

@@ -137,7 +137,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
 
     @Override
     @IsTraineeOrAdmin
-    public Page<TrainingRun> findAllByParticiparRefUserRefId(Pageable pageable) {
+    public Page<TrainingRun> findAllByParticipantRefUserRefId(Pageable pageable) {
         return trainingRunRepository.findAllByParticipantRefId(securityService.getUserRefIdFromUserAndGroup(), pageable);
     }
 
@@ -201,6 +201,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
     @IsTraineeOrAdmin
     @TrackTime
     public TrainingRun accessTrainingRun(TrainingInstance trainingInstance) {
+        //TODO repaire, parameter of the method is not access token anymore
         Optional<TrainingRun> accessedTrainingRun = trainingRunRepository.findValidTrainingRunOfUser(trainingInstance.getAccessToken(), securityService.getUserRefIdFromUserAndGroup());
 
         if (accessedTrainingRun.isPresent()) {

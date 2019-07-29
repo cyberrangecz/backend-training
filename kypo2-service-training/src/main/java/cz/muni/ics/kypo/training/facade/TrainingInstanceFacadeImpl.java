@@ -42,16 +42,14 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
     private TrainingDefinitionService trainingDefinitionService;
     private TrainingInstanceMapper trainingInstanceMapper;
     private TrainingRunMapper trainingRunMapper;
-    private SecurityService securityService;
 
     @Autowired
     public TrainingInstanceFacadeImpl(TrainingInstanceService trainingInstanceService, TrainingDefinitionService trainingDefinitionService,
-                                      TrainingInstanceMapper trainingInstanceMapper, TrainingRunMapper trainingRunMapper, SecurityService securityService) {
+                                      TrainingInstanceMapper trainingInstanceMapper, TrainingRunMapper trainingRunMapper) {
         this.trainingInstanceService = trainingInstanceService;
         this.trainingDefinitionService = trainingDefinitionService;
         this.trainingInstanceMapper = trainingInstanceMapper;
         this.trainingRunMapper = trainingRunMapper;
-        this.securityService = securityService;
     }
 
     @Override

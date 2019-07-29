@@ -411,7 +411,7 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
 
     @Override
     @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
-            "or @securityService.isOrganizerOfGivenTrainingInstance(#instanceId)")
+            "or @securityService.isOrganizerOfGivenTrainingInstance(#trainingInstanceId)")
     public boolean checkIfInstanceIsFinished(Long trainingInstanceId) {
         return trainingInstanceRepository.isFinished(trainingInstanceId, LocalDateTime.now(Clock.systemUTC()));
     }

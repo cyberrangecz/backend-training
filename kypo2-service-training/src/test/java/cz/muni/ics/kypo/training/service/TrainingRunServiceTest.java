@@ -417,7 +417,7 @@ public class TrainingRunServiceTest {
 
         given(securityService.getUserRefIdFromUserAndGroup()).willReturn(participantRef.getUserRefId());
         given(trainingRunRepository.findAllByParticipantRefId(eq(participantRef.getUserRefId()), any(PageRequest.class))).willReturn(expectedPage);
-        Page<TrainingRun> resultPage = trainingRunService.findAllByParticiparRefUserRefId(PageRequest.of(0, 2));
+        Page<TrainingRun> resultPage = trainingRunService.findAllByParticipantRefUserRefId(PageRequest.of(0, 2));
 
         assertEquals(expectedPage, resultPage);
 
