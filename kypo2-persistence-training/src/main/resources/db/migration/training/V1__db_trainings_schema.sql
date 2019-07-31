@@ -61,7 +61,7 @@ create table info_level (
 
 create table sandbox_instance_ref (
    id  bigserial not null,
-    sandbox_instance_ref int8,
+    sandbox_instance_ref int8 not null,
     training_instance_id int8 not null,
     primary key (id)
 );
@@ -160,6 +160,9 @@ alter table training_definition
 
 alter table training_instance
    add constraint UK_b81w12g91hiuhdvsmoanyel6m unique (access_token);
+
+alter table sandbox_instance_ref
+   add constraint UK_b81w12g91hiuhztnmoanyel8m unique (sandbox_instance_ref);
 
 
 alter table hint_info
