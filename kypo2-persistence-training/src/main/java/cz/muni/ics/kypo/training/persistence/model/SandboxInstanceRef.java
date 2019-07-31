@@ -17,7 +17,7 @@ public class SandboxInstanceRef implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", unique = true, nullable = false, insertable = false)
     private Long id;
-    @Column(name = "sandbox_instance_ref")
+    @Column(name = "sandbox_instance_ref", unique = true, nullable = false)
     private Long sandboxInstanceRefId;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "training_instance_id", nullable = false)
