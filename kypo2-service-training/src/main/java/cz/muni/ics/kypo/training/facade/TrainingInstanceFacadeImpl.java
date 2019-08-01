@@ -21,7 +21,6 @@ import cz.muni.ics.kypo.training.persistence.model.TrainingRun;
 import cz.muni.ics.kypo.training.persistence.model.UserRef;
 import cz.muni.ics.kypo.training.service.TrainingDefinitionService;
 import cz.muni.ics.kypo.training.service.TrainingInstanceService;
-import cz.muni.ics.kypo.training.service.impl.SecurityService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -156,7 +155,7 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
         if (trainingInstance.getPoolId() == null) {
             throw new FacadeLayerException(new ServiceLayerException("Pool for sandboxes is not created yet. Please create pool before allocating sandboxes.", ErrorCode.RESOURCE_CONFLICT));
         }
-        trainingInstanceService.synchronizeSandboxesWithPythonApi(trainingInstance);
+        //trainingInstanceService.synchronizeSandboxesWithPythonApi(trainingInstance);
         //Check if sandbox can be allocated
         if (trainingInstance.getSandboxInstanceRefs().size() >= trainingInstance.getPoolSize()) {
             throw new FacadeLayerException(new ServiceLayerException("Pool of sandboxes of training instance with id: " + trainingInstance.getId() + " is full. " +
