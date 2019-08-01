@@ -422,8 +422,6 @@ public class TrainingInstancesIT {
         sandboxInstanceRef1.setTrainingInstance(futureTrainingInstance);
         TrainingInstance tI = trainingInstanceRepository.save(futureTrainingInstance);
         doNothing().when(trainingEventsServiceMock).deleteEventsByTrainingInstanceId(anyLong());
-        given(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class)))
-                .willReturn(new ResponseEntity<List<SandboxInfo>>(new ArrayList<>(List.of(sandboxInfo1)), HttpStatus.OK));
 
         mvc.perform(delete("/training-instances/{id}", tI.getId()))
                 .andExpect(status().isOk());
@@ -438,8 +436,6 @@ public class TrainingInstancesIT {
         trainingRun1.setTrainingInstance(finishedTrainingInstance);
         trainingRun1.setSandboxInstanceRef(sandboxInstanceRef1);
         trainingRunRepository.save(trainingRun1);
-        given(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class)))
-                .willReturn(new ResponseEntity<List<SandboxInfo>>(new ArrayList<>(List.of(sandboxInfo1)), HttpStatus.OK));
 
         Exception ex = mvc.perform(delete("/training-instances/{id}", finishedTrainingInstance.getId()))
                 .andExpect(status().isConflict())
@@ -454,8 +450,6 @@ public class TrainingInstancesIT {
         finishedTrainingInstance.setPoolId(5L);
         finishedTrainingInstance.setPoolSize(3);
         trainingInstanceRepository.save(finishedTrainingInstance);
-        given(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class)))
-                .willReturn(new ResponseEntity<List<SandboxInfo>>(new ArrayList<>(List.of(sandboxInfo1)), HttpStatus.OK));
 
         Exception ex = mvc.perform(delete("/training-instances/{id}", finishedTrainingInstance.getId()))
                 .andExpect(status().isConflict())

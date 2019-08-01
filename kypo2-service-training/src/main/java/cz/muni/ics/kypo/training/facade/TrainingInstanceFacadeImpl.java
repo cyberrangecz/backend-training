@@ -130,7 +130,6 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
         try {
             Objects.requireNonNull(id);
             TrainingInstance trainingInstance = trainingInstanceService.findById(id);
-            trainingInstanceService.synchronizeSandboxesWithPythonApi(trainingInstance);
             trainingInstanceService.delete(trainingInstance);
         } catch (ServiceLayerException ex) {
             throw new FacadeLayerException(ex);
@@ -155,7 +154,6 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
         if (trainingInstance.getPoolId() == null) {
             throw new FacadeLayerException(new ServiceLayerException("Pool for sandboxes is not created yet. Please create pool before allocating sandboxes.", ErrorCode.RESOURCE_CONFLICT));
         }
-        //trainingInstanceService.synchronizeSandboxesWithPythonApi(trainingInstance);
         //Check if sandbox can be allocated
         if (trainingInstance.getSandboxInstanceRefs().size() >= trainingInstance.getPoolSize()) {
             throw new FacadeLayerException(new ServiceLayerException("Pool of sandboxes of training instance with id: " + trainingInstance.getId() + " is full. " +
@@ -219,5 +217,15 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
             infoDTO.setMessage("WARNING: Training instance is still running! Are you sure you want to delete it?");
         }
         return infoDTO;
+    }
+
+    @Override
+    public void synchronizeSandboxes(Long instanceId) {
+        TrainingInstance trainingInstance = trainingInstanceService.findById(instanceId);
+        try{
+            trainingInstanceService.synchronizeSandboxesWithPythonApi(trainingInstance);
+        } catch (ServiceLayerException ex){
+            throw new FacadeLayerException(ex);
+        }
     }
 }
