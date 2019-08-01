@@ -410,4 +410,26 @@ public class TrainingInstancesRestController {
             @PathVariable(value = "instanceId") Long instanceId){
         return ResponseEntity.ok(trainingInstanceFacade.checkIfInstanceCanBeDeleted(instanceId));
     }
+
+    @ApiOperation(httpMethod = "PUT",
+            value = "Synchronize sandboxes of given instance with PythonApi database",
+            response = Void.class,
+            nickname = "synchronizeSandboxes")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Sandboxes synchronized"),
+            @ApiResponse(code = 404, message = "Training instance with given id not found."),
+            @ApiResponse(code = 500, message = "Unexpected condition was encountered")
+    })
+    @PutMapping(path = "/{instanceId}/synchronize")
+    public ResponseEntity<Void> synchronizeSandboxes(@ApiParam(value = "Id of training instance for which sandboxes are synchronized", required = true)
+                                                     @PathVariable(value = "instanceId") Long instanceId){
+        try {
+            trainingInstanceFacade.synchronizeSandboxes(instanceId);
+            return new ResponseEntity<>(HttpStatus.ACCEPTED);
+        } catch (FacadeLayerException ex) {
+            throw ExceptionSorter.throwException(ex);
+        }
+    }
+
+
 }

@@ -401,8 +401,6 @@ public class TrainingRunsIT {
 
         given(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
                 willReturn(new ResponseEntity<UserInfoDTO>(userInfoDTO, HttpStatus.OK));
-        given(restTemplate.exchange(eq("http://localhost:8080" + "/pools/" + trainingInstance.getPoolId() + "/sandboxes/"), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
-                willReturn(new ResponseEntity<List<SandboxInfo>>(new ArrayList<>(List.of(sandboxInfo1)), HttpStatus.OK));
         mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_TRAINEE.name()));
         MockHttpServletResponse result = mvc.perform(post("/training-runs")
                 .param("accessToken", "pass-1234"))
@@ -455,8 +453,6 @@ public class TrainingRunsIT {
         sandboxInstanceRefRepository.deleteAllInBatch();
         given(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
                 willReturn(new ResponseEntity<UserInfoDTO>(userInfoDTO, HttpStatus.OK));
-        given(restTemplate.exchange(eq("http://localhost:8080" + "/pools/" + trainingInstance.getPoolId() + "/sandboxes/"), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
-                willReturn(new ResponseEntity<List<SandboxInfo>>(new ArrayList<>(List.of(sandboxInfo1)), HttpStatus.OK));
         mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_TRAINEE.name()));
         Exception exception = mvc.perform(post("/training-runs")
                 .param("accessToken", "pass-1234"))

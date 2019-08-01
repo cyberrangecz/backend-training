@@ -114,4 +114,12 @@ public interface TrainingInstanceFacade {
      * @return true if instance can be deleted, false if not and message. {@link TrainingInstanceIsFinishedInfoDTO}
      */
     TrainingInstanceIsFinishedInfoDTO checkIfInstanceCanBeDeleted(Long trainingInstanceId);
+
+
+    /**
+     * Synchronize sandboxes.
+     *
+     * @param instanceId the instance id
+     */
+    void synchronizeSandboxes(Long instanceId);
 }
