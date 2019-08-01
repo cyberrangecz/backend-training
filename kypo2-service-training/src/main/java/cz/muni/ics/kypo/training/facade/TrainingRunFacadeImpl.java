@@ -137,7 +137,7 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
     public AccessTrainingRunDTO accessTrainingRun(String accessToken) {
         try {
             TrainingInstance instance = trainingInstanceService.findByStartTimeAfterAndEndTimeBeforeAndAccessToken(accessToken);
-            trainingInstanceService.synchronizeSandboxesWithPythonApi(instance);
+            //trainingInstanceService.synchronizeSandboxesWithPythonApi(instance);
             TrainingRun trainingRun = trainingRunService.accessTrainingRun(instance);
             return convertToAccessTrainingRunDTO(trainingRun);
         } catch (ServiceLayerException ex) {

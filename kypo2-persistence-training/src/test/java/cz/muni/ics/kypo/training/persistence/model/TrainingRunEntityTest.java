@@ -66,6 +66,7 @@ public class TrainingRunEntityTest {
         trainingInstance.setEndTime(LocalDateTime.now());
         trainingInstance.setTitle("title");
         sandboxInstanceRef.setTrainingInstance(trainingInstance);
+        sandboxInstanceRef.setSandboxInstanceRef(1L);
 
     }
 
@@ -78,6 +79,7 @@ public class TrainingRunEntityTest {
         trainingRun1.setCurrentLevel(entityManager.persist(infoLevel));
         trainingRun1.setParticipantRef(entityManager.persist(participantRef));
         trainingRun1.setTrainingInstance(entityManager.persist(trainingInstance));
+
 
         sandboxInstanceRef.setTrainingInstance(trainingInstance);
         trainingRun1.setSandboxInstanceRef(entityManager.persist(sandboxInstanceRef));
