@@ -77,7 +77,7 @@ public interface TrainingRunRepository extends JpaRepository<TrainingRun, Long>,
      */
     @Query(value = "SELECT tr FROM TrainingRun tr JOIN FETCH tr.participantRef pr JOIN FETCH tr.trainingInstance ti JOIN FETCH "
             + "ti.trainingDefinition td WHERE td.id = :trainingDefinitionId AND pr.userRefId = :userRefId",
-            countQuery = "SELECT tr FROM TrainingRun tr INNER JOIN tr.participantRef pr INNER JOIN tr.trainingInstance ti INNER JOIN " +
+            countQuery = "SELECT COUNT(tr) FROM TrainingRun tr INNER JOIN tr.participantRef pr INNER JOIN tr.trainingInstance ti INNER JOIN " +
                     "ti.trainingDefinition td WHERE td.id = :trainingDefinitionId AND pr.userRefId = :userRefId")
     Page<TrainingRun> findAllByTrainingDefinitionIdAndParticipantUserRefId(@Param("trainingDefinitionId") Long trainingDefinitionId,
                                                                            @Param("userRefId") Long userRefId, Pageable pageable);
@@ -109,7 +109,7 @@ public interface TrainingRunRepository extends JpaRepository<TrainingRun, Long>,
      * @return the page of all active {@link TrainingRun}s associated with given {@link TrainingInstance}
      */
     @Query(value = "SELECT tr FROM TrainingRun tr JOIN FETCH tr.trainingInstance ti WHERE ti.id = :trainingInstanceId AND tr.state <> 'ARCHIVED'",
-            countQuery = "SELECT tr FROM TrainingRun tr INNER JOIN tr.trainingInstance ti WHERE ti.id = :trainingInstanceId AND tr.state <> 'ARCHIVED'")
+            countQuery = "SELECT COUNT(tr) FROM TrainingRun tr INNER JOIN tr.trainingInstance ti WHERE ti.id = :trainingInstanceId AND tr.state <> 'ARCHIVED'")
     Page<TrainingRun> findAllActiveByTrainingInstanceId(@Param("trainingInstanceId") Long trainingInstanceId, Pageable pageable);
 
     /**
@@ -120,7 +120,7 @@ public interface TrainingRunRepository extends JpaRepository<TrainingRun, Long>,
      * @return the page of all inactive {@link TrainingRun}s associated with given {@link TrainingInstance}
      */
     @Query(value = "SELECT tr FROM TrainingRun tr JOIN FETCH tr.trainingInstance ti WHERE ti.id = :trainingInstanceId AND tr.state = 'ARCHIVED'",
-            countQuery = "SELECT tr FROM TrainingRun tr INNER JOIN tr.trainingInstance ti WHERE ti.id = :trainingInstanceId AND tr.state = 'ARCHIVED'")
+            countQuery = "SELECT COUNT(tr) FROM TrainingRun tr INNER JOIN tr.trainingInstance ti WHERE ti.id = :trainingInstanceId AND tr.state = 'ARCHIVED'")
     Page<TrainingRun> findAllInactiveByTrainingInstanceId(@Param("trainingInstanceId") Long trainingInstanceId, Pageable pageable);
 
     /**
@@ -131,7 +131,7 @@ public interface TrainingRunRepository extends JpaRepository<TrainingRun, Long>,
      * @return the page of all {@link TrainingRun}s associated with {@link cz.muni.ics.kypo.training.persistence.model.TrainingDefinition}
      */
     @Query(value = "SELECT tr FROM TrainingRun tr JOIN FETCH tr.trainingInstance ti JOIN FETCH ti.trainingDefinition td WHERE td.id = :trainingDefinitionId",
-            countQuery = "SELECT tr FROM TrainingRun tr INNER JOIN tr.trainingInstance ti INNER JOIN ti.trainingDefinition td WHERE td.id = :trainingDefinitionId")
+            countQuery = "SELECT COUNT(tr) FROM TrainingRun tr INNER JOIN tr.trainingInstance ti INNER JOIN ti.trainingDefinition td WHERE td.id = :trainingDefinitionId")
     Page<TrainingRun> findAllByTrainingDefinitionId(@Param("trainingDefinitionId") Long trainingDefinitionId, Pageable pageable);
 
     /**
