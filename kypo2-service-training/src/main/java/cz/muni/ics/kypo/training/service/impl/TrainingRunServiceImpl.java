@@ -200,7 +200,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
     @Override
     @IsTraineeOrAdmin
     @TrackTime
-    public TrainingRun accessTrainingRun(TrainingInstance trainingInstance) {
+    public synchronized TrainingRun accessTrainingRun(TrainingInstance trainingInstance) {
         //TODO repaire, parameter of the method is not access token anymore
         Optional<TrainingRun> accessedTrainingRun = trainingRunRepository.findValidTrainingRunOfUser(trainingInstance.getAccessToken(), securityService.getUserRefIdFromUserAndGroup());
 
