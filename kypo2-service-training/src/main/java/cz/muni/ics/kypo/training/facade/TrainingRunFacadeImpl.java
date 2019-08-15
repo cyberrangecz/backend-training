@@ -31,6 +31,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
@@ -133,7 +134,7 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
     }
 
     @Override
-    @TransactionalWO
+    @TransactionalWO(isolation = Isolation.SERIALIZABLE)
     public AccessTrainingRunDTO accessTrainingRun(String accessToken) {
         try {
             TrainingInstance instance = trainingInstanceService.findByStartTimeAfterAndEndTimeBeforeAndAccessToken(accessToken);
