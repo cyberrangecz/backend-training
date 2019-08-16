@@ -12,5 +12,7 @@
   "hint_id": 5,
   "hint_penalty_points": 15,
   "hint_title": "Hint1",
-  "game_time": 8580000
+  "game_time": 8580000,
+  "full_name": "Ing. Mgr. MuDr. Boris Jadus",
+  "full_name_without_titles": "Boris Jadus"
 }

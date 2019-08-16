@@ -11,5 +11,7 @@
   "level": 11,
   "flag_content": "asdafs",
   "count": 1,
-  "game_time": 300000
+  "game_time": 300000,
+  "full_name": "Ing. Mgr. MuDr. Boris Jadus",
+  "full_name_without_titles": "Boris Jadus"
 }
