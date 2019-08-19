@@ -10,5 +10,7 @@
   "actual_score_in_level": 20,
   "level": 11,
   "flag_content": "NoMoreTelnet",
-  "game_time": 660000
+  "game_time": 660000,
+  "full_name": "Ing. Mgr. MuDr. Boris Jadus",
+  "full_name_without_titles": "Boris Jadus"
 }

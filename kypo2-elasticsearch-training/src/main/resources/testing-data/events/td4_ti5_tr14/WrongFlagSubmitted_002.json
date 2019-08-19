@@ -11,5 +11,7 @@
   "level": 13,
   "flag_content": "test",
   "count": 1,
-  "game_time": 780000
+  "game_time": 780000,
+  "full_name": "Ing. Mgr. MuDr. Boris Jadus",
+  "full_name_without_titles": "Boris Jadus"
 }

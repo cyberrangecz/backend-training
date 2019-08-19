@@ -12,5 +12,7 @@
   "level_type": "GAME",
   "max_score": 20,
   "level_title": "New Secure Connection",
-  "game_time": 840000
+  "game_time": 840000,
+  "full_name": "Ing. Mgr. MuDr. Boris Jadus",
+  "full_name_without_titles": "Boris Jadus"
 }
