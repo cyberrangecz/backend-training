@@ -54,8 +54,8 @@ public class TrainingRun implements Serializable {
     private String assessmentResponses;
     @Column(name = "total_score")
     private int totalScore;
-    @Column(name = "current_score")
-    private int currentScore;
+    @Column(name = "max_level_score")
+    private int maxLevelScore;
     @Column(name = "level_answered")
     private boolean levelAnswered;
     @ElementCollection(targetClass = HintInfo.class, fetch = FetchType.LAZY)
@@ -63,7 +63,8 @@ public class TrainingRun implements Serializable {
     private Set<HintInfo> hintInfoList = new HashSet<>();
     @Column(name = "previous_sandbox_instance_ref_id")
     private Long previousSandboxInstanceRefId;
-
+    @Column(name = "current_penalty")
+    private int currentPenalty;
     /**
      * Gets unique identification number of Training run
      *
@@ -172,8 +173,8 @@ public class TrainingRun implements Serializable {
      * @param currentLevel the current level
      */
     public void setCurrentLevel(AbstractLevel currentLevel) {
-        this.totalScore += currentLevel.getMaxScore();
-        this.currentScore = currentLevel.getMaxScore();
+        this.currentPenalty = 0;
+        this.maxLevelScore = currentLevel.getMaxScore();
         this.levelAnswered = currentLevel instanceof InfoLevel;
         this.solutionTaken = false;
         this.currentLevel = currentLevel;
@@ -314,31 +315,20 @@ public class TrainingRun implements Serializable {
         this.totalScore -= penalty;
     }
 
-    /**
-     * Gets score gathered by trainee
-     *
-     * @return the current score
-     */
-    public int getCurrentScore() {
-        return currentScore;
+    public int getMaxLevelScore() {
+        return maxLevelScore;
     }
 
-    /**
-     * Sets score gathered by trainee
-     *
-     * @param currentScore the current score
-     */
-    public void setCurrentScore(int currentScore) {
-        this.currentScore = currentScore;
+    public void setMaxLevelScore(int maxLevelScore) {
+        this.maxLevelScore = maxLevelScore;
     }
 
-    /**
-     * Takes away points from current score
-     *
-     * @param penalty the penalty
-     */
-    public void decreaseCurrentScore(int penalty) {
-        this.currentScore -= penalty;
+    public void increaseCurrentPenalty(int penalty) {
+        this.currentPenalty += penalty;
+    }
+
+    public void increaseTotalScore(int points) {
+        this.totalScore += points;
     }
 
     /**
@@ -404,6 +394,18 @@ public class TrainingRun implements Serializable {
         this.previousSandboxInstanceRefId = previousSandboxInstanceRefId;
     }
 
+    public void setHintInfoList(Set<HintInfo> hintInfoList) {
+        this.hintInfoList = hintInfoList;
+    }
+
+    public int getCurrentPenalty() {
+        return currentPenalty;
+    }
+
+    public void setCurrentPenalty(int currentPenalty) {
+        this.currentPenalty = currentPenalty;
+    }
+
     @Override
     public int hashCode() {
         return Objects.hash(currentLevel, eventLogReference, startTime, endTime, state, trainingInstance, incorrectFlagCount);
@@ -445,7 +447,7 @@ public class TrainingRun implements Serializable {
                 ", participantRef=" + participantRef +
                 ", assessmentResponses='" + assessmentResponses + '\'' +
                 ", totalScore=" + totalScore +
-                ", currentScore=" + currentScore +
+                ", maxLevelScore=" + maxLevelScore +
                 ", levelAnswered=" + levelAnswered +
                 '}';
     }

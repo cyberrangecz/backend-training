@@ -41,7 +41,7 @@ public class AuditEventsService {
                 .fullName(trainingRun.getParticipantRef().getUserRefFullName())
                 .fullNameWithoutTitles(trainingRun.getParticipantRef().getUserRefGivenName() + " " + trainingRun.getParticipantRef().getUserRefFamilyName())
                 .totalScore(trainingRun.getTotalScore())
-                .actualScoreInLevel(trainingRun.getCurrentScore())
+                .actualScoreInLevel(trainingRun.getMaxLevelScore() - trainingRun.getCurrentPenalty())
                 .level(trainingRun.getCurrentLevel().getId())
                 .build();
 
@@ -64,7 +64,7 @@ public class AuditEventsService {
                 .fullName(trainingRun.getParticipantRef().getUserRefFullName())
                 .fullNameWithoutTitles(trainingRun.getParticipantRef().getUserRefGivenName() + " " + trainingRun.getParticipantRef().getUserRefFamilyName())
                 .totalScore(trainingRun.getTotalScore())
-                .actualScoreInLevel(trainingRun.getCurrentScore())
+                .actualScoreInLevel(trainingRun.getMaxLevelScore() - trainingRun.getCurrentPenalty())
                 .level(trainingRun.getCurrentLevel().getId())
                 .levelType(levelType)
                 .maxScore(trainingRun.getCurrentLevel().getMaxScore())
@@ -90,7 +90,7 @@ public class AuditEventsService {
                 .fullName(trainingRun.getParticipantRef().getUserRefFullName())
                 .fullNameWithoutTitles(trainingRun.getParticipantRef().getUserRefGivenName() + " " + trainingRun.getParticipantRef().getUserRefFamilyName())
                 .totalScore(trainingRun.getTotalScore())
-                .actualScoreInLevel(trainingRun.getCurrentScore())
+                .actualScoreInLevel(trainingRun.getMaxLevelScore() - trainingRun.getCurrentPenalty())
                 .level(trainingRun.getCurrentLevel().getId())
                 .levelType(levelType)
                 .build();
@@ -112,7 +112,7 @@ public class AuditEventsService {
                 .fullName(trainingRun.getParticipantRef().getUserRefFullName())
                 .fullNameWithoutTitles(trainingRun.getParticipantRef().getUserRefGivenName() + " " + trainingRun.getParticipantRef().getUserRefFamilyName())
                 .totalScore(trainingRun.getTotalScore())
-                .actualScoreInLevel(trainingRun.getCurrentScore())
+                .actualScoreInLevel(trainingRun.getMaxLevelScore() - trainingRun.getCurrentPenalty())
                 .level(trainingRun.getCurrentLevel().getId())
                 .hintId(hint.getId())
                 .hintPenaltyPoints(hint.getHintPenalty())
@@ -135,9 +135,9 @@ public class AuditEventsService {
                 .fullName(trainingRun.getParticipantRef().getUserRefFullName())
                 .fullNameWithoutTitles(trainingRun.getParticipantRef().getUserRefGivenName() + " " + trainingRun.getParticipantRef().getUserRefFamilyName())
                 .totalScore(trainingRun.getTotalScore())
-                .actualScoreInLevel(trainingRun.getCurrentScore())
+                .actualScoreInLevel(trainingRun.getMaxLevelScore() - trainingRun.getCurrentPenalty())
                 .level(trainingRun.getCurrentLevel().getId())
-                .penaltyPoints(gameLevel.getMaxScore() - trainingRun.getCurrentScore())
+                .penaltyPoints(trainingRun.getCurrentPenalty())
                 .build();
         auditService.saveTrainingRunEvent(solutionDisplayed, trainingDefinitionId, trainingInstance.getId());
     }
@@ -156,7 +156,7 @@ public class AuditEventsService {
                 .fullName(trainingRun.getParticipantRef().getUserRefFullName())
                 .fullNameWithoutTitles(trainingRun.getParticipantRef().getUserRefGivenName() + " " + trainingRun.getParticipantRef().getUserRefFamilyName())
                 .totalScore(trainingRun.getTotalScore()) // requires to set total and actual score in level from training run entity
-                .actualScoreInLevel(trainingRun.getCurrentScore())
+                .actualScoreInLevel(trainingRun.getMaxLevelScore() - trainingRun.getCurrentPenalty())
                 .level(trainingRun.getCurrentLevel().getId())
                 .flagContent(flag)
                 .build();
@@ -178,7 +178,7 @@ public class AuditEventsService {
                 .fullName(trainingRun.getParticipantRef().getUserRefFullName())
                 .fullNameWithoutTitles(trainingRun.getParticipantRef().getUserRefGivenName() + " " + trainingRun.getParticipantRef().getUserRefFamilyName())
                 .totalScore(trainingRun.getTotalScore())
-                .actualScoreInLevel(trainingRun.getCurrentScore())
+                .actualScoreInLevel(trainingRun.getMaxLevelScore() - trainingRun.getCurrentPenalty())
                 .level(trainingRun.getCurrentLevel().getId())
                 .flagContent(flag)
                 .count(trainingRun.getIncorrectFlagCount())
@@ -200,7 +200,7 @@ public class AuditEventsService {
                 .fullName(trainingRun.getParticipantRef().getUserRefFullName())
                 .fullNameWithoutTitles(trainingRun.getParticipantRef().getUserRefGivenName() + " " + trainingRun.getParticipantRef().getUserRefFamilyName())
                 .totalScore(trainingRun.getTotalScore())
-                .actualScoreInLevel(trainingRun.getCurrentScore())
+                .actualScoreInLevel(trainingRun.getMaxLevelScore() - trainingRun.getCurrentPenalty())
                 .level(trainingRun.getCurrentLevel().getId())
                 .answers(answers)
                 .build();
@@ -222,7 +222,7 @@ public class AuditEventsService {
                 .fullName(trainingRun.getParticipantRef().getUserRefFullName())
                 .fullNameWithoutTitles(trainingRun.getParticipantRef().getUserRefGivenName() + " " + trainingRun.getParticipantRef().getUserRefFamilyName())
                 .totalScore(trainingRun.getTotalScore())
-                .actualScoreInLevel(trainingRun.getCurrentScore())
+                .actualScoreInLevel(trainingRun.getMaxLevelScore() - trainingRun.getCurrentPenalty())
                 .level(trainingRun.getCurrentLevel().getId())
                 .startTime(trainingRun.getStartTime().atOffset(ZoneOffset.UTC).toInstant().toEpochMilli())
                 .endTime(System.currentTimeMillis())
@@ -245,7 +245,7 @@ public class AuditEventsService {
                 .fullName(trainingRun.getParticipantRef().getUserRefFullName())
                 .fullNameWithoutTitles(trainingRun.getParticipantRef().getUserRefGivenName() + " " + trainingRun.getParticipantRef().getUserRefFamilyName())
                 .totalScore(trainingRun.getTotalScore())
-                .actualScoreInLevel(trainingRun.getCurrentScore())
+                .actualScoreInLevel(trainingRun.getMaxLevelScore() - trainingRun.getCurrentPenalty())
                 .level(trainingRun.getCurrentLevel().getId())
                 .build();
         auditService.saveTrainingRunEvent(trainingRunResumed, trainingDefinitionId, trainingInstance.getId());

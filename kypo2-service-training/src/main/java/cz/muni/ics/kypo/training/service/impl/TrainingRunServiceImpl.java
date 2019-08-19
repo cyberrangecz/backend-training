@@ -303,6 +303,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
         if (level instanceof GameLevel) {
             if (((GameLevel) level).getFlag().equals(flag)) {
                 trainingRun.setLevelAnswered(true);
+                trainingRun.increaseTotalScore(trainingRun.getMaxLevelScore() - trainingRun.getCurrentPenalty());
                 auditEventsService.auditCorrectFlagSubmittedAction(trainingRun, flag);
                 auditEventsService.auditLevelCompletedAction(trainingRun);
                 return true;
@@ -344,8 +345,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
         if (level instanceof GameLevel) {
             if (!trainingRun.isSolutionTaken()) {
                 trainingRun.setSolutionTaken(true);
-                trainingRun.decreaseTotalScore(trainingRun.getCurrentScore() - 1);
-                trainingRun.setCurrentScore(1);
+                trainingRun.setCurrentPenalty(trainingRun.getMaxLevelScore() -1);
                 trainingRunRepository.save(trainingRun);
             }
             auditEventsService.auditSolutionDisplayedAction(trainingRun, (GameLevel) level);
@@ -366,8 +366,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
         if (level instanceof GameLevel) {
             Hint hint = hintRepository.findById(hintId).orElseThrow(() -> new ServiceLayerException("Hint with id " + hintId + " not found.", ErrorCode.RESOURCE_NOT_FOUND));
             if (hint.getGameLevel().getId().equals(level.getId())) {
-                trainingRun.decreaseCurrentScore(hint.getHintPenalty());
-                trainingRun.decreaseTotalScore(hint.getHintPenalty());
+                trainingRun.increaseCurrentPenalty(hint.getHintPenalty());
                 trainingRun.addHintInfo(new HintInfo(level.getId(), hint.getId(), hint.getTitle(), hint.getContent()));
                 auditEventsService.auditHintTakenAction(trainingRun, hint);
                 return hint;
@@ -433,8 +432,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
         } else {
             points = util.evaluateTest(new JSONArray(assessmentLevel.getQuestions()), responses);
             responseToCurrentAssessment.put("receivedPoints", points);
-            trainingRun.setCurrentScore(points);
-            trainingRun.setTotalScore(trainingRun.getTotalScore() - (trainingRun.getCurrentLevel().getMaxScore() - trainingRun.getCurrentScore()));
+            trainingRun.increaseTotalScore(points);
         }
         responsesJSON.put(responseToCurrentAssessment);
         trainingRun.setAssessmentResponses(responsesJSON.toString());

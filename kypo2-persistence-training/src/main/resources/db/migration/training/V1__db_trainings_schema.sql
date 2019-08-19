@@ -108,7 +108,7 @@ create table training_instance_user_ref (
 create table training_run (
    id  bigserial not null,
     assessment_responses text,
-    current_score int4,
+    max_level_score int4,
     end_time timestamp not null,
     event_log_reference varchar(255),
     incorrect_flag_count int4 not null,
@@ -122,6 +122,7 @@ create table training_run (
     sandbox_instance_ref_id int8 null,
     training_instance_id int8 not null,
     previous_sandbox_instance_ref_id int8 null,
+    current_penalty int4,
     primary key (id)
 );
 
