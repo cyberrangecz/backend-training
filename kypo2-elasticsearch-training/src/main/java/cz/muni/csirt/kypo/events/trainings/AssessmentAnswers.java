@@ -55,6 +55,12 @@ public class AssessmentAnswers extends AbstractAuditPOJO {
     @ApiModelProperty(value = "Only on assessment level type, data format is JSON.", required = false)
     @JsonProperty(value = "answers", required = false)
     private String answers;
+    @ApiModelProperty(value = "Id of player in the training run")
+    @JsonProperty(value = "user_ref_id")
+    private long userRefId;
+    @ApiModelProperty(value = "Issuer of player in the training run")
+    @JsonProperty(value = "iss")
+    private String iss;
 
     private AssessmentAnswers(AssessmentAnswersBuilder builder) {
         this.sandboxId = builder.sandboxId;
@@ -69,6 +75,8 @@ public class AssessmentAnswers extends AbstractAuditPOJO {
         this.actualScoreInLevel = builder.actualScoreInLevel;
         this.level = builder.level;
         this.answers = builder.answers;
+        this.userRefId = builder.userRefId;
+        this.iss = builder.iss;
     }
 
     public static class AssessmentAnswersBuilder {
@@ -84,6 +92,8 @@ public class AssessmentAnswers extends AbstractAuditPOJO {
         private int actualScoreInLevel;
         private long level;
         private String answers;
+        private long userRefId;
+        private String iss;
 
         public AssessmentAnswersBuilder sandboxId(long sandboxId) {
             this.sandboxId = sandboxId;
@@ -145,6 +155,16 @@ public class AssessmentAnswers extends AbstractAuditPOJO {
             return this;
         }
 
+        public AssessmentAnswersBuilder userRefId(long userRefId) {
+            this.userRefId = userRefId;
+            return this;
+        }
+
+        public AssessmentAnswersBuilder iss(String iss) {
+            this.iss = iss;
+            return this;
+        }
+
         public AssessmentAnswers build() {
             return new AssessmentAnswers(this);
         }
@@ -165,6 +185,8 @@ public class AssessmentAnswers extends AbstractAuditPOJO {
                 ", actualScoreInLevel=" + actualScoreInLevel +
                 ", level=" + level +
                 ", answers='" + answers + '\'' +
+                ", userRefId=" + userRefId +
+                ", iss='" + iss + '\'' +
                 '}';
     }
 }

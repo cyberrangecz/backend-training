@@ -57,6 +57,12 @@ public class WrongFlagSubmitted extends AbstractAuditPOJO {
     @ApiModelProperty(value = "The number of wrong try (indicates the sequence number of the wrong flag).", required = true)
     @JsonProperty(value = "count", required = true)
     private int count;
+    @ApiModelProperty(value = "Id of player in the training run")
+    @JsonProperty(value = "user_ref_id")
+    private long userRefId;
+    @ApiModelProperty(value = "Issuer of player in the training run")
+    @JsonProperty(value = "iss")
+    private String iss;
 
     private WrongFlagSubmitted(WrongFlagSubmittedBuilder builder) {
         this.sandboxId = builder.sandboxId;
@@ -72,6 +78,8 @@ public class WrongFlagSubmitted extends AbstractAuditPOJO {
         this.level = builder.level;
         this.flagContent = builder.flagContent;
         this.count = builder.count;
+        this.userRefId = builder.userRefId;
+        this.iss = builder.iss;
     }
 
     public static class WrongFlagSubmittedBuilder {
@@ -88,6 +96,8 @@ public class WrongFlagSubmitted extends AbstractAuditPOJO {
         private long level;
         private String flagContent;
         private int count;
+        private long userRefId;
+        private String iss;
 
         public WrongFlagSubmittedBuilder sandboxId(long sandboxId) {
             this.sandboxId = sandboxId;
@@ -154,6 +164,16 @@ public class WrongFlagSubmitted extends AbstractAuditPOJO {
             return this;
         }
 
+        public WrongFlagSubmittedBuilder  userRefId(long userRefId) {
+            this.userRefId = userRefId;
+            return this;
+        }
+
+        public WrongFlagSubmittedBuilder iss(String iss) {
+            this.iss = iss;
+            return this;
+        }
+
         public WrongFlagSubmitted build() {
             return new WrongFlagSubmitted(this);
         }
@@ -176,6 +196,8 @@ public class WrongFlagSubmitted extends AbstractAuditPOJO {
                 ", level=" + level +
                 ", flagContent='" + flagContent + '\'' +
                 ", count=" + count +
+                ", userRefId=" + userRefId +
+                ", iss='" + iss + '\'' +
                 '}';
     }
 }

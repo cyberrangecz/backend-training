@@ -60,6 +60,13 @@ public class HintTaken extends AbstractAuditPOJO {
     @ApiModelProperty(value = "Hint title.", required = true)
     @JsonProperty(value = "hint_title", required = true)
     private String hintTitle;
+    @ApiModelProperty(value = "Id of player in the training run")
+    @JsonProperty(value = "user_ref_id")
+    private long userRefId;
+    @ApiModelProperty(value = "Issuer of player in the training run")
+    @JsonProperty(value = "iss")
+    private String iss;
+
 
     private HintTaken(HintTakenBuilder builder) {
         this.sandboxId = builder.sandboxId;
@@ -76,6 +83,8 @@ public class HintTaken extends AbstractAuditPOJO {
         this.hintId = builder.hintId;
         this.hintPenaltyPoints = builder.hintPenaltyPoints;
         this.hintTitle = builder.hintTitle;
+        this.userRefId = builder.userRefId;
+        this.iss = builder.iss;
     }
 
     public static class HintTakenBuilder {
@@ -93,6 +102,8 @@ public class HintTaken extends AbstractAuditPOJO {
         private long hintId;
         private int hintPenaltyPoints;
         private String hintTitle;
+        private long userRefId;
+        private String iss;
 
         public HintTakenBuilder sandboxId(long sandboxId) {
             this.sandboxId = sandboxId;
@@ -164,6 +175,16 @@ public class HintTaken extends AbstractAuditPOJO {
             return this;
         }
 
+        public HintTakenBuilder userRefId(long userRefId) {
+            this.userRefId = userRefId;
+            return this;
+        }
+
+        public HintTakenBuilder iss(String iss) {
+            this.iss = iss;
+            return this;
+        }
+
         public HintTaken build() {
             return new HintTaken(this);
         }
@@ -187,6 +208,8 @@ public class HintTaken extends AbstractAuditPOJO {
                 ", hintId=" + hintId +
                 ", hintPenaltyPoints=" + hintPenaltyPoints +
                 ", hintTitle='" + hintTitle + '\'' +
+                ", userRefId=" + userRefId +
+                ", iss='" + iss + '\'' +
                 '}';
     }
 }
