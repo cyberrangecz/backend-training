@@ -332,8 +332,6 @@ public class TrainingRunServiceTest {
         given(trainingRunRepository.findByIdWithLevel(trainingRun1.getId())).willReturn(Optional.of(trainingRun1));
         String solution = trainingRunService.getSolution(trainingRun1.getId());
         assertEquals(solution, gameLevel.getSolution());
-        assertEquals(21, trainingRun1.getTotalScore());
-        assertEquals(1, trainingRun1.getCurrentScore());
         assertFalse(trainingRun1.isLevelAnswered());
     }
 
@@ -341,12 +339,9 @@ public class TrainingRunServiceTest {
     public void getAlreadyTakenSolution() {
         mockSpringSecurityContextForGet();
         trainingRun1.setSolutionTaken(true);
-        trainingRun1.setCurrentScore(1);
         given(trainingRunRepository.findByIdWithLevel(trainingRun1.getId())).willReturn(Optional.of(trainingRun1));
         String solution = trainingRunService.getSolution(trainingRun1.getId());
         assertEquals(solution, gameLevel.getSolution());
-        assertEquals(20, trainingRun1.getTotalScore());
-        assertEquals(1, trainingRun1.getCurrentScore());
         assertFalse(trainingRun1.isLevelAnswered());
     }
 
@@ -365,8 +360,7 @@ public class TrainingRunServiceTest {
         given(hintRepository.findById(any(Long.class))).willReturn(Optional.of(hint1));
         Hint resultHint1 = trainingRunService.getHint(trainingRun1.getId(), hint1.getId());
         assertEquals(hint1, resultHint1);
-        assertEquals(gameLevel.getMaxScore() - hint1.getHintPenalty(), trainingRun1.getCurrentScore());
-        assertEquals(gameLevel.getMaxScore() - hint1.getHintPenalty(), trainingRun1.getTotalScore());
+        assertEquals(hint1.getHintPenalty(),(Integer) trainingRun1.getCurrentPenalty());
     }
 
     @Test
@@ -471,8 +465,7 @@ public class TrainingRunServiceTest {
         AbstractLevel resultAbstractLevel = trainingRunService.getNextLevel(trainingRun1.getId());
 
         assertEquals(trainingRun1.getCurrentLevel().getId(), resultAbstractLevel.getId());
-        assertEquals(trainingRun1.getCurrentScore(), infoLevel.getMaxScore());
-        assertEquals(gameLevel.getMaxScore() + infoLevel.getMaxScore(), trainingRun1.getTotalScore());
+        assertEquals(trainingRun1.getMaxLevelScore(), infoLevel.getMaxScore());
         assertTrue(trainingRun1.isLevelAnswered()); // because next level is info and it is always set to true
 
         then(trainingRunRepository).should().findByIdWithLevel(trainingRun1.getId());

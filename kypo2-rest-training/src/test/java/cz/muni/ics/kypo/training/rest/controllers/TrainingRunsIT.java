@@ -563,7 +563,7 @@ public class TrainingRunsIT {
 
     @Test
     public void getSolution() throws Exception {
-        trainingRun1.setCurrentScore(gameLevel1.getMaxScore());
+        trainingRun1.setMaxLevelScore(gameLevel1.getMaxScore());
         trainingRun1.setTotalScore(10 + gameLevel1.getMaxScore());
         trainingRunRepository.save(trainingRun1);
         assertFalse(trainingRun1.isSolutionTaken());
@@ -572,13 +572,11 @@ public class TrainingRunsIT {
                 .andReturn().getResponse();
         assertEquals(((GameLevel) trainingRun1.getCurrentLevel()).getSolution(), convertJsonBytesToString(response.getContentAsString()));
         assertTrue(trainingRun1.isSolutionTaken());
-        assertEquals(1, trainingRun1.getCurrentScore());
-        assertEquals(11, trainingRun1.getTotalScore());
     }
 
     @Test
     public void getSolutionSecondTime() throws Exception {
-        trainingRun1.setCurrentScore(1);
+        trainingRun1.setMaxLevelScore(1);
         trainingRun1.setTotalScore(11);
         trainingRun1.setSolutionTaken(true);
         trainingRunRepository.save(trainingRun1);
@@ -588,7 +586,6 @@ public class TrainingRunsIT {
                 .andReturn().getResponse();
         assertEquals(((GameLevel) trainingRun1.getCurrentLevel()).getSolution(), convertJsonBytesToString(response.getContentAsString()));
         assertTrue(trainingRun1.isSolutionTaken());
-        assertEquals(1, trainingRun1.getCurrentScore());
         assertEquals(11, trainingRun1.getTotalScore());
     }
 
@@ -617,15 +614,13 @@ public class TrainingRunsIT {
     public void getHint() throws Exception {
         hintRepository.save(hint);
         trainingRun1.setTotalScore(10 + gameLevel1.getMaxScore());
-        trainingRun1.setCurrentScore(gameLevel1.getMaxScore());
+        trainingRun1.setMaxLevelScore(gameLevel1.getMaxScore());
         trainingRunRepository.save(trainingRun1);
         MockHttpServletResponse response = mvc.perform(get("/training-runs/{runId}/hints/{hintId}", trainingRun1.getId(), hint.getId()))
                 .andExpect(status().isOk())
                 .andReturn().getResponse();
         assertEquals(hintMapper.mapToDTO(hint), mapper.readValue(convertJsonBytesToString(response.getContentAsString()), HintDTO.class));
         assertTrue(trainingRun1.getHintInfoList().contains(new HintInfo(trainingRun1.getCurrentLevel().getId(), hint.getId(), hint.getTitle(), hint.getContent())));
-        assertEquals(gameLevel1.getMaxScore() - hint.getHintPenalty(), trainingRun1.getCurrentScore());
-        assertEquals(10 + gameLevel1.getMaxScore() - hint.getHintPenalty(), trainingRun1.getTotalScore());
     }
 
     @Test
