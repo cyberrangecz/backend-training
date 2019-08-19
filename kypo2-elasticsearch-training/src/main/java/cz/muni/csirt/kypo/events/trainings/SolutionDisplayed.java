@@ -54,6 +54,12 @@ public class SolutionDisplayed extends AbstractAuditPOJO {
     @ApiModelProperty(value = "Solution displayed penalty points.", required = true)
     @JsonProperty(value = "penalty_points", required = true)
     private int penaltyPoints;
+    @ApiModelProperty(value = "Id of player in the training run")
+    @JsonProperty(value = "user_ref_id")
+    private long userRefId;
+    @ApiModelProperty(value = "Issuer of player in the training run")
+    @JsonProperty(value = "iss")
+    private String iss;
 
     private SolutionDisplayed(SolutionDisplayedBuilder builder) {
         this.sandboxId = builder.sandboxId;
@@ -68,6 +74,8 @@ public class SolutionDisplayed extends AbstractAuditPOJO {
         this.actualScoreInLevel = builder.actualScoreInLevel;
         this.level = builder.level;
         this.penaltyPoints = builder.penaltyPoints;
+        this.userRefId = builder.userRefId;
+        this.iss = builder.iss;
     }
 
     public static class SolutionDisplayedBuilder {
@@ -83,6 +91,8 @@ public class SolutionDisplayed extends AbstractAuditPOJO {
         private int actualScoreInLevel;
         private long level;
         private int penaltyPoints;
+        private long userRefId;
+        private String iss;
 
         public SolutionDisplayedBuilder sandboxId(long sandboxId) {
             this.sandboxId = sandboxId;
@@ -144,6 +154,16 @@ public class SolutionDisplayed extends AbstractAuditPOJO {
             return this;
         }
 
+        public SolutionDisplayedBuilder userRefId(long userRefId) {
+            this.userRefId = userRefId;
+            return this;
+        }
+
+        public SolutionDisplayedBuilder iss(String iss) {
+            this.iss = iss;
+            return this;
+        }
+
         public SolutionDisplayed build() {
             return new SolutionDisplayed(this);
         }
@@ -165,6 +185,8 @@ public class SolutionDisplayed extends AbstractAuditPOJO {
                 ", actualScoreInLevel=" + actualScoreInLevel +
                 ", level=" + level +
                 ", penaltyPoints=" + penaltyPoints +
+                ", userRefId=" + userRefId +
+                ", iss='" + iss + '\'' +
                 '}';
     }
 }

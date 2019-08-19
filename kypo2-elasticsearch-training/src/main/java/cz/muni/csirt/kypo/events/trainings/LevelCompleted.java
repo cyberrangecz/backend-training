@@ -55,6 +55,12 @@ public class LevelCompleted extends AbstractAuditPOJO {
     @ApiModelProperty(value = "Level Type.", required = true)
     @JsonProperty(value = "level_type", required = true)
     private LevelType levelType;
+    @ApiModelProperty(value = "Id of player in the training run")
+    @JsonProperty(value = "user_ref_id")
+    private long userRefId;
+    @ApiModelProperty(value = "Issuer of player in the training run")
+    @JsonProperty(value = "iss")
+    private String iss;
 
     private LevelCompleted(LevelCompletedBuilder builder) {
         this.sandboxId = builder.sandboxId;
@@ -69,6 +75,8 @@ public class LevelCompleted extends AbstractAuditPOJO {
         this.actualScoreInLevel = builder.actualScoreInLevel;
         this.level = builder.level;
         this.levelType = builder.levelType;
+        this.userRefId = builder.userRefId;
+        this.iss = builder.iss;
     }
 
     public static class LevelCompletedBuilder {
@@ -84,6 +92,8 @@ public class LevelCompleted extends AbstractAuditPOJO {
         private int actualScoreInLevel;
         private long level;
         private LevelType levelType;
+        private long userRefId;
+        private String iss;
 
         public LevelCompletedBuilder sandboxId(long sandboxId) {
             this.sandboxId = sandboxId;
@@ -145,6 +155,16 @@ public class LevelCompleted extends AbstractAuditPOJO {
             return this;
         }
 
+        public LevelCompletedBuilder userRefId(long userRefId) {
+            this.userRefId = userRefId;
+            return this;
+        }
+
+        public LevelCompletedBuilder iss(String iss) {
+            this.iss = iss;
+            return this;
+        }
+
         public LevelCompleted build() {
             return new LevelCompleted(this);
         }
@@ -166,6 +186,8 @@ public class LevelCompleted extends AbstractAuditPOJO {
                 ", actualScoreInLevel=" + actualScoreInLevel +
                 ", level=" + level +
                 ", levelType=" + levelType +
+                ", userRefId=" + userRefId +
+                ", iss='" + iss + '\'' +
                 '}';
     }
 }

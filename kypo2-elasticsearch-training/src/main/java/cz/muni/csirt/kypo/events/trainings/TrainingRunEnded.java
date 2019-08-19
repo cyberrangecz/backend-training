@@ -57,6 +57,12 @@ public class TrainingRunEnded extends AbstractAuditPOJO {
     @ApiModelProperty(value = "Training run end time.", required = true)
     @JsonProperty(value = "end_time", required = true)
     private long endTime;
+    @ApiModelProperty(value = "Id of player in the training run")
+    @JsonProperty(value = "user_ref_id")
+    private long userRefId;
+    @ApiModelProperty(value = "Issuer of player in the training run")
+    @JsonProperty(value = "iss")
+    private String iss;
 
     private TrainingRunEnded(TrainingRunEndedBuilder builder) {
         this.sandboxId = builder.sandboxId;
@@ -72,6 +78,8 @@ public class TrainingRunEnded extends AbstractAuditPOJO {
         this.level = builder.level;
         this.startTime = builder.startTime;
         this.endTime = builder.endTime;
+        this.userRefId = builder.userRefId;
+        this.iss = builder.iss;
     }
 
     public static class TrainingRunEndedBuilder {
@@ -88,6 +96,8 @@ public class TrainingRunEnded extends AbstractAuditPOJO {
         private long level;
         private long startTime;
         private long endTime;
+        private long userRefId;
+        private String iss;
 
         public TrainingRunEndedBuilder sandboxId(long sandboxId) {
             this.sandboxId = sandboxId;
@@ -154,6 +164,16 @@ public class TrainingRunEnded extends AbstractAuditPOJO {
             return this;
         }
 
+        public TrainingRunEndedBuilder userRefId(long userRefId) {
+            this.userRefId = userRefId;
+            return this;
+        }
+
+        public TrainingRunEndedBuilder iss(String iss) {
+            this.iss = iss;
+            return this;
+        }
+
         public TrainingRunEnded build() {
             return new TrainingRunEnded(this);
         }
@@ -175,6 +195,8 @@ public class TrainingRunEnded extends AbstractAuditPOJO {
                 ", level=" + level +
                 ", startTime=" + startTime +
                 ", endTime=" + endTime +
+                ", userRefId=" + userRefId +
+                ", iss='" + iss + '\'' +
                 '}';
     }
 }

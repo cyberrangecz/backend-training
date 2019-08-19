@@ -54,6 +54,12 @@ public class CorrectFlagSubmitted extends AbstractAuditPOJO {
     @ApiModelProperty(value = "Flag Content.", required = true)
     @JsonProperty(value = "flag_content", required = true)
     private String flagContent;
+    @ApiModelProperty(value = "Id of player in the training run")
+    @JsonProperty(value = "user_ref_id")
+    private long userRefId;
+    @ApiModelProperty(value = "Issuer of player in the training run")
+    @JsonProperty(value = "iss")
+    private String iss;
 
     private CorrectFlagSubmitted(CorrectFlagSubmittedBuilder builder) {
         this.sandboxId = builder.sandboxId;
@@ -68,6 +74,8 @@ public class CorrectFlagSubmitted extends AbstractAuditPOJO {
         this.actualScoreInLevel = builder.actualScoreInLevel;
         this.level = builder.level;
         this.flagContent = builder.flagContent;
+        this.userRefId = builder.userRefId;
+        this.iss = builder.iss;
     }
 
     public static class CorrectFlagSubmittedBuilder {
@@ -83,6 +91,8 @@ public class CorrectFlagSubmitted extends AbstractAuditPOJO {
         private int actualScoreInLevel;
         private long level;
         private String flagContent;
+        private long userRefId;
+        private String iss;
 
         public CorrectFlagSubmittedBuilder sandboxId(long sandboxId) {
             this.sandboxId = sandboxId;
@@ -145,6 +155,16 @@ public class CorrectFlagSubmitted extends AbstractAuditPOJO {
             return this;
         }
 
+        public CorrectFlagSubmittedBuilder userRefId(long userRefId) {
+            this.userRefId = userRefId;
+            return this;
+        }
+
+        public CorrectFlagSubmittedBuilder iss(String iss) {
+            this.iss = iss;
+            return this;
+        }
+
         public CorrectFlagSubmitted build() {
             return new CorrectFlagSubmitted(this);
         }
@@ -165,6 +185,8 @@ public class CorrectFlagSubmitted extends AbstractAuditPOJO {
                 ", actualScoreInLevel=" + actualScoreInLevel +
                 ", level=" + level +
                 ", flagContent='" + flagContent + '\'' +
+                ", userRefId=" + userRefId +
+                ", iss='" + iss + '\'' +
                 '}';
     }
 }

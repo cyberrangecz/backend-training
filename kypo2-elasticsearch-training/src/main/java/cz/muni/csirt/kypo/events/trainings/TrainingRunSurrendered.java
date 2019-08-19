@@ -46,6 +46,12 @@ public class TrainingRunSurrendered extends AbstractAuditPOJO {
     @ApiModelProperty(value = "Training run level.", required = true)
     @JsonProperty(value = "level", required = true)
     private long level;
+    @ApiModelProperty(value = "Id of player in the training run")
+    @JsonProperty(value = "user_ref_id")
+    private long userRefId;
+    @ApiModelProperty(value = "Issuer of player in the training run")
+    @JsonProperty(value = "iss")
+    private String iss;
 
     private TrainingRunSurrendered(TrainingRunSurrenderedBuilder builder) {
         this.sandboxId = builder.sandboxId;
@@ -59,6 +65,8 @@ public class TrainingRunSurrendered extends AbstractAuditPOJO {
         this.totalScore = builder.totalScore;
         this.actualScoreInLevel = builder.actualScoreInLevel;
         this.level = builder.level;
+        this.userRefId = builder.userRefId;
+        this.iss = builder.iss;
     }
 
     public static class TrainingRunSurrenderedBuilder {
@@ -73,6 +81,8 @@ public class TrainingRunSurrendered extends AbstractAuditPOJO {
         private int totalScore;
         private int actualScoreInLevel;
         private long level;
+        private long userRefId;
+        private String iss;
 
         public TrainingRunSurrenderedBuilder sandboxId(long sandboxId) {
             this.sandboxId = sandboxId;
@@ -129,6 +139,16 @@ public class TrainingRunSurrendered extends AbstractAuditPOJO {
             return this;
         }
 
+        public TrainingRunSurrenderedBuilder userRefId(long userRefId) {
+            this.userRefId = userRefId;
+            return this;
+        }
+
+        public TrainingRunSurrenderedBuilder iss(String iss) {
+            this.iss = iss;
+            return this;
+        }
+
         public TrainingRunSurrendered build() {
             return new TrainingRunSurrendered(this);
         }
@@ -148,6 +168,8 @@ public class TrainingRunSurrendered extends AbstractAuditPOJO {
                 ", totalScore=" + totalScore +
                 ", actualScoreInLevel=" + actualScoreInLevel +
                 ", level=" + level +
+                ", userRefId=" + userRefId +
+                ", iss='" + iss + '\'' +
                 '}';
     }
 }
