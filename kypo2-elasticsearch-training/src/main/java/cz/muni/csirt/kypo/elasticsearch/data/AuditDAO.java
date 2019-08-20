@@ -3,10 +3,7 @@ package cz.muni.csirt.kypo.elasticsearch.data;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import cz.muni.csirt.kypo.elasticsearch.AbstractAuditPOJO;
 import cz.muni.csirt.kypo.elasticsearch.data.exceptions.ElasticsearchTrainingDataLayerException;
-import cz.muni.csirt.kypo.events.trainings.HintTaken;
-import cz.muni.csirt.kypo.events.trainings.TrainingRunStarted;
 import org.elasticsearch.action.index.IndexRequest;
-import org.elasticsearch.action.update.UpdateRequest;
 
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
@@ -42,7 +39,7 @@ public class AuditDAO extends AbstractElasticClientDAO {
         indexRequest.index(index);
         indexRequest.type("default");
         indexRequest.source(getMapper().writeValueAsString(pojoClass), XContentType.JSON);
-        getClient().index(indexRequest, RequestOptions.DEFAULT);
+        getRestHighLevelClient().index(indexRequest, RequestOptions.DEFAULT);
     }
 
     private <T extends AbstractAuditPOJO> String createIndexForTrainingRunEvents(T pojoClass, Long trainingDefinitionID, Long trainingInstanceID) {

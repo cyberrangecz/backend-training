@@ -2,6 +2,7 @@ package cz.muni.ics.kypo.training.service.impl;
 
 import com.querydsl.core.types.Predicate;
 import cz.muni.csirt.kypo.elasticsearch.service.TrainingEventsService;
+import cz.muni.csirt.kypo.elasticsearch.service.exceptions.ElasticsearchTrainingServiceLayerException;
 import cz.muni.ics.kypo.training.annotations.aop.TrackTime;
 import cz.muni.ics.kypo.training.annotations.security.IsOrganizerOrAdmin;
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalWO;
@@ -30,7 +31,6 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.io.IOException;
 import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -168,7 +168,7 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
 
         try {
             trainingEventsService.deleteEventsByTrainingInstanceId(trainingInstance.getId());
-        } catch (IOException io) {
+        } catch (ElasticsearchTrainingServiceLayerException io) {
             throw new ServiceLayerException("Could not delete documents of this training instance from Elasticsearch. Please contact administrator to check if Elasticsearch is running.", io, ErrorCode.UNEXPECTED_ERROR);
         }
         LOG.debug("Training instance with id: {} deleted.", trainingInstance.getId());
