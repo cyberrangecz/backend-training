@@ -1,9 +1,9 @@
 package cz.muni.ics.kypo.training.persistence.repository;
 
+import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Predicate;
-import cz.muni.ics.kypo.training.persistence.model.SandboxInstanceRef;
-import cz.muni.ics.kypo.training.persistence.model.TrainingInstance;
-import cz.muni.ics.kypo.training.persistence.model.TrainingRun;
+import com.querydsl.core.types.dsl.StringPath;
+import cz.muni.ics.kypo.training.persistence.model.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
@@ -11,9 +11,12 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
+import org.springframework.data.querydsl.binding.QuerydslBinderCustomizer;
+import org.springframework.data.querydsl.binding.QuerydslBindings;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -24,7 +27,22 @@ import java.util.Set;
  * @author Pavel Seda (441048)
  */
 @Repository
-public interface TrainingRunRepository extends JpaRepository<TrainingRun, Long>, QuerydslPredicateExecutor<TrainingRun> {
+public interface TrainingRunRepository extends JpaRepository<TrainingRun, Long>, QuerydslPredicateExecutor<TrainingRun>, QuerydslBinderCustomizer<QTrainingRun> {
+
+    /**
+     * That method is used to make the query dsl string values case insensitive and also it supports partial matches in the database.
+     *
+     * @param querydslBindings
+     * @param qTrainingRun
+     */
+    @Override
+    default void customize(QuerydslBindings querydslBindings, QTrainingRun qTrainingRun) {
+        querydslBindings.bind(String.class).all((StringPath path, Collection<? extends String> values) -> {
+            BooleanBuilder predicate = new BooleanBuilder();
+            values.forEach(value -> predicate.and(path.containsIgnoreCase(value)));
+            return Optional.ofNullable(predicate);
+        });
+    }
 
     /**
      * Find all training runs
