@@ -1,5 +1,8 @@
 package cz.muni.ics.kypo.training.persistence.repository;
 
+import com.querydsl.core.BooleanBuilder;
+import com.querydsl.core.types.dsl.StringPath;
+import cz.muni.ics.kypo.training.persistence.model.QTrainingInstance;
 import cz.muni.ics.kypo.training.persistence.model.TrainingDefinition;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -7,15 +10,17 @@ import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
+import org.springframework.data.querydsl.binding.QuerydslBinderCustomizer;
+import org.springframework.data.querydsl.binding.QuerydslBindings;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import cz.muni.ics.kypo.training.persistence.model.TrainingInstance;
 import com.querydsl.core.types.Predicate;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
-
 
 /**
  * The JPA repository interface to manage {@link TrainingInstance} instances.
@@ -23,7 +28,22 @@ import java.util.Optional;
  * @author Pavel Seda (441048)
  */
 @Repository
-public interface TrainingInstanceRepository extends JpaRepository<TrainingInstance, Long>, QuerydslPredicateExecutor<TrainingInstance> {
+public interface TrainingInstanceRepository extends JpaRepository<TrainingInstance, Long>, QuerydslPredicateExecutor<TrainingInstance>, QuerydslBinderCustomizer<QTrainingInstance> {
+
+    /**
+     * That method is used to make the query dsl string values case insensitive and also it supports partial matches in the database.
+     *
+     * @param querydslBindings
+     * @param qTrainingInstance
+     */
+    @Override
+    default void customize(QuerydslBindings querydslBindings, QTrainingInstance qTrainingInstance) {
+        querydslBindings.bind(String.class).all((StringPath path, Collection<? extends String> values) -> {
+            BooleanBuilder predicate = new BooleanBuilder();
+            values.forEach(value -> predicate.and(path.containsIgnoreCase(value)));
+            return Optional.ofNullable(predicate);
+        });
+    }
 
     /**
      * Find all training instances by id of associated training definition.
@@ -87,8 +107,8 @@ public interface TrainingInstanceRepository extends JpaRepository<TrainingInstan
     /**
      * Checks if training instance finished.
      *
-     * @param currentTime       the current time
-     * @param instanceId the instance id
+     * @param currentTime the current time
+     * @param instanceId  the instance id
      * @return true if instance is finished, false if not
      */
     @Query("SELECT (COUNT(ti) > 0) FROM TrainingInstance ti WHERE ti.id = :instanceId AND ti.endTime < :currentTime")
