@@ -8,7 +8,16 @@ package cz.muni.ics.kypo.training.api.enums;
 public enum Actions {
 
     /**
+     * None actions.
+     */
+    NONE,
+    /**
      * Shows results of finished training runs.
      */
-    RESULTS;
+    RESULTS,
+
+    /**
+     * Resume actions.
+     */
+    RESUME;
 }

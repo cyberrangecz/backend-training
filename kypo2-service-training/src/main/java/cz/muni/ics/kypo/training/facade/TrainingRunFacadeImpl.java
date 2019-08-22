@@ -35,6 +35,7 @@ import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
+import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -213,7 +214,7 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
         try {
             correctFlagDTO.setCorrect(trainingRunService.isCorrectFlag(trainingRunId, flag));
             correctFlagDTO.setRemainingAttempts(trainingRunService.getRemainingAttempts(trainingRunId));
-            if(correctFlagDTO.getRemainingAttempts() == 0) {
+            if (correctFlagDTO.getRemainingAttempts() == 0) {
                 correctFlagDTO.setSolution(getSolution(trainingRunId));
             }
         } catch (ServiceLayerException ex) {
@@ -254,9 +255,14 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
             //number of levels equals maxOrder of definition +1(order starts at 0)
             accessedTrainingRunDTO.setNumberOfLevels(trainingRunService.getMaxLevelOrder(trainingRun.getTrainingInstance().getTrainingDefinition().getId()) + 1);
             accessedTrainingRunDTO.setCurrentLevelOrder(trainingRun.getCurrentLevel().getOrder() + 1);
-            if ((trainingRun.isLevelAnswered() && accessedTrainingRunDTO.getCurrentLevelOrder() == accessedTrainingRunDTO.getNumberOfLevels())
-                    || LocalDateTime.now().isAfter(accessedTrainingRunDTO.getTrainingInstanceEndDate())) {
+            boolean isTrainingRunFinished = trainingRun.isLevelAnswered() && accessedTrainingRunDTO.getCurrentLevelOrder() == accessedTrainingRunDTO.getNumberOfLevels();
+            boolean isTrainingInstanceRunning = LocalDateTime.now(Clock.systemUTC()).isBefore(accessedTrainingRunDTO.getTrainingInstanceEndDate());
+            if (isTrainingRunFinished || !isTrainingInstanceRunning) {
                 accessedTrainingRunDTO.setPossibleAction(Actions.RESULTS);
+            } else if (!isTrainingRunFinished && isTrainingInstanceRunning) {
+                accessedTrainingRunDTO.setPossibleAction(Actions.RESUME);
+            } else {
+                accessedTrainingRunDTO.setPossibleAction(Actions.NONE);
             }
             accessedTrainingRunDTOS.add(accessedTrainingRunDTO);
         }
