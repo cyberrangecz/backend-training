@@ -50,6 +50,7 @@ create table hint (
     hint_penalty int4 not null,
     title varchar(255) not null,
     game_level_id int8,
+    order_in_level int4 not null,
     primary key (id)
 );
 
@@ -133,7 +134,8 @@ create table hint_info(
   game_level_id bigserial not null,
   hint_id bigserial not null,
   hint_title varchar(128) not null,
-  hint_content varchar(4096) not null
+  hint_content varchar(4096) not null,
+  order_in_level int4 not null
 );
 
 

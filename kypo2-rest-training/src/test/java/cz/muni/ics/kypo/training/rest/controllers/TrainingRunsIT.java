@@ -284,7 +284,7 @@ public class TrainingRunsIT {
         gameLevel1.setSolution("testSolution");
         gameLevel1.setSolutionPenalized(true);
         gameLevel1.setMaxScore(30);
-        gameLevel1.setHints(Set.of(hint));
+        gameLevel1.setHints(new HashSet<>(Arrays.asList(hint)));
         gameLevel1.setTrainingDefinition(trainingDefinition);
         gameLevel1.setOrder(1);
         gameLevel1.setIncorrectFlagLimit(4);
@@ -620,7 +620,7 @@ public class TrainingRunsIT {
                 .andExpect(status().isOk())
                 .andReturn().getResponse();
         assertEquals(hintMapper.mapToDTO(hint), mapper.readValue(convertJsonBytesToString(response.getContentAsString()), HintDTO.class));
-        assertTrue(trainingRun1.getHintInfoList().contains(new HintInfo(trainingRun1.getCurrentLevel().getId(), hint.getId(), hint.getTitle(), hint.getContent())));
+        assertTrue(trainingRun1.getHintInfoList().contains(new HintInfo(trainingRun1.getCurrentLevel().getId(), hint.getId(), hint.getTitle(), hint.getContent(), hint.getOrder())));
     }
 
     @Test
@@ -779,7 +779,7 @@ public class TrainingRunsIT {
 
     @Test
     public void resumeTrainingRunWithTakenHints() throws Exception {
-        trainingRun1.addHintInfo(new HintInfo(gameLevel1.getId(), hint.getId(), hint.getTitle(), hint.getContent()));
+        trainingRun1.addHintInfo(new HintInfo(gameLevel1.getId(), hint.getId(), hint.getTitle(), hint.getContent(), hint.getOrder()));
         trainingRunRepository.save(trainingRun1);
         TakenHintDTO expectedTakenHint = new TakenHintDTO();
         expectedTakenHint.setId(hint.getId());

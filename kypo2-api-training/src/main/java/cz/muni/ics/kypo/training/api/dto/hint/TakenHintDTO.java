@@ -14,6 +14,7 @@ public class TakenHintDTO {
     private Long id;
     private String title;
     private String content;
+    private int order;
 
     /**
      * Gets id.
@@ -72,6 +73,14 @@ public class TakenHintDTO {
         this.content = content;
     }
 
+    @ApiModelProperty(value = "The order of hint in game level", example = "1")
+    public int getOrder() {
+        return order;
+    }
+
+    public void setOrder(int order) {
+        this.order = order;
+    }
 
     @Override
     public boolean equals(Object o) {
@@ -92,10 +101,11 @@ public class TakenHintDTO {
 
     @Override
     public String toString() {
-        return "HintDTO{" +
+        return "TakenHintDTO{" +
                 "id=" + id +
                 ", title='" + title + '\'' +
                 ", content='" + content + '\'' +
+                ", order=" + order +
                 '}';
     }
 }
