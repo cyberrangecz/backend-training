@@ -1,6 +1,5 @@
 package cz.muni.ics.kypo.training.api.dto.export;
 
-import cz.muni.ics.kypo.training.api.dto.hint.HintDTO;
 import io.swagger.annotations.ApiModelProperty;
 
 import java.util.Objects;
@@ -15,6 +14,7 @@ public class HintExportDTO {
     private String title;
     private String content;
     private Integer hintPenalty;
+    private int order;
 
     /**
      * Instantiates a new Hint export dto.
@@ -79,6 +79,15 @@ public class HintExportDTO {
         this.hintPenalty = hintPenalty;
     }
 
+    @ApiModelProperty(value = "The order of hint in game level", example = "1")
+    public int getOrder() {
+        return order;
+    }
+
+    public void setOrder(int order) {
+        this.order = order;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -96,11 +105,11 @@ public class HintExportDTO {
 
     @Override
     public String toString() {
-        return "HintDTO{" +
-                ", title='" + title + '\'' +
+        return "HintExportDTO{" +
+                "title='" + title + '\'' +
                 ", content='" + content + '\'' +
                 ", hintPenalty=" + hintPenalty +
+                ", order=" + order +
                 '}';
     }
-
 }

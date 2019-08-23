@@ -17,6 +17,8 @@ public class HintInfo {
     private String hintTitle;
     @Column(name = "hint_content", nullable = false)
     private String hintContent;
+    @Column(name = "order_in_level", nullable = false)
+    private int order;
 
     /**
      * Instantiates a new Hint info
@@ -31,11 +33,12 @@ public class HintInfo {
      * @param hintTitle   title of Hint
      * @param hintContent content of Hint
      */
-    public HintInfo(long gameLevelId, long hintId, String hintTitle, String hintContent) {
+    public HintInfo(long gameLevelId, long hintId, String hintTitle, String hintContent, int order) {
         this.gameLevelId = gameLevelId;
         this.hintId = hintId;
         this.hintTitle = hintTitle;
         this.hintContent = hintContent;
+        this.order = order;
     }
 
     /**
@@ -108,6 +111,10 @@ public class HintInfo {
      */
     public void setHintContent(String hintContent) {
         this.hintContent = hintContent;
+    }
+
+    public void setGameLevelId(long gameLevelId) {
+        this.gameLevelId = gameLevelId;
     }
 
     @Override

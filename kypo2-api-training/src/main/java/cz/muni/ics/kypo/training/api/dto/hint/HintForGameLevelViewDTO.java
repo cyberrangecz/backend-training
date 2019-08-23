@@ -11,6 +11,7 @@ public class HintForGameLevelViewDTO {
 
     private Long id;
     private String title;
+    private int order;
 
     /**
      * Gets id.
@@ -50,6 +51,15 @@ public class HintForGameLevelViewDTO {
         this.title = title;
     }
 
+    @ApiModelProperty(value = "The order of hint in game level", example = "1")
+    public int getOrder() {
+        return order;
+    }
+
+    public void setOrder(int order) {
+        this.order = order;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -64,6 +74,7 @@ public class HintForGameLevelViewDTO {
         return "HintForGameLevelViewDTO{" +
                 "id=" + id +
                 ", title='" + title + '\'' +
+                ", order=" + order +
                 '}';
     }
 

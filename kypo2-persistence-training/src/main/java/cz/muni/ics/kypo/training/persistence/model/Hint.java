@@ -1,9 +1,6 @@
 package cz.muni.ics.kypo.training.persistence.model;
 
 import javax.persistence.*;
-
-import org.hibernate.annotations.Type;
-
 import java.io.Serializable;
 import java.util.Objects;
 
@@ -31,6 +28,8 @@ public class Hint implements Serializable {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "game_level_id")
     private GameLevel gameLevel;
+    @Column(name = "order_in_level", nullable = false)
+    private int order;
 
     /**
      * Instantiates a new Hint
@@ -46,11 +45,12 @@ public class Hint implements Serializable {
      * @param hintPenalty score penalty trainee pays to display hint
      * @param gameLevel   game level associated with given hint
      */
-    public Hint(String title, String content, Integer hintPenalty, GameLevel gameLevel) {
+    public Hint(String title, String content, Integer hintPenalty, GameLevel gameLevel, int order) {
         this.title = title;
         this.content = content;
         this.hintPenalty = hintPenalty;
         this.gameLevel = gameLevel;
+        this.order = order;
     }
 
     /**
@@ -143,6 +143,14 @@ public class Hint implements Serializable {
         this.gameLevel = gameLevel;
     }
 
+    public int getOrder() {
+        return order;
+    }
+
+    public void setOrder(int order) {
+        this.order = order;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -165,6 +173,7 @@ public class Hint implements Serializable {
                 ", title='" + title + '\'' +
                 ", content='" + content + '\'' +
                 ", hintPenalty=" + hintPenalty +
+                ", order=" + order +
                 '}';
     }
 }

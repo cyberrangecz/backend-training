@@ -8,6 +8,7 @@ public class HintArchiveDTO {
     private String title;
     private String content;
     private Integer hintPenalty;
+    private int order;
 
     @ApiModelProperty(value = "Main identifier of hint.", example = "1")
     public Long getId() {
@@ -45,6 +46,15 @@ public class HintArchiveDTO {
         this.hintPenalty = hintPenalty;
     }
 
+    @ApiModelProperty(value = "The order of hint in game level", example = "1")
+    public int getOrder() {
+        return order;
+    }
+
+    public void setOrder(int order) {
+        this.order = order;
+    }
+
     @Override
     public String toString() {
         return "HintArchiveDTO{" +
@@ -52,6 +62,7 @@ public class HintArchiveDTO {
                 ", title='" + title + '\'' +
                 ", content='" + content + '\'' +
                 ", hintPenalty=" + hintPenalty +
+                ", order=" + order +
                 '}';
     }
 }

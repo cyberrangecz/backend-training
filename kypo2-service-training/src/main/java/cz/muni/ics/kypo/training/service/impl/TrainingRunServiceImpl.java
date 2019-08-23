@@ -367,7 +367,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
             Hint hint = hintRepository.findById(hintId).orElseThrow(() -> new ServiceLayerException("Hint with id " + hintId + " not found.", ErrorCode.RESOURCE_NOT_FOUND));
             if (hint.getGameLevel().getId().equals(level.getId())) {
                 trainingRun.increaseCurrentPenalty(hint.getHintPenalty());
-                trainingRun.addHintInfo(new HintInfo(level.getId(), hint.getId(), hint.getTitle(), hint.getContent()));
+                trainingRun.addHintInfo(new HintInfo(level.getId(), hint.getId(), hint.getTitle(), hint.getContent(), hint.getOrder()));
                 auditEventsService.auditHintTakenAction(trainingRun, hint);
                 return hint;
             }

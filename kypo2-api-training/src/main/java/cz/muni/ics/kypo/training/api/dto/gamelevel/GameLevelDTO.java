@@ -1,13 +1,11 @@
 package cz.muni.ics.kypo.training.api.dto.gamelevel;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
-
 import cz.muni.ics.kypo.training.api.dto.AbstractLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.hint.HintDTO;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+
+import java.util.*;
 
 /**
  * Encapsulates information about game level. Inherits from {@link AbstractLevelDTO}
