@@ -419,6 +419,6 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
     public TrainingInstance findByStartTimeAfterAndEndTimeBeforeAndAccessToken(String accessToken) {
         Assert.hasLength(accessToken, "AccessToken cannot be null or empty.");
         return trainingInstanceRepository.findByStartTimeAfterAndEndTimeBeforeAndAccessToken(LocalDateTime.now(Clock.systemUTC()), accessToken)
-                .orElseThrow(() -> new ServiceLayerException("Training instance with access token: " + accessToken + " not found.", ErrorCode.RESOURCE_NOT_FOUND));
+                .orElseThrow(() -> new ServiceLayerException("There is no active game session matching your keyword: " + accessToken + ".", ErrorCode.RESOURCE_NOT_FOUND));
     }
 }
