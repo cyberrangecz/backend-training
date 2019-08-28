@@ -345,7 +345,8 @@ public class TrainingRunServiceImpl implements TrainingRunService {
         if (level instanceof GameLevel) {
             if (!trainingRun.isSolutionTaken()) {
                 trainingRun.setSolutionTaken(true);
-                trainingRun.setCurrentPenalty(trainingRun.getMaxLevelScore() -1);
+                if (((GameLevel) level).isSolutionPenalized())
+                    trainingRun.setCurrentPenalty(trainingRun.getMaxLevelScore());
                 trainingRunRepository.save(trainingRun);
             }
             auditEventsService.auditSolutionDisplayedAction(trainingRun, (GameLevel) level);
