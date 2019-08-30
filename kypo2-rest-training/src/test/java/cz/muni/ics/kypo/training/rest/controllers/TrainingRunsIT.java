@@ -139,7 +139,7 @@ public class TrainingRunsIT {
     private Long nonExistentTrainingRunId;
     private TrainingInstance trainingInstance;
     private TrainingDefinition trainingDefinition;
-    private SandboxInfo sandboxInfo1, sandboxInfo2;
+    private SandboxInfo sandboxInfo1, sandboxInfo2, sandboxInfo3;
     private SandboxInstanceRef sandboxInstanceRef1, sandboxInstanceRef2;
     private UserRef participant;
     private UserInfoDTO userInfoDTO;
@@ -170,6 +170,10 @@ public class TrainingRunsIT {
         sandboxInfo2.setId(2L);
         sandboxInfo2.setStatus(SandboxStates.FULL_BUILD_COMPLETE.getName());
         sandboxInfo2.setPool(3L);
+        sandboxInfo3 = new SandboxInfo();
+        sandboxInfo3.setId(3L);
+        sandboxInfo3.setStatus(SandboxStates.FULL_BUILD_COMPLETE.getName());
+        sandboxInfo3.setPool(3L);
 
         participant = new UserRef();
         participant.setUserRefLogin("445469@muni.cz");
@@ -446,7 +450,44 @@ public class TrainingRunsIT {
         assertEquals(ResourceNotFoundException.class, Objects.requireNonNull(exception).getClass());
         assertEquals("No starting level available for this training definition.", exception.getCause().getCause().getMessage());
     }
-
+//
+//    @Test
+//    public void concurrentAccessTrainingRun() throws Exception {
+//        sandboxInfo1.setStatus(SandboxStates.FULL_BUILD_COMPLETE.getName());
+//        sandboxInfo2.setStatus(SandboxStates.FULL_BUILD_COMPLETE.getName());
+//        sandboxInfo3.setStatus(SandboxStates.FULL_BUILD_COMPLETE.getName());
+//        mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_TRAINEE.name()));
+//
+//        given(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
+//                willReturn(new ResponseEntity<UserInfoDTO>(userInfoDTO, HttpStatus.OK));
+//        given(restTemplate.exchange(eq("http://localhost:8080" + "/pools/" + trainingInstance.getPoolId() + "/sandboxes/"), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
+//                willReturn(new ResponseEntity<List<SandboxInfo>>(new ArrayList<>(List.of(sandboxInfo1, sandboxInfo2, sandboxInfo3)), HttpStatus.OK));
+//
+//        ExecutorService executorService = Executors.newFixedThreadPool(3);
+//        Callable<MockHttpServletResponse> callable = () -> {
+//            MockHttpServletResponse result = mvc.perform(post("/training-runs")
+//                    .param("accessToken", "pass-1234"))
+//                    .andExpect(status().isOk())
+//                    .andReturn().getResponse();
+//            return result;
+//        };
+//        List<Callable<MockHttpServletResponse>> callableTasks = new ArrayList<>();
+//        callableTasks.add(callable);
+//       // callableTasks.add(callable);
+//        //callableTasks.add(callable);
+//
+//        List<Future<MockHttpServletResponse>> futures = executorService.invokeAll(callableTasks);
+////        Set<Long> sandboxIds = new HashSet<>();
+////        for(int i=0; i<3; i++){
+////            JSONObject jsonObject = new JSONObject(futures.get(i).get().getContentAsString());
+////            long id = jsonObject.getLong("trainingRunID");
+////            Optional<TrainingRun> run = trainingRunRepository.findById(id);
+////            assertTrue(run.isPresent());
+////            sandboxIds.add(run.get().getSandboxInstanceRef().getId());
+////        }
+//       // assertEquals(3, sandboxIds.size());
+//        executorService.shutdown();
+//    }
 
     @Test
     public void accessTrainingRunNoFreeSandboxes() throws Exception {
