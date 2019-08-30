@@ -31,8 +31,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Isolation;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.time.Clock;
@@ -40,16 +38,20 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * @author Dominik Pilar
  * @author Boris Jadus
+ * @author Pavel Seda
  */
 @Service
-@Transactional
 public class TrainingRunFacadeImpl implements TrainingRunFacade {
 
     private static final Logger LOG = LoggerFactory.getLogger(TrainingRunFacadeImpl.class);
+
+    private Lock reentrantLock = new ReentrantLock();
 
     private TrainingRunService trainingRunService;
     private TrainingRunMapper trainingRunMapper;
@@ -135,14 +137,16 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
     }
 
     @Override
-    @TransactionalWO(isolation = Isolation.SERIALIZABLE)
     public AccessTrainingRunDTO accessTrainingRun(String accessToken) {
+        // locks the training run access
+        reentrantLock.lock();
         try {
-            TrainingInstance instance = trainingInstanceService.findByStartTimeAfterAndEndTimeBeforeAndAccessToken(accessToken);
-            TrainingRun trainingRun = trainingRunService.accessTrainingRun(instance);
+            TrainingRun trainingRun = trainingRunService.accessTrainingRun(accessToken);
             return convertToAccessTrainingRunDTO(trainingRun);
         } catch (ServiceLayerException ex) {
             throw new FacadeLayerException(ex);
+        } finally {
+            reentrantLock.unlock();
         }
     }
 

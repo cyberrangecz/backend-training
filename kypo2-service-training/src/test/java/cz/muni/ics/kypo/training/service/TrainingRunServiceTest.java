@@ -253,7 +253,7 @@ public class TrainingRunServiceTest {
         given(abstractLevelRepository.findAllLevelsByTrainingDefinitionId(trainingInstance1.getTrainingDefinition().getId())).willReturn(new ArrayList<>(List.of(gameLevel, infoLevel)));
         given(participantRefRepository.save(new UserRef(participantRef.getUserRefLogin()))).willReturn(participantRef);
         given(trainingRunRepository.save(any(TrainingRun.class))).willReturn(trainingRun1);
-        TrainingRun trainingRun = trainingRunService.accessTrainingRun(trainingInstance1);
+        TrainingRun trainingRun = trainingRunService.accessTrainingRun(trainingInstance1.getAccessToken());
         assertEquals(trainingRun1, trainingRun);
     }
 
@@ -262,7 +262,7 @@ public class TrainingRunServiceTest {
         given(trainingInstanceRepository.findByStartTimeAfterAndEndTimeBeforeAndAccessToken(any(LocalDateTime.class), any(String.class))).willReturn(Optional.of(trainingInstance2));
         thrown.expect(ServiceLayerException.class);
         thrown.expectMessage("At first organizer must allocate sandboxes for training instance.");
-        trainingRunService.accessTrainingRun(trainingInstance2);
+        trainingRunService.accessTrainingRun("pass");
     }
 
     @Test
@@ -271,7 +271,7 @@ public class TrainingRunServiceTest {
         given(trainingRunRepository.findFreeSandboxesOfTrainingInstance(anyLong())).willReturn(new HashSet<>());
         thrown.expect(ServiceLayerException.class);
         thrown.expectMessage("There is no available sandbox, wait a minute and try again.");
-        trainingRunService.accessTrainingRun(trainingInstance1);
+        trainingRunService.accessTrainingRun("pass");
     }
 
     @Test
@@ -283,7 +283,7 @@ public class TrainingRunServiceTest {
         given(abstractLevelRepository.findById(anyLong())).willReturn(Optional.empty());
         thrown.expect(ServiceLayerException.class);
         thrown.expectMessage("No starting level available for this training definition");
-        trainingRunService.accessTrainingRun(trainingInstance1);
+        trainingRunService.accessTrainingRun("pass");
     }
 
     private void mockSpringSecurityContextForGet() {

@@ -183,20 +183,20 @@ public class TrainingRunFacadeTest {
 
     @Test
     public void accessTrainingRun() {
-        given(trainingRunService.accessTrainingRun(trainingInstance)).willReturn(trainingRun1);
+        given(trainingRunService.accessTrainingRun(anyString())).willReturn(trainingRun1);
         given(trainingRunService.getLevels(1L)).willReturn(Arrays.asList(gameLevel, infoLevel, assessmentLevel));
         given(trainingRunService.getMaxLevelOrder(anyLong())).willReturn(2);
         given(trainingInstanceService.findByStartTimeAfterAndEndTimeBeforeAndAccessToken(anyString())).willReturn(trainingInstance);
         Object result = trainingRunFacade.accessTrainingRun("password");
         assertEquals(AccessTrainingRunDTO.class, result.getClass());
-        then(trainingRunService).should().accessTrainingRun(trainingInstance);
+        then(trainingRunService).should().accessTrainingRun("password");
     }
 
     @Test
     public void accessTrainingRunWithFacadeLayerException() {
         thrown.expect(FacadeLayerException.class);
         given(trainingInstanceService.findByStartTimeAfterAndEndTimeBeforeAndAccessToken(anyString())).willReturn(trainingInstance);
-        willThrow(ServiceLayerException.class).given(trainingRunService).accessTrainingRun(trainingInstance);
+        willThrow(ServiceLayerException.class).given(trainingRunService).accessTrainingRun("pass");
         trainingRunFacade.accessTrainingRun("pass");
     }
 

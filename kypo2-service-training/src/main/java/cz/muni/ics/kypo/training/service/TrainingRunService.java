@@ -4,9 +4,7 @@ import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.persistence.model.AbstractLevel;
 import cz.muni.ics.kypo.training.persistence.model.Hint;
-import cz.muni.ics.kypo.training.persistence.model.TrainingInstance;
 import cz.muni.ics.kypo.training.persistence.model.TrainingRun;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -105,7 +103,7 @@ public interface TrainingRunService {
      *                               UNEXPECTED_ERROR there is error while getting info about sandboxes.
      *                               NO_AVAILABLE_SANDBOX there is no free or ready sandbox
      */
-    TrainingRun accessTrainingRun(TrainingInstance trainingInstance);
+    TrainingRun accessTrainingRun(String accessToken);
 
     /**
      * Gets list of all levels in Training Definition.
