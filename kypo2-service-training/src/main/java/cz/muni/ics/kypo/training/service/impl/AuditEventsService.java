@@ -42,7 +42,7 @@ public class AuditEventsService {
                 .userRefId(auditInfoDTO.getUserRefId())
                 .totalScore(auditInfoDTO.getTotalScore())
                 .actualScoreInLevel(auditInfoDTO.getActualScoreInLevel())
-                .level(auditInfoDTO.getTotalScore())
+                .level(auditInfoDTO.getLevel())
                 .iss(auditInfoDTO.getIss())
                 .build();
 
@@ -65,7 +65,7 @@ public class AuditEventsService {
                 .userRefId(auditInfoDTO.getUserRefId())
                 .totalScore(auditInfoDTO.getTotalScore())
                 .actualScoreInLevel(auditInfoDTO.getActualScoreInLevel())
-                .level(auditInfoDTO.getTotalScore())
+                .level(auditInfoDTO.getLevel())
                 .levelType(levelType)
                 .maxScore(trainingRun.getCurrentLevel().getMaxScore())
                 .levelTitle(trainingRun.getCurrentLevel().getTitle())
@@ -91,7 +91,7 @@ public class AuditEventsService {
                 .userRefId(auditInfoDTO.getUserRefId())
                 .totalScore(auditInfoDTO.getTotalScore())
                 .actualScoreInLevel(auditInfoDTO.getActualScoreInLevel())
-                .level(auditInfoDTO.getTotalScore())
+                .level(auditInfoDTO.getLevel())
                 .levelType(levelType)
                 .iss(auditInfoDTO.getIss())
                 .build();
@@ -114,7 +114,7 @@ public class AuditEventsService {
                 .userRefId(auditInfoDTO.getUserRefId())
                 .totalScore(auditInfoDTO.getTotalScore())
                 .actualScoreInLevel(auditInfoDTO.getActualScoreInLevel())
-                .level(auditInfoDTO.getTotalScore())
+                .level(auditInfoDTO.getLevel())
                 .hintId(hint.getId())
                 .hintPenaltyPoints(hint.getHintPenalty())
                 .hintTitle(hint.getTitle())
@@ -138,7 +138,7 @@ public class AuditEventsService {
                 .userRefId(auditInfoDTO.getUserRefId())
                 .totalScore(auditInfoDTO.getTotalScore())
                 .actualScoreInLevel(auditInfoDTO.getActualScoreInLevel())
-                .level(auditInfoDTO.getTotalScore())
+                .level(auditInfoDTO.getLevel())
                 .penaltyPoints(trainingRun.getCurrentPenalty())
                 .iss(auditInfoDTO.getIss())
                 .build();
@@ -160,7 +160,7 @@ public class AuditEventsService {
                 .userRefId(auditInfoDTO.getUserRefId())
                 .totalScore(auditInfoDTO.getTotalScore())
                 .actualScoreInLevel(auditInfoDTO.getActualScoreInLevel())
-                .level(auditInfoDTO.getTotalScore())
+                .level(auditInfoDTO.getLevel())
                 .flagContent(flag)
                 .iss(auditInfoDTO.getIss())
                 .build();
@@ -182,7 +182,7 @@ public class AuditEventsService {
                 .userRefId(auditInfoDTO.getUserRefId())
                 .totalScore(auditInfoDTO.getTotalScore())
                 .actualScoreInLevel(auditInfoDTO.getActualScoreInLevel())
-                .level(auditInfoDTO.getTotalScore())
+                .level(auditInfoDTO.getLevel())
                 .flagContent(flag)
                 .count(trainingRun.getIncorrectFlagCount())
                 .iss(auditInfoDTO.getIss())
@@ -205,7 +205,7 @@ public class AuditEventsService {
                 .userRefId(auditInfoDTO.getUserRefId())
                 .totalScore(auditInfoDTO.getTotalScore())
                 .actualScoreInLevel(auditInfoDTO.getActualScoreInLevel())
-                .level(auditInfoDTO.getTotalScore())
+                .level(auditInfoDTO.getLevel())
                 .answers(answers)
                 .iss(auditInfoDTO.getIss())
                 .build();
@@ -227,7 +227,7 @@ public class AuditEventsService {
                 .userRefId(auditInfoDTO.getUserRefId())
                 .totalScore(auditInfoDTO.getTotalScore())
                 .actualScoreInLevel(auditInfoDTO.getActualScoreInLevel())
-                .level(auditInfoDTO.getTotalScore())
+                .level(auditInfoDTO.getLevel())
                 .startTime(trainingRun.getStartTime().atOffset(ZoneOffset.UTC).toInstant().toEpochMilli())
                 .endTime(System.currentTimeMillis())
                 .iss(auditInfoDTO.getIss())
@@ -251,7 +251,7 @@ public class AuditEventsService {
                 .userRefId(auditInfoDTO.getUserRefId())
                 .totalScore(auditInfoDTO.getTotalScore())
                 .actualScoreInLevel(auditInfoDTO.getActualScoreInLevel())
-                .level(auditInfoDTO.getTotalScore())
+                .level(auditInfoDTO.getLevel())
                 .iss(auditInfoDTO.getIss())
                 .build();
         auditService.saveTrainingRunEvent(trainingRunResumed, auditInfoDTO.getTrainingDefinitionId(), auditInfoDTO.getTrainingInstanceId());
