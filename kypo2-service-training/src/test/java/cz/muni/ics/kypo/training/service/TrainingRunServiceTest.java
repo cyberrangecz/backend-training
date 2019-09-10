@@ -15,6 +15,7 @@ import cz.muni.ics.kypo.training.service.impl.AuditEventsService;
 import cz.muni.ics.kypo.training.service.impl.SecurityService;
 import cz.muni.ics.kypo.training.service.impl.TrainingRunServiceImpl;
 import cz.muni.ics.kypo.training.utils.SandboxInfo;
+import cz.muni.ics.kypo.training.utils.PageResultResourcePython;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.junit.*;
@@ -92,6 +93,7 @@ public class TrainingRunServiceTest {
     private TrainingDefinition trainingDefinition, trainingDefinition2;
     private JSONParser parser = new JSONParser();
     private String responses, questions;
+    private PageResultResourcePython sandboxInfoPageResult;
 
     @Before
     public void init() {
@@ -219,6 +221,10 @@ public class TrainingRunServiceTest {
         assessmentLevel.setTitle("Assessment level");
         assessmentLevel.setAssessmentType(AssessmentType.TEST);
         assessmentLevel.setQuestions(questions);
+
+        sandboxInfoPageResult = new PageResultResourcePython();
+        sandboxInfoPageResult.setResults(new ArrayList<>(Arrays.asList(sandboxInfo)));
+
     }
 
     @Test
@@ -249,7 +255,7 @@ public class TrainingRunServiceTest {
         given(trainingInstanceRepository.findByStartTimeAfterAndEndTimeBeforeAndAccessToken(any(LocalDateTime.class), eq(trainingInstance1.getAccessToken()))).willReturn(Optional.ofNullable(trainingInstance1));
         given(trainingRunRepository.findFreeSandboxesOfTrainingInstance(trainingInstance1.getId())).willReturn(new HashSet<>(Arrays.asList(sandboxInstanceRef1)));
         given(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
-                willReturn(new ResponseEntity<List<SandboxInfo>>(new ArrayList<>(Arrays.asList(sandboxInfo)), HttpStatus.OK));
+                willReturn(new ResponseEntity<PageResultResourcePython>(sandboxInfoPageResult, HttpStatus.OK));
         given(abstractLevelRepository.findAllLevelsByTrainingDefinitionId(trainingInstance1.getTrainingDefinition().getId())).willReturn(new ArrayList<>(List.of(gameLevel, infoLevel)));
         given(participantRefRepository.save(new UserRef(participantRef.getUserRefLogin()))).willReturn(participantRef);
         given(trainingRunRepository.save(any(TrainingRun.class))).willReturn(trainingRun1);
@@ -279,7 +285,7 @@ public class TrainingRunServiceTest {
         given(trainingInstanceRepository.findByStartTimeAfterAndEndTimeBeforeAndAccessToken(any(LocalDateTime.class), any(String.class))).willReturn(Optional.of(trainingInstance1));
         given(trainingRunRepository.findFreeSandboxesOfTrainingInstance(anyLong())).willReturn(new HashSet<>(Arrays.asList(sandboxInstanceRef1)));
         given(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
-                willReturn(new ResponseEntity<List<SandboxInfo>>(new ArrayList<>(Arrays.asList(sandboxInfo)), HttpStatus.OK));
+                willReturn(new ResponseEntity<PageResultResourcePython>(sandboxInfoPageResult, HttpStatus.OK));
         given(abstractLevelRepository.findById(anyLong())).willReturn(Optional.empty());
         thrown.expect(ServiceLayerException.class);
         thrown.expectMessage("No starting level available for this training definition");

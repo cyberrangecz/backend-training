@@ -21,6 +21,7 @@ import cz.muni.ics.kypo.training.persistence.repository.*;
 import cz.muni.ics.kypo.training.service.TrainingRunService;
 import cz.muni.ics.kypo.training.utils.AssessmentUtil;
 import cz.muni.ics.kypo.training.utils.SandboxInfo;
+import cz.muni.ics.kypo.training.utils.PageResultResourcePython;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -36,6 +37,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
 import java.time.Clock;
@@ -62,6 +64,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
     private AuditEventsService auditEventsService;
     private RestTemplate restTemplate;
     private SecurityService securityService;
+    private static final int PYTHON_RESULT_PAGE_SIZE = 1000;
 
     @Autowired
     public TrainingRunServiceImpl(TrainingRunRepository trainingRunRepository, AbstractLevelRepository abstractLevelRepository,
@@ -281,10 +284,15 @@ public class TrainingRunServiceImpl implements TrainingRunService {
 
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.set("Accept", MediaType.APPLICATION_JSON_VALUE);
-        ResponseEntity<List<SandboxInfo>> response = restTemplate.exchange(kypoOpenStackURI + "/pools/" + poolId + "/sandboxes/", HttpMethod.GET, new HttpEntity<>(httpHeaders),
-                new ParameterizedTypeReference<List<SandboxInfo>>() {
+        String url = kypoOpenStackURI + "/pools/" + poolId + "/sandboxes/";
+        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(url);
+        builder.queryParam("page", 1);
+        builder.queryParam("page_size", PYTHON_RESULT_PAGE_SIZE);
+        ResponseEntity<PageResultResourcePython> response = restTemplate.exchange(builder.toUriString(), HttpMethod.GET, new HttpEntity<>(httpHeaders),
+                new ParameterizedTypeReference<PageResultResourcePython>() {
                 });
-        List<SandboxInfo> sandboxInfoList = Objects.requireNonNull(response.getBody());
+        PageResultResourcePython<SandboxInfo> sandboxInfoPageResult = Objects.requireNonNull(response.getBody());
+        List<SandboxInfo> sandboxInfoList = Objects.requireNonNull(sandboxInfoPageResult.getResults());
         sandboxInfoList.removeIf(sandboxInfo -> !sandboxInfo.getStatus().contains(SandboxStates.FULL_BUILD_COMPLETE.getName()) || !idsOfUnoccupiedSandboxes.contains(sandboxInfo.getId()));
         if (sandboxInfoList.isEmpty()) {
             throw new ServiceLayerException("There is no available sandbox, wait a minute and try again or ask organizer to allocate more sandboxes.", ErrorCode.NO_AVAILABLE_SANDBOX);
