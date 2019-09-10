@@ -14,6 +14,7 @@ import cz.muni.ics.kypo.training.persistence.model.enums.TRState;
 import cz.muni.ics.kypo.training.persistence.repository.*;
 import cz.muni.ics.kypo.training.service.TrainingInstanceService;
 import cz.muni.ics.kypo.training.utils.SandboxInfo;
+import cz.muni.ics.kypo.training.utils.PageResultResourcePython;
 import cz.muni.ics.kypo.training.utils.SandboxPoolInfo;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
@@ -59,6 +60,7 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
     private SecurityService securityService;
     private SandboxInstanceRefRepository sandboxInstanceRefRepository;
     private TrainingEventsService trainingEventsService;
+    private static final int PYTHON_RESULT_PAGE_SIZE = 1000;
 
     @Autowired
     public TrainingInstanceServiceImpl(TrainingInstanceRepository trainingInstanceRepository, AccessTokenRepository accessTokenRepository,
@@ -353,10 +355,14 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
             //Get sandboxes
             String url = kypoOpenStackURI + "/pools/" + trainingInstance.getPoolId() + "/sandboxes/";
             UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(url);
-            ResponseEntity<List<SandboxInfo>> sandboxResponse = restTemplate.exchange(builder.toUriString(), HttpMethod.GET,
-                    new HttpEntity<>(httpHeaders), new ParameterizedTypeReference<List<SandboxInfo>>() {
+            builder.queryParam("page", 1);
+            builder.queryParam("page_size", PYTHON_RESULT_PAGE_SIZE);
+            ResponseEntity<PageResultResourcePython> response = restTemplate.exchange(builder.toUriString(), HttpMethod.GET, new HttpEntity<>(httpHeaders),
+                    new ParameterizedTypeReference<PageResultResourcePython>() {
                     });
-            sandboxResponse.getBody().forEach(s -> {
+            PageResultResourcePython<SandboxInfo> sandboxInfoPageResult = Objects.requireNonNull(response.getBody());
+            List<SandboxInfo> sandboxResponse = Objects.requireNonNull(sandboxInfoPageResult.getResults());
+            sandboxResponse.forEach(s -> {
                 if (trainingInstance.getSandboxInstanceRefs().stream().noneMatch((sandboxInstanceRef -> sandboxInstanceRef.getSandboxInstanceRef().equals(s.getId())))) {
                     SandboxInstanceRef sIR = new SandboxInstanceRef();
                     sIR.setSandboxInstanceRef(s.getId());
@@ -364,7 +370,7 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
                 }
             });
             for (SandboxInstanceRef sandbox : trainingInstance.getSandboxInstanceRefs()) {
-                if (!sandboxResponse.getBody().stream().anyMatch(sandboxInfo -> sandboxInfo.getId().equals(sandbox.getSandboxInstanceRef()))) {
+                if (!sandboxResponse.stream().anyMatch(sandboxInfo -> sandboxInfo.getId().equals(sandbox.getSandboxInstanceRef()))) {
                     removeSandboxFromTrainingRun(sandbox);
                     trainingInstance.removeSandboxInstanceRef(sandbox);
                 }

@@ -31,6 +31,7 @@ import cz.muni.ics.kypo.training.rest.exceptions.ConflictException;
 import cz.muni.ics.kypo.training.rest.exceptions.ResourceNotFoundException;
 import cz.muni.ics.kypo.training.rest.exceptions.ServiceUnavailableException;
 import cz.muni.ics.kypo.training.utils.SandboxInfo;
+import cz.muni.ics.kypo.training.utils.PageResultResourcePython;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.After;
@@ -65,6 +66,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
 import java.sql.SQLException;
@@ -143,6 +145,7 @@ public class TrainingRunsIT {
     private SandboxInstanceRef sandboxInstanceRef1, sandboxInstanceRef2;
     private UserRef participant;
     private UserInfoDTO userInfoDTO;
+    private PageResultResourcePython sandboxInfoPageResult;
 
     @SpringBootApplication
     static class TestConfiguration {
@@ -322,7 +325,8 @@ public class TrainingRunsIT {
         sandboxInfo.setId(1L);
         sandboxInfo.setStatus(SandboxStates.FULL_BUILD_COMPLETE.getName());
 
-
+        sandboxInfoPageResult = new PageResultResourcePython();
+        sandboxInfoPageResult.setResults(Arrays.asList(sandboxInfo));
     }
 
     @After
@@ -372,13 +376,17 @@ public class TrainingRunsIT {
 
     @Test
     public void accessTrainingRun() throws Exception {
+        String url = "http://localhost:8080" + "/pools/" + trainingInstance.getPoolId() + "/sandboxes/";
+        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(url);
+        builder.queryParam("page", 1);
+        builder.queryParam("page_size", 1000);
         sandboxInfo1.setStatus(SandboxStates.FULL_BUILD_COMPLETE.getName());
         sandboxInfo2.setStatus(SandboxStates.FULL_BUILD_COMPLETE.getName());
 
         given(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
                 willReturn(new ResponseEntity<UserInfoDTO>(userInfoDTO, HttpStatus.OK));
-        given(restTemplate.exchange(eq("http://localhost:8080" + "/pools/" + trainingInstance.getPoolId() + "/sandboxes/"), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
-                willReturn(new ResponseEntity<List<SandboxInfo>>(new ArrayList<>(List.of(sandboxInfo1)), HttpStatus.OK));
+        given(restTemplate.exchange(eq(builder.toUriString()), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
+                willReturn(new ResponseEntity<PageResultResourcePython>(sandboxInfoPageResult, HttpStatus.OK));
         mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_TRAINEE.name()));
         MockHttpServletResponse result = mvc.perform(post("/training-runs")
                 .param("accessToken", "pass-1234"))
@@ -436,12 +444,17 @@ public class TrainingRunsIT {
 
     @Test
     public void accessTrainingRunDefinitionWithoutLevels() throws Exception {
+        String url = "http://localhost:8080" + "/pools/" + trainingInstance.getPoolId() + "/sandboxes/";
+        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(url);
+        builder.queryParam("page", 1);
+        builder.queryParam("page_size", 1000);
+
         gameLevel1.setTrainingDefinition(null);
         infoLevel1.setTrainingDefinition(null);
         given(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
                 willReturn(new ResponseEntity<UserInfoDTO>(userInfoDTO, HttpStatus.OK));
-        given(restTemplate.exchange(eq("http://localhost:8080" + "/pools/" + trainingInstance.getPoolId() + "/sandboxes/"), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
-                willReturn(new ResponseEntity<List<SandboxInfo>>(new ArrayList<>(List.of(sandboxInfo1)), HttpStatus.OK));
+        given(restTemplate.exchange(eq(builder.toUriString()), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
+                willReturn(new ResponseEntity<PageResultResourcePython>(sandboxInfoPageResult, HttpStatus.OK));
         mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_TRAINEE.name()));
         Exception exception = mvc.perform(post("/training-runs")
                 .param("accessToken", "pass-1234"))
@@ -506,11 +519,17 @@ public class TrainingRunsIT {
     @Test
     public void accessTrainingRunNoAvailableSandbox() throws Exception {
         trainingInstanceRepository.save(trainingInstance);
+        PageResultResourcePython<SandboxInfo> pageResult = new PageResultResourcePython<>();
+        pageResult.setResults(new ArrayList<>());
+        String url = "http://localhost:8080" + "/pools/" + trainingInstance.getPoolId() + "/sandboxes/";
+        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(url);
+        builder.queryParam("page", 1);
+        builder.queryParam("page_size", 1000);
 
         given(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
                 willReturn(new ResponseEntity<UserInfoDTO>(userInfoDTO, HttpStatus.OK));
-        given(restTemplate.exchange(eq("http://localhost:8080" + "/pools/" + trainingInstance.getPoolId() + "/sandboxes/"), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
-                willReturn(new ResponseEntity<List<SandboxInfo>>(new ArrayList<>(List.of()), HttpStatus.OK));
+        given(restTemplate.exchange(eq(builder.toUriString()), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
+                willReturn(new ResponseEntity<PageResultResourcePython>(pageResult, HttpStatus.OK));
 
         mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_TRAINEE.name()));
         Exception exception = mvc.perform(post("/training-runs")
