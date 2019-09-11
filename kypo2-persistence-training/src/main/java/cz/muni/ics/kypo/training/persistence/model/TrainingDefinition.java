@@ -316,7 +316,7 @@ public class TrainingDefinition implements Serializable {
     public String toString() {
         return "TrainingDefinition{" + "id=" + id + ", title='" + title + '\'' + ", description='" + description + '\''
                 + ", prerequisities=" + Arrays.toString(prerequisities) + ", outcomes=" + Arrays.toString(outcomes) + ", state=" + state
-                + ", authors=" + authors + ", betaTestingGroup=" + betaTestingGroup + ", sandboxDefinitionRefId=" + sandboxDefinitionRefId
+                + ", authors=" + authors + ", sandboxDefinitionRefId=" + sandboxDefinitionRefId
                 + ", showStepperBar=" + showStepperBar + ", lastEdited=" + lastEdited + '}';
     }
 }
