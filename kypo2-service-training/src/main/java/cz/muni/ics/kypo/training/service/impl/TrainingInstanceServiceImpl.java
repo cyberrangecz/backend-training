@@ -357,8 +357,8 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
             UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(url);
             builder.queryParam("page", 1);
             builder.queryParam("page_size", PYTHON_RESULT_PAGE_SIZE);
-            ResponseEntity<PageResultResourcePython> response = restTemplate.exchange(builder.toUriString(), HttpMethod.GET, new HttpEntity<>(httpHeaders),
-                    new ParameterizedTypeReference<PageResultResourcePython>() {
+            ResponseEntity<PageResultResourcePython<SandboxInfo>> response = restTemplate.exchange(builder.toUriString(), HttpMethod.GET, new HttpEntity<>(httpHeaders),
+                    new ParameterizedTypeReference<PageResultResourcePython<SandboxInfo>>() {
                     });
             PageResultResourcePython<SandboxInfo> sandboxInfoPageResult = Objects.requireNonNull(response.getBody());
             List<SandboxInfo> sandboxResponse = Objects.requireNonNull(sandboxInfoPageResult.getResults());

@@ -386,7 +386,7 @@ public class TrainingRunsIT {
         given(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
                 willReturn(new ResponseEntity<UserInfoDTO>(userInfoDTO, HttpStatus.OK));
         given(restTemplate.exchange(eq(builder.toUriString()), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
-                willReturn(new ResponseEntity<PageResultResourcePython>(sandboxInfoPageResult, HttpStatus.OK));
+                willReturn(new ResponseEntity<PageResultResourcePython<SandboxInfo>>(sandboxInfoPageResult, HttpStatus.OK));
         mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_TRAINEE.name()));
         MockHttpServletResponse result = mvc.perform(post("/training-runs")
                 .param("accessToken", "pass-1234"))
@@ -454,7 +454,7 @@ public class TrainingRunsIT {
         given(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
                 willReturn(new ResponseEntity<UserInfoDTO>(userInfoDTO, HttpStatus.OK));
         given(restTemplate.exchange(eq(builder.toUriString()), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
-                willReturn(new ResponseEntity<PageResultResourcePython>(sandboxInfoPageResult, HttpStatus.OK));
+                willReturn(new ResponseEntity<PageResultResourcePython<SandboxInfo>>(sandboxInfoPageResult, HttpStatus.OK));
         mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_TRAINEE.name()));
         Exception exception = mvc.perform(post("/training-runs")
                 .param("accessToken", "pass-1234"))
@@ -529,7 +529,7 @@ public class TrainingRunsIT {
         given(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
                 willReturn(new ResponseEntity<UserInfoDTO>(userInfoDTO, HttpStatus.OK));
         given(restTemplate.exchange(eq(builder.toUriString()), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
-                willReturn(new ResponseEntity<PageResultResourcePython>(pageResult, HttpStatus.OK));
+                willReturn(new ResponseEntity<PageResultResourcePython<SandboxInfo>>(pageResult, HttpStatus.OK));
 
         mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_TRAINEE.name()));
         Exception exception = mvc.perform(post("/training-runs")
