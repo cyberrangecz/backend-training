@@ -23,6 +23,7 @@
 
     <appender name="AUDIT_CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
+            <charset>UTF-8</charset>
             <pattern>AUDIT --- [%thread] %logger{5} --- %msg%n</pattern>
         </encoder>
     </appender>
