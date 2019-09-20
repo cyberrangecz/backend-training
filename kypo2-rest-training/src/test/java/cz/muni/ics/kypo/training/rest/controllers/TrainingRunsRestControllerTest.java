@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.querydsl.core.types.Predicate;
-import cz.muni.ics.kypo.training.api.PageResultResource;
+import cz.muni.ics.kypo.training.api.RestResponses.PageResultResource;
 import cz.muni.ics.kypo.training.api.dto.IsCorrectFlagDTO;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.gamelevel.GameLevelDTO;
@@ -62,7 +62,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = {InfoLevelMapperImpl.class, TrainingInstanceMapperImpl.class, UserRefMapperImpl.class,
         TrainingDefinitionMapperImpl.class, UserRefMapperImpl.class, TrainingRunMapperImpl.class,
-        SandboxInstanceRefMapperImpl.class, BetaTestingGroupMapperImpl.class})
+        BetaTestingGroupMapperImpl.class})
 public class TrainingRunsRestControllerTest {
 
     private TrainingRunsRestController trainingRunsRestController;

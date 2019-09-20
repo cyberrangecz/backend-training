@@ -14,8 +14,8 @@ import cz.muni.ics.kypo.training.persistence.repository.*;
 import cz.muni.ics.kypo.training.service.impl.AuditEventsService;
 import cz.muni.ics.kypo.training.service.impl.SecurityService;
 import cz.muni.ics.kypo.training.service.impl.TrainingRunServiceImpl;
-import cz.muni.ics.kypo.training.utils.SandboxInfo;
-import cz.muni.ics.kypo.training.utils.PageResultResourcePython;
+import cz.muni.ics.kypo.training.api.RestResponses.PageResultResourcePython;
+import cz.muni.ics.kypo.training.api.RestResponses.SandboxInfo;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.junit.*;
@@ -86,7 +86,6 @@ public class TrainingRunServiceTest {
     private AssessmentLevel assessmentLevel;
     private InfoLevel infoLevel, infoLevel2;
     private Hint hint1, hint2;
-    private SandboxInstanceRef sandboxInstanceRef1, sandboxInstanceRef2;
     private TrainingInstance trainingInstance1, trainingInstance2;
     private UserRef participantRef;
     private SandboxInfo sandboxInfo;
@@ -121,17 +120,8 @@ public class TrainingRunServiceTest {
         trainingDefinition2.setTitle("Title2");
         trainingDefinition2.setSandboxDefinitionRefId(1L);
 
-        sandboxInstanceRef1 = new SandboxInstanceRef();
-        sandboxInstanceRef1.setId(1L);
-        sandboxInstanceRef1.setSandboxInstanceRef(7L);
-
-        sandboxInstanceRef2 = new SandboxInstanceRef();
-        sandboxInstanceRef2.setId(2L);
-        sandboxInstanceRef2.setSandboxInstanceRef(5L);
-
         trainingInstance2 = new TrainingInstance();
         trainingInstance2.setId(2L);
-        trainingInstance2.setSandboxInstanceRefs(new HashSet<>(Collections.singletonList(sandboxInstanceRef2)));
         trainingInstance2.setAccessToken("keyword-1234");
         trainingInstance2.setTrainingDefinition(trainingDefinition2);
 
@@ -144,7 +134,6 @@ public class TrainingRunServiceTest {
         trainingInstance1.setPoolId(1L);
         trainingInstance1.setAccessToken("keyword-5678");
         trainingInstance1.setTrainingDefinition(trainingDefinition);
-        trainingInstance1.setSandboxInstanceRefs(new HashSet<>(Arrays.asList(sandboxInstanceRef1, sandboxInstanceRef2)));
 
         participantRef = new UserRef();
         participantRef.setId(1L);
@@ -193,11 +182,16 @@ public class TrainingRunServiceTest {
         infoLevel2.setOrder(1);
         infoLevel2.setTrainingDefinition(trainingDefinition2);
 
+
+        sandboxInfo = new SandboxInfo();
+        sandboxInfo.setId(7L);
+        sandboxInfo.setStatus(SandboxStates.FULL_BUILD_COMPLETE.getName());
+
         trainingRun1 = new TrainingRun();
         trainingRun1.setId(1L);
         trainingRun1.setState(TRState.RUNNING);
         trainingRun1.setCurrentLevel(gameLevel);
-        trainingRun1.setSandboxInstanceRef(sandboxInstanceRef1);
+        trainingRun1.setSandboxInstanceRefId(sandboxInfo.getId());
         trainingRun1.setParticipantRef(participantRef);
         trainingRun1.setTrainingInstance(trainingInstance1);
         trainingRun1.setStartTime(LocalDateTime.of(2019, Month.JANUARY, 3, 1, 1, 1));
@@ -212,10 +206,6 @@ public class TrainingRunServiceTest {
         trainingRun2.setStartTime(LocalDateTime.of(2019, Month.JANUARY, 3, 1, 1, 1));
         trainingRun2.setEndTime(LocalDateTime.of(2019, Month.JANUARY, 3, 2, 1, 1));
 
-        sandboxInfo = new SandboxInfo();
-        sandboxInfo.setId(7L);
-        sandboxInfo.setStatus(SandboxStates.FULL_BUILD_COMPLETE.getName());
-
         assessmentLevel = new AssessmentLevel();
         assessmentLevel.setId(3L);
         assessmentLevel.setTitle("Assessment level");
@@ -223,7 +213,7 @@ public class TrainingRunServiceTest {
         assessmentLevel.setQuestions(questions);
 
         sandboxInfoPageResult = new PageResultResourcePython();
-        sandboxInfoPageResult.setResults(new ArrayList<>(Arrays.asList(sandboxInfo)));
+        sandboxInfoPageResult.setResults(new ArrayList<>(List.of(sandboxInfo)));
 
     }
 
@@ -249,16 +239,18 @@ public class TrainingRunServiceTest {
     @Test
     public void accessTrainingRun() {
         mockSpringSecurityContextForGet();
+        sandboxInfo.setLocked(false);
+        PageResultResourcePython<SandboxInfo> pythonPage = new PageResultResourcePython<SandboxInfo>();
+        pythonPage.setResults(List.of(sandboxInfo));
 
-        trainingInstance1.setTrainingDefinition(trainingDefinition);
-        given(trainingDefinitionRepository.save(any(TrainingDefinition.class))).willReturn(trainingDefinition);
         given(trainingInstanceRepository.findByStartTimeAfterAndEndTimeBeforeAndAccessToken(any(LocalDateTime.class), eq(trainingInstance1.getAccessToken()))).willReturn(Optional.ofNullable(trainingInstance1));
-        given(trainingRunRepository.findFreeSandboxesOfTrainingInstance(trainingInstance1.getId())).willReturn(new HashSet<>(Arrays.asList(sandboxInstanceRef1)));
         given(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
-                willReturn(new ResponseEntity<PageResultResourcePython>(sandboxInfoPageResult, HttpStatus.OK));
+                willReturn(new ResponseEntity<PageResultResourcePython<SandboxInfo>>(pythonPage, HttpStatus.OK));
         given(abstractLevelRepository.findAllLevelsByTrainingDefinitionId(trainingInstance1.getTrainingDefinition().getId())).willReturn(new ArrayList<>(List.of(gameLevel, infoLevel)));
         given(participantRefRepository.save(new UserRef(participantRef.getUserRefLogin()))).willReturn(participantRef);
         given(trainingRunRepository.save(any(TrainingRun.class))).willReturn(trainingRun1);
+
+        trainingInstance1.setTrainingDefinition(trainingDefinition);
         TrainingRun trainingRun = trainingRunService.accessTrainingRun(trainingInstance1.getAccessToken());
         assertEquals(trainingRun1, trainingRun);
     }
@@ -266,6 +258,9 @@ public class TrainingRunServiceTest {
     @Test
     public void accessTrainingRunWithoutAllocatedSandboxes() {
         given(trainingInstanceRepository.findByStartTimeAfterAndEndTimeBeforeAndAccessToken(any(LocalDateTime.class), any(String.class))).willReturn(Optional.of(trainingInstance2));
+
+        given(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
+                willReturn(new ResponseEntity<PageResultResourcePython>(new PageResultResourcePython<SandboxInfo>(), HttpStatus.OK));
         thrown.expect(ServiceLayerException.class);
         thrown.expectMessage("At first organizer must allocate sandboxes for training instance.");
         trainingRunService.accessTrainingRun("pass");
@@ -273,19 +268,25 @@ public class TrainingRunServiceTest {
 
     @Test
     public void accessTrainingRunWithoutFreeSandbox() {
+        sandboxInfo.setLocked(true);
+        PageResultResourcePython<SandboxInfo> pythonPage = new PageResultResourcePython<SandboxInfo>();
+        pythonPage.setResults(List.of(sandboxInfo));
         given(trainingInstanceRepository.findByStartTimeAfterAndEndTimeBeforeAndAccessToken(any(LocalDateTime.class), any(String.class))).willReturn(Optional.of(trainingInstance1));
-        given(trainingRunRepository.findFreeSandboxesOfTrainingInstance(anyLong())).willReturn(new HashSet<>());
+        given(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
+                willReturn(new ResponseEntity<PageResultResourcePython<SandboxInfo>>(pythonPage, HttpStatus.OK));
         thrown.expect(ServiceLayerException.class);
-        thrown.expectMessage("There is no available sandbox, wait a minute and try again.");
+        thrown.expectMessage("There is no available sandbox, wait a minute and try again");
         trainingRunService.accessTrainingRun("pass");
     }
 
     @Test
     public void accessTrainingRunWithoutStartingLevel() {
+        sandboxInfo.setLocked(false);
+        PageResultResourcePython<SandboxInfo> pythonPage = new PageResultResourcePython<SandboxInfo>();
+        pythonPage.setResults(List.of(sandboxInfo));
         given(trainingInstanceRepository.findByStartTimeAfterAndEndTimeBeforeAndAccessToken(any(LocalDateTime.class), any(String.class))).willReturn(Optional.of(trainingInstance1));
-        given(trainingRunRepository.findFreeSandboxesOfTrainingInstance(anyLong())).willReturn(new HashSet<>(Arrays.asList(sandboxInstanceRef1)));
         given(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
-                willReturn(new ResponseEntity<PageResultResourcePython>(sandboxInfoPageResult, HttpStatus.OK));
+                willReturn(new ResponseEntity<PageResultResourcePython<SandboxInfo>>(pythonPage, HttpStatus.OK));
         given(abstractLevelRepository.findById(anyLong())).willReturn(Optional.empty());
         thrown.expect(ServiceLayerException.class);
         thrown.expectMessage("No starting level available for this training definition");
@@ -543,7 +544,7 @@ public class TrainingRunServiceTest {
 
     @Test
     public void resumeTrainingRunWithDeletedSandbox() {
-        trainingRun1.setSandboxInstanceRef(null);
+        trainingRun1.setSandboxInstanceRefId(null);
         given(trainingRunRepository.findByIdWithLevel(any(Long.class))).willReturn(Optional.of(trainingRun1));
         thrown.expect(ServiceLayerException.class);
         thrown.expectMessage("Sandbox of this training run was already deleted, you have to start new game.");

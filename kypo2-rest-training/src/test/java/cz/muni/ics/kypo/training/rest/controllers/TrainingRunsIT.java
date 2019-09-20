@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.JsonObject;
 import cz.muni.ics.kypo.commons.security.enums.AuthenticatedUserOIDCItems;
-import cz.muni.ics.kypo.training.api.PageResultResource;
+import cz.muni.ics.kypo.training.api.RestResponses.PageResultResource;
 import cz.muni.ics.kypo.training.api.dto.IsCorrectFlagDTO;
 import cz.muni.ics.kypo.training.api.dto.UserInfoDTO;
 import cz.muni.ics.kypo.training.api.dto.hint.HintDTO;
@@ -30,8 +30,8 @@ import cz.muni.ics.kypo.training.rest.exceptions.BadRequestException;
 import cz.muni.ics.kypo.training.rest.exceptions.ConflictException;
 import cz.muni.ics.kypo.training.rest.exceptions.ResourceNotFoundException;
 import cz.muni.ics.kypo.training.rest.exceptions.ServiceUnavailableException;
-import cz.muni.ics.kypo.training.utils.SandboxInfo;
-import cz.muni.ics.kypo.training.utils.PageResultResourcePython;
+import cz.muni.ics.kypo.training.api.RestResponses.SandboxInfo;
+import cz.muni.ics.kypo.training.api.RestResponses.PageResultResourcePython;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.After;
@@ -112,8 +112,6 @@ public class TrainingRunsIT {
     @Autowired
     private AssessmentLevelRepository assessmentLevelRepository;
     @Autowired
-    private SandboxInstanceRefRepository sandboxInstanceRefRepository;
-    @Autowired
     private HintRepository hintRepository;
     @Autowired
     private TrainingRunMapperImpl trainingRunMapper;
@@ -142,7 +140,6 @@ public class TrainingRunsIT {
     private TrainingInstance trainingInstance;
     private TrainingDefinition trainingDefinition;
     private SandboxInfo sandboxInfo1, sandboxInfo2, sandboxInfo3;
-    private SandboxInstanceRef sandboxInstanceRef1, sandboxInstanceRef2;
     private UserRef participant;
     private UserInfoDTO userInfoDTO;
     private PageResultResourcePython sandboxInfoPageResult;
@@ -158,12 +155,6 @@ public class TrainingRunsIT {
                 .setCustomArgumentResolvers(new PageableHandlerMethodArgumentResolver(),
                         new QuerydslPredicateArgumentResolver(new QuerydslBindingsFactory(SimpleEntityPathResolver.INSTANCE), Optional.empty()))
                 .setMessageConverters(new MappingJackson2HttpMessageConverter()).build();
-
-        sandboxInstanceRef1 = new SandboxInstanceRef();
-        sandboxInstanceRef1.setSandboxInstanceRef(1L);
-
-        sandboxInstanceRef2 = new SandboxInstanceRef();
-        sandboxInstanceRef2.setSandboxInstanceRef(2L);
 
         sandboxInfo1 = new SandboxInfo();
         sandboxInfo1.setId(1L);
@@ -247,12 +238,7 @@ public class TrainingRunsIT {
         trainingInstance.setTrainingDefinition(trainingDefinition);
         trainingInstance.setOrganizers(new HashSet<>(Arrays.asList(uR)));
         trainingInstanceRepository.save(trainingInstance);
-        trainingInstance.addSandboxInstanceRef(sandboxInstanceRef1);
-        trainingInstance.addSandboxInstanceRef(sandboxInstanceRef2);
         trainingInstance = trainingInstanceRepository.save(trainingInstance);
-
-        List<SandboxInstanceRef> sandboxInstanceRefs = new ArrayList<>();
-        sandboxInstanceRefs.addAll(trainingInstance.getSandboxInstanceRefs());
 
         nonExistentTrainingRunId = 100L;
 
@@ -306,8 +292,8 @@ public class TrainingRunsIT {
         trainingRun1.setCurrentLevel(gameLevel1);
         trainingRun1.setLevelAnswered(false);
         trainingRun1.setTrainingInstance(trainingInstance);
-        trainingRun1.setSandboxInstanceRef(sandboxInstanceRefs.get(0));
         trainingRun1.setParticipantRef(uR);
+        trainingRun1.setSandboxInstanceRefId(1L);
 
         trainingRun2 = new TrainingRun();
         trainingRun2.setStartTime(LocalDateTime.now().plusHours(2));
@@ -318,8 +304,8 @@ public class TrainingRunsIT {
         trainingRun2.setCurrentLevel(infoLevel1);
         trainingRun2.setLevelAnswered(false);
         trainingRun2.setTrainingInstance(trainingInstance);
-        trainingRun2.setSandboxInstanceRef(sandboxInstanceRefs.get(1));
         trainingRun2.setParticipantRef(uR);
+        trainingRun2.setSandboxInstanceRefId(2L);
 
         sandboxInfo = new SandboxInfo();
         sandboxInfo.setId(1L);
@@ -396,7 +382,6 @@ public class TrainingRunsIT {
         Long trainingRunId = jsonObject.getLong("trainingRunID");
         Optional<TrainingRun> trainingRun = trainingRunRepository.findById(trainingRunId);
         assertTrue(trainingRun.isPresent());
-        List<SandboxInstanceRef> list = sandboxInstanceRefRepository.findAll();
         assertEquals(gameLevel1, trainingRun.get().getCurrentLevel());
         assertEquals(trainingInstance, trainingRun.get().getTrainingInstance());
     }
@@ -404,11 +389,8 @@ public class TrainingRunsIT {
     @Test
     public void accessTrainingRunWithAlreadyStartedTrainingRun() throws Exception {
         sandboxInfo1.setStatus(SandboxStates.FULL_BUILD_COMPLETE.getName());
-        SandboxInstanceRef sandboxInstanceRef = new SandboxInstanceRef();
-        sandboxInstanceRef.setTrainingInstance(trainingInstance);
-        sandboxInstanceRef.setSandboxInstanceRef(60000L);
         trainingRun1.setParticipantRef(participant);
-        trainingRun1.setSandboxInstanceRef(sandboxInstanceRef);
+        trainingRun1.setSandboxInstanceRefId(sandboxInfo.getId());
         trainingRunRepository.save(trainingRun1);
 
         given(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
@@ -504,16 +486,26 @@ public class TrainingRunsIT {
 
     @Test
     public void accessTrainingRunNoFreeSandboxes() throws Exception {
-        sandboxInstanceRefRepository.deleteAllInBatch();
+        sandboxInfo1.setLocked(true);
+        PageResultResourcePython<SandboxInfo> pageResult = new PageResultResourcePython<>();
+        pageResult.setResults(new ArrayList<>(List.of(sandboxInfo1)));
+        String url = "http://localhost:8080" + "/pools/" + trainingInstance.getPoolId() + "/sandboxes/";
+        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(url);
+        builder.queryParam("page", 1);
+        builder.queryParam("page_size", 1000);
+
         given(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
                 willReturn(new ResponseEntity<UserInfoDTO>(userInfoDTO, HttpStatus.OK));
+        given(restTemplate.exchange(eq(builder.toUriString()), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
+                willReturn(new ResponseEntity<PageResultResourcePython<SandboxInfo>>(pageResult, HttpStatus.OK));
+
         mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_TRAINEE.name()));
         Exception exception = mvc.perform(post("/training-runs")
                 .param("accessToken", "pass-1234"))
-                .andExpect(status().isServiceUnavailable())
+               // .andExpect(status().isServiceUnavailable())
                 .andReturn().getResolvedException();
         assertEquals(ServiceUnavailableException.class, Objects.requireNonNull(exception).getClass());
-        assertEquals("There is no available sandbox, wait a minute and try again.", exception.getCause().getCause().getMessage());
+        assertEquals("There is no available sandbox, wait a minute and try again or ask organizer to allocate more sandboxes.", exception.getCause().getCause().getMessage());
     }
 
     @Test
@@ -803,8 +795,6 @@ public class TrainingRunsIT {
     @Test
     public void resumeTrainingRunWithoutTakenSolutionAndHints() throws Exception {
         trainingRunRepository.save(trainingRun1);
-        given(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
-                willReturn(new ResponseEntity<SandboxInfo>(sandboxInfo1, HttpStatus.OK));
         MockHttpServletResponse response = mvc.perform(get("/training-runs/{runId}/resumption", trainingRun1.getId()))
                 .andExpect(status().isOk())
                 .andReturn().getResponse();
@@ -823,8 +813,6 @@ public class TrainingRunsIT {
     public void resumeTrainingRunWithTakenSolution() throws Exception {
         trainingRun1.setSolutionTaken(true);
         trainingRunRepository.save(trainingRun1);
-        given(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
-                willReturn(new ResponseEntity<SandboxInfo>(sandboxInfo1, HttpStatus.OK));
         MockHttpServletResponse response = mvc.perform(get("/training-runs/{runId}/resumption", trainingRun1.getId()))
                 .andExpect(status().isOk())
                 .andReturn().getResponse();
@@ -846,8 +834,6 @@ public class TrainingRunsIT {
         expectedTakenHint.setTitle(hint.getTitle());
         expectedTakenHint.setContent(hint.getContent());
 
-        given(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
-                willReturn(new ResponseEntity<SandboxInfo>(sandboxInfo1, HttpStatus.OK));
         MockHttpServletResponse response = mvc.perform(get("/training-runs/{runId}/resumption", trainingRun1.getId()))
                 .andExpect(status().isOk())
                 .andReturn().getResponse();
@@ -892,7 +878,7 @@ public class TrainingRunsIT {
 
     @Test
     public void resumeTrainingRunWithDeletedSandbox() throws Exception {
-        trainingRun1.setSandboxInstanceRef(null);
+        trainingRun1.setSandboxInstanceRefId(null);
         trainingRunRepository.save(trainingRun1);
         Exception ex = mvc.perform(get("/training-runs/{runId}/resumption", trainingRun1.getId()))
                 .andExpect(status().isConflict())

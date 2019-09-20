@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.querydsl.core.types.Predicate;
-import cz.muni.ics.kypo.training.api.PageResultResource;
+import cz.muni.ics.kypo.training.api.RestResponses.PageResultResource;
 import cz.muni.ics.kypo.training.api.dto.UserInfoDTO;
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceCreateDTO;
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceDTO;
@@ -102,7 +102,6 @@ public class TrainingInstancesRestControllerTest {
         trainingInstance1 = new TrainingInstance();
         trainingInstance1.setId(1L);
         trainingInstance1.setTitle("test1");
-        trainingInstance1.setSandboxInstanceRefs(new HashSet<>());
 
         trainingInstance2 = new TrainingInstance();
         trainingInstance2.setId(2L);
@@ -254,23 +253,6 @@ public class TrainingInstancesRestControllerTest {
                 mockMvc.perform(delete("/training-instances" + "/{instanceId}/" + "sandbox-instances", 698L)
                         .param("sandboxIds", "1")
                         .param("sandboxIds", "2"))
-                        .andExpect(status().isNotFound()).andReturn().getResolvedException();
-        assertEquals(ResourceNotFoundException.class, exception.getClass());
-    }
-
-    @Test
-    public void reallocateSandbox() throws Exception {
-        mockMvc.perform(post("/training-instances" + "/{instanceId}/" + "sandbox-instances" + "/1", 1L))
-                .andExpect(status().isAccepted());
-    }
-
-
-    @Test
-    public void reallocateSandboxWithFacadeException() throws Exception {
-        Exception exceptionThrow = new ServiceLayerException("message", ErrorCode.RESOURCE_NOT_FOUND);
-        willThrow(new FacadeLayerException(exceptionThrow)).given(trainingInstanceFacade).reallocateSandbox(any(Long.class), any(Long.class));
-        Exception exception =
-                mockMvc.perform(post("/training-instances" + "/{instanceId}/" + "sandbox-instances" + "/1", 698L))
                         .andExpect(status().isNotFound()).andReturn().getResolvedException();
         assertEquals(ResourceNotFoundException.class, exception.getClass());
     }

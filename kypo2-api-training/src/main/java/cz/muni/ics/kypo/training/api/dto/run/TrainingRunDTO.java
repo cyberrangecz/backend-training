@@ -1,6 +1,5 @@
 package cz.muni.ics.kypo.training.api.dto.run;
 
-import cz.muni.ics.kypo.training.api.dto.SandboxInstanceRefDTO;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
 import cz.muni.ics.kypo.training.api.enums.TRState;
@@ -26,7 +25,7 @@ public class TrainingRunDTO {
     private LocalDateTime endTime;
     private String eventLogReference;
     private TRState state;
-    private SandboxInstanceRefDTO sandboxInstanceRef;
+    private Long sandboxInstanceRefId;
     private UserRefDTO participantRef;
 
     /**
@@ -126,20 +125,20 @@ public class TrainingRunDTO {
     /**
      * Gets sandbox instance ref.
      *
-     * @return the {@link SandboxInstanceRefDTO}
+     * @return the sandbox instance ref id
      */
     @ApiModelProperty(value = "Reference to the received sandbox.")
-    public SandboxInstanceRefDTO getSandboxInstanceRef() {
-        return sandboxInstanceRef;
+    public Long getSandboxInstanceRefId() {
+        return sandboxInstanceRefId;
     }
 
     /**
      * Sets sandbox instance ref.
      *
-     * @param sandboxInstanceRef the {@link SandboxInstanceRefDTO}
+     * @param sandboxInstanceRefId the sandbox instance ref id
      */
-    public void setSandboxInstanceRef(SandboxInstanceRefDTO sandboxInstanceRef) {
-        this.sandboxInstanceRef = sandboxInstanceRef;
+    public void setSandboxInstanceRefId(Long sandboxInstanceRefId) {
+        this.sandboxInstanceRefId = sandboxInstanceRefId;
     }
 
     /**
@@ -169,7 +168,7 @@ public class TrainingRunDTO {
                 ", endTime=" + endTime +
                 ", eventLogReference='" + eventLogReference + '\'' +
                 ", state=" + state +
-                ", sandboxInstanceRef=" + sandboxInstanceRef +
+                ", sandboxInstanceRefId=" + sandboxInstanceRefId +
                 ", participantRef=" + participantRef +
                 '}';
     }

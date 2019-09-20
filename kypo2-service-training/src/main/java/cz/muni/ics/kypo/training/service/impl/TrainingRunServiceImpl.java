@@ -11,6 +11,7 @@ import cz.muni.ics.kypo.training.annotations.aop.TrackTime;
 import cz.muni.ics.kypo.training.annotations.security.IsOrganizerOrAdmin;
 import cz.muni.ics.kypo.training.annotations.security.IsTraineeOrAdmin;
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalWO;
+import cz.muni.ics.kypo.training.api.RestResponses.PageResultResourcePython;
 import cz.muni.ics.kypo.training.enums.SandboxStates;
 import cz.muni.ics.kypo.training.exceptions.ErrorCode;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
@@ -20,8 +21,7 @@ import cz.muni.ics.kypo.training.persistence.model.enums.TRState;
 import cz.muni.ics.kypo.training.persistence.repository.*;
 import cz.muni.ics.kypo.training.service.TrainingRunService;
 import cz.muni.ics.kypo.training.utils.AssessmentUtil;
-import cz.muni.ics.kypo.training.utils.SandboxInfo;
-import cz.muni.ics.kypo.training.utils.PageResultResourcePython;
+import cz.muni.ics.kypo.training.api.RestResponses.SandboxInfo;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -116,7 +116,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
     @IsOrganizerOrAdmin
     public void deleteTrainingRun(Long trainingRunId) {
         TrainingRun trainingRun = trainingRunRepository.findById(trainingRunId).orElseThrow(() -> new ServiceLayerException("Training Run with runId: " + trainingRunId + " could not be deleted because it is not in the database.", ErrorCode.RESOURCE_NOT_FOUND));
-        if (trainingRun.getSandboxInstanceRef() == null) {
+        if (trainingRun.getSandboxInstanceRefId() == null) {
             try {
                 HttpHeaders httpHeaders = new HttpHeaders();
                 httpHeaders.set("Accept", MediaType.APPLICATION_JSON_VALUE);
@@ -134,7 +134,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
             }
             trainingRunRepository.delete(trainingRun);
         } else {
-            throw new ServiceLayerException("Could not delete training run (id: " + trainingRunId + ") with associated sandbox (id: " + trainingRun.getSandboxInstanceRef().getSandboxInstanceRef() +
+            throw new ServiceLayerException("Could not delete training run (id: " + trainingRunId + ") with associated sandbox (id: " + trainingRun.getSandboxInstanceRefId() +
                     "). Please firstly, delete associated sandbox.", ErrorCode.RESOURCE_CONFLICT);
         }
     }
@@ -218,24 +218,29 @@ public class TrainingRunServiceImpl implements TrainingRunService {
         if (trainingInstance.getPoolId() == null) {
             throw new ServiceLayerException("At first organizer must allocate sandboxes for training instance.", ErrorCode.RESOURCE_CONFLICT);
         }
-        Set<SandboxInstanceRef> freeSandboxes = trainingRunRepository.findFreeSandboxesOfTrainingInstance(trainingInstance.getId());
-        if (!freeSandboxes.isEmpty()) {
-            SandboxInstanceRef sandboxInstanceRef = getReadySandboxInstanceRef(freeSandboxes, trainingInstance.getPoolId());
-            List<AbstractLevel> levels = abstractLevelRepository.findAllLevelsByTrainingDefinitionId(trainingInstance.getTrainingDefinition().getId());
-            if (levels.isEmpty())
-                throw new ServiceLayerException("No starting level available for this training definition.", ErrorCode.RESOURCE_NOT_FOUND);
-            Collections.sort(levels, Comparator.comparing(AbstractLevel::getOrder));
+        Long sandboxInstanceRef = getReadySandboxInstanceRef(trainingInstance.getPoolId());
+        List<AbstractLevel> levels = abstractLevelRepository.findAllLevelsByTrainingDefinitionId(trainingInstance.getTrainingDefinition().getId());
+        if (levels.isEmpty())
+            throw new ServiceLayerException("No starting level available for this training definition.", ErrorCode.RESOURCE_NOT_FOUND);
+        Collections.sort(levels, Comparator.comparing(AbstractLevel::getOrder));
 
-            TrainingRun trainingRun = getNewTrainingRun(levels.get(0), trainingInstance,
-                    TRState.RUNNING, LocalDateTime.now(Clock.systemUTC()), trainingInstance.getEndTime(), sandboxInstanceRef);
-            trainingRun = create(trainingRun);
-            // audit this action to the Elasticsearch
-            auditEventsService.auditTrainingRunStartedAction(trainingRun);
-            auditEventsService.auditLevelStartedAction(trainingRun);
-            return trainingRun;
-        } else {
-            throw new ServiceLayerException("There is no available sandbox, wait a minute and try again.", ErrorCode.NO_AVAILABLE_SANDBOX);
+        TrainingRun trainingRun = getNewTrainingRun(levels.get(0), trainingInstance,
+                TRState.RUNNING, LocalDateTime.now(Clock.systemUTC()), trainingInstance.getEndTime(), sandboxInstanceRef);
+        trainingRun = create(trainingRun);
+        // audit this action to the Elasticsearch
+        HttpHeaders httpHeaders = new HttpHeaders();
+        httpHeaders.setContentType(MediaType.APPLICATION_JSON);
+        String requestJson = "{}";
+        try{
+            restTemplate.exchange(kypoOpenStackURI + "/sandboxes/" + sandboxInstanceRef + "/lock/",
+                    HttpMethod.POST, new HttpEntity<>(requestJson, httpHeaders), String.class);
+        } catch (HttpClientErrorException ex){
+            LOG.error(ex.getMessage());
         }
+
+        auditEventsService.auditTrainingRunStartedAction(trainingRun);
+        auditEventsService.auditLevelStartedAction(trainingRun);
+        return trainingRun;
     }
 
     @Override
@@ -251,7 +256,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
         if (trainingRun.getTrainingInstance().getEndTime().isBefore(LocalDateTime.now(Clock.systemUTC()))) {
             throw new ServiceLayerException("Cannot resume training run after end of training instance.", ErrorCode.RESOURCE_CONFLICT);
         }
-        if (trainingRun.getSandboxInstanceRef() == null) {
+        if (trainingRun.getSandboxInstanceRefId() == null) {
             throw new ServiceLayerException("Sandbox of this training run was already deleted, you have to start new game.", ErrorCode.RESOURCE_CONFLICT);
         }
         auditEventsService.auditTrainingRunResumedAction(trainingRun);
@@ -259,7 +264,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
     }
 
     private TrainingRun getNewTrainingRun(AbstractLevel currentLevel, TrainingInstance trainingInstance,
-                                          TRState state, LocalDateTime startTime, LocalDateTime endTime, SandboxInstanceRef sandboxInstanceRef) {
+                                          TRState state, LocalDateTime startTime, LocalDateTime endTime, Long sandboxInstanceRefId) {
         TrainingRun newTrainingRun = new TrainingRun();
         newTrainingRun.setCurrentLevel(currentLevel);
 
@@ -274,14 +279,11 @@ public class TrainingRunServiceImpl implements TrainingRunService {
         newTrainingRun.setTrainingInstance(trainingInstance);
         newTrainingRun.setStartTime(startTime);
         newTrainingRun.setEndTime(endTime);
-        newTrainingRun.setSandboxInstanceRef(sandboxInstanceRef);
+        newTrainingRun.setSandboxInstanceRefId(sandboxInstanceRefId);
         return newTrainingRun;
     }
 
-    private SandboxInstanceRef getReadySandboxInstanceRef(Set<SandboxInstanceRef> sandboxInstancePool, Long poolId) {
-        List<Long> idsOfUnoccupiedSandboxes = new ArrayList<>();
-        sandboxInstancePool.forEach(sandboxInstanceRef -> idsOfUnoccupiedSandboxes.add(sandboxInstanceRef.getSandboxInstanceRef()));
-
+    private Long getReadySandboxInstanceRef(Long poolId) {
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.set("Accept", MediaType.APPLICATION_JSON_VALUE);
         String url = kypoOpenStackURI + "/pools/" + poolId + "/sandboxes/";
@@ -293,15 +295,15 @@ public class TrainingRunServiceImpl implements TrainingRunService {
                 });
         PageResultResourcePython<SandboxInfo> sandboxInfoPageResult = Objects.requireNonNull(response.getBody());
         List<SandboxInfo> sandboxInfoList = Objects.requireNonNull(sandboxInfoPageResult.getResults());
-        sandboxInfoList.removeIf(sandboxInfo -> !sandboxInfo.getStatus().contains(SandboxStates.FULL_BUILD_COMPLETE.getName()) || !idsOfUnoccupiedSandboxes.contains(sandboxInfo.getId()));
-        if (sandboxInfoList.isEmpty()) {
+        List<Long> readySandboxesIds = new ArrayList<>();
+        sandboxInfoList.forEach(sandboxInfo -> {
+            if (sandboxInfo.getStatus().contains(SandboxStates.FULL_BUILD_COMPLETE.getName()) && !sandboxInfo.isLocked())
+                readySandboxesIds.add(sandboxInfo.getId());
+        });
+        if (readySandboxesIds.isEmpty()) {
             throw new ServiceLayerException("There is no available sandbox, wait a minute and try again or ask organizer to allocate more sandboxes.", ErrorCode.NO_AVAILABLE_SANDBOX);
         } else {
-            return sandboxInstancePool
-                    .stream()
-                    .filter(sandboxInstanceRef -> sandboxInstanceRef.getSandboxInstanceRef().equals(sandboxInfoList.get(0).getId()))
-                    .findFirst()
-                    .get();
+            return readySandboxesIds.get(0);
         }
     }
 

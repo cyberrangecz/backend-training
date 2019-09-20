@@ -30,7 +30,7 @@ public class TrainingInstanceCreateDTO {
     private String title;
     @NotNull(message = "{traininginstancecreate.poolSize.NotNull.message}")
     @Min(value = 1, message = "{traininginstancecreate.poolSize.Min.message}")
-    @Max(value = 100, message = "{traininginstancecreate.poolSize.Max.message}")
+    @Max(value = 64, message = "{traininginstancecreate.poolSize.Max.message}")
     private int poolSize;
     @NotEmpty(message = "{traininginstancecreate.accessToken.NotEmpty.message}")
     private String accessToken;

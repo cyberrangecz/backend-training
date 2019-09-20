@@ -6,7 +6,7 @@ import com.github.fge.jackson.JsonLoader;
 import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalRO;
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalWO;
-import cz.muni.ics.kypo.training.api.PageResultResource;
+import cz.muni.ics.kypo.training.api.RestResponses.PageResultResource;
 import cz.muni.ics.kypo.training.api.dto.AbstractLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.BasicLevelInfoDTO;
 import cz.muni.ics.kypo.training.api.dto.IsCorrectFlagDTO;
@@ -23,7 +23,6 @@ import cz.muni.ics.kypo.training.exceptions.FacadeLayerException;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.mapping.mapstruct.*;
 import cz.muni.ics.kypo.training.persistence.model.*;
-import cz.muni.ics.kypo.training.service.TrainingInstanceService;
 import cz.muni.ics.kypo.training.service.TrainingRunService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,19 +58,17 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
     private AssessmentLevelMapper assessmentLevelMapper;
     private InfoLevelMapper infoLevelMapper;
     private HintMapper hintMapper;
-    private TrainingInstanceService trainingInstanceService;
 
     @Autowired
     public TrainingRunFacadeImpl(TrainingRunService trainingRunService, TrainingRunMapper trainingRunMapper,
                                  GameLevelMapper gameLevelMapper, AssessmentLevelMapper assessmentLevelMapper,
-                                 InfoLevelMapper infoLevelMapper, HintMapper hintMapper, TrainingInstanceService trainingInstanceService) {
+                                 InfoLevelMapper infoLevelMapper, HintMapper hintMapper) {
         this.trainingRunService = trainingRunService;
         this.trainingRunMapper = trainingRunMapper;
         this.gameLevelMapper = gameLevelMapper;
         this.assessmentLevelMapper = assessmentLevelMapper;
         this.infoLevelMapper = infoLevelMapper;
         this.hintMapper = hintMapper;
-        this.trainingInstanceService = trainingInstanceService;
     }
 
     @Override
@@ -296,7 +293,7 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
         accessTrainingRunDTO.setAbstractLevelDTO(getCorrectAbstractLevelDTO(trainingRun.getCurrentLevel()));
         accessTrainingRunDTO.setShowStepperBar(trainingRun.getTrainingInstance().getTrainingDefinition().isShowStepperBar());
         accessTrainingRunDTO.setInfoAboutLevels(getInfoAboutLevels(trainingRun.getCurrentLevel().getTrainingDefinition().getId()));
-        accessTrainingRunDTO.setSandboxInstanceId(trainingRun.getSandboxInstanceRef().getSandboxInstanceRef());
+        accessTrainingRunDTO.setSandboxInstanceRefId(trainingRun.getSandboxInstanceRefId());
         accessTrainingRunDTO.setInstanceId(trainingRun.getTrainingInstance().getId());
         accessTrainingRunDTO.setStartTime(trainingRun.getStartTime());
         return accessTrainingRunDTO;

@@ -3,7 +3,7 @@ package cz.muni.ics.kypo.training.rest.controllers;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.querydsl.core.types.Predicate;
-import cz.muni.ics.kypo.training.api.PageResultResource;
+import cz.muni.ics.kypo.training.api.RestResponses.PageResultResource;
 import cz.muni.ics.kypo.training.api.dto.*;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelUpdateDTO;
 import cz.muni.ics.kypo.training.api.dto.gamelevel.GameLevelUpdateDTO;
@@ -295,18 +295,6 @@ public class TrainingDefinitionsRestControllerTest {
                 .andReturn().getResponse();
         assertEquals(convertObjectToJsonBytes(convertObjectToJsonBytes(trainingDefinitionDTOPageResultResource)), result.getContentAsString());
     }
-
-//    @Test
-//    public void findAllTrainingDefinitionsBySandboxDefinitionId() throws Exception {
-//        String valueTi = convertObjectToJsonBytes(trainingDefinitionDTOPageResultResource);
-//        given(objectMapper.writeValueAsString(any(Object.class))).willReturn(valueTi);
-//        given(trainingDefinitionFacade.findAllBySandboxDefinitionId(any(Long.class), any(Pageable.class))).willReturn(trainingDefinitionDTOPageResultResource);
-//        MockHttpServletResponse result = mockMvc.perform(get("/training-definitions/sandbox-definitions" + "/{id}", 1L))
-//                .andExpect(status().isOk())
-//                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-//                .andReturn().getResponse();
-//        assertEquals(convertObjectToJsonBytes(convertObjectToJsonBytes(trainingDefinitionDTOPageResultResource)), result.getContentAsString());
-//    }
 
     @Test
     public void updateTrainingDefinition() throws Exception {

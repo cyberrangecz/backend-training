@@ -35,7 +35,6 @@ public class TrainingRunEntityTest {
 
     private TrainingRun trainingRun1, trainingRun2;
     private TrainingInstance trainingInstance;
-    private SandboxInstanceRef sandboxInstanceRef;
     private TrainingDefinition trainingDefinition;
     private InfoLevel infoLevel;
     private UserRef participantRef;
@@ -47,7 +46,6 @@ public class TrainingRunEntityTest {
     @Before
     public void init() {
         trainingInstance = new TrainingInstance();
-        sandboxInstanceRef = new SandboxInstanceRef();
         trainingDefinition = new TrainingDefinition();
         infoLevel = new InfoLevel();
         infoLevel.setTitle("infoLevel");
@@ -65,8 +63,6 @@ public class TrainingRunEntityTest {
         trainingInstance.setStartTime(LocalDateTime.now());
         trainingInstance.setEndTime(LocalDateTime.now());
         trainingInstance.setTitle("title");
-        sandboxInstanceRef.setTrainingInstance(trainingInstance);
-        sandboxInstanceRef.setSandboxInstanceRef(1L);
 
     }
 
@@ -80,9 +76,6 @@ public class TrainingRunEntityTest {
         trainingRun1.setParticipantRef(entityManager.persist(participantRef));
         trainingRun1.setTrainingInstance(entityManager.persist(trainingInstance));
 
-
-        sandboxInstanceRef.setTrainingInstance(trainingInstance);
-        trainingRun1.setSandboxInstanceRef(entityManager.persist(sandboxInstanceRef));
         TrainingRun tr = this.entityManager.persistFlushFind(trainingRun1);
         assertEquals(TRState.RUNNING, tr.getState());
     }

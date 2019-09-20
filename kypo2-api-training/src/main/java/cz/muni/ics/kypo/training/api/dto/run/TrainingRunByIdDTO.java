@@ -1,7 +1,6 @@
 package cz.muni.ics.kypo.training.api.dto.run;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import cz.muni.ics.kypo.training.api.dto.SandboxInstanceRefDTO;
 import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
 import cz.muni.ics.kypo.training.api.enums.TRState;
 import cz.muni.ics.kypo.training.converters.LocalDateTimeUTCSerializer;
@@ -25,7 +24,7 @@ public class TrainingRunByIdDTO {
 	private LocalDateTime endTime;
 	private String eventLogReference;
 	private TRState state;
-	private SandboxInstanceRefDTO sandboxInstanceRef;
+	private Long sandboxInstanceRefId;
 	private UserRefDTO participantRef;
 	private Long definitionId;
 	private Long instanceId;
@@ -125,23 +124,23 @@ public class TrainingRunByIdDTO {
 		this.state = state;
 	}
 
-	/**
-	 * Gets sandbox instance reference.
-	 *
-	 * @return the {@link SandboxInstanceRefDTO}
-	 */
-	@ApiModelProperty(value = "Reference to the received sandbox.")
-	public SandboxInstanceRefDTO getSandboxInstanceRef() {
-		return sandboxInstanceRef;
-	}
 
 	/**
-	 * Sets sandbox instance reference.
+	 * Gets sandbox instance id.
 	 *
-	 * @param sandboxInstanceRef the {@link SandboxInstanceRefDTO}
+	 * @return the sandbox instance id
 	 */
-	public void setSandboxInstanceRef(SandboxInstanceRefDTO sandboxInstanceRef) {
-		this.sandboxInstanceRef = sandboxInstanceRef;
+	@ApiModelProperty(value = "Reference to the received sandbox.")
+	public Long getSandboxInstanceRefId() {
+		return sandboxInstanceRefId;
+	}
+	/**
+	 * Sets sandbox instance id.
+	 *
+	 * @param sandboxInstanceRefId the sandbox instance id
+	 */
+	public void setSandboxInstanceRefId(Long sandboxInstanceRefId) {
+		this.sandboxInstanceRefId = sandboxInstanceRefId;
 	}
 
 	/**
@@ -228,7 +227,7 @@ public class TrainingRunByIdDTO {
 				", endTime=" + endTime +
 				", eventLogReference='" + eventLogReference + '\'' +
 				", state=" + state +
-				", sandboxInstanceRef=" + sandboxInstanceRef +
+				", sandboxInstanceRefId=" + sandboxInstanceRefId +
 				", participantRef=" + participantRef +
 				", definitionId=" + definitionId +
 				", instanceId=" + instanceId +

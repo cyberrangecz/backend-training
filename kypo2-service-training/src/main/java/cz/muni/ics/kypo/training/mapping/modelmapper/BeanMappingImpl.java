@@ -1,7 +1,7 @@
 package cz.muni.ics.kypo.training.mapping.modelmapper;
 
-import cz.muni.ics.kypo.training.api.PageResultResource;
-import cz.muni.ics.kypo.training.api.PageResultResource.Pagination;
+import cz.muni.ics.kypo.training.api.RestResponses.PageResultResource;
+import cz.muni.ics.kypo.training.api.RestResponses.PageResultResource.Pagination;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;

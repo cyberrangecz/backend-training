@@ -61,7 +61,7 @@ public interface TrainingInstanceRepository extends JpaRepository<TrainingInstan
      * @param pageable  the pageable
      * @return page of all {@link TrainingInstance}
      */
-    @EntityGraph(attributePaths = {"trainingDefinition.authors", "organizers", "sandboxInstanceRefs", "trainingDefinition.betaTestingGroup", "trainingDefinition.betaTestingGroup.organizers"})
+    @EntityGraph(attributePaths = {"trainingDefinition.authors", "organizers", "trainingDefinition.betaTestingGroup", "trainingDefinition.betaTestingGroup.organizers"})
     Page<TrainingInstance> findAll(Predicate predicate, Pageable pageable);
 
     /**
@@ -80,7 +80,7 @@ public interface TrainingInstanceRepository extends JpaRepository<TrainingInstan
      * @param id id of training instance
      * @return {@link TrainingInstance}
      */
-    @EntityGraph(attributePaths = {"trainingDefinition.authors", "organizers", "sandboxInstanceRefs"})
+    @EntityGraph(attributePaths = {"trainingDefinition.authors", "organizers"})
     Optional<TrainingInstance> findById(Long id);
 
 
@@ -99,7 +99,7 @@ public interface TrainingInstanceRepository extends JpaRepository<TrainingInstan
      * @param instanceId the instance id
      * @return {@link TrainingInstance} including its associated {@link TrainingDefinition}
      */
-    @Query("SELECT ti FROM TrainingInstance ti LEFT OUTER JOIN FETCH ti.organizers LEFT OUTER JOIN FETCH ti.sandboxInstanceRefs JOIN FETCH"
+    @Query("SELECT ti FROM TrainingInstance ti LEFT OUTER JOIN FETCH ti.organizers JOIN FETCH"
             + " ti.trainingDefinition td LEFT OUTER JOIN FETCH td.authors LEFT OUTER JOIN FETCH td.betaTestingGroup btg LEFT OUTER JOIN FETCH btg.organizers WHERE ti.id = :instanceId")
     Optional<TrainingInstance> findByIdIncludingDefinition(@Param("instanceId") Long instanceId);
 

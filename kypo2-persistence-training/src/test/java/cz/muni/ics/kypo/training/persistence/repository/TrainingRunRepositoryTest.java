@@ -1,12 +1,9 @@
 package cz.muni.ics.kypo.training.persistence.repository;
 
-import com.querydsl.core.types.Predicate;
-
 import cz.muni.ics.kypo.training.persistence.config.PersistenceConfigTest;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.model.enums.TDState;
 import cz.muni.ics.kypo.training.persistence.model.enums.TRState;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -24,7 +21,6 @@ import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 import static org.junit.Assert.*;
 
@@ -41,7 +37,6 @@ public class TrainingRunRepositoryTest {
 
     private TrainingRun trainingRun1, trainingRun2;
     private TrainingInstance trainingInstance;
-    private SandboxInstanceRef sandboxInstanceRef1, sandboxInstanceRef2, sandboxInstanceRef3;
     private TrainingDefinition trainingDefinition;
     private InfoLevel infoLevel;
     private UserRef participantRef;
@@ -55,13 +50,6 @@ public class TrainingRunRepositoryTest {
     @Before
     public void init() {
         betaTestingGroup = new BetaTestingGroup();
-
-        sandboxInstanceRef1 = new SandboxInstanceRef();
-        sandboxInstanceRef1.setSandboxInstanceRef(1L);
-        sandboxInstanceRef2 = new SandboxInstanceRef();
-        sandboxInstanceRef2.setSandboxInstanceRef(2L);
-        sandboxInstanceRef3 = new SandboxInstanceRef();
-        sandboxInstanceRef3.setSandboxInstanceRef(3L);
 
         trainingDefinition = new TrainingDefinition();
         trainingDefinition.setState(TDState.ARCHIVED);
@@ -96,8 +84,7 @@ public class TrainingRunRepositoryTest {
         trainingRun2.setCurrentLevel(entityManager.persist(infoLevel));
         trainingRun2.setParticipantRef(entityManager.persist(participantRef));
         trainingRun2.setTrainingInstance(entityManager.persist(trainingInstance));
-        sandboxInstanceRef2.setTrainingInstance(trainingInstance);
-        trainingRun2.setSandboxInstanceRef(entityManager.persist(sandboxInstanceRef2));
+        trainingRun2.setSandboxInstanceRefId(1L);
 
         trainingRun1 = new TrainingRun();
         trainingRun1.setStartTime(LocalDateTime.now());
@@ -106,13 +93,7 @@ public class TrainingRunRepositoryTest {
         trainingRun1.setCurrentLevel(entityManager.persist(infoLevel));
         trainingRun1.setParticipantRef(entityManager.persist(participantRef));
         trainingRun1.setTrainingInstance(entityManager.persist(trainingInstance));
-        sandboxInstanceRef1.setTrainingInstance(trainingInstance);
-        trainingRun1.setSandboxInstanceRef(entityManager.persist(sandboxInstanceRef1));
-
-        sandboxInstanceRef2.setTrainingInstance(trainingInstance);
-        entityManager.persist(sandboxInstanceRef2);
-        sandboxInstanceRef3.setTrainingInstance(trainingInstance);
-        entityManager.persist(sandboxInstanceRef3);
+        trainingRun1.setSandboxInstanceRefId(2L);
 
         pageable = PageRequest.of(0, 10);
     }
@@ -184,13 +165,6 @@ public class TrainingRunRepositoryTest {
     }
 
     @Test
-    public void getAllocatedSandboxInstanceRefsOfTrainingInstance() {
-        entityManager.persist(trainingRun1);
-        Set<SandboxInstanceRef> sandboxInstanceRefs = trainingRunRepository.findFreeSandboxesOfTrainingInstance(trainingInstance.getId());
-        assertEquals(2, sandboxInstanceRefs.size());
-    }
-
-    @Test
     public void deleteTrainingRunsByTrainingInstance() {
         entityManager.persist(trainingRun1);
         entityManager.persist(trainingRun2);
@@ -201,10 +175,4 @@ public class TrainingRunRepositoryTest {
         assertFalse(trainingRunsAfterDelete.getContent().contains(trainingRun2));
     }
 
-    @Test
-    public void findBySandboxInstanceRef() {
-        entityManager.persist(trainingRun1);
-        Optional<TrainingRun> trainingRun = trainingRunRepository.findBySandboxInstanceRef(sandboxInstanceRef1);
-        assertTrue(trainingRun.isPresent());
-    }
 }
