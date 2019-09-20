@@ -7,7 +7,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.JsonObject;
 import cz.muni.ics.kypo.commons.security.enums.AuthenticatedUserOIDCItems;
-import cz.muni.ics.kypo.training.api.PageResultResource;
+import cz.muni.ics.kypo.training.api.RestResponses.PageResultResource;
 import cz.muni.ics.kypo.training.api.dto.UserInfoDTO;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelUpdateDTO;
@@ -116,9 +116,6 @@ public class TrainingDefinitionsIT {
     private GameLevelRepository gameLevelRepository;
     @Autowired
     private InfoLevelRepository infoLevelRepository;
-    @Autowired
-    private SandboxInstanceRefRepository sandboxInstanceRefRepository;
-
     @Autowired
     private AssessmentLevelRepository assessmentLevelRepository;
     @Autowired
@@ -298,7 +295,6 @@ public class TrainingDefinitionsIT {
         updateForNonexistingDefinition.setShowStepperBar(true);
 
         trainingInstance = new TrainingInstance();
-        trainingInstance.setSandboxInstanceRefs(new HashSet<>());
         trainingInstance.setPoolSize(5);
         trainingInstance.setOrganizers(Set.of(author1));
         trainingInstance.setAccessToken("pref-7895");

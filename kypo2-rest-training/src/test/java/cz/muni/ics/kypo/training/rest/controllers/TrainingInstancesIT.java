@@ -6,7 +6,7 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.google.gson.JsonObject;
 import cz.muni.csirt.kypo.elasticsearch.service.TrainingEventsService;
 import cz.muni.ics.kypo.commons.security.enums.AuthenticatedUserOIDCItems;
-import cz.muni.ics.kypo.training.api.PageResultResource;
+import cz.muni.ics.kypo.training.api.RestResponses.PageResultResource;
 import cz.muni.ics.kypo.training.api.dto.UserInfoDTO;
 import cz.muni.ics.kypo.training.api.dto.run.TrainingRunDTO;
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceCreateDTO;
@@ -25,8 +25,9 @@ import cz.muni.ics.kypo.training.rest.controllers.config.DBTestUtil;
 import cz.muni.ics.kypo.training.rest.controllers.config.RestConfigTest;
 import cz.muni.ics.kypo.training.rest.exceptions.ConflictException;
 import cz.muni.ics.kypo.training.rest.exceptions.ResourceNotFoundException;
-import cz.muni.ics.kypo.training.utils.SandboxInfo;
-import cz.muni.ics.kypo.training.utils.SandboxPoolInfo;
+import cz.muni.ics.kypo.training.api.RestResponses.PageResultResourcePython;
+import cz.muni.ics.kypo.training.api.RestResponses.SandboxInfo;
+import cz.muni.ics.kypo.training.api.RestResponses.SandboxPoolInfo;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -115,7 +116,6 @@ public class TrainingInstancesIT {
     private TrainingInstanceCreateDTO trainingInstanceCreateDTO;
     private TrainingInstanceUpdateDTO trainingInstanceUpdateDTO;
     private TrainingRun trainingRun1, trainingRun2;
-    private SandboxInstanceRef sandboxInstanceRef1, sandboxInstanceRef2;
     private TrainingDefinition trainingDefinition;
     private UserRef organizer1, organizer2;
     private UserInfoDTO userInfoDTO;
@@ -138,11 +138,6 @@ public class TrainingInstancesIT {
         organizer1 = createUserRef("778932@muni.cz", "Peter Černý", "Peter", "Černý", "https://oidc.muni.cz", 1L);
         organizer2 = createUserRef("773254@muni.cz", "Jakub Plátal", "Jakub", "Plátal", "https://oidc.muni.cz", 2L);
         userRefRepository.saveAll(Set.of(organizer1, organizer2));
-
-        sandboxInstanceRef1 = new SandboxInstanceRef();
-        sandboxInstanceRef1.setSandboxInstanceRef(1L);
-        sandboxInstanceRef2 = new SandboxInstanceRef();
-        sandboxInstanceRef2.setSandboxInstanceRef(2L);
 
         sandboxInfo1 = new SandboxInfo();
         sandboxInfo1.setId(1L);
@@ -187,8 +182,8 @@ public class TrainingInstancesIT {
         finishedTrainingInstance.setTitle("Finished training instance");
         finishedTrainingInstance.setAccessToken("token-1254");
         finishedTrainingInstance.setPoolSize(5);
+        finishedTrainingInstance.setPoolId(8L);
         finishedTrainingInstance.setOrganizers(new HashSet<>(Arrays.asList(organizer1)));
-        finishedTrainingInstance.setSandboxInstanceRefs(new HashSet<>(Arrays.asList(sandboxInstanceRef1)));
 
         notConcludedTrainingInstance = new TrainingInstance();
         notConcludedTrainingInstance.setStartTime(LocalDateTime.now().minusHours(24));
@@ -230,7 +225,7 @@ public class TrainingInstancesIT {
         trainingRun1.setSolutionTaken(false);
         trainingRun1.setCurrentLevel(infoLevel);
         trainingRun1.setTrainingInstance(futureTrainingInstance);
-        trainingRun1.setSandboxInstanceRef(sandboxInstanceRef1);
+        trainingRun1.setSandboxInstanceRefId(sandboxInfo1.getId());
         trainingRun1.setParticipantRef(organizer1);
 
         trainingRun2 = new TrainingRun();
@@ -241,7 +236,7 @@ public class TrainingInstancesIT {
         trainingRun2.setSolutionTaken(false);
         trainingRun2.setCurrentLevel(infoLevel);
         trainingRun2.setTrainingInstance(futureTrainingInstance);
-        trainingRun2.setSandboxInstanceRef(sandboxInstanceRef2);
+        trainingRun2.setSandboxInstanceRefId(sandboxInfo2.getId());
         trainingRun2.setParticipantRef(organizer1);
 
         userInfoDTO = new UserInfoDTO();
@@ -256,17 +251,19 @@ public class TrainingInstancesIT {
     @After
     public void reset() throws SQLException {
         DBTestUtil.resetAutoIncrementColumns(applicationContext, "training_instance");
-        DBTestUtil.resetAutoIncrementColumns(applicationContext, "sandbox_instance_ref");
         DBTestUtil.resetAutoIncrementColumns(applicationContext, "training_run");
     }
 
 @Test
     public void findAllTrainingInstancesAsAdmin() throws Exception {
-        sandboxInstanceRef1.setTrainingInstance(futureTrainingInstance);
         trainingInstanceRepository.save(notConcludedTrainingInstance);
         trainingInstanceRepository.save(futureTrainingInstance);
         mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_ADMINISTRATOR.name()));
 
+        PageResultResourcePython<SandboxInfo> pageResult = new PageResultResourcePython<>();
+        pageResult.setResults(new ArrayList<>());
+        given(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
+                willReturn(new ResponseEntity<PageResultResourcePython<SandboxInfo>>(pageResult, HttpStatus.OK));
         MockHttpServletResponse result = mvc.perform(get("/training-instances"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
@@ -279,20 +276,20 @@ public class TrainingInstancesIT {
 
     @Test
     public void findTrainingInstanceById() throws Exception {
-        sandboxInstanceRef1.setTrainingInstance(futureTrainingInstance);
-        sandboxInstanceRef2.setTrainingInstance(futureTrainingInstance);
-        futureTrainingInstance.setSandboxInstanceRefs(Set.of(sandboxInstanceRef1, sandboxInstanceRef2));
         trainingInstanceRepository.save(futureTrainingInstance);
+        sandboxInfo1.setLocked(true);
 
-        trainingRun1.setSandboxInstanceRef(sandboxInstanceRef1);
-        trainingRunRepository.save(trainingRun1);
+        PageResultResourcePython<SandboxInfo> pageResult = new PageResultResourcePython<>();
+        pageResult.setResults(new ArrayList<>(List.of(sandboxInfo1)));
+        given(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
+                willReturn(new ResponseEntity<PageResultResourcePython<SandboxInfo>>(pageResult, HttpStatus.OK));
         MockHttpServletResponse result = mvc.perform(get("/training-instances/{id}", futureTrainingInstance.getId()))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andReturn().getResponse();
 
         TrainingInstanceDTO expectedInstanceDTO = trainingInstanceMapper.mapToDTO(futureTrainingInstance);
-        expectedInstanceDTO.setSandboxesWithTrainingRun(List.of(sandboxInstanceRef1.getId()));
+        expectedInstanceDTO.setSandboxesWithTrainingRun(List.of(sandboxInfo1.getId()));
         TrainingInstanceDTO responseInstanceDTO = mapper.readValue(convertJsonBytesToString(result.getContentAsString()), TrainingInstanceDTO.class);
         assertEquals(expectedInstanceDTO, responseInstanceDTO);
     }
@@ -341,7 +338,6 @@ public class TrainingInstancesIT {
 
     @Test
     public void updateTrainingInstance() throws Exception {
-        sandboxInstanceRef1.setTrainingInstance(futureTrainingInstance);
         trainingInstanceRepository.save(futureTrainingInstance);
         trainingInstanceUpdateDTO.setAccessToken(futureTrainingInstance.getAccessToken());
         trainingInstanceUpdateDTO.setId(futureTrainingInstance.getId());
@@ -398,7 +394,6 @@ public class TrainingInstancesIT {
 
     @Test
     public void updateTrainingInstanceWrongStartTime() throws Exception {
-        sandboxInstanceRef1.setTrainingInstance(futureTrainingInstance);
         trainingInstanceRepository.save(futureTrainingInstance);
         trainingInstanceUpdateDTO.setAccessToken("someToken");
         trainingInstanceUpdateDTO.setId(futureTrainingInstance.getId());
@@ -418,8 +413,6 @@ public class TrainingInstancesIT {
 
     @Test
     public void deleteTrainingInstance() throws Exception {
-        futureTrainingInstance.setSandboxInstanceRefs(new HashSet<>(Arrays.asList(sandboxInstanceRef1)));
-        sandboxInstanceRef1.setTrainingInstance(futureTrainingInstance);
         TrainingInstance tI = trainingInstanceRepository.save(futureTrainingInstance);
         doNothing().when(trainingEventsServiceMock).deleteEventsByTrainingInstanceId(anyLong());
 
@@ -431,10 +424,8 @@ public class TrainingInstancesIT {
 
     @Test
     public void deleteFinishedTrainingInstanceWithTrainingRuns() throws Exception {
-        sandboxInstanceRef1.setTrainingInstance(finishedTrainingInstance);
         trainingInstanceRepository.save(finishedTrainingInstance);
         trainingRun1.setTrainingInstance(finishedTrainingInstance);
-        trainingRun1.setSandboxInstanceRef(sandboxInstanceRef1);
         trainingRunRepository.save(trainingRun1);
 
         Exception ex = mvc.perform(delete("/training-instances/{id}", finishedTrainingInstance.getId()))
@@ -446,11 +437,12 @@ public class TrainingInstancesIT {
 
     @Test
     public void deleteTrainingInstanceWithSandboxes() throws Exception {
-        sandboxInstanceRef1.setTrainingInstance(finishedTrainingInstance);
-        finishedTrainingInstance.setPoolId(5L);
-        finishedTrainingInstance.setPoolSize(3);
         trainingInstanceRepository.save(finishedTrainingInstance);
 
+        PageResultResourcePython<SandboxInfo> pageResult = new PageResultResourcePython<>();
+        pageResult.setResults(new ArrayList<>(List.of(sandboxInfo1)));
+        given(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
+                willReturn(new ResponseEntity<PageResultResourcePython<SandboxInfo>>(pageResult, HttpStatus.OK));
         Exception ex = mvc.perform(delete("/training-instances/{id}", finishedTrainingInstance.getId()))
                 .andExpect(status().isConflict())
                 .andReturn().getResolvedException();
@@ -460,13 +452,12 @@ public class TrainingInstancesIT {
 
     @Test
     public void allocateSandboxes() throws Exception {
-        futureTrainingInstance.setPoolId(3L);
-        futureTrainingInstance.setPoolSize(2);
+        futureTrainingInstance.setPoolId(1L);
         trainingInstanceRepository.save(futureTrainingInstance);
-        given(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class)))
-                .willReturn(new ResponseEntity<List<SandboxInfo>>(new ArrayList<>(), HttpStatus.OK));
-        given(restTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
-                willReturn(new ResponseEntity<List<SandboxInfo>>(new ArrayList<>(List.of(sandboxInfo1, sandboxInfo2)), HttpStatus.OK));
+        PageResultResourcePython<SandboxInfo> pageResult = new PageResultResourcePython<>();
+        pageResult.setResults(new ArrayList<>());
+        given(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
+                willReturn(new ResponseEntity<PageResultResourcePython<SandboxInfo>>(pageResult, HttpStatus.OK));
         mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_ORGANIZER.name()));
         mvc.perform(post("/training-instances/{instanceId}/sandbox-instances", futureTrainingInstance.getId())
                 .contentType(MediaType.APPLICATION_JSON_VALUE))
@@ -476,6 +467,7 @@ public class TrainingInstancesIT {
     @Test
     public void allocateSandboxesWithoutCreatedPool() throws Exception {
         trainingInstanceRepository.save(futureTrainingInstance);
+
         mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_ORGANIZER.name()));
         Exception exception = mvc.perform(post("/training-instances/{instanceId}/sandbox-instances", futureTrainingInstance.getId())
                 .contentType(MediaType.APPLICATION_JSON_VALUE))
@@ -489,14 +481,11 @@ public class TrainingInstancesIT {
     public void allocateSandboxesWithFullPool() throws Exception {
         futureTrainingInstance.setPoolId(3L);
         futureTrainingInstance.setPoolSize(1);
-        SandboxInfo sandboxInfo = new SandboxInfo();
-        sandboxInfo.setId(sandboxInstanceRef1.getSandboxInstanceRef());
-        sandboxInstanceRef1.setTrainingInstance(futureTrainingInstance);
-        futureTrainingInstance.setSandboxInstanceRefs(new HashSet<>(Set.of(sandboxInstanceRef1)));
-
+        PageResultResourcePython<SandboxInfo> pageResult = new PageResultResourcePython<>();
+        pageResult.setResults(List.of(sandboxInfo1));
+        given(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
+                willReturn(new ResponseEntity<PageResultResourcePython<SandboxInfo>>(pageResult, HttpStatus.OK));
         trainingInstanceRepository.save(futureTrainingInstance);
-        given(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class)))
-                .willReturn(new ResponseEntity<List<SandboxInfo>>(new ArrayList<>(List.of(sandboxInfo)), HttpStatus.OK));
 
         mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_ORGANIZER.name()));
         Exception exception = mvc.perform(post("/training-instances/{instanceId}/sandbox-instances", futureTrainingInstance.getId())
@@ -509,8 +498,6 @@ public class TrainingInstancesIT {
 
     @Test
     public void createPoolForSandboxes() throws Exception {
-        sandboxInstanceRef1.setTrainingInstance(futureTrainingInstance);
-        futureTrainingInstance.setPoolSize(5);
         trainingInstanceRepository.save(futureTrainingInstance);
         sandboxPoolInfo.setMaxSize(5L);
         given(restTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(SandboxPoolInfo.class))).
@@ -525,9 +512,7 @@ public class TrainingInstancesIT {
 
     @Test
     public void createPoolInInstanceWithAlreadyCreatedPool() throws Exception {
-        sandboxInstanceRef1.setTrainingInstance(futureTrainingInstance);
         futureTrainingInstance.setPoolId(sandboxPoolInfo.getId());
-        futureTrainingInstance.setPoolSize(1);
         trainingInstanceRepository.save(futureTrainingInstance);
         given(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
                 willReturn(new ResponseEntity<SandboxPoolInfo>(sandboxPoolInfo, HttpStatus.OK));
@@ -541,8 +526,6 @@ public class TrainingInstancesIT {
 
     @Test
     public void findAllTrainingRunsByTrainingInstanceId() throws Exception {
-        futureTrainingInstance.addSandboxInstanceRef(trainingRun1.getSandboxInstanceRef());
-        futureTrainingInstance.addSandboxInstanceRef(trainingRun2.getSandboxInstanceRef());
         trainingInstanceRepository.save(futureTrainingInstance);
         trainingRunRepository.save(trainingRun1);
         trainingRunRepository.save(trainingRun2);
@@ -569,115 +552,15 @@ public class TrainingInstancesIT {
     @Test
     public void deleteSandboxes() throws Exception {
         futureTrainingInstance.setPoolId(3L);
-        futureTrainingInstance.setPoolSize(2);
-        futureTrainingInstance.addSandboxInstanceRef(sandboxInstanceRef1);
-        futureTrainingInstance.addSandboxInstanceRef(sandboxInstanceRef2);
 
         trainingInstanceRepository.save(futureTrainingInstance);
         given(restTemplate.exchange(anyString(), eq(HttpMethod.DELETE), any(HttpEntity.class), eq(String.class))).
                 willReturn(new ResponseEntity<String>("", HttpStatus.OK));
         mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_ORGANIZER.name()));
         mvc.perform(delete("/training-instances/{instanceId}/sandbox-instances", futureTrainingInstance.getId())
-                .param("sandboxIds", sandboxInstanceRef2.getSandboxInstanceRef().toString(), sandboxInstanceRef1.getSandboxInstanceRef().toString())
+                .param("sandboxIds", sandboxInfo1.getId().toString(), sandboxInfo2.getId().toString())
                 .contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isOk());
-        assertTrue(futureTrainingInstance.getSandboxInstanceRefs().isEmpty());
-    }
-
-    @Test
-    public void deleteNonExistentSandbox() throws Exception {
-        sandboxInstanceRef1.setTrainingInstance(futureTrainingInstance);
-        sandboxInstanceRef2.setTrainingInstance(futureTrainingInstance);
-        futureTrainingInstance.setPoolId(3L);
-        futureTrainingInstance.setPoolSize(3);
-        futureTrainingInstance.setSandboxInstanceRefs(new HashSet<>(Set.of(sandboxInstanceRef1, sandboxInstanceRef2)));
-
-        trainingInstanceRepository.save(futureTrainingInstance);
-        given(restTemplate.exchange(anyString(), eq(HttpMethod.DELETE), any(HttpEntity.class), eq(String.class))).
-                willReturn(new ResponseEntity<String>("", HttpStatus.OK));
-        mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_ORGANIZER.name()));
-        mvc.perform(delete("/training-instances/{instanceId}/sandbox-instances", futureTrainingInstance.getId())
-                .param("sandboxIds", sandboxInstanceRef1.getSandboxInstanceRef().toString(), "156")
-                .contentType(MediaType.APPLICATION_JSON_VALUE))
-                .andExpect(status().isOk());
-        assertEquals(1, futureTrainingInstance.getSandboxInstanceRefs().size());
-        assertTrue(futureTrainingInstance.getSandboxInstanceRefs().contains(sandboxInstanceRef2));
-    }
-
-    @Test
-    public void reallocateSandbox() throws Exception {
-        SandboxInstanceRef sI1 = new SandboxInstanceRef();
-        sI1.setSandboxInstanceRef(85L);
-        sI1.setTrainingInstance(futureTrainingInstance);
-        SandboxInstanceRef sI2 = new SandboxInstanceRef();
-        sI2.setSandboxInstanceRef(86L);
-        sI2.setTrainingInstance(futureTrainingInstance);
-        futureTrainingInstance.setPoolId(3L);
-        futureTrainingInstance.setPoolSize(10);
-        futureTrainingInstance.setSandboxInstanceRefs(new HashSet<>(Set.of(sI1, sI2)));
-
-        trainingInstanceRepository.save(futureTrainingInstance);
-        given(restTemplate.exchange(anyString(), eq(HttpMethod.DELETE), any(HttpEntity.class), eq(String.class))).
-                willReturn(new ResponseEntity<String>("", HttpStatus.OK));
-        given(restTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
-                willReturn(new ResponseEntity<List<SandboxInfo>>(new ArrayList<>(List.of(sandboxInfo1)), HttpStatus.OK));
-        mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_ORGANIZER.name()));
-        mvc.perform(post("/training-instances/{instanceId}/sandbox-instances/{sandboxId}", futureTrainingInstance.getId(), sI1.getSandboxInstanceRef())
-                .contentType(MediaType.APPLICATION_JSON_VALUE))
-                .andExpect(status().isAccepted());
-        assertTrue(futureTrainingInstance.getSandboxInstanceRefs().contains(sI2));
-        assertFalse(futureTrainingInstance.getSandboxInstanceRefs().contains(sandboxInfo1));
-        assertTrue(futureTrainingInstance.getSandboxInstanceRefs().stream().anyMatch(sandboxInstanceRef ->
-                sandboxInstanceRef.getSandboxInstanceRef().equals(sandboxInfo1.getId())));
-    }
-
-    @Test
-    public void reallocateSandboxWithNoSpaceForNewSandbox() throws Exception {
-        SandboxInstanceRef sI1 = new SandboxInstanceRef();
-        sI1.setSandboxInstanceRef(85L);
-        sI1.setTrainingInstance(futureTrainingInstance);
-        SandboxInstanceRef sI2 = new SandboxInstanceRef();
-        sI2.setSandboxInstanceRef(86L);
-        sI2.setTrainingInstance(futureTrainingInstance);
-
-        futureTrainingInstance.setPoolId(3L);
-        futureTrainingInstance.setPoolSize(2);
-        futureTrainingInstance.setSandboxInstanceRefs(new HashSet<>(Set.of(sI1, sI2)));
-
-        trainingInstanceRepository.save(futureTrainingInstance);
-        given(restTemplate.exchange(anyString(), eq(HttpMethod.DELETE), any(HttpEntity.class), eq(String.class))).
-                willReturn(new ResponseEntity<String>("", HttpStatus.OK));
-        given(restTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
-                willReturn(new ResponseEntity<List<SandboxInfo>>(new ArrayList<>(List.of(sandboxInfo1)), HttpStatus.OK));
-        mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_ORGANIZER.name()));
-        Exception exception = mvc.perform(post("/training-instances/{instanceId}/sandbox-instances/{sandboxId}", futureTrainingInstance.getId(), sI1.getSandboxInstanceRef())
-                .contentType(MediaType.APPLICATION_JSON_VALUE))
-                .andExpect(status().isConflict())
-                .andReturn().getResolvedException();
-        assertTrue(futureTrainingInstance.getSandboxInstanceRefs().contains(sI2));
-        assertFalse(futureTrainingInstance.getSandboxInstanceRefs().contains(sI1));
-        assertEquals("Sandbox cannot be reallocated because pool of training instance with id: " + futureTrainingInstance.getId() + " is full. " +
-                        "Given sandbox with id: " + sI1.getSandboxInstanceRef() + " is probably in the process of removing right now. Please wait and try allocate new sandbox later or contact administrator.",
-                Objects.requireNonNull(exception).getCause().getCause().getMessage());
-    }
-
-    @Test
-    public void reallocateNonExistentSandbox() throws Exception {
-        sandboxInstanceRef1.setTrainingInstance(futureTrainingInstance);
-        sandboxInstanceRef2.setTrainingInstance(futureTrainingInstance);
-        futureTrainingInstance.setPoolId(3L);
-        futureTrainingInstance.setPoolSize(2);
-        futureTrainingInstance.setSandboxInstanceRefs(new HashSet<>(Set.of(sandboxInstanceRef1, sandboxInstanceRef2)));
-
-        trainingInstanceRepository.save(futureTrainingInstance);
-        mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_ORGANIZER.name()));
-        Exception exception = mvc.perform(post("/training-instances/{instanceId}/sandbox-instances/{sandboxId}", futureTrainingInstance.getId(), 156)
-                .contentType(MediaType.APPLICATION_JSON_VALUE))
-                .andExpect(status().isNotFound())
-                .andReturn().getResolvedException();
-        assertEquals(ResourceNotFoundException.class, Objects.requireNonNull(exception).getClass());
-        assertEquals("Given sandbox with id: 156 is not in DB or is not assigned to given training instance.",
-                exception.getCause().getCause().getMessage());
     }
 
     private static String convertObjectToJsonBytes(Object object) throws IOException {

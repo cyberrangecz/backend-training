@@ -132,12 +132,5 @@ public interface TrainingInstanceService {
      */
     boolean checkIfInstanceIsFinished(Long trainingInstanceId);
 
-    /**
-     * Synchronizes sandboxes associated with training instance with python API
-     *
-     * @param trainingInstance which sandboxes will be synchronized
-     */
-    public void synchronizeSandboxesWithPythonApi(TrainingInstance trainingInstance);
-
     TrainingInstance findByStartTimeAfterAndEndTimeBeforeAndAccessToken(String accessToken);
 }

@@ -37,7 +37,7 @@ import static org.mockito.BDDMockito.*;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = {InfoLevelMapperImpl.class, TrainingDefinitionMapperImpl.class,
-        UserRefMapperImpl.class, SandboxInstanceRefMapperImpl.class, GameLevelMapperImpl.class,
+        UserRefMapperImpl.class, GameLevelMapperImpl.class,
         InfoLevelMapperImpl.class, AssessmentLevelMapperImpl.class, HintMapperImpl.class,
         BasicLevelInfoMapperImpl.class, TrainingRunMapperImpl.class, BetaTestingGroupMapperImpl.class})
 public class TrainingRunFacadeTest {
@@ -71,31 +71,22 @@ public class TrainingRunFacadeTest {
     private GameLevel gameLevel;
     private InfoLevel infoLevel;
     private AssessmentLevel assessmentLevel;
-    private SandboxInstanceRef sandboxInstanceRef;
 
     @Before
     public void init() {
         MockitoAnnotations.initMocks(this);
         trainingRunFacade = new TrainingRunFacadeImpl(trainingRunService, trainingRunMapper, gameLevelMapper,
-                assessmentLevelMapper, infoLevelMapper, hintMapper, trainingInstanceService);
-
-        sandboxInstanceRef = new SandboxInstanceRef();
-        sandboxInstanceRef.setId(1L);
-        sandboxInstanceRef.setSandboxInstanceRef(5L);
+                assessmentLevelMapper, infoLevelMapper, hintMapper);
 
         trainingRun1 = new TrainingRun();
         trainingRun1.setId(1L);
         trainingRun1.setState(TRState.RUNNING);
         trainingRun1.setSolutionTaken(false);
-        trainingRun1.setSandboxInstanceRef(sandboxInstanceRef);
 
         hint = new Hint();
         hint.setId(1L);
         hint.setContent("Hint");
         hint.setTitle("Hint Title");
-
-
-
 
         trainingRun2 = new TrainingRun();
         trainingRun2.setId(2L);

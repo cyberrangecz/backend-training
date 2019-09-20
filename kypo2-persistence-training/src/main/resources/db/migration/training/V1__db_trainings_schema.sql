@@ -60,13 +60,6 @@ create table info_level (
     primary key (id)
 );
 
-create table sandbox_instance_ref (
-   id  bigserial not null,
-    sandbox_instance_ref int8 not null,
-    training_instance_id int8 not null,
-    primary key (id)
-);
-
 create table training_definition (
    id  bigserial not null,
     description text,
@@ -164,10 +157,6 @@ alter table training_definition
 alter table training_instance
    add constraint UK_b81w12g91hiuhdvsmoanyel6m unique (access_token);
 
-alter table sandbox_instance_ref
-   add constraint UK_b81w12g91hiuhztnmoanyel8m unique (sandbox_instance_ref);
-
-
 alter table hint_info
    add constraint FKi9smgl25av8pb1yv3fl4ycby0
    foreign key (training_run_id)
@@ -208,11 +197,6 @@ alter table info_level
    foreign key (id)
    references abstract_level;
 
-alter table sandbox_instance_ref
-   add constraint FK2j5jmin6ht1fl42nyd5wiqsjd
-   foreign key (training_instance_id)
-   references training_instance;
-
 alter table training_definition
    add constraint FKdps9cuy3u6c6v1n8igr9hnu1r
    foreign key (beta_testing_group_id)
@@ -252,11 +236,6 @@ alter table training_run
    add constraint FKmfyx8wi2fu400w1h6gikyp9cy
    foreign key (user_ref_id)
    references user_ref;
-
-alter table training_run
-   add constraint FK6yn4e9w78a454vegxipn3cmvf
-   foreign key (sandbox_instance_ref_id)
-   references sandbox_instance_ref;
 
 alter table training_run
    add constraint FK7vajehsxurugwfg363f4ppb0s

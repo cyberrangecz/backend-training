@@ -43,8 +43,6 @@ public class TrainingInstance implements Serializable {
             inverseJoinColumns = @JoinColumn(name = "user_ref_id")
     )
     private Set<UserRef> organizers = new HashSet<>();
-    @OneToMany(fetch = FetchType.LAZY, orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "trainingInstance")
-    private Set<SandboxInstanceRef> sandboxInstanceRefs = new HashSet<>();
 
     /**
      * Gets unique identification number of Training instance
@@ -218,52 +216,6 @@ public class TrainingInstance implements Serializable {
         userRef.addTrainingInstance(this);
     }
 
-    /**
-     * Gets set of DB references of sandbox instances associated with Training instance
-     *
-     * @return the sandbox instance refs
-     */
-    public Set<SandboxInstanceRef> getSandboxInstanceRefs() {
-        return new HashSet<>(sandboxInstanceRefs);
-    }
-
-    /**
-     * Gets set of DB references of sandbox instances associated with Training instance
-     *
-     * @return the sandbox instance refs
-     */
-    public void clearSetOfSandboxInstanceRefs() {
-        sandboxInstanceRefs.clear();
-    }
-
-    /**
-     * Sets set of DB references of sandbox instances associated with Training instance
-     *
-     * @param sandboxInstanceRefs the sandbox instance refs
-     */
-    public void setSandboxInstanceRefs(Set<SandboxInstanceRef> sandboxInstanceRefs) {
-        this.sandboxInstanceRefs = sandboxInstanceRefs;
-    }
-
-    /**
-     * Adds DB reference of sandbox instance to the set of DB references of sandbox instances associated with Training instance
-     *
-     * @param sandboxInstanceRef the sandbox instance ref
-     */
-    public void addSandboxInstanceRef(SandboxInstanceRef sandboxInstanceRef) {
-        this.sandboxInstanceRefs.add(sandboxInstanceRef);
-        sandboxInstanceRef.setTrainingInstance(this);
-    }
-
-    /**
-     * Remove DB reference of sandbox instance from the set of DB references of sandbox instances associated with Training instance
-     *
-     * @param sandboxInstanceRef the sandbox instance ref
-     */
-    public void removeSandboxInstanceRef(SandboxInstanceRef sandboxInstanceRef) {
-        this.sandboxInstanceRefs.remove(sandboxInstanceRef);
-    }
-
     @Override
     public int hashCode() {
         return Objects.hash(accessToken, startTime, endTime, poolSize, title, trainingDefinition);
@@ -297,7 +249,6 @@ public class TrainingInstance implements Serializable {
                 ", accessToken='" + accessToken + '\'' +
                 ", trainingDefinition=" + trainingDefinition +
                 ", organizers=" + organizers +
-                ", sandboxInstanceRefs=" + sandboxInstanceRefs +
                 '}';
     }
 }

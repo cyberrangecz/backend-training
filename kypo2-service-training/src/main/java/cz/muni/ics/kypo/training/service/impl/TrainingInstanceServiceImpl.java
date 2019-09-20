@@ -13,9 +13,9 @@ import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.model.enums.TRState;
 import cz.muni.ics.kypo.training.persistence.repository.*;
 import cz.muni.ics.kypo.training.service.TrainingInstanceService;
-import cz.muni.ics.kypo.training.utils.SandboxInfo;
-import cz.muni.ics.kypo.training.utils.PageResultResourcePython;
-import cz.muni.ics.kypo.training.utils.SandboxPoolInfo;
+import cz.muni.ics.kypo.training.api.RestResponses.SandboxInfo;
+import cz.muni.ics.kypo.training.api.RestResponses.PageResultResourcePython;
+import cz.muni.ics.kypo.training.api.RestResponses.SandboxPoolInfo;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,10 +35,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.time.Clock;
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 
 /**
@@ -58,22 +55,19 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
     private UserRefRepository organizerRefRepository;
     private RestTemplate restTemplate;
     private SecurityService securityService;
-    private SandboxInstanceRefRepository sandboxInstanceRefRepository;
     private TrainingEventsService trainingEventsService;
     private static final int PYTHON_RESULT_PAGE_SIZE = 1000;
 
     @Autowired
     public TrainingInstanceServiceImpl(TrainingInstanceRepository trainingInstanceRepository, AccessTokenRepository accessTokenRepository,
                                        TrainingRunRepository trainingRunRepository, UserRefRepository organizerRefRepository,
-                                       RestTemplate restTemplate, SecurityService securityService, SandboxInstanceRefRepository sandboxInstanceRefRepository,
-                                       TrainingEventsService trainingEventsService) {
+                                       RestTemplate restTemplate, SecurityService securityService, TrainingEventsService trainingEventsService) {
         this.trainingInstanceRepository = trainingInstanceRepository;
         this.trainingRunRepository = trainingRunRepository;
         this.accessTokenRepository = accessTokenRepository;
         this.organizerRefRepository = organizerRefRepository;
         this.restTemplate = restTemplate;
         this.securityService = securityService;
-        this.sandboxInstanceRefRepository = sandboxInstanceRefRepository;
         this.trainingEventsService = trainingEventsService;
     }
 
@@ -104,7 +98,36 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
     @Override
     @IsOrganizerOrAdmin
     public List<Long> findIdsOfAllOccupiedSandboxesByTrainingInstance(Long trainingInstanceId) {
-        return trainingRunRepository.findIdsOfAllOccupiedSandboxesByTrainingInstance(trainingInstanceId);
+        TrainingInstance trainingInstance =  trainingInstanceRepository.findById(trainingInstanceId)
+                .orElseThrow(() -> new ServiceLayerException("Training instance with id: " + trainingInstanceId + " not found.", ErrorCode.RESOURCE_NOT_FOUND));
+
+        List<SandboxInfo> sandboxes = findSandboxesFromSandboxPool(trainingInstance.getPoolId());
+        List<Long> occupiedSandboxes = new ArrayList<>();
+        sandboxes.forEach(s -> {
+            if (s.isLocked()) occupiedSandboxes.add(s.getId());
+        });
+        return occupiedSandboxes;
+    }
+
+    private List<SandboxInfo> findSandboxesFromSandboxPool(Long poolId){
+        try {
+            HttpHeaders httpHeaders = new HttpHeaders();
+            httpHeaders.setContentType(MediaType.APPLICATION_JSON);
+
+            String url = kypoOpenStackURI + "/pools/" + poolId + "/sandboxes/";
+            UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(url);
+            builder.queryParam("page", 1);
+            builder.queryParam("page_size", PYTHON_RESULT_PAGE_SIZE);
+            ResponseEntity<PageResultResourcePython<SandboxInfo>> response = restTemplate.exchange(builder.toUriString(), HttpMethod.GET, new HttpEntity<>(httpHeaders),
+                    new ParameterizedTypeReference<PageResultResourcePython<SandboxInfo>>() {
+                    });
+            PageResultResourcePython<SandboxInfo> sandboxInfoPageResult = Objects.requireNonNull(response.getBody());
+            List<SandboxInfo> sandboxResponse = Objects.requireNonNull(sandboxInfoPageResult.getResults());
+            return sandboxResponse;
+        } catch (HttpClientErrorException ex) {
+            throw new ServiceLayerException("Client side error when checking a state of sandbox in OpenStack for pool with ID " +
+                    poolId + " : " + ex.getMessage() + ". Please contact administrator", ErrorCode.UNEXPECTED_ERROR);
+        }
     }
 
     @Override
@@ -161,11 +184,14 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
             throw new ServiceLayerException("Training instance with already assigned training runs cannot be deleted. Please delete training runs assigned to training instance" +
                     " and try again or contact administrator.", ErrorCode.RESOURCE_CONFLICT);
         }
-        if (trainingInstance.getPoolId() != null && trainingInstance.getSandboxInstanceRefs().isEmpty()) {
-            removePoolOfSandboxesFromOpenStack(trainingInstance.getPoolId());
-        } else if (trainingInstance.getPoolId() != null) {
-            throw new ServiceLayerException("Cannot delete training instance because it contains some sandboxes. Please delete sandboxes and try again or " +
-                    "wait until all sandboxes are deleted from OpenStack.", ErrorCode.RESOURCE_CONFLICT);
+        if (trainingInstance.getPoolId() != null) {
+            List<SandboxInfo> sandboxes = findSandboxesFromSandboxPool(trainingInstance.getPoolId());
+            if (sandboxes.isEmpty()){
+                removePoolOfSandboxesFromOpenStack(trainingInstance.getPoolId());
+            }else {
+                throw new ServiceLayerException("Cannot delete training instance because it contains some sandboxes. Please delete sandboxes and try again or " +
+                        "wait until all sandboxes are deleted from OpenStack.", ErrorCode.RESOURCE_CONFLICT);
+            }
         }
         trainingInstanceRepository.delete(trainingInstance);
 
@@ -249,15 +275,16 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
         if (count != null && count > trainingInstance.getPoolSize()) {
             count = null;
         }
-        if (count != null && count + trainingInstance.getSandboxInstanceRefs().size() > trainingInstance.getPoolSize()) {
-            count = trainingInstance.getPoolSize() - trainingInstance.getSandboxInstanceRefs().size();
-        }
         //Check if pool exist
         if (trainingInstance.getPoolId() == null) {
             throw new ServiceLayerException("Pool for sandboxes is not created yet. Please create pool before allocating sandboxes.", ErrorCode.RESOURCE_CONFLICT);
         }
+        List<SandboxInfo> sandboxes = findSandboxesFromSandboxPool(trainingInstance.getPoolId());
+        if (count != null && count + sandboxes.size() > trainingInstance.getPoolSize()) {
+            count = trainingInstance.getPoolSize() - sandboxes.size();
+        }
         //Check if sandbox can be allocated
-        if (trainingInstance.getSandboxInstanceRefs().size() >= trainingInstance.getPoolSize()) {
+        if (sandboxes.size() >= trainingInstance.getPoolSize()) {
             throw new ServiceLayerException("Pool of sandboxes of training instance with id: " + trainingInstance.getId() + " is full.", ErrorCode.RESOURCE_CONFLICT);
         }
         HttpHeaders httpHeaders = new HttpHeaders();
@@ -271,15 +298,9 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
             }
             // allocate sandboxes with appropriate ansible scripts (set up an environment etc.)
             builder.queryParam("full", true);
-            ResponseEntity<List<SandboxInfo>> sandboxResponse = restTemplate.exchange(builder.toUriString(), HttpMethod.POST,
+            restTemplate.exchange(builder.toUriString(), HttpMethod.POST,
                     new HttpEntity<>(httpHeaders), new ParameterizedTypeReference<List<SandboxInfo>>() {
                     });
-            Objects.requireNonNull(sandboxResponse.getBody()).forEach(s -> {
-                SandboxInstanceRef sIR = new SandboxInstanceRef();
-                sIR.setSandboxInstanceRef(s.getId());
-                trainingInstance.addSandboxInstanceRef(sIR);
-            });
-            trainingInstanceRepository.save(trainingInstance);
         } catch (HttpClientErrorException ex) {
             LOG.error("Client side error when calling OpenStack: {}.", ex.getMessage() + " - " + ex.getResponseBodyAsString());
         }
@@ -292,101 +313,36 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
     @Async
     @TrackTime
     public void deleteSandbox(Long trainingInstanceId, Long idOfSandboxRefToDelete) {
-        Optional<TrainingInstance> trainingInstanceOptional = trainingInstanceRepository.findById(trainingInstanceId);
-        TrainingInstance trainingInstance;
-        if (trainingInstanceOptional.isPresent()) {
-            trainingInstance = trainingInstanceOptional.get();
-        } else {
-            LOG.error("Training Instance with id: " + trainingInstanceId + " not found.");
-            return;
-        }
-        trainingInstanceRepository.save(trainingInstance);
-        Optional<SandboxInstanceRef> optionalSandboxInstanceRefToDelete = sandboxInstanceRefRepository.findBySandboxInstanceRefId(idOfSandboxRefToDelete);
-        if (optionalSandboxInstanceRefToDelete.isPresent()) {
-            if (trainingInstance.getSandboxInstanceRefs().contains(optionalSandboxInstanceRefToDelete.get())) {
-                Optional<TrainingRun> trainingRun = trainingRunRepository.findBySandboxInstanceRef(optionalSandboxInstanceRefToDelete.get());
-                removeSandboxFromTrainingRun(optionalSandboxInstanceRefToDelete.get());
-                trainingInstance.removeSandboxInstanceRef(optionalSandboxInstanceRefToDelete.get());
-            } else {
+
+        HttpHeaders httpHeaders = new HttpHeaders();
+        httpHeaders.setContentType(MediaType.APPLICATION_JSON);
+        try {
+            restTemplate.exchange(kypoOpenStackURI + "/sandboxes/" + idOfSandboxRefToDelete + "/lock/",
+                    HttpMethod.DELETE, new HttpEntity<>(httpHeaders), String.class);
+        } catch (HttpClientErrorException ex) {
+            if (!ex.getStatusCode().equals(HttpStatus.BAD_REQUEST)) {
+                LOG.error("Client side error when calling OpenStack: {}. Probably wrong URL of service.", ex.getMessage() + " - " + ex.getResponseBodyAsString());
                 return;
             }
         }
-        HttpHeaders httpHeaders = new HttpHeaders();
-        httpHeaders.setContentType(MediaType.APPLICATION_JSON);
         try {
             restTemplate.exchange(kypoOpenStackURI + "/sandboxes/" + idOfSandboxRefToDelete + "/",
                     HttpMethod.DELETE, new HttpEntity<>(httpHeaders), String.class);
         } catch (HttpClientErrorException ex) {
-            if (!ex.getStatusCode().equals(HttpStatus.NOT_FOUND)) {
+            if (!ex.getStatusCode().equals(HttpStatus.NOT_FOUND)){
                 LOG.error("Client side error when calling OpenStack: {}. Probably wrong URL of service.", ex.getMessage() + " - " + ex.getResponseBodyAsString());
-            }
-        }
-        trainingInstanceRepository.save(trainingInstance);
-    }
-
-    @Override
-    @TransactionalWO
-    public void synchronizeSandboxesWithPythonApi(TrainingInstance trainingInstance) {
-        HttpHeaders httpHeaders = new HttpHeaders();
-        httpHeaders.setContentType(MediaType.APPLICATION_JSON);
-        try {
-            //check if pool exists
-            String url = kypoOpenStackURI + "/pools/" + trainingInstance.getPoolId() + "/";
-            UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(url);
-            restTemplate.exchange(builder.toUriString(), HttpMethod.GET,
-                    new HttpEntity<>(httpHeaders), new ParameterizedTypeReference<SandboxPoolInfo>() {
-                    });
-        } catch (HttpClientErrorException ex) {
-            if (ex.getStatusCode().equals(HttpStatus.NOT_FOUND)) {
-                for (SandboxInstanceRef sandbox : trainingInstance.getSandboxInstanceRefs()) {
-                    removeSandboxFromTrainingRun(sandbox);
-                }
-                trainingInstance.clearSetOfSandboxInstanceRefs();
-                trainingInstance.setPoolId(null);
-                trainingInstanceRepository.save(trainingInstance);
                 return;
-            } else {
-                throw new ServiceLayerException("Client side error when checking a state of pool (id: " + trainingInstance.getPoolId() + ") in OpenStack" + " : "
-                        + ex.getMessage() + ". Please contact administrator", ErrorCode.UNEXPECTED_ERROR);
             }
         }
-
-        try {
-            //Get sandboxes
-            String url = kypoOpenStackURI + "/pools/" + trainingInstance.getPoolId() + "/sandboxes/";
-            UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(url);
-            builder.queryParam("page", 1);
-            builder.queryParam("page_size", PYTHON_RESULT_PAGE_SIZE);
-            ResponseEntity<PageResultResourcePython<SandboxInfo>> response = restTemplate.exchange(builder.toUriString(), HttpMethod.GET, new HttpEntity<>(httpHeaders),
-                    new ParameterizedTypeReference<PageResultResourcePython<SandboxInfo>>() {
-                    });
-            PageResultResourcePython<SandboxInfo> sandboxInfoPageResult = Objects.requireNonNull(response.getBody());
-            List<SandboxInfo> sandboxResponse = Objects.requireNonNull(sandboxInfoPageResult.getResults());
-            sandboxResponse.forEach(s -> {
-                if (trainingInstance.getSandboxInstanceRefs().stream().noneMatch((sandboxInstanceRef -> sandboxInstanceRef.getSandboxInstanceRef().equals(s.getId())))) {
-                    SandboxInstanceRef sIR = new SandboxInstanceRef();
-                    sIR.setSandboxInstanceRef(s.getId());
-                    trainingInstance.addSandboxInstanceRef(sIR);
-                }
-            });
-            for (SandboxInstanceRef sandbox : trainingInstance.getSandboxInstanceRefs()) {
-                if (!sandboxResponse.stream().anyMatch(sandboxInfo -> sandboxInfo.getId().equals(sandbox.getSandboxInstanceRef()))) {
-                    removeSandboxFromTrainingRun(sandbox);
-                    trainingInstance.removeSandboxInstanceRef(sandbox);
-                }
-            }
-            trainingInstanceRepository.save(trainingInstance);
-        } catch (HttpClientErrorException ex) {
-            throw new ServiceLayerException("Client side error when checking a state of sandbox in OpenStack for pool with ID " + trainingInstance.getPoolId() + " : " + ex.getMessage() + ". Please contact administrator", ErrorCode.UNEXPECTED_ERROR);
-        }
+        removeSandboxFromTrainingRun(idOfSandboxRefToDelete);
     }
 
-    private void removeSandboxFromTrainingRun(SandboxInstanceRef sandbox) {
-        Optional<TrainingRun> trainingRun = trainingRunRepository.findBySandboxInstanceRef(sandbox);
+    private void removeSandboxFromTrainingRun(Long sandboxId) {
+        Optional<TrainingRun> trainingRun = trainingRunRepository.findBySandboxInstanceRefId(sandboxId);
         if (trainingRun.isPresent()) {
             trainingRun.get().setState(TRState.ARCHIVED);
-            trainingRun.get().setSandboxInstanceRef(null);
-            trainingRun.get().setPreviousSandboxInstanceRefId(sandbox.getSandboxInstanceRef());
+            trainingRun.get().setSandboxInstanceRefId(null);
+            trainingRun.get().setPreviousSandboxInstanceRefId(sandboxId);
             trainingRunRepository.save(trainingRun.get());
         }
     }

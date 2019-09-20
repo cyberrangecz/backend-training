@@ -5,7 +5,7 @@ import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceIsFini
 import cz.muni.ics.kypo.training.exceptions.FacadeLayerException;
 import org.springframework.data.domain.Pageable;
 import com.querydsl.core.types.Predicate;
-import cz.muni.ics.kypo.training.api.PageResultResource;
+import cz.muni.ics.kypo.training.api.RestResponses.PageResultResource;
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceCreateDTO;
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceDTO;
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceUpdateDTO;
@@ -99,27 +99,10 @@ public interface TrainingInstanceFacade {
     void deleteSandboxes(Long instanceId, Set<Long> sandboxIds);
 
     /**
-     * Reallocates sandboxes in training instance
-     *
-     * @param instanceId id of training instance
-     * @param sandboxId  id of sandbox that will be reallocated
-     */
-    void reallocateSandbox(Long instanceId, Long sandboxId);
-
-
-    /**
      * Check if instance can be deleted.
      *
      * @param trainingInstanceId the training instance id
      * @return true if instance can be deleted, false if not and message. {@link TrainingInstanceIsFinishedInfoDTO}
      */
     TrainingInstanceIsFinishedInfoDTO checkIfInstanceCanBeDeleted(Long trainingInstanceId);
-
-
-    /**
-     * Synchronize sandboxes.
-     *
-     * @param instanceId the instance id
-     */
-    void synchronizeSandboxes(Long instanceId);
 }

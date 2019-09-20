@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.bohnman.squiggly.Squiggly;
 import com.github.bohnman.squiggly.util.SquigglyUtils;
 import com.querydsl.core.types.Predicate;
-import cz.muni.ics.kypo.training.api.PageResultResource;
+import cz.muni.ics.kypo.training.api.RestResponses.PageResultResource;
 import cz.muni.ics.kypo.training.api.dto.run.TrainingRunDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionByIdDTO;
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceCreateDTO;
@@ -364,38 +364,6 @@ public class TrainingInstancesRestController {
         }
     }
 
-    /**
-     * Reallocate sandbox of given training run.
-     * 1. sandbox is deleted
-     * 2. state of training run is changed to ARCHIVED
-     * 3. new sandbox is allocated
-     *
-     * @param instanceId id of training instance in which training instance is allocated
-     * @param sandboxId  id of sandbox to be deleted.
-     */
-    @ApiOperation(httpMethod = "POST",
-            value = "Reallocate sandbox in training instance",
-            response = Void.class,
-            nickname = "reallocateSandbox")
-    @ApiResponses(value = {
-            @ApiResponse(code = 202, message = "Sandbox was reallocated"),
-            @ApiResponse(code = 404, message = "Training instance with given id not found."),
-            @ApiResponse(code = 500, message = "Unexpected condition was encountered")
-    })
-    @PostMapping(path = "/{instanceId}/sandbox-instances/{sandboxId}")
-    public ResponseEntity<Void> reallocateSandbox(
-            @ApiParam(value = "Id of training instance for which sandbox is reallocated", required = true)
-            @PathVariable(value = "instanceId") Long instanceId,
-            @ApiParam(value = "id of sandbox that will be reallocated", required = true)
-            @PathVariable(value = "sandboxId") Long sandboxId) {
-        try {
-            trainingInstanceFacade.reallocateSandbox(instanceId, sandboxId);
-            return new ResponseEntity<>(HttpStatus.ACCEPTED);
-        } catch (FacadeLayerException ex) {
-            throw ExceptionSorter.throwException(ex);
-        }
-    }
-
     @ApiOperation(httpMethod = "GET",
             value = "Check if training instance can be safely deleted",
             response = TrainingInstanceIsFinishedInfoDTO.class,
@@ -410,26 +378,5 @@ public class TrainingInstancesRestController {
             @PathVariable(value = "instanceId") Long instanceId){
         return ResponseEntity.ok(trainingInstanceFacade.checkIfInstanceCanBeDeleted(instanceId));
     }
-
-    @ApiOperation(httpMethod = "PUT",
-            value = "Synchronize sandboxes of given instance with PythonApi database",
-            response = Void.class,
-            nickname = "synchronizeSandboxes")
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Sandboxes synchronized"),
-            @ApiResponse(code = 404, message = "Training instance with given id not found."),
-            @ApiResponse(code = 500, message = "Unexpected condition was encountered")
-    })
-    @PutMapping(path = "/{instanceId}/synchronize")
-    public ResponseEntity<Void> synchronizeSandboxes(@ApiParam(value = "Id of training instance for which sandboxes are synchronized", required = true)
-                                                     @PathVariable(value = "instanceId") Long instanceId){
-        try {
-            trainingInstanceFacade.synchronizeSandboxes(instanceId);
-            return new ResponseEntity<>(HttpStatus.ACCEPTED);
-        } catch (FacadeLayerException ex) {
-            throw ExceptionSorter.throwException(ex);
-        }
-    }
-
 
 }

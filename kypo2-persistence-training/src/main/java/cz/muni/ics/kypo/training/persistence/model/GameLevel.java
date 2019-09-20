@@ -22,7 +22,7 @@ public class GameLevel extends AbstractLevel implements Serializable {
     @Column(name = "content", nullable = false)
     private String content;
     @Lob
-    @Column(name = "solution", nullable = false)
+    @Column(name = "solution", nullable = false, columnDefinition = "TEXT")
     private String solution;
     @Column(name = "solution_penalized", nullable = false)
     private boolean solutionPenalized;

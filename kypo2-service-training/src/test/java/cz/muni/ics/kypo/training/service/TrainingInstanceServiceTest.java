@@ -6,12 +6,19 @@ import com.querydsl.core.types.dsl.PathBuilder;
 import cz.muni.csirt.kypo.elasticsearch.service.TrainingEventsService;
 import cz.muni.ics.kypo.commons.security.enums.AuthenticatedUserOIDCItems;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
-import cz.muni.ics.kypo.training.persistence.model.*;
-import cz.muni.ics.kypo.training.persistence.repository.*;
+import cz.muni.ics.kypo.training.persistence.model.TrainingDefinition;
+import cz.muni.ics.kypo.training.persistence.model.TrainingInstance;
+import cz.muni.ics.kypo.training.persistence.model.TrainingRun;
+import cz.muni.ics.kypo.training.persistence.model.UserRef;
+import cz.muni.ics.kypo.training.persistence.repository.AccessTokenRepository;
+import cz.muni.ics.kypo.training.persistence.repository.TrainingInstanceRepository;
+import cz.muni.ics.kypo.training.persistence.repository.TrainingRunRepository;
+import cz.muni.ics.kypo.training.persistence.repository.UserRefRepository;
 import cz.muni.ics.kypo.training.service.impl.SecurityService;
 import cz.muni.ics.kypo.training.service.impl.TrainingInstanceServiceImpl;
-import cz.muni.ics.kypo.training.utils.SandboxInfo;
-import cz.muni.ics.kypo.training.utils.SandboxPoolInfo;
+import cz.muni.ics.kypo.training.api.RestResponses.PageResultResourcePython;
+import cz.muni.ics.kypo.training.api.RestResponses.SandboxInfo;
+import cz.muni.ics.kypo.training.api.RestResponses.SandboxPoolInfo;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -41,9 +48,12 @@ import org.springframework.web.client.RestTemplate;
 
 import java.time.Clock;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 import static org.mockito.BDDMockito.*;
 
 /**
@@ -69,8 +79,6 @@ public class TrainingInstanceServiceTest {
     @Mock
     private UserRefRepository organizerRefRepository;
     @Mock
-    private SandboxInstanceRefRepository sandboxInstanceRefRepository;
-    @Mock
     private SecurityService securityService;
     @Mock
     private TrainingEventsService trainingEventsService;
@@ -78,9 +86,7 @@ public class TrainingInstanceServiceTest {
     private TrainingDefinition trainingDefinition;
     @Mock
     private SandboxPoolInfo sandboxPoolInfo;
-    @Mock
-    private SandboxInstanceRef sandboxInstanceRef1, sandboxInstanceRef2;
-    private SandboxInfo sandboxInfo;
+    private SandboxInfo sandboxInfo1 ,sandboxInfo2;
     private TrainingInstance trainingInstance1, trainingInstance2, trainingInstanceInvalid, trainingInstanceInvalidTime, currentInstance,
             instanceWithSB;
     private TrainingRun trainingRun1, trainingRun2;
@@ -90,7 +96,7 @@ public class TrainingInstanceServiceTest {
     public void init() {
         MockitoAnnotations.initMocks(this);
         trainingInstanceService = new TrainingInstanceServiceImpl(trainingInstanceRepository, accessTokenRepository,
-                trainingRunRepository, organizerRefRepository, restTemplate, securityService, sandboxInstanceRefRepository, trainingEventsService);
+                trainingRunRepository, organizerRefRepository, restTemplate, securityService, trainingEventsService);
 
         trainingInstance1 = new TrainingInstance();
         trainingInstance1.setId(1L);
@@ -111,7 +117,6 @@ public class TrainingInstanceServiceTest {
         instanceWithSB.setTrainingDefinition(trainingDefinition);
         instanceWithSB.setPoolSize(2);
         instanceWithSB.setPoolId(1L);
-        instanceWithSB.setSandboxInstanceRefs(new HashSet<>(Arrays.asList(sandboxInstanceRef1, sandboxInstanceRef2)));
 
         user = new UserRef();
         user.setUserRefLogin("login");
@@ -124,6 +129,7 @@ public class TrainingInstanceServiceTest {
         trainingInstance2.setEndTime(LocalDateTime.now(Clock.systemUTC()).plusHours(5L));
         trainingInstance2.setAccessToken("pass-1253");
         trainingInstance2.setTrainingDefinition(trainingDefinition);
+        trainingInstance2.setPoolId(null);
 
         trainingInstanceInvalid = new TrainingInstance();
         trainingInstanceInvalid.setId(3L);
@@ -150,15 +156,15 @@ public class TrainingInstanceServiceTest {
         trainingRun2.setId(2L);
         trainingRun2.setTrainingInstance(trainingInstance1);
 
-        sandboxInfo = new SandboxInfo();
-        sandboxInfo.setId(2L);
-        sandboxInfo.setStatus("CREATE_COMPLETE");
-        sandboxInfo.setPool(5L);
+        sandboxInfo1 = new SandboxInfo();
+        sandboxInfo1.setId(2L);
+        sandboxInfo1.setStatus("CREATE_COMPLETE");
+        sandboxInfo1.setPool(5L);
 
-        sandboxInstanceRef1 = new SandboxInstanceRef();
-        sandboxInstanceRef1.setSandboxInstanceRef(1L);
-        sandboxInstanceRef2 = new SandboxInstanceRef();
-        sandboxInstanceRef2.setSandboxInstanceRef(2L);
+        sandboxInfo2 = new SandboxInfo();
+        sandboxInfo2.setId(3L);
+        sandboxInfo2.setStatus("CREATE_COMPLETE");
+        sandboxInfo2.setPool(5L);
     }
 
     @Test
@@ -273,7 +279,12 @@ public class TrainingInstanceServiceTest {
 
     @Test
     public void deleteInstanceWithAssignedSandboxes() {
+        PageResultResourcePython<SandboxInfo> pythonPage = new PageResultResourcePython<SandboxInfo>();
+        pythonPage.setResults(List.of(sandboxInfo1, sandboxInfo2));
+
         given(trainingRunRepository.existsAnyForTrainingInstance(instanceWithSB.getId())).willReturn(false);
+        given(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class)))
+                .willReturn(new ResponseEntity<PageResultResourcePython<SandboxInfo>>(pythonPage, HttpStatus.OK));
         thrown.expect(ServiceLayerException.class);
         thrown.expectMessage("Cannot delete training instance because it contains some sandboxes. Please delete sandboxes and try again or wait until all sandboxes are deleted from OpenStack.");
         trainingInstanceService.delete(instanceWithSB);
@@ -301,18 +312,6 @@ public class TrainingInstanceServiceTest {
     }
 
     @Test
-    public void allocateSandboxesWithNullCount() {
-        when(trainingDefinition.getSandboxDefinitionRefId()).thenReturn(1L);
-        when(sandboxPoolInfo.getId()).thenReturn(4L);
-
-        // given(trainingInstanceRepository.findById(trainingInstance1.getId())).willReturn(Optional.ofNullable(trainingInstance1));
-        given(restTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
-                willReturn(new ResponseEntity<List<SandboxInfo>>(new ArrayList<>(Collections.singletonList(sandboxInfo)), HttpStatus.OK));
-        trainingInstanceService.allocateSandboxes(trainingInstance1, null);
-        assertTrue(trainingInstance1.getSandboxInstanceRefs().stream().anyMatch(s -> s.getSandboxInstanceRef().equals(2L)));
-    }
-
-    @Test
     public void allocateSandboxesWithNotCreatedPool() {
         given(trainingInstanceRepository.findById(trainingInstance2.getId())).willReturn(Optional.ofNullable(trainingInstance2));
         thrown.expect(ServiceLayerException.class);
@@ -323,22 +322,15 @@ public class TrainingInstanceServiceTest {
 
     @Test
     public void allocateSandboxesWithFullPool() {
+        PageResultResourcePython<SandboxInfo> pythonPage = new PageResultResourcePython<SandboxInfo>();
+        pythonPage.setResults(List.of(sandboxInfo1, sandboxInfo2));
+
         given(trainingInstanceRepository.findById(instanceWithSB.getId())).willReturn(Optional.ofNullable(instanceWithSB));
+        given(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class)))
+                .willReturn(new ResponseEntity<PageResultResourcePython<SandboxInfo>>(pythonPage, HttpStatus.OK));
         thrown.expect(ServiceLayerException.class);
         thrown.expectMessage("Pool of sandboxes of training instance with id: " + instanceWithSB.getId() + " is full.");
         trainingInstanceService.allocateSandboxes(instanceWithSB, 1);
-    }
-
-    @Test
-    public void deleteSandbox() {
-        trainingInstance1.addSandboxInstanceRef(sandboxInstanceRef1);
-        trainingInstance1.addSandboxInstanceRef(sandboxInstanceRef2);
-        given(trainingInstanceRepository.findById(trainingInstance1.getId())).willReturn(Optional.ofNullable(trainingInstance1));
-        given(sandboxInstanceRefRepository.findBySandboxInstanceRefId(sandboxInstanceRef1.getSandboxInstanceRef())).willReturn(Optional.ofNullable(sandboxInstanceRef1));
-        given(restTemplate.exchange(anyString(), eq(HttpMethod.DELETE), any(HttpEntity.class), eq(String.class))).
-                willReturn(new ResponseEntity<String>("", HttpStatus.OK));
-        trainingInstanceService.deleteSandbox(trainingInstance1.getId(), sandboxInstanceRef1.getSandboxInstanceRef());
-        assertFalse(trainingInstance1.getSandboxInstanceRefs().contains(sandboxInstanceRef1));
     }
 
     @Test

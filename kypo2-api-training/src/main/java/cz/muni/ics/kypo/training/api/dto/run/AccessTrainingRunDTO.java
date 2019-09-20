@@ -20,7 +20,7 @@ public class AccessTrainingRunDTO {
 
     private Long trainingRunID;
     private boolean showStepperBar;
-    private Long sandboxInstanceId;
+    private Long sandboxInstanceRefId;
     private AbstractLevelDTO abstractLevelDTO;
     private List<BasicLevelInfoDTO> infoAboutLevels;
     private Long instanceId;
@@ -73,17 +73,17 @@ public class AccessTrainingRunDTO {
      * @return the sandbox instance id
      */
     @ApiModelProperty(value = "Main identifier of sandbox which is assigned to training run.", example = "2")
-    public Long getSandboxInstanceId() {
-        return sandboxInstanceId;
+    public Long getSandboxInstanceRefId() {
+        return sandboxInstanceRefId;
     }
 
     /**
      * Sets sandbox instance id.
      *
-     * @param sandboxInstanceId the sandbox instance id
+     * @param sandboxInstanceRefId the sandbox instance id
      */
-    public void setSandboxInstanceId(Long sandboxInstanceId) {
-        this.sandboxInstanceId = sandboxInstanceId;
+    public void setSandboxInstanceRefId(Long sandboxInstanceRefId) {
+        this.sandboxInstanceRefId = sandboxInstanceRefId;
     }
 
     /**
@@ -209,8 +209,8 @@ public class AccessTrainingRunDTO {
 
 
     @Override public String toString() {
-        return "AccessTrainingRunDTO{" + "trainingRunID=" + trainingRunID + ", showStepperBar=" + showStepperBar + ", sandboxInstanceId="
-            + sandboxInstanceId + ", abstractLevelDTO=" + abstractLevelDTO + ", infoAboutLevels=" + infoAboutLevels + ", instanceId="
+        return "AccessTrainingRunDTO{" + "trainingRunID=" + trainingRunID + ", showStepperBar=" + showStepperBar + ", sandboxInstanceRefId="
+            + sandboxInstanceRefId + ", abstractLevelDTO=" + abstractLevelDTO + ", infoAboutLevels=" + infoAboutLevels + ", instanceId="
             + instanceId + ", startTime=" + startTime + '}';
     }
 }

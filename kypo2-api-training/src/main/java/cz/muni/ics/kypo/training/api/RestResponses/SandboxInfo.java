@@ -1,4 +1,4 @@
-package cz.muni.ics.kypo.training.utils;
+package cz.muni.ics.kypo.training.api.RestResponses;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
@@ -14,6 +14,8 @@ public class SandboxInfo {
     private String status;
     @NotNull
     private Long pool;
+    @NotNull
+    private boolean locked;
 
     /**
      * Gets id of sandbox.
@@ -69,12 +71,21 @@ public class SandboxInfo {
         this.pool = pool;
     }
 
+    public boolean isLocked() {
+        return locked;
+    }
+
+    public void setLocked(boolean locked) {
+        this.locked = locked;
+    }
+
     @Override
     public String toString() {
         return "SandboxInfo{" +
                 "id=" + id +
                 ", status='" + status + '\'' +
                 ", pool=" + pool +
+                ", locked=" + locked +
                 '}';
     }
 }

@@ -3,7 +3,9 @@ package cz.muni.ics.kypo.training.persistence.repository;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.StringPath;
-import cz.muni.ics.kypo.training.persistence.model.*;
+import cz.muni.ics.kypo.training.persistence.model.QTrainingRun;
+import cz.muni.ics.kypo.training.persistence.model.TrainingInstance;
+import cz.muni.ics.kypo.training.persistence.model.TrainingRun;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
@@ -17,7 +19,6 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -51,7 +52,7 @@ public interface TrainingRunRepository extends JpaRepository<TrainingRun, Long>,
      * @param pageable  the pageable
      * @return page of all {@link TrainingRun}
      */
-    @EntityGraph(attributePaths = {"participantRef", "sandboxInstanceRef"})
+    @EntityGraph(attributePaths = {"participantRef"})
     Page<TrainingRun> findAll(Predicate predicate, Pageable pageable);
 
     /**
@@ -60,7 +61,7 @@ public interface TrainingRunRepository extends JpaRepository<TrainingRun, Long>,
      * @param id id of training run
      * @return {@link TrainingRun}
      */
-    @EntityGraph(attributePaths = {"participantRef", "sandboxInstanceRef", "trainingInstance"})
+    @EntityGraph(attributePaths = {"participantRef", "trainingInstance"})
     Optional<TrainingRun> findById(Long id);
 
     /**
@@ -107,7 +108,7 @@ public interface TrainingRunRepository extends JpaRepository<TrainingRun, Long>,
      * @param pageable           the pageable
      * @return the page of all {@link TrainingRun}s associated with {@link TrainingInstance}
      */
-    @EntityGraph(attributePaths = {"participantRef", "sandboxInstanceRef"})
+    @EntityGraph(attributePaths = {"participantRef"})
     Page<TrainingRun> findAllByTrainingInstanceId(Long trainingInstanceId, Pageable pageable);
 
     /**
@@ -116,7 +117,7 @@ public interface TrainingRunRepository extends JpaRepository<TrainingRun, Long>,
      * @param trainingInstanceId the training instance id
      * @return the set of all {@link TrainingRun}s associated with {@link TrainingInstance}
      */
-    @EntityGraph(attributePaths = {"participantRef", "sandboxInstanceRef"})
+    @EntityGraph(attributePaths = {"participantRef"})
     Set<TrainingRun> findAllByTrainingInstanceId(Long trainingInstanceId);
 
     /**
@@ -153,16 +154,6 @@ public interface TrainingRunRepository extends JpaRepository<TrainingRun, Long>,
     Page<TrainingRun> findAllByTrainingDefinitionId(@Param("trainingDefinitionId") Long trainingDefinitionId, Pageable pageable);
 
     /**
-     * Find free sandboxes of training instance.
-     *
-     * @param trainingInstanceId the training instance id
-     * @return the set of free sandboxes of {@link TrainingInstance}
-     */
-    @Query("SELECT sir FROM SandboxInstanceRef sir JOIN FETCH sir.trainingInstance ti WHERE ti.id = :trainingInstanceId AND sir NOT IN " +
-            "(SELECT si FROM TrainingRun tr INNER JOIN tr.sandboxInstanceRef si WHERE tr.trainingInstance.id = :trainingInstanceId)")
-    Set<SandboxInstanceRef> findFreeSandboxesOfTrainingInstance(@Param("trainingInstanceId") Long trainingInstanceId);
-
-    /**
      * Delete all training runs by training instance.
      *
      * @param trainingInstanceId the training instance id
@@ -179,22 +170,25 @@ public interface TrainingRunRepository extends JpaRepository<TrainingRun, Long>,
      * @return the {@link TrainingRun} by user and access token
      */
     @Query("SELECT tr FROM TrainingRun tr JOIN FETCH tr.trainingInstance ti JOIN FETCH tr.participantRef pr JOIN FETCH tr.currentLevel WHERE ti.accessToken = :accessToken " +
-            "AND pr.userRefId = :userRefId AND tr.sandboxInstanceRef  IS NOT NULL AND tr.state NOT LIKE 'FINISHED' ")
+            "AND pr.userRefId = :userRefId AND tr.sandboxInstanceRefId IS NOT NULL AND tr.state NOT LIKE 'FINISHED' ")
     Optional<TrainingRun> findValidTrainingRunOfUser(@Param("accessToken") String accessToken, @Param("userRefId") Long userRefId);
 
-    /**
-     * Find by sandbox instance ref.
-     *
-     * @param sandboxInstanceRef the sandbox instance ref
-     * @return the {@link TrainingRun}
-     */
-    @Query("SELECT tr FROM TrainingRun tr WHERE tr.sandboxInstanceRef = :sandboxInstanceRef")
-    Optional<TrainingRun> findBySandboxInstanceRef(@Param("sandboxInstanceRef") SandboxInstanceRef sandboxInstanceRef);
-
-    @Query("SELECT si.sandboxInstanceRefId FROM TrainingRun tr INNER JOIN tr.sandboxInstanceRef si INNER JOIN tr.trainingInstance ti WHERE ti.id = :trainingInstanceId")
-    List<Long> findIdsOfAllOccupiedSandboxesByTrainingInstance(@Param("trainingInstanceId") Long trainingInstanceId);
+//    /**
+//     * Find by sandbox instance ref.
+//     *
+//     * @param sandboxInstanceRef the sandbox instance ref
+//     * @return the {@link TrainingRun}
+//     */
+//    @Query("SELECT tr FROM TrainingRun tr WHERE tr.sandboxInstanceRef = :sandboxInstanceRef")
+//    Optional<TrainingRun> findBySandboxInstanceRef(@Param("sandboxInstanceRef") SandboxInstanceRef sandboxInstanceRef);
+//
+//    @Query("SELECT si.sandboxInstanceRefId FROM TrainingRun tr INNER JOIN tr.sandboxInstanceRef si INNER JOIN tr.trainingInstance ti WHERE ti.id = :trainingInstanceId")
+//    List<Long> findIdsOfAllOccupiedSandboxesByTrainingInstance(@Param("trainingInstanceId") Long trainingInstanceId);
 
     @Query("SELECT (COUNT(tr) > 0) FROM TrainingRun tr INNER JOIN tr.trainingInstance ti WHERE ti.id = :trainingInstanceId")
     boolean existsAnyForTrainingInstance(@Param("trainingInstanceId") Long trainingInstanceId);
+
+    @EntityGraph(attributePaths = {"participantRef"})
+    Optional<TrainingRun> findBySandboxInstanceRefId(Long sandboxId);
 
 }

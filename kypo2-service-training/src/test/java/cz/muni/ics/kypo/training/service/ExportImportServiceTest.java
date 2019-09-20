@@ -4,9 +4,6 @@ import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.repository.*;
 import cz.muni.ics.kypo.training.service.impl.ExportImportServiceImpl;
-import cz.muni.ics.kypo.training.utils.AssessmentUtil;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -15,17 +12,11 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.util.ResourceUtils;
 
-import java.io.FileReader;
-import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
-import static org.junit.Assert.assertEquals;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.*;
-import static org.mockito.Mockito.when;
 
 /**
  * @author Boris Jadus(445343)
@@ -103,6 +94,15 @@ public class ExportImportServiceTest {
         thrown.expect(ServiceLayerException.class);
         thrown.expectMessage("The training instance is not finished.");
         exportImportService.failIfInstanceIsNotFinished(LocalDateTime.now().plusHours(25));
+    }
+
+    @Test
+    public void test(){
+        String pass = "pass-0221";
+        String shortPass = pass.substring(0, pass.length() - 5);
+        String pin = pass.substring(pass.length() -4, pass.length() );
+        System.out.println("short:"  +shortPass);
+        System.out.println("pin: " + pin);
     }
 
 }

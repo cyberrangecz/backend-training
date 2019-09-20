@@ -42,9 +42,8 @@ public class TrainingRun implements Serializable {
     private AbstractLevel currentLevel;
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     private TrainingInstance trainingInstance;
-    @OneToOne(fetch = FetchType.LAZY, cascade = {CascadeType.ALL})
-    @JoinColumn(name = "sandbox_instance_ref_id")
-    private SandboxInstanceRef sandboxInstanceRef;
+    @Column(name = "sandbox_instance_ref_id")
+    private Long sandboxInstanceRefId;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_ref_id", nullable = false)
     private UserRef participantRef;
@@ -199,12 +198,22 @@ public class TrainingRun implements Serializable {
     }
 
     /**
-     * Gets DB reference of sandbox instance associated with Training run
+     * Gets id of sandbox instance associated with Training run
      *
-     * @return the sandbox instance ref
+     * @return the sandbox instance ref id
      */
-    public SandboxInstanceRef getSandboxInstanceRef() {
-        return sandboxInstanceRef;
+    public Long getSandboxInstanceRefId() {
+        return sandboxInstanceRefId;
+    }
+
+
+    /**
+     * Sets id of sandbox instance associated with Training run
+     *
+     * @param sandboxInstanceRefId the sandbox instance ref id
+     */
+    public void setSandboxInstanceRefId(Long sandboxInstanceRefId) {
+        this.sandboxInstanceRefId = sandboxInstanceRefId;
     }
 
     /**
@@ -241,15 +250,6 @@ public class TrainingRun implements Serializable {
      */
     public void setSolutionTaken(boolean solutionTaken) {
         this.solutionTaken = solutionTaken;
-    }
-
-    /**
-     * Sets DB reference of sandbox instance associated with Training run
-     *
-     * @param sandboxInstanceRef the sandbox instance ref
-     */
-    public void setSandboxInstanceRef(SandboxInstanceRef sandboxInstanceRef) {
-        this.sandboxInstanceRef = sandboxInstanceRef;
     }
 
     /**
@@ -443,7 +443,7 @@ public class TrainingRun implements Serializable {
                 ", solutionTaken=" + solutionTaken +
                 ", currentLevel=" + currentLevel +
                 ", trainingInstance=" + trainingInstance +
-                ", sandboxInstanceRef=" + sandboxInstanceRef +
+                ", sandboxInstanceRefId=" + sandboxInstanceRefId +
                 ", participantRef=" + participantRef +
                 ", assessmentResponses='" + assessmentResponses + '\'' +
                 ", totalScore=" + totalScore +

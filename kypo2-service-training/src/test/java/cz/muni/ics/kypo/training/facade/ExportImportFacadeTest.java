@@ -183,9 +183,6 @@ public class ExportImportFacadeTest {
 
     @Test
     public void dbImport() {
-        //given(exportImportService.createLevel(infoLevelMapper.mapImportToEntity(importInfoLevelDTO), any(TrainingDefinition.class))).willReturn(3L);
-        //given(exportImportService.createLevel(gameLevelMapper.mapImportToEntity(importGameLevelDTO), 1L)).willReturn(2L);
-        //given(exportImportService.createLevel(assessmentLevelMapper.mapImportToEntity(importAssessmentLevelDTO), 1L)).willReturn(1L);
         given(trainingDefinitionService.create(any(TrainingDefinition.class))).willReturn(trainingDefinitionImported);
 
         TrainingDefinitionByIdDTO trainingDefinitionByIdDTO = exportImportFacade.dbImport(importTrainingDefinitionDTO);
@@ -193,21 +190,7 @@ public class ExportImportFacadeTest {
 
         deepEqualsTrainingDefinitionDTO(trainingDefinitionByIdDTOImported, trainingDefinitionByIdDTO);
     }
-/*
-    @Test
-    public void archiveTrainingRun() {
-        given(exportImportService.findInstanceById(anyLong())).willReturn(trainingInstance);
-        given(exportImportService.findById(trainingDefinition.getId())).willReturn(trainingDefinition);
-        given(trainingDefinitionService.findLevelById(infoLevel.getId())).willReturn(infoLevel);
-        given(trainingDefinitionService.findLevelById(gameLevel.getId())).willReturn(gameLevel);
-        given(trainingDefinitionService.findLevelById(assessmentLevel.getId())).willReturn(assessmentLevel);
-        given(exportImportService.findRunsByInstanceId(anyLong())).willReturn(Set.of(trainingRun));
 
-        FileToReturnDTO trainingInstanceArchiveDTO = exportImportFacade.archiveTrainingInstance(1L);
-
-        assertEquals(trainingInstance.getTitle(), trainingInstanceArchiveDTO.getTitle());
-    }
-*/
     @Test
     public void createInfoLevelWithFacadeLayerException() {
         thrown.expect(FacadeLayerException.class);
