@@ -88,6 +88,18 @@ public interface TrainingDefinitionFacade {
      */
     List<BasicLevelInfoDTO> swapLevels(Long definitionId, Long swapLevelFrom, Long swapLevelTo);
 
+    /**
+     * Move level to the different position and modify orders of levels between moved level and new position.
+     *
+     * @param definitionId  - Id of definition containing levels, this training definition is updating its last edited column.
+     * @param levelIdToBeMoved - id of the level to be moved to the new position
+     * @param newPosition   - position where level will be moved
+     * @return the list of {@link BasicLevelInfoDTO} about all levels from given definition
+     * @throws FacadeLayerException with ErrorCode: RESOURCE_NOT_FOUND given training definition or one of the levels is not found.
+     *                                              RESOURCE_CONFLICT released or archived training definition cannot be modified.
+     */
+    List<BasicLevelInfoDTO> moveLevel(Long definitionId, Long levelIdToBeMoved, Integer newPosition);
+
 
     /**
      * Deletes specific training instance based on id

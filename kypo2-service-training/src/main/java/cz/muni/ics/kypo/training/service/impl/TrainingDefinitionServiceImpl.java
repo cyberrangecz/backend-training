@@ -183,6 +183,30 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     @Override
     @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
             "or @securityService.isDesignerOfGivenTrainingDefinition(#definitionId)")
+    public void moveLevel(Long definitionId, Long levelIdToBeMoved, Integer newPosition) {
+        Integer maxOrderOfLevel = abstractLevelRepository.getCurrentMaxOrder(definitionId);
+        if(newPosition < 0) {
+            newPosition = 0;
+        } else if(newPosition > maxOrderOfLevel) {
+            newPosition = maxOrderOfLevel;
+        }
+        TrainingDefinition trainingDefinition = findById(definitionId);
+        checkIfCanBeUpdated(trainingDefinition);
+        AbstractLevel levelToBeMoved = abstractLevelRepository.findById(levelIdToBeMoved).orElseThrow(() -> new ServiceLayerException(LEVEL_NOT_FOUND, ErrorCode.RESOURCE_NOT_FOUND));
+        if(levelToBeMoved.getOrder() == newPosition) {
+            return;
+        } else if(levelToBeMoved.getOrder() < newPosition) {
+            abstractLevelRepository.decreaseOrderOfLevels(definitionId, levelToBeMoved.getOrder()+1, newPosition);
+        } else {
+            abstractLevelRepository.increaseOrderOfLevels(definitionId, newPosition, levelToBeMoved.getOrder()-1);
+        }
+        levelToBeMoved.setOrder(newPosition);
+        trainingDefinition.setLastEdited(getCurrentTimeInUTC());
+    }
+
+    @Override
+    @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
+            "or @securityService.isDesignerOfGivenTrainingDefinition(#definitionId)")
     public void delete(Long definitionId) {
         TrainingDefinition definition = findById(definitionId);
         if (definition.getState().equals(TDState.RELEASED))

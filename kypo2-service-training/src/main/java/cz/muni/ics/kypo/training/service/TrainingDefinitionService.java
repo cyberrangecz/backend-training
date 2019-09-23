@@ -1,10 +1,12 @@
 package cz.muni.ics.kypo.training.service;
 
 import com.querydsl.core.types.Predicate;
+import cz.muni.ics.kypo.training.api.dto.BasicLevelInfoDTO;
 import cz.muni.ics.kypo.training.api.dto.UserDTO;
 import cz.muni.ics.kypo.training.api.dto.UserInfoDTO;
 import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
 import cz.muni.ics.kypo.training.api.enums.RoleType;
+import cz.muni.ics.kypo.training.exceptions.FacadeLayerException;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import org.springframework.data.domain.Page;
@@ -77,6 +79,17 @@ public interface TrainingDefinitionService {
      *                                               RESOURCE_CONFLICT released or archived training definition cannot be modified.
      */
     void swapLevels(Long definitionId, Long swapLevelFrom, Long swapLevelTo);
+
+    /**
+     * Move level to the different position and modify orders of levels between moved level and new position.
+     *
+     * @param definitionId  - Id of definition containing levels, this training definition is updating its last edited column.
+     * @param levelIdToBeMoved - id of the level to be moved to the new position
+     * @param newPosition   - position where level will be moved
+     * @throws FacadeLayerException with ErrorCode: RESOURCE_NOT_FOUND given training definition or one of the levels is not found.
+     *                                              RESOURCE_CONFLICT released or archived training definition cannot be modified.
+     */
+    void moveLevel(Long definitionId, Long levelIdToBeMoved, Integer newPosition);
 
     /**
      * Deletes specific training definition based on id

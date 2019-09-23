@@ -1,6 +1,7 @@
 package cz.muni.ics.kypo.training.persistence.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.repository.query.Param;
@@ -55,4 +56,24 @@ public interface AbstractLevelRepository extends JpaRepository<AbstractLevel, Lo
      */
     @Query("SELECT l FROM AbstractLevel l JOIN FETCH l.trainingDefinition td JOIN FETCH td.authors LEFT OUTER JOIN FETCH td.betaTestingGroup btg LEFT OUTER JOIN FETCH btg.organizers WHERE l.id = :levelId")
     Optional<AbstractLevel> findByIdIncludinDefinition(@Param("levelId") Long levelId);
+
+    /**
+     * Increase level order from given order to the given order.
+     *
+     * @param fromOrder first level which order will be increased
+     * @param toOrder last level which order will be increased.
+     */
+    @Modifying
+    @Query("UPDATE AbstractLevel l SET l.order = l.order + 1 WHERE l.trainingDefinition.id = :trainingDefinitionId AND l.order >= :fromOrder AND l.order <= :toOrder")
+    void increaseOrderOfLevels(@Param("trainingDefinitionId") Long trainingDefinitionId, @Param("fromOrder") Integer fromOrder, @Param("toOrder") Integer toOrder);
+
+    /**
+     * Decrease level order from given order to the given order.
+     *
+     * @param fromOrder first level which order will be decreased
+     * @param toOrder last level which order will be decreased.
+     */
+    @Modifying
+    @Query("UPDATE AbstractLevel l SET l.order = l.order - 1 WHERE l.trainingDefinition.id = :trainingDefinitionId AND l.order >= :fromOrder AND l.order <= :toOrder")
+    void decreaseOrderOfLevels(@Param("trainingDefinitionId") Long trainingDefinitionId, @Param("fromOrder") Integer fromOrder, @Param("toOrder") Integer toOrder);
 }
