@@ -245,6 +245,20 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
 
     @Override
     @TransactionalWO
+    public List<BasicLevelInfoDTO> moveLevel(Long definitionId, Long levelIdToBeMoved, Integer newPosition) {
+        try {
+            Objects.requireNonNull(definitionId);
+            Objects.requireNonNull(levelIdToBeMoved);
+            Objects.requireNonNull(newPosition);
+            trainingDefinitionService.moveLevel(definitionId, levelIdToBeMoved, newPosition);
+            return gatherBasicLevelInfo(definitionId);
+        } catch (ServiceLayerException ex) {
+            throw new FacadeLayerException(ex);
+        }
+    }
+
+    @Override
+    @TransactionalWO
     public void delete(Long id) {
         try {
             Objects.requireNonNull(id);

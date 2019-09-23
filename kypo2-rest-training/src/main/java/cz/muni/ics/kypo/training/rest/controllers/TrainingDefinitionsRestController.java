@@ -334,6 +334,41 @@ public class TrainingDefinitionsRestController {
     }
 
     /**
+     * Move the given level to the specified position.
+     *
+     * @param definitionId the definition id
+     * @param levelIdToBeMoved  the level id from
+     * @param newPosition    position where move the given level
+     * @return the basic information about levels
+     */
+    @ApiOperation(httpMethod = "PUT",
+            value = "Move level",
+            nickname = "moveLevel",
+            produces = MediaType.APPLICATION_JSON_VALUE,
+            response = BasicLevelInfoDTO.class
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "The level has been moved to the given position."),
+            @ApiResponse(code = 404, message = "Training definition with given id not found."),
+            @ApiResponse(code = 409, message = "Cannot edit released or archived training definition."),
+            @ApiResponse(code = 500, message = "Unexpected condition was encountered.")
+    })
+    @PutMapping(path = "/{definitionId}/levels/{levelIdToBeMoved}/move-to/{newPosition}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Object> moveLevel(
+            @ApiParam(value = "Id of training definition", required = true)
+            @PathVariable("definitionId") Long definitionId,
+            @ApiParam(value = "Id of training definition", required = true)
+            @PathVariable("levelIdToBeMoved") Long levelIdToBeMoved,
+            @ApiParam(value = "Id of training definition", required = true)
+            @PathVariable("newPosition") Integer newPosition) {
+        try {
+            return ResponseEntity.ok(trainingDefinitionFacade.moveLevel(definitionId, levelIdToBeMoved, newPosition));
+        } catch (FacadeLayerException ex) {
+            throw ExceptionSorter.throwException(ex);
+        }
+    }
+
+    /**
      * Delete training definition.
      *
      * @param id the id of definition to be deleted
