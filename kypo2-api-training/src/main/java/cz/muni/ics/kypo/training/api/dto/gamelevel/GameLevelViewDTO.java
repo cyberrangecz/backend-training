@@ -5,7 +5,6 @@ import cz.muni.ics.kypo.training.api.dto.hint.HintForGameLevelViewDTO;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -20,7 +19,6 @@ public class GameLevelViewDTO extends AbstractLevelDTO {
     private String content;
     private boolean solutionPenalized;
     private int estimatedDuration;
-    private String[] attachments;
     private int incorrectFlagLimit;
     private Set<HintForGameLevelViewDTO> hints = new HashSet<>();
 
@@ -73,25 +71,6 @@ public class GameLevelViewDTO extends AbstractLevelDTO {
     }
 
     /**
-     * Get attachments.
-     *
-     * @return the attachments
-     */
-    @ApiModelProperty(value = "Downloadable files for level (pictures, source code...)", example = "")
-    public String[] getAttachments() {
-        return attachments;
-    }
-
-    /**
-     * Sets attachments.
-     *
-     * @param attachments the attachments
-     */
-    public void setAttachments(String[] attachments) {
-        this.attachments = attachments;
-    }
-
-    /**
      * Gets incorrect flag limit.
      *
      * @return the incorrect flag limit
@@ -131,8 +110,12 @@ public class GameLevelViewDTO extends AbstractLevelDTO {
 
     @Override
     public String toString() {
-        return "GameLevelDTO{" + '\'' + ", content='" + content + '\''
-                + ", solutionPenalized=" + solutionPenalized + ", estimatedDuration=" + estimatedDuration + ", attachments="
-                + Arrays.toString(attachments)  + ", incorrectFlagLimit=" + incorrectFlagLimit + '}';
+        return "GameLevelViewDTO{" +
+                "content='" + content + '\'' +
+                ", solutionPenalized=" + solutionPenalized +
+                ", estimatedDuration=" + estimatedDuration +
+                ", incorrectFlagLimit=" + incorrectFlagLimit +
+                ", hints=" + hints +
+                '}';
     }
 }

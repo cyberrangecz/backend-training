@@ -14,7 +14,6 @@ public class GameLevelArchiveDTO extends AbstractLevelArchiveDTO{
     private String content;
     private String solution;
     private boolean solutionPenalized;
-    private String[] attachments;
     private Set<HintArchiveDTO> hints = new HashSet<>();
     private int incorrectFlagLimit;
 
@@ -54,15 +53,6 @@ public class GameLevelArchiveDTO extends AbstractLevelArchiveDTO{
         this.solutionPenalized = solutionPenalized;
     }
 
-    @ApiModelProperty(value = "Downloadable files for level (pictures, source code...)", example = "")
-    public String[] getAttachments() {
-        return attachments;
-    }
-
-    public void setAttachments(String[] attachments) {
-        this.attachments = attachments;
-    }
-
     @ApiModelProperty(value = "Information which helps player resolve the level.")
     public Set<HintArchiveDTO> getHints() {
         return hints;
@@ -88,7 +78,6 @@ public class GameLevelArchiveDTO extends AbstractLevelArchiveDTO{
                 ", content='" + content + '\'' +
                 ", solution='" + solution + '\'' +
                 ", solutionPenalized=" + solutionPenalized +
-                ", attachments=" + Arrays.toString(attachments) +
                 ", hints=" + hints +
                 ", incorrectFlagLimit=" + incorrectFlagLimit +
                 '}';

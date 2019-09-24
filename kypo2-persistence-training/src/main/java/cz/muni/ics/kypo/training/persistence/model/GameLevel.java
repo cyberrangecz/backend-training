@@ -15,7 +15,6 @@ import java.util.*;
 @Table(name = "game_level")
 @PrimaryKeyJoinColumn(name = "id")
 public class GameLevel extends AbstractLevel implements Serializable {
-
     @Column(name = "flag", nullable = false)
     private String flag;
     @Lob
@@ -26,8 +25,11 @@ public class GameLevel extends AbstractLevel implements Serializable {
     private String solution;
     @Column(name = "solution_penalized", nullable = false)
     private boolean solutionPenalized;
-    @Column(name = "attachments")
-    private String[] attachments;
+    @OneToMany(
+            mappedBy = "gameLevel",
+            orphanRemoval = true
+    )
+    private Set<Attachment> attachments = new HashSet<>();
     @OneToMany(
             mappedBy = "gameLevel",
             cascade = CascadeType.ALL,
@@ -119,22 +121,16 @@ public class GameLevel extends AbstractLevel implements Serializable {
         this.solutionPenalized = solutionPenalized;
     }
 
-    /**
-     * Gets attachments to level, for example picture or script
-     *
-     * @return the string [ ]
-     */
-    public String[] getAttachments() {
+    public Set<Attachment> getAttachments() {
         return attachments;
     }
 
-    /**
-     * Sets attachments to level, for example picture or script
-     *
-     * @param attachments the attachments
-     */
-    public void setAttachments(String[] attachments) {
+    public void setAttachments(Set<Attachment> attachments) {
         this.attachments = attachments;
+    }
+
+    public void addAttachment(Attachment attachment){
+        this.attachments.add(attachment);
     }
 
     /**
@@ -197,9 +193,14 @@ public class GameLevel extends AbstractLevel implements Serializable {
         return Objects.hash(super.hashCode(), getContent(), getSolution());
     }
 
-    @Override public String toString() {
-        return "GameLevel{" + "flag='" + flag + '\'' + ", content='" + content + '\'' + ", solution='" + solution + '\''
-            + ", solutionPenalized=" + solutionPenalized + ", attachments=" + Arrays.toString(attachments) + ", hints=" + hints
-            + ", incorrectFlagLimit=" + incorrectFlagLimit + '}';
+    @Override
+    public String toString() {
+        return "GameLevel{" +
+                "flag='" + flag + '\'' +
+                ", content='" + content + '\'' +
+                ", solution='" + solution + '\'' +
+                ", solutionPenalized=" + solutionPenalized +
+                ", incorrectFlagLimit=" + incorrectFlagLimit +
+                '}';
     }
 }

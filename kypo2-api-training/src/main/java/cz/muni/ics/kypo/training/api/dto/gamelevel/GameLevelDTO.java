@@ -19,7 +19,6 @@ public class GameLevelDTO extends AbstractLevelDTO {
     private String content;
     private String solution;
     private boolean solutionPenalized;
-    private String[] attachments;
     private Set<HintDTO> hints = new HashSet<>();
     private int incorrectFlagLimit;
 
@@ -100,25 +99,6 @@ public class GameLevelDTO extends AbstractLevelDTO {
     }
 
     /**
-     * Get attachments.
-     *
-     * @return the attachments
-     */
-    @ApiModelProperty(value = "Downloadable files for level (pictures, source code...)", example = "")
-    public String[] getAttachments() {
-        return attachments;
-    }
-
-    /**
-     * Sets attachments.
-     *
-     * @param attachments the attachments
-     */
-    public void setAttachments(String[] attachments) {
-        this.attachments = attachments;
-    }
-
-    /**
      * Gets hints.
      *
      * @return the set of {@link HintDTO}s
@@ -158,8 +138,13 @@ public class GameLevelDTO extends AbstractLevelDTO {
 
     @Override
     public String toString() {
-        return "GameLevelDTO{" + "flag='" + flag + '\'' + ", content='" + content + '\'' + ", solution='" + solution + '\''
-                + ", solutionPenalized=" + solutionPenalized + ", attachments="
-                + Arrays.toString(attachments) + ", hints=" + hints + ", incorrectFlagLimit=" + incorrectFlagLimit + '}';
+        return "GameLevelDTO{" +
+                "flag='" + flag + '\'' +
+                ", content='" + content + '\'' +
+                ", solution='" + solution + '\'' +
+                ", solutionPenalized=" + solutionPenalized +
+                ", hints=" + hints +
+                ", incorrectFlagLimit=" + incorrectFlagLimit +
+                '}';
     }
 }

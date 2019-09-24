@@ -125,7 +125,6 @@ public class TrainingDefinitionFacadeTest {
         gameLevelUpdate = new GameLevelUpdateDTO();
         gameLevelUpdate.setId(2L);
         gameLevelUpdate.setTitle("title");
-        gameLevelUpdate.setAttachments(new String[3]);
         gameLevelUpdate.setContent("Content");
         gameLevelUpdate.setEstimatedDuration(1000);
         gameLevelUpdate.setFlag("flag1");

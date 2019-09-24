@@ -131,7 +131,6 @@ public class TrainingDefinitionsRestControllerTest {
         gameLevelUpdateDTO = new GameLevelUpdateDTO();
         gameLevelUpdateDTO.setId(2L);
         gameLevelUpdateDTO.setTitle("title");
-        gameLevelUpdateDTO.setAttachments(new String[3]);
         gameLevelUpdateDTO.setContent("Content");
         gameLevelUpdateDTO.setEstimatedDuration(1000);
         gameLevelUpdateDTO.setFlag("flag1");
