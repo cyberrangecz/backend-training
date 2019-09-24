@@ -1,4 +1,4 @@
-package cz.muni.ics.kypo.training.api.RestResponses;
+package cz.muni.ics.kypo.training.api.responses;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 

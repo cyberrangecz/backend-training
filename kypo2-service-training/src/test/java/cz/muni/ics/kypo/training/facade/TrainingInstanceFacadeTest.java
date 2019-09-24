@@ -2,7 +2,7 @@ package cz.muni.ics.kypo.training.facade;
 
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.PathBuilder;
-import cz.muni.ics.kypo.training.api.RestResponses.PageResultResource;
+import cz.muni.ics.kypo.training.api.responses.PageResultResource;
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceCreateDTO;
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceDTO;
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceUpdateDTO;
@@ -186,21 +186,6 @@ public class TrainingInstanceFacadeTest {
         thrown.expect(FacadeLayerException.class);
         willThrow(ServiceLayerException.class).given(trainingInstanceService).findById(trainingInstance1.getId());
         trainingInstanceFacade.delete(trainingInstance1.getId());
-    }
-
-    @Test
-    public void createPool() {
-        given(trainingInstanceService.createPoolForSandboxes(trainingInstance1.getId())).willReturn(5L);
-        long poolId = trainingInstanceFacade.createPoolForSandboxes(trainingInstance1.getId());
-
-        assertEquals(5L, poolId);
-    }
-
-    @Test
-    public void createPoolWithServiceException() {
-        willThrow(ServiceLayerException.class).given(trainingInstanceService).createPoolForSandboxes(trainingInstance1.getId());
-        thrown.expect(FacadeLayerException.class);
-        trainingInstanceFacade.createPoolForSandboxes(trainingInstance1.getId());
     }
 
     @Test

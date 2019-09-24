@@ -5,6 +5,9 @@ import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.PathBuilder;
 import cz.muni.csirt.kypo.elasticsearch.service.TrainingEventsService;
 import cz.muni.ics.kypo.commons.security.enums.AuthenticatedUserOIDCItems;
+import cz.muni.ics.kypo.training.api.responses.PageResultResourcePython;
+import cz.muni.ics.kypo.training.api.responses.SandboxInfo;
+import cz.muni.ics.kypo.training.api.responses.SandboxPoolInfo;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.persistence.model.TrainingDefinition;
 import cz.muni.ics.kypo.training.persistence.model.TrainingInstance;
@@ -16,9 +19,6 @@ import cz.muni.ics.kypo.training.persistence.repository.TrainingRunRepository;
 import cz.muni.ics.kypo.training.persistence.repository.UserRefRepository;
 import cz.muni.ics.kypo.training.service.impl.SecurityService;
 import cz.muni.ics.kypo.training.service.impl.TrainingInstanceServiceImpl;
-import cz.muni.ics.kypo.training.api.RestResponses.PageResultResourcePython;
-import cz.muni.ics.kypo.training.api.RestResponses.SandboxInfo;
-import cz.muni.ics.kypo.training.api.RestResponses.SandboxPoolInfo;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -43,7 +43,6 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.Clock;
@@ -207,7 +206,8 @@ public class TrainingInstanceServiceTest {
         given(trainingInstanceRepository.save(trainingInstance2)).willReturn(trainingInstance2);
         given(organizerRefRepository.save(any(UserRef.class))).willReturn(user);
         given(securityService.createUserRefEntityByInfoFromUserAndGroup()).willReturn(user);
-
+        given(restTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(SandboxPoolInfo.class))).
+                willReturn(new ResponseEntity<SandboxPoolInfo>(sandboxPoolInfo, HttpStatus.OK));
         TrainingInstance tI = trainingInstanceService.create(trainingInstance2);
         deepEquals(trainingInstance2, tI);
         then(trainingInstanceRepository).should().save(trainingInstance2);
@@ -331,28 +331,6 @@ public class TrainingInstanceServiceTest {
         thrown.expect(ServiceLayerException.class);
         thrown.expectMessage("Pool of sandboxes of training instance with id: " + instanceWithSB.getId() + " is full.");
         trainingInstanceService.allocateSandboxes(instanceWithSB, 1);
-    }
-
-    @Test
-    public void createPoolForSandboxes() {
-        when(sandboxPoolInfo.getId()).thenReturn(4L);
-
-        given(trainingInstanceRepository.findById(trainingInstance2.getId())).willReturn(Optional.ofNullable(trainingInstance2));
-        given(restTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(SandboxPoolInfo.class))).
-                willReturn(new ResponseEntity<SandboxPoolInfo>(sandboxPoolInfo, HttpStatus.OK));
-        Long poolId = trainingInstanceService.createPoolForSandboxes(trainingInstance2.getId());
-
-        assertEquals(sandboxPoolInfo.getId(), poolId);
-    }
-
-    @Test
-    public void createPoolWithErrorFromOpenStack() {
-        HttpClientErrorException ex = new HttpClientErrorException(HttpStatus.CONFLICT, "CONFLICT");
-        given(trainingInstanceRepository.findById(trainingInstance2.getId())).willReturn(Optional.ofNullable(trainingInstance2));
-        willThrow(ex).given(restTemplate).exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(SandboxPoolInfo.class));
-        thrown.expect(ServiceLayerException.class);
-        thrown.expectMessage("Error from OpenStack while creating pool: 409 CONFLICT");
-        Long id = trainingInstanceService.createPoolForSandboxes(trainingInstance2.getId());
     }
 
     @After
