@@ -144,6 +144,15 @@ create table user_ref (
     primary key (id)
 );
 
+create table attachment (
+    id bigserial not null,
+    content varchar(255) not null ,
+    creation_time timestamp not null,
+    game_level_id int8,
+    primary key (id)
+
+)
+
 
 alter table user_ref
    add constraint UK_KYPO_PRINCIPAL unique (user_ref_login,user_ref_id,iss);
@@ -241,3 +250,8 @@ alter table training_run
    add constraint FK7vajehsxurugwfg363f4ppb0s
    foreign key (training_instance_id)
    references training_instance;
+
+   alter table attachment
+   add constraint FKikeediy8uqdf22egpfmdaaar
+   foreign key (game_level_id)
+   references game_level;

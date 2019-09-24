@@ -538,7 +538,15 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
                     newHint.setId(null);
                     hints.add(newHint);
                 }
+                Set<Attachment> attachments = new HashSet<>();
+                for (Attachment attachment: ((GameLevel) level).getAttachments()) {
+                    Attachment newAttachment = new Attachment();
+                    BeanUtils.copyProperties(attachment, newAttachment);
+                    newAttachment.setId(null);
+                    attachments.add(newAttachment);
+                }
                 newGameLevel.setHints(hints);
+                newGameLevel.setAttachments(attachments);
                 newGameLevel.setTrainingDefinition(clonedTrainingDefinition);
                 gameLevelRepository.save(newGameLevel);
             }

@@ -3,7 +3,6 @@ package cz.muni.ics.kypo.training.api.dto.export;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -19,7 +18,6 @@ public class GameLevelExportDTO extends AbstractLevelExportDTO {
     private String content;
     private String solution;
     private boolean solutionPenalized;
-    private String[] attachments;
     private Set<HintExportDTO> hints = new HashSet<>();
     private int incorrectFlagLimit;
 
@@ -106,25 +104,6 @@ public class GameLevelExportDTO extends AbstractLevelExportDTO {
     }
 
     /**
-     * Get attachments.
-     *
-     * @return the attachments
-     */
-    @ApiModelProperty(value = "Downloadable files for level (pictures, source code...)", example = "")
-    public String[] getAttachments() {
-        return attachments;
-    }
-
-    /**
-     * Sets attachments.
-     *
-     * @param attachments the attachments
-     */
-    public void setAttachments(String[] attachments) {
-        this.attachments = attachments;
-    }
-
-    /**
      * Gets hints.
      *
      * @return the set of {@link HintExportDTO}
@@ -169,7 +148,6 @@ public class GameLevelExportDTO extends AbstractLevelExportDTO {
                 ", content='" + content + '\'' +
                 ", solution='" + solution + '\'' +
                 ", solutionPenalized=" + solutionPenalized +
-                ", attachments=" + Arrays.toString(attachments) +
                 ", hints=" + hints +
                 ", incorrectFlagLimit=" + incorrectFlagLimit +
                 ", title='" + title + '\'' +

@@ -31,7 +31,6 @@ public class GameLevelUpdateDTO {
     @NotNull(message = "{gamelevelupdate.solutionPenalized.NotNull.message}")
     private boolean solutionPenalized;
     private int estimatedDuration;
-    private String[] attachments;//?
     @NotNull(message = "{gamelevelupdate.incorrectFlagLimit.NotEmpty.message}")
     @Min(value = 0, message = "{gamelevelupdate.incorrectFlagLimit.Min.message}")
     private int incorrectFlagLimit;
@@ -152,25 +151,6 @@ public class GameLevelUpdateDTO {
     }
 
     /**
-     * Get attachments.
-     *
-     * @return the attachments
-     */
-    @ApiModelProperty(value = "Downloadable files for level (pictures, source code...)", example = "")
-    public String[] getAttachments() {
-        return attachments;
-    }
-
-    /**
-     * Sets attachments.
-     *
-     * @param attachments the attachments
-     */
-    public void setAttachments(String[] attachments) {
-        this.attachments = attachments;
-    }
-
-    /**
      * Gets title.
      *
      * @return the title
@@ -248,9 +228,17 @@ public class GameLevelUpdateDTO {
 
     @Override
     public String toString() {
-        return "GameLevelUpdateDTO{" + "id=" + id + ", title='" + title + '\'' + ", maxScore=" + maxScore + ", flag='" + flag + '\''
-                + ", content='" + content + '\'' + ", solution='" + solution + '\'' + ", solutionPenalized=" + solutionPenalized
-                + ", estimatedDuration=" + estimatedDuration + ", attachments=" + Arrays.toString(attachments) + ", incorrectFlagLimit="
-                + incorrectFlagLimit + ", hints=" + hints + '}';
+        return "GameLevelUpdateDTO{" +
+                "id=" + id +
+                ", title='" + title + '\'' +
+                ", maxScore=" + maxScore +
+                ", flag='" + flag + '\'' +
+                ", content='" + content + '\'' +
+                ", solution='" + solution + '\'' +
+                ", solutionPenalized=" + solutionPenalized +
+                ", estimatedDuration=" + estimatedDuration +
+                ", incorrectFlagLimit=" + incorrectFlagLimit +
+                ", hints=" + hints +
+                '}';
     }
 }

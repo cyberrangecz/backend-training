@@ -6,7 +6,6 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -24,7 +23,6 @@ public class GameLevelImportDTO extends AbstractLevelImportDTO{
 	private String solution;
 	@NotNull(message = "{gamelevelimport.solutionPenalized.NotNull.message}")
 	private boolean solutionPenalized;
-	private String[] attachments;
 	private Set<HintDTO> hints = new HashSet<>();
 	@NotNull(message = "{gamelevelimport.incorrectFlagLimit.NotEmpty.message}")
 	@Min(value = 0, message = "{gamelevelimport.incorrectFlagLimit.Min.message}")
@@ -103,24 +101,6 @@ public class GameLevelImportDTO extends AbstractLevelImportDTO{
 	}
 
 	/**
-	 * Get attachments.
-	 *
-	 * @return attachments
-	 */
-	public String[] getAttachments() {
-		return attachments;
-	}
-
-	/**
-	 * Sets attachments.
-	 *
-	 * @param attachments the attachments
-	 */
-	public void setAttachments(String[] attachments) {
-		this.attachments = attachments;
-	}
-
-	/**
 	 * Gets hints.
 	 *
 	 * @return the set of {@link HintImportDTO}
@@ -156,9 +136,15 @@ public class GameLevelImportDTO extends AbstractLevelImportDTO{
 		this.incorrectFlagLimit = incorrectFlagLimit;
 	}
 
-	@Override public String toString() {
-		return "GameLevelImportDTO{" + "flag='" + flag + '\'' + ", content='" + content + '\'' + ", solution='" + solution + '\''
-				+ ", solutionPenalized=" + solutionPenalized + ", attachments=" + Arrays
-				.toString(attachments) + ", hints=" + hints + ", incorrectFlagLimit=" + incorrectFlagLimit + '}';
+	@Override
+	public String toString() {
+		return "GameLevelImportDTO{" +
+				"flag='" + flag + '\'' +
+				", content='" + content + '\'' +
+				", solution='" + solution + '\'' +
+				", solutionPenalized=" + solutionPenalized +
+				", hints=" + hints +
+				", incorrectFlagLimit=" + incorrectFlagLimit +
+				'}';
 	}
 }
