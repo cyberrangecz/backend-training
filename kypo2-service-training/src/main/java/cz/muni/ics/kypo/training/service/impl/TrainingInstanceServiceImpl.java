@@ -7,15 +7,16 @@ import cz.muni.ics.kypo.training.annotations.aop.TrackTime;
 import cz.muni.ics.kypo.training.annotations.security.IsOrganizerOrAdmin;
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalRO;
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalWO;
+import cz.muni.ics.kypo.training.api.requests.PoolCreationRequest;
 import cz.muni.ics.kypo.training.exceptions.ErrorCode;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.model.enums.TRState;
 import cz.muni.ics.kypo.training.persistence.repository.*;
 import cz.muni.ics.kypo.training.service.TrainingInstanceService;
-import cz.muni.ics.kypo.training.api.RestResponses.SandboxInfo;
-import cz.muni.ics.kypo.training.api.RestResponses.PageResultResourcePython;
-import cz.muni.ics.kypo.training.api.RestResponses.SandboxPoolInfo;
+import cz.muni.ics.kypo.training.api.responses.SandboxInfo;
+import cz.muni.ics.kypo.training.api.responses.PageResultResourcePython;
+import cz.muni.ics.kypo.training.api.responses.SandboxPoolInfo;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -139,6 +140,7 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
             throw new ServiceLayerException("End time must be later than start time.", ErrorCode.RESOURCE_CONFLICT);
         }
         addLoggedInUserAsOrganizerToTrainingInstance(trainingInstance);
+        trainingInstance.setPoolId(createPoolForSandboxes(trainingInstance.getTrainingDefinition().getSandboxDefinitionRefId(), trainingInstance.getPoolSize()));
         return trainingInstanceRepository.save(trainingInstance);
     }
 
@@ -228,38 +230,19 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
         return newPass;
     }
 
-    @Override
-    @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
-            "or @securityService.isOrganizerOfGivenTrainingInstance(#instanceId)")
     @TrackTime
-    public Long createPoolForSandboxes(Long instanceId) {
-        TrainingInstance trainingInstance = findById(instanceId);
+    private Long createPoolForSandboxes(Long sandboxDefinitionId, int poolSize) {
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.setContentType(MediaType.APPLICATION_JSON);
 
+        PoolCreationRequest poolCreationRequest = new PoolCreationRequest();
+        poolCreationRequest.setSandboxDefinitionId(sandboxDefinitionId);
+        poolCreationRequest.setPoolSize(poolSize);
+
         try {
-            //Check if pool can be created
-            if (trainingInstance.getPoolId() != null) {
-                String url = kypoOpenStackURI + "/pools/" + trainingInstance.getPoolId() + "/";
-                UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(url);
-                ResponseEntity<SandboxPoolInfo> sandboxPool = restTemplate.exchange(builder.toUriString(), HttpMethod.GET,
-                        new HttpEntity<>(httpHeaders), new ParameterizedTypeReference<SandboxPoolInfo>() {
-                        });
-                if (!sandboxPool.getBody().getId().equals(trainingInstance.getPoolId()))
-                    trainingInstance.setPoolId(sandboxPool.getBody().getId());
-                return trainingInstance.getPoolId();
-            }
-        } catch (HttpClientErrorException ex) {
-            if (!ex.getStatusCode().equals(HttpStatus.NOT_FOUND))
-                LOG.error("Client side error when calling OpenStack: {}. Probably wrong URL of service.", ex.getMessage() + " - " + ex.getResponseBodyAsString());
-        }
-        //Create pool with given size
-        String requestJson = "{\"definition\": " + trainingInstance.getTrainingDefinition().getSandboxDefinitionRefId() +
-                ", \"max_size\": " + trainingInstance.getPoolSize() + "}";
-        try {
-            ResponseEntity<SandboxPoolInfo> poolResponse = restTemplate.exchange(kypoOpenStackURI + "/pools/", HttpMethod.POST, new HttpEntity<>(requestJson, httpHeaders), SandboxPoolInfo.class);
-            trainingInstance.setPoolId(Objects.requireNonNull(poolResponse.getBody()).getId());
-            return poolResponse.getBody().getId();
+            ResponseEntity<SandboxPoolInfo> poolResponse = restTemplate.exchange(kypoOpenStackURI + "/pools/", HttpMethod.POST, new HttpEntity<>(poolCreationRequest, httpHeaders), SandboxPoolInfo.class);
+            Long poolId = Objects.requireNonNull(poolResponse.getBody()).getId();
+            return poolId;
         } catch (HttpClientErrorException ex) {
             throw new ServiceLayerException("Error from OpenStack while creating pool: " + ex.getMessage() + " - " + ex.getResponseBodyAsString(), ErrorCode.UNEXPECTED_ERROR);
         }

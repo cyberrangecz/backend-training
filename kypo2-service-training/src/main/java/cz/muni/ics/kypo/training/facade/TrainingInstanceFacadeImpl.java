@@ -3,7 +3,7 @@ package cz.muni.ics.kypo.training.facade;
 import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalRO;
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalWO;
-import cz.muni.ics.kypo.training.api.RestResponses.PageResultResource;
+import cz.muni.ics.kypo.training.api.responses.PageResultResource;
 import cz.muni.ics.kypo.training.api.dto.UserInfoDTO;
 import cz.muni.ics.kypo.training.api.dto.run.TrainingRunDTO;
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceCreateDTO;
@@ -133,16 +133,6 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
             Objects.requireNonNull(id);
             TrainingInstance trainingInstance = trainingInstanceService.findById(id);
             trainingInstanceService.delete(trainingInstance);
-        } catch (ServiceLayerException ex) {
-            throw new FacadeLayerException(ex);
-        }
-    }
-
-    @Override
-    @TransactionalWO
-    public Long createPoolForSandboxes(Long instanceId) {
-        try {
-            return trainingInstanceService.createPoolForSandboxes(instanceId);
         } catch (ServiceLayerException ex) {
             throw new FacadeLayerException(ex);
         }

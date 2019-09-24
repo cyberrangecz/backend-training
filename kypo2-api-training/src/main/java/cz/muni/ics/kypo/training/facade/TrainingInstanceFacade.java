@@ -5,7 +5,7 @@ import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceIsFini
 import cz.muni.ics.kypo.training.exceptions.FacadeLayerException;
 import org.springframework.data.domain.Pageable;
 import com.querydsl.core.types.Predicate;
-import cz.muni.ics.kypo.training.api.RestResponses.PageResultResource;
+import cz.muni.ics.kypo.training.api.responses.PageResultResource;
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceCreateDTO;
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceDTO;
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceUpdateDTO;
@@ -80,14 +80,6 @@ public interface TrainingInstanceFacade {
      * @return Page of {@link TrainingRunDTO} of specific Training Instance
      */
     PageResultResource<TrainingRunDTO> findTrainingRunsByTrainingInstance(Long trainingInstanceId, Boolean isActive, Pageable pageable);
-
-    /**
-     * Create pool for sandboxes in open stack for given training instance
-     *
-     * @param instanceId id of training instance for which to create pool
-     * @return id of created pool
-     */
-    Long createPoolForSandboxes(Long instanceId);
 
     /**
      * Deletes all failed sandboxes from training instance

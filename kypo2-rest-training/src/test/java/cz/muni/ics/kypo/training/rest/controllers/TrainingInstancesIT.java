@@ -6,7 +6,7 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.google.gson.JsonObject;
 import cz.muni.csirt.kypo.elasticsearch.service.TrainingEventsService;
 import cz.muni.ics.kypo.commons.security.enums.AuthenticatedUserOIDCItems;
-import cz.muni.ics.kypo.training.api.RestResponses.PageResultResource;
+import cz.muni.ics.kypo.training.api.responses.PageResultResource;
 import cz.muni.ics.kypo.training.api.dto.UserInfoDTO;
 import cz.muni.ics.kypo.training.api.dto.run.TrainingRunDTO;
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceCreateDTO;
@@ -25,9 +25,9 @@ import cz.muni.ics.kypo.training.rest.controllers.config.DBTestUtil;
 import cz.muni.ics.kypo.training.rest.controllers.config.RestConfigTest;
 import cz.muni.ics.kypo.training.rest.exceptions.ConflictException;
 import cz.muni.ics.kypo.training.rest.exceptions.ResourceNotFoundException;
-import cz.muni.ics.kypo.training.api.RestResponses.PageResultResourcePython;
-import cz.muni.ics.kypo.training.api.RestResponses.SandboxInfo;
-import cz.muni.ics.kypo.training.api.RestResponses.SandboxPoolInfo;
+import cz.muni.ics.kypo.training.api.responses.PageResultResourcePython;
+import cz.muni.ics.kypo.training.api.responses.SandboxInfo;
+import cz.muni.ics.kypo.training.api.responses.SandboxPoolInfo;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -310,6 +310,8 @@ public class TrainingInstancesIT {
                 willReturn(new ResponseEntity<List<UserInfoDTO>>(new ArrayList<>(Collections.singletonList(userInfoDTO)), HttpStatus.OK));
         given(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
                 willReturn(new ResponseEntity<UserInfoDTO>(userInfoDTO, HttpStatus.OK));
+        given(restTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(SandboxPoolInfo.class))).
+                willReturn(new ResponseEntity<SandboxPoolInfo>(sandboxPoolInfo, HttpStatus.OK));
         mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_ORGANIZER.name()));
         MockHttpServletResponse result = mvc.perform(post("/training-instances").content(convertObjectToJsonBytes(trainingInstanceCreateDTO))
                 .contentType(MediaType.APPLICATION_JSON_VALUE))
@@ -494,34 +496,6 @@ public class TrainingInstancesIT {
                 .andReturn().getResolvedException();
         assertEquals(ConflictException.class, exception.getClass());
         assertTrue(exception.getCause().getCause().getMessage().contains("Pool of sandboxes of training instance with id: 1 is full."));
-    }
-
-    @Test
-    public void createPoolForSandboxes() throws Exception {
-        trainingInstanceRepository.save(futureTrainingInstance);
-        sandboxPoolInfo.setMaxSize(5L);
-        given(restTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(SandboxPoolInfo.class))).
-                willReturn(new ResponseEntity<SandboxPoolInfo>(sandboxPoolInfo, HttpStatus.OK));
-        mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_ORGANIZER.name()));
-        MockHttpServletResponse result = mvc.perform(post("/training-instances/{instanceId}/pools", futureTrainingInstance.getId())
-                .contentType(MediaType.APPLICATION_JSON_VALUE))
-                .andExpect(status().isCreated())
-                .andReturn().getResponse();
-        assertEquals(sandboxPoolInfo.getId().toString(), result.getContentAsString());
-    }
-
-    @Test
-    public void createPoolInInstanceWithAlreadyCreatedPool() throws Exception {
-        futureTrainingInstance.setPoolId(sandboxPoolInfo.getId());
-        trainingInstanceRepository.save(futureTrainingInstance);
-        given(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
-                willReturn(new ResponseEntity<SandboxPoolInfo>(sandboxPoolInfo, HttpStatus.OK));
-        mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_ORGANIZER.name()));
-        MockHttpServletResponse result = mvc.perform(post("/training-instances/{instanceId}/pools", futureTrainingInstance.getId())
-                .contentType(MediaType.APPLICATION_JSON_VALUE))
-                .andExpect(status().isCreated())
-                .andReturn().getResponse();
-        assertEquals(sandboxPoolInfo.getId().toString(), result.getContentAsString());
     }
 
     @Test

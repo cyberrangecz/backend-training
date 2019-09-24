@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.bohnman.squiggly.Squiggly;
 import com.github.bohnman.squiggly.util.SquigglyUtils;
 import com.querydsl.core.types.Predicate;
-import cz.muni.ics.kypo.training.api.RestResponses.PageResultResource;
+import cz.muni.ics.kypo.training.api.responses.PageResultResource;
 import cz.muni.ics.kypo.training.api.dto.run.TrainingRunDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionByIdDTO;
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceCreateDTO;
@@ -250,35 +250,6 @@ public class TrainingInstancesRestController {
         try {
             trainingInstanceFacade.allocateSandboxes(instanceId, count);
             return new ResponseEntity<>(HttpStatus.ACCEPTED);
-        } catch (FacadeLayerException ex) {
-            throw ExceptionSorter.throwException(ex);
-        }
-    }
-
-    /**
-     * Create pool for sandboxes.
-     *
-     * @param instanceId the instance id
-     * @return the id of new pool
-     */
-    @ApiOperation(httpMethod = "POST",
-            value = "Create pool",
-            response = Long.class,
-            nickname = "createPool"
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Pool has been created."),
-            @ApiResponse(code = 404, message = "Training instance with given id not found."),
-            @ApiResponse(code = 409, message = "Pool has been already created before."),
-            @ApiResponse(code = 500, message = "Unexpected condition was encountered.")
-    })
-    @PostMapping(path = "/{instanceId}/pools")
-    public ResponseEntity<Long> createPoolForSandboxes(
-            @ApiParam(value = "Id of training instance for which pool is created", required = true)
-            @PathVariable(value = "instanceId") Long instanceId) {
-        try {
-            Long poolId = trainingInstanceFacade.createPoolForSandboxes(instanceId);
-            return new ResponseEntity<>(poolId, HttpStatus.CREATED);
         } catch (FacadeLayerException ex) {
             throw ExceptionSorter.throwException(ex);
         }

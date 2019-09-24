@@ -100,14 +100,6 @@ public interface TrainingInstanceService {
     Set<UserRef> findUserRefsByUserRefIds(Set<Long> usersRefId);
 
     /**
-     * Create pool in openstack for sandboxes
-     *
-     * @param trainingInstanceId id of training instance for which to create pool
-     * @return id of pool created in openstack
-     */
-    Long createPoolForSandboxes(Long trainingInstanceId);
-
-    /**
      * Find specific Training instance by id including its associated Training definition.
      *
      * @param instanceId the instance id

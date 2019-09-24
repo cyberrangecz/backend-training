@@ -151,7 +151,7 @@ create table attachment (
     game_level_id int8,
     primary key (id)
 
-)
+);
 
 
 alter table user_ref
