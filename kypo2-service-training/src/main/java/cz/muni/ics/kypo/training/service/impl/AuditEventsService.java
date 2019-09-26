@@ -139,7 +139,7 @@ public class AuditEventsService {
                 .totalScore(auditInfoDTO.getTotalScore())
                 .actualScoreInLevel(auditInfoDTO.getActualScoreInLevel())
                 .level(auditInfoDTO.getLevel())
-                .penaltyPoints(trainingRun.getCurrentPenalty())
+                .penaltyPoints(auditInfoDTO.getActualScoreInLevel())
                 .iss(auditInfoDTO.getIss())
                 .build();
         auditService.saveTrainingRunEvent(solutionDisplayed, auditInfoDTO.getTrainingDefinitionId(), auditInfoDTO.getTrainingInstanceId());
