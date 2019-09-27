@@ -161,6 +161,7 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
         } else {
             trainingInstanceToUpdate.setAccessToken(generateAccessToken(trainingInstanceToUpdate.getAccessToken()));
         }
+        trainingInstanceToUpdate.setPoolId(trainingInstance.getPoolId());
         trainingInstanceRepository.save(trainingInstanceToUpdate);
         addLoggedInUserAsOrganizerToTrainingInstance(trainingInstance);
         return trainingInstanceToUpdate.getAccessToken();
