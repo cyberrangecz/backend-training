@@ -123,8 +123,7 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
                     new ParameterizedTypeReference<PageResultResourcePython<SandboxInfo>>() {
                     });
             PageResultResourcePython<SandboxInfo> sandboxInfoPageResult = Objects.requireNonNull(response.getBody());
-            List<SandboxInfo> sandboxResponse = Objects.requireNonNull(sandboxInfoPageResult.getResults());
-            return sandboxResponse;
+            return Objects.requireNonNull(sandboxInfoPageResult.getResults());
         } catch (HttpClientErrorException ex) {
             throw new ServiceLayerException("Client side error when checking a state of sandbox in OpenStack for pool with ID " +
                     poolId + " : " + ex.getMessage() + ". Please contact administrator", ErrorCode.UNEXPECTED_ERROR);
