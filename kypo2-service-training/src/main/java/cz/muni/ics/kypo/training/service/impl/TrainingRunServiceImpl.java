@@ -108,8 +108,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
     @Override
     @IsOrganizerOrAdmin
     public void deleteTrainingRuns(List<Long> trainingRunIds) {
-        trainingRunIds.forEach(trainingRun ->
-                deleteTrainingRun(trainingRun));
+        trainingRunIds.forEach(this::deleteTrainingRun);
     }
 
     @Override
@@ -218,26 +217,16 @@ public class TrainingRunServiceImpl implements TrainingRunService {
         if (trainingInstance.getPoolId() == null) {
             throw new ServiceLayerException("At first organizer must allocate sandboxes for training instance.", ErrorCode.RESOURCE_CONFLICT);
         }
-        Long sandboxInstanceRef = getReadySandboxInstanceRef(trainingInstance.getPoolId());
         List<AbstractLevel> levels = abstractLevelRepository.findAllLevelsByTrainingDefinitionId(trainingInstance.getTrainingDefinition().getId());
-        if (levels.isEmpty())
+        if (levels.isEmpty()) {
             throw new ServiceLayerException("No starting level available for this training definition.", ErrorCode.RESOURCE_NOT_FOUND);
-        Collections.sort(levels, Comparator.comparing(AbstractLevel::getOrder));
-
+        }
+        levels.sort(Comparator.comparing(AbstractLevel::getOrder));
+        Long sandboxInstanceRef = getReadySandboxInstanceRef(trainingInstance.getPoolId());
         TrainingRun trainingRun = getNewTrainingRun(levels.get(0), trainingInstance,
                 TRState.RUNNING, LocalDateTime.now(Clock.systemUTC()), trainingInstance.getEndTime(), sandboxInstanceRef);
         trainingRun = create(trainingRun);
         // audit this action to the Elasticsearch
-        HttpHeaders httpHeaders = new HttpHeaders();
-        httpHeaders.setContentType(MediaType.APPLICATION_JSON);
-        String requestJson = "{}";
-        try{
-            restTemplate.exchange(kypoOpenStackURI + "/sandboxes/" + sandboxInstanceRef + "/lock/",
-                    HttpMethod.POST, new HttpEntity<>(requestJson, httpHeaders), String.class);
-        } catch (HttpClientErrorException ex){
-            LOG.error(ex.getMessage());
-        }
-
         auditEventsService.auditTrainingRunStartedAction(trainingRun);
         auditEventsService.auditLevelStartedAction(trainingRun);
         return trainingRun;
@@ -284,26 +273,43 @@ public class TrainingRunServiceImpl implements TrainingRunService {
     }
 
     private Long getReadySandboxInstanceRef(Long poolId) {
-        HttpHeaders httpHeaders = new HttpHeaders();
-        httpHeaders.set("Accept", MediaType.APPLICATION_JSON_VALUE);
-        String url = kypoOpenStackURI + "/pools/" + poolId + "/sandboxes/";
-        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(url);
-        builder.queryParam("page", 1);
-        builder.queryParam("page_size", PYTHON_RESULT_PAGE_SIZE);
-        ResponseEntity<PageResultResourcePython<SandboxInfo>> response = restTemplate.exchange(builder.toUriString(), HttpMethod.GET, new HttpEntity<>(httpHeaders),
-                new ParameterizedTypeReference<PageResultResourcePython<SandboxInfo>>() {
-                });
-        PageResultResourcePython<SandboxInfo> sandboxInfoPageResult = Objects.requireNonNull(response.getBody());
-        List<SandboxInfo> sandboxInfoList = Objects.requireNonNull(sandboxInfoPageResult.getResults());
         List<Long> readySandboxesIds = new ArrayList<>();
-        sandboxInfoList.forEach(sandboxInfo -> {
-            if (sandboxInfo.getStatus().contains(SandboxStates.FULL_BUILD_COMPLETE.getName()) && !sandboxInfo.isLocked())
-                readySandboxesIds.add(sandboxInfo.getId());
-        });
-        if (readySandboxesIds.isEmpty()) {
-            throw new ServiceLayerException("There is no available sandbox, wait a minute and try again or ask organizer to allocate more sandboxes.", ErrorCode.NO_AVAILABLE_SANDBOX);
-        } else {
-            return readySandboxesIds.get(0);
+        while(true) {
+            HttpHeaders httpHeaders = new HttpHeaders();
+            httpHeaders.set("Accept", MediaType.APPLICATION_JSON_VALUE);
+            String url = kypoOpenStackURI + "/pools/" + poolId + "/sandboxes/";
+            UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(url);
+            builder.queryParam("page", 1);
+            builder.queryParam("page_size", PYTHON_RESULT_PAGE_SIZE);
+            ResponseEntity<PageResultResourcePython<SandboxInfo>> response = restTemplate.exchange(builder.toUriString(), HttpMethod.GET, new HttpEntity<>(httpHeaders),
+                    new ParameterizedTypeReference<PageResultResourcePython<SandboxInfo>>() {
+                    });
+            PageResultResourcePython<SandboxInfo> sandboxInfoPageResult = Objects.requireNonNull(response.getBody());
+            List<SandboxInfo> sandboxInfoList = Objects.requireNonNull(sandboxInfoPageResult.getResults());
+
+            readySandboxesIds.clear();
+            sandboxInfoList.forEach(sandboxInfo -> {
+                if (sandboxInfo.getStatus().contains(SandboxStates.FULL_BUILD_COMPLETE.getName()) && !sandboxInfo.isLocked()) {
+                    readySandboxesIds.add(sandboxInfo.getId());
+                }
+            });
+            if (readySandboxesIds.isEmpty()) {
+                throw new ServiceLayerException("There is no available sandbox, wait a minute and try again or ask organizer to allocate more sandboxes.", ErrorCode.NO_AVAILABLE_SANDBOX);
+            } else {
+                Long readySandboxId = readySandboxesIds.get(0);
+                //TODO why they need empty body ??
+                String requestJson = "{}";
+                try{
+                    httpHeaders = new HttpHeaders();
+                    httpHeaders.setContentType(MediaType.APPLICATION_JSON);
+                    restTemplate.exchange(kypoOpenStackURI + "/sandboxes/" + readySandboxId + "/lock/",
+                            HttpMethod.POST, new HttpEntity<>(requestJson, httpHeaders), String.class);
+                } catch (HttpClientErrorException ex){
+                    LOG.error(ex.getMessage());
+                    continue;
+                }
+                return readySandboxId;
+            }
         }
     }
 
