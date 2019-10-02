@@ -18,7 +18,7 @@ public class TrainingRunArchiveDTO {
     private LocalDateTime endTime;
     private String eventLogReference;
     private TRState state;
-    private UserRefExportDTO participantRef;
+    private Long participantRefId;
 
     @ApiModelProperty(value = "Main identifier of training run.", example = "1")
     public Long getId() {
@@ -74,12 +74,12 @@ public class TrainingRunArchiveDTO {
     }
 
     @ApiModelProperty(value = "Reference to participant of training run.")
-    public UserRefExportDTO getParticipantRef() {
-        return participantRef;
+    public Long getParticipantRefId() {
+        return participantRefId;
     }
 
-    public void setParticipantRef(UserRefExportDTO participantRef) {
-        this.participantRef = participantRef;
+    public void setParticipantRefId(Long participantRefId) {
+        this.participantRefId = participantRefId;
     }
 
     @Override
@@ -91,7 +91,7 @@ public class TrainingRunArchiveDTO {
                 ", endTime=" + endTime +
                 ", eventLogReference='" + eventLogReference + '\'' +
                 ", state=" + state +
-                ", participantRef=" + participantRef +
+                ", participantRefId=" + participantRefId +
                 '}';
     }
 }

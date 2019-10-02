@@ -5,28 +5,33 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import cz.muni.csirt.kypo.elasticsearch.service.TrainingEventsService;
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalRO;
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalWO;
+import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
 import cz.muni.ics.kypo.training.api.dto.archive.*;
 import cz.muni.ics.kypo.training.api.dto.export.*;
 import cz.muni.ics.kypo.training.api.dto.imports.*;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionByIdDTO;
 import cz.muni.ics.kypo.training.api.enums.LevelType;
 import cz.muni.ics.kypo.training.api.enums.TDState;
+import cz.muni.ics.kypo.training.api.responses.PageResultResource;
 import cz.muni.ics.kypo.training.exceptions.FacadeLayerException;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.mapping.mapstruct.*;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.service.ExportImportService;
 import cz.muni.ics.kypo.training.service.TrainingDefinitionService;
+import cz.muni.ics.kypo.training.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -43,6 +48,7 @@ public class ExportImportFacadeImpl implements ExportImportFacade {
     private String kypoOpenStackURI;
 
     private ExportImportService exportImportService;
+    private UserService userService;
     private ExportImportMapper exportImportMapper;
     private GameLevelMapper gameLevelMapper;
     private AssessmentLevelMapper assessmentLevelMapper;
@@ -51,11 +57,13 @@ public class ExportImportFacadeImpl implements ExportImportFacade {
     private TrainingDefinitionMapper trainingDefinitionMapper;
     private ObjectMapper objectMapper;
     private TrainingEventsService trainingEventsService;
+    private UserRefMapper userRefMapper;
 
     @Autowired
     public ExportImportFacadeImpl(ExportImportService exportImportService, ExportImportMapper exportImportMapper, GameLevelMapper gameLevelMapper,
                                   InfoLevelMapper infoLevelMapper, AssessmentLevelMapper assessmentLevelMapper, TrainingDefinitionService trainingDefinitionService,
-                                  TrainingDefinitionMapper trainingDefinitionMapper, ObjectMapper objectMapper, TrainingEventsService trainingEventsService) {
+                                  TrainingDefinitionMapper trainingDefinitionMapper, ObjectMapper objectMapper, TrainingEventsService trainingEventsService,
+                                  UserService userService, UserRefMapper userRefMapper) {
         this.exportImportService = exportImportService;
         this.exportImportMapper = exportImportMapper;
         this.gameLevelMapper = gameLevelMapper;
@@ -65,6 +73,8 @@ public class ExportImportFacadeImpl implements ExportImportFacade {
         this.trainingDefinitionMapper = trainingDefinitionMapper;
         this.objectMapper = objectMapper;
         this.trainingEventsService = trainingEventsService;
+        this.userService = userService;
+        this.userRefMapper = userRefMapper;
     }
 
     @Override
@@ -161,36 +171,52 @@ public class ExportImportFacadeImpl implements ExportImportFacade {
             exportImportService.failIfInstanceIsNotFinished(trainingInstance.getEndTime());
             TrainingInstanceArchiveDTO archivedInstance = exportImportMapper.mapToDTO(trainingInstance);
             archivedInstance.setDefinitionId(trainingInstance.getTrainingDefinition().getId());
-            if (archivedInstance != null) {
-                ZipEntry instanceEntry = new ZipEntry("training_instance-id" + trainingInstanceId + ".json" );
-                zos.putNextEntry(instanceEntry);
-                zos.write(objectMapper.writeValueAsBytes(archivedInstance));
+            Set<Long> organizersRefIds = trainingInstance.getOrganizers().stream().map(UserRef::getUserRefId).collect(Collectors.toSet());
+            archivedInstance.setOrganizersRefIds(new HashSet<>(organizersRefIds));
 
-                TrainingDefinitionArchiveDTO tD = exportImportMapper.mapToArchiveDTO(exportImportService.findById(trainingInstance.getTrainingDefinition().getId()));
-                if (tD != null) {
-                    tD.setLevels(mapAbstractLevelsToArchiveDTO(trainingInstance.getTrainingDefinition().getId()));
+            ZipEntry instanceEntry = new ZipEntry("training_instance-id" + trainingInstanceId + ".json" );
+            zos.putNextEntry(instanceEntry);
+            zos.write(objectMapper.writeValueAsBytes(archivedInstance));
 
-                    ZipEntry definitionEntry = new ZipEntry("training_definition-id" + trainingInstance.getTrainingDefinition().getId() + ".json" );
-                    zos.putNextEntry(definitionEntry);
-                    zos.write(objectMapper.writeValueAsBytes(tD));
-                }
-                Set<TrainingRun> runs = exportImportService.findRunsByInstanceId(trainingInstanceId);
-                for (TrainingRun run : runs) {
-                    TrainingRunArchiveDTO archivedRun = exportImportMapper.mapToArchiveDTO(run);
-                    archivedRun.setInstanceId(trainingInstanceId);
-                    ZipEntry runEntry = new ZipEntry("training_run-id" + run.getId() + ".json" );
-                    zos.putNextEntry(runEntry);
-                    zos.write(objectMapper.writeValueAsBytes(archivedRun));
+            ZipEntry organizersEntry = new ZipEntry("training_instance-id" + trainingInstanceId + "-organizers" + ".json" );
+            zos.putNextEntry(organizersEntry);
+            zos.write(objectMapper.writeValueAsBytes(getUsersRefExportDTO(organizersRefIds)));
 
-                    List<Map<String, Object>> events = trainingEventsService.findAllEventsFromTrainingRun(trainingInstance.getTrainingDefinition().getId(), trainingInstanceId, run.getId());
-                    ZipEntry eventsEntry = new ZipEntry("training_run-id" + run.getId() + "-events.json");
-                    zos.putNextEntry(eventsEntry);
-                    for (Map<String, Object> event : events) {
-                        zos.write(objectMapper.writer(new MinimalPrettyPrinter()).writeValueAsBytes(event));
-                        zos.write(System.lineSeparator().getBytes());
-                    }
+            TrainingDefinitionArchiveDTO tD = exportImportMapper.mapToArchiveDTO(exportImportService.findById(trainingInstance.getTrainingDefinition().getId()));
+            if (tD != null) {
+                tD.setLevels(mapAbstractLevelsToArchiveDTO(trainingInstance.getTrainingDefinition().getId()));
+
+                ZipEntry definitionEntry = new ZipEntry("training_definition-id" + trainingInstance.getTrainingDefinition().getId() + ".json" );
+                zos.putNextEntry(definitionEntry);
+                zos.write(objectMapper.writeValueAsBytes(tD));
+            }
+            Set<TrainingRun> runs = exportImportService.findRunsByInstanceId(trainingInstanceId);
+            Set<Long> participantRefIds = new HashSet<>();
+            for (TrainingRun run : runs) {
+                TrainingRunArchiveDTO archivedRun = exportImportMapper.mapToArchiveDTO(run);
+                archivedRun.setInstanceId(trainingInstanceId);
+                archivedRun.setParticipantRefId(run.getParticipantRef().getUserRefId());
+                participantRefIds.add(run.getParticipantRef().getUserRefId());
+                ZipEntry runEntry = new ZipEntry("training_run-id" + run.getId() + ".json" );
+                zos.putNextEntry(runEntry);
+                zos.write(objectMapper.writeValueAsBytes(archivedRun));
+
+                List<Map<String, Object>> events = trainingEventsService.findAllEventsFromTrainingRun(trainingInstance.getTrainingDefinition().getId(), trainingInstanceId, run.getId());
+                ZipEntry eventsEntry = new ZipEntry("training_run-id" + run.getId() + "-events.json");
+                zos.putNextEntry(eventsEntry);
+                for (Map<String, Object> event : events) {
+                    zos.write(objectMapper.writer(new MinimalPrettyPrinter()).writeValueAsBytes(event));
+                    zos.write(System.lineSeparator().getBytes());
                 }
             }
+            ZipEntry participantsEntry = new ZipEntry("training_instance-id" + trainingInstance.getId() + "-participants" + ".json" );
+            zos.putNextEntry(participantsEntry);
+            zos.write(objectMapper.writeValueAsBytes(getUsersRefExportDTO(participantRefIds)));
+
+
+
+
+
             zos.closeEntry();
             zos.close();
             FileToReturnDTO fileToReturnDTO = new FileToReturnDTO();
@@ -202,6 +228,19 @@ public class ExportImportFacadeImpl implements ExportImportFacade {
         } catch (ServiceLayerException | IOException ex) {
             throw new FacadeLayerException(ex);
         }
+    }
+
+    private List<UserRefExportDTO> getUsersRefExportDTO(Set<Long> usersRefIds) {
+        PageResultResource<UserRefDTO> usersResponse;
+        List<UserRefExportDTO> users = new ArrayList<>();
+        int page = 0;
+        do {
+            usersResponse = userService.getUsersRefDTOByGivenUserIds(usersRefIds, PageRequest.of(page,999), null, null);
+            users.addAll(userRefMapper.mapUserRefExportDTOToUserRefDTO(usersResponse.getContent()));
+            page++;
+
+        } while (usersResponse.getPagination().getTotalPages() != usersResponse.getPagination().getNumber());
+        return users;
     }
 
 }

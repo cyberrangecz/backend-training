@@ -2,6 +2,7 @@ package cz.muni.ics.kypo.training.mapping.mapstruct;
 
 import cz.muni.ics.kypo.training.api.responses.PageResultResource;
 import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
+import cz.muni.ics.kypo.training.api.dto.export.UserRefExportDTO;
 import cz.muni.ics.kypo.training.persistence.model.UserRef;
 import org.mapstruct.Mapper;
 import org.mapstruct.ReportingPolicy;
@@ -30,6 +31,8 @@ public interface UserRefMapper extends ParentMapper {
     Set<UserRef> mapToSet(Collection<UserRefDTO> dtos);
 
     Set<UserRefDTO> mapToSetDTO(Collection<UserRef> entities);
+
+    List<UserRefExportDTO> mapUserRefExportDTOToUserRefDTO(Collection<UserRefDTO> userRefDTOs);
 
     default Optional<UserRef> mapToOptional(UserRefDTO dto) {
         return Optional.ofNullable(mapToEntity(dto));

@@ -23,7 +23,7 @@ public class TrainingInstanceArchiveDTO {
 	private LocalDateTime endTime;
 	private String title;
 	private int poolSize;
-	private Set<UserRefExportDTO> organizers;
+	private Set<Long> organizersRefIds;
 	private String accessToken;
 
 	@ApiModelProperty(value = "Main identifier of training instance.", example = "1")
@@ -121,22 +121,22 @@ public class TrainingInstanceArchiveDTO {
 	}
 
 	/**
-	 * Gets organizers of training instance.
+	 * Gets organizersRefIds of training instance.
 	 *
-	 * @return the organizers
+	 * @return the organizersRefIds
 	 */
-	@ApiModelProperty(value = "Reference to organizers which organize training instance.")
-	public Set<UserRefExportDTO> getOrganizers() {
-		return organizers;
+	@ApiModelProperty(value = "Reference to organizersRefIds which organize training instance.")
+	public Set<Long> getOrganizersRefIds() {
+		return organizersRefIds;
 	}
 
 	/**
-	 * Sets organizers of training instance.
+	 * Sets organizersRefIds of training instance.
 	 *
-	 * @param organizers the organizers
+	 * @param organizersRefIds the organizersRefIds
 	 */
-	public void setOrganizers(Set<UserRefExportDTO> organizers) {
-		this.organizers = organizers;
+	public void setOrganizersRefIds(Set<Long> organizersRefIds) {
+		this.organizersRefIds = organizersRefIds;
 	}
 
 	/**
@@ -167,7 +167,7 @@ public class TrainingInstanceArchiveDTO {
 				", endTime=" + endTime +
 				", title='" + title + '\'' +
 				", poolSize=" + poolSize +
-				", organizers=" + organizers +
+				", organizersRefIds=" + organizersRefIds +
 				", accessToken='" + accessToken + '\'' +
 				'}';
 	}

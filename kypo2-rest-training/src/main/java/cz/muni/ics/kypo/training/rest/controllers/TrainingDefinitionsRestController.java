@@ -21,6 +21,7 @@ import cz.muni.ics.kypo.training.api.enums.RoleType;
 import cz.muni.ics.kypo.training.exceptions.FacadeLayerException;
 import cz.muni.ics.kypo.training.facade.TrainingDefinitionFacade;
 import cz.muni.ics.kypo.training.persistence.model.TrainingDefinition;
+import cz.muni.ics.kypo.training.persistence.model.UserRef;
 import cz.muni.ics.kypo.training.persistence.model.enums.LevelType;
 import cz.muni.ics.kypo.training.rest.ExceptionSorter;
 import cz.muni.ics.kypo.training.rest.exceptions.ResourceNotFoundException;
@@ -666,6 +667,7 @@ public class TrainingDefinitionsRestController {
     })
     @ApiPageableSwagger
     @GetMapping(path = "/organizers", produces = MediaType.APPLICATION_JSON_VALUE)
+
     public ResponseEntity<Object> getOrganizers(@ApiParam(value = "Given name filter.", required = false)
                                                 @RequestParam(value = "givenName", required = false) String givenName,
                                                 @ApiParam(value = "Family name filter.", required = false)

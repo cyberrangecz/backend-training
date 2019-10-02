@@ -19,6 +19,7 @@ import cz.muni.ics.kypo.training.persistence.model.enums.TDState;
 import cz.muni.ics.kypo.training.persistence.model.enums.TRState;
 import cz.muni.ics.kypo.training.service.ExportImportService;
 import cz.muni.ics.kypo.training.service.TrainingDefinitionService;
+import cz.muni.ics.kypo.training.service.UserService;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -61,6 +62,8 @@ public class ExportImportFacadeTest {
     private AssessmentLevelMapperImpl assessmentLevelMapper;
     @Autowired
     private TrainingDefinitionMapperImpl trainingDefinitionMapper;
+    @Autowired
+    private UserRefMapper userRefMapper;
 
 
     @Mock
@@ -69,6 +72,8 @@ public class ExportImportFacadeTest {
     private TrainingDefinitionService trainingDefinitionService;
     @Mock
     private ExportImportService exportImportService;
+    @Mock
+    private UserService userService;
 
     private TrainingDefinition trainingDefinition;
     private TrainingDefinition trainingDefinitionImported;
@@ -87,7 +92,7 @@ public class ExportImportFacadeTest {
     public void init() {
         MockitoAnnotations.initMocks(this);
         exportImportFacade = new ExportImportFacadeImpl(exportImportService, exportImportMapper, gameLevelMapper,
-                infoLevelMapper, assessmentLevelMapper, trainingDefinitionService, trainingDefinitionMapper, objectMapper, trainingEventsService);
+                infoLevelMapper, assessmentLevelMapper, trainingDefinitionService, trainingDefinitionMapper, objectMapper, trainingEventsService, userService, userRefMapper);
         assessmentLevel = new AssessmentLevel();
         assessmentLevel.setId(1L);
         assessmentLevel.setTitle("Assessment title");
