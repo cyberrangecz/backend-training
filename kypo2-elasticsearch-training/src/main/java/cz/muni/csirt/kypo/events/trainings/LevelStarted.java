@@ -34,15 +34,6 @@ public class LevelStarted extends AbstractAuditPOJO {
     @ApiModelProperty(value = "The time in particular training run (in particular game).", required = true)
     @JsonProperty(value = "game_time", required = true)
     private long gameTime;
-    @ApiModelProperty(value = "ID of a player in the training run.", required = true)
-    @JsonProperty(value = "player_login", required = true)
-    private String playerLogin;
-    @ApiModelProperty(value = "Full name of a player in the training run with titles.", required = true)
-    @JsonProperty(value = "full_name", required = true)
-    private String fullName;
-    @ApiModelProperty(value = "Full name of a player in the training run without titles.", required = true)
-    @JsonProperty(value = "full_name_without_titles", required = true)
-    private String fullNameWithoutTitles;
     @ApiModelProperty(value = "Total score of the player in the level.", required = true)
     @JsonProperty(value = "total_score", required = true)
     private int totalScore;
@@ -74,9 +65,6 @@ public class LevelStarted extends AbstractAuditPOJO {
         this.trainingInstanceId = builder.trainingInstanceId;
         this.trainingRunId = builder.trainingRunId;
         this.gameTime = builder.gameTime;
-        this.playerLogin = builder.playerLogin;
-        this.fullName = builder.fullName;
-        this.fullNameWithoutTitles = builder.fullNameWithoutTitles;
         this.totalScore = builder.totalScore;
         this.actualScoreInLevel = builder.actualScoreInLevel;
         this.level = builder.level;
@@ -93,9 +81,6 @@ public class LevelStarted extends AbstractAuditPOJO {
         private long trainingInstanceId;
         private long trainingRunId;
         private long gameTime;
-        private String playerLogin;
-        private String fullName;
-        private String fullNameWithoutTitles;
         private int totalScore;
         private int actualScoreInLevel;
         private long level;
@@ -127,21 +112,6 @@ public class LevelStarted extends AbstractAuditPOJO {
 
         public LevelStartedBuilder gameTime(long gameTime) {
             this.gameTime = gameTime;
-            return this;
-        }
-
-        public LevelStartedBuilder playerLogin(String playerLogin) {
-            this.playerLogin = playerLogin;
-            return this;
-        }
-
-        public LevelStartedBuilder fullName(String fullName) {
-            this.fullName = fullName;
-            return this;
-        }
-
-        public LevelStartedBuilder fullNameWithoutTitles(String fullNameWithoutTitles) {
-            this.fullNameWithoutTitles = fullNameWithoutTitles;
             return this;
         }
 
@@ -199,9 +169,6 @@ public class LevelStarted extends AbstractAuditPOJO {
                 ", trainingInstanceId=" + trainingInstanceId +
                 ", trainingRunId=" + trainingRunId +
                 ", gameTime=" + gameTime +
-                ", playerLogin='" + playerLogin + '\'' +
-                ", fullName='" + fullName + '\'' +
-                ", fullNameWithoutTitles='" + fullNameWithoutTitles + '\'' +
                 ", totalScore=" + totalScore +
                 ", actualScoreInLevel=" + actualScoreInLevel +
                 ", level=" + level +
