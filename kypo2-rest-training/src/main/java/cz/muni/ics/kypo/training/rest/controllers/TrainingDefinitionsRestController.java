@@ -6,14 +6,18 @@ import com.github.bohnman.squiggly.Squiggly;
 import com.github.bohnman.squiggly.util.SquigglyUtils;
 import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.commons.security.mapping.UserInfoDTO;
+import cz.muni.ics.kypo.training.api.enums.TDState;
 import cz.muni.ics.kypo.training.api.responses.PageResultResource;
 import cz.muni.ics.kypo.training.api.dto.*;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelUpdateDTO;
 import cz.muni.ics.kypo.training.api.dto.gamelevel.GameLevelUpdateDTO;
 import cz.muni.ics.kypo.training.api.dto.infolevel.InfoLevelUpdateDTO;
-import cz.muni.ics.kypo.training.api.dto.trainingdefinition.*;
+import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionCreateDTO;
+import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionByIdDTO;
+import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionDTO;
+import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionInfoDTO;
+import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionUpdateDTO;
 import cz.muni.ics.kypo.training.api.enums.RoleType;
-import cz.muni.ics.kypo.training.api.enums.TDState;
 import cz.muni.ics.kypo.training.exceptions.FacadeLayerException;
 import cz.muni.ics.kypo.training.facade.TrainingDefinitionFacade;
 import cz.muni.ics.kypo.training.persistence.model.TrainingDefinition;
@@ -612,7 +616,6 @@ public class TrainingDefinitionsRestController {
         private Pagination pagination;
     }
 
-
     /**
      * Get requested designers.
      *
@@ -661,6 +664,7 @@ public class TrainingDefinitionsRestController {
             @ApiResponse(code = 200, message = "Organizers found.", response = UserInfoRestResource.class),
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.")
     })
+    @ApiPageableSwagger
     @GetMapping(path = "/organizers", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> getOrganizers(@ApiParam(value = "Given name filter.", required = false)
                                                 @RequestParam(value = "givenName", required = false) String givenName,
