@@ -6,6 +6,7 @@ import cz.muni.ics.kypo.training.persistence.model.TrainingInstance;
 import cz.muni.ics.kypo.training.persistence.model.TrainingRun;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * The interface for Visualization service.
@@ -32,5 +33,13 @@ public interface VisualizationService {
      * @throws ServiceLayerException with ErrorCode: SECURITY_RIGHTS logged in user is not organizer of given training instance.
      */
     List<AbstractLevel> getLevelsForOrganizerVisualization(TrainingInstance trainingInstance);
+
+    /**
+     * Get all participants ref ids in given training instance.
+     *
+     * @param trainingInstanceId id of Training Instance to gets participants ref ids.
+     * @return list of participants ref ids.
+     */
+    Set<Long> getAllParticipantsRefIdsForSpecificTrainingInstance(Long trainingInstanceId);
 
 }

@@ -246,4 +246,5 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
             throw new FacadeLayerException(ex);
         }
     }
+
 }

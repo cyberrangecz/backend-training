@@ -9,6 +9,7 @@ import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -38,5 +39,14 @@ public interface UserRefRepository extends JpaRepository<UserRef, Long>,
      */
     @Query("SELECT ur FROM UserRef ur WHERE ur.userRefId = :userRefId")
     Optional<UserRef> findUserByUserRefId(@Param("userRefId") Long userRefId);
+
+    /**
+     * Find all participants of given training instance.
+     *
+     * @param trainingInstanceId id of the training instance
+     * @return the {@link UserRef}
+     */
+    @Query("SELECT pr.userRefId FROM TrainingRun tr INNER JOIN tr.participantRef pr INNER JOIN tr.trainingInstance ti WHERE ti.id = :trainingInstanceId")
+    Set<Long> findParticipantsRefByTrainingInstanceId(@Param("trainingInstanceId") Long trainingInstanceId);
 
 }

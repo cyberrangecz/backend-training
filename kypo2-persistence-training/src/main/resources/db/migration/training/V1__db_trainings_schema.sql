@@ -148,10 +148,6 @@ create table attachment (
 
 );
 
-<<<<<<< HEAD
-=======
-
->>>>>>> master
 alter table access_token
    add constraint UK_qglhb4xi0iwstguebaliifr1n unique (access_token);
 

@@ -1,8 +1,10 @@
 package cz.muni.ics.kypo.training.facade;
 
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalRO;
+import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
 import cz.muni.ics.kypo.training.api.dto.visualization.*;
 import cz.muni.ics.kypo.training.api.enums.LevelType;
+import cz.muni.ics.kypo.training.api.responses.PageResultResource;
 import cz.muni.ics.kypo.training.exceptions.ErrorCode;
 import cz.muni.ics.kypo.training.exceptions.FacadeLayerException;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
@@ -13,15 +15,21 @@ import cz.muni.ics.kypo.training.mapping.mapstruct.InfoLevelMapper;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.service.TrainingInstanceService;
 import cz.muni.ics.kypo.training.service.TrainingRunService;
+import cz.muni.ics.kypo.training.service.UserService;
 import cz.muni.ics.kypo.training.service.VisualizationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 @Service
 @Transactional
 public class VisualizationFacadeImpl implements VisualizationFacade {
@@ -35,11 +43,12 @@ public class VisualizationFacadeImpl implements VisualizationFacade {
     private AssessmentLevelMapper assessmentLevelMapper;
     private InfoLevelMapper infoLevelMapper;
     private HintMapper hintMapper;
+    private UserService userService;
 
     @Autowired
     public VisualizationFacadeImpl(TrainingRunService trainingRunService, TrainingInstanceService trainingInstanceService, VisualizationService visualizationService,
                                  HintMapper hintMapper, GameLevelMapper gameLevelMapper, InfoLevelMapper infoLevelMapper,
-                                   AssessmentLevelMapper assessmentLevelMapper) {
+                                   AssessmentLevelMapper assessmentLevelMapper, UserService userService) {
         this.trainingRunService = trainingRunService;
         this.trainingInstanceService = trainingInstanceService;
         this.visualizationService = visualizationService;
@@ -47,6 +56,7 @@ public class VisualizationFacadeImpl implements VisualizationFacade {
         this.assessmentLevelMapper = assessmentLevelMapper;
         this.infoLevelMapper = infoLevelMapper;
         this.hintMapper = hintMapper;
+        this.userService = userService;
     }
 
     @Override
@@ -75,6 +85,21 @@ public class VisualizationFacadeImpl implements VisualizationFacade {
         }
     }
 
+    @Override
+    public List<UserRefDTO> getParticipantsForGivenTrainingInstance(Long trainingInstanceId) {
+        Set<Long> participantsRefIds = visualizationService.getAllParticipantsRefIdsForSpecificTrainingInstance(trainingInstanceId);
+        PageResultResource<UserRefDTO> participantsInfo;
+        List<UserRefDTO> participants = new ArrayList<>();
+        int page = 0;
+        do {
+            participantsInfo = userService.getUsersRefDTOByGivenUserIds(participantsRefIds, PageRequest.of(page,999), null, null);
+            participants.addAll(participantsInfo.getContent());
+            page++;
+        }
+        while (participantsInfo.getPagination().getNumber() != participantsInfo.getPagination().getTotalPages());
+        return participants;
+    }
+
     private List<AbstractLevelVisualizationDTO> convertToAbstractLevelVisualizationDTO(List<AbstractLevel> abstractLevels) {
         List<AbstractLevelVisualizationDTO> visualizationLevelInfoDTOs = new ArrayList<>();
         abstractLevels.forEach(level -> {
@@ -98,5 +123,10 @@ public class VisualizationFacadeImpl implements VisualizationFacade {
             }
         });
         return visualizationLevelInfoDTOs;
+    }
+
+    @Override
+    public PageResultResource<UserRefDTO> getUsersByIds(Set<Long> usersIds, Pageable pageable) {
+        return userService.getUsersRefDTOByGivenUserIds(usersIds, pageable, null, null);
     }
 }

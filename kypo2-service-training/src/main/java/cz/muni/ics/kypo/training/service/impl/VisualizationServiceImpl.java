@@ -9,6 +9,7 @@ import cz.muni.ics.kypo.training.persistence.model.TrainingInstance;
 import cz.muni.ics.kypo.training.persistence.model.TrainingRun;
 import cz.muni.ics.kypo.training.persistence.model.enums.TRState;
 import cz.muni.ics.kypo.training.persistence.repository.AbstractLevelRepository;
+import cz.muni.ics.kypo.training.persistence.repository.UserRefRepository;
 import cz.muni.ics.kypo.training.service.VisualizationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author Dominik Pilar (445537)
@@ -28,13 +30,15 @@ public class VisualizationServiceImpl implements VisualizationService {
     private static final String MUST_NOT_BE_NULL = "Input training run id must not be null.";
 
     private AbstractLevelRepository abstractLevelRepository;
+    private UserRefRepository userRefRepository;
     private SecurityService securityService;
 
     @Autowired
     public VisualizationServiceImpl(AbstractLevelRepository abstractLevelRepository,
-                                    SecurityService securityService) {
+                                    SecurityService securityService,  UserRefRepository userRefRepository) {
         this.abstractLevelRepository = abstractLevelRepository;
         this.securityService = securityService;
+        this.userRefRepository = userRefRepository;
     }
 
     @Override
@@ -64,5 +68,10 @@ public class VisualizationServiceImpl implements VisualizationService {
                         ".", ErrorCode.SECURITY_RIGHTS);
         }
         return abstractLevelRepository.findAllLevelsByTrainingDefinitionId(trainingInstance.getTrainingDefinition().getId());
+    }
+
+    @Override
+    public Set<Long> getAllParticipantsRefIdsForSpecificTrainingInstance(Long trainingInstanceId) {
+        return userRefRepository.findParticipantsRefByTrainingInstanceId(trainingInstanceId);
     }
 }

@@ -106,6 +106,7 @@ public class TrainingDefinitionFacadeTest {
     private Pageable pageable;
     private PageResultResource.Pagination pagination;
 
+    private UserRefDTO userInfoDTO1, userInfoDTO2;
 
     @Before
     public void init() {
