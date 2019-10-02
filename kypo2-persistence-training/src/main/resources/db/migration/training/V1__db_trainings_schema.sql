@@ -135,12 +135,7 @@ create table hint_info(
 
 create table user_ref (
    id  bigserial not null,
-    user_ref_full_name varchar(255),
-    user_ref_given_name varchar(255),
-    user_ref_family_name varchar(255),
-    user_ref_login varchar(255) not null,
     user_ref_id int8 not null,
-    iss varchar(255) not null,
     primary key (id)
 );
 
@@ -153,9 +148,6 @@ create table attachment (
 
 );
 
-
-alter table user_ref
-   add constraint UK_KYPO_PRINCIPAL unique (user_ref_login,user_ref_id,iss);
 
 alter table access_token
    add constraint UK_qglhb4xi0iwstguebaliifr1n unique (access_token);

@@ -6,7 +6,7 @@ import com.google.gson.JsonObject;
 import cz.muni.ics.kypo.commons.security.enums.AuthenticatedUserOIDCItems;
 import cz.muni.ics.kypo.training.api.responses.PageResultResource;
 import cz.muni.ics.kypo.training.api.dto.IsCorrectFlagDTO;
-import cz.muni.ics.kypo.training.api.dto.UserInfoDTO;
+import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
 import cz.muni.ics.kypo.training.api.dto.hint.HintDTO;
 import cz.muni.ics.kypo.training.api.dto.hint.TakenHintDTO;
 import cz.muni.ics.kypo.training.api.dto.infolevel.InfoLevelDTO;
@@ -42,6 +42,7 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.ApplicationContext;
@@ -125,6 +126,9 @@ public class TrainingRunsIT {
     @Qualifier("objMapperRESTApi")
     private ObjectMapper mapper;
 
+    @Value("${user-and-group-server.uri}")
+    private String userAndGroupURI;
+
     @Autowired
     private InfoLevelMapperImpl infoLevelMapper;
 
@@ -140,8 +144,9 @@ public class TrainingRunsIT {
     private TrainingInstance trainingInstance;
     private TrainingDefinition trainingDefinition;
     private SandboxInfo sandboxInfo1, sandboxInfo2, sandboxInfo3;
+    private UserRef participant1, participant2, organizer;
+    private UserRefDTO userRefDTO1, userRefDTO2;
     private UserRef participant;
-    private UserInfoDTO userInfoDTO;
     private PageResultResourcePython sandboxInfoPageResult;
 
     @SpringBootApplication
@@ -169,22 +174,21 @@ public class TrainingRunsIT {
         sandboxInfo3.setStatus(SandboxStates.FULL_BUILD_COMPLETE.getName());
         sandboxInfo3.setPool(3L);
 
-        participant = new UserRef();
-        participant.setUserRefLogin("445469@muni.cz");
-        participant.setUserRefFullName("Ing. Mgr. MuDr. Boris Jadus");
-        participant.setUserRefGivenName("Boris");
-        participant.setUserRefFamilyName("Jadus");
-        participant.setIss("https://oidc.muni.cz");
-        participant.setUserRefId(1L);
-        userRefRepository.save(participant);
+        userRefDTO1 = new UserRefDTO();
+        userRefDTO1.setUserRefFullName("Ing. Mgr. MuDr. Boris Jadus");
+        userRefDTO1.setUserRefLogin("445469@muni.cz");
+        userRefDTO1.setUserRefGivenName("Boris");
+        userRefDTO1.setUserRefFamilyName("Jadus");
+        userRefDTO1.setIss("https://oidc.muni.cz");
+        userRefDTO1.setUserRefId(3L);
 
-        userInfoDTO = new UserInfoDTO();
-        userInfoDTO.setFullName("Ing. Mgr. MuDr. Boris Jadus");
-        userInfoDTO.setLogin("445469@muni.cz");
-        userInfoDTO.setGivenName("Boris");
-        userInfoDTO.setFamilyName("Jadus");
-        userInfoDTO.setIss("https://oidc.muni.cz");
-        userInfoDTO.setUserRefId(1L);
+        userRefDTO2 = new UserRefDTO();
+        userRefDTO2.setUserRefFullName("Ing. Jan Chudý");
+        userRefDTO2.setUserRefLogin("445497@muni.cz");
+        userRefDTO2.setUserRefGivenName("Jan");
+        userRefDTO2.setUserRefFamilyName("Chudý");
+        userRefDTO2.setIss("https://oidc.muni.cz");
+        userRefDTO2.setUserRefId(4L);
 
         InfoLevel iL = new InfoLevel();
         iL.setContent("content");
@@ -207,17 +211,16 @@ public class TrainingRunsIT {
         aL.setTitle("assessmentTitle");
         assessmentLevelRepository.save(aL);
 
-        UserRef userRef = new UserRef();
-        userRef.setUserRefLogin("testDesigner");
-        userRef.setUserRefFullName("Mgr. Ing. Pavel Seda");
-        userRef.setUserRefGivenName("Pavel123");
-        userRef.setUserRefFamilyName("Seda123123123");
-        userRef.setIss("https://oidc.muni.cz");
-        userRef.setUserRefId(3L);
-        UserRef uR = userRefRepository.save(userRef);
+        organizer = new UserRef();
+        organizer.setUserRefId(1L);
+        participant1 = new UserRef();
+        participant1.setUserRefId(3L);
+        participant2 = new UserRef();
+        participant2.setUserRefId(4L);
+        userRefRepository.saveAll(Set.of(organizer, participant1, participant2));
 
         BetaTestingGroup betaTestingGroup = new BetaTestingGroup();
-        betaTestingGroup.setOrganizers(new HashSet<>(Arrays.asList(uR)));
+        betaTestingGroup.setOrganizers(new HashSet<>(Arrays.asList(organizer)));
 
         trainingDefinition = new TrainingDefinition();
         trainingDefinition.setTitle("definition");
@@ -236,7 +239,7 @@ public class TrainingRunsIT {
         trainingInstance.setPoolId(1L);
         trainingInstance.setAccessToken("pass-1234");
         trainingInstance.setTrainingDefinition(trainingDefinition);
-        trainingInstance.setOrganizers(new HashSet<>(Arrays.asList(uR)));
+        trainingInstance.setOrganizers(new HashSet<>(Arrays.asList(organizer)));
         trainingInstanceRepository.save(trainingInstance);
         trainingInstance = trainingInstanceRepository.save(trainingInstance);
 
@@ -292,7 +295,7 @@ public class TrainingRunsIT {
         trainingRun1.setCurrentLevel(gameLevel1);
         trainingRun1.setLevelAnswered(false);
         trainingRun1.setTrainingInstance(trainingInstance);
-        trainingRun1.setParticipantRef(uR);
+        trainingRun1.setParticipantRef(participant1);
         trainingRun1.setSandboxInstanceRefId(1L);
 
         trainingRun2 = new TrainingRun();
@@ -304,7 +307,7 @@ public class TrainingRunsIT {
         trainingRun2.setCurrentLevel(infoLevel1);
         trainingRun2.setLevelAnswered(false);
         trainingRun2.setTrainingInstance(trainingInstance);
-        trainingRun2.setParticipantRef(uR);
+        trainingRun2.setParticipantRef(participant2);
         trainingRun2.setSandboxInstanceRefId(2L);
 
         sandboxInfo = new SandboxInfo();
@@ -324,6 +327,8 @@ public class TrainingRunsIT {
     public void findTrainingRunById() throws Exception {
         TrainingRun trainingRun = trainingRunRepository.save(trainingRun1);
 
+        given(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), eq(UserRefDTO.class))).
+                willReturn(new ResponseEntity<UserRefDTO>(userRefDTO1, HttpStatus.OK));
         MockHttpServletResponse result = mvc.perform(get("/training-runs/{id}", trainingRun.getId()))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
@@ -332,6 +337,7 @@ public class TrainingRunsIT {
         TrainingRunByIdDTO runDTO = trainingRunMapper.mapToFindByIdDTO(trainingRun);
         runDTO.setDefinitionId(trainingRun.getTrainingInstance().getTrainingDefinition().getId());
         runDTO.setInstanceId(trainingRun.getTrainingInstance().getId());
+        runDTO.setParticipantRef(userRefDTO1);
         TrainingRunByIdDTO resultDTO = mapper.readValue(convertJsonBytesToString(result.getContentAsString()), TrainingRunByIdDTO.class);
         assertEquals(runDTO.toString(), resultDTO.toString());
     }
@@ -349,15 +355,25 @@ public class TrainingRunsIT {
     public void findAllTrainingRuns() throws Exception {
         trainingRunRepository.save(trainingRun1);
         trainingRunRepository.save(trainingRun2);
-
+        given(restTemplate.exchange(eq(userAndGroupURI + "/users/" + trainingRun1.getParticipantRef().getUserRefId()), eq(HttpMethod.GET), any(HttpEntity.class), eq(UserRefDTO.class))).
+                willReturn(new ResponseEntity<UserRefDTO>(userRefDTO1, HttpStatus.OK));
+        given(restTemplate.exchange(eq(userAndGroupURI + "/users/" + trainingRun2.getParticipantRef().getUserRefId()), eq(HttpMethod.GET), any(HttpEntity.class), eq(UserRefDTO.class))).
+                willReturn(new ResponseEntity<UserRefDTO>(userRefDTO2, HttpStatus.OK));
+        System.out.println(userAndGroupURI + "/users/" + trainingRun1.getParticipantRef().getUserRefId());
+        System.out.println(userAndGroupURI + "/users/" + trainingRun2.getParticipantRef().getUserRefId());
         MockHttpServletResponse result = mvc.perform(get("/training-runs"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andReturn().getResponse();
         PageResultResource<TrainingRunDTO> trainingRunsPage = mapper.readValue(convertJsonBytesToString(result.getContentAsString()), new TypeReference<PageResultResource<TrainingRunDTO>>() {
         });
-        assertTrue(trainingRunsPage.getContent().contains(trainingRunMapper.mapToDTO(trainingRun1)));
-        assertTrue(trainingRunsPage.getContent().contains(trainingRunMapper.mapToDTO(trainingRun2)));
+        TrainingRunDTO trainingRunDTO1 = trainingRunMapper.mapToDTO(trainingRun1);
+        trainingRunDTO1.setParticipantRef(userRefDTO1);
+        TrainingRunDTO trainingRunDTO2 = trainingRunMapper.mapToDTO(trainingRun2);
+        trainingRunDTO2.setParticipantRef(userRefDTO2);
+        System.out.println(trainingRunsPage.getContent());
+        assertTrue(trainingRunsPage.getContent().contains(trainingRunDTO1));
+        assertTrue(trainingRunsPage.getContent().contains(trainingRunDTO2));
     }
 
     @Test
@@ -369,8 +385,8 @@ public class TrainingRunsIT {
         sandboxInfo1.setStatus(SandboxStates.FULL_BUILD_COMPLETE.getName());
         sandboxInfo2.setStatus(SandboxStates.FULL_BUILD_COMPLETE.getName());
 
-        given(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
-                willReturn(new ResponseEntity<UserInfoDTO>(userInfoDTO, HttpStatus.OK));
+        given(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), eq(UserRefDTO.class))).
+                willReturn(new ResponseEntity<UserRefDTO>(userRefDTO1, HttpStatus.OK));
         given(restTemplate.exchange(eq(builder.toUriString()), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
                 willReturn(new ResponseEntity<PageResultResourcePython<SandboxInfo>>(sandboxInfoPageResult, HttpStatus.OK));
         mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_TRAINEE.name()));
@@ -389,12 +405,12 @@ public class TrainingRunsIT {
     @Test
     public void accessTrainingRunWithAlreadyStartedTrainingRun() throws Exception {
         sandboxInfo1.setStatus(SandboxStates.FULL_BUILD_COMPLETE.getName());
-        trainingRun1.setParticipantRef(participant);
+        trainingRun1.setParticipantRef(participant1);
         trainingRun1.setSandboxInstanceRefId(sandboxInfo.getId());
         trainingRunRepository.save(trainingRun1);
 
-        given(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
-                willReturn(new ResponseEntity<UserInfoDTO>(userInfoDTO, HttpStatus.OK));
+        given(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), eq(UserRefDTO.class))).
+                willReturn(new ResponseEntity<UserRefDTO>(userRefDTO1, HttpStatus.OK));
         mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_TRAINEE.name()));
         MockHttpServletResponse result = mvc.perform(post("/training-runs")
                 .param("accessToken", "pass-1234"))
@@ -412,8 +428,8 @@ public class TrainingRunsIT {
     public void accessTrainingRunWithTrainingInstanceWithoutSandboxes() throws Exception {
         trainingInstance.setPoolId(null);
         trainingInstanceRepository.save(trainingInstance);
-        given(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
-                willReturn(new ResponseEntity<UserInfoDTO>(userInfoDTO, HttpStatus.OK));
+        given(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), eq(UserRefDTO.class))).
+                willReturn(new ResponseEntity<UserRefDTO>(userRefDTO1, HttpStatus.OK));
 
         mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_TRAINEE.name()));
         Exception exception = mvc.perform(post("/training-runs")
@@ -433,8 +449,8 @@ public class TrainingRunsIT {
 
         gameLevel1.setTrainingDefinition(null);
         infoLevel1.setTrainingDefinition(null);
-        given(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
-                willReturn(new ResponseEntity<UserInfoDTO>(userInfoDTO, HttpStatus.OK));
+        given(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), eq(UserRefDTO.class))).
+                willReturn(new ResponseEntity<UserRefDTO>(userRefDTO1, HttpStatus.OK));
         given(restTemplate.exchange(eq(builder.toUriString()), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
                 willReturn(new ResponseEntity<PageResultResourcePython<SandboxInfo>>(sandboxInfoPageResult, HttpStatus.OK));
         mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_TRAINEE.name()));
@@ -454,7 +470,7 @@ public class TrainingRunsIT {
 //        mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_TRAINEE.name()));
 //
 //        given(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
-//                willReturn(new ResponseEntity<UserInfoDTO>(userInfoDTO, HttpStatus.OK));
+//                willReturn(new ResponseEntity<UserInfoDTO>(userRefDTO1, HttpStatus.OK));
 //        given(restTemplate.exchange(eq("http://localhost:8080" + "/pools/" + trainingInstance.getPoolId() + "/sandboxes/"), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
 //                willReturn(new ResponseEntity<List<SandboxInfo>>(new ArrayList<>(List.of(sandboxInfo1, sandboxInfo2, sandboxInfo3)), HttpStatus.OK));
 //
@@ -495,7 +511,7 @@ public class TrainingRunsIT {
         builder.queryParam("page_size", 1000);
 
         given(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
-                willReturn(new ResponseEntity<UserInfoDTO>(userInfoDTO, HttpStatus.OK));
+                willReturn(new ResponseEntity<UserRefDTO>(userRefDTO1, HttpStatus.OK));
         given(restTemplate.exchange(eq(builder.toUriString()), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
                 willReturn(new ResponseEntity<PageResultResourcePython<SandboxInfo>>(pageResult, HttpStatus.OK));
 
@@ -518,8 +534,8 @@ public class TrainingRunsIT {
         builder.queryParam("page", 1);
         builder.queryParam("page_size", 1000);
 
-        given(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
-                willReturn(new ResponseEntity<UserInfoDTO>(userInfoDTO, HttpStatus.OK));
+        given(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), eq(UserRefDTO.class))).
+                willReturn(new ResponseEntity<UserRefDTO>(userRefDTO1, HttpStatus.OK));
         given(restTemplate.exchange(eq(builder.toUriString()), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
                 willReturn(new ResponseEntity<PageResultResourcePython<SandboxInfo>>(pageResult, HttpStatus.OK));
 
@@ -546,11 +562,11 @@ public class TrainingRunsIT {
 
     @Test
     public void getAllAccessedTrainingRuns() throws Exception {
-        trainingRun1.setParticipantRef(participant);
+        trainingRun1.setParticipantRef(participant1);
         trainingRunRepository.save(trainingRun1);
         trainingRunRepository.save(trainingRun2);
         given(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
-                willReturn(new ResponseEntity<UserInfoDTO>(userInfoDTO, HttpStatus.OK));
+                willReturn(new ResponseEntity<UserRefDTO>(userRefDTO1, HttpStatus.OK));
 
         AccessedTrainingRunDTO expectedAccessTrainingRunDTO = new AccessedTrainingRunDTO();
         expectedAccessTrainingRunDTO.setId(trainingRun1.getId());
@@ -619,6 +635,8 @@ public class TrainingRunsIT {
         trainingRun1.setTotalScore(10 + gameLevel1.getMaxScore());
         trainingRunRepository.save(trainingRun1);
         assertFalse(trainingRun1.isSolutionTaken());
+        given(restTemplate.exchange(eq(userAndGroupURI + "/users/" + trainingRun1.getParticipantRef().getUserRefId()), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
+                willReturn(new ResponseEntity<UserRefDTO>(userRefDTO1, HttpStatus.OK));
         MockHttpServletResponse response = mvc.perform(get("/training-runs/{runId}/solutions", trainingRun1.getId()))
                 .andExpect(status().isOk())
                 .andReturn().getResponse();
@@ -633,6 +651,8 @@ public class TrainingRunsIT {
         trainingRun1.setSolutionTaken(true);
         trainingRunRepository.save(trainingRun1);
         assertTrue(trainingRun1.isSolutionTaken());
+        given(restTemplate.exchange(eq(userAndGroupURI + "/users/" + trainingRun1.getParticipantRef().getUserRefId()), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
+                willReturn(new ResponseEntity<UserRefDTO>(userRefDTO1, HttpStatus.OK));
         MockHttpServletResponse response = mvc.perform(get("/training-runs/{runId}/solutions", trainingRun1.getId()))
                 .andExpect(status().isOk())
                 .andReturn().getResponse();
@@ -730,6 +750,8 @@ public class TrainingRunsIT {
         isCorrectFlagDTO.setRemainingAttempts(gameLevel1.getIncorrectFlagLimit() - 1);
         isCorrectFlagDTO.setCorrect(false);
         mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_ADMINISTRATOR.name()));
+        given(restTemplate.exchange(eq(userAndGroupURI + "/users/" + trainingRun1.getParticipantRef().getUserRefId()), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
+                willReturn(new ResponseEntity<UserRefDTO>(userRefDTO1, HttpStatus.OK));
 
         assertFalse(trainingRun1.isLevelAnswered());
         MockHttpServletResponse response = mvc.perform(get("/training-runs/{runId}/is-correct-flag", trainingRun1.getId())
@@ -833,7 +855,10 @@ public class TrainingRunsIT {
         expectedTakenHint.setId(hint.getId());
         expectedTakenHint.setTitle(hint.getTitle());
         expectedTakenHint.setContent(hint.getContent());
-
+        given(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
+                willReturn(new ResponseEntity<SandboxInfo>(sandboxInfo1, HttpStatus.OK));
+        given(restTemplate.exchange(eq(userAndGroupURI + "/users/" + trainingRun1.getParticipantRef().getUserRefId()), eq(HttpMethod.GET), any(HttpEntity.class), eq(UserRefDTO.class))).
+                willReturn(new ResponseEntity<UserRefDTO>(userRefDTO1, HttpStatus.OK));
         MockHttpServletResponse response = mvc.perform(get("/training-runs/{runId}/resumption", trainingRun1.getId()))
                 .andExpect(status().isOk())
                 .andReturn().getResponse();

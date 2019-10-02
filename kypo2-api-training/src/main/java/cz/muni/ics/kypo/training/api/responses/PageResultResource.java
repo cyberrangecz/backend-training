@@ -59,16 +59,16 @@ public class PageResultResource<E> {
         @JsonProperty(required = true)
         private int number;
         @ApiModelProperty(value = "Number of elements in page.", example = "20")
-        @JsonProperty(required = true)
+        @JsonProperty(required = true, value = "number_of_elements")
         private int numberOfElements;
         @ApiModelProperty(value = "Page size.", example = "20")
         @JsonProperty(required = true)
         private int size;
         @ApiModelProperty(value = "Total number of elements in this resource (in all Pages).", example = "100")
-        @JsonProperty(required = true)
+        @JsonProperty(required = true, value = "total_elements")
         private long totalElements;
         @ApiModelProperty(value = "Total number of pages.", example = "5")
-        @JsonProperty(required = true)
+        @JsonProperty(required = true, value = "total_pages")
         private int totalPages;
 
         public Pagination() {

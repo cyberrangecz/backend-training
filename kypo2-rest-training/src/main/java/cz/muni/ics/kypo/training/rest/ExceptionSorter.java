@@ -15,7 +15,6 @@ public class ExceptionSorter {
             case WRONG_LEVEL_TYPE:
                 return new BadRequestException(ex);
             case RESOURCE_NOT_FOUND:
-                return new ResourceNotFoundException(ex);
             case NO_NEXT_LEVEL:
                 return new ResourceNotFoundException(ex);
             case RESOURCE_CONFLICT:

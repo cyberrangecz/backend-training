@@ -47,7 +47,6 @@ public class BeanMappingTest {
 
         aR = new UserRef();
         aR.setId(1L);
-        aR.setUserRefLogin("login");
         aR.setTrainingDefinitions(new HashSet<>(Arrays.asList(tD)));
 
         aRDTO = new UserRefDTO();
@@ -72,7 +71,6 @@ public class BeanMappingTest {
         tDDTO.setPrerequisities(new String[]{"p1", "p2"});
         tDDTO.setOutcomes(new String[]{"o1", "o2"});
         tDDTO.setState(cz.muni.ics.kypo.training.api.enums.TDState.UNRELEASED);
-        tDDTO.setAuthors(new HashSet<>(Arrays.asList(aRDTO)));
         tDDTO.setSandboxDefinitionRefId(1L);
         tDDTO.setShowStepperBar(true);
 
@@ -120,8 +118,6 @@ public class BeanMappingTest {
         assertEquals(tD.getPrerequisities()[1], dto.getPrerequisities()[1]);
         assertEquals(tD.getOutcomes()[0], dto.getOutcomes()[0]);
         assertEquals(tD.getOutcomes()[1], dto.getOutcomes()[1]);
-        assertEquals(tD.getAuthors().size(), dto.getAuthors().size());
-        assertEquals(tD.getAuthors().size(), dto.getAuthors().size());
         assertEquals(tD.getSandboxDefinitionRefId(), dto.getSandboxDefinitionRefId());
         assertEquals(tD.isShowStepperBar(), dto.isShowStepperBar());
     }
@@ -138,8 +134,6 @@ public class BeanMappingTest {
         assertEquals(tDDTO.getPrerequisities()[1], tD.getPrerequisities()[1]);
         assertEquals(tDDTO.getOutcomes()[0], tD.getOutcomes()[0]);
         assertEquals(tDDTO.getOutcomes()[1], tD.getOutcomes()[1]);
-        assertEquals(tDDTO.getAuthors().size(), tD.getAuthors().size());
-        assertEquals(tDDTO.getAuthors().size(), tD.getAuthors().size());
         assertEquals(tDDTO.getSandboxDefinitionRefId(), tD.getSandboxDefinitionRefId());
         assertEquals(tDDTO.isShowStepperBar(), tD.isShowStepperBar());
     }

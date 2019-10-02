@@ -163,13 +163,7 @@ public class TrainingDefinitionsRestControllerTest {
         assessmentLevelUpdateDTO.setType(cz.muni.ics.kypo.training.api.enums.AssessmentType.QUESTIONNAIRE);
 
         UserRef authorRef = new UserRef();
-        authorRef.setUserRefLogin("Author");
         authorRef.setUserRefId(1L);
-        authorRef.setIss("https://oidc.muni.cz");
-        authorRef.setUserRefGivenName("Pavel");
-        authorRef.setUserRefFamilyName("Seda");
-        authorRef.setUserRefFullName("Mgr. Ing. Pavel Seda");
-
 
         Set<UserRef> authorRefSet = new HashSet<>();
         authorRefSet.add(authorRef);
@@ -208,21 +202,18 @@ public class TrainingDefinitionsRestControllerTest {
         trainingDefinition1DTO.setId(1L);
         trainingDefinition1DTO.setState(cz.muni.ics.kypo.training.api.enums.TDState.UNRELEASED);
         trainingDefinition1DTO.setTitle("test");
-        trainingDefinition1DTO.setAuthors(authorRefSetDTO);
         trainingDefinition1DTO.setSandboxDefinitionRefId(1L);
 
         trainingDefinition2DTO = new TrainingDefinitionByIdDTO();
         trainingDefinition2DTO.setId(2L);
         trainingDefinition2DTO.setState(cz.muni.ics.kypo.training.api.enums.TDState.PRIVATED);
         trainingDefinition2DTO.setTitle("test");
-        trainingDefinition2DTO.setAuthors(authorRefSetDTO);
         trainingDefinition2DTO.setSandboxDefinitionRefId(1L);
 
         trainingDefinitionUpdateDTO = new TrainingDefinitionUpdateDTO();
         trainingDefinitionUpdateDTO.setId(4L);
         trainingDefinitionUpdateDTO.setState(cz.muni.ics.kypo.training.api.enums.TDState.UNRELEASED);
         trainingDefinitionUpdateDTO.setTitle("training definition title");
-        trainingDefinitionUpdateDTO.setAuthorsRefIds(Set.of());
         trainingDefinitionUpdateDTO.setSandboxDefinitionRefId(1L);
         trainingDefinitionUpdateDTO.setShowStepperBar(false);
         trainingDefinitionUpdateDTO.setBetaTestingGroup(betaTestingGroupUpdateDTO);
@@ -233,7 +224,6 @@ public class TrainingDefinitionsRestControllerTest {
         trainingDefinitionCreateDTO.setPrerequisities(new String[0]);
         trainingDefinitionCreateDTO.setState(cz.muni.ics.kypo.training.api.enums.TDState.ARCHIVED);
         trainingDefinitionCreateDTO.setTitle("TD some title");
-        trainingDefinitionCreateDTO.setAuthorsRefIds(Set.of());
         trainingDefinitionCreateDTO.setShowStepperBar(true);
         trainingDefinitionCreateDTO.setSandboxDefinitionRefId(1L);
         trainingDefinitionCreateDTO.setBetaTestingGroup(betaTestingGroupCreateDTO);
@@ -484,21 +474,20 @@ public class TrainingDefinitionsRestControllerTest {
 
     @Test
     public void getDesigners() throws Exception {
-        UserInfoDTO user1 = new UserInfoDTO();
-        user1.setLogin("peter@mail.muni.cz");
-        user1.setFullName("Peter Parker");
-        UserInfoDTO user2 = new UserInfoDTO();
-        user2.setLogin("dave@mail.muni.cz");
-        user2.setFullName("David Holman");
-        List<UserInfoDTO> designers = Arrays.asList(user1, user2);
+        UserRefDTO user1 = new UserRefDTO();
+        user1.setUserRefLogin("peter@mail.muni.cz");
+        user1.setUserRefFullName("Peter Parker");
+        UserRefDTO user2 = new UserRefDTO();
+        user2.setUserRefLogin("dave@mail.muni.cz");
+        user2.setUserRefFullName("David Holman");
+        List<UserRefDTO> designers = Arrays.asList(user1, user2);
         String value = convertObjectToJsonBytes(designers);
         given(objectMapper.writeValueAsString(any(Object.class))).willReturn(value);
-        given(trainingDefinitionFacade.getUsersWithGivenRole(any(RoleType.class), any(Pageable.class))).willReturn(designers);
+        given(trainingDefinitionFacade.getUsersWithGivenRole(any(RoleType.class), any(Pageable.class), eq(null), eq(null))).willReturn(new PageResultResource<>(designers));
         MockHttpServletResponse result = mockMvc
                 .perform(get("/training-definitions/designers")
                         .contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isOk())
-                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andReturn().getResponse();
         assertEquals(convertObjectToJsonBytes(value), result.getContentAsString());
     }
@@ -507,7 +496,7 @@ public class TrainingDefinitionsRestControllerTest {
     public void getDesignersWithUnexpectedError() throws Exception {
         Exception exceptionThrow = new ServiceLayerException("Error while getting users from user and group microservice.", ErrorCode.UNEXPECTED_ERROR);
         willThrow(new FacadeLayerException(exceptionThrow))
-                .given(trainingDefinitionFacade).getUsersWithGivenRole(any(RoleType.class), any(Pageable.class));
+                .given(trainingDefinitionFacade).getUsersWithGivenRole(any(RoleType.class), any(Pageable.class), eq(null), eq(null));
         Exception ex = mockMvc.perform(get("/training-definitions/designers")
                         .contentType(MediaType.APPLICATION_JSON_VALUE))
                         .andExpect(status().isInternalServerError())

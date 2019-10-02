@@ -202,11 +202,10 @@ public class ExportImportFacadeTest {
     private void deepEqualsTrainingDefinitionDTO(TrainingDefinitionByIdDTO t1, TrainingDefinitionByIdDTO t2) {
         assertEquals(t1.getId(), t2.getId());
         assertEquals(t1.getSandboxDefinitionRefId(), t2.getSandboxDefinitionRefId());
-        assertEquals(t1.getAuthors(), t2.getAuthors());
         assertEquals(t1.getState(), t2.getState());
         assertEquals(t1.getDescription(), t2.getDescription());
         assertEquals(t1.getTitle(), t2.getTitle());
-        assertEquals(t1.getBetaTestingGroup(), t2.getBetaTestingGroup());
+        assertEquals(t1.getBetaTestingGroupId(), t2.getBetaTestingGroupId());
         assertEquals(t1.getLevels(), t2.getLevels());
     }
 

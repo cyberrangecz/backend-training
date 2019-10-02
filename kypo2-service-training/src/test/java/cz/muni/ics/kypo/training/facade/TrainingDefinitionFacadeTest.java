@@ -4,7 +4,7 @@ import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.PathBuilder;
 import cz.muni.ics.kypo.training.api.responses.PageResultResource;
 import cz.muni.ics.kypo.training.api.dto.AbstractLevelDTO;
-import cz.muni.ics.kypo.training.api.dto.UserInfoDTO;
+import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelUpdateDTO;
 import cz.muni.ics.kypo.training.api.dto.betatestinggroup.BetaTestingGroupCreateDTO;
 import cz.muni.ics.kypo.training.api.dto.betatestinggroup.BetaTestingGroupUpdateDTO;
@@ -15,6 +15,8 @@ import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionDT
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionUpdateDTO;
 import cz.muni.ics.kypo.training.api.enums.AssessmentType;
 import cz.muni.ics.kypo.training.api.enums.LevelType;
+import cz.muni.ics.kypo.training.api.enums.RoleType;
+import cz.muni.ics.kypo.training.exceptions.ErrorCode;
 import cz.muni.ics.kypo.training.exceptions.FacadeLayerException;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.mapping.mapstruct.*;
@@ -23,7 +25,9 @@ import cz.muni.ics.kypo.training.mapping.modelmapper.BeanMappingImpl;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.model.enums.TDState;
 import cz.muni.ics.kypo.training.service.TrainingDefinitionService;
+import cz.muni.ics.kypo.training.service.UserService;
 import cz.muni.ics.kypo.training.service.impl.SecurityService;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -41,10 +45,13 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.BDDMockito.*;
 
 @RunWith(SpringRunner.class)
@@ -73,6 +80,8 @@ public class TrainingDefinitionFacadeTest {
     private TrainingDefinitionService trainingDefinitionService;
     @Mock
     private SecurityService securityService;
+    @Mock
+    private UserService userService;
 
     private BeanMapping beanMapping;
 
@@ -92,15 +101,17 @@ public class TrainingDefinitionFacadeTest {
     private BetaTestingGroupUpdateDTO betaTestingGroupUpdateDTO;
     private BetaTestingGroupCreateDTO betaTestingGroupCreateDTO;
 
-    private UserRef authorRef;
+    private UserRef author1, author2, author3;
+    private UserRefDTO authorDTO1, authorDTO2, authorDTO3;
+    private Pageable pageable;
+    private PageResultResource.Pagination pagination;
 
-    private UserInfoDTO userInfoDTO1, userInfoDTO2;
 
     @Before
     public void init() {
         MockitoAnnotations.initMocks(this);
         trainingDefinitionFacade = new TrainingDefinitionFacadeImpl(trainingDefinitionService,
-                trainingDefinitionMapper, gameLevelMapper, infoLevelMapper, assessmentLevelMapper, basicLevelInfoMapper);
+                trainingDefinitionMapper, gameLevelMapper, infoLevelMapper, assessmentLevelMapper, basicLevelInfoMapper, userService, securityService);
         beanMapping = new BeanMappingImpl(new ModelMapper());
         assessmentLevel = new AssessmentLevel();
         assessmentLevel.setId(1L);
@@ -109,13 +120,19 @@ public class TrainingDefinitionFacadeTest {
         alUpdate = new AssessmentLevelUpdateDTO();
         alUpdate.setId(2L);
 
-        userInfoDTO1 = new UserInfoDTO();
-        userInfoDTO1.setLogin("peter@mail.muni.cz");
-        userInfoDTO1.setFullName("Peter");
+        author1 = new UserRef();
+        author1.setId(1L);
+        author1.setUserRefId(10L);
+        author2 = new UserRef();
+        author2.setId(2L);
+        author2.setUserRefId(20L);
+        author3 = new UserRef();
+        author3.setId(3L);
+        author3.setUserRefId(30L);
 
-        userInfoDTO2 = new UserInfoDTO();
-        userInfoDTO2.setLogin("david@mail.muni.cz");
-        userInfoDTO2.setFullName("David");
+        authorDTO1 = createUserRefDTO(10L, "Bc. Dominik Meškal", "Meškal", "Dominik", "445533@muni.cz", "https://oidc.muni.cz/oidc", null);
+        authorDTO2 = createUserRefDTO(20L, "Bc. Boris Makal", "Makal", "Boris", "772211@muni.cz", "https://oidc.muni.cz/oidc", null);
+        authorDTO3 = createUserRefDTO(30L, "Ing. Pavel Flákal", "Flákal", "Pavel", "221133@muni.cz", "https://oidc.muni.cz/oidc", null);
 
         gameLevel = new GameLevel();
         gameLevel.setId(2L);
@@ -151,6 +168,7 @@ public class TrainingDefinitionFacadeTest {
         trainingDefinition1 = new TrainingDefinition();
         trainingDefinition1.setId(1L);
         trainingDefinition1.setState(TDState.RELEASED);
+        trainingDefinition1.setAuthors(new HashSet<>(Set.of(author1, author2)));
 
         trainingDefinition2 = new TrainingDefinition();
         trainingDefinition2.setId(2L);
@@ -164,9 +182,6 @@ public class TrainingDefinitionFacadeTest {
         trainingDefinitionUpdate.setState(cz.muni.ics.kypo.training.api.enums.TDState.UNRELEASED);
         trainingDefinitionUpdate.setBetaTestingGroup(betaTestingGroupUpdateDTO);
 
-        authorRef = new UserRef();
-        authorRef.setUserRefLogin("author");
-
         betaTestingGroupCreateDTO = new BetaTestingGroupCreateDTO();
         betaTestingGroupCreateDTO.setOrganizersRefIds(Set.of());
 
@@ -176,7 +191,6 @@ public class TrainingDefinitionFacadeTest {
         trainingDefinitionCreate.setPrerequisities(new String[0]);
         trainingDefinitionCreate.setState(cz.muni.ics.kypo.training.api.enums.TDState.ARCHIVED);
         trainingDefinitionCreate.setTitle("TD some title");
-        trainingDefinitionCreate.setAuthorsRefIds(Set.of(1L));
         trainingDefinitionCreate.setBetaTestingGroup(betaTestingGroupCreateDTO);
     }
 
@@ -220,6 +234,7 @@ public class TrainingDefinitionFacadeTest {
         viewGroup.setId(1L);
         viewGroup.setOrganizers(Set.of());
         given(trainingDefinitionService.findById(anyLong())).willReturn(trainingDefinition1);
+        given(userService.getUsersRefDTOByGivenUserIds(anySet(), any(), eq(null), eq(null))).willReturn(new PageResultResource<>(new ArrayList<>()));
         trainingDefinitionFacade.update(trainingDefinitionUpdate);
         then(trainingDefinitionService).should().update(trainingDefinitionMapper.mapUpdateToEntity(trainingDefinitionUpdate));
     }
@@ -236,6 +251,7 @@ public class TrainingDefinitionFacadeTest {
         viewGroup.setTrainingDefinition(trainingDefinition1);
         viewGroup.setId(1L);
         given(trainingDefinitionService.findById(anyLong())).willReturn(trainingDefinition1);
+        given(userService.getUsersRefDTOByGivenUserIds(anySet(), any(Pageable.class), eq(null), eq(null))).willReturn(new PageResultResource<>(new ArrayList<>()));
         willThrow(ServiceLayerException.class).given(trainingDefinitionService)
                 .update(any(TrainingDefinition.class));
         thrown.expect(FacadeLayerException.class);
@@ -246,7 +262,8 @@ public class TrainingDefinitionFacadeTest {
     public void createTrainingDefinition() {
         given(trainingDefinitionService.create(trainingDefinitionMapper.mapCreateToEntity(trainingDefinitionCreate)))
                 .willReturn(trainingDefinitionMapper.mapCreateToEntity(trainingDefinitionCreate));
-        given(trainingDefinitionService.findUserByRefId(anyLong())).willReturn(authorRef);
+        given(userService.getUserByUserRefId(anyLong())).willReturn(author1);
+        given(userService.getUsersRefDTOByGivenUserIds(anySet(), any(), eq(null), eq(null))).willReturn(new PageResultResource<>(new ArrayList<>()));
         trainingDefinitionFacade.create(trainingDefinitionCreate);
         then(trainingDefinitionService).should().create(trainingDefinitionMapper.mapCreateToEntity(trainingDefinitionCreate));
     }
@@ -506,6 +523,166 @@ public class TrainingDefinitionFacadeTest {
         willThrow(ServiceLayerException.class).given(trainingDefinitionService).switchState(any(Long.class), any(cz.muni.ics.kypo.training.api.enums.TDState.class));
         thrown.expect(FacadeLayerException.class);
         trainingDefinitionFacade.switchState(trainingDefinition1.getId(), cz.muni.ics.kypo.training.api.enums.TDState.ARCHIVED);
+    }
+
+    @Test
+    public void getAuthors() {
+        pagination = new PageResultResource.Pagination(0,2,5,2,1);
+        given(trainingDefinitionService.findById(trainingDefinition1.getId())).willReturn(trainingDefinition1);
+        given(userService.getUsersRefDTOByGivenUserIds(trainingDefinition1.getAuthors().stream().map(UserRef::getUserRefId).collect(Collectors.toSet()), pageable, null, null))
+                .willReturn(new PageResultResource<>(List.of(authorDTO1, authorDTO2), pagination));
+        PageResultResource<UserRefDTO> authors = trainingDefinitionFacade.getAuthors(trainingDefinition1.getId(), pageable, null, null);
+        Assert.assertEquals(authors.getPagination(), pagination);
+        Assert.assertTrue(authors.getContent().containsAll(Set.of(authorDTO1, authorDTO2)));
+    }
+
+    @Test
+    public void getAuthorsTrainingDefinitionNotFound() {
+        willThrow(new ServiceLayerException("Training definition not found.", ErrorCode.RESOURCE_NOT_FOUND)).given(trainingDefinitionService).findById(trainingDefinition1.getId());
+        thrown.expect(FacadeLayerException.class);
+        thrown.expectMessage("Training definition not found.");
+        trainingDefinitionFacade.getAuthors(trainingDefinition1.getId(), pageable, null, null);
+    }
+
+    @Test
+    public void getAuthorsNotInGivenTrainingDefinition() {
+        pagination = new PageResultResource.Pagination(0,1,1,1,1);
+        given(trainingDefinitionService.findById(trainingDefinition1.getId())).willReturn(trainingDefinition1);
+        given(userService.getUsersByGivenRoleAndNotWithGivenIds(RoleType.ROLE_TRAINING_DESIGNER, Set.of(author1.getUserRefId(), author2.getUserRefId()), pageable, null, null)).willReturn(
+                new PageResultResource<>(List.of(authorDTO3), pagination));
+        PageResultResource<UserRefDTO> organizersNotInTrainingInstance = trainingDefinitionFacade.getDesignersNotInGivenTrainingDefinition(trainingDefinition1.getId(), pageable, null, null);
+        assertEquals(pagination.toString(), organizersNotInTrainingInstance.getPagination().toString());
+        assertTrue(organizersNotInTrainingInstance.getContent().contains(authorDTO3));
+    }
+
+    @Test
+    public void getAuthorsNotInGivenTrainingDefinitionTrainingDefinitionNotFound() {
+        willThrow(new ServiceLayerException("Training definition not found.", ErrorCode.RESOURCE_NOT_FOUND)).given(trainingDefinitionService).findById(trainingDefinition1.getId());
+        thrown.expect(FacadeLayerException.class);
+        thrown.expectMessage("Training definition not found.");
+        trainingDefinitionFacade.getDesignersNotInGivenTrainingDefinition(trainingDefinition1.getId(), pageable, null, null);
+    }
+
+    @Test
+    public void getAuthorsNotInGivenTrainingInstanceUserServiceError() {
+        given(trainingDefinitionService.findById(trainingDefinition1.getId())).willReturn(trainingDefinition1);
+        willThrow(new ServiceLayerException("Error when calling User And Group endpoint.", ErrorCode.UNEXPECTED_ERROR)).given(userService)
+                .getUsersByGivenRoleAndNotWithGivenIds(RoleType.ROLE_TRAINING_DESIGNER,new HashSet<>(Set.of(author1.getUserRefId(), author2.getUserRefId())), pageable, null, null);
+        thrown.expect(FacadeLayerException.class);
+        thrown.expectMessage("Error when calling User And Group endpoint.");
+        trainingDefinitionFacade.getDesignersNotInGivenTrainingDefinition(trainingDefinition1.getId(), pageable, null, null);
+    }
+
+
+    @Test
+    public void editAuthors() {
+        PageResultResource.Pagination pagination = new PageResultResource.Pagination(0,1,999,1,1);
+        given(trainingDefinitionService.findById(trainingDefinition1.getId())).willReturn(trainingDefinition1);
+        given(securityService.getUserRefIdFromUserAndGroup()).willReturn(author1.getUserRefId());
+        given(userService.getUsersRefDTOByGivenUserIds(Set.of(author3.getUserRefId()), PageRequest.of(0,999), null, null)).willReturn(new PageResultResource<>(List.of(authorDTO3), pagination));
+        given(userService.getUserByUserRefId(author3.getUserRefId())).willReturn(author3);
+        trainingDefinitionFacade.editAuthors(trainingDefinition1.getId(), new HashSet<>(Set.of(author3.getUserRefId())), new HashSet<>(Set.of(author2.getUserRefId())));
+        Assert.assertEquals(2, trainingDefinition1.getAuthors().size());
+        Assert.assertTrue(trainingDefinition1.getAuthors().containsAll(Set.of(author1, author3)));
+    }
+
+    @Test
+    public void editAuthorsRemoveLoggedInAuthor() {
+        PageResultResource.Pagination pagination = new PageResultResource.Pagination(0,1,999,1,1);
+        given(trainingDefinitionService.findById(trainingDefinition1.getId())).willReturn(trainingDefinition1);
+        given(securityService.getUserRefIdFromUserAndGroup()).willReturn(author1.getUserRefId());
+        given(userService.getUsersRefDTOByGivenUserIds(Set.of(author3.getUserRefId()), PageRequest.of(0,999), null, null)).willReturn(new PageResultResource<>(List.of(authorDTO3), pagination));
+        given(userService.getUserByUserRefId(author3.getUserRefId())).willReturn(author3);
+        trainingDefinitionFacade.editAuthors(trainingDefinition1.getId(), new HashSet<>(Set.of(author3.getUserRefId())), new HashSet<>(Set.of(author1.getUserRefId())));
+        Assert.assertEquals(3, trainingDefinition1.getAuthors().size());
+        Assert.assertTrue(trainingDefinition1.getAuthors().containsAll(Set.of(author1, author2, author3)));
+    }
+
+    @Test
+    public void editAuthorsConcurrentlyRemoveAndAddOAuthorWhoIsNotInTrainingDefinition() {
+        PageResultResource.Pagination pagination = new PageResultResource.Pagination(0,1,999,1,1);
+        given(trainingDefinitionService.findById(trainingDefinition1.getId())).willReturn(trainingDefinition1);
+        given(securityService.getUserRefIdFromUserAndGroup()).willReturn(author1.getUserRefId());
+        given(userService.getUsersRefDTOByGivenUserIds(Set.of(author3.getUserRefId()), PageRequest.of(0,999), null, null)).willReturn(new PageResultResource<>(List.of(authorDTO3), pagination));
+        given(userService.getUserByUserRefId(author3.getUserRefId())).willReturn(author3);
+        trainingDefinitionFacade.editAuthors(trainingDefinition1.getId(), new HashSet<>(Set.of(author3.getUserRefId())), new HashSet<>(Set.of(author3.getUserRefId())));
+        Assert.assertEquals(3, trainingDefinition1.getAuthors().size());
+        Assert.assertTrue(trainingDefinition1.getAuthors().containsAll(Set.of(author1, author2, author3)));
+    }
+
+    @Test
+    public void editAuthorsConcurrentlyRemoveAndAddAuthorWhoIsInTrainingDefinition() {
+        PageResultResource.Pagination pagination = new PageResultResource.Pagination(0,1,999,1,1);
+        given(trainingDefinitionService.findById(trainingDefinition1.getId())).willReturn(trainingDefinition1);
+        given(securityService.getUserRefIdFromUserAndGroup()).willReturn(author1.getUserRefId());
+        given(userService.getUsersRefDTOByGivenUserIds(Set.of(author2.getUserRefId()), PageRequest.of(0,999), null, null)).willReturn(new PageResultResource<>(List.of(authorDTO2), pagination));
+        given(userService.getUserByUserRefId(author2.getUserRefId())).willReturn(author2);
+        trainingDefinitionFacade.editAuthors(trainingDefinition1.getId(), new HashSet<>(Set.of(author2.getUserRefId())), new HashSet<>(Set.of(author2.getUserRefId())));
+        Assert.assertEquals(2, trainingDefinition1.getAuthors().size());
+        Assert.assertTrue(trainingDefinition1.getAuthors().containsAll(Set.of(author1, author2)));
+    }
+
+    @Test
+    public void editAuthorsWithEmptySetOfRemovalAndAdditionSets() {
+        PageResultResource.Pagination pagination = new PageResultResource.Pagination(0,1,999,1,1);
+        given(trainingDefinitionService.findById(trainingDefinition1.getId())).willReturn(trainingDefinition1);
+        given(securityService.getUserRefIdFromUserAndGroup()).willReturn(author1.getUserRefId());
+        given(userService.getUsersRefDTOByGivenUserIds(Set.of(author2.getUserRefId()), PageRequest.of(0,999), null, null)).willReturn(new PageResultResource<>(List.of(authorDTO2), pagination));
+        given(userService.getUserByUserRefId(author3.getUserRefId())).willReturn(author2);
+        trainingDefinitionFacade.editAuthors(trainingDefinition1.getId(), new HashSet<>(), new HashSet<>());
+        Assert.assertEquals(2, trainingDefinition1.getAuthors().size());
+        Assert.assertTrue(trainingDefinition1.getAuthors().containsAll(Set.of(author1, author2)));
+    }
+
+    @Test
+    public void editAuthorsRemove() {
+        PageResultResource.Pagination pagination = new PageResultResource.Pagination(0,1,999,1,1);
+        given(trainingDefinitionService.findById(trainingDefinition1.getId())).willReturn(trainingDefinition1);
+        given(securityService.getUserRefIdFromUserAndGroup()).willReturn(author1.getUserRefId());
+        trainingDefinitionFacade.editAuthors(trainingDefinition1.getId(), new HashSet<>(), new HashSet<>(Set.of(author1.getUserRefId(), author2.getUserRefId())));
+        Assert.assertEquals(1, trainingDefinition1.getAuthors().size());
+        Assert.assertTrue(trainingDefinition1.getAuthors().contains(author1));
+    }
+
+    @Test
+    public void editAuthorsAdd() {
+        trainingDefinition1.removeAuthorsByUserRefIds(Set.of(author2.getUserRefId()));
+        PageResultResource.Pagination pagination = new PageResultResource.Pagination(0,1,999,1,1);
+        given(trainingDefinitionService.findById(trainingDefinition1.getId())).willReturn(trainingDefinition1);
+        given(securityService.getUserRefIdFromUserAndGroup()).willReturn(author1.getUserRefId());
+        given(userService.getUsersRefDTOByGivenUserIds(Set.of(author3.getUserRefId(), author2.getUserRefId()), PageRequest.of(0,999), null, null)).willReturn(new PageResultResource<>(List.of(authorDTO3, authorDTO2), pagination));
+        given(userService.getUserByUserRefId(author3.getUserRefId())).willReturn(author3);
+        given(userService.getUserByUserRefId(author2.getUserRefId())).willReturn(author2);
+        trainingDefinitionFacade.editAuthors(trainingDefinition1.getId(), new HashSet<>(Set.of(author2.getUserRefId(), author3.getUserRefId())), new HashSet<>());
+        Assert.assertEquals(3, trainingDefinition1.getAuthors().size());
+        Assert.assertTrue(trainingDefinition1.getAuthors().containsAll(Set.of(author1, author2, author3)));
+    }
+
+    @Test
+    public void editAuthorsAddUserRefNotInDB() {
+        trainingDefinition1.removeAuthorsByUserRefIds(Set.of(author2.getUserRefId()));
+        PageResultResource.Pagination pagination = new PageResultResource.Pagination(0,1,999,1,1);
+        given(trainingDefinitionService.findById(trainingDefinition1.getId())).willReturn(trainingDefinition1);
+        given(securityService.getUserRefIdFromUserAndGroup()).willReturn(author1.getUserRefId());
+        given(userService.getUsersRefDTOByGivenUserIds(Set.of(author3.getUserRefId(), author2.getUserRefId()), PageRequest.of(0,999), null, null)).willReturn(new PageResultResource<>(List.of(authorDTO3, authorDTO2), pagination));
+        given(userService.getUserByUserRefId(author3.getUserRefId())).willReturn(author3);
+        willThrow(ServiceLayerException.class).given(userService).getUserByUserRefId(author2.getUserRefId());
+        given(userService.createUserRef(any(UserRef.class))).willReturn(author2);
+        trainingDefinitionFacade.editAuthors(trainingDefinition1.getId(), new HashSet<>(Set.of(author2.getUserRefId(), author3.getUserRefId())), new HashSet<>());
+        Assert.assertEquals(3, trainingDefinition1.getAuthors().size());
+        Assert.assertTrue(trainingDefinition1.getAuthors().containsAll(Set.of(author1, author2, author3)));
+    }
+
+    private UserRefDTO createUserRefDTO(Long userRefId, String fullName, String familyName, String givenName, String login, String iss, byte[] picture) {
+        UserRefDTO userRefDTO = new UserRefDTO();
+        userRefDTO.setUserRefId(userRefId);
+        userRefDTO.setUserRefFullName(fullName);
+        userRefDTO.setUserRefFamilyName(familyName);
+        userRefDTO.setUserRefGivenName(givenName);
+        userRefDTO.setUserRefLogin(login);
+        userRefDTO.setIss(iss);
+        userRefDTO.setPicture(picture);
+        return userRefDTO;
     }
 
     private void deepEquals(TrainingDefinition expected, TrainingDefinitionDTO actual) {

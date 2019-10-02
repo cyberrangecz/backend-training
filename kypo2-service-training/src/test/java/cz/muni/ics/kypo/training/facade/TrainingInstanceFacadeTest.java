@@ -2,18 +2,24 @@ package cz.muni.ics.kypo.training.facade;
 
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.PathBuilder;
+import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
 import cz.muni.ics.kypo.training.api.responses.PageResultResource;
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceCreateDTO;
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceDTO;
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceUpdateDTO;
+import cz.muni.ics.kypo.training.api.enums.RoleType;
+import cz.muni.ics.kypo.training.exceptions.ErrorCode;
 import cz.muni.ics.kypo.training.exceptions.FacadeLayerException;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.mapping.mapstruct.*;
 import cz.muni.ics.kypo.training.persistence.model.TrainingDefinition;
 import cz.muni.ics.kypo.training.persistence.model.TrainingInstance;
+import cz.muni.ics.kypo.training.persistence.model.UserRef;
 import cz.muni.ics.kypo.training.service.TrainingDefinitionService;
 import cz.muni.ics.kypo.training.service.TrainingInstanceService;
+import cz.muni.ics.kypo.training.service.UserService;
 import cz.muni.ics.kypo.training.service.impl.SecurityService;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -36,6 +42,7 @@ import java.util.List;
 import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.BDDMockito.*;
 
 @RunWith(SpringRunner.class)
@@ -62,21 +69,44 @@ public class TrainingInstanceFacadeTest {
     private TrainingDefinitionService trainingDefinitionService;
     @Mock
     private SecurityService securityService;
+    @Mock
+    private UserService userService;
 
     private TrainingInstance trainingInstance1, trainingInstance2;
     private TrainingInstanceCreateDTO trainingInstanceCreate;
     private TrainingInstanceUpdateDTO trainingInstanceUpdate;
+    private UserRef organizer1, organizer2, organizer3;
+    private UserRefDTO organizerDTO1, organizerDTO2, organizerDTO3;
+    private Pageable pageable;
+    private PageResultResource.Pagination pagination;
 
     @Before
     public void init() {
         MockitoAnnotations.initMocks(this);
-        trainingInstanceFacade = new TrainingInstanceFacadeImpl(trainingInstanceService, trainingDefinitionService, trainingInstanceMapper, trainingRunMapper);
+        trainingInstanceFacade = new TrainingInstanceFacadeImpl(trainingInstanceService, trainingDefinitionService, trainingInstanceMapper, trainingRunMapper, userService, securityService);
+
+        pageable = PageRequest.of(0,5);
+
+        organizer1 = new UserRef();
+        organizer1.setId(1L);
+        organizer1.setUserRefId(10L);
+        organizer2 = new UserRef();
+        organizer2.setId(2L);
+        organizer2.setUserRefId(20L);
+        organizer3 = new UserRef();
+        organizer3.setId(3L);
+        organizer3.setUserRefId(30L);
+
+        organizerDTO1 = createUserRefDTO(10L, "Bc. Dominik Meškal", "Meškal", "Dominik", "445533@muni.cz", "https://oidc.muni.cz/oidc", null);
+        organizerDTO2 = createUserRefDTO(20L, "Bc. Boris Makal", "Makal", "Boris", "772211@muni.cz", "https://oidc.muni.cz/oidc", null);
+        organizerDTO3 = createUserRefDTO(30L, "Ing. Pavel Flákal", "Flákal", "Pavel", "221133@muni.cz", "https://oidc.muni.cz/oidc", null);
 
         trainingInstance1 = new TrainingInstance();
         trainingInstance1.setId(1L);
         trainingInstance1.setTitle("test");
         trainingInstance1.setPoolId(1L);
         trainingInstance1.setPoolSize(2);
+        trainingInstance1.setOrganizers(new HashSet<>(Set.of(organizer1, organizer2)));
 
         trainingInstance2 = new TrainingInstance();
         trainingInstance2.setId(2L);
@@ -84,7 +114,6 @@ public class TrainingInstanceFacadeTest {
 
         trainingInstanceCreate = new TrainingInstanceCreateDTO();
         trainingInstanceCreate.setTitle("test");
-        trainingInstanceCreate.setOrganizersRefIds(new HashSet<>());
         trainingInstanceCreate.setTrainingDefinitionId(1L);
 
         trainingInstanceUpdate = new TrainingInstanceUpdateDTO();
@@ -95,7 +124,6 @@ public class TrainingInstanceFacadeTest {
         trainingInstanceUpdate.setEndTime(LocalDateTime.now());
         trainingInstanceUpdate.setStartTime(LocalDateTime.now());
         trainingInstanceUpdate.setTrainingDefinitionId(1L);
-        trainingInstanceUpdate.setOrganizersRefIds(new HashSet<>());
     }
 
     @Test
@@ -139,6 +167,7 @@ public class TrainingInstanceFacadeTest {
         given(trainingInstanceService.create(any(TrainingInstance.class))).willReturn(trainingInstance1);
         given(trainingDefinitionService.findById(any(Long.class))).willReturn(new TrainingDefinition());
         given(trainingInstanceService.findUserRefsByUserRefIds(any(Set.class))).willReturn(new HashSet());
+        given(userService.getUsersRefDTOByGivenUserIds(anySet(), any(Pageable.class), anyString(), anyString())).willReturn(new PageResultResource<>(new ArrayList<>()));
         trainingInstanceFacade.create(trainingInstanceCreate);
         then(trainingInstanceService).should().create(any(TrainingInstance.class));
     }
@@ -151,6 +180,7 @@ public class TrainingInstanceFacadeTest {
 
     @Test
     public void updateTrainingInstance() {
+        given(userService.getUsersRefDTOByGivenUserIds(anySet(), any(Pageable.class), anyString(), anyString())).willReturn(new PageResultResource<>(new ArrayList<>()));
         trainingInstanceFacade.update(trainingInstanceUpdate);
         then(trainingInstanceService).should().update(any(TrainingInstance.class));
     }
@@ -164,6 +194,7 @@ public class TrainingInstanceFacadeTest {
     @Test
     public void updateTrainingInstanceWithFacadeLayerException() {
         thrown.expect(FacadeLayerException.class);
+        given(userService.getUsersRefDTOByGivenUserIds(anySet(), any(Pageable.class), anyString(), anyString())).willReturn(new PageResultResource<>(new ArrayList<>()));
         willThrow(ServiceLayerException.class).given(trainingInstanceService).update(any(TrainingInstance.class));
         trainingInstanceFacade.update(trainingInstanceUpdate);
     }
@@ -224,9 +255,179 @@ public class TrainingInstanceFacadeTest {
         trainingInstanceFacade.deleteSandboxes(trainingInstance1.getId(), ids);
     }
 
+    @Test
+    public void getOrganizersOfTrainingInstance() {
+        pagination = new PageResultResource.Pagination(0,2,5,2,1);
+        given(trainingInstanceService.findById(trainingInstance1.getId())).willReturn(trainingInstance1);
+        given(userService.getUsersRefDTOByGivenUserIds(Set.of(organizer1.getUserRefId(), organizer2.getUserRefId()), pageable, null, null)).willReturn(
+                new PageResultResource<>(List.of(organizerDTO1, organizerDTO2), pagination));
+        PageResultResource<UserRefDTO> organizersOfTrainingInstance = trainingInstanceFacade.getOrganizersOfTrainingInstance(trainingInstance1.getId(), pageable, null, null);
+        assertEquals(pagination.toString(), organizersOfTrainingInstance.getPagination().toString());
+        assertTrue(organizersOfTrainingInstance.getContent().containsAll(Set.of(organizerDTO1, organizerDTO2)));
+    }
+
+    @Test
+    public void getOrganizersOfTrainingInstanceTrainingInstanceNotFound() {
+        willThrow(new ServiceLayerException("Training instance not found.", ErrorCode.RESOURCE_NOT_FOUND)).given(trainingInstanceService).findById(trainingInstance1.getId());
+        thrown.expect(FacadeLayerException.class);
+        thrown.expectMessage("Training instance not found.");
+        trainingInstanceFacade.getOrganizersOfTrainingInstance(trainingInstance1.getId(), pageable, null, null);
+    }
+
+    @Test
+    public void getOrganizersOfTrainingInstanceTrainingInstanceUserServiceError() {
+        given(trainingInstanceService.findById(trainingInstance1.getId())).willReturn(trainingInstance1);
+        willThrow(new ServiceLayerException("Error when calling User And Group endpoint.", ErrorCode.UNEXPECTED_ERROR)).given(userService)
+                .getUsersRefDTOByGivenUserIds(new HashSet<>(Set.of(organizer1.getUserRefId(), organizer2.getUserRefId())), pageable, null, null);
+        thrown.expect(FacadeLayerException.class);
+        thrown.expectMessage("Error when calling User And Group endpoint.");
+        trainingInstanceFacade.getOrganizersOfTrainingInstance(trainingInstance1.getId(), pageable, null, null);
+    }
+
+    @Test
+    public void getOrganizersNotInGivenTrainingInstance() {
+        pagination = new PageResultResource.Pagination(0,1,1,1,1);
+        given(trainingInstanceService.findById(trainingInstance1.getId())).willReturn(trainingInstance1);
+        given(userService.getUsersByGivenRoleAndNotWithGivenIds(RoleType.ROLE_TRAINING_ORGANIZER, Set.of(organizer1.getUserRefId(), organizer2.getUserRefId()), pageable, null, null)).willReturn(
+                new PageResultResource<>(List.of(organizerDTO3), pagination));
+        PageResultResource<UserRefDTO> organizersNotInTrainingInstance = trainingInstanceFacade.getOrganizersNotInGivenTrainingInstance(trainingInstance1.getId(), pageable, null, null);
+        assertEquals(pagination.toString(), organizersNotInTrainingInstance.getPagination().toString());
+        assertTrue(organizersNotInTrainingInstance.getContent().contains(organizerDTO3));
+    }
+
+    @Test
+    public void getOrganizersNotInGivenTrainingInstanceTrainingInstanceNotFound() {
+        willThrow(new ServiceLayerException("Training instance not found.", ErrorCode.RESOURCE_NOT_FOUND)).given(trainingInstanceService).findById(trainingInstance1.getId());
+        thrown.expect(FacadeLayerException.class);
+        thrown.expectMessage("Training instance not found.");
+        trainingInstanceFacade.getOrganizersNotInGivenTrainingInstance(trainingInstance1.getId(), pageable, null, null);
+    }
+
+    @Test
+    public void getOrganizersNotInGivenTrainingInstanceUserServiceError() {
+        given(trainingInstanceService.findById(trainingInstance1.getId())).willReturn(trainingInstance1);
+        willThrow(new ServiceLayerException("Error when calling User And Group endpoint.", ErrorCode.UNEXPECTED_ERROR)).given(userService)
+                .getUsersByGivenRoleAndNotWithGivenIds(RoleType.ROLE_TRAINING_ORGANIZER,new HashSet<>(Set.of(organizer1.getUserRefId(), organizer2.getUserRefId())), pageable, null, null);
+        thrown.expect(FacadeLayerException.class);
+        thrown.expectMessage("Error when calling User And Group endpoint.");
+        trainingInstanceFacade.getOrganizersNotInGivenTrainingInstance(trainingInstance1.getId(), pageable, null, null);
+    }
+
+    @Test
+    public void editOrganizers() {
+        PageResultResource.Pagination pagination = new PageResultResource.Pagination(0,1,999,1,1);
+        given(trainingInstanceService.findById(trainingInstance1.getId())).willReturn(trainingInstance1);
+        given(securityService.getUserRefIdFromUserAndGroup()).willReturn(organizer1.getUserRefId());
+        given(userService.getUsersRefDTOByGivenUserIds(Set.of(organizer3.getUserRefId()), PageRequest.of(0,999), null, null)).willReturn(new PageResultResource<>(List.of(organizerDTO3), pagination));
+        given(userService.getUserByUserRefId(organizer3.getUserRefId())).willReturn(organizer3);
+        trainingInstanceFacade.editOrganizers(trainingInstance1.getId(), new HashSet<>(Set.of(organizer3.getUserRefId())), new HashSet<>(Set.of(organizer2.getUserRefId())));
+        Assert.assertEquals(2, trainingInstance1.getOrganizers().size());
+        Assert.assertTrue(trainingInstance1.getOrganizers().containsAll(Set.of(organizer1, organizer3)));
+    }
+
+    @Test
+    public void editOrganizersRemoveLoggedInOrganizer() {
+        PageResultResource.Pagination pagination = new PageResultResource.Pagination(0,1,999,1,1);
+        given(trainingInstanceService.findById(trainingInstance1.getId())).willReturn(trainingInstance1);
+        given(securityService.getUserRefIdFromUserAndGroup()).willReturn(organizer1.getUserRefId());
+        given(userService.getUsersRefDTOByGivenUserIds(Set.of(organizer3.getUserRefId()), PageRequest.of(0,999), null, null)).willReturn(new PageResultResource<>(List.of(organizerDTO3), pagination));
+        given(userService.getUserByUserRefId(organizer3.getUserRefId())).willReturn(organizer3);
+        trainingInstanceFacade.editOrganizers(trainingInstance1.getId(), new HashSet<>(Set.of(organizer3.getUserRefId())), new HashSet<>(Set.of(organizer1.getUserRefId())));
+        Assert.assertEquals(3, trainingInstance1.getOrganizers().size());
+        Assert.assertTrue(trainingInstance1.getOrganizers().containsAll(Set.of(organizer1, organizer2, organizer3)));
+    }
+
+    @Test
+    public void editOrganizersConcurrentlyRemoveAndAddOrganizerWhoIsNotInTrainingInstance() {
+        PageResultResource.Pagination pagination = new PageResultResource.Pagination(0,1,999,1,1);
+        given(trainingInstanceService.findById(trainingInstance1.getId())).willReturn(trainingInstance1);
+        given(securityService.getUserRefIdFromUserAndGroup()).willReturn(organizer1.getUserRefId());
+        given(userService.getUsersRefDTOByGivenUserIds(Set.of(organizer3.getUserRefId()), PageRequest.of(0,999), null, null)).willReturn(new PageResultResource<>(List.of(organizerDTO3), pagination));
+        given(userService.getUserByUserRefId(organizer3.getUserRefId())).willReturn(organizer3);
+        trainingInstanceFacade.editOrganizers(trainingInstance1.getId(), new HashSet<>(Set.of(organizer3.getUserRefId())), new HashSet<>(Set.of(organizer3.getUserRefId())));
+        Assert.assertEquals(3, trainingInstance1.getOrganizers().size());
+        Assert.assertTrue(trainingInstance1.getOrganizers().containsAll(Set.of(organizer1, organizer2, organizer3)));
+    }
+
+    @Test
+    public void editOrganizersConcurrentlyRemoveAndAddOrganizerWhoIsInTrainingInstance() {
+        PageResultResource.Pagination pagination = new PageResultResource.Pagination(0,1,999,1,1);
+        given(trainingInstanceService.findById(trainingInstance1.getId())).willReturn(trainingInstance1);
+        given(securityService.getUserRefIdFromUserAndGroup()).willReturn(organizer1.getUserRefId());
+        given(userService.getUsersRefDTOByGivenUserIds(Set.of(organizer2.getUserRefId()), PageRequest.of(0,999), null, null)).willReturn(new PageResultResource<>(List.of(organizerDTO2), pagination));
+        given(userService.getUserByUserRefId(organizer2.getUserRefId())).willReturn(organizer2);
+        trainingInstanceFacade.editOrganizers(trainingInstance1.getId(), new HashSet<>(Set.of(organizer2.getUserRefId())), new HashSet<>(Set.of(organizer2.getUserRefId())));
+        Assert.assertEquals(2, trainingInstance1.getOrganizers().size());
+        Assert.assertTrue(trainingInstance1.getOrganizers().containsAll(Set.of(organizer1, organizer2)));
+    }
+
+    @Test
+    public void editOrganizersWithEmptySetOfRemovalAndAdditionSets() {
+        PageResultResource.Pagination pagination = new PageResultResource.Pagination(0,1,999,1,1);
+        given(trainingInstanceService.findById(trainingInstance1.getId())).willReturn(trainingInstance1);
+        given(securityService.getUserRefIdFromUserAndGroup()).willReturn(organizer1.getUserRefId());
+        given(userService.getUsersRefDTOByGivenUserIds(Set.of(organizer3.getUserRefId()), PageRequest.of(0,999), null, null)).willReturn(new PageResultResource<>(List.of(organizerDTO3), pagination));
+        given(userService.getUserByUserRefId(organizer3.getUserRefId())).willReturn(organizer3);
+        trainingInstanceFacade.editOrganizers(trainingInstance1.getId(), new HashSet<>(), new HashSet<>());
+        Assert.assertEquals(2, trainingInstance1.getOrganizers().size());
+        Assert.assertTrue(trainingInstance1.getOrganizers().containsAll(Set.of(organizer1, organizer2)));
+    }
+
+    @Test
+    public void editOrganizersRemove() {
+        PageResultResource.Pagination pagination = new PageResultResource.Pagination(0,1,999,1,1);
+        given(trainingInstanceService.findById(trainingInstance1.getId())).willReturn(trainingInstance1);
+        given(securityService.getUserRefIdFromUserAndGroup()).willReturn(organizer1.getUserRefId());
+        trainingInstanceFacade.editOrganizers(trainingInstance1.getId(), new HashSet<>(), new HashSet<>(Set.of(organizer1.getUserRefId(), organizer2.getUserRefId())));
+        Assert.assertEquals(1, trainingInstance1.getOrganizers().size());
+        Assert.assertTrue(trainingInstance1.getOrganizers().contains(organizer1));
+    }
+
+    @Test
+    public void editOrganizersAdd() {
+        trainingInstance1.removeOrganizersByUserRefIds(Set.of(organizer2.getUserRefId()));
+        PageResultResource.Pagination pagination = new PageResultResource.Pagination(0,1,999,1,1);
+        given(trainingInstanceService.findById(trainingInstance1.getId())).willReturn(trainingInstance1);
+        given(securityService.getUserRefIdFromUserAndGroup()).willReturn(organizer1.getUserRefId());
+        given(userService.getUsersRefDTOByGivenUserIds(Set.of(organizer3.getUserRefId(), organizer2.getUserRefId()), PageRequest.of(0,999), null, null)).willReturn(new PageResultResource<>(List.of(organizerDTO3, organizerDTO2), pagination));
+        given(userService.getUserByUserRefId(organizer3.getUserRefId())).willReturn(organizer3);
+        given(userService.getUserByUserRefId(organizer2.getUserRefId())).willReturn(organizer2);
+        trainingInstanceFacade.editOrganizers(trainingInstance1.getId(), new HashSet<>(Set.of(organizer2.getUserRefId(), organizer3.getUserRefId())), new HashSet<>());
+        Assert.assertEquals(3, trainingInstance1.getOrganizers().size());
+        Assert.assertTrue(trainingInstance1.getOrganizers().containsAll(Set.of(organizer1, organizer2, organizer3)));
+    }
+
+    @Test
+    public void editOrganizersAddUserRefNotInDB() {
+        trainingInstance1.removeOrganizersByUserRefIds(Set.of(organizer2.getUserRefId()));
+        PageResultResource.Pagination pagination = new PageResultResource.Pagination(0,1,999,1,1);
+        given(trainingInstanceService.findById(trainingInstance1.getId())).willReturn(trainingInstance1);
+        given(securityService.getUserRefIdFromUserAndGroup()).willReturn(organizer1.getUserRefId());
+        given(userService.getUsersRefDTOByGivenUserIds(Set.of(organizer3.getUserRefId(), organizer2.getUserRefId()), PageRequest.of(0,999), null, null)).willReturn(new PageResultResource<>(List.of(organizerDTO3, organizerDTO2), pagination));
+        given(userService.getUserByUserRefId(organizer3.getUserRefId())).willReturn(organizer3);
+        willThrow(ServiceLayerException.class).given(userService).getUserByUserRefId(organizer2.getUserRefId());
+        given(userService.createUserRef(any(UserRef.class))).willReturn(organizer2);
+        trainingInstanceFacade.editOrganizers(trainingInstance1.getId(), new HashSet<>(Set.of(organizer2.getUserRefId(), organizer3.getUserRefId())), new HashSet<>());
+        Assert.assertEquals(3, trainingInstance1.getOrganizers().size());
+        Assert.assertTrue(trainingInstance1.getOrganizers().containsAll(Set.of(organizer1, organizer2, organizer3)));
+    }
+
+
     private void deepEquals(TrainingInstance expected, TrainingInstanceDTO actual) {
         assertEquals(expected.getId(), actual.getId());
         assertEquals(expected.getTitle(), actual.getTitle());
+    }
+
+    private UserRefDTO createUserRefDTO(Long userRefId, String fullName, String familyName, String givenName, String login, String iss, byte[] picture) {
+        UserRefDTO userRefDTO = new UserRefDTO();
+        userRefDTO.setUserRefId(userRefId);
+        userRefDTO.setUserRefFullName(fullName);
+        userRefDTO.setUserRefFamilyName(familyName);
+        userRefDTO.setUserRefGivenName(givenName);
+        userRefDTO.setUserRefLogin(login);
+        userRefDTO.setIss(iss);
+        userRefDTO.setPicture(picture);
+        return userRefDTO;
     }
 
 }

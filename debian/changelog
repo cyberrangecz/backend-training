@@ -16,13 +16,13 @@ kypo2-training (0.0.0) stable; urgency=medium
     assigned to it
   * [09c9b0df] Users in view group can see and test unreleased training
     definitions
-  * [8656fd96] Add full name of authors and designers when create and
+  * [8656fd96] Add full name of authorsRefIds and designers when create and
     update training definition
   * [3cdff3af] Move integration tests to current project version
   * [121fc7a9] Edit training instance does not return generated access
     token
   * [3d5cdb44] Add full name of users to dtos when obtaining designers
-    or organizers
+    or organizersRefIds
   * [3cae0b30] Simplify preauthorize annotations in service methods
   * [1e823a1b] Reference to training definition is not saved when
     editing training instance
@@ -48,7 +48,7 @@ kypo2-training (0.0.0) stable; urgency=medium
     yaml file
   * [bdb1ea92] Repairing test data and endpoints for calling openstack
   * [fe08dc48] Change data integration of some attributes and test data
-  * [773bc32b] New endpoints for getting organizers and designers
+  * [773bc32b] New endpoints for getting organizersRefIds and designers
   * [143a6906] Managing sandboxes by calling open stack
   * [dd200b0f] Integrate nexus repository to the training project
   * [28f2bd27] Integration of view group for training definition

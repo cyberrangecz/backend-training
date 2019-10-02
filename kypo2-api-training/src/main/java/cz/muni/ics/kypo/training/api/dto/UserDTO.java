@@ -67,5 +67,14 @@ public class UserDTO {
         return Objects.hash(getId(), getLogin(), getFullName(), getGivenName(), getFamilyName());
     }
 
-
+    @Override
+    public String toString() {
+        return "UserDTO{" +
+                "id=" + id +
+                ", login='" + login + '\'' +
+                ", fullName='" + fullName + '\'' +
+                ", givenName='" + givenName + '\'' +
+                ", familyName='" + familyName + '\'' +
+                '}';
+    }
 }

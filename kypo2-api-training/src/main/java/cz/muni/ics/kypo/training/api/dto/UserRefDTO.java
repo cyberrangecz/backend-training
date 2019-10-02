@@ -1,5 +1,6 @@
 package cz.muni.ics.kypo.training.api.dto;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModelProperty;
 
@@ -12,7 +13,6 @@ import java.util.Objects;
  */
 public class UserRefDTO {
 
-    @JsonProperty("user_ref_id")
     private Long userRefId;
     @JsonProperty("login")
     private String userRefLogin;
@@ -23,6 +23,7 @@ public class UserRefDTO {
     @JsonProperty("family_name")
     private String userRefFamilyName;
     private String iss;
+    private byte[] picture;
 
     /**
      * Gets user ref login.
@@ -68,6 +69,7 @@ public class UserRefDTO {
      * @return the user ref id
      */
     @ApiModelProperty(value = "Reference to user in another microservice and get his id", example = "1")
+    @JsonProperty("user_ref_id")
     public Long getUserRefId() {
         return userRefId;
     }
@@ -77,6 +79,7 @@ public class UserRefDTO {
      *
      * @param userRefId the user ref id
      */
+    @JsonAlias({"id", "user_ref_id"})
     public void setUserRefId(Long userRefId) {
         this.userRefId = userRefId;
     }
@@ -137,6 +140,26 @@ public class UserRefDTO {
     public void setUserRefFamilyName(String userRefFamilyName) {
         this.userRefFamilyName = userRefFamilyName;
     }
+
+    /**
+     * Gets the identicon of the user encoded in base64.
+     *
+     * @return identicon of the user.
+     */
+    @ApiModelProperty(value = "Identicon of a user.", example = "iVBORw0KGgoAAAANSUhEUgAAAEsAAABLCAYAAAA4TnrqAAACIUlEQVR4Xu3YsY0dSQxAQQUlpXT5Z3CS/YgxSrQa4gLlEOBb9pj/x6//fv7/t/78/XhN3yBWyz3kBX2DWC33kBf0DWK13ENe0DeI1XIPeUHfIFbLPeQFfYNYLfeQF/QNYrXcQ17QN4jVcg95Qd8gVss95AV9g1gt95AX9A1itdxDXtA3iNVyD3lB3yBWyz3kBX2DWC33kBf0DWLERGOiLdGWaEuMgeghoi3RlmhLjIHoIaIt0ZZoS4yB6CGiLdGWaEuMgeghoi3RlmhLjIHoIaIt0ZZoS4yB6CGiLdGWaEuMgeghoi3RlmhLjIHoIaIt0ZZoS4yB6CGiLdGWaEuMgeghoi3RlmhLjIHoIaIt0ZZoS4yB6CGiLdGWaEuMgeghoi3RlmhLjIHoIaIt0ZZoS6z+8b/mPha4jwXuY4H7WOA+FriPBe5jgftY4D4WuI8F7mOB+1jgPha4jwXGbzbn2xicb2Nwvo3B+TYG59sYnG9jcL6Nwfk2BufbGJxvY3C+jcH5Ngbn2xicb2Nwvq1+z2pMtCXaEm2J1XIPEW2JtkRbYrXcQ0Rboi3Rllgt9xDRlmhLtCVWyz1EtCXaEm2J1XIPEW2JtkRbYrXcQ0Rboi3Rllgt9xDRlmhLtCVWyz1EtCXaEm2J1XIPEW2JtkRbYrXcQ0Rboi3Rllgt9xDRlmhLtCVWyz1EtCXaEm2J1XIPEW2JtkRbYrXcQ0Rboi3RlvgNt34wfeJElG8AAAAASUVORK5CYII=")
+    public byte[] getPicture() {
+        return picture;
+    }
+
+    /**
+     * Sets the identicon of the user encoded in base64.
+     *
+     * @param picture encoded identicon of the user.
+     */
+    public void setPicture(byte[] picture) {
+        this.picture = picture;
+    }
+
 
     @Override
     public String toString() {

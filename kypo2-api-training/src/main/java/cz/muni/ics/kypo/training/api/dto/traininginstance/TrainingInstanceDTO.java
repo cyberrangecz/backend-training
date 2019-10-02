@@ -1,5 +1,6 @@
 package cz.muni.ics.kypo.training.api.dto.traininginstance;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionByIdDTO;
@@ -29,7 +30,6 @@ public class TrainingInstanceDTO {
     private String title;
     private int poolSize;
     private TrainingDefinitionByIdDTO trainingDefinition;
-    private Set<UserRefDTO> organizers;
     private String accessToken;
     private Long poolId;
     private List<Long> sandboxesWithTrainingRun = new ArrayList<>();
@@ -149,25 +149,6 @@ public class TrainingInstanceDTO {
     }
 
     /**
-     * Gets organizers.
-     *
-     * @return the set of {@link UserRefDTO}
-     */
-    @ApiModelProperty(value = "Reference to organizers which organize training instance.")
-    public Set<UserRefDTO> getOrganizers() {
-        return organizers;
-    }
-
-    /**
-     * Sets organizers.
-     *
-     * @param organizers the set of {@link UserRefDTO}
-     */
-    public void setOrganizers(Set<UserRefDTO> organizers) {
-        this.organizers = organizers;
-    }
-
-    /**
      * Gets access token.
      *
      * @return the access token
@@ -225,7 +206,7 @@ public class TrainingInstanceDTO {
 
     @Override public String toString() {
         return "TrainingInstanceDTO{" + "id=" + id + ", startTime=" + startTime + ", endTime=" + endTime + ", title='" + title + '\''
-            + ", poolSize=" + poolSize + ", trainingDefinition=" + trainingDefinition + ", organizers=" + organizers + ", accessToken='"
+            + ", poolSize=" + poolSize + ", trainingDefinition=" + trainingDefinition + ", accessToken='"
             + accessToken + '\'' + ", poolId=" + poolId + '}';
     }
 

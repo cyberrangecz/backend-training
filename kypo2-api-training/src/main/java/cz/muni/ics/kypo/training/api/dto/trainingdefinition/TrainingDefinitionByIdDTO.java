@@ -2,7 +2,6 @@ package cz.muni.ics.kypo.training.api.dto.trainingdefinition;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import cz.muni.ics.kypo.training.api.dto.AbstractLevelDTO;
-import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
 import cz.muni.ics.kypo.training.api.dto.betatestinggroup.BetaTestingGroupDTO;
 import cz.muni.ics.kypo.training.api.enums.TDState;
 import cz.muni.ics.kypo.training.converters.LocalDateTimeUTCSerializer;
@@ -26,8 +25,7 @@ public class TrainingDefinitionByIdDTO {
     private String[] prerequisities;
     private String[] outcomes;
     private TDState state;
-    private Set<UserRefDTO> authors = new HashSet<>();
-    private BetaTestingGroupDTO betaTestingGroup;
+    private Long betaTestingGroupId;
     private Long sandboxDefinitionRefId;
     private List<AbstractLevelDTO> levels = new ArrayList<>();
     private boolean showStepperBar;
@@ -151,41 +149,22 @@ public class TrainingDefinitionByIdDTO {
     }
 
     /**
-     * Gets authors.
+     * Gets beta testing group ID.
      *
-     * @return the set of {@link UserRefDTO}
-     */
-    @ApiModelProperty(value = "References to the authors of the training definition.")
-    public Set<UserRefDTO> getAuthors() {
-        return authors;
-    }
-
-    /**
-     * Sets authors.
-     *
-     * @param authors the set of {@link UserRefDTO}
-     */
-    public void setAuthors(Set<UserRefDTO> authors) {
-        this.authors = authors;
-    }
-
-    /**
-     * Gets beta testing group.
-     *
-     * @return the {@link BetaTestingGroupDTO}
+     * @return the ID of the beta testing group
      */
     @ApiModelProperty(value = "Group of organizers who is allowed to see the training definition.")
-    public BetaTestingGroupDTO getBetaTestingGroup() {
-        return betaTestingGroup;
+    public Long getBetaTestingGroupId() {
+        return betaTestingGroupId;
     }
 
     /**
-     * Sets beta testing group.
+     * Sets beta testing group ID.
      *
-     * @param betaTestingGroup the {@link BetaTestingGroupDTO}
+     * @param betaTestingGroupId the ID of the beta testing group
      */
-    public void setBetaTestingGroup(BetaTestingGroupDTO betaTestingGroup) {
-        this.betaTestingGroup = betaTestingGroup;
+    public void setBetaTestingGroupId(Long betaTestingGroupId) {
+        this.betaTestingGroupId = betaTestingGroupId;
     }
 
     /**
@@ -304,7 +283,7 @@ public class TrainingDefinitionByIdDTO {
     @Override public String toString() {
         return "TrainingDefinitionByIdDTO{" + "id=" + id + ", title='" + title + '\'' + ", description='" + description + '\''
             + ", prerequisities=" + Arrays.toString(prerequisities) + ", outcomes=" + Arrays.toString(outcomes) + ", state=" + state
-            + ", authors=" + authors + ", betaTestingGroup=" + betaTestingGroup + ", sandboxDefinitionRefId=" + sandboxDefinitionRefId
+            + ", betaTestingGroupId=" + betaTestingGroupId + ", sandboxDefinitionRefId=" + sandboxDefinitionRefId
             + ", levels=" + levels + ", showStepperBar=" + showStepperBar + ", canBeArchived=" + canBeArchived + ", estimatedDuration="
             + estimatedDuration + ", lastEdited=" + lastEdited + '}';
     }

@@ -4,8 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.querydsl.core.types.Predicate;
+import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
 import cz.muni.ics.kypo.training.api.responses.PageResultResource;
-import cz.muni.ics.kypo.training.api.dto.UserInfoDTO;
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceCreateDTO;
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceDTO;
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceUpdateDTO;
@@ -16,6 +16,8 @@ import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.facade.TrainingInstanceFacade;
 import cz.muni.ics.kypo.training.mapping.mapstruct.*;
 import cz.muni.ics.kypo.training.persistence.model.TrainingInstance;
+import cz.muni.ics.kypo.training.persistence.model.UserRef;
+import cz.muni.ics.kypo.training.rest.exceptions.InternalServerErrorException;
 import cz.muni.ics.kypo.training.rest.exceptions.ResourceNotFoundException;
 import org.junit.Before;
 import org.junit.Test;
@@ -27,6 +29,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.querydsl.SimpleEntityPathResolver;
 import org.springframework.data.querydsl.binding.QuerydslBindingsFactory;
@@ -74,13 +77,17 @@ public class TrainingInstancesRestControllerTest {
 
     @MockBean
     private ObjectMapper objectMapper;
+    private ObjectMapper testObjectMapper;
 
     private TrainingInstance trainingInstance1, trainingInstance2;
 
     private TrainingInstanceDTO trainingInstance1DTO, trainingInstance2DTO;
     private TrainingInstanceCreateDTO trainingInstanceCreateDTO;
     private TrainingInstanceUpdateDTO trainingInstanceUpdateDTO;
-    private UserInfoDTO userInfoDTO1;
+    private UserRefDTO organizerDTO1, organizerDTO2, organizerDTO3;
+    private UserRef participant1;
+    private Pageable pageable;
+    private PageResultResource.Pagination pagination;
 
     private Page p;
 
@@ -95,11 +102,11 @@ public class TrainingInstancesRestControllerTest {
                         new QuerydslPredicateArgumentResolver(new QuerydslBindingsFactory(SimpleEntityPathResolver.INSTANCE), Optional.empty()))
                 .setMessageConverters(new MappingJackson2HttpMessageConverter()).build();
 
-        userInfoDTO1 = new UserInfoDTO();
-        userInfoDTO1.setLogin("441048@mail.muni.cz");
-        userInfoDTO1.setFullName("Mgr. Ing. Pavel Šeda");
-        userInfoDTO1.setIss("https://oidc.muni.cz");
-        userInfoDTO1.setUserRefId(1000L);
+        pageable = PageRequest.of(0,5);
+
+        organizerDTO1 = createUserRefDTO(10L, "Bc. Dominik Meškal", "Meškal", "Dominik", "445533@muni.cz", "https://oidc.muni.cz/oidc", null);
+        organizerDTO2 = createUserRefDTO(20L, "Bc. Boris Makal", "Makal", "Boris", "772211@muni.cz", "https://oidc.muni.cz/oidc", null);
+        organizerDTO3 = createUserRefDTO(30L, "Ing. Pavel Flákal", "Flákal", "Pavel", "221133@muni.cz", "https://oidc.muni.cz/oidc", null);
 
         trainingInstance1 = new TrainingInstance();
         trainingInstance1.setId(1L);
@@ -125,7 +132,6 @@ public class TrainingInstancesRestControllerTest {
         trainingInstanceCreateDTO.setEndTime(endTime);
         trainingInstanceCreateDTO.setAccessToken("pass");
         trainingInstanceCreateDTO.setPoolSize(20);
-        trainingInstanceCreateDTO.setOrganizersRefIds(Set.of(userInfoDTO1.getUserRefId()));
         trainingInstanceCreateDTO.setTrainingDefinitionId(1L);
 
         trainingInstanceUpdateDTO = new TrainingInstanceUpdateDTO();
@@ -136,7 +142,6 @@ public class TrainingInstancesRestControllerTest {
         trainingInstanceUpdateDTO.setPoolSize(5);
         //trainingInstanceUpdateDTO.setKeyword("pass-2586");
         trainingInstanceUpdateDTO.setTrainingDefinitionId(1L);
-        trainingInstanceUpdateDTO.setOrganizersRefIds(Set.of(userInfoDTO1.getUserRefId()));
 
         List<TrainingInstance> expected = new ArrayList<>();
         expected.add(trainingInstance1);
@@ -239,9 +244,103 @@ public class TrainingInstancesRestControllerTest {
         assertEquals(ResourceNotFoundException.class, exception.getClass());
     }
 
+    @Test
+    public void getOrganizersNotInGivenTrainingInstance() throws Exception {
+        PageResultResource<UserRefDTO> expectedUsersRefDTOs = new PageResultResource<>(List.of(organizerDTO1, organizerDTO2),pagination);
+        pagination = new PageResultResource.Pagination(0,2,5,2,1);
+        given(trainingInstanceFacade.getOrganizersNotInGivenTrainingInstance(eq(trainingInstance1.getId()), any(Pageable.class), eq(null), eq(null))).willReturn(expectedUsersRefDTOs);
+        given(objectMapper.writeValueAsString(any(Object.class))).willReturn(convertObjectToJsonBytes(expectedUsersRefDTOs));
+
+        MockHttpServletResponse result = mockMvc.perform(get("/training-instances/{id}/organizers-not-in-training-instance", trainingInstance1.getId()))
+                .andExpect(status().isOk())
+                .andReturn().getResponse();
+        assertEquals(convertObjectToJsonBytes(expectedUsersRefDTOs), convertJsonBytesToString(result.getContentAsString()));
+    }
+
+    @Test
+    public void getOrganizersNotInGivenTrainingInstanceNotFoundError() throws Exception {
+        willThrow(new FacadeLayerException(new ServiceLayerException("Training instance not found.",
+                ErrorCode.RESOURCE_NOT_FOUND))).given(trainingInstanceFacade).getOrganizersNotInGivenTrainingInstance(eq(trainingInstance1.getId()), any(Pageable.class), eq(null), eq(null));
+        Exception ex = mockMvc.perform(get("/training-instances/{id}/organizers-not-in-training-instance", trainingInstance1.getId()))
+                .andExpect(status().isNotFound())
+                .andReturn().getResolvedException();
+        assertEquals(ResourceNotFoundException.class, ex.getClass());
+        assertEquals("Training instance not found.", ex.getCause().getCause().getLocalizedMessage());
+    }
+
+    @Test
+    public void getOrganizersNotInGivenTrainingInstanceUserServiceError() throws Exception {
+        willThrow(new FacadeLayerException(new ServiceLayerException("Unexpected error when calling user and group service.",
+                ErrorCode.UNEXPECTED_ERROR))).given(trainingInstanceFacade).getOrganizersNotInGivenTrainingInstance(eq(trainingInstance1.getId()), any(Pageable.class), eq(null), eq(null));
+        Exception ex = mockMvc.perform(get("/training-instances/{id}/organizers-not-in-training-instance", trainingInstance1.getId()))
+                .andExpect(status().isInternalServerError())
+                .andReturn().getResolvedException();
+        assertEquals(InternalServerErrorException.class, ex.getClass());
+        assertEquals("Unexpected error when calling user and group service.", ex.getCause().getCause().getLocalizedMessage());
+    }
+
+
+    @Test
+    public void editOrganizers() throws Exception {
+        mockMvc.perform(put("/training-instances/{id}/organizers", trainingInstance1.getId())
+                .param("organizersAddition", "1,2,3")
+                .param("organizersRemoval", "3,4"))
+                .andExpect(status().isNoContent());
+        then(trainingInstanceFacade).should().editOrganizers(trainingInstance1.getId(), Set.of(1L,2L,3L), Set.of(3L,4L));
+    }
+
+    @Test
+    public void editOrganizersTrainingInstanceNotFound() throws Exception {
+        willThrow(new FacadeLayerException(new ServiceLayerException("Training instance not found.",
+                ErrorCode.RESOURCE_NOT_FOUND))).given(trainingInstanceFacade).editOrganizers(trainingInstance1.getId(), Set.of(1L,2L), Set.of(4L));
+        Exception ex = mockMvc.perform(put("/training-instances/{id}/organizers", trainingInstance1.getId())
+                .param("organizersAddition", "1,2")
+                .param("organizersRemoval", "4"))
+                .andExpect(status().isNotFound())
+                .andReturn().getResolvedException();
+        assertEquals(ResourceNotFoundException.class, ex.getClass());
+        assertEquals("Training instance not found.", ex.getCause().getCause().getLocalizedMessage());
+    }
+
+    @Test
+    public void editOrganizersUserAndGroupServiceError() throws Exception {
+        willThrow(new FacadeLayerException(new ServiceLayerException("Unexpected error when calling user and group service.",
+                ErrorCode.UNEXPECTED_ERROR))).given(trainingInstanceFacade).editOrganizers(trainingInstance1.getId(), Set.of(1L,2L), Set.of(4L));
+        Exception ex = mockMvc.perform(put("/training-instances/{id}/organizers", trainingInstance1.getId())
+                .param("organizersAddition", "1,2")
+                .param("organizersRemoval", "4"))
+                .andExpect(status().isInternalServerError())
+                .andReturn().getResolvedException();
+        assertEquals(InternalServerErrorException.class, ex.getClass());
+        assertEquals("Unexpected error when calling user and group service.", ex.getCause().getCause().getLocalizedMessage());
+    }
+
+
     private static String convertObjectToJsonBytes(Object object) throws IOException {
         ObjectMapper mapper = new ObjectMapper();
         mapper.registerModule(new JavaTimeModule().addDeserializer(LocalDateTime.class, new LocalDateTimeDeserializer()));
         return mapper.writeValueAsString(object);
+    }
+
+    private static String convertJsonBytesToString(String object) throws IOException {
+        ObjectMapper mapper = new ObjectMapper();
+        return mapper.readValue(object, String.class);
+    }
+
+    private <T> T convertResultStringToDTO(String resultAsString, Class<T> claas) throws Exception {
+        System.out.println(resultAsString);
+        return testObjectMapper.readValue(convertJsonBytesToString(resultAsString), claas);
+    }
+
+    private UserRefDTO createUserRefDTO(Long userRefId, String fullName, String familyName, String givenName, String login, String iss, byte[] picture) {
+        UserRefDTO userRefDTO = new UserRefDTO();
+        userRefDTO.setUserRefId(userRefId);
+        userRefDTO.setUserRefFullName(fullName);
+        userRefDTO.setUserRefFamilyName(familyName);
+        userRefDTO.setUserRefGivenName(givenName);
+        userRefDTO.setUserRefLogin(login);
+        userRefDTO.setIss(iss);
+        userRefDTO.setPicture(picture);
+        return userRefDTO;
     }
 }

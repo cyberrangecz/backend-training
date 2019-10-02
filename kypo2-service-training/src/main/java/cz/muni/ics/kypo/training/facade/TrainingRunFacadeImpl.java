@@ -6,6 +6,7 @@ import com.github.fge.jackson.JsonLoader;
 import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalRO;
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalWO;
+import cz.muni.ics.kypo.training.api.dto.*;
 import cz.muni.ics.kypo.training.api.responses.PageResultResource;
 import cz.muni.ics.kypo.training.api.dto.AbstractLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.BasicLevelInfoDTO;
@@ -24,6 +25,7 @@ import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.mapping.mapstruct.*;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.service.TrainingRunService;
+import cz.muni.ics.kypo.training.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,9 +36,7 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.time.Clock;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -58,17 +58,19 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
     private AssessmentLevelMapper assessmentLevelMapper;
     private InfoLevelMapper infoLevelMapper;
     private HintMapper hintMapper;
+    private UserService userService;
 
     @Autowired
     public TrainingRunFacadeImpl(TrainingRunService trainingRunService, TrainingRunMapper trainingRunMapper,
                                  GameLevelMapper gameLevelMapper, AssessmentLevelMapper assessmentLevelMapper,
-                                 InfoLevelMapper infoLevelMapper, HintMapper hintMapper) {
+                                 InfoLevelMapper infoLevelMapper, HintMapper hintMapper, UserService userService) {
         this.trainingRunService = trainingRunService;
         this.trainingRunMapper = trainingRunMapper;
         this.gameLevelMapper = gameLevelMapper;
         this.assessmentLevelMapper = assessmentLevelMapper;
         this.infoLevelMapper = infoLevelMapper;
         this.hintMapper = hintMapper;
+        this.userService = userService;
     }
 
     @Override
@@ -79,6 +81,7 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
             TrainingRunByIdDTO trainingRunByIdDTO = trainingRunMapper.mapToFindByIdDTO(trainingRun);
             trainingRunByIdDTO.setDefinitionId(trainingRun.getTrainingInstance().getTrainingDefinition().getId());
             trainingRunByIdDTO.setInstanceId(trainingRun.getTrainingInstance().getId());
+            trainingRunByIdDTO.setParticipantRef(userService.getUserRefDTOByUserRefId(trainingRunByIdDTO.getParticipantRef().getUserRefId()));
             return trainingRunByIdDTO;
         } catch (ServiceLayerException ex) {
             throw new FacadeLayerException(ex);
@@ -88,7 +91,9 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
     @Override
     @TransactionalRO
     public PageResultResource<TrainingRunDTO> findAll(Predicate predicate, Pageable pageable) {
-        return trainingRunMapper.mapToPageResultResource(trainingRunService.findAll(predicate, pageable));
+        PageResultResource<TrainingRunDTO>  trainingRunDTOPageResultResource = trainingRunMapper.mapToPageResultResource(trainingRunService.findAll(predicate, pageable));
+        addParticipantsToTrainingRunDTOs(trainingRunDTOPageResultResource.getContent());
+        return trainingRunDTOPageResultResource;
     }
 
     @Override
@@ -166,14 +171,18 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
     @TransactionalRO
     public PageResultResource<TrainingRunDTO> findAllByTrainingDefinitionAndParticipant(Long trainingDefinitionId, Pageable pageable) {
         Page<TrainingRun> trainingRuns = trainingRunService.findAllByTrainingDefinitionAndParticipant(trainingDefinitionId, pageable);
-        return trainingRunMapper.mapToPageResultResource(trainingRuns);
+        PageResultResource<TrainingRunDTO>  trainingRunDTOPageResultResource = trainingRunMapper.mapToPageResultResource(trainingRuns);
+        addParticipantsToTrainingRunDTOs(trainingRunDTOPageResultResource.getContent());
+        return trainingRunDTOPageResultResource;
     }
 
     @Override
     @TransactionalRO
     public PageResultResource<TrainingRunDTO> findAllByTrainingDefinition(Long trainingDefinitionId, Pageable pageable) {
         Page<TrainingRun> trainingRuns = trainingRunService.findAllByTrainingDefinition(trainingDefinitionId, pageable);
-        return trainingRunMapper.mapToPageResultResource(trainingRuns);
+        PageResultResource<TrainingRunDTO>  trainingRunDTOPageResultResource = trainingRunMapper.mapToPageResultResource(trainingRuns);
+        addParticipantsToTrainingRunDTOs(trainingRunDTOPageResultResource.getContent());
+        return trainingRunDTOPageResultResource;
     }
 
     @Override
@@ -243,6 +252,23 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
             throw new FacadeLayerException(ex);
         }
     }
+
+    @Override
+    @TransactionalRO
+    public UserRefDTO getParticipant(Long trainingRunId) {
+        try {
+            TrainingRun trainingRun = trainingRunService.findById(trainingRunId);
+            return userService.getUserRefDTOByUserRefId(trainingRun.getParticipantRef().getUserRefId());
+        }catch (ServiceLayerException ex) {
+            throw new FacadeLayerException(ex);
+        }
+    }
+
+    private void addParticipantsToTrainingRunDTOs(List<TrainingRunDTO> trainingRunDTOS) {
+        trainingRunDTOS.forEach(trainingRunDTO ->
+                trainingRunDTO.setParticipantRef(userService.getUserRefDTOByUserRefId(trainingRunDTO.getParticipantRef().getUserRefId())));
+    }
+
 
     private PageResultResource<AccessedTrainingRunDTO> convertToAccessedRunDTO(Page<TrainingRun> trainingRuns, String sortByTitle) {
         List<AccessedTrainingRunDTO> accessedTrainingRunDTOS = new ArrayList<>();

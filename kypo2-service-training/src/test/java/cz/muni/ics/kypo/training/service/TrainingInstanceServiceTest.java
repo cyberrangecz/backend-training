@@ -118,8 +118,6 @@ public class TrainingInstanceServiceTest {
         instanceWithSB.setPoolId(1L);
 
         user = new UserRef();
-        user.setUserRefLogin("login");
-        user.setUserRefFullName("Dave Holman");
 
         trainingInstance2 = new TrainingInstance();
         trainingInstance2.setId(2L);

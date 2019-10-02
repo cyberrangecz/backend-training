@@ -137,7 +137,6 @@ public class TrainingRunServiceTest {
 
         participantRef = new UserRef();
         participantRef.setId(1L);
-        participantRef.setUserRefLogin("participant");
 
         hint1 = new Hint();
         hint1.setId(1L);
@@ -239,6 +238,8 @@ public class TrainingRunServiceTest {
     @Test
     public void accessTrainingRun() {
         mockSpringSecurityContextForGet();
+        UserRef participant = new UserRef();
+        participant.setUserRefId(2L);
         sandboxInfo.setLocked(false);
         PageResultResourcePython<SandboxInfo> pythonPage = new PageResultResourcePython<SandboxInfo>();
         pythonPage.setResults(List.of(sandboxInfo));
@@ -247,7 +248,7 @@ public class TrainingRunServiceTest {
         given(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
                 willReturn(new ResponseEntity<PageResultResourcePython<SandboxInfo>>(pythonPage, HttpStatus.OK));
         given(abstractLevelRepository.findAllLevelsByTrainingDefinitionId(trainingInstance1.getTrainingDefinition().getId())).willReturn(new ArrayList<>(List.of(gameLevel, infoLevel)));
-        given(participantRefRepository.save(new UserRef(participantRef.getUserRefLogin()))).willReturn(participantRef);
+        given(participantRefRepository.save(participant)).willReturn(participantRef);
         given(trainingRunRepository.save(any(TrainingRun.class))).willReturn(trainingRun1);
 
         trainingInstance1.setTrainingDefinition(trainingDefinition);

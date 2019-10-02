@@ -5,9 +5,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.bohnman.squiggly.Squiggly;
 import com.github.bohnman.squiggly.util.SquigglyUtils;
 import com.querydsl.core.types.Predicate;
+import cz.muni.ics.kypo.commons.security.mapping.UserInfoDTO;
+import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
 import cz.muni.ics.kypo.training.api.responses.PageResultResource;
 import cz.muni.ics.kypo.training.api.dto.run.TrainingRunDTO;
-import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionByIdDTO;
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceCreateDTO;
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceDTO;
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceIsFinishedInfoDTO;
@@ -16,6 +17,7 @@ import cz.muni.ics.kypo.training.exceptions.FacadeLayerException;
 import cz.muni.ics.kypo.training.facade.TrainingInstanceFacade;
 import cz.muni.ics.kypo.training.persistence.model.TrainingInstance;
 import cz.muni.ics.kypo.training.rest.ExceptionSorter;
+import cz.muni.ics.kypo.training.rest.utils.annotations.ApiPageableSwagger;
 import io.swagger.annotations.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
@@ -69,7 +71,7 @@ public class TrainingInstancesRestController {
      */
     @ApiOperation(httpMethod = "GET",
             value = "Get training instance by Id.",
-            response = TrainingDefinitionByIdDTO.class,
+            response = TrainingInstanceDTO.class,
             nickname = "findTrainingInstanceById",
             notes = "Returns training instance by id and also contains particular training definition in it.",
             produces = MediaType.APPLICATION_JSON_VALUE
@@ -335,19 +337,121 @@ public class TrainingInstancesRestController {
         }
     }
 
+    /**
+     * Get requested organizers for training instance.
+     *
+     * @param pageable   pageable parameter with information about pagination.
+     * @param trainingInstanceId id of training instance for which to get the organizers
+     * @return List of users login and full name with role designer.
+     */
     @ApiOperation(httpMethod = "GET",
-            value = "Check if training instance can be safely deleted",
-            response = TrainingInstanceIsFinishedInfoDTO.class,
-            nickname = "checkIfInstanceCanBeDeleted")
+            value = "Get organizer for training instance.",
+            response = UserInfoRestResource.class,
+            nickname = "getOrganizersForTrainingInstance",
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Information about safe deletion was gathered"),
-            @ApiResponse(code = 500, message = "Unexpected condition was encountered")
+            @ApiResponse(code = 200, message = "Organizers for training instance found."),
+            @ApiResponse(code = 404, message = "Training instance not found."),
+            @ApiResponse(code = 500, message = "Unexpected condition was encountered.")
     })
-    @GetMapping(path = "/{instanceId}/deletion-info")
-    public ResponseEntity<TrainingInstanceIsFinishedInfoDTO> checkIfInstanceCanBeDeleted(
-            @ApiParam(value = "Id of training instance for which deletion info is gathered", required = true)
-            @PathVariable(value = "instanceId") Long instanceId){
-        return ResponseEntity.ok(trainingInstanceFacade.checkIfInstanceCanBeDeleted(instanceId));
+    @ApiPageableSwagger
+    @GetMapping(path = "/{id}/organizers", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Object> getOrganizersForTrainingInstance(@ApiParam(value = "ID of training instance for which to retrieve the organizers.", required = true)
+                                                                   @PathVariable(value = "id", required = true) Long trainingInstanceId,
+                                                                   @ApiParam(value = "Given name filter.", required = true)
+                                                                   @RequestParam(value = "givenName", required = false) String givenName,
+                                                                   @ApiParam(value = "Family name filter.", required = true)
+                                                                   @RequestParam(value = "familyName", required = false) String familyName,
+                                                                   Pageable pageable) {
+        try {
+            PageResultResource<UserRefDTO> designers = trainingInstanceFacade.getOrganizersOfTrainingInstance(trainingInstanceId, pageable, givenName, familyName);
+            return ResponseEntity.ok(SquigglyUtils.stringify(objectMapper, designers));
+        } catch (FacadeLayerException ex) {
+            throw ExceptionSorter.throwException(ex);
+        }
     }
+
+    @ApiModel(value = "UserInfoRestResource",
+            description = "Content (Retrieved data) and meta information about REST API result page. Including page number, number of elements in page, size of elements, total number of elements and total number of pages")
+    private static class UserInfoRestResource extends PageResultResource<UserInfoDTO> {
+        @JsonProperty(required = true)
+        @ApiModelProperty(value = "Retrieved Training Instances from databases.")
+        private List<UserInfoDTO> content;
+        @JsonProperty(required = true)
+        @ApiModelProperty(value = "Pagination including: page number, number of elements in page, size, total elements and total pages.")
+        private Pagination pagination;
+    }
+
+    /**
+     * Get requested organizers not in given training instance.
+     *
+     * @param trainingInstanceId id ot the training instance
+     * @param pageable   pageable parameter with information about pagination.
+     * @return List of users login and full name with role organizer.
+     */
+    @ApiOperation(httpMethod = "GET",
+            value = "Get organizers not in given training instance.",
+            response = UserInfoRestResource.class,
+            nickname = "findOrganizersNotInGivenTrainingInstance",
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Organizers found.", response = UserInfoRestResource.class),
+            @ApiResponse(code = 404, message = "Training instance not found."),
+            @ApiResponse(code = 500, message = "Unexpected condition was encountered.")
+
+    })
+    @ApiPageableSwagger
+    @GetMapping(path = "{id}/organizers-not-in-training-instance", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Object> getOrganizersNotInGivenTrainingInstance(@ApiParam(value = "ID of the training instance which do not contains organizers you want to retrieve.", required = true)
+                                                                           @PathVariable(value = "id") Long trainingInstanceId,
+                                                                          @ApiParam(value = "Given name filter.", required = false)
+                                                                          @RequestParam(value = "givenName", required = false) String givenName,
+                                                                          @ApiParam(value = "Family name filter.", required = false)
+                                                                          @RequestParam(value = "familyName", required = false) String familyName,
+                                                                           Pageable pageable) {
+        try {
+            PageResultResource<UserRefDTO> designers = trainingInstanceFacade.getOrganizersNotInGivenTrainingInstance(trainingInstanceId, pageable, givenName, familyName);
+            return ResponseEntity.ok(SquigglyUtils.stringify(objectMapper, designers));
+        } catch (FacadeLayerException ex) {
+            throw ExceptionSorter.throwException(ex);
+        }
+    }
+
+    /**
+     * Concurrently add/remove organizers with given ids to/from the training instance.
+     *
+     * @param trainingInstanceId id of training instance for which to retrieve organizers
+     * @param organizersAddition ids of the organizers to be added to the training instance.
+     * @param organizersRemoval ids of the organizers to be removed from the training instance.
+     */
+    @ApiOperation(httpMethod = "PUT",
+            value = "Edit organizers.",
+            response = Void.class,
+            nickname = "editOrganizers",
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 204, message = "Organizers edited."),
+            @ApiResponse(code = 404, message = "Training instance with given id has not been found."),
+            @ApiResponse(code = 500, message = "Unexpected condition was encountered.")
+    })
+    @ApiPageableSwagger
+    @PutMapping(path = "/{id}/organizers", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Void> editOrganizers(@ApiParam(value = "ID of training instance to be updated.", required = true)
+                                            @PathVariable(value = "id", required = true) Long trainingInstanceId,
+                                            @ApiParam(value = "Ids of the organizers to be added to the training instance.")
+                                            @RequestParam(value = "organizersAddition", required = false) Set<Long> organizersAddition,
+                                            @ApiParam(value = "Ids of the organizers to be removed from the training instance.")
+                                            @RequestParam(value = "organizersRemoval", required = false) Set<Long> organizersRemoval) {
+        try {
+            trainingInstanceFacade.editOrganizers(trainingInstanceId, organizersAddition, organizersRemoval);
+            return ResponseEntity.noContent().build();
+        } catch (FacadeLayerException ex) {
+            throw ExceptionSorter.throwException(ex);
+        }
+    }
+
 
 }
