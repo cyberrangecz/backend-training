@@ -8,6 +8,7 @@ import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.training.api.responses.PageResultResource;
 import cz.muni.ics.kypo.training.api.dto.AbstractLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.IsCorrectFlagDTO;
+import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
 import cz.muni.ics.kypo.training.api.dto.run.AccessTrainingRunDTO;
 import cz.muni.ics.kypo.training.api.dto.run.AccessedTrainingRunDTO;
 import cz.muni.ics.kypo.training.api.dto.run.TrainingRunByIdDTO;
@@ -463,6 +464,33 @@ public class TrainingRunsRestController {
         try {
             trainingRunFacade.evaluateResponsesToAssessment(runId, responses);
             return ResponseEntity.noContent().build();
+        } catch (FacadeLayerException ex) {
+            throw ExceptionSorter.throwException(ex);
+        }
+    }
+
+    /**
+     * Get requested participant of the given training run.
+     *
+     * @param trainingRunId id of training run for which to get participant
+     * @return Participant of specific training run.
+     */
+    @ApiOperation(httpMethod = "GET",
+            value = "Get participant.",
+            response = UserRefDTO.class,
+            nickname = "getParticipant",
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Participant found.", response = UserRefDTO.class),
+            @ApiResponse(code = 404, message = "Training run not found."),
+            @ApiResponse(code = 500, message = "Unexpected condition was encountered.")
+    })
+    @GetMapping(path = "/{id}/participant", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Object> getParticipant(@PathVariable(value = "id", required = true) Long trainingRunId) {
+        try {
+            UserRefDTO participant = trainingRunFacade.getParticipant(trainingRunId);
+            return ResponseEntity.ok(SquigglyUtils.stringify(objectMapper, participant));
         } catch (FacadeLayerException ex) {
             throw ExceptionSorter.throwException(ex);
         }

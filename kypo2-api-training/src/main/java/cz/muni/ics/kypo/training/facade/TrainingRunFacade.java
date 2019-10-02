@@ -4,6 +4,7 @@ import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.training.api.responses.PageResultResource;
 import cz.muni.ics.kypo.training.api.dto.AbstractLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.IsCorrectFlagDTO;
+import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
 import cz.muni.ics.kypo.training.api.dto.hint.HintDTO;
 import cz.muni.ics.kypo.training.api.dto.run.AccessTrainingRunDTO;
 import cz.muni.ics.kypo.training.api.dto.run.AccessedTrainingRunDTO;
@@ -158,5 +159,13 @@ public interface TrainingRunFacade {
      * @throws FacadeLayerException with ErrorCode: RESOURCE_NOT_FOUND cannot find training run.
      */
     void evaluateResponsesToAssessment(Long trainingRunId, String responsesAsString);
+
+            /**
+             * Retrieve info about the participant of the given training run.
+             *
+             * @param trainingRunId id of the training run whose participant you want to get.
+             * @return returns participant of the given training run.
+             */
+    UserRefDTO getParticipant(Long trainingRunId);
 
 }

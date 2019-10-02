@@ -1,11 +1,6 @@
 package cz.muni.ics.kypo.training.service;
 
 import com.querydsl.core.types.Predicate;
-import cz.muni.ics.kypo.training.api.dto.BasicLevelInfoDTO;
-import cz.muni.ics.kypo.training.api.dto.UserDTO;
-import cz.muni.ics.kypo.training.api.dto.UserInfoDTO;
-import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
-import cz.muni.ics.kypo.training.api.enums.RoleType;
 import cz.muni.ics.kypo.training.exceptions.FacadeLayerException;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.persistence.model.*;
@@ -13,7 +8,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import java.util.List;
-import java.util.Set;
 
 /**
  * The interface for training definition service.
@@ -205,31 +199,6 @@ public interface TrainingDefinitionService {
     List<TrainingInstance> findAllTrainingInstancesByTrainingDefinitionId(Long id);
 
     /**
-     * Finds specific User reference by login
-     *
-     * @param userRefId of wanted User reference
-     * @return {@link UserRef} with corresponding login
-     * @throws ServiceLayerException if UserRef was not found
-     */
-    UserRef findUserByRefId(Long userRefId);
-
-    /**
-     * Finds all logins of users that have role of designer
-     *
-     * @param roleType the role type
-     * @param pageable the pageable
-     * @return list of users with given role
-     */
-    List<UserInfoDTO> getUsersWithGivenRole(RoleType roleType, Pageable pageable);
-
-    /**
-     * Create new user reference
-     * @param userRef user reference to be created
-     * @return created {@link UserRef}
-     */
-    UserRef createUserRef(UserRef userRef);
-
-    /**
      * Switch development state of definition from unreleased to released, or from released to archived or back to unreleased.
      *
      * @param definitionId - id of training definition
@@ -245,12 +214,4 @@ public interface TrainingDefinitionService {
      * @return all Training Definitions for organizers
      */
     Page<TrainingDefinition> findAllForOrganizers(Predicate predicate, Pageable pageable);
-
-    /**
-     * Gets users with given user ref ids.
-     *
-     * @param userRefIds the user ref ids
-     * @return the users with given user ref ids
-     */
-    Set<UserInfoDTO> getUsersWithGivenUserRefIds(Set<Long> userRefIds);
 }

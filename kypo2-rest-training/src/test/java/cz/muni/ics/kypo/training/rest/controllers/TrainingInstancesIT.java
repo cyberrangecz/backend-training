@@ -6,8 +6,8 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.google.gson.JsonObject;
 import cz.muni.csirt.kypo.elasticsearch.service.TrainingEventsService;
 import cz.muni.ics.kypo.commons.security.enums.AuthenticatedUserOIDCItems;
+import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
 import cz.muni.ics.kypo.training.api.responses.PageResultResource;
-import cz.muni.ics.kypo.training.api.dto.UserInfoDTO;
 import cz.muni.ics.kypo.training.api.dto.run.TrainingRunDTO;
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceCreateDTO;
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceDTO;
@@ -36,6 +36,7 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.ApplicationContext;
@@ -112,13 +113,16 @@ public class TrainingInstancesIT {
     @Autowired
     private TrainingEventsService trainingEventsServiceMock;
 
+    @Value("${user-and-group-server.uri}")
+    private String userAndGroupURI;
+
     private TrainingInstance futureTrainingInstance, notConcludedTrainingInstance, finishedTrainingInstance;
     private TrainingInstanceCreateDTO trainingInstanceCreateDTO;
     private TrainingInstanceUpdateDTO trainingInstanceUpdateDTO;
     private TrainingRun trainingRun1, trainingRun2;
     private TrainingDefinition trainingDefinition;
-    private UserRef organizer1, organizer2;
-    private UserInfoDTO userInfoDTO;
+    private UserRef organizer1, organizer2, participant1, participant2;
+    private UserRefDTO userRefDTO1, userRefDTO2;
     private SandboxInfo sandboxInfo1, sandboxInfo2;
     private SandboxPoolInfo sandboxPoolInfo;
 
@@ -135,9 +139,15 @@ public class TrainingInstancesIT {
                         new QuerydslPredicateArgumentResolver(new QuerydslBindingsFactory(SimpleEntityPathResolver.INSTANCE), Optional.empty()))
                 .setMessageConverters(new MappingJackson2HttpMessageConverter()).build();
 
-        organizer1 = createUserRef("778932@muni.cz", "Peter Černý", "Peter", "Černý", "https://oidc.muni.cz", 1L);
-        organizer2 = createUserRef("773254@muni.cz", "Jakub Plátal", "Jakub", "Plátal", "https://oidc.muni.cz", 2L);
-        userRefRepository.saveAll(Set.of(organizer1, organizer2));
+        organizer1 = new UserRef();
+        organizer1.setUserRefId(1L);
+        organizer2 = new UserRef();
+        organizer2.setUserRefId(2L);
+        participant1 = new UserRef();
+        participant1.setUserRefId(3L);
+        participant2 = new UserRef();
+        participant2.setUserRefId(4L);
+        userRefRepository.saveAll(Set.of(organizer1, organizer2, participant1, participant2));
 
         sandboxInfo1 = new SandboxInfo();
         sandboxInfo1.setId(1L);
@@ -201,10 +211,8 @@ public class TrainingInstancesIT {
         trainingInstanceCreateDTO.setTitle("newInstance");
         trainingInstanceCreateDTO.setPoolSize(50);
         trainingInstanceCreateDTO.setAccessToken("pass-1235");
-        trainingInstanceCreateDTO.setOrganizersRefIds(Set.of());
 
         trainingInstanceUpdateDTO = new TrainingInstanceUpdateDTO();
-        trainingInstanceUpdateDTO.setOrganizersRefIds(Set.of(organizer2.getUserRefId()));
         trainingInstanceUpdateDTO.setPoolSize(6);
         trainingInstanceUpdateDTO.setStartTime(LocalDateTime.now().plusHours(4));
         trainingInstanceUpdateDTO.setEndTime(LocalDateTime.now().plusHours(45));
@@ -225,6 +233,7 @@ public class TrainingInstancesIT {
         trainingRun1.setSolutionTaken(false);
         trainingRun1.setCurrentLevel(infoLevel);
         trainingRun1.setTrainingInstance(futureTrainingInstance);
+        trainingRun1.setParticipantRef(participant2);
         trainingRun1.setSandboxInstanceRefId(sandboxInfo1.getId());
         trainingRun1.setParticipantRef(organizer1);
 
@@ -236,16 +245,27 @@ public class TrainingInstancesIT {
         trainingRun2.setSolutionTaken(false);
         trainingRun2.setCurrentLevel(infoLevel);
         trainingRun2.setTrainingInstance(futureTrainingInstance);
+        trainingRun2.setParticipantRef(participant1);
+
+        userRefDTO1 = new UserRefDTO();
+        userRefDTO1.setUserRefFullName("Ing. Mgr. MuDr. Boris Jadus");
+        userRefDTO1.setUserRefLogin("445469@muni.cz");
+        userRefDTO1.setUserRefGivenName("Boris");
+        userRefDTO1.setUserRefFamilyName("Jadus");
+        userRefDTO1.setIss("https://oidc.muni.cz");
+        userRefDTO1.setUserRefId(3L);
+
+        userRefDTO2 = new UserRefDTO();
+        userRefDTO2.setUserRefFullName("Ing. Jan Chudý");
+        userRefDTO2.setUserRefLogin("445497@muni.cz");
+        userRefDTO2.setUserRefGivenName("Jan");
+        userRefDTO2.setUserRefFamilyName("Chudý");
+        userRefDTO2.setIss("https://oidc.muni.cz");
+        userRefDTO2.setUserRefId(4L);
+
         trainingRun2.setSandboxInstanceRefId(sandboxInfo2.getId());
         trainingRun2.setParticipantRef(organizer1);
 
-        userInfoDTO = new UserInfoDTO();
-        userInfoDTO.setFullName("Ing. Mgr. MuDr. Boris Jadus");
-        userInfoDTO.setLogin("445469@muni.cz");
-        userInfoDTO.setGivenName("Boris");
-        userInfoDTO.setFamilyName("Jadus");
-        userInfoDTO.setIss("https://oidc.muni.cz");
-        userInfoDTO.setUserRefId(1L);
     }
 
     @After
@@ -306,10 +326,12 @@ public class TrainingInstancesIT {
 
     @Test
     public void createTrainingInstance() throws Exception {
+        PageResultResource<UserRefDTO> userRefDTOPageResultResource = new PageResultResource<>();
+        userRefDTOPageResultResource.setContent(new ArrayList<>(List.of(userRefDTO1)));
         given(restTemplate.exchange(any(URI.class), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
-                willReturn(new ResponseEntity<List<UserInfoDTO>>(new ArrayList<>(Collections.singletonList(userInfoDTO)), HttpStatus.OK));
-        given(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
-                willReturn(new ResponseEntity<UserInfoDTO>(userInfoDTO, HttpStatus.OK));
+                willReturn(new ResponseEntity<PageResultResource<UserRefDTO>>(userRefDTOPageResultResource, HttpStatus.OK));
+        given(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), eq(UserRefDTO.class))).
+                willReturn(new ResponseEntity<UserRefDTO>(userRefDTO1, HttpStatus.OK));
         given(restTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(SandboxPoolInfo.class))).
                 willReturn(new ResponseEntity<SandboxPoolInfo>(sandboxPoolInfo, HttpStatus.OK));
         mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_ORGANIZER.name()));
@@ -323,7 +345,6 @@ public class TrainingInstancesIT {
         assertTrue(newInstance.isPresent());
         TrainingInstanceDTO newInstanceDTO = trainingInstanceMapper.mapToDTO(newInstance.get());
 
-        assertTrue(newInstanceDTO.getOrganizers().stream().anyMatch(userRefDTO -> userRefDTO.getUserRefLogin().equals(organizer1.getUserRefLogin())));
         assertEquals(newInstanceDTO, mapper.readValue(convertJsonBytesToString(result.getContentAsString()), TrainingInstanceDTO.class));
     }
 
@@ -343,10 +364,13 @@ public class TrainingInstancesIT {
         trainingInstanceRepository.save(futureTrainingInstance);
         trainingInstanceUpdateDTO.setAccessToken(futureTrainingInstance.getAccessToken());
         trainingInstanceUpdateDTO.setId(futureTrainingInstance.getId());
+        PageResultResource<UserRefDTO> userRefDTOPageResultResource = new PageResultResource<>();
+        userRefDTOPageResultResource.setContent(List.of(userRefDTO1));
+
         given(restTemplate.exchange(any(URI.class), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
-                willReturn(new ResponseEntity<List<UserInfoDTO>>(new ArrayList<>(Collections.singletonList(userInfoDTO)), HttpStatus.OK));
-        given(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
-                willReturn(new ResponseEntity<UserInfoDTO>(userInfoDTO, HttpStatus.OK));
+                willReturn(new ResponseEntity<PageResultResource<UserRefDTO>>(userRefDTOPageResultResource, HttpStatus.OK));
+        given(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), eq(UserRefDTO.class))).
+                willReturn(new ResponseEntity<UserRefDTO>(userRefDTO1, HttpStatus.OK));
         mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_ORGANIZER.name()));
         MockHttpServletResponse result = mvc.perform(put("/training-instances")
                 .content(convertObjectToJsonBytes(trainingInstanceUpdateDTO))
@@ -381,8 +405,10 @@ public class TrainingInstancesIT {
     public void updateTrainingInstanceNotFound() throws Exception {
         trainingInstanceUpdateDTO.setAccessToken("someToken");
         trainingInstanceUpdateDTO.setId(500L);
+        PageResultResource<UserRefDTO> userRefDTOPageResultResource = new PageResultResource<>();
+        userRefDTOPageResultResource.setContent(List.of(userRefDTO1));
         given(restTemplate.exchange(any(URI.class), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
-                willReturn(new ResponseEntity<List<UserInfoDTO>>(new ArrayList<>(Collections.singletonList(userInfoDTO)), HttpStatus.OK));
+                willReturn(new ResponseEntity<PageResultResource<UserRefDTO>>(userRefDTOPageResultResource, HttpStatus.OK));
         mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_ORGANIZER.name()));
         Exception ex = mvc.perform(put("/training-instances")
                 .content(convertObjectToJsonBytes(trainingInstanceUpdateDTO))
@@ -400,8 +426,10 @@ public class TrainingInstancesIT {
         trainingInstanceUpdateDTO.setAccessToken("someToken");
         trainingInstanceUpdateDTO.setId(futureTrainingInstance.getId());
         trainingInstanceUpdateDTO.setEndTime(LocalDateTime.now().plusHours(2));
+        PageResultResource<UserRefDTO> userRefDTOPageResultResource = new PageResultResource<>();
+        userRefDTOPageResultResource.setContent(List.of(userRefDTO1));
         given(restTemplate.exchange(any(URI.class), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
-                willReturn(new ResponseEntity<List<UserInfoDTO>>(new ArrayList<>(Collections.singletonList(userInfoDTO)), HttpStatus.OK));
+                willReturn(new ResponseEntity<PageResultResource<UserRefDTO>>(userRefDTOPageResultResource, HttpStatus.OK));
         mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_ORGANIZER.name()));
         Exception ex = mvc.perform(put("/training-instances")
                 .content(convertObjectToJsonBytes(trainingInstanceUpdateDTO))
@@ -504,14 +532,22 @@ public class TrainingInstancesIT {
         trainingRunRepository.save(trainingRun1);
         trainingRunRepository.save(trainingRun2);
 
+        given(restTemplate.exchange(eq(userAndGroupURI + "/users/"+trainingRun1.getParticipantRef().getUserRefId()), eq(HttpMethod.GET), any(HttpEntity.class), eq(UserRefDTO.class))).
+                willReturn(new ResponseEntity<UserRefDTO>(userRefDTO1, HttpStatus.OK));
+        given(restTemplate.exchange(eq(userAndGroupURI + "/users/"+trainingRun2.getParticipantRef().getUserRefId()), eq(HttpMethod.GET), any(HttpEntity.class), eq(UserRefDTO.class))).
+                willReturn(new ResponseEntity<UserRefDTO>(userRefDTO2, HttpStatus.OK));
         MockHttpServletResponse result = mvc.perform(get("/training-instances/{instanceId}/training-runs", futureTrainingInstance.getId()))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andReturn().getResponse();
         PageResultResource<TrainingRunDTO> trainingRunsPage = mapper.readValue(convertJsonBytesToString(result.getContentAsString()), new TypeReference<PageResultResource<TrainingRunDTO>>() {
         });
-        assertTrue(trainingRunsPage.getContent().contains(trainingRunMapper.mapToDTO(trainingRun1)));
-        assertTrue(trainingRunsPage.getContent().contains(trainingRunMapper.mapToDTO(trainingRun2)));
+        TrainingRunDTO trainingRunDTO1 = trainingRunMapper.mapToDTO(trainingRun1);
+        trainingRunDTO1.setParticipantRef(userRefDTO2);
+        TrainingRunDTO trainingRunDTO2 = trainingRunMapper.mapToDTO(trainingRun2);
+        trainingRunDTO2.setParticipantRef(userRefDTO2);
+        assertTrue(trainingRunsPage.getContent().contains(trainingRunDTO1));
+        assertTrue(trainingRunsPage.getContent().contains(trainingRunDTO2));
     }
 
     @Test
@@ -570,16 +606,6 @@ public class TrainingInstancesIT {
         return mapper.readValue(object, String.class);
     }
 
-    private UserRef createUserRef(String login, String fullName, String givenName, String familyName, String iss, Long userRefId) {
-        UserRef userRef = new UserRef();
-        userRef.setUserRefLogin(login);
-        userRef.setUserRefFullName(fullName);
-        userRef.setUserRefGivenName(givenName);
-        userRef.setUserRefFamilyName(familyName);
-        userRef.setIss(iss);
-        userRef.setUserRefId(userRefId);
-        return userRef;
-    }
 
 }
 

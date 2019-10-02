@@ -216,6 +216,15 @@ public class TrainingInstance implements Serializable {
         userRef.addTrainingInstance(this);
     }
 
+    /**
+     * Remove organizers with given ids from the set of organizers.
+     *
+     * @param userRefIds ids of the organizers to be removed.
+     */
+    public void removeOrganizersByUserRefIds(Set<Long> userRefIds) {
+        this.organizers.removeIf(userRef -> userRefIds.contains(userRef.getUserRefId()));
+    }
+
     @Override
     public int hashCode() {
         return Objects.hash(accessToken, startTime, endTime, poolSize, title, trainingDefinition);

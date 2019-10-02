@@ -13,6 +13,7 @@ import cz.muni.ics.kypo.training.exceptions.FacadeLayerException;
 import org.springframework.data.domain.Pageable;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * The interface for training definition facade.
@@ -205,7 +206,7 @@ public interface TrainingDefinitionFacade {
      * @return list of users {@link UserRefDTO}
      * @throws FacadeLayerException some error encountered when obtaining info about users
      */
-    List<UserInfoDTO> getUsersWithGivenRole(RoleType roleType, Pageable pageable);
+    PageResultResource<UserRefDTO> getUsersWithGivenRole(RoleType roleType, Pageable pageable, String givenName, String familyName);
 
     /**
      * Switch state of definition to unreleased
@@ -223,4 +224,40 @@ public interface TrainingDefinitionFacade {
      * @return page of all {@link TrainingDefinitionInfoDTO} accessible for organizers
      */
     PageResultResource<TrainingDefinitionInfoDTO> findAllForOrganizers(Predicate predicate, Pageable pageable);
+
+    /**
+     * Retrieve all authors for given training definition.
+     *
+     * @param trainingDefinitionId id of the training definition for which to get the authors
+     * @return returns all authors in given training definition.
+     */
+    PageResultResource<UserRefDTO> getAuthors(Long trainingDefinitionId, Pageable pageable, String givenName, String familyName);
+
+    /**
+     * Retrieve all beta testers for given training definition.
+     *
+     * @param trainingDefinitionId id of the training definition for which to get the beta testers
+     * @return returns all beta testers in given training definition.
+     */
+    PageResultResource<UserRefDTO> getBetaTesters(Long trainingDefinitionId, Pageable pageable);
+
+    /**
+     * Retrieve all designers not in the given training definition.
+     *
+     * @param trainingDefinitionId id of the training definition which users should be excluded from the result list.
+     * @return returns all designers not in the given training definition.
+     */
+    PageResultResource<UserRefDTO> getDesignersNotInGivenTrainingDefinition(Long trainingDefinitionId, Pageable pageable, String givenName, String familyName);
+
+    /**
+     * Concurrently add authors to the given training definition and remove authors from the training definition.
+     *
+     * @param trainingDefinitionId if of the training definition to be updated
+     * @param authorsAddition ids of the authors to be added to the training definition
+     * @param authorsRemoval ids of the authors to be removed from the training definition.
+     * @throws FacadeLayerException with ErrorCode: RESOURCE_NOT_FOUND given training definition not found.
+     *                                              RESOURCE_CONFLICT released or archived training definition cannot be modified.
+     */
+    void editAuthors(Long trainingDefinitionId, Set<Long> authorsAddition, Set<Long> authorsRemoval) throws FacadeLayerException;
+
 }

@@ -67,12 +67,7 @@ public class TrainingDefinitionRepositoryTest {
         viewGroup2 = new BetaTestingGroup();
 
         organizer1 = new UserRef();
-        organizer1.setUserRefLogin("Organizer");
-        organizer1.setUserRefFullName("Mgr. Ing. Pavel Seda");
         organizer1.setUserRefId(1L);
-        organizer1.setUserRefFamilyName("Seda");
-        organizer1.setUserRefGivenName("Pavel");
-        organizer1.setIss("https://oidc.muni.cz");
 
         trainingDefinition1.setBetaTestingGroup(viewGroup1);
         trainingDefinition2.setBetaTestingGroup(viewGroup2);
@@ -87,22 +82,12 @@ public class TrainingDefinitionRepositoryTest {
     public void findAllByLoggedInUser() {
 
         author1 = new UserRef();
-        author1.setUserRefLogin("author1");
-        author1.setUserRefFullName("Mgr. Ing. Pavel Seda");
         author1.setUserRefId(3L);
-        author1.setUserRefFamilyName("Seda");
-        author1.setUserRefGivenName("Pavel");
-        author1.setIss("https://oidc.muni.cz");
 
         entityManager.persist(author1);
 
         author2 = new UserRef();
-        author2.setUserRefLogin("Organizer");
-        author2.setUserRefFullName("Mgr. Ing. Pavel Seda");
         author2.setUserRefId(4L);
-        author2.setUserRefFamilyName("Seda");
-        author2.setUserRefGivenName("Pavel");
-        author2.setIss("https://oidc.muni.cz");
         entityManager.persist(author2);
 
         trainingDefinition1.addAuthor(author1);

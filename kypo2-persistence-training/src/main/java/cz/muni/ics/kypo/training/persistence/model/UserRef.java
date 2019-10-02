@@ -13,25 +13,15 @@ import java.util.Set;
  * @author Pavel Seda
  */
 @Entity
-@Table(name = "user_ref", uniqueConstraints = @UniqueConstraint(columnNames = {"user_ref_login", "user_ref_id", "iss"}))
+@Table(name = "user_ref", uniqueConstraints = @UniqueConstraint(columnNames = {"user_ref_id"}))
 public class UserRef implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", unique = true, nullable = false, insertable = false)
     private Long id;
-    @Column(name = "user_ref_login", nullable = false)
-    private String userRefLogin;
     @Column(name = "user_ref_id", nullable = false)
     private Long userRefId;
-    @Column(name = "iss", nullable = false)
-    private String iss;
-    @Column(name = "user_ref_full_name")
-    private String userRefFullName;
-    @Column(name = "user_ref_given_name")
-    private String userRefGivenName;
-    @Column(name = "user_ref_family_name")
-    private String userRefFamilyName;
     @ManyToMany(mappedBy = "organizers", fetch = FetchType.LAZY)
     private Set<TrainingInstance> trainingInstances = new HashSet<>();
     @ManyToMany(mappedBy = "authors", fetch = FetchType.LAZY)
@@ -43,54 +33,6 @@ public class UserRef implements Serializable {
      * Instantiates a new user reference
      */
     public UserRef() {
-    }
-
-    /**
-     * Instantiates a new user reference
-     *
-     * @param userRefLogin login of user
-     */
-    public UserRef(String userRefLogin) {
-        setUserRefLogin(userRefLogin);
-    }
-
-    /**
-     * Instantiates a new user reference
-     *
-     * @param userRefLogin    login of user
-     * @param userRefFullName full name of user
-     */
-    public UserRef(String userRefLogin, String userRefFullName) {
-        setUserRefLogin(userRefLogin);
-        setUserRefFullName(userRefFullName);
-    }
-
-    /**
-     * Instantiates a new user reference
-     *
-     * @param userRefLogin      login of user
-     * @param userRefFullName   full name of user
-     * @param userRefGivenName  given name of user
-     * @param userRefFamilyName family name of user
-     */
-    public UserRef(String userRefLogin, String userRefFullName, String userRefGivenName, String userRefFamilyName) {
-        this(userRefLogin, userRefFullName);
-        setUserRefGivenName(userRefGivenName);
-        setUserRefFamilyName(userRefFamilyName);
-    }
-
-    /**
-     * Instantiates a new User ref.
-     *
-     * @param userRefLogin      the user ref login
-     * @param iss               the iss
-     * @param userRefFullName   the user ref full name
-     * @param userRefGivenName  the user ref given name
-     * @param userRefFamilyName the user ref family name
-     */
-    public UserRef(String userRefLogin, String userRefFullName, String userRefGivenName, String userRefFamilyName, String iss) {
-        this(userRefLogin, userRefFullName, userRefGivenName, userRefFamilyName);
-        setIss(iss);
     }
 
     /**
@@ -127,60 +69,6 @@ public class UserRef implements Serializable {
      */
     public void setUserRefId(Long userRefId) {
         this.userRefId = userRefId;
-    }
-
-    /**
-     * Gets iss.
-     *
-     * @return the iss
-     */
-    public String getIss() {
-        return iss;
-    }
-
-    /**
-     * Sets iss.
-     *
-     * @param iss the iss
-     */
-    public void setIss(String iss) {
-        this.iss = iss;
-    }
-
-    /**
-     * Gets login of user
-     *
-     * @return the user ref login
-     */
-    public String getUserRefLogin() {
-        return userRefLogin;
-    }
-
-    /**
-     * Sets login of user
-     *
-     * @param userRefLogin the user ref login
-     */
-    public void setUserRefLogin(String userRefLogin) {
-        this.userRefLogin = userRefLogin;
-    }
-
-    /**
-     * Gets full name of user
-     *
-     * @return the user ref full name
-     */
-    public String getUserRefFullName() {
-        return userRefFullName;
-    }
-
-    /**
-     * Sets full name of user
-     *
-     * @param userRefFullName the user ref full name
-     */
-    public void setUserRefFullName(String userRefFullName) {
-        this.userRefFullName = userRefFullName;
     }
 
     /**
@@ -274,42 +162,6 @@ public class UserRef implements Serializable {
     }
 
     /**
-     * Gets given name of user
-     *
-     * @return the user ref given name
-     */
-    public String getUserRefGivenName() {
-        return userRefGivenName;
-    }
-
-    /**
-     * Sets given name of user
-     *
-     * @param userRefGivenName the user ref given name
-     */
-    public void setUserRefGivenName(String userRefGivenName) {
-        this.userRefGivenName = userRefGivenName;
-    }
-
-    /**
-     * Gets family name of user
-     *
-     * @return the user ref family name
-     */
-    public String getUserRefFamilyName() {
-        return userRefFamilyName;
-    }
-
-    /**
-     * Sets family name of user
-     *
-     * @param userRefFamilyName the user ref family name
-     */
-    public void setUserRefFamilyName(String userRefFamilyName) {
-        this.userRefFamilyName = userRefFamilyName;
-    }
-
-    /**
      * Gets set of Beta testing groups user can access
      *
      * @return the beta testers
@@ -332,26 +184,19 @@ public class UserRef implements Serializable {
         if (this == o) return true;
         if (!(o instanceof UserRef)) return false;
         UserRef userRef = (UserRef) o;
-        return Objects.equals(getUserRefLogin(), userRef.getUserRefLogin()) &&
-                Objects.equals(getUserRefId(), userRef.getUserRefId()) &&
-                Objects.equals(getIss(), userRef.getIss());
+        return Objects.equals(getUserRefId(), userRef.getUserRefId());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getUserRefLogin(), getUserRefId(), getIss());
+        return Objects.hash(getUserRefId());
     }
 
     @Override
     public String toString() {
         return "UserRef{" +
                 "id=" + id +
-                ", userRefLogin='" + userRefLogin + '\'' +
                 ", userRefId=" + userRefId +
-                ", iss='" + iss + '\'' +
-                ", userRefFullName='" + userRefFullName + '\'' +
-                ", userRefGivenName='" + userRefGivenName + '\'' +
-                ", userRefFamilyName='" + userRefFamilyName + '\'' +
                 '}';
     }
 }

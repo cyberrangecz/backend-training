@@ -1,14 +1,10 @@
 package cz.muni.ics.kypo.training.service.impl;
 
 import com.querydsl.core.types.Predicate;
-import cz.muni.ics.kypo.training.annotations.aop.TrackTime;
 import cz.muni.ics.kypo.training.annotations.security.IsAdminOrDesignerOrOrganizer;
 import cz.muni.ics.kypo.training.annotations.security.IsDesignerOrAdmin;
 import cz.muni.ics.kypo.training.annotations.security.IsOrganizerOrAdmin;
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalWO;
-import cz.muni.ics.kypo.training.api.responses.PageResultResource;
-import cz.muni.ics.kypo.training.api.dto.UserInfoDTO;
-import cz.muni.ics.kypo.training.api.enums.RoleType;
 import cz.muni.ics.kypo.training.exceptions.ErrorCode;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.persistence.model.*;
@@ -22,22 +18,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
-import org.springframework.util.StringUtils;
-import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.UriComponentsBuilder;
 
-import java.net.URI;
 import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -82,6 +69,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
         this.securityService = securityService;
     }
 
+    // TODO check pre authorize for this method
     @Override
     @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_TRAINEE)")
     public TrainingDefinition findById(Long id) {
@@ -408,59 +396,6 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     public List<TrainingInstance> findAllTrainingInstancesByTrainingDefinitionId(Long id) {
         Assert.notNull(id, "Input definition id must not be null");
         return trainingInstanceRepository.findAllByTrainingDefinitionId(id);
-    }
-
-    @Override
-    @IsAdminOrDesignerOrOrganizer
-    public UserRef findUserByRefId(Long userRefId) {
-        return userRefRepository.findUserByUserRefId(userRefId).orElseThrow(
-                () -> new ServiceLayerException("UserRef with userRefId " + userRefId + " not found.", ErrorCode.RESOURCE_NOT_FOUND));
-    }
-
-    @Override
-    @IsDesignerOrAdmin
-    @TrackTime
-    public List<UserInfoDTO> getUsersWithGivenRole(RoleType roleType, Pageable pageable) {
-        HttpHeaders httpHeaders = new HttpHeaders();
-        String url = userAndGroupUrl + "/roles/users" + "?roleType=" + roleType
-                + "&page=" + pageable.getPageNumber() + "&size=" + pageable.getPageSize();
-        try {
-            ResponseEntity<PageResultResource<UserInfoDTO>> usersResponse = restTemplate.exchange(url, HttpMethod.GET, new HttpEntity<>(httpHeaders),
-                    new ParameterizedTypeReference<PageResultResource<UserInfoDTO>>() {
-                    });
-
-            return Objects.requireNonNull(usersResponse.getBody()).getContent();
-
-        } catch (HttpClientErrorException ex) {
-            throw new ServiceLayerException("Client side error when calling UserAndGroup: " + ex.getMessage() + " - " + ex.getResponseBodyAsString(), ErrorCode.UNEXPECTED_ERROR);
-        }
-    }
-
-    @Override
-    @IsDesignerOrAdmin
-    @TrackTime
-    public Set<UserInfoDTO> getUsersWithGivenUserRefIds(Set<Long> userRefIds) {
-        HttpHeaders httpHeaders = new HttpHeaders();
-        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(userAndGroupUrl + "/users/ids");
-        builder.queryParam("ids", StringUtils.collectionToDelimitedString(userRefIds, ","));
-        URI uri = builder.build().encode().toUri();
-        try {
-            ResponseEntity<List<UserInfoDTO>> usersResponse = restTemplate.exchange(uri, HttpMethod.GET, new HttpEntity<>(httpHeaders),
-                    new ParameterizedTypeReference<List<UserInfoDTO>>() {
-                    });
-            return new HashSet<>(Objects.requireNonNull(usersResponse.getBody()));
-        } catch (HttpClientErrorException ex) {
-            throw new ServiceLayerException("Client side error when calling UserAndGroup: " + ex.getMessage() + " - " + ex.getResponseBodyAsString(), ErrorCode.UNEXPECTED_ERROR);
-        }
-    }
-
-    @Override
-    @TransactionalWO
-    public UserRef createUserRef(UserRef userRefToCreate) {
-        Assert.notNull(userRefToCreate, "User ref must not be null");
-        UserRef userRef = userRefRepository.save(userRefToCreate);
-        LOG.info("User ref with login: {} created.", userRef.getUserRefLogin());
-        return userRef;
     }
 
     @Override

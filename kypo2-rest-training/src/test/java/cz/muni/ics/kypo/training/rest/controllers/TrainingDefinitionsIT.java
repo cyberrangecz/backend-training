@@ -4,11 +4,12 @@ import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.Appender;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.JsonObject;
 import cz.muni.ics.kypo.commons.security.enums.AuthenticatedUserOIDCItems;
+import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
 import cz.muni.ics.kypo.training.api.responses.PageResultResource;
-import cz.muni.ics.kypo.training.api.dto.UserInfoDTO;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelUpdateDTO;
 import cz.muni.ics.kypo.training.api.dto.betatestinggroup.BetaTestingGroupCreateDTO;
@@ -141,7 +142,7 @@ public class TrainingDefinitionsIT {
     private InfoLevelUpdateDTO infoLevelUpdateDTO, invalidInfoLevelUpdateDTO;
     private AssessmentLevel assessmentLevel1;
     private AssessmentLevelUpdateDTO assessmentLevelUpdateDTO, invalidAssessmentLevelUpdateDTO;
-    private UserInfoDTO userInfoDTO;
+    private UserRefDTO userRefDTO;
 
     @SpringBootApplication
     static class TestConfiguration {
@@ -173,13 +174,13 @@ public class TrainingDefinitionsIT {
         BetaTestingGroupUpdateDTO betaTestingGroupUpdateDTO = new BetaTestingGroupUpdateDTO();
         betaTestingGroupUpdateDTO.setOrganizersRefIds(Set.of(organizer2.getUserRefId()));
 
-        userInfoDTO = new UserInfoDTO();
-        userInfoDTO.setFullName("Ing. Mgr. MuDr. Boris Jadus");
-        userInfoDTO.setLogin("445469@muni.cz");
-        userInfoDTO.setGivenName("Boris");
-        userInfoDTO.setFamilyName("Jadus");
-        userInfoDTO.setIss("https://oidc.muni.cz");
-        userInfoDTO.setUserRefId(1L);
+        userRefDTO = new UserRefDTO();
+        userRefDTO.setUserRefFullName("Ing. Mgr. MuDr. Boris Jadus");
+        userRefDTO.setUserRefLogin("445469@muni.cz");
+        userRefDTO.setUserRefGivenName("Boris");
+        userRefDTO.setUserRefFamilyName("Jadus");
+        userRefDTO.setIss("https://oidc.muni.cz");
+        userRefDTO.setUserRefId(1L);
 
         gameLevel1 = new GameLevel();
         gameLevel1.setTitle("testTitle");
@@ -233,6 +234,7 @@ public class TrainingDefinitionsIT {
         assessmentLevelUpdateDTO.setMaxScore(50);
 
         invalidAssessmentLevelUpdateDTO = new AssessmentLevelUpdateDTO();
+        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
         trainingDefinitionCreateDTO = new TrainingDefinitionCreateDTO();
         trainingDefinitionCreateDTO.setTitle("testTitle");
@@ -241,7 +243,6 @@ public class TrainingDefinitionsIT {
         trainingDefinitionCreateDTO.setState(TDState.UNRELEASED);
         trainingDefinitionCreateDTO.setSandboxDefinitionRefId(1L);
         trainingDefinitionCreateDTO.setBetaTestingGroup(betaTestingGroupCreateDTO);
-        trainingDefinitionCreateDTO.setAuthorsRefIds(new HashSet<>(Arrays.asList(author1.getUserRefId())));
 
         releasedTrainingDefinition = new TrainingDefinition();
         releasedTrainingDefinition.setTitle("released");
@@ -280,7 +281,6 @@ public class TrainingDefinitionsIT {
         trainingDefinitionUpdateDTO.setShowStepperBar(true);
         trainingDefinitionUpdateDTO.setState(TDState.UNRELEASED);
         trainingDefinitionUpdateDTO.setSandboxDefinitionRefId(1L);
-        trainingDefinitionUpdateDTO.setAuthorsRefIds(new HashSet<>(Arrays.asList(author1.getUserRefId())));
         trainingDefinitionUpdateDTO.setBetaTestingGroup(betaTestingGroupUpdateDTO);
 
         invalidDefinitionUpdateDTO = new TrainingDefinitionUpdateDTO();
@@ -291,7 +291,6 @@ public class TrainingDefinitionsIT {
         updateForNonexistingDefinition.setState(TDState.UNRELEASED);
         updateForNonexistingDefinition.setSandboxDefinitionRefId(1L);
         updateForNonexistingDefinition.setBetaTestingGroup(betaTestingGroupUpdateDTO);
-        updateForNonexistingDefinition.setAuthorsRefIds(new HashSet<>(Arrays.asList(author1.getUserRefId())));
         updateForNonexistingDefinition.setShowStepperBar(true);
 
         trainingInstance = new TrainingInstance();
@@ -326,7 +325,7 @@ public class TrainingDefinitionsIT {
         GameLevelDTO gameLevelDTO = gameLevelMapper.mapToDTO(gameLevel1);
         gameLevelDTO.setLevelType(LevelType.GAME_LEVEL);
         definitionDTO.setLevels(new ArrayList<>(Collections.singleton(gameLevelDTO)));
-        assertTwoJsons(convertObjectToJsonBytes(definitionDTO), convertJsonBytesToString(result.getContentAsString()));
+        assertEquals(definitionDTO, mapper.readValue(convertJsonBytesToString(result.getContentAsString()), TrainingDefinitionByIdDTO.class));
     }
 
     @Test
@@ -374,6 +373,8 @@ public class TrainingDefinitionsIT {
         trainingDefinitionRepository.save(unreleasedDefinition);
         mockSpringSecurityContextForGet(List.of(RoleTypeSecurity.ROLE_TRAINING_ORGANIZER.name()));
 
+        given(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), eq(UserRefDTO.class))).
+                willReturn(new ResponseEntity<UserRefDTO>(userRefDTO, HttpStatus.OK));
         MockHttpServletResponse result = mvc.perform(get("/training-definitions/for-organizers"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
@@ -396,6 +397,8 @@ public class TrainingDefinitionsIT {
         trainingDefinitionRepository.save(unreleasedDefinition);
         mockSpringSecurityContextForGet(List.of(RoleTypeSecurity.ROLE_TRAINING_ORGANIZER.name(), RoleTypeSecurity.ROLE_TRAINING_DESIGNER.name()));
 
+        given(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), eq(UserRefDTO.class))).
+                willReturn(new ResponseEntity<UserRefDTO>(userRefDTO, HttpStatus.OK));
         MockHttpServletResponse result = mvc.perform(get("/training-definitions/for-organizers"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
@@ -443,11 +446,13 @@ public class TrainingDefinitionsIT {
     @Test
     public void createTrainingDefinition() throws Exception {
         mockSpringSecurityContextForGet(List.of(RoleTypeSecurity.ROLE_TRAINING_DESIGNER.name()));
+        PageResultResource<UserRefDTO> userRefDTOPageResultResource = new PageResultResource<>();
+        userRefDTOPageResultResource.setContent(List.of(userRefDTO));
 
         given(restTemplate.exchange(any(URI.class), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
-                willReturn(new ResponseEntity<List<UserInfoDTO>>(new ArrayList<>(Collections.singletonList(userInfoDTO)), HttpStatus.OK));
-        given(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
-                willReturn(new ResponseEntity<UserInfoDTO>(userInfoDTO, HttpStatus.OK));
+                willReturn(new ResponseEntity<PageResultResource<UserRefDTO>>(userRefDTOPageResultResource, HttpStatus.OK));
+        given(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), eq(UserRefDTO.class))).
+                willReturn(new ResponseEntity<UserRefDTO>(userRefDTO, HttpStatus.OK));
 
         MockHttpServletResponse result = mvc.perform(post("/training-definitions").content(convertObjectToJsonBytes(trainingDefinitionCreateDTO))
                 .contentType(MediaType.APPLICATION_JSON_VALUE))
@@ -464,10 +469,12 @@ public class TrainingDefinitionsIT {
     @Test
     public void createTrainingDefinitionWithoutBetaTestingGroup() throws Exception {
         mockSpringSecurityContextForGet(List.of(RoleTypeSecurity.ROLE_TRAINING_DESIGNER.name()));
+        PageResultResource<UserRefDTO> userRefDTOPageResultResource = new PageResultResource<>();
+        userRefDTOPageResultResource.setContent(List.of(userRefDTO));
         given(restTemplate.exchange(any(URI.class), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
-                willReturn(new ResponseEntity<List<UserInfoDTO>>(new ArrayList<>(Collections.singletonList(userInfoDTO)), HttpStatus.OK));
-        given(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
-                willReturn(new ResponseEntity<UserInfoDTO>(userInfoDTO, HttpStatus.OK));
+                willReturn(new ResponseEntity<PageResultResource<UserRefDTO>>(userRefDTOPageResultResource, HttpStatus.OK));
+        given(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), eq(UserRefDTO.class))).
+                willReturn(new ResponseEntity<UserRefDTO>(userRefDTO, HttpStatus.OK));
         trainingDefinitionCreateDTO.setBetaTestingGroup(null);
         MockHttpServletResponse result = mvc.perform(post("/training-definitions").content(convertObjectToJsonBytes(trainingDefinitionCreateDTO))
                 .contentType(MediaType.APPLICATION_JSON_VALUE))
@@ -495,10 +502,12 @@ public class TrainingDefinitionsIT {
     public void updateTrainingDefinition() throws Exception {
         TrainingDefinition tD = trainingDefinitionRepository.save(unreleasedDefinition);
         trainingDefinitionUpdateDTO.setId(tD.getId());
+        PageResultResource<UserRefDTO> userRefDTOPageResultResource = new PageResultResource<>();
+        userRefDTOPageResultResource.setContent(List.of(userRefDTO));
         given(restTemplate.exchange(any(URI.class), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
-                willReturn(new ResponseEntity<List<UserInfoDTO>>(new ArrayList<>(Collections.singletonList(userInfoDTO)), HttpStatus.OK));
-        given(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
-                willReturn(new ResponseEntity<UserInfoDTO>(userInfoDTO, HttpStatus.OK));
+                willReturn(new ResponseEntity<PageResultResource<UserRefDTO>>(userRefDTOPageResultResource, HttpStatus.OK));
+        given(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), eq(UserRefDTO.class))).
+                willReturn(new ResponseEntity<UserRefDTO>(userRefDTO, HttpStatus.OK));
         mvc.perform(put("/training-definitions").content(convertObjectToJsonBytes(trainingDefinitionUpdateDTO))
                 .contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isNoContent());
@@ -537,8 +546,10 @@ public class TrainingDefinitionsIT {
     public void updateTrainingDefinitionWithReleasedDefinition() throws Exception {
         TrainingDefinition tD = trainingDefinitionRepository.save(releasedTrainingDefinition);
         trainingDefinitionUpdateDTO.setId(tD.getId());
+        PageResultResource<UserRefDTO> userRefDTOPageResultResource = new PageResultResource<>();
+        userRefDTOPageResultResource.setContent(List.of(userRefDTO));
         given(restTemplate.exchange(any(URI.class), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
-                willReturn(new ResponseEntity<List<UserInfoDTO>>(new ArrayList<>(Collections.singletonList(userInfoDTO)), HttpStatus.OK));
+                willReturn(new ResponseEntity<PageResultResource<UserRefDTO>>(userRefDTOPageResultResource, HttpStatus.OK));
 
         Exception ex = mvc.perform(put("/training-definitions").content(convertObjectToJsonBytes(trainingDefinitionUpdateDTO))
                 .contentType(MediaType.APPLICATION_JSON_VALUE))
@@ -1241,11 +1252,6 @@ public class TrainingDefinitionsIT {
 
     private UserRef createUserRef(String login, String fullName, String givenName, String familyName, String iss, Long userRefId) {
         UserRef userRef = new UserRef();
-        userRef.setUserRefLogin(login);
-        userRef.setUserRefFullName(fullName);
-        userRef.setUserRefGivenName(givenName);
-        userRef.setUserRefFamilyName(familyName);
-        userRef.setIss(iss);
         userRef.setUserRefId(userRefId);
         return userRef;
     }

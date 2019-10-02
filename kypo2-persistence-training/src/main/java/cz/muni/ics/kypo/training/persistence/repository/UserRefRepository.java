@@ -39,12 +39,4 @@ public interface UserRefRepository extends JpaRepository<UserRef, Long>,
     @Query("SELECT ur FROM UserRef ur WHERE ur.userRefId = :userRefId")
     Optional<UserRef> findUserByUserRefId(@Param("userRefId") Long userRefId);
 
-    /**
-     * Find user by user ref login and issuer.
-     *
-     * @param userRefLogin the user login
-     * @param iss the issuer which provides authentication of the user
-     * @return the {@link UserRef}
-     */
-    Optional<UserRef> findUserByUserRefLoginAndIss(String userRefLogin, String iss);
 }

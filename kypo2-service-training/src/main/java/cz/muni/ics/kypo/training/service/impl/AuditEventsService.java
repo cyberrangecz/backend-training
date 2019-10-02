@@ -3,15 +3,28 @@ package cz.muni.ics.kypo.training.service.impl;
 import cz.muni.csirt.kypo.elasticsearch.service.AuditService;
 import cz.muni.csirt.kypo.events.trainings.*;
 import cz.muni.csirt.kypo.events.trainings.enums.LevelType;
+import cz.muni.ics.kypo.commons.security.mapping.UserInfoDTO;
 import cz.muni.ics.kypo.training.api.dto.AuditInfoDTO;
+import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
 import cz.muni.ics.kypo.training.persistence.model.*;
+import org.codehaus.jackson.map.ObjectReader;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.actuate.metrics.web.client.RestTemplateExchangeTags;
+import org.springframework.http.*;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestTemplate;
 
+import javax.servlet.http.HttpServletRequest;
 import java.time.Clock;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * @author Pavel Seda
@@ -20,10 +33,17 @@ import java.time.temporal.ChronoUnit;
 public class AuditEventsService {
 
     private AuditService auditService;
+    private RestTemplate restTemplate;
+    private HttpServletRequest servletRequest;
+
+    @Value("${user-and-group-server.uri}")
+    private String userAndGroupUrl;
 
     @Autowired
-    public AuditEventsService(AuditService auditService) {
+    public AuditEventsService(AuditService auditService, RestTemplate restTemplate, HttpServletRequest servletRequest) {
         this.auditService = auditService;
+        this.restTemplate = restTemplate;
+        this.servletRequest = servletRequest;
     }
 
 
@@ -261,21 +281,36 @@ public class AuditEventsService {
         TrainingInstance trainingInstance = trainingRun.getTrainingInstance();
         AuditInfoDTO auditInfoDTO = new AuditInfoDTO();
 
-        if(trainingRun.getParticipantRef() != null && trainingRun.getParticipantRef().getUserRefLogin() != null)
-            auditInfoDTO.setPlayerLogin(trainingRun.getParticipantRef().getUserRefLogin());
-        else auditInfoDTO.setPlayerLogin("");
+        String userAndGroupUserInfoById = userAndGroupUrl + "/users/" + trainingRun.getParticipantRef().getUserRefId();
+        HttpHeaders httpHeaders = new HttpHeaders();
+        httpHeaders.setContentType(MediaType.APPLICATION_JSON);
+        HttpEntity<String> entity = new HttpEntity<>(httpHeaders);
+        try {
+            ResponseEntity<UserRefDTO> response =
+                    restTemplate.exchange(userAndGroupUserInfoById, HttpMethod.GET, entity, UserRefDTO.class);
+            UserRefDTO participantInfo = response.getBody();
+            Objects.requireNonNull(participantInfo);
 
-        if(trainingRun.getParticipantRef() != null && trainingRun.getParticipantRef().getUserRefFullName() != null)
-            auditInfoDTO.setFullName(trainingRun.getParticipantRef().getUserRefFullName());
-        else auditInfoDTO.setFullName("");
+            if(participantInfo.getUserRefLogin() != null)
+                auditInfoDTO.setPlayerLogin(participantInfo.getUserRefLogin());
+            else auditInfoDTO.setPlayerLogin("");
 
-        if(trainingRun.getParticipantRef() != null && trainingRun.getParticipantRef().getUserRefGivenName() != null && trainingRun.getParticipantRef().getUserRefFamilyName() != null)
-            auditInfoDTO.setFullNameWithoutTitles(trainingRun.getParticipantRef().getUserRefGivenName() +" "+ trainingRun.getParticipantRef().getUserRefFamilyName());
-        else auditInfoDTO.setFullNameWithoutTitles("");
+            if(participantInfo.getUserRefFullName() != null)
+                auditInfoDTO.setFullName(participantInfo.getUserRefFullName());
+            else auditInfoDTO.setFullName("");
 
-        if(trainingRun.getParticipantRef() != null && trainingRun.getParticipantRef().getIss() != null)
-            auditInfoDTO.setIss(trainingRun.getParticipantRef().getIss());
-        else auditInfoDTO.setIss("");
+            if(participantInfo.getUserRefGivenName() != null && participantInfo.getUserRefFamilyName() != null)
+                auditInfoDTO.setFullNameWithoutTitles(participantInfo.getUserRefGivenName() +" "+ participantInfo.getUserRefFamilyName());
+            else auditInfoDTO.setFullNameWithoutTitles("");
+
+            if(participantInfo.getIss() != null )
+                auditInfoDTO.setIss(participantInfo.getIss());
+            else auditInfoDTO.setIss("");
+        } catch (HttpClientErrorException ex) {
+            throw new SecurityException("Error while getting info about user (user_ref_id: " + trainingRun.getParticipantRef().getUserRefId() + ") : " + ex.getStatusCode());
+        }
+
+
 
         auditInfoDTO.setUserRefId(trainingRun.getParticipantRef().getUserRefId());
         auditInfoDTO.setSandboxId(trainingInstance.getTrainingDefinition().getSandboxDefinitionRefId());

@@ -66,7 +66,15 @@ public interface TrainingDefinitionMapper extends ParentMapper {
 
     default PageResultResource<TrainingDefinitionDTO> mapToPageResultResource(Page<TrainingDefinition> objects) {
         List<TrainingDefinitionDTO> mapped = new ArrayList<>();
-        objects.forEach(object -> mapped.add(mapToDTO(object)));
+        objects.forEach(object ->
+                {
+                    TrainingDefinitionDTO objectDTO = mapToDTO(object);
+                    if(object.getBetaTestingGroup() != null) {
+                        objectDTO.setBetaTestingGroupId(object.getBetaTestingGroup().getId());
+                    }
+                    mapped.add(objectDTO);
+
+                });
         return new PageResultResource<>(mapped, createPagination(objects));
     }
 

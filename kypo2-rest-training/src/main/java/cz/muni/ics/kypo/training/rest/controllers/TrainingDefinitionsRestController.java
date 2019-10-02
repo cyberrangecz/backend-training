@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.bohnman.squiggly.Squiggly;
 import com.github.bohnman.squiggly.util.SquigglyUtils;
 import com.querydsl.core.types.Predicate;
+import cz.muni.ics.kypo.commons.security.mapping.UserInfoDTO;
 import cz.muni.ics.kypo.training.api.responses.PageResultResource;
 import cz.muni.ics.kypo.training.api.dto.*;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelUpdateDTO;
@@ -32,6 +33,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.List;
+import java.util.Set;
 
 /**
  * The type Training definitions rest controller.
@@ -319,13 +321,12 @@ public class TrainingDefinitionsRestController {
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.")
     })
     @PutMapping(path = "/{definitionId}/levels/{levelIdFrom}/swap-with/{levelIdTo}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Object> swapLevels(
-            @ApiParam(value = "Id of training definition", required = true)
-            @PathVariable("definitionId") Long definitionId,
-            @ApiParam(value = "Id of training definition", required = true)
-            @PathVariable("levelIdFrom") Long levelIdFrom,
-            @ApiParam(value = "Id of training definition", required = true)
-            @PathVariable("levelIdTo") Long levelIdTo) {
+    public ResponseEntity<Object> swapLevels(@ApiParam(value = "Id of training definition", required = true)
+                                             @PathVariable("definitionId") Long definitionId,
+                                             @ApiParam(value = "Id of training definition", required = true)
+                                             @PathVariable("levelIdFrom") Long levelIdFrom,
+                                             @ApiParam(value = "Id of training definition", required = true)
+                                             @PathVariable("levelIdTo") Long levelIdTo) {
         try {
             return ResponseEntity.ok(trainingDefinitionFacade.swapLevels(definitionId, levelIdFrom, levelIdTo));
         } catch (FacadeLayerException ex) {
@@ -386,9 +387,8 @@ public class TrainingDefinitionsRestController {
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.")
     })
     @DeleteMapping(path = "/{id}")
-    public ResponseEntity<Void> deleteTrainingDefinition(
-            @ApiParam(value = "Id of training definition to be deleted")
-            @PathVariable("id") Long id) {
+    public ResponseEntity<Void> deleteTrainingDefinition(@ApiParam(value = "Id of training definition to be deleted")
+                                                         @PathVariable("id") Long id) {
         try {
             trainingDefinitionFacade.delete(id);
             return ResponseEntity.ok().build();
@@ -418,11 +418,10 @@ public class TrainingDefinitionsRestController {
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.")
     })
     @DeleteMapping(path = "/{definitionId}/levels/{levelId}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Object> deleteOneLevel(
-            @ApiParam(value = "Id of training definition from which level is deleted")
-            @PathVariable("definitionId") Long definitionId,
-            @ApiParam(value = "Id of level to be deleted")
-            @PathVariable("levelId") Long levelId) {
+    public ResponseEntity<Object> deleteOneLevel(@ApiParam(value = "Id of training definition from which level is deleted")
+                                                 @PathVariable("definitionId") Long definitionId,
+                                                 @ApiParam(value = "Id of level to be deleted")
+                                                 @PathVariable("levelId") Long levelId) {
         try {
             return ResponseEntity.ok(trainingDefinitionFacade.deleteOneLevel(definitionId, levelId));
         } catch (FacadeLayerException ex) {
@@ -450,11 +449,10 @@ public class TrainingDefinitionsRestController {
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.")
     })
     @PutMapping(path = "/{definitionId}/game-levels", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Void> updateGameLevel(
-            @ApiParam(value = "Id of definition to which level is assigned", required = true)
-            @PathVariable(value = "definitionId") Long definitionId,
-            @ApiParam(value = "Game level to be updated")
-            @RequestBody @Valid GameLevelUpdateDTO gameLevelUpdateDTO) {
+    public ResponseEntity<Void> updateGameLevel(@ApiParam(value = "Id of definition to which level is assigned", required = true)
+                                                @PathVariable(value = "definitionId") Long definitionId,
+                                                @ApiParam(value = "Game level to be updated")
+                                                @RequestBody @Valid GameLevelUpdateDTO gameLevelUpdateDTO) {
         try {
             trainingDefinitionFacade.updateGameLevel(definitionId, gameLevelUpdateDTO);
             return ResponseEntity.noContent().build();
@@ -483,11 +481,10 @@ public class TrainingDefinitionsRestController {
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.")
     })
     @PutMapping(path = "/{definitionId}/info-levels", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Void> updateInfoLevel(
-            @ApiParam(value = "Id of definition to which level is assigned", required = true)
-            @PathVariable(value = "definitionId") Long definitionId,
-            @ApiParam(value = "Info level to be updated")
-            @RequestBody @Valid InfoLevelUpdateDTO infoLevelUpdateDTO) {
+    public ResponseEntity<Void> updateInfoLevel(@ApiParam(value = "Id of definition to which level is assigned", required = true)
+                                                @PathVariable(value = "definitionId") Long definitionId,
+                                                @ApiParam(value = "Info level to be updated")
+                                                @RequestBody @Valid InfoLevelUpdateDTO infoLevelUpdateDTO) {
         try {
             trainingDefinitionFacade.updateInfoLevel(definitionId, infoLevelUpdateDTO);
             return ResponseEntity.noContent().build();
@@ -516,11 +513,10 @@ public class TrainingDefinitionsRestController {
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.")
     })
     @PutMapping(path = "/{definitionId}/assessment-levels", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Void> updateAssessmentLevel(
-            @ApiParam(value = "Id of definition to which level is assigned", required = true)
-            @PathVariable(value = "definitionId") Long definitionId,
-            @ApiParam(value = "Assessment level to be updated")
-            @RequestBody @Valid AssessmentLevelUpdateDTO assessmentLevelUpdateDTO) {
+    public ResponseEntity<Void> updateAssessmentLevel(@ApiParam(value = "Id of definition to which level is assigned", required = true)
+                                                      @PathVariable(value = "definitionId") Long definitionId,
+                                                      @ApiParam(value = "Assessment level to be updated")
+                                                      @RequestBody @Valid AssessmentLevelUpdateDTO assessmentLevelUpdateDTO) {
         try {
             trainingDefinitionFacade.updateAssessmentLevel(definitionId, assessmentLevelUpdateDTO);
             return ResponseEntity.noContent().build();
@@ -548,11 +544,10 @@ public class TrainingDefinitionsRestController {
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.")
     })
     @GetMapping(path = "/levels/{levelId}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Object> findLevelById(
-            @ApiParam(value = "Id of wanted level", required = true)
-            @PathVariable(value = "levelId") Long levelId,
-            @ApiParam(value = "Fields which should be returned in REST API response", required = false)
-            @RequestParam(value = "fields", required = false) String fields) {
+    public ResponseEntity<Object> findLevelById(@ApiParam(value = "Id of wanted level", required = true)
+                                                @PathVariable(value = "levelId") Long levelId,
+                                                @ApiParam(value = "Fields which should be returned in REST API response", required = false)
+                                                @RequestParam(value = "fields", required = false) String fields) {
         try {
             AbstractLevelDTO level = trainingDefinitionFacade.findLevelById(levelId);
             Squiggly.init(objectMapper, fields);
@@ -584,13 +579,12 @@ public class TrainingDefinitionsRestController {
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.")
     })
     @PostMapping(path = "/{definitionId}/levels/{levelType}")
-    public ResponseEntity<Object> createLevel(
-            @ApiParam(value = "Id of definition for which is level created", required = true)
-            @PathVariable(value = "definitionId") Long definitionId,
-            @ApiParam(value = "Level type", allowableValues = "GAME, ASSESSMENT, INFO", required = true)
-            @PathVariable(value = "levelType") LevelType levelType,
-            @ApiParam(value = "Fields which should be returned in REST API response", required = false)
-            @RequestParam(value = "fields", required = false) String fields) {
+    public ResponseEntity<Object> createLevel(@ApiParam(value = "Id of definition for which is level created", required = true)
+                                              @PathVariable(value = "definitionId") Long definitionId,
+                                              @ApiParam(value = "Level type", allowableValues = "GAME, ASSESSMENT, INFO", required = true)
+                                              @PathVariable(value = "levelType") LevelType levelType,
+                                              @ApiParam(value = "Fields which should be returned in REST API response", required = false)
+                                              @RequestParam(value = "fields", required = false) String fields) {
         try {
             BasicLevelInfoDTO basicLevelInfoDTO;
             if (levelType.equals(LevelType.GAME)) {
@@ -607,29 +601,44 @@ public class TrainingDefinitionsRestController {
         }
     }
 
+    @ApiModel(value = "UserInfoRestResource",
+            description = "Content (Retrieved data) and meta information about REST API result page. Including page number, number of elements in page, size of elements, total number of elements and total number of pages")
+    private static class UserInfoRestResource extends PageResultResource<UserInfoDTO> {
+        @JsonProperty(required = true)
+        @ApiModelProperty(value = "Retrieved Training Instances from databases.")
+        private List<UserRefDTO> content;
+        @JsonProperty(required = true)
+        @ApiModelProperty(value = "Pagination including: page number, number of elements in page, size, total elements and total pages.")
+        private Pagination pagination;
+    }
+
+
     /**
      * Get requested designers.
      *
-     * @param predicate  specifies query to database.
      * @param pageable   pageable parameter with information about pagination.
      * @return List of users login and full name with role designer.
      */
     @ApiOperation(httpMethod = "GET",
             value = "Get designers.",
-            response = UserDTO.class,
-            nickname = "findTrainingDefinitionById",
+            response = UserInfoRestResource.class,
+            nickname = "getDesigners",
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Designers found.", response = String[].class),
+            @ApiResponse(code = 200, message = "Designers found.", response = UserInfoRestResource.class),
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.")
 
     })
+    @ApiPageableSwagger
     @GetMapping(path = "/designers", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Object> getDesigners(@QuerydslPredicate(root = TrainingDefinition.class) Predicate predicate,
+    public ResponseEntity<Object> getDesigners(@ApiParam(value = "Given name filter.", required = false)
+                                               @RequestParam(value = "givenName", required = false) String givenName,
+                                               @ApiParam(value = "Family name filter.", required = false)
+                                               @RequestParam(value = "familyName", required = false) String familyName,
                                                Pageable pageable) {
         try {
-            List<UserInfoDTO> designers = trainingDefinitionFacade.getUsersWithGivenRole(cz.muni.ics.kypo.training.api.enums.RoleType.ROLE_TRAINING_DESIGNER, pageable);
+            PageResultResource<UserRefDTO> designers = trainingDefinitionFacade.getUsersWithGivenRole(cz.muni.ics.kypo.training.api.enums.RoleType.ROLE_TRAINING_DESIGNER, pageable, givenName, familyName);
             return ResponseEntity.ok(SquigglyUtils.stringify(objectMapper, designers));
         } catch (FacadeLayerException ex) {
             throw ExceptionSorter.throwException(ex);
@@ -637,28 +646,166 @@ public class TrainingDefinitionsRestController {
     }
 
     /**
-     * Get requested designers.
+     * Get requested organizers.
      *
-     * @param predicate  specifies query to database.
      * @param pageable   pageable parameter with information about pagination.
      * @return List of users login and full name with role designer.
      */
     @ApiOperation(httpMethod = "GET",
             value = "Get organizers.",
-            response = UserDTO.class,
+            response = UserInfoRestResource.class,
             nickname = "getOrganizers",
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Organizers found.", response = String[].class),
+            @ApiResponse(code = 200, message = "Organizers found.", response = UserInfoRestResource.class),
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.")
     })
     @GetMapping(path = "/organizers", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Object> getOrganizers(@QuerydslPredicate(root = TrainingDefinition.class) Predicate predicate,
-                                                Pageable pageable) {
+    public ResponseEntity<Object> getOrganizers(@ApiParam(value = "Given name filter.", required = false)
+                                                @RequestParam(value = "givenName", required = false) String givenName,
+                                                @ApiParam(value = "Family name filter.", required = false)
+                                                @RequestParam(value = "familyName", required = false) String familyName,
+                                                @ApiParam(value = "Pagination support.", required = false) Pageable pageable) {
         try {
-            List<UserInfoDTO> designers = trainingDefinitionFacade.getUsersWithGivenRole(RoleType.ROLE_TRAINING_ORGANIZER, pageable);
+            PageResultResource<UserRefDTO> designers = trainingDefinitionFacade.getUsersWithGivenRole(RoleType.ROLE_TRAINING_ORGANIZER, pageable, givenName, familyName);
             return ResponseEntity.ok(SquigglyUtils.stringify(objectMapper, designers));
+        } catch (FacadeLayerException ex) {
+            throw ExceptionSorter.throwException(ex);
+        }
+    }
+
+    /**
+     * Get requested designers not in given training definition.
+     *
+     * @param trainingDefinitionId id of the training definition
+     * @param pageable   pageable parameter with information about pagination.
+     * @return List of users login and full name with role designer.
+     */
+    @ApiOperation(httpMethod = "GET",
+            value = "Get designers not in given training definition.",
+            response = UserInfoRestResource.class,
+            nickname = "findDesignersNotInGivenTrainingDefinition",
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Designers found.", response = UserInfoRestResource.class),
+            @ApiResponse(code = 404, message = "Training definition not found."),
+            @ApiResponse(code = 500, message = "Unexpected condition was encountered.")
+
+    })
+    @ApiPageableSwagger
+    @GetMapping(path = "{id}/designers-not-in-training-definition", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Object> getDesignersNotInGivenTrainingDefinition(@ApiParam(value = "ID of the training definition which do not contains authors you want to retrieve.", required = true)
+                                                                           @PathVariable(value = "id") Long trainingDefinitionId,
+                                                                           @ApiParam(value = "Given name filter.", required = false)
+                                                                           @RequestParam(value = "givenName", required = false) String givenName,
+                                                                           @ApiParam(value = "Family name filter.", required = false)
+                                                                           @RequestParam(value = "familyName", required = false) String familyName,
+                                                                           Pageable pageable) {
+        try {
+            PageResultResource<UserRefDTO> designers = trainingDefinitionFacade.getDesignersNotInGivenTrainingDefinition(trainingDefinitionId, pageable, givenName, familyName);
+            return ResponseEntity.ok(SquigglyUtils.stringify(objectMapper, designers));
+        } catch (FacadeLayerException ex) {
+            throw ExceptionSorter.throwException(ex);
+        }
+    }
+
+    /**
+     * Get requested beta testers for training definition.
+     *
+     * @param pageable   pageable parameter with information about pagination.
+     * @param trainingDefinitionId id of training definition for which to get beta testers
+     * @return List of beta testers and theirs info.
+     */
+    @ApiOperation(httpMethod = "GET",
+            value = "Get beta testers.",
+            response = UserInfoRestResource.class,
+            nickname = "getBetaTesters",
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Beta testers found.", response = UserInfoRestResource.class),
+            @ApiResponse(code = 404, message = "Training definition not found."),
+            @ApiResponse(code = 500, message = "Unexpected condition was encountered.")
+    })
+    @ApiPageableSwagger
+    @GetMapping(path = "/{id}/beta-testers", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Object> getBetaTesters(@ApiParam(value = "ID of the training definition which contains beta testers you want to retrieve", required = true)
+                                                 @PathVariable(value = "id", required = true) Long trainingDefinitionId,
+                                                 @ApiParam(value = "Pagination support.", required = false) Pageable pageable) {
+        try {
+            PageResultResource<UserRefDTO> designers = trainingDefinitionFacade.getBetaTesters(trainingDefinitionId, pageable);
+            return ResponseEntity.ok(SquigglyUtils.stringify(objectMapper, designers));
+        } catch (FacadeLayerException ex) {
+            throw ExceptionSorter.throwException(ex);
+        }
+    }
+
+    /**
+     * Get requested authors for training definition.
+     *
+     * @param pageable   pageable parameter with information about pagination.
+     * @param trainingDefinitionId id of training definition for which to retrieve authors
+     * @return List of users login and full name with role designer.
+     */
+    @ApiOperation(httpMethod = "GET",
+            value = "Get authors.",
+            response = UserInfoRestResource.class,
+            nickname = "getAuthors",
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Authors found.", response = UserInfoRestResource.class),
+            @ApiResponse(code = 404, message = "Training definition not found"),
+            @ApiResponse(code = 500, message = "Unexpected condition was encountered.")
+    })
+    @ApiPageableSwagger
+    @GetMapping(path = "/{id}/authors", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Object> getAuthors(@ApiParam(value = "ID of the training definition which contains authors you want to retrieve.", required = true)
+                                             @PathVariable(value = "id", required = true) Long trainingDefinitionId,
+                                             @ApiParam(value = "Given name filter.", required = false)
+                                             @RequestParam(value = "givenName", required = false) String givenName,
+                                             @ApiParam(value = "Family name filter.", required = false)
+                                             @RequestParam(value = "familyName", required = false) String familyName,
+                                             @ApiParam(value = "Pagination support.", required = false) Pageable pageable) {
+        try {
+            PageResultResource<UserRefDTO> designers = trainingDefinitionFacade.getAuthors(trainingDefinitionId, pageable, givenName, familyName);
+            return ResponseEntity.ok(SquigglyUtils.stringify(objectMapper, designers));
+        } catch (FacadeLayerException ex) {
+            throw ExceptionSorter.throwException(ex);
+        }
+    }
+
+    /**
+     * Concurrently add/remove authors with given ids to/from the training definition.
+     *
+     * @param trainingDefinitionId id of training definition for which to retrieve authors
+     * @param authorsAddition ids of the authors to be added to the training definition.
+     * @param authorsRemoval ids of the authors to be removed from the training definition.
+     */
+    @ApiOperation(httpMethod = "PUT",
+            value = "Edit authors.",
+            response = UserInfoRestResource.class,
+            nickname = "editAuthors",
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Authors in training definition updated."),
+            @ApiResponse(code = 404, message = "Training definition not found."),
+            @ApiResponse(code = 500, message = "Unexpected condition was encountered.")
+    })
+    @ApiPageableSwagger
+    @PutMapping(path = "/{id}/authors", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Void> editAuthors(@ApiParam(value = "ID of training definition to be updated.", required = true)
+                                            @PathVariable(value = "id", required = true) Long trainingDefinitionId,
+                                            @ApiParam(value = "Ids of the users to be added to the training definition.")
+                                            @RequestParam(value = "authorsAddition", required = false) Set<Long> authorsAddition,
+                                            @ApiParam(value = "Ids of the users to be removed from the training definition.")
+                                            @RequestParam(value = "authorsRemoval", required = false) Set<Long> authorsRemoval) {
+        try {
+            trainingDefinitionFacade.editAuthors(trainingDefinitionId, authorsAddition, authorsRemoval);
+            return ResponseEntity.noContent().build();
         } catch (FacadeLayerException ex) {
             throw ExceptionSorter.throwException(ex);
         }

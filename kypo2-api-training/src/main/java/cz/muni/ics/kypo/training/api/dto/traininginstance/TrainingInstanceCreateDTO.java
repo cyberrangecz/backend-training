@@ -36,8 +36,6 @@ public class TrainingInstanceCreateDTO {
     private String accessToken;
     @NotNull(message = "{traininginstancecreate.trainingDefinition.NotNull.message}")
     private long trainingDefinitionId;
-    @NotNull(message = "{traininginstancecreate.organizersRefIds.NotNull.message}")
-    private Set<Long> organizersRefIds;
 
     /**
      * Gets start time.
@@ -151,25 +149,6 @@ public class TrainingInstanceCreateDTO {
      */
     public void setTrainingDefinitionId(long trainingDefinitionId) {
         this.trainingDefinitionId = trainingDefinitionId;
-    }
-
-    /**
-     * Gets organizers ids.
-     *
-     * @return the organizers ids
-     */
-    @ApiModelProperty(value = "Reference to users which organize training instance.", required = true)
-    public Set<Long> getOrganizersRefIds() {
-        return organizersRefIds;
-    }
-
-    /**
-     * Sets organizers user ref ids.
-     *
-     * @param organizersRefIds the organizers user ref ids
-     */
-    public void setOrganizersRefIds(Set<Long> organizersRefIds) {
-        this.organizersRefIds = organizersRefIds;
     }
 
     @Override

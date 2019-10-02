@@ -1,5 +1,6 @@
 package cz.muni.ics.kypo.training.facade;
 
+import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
 import cz.muni.ics.kypo.training.api.dto.run.TrainingRunDTO;
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceIsFinishedInfoDTO;
 import cz.muni.ics.kypo.training.exceptions.FacadeLayerException;
@@ -10,6 +11,7 @@ import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceCreate
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceDTO;
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceUpdateDTO;
 
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -97,4 +99,32 @@ public interface TrainingInstanceFacade {
      * @return true if instance can be deleted, false if not and message. {@link TrainingInstanceIsFinishedInfoDTO}
      */
     TrainingInstanceIsFinishedInfoDTO checkIfInstanceCanBeDeleted(Long trainingInstanceId);
+
+    /**
+     * Retrieve all organizers for given training instance .
+     *
+     * @param trainingInstanceId id of the training instance for which to get the organizers
+     * @return returns all organizers in given training instance.
+     */
+    PageResultResource<UserRefDTO> getOrganizersOfTrainingInstance(Long trainingInstanceId, Pageable pageable, String givenName, String familyName);
+
+    /**
+     * Retrieve all organizers not in the given training instance.
+     *
+     * @param trainingInstanceId id of the training instance which users should be excluded from the result list.
+     * @return returns all organizers not in the given training instance.
+     */
+    PageResultResource<UserRefDTO> getOrganizersNotInGivenTrainingInstance(Long trainingInstanceId, Pageable pageable, String givenName, String familyName);
+
+    /**
+     * Concurrently add organizers to the given training instance and remove authors from the training instance.
+     *
+     * @param trainingInstanceId if of the training instance to be updated
+     * @param organizersAddition ids of the organizers to be added to the training instance
+     * @param organizersRemoval ids of the organizers to be removed from the training instance.
+     * @throws FacadeLayerException with ErrorCode: RESOURCE_NOT_FOUND given training instance not found.
+     *                                              RESOURCE_CONFLICT released or archived training instance cannot be modified.
+     */
+    void editOrganizers(Long trainingInstanceId, Set<Long> organizersAddition, Set<Long> organizersRemoval) throws FacadeLayerException;
+
 }

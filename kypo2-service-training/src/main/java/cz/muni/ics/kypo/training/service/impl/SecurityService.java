@@ -3,7 +3,6 @@ package cz.muni.ics.kypo.training.service.impl;
 import com.google.gson.JsonObject;
 import cz.muni.ics.kypo.commons.security.enums.AuthenticatedUserOIDCItems;
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalRO;
-import cz.muni.ics.kypo.training.api.dto.UserInfoDTO;
 import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
 import cz.muni.ics.kypo.training.enums.RoleTypeSecurity;
 import cz.muni.ics.kypo.training.exceptions.ErrorCode;
@@ -15,7 +14,6 @@ import cz.muni.ics.kypo.training.persistence.model.UserRef;
 import cz.muni.ics.kypo.training.persistence.repository.TrainingDefinitionRepository;
 import cz.muni.ics.kypo.training.persistence.repository.TrainingInstanceRepository;
 import cz.muni.ics.kypo.training.persistence.repository.TrainingRunRepository;
-import cz.muni.ics.kypo.training.persistence.repository.UserRefRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
@@ -27,8 +25,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
-
-import java.util.Optional;
 
 /**
  * @author Dominik Pilar
@@ -137,20 +133,19 @@ public class SecurityService {
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.setContentType(MediaType.APPLICATION_JSON);
         try {
-            ResponseEntity<UserInfoDTO> userInfoResponseEntity = restTemplate.exchange(userAndGroupURI + "/users/info", HttpMethod.GET, new HttpEntity<>(httpHeaders), new ParameterizedTypeReference<UserInfoDTO>() {
-            });
-            UserInfoDTO userRefDto = userInfoResponseEntity.getBody();
+            ResponseEntity<UserRefDTO> userInfoResponseEntity = restTemplate.exchange(userAndGroupURI + "/users/info", HttpMethod.GET, new HttpEntity<>(httpHeaders), UserRefDTO.class);
+            UserRefDTO userRefDto = userInfoResponseEntity.getBody();
             return userRefDto.getUserRefId();
         } catch (HttpClientErrorException ex) {
             throw new ServiceLayerException("Error from retrieving information from user and group service: " + ex.getMessage() + " - " + ex.getResponseBodyAsString(), ErrorCode.UNEXPECTED_ERROR);
         }
     }
 
-    public UserInfoDTO getUserRefDTOFromUserAndGroup() {
+    public UserRefDTO getUserRefDTOFromUserAndGroup() {
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.setContentType(MediaType.APPLICATION_JSON);
         try {
-            ResponseEntity<UserInfoDTO> userInfoResponseEntity = restTemplate.exchange(userAndGroupURI + "/users/info", HttpMethod.GET, new HttpEntity<>(httpHeaders), new ParameterizedTypeReference<UserInfoDTO>() {
+            ResponseEntity<UserRefDTO> userInfoResponseEntity = restTemplate.exchange(userAndGroupURI + "/users/info", HttpMethod.GET, new HttpEntity<>(httpHeaders), new ParameterizedTypeReference<UserRefDTO>() {
             });
             return userInfoResponseEntity.getBody();
         } catch (HttpClientErrorException ex) {
@@ -163,17 +158,12 @@ public class SecurityService {
         httpHeaders.setContentType(MediaType.APPLICATION_JSON);
 
         try {
-            ResponseEntity<UserInfoDTO> userInfoResponseEntity = restTemplate.exchange(userAndGroupURI + "/users/info", HttpMethod.GET, new HttpEntity<>(httpHeaders), new ParameterizedTypeReference<UserInfoDTO>() {
+            ResponseEntity<UserRefDTO> userInfoResponseEntity = restTemplate.exchange(userAndGroupURI + "/users/info", HttpMethod.GET, new HttpEntity<>(httpHeaders), new ParameterizedTypeReference<UserRefDTO>() {
             });
-            UserInfoDTO userRefDto = userInfoResponseEntity.getBody();
+            UserRefDTO userRefDto = userInfoResponseEntity.getBody();
 
             UserRef userRef = new UserRef();
             userRef.setUserRefId(userRefDto.getUserRefId());
-            userRef.setIss(userRefDto.getIss());
-            userRef.setUserRefGivenName(userRefDto.getGivenName());
-            userRef.setUserRefFamilyName(userRefDto.getFamilyName());
-            userRef.setUserRefLogin(userRefDto.getLogin());
-            userRef.setUserRefFullName(userRefDto.getFullName());
             return userRef;
         } catch (HttpClientErrorException ex) {
             throw new ServiceLayerException("Error from retrieving information from user management service: " + ex.getMessage() + " - " + ex.getResponseBodyAsString(), ErrorCode.UNEXPECTED_ERROR);

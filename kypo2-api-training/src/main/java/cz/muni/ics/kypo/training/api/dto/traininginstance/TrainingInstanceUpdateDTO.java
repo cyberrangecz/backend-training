@@ -38,8 +38,6 @@ public class TrainingInstanceUpdateDTO {
     private String accessToken;
     @NotNull(message = "{traininginstanceupdate.trainingDefinition.NotNull.message}")
     private Long trainingDefinitionId;
-    @NotNull(message = "{traininginstanceupdate.organizersRefIds.NotNull.message}")
-    private Set<Long> organizersRefIds;
 
     /**
      * Gets id.
@@ -174,24 +172,6 @@ public class TrainingInstanceUpdateDTO {
         this.trainingDefinitionId = trainingDefinitionId;
     }
 
-    /**
-     * Gets organizers ids.
-     *
-     * @return the organizers ids
-     */
-    @ApiModelProperty(value = "Reference to users which organize training instance.", required = true)
-    public Set<Long> getOrganizersRefIds() {
-        return organizersRefIds;
-    }
-
-    /**
-     * Sets organizers ids.
-     *
-     * @param organizersRefIds the organizers user ref ids
-     */
-    public void setOrganizersRefIds(Set<Long> organizersRefIds) {
-        this.organizersRefIds = organizersRefIds;
-    }
 
     @Override
     public String toString() {
@@ -203,7 +183,6 @@ public class TrainingInstanceUpdateDTO {
                 ", poolSize=" + poolSize +
                 ", accessToken='" + accessToken + '\'' +
                 ", trainingDefinitionId=" + trainingDefinitionId +
-                ", organizersUserRefIds=" + organizersRefIds +
                 '}';
     }
 }

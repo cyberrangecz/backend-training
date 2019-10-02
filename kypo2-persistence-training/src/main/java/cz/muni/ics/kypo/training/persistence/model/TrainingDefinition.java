@@ -192,13 +192,12 @@ public class TrainingDefinition implements Serializable {
     }
 
     /**
-     * Removes user to the set of authors that can make changes to the Training definition
+     * Remove authors with given ids from the set of authors.
      *
-     * @param authorRef the author ref
+     * @param userRefIds ids of the authors to be removed.
      */
-    public void removeAuthor(UserRef authorRef) {
-        this.authors.remove(authorRef);
-        authorRef.removeTrainingDefinition(this);
+    public void removeAuthorsByUserRefIds(Set<Long> userRefIds) {
+        this.authors.removeIf(userRef -> userRefIds.contains(userRef.getUserRefId()));
     }
 
     /**

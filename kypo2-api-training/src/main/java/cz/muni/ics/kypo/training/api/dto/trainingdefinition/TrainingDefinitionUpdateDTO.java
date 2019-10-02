@@ -31,8 +31,6 @@ public class TrainingDefinitionUpdateDTO {
     private String[] outcomes;
     @NotNull(message = "{trainingdefinitionupdate.state.NotNull.message}")
     private TDState state;
-    @NotNull(message = "{trainingdefinitioncreate.authors.NotNull.message}")
-    private Set<Long> authorsRefIds = new HashSet<>();
     @Valid
     private BetaTestingGroupUpdateDTO betaTestingGroup;
     private Long sandboxDefinitionRefId;
@@ -154,20 +152,6 @@ public class TrainingDefinitionUpdateDTO {
     }
 
     /**
-     * Gets authors ids.
-     *
-     * @return the authors ids
-     */
-    @ApiModelProperty(value = "References (IDs) to the authors of the training definition.", required = true, example = "[1]")
-    public Set<Long> getAuthorsRefIds() {
-        return authorsRefIds;
-    }
-
-    public void setAuthorsRefIds(Set<Long> authorsRefIds) {
-        this.authorsRefIds = authorsRefIds;
-    }
-
-    /**
      * Gets beta testing group.
      *
      * @return the {@link BetaTestingGroupUpdateDTO}
@@ -233,7 +217,6 @@ public class TrainingDefinitionUpdateDTO {
                 ", prerequisities=" + Arrays.toString(prerequisities) +
                 ", outcomes=" + Arrays.toString(outcomes) +
                 ", state=" + state +
-                ", authorsRefIds=" + authorsRefIds +
                 ", sandboxDefinitionRefId=" + sandboxDefinitionRefId +
                 ", showStepperBar=" + showStepperBar +
                 '}';

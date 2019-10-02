@@ -6,6 +6,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.training.api.responses.PageResultResource;
 import cz.muni.ics.kypo.training.api.dto.IsCorrectFlagDTO;
+import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.gamelevel.GameLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.hint.HintDTO;
@@ -20,6 +21,7 @@ import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.facade.TrainingRunFacade;
 import cz.muni.ics.kypo.training.mapping.mapstruct.*;
 import cz.muni.ics.kypo.training.persistence.model.TrainingRun;
+import cz.muni.ics.kypo.training.persistence.model.UserRef;
 import cz.muni.ics.kypo.training.persistence.model.enums.TRState;
 import cz.muni.ics.kypo.training.rest.exceptions.*;
 import org.junit.Before;
@@ -77,6 +79,7 @@ public class TrainingRunsRestControllerTest {
 
     @MockBean
     private ObjectMapper objectMapper;
+    private ObjectMapper testObjectMapper = new ObjectMapper();
 
     private TrainingRun trainingRun1, trainingRun2;
     private TrainingRunDTO trainingRun1DTO, trainingRun2DTO;
@@ -91,13 +94,23 @@ public class TrainingRunsRestControllerTest {
     private AccessedTrainingRunDTO accessedTrainingRunDTO;
     private IsCorrectFlagDTO isCorrectFlagDTO;
     private TrainingRunByIdDTO trainingRunByIdDTO;
+    private UserRefDTO participantDTO1, participantDTO2;
+    private UserRef participant1;
 
 
     @Before
     public void init() {
+        participant1 = new UserRef();
+        participant1.setId(1L);
+        participant1.setUserRefId(10L);
+
+        participantDTO1 = createUserRefDTO(10L, "Bc. Dominik Meškal", "Meškal", "Dominik", "445533@muni.cz", "https://oidc.muni.cz/oidc", null);
+        participantDTO2 = createUserRefDTO(20L, "Bc. Boris Makal", "Makal", "Boris", "772211@muni.cz", "https://oidc.muni.cz/oidc", null);
+
         trainingRun1 = new TrainingRun();
         trainingRun1.setId(1L);
         trainingRun1.setState(TRState.FINISHED);
+        trainingRun1.setParticipantRef(participant1);
 
         trainingRunByIdDTO = new TrainingRunByIdDTO();
         trainingRunByIdDTO.setId(1L);
@@ -432,6 +445,61 @@ public class TrainingRunsRestControllerTest {
                 .andReturn().getResolvedException();
         assertEquals(ResourceNotFoundException.class, ex.getClass());
         assertEquals("Training run not found.", ex.getCause().getCause().getLocalizedMessage());
+    }
+
+    @Test
+    public void getParticipant() throws Exception {
+        given(trainingRunFacade.getParticipant(trainingRun1.getId())).willReturn(participantDTO1);
+        given(objectMapper.writeValueAsString(any(Object.class))).willReturn(convertObjectToJsonBytes(participantDTO1));
+        MockHttpServletResponse result = mockMvc.perform(get("/training-runs/{runId}/participant", trainingRun1.getId()))
+                .andExpect(status().isOk())
+                .andReturn().getResponse();
+        assertEquals(participantDTO1, convertResultStringToDTO(result.getContentAsString(), UserRefDTO.class));
+    }
+
+    @Test
+    public void getParticipantTrainingRunNotFound() throws Exception {
+        willThrow(new FacadeLayerException(new ServiceLayerException("Training run not found.",
+                ErrorCode.RESOURCE_NOT_FOUND))).given(trainingRunFacade).getParticipant(trainingRun1.getId());
+        Exception ex = mockMvc.perform(get("/training-runs/{runId}/participant", trainingRun1.getId()))
+                .andExpect(status().isNotFound())
+                .andReturn().getResolvedException();
+        assertEquals(ResourceNotFoundException.class, ex.getClass());
+        assertEquals("Training run not found.", ex.getCause().getCause().getLocalizedMessage());
+    }
+
+    @Test
+    public void getParticipantUserAndGroupServiceError() throws Exception {
+        willThrow(new FacadeLayerException(new ServiceLayerException("Unexpected error when calling user and group service.",
+                ErrorCode.UNEXPECTED_ERROR))).given(trainingRunFacade).getParticipant(trainingRun1.getId());
+        Exception ex = mockMvc.perform(get("/training-runs/{runId}/participant", trainingRun1.getId()))
+                .andExpect(status().isInternalServerError())
+                .andReturn().getResolvedException();
+        assertEquals(InternalServerErrorException.class, ex.getClass());
+        assertEquals("Unexpected error when calling user and group service.", ex.getCause().getCause().getLocalizedMessage());
+    }
+
+
+    private UserRefDTO createUserRefDTO(Long userRefId, String fullName, String familyName, String givenName, String login, String iss, byte[] picture) {
+        UserRefDTO userRefDTO = new UserRefDTO();
+        userRefDTO.setUserRefId(userRefId);
+        userRefDTO.setUserRefFullName(fullName);
+        userRefDTO.setUserRefFamilyName(familyName);
+        userRefDTO.setUserRefGivenName(givenName);
+        userRefDTO.setUserRefLogin(login);
+        userRefDTO.setIss(iss);
+        userRefDTO.setPicture(picture);
+        return userRefDTO;
+    }
+
+    private <T> T convertResultStringToDTO(String resultAsString, Class<T> claas) throws Exception {
+        System.out.println(resultAsString);
+        return testObjectMapper.readValue(convertJsonBytesToString(resultAsString), claas);
+    }
+
+    private static String convertJsonBytesToString(String object) throws IOException {
+        ObjectMapper mapper = new ObjectMapper();
+        return mapper.readValue(object, String.class);
     }
 
     private static String convertObjectToJsonBytes(Object object) throws IOException {
