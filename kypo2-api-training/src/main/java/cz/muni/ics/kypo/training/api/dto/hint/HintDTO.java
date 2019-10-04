@@ -112,12 +112,13 @@ public class HintDTO {
         if (!id.equals(hintDTO.id)) return false;
         if (!title.equals(hintDTO.title)) return false;
         if (!content.equals(hintDTO.content)) return false;
+        if (order != hintDTO.order) return false;
         return hintPenalty.equals(hintDTO.hintPenalty);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, title, content, hintPenalty);
+        return Objects.hash(id, title, content, hintPenalty, order);
     }
 
     @Override
