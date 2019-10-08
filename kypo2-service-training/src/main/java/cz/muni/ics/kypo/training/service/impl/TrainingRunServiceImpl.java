@@ -12,8 +12,10 @@ import cz.muni.ics.kypo.training.annotations.security.IsOrganizerOrAdmin;
 import cz.muni.ics.kypo.training.annotations.security.IsTraineeOrAdmin;
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalWO;
 import cz.muni.ics.kypo.training.api.responses.PageResultResourcePython;
+import cz.muni.ics.kypo.training.api.responses.SandboxInfo;
 import cz.muni.ics.kypo.training.enums.SandboxStates;
 import cz.muni.ics.kypo.training.exceptions.ErrorCode;
+import cz.muni.ics.kypo.training.exceptions.RestTemplateException;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.model.enums.AssessmentType;
@@ -21,12 +23,12 @@ import cz.muni.ics.kypo.training.persistence.model.enums.TRState;
 import cz.muni.ics.kypo.training.persistence.repository.*;
 import cz.muni.ics.kypo.training.service.TrainingRunService;
 import cz.muni.ics.kypo.training.utils.AssessmentUtil;
-import cz.muni.ics.kypo.training.api.responses.SandboxInfo;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.data.domain.Page;
@@ -35,7 +37,6 @@ import org.springframework.http.*;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
-import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -64,13 +65,15 @@ public class TrainingRunServiceImpl implements TrainingRunService {
     private AuditEventsService auditEventsService;
     private RestTemplate restTemplate;
     private SecurityService securityService;
+    @Qualifier("pythonRestTemplate")
+    private RestTemplate pythonRestTemplate;
     private static final int PYTHON_RESULT_PAGE_SIZE = 1000;
 
     @Autowired
     public TrainingRunServiceImpl(TrainingRunRepository trainingRunRepository, AbstractLevelRepository abstractLevelRepository,
                                   TrainingInstanceRepository trainingInstanceRepository, UserRefRepository participantRefRepository,
                                   HintRepository hintRepository, AuditEventsService auditEventsService, RestTemplate restTemplate,
-                                  SecurityService securityService) {
+                                  SecurityService securityService, RestTemplate pythonRestTemplate) {
         this.trainingRunRepository = trainingRunRepository;
         this.abstractLevelRepository = abstractLevelRepository;
         this.trainingInstanceRepository = trainingInstanceRepository;
@@ -79,6 +82,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
         this.auditEventsService = auditEventsService;
         this.restTemplate = restTemplate;
         this.securityService = securityService;
+        this.pythonRestTemplate = pythonRestTemplate;
     }
 
     @Override
@@ -119,15 +123,15 @@ public class TrainingRunServiceImpl implements TrainingRunService {
             try {
                 HttpHeaders httpHeaders = new HttpHeaders();
                 httpHeaders.set("Accept", MediaType.APPLICATION_JSON_VALUE);
-                ResponseEntity<SandboxInfo> response = restTemplate.exchange(kypoOpenStackURI + "/sandboxes/" + trainingRun.getPreviousSandboxInstanceRefId() + "/", HttpMethod.GET, new HttpEntity<>(httpHeaders),
+                ResponseEntity<SandboxInfo> response = pythonRestTemplate.exchange(kypoOpenStackURI + "/sandboxes/" + trainingRun.getPreviousSandboxInstanceRefId() + "/", HttpMethod.GET, new HttpEntity<>(httpHeaders),
                         new ParameterizedTypeReference<SandboxInfo>() {
                         });
                 if (response.getStatusCode().is2xxSuccessful()) {
                     throw new ServiceLayerException("Sandbox (id:" + trainingRun.getPreviousSandboxInstanceRefId() + ") previously assigned to the training run (id: " + trainingRunId + ") was not deleted in OpenStack. Please delete sandbox in OpenStack before you delete training run.", ErrorCode.RESOURCE_CONFLICT);
                 }
-            } catch (HttpClientErrorException ex) {
+            } catch (RestTemplateException ex) {
                 if (!ex.getStatusCode().equals(HttpStatus.NOT_FOUND)) {
-                    throw new ServiceLayerException("Client side error when calling OpenStack: " + ex.getMessage() + " " + ex.getResponseBodyAsString() + ". Probably wrong URL of service.", ErrorCode.UNEXPECTED_ERROR);
+                    throw new ServiceLayerException("Client side error when calling OpenStack: " + ex.getStatusCode() + ": " + ex.getMessage(), ErrorCode.PYTHON_API_ERROR);
                 }
                 LOG.debug("Sandbox (id:" + trainingRun.getPreviousSandboxInstanceRefId() + ") previously assigned to the training run (id: " + trainingRunId + ") is not found in OpenStack because it was successfully deleted.");
             }
@@ -281,7 +285,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
             UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(url);
             builder.queryParam("page", 1);
             builder.queryParam("page_size", PYTHON_RESULT_PAGE_SIZE);
-            ResponseEntity<PageResultResourcePython<SandboxInfo>> response = restTemplate.exchange(builder.toUriString(), HttpMethod.GET, new HttpEntity<>(httpHeaders),
+            ResponseEntity<PageResultResourcePython<SandboxInfo>> response = pythonRestTemplate.exchange(builder.toUriString(), HttpMethod.GET, new HttpEntity<>(httpHeaders),
                     new ParameterizedTypeReference<PageResultResourcePython<SandboxInfo>>() {
                     });
             PageResultResourcePython<SandboxInfo> sandboxInfoPageResult = Objects.requireNonNull(response.getBody());
@@ -302,9 +306,9 @@ public class TrainingRunServiceImpl implements TrainingRunService {
                 try{
                     httpHeaders = new HttpHeaders();
                     httpHeaders.setContentType(MediaType.APPLICATION_JSON);
-                    restTemplate.exchange(kypoOpenStackURI + "/sandboxes/" + readySandboxId + "/lock/",
+                    pythonRestTemplate.exchange(kypoOpenStackURI + "/sandboxes/" + readySandboxId + "/lock/",
                             HttpMethod.POST, new HttpEntity<>(requestJson, httpHeaders), String.class);
-                } catch (HttpClientErrorException ex){
+                } catch (RestTemplateException ex){
                     LOG.error(ex.getMessage());
                     continue;
                 }
