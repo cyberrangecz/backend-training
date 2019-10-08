@@ -77,7 +77,7 @@ public class TrainingRunServiceTest {
     @Mock
     private HintRepository hintRepository;
     @Mock
-    private RestTemplate restTemplate;
+    private RestTemplate restTemplate, pythonRestTemplate;
     @Mock
     private SecurityService securityService;
 
@@ -98,7 +98,7 @@ public class TrainingRunServiceTest {
     public void init() {
         MockitoAnnotations.initMocks(this);
         trainingRunService = new TrainingRunServiceImpl(trainingRunRepository, abstractLevelRepository, trainingInstanceRepository,
-                participantRefRepository, hintRepository, auditEventService, restTemplate, securityService);
+                participantRefRepository, hintRepository, auditEventService, restTemplate, securityService, pythonRestTemplate);
         parser = new JSONParser();
         try {
             questions = parser.parse(new FileReader(ResourceUtils.getFile("classpath:questions.json"))).toString();
@@ -245,7 +245,7 @@ public class TrainingRunServiceTest {
         pythonPage.setResults(List.of(sandboxInfo));
 
         given(trainingInstanceRepository.findByStartTimeAfterAndEndTimeBeforeAndAccessToken(any(LocalDateTime.class), eq(trainingInstance1.getAccessToken()))).willReturn(Optional.ofNullable(trainingInstance1));
-        given(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
+        given(pythonRestTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
                 willReturn(new ResponseEntity<PageResultResourcePython<SandboxInfo>>(pythonPage, HttpStatus.OK));
         given(abstractLevelRepository.findAllLevelsByTrainingDefinitionId(trainingInstance1.getTrainingDefinition().getId())).willReturn(new ArrayList<>(List.of(gameLevel, infoLevel)));
         given(participantRefRepository.save(participant)).willReturn(participantRef);
@@ -274,7 +274,7 @@ public class TrainingRunServiceTest {
         pythonPage.setResults(List.of(sandboxInfo));
         given(trainingInstanceRepository.findByStartTimeAfterAndEndTimeBeforeAndAccessToken(any(LocalDateTime.class), any(String.class))).willReturn(Optional.of(trainingInstance1));
         given(abstractLevelRepository.findAllLevelsByTrainingDefinitionId(trainingInstance1.getTrainingDefinition().getId())).willReturn(new ArrayList<>(List.of(gameLevel, infoLevel)));
-        given(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
+        given(pythonRestTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
                 willReturn(new ResponseEntity<PageResultResourcePython<SandboxInfo>>(pythonPage, HttpStatus.OK));
         thrown.expect(ServiceLayerException.class);
         thrown.expectMessage("There is no available sandbox, wait a minute and try again");

@@ -1,13 +1,16 @@
 package cz.muni.ics.kypo.training.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import cz.muni.csirt.kypo.elasticsearch.service.config.ElasticsearchServiceConfig;
 import cz.muni.ics.kypo.commons.security.config.ResourceServerSecurityConfig;
+import cz.muni.ics.kypo.training.exceptions.PythonApiResponseErrorHandler;
 import cz.muni.ics.kypo.training.persistence.config.PersistenceConfig;
 import org.apache.http.client.HttpClient;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.ssl.SSLContextBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.MethodInvokingFactoryBean;
 import org.springframework.context.annotation.Bean;
@@ -38,6 +41,8 @@ public class ServiceConfig {
 
     @Autowired
     private RestTemplateHeaderModifierInterceptor restTemplateHeaderModifierInterceptor;
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @Value("${server.ssl.trust-store}")
     private String trustStore;
@@ -48,7 +53,19 @@ public class ServiceConfig {
     }
 
     @Bean
+    @Qualifier("pythonRestTemplate")
+    public RestTemplate pythonRestTemplate() throws Exception{
+        RestTemplate restTemplate = prepareRestTemplate();
+        restTemplate.setErrorHandler(new PythonApiResponseErrorHandler(objectMapper));
+        return restTemplate;
+    }
+
+    @Bean
     public RestTemplate restTemplate() throws Exception{
+        return prepareRestTemplate();
+    }
+
+    private RestTemplate prepareRestTemplate() throws Exception{
         SSLContext sslContext = new SSLContextBuilder()
                 .loadTrustMaterial(new File(trustStore), trustStorePassword.toCharArray())
                 .setProtocol("TLSv1.2")
@@ -63,7 +80,7 @@ public class ServiceConfig {
         List<ClientHttpRequestInterceptor> interceptors = restTemplate.getInterceptors();
         interceptors.add(restTemplateHeaderModifierInterceptor);
         restTemplate.setInterceptors(interceptors);
-        return restTemplate;
+        return  restTemplate;
     }
 
     /**

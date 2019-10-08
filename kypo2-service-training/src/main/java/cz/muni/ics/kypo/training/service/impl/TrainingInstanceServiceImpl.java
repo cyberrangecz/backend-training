@@ -8,19 +8,24 @@ import cz.muni.ics.kypo.training.annotations.security.IsOrganizerOrAdmin;
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalRO;
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalWO;
 import cz.muni.ics.kypo.training.api.requests.PoolCreationRequest;
+import cz.muni.ics.kypo.training.api.responses.PageResultResourcePython;
+import cz.muni.ics.kypo.training.api.responses.SandboxInfo;
+import cz.muni.ics.kypo.training.api.responses.SandboxPoolInfo;
 import cz.muni.ics.kypo.training.exceptions.ErrorCode;
+import cz.muni.ics.kypo.training.exceptions.RestTemplateException;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.model.enums.TRState;
-import cz.muni.ics.kypo.training.persistence.repository.*;
+import cz.muni.ics.kypo.training.persistence.repository.AccessTokenRepository;
+import cz.muni.ics.kypo.training.persistence.repository.TrainingInstanceRepository;
+import cz.muni.ics.kypo.training.persistence.repository.TrainingRunRepository;
+import cz.muni.ics.kypo.training.persistence.repository.UserRefRepository;
 import cz.muni.ics.kypo.training.service.TrainingInstanceService;
-import cz.muni.ics.kypo.training.api.responses.SandboxInfo;
-import cz.muni.ics.kypo.training.api.responses.PageResultResourcePython;
-import cz.muni.ics.kypo.training.api.responses.SandboxPoolInfo;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.data.domain.Page;
@@ -30,7 +35,6 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
-import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -57,12 +61,14 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
     private RestTemplate restTemplate;
     private SecurityService securityService;
     private TrainingEventsService trainingEventsService;
+    @Qualifier("pythonRestTemplate")
+    private RestTemplate pythonRestTemplate;
     private static final int PYTHON_RESULT_PAGE_SIZE = 1000;
 
     @Autowired
     public TrainingInstanceServiceImpl(TrainingInstanceRepository trainingInstanceRepository, AccessTokenRepository accessTokenRepository,
                                        TrainingRunRepository trainingRunRepository, UserRefRepository organizerRefRepository,
-                                       RestTemplate restTemplate, SecurityService securityService, TrainingEventsService trainingEventsService) {
+                                       RestTemplate restTemplate,RestTemplate pythonRestTemplate, SecurityService securityService, TrainingEventsService trainingEventsService) {
         this.trainingInstanceRepository = trainingInstanceRepository;
         this.trainingRunRepository = trainingRunRepository;
         this.accessTokenRepository = accessTokenRepository;
@@ -70,6 +76,7 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
         this.restTemplate = restTemplate;
         this.securityService = securityService;
         this.trainingEventsService = trainingEventsService;
+        this.pythonRestTemplate = pythonRestTemplate;
     }
 
     @Override
@@ -119,14 +126,14 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
             UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(url);
             builder.queryParam("page", 1);
             builder.queryParam("page_size", PYTHON_RESULT_PAGE_SIZE);
-            ResponseEntity<PageResultResourcePython<SandboxInfo>> response = restTemplate.exchange(builder.toUriString(), HttpMethod.GET, new HttpEntity<>(httpHeaders),
+            ResponseEntity<PageResultResourcePython<SandboxInfo>> response = pythonRestTemplate.exchange(builder.toUriString(), HttpMethod.GET, new HttpEntity<>(httpHeaders),
                     new ParameterizedTypeReference<PageResultResourcePython<SandboxInfo>>() {
                     });
             PageResultResourcePython<SandboxInfo> sandboxInfoPageResult = Objects.requireNonNull(response.getBody());
             return Objects.requireNonNull(sandboxInfoPageResult.getResults());
-        } catch (HttpClientErrorException ex) {
+        } catch (RestTemplateException ex) {
             throw new ServiceLayerException("Client side error when checking a state of sandbox in OpenStack for pool with ID " +
-                    poolId + " : " + ex.getMessage() + ". Please contact administrator", ErrorCode.UNEXPECTED_ERROR);
+                    poolId + " : " + ex.getStatusCode()+ ": " + ex.getMessage() + " Please contact administrator", ErrorCode.PYTHON_API_ERROR);
         }
     }
 
@@ -209,9 +216,9 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
         //Delete pool
         String url = kypoOpenStackURI + "/pools/" + poolId + "/";
         try {
-            restTemplate.delete(UriComponentsBuilder.fromUriString(url).toUriString());
-        } catch (HttpClientErrorException ex) {
-            throw new ServiceLayerException("Client side error when removing pool from OpenStack:  " + ex.getMessage() + " - " + ex.getResponseBodyAsString() + ".", ErrorCode.UNEXPECTED_ERROR);
+            pythonRestTemplate.delete(UriComponentsBuilder.fromUriString(url).toUriString());
+        } catch (RestTemplateException ex) {
+            throw new ServiceLayerException("Client side error when removing pool from OpenStack:  " + ex.getStatusCode() + ": "+  ex.getMessage(), ErrorCode.PYTHON_API_ERROR);
         }
     }
 
@@ -240,11 +247,11 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
         poolCreationRequest.setPoolSize(poolSize);
 
         try {
-            ResponseEntity<SandboxPoolInfo> poolResponse = restTemplate.exchange(kypoOpenStackURI + "/pools/", HttpMethod.POST, new HttpEntity<>(poolCreationRequest, httpHeaders), SandboxPoolInfo.class);
+            ResponseEntity<SandboxPoolInfo> poolResponse = pythonRestTemplate.exchange(kypoOpenStackURI + "/pools/", HttpMethod.POST, new HttpEntity<>(poolCreationRequest, httpHeaders), SandboxPoolInfo.class);
             Long poolId = Objects.requireNonNull(poolResponse.getBody()).getId();
             return poolId;
-        } catch (HttpClientErrorException ex) {
-            throw new ServiceLayerException("Error from OpenStack while creating pool: " + ex.getMessage() + " - " + ex.getResponseBodyAsString(), ErrorCode.UNEXPECTED_ERROR);
+        } catch (RestTemplateException ex) {
+            throw new ServiceLayerException("Error from OpenStack while creating pool: "  + ex.getStatusCode() + ": " + ex.getMessage(), ErrorCode.PYTHON_API_ERROR);
         }
     }
 
@@ -281,11 +288,11 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
             }
             // allocate sandboxes with appropriate ansible scripts (set up an environment etc.)
             builder.queryParam("full", true);
-            restTemplate.exchange(builder.toUriString(), HttpMethod.POST,
+            pythonRestTemplate.exchange(builder.toUriString(), HttpMethod.POST,
                     new HttpEntity<>(httpHeaders), new ParameterizedTypeReference<List<SandboxInfo>>() {
                     });
-        } catch (HttpClientErrorException ex) {
-            LOG.error("Client side error when calling OpenStack: {}.", ex.getMessage() + " - " + ex.getResponseBodyAsString());
+        } catch (RestTemplateException ex) {
+            LOG.error("Client side error when calling OpenStack: {}.", ex.getStatusCode() + " - " + ex.getMessage());
         }
     }
 
@@ -300,20 +307,20 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.setContentType(MediaType.APPLICATION_JSON);
         try {
-            restTemplate.exchange(kypoOpenStackURI + "/sandboxes/" + idOfSandboxRefToDelete + "/lock/",
+            pythonRestTemplate.exchange(kypoOpenStackURI + "/sandboxes/" + idOfSandboxRefToDelete + "/lock/",
                     HttpMethod.DELETE, new HttpEntity<>(httpHeaders), String.class);
-        } catch (HttpClientErrorException ex) {
+        } catch (RestTemplateException ex) {
             if (!ex.getStatusCode().equals(HttpStatus.BAD_REQUEST)) {
-                LOG.error("Client side error when calling OpenStack: {}. Probably wrong URL of service.", ex.getMessage() + " - " + ex.getResponseBodyAsString());
+                LOG.error("Client side error when calling OpenStack: {}. Probably wrong URL of service.", ex.getStatusCode() + " - " + ex.getMessage());
                 return;
             }
         }
         try {
-            restTemplate.exchange(kypoOpenStackURI + "/sandboxes/" + idOfSandboxRefToDelete + "/",
+            pythonRestTemplate.exchange(kypoOpenStackURI + "/sandboxes/" + idOfSandboxRefToDelete + "/",
                     HttpMethod.DELETE, new HttpEntity<>(httpHeaders), String.class);
-        } catch (HttpClientErrorException ex) {
+        } catch (RestTemplateException ex) {
             if (!ex.getStatusCode().equals(HttpStatus.NOT_FOUND)){
-                LOG.error("Client side error when calling OpenStack: {}. Probably wrong URL of service.", ex.getMessage() + " - " + ex.getResponseBodyAsString());
+                LOG.error("Client side error when calling OpenStack: {}. Probably wrong URL of service.", ex.getStatusCode() + " - " + ex.getMessage());
                 return;
             }
         }

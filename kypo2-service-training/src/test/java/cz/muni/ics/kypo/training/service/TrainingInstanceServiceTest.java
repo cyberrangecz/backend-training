@@ -70,7 +70,7 @@ public class TrainingInstanceServiceTest {
     @Mock
     private TrainingInstanceRepository trainingInstanceRepository;
     @Mock
-    private RestTemplate restTemplate;
+    private RestTemplate restTemplate, pythonRestTemplate;
     @Mock
     private AccessTokenRepository accessTokenRepository;
     @Mock
@@ -95,7 +95,7 @@ public class TrainingInstanceServiceTest {
     public void init() {
         MockitoAnnotations.initMocks(this);
         trainingInstanceService = new TrainingInstanceServiceImpl(trainingInstanceRepository, accessTokenRepository,
-                trainingRunRepository, organizerRefRepository, restTemplate, securityService, trainingEventsService);
+                trainingRunRepository, organizerRefRepository, restTemplate, pythonRestTemplate, securityService, trainingEventsService);
 
         trainingInstance1 = new TrainingInstance();
         trainingInstance1.setId(1L);
@@ -204,7 +204,7 @@ public class TrainingInstanceServiceTest {
         given(trainingInstanceRepository.save(trainingInstance2)).willReturn(trainingInstance2);
         given(organizerRefRepository.save(any(UserRef.class))).willReturn(user);
         given(securityService.createUserRefEntityByInfoFromUserAndGroup()).willReturn(user);
-        given(restTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(SandboxPoolInfo.class))).
+        given(pythonRestTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(SandboxPoolInfo.class))).
                 willReturn(new ResponseEntity<SandboxPoolInfo>(sandboxPoolInfo, HttpStatus.OK));
         TrainingInstance tI = trainingInstanceService.create(trainingInstance2);
         deepEquals(trainingInstance2, tI);
@@ -281,7 +281,7 @@ public class TrainingInstanceServiceTest {
         pythonPage.setResults(List.of(sandboxInfo1, sandboxInfo2));
 
         given(trainingRunRepository.existsAnyForTrainingInstance(instanceWithSB.getId())).willReturn(false);
-        given(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class)))
+        given(pythonRestTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class)))
                 .willReturn(new ResponseEntity<PageResultResourcePython<SandboxInfo>>(pythonPage, HttpStatus.OK));
         thrown.expect(ServiceLayerException.class);
         thrown.expectMessage("Cannot delete training instance because it contains some sandboxes. Please delete sandboxes and try again or wait until all sandboxes are deleted from OpenStack.");
@@ -324,7 +324,7 @@ public class TrainingInstanceServiceTest {
         pythonPage.setResults(List.of(sandboxInfo1, sandboxInfo2));
 
         given(trainingInstanceRepository.findById(instanceWithSB.getId())).willReturn(Optional.ofNullable(instanceWithSB));
-        given(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class)))
+        given(pythonRestTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class)))
                 .willReturn(new ResponseEntity<PageResultResourcePython<SandboxInfo>>(pythonPage, HttpStatus.OK));
         thrown.expect(ServiceLayerException.class);
         thrown.expectMessage("Pool of sandboxes of training instance with id: " + instanceWithSB.getId() + " is full.");
