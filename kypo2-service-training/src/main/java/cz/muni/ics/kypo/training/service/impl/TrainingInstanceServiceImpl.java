@@ -16,10 +16,7 @@ import cz.muni.ics.kypo.training.exceptions.RestTemplateException;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.model.enums.TRState;
-import cz.muni.ics.kypo.training.persistence.repository.AccessTokenRepository;
-import cz.muni.ics.kypo.training.persistence.repository.TrainingInstanceRepository;
-import cz.muni.ics.kypo.training.persistence.repository.TrainingRunRepository;
-import cz.muni.ics.kypo.training.persistence.repository.UserRefRepository;
+import cz.muni.ics.kypo.training.persistence.repository.*;
 import cz.muni.ics.kypo.training.service.TrainingInstanceService;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
@@ -58,9 +55,9 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
     private TrainingRunRepository trainingRunRepository;
     private AccessTokenRepository accessTokenRepository;
     private UserRefRepository organizerRefRepository;
-    private RestTemplate restTemplate;
     private SecurityService securityService;
     private TrainingEventsService trainingEventsService;
+    private TRAcquisitionLockRepository trAcquisitionLockRepository;
     @Qualifier("pythonRestTemplate")
     private RestTemplate pythonRestTemplate;
     private static final int PYTHON_RESULT_PAGE_SIZE = 1000;
@@ -68,15 +65,16 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
     @Autowired
     public TrainingInstanceServiceImpl(TrainingInstanceRepository trainingInstanceRepository, AccessTokenRepository accessTokenRepository,
                                        TrainingRunRepository trainingRunRepository, UserRefRepository organizerRefRepository,
-                                       RestTemplate restTemplate,RestTemplate pythonRestTemplate, SecurityService securityService, TrainingEventsService trainingEventsService) {
+                                       RestTemplate pythonRestTemplate, SecurityService securityService, TrainingEventsService trainingEventsService,
+                                       TRAcquisitionLockRepository trAcquisitionLockRepository) {
         this.trainingInstanceRepository = trainingInstanceRepository;
         this.trainingRunRepository = trainingRunRepository;
         this.accessTokenRepository = accessTokenRepository;
         this.organizerRefRepository = organizerRefRepository;
-        this.restTemplate = restTemplate;
         this.securityService = securityService;
         this.trainingEventsService = trainingEventsService;
         this.pythonRestTemplate = pythonRestTemplate;
+        this.trAcquisitionLockRepository = trAcquisitionLockRepository;
     }
 
     @Override
@@ -150,7 +148,6 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
         return trainingInstanceRepository.save(trainingInstance);
     }
 
-    //TODO during update automatically add author as organizer of training instance, add login of logged in user in facade when calling user and group ;)
     @Override
     @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
             "or @securityService.isOrganizerOfGivenTrainingInstance(#trainingInstanceToUpdate.id)")
@@ -333,6 +330,7 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
             trainingRun.get().setState(TRState.ARCHIVED);
             trainingRun.get().setSandboxInstanceRefId(null);
             trainingRun.get().setPreviousSandboxInstanceRefId(sandboxId);
+            trAcquisitionLockRepository.deleteByParticipantRefIdAndTrainingInstanceId(trainingRun.get().getParticipantRef().getUserRefId(), trainingRun.get().getTrainingInstance().getId());
             trainingRunRepository.save(trainingRun.get());
         }
     }

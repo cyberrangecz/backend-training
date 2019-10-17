@@ -148,6 +148,14 @@ create table attachment (
 
 );
 
+create table training_run_acquisition_lock (
+    id bigserial not null,
+    participant_ref_id bigserial not null,
+    training_instance_id bigserial not null,
+    creation_time timestamp not null,
+    primary key (id)
+);
+
 alter table access_token
    add constraint UK_qglhb4xi0iwstguebaliifr1n unique (access_token);
 
@@ -156,6 +164,9 @@ alter table training_definition
 
 alter table training_instance
    add constraint UK_b81w12g91hiuhdvsmoanyel6m unique (access_token);
+
+alter table training_run_acquisition_lock
+   add constraint UK_b81w12g91hiuhdasdgfcyel6m unique (participant_ref_id, training_instance_id);
 
 alter table hint_info
    add constraint FKi9smgl25av8pb1yv3fl4ycby0

@@ -20,6 +20,7 @@ import cz.muni.ics.kypo.training.api.dto.run.TrainingRunByIdDTO;
 import cz.muni.ics.kypo.training.api.dto.run.TrainingRunDTO;
 import cz.muni.ics.kypo.training.api.enums.Actions;
 import cz.muni.ics.kypo.training.api.enums.LevelType;
+import cz.muni.ics.kypo.training.exceptions.ErrorCode;
 import cz.muni.ics.kypo.training.exceptions.FacadeLayerException;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.mapping.mapstruct.*;
@@ -29,6 +30,7 @@ import cz.muni.ics.kypo.training.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -51,8 +53,6 @@ import java.util.stream.Collectors;
 public class TrainingRunFacadeImpl implements TrainingRunFacade {
 
     private static final Logger LOG = LoggerFactory.getLogger(TrainingRunFacadeImpl.class);
-
-    private Lock reentrantLock = new ReentrantLock();
 
     private TrainingRunService trainingRunService;
     private TrainingRunMapper trainingRunMapper;
@@ -141,16 +141,15 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
     }
 
     @Override
+    @TransactionalWO
     public AccessTrainingRunDTO accessTrainingRun(String accessToken) {
-        // locks the training run access
-        reentrantLock.lock();
         try {
             TrainingRun trainingRun = trainingRunService.accessTrainingRun(accessToken);
             return convertToAccessTrainingRunDTO(trainingRun);
         } catch (ServiceLayerException ex) {
             throw new FacadeLayerException(ex);
-        } finally {
-            reentrantLock.unlock();
+        } catch (DataIntegrityViolationException ex) {
+            throw new FacadeLayerException(new ServiceLayerException(ex.getLocalizedMessage(), ErrorCode.UNEXPECTED_ERROR));
         }
     }
 

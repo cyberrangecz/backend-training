@@ -31,6 +31,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.*;
@@ -42,6 +43,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
 import java.time.Clock;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -63,8 +65,8 @@ public class TrainingRunServiceImpl implements TrainingRunService {
     private UserRefRepository participantRefRepository;
     private HintRepository hintRepository;
     private AuditEventsService auditEventsService;
-    private RestTemplate restTemplate;
     private SecurityService securityService;
+    private TRAcquisitionLockRepository trAcquisitionLockRepository;
     @Qualifier("pythonRestTemplate")
     private RestTemplate pythonRestTemplate;
     private static final int PYTHON_RESULT_PAGE_SIZE = 1000;
@@ -72,17 +74,17 @@ public class TrainingRunServiceImpl implements TrainingRunService {
     @Autowired
     public TrainingRunServiceImpl(TrainingRunRepository trainingRunRepository, AbstractLevelRepository abstractLevelRepository,
                                   TrainingInstanceRepository trainingInstanceRepository, UserRefRepository participantRefRepository,
-                                  HintRepository hintRepository, AuditEventsService auditEventsService, RestTemplate restTemplate,
-                                  SecurityService securityService, RestTemplate pythonRestTemplate) {
+                                  HintRepository hintRepository, AuditEventsService auditEventsService, SecurityService securityService,
+                                  RestTemplate pythonRestTemplate, TRAcquisitionLockRepository trAcquisitionLockRepository) {
         this.trainingRunRepository = trainingRunRepository;
         this.abstractLevelRepository = abstractLevelRepository;
         this.trainingInstanceRepository = trainingInstanceRepository;
         this.participantRefRepository = participantRefRepository;
         this.hintRepository = hintRepository;
         this.auditEventsService = auditEventsService;
-        this.restTemplate = restTemplate;
         this.securityService = securityService;
         this.pythonRestTemplate = pythonRestTemplate;
+        this.trAcquisitionLockRepository = trAcquisitionLockRepository;
     }
 
     @Override
@@ -130,11 +132,12 @@ public class TrainingRunServiceImpl implements TrainingRunService {
                     throw new ServiceLayerException("Sandbox (id:" + trainingRun.getPreviousSandboxInstanceRefId() + ") previously assigned to the training run (id: " + trainingRunId + ") was not deleted in OpenStack. Please delete sandbox in OpenStack before you delete training run.", ErrorCode.RESOURCE_CONFLICT);
                 }
             } catch (RestTemplateException ex) {
-                if (!ex.getStatusCode().equals(HttpStatus.NOT_FOUND)) {
+                if (!ex.getStatusCode().equals(HttpStatus.NOT_FOUND.name())) {
                     throw new ServiceLayerException("Client side error when calling OpenStack: " + ex.getStatusCode() + ": " + ex.getMessage(), ErrorCode.PYTHON_API_ERROR);
                 }
                 LOG.debug("Sandbox (id:" + trainingRun.getPreviousSandboxInstanceRefId() + ") previously assigned to the training run (id: " + trainingRunId + ") is not found in OpenStack because it was successfully deleted.");
             }
+            trAcquisitionLockRepository.deleteByParticipantRefIdAndTrainingInstanceId(trainingRun.getParticipantRef().getUserRefId(), trainingRun.getTrainingInstance().getId());
             trainingRunRepository.delete(trainingRun);
         } else {
             throw new ServiceLayerException("Could not delete training run (id: " + trainingRunId + ") with associated sandbox (id: " + trainingRun.getSandboxInstanceRefId() +
@@ -206,29 +209,34 @@ public class TrainingRunServiceImpl implements TrainingRunService {
 
     @Override
     @IsTraineeOrAdmin
-    @TransactionalWO
+    //@TransactionalWO
     @TrackTime
     public TrainingRun accessTrainingRun(String accessToken) {
         Assert.hasLength(accessToken, "AccessToken cannot be null or empty.");
         TrainingInstance trainingInstance = trainingInstanceRepository.findByStartTimeAfterAndEndTimeBeforeAndAccessToken(LocalDateTime.now(Clock.systemUTC()), accessToken)
                 .orElseThrow(() -> new ServiceLayerException("There is no active game session matching your keyword: " + accessToken + ".", ErrorCode.RESOURCE_NOT_FOUND));
-
-        Optional<TrainingRun> accessedTrainingRun = trainingRunRepository.findValidTrainingRunOfUser(trainingInstance.getAccessToken(), securityService.getUserRefIdFromUserAndGroup());
-
-        if (accessedTrainingRun.isPresent()) {
-            return resumeTrainingRun(accessedTrainingRun.get().getId());
-        }
         if (trainingInstance.getPoolId() == null) {
             throw new ServiceLayerException("At first organizer must allocate sandboxes for training instance.", ErrorCode.RESOURCE_CONFLICT);
         }
+        Long participantRefId = securityService.getUserRefIdFromUserAndGroup();
+        Optional<TrainingRun> accessedTrainingRun = trainingRunRepository.findValidTrainingRunOfUser(trainingInstance.getAccessToken(), participantRefId);
+        if (accessedTrainingRun.isPresent()) {
+            return resumeTrainingRun(accessedTrainingRun.get().getId());
+        }
+        try {
+            trAcquisitionLockRepository.save(new TRAcquisitionLock(participantRefId, trainingInstance.getId(), LocalDateTime.now()));
+        } catch (DataIntegrityViolationException ex) {
+            throw new ServiceLayerException("Training run has been already accessed and cannot be created again. Please resume Training Run", ErrorCode.TR_ACQUIRED_LOCK);
+        }
+
         List<AbstractLevel> levels = abstractLevelRepository.findAllLevelsByTrainingDefinitionId(trainingInstance.getTrainingDefinition().getId());
         if (levels.isEmpty()) {
             throw new ServiceLayerException("No starting level available for this training definition.", ErrorCode.RESOURCE_NOT_FOUND);
         }
         levels.sort(Comparator.comparing(AbstractLevel::getOrder));
         Long sandboxInstanceRef = getReadySandboxInstanceRef(trainingInstance.getPoolId());
-        TrainingRun trainingRun = getNewTrainingRun(levels.get(0), trainingInstance,
-                TRState.RUNNING, LocalDateTime.now(Clock.systemUTC()), trainingInstance.getEndTime(), sandboxInstanceRef);
+        TrainingRun trainingRun = getNewTrainingRun(levels.get(0), trainingInstance, TRState.RUNNING,
+                LocalDateTime.now(Clock.systemUTC()), trainingInstance.getEndTime(), sandboxInstanceRef, participantRefId);
         trainingRun = create(trainingRun);
         // audit this action to the Elasticsearch
         auditEventsService.auditTrainingRunStartedAction(trainingRun);
@@ -257,11 +265,12 @@ public class TrainingRunServiceImpl implements TrainingRunService {
     }
 
     private TrainingRun getNewTrainingRun(AbstractLevel currentLevel, TrainingInstance trainingInstance,
-                                          TRState state, LocalDateTime startTime, LocalDateTime endTime, Long sandboxInstanceRefId) {
+                                          TRState state, LocalDateTime startTime, LocalDateTime endTime, Long sandboxInstanceRefId,
+                                          Long participantRefId) {
         TrainingRun newTrainingRun = new TrainingRun();
         newTrainingRun.setCurrentLevel(currentLevel);
 
-        Optional<UserRef> userRefOpt = participantRefRepository.findUserByUserRefId(securityService.getUserRefIdFromUserAndGroup());
+        Optional<UserRef> userRefOpt = participantRefRepository.findUserByUserRefId(participantRefId);
         if (userRefOpt.isPresent()) {
             newTrainingRun.setParticipantRef(userRefOpt.get());
         } else {
@@ -425,6 +434,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
 
         trainingRun.setState(TRState.FINISHED);
         trainingRun.setEndTime(LocalDateTime.now(Clock.systemUTC()));
+        trAcquisitionLockRepository.deleteByParticipantRefIdAndTrainingInstanceId(trainingRun.getParticipantRef().getUserRefId(), trainingRun.getTrainingInstance().getId());
         if (trainingRun.getCurrentLevel() instanceof InfoLevel) {
             auditEventsService.auditLevelCompletedAction(trainingRun);
         }

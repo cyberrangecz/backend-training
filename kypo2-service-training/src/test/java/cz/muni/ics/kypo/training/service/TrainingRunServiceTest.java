@@ -29,6 +29,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -63,6 +64,8 @@ public class TrainingRunServiceTest {
     private TrainingRunService trainingRunService;
 
     @Mock
+    private TRAcquisitionLockRepository trAcquisitionLockRepository;
+    @Mock
     private TrainingRunRepository trainingRunRepository;
     @Mock
     private AuditEventsService auditEventService;
@@ -70,8 +73,6 @@ public class TrainingRunServiceTest {
     private AbstractLevelRepository abstractLevelRepository;
     @Mock
     private TrainingInstanceRepository trainingInstanceRepository;
-    @Mock
-    private TrainingDefinitionRepository trainingDefinitionRepository;
     @Mock
     private UserRefRepository participantRefRepository;
     @Mock
@@ -98,7 +99,7 @@ public class TrainingRunServiceTest {
     public void init() {
         MockitoAnnotations.initMocks(this);
         trainingRunService = new TrainingRunServiceImpl(trainingRunRepository, abstractLevelRepository, trainingInstanceRepository,
-                participantRefRepository, hintRepository, auditEventService, restTemplate, securityService, pythonRestTemplate);
+                participantRefRepository, hintRepository, auditEventService, securityService, pythonRestTemplate, trAcquisitionLockRepository);
         parser = new JSONParser();
         try {
             questions = parser.parse(new FileReader(ResourceUtils.getFile("classpath:questions.json"))).toString();
@@ -137,6 +138,7 @@ public class TrainingRunServiceTest {
 
         participantRef = new UserRef();
         participantRef.setId(1L);
+        participantRef.setUserRefId(3L);
 
         hint1 = new Hint();
         hint1.setId(1L);
@@ -195,6 +197,7 @@ public class TrainingRunServiceTest {
         trainingRun1.setTrainingInstance(trainingInstance1);
         trainingRun1.setStartTime(LocalDateTime.of(2019, Month.JANUARY, 3, 1, 1, 1));
         trainingRun1.setEndTime(LocalDateTime.of(2019, Month.JANUARY, 3, 2, 1, 1));
+        trainingRun1.setTrainingInstance(trainingInstance1);
 
         trainingRun2 = new TrainingRun();
         trainingRun2.setId(2L);
@@ -244,6 +247,7 @@ public class TrainingRunServiceTest {
         PageResultResourcePython<SandboxInfo> pythonPage = new PageResultResourcePython<SandboxInfo>();
         pythonPage.setResults(List.of(sandboxInfo));
 
+        given(securityService.getUserRefIdFromUserAndGroup()).willReturn(participantRef.getUserRefId());
         given(trainingInstanceRepository.findByStartTimeAfterAndEndTimeBeforeAndAccessToken(any(LocalDateTime.class), eq(trainingInstance1.getAccessToken()))).willReturn(Optional.ofNullable(trainingInstance1));
         given(pythonRestTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
                 willReturn(new ResponseEntity<PageResultResourcePython<SandboxInfo>>(pythonPage, HttpStatus.OK));
@@ -253,6 +257,7 @@ public class TrainingRunServiceTest {
 
         trainingInstance1.setTrainingDefinition(trainingDefinition);
         TrainingRun trainingRun = trainingRunService.accessTrainingRun(trainingInstance1.getAccessToken());
+        then(trAcquisitionLockRepository).should().save(any(TRAcquisitionLock.class));
         assertEquals(trainingRun1, trainingRun);
     }
 
@@ -287,12 +292,14 @@ public class TrainingRunServiceTest {
         PageResultResourcePython<SandboxInfo> pythonPage = new PageResultResourcePython<SandboxInfo>();
         pythonPage.setResults(List.of(sandboxInfo));
         given(trainingInstanceRepository.findByStartTimeAfterAndEndTimeBeforeAndAccessToken(any(LocalDateTime.class), any(String.class))).willReturn(Optional.of(trainingInstance1));
+        given(securityService.getUserRefIdFromUserAndGroup()).willReturn(1L);
         given(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
                 willReturn(new ResponseEntity<PageResultResourcePython<SandboxInfo>>(pythonPage, HttpStatus.OK));
         given(abstractLevelRepository.findById(anyLong())).willReturn(Optional.empty());
         thrown.expect(ServiceLayerException.class);
         thrown.expectMessage("No starting level available for this training definition");
         trainingRunService.accessTrainingRun("pass");
+        then(trAcquisitionLockRepository).should().save(new TRAcquisitionLock(1L, trainingInstance1.getId(), any(LocalDateTime.class)));
     }
 
     private void mockSpringSecurityContextForGet() {
@@ -505,6 +512,7 @@ public class TrainingRunServiceTest {
         given(trainingRunRepository.findById(any(Long.class))).willReturn(Optional.of(trainingRun2));
         given(abstractLevelRepository.getCurrentMaxOrder(anyLong())).willReturn(infoLevel2.getOrder());
         trainingRunService.finishTrainingRun(trainingRun2.getId());
+        then(trAcquisitionLockRepository).should().deleteByParticipantRefIdAndTrainingInstanceId(trainingRun2.getParticipantRef().getUserRefId(), trainingRun2.getTrainingInstance().getId());
         assertEquals(trainingRun2.getState(), TRState.FINISHED);
     }
 
