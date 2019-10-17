@@ -23,6 +23,8 @@ public class ExceptionSorter {
                 return new ServiceUnavailableException(ex);
             case SECURITY_RIGHTS:
                 return new AccessDeniedException("Access is denied.");
+            case TR_ACQUIRED_LOCK:
+                return new TooManyRequestsException(ex);
             case UNEXPECTED_ERROR:
             default:
                 return new InternalServerErrorException(ex);

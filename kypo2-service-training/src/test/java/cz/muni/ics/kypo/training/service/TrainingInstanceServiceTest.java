@@ -9,14 +9,8 @@ import cz.muni.ics.kypo.training.api.responses.PageResultResourcePython;
 import cz.muni.ics.kypo.training.api.responses.SandboxInfo;
 import cz.muni.ics.kypo.training.api.responses.SandboxPoolInfo;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
-import cz.muni.ics.kypo.training.persistence.model.TrainingDefinition;
-import cz.muni.ics.kypo.training.persistence.model.TrainingInstance;
-import cz.muni.ics.kypo.training.persistence.model.TrainingRun;
-import cz.muni.ics.kypo.training.persistence.model.UserRef;
-import cz.muni.ics.kypo.training.persistence.repository.AccessTokenRepository;
-import cz.muni.ics.kypo.training.persistence.repository.TrainingInstanceRepository;
-import cz.muni.ics.kypo.training.persistence.repository.TrainingRunRepository;
-import cz.muni.ics.kypo.training.persistence.repository.UserRefRepository;
+import cz.muni.ics.kypo.training.persistence.model.*;
+import cz.muni.ics.kypo.training.persistence.repository.*;
 import cz.muni.ics.kypo.training.service.impl.SecurityService;
 import cz.muni.ics.kypo.training.service.impl.TrainingInstanceServiceImpl;
 import org.junit.After;
@@ -70,11 +64,13 @@ public class TrainingInstanceServiceTest {
     @Mock
     private TrainingInstanceRepository trainingInstanceRepository;
     @Mock
-    private RestTemplate restTemplate, pythonRestTemplate;
+    private RestTemplate pythonRestTemplate;
     @Mock
     private AccessTokenRepository accessTokenRepository;
     @Mock
     private TrainingRunRepository trainingRunRepository;
+    @Mock
+    private TRAcquisitionLockRepository trAcquisitionLockRepository;
     @Mock
     private UserRefRepository organizerRefRepository;
     @Mock
@@ -95,7 +91,8 @@ public class TrainingInstanceServiceTest {
     public void init() {
         MockitoAnnotations.initMocks(this);
         trainingInstanceService = new TrainingInstanceServiceImpl(trainingInstanceRepository, accessTokenRepository,
-                trainingRunRepository, organizerRefRepository, restTemplate, pythonRestTemplate, securityService, trainingEventsService);
+                trainingRunRepository, organizerRefRepository, pythonRestTemplate, securityService, trainingEventsService,
+                trAcquisitionLockRepository);
 
         trainingInstance1 = new TrainingInstance();
         trainingInstance1.setId(1L);
