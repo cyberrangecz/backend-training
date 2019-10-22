@@ -33,7 +33,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.Assert.*;
@@ -195,9 +194,7 @@ public class TrainingRunFacadeTest {
     @Test
     public void accessTrainingRun() {
         given(trainingRunService.accessTrainingRun(anyString())).willReturn(trainingRun1);
-        given(trainingRunService.getLevels(1L)).willReturn(Arrays.asList(gameLevel, infoLevel, assessmentLevel));
-        given(trainingRunService.getMaxLevelOrder(anyLong())).willReturn(2);
-        given(trainingInstanceService.findByStartTimeAfterAndEndTimeBeforeAndAccessToken(anyString())).willReturn(trainingInstance);
+        given(trainingRunService.assignSandbox(any(TrainingRun.class))).willReturn(trainingRun1);
         Object result = trainingRunFacade.accessTrainingRun("password");
         assertEquals(AccessTrainingRunDTO.class, result.getClass());
         then(trainingRunService).should().accessTrainingRun("password");

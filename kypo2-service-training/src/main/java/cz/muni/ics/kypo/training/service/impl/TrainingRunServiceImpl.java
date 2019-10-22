@@ -43,7 +43,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
 import java.time.Clock;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -209,7 +208,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
 
     @Override
     @IsTraineeOrAdmin
-    //@TransactionalWO
+    @TransactionalWO
     @TrackTime
     public TrainingRun accessTrainingRun(String accessToken) {
         Assert.hasLength(accessToken, "AccessToken cannot be null or empty.");
@@ -234,14 +233,26 @@ public class TrainingRunServiceImpl implements TrainingRunService {
             throw new ServiceLayerException("No starting level available for this training definition.", ErrorCode.RESOURCE_NOT_FOUND);
         }
         levels.sort(Comparator.comparing(AbstractLevel::getOrder));
-        Long sandboxInstanceRef = getReadySandboxInstanceRef(trainingInstance.getPoolId());
         TrainingRun trainingRun = getNewTrainingRun(levels.get(0), trainingInstance, TRState.RUNNING,
-                LocalDateTime.now(Clock.systemUTC()), trainingInstance.getEndTime(), sandboxInstanceRef, participantRefId);
-        trainingRun = create(trainingRun);
+                LocalDateTime.now(Clock.systemUTC()), trainingInstance.getEndTime(), participantRefId);
         // audit this action to the Elasticsearch
-        auditEventsService.auditTrainingRunStartedAction(trainingRun);
-        auditEventsService.auditLevelStartedAction(trainingRun);
-        return trainingRun;
+        return trainingRunRepository.save(trainingRun);
+    }
+
+    @Override
+    @IsTraineeOrAdmin
+    @TransactionalWO
+    public TrainingRun assignSandbox(TrainingRun trainingRun){
+        Long sandboxInstanceRef = getReadySandboxInstanceRef(trainingRun.getTrainingInstance().getPoolId());
+        try {
+            trainingRun.setSandboxInstanceRefId(sandboxInstanceRef);
+            auditEventsService.auditTrainingRunStartedAction(trainingRun);
+            auditEventsService.auditLevelStartedAction(trainingRun);
+        }catch(ServiceLayerException ex){
+            trainingRunRepository.delete(trainingRun);
+            throw ex;
+        }
+        return trainingRunRepository.save(trainingRun);
     }
 
     @Override
@@ -265,8 +276,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
     }
 
     private TrainingRun getNewTrainingRun(AbstractLevel currentLevel, TrainingInstance trainingInstance,
-                                          TRState state, LocalDateTime startTime, LocalDateTime endTime, Long sandboxInstanceRefId,
-                                          Long participantRefId) {
+                                          TRState state, LocalDateTime startTime, LocalDateTime endTime, Long participantRefId) {
         TrainingRun newTrainingRun = new TrainingRun();
         newTrainingRun.setCurrentLevel(currentLevel);
 
@@ -281,7 +291,6 @@ public class TrainingRunServiceImpl implements TrainingRunService {
         newTrainingRun.setTrainingInstance(trainingInstance);
         newTrainingRun.setStartTime(startTime);
         newTrainingRun.setEndTime(endTime);
-        newTrainingRun.setSandboxInstanceRefId(sandboxInstanceRefId);
         return newTrainingRun;
     }
 

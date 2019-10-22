@@ -188,5 +188,5 @@ public interface TrainingRunService {
      */
     void evaluateResponsesToAssessment(Long trainingRunId, String responsesAsString);
 
-
+    TrainingRun assignSandbox(TrainingRun trainingRun);
 }
