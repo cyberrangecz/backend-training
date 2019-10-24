@@ -4,7 +4,6 @@ import javax.persistence.*;
 
 import cz.muni.ics.kypo.training.persistence.model.enums.TDState;
 
-import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -16,12 +15,8 @@ import java.util.*;
  */
 @Entity(name = "TrainingDefinition")
 @Table(name = "training_definition")
-public class TrainingDefinition implements Serializable {
+public class TrainingDefinition extends AbstractEntity<Long> {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id", unique = true, nullable = false, insertable = false)
-    private Long id;
     @Column(name = "title", nullable = false)
     private String title;
     @Column(name = "description", nullable = true)
@@ -57,7 +52,7 @@ public class TrainingDefinition implements Serializable {
      * @return the id
      */
     public Long getId() {
-        return id;
+        return super.getId();
     }
 
     /**
@@ -66,7 +61,7 @@ public class TrainingDefinition implements Serializable {
      * @param id the id
      */
     public void setId(Long id) {
-        this.id = id;
+        super.setId(id);
     }
 
     /**
@@ -313,9 +308,17 @@ public class TrainingDefinition implements Serializable {
 
     @Override
     public String toString() {
-        return "TrainingDefinition{" + "id=" + id + ", title='" + title + '\'' + ", description='" + description + '\''
-                + ", prerequisities=" + Arrays.toString(prerequisities) + ", outcomes=" + Arrays.toString(outcomes) + ", state=" + state
-                + ", authors=" + authors + ", sandboxDefinitionRefId=" + sandboxDefinitionRefId
-                + ", showStepperBar=" + showStepperBar + ", lastEdited=" + lastEdited + '}';
+        return "TrainingDefinition{" +
+                "id=" + super.getId() +
+                ", title='" + title + '\'' +
+                ", description='" + description + '\'' +
+                ", prerequisities=" + Arrays.toString(prerequisities) +
+                ", outcomes=" + Arrays.toString(outcomes) +
+                ", state=" + state +
+                ", sandboxDefinitionRefId=" + sandboxDefinitionRefId +
+                ", showStepperBar=" + showStepperBar +
+                ", estimatedDuration=" + estimatedDuration +
+                ", lastEdited=" + lastEdited +
+                '}';
     }
 }

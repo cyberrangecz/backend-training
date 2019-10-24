@@ -8,12 +8,11 @@ import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Objects;
 
-
 /**
  * Class specifying Abstract level as assessment level.
  * Assessment levels contain questions for trainees to answer.
  *
- * @author Pavel Seda (441048)
+ * @author Pavel Seda
  */
 @Entity(name = "AssessmentLevel")
 @Table(name = "assessment_level")

@@ -1,7 +1,6 @@
 package cz.muni.ics.kypo.training.persistence.model;
 
 import javax.persistence.*;
-import java.io.Serializable;
 import java.util.Objects;
 
 /**
@@ -12,12 +11,8 @@ import java.util.Objects;
  */
 @Entity(name = "AccessToken")
 @Table(name = "access_token")
-public class AccessToken implements Serializable {
+public class AccessToken extends AbstractEntity<Long> {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id", unique = true, nullable = false, insertable = false)
-    private Long id;
     @Column(name = "access_token", nullable = false, unique = true)
     private String accessToken;
 
@@ -35,7 +30,7 @@ public class AccessToken implements Serializable {
      */
     public AccessToken(Long id, String accessToken) {
         this.accessToken = accessToken;
-        this.id = id;
+        super.setId(id);
     }
 
     /**
@@ -44,7 +39,7 @@ public class AccessToken implements Serializable {
      * @return the id
      */
     public Long getId() {
-        return id;
+        return super.getId();
     }
 
     /**
@@ -53,7 +48,7 @@ public class AccessToken implements Serializable {
      * @param id the id
      */
     public void setId(Long id) {
-        this.id = id;
+        super.setId(id);
     }
 
     /**
@@ -81,18 +76,18 @@ public class AccessToken implements Serializable {
         if (!(o instanceof AccessToken))
             return false;
         AccessToken accessToken = (AccessToken) o;
-        return Objects.equals(id, accessToken.getId()) && Objects.equals(this.accessToken, accessToken.getAccessToken());
+        return Objects.equals(super.getId(), accessToken.getId()) && Objects.equals(this.accessToken, accessToken.getAccessToken());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, accessToken);
+        return Objects.hash(super.getId(), accessToken);
     }
 
     @Override
     public String toString() {
         return "AccessToken{" +
-                "id=" + id +
+                "id=" + super.getId() +
                 ", accessToken='" + accessToken + '\'' +
                 '}';
     }

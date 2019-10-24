@@ -1,7 +1,6 @@
 package cz.muni.ics.kypo.training.persistence.model;
 
 import javax.persistence.*;
-import java.io.Serializable;
 import java.util.Objects;
 
 /**
@@ -13,12 +12,8 @@ import java.util.Objects;
 @Entity(name = "AbstractLevel")
 @Table(name = "abstract_level")
 @Inheritance(strategy = InheritanceType.JOINED)
-public abstract class AbstractLevel implements Serializable {
+public abstract class AbstractLevel extends AbstractEntity<Long> {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id", unique = true, nullable = false, insertable = false)
-    private Long id;
     @Column(name = "title", nullable = false)
     private String title;
     @Column(name = "max_score", nullable = false)
@@ -43,7 +38,7 @@ public abstract class AbstractLevel implements Serializable {
      * @return the id
      */
     public Long getId() {
-        return id;
+        return super.getId();
     }
 
     /**
@@ -52,7 +47,7 @@ public abstract class AbstractLevel implements Serializable {
      * @param id the id
      */
     public void setId(Long id) {
-        this.id = id;
+        super.setId(id);
     }
 
     /**
@@ -159,5 +154,16 @@ public abstract class AbstractLevel implements Serializable {
     @Override
     public int hashCode() {
         return Objects.hash(getId(), getMaxScore());
+    }
+
+    @Override
+    public String toString() {
+        return "AbstractLevel{" +
+                "id=" + super.getId() +
+                "title='" + title + '\'' +
+                ", maxScore=" + maxScore +
+                ", estimatedDuration=" + estimatedDuration +
+                ", order=" + order +
+                '}';
     }
 }
