@@ -131,7 +131,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
                     throw new ServiceLayerException("Sandbox (id:" + trainingRun.getPreviousSandboxInstanceRefId() + ") previously assigned to the training run (id: " + trainingRunId + ") was not deleted in OpenStack. Please delete sandbox in OpenStack before you delete training run.", ErrorCode.RESOURCE_CONFLICT);
                 }
             } catch (RestTemplateException ex) {
-                if (!ex.getStatusCode().equals(HttpStatus.NOT_FOUND.name())) {
+                if (!ex.getStatusCode().equals(HttpStatus.NOT_FOUND.toString())) {
                     throw new ServiceLayerException("Client side error when calling OpenStack: " + ex.getStatusCode() + ": " + ex.getMessage(), ErrorCode.PYTHON_API_ERROR);
                 }
                 LOG.debug("Sandbox (id:" + trainingRun.getPreviousSandboxInstanceRefId() + ") previously assigned to the training run (id: " + trainingRunId + ") is not found in OpenStack because it was successfully deleted.");

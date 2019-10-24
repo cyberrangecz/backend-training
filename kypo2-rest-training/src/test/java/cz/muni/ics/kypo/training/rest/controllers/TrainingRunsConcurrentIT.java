@@ -14,14 +14,15 @@ import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.model.enums.TDState;
 import cz.muni.ics.kypo.training.persistence.repository.*;
 import cz.muni.ics.kypo.training.rest.controllers.config.RestConfigTest;
-import org.junit.*;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
@@ -201,7 +202,7 @@ public class TrainingRunsConcurrentIT {
         List<TRAcquisitionLock> locks = trAcquisitionLockRepository.findAll();
         assertEquals(1, trainingRuns.size());
         assertEquals(1, locks.size());
-        RestTemplateException exception = new RestTemplateException("Sandbox not found.", "NOT_FOUND");
+        RestTemplateException exception = new RestTemplateException("Sandbox not found.", "404 NOT_FOUND");
         willThrow(exception).given(restTemplate).exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class));
         mvc.perform(delete("/training-instances/{instanceId}/sandbox-instances", trainingInstance.getId())
                 .param("sandboxIds", sandboxInfoPageResult.getResults().get(0).getId().toString())
