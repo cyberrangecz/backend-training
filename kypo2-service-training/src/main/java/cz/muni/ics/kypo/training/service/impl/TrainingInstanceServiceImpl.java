@@ -307,7 +307,7 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
             pythonRestTemplate.exchange(kypoOpenStackURI + "/sandboxes/" + idOfSandboxRefToDelete + "/lock/",
                     HttpMethod.DELETE, new HttpEntity<>(httpHeaders), String.class);
         } catch (RestTemplateException ex) {
-            if (!ex.getStatusCode().equals(HttpStatus.BAD_REQUEST)) {
+            if (!ex.getStatusCode().equals(HttpStatus.BAD_REQUEST.toString())) {
                 LOG.error("Client side error when calling OpenStack: {}. Probably wrong URL of service.", ex.getStatusCode() + " - " + ex.getMessage());
                 return;
             }
@@ -316,7 +316,7 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
             pythonRestTemplate.exchange(kypoOpenStackURI + "/sandboxes/" + idOfSandboxRefToDelete + "/",
                     HttpMethod.DELETE, new HttpEntity<>(httpHeaders), String.class);
         } catch (RestTemplateException ex) {
-            if (!ex.getStatusCode().equals(HttpStatus.NOT_FOUND)){
+            if (!ex.getStatusCode().equals(HttpStatus.NOT_FOUND.toString())){
                 LOG.error("Client side error when calling OpenStack: {}. Probably wrong URL of service.", ex.getStatusCode() + " - " + ex.getMessage());
                 return;
             }
