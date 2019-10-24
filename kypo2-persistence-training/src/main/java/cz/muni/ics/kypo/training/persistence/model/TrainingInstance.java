@@ -1,7 +1,6 @@
 package cz.muni.ics.kypo.training.persistence.model;
 
 import javax.persistence.*;
-import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.HashSet;
@@ -17,12 +16,8 @@ import java.util.Set;
  */
 @Entity(name = "TrainingInstance")
 @Table(name = "training_instance")
-public class TrainingInstance implements Serializable {
+public class TrainingInstance extends AbstractEntity<Long> {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id", unique = true, nullable = false, insertable = false)
-    private Long id;
     @Column(name = "start_time", nullable = false)
     private LocalDateTime startTime;
     @Column(name = "end_time", nullable = false)
@@ -50,7 +45,7 @@ public class TrainingInstance implements Serializable {
      * @return the id
      */
     public Long getId() {
-        return id;
+        return super.getId();
     }
 
     /**
@@ -59,7 +54,7 @@ public class TrainingInstance implements Serializable {
      * @param id the id
      */
     public void setId(Long id) {
-        this.id = id;
+        super.setId(id);
     }
 
     /**
@@ -250,7 +245,7 @@ public class TrainingInstance implements Serializable {
     @Override
     public String toString() {
         return "TrainingInstance{" +
-                "id=" + id +
+                "id=" + super.getId() +
                 ", startTime=" + startTime +
                 ", endTime=" + endTime +
                 ", title='" + title + '\'' +

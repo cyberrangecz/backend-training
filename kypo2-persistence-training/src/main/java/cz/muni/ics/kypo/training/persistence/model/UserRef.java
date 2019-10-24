@@ -1,7 +1,6 @@
 package cz.muni.ics.kypo.training.persistence.model;
 
 import javax.persistence.*;
-import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Objects;
@@ -14,12 +13,8 @@ import java.util.Set;
  */
 @Entity
 @Table(name = "user_ref", uniqueConstraints = @UniqueConstraint(columnNames = {"user_ref_id"}))
-public class UserRef implements Serializable {
+public class UserRef extends AbstractEntity<Long> {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id", unique = true, nullable = false, insertable = false)
-    private Long id;
     @Column(name = "user_ref_id", nullable = false)
     private Long userRefId;
     @ManyToMany(mappedBy = "organizers", fetch = FetchType.LAZY)
@@ -41,7 +36,7 @@ public class UserRef implements Serializable {
      * @return the id
      */
     public Long getId() {
-        return id;
+        return super.getId();
     }
 
     /**
@@ -50,7 +45,7 @@ public class UserRef implements Serializable {
      * @param id the id
      */
     public void setId(Long id) {
-        this.id = id;
+        super.setId(id);
     }
 
     /**
@@ -195,7 +190,7 @@ public class UserRef implements Serializable {
     @Override
     public String toString() {
         return "UserRef{" +
-                "id=" + id +
+                "id=" + super.getId() +
                 ", userRefId=" + userRefId +
                 '}';
     }

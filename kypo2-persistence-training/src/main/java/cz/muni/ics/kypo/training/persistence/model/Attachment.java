@@ -1,17 +1,16 @@
 package cz.muni.ics.kypo.training.persistence.model;
 
 import javax.persistence.*;
-import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
+/**
+ * @author Dominik Pilar
+ */
 @Entity(name = "Attachment")
 @Table(name = "attachment")
-public class Attachment implements Serializable {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id", unique = true, nullable = false, insertable = false)
-    private Long id;
+public class Attachment extends AbstractEntity<Long> {
+
     @Column(name = "content", nullable = false)
     private String content;
     @Column(name = "creation_time", nullable = false)
@@ -30,11 +29,11 @@ public class Attachment implements Serializable {
     }
 
     public Long getId() {
-        return id;
+        return super.getId();
     }
 
     public void setId(Long id) {
-        this.id = id;
+        super.setId(id);
     }
 
     public String getContent() {
@@ -78,7 +77,7 @@ public class Attachment implements Serializable {
     @Override
     public String toString() {
         return "Attachment{" +
-                "id=" + id +
+                "id=" + super.getId() +
                 ", content='" + content + '\'' +
                 ", creationTime=" + creationTime +
                 '}';

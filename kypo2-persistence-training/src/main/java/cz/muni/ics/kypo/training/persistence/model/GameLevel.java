@@ -5,16 +5,16 @@ import java.io.Serializable;
 import java.util.*;
 
 /**
- * /**
  * Class specifying Abstract level as game level.
  * Game levels contain tasks for trainees to solve.
  *
- * @author Pavel Seda (441048)
+ * @author Pavel Seda
  */
 @Entity(name = "GameLevel")
 @Table(name = "game_level")
 @PrimaryKeyJoinColumn(name = "id")
 public class GameLevel extends AbstractLevel implements Serializable {
+
     @Column(name = "flag", nullable = false)
     private String flag;
     @Lob
@@ -41,7 +41,7 @@ public class GameLevel extends AbstractLevel implements Serializable {
 
     /**
      * Used to fix missing foreign key in the child (Hint) of @OneToMany association.
-     *
+     * <p>
      * Hint entity was missing foreign key to GameLevel after persisting it.
      */
     @PrePersist
@@ -121,15 +121,30 @@ public class GameLevel extends AbstractLevel implements Serializable {
         this.solutionPenalized = solutionPenalized;
     }
 
+    /**
+     * Gets attachments.
+     *
+     * @return the attachments
+     */
     public Set<Attachment> getAttachments() {
         return attachments;
     }
 
+    /**
+     * Sets attachments.
+     *
+     * @param attachments the attachments
+     */
     public void setAttachments(Set<Attachment> attachments) {
         this.attachments = attachments;
     }
 
-    public void addAttachment(Attachment attachment){
+    /**
+     * Add attachment.
+     *
+     * @param attachment the attachment
+     */
+    public void addAttachment(Attachment attachment) {
         this.attachments.add(attachment);
     }
 

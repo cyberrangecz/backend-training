@@ -4,7 +4,6 @@ import cz.muni.ics.kypo.training.persistence.model.enums.TRState;
 import org.hibernate.annotations.Type;
 
 import javax.persistence.*;
-import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Objects;
@@ -15,16 +14,12 @@ import java.util.Set;
  * Training runs can be created based on instances.
  * Training runs are accessed by trainees
  *
- * @author Pavel Seda (441048)
+ * @author Pavel Seda
  */
 @Entity(name = "TrainingRun")
 @Table(name = "training_run")
-public class TrainingRun implements Serializable {
+public class TrainingRun extends AbstractEntity<Long> {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id", unique = true, nullable = false, insertable = false)
-    private Long id;
     @Column(name = "start_time", nullable = false)
     private LocalDateTime startTime;
     @Column(name = "end_time", nullable = false)
@@ -64,13 +59,14 @@ public class TrainingRun implements Serializable {
     private Long previousSandboxInstanceRefId;
     @Column(name = "current_penalty")
     private int currentPenalty;
+
     /**
      * Gets unique identification number of Training run
      *
      * @return the id
      */
     public Long getId() {
-        return id;
+        return super.getId();
     }
 
     /**
@@ -79,7 +75,7 @@ public class TrainingRun implements Serializable {
      * @param id the id
      */
     public void setId(Long id) {
-        this.id = id;
+        super.setId(id);
     }
 
     /**
@@ -206,7 +202,6 @@ public class TrainingRun implements Serializable {
         return sandboxInstanceRefId;
     }
 
-
     /**
      * Sets id of sandbox instance associated with Training run
      *
@@ -315,18 +310,38 @@ public class TrainingRun implements Serializable {
         this.totalScore -= penalty;
     }
 
+    /**
+     * Gets max level score.
+     *
+     * @return the max level score
+     */
     public int getMaxLevelScore() {
         return maxLevelScore;
     }
 
+    /**
+     * Sets max level score.
+     *
+     * @param maxLevelScore the max level score
+     */
     public void setMaxLevelScore(int maxLevelScore) {
         this.maxLevelScore = maxLevelScore;
     }
 
+    /**
+     * Increase current penalty.
+     *
+     * @param penalty the penalty
+     */
     public void increaseCurrentPenalty(int penalty) {
         this.currentPenalty += penalty;
     }
 
+    /**
+     * Increase total score.
+     *
+     * @param points the points
+     */
     public void increaseTotalScore(int points) {
         this.totalScore += points;
     }
@@ -385,6 +400,7 @@ public class TrainingRun implements Serializable {
     public Long getPreviousSandboxInstanceRefId() {
         return previousSandboxInstanceRefId;
     }
+
     /**
      * Sets previous sandbox instance ref ID
      *
@@ -394,14 +410,29 @@ public class TrainingRun implements Serializable {
         this.previousSandboxInstanceRefId = previousSandboxInstanceRefId;
     }
 
+    /**
+     * Sets hint info list.
+     *
+     * @param hintInfoList the hint info list
+     */
     public void setHintInfoList(Set<HintInfo> hintInfoList) {
         this.hintInfoList = hintInfoList;
     }
 
+    /**
+     * Gets current penalty.
+     *
+     * @return the current penalty
+     */
     public int getCurrentPenalty() {
         return currentPenalty;
     }
 
+    /**
+     * Sets current penalty.
+     *
+     * @param currentPenalty the current penalty
+     */
     public void setCurrentPenalty(int currentPenalty) {
         this.currentPenalty = currentPenalty;
     }
@@ -434,7 +465,7 @@ public class TrainingRun implements Serializable {
     @Override
     public String toString() {
         return "TrainingRun{" +
-                "id=" + id +
+                "id=" + super.getId() +
                 ", startTime=" + startTime +
                 ", endTime=" + endTime +
                 ", eventLogReference='" + eventLogReference + '\'' +

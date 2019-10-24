@@ -23,7 +23,8 @@ public class HintInfo {
     /**
      * Instantiates a new Hint info
      */
-    public HintInfo() {}
+    public HintInfo() {
+    }
 
     /**
      * Instantiates a new Hint info
@@ -117,11 +118,23 @@ public class HintInfo {
         this.gameLevelId = gameLevelId;
     }
 
+    public void setHintId(long hintId) {
+        this.hintId = hintId;
+    }
+
+    public int getOrder() {
+        return order;
+    }
+
+    public void setOrder(int order) {
+        this.order = order;
+    }
+
     @Override
     public boolean equals(Object object) {
         if (!(object instanceof HintInfo)) return false;
         HintInfo hintInfo = (HintInfo) object;
-        return Objects.equals(getGameLevelId(),hintInfo.getGameLevelId()) &&
+        return Objects.equals(getGameLevelId(), hintInfo.getGameLevelId()) &&
                 Objects.equals(getHintId(), hintInfo.getHintId()) &&
                 Objects.equals(getHintTitle(), hintInfo.getHintTitle());
     }
@@ -129,5 +142,16 @@ public class HintInfo {
     @Override
     public int hashCode() {
         return Objects.hash(getGameLevelId(), getHintId(), getHintTitle());
+    }
+
+    @Override
+    public String toString() {
+        return "HintInfo{" +
+                "gameLevelId=" + gameLevelId +
+                ", hintId=" + hintId +
+                ", hintTitle='" + hintTitle + '\'' +
+                ", hintContent='" + hintContent + '\'' +
+                ", order=" + order +
+                '}';
     }
 }

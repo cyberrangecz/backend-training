@@ -1,7 +1,6 @@
 package cz.muni.ics.kypo.training.persistence.model;
 
 import javax.persistence.*;
-import java.io.Serializable;
 import java.util.Objects;
 
 /**
@@ -12,12 +11,8 @@ import java.util.Objects;
  */
 @Entity(name = "Hint")
 @Table(name = "hint")
-public class Hint implements Serializable {
+public class Hint extends AbstractEntity<Long> {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id", unique = true, nullable = false, insertable = false)
-    private Long id;
     @Column(name = "title", nullable = false)
     private String title;
     @Lob
@@ -59,7 +54,7 @@ public class Hint implements Serializable {
      * @return the id
      */
     public Long getId() {
-        return id;
+        return super.getId();
     }
 
     /**
@@ -68,7 +63,7 @@ public class Hint implements Serializable {
      * @param id the id
      */
     public void setId(Long id) {
-        this.id = id;
+        super.setId(id);
     }
 
     /**
@@ -169,7 +164,7 @@ public class Hint implements Serializable {
     @Override
     public String toString() {
         return "Hint{" +
-                "id=" + id +
+                "id=" + super.getId() +
                 ", title='" + title + '\'' +
                 ", content='" + content + '\'' +
                 ", hintPenalty=" + hintPenalty +

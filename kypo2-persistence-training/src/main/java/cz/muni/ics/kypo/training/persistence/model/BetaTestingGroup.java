@@ -1,7 +1,6 @@
 package cz.muni.ics.kypo.training.persistence.model;
 
 import javax.persistence.*;
-import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Objects;
@@ -14,12 +13,8 @@ import java.util.Set;
  */
 @Entity
 @Table(name = "beta_testing_group")
-public class BetaTestingGroup implements Serializable {
+public class BetaTestingGroup extends AbstractEntity<Long> {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id", unique = true, nullable = false, insertable = false)
-    private Long id;
     @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     @JoinTable(name = "beta_testing_group_user_ref",
             joinColumns = @JoinColumn(name = "beta_testing_group_id"),
@@ -35,7 +30,7 @@ public class BetaTestingGroup implements Serializable {
      * @return the id
      */
     public Long getId() {
-        return id;
+        return super.getId();
     }
 
     /**
@@ -44,7 +39,7 @@ public class BetaTestingGroup implements Serializable {
      * @param id the id
      */
     public void setId(Long id) {
-        this.id = id;
+        super.setId(id);
     }
 
     /**
@@ -119,7 +114,7 @@ public class BetaTestingGroup implements Serializable {
     @Override
     public String toString() {
         return "BetaTestingGroup{" +
-                "id=" + id +
+                "id=" + super.getId() +
                 ", organizers=" + organizers +
                 '}';
     }
