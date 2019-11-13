@@ -1,6 +1,8 @@
 package cz.muni.ics.kypo.training.service.impl;
 
 import com.querydsl.core.types.Predicate;
+import com.querydsl.jpa.JPAExpressions;
+import com.querydsl.jpa.JPQLQuery;
 import cz.muni.ics.kypo.training.annotations.security.IsAdminOrDesignerOrOrganizer;
 import cz.muni.ics.kypo.training.annotations.security.IsDesignerOrAdmin;
 import cz.muni.ics.kypo.training.annotations.security.IsOrganizerOrAdmin;
@@ -83,20 +85,24 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
         if (securityService.isAdmin()) {
             return trainingDefinitionRepository.findAll(predicate, pageable);
         }
-        return trainingDefinitionRepository.findAllByLoggedInUser(securityService.getUserRefIdFromUserAndGroup(), pageable);
+        Long loggedInUserId = securityService.getUserRefIdFromUserAndGroup();
+        Predicate finalPredicate = QTrainingDefinition.trainingDefinition.authors.any().userRefId.eq(loggedInUserId).or(QTrainingDefinition.trainingDefinition.betaTestingGroup.organizers.any().userRefId.eq(loggedInUserId)).and(predicate);
+        return trainingDefinitionRepository.findAll(finalPredicate, pageable);
     }
 
     @Override
     @IsOrganizerOrAdmin
     public Page<TrainingDefinition> findAllForOrganizers(Predicate predicate, Pageable pageable) {
+        Long loggedInUserId = securityService.getUserRefIdFromUserAndGroup();
         if (securityService.isAdmin()) {
             return trainingDefinitionRepository.findAll(predicate, pageable);
         } else if (securityService.isDesigner() && securityService.isOrganizer()) {
-            return trainingDefinitionRepository.findAllForDesignersAndOrganizers(securityService.getUserRefIdFromUserAndGroup(), pageable);
+            Predicate finalPredicate = QTrainingDefinition.trainingDefinition.authors.any().userRefId.eq(loggedInUserId).or(QTrainingDefinition.trainingDefinition.betaTestingGroup.organizers.any().userRefId.eq(loggedInUserId)).and(predicate);
+            return trainingDefinitionRepository.findAll(finalPredicate, pageable);
         } else {
-            return trainingDefinitionRepository.findAllForOrganizers(securityService.getUserRefIdFromUserAndGroup(), pageable);
+            Predicate finalPredicate = QTrainingDefinition.trainingDefinition.betaTestingGroup.organizers.any().userRefId.eq(loggedInUserId).and(predicate);
+            return trainingDefinitionRepository.findAll(finalPredicate, pageable);
         }
-
     }
 
     @Override
@@ -173,20 +179,20 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
             "or @securityService.isDesignerOfGivenTrainingDefinition(#definitionId)")
     public void moveLevel(Long definitionId, Long levelIdToBeMoved, Integer newPosition) {
         Integer maxOrderOfLevel = abstractLevelRepository.getCurrentMaxOrder(definitionId);
-        if(newPosition < 0) {
+        if (newPosition < 0) {
             newPosition = 0;
-        } else if(newPosition > maxOrderOfLevel) {
+        } else if (newPosition > maxOrderOfLevel) {
             newPosition = maxOrderOfLevel;
         }
         TrainingDefinition trainingDefinition = findById(definitionId);
         checkIfCanBeUpdated(trainingDefinition);
         AbstractLevel levelToBeMoved = abstractLevelRepository.findById(levelIdToBeMoved).orElseThrow(() -> new ServiceLayerException(LEVEL_NOT_FOUND, ErrorCode.RESOURCE_NOT_FOUND));
-        if(levelToBeMoved.getOrder() == newPosition) {
+        if (levelToBeMoved.getOrder() == newPosition) {
             return;
-        } else if(levelToBeMoved.getOrder() < newPosition) {
-            abstractLevelRepository.decreaseOrderOfLevels(definitionId, levelToBeMoved.getOrder()+1, newPosition);
+        } else if (levelToBeMoved.getOrder() < newPosition) {
+            abstractLevelRepository.decreaseOrderOfLevels(definitionId, levelToBeMoved.getOrder() + 1, newPosition);
         } else {
-            abstractLevelRepository.increaseOrderOfLevels(definitionId, newPosition, levelToBeMoved.getOrder()-1);
+            abstractLevelRepository.increaseOrderOfLevels(definitionId, newPosition, levelToBeMoved.getOrder() - 1);
         }
         levelToBeMoved.setOrder(newPosition);
         trainingDefinition.setLastEdited(getCurrentTimeInUTC());
@@ -474,7 +480,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
                     hints.add(newHint);
                 }
                 Set<Attachment> attachments = new HashSet<>();
-                for (Attachment attachment: ((GameLevel) level).getAttachments()) {
+                for (Attachment attachment : ((GameLevel) level).getAttachments()) {
                     Attachment newAttachment = new Attachment();
                     BeanUtils.copyProperties(attachment, newAttachment);
                     newAttachment.setId(null);
