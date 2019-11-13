@@ -3,6 +3,7 @@ package cz.muni.ics.kypo.training.persistence.repository;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.StringPath;
+import com.querydsl.jpa.JPQLQuery;
 import cz.muni.ics.kypo.training.persistence.model.QTrainingDefinition;
 import cz.muni.ics.kypo.training.persistence.model.TrainingInstance;
 import cz.muni.ics.kypo.training.persistence.model.enums.TDState;
@@ -66,41 +67,6 @@ public interface TrainingDefinitionRepository
      */
     @EntityGraph(attributePaths = {"authors", "betaTestingGroup", "betaTestingGroup.organizers"})
     Page<TrainingDefinition> findAll(Predicate predicate, Pageable pageable);
-
-    /**
-     * Find all training definitions accessible to logged in user.
-     *
-     * @param userRefId the user ref id
-     * @param pageable  the pageable
-     * @return the page of {@link TrainingDefinition} accessible to logged in user
-     */
-    @Query(value = "SELECT td FROM TrainingDefinition td INNER JOIN td.authors a WHERE a.userRefId = :userRefId",
-            countQuery = "SELECT COUNT(td) FROM TrainingDefinition td INNER JOIN td.authors a WHERE a.userRefId = :userRefId")
-    Page<TrainingDefinition> findAllByLoggedInUser(@Param("userRefId") Long userRefId, Pageable pageable);
-
-    /**
-     * Find all training definitions accessible to organizer.
-     *
-     * @param userRefId the user ref id
-     * @param pageable  the pageable
-     * @return the page of {@link TrainingDefinition} accessible to organizer
-     */
-    @Query(value = "SELECT DISTINCT td FROM TrainingDefinition td LEFT JOIN td.betaTestingGroup bt LEFT JOIN bt.organizers org WHERE org.userRefId = :userRefId OR td.state = 'RELEASED'",
-            countQuery = "SELECT COUNT(DISTINCT td) FROM TrainingDefinition td LEFT JOIN td.betaTestingGroup bt LEFT JOIN bt.organizers org WHERE org.userRefId = :userRefId OR td.state = 'RELEASED'")
-    Page<TrainingDefinition> findAllForOrganizers(@Param("userRefId") Long userRefId, Pageable pageable);
-
-    /**
-     * Find all training definitions accessible to organizer and designer.
-     *
-     * @param userRefId the user ref id
-     * @param pageable  the pageable
-     * @return the page of {@link TrainingDefinition} accessible to organizer and designer
-     */
-    @Query(value = "SELECT DISTINCT td FROM TrainingDefinition td LEFT JOIN td.betaTestingGroup bt LEFT JOIN bt.organizers org " +
-            "LEFT JOIN td.authors aut WHERE aut.userRefId = :userRefId OR org.userRefId = :userRefId OR td.state = 'RELEASED'",
-            countQuery = "SELECT COUNT(DISTINCT td) FROM TrainingDefinition td LEFT JOIN td.betaTestingGroup bt LEFT JOIN bt.organizers org " +
-                    "LEFT JOIN td.authors aut WHERE aut.userRefId = :userRefId OR org.userRefId = :userRefId OR td.state = 'RELEASED'")
-    Page<TrainingDefinition> findAllForDesignersAndOrganizers(@Param("userRefId") Long userRefId, Pageable pageable);
 
     /**
      * Find training definition by id
