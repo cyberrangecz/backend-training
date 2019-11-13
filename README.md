@@ -6,7 +6,7 @@ It is divided into several modules as:
   * Provides REST layer for communication with front-end.
   * Based on HTTP REST without HATEOAS.
   * Documented with Swagger.
-* `kypo2-facade`
+* `kypo2-api`
   * Contains API (DTO classes)
     * These are annotated with proprietary converters for DateTime processing.
     * Localized Bean validations are set (messages are localized).
