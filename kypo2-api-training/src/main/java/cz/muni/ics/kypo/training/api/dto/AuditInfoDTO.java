@@ -3,9 +3,6 @@ package cz.muni.ics.kypo.training.api.dto;
 public class AuditInfoDTO {
 
     private long userRefId;
-    private String fullNameWithoutTitles;
-    private String fullName;
-    private String playerLogin;
     private long sandboxId;
     private long trainingRunId;
     private long trainingDefinitionId;
@@ -14,7 +11,6 @@ public class AuditInfoDTO {
     private long level;
     private int totalScore;
     private int actualScoreInLevel;
-    private String iss;
 
     public AuditInfoDTO() {
     }
@@ -25,30 +21,6 @@ public class AuditInfoDTO {
 
     public void setUserRefId(long userRefId) {
         this.userRefId = userRefId;
-    }
-
-    public String getFullNameWithoutTitles() {
-        return fullNameWithoutTitles;
-    }
-
-    public void setFullNameWithoutTitles(String fullNameWithoutTitles) {
-        this.fullNameWithoutTitles = fullNameWithoutTitles;
-    }
-
-    public String getFullName() {
-        return fullName;
-    }
-
-    public void setFullName(String fullName) {
-        this.fullName = fullName;
-    }
-
-    public String getPlayerLogin() {
-        return playerLogin;
-    }
-
-    public void setPlayerLogin(String playerLogin) {
-        this.playerLogin = playerLogin;
     }
 
     public long getSandboxId() {
@@ -115,21 +87,10 @@ public class AuditInfoDTO {
         this.actualScoreInLevel = actualScoreInLevel;
     }
 
-    public String getIss() {
-        return iss;
-    }
-
-    public void setIss(String iss) {
-        this.iss = iss;
-    }
-
     @Override
     public String toString() {
         return "AuditInfoDTO{" +
                 "userRefId=" + userRefId +
-                ", fullNameWithoutTitles='" + fullNameWithoutTitles + '\'' +
-                ", fullName='" + fullName + '\'' +
-                ", playerLogin='" + playerLogin + '\'' +
                 ", sandboxId=" + sandboxId +
                 ", trainingRunId=" + trainingRunId +
                 ", trainingDefinitionId=" + trainingDefinitionId +
@@ -138,7 +99,6 @@ public class AuditInfoDTO {
                 ", level=" + level +
                 ", totalScore=" + totalScore +
                 ", actualScoreInLevel=" + actualScoreInLevel +
-                ", iss='" + iss + '\'' +
                 '}';
     }
 }

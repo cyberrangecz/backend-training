@@ -33,17 +33,13 @@ import java.util.stream.Collectors;
 public class AuditEventsService {
 
     private AuditService auditService;
-    private RestTemplate restTemplate;
-    private HttpServletRequest servletRequest;
 
     @Value("${user-and-group-server.uri}")
     private String userAndGroupUrl;
 
     @Autowired
-    public AuditEventsService(AuditService auditService, RestTemplate restTemplate, HttpServletRequest servletRequest) {
+    public AuditEventsService(AuditService auditService) {
         this.auditService = auditService;
-        this.restTemplate = restTemplate;
-        this.servletRequest = servletRequest;
     }
 
 
@@ -60,7 +56,6 @@ public class AuditEventsService {
                 .totalScore(auditInfoDTO.getTotalScore())
                 .actualScoreInLevel(auditInfoDTO.getActualScoreInLevel())
                 .level(auditInfoDTO.getLevel())
-                .iss(auditInfoDTO.getIss())
                 .build();
 
         auditService.saveTrainingRunEvent(trainingRunStarted, auditInfoDTO.getTrainingDefinitionId(), auditInfoDTO.getTrainingInstanceId());
@@ -83,7 +78,6 @@ public class AuditEventsService {
                 .levelType(levelType)
                 .maxScore(trainingRun.getCurrentLevel().getMaxScore())
                 .levelTitle(trainingRun.getCurrentLevel().getTitle())
-                .iss(auditInfoDTO.getIss())
                 .build();
 
         auditService.saveTrainingRunEvent(levelStarted, auditInfoDTO.getTrainingDefinitionId(), auditInfoDTO.getTrainingInstanceId());
@@ -104,7 +98,6 @@ public class AuditEventsService {
                 .actualScoreInLevel(auditInfoDTO.getActualScoreInLevel())
                 .level(auditInfoDTO.getLevel())
                 .levelType(levelType)
-                .iss(auditInfoDTO.getIss())
                 .build();
 
         auditService.saveTrainingRunEvent(levelCompleted, auditInfoDTO.getTrainingDefinitionId(), auditInfoDTO.getTrainingInstanceId());
@@ -126,7 +119,6 @@ public class AuditEventsService {
                 .hintId(hint.getId())
                 .hintPenaltyPoints(hint.getHintPenalty())
                 .hintTitle(hint.getTitle())
-                .iss(auditInfoDTO.getIss())
                 .build();
         auditService.saveTrainingRunEvent(hintTaken, auditInfoDTO.getTrainingDefinitionId(), auditInfoDTO.getTrainingInstanceId());
     }
@@ -145,7 +137,6 @@ public class AuditEventsService {
                 .actualScoreInLevel(auditInfoDTO.getActualScoreInLevel())
                 .level(auditInfoDTO.getLevel())
                 .penaltyPoints(auditInfoDTO.getActualScoreInLevel())
-                .iss(auditInfoDTO.getIss())
                 .build();
         auditService.saveTrainingRunEvent(solutionDisplayed, auditInfoDTO.getTrainingDefinitionId(), auditInfoDTO.getTrainingInstanceId());
     }
@@ -164,7 +155,6 @@ public class AuditEventsService {
                 .actualScoreInLevel(auditInfoDTO.getActualScoreInLevel())
                 .level(auditInfoDTO.getLevel())
                 .flagContent(flag)
-                .iss(auditInfoDTO.getIss())
                 .build();
         auditService.saveTrainingRunEvent(correctFlagSubmitted, auditInfoDTO.getTrainingDefinitionId(), auditInfoDTO.getTrainingInstanceId());
     }
@@ -184,7 +174,6 @@ public class AuditEventsService {
                 .level(auditInfoDTO.getLevel())
                 .flagContent(flag)
                 .count(trainingRun.getIncorrectFlagCount())
-                .iss(auditInfoDTO.getIss())
                 .build();
         auditService.saveTrainingRunEvent(wrongFlagSubmitted, auditInfoDTO.getTrainingDefinitionId(), auditInfoDTO.getTrainingInstanceId());
     }
@@ -203,7 +192,6 @@ public class AuditEventsService {
                 .actualScoreInLevel(auditInfoDTO.getActualScoreInLevel())
                 .level(auditInfoDTO.getLevel())
                 .answers(answers)
-                .iss(auditInfoDTO.getIss())
                 .build();
         auditService.saveTrainingRunEvent(assessmentAnswers, auditInfoDTO.getTrainingDefinitionId(), auditInfoDTO.getTrainingInstanceId());
     }
@@ -223,7 +211,6 @@ public class AuditEventsService {
                 .level(auditInfoDTO.getLevel())
                 .startTime(trainingRun.getStartTime().atOffset(ZoneOffset.UTC).toInstant().toEpochMilli())
                 .endTime(System.currentTimeMillis())
-                .iss(auditInfoDTO.getIss())
                 .build();
 
         auditService.saveTrainingRunEvent(assessmentAnswers, auditInfoDTO.getTrainingDefinitionId(), auditInfoDTO.getTrainingInstanceId());
@@ -242,7 +229,6 @@ public class AuditEventsService {
                 .totalScore(auditInfoDTO.getTotalScore())
                 .actualScoreInLevel(auditInfoDTO.getActualScoreInLevel())
                 .level(auditInfoDTO.getLevel())
-                .iss(auditInfoDTO.getIss())
                 .build();
         auditService.saveTrainingRunEvent(trainingRunResumed, auditInfoDTO.getTrainingDefinitionId(), auditInfoDTO.getTrainingInstanceId());
     }
@@ -250,38 +236,6 @@ public class AuditEventsService {
     private AuditInfoDTO createAuditUserInfo(TrainingRun trainingRun){
         TrainingInstance trainingInstance = trainingRun.getTrainingInstance();
         AuditInfoDTO auditInfoDTO = new AuditInfoDTO();
-
-        String userAndGroupUserInfoById = userAndGroupUrl + "/users/" + trainingRun.getParticipantRef().getUserRefId();
-        HttpHeaders httpHeaders = new HttpHeaders();
-        httpHeaders.setContentType(MediaType.APPLICATION_JSON);
-        HttpEntity<String> entity = new HttpEntity<>(httpHeaders);
-        try {
-            ResponseEntity<UserRefDTO> response =
-                    restTemplate.exchange(userAndGroupUserInfoById, HttpMethod.GET, entity, UserRefDTO.class);
-            UserRefDTO participantInfo = response.getBody();
-            Objects.requireNonNull(participantInfo);
-
-            if(participantInfo.getUserRefLogin() != null)
-                auditInfoDTO.setPlayerLogin(participantInfo.getUserRefLogin());
-            else auditInfoDTO.setPlayerLogin("");
-
-            if(participantInfo.getUserRefFullName() != null)
-                auditInfoDTO.setFullName(participantInfo.getUserRefFullName());
-            else auditInfoDTO.setFullName("");
-
-            if(participantInfo.getUserRefGivenName() != null && participantInfo.getUserRefFamilyName() != null)
-                auditInfoDTO.setFullNameWithoutTitles(participantInfo.getUserRefGivenName() +" "+ participantInfo.getUserRefFamilyName());
-            else auditInfoDTO.setFullNameWithoutTitles("");
-
-            if(participantInfo.getIss() != null )
-                auditInfoDTO.setIss(participantInfo.getIss());
-            else auditInfoDTO.setIss("");
-        } catch (HttpClientErrorException ex) {
-            throw new SecurityException("Error while getting info about user (user_ref_id: " + trainingRun.getParticipantRef().getUserRefId() + ") : " + ex.getStatusCode());
-        }
-
-
-
         auditInfoDTO.setUserRefId(trainingRun.getParticipantRef().getUserRefId());
         auditInfoDTO.setSandboxId(trainingInstance.getTrainingDefinition().getSandboxDefinitionRefId());
         auditInfoDTO.setTrainingRunId(trainingRun.getId());
