@@ -111,7 +111,10 @@
             <artifactId>concurrent-junit</artifactId>
             <scope>test</scope>
         </dependency>
-
+        <dependency>
+            <groupId>com.github.kongchen</groupId>
+            <artifactId>swagger-maven-plugin</artifactId>
+        </dependency>
     </dependencies>
 
     <build>
@@ -121,11 +124,10 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
             </plugin>
-            <!--
             <plugin>
                 <groupId>com.github.kongchen</groupId>
                 <artifactId>swagger-maven-plugin</artifactId>
-                <version>3.1.6</version>
+                <version>3.1.8</version>
                 <configuration>
                     <apiSources>
                         <apiSource>
@@ -146,6 +148,7 @@
                                     <url>https://is.muni.cz/auth/osoba/441048</url>
                                 </contact>
                             </info>
+                            <swaggerApiReader>cz.muni.ics.kypo.training.rest.utils.CustomSwaggerReader</swaggerApiReader>
                             <outputPath>${swagger.directory}/document.html</outputPath>
                             <swaggerDirectory>${swagger.directory}</swaggerDirectory>
                             <outputFormats>yaml</outputFormats>
@@ -235,7 +238,6 @@
                     </execution>
                 </executions>
             </plugin>
-            -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-failsafe-plugin</artifactId>
