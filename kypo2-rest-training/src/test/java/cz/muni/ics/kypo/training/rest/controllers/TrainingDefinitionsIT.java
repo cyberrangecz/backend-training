@@ -369,57 +369,6 @@ public class TrainingDefinitionsIT {
     }
 
     @Test
-    public void findAllTrainingDefinitionsForOrganizersOrganizerRole() throws Exception {
-        trainingDefinitionRepository.save(releasedTrainingDefinition);
-        trainingDefinitionRepository.save(unreleasedDefinition);
-        mockSpringSecurityContextForGet(List.of(RoleTypeSecurity.ROLE_TRAINING_ORGANIZER.name()));
-
-        given(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), eq(UserRefDTO.class))).
-                willReturn(new ResponseEntity<UserRefDTO>(userRefDTO, HttpStatus.OK));
-        MockHttpServletResponse result = mvc.perform(get("/training-definitions/for-organizers"))
-                .andExpect(status().isOk())
-                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-                .andReturn().getResponse();
-        PageResultResource<TrainingDefinitionInfoDTO> trainingDefinitionsPage = mapper.readValue(convertJsonBytesToString(result.getContentAsString()), new TypeReference<PageResultResource<TrainingDefinitionInfoDTO>>() {
-        });
-
-        TrainingDefinitionInfoDTO releasedTrainingDefinitionInfoDTO = new TrainingDefinitionInfoDTO();
-        releasedTrainingDefinitionInfoDTO.setId(releasedTrainingDefinition.getId());
-        releasedTrainingDefinitionInfoDTO.setState(TDState.RELEASED);
-        releasedTrainingDefinitionInfoDTO.setTitle(releasedTrainingDefinition.getTitle());
-
-        assertTrue(trainingDefinitionsPage.getContent().contains(releasedTrainingDefinitionInfoDTO));
-    }
-
-    @Test
-    public void findAllTrainingDefinitionsForOrganizersOrganizerAndDesignerRole() throws Exception {
-        unreleasedDefinition.addAuthor(organizer1);
-        trainingDefinitionRepository.save(releasedTrainingDefinition);
-        trainingDefinitionRepository.save(unreleasedDefinition);
-        mockSpringSecurityContextForGet(List.of(RoleTypeSecurity.ROLE_TRAINING_ORGANIZER.name(), RoleTypeSecurity.ROLE_TRAINING_DESIGNER.name()));
-
-        given(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), eq(UserRefDTO.class))).
-                willReturn(new ResponseEntity<UserRefDTO>(userRefDTO, HttpStatus.OK));
-        MockHttpServletResponse result = mvc.perform(get("/training-definitions/for-organizers"))
-                .andExpect(status().isOk())
-                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-                .andReturn().getResponse();
-        PageResultResource<TrainingDefinitionInfoDTO> trainingDefinitionsPage = mapper.readValue(convertJsonBytesToString(result.getContentAsString()), new TypeReference<PageResultResource<TrainingDefinitionInfoDTO>>() {
-        });
-
-        TrainingDefinitionInfoDTO releasedTrainingDefinitionInfoDTO = new TrainingDefinitionInfoDTO();
-        releasedTrainingDefinitionInfoDTO.setId(releasedTrainingDefinition.getId());
-        releasedTrainingDefinitionInfoDTO.setState(TDState.RELEASED);
-        releasedTrainingDefinitionInfoDTO.setTitle(releasedTrainingDefinition.getTitle());
-
-        TrainingDefinitionInfoDTO unreleasedTrainingDefinitionInfoDTO = new TrainingDefinitionInfoDTO();
-        unreleasedTrainingDefinitionInfoDTO.setId(unreleasedDefinition.getId());
-        unreleasedTrainingDefinitionInfoDTO.setState(TDState.UNRELEASED);
-        unreleasedTrainingDefinitionInfoDTO.setTitle(unreleasedDefinition.getTitle());
-        assertTrue(trainingDefinitionsPage.getContent().containsAll(Set.of(unreleasedTrainingDefinitionInfoDTO, releasedTrainingDefinitionInfoDTO)));
-    }
-
-    @Test
     public void findAllTrainingDefinitionsBySandboxDefinitionId() throws Exception {
         trainingDefinitionRepository.save(releasedTrainingDefinition);
         trainingDefinitionRepository.save(archivedTrainingDefinition);

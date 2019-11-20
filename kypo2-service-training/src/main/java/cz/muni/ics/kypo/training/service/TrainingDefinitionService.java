@@ -180,7 +180,6 @@ public interface TrainingDefinitionService {
      */
     TrainingDefinition create(TrainingDefinition trainingDefinition);
 
-
     /**
      * Finds specific level by id
      *
@@ -209,9 +208,9 @@ public interface TrainingDefinitionService {
     /**
      * Finds all Training Definitions accessible to users with the role of organizer.
      *
-     * @param predicate represents a predicate (boolean-valued function) of one argument.
+     * @param state represents a state of training definition if it is released or unreleased.
      * @param pageable  pageable parameter with information about pagination.
      * @return all Training Definitions for organizers
      */
-    Page<TrainingDefinition> findAllForOrganizers(Predicate predicate, Pageable pageable);
+    Page<TrainingDefinition> findAllForOrganizers(String state, Pageable pageable);
 }

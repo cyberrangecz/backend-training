@@ -152,9 +152,8 @@ public class TrainingDefinitionsRestController {
     /**
      * Get all Training Definitions for organizers.
      *
-     * @param predicate  specifies query to database.
+     * @param state      training definition state (should be RELEASED or UNRELEASED)
      * @param pageable   pageable parameter with information about pagination.
-     * @param parameters the parameters
      * @param fields     attributes of the object to be returned as the result.
      * @return all Training Definitions for organizers.
      */
@@ -171,14 +170,13 @@ public class TrainingDefinitionsRestController {
     @ApiPageableSwagger
     @GetMapping(path = "/for-organizers", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> findAllTrainingDefinitionsForOrganizers(
-            @QuerydslPredicate(root = TrainingDefinition.class) Predicate predicate,
+            @ApiParam(value = "State of the training definition", required = true)
+            @RequestParam(value = "state", required = true) String state,
             Pageable pageable,
-            @ApiParam(value = "Parameters for filtering the objects.", required = false)
-            @RequestParam MultiValueMap<String, String> parameters,
             @ApiParam(value = "Fields which should be returned in REST API response", required = false)
             @RequestParam(value = "fields", required = false) String fields) {
 
-        PageResultResource<TrainingDefinitionInfoDTO> trainingDefinitionResource = trainingDefinitionFacade.findAllForOrganizers(predicate, pageable);
+        PageResultResource<TrainingDefinitionInfoDTO> trainingDefinitionResource = trainingDefinitionFacade.findAllForOrganizers(state, pageable);
         Squiggly.init(objectMapper, fields);
         return ResponseEntity.ok(SquigglyUtils.stringify(objectMapper, trainingDefinitionResource));
     }
