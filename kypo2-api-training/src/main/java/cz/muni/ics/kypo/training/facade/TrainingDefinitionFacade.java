@@ -219,11 +219,11 @@ public interface TrainingDefinitionFacade {
     /**
      * Find all Training Definitions.
      *
-     * @param predicate represents a predicate (boolean-valued function) of one argument.
+     * @param state represents a string if the training definitions should be relased or not.
      * @param pageable  pageable parameter with information about pagination.
      * @return page of all {@link TrainingDefinitionInfoDTO} accessible for organizers
      */
-    PageResultResource<TrainingDefinitionInfoDTO> findAllForOrganizers(Predicate predicate, Pageable pageable);
+    PageResultResource<TrainingDefinitionInfoDTO> findAllForOrganizers(String state, Pageable pageable);
 
     /**
      * Retrieve all authors for given training definition.

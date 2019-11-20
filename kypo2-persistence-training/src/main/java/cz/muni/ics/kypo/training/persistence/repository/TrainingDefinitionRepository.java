@@ -21,7 +21,6 @@ import org.springframework.stereotype.Repository;
 import cz.muni.ics.kypo.training.persistence.model.TrainingDefinition;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.Optional;
 
 /**
@@ -67,6 +66,36 @@ public interface TrainingDefinitionRepository
      */
     @EntityGraph(attributePaths = {"authors", "betaTestingGroup", "betaTestingGroup.organizers"})
     Page<TrainingDefinition> findAll(Predicate predicate, Pageable pageable);
+
+    /**
+     * Find all training definitions
+     *
+     * @param state     the state of training definition
+     * @param pageable  the pageable
+     * @return page of all {@link TrainingDefinition}
+     */
+    @Query(value = "SELECT DISTINCT td FROM TrainingDefinition td WHERE td.state = :state",
+            countQuery = "SELECT COUNT(DISTINCT td) FROM TrainingDefinition td WHERE td.state = :state")
+    Page<TrainingDefinition> findAllForOrganizers(@Param("state") TDState state, Pageable pageable);
+
+    /**
+     * Find all training definitions
+     *
+     * @param pageable  the pageable
+     * @return page of all {@link TrainingDefinition}
+     */
+    @EntityGraph(attributePaths = {"authors", "betaTestingGroup", "betaTestingGroup.organizers"})
+    Page<TrainingDefinition> findAll(Pageable pageable);
+
+    @Query(value = "SELECT DISTINCT td FROM TrainingDefinition td LEFT JOIN td.betaTestingGroup bt LEFT JOIN bt.organizers org WHERE org.userRefId = :userRefId AND td.state = 'UNRELEASED'",
+            countQuery = "SELECT COUNT(DISTINCT td) FROM TrainingDefinition td LEFT JOIN td.betaTestingGroup bt LEFT JOIN bt.organizers org WHERE org.userRefId = :userRefId AND td.state = 'UNRELEASED'")
+    Page<TrainingDefinition> findAllForOrganizersUnreleased(@Param("userRefId") Long userRefId, Pageable pageable);
+
+    @Query(value = "SELECT DISTINCT td FROM TrainingDefinition td LEFT JOIN td.betaTestingGroup bt LEFT JOIN bt.organizers org " +
+            "LEFT JOIN td.authors aut WHERE aut.userRefId = :userRefId OR org.userRefId = :userRefId AND td.state = 'UNRELEASED'",
+            countQuery = "SELECT COUNT(DISTINCT td) FROM TrainingDefinition td LEFT JOIN td.betaTestingGroup bt LEFT JOIN bt.organizers org " +
+                    "LEFT JOIN td.authors aut WHERE aut.userRefId = :userRefId OR org.userRefId = :userRefId AND td.state = 'UNRELEASED'")
+    Page<TrainingDefinition> findAllForDesignersAndOrganizersUnreleased(@Param("userRefId") Long userRefId, Pageable pageable);
 
     /**
      * Find training definition by id

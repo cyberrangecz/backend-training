@@ -1,8 +1,6 @@
 package cz.muni.ics.kypo.training.service.impl;
 
 import com.querydsl.core.types.Predicate;
-import com.querydsl.jpa.JPAExpressions;
-import com.querydsl.jpa.JPQLQuery;
 import cz.muni.ics.kypo.training.annotations.security.IsAdminOrDesignerOrOrganizer;
 import cz.muni.ics.kypo.training.annotations.security.IsDesignerOrAdmin;
 import cz.muni.ics.kypo.training.annotations.security.IsOrganizerOrAdmin;
@@ -92,17 +90,22 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
 
     @Override
     @IsOrganizerOrAdmin
-    public Page<TrainingDefinition> findAllForOrganizers(Predicate predicate, Pageable pageable) {
+    public Page<TrainingDefinition> findAllForOrganizers(String state, Pageable pageable) {
         Long loggedInUserId = securityService.getUserRefIdFromUserAndGroup();
-        if (securityService.isAdmin()) {
-            return trainingDefinitionRepository.findAll(predicate, pageable);
-        } else if (securityService.isDesigner() && securityService.isOrganizer()) {
-            Predicate finalPredicate = QTrainingDefinition.trainingDefinition.authors.any().userRefId.eq(loggedInUserId).or(QTrainingDefinition.trainingDefinition.betaTestingGroup.organizers.any().userRefId.eq(loggedInUserId)).and(predicate);
-            return trainingDefinitionRepository.findAll(finalPredicate, pageable);
-        } else {
-            Predicate finalPredicate = QTrainingDefinition.trainingDefinition.betaTestingGroup.organizers.any().userRefId.eq(loggedInUserId).and(predicate);
-            return trainingDefinitionRepository.findAll(finalPredicate, pageable);
+        if(state != null && state.equals(TDState.RELEASED.name())) {
+            return trainingDefinitionRepository.findAllForOrganizers(TDState.RELEASED, pageable);
+        } else if (state != null && state.equals(TDState.UNRELEASED.name())) {
+            if (securityService.isAdmin()) {
+                if(state.equals(TDState.UNRELEASED.name())) {
+                    return trainingDefinitionRepository.findAllForOrganizers(TDState.UNRELEASED, pageable);
+                }
+            } else if (securityService.isDesigner() && securityService.isOrganizer()) {
+                return trainingDefinitionRepository.findAllForDesignersAndOrganizersUnreleased(loggedInUserId, pageable);
+            } else {
+                return trainingDefinitionRepository.findAllForOrganizersUnreleased(loggedInUserId, pageable);
+            }
         }
+        throw new ServiceLayerException("It is required to provide training definition state that is RELEASED or UNRELEASED", ErrorCode.UNEXPECTED_ERROR);
     }
 
     @Override
