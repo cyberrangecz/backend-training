@@ -1,10 +1,13 @@
 package cz.muni.ics.kypo.training.api.dto.betatestinggroup;
 
+import io.swagger.annotations.ApiModel;
+
 import java.util.Set;
 
 /**
  * Encapsulates information about Beta testing group.
  */
+@ApiModel(value = "BetaTestingGroupDTO", description = "Group of organizers who are allowed to see the specific training definitions. (Deprecated)")
 public class BetaTestingGroupDTO {
 
     private Long id;

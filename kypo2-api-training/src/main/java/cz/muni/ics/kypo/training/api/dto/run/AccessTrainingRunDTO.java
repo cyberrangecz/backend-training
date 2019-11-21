@@ -15,18 +15,27 @@ import java.util.List;
 /**
  * Encapsulates information about Training Run, intended as a response to run accessing.
  */
-@ApiModel(value = "AccessTrainingRunDTO", description = ".")
+@ApiModel(value = "AccessTrainingRunDTO", description = "Just accessed training run.")
 public class AccessTrainingRunDTO {
 
+    @ApiModelProperty(value = "Main identifier of training run.", example = "1")
     private Long trainingRunID;
+    @ApiModelProperty(value = "Sign if stepper bar should be displayed.", example = "false")
     private boolean showStepperBar;
+    @ApiModelProperty(value = "Main identifier of sandbox which is assigned to training run.", example = "2")
     private Long sandboxInstanceRefId;
+    @ApiModelProperty(value = "First level in the current training run.")
     private AbstractLevelDTO abstractLevelDTO;
+    @ApiModelProperty(value = "Information about all levels in training instance.")
     private List<BasicLevelInfoDTO> infoAboutLevels;
+    @ApiModelProperty(value = "Id of associated training instance", example = "1")
     private Long instanceId;
+    @ApiModelProperty(value = "Date when training run started.", example = "2016-10-19 10:23:54+02")
     @JsonSerialize(using = LocalDateTimeUTCSerializer.class)
     private LocalDateTime startTime;
+    @ApiModelProperty(value = "Sign if solution of current game level was taken", example = "true")
     private String takenSolution;
+    @ApiModelProperty(value = "All already taken hints.")
     private List<TakenHintDTO> takenHints = new ArrayList<>();
 
     /**
@@ -34,7 +43,6 @@ public class AccessTrainingRunDTO {
      *
      * @return the training run id
      */
-    @ApiModelProperty(value = "Main identifier of training run.", example = "1")
     public Long getTrainingRunID() {
         return trainingRunID;
     }
@@ -53,7 +61,6 @@ public class AccessTrainingRunDTO {
      *
      * @return true if bar is shown
      */
-    @ApiModelProperty(value = "Sign if stepper bar should be displayed.", example = "false")
     public boolean isShowStepperBar() {
         return showStepperBar;
     }
@@ -72,7 +79,6 @@ public class AccessTrainingRunDTO {
      *
      * @return the sandbox instance id
      */
-    @ApiModelProperty(value = "Main identifier of sandbox which is assigned to training run.", example = "2")
     public Long getSandboxInstanceRefId() {
         return sandboxInstanceRefId;
     }
@@ -91,7 +97,6 @@ public class AccessTrainingRunDTO {
      *
      * @return the {@link AbstractLevelDTO}
      */
-    @ApiModelProperty(value = "First level in the current training run.")
     public AbstractLevelDTO getAbstractLevelDTO() {
         return abstractLevelDTO;
     }
@@ -110,7 +115,6 @@ public class AccessTrainingRunDTO {
      *
      * @return the list of {@link BasicLevelInfoDTO}
      */
-    @ApiModelProperty(value = "Information about all levels in training instance.")
     public List<BasicLevelInfoDTO> getInfoAboutLevels() {
         return infoAboutLevels;
     }
@@ -129,7 +133,6 @@ public class AccessTrainingRunDTO {
      *
      * @return the instance id
      */
-    @ApiModelProperty(value = "Id of associated training instance", example = "1")
     public Long getInstanceId() {
         return instanceId;
     }
@@ -148,7 +151,6 @@ public class AccessTrainingRunDTO {
      *
      * @return the start time
      */
-    @ApiModelProperty(value = "Date when training run started.", example = "2016-10-19 10:23:54+02")
     public LocalDateTime getStartTime() {
         return startTime;
     }

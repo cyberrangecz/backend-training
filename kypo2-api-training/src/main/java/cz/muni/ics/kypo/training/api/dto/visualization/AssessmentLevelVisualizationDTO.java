@@ -4,14 +4,18 @@ package cz.muni.ics.kypo.training.api.dto.visualization;/**
      * @return the {@link AssessmentType}
      */
 
+import cz.muni.ics.kypo.training.api.dto.imports.AbstractLevelImportDTO;
 import cz.muni.ics.kypo.training.api.enums.AssessmentType;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
 import java.util.Objects;
-
+@ApiModel(value = "AssessmentLevelVisualizationDTO", description = "Information about assessment level needed for visualizations.", parent = AbstractLevelImportDTO.class)
 public class AssessmentLevelVisualizationDTO extends AbstractLevelVisualizationDTO{
 
+    @ApiModelProperty(value = "Type of assessment.", example = "TEST")
     private AssessmentType assessmentType;
+    @ApiModelProperty(value = "List of questions in this assessment as JSON.", example = "What is my mothers name?")
     private String questions;
 
     public AssessmentLevelVisualizationDTO() {
@@ -22,7 +26,6 @@ public class AssessmentLevelVisualizationDTO extends AbstractLevelVisualizationD
      *
      * @return the {@link AssessmentType}
      */
-    @ApiModelProperty(value = "Type of assessment.", example = "TEST")
     public AssessmentType getAssessmentType() {
         return assessmentType;
     }
@@ -39,7 +42,6 @@ public class AssessmentLevelVisualizationDTO extends AbstractLevelVisualizationD
      *
      * @return the questions
      */
-    @ApiModelProperty(value = "List of questions in this assessment as JSON.", example = "What is my mothers name?")
     public String getQuestions() {
         return questions;
     }

@@ -20,17 +20,25 @@ import java.util.Set;
 @ApiModel(value = "TrainingDefinitionCreateDTO", description = "Training definition to create.")
 public class TrainingDefinitionCreateDTO {
 
+    @ApiModelProperty(value = "A name of the training/game (e.g., Photo Hunter) .", required = true, example = "Photo Hunter")
     @NotEmpty(message = "{trainingdefinitioncreate.title.NotEmpty.message}")
     private String title;
+    @ApiModelProperty(value = "Description of training definition that is visible to the participant.", example = "Description of Photo Hunter")
     private String description;
+    @ApiModelProperty(value = "List of knowledge and skills necessary to complete the training.", example = "[HTML, http protocol]")
     private String[] prerequisities;
+    @ApiModelProperty(value = "A list of knowledge and skills that the participant should learn by attending the training (if it is used for educational purposes) ", example = "[outcomes]")
     private String[] outcomes;
+    @ApiModelProperty(value = "Current state of training definition.", required = true, example = "UNRELEASED")
     @NotNull(message = "{trainingdefinitioncreate.state.NotNull.message}")
     private TDState state;
+    @ApiModelProperty(value = "Group of organizers who is allowed to see the training definition.", required = true)
     @Valid
     private BetaTestingGroupCreateDTO betaTestingGroup;
+    @ApiModelProperty(value = "Sign if stepper bar should be displayed.", required = true, example = "true")
     @NotNull(message = "{trainingdefinitioncreate.showStepperBar.NotNull.message}")
     private boolean showStepperBar;
+    @ApiModelProperty(value = "Reference to the sandbox definition.", required = true, example = "1")
     private Long sandboxDefinitionRefId;
 
     /**
@@ -38,7 +46,6 @@ public class TrainingDefinitionCreateDTO {
      *
      * @return the title
      */
-    @ApiModelProperty(value = "A name of the training/game (e.g., Photo Hunter) .", required = true, example = "Photo Hunter")
     public String getTitle() {
         return title;
     }
@@ -57,7 +64,6 @@ public class TrainingDefinitionCreateDTO {
      *
      * @return the description
      */
-    @ApiModelProperty(value = "Description of training definition that is visible to the participant.", example = "Description of Photo Hunter")
     public String getDescription() {
         return description;
     }
@@ -76,7 +82,6 @@ public class TrainingDefinitionCreateDTO {
      *
      * @return the prerequisites
      */
-    @ApiModelProperty(value = "List of knowledge and skills necessary to complete the training.", example = "[HTML, http protocol]")
     public String[] getPrerequisities() {
         return prerequisities;
     }
@@ -95,7 +100,6 @@ public class TrainingDefinitionCreateDTO {
      *
      * @return the outcomes
      */
-    @ApiModelProperty(value = "A list of knowledge and skills that the participant should learn by attending the training (if it is used for educational purposes) ", example = "[outcomes]")
     public String[] getOutcomes() {
         return outcomes;
     }
@@ -114,7 +118,6 @@ public class TrainingDefinitionCreateDTO {
      *
      * @return the {@link TDState}
      */
-    @ApiModelProperty(value = "Current state of training definition.", required = true, example = "UNRELEASED")
     public TDState getState() {
         return state;
     }
@@ -133,7 +136,6 @@ public class TrainingDefinitionCreateDTO {
      *
      * @return the {@link BetaTestingGroupCreateDTO}
      */
-    @ApiModelProperty(value = "Group of organizers who is allowed to see the training definition.", required = true)
     public BetaTestingGroupCreateDTO getBetaTestingGroup() {
         return betaTestingGroup;
     }
@@ -152,7 +154,6 @@ public class TrainingDefinitionCreateDTO {
      *
      * @return true if bar is shown
      */
-    @ApiModelProperty(value = "Sign if stepper bar should be displayed.", required = true, example = "true")
     public boolean isShowStepperBar() {
         return showStepperBar;
     }
@@ -171,7 +172,6 @@ public class TrainingDefinitionCreateDTO {
      *
      * @return the sandbox definition ref id
      */
-    @ApiModelProperty(value = "Reference to the sandbox definition.", required = true, example = "1")
     public Long getSandboxDefinitionRefId() {
         return sandboxDefinitionRefId;
     }

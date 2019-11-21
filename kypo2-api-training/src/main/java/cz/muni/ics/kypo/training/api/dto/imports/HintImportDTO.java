@@ -1,14 +1,21 @@
 package cz.muni.ics.kypo.training.api.dto.imports;
 
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
+
 /**
  *  Encapsulates information about Hint.
  *
  * @author Boris Jadus(445343)
  */
+@ApiModel(value = "HintDTO", description = "Imported hint.")
 public class HintImportDTO {
 
+	@ApiModelProperty(value = "Short textual description of the hint.", example = "Hint1")
 	private String title;
+	@ApiModelProperty(value = "The information and experiences that are directed towards a participant.", example = "Very good advice")
 	private String content;
+	@ApiModelProperty(value = "The number of points the participant loses after receiving the hint.", example = "10")
 	private Integer hintPenalty;
 
 	/**

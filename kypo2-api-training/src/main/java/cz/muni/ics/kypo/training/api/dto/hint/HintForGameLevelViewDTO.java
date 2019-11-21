@@ -1,5 +1,6 @@
 package cz.muni.ics.kypo.training.api.dto.hint;
 
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
 import java.util.Objects;
@@ -7,10 +8,14 @@ import java.util.Objects;
 /**
  * Encapsulates basic information about Hint
  */
+@ApiModel(value = "HintForGameLevelViewDTO", description = "Basic information about hint viewed in a game level.")
 public class HintForGameLevelViewDTO {
 
+    @ApiModelProperty(value = "Main identifier of hint.", example = "1")
     private Long id;
+    @ApiModelProperty(value = "Short textual description of the hint.", example = "Hint1")
     private String title;
+    @ApiModelProperty(value = "The order of hint in game level", example = "1")
     private int order;
 
     /**
@@ -18,7 +23,6 @@ public class HintForGameLevelViewDTO {
      *
      * @return the id
      */
-    @ApiModelProperty(value = "Main identifier of hint.", example = "1")
     public Long getId() {
         return id;
     }
@@ -37,7 +41,6 @@ public class HintForGameLevelViewDTO {
      *
      * @return the title
      */
-    @ApiModelProperty(value = "Short textual description of the hint.", example = "Hint1")
     public String getTitle() {
         return title;
     }
@@ -51,7 +54,6 @@ public class HintForGameLevelViewDTO {
         this.title = title;
     }
 
-    @ApiModelProperty(value = "The order of hint in game level", example = "1")
     public int getOrder() {
         return order;
     }

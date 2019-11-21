@@ -1,16 +1,22 @@
 package cz.muni.ics.kypo.training.api.dto.imports;
 
 import cz.muni.ics.kypo.training.api.enums.AssessmentType;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 
 /**
  * Encapsulates information about assessment level. Inherits from {@link AbstractLevelImportDTO}
  *
  * @author Boris Jadus(445343)
  */
+@ApiModel(value = "AssessmentLevelImportDTO", description = "Imported assessment level.", parent = AbstractLevelImportDTO.class)
 public class AssessmentLevelImportDTO extends AbstractLevelImportDTO {
 
+	@ApiModelProperty(value = "Questions of assessment level to update.", example = "\"[{\"question_type\":\"FFQ\",\"text\":\"Which tool would you use to scan the open ports of a server?\",\"points\":6,\"penalty\":3,\"order\":0,\"answer_required\":true,\"correct_choices\":[\"nmap\",\"Nmap\"]}]\"")
 	private String questions;
+	@ApiModelProperty(value = "Instructions of assessment level to update.", example = "Fill me up slowly")
 	private String instructions;
+	@ApiModelProperty(value = "Type of assessment level to update.", required = true, example = "TEST")
 	private AssessmentType assessmentType;
 
 	/**

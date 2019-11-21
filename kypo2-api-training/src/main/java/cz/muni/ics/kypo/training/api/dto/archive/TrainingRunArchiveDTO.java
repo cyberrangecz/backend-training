@@ -4,23 +4,29 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import cz.muni.ics.kypo.training.api.dto.export.UserRefExportDTO;
 import cz.muni.ics.kypo.training.api.enums.TRState;
 import cz.muni.ics.kypo.training.converters.LocalDateTimeUTCSerializer;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
 import java.time.LocalDateTime;
-
+@ApiModel(value = "TrainingRunArchiveDTO", description = "An archived run of training instance of a particular participant.")
 public class TrainingRunArchiveDTO {
 
+    @ApiModelProperty(value = "Main identifier of training run.", example = "1")
     private Long id;
+    @ApiModelProperty(value = "Main identifier of training instance associated with this run.", example = "1")
     private Long instanceId;
+    @ApiModelProperty(value = "Date when training run started.", example = "2016-10-19 10:23:54+02")
     @JsonSerialize(using = LocalDateTimeUTCSerializer.class)
     private LocalDateTime startTime;
+    @ApiModelProperty(value = "Date when training run ends.", example = "2022-10-19 10:23:54+02")
     @JsonSerialize(using = LocalDateTimeUTCSerializer.class)
     private LocalDateTime endTime;
     private String eventLogReference;
+    @ApiModelProperty(value = "Current state of training run.", example = "ALLOCATED")
     private TRState state;
+    @ApiModelProperty(value = "Reference to participant of training run.", example = "5")
     private Long participantRefId;
 
-    @ApiModelProperty(value = "Main identifier of training run.", example = "1")
     public Long getId() {
         return id;
     }
@@ -29,7 +35,6 @@ public class TrainingRunArchiveDTO {
         this.id = id;
     }
 
-    @ApiModelProperty(value = "Main identifier of training instance associated with this run.", example = "1")
     public Long getInstanceId() {
         return instanceId;
     }
@@ -38,7 +43,6 @@ public class TrainingRunArchiveDTO {
         this.instanceId = instanceId;
     }
 
-    @ApiModelProperty(value = "Date when training run started.", example = "2016-10-19 10:23:54+02")
     public LocalDateTime getStartTime() {
         return startTime;
     }
@@ -47,7 +51,6 @@ public class TrainingRunArchiveDTO {
         this.startTime = startTime;
     }
 
-    @ApiModelProperty(value = "Date when training run ends.", example = "2022-10-19 10:23:54+02")
     public LocalDateTime getEndTime() {
         return endTime;
     }
@@ -64,7 +67,6 @@ public class TrainingRunArchiveDTO {
         this.eventLogReference = eventLogReference;
     }
 
-    @ApiModelProperty(value = "Current state of training run.", example = "ALLOCATED")
     public TRState getState() {
         return state;
     }
@@ -73,7 +75,6 @@ public class TrainingRunArchiveDTO {
         this.state = state;
     }
 
-    @ApiModelProperty(value = "Reference to participant of training run.")
     public Long getParticipantRefId() {
         return participantRefId;
     }

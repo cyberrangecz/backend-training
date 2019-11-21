@@ -3,6 +3,7 @@ package cz.muni.ics.kypo.training.api.dto.archive;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import cz.muni.ics.kypo.training.api.dto.export.UserRefExportDTO;
 import cz.muni.ics.kypo.training.converters.LocalDateTimeUTCSerializer;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
 import java.time.LocalDateTime;
@@ -13,20 +14,28 @@ import java.util.Set;
  *
  * @author Boris Jadus
  */
+@ApiModel(value = "TrainingInstanceArchiveDTO", description = "The finished and archived instance of training definition which includes individual finished training runs of participants.")
 public class TrainingInstanceArchiveDTO {
 
+	@ApiModelProperty(value = "Main identifier of training instance.", example = "1")
 	private Long id;
+	@ApiModelProperty(value = "Main identifier of training definition associated with this instance.", example = "1")
 	private Long definitionId;
+	@ApiModelProperty(value = "Date when training instance starts.", example = "2016-10-19 10:23:54+02")
 	@JsonSerialize(using = LocalDateTimeUTCSerializer.class)
 	private LocalDateTime startTime;
+	@ApiModelProperty(value = "Date when training instance ends.", example = "2017-10-19 10:23:54+02")
 	@JsonSerialize(using = LocalDateTimeUTCSerializer.class)
 	private LocalDateTime endTime;
+	@ApiModelProperty(value = "Short textual description of the training instance.", example = "Concluded Instance")
 	private String title;
+	@ApiModelProperty(value = "Number of sandboxes that can be allocated.", example = "5")
 	private int poolSize;
+	@ApiModelProperty(value = "Reference to organizersRefIds which organize training instance.")
 	private Set<Long> organizersRefIds;
+	@ApiModelProperty(value = "Token needed to access runs created from this definition", example = "pass-1234")
 	private String accessToken;
 
-	@ApiModelProperty(value = "Main identifier of training instance.", example = "1")
 	public Long getId() {
 		return id;
 	}
@@ -35,7 +44,6 @@ public class TrainingInstanceArchiveDTO {
 		this.id = id;
 	}
 
-	@ApiModelProperty(value = "Main identifier of training definition associated with this instance.", example = "1")
 	public Long getDefinitionId() {
 		return definitionId;
 	}
@@ -49,7 +57,6 @@ public class TrainingInstanceArchiveDTO {
 	 *
 	 * @return the start time
 	 */
-	@ApiModelProperty(value = "Date when training instance starts.", example = "2016-10-19 10:23:54+02")
 	public LocalDateTime getStartTime() {
 		return startTime;
 	}
@@ -68,7 +75,6 @@ public class TrainingInstanceArchiveDTO {
 	 *
 	 * @return the end time
 	 */
-	@ApiModelProperty(value = "Date when training instance ends.", example = "2017-10-19 10:23:54+02")
 	public LocalDateTime getEndTime() {
 		return endTime;
 	}
@@ -87,7 +93,6 @@ public class TrainingInstanceArchiveDTO {
 	 *
 	 * @return the title
 	 */
-	@ApiModelProperty(value = "Short textual description of the training instance.", example = "Concluded Instance")
 	public String getTitle() {
 		return title;
 	}
@@ -106,7 +111,6 @@ public class TrainingInstanceArchiveDTO {
 	 *
 	 * @return the pool size
 	 */
-	@ApiModelProperty(value = "Number of sandboxes that can be allocated.", example = "5")
 	public int getPoolSize() {
 		return poolSize;
 	}
@@ -125,7 +129,6 @@ public class TrainingInstanceArchiveDTO {
 	 *
 	 * @return the organizersRefIds
 	 */
-	@ApiModelProperty(value = "Reference to organizersRefIds which organize training instance.")
 	public Set<Long> getOrganizersRefIds() {
 		return organizersRefIds;
 	}
@@ -144,7 +147,6 @@ public class TrainingInstanceArchiveDTO {
 	 *
 	 * @return the access token
 	 */
-	@ApiModelProperty(value = "Token needed to access runs created from this definition", example = "pass-1234")
 	public String getAccessToken() {
 		return accessToken;
 	}

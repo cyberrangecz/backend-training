@@ -20,22 +20,29 @@ import java.util.Set;
 @ApiModel(value = "TrainingInstanceUpdateDTO", description = "Training Instance to update.")
 public class TrainingInstanceUpdateDTO {
 
+    @ApiModelProperty(value = "Main identifier of training instance.", required = true, example = "2")
     @NotNull(message = "{traininginstanceupdate.id.NotNull.message}")
     private Long id;
+    @ApiModelProperty(value = "Date when training instance starts.", required = true, example = "2019-10-19T10:28:02.727Z")
     @NotNull(message = "{traininginstanceupdate.startTime.NotNull.message}")
     @JsonDeserialize(using = LocalDateTimeUTCDeserializer.class)
     private LocalDateTime startTime;
+    @ApiModelProperty(value = "Date when training instance ends.", required = true, example = "2019-10-25T10:28:02.727Z")
     @NotNull(message = "{traininginstanceupdate.endTime.NotNull.message}")
     @JsonDeserialize(using = LocalDateTimeUTCDeserializer.class)
     private LocalDateTime endTime;
+    @ApiModelProperty(value = "Short textual description of the training instance.", required = true, example = "Current Instance")
     @NotEmpty(message = "{traininginstanceupdate.title.NotEmpty.message}")
     private String title;
+    @ApiModelProperty(value = "Number of sandboxes that can be allocated.", required = true, example = "8")
     @NotNull(message = "{traininginstanceupdate.poolSize.NotNull.message}")
     @Min(value = 1, message = "{traininginstanceupdate.poolSize.Min.message}")
     @Max(value = 100, message = "{traininginstanceupdate.poolSize.Max.message}")
     private int poolSize;
+    @ApiModelProperty(value = "AccessToken which will be modified and then used for accessing training run.", required = true, example = "hello-6578")
     @NotEmpty(message = "{traininginstanceupdate.accessToken.NotEmpty.message}")
     private String accessToken;
+    @ApiModelProperty(value = "Reference to training definition from which is training instance created.", required = true, example = "1")
     @NotNull(message = "{traininginstanceupdate.trainingDefinition.NotNull.message}")
     private Long trainingDefinitionId;
 
@@ -44,7 +51,6 @@ public class TrainingInstanceUpdateDTO {
      *
      * @return the id
      */
-    @ApiModelProperty(value = "Main identifier of training instance.", required = true, example = "2")
     public Long getId() {
         return id;
     }
@@ -63,7 +69,6 @@ public class TrainingInstanceUpdateDTO {
      *
      * @return the start time
      */
-    @ApiModelProperty(value = "Date when training instance starts.", required = true, example = "2019-10-19T10:28:02.727Z")
     public LocalDateTime getStartTime() {
         return startTime;
     }
@@ -82,7 +87,6 @@ public class TrainingInstanceUpdateDTO {
      *
      * @return the end time
      */
-    @ApiModelProperty(value = "Date when training instance ends.", required = true, example = "2019-10-25T10:28:02.727Z")
     public LocalDateTime getEndTime() {
         return endTime;
     }
@@ -101,7 +105,6 @@ public class TrainingInstanceUpdateDTO {
      *
      * @return the title
      */
-    @ApiModelProperty(value = "Short textual description of the training instance.", required = true, example = "Current Instance")
     public String getTitle() {
         return title;
     }
@@ -120,7 +123,6 @@ public class TrainingInstanceUpdateDTO {
      *
      * @return the pool size
      */
-    @ApiModelProperty(value = "Number of sandboxes that can be allocated.", required = true, example = "8")
     public int getPoolSize() {
         return poolSize;
     }
@@ -139,7 +141,6 @@ public class TrainingInstanceUpdateDTO {
      *
      * @return the access token
      */
-    @ApiModelProperty(value = "AccessToken which will be modified and then used for accessing training run.", required = true, example = "hello-6578")
     public String getAccessToken() {
         return accessToken;
     }
@@ -158,7 +159,6 @@ public class TrainingInstanceUpdateDTO {
      *
      * @return the training definition id
      */
-    @ApiModelProperty(value = "Reference to training definition from which is training instance created.", required = true, example = "1")
     public Long getTrainingDefinitionId() {
         return trainingDefinitionId;
     }

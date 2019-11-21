@@ -18,14 +18,20 @@ import java.util.Objects;
 @ApiModel(value = "TrainingRunDTO", description = "The act, or a recording, of performing actions during training from a perspective of one concrete participant.")
 public class TrainingRunDTO {
 
+    @ApiModelProperty(value = "Main identifier of training run.", example = "1")
     private Long id;
+    @ApiModelProperty(value = "Date when training run started.", example = "2016-10-19 10:23:54+02")
     @JsonSerialize(using = LocalDateTimeUTCSerializer.class)
     private LocalDateTime startTime;
+    @ApiModelProperty(value = "Date when training run ends.", example = "2022-10-19 10:23:54+02")
     @JsonSerialize(using = LocalDateTimeUTCSerializer.class)
     private LocalDateTime endTime;
     private String eventLogReference;
+    @ApiModelProperty(value = "Current state of training run.", example = "ALLOCATED")
     private TRState state;
+    @ApiModelProperty(value = "Reference to the received sandbox.")
     private Long sandboxInstanceRefId;
+    @ApiModelProperty(value = "Reference to participant of training run.")
     private UserRefDTO participantRef;
 
     /**
@@ -33,7 +39,6 @@ public class TrainingRunDTO {
      *
      * @return the id
      */
-    @ApiModelProperty(value = "Main identifier of training run.", example = "1")
     public Long getId() {
         return id;
     }
@@ -52,7 +57,6 @@ public class TrainingRunDTO {
      *
      * @return the start time
      */
-    @ApiModelProperty(value = "Date when training run started.", example = "2016-10-19 10:23:54+02")
     public LocalDateTime getStartTime() {
         return startTime;
     }
@@ -71,7 +75,6 @@ public class TrainingRunDTO {
      *
      * @return the end time
      */
-    @ApiModelProperty(value = "Date when training run ends.", example = "2022-10-19 10:23:54+02")
     public LocalDateTime getEndTime() {
         return endTime;
     }
@@ -108,7 +111,6 @@ public class TrainingRunDTO {
      *
      * @return the {@link TRState}
      */
-    @ApiModelProperty(value = "Current state of training run.", example = "ALLOCATED")
     public TRState getState() {
         return state;
     }
@@ -127,7 +129,6 @@ public class TrainingRunDTO {
      *
      * @return the sandbox instance ref id
      */
-    @ApiModelProperty(value = "Reference to the received sandbox.")
     public Long getSandboxInstanceRefId() {
         return sandboxInstanceRefId;
     }
@@ -146,7 +147,6 @@ public class TrainingRunDTO {
      *
      * @return the {@link UserRefDTO}
      */
-    @ApiModelProperty(value = "Reference to participant of training run.")
     public UserRefDTO getParticipantRef() {
         return participantRef;
     }

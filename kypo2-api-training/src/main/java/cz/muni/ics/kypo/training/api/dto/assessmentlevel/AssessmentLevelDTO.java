@@ -9,13 +9,16 @@ import io.swagger.annotations.ApiModelProperty;
 /**
  * Encapsulates information about assessment level. Inherits from {@link AbstractLevelDTO}
  *
- * @author Dominik Pilár (445537)
+ * @author Dominik Pilár
  */
 @ApiModel(value = "AssessmentLevelDTO", description = "A questionnaire or a test that is displayed to the participant.", parent = AbstractLevelDTO.class)
 public class AssessmentLevelDTO extends AbstractLevelDTO {
 
+    @ApiModelProperty(value = "List of questions in this assessment as JSON.", example = "What is my mothers name?")
     private String questions;
+    @ApiModelProperty(value = "Assessment instructions for participant.", example = "Fill me up")
     private String instructions;
+    @ApiModelProperty(value = "Type of assessment.", example = "TEST")
     private AssessmentType assessmentType;
 
     /**
@@ -23,7 +26,6 @@ public class AssessmentLevelDTO extends AbstractLevelDTO {
      *
      * @return the questions
      */
-    @ApiModelProperty(value = "List of questions in this assessment as JSON.", example = "What is my mothers name?")
     public String getQuestions() {
         return questions;
     }
@@ -42,7 +44,6 @@ public class AssessmentLevelDTO extends AbstractLevelDTO {
      *
      * @return the instructions
      */
-    @ApiModelProperty(value = "Assessment instructions for participant.", example = "Fill me up")
     public String getInstructions() {
         return instructions;
     }
@@ -61,7 +62,6 @@ public class AssessmentLevelDTO extends AbstractLevelDTO {
      *
      * @return the {@link AssessmentType}
      */
-    @ApiModelProperty(value = "Type of assessment.", example = "TEST")
     public AssessmentType getAssessmentType() {
         return assessmentType;
     }

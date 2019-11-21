@@ -1,25 +1,35 @@
 package cz.muni.ics.kypo.training.api.dto.archive;
 
 import cz.muni.ics.kypo.training.api.enums.TDState;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
 import java.util.ArrayList;
 import java.util.List;
-
+@ApiModel(value = "TrainingDefinitionArchiveDTO", description = "Archived detailed information about training definition which also include individual levels.")
 public class TrainingDefinitionArchiveDTO {
 
+    @ApiModelProperty(value = "Main identifier of training definition.", example = "1")
     private Long id;
+    @ApiModelProperty(value = "A name of the training/game (e.g., Photo Hunter) .", example = "TrainingDefinition2")
     private String title;
+    @ApiModelProperty(value = "Description of training definition that is visible to the participant.", example = "Unreleased training definition")
     private String description;
+    @ApiModelProperty(value = "List of knowledge and skills necessary to complete the training.", example = "")
     private String[] prerequisities;
+    @ApiModelProperty(value = "A list of knowledge and skills that the participant should learn by attending the training (if it is used for educational purposes) ", example = "")
     private String[] outcomes;
+    @ApiModelProperty(value = "Current state of training definition.", example = "UNRELEASED")
     private TDState state;
+    @ApiModelProperty(value = "Sign if stepper bar should be displayed.", example = "false")
     private boolean showStepperBar;
+    @ApiModelProperty(value = "Information about all levels in training definition.")
     private List<AbstractLevelArchiveDTO> levels = new ArrayList<>();
+    @ApiModelProperty(value = "Estimated time it takes to finish runs created from this definition.", example = "5")
     private int estimatedDuration;
+    @ApiModelProperty(value = "Main identifier of sandbox definition associated with this training definition.", example = "1")
     private Long sandboxDefinitionRefId;
 
-    @ApiModelProperty(value = "Main identifier of training definition.", example = "1")
     public Long getId() {
         return id;
     }
@@ -28,7 +38,6 @@ public class TrainingDefinitionArchiveDTO {
         this.id = id;
     }
 
-    @ApiModelProperty(value = "A name of the training/game (e.g., Photo Hunter) .", example = "TrainingDefinition2")
     public String getTitle() {
         return title;
     }
@@ -37,7 +46,6 @@ public class TrainingDefinitionArchiveDTO {
         this.title = title;
     }
 
-    @ApiModelProperty(value = "Description of training definition that is visible to the participant.", example = "Unreleased training definition")
     public String getDescription() {
         return description;
     }
@@ -46,7 +54,6 @@ public class TrainingDefinitionArchiveDTO {
         this.description = description;
     }
 
-    @ApiModelProperty(value = "List of knowledge and skills necessary to complete the training.", example = "")
     public String[] getPrerequisities() {
         return prerequisities;
     }
@@ -55,7 +62,6 @@ public class TrainingDefinitionArchiveDTO {
         this.prerequisities = prerequisities;
     }
 
-    @ApiModelProperty(value = "A list of knowledge and skills that the participant should learn by attending the training (if it is used for educational purposes) ", example = "")
     public String[] getOutcomes() {
         return outcomes;
     }
@@ -64,7 +70,6 @@ public class TrainingDefinitionArchiveDTO {
         this.outcomes = outcomes;
     }
 
-    @ApiModelProperty(value = "Current state of training definition.", example = "UNRELEASED")
     public TDState getState() {
         return state;
     }
@@ -73,7 +78,6 @@ public class TrainingDefinitionArchiveDTO {
         this.state = state;
     }
 
-    @ApiModelProperty(value = "Sign if stepper bar should be displayed.", example = "false")
     public boolean isShowStepperBar() {
         return showStepperBar;
     }
@@ -82,7 +86,6 @@ public class TrainingDefinitionArchiveDTO {
         this.showStepperBar = showStepperBar;
     }
 
-    @ApiModelProperty(value = "Information about all levels in training definition.")
     public List<AbstractLevelArchiveDTO> getLevels() {
         return levels;
     }
@@ -91,7 +94,6 @@ public class TrainingDefinitionArchiveDTO {
         this.levels = levels;
     }
 
-    @ApiModelProperty(value = "Estimated time it takes to finish runs created from this definition.", example = "5")
     public int getEstimatedDuration() {
         return estimatedDuration;
     }
@@ -100,7 +102,6 @@ public class TrainingDefinitionArchiveDTO {
         this.estimatedDuration = estimatedDuration;
     }
 
-    @ApiModelProperty(value = "Main identifier of sandbox definition associated with this training definition.", example = "1")
     public Long getSandboxDefinitionRefId() {
         return sandboxDefinitionRefId;
     }

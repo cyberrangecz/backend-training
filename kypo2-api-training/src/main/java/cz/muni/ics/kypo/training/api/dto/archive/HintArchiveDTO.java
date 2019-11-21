@@ -1,16 +1,21 @@
 package cz.muni.ics.kypo.training.api.dto.archive;
 
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-
+@ApiModel(value = "HintArchiveDTO", description = "Archived hint.")
 public class HintArchiveDTO {
 
+    @ApiModelProperty(value = "Main identifier of hint.", example = "1")
     private Long id;
+    @ApiModelProperty(value = "Short textual description of the hint.", example = "Hint1")
     private String title;
+    @ApiModelProperty(value = "The information and experiences that are directed towards a participant.", example = "Very good advice")
     private String content;
+    @ApiModelProperty(value = "The number of points the participant loses after receiving the hint.", example = "10")
     private Integer hintPenalty;
+    @ApiModelProperty(value = "The order of hint in game level", example = "1")
     private int order;
 
-    @ApiModelProperty(value = "Main identifier of hint.", example = "1")
     public Long getId() {
         return id;
     }
@@ -19,7 +24,6 @@ public class HintArchiveDTO {
         this.id = id;
     }
 
-    @ApiModelProperty(value = "Short textual description of the hint.", example = "Hint1")
     public String getTitle() {
         return title;
     }
@@ -28,7 +32,6 @@ public class HintArchiveDTO {
         this.title = title;
     }
 
-    @ApiModelProperty(value = "The information and experiences that are directed towards a participant.", example = "Very good advice")
     public String getContent() {
         return content;
     }
@@ -37,7 +40,6 @@ public class HintArchiveDTO {
         this.content = content;
     }
 
-    @ApiModelProperty(value = "The number of points the participant loses after receiving the hint.", example = "10")
     public Integer getHintPenalty() {
         return hintPenalty;
     }
@@ -46,7 +48,6 @@ public class HintArchiveDTO {
         this.hintPenalty = hintPenalty;
     }
 
-    @ApiModelProperty(value = "The order of hint in game level", example = "1")
     public int getOrder() {
         return order;
     }

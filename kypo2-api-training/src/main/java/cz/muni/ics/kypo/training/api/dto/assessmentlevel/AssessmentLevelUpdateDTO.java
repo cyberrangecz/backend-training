@@ -17,18 +17,25 @@ import io.swagger.annotations.ApiModelProperty;
 @ApiModel(value = "AssessmentLevelUpdateDTO", description = "Assessment level to update.")
 public class AssessmentLevelUpdateDTO {
 
+    @ApiModelProperty(value = "Main identifier of level.", required = true, example = "8")
     @NotNull(message = "{assessmentlevelupdate.id.NotNull.message}")
     protected Long id;
+    @ApiModelProperty(value = "Short textual description of the level.", required = true, example = "Assessment Level1")
     @NotEmpty(message = "{assessmentlevelupdate.title.NotEmpty.message}")
     private String title;
+    @ApiModelProperty(value = "Maximum score of assessment level to update. Have to be filled in range from 0 to 100.", required = true, example = "40")
     @NotNull(message = "{assessmentlevelupdate.maxScore.NotNull.message}")
     @Min(value = 0, message = "{assessmentlevelupdate.maxScore.Min.message}")
     @Max(value = 100, message = "{assessmentlevelupdate.maxScore.Max.message}")
     private int maxScore;
+    @ApiModelProperty(value = "Questions of assessment level to update.", example = "\"[{\"question_type\":\"FFQ\",\"text\":\"Which tool would you use to scan the open ports of a server?\",\"points\":6,\"penalty\":3,\"order\":0,\"answer_required\":true,\"correct_choices\":[\"nmap\",\"Nmap\"]}]\"")
     private String questions;
+    @ApiModelProperty(value = "Instructions of assessment level to update.", example = "Fill me up slowly")
     private String instructions;
+    @ApiModelProperty(value = "Type of assessment level to update.", required = true, example = "TEST")
     @NotNull(message = "{assessmentlevelupdate.type.NotNull.message}")
     private AssessmentType type;
+    @ApiModelProperty(value = "Estimated time (minutes) taken by the player to solve the level.", required = true, example = "5")
     private int estimatedDuration;
 
     /**
@@ -36,7 +43,6 @@ public class AssessmentLevelUpdateDTO {
      *
      * @return the id
      */
-    @ApiModelProperty(value = "Main identifier of level.", required = true, example = "8")
     public Long getId() {
         return id;
     }
@@ -55,7 +61,6 @@ public class AssessmentLevelUpdateDTO {
      *
      * @return the title
      */
-    @ApiModelProperty(value = "Short textual description of the level.", required = true, example = "Assessment Level1")
     public String getTitle() {
         return title;
     }
@@ -74,7 +79,6 @@ public class AssessmentLevelUpdateDTO {
      *
      * @return the max score
      */
-    @ApiModelProperty(value = "Maximum score of assessment level to update. Have to be filled in range from 0 to 100.", required = true, example = "40")
     public int getMaxScore() {
         return maxScore;
     }
@@ -93,7 +97,6 @@ public class AssessmentLevelUpdateDTO {
      *
      * @return the questions
      */
-    @ApiModelProperty(value = "Questions of assessment level to update.", example = "\"[{\"question_type\":\"FFQ\",\"text\":\"Which tool would you use to scan the open ports of a server?\",\"points\":6,\"penalty\":3,\"order\":0,\"answer_required\":true,\"correct_choices\":[\"nmap\",\"Nmap\"]}]\"")
     public String getQuestions() {
         return questions;
     }
@@ -112,7 +115,6 @@ public class AssessmentLevelUpdateDTO {
      *
      * @return the instructions
      */
-    @ApiModelProperty(value = "Instructions of assessment level to update.", example = "Fill me up slowly")
     public String getInstructions() {
         return instructions;
     }
@@ -131,7 +133,6 @@ public class AssessmentLevelUpdateDTO {
      *
      * @return the {@link AssessmentType}
      */
-    @ApiModelProperty(value = "Type of assessment level to update.", required = true, example = "TEST")
     public AssessmentType getType() {
         return type;
     }

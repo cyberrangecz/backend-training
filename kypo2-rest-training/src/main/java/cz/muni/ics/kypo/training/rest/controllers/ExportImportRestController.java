@@ -10,6 +10,7 @@ import cz.muni.ics.kypo.training.api.dto.imports.ImportTrainingDefinitionDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionByIdDTO;
 import cz.muni.ics.kypo.training.exceptions.FacadeLayerException;
 import cz.muni.ics.kypo.training.facade.ExportImportFacade;
+import cz.muni.ics.kypo.training.rest.ApiErrorTraining;
 import cz.muni.ics.kypo.training.rest.ExceptionSorter;
 import io.swagger.annotations.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,8 +30,8 @@ import javax.validation.Valid;
  */
 @Api(value = "/", tags = "Export Imports", consumes = MediaType.APPLICATION_JSON_VALUE)
 @ApiResponses(value = {
-        @ApiResponse(code = 401, message = "Full authentication is required to access this resource."),
-        @ApiResponse(code = 403, message = "The necessary permissions are required for a resource.")
+        @ApiResponse(code = 401, message = "Full authentication is required to access this resource.", response = ApiErrorTraining.class),
+        @ApiResponse(code = 403, message = "The necessary permissions are required for a resource.", response = ApiErrorTraining.class)
 })
 @RestController
 @RequestMapping(path = "/", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -52,7 +53,7 @@ public class ExportImportRestController {
     }
 
     /**
-     * Exportss training definition and levels.
+     * Exports training definition and levels.
      *
      * @param trainingDefinitionId the training definition id
      * @return Exported training definition and levels.
@@ -60,13 +61,13 @@ public class ExportImportRestController {
     @ApiOperation(httpMethod = "GET",
             value = "Get exported training definitions and levels.",
             response = ExportTrainingDefinitionAndLevelsDTO.class,
-            nickname = "findTrainingDefinitionById",
+            nickname = "getExportedTrainingDefinitionAndLevels",
             produces = MediaType.APPLICATION_OCTET_STREAM_VALUE
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Training definitions and levels found.", response = ExportTrainingDefinitionAndLevelsDTO.class),
-            @ApiResponse(code = 404, message = "Training definition and levels not found."),
-            @ApiResponse(code = 500, message = "Unexpected condition was encountered.")
+            @ApiResponse(code = 200, message = "Training definitions and levels found and exported.", response = ExportTrainingDefinitionAndLevelsDTO.class),
+            @ApiResponse(code = 404, message = "Training definition and levels not found.", response = ApiErrorTraining.class),
+            @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiErrorTraining.class)
     })
     @GetMapping(path = "/exports/training-definitions/{trainingDefinitionId}", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     public ResponseEntity<byte[]> getExportedTrainingDefinitionAndLevels(
@@ -100,7 +101,8 @@ public class ExportImportRestController {
             consumes = MediaType.APPLICATION_JSON_VALUE
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Training definition imported.", response = TrainingDefinitionByIdDTO.class)
+            @ApiResponse(code = 200, message = "Training definition imported.", response = TrainingDefinitionByIdDTO.class),
+            @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiErrorTraining.class)
     })
     @PostMapping(path = "/imports/training-definitions", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> importTrainingDefinition(
@@ -126,9 +128,9 @@ public class ExportImportRestController {
             produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     @ApiResponses(value = {
         @ApiResponse(code = 200, message = "Training instance archived.", response = TrainingInstanceArchiveDTO.class),
-        @ApiResponse(code = 404, message = "Training instance not found."),
-        @ApiResponse(code = 409, message = "Cannot archive instance that is not finished."),
-        @ApiResponse(code = 500, message = "Unexpected condition was encountered.")
+        @ApiResponse(code = 404, message = "Training instance not found.", response = ApiErrorTraining.class),
+        @ApiResponse(code = 409, message = "Cannot archive instance that is not finished.", response = ApiErrorTraining.class),
+        @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiErrorTraining.class)
     })
     @GetMapping(path = "/exports/training-instances/{trainingInstanceId}", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     public ResponseEntity<byte[]> archiveTrainingInstance(

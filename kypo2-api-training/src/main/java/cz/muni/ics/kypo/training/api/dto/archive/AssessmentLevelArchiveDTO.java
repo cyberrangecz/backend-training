@@ -4,13 +4,16 @@ import cz.muni.ics.kypo.training.api.enums.AssessmentType;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
-@ApiModel(value = "AssessmentLevelArchiveDTO", description = "A questionnaire or a test that is displayed to the participant.", parent = AbstractLevelArchiveDTO.class)
+@ApiModel(value = "AssessmentLevelArchiveDTO", description = "Archived assessment level.", parent = AbstractLevelArchiveDTO.class)
 public class AssessmentLevelArchiveDTO extends AbstractLevelArchiveDTO{
-    private String questions;
-    private String instructions;
-    private AssessmentType assessmentType;
 
     @ApiModelProperty(value = "List of questions in this assessment as JSON.", example = "What is my mothers name?")
+    private String questions;
+    @ApiModelProperty(value = "Assessment instructions for participant.", example = "Fill me up")
+    private String instructions;
+    @ApiModelProperty(value = "Type of assessment.", example = "TEST")
+    private AssessmentType assessmentType;
+
     public String getQuestions() {
         return questions;
     }
@@ -19,7 +22,6 @@ public class AssessmentLevelArchiveDTO extends AbstractLevelArchiveDTO{
         this.questions = questions;
     }
 
-    @ApiModelProperty(value = "Assessment instructions for participant.", example = "Fill me up")
     public String getInstructions() {
         return instructions;
     }
@@ -28,7 +30,6 @@ public class AssessmentLevelArchiveDTO extends AbstractLevelArchiveDTO{
         this.instructions = instructions;
     }
 
-    @ApiModelProperty(value = "Type of assessment.", example = "TEST")
     public AssessmentType getAssessmentType() {
         return assessmentType;
     }

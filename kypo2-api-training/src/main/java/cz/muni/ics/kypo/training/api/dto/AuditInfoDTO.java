@@ -1,5 +1,7 @@
 package cz.muni.ics.kypo.training.api.dto;
 
+import io.swagger.annotations.ApiModel;
+
 public class AuditInfoDTO {
 
     private long userRefId;

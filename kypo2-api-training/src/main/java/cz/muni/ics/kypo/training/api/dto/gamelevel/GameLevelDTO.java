@@ -15,11 +15,17 @@ import java.util.*;
 @ApiModel(value = "GameLevelDTO", description = "An assignment containing security tasks whose completion yields a flag.", parent = AbstractLevelDTO.class)
 public class GameLevelDTO extends AbstractLevelDTO {
 
+    @ApiModelProperty(value = "Keyword found in game, used for access next level.", example = "secretFlag")
     private String flag;
+    @ApiModelProperty(value = "The information and experiences that are directed towards a participant.", example = "Play me")
     private String content;
+    @ApiModelProperty(value = "Instruction how to get flag in game.", example = "This is how you do it")
     private String solution;
+    @ApiModelProperty(value = "Sign if displaying of solution is penalized.", example = "true")
     private boolean solutionPenalized;
+    @ApiModelProperty(value = "Information which helps player resolve the level.")
     private Set<HintDTO> hints = new HashSet<>();
+    @ApiModelProperty(value = "How many times player can submit incorrect flag before displaying solution.", example = "5")
     private int incorrectFlagLimit;
 
     /**
@@ -27,7 +33,6 @@ public class GameLevelDTO extends AbstractLevelDTO {
      *
      * @return the flag
      */
-    @ApiModelProperty(value = "Keyword found in game, used for access next level.", example = "secretFlag")
     public String getFlag() {
         return flag;
     }
@@ -46,7 +51,6 @@ public class GameLevelDTO extends AbstractLevelDTO {
      *
      * @return the content
      */
-    @ApiModelProperty(value = "The information and experiences that are directed towards a participant.", example = "Play me")
     public String getContent() {
         return content;
     }
@@ -65,7 +69,6 @@ public class GameLevelDTO extends AbstractLevelDTO {
      *
      * @return the solution
      */
-    @ApiModelProperty(value = "Instruction how to get flag in game.", example = "This is how you do it")
     public String getSolution() {
         return solution;
     }
@@ -84,7 +87,6 @@ public class GameLevelDTO extends AbstractLevelDTO {
      *
      * @return true if incorrect solution is penalized
      */
-    @ApiModelProperty(value = "Sign if displaying of solution is penalized.", example = "true")
     public boolean isSolutionPenalized() {
         return solutionPenalized;
     }
@@ -103,7 +105,6 @@ public class GameLevelDTO extends AbstractLevelDTO {
      *
      * @return the set of {@link HintDTO}s
      */
-    @ApiModelProperty(value = "Information which helps player resolve the level.")
     public Set<HintDTO> getHints() {
         return hints;
     }
@@ -122,7 +123,6 @@ public class GameLevelDTO extends AbstractLevelDTO {
      *
      * @return the incorrect flag limit
      */
-    @ApiModelProperty(value = "How many times player can submit incorrect flag before displaying solution.", example = "5")
     public int getIncorrectFlagLimit() {
         return incorrectFlagLimit;
     }

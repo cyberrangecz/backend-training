@@ -22,16 +22,25 @@ import java.util.Set;
 @ApiModel(value = "TrainingInstanceDTO", description = "A session of attending a concrete training, which involves a deployment of the training definition in one or more sandbox instances that are then assigned to participants. The instance comprises one or more game runs.")
 public class TrainingInstanceDTO {
 
+    @ApiModelProperty(value = "Main identifier of training instance.", example = "1")
     private Long id;
+    @ApiModelProperty(value = "Date when training instance starts.", example = "2016-10-19 10:23:54+02")
     @JsonSerialize(using = LocalDateTimeUTCSerializer.class)
     private LocalDateTime startTime;
+    @ApiModelProperty(value = "Date when training instance ends.", example = "2017-10-19 10:23:54+02")
     @JsonSerialize(using = LocalDateTimeUTCSerializer.class)
     private LocalDateTime endTime;
+    @ApiModelProperty(value = "Short textual description of the training instance.", example = "Concluded Instance")
     private String title;
+    @ApiModelProperty(value = "Number of sandboxes that can be allocated.", example = "5")
     private int poolSize;
+    @ApiModelProperty(value = "Reference to training definition from which is training instance created.")
     private TrainingDefinitionByIdDTO trainingDefinition;
+    @ApiModelProperty(value = "Token used to access training run.", required = true, example = "hunter")
     private String accessToken;
+    @ApiModelProperty(value = "Id of sandbox pool belonging to training instance", example = "1")
     private Long poolId;
+    @ApiModelProperty(value = "Ids of sandboxes which are assigned to training run.", example = "[3,15]")
     private List<Long> sandboxesWithTrainingRun = new ArrayList<>();
 
     /**
@@ -39,7 +48,6 @@ public class TrainingInstanceDTO {
      *
      * @return the id
      */
-    @ApiModelProperty(value = "Main identifier of training instance.", example = "1")
     public Long getId() {
         return id;
     }
@@ -58,7 +66,6 @@ public class TrainingInstanceDTO {
      *
      * @return the start time
      */
-    @ApiModelProperty(value = "Date when training instance starts.", example = "2016-10-19 10:23:54+02")
     public LocalDateTime getStartTime() {
         return startTime;
     }
@@ -77,7 +84,6 @@ public class TrainingInstanceDTO {
      *
      * @return the end time
      */
-    @ApiModelProperty(value = "Date when training instance ends.", example = "2017-10-19 10:23:54+02")
     public LocalDateTime getEndTime() {
         return endTime;
     }
@@ -96,7 +102,6 @@ public class TrainingInstanceDTO {
      *
      * @return the title
      */
-    @ApiModelProperty(value = "Short textual description of the training instance.", example = "Concluded Instance")
     public String getTitle() {
         return title;
     }
@@ -115,7 +120,6 @@ public class TrainingInstanceDTO {
      *
      * @return the pool size
      */
-    @ApiModelProperty(value = "Number of sandboxes that can be allocated.", example = "5")
     public int getPoolSize() {
         return poolSize;
     }
@@ -134,7 +138,6 @@ public class TrainingInstanceDTO {
      *
      * @return the training definition
      */
-    @ApiModelProperty(value = "Reference to training definition from which is training instance created.")
     public TrainingDefinitionByIdDTO getTrainingDefinition() {
         return trainingDefinition;
     }
@@ -171,7 +174,6 @@ public class TrainingInstanceDTO {
      *
      * @return the pool id
      */
-    @ApiModelProperty(value = "Id of sandbox pool belonging to training instance", example = "1")
     public Long getPoolId() {
         return poolId;
     }
@@ -190,7 +192,6 @@ public class TrainingInstanceDTO {
      *
      * @return the sandboxes with training run
      */
-    @ApiModelProperty(value = "Id of sandboxes which are assigned to training run.", example = "[3,15]")
     public List<Long> getSandboxesWithTrainingRun() {
         return sandboxesWithTrainingRun;
     }

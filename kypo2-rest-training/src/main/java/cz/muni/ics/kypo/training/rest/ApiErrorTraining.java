@@ -1,5 +1,6 @@
 package cz.muni.ics.kypo.training.rest;
 
+import io.swagger.annotations.ApiModelProperty;
 import org.springframework.http.HttpStatus;
 
 import java.util.ArrayList;
@@ -11,11 +12,15 @@ import java.util.Objects;
  * @author Pavel Seda (441048)
  */
 public class ApiErrorTraining {
-
+    @ApiModelProperty(value = "The time when the exception occurred", example = "1574062900 (different for each type of exception)")
     private long timestamp;
+    @ApiModelProperty(value = "The HTTP response status code", example = "404 Not found (different for each type of exception).")
     private HttpStatus status;
+    @ApiModelProperty(value = "The specific description of the ApiError.", example = "The IDMGroup could not be found in database (different for each type of exception).")
     private String message;
+    @ApiModelProperty(value = "The list of main reasons of the ApiError.", example = "[The requested resource was not found (different for each type of exception).]")
     private List<String> errors;
+    @ApiModelProperty(value = "The requested URI path which caused error.", example = "/kypo2-rest-user-and-group/api/v1/groups/1000 (different for each type of exception).")
     private String path;
 
     public static class ApiErrorBuilder {

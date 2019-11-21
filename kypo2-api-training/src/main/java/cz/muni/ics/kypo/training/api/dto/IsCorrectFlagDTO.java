@@ -1,5 +1,6 @@
 package cz.muni.ics.kypo.training.api.dto;
 
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
 import java.util.Objects;
@@ -9,10 +10,15 @@ import java.util.Objects;
  *
  * @author Pavel Seda
  */
+@ApiModel(value = "IsCorrectFlagDTO", description = "A response for the request about the validation of the flag. May also " +
+        "include solution if remaining attempts reach 0.")
 public class IsCorrectFlagDTO {
 
+    @ApiModelProperty(value = "True/false if flag has been correct/incorrect.", example = "false")
     private boolean isCorrect;
+    @ApiModelProperty(value = "Number of attempts to submit a bad flag.", example = "3")
     private int remainingAttempts;
+    @ApiModelProperty(value = "Instruction how to get flag in game.", example = "This is how you do it")
     private String solution;
 
     /**
@@ -20,7 +26,6 @@ public class IsCorrectFlagDTO {
      *
      * @return True if flag is correct
      */
-    @ApiModelProperty(value = "True/false if flag has been correct/incorrect.", example = "false")
     public boolean isCorrect() {
         return isCorrect;
     }
@@ -39,7 +44,6 @@ public class IsCorrectFlagDTO {
      *
      * @return the remaining attempts
      */
-    @ApiModelProperty(value = "Number of attempts to submit a bad flag.", example = "3")
     public int getRemainingAttempts() {
         return remainingAttempts;
     }
@@ -58,7 +62,6 @@ public class IsCorrectFlagDTO {
      *
      * @return the solution
      */
-    @ApiModelProperty(value = "Instruction how to get flag in game.", example = "This is how you do it")
     public String getSolution() {
         return solution;
     }
