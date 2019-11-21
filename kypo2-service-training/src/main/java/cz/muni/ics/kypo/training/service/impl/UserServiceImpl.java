@@ -20,7 +20,6 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
@@ -67,7 +66,7 @@ public class UserServiceImpl implements UserService {
             ResponseEntity<UserRefDTO> userInfoResponseEntity = restTemplate.exchange(userAndGroupURI + "/users/" + id, HttpMethod.GET, new HttpEntity<>(httpHeaders), UserRefDTO.class);
             return userInfoResponseEntity.getBody();
         } catch (HttpClientErrorException ex) {
-            throw new ServiceLayerException("Client side error when calling UserAndGroup: " + ex.getMessage() + " - " + ex.getResponseBodyAsString(), ErrorCode.UNEXPECTED_ERROR);
+            throw new ServiceLayerException("Error when calling UserAndGroup API to obtain info about user(ID: " + id + "): " + ex.getMessage() + " - " + ex.getResponseBodyAsString(), ErrorCode.UNEXPECTED_ERROR);
         }
     }
 
@@ -97,7 +96,7 @@ public class UserServiceImpl implements UserService {
                     });
             return (Objects.requireNonNull(usersResponse.getBody()));
         } catch (HttpClientErrorException ex) {
-            throw new ServiceLayerException("Client side error when calling UserAndGroup: " + ex.getMessage() + " - " + ex.getResponseBodyAsString(), ErrorCode.UNEXPECTED_ERROR);
+            throw new ServiceLayerException("Error when calling UserAndGroup API to obtain users by IDs: " + ex.getMessage() + " - " + ex.getResponseBodyAsString(), ErrorCode.UNEXPECTED_ERROR);
         }
     }
 
@@ -125,7 +124,7 @@ public class UserServiceImpl implements UserService {
             return Objects.requireNonNull(usersResponse.getBody());
 
         } catch (HttpClientErrorException ex) {
-            throw new ServiceLayerException("Client side error when calling UserAndGroup: " + ex.getMessage() + " - " + ex.getResponseBodyAsString(), ErrorCode.UNEXPECTED_ERROR);
+            throw new ServiceLayerException("Error when calling UserAndGroup API to obtain users with role " + roleType.name() + ": " + ex.getMessage() + " - " + ex.getResponseBodyAsString(), ErrorCode.UNEXPECTED_ERROR);
         }
     }
 
@@ -155,7 +154,7 @@ public class UserServiceImpl implements UserService {
             return Objects.requireNonNull(usersResponse.getBody());
 
         } catch (HttpClientErrorException ex) {
-            throw new ServiceLayerException("Client side error when calling UserAndGroup: " + ex.getMessage() + " - " + ex.getResponseBodyAsString(), ErrorCode.UNEXPECTED_ERROR);
+            throw new ServiceLayerException("Error when calling UserAndGroup API to obtain users with role " + roleType.name() + " and IDs:" + ex.getMessage() + " - " + ex.getResponseBodyAsString(), ErrorCode.UNEXPECTED_ERROR);
         }
     }
 
