@@ -1,5 +1,6 @@
 package cz.muni.ics.kypo.training.api.dto.export;
 
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
 import java.util.Objects;
@@ -9,11 +10,16 @@ import java.util.Objects;
  *
  * @author Pavel Seda
  */
+@ApiModel(value = "HintExportDTO", description = "An exported brief textual description to aid the participant.")
 public class HintExportDTO {
 
+    @ApiModelProperty(value = "Short textual description of the hint.", example = "Hint1")
     private String title;
+    @ApiModelProperty(value = "The information and experiences that are directed towards a participant.", example = "Very good advice")
     private String content;
+    @ApiModelProperty(value = "The number of points the participant loses after receiving the hint.", example = "10")
     private Integer hintPenalty;
+    @ApiModelProperty(value = "The order of hint in game level", example = "1")
     private int order;
 
     /**
@@ -27,7 +33,6 @@ public class HintExportDTO {
      *
      * @return the title
      */
-    @ApiModelProperty(value = "Short textual description of the hint.", example = "Hint1")
     public String getTitle() {
         return title;
     }
@@ -46,7 +51,6 @@ public class HintExportDTO {
      *
      * @return the content
      */
-    @ApiModelProperty(value = "The information and experiences that are directed towards a participant.", example = "Very good advice")
     public String getContent() {
         return content;
     }
@@ -65,7 +69,6 @@ public class HintExportDTO {
      *
      * @return the hint penalty
      */
-    @ApiModelProperty(value = "The number of points the participant loses after receiving the hint.", example = "10")
     public Integer getHintPenalty() {
         return hintPenalty;
     }
@@ -79,7 +82,6 @@ public class HintExportDTO {
         this.hintPenalty = hintPenalty;
     }
 
-    @ApiModelProperty(value = "The order of hint in game level", example = "1")
     public int getOrder() {
         return order;
     }

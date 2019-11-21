@@ -1,12 +1,15 @@
 package cz.muni.ics.kypo.training.rest.controllers;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.bohnman.squiggly.util.SquigglyUtils;
 import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
+import cz.muni.ics.kypo.training.api.dto.run.AccessedTrainingRunDTO;
 import cz.muni.ics.kypo.training.api.dto.visualization.VisualizationInfoDTO;
 import cz.muni.ics.kypo.training.api.responses.PageResultResource;
 import cz.muni.ics.kypo.training.exceptions.FacadeLayerException;
 import cz.muni.ics.kypo.training.facade.VisualizationFacade;
+import cz.muni.ics.kypo.training.rest.ApiErrorTraining;
 import cz.muni.ics.kypo.training.rest.ExceptionSorter;
 import cz.muni.ics.kypo.training.rest.utils.annotations.ApiPageableSwagger;
 import io.swagger.annotations.*;
@@ -19,6 +22,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -29,8 +33,8 @@ import java.util.Set;
  */
 @Api(value = "/visualizations", tags = "Visualizations", consumes = MediaType.APPLICATION_JSON_VALUE)
 @ApiResponses(value = {
-        @ApiResponse(code = 401, message = "Full authentication is required to access this resource."),
-        @ApiResponse(code = 403, message = "The necessary permissions are required for a resource.")
+        @ApiResponse(code = 401, message = "Full authentication is required to access this resource.", response = ApiErrorTraining.class),
+        @ApiResponse(code = 403, message = "The necessary permissions are required for a resource.", response = ApiErrorTraining.class)
 })
 @RestController
 @RequestMapping(value = "/visualizations", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -60,15 +64,15 @@ public class VisualizationRestController {
      * @return necessary info about levels for specific training run and additional info about training definition.
      */
     @ApiOperation(httpMethod = "GET",
-            value = "Get necessary info about levels for specific training run and additional info about training definition.",
+            value = "Get necessary visualization info for training run.",
             response = VisualizationInfoDTO.class,
             nickname = "gatherVisualizationInfoForTrainingRun",
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Visualization info found.", response = VisualizationInfoDTO.class),
-            @ApiResponse(code = 404, message = "Training run with given id not found."),
-            @ApiResponse(code = 500, message = "Unexpected condition was encountered.")
+            @ApiResponse(code = 404, message = "Training run with given id not found.", response = ApiErrorTraining.class),
+            @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiErrorTraining.class)
     })
     @GetMapping(path = "/training-runs/{runId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<VisualizationInfoDTO> gatherVisualizationInfoForTrainingRun(@ApiParam(value = "Training run ID", required = true) @PathVariable Long runId) {
@@ -87,15 +91,15 @@ public class VisualizationRestController {
      * @return necessary info about levels for specific training instance and additional info about training definition.
      */
     @ApiOperation(httpMethod = "GET",
-            value = "Get necessary info about levels for specific training instance and additional info about training definition.",
+            value = "Get necessary visualization info for training instance.",
             response = VisualizationInfoDTO.class,
             nickname = "gatherVisualizationInfoForTrainingInstance",
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Visualization info found.", response = VisualizationInfoDTO.class),
-            @ApiResponse(code = 404, message = "Training instance with given id not found."),
-            @ApiResponse(code = 500, message = "Unexpected condition was encountered.")
+            @ApiResponse(code = 404, message = "Training instance with given id not found.", response = ApiErrorTraining.class),
+            @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiErrorTraining.class)
     })
     @GetMapping(path = "/training-instances/{trainingInstanceId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<VisualizationInfoDTO> gatherVisualizationInfoForTrainingInstance(@ApiParam(value = "Training instance ID", required = true) @PathVariable Long trainingInstanceId) {
@@ -117,19 +121,19 @@ public class VisualizationRestController {
      */
     @ApiOperation(httpMethod = "GET",
             value = "Get necessary info about participants for specific training instance.",
-            response = VisualizationInfoDTO.class,
+            response = UserRefDTO[].class,
             nickname = "getParticipantsForGivenTrainingInstance",
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Visualization info found.", response = UserRefDTO.class),
-            @ApiResponse(code = 500, message = "Unexpected condition was encountered.")
+            @ApiResponse(code = 200, message = "Visualization info found.", response = UserRefDTO[].class),
+            @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiErrorTraining.class)
     })
     @GetMapping(path = "/training-instances/{trainingInstanceId}/participants", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<UserRefDTO>> getParticipantsForGivenTrainingInstance(@ApiParam(value = "Training instance ID", required = true) @PathVariable Long trainingInstanceId) {
         try {
-            List<UserRefDTO> visualizationInfoDTO = visualizationFacade.getParticipantsForGivenTrainingInstance(trainingInstanceId);
-            return ResponseEntity.ok(visualizationInfoDTO);
+            List<UserRefDTO> participants = visualizationFacade.getParticipantsForGivenTrainingInstance(trainingInstanceId);
+            return ResponseEntity.ok(participants);
         } catch (FacadeLayerException ex) {
             throw ExceptionSorter.throwException(ex);
         }
@@ -142,14 +146,14 @@ public class VisualizationRestController {
      * @return necessary info about participants specific training instance.
      */
     @ApiOperation(httpMethod = "GET",
-            value = "Get necessary info about participants for specific training instance.",
-            response = VisualizationInfoDTO.class,
-            nickname = "getParticipantsForGivenTrainingInstance",
+            value = "Get users by IDs.",
+            response = TrainingDefinitionsRestController.UserInfoRestResource.class,
+            nickname = "getUsersByIds",
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Visualization info found.", response = UserRefDTO.class),
-            @ApiResponse(code = 500, message = "Unexpected condition was encountered.")
+            @ApiResponse(code = 200, message = "Visualization info found.", response = TrainingDefinitionsRestController.UserInfoRestResource.class),
+            @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiErrorTraining.class)
     })
     @ApiPageableSwagger
     @GetMapping(path = "/users", produces = MediaType.APPLICATION_JSON_VALUE)

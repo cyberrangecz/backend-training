@@ -1,6 +1,7 @@
 package cz.muni.ics.kypo.training.api.dto.export;
 
 import cz.muni.ics.kypo.training.api.enums.TDState;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
 import java.util.ArrayList;
@@ -12,16 +13,26 @@ import java.util.List;
  *
  * @author Pavel Seda
  */
+@ApiModel(value = "ExportTrainingDefinitionAndLevelsDTO", description = "An exported detailed information about training definition which also include individual levels.")
 public class ExportTrainingDefinitionAndLevelsDTO {
 
+    @ApiModelProperty(value = "A name of the training/game (e.g., Photo Hunter) .", example = "TrainingDefinition2")
     private String title;
+    @ApiModelProperty(value = "Description of training definition that is visible to the participant.", example = "Unreleased training definition")
     private String description;
+    @ApiModelProperty(value = "List of knowledge and skills necessary to complete the training.", example = "")
     private String[] prerequisities;
+    @ApiModelProperty(value = "A list of knowledge and skills that the participant should learn by attending the training (if it is used for educational purposes) ", example = "")
     private String[] outcomes;
+    @ApiModelProperty(value = "Current state of training definition.", example = "UNRELEASED")
     private TDState state;
+    @ApiModelProperty(value = "Sign if stepper bar should be displayed.", example = "false")
     private boolean showStepperBar;
+    @ApiModelProperty(value = "Information about all levels in training definition.")
     private List<AbstractLevelExportDTO> levels = new ArrayList<>();
+    @ApiModelProperty(value = "Estimated time (minutes) taken by the player to finish run created from this definition.", example = "5")
     private int estimatedDuration;
+    @ApiModelProperty(value = "Main identifier of sandbox definition associated with this training definition.", example = "1")
     private Long sandboxDefinitionRefId;
 
     /**
@@ -35,7 +46,6 @@ public class ExportTrainingDefinitionAndLevelsDTO {
      *
      * @return the title
      */
-    @ApiModelProperty(value = "A name of the training/game (e.g., Photo Hunter) .", example = "TrainingDefinition2")
     public String getTitle() {
         return title;
     }
@@ -54,7 +64,6 @@ public class ExportTrainingDefinitionAndLevelsDTO {
      *
      * @return the description
      */
-    @ApiModelProperty(value = "Description of training definition that is visible to the participant.", example = "Unreleased training definition")
     public String getDescription() {
         return description;
     }
@@ -73,7 +82,6 @@ public class ExportTrainingDefinitionAndLevelsDTO {
      *
      * @return the prerequisites
      */
-    @ApiModelProperty(value = "List of knowledge and skills necessary to complete the training.", example = "")
     public String[] getPrerequisities() {
         return prerequisities;
     }
@@ -92,7 +100,6 @@ public class ExportTrainingDefinitionAndLevelsDTO {
      *
      * @return the outcomes
      */
-    @ApiModelProperty(value = "A list of knowledge and skills that the participant should learn by attending the training (if it is used for educational purposes) ", example = "")
     public String[] getOutcomes() {
         return outcomes;
     }
@@ -111,7 +118,6 @@ public class ExportTrainingDefinitionAndLevelsDTO {
      *
      * @return the {@link TDState}
      */
-    @ApiModelProperty(value = "Current state of training definition.", example = "UNRELEASED")
     public TDState getState() {
         return state;
     }
@@ -130,7 +136,6 @@ public class ExportTrainingDefinitionAndLevelsDTO {
      *
      * @return the boolean
      */
-    @ApiModelProperty(value = "Sign if stepper bar should be displayed.", example = "false")
     public boolean isShowStepperBar() {
         return showStepperBar;
     }
@@ -149,7 +154,6 @@ public class ExportTrainingDefinitionAndLevelsDTO {
      *
      * @return the list of {@link AbstractLevelExportDTO}
      */
-    @ApiModelProperty(value = "Information about all levels in training definition.")
     public List<AbstractLevelExportDTO> getLevels() {
         return levels;
     }
@@ -168,7 +172,6 @@ public class ExportTrainingDefinitionAndLevelsDTO {
      *
      * @return the estimated duration
      */
-    @ApiModelProperty(value = "Estimated time it takes to finish runs created from this definition.", example = "5")
     public int getEstimatedDuration() {
         return estimatedDuration;
     }
@@ -187,7 +190,6 @@ public class ExportTrainingDefinitionAndLevelsDTO {
      *
      * @return the sandbox definition ref id
      */
-    @ApiModelProperty(value = "Main identifier of sandbox definition associated with this training definition.", example = "1")
     public Long getSandboxDefinitionRefId() {
         return sandboxDefinitionRefId;
     }

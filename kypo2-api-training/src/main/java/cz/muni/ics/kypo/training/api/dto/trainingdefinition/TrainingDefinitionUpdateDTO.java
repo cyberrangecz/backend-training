@@ -22,18 +22,27 @@ import io.swagger.annotations.ApiModelProperty;
 @ApiModel(value = "TrainingDefinitionUpdateDTO", description = "Training definition to update.")
 public class TrainingDefinitionUpdateDTO {
 
+    @ApiModelProperty(value = "Main identifier of training definition.", required = true, example = "2")
     @NotNull(message = "{trainingdefinitionupdate.id.NotNull.message}")
     private Long id;
+    @ApiModelProperty(value = "A name of the training/game (e.g., Photo Hunter) .", required = true, example = "TrainingDefinition2")
     @NotEmpty(message = "{trainingdefinitionupdate.title.NotEmpty.message}")
     private String title;
+    @ApiModelProperty(value = "Description of training definition that is visible to the participant.", example = "Unreleased training definition")
     private String description;
+    @ApiModelProperty(value = "List of knowledge and skills necessary to complete the training.", example = "[phishing]")
     private String[] prerequisities;
+    @ApiModelProperty(value = "A list of knowledge and skills that the participant should learn by attending the training (if it is used for educational purposes) ", example = "")
     private String[] outcomes;
+    @ApiModelProperty(value = "Current state of training definition.", required = true, example = "UNRELEASED")
     @NotNull(message = "{trainingdefinitionupdate.state.NotNull.message}")
     private TDState state;
+    @ApiModelProperty(value = "Group of organizers who is allowed to see the training definition.", required = true)
     @Valid
     private BetaTestingGroupUpdateDTO betaTestingGroup;
+    @ApiModelProperty(value = "Reference to the sandbox definition.", required = true, example = "1")
     private Long sandboxDefinitionRefId;
+    @ApiModelProperty(value = "Sign if stepper bar should be displayed.", required = true, example = "false")
     @NotNull(message = "{trainingdefinitionupdate.showStepperBar.NotNull.message}")
     private boolean showStepperBar;
 
@@ -42,7 +51,6 @@ public class TrainingDefinitionUpdateDTO {
      *
      * @return the id
      */
-    @ApiModelProperty(value = "Main identifier of training definition.", required = true, example = "2")
     public Long getId() {
         return id;
     }
@@ -61,7 +69,6 @@ public class TrainingDefinitionUpdateDTO {
      *
      * @return the title
      */
-    @ApiModelProperty(value = "A name of the training/game (e.g., Photo Hunter) .", required = true, example = "TrainingDefinition2")
     public String getTitle() {
         return title;
     }
@@ -80,7 +87,6 @@ public class TrainingDefinitionUpdateDTO {
      *
      * @return the description
      */
-    @ApiModelProperty(value = "Description of training definition that is visible to the participant.", example = "Unreleased training definition")
     public String getDescription() {
         return description;
     }
@@ -99,7 +105,6 @@ public class TrainingDefinitionUpdateDTO {
      *
      * @return the prerequisites.
      */
-    @ApiModelProperty(value = "List of knowledge and skills necessary to complete the training.", example = "[phishing]")
     public String[] getPrerequisities() {
         return prerequisities;
     }
@@ -118,7 +123,6 @@ public class TrainingDefinitionUpdateDTO {
      *
      * @return the outcomes
      */
-    @ApiModelProperty(value = "A list of knowledge and skills that the participant should learn by attending the training (if it is used for educational purposes) ", example = "")
     public String[] getOutcomes() {
         return outcomes;
     }
@@ -137,7 +141,6 @@ public class TrainingDefinitionUpdateDTO {
      *
      * @return the {@link TDState}
      */
-    @ApiModelProperty(value = "Current state of training definition.", required = true, example = "UNRELEASED")
     public TDState getState() {
         return state;
     }
@@ -156,7 +159,6 @@ public class TrainingDefinitionUpdateDTO {
      *
      * @return the {@link BetaTestingGroupUpdateDTO}
      */
-    @ApiModelProperty(value = "Group of organizers who is allowed to see the training definition.", required = true)
     public BetaTestingGroupUpdateDTO getBetaTestingGroup() {
         return betaTestingGroup;
     }
@@ -175,7 +177,6 @@ public class TrainingDefinitionUpdateDTO {
      *
      * @return the sandbox definition ref id
      */
-    @ApiModelProperty(value = "Reference to the sandbox definition.", required = true, example = "1")
     public Long getSandboxDefinitionRefId() {
         return sandboxDefinitionRefId;
     }
@@ -194,7 +195,6 @@ public class TrainingDefinitionUpdateDTO {
      *
      * @return true if bar is shown
      */
-    @ApiModelProperty(value = "Sign if stepper bar should be displayed.", required = true, example = "false")
     public boolean isShowStepperBar() {
         return showStepperBar;
     }

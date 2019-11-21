@@ -2,7 +2,11 @@ package cz.muni.ics.kypo.training.api.dto.export;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import cz.muni.ics.kypo.training.api.dto.archive.AssessmentLevelArchiveDTO;
+import cz.muni.ics.kypo.training.api.dto.archive.GameLevelArchiveDTO;
+import cz.muni.ics.kypo.training.api.dto.archive.InfoLevelArchiveDTO;
 import cz.muni.ics.kypo.training.api.enums.LevelType;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
 /**
@@ -16,12 +20,19 @@ import io.swagger.annotations.ApiModelProperty;
     @JsonSubTypes.Type(value = GameLevelExportDTO.class, name = "GameLevelImportDTO"),
     @JsonSubTypes.Type(value = AssessmentLevelExportDTO.class, name = "AssessmentLevelImportDTO"),
     @JsonSubTypes.Type(value = InfoLevelExportDTO.class, name = "InfoLevelImportDTO")})
+@ApiModel(value = "AbstractLevelExportDTO", subTypes = {GameLevelExportDTO.class, InfoLevelExportDTO.class, AssessmentLevelExportDTO.class},
+        description = "Superclass for classes GameLevelExportDTO, InfoLevelExportDTO and AssessmentLevelExportDTO")
 public class AbstractLevelExportDTO {
 
+    @ApiModelProperty(value = "Short textual description of the level.", example = "Game Level1")
     protected String title;
+    @ApiModelProperty(value = "The maximum score a participant can achieve during a level.", example = "20")
     protected int maxScore;
+    @ApiModelProperty(value = "Type of the level.", example = "GAME")
     protected LevelType levelType;
+    @ApiModelProperty(value = "Order of level, starts with 0", example = "2")
     protected int order;
+    @ApiModelProperty(value = "Estimated time (minutes) taken by the player to solve the level.", example = "5")
     protected int estimatedDuration;
 
     /**
@@ -34,7 +45,6 @@ public class AbstractLevelExportDTO {
      *
      * @return the title
      */
-    @ApiModelProperty(value = "Short textual description of the level.", example = "Game Level1")
     public String getTitle() {
         return title;
     }
@@ -53,7 +63,6 @@ public class AbstractLevelExportDTO {
      *
      * @return the max score
      */
-    @ApiModelProperty(value = "The maximum score a participant can achieve during a level.", example = "20")
     public int getMaxScore() {
         return maxScore;
     }
@@ -72,7 +81,6 @@ public class AbstractLevelExportDTO {
      *
      * @return the {@link LevelType}
      */
-    @ApiModelProperty(value = "Type of the level.", example = "GAME")
     public LevelType getLevelType() {
         return levelType;
     }
@@ -91,7 +99,6 @@ public class AbstractLevelExportDTO {
      *
      * @return the order
      */
-    @ApiModelProperty(value = "Order of level, starts with 0", example = "2")
     public int getOrder() {
         return order;
     }
@@ -110,7 +117,6 @@ public class AbstractLevelExportDTO {
      *
      * @return the estimated duration
      */
-    @ApiModelProperty(value = "Estimated time taken by the player to resolve the level.", example = "5")
     public int getEstimatedDuration() {
         return estimatedDuration;
     }

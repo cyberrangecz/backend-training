@@ -27,13 +27,20 @@ import io.swagger.annotations.ApiModelProperty;
         @JsonSubTypes.Type(value = InfoLevelDTO.class, name = "InfoLevelDTO")})
 public class AbstractLevelDTO {
 
+    @ApiModelProperty(value = "Main identifier of level.", example = "1")
     protected Long id;
+    @ApiModelProperty(value = "Short textual description of the level.", example = "Game Level1")
     protected String title;
+    @ApiModelProperty(value = "The maximum score a participant can achieve during a level.", example = "20")
     protected int maxScore;
     protected SnapshotHookDTO snapshotHook;
+    @ApiModelProperty(value = "Type of the level.", example = "GAME")
     protected LevelType levelType;
+    @ApiModelProperty(value = "Estimated time taken by the player to resolve the level.", example = "5")
     protected int estimatedDuration;
+    @ApiModelProperty(value = "Training definition to which is this level assigned.", example = "2")
     protected TrainingDefinitionDTO trainingDefinition;
+    @ApiModelProperty(value = "Order of level, starts with 0", example = "2")
     protected int order;
 
     /**
@@ -41,7 +48,6 @@ public class AbstractLevelDTO {
      *
      * @return the id
      */
-    @ApiModelProperty(value = "Main identifier of level.", example = "1")
     public Long getId() {
         return id;
     }
@@ -60,7 +66,6 @@ public class AbstractLevelDTO {
      *
      * @return the title
      */
-    @ApiModelProperty(value = "Short textual description of the level.", example = "Game Level1")
     public String getTitle() {
         return title;
     }
@@ -79,7 +84,6 @@ public class AbstractLevelDTO {
      *
      * @return the max score
      */
-    @ApiModelProperty(value = "The maximum score a participant can achieve during a level.", example = "20")
     public int getMaxScore() {
         return maxScore;
     }
@@ -116,7 +120,6 @@ public class AbstractLevelDTO {
      *
      * @return the {@link LevelType}
      */
-    @ApiModelProperty(value = "Type of the level.", example = "GAME")
     public LevelType getLevelType() {
         return levelType;
     }
@@ -135,7 +138,6 @@ public class AbstractLevelDTO {
      *
      * @return the estimated duration
      */
-    @ApiModelProperty(value = "Estimated time taken by the player to resolve the level.", example = "5")
     public int getEstimatedDuration() {
         return estimatedDuration;
     }

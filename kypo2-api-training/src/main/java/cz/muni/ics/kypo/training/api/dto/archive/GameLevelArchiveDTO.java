@@ -7,17 +7,22 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-@ApiModel(value = "GameLevelArchiveDTO", description = "An assignment containing security tasks whose completion yields a flag.", parent = AbstractLevelArchiveDTO.class)
+@ApiModel(value = "GameLevelArchiveDTO", description = "Archived game level.", parent = AbstractLevelArchiveDTO.class)
 public class GameLevelArchiveDTO extends AbstractLevelArchiveDTO{
 
+    @ApiModelProperty(value = "Keyword found in game, used for access next level.", example = "secretFlag")
     private String flag;
+    @ApiModelProperty(value = "The information and experiences that are directed towards a participant.", example = "Play me")
     private String content;
+    @ApiModelProperty(value = "Instruction how to get flag in game.", example = "This is how you do it")
     private String solution;
+    @ApiModelProperty(value = "Sign if displaying of solution is penalized.", example = "true")
     private boolean solutionPenalized;
+    @ApiModelProperty(value = "Information which helps player resolve the level.")
     private Set<HintArchiveDTO> hints = new HashSet<>();
+    @ApiModelProperty(value = "How many times player can submit incorrect flag before displaying solution.", example = "5")
     private int incorrectFlagLimit;
 
-    @ApiModelProperty(value = "Keyword found in game, used for access next level.", example = "secretFlag")
     public String getFlag() {
         return flag;
     }
@@ -26,7 +31,6 @@ public class GameLevelArchiveDTO extends AbstractLevelArchiveDTO{
         this.flag = flag;
     }
 
-    @ApiModelProperty(value = "The information and experiences that are directed towards a participant.", example = "Play me")
     public String getContent() {
         return content;
     }
@@ -35,7 +39,6 @@ public class GameLevelArchiveDTO extends AbstractLevelArchiveDTO{
         this.content = content;
     }
 
-    @ApiModelProperty(value = "Instruction how to get flag in game.", example = "This is how you do it")
     public String getSolution() {
         return solution;
     }
@@ -44,7 +47,6 @@ public class GameLevelArchiveDTO extends AbstractLevelArchiveDTO{
         this.solution = solution;
     }
 
-    @ApiModelProperty(value = "Sign if displaying of solution is penalized.", example = "true")
     public boolean isSolutionPenalized() {
         return solutionPenalized;
     }
@@ -53,7 +55,6 @@ public class GameLevelArchiveDTO extends AbstractLevelArchiveDTO{
         this.solutionPenalized = solutionPenalized;
     }
 
-    @ApiModelProperty(value = "Information which helps player resolve the level.")
     public Set<HintArchiveDTO> getHints() {
         return hints;
     }
@@ -62,7 +63,6 @@ public class GameLevelArchiveDTO extends AbstractLevelArchiveDTO{
         this.hints = hints;
     }
 
-    @ApiModelProperty(value = "How many times player can submit incorrect flag before displaying solution.", example = "5")
     public int getIncorrectFlagLimit() {
         return incorrectFlagLimit;
     }

@@ -1,17 +1,25 @@
 package cz.muni.ics.kypo.training.api.dto.export;
 
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
 /**
  * Encapsulates information about user reference.
  */
+@ApiModel(value = "UserRefExportDTO", description = "An exported information about user reference.")
 public class UserRefExportDTO {
 
+    @ApiModelProperty(value = "Reference to user in another microservice.", example = "441048@mail.muni.cz")
     private String userRefLogin;
+    @ApiModelProperty(value = "Reference to user in another microservice and get his full name", example = "Mgr. Ing. Pavel Šeda")
     private String userRefFullName;
+    @ApiModelProperty(value = "User given name", example = "Pavel")
     private String userRefGivenName;
+    @ApiModelProperty(value = "User family name", example = "Seda")
     private String userRefFamilyName;
+    @ApiModelProperty(value = "Reference to user in another microservice and get his iss", example = "https://oidc.muni.cz")
     private String iss;
+    @ApiModelProperty(value = "Reference to user in another microservice and get his id", example = "1")
     private Long userRefId;
 
     /**
@@ -19,7 +27,6 @@ public class UserRefExportDTO {
      *
      * @return the user reference login
      */
-    @ApiModelProperty(value = "Reference to user in another microservice.", example = "441048@mail.muni.cz")
     public String getUserRefLogin() {
         return userRefLogin;
     }
@@ -47,7 +54,6 @@ public class UserRefExportDTO {
      *
      * @param userRefFullName the user reference full name
      */
-    @ApiModelProperty(value = "Reference to user in another microservice and get his full name", example = "Mgr. Ing. Pavel Šeda")
     public void setUserRefFullName(String userRefFullName) {
         this.userRefFullName = userRefFullName;
     }
@@ -57,7 +63,6 @@ public class UserRefExportDTO {
      *
      * @return the iss
      */
-    @ApiModelProperty(value = "Reference to user in another microservice and get his iss", example = "https://oidc.muni.cz")
     public String getIss() {
         return iss;
     }
@@ -76,7 +81,6 @@ public class UserRefExportDTO {
      *
      * @return the user ref id
      */
-    @ApiModelProperty(value = "Reference to user in another microservice and get his id", example = "1")
     public Long getUserRefId() {
         return userRefId;
     }
@@ -95,7 +99,6 @@ public class UserRefExportDTO {
      *
      * @return the user ref given name
      */
-    @ApiModelProperty(value = "User given name", example = "Pavel")
     public String getUserRefGivenName() {
         return userRefGivenName;
     }
@@ -114,7 +117,6 @@ public class UserRefExportDTO {
      *
      * @return the user ref family name
      */
-    @ApiModelProperty(value = "User family name", example = "Seda")
     public String getUserRefFamilyName() {
         return userRefFamilyName;
     }

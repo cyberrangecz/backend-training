@@ -9,11 +9,14 @@ import io.swagger.annotations.ApiModelProperty;
  *
  * @author Pavel Seda
  */
-@ApiModel(value = "AssessmentLevelExportDTO", description = "A questionnaire or a test that is displayed to the participant.", parent = AbstractLevelExportDTO.class)
+@ApiModel(value = "AssessmentLevelExportDTO", description = "Exported assessment level.", parent = AbstractLevelExportDTO.class)
 public class AssessmentLevelExportDTO extends AbstractLevelExportDTO {
 
+    @ApiModelProperty(value = "List of questions in this assessment as JSON.", example = "What is my mothers name?")
     private String questions;
+    @ApiModelProperty(value = "Assessment instructions for participant.", example = "Fill me up")
     private String instructions;
+    @ApiModelProperty(value = "Type of assessment.", example = "TEST")
     private AssessmentType assessmentType;
 
     /**
@@ -21,7 +24,6 @@ public class AssessmentLevelExportDTO extends AbstractLevelExportDTO {
      *
      * @return the questions
      */
-    @ApiModelProperty(value = "List of questions in this assessment as JSON.", example = "What is my mothers name?")
     public String getQuestions() {
         return questions;
     }
@@ -40,7 +42,6 @@ public class AssessmentLevelExportDTO extends AbstractLevelExportDTO {
      *
      * @return the instructions
      */
-    @ApiModelProperty(value = "Assessment instructions for participant.", example = "Fill me up")
     public String getInstructions() {
         return instructions;
     }
@@ -59,7 +60,6 @@ public class AssessmentLevelExportDTO extends AbstractLevelExportDTO {
      *
      * @return the {@link AssessmentType}
      */
-    @ApiModelProperty(value = "Type of assessment.", example = "TEST")
     public AssessmentType getAssessmentType() {
         return assessmentType;
     }

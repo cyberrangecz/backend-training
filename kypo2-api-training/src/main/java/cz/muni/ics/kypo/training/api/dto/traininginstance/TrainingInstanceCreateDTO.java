@@ -20,20 +20,26 @@ import java.util.Set;
 @ApiModel(value = "TrainingInstanceCreateDTO", description = "Training Instance to create.")
 public class TrainingInstanceCreateDTO {
 
+    @ApiModelProperty(value = "Date when training instance starts.", required = true, example = "2020-11-20T10:28:02.727Z")
     @NotNull(message = "{traininginstancecreate.startTime.NotNull.message}")
     @JsonDeserialize(using = LocalDateTimeUTCDeserializer.class)
     private LocalDateTime startTime;
+    @ApiModelProperty(value = "Date when training instance ends.", required = true, example = "2020-11-25T10:26:02.727Z")
     @NotNull(message = "{traininginstancecreate.endTime.NotNull.message}")
     @JsonDeserialize(using = LocalDateTimeUTCDeserializer.class)
     private LocalDateTime endTime;
+    @ApiModelProperty(value = "Short textual description of the training instance.", required = true, example = "December instance")
     @NotEmpty(message = "{traininginstancecreate.title.NotEmpty.message}")
     private String title;
+    @ApiModelProperty(value = "Number of sandboxes that can be allocated.", required = true, example = "20")
     @NotNull(message = "{traininginstancecreate.poolSize.NotNull.message}")
     @Min(value = 1, message = "{traininginstancecreate.poolSize.Min.message}")
     @Max(value = 64, message = "{traininginstancecreate.poolSize.Max.message}")
     private int poolSize;
+    @ApiModelProperty(value = "AccessToken which will be modified and then used for accessing training run.", required = true, example = "hunter")
     @NotEmpty(message = "{traininginstancecreate.accessToken.NotEmpty.message}")
     private String accessToken;
+    @ApiModelProperty(value = "Reference to training definition from which is training instance created.", required = true, example = "1")
     @NotNull(message = "{traininginstancecreate.trainingDefinition.NotNull.message}")
     private long trainingDefinitionId;
 
@@ -42,7 +48,6 @@ public class TrainingInstanceCreateDTO {
      *
      * @return the start time
      */
-    @ApiModelProperty(value = "Date when training instance starts.", required = true, example = "2020-11-20T10:28:02.727Z")
     public LocalDateTime getStartTime() {
         return startTime;
     }
@@ -61,7 +66,6 @@ public class TrainingInstanceCreateDTO {
      *
      * @return the end time
      */
-    @ApiModelProperty(value = "Date when training instance ends.", required = true, example = "2020-11-25T10:26:02.727Z")
     public LocalDateTime getEndTime() {
         return endTime;
     }
@@ -80,7 +84,6 @@ public class TrainingInstanceCreateDTO {
      *
      * @return the title
      */
-    @ApiModelProperty(value = "Short textual description of the training instance.", required = true, example = "December instance")
     public String getTitle() {
         return title;
     }
@@ -99,7 +102,6 @@ public class TrainingInstanceCreateDTO {
      *
      * @return the pool size
      */
-    @ApiModelProperty(value = "Number of sandboxes that can be allocated.", required = true, example = "20")
     public int getPoolSize() {
         return poolSize;
     }
@@ -118,7 +120,6 @@ public class TrainingInstanceCreateDTO {
      *
      * @return the access token
      */
-    @ApiModelProperty(value = "AccessToken which will be modified and then used for accessing training run.", required = true, example = "hunter")
     public String getAccessToken() {
         return accessToken;
     }
@@ -137,7 +138,6 @@ public class TrainingInstanceCreateDTO {
      *
      * @return the training definition id
      */
-    @ApiModelProperty(value = "Reference to training definition from which is training instance created.", required = true, example = "1")
     public long getTrainingDefinitionId() {
         return trainingDefinitionId;
     }

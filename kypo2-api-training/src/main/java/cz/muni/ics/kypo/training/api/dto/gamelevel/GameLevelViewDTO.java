@@ -16,10 +16,15 @@ import java.util.Set;
 @ApiModel(value = "GameLevelDTO", description = "An assignment containing security tasks whose completion yields a flag.", parent = AbstractLevelDTO.class)
 public class GameLevelViewDTO extends AbstractLevelDTO {
 
+    @ApiModelProperty(value = "The information and experiences that are directed towards a participant.", example = "Play me")
     private String content;
+    @ApiModelProperty(value = "Sign if displaying of solution is penalized.", example = "true")
     private boolean solutionPenalized;
+    @ApiModelProperty(value = "Estimated time (minutes) taken by the player to solve the level.", example = "25")
     private int estimatedDuration;
+    @ApiModelProperty(value = "How many times player can submit incorrect flag before displaying solution.", example = "5")
     private int incorrectFlagLimit;
+    @ApiModelProperty(value = "Information which helps player resolve the level.")
     private Set<HintForGameLevelViewDTO> hints = new HashSet<>();
 
 
@@ -28,7 +33,6 @@ public class GameLevelViewDTO extends AbstractLevelDTO {
      *
      * @return the content
      */
-    @ApiModelProperty(value = "The information and experiences that are directed towards a participant.", example = "Play me")
     public String getContent() {
         return content;
     }
@@ -47,7 +51,6 @@ public class GameLevelViewDTO extends AbstractLevelDTO {
      *
      * @return true if incorrect solution is penalized
      */
-    @ApiModelProperty(value = "Sign if displaying of solution is penalized.", example = "true")
     public boolean isSolutionPenalized() {
         return solutionPenalized;
     }
@@ -61,7 +64,6 @@ public class GameLevelViewDTO extends AbstractLevelDTO {
         this.solutionPenalized = solutionPenalized;
     }
 
-    @ApiModelProperty(value = "Estimated time taken by the player to resolve the level.", example = "25")
     public int getEstimatedDuration() {
         return estimatedDuration;
     }
@@ -75,7 +77,6 @@ public class GameLevelViewDTO extends AbstractLevelDTO {
      *
      * @return the incorrect flag limit
      */
-    @ApiModelProperty(value = "How many times player can submit incorrect flag before displaying solution.", example = "5")
     public int getIncorrectFlagLimit() {
         return incorrectFlagLimit;
     }
@@ -94,7 +95,6 @@ public class GameLevelViewDTO extends AbstractLevelDTO {
      *
      * @return the set of {@link HintForGameLevelViewDTO}s
      */
-    @ApiModelProperty(value = "Information which helps player resolve the level.")
     public Set<HintForGameLevelViewDTO> getHints() {
         return hints;
     }

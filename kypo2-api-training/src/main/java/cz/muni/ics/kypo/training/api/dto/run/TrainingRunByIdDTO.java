@@ -17,17 +17,26 @@ import java.time.LocalDateTime;
 @ApiModel(value = "TrainingRunByIdDTO", description = "The act, or a recording, of performing actions during training from a perspective of one concrete participant.")
 public class TrainingRunByIdDTO {
 
+	@ApiModelProperty(value = "Main identifier of training run.", example = "1")
 	private Long id;
+	@ApiModelProperty(value = "Date when training run started.", example = "2016-10-19 10:23:54+02")
 	@JsonSerialize(using = LocalDateTimeUTCSerializer.class)
 	private LocalDateTime startTime;
+	@ApiModelProperty(value = "Date when training run ends.", example = "2022-10-19 10:23:54+02")
 	@JsonSerialize(using = LocalDateTimeUTCSerializer.class)
 	private LocalDateTime endTime;
 	private String eventLogReference;
+	@ApiModelProperty(value = "Current state of training run.", example = "ALLOCATED")
 	private TRState state;
+	@ApiModelProperty(value = "Reference to the received sandbox.")
 	private Long sandboxInstanceRefId;
+	@ApiModelProperty(value = "Reference to participant of training run.")
 	private UserRefDTO participantRef;
+	@ApiModelProperty(value = "Id of associated training definition")
 	private Long definitionId;
+	@ApiModelProperty(value = "Id of associated training instance")
 	private Long instanceId;
+	@ApiModelProperty(value = "Id of a previous sandbox instance assigned to the training run.", example = "12")
 	private Long previousSandboxInstanceRefId;
 
 	/**
@@ -35,7 +44,6 @@ public class TrainingRunByIdDTO {
 	 *
 	 * @return the id
 	 */
-	@ApiModelProperty(value = "Main identifier of training run.", example = "1")
 	public Long getId() {
 		return id;
 	}
@@ -54,7 +62,6 @@ public class TrainingRunByIdDTO {
 	 *
 	 * @return the start time
 	 */
-	@ApiModelProperty(value = "Date when training run started.", example = "2016-10-19 10:23:54+02")
 	public LocalDateTime getStartTime() {
 		return startTime;
 	}
@@ -73,7 +80,6 @@ public class TrainingRunByIdDTO {
 	 *
 	 * @return the end time
 	 */
-	@ApiModelProperty(value = "Date when training run ends.", example = "2022-10-19 10:23:54+02")
 	public LocalDateTime getEndTime() {
 		return endTime;
 	}
@@ -110,7 +116,6 @@ public class TrainingRunByIdDTO {
 	 *
 	 * @return the {@link TRState}
 	 */
-	@ApiModelProperty(value = "Current state of training run.", example = "ALLOCATED")
 	public TRState getState() {
 		return state;
 	}
@@ -130,7 +135,6 @@ public class TrainingRunByIdDTO {
 	 *
 	 * @return the sandbox instance id
 	 */
-	@ApiModelProperty(value = "Reference to the received sandbox.")
 	public Long getSandboxInstanceRefId() {
 		return sandboxInstanceRefId;
 	}
@@ -148,7 +152,6 @@ public class TrainingRunByIdDTO {
 	 *
 	 * @return the {@link UserRefDTO}
 	 */
-	@ApiModelProperty(value = "Reference to participant of training run.")
 	public UserRefDTO getParticipantRef() {
 		return participantRef;
 	}
@@ -167,7 +170,6 @@ public class TrainingRunByIdDTO {
 	 *
 	 * @return the definition id
 	 */
-	@ApiModelProperty(value = "Id of associated training definition")
 	public Long getDefinitionId() {
 		return definitionId;
 	}
@@ -186,7 +188,6 @@ public class TrainingRunByIdDTO {
 	 *
 	 * @return the instance id
 	 */
-	@ApiModelProperty(value = "Id of associated training instance")
 	public Long getInstanceId() {
 		return instanceId;
 	}
@@ -205,7 +206,6 @@ public class TrainingRunByIdDTO {
 	 *
 	 * @return the previous sandbox instance ref id
 	 */
-	@ApiModelProperty(value = "Id of a previous sandbox instance assigned to the training run.", example = "12")
 	public Long getPreviousSandboxInstanceRefId() {
 		return previousSandboxInstanceRefId;
 	}

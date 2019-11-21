@@ -11,7 +11,9 @@ import io.swagger.annotations.ApiModelProperty;
 @ApiModel(value = "SnapshotHookDTO", description = ".")
 public class SnapshotHookDTO {
 
+    @ApiModelProperty(value = "Main identifier of snapshotHook.", example = "8")
     private Long id;
+    @ApiModelProperty(value = "Content of snapshot. What should be executed to get to particular state.", example = "Snapshot 1")
     private String snapshot;
 
     /**
@@ -19,7 +21,6 @@ public class SnapshotHookDTO {
      *
      * @return the id
      */
-    @ApiModelProperty(value = "Main identifier of snapshotHook.", example = "8")
     public Long getId() {
         return id;
     }
@@ -38,7 +39,6 @@ public class SnapshotHookDTO {
      *
      * @return the snapshot
      */
-    @ApiModelProperty(value = "Content of snapshot. What should be executed to get to particular state.", example = "Snapshot 1")
     public String getSnapshot() {
         return snapshot;
     }

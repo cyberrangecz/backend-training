@@ -1,16 +1,22 @@
 package cz.muni.ics.kypo.training.api.dto.visualization;
 
+import cz.muni.ics.kypo.training.api.dto.export.AbstractLevelExportDTO;
 import cz.muni.ics.kypo.training.api.dto.hint.HintDTO;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
 import java.util.List;
 import java.util.Objects;
-
+@ApiModel(value = "GameLevelVisualizationDTO", description = "Information about game level needed for visualizations.", parent = AbstractLevelExportDTO.class)
 public class GameLevelVisualizationDTO extends AbstractLevelVisualizationDTO {
 
+    @ApiModelProperty(value = "Instruction how to get flag in game.", example = "This is how you do it")
     private String solution;
+    @ApiModelProperty(value = "Keyword found in game, used for access next level.", example = "secretFlag")
     private String flag;
+    @ApiModelProperty(value = "Sign if displaying of solution is penalized.", example = "true")
     private boolean solutionPenalized;
+    @ApiModelProperty(value = "Information which helps player resolve the level.")
     private List<HintDTO> hints;
 
     public GameLevelVisualizationDTO() {
@@ -22,7 +28,6 @@ public class GameLevelVisualizationDTO extends AbstractLevelVisualizationDTO {
      *
      * @return the solution
      */
-    @ApiModelProperty(value = "Instruction how to get flag in game.", example = "This is how you do it")
     public String getSolution() {
         return solution;
     }
@@ -41,7 +46,6 @@ public class GameLevelVisualizationDTO extends AbstractLevelVisualizationDTO {
      *
      * @return the flag
      */
-    @ApiModelProperty(value = "Keyword found in game, used for access next level.", example = "secretFlag")
     public String getFlag() {
         return flag;
     }
@@ -59,7 +63,6 @@ public class GameLevelVisualizationDTO extends AbstractLevelVisualizationDTO {
      *
      * @return true if incorrect solution is penalized
      */
-    @ApiModelProperty(value = "Sign if displaying of solution is penalized.", example = "true")
     public boolean isSolutionPenalized() {
         return solutionPenalized;
     }
@@ -78,7 +81,6 @@ public class GameLevelVisualizationDTO extends AbstractLevelVisualizationDTO {
      *
      * @return the set of {@link HintDTO}s
      */
-    @ApiModelProperty(value = "Information which helps player resolve the level.")
     public List<HintDTO> getHints() {
         return hints;
     }

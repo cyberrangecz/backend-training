@@ -136,7 +136,7 @@
                                 <location>cz.muni.ics.kypo.training.rest.controllers</location>
                             </locations>
                             <schemes>http,https</schemes>
-                            <host>localhost:8080</host>
+                            <host>localhost:8083</host>
                             <basePath>/kypo2-rest-training/api/v1</basePath>
                             <info>
                                 <title>KYPO2 Trainings - API Reference</title>

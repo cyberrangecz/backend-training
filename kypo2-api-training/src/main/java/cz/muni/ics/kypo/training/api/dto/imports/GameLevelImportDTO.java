@@ -1,6 +1,9 @@
 package cz.muni.ics.kypo.training.api.dto.imports;
 
+import cz.muni.ics.kypo.training.api.dto.export.AbstractLevelExportDTO;
 import cz.muni.ics.kypo.training.api.dto.hint.HintDTO;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
@@ -14,16 +17,23 @@ import java.util.Set;
  *
  * @author Boris Jadus(445343)
  */
+@ApiModel(value = "GameLevelImportDTO", description = "Imported game level.", parent = AbstractLevelExportDTO.class)
 public class GameLevelImportDTO extends AbstractLevelImportDTO{
 
+	@ApiModelProperty(value = "Keyword found in game, used for access next level.", example = "secretFlag")
 	@NotEmpty(message = "{gamelevelimport.flag.NotEmpty.message}")
 	@Size(max = 50, message = "{gamelevelimport.flag.Size.message}")
 	private String flag;
+	@ApiModelProperty(value = "The information and experiences that are directed towards a participant.", example = "Play me")
 	private String content;
+	@ApiModelProperty(value = "Instruction how to get flag in game.", example = "This is how you do it")
 	private String solution;
+	@ApiModelProperty(value = "Sign if displaying of solution is penalized.", example = "true")
 	@NotNull(message = "{gamelevelimport.solutionPenalized.NotNull.message}")
 	private boolean solutionPenalized;
+	@ApiModelProperty(value = "Information which helps player resolve the level.")
 	private Set<HintDTO> hints = new HashSet<>();
+	@ApiModelProperty(value = "How many times player can submit incorrect flag before displaying solution.", example = "5")
 	@NotNull(message = "{gamelevelimport.incorrectFlagLimit.NotEmpty.message}")
 	@Min(value = 0, message = "{gamelevelimport.incorrectFlagLimit.Min.message}")
 	private int incorrectFlagLimit;

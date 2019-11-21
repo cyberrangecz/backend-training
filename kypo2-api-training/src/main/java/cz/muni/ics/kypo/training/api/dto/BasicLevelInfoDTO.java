@@ -4,6 +4,7 @@ import java.util.Objects;
 
 import cz.muni.ics.kypo.training.api.enums.LevelType;
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
 /**
@@ -11,11 +12,16 @@ import io.swagger.annotations.ApiModelProperty;
  *
  * @author Boris Jadus
  */
+@ApiModel(value = "BasicLevelInfoDTO", description = "Basic information about the level and its type.")
 public class BasicLevelInfoDTO {
 
+    @ApiModelProperty(value = "Main identifier of level.", example = "1")
     private Long id;
+    @ApiModelProperty(value = "Short textual description of the level.", example = "Game Level1")
     private String title;
+    @ApiModelProperty(value = "Order of level among levels in training definition.", example = "1")
     private int order;
+    @ApiModelProperty(value = "Type of the level.", example = "GAME")
     private LevelType levelType;
 
     /**
@@ -44,7 +50,6 @@ public class BasicLevelInfoDTO {
      *
      * @return the id
      */
-    @ApiModelProperty(value = "Main identifier of level.", example = "1")
     public Long getId() {
         return id;
     }
@@ -63,7 +68,6 @@ public class BasicLevelInfoDTO {
      *
      * @return the title
      */
-    @ApiModelProperty(value = "Short textual description of the level.", example = "Game Level1")
     public String getTitle() {
         return title;
     }
@@ -83,7 +87,6 @@ public class BasicLevelInfoDTO {
      *
      * @return the order
      */
-    @ApiModelProperty(value = "Order of level among levels in training definition.", example = "1")
     public int getOrder() {
         return order;
     }
@@ -103,7 +106,6 @@ public class BasicLevelInfoDTO {
      *
      * @return the {@link LevelType}
      */
-    @ApiModelProperty(value = "Type of the level.", example = "GAME")
     public LevelType getLevelType() {
         return levelType;
     }
