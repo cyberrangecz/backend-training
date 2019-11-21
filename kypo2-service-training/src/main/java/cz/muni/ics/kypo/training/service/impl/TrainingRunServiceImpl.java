@@ -132,9 +132,9 @@ public class TrainingRunServiceImpl implements TrainingRunService {
                 }
             } catch (RestTemplateException ex) {
                 if (!ex.getStatusCode().equals(HttpStatus.NOT_FOUND.toString())) {
-                    throw new ServiceLayerException("Client side error when calling OpenStack: " + ex.getStatusCode() + ": " + ex.getMessage(), ErrorCode.PYTHON_API_ERROR);
+                    throw new ServiceLayerException("Error when calling Python API to obtain info about sandbox (ID: " + trainingRun.getPreviousSandboxInstanceRefId() + "): " + ex.getStatusCode() + " - " + ex.getMessage() + ".", ErrorCode.PYTHON_API_ERROR);
                 }
-                LOG.debug("Sandbox (id:" + trainingRun.getPreviousSandboxInstanceRefId() + ") previously assigned to the training run (id: " + trainingRunId + ") is not found in OpenStack because it was successfully deleted.");
+                LOG.debug("Sandbox (ID:" + trainingRun.getPreviousSandboxInstanceRefId() + ") previously assigned to the training run (ID: " + trainingRunId + ") is not found in OpenStack because it was successfully deleted.");
             }
             trAcquisitionLockRepository.deleteByParticipantRefIdAndTrainingInstanceId(trainingRun.getParticipantRef().getUserRefId(), trainingRun.getTrainingInstance().getId());
             trainingRunRepository.delete(trainingRun);
@@ -327,7 +327,8 @@ public class TrainingRunServiceImpl implements TrainingRunService {
                     pythonRestTemplate.exchange(kypoOpenStackURI + "/sandboxes/" + readySandboxId + "/lock/",
                             HttpMethod.POST, new HttpEntity<>(requestJson, httpHeaders), String.class);
                 } catch (RestTemplateException ex){
-                    LOG.error(ex.getMessage());
+                    LOG.error("Error when calling Python API to obtain lock status of sandbox (ID: {}): {}.", readySandboxId, ex.getStatusCode() + ex.getMessage());
+                    //TODO do not continue when get error, you are trying to lock sandbox when you expect it is not locked.
                     continue;
                 }
                 return readySandboxId;

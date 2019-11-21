@@ -137,7 +137,7 @@ public class SecurityService {
             UserRefDTO userRefDto = userInfoResponseEntity.getBody();
             return userRefDto.getUserRefId();
         } catch (HttpClientErrorException ex) {
-            throw new ServiceLayerException("Error from retrieving information from user and group service: " + ex.getMessage() + " - " + ex.getResponseBodyAsString(), ErrorCode.UNEXPECTED_ERROR);
+            throw new ServiceLayerException("Error when calling UserAndGroup API to get info about logged in user: " + ex.getMessage() + " - " + ex.getResponseBodyAsString(), ErrorCode.UNEXPECTED_ERROR);
         }
     }
 
@@ -149,7 +149,7 @@ public class SecurityService {
             });
             return userInfoResponseEntity.getBody();
         } catch (HttpClientErrorException ex) {
-            throw new ServiceLayerException("Error from retrieving information from user and group service: " + ex.getMessage() + " - " + ex.getResponseBodyAsString(), ErrorCode.UNEXPECTED_ERROR);
+            throw new ServiceLayerException("Error when calling UserAndGroup API to get info about logged in user: " + ex.getMessage() + " - " + ex.getResponseBodyAsString(), ErrorCode.UNEXPECTED_ERROR);
         }
     }
 
@@ -166,7 +166,7 @@ public class SecurityService {
             userRef.setUserRefId(userRefDto.getUserRefId());
             return userRef;
         } catch (HttpClientErrorException ex) {
-            throw new ServiceLayerException("Error from retrieving information from user management service: " + ex.getMessage() + " - " + ex.getResponseBodyAsString(), ErrorCode.UNEXPECTED_ERROR);
+            throw new ServiceLayerException("Error when calling UserAndGroup API to get info about logged in user: " + ex.getMessage() + " - " + ex.getResponseBodyAsString(), ErrorCode.UNEXPECTED_ERROR);
         }
     }
 

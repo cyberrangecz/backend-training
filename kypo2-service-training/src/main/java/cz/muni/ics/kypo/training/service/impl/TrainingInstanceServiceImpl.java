@@ -130,8 +130,8 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
             PageResultResourcePython<SandboxInfo> sandboxInfoPageResult = Objects.requireNonNull(response.getBody());
             return Objects.requireNonNull(sandboxInfoPageResult.getResults());
         } catch (RestTemplateException ex) {
-            throw new ServiceLayerException("Client side error when checking a state of sandbox in OpenStack for pool with ID " +
-                    poolId + " : " + ex.getStatusCode()+ ": " + ex.getMessage() + " Please contact administrator", ErrorCode.PYTHON_API_ERROR);
+            throw new ServiceLayerException("Error from Python API when checking a state of sandboxes in pool (ID: " + poolId + "): "
+                    + ex.getStatusCode()+ ": " + ex.getMessage() + " Please contact administrator", ErrorCode.PYTHON_API_ERROR);
         }
     }
 
@@ -215,7 +215,8 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
         try {
             pythonRestTemplate.delete(UriComponentsBuilder.fromUriString(url).toUriString());
         } catch (RestTemplateException ex) {
-            throw new ServiceLayerException("Client side error when removing pool from OpenStack:  " + ex.getStatusCode() + ": "+  ex.getMessage(), ErrorCode.PYTHON_API_ERROR);
+            throw new ServiceLayerException("Error when calling Python API to remove pool (ID: " + poolId + "):"
+                    + ex.getStatusCode() + ": "+  ex.getMessage(), ErrorCode.PYTHON_API_ERROR);
         }
     }
 
@@ -245,10 +246,9 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
 
         try {
             ResponseEntity<SandboxPoolInfo> poolResponse = pythonRestTemplate.exchange(kypoOpenStackURI + "/pools/", HttpMethod.POST, new HttpEntity<>(poolCreationRequest, httpHeaders), SandboxPoolInfo.class);
-            Long poolId = Objects.requireNonNull(poolResponse.getBody()).getId();
-            return poolId;
+            return Objects.requireNonNull(poolResponse.getBody()).getId();
         } catch (RestTemplateException ex) {
-            throw new ServiceLayerException("Error from OpenStack while creating pool: "  + ex.getStatusCode() + ": " + ex.getMessage(), ErrorCode.PYTHON_API_ERROR);
+            throw new ServiceLayerException("Error when calling Python API to create pool: "  + ex.getStatusCode() + ": " + ex.getMessage(), ErrorCode.PYTHON_API_ERROR);
         }
     }
 
@@ -289,7 +289,7 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
                     new HttpEntity<>(httpHeaders), new ParameterizedTypeReference<List<SandboxInfo>>() {
                     });
         } catch (RestTemplateException ex) {
-            LOG.error("Client side error when calling OpenStack: {}.", ex.getStatusCode() + " - " + ex.getMessage());
+            LOG.error("Error when calling Python API to allocate sandboxes: {}.", ex.getStatusCode() + " - " + ex.getMessage());
         }
     }
 
@@ -309,7 +309,7 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
         } catch (RestTemplateException ex) {
             if (!ex.getStatusCode().equals(HttpStatus.BAD_REQUEST.toString()) &&
                 !ex.getStatusCode().equals(HttpStatus.NOT_FOUND.toString())) {
-                LOG.error("Client side error when calling OpenStack: {}. Probably wrong URL of service.", ex.getStatusCode() + " - " + ex.getMessage());
+                LOG.error("Error when calling Python API to get lock status of sandbox (ID: {}): {}.", idOfSandboxRefToDelete, ex.getStatusCode() + " - " + ex.getMessage());
                 return;
             }
         }
@@ -318,7 +318,7 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
                     HttpMethod.DELETE, new HttpEntity<>(httpHeaders), String.class);
         } catch (RestTemplateException ex) {
             if (!ex.getStatusCode().equals(HttpStatus.NOT_FOUND.toString())){
-                LOG.error("Client side error when calling OpenStack: {}. Probably wrong URL of service.", ex.getStatusCode() + " - " + ex.getMessage());
+                LOG.error("Error when calling Python API to delete sandbox (ID: {}): {}.", idOfSandboxRefToDelete, ex.getStatusCode() + " - " + ex.getMessage());
                 return;
             }
         }
