@@ -69,7 +69,6 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
         this.securityService = securityService;
     }
 
-    // TODO check pre authorize for this method
     @Override
     @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_TRAINEE)")
     public TrainingDefinition findById(Long id) {
@@ -84,8 +83,7 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
             return trainingDefinitionRepository.findAll(predicate, pageable);
         }
         Long loggedInUserId = securityService.getUserRefIdFromUserAndGroup();
-        Predicate finalPredicate = QTrainingDefinition.trainingDefinition.authors.any().userRefId.eq(loggedInUserId).or(QTrainingDefinition.trainingDefinition.betaTestingGroup.organizers.any().userRefId.eq(loggedInUserId)).and(predicate);
-        return trainingDefinitionRepository.findAll(finalPredicate, pageable);
+        return trainingDefinitionRepository.findAll(predicate, pageable, loggedInUserId);
     }
 
     @Override
