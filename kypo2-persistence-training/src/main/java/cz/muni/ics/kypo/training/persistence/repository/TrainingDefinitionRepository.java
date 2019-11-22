@@ -28,9 +28,8 @@ import java.util.Optional;
  *
  * @author Pavel Seda (441048)
  */
-@Repository
 public interface TrainingDefinitionRepository
-        extends JpaRepository<TrainingDefinition, Long>, QuerydslPredicateExecutor<TrainingDefinition>, QuerydslBinderCustomizer<QTrainingDefinition> {
+        extends JpaRepository<TrainingDefinition, Long>, TrainingDefinitionRepositoryCustom, QuerydslPredicateExecutor<TrainingDefinition>, QuerydslBinderCustomizer<QTrainingDefinition> {
 
     /**
      * That method is used to make the query dsl string values case insensitive and also it supports partial matches in the database.
