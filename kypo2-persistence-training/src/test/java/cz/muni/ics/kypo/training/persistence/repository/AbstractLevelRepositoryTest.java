@@ -135,16 +135,17 @@ public class AbstractLevelRepositoryTest {
         assertTrue(optionalGameLevel.get() instanceof GameLevel);
         assertEquals(gameLevel2, optionalGameLevel.get());
     }
-//
-//    @Test
-//    public void findAll() {
-//        List<AbstractLevel> expectedAbstractLevels = Arrays.asList(gameLevel, infoLevel, assessmentLevel, infoLevel2, gameLevel2);
-//        expectedAbstractLevels.stream().forEach(a -> entityManager.persist(a));
-//        List<AbstractLevel> resultAbstractLevels = abstractLevelRepository.findAll();
-//        assertNotNull(resultAbstractLevels);
-//        assertEquals(expectedAbstractLevels.size(), resultAbstractLevels.size());
-//        assertEquals(expectedAbstractLevels, resultAbstractLevels);
-//    }
+
+    @Test
+    public void findAll() {
+        entityManager.persist(trainingDefinition);
+        List<AbstractLevel> expectedAbstractLevels = Arrays.asList(gameLevel, infoLevel, assessmentLevel, infoLevel2, gameLevel2);
+        expectedAbstractLevels.stream().forEach(a -> entityManager.persist(a));
+        List<AbstractLevel> resultAbstractLevels = abstractLevelRepository.findAll();
+        assertNotNull(resultAbstractLevels);
+        assertEquals(expectedAbstractLevels.size(), resultAbstractLevels.size());
+        assertEquals(expectedAbstractLevels, resultAbstractLevels);
+    }
 
     @Test
     public void getCurrentMaxOrder(){
