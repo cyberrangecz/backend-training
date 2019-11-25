@@ -60,7 +60,7 @@ public class TrainingDefinitionRepositoryTest {
         trainingDefinition1.setLastEdited(LocalDateTime.now());
 
         trainingDefinition2 = new TrainingDefinition();
-        trainingDefinition2.setSandboxDefinitionRefId(2L);
+        trainingDefinition2.setSandboxDefinitionRefId(1L);
         trainingDefinition2.setTitle("test2");
         trainingDefinition2.setState(TDState.UNRELEASED);
         trainingDefinition2.setLastEdited(LocalDateTime.now());
@@ -106,33 +106,7 @@ public class TrainingDefinitionRepositoryTest {
         entityManager.persist(trainingDefinitionWithBG3);
         entityManager.persist(trainingDefinitionWithBG4);
 
-
         pageable = PageRequest.of(0, 10);
-    }
-
-    @Test
-    public void findAllByLoggedInUser() {
-
-        author1 = new UserRef();
-        author1.setUserRefId(3L);
-
-        entityManager.persist(author1);
-
-        author2 = new UserRef();
-        author2.setUserRefId(4L);
-        entityManager.persist(author2);
-
-        trainingDefinition1.addAuthor(author1);
-        trainingDefinition1.addAuthor(author2);
-        entityManager.merge(trainingDefinition1);
-        trainingDefinition2.addAuthor(author1);
-        entityManager.merge(trainingDefinition2);
-
-//        List<TrainingDefinition> trainingDefinitions = trainingDefinitionRepository
-//                .findAllByLoggedInUser(pageable).getContent();
-//        assertTrue(trainingDefinitions.contains(trainingDefinition1));
-//        assertTrue(trainingDefinitions.contains(trainingDefinition2));
-//        assertEquals(2, trainingDefinitions.size());
     }
 
     @Test
@@ -143,20 +117,6 @@ public class TrainingDefinitionRepositoryTest {
         assertTrue(trainingDefinitions.contains(trainingDefinition2));
         assertEquals(2, trainingDefinitions.size());
     }
-
-//    @Test
-//    public void findAllByViewGroup() {
-//        entityManager.persist(trainingDefinition1);
-//        entityManager.persist(trainingDefinition2);
-//        entityManager.persist(organizer1);
-//        viewGroup1.addOrganizer(organizer1);
-//        viewGroup2.addOrganizer(organizer1);
-//
-//        List<TrainingDefinition> trainingDefinitions = trainingDefinitionRepository
-//                .findAllByBetaTesters("Organizer", pageable).getContent();
-//        assertTrue(trainingDefinitions.contains(trainingDefinition1));
-//        assertEquals(2, trainingDefinitions.size());
-//    }
 
     @Test
     public void findAllAsDesigner() {
