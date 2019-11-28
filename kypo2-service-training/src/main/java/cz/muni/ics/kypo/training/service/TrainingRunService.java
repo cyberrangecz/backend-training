@@ -188,5 +188,11 @@ public interface TrainingRunService {
      */
     void evaluateResponsesToAssessment(Long trainingRunId, String responsesAsString);
 
+    /**
+     * Connects available sandbox with given Training run.
+     *
+     * @param trainingRun that will be connected with sandbox
+     * @return Training run with assigned sandbox
+     */
     TrainingRun assignSandbox(TrainingRun trainingRun);
 }

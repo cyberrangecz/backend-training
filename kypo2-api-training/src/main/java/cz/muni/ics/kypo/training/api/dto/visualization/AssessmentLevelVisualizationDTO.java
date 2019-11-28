@@ -10,6 +10,11 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
 import java.util.Objects;
+
+/**
+ * Encapsulates information about assessment level. Inherits from {@link AbstractLevelVisualizationDTO}
+ * Used for visualization.
+ */
 @ApiModel(value = "AssessmentLevelVisualizationDTO", description = "Information about assessment level needed for visualizations.", parent = AbstractLevelImportDTO.class)
 public class AssessmentLevelVisualizationDTO extends AbstractLevelVisualizationDTO{
 
@@ -18,6 +23,9 @@ public class AssessmentLevelVisualizationDTO extends AbstractLevelVisualizationD
     @ApiModelProperty(value = "List of questions in this assessment as JSON.", example = "What is my mothers name?")
     private String questions;
 
+    /**
+     * Instantiates a new Assessment level visualization dto.
+     */
     public AssessmentLevelVisualizationDTO() {
     }
 
@@ -29,6 +37,7 @@ public class AssessmentLevelVisualizationDTO extends AbstractLevelVisualizationD
     public AssessmentType getAssessmentType() {
         return assessmentType;
     }
+
     /**
      * Sets assessment type.
      *
@@ -37,6 +46,7 @@ public class AssessmentLevelVisualizationDTO extends AbstractLevelVisualizationD
     public void setAssessmentType(AssessmentType assessmentType) {
         this.assessmentType = assessmentType;
     }
+
     /**
      * Gets questions.
      *
@@ -45,6 +55,7 @@ public class AssessmentLevelVisualizationDTO extends AbstractLevelVisualizationD
     public String getQuestions() {
         return questions;
     }
+
     /**
      * Sets questions.
      *

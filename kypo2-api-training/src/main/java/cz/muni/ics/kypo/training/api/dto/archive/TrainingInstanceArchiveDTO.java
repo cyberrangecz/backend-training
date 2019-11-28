@@ -1,7 +1,6 @@
 package cz.muni.ics.kypo.training.api.dto.archive;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import cz.muni.ics.kypo.training.api.dto.export.UserRefExportDTO;
 import cz.muni.ics.kypo.training.converters.LocalDateTimeUTCSerializer;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -10,7 +9,8 @@ import java.time.LocalDateTime;
 import java.util.Set;
 
 /**
- * Encapsulates information about Training instance intended for export.
+ * Encapsulates information about Training instance.
+ * Used for archiving
  *
  * @author Boris Jadus
  */

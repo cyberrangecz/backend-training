@@ -5,6 +5,12 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
 import java.util.Objects;
+
+/**
+ * Encapsulates information about abstract level.
+ * Used for visualization.
+ * Extended by {@link AssessmentLevelVisualizationDTO}, {@link GameLevelVisualizationDTO} and {@link InfoLevelVisualizationDTO}.
+ */
 @ApiModel(value = "AbstractLevelVisualizationDTO", subTypes = {GameLevelVisualizationDTO.class, InfoLevelVisualizationDTO.class, AssessmentLevelVisualizationDTO.class},
         description = "Superclass for classes GameLevelDTO, AssessmentLevelDTO and InfoLevelDTO")
 public abstract class AbstractLevelVisualizationDTO {
@@ -31,11 +37,11 @@ public abstract class AbstractLevelVisualizationDTO {
     /**
      * Instantiates a new Visualization level info dto.
      *
-     * @param id        the id
-     * @param title     the title
-     * @param levelType the level type
-     * @param order     the order
-     * @param maxScore  the maximum score
+     * @param id                the id
+     * @param title             the title
+     * @param levelType         the level type
+     * @param order             the order
+     * @param maxScore          the maximum score
      * @param estimatedDuration the estimated duration
      */
     public AbstractLevelVisualizationDTO(Long id, String title, LevelType levelType, int order, int maxScore, long estimatedDuration) {

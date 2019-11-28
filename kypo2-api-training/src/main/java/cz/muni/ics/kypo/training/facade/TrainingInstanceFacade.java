@@ -1,17 +1,16 @@
 package cz.muni.ics.kypo.training.facade;
 
+import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
 import cz.muni.ics.kypo.training.api.dto.run.TrainingRunDTO;
-import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceIsFinishedInfoDTO;
-import cz.muni.ics.kypo.training.exceptions.FacadeLayerException;
-import org.springframework.data.domain.Pageable;
-import com.querydsl.core.types.Predicate;
-import cz.muni.ics.kypo.training.api.responses.PageResultResource;
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceCreateDTO;
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceDTO;
+import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceIsFinishedInfoDTO;
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceUpdateDTO;
+import cz.muni.ics.kypo.training.api.responses.PageResultResource;
+import cz.muni.ics.kypo.training.exceptions.FacadeLayerException;
+import org.springframework.data.domain.Pageable;
 
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -44,7 +43,8 @@ public interface TrainingInstanceFacade {
      *
      * @param trainingInstance to be updated
      * @return new access token if it was changed
-     * @throws FacadeLayerException with ErrorCode: RESOURCE_NOT_FOUND given training instance is not found.                                              RESOURCE_CONFLICT cannot be updated for some reason.
+     * @throws FacadeLayerException with ErrorCode: RESOURCE_NOT_FOUND given training instance is not found.
+     *                              RESOURCE_CONFLICT cannot be updated for some reason.
      */
     String update(TrainingInstanceUpdateDTO trainingInstance);
 
@@ -60,7 +60,8 @@ public interface TrainingInstanceFacade {
      * Deletes specific training instance based on id
      *
      * @param id of training instance to be deleted
-     * @throws FacadeLayerException with ErrorCode: RESOURCE_NOT_FOUND given training instance is not found.                                               RESOURCE_CONFLICT cannot be deleted for some reason.
+     * @throws FacadeLayerException with ErrorCode: RESOURCE_NOT_FOUND given training instance is not found.
+     *                              RESOURCE_CONFLICT cannot be deleted for some reason.
      */
     void delete(Long id);
 
@@ -104,6 +105,9 @@ public interface TrainingInstanceFacade {
      * Retrieve all organizers for given training instance .
      *
      * @param trainingInstanceId id of the training instance for which to get the organizers
+     * @param pageable pageable parameter with information about pagination.
+     * @param givenName optional parameter used for filtration
+     * @param familyName optional parameter used for filtration
      * @return returns all organizers in given training instance.
      */
     PageResultResource<UserRefDTO> getOrganizersOfTrainingInstance(Long trainingInstanceId, Pageable pageable, String givenName, String familyName);
@@ -112,6 +116,9 @@ public interface TrainingInstanceFacade {
      * Retrieve all organizers not in the given training instance.
      *
      * @param trainingInstanceId id of the training instance which users should be excluded from the result list.
+     * @param pageable pageable parameter with information about pagination.
+     * @param givenName optional parameter used for filtration
+     * @param familyName optional parameter used for filtration
      * @return returns all organizers not in the given training instance.
      */
     PageResultResource<UserRefDTO> getOrganizersNotInGivenTrainingInstance(Long trainingInstanceId, Pageable pageable, String givenName, String familyName);

@@ -248,6 +248,6 @@ public class AuditEventsService {
         } else if (abstractLevel instanceof AssessmentLevel) {
             return LevelType.ASSESSMENT;
         }
-        return LevelType.PVP; //no one knows what PVP is
+        return LevelType.PVP;
     }
 }

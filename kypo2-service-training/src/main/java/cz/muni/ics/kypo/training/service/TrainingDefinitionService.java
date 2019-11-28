@@ -209,7 +209,7 @@ public interface TrainingDefinitionService {
      * Finds all Training Definitions accessible to users with the role of organizer.
      *
      * @param state represents a state of training definition if it is released or unreleased.
-     * @param pageable  pageable parameter with information about pagination.
+     * @param pageable pageable parameter with information about pagination.
      * @return all Training Definitions for organizers
      */
     Page<TrainingDefinition> findAllForOrganizers(String state, Pageable pageable);

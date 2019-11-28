@@ -6,6 +6,10 @@ import io.swagger.annotations.ApiModelProperty;
 
 import java.util.List;
 import java.util.Objects;
+
+/**
+ * Encapsulates base information needed for visualization.
+ */
 @ApiModel(value = "InfoLevelVisualizationDTO", description = "A model includes necessary information about training definition which is needed for visualizations.", parent = AbstractLevelImportDTO.class)
 public class VisualizationInfoDTO {
     @ApiModelProperty(value = "Main identifier of training definition.", example = "1")
@@ -17,6 +21,14 @@ public class VisualizationInfoDTO {
     @ApiModelProperty(value = "Information about all levels in training definition.")
     private List<AbstractLevelVisualizationDTO> levels;
 
+    /**
+     * Instantiates a new Visualization info dto.
+     *
+     * @param trainingDefinitionId                the training definition id
+     * @param trainingDefinitionTitle             the training definition title
+     * @param trainingDefinitionEstimatedDuration the training definition estimated duration
+     * @param levels                              the levels
+     */
     public VisualizationInfoDTO(Long trainingDefinitionId, String trainingDefinitionTitle, long trainingDefinitionEstimatedDuration, List<AbstractLevelVisualizationDTO> levels) {
         this.trainingDefinitionId = trainingDefinitionId;
         this.trainingDefinitionTitle = trainingDefinitionTitle;
@@ -68,6 +80,7 @@ public class VisualizationInfoDTO {
     public long getTrainingDefinitionEstimatedDuration() {
         return trainingDefinitionEstimatedDuration;
     }
+
     /**
      * Sets estimated duration of training definition.
      *
