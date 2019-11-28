@@ -26,7 +26,7 @@ public class TrainingDefinitionRepositoryImpl extends QuerydslRepositorySupport 
     private EntityManager entityManager;
 
     public TrainingDefinitionRepositoryImpl() {
-        super(TrainingDefinitionRepositoryImpl.class);
+        super(TrainingDefinition.class);
     }
 
     @Override
@@ -41,21 +41,22 @@ public class TrainingDefinitionRepositoryImpl extends QuerydslRepositorySupport 
         JPQLQuery<TrainingDefinition> query = new JPAQueryFactory(entityManager).selectFrom(trainingDefinition).distinct()
                 .leftJoin(trainingDefinition.authors, authors)
                 .leftJoin(trainingDefinition.betaTestingGroup, betaTestingGroup)
-                .leftJoin(trainingDefinition.betaTestingGroup.organizers, organizers);
+                .leftJoin(trainingDefinition.betaTestingGroup.organizers, organizers)
+                .where(authors.userRefId.eq(loggedInUserId).or(organizers.userRefId.eq(loggedInUserId)));
 
         if(predicate != null) {
-            query = query.where(authors.userRefId.eq(loggedInUserId).or(organizers.userRefId.eq(loggedInUserId)), predicate);
-        } else {
-            query = query.where(authors.userRefId.eq(loggedInUserId).or(organizers.userRefId.eq(loggedInUserId)));
+            query.where(predicate);
         }
-        if(pageable == null) {
+        return getPage(query, pageable);
+    }
+
+    private <T> Page getPage(JPQLQuery<T> query, Pageable pageable) {
+        if (pageable == null) {
             //default pagination
-            pageable = PageRequest.of(0,20);
+            pageable = PageRequest.of(0, 20);
         }
         query = getQuerydsl().applyPagination(pageable, query);
         long count = query.fetchCount();
-        //query = query.offset(pageable.getOffset()).limit((long)pageable.getPageSize());
         return new PageImpl<>(query.fetch(), pageable, count);
-
     }
 }
