@@ -1,7 +1,8 @@
 package cz.muni.ics.kypo.training.api.dto;
 
-import io.swagger.annotations.ApiModel;
-
+/**
+ * Encapsulates information used for auditing.
+ */
 public class AuditInfoDTO {
 
     private long userRefId;
@@ -14,77 +15,170 @@ public class AuditInfoDTO {
     private int totalScore;
     private int actualScoreInLevel;
 
+    /**
+     * Instantiates a new Audit info dto.
+     */
     public AuditInfoDTO() {
     }
 
+    /**
+     * Gets user ref id.
+     *
+     * @return the user ref id
+     */
     public long getUserRefId() {
         return userRefId;
     }
 
+    /**
+     * Sets user ref id.
+     *
+     * @param userRefId the user ref id
+     */
     public void setUserRefId(long userRefId) {
         this.userRefId = userRefId;
     }
 
+    /**
+     * Gets sandbox id.
+     *
+     * @return the sandbox id
+     */
     public long getSandboxId() {
         return sandboxId;
     }
 
+    /**
+     * Sets sandbox id.
+     *
+     * @param sandboxId the sandbox id
+     */
     public void setSandboxId(long sandboxId) {
         this.sandboxId = sandboxId;
     }
 
+    /**
+     * Gets training run id.
+     *
+     * @return the training run id
+     */
     public long getTrainingRunId() {
         return trainingRunId;
     }
 
+    /**
+     * Sets training run id.
+     *
+     * @param trainingRunId the training run id
+     */
     public void setTrainingRunId(long trainingRunId) {
         this.trainingRunId = trainingRunId;
     }
 
+    /**
+     * Gets training definition id.
+     *
+     * @return the training definition id
+     */
     public long getTrainingDefinitionId() {
         return trainingDefinitionId;
     }
 
+    /**
+     * Sets training definition id.
+     *
+     * @param trainingDefinitionId the training definition id
+     */
     public void setTrainingDefinitionId(long trainingDefinitionId) {
         this.trainingDefinitionId = trainingDefinitionId;
     }
 
+    /**
+     * Gets training instance id.
+     *
+     * @return the training instance id
+     */
     public long getTrainingInstanceId() {
         return trainingInstanceId;
     }
 
+    /**
+     * Sets training instance id.
+     *
+     * @param trainingInstanceId the training instance id
+     */
     public void setTrainingInstanceId(long trainingInstanceId) {
         this.trainingInstanceId = trainingInstanceId;
     }
 
+    /**
+     * Gets game time.
+     *
+     * @return the game time
+     */
     public long getGameTime() {
         return gameTime;
     }
 
+    /**
+     * Sets game time.
+     *
+     * @param gameTime the game time
+     */
     public void setGameTime(long gameTime) {
         this.gameTime = gameTime;
     }
 
+    /**
+     * Gets level.
+     *
+     * @return the level
+     */
     public long getLevel() {
         return level;
     }
 
+    /**
+     * Sets level.
+     *
+     * @param level the level
+     */
     public void setLevel(long level) {
         this.level = level;
     }
 
+    /**
+     * Gets total score.
+     *
+     * @return the total score
+     */
     public int getTotalScore() {
         return totalScore;
     }
 
+    /**
+     * Sets total score.
+     *
+     * @param totalScore the total score
+     */
     public void setTotalScore(int totalScore) {
         this.totalScore = totalScore;
     }
 
+    /**
+     * Gets actual score in level.
+     *
+     * @return the actual score in level
+     */
     public int getActualScoreInLevel() {
         return actualScoreInLevel;
     }
 
+    /**
+     * Sets actual score in level.
+     *
+     * @param actualScoreInLevel the actual score in level
+     */
     public void setActualScoreInLevel(int actualScoreInLevel) {
         this.actualScoreInLevel = actualScoreInLevel;
     }

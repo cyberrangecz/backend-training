@@ -32,7 +32,7 @@ public interface TrainingInstanceService {
      * Find all Training Instances.
      *
      * @param predicate represents a predicate (boolean-valued function) of one argument.
-     * @param pageable
+     * @param pageable pageable parameter with information about pagination.
      * @return all {@link TrainingInstance}s
      */
     Page<TrainingInstance> findAll(Predicate predicate, Pageable pageable);
@@ -50,7 +50,8 @@ public interface TrainingInstanceService {
      *
      * @param trainingInstance to be updated
      * @return new access token if it was changed
-     * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND given training instance is not found.                                               RESOURCE_CONFLICT cannot be updated for some reason.
+     * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND given training instance is not found.
+     *                               RESOURCE_CONFLICT cannot be updated for some reason.
      */
     String update(TrainingInstance trainingInstance);
 
@@ -58,7 +59,8 @@ public interface TrainingInstanceService {
      * deletes training instance
      *
      * @param trainingInstance the training instance to be deleted.
-     * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND given training instance is not found.                                               RESOURCE_CONFLICT cannot be deleted for some reason.
+     * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND given training instance is not found.
+     *                               RESOURCE_CONFLICT cannot be deleted for some reason.
      */
     void delete(TrainingInstance trainingInstance);
 
@@ -76,7 +78,7 @@ public interface TrainingInstanceService {
      * Delete sandbox from training instance
      * This method is annotated with @Transactional and is asynchronous
      *
-     * @param trainingInstanceId             id of Training Instnace from which to delete sandbox instance.
+     * @param trainingInstanceId             id of Training Instance from which to delete sandbox instance.
      * @param idOfSandboxInstanceRefToDelete id of sandbox to be removed from training instance and deleted from open stack
      */
     void deleteSandbox(Long trainingInstanceId, Long idOfSandboxInstanceRefToDelete);
@@ -124,5 +126,11 @@ public interface TrainingInstanceService {
      */
     boolean checkIfInstanceIsFinished(Long trainingInstanceId);
 
+    /**
+     * Find specific Training instance by its access token and with start time before current time and ending time after current time
+     *
+     * @param accessToken of Training instance
+     * @return Training instance
+     */
     TrainingInstance findByStartTimeAfterAndEndTimeBeforeAndAccessToken(String accessToken);
 }

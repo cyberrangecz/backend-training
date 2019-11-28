@@ -34,6 +34,8 @@ public class TrainingEventsRestController {
     /**
      * Get all events in particular Training Instance.
      *
+     * @param trainingDefinitionId id of definition associated with wanted instance
+     * @param trainingInstanceId id of wanted instance
      * @return all events in selected Training Instance.
      */
     @ApiOperation(httpMethod = "GET",
@@ -59,6 +61,9 @@ public class TrainingEventsRestController {
     /**
      * Get all events in particular Training Run.
      *
+     * @param trainingDefinitionId id of definition associated with wanted run
+     * @param trainingInstanceId id of instance associated with wanted run
+     * @param trainingRunId id of wanted run
      * @return all events in selected Training Run.
      */
     @ApiOperation(httpMethod = "GET",
@@ -85,6 +90,8 @@ public class TrainingEventsRestController {
     /**
      * Delete all events in particular Training Run.
      *
+     * @param trainingInstanceId id of instance associated with wanted run
+     * @param trainingRunId id of wanted run
      * @return Confirmation that the request process is ok.
      */
     @ApiOperation(httpMethod = "DELETE",

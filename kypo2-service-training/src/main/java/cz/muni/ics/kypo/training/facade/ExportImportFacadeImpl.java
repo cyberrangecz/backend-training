@@ -141,7 +141,7 @@ public class ExportImportFacadeImpl implements ExportImportFacade {
     @TransactionalWO
     public TrainingDefinitionByIdDTO dbImport(ImportTrainingDefinitionDTO importTrainingDefinitionDTO) {
         Objects.requireNonNull(importTrainingDefinitionDTO, "In dbImport() method the input parameter for ImportTrainingDefinitionDTO must not be empty.");
-        // by default set uploaded training definition to unrelease state
+        // by default set uploaded training definition to unreleased state
         importTrainingDefinitionDTO.setState(TDState.UNRELEASED);
         // uploaded training definitions have title started with 'Uploaded 'prefix
         if (importTrainingDefinitionDTO.getTitle() != null && !importTrainingDefinitionDTO.getTitle().startsWith("Uploaded")) {

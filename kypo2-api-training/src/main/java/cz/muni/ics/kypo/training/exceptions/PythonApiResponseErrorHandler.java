@@ -10,10 +10,18 @@ import java.util.Map;
 import static org.springframework.http.HttpStatus.Series.CLIENT_ERROR;
 import static org.springframework.http.HttpStatus.Series.SERVER_ERROR;
 
+/**
+ * Handler used for errors returned from Python api.
+ */
 public class PythonApiResponseErrorHandler implements ResponseErrorHandler {
 
     private ObjectMapper mapper;
 
+    /**
+     * Instantiates a new Python api response error handler.
+     *
+     * @param mapper the mapper
+     */
     public PythonApiResponseErrorHandler(ObjectMapper mapper) {
         this.mapper = mapper;
     }

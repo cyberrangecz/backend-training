@@ -160,12 +160,12 @@ public interface TrainingRunFacade {
      */
     void evaluateResponsesToAssessment(Long trainingRunId, String responsesAsString);
 
-            /**
-             * Retrieve info about the participant of the given training run.
-             *
-             * @param trainingRunId id of the training run whose participant you want to get.
-             * @return returns participant of the given training run.
-             */
+    /**
+    * Retrieve info about the participant of the given training run.
+    *
+    * @param trainingRunId id of the training run whose participant you want to get.
+    * @return returns participant of the given training run.
+    */
     UserRefDTO getParticipant(Long trainingRunId);
 
 }

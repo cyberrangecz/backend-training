@@ -7,6 +7,11 @@ import io.swagger.annotations.ApiModelProperty;
 
 import java.util.List;
 import java.util.Objects;
+
+/**
+ * Encapsulates information about game level. Inherits from {@link AbstractLevelVisualizationDTO}
+ * Used for visualization.
+ */
 @ApiModel(value = "GameLevelVisualizationDTO", description = "Information about game level needed for visualizations.", parent = AbstractLevelExportDTO.class)
 public class GameLevelVisualizationDTO extends AbstractLevelVisualizationDTO {
 
@@ -19,6 +24,9 @@ public class GameLevelVisualizationDTO extends AbstractLevelVisualizationDTO {
     @ApiModelProperty(value = "Information which helps player resolve the level.")
     private List<HintDTO> hints;
 
+    /**
+     * Instantiates a new Game level visualization dto.
+     */
     public GameLevelVisualizationDTO() {
     }
 
@@ -58,6 +66,7 @@ public class GameLevelVisualizationDTO extends AbstractLevelVisualizationDTO {
     public void setFlag(String flag) {
         this.flag = flag;
     }
+
     /**
      * Is solution penalized boolean.
      *

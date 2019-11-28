@@ -7,7 +7,6 @@ import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.persistence.model.UserRef;
 import org.springframework.data.domain.Pageable;
 
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -40,6 +39,9 @@ public interface UserService {
      * Gets users with given user ref ids.
      *
      * @param userRefIds the user ref ids
+     * @param pageable pageable parameter with information about pagination.
+     * @param givenName optional parameter used for filtration
+     * @param familyName optional parameter used for filtration
      * @return the users with given user ref ids
      */
     PageResultResource<UserRefDTO> getUsersRefDTOByGivenUserIds(Set<Long> userRefIds, Pageable pageable, String givenName, String familyName);
@@ -48,7 +50,9 @@ public interface UserService {
      * Finds all logins of users that have role of designer
      *
      * @param roleType the role type
-     * @param pageable the pageable
+     * @param pageable pageable parameter with information about pagination.
+     * @param givenName optional parameter used for filtration
+     * @param familyName optional parameter used for filtration
      * @return list of users with given role
      */
     PageResultResource<UserRefDTO> getUsersByGivenRole(RoleType roleType, Pageable pageable, String givenName, String familyName);
@@ -59,6 +63,8 @@ public interface UserService {
      * @param roleType the role type
      * @param userRefIds ids of the users who should be excluded from the result set.
      * @param pageable the pageable
+     * @param givenName optional parameter used for filtration
+     * @param familyName optional parameter used for filtration
      * @return list of users with given role
      */
     PageResultResource<UserRefDTO> getUsersByGivenRoleAndNotWithGivenIds(RoleType roleType, Set<Long> userRefIds, Pageable pageable, String givenName, String familyName);

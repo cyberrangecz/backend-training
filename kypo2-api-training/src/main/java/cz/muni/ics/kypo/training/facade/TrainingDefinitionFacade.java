@@ -229,6 +229,9 @@ public interface TrainingDefinitionFacade {
      * Retrieve all authors for given training definition.
      *
      * @param trainingDefinitionId id of the training definition for which to get the authors
+     * @param pageable pageable parameter with information about pagination.
+     * @param givenName optional parameter used for filtration
+     * @param familyName optional parameter used for filtration
      * @return returns all authors in given training definition.
      */
     PageResultResource<UserRefDTO> getAuthors(Long trainingDefinitionId, Pageable pageable, String givenName, String familyName);
@@ -237,6 +240,7 @@ public interface TrainingDefinitionFacade {
      * Retrieve all beta testers for given training definition.
      *
      * @param trainingDefinitionId id of the training definition for which to get the beta testers
+     * @param pageable pageable parameter with information about pagination.
      * @return returns all beta testers in given training definition.
      */
     PageResultResource<UserRefDTO> getBetaTesters(Long trainingDefinitionId, Pageable pageable);
@@ -245,6 +249,9 @@ public interface TrainingDefinitionFacade {
      * Retrieve all designers not in the given training definition.
      *
      * @param trainingDefinitionId id of the training definition which users should be excluded from the result list.
+     * @param pageable pageable parameter with information about pagination.
+     * @param givenName optional parameter used for filtration
+     * @param familyName optional parameter used for filtration
      * @return returns all designers not in the given training definition.
      */
     PageResultResource<UserRefDTO> getDesignersNotInGivenTrainingDefinition(Long trainingDefinitionId, Pageable pageable, String givenName, String familyName);
