@@ -91,9 +91,9 @@ public interface TrainingDefinitionRepository
     Page<TrainingDefinition> findAllForOrganizersUnreleased(@Param("userRefId") Long userRefId, Pageable pageable);
 
     @Query(value = "SELECT DISTINCT td FROM TrainingDefinition td LEFT JOIN td.betaTestingGroup bt LEFT JOIN bt.organizers org " +
-            "LEFT JOIN td.authors aut WHERE aut.userRefId = :userRefId OR org.userRefId = :userRefId AND td.state = 'UNRELEASED'",
+            "LEFT JOIN td.authors aut WHERE (aut.userRefId = :userRefId OR org.userRefId = :userRefId) AND td.state = 'UNRELEASED'",
             countQuery = "SELECT COUNT(DISTINCT td) FROM TrainingDefinition td LEFT JOIN td.betaTestingGroup bt LEFT JOIN bt.organizers org " +
-                    "LEFT JOIN td.authors aut WHERE aut.userRefId = :userRefId OR org.userRefId = :userRefId AND td.state = 'UNRELEASED'")
+                    "LEFT JOIN td.authors aut WHERE (aut.userRefId = :userRefId OR org.userRefId = :userRefId) AND td.state = 'UNRELEASED'")
     Page<TrainingDefinition> findAllForDesignersAndOrganizersUnreleased(@Param("userRefId") Long userRefId, Pageable pageable);
 
     /**
