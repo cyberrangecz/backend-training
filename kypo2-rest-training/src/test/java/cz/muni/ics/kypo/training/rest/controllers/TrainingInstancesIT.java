@@ -151,12 +151,8 @@ public class TrainingInstancesIT {
 
         sandboxInfo1 = new SandboxInfo();
         sandboxInfo1.setId(1L);
-        sandboxInfo1.setStatus(SandboxStates.FULL_BUILD_IN_PROGRESS.getName());
-        sandboxInfo1.setPool(3L);
         sandboxInfo2 = new SandboxInfo();
         sandboxInfo2.setId(2L);
-        sandboxInfo2.setStatus(SandboxStates.FULL_BUILD_IN_PROGRESS.getName());
-        sandboxInfo2.setPool(3L);
 
         sandboxPoolInfo = new SandboxPoolInfo();
         sandboxPoolInfo.setId(15L);

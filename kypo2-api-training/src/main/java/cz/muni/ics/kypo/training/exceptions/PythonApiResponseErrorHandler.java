@@ -5,6 +5,7 @@ import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.web.client.ResponseErrorHandler;
 
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.Map;
 
 import static org.springframework.http.HttpStatus.Series.CLIENT_ERROR;
@@ -35,6 +36,9 @@ public class PythonApiResponseErrorHandler implements ResponseErrorHandler {
 
     @Override
     public void handleError(ClientHttpResponse response) throws IOException {
+        if(!new InputStreamReader(response.getBody()).ready()) {
+            throw new RestTemplateException("Error from Python API. No specific message provided.", response.getStatusCode().toString());
+        }
         Map<String, Object> json = mapper.readValue(response.getBody(), Map.class);
         throw new RestTemplateException((String) json.get("detail"), response.getStatusCode().toString());
     }

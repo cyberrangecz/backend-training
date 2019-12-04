@@ -242,13 +242,13 @@ public class TrainingRunServiceImpl implements TrainingRunService {
     @Override
     @IsTraineeOrAdmin
     @TransactionalWO
-    public TrainingRun assignSandbox(TrainingRun trainingRun){
+    public TrainingRun assignSandbox(TrainingRun trainingRun) {
         Long sandboxInstanceRef = getReadySandboxInstanceRef(trainingRun.getTrainingInstance().getPoolId());
         try {
             trainingRun.setSandboxInstanceRefId(sandboxInstanceRef);
             auditEventsService.auditTrainingRunStartedAction(trainingRun);
             auditEventsService.auditLevelStartedAction(trainingRun);
-        }catch(ServiceLayerException ex){
+        } catch (ServiceLayerException ex) {
             trainingRunRepository.delete(trainingRun);
             throw ex;
         }
@@ -295,44 +295,20 @@ public class TrainingRunServiceImpl implements TrainingRunService {
     }
 
     private Long getReadySandboxInstanceRef(Long poolId) {
-        List<Long> readySandboxesIds = new ArrayList<>();
-        while(true) {
-            HttpHeaders httpHeaders = new HttpHeaders();
-            httpHeaders.set("Accept", MediaType.APPLICATION_JSON_VALUE);
-            String url = kypoOpenStackURI + "/pools/" + poolId + "/sandboxes/";
-            UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(url);
-            builder.queryParam("page", 1);
-            builder.queryParam("page_size", PYTHON_RESULT_PAGE_SIZE);
-            ResponseEntity<PageResultResourcePython<SandboxInfo>> response = pythonRestTemplate.exchange(builder.toUriString(), HttpMethod.GET, new HttpEntity<>(httpHeaders),
-                    new ParameterizedTypeReference<PageResultResourcePython<SandboxInfo>>() {
-                    });
-            PageResultResourcePython<SandboxInfo> sandboxInfoPageResult = Objects.requireNonNull(response.getBody());
-            List<SandboxInfo> sandboxInfoList = Objects.requireNonNull(sandboxInfoPageResult.getResults());
-
-            readySandboxesIds.clear();
-            sandboxInfoList.forEach(sandboxInfo -> {
-                if (sandboxInfo.getStatus().contains(SandboxStates.FULL_BUILD_COMPLETE.getName()) && !sandboxInfo.isLocked()) {
-                    readySandboxesIds.add(sandboxInfo.getId());
-                }
-            });
-            if (readySandboxesIds.isEmpty()) {
+        HttpHeaders httpHeaders = new HttpHeaders();
+        String url = kypoOpenStackURI + "/pools/" + poolId + "/sandboxes/unlocked/";
+        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(url);
+        try {
+            ResponseEntity<SandboxInfo> response = pythonRestTemplate.exchange(builder.toUriString(), HttpMethod.GET, new HttpEntity<>(httpHeaders), SandboxInfo.class);
+            SandboxInfo sandboxInfoResult = Objects.requireNonNull(response.getBody(), "There is no available sandbox, wait a minute and try again or ask organizer to allocate more sandboxes.");
+            return sandboxInfoResult.getId();
+        } catch (NullPointerException ex) {
+            throw new ServiceLayerException(ex.getMessage(), ErrorCode.NO_AVAILABLE_SANDBOX);
+        } catch (RestTemplateException ex) {
+            if (ex.getStatusCode().equals(HttpStatus.CONFLICT.toString())) {
                 throw new ServiceLayerException("There is no available sandbox, wait a minute and try again or ask organizer to allocate more sandboxes.", ErrorCode.NO_AVAILABLE_SANDBOX);
-            } else {
-                Long readySandboxId = readySandboxesIds.get(0);
-                //TODO why they need empty body ??
-                String requestJson = "{}";
-                try{
-                    httpHeaders = new HttpHeaders();
-                    httpHeaders.setContentType(MediaType.APPLICATION_JSON);
-                    pythonRestTemplate.exchange(kypoOpenStackURI + "/sandboxes/" + readySandboxId + "/lock/",
-                            HttpMethod.POST, new HttpEntity<>(requestJson, httpHeaders), String.class);
-                } catch (RestTemplateException ex){
-                    LOG.error("Error when calling Python API to obtain lock status of sandbox (ID: {}): {}.", readySandboxId, ex.getStatusCode() + ex.getMessage());
-                    //TODO do not continue when get error, you are trying to lock sandbox when you expect it is not locked.
-                    continue;
-                }
-                return readySandboxId;
             }
+            throw new ServiceLayerException("Error when calling Python API to get unlocked sandbox from pool (ID: " + poolId + "): " + ex.getStatusCode() + " - " + ex.getMessage(), ErrorCode.PYTHON_API_ERROR);
         }
     }
 

@@ -185,7 +185,6 @@ public class TrainingRunServiceTest {
 
         sandboxInfo = new SandboxInfo();
         sandboxInfo.setId(7L);
-        sandboxInfo.setStatus(SandboxStates.FULL_BUILD_COMPLETE.getName());
 
         trainingRun1 = new TrainingRun();
         trainingRun1.setId(1L);

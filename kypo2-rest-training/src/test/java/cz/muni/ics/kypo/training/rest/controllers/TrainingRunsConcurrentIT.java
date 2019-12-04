@@ -89,6 +89,7 @@ public class TrainingRunsConcurrentIT {
     private Hint hint;
     private PageResultResourcePython<SandboxInfo> sandboxInfoPageResult;
     private UserRef participant;
+    private SandboxInfo sandboxInfo1;
 
     @Value("${user-and-group-server.uri}")
     private String userAndGroupURI;
@@ -102,25 +103,17 @@ public class TrainingRunsConcurrentIT {
         testContextManager = new TestContextManager(getClass());
         testContextManager.prepareTestInstance(this);
         this.mvc = MockMvcBuilders.standaloneSetup(trainingRunsRestController, trainingInstancesRestController).build();
-        SandboxInfo sandboxInfo1 = new SandboxInfo();
+        sandboxInfo1 = new SandboxInfo();
         sandboxInfo1.setId(1L);
-        sandboxInfo1.setStatus(SandboxStates.FULL_BUILD_COMPLETE.getName());
-        sandboxInfo1.setPool(1L);
         sandboxInfo1.setLocked(false);
         SandboxInfo sandboxInfo2 = new SandboxInfo();
         sandboxInfo2.setId(2L);
-        sandboxInfo2.setStatus(SandboxStates.FULL_BUILD_COMPLETE.getName());
-        sandboxInfo2.setPool(1L);
         sandboxInfo2.setLocked(false);
         SandboxInfo sandboxInfo3 = new SandboxInfo();
         sandboxInfo3.setId(3L);
-        sandboxInfo3.setStatus(SandboxStates.FULL_BUILD_COMPLETE.getName());
-        sandboxInfo3.setPool(1L);
         sandboxInfo3.setLocked(false);
         SandboxInfo sandboxInfo4 = new SandboxInfo();
         sandboxInfo4.setId(4L);
-        sandboxInfo4.setStatus(SandboxStates.FULL_BUILD_COMPLETE.getName());
-        sandboxInfo4.setPool(1L);
         sandboxInfo4.setLocked(false);
 
         participant = new UserRef();
@@ -182,14 +175,12 @@ public class TrainingRunsConcurrentIT {
     @Test
     @ThreadCount(4)
     public void concurrentAccessTrainingRun() throws Exception{
-        String url = "http://localhost:8080" + "/pools/" + trainingInstance.getPoolId() + "/sandboxes/";
+        String url = "http://localhost:8080" + "/pools/" + trainingInstance.getPoolId() + "/sandboxes/unlocked/";
         UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(url);
-        builder.queryParam("page", 1);
-        builder.queryParam("page_size", 1000);
 
         given(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), eq(UserRefDTO.class))).willReturn(new ResponseEntity<UserRefDTO>(userRefDTO1, HttpStatus.OK));
         given(restTemplate.exchange(eq(userAndGroupURI + "/users/info"), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).willReturn(new ResponseEntity<UserRefDTO>(userRefDTO1, HttpStatus.OK));
-        given(restTemplate.exchange(eq(builder.toUriString()), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).willReturn(new ResponseEntity<PageResultResourcePython<SandboxInfo>>(sandboxInfoPageResult, HttpStatus.OK));
+        given(restTemplate.exchange(eq(builder.toUriString()), eq(HttpMethod.GET), any(HttpEntity.class), eq(SandboxInfo.class))).willReturn(new ResponseEntity<SandboxInfo>(sandboxInfo1, HttpStatus.OK));
         mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_TRAINEE.name()));
 
         mvc.perform(post("/training-runs")

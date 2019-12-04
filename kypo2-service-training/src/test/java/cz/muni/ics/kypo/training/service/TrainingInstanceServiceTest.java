@@ -152,13 +152,9 @@ public class TrainingInstanceServiceTest {
 
         sandboxInfo1 = new SandboxInfo();
         sandboxInfo1.setId(2L);
-        sandboxInfo1.setStatus("CREATE_COMPLETE");
-        sandboxInfo1.setPool(5L);
 
         sandboxInfo2 = new SandboxInfo();
         sandboxInfo2.setId(3L);
-        sandboxInfo2.setStatus("CREATE_COMPLETE");
-        sandboxInfo2.setPool(5L);
     }
 
     @Test
