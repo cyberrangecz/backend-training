@@ -3,6 +3,7 @@ package cz.muni.ics.kypo.training.facade;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.PathBuilder;
 import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
+import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceFindAllResponseDTO;
 import cz.muni.ics.kypo.training.api.responses.PageResultResource;
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceCreateDTO;
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceDTO;
@@ -154,13 +155,12 @@ public class TrainingInstanceFacadeTest {
 
         given(trainingInstanceService.findAll(any(Predicate.class), any(Pageable.class))).willReturn(p);
 
-        PageResultResource<TrainingInstanceDTO> trainingInstanceDTO = trainingInstanceFacade.findAll(predicate, PageRequest.of(0, 2));
-        deepEquals(trainingInstance1, trainingInstanceDTO.getContent().get(0));
-        deepEquals(trainingInstance2, trainingInstanceDTO.getContent().get(1));
+        PageResultResource<TrainingInstanceFindAllResponseDTO> trainingInstanceDTO = trainingInstanceFacade.findAll(predicate, PageRequest.of(0, 2));
+        deepEqualsTrainingInstanceFindAllView(trainingInstance1, trainingInstanceDTO.getContent().get(0));
+        deepEqualsTrainingInstanceFindAllView(trainingInstance2, trainingInstanceDTO.getContent().get(1));
 
         then(trainingInstanceService).should().findAll(predicate, PageRequest.of(0, 2));
     }
-
 
     @Test
     public void createTrainingInstance() {
@@ -417,6 +417,12 @@ public class TrainingInstanceFacadeTest {
         assertEquals(expected.getId(), actual.getId());
         assertEquals(expected.getTitle(), actual.getTitle());
     }
+
+    private void deepEqualsTrainingInstanceFindAllView(TrainingInstance expected, TrainingInstanceFindAllResponseDTO actual) {
+        assertEquals(expected.getId(), actual.getId());
+        assertEquals(expected.getTitle(), actual.getTitle());
+    }
+
 
     private UserRefDTO createUserRefDTO(Long userRefId, String fullName, String familyName, String givenName, String login, String iss, byte[] picture) {
         UserRefDTO userRefDTO = new UserRefDTO();

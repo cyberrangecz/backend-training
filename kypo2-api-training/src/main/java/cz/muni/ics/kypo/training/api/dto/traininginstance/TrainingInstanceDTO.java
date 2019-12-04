@@ -17,7 +17,7 @@ import java.util.Set;
 /**
  * Encapsulates information about Training Instance
  *
- * @author Pavel Seda (441048)
+ * @author Pavel Seda
  */
 @ApiModel(value = "TrainingInstanceDTO", description = "A session of attending a concrete training, which involves a deployment of the training definition in one or more sandbox instances that are then assigned to participants. The instance comprises one or more game runs.")
 public class TrainingInstanceDTO {

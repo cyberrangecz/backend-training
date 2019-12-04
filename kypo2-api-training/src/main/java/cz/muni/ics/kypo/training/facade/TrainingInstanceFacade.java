@@ -3,10 +3,7 @@ package cz.muni.ics.kypo.training.facade;
 import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
 import cz.muni.ics.kypo.training.api.dto.run.TrainingRunDTO;
-import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceCreateDTO;
-import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceDTO;
-import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceIsFinishedInfoDTO;
-import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceUpdateDTO;
+import cz.muni.ics.kypo.training.api.dto.traininginstance.*;
 import cz.muni.ics.kypo.training.api.responses.PageResultResource;
 import cz.muni.ics.kypo.training.exceptions.FacadeLayerException;
 import org.springframework.data.domain.Pageable;
@@ -34,9 +31,9 @@ public interface TrainingInstanceFacade {
      *
      * @param predicate represents a predicate (boolean-valued function) of one argument.
      * @param pageable  pageable parameter with information about pagination.
-     * @return page of all {@link TrainingInstanceDTO}
+     * @return page of all {@link TrainingInstanceFindAllResponseDTO}
      */
-    PageResultResource<TrainingInstanceDTO> findAll(Predicate predicate, Pageable pageable);
+    PageResultResource<TrainingInstanceFindAllResponseDTO> findAll(Predicate predicate, Pageable pageable);
 
     /**
      * Updates training instance

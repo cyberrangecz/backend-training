@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
+import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceFindAllResponseDTO;
 import cz.muni.ics.kypo.training.api.responses.PageResultResource;
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceCreateDTO;
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceDTO;
@@ -91,7 +92,7 @@ public class TrainingInstancesRestControllerTest {
 
     private Page p;
 
-    private PageResultResource<TrainingInstanceDTO> trainingInstanceDTOPageResultResource;
+    private PageResultResource<TrainingInstanceFindAllResponseDTO> trainingInstanceDTOPageResultResource;
 
     @Before
     public void init() {

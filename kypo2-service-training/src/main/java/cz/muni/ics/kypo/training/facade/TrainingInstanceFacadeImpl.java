@@ -4,12 +4,9 @@ import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalRO;
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalWO;
 import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
+import cz.muni.ics.kypo.training.api.dto.traininginstance.*;
 import cz.muni.ics.kypo.training.api.responses.PageResultResource;
 import cz.muni.ics.kypo.training.api.dto.run.TrainingRunDTO;
-import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceCreateDTO;
-import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceDTO;
-import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceIsFinishedInfoDTO;
-import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceUpdateDTO;
 import cz.muni.ics.kypo.training.api.enums.RoleType;
 import cz.muni.ics.kypo.training.exceptions.FacadeLayerException;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
@@ -69,19 +66,15 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
             if (trainingInstanceDTO.getPoolId() != null)
                 trainingInstanceDTO.setSandboxesWithTrainingRun(trainingInstanceService.findIdsOfAllOccupiedSandboxesByTrainingInstance(trainingInstanceDTO.getId()));
             return trainingInstanceDTO;
-        } catch (ServiceLayerException ex) {
+        } catch (ServiceLayerException | NullPointerException ex) {
             throw new FacadeLayerException(ex);
         }
     }
 
     @Override
     @TransactionalRO
-    public PageResultResource<TrainingInstanceDTO> findAll(Predicate predicate, Pageable pageable) {
-        PageResultResource<TrainingInstanceDTO> trainingInstancePageResultResource = trainingInstanceMapper.mapToPageResultResource(trainingInstanceService.findAll(predicate, pageable));
-        trainingInstancePageResultResource.getContent().forEach(trainingInstanceDTO -> {
-            trainingInstanceDTO.setSandboxesWithTrainingRun(trainingInstanceService.findIdsOfAllOccupiedSandboxesByTrainingInstance(trainingInstanceDTO.getId()));
-        });
-        return trainingInstancePageResultResource;
+    public PageResultResource<TrainingInstanceFindAllResponseDTO> findAll(Predicate predicate, Pageable pageable) {
+        return trainingInstanceMapper.mapToPageResultResourceBasicView(trainingInstanceService.findAll(predicate, pageable));
     }
 
     @Override
@@ -92,7 +85,7 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
             TrainingInstance trainingInstance = trainingInstanceMapper.mapUpdateToEntity(trainingInstanceUpdateDTO);
             trainingInstance.setTrainingDefinition(trainingDefinitionService.findById(trainingInstanceUpdateDTO.getTrainingDefinitionId()));
             return trainingInstanceService.update(trainingInstance);
-        } catch (ServiceLayerException ex) {
+        } catch (ServiceLayerException | NullPointerException ex) {
             throw new FacadeLayerException(ex);
         }
     }
@@ -106,21 +99,21 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
             trainingInstance.setTrainingDefinition(trainingDefinitionService.findById(trainingInstanceCreateDTO.getTrainingDefinitionId()));
             trainingInstance.setId(null);
             return trainingInstanceMapper.mapToDTO(trainingInstanceService.create(trainingInstance));
-        } catch (ServiceLayerException ex) {
+        } catch (ServiceLayerException | NullPointerException ex) {
             throw new FacadeLayerException(ex);
         }
     }
 
     private void addOrganizersToTrainingInstance(TrainingInstance trainingInstance, Set<Long> userRefIdsOfOrganizers) {
-        if(userRefIdsOfOrganizers.isEmpty()) return;
+        if (userRefIdsOfOrganizers.isEmpty()) return;
         PageResultResource<UserRefDTO> organizers;
         int page = 0;
         do {
-            organizers = userService.getUsersRefDTOByGivenUserIds(userRefIdsOfOrganizers, PageRequest.of(page,999), null, null);
+            organizers = userService.getUsersRefDTOByGivenUserIds(userRefIdsOfOrganizers, PageRequest.of(page, 999), null, null);
             Set<Long> actualOrganizersIds = trainingInstance.getOrganizers().stream().map(UserRef::getUserRefId).collect(Collectors.toSet());
             page++;
             for (UserRefDTO organizer : organizers.getContent()) {
-                if(actualOrganizersIds.contains(organizer.getUserRefId())) {
+                if (actualOrganizersIds.contains(organizer.getUserRefId())) {
                     continue;
                 }
                 try {
@@ -145,7 +138,7 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
             Objects.requireNonNull(id);
             TrainingInstance trainingInstance = trainingInstanceService.findById(id);
             trainingInstanceService.delete(trainingInstance);
-        } catch (ServiceLayerException ex) {
+        } catch (ServiceLayerException | NullPointerException ex) {
             throw new FacadeLayerException(ex);
         }
     }
@@ -153,7 +146,7 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
     @Override
     @TransactionalWO
     public void allocateSandboxes(Long instanceId, Integer count) {
-        try{
+        try {
             TrainingInstance trainingInstance = trainingInstanceService.findById(instanceId);
             trainingInstanceService.allocateSandboxes(trainingInstance, count);
         } catch (ServiceLayerException ex) {
@@ -189,17 +182,17 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
 
     private void addParticipantsToTrainingRunDTOs(List<TrainingRunDTO> trainingRunDTOS) {
         trainingRunDTOS.forEach(trainingRunDTO ->
-            trainingRunDTO.setParticipantRef(userService.getUserRefDTOByUserRefId(trainingRunDTO.getParticipantRef().getUserRefId())));
+                trainingRunDTO.setParticipantRef(userService.getUserRefDTOByUserRefId(trainingRunDTO.getParticipantRef().getUserRefId())));
     }
 
     @Override
     @TransactionalRO
     public TrainingInstanceIsFinishedInfoDTO checkIfInstanceCanBeDeleted(Long trainingInstanceId) {
         TrainingInstanceIsFinishedInfoDTO infoDTO = new TrainingInstanceIsFinishedInfoDTO();
-        if (trainingInstanceService.checkIfInstanceIsFinished(trainingInstanceId)){
+        if (trainingInstanceService.checkIfInstanceIsFinished(trainingInstanceId)) {
             infoDTO.setHasFinished(true);
             infoDTO.setMessage("Training instance has already finished and can be safely deleted.");
-        }else{
+        } else {
             infoDTO.setHasFinished(false);
             infoDTO.setMessage("WARNING: Training instance is still running! Are you sure you want to delete it?");
         }
@@ -235,11 +228,11 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
         try {
             TrainingInstance trainingInstance = trainingInstanceService.findById(trainingInstanceId);
             Long loggedInUserRefId = securityService.getUserRefIdFromUserAndGroup();
-            if(organizersRemoval != null && !organizersRemoval.isEmpty()) {
+            if (organizersRemoval != null && !organizersRemoval.isEmpty()) {
                 organizersRemoval.remove(loggedInUserRefId);
                 trainingInstance.removeOrganizersByUserRefIds(organizersRemoval);
             }
-            if(organizersAddition != null && !organizersAddition.isEmpty()) {
+            if (organizersAddition != null && !organizersAddition.isEmpty()) {
                 addOrganizersToTrainingInstance(trainingInstance, organizersAddition);
             }
         } catch (ServiceLayerException ex) {
