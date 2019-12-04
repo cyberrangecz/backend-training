@@ -421,10 +421,10 @@ public class TrainingInstancesRestController {
 
     @ApiModel(value = "TrainingInstanceRestResource",
             description = "Content (Retrieved data) and meta information about REST API result page. Including page number, number of elements in page, size of elements, total number of elements and total number of pages")
-    private static class TrainingInstanceRestResource extends PageResultResource<TrainingInstanceDTO> {
+    private static class TrainingInstanceRestResource extends PageResultResource<TrainingInstanceFindAllResponseDTO> {
         @JsonProperty(required = true)
         @ApiModelProperty(value = "Retrieved Training Instances from databases.")
-        private List<TrainingInstanceDTO> content;
+        private List<TrainingInstanceFindAllResponseDTO> content;
         @JsonProperty(required = true)
         @ApiModelProperty(value = "Pagination including: page number, number of elements in page, size, total elements and total pages.")
         private Pagination pagination;
