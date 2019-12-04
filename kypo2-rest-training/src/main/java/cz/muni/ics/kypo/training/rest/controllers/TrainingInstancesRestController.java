@@ -7,6 +7,7 @@ import com.github.bohnman.squiggly.util.SquigglyUtils;
 import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
 import cz.muni.ics.kypo.commons.security.mapping.UserInfoDTO;
+import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceFindAllResponseDTO;
 import cz.muni.ics.kypo.training.api.responses.PageResultResource;
 import cz.muni.ics.kypo.training.api.dto.run.TrainingRunDTO;
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceCreateDTO;
@@ -95,9 +96,6 @@ public class TrainingInstancesRestController {
         }
     }
 
-
-
-
     /**
      * Get all Training Instances.
      *
@@ -116,7 +114,6 @@ public class TrainingInstancesRestController {
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "All training instances found.", response = TrainingInstanceRestResource.class),
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiErrorTraining.class)
-
     })
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> findAllTrainingInstances(@QuerydslPredicate(root = TrainingInstance.class) Predicate predicate,
@@ -126,7 +123,7 @@ public class TrainingInstancesRestController {
                                                            @RequestParam MultiValueMap<String, String> parameters,
                                                            @ApiParam(value = "Fields which should be returned in REST API response", required = false)
                                                            @RequestParam(value = "fields", required = false) String fields) {
-        PageResultResource<TrainingInstanceDTO> trainingInstanceResource = trainingInstanceFacade.findAll(predicate, pageable);
+        PageResultResource<TrainingInstanceFindAllResponseDTO> trainingInstanceResource = trainingInstanceFacade.findAll(predicate, pageable);
         Squiggly.init(objectMapper, fields);
         return ResponseEntity.ok(SquigglyUtils.stringify(objectMapper, trainingInstanceResource));
     }

@@ -1,9 +1,11 @@
 package cz.muni.ics.kypo.training.mapping.mapstruct;
 
+import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceFindAllResponseDTO;
 import cz.muni.ics.kypo.training.api.responses.PageResultResource;
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceCreateDTO;
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceDTO;
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceUpdateDTO;
+import cz.muni.ics.kypo.training.persistence.model.TrainingDefinition;
 import cz.muni.ics.kypo.training.persistence.model.TrainingInstance;
 import org.mapstruct.Mapper;
 import org.mapstruct.ReportingPolicy;
@@ -27,6 +29,8 @@ public interface TrainingInstanceMapper extends ParentMapper{
     TrainingInstance mapCreateToEntity(TrainingInstanceCreateDTO dto);
 
     TrainingInstanceDTO mapToDTO(TrainingInstance entity);
+
+    TrainingInstanceFindAllResponseDTO mapToFindAllViewDTO(TrainingInstance entity);
 
     List<TrainingInstance> mapToList(Collection<TrainingInstanceDTO> dtos);
 
@@ -59,4 +63,11 @@ public interface TrainingInstanceMapper extends ParentMapper{
         objects.forEach(object -> mapped.add(mapToDTO(object)));
         return new PageResultResource<>(mapped, createPagination(objects));
     }
+
+    default PageResultResource<TrainingInstanceFindAllResponseDTO> mapToPageResultResourceBasicView(Page<TrainingInstance> objects){
+        List<TrainingInstanceFindAllResponseDTO> mapped = new ArrayList<>();
+        objects.forEach(object -> mapped.add(mapToFindAllViewDTO(object)));
+        return new PageResultResource<>(mapped, createPagination(objects));
+    }
+
 }

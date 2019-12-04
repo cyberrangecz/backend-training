@@ -160,7 +160,7 @@ public class TrainingInstancesIT {
         sandboxPoolInfo.setSize(0L);
 
         BetaTestingGroup betaTestingGroup = new BetaTestingGroup();
-        betaTestingGroup.setOrganizers(new HashSet<>(Arrays.asList(organizer1)));
+        betaTestingGroup.setOrganizers(new HashSet<>(List.of(organizer1)));
 
         trainingDefinition = new TrainingDefinition();
         trainingDefinition.setTitle("definition");
@@ -169,7 +169,7 @@ public class TrainingInstancesIT {
         trainingDefinition.setBetaTestingGroup(betaTestingGroup);
         trainingDefinition.setSandboxDefinitionRefId(1L);
         trainingDefinition.setLastEdited(LocalDateTime.now());
-        trainingDefinition.setAuthors(new HashSet<>(Arrays.asList(organizer1)));
+        trainingDefinition.setAuthors(new HashSet<>(List.of(organizer1)));
         TrainingDefinition tD = trainingDefinitionRepository.save(trainingDefinition);
 
         futureTrainingInstance = new TrainingInstance();
@@ -179,7 +179,7 @@ public class TrainingInstancesIT {
         futureTrainingInstance.setPoolSize(20);
         futureTrainingInstance.setAccessToken("pass-1234");
         futureTrainingInstance.setTrainingDefinition(tD);
-        futureTrainingInstance.setOrganizers(new HashSet<>(Arrays.asList(organizer1)));
+        futureTrainingInstance.setOrganizers(new HashSet<>(List.of(organizer1)));
 
         finishedTrainingInstance = new TrainingInstance();
         finishedTrainingInstance.setStartTime(LocalDateTime.now().minusHours(24));
@@ -189,7 +189,7 @@ public class TrainingInstancesIT {
         finishedTrainingInstance.setAccessToken("token-1254");
         finishedTrainingInstance.setPoolSize(5);
         finishedTrainingInstance.setPoolId(8L);
-        finishedTrainingInstance.setOrganizers(new HashSet<>(Arrays.asList(organizer1)));
+        finishedTrainingInstance.setOrganizers(new HashSet<>(List.of(organizer1)));
 
         notConcludedTrainingInstance = new TrainingInstance();
         notConcludedTrainingInstance.setStartTime(LocalDateTime.now().minusHours(24));
@@ -198,7 +198,7 @@ public class TrainingInstancesIT {
         notConcludedTrainingInstance.setPoolSize(25);
         notConcludedTrainingInstance.setAccessToken("key-9999");
         notConcludedTrainingInstance.setTrainingDefinition(tD);
-        notConcludedTrainingInstance.setOrganizers(new HashSet<>(Arrays.asList(organizer1)));
+        notConcludedTrainingInstance.setOrganizers(new HashSet<>(List.of(organizer1)));
 
         trainingInstanceCreateDTO = new TrainingInstanceCreateDTO();
         trainingInstanceCreateDTO.setStartTime(LocalDateTime.now(ZoneOffset.UTC).plusHours(24));
