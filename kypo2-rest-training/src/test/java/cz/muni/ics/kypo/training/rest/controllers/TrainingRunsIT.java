@@ -15,6 +15,7 @@ import cz.muni.ics.kypo.training.api.dto.run.TrainingRunByIdDTO;
 import cz.muni.ics.kypo.training.api.dto.run.TrainingRunDTO;
 import cz.muni.ics.kypo.training.api.enums.RoleType;
 import cz.muni.ics.kypo.training.enums.SandboxStates;
+import cz.muni.ics.kypo.training.exceptions.RestTemplateException;
 import cz.muni.ics.kypo.training.mapping.mapstruct.GameLevelMapperImpl;
 import cz.muni.ics.kypo.training.mapping.mapstruct.HintMapperImpl;
 import cz.muni.ics.kypo.training.mapping.mapstruct.InfoLevelMapperImpl;
@@ -26,10 +27,7 @@ import cz.muni.ics.kypo.training.persistence.model.enums.TRState;
 import cz.muni.ics.kypo.training.persistence.repository.*;
 import cz.muni.ics.kypo.training.rest.controllers.config.DBTestUtil;
 import cz.muni.ics.kypo.training.rest.controllers.config.RestConfigTest;
-import cz.muni.ics.kypo.training.rest.exceptions.BadRequestException;
-import cz.muni.ics.kypo.training.rest.exceptions.ConflictException;
-import cz.muni.ics.kypo.training.rest.exceptions.ResourceNotFoundException;
-import cz.muni.ics.kypo.training.rest.exceptions.ServiceUnavailableException;
+import cz.muni.ics.kypo.training.rest.exceptions.*;
 import cz.muni.ics.kypo.training.api.responses.SandboxInfo;
 import cz.muni.ics.kypo.training.api.responses.PageResultResourcePython;
 import org.json.JSONArray;
@@ -77,6 +75,7 @@ import java.util.*;
 import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.willThrow;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -163,16 +162,10 @@ public class TrainingRunsIT {
 
         sandboxInfo1 = new SandboxInfo();
         sandboxInfo1.setId(1L);
-        sandboxInfo1.setStatus(SandboxStates.FULL_BUILD_COMPLETE.getName());
-        sandboxInfo1.setPool(3L);
         sandboxInfo2 = new SandboxInfo();
         sandboxInfo2.setId(2L);
-        sandboxInfo2.setStatus(SandboxStates.FULL_BUILD_COMPLETE.getName());
-        sandboxInfo2.setPool(3L);
         sandboxInfo3 = new SandboxInfo();
         sandboxInfo3.setId(3L);
-        sandboxInfo3.setStatus(SandboxStates.FULL_BUILD_COMPLETE.getName());
-        sandboxInfo3.setPool(3L);
 
         userRefDTO1 = new UserRefDTO();
         userRefDTO1.setUserRefFullName("Ing. Mgr. MuDr. Boris Jadus");
@@ -312,7 +305,6 @@ public class TrainingRunsIT {
 
         sandboxInfo = new SandboxInfo();
         sandboxInfo.setId(1L);
-        sandboxInfo.setStatus(SandboxStates.FULL_BUILD_COMPLETE.getName());
 
         sandboxInfoPageResult = new PageResultResourcePython();
         sandboxInfoPageResult.setResults(Arrays.asList(sandboxInfo));
@@ -378,17 +370,13 @@ public class TrainingRunsIT {
 
     @Test
     public void accessTrainingRun() throws Exception {
-        String url = "http://localhost:8080" + "/pools/" + trainingInstance.getPoolId() + "/sandboxes/";
+        String url = "http://localhost:8080" + "/pools/" + trainingInstance.getPoolId() + "/sandboxes/unlocked/";
         UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(url);
-        builder.queryParam("page", 1);
-        builder.queryParam("page_size", 1000);
-        sandboxInfo1.setStatus(SandboxStates.FULL_BUILD_COMPLETE.getName());
-        sandboxInfo2.setStatus(SandboxStates.FULL_BUILD_COMPLETE.getName());
 
         given(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), eq(UserRefDTO.class))).
                 willReturn(new ResponseEntity<UserRefDTO>(userRefDTO1, HttpStatus.OK));
-        given(restTemplate.exchange(eq(builder.toUriString()), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
-                willReturn(new ResponseEntity<PageResultResourcePython<SandboxInfo>>(sandboxInfoPageResult, HttpStatus.OK));
+        given(restTemplate.exchange(eq(builder.toUriString()), eq(HttpMethod.GET), any(HttpEntity.class), eq(SandboxInfo.class))).
+                willReturn(new ResponseEntity<SandboxInfo>(sandboxInfo1, HttpStatus.OK));
         mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_TRAINEE.name()));
         MockHttpServletResponse result = mvc.perform(post("/training-runs")
                 .param("accessToken", "pass-1234"))
@@ -404,7 +392,6 @@ public class TrainingRunsIT {
 
     @Test
     public void accessTrainingRunWithAlreadyStartedTrainingRun() throws Exception {
-        sandboxInfo1.setStatus(SandboxStates.FULL_BUILD_COMPLETE.getName());
         trainingRun1.setParticipantRef(participant1);
         trainingRun1.setSandboxInstanceRefId(sandboxInfo.getId());
         trainingRunRepository.save(trainingRun1);
@@ -500,43 +487,20 @@ public class TrainingRunsIT {
 //        executorService.shutdown();
 //    }
 
-    @Test
-    public void accessTrainingRunNoFreeSandboxes() throws Exception {
-        sandboxInfo1.setLocked(true);
-        PageResultResourcePython<SandboxInfo> pageResult = new PageResultResourcePython<>();
-        pageResult.setResults(new ArrayList<>(List.of(sandboxInfo1)));
-        String url = "http://localhost:8080" + "/pools/" + trainingInstance.getPoolId() + "/sandboxes/";
-        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(url);
-        builder.queryParam("page", 1);
-        builder.queryParam("page_size", 1000);
-
-        given(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
-                willReturn(new ResponseEntity<UserRefDTO>(userRefDTO1, HttpStatus.OK));
-        given(restTemplate.exchange(eq(builder.toUriString()), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
-                willReturn(new ResponseEntity<PageResultResourcePython<SandboxInfo>>(pageResult, HttpStatus.OK));
-        mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_TRAINEE.name()));
-        Exception exception = mvc.perform(post("/training-runs")
-                .param("accessToken", "pass-1234"))
-               // .andExpect(status().isServiceUnavailable())
-                .andReturn().getResolvedException();
-        assertEquals(ServiceUnavailableException.class, Objects.requireNonNull(exception).getClass());
-        assertEquals("There is no available sandbox, wait a minute and try again or ask organizer to allocate more sandboxes.", exception.getCause().getCause().getMessage());
-    }
 
     @Test
     public void accessTrainingRunNoAvailableSandbox() throws Exception {
         trainingInstanceRepository.save(trainingInstance);
         PageResultResourcePython<SandboxInfo> pageResult = new PageResultResourcePython<>();
         pageResult.setResults(new ArrayList<>());
-        String url = "http://localhost:8080" + "/pools/" + trainingInstance.getPoolId() + "/sandboxes/";
+        String url = "http://localhost:8080" + "/pools/" + trainingInstance.getPoolId() + "/sandboxes/unlocked/";
         UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(url);
         builder.queryParam("page", 1);
         builder.queryParam("page_size", 1000);
 
         given(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), eq(UserRefDTO.class))).
                 willReturn(new ResponseEntity<UserRefDTO>(userRefDTO1, HttpStatus.OK));
-        given(restTemplate.exchange(eq(builder.toUriString()), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
-                willReturn(new ResponseEntity<PageResultResourcePython<SandboxInfo>>(pageResult, HttpStatus.OK));
+        willThrow(new RestTemplateException("No unlocked sandbox.", HttpStatus.CONFLICT.toString())).given(restTemplate).exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), eq(SandboxInfo.class));
 
         mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_TRAINEE.name()));
         Exception exception = mvc.perform(post("/training-runs")
