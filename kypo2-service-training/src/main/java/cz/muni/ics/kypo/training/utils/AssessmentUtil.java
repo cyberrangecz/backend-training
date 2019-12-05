@@ -26,38 +26,28 @@ public class AssessmentUtil {
 
     public int evaluateTest(JSONArray questions, JSONArray responses) {
         LOG.info("Evaluating test");
-        //Received points for the whole test
         int receivedPoints = 0;
 
-        //Get list of individual responses to questions
         for (int i = 0; i < responses.length(); i++) {
-            //Get question from question array
             JSONObject question = getQuestionWithOrder(questions, responses.getJSONObject(i).getInt("question_order"));
             if (question == null) {
                 continue;
             }
-            //Evaluate FFQ question
             if (question.get("question_type").equals("FFQ")) {
                 LOG.info("Evaluating FFQ question");
                 String answer = responses.getJSONObject(i).getString("text");
                 receivedPoints += evaluateFFQQuestion(question,answer);
             }
-
-            //Evaluate MCQ questions
             else if (question.get("question_type").equals("MCQ")) {
                 LOG.info("Evaluating MCQ question");
                 JSONArray answers = responses.getJSONObject(i).getJSONArray("choices");
                 receivedPoints += evaluateMCQQuestion(question, answers);
             }
-
-            //Evaluate EMI question
             else if (question.get("question_type").equals("EMI")) {
                 LOG.info("Evaluating EMI question");
                 JSONArray answers = responses.getJSONObject(i).getJSONArray("pairs");
                 receivedPoints += evaluateEMIQuestion(question,answers);
             }
-
-
         }
         return receivedPoints;
 
@@ -213,11 +203,6 @@ public class AssessmentUtil {
 
     }
 
-
-
-
-    //  getting results methods
-
     /**
      * Method to get certain assessment from array of assessments.
      * @param assessmentPosition
@@ -242,7 +227,6 @@ public class AssessmentUtil {
      */
     public void putAnswersToQuestions(JSONArray answers, JSONArray questions, String userName) {
         for (int a = 0; a < answers.length(); a++) {
-            //single response
             int questionOrder = answers.getJSONObject(a).getInt("question_order");
             answers.getJSONObject(a).remove("question_order");
             answers.getJSONObject(a).put("userName", userName);
@@ -269,7 +253,6 @@ public class AssessmentUtil {
         }
 
     }
-    //end getting results
 
     /**
      * Method which validate questions from assessment.

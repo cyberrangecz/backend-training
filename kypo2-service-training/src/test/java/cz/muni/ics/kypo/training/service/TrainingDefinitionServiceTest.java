@@ -4,7 +4,6 @@ import com.google.gson.JsonObject;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.PathBuilder;
 import cz.muni.ics.kypo.commons.security.enums.AuthenticatedUserOIDCItems;
-import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
 import cz.muni.ics.kypo.training.api.enums.RoleType;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.persistence.model.*;
@@ -43,7 +42,9 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.time.Clock;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 import static org.junit.Assert.*;
 import static org.mockito.BDDMockito.*;
@@ -745,13 +746,6 @@ public class TrainingDefinitionServiceTest {
                 "Remove training instance(s) before changing the state from released to unreleased training definition.");
         trainingDefinitionService.switchState(releasedDefinition.getId(), cz.muni.ics.kypo.training.api.enums.TDState.UNRELEASED);
     }
-
-//    @Test
-//    public void getUsersWithGivenLogins() {
-//        given(restTemplate.exchange(any(URI.class), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
-//                willReturn(new ResponseEntity<List<UserInfoDTO>>(new ArrayList<>(Collections.singletonList(userInfoDTO1)), HttpStatus.OK));
-//        trainingDefinitionService.getUsersWithGivenUserRefIds(Set.of(1L));
-//    }
 
     @After
     public void after() {

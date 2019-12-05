@@ -180,7 +180,6 @@ public class TrainingRunServiceImpl implements TrainingRunService {
         trainingRun.setCurrentLevel(abstractLevel);
         trainingRun.setIncorrectFlagCount(0);
         trainingRunRepository.save(trainingRun);
-        //audit this action to theElasticSearch
         auditEventsService.auditLevelStartedAction(trainingRun);
 
         return abstractLevel;
@@ -235,7 +234,6 @@ public class TrainingRunServiceImpl implements TrainingRunService {
         levels.sort(Comparator.comparing(AbstractLevel::getOrder));
         TrainingRun trainingRun = getNewTrainingRun(levels.get(0), trainingInstance, TRState.RUNNING,
                 LocalDateTime.now(Clock.systemUTC()), trainingInstance.getEndTime(), participantRefId);
-        // audit this action to the Elasticsearch
         return trainingRunRepository.save(trainingRun);
     }
 

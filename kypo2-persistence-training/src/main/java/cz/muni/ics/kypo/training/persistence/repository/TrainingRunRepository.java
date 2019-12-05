@@ -173,18 +173,6 @@ public interface TrainingRunRepository extends JpaRepository<TrainingRun, Long>,
             "AND pr.userRefId = :userRefId AND tr.sandboxInstanceRefId IS NOT NULL AND tr.state NOT LIKE 'FINISHED' ")
     Optional<TrainingRun> findValidTrainingRunOfUser(@Param("accessToken") String accessToken, @Param("userRefId") Long userRefId);
 
-//    /**
-//     * Find by sandbox instance ref.
-//     *
-//     * @param sandboxInstanceRef the sandbox instance ref
-//     * @return the {@link TrainingRun}
-//     */
-//    @Query("SELECT tr FROM TrainingRun tr WHERE tr.sandboxInstanceRef = :sandboxInstanceRef")
-//    Optional<TrainingRun> findBySandboxInstanceRef(@Param("sandboxInstanceRef") SandboxInstanceRef sandboxInstanceRef);
-//
-//    @Query("SELECT si.sandboxInstanceRefId FROM TrainingRun tr INNER JOIN tr.sandboxInstanceRef si INNER JOIN tr.trainingInstance ti WHERE ti.id = :trainingInstanceId")
-//    List<Long> findIdsOfAllOccupiedSandboxesByTrainingInstance(@Param("trainingInstanceId") Long trainingInstanceId);
-
     @Query("SELECT (COUNT(tr) > 0) FROM TrainingRun tr INNER JOIN tr.trainingInstance ti WHERE ti.id = :trainingInstanceId")
     boolean existsAnyForTrainingInstance(@Param("trainingInstanceId") Long trainingInstanceId);
 

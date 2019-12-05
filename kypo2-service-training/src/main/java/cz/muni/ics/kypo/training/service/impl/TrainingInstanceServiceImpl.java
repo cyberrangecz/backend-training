@@ -262,7 +262,6 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
         if (count != null && count > trainingInstance.getPoolSize()) {
             count = null;
         }
-        //Check if pool exist
         if (trainingInstance.getPoolId() == null) {
             throw new ServiceLayerException("Pool for sandboxes is not created yet. Please create pool before allocating sandboxes.", ErrorCode.RESOURCE_CONFLICT);
         }
@@ -270,20 +269,17 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
         if (count != null && count + sandboxes.size() > trainingInstance.getPoolSize()) {
             count = trainingInstance.getPoolSize() - sandboxes.size();
         }
-        //Check if sandbox can be allocated
         if (sandboxes.size() >= trainingInstance.getPoolSize()) {
             throw new ServiceLayerException("Pool of sandboxes of training instance with id: " + trainingInstance.getId() + " is full.", ErrorCode.RESOURCE_CONFLICT);
         }
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.setContentType(MediaType.APPLICATION_JSON);
         try {
-            //Allocate sandboxes in pool
             String url = kypoOpenStackURI + "/pools/" + trainingInstance.getPoolId() + "/sandboxes/";
             UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(url);
             if (count != null) {
                 builder.queryParam("count", count);
             }
-            // allocate sandboxes with appropriate ansible scripts (set up an environment etc.)
             builder.queryParam("full", true);
             pythonRestTemplate.exchange(builder.toUriString(), HttpMethod.POST,
                     new HttpEntity<>(httpHeaders), new ParameterizedTypeReference<List<SandboxInfo>>() {

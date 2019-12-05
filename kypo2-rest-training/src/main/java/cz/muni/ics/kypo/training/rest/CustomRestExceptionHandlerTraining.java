@@ -30,7 +30,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -43,7 +42,6 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
     private static final Logger LOG = LoggerFactory.getLogger(CustomRestExceptionHandlerTraining.class);
     protected static final UrlPathHelper URL_PATH_HELPER = new UrlPathHelper();
 
-    // 400
     @Override
     protected ResponseEntity<Object> handleMethodArgumentNotValid(final MethodArgumentNotValidException ex, final HttpHeaders headers,
                                                                   final HttpStatus status, final WebRequest request) {
@@ -108,7 +106,6 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
         return new ResponseEntity<>(apiError, new HttpHeaders(), apiError.getStatus());
     }
 
-    // 404
     @Override
     protected ResponseEntity<Object> handleNoHandlerFoundException(final NoHandlerFoundException ex, final HttpHeaders headers,
                                                                    final HttpStatus status, final WebRequest request) {
@@ -119,7 +116,6 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
         return new ResponseEntity<>(apiError, new HttpHeaders(), apiError.getStatus());
     }
 
-    // 405
     @Override
     protected ResponseEntity<Object> handleHttpRequestMethodNotSupported(final HttpRequestMethodNotSupportedException ex,
                                                                          final HttpHeaders headers, final HttpStatus status, final WebRequest request) {
@@ -135,7 +131,6 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
         return new ResponseEntity<>(apiError, new HttpHeaders(), apiError.getStatus());
     }
 
-    // 415
     @Override
     protected ResponseEntity<Object> handleHttpMediaTypeNotSupported(final HttpMediaTypeNotSupportedException ex, final HttpHeaders headers,
                                                                      final HttpStatus status, final WebRequest request) {
@@ -150,8 +145,6 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
                         .setPath(request.getContextPath()).build();
         return new ResponseEntity<>(apiError, new HttpHeaders(), apiError.getStatus());
     }
-
-    // Custom methods for handling own exceptions
 
     @ExceptionHandler(BadGatewayException.class)
     public ResponseEntity<Object> handleBadGatewayException(final BadGatewayException ex, final WebRequest request, HttpServletRequest req) {
@@ -173,7 +166,6 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
         return new ResponseEntity<>(apiError, new HttpHeaders(), apiError.getStatus());
     }
 
-    // @ExceptionHandler(ForbiddenException.class)
     public ResponseEntity<Object> handleForbiddenException(final ForbiddenException ex, final WebRequest request, HttpServletRequest req) {
 
         final ApiErrorTraining apiError =
@@ -367,7 +359,6 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
         return new ResponseEntity<>(apiError, new HttpHeaders(), apiError.getStatus());
     }
 
-    // resource not created exception
     @ExceptionHandler({ResourceNotCreatedException.class})
     public ResponseEntity<Object> handleResourceNotCreatedException(final ResourceNotCreatedException ex, final WebRequest request,
                                                                     HttpServletRequest req) {
@@ -379,7 +370,6 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
         return new ResponseEntity<>(apiError, new HttpHeaders(), apiError.getStatus());
     }
 
-    // handle resource not found exceptions e.g. ~/{id} which does not exists
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<Object> handleResourceNotFoundException(final ResourceNotFoundException ex, final WebRequest request,
                                                                   HttpServletRequest req) {
@@ -391,7 +381,6 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
         return new ResponseEntity<>(apiError, new HttpHeaders(), apiError.getStatus());
     }
 
-    // resource not created exception
     @ExceptionHandler({ResourceNotModifiedException.class})
     public ResponseEntity<Object> handleResourceNotModifiedException(final ResourceNotModifiedException ex, final WebRequest request,
                                                                      HttpServletRequest req) {
@@ -403,7 +392,6 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
         return new ResponseEntity<>(apiError, new HttpHeaders(), apiError.getStatus());
     }
 
-    // 409 - Conflict
     @ExceptionHandler({ConflictException.class})
     public ResponseEntity<Object> handleConflictException(final ConflictException ex, final WebRequest request,
                                                                      HttpServletRequest req) {
@@ -491,9 +479,6 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
         return new ResponseEntity<>(apiError, new HttpHeaders(), apiError.getStatus());
     }
 
-    // Existing Java Exceptions
-
-    // access denied
     @ExceptionHandler({java.nio.file.AccessDeniedException.class})
     public ResponseEntity<Object> handleAccessDeniedException(java.nio.file.AccessDeniedException ex, WebRequest request) {
 
@@ -508,8 +493,6 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
         return new ResponseEntity<>(apiError, new HttpHeaders(), apiError.getStatus());
     }
 
-    // handle illegal argument exceptions e.g. given payload is not valid against
-    // draft-v4 schema
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<Object> handleIllegalArgumentException(final IllegalArgumentException ex, final WebRequest request,
                                                                  HttpServletRequest req) {
@@ -545,7 +528,6 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
         return new ResponseEntity<>(apiError, new HttpHeaders(), apiError.getStatus());
     }
 
-    // 500
     @ExceptionHandler({Exception.class})
     public ResponseEntity<Object> handleAll(final Exception ex, final WebRequest request, HttpServletRequest req) {
 

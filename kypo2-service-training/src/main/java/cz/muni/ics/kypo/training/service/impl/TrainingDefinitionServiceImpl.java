@@ -151,7 +151,6 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
 
         addLoggedInUserToTrainingDefinitionAsAuthor(clonedTrainingDefinition);
         clonedTrainingDefinition = trainingDefinitionRepository.save(clonedTrainingDefinition);
-        // clone all levels which are assigned to the particular training definition and set
         cloneLevelsFromTrainingDefinition(trainingDefinition, clonedTrainingDefinition);
 
         LOG.info("Training definition with id: {} cloned.", trainingDefinition.getId());

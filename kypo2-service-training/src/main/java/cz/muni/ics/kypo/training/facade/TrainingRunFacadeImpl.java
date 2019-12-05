@@ -281,7 +281,6 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
             accessedTrainingRunDTO.setTrainingInstanceStartDate(trainingRun.getTrainingInstance().getStartTime());
             accessedTrainingRunDTO.setTrainingInstanceEndDate(trainingRun.getTrainingInstance().getEndTime());
             accessedTrainingRunDTO.setInstanceId(trainingRun.getTrainingInstance().getId());
-            //number of levels equals maxOrder of definition +1(order starts at 0)
             accessedTrainingRunDTO.setNumberOfLevels(trainingRunService.getMaxLevelOrder(trainingRun.getTrainingInstance().getTrainingDefinition().getId()) + 1);
             accessedTrainingRunDTO.setCurrentLevelOrder(trainingRun.getCurrentLevel().getOrder() + 1);
             boolean isTrainingRunFinished = trainingRun.isLevelAnswered() && accessedTrainingRunDTO.getCurrentLevelOrder() == accessedTrainingRunDTO.getNumberOfLevels();

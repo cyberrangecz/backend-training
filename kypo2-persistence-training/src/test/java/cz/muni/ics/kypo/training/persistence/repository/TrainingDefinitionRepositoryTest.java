@@ -124,27 +124,22 @@ public class TrainingDefinitionRepositoryTest {
         entityManager.persist(author2);
         entityManager.persist(organizer1);
 
-        // Training definition with author
         trainingDefinition2.addAuthor(author1);
         trainingDefinition2.addAuthor(author2);
         entityManager.merge(trainingDefinition2);
-        // Training definition with author and empty view group
         trainingDefinitionWithBG1.addAuthor(author1);
         viewGroup1.addOrganizer(organizer1);
         entityManager.merge(trainingDefinitionWithBG2);
-        // Training definition with author and view group with author
         trainingDefinitionWithBG2.addAuthor(author1);
         trainingDefinitionWithBG2.addAuthor(author2);
         viewGroup2.addOrganizer(author1);
         viewGroup2.addOrganizer(organizer1);
         entityManager.merge(trainingDefinitionWithBG2);
 
-        // Training definition without author
         trainingDefinitionWithBG3.addAuthor(author2);
         viewGroup3.addOrganizer(author2);
         entityManager.merge(trainingDefinitionWithBG3);
 
-        // Training definition without author but author in view group
         trainingDefinitionWithBG4.addAuthor(author2);
         viewGroup4.addOrganizer(author1);
         viewGroup4.addOrganizer(organizer1);
