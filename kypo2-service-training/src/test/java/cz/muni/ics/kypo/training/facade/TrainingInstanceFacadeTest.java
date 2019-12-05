@@ -174,7 +174,7 @@ public class TrainingInstanceFacadeTest {
 
     @Test
     public void createTrainingInstanceWithNull() {
-        thrown.expect(NullPointerException.class);
+        thrown.expect(FacadeLayerException.class);
         trainingInstanceFacade.create(null);
     }
 
@@ -187,7 +187,7 @@ public class TrainingInstanceFacadeTest {
 
     @Test
     public void updateTrainingInstanceWithNull() {
-        thrown.expect(NullPointerException.class);
+        thrown.expect(FacadeLayerException.class);
         trainingInstanceFacade.update(null);
     }
 
@@ -208,7 +208,7 @@ public class TrainingInstanceFacadeTest {
 
     @Test
     public void deleteTrainingInstanceWithNull() {
-        thrown.expect(NullPointerException.class);
+        thrown.expect(FacadeLayerException.class);
         trainingInstanceFacade.delete(null);
     }
 
