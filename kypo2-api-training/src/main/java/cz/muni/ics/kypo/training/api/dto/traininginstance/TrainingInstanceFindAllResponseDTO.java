@@ -34,8 +34,6 @@ public class TrainingInstanceFindAllResponseDTO {
     private String accessToken;
     @ApiModelProperty(value = "Id of sandbox pool belonging to training instance", example = "1")
     private Long poolId;
-    @ApiModelProperty(value = "Ids of sandboxes which are assigned to training run.", example = "[3,15]")
-    private List<Long> sandboxesWithTrainingRun = new ArrayList<>();
 
     public TrainingInstanceFindAllResponseDTO(){}
 
@@ -101,14 +99,6 @@ public class TrainingInstanceFindAllResponseDTO {
 
     public void setPoolId(Long poolId) {
         this.poolId = poolId;
-    }
-
-    public List<Long> getSandboxesWithTrainingRun() {
-        return sandboxesWithTrainingRun;
-    }
-
-    public void setSandboxesWithTrainingRun(List<Long> sandboxesWithTrainingRun) {
-        this.sandboxesWithTrainingRun = sandboxesWithTrainingRun;
     }
 
     @Override

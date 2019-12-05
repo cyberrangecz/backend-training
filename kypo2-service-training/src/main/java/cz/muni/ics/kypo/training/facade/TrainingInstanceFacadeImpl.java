@@ -74,11 +74,7 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
     @Override
     @TransactionalRO
     public PageResultResource<TrainingInstanceFindAllResponseDTO> findAll(Predicate predicate, Pageable pageable) {
-        PageResultResource<TrainingInstanceFindAllResponseDTO> trainingInstanceFindAllResponseDTOPageResultResource = trainingInstanceMapper.mapToPageResultResourceBasicView(trainingInstanceService.findAll(predicate, pageable));
-        trainingInstanceFindAllResponseDTOPageResultResource.getContent().forEach(trainingInstanceDTO -> {
-            trainingInstanceDTO.setSandboxesWithTrainingRun(trainingInstanceService.findIdsOfAllOccupiedSandboxesByTrainingInstance(trainingInstanceDTO.getId()));
-        });
-        return trainingInstanceFindAllResponseDTOPageResultResource;
+        return trainingInstanceMapper.mapToPageResultResourceBasicView(trainingInstanceService.findAll(predicate, pageable));
     }
 
     @Override
