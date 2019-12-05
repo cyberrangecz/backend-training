@@ -141,7 +141,6 @@ public class TrainingInstancesRestControllerTest {
         trainingInstanceUpdateDTO.setStartTime(startTime.plusHours(1));
         trainingInstanceUpdateDTO.setEndTime(endTime);
         trainingInstanceUpdateDTO.setPoolSize(5);
-        //trainingInstanceUpdateDTO.setKeyword("pass-2586");
         trainingInstanceUpdateDTO.setTrainingDefinitionId(1L);
 
         List<TrainingInstance> expected = new ArrayList<>();

@@ -55,7 +55,6 @@ import java.util.regex.Pattern;
 @Component
 public class KYPODateMathParser {
 
-    // checks if String is composed only from digits
     private static final Pattern ONLY_DIGITS = Pattern.compile("(\\d+)");
     private static final DateTimeFormatter dateFormatter = new DateTimeFormatterBuilder().append(null, new DateTimeParser[]{
             DateTimeFormat.forPattern("dd/MM/yyyy").getParser(),

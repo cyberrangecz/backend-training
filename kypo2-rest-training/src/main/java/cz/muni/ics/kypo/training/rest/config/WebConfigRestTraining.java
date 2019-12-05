@@ -29,7 +29,6 @@ public class WebConfigRestTraining implements WebMvcConfigurer {
     @Autowired
     private ObjectMapper objectMapper;
 
-    // To resolve ${} in @Value
     @Bean
     public static PropertySourcesPlaceholderConfigurer propertyConfigInDev() {
         PropertySourcesPlaceholderConfigurer confPropertyPlaceholder = new PropertySourcesPlaceholderConfigurer();

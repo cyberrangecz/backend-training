@@ -63,7 +63,7 @@ public class RestConfigTest {
 
 	@Bean
 	public RestTemplate restTemplate() {
-		RestTemplate rT = Mockito.mock(RestTemplate.class);//new RestTemplate();
+		RestTemplate rT = Mockito.mock(RestTemplate.class);
 		rT.getMessageConverters().add(0, new StringHttpMessageConverter(Charset.forName("UTF-8")));
 		return rT;
 	}

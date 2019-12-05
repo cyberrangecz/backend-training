@@ -25,10 +25,8 @@ public class ApiErrorTraining {
 
     public static class ApiErrorBuilder {
 
-        // required member variables
         private final HttpStatus status;
         private final String message;
-        // optional member variables
         private List<String> errors = new ArrayList<>();
         private String path = "";
 

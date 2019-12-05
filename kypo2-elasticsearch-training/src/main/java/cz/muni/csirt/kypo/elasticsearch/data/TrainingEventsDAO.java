@@ -57,9 +57,7 @@ public class TrainingEventsDAO extends AbstractElasticClientDAO {
 
     public List<Map<String, Object>> findAllEventsByTrainingDefinitionAndTrainingInstanceId(Long trainingDefinitionId, Long trainingInstanceId) throws ElasticsearchTrainingDataLayerException, IOException {
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
-        // returns all documents under given index
         searchSourceBuilder.query(QueryBuilders.matchAllQuery());
-        // events are sorted based on timestamp attribute
         searchSourceBuilder.sort("timestamp", SortOrder.ASC);
         searchSourceBuilder.size(INDEX_DOCUMENTS_MAX_RETURN_NUMBER);
         searchSourceBuilder.timeout(new TimeValue(5, TimeUnit.MINUTES));
@@ -72,9 +70,7 @@ public class TrainingEventsDAO extends AbstractElasticClientDAO {
 
     public List<Map<String, Object>> findAllEventsFromTrainingRun(Long trainingDefinitionId, Long trainingInstanceId, Long trainingRunId) throws ElasticsearchTrainingDataLayerException, IOException {
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
-        // returns all documents under specific index with specific training run id
         searchSourceBuilder.query(QueryBuilders.termQuery("training_run_id", trainingRunId));
-        // events are sorted based on timestamp attribute
         searchSourceBuilder.sort("timestamp", SortOrder.ASC);
         searchSourceBuilder.size(INDEX_DOCUMENTS_MAX_RETURN_NUMBER);
         searchSourceBuilder.timeout(new TimeValue(5, TimeUnit.MINUTES));
@@ -142,7 +138,6 @@ public class TrainingEventsDAO extends AbstractElasticClientDAO {
                 restTemplate.postForObject(elasticsearchProtocol + "://" + elasticsearchIpAddress + ":" + elasticsearchPort + "/"
                         + AbstractKypoIndexPath.KYPO3_EVENTS_INDEX + ".*" + ".instance=" + trainingInstanceId + "/_delete_by_query", request, ElasticsearchResponseDto.class);
         if (elasticsearchResponseDto != null && !elasticsearchResponseDto.isAcknowledged()) {
-            // throw exception
             throw new ElasticsearchTrainingDataLayerException("Training run events was not deleted.");
         }
     }

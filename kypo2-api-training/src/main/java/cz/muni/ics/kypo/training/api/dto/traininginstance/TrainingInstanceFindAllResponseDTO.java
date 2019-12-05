@@ -35,68 +35,151 @@ public class TrainingInstanceFindAllResponseDTO {
     @ApiModelProperty(value = "Id of sandbox pool belonging to training instance", example = "1")
     private Long poolId;
 
+    /**
+     * Instantiates a new Training instance find all response dto.
+     */
     public TrainingInstanceFindAllResponseDTO(){}
 
+    /**
+     * Gets id.
+     *
+     * @return the id
+     */
     public Long getId() {
         return id;
     }
 
+    /**
+     * Sets id.
+     *
+     * @param id the id
+     */
     public void setId(Long id) {
         this.id = id;
     }
 
+    /**
+     * Gets start time.
+     *
+     * @return the start time
+     */
     public LocalDateTime getStartTime() {
         return startTime;
     }
 
+    /**
+     * Sets start time.
+     *
+     * @param startTime the start time
+     */
     public void setStartTime(LocalDateTime startTime) {
         this.startTime = startTime;
     }
 
+    /**
+     * Gets end time.
+     *
+     * @return the end time
+     */
     public LocalDateTime getEndTime() {
         return endTime;
     }
 
+    /**
+     * Sets end time.
+     *
+     * @param endTime the end time
+     */
     public void setEndTime(LocalDateTime endTime) {
         this.endTime = endTime;
     }
 
+    /**
+     * Gets title.
+     *
+     * @return the title
+     */
     public String getTitle() {
         return title;
     }
 
+    /**
+     * Sets title.
+     *
+     * @param title the title
+     */
     public void setTitle(String title) {
         this.title = title;
     }
 
+    /**
+     * Gets pool size.
+     *
+     * @return the pool size
+     */
     public int getPoolSize() {
         return poolSize;
     }
 
+    /**
+     * Sets pool size.
+     *
+     * @param poolSize the pool size
+     */
     public void setPoolSize(int poolSize) {
         this.poolSize = poolSize;
     }
 
+    /**
+     * Gets training definition.
+     *
+     * @return the training definition
+     */
     public TrainingDefinitionByIdDTO getTrainingDefinition() {
         return trainingDefinition;
     }
 
+    /**
+     * Sets training definition.
+     *
+     * @param trainingDefinition the training definition
+     */
     public void setTrainingDefinition(TrainingDefinitionByIdDTO trainingDefinition) {
         this.trainingDefinition = trainingDefinition;
     }
 
+    /**
+     * Gets access token.
+     *
+     * @return the access token
+     */
     public String getAccessToken() {
         return accessToken;
     }
 
+    /**
+     * Sets access token.
+     *
+     * @param accessToken the access token
+     */
     public void setAccessToken(String accessToken) {
         this.accessToken = accessToken;
     }
 
+    /**
+     * Gets pool id.
+     *
+     * @return the pool id
+     */
     public Long getPoolId() {
         return poolId;
     }
 
+    /**
+     * Sets pool id.
+     *
+     * @param poolId the pool id
+     */
     public void setPoolId(Long poolId) {
         this.poolId = poolId;
     }
