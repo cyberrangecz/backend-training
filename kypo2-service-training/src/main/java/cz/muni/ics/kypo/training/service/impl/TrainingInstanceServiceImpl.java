@@ -190,21 +190,24 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
             throw new ServiceLayerException("Training instance with already assigned training runs cannot be deleted. Please delete training runs assigned to training instance" +
                     " and try again or contact administrator.", ErrorCode.RESOURCE_CONFLICT);
         }
+        trainingInstanceRepository.delete(trainingInstance);
         if (trainingInstance.getPoolId() != null) {
-            List<SandboxInfo> sandboxes = findSandboxesFromSandboxPool(trainingInstance.getPoolId());
-            if (sandboxes.isEmpty()){
-                removePoolOfSandboxesFromOpenStack(trainingInstance.getPoolId());
-            }else {
-                throw new ServiceLayerException("Cannot delete training instance because it contains some sandboxes. Please delete sandboxes and try again or " +
-                        "wait until all sandboxes are deleted from OpenStack.", ErrorCode.RESOURCE_CONFLICT);
+            try {
+                List<SandboxInfo> sandboxes = findSandboxesFromSandboxPool(trainingInstance.getPoolId());
+                if (sandboxes.isEmpty()){
+                    removePoolOfSandboxesFromOpenStack(trainingInstance.getPoolId());
+                }else {
+                    LOG.error("Pool (ID: {}) assigned to training instance contains some sandboxes. Training instance will has been " +
+                            "deleted and these sandboxes remains in the pool and must be deleted through Python API.");
+                }
+            } catch (ServiceLayerException ex) {
+                LOG.error(ex.getLocalizedMessage());
             }
         }
-        trainingInstanceRepository.delete(trainingInstance);
-
         try {
             trainingEventsService.deleteEventsByTrainingInstanceId(trainingInstance.getId());
         } catch (ElasticsearchTrainingServiceLayerException io) {
-            throw new ServiceLayerException("Could not delete documents of this training instance from Elasticsearch. Please contact administrator to check if Elasticsearch is running.", io, ErrorCode.UNEXPECTED_ERROR);
+            LOG.error("Could not delete documents of this training instance from Elasticsearch. Please contact administrator to check if Elasticsearch is running.");
         }
         LOG.debug("Training instance with id: {} deleted.", trainingInstance.getId());
     }
@@ -296,7 +299,6 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
     @Async
     @TrackTime
     public void deleteSandbox(Long trainingInstanceId, Long idOfSandboxRefToDelete) {
-        removeSandboxFromTrainingRun(idOfSandboxRefToDelete);
 
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.setContentType(MediaType.APPLICATION_JSON);
@@ -317,6 +319,7 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
                 LOG.error("Error when calling Python API to delete sandbox (ID: {}): {}.", idOfSandboxRefToDelete, ex.getStatusCode() + " - " + ex.getMessage());
             }
         }
+        removeSandboxFromTrainingRun(idOfSandboxRefToDelete);
     }
 
     private void removeSandboxFromTrainingRun(Long sandboxId) {

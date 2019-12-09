@@ -470,10 +470,8 @@ public class TrainingInstancesIT {
         given(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
                 willReturn(new ResponseEntity<PageResultResourcePython<SandboxInfo>>(pageResult, HttpStatus.OK));
         Exception ex = mvc.perform(delete("/training-instances/{id}", finishedTrainingInstance.getId()))
-                .andExpect(status().isConflict())
+                .andExpect(status().isOk())
                 .andReturn().getResolvedException();
-        assertEquals(ConflictException.class, Objects.requireNonNull(ex).getClass());
-        assertTrue(ex.getMessage().contains("Cannot delete training instance because it contains some sandboxes."));
     }
 
     @Test
