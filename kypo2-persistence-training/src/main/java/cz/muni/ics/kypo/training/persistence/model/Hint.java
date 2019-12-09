@@ -153,12 +153,13 @@ public class Hint extends AbstractEntity<Long> {
         Hint hint = (Hint) o;
         return Objects.equals(getTitle(), hint.getTitle()) &&
                 Objects.equals(getContent(), hint.getContent()) &&
-                Objects.equals(getHintPenalty(), hint.getHintPenalty());
+                Objects.equals(getHintPenalty(), hint.getHintPenalty()) &&
+                getOrder() == getOrder();
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getTitle(), getContent(), getHintPenalty());
+        return Objects.hash(getTitle(), getContent(), getHintPenalty(), getOrder());
     }
 
     @Override
