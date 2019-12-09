@@ -296,6 +296,7 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
     @Async
     @TrackTime
     public void deleteSandbox(Long trainingInstanceId, Long idOfSandboxRefToDelete) {
+        removeSandboxFromTrainingRun(idOfSandboxRefToDelete);
 
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.setContentType(MediaType.APPLICATION_JSON);
@@ -306,7 +307,6 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
             if (!ex.getStatusCode().equals(HttpStatus.BAD_REQUEST.toString()) &&
                 !ex.getStatusCode().equals(HttpStatus.NOT_FOUND.toString())) {
                 LOG.error("Error when calling Python API to get lock status of sandbox (ID: {}): {}.", idOfSandboxRefToDelete, ex.getStatusCode() + " - " + ex.getMessage());
-                return;
             }
         }
         try {
@@ -315,10 +315,8 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
         } catch (RestTemplateException ex) {
             if (!ex.getStatusCode().equals(HttpStatus.NOT_FOUND.toString())){
                 LOG.error("Error when calling Python API to delete sandbox (ID: {}): {}.", idOfSandboxRefToDelete, ex.getStatusCode() + " - " + ex.getMessage());
-                return;
             }
         }
-        removeSandboxFromTrainingRun(idOfSandboxRefToDelete);
     }
 
     private void removeSandboxFromTrainingRun(Long sandboxId) {
