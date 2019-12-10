@@ -269,19 +269,6 @@ public class TrainingInstanceServiceTest {
     }
 
     @Test
-    public void deleteInstanceWithAssignedSandboxes() {
-        PageResultResourcePython<SandboxInfo> pythonPage = new PageResultResourcePython<SandboxInfo>();
-        pythonPage.setResults(List.of(sandboxInfo1, sandboxInfo2));
-
-        given(trainingRunRepository.existsAnyForTrainingInstance(instanceWithSB.getId())).willReturn(false);
-        given(pythonRestTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class)))
-                .willReturn(new ResponseEntity<PageResultResourcePython<SandboxInfo>>(pythonPage, HttpStatus.OK));
-        thrown.expect(ServiceLayerException.class);
-        thrown.expectMessage("Cannot delete training instance because it contains some sandboxes. Please delete sandboxes and try again or wait until all sandboxes are deleted from OpenStack.");
-        trainingInstanceService.delete(instanceWithSB);
-    }
-
-    @Test
     public void findTrainingRunsByTrainingInstance() {
         List<TrainingRun> expected = new ArrayList<>();
         expected.add(trainingRun1);

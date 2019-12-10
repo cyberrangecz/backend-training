@@ -198,8 +198,8 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
                 if (sandboxes.isEmpty()){
                     removePoolOfSandboxesFromOpenStack(trainingInstance.getPoolId());
                 }else {
-                    LOG.error("Pool (ID: {}) assigned to training instance contains some sandboxes. Training instance will has been " +
-                            "deleted and these sandboxes remains in the pool and must be deleted through Python API.");
+                    LOG.error("Pool (ID: {}) assigned to training instance contains some sandboxes. Training instance will be " +
+                            "deleted and these sandboxes remaining in the pool must be deleted through Python API.");
                 }
             } catch (ServiceLayerException ex) {
                 LOG.error(ex.getLocalizedMessage());
