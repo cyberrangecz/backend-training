@@ -181,6 +181,7 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
             Objects.requireNonNull(trainingDefinitionUpdateDTO);
             TrainingDefinition mappedTrainingDefinition = trainingDefinitionMapper.mapUpdateToEntity(trainingDefinitionUpdateDTO);
             TrainingDefinition trainingDefinition = trainingDefinitionService.findById(trainingDefinitionUpdateDTO.getId());
+            mappedTrainingDefinition.setAuthors(new HashSet<>(trainingDefinition.getAuthors()));
             if (trainingDefinitionUpdateDTO.getBetaTestingGroup() != null) {
                 addOrganizersToTrainingDefinition(mappedTrainingDefinition, trainingDefinitionUpdateDTO.getBetaTestingGroup().getOrganizersRefIds());
                 if (trainingDefinition.getBetaTestingGroup() != null) {
