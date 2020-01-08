@@ -1,10 +1,8 @@
 package cz.muni.ics.kypo.training.rest.controllers;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.bohnman.squiggly.util.SquigglyUtils;
 import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
-import cz.muni.ics.kypo.training.api.dto.run.AccessedTrainingRunDTO;
 import cz.muni.ics.kypo.training.api.dto.visualization.VisualizationInfoDTO;
 import cz.muni.ics.kypo.training.api.responses.PageResultResource;
 import cz.muni.ics.kypo.training.exceptions.FacadeLayerException;
@@ -16,20 +14,17 @@ import io.swagger.annotations.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
 /**
  * The type Visualizations rest controller.
  *
- * @author Dominik Pilar (445537)
  */
 @Api(value = "/visualizations", tags = "Visualizations", consumes = MediaType.APPLICATION_JSON_VALUE)
 @ApiResponses(value = {

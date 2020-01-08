@@ -7,7 +7,6 @@ import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionBy
 /**
  * The interface for export/import facade.
  *
- * @author Pavel Seda
  */
 public interface ExportImportFacade {
 

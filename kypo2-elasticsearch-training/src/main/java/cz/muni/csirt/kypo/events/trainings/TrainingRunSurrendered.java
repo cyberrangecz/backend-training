@@ -6,9 +6,6 @@ import cz.muni.csirt.kypo.elasticsearch.AbstractAuditPOJO;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
-/**
- * @author Pavel Seda
- */
 @ApiModel(value = "Training Run Surrendered", description = "Type of event from trainings (when training run is surrendered).")
 @JsonRootName(value = "event")
 public class TrainingRunSurrendered extends AbstractAuditPOJO {

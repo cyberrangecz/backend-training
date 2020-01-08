@@ -8,7 +8,6 @@ import java.util.*;
  * Class specifying Abstract level as game level.
  * Game levels contain tasks for trainees to solve.
  *
- * @author Pavel Seda
  */
 @Entity(name = "GameLevel")
 @Table(name = "game_level")

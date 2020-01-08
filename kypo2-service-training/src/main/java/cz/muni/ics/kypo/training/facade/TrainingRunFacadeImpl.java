@@ -42,11 +42,6 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-/**
- * @author Dominik Pilar
- * @author Boris Jadus
- * @author Pavel Seda
- */
 @Service
 public class TrainingRunFacadeImpl implements TrainingRunFacade {
 

@@ -10,7 +10,6 @@ import io.swagger.annotations.ApiModelProperty;
  * member variables 'timestamp' and 'type': 'timestamp' is generated based on current time 'type' is
  * generated based on your pojoClass (name of package + class name)
  *
- * @author Pavel Šeda
  */
 @ApiModel(value = "Parent class for all audit POJO classes",
         description = "This class have to be extended when some event should be saved to Elasticsearch."

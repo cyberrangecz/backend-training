@@ -3,7 +3,6 @@ package cz.muni.ics.kypo.training.exceptions;
 /**
  * The type Service layer exception.
  *
- * @author Pavel Šeda (441048)
  */
 public class ServiceLayerException extends RuntimeException {
     private final ErrorCode code;

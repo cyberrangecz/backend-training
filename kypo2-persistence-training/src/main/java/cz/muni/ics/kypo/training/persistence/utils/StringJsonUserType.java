@@ -1,6 +1,5 @@
 package cz.muni.ics.kypo.training.persistence.utils;
 
-import org.hibernate.HibernateException;
 import org.hibernate.engine.spi.SharedSessionContractImplementor;
 import org.hibernate.usertype.UserType;
 
@@ -13,7 +12,6 @@ import java.sql.Types;
 /**
  * Based on this post: https://stackoverflow.com/a/16049086
  *
- * @author Pavel Seda (441048)
  */
 public class StringJsonUserType implements UserType {
 

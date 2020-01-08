@@ -13,7 +13,6 @@ import java.util.Set;
 /**
  * The interface for export/import service.
  *
- * @author Pavel Seda
  */
 public interface ExportImportService {
 

@@ -20,9 +20,6 @@ import org.springframework.util.Assert;
 import java.util.List;
 import java.util.Set;
 
-/**
- * @author Dominik Pilar (445537)
- */
 @Service
 public class VisualizationServiceImpl implements VisualizationService {
 

@@ -6,7 +6,6 @@ import io.swagger.annotations.ApiModelProperty;
 /**
  *  Encapsulates information about Hint.
  *
- * @author Boris Jadus(445343)
  */
 @ApiModel(value = "HintDTO", description = "Imported hint.")
 public class HintImportDTO {

@@ -8,7 +8,6 @@ import java.util.Objects;
 /**
  * Response to attempt of flag input
  *
- * @author Pavel Seda
  */
 @ApiModel(value = "IsCorrectFlagDTO", description = "A response for the request about the validation of the flag. May also " +
         "include solution if remaining attempts reach 0.")

@@ -5,7 +5,6 @@ import java.lang.annotation.*;
 /**
  * Document info.
  *
- * @author Pavel Seda
  */
 @Documented
 @Inherited

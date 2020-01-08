@@ -9,9 +9,6 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
-/**
- * @author Pavel Seda (441048)
- */
 @Configuration
 @EnableTransactionManagement
 @ComponentScan(basePackages = {"cz.muni.ics.kypo.training.persistence.model", "cz.muni.ics.kypo.training.persistence.repository"})

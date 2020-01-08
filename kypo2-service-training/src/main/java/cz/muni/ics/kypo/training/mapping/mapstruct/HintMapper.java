@@ -15,7 +15,6 @@ import java.util.*;
  * The HintMapper is an utility class to map items into data transfer objects. It provides the implementation of mappings between Java bean type HintMapper and
  * DTOs classes. Code is generated during compile time.
  *
- * @author Roman Oravec & Pavel Seda
  */
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface HintMapper extends ParentMapper {

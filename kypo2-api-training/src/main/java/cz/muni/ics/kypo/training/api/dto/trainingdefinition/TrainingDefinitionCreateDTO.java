@@ -15,7 +15,6 @@ import java.util.Set;
 /**
  * Encapsulates information about Training definition, intended for creation of new definition.
  *
- * @author Pavel Šeda (441048)
  */
 @ApiModel(value = "TrainingDefinitionCreateDTO", description = "Training definition to create.")
 public class TrainingDefinitionCreateDTO {

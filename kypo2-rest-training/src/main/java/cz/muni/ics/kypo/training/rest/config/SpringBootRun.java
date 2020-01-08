@@ -43,7 +43,6 @@ import org.springframework.data.web.config.EnableSpringDataWebSupport;
  *  </code>
  * </pre>
  *
- * @author Pavel Seda (441048)
  */
 @SpringBootApplication(scanBasePackages = "cz.muni.ics.kypo.training.rest")
 @EnableSpringDataWebSupport

@@ -8,9 +8,6 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
-/**
- * @author Pavel Šeda
- */
 public class LocalDateTimeSerializer extends StdSerializer<LocalDateTime> {
 
     private static final long serialVersionUID = 4981746330658018061L;

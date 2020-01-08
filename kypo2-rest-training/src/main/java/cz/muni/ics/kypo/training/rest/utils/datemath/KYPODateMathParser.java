@@ -50,7 +50,6 @@ import java.util.regex.Pattern;
  * </code>
  * </pre>
  *
- * @author Pavel Šeda
  */
 @Component
 public class KYPODateMathParser {

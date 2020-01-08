@@ -29,10 +29,6 @@ import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.*;
 
-/**
- * @author Pavel Seda
- * @author Boris Jadus
- */
 @Service
 public class TrainingDefinitionServiceImpl implements TrainingDefinitionService {
 

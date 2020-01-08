@@ -15,7 +15,6 @@ import java.util.Set;
 /**
  * The interface for Training instance service.
  *
- * @author Pavel Seda (441048)
  */
 public interface TrainingInstanceService {
 

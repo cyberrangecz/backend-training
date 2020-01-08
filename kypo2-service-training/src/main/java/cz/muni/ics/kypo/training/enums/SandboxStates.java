@@ -3,7 +3,6 @@ package cz.muni.ics.kypo.training.enums;
 /**
  * The enum Sandbox states.
  *
- * @author Pavel Seda
  */
 public enum SandboxStates {
 

@@ -7,7 +7,6 @@ import java.util.Objects;
 /**
  * The entity which prevents multiple training runs to be created in parallel threads. Basically it determines active training runs.
  *
- * @author Dominik Pilar
  */
 @Entity(name = "TrainingRunAcquisitionLock")
 @Table(name = "training_run_acquisition_lock", uniqueConstraints = @UniqueConstraint(columnNames = {"participant_ref_id", "training_instance_id"}))

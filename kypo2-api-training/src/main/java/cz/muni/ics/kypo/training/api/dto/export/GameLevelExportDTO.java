@@ -9,7 +9,6 @@ import java.util.Set;
 /**
  * Encapsulates information about game level. Inherits from {@link AbstractLevelExportDTO}
  *
- * @author Pavel Šeda (441048)
  */
 @ApiModel(value = "GameLevelExportDTO", description = "Exported game level.", parent = AbstractLevelExportDTO.class)
 public class GameLevelExportDTO extends AbstractLevelExportDTO {

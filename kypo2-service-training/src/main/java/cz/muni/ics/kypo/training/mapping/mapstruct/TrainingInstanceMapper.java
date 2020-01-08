@@ -1,11 +1,10 @@
 package cz.muni.ics.kypo.training.mapping.mapstruct;
 
-import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceFindAllResponseDTO;
-import cz.muni.ics.kypo.training.api.responses.PageResultResource;
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceCreateDTO;
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceDTO;
+import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceFindAllResponseDTO;
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceUpdateDTO;
-import cz.muni.ics.kypo.training.persistence.model.TrainingDefinition;
+import cz.muni.ics.kypo.training.api.responses.PageResultResource;
 import cz.muni.ics.kypo.training.persistence.model.TrainingInstance;
 import org.mapstruct.Mapper;
 import org.mapstruct.ReportingPolicy;
@@ -18,7 +17,6 @@ import java.util.*;
  * The TrainingInstanceMapper is an utility class to map items into data transfer objects. It provides the implementation of mappings between Java bean type TrainingInstanceMapper and
  * DTOs classes. Code is generated during compile time.
  *
- *  @author Roman Oravec
  */
 @Mapper(componentModel = "spring", uses = {TrainingDefinitionMapper.class, UserRefMapper.class}, unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface TrainingInstanceMapper extends ParentMapper{

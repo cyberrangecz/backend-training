@@ -13,7 +13,6 @@ import java.util.List;
 /**
  * The interface for Training run service.
  *
- * @author Dominik Pilar (445537)
  */
 public interface TrainingRunService {
 

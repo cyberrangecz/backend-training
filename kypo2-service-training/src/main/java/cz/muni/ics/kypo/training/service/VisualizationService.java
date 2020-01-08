@@ -11,7 +11,6 @@ import java.util.Set;
 /**
  * The interface for Visualization service.
  *
- * @author Dominik Pilar (445537)
  */
 public interface VisualizationService {
 

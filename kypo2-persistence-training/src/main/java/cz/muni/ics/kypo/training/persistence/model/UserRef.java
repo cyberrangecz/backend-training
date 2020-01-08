@@ -9,7 +9,6 @@ import java.util.Set;
 /**
  * Class representing DB reference for user and training instances and definition they can access
  *
- * @author Pavel Seda
  */
 @Entity
 @Table(name = "user_ref", uniqueConstraints = @UniqueConstraint(columnNames = {"user_ref_id"}))

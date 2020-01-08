@@ -7,7 +7,6 @@ import io.swagger.annotations.ApiModelProperty;
 /**
  * Encapsulates information about game level. Inherits from {@link AbstractLevelDTO}
  *
- * @author Pavel Šeda (441048)
  */
 @ApiModel(value = "InfoLevelDTO", description = "A HTML content for the participant to read.", parent = AbstractLevelDTO.class)
 public class InfoLevelDTO extends AbstractLevelDTO {

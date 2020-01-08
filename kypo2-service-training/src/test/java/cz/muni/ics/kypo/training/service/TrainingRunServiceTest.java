@@ -6,7 +6,6 @@ import com.querydsl.core.types.dsl.PathBuilder;
 import cz.muni.ics.kypo.commons.security.enums.AuthenticatedUserOIDCItems;
 import cz.muni.ics.kypo.training.api.responses.PageResultResourcePython;
 import cz.muni.ics.kypo.training.api.responses.SandboxInfo;
-import cz.muni.ics.kypo.training.enums.SandboxStates;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.model.enums.AssessmentType;
@@ -49,10 +48,6 @@ import java.util.*;
 
 import static org.junit.Assert.*;
 import static org.mockito.BDDMockito.*;
-
-/**
- * @author Boris Jadus(445343)
- */
 
 @RunWith(SpringRunner.class)
 public class TrainingRunServiceTest {

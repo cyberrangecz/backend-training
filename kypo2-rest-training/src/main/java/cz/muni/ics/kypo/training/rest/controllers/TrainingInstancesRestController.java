@@ -37,8 +37,6 @@ import java.util.Set;
 /**
  * The type Training instances rest controller.
  *
- * @author Pavel Šeda
- * @author Boris Jadus
  */
 @Api(value = "/training-instances", tags = "Training instances", consumes = MediaType.APPLICATION_JSON_VALUE)
 @ApiResponses(value = {

@@ -3,7 +3,6 @@ package cz.muni.csirt.kypo.elasticsearch.service.exceptions;
 /**
  * The type Elasticsearch training service layer exception.
  *
- * @author Pavel Šeda (441048)
  */
 public class ElasticsearchTrainingServiceLayerException extends RuntimeException {
 

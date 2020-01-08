@@ -12,7 +12,6 @@ import java.util.Objects;
 /**
  * Encapsulates information about already accessed training run.
  *
- * @author Dominik Pilar & Pavel Seda
  */
 @ApiModel(value = "AccessedTrainingRunDTO", description = "Already accessed training run by some participant.")
 public class AccessedTrainingRunDTO {

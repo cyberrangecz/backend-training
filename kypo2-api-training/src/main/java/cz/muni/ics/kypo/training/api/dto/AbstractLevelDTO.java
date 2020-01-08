@@ -4,20 +4,18 @@ import com.fasterxml.jackson.annotation.JsonSubTypes;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.gamelevel.GameLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.infolevel.InfoLevelDTO;
-
-import java.util.Objects;
-
 import cz.muni.ics.kypo.training.api.dto.snapshothook.SnapshotHookDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionDTO;
 import cz.muni.ics.kypo.training.api.enums.LevelType;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
+import java.util.Objects;
+
 /**
  * Encapsulates information about abstract level.
  * Extended by {@link AssessmentLevelDTO}, {@link GameLevelDTO} and {@link InfoLevelDTO}
  *
- * @author Pavel Šeda (441048)
  */
 @ApiModel(value = "AbstractLevelDTO", subTypes = {GameLevelDTO.class, InfoLevelDTO.class, AssessmentLevelDTO.class},
         description = "Superclass for classes GameLevelDTO, AssessmentLevelDTO and InfoLevelDTO")

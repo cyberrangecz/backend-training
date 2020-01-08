@@ -10,7 +10,6 @@ import java.util.*;
 /**
  * Encapsulates information needed to update game level.
  *
- * @author Pavel Šeda (441048)
  */
 @ApiModel(value = "GameLevelUpdateDTO", description = "Game level to update.")
 public class GameLevelUpdateDTO {

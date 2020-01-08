@@ -11,7 +11,6 @@ import java.util.Objects;
 /**
  * Encapsulates information about user reference.
  *
- * @author Pavel Seda
  */
 @ApiModel(value = "UserRefDTO", description = "User information from user-and-group microservice is mapped to this class " +
         "and is also used to provide information about authors, participants, and organizers.")

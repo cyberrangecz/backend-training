@@ -12,7 +12,6 @@ import java.time.LocalDateTime;
 /**
  * Encapsulates information about Training Run.
  *
- * @author Boris Jadus
  */
 @ApiModel(value = "TrainingRunByIdDTO", description = "The act, or a recording, of performing actions during training from a perspective of one concrete participant.")
 public class TrainingRunByIdDTO {

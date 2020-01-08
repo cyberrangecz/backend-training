@@ -12,7 +12,6 @@ import java.util.List;
 /**
  * The interface for training definition service.
  *
- * @author Pavel Seda (441048)
  */
 public interface TrainingDefinitionService {
 

@@ -30,9 +30,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 import java.nio.charset.Charset;
 
-/**
- * @author Boris Jadus(445343)
- */
 @Configuration
 @ComponentScan(basePackages = {"cz.muni.ics.kypo.training.facade", "cz.muni.ics.kypo.training.mapping", "cz.muni.ics.kypo.training.service",
 		"cz.muni.csirt.kypo.elasticsearch.service",	"cz.muni.csirt.kypo.elasticsearch.data"})

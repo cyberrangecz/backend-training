@@ -13,9 +13,6 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 
-/**
- * @author Pavel Seda
- */
 @Service
 public class AuditEventsService {
 

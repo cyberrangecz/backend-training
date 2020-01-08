@@ -7,7 +7,6 @@ import java.util.Objects;
  * Class representing access token needed by trainee to start a Training run.
  * Access tokens are associated with Training instances.
  *
- * @author Boris Jadus
  */
 @Entity(name = "AccessToken")
 @Table(name = "access_token")

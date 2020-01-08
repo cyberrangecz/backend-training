@@ -15,7 +15,6 @@ import java.util.Optional;
 /**
  * The JPA repository interface to manage {@link AbstractLevel} instances.
  *
- * @author Pavel Seda
  */
 @Repository
 public interface AbstractLevelRepository extends JpaRepository<AbstractLevel, Long>, QuerydslPredicateExecutor<AbstractLevel> {

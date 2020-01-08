@@ -1,15 +1,14 @@
 package cz.muni.ics.kypo.training.api.dto.infolevel;
 
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
-
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 
 /**
  * Encapsulates information needed to update info level.
  *
- * @author Pavel Šeda (441048)
  */
 @ApiModel(value = "InfoLevelUpdateDTO", description = "Info level to update.")
 public class InfoLevelUpdateDTO {

@@ -13,9 +13,6 @@ import org.springframework.stereotype.Repository;
 
 import java.io.IOException;
 
-/**
- * @author Pavel Šeda
- */
 @Repository
 public class AuditDAO extends AbstractElasticClientDAO {
 

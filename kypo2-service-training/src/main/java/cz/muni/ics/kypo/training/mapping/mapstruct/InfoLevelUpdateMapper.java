@@ -14,7 +14,6 @@ import java.util.*;
  * The InfoLevelUpdateMapper is an utility class to map items into data transfer objects. It provides the implementation of mappings between Java bean type InfoLevelUpdateMapper and
  * DTOs classes. Code is generated during compile time.
  *
- * @author Roman Oravec
  */
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface InfoLevelUpdateMapper extends ParentMapper{

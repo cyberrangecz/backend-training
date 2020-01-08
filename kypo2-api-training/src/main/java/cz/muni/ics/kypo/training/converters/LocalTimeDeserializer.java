@@ -7,9 +7,6 @@ import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import java.io.IOException;
 import java.time.LocalTime;
 
-/**
- * @author Pavel Šeda
- */
 public class LocalTimeDeserializer extends StdDeserializer<LocalTime> {
 
     public LocalTimeDeserializer() {

@@ -13,7 +13,6 @@ import java.util.Objects;
 /**
  * Encapsulates information about Training Run.
  *
- * @author Pavel Seda (441048)
  */
 @ApiModel(value = "TrainingRunDTO", description = "The act, or a recording, of performing actions during training from a perspective of one concrete participant.")
 public class TrainingRunDTO {

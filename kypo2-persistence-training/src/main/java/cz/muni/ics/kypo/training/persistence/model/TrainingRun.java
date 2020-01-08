@@ -14,7 +14,6 @@ import java.util.Set;
  * Training runs can be created based on instances.
  * Training runs are accessed by trainees
  *
- * @author Pavel Seda
  */
 @Entity(name = "TrainingRun")
 @Table(name = "training_run")

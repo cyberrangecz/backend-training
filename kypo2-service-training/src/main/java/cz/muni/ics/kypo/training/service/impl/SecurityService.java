@@ -26,10 +26,6 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
-/**
- * @author Dominik Pilar
- * @author Pavel Seda
- */
 @Service
 @TransactionalRO(propagation = Propagation.REQUIRES_NEW)
 public class SecurityService {

@@ -11,7 +11,6 @@ import java.util.Optional;
 /**
  * The JPA repository interface to manage {@link AccessToken} instances.
  *
- * @author Boris Jadus
  */
 @Repository
 public interface AccessTokenRepository extends JpaRepository<AccessToken, Long>, QuerydslPredicateExecutor<AccessToken> {

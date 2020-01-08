@@ -7,9 +7,6 @@ import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import java.io.IOException;
 import java.time.LocalDate;
 
-/**
- * @author Pavel Šeda
- */
 public class LocalDateDeserializer extends StdDeserializer<LocalDate> {
 
     private static final long serialVersionUID = 8559445466757321763L;

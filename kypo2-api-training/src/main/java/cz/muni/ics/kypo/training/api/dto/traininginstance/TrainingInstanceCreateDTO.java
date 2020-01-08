@@ -10,12 +10,10 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
-import java.util.Set;
 
 /**
  * Encapsulates information about Training Instance, intended for creation of new instance.
  *
- * @author Pavel Seda (441048)
  */
 @ApiModel(value = "TrainingInstanceCreateDTO", description = "Training Instance to create.")
 public class TrainingInstanceCreateDTO {

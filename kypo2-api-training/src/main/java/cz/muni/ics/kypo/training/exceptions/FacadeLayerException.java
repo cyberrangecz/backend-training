@@ -3,7 +3,6 @@ package cz.muni.ics.kypo.training.exceptions;
 /**
  * The type Facade layer exception.
  *
- * @author Pavel Šeda (441048)
  */
 public class FacadeLayerException extends RuntimeException {
 
