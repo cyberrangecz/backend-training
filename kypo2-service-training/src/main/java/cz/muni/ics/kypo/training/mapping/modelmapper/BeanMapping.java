@@ -29,7 +29,6 @@ import java.util.Set;
  * <p>
  * This example shows mapping list of user entities to list of user DTO classes.
  *
- * @author Pavel Šeda (441048)
  */
 public interface BeanMapping {
 

@@ -9,7 +9,6 @@ import java.util.Set;
 /**
  * Group of users that can test Training runs created from unreleased Training Definition
  *
- * @author Pavel Seda
  */
 @Entity
 @Table(name = "beta_testing_group")

@@ -2,9 +2,6 @@ package cz.muni.ics.kypo.training.api.dto.export;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import cz.muni.ics.kypo.training.api.dto.archive.AssessmentLevelArchiveDTO;
-import cz.muni.ics.kypo.training.api.dto.archive.GameLevelArchiveDTO;
-import cz.muni.ics.kypo.training.api.dto.archive.InfoLevelArchiveDTO;
 import cz.muni.ics.kypo.training.api.enums.LevelType;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -13,7 +10,6 @@ import io.swagger.annotations.ApiModelProperty;
  * Encapsulates information about abstract level.
  * Extended by {@link AssessmentLevelExportDTO}, {@link GameLevelExportDTO} and {@link InfoLevelExportDTO}
  *
- * @author Pavel Seda
  */
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
 @JsonSubTypes({

@@ -8,9 +8,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
-/**
- * @author Pavel Seda (441048)
- */
 public class ApiErrorTraining {
     @ApiModelProperty(value = "The time when the exception occurred", example = "1574062900 (different for each type of exception)")
     private long timestamp;

@@ -29,12 +29,8 @@ import org.springframework.web.client.RestTemplate;
 import javax.net.ssl.SSLContext;
 import java.io.File;
 import java.nio.charset.Charset;
-import java.util.Arrays;
 import java.util.List;
 
-/**
- * @author Pavel Šeda
- */
 @Configuration
 @EnableAsync(proxyTargetClass = true)
 @Import({ElasticsearchServiceConfig.class, PersistenceConfig.class, ResourceServerSecurityConfig.class})

@@ -1,6 +1,6 @@
 package cz.muni.ics.kypo.training.persistence.model;
 
-import org.h2.jdbc.JdbcSQLException;
+import cz.muni.ics.kypo.training.persistence.config.PersistenceConfigTest;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -11,18 +11,10 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.context.annotation.Import;
-import org.springframework.dao.DataAccessException;
 import org.springframework.test.context.junit4.SpringRunner;
-
-import cz.muni.ics.kypo.training.persistence.config.PersistenceConfigTest;
-
-import javax.persistence.PersistenceException;
 
 import static org.junit.Assert.assertNotNull;
 
-/**
- * @author Pavel Seda
- */
 @RunWith(SpringRunner.class)
 @DataJpaTest
 @Import(PersistenceConfigTest.class)

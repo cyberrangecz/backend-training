@@ -12,7 +12,6 @@ import java.util.List;
 /**
  * Encapsulates basic information about Training Instance
  *
- * @author Pavel Seda
  */
 public class TrainingInstanceFindAllResponseDTO {
 

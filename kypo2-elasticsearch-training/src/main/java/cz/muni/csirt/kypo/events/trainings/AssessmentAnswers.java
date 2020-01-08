@@ -9,7 +9,6 @@ import io.swagger.annotations.ApiModelProperty;
 /**
  * This classes uses Builder pattern based on the following blog:
  *
- * @author Pavel Šeda
  * @see <a href="https://blog.jayway.com/2012/02/07/builder-pattern-with-a-twist/">https://blog.jayway.com/2012/02/07/builder-pattern-with-a-twist/</a>
  * <p>
  * <p>

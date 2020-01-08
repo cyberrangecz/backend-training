@@ -29,9 +29,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.net.URI;
 import java.util.*;
 
-/**
- * @author Dominik Pilar
- */
 @Service
 public class UserServiceImpl implements UserService {
 

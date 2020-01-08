@@ -8,9 +8,6 @@ import org.springframework.context.annotation.Import;
 
 import cz.muni.csirt.kypo.elasticsearch.data.config.ElasticsearchDataConfig;
 
-/**
- * @author Pavel Šeda
- */
 @Configuration
 @Import({ElasticsearchDataConfig.class, ObjectMapperConfigElasticsearch.class})
 @ComponentScan(basePackages = {"cz.muni.csirt.kypo.elasticsearch.service"})

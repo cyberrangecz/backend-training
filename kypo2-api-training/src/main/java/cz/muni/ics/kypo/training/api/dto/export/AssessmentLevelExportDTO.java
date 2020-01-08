@@ -7,7 +7,6 @@ import io.swagger.annotations.ApiModelProperty;
 /**
  * Encapsulates information about assessment level. Inherits from {@link AbstractLevelExportDTO}
  *
- * @author Pavel Seda
  */
 @ApiModel(value = "AssessmentLevelExportDTO", description = "Exported assessment level.", parent = AbstractLevelExportDTO.class)
 public class AssessmentLevelExportDTO extends AbstractLevelExportDTO {

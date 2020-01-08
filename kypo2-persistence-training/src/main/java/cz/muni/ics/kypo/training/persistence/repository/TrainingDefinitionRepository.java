@@ -26,7 +26,6 @@ import java.util.Optional;
 /**
  * The JPA repository interface to manage {@link TrainingDefinition} instances.
  *
- * @author Pavel Seda (441048)
  */
 public interface TrainingDefinitionRepository
         extends JpaRepository<TrainingDefinition, Long>, TrainingDefinitionRepositoryCustom, QuerydslPredicateExecutor<TrainingDefinition>, QuerydslBinderCustomizer<QTrainingDefinition> {

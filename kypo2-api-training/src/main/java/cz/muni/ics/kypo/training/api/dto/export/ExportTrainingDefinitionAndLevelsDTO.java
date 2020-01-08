@@ -11,7 +11,6 @@ import java.util.List;
 /**
  * Encapsulates information about training definition and its levels.
  *
- * @author Pavel Seda
  */
 @ApiModel(value = "ExportTrainingDefinitionAndLevelsDTO", description = "An exported detailed information about training definition which also include individual levels.")
 public class ExportTrainingDefinitionAndLevelsDTO {

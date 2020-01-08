@@ -1,22 +1,18 @@
 package cz.muni.ics.kypo.training.persistence.repository;
 
 import cz.muni.ics.kypo.training.persistence.model.UserRef;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
 /**
  * The JPA repository interface to manage {@link UserRef} instances.
  *
- * @author Pavel Seda
  */
 @Repository
 public interface UserRefRepository extends JpaRepository<UserRef, Long>,

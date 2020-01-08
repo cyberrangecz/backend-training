@@ -3,7 +3,6 @@ package cz.muni.csirt.kypo.events.trainings.enums;
 /**
  * The enum Level type.
  *
- * @author Pavel Šeda
  */
 public enum LevelType {
     /**

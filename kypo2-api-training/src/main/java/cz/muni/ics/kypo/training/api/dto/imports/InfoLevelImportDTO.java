@@ -6,7 +6,6 @@ import io.swagger.annotations.ApiModelProperty;
 /**
  * The type Info level import dto. * Encapsulates information about info level. Inherits from {@link AbstractLevelImportDTO}
  *
- * @author Boris Jadus(445343)
  */
 @ApiModel(value = "InfoLevelImportDTO", description = "An imported info level.", parent = AbstractLevelImportDTO.class)
 public class InfoLevelImportDTO extends AbstractLevelImportDTO{

@@ -19,9 +19,6 @@ import java.time.LocalDateTime;
 
 import static org.junit.Assert.assertEquals;
 
-/**
- * @author Pavel Seda
- */
 @RunWith(SpringRunner.class)
 @DataJpaTest
 @Import(PersistenceConfigTest.class)

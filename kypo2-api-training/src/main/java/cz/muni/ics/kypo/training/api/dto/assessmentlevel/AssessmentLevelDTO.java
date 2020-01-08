@@ -9,7 +9,6 @@ import io.swagger.annotations.ApiModelProperty;
 /**
  * Encapsulates information about assessment level. Inherits from {@link AbstractLevelDTO}
  *
- * @author Dominik Pilár
  */
 @ApiModel(value = "AssessmentLevelDTO", description = "A questionnaire or a test that is displayed to the participant.", parent = AbstractLevelDTO.class)
 public class AssessmentLevelDTO extends AbstractLevelDTO {

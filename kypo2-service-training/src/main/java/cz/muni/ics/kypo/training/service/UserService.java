@@ -12,7 +12,6 @@ import java.util.Set;
 /**
  * The interface for User service.
  *
- * @author Dominik Pilar (445537)
  */
 public interface UserService {
 

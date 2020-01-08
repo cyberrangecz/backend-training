@@ -14,7 +14,6 @@ import java.util.*;
 /**
  * Encapsulates information about Training Definition.
  *
- * @author Pavel Seda (441048)
  */
 @ApiModel(value = "TrainingDefinitionByIdDTO", description = "A blueprint of abstract levels.")
 public class TrainingDefinitionByIdDTO {

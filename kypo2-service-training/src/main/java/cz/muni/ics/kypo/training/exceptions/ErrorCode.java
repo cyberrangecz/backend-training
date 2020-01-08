@@ -1,7 +1,6 @@
 package cz.muni.ics.kypo.training.exceptions;
 
 /**
- * @author Dominik Pilar (445537)
  * <p>
  * NO_AVAILABLE_SANDBOX - no ready sandbox, which can be assigned to the participant
  * WRONG_LEVEL_TYPE - requested method cannot be call on given level because of missing atribute

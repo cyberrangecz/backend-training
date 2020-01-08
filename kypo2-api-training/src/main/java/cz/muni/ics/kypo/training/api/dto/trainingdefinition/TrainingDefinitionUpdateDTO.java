@@ -1,23 +1,19 @@
 package cz.muni.ics.kypo.training.api.dto.trainingdefinition;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
-
-import javax.validation.Valid;
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
-
 import cz.muni.ics.kypo.training.api.dto.betatestinggroup.BetaTestingGroupUpdateDTO;
 import cz.muni.ics.kypo.training.api.enums.TDState;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
+import javax.validation.Valid;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
+import java.util.Arrays;
+
 
 /**
  * Encapsulates information about Training Definition, intended for edit of the definition.
  *
- * @author Pavel Šeda (441048)
  */
 @ApiModel(value = "TrainingDefinitionUpdateDTO", description = "Training definition to update.")
 public class TrainingDefinitionUpdateDTO {

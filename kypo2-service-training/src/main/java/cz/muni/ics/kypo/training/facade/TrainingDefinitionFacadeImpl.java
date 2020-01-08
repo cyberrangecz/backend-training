@@ -36,10 +36,6 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
-/**
- * @author Pavel Šeda
- * @author Boris Jadus
- */
 @Service
 @Transactional
 public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {

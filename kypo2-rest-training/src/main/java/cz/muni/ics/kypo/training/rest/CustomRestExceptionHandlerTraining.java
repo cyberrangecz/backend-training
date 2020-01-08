@@ -32,9 +32,6 @@ import javax.validation.ConstraintViolationException;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * @author Pavel Seda (441048)
- */
 @Order(Ordered.HIGHEST_PRECEDENCE)
 @RestControllerAdvice(basePackages = "cz.muni.ics.kypo.training")
 public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionHandler {

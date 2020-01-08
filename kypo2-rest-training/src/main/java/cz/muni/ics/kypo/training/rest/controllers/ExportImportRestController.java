@@ -25,8 +25,6 @@ import javax.validation.Valid;
 /**
  * The controller for export/import.
  *
- * @author Pavel Seda
- * @author Boris Jadus
  */
 @Api(value = "/", tags = "Export Imports", consumes = MediaType.APPLICATION_JSON_VALUE)
 @ApiResponses(value = {

@@ -10,7 +10,6 @@ import io.swagger.annotations.ApiModelProperty;
 /**
  * Encapsulates basic information about level.
  *
- * @author Boris Jadus
  */
 @ApiModel(value = "BasicLevelInfoDTO", description = "Basic information about the level and its type.")
 public class BasicLevelInfoDTO {

@@ -3,9 +3,6 @@ package cz.muni.csirt.kypo.elasticsearch.data;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.elasticsearch.client.RestHighLevelClient;
 
-/**
- * @author Pavel Šeda
- */
 public abstract class AbstractElasticClientDAO {
 
     private RestHighLevelClient restHighLevelClient;

@@ -8,7 +8,6 @@ import java.util.Objects;
  * Class specifying Abstract level as Info level.
  * Info levels contain information for trainees.
  *
- * @author Pavel Seda (441048)
  */
 @Entity(name = "InfoLevel")
 @Table(name = "info_level")

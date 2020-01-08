@@ -9,7 +9,6 @@ import org.springframework.stereotype.Repository;
 /**
  * The JPA repository interface to manage {@link TRAcquisitionLock} instances.
  *
- * @author Dominik Pilar
  */
 @Repository
 public interface TRAcquisitionLockRepository extends JpaRepository<TRAcquisitionLock, Long>, QuerydslPredicateExecutor<TRAcquisitionLockRepository> {

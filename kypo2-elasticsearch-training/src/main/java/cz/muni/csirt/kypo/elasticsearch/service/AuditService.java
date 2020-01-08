@@ -14,9 +14,6 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.util.Objects;
 
-/**
- * @author Pavel Šeda
- */
 @Service
 public class AuditService {
 

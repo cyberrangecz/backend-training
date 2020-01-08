@@ -10,7 +10,6 @@ import java.util.*;
 /**
  * Encapsulates information about game level. Inherits from {@link AbstractLevelDTO}
  *
- * @author Pavel Šeda (441048)
  */
 @ApiModel(value = "GameLevelDTO", description = "An assignment containing security tasks whose completion yields a flag.", parent = AbstractLevelDTO.class)
 public class GameLevelDTO extends AbstractLevelDTO {

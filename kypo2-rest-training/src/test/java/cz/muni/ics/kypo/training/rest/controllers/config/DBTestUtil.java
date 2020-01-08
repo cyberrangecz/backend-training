@@ -7,9 +7,7 @@ import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
-/**
- * @author Boris Jadus(445343)
- */
+
 public class DBTestUtil {
 	private DBTestUtil() {}
 

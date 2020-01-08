@@ -11,9 +11,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-/**
- * @author Pavel Seda
- */
 @Service
 public class TrainingEventsService {
 

@@ -6,9 +6,6 @@ import com.fasterxml.jackson.databind.JsonDeserializer;
 
 import java.io.IOException;
 
-/**
- * @author Pavel Šeda
- */
 public class JsonRawValueDeserializer extends JsonDeserializer<String> {
 
     @Override

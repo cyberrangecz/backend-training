@@ -11,7 +11,6 @@ import java.util.*;
  * Class represents Training definition.
  * Training instances can be created based on definitions.
  *
- * @author Pavel Seda (441048)
  */
 @Entity(name = "TrainingDefinition")
 @Table(name = "training_definition")

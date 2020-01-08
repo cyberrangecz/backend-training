@@ -18,7 +18,6 @@ import java.util.Set;
 /**
  * The interface for training definition facade.
  *
- * @author Pavel Seda (441048)
  */
 public interface TrainingDefinitionFacade {
 

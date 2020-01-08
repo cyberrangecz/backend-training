@@ -6,7 +6,6 @@ import io.swagger.annotations.ApiModelProperty;
 /**
  * Encapsulates information about Snapshot hook.
  *
- * @author Pavel Seda (441048)
  */
 @ApiModel(value = "SnapshotHookDTO", description = ".")
 public class SnapshotHookDTO {

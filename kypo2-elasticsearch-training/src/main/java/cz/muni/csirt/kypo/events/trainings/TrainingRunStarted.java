@@ -6,9 +6,6 @@ import cz.muni.csirt.kypo.elasticsearch.AbstractAuditPOJO;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
-/**
- * @author Pavel Šeda
- */
 @ApiModel(value = "Training Run Started", description = "Type of event from trainings (when training run is started).")
 @JsonRootName(value = "event")
 public class TrainingRunStarted extends AbstractAuditPOJO {

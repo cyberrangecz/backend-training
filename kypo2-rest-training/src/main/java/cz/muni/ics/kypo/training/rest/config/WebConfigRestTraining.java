@@ -15,7 +15,6 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import java.util.List;
 
 /**
- * @author Pavel Seda
  * <p>
  * Supported media types for .yml files -> https://stackoverflow.com/a/38000954/2892314
  */

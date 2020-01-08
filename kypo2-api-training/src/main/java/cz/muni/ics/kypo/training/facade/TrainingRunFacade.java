@@ -18,7 +18,6 @@ import java.util.List;
 /**
  * The interface Training run facade.
  *
- * @author Dominik Pilar (445537)
  */
 public interface TrainingRunFacade {
 

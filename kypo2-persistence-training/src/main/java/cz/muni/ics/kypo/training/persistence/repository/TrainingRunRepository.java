@@ -25,7 +25,6 @@ import java.util.Set;
 /**
  * The JPA repository interface to manage {@link TrainingRun} instances.
  *
- * @author Pavel Seda (441048)
  */
 @Repository
 public interface TrainingRunRepository extends JpaRepository<TrainingRun, Long>, QuerydslPredicateExecutor<TrainingRun>, QuerydslBinderCustomizer<QTrainingRun> {

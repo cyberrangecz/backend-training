@@ -13,7 +13,6 @@ import java.util.List;
 /**
  * Encapsulates information about training definition and its levels.
  *
- * @author Boris Jadus(445343)
  */
 @ApiModel(value = "HintDTO", description = "A basic information about hint.")
 public class ImportTrainingDefinitionDTO {

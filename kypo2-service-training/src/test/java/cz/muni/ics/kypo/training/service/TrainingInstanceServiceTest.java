@@ -49,10 +49,6 @@ import java.util.Optional;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.BDDMockito.*;
 
-/**
- * @author Boris Jadus(445343)
- */
-
 @RunWith(SpringRunner.class)
 public class TrainingInstanceServiceTest {
 

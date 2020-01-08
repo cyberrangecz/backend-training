@@ -15,7 +15,6 @@ import javax.validation.constraints.NotNull;
  * Encapsulates information about abstract level.
  * Extended by {@link AssessmentLevelImportDTO}, {@link GameLevelImportDTO} and {@link InfoLevelImportDTO}
  *
- * @author Boris Jadus(445343)
  */
 @ApiModel(value = "AbstractLevelImportDTO", subTypes = {GameLevelImportDTO.class, InfoLevelImportDTO.class, AssessmentLevelImportDTO.class},
 		description = "Superclass for classes GameLevelImportDTO, AssessmentLevelImportDTO and InfoLevelImportDTO")

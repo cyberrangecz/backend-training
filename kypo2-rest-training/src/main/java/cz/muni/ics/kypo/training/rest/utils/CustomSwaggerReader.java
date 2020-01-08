@@ -10,7 +10,6 @@ import org.apache.maven.plugin.logging.Log;
  *
  * That class is used to generate snake_case fields in REST API .adoc and .pdf documentation.
  *
- * @author Pavel Seda
  */
 public class CustomSwaggerReader extends SpringMvcApiReader {
 

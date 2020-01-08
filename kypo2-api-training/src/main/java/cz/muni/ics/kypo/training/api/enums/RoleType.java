@@ -3,7 +3,6 @@ package cz.muni.ics.kypo.training.api.enums;
 /**
  * The enumeration of user roles.
  *
- * @author Pavel Seda
  */
 public enum RoleType {
 

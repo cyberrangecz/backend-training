@@ -36,8 +36,6 @@ import org.springframework.web.bind.annotation.*;
 /**
  * The type Training runs rest controller.
  *
- * @author Dominik Pilar
- * @author Pavel Seda
  */
 @Api(value = "/training-runs", tags = "Training runs", consumes = MediaType.APPLICATION_JSON_VALUE)
 @ApiResponses(value = {

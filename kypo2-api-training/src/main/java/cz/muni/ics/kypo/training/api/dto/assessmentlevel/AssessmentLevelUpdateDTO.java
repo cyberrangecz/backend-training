@@ -1,18 +1,17 @@
 package cz.muni.ics.kypo.training.api.dto.assessmentlevel;
 
+import cz.muni.ics.kypo.training.api.enums.AssessmentType;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
+
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
-import cz.muni.ics.kypo.training.api.enums.AssessmentType;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
-
 /**
  * Encapsulates information needed to update assessment level.
  *
- * @author Pavel Šeda (441048)
  */
 @ApiModel(value = "AssessmentLevelUpdateDTO", description = "Assessment level to update.")
 public class AssessmentLevelUpdateDTO {

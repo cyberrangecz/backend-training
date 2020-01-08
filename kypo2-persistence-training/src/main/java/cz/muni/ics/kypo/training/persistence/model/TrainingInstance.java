@@ -12,7 +12,6 @@ import java.util.Set;
  * Training instances can be created based on definitions.
  * Training runs can be created based on instances.
  *
- * @author Pavel Seda (441048)
  */
 @Entity(name = "TrainingInstance")
 @Table(name = "training_instance")

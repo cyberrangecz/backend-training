@@ -35,10 +35,6 @@ import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-/**
- * @author Pavel Seda
- * @author Boris Jadus
- */
 @Service
 @Transactional
 public class ExportImportFacadeImpl implements ExportImportFacade {

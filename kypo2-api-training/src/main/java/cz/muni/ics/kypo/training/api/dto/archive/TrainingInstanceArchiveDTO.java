@@ -12,7 +12,6 @@ import java.util.Set;
  * Encapsulates information about Training instance.
  * Used for archiving
  *
- * @author Boris Jadus
  */
 @ApiModel(value = "TrainingInstanceArchiveDTO", description = "The finished and archived instance of training definition which includes individual finished training runs of participants.")
 public class TrainingInstanceArchiveDTO {

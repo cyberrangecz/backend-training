@@ -1,19 +1,18 @@
 package cz.muni.ics.kypo.training.api.dto.trainingdefinition;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import cz.muni.ics.kypo.training.api.dto.betatestinggroup.BetaTestingGroupDTO;
 import cz.muni.ics.kypo.training.api.enums.TDState;
 import cz.muni.ics.kypo.training.converters.LocalDateTimeUTCSerializer;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Objects;
 
 /**
  * Encapsulates information about Training Definition
  *
- * @author Pavel Seda (441048)
  */
 @ApiModel(value = "TrainingDefinitionDTO", description = "A blueprint of abstract levels.")
 public class TrainingDefinitionDTO {

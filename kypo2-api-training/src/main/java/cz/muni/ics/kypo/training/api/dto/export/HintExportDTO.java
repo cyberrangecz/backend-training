@@ -8,7 +8,6 @@ import java.util.Objects;
 /**
  *  Encapsulates information about Hint.
  *
- * @author Pavel Seda
  */
 @ApiModel(value = "HintExportDTO", description = "An exported brief textual description to aid the participant.")
 public class HintExportDTO {

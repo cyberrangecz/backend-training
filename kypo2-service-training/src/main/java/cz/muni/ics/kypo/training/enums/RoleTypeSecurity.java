@@ -3,7 +3,6 @@ package cz.muni.ics.kypo.training.enums;
 /**
  * The enumeration of Role types used for security.
  *
- * @author Pavel Seda
  */
 public enum RoleTypeSecurity {
     /**

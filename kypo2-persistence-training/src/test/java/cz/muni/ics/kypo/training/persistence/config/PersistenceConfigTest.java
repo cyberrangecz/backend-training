@@ -5,9 +5,6 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
-/**
- * @author Pavel Seda (441048)
- */
 @Configuration
 @ComponentScan(basePackages = {"cz.muni.ics.kypo.training.persistence.model", "cz.muni.ics.kypo.training.persistence.repository"})
 @EntityScan(basePackages = "cz.muni.ics.kypo.training.persistence.model")
