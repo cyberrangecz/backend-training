@@ -10,19 +10,6 @@
     <artifactId>kypo2-elasticsearch-training</artifactId>
     <packaging>jar</packaging>
 
-    <developers>
-        <developer>
-            <name>Pavel Šeda</name>
-            <email>441048@mail.muni.cz</email>
-            <organization>CSIRT</organization>
-            <organizationUrl>https://csirt.muni.cz/</organizationUrl>
-            <roles>
-                <role>developer</role>
-            </roles>
-            <timezone>CET/Central European Time - offset: UTC +1</timezone>
-        </developer>
-    </developers>
-
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>

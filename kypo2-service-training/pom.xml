@@ -16,19 +16,6 @@
         <swagger-codegen-plugin.version>2.2.3</swagger-codegen-plugin.version>
     </properties>
 
-    <developers>
-        <developer>
-            <name>Pavel Šeda</name>
-            <email>441048@mail.muni.cz</email>
-            <organization>CSIRT</organization>
-            <organizationUrl>https://csirt.muni.cz/</organizationUrl>
-            <roles>
-                <role>developer</role>
-            </roles>
-            <timezone>CET/Central European Time - offset: UTC +1</timezone>
-        </developer>
-    </developers>
-
     <dependencies>
         <dependency>
             <groupId>cz.muni.ics.kypo</groupId>
