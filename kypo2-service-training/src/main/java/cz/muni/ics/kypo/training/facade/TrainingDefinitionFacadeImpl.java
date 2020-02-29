@@ -447,11 +447,6 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
     @Override
     @TransactionalWO
     public void editAuthors(Long trainingDefinitionId, Set<Long> authorsAddition, Set<Long> authorsRemoval) throws FacadeLayerException {
-        try {
-
-        } catch (ServiceLayerException ex) {
-            throw new FacadeLayerException(ex);
-        }
         TrainingDefinition trainingDefinition = trainingDefinitionService.findById(trainingDefinitionId);
         Long loggedInUserRefId = securityService.getUserRefIdFromUserAndGroup();
         if(authorsRemoval != null && !authorsRemoval.isEmpty()) {
