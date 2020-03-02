@@ -4,6 +4,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.fge.jackson.JsonLoader;
 import com.querydsl.core.types.Predicate;
+import cz.muni.ics.kypo.training.annotations.security.IsOrganizerOrAdmin;
+import cz.muni.ics.kypo.training.annotations.security.IsTrainee;
+import cz.muni.ics.kypo.training.annotations.security.IsTraineeOrAdmin;
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalRO;
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalWO;
 import cz.muni.ics.kypo.training.api.dto.AbstractLevelDTO;
@@ -33,6 +36,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -69,6 +73,8 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
     }
 
     @Override
+    @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
+            "or @securityService.isTraineeOfGivenTrainingRun(#runId)")
     @TransactionalRO
     public TrainingRunByIdDTO findById(Long id) {
         try {
@@ -84,26 +90,30 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
     }
 
     @Override
+    @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)")
     @TransactionalRO
     public PageResultResource<TrainingRunDTO> findAll(Predicate predicate, Pageable pageable) {
-        PageResultResource<TrainingRunDTO>  trainingRunDTOPageResultResource = trainingRunMapper.mapToPageResultResource(trainingRunService.findAll(predicate, pageable));
+        PageResultResource<TrainingRunDTO> trainingRunDTOPageResultResource = trainingRunMapper.mapToPageResultResource(trainingRunService.findAll(predicate, pageable));
         addParticipantsToTrainingRunDTOs(trainingRunDTOPageResultResource.getContent());
         return trainingRunDTOPageResultResource;
     }
 
     @Override
+    @IsOrganizerOrAdmin
     @TransactionalWO
     public void deleteTrainingRuns(List<Long> trainingRunIds) {
         trainingRunService.deleteTrainingRuns(trainingRunIds);
     }
 
     @Override
+    @IsOrganizerOrAdmin
     @TransactionalWO
     public void deleteTrainingRun(Long trainingRunId) {
         trainingRunService.deleteTrainingRun(trainingRunId);
     }
 
     @Override
+    @IsTraineeOrAdmin
     @TransactionalRO
     public PageResultResource<AccessedTrainingRunDTO> findAllAccessedTrainingRuns(Pageable pageable, String sortByTitle) {
         Page<TrainingRun> trainingRuns = trainingRunService.findAllByParticipantRefUserRefId(pageable);
@@ -111,6 +121,8 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
     }
 
     @Override
+    @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
+            "or @securityService.isTraineeOfGivenTrainingRun(#trainingRunId)")
     @TransactionalWO
     public AccessTrainingRunDTO resumeTrainingRun(Long trainingRunId) {
         try {
@@ -134,6 +146,7 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
     }
 
     @Override
+    @IsTraineeOrAdmin
     @TransactionalWO
     public AccessTrainingRunDTO accessTrainingRun(String accessToken) {
         try {
@@ -165,6 +178,7 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
     }
 
     @Override
+    @IsTrainee
     @TransactionalRO
     public PageResultResource<TrainingRunDTO> findAllByTrainingDefinitionAndParticipant(Long trainingDefinitionId, Pageable pageable) {
         Page<TrainingRun> trainingRuns = trainingRunService.findAllByTrainingDefinitionAndParticipant(trainingDefinitionId, pageable);
@@ -174,6 +188,7 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
     }
 
     @Override
+    @IsTrainee
     @TransactionalRO
     public PageResultResource<TrainingRunDTO> findAllByTrainingDefinition(Long trainingDefinitionId, Pageable pageable) {
         Page<TrainingRun> trainingRuns = trainingRunService.findAllByTrainingDefinition(trainingDefinitionId, pageable);
@@ -183,6 +198,8 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
     }
 
     @Override
+    @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
+            "or @securityService.isTraineeOfGivenTrainingRun(#runId)")
     @TransactionalWO
     public AbstractLevelDTO getNextLevel(Long trainingRunId) {
         AbstractLevel abstractLevel;
@@ -195,6 +212,8 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
     }
 
     @Override
+    @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
+            "or @securityService.isTraineeOfGivenTrainingRun(#trainingRunId)")
     @TransactionalWO
     public String getSolution(Long trainingRunId) {
         try {
@@ -205,6 +224,8 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
     }
 
     @Override
+    @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
+            "or @securityService.isTraineeOfGivenTrainingRun(#trainingRunId)")
     @TransactionalWO
     public HintDTO getHint(Long trainingRunId, Long hintId) {
         try {
@@ -215,6 +236,8 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
     }
 
     @Override
+    @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
+            "or @securityService.isTraineeOfGivenTrainingRun(#runId)")
     @TransactionalWO
     public IsCorrectFlagDTO isCorrectFlag(Long trainingRunId, String flag) {
         IsCorrectFlagDTO correctFlagDTO = new IsCorrectFlagDTO();
@@ -231,6 +254,8 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
     }
 
     @Override
+    @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
+            "or @securityService.isTraineeOfGivenTrainingRun(#trainingRunId)")
     @TransactionalWO
     public void finishTrainingRun(Long trainingRunId) {
         try {
@@ -241,6 +266,7 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
     }
 
     @Override
+    @IsTrainee
     @TransactionalWO
     public void evaluateResponsesToAssessment(Long trainingRunId, String responsesAsString) {
         try {
@@ -251,6 +277,8 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
     }
 
     @Override
+    @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
+            "or @securityService.isTraineeOfGivenTrainingRun(#runId)")
     @TransactionalRO
     public UserRefDTO getParticipant(Long trainingRunId) {
         try {

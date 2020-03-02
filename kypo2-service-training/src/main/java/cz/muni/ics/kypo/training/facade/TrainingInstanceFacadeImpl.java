@@ -1,6 +1,7 @@
 package cz.muni.ics.kypo.training.facade;
 
 import com.querydsl.core.types.Predicate;
+import cz.muni.ics.kypo.training.annotations.security.IsOrganizerOrAdmin;
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalRO;
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalWO;
 import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
@@ -23,6 +24,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -53,6 +55,8 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
     }
 
     @Override
+    @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
+            "or @securityService.isOrganizerOfGivenTrainingInstance(#instanceId)")
     @TransactionalRO
     public TrainingInstanceDTO findById(Long id) {
         try {
@@ -67,12 +71,14 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
     }
 
     @Override
+    @IsOrganizerOrAdmin
     @TransactionalRO
     public PageResultResource<TrainingInstanceFindAllResponseDTO> findAll(Predicate predicate, Pageable pageable) {
         return trainingInstanceMapper.mapToPageResultResourceBasicView(trainingInstanceService.findAll(predicate, pageable));
     }
 
     @Override
+    @IsOrganizerOrAdmin
     @TransactionalWO
     public String update(TrainingInstanceUpdateDTO trainingInstanceUpdateDTO) {
         try {
@@ -86,6 +92,7 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
     }
 
     @Override
+    @IsOrganizerOrAdmin
     @TransactionalWO
     public TrainingInstanceDTO create(TrainingInstanceCreateDTO trainingInstanceCreateDTO) {
         try {
@@ -127,6 +134,8 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
     }
 
     @Override
+    @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
+            "or @securityService.isOrganizerOfGivenTrainingInstance(#instanceId)")
     @TransactionalWO
     public void delete(Long id) {
         try {
@@ -139,6 +148,8 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
     }
 
     @Override
+    @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
+            "or @securityService.isOrganizerOfGivenTrainingInstance(#instanceId)")
     @TransactionalWO
     public void allocateSandboxes(Long instanceId, Integer count) {
         try {
@@ -150,6 +161,8 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
     }
 
     @Override
+    @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
+            "or @securityService.isOrganizerOfGivenTrainingInstance(#instanceId)")
     @TransactionalWO
     public void deleteSandboxes(Long instanceId, Set<Long> sandboxIds) {
         try {
@@ -163,6 +176,8 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
     }
 
     @Override
+    @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
+            "or @securityService.isOrganizerOfGivenTrainingInstance(#instanceId)")
     @TransactionalRO
     public PageResultResource<TrainingRunDTO> findTrainingRunsByTrainingInstance(Long trainingInstanceId, Boolean isActive, Pageable pageable) {
         try {
@@ -181,6 +196,8 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
     }
 
     @Override
+    @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
+            "or @securityService.isOrganizerOfGivenTrainingInstance(#trainingInstanceId)")
     @TransactionalRO
     public TrainingInstanceIsFinishedInfoDTO checkIfInstanceCanBeDeleted(Long trainingInstanceId) {
         TrainingInstanceIsFinishedInfoDTO infoDTO = new TrainingInstanceIsFinishedInfoDTO();
@@ -195,22 +212,30 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
     }
 
     @Override
+    @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
+            "or @securityService.isOrganizerOfGivenTrainingInstance(#instanceId)")
     @TransactionalRO
     public PageResultResource<UserRefDTO> getOrganizersOfTrainingInstance(Long trainingInstanceId, Pageable pageable, String givenName, String familyName) {
         try {
             TrainingInstance trainingInstance = trainingInstanceService.findById(trainingInstanceId);
-            return userService.getUsersRefDTOByGivenUserIds(trainingInstance.getOrganizers().stream().map(UserRef::getUserRefId).collect(Collectors.toSet()), pageable, givenName, familyName);
+            return userService.getUsersRefDTOByGivenUserIds(trainingInstance.getOrganizers().stream()
+                    .map(UserRef::getUserRefId)
+                    .collect(Collectors.toSet()), pageable, givenName, familyName);
         } catch (ServiceLayerException ex) {
             throw new FacadeLayerException(ex);
         }
     }
 
     @Override
+    @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
+            "or @securityService.isOrganizerOfGivenTrainingInstance(#instanceId)")
     @TransactionalRO
     public PageResultResource<UserRefDTO> getOrganizersNotInGivenTrainingInstance(Long trainingInstanceId, Pageable pageable, String givenName, String familyName) {
         try {
             TrainingInstance trainingInstance = trainingInstanceService.findById(trainingInstanceId);
-            Set<Long> excludedOrganizers = trainingInstance.getOrganizers().stream().map(UserRef::getUserRefId).collect(Collectors.toSet());
+            Set<Long> excludedOrganizers = trainingInstance.getOrganizers().stream()
+                    .map(UserRef::getUserRefId)
+                    .collect(Collectors.toSet());
             return userService.getUsersByGivenRoleAndNotWithGivenIds(RoleType.ROLE_TRAINING_ORGANIZER, excludedOrganizers, pageable, givenName, familyName);
         } catch (ServiceLayerException ex) {
             throw new FacadeLayerException(ex);
@@ -218,6 +243,8 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
     }
 
     @Override
+    @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
+            "or @securityService.isOrganizerOfGivenTrainingInstance(#instanceId)")
     @TransactionalWO
     public void editOrganizers(Long trainingInstanceId, Set<Long> organizersAddition, Set<Long> organizersRemoval) throws FacadeLayerException {
         try {

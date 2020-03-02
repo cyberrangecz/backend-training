@@ -1,7 +1,5 @@
 package cz.muni.ics.kypo.training.service.impl;
 
-import cz.muni.ics.kypo.training.annotations.security.IsAdminOrTrainee;
-import cz.muni.ics.kypo.training.annotations.security.IsOrganizerOrAdmin;
 import cz.muni.ics.kypo.training.exceptions.ErrorCode;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.persistence.model.AbstractLevel;
@@ -23,9 +21,6 @@ import java.util.Set;
 @Service
 public class VisualizationServiceImpl implements VisualizationService {
 
-    private static final Logger LOG = LoggerFactory.getLogger(VisualizationServiceImpl.class);
-    private static final String MUST_NOT_BE_NULL = "Input training run id must not be null.";
-
     private AbstractLevelRepository abstractLevelRepository;
     private UserRefRepository userRefRepository;
     private SecurityService securityService;
@@ -39,7 +34,6 @@ public class VisualizationServiceImpl implements VisualizationService {
     }
 
     @Override
-    @IsAdminOrTrainee
     public List<AbstractLevel> getLevelsForTraineeVisualization(TrainingRun trainingRun) {
         Assert.notNull(trainingRun, "Id of training run must not be null.");
         if(securityService.isAdmin()) {
@@ -55,7 +49,6 @@ public class VisualizationServiceImpl implements VisualizationService {
     }
 
     @Override
-    @IsOrganizerOrAdmin
     public List<AbstractLevel> getLevelsForOrganizerVisualization(TrainingInstance trainingInstance) {
         Assert.notNull(trainingInstance, "Id of training instance must not be null.");
         if(securityService.isAdmin()) {

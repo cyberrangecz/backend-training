@@ -6,7 +6,6 @@ import cz.muni.csirt.kypo.events.trainings.enums.LevelType;
 import cz.muni.ics.kypo.training.api.dto.AuditInfoDTO;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import java.time.Clock;
 import java.time.LocalDateTime;
@@ -17,9 +16,6 @@ import java.time.temporal.ChronoUnit;
 public class AuditEventsService {
 
     private AuditService auditService;
-
-    @Value("${user-and-group-server.uri}")
-    private String userAndGroupUrl;
 
     @Autowired
     public AuditEventsService(AuditService auditService) {

@@ -7,13 +7,7 @@ import com.github.fge.jsonschema.core.report.ProcessingReport;
 import com.github.fge.jsonschema.main.JsonSchemaFactory;
 import com.github.fge.jsonschema.main.JsonValidator;
 import com.querydsl.core.types.Predicate;
-import cz.muni.ics.kypo.training.annotations.aop.TrackTime;
-import cz.muni.ics.kypo.training.annotations.security.IsOrganizerOrAdmin;
-import cz.muni.ics.kypo.training.annotations.security.IsTraineeOrAdmin;
-import cz.muni.ics.kypo.training.annotations.transactions.TransactionalWO;
-import cz.muni.ics.kypo.training.api.responses.PageResultResourcePython;
 import cz.muni.ics.kypo.training.api.responses.SandboxInfo;
-import cz.muni.ics.kypo.training.enums.SandboxStates;
 import cz.muni.ics.kypo.training.exceptions.ErrorCode;
 import cz.muni.ics.kypo.training.exceptions.RestTemplateException;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
@@ -35,7 +29,6 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.*;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import org.springframework.web.client.RestTemplate;
@@ -83,8 +76,6 @@ public class TrainingRunServiceImpl implements TrainingRunService {
     }
 
     @Override
-    @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
-            "or @securityService.isTraineeOfGivenTrainingRun(#runId)")
     public TrainingRun findById(Long runId) {
         Objects.requireNonNull(runId);
         return trainingRunRepository.findById(runId)
@@ -92,8 +83,6 @@ public class TrainingRunServiceImpl implements TrainingRunService {
     }
 
     @Override
-    @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
-            "or @securityService.isTraineeOfGivenTrainingRun(#runId)")
     public TrainingRun findByIdWithLevel(Long runId) {
         Objects.requireNonNull(runId);
         return trainingRunRepository.findByIdWithLevel(runId).orElseThrow(() ->
@@ -101,19 +90,16 @@ public class TrainingRunServiceImpl implements TrainingRunService {
     }
 
     @Override
-    @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)")
     public Page<TrainingRun> findAll(Predicate predicate, Pageable pageable) {
         return trainingRunRepository.findAll(predicate, pageable);
     }
 
     @Override
-    @IsOrganizerOrAdmin
     public void deleteTrainingRuns(List<Long> trainingRunIds) {
         trainingRunIds.forEach(this::deleteTrainingRun);
     }
 
     @Override
-    @IsOrganizerOrAdmin
     public void deleteTrainingRun(Long trainingRunId) {
         TrainingRun trainingRun = trainingRunRepository.findById(trainingRunId).orElseThrow(() -> new ServiceLayerException("Training Run with runId: " + trainingRunId + " could not be deleted because it is not in the database.", ErrorCode.RESOURCE_NOT_FOUND));
         if (trainingRun.getSandboxInstanceRefId() == null) {
@@ -141,7 +127,6 @@ public class TrainingRunServiceImpl implements TrainingRunService {
     }
 
     @Override
-    @IsTraineeOrAdmin
     public Page<TrainingRun> findAllByParticipantRefUserRefId(Pageable pageable) {
         return trainingRunRepository.findAllByParticipantRefId(securityService.getUserRefIdFromUserAndGroup(), pageable);
     }
@@ -152,8 +137,6 @@ public class TrainingRunServiceImpl implements TrainingRunService {
     }
 
     @Override
-    @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
-            "or @securityService.isTraineeOfGivenTrainingRun(#runId)")
     public AbstractLevel getNextLevel(Long runId) {
         Assert.notNull(runId, MUST_NOT_BE_NULL);
         TrainingRun trainingRun = findByIdWithLevel(runId);
@@ -194,7 +177,6 @@ public class TrainingRunServiceImpl implements TrainingRunService {
     }
 
     @Override
-    @IsTraineeOrAdmin
     public List<AbstractLevel> getLevels(Long definitionId) {
         Assert.notNull(definitionId, "Id of training definition must not be null.");
         return abstractLevelRepository.findAllLevelsByTrainingDefinitionId(definitionId);
@@ -202,9 +184,6 @@ public class TrainingRunServiceImpl implements TrainingRunService {
 
 
     @Override
-    @IsTraineeOrAdmin
-    @TransactionalWO
-    @TrackTime
     public TrainingRun accessTrainingRun(String accessToken) {
         Assert.hasLength(accessToken, "AccessToken cannot be null or empty.");
         TrainingInstance trainingInstance = trainingInstanceRepository.findByStartTimeAfterAndEndTimeBeforeAndAccessToken(LocalDateTime.now(Clock.systemUTC()), accessToken)
@@ -234,8 +213,6 @@ public class TrainingRunServiceImpl implements TrainingRunService {
     }
 
     @Override
-    @IsTraineeOrAdmin
-    @TransactionalWO
     public TrainingRun assignSandbox(TrainingRun trainingRun) {
         Long sandboxInstanceRef = getReadySandboxInstanceRef(trainingRun.getTrainingInstance().getPoolId());
         try {
@@ -250,9 +227,6 @@ public class TrainingRunServiceImpl implements TrainingRunService {
     }
 
     @Override
-    @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
-            "or @securityService.isTraineeOfGivenTrainingRun(#trainingRunId)")
-    @TrackTime
     public TrainingRun resumeTrainingRun(Long trainingRunId) {
         Assert.notNull(trainingRunId, MUST_NOT_BE_NULL);
         TrainingRun trainingRun = findByIdWithLevel(trainingRunId);
@@ -307,8 +281,6 @@ public class TrainingRunServiceImpl implements TrainingRunService {
     }
 
     @Override
-    @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
-            "or @securityService.isTraineeOfGivenTrainingRun(#runId)")
     public boolean isCorrectFlag(Long runId, String flag) {
         Assert.notNull(runId, MUST_NOT_BE_NULL);
         Assert.hasLength(flag, "Submitted flag must not be nul nor empty.");
@@ -334,8 +306,6 @@ public class TrainingRunServiceImpl implements TrainingRunService {
     }
 
     @Override
-    @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
-            "or @securityService.isTraineeOfGivenTrainingRun(#trainingRunId)")
     public int getRemainingAttempts(Long trainingRunId) {
         Assert.notNull(trainingRunId, MUST_NOT_BE_NULL);
         TrainingRun trainingRun = findByIdWithLevel(trainingRunId);
@@ -350,8 +320,6 @@ public class TrainingRunServiceImpl implements TrainingRunService {
     }
 
     @Override
-    @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
-            "or @securityService.isTraineeOfGivenTrainingRun(#trainingRunId)")
     public String getSolution(Long trainingRunId) {
         Assert.notNull(trainingRunId, MUST_NOT_BE_NULL);
         TrainingRun trainingRun = findByIdWithLevel(trainingRunId);
@@ -371,8 +339,6 @@ public class TrainingRunServiceImpl implements TrainingRunService {
     }
 
     @Override
-    @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
-            "or @securityService.isTraineeOfGivenTrainingRun(#trainingRunId)")
     public Hint getHint(Long trainingRunId, Long hintId) {
         Assert.notNull(trainingRunId, MUST_NOT_BE_NULL);
         Assert.notNull(hintId, "Input hint id must not be null.");
@@ -393,14 +359,11 @@ public class TrainingRunServiceImpl implements TrainingRunService {
     }
 
     @Override
-    @IsTraineeOrAdmin
     public int getMaxLevelOrder(Long definitionId) {
         return abstractLevelRepository.getCurrentMaxOrder(definitionId);
     }
 
     @Override
-    @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
-            "or @securityService.isTraineeOfGivenTrainingRun(#trainingRunId)")
     public void finishTrainingRun(Long trainingRunId) {
         Assert.notNull(trainingRunId, MUST_NOT_BE_NULL);
         TrainingRun trainingRun = findById(trainingRunId);

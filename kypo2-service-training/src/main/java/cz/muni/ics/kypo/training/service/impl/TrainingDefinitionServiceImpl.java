@@ -1,10 +1,6 @@
 package cz.muni.ics.kypo.training.service.impl;
 
 import com.querydsl.core.types.Predicate;
-import cz.muni.ics.kypo.training.annotations.security.IsAdminOrDesignerOrOrganizer;
-import cz.muni.ics.kypo.training.annotations.security.IsDesignerOrAdmin;
-import cz.muni.ics.kypo.training.annotations.security.IsOrganizerOrAdmin;
-import cz.muni.ics.kypo.training.annotations.transactions.TransactionalWO;
 import cz.muni.ics.kypo.training.exceptions.ErrorCode;
 import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.persistence.model.*;
@@ -20,7 +16,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import org.springframework.web.client.RestTemplate;
@@ -66,14 +61,12 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     }
 
     @Override
-    @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_TRAINEE)")
     public TrainingDefinition findById(Long id) {
         return trainingDefinitionRepository.findById(id).orElseThrow(
                 () -> new ServiceLayerException("Training definition with id: " + id + " not found.", ErrorCode.RESOURCE_NOT_FOUND));
     }
 
     @Override
-    @IsDesignerOrAdmin
     public Page<TrainingDefinition> findAll(Predicate predicate, Pageable pageable) {
         if (securityService.isAdmin()) {
             return trainingDefinitionRepository.findAll(predicate, pageable);
@@ -83,7 +76,6 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     }
 
     @Override
-    @IsOrganizerOrAdmin
     public Page<TrainingDefinition> findAllForOrganizers(String state, Pageable pageable) {
         Long loggedInUserId = securityService.getUserRefIdFromUserAndGroup();
         if(state != null && state.equals(TDState.RELEASED.name())) {
@@ -103,7 +95,6 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     }
 
     @Override
-    @IsDesignerOrAdmin
     public TrainingDefinition create(TrainingDefinition trainingDefinition) {
         Assert.notNull(trainingDefinition, "Input training definition must not be null");
 
@@ -114,14 +105,11 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     }
 
     @Override
-    @IsDesignerOrAdmin
     public Page<TrainingDefinition> findAllBySandboxDefinitionId(Long sandboxDefinitionId, Pageable pageable) {
         return trainingDefinitionRepository.findAllBySandBoxDefinitionRefId(sandboxDefinitionId, pageable);
     }
 
     @Override
-    @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
-            "or @securityService.isDesignerOfGivenTrainingDefinition(#trainingDefinitionToUpdate.id)")
     public void update(TrainingDefinition trainingDefinitionToUpdate) {
         Assert.notNull(trainingDefinitionToUpdate, "Input training definition must not be null");
         TrainingDefinition trainingDefinition = findById(trainingDefinitionToUpdate.getId());
@@ -133,7 +121,6 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     }
 
     @Override
-    @IsDesignerOrAdmin
     public TrainingDefinition clone(Long id, String title) {
         TrainingDefinition trainingDefinition = findById(id);
         TrainingDefinition clonedTrainingDefinition = new TrainingDefinition();
@@ -155,8 +142,6 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
 
 
     @Override
-    @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
-            "or @securityService.isDesignerOfGivenTrainingDefinition(#definitionId)")
     public void swapLevels(Long definitionId, Long swapLevelFrom, Long swapLevelTo) {
         TrainingDefinition trainingDefinition = findById(definitionId);
         checkIfCanBeUpdated(trainingDefinition);
@@ -171,8 +156,6 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     }
 
     @Override
-    @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
-            "or @securityService.isDesignerOfGivenTrainingDefinition(#definitionId)")
     public void moveLevel(Long definitionId, Long levelIdToBeMoved, Integer newPosition) {
         Integer maxOrderOfLevel = abstractLevelRepository.getCurrentMaxOrder(definitionId);
         if (newPosition < 0) {
@@ -195,8 +178,6 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     }
 
     @Override
-    @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
-            "or @securityService.isDesignerOfGivenTrainingDefinition(#definitionId)")
     public void delete(Long definitionId) {
         TrainingDefinition definition = findById(definitionId);
         if (definition.getState().equals(TDState.RELEASED))
@@ -211,8 +192,6 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     }
 
     @Override
-    @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
-            "or @securityService.isDesignerOfGivenTrainingDefinition(#definitionId)")
     public void deleteOneLevel(Long definitionId, Long levelId) {
         TrainingDefinition trainingDefinition = findById(definitionId);
         if (!trainingDefinition.getState().equals(TDState.UNRELEASED))
@@ -233,8 +212,6 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     }
 
     @Override
-    @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
-            "or @securityService.isDesignerOfGivenTrainingDefinition(#definitionId)")
     public void updateGameLevel(Long definitionId, GameLevel gameLevelToUpdate) {
         TrainingDefinition trainingDefinition = findById(definitionId);
         checkIfCanBeUpdated(trainingDefinition);
@@ -253,8 +230,6 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     }
 
     @Override
-    @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
-            "or @securityService.isDesignerOfGivenTrainingDefinition(#definitionId)")
     public void updateInfoLevel(Long definitionId, InfoLevel infoLevelToUpdate) {
         TrainingDefinition trainingDefinition = findById(definitionId);
         checkIfCanBeUpdated(trainingDefinition);
@@ -273,8 +248,6 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     }
 
     @Override
-    @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
-            "or @securityService.isDesignerOfGivenTrainingDefinition(#definitionId)")
     public void updateAssessmentLevel(Long definitionId, AssessmentLevel assessmentLevelToUpdate) {
         TrainingDefinition trainingDefinition = findById(definitionId);
         checkIfCanBeUpdated(trainingDefinition);
@@ -296,8 +269,6 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     }
 
     @Override
-    @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
-            "or @securityService.isDesignerOfGivenTrainingDefinition(#definitionId)")
     public GameLevel createGameLevel(Long definitionId) {
         Assert.notNull(definitionId, "Definition id must not be null");
         TrainingDefinition trainingDefinition = findById(definitionId);
@@ -331,8 +302,6 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     }
 
     @Override
-    @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
-            "or @securityService.isDesignerOfGivenTrainingDefinition(#definitionId)")
     public InfoLevel createInfoLevel(Long definitionId) {
         Assert.notNull(definitionId, "Definition id must not be null");
         TrainingDefinition trainingDefinition = findById(definitionId);
@@ -350,8 +319,6 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     }
 
     @Override
-    @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
-            "or @securityService.isDesignerOfGivenTrainingDefinition(#definitionId)")
     public AssessmentLevel createAssessmentLevel(Long definitionId) {
         Assert.notNull(definitionId, "Definition id must not be null");
         TrainingDefinition trainingDefinition = findById(definitionId);
@@ -379,14 +346,12 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     }
 
     @Override
-    @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_TRAINEE)")
     public List<AbstractLevel> findAllLevelsFromDefinition(Long definitionId) {
         Assert.notNull(definitionId, "Definition id must not be null");
         return abstractLevelRepository.findAllLevelsByTrainingDefinitionId(definitionId);
     }
 
     @Override
-    @IsDesignerOrAdmin
     public AbstractLevel findLevelById(Long levelId) {
         Assert.notNull(levelId, "Input level id must not be null.");
         return abstractLevelRepository.findByIdIncludinDefinition(levelId)
@@ -394,16 +359,12 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     }
 
     @Override
-    @IsAdminOrDesignerOrOrganizer
     public List<TrainingInstance> findAllTrainingInstancesByTrainingDefinitionId(Long id) {
         Assert.notNull(id, "Input definition id must not be null");
         return trainingInstanceRepository.findAllByTrainingDefinitionId(id);
     }
 
     @Override
-    @TransactionalWO
-    @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
-            "or @securityService.isDesignerOfGivenTrainingDefinition(#definitionId)")
     public void switchState(Long definitionId, cz.muni.ics.kypo.training.api.enums.TDState state) {
         TrainingDefinition trainingDefinition = findById(definitionId);
         if (trainingDefinition.getState().name().equals(state.name())) {

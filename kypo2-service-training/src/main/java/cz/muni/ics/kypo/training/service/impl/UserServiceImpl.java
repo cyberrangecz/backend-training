@@ -1,9 +1,5 @@
 package cz.muni.ics.kypo.training.service.impl;
 
-
-import cz.muni.ics.kypo.training.annotations.aop.TrackTime;
-import cz.muni.ics.kypo.training.annotations.security.IsAdminOrDesignerOrOrganizer;
-import cz.muni.ics.kypo.training.annotations.security.IsDesignerOrAdmin;
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalWO;
 import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
 import cz.muni.ics.kypo.training.api.enums.RoleType;
@@ -19,7 +15,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.*;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.client.HttpClientErrorException;
@@ -45,7 +40,6 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    @IsAdminOrDesignerOrOrganizer
     public UserRef getUserByUserRefId(Long userRefId) {
         Objects.requireNonNull(userRefId, "UserRef ID must not be null.");
         return userRefRepository.findUserByUserRefId(userRefId).orElseThrow(
@@ -53,8 +47,6 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_TRAINEE)")
-    @TrackTime
     public UserRefDTO getUserRefDTOByUserRefId(Long id) {
         Objects.requireNonNull(id, "UserRef ID must not be null.");
         HttpHeaders httpHeaders = new HttpHeaders();
@@ -69,8 +61,6 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    @IsAdminOrDesignerOrOrganizer
-    @TrackTime
     public PageResultResource<UserRefDTO> getUsersRefDTOByGivenUserIds(Set<Long> userRefIds, Pageable pageable, String givenName, String familyName) {
         Objects.requireNonNull(userRefIds, "UserRef IDs must not be null.");
         if(userRefIds.isEmpty()) {
@@ -99,8 +89,6 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    @IsDesignerOrAdmin
-    @TrackTime
     public PageResultResource<UserRefDTO> getUsersByGivenRole(RoleType roleType, Pageable pageable, String givenName, String familyName) {
         Objects.requireNonNull(roleType, "Role type must not be null.");
         HttpHeaders httpHeaders = new HttpHeaders();
@@ -127,8 +115,6 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    @IsAdminOrDesignerOrOrganizer
-    @TrackTime
     public PageResultResource<UserRefDTO> getUsersByGivenRoleAndNotWithGivenIds(RoleType roleType, Set<Long> userRefIds, Pageable pageable, String givenName, String familyName) {
         Objects.requireNonNull(roleType, "Role type must not be null.");
         Objects.requireNonNull(userRefIds, "UserRef IDs must not be null.");
