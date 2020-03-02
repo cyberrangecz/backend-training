@@ -3,6 +3,9 @@ package cz.muni.ics.kypo.training.facade;
 import com.fasterxml.jackson.core.util.MinimalPrettyPrinter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import cz.muni.csirt.kypo.elasticsearch.service.TrainingEventsService;
+import cz.muni.ics.kypo.training.annotations.security.IsDesignerOrOrganizerOrAdmin;
+import cz.muni.ics.kypo.training.annotations.security.IsDesignerOrAdmin;
+import cz.muni.ics.kypo.training.annotations.security.IsOrganizerOrAdmin;
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalRO;
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalWO;
 import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
@@ -74,10 +77,11 @@ public class ExportImportFacadeImpl implements ExportImportFacade {
     }
 
     @Override
+    @IsDesignerOrOrganizerOrAdmin
     @TransactionalRO
     public FileToReturnDTO dbExport(Long trainingDefinitionId) {
         TrainingDefinition td = exportImportService.findById(trainingDefinitionId);
-        ExportTrainingDefinitionAndLevelsDTO dbExport = exportImportMapper.mapToDTO(exportImportService.findById(trainingDefinitionId));
+        ExportTrainingDefinitionAndLevelsDTO dbExport = exportImportMapper.mapToDTO(td);
         if (dbExport != null) {
             dbExport.setLevels(mapAbstractLevelToAbstractLevelDTO(trainingDefinitionId));
         }
@@ -134,6 +138,7 @@ public class ExportImportFacadeImpl implements ExportImportFacade {
     }
 
     @Override
+    @IsDesignerOrAdmin
     @TransactionalWO
     public TrainingDefinitionByIdDTO dbImport(ImportTrainingDefinitionDTO importTrainingDefinitionDTO) {
         Objects.requireNonNull(importTrainingDefinitionDTO, "In dbImport() method the input parameter for ImportTrainingDefinitionDTO must not be empty.");
@@ -158,6 +163,7 @@ public class ExportImportFacadeImpl implements ExportImportFacade {
     }
 
     @Override
+    @IsOrganizerOrAdmin
     @TransactionalRO
     public FileToReturnDTO archiveTrainingInstance(Long trainingInstanceId) {
         try(ByteArrayOutputStream baos = new ByteArrayOutputStream(); ZipOutputStream zos = new ZipOutputStream(baos)) {
@@ -208,9 +214,6 @@ public class ExportImportFacadeImpl implements ExportImportFacade {
             zos.write(objectMapper.writeValueAsBytes(getUsersRefExportDTO(participantRefIds)));
 
 
-
-
-
             zos.closeEntry();
             zos.close();
             FileToReturnDTO fileToReturnDTO = new FileToReturnDTO();
@@ -218,7 +221,6 @@ public class ExportImportFacadeImpl implements ExportImportFacade {
             fileToReturnDTO.setTitle(trainingInstance.getTitle());
 
             return fileToReturnDTO;
-
         } catch (ServiceLayerException | IOException ex) {
             throw new FacadeLayerException(ex);
         }

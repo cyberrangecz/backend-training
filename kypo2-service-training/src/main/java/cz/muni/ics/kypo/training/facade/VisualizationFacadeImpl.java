@@ -1,5 +1,7 @@
 package cz.muni.ics.kypo.training.facade;
 
+import cz.muni.ics.kypo.training.annotations.security.IsDesignerOrOrganizerOrAdmin;
+import cz.muni.ics.kypo.training.annotations.security.IsTraineeOrAdmin;
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalRO;
 import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
 import cz.muni.ics.kypo.training.api.dto.visualization.*;
@@ -22,6 +24,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -60,6 +63,8 @@ public class VisualizationFacadeImpl implements VisualizationFacade {
     }
 
     @Override
+    @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
+            "or @securityService.isTraineeOfGivenTrainingRun(#runId)")
     @TransactionalRO
     public VisualizationInfoDTO getVisualizationInfoAboutTrainingRun(Long trainingRunId) {
         try {
@@ -73,6 +78,8 @@ public class VisualizationFacadeImpl implements VisualizationFacade {
     }
 
     @Override
+    @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
+            "or @securityService.isOrganizerOfGivenTrainingInstance(#instanceId)")
     @TransactionalRO
     public VisualizationInfoDTO getVisualizationInfoAboutTrainingInstance(Long trainingInstanceId) {
         try {
@@ -86,6 +93,7 @@ public class VisualizationFacadeImpl implements VisualizationFacade {
     }
 
     @Override
+    @IsTraineeOrAdmin
     public List<UserRefDTO> getParticipantsForGivenTrainingInstance(Long trainingInstanceId) {
         Set<Long> participantsRefIds = visualizationService.getAllParticipantsRefIdsForSpecificTrainingInstance(trainingInstanceId);
         PageResultResource<UserRefDTO> participantsInfo;
@@ -126,6 +134,7 @@ public class VisualizationFacadeImpl implements VisualizationFacade {
     }
 
     @Override
+    @IsDesignerOrOrganizerOrAdmin
     public PageResultResource<UserRefDTO> getUsersByIds(Set<Long> usersIds, Pageable pageable) {
         return userService.getUsersRefDTOByGivenUserIds(usersIds, pageable, null, null);
     }
