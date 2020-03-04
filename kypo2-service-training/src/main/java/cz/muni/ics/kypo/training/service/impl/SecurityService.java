@@ -1,12 +1,19 @@
 package cz.muni.ics.kypo.training.service.impl;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.google.gson.JsonObject;
 import cz.muni.ics.kypo.commons.security.enums.AuthenticatedUserOIDCItems;
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalRO;
 import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
 import cz.muni.ics.kypo.training.enums.RoleTypeSecurity;
-import cz.muni.ics.kypo.training.exceptions.ErrorCode;
-import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
+import cz.muni.ics.kypo.training.exceptions.EntityErrorDetail;
+import cz.muni.ics.kypo.training.exceptions.EntityNotFoundException;
+import cz.muni.ics.kypo.training.exceptions.InternalServerErrorException;
+import cz.muni.ics.kypo.training.exceptions.MicroserviceApiException;
+import cz.muni.ics.kypo.training.exceptions.errors.JavaApiError;
 import cz.muni.ics.kypo.training.persistence.model.TrainingDefinition;
 import cz.muni.ics.kypo.training.persistence.model.TrainingInstance;
 import cz.muni.ics.kypo.training.persistence.model.TrainingRun;
@@ -25,6 +32,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
+
+import java.io.IOException;
 
 @Service
 @TransactionalRO(propagation = Propagation.REQUIRES_NEW)
@@ -49,24 +58,29 @@ public class SecurityService {
         this.restTemplate = restTemplate;
     }
     public boolean isTraineeOfGivenTrainingRun(Long trainingRunId) {
-        TrainingRun trainingRun = trainingRunRepository.findById(trainingRunId).orElseThrow(() -> new ServiceLayerException("The necessary permissions are required for a resource.", ErrorCode.SECURITY_RIGHTS));
+        TrainingRun trainingRun = trainingRunRepository.findById(trainingRunId).orElseThrow(() -> new EntityNotFoundException(new EntityErrorDetail(TrainingRun.class, "id", trainingRunId.getClass(),
+                trainingRunId, "The necessary permissions are required for a resource.")));
         return trainingRun.getParticipantRef().getUserRefId().equals(getUserRefIdFromUserAndGroup());
     }
 
     public boolean isOrganizerOfGivenTrainingInstance(Long instanceId) {
-        TrainingInstance trainingInstance = trainingInstanceRepository.findById(instanceId).orElseThrow(() -> new ServiceLayerException("The necessary permissions are required for a resource.", ErrorCode.SECURITY_RIGHTS));
+        TrainingInstance trainingInstance = trainingInstanceRepository.findById(instanceId).orElseThrow(() -> new EntityNotFoundException(new EntityErrorDetail(TrainingInstance.class, "id", instanceId.getClass(),
+                instanceId, "The necessary permissions are required for a resource.")));
         return trainingInstance.getOrganizers().stream().anyMatch(o -> o.getUserRefId().equals(getUserRefIdFromUserAndGroup()));
     }
 
     public boolean isDesignerOfGivenTrainingDefinition(Long definitionId) {
-        TrainingDefinition trainingDefinition = trainingDefinitionRepository.findById(definitionId).orElseThrow(() -> new ServiceLayerException("The necessary permissions are required for a resource.", ErrorCode.SECURITY_RIGHTS));
+        TrainingDefinition trainingDefinition = trainingDefinitionRepository.findById(definitionId).orElseThrow(() -> new EntityNotFoundException(new EntityErrorDetail(TrainingDefinition.class,
+                "id", definitionId.getClass(), definitionId, "The necessary permissions are required for a resource.")));
         return trainingDefinition.getAuthors().stream().anyMatch(a -> a.getUserRefId().equals(getUserRefIdFromUserAndGroup()));
     }
 
     public boolean isInBetaTestingGroup(Long definitionId) {
-        TrainingDefinition trainingDefinition = trainingDefinitionRepository.findById(definitionId).orElseThrow(() -> new ServiceLayerException("The necessary permissions are required for a resource.", ErrorCode.SECURITY_RIGHTS));
+        TrainingDefinition trainingDefinition = trainingDefinitionRepository.findById(definitionId).orElseThrow(() -> new EntityNotFoundException(new EntityErrorDetail(TrainingDefinition.class,
+                "id", definitionId.getClass(), definitionId, "The necessary permissions are required for a resource.")));
         if (trainingDefinition.getBetaTestingGroup() == null) {
-            throw new ServiceLayerException("The necessary permissions are required for a resource.", ErrorCode.SECURITY_RIGHTS);
+            throw new EntityNotFoundException(new EntityErrorDetail(TrainingDefinition.class,
+                    "id", definitionId.getClass(), definitionId, "The necessary permissions are required for a resource."));
         }
         return trainingDefinition.getBetaTestingGroup().getOrganizers().stream().anyMatch(o -> o.getUserRefId().equals(getUserRefIdFromUserAndGroup()));
     }
@@ -133,7 +147,11 @@ public class SecurityService {
             UserRefDTO userRefDto = userInfoResponseEntity.getBody();
             return userRefDto.getUserRefId();
         } catch (HttpClientErrorException ex) {
-            throw new ServiceLayerException("Error when calling UserAndGroup API to get info about logged in user: " + ex.getMessage() + " - " + ex.getResponseBodyAsString(), ErrorCode.UNEXPECTED_ERROR);
+            try {
+                throw new MicroserviceApiException("Error when calling UserAndGroup API to get info about logged in user.", convertJsonBytesToObject(ex.getResponseBodyAsString(), JavaApiError.class));
+            } catch (IOException ex1) {
+                throw new InternalServerErrorException("Unable to parse ApiError when calling UserAndGroup API");
+            }
         }
     }
 
@@ -145,7 +163,11 @@ public class SecurityService {
             });
             return userInfoResponseEntity.getBody();
         } catch (HttpClientErrorException ex) {
-            throw new ServiceLayerException("Error when calling UserAndGroup API to get info about logged in user: " + ex.getMessage() + " - " + ex.getResponseBodyAsString(), ErrorCode.UNEXPECTED_ERROR);
+            try {
+                throw new MicroserviceApiException("Error when calling UserAndGroup API to get info about logged in user.", convertJsonBytesToObject(ex.getResponseBodyAsString(), JavaApiError.class));
+            } catch (IOException ex1) {
+                throw new InternalServerErrorException("Unable to parse ApiError when calling UserAndGroup API");
+            }
         }
     }
 
@@ -162,8 +184,19 @@ public class SecurityService {
             userRef.setUserRefId(userRefDto.getUserRefId());
             return userRef;
         } catch (HttpClientErrorException ex) {
-            throw new ServiceLayerException("Error when calling UserAndGroup API to get info about logged in user: " + ex.getMessage() + " - " + ex.getResponseBodyAsString(), ErrorCode.UNEXPECTED_ERROR);
+            try {
+                throw new MicroserviceApiException("Error when calling UserAndGroup API to get info about logged in user.", convertJsonBytesToObject(ex.getResponseBodyAsString(), JavaApiError.class));
+            } catch (IOException ex1) {
+                throw new InternalServerErrorException("Unable to parse ApiError when calling UserAndGroup API");
+            }
         }
     }
+    private static <T> T convertJsonBytesToObject(String object, Class<T> objectClass) throws IOException {
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+        mapper.registerModule( new JavaTimeModule()).disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        return mapper.readValue(object, objectClass);
+    }
+
 
 }

@@ -10,7 +10,6 @@ import cz.muni.ics.kypo.training.api.dto.run.AccessTrainingRunDTO;
 import cz.muni.ics.kypo.training.api.dto.run.AccessedTrainingRunDTO;
 import cz.muni.ics.kypo.training.api.dto.run.TrainingRunByIdDTO;
 import cz.muni.ics.kypo.training.api.dto.run.TrainingRunDTO;
-import cz.muni.ics.kypo.training.exceptions.FacadeLayerException;
 import org.springframework.data.domain.Pageable;
 
 import java.util.List;
@@ -26,7 +25,6 @@ public interface TrainingRunFacade {
      *
      * @param id of a Training Run that would be returned
      * @return specific {@link TrainingRunByIdDTO}
-     * @throws FacadeLayerException with ErrorCode: RESOURCE_NOT_FOUND training run is not found.
      */
     TrainingRunByIdDTO findById(Long id);
 
@@ -67,9 +65,6 @@ public interface TrainingRunFacade {
      *
      * @param accessToken of one training instance
      * @return {@link AccessTrainingRunDTO} response
-     * @throws FacadeLayerException with ErrorCode: RESOURCE_NOT_FOUND cannot find training instance with given id or the accessToken is wrong.
-     *                                              UNEXPECTED_ERROR there is error while getting info about sandboxes.
-     *                                              NO_AVAILABLE_SANDBOX there is no free or ready sandbox
      */
     AccessTrainingRunDTO accessTrainingRun(String accessToken);
 
@@ -96,8 +91,6 @@ public interface TrainingRunFacade {
      *
      * @param trainingRunId id of Training Run whose next level should be returned.
      * @return {@link AbstractLevelDTO}
-     * @throws FacadeLayerException with ErrorCode: RESOURCE_NOT_FOUND hint is not found in DB.
-     *                                              NO_NEXT_LEVEL there is no next level.
      */
     AbstractLevelDTO getNextLevel(Long trainingRunId);
 
@@ -106,8 +99,6 @@ public interface TrainingRunFacade {
      *
      * @param trainingRunId id of Training Run which current level gets solution for.
      * @return solution of current level.
-     * @throws FacadeLayerException with ErrorCode: RESOURCE_NOT_FOUND training run is not found in DB.
-     *                                              WRONG_LEVEL_TYPE the level is not game level.
      */
     String getSolution(Long trainingRunId);
 
@@ -117,8 +108,6 @@ public interface TrainingRunFacade {
      * @param trainingRunId id of Training Run which current level gets hint for.
      * @param hintId        id of hint to be returned.
      * @return {@link HintDTO}
-     * @throws FacadeLayerException with ErrorCode: RESOURCE_NOT_FOUND when hint is not found in DB.
-     *                                              WRONG_LEVEL_TYPE when the level is not game level.
      */
     HintDTO getHint(Long trainingRunId, Long hintId);
 
@@ -128,8 +117,6 @@ public interface TrainingRunFacade {
      * @param trainingRunId id of Training Run to check flag.
      * @param flag          string which player submit.
      * @return true if flag is correct, false if flag is wrong.
-     * @throws FacadeLayerException with ErrorCode: RESOURCE_NOT_FOUND training run is not found in DB.
-     *                                              WRONG_LEVEL_TYPE the level is not game level.
      */
     IsCorrectFlagDTO isCorrectFlag(Long trainingRunId, String flag);
 
@@ -138,7 +125,6 @@ public interface TrainingRunFacade {
      *
      * @param trainingRunId id of Training Run to be resumed.
      * @return {@link AccessTrainingRunDTO} response
-     * @throws FacadeLayerException with ErrorCode: RESOURCE_NOT_FOUND cannot find training run.
      */
     AccessTrainingRunDTO resumeTrainingRun(Long trainingRunId);
 
@@ -146,7 +132,6 @@ public interface TrainingRunFacade {
      * Finish training run.
      *
      * @param trainingRunId id of Training Run to be finished.
-     * @throws FacadeLayerException with ErrorCode: RESOURCE_NOT_FOUND cannot find training run.
      */
     void finishTrainingRun(Long trainingRunId);
 
@@ -155,7 +140,6 @@ public interface TrainingRunFacade {
      *
      * @param trainingRunId     id of Training Run to be finish.
      * @param responsesAsString responses to assessment
-     * @throws FacadeLayerException with ErrorCode: RESOURCE_NOT_FOUND cannot find training run.
      */
     void evaluateResponsesToAssessment(Long trainingRunId, String responsesAsString);
 

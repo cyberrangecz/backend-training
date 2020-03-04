@@ -6,9 +6,8 @@ import cz.muni.ics.kypo.training.api.dto.IsCorrectFlagDTO;
 import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
 import cz.muni.ics.kypo.training.api.dto.run.AccessTrainingRunDTO;
 import cz.muni.ics.kypo.training.api.dto.run.TrainingRunDTO;
-import cz.muni.ics.kypo.training.exceptions.ErrorCode;
-import cz.muni.ics.kypo.training.exceptions.FacadeLayerException;
-import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
+import cz.muni.ics.kypo.training.exceptions.EntityNotFoundException;
+import cz.muni.ics.kypo.training.exceptions.InternalServerErrorException;
 import cz.muni.ics.kypo.training.mapping.mapstruct.*;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.model.enums.AssessmentType;
@@ -154,13 +153,6 @@ public class TrainingRunFacadeTest {
     }
 
     @Test
-    public void findTrainingRunByIdWithFacadeLayerException() {
-        thrown.expect(FacadeLayerException.class);
-        willThrow(ServiceLayerException.class).given(trainingRunService).findById(1L);
-        trainingRunFacade.findById(1L);
-    }
-
-    @Test
     public void findAllTrainingRuns() {
         List<TrainingRun> expected = new ArrayList<>();
         expected.add(trainingRun1);
@@ -201,25 +193,10 @@ public class TrainingRunFacadeTest {
     }
 
     @Test
-    public void accessTrainingRunWithFacadeLayerException() {
-        thrown.expect(FacadeLayerException.class);
-        given(trainingInstanceService.findByStartTimeAfterAndEndTimeBeforeAndAccessToken(anyString())).willReturn(trainingInstance);
-        willThrow(ServiceLayerException.class).given(trainingRunService).accessTrainingRun("pass");
-        trainingRunFacade.accessTrainingRun("pass");
-    }
-
-    @Test
     public void getNextLevel() {
         given(trainingRunService.getNextLevel(3L)).willReturn(infoLevel);
         trainingRunFacade.getNextLevel(3L);
         then(trainingRunService).should().getNextLevel(3L);
-    }
-
-    @Test
-    public void getNextLevelWithFacadeLayerException() {
-        thrown.expect(FacadeLayerException.class);
-        willThrow(ServiceLayerException.class).given(trainingRunService).getNextLevel(1L);
-        trainingRunFacade.getNextLevel(1L);
     }
 
     @Test
@@ -230,24 +207,10 @@ public class TrainingRunFacadeTest {
     }
 
     @Test
-    public void getHintWithFacadeLayerException() {
-        thrown.expect(FacadeLayerException.class);
-        willThrow(ServiceLayerException.class).given(trainingRunService).getHint(1L, 1L);
-        trainingRunFacade.getHint(1L, 1L);
-    }
-
-    @Test
     public void getSolution() {
         given(trainingRunService.getSolution(1L)).willReturn("game solution");
         trainingRunFacade.getSolution(trainingRun1.getId());
         then(trainingRunService).should().getSolution(1L);
-    }
-
-    @Test
-    public void getSolutionWithFacadeLayerException() {
-        thrown.expect(FacadeLayerException.class);
-        willThrow(ServiceLayerException.class).given(trainingRunService).getSolution(1L);
-        trainingRunFacade.getSolution(1L);
     }
 
     @Test
@@ -263,13 +226,6 @@ public class TrainingRunFacadeTest {
     }
 
     @Test
-    public void finishTrainingRunWithServiceException() {
-        willThrow(ServiceLayerException.class).given(trainingRunService).finishTrainingRun(trainingRun1.getId());
-        thrown.expect(FacadeLayerException.class);
-        trainingRunFacade.finishTrainingRun(trainingRun1.getId());
-    }
-
-    @Test
     public void getParticipant() {
         given(trainingRunService.findById(trainingRun1.getId())).willReturn(trainingRun1);
         given(userService.getUserRefDTOByUserRefId(participant.getUserRefId())).willReturn(participantRefDTO);
@@ -277,19 +233,15 @@ public class TrainingRunFacadeTest {
         Assert.assertEquals(participantRefDTO, foundParticipantRefDTO);
     }
 
-    @Test
+    @Test(expected = EntityNotFoundException.class)
     public void getParticipantTrainingRunNotFound() {
-        willThrow(new ServiceLayerException("Training run not found.", ErrorCode.RESOURCE_NOT_FOUND)).given(trainingRunService).findById(15L);
-        thrown.expect(FacadeLayerException.class);
-        thrown.expectMessage("Training run not found.");
+        willThrow(new EntityNotFoundException()).given(trainingRunService).findById(15L);
         trainingRunFacade.getParticipant(15L);
     }
 
-    @Test
+    @Test(expected = InternalServerErrorException.class)
     public void getParticipantCallingUserAndGroupError() {
-        willThrow(new ServiceLayerException("Error when calling user and group side.", ErrorCode.UNEXPECTED_ERROR)).given(trainingRunService).findById(15L);
-        thrown.expect(FacadeLayerException.class);
-        thrown.expectMessage("Error when calling user and group side.");
+        willThrow(new InternalServerErrorException()).given(trainingRunService).findById(15L);
         trainingRunFacade.getParticipant(15L);
     }
 

@@ -1,7 +1,10 @@
 package cz.muni.ics.kypo.training.service;
 
 import com.querydsl.core.types.Predicate;
-import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
+import cz.muni.ics.kypo.training.exceptions.EntityConflictException;
+import cz.muni.ics.kypo.training.exceptions.EntityNotFoundException;
+import cz.muni.ics.kypo.training.exceptions.TooManyRequestsException;
+import cz.muni.ics.kypo.training.exceptions.BadRequestException;
 import cz.muni.ics.kypo.training.persistence.model.AbstractLevel;
 import cz.muni.ics.kypo.training.persistence.model.Hint;
 import cz.muni.ics.kypo.training.persistence.model.TrainingRun;
@@ -21,7 +24,7 @@ public interface TrainingRunService {
      *
      * @param id of a Training Run that would be returned
      * @return specific {@link TrainingRun} by id
-     * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND training run is not found in DB.
+     * @throws EntityNotFoundException training run is not found.
      */
     TrainingRun findById(Long id);
 
@@ -30,7 +33,7 @@ public interface TrainingRunService {
      *
      * @param id of a Training Run with level that would be returned
      * @return specific {@link TrainingRun} by id
-     * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND training run is not found in DB.
+     * @throws EntityNotFoundException training run is not found.
      */
     TrainingRun findByIdWithLevel(Long id);
 
@@ -88,8 +91,7 @@ public interface TrainingRunService {
      *
      * @param trainingRunId id of Training Run whose next level should be returned.
      * @return {@link AbstractLevel}
-     * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND hint is not found in DB.
-     *                               NO_NEXT_LEVEL there is no next level.
+     * @throws EntityNotFoundException training run or level is not found.
      */
     AbstractLevel getNextLevel(Long trainingRunId);
 
@@ -98,9 +100,9 @@ public interface TrainingRunService {
      *
      * @param accessToken of Training Instance.
      * @return accessed {@link TrainingRun}
-     * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND cannot find training instance with given id or the accessToken is wrong.
-     *                               UNEXPECTED_ERROR there is error while getting info about sandboxes.
-     *                               NO_AVAILABLE_SANDBOX there is no free or ready sandbox
+     * @throws EntityNotFoundException no active training instance for given access token, no starting level in training definition.
+     * @throws EntityConflictException pool of sandboxes is not created for training instance.
+     * @throws TooManyRequestsException training run has been already accessed.
      */
     TrainingRun accessTrainingRun(String accessToken);
 
@@ -109,7 +111,7 @@ public interface TrainingRunService {
      *
      * @param levelId must be id of first level of some Training Definition.
      * @return List of {@link AbstractLevel}s
-     * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND one of the levels is not found in DB.
+     * @throws EntityNotFoundException one of the levels is not found.
      */
     List<AbstractLevel> getLevels(Long levelId);
 
@@ -119,8 +121,8 @@ public interface TrainingRunService {
      * @param trainingRunId id of Training Run to check flag.
      * @param flag          string which player submit.
      * @return true if flag is correct, false if flag is wrong.
-     * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND training run is not found in DB.
-     *                               WRONG_LEVEL_TYPE the level is not game level.
+     * @throws EntityNotFoundException training run is not found.
+     * @throws BadRequestException the current level of training run is not game level.
      */
     boolean isCorrectFlag(Long trainingRunId, String flag);
 
@@ -129,8 +131,8 @@ public interface TrainingRunService {
      *
      * @param trainingRunId id of Training Run which current level gets solution for.
      * @return solution of current level.
-     * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND training run is not found in DB.
-     *                               WRONG_LEVEL_TYPE the level is not game level.
+     * @throws EntityNotFoundException training run is not found.
+     * @throws BadRequestException the current level of training run is not game level.
      */
     String getSolution(Long trainingRunId);
 
@@ -140,8 +142,8 @@ public interface TrainingRunService {
      * @param trainingRunId id of Training Run which current level gets hint for.
      * @param hintId        id of hint to be returned.
      * @return {@link Hint}
-     * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND when hint is not found in DB.
-     *                               WRONG_LEVEL_TYPE when the level is not game level.
+     * @throws EntityNotFoundException training run or hint is not found.
+     * @throws BadRequestException the current level of training run is not game level.
      */
     Hint getHint(Long trainingRunId, Long hintId);
 
@@ -166,7 +168,7 @@ public interface TrainingRunService {
      *
      * @param trainingRunId id of training run to be resumed.
      * @return {@link TrainingRun}
-     * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND cannot find training run.
+     * @throws EntityNotFoundException training run is not found.
      */
     TrainingRun resumeTrainingRun(Long trainingRunId);
 
@@ -174,7 +176,7 @@ public interface TrainingRunService {
      * Finish training run.
      *
      * @param trainingRunId id of training run to be finished.
-     * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND cannot find training run.
+     * @throws EntityNotFoundException training run is not found.
      */
     void finishTrainingRun(Long trainingRunId);
 
@@ -183,7 +185,7 @@ public interface TrainingRunService {
      *
      * @param trainingRunId     id of training run to be finished.
      * @param responsesAsString response to assessment to be evaluated
-     * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND cannot find training run.
+     * @throws EntityNotFoundException training run is not found.
      */
     void evaluateResponsesToAssessment(Long trainingRunId, String responsesAsString);
 

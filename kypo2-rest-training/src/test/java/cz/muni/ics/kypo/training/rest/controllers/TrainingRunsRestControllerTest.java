@@ -15,15 +15,14 @@ import cz.muni.ics.kypo.training.api.dto.run.AccessTrainingRunDTO;
 import cz.muni.ics.kypo.training.api.dto.run.AccessedTrainingRunDTO;
 import cz.muni.ics.kypo.training.api.dto.run.TrainingRunByIdDTO;
 import cz.muni.ics.kypo.training.api.dto.run.TrainingRunDTO;
-import cz.muni.ics.kypo.training.exceptions.FacadeLayerException;
-import cz.muni.ics.kypo.training.exceptions.ErrorCode;
-import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
+import cz.muni.ics.kypo.training.exceptions.*;
 import cz.muni.ics.kypo.training.facade.TrainingRunFacade;
 import cz.muni.ics.kypo.training.mapping.mapstruct.*;
 import cz.muni.ics.kypo.training.persistence.model.TrainingRun;
 import cz.muni.ics.kypo.training.persistence.model.UserRef;
 import cz.muni.ics.kypo.training.persistence.model.enums.TRState;
-import cz.muni.ics.kypo.training.rest.exceptions.*;
+import cz.muni.ics.kypo.training.rest.ApiError;
+import cz.muni.ics.kypo.training.rest.CustomRestExceptionHandlerTraining;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -39,6 +38,7 @@ import org.springframework.data.querydsl.SimpleEntityPathResolver;
 import org.springframework.data.querydsl.binding.QuerydslBindingsFactory;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.data.web.querydsl.QuerydslPredicateArgumentResolver;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
@@ -52,6 +52,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import static cz.muni.ics.kypo.training.rest.controllers.util.ObjectConverter.convertJsonBytesToObject;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.BDDMockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -177,8 +178,11 @@ public class TrainingRunsRestControllerTest {
         trainingRunsRestController = new TrainingRunsRestController(trainingRunFacade, objectMapper);
         this.mockMvc = MockMvcBuilders.standaloneSetup(trainingRunsRestController)
                 .setCustomArgumentResolvers(new PageableHandlerMethodArgumentResolver(),
-                        new QuerydslPredicateArgumentResolver(new QuerydslBindingsFactory(SimpleEntityPathResolver.INSTANCE), Optional.empty()))
-                .setMessageConverters(new MappingJackson2HttpMessageConverter(), new StringHttpMessageConverter()).build();
+                        new QuerydslPredicateArgumentResolver(
+                                new QuerydslBindingsFactory(SimpleEntityPathResolver.INSTANCE), Optional.empty()))
+                .setMessageConverters(new MappingJackson2HttpMessageConverter(), new StringHttpMessageConverter())
+                .setControllerAdvice(new CustomRestExceptionHandlerTraining())
+                .build();
 
 
     }
@@ -197,12 +201,13 @@ public class TrainingRunsRestControllerTest {
 
     @Test
     public void findTrainingRunByIdWithFacadeException() throws Exception {
-        Exception exceptionThrow = new ServiceLayerException("message", ErrorCode.RESOURCE_NOT_FOUND);
-        willThrow(new FacadeLayerException(exceptionThrow)).given(trainingRunFacade).findById(any(Long.class));
-        Exception exception = mockMvc.perform(get("/training-runs" + "/{runId}", 6l))
+        willThrow(new EntityNotFoundException()).given(trainingRunFacade).findById(any(Long.class));
+        MockHttpServletResponse response = mockMvc.perform(get("/training-runs" + "/{runId}", 6l))
                 .andExpect(status().isNotFound())
-                .andReturn().getResolvedException();
-        assertEquals(ResourceNotFoundException.class, exception.getClass());
+                .andReturn().getResponse();
+        ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
+        assertEquals(HttpStatus.NOT_FOUND, error.getStatus());
+        assertEquals("The requested entity could not be found", error.getMessage());
     }
 
     @Test
@@ -246,32 +251,33 @@ public class TrainingRunsRestControllerTest {
 
     @Test
     public void accessTrainingRunWithNoSandbox() throws Exception {
-        Exception exceptionToThrow = new ServiceLayerException("message", ErrorCode.NO_AVAILABLE_SANDBOX);
-        willThrow(new FacadeLayerException(exceptionToThrow)).given(trainingRunFacade).accessTrainingRun("accessToken");
-        Exception exception = mockMvc.perform(post("/training-runs").param("accessToken", "accessToken"))
-                .andExpect(status().isServiceUnavailable())
-                .andReturn().getResolvedException();
-        assertEquals(ServiceUnavailableException.class, exception.getClass());
+        willThrow(new ForbiddenException()).given(trainingRunFacade).accessTrainingRun("accessToken");
+        MockHttpServletResponse response = mockMvc.perform(post("/training-runs").param("accessToken", "accessToken"))
+                .andExpect(status().isForbidden())
+                .andReturn().getResponse();
+        ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
+        assertEquals(HttpStatus.FORBIDDEN, error.getStatus());
     }
 
     @Test
     public void accessTrainingRunWithResourceNotFound() throws Exception {
-        Exception exceptionToThrow = new ServiceLayerException("message", ErrorCode.RESOURCE_NOT_FOUND);
-        willThrow(new FacadeLayerException(exceptionToThrow)).given(trainingRunFacade).accessTrainingRun("accessToken");
-        Exception exception = mockMvc.perform(post("/training-runs").param("accessToken", "accessToken"))
+        willThrow(new EntityNotFoundException()).given(trainingRunFacade).accessTrainingRun("accessToken");
+        MockHttpServletResponse response = mockMvc.perform(post("/training-runs").param("accessToken", "accessToken"))
                 .andExpect(status().isNotFound())
-                .andReturn().getResolvedException();
-        assertEquals(ResourceNotFoundException.class, exception.getClass());
+                .andReturn().getResponse();
+        ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
+        assertEquals(HttpStatus.NOT_FOUND, error.getStatus());
+        assertEquals("The requested entity could not be found", error.getMessage());
     }
 
     @Test
     public void accessTrainingRunWithUnexpectedError() throws Exception {
-        Exception exceptionToThrow = new ServiceLayerException("message", ErrorCode.UNEXPECTED_ERROR);
-        willThrow(new FacadeLayerException(exceptionToThrow)).given(trainingRunFacade).accessTrainingRun("accessToken");
-        Exception exception = mockMvc.perform(post("/training-runs").param("accessToken", "accessToken"))
+        willThrow(new InternalServerErrorException()).given(trainingRunFacade).accessTrainingRun("accessToken");
+        MockHttpServletResponse response = mockMvc.perform(post("/training-runs").param("accessToken", "accessToken"))
                 .andExpect(status().isInternalServerError())
-                .andReturn().getResolvedException();
-        assertEquals(InternalServerErrorException.class, exception.getClass());
+                .andReturn().getResponse();
+        ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, error.getStatus());
     }
 
     @Test
@@ -323,12 +329,12 @@ public class TrainingRunsRestControllerTest {
 
     @Test
     public void getSolutionWithException() throws Exception {
-        Exception exceptionToThrow = new ServiceLayerException("message", ErrorCode.WRONG_LEVEL_TYPE);
-        willThrow(new FacadeLayerException(exceptionToThrow)).given(trainingRunFacade).getSolution(1L);
-        Exception ex = mockMvc.perform(get("/training-runs/{runId}/solutions", 1L))
+        willThrow(new BadRequestException()).given(trainingRunFacade).getSolution(1L);
+        MockHttpServletResponse response = mockMvc.perform(get("/training-runs/{runId}/solutions", 1L))
                 .andExpect(status().isBadRequest())
-                .andReturn().getResolvedException();
-        assertEquals(BadRequestException.class, ex.getClass());
+                .andReturn().getResponse();
+        ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
+        assertEquals(HttpStatus.BAD_REQUEST, error.getStatus());
     }
 
     @Test
@@ -356,22 +362,23 @@ public class TrainingRunsRestControllerTest {
 
     @Test
     public void getHintNotFound() throws Exception {
-        Exception exceptionToThrow = new ServiceLayerException("message", ErrorCode.RESOURCE_NOT_FOUND);
-        willThrow(new FacadeLayerException(exceptionToThrow)).given(trainingRunFacade).getHint(anyLong(), anyLong());
-        Exception exception = mockMvc.perform(get("/training-runs/{runId}/hints/{hintId}", trainingRun1.getId(), hintDTO.getId()))
+        willThrow(new EntityNotFoundException()).given(trainingRunFacade).getHint(anyLong(), anyLong());
+        MockHttpServletResponse response = mockMvc.perform(get("/training-runs/{runId}/hints/{hintId}", trainingRun1.getId(), hintDTO.getId()))
                 .andExpect(status().isNotFound())
-                .andReturn().getResolvedException();
-        assertEquals(ResourceNotFoundException.class, exception.getClass());
+                .andReturn().getResponse();
+        ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
+        assertEquals(HttpStatus.NOT_FOUND, error.getStatus());
+        assertEquals("The requested entity could not be found", error.getMessage());
     }
 
     @Test
     public void getHintWrongLevelType() throws Exception {
-        Exception exceptionToThrow = new ServiceLayerException("message", ErrorCode.WRONG_LEVEL_TYPE);
-        willThrow(new FacadeLayerException(exceptionToThrow)).given(trainingRunFacade).getHint(anyLong(), anyLong());
-        Exception exception = mockMvc.perform(get("/training-runs/{runId}/hints/{hintId}", trainingRun1.getId(), hintDTO.getId()))
+        willThrow(new BadRequestException()).given(trainingRunFacade).getHint(anyLong(), anyLong());
+        MockHttpServletResponse response = mockMvc.perform(get("/training-runs/{runId}/hints/{hintId}", trainingRun1.getId(), hintDTO.getId()))
                 .andExpect(status().isBadRequest())
-                .andReturn().getResolvedException();
-        assertEquals(BadRequestException.class, exception.getClass());
+                .andReturn().getResponse();
+        ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
+        assertEquals(HttpStatus.BAD_REQUEST, error.getStatus());
     }
 
     @Test
@@ -391,24 +398,24 @@ public class TrainingRunsRestControllerTest {
 
     @Test
     public void finishTrainingRunCannotFinish() throws Exception {
-        willThrow(new FacadeLayerException(new ServiceLayerException("Cannot finish given training run.",
-                ErrorCode.RESOURCE_CONFLICT))).given(trainingRunFacade).finishTrainingRun(trainingRun1.getId());
-        Exception ex = mockMvc.perform(put("/training-runs/{runId}", trainingRun1.getId()))
+        willThrow(new EntityConflictException()).given(trainingRunFacade).finishTrainingRun(trainingRun1.getId());
+        MockHttpServletResponse response = mockMvc.perform(put("/training-runs/{runId}", trainingRun1.getId()))
                 .andExpect(status().isConflict())
-                .andReturn().getResolvedException();
-        assertEquals(ConflictException.class, ex.getClass());
-        assertEquals("Cannot finish given training run.", ex.getCause().getCause().getLocalizedMessage());
+                .andReturn().getResponse();
+        ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
+        assertEquals(HttpStatus.CONFLICT, error.getStatus());
+        assertEquals("The request could not be completed due to a conflict with the current state of the target resource.", error.getMessage());
     }
 
     @Test
     public void finishTrainingRunNotFound() throws Exception {
-        willThrow(new FacadeLayerException(new ServiceLayerException("Training run not found.",
-                ErrorCode.RESOURCE_NOT_FOUND))).given(trainingRunFacade).finishTrainingRun(trainingRun1.getId());
-        Exception ex = mockMvc.perform(put("/training-runs/{runId}", trainingRun1.getId()))
+        willThrow(new EntityNotFoundException()).given(trainingRunFacade).finishTrainingRun(trainingRun1.getId());
+        MockHttpServletResponse response = mockMvc.perform(put("/training-runs/{runId}", trainingRun1.getId()))
                 .andExpect(status().isNotFound())
-                .andReturn().getResolvedException();
-        assertEquals(ResourceNotFoundException.class, ex.getClass());
-        assertEquals("Training run not found.", ex.getCause().getCause().getLocalizedMessage());
+                .andReturn().getResponse();
+        ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
+        assertEquals(HttpStatus.NOT_FOUND, error.getStatus());
+        assertEquals("The requested entity could not be found", error.getMessage());
     }
 
 
@@ -423,24 +430,24 @@ public class TrainingRunsRestControllerTest {
 
     @Test
     public void resumeTrainingRunCannotFinish() throws Exception {
-        willThrow(new FacadeLayerException(new ServiceLayerException("Cannot finish given training run.",
-                ErrorCode.RESOURCE_CONFLICT))).given(trainingRunFacade).resumeTrainingRun(trainingRun1.getId());
-        Exception ex = mockMvc.perform(get("/training-runs/{runId}/resumption", trainingRun1.getId()))
+        willThrow(new EntityConflictException()).given(trainingRunFacade).resumeTrainingRun(trainingRun1.getId());
+        MockHttpServletResponse response = mockMvc.perform(get("/training-runs/{runId}/resumption", trainingRun1.getId()))
                 .andExpect(status().isConflict())
-                .andReturn().getResolvedException();
-        assertEquals(ConflictException.class, ex.getClass());
-        assertEquals("Cannot finish given training run.", ex.getCause().getCause().getLocalizedMessage());
+                .andReturn().getResponse();
+        ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
+        assertEquals(HttpStatus.CONFLICT, error.getStatus());
+        assertEquals("The request could not be completed due to a conflict with the current state of the target resource.", error.getMessage());
     }
 
     @Test
     public void resumeTrainingRunNotFound() throws Exception {
-        willThrow(new FacadeLayerException(new ServiceLayerException("Training run not found.",
-                ErrorCode.RESOURCE_NOT_FOUND))).given(trainingRunFacade).resumeTrainingRun(trainingRun1.getId());
-        Exception ex = mockMvc.perform(get("/training-runs/{runId}/resumption", trainingRun1.getId()))
+        willThrow(new EntityNotFoundException()).given(trainingRunFacade).resumeTrainingRun(trainingRun1.getId());
+        MockHttpServletResponse response = mockMvc.perform(get("/training-runs/{runId}/resumption", trainingRun1.getId()))
                 .andExpect(status().isNotFound())
-                .andReturn().getResolvedException();
-        assertEquals(ResourceNotFoundException.class, ex.getClass());
-        assertEquals("Training run not found.", ex.getCause().getCause().getLocalizedMessage());
+                .andReturn().getResponse();
+        ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
+        assertEquals(HttpStatus.NOT_FOUND, error.getStatus());
+        assertEquals("The requested entity could not be found", error.getMessage());
     }
 
     @Test
@@ -455,24 +462,23 @@ public class TrainingRunsRestControllerTest {
 
     @Test
     public void getParticipantTrainingRunNotFound() throws Exception {
-        willThrow(new FacadeLayerException(new ServiceLayerException("Training run not found.",
-                ErrorCode.RESOURCE_NOT_FOUND))).given(trainingRunFacade).getParticipant(trainingRun1.getId());
-        Exception ex = mockMvc.perform(get("/training-runs/{runId}/participant", trainingRun1.getId()))
+        willThrow(new EntityNotFoundException()).given(trainingRunFacade).getParticipant(trainingRun1.getId());
+        MockHttpServletResponse response = mockMvc.perform(get("/training-runs/{runId}/participant", trainingRun1.getId()))
                 .andExpect(status().isNotFound())
-                .andReturn().getResolvedException();
-        assertEquals(ResourceNotFoundException.class, ex.getClass());
-        assertEquals("Training run not found.", ex.getCause().getCause().getLocalizedMessage());
+                .andReturn().getResponse();
+        ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
+        assertEquals(HttpStatus.NOT_FOUND, error.getStatus());
+        assertEquals("The requested entity could not be found", error.getMessage());
     }
 
     @Test
     public void getParticipantUserAndGroupServiceError() throws Exception {
-        willThrow(new FacadeLayerException(new ServiceLayerException("Unexpected error when calling user and group service.",
-                ErrorCode.UNEXPECTED_ERROR))).given(trainingRunFacade).getParticipant(trainingRun1.getId());
-        Exception ex = mockMvc.perform(get("/training-runs/{runId}/participant", trainingRun1.getId()))
+        willThrow(new InternalServerErrorException()).given(trainingRunFacade).getParticipant(trainingRun1.getId());
+        MockHttpServletResponse response = mockMvc.perform(get("/training-runs/{runId}/participant", trainingRun1.getId()))
                 .andExpect(status().isInternalServerError())
-                .andReturn().getResolvedException();
-        assertEquals(InternalServerErrorException.class, ex.getClass());
-        assertEquals("Unexpected error when calling user and group service.", ex.getCause().getCause().getLocalizedMessage());
+                .andReturn().getResponse();
+        ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, error.getStatus());
     }
 
 

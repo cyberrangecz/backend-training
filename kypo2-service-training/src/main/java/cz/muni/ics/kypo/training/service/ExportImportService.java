@@ -1,10 +1,10 @@
 package cz.muni.ics.kypo.training.service;
 
-import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.persistence.model.AbstractLevel;
 import cz.muni.ics.kypo.training.persistence.model.TrainingDefinition;
 import cz.muni.ics.kypo.training.persistence.model.TrainingInstance;
 import cz.muni.ics.kypo.training.persistence.model.TrainingRun;
+import cz.muni.ics.kypo.training.exceptions.EntityNotFoundException;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -21,7 +21,7 @@ public interface ExportImportService {
      *
      * @param trainingDefinitionId the id of definition to be found.
      * @return the {@link TrainingDefinition} with the given id.
-     * @throws ServiceLayerException if training definition was not found.
+     * @throws EntityNotFoundException if training definition was not found.
      */
     TrainingDefinition findById(Long trainingDefinitionId);
 
@@ -46,7 +46,7 @@ public interface ExportImportService {
      *
      * @param trainingInstanceId the id of instance to be found.
      * @return the {@link TrainingInstance} with the given id.
-     * @throws ServiceLayerException if training instance was not found.
+     * @throws EntityNotFoundException if training instance was not found.
      */
     TrainingInstance findInstanceById(Long trainingInstanceId);
 
@@ -57,12 +57,4 @@ public interface ExportImportService {
      * @return the set off all {@link TrainingRun}
      */
     Set<TrainingRun> findRunsByInstanceId(Long trainingInstanceId);
-
-    /**
-     * Throws exception if end time of training instance is in the future.
-     *
-     * @param endTime the end time of training instance.
-     * @throws ServiceLayerException if training instance is not finished
-     */
-    void failIfInstanceIsNotFinished(LocalDateTime endTime);
 }

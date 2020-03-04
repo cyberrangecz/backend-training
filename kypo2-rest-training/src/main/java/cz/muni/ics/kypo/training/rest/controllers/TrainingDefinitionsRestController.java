@@ -18,18 +18,13 @@ import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionDT
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionInfoDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionUpdateDTO;
 import cz.muni.ics.kypo.training.api.enums.RoleType;
-import cz.muni.ics.kypo.training.exceptions.FacadeLayerException;
 import cz.muni.ics.kypo.training.facade.TrainingDefinitionFacade;
 import cz.muni.ics.kypo.training.persistence.model.TrainingDefinition;
-import cz.muni.ics.kypo.training.persistence.model.UserRef;
 import cz.muni.ics.kypo.training.persistence.model.enums.LevelType;
-import cz.muni.ics.kypo.training.rest.ApiErrorTraining;
-import cz.muni.ics.kypo.training.rest.ExceptionSorter;
-import cz.muni.ics.kypo.training.rest.exceptions.ResourceNotFoundException;
+import cz.muni.ics.kypo.training.exceptions.errors.JavaApiError;
 import cz.muni.ics.kypo.training.rest.utils.annotations.ApiPageableSwagger;
 import io.swagger.annotations.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.security.SecurityProperties;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.querydsl.binding.QuerydslPredicate;
 import org.springframework.http.HttpStatus;
@@ -48,8 +43,8 @@ import java.util.Set;
  */
 @Api(value = "/training-definitions", tags = "Training definitions", consumes = MediaType.APPLICATION_JSON_VALUE)
 @ApiResponses(value = {
-        @ApiResponse(code = 401, message = "Full authentication is required to access this resource.", response = ApiErrorTraining.class),
-        @ApiResponse(code = 403, message = "The necessary permissions are required for a resource.", response = ApiErrorTraining.class)
+        @ApiResponse(code = 401, message = "Full authentication is required to access this resource.", response = JavaApiError.class),
+        @ApiResponse(code = 403, message = "The necessary permissions are required for a resource.", response = JavaApiError.class)
 })
 @RestController
 @RequestMapping(path = "/training-definitions", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -85,8 +80,8 @@ public class TrainingDefinitionsRestController {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Training definition found.", response = TrainingDefinitionByIdDTO.class),
-            @ApiResponse(code = 404, message = "Training definition with given id not found.", response = ApiErrorTraining.class),
-            @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiErrorTraining.class)
+            @ApiResponse(code = 404, message = "Training definition with given id not found.", response = JavaApiError.class),
+            @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = JavaApiError.class)
 
     })
     @GetMapping(path = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -94,13 +89,9 @@ public class TrainingDefinitionsRestController {
                                                              @PathVariable Long id,
                                                              @ApiParam(value = "Fields which should be returned in REST API response", required = false)
                                                              @RequestParam(value = "fields", required = false) String fields) {
-        try {
-            TrainingDefinitionByIdDTO trainingDefinitionResource = trainingDefinitionFacade.findById(id);
-            Squiggly.init(objectMapper, fields);
-            return ResponseEntity.ok(SquigglyUtils.stringify(objectMapper, trainingDefinitionResource));
-        } catch (FacadeLayerException ex) {
-            throw new ResourceNotFoundException(ex.getLocalizedMessage());
-        }
+        TrainingDefinitionByIdDTO trainingDefinitionResource = trainingDefinitionFacade.findById(id);
+        Squiggly.init(objectMapper, fields);
+        return ResponseEntity.ok(SquigglyUtils.stringify(objectMapper, trainingDefinitionResource));
     }
 
     /**
@@ -120,7 +111,7 @@ public class TrainingDefinitionsRestController {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "All training definitions found.", response = TrainingDefinitionByIdDTO.class, responseContainer = "List"),
-            @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiErrorTraining.class)
+            @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = JavaApiError.class)
     })
     @ApiPageableSwagger
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
@@ -153,7 +144,7 @@ public class TrainingDefinitionsRestController {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "All training definitions for organizers found.", response = TrainingDefinitionInfoDTO.class, responseContainer = "List"),
-            @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiErrorTraining.class)
+            @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = JavaApiError.class)
     })
     @ApiPageableSwagger
     @GetMapping(path = "/for-organizers", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -184,7 +175,7 @@ public class TrainingDefinitionsRestController {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "All training definitions by sandbox definition found.", response = TrainingDefinitionByIdDTO.class, responseContainer = "List"),
-            @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiErrorTraining.class)
+            @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = JavaApiError.class)
     })
     @ApiPageableSwagger
     @GetMapping(path = "/sandbox-definitions/{sandboxDefinitionId}", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -211,15 +202,14 @@ public class TrainingDefinitionsRestController {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "The requested resource has been created.", response = TrainingDefinitionByIdDTO.class),
-            @ApiResponse(code = 400, message = "Given training definition is not valid", response = ApiErrorTraining.class),
-            @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiErrorTraining.class)
+            @ApiResponse(code = 400, message = "Given training definition is not valid", response = JavaApiError.class),
+            @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = JavaApiError.class)
     })
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> createTrainingDefinition(@ApiParam(value = "Training Definition to be created")
                                                            @RequestBody @Valid TrainingDefinitionCreateDTO trainingDefinitionCreateDTO,
                                                            @ApiParam(value = "Fields which should be returned in REST API response", required = false)
-                                                           @RequestParam(value = "fields", required = false) String fields
-    ) {
+                                                           @RequestParam(value = "fields", required = false) String fields) {
         TrainingDefinitionByIdDTO trainingDefinitionResource = trainingDefinitionFacade.create(trainingDefinitionCreateDTO);
         Squiggly.init(objectMapper, fields);
         return ResponseEntity.ok(SquigglyUtils.stringify(objectMapper, trainingDefinitionResource));
@@ -238,21 +228,17 @@ public class TrainingDefinitionsRestController {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "The requested resource has been updated."),
-            @ApiResponse(code = 400, message = "Given training definition is not valid", response = ApiErrorTraining.class),
-            @ApiResponse(code = 404, message = "Training definition with given id not found.", response = ApiErrorTraining.class),
-            @ApiResponse(code = 409, message = "Cannot edit released or archived training definition.", response = ApiErrorTraining.class),
-            @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiErrorTraining.class)
+            @ApiResponse(code = 400, message = "Given training definition is not valid", response = JavaApiError.class),
+            @ApiResponse(code = 404, message = "Training definition with given id not found.", response = JavaApiError.class),
+            @ApiResponse(code = 409, message = "Cannot edit released or archived training definition.", response = JavaApiError.class),
+            @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = JavaApiError.class)
     })
     @PutMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Void> updateTrainingDefinition(
             @ApiParam(value = "Training definition to be updated")
             @RequestBody @Valid TrainingDefinitionUpdateDTO trainingDefinitionUpdateDTO) {
-        try {
-            trainingDefinitionFacade.update(trainingDefinitionUpdateDTO);
-            return ResponseEntity.noContent().build();
-        } catch (FacadeLayerException ex) {
-            throw ExceptionSorter.throwException(ex);
-        }
+        trainingDefinitionFacade.update(trainingDefinitionUpdateDTO);
+        return ResponseEntity.noContent().build();
     }
 
     /**
@@ -271,20 +257,16 @@ public class TrainingDefinitionsRestController {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Training definition cloned.", response = TrainingDefinitionByIdDTO.class),
-            @ApiResponse(code = 404, message = "Training definition with given id not found.", response = ApiErrorTraining.class),
-            @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiErrorTraining.class)
+            @ApiResponse(code = 404, message = "Training definition with given id not found.", response = JavaApiError.class),
+            @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = JavaApiError.class)
     })
     @PostMapping(path = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<TrainingDefinitionByIdDTO> cloneTrainingDefinition(@ApiParam(value = "Id of training definition to be cloned", required = true)
                                                                              @PathVariable("id") Long id,
                                                                              @ApiParam(value = "Title of cloned definition", required = true)
                                                                              @RequestParam(value = "title") String title) {
-        try {
-            TrainingDefinitionByIdDTO trainingDefinitionByIdDTO = trainingDefinitionFacade.clone(id, title);
-            return ResponseEntity.ok(trainingDefinitionByIdDTO);
-        } catch (FacadeLayerException ex) {
-            throw ExceptionSorter.throwException(ex);
-        }
+        TrainingDefinitionByIdDTO trainingDefinitionByIdDTO = trainingDefinitionFacade.clone(id, title);
+        return ResponseEntity.ok(trainingDefinitionByIdDTO);
     }
 
     /**
@@ -304,9 +286,9 @@ public class TrainingDefinitionsRestController {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "The level has been swapped to the left.", response = BasicLevelInfoDTO[].class),
-            @ApiResponse(code = 404, message = "Training definition with given id not found.", response = ApiErrorTraining.class),
-            @ApiResponse(code = 409, message = "Cannot edit released or archived training definition or cannot swap first level to the left.", response = ApiErrorTraining.class),
-            @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiErrorTraining.class)
+            @ApiResponse(code = 404, message = "Training definition with given id not found.", response = JavaApiError.class),
+            @ApiResponse(code = 409, message = "Cannot edit released or archived training definition or cannot swap first level to the left.", response = JavaApiError.class),
+            @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = JavaApiError.class)
     })
     @PutMapping(path = "/{definitionId}/levels/{levelIdFrom}/swap-with/{levelIdTo}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> swapLevels(@ApiParam(value = "Id of training definition", required = true)
@@ -315,11 +297,7 @@ public class TrainingDefinitionsRestController {
                                              @PathVariable("levelIdFrom") Long levelIdFrom,
                                              @ApiParam(value = "Id of training definition", required = true)
                                              @PathVariable("levelIdTo") Long levelIdTo) {
-        try {
-            return ResponseEntity.ok(trainingDefinitionFacade.swapLevels(definitionId, levelIdFrom, levelIdTo));
-        } catch (FacadeLayerException ex) {
-            throw ExceptionSorter.throwException(ex);
-        }
+        return ResponseEntity.ok(trainingDefinitionFacade.swapLevels(definitionId, levelIdFrom, levelIdTo));
     }
 
     /**
@@ -338,9 +316,9 @@ public class TrainingDefinitionsRestController {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "The level has been moved to the given position."),
-            @ApiResponse(code = 404, message = "Training definition with given id not found.", response = ApiErrorTraining.class),
-            @ApiResponse(code = 409, message = "Cannot edit released or archived training definition.", response = ApiErrorTraining.class),
-            @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiErrorTraining.class)
+            @ApiResponse(code = 404, message = "Training definition with given id not found.", response = JavaApiError.class),
+            @ApiResponse(code = 409, message = "Cannot edit released or archived training definition.", response = JavaApiError.class),
+            @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = JavaApiError.class)
     })
     @PutMapping(path = "/{definitionId}/levels/{levelIdToBeMoved}/move-to/{newPosition}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> moveLevel(@ApiParam(value = "Id of training definition", required = true)
@@ -349,11 +327,7 @@ public class TrainingDefinitionsRestController {
                                             @PathVariable("levelIdToBeMoved") Long levelIdToBeMoved,
                                             @ApiParam(value = "Id of training definition", required = true)
                                             @PathVariable("newPosition") Integer newPosition) {
-        try {
-            return ResponseEntity.ok(trainingDefinitionFacade.moveLevel(definitionId, levelIdToBeMoved, newPosition));
-        } catch (FacadeLayerException ex) {
-            throw ExceptionSorter.throwException(ex);
-        }
+        return ResponseEntity.ok(trainingDefinitionFacade.moveLevel(definitionId, levelIdToBeMoved, newPosition));
     }
 
     /**
@@ -368,19 +342,15 @@ public class TrainingDefinitionsRestController {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Training definition deleted."),
-            @ApiResponse(code = 404, message = "Training definition or one of levels cannot be found.", response = ApiErrorTraining.class),
-            @ApiResponse(code = 409, message = "Cannot delete released training definition.", response = ApiErrorTraining.class),
-            @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiErrorTraining.class)
+            @ApiResponse(code = 404, message = "Training definition or one of levels cannot be found.", response = JavaApiError.class),
+            @ApiResponse(code = 409, message = "Cannot delete released training definition.", response = JavaApiError.class),
+            @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = JavaApiError.class)
     })
     @DeleteMapping(path = "/{id}")
     public ResponseEntity<Void> deleteTrainingDefinition(@ApiParam(value = "Id of training definition to be deleted")
                                                          @PathVariable("id") Long id) {
-        try {
-            trainingDefinitionFacade.delete(id);
-            return ResponseEntity.ok().build();
-        } catch (FacadeLayerException ex) {
-            throw ExceptionSorter.throwException(ex);
-        }
+        trainingDefinitionFacade.delete(id);
+        return ResponseEntity.ok().build();
     }
 
     /**
@@ -398,20 +368,16 @@ public class TrainingDefinitionsRestController {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "The level deleted."),
-            @ApiResponse(code = 404, message = "Level with given id not found.", response = ApiErrorTraining.class),
-            @ApiResponse(code = 409, message = "Cannot edit released or archived training definition.", response = ApiErrorTraining.class),
-            @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiErrorTraining.class)
+            @ApiResponse(code = 404, message = "Level with given id not found.", response = JavaApiError.class),
+            @ApiResponse(code = 409, message = "Cannot edit released or archived training definition.", response = JavaApiError.class),
+            @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = JavaApiError.class)
     })
     @DeleteMapping(path = "/{definitionId}/levels/{levelId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> deleteOneLevel(@ApiParam(value = "Id of training definition from which level is deleted")
                                                  @PathVariable("definitionId") Long definitionId,
                                                  @ApiParam(value = "Id of level to be deleted")
                                                  @PathVariable("levelId") Long levelId) {
-        try {
-            return ResponseEntity.ok(trainingDefinitionFacade.deleteOneLevel(definitionId, levelId));
-        } catch (FacadeLayerException ex) {
-            throw ExceptionSorter.throwException(ex);
-        }
+        return ResponseEntity.ok(trainingDefinitionFacade.deleteOneLevel(definitionId, levelId));
     }
 
     /**
@@ -428,22 +394,18 @@ public class TrainingDefinitionsRestController {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 204, message = "Game level updated."),
-            @ApiResponse(code = 400, message = "Given game level is not valid.", response = ApiErrorTraining.class),
-            @ApiResponse(code = 409, message = "Cannot edit released or archived training definition.", response = ApiErrorTraining.class),
-            @ApiResponse(code = 404, message = "Level not found in definition.", response = ApiErrorTraining.class),
-            @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiErrorTraining.class)
+            @ApiResponse(code = 400, message = "Given game level is not valid.", response = JavaApiError.class),
+            @ApiResponse(code = 409, message = "Cannot edit released or archived training definition.", response = JavaApiError.class),
+            @ApiResponse(code = 404, message = "Level not found in definition.", response = JavaApiError.class),
+            @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = JavaApiError.class)
     })
     @PutMapping(path = "/{definitionId}/game-levels", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Void> updateGameLevel(@ApiParam(value = "Id of definition to which level is assigned", required = true)
                                                 @PathVariable(value = "definitionId") Long definitionId,
                                                 @ApiParam(value = "Game level to be updated")
                                                 @RequestBody @Valid GameLevelUpdateDTO gameLevelUpdateDTO) {
-        try {
-            trainingDefinitionFacade.updateGameLevel(definitionId, gameLevelUpdateDTO);
-            return ResponseEntity.noContent().build();
-        } catch (FacadeLayerException ex) {
-            throw ExceptionSorter.throwException(ex);
-        }
+        trainingDefinitionFacade.updateGameLevel(definitionId, gameLevelUpdateDTO);
+        return ResponseEntity.noContent().build();
     }
 
     /**
@@ -460,22 +422,18 @@ public class TrainingDefinitionsRestController {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 204, message = "Info level updated."),
-            @ApiResponse(code = 400, message = "Given info level is not valid.", response = ApiErrorTraining.class),
-            @ApiResponse(code = 409, message = "Cannot edit released or archived training definition.", response = ApiErrorTraining.class),
-            @ApiResponse(code = 404, message = "Level not found in definition.", response = ApiErrorTraining.class),
-            @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiErrorTraining.class)
+            @ApiResponse(code = 400, message = "Given info level is not valid.", response = JavaApiError.class),
+            @ApiResponse(code = 409, message = "Cannot edit released or archived training definition.", response = JavaApiError.class),
+            @ApiResponse(code = 404, message = "Level not found in definition.", response = JavaApiError.class),
+            @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = JavaApiError.class)
     })
     @PutMapping(path = "/{definitionId}/info-levels", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Void> updateInfoLevel(@ApiParam(value = "Id of definition to which level is assigned", required = true)
                                                 @PathVariable(value = "definitionId") Long definitionId,
                                                 @ApiParam(value = "Info level to be updated")
                                                 @RequestBody @Valid InfoLevelUpdateDTO infoLevelUpdateDTO) {
-        try {
-            trainingDefinitionFacade.updateInfoLevel(definitionId, infoLevelUpdateDTO);
-            return ResponseEntity.noContent().build();
-        } catch (FacadeLayerException ex) {
-            throw ExceptionSorter.throwException(ex);
-        }
+        trainingDefinitionFacade.updateInfoLevel(definitionId, infoLevelUpdateDTO);
+        return ResponseEntity.noContent().build();
     }
 
     /**
@@ -492,22 +450,18 @@ public class TrainingDefinitionsRestController {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 204, message = "Assessment level updated."),
-            @ApiResponse(code = 400, message = "Given assessment level is not valid.", response = ApiErrorTraining.class),
-            @ApiResponse(code = 409, message = "Cannot edit released or archived training definition.", response = ApiErrorTraining.class),
-            @ApiResponse(code = 404, message = "Level not found in definition.", response = ApiErrorTraining.class),
-            @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiErrorTraining.class)
+            @ApiResponse(code = 400, message = "Given assessment level is not valid.", response = JavaApiError.class),
+            @ApiResponse(code = 409, message = "Cannot edit released or archived training definition.", response = JavaApiError.class),
+            @ApiResponse(code = 404, message = "Level not found in definition.", response = JavaApiError.class),
+            @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = JavaApiError.class)
     })
     @PutMapping(path = "/{definitionId}/assessment-levels", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Void> updateAssessmentLevel(@ApiParam(value = "Id of definition to which level is assigned", required = true)
                                                       @PathVariable(value = "definitionId") Long definitionId,
                                                       @ApiParam(value = "Assessment level to be updated")
                                                       @RequestBody @Valid AssessmentLevelUpdateDTO assessmentLevelUpdateDTO) {
-        try {
-            trainingDefinitionFacade.updateAssessmentLevel(definitionId, assessmentLevelUpdateDTO);
-            return ResponseEntity.noContent().build();
-        } catch (FacadeLayerException ex) {
-            throw ExceptionSorter.throwException(ex);
-        }
+        trainingDefinitionFacade.updateAssessmentLevel(definitionId, assessmentLevelUpdateDTO);
+        return ResponseEntity.noContent().build();
     }
 
     /**
@@ -525,21 +479,17 @@ public class TrainingDefinitionsRestController {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Game level has been found.", response = AbstractLevelDTO.class),
-            @ApiResponse(code = 404, message = "Level with given id not found.", response = ApiErrorTraining.class),
-            @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiErrorTraining.class)
+            @ApiResponse(code = 404, message = "Level with given id not found.", response = JavaApiError.class),
+            @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = JavaApiError.class)
     })
     @GetMapping(path = "/levels/{levelId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> findLevelById(@ApiParam(value = "Id of wanted level", required = true)
                                                 @PathVariable(value = "levelId") Long levelId,
                                                 @ApiParam(value = "Fields which should be returned in REST API response", required = false)
                                                 @RequestParam(value = "fields", required = false) String fields) {
-        try {
-            AbstractLevelDTO level = trainingDefinitionFacade.findLevelById(levelId);
-            Squiggly.init(objectMapper, fields);
-            return ResponseEntity.ok(SquigglyUtils.stringify(objectMapper, level));
-        } catch (FacadeLayerException ex) {
-            throw new ResourceNotFoundException(ex.getLocalizedMessage());
-        }
+        AbstractLevelDTO level = trainingDefinitionFacade.findLevelById(levelId);
+        Squiggly.init(objectMapper, fields);
+        return ResponseEntity.ok(SquigglyUtils.stringify(objectMapper, level));
     }
 
     /**
@@ -559,9 +509,9 @@ public class TrainingDefinitionsRestController {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 201, message = "Level created.", response = AbstractLevelDTO.class),
-            @ApiResponse(code = 404, message = "Training definition with given id not found.", response = ApiErrorTraining.class),
-            @ApiResponse(code = 409, message = "Cannot create level in released or archived training definition.", response = ApiErrorTraining.class),
-            @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiErrorTraining.class)
+            @ApiResponse(code = 404, message = "Training definition with given id not found.", response = JavaApiError.class),
+            @ApiResponse(code = 409, message = "Cannot create level in released or archived training definition.", response = JavaApiError.class),
+            @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = JavaApiError.class)
     })
     @PostMapping(path = "/{definitionId}/levels/{levelType}")
     public ResponseEntity<Object> createLevel(@ApiParam(value = "Id of definition for which is level created", required = true)
@@ -570,20 +520,16 @@ public class TrainingDefinitionsRestController {
                                               @PathVariable(value = "levelType") LevelType levelType,
                                               @ApiParam(value = "Fields which should be returned in REST API response", required = false)
                                               @RequestParam(value = "fields", required = false) String fields) {
-        try {
-            BasicLevelInfoDTO basicLevelInfoDTO;
-            if (levelType.equals(LevelType.GAME)) {
-                basicLevelInfoDTO = trainingDefinitionFacade.createGameLevel(definitionId);
-            } else if (levelType.equals(LevelType.ASSESSMENT)) {
-                basicLevelInfoDTO = trainingDefinitionFacade.createAssessmentLevel(definitionId);
-            } else {
-                basicLevelInfoDTO = trainingDefinitionFacade.createInfoLevel(definitionId);
-            }
-            Squiggly.init(objectMapper, fields);
-            return new ResponseEntity<>(SquigglyUtils.stringify(objectMapper, basicLevelInfoDTO), HttpStatus.CREATED);
-        } catch (FacadeLayerException ex) {
-            throw ExceptionSorter.throwException(ex);
+        BasicLevelInfoDTO basicLevelInfoDTO;
+        if (levelType.equals(LevelType.GAME)) {
+            basicLevelInfoDTO = trainingDefinitionFacade.createGameLevel(definitionId);
+        } else if (levelType.equals(LevelType.ASSESSMENT)) {
+            basicLevelInfoDTO = trainingDefinitionFacade.createAssessmentLevel(definitionId);
+        } else {
+            basicLevelInfoDTO = trainingDefinitionFacade.createInfoLevel(definitionId);
         }
+        Squiggly.init(objectMapper, fields);
+        return new ResponseEntity<>(SquigglyUtils.stringify(objectMapper, basicLevelInfoDTO), HttpStatus.CREATED);
     }
 
     /**
@@ -600,7 +546,7 @@ public class TrainingDefinitionsRestController {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Designers found.", response = UserInfoRestResource.class),
-            @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiErrorTraining.class)
+            @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = JavaApiError.class)
 
     })
     @ApiPageableSwagger
@@ -610,12 +556,8 @@ public class TrainingDefinitionsRestController {
                                                @ApiParam(value = "Family name filter.", required = false)
                                                @RequestParam(value = "familyName", required = false) String familyName,
                                                Pageable pageable) {
-        try {
-            PageResultResource<UserRefDTO> designers = trainingDefinitionFacade.getUsersWithGivenRole(cz.muni.ics.kypo.training.api.enums.RoleType.ROLE_TRAINING_DESIGNER, pageable, givenName, familyName);
-            return ResponseEntity.ok(SquigglyUtils.stringify(objectMapper, designers));
-        } catch (FacadeLayerException ex) {
-            throw ExceptionSorter.throwException(ex);
-        }
+        PageResultResource<UserRefDTO> designers = trainingDefinitionFacade.getUsersWithGivenRole(cz.muni.ics.kypo.training.api.enums.RoleType.ROLE_TRAINING_DESIGNER, pageable, givenName, familyName);
+        return ResponseEntity.ok(SquigglyUtils.stringify(objectMapper, designers));
     }
 
     /**
@@ -632,7 +574,7 @@ public class TrainingDefinitionsRestController {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Organizers found.", response = UserInfoRestResource.class),
-            @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiErrorTraining.class)
+            @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = JavaApiError.class)
     })
     @ApiPageableSwagger
     @GetMapping(path = "/organizers", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -642,12 +584,8 @@ public class TrainingDefinitionsRestController {
                                                 @ApiParam(value = "Family name filter.", required = false)
                                                 @RequestParam(value = "familyName", required = false) String familyName,
                                                 @ApiParam(value = "Pagination support.", required = false) Pageable pageable) {
-        try {
-            PageResultResource<UserRefDTO> designers = trainingDefinitionFacade.getUsersWithGivenRole(RoleType.ROLE_TRAINING_ORGANIZER, pageable, givenName, familyName);
-            return ResponseEntity.ok(SquigglyUtils.stringify(objectMapper, designers));
-        } catch (FacadeLayerException ex) {
-            throw ExceptionSorter.throwException(ex);
-        }
+        PageResultResource<UserRefDTO> designers = trainingDefinitionFacade.getUsersWithGivenRole(RoleType.ROLE_TRAINING_ORGANIZER, pageable, givenName, familyName);
+        return ResponseEntity.ok(SquigglyUtils.stringify(objectMapper, designers));
     }
 
     /**
@@ -665,8 +603,8 @@ public class TrainingDefinitionsRestController {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Designers found.", response = UserInfoRestResource.class),
-            @ApiResponse(code = 404, message = "Training definition not found.", response = ApiErrorTraining.class),
-            @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiErrorTraining.class)
+            @ApiResponse(code = 404, message = "Training definition not found.", response = JavaApiError.class),
+            @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = JavaApiError.class)
 
     })
     @ApiPageableSwagger
@@ -678,12 +616,8 @@ public class TrainingDefinitionsRestController {
                                                                            @ApiParam(value = "Family name filter.", required = false)
                                                                            @RequestParam(value = "familyName", required = false) String familyName,
                                                                            Pageable pageable) {
-        try {
-            PageResultResource<UserRefDTO> designers = trainingDefinitionFacade.getDesignersNotInGivenTrainingDefinition(trainingDefinitionId, pageable, givenName, familyName);
-            return ResponseEntity.ok(SquigglyUtils.stringify(objectMapper, designers));
-        } catch (FacadeLayerException ex) {
-            throw ExceptionSorter.throwException(ex);
-        }
+        PageResultResource<UserRefDTO> designers = trainingDefinitionFacade.getDesignersNotInGivenTrainingDefinition(trainingDefinitionId, pageable, givenName, familyName);
+        return ResponseEntity.ok(SquigglyUtils.stringify(objectMapper, designers));
     }
 
     /**
@@ -701,20 +635,16 @@ public class TrainingDefinitionsRestController {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Beta testers found.", response = UserInfoRestResource.class),
-            @ApiResponse(code = 404, message = "Training definition not found.", response = ApiErrorTraining.class),
-            @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiErrorTraining.class)
+            @ApiResponse(code = 404, message = "Training definition not found.", response = JavaApiError.class),
+            @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = JavaApiError.class)
     })
     @ApiPageableSwagger
     @GetMapping(path = "/{id}/beta-testers", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> getBetaTesters(@ApiParam(value = "ID of the training definition which contains beta testers you want to retrieve", required = true)
                                                  @PathVariable(value = "id", required = true) Long trainingDefinitionId,
                                                  @ApiParam(value = "Pagination support.", required = false) Pageable pageable) {
-        try {
-            PageResultResource<UserRefDTO> designers = trainingDefinitionFacade.getBetaTesters(trainingDefinitionId, pageable);
-            return ResponseEntity.ok(SquigglyUtils.stringify(objectMapper, designers));
-        } catch (FacadeLayerException ex) {
-            throw ExceptionSorter.throwException(ex);
-        }
+        PageResultResource<UserRefDTO> designers = trainingDefinitionFacade.getBetaTesters(trainingDefinitionId, pageable);
+        return ResponseEntity.ok(SquigglyUtils.stringify(objectMapper, designers));
     }
 
     /**
@@ -732,8 +662,8 @@ public class TrainingDefinitionsRestController {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Authors found.", response = UserInfoRestResource.class),
-            @ApiResponse(code = 404, message = "Training definition not found", response = ApiErrorTraining.class),
-            @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiErrorTraining.class)
+            @ApiResponse(code = 404, message = "Training definition not found", response = JavaApiError.class),
+            @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = JavaApiError.class)
     })
     @ApiPageableSwagger
     @GetMapping(path = "/{id}/authors", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -744,12 +674,8 @@ public class TrainingDefinitionsRestController {
                                              @ApiParam(value = "Family name filter.", required = false)
                                              @RequestParam(value = "familyName", required = false) String familyName,
                                              @ApiParam(value = "Pagination support.", required = false) Pageable pageable) {
-        try {
-            PageResultResource<UserRefDTO> designers = trainingDefinitionFacade.getAuthors(trainingDefinitionId, pageable, givenName, familyName);
-            return ResponseEntity.ok(SquigglyUtils.stringify(objectMapper, designers));
-        } catch (FacadeLayerException ex) {
-            throw ExceptionSorter.throwException(ex);
-        }
+        PageResultResource<UserRefDTO> designers = trainingDefinitionFacade.getAuthors(trainingDefinitionId, pageable, givenName, familyName);
+        return ResponseEntity.ok(SquigglyUtils.stringify(objectMapper, designers));
     }
 
     /**
@@ -767,8 +693,8 @@ public class TrainingDefinitionsRestController {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Authors in training definition updated."),
-            @ApiResponse(code = 404, message = "Training definition not found.", response = ApiErrorTraining.class),
-            @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiErrorTraining.class)
+            @ApiResponse(code = 404, message = "Training definition not found.", response = JavaApiError.class),
+            @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = JavaApiError.class)
     })
     @ApiPageableSwagger
     @PutMapping(path = "/{id}/authors", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -778,12 +704,8 @@ public class TrainingDefinitionsRestController {
                                             @RequestParam(value = "authorsAddition", required = false) Set<Long> authorsAddition,
                                             @ApiParam(value = "Ids of the users to be removed from the training definition.")
                                             @RequestParam(value = "authorsRemoval", required = false) Set<Long> authorsRemoval) {
-        try {
-            trainingDefinitionFacade.editAuthors(trainingDefinitionId, authorsAddition, authorsRemoval);
-            return ResponseEntity.noContent().build();
-        } catch (FacadeLayerException ex) {
-            throw ExceptionSorter.throwException(ex);
-        }
+        trainingDefinitionFacade.editAuthors(trainingDefinitionId, authorsAddition, authorsRemoval);
+        return ResponseEntity.noContent().build();
     }
 
     /**
@@ -797,9 +719,9 @@ public class TrainingDefinitionsRestController {
             nickname = "switchDefinitionState")
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Training definition updated."),
-            @ApiResponse(code = 404, message = "Training definition with given id not found.", response = ApiErrorTraining.class),
-            @ApiResponse(code = 409, message = "Cannot edit definition with created instances.", response = ApiErrorTraining.class),
-            @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiErrorTraining.class)
+            @ApiResponse(code = 404, message = "Training definition with given id not found.", response = JavaApiError.class),
+            @ApiResponse(code = 409, message = "Cannot edit definition with created instances.", response = JavaApiError.class),
+            @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = JavaApiError.class)
     })
     @PutMapping(path = "/{definitionId}/states/{state}")
     public ResponseEntity<Void> switchState(
@@ -807,12 +729,8 @@ public class TrainingDefinitionsRestController {
             @PathVariable(value = "definitionId") Long definitionId,
             @ApiParam(value = "New state of definition", allowableValues = "RELEASED, UNRELEASED, ARCHIVED", required = true)
             @PathVariable(value = "state") TDState state) {
-        try {
-            trainingDefinitionFacade.switchState(definitionId, state);
-            return ResponseEntity.noContent().build();
-        } catch (FacadeLayerException ex) {
-            throw ExceptionSorter.throwException(ex);
-        }
+        trainingDefinitionFacade.switchState(definitionId, state);
+        return ResponseEntity.noContent().build();
     }
 
     @ApiModel(description = "Content (Retrieved data) and meta information about REST API result page. Including page number, number of elements in page, size of elements, total number of elements and total number of pages")

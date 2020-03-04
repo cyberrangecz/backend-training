@@ -1,8 +1,8 @@
 package cz.muni.ics.kypo.training.service;
 
 import com.querydsl.core.types.Predicate;
-import cz.muni.ics.kypo.training.exceptions.FacadeLayerException;
-import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
+import cz.muni.ics.kypo.training.exceptions.EntityNotFoundException;
+import cz.muni.ics.kypo.training.exceptions.EntityConflictException;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -20,7 +20,7 @@ public interface TrainingDefinitionService {
      *
      * @param id of a Training Definition that would be returned
      * @return specific {@link TrainingDefinition} by id
-     * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND training definition cannot be found
+     * @throws EntityNotFoundException training definition cannot be found
      */
     TrainingDefinition findById(Long id);
 
@@ -46,8 +46,8 @@ public interface TrainingDefinitionService {
      * Updates given Training Definition
      *
      * @param trainingDefinition to be updated
-     * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND given training definition or one of the levels is not found.
-     *                                               RESOURCE_CONFLICT released or archived training definition cannot be modified.
+     * @throws EntityNotFoundException training definition or one of the levels is not found.
+     * @throws EntityConflictException released or archived training definition cannot be modified.
      */
     void update(TrainingDefinition trainingDefinition);
 
@@ -57,8 +57,8 @@ public interface TrainingDefinitionService {
      * @param id    of definition to be cloned
      * @param title the title of the new cloned definition
      * @return cloned {@link TrainingDefinition}
-     * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND given training definition not found.
-     *                                               RESOURCE_CONFLICT cannot clone unreleased training definition.
+     * @throws EntityNotFoundException training definition not found.
+     * @throws EntityConflictException cannot clone unreleased training definition.
      */
     TrainingDefinition clone(Long id, String title);
 
@@ -68,8 +68,8 @@ public interface TrainingDefinitionService {
      * @param definitionId  - Id of definition containing levels, this training definition is updating its last edited column.
      * @param swapLevelFrom - Id of a first level to be swapped.
      * @param swapLevelTo   - Id of a second level to be swapped.
-     * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND given training definition or one of the levels is not found.
-     *                                               RESOURCE_CONFLICT released or archived training definition cannot be modified.
+     * @throws EntityNotFoundException training definition or one of the levels is not found.
+     * @throws EntityConflictException released or archived training definition cannot be modified.
      */
     void swapLevels(Long definitionId, Long swapLevelFrom, Long swapLevelTo);
 
@@ -79,8 +79,8 @@ public interface TrainingDefinitionService {
      * @param definitionId  - Id of definition containing levels, this training definition is updating its last edited column.
      * @param levelIdToBeMoved - id of the level to be moved to the new position
      * @param newPosition   - position where level will be moved
-     * @throws FacadeLayerException with ErrorCode: RESOURCE_NOT_FOUND given training definition or one of the levels is not found.
-     *                                              RESOURCE_CONFLICT released or archived training definition cannot be modified.
+     * @throws EntityNotFoundException training definition or one of the levels is not found.
+     * @throws EntityConflictException released or archived training definition cannot be modified.
      */
     void moveLevel(Long definitionId, Long levelIdToBeMoved, Integer newPosition);
 
@@ -88,8 +88,8 @@ public interface TrainingDefinitionService {
      * Deletes specific training definition based on id
      *
      * @param id of definition to be deleted
-     * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND given training definition or level is not found.
-     *                                               RESOURCE_CONFLICT released training definition cannot be deleted.
+     * @throws EntityNotFoundException training definition or level is not found.
+     * @throws EntityConflictException released training definition cannot be deleted.
      */
     void delete(Long id);
 
@@ -98,8 +98,8 @@ public interface TrainingDefinitionService {
      *
      * @param definitionId - id of definition containing level to be deleted
      * @param levelId      - id of level to be deleted
-     * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND given training definition or level is not found.
-     *                                               RESOURCE_CONFLICT level cannot be deleted in released or archived training definition.
+     * @throws EntityNotFoundException training definition or level is not found.
+     * @throws EntityConflictException level cannot be deleted in released or archived training definition.
      */
     void deleteOneLevel(Long definitionId, Long levelId);
 
@@ -108,8 +108,8 @@ public interface TrainingDefinitionService {
      *
      * @param definitionId - id of training definition containing level to be updated
      * @param gameLevel    to be updated
-     * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND given training definition is not found.
-     *                                               RESOURCE_CONFLICT level cannot be updated in released or archived training definition.
+     * @throws EntityNotFoundException training definition is not found.
+     * @throws EntityConflictException level cannot be updated in released or archived training definition.
      */
     void updateGameLevel(Long definitionId, GameLevel gameLevel);
 
@@ -118,8 +118,8 @@ public interface TrainingDefinitionService {
      *
      * @param definitionId - id of training definition containing level to be updated
      * @param infoLevel    to be updated
-     * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND given training definition is not found.
-     *                                               RESOURCE_CONFLICT level cannot be updated in released or archived training definition.
+     * @throws EntityNotFoundException training definition is not found.
+     * @throws EntityConflictException level cannot be updated in released or archived training definition.
      */
     void updateInfoLevel(Long definitionId, InfoLevel infoLevel);
 
@@ -128,8 +128,8 @@ public interface TrainingDefinitionService {
      *
      * @param definitionId    - id of training definition containing level to be updated
      * @param assessmentLevel to be updated
-     * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND given training definition is not found.
-     *                                               RESOURCE_CONFLICT level cannot be updated in released or archived training definition.
+     * @throws EntityNotFoundException training definition is not found.
+     * @throws EntityConflictException level cannot be updated in released or archived training definition.
      */
     void updateAssessmentLevel(Long definitionId, AssessmentLevel assessmentLevel);
 
@@ -138,8 +138,8 @@ public interface TrainingDefinitionService {
      *
      * @param definitionId - id of definition in which level will be created
      * @return new {@link GameLevel}
-     * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND given training definition is not found.
-     *                                               RESOURCE_CONFLICT level cannot be created in released or archived training definition.
+     * @throws EntityNotFoundException training definition is not found.
+     * @throws EntityConflictException level cannot be created in released or archived training definition.
      */
     GameLevel createGameLevel(Long definitionId);
 
@@ -148,8 +148,8 @@ public interface TrainingDefinitionService {
      *
      * @param definitionId - id of definition in which level will be created
      * @return new {@link InfoLevel}
-     * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND given training definition is not found.
-     *                                               RESOURCE_CONFLICT level cannot be created in released or archived training definition.
+     * @throws EntityNotFoundException training definition is not found.
+     * @throws EntityConflictException level cannot be created in released or archived training definition.
      */
     InfoLevel createInfoLevel(Long definitionId);
 
@@ -158,8 +158,8 @@ public interface TrainingDefinitionService {
      *
      * @param definitionId - id of definition in which level will be created
      * @return new {@link AssessmentLevel}
-     * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND given training definition is not found.
-     *                                               RESOURCE_CONFLICT level cannot be created in released or archived training definition.
+     * @throws EntityNotFoundException training definition is not found.
+     * @throws EntityConflictException level cannot be created in released or archived training definition.
      */
     AssessmentLevel createAssessmentLevel(Long definitionId);
 
@@ -184,7 +184,7 @@ public interface TrainingDefinitionService {
      *
      * @param levelId - id of wanted level
      * @return wanted {@link AbstractLevel}
-     * @throws ServiceLayerException if level is not found
+     * @throws EntityNotFoundException level is not found.
      */
     AbstractLevel findLevelById(Long levelId);
 

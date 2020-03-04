@@ -6,8 +6,7 @@ import com.github.fge.jsonschema.core.exceptions.ProcessingException;
 import com.github.fge.jsonschema.core.report.ProcessingReport;
 import com.github.fge.jsonschema.main.JsonSchemaFactory;
 import com.github.fge.jsonschema.main.JsonValidator;
-import cz.muni.ics.kypo.training.exceptions.ErrorCode;
-import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
+import cz.muni.ics.kypo.training.exceptions.InternalServerErrorException;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -271,7 +270,7 @@ public class AssessmentUtil {
             }
 
         } catch (IOException | ProcessingException ex) {
-            throw new ServiceLayerException(ex.getMessage(), ErrorCode.UNEXPECTED_ERROR);
+            throw new InternalServerErrorException(ex.getMessage());
         }
     }
 }

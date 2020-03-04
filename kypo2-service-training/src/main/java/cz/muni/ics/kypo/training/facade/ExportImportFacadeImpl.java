@@ -16,8 +16,9 @@ import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionBy
 import cz.muni.ics.kypo.training.api.enums.LevelType;
 import cz.muni.ics.kypo.training.api.enums.TDState;
 import cz.muni.ics.kypo.training.api.responses.PageResultResource;
-import cz.muni.ics.kypo.training.exceptions.FacadeLayerException;
-import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
+import cz.muni.ics.kypo.training.exceptions.EntityConflictException;
+import cz.muni.ics.kypo.training.exceptions.EntityErrorDetail;
+import cz.muni.ics.kypo.training.exceptions.InternalServerErrorException;
 import cz.muni.ics.kypo.training.mapping.mapstruct.*;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.service.ExportImportService;
@@ -33,6 +34,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.time.Clock;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
@@ -91,7 +94,7 @@ public class ExportImportFacadeImpl implements ExportImportFacade {
             fileToReturnDTO.setTitle(dbExport.getTitle());
             return fileToReturnDTO;
         } catch (IOException ex) {
-            throw new FacadeLayerException(ex);
+            throw new InternalServerErrorException(ex);
         }
     }
 
@@ -168,7 +171,7 @@ public class ExportImportFacadeImpl implements ExportImportFacade {
     public FileToReturnDTO archiveTrainingInstance(Long trainingInstanceId) {
         try(ByteArrayOutputStream baos = new ByteArrayOutputStream(); ZipOutputStream zos = new ZipOutputStream(baos)) {
             TrainingInstance trainingInstance = exportImportService.findInstanceById(trainingInstanceId);
-            exportImportService.failIfInstanceIsNotFinished(trainingInstance.getEndTime());
+            this.checkIfInstanceIsNotFinished(trainingInstance);
             TrainingInstanceArchiveDTO archivedInstance = exportImportMapper.mapToDTO(trainingInstance);
             archivedInstance.setDefinitionId(trainingInstance.getTrainingDefinition().getId());
             Set<Long> organizersRefIds = trainingInstance.getOrganizers().stream().map(UserRef::getUserRefId).collect(Collectors.toSet());
@@ -221,8 +224,8 @@ public class ExportImportFacadeImpl implements ExportImportFacade {
             fileToReturnDTO.setTitle(trainingInstance.getTitle());
 
             return fileToReturnDTO;
-        } catch (ServiceLayerException | IOException ex) {
-            throw new FacadeLayerException(ex);
+        } catch (IOException ex) {
+            throw new InternalServerErrorException(ex);
         }
     }
 
@@ -237,6 +240,14 @@ public class ExportImportFacadeImpl implements ExportImportFacade {
 
         } while (usersResponse.getPagination().getTotalPages() != usersResponse.getPagination().getNumber());
         return users;
+    }
+
+
+    private void checkIfInstanceIsNotFinished(TrainingInstance trainingInstance) {
+        LocalDateTime currentTime = LocalDateTime.now(Clock.systemUTC());
+        if (currentTime.isBefore(trainingInstance.getEndTime()))
+            throw new EntityConflictException(new EntityErrorDetail(TrainingInstance.class, "id", trainingInstance.getId().getClass(),
+                    trainingInstance.getId(), "The training instance is not finished."));
     }
 
 }

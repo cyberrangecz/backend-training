@@ -9,7 +9,6 @@ import cz.muni.ics.kypo.training.api.dto.infolevel.InfoLevelUpdateDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.*;
 import cz.muni.ics.kypo.training.api.enums.RoleType;
 import cz.muni.ics.kypo.training.api.enums.TDState;
-import cz.muni.ics.kypo.training.exceptions.FacadeLayerException;
 import org.springframework.data.domain.Pageable;
 
 import java.util.List;
@@ -26,7 +25,6 @@ public interface TrainingDefinitionFacade {
      *
      * @param id of a Training Definition that would be returned
      * @return specific {@link TrainingDefinitionByIdDTO}
-     * @throws FacadeLayerException with ErrorCode: RESOURCE_NOT_FOUND training definition cannot be found
      */
     TrainingDefinitionByIdDTO findById(Long id);
 
@@ -52,10 +50,8 @@ public interface TrainingDefinitionFacade {
      * Updates training definition
      *
      * @param trainingDefinition to be updated
-     * @throws FacadeLayerException with ErrorCode: RESOURCE_NOT_FOUND given training definition or one of the levels is not found.
-     *                                              RESOURCE_CONFLICT released or archived training definition cannot be modified.
      */
-    void update(TrainingDefinitionUpdateDTO trainingDefinition) throws FacadeLayerException;
+    void update(TrainingDefinitionUpdateDTO trainingDefinition);
 
     /**
      * Creates new training definition
@@ -71,10 +67,8 @@ public interface TrainingDefinitionFacade {
      * @param id    of definition to be cloned
      * @param title the title of cloned definition
      * @return DTO of cloned definition, {@link TrainingDefinitionByIdDTO}
-     * @throws FacadeLayerException with ErrorCode: RESOURCE_NOT_FOUND given training definition not found.
-     *                                              RESOURCE_CONFLICT cannot clone unreleased training definition.
      */
-    TrainingDefinitionByIdDTO clone(Long id, String title) throws FacadeLayerException;
+    TrainingDefinitionByIdDTO clone(Long id, String title);
 
     /**
      * Swaps between levels. Swap basically means swapping the order attribute between these two levels.
@@ -83,8 +77,6 @@ public interface TrainingDefinitionFacade {
      * @param swapLevelFrom - Id of a first level to be swapped.
      * @param swapLevelTo   - Id of a second level to be swapped.
      * @return the list of {@link BasicLevelInfoDTO} about all levels from given definition
-     * @throws FacadeLayerException with ErrorCode: RESOURCE_NOT_FOUND given training definition or one of the levels is not found.
-     *                                              RESOURCE_CONFLICT released or archived training definition cannot be modified.
      */
     List<BasicLevelInfoDTO> swapLevels(Long definitionId, Long swapLevelFrom, Long swapLevelTo);
 
@@ -95,8 +87,6 @@ public interface TrainingDefinitionFacade {
      * @param levelIdToBeMoved - id of the level to be moved to the new position
      * @param newPosition   - position where level will be moved
      * @return the list of {@link BasicLevelInfoDTO} about all levels from given definition
-     * @throws FacadeLayerException with ErrorCode: RESOURCE_NOT_FOUND given training definition or one of the levels is not found.
-     *                                              RESOURCE_CONFLICT released or archived training definition cannot be modified.
      */
     List<BasicLevelInfoDTO> moveLevel(Long definitionId, Long levelIdToBeMoved, Integer newPosition);
 
@@ -105,10 +95,8 @@ public interface TrainingDefinitionFacade {
      * Deletes specific training instance based on id
      *
      * @param id of definition to be deleted
-     * @throws FacadeLayerException with ErrorCode: RESOURCE_NOT_FOUND given training definition or level is not found.
-     *                                              RESOURCE_CONFLICT level cannot be deleted in released or archived training definition.
      */
-    void delete(Long id) throws FacadeLayerException;
+    void delete(Long id);
 
 
     /**
@@ -117,20 +105,16 @@ public interface TrainingDefinitionFacade {
      * @param definitionId - id of definition containing level to be deleted
      * @param levelId      - id of level to be deleted
      * @return the list of {@link BasicLevelInfoDTO} about all levels from given definition
-     * @throws FacadeLayerException with ErrorCode: RESOURCE_NOT_FOUND given training definition is not found.
-     *                                              RESOURCE_CONFLICT level cannot be updated in released or archived training definition.
      */
-    List<BasicLevelInfoDTO> deleteOneLevel(Long definitionId, Long levelId) throws FacadeLayerException;
+    List<BasicLevelInfoDTO> deleteOneLevel(Long definitionId, Long levelId);
 
     /**
      * updates game level from training definition
      *
      * @param definitionId - id of training definition containing level to be updated
      * @param gameLevel    to be updated
-     * @throws FacadeLayerException with ErrorCode: RESOURCE_NOT_FOUND given training definition is not found.
-     *                                              RESOURCE_CONFLICT level cannot be updated in released or archived training definition.
      */
-    void updateGameLevel(Long definitionId, GameLevelUpdateDTO gameLevel) throws FacadeLayerException;
+    void updateGameLevel(Long definitionId, GameLevelUpdateDTO gameLevel);
 
 
     /**
@@ -138,10 +122,8 @@ public interface TrainingDefinitionFacade {
      *
      * @param definitionId - id of training definition containing level to be updated
      * @param infoLevel    to be updated
-     * @throws FacadeLayerException with ErrorCode: RESOURCE_NOT_FOUND given training definition is not found.
-     *                                              RESOURCE_CONFLICT level cannot be updated in released or archived training definition.
      */
-    void updateInfoLevel(Long definitionId, InfoLevelUpdateDTO infoLevel) throws FacadeLayerException;
+    void updateInfoLevel(Long definitionId, InfoLevelUpdateDTO infoLevel);
 
 
     /**
@@ -149,10 +131,8 @@ public interface TrainingDefinitionFacade {
      *
      * @param definitionId    - id of training definition containing level to be updated
      * @param assessmentLevel to be updated
-     * @throws FacadeLayerException with ErrorCode: RESOURCE_NOT_FOUND given training definition is not found.
-     *                                              RESOURCE_CONFLICT level cannot be updated in released or archived training definition.
      */
-    void updateAssessmentLevel(Long definitionId, AssessmentLevelUpdateDTO assessmentLevel) throws FacadeLayerException;
+    void updateAssessmentLevel(Long definitionId, AssessmentLevelUpdateDTO assessmentLevel);
 
 
     /**
@@ -160,10 +140,8 @@ public interface TrainingDefinitionFacade {
      *
      * @param definitionId - id of definition in which level will be created
      * @return {@link BasicLevelInfoDTO} of new info level
-     * @throws FacadeLayerException with ErrorCode: RESOURCE_NOT_FOUND given training definition is not found.
-     *                                              RESOURCE_CONFLICT level cannot be created in released or archived training definition.
      */
-    BasicLevelInfoDTO createInfoLevel(Long definitionId) throws FacadeLayerException;
+    BasicLevelInfoDTO createInfoLevel(Long definitionId);
 
 
     /**
@@ -171,10 +149,8 @@ public interface TrainingDefinitionFacade {
      *
      * @param definitionId - id of definition in which level will be created
      * @return {@link BasicLevelInfoDTO} of new game level
-     * @throws FacadeLayerException with ErrorCode: RESOURCE_NOT_FOUND given training definition is not found.
-     *                                              RESOURCE_CONFLICT level cannot be created in released or archived training definition.
      */
-    BasicLevelInfoDTO createGameLevel(Long definitionId) throws FacadeLayerException;
+    BasicLevelInfoDTO createGameLevel(Long definitionId);
 
 
     /**
@@ -182,19 +158,16 @@ public interface TrainingDefinitionFacade {
      *
      * @param definitionId - id of definition in which level will be created
      * @return {@link BasicLevelInfoDTO} of new assessment level
-     * @throws FacadeLayerException with ErrorCode: RESOURCE_NOT_FOUND given training definition is not found.
-     *                                              RESOURCE_CONFLICT level cannot be created in released or archived training definition.
      */
-    BasicLevelInfoDTO createAssessmentLevel(Long definitionId) throws FacadeLayerException;
+    BasicLevelInfoDTO createAssessmentLevel(Long definitionId);
 
     /**
      * Finds specific level by id
      *
      * @param levelId - id of wanted level
      * @return wanted {@link AbstractLevelDTO}
-     * @throws FacadeLayerException with ErrorCode: RESOURCE_NOT_FOUND given level is not found.
      */
-    AbstractLevelDTO findLevelById(Long levelId) throws FacadeLayerException;
+    AbstractLevelDTO findLevelById(Long levelId);
 
 
     /**
@@ -203,7 +176,6 @@ public interface TrainingDefinitionFacade {
      * @param roleType the wanted role type
      * @param pageable pageable parameter with information about pagination.
      * @return list of users {@link UserRefDTO}
-     * @throws FacadeLayerException some error encountered when obtaining info about users
      */
     PageResultResource<UserRefDTO> getUsersWithGivenRole(RoleType roleType, Pageable pageable, String givenName, String familyName);
 
@@ -261,9 +233,7 @@ public interface TrainingDefinitionFacade {
      * @param trainingDefinitionId if of the training definition to be updated
      * @param authorsAddition ids of the authors to be added to the training definition
      * @param authorsRemoval ids of the authors to be removed from the training definition.
-     * @throws FacadeLayerException with ErrorCode: RESOURCE_NOT_FOUND given training definition not found.
-     *                                              RESOURCE_CONFLICT released or archived training definition cannot be modified.
      */
-    void editAuthors(Long trainingDefinitionId, Set<Long> authorsAddition, Set<Long> authorsRemoval) throws FacadeLayerException;
+    void editAuthors(Long trainingDefinitionId, Set<Long> authorsAddition, Set<Long> authorsRemoval);
 
 }

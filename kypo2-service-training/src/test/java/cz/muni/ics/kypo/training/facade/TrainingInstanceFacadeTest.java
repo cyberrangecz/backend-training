@@ -9,9 +9,8 @@ import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceCreate
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceDTO;
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceUpdateDTO;
 import cz.muni.ics.kypo.training.api.enums.RoleType;
-import cz.muni.ics.kypo.training.exceptions.ErrorCode;
-import cz.muni.ics.kypo.training.exceptions.FacadeLayerException;
-import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
+import cz.muni.ics.kypo.training.exceptions.EntityConflictException;
+import cz.muni.ics.kypo.training.exceptions.EntityNotFoundException;
 import cz.muni.ics.kypo.training.mapping.mapstruct.*;
 import cz.muni.ics.kypo.training.persistence.model.TrainingDefinition;
 import cz.muni.ics.kypo.training.persistence.model.TrainingInstance;
@@ -135,10 +134,9 @@ public class TrainingInstanceFacadeTest {
         then(trainingInstanceService).should().findByIdIncludingDefinition(trainingInstance1.getId());
     }
 
-    @Test
+    @Test(expected = EntityNotFoundException.class)
     public void findNonexistentTrainingInstanceById() {
-        willThrow(ServiceLayerException.class).given(trainingInstanceService).findByIdIncludingDefinition(1L);
-        thrown.expect(FacadeLayerException.class);
+        willThrow(EntityNotFoundException.class).given(trainingInstanceService).findByIdIncludingDefinition(1L);
         trainingInstanceFacade.findById(1L);
     }
 
@@ -173,29 +171,16 @@ public class TrainingInstanceFacadeTest {
     }
 
     @Test
-    public void createTrainingInstanceWithNull() {
-        thrown.expect(FacadeLayerException.class);
-        trainingInstanceFacade.create(null);
-    }
-
-    @Test
     public void updateTrainingInstance() {
         given(userService.getUsersRefDTOByGivenUserIds(anySet(), any(Pageable.class), anyString(), anyString())).willReturn(new PageResultResource<>(new ArrayList<>()));
         trainingInstanceFacade.update(trainingInstanceUpdate);
         then(trainingInstanceService).should().update(any(TrainingInstance.class));
     }
 
-    @Test
-    public void updateTrainingInstanceWithNull() {
-        thrown.expect(FacadeLayerException.class);
-        trainingInstanceFacade.update(null);
-    }
-
-    @Test
+    @Test(expected = EntityConflictException.class)
     public void updateTrainingInstanceWithFacadeLayerException() {
-        thrown.expect(FacadeLayerException.class);
         given(userService.getUsersRefDTOByGivenUserIds(anySet(), any(Pageable.class), anyString(), anyString())).willReturn(new PageResultResource<>(new ArrayList<>()));
-        willThrow(ServiceLayerException.class).given(trainingInstanceService).update(any(TrainingInstance.class));
+        willThrow(EntityConflictException.class).given(trainingInstanceService).update(any(TrainingInstance.class));
         trainingInstanceFacade.update(trainingInstanceUpdate);
     }
 
@@ -207,30 +192,16 @@ public class TrainingInstanceFacadeTest {
     }
 
     @Test
-    public void deleteTrainingInstanceWithNull() {
-        thrown.expect(FacadeLayerException.class);
-        trainingInstanceFacade.delete(null);
-    }
-
-    @Test
-    public void deleteTrainingInstanceWithFacadeLayerException() {
-        thrown.expect(FacadeLayerException.class);
-        willThrow(ServiceLayerException.class).given(trainingInstanceService).findById(trainingInstance1.getId());
-        trainingInstanceFacade.delete(trainingInstance1.getId());
-    }
-
-    @Test
     public void allocateSandboxes() {
         given(trainingInstanceService.findById(anyLong())).willReturn(trainingInstance1);
         trainingInstanceFacade.allocateSandboxes(trainingInstance1.getId(), null);
         then(trainingInstanceService).should().allocateSandboxes(trainingInstance1, null);
     }
 
-    @Test
+    @Test(expected = EntityConflictException.class)
     public void allocateSandboxesWithServiceException() {
         given(trainingInstanceService.findById(anyLong())).willReturn(trainingInstance1);
-        willThrow(ServiceLayerException.class).given(trainingInstanceService).allocateSandboxes(trainingInstance1, null);
-        thrown.expect(FacadeLayerException.class);
+        willThrow(EntityConflictException.class).given(trainingInstanceService).allocateSandboxes(trainingInstance1, null);
         trainingInstanceFacade.allocateSandboxes(trainingInstance1.getId(), null);
     }
 
@@ -245,13 +216,12 @@ public class TrainingInstanceFacadeTest {
         then(trainingInstanceService).should().deleteSandbox(trainingInstance1.getId(), 2L);
     }
 
-    @Test
+    @Test(expected = EntityConflictException.class)
     public void deleteSandboxesWithServiceException() {
         Set<Long> ids = new HashSet<>();
         ids.add(1L);
         given(trainingInstanceService.findById(anyLong())).willReturn(trainingInstance1);
-        willThrow(ServiceLayerException.class).given(trainingInstanceService).deleteSandbox(trainingInstance1.getId(), 1L);
-        thrown.expect(FacadeLayerException.class);
+        willThrow(EntityConflictException.class).given(trainingInstanceService).deleteSandbox(trainingInstance1.getId(), 1L);
         trainingInstanceFacade.deleteSandboxes(trainingInstance1.getId(), ids);
     }
 
@@ -266,21 +236,17 @@ public class TrainingInstanceFacadeTest {
         assertTrue(organizersOfTrainingInstance.getContent().containsAll(Set.of(organizerDTO1, organizerDTO2)));
     }
 
-    @Test
+    @Test(expected = EntityNotFoundException.class)
     public void getOrganizersOfTrainingInstanceTrainingInstanceNotFound() {
-        willThrow(new ServiceLayerException("Training instance not found.", ErrorCode.RESOURCE_NOT_FOUND)).given(trainingInstanceService).findById(trainingInstance1.getId());
-        thrown.expect(FacadeLayerException.class);
-        thrown.expectMessage("Training instance not found.");
+        willThrow(new EntityNotFoundException()).given(trainingInstanceService).findById(trainingInstance1.getId());
         trainingInstanceFacade.getOrganizersOfTrainingInstance(trainingInstance1.getId(), pageable, null, null);
     }
 
-    @Test
+    @Test(expected = EntityNotFoundException.class)
     public void getOrganizersOfTrainingInstanceTrainingInstanceUserServiceError() {
         given(trainingInstanceService.findById(trainingInstance1.getId())).willReturn(trainingInstance1);
-        willThrow(new ServiceLayerException("Error when calling User And Group endpoint.", ErrorCode.UNEXPECTED_ERROR)).given(userService)
+        willThrow(new EntityNotFoundException()).given(userService)
                 .getUsersRefDTOByGivenUserIds(new HashSet<>(Set.of(organizer1.getUserRefId(), organizer2.getUserRefId())), pageable, null, null);
-        thrown.expect(FacadeLayerException.class);
-        thrown.expectMessage("Error when calling User And Group endpoint.");
         trainingInstanceFacade.getOrganizersOfTrainingInstance(trainingInstance1.getId(), pageable, null, null);
     }
 
@@ -295,21 +261,17 @@ public class TrainingInstanceFacadeTest {
         assertTrue(organizersNotInTrainingInstance.getContent().contains(organizerDTO3));
     }
 
-    @Test
+    @Test(expected = EntityNotFoundException.class)
     public void getOrganizersNotInGivenTrainingInstanceTrainingInstanceNotFound() {
-        willThrow(new ServiceLayerException("Training instance not found.", ErrorCode.RESOURCE_NOT_FOUND)).given(trainingInstanceService).findById(trainingInstance1.getId());
-        thrown.expect(FacadeLayerException.class);
-        thrown.expectMessage("Training instance not found.");
+        willThrow(new EntityNotFoundException()).given(trainingInstanceService).findById(trainingInstance1.getId());
         trainingInstanceFacade.getOrganizersNotInGivenTrainingInstance(trainingInstance1.getId(), pageable, null, null);
     }
 
-    @Test
+    @Test(expected = EntityNotFoundException.class)
     public void getOrganizersNotInGivenTrainingInstanceUserServiceError() {
         given(trainingInstanceService.findById(trainingInstance1.getId())).willReturn(trainingInstance1);
-        willThrow(new ServiceLayerException("Error when calling User And Group endpoint.", ErrorCode.UNEXPECTED_ERROR)).given(userService)
+        willThrow(new EntityNotFoundException()).given(userService)
                 .getUsersByGivenRoleAndNotWithGivenIds(RoleType.ROLE_TRAINING_ORGANIZER,new HashSet<>(Set.of(organizer1.getUserRefId(), organizer2.getUserRefId())), pageable, null, null);
-        thrown.expect(FacadeLayerException.class);
-        thrown.expectMessage("Error when calling User And Group endpoint.");
         trainingInstanceFacade.getOrganizersNotInGivenTrainingInstance(trainingInstance1.getId(), pageable, null, null);
     }
 
@@ -405,7 +367,7 @@ public class TrainingInstanceFacadeTest {
         given(securityService.getUserRefIdFromUserAndGroup()).willReturn(organizer1.getUserRefId());
         given(userService.getUsersRefDTOByGivenUserIds(Set.of(organizer3.getUserRefId(), organizer2.getUserRefId()), PageRequest.of(0,999), null, null)).willReturn(new PageResultResource<>(List.of(organizerDTO3, organizerDTO2), pagination));
         given(userService.getUserByUserRefId(organizer3.getUserRefId())).willReturn(organizer3);
-        willThrow(ServiceLayerException.class).given(userService).getUserByUserRefId(organizer2.getUserRefId());
+        willThrow(EntityNotFoundException.class).given(userService).getUserByUserRefId(organizer2.getUserRefId());
         given(userService.createUserRef(any(UserRef.class))).willReturn(organizer2);
         trainingInstanceFacade.editOrganizers(trainingInstance1.getId(), new HashSet<>(Set.of(organizer2.getUserRefId(), organizer3.getUserRefId())), new HashSet<>());
         Assert.assertEquals(3, trainingInstance1.getOrganizers().size());

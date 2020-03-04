@@ -11,15 +11,14 @@ import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceCreate
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceDTO;
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceUpdateDTO;
 import cz.muni.ics.kypo.training.converters.LocalDateTimeDeserializer;
-import cz.muni.ics.kypo.training.exceptions.ErrorCode;
-import cz.muni.ics.kypo.training.exceptions.FacadeLayerException;
-import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
+import cz.muni.ics.kypo.training.exceptions.EntityNotFoundException;
+import cz.muni.ics.kypo.training.exceptions.InternalServerErrorException;
 import cz.muni.ics.kypo.training.facade.TrainingInstanceFacade;
 import cz.muni.ics.kypo.training.mapping.mapstruct.*;
 import cz.muni.ics.kypo.training.persistence.model.TrainingInstance;
 import cz.muni.ics.kypo.training.persistence.model.UserRef;
-import cz.muni.ics.kypo.training.rest.exceptions.InternalServerErrorException;
-import cz.muni.ics.kypo.training.rest.exceptions.ResourceNotFoundException;
+import cz.muni.ics.kypo.training.rest.ApiError;
+import cz.muni.ics.kypo.training.rest.CustomRestExceptionHandlerTraining;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -36,6 +35,7 @@ import org.springframework.data.querydsl.SimpleEntityPathResolver;
 import org.springframework.data.querydsl.binding.QuerydslBindingsFactory;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.data.web.querydsl.QuerydslPredicateArgumentResolver;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.mock.web.MockHttpServletResponse;
@@ -51,6 +51,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import static cz.muni.ics.kypo.training.rest.controllers.util.ObjectConverter.convertJsonBytesToObject;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.*;
@@ -97,8 +98,11 @@ public class TrainingInstancesRestControllerTest {
         trainingInstancesRestController = new TrainingInstancesRestController(trainingInstanceFacade, objectMapper);
         this.mockMvc = MockMvcBuilders.standaloneSetup(trainingInstancesRestController)
                 .setCustomArgumentResolvers(new PageableHandlerMethodArgumentResolver(),
-                        new QuerydslPredicateArgumentResolver(new QuerydslBindingsFactory(SimpleEntityPathResolver.INSTANCE), Optional.empty()))
-                .setMessageConverters(new MappingJackson2HttpMessageConverter()).build();
+                    new QuerydslPredicateArgumentResolver(
+                            new QuerydslBindingsFactory(SimpleEntityPathResolver.INSTANCE), Optional.empty()))
+                .setMessageConverters(new MappingJackson2HttpMessageConverter())
+                .setControllerAdvice(new CustomRestExceptionHandlerTraining())
+                .build();
 
         pageable = PageRequest.of(0,5);
 
@@ -166,13 +170,14 @@ public class TrainingInstancesRestControllerTest {
     }
 
     @Test
-    public void findTrainingInstanceByIdWithFacadeException() throws Exception {
-        Exception exceptionThrow = new ServiceLayerException("message", ErrorCode.RESOURCE_NOT_FOUND);
-        willThrow(new FacadeLayerException(exceptionThrow)).given(trainingInstanceFacade).findById(any(Long.class));
-        Exception exception = mockMvc.perform(get("/training-instances" + "/{id}", 6l))
+    public void findTrainingInstanceByIdNotFound() throws Exception {
+        willThrow(new EntityNotFoundException()).given(trainingInstanceFacade).findById(any(Long.class));
+        MockHttpServletResponse response = mockMvc.perform(get("/training-instances" + "/{id}", 6l))
                 .andExpect(status().isNotFound())
-                .andReturn().getResolvedException();
-        assertEquals(ResourceNotFoundException.class, exception.getClass());
+                .andReturn().getResponse();
+        ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
+        assertEquals(HttpStatus.NOT_FOUND, error.getStatus());
+        assertEquals("The requested entity could not be found", error.getMessage());
     }
 
     @Test
@@ -195,14 +200,15 @@ public class TrainingInstancesRestControllerTest {
     }
 
     @Test
-    public void deleteTrainingInstanceWithFacadeException() throws Exception {
-        Exception exceptionThrow = new ServiceLayerException("message", ErrorCode.RESOURCE_NOT_FOUND);
-        willThrow(new FacadeLayerException(exceptionThrow)).given(trainingInstanceFacade).delete(any(Long.class));
-        Exception exception = mockMvc.perform(delete("/training-instances" + "/{id}", 1l)
+    public void deleteTrainingInstanceNotFound() throws Exception {
+        willThrow(new EntityNotFoundException()).given(trainingInstanceFacade).delete(any(Long.class));
+        MockHttpServletResponse response = mockMvc.perform(delete("/training-instances" + "/{id}", 1l)
                 .contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isNotFound())
-                .andReturn().getResolvedException();
-        assertEquals(ResourceNotFoundException.class, exception.getClass());
+                .andReturn().getResponse();
+        ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
+        assertEquals(HttpStatus.NOT_FOUND, error.getStatus());
+        assertEquals("The requested entity could not be found", error.getMessage());
     }
 
     @Test
@@ -213,12 +219,13 @@ public class TrainingInstancesRestControllerTest {
 
     @Test
     public void allocateSandboxesWithFacadeException() throws Exception {
-        Exception exceptionThrow = new ServiceLayerException("message", ErrorCode.RESOURCE_NOT_FOUND);
-        willThrow(new FacadeLayerException(exceptionThrow)).given(trainingInstanceFacade).allocateSandboxes(any(Long.class), isNull());
-        Exception exception =
-                mockMvc.perform(post("/training-instances" + "/{instanceId}/" + "sandbox-instances", 698L))
-                        .andExpect(status().isNotFound()).andReturn().getResolvedException();
-        assertEquals(ResourceNotFoundException.class, exception.getClass());
+        willThrow(new EntityNotFoundException()).given(trainingInstanceFacade).allocateSandboxes(any(Long.class), isNull());
+        MockHttpServletResponse response = mockMvc.perform(post("/training-instances" + "/{instanceId}/" + "sandbox-instances", 698L))
+                .andExpect(status().isNotFound())
+                .andReturn().getResponse();
+        ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
+        assertEquals(HttpStatus.NOT_FOUND, error.getStatus());
+        assertEquals("The requested entity could not be found", error.getMessage());
     }
 
     @Test
@@ -230,15 +237,16 @@ public class TrainingInstancesRestControllerTest {
     }
 
     @Test
-    public void deleteSandboxesWithFacadeException() throws Exception {
-        Exception exceptionThrow = new ServiceLayerException("message", ErrorCode.RESOURCE_NOT_FOUND);
-        willThrow(new FacadeLayerException(exceptionThrow)).given(trainingInstanceFacade).deleteSandboxes(any(Long.class), any(Set.class));
-        Exception exception =
-                mockMvc.perform(delete("/training-instances" + "/{instanceId}/" + "sandbox-instances", 698L)
-                        .param("sandboxIds", "1")
-                        .param("sandboxIds", "2"))
-                        .andExpect(status().isNotFound()).andReturn().getResolvedException();
-        assertEquals(ResourceNotFoundException.class, exception.getClass());
+    public void deleteSandboxesNotFound() throws Exception {
+        willThrow(new EntityNotFoundException()).given(trainingInstanceFacade).deleteSandboxes(any(Long.class), any(Set.class));
+        MockHttpServletResponse response = mockMvc.perform(delete("/training-instances" + "/{instanceId}/" + "sandbox-instances", 698L)
+                .param("sandboxIds", "1")
+                .param("sandboxIds", "2"))
+                .andExpect(status().isNotFound())
+                .andReturn().getResponse();
+        ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
+        assertEquals(HttpStatus.NOT_FOUND, error.getStatus());
+        assertEquals("The requested entity could not be found", error.getMessage());
     }
 
     @Test
@@ -256,24 +264,24 @@ public class TrainingInstancesRestControllerTest {
 
     @Test
     public void getOrganizersNotInGivenTrainingInstanceNotFoundError() throws Exception {
-        willThrow(new FacadeLayerException(new ServiceLayerException("Training instance not found.",
-                ErrorCode.RESOURCE_NOT_FOUND))).given(trainingInstanceFacade).getOrganizersNotInGivenTrainingInstance(eq(trainingInstance1.getId()), any(Pageable.class), eq(null), eq(null));
-        Exception ex = mockMvc.perform(get("/training-instances/{id}/organizers-not-in-training-instance", trainingInstance1.getId()))
+        willThrow(new EntityNotFoundException()).given(trainingInstanceFacade).getOrganizersNotInGivenTrainingInstance(eq(trainingInstance1.getId()), any(Pageable.class), eq(null), eq(null));
+        MockHttpServletResponse response = mockMvc.perform(get("/training-instances/{id}/organizers-not-in-training-instance", trainingInstance1.getId()))
                 .andExpect(status().isNotFound())
-                .andReturn().getResolvedException();
-        assertEquals(ResourceNotFoundException.class, ex.getClass());
-        assertEquals("Training instance not found.", ex.getCause().getCause().getLocalizedMessage());
+                .andReturn().getResponse();
+        ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
+        assertEquals(HttpStatus.NOT_FOUND, error.getStatus());
+        assertEquals("The requested entity could not be found", error.getMessage());
     }
 
     @Test
     public void getOrganizersNotInGivenTrainingInstanceUserServiceError() throws Exception {
-        willThrow(new FacadeLayerException(new ServiceLayerException("Unexpected error when calling user and group service.",
-                ErrorCode.UNEXPECTED_ERROR))).given(trainingInstanceFacade).getOrganizersNotInGivenTrainingInstance(eq(trainingInstance1.getId()), any(Pageable.class), eq(null), eq(null));
-        Exception ex = mockMvc.perform(get("/training-instances/{id}/organizers-not-in-training-instance", trainingInstance1.getId()))
+        willThrow(new InternalServerErrorException("Unexpected error when calling user and group service.")).given(trainingInstanceFacade).getOrganizersNotInGivenTrainingInstance(eq(trainingInstance1.getId()), any(Pageable.class), eq(null), eq(null));
+        MockHttpServletResponse response = mockMvc.perform(get("/training-instances/{id}/organizers-not-in-training-instance", trainingInstance1.getId()))
                 .andExpect(status().isInternalServerError())
-                .andReturn().getResolvedException();
-        assertEquals(InternalServerErrorException.class, ex.getClass());
-        assertEquals("Unexpected error when calling user and group service.", ex.getCause().getCause().getLocalizedMessage());
+                .andReturn().getResponse();
+        ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, error.getStatus());
+        assertEquals("Unexpected error when calling user and group service.", error.getMessage());
     }
 
 
@@ -288,28 +296,28 @@ public class TrainingInstancesRestControllerTest {
 
     @Test
     public void editOrganizersTrainingInstanceNotFound() throws Exception {
-        willThrow(new FacadeLayerException(new ServiceLayerException("Training instance not found.",
-                ErrorCode.RESOURCE_NOT_FOUND))).given(trainingInstanceFacade).editOrganizers(trainingInstance1.getId(), Set.of(1L,2L), Set.of(4L));
-        Exception ex = mockMvc.perform(put("/training-instances/{id}/organizers", trainingInstance1.getId())
+        willThrow(new EntityNotFoundException()).given(trainingInstanceFacade).editOrganizers(trainingInstance1.getId(), Set.of(1L,2L), Set.of(4L));
+        MockHttpServletResponse response = mockMvc.perform(put("/training-instances/{id}/organizers", trainingInstance1.getId())
                 .param("organizersAddition", "1,2")
                 .param("organizersRemoval", "4"))
                 .andExpect(status().isNotFound())
-                .andReturn().getResolvedException();
-        assertEquals(ResourceNotFoundException.class, ex.getClass());
-        assertEquals("Training instance not found.", ex.getCause().getCause().getLocalizedMessage());
+                .andReturn().getResponse();
+        ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
+        assertEquals(HttpStatus.NOT_FOUND, error.getStatus());
+        assertEquals("The requested entity could not be found", error.getMessage());
     }
 
     @Test
     public void editOrganizersUserAndGroupServiceError() throws Exception {
-        willThrow(new FacadeLayerException(new ServiceLayerException("Unexpected error when calling user and group service.",
-                ErrorCode.UNEXPECTED_ERROR))).given(trainingInstanceFacade).editOrganizers(trainingInstance1.getId(), Set.of(1L,2L), Set.of(4L));
-        Exception ex = mockMvc.perform(put("/training-instances/{id}/organizers", trainingInstance1.getId())
+        willThrow(new InternalServerErrorException("Unexpected error when calling user and group service.")).given(trainingInstanceFacade).editOrganizers(trainingInstance1.getId(), Set.of(1L,2L), Set.of(4L));
+        MockHttpServletResponse response = mockMvc.perform(put("/training-instances/{id}/organizers", trainingInstance1.getId())
                 .param("organizersAddition", "1,2")
                 .param("organizersRemoval", "4"))
                 .andExpect(status().isInternalServerError())
-                .andReturn().getResolvedException();
-        assertEquals(InternalServerErrorException.class, ex.getClass());
-        assertEquals("Unexpected error when calling user and group service.", ex.getCause().getCause().getLocalizedMessage());
+                .andReturn().getResponse();
+        ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, error.getStatus());
+        assertEquals("Unexpected error when calling user and group service.", error.getMessage());
     }
 
 

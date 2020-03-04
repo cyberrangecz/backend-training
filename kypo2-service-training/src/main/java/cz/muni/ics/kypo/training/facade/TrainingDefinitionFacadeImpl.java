@@ -18,9 +18,9 @@ import cz.muni.ics.kypo.training.api.dto.trainingdefinition.*;
 import cz.muni.ics.kypo.training.api.enums.LevelType;
 import cz.muni.ics.kypo.training.api.enums.RoleType;
 import cz.muni.ics.kypo.training.api.enums.TDState;
-import cz.muni.ics.kypo.training.exceptions.ErrorCode;
-import cz.muni.ics.kypo.training.exceptions.FacadeLayerException;
-import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
+import cz.muni.ics.kypo.training.exceptions.EntityConflictException;
+import cz.muni.ics.kypo.training.exceptions.EntityErrorDetail;
+import cz.muni.ics.kypo.training.exceptions.EntityNotFoundException;
 import cz.muni.ics.kypo.training.mapping.mapstruct.*;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.service.TrainingDefinitionService;
@@ -72,18 +72,14 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
     @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_TRAINEE)")
     @TransactionalRO
     public TrainingDefinitionByIdDTO findById(Long id) {
-        try {
-            Objects.requireNonNull(id);
-            TrainingDefinition trainingDefinition = trainingDefinitionService.findById(id);
-            TrainingDefinitionByIdDTO trainingDefinitionByIdDTO = trainingDefinitionMapper.mapToDTOById(trainingDefinition);
-            trainingDefinitionByIdDTO.setLevels(gatherLevels(id));
-            if(trainingDefinition.getBetaTestingGroup() != null) {
-                trainingDefinitionByIdDTO.setBetaTestingGroupId(trainingDefinition.getBetaTestingGroup().getId());
-            }
-            return trainingDefinitionByIdDTO;
-        } catch (ServiceLayerException ex) {
-            throw new FacadeLayerException(ex);
+        Objects.requireNonNull(id);
+        TrainingDefinition trainingDefinition = trainingDefinitionService.findById(id);
+        TrainingDefinitionByIdDTO trainingDefinitionByIdDTO = trainingDefinitionMapper.mapToDTOById(trainingDefinition);
+        trainingDefinitionByIdDTO.setLevels(gatherLevels(id));
+        if(trainingDefinition.getBetaTestingGroup() != null) {
+            trainingDefinitionByIdDTO.setBetaTestingGroupId(trainingDefinition.getBetaTestingGroup().getId());
         }
+        return trainingDefinitionByIdDTO;
     }
 
     private List<BasicLevelInfoDTO> gatherBasicLevelInfo(Long definitionId) {
@@ -163,21 +159,17 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
     @IsDesignerOrAdmin
     @TransactionalWO
     public TrainingDefinitionByIdDTO create(TrainingDefinitionCreateDTO trainingDefinition) {
-        try {
-            Objects.requireNonNull(trainingDefinition);
-            TrainingDefinition newTrainingDefinition = trainingDefinitionMapper.mapCreateToEntity(trainingDefinition);
-            if (trainingDefinition.getBetaTestingGroup() != null) {
-                addOrganizersToTrainingDefinition(newTrainingDefinition, trainingDefinition.getBetaTestingGroup().getOrganizersRefIds());
-            }
-            TrainingDefinition createdTrainingDefinition = trainingDefinitionService.create(newTrainingDefinition);
-            TrainingDefinitionByIdDTO trainingDefinitionByIdDTO = trainingDefinitionMapper.mapToDTOById(createdTrainingDefinition);
-            if(createdTrainingDefinition.getBetaTestingGroup() != null) {
-                trainingDefinitionByIdDTO.setBetaTestingGroupId(createdTrainingDefinition.getBetaTestingGroup().getId());
-            }
-            return trainingDefinitionByIdDTO;
-        } catch (ServiceLayerException ex) {
-            throw new FacadeLayerException(ex);
+        Objects.requireNonNull(trainingDefinition);
+        TrainingDefinition newTrainingDefinition = trainingDefinitionMapper.mapCreateToEntity(trainingDefinition);
+        if (trainingDefinition.getBetaTestingGroup() != null) {
+            addOrganizersToTrainingDefinition(newTrainingDefinition, trainingDefinition.getBetaTestingGroup().getOrganizersRefIds());
         }
+        TrainingDefinition createdTrainingDefinition = trainingDefinitionService.create(newTrainingDefinition);
+        TrainingDefinitionByIdDTO trainingDefinitionByIdDTO = trainingDefinitionMapper.mapToDTOById(createdTrainingDefinition);
+        if(createdTrainingDefinition.getBetaTestingGroup() != null) {
+            trainingDefinitionByIdDTO.setBetaTestingGroupId(createdTrainingDefinition.getBetaTestingGroup().getId());
+        }
+        return trainingDefinitionByIdDTO;
     }
 
 
@@ -185,23 +177,20 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
     @IsDesignerOrAdmin
     @TransactionalWO
     public void update(TrainingDefinitionUpdateDTO trainingDefinitionUpdateDTO) {
-        try {
-            Objects.requireNonNull(trainingDefinitionUpdateDTO);
-            TrainingDefinition mappedTrainingDefinition = trainingDefinitionMapper.mapUpdateToEntity(trainingDefinitionUpdateDTO);
-            TrainingDefinition trainingDefinition = trainingDefinitionService.findById(trainingDefinitionUpdateDTO.getId());
-            mappedTrainingDefinition.setAuthors(new HashSet<>(trainingDefinition.getAuthors()));
-            if (trainingDefinitionUpdateDTO.getBetaTestingGroup() != null) {
-                addOrganizersToTrainingDefinition(mappedTrainingDefinition, trainingDefinitionUpdateDTO.getBetaTestingGroup().getOrganizersRefIds());
-                if (trainingDefinition.getBetaTestingGroup() != null) {
-                    trainingDefinition.getBetaTestingGroup().setId(trainingDefinition.getBetaTestingGroup().getId());
-                }
-            } else if (trainingDefinition.getBetaTestingGroup() != null) {
-                throw new FacadeLayerException(new ServiceLayerException("Cannot delete beta testing group. You only can remove organizers from group.", ErrorCode.RESOURCE_CONFLICT));
+        Objects.requireNonNull(trainingDefinitionUpdateDTO);
+        TrainingDefinition mappedTrainingDefinition = trainingDefinitionMapper.mapUpdateToEntity(trainingDefinitionUpdateDTO);
+        TrainingDefinition trainingDefinition = trainingDefinitionService.findById(trainingDefinitionUpdateDTO.getId());
+        mappedTrainingDefinition.setAuthors(new HashSet<>(trainingDefinition.getAuthors()));
+        if (trainingDefinitionUpdateDTO.getBetaTestingGroup() != null) {
+            addOrganizersToTrainingDefinition(mappedTrainingDefinition, trainingDefinitionUpdateDTO.getBetaTestingGroup().getOrganizersRefIds());
+            if (trainingDefinition.getBetaTestingGroup() != null) {
+                trainingDefinition.getBetaTestingGroup().setId(trainingDefinition.getBetaTestingGroup().getId());
             }
-            trainingDefinitionService.update(mappedTrainingDefinition);
-        } catch (ServiceLayerException ex) {
-            throw new FacadeLayerException(ex);
+        } else if (trainingDefinition.getBetaTestingGroup() != null) {
+            throw new EntityConflictException(new EntityErrorDetail(BetaTestingGroup.class, "id", Long.class, trainingDefinition.getBetaTestingGroup().getId(),
+                    "Cannot delete beta testing group. You only can remove organizers from group."));
         }
+        trainingDefinitionService.update(mappedTrainingDefinition);
     }
 
     private void addOrganizersToTrainingDefinition(TrainingDefinition trainingDefinition, Set<Long> userRefIds) {
@@ -210,7 +199,7 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
         for (UserRefDTO organizer : organizers.getContent()) {
             try {
                 trainingDefinition.getBetaTestingGroup().addOrganizer(userService.getUserByUserRefId(organizer.getUserRefId()));
-            } catch (ServiceLayerException ex) {
+            } catch (EntityNotFoundException ex) {
                 trainingDefinition.getBetaTestingGroup().addOrganizer(userService.createUserRef(createUserRefFromDTO(organizer)));
             }
         }
@@ -226,15 +215,10 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
     @IsDesignerOrAdmin
     @TransactionalWO
     public TrainingDefinitionByIdDTO clone(Long id, String title) {
-        try {
-            Assert.notNull(id, "Given id of training definition to be cloned");
-
-            TrainingDefinitionByIdDTO clonedDefinition = trainingDefinitionMapper.mapToDTOById(trainingDefinitionService.clone(id, title));
-            clonedDefinition.setLevels(gatherLevels(clonedDefinition.getId()));
-            return clonedDefinition;
-        } catch (ServiceLayerException ex) {
-            throw new FacadeLayerException(ex);
-        }
+        Assert.notNull(id, "Given id of training definition to be cloned");
+        TrainingDefinitionByIdDTO clonedDefinition = trainingDefinitionMapper.mapToDTOById(trainingDefinitionService.clone(id, title));
+        clonedDefinition.setLevels(gatherLevels(clonedDefinition.getId()));
+        return clonedDefinition;
     }
 
     @Override
@@ -242,15 +226,11 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
             "or @securityService.isDesignerOfGivenTrainingDefinition(#definitionId)")
     @TransactionalWO
     public List<BasicLevelInfoDTO> swapLevels(Long definitionId, Long swapLevelFrom, Long swapLevelTo) {
-        try {
-            Objects.requireNonNull(definitionId);
-            Objects.requireNonNull(swapLevelFrom);
-            Objects.requireNonNull(swapLevelTo);
-            trainingDefinitionService.swapLevels(definitionId, swapLevelFrom, swapLevelTo);
-            return gatherBasicLevelInfo(definitionId);
-        } catch (ServiceLayerException ex) {
-            throw new FacadeLayerException(ex);
-        }
+        Objects.requireNonNull(definitionId);
+        Objects.requireNonNull(swapLevelFrom);
+        Objects.requireNonNull(swapLevelTo);
+        trainingDefinitionService.swapLevels(definitionId, swapLevelFrom, swapLevelTo);
+        return gatherBasicLevelInfo(definitionId);
     }
 
     @Override
@@ -258,15 +238,11 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
             "or @securityService.isDesignerOfGivenTrainingDefinition(#definitionId)")
     @TransactionalWO
     public List<BasicLevelInfoDTO> moveLevel(Long definitionId, Long levelIdToBeMoved, Integer newPosition) {
-        try {
-            Objects.requireNonNull(definitionId);
-            Objects.requireNonNull(levelIdToBeMoved);
-            Objects.requireNonNull(newPosition);
-            trainingDefinitionService.moveLevel(definitionId, levelIdToBeMoved, newPosition);
-            return gatherBasicLevelInfo(definitionId);
-        } catch (ServiceLayerException ex) {
-            throw new FacadeLayerException(ex);
-        }
+        Objects.requireNonNull(definitionId);
+        Objects.requireNonNull(levelIdToBeMoved);
+        Objects.requireNonNull(newPosition);
+        trainingDefinitionService.moveLevel(definitionId, levelIdToBeMoved, newPosition);
+        return gatherBasicLevelInfo(definitionId);
     }
 
     @Override
@@ -274,12 +250,8 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
             "or @securityService.isDesignerOfGivenTrainingDefinition(#definitionId)")
     @TransactionalWO
     public void delete(Long id) {
-        try {
-            Objects.requireNonNull(id);
-            trainingDefinitionService.delete(id);
-        } catch (ServiceLayerException ex) {
-            throw new FacadeLayerException(ex);
-        }
+        Objects.requireNonNull(id);
+        trainingDefinitionService.delete(id);
     }
 
     @Override
@@ -287,14 +259,10 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
             "or @securityService.isDesignerOfGivenTrainingDefinition(#definitionId)")
     @TransactionalWO
     public List<BasicLevelInfoDTO> deleteOneLevel(Long definitionId, Long levelId) {
-        try {
-            Objects.requireNonNull(definitionId);
-            Objects.requireNonNull(levelId);
-            trainingDefinitionService.deleteOneLevel(definitionId, levelId);
-            return gatherBasicLevelInfo(definitionId);
-        } catch (ServiceLayerException ex) {
-            throw new FacadeLayerException(ex);
-        }
+        Objects.requireNonNull(definitionId);
+        Objects.requireNonNull(levelId);
+        trainingDefinitionService.deleteOneLevel(definitionId, levelId);
+        return gatherBasicLevelInfo(definitionId);
     }
 
     @Override
@@ -302,16 +270,12 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
             "or @securityService.isDesignerOfGivenTrainingDefinition(#definitionId)")
     @TransactionalWO
     public void updateGameLevel(Long definitionId, GameLevelUpdateDTO gameLevel) {
-        try {
-            Objects.requireNonNull(gameLevel);
-            Objects.requireNonNull(definitionId);
-            GameLevel gameLevelToUpdate = gameLevelMapper.mapUpdateToEntity(gameLevel);
-            for (Hint hint : gameLevelToUpdate.getHints())
-                hint.setGameLevel(gameLevelToUpdate);
-            trainingDefinitionService.updateGameLevel(definitionId, gameLevelToUpdate);
-        } catch (ServiceLayerException ex) {
-            throw new FacadeLayerException(ex);
-        }
+        Objects.requireNonNull(gameLevel);
+        Objects.requireNonNull(definitionId);
+        GameLevel gameLevelToUpdate = gameLevelMapper.mapUpdateToEntity(gameLevel);
+        for (Hint hint : gameLevelToUpdate.getHints())
+            hint.setGameLevel(gameLevelToUpdate);
+        trainingDefinitionService.updateGameLevel(definitionId, gameLevelToUpdate);
     }
 
     @Override
@@ -319,13 +283,9 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
             "or @securityService.isDesignerOfGivenTrainingDefinition(#definitionId)")
     @TransactionalWO
     public void updateInfoLevel(Long definitionId, InfoLevelUpdateDTO infoLevel) {
-        try {
-            Objects.requireNonNull(infoLevel);
-            Objects.requireNonNull(definitionId);
-            trainingDefinitionService.updateInfoLevel(definitionId, infoLevelMapper.mapUpdateToEntity(infoLevel));
-        } catch (ServiceLayerException ex) {
-            throw new FacadeLayerException(ex);
-        }
+        Objects.requireNonNull(infoLevel);
+        Objects.requireNonNull(definitionId);
+        trainingDefinitionService.updateInfoLevel(definitionId, infoLevelMapper.mapUpdateToEntity(infoLevel));
     }
 
     @Override
@@ -333,13 +293,9 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
             "or @securityService.isDesignerOfGivenTrainingDefinition(#definitionId)")
     @TransactionalWO
     public void updateAssessmentLevel(Long definitionId, AssessmentLevelUpdateDTO assessmentLevel) {
-        try {
-            Objects.requireNonNull(assessmentLevel);
-            Objects.requireNonNull(definitionId);
-            trainingDefinitionService.updateAssessmentLevel(definitionId, assessmentLevelMapper.mapUpdateToEntity(assessmentLevel));
-        } catch (ServiceLayerException ex) {
-            throw new FacadeLayerException(ex);
-        }
+        Objects.requireNonNull(assessmentLevel);
+        Objects.requireNonNull(definitionId);
+        trainingDefinitionService.updateAssessmentLevel(definitionId, assessmentLevelMapper.mapUpdateToEntity(assessmentLevel));
     }
 
     @Override
@@ -347,15 +303,11 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
             "or @securityService.isDesignerOfGivenTrainingDefinition(#definitionId)")
     @TransactionalWO
     public BasicLevelInfoDTO createInfoLevel(Long definitionId) {
-        try {
-            Objects.requireNonNull(definitionId);
-            InfoLevel newInfoLevel = trainingDefinitionService.createInfoLevel(definitionId);
-            BasicLevelInfoDTO levelInfoDTO = basicLevelInfoMapper.mapTo(newInfoLevel);
-            levelInfoDTO.setLevelType(LevelType.INFO_LEVEL);
-            return levelInfoDTO;
-        } catch (ServiceLayerException ex) {
-            throw new FacadeLayerException(ex);
-        }
+        Objects.requireNonNull(definitionId);
+        InfoLevel newInfoLevel = trainingDefinitionService.createInfoLevel(definitionId);
+        BasicLevelInfoDTO levelInfoDTO = basicLevelInfoMapper.mapTo(newInfoLevel);
+        levelInfoDTO.setLevelType(LevelType.INFO_LEVEL);
+        return levelInfoDTO;
     }
 
 
@@ -364,15 +316,11 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
             "or @securityService.isDesignerOfGivenTrainingDefinition(#definitionId)")
     @TransactionalWO
     public BasicLevelInfoDTO createGameLevel(Long definitionId) {
-        try {
-            Objects.requireNonNull(definitionId);
-            GameLevel newGameLevel = trainingDefinitionService.createGameLevel(definitionId);
-            BasicLevelInfoDTO levelInfoDTO = basicLevelInfoMapper.mapTo(newGameLevel);
-            levelInfoDTO.setLevelType(LevelType.GAME_LEVEL);
-            return levelInfoDTO;
-        } catch (ServiceLayerException ex) {
-            throw new FacadeLayerException(ex);
-        }
+        Objects.requireNonNull(definitionId);
+        GameLevel newGameLevel = trainingDefinitionService.createGameLevel(definitionId);
+        BasicLevelInfoDTO levelInfoDTO = basicLevelInfoMapper.mapTo(newGameLevel);
+        levelInfoDTO.setLevelType(LevelType.GAME_LEVEL);
+        return levelInfoDTO;
     }
 
 
@@ -381,61 +329,45 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
             "or @securityService.isDesignerOfGivenTrainingDefinition(#definitionId)")
     @TransactionalWO
     public BasicLevelInfoDTO createAssessmentLevel(Long definitionId) {
-        try {
-            Objects.requireNonNull(definitionId);
-            AssessmentLevel newAssessmentLevel = trainingDefinitionService.createAssessmentLevel(definitionId);
-            BasicLevelInfoDTO levelInfoDTO = basicLevelInfoMapper.mapTo(newAssessmentLevel);
-            levelInfoDTO.setLevelType(LevelType.ASSESSMENT_LEVEL);
-            return levelInfoDTO;
-        } catch (ServiceLayerException ex) {
-            throw new FacadeLayerException(ex);
-        }
+        Objects.requireNonNull(definitionId);
+        AssessmentLevel newAssessmentLevel = trainingDefinitionService.createAssessmentLevel(definitionId);
+        BasicLevelInfoDTO levelInfoDTO = basicLevelInfoMapper.mapTo(newAssessmentLevel);
+        levelInfoDTO.setLevelType(LevelType.ASSESSMENT_LEVEL);
+        return levelInfoDTO;
     }
 
     @Override
     @IsDesignerOrAdmin
     @TransactionalRO
     public AbstractLevelDTO findLevelById(Long levelId) {
-        try {
-            AbstractLevel abstractLevel = trainingDefinitionService.findLevelById(levelId);
-            AbstractLevelDTO abstractLevelDTO;
-            if (abstractLevel instanceof GameLevel) {
-                abstractLevelDTO = gameLevelMapper.mapToDTO((GameLevel) abstractLevel);
-                abstractLevelDTO.setLevelType(LevelType.GAME_LEVEL);
-            } else if (abstractLevel instanceof AssessmentLevel) {
-                abstractLevelDTO = assessmentLevelMapper.mapToDTO((AssessmentLevel) abstractLevel);
-                abstractLevelDTO.setLevelType(LevelType.ASSESSMENT_LEVEL);
-            } else {
-                abstractLevelDTO = infoLevelMapper.mapToDTO((InfoLevel) abstractLevel);
-                abstractLevelDTO.setLevelType(LevelType.INFO_LEVEL);
-            }
-            return abstractLevelDTO;
-        } catch (ServiceLayerException ex) {
-            throw new FacadeLayerException(ex.getLocalizedMessage());
+        AbstractLevel abstractLevel = trainingDefinitionService.findLevelById(levelId);
+        AbstractLevelDTO abstractLevelDTO;
+        if (abstractLevel instanceof GameLevel) {
+            abstractLevelDTO = gameLevelMapper.mapToDTO((GameLevel) abstractLevel);
+            abstractLevelDTO.setLevelType(LevelType.GAME_LEVEL);
+        } else if (abstractLevel instanceof AssessmentLevel) {
+            abstractLevelDTO = assessmentLevelMapper.mapToDTO((AssessmentLevel) abstractLevel);
+            abstractLevelDTO.setLevelType(LevelType.ASSESSMENT_LEVEL);
+        } else {
+            abstractLevelDTO = infoLevelMapper.mapToDTO((InfoLevel) abstractLevel);
+            abstractLevelDTO.setLevelType(LevelType.INFO_LEVEL);
         }
+        return abstractLevelDTO;
     }
 
     @Override
     @IsDesignerOrAdmin
     @TransactionalRO
     public PageResultResource<UserRefDTO> getUsersWithGivenRole(RoleType roleType, Pageable pageable, String givenName, String familyName) {
-        try {
-            return userService.getUsersByGivenRole(roleType, pageable, givenName, familyName);
-        } catch (ServiceLayerException ex) {
-            throw new FacadeLayerException(ex);
-        }
+        return userService.getUsersByGivenRole(roleType, pageable, givenName, familyName);
     }
 
     @Override
     @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
             "or @securityService.isDesignerOfGivenTrainingDefinition(#definitionId)")
     public void switchState(Long definitionId, TDState state) {
-        try {
-            Objects.requireNonNull(definitionId);
-            trainingDefinitionService.switchState(definitionId, state);
-        } catch (ServiceLayerException ex) {
-            throw new FacadeLayerException(ex);
-        }
+        Objects.requireNonNull(definitionId);
+        trainingDefinitionService.switchState(definitionId, state);
     }
 
     private boolean checkIfCanBeArchived(Long definitionId) {
@@ -449,49 +381,37 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
     @Override
     @IsDesignerOrOrganizerOrAdmin
     public PageResultResource<UserRefDTO> getAuthors(Long trainingDefinitionId, Pageable pageable, String givenName, String familyName) {
-        try {
-            TrainingDefinition trainingDefinition = trainingDefinitionService.findById(trainingDefinitionId);
-            return userService.getUsersRefDTOByGivenUserIds(trainingDefinition.getAuthors().stream().map(UserRef::getUserRefId).collect(Collectors.toSet()), pageable, givenName, familyName);
-        } catch (ServiceLayerException ex) {
-            throw new FacadeLayerException(ex);
-        }
+        TrainingDefinition trainingDefinition = trainingDefinitionService.findById(trainingDefinitionId);
+        return userService.getUsersRefDTOByGivenUserIds(trainingDefinition.getAuthors().stream().map(UserRef::getUserRefId).collect(Collectors.toSet()), pageable, givenName, familyName);
     }
 
     @Override
     @IsDesignerOrOrganizerOrAdmin
     public PageResultResource<UserRefDTO> getBetaTesters(Long trainingDefinitionId, Pageable pageable) {
-        try {
-            TrainingDefinition trainingDefinition = trainingDefinitionService.findById(trainingDefinitionId);
-            if(trainingDefinition.getBetaTestingGroup() != null && !trainingDefinition.getBetaTestingGroup().getOrganizers().isEmpty()) {
-                return userService.getUsersRefDTOByGivenUserIds(trainingDefinition.getBetaTestingGroup().getOrganizers().stream()
-                        .map(UserRef::getUserRefId)
-                        .collect(Collectors.toSet()), pageable, null, null);
-            }
-            return new PageResultResource<>(Collections.emptyList(), new PageResultResource.Pagination(0,0,0,0,0));
-        } catch (ServiceLayerException ex) {
-            throw new FacadeLayerException(ex);
+        TrainingDefinition trainingDefinition = trainingDefinitionService.findById(trainingDefinitionId);
+        if(trainingDefinition.getBetaTestingGroup() != null && !trainingDefinition.getBetaTestingGroup().getOrganizers().isEmpty()) {
+            return userService.getUsersRefDTOByGivenUserIds(trainingDefinition.getBetaTestingGroup().getOrganizers().stream()
+                    .map(UserRef::getUserRefId)
+                    .collect(Collectors.toSet()), pageable, null, null);
         }
+        return new PageResultResource<>(Collections.emptyList(), new PageResultResource.Pagination(0,0,0,0,0));
     }
 
     @Override
     @IsDesignerOrOrganizerOrAdmin
     @TransactionalRO
     public PageResultResource<UserRefDTO> getDesignersNotInGivenTrainingDefinition(Long trainingDefinitionId, Pageable pageable, String givenName, String familyName) {
-        try {
-            TrainingDefinition trainingDefinition = trainingDefinitionService.findById(trainingDefinitionId);
-            Set<Long> excludedUsers = trainingDefinition.getAuthors().stream()
-                    .map(UserRef::getUserRefId)
-                    .collect(Collectors.toSet());
-            return userService.getUsersByGivenRoleAndNotWithGivenIds(RoleType.ROLE_TRAINING_DESIGNER, excludedUsers, pageable, givenName, familyName);
-        } catch (ServiceLayerException ex) {
-            throw new FacadeLayerException(ex);
-        }
+        TrainingDefinition trainingDefinition = trainingDefinitionService.findById(trainingDefinitionId);
+        Set<Long> excludedUsers = trainingDefinition.getAuthors().stream()
+                .map(UserRef::getUserRefId)
+                .collect(Collectors.toSet());
+        return userService.getUsersByGivenRoleAndNotWithGivenIds(RoleType.ROLE_TRAINING_DESIGNER, excludedUsers, pageable, givenName, familyName);
     }
 
     @Override
     @IsDesignerOrAdmin
     @TransactionalWO
-    public void editAuthors(Long trainingDefinitionId, Set<Long> authorsAddition, Set<Long> authorsRemoval) throws FacadeLayerException {
+    public void editAuthors(Long trainingDefinitionId, Set<Long> authorsAddition, Set<Long> authorsRemoval) {
         TrainingDefinition trainingDefinition = trainingDefinitionService.findById(trainingDefinitionId);
         Long loggedInUserRefId = securityService.getUserRefIdFromUserAndGroup();
         if(authorsRemoval != null && !authorsRemoval.isEmpty()) {
@@ -516,7 +436,7 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
                 }
                 try {
                     trainingDefinition.addAuthor(userService.getUserByUserRefId(author.getUserRefId()));
-                } catch (ServiceLayerException ex) {
+                } catch (EntityNotFoundException ex) {
                     trainingDefinition.addAuthor(userService.createUserRef(createUserRefFromDTO(author)));
                 }
             }

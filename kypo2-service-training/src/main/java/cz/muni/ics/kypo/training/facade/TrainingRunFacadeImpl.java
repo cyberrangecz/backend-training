@@ -23,9 +23,6 @@ import cz.muni.ics.kypo.training.api.dto.run.TrainingRunDTO;
 import cz.muni.ics.kypo.training.api.enums.Actions;
 import cz.muni.ics.kypo.training.api.enums.LevelType;
 import cz.muni.ics.kypo.training.api.responses.PageResultResource;
-import cz.muni.ics.kypo.training.exceptions.ErrorCode;
-import cz.muni.ics.kypo.training.exceptions.FacadeLayerException;
-import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.mapping.mapstruct.*;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.service.TrainingRunService;
@@ -33,7 +30,6 @@ import cz.muni.ics.kypo.training.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -77,16 +73,12 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
             "or @securityService.isTraineeOfGivenTrainingRun(#runId)")
     @TransactionalRO
     public TrainingRunByIdDTO findById(Long id) {
-        try {
-            TrainingRun trainingRun = trainingRunService.findById(id);
-            TrainingRunByIdDTO trainingRunByIdDTO = trainingRunMapper.mapToFindByIdDTO(trainingRun);
-            trainingRunByIdDTO.setDefinitionId(trainingRun.getTrainingInstance().getTrainingDefinition().getId());
-            trainingRunByIdDTO.setInstanceId(trainingRun.getTrainingInstance().getId());
-            trainingRunByIdDTO.setParticipantRef(userService.getUserRefDTOByUserRefId(trainingRunByIdDTO.getParticipantRef().getUserRefId()));
-            return trainingRunByIdDTO;
-        } catch (ServiceLayerException ex) {
-            throw new FacadeLayerException(ex);
-        }
+        TrainingRun trainingRun = trainingRunService.findById(id);
+        TrainingRunByIdDTO trainingRunByIdDTO = trainingRunMapper.mapToFindByIdDTO(trainingRun);
+        trainingRunByIdDTO.setDefinitionId(trainingRun.getTrainingInstance().getTrainingDefinition().getId());
+        trainingRunByIdDTO.setInstanceId(trainingRun.getTrainingInstance().getId());
+        trainingRunByIdDTO.setParticipantRef(userService.getUserRefDTOByUserRefId(trainingRunByIdDTO.getParticipantRef().getUserRefId()));
+        return trainingRunByIdDTO;
     }
 
     @Override
@@ -125,41 +117,31 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
             "or @securityService.isTraineeOfGivenTrainingRun(#trainingRunId)")
     @TransactionalWO
     public AccessTrainingRunDTO resumeTrainingRun(Long trainingRunId) {
-        try {
-            TrainingRun trainingRun = trainingRunService.resumeTrainingRun(trainingRunId);
-            AccessTrainingRunDTO accessTrainingRunDTO = convertToAccessTrainingRunDTO(trainingRun);
-            if (trainingRun.getCurrentLevel() instanceof GameLevel) {
-                if (trainingRun.isSolutionTaken()) {
-                    accessTrainingRunDTO.setTakenSolution(((GameLevel) trainingRun.getCurrentLevel()).getSolution());
-                }
-                trainingRun.getHintInfoList().forEach(hintInfo -> {
-                            if (hintInfo.getGameLevelId().equals(trainingRun.getCurrentLevel().getId())) {
-                                accessTrainingRunDTO.getTakenHints().add(convertToTakenHintDTO(hintInfo));
-                            }
-                        }
-                );
+        TrainingRun trainingRun = trainingRunService.resumeTrainingRun(trainingRunId);
+        AccessTrainingRunDTO accessTrainingRunDTO = convertToAccessTrainingRunDTO(trainingRun);
+        if (trainingRun.getCurrentLevel() instanceof GameLevel) {
+            if (trainingRun.isSolutionTaken()) {
+                accessTrainingRunDTO.setTakenSolution(((GameLevel) trainingRun.getCurrentLevel()).getSolution());
             }
-            return accessTrainingRunDTO;
-        } catch (ServiceLayerException ex) {
-            throw new FacadeLayerException(ex);
+            trainingRun.getHintInfoList().forEach(hintInfo -> {
+                        if (hintInfo.getGameLevelId().equals(trainingRun.getCurrentLevel().getId())) {
+                            accessTrainingRunDTO.getTakenHints().add(convertToTakenHintDTO(hintInfo));
+                        }
+                    }
+            );
         }
+        return accessTrainingRunDTO;
     }
 
     @Override
     @IsTraineeOrAdmin
     @TransactionalWO
     public AccessTrainingRunDTO accessTrainingRun(String accessToken) {
-        try {
-            TrainingRun trainingRun = trainingRunService.accessTrainingRun(accessToken);
-            if (trainingRun.getSandboxInstanceRefId() == null){
-                trainingRun = trainingRunService.assignSandbox(trainingRun);
-            }
-            return convertToAccessTrainingRunDTO(trainingRun);
-        } catch (ServiceLayerException ex) {
-            throw new FacadeLayerException(ex);
-        } catch (DataIntegrityViolationException ex) {
-            throw new FacadeLayerException(new ServiceLayerException(ex.getLocalizedMessage(), ErrorCode.UNEXPECTED_ERROR));
+        TrainingRun trainingRun = trainingRunService.accessTrainingRun(accessToken);
+        if (trainingRun.getSandboxInstanceRefId() == null){
+            trainingRun = trainingRunService.assignSandbox(trainingRun);
         }
+        return convertToAccessTrainingRunDTO(trainingRun);
     }
 
     private List<BasicLevelInfoDTO> getInfoAboutLevels(Long definitionId) {
@@ -203,11 +185,7 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
     @TransactionalWO
     public AbstractLevelDTO getNextLevel(Long trainingRunId) {
         AbstractLevel abstractLevel;
-        try {
-            abstractLevel = trainingRunService.getNextLevel(trainingRunId);
-        } catch (ServiceLayerException ex) {
-            throw new FacadeLayerException(ex);
-        }
+        abstractLevel = trainingRunService.getNextLevel(trainingRunId);
         return getCorrectAbstractLevelDTO(abstractLevel);
     }
 
@@ -216,11 +194,7 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
             "or @securityService.isTraineeOfGivenTrainingRun(#trainingRunId)")
     @TransactionalWO
     public String getSolution(Long trainingRunId) {
-        try {
-            return trainingRunService.getSolution(trainingRunId);
-        } catch (ServiceLayerException ex) {
-            throw new FacadeLayerException(ex);
-        }
+        return trainingRunService.getSolution(trainingRunId);
     }
 
     @Override
@@ -228,11 +202,7 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
             "or @securityService.isTraineeOfGivenTrainingRun(#trainingRunId)")
     @TransactionalWO
     public HintDTO getHint(Long trainingRunId, Long hintId) {
-        try {
-            return hintMapper.mapToDTO(trainingRunService.getHint(trainingRunId, hintId));
-        } catch (ServiceLayerException ex) {
-            throw new FacadeLayerException(ex);
-        }
+        return hintMapper.mapToDTO(trainingRunService.getHint(trainingRunId, hintId));
     }
 
     @Override
@@ -241,14 +211,10 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
     @TransactionalWO
     public IsCorrectFlagDTO isCorrectFlag(Long trainingRunId, String flag) {
         IsCorrectFlagDTO correctFlagDTO = new IsCorrectFlagDTO();
-        try {
-            correctFlagDTO.setCorrect(trainingRunService.isCorrectFlag(trainingRunId, flag));
-            correctFlagDTO.setRemainingAttempts(trainingRunService.getRemainingAttempts(trainingRunId));
-            if (correctFlagDTO.getRemainingAttempts() == 0) {
-                correctFlagDTO.setSolution(getSolution(trainingRunId));
-            }
-        } catch (ServiceLayerException ex) {
-            throw new FacadeLayerException(ex);
+        correctFlagDTO.setCorrect(trainingRunService.isCorrectFlag(trainingRunId, flag));
+        correctFlagDTO.setRemainingAttempts(trainingRunService.getRemainingAttempts(trainingRunId));
+        if (correctFlagDTO.getRemainingAttempts() == 0) {
+            correctFlagDTO.setSolution(getSolution(trainingRunId));
         }
         return correctFlagDTO;
     }
@@ -258,22 +224,14 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
             "or @securityService.isTraineeOfGivenTrainingRun(#trainingRunId)")
     @TransactionalWO
     public void finishTrainingRun(Long trainingRunId) {
-        try {
-            trainingRunService.finishTrainingRun(trainingRunId);
-        } catch (ServiceLayerException ex) {
-            throw new FacadeLayerException(ex);
-        }
+        trainingRunService.finishTrainingRun(trainingRunId);
     }
 
     @Override
     @IsTrainee
     @TransactionalWO
     public void evaluateResponsesToAssessment(Long trainingRunId, String responsesAsString) {
-        try {
-            trainingRunService.evaluateResponsesToAssessment(trainingRunId, responsesAsString);
-        } catch (ServiceLayerException ex) {
-            throw new FacadeLayerException(ex);
-        }
+        trainingRunService.evaluateResponsesToAssessment(trainingRunId, responsesAsString);
     }
 
     @Override
@@ -281,12 +239,8 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
             "or @securityService.isTraineeOfGivenTrainingRun(#runId)")
     @TransactionalRO
     public UserRefDTO getParticipant(Long trainingRunId) {
-        try {
-            TrainingRun trainingRun = trainingRunService.findById(trainingRunId);
-            return userService.getUserRefDTOByUserRefId(trainingRun.getParticipantRef().getUserRefId());
-        }catch (ServiceLayerException ex) {
-            throw new FacadeLayerException(ex);
-        }
+        TrainingRun trainingRun = trainingRunService.findById(trainingRunId);
+        return userService.getUserRefDTOByUserRefId(trainingRun.getParticipantRef().getUserRefId());
     }
 
     private void addParticipantsToTrainingRunDTOs(List<TrainingRunDTO> trainingRunDTOS) {

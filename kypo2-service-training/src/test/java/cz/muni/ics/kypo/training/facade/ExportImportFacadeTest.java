@@ -11,8 +11,6 @@ import cz.muni.ics.kypo.training.api.dto.imports.InfoLevelImportDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionByIdDTO;
 import cz.muni.ics.kypo.training.api.enums.AssessmentType;
 import cz.muni.ics.kypo.training.api.enums.LevelType;
-import cz.muni.ics.kypo.training.exceptions.FacadeLayerException;
-import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.mapping.mapstruct.*;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.model.enums.TDState;
@@ -194,14 +192,6 @@ public class ExportImportFacadeTest {
         TrainingDefinitionByIdDTO trainingDefinitionByIdDTOImported = trainingDefinitionMapper.mapToDTOById(trainingDefinitionImported);
 
         deepEqualsTrainingDefinitionDTO(trainingDefinitionByIdDTOImported, trainingDefinitionByIdDTO);
-    }
-
-    @Test
-    public void createInfoLevelWithFacadeLayerException() {
-        thrown.expect(FacadeLayerException.class);
-        given(exportImportService.findInstanceById(anyLong())).willReturn(trainingInstance);
-        willThrow(ServiceLayerException.class).given(exportImportService).failIfInstanceIsNotFinished(any(LocalDateTime.class));
-        exportImportFacade.archiveTrainingInstance(1L);
     }
 
     private void deepEqualsTrainingDefinitionDTO(TrainingDefinitionByIdDTO t1, TrainingDefinitionByIdDTO t2) {

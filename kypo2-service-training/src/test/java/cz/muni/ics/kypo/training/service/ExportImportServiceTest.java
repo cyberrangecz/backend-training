@@ -1,6 +1,5 @@
 package cz.muni.ics.kypo.training.service;
 
-import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.repository.*;
 import cz.muni.ics.kypo.training.service.impl.ExportImportServiceImpl;
@@ -84,13 +83,6 @@ public class ExportImportServiceTest {
         TrainingInstance tI = exportImportService.findInstanceById(trainingInstance.getId());
 
         then(trainingInstanceRepository).should().findById(trainingInstance.getId());
-    }
-
-    @Test
-    public void failIfInstanceNotFinished() {
-        thrown.expect(ServiceLayerException.class);
-        thrown.expectMessage("The training instance is not finished.");
-        exportImportService.failIfInstanceIsNotFinished(LocalDateTime.now().plusHours(25));
     }
 
     @Test

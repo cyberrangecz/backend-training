@@ -17,17 +17,16 @@ import cz.muni.ics.kypo.training.api.dto.betatestinggroup.BetaTestingGroupCreate
 import cz.muni.ics.kypo.training.api.dto.betatestinggroup.BetaTestingGroupUpdateDTO;
 import cz.muni.ics.kypo.training.api.enums.LevelType;
 import cz.muni.ics.kypo.training.api.enums.RoleType;
-import cz.muni.ics.kypo.training.exceptions.FacadeLayerException;
-import cz.muni.ics.kypo.training.exceptions.ErrorCode;
-import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
+import cz.muni.ics.kypo.training.exceptions.InternalServerErrorException;
+import cz.muni.ics.kypo.training.exceptions.EntityConflictException;
+import cz.muni.ics.kypo.training.exceptions.EntityNotFoundException;
 import cz.muni.ics.kypo.training.facade.TrainingDefinitionFacade;
 import cz.muni.ics.kypo.training.mapping.mapstruct.*;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.model.enums.AssessmentType;
 import cz.muni.ics.kypo.training.persistence.model.enums.TDState;
-import cz.muni.ics.kypo.training.rest.exceptions.ConflictException;
-import cz.muni.ics.kypo.training.rest.exceptions.InternalServerErrorException;
-import cz.muni.ics.kypo.training.rest.exceptions.ResourceNotFoundException;
+import cz.muni.ics.kypo.training.rest.ApiError;
+import cz.muni.ics.kypo.training.rest.CustomRestExceptionHandlerTraining;
 import io.swagger.annotations.ApiParam;
 import org.junit.Before;
 import org.junit.Test;
@@ -44,6 +43,7 @@ import org.springframework.data.querydsl.SimpleEntityPathResolver;
 import org.springframework.data.querydsl.binding.QuerydslBindingsFactory;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.data.web.querydsl.QuerydslPredicateArgumentResolver;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.mock.web.MockHttpServletResponse;
@@ -54,6 +54,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import java.io.IOException;
 import java.util.*;
 
+import static cz.muni.ics.kypo.training.rest.controllers.util.ObjectConverter.convertJsonBytesToObject;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.BDDMockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -113,8 +114,11 @@ public class TrainingDefinitionsRestControllerTest {
         trainingDefinitionsRestController = new TrainingDefinitionsRestController(trainingDefinitionFacade, objectMapper);
         this.mockMvc = MockMvcBuilders.standaloneSetup(trainingDefinitionsRestController)
                 .setCustomArgumentResolvers(new PageableHandlerMethodArgumentResolver(),
-                        new QuerydslPredicateArgumentResolver(new QuerydslBindingsFactory(SimpleEntityPathResolver.INSTANCE), Optional.empty()))
-                .setMessageConverters(new MappingJackson2HttpMessageConverter()).build();
+                        new QuerydslPredicateArgumentResolver(
+                                new QuerydslBindingsFactory(SimpleEntityPathResolver.INSTANCE), Optional.empty()))
+                .setMessageConverters(new MappingJackson2HttpMessageConverter())
+                .setControllerAdvice(new CustomRestExceptionHandlerTraining())
+                .build();
 
         gameLevel = new GameLevel();
         gameLevel.setId(1L);
@@ -264,11 +268,14 @@ public class TrainingDefinitionsRestControllerTest {
 
     @Test
     public void findTrainingDefinitionByIdWithFacadeException() throws Exception {
-        Exception exceptionThrow = new ServiceLayerException("message", ErrorCode.RESOURCE_NOT_FOUND);
-        willThrow(new FacadeLayerException(exceptionThrow)).given(trainingDefinitionFacade).findById(any(Long.class));
-        Exception exception =
-                mockMvc.perform(get("/training-definitions" + "/{id}", 6l)).andExpect(status().isNotFound()).andReturn().getResolvedException();
-        assertEquals(ResourceNotFoundException.class, exception.getClass());
+        willThrow(new EntityNotFoundException()).given(trainingDefinitionFacade).findById(any(Long.class));
+        MockHttpServletResponse response = mockMvc.perform(get("/training-definitions" + "/{id}", 6L))
+                        .andExpect(status().isNotFound())
+                .andReturn().getResponse();
+        ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
+        assertEquals(HttpStatus.NOT_FOUND, error.getStatus());
+        assertEquals("The requested entity could not be found", error.getMessage());
+        then(trainingDefinitionFacade).should().findById(6L);
     }
 
     @Test
@@ -291,13 +298,14 @@ public class TrainingDefinitionsRestControllerTest {
 
     @Test
     public void updateTrainingDefinitionWithFacadeException() throws Exception {
-        Exception exceptionThrow = new ServiceLayerException("message", ErrorCode.RESOURCE_CONFLICT);
-        willThrow(new FacadeLayerException(exceptionThrow)).given(trainingDefinitionFacade).update(any(TrainingDefinitionUpdateDTO.class));
-        Exception exception = mockMvc.perform(put("/training-definitions").content(convertObjectToJsonBytes(trainingDefinitionUpdateDTO))
+        willThrow(new EntityConflictException()).given(trainingDefinitionFacade).update(any(TrainingDefinitionUpdateDTO.class));
+        MockHttpServletResponse response = mockMvc.perform(put("/training-definitions").content(convertObjectToJsonBytes(trainingDefinitionUpdateDTO))
                 .contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isConflict())
-                .andReturn().getResolvedException();
-        assertEquals(ConflictException.class, exception.getClass());
+                .andReturn().getResponse();
+        ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
+        assertEquals(HttpStatus.CONFLICT, error.getStatus());
+        assertEquals("The request could not be completed due to a conflict with the current state of the target resource.", error.getMessage());
     }
 
     @Test
@@ -315,11 +323,13 @@ public class TrainingDefinitionsRestControllerTest {
 
     @Test
     public void cloneTrainingDefinitionWithFacadeException() throws Exception {
-        Exception exceptionToThrow = new ServiceLayerException("message", ErrorCode.RESOURCE_CONFLICT);
-        willThrow(new FacadeLayerException(exceptionToThrow)).given(trainingDefinitionFacade).clone(any(Long.class), anyString());
-        Exception exception = mockMvc.perform(post("/training-definitions/1").param("title", "title").contentType(MediaType.APPLICATION_JSON_VALUE))
-                .andExpect(status().isConflict()).andReturn().getResolvedException();
-        assertEquals(ConflictException.class, exception.getClass());
+        willThrow(new EntityConflictException()).given(trainingDefinitionFacade).clone(any(Long.class), anyString());
+        MockHttpServletResponse response = mockMvc.perform(post("/training-definitions/1").param("title", "title").contentType(MediaType.APPLICATION_JSON_VALUE))
+                .andExpect(status().isConflict())
+                .andReturn().getResponse();
+        ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
+        assertEquals(HttpStatus.CONFLICT, error.getStatus());
+        assertEquals("The request could not be completed due to a conflict with the current state of the target resource.", error.getMessage());
     }
 
     @Test
@@ -329,21 +339,25 @@ public class TrainingDefinitionsRestControllerTest {
 
     @Test
     public void deleteTrainingDefinitionWithCannotBeDeletedException() throws Exception {
-        Exception exceptionToThrow = new ServiceLayerException("message", ErrorCode.RESOURCE_CONFLICT);
-        willThrow(new FacadeLayerException(exceptionToThrow)).given(trainingDefinitionFacade).delete(any(Long.class));
-        Exception exception = mockMvc.perform(delete("/training-definitions/{id}", trainingDefinition2.getId()))
-                .andExpect(status().isConflict()).andReturn().getResolvedException();
-
-        assertEquals(ConflictException.class, exception.getClass());
+        willThrow(new EntityConflictException()).given(trainingDefinitionFacade).delete(any(Long.class));
+        MockHttpServletResponse response = mockMvc.perform(delete("/training-definitions/{id}", trainingDefinition2.getId()))
+                .andExpect(status().isConflict())
+                .andReturn().getResponse();
+        ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
+        assertEquals(HttpStatus.CONFLICT, error.getStatus());
+        assertEquals("The request could not be completed due to a conflict with the current state of the target resource.", error.getMessage());
     }
 
     @Test
     public void deleteTrainingDefinitionWithFacadeLayerException() throws Exception {
-        Exception exceptionThrow = new ServiceLayerException("message", ErrorCode.RESOURCE_NOT_FOUND);
-        willThrow(new FacadeLayerException(exceptionThrow)).given(trainingDefinitionFacade).delete(any(Long.class));
-        Exception exception = mockMvc.perform(delete("/training-definitions/{id}", trainingDefinition2.getId()))
-                .andExpect(status().isNotFound()).andReturn().getResolvedException();
-        assertEquals(ResourceNotFoundException.class, exception.getClass());
+        willThrow(new EntityNotFoundException()).given(trainingDefinitionFacade).delete(any(Long.class));
+        MockHttpServletResponse response = mockMvc.perform(delete("/training-definitions/{id}", trainingDefinition2.getId()))
+                .andExpect(status().isNotFound())
+                .andReturn().getResponse();
+        ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
+        assertEquals(HttpStatus.NOT_FOUND, error.getStatus());
+        assertEquals("The requested entity could not be found", error.getMessage());
+        then(trainingDefinitionFacade).should().delete(trainingDefinition2.getId());
     }
 
     @Test
@@ -354,22 +368,24 @@ public class TrainingDefinitionsRestControllerTest {
 
     @Test
     public void deleteLevelWithCannotBeUpdatedException() throws Exception {
-        Exception exceptionToThrow = new ServiceLayerException("message", ErrorCode.RESOURCE_CONFLICT);
-        willThrow(new FacadeLayerException(exceptionToThrow)).given(trainingDefinitionFacade).deleteOneLevel(any(Long.class), any(Long.class));
-        Exception exception =
-                mockMvc.perform(delete("/training-definitions/{definitionId}/levels/{levelId}", trainingDefinition2.getId(), gameLevel.getId()))
-                        .andExpect(status().isConflict()).andReturn().getResolvedException();
-        assertEquals(ConflictException.class, exception.getClass());
+        willThrow(new EntityConflictException()).given(trainingDefinitionFacade).deleteOneLevel(any(Long.class), any(Long.class));
+        MockHttpServletResponse response = mockMvc.perform(delete("/training-definitions/{definitionId}/levels/{levelId}", trainingDefinition2.getId(), gameLevel.getId()))
+                .andExpect(status().isConflict())
+                .andReturn().getResponse();
+        ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
+        assertEquals(HttpStatus.CONFLICT, error.getStatus());
+        assertEquals("The request could not be completed due to a conflict with the current state of the target resource.", error.getMessage());
     }
 
     @Test
     public void deleteLevelWithFacadeLayerException() throws Exception {
-        Exception exceptionToThrow = new ServiceLayerException("message", ErrorCode.RESOURCE_NOT_FOUND);
-        willThrow(new FacadeLayerException(exceptionToThrow)).given(trainingDefinitionFacade).deleteOneLevel(any(Long.class), any(Long.class));
-        Exception exception =
-                mockMvc.perform(delete("/training-definitions/{definitionId}/levels/{levelId}", trainingDefinition2.getId(), gameLevel.getId()))
-                        .andExpect(status().isNotFound()).andReturn().getResolvedException();
-        assertEquals(ResourceNotFoundException.class, exception.getClass());
+        willThrow(new EntityNotFoundException()).given(trainingDefinitionFacade).deleteOneLevel(any(Long.class), any(Long.class));
+        MockHttpServletResponse response = mockMvc.perform(delete("/training-definitions/{definitionId}/levels/{levelId}", trainingDefinition2.getId(), gameLevel.getId()))
+                .andExpect(status().isNotFound())
+                .andReturn().getResponse();
+        ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
+        assertEquals(HttpStatus.NOT_FOUND, error.getStatus());
+        assertEquals("The requested entity could not be found", error.getMessage());
     }
 
     @Test
@@ -381,24 +397,26 @@ public class TrainingDefinitionsRestControllerTest {
 
     @Test
     public void updateGameLevelWithFacadeLayerException() throws Exception {
-        Exception exceptionThrow = new ServiceLayerException("message", ErrorCode.RESOURCE_NOT_FOUND);
-        willThrow(new FacadeLayerException(exceptionThrow)).given(trainingDefinitionFacade).updateGameLevel(any(Long.class), any(GameLevelUpdateDTO.class));
-        Exception exception = mockMvc
-                .perform(put("/training-definitions/{definitionId}/game-levels", trainingDefinition2.getId())
+        willThrow(new EntityNotFoundException()).given(trainingDefinitionFacade).updateGameLevel(any(Long.class), any(GameLevelUpdateDTO.class));
+        MockHttpServletResponse response = mockMvc.perform(put("/training-definitions/{definitionId}/game-levels", trainingDefinition2.getId())
                         .content(convertObjectToJsonBytes(gameLevelUpdateDTO)).contentType(MediaType.APPLICATION_JSON_VALUE))
-                .andExpect(status().isNotFound()).andReturn().getResolvedException();
-        assertEquals(ResourceNotFoundException.class, exception.getClass());
+                .andExpect(status().isNotFound())
+                .andReturn().getResponse();
+        ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
+        assertEquals(HttpStatus.NOT_FOUND, error.getStatus());
+        assertEquals("The requested entity could not be found", error.getMessage());
     }
 
     @Test
     public void updateGameLevelWithCannotBeUpdatedException() throws Exception {
-        Exception exceptionToThrow = new ServiceLayerException("message", ErrorCode.RESOURCE_CONFLICT);
-        willThrow(new FacadeLayerException(exceptionToThrow)).given(trainingDefinitionFacade).updateGameLevel(any(Long.class), any(GameLevelUpdateDTO.class));
-        Exception exception = mockMvc
-                .perform(put("/training-definitions/{definitionId}/game-levels", trainingDefinition2.getId())
+        willThrow(new EntityConflictException()).given(trainingDefinitionFacade).updateGameLevel(any(Long.class), any(GameLevelUpdateDTO.class));
+        MockHttpServletResponse response = mockMvc.perform(put("/training-definitions/{definitionId}/game-levels", trainingDefinition2.getId())
                         .content(convertObjectToJsonBytes(gameLevelUpdateDTO)).contentType(MediaType.APPLICATION_JSON_VALUE))
-                .andExpect(status().isConflict()).andReturn().getResolvedException();
-        assertEquals(ConflictException.class, exception.getClass());
+                .andExpect(status().isConflict())
+                .andReturn().getResponse();
+        ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
+        assertEquals(HttpStatus.CONFLICT, error.getStatus());
+        assertEquals("The request could not be completed due to a conflict with the current state of the target resource.", error.getMessage());
     }
 
     @Test
@@ -410,24 +428,26 @@ public class TrainingDefinitionsRestControllerTest {
 
     @Test
     public void updateInfoLevelWithFacadeLayerException() throws Exception {
-        Exception exceptionThrow = new ServiceLayerException("message", ErrorCode.RESOURCE_NOT_FOUND);
-        willThrow(new FacadeLayerException(exceptionThrow)).given(trainingDefinitionFacade).updateInfoLevel(any(Long.class), any(InfoLevelUpdateDTO.class));
-        Exception exception = mockMvc
-                .perform(put("/training-definitions/{definitionId}/info-levels", trainingDefinition2.getId())
+        willThrow(new EntityNotFoundException()).given(trainingDefinitionFacade).updateInfoLevel(any(Long.class), any(InfoLevelUpdateDTO.class));
+        MockHttpServletResponse response = mockMvc.perform(put("/training-definitions/{definitionId}/info-levels", trainingDefinition2.getId())
                         .content(convertObjectToJsonBytes(infoLevelUpdateDTO)).contentType(MediaType.APPLICATION_JSON_VALUE))
-                .andExpect(status().isNotFound()).andReturn().getResolvedException();
-        assertEquals(ResourceNotFoundException.class, exception.getClass());
+                .andExpect(status().isNotFound())
+                .andReturn().getResponse();
+        ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
+        assertEquals(HttpStatus.NOT_FOUND, error.getStatus());
+        assertEquals("The requested entity could not be found", error.getMessage());
     }
 
     @Test
     public void updateInfoLevelWithCannotBeUpdatedException() throws Exception {
-        Exception exceptionThrow = new ServiceLayerException("message", ErrorCode.RESOURCE_CONFLICT);
-        willThrow(new FacadeLayerException(exceptionThrow)).given(trainingDefinitionFacade).updateInfoLevel(any(Long.class), any(InfoLevelUpdateDTO.class));
-        Exception exception = mockMvc
-                .perform(put("/training-definitions/{definitionId}/info-levels", trainingDefinition2.getId())
+        willThrow(new EntityConflictException()).given(trainingDefinitionFacade).updateInfoLevel(any(Long.class), any(InfoLevelUpdateDTO.class));
+        MockHttpServletResponse response = mockMvc.perform(put("/training-definitions/{definitionId}/info-levels", trainingDefinition2.getId())
                         .content(convertObjectToJsonBytes(infoLevelUpdateDTO)).contentType(MediaType.APPLICATION_JSON_VALUE))
-                .andExpect(status().isConflict()).andReturn().getResolvedException();
-        assertEquals(ConflictException.class, exception.getClass());
+                .andExpect(status().isConflict())
+                .andReturn().getResponse();
+        ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
+        assertEquals(HttpStatus.CONFLICT, error.getStatus());
+        assertEquals("The request could not be completed due to a conflict with the current state of the target resource.", error.getMessage());
     }
 
     @Test
@@ -492,15 +512,15 @@ public class TrainingDefinitionsRestControllerTest {
 
     @Test
     public void getDesignersWithUnexpectedError() throws Exception {
-        Exception exceptionThrow = new ServiceLayerException("Error while getting users from user and group microservice.", ErrorCode.UNEXPECTED_ERROR);
-        willThrow(new FacadeLayerException(exceptionThrow))
+        willThrow(new InternalServerErrorException("Error while getting users from user and group microservice."))
                 .given(trainingDefinitionFacade).getUsersWithGivenRole(any(RoleType.class), any(Pageable.class), eq(null), eq(null));
-        Exception ex = mockMvc.perform(get("/training-definitions/designers")
+        MockHttpServletResponse response = mockMvc.perform(get("/training-definitions/designers")
                         .contentType(MediaType.APPLICATION_JSON_VALUE))
                         .andExpect(status().isInternalServerError())
-                        .andReturn().getResolvedException();
-        assertEquals(InternalServerErrorException.class, ex.getClass());
-        assertEquals("Error while getting users from user and group microservice.", ex.getCause().getCause().getLocalizedMessage());
+                        .andReturn().getResponse();
+        ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, error.getStatus());
+        assertEquals("Error while getting users from user and group microservice.", error.getMessage());
     }
 
     @Test
@@ -512,14 +532,14 @@ public class TrainingDefinitionsRestControllerTest {
 
     @Test
     public void switchStateWithConflict() throws Exception {
-        Exception exceptionToThrow = new ServiceLayerException("message", ErrorCode.RESOURCE_CONFLICT);
-        willThrow(new FacadeLayerException(exceptionToThrow)).given(trainingDefinitionFacade).switchState(any(Long.class), any(cz.muni.ics.kypo.training.api.enums.TDState.class));
-        Exception exception =
-            mockMvc.perform(put("/training-definitions/{definitionId}/states/{state}", trainingDefinition2.getId(),
+        willThrow(new EntityConflictException()).given(trainingDefinitionFacade).switchState(any(Long.class), any(cz.muni.ics.kypo.training.api.enums.TDState.class));
+        MockHttpServletResponse response = mockMvc.perform(put("/training-definitions/{definitionId}/states/{state}", trainingDefinition2.getId(),
 								cz.muni.ics.kypo.training.api.enums.TDState.ARCHIVED))
                 .andExpect(status().isConflict())
-                .andReturn().getResolvedException();
-        assertEquals(ConflictException.class, exception.getClass());
+                .andReturn().getResponse();
+        ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
+        assertEquals(HttpStatus.CONFLICT, error.getStatus());
+        assertEquals("The request could not be completed due to a conflict with the current state of the target resource.", error.getMessage());
     }
     private static String convertObjectToJsonBytes(Object object) throws IOException {
         ObjectMapper mapper = new ObjectMapper();

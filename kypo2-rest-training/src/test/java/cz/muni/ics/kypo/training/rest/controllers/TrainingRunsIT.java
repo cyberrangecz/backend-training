@@ -14,7 +14,10 @@ import cz.muni.ics.kypo.training.api.dto.run.AccessedTrainingRunDTO;
 import cz.muni.ics.kypo.training.api.dto.run.TrainingRunByIdDTO;
 import cz.muni.ics.kypo.training.api.dto.run.TrainingRunDTO;
 import cz.muni.ics.kypo.training.api.enums.RoleType;
-import cz.muni.ics.kypo.training.enums.SandboxStates;
+import static cz.muni.ics.kypo.training.rest.controllers.util.ObjectConverter.*;
+
+import cz.muni.ics.kypo.training.exceptions.BadRequestException;
+import cz.muni.ics.kypo.training.exceptions.EntityErrorDetail;
 import cz.muni.ics.kypo.training.exceptions.RestTemplateException;
 import cz.muni.ics.kypo.training.mapping.mapstruct.GameLevelMapperImpl;
 import cz.muni.ics.kypo.training.mapping.mapstruct.HintMapperImpl;
@@ -25,9 +28,10 @@ import cz.muni.ics.kypo.training.persistence.model.enums.AssessmentType;
 import cz.muni.ics.kypo.training.persistence.model.enums.TDState;
 import cz.muni.ics.kypo.training.persistence.model.enums.TRState;
 import cz.muni.ics.kypo.training.persistence.repository.*;
+import cz.muni.ics.kypo.training.rest.ApiError;
+import cz.muni.ics.kypo.training.rest.CustomRestExceptionHandlerTraining;
 import cz.muni.ics.kypo.training.rest.controllers.config.DBTestUtil;
 import cz.muni.ics.kypo.training.rest.controllers.config.RestConfigTest;
-import cz.muni.ics.kypo.training.rest.exceptions.*;
 import cz.muni.ics.kypo.training.api.responses.SandboxInfo;
 import cz.muni.ics.kypo.training.api.responses.PageResultResourcePython;
 import org.json.JSONArray;
@@ -154,8 +158,11 @@ public class TrainingRunsIT {
         MockitoAnnotations.initMocks(this);
         this.mvc = MockMvcBuilders.standaloneSetup(trainingRunsRestController)
                 .setCustomArgumentResolvers(new PageableHandlerMethodArgumentResolver(),
-                        new QuerydslPredicateArgumentResolver(new QuerydslBindingsFactory(SimpleEntityPathResolver.INSTANCE), Optional.empty()))
-                .setMessageConverters(new MappingJackson2HttpMessageConverter()).build();
+                        new QuerydslPredicateArgumentResolver(
+                                new QuerydslBindingsFactory(SimpleEntityPathResolver.INSTANCE), Optional.empty()))
+                .setMessageConverters(new MappingJackson2HttpMessageConverter())
+                .setControllerAdvice(new CustomRestExceptionHandlerTraining())
+                .build();
 
         sandboxInfo1 = new SandboxInfo();
         sandboxInfo1.setId(1L);
@@ -333,11 +340,13 @@ public class TrainingRunsIT {
 
     @Test
     public void findTrainingRunByIdNotFound() throws Exception {
-        Exception ex = mvc.perform(get("/training-runs/{id}", 100L))
+        MockHttpServletResponse response = mvc.perform(get("/training-runs/{id}", 100L))
                 .andExpect(status().isNotFound())
-                .andReturn().getResolvedException();
-        assertEquals(ResourceNotFoundException.class, Objects.requireNonNull(ex).getClass());
-        assertTrue(ex.getMessage().contains("Training Run with runId: 100 not found."));
+                .andReturn().getResponse();
+        ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
+        assertEquals(HttpStatus.NOT_FOUND, error.getStatus());
+        assertEntityDetailError(error.getEntityErrorDetail(), TrainingRun.class, "id", "100",
+                "Training run not found.");
     }
 
     @Test
@@ -416,12 +425,14 @@ public class TrainingRunsIT {
                 willReturn(new ResponseEntity<UserRefDTO>(userRefDTO1, HttpStatus.OK));
 
         mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_TRAINEE.name()));
-        Exception exception = mvc.perform(post("/training-runs")
+        MockHttpServletResponse response = mvc.perform(post("/training-runs")
                 .param("accessToken", "pass-1234"))
                 .andExpect(status().isConflict())
-                .andReturn().getResolvedException();
-        assertEquals(ConflictException.class, Objects.requireNonNull(exception).getClass());
-        assertEquals("At first organizer must allocate sandboxes for training instance.", exception.getCause().getCause().getMessage());
+                .andReturn().getResponse();
+        ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
+        assertEquals(HttpStatus.CONFLICT, error.getStatus());
+        assertEntityDetailError(error.getEntityErrorDetail(), TrainingInstance.class, "id", trainingInstance.getId().toString(),
+                "At first organizer must allocate sandboxes for training instance.");
     }
 
     @Test
@@ -438,12 +449,14 @@ public class TrainingRunsIT {
         given(restTemplate.exchange(eq(builder.toUriString()), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
                 willReturn(new ResponseEntity<PageResultResourcePython<SandboxInfo>>(sandboxInfoPageResult, HttpStatus.OK));
         mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_TRAINEE.name()));
-        Exception exception = mvc.perform(post("/training-runs")
+        MockHttpServletResponse response = mvc.perform(post("/training-runs")
                 .param("accessToken", "pass-1234"))
                 .andExpect(status().isNotFound())
-                .andReturn().getResolvedException();
-        assertEquals(ResourceNotFoundException.class, Objects.requireNonNull(exception).getClass());
-        assertEquals("No starting level available for this training definition.", exception.getCause().getCause().getMessage());
+                .andReturn().getResponse();
+        ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
+        assertEquals(HttpStatus.NOT_FOUND, error.getStatus());
+        assertEntityDetailError(error.getEntityErrorDetail(), TrainingDefinition.class, "id", trainingInstance.getTrainingDefinition().getId().toString(),
+                "No starting level available for this training definition.");
     }
 
     @Test
@@ -461,23 +474,27 @@ public class TrainingRunsIT {
         willThrow(new RestTemplateException("No unlocked sandbox.", HttpStatus.CONFLICT.toString())).given(restTemplate).exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), eq(SandboxInfo.class));
 
         mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_TRAINEE.name()));
-        Exception exception = mvc.perform(post("/training-runs")
+        MockHttpServletResponse response = mvc.perform(post("/training-runs")
                 .param("accessToken", "pass-1234"))
-                .andExpect(status().isServiceUnavailable())
-                .andReturn().getResolvedException();
-        assertEquals(ServiceUnavailableException.class, Objects.requireNonNull(exception).getClass());
-        assertEquals("There is no available sandbox, wait a minute and try again or ask organizer to allocate more sandboxes.", exception.getCause().getCause().getMessage());
+                .andExpect(status().isForbidden())
+                .andReturn().getResponse();
+        ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
+        assertEquals(HttpStatus.FORBIDDEN, error.getStatus());
+        assertEquals("There is no available sandbox, wait a minute and try again or ask organizer to allocate more sandboxes.", error.getMessage());
     }
 
     @Test
     public void accessTrainingRunAccessTokenNotFound() throws Exception {
         trainingRunRepository.save(trainingRun2);
 
-        Exception ex = mvc.perform(post("/training-runs")
+        MockHttpServletResponse response = mvc.perform(post("/training-runs")
                 .param("accessToken", "notFoundToken"))
                 .andExpect(status().isNotFound())
-                .andReturn().getResolvedException();
-        assertEquals(ResourceNotFoundException.class, Objects.requireNonNull(ex).getClass());
+                .andReturn().getResponse();
+        ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
+        assertEquals(HttpStatus.NOT_FOUND, error.getStatus());
+        assertEntityDetailError(error.getEntityErrorDetail(), TrainingInstance.class, "accessToken", "notFoundToken",
+                "There is no active game session matching access token.");
     }
 
 
@@ -530,11 +547,13 @@ public class TrainingRunsIT {
 
         mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_ADMINISTRATOR.name()));
 
-        Exception ex = mvc.perform(get("/training-runs/{runId}/next-levels", trainingRun2.getId()))
+        MockHttpServletResponse response = mvc.perform(get("/training-runs/{runId}/next-levels", trainingRun2.getId()))
                 .andExpect(status().isConflict())
-                .andReturn().getResolvedException();
-        assertEquals(ConflictException.class, Objects.requireNonNull(ex).getClass());
-        assertEquals("At first you need to answer the level.", ex.getCause().getCause().getMessage());
+                .andReturn().getResponse();
+        ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
+        assertEquals(HttpStatus.CONFLICT, error.getStatus());
+        assertEntityDetailError(error.getEntityErrorDetail(), TrainingRun.class, "id", trainingRun2.getId().toString(),
+                "You need to answer the level to move to the next level.");
     }
 
     @Test
@@ -543,11 +562,13 @@ public class TrainingRunsIT {
         trainingRunRepository.save(trainingRun2);
 
         mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_ADMINISTRATOR.name()));
-        Exception ex = mvc.perform(get("/training-runs/{runId}/next-levels", trainingRun2.getId()))
+        MockHttpServletResponse response = mvc.perform(get("/training-runs/{runId}/next-levels", trainingRun2.getId()))
                 .andExpect(status().isNotFound())
-                .andReturn().getResolvedException();
-        assertEquals(ResourceNotFoundException.class, Objects.requireNonNull(ex).getClass());
-        assertEquals("There is no next level.", ex.getCause().getCause().getMessage());
+                .andReturn().getResponse();
+        ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
+        assertEquals(HttpStatus.NOT_FOUND, error.getStatus());
+        assertEntityDetailError(error.getEntityErrorDetail(), AbstractLevel.class, null, null,
+                "There is no next level for current training run (ID: 1).");
     }
 
     @Test
@@ -596,11 +617,13 @@ public class TrainingRunsIT {
 
     @Test
     public void getSolutionLevelNotFound() throws Exception {
-        Exception ex = mvc.perform(get("/training-runs/{runId}/solutions", nonExistentTrainingRunId))
+        MockHttpServletResponse response = mvc.perform(get("/training-runs/{runId}/solutions", nonExistentTrainingRunId))
                 .andExpect(status().isNotFound())
-                .andReturn().getResolvedException();
-        assertEquals(ResourceNotFoundException.class, Objects.requireNonNull(ex).getClass());
-        assertEquals("Training Run with id: " + nonExistentTrainingRunId + " not found.", ex.getCause().getCause().getMessage());
+                .andReturn().getResponse();
+        ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
+        assertEquals(HttpStatus.NOT_FOUND, error.getStatus());
+        assertEntityDetailError(error.getEntityErrorDetail(), TrainingRun.class, "id", nonExistentTrainingRunId.toString(),
+                "Training run not found.");
     }
 
     @Test
@@ -618,23 +641,27 @@ public class TrainingRunsIT {
 
     @Test
     public void getHintNotFound() throws Exception {
-        long nonExistentHintId = 100L;
+        Long nonExistentHintId = 100L;
         trainingRunRepository.save(trainingRun1);
-        Exception ex = mvc.perform(get("/training-runs/{runId}/hints/{hintId}", trainingRun1.getId(), nonExistentHintId))
+        MockHttpServletResponse response = mvc.perform(get("/training-runs/{runId}/hints/{hintId}", trainingRun1.getId(), nonExistentHintId))
                 .andExpect(status().isNotFound())
-                .andReturn().getResolvedException();
-        assertEquals(Objects.requireNonNull(ex).getClass(), ResourceNotFoundException.class);
-        assertEquals("Hint with id " + nonExistentHintId + " not found.", ex.getCause().getCause().getMessage());
+                .andReturn().getResponse();
+        ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
+        assertEquals(HttpStatus.NOT_FOUND, error.getStatus());
+        assertEntityDetailError(error.getEntityErrorDetail(), Hint.class, "id", nonExistentHintId.toString(),
+                "Hint not found.");
     }
 
     @Test
     public void getHintTrainingRunNotFound() throws Exception {
         trainingRunRepository.save(trainingRun1);
-        Exception ex = mvc.perform(get("/training-runs/{runId}/hints/{hintId}", nonExistentTrainingRunId, 1L))
+        MockHttpServletResponse response = mvc.perform(get("/training-runs/{runId}/hints/{hintId}", nonExistentTrainingRunId, 1L))
                 .andExpect(status().isNotFound())
-                .andReturn().getResolvedException();
-        assertEquals(Objects.requireNonNull(ex).getClass(), ResourceNotFoundException.class);
-        assertEquals("Training Run with id: " + nonExistentTrainingRunId + " not found.", ex.getCause().getCause().getMessage());
+                .andReturn().getResponse();
+        ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
+        assertEquals(HttpStatus.NOT_FOUND, error.getStatus());
+        assertEntityDetailError(error.getEntityErrorDetail(), TrainingRun.class, "id", nonExistentTrainingRunId.toString(),
+                "Training run not found.");
 
     }
 
@@ -802,11 +829,13 @@ public class TrainingRunsIT {
     public void resumeFinishedTrainingRun() throws Exception {
         trainingRun2.setState(TRState.FINISHED);
         trainingRunRepository.save(trainingRun2);
-        Exception ex = mvc.perform(get("/training-runs/{runId}/resumption", trainingRun2.getId()))
+        MockHttpServletResponse response = mvc.perform(get("/training-runs/{runId}/resumption", trainingRun2.getId()))
                 .andExpect(status().isConflict())
-                .andReturn().getResolvedException();
-        assertEquals(ConflictException.class, Objects.requireNonNull(ex).getClass());
-        assertEquals("Cannot resume finished training run.", ex.getCause().getCause().getLocalizedMessage());
+                .andReturn().getResponse();
+        ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
+        assertEquals(HttpStatus.CONFLICT, error.getStatus());
+        assertEntityDetailError(error.getEntityErrorDetail(), TrainingRun.class, "id", trainingRun2.getId().toString(),
+                "Cannot resume finished training run.");
     }
 
     @Test
@@ -815,43 +844,50 @@ public class TrainingRunsIT {
         trainingInstanceRepository.save(trainingInstance);
         trainingRun1.setTrainingInstance(trainingInstance);
         trainingRunRepository.save(trainingRun1);
-        Exception ex = mvc.perform(get("/training-runs/{runId}/resumption", trainingRun1.getId()))
+        MockHttpServletResponse response = mvc.perform(get("/training-runs/{runId}/resumption", trainingRun1.getId()))
                 .andExpect(status().isConflict())
-                .andReturn().getResolvedException();
-        assertEquals(ConflictException.class, Objects.requireNonNull(ex).getClass());
-        assertEquals("Cannot resume training run after end of training instance.", ex.getCause().getCause().getLocalizedMessage());
+                .andReturn().getResponse();
+        ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
+        assertEquals(HttpStatus.CONFLICT, error.getStatus());
+        assertEntityDetailError(error.getEntityErrorDetail(), TrainingRun.class, "id", trainingRun1.getId().toString(),
+                "Cannot resume training run after end of training instance.");
     }
 
     @Test
     public void resumeTrainingRunWithDeletedSandbox() throws Exception {
         trainingRun1.setSandboxInstanceRefId(null);
         trainingRunRepository.save(trainingRun1);
-        Exception ex = mvc.perform(get("/training-runs/{runId}/resumption", trainingRun1.getId()))
+        MockHttpServletResponse response = mvc.perform(get("/training-runs/{runId}/resumption", trainingRun1.getId()))
                 .andExpect(status().isConflict())
-                .andReturn().getResolvedException();
-        assertEquals(ConflictException.class, Objects.requireNonNull(ex).getClass());
-        assertEquals("Sandbox of this training run was already deleted, you have to start new game.", ex.getCause().getCause().getLocalizedMessage());
+                .andReturn().getResponse();
+        ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
+        assertEquals(HttpStatus.CONFLICT, error.getStatus());
+        assertEntityDetailError(error.getEntityErrorDetail(), TrainingRun.class, "id", trainingRun1.getId().toString(),
+                "Sandbox of this training run was already deleted, you have to start new game.");
     }
 
     @Test
     public void resumeArchivedTrainingRun() throws Exception {
         trainingRun2.setState(TRState.ARCHIVED);
         trainingRunRepository.save(trainingRun2);
-        Exception ex = mvc.perform(get("/training-runs/{runId}/resumption", trainingRun2.getId()))
+        MockHttpServletResponse response = mvc.perform(get("/training-runs/{runId}/resumption", trainingRun2.getId()))
                 .andExpect(status().isConflict())
-                .andReturn().getResolvedException();
-        assertEquals(ConflictException.class, Objects.requireNonNull(ex).getClass());
-        assertEquals("Cannot resume finished training run.", ex.getCause().getCause().getLocalizedMessage());
+                .andReturn().getResponse();
+        ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
+        assertEquals(HttpStatus.CONFLICT, error.getStatus());
+        assertEntityDetailError(error.getEntityErrorDetail(), TrainingRun.class, "id", trainingRun2.getId().toString(),
+                "Cannot resume finished training run.");
     }
 
     @Test
     public void resumeTrainingRunNotFound() throws Exception {
-        Exception ex = mvc.perform(get("/training-runs/{runId}/resumption", nonExistentTrainingRunId))
+        MockHttpServletResponse response = mvc.perform(get("/training-runs/{runId}/resumption", nonExistentTrainingRunId))
                 .andExpect(status().isNotFound())
-                .andReturn().getResolvedException();
-
-        assertEquals(ResourceNotFoundException.class, Objects.requireNonNull(ex).getClass());
-        assertEquals("Training Run with id: " + nonExistentTrainingRunId + " not found.", ex.getCause().getCause().getLocalizedMessage());
+                .andReturn().getResponse();
+        ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
+        assertEquals(HttpStatus.NOT_FOUND, error.getStatus());
+        assertEntityDetailError(error.getEntityErrorDetail(), TrainingRun.class, "id", nonExistentTrainingRunId.toString(),
+                "Training run not found.");
     }
 
     @Test
@@ -866,11 +902,13 @@ public class TrainingRunsIT {
     @Test
     public void finishTrainingRunWithNotLastLevel() throws Exception {
         trainingRunRepository.save(trainingRun1);
-        Exception ex = mvc.perform(put("/training-runs/{runId}", trainingRun1.getId()))
+        MockHttpServletResponse response = mvc.perform(put("/training-runs/{runId}", trainingRun1.getId()))
                 .andExpect(status().isConflict())
-                .andReturn().getResolvedException();
-        assertEquals(ConflictException.class, Objects.requireNonNull(ex).getClass());
-        assertEquals("Cannot finish training run because current level is not last.", ex.getCause().getCause().getLocalizedMessage());
+                .andReturn().getResponse();
+        ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
+        assertEquals(HttpStatus.CONFLICT, error.getStatus());
+        assertEntityDetailError(error.getEntityErrorDetail(), TrainingRun.class, "id", trainingRun1.getId().toString(),
+                "Cannot finish training run because current level is not last.");
     }
 
     @Test
@@ -878,20 +916,24 @@ public class TrainingRunsIT {
         trainingRun1.setCurrentLevel(infoLevel1);
         trainingRun1.setLevelAnswered(false);
         trainingRunRepository.save(trainingRun1);
-        Exception ex = mvc.perform(put("/training-runs/{runId}", trainingRun1.getId()))
+        MockHttpServletResponse response = mvc.perform(put("/training-runs/{runId}", trainingRun1.getId()))
                 .andExpect(status().isConflict())
-                .andReturn().getResolvedException();
-        assertEquals(ConflictException.class, Objects.requireNonNull(ex).getClass());
-        assertEquals("Cannot finish training run because current level is not answered.", ex.getCause().getCause().getLocalizedMessage());
+                .andReturn().getResponse();
+        ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
+        assertEquals(HttpStatus.CONFLICT, error.getStatus());
+        assertEntityDetailError(error.getEntityErrorDetail(), TrainingRun.class, "id", trainingRun1.getId().toString(),
+                "Cannot finish training run because current level is not answered.");
     }
 
     @Test
     public void finishTrainingRunNotFound() throws Exception {
-        Exception ex = mvc.perform(put("/training-runs/{runId}", nonExistentTrainingRunId))
+        MockHttpServletResponse response = mvc.perform(put("/training-runs/{runId}", nonExistentTrainingRunId))
                 .andExpect(status().isNotFound())
-                .andReturn().getResolvedException();
-        assertEquals(ResourceNotFoundException.class, ex.getClass());
-        assertEquals("Training Run with runId: " + nonExistentTrainingRunId + " not found.", ex.getCause().getCause().getLocalizedMessage());
+                .andReturn().getResponse();
+        ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
+        assertEquals(HttpStatus.NOT_FOUND, error.getStatus());
+        assertEntityDetailError(error.getEntityErrorDetail(), TrainingRun.class, "id", nonExistentTrainingRunId.toString(),
+                "Training run not found.");
     }
 
     private static String convertObjectToJsonBytes(Object object) throws IOException {
@@ -923,5 +965,16 @@ public class TrainingRunsIT {
     private static String convertJsonBytesToString(String object) throws IOException {
         ObjectMapper mapper = new ObjectMapper();
         return mapper.readValue(object, String.class);
+    }
+
+    private void assertEntityDetailError(EntityErrorDetail entityErrorDetail, Class<?> entity, String identifier, Object value, String reason) {
+        assertEquals(entity.getSimpleName(), entityErrorDetail.getEntity());
+        assertEquals(identifier, entityErrorDetail.getIdentifier());
+        if(entityErrorDetail.getIdentifierValue() == null) {
+            assertEquals(value, entityErrorDetail.getIdentifierValue());
+        } else {
+            assertEquals(value, entityErrorDetail.getIdentifierValue().toString());
+        }
+        assertEquals(reason, entityErrorDetail.getReason());
     }
 }

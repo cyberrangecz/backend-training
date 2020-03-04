@@ -3,7 +3,7 @@ package cz.muni.ics.kypo.training.service;
 import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
 import cz.muni.ics.kypo.training.api.enums.RoleType;
 import cz.muni.ics.kypo.training.api.responses.PageResultResource;
-import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
+import cz.muni.ics.kypo.training.exceptions.EntityNotFoundException;
 import cz.muni.ics.kypo.training.persistence.model.UserRef;
 import org.springframework.data.domain.Pageable;
 
@@ -20,7 +20,7 @@ public interface UserService {
      *
      * @param userRefId of wanted User reference
      * @return {@link UserRef} with corresponding login
-     * @throws ServiceLayerException if UserRef was not found
+     * @throws EntityNotFoundException UserRef was not found
      */
     UserRef getUserByUserRefId(Long userRefId);
 
@@ -29,7 +29,7 @@ public interface UserService {
      *
      * @param userRefId of wanted User reference
      * @return {@link UserRef} with corresponding login
-     * @throws ServiceLayerException if UserRef was not found
+     * @throws EntityNotFoundException UserRef was not found
      */
     UserRefDTO getUserRefDTOByUserRefId(Long userRefId);
 

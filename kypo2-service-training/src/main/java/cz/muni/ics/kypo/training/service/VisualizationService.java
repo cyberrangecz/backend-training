@@ -1,6 +1,6 @@
 package cz.muni.ics.kypo.training.service;
 
-import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
+import cz.muni.ics.kypo.training.exceptions.EntityConflictException;
 import cz.muni.ics.kypo.training.persistence.model.AbstractLevel;
 import cz.muni.ics.kypo.training.persistence.model.TrainingInstance;
 import cz.muni.ics.kypo.training.persistence.model.TrainingRun;
@@ -19,8 +19,7 @@ public interface VisualizationService {
      *
      * @param trainingRun the training run for which to find all levels.
      * @return List of {@link AbstractLevel}s
-     * @throws ServiceLayerException with ErrorCode: SECURITY_RIGHTS logged in user is not trainee of given training instance.
-     *                                               RESOURCE_CONFLICT training run is still running.
+     * @throws EntityConflictException training run is still running
      */
     List<AbstractLevel> getLevelsForTraineeVisualization(TrainingRun trainingRun);
 
@@ -29,7 +28,6 @@ public interface VisualizationService {
      *
      * @param trainingInstance the training instance for which to find all levels.
      * @return List of {@link AbstractLevel}s
-     * @throws ServiceLayerException with ErrorCode: SECURITY_RIGHTS logged in user is not organizer of given training instance.
      */
     List<AbstractLevel> getLevelsForOrganizerVisualization(TrainingInstance trainingInstance);
 

@@ -1,7 +1,8 @@
 package cz.muni.ics.kypo.training.service;
 
 import com.querydsl.core.types.Predicate;
-import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
+import cz.muni.ics.kypo.training.exceptions.EntityConflictException;
+import cz.muni.ics.kypo.training.exceptions.EntityNotFoundException;
 import cz.muni.ics.kypo.training.persistence.model.TrainingInstance;
 
 import cz.muni.ics.kypo.training.persistence.model.TrainingRun;
@@ -23,7 +24,7 @@ public interface TrainingInstanceService {
      *
      * @param id of a Training Instance that would be returned
      * @return specific {@link TrainingInstance} by id
-     * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND given training instance is not found.
+     * @throws EntityNotFoundException training instance is not found.
      */
     TrainingInstance findById(Long id);
 
@@ -49,8 +50,8 @@ public interface TrainingInstanceService {
      *
      * @param trainingInstance to be updated
      * @return new access token if it was changed
-     * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND given training instance is not found.
-     *                               RESOURCE_CONFLICT cannot be updated for some reason.
+     * @throws EntityNotFoundException training instance is not found.
+     * @throws EntityConflictException cannot be updated for some reason.
      */
     String update(TrainingInstance trainingInstance);
 
@@ -58,8 +59,8 @@ public interface TrainingInstanceService {
      * deletes training instance
      *
      * @param trainingInstance the training instance to be deleted.
-     * @throws ServiceLayerException with ErrorCode: RESOURCE_NOT_FOUND given training instance is not found.
-     *                               RESOURCE_CONFLICT cannot be deleted for some reason.
+     * @throws EntityNotFoundException training instance is not found.
+     * @throws EntityConflictException cannot be deleted for some reason.
      */
     void delete(TrainingInstance trainingInstance);
 
@@ -69,7 +70,7 @@ public interface TrainingInstanceService {
      *
      * @param trainingInstance for which allocate sandboxes
      * @param count            number of sandboxes to allocate
-     * @throws ServiceLayerException if instance is not found
+     * @throws EntityNotFoundException training instance is not found.
      */
     void allocateSandboxes(TrainingInstance trainingInstance, Integer count);
 
