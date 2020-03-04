@@ -8,9 +8,8 @@ import com.github.fge.jsonschema.main.JsonSchemaFactory;
 import com.github.fge.jsonschema.main.JsonValidator;
 import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.training.api.responses.SandboxInfo;
-import cz.muni.ics.kypo.training.exceptions.ErrorCode;
-import cz.muni.ics.kypo.training.exceptions.RestTemplateException;
-import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
+import cz.muni.ics.kypo.training.exceptions.*;
+import cz.muni.ics.kypo.training.exceptions.errors.PythonApiError;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.model.enums.AssessmentType;
 import cz.muni.ics.kypo.training.persistence.model.enums.TRState;
@@ -79,14 +78,15 @@ public class TrainingRunServiceImpl implements TrainingRunService {
     public TrainingRun findById(Long runId) {
         Objects.requireNonNull(runId);
         return trainingRunRepository.findById(runId)
-                .orElseThrow(() -> new ServiceLayerException("Training Run with runId: " + runId + " not found.", ErrorCode.RESOURCE_NOT_FOUND));
+                .orElseThrow(() -> new EntityNotFoundException(new EntityErrorDetail(TrainingRun.class, "id", runId.getClass(), runId,
+                        "Training run not found.")));
     }
 
     @Override
     public TrainingRun findByIdWithLevel(Long runId) {
         Objects.requireNonNull(runId);
-        return trainingRunRepository.findByIdWithLevel(runId).orElseThrow(() ->
-                new ServiceLayerException("Training Run with id: " + runId + " not found.", ErrorCode.RESOURCE_NOT_FOUND));
+        return trainingRunRepository.findByIdWithLevel(runId).orElseThrow(() -> new EntityNotFoundException(
+                new EntityErrorDetail(TrainingRun.class, "id", runId.getClass(), runId, "Training run not found.")));
     }
 
     @Override
@@ -101,7 +101,8 @@ public class TrainingRunServiceImpl implements TrainingRunService {
 
     @Override
     public void deleteTrainingRun(Long trainingRunId) {
-        TrainingRun trainingRun = trainingRunRepository.findById(trainingRunId).orElseThrow(() -> new ServiceLayerException("Training Run with runId: " + trainingRunId + " could not be deleted because it is not in the database.", ErrorCode.RESOURCE_NOT_FOUND));
+        TrainingRun trainingRun = trainingRunRepository.findById(trainingRunId).orElseThrow(() -> new EntityNotFoundException(
+                new EntityErrorDetail(TrainingRun.class, "id", trainingRunId.getClass(), trainingRunId, "Training run not found.")));
         if (trainingRun.getSandboxInstanceRefId() == null) {
             try {
                 HttpHeaders httpHeaders = new HttpHeaders();
@@ -110,19 +111,22 @@ public class TrainingRunServiceImpl implements TrainingRunService {
                         new ParameterizedTypeReference<SandboxInfo>() {
                         });
                 if (response.getStatusCode().is2xxSuccessful()) {
-                    throw new ServiceLayerException("Sandbox (id:" + trainingRun.getPreviousSandboxInstanceRefId() + ") previously assigned to the training run (id: " + trainingRunId + ") was not deleted in OpenStack. Please delete sandbox in OpenStack before you delete training run.", ErrorCode.RESOURCE_CONFLICT);
+                    throw new EntityConflictException(new EntityErrorDetail(TrainingRun.class, "id", trainingRunId.getClass(), trainingRun ,
+                            "Sandbox (id:" + trainingRun.getPreviousSandboxInstanceRefId() + ") previously assigned to the training run was not deleted in OpenStack. " +
+                                    "Please delete sandbox in OpenStack before you delete training run."));
                 }
             } catch (RestTemplateException ex) {
                 if (!ex.getStatusCode().equals(HttpStatus.NOT_FOUND.toString())) {
-                    throw new ServiceLayerException("Error when calling Python API to obtain info about sandbox (ID: " + trainingRun.getPreviousSandboxInstanceRefId() + "): " + ex.getStatusCode() + " - " + ex.getMessage() + ".", ErrorCode.PYTHON_API_ERROR);
+                    throw new MicroserviceApiException("Error when calling Python API to obtain info about sandbox (ID: " + trainingRun.getPreviousSandboxInstanceRefId() + ")", new PythonApiError(ex.getMessage()));
                 }
                 LOG.debug("Sandbox (ID:" + trainingRun.getPreviousSandboxInstanceRefId() + ") previously assigned to the training run (ID: " + trainingRunId + ") is not found in OpenStack because it was successfully deleted.");
             }
             trAcquisitionLockRepository.deleteByParticipantRefIdAndTrainingInstanceId(trainingRun.getParticipantRef().getUserRefId(), trainingRun.getTrainingInstance().getId());
             trainingRunRepository.delete(trainingRun);
         } else {
-            throw new ServiceLayerException("Could not delete training run (id: " + trainingRunId + ") with associated sandbox (id: " + trainingRun.getSandboxInstanceRefId() +
-                    "). Please firstly, delete associated sandbox.", ErrorCode.RESOURCE_CONFLICT);
+            throw new EntityConflictException(new EntityErrorDetail(TrainingRun.class, "id", trainingRunId.getClass(), trainingRunId,
+                    "Could not delete training run with associated sandbox (id: " + trainingRun.getSandboxInstanceRefId() +
+                    "). Please firstly, delete associated sandbox."));
         }
     }
 
@@ -143,10 +147,11 @@ public class TrainingRunServiceImpl implements TrainingRunService {
         int currentLevelOrder = trainingRun.getCurrentLevel().getOrder();
         int maxLevelOrder = abstractLevelRepository.getCurrentMaxOrder(trainingRun.getCurrentLevel().getTrainingDefinition().getId());
         if (!trainingRun.isLevelAnswered()) {
-            throw new ServiceLayerException("At first you need to answer the level.", ErrorCode.RESOURCE_CONFLICT);
+            throw new EntityConflictException(new EntityErrorDetail(TrainingRun.class, "id", runId.getClass(), runId,
+                    "You need to answer the level to move to the next level."));
         }
         if (currentLevelOrder == maxLevelOrder) {
-            throw new ServiceLayerException("There is no next level.", ErrorCode.NO_NEXT_LEVEL);
+            throw new EntityNotFoundException(new EntityErrorDetail(AbstractLevel.class, "There is no next level for current training run (ID: " + runId + ")."));
         }
         List<AbstractLevel> levels = abstractLevelRepository.findAllLevelsByTrainingDefinitionId(trainingRun.getCurrentLevel().getTrainingDefinition().getId());
         Collections.sort(levels, Comparator.comparing(AbstractLevel::getOrder));
@@ -187,9 +192,11 @@ public class TrainingRunServiceImpl implements TrainingRunService {
     public TrainingRun accessTrainingRun(String accessToken) {
         Assert.hasLength(accessToken, "AccessToken cannot be null or empty.");
         TrainingInstance trainingInstance = trainingInstanceRepository.findByStartTimeAfterAndEndTimeBeforeAndAccessToken(LocalDateTime.now(Clock.systemUTC()), accessToken)
-                .orElseThrow(() -> new ServiceLayerException("There is no active game session matching your keyword: " + accessToken + ".", ErrorCode.RESOURCE_NOT_FOUND));
+                .orElseThrow(() -> new EntityNotFoundException(new EntityErrorDetail(TrainingInstance.class, "accessToken", accessToken.getClass(), accessToken,
+                        "There is no active game session matching access token.")));
         if (trainingInstance.getPoolId() == null) {
-            throw new ServiceLayerException("At first organizer must allocate sandboxes for training instance.", ErrorCode.RESOURCE_CONFLICT);
+            throw new EntityConflictException(new EntityErrorDetail(TrainingInstance.class, "id", trainingInstance.getId().getClass(), trainingInstance.getId(),
+                    "At first organizer must allocate sandboxes for training instance."));
         }
         Long participantRefId = securityService.getUserRefIdFromUserAndGroup();
         Optional<TrainingRun> accessedTrainingRun = trainingRunRepository.findValidTrainingRunOfUser(trainingInstance.getAccessToken(), participantRefId);
@@ -199,12 +206,14 @@ public class TrainingRunServiceImpl implements TrainingRunService {
         try {
             trAcquisitionLockRepository.save(new TRAcquisitionLock(participantRefId, trainingInstance.getId(), LocalDateTime.now()));
         } catch (DataIntegrityViolationException ex) {
-            throw new ServiceLayerException("Training run has been already accessed and cannot be created again. Please resume Training Run", ErrorCode.TR_ACQUIRED_LOCK);
+            throw new TooManyRequestsException(new EntityErrorDetail(TrainingInstance.class, "accessToken", accessToken.getClass(), accessToken,
+                    "Training run has been already accessed and cannot be created again. Please resume Training Run"));
         }
 
         List<AbstractLevel> levels = abstractLevelRepository.findAllLevelsByTrainingDefinitionId(trainingInstance.getTrainingDefinition().getId());
         if (levels.isEmpty()) {
-            throw new ServiceLayerException("No starting level available for this training definition.", ErrorCode.RESOURCE_NOT_FOUND);
+            throw new EntityNotFoundException(new EntityErrorDetail(TrainingDefinition.class, "id", Long.class, trainingInstance.getTrainingDefinition().getId(),
+                    "No starting level available for this training definition."));
         }
         levels.sort(Comparator.comparing(AbstractLevel::getOrder));
         TrainingRun trainingRun = getNewTrainingRun(levels.get(0), trainingInstance, TRState.RUNNING,
@@ -214,12 +223,12 @@ public class TrainingRunServiceImpl implements TrainingRunService {
 
     @Override
     public TrainingRun assignSandbox(TrainingRun trainingRun) {
-        Long sandboxInstanceRef = getReadySandboxInstanceRef(trainingRun.getTrainingInstance().getPoolId());
         try {
+            Long sandboxInstanceRef = getReadySandboxInstanceRef(trainingRun.getTrainingInstance().getPoolId());
             trainingRun.setSandboxInstanceRefId(sandboxInstanceRef);
             auditEventsService.auditTrainingRunStartedAction(trainingRun);
             auditEventsService.auditLevelStartedAction(trainingRun);
-        } catch (ServiceLayerException ex) {
+        } catch (ForbiddenException | InternalServerErrorException ex) {
             trainingRunRepository.delete(trainingRun);
             throw ex;
         }
@@ -231,13 +240,16 @@ public class TrainingRunServiceImpl implements TrainingRunService {
         Assert.notNull(trainingRunId, MUST_NOT_BE_NULL);
         TrainingRun trainingRun = findByIdWithLevel(trainingRunId);
         if (trainingRun.getState().equals(TRState.FINISHED) || trainingRun.getState().equals(TRState.ARCHIVED)) {
-            throw new ServiceLayerException("Cannot resume finished training run.", ErrorCode.RESOURCE_CONFLICT);
+            throw new EntityConflictException(new EntityErrorDetail(TrainingRun.class, "id", trainingRunId.getClass(), trainingRunId,
+                    "Cannot resume finished training run."));
         }
         if (trainingRun.getTrainingInstance().getEndTime().isBefore(LocalDateTime.now(Clock.systemUTC()))) {
-            throw new ServiceLayerException("Cannot resume training run after end of training instance.", ErrorCode.RESOURCE_CONFLICT);
+            throw new EntityConflictException(new EntityErrorDetail(TrainingRun.class, "id", trainingRunId.getClass(), trainingRunId,
+                    "Cannot resume training run after end of training instance."));
         }
         if (trainingRun.getSandboxInstanceRefId() == null) {
-            throw new ServiceLayerException("Sandbox of this training run was already deleted, you have to start new game.", ErrorCode.RESOURCE_CONFLICT);
+            throw new EntityConflictException(new EntityErrorDetail(TrainingRun.class, "id", trainingRunId.getClass(), trainingRunId,
+                    "Sandbox of this training run was already deleted, you have to start new game."));
         }
         auditEventsService.auditTrainingRunResumedAction(trainingRun);
         return trainingRun;
@@ -271,12 +283,12 @@ public class TrainingRunServiceImpl implements TrainingRunService {
             SandboxInfo sandboxInfoResult = Objects.requireNonNull(response.getBody(), "There is no available sandbox, wait a minute and try again or ask organizer to allocate more sandboxes.");
             return sandboxInfoResult.getId();
         } catch (NullPointerException ex) {
-            throw new ServiceLayerException(ex.getMessage(), ErrorCode.NO_AVAILABLE_SANDBOX);
+            throw new ForbiddenException(ex.getMessage());
         } catch (RestTemplateException ex) {
             if (ex.getStatusCode().equals(HttpStatus.CONFLICT.toString())) {
-                throw new ServiceLayerException("There is no available sandbox, wait a minute and try again or ask organizer to allocate more sandboxes.", ErrorCode.NO_AVAILABLE_SANDBOX);
+                throw new ForbiddenException("There is no available sandbox, wait a minute and try again or ask organizer to allocate more sandboxes.");
             }
-            throw new ServiceLayerException("Error when calling Python API to get unlocked sandbox from pool (ID: " + poolId + "): " + ex.getStatusCode() + " - " + ex.getMessage(), ErrorCode.PYTHON_API_ERROR);
+            throw new MicroserviceApiException("Error when calling Python API to get unlocked sandbox from pool (ID: " + poolId + ")", new PythonApiError(ex.getMessage()));
         }
     }
 
@@ -301,7 +313,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
             }
             return false;
         } else {
-            throw new ServiceLayerException("Current level is not game level and does not have flag.", ErrorCode.WRONG_LEVEL_TYPE);
+            throw new BadRequestException("Current level is not game level and does not have flag.");
         }
     }
 
@@ -316,7 +328,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
             }
             return ((GameLevel) level).getIncorrectFlagLimit() - trainingRun.getIncorrectFlagCount();
         }
-        throw new ServiceLayerException("Current level is not game level and does not have flag.", ErrorCode.WRONG_LEVEL_TYPE);
+        throw new BadRequestException("Current level is not game level and does not have flag.");
     }
 
     @Override
@@ -334,7 +346,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
             auditEventsService.auditSolutionDisplayedAction(trainingRun, (GameLevel) level);
             return ((GameLevel) level).getSolution();
         } else {
-            throw new ServiceLayerException("Current level is not game level and does not have solution.", ErrorCode.WRONG_LEVEL_TYPE);
+            throw new BadRequestException("Current level is not game level and does not have solution.");
         }
     }
 
@@ -345,16 +357,18 @@ public class TrainingRunServiceImpl implements TrainingRunService {
         TrainingRun trainingRun = findByIdWithLevel(trainingRunId);
         AbstractLevel level = trainingRun.getCurrentLevel();
         if (level instanceof GameLevel) {
-            Hint hint = hintRepository.findById(hintId).orElseThrow(() -> new ServiceLayerException("Hint with id " + hintId + " not found.", ErrorCode.RESOURCE_NOT_FOUND));
+            Hint hint = hintRepository.findById(hintId).orElseThrow(() -> new EntityNotFoundException(new EntityErrorDetail(Hint.class, "id", hintId.getClass(), hintId,
+                    "Hint not found.")));
             if (hint.getGameLevel().getId().equals(level.getId())) {
                 trainingRun.increaseCurrentPenalty(hint.getHintPenalty());
                 trainingRun.addHintInfo(new HintInfo(level.getId(), hint.getId(), hint.getTitle(), hint.getContent(), hint.getOrder()));
                 auditEventsService.auditHintTakenAction(trainingRun, hint);
                 return hint;
             }
-            throw new ServiceLayerException("Hint with id " + hintId + " is not in current level of training run: " + trainingRunId + ".", ErrorCode.RESOURCE_CONFLICT);
+            throw new EntityConflictException(new EntityErrorDetail(Hint.class, "id", hintId.getClass(), hintId,
+                    "Hint is not in current level of training run: " + trainingRunId + "."));
         } else {
-            throw new ServiceLayerException("Current level is not game level and does not have hints.", ErrorCode.WRONG_LEVEL_TYPE);
+            throw new BadRequestException("Current level is not game level and does not have hints.");
         }
     }
 
@@ -369,10 +383,12 @@ public class TrainingRunServiceImpl implements TrainingRunService {
         TrainingRun trainingRun = findById(trainingRunId);
         int maxOrder = abstractLevelRepository.getCurrentMaxOrder(trainingRun.getCurrentLevel().getTrainingDefinition().getId());
         if (trainingRun.getCurrentLevel().getOrder() != maxOrder) {
-            throw new ServiceLayerException("Cannot finish training run because current level is not last.", ErrorCode.RESOURCE_CONFLICT);
+            throw new EntityConflictException(new EntityErrorDetail(TrainingRun.class, "id", trainingRunId.getClass(), trainingRunId,
+                    "Cannot finish training run because current level is not last."));
         }
         if (!trainingRun.isLevelAnswered()) {
-            throw new ServiceLayerException("Cannot finish training run because current level is not answered.", ErrorCode.RESOURCE_CONFLICT);
+            throw new EntityConflictException(new EntityErrorDetail(TrainingRun.class, "id", trainingRunId.getClass(), trainingRunId,
+                    "Cannot finish training run because current level is not answered."));
         }
 
         trainingRun.setState(TRState.FINISHED);
@@ -391,10 +407,11 @@ public class TrainingRunServiceImpl implements TrainingRunService {
         int points = 0;
         TrainingRun trainingRun = findByIdWithLevel(trainingRunId);
         if (!(trainingRun.getCurrentLevel() instanceof AssessmentLevel)) {
-            throw new ServiceLayerException("Current level is not assessment level and cannot be evaluated.", ErrorCode.WRONG_LEVEL_TYPE);
+            throw new BadRequestException("Current level is not assessment level and cannot be evaluated.");
         }
         if (trainingRun.isLevelAnswered())
-            throw new ServiceLayerException("Current level has been already answered.", ErrorCode.RESOURCE_CONFLICT);
+            throw new EntityConflictException(new EntityErrorDetail(TrainingRun.class, "id", trainingRunId.getClass(), trainingRunId,
+                    "Current level of the training run has been already answered."));
         if (trainingRun.getAssessmentResponses() == null) {
             trainingRun.setAssessmentResponses("[]");
         }
@@ -434,7 +451,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
             }
 
         } catch (IOException | ProcessingException ex) {
-            throw new ServiceLayerException(ex.getMessage(), ErrorCode.UNEXPECTED_ERROR);
+            throw new InternalServerErrorException(ex.getMessage());
         }
     }
 }

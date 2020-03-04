@@ -8,7 +8,8 @@ import cz.muni.ics.kypo.commons.security.enums.AuthenticatedUserOIDCItems;
 import cz.muni.ics.kypo.training.api.responses.PageResultResourcePython;
 import cz.muni.ics.kypo.training.api.responses.SandboxInfo;
 import cz.muni.ics.kypo.training.api.responses.SandboxPoolInfo;
-import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
+import cz.muni.ics.kypo.training.exceptions.EntityConflictException;
+import cz.muni.ics.kypo.training.exceptions.EntityNotFoundException;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.repository.*;
 import cz.muni.ics.kypo.training.service.impl.SecurityService;
@@ -163,10 +164,8 @@ public class TrainingInstanceServiceTest {
         then(trainingInstanceRepository).should().findById(trainingInstance1.getId());
     }
 
-    @Test
+    @Test(expected = EntityNotFoundException.class)
     public void getNonexistentTrainingInstanceById() {
-        thrown.expect(ServiceLayerException.class);
-        thrown.expectMessage("Training instance with id: " + 10L + " not found.");
         trainingInstanceService.findById(10L);
     }
 
@@ -207,10 +206,8 @@ public class TrainingInstanceServiceTest {
         trainingInstanceService.create(null);
     }
 
-    @Test
+    @Test(expected = EntityConflictException.class)
     public void createTrainingInstanceWithInvalidTimes() {
-        thrown.expect(ServiceLayerException.class);
-        thrown.expectMessage("End time must be later than start time.");
         trainingInstanceService.create(trainingInstanceInvalidTime);
     }
 
@@ -228,11 +225,9 @@ public class TrainingInstanceServiceTest {
         assertEquals(trainingInstance2.getAccessToken(), token);
     }
 
-    @Test
+    @Test(expected = EntityConflictException.class)
     public void updateTrainingInstanceWithInvalidTimes() {
         given(trainingInstanceRepository.findById(anyLong())).willReturn(Optional.of(trainingInstanceInvalidTime));
-        thrown.expect(ServiceLayerException.class);
-        thrown.expectMessage("End time must be later than start time.");
         trainingInstanceService.update(trainingInstanceInvalidTime);
     }
 
@@ -250,7 +245,7 @@ public class TrainingInstanceServiceTest {
         trainingInstanceService.delete(null);
     }
 
-    @Test
+    @Test(expected = EntityConflictException.class)
     public void deleteTrainingInstanceWithAssignedTrainingRuns() {
         List<TrainingRun> runs = new ArrayList<>();
         runs.add(trainingRun1);
@@ -258,9 +253,6 @@ public class TrainingInstanceServiceTest {
         Page p = new PageImpl<>(runs);
 
         given(trainingRunRepository.existsAnyForTrainingInstance(trainingInstance1.getId())).willReturn(true);
-
-        thrown.expect(ServiceLayerException.class);
-        thrown.expectMessage("Training instance with already assigned training runs cannot be deleted. Please delete training runs assigned to training instance and try again or contact administrator.");
         trainingInstanceService.delete(trainingInstance1);
     }
 
@@ -278,23 +270,19 @@ public class TrainingInstanceServiceTest {
         assertEquals(2, pr.getTotalElements());
     }
 
-    @Test
+    @Test(expected = EntityNotFoundException.class)
     public void findTrainingRunsByTrainingInstance_notContainedId() {
-        thrown.expect(ServiceLayerException.class);
-        thrown.expectMessage("Training instance with id: 10 not found.");
         trainingInstanceService.findTrainingRunsByTrainingInstance(10L, null, PageRequest.of(0, 2));
     }
 
-    @Test
+    @Test(expected = EntityConflictException.class)
     public void allocateSandboxesWithNotCreatedPool() {
         given(trainingInstanceRepository.findById(trainingInstance2.getId())).willReturn(Optional.ofNullable(trainingInstance2));
-        thrown.expect(ServiceLayerException.class);
-        thrown.expectMessage("Pool for sandboxes is not created yet. Please create pool before allocating sandboxes.");
         trainingInstanceService.allocateSandboxes(trainingInstance2, null);
     }
 
 
-    @Test
+    @Test(expected = EntityConflictException.class)
     public void allocateSandboxesWithFullPool() {
         PageResultResourcePython<SandboxInfo> pythonPage = new PageResultResourcePython<SandboxInfo>();
         pythonPage.setResults(List.of(sandboxInfo1, sandboxInfo2));
@@ -302,8 +290,6 @@ public class TrainingInstanceServiceTest {
         given(trainingInstanceRepository.findById(instanceWithSB.getId())).willReturn(Optional.ofNullable(instanceWithSB));
         given(pythonRestTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class)))
                 .willReturn(new ResponseEntity<PageResultResourcePython<SandboxInfo>>(pythonPage, HttpStatus.OK));
-        thrown.expect(ServiceLayerException.class);
-        thrown.expectMessage("Pool of sandboxes of training instance with id: " + instanceWithSB.getId() + " is full.");
         trainingInstanceService.allocateSandboxes(instanceWithSB, 1);
     }
 

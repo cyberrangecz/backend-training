@@ -1,7 +1,7 @@
 package cz.muni.ics.kypo.training.service.impl;
 
-import cz.muni.ics.kypo.training.exceptions.ErrorCode;
-import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
+import cz.muni.ics.kypo.training.exceptions.EntityErrorDetail;
+import cz.muni.ics.kypo.training.exceptions.EntityNotFoundException;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.repository.*;
 import cz.muni.ics.kypo.training.service.ExportImportService;
@@ -11,8 +11,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
-import java.time.Clock;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
 
@@ -47,7 +45,8 @@ public class ExportImportServiceImpl implements ExportImportService {
     @Override
     public TrainingDefinition findById(Long trainingDefinitionId) {
         return trainingDefinitionRepository.findById(trainingDefinitionId).orElseThrow(
-                () -> new ServiceLayerException("Training definition with id: " + trainingDefinitionId + " not found.", ErrorCode.RESOURCE_NOT_FOUND));
+                () -> new EntityNotFoundException(new EntityErrorDetail(TrainingDefinition.class, "id", trainingDefinitionId.getClass(),
+                        trainingDefinitionId, "Training definition not found.")));
     }
 
     @Override
@@ -75,7 +74,8 @@ public class ExportImportServiceImpl implements ExportImportService {
     @Override
     public TrainingInstance findInstanceById(Long trainingInstanceId) {
         return trainingInstanceRepository.findById(trainingInstanceId).orElseThrow(
-                () -> new ServiceLayerException("Training instance with id: " + trainingInstanceId + " not found.", ErrorCode.RESOURCE_NOT_FOUND));
+                () -> new EntityNotFoundException(new EntityErrorDetail(TrainingInstance.class, "id", trainingInstanceId.getClass(),
+                        trainingInstanceId, "Training instance not found.")));
     }
 
     @Override
@@ -83,10 +83,5 @@ public class ExportImportServiceImpl implements ExportImportService {
         return trainingRunRepository.findAllByTrainingInstanceId(trainingInstanceId);
     }
 
-    @Override
-    public void failIfInstanceIsNotFinished(LocalDateTime endTime) {
-        LocalDateTime currentTime = LocalDateTime.now(Clock.systemUTC());
-        if (currentTime.isBefore(endTime))
-            throw new ServiceLayerException("The training instance is not finished.", ErrorCode.RESOURCE_CONFLICT);
-    }
+
 }

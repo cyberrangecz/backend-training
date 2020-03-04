@@ -1,11 +1,15 @@
 package cz.muni.ics.kypo.training.service.impl;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalWO;
 import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
 import cz.muni.ics.kypo.training.api.enums.RoleType;
 import cz.muni.ics.kypo.training.api.responses.PageResultResource;
-import cz.muni.ics.kypo.training.exceptions.ErrorCode;
-import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
+import cz.muni.ics.kypo.training.exceptions.*;
+import cz.muni.ics.kypo.training.exceptions.errors.JavaApiError;
 import cz.muni.ics.kypo.training.persistence.model.UserRef;
 import cz.muni.ics.kypo.training.persistence.repository.UserRefRepository;
 import cz.muni.ics.kypo.training.service.UserService;
@@ -21,6 +25,7 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.io.IOException;
 import java.net.URI;
 import java.util.*;
 
@@ -43,7 +48,7 @@ public class UserServiceImpl implements UserService {
     public UserRef getUserByUserRefId(Long userRefId) {
         Objects.requireNonNull(userRefId, "UserRef ID must not be null.");
         return userRefRepository.findUserByUserRefId(userRefId).orElseThrow(
-                () -> new ServiceLayerException("UserRef with userRefId " + userRefId + " not found.", ErrorCode.RESOURCE_NOT_FOUND));
+                () -> new EntityNotFoundException(new EntityErrorDetail(UserRef.class, "id", userRefId.getClass(), userRefId, "UserRef not found.")));
     }
 
     @Override
@@ -56,7 +61,11 @@ public class UserServiceImpl implements UserService {
             ResponseEntity<UserRefDTO> userInfoResponseEntity = restTemplate.exchange(userAndGroupURI + "/users/" + id, HttpMethod.GET, new HttpEntity<>(httpHeaders), UserRefDTO.class);
             return userInfoResponseEntity.getBody();
         } catch (HttpClientErrorException ex) {
-            throw new ServiceLayerException("Error when calling UserAndGroup API to obtain info about user(ID: " + id + "): " + ex.getMessage() + " - " + ex.getResponseBodyAsString(), ErrorCode.UNEXPECTED_ERROR);
+            try {
+                throw new MicroserviceApiException("Error when calling UserAndGroup API to obtain info about user(ID: " + id + ")", convertJsonBytesToObject(ex.getResponseBodyAsString(), JavaApiError.class));
+            } catch (IOException ex1) {
+                throw new InternalServerErrorException("Unable to parse ApiError when calling UserAndGroup API");
+            }
         }
     }
 
@@ -84,7 +93,11 @@ public class UserServiceImpl implements UserService {
                     });
             return (Objects.requireNonNull(usersResponse.getBody()));
         } catch (HttpClientErrorException ex) {
-            throw new ServiceLayerException("Error when calling UserAndGroup API to obtain users by IDs: " + ex.getMessage() + " - " + ex.getResponseBodyAsString(), ErrorCode.UNEXPECTED_ERROR);
+            try {
+                throw new MicroserviceApiException("Error when calling UserAndGroup API to obtain users by IDs: " + userRefIds, convertJsonBytesToObject(ex.getResponseBodyAsString(), JavaApiError.class));
+            } catch (IOException ex1) {
+                throw new InternalServerErrorException("Unable to parse ApiError when calling UserAndGroup API");
+            }
         }
     }
 
@@ -110,7 +123,11 @@ public class UserServiceImpl implements UserService {
             return Objects.requireNonNull(usersResponse.getBody());
 
         } catch (HttpClientErrorException ex) {
-            throw new ServiceLayerException("Error when calling UserAndGroup API to obtain users with role " + roleType.name() + ": " + ex.getMessage() + " - " + ex.getResponseBodyAsString(), ErrorCode.UNEXPECTED_ERROR);
+            try {
+                throw new MicroserviceApiException("Error when calling UserAndGroup API to obtain users with role " + roleType.name(), convertJsonBytesToObject(ex.getResponseBodyAsString(), JavaApiError.class));
+            } catch (IOException ex1) {
+                throw new InternalServerErrorException("Unable to parse ApiError when calling UserAndGroup API");
+            }
         }
     }
 
@@ -138,7 +155,11 @@ public class UserServiceImpl implements UserService {
             return Objects.requireNonNull(usersResponse.getBody());
 
         } catch (HttpClientErrorException ex) {
-            throw new ServiceLayerException("Error when calling UserAndGroup API to obtain users with role " + roleType.name() + " and IDs:" + ex.getMessage() + " - " + ex.getResponseBodyAsString(), ErrorCode.UNEXPECTED_ERROR);
+            try {
+                throw new MicroserviceApiException("Error when calling UserAndGroup API to obtain users with role " + roleType.name() + " and IDs:", convertJsonBytesToObject(ex.getResponseBodyAsString(), JavaApiError.class));
+            } catch (IOException ex1) {
+                throw new InternalServerErrorException("Unable to parse ApiError when calling UserAndGroup API");
+            }
         }
     }
 
@@ -149,5 +170,12 @@ public class UserServiceImpl implements UserService {
         UserRef userRef = userRefRepository.save(userRefToCreate);
         LOG.info("User ref with user_ref_id: {} created.", userRef.getUserRefId());
         return userRef;
+    }
+
+    private static <T> T convertJsonBytesToObject(String object, Class<T> objectClass) throws IOException {
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+        mapper.registerModule( new JavaTimeModule()).disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        return mapper.readValue(object, objectClass);
     }
 }

@@ -1,10 +1,9 @@
-package cz.muni.ics.kypo.training.rest.exceptions;
+package cz.muni.ics.kypo.training.exceptions;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
-@ResponseStatus(value = HttpStatus.FORBIDDEN,
-        reason = "The request was valid, but the server is refusing action. The user might not have the necessary permissions for a resource or may need an account of some sort.")
+@ResponseStatus(value = HttpStatus.FORBIDDEN, reason = "Request is formed correctly, but the server doesn't want to carry it out.")
 public class ForbiddenException extends RuntimeException {
 
     public ForbiddenException() {

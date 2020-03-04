@@ -1,5 +1,9 @@
 package cz.muni.ics.kypo.training.service.impl;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.querydsl.core.types.Predicate;
 import cz.muni.csirt.kypo.elasticsearch.service.TrainingEventsService;
 import cz.muni.csirt.kypo.elasticsearch.service.exceptions.ElasticsearchTrainingServiceLayerException;
@@ -7,9 +11,9 @@ import cz.muni.ics.kypo.training.api.requests.PoolCreationRequest;
 import cz.muni.ics.kypo.training.api.responses.PageResultResourcePython;
 import cz.muni.ics.kypo.training.api.responses.SandboxInfo;
 import cz.muni.ics.kypo.training.api.responses.SandboxPoolInfo;
-import cz.muni.ics.kypo.training.exceptions.ErrorCode;
-import cz.muni.ics.kypo.training.exceptions.RestTemplateException;
-import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
+import cz.muni.ics.kypo.training.exceptions.*;
+import cz.muni.ics.kypo.training.exceptions.errors.JavaApiError;
+import cz.muni.ics.kypo.training.exceptions.errors.PythonApiError;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.model.enums.TRState;
 import cz.muni.ics.kypo.training.persistence.repository.*;
@@ -30,6 +34,7 @@ import org.springframework.util.Assert;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.io.IOException;
 import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -69,12 +74,14 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
 
     @Override
     public TrainingInstance findById(Long instanceId) {
-        return trainingInstanceRepository.findById(instanceId).orElseThrow(() -> new ServiceLayerException("Training instance with id: " + instanceId + " not found.", ErrorCode.RESOURCE_NOT_FOUND));
+        return trainingInstanceRepository.findById(instanceId).orElseThrow(() -> new EntityNotFoundException(new EntityErrorDetail(
+                TrainingInstance.class, "id", instanceId.getClass(), instanceId, "Training instance not found.")));
     }
 
     @Override
     public TrainingInstance findByIdIncludingDefinition(Long instanceId) {
-        return trainingInstanceRepository.findByIdIncludingDefinition(instanceId).orElseThrow(() -> new ServiceLayerException("Training instance with id: " + instanceId + " not found.", ErrorCode.RESOURCE_NOT_FOUND));
+        return trainingInstanceRepository.findByIdIncludingDefinition(instanceId).orElseThrow(() -> new EntityNotFoundException(new EntityErrorDetail(
+                TrainingInstance.class, "id", instanceId.getClass(), instanceId, "Training instance not found.")));
     }
 
     @Override
@@ -89,7 +96,8 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
     @Override
     public List<Long> findIdsOfAllOccupiedSandboxesByTrainingInstance(Long trainingInstanceId) {
         TrainingInstance trainingInstance =  trainingInstanceRepository.findById(trainingInstanceId)
-                .orElseThrow(() -> new ServiceLayerException("Training instance with id: " + trainingInstanceId + " not found.", ErrorCode.RESOURCE_NOT_FOUND));
+                .orElseThrow(() -> new EntityNotFoundException(new EntityErrorDetail(TrainingInstance.class, "id",
+                        trainingInstanceId.getClass(), trainingInstanceId, "Training instance not found.")));
 
         List<SandboxInfo> sandboxes = findSandboxesFromSandboxPool(trainingInstance.getPoolId());
         List<Long> occupiedSandboxes = new ArrayList<>();
@@ -114,8 +122,7 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
             PageResultResourcePython<SandboxInfo> sandboxInfoPageResult = Objects.requireNonNull(response.getBody());
             return Objects.requireNonNull(sandboxInfoPageResult.getResults());
         } catch (RestTemplateException ex) {
-            throw new ServiceLayerException("Error from Python API when checking a state of sandboxes in pool (ID: " + poolId + "): "
-                    + ex.getStatusCode()+ ": " + ex.getMessage() + " Please contact administrator", ErrorCode.PYTHON_API_ERROR);
+                throw new MicroserviceApiException("Error from Python API when checking a state of sandboxes in pool (ID: " + poolId + ")", new PythonApiError(ex.getMessage()));
         }
     }
 
@@ -124,7 +131,8 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
         Assert.notNull(trainingInstance, "Input training instance must not be null");
         trainingInstance.setAccessToken(generateAccessToken(trainingInstance.getAccessToken()));
         if (trainingInstance.getStartTime().isAfter(trainingInstance.getEndTime())) {
-            throw new ServiceLayerException("End time must be later than start time.", ErrorCode.RESOURCE_CONFLICT);
+            throw new EntityConflictException(new EntityErrorDetail(TrainingInstance.class, "id", trainingInstance.getId().getClass(), trainingInstance.getId(),
+                    "End time must be later than start time."));
         }
         addLoggedInUserAsOrganizerToTrainingInstance(trainingInstance);
         trainingInstance.setPoolId(createPoolForSandboxes(trainingInstance.getTrainingDefinition().getSandboxDefinitionRefId(), trainingInstance.getPoolSize()));
@@ -135,9 +143,11 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
     public String update(TrainingInstance trainingInstanceToUpdate) {
         Assert.notNull(trainingInstanceToUpdate, "Input training instance must not be null");
         TrainingInstance trainingInstance = trainingInstanceRepository.findById(trainingInstanceToUpdate.getId())
-                .orElseThrow(() -> new ServiceLayerException("Training instance with id: " + trainingInstanceToUpdate.getId() + ", not found.", ErrorCode.RESOURCE_NOT_FOUND));
+                .orElseThrow(() -> new EntityNotFoundException(new EntityErrorDetail(TrainingInstance.class, "id",
+                        trainingInstanceToUpdate.getId().getClass(), trainingInstanceToUpdate.getId(), "Training instance not found.")));
         if (trainingInstanceToUpdate.getStartTime().isAfter(trainingInstanceToUpdate.getEndTime())) {
-            throw new ServiceLayerException("End time must be later than start time.", ErrorCode.RESOURCE_CONFLICT);
+            throw new EntityConflictException(new EntityErrorDetail(TrainingInstance.class, "id",
+                    trainingInstanceToUpdate.getId().getClass(), trainingInstanceToUpdate.getId(), "End time must be later than start time."));
         }
         String shortPass = trainingInstance.getAccessToken().substring(0, trainingInstance.getAccessToken().length() - 5);
         if (trainingInstanceToUpdate.getAccessToken().equals(shortPass) || trainingInstanceToUpdate.getAccessToken().equals(trainingInstance.getAccessToken())) {
@@ -166,8 +176,9 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
     public void delete(TrainingInstance trainingInstance) {
         Assert.notNull(trainingInstance, "Input training instance must not be null");
         if (trainingRunRepository.existsAnyForTrainingInstance(trainingInstance.getId())) {
-            throw new ServiceLayerException("Training instance with already assigned training runs cannot be deleted. Please delete training runs assigned to training instance" +
-                    " and try again or contact administrator.", ErrorCode.RESOURCE_CONFLICT);
+            throw new EntityConflictException(new EntityErrorDetail(TrainingInstance.class, "id", trainingInstance.getId().getClass(), trainingInstance.getId(),
+                    "Training instance with already assigned training runs cannot be deleted. Please delete training runs assigned to training instance" +
+                    " and try again or contact administrator."));
         }
         trainingInstanceRepository.delete(trainingInstance);
         if (trainingInstance.getPoolId() != null) {
@@ -179,7 +190,7 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
                     LOG.error("Pool (ID: {}) assigned to training instance contains some sandboxes. Training instance will be " +
                             "deleted and these sandboxes remaining in the pool must be deleted through Python API.");
                 }
-            } catch (ServiceLayerException ex) {
+            } catch (InternalServerErrorException ex) {
                 LOG.error(ex.getLocalizedMessage());
             }
         }
@@ -197,8 +208,7 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
         try {
             pythonRestTemplate.delete(UriComponentsBuilder.fromUriString(url).toUriString());
         } catch (RestTemplateException ex) {
-            throw new ServiceLayerException("Error when calling Python API to remove pool (ID: " + poolId + "):"
-                    + ex.getStatusCode() + ": "+  ex.getMessage(), ErrorCode.PYTHON_API_ERROR);
+            throw new MicroserviceApiException("Error when calling Python API to remove pool (ID: " + poolId + ")", new PythonApiError(ex.getMessage()));
         }
     }
 
@@ -229,7 +239,7 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
             ResponseEntity<SandboxPoolInfo> poolResponse = pythonRestTemplate.exchange(kypoOpenStackURI + "/pools/", HttpMethod.POST, new HttpEntity<>(poolCreationRequest, httpHeaders), SandboxPoolInfo.class);
             return Objects.requireNonNull(poolResponse.getBody()).getId();
         } catch (RestTemplateException ex) {
-            throw new ServiceLayerException("Error when calling Python API to create pool: "  + ex.getStatusCode() + ": " + ex.getMessage(), ErrorCode.PYTHON_API_ERROR);
+            throw new MicroserviceApiException("Error when calling Python API to create pool", new PythonApiError(ex.getMessage()));
         }
     }
 
@@ -240,14 +250,16 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
             count = null;
         }
         if (trainingInstance.getPoolId() == null) {
-            throw new ServiceLayerException("Pool for sandboxes is not created yet. Please create pool before allocating sandboxes.", ErrorCode.RESOURCE_CONFLICT);
+            throw new EntityConflictException(new EntityErrorDetail(TrainingInstance.class, "id", trainingInstance.getId().getClass(), trainingInstance.getId(),
+                    "Pool for sandboxes is not created yet. Please create pool before allocating sandboxes."));
         }
         List<SandboxInfo> sandboxes = findSandboxesFromSandboxPool(trainingInstance.getPoolId());
         if (count != null && count + sandboxes.size() > trainingInstance.getPoolSize()) {
             count = trainingInstance.getPoolSize() - sandboxes.size();
         }
         if (sandboxes.size() >= trainingInstance.getPoolSize()) {
-            throw new ServiceLayerException("Pool of sandboxes of training instance with id: " + trainingInstance.getId() + " is full.", ErrorCode.RESOURCE_CONFLICT);
+            throw new EntityConflictException(new EntityErrorDetail(TrainingInstance.class, "id", trainingInstance.getId().getClass(), trainingInstance.getId(),
+                    "Pool of sandboxes of training instance is full."));
         }
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.setContentType(MediaType.APPLICATION_JSON);
@@ -308,7 +320,8 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
             pageable) {
         Assert.notNull(instanceId, "Input training instance id must not be null.");
         trainingInstanceRepository.findById(instanceId)
-                .orElseThrow(() -> new ServiceLayerException("Training instance with id: " + instanceId + " not found.", ErrorCode.RESOURCE_NOT_FOUND));
+                .orElseThrow(() -> new EntityNotFoundException(new EntityErrorDetail(
+                        TrainingInstance.class, "id", instanceId.getClass(), instanceId, "Training instance not found.")));
         if (isActive == null) {
             return trainingRunRepository.findAllByTrainingInstanceId(instanceId, pageable);
 
@@ -333,6 +346,7 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
     public TrainingInstance findByStartTimeAfterAndEndTimeBeforeAndAccessToken(String accessToken) {
         Assert.hasLength(accessToken, "AccessToken cannot be null or empty.");
         return trainingInstanceRepository.findByStartTimeAfterAndEndTimeBeforeAndAccessToken(LocalDateTime.now(Clock.systemUTC()), accessToken)
-                .orElseThrow(() -> new ServiceLayerException("There is no active game session matching your keyword: " + accessToken + ".", ErrorCode.RESOURCE_NOT_FOUND));
+                .orElseThrow(() -> new EntityNotFoundException(new EntityErrorDetail(
+                        TrainingInstance.class, "accessToken", accessToken.getClass(), accessToken, "There is no active game session matching access token.")));
     }
 }

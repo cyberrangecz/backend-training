@@ -5,10 +5,8 @@ import com.github.bohnman.squiggly.util.SquigglyUtils;
 import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
 import cz.muni.ics.kypo.training.api.dto.visualization.VisualizationInfoDTO;
 import cz.muni.ics.kypo.training.api.responses.PageResultResource;
-import cz.muni.ics.kypo.training.exceptions.FacadeLayerException;
 import cz.muni.ics.kypo.training.facade.VisualizationFacade;
-import cz.muni.ics.kypo.training.rest.ApiErrorTraining;
-import cz.muni.ics.kypo.training.rest.ExceptionSorter;
+import cz.muni.ics.kypo.training.exceptions.errors.JavaApiError;
 import cz.muni.ics.kypo.training.rest.utils.annotations.ApiPageableSwagger;
 import io.swagger.annotations.*;
 import org.slf4j.Logger;
@@ -28,8 +26,8 @@ import java.util.Set;
  */
 @Api(value = "/visualizations", tags = "Visualizations", consumes = MediaType.APPLICATION_JSON_VALUE)
 @ApiResponses(value = {
-        @ApiResponse(code = 401, message = "Full authentication is required to access this resource.", response = ApiErrorTraining.class),
-        @ApiResponse(code = 403, message = "The necessary permissions are required for a resource.", response = ApiErrorTraining.class)
+        @ApiResponse(code = 401, message = "Full authentication is required to access this resource.", response = JavaApiError.class),
+        @ApiResponse(code = 403, message = "The necessary permissions are required for a resource.", response = JavaApiError.class)
 })
 @RestController
 @RequestMapping(value = "/visualizations", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -66,17 +64,13 @@ public class VisualizationRestController {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Visualization info found.", response = VisualizationInfoDTO.class),
-            @ApiResponse(code = 404, message = "Training run with given id not found.", response = ApiErrorTraining.class),
-            @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiErrorTraining.class)
+            @ApiResponse(code = 404, message = "Training run with given id not found.", response = JavaApiError.class),
+            @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = JavaApiError.class)
     })
     @GetMapping(path = "/training-runs/{runId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<VisualizationInfoDTO> gatherVisualizationInfoForTrainingRun(@ApiParam(value = "Training run ID", required = true) @PathVariable Long runId) {
-        try {
-            VisualizationInfoDTO visualizationInfoAboutTrainingRunDTO = visualizationFacade.getVisualizationInfoAboutTrainingRun(runId);
-            return ResponseEntity.ok(visualizationInfoAboutTrainingRunDTO);
-        } catch (FacadeLayerException ex) {
-            throw ExceptionSorter.throwException(ex);
-        }
+        VisualizationInfoDTO visualizationInfoAboutTrainingRunDTO = visualizationFacade.getVisualizationInfoAboutTrainingRun(runId);
+        return ResponseEntity.ok(visualizationInfoAboutTrainingRunDTO);
     }
 
     /**
@@ -93,17 +87,13 @@ public class VisualizationRestController {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Visualization info found.", response = VisualizationInfoDTO.class),
-            @ApiResponse(code = 404, message = "Training instance with given id not found.", response = ApiErrorTraining.class),
-            @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiErrorTraining.class)
+            @ApiResponse(code = 404, message = "Training instance with given id not found.", response = JavaApiError.class),
+            @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = JavaApiError.class)
     })
     @GetMapping(path = "/training-instances/{trainingInstanceId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<VisualizationInfoDTO> gatherVisualizationInfoForTrainingInstance(@ApiParam(value = "Training instance ID", required = true) @PathVariable Long trainingInstanceId) {
-        try {
-            VisualizationInfoDTO visualizationInfoDTO = visualizationFacade.getVisualizationInfoAboutTrainingInstance(trainingInstanceId);
-            return ResponseEntity.ok(visualizationInfoDTO);
-        } catch (FacadeLayerException ex) {
-            throw ExceptionSorter.throwException(ex);
-        }
+        VisualizationInfoDTO visualizationInfoDTO = visualizationFacade.getVisualizationInfoAboutTrainingInstance(trainingInstanceId);
+        return ResponseEntity.ok(visualizationInfoDTO);
     }
 
 
@@ -122,16 +112,12 @@ public class VisualizationRestController {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Visualization info found.", response = UserRefDTO[].class),
-            @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiErrorTraining.class)
+            @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = JavaApiError.class)
     })
     @GetMapping(path = "/training-instances/{trainingInstanceId}/participants", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<UserRefDTO>> getParticipantsForGivenTrainingInstance(@ApiParam(value = "Training instance ID", required = true) @PathVariable Long trainingInstanceId) {
-        try {
-            List<UserRefDTO> participants = visualizationFacade.getParticipantsForGivenTrainingInstance(trainingInstanceId);
-            return ResponseEntity.ok(participants);
-        } catch (FacadeLayerException ex) {
-            throw ExceptionSorter.throwException(ex);
-        }
+        List<UserRefDTO> participants = visualizationFacade.getParticipantsForGivenTrainingInstance(trainingInstanceId);
+        return ResponseEntity.ok(participants);
     }
 
     /**
@@ -148,17 +134,13 @@ public class VisualizationRestController {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Visualization info found.", response = TrainingDefinitionsRestController.UserInfoRestResource.class),
-            @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiErrorTraining.class)
+            @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = JavaApiError.class)
     })
     @ApiPageableSwagger
     @GetMapping(path = "/users", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> getUsersByIds(Pageable pageable,
                                                 @ApiParam(value = "usersIds", required = true) @RequestParam Set<Long> usersIds) {
-        try {
-            PageResultResource<UserRefDTO> visualizationInfoDTO = visualizationFacade.getUsersByIds(usersIds, pageable);
-            return ResponseEntity.ok(SquigglyUtils.stringify(objectMapper, visualizationInfoDTO));
-        } catch (FacadeLayerException ex) {
-            throw ExceptionSorter.throwException(ex);
-        }
+        PageResultResource<UserRefDTO> visualizationInfoDTO = visualizationFacade.getUsersByIds(usersIds, pageable);
+        return ResponseEntity.ok(SquigglyUtils.stringify(objectMapper, visualizationInfoDTO));
     }
 }

@@ -5,7 +5,7 @@ import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.PathBuilder;
 import cz.muni.ics.kypo.commons.security.enums.AuthenticatedUserOIDCItems;
 import cz.muni.ics.kypo.training.api.enums.RoleType;
-import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
+import cz.muni.ics.kypo.training.exceptions.EntityConflictException;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.model.enums.AssessmentType;
 import cz.muni.ics.kypo.training.persistence.model.enums.TDState;
@@ -37,7 +37,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.util.ResourceUtils;
 import org.springframework.web.client.RestTemplate;
-
+import cz.muni.ics.kypo.training.exceptions.EntityNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.time.Clock;
@@ -199,11 +199,9 @@ public class TrainingDefinitionServiceTest {
         then(trainingDefinitionRepository).should().findById(trainingDefinition1.getId());
     }
 
-    @Test
+    @Test(expected = EntityNotFoundException.class)
     public void getNonexistentTrainingDefinitionById() {
         Long id = 6L;
-        thrown.expect(ServiceLayerException.class);
-        thrown.expectMessage("Training definition with id: " + id + " not found.");
         trainingDefinitionService.findById(id);
     }
 
@@ -257,9 +255,8 @@ public class TrainingDefinitionServiceTest {
         then(trainingDefinitionRepository).should().save(tDcloned);
     }
 
-    @Test
+    @Test(expected = EntityNotFoundException.class)
     public void cloneTrainingDefinitionWithNull() {
-        thrown.expect(ServiceLayerException.class);
         trainingDefinitionService.clone(null, "Clone of tD");
     }
 
@@ -278,22 +275,16 @@ public class TrainingDefinitionServiceTest {
         then(trainingDefinitionRepository).should().save(updatedDefinition);
     }
 
-    @Test
+    @Test(expected = EntityConflictException.class)
     public void updateTrainingDefinitionWithCannotBeUpdatedException() {
         given(trainingDefinitionRepository.findById(releasedDefinition.getId())).willReturn(Optional.of(releasedDefinition));
-
-        thrown.expect(ServiceLayerException.class);
-        thrown.expectMessage("Cannot edit released or archived training definition");
         trainingDefinitionService.update(releasedDefinition);
     }
 
-    @Test
+    @Test(expected = EntityConflictException.class)
     public void updateTrainingDefinitionWithCreatedInstances() {
         given(trainingDefinitionRepository.findById(unreleasedDefinition.getId())).willReturn(Optional.of(unreleasedDefinition));
         given(trainingInstanceRepository.existsAnyForTrainingDefinition(unreleasedDefinition.getId())).willReturn(true);
-        thrown.expect(ServiceLayerException.class);
-        thrown.expectMessage("Cannot update training definition with already created training instance. " +
-                "Remove training instance/s before updating training definition.");
         trainingDefinitionService.update(unreleasedDefinition);
     }
 
@@ -318,28 +309,21 @@ public class TrainingDefinitionServiceTest {
         then(assessmentLevelRepository).should(times(3)).delete(any(AssessmentLevel.class));
     }
 
-    @Test
+    @Test(expected = EntityConflictException.class)
     public void deleteWithCannotBeDeletedException() {
         given(trainingDefinitionRepository.findById(releasedDefinition.getId())).willReturn(Optional.of(releasedDefinition));
-        thrown.expect(ServiceLayerException.class);
-        thrown.expectMessage("Cannot delete released training definition");
-
         trainingDefinitionService.delete(releasedDefinition.getId());
     }
 
-    @Test
+    @Test(expected = EntityNotFoundException.class)
     public void deleteWithNull() {
-        thrown.expect(ServiceLayerException.class);
         trainingDefinitionService.delete(null);
     }
 
-    @Test
+    @Test(expected = EntityConflictException.class)
     public void deleteWithCreatedInstances() {
         given(trainingDefinitionRepository.findById(unreleasedDefinition.getId())).willReturn(Optional.of(unreleasedDefinition));
         given(trainingInstanceRepository.existsAnyForTrainingDefinition(unreleasedDefinition.getId())).willReturn(true);
-        thrown.expect(ServiceLayerException.class);
-        thrown.expectMessage("Cannot delete training definition with already created training instance. " +
-                "Remove training instance/s before deleting training definition.");
         trainingDefinitionService.delete(unreleasedDefinition.getId());
     }
 
@@ -356,26 +340,21 @@ public class TrainingDefinitionServiceTest {
         then(assessmentLevelRepository).should().delete(level1);
     }
 
-    @Test
+    @Test(expected = EntityConflictException.class)
     public void deleteOneLevelWithCannotBeUpdatedException() {
         given(trainingDefinitionRepository.findById(releasedDefinition.getId())).willReturn(Optional.of(releasedDefinition));
-        thrown.expect(ServiceLayerException.class);
-        thrown.expectMessage("Cannot edit released or archived training definition");
-
         trainingDefinitionService.deleteOneLevel(releasedDefinition.getId(), any(Long.class));
     }
 
 
-    @Test
+    @Test(expected = EntityNotFoundException.class)
     public void deleteOneLevelWithNullDefinition() {
-        thrown.expect(ServiceLayerException.class);
         trainingDefinitionService.deleteOneLevel(null, level2.getId());
     }
 
-    @Test
+    @Test(expected = NullPointerException.class)
     public void deleteOneLevelWithNullLevel() {
         given(trainingDefinitionRepository.findById(unreleasedDefinition.getId())).willReturn(Optional.of(unreleasedDefinition));
-        thrown.expect(ServiceLayerException.class);
         trainingDefinitionService.deleteOneLevel(unreleasedDefinition.getId(), null);
     }
 
@@ -392,16 +371,13 @@ public class TrainingDefinitionServiceTest {
         then(assessmentLevelRepository).should().save(level2);
     }
 
-    @Test
+    @Test(expected = EntityConflictException.class)
     public void updateAssessmentLevelWithCannotBeUpdatedException() {
         given(trainingDefinitionRepository.findById(releasedDefinition.getId())).willReturn(Optional.of(releasedDefinition));
-        thrown.expect(ServiceLayerException.class);
-        thrown.expectMessage("Cannot edit released or archived training definition");
-
         trainingDefinitionService.updateAssessmentLevel(releasedDefinition.getId(), any(AssessmentLevel.class));
     }
 
-    @Test
+    @Test(expected = EntityNotFoundException.class)
     public void updateAssessmentLevelWithLevelNotInDefinition() {
         AssessmentLevel level = new AssessmentLevel();
         level.setId(8L);
@@ -409,15 +385,11 @@ public class TrainingDefinitionServiceTest {
         given(abstractLevelRepository.findById(level2.getId())).willReturn(Optional.of(level2));
         given(abstractLevelRepository.findById(level3.getId())).willReturn(Optional.of(level3));
         given(trainingDefinitionRepository.findById(unreleasedDefinition.getId())).willReturn(Optional.of(unreleasedDefinition));
-        thrown.expect(ServiceLayerException.class);
-        thrown.expectMessage("Level was not found in definition");
-
         trainingDefinitionService.updateAssessmentLevel(unreleasedDefinition.getId(), level);
     }
 
-    @Test
+    @Test(expected = EntityNotFoundException.class)
     public void updateAssessmentLevelWithNullDefinition() {
-        thrown.expect(ServiceLayerException.class);
         trainingDefinitionService.updateAssessmentLevel(null, level2);
     }
 
@@ -428,13 +400,10 @@ public class TrainingDefinitionServiceTest {
         trainingDefinitionService.updateAssessmentLevel(unreleasedDefinition.getId(), null);
     }
 
-    @Test
+    @Test(expected = EntityConflictException.class)
     public void updateAssessmentLevelWithCreatedInstances() {
         given(trainingDefinitionRepository.findById(unreleasedDefinition.getId())).willReturn(Optional.of(unreleasedDefinition));
         given(trainingInstanceRepository.existsAnyForTrainingDefinition(unreleasedDefinition.getId())).willReturn(true);
-        thrown.expect(ServiceLayerException.class);
-        thrown.expectMessage("Cannot update training definition with already created training instance. " +
-                "Remove training instance/s before updating training definition.");
         trainingDefinitionService.updateAssessmentLevel(unreleasedDefinition.getId(), level2);
     }
 
@@ -451,31 +420,24 @@ public class TrainingDefinitionServiceTest {
         then(gameLevelRepository).should().save(gameLevel);
     }
 
-    @Test
+    @Test(expected = EntityConflictException.class)
     public void updateGameLevelWithCannotBeUpdatedException() {
         given(trainingDefinitionRepository.findById(releasedDefinition.getId())).willReturn(Optional.of(releasedDefinition));
-        thrown.expect(ServiceLayerException.class);
-        thrown.expectMessage("Cannot edit released or archived training definition");
-
         trainingDefinitionService.updateGameLevel(releasedDefinition.getId(), any(GameLevel.class));
     }
 
-    @Test
+    @Test(expected = EntityNotFoundException.class)
     public void updateGameLevelWithLevelNotInDefinition() {
         GameLevel level = new GameLevel();
         level.setId(8L);
         given(abstractLevelRepository.findById(infoLevel.getId())).willReturn(Optional.of(infoLevel));
         given(abstractLevelRepository.findById(gameLevel.getId())).willReturn(Optional.of(gameLevel));
         given(trainingDefinitionRepository.findById(trainingDefinition2.getId())).willReturn(Optional.of(trainingDefinition2));
-        thrown.expect(ServiceLayerException.class);
-        thrown.expectMessage("Level was not found in definition");
-
         trainingDefinitionService.updateGameLevel(trainingDefinition2.getId(), level);
     }
 
-    @Test
+    @Test(expected = EntityNotFoundException.class)
     public void updateGameLevelWithNullDefinition() {
-        thrown.expect(ServiceLayerException.class);
         trainingDefinitionService.updateGameLevel(null, gameLevel);
     }
 
@@ -486,13 +448,10 @@ public class TrainingDefinitionServiceTest {
         trainingDefinitionService.updateGameLevel(trainingDefinition2.getId(), null);
     }
 
-    @Test
+    @Test(expected = EntityConflictException.class)
     public void updateGameLevelWithCreatedInstances() {
         given(trainingDefinitionRepository.findById(unreleasedDefinition.getId())).willReturn(Optional.of(unreleasedDefinition));
         given(trainingInstanceRepository.existsAnyForTrainingDefinition(unreleasedDefinition.getId())).willReturn(true);
-        thrown.expect(ServiceLayerException.class);
-        thrown.expectMessage("Cannot update training definition with already created training instance. " +
-                "Remove training instance/s before updating training definition.");
         trainingDefinitionService.updateGameLevel(unreleasedDefinition.getId(), gameLevel);
     }
 
@@ -508,31 +467,24 @@ public class TrainingDefinitionServiceTest {
         then(infoLevelRepository).should().save(infoLevel);
     }
 
-    @Test
+    @Test(expected = EntityConflictException.class)
     public void updateInfoLevelWithCannotBeUpdatedException() {
         given(trainingDefinitionRepository.findById(releasedDefinition.getId())).willReturn(Optional.of(releasedDefinition));
-        thrown.expect(ServiceLayerException.class);
-        thrown.expectMessage("Cannot edit released or archived training definition");
-
         trainingDefinitionService.updateInfoLevel(releasedDefinition.getId(), any(InfoLevel.class));
     }
 
-    @Test
+    @Test(expected = EntityNotFoundException.class)
     public void updateInfoLevelWithLevelNotInDefinition() {
         InfoLevel level = new InfoLevel();
         level.setId(8L);
         given(abstractLevelRepository.findById(infoLevel.getId())).willReturn(Optional.of(infoLevel));
         given(abstractLevelRepository.findById(gameLevel.getId())).willReturn(Optional.of(gameLevel));
         given(trainingDefinitionRepository.findById(trainingDefinition2.getId())).willReturn(Optional.of(trainingDefinition2));
-        thrown.expect(ServiceLayerException.class);
-        thrown.expectMessage("Level was not found in definition");
-
         trainingDefinitionService.updateInfoLevel(trainingDefinition2.getId(), level);
     }
 
-    @Test
+    @Test(expected = EntityNotFoundException.class)
     public void updateInfoLevelWithNullDefinition() {
-        thrown.expect(ServiceLayerException.class);
         trainingDefinitionService.updateInfoLevel(null, infoLevel);
     }
 
@@ -543,13 +495,10 @@ public class TrainingDefinitionServiceTest {
         trainingDefinitionService.updateInfoLevel(trainingDefinition2.getId(), null);
     }
 
-    @Test
+    @Test(expected = EntityConflictException.class)
     public void updateInfoLevelWithCreatedInstances() {
         given(trainingDefinitionRepository.findById(unreleasedDefinition.getId())).willReturn(Optional.of(unreleasedDefinition));
         given(trainingInstanceRepository.existsAnyForTrainingDefinition(unreleasedDefinition.getId())).willReturn(true);
-        thrown.expect(ServiceLayerException.class);
-        thrown.expectMessage("Cannot update training definition with already created training instance. " +
-                "Remove training instance/s before updating training definition.");
         trainingDefinitionService.updateInfoLevel(unreleasedDefinition.getId(), infoLevel);
     }
 
@@ -564,12 +513,9 @@ public class TrainingDefinitionServiceTest {
         then(trainingDefinitionRepository).should().findById(trainingDefinition2.getId());
     }
 
-    @Test
+    @Test(expected = EntityConflictException.class)
     public void createGameLevelWithCannotBeUpdatedException() {
         given(trainingDefinitionRepository.findById(releasedDefinition.getId())).willReturn(Optional.of(releasedDefinition));
-        thrown.expect(ServiceLayerException.class);
-        thrown.expectMessage("Cannot create level in released or archived training definition");
-
         trainingDefinitionService.createGameLevel(releasedDefinition.getId());
     }
 
@@ -581,13 +527,10 @@ public class TrainingDefinitionServiceTest {
 
     }
 
-    @Test
+    @Test(expected = EntityConflictException.class)
     public void createGameLevelWithCreatedInstances() {
         given(trainingDefinitionRepository.findById(unreleasedDefinition.getId())).willReturn(Optional.of(unreleasedDefinition));
         given(trainingInstanceRepository.existsAnyForTrainingDefinition(unreleasedDefinition.getId())).willReturn(true);
-        thrown.expect(ServiceLayerException.class);
-        thrown.expectMessage("Cannot update training definition with already created training instance. " +
-                "Remove training instance/s before updating training definition.");
         trainingDefinitionService.createGameLevel(unreleasedDefinition.getId());
     }
 
@@ -604,12 +547,9 @@ public class TrainingDefinitionServiceTest {
         then(trainingDefinitionRepository).should().findById(trainingDefinition2.getId());
     }
 
-    @Test
+    @Test(expected = EntityConflictException.class)
     public void createInfoLevelWithCannotBeUpdatedException() {
         given(trainingDefinitionRepository.findById(releasedDefinition.getId())).willReturn(Optional.of(releasedDefinition));
-        thrown.expect(ServiceLayerException.class);
-        thrown.expectMessage("Cannot edit released or archived training definition.");
-
         trainingDefinitionService.createInfoLevel(releasedDefinition.getId());
     }
 
@@ -621,13 +561,10 @@ public class TrainingDefinitionServiceTest {
 
     }
 
-    @Test
+    @Test(expected = EntityConflictException.class)
     public void createInfoLevelWithCreatedInstances() {
         given(trainingDefinitionRepository.findById(unreleasedDefinition.getId())).willReturn(Optional.of(unreleasedDefinition));
         given(trainingInstanceRepository.existsAnyForTrainingDefinition(unreleasedDefinition.getId())).willReturn(true);
-        thrown.expect(ServiceLayerException.class);
-        thrown.expectMessage("Cannot update training definition with already created training instance. " +
-                "Remove training instance/s before updating training definition.");
         trainingDefinitionService.createInfoLevel(unreleasedDefinition.getId());
     }
 
@@ -644,12 +581,9 @@ public class TrainingDefinitionServiceTest {
         then(trainingDefinitionRepository).should().findById(trainingDefinition2.getId());
     }
 
-    @Test
+    @Test(expected = EntityConflictException.class)
     public void createAssessmentLevelWithCannotBeUpdatedException() {
         given(trainingDefinitionRepository.findById(releasedDefinition.getId())).willReturn(Optional.of(releasedDefinition));
-        thrown.expect(ServiceLayerException.class);
-        thrown.expectMessage("Cannot create level in released or archived training definition");
-
         trainingDefinitionService.createAssessmentLevel(releasedDefinition.getId());
     }
 
@@ -661,13 +595,10 @@ public class TrainingDefinitionServiceTest {
 
     }
 
-    @Test
+    @Test(expected = EntityConflictException.class)
     public void createAssessmentLevelWithCreatedInstances() {
         given(trainingDefinitionRepository.findById(unreleasedDefinition.getId())).willReturn(Optional.of(unreleasedDefinition));
         given(trainingInstanceRepository.existsAnyForTrainingDefinition(unreleasedDefinition.getId())).willReturn(true);
-        thrown.expect(ServiceLayerException.class);
-        thrown.expectMessage("Cannot update training definition with already created training instance. " +
-                "Remove training instance/s before updating training definition.");
         trainingDefinitionService.createAssessmentLevel(unreleasedDefinition.getId());
     }
 
@@ -705,9 +636,8 @@ public class TrainingDefinitionServiceTest {
         then(abstractLevelRepository).should().findByIdIncludinDefinition(infoLevel.getId());
     }
 
-    @Test
-    public void findLevelById_notExisting() {
-        thrown.expect(ServiceLayerException.class);
+    @Test(expected = EntityNotFoundException.class)
+    public void findLevelByIdNotExisting() {
         trainingDefinitionService.findLevelById(555L);
     }
 
@@ -733,13 +663,10 @@ public class TrainingDefinitionServiceTest {
         assertEquals(TDState.UNRELEASED, releasedDefinition.getState());
     }
 
-    @Test
+    @Test(expected = EntityConflictException.class)
     public void switchState_RELEASEDtoUNRELEASED_withCreatedInstances() {
         given(trainingDefinitionRepository.findById(anyLong())).willReturn(Optional.of(releasedDefinition));
         given(trainingInstanceRepository.existsAnyForTrainingDefinition(anyLong())).willReturn(true);
-        thrown.expect(ServiceLayerException.class);
-        thrown.expectMessage("Cannot update training definition with already created training instance(s). " +
-                "Remove training instance(s) before changing the state from released to unreleased training definition.");
         trainingDefinitionService.switchState(releasedDefinition.getId(), cz.muni.ics.kypo.training.api.enums.TDState.UNRELEASED);
     }
 

@@ -1,4 +1,4 @@
-package cz.muni.ics.kypo.training.rest.exceptions;
+package cz.muni.ics.kypo.training.exceptions;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -14,12 +14,15 @@ public class BadRequestException extends RuntimeException {
         super(message);
     }
 
-    public BadRequestException(String message, Throwable ex) {
-        super(message, ex);
+    public BadRequestException(String message, Throwable cause) {
+        super(message, cause);
     }
 
-    public BadRequestException(Throwable ex) {
-        super(ex);
+    public BadRequestException(Throwable cause) {
+        super(cause);
     }
 
+    public BadRequestException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
+        super(message, cause, enableSuppression, writableStackTrace);
+    }
 }

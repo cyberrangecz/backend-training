@@ -6,7 +6,9 @@ import com.querydsl.core.types.dsl.PathBuilder;
 import cz.muni.ics.kypo.commons.security.enums.AuthenticatedUserOIDCItems;
 import cz.muni.ics.kypo.training.api.responses.PageResultResourcePython;
 import cz.muni.ics.kypo.training.api.responses.SandboxInfo;
-import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
+import cz.muni.ics.kypo.training.exceptions.BadRequestException;
+import cz.muni.ics.kypo.training.exceptions.EntityConflictException;
+import cz.muni.ics.kypo.training.exceptions.EntityNotFoundException;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.model.enums.AssessmentType;
 import cz.muni.ics.kypo.training.persistence.model.enums.TDState;
@@ -223,11 +225,9 @@ public class TrainingRunServiceTest {
         then(trainingRunRepository).should().findById(trainingRun1.getId());
     }
 
-    @Test
+    @Test(expected = EntityNotFoundException.class)
     public void getNonExistTrainingRunById() {
         Long id = 6L;
-        thrown.expect(ServiceLayerException.class);
-        thrown.expectMessage("Training Run with runId: " + id + " not found.");
         trainingRunService.findById(id);
     }
 
@@ -254,18 +254,16 @@ public class TrainingRunServiceTest {
         assertEquals(trainingRun1, trainingRun);
     }
 
-    @Test
+    @Test(expected = EntityConflictException.class)
     public void accessTrainingRunWithoutAllocatedSandboxes() {
         given(trainingInstanceRepository.findByStartTimeAfterAndEndTimeBeforeAndAccessToken(any(LocalDateTime.class), any(String.class))).willReturn(Optional.of(trainingInstance2));
 
         given(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
                 willReturn(new ResponseEntity<PageResultResourcePython>(new PageResultResourcePython<SandboxInfo>(), HttpStatus.OK));
-        thrown.expect(ServiceLayerException.class);
-        thrown.expectMessage("At first organizer must allocate sandboxes for training instance.");
         trainingRunService.accessTrainingRun("pass");
     }
 
-    @Test
+    @Test(expected = EntityNotFoundException.class)
     public void accessTrainingRunWithoutStartingLevel() {
         sandboxInfo.setLocked(false);
         PageResultResourcePython<SandboxInfo> pythonPage = new PageResultResourcePython<SandboxInfo>();
@@ -275,8 +273,6 @@ public class TrainingRunServiceTest {
         given(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
                 willReturn(new ResponseEntity<PageResultResourcePython<SandboxInfo>>(pythonPage, HttpStatus.OK));
         given(abstractLevelRepository.findById(anyLong())).willReturn(Optional.empty());
-        thrown.expect(ServiceLayerException.class);
-        thrown.expectMessage("No starting level available for this training definition");
         trainingRunService.accessTrainingRun("pass");
         then(trAcquisitionLockRepository).should().save(new TRAcquisitionLock(1L, trainingInstance1.getId(), any(LocalDateTime.class)));
     }
@@ -312,10 +308,8 @@ public class TrainingRunServiceTest {
         assertFalse(trainingRun1.isLevelAnswered());
     }
 
-    @Test
+    @Test(expected = BadRequestException.class)
     public void isCorrectFlagOfNonGameLevel() {
-        thrown.expect(ServiceLayerException.class);
-        thrown.expectMessage("Current level is not game level and does not have flag.");
         given(trainingRunRepository.findByIdWithLevel(trainingRun2.getId())).willReturn(Optional.of(trainingRun2));
         trainingRunService.isCorrectFlag(trainingRun2.getId(), "flag");
     }
@@ -340,10 +334,8 @@ public class TrainingRunServiceTest {
         assertFalse(trainingRun1.isLevelAnswered());
     }
 
-    @Test
+    @Test(expected = BadRequestException.class)
     public void getSolutionOfNonGameLevel() {
-        thrown.expect(ServiceLayerException.class);
-        thrown.expectMessage("Current level is not game level and does not have solution.");
         given(trainingRunRepository.findByIdWithLevel(trainingRun2.getId())).willReturn(Optional.of(trainingRun2));
         trainingRunService.getSolution(trainingRun2.getId());
     }
@@ -365,9 +357,8 @@ public class TrainingRunServiceTest {
         assertEquals(5, attempts);
     }
 
+    @Test(expected = BadRequestException.class)
     public void getHintOfNonGameLevel() {
-        thrown.expect(ServiceLayerException.class);
-        thrown.expectMessage("Current level is not game level and does not have hints.");
         given(trainingRunRepository.findByIdWithLevel(trainingRun2.getId())).willReturn(Optional.of(trainingRun2));
         trainingRunService.getHint(trainingRun2.getId(), hint1.getId());
     }
@@ -467,21 +458,17 @@ public class TrainingRunServiceTest {
         then(trainingRunRepository).should().save(trainingRun1);
     }
 
-    @Test
+    @Test(expected = EntityConflictException.class)
     public void getNextLevelNotAnswered() {
         given(trainingRunRepository.findByIdWithLevel(trainingRun1.getId())).willReturn(Optional.of(trainingRun1));
-        thrown.expect(ServiceLayerException.class);
-        thrown.expectMessage("At first you need to answer the level.");
         trainingRunService.getNextLevel(trainingRun1.getId());
     }
 
-    @Test
+    @Test(expected = EntityNotFoundException.class)
     public void getNextLevel_noNextLevel() {
         trainingRun2.setLevelAnswered(true);
         given(trainingRunRepository.findByIdWithLevel(any(Long.class))).willReturn(Optional.of(trainingRun2));
         given(abstractLevelRepository.getCurrentMaxOrder(anyLong())).willReturn(infoLevel2.getOrder());
-        thrown.expect(ServiceLayerException.class);
-        thrown.expectMessage("There is no next level.");
         trainingRunService.getNextLevel(trainingRun2.getId());
     }
 
@@ -502,21 +489,17 @@ public class TrainingRunServiceTest {
         trainingRunService.finishTrainingRun(null);
     }
 
-    @Test
+    @Test(expected = EntityConflictException.class)
     public void testFinishTrainingRunWithNonLastLevel() {
         trainingRun1.setLevelAnswered(true);
         given(trainingRunRepository.findById(any(Long.class))).willReturn(Optional.of(trainingRun1));
         given(abstractLevelRepository.getCurrentMaxOrder(anyLong())).willReturn(infoLevel.getOrder());
-        thrown.expect(ServiceLayerException.class);
-
         trainingRunService.finishTrainingRun(trainingRun1.getId());
     }
 
-    @Test
+    @Test(expected = EntityConflictException.class)
     public void testFinishTrainingRunWithNotAnsweredLevel() {
         given(trainingRunRepository.findById(any(Long.class))).willReturn(Optional.of(trainingRun1));
-        thrown.expect(ServiceLayerException.class);
-
         trainingRunService.finishTrainingRun(trainingRun1.getId());
     }
 
@@ -531,23 +514,17 @@ public class TrainingRunServiceTest {
         assertTrue(trainingRun.getCurrentLevel() instanceof GameLevel);
     }
 
-    @Test
+    @Test(expected = EntityConflictException.class)
     public void resumeTrainingRunWithDeletedSandbox() {
         trainingRun1.setSandboxInstanceRefId(null);
         given(trainingRunRepository.findByIdWithLevel(any(Long.class))).willReturn(Optional.of(trainingRun1));
-        thrown.expect(ServiceLayerException.class);
-        thrown.expectMessage("Sandbox of this training run was already deleted, you have to start new game.");
-
         trainingRunService.resumeTrainingRun(trainingRun1.getId());
     }
 
-    @Test
+    @Test(expected = EntityConflictException.class)
     public void resumeFinishedTrainingRun() {
         trainingRun1.setState(TRState.FINISHED);
         given(trainingRunRepository.findByIdWithLevel(any(Long.class))).willReturn(Optional.of(trainingRun1));
-        thrown.expect(ServiceLayerException.class);
-        thrown.expectMessage("Cannot resume finished training run.");
-
         trainingRunService.resumeTrainingRun(trainingRun1.getId());
     }
 

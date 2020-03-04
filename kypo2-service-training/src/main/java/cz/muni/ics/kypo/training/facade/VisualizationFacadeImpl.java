@@ -7,9 +7,7 @@ import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
 import cz.muni.ics.kypo.training.api.dto.visualization.*;
 import cz.muni.ics.kypo.training.api.enums.LevelType;
 import cz.muni.ics.kypo.training.api.responses.PageResultResource;
-import cz.muni.ics.kypo.training.exceptions.ErrorCode;
-import cz.muni.ics.kypo.training.exceptions.FacadeLayerException;
-import cz.muni.ics.kypo.training.exceptions.ServiceLayerException;
+import cz.muni.ics.kypo.training.exceptions.InternalServerErrorException;
 import cz.muni.ics.kypo.training.mapping.mapstruct.AssessmentLevelMapper;
 import cz.muni.ics.kypo.training.mapping.mapstruct.GameLevelMapper;
 import cz.muni.ics.kypo.training.mapping.mapstruct.HintMapper;
@@ -31,7 +29,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -67,14 +64,10 @@ public class VisualizationFacadeImpl implements VisualizationFacade {
             "or @securityService.isTraineeOfGivenTrainingRun(#runId)")
     @TransactionalRO
     public VisualizationInfoDTO getVisualizationInfoAboutTrainingRun(Long trainingRunId) {
-        try {
-            TrainingRun trainingRun = trainingRunService.findByIdWithLevel(trainingRunId);
-            TrainingDefinition trainingDefinitionOfTrainingRun = trainingRun.getTrainingInstance().getTrainingDefinition();
-            return new VisualizationInfoDTO(trainingDefinitionOfTrainingRun.getId(), trainingDefinitionOfTrainingRun.getTitle(),
-                    trainingDefinitionOfTrainingRun.getEstimatedDuration(), convertToAbstractLevelVisualizationDTO(visualizationService.getLevelsForTraineeVisualization(trainingRun)));
-        } catch (ServiceLayerException ex) {
-            throw new FacadeLayerException(ex);
-        }
+        TrainingRun trainingRun = trainingRunService.findByIdWithLevel(trainingRunId);
+        TrainingDefinition trainingDefinitionOfTrainingRun = trainingRun.getTrainingInstance().getTrainingDefinition();
+        return new VisualizationInfoDTO(trainingDefinitionOfTrainingRun.getId(), trainingDefinitionOfTrainingRun.getTitle(),
+                trainingDefinitionOfTrainingRun.getEstimatedDuration(), convertToAbstractLevelVisualizationDTO(visualizationService.getLevelsForTraineeVisualization(trainingRun)));
     }
 
     @Override
@@ -82,14 +75,10 @@ public class VisualizationFacadeImpl implements VisualizationFacade {
             "or @securityService.isOrganizerOfGivenTrainingInstance(#instanceId)")
     @TransactionalRO
     public VisualizationInfoDTO getVisualizationInfoAboutTrainingInstance(Long trainingInstanceId) {
-        try {
-            TrainingInstance trainingInstance = trainingInstanceService.findById(trainingInstanceId);
-            TrainingDefinition trainingDefinitionOfTrainingRun = trainingInstance.getTrainingDefinition();
-            return new VisualizationInfoDTO(trainingDefinitionOfTrainingRun.getId(), trainingDefinitionOfTrainingRun.getTitle(),
-                    trainingDefinitionOfTrainingRun.getEstimatedDuration(),convertToAbstractLevelVisualizationDTO(visualizationService.getLevelsForOrganizerVisualization(trainingInstance)));
-        } catch (ServiceLayerException ex) {
-            throw new FacadeLayerException(ex);
-        }
+        TrainingInstance trainingInstance = trainingInstanceService.findById(trainingInstanceId);
+        TrainingDefinition trainingDefinitionOfTrainingRun = trainingInstance.getTrainingDefinition();
+        return new VisualizationInfoDTO(trainingDefinitionOfTrainingRun.getId(), trainingDefinitionOfTrainingRun.getTitle(),
+                trainingDefinitionOfTrainingRun.getEstimatedDuration(),convertToAbstractLevelVisualizationDTO(visualizationService.getLevelsForOrganizerVisualization(trainingInstance)));
     }
 
     @Override
@@ -126,8 +115,8 @@ public class VisualizationFacadeImpl implements VisualizationFacade {
                 infoLevelVisualizationDTO.setLevelType(LevelType.INFO_LEVEL);
                 visualizationLevelInfoDTOs.add(infoLevelVisualizationDTO);
             } else {
-                throw new ServiceLayerException("Level with id: " + level.getId() + " in given training definition with id: " + level.getTrainingDefinition().getId() +
-                        " is not instance of assessment, game or info level.", ErrorCode.UNEXPECTED_ERROR);
+                throw new InternalServerErrorException("Level with id: " + level.getId() + " in given training definition with id: " + level.getTrainingDefinition().getId() +
+                        " is not instance of assessment, game or info level.");
             }
         });
         return visualizationLevelInfoDTOs;
