@@ -21,6 +21,9 @@ public class LevelStarted extends AbstractAuditPOJO {
     @ApiModelProperty(value = "Sandbox ID.", required = true)
     @JsonProperty(value = "sandbox_id", required = true)
     private long sandboxId;
+    @ApiModelProperty(value = "Pool ID.", required = true)
+    @JsonProperty(value = "pool_id", required = true)
+    private long poolId;
     @ApiModelProperty(value = "Training definition ID.", required = true)
     @JsonProperty(value = "training_definition_id", required = true)
     private long trainingDefinitionId;
@@ -60,6 +63,7 @@ public class LevelStarted extends AbstractAuditPOJO {
 
     private LevelStarted(LevelStartedBuilder builder) {
         this.sandboxId = builder.sandboxId;
+        this.poolId = builder.poolId;
         this.trainingDefinitionId = builder.trainingDefinitionId;
         this.trainingInstanceId = builder.trainingInstanceId;
         this.trainingRunId = builder.trainingRunId;
@@ -76,6 +80,7 @@ public class LevelStarted extends AbstractAuditPOJO {
 
     public static class LevelStartedBuilder {
         private long sandboxId;
+        private long poolId;
         private long trainingDefinitionId;
         private long trainingInstanceId;
         private long trainingRunId;
@@ -91,6 +96,11 @@ public class LevelStarted extends AbstractAuditPOJO {
 
         public LevelStartedBuilder sandboxId(long sandboxId) {
             this.sandboxId = sandboxId;
+            return this;
+        }
+
+        public LevelStartedBuilder poolId(long poolId) {
+            this.poolId = poolId;
             return this;
         }
 

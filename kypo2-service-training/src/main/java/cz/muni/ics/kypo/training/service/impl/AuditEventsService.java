@@ -28,6 +28,7 @@ public class AuditEventsService {
 
         TrainingRunStarted trainingRunStarted = new TrainingRunStarted.TrainingRunStartedBuilder()
                 .sandboxId(auditInfoDTO.getSandboxId())
+                .poolId(auditInfoDTO.getPoolId())
                 .trainingDefinitionId(auditInfoDTO.getTrainingDefinitionId())
                 .trainingInstanceId(auditInfoDTO.getTrainingInstanceId())
                 .trainingRunId(auditInfoDTO.getTrainingRunId())
@@ -38,7 +39,7 @@ public class AuditEventsService {
                 .level(auditInfoDTO.getLevel())
                 .build();
 
-        auditService.saveTrainingRunEvent(trainingRunStarted, auditInfoDTO.getTrainingDefinitionId(), auditInfoDTO.getTrainingInstanceId());
+        auditService.saveTrainingRunEvent(trainingRunStarted);
     }
 
     public void auditLevelStartedAction(TrainingRun trainingRun) {
@@ -47,6 +48,7 @@ public class AuditEventsService {
 
         LevelStarted levelStarted = new LevelStarted.LevelStartedBuilder()
                 .sandboxId(auditInfoDTO.getSandboxId())
+                .poolId(auditInfoDTO.getPoolId())
                 .trainingDefinitionId(auditInfoDTO.getTrainingDefinitionId())
                 .trainingInstanceId(auditInfoDTO.getTrainingInstanceId())
                 .trainingRunId(auditInfoDTO.getTrainingRunId())
@@ -60,7 +62,7 @@ public class AuditEventsService {
                 .levelTitle(trainingRun.getCurrentLevel().getTitle())
                 .build();
 
-        auditService.saveTrainingRunEvent(levelStarted, auditInfoDTO.getTrainingDefinitionId(), auditInfoDTO.getTrainingInstanceId());
+        auditService.saveTrainingRunEvent(levelStarted);
     }
 
     public void auditLevelCompletedAction(TrainingRun trainingRun) {
@@ -69,6 +71,8 @@ public class AuditEventsService {
 
         LevelCompleted levelCompleted = new LevelCompleted.LevelCompletedBuilder()
                 .sandboxId(auditInfoDTO.getSandboxId())
+                .poolId(auditInfoDTO.getPoolId())
+                .poolId(auditInfoDTO.getPoolId())
                 .trainingDefinitionId(auditInfoDTO.getTrainingDefinitionId())
                 .trainingInstanceId(auditInfoDTO.getTrainingInstanceId())
                 .trainingRunId(auditInfoDTO.getTrainingRunId())
@@ -80,7 +84,7 @@ public class AuditEventsService {
                 .levelType(levelType)
                 .build();
 
-        auditService.saveTrainingRunEvent(levelCompleted, auditInfoDTO.getTrainingDefinitionId(), auditInfoDTO.getTrainingInstanceId());
+        auditService.saveTrainingRunEvent(levelCompleted);
     }
 
     public void auditHintTakenAction(TrainingRun trainingRun, Hint hint) {
@@ -88,6 +92,7 @@ public class AuditEventsService {
 
         HintTaken hintTaken = new HintTaken.HintTakenBuilder()
                 .sandboxId(auditInfoDTO.getSandboxId())
+                .poolId(auditInfoDTO.getPoolId())
                 .trainingDefinitionId(auditInfoDTO.getTrainingDefinitionId())
                 .trainingInstanceId(auditInfoDTO.getTrainingInstanceId())
                 .trainingRunId(auditInfoDTO.getTrainingRunId())
@@ -100,14 +105,15 @@ public class AuditEventsService {
                 .hintPenaltyPoints(hint.getHintPenalty())
                 .hintTitle(hint.getTitle())
                 .build();
-        auditService.saveTrainingRunEvent(hintTaken, auditInfoDTO.getTrainingDefinitionId(), auditInfoDTO.getTrainingInstanceId());
+        auditService.saveTrainingRunEvent(hintTaken);
     }
 
-    public void auditSolutionDisplayedAction(TrainingRun trainingRun, GameLevel gameLevel) {
+    public void auditSolutionDisplayedAction(TrainingRun trainingRun) {
         AuditInfoDTO auditInfoDTO = createAuditUserInfo(trainingRun);
 
         SolutionDisplayed solutionDisplayed = new SolutionDisplayed.SolutionDisplayedBuilder()
                 .sandboxId(auditInfoDTO.getSandboxId())
+                .poolId(auditInfoDTO.getPoolId())
                 .trainingDefinitionId(auditInfoDTO.getTrainingDefinitionId())
                 .trainingInstanceId(auditInfoDTO.getTrainingInstanceId())
                 .trainingRunId(auditInfoDTO.getTrainingRunId())
@@ -118,7 +124,7 @@ public class AuditEventsService {
                 .level(auditInfoDTO.getLevel())
                 .penaltyPoints(auditInfoDTO.getActualScoreInLevel())
                 .build();
-        auditService.saveTrainingRunEvent(solutionDisplayed, auditInfoDTO.getTrainingDefinitionId(), auditInfoDTO.getTrainingInstanceId());
+        auditService.saveTrainingRunEvent(solutionDisplayed);
     }
 
     public void auditCorrectFlagSubmittedAction(TrainingRun trainingRun, String flag) {
@@ -126,6 +132,7 @@ public class AuditEventsService {
 
         CorrectFlagSubmitted correctFlagSubmitted = new CorrectFlagSubmitted.CorrectFlagSubmittedBuilder()
                 .sandboxId(auditInfoDTO.getSandboxId())
+                .poolId(auditInfoDTO.getPoolId())
                 .trainingDefinitionId(auditInfoDTO.getTrainingDefinitionId())
                 .trainingInstanceId(auditInfoDTO.getTrainingInstanceId())
                 .trainingRunId(auditInfoDTO.getTrainingRunId())
@@ -136,7 +143,7 @@ public class AuditEventsService {
                 .level(auditInfoDTO.getLevel())
                 .flagContent(flag)
                 .build();
-        auditService.saveTrainingRunEvent(correctFlagSubmitted, auditInfoDTO.getTrainingDefinitionId(), auditInfoDTO.getTrainingInstanceId());
+        auditService.saveTrainingRunEvent(correctFlagSubmitted);
     }
 
     public void auditWrongFlagSubmittedAction(TrainingRun trainingRun, String flag) {
@@ -144,6 +151,7 @@ public class AuditEventsService {
 
         WrongFlagSubmitted wrongFlagSubmitted = new WrongFlagSubmitted.WrongFlagSubmittedBuilder()
                 .sandboxId(auditInfoDTO.getSandboxId())
+                .poolId(auditInfoDTO.getPoolId())
                 .trainingDefinitionId(auditInfoDTO.getTrainingDefinitionId())
                 .trainingInstanceId(auditInfoDTO.getTrainingInstanceId())
                 .trainingRunId(auditInfoDTO.getTrainingRunId())
@@ -155,7 +163,7 @@ public class AuditEventsService {
                 .flagContent(flag)
                 .count(trainingRun.getIncorrectFlagCount())
                 .build();
-        auditService.saveTrainingRunEvent(wrongFlagSubmitted, auditInfoDTO.getTrainingDefinitionId(), auditInfoDTO.getTrainingInstanceId());
+        auditService.saveTrainingRunEvent(wrongFlagSubmitted);
     }
 
     public void auditAssessmentAnswersAction(TrainingRun trainingRun, String answers) {
@@ -163,6 +171,7 @@ public class AuditEventsService {
 
         AssessmentAnswers assessmentAnswers = new AssessmentAnswers.AssessmentAnswersBuilder()
                 .sandboxId(auditInfoDTO.getSandboxId())
+                .poolId(auditInfoDTO.getPoolId())
                 .trainingDefinitionId(auditInfoDTO.getTrainingDefinitionId())
                 .trainingInstanceId(auditInfoDTO.getTrainingInstanceId())
                 .trainingRunId(auditInfoDTO.getTrainingRunId())
@@ -173,7 +182,7 @@ public class AuditEventsService {
                 .level(auditInfoDTO.getLevel())
                 .answers(answers)
                 .build();
-        auditService.saveTrainingRunEvent(assessmentAnswers, auditInfoDTO.getTrainingDefinitionId(), auditInfoDTO.getTrainingInstanceId());
+        auditService.saveTrainingRunEvent(assessmentAnswers);
     }
 
     public void auditTrainingRunEndedAction(TrainingRun trainingRun) {
@@ -181,6 +190,7 @@ public class AuditEventsService {
 
         TrainingRunEnded assessmentAnswers = new TrainingRunEnded.TrainingRunEndedBuilder()
                 .sandboxId(auditInfoDTO.getSandboxId())
+                .poolId(auditInfoDTO.getPoolId())
                 .trainingDefinitionId(auditInfoDTO.getTrainingDefinitionId())
                 .trainingInstanceId(auditInfoDTO.getTrainingInstanceId())
                 .trainingRunId(auditInfoDTO.getTrainingRunId())
@@ -193,7 +203,7 @@ public class AuditEventsService {
                 .endTime(System.currentTimeMillis())
                 .build();
 
-        auditService.saveTrainingRunEvent(assessmentAnswers, auditInfoDTO.getTrainingDefinitionId(), auditInfoDTO.getTrainingInstanceId());
+        auditService.saveTrainingRunEvent(assessmentAnswers);
     }
 
     public void auditTrainingRunResumedAction(TrainingRun trainingRun) {
@@ -201,6 +211,7 @@ public class AuditEventsService {
 
         TrainingRunResumed trainingRunResumed = new TrainingRunResumed.TrainingRunResumedBuilder()
                 .sandboxId(auditInfoDTO.getSandboxId())
+                .poolId(auditInfoDTO.getPoolId())
                 .trainingDefinitionId(auditInfoDTO.getTrainingDefinitionId())
                 .trainingInstanceId(auditInfoDTO.getTrainingInstanceId())
                 .trainingRunId(auditInfoDTO.getTrainingRunId())
@@ -210,18 +221,19 @@ public class AuditEventsService {
                 .actualScoreInLevel(auditInfoDTO.getActualScoreInLevel())
                 .level(auditInfoDTO.getLevel())
                 .build();
-        auditService.saveTrainingRunEvent(trainingRunResumed, auditInfoDTO.getTrainingDefinitionId(), auditInfoDTO.getTrainingInstanceId());
+        auditService.saveTrainingRunEvent(trainingRunResumed);
     }
 
     private AuditInfoDTO createAuditUserInfo(TrainingRun trainingRun){
         TrainingInstance trainingInstance = trainingRun.getTrainingInstance();
         AuditInfoDTO auditInfoDTO = new AuditInfoDTO();
-        auditInfoDTO.setUserRefId(trainingRun.getParticipantRef().getUserRefId());
         auditInfoDTO.setSandboxId(trainingInstance.getTrainingDefinition().getSandboxDefinitionRefId());
+        auditInfoDTO.setPoolId(trainingInstance.getPoolId());
         auditInfoDTO.setTrainingRunId(trainingRun.getId());
         auditInfoDTO.setTrainingDefinitionId(trainingInstance.getTrainingDefinition().getId());
         auditInfoDTO.setTrainingInstanceId(trainingInstance.getId());
         auditInfoDTO.setGameTime(computeGameTime(trainingRun.getStartTime()));
+        auditInfoDTO.setUserRefId(trainingRun.getParticipantRef().getUserRefId());
         auditInfoDTO.setLevel(trainingRun.getCurrentLevel().getId());
         auditInfoDTO.setTotalScore(trainingRun.getTotalScore());
         auditInfoDTO.setActualScoreInLevel(trainingRun.getMaxLevelScore() - trainingRun.getCurrentPenalty());
