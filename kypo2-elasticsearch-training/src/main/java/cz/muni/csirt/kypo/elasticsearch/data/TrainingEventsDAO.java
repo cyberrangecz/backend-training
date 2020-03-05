@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import cz.muni.csirt.kypo.elasticsearch.AbstractAuditPOJO;
 import cz.muni.csirt.kypo.elasticsearch.data.dto.ElasticsearchResponseDto;
 import cz.muni.csirt.kypo.elasticsearch.data.exceptions.ElasticsearchTrainingDataLayerException;
+import cz.muni.csirt.kypo.elasticsearch.data.indexpaths.AbstractKypoElasticTermQueryFields;
 import cz.muni.csirt.kypo.elasticsearch.data.indexpaths.AbstractKypoIndexPath;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
 import org.elasticsearch.action.search.SearchRequest;
@@ -55,7 +56,7 @@ public class TrainingEventsDAO extends AbstractElasticClientDAO {
     public List<Map<String, Object>> findAllEventsByTrainingDefinitionAndTrainingInstanceId(Long trainingDefinitionId, Long trainingInstanceId) throws ElasticsearchTrainingDataLayerException, IOException {
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
         searchSourceBuilder.query(QueryBuilders.matchAllQuery());
-        searchSourceBuilder.sort("timestamp", SortOrder.ASC);
+        searchSourceBuilder.sort(AbstractKypoElasticTermQueryFields.KYPO_ELASTICSEARCH_TIMESTAMP, SortOrder.ASC);
         searchSourceBuilder.size(INDEX_DOCUMENTS_MAX_RETURN_NUMBER);
         searchSourceBuilder.timeout(new TimeValue(5, TimeUnit.MINUTES));
 
@@ -67,8 +68,8 @@ public class TrainingEventsDAO extends AbstractElasticClientDAO {
 
     public List<Map<String, Object>> findAllEventsFromTrainingRun(Long trainingDefinitionId, Long trainingInstanceId, Long trainingRunId) throws ElasticsearchTrainingDataLayerException, IOException {
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
-        searchSourceBuilder.query(QueryBuilders.termQuery("training_run_id", trainingRunId));
-        searchSourceBuilder.sort("timestamp", SortOrder.ASC);
+        searchSourceBuilder.query(QueryBuilders.termQuery(AbstractKypoElasticTermQueryFields.KYPO_ELASTICSEARCH_TRAINING_RUN_ID, trainingRunId));
+        searchSourceBuilder.sort(AbstractKypoElasticTermQueryFields.KYPO_ELASTICSEARCH_TIMESTAMP, SortOrder.ASC);
         searchSourceBuilder.size(INDEX_DOCUMENTS_MAX_RETURN_NUMBER);
         searchSourceBuilder.timeout(new TimeValue(5, TimeUnit.MINUTES));
 
@@ -182,10 +183,10 @@ public class TrainingEventsDAO extends AbstractElasticClientDAO {
                 QueryBuilders
                         .boolQuery()
                         .must(
-                                QueryBuilders.termQuery("training_definition_id", trainingDefinitionId)
+                                QueryBuilders.termQuery(AbstractKypoElasticTermQueryFields.KYPO_ELASTICSEARCH_TRAINING_DEFINITION_ID, trainingDefinitionId)
                         )
                         .must(
-                                QueryBuilders.termQuery("training_instance_id", trainingInstanceId)
+                                QueryBuilders.termQuery(AbstractKypoElasticTermQueryFields.KYPO_ELASTICSEARCH_TRAINING_INSTANCE_ID, trainingInstanceId)
                         );
 
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();

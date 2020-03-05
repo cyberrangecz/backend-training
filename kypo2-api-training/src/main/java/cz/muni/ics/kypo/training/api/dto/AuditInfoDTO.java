@@ -7,6 +7,7 @@ public class AuditInfoDTO {
 
     private long userRefId;
     private long sandboxId;
+    private long poolId;
     private long trainingRunId;
     private long trainingDefinitionId;
     private long trainingInstanceId;
@@ -55,6 +56,24 @@ public class AuditInfoDTO {
      */
     public void setSandboxId(long sandboxId) {
         this.sandboxId = sandboxId;
+    }
+
+    /**
+     * Gets pool id.
+     *
+     * @return the pool id
+     */
+    public long getPoolId() {
+        return poolId;
+    }
+
+    /**
+     * Sets pool id.
+     *
+     * @param poolId the pool id
+     */
+    public void setPoolId(long poolId) {
+        this.poolId = poolId;
     }
 
     /**
@@ -188,6 +207,7 @@ public class AuditInfoDTO {
         return "AuditInfoDTO{" +
                 "userRefId=" + userRefId +
                 ", sandboxId=" + sandboxId +
+                ", poolId=" + poolId +
                 ", trainingRunId=" + trainingRunId +
                 ", trainingDefinitionId=" + trainingDefinitionId +
                 ", trainingInstanceId=" + trainingInstanceId +

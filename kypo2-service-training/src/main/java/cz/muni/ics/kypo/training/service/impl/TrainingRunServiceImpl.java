@@ -343,7 +343,7 @@ public class TrainingRunServiceImpl implements TrainingRunService {
                     trainingRun.setCurrentPenalty(trainingRun.getMaxLevelScore());
                 trainingRunRepository.save(trainingRun);
             }
-            auditEventsService.auditSolutionDisplayedAction(trainingRun, (GameLevel) level);
+            auditEventsService.auditSolutionDisplayedAction(trainingRun);
             return ((GameLevel) level).getSolution();
         } else {
             throw new BadRequestException("Current level is not game level and does not have solution.");
