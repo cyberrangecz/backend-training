@@ -1,1 +1,1 @@
-1.1.21  TrainingChangeLogCreatedAndCICreated
+1.1.22  TrainingChangeLogCreatedAndCICreated
