@@ -35,7 +35,6 @@ import java.util.Arrays;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.willThrow;
 
@@ -89,7 +88,7 @@ public class ExportImportFacadeTest {
     @Before
     public void init() {
         MockitoAnnotations.initMocks(this);
-        exportImportFacade = new ExportImportFacadeImpl(exportImportService, exportImportMapper, gameLevelMapper,
+        exportImportFacade = new ExportImportFacade(exportImportService, exportImportMapper, gameLevelMapper,
                 infoLevelMapper, assessmentLevelMapper, trainingDefinitionService, trainingDefinitionMapper, objectMapper, trainingEventsService, userService, userRefMapper);
         assessmentLevel = new AssessmentLevel();
         assessmentLevel.setId(1L);

@@ -10,8 +10,6 @@ import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.model.enums.AssessmentType;
 import cz.muni.ics.kypo.training.persistence.model.enums.TDState;
 import cz.muni.ics.kypo.training.persistence.repository.*;
-import cz.muni.ics.kypo.training.service.impl.SecurityService;
-import cz.muni.ics.kypo.training.service.impl.TrainingDefinitionServiceImpl;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.junit.After;
@@ -36,7 +34,6 @@ import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.util.ResourceUtils;
-import org.springframework.web.client.RestTemplate;
 import cz.muni.ics.kypo.training.exceptions.EntityNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
@@ -74,8 +71,6 @@ public class TrainingDefinitionServiceTest {
     @Mock
     private UserRefRepository userRefRepository;
     @Mock
-    private RestTemplate restTemplate;
-    @Mock
     private SecurityService securityService;
 
     private TrainingDefinition trainingDefinition1, trainingDefinition2, unreleasedDefinition, releasedDefinition, definitionWithoutLevels;
@@ -95,9 +90,9 @@ public class TrainingDefinitionServiceTest {
     @Before
     public void init() {
         MockitoAnnotations.initMocks(this);
-        trainingDefinitionService = new TrainingDefinitionServiceImpl(trainingDefinitionRepository, abstractLevelRepository,
+        trainingDefinitionService = new TrainingDefinitionService(trainingDefinitionRepository, abstractLevelRepository,
                 infoLevelRepository, gameLevelRepository, assessmentLevelRepository, trainingInstanceRepository, userRefRepository,
-                restTemplate, securityService);
+                securityService);
 
         parser = new JSONParser();
         try {

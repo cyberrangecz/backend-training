@@ -32,9 +32,9 @@ import java.util.Set;
 
 @Service
 @Transactional
-public class VisualizationFacadeImpl implements VisualizationFacade {
+public class VisualizationFacade {
 
-    private static final Logger LOG = LoggerFactory.getLogger(VisualizationFacadeImpl.class);
+    private static final Logger LOG = LoggerFactory.getLogger(VisualizationFacade.class);
 
     private TrainingRunService trainingRunService;
     private TrainingInstanceService trainingInstanceService;
@@ -46,9 +46,9 @@ public class VisualizationFacadeImpl implements VisualizationFacade {
     private UserService userService;
 
     @Autowired
-    public VisualizationFacadeImpl(TrainingRunService trainingRunService, TrainingInstanceService trainingInstanceService, VisualizationService visualizationService,
-                                 HintMapper hintMapper, GameLevelMapper gameLevelMapper, InfoLevelMapper infoLevelMapper,
-                                   AssessmentLevelMapper assessmentLevelMapper, UserService userService) {
+    public VisualizationFacade(TrainingRunService trainingRunService, TrainingInstanceService trainingInstanceService, VisualizationService visualizationService,
+                               HintMapper hintMapper, GameLevelMapper gameLevelMapper, InfoLevelMapper infoLevelMapper,
+                               AssessmentLevelMapper assessmentLevelMapper, UserService userService) {
         this.trainingRunService = trainingRunService;
         this.trainingInstanceService = trainingInstanceService;
         this.visualizationService = visualizationService;
@@ -59,9 +59,14 @@ public class VisualizationFacadeImpl implements VisualizationFacade {
         this.userService = userService;
     }
 
-    @Override
+    /**
+     * Gather all the necessary information about the training run needed to visualize the result.
+     *
+     * @param trainingRunId id of Training Run to gets info.
+     * @return basic info about the training definition of given a training run and the necessary info about all levels from that training run.
+     */
     @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
-            "or @securityService.isTraineeOfGivenTrainingRun(#runId)")
+            "or @securityService.isTraineeOfGivenTrainingRun(#trainingRunId)")
     @TransactionalRO
     public VisualizationInfoDTO getVisualizationInfoAboutTrainingRun(Long trainingRunId) {
         TrainingRun trainingRun = trainingRunService.findByIdWithLevel(trainingRunId);
@@ -70,9 +75,14 @@ public class VisualizationFacadeImpl implements VisualizationFacade {
                 trainingDefinitionOfTrainingRun.getEstimatedDuration(), convertToAbstractLevelVisualizationDTO(visualizationService.getLevelsForTraineeVisualization(trainingRun)));
     }
 
-    @Override
+    /**
+     * Gather all the necessary information about the training instance needed to visualize the result.
+     *
+     * @param trainingInstanceId id of Training Instance to gets info.
+     * @return basic info about the training definition of given a training instance and the necessary info about all levels from that training instance.
+     */
     @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
-            "or @securityService.isOrganizerOfGivenTrainingInstance(#instanceId)")
+            "or @securityService.isOrganizerOfGivenTrainingInstance(#trainingInstanceId)")
     @TransactionalRO
     public VisualizationInfoDTO getVisualizationInfoAboutTrainingInstance(Long trainingInstanceId) {
         TrainingInstance trainingInstance = trainingInstanceService.findById(trainingInstanceId);
@@ -81,7 +91,12 @@ public class VisualizationFacadeImpl implements VisualizationFacade {
                 trainingDefinitionOfTrainingRun.getEstimatedDuration(),convertToAbstractLevelVisualizationDTO(visualizationService.getLevelsForOrganizerVisualization(trainingInstance)));
     }
 
-    @Override
+    /**
+     * Gather all the necessary information about the users for specific training instance.
+     *
+     * @param trainingInstanceId id of Training Instance to gets info about all participants.
+     * @return basic info about the participants of given a training instance.
+     */
     @IsTraineeOrAdmin
     public List<UserRefDTO> getParticipantsForGivenTrainingInstance(Long trainingInstanceId) {
         Set<Long> participantsRefIds = visualizationService.getAllParticipantsRefIdsForSpecificTrainingInstance(trainingInstanceId);
@@ -122,7 +137,13 @@ public class VisualizationFacadeImpl implements VisualizationFacade {
         return visualizationLevelInfoDTOs;
     }
 
-    @Override
+    /**
+     * Gather all the necessary information about the users with given ids.
+     *
+     * @param usersIds ids of the users to be retrieved.
+     * @param pageable  pageable parameter with information about pagination.
+     * @return basic info about the users with given ids.
+     */
     @IsDesignerOrOrganizerOrAdmin
     public PageResultResource<UserRefDTO> getUsersByIds(Set<Long> usersIds, Pageable pageable) {
         return userService.getUsersRefDTOByGivenUserIds(usersIds, pageable, null, null);

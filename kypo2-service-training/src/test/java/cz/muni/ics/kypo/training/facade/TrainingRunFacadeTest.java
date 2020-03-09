@@ -82,7 +82,7 @@ public class TrainingRunFacadeTest {
     @Before
     public void init() {
         MockitoAnnotations.initMocks(this);
-        trainingRunFacade = new TrainingRunFacadeImpl(trainingRunService, trainingRunMapper, gameLevelMapper,
+        trainingRunFacade = new TrainingRunFacade(trainingRunService, trainingRunMapper, gameLevelMapper,
                 assessmentLevelMapper, infoLevelMapper, hintMapper, userService);
 
         participant = new UserRef();

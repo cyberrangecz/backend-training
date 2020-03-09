@@ -1,4 +1,4 @@
-package cz.muni.ics.kypo.training.service.impl;
+package cz.muni.ics.kypo.training.service;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;

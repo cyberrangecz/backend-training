@@ -43,9 +43,9 @@ import java.util.zip.ZipOutputStream;
 
 @Service
 @Transactional
-public class ExportImportFacadeImpl implements ExportImportFacade {
+public class ExportImportFacade {
 
-    private static final Logger LOG = LoggerFactory.getLogger(ExportImportFacadeImpl.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ExportImportFacade.class);
     @Value("${openstack-server.uri}")
     private String kypoOpenStackURI;
 
@@ -62,10 +62,10 @@ public class ExportImportFacadeImpl implements ExportImportFacade {
     private UserRefMapper userRefMapper;
 
     @Autowired
-    public ExportImportFacadeImpl(ExportImportService exportImportService, ExportImportMapper exportImportMapper, GameLevelMapper gameLevelMapper,
-                                  InfoLevelMapper infoLevelMapper, AssessmentLevelMapper assessmentLevelMapper, TrainingDefinitionService trainingDefinitionService,
-                                  TrainingDefinitionMapper trainingDefinitionMapper, ObjectMapper objectMapper, TrainingEventsService trainingEventsService,
-                                  UserService userService, UserRefMapper userRefMapper) {
+    public ExportImportFacade(ExportImportService exportImportService, ExportImportMapper exportImportMapper, GameLevelMapper gameLevelMapper,
+                              InfoLevelMapper infoLevelMapper, AssessmentLevelMapper assessmentLevelMapper, TrainingDefinitionService trainingDefinitionService,
+                              TrainingDefinitionMapper trainingDefinitionMapper, ObjectMapper objectMapper, TrainingEventsService trainingEventsService,
+                              UserService userService, UserRefMapper userRefMapper) {
         this.exportImportService = exportImportService;
         this.exportImportMapper = exportImportMapper;
         this.gameLevelMapper = gameLevelMapper;
@@ -79,7 +79,12 @@ public class ExportImportFacadeImpl implements ExportImportFacade {
         this.userRefMapper = userRefMapper;
     }
 
-    @Override
+    /**
+     * Exports Training Definition to file
+     *
+     * @param trainingDefinitionId the id of the definition to be exported
+     * @return the file containing definition, {@link FileToReturnDTO}
+     */
     @IsDesignerOrOrganizerOrAdmin
     @TransactionalRO
     public FileToReturnDTO dbExport(Long trainingDefinitionId) {
@@ -140,7 +145,12 @@ public class ExportImportFacadeImpl implements ExportImportFacade {
         return abstractLevelArchiveDTOs;
     }
 
-    @Override
+    /**
+     * Imports training definition.
+     *
+     * @param importTrainingDefinitionDTO the training definition to be imported
+     * @return the {@link TrainingDefinitionByIdDTO}
+     */
     @IsDesignerOrAdmin
     @TransactionalWO
     public TrainingDefinitionByIdDTO dbImport(ImportTrainingDefinitionDTO importTrainingDefinitionDTO) {
@@ -165,7 +175,12 @@ public class ExportImportFacadeImpl implements ExportImportFacade {
         return trainingDefinitionMapper.mapToDTOById(newTrainingDefinition);
     }
 
-    @Override
+    /**
+     * Exports Training Instance to file
+     *
+     * @param trainingInstanceId the id of the instance to be exported
+     * @return the file containing instance, {@link FileToReturnDTO}
+     */
     @IsOrganizerOrAdmin
     @TransactionalRO
     public FileToReturnDTO archiveTrainingInstance(Long trainingInstanceId) {
