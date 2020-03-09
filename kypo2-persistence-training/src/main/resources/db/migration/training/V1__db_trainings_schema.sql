@@ -67,7 +67,6 @@ create table training_definition (
     estimated_duration int8,
     outcomes bytea,
     prerequisities bytea,
-    sandbox_definition_ref_id int8 not null,
     show_stepper_bar boolean not null,
     state varchar(128) not null,
     title varchar(255) not null,

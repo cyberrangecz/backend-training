@@ -50,7 +50,6 @@ public class TrainingInstanceRepositoryTest {
         betaTestingGroup = new BetaTestingGroup();
 
         trainingDefinition = new TrainingDefinition();
-        trainingDefinition.setSandboxDefinitionRefId(1L);
         trainingDefinition.setTitle("test");
         trainingDefinition.setState(TDState.RELEASED);
         trainingDefinition.setBetaTestingGroup(betaTestingGroup);

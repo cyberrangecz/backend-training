@@ -13,7 +13,7 @@ import java.util.Objects;
  * Assessment levels contain questions for trainees to answer.
  *
  */
-@Entity(name = "AssessmentLevel")
+@Entity
 @Table(name = "assessment_level")
 @PrimaryKeyJoinColumn(name = "id")
 public class AssessmentLevel extends AbstractLevel implements Serializable {

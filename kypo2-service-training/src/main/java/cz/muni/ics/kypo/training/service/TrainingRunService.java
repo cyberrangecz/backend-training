@@ -195,5 +195,5 @@ public interface TrainingRunService {
      * @param trainingRun that will be connected with sandbox
      * @return Training run with assigned sandbox
      */
-    TrainingRun assignSandbox(TrainingRun trainingRun);
+    TrainingRun assignSandbox(TrainingRun trainingRun, long poolId);
 }

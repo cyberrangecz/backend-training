@@ -32,8 +32,6 @@ public class TrainingDefinitionByIdDTO {
     private TDState state;
     @ApiModelProperty(value = "Group of organizers who is allowed to see the training definition.", example = "2")
     private Long betaTestingGroupId;
-    @ApiModelProperty(value = "Reference to the sandbox definition.", example = "3")
-    private Long sandboxDefinitionRefId;
     @ApiModelProperty(value = "Information about all levels in training definition.")
     private List<AbstractLevelDTO> levels = new ArrayList<>();
     @ApiModelProperty(value = "Sign if stepper bar should be displayed.", example = "false")
@@ -173,24 +171,6 @@ public class TrainingDefinitionByIdDTO {
     }
 
     /**
-     * Gets sandbox definition ref id.
-     *
-     * @return the sandbox definition ref id
-     */
-    public Long getSandboxDefinitionRefId() {
-        return sandboxDefinitionRefId;
-    }
-
-    /**
-     * Sets sandbox definition ref id.
-     *
-     * @param sandBoxDefinitionRefId the sand box definition ref id
-     */
-    public void setSandboxDefinitionRefId(Long sandBoxDefinitionRefId) {
-        this.sandboxDefinitionRefId = sandBoxDefinitionRefId;
-    }
-
-    /**
      * Gets levels.
      *
      * @return the list of {@link AbstractLevelDTO}
@@ -280,26 +260,32 @@ public class TrainingDefinitionByIdDTO {
         this.lastEdited = lastEdited;
     }
 
-    @Override public String toString() {
-        return "TrainingDefinitionByIdDTO{" + "id=" + id + ", title='" + title + '\'' + ", description='" + description + '\''
-            + ", prerequisities=" + Arrays.toString(prerequisities) + ", outcomes=" + Arrays.toString(outcomes) + ", state=" + state
-            + ", betaTestingGroupId=" + betaTestingGroupId + ", sandboxDefinitionRefId=" + sandboxDefinitionRefId
-            + ", levels=" + levels + ", showStepperBar=" + showStepperBar + ", canBeArchived=" + canBeArchived + ", estimatedDuration="
-            + estimatedDuration + ", lastEdited=" + lastEdited + '}';
-    }
-
     @Override
     public boolean equals(Object object) {
         if (!(object instanceof TrainingDefinitionByIdDTO)) return false;
         TrainingDefinitionByIdDTO that = (TrainingDefinitionByIdDTO) object;
         return Objects.equals(getId(), that.getId()) &&
                 Objects.equals(getTitle(), that.getTitle()) &&
-                Objects.equals(getState(), that.getState()) &&
-                Objects.equals(getSandboxDefinitionRefId(), that.getSandboxDefinitionRefId());
+                Objects.equals(getState(), that.getState());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getId(), getTitle(), getState(), getSandboxDefinitionRefId());
+        return Objects.hash(getId(), getTitle(), getState());
+    }
+
+    @Override
+    public String toString() {
+        return "TrainingDefinitionByIdDTO{" +
+                "id=" + id +
+                ", title='" + title + '\'' +
+                ", description='" + description + '\'' +
+                ", state=" + state +
+                ", betaTestingGroupId=" + betaTestingGroupId +
+                ", showStepperBar=" + showStepperBar +
+                ", canBeArchived=" + canBeArchived +
+                ", estimatedDuration=" + estimatedDuration +
+                ", lastEdited=" + lastEdited +
+                '}';
     }
 }

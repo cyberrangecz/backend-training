@@ -47,7 +47,6 @@ public class AbstractLevelRepositoryTest {
         trainingDefinition = new TrainingDefinition();
         trainingDefinition.setTitle("tD");
         trainingDefinition.setState(TDState.UNRELEASED);
-        trainingDefinition.setSandboxDefinitionRefId(1L);
         trainingDefinition.setShowStepperBar(true);
         trainingDefinition.setLastEdited(LocalDateTime.now(Clock.systemUTC()));
 

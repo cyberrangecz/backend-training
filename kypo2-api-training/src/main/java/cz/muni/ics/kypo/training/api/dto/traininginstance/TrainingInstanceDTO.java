@@ -1,8 +1,6 @@
 package cz.muni.ics.kypo.training.api.dto.traininginstance;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionByIdDTO;
 import cz.muni.ics.kypo.training.converters.LocalDateTimeUTCSerializer;
 import io.swagger.annotations.ApiModel;
@@ -12,7 +10,6 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 
 /**
  * Encapsulates information about Training Instance

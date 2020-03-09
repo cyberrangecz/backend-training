@@ -181,7 +181,7 @@ public class TrainingRunsRestController {
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<AccessTrainingRunDTO> accessTrainingRun(@ApiParam(value = "accessToken", required = true) @RequestParam(value = "accessToken", required = false) String accessToken) {
         AccessTrainingRunDTO accessTrainingRunDTO = trainingRunFacade.accessTrainingRun(accessToken);
-        return new ResponseEntity<>(accessTrainingRunDTO, HttpStatus.OK);
+        return ResponseEntity.ok(accessTrainingRunDTO);
     }
 
     /**

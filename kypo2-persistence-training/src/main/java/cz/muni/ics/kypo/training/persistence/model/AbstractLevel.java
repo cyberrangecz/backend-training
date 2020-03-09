@@ -8,7 +8,7 @@ import java.util.Objects;
  * This class is extended by GameLevel, InfoLevel and AssessmentLevel.
  *
  */
-@Entity(name = "AbstractLevel")
+@Entity
 @Table(name = "abstract_level")
 @Inheritance(strategy = InheritanceType.JOINED)
 public abstract class AbstractLevel extends AbstractEntity<Long> {

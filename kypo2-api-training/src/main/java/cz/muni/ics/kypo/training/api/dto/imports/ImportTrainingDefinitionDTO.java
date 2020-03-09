@@ -32,9 +32,6 @@ public class ImportTrainingDefinitionDTO {
 	@ApiModelProperty(value = "Sign if stepper bar should be displayed.", example = "false")
 	@NotNull(message = "{trainingdefinitionimport.showStepperBar.NotNull.message}")
 	private boolean showStepperBar;
-	@ApiModelProperty(value = "Main identifier of sandbox definition associated with this training definition.", example = "1")
-	@NotNull(message = "{trainingdefinitionimport.sandboxDefinitionRefId.NotNull.message}")
-    private Long sandboxDefinitionRefId;
 	@ApiModelProperty(value = "Information about all levels in training definition.")
 	private List<AbstractLevelImportDTO> levels = new ArrayList<>();
 	@ApiModelProperty(value = "Estimated time it takes to finish runs created from this definition.", example = "5")
@@ -172,23 +169,6 @@ public class ImportTrainingDefinitionDTO {
 		this.levels = new ArrayList<>(levels);
 	}
 
-	/**
-	 * Gets sandbox definition ref id.
-	 *
-	 * @return the sandbox definition ref id
-	 */
-	public Long getSandboxDefinitionRefId() {
-		return sandboxDefinitionRefId;
-	}
-
-	/**
-	 * Sets sandbox definition ref id.
-	 *
-	 * @param sandboxDefinitionRefId the sandbox definition ref id
-	 */
-	public void setSandboxDefinitionRefId(Long sandboxDefinitionRefId) {
-		this.sandboxDefinitionRefId = sandboxDefinitionRefId;
-	}
 
 	/**
 	 * Gets estimated duration.
@@ -208,9 +188,14 @@ public class ImportTrainingDefinitionDTO {
 		this.estimatedDuration = estimatedDuration;
 	}
 
-	@Override public String toString() {
-		return "ImportTrainingDefinitionDTO{" + "title='" + title + '\'' + ", description='" + description + '\'' + ", prerequisities=" + Arrays
-				.toString(prerequisities) + ", outcomes=" + Arrays.toString(outcomes) + ", state=" + state + ", showStepperBar=" + showStepperBar
-				+ ", sandboxDefinitionRefId=" + sandboxDefinitionRefId + ", levels=" + levels + ", estimatedDuration=" + estimatedDuration + '}';
+	@Override
+	public String toString() {
+		return "ImportTrainingDefinitionDTO{" +
+				"title='" + title + '\'' +
+				", description='" + description + '\'' +
+				", state=" + state +
+				", showStepperBar=" + showStepperBar +
+				", estimatedDuration=" + estimatedDuration +
+				'}';
 	}
 }

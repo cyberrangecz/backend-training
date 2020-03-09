@@ -12,7 +12,7 @@ import java.util.*;
  * Training instances can be created based on definitions.
  *
  */
-@Entity(name = "TrainingDefinition")
+@Entity
 @Table(name = "training_definition")
 public class TrainingDefinition extends AbstractEntity<Long> {
 
@@ -36,8 +36,6 @@ public class TrainingDefinition extends AbstractEntity<Long> {
     @OneToOne(fetch = FetchType.LAZY, orphanRemoval = true, optional = true, cascade = CascadeType.ALL)
     @JoinColumn(name = "beta_testing_group_id", unique = true)
     private BetaTestingGroup betaTestingGroup;
-    @Column(name = "sandbox_definition_ref_id", nullable = false)
-    private Long sandboxDefinitionRefId;
     @Column(name = "show_stepper_bar", nullable = false)
     private boolean showStepperBar;
     @Column(name = "estimated_duration", nullable = true)
@@ -213,24 +211,6 @@ public class TrainingDefinition extends AbstractEntity<Long> {
     }
 
     /**
-     * Gets DB reference of sandbox definition associated with Training definition
-     *
-     * @return the sandbox definition ref id
-     */
-    public Long getSandboxDefinitionRefId() {
-        return sandboxDefinitionRefId;
-    }
-
-    /**
-     * Sets DB reference of sandbox definition associated with Training definition
-     *
-     * @param sandboxDefinitionRefId the sandbox definition ref id
-     */
-    public void setSandboxDefinitionRefId(Long sandboxDefinitionRefId) {
-        this.sandboxDefinitionRefId = sandboxDefinitionRefId;
-    }
-
-    /**
      * Gets if stepper bar is shown while in run.
      *
      * @return true if bar is shown
@@ -314,7 +294,6 @@ public class TrainingDefinition extends AbstractEntity<Long> {
                 ", prerequisities=" + Arrays.toString(prerequisities) +
                 ", outcomes=" + Arrays.toString(outcomes) +
                 ", state=" + state +
-                ", sandboxDefinitionRefId=" + sandboxDefinitionRefId +
                 ", showStepperBar=" + showStepperBar +
                 ", estimatedDuration=" + estimatedDuration +
                 ", lastEdited=" + lastEdited +

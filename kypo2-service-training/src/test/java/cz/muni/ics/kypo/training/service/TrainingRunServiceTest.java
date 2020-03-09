@@ -1,5 +1,6 @@
 package cz.muni.ics.kypo.training.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.JsonObject;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.PathBuilder;
@@ -30,10 +31,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -109,13 +107,11 @@ public class TrainingRunServiceTest {
         trainingDefinition.setTitle("Title TrainingDefinition");
         trainingDefinition.setState(TDState.RELEASED);
         trainingDefinition.setAuthors(new HashSet<>());
-        trainingDefinition.setSandboxDefinitionRefId(1L);
         trainingDefinition.setShowStepperBar(true);
 
         trainingDefinition2 = new TrainingDefinition();
         trainingDefinition2.setId(2L);
         trainingDefinition2.setTitle("Title2");
-        trainingDefinition2.setSandboxDefinitionRefId(1L);
 
         trainingInstance2 = new TrainingInstance();
         trainingInstance2.setId(2L);
@@ -232,7 +228,7 @@ public class TrainingRunServiceTest {
     }
 
     @Test
-    public void accessTrainingRun() {
+    public void accessTrainingRun() throws Exception{
         mockSpringSecurityContextForGet();
         UserRef participant = new UserRef();
         participant.setUserRefId(2L);
@@ -242,8 +238,8 @@ public class TrainingRunServiceTest {
 
         given(securityService.getUserRefIdFromUserAndGroup()).willReturn(participantRef.getUserRefId());
         given(trainingInstanceRepository.findByStartTimeAfterAndEndTimeBeforeAndAccessToken(any(LocalDateTime.class), eq(trainingInstance1.getAccessToken()))).willReturn(Optional.ofNullable(trainingInstance1));
-        given(pythonRestTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
-                willReturn(new ResponseEntity<PageResultResourcePython<SandboxInfo>>(pythonPage, HttpStatus.OK));
+        given(pythonRestTemplate.getForEntity(anyString(), any())).
+                willReturn(new ResponseEntity<>(sandboxInfo, HttpStatus.OK));
         given(abstractLevelRepository.findAllLevelsByTrainingDefinitionId(trainingInstance1.getTrainingDefinition().getId())).willReturn(new ArrayList<>(List.of(gameLevel, infoLevel)));
         given(participantRefRepository.save(participant)).willReturn(participantRef);
         given(trainingRunRepository.save(any(TrainingRun.class))).willReturn(trainingRun1);
@@ -539,6 +535,10 @@ public class TrainingRunServiceTest {
 
     }
 
+    private static String convertObjectToJsonBytes(Object object) throws IOException {
+        ObjectMapper mapper = new ObjectMapper();
+        return mapper.writeValueAsString(object);
+    }
 
     @After
     public void after() {

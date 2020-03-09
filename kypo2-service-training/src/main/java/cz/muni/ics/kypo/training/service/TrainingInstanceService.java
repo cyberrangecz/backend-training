@@ -1,6 +1,7 @@
 package cz.muni.ics.kypo.training.service;
 
 import com.querydsl.core.types.Predicate;
+import cz.muni.ics.kypo.training.api.responses.LockedPoolInfo;
 import cz.muni.ics.kypo.training.exceptions.EntityConflictException;
 import cz.muni.ics.kypo.training.exceptions.EntityNotFoundException;
 import cz.muni.ics.kypo.training.persistence.model.TrainingInstance;
@@ -10,7 +11,6 @@ import cz.muni.ics.kypo.training.persistence.model.UserRef;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -65,25 +65,6 @@ public interface TrainingInstanceService {
     void delete(TrainingInstance trainingInstance);
 
     /**
-     * Allocates sandboxes for training instance
-     * This method is annotated with @Transactional
-     *
-     * @param trainingInstance for which allocate sandboxes
-     * @param count            number of sandboxes to allocate
-     * @throws EntityNotFoundException training instance is not found.
-     */
-    void allocateSandboxes(TrainingInstance trainingInstance, Integer count);
-
-    /**
-     * Delete sandbox from training instance
-     * This method is annotated with @Transactional and is asynchronous
-     *
-     * @param trainingInstanceId             id of Training Instance from which to delete sandbox instance.
-     * @param idOfSandboxInstanceRefToDelete id of sandbox to be removed from training instance and deleted from open stack
-     */
-    void deleteSandbox(Long trainingInstanceId, Long idOfSandboxInstanceRefToDelete);
-
-    /**
      * Finds all Training Runs of specific Training Instance.
      *
      * @param trainingInstanceId id of Training Instance whose Training Runs would be returned.
@@ -92,6 +73,12 @@ public interface TrainingInstanceService {
      * @return {@link TrainingRun}s of specific {@link TrainingInstance}
      */
     Page<TrainingRun> findTrainingRunsByTrainingInstance(Long trainingInstanceId, Boolean isActive, Pageable pageable);
+
+    TrainingInstance assignPoolToTrainingInstance(TrainingInstance trainingInstance);
+
+    LockedPoolInfo lockPool(Long poolId);
+
+    void unlockPool(Long poolId);
 
     /**
      * Find UserRefs by userRefId
@@ -108,15 +95,6 @@ public interface TrainingInstanceService {
      * @return the {@link TrainingInstance}
      */
     TrainingInstance findByIdIncludingDefinition(Long instanceId);
-
-    /**
-     * Find ids of all sandboxes occupied by specific training instance.
-     *
-     * @param trainingInstanceId the id of specific training instance
-     * @return the list of ids of all occupied sandboxes
-     */
-    List<Long> findIdsOfAllOccupiedSandboxesByTrainingInstance(Long trainingInstanceId);
-
 
     /**
      * Check if instance is finished.

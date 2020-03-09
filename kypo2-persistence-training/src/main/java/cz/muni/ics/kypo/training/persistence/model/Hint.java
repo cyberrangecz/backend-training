@@ -8,7 +8,7 @@ import java.util.Objects;
  * solving given level
  *
  */
-@Entity(name = "Hint")
+@Entity
 @Table(name = "hint")
 public class Hint extends AbstractEntity<Long> {
 

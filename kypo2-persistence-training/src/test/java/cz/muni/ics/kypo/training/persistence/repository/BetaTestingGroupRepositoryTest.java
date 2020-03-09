@@ -42,7 +42,6 @@ public class BetaTestingGroupRepositoryTest {
         viewGroup1 = new BetaTestingGroup();
 
         trainingDefinition1 = new TrainingDefinition();
-        trainingDefinition1.setSandboxDefinitionRefId(1L);
         trainingDefinition1.setTitle("Best training definition");
         trainingDefinition1.setState(TDState.UNRELEASED);
         trainingDefinition1.setBetaTestingGroup(viewGroup1);
@@ -51,7 +50,6 @@ public class BetaTestingGroupRepositoryTest {
         viewGroup2 = new BetaTestingGroup();
 
         trainingDefinition2 = new TrainingDefinition();
-        trainingDefinition2.setSandboxDefinitionRefId(2L);
         trainingDefinition2.setTitle("Very good training definition");
         trainingDefinition2.setState(TDState.UNRELEASED);
         trainingDefinition2.setBetaTestingGroup(viewGroup2);

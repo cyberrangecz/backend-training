@@ -138,9 +138,6 @@ public class TrainingRunFacadeImpl implements TrainingRunFacade {
     @TransactionalWO
     public AccessTrainingRunDTO accessTrainingRun(String accessToken) {
         TrainingRun trainingRun = trainingRunService.accessTrainingRun(accessToken);
-        if (trainingRun.getSandboxInstanceRefId() == null){
-            trainingRun = trainingRunService.assignSandbox(trainingRun);
-        }
         return convertToAccessTrainingRunDTO(trainingRun);
     }
 

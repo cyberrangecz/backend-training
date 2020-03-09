@@ -15,7 +15,7 @@ import java.util.Set;
  * Training runs are accessed by trainees
  *
  */
-@Entity(name = "TrainingRun")
+@Entity
 @Table(name = "training_run")
 public class TrainingRun extends AbstractEntity<Long> {
 

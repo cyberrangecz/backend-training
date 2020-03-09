@@ -9,7 +9,7 @@ import java.util.*;
  * Game levels contain tasks for trainees to solve.
  *
  */
-@Entity(name = "GameLevel")
+@Entity
 @Table(name = "game_level")
 @PrimaryKeyJoinColumn(name = "id")
 public class GameLevel extends AbstractLevel implements Serializable {

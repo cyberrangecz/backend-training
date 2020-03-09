@@ -32,8 +32,6 @@ public class TrainingDefinitionArchiveDTO {
     private List<AbstractLevelArchiveDTO> levels = new ArrayList<>();
     @ApiModelProperty(value = "Estimated time it takes to finish runs created from this definition.", example = "5")
     private int estimatedDuration;
-    @ApiModelProperty(value = "Main identifier of sandbox definition associated with this training definition.", example = "1")
-    private Long sandboxDefinitionRefId;
 
     /**
      * Gets id.
@@ -197,21 +195,4 @@ public class TrainingDefinitionArchiveDTO {
         this.estimatedDuration = estimatedDuration;
     }
 
-    /**
-     * Gets sandbox definition ref id.
-     *
-     * @return the sandbox definition ref id
-     */
-    public Long getSandboxDefinitionRefId() {
-        return sandboxDefinitionRefId;
-    }
-
-    /**
-     * Sets sandbox definition ref id.
-     *
-     * @param sandboxDefinitionRefId the sandbox definition ref id
-     */
-    public void setSandboxDefinitionRefId(Long sandboxDefinitionRefId) {
-        this.sandboxDefinitionRefId = sandboxDefinitionRefId;
-    }
 }

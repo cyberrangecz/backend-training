@@ -9,7 +9,7 @@ import java.util.Objects;
  * Info levels contain information for trainees.
  *
  */
-@Entity(name = "InfoLevel")
+@Entity
 @Table(name = "info_level")
 @PrimaryKeyJoinColumn(name = "id")
 public class InfoLevel extends AbstractLevel implements Serializable {

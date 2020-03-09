@@ -1,9 +1,6 @@
 package cz.muni.ics.kypo.training.mapping.mapstruct;
 
-import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceCreateDTO;
-import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceDTO;
-import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceFindAllResponseDTO;
-import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceUpdateDTO;
+import cz.muni.ics.kypo.training.api.dto.traininginstance.*;
 import cz.muni.ics.kypo.training.api.responses.PageResultResource;
 import cz.muni.ics.kypo.training.persistence.model.TrainingInstance;
 import org.mapstruct.Mapper;
@@ -25,6 +22,10 @@ public interface TrainingInstanceMapper extends ParentMapper{
     TrainingInstance mapUpdateToEntity(TrainingInstanceUpdateDTO dto);
 
     TrainingInstance mapCreateToEntity(TrainingInstanceCreateDTO dto);
+
+    TrainingInstance mapPartialUpdateToEntity(TrainingInstanceAssignPoolIdDTO dto);
+
+    TrainingInstanceBasicInfoDTO mapEntityToTIBasicInfo(TrainingInstance dto);
 
     TrainingInstanceDTO mapToDTO(TrainingInstance entity);
 

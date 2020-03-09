@@ -1,18 +1,11 @@
 package cz.muni.ics.kypo.training.service.impl;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.querydsl.core.types.Predicate;
 import cz.muni.csirt.kypo.elasticsearch.service.TrainingEventsService;
 import cz.muni.csirt.kypo.elasticsearch.service.exceptions.ElasticsearchTrainingServiceLayerException;
-import cz.muni.ics.kypo.training.api.requests.PoolCreationRequest;
-import cz.muni.ics.kypo.training.api.responses.PageResultResourcePython;
-import cz.muni.ics.kypo.training.api.responses.SandboxInfo;
-import cz.muni.ics.kypo.training.api.responses.SandboxPoolInfo;
+import cz.muni.ics.kypo.training.api.responses.LockedPoolInfo;
+import cz.muni.ics.kypo.training.api.responses.PoolInfoDto;
 import cz.muni.ics.kypo.training.exceptions.*;
-import cz.muni.ics.kypo.training.exceptions.errors.JavaApiError;
 import cz.muni.ics.kypo.training.exceptions.errors.PythonApiError;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.model.enums.TRState;
@@ -24,17 +17,14 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.*;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.io.IOException;
 import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -94,54 +84,18 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
     }
 
     @Override
-    public List<Long> findIdsOfAllOccupiedSandboxesByTrainingInstance(Long trainingInstanceId) {
-        TrainingInstance trainingInstance =  trainingInstanceRepository.findById(trainingInstanceId)
-                .orElseThrow(() -> new EntityNotFoundException(new EntityErrorDetail(TrainingInstance.class, "id",
-                        trainingInstanceId.getClass(), trainingInstanceId, "Training instance not found.")));
-
-        List<SandboxInfo> sandboxes = findSandboxesFromSandboxPool(trainingInstance.getPoolId());
-        List<Long> occupiedSandboxes = new ArrayList<>();
-        sandboxes.forEach(s -> {
-            if (s.isLocked()) occupiedSandboxes.add(s.getId());
-        });
-        return occupiedSandboxes;
-    }
-
-    private List<SandboxInfo> findSandboxesFromSandboxPool(Long poolId){
-        try {
-            HttpHeaders httpHeaders = new HttpHeaders();
-            httpHeaders.setContentType(MediaType.APPLICATION_JSON);
-
-            String url = kypoOpenStackURI + "/pools/" + poolId + "/sandboxes/";
-            UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(url);
-            builder.queryParam("page", 1);
-            builder.queryParam("page_size", PYTHON_RESULT_PAGE_SIZE);
-            ResponseEntity<PageResultResourcePython<SandboxInfo>> response = pythonRestTemplate.exchange(builder.toUriString(), HttpMethod.GET, new HttpEntity<>(httpHeaders),
-                    new ParameterizedTypeReference<PageResultResourcePython<SandboxInfo>>() {
-                    });
-            PageResultResourcePython<SandboxInfo> sandboxInfoPageResult = Objects.requireNonNull(response.getBody());
-            return Objects.requireNonNull(sandboxInfoPageResult.getResults());
-        } catch (RestTemplateException ex) {
-                throw new MicroserviceApiException("Error from Python API when checking a state of sandboxes in pool (ID: " + poolId + ")", new PythonApiError(ex.getMessage()));
-        }
-    }
-
-    @Override
     public TrainingInstance create(TrainingInstance trainingInstance) {
-        Assert.notNull(trainingInstance, "Input training instance must not be null");
         trainingInstance.setAccessToken(generateAccessToken(trainingInstance.getAccessToken()));
         if (trainingInstance.getStartTime().isAfter(trainingInstance.getEndTime())) {
             throw new EntityConflictException(new EntityErrorDetail(TrainingInstance.class, "id", trainingInstance.getId().getClass(), trainingInstance.getId(),
                     "End time must be later than start time."));
         }
         addLoggedInUserAsOrganizerToTrainingInstance(trainingInstance);
-        trainingInstance.setPoolId(createPoolForSandboxes(trainingInstance.getTrainingDefinition().getSandboxDefinitionRefId(), trainingInstance.getPoolSize()));
         return trainingInstanceRepository.save(trainingInstance);
     }
 
     @Override
     public String update(TrainingInstance trainingInstanceToUpdate) {
-        Assert.notNull(trainingInstanceToUpdate, "Input training instance must not be null");
         TrainingInstance trainingInstance = trainingInstanceRepository.findById(trainingInstanceToUpdate.getId())
                 .orElseThrow(() -> new EntityNotFoundException(new EntityErrorDetail(TrainingInstance.class, "id",
                         trainingInstanceToUpdate.getId().getClass(), trainingInstanceToUpdate.getId(), "Training instance not found.")));
@@ -172,28 +126,15 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
         }
     }
 
+
     @Override
     public void delete(TrainingInstance trainingInstance) {
-        Assert.notNull(trainingInstance, "Input training instance must not be null");
         if (trainingRunRepository.existsAnyForTrainingInstance(trainingInstance.getId())) {
             throw new EntityConflictException(new EntityErrorDetail(TrainingInstance.class, "id", trainingInstance.getId().getClass(), trainingInstance.getId(),
                     "Training instance with already assigned training runs cannot be deleted. Please delete training runs assigned to training instance" +
                     " and try again or contact administrator."));
         }
         trainingInstanceRepository.delete(trainingInstance);
-        if (trainingInstance.getPoolId() != null) {
-            try {
-                List<SandboxInfo> sandboxes = findSandboxesFromSandboxPool(trainingInstance.getPoolId());
-                if (sandboxes.isEmpty()){
-                    removePoolOfSandboxesFromOpenStack(trainingInstance.getPoolId());
-                }else {
-                    LOG.error("Pool (ID: {}) assigned to training instance contains some sandboxes. Training instance will be " +
-                            "deleted and these sandboxes remaining in the pool must be deleted through Python API.");
-                }
-            } catch (InternalServerErrorException ex) {
-                LOG.error(ex.getLocalizedMessage());
-            }
-        }
         try {
             trainingEventsService.deleteEventsByTrainingInstanceId(trainingInstance.getId());
         } catch (ElasticsearchTrainingServiceLayerException io) {
@@ -202,13 +143,35 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
         LOG.debug("Training instance with id: {} deleted.", trainingInstance.getId());
     }
 
-    private void removePoolOfSandboxesFromOpenStack(Long poolId) {
-        //Delete pool
-        String url = kypoOpenStackURI + "/pools/" + poolId + "/";
+    public TrainingInstance assignPoolToTrainingInstance(TrainingInstance trainingInstance) {
+        return trainingInstanceRepository.saveAndFlush(trainingInstance);
+    }
+
+    @Override
+    public LockedPoolInfo lockPool(Long poolId){
         try {
-            pythonRestTemplate.delete(UriComponentsBuilder.fromUriString(url).toUriString());
+            HttpHeaders httpHeaders = new HttpHeaders();
+            httpHeaders.setContentType(MediaType.APPLICATION_JSON);
+
+            String url = kypoOpenStackURI + "/pools/" + poolId + "/locks/";
+            UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(url);
+            return pythonRestTemplate.postForObject(builder.toUriString(), new HttpEntity<>("{}", httpHeaders), LockedPoolInfo.class);
         } catch (RestTemplateException ex) {
-            throw new MicroserviceApiException("Error when calling Python API to remove pool (ID: " + poolId + ")", new PythonApiError(ex.getMessage()));
+            throw new MicroserviceApiException("Currently, it is not possible to lock and assign pool with (ID: " + poolId + ").", new PythonApiError(ex.getMessage()));
+        }
+    }
+
+    @Override
+    public void unlockPool(Long poolId) {
+        try {
+            // get lock id from pool
+            String urlGetLockId = kypoOpenStackURI + "/pools/" + poolId;
+            PoolInfoDto poolInfoDto = pythonRestTemplate.getForEntity(UriComponentsBuilder.fromUriString(urlGetLockId).toUriString(), PoolInfoDto.class).getBody();
+            // unlock pool
+            String urlUnlockPool = kypoOpenStackURI + "/pools/" + poolId + "/locks/" + poolInfoDto.getLock();
+            pythonRestTemplate.delete(UriComponentsBuilder.fromUriString(urlUnlockPool).toString());
+        } catch (RestTemplateException ex) {
+            throw new MicroserviceApiException("Currently, it is not possible to unlock a pool with (ID: " + poolId + ").", new PythonApiError(ex.getMessage()));
         }
     }
 
@@ -225,83 +188,6 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
         newTokenInstance.setAccessToken(newPass);
         accessTokenRepository.saveAndFlush(newTokenInstance);
         return newPass;
-    }
-
-    private Long createPoolForSandboxes(Long sandboxDefinitionId, int poolSize) {
-        HttpHeaders httpHeaders = new HttpHeaders();
-        httpHeaders.setContentType(MediaType.APPLICATION_JSON);
-
-        PoolCreationRequest poolCreationRequest = new PoolCreationRequest();
-        poolCreationRequest.setSandboxDefinitionId(sandboxDefinitionId);
-        poolCreationRequest.setPoolSize(poolSize);
-
-        try {
-            ResponseEntity<SandboxPoolInfo> poolResponse = pythonRestTemplate.exchange(kypoOpenStackURI + "/pools/", HttpMethod.POST, new HttpEntity<>(poolCreationRequest, httpHeaders), SandboxPoolInfo.class);
-            return Objects.requireNonNull(poolResponse.getBody()).getId();
-        } catch (RestTemplateException ex) {
-            throw new MicroserviceApiException("Error when calling Python API to create pool", new PythonApiError(ex.getMessage()));
-        }
-    }
-
-    @Override
-    @Async
-    public void allocateSandboxes(TrainingInstance trainingInstance, Integer count) {
-        if (count != null && count > trainingInstance.getPoolSize()) {
-            count = null;
-        }
-        if (trainingInstance.getPoolId() == null) {
-            throw new EntityConflictException(new EntityErrorDetail(TrainingInstance.class, "id", trainingInstance.getId().getClass(), trainingInstance.getId(),
-                    "Pool for sandboxes is not created yet. Please create pool before allocating sandboxes."));
-        }
-        List<SandboxInfo> sandboxes = findSandboxesFromSandboxPool(trainingInstance.getPoolId());
-        if (count != null && count + sandboxes.size() > trainingInstance.getPoolSize()) {
-            count = trainingInstance.getPoolSize() - sandboxes.size();
-        }
-        if (sandboxes.size() >= trainingInstance.getPoolSize()) {
-            throw new EntityConflictException(new EntityErrorDetail(TrainingInstance.class, "id", trainingInstance.getId().getClass(), trainingInstance.getId(),
-                    "Pool of sandboxes of training instance is full."));
-        }
-        HttpHeaders httpHeaders = new HttpHeaders();
-        httpHeaders.setContentType(MediaType.APPLICATION_JSON);
-        try {
-            String url = kypoOpenStackURI + "/pools/" + trainingInstance.getPoolId() + "/sandboxes/";
-            UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(url);
-            if (count != null) {
-                builder.queryParam("count", count);
-            }
-            builder.queryParam("full", true);
-            pythonRestTemplate.exchange(builder.toUriString(), HttpMethod.POST,
-                    new HttpEntity<>(httpHeaders), new ParameterizedTypeReference<List<SandboxInfo>>() {
-                    });
-        } catch (RestTemplateException ex) {
-            LOG.error("Error when calling Python API to allocate sandboxes: {}.", ex.getStatusCode() + " - " + ex.getMessage());
-        }
-    }
-
-    @Override
-    @Async
-    public void deleteSandbox(Long trainingInstanceId, Long idOfSandboxRefToDelete) {
-
-        HttpHeaders httpHeaders = new HttpHeaders();
-        httpHeaders.setContentType(MediaType.APPLICATION_JSON);
-        try {
-            pythonRestTemplate.exchange(kypoOpenStackURI + "/sandboxes/" + idOfSandboxRefToDelete + "/lock/",
-                    HttpMethod.DELETE, new HttpEntity<>(httpHeaders), String.class);
-        } catch (RestTemplateException ex) {
-            if (!ex.getStatusCode().equals(HttpStatus.BAD_REQUEST.toString()) &&
-                !ex.getStatusCode().equals(HttpStatus.NOT_FOUND.toString())) {
-                LOG.error("Error when calling Python API to get lock status of sandbox (ID: {}): {}.", idOfSandboxRefToDelete, ex.getStatusCode() + " - " + ex.getMessage());
-            }
-        }
-        try {
-            pythonRestTemplate.exchange(kypoOpenStackURI + "/sandboxes/" + idOfSandboxRefToDelete + "/",
-                    HttpMethod.DELETE, new HttpEntity<>(httpHeaders), String.class);
-        } catch (RestTemplateException ex) {
-            if (!ex.getStatusCode().equals(HttpStatus.NOT_FOUND.toString())){
-                LOG.error("Error when calling Python API to delete sandbox (ID: {}): {}.", idOfSandboxRefToDelete, ex.getStatusCode() + " - " + ex.getMessage());
-            }
-        }
-        removeSandboxFromTrainingRun(idOfSandboxRefToDelete);
     }
 
     private void removeSandboxFromTrainingRun(Long sandboxId) {
@@ -324,7 +210,6 @@ public class TrainingInstanceServiceImpl implements TrainingInstanceService {
                         TrainingInstance.class, "id", instanceId.getClass(), instanceId, "Training instance not found.")));
         if (isActive == null) {
             return trainingRunRepository.findAllByTrainingInstanceId(instanceId, pageable);
-
         } else if (isActive) {
             return trainingRunRepository.findAllActiveByTrainingInstanceId(instanceId, pageable);
         } else {

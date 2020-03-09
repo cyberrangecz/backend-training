@@ -161,32 +161,6 @@ public class TrainingDefinitionsRestController {
     }
 
     /**
-     * Find all Training Definitions by sandbox definition id.
-     *
-     * @param sandboxDefinitionId the sandbox definition id
-     * @param pageable            pageable parameter with information about pagination.
-     * @return the all training definitions by sandbox definition.
-     */
-    @ApiOperation(httpMethod = "GET",
-            value = "Get all training definition by sandbox definition id",
-            response = TrainingDefinitionRestResource.class,
-            nickname = "findAllTrainingDefinitionsBySandboxDefinitionId",
-            produces = MediaType.APPLICATION_JSON_VALUE
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "All training definitions by sandbox definition found.", response = TrainingDefinitionByIdDTO.class, responseContainer = "List"),
-            @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = JavaApiError.class)
-    })
-    @ApiPageableSwagger
-    @GetMapping(path = "/sandbox-definitions/{sandboxDefinitionId}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Object> findAllTrainingDefinitionsBySandboxDefinitionId(@ApiParam(value = "Id of sandbox definition", required = true)
-                                                                                  @PathVariable(value = "sandboxDefinitionId") Long sandboxDefinitionId, Pageable pageable
-    ) {
-        PageResultResource<TrainingDefinitionInfoDTO> trainingDefinitionResource = trainingDefinitionFacade.findAllBySandboxDefinitionId(sandboxDefinitionId, pageable);
-        return ResponseEntity.ok(SquigglyUtils.stringify(objectMapper, trainingDefinitionResource));
-    }
-
-    /**
      * Create Training Definition.
      *
      * @param trainingDefinitionCreateDTO the Training Definition to be create

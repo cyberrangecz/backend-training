@@ -54,37 +54,31 @@ public class TrainingDefinitionRepositoryTest {
         organizer1.setUserRefId(5L);
 
         trainingDefinition1 = new TrainingDefinition();
-        trainingDefinition1.setSandboxDefinitionRefId(1L);
         trainingDefinition1.setTitle("test1");
         trainingDefinition1.setState(TDState.RELEASED);
         trainingDefinition1.setLastEdited(LocalDateTime.now());
 
         trainingDefinition2 = new TrainingDefinition();
-        trainingDefinition2.setSandboxDefinitionRefId(1L);
         trainingDefinition2.setTitle("test2");
         trainingDefinition2.setState(TDState.UNRELEASED);
         trainingDefinition2.setLastEdited(LocalDateTime.now());
 
         trainingDefinitionWithBG1 = new TrainingDefinition();
-        trainingDefinitionWithBG1.setSandboxDefinitionRefId(6L);
         trainingDefinitionWithBG1.setTitle("test3");
         trainingDefinitionWithBG1.setState(TDState.RELEASED);
         trainingDefinitionWithBG1.setLastEdited(LocalDateTime.now());
 
         trainingDefinitionWithBG2 = new TrainingDefinition();
-        trainingDefinitionWithBG2.setSandboxDefinitionRefId(4L);
         trainingDefinitionWithBG2.setTitle("test4");
         trainingDefinitionWithBG2.setState(TDState.UNRELEASED);
         trainingDefinitionWithBG2.setLastEdited(LocalDateTime.now());
 
         trainingDefinitionWithBG3 = new TrainingDefinition();
-        trainingDefinitionWithBG3.setSandboxDefinitionRefId(6L);
         trainingDefinitionWithBG3.setTitle("test5");
         trainingDefinitionWithBG3.setState(TDState.RELEASED);
         trainingDefinitionWithBG3.setLastEdited(LocalDateTime.now());
 
         trainingDefinitionWithBG4 = new TrainingDefinition();
-        trainingDefinitionWithBG4.setSandboxDefinitionRefId(4L);
         trainingDefinitionWithBG4.setTitle("test6");
         trainingDefinitionWithBG4.setState(TDState.UNRELEASED);
         trainingDefinitionWithBG4.setLastEdited(LocalDateTime.now());
@@ -107,15 +101,6 @@ public class TrainingDefinitionRepositoryTest {
         entityManager.persist(trainingDefinitionWithBG4);
 
         pageable = PageRequest.of(0, 10);
-    }
-
-    @Test
-    public void findAllBySandboxDefinitionRefId() {
-        List<TrainingDefinition> trainingDefinitions = trainingDefinitionRepository
-                .findAllBySandBoxDefinitionRefId(1L, pageable).getContent();
-        assertTrue(trainingDefinitions.contains(trainingDefinition1));
-        assertTrue(trainingDefinitions.contains(trainingDefinition2));
-        assertEquals(2, trainingDefinitions.size());
     }
 
     @Test

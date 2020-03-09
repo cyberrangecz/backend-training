@@ -5,11 +5,8 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
-import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceFindAllResponseDTO;
+import cz.muni.ics.kypo.training.api.dto.traininginstance.*;
 import cz.muni.ics.kypo.training.api.responses.PageResultResource;
-import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceCreateDTO;
-import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceDTO;
-import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceUpdateDTO;
 import cz.muni.ics.kypo.training.converters.LocalDateTimeDeserializer;
 import cz.muni.ics.kypo.training.exceptions.EntityNotFoundException;
 import cz.muni.ics.kypo.training.exceptions.InternalServerErrorException;
@@ -85,6 +82,8 @@ public class TrainingInstancesRestControllerTest {
     private TrainingInstanceUpdateDTO trainingInstanceUpdateDTO;
     private UserRefDTO organizerDTO1, organizerDTO2, organizerDTO3;
     private UserRef participant1;
+    private TrainingInstanceAssignPoolIdDTO trainingInstanceAssignPoolIdDTO;
+    private TrainingInstanceBasicInfoDTO trainingInstanceBasicInfoDTO;
     private Pageable pageable;
     private PageResultResource.Pagination pagination;
 
@@ -143,6 +142,12 @@ public class TrainingInstancesRestControllerTest {
         trainingInstanceUpdateDTO.setEndTime(endTime);
         trainingInstanceUpdateDTO.setPoolSize(5);
         trainingInstanceUpdateDTO.setTrainingDefinitionId(1L);
+
+        trainingInstanceAssignPoolIdDTO = new TrainingInstanceAssignPoolIdDTO();
+        trainingInstanceAssignPoolIdDTO.setId(1L);
+        trainingInstanceAssignPoolIdDTO.setPoolId(1L);
+
+        trainingInstanceBasicInfoDTO = new TrainingInstanceBasicInfoDTO();
 
         List<TrainingInstance> expected = new ArrayList<>();
         expected.add(trainingInstance1);
@@ -212,15 +217,20 @@ public class TrainingInstancesRestControllerTest {
     }
 
     @Test
-    public void allocateSandboxes() throws Exception {
-        mockMvc.perform(post("/training-instances" + "/{instanceId}/" + "sandbox-instances", 1L))
-                .andExpect(status().isAccepted());
+    public void assignPool() throws Exception {
+        given(trainingInstanceFacade.assignPoolToTrainingInstance(trainingInstanceAssignPoolIdDTO)).willReturn(trainingInstanceBasicInfoDTO);
+        mockMvc.perform(patch("/training-instances" + "/{instanceId}/" + "assign-pool", 1L)
+                .content(convertObjectToJsonBytes(trainingInstanceAssignPoolIdDTO))
+                .contentType(MediaType.APPLICATION_JSON_VALUE))
+                .andExpect(status().isOk());
     }
 
     @Test
-    public void allocateSandboxesWithFacadeException() throws Exception {
-        willThrow(new EntityNotFoundException()).given(trainingInstanceFacade).allocateSandboxes(any(Long.class), isNull());
-        MockHttpServletResponse response = mockMvc.perform(post("/training-instances" + "/{instanceId}/" + "sandbox-instances", 698L))
+    public void assignPoolWithFacadeException() throws Exception {
+        willThrow(new EntityNotFoundException()).given(trainingInstanceFacade).assignPoolToTrainingInstance(any(TrainingInstanceAssignPoolIdDTO.class));
+        MockHttpServletResponse response = mockMvc.perform(patch("/training-instances" + "/{instanceId}/" + "assign-pool", 698L)
+                .content(convertObjectToJsonBytes(trainingInstanceAssignPoolIdDTO))
+                .contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isNotFound())
                 .andReturn().getResponse();
         ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
@@ -229,19 +239,19 @@ public class TrainingInstancesRestControllerTest {
     }
 
     @Test
-    public void deleteSandboxes() throws Exception {
-        mockMvc.perform(delete("/training-instances" + "/{instanceId}/sandbox-instances", 1L)
-                .param("sandboxIds", "1")
-                .param("sandboxIds", "2"))
+    public void reassignPool() throws Exception {
+        mockMvc.perform(patch("/training-instances" + "/{instanceId}/reassign-pool", 1L)
+                .content(convertObjectToJsonBytes(trainingInstanceAssignPoolIdDTO))
+                .contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isOk());
     }
 
     @Test
-    public void deleteSandboxesNotFound() throws Exception {
-        willThrow(new EntityNotFoundException()).given(trainingInstanceFacade).deleteSandboxes(any(Long.class), any(Set.class));
-        MockHttpServletResponse response = mockMvc.perform(delete("/training-instances" + "/{instanceId}/" + "sandbox-instances", 698L)
-                .param("sandboxIds", "1")
-                .param("sandboxIds", "2"))
+    public void reassignSandboxesNotFound() throws Exception {
+        willThrow(new EntityNotFoundException()).given(trainingInstanceFacade).reassignPoolToTrainingInstance(any(TrainingInstanceAssignPoolIdDTO.class));
+        MockHttpServletResponse response = mockMvc.perform(patch("/training-instances" + "/{instanceId}/" + "reassign-pool", 698L)
+                .content(convertObjectToJsonBytes(trainingInstanceAssignPoolIdDTO))
+                .contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isNotFound())
                 .andReturn().getResponse();
         ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);

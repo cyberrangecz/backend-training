@@ -8,8 +8,6 @@ import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
 import cz.muni.ics.kypo.training.api.enums.RoleType;
 import cz.muni.ics.kypo.training.api.responses.PageResultResourcePython;
 import cz.muni.ics.kypo.training.api.responses.SandboxInfo;
-import cz.muni.ics.kypo.training.enums.SandboxStates;
-import cz.muni.ics.kypo.training.exceptions.RestTemplateException;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.model.enums.TDState;
 import cz.muni.ics.kypo.training.persistence.repository.*;
@@ -25,7 +23,10 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.*;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -38,7 +39,6 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.UriComponentsBuilder;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -49,8 +49,6 @@ import java.util.List;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.BDDMockito.willThrow;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
 @RunWith(ConcurrentTestRunner.class)
@@ -138,7 +136,6 @@ public class TrainingRunsConcurrentIT {
         trainingDefinition.setTitle("definition");
         trainingDefinition.setState(TDState.RELEASED);
         trainingDefinition.setShowStepperBar(true);
-        trainingDefinition.setSandboxDefinitionRefId(1L);
         trainingDefinition.setLastEdited(LocalDateTime.now());
         trainingDefinitionRepository.save(trainingDefinition);
 
@@ -175,12 +172,9 @@ public class TrainingRunsConcurrentIT {
     @Test
     @ThreadCount(4)
     public void concurrentAccessTrainingRun() throws Exception{
-        String url = "http://localhost:8080" + "/pools/" + trainingInstance.getPoolId() + "/sandboxes/unlocked/";
-        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(url);
-
         given(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), eq(UserRefDTO.class))).willReturn(new ResponseEntity<UserRefDTO>(userRefDTO1, HttpStatus.OK));
         given(restTemplate.exchange(eq(userAndGroupURI + "/users/info"), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).willReturn(new ResponseEntity<UserRefDTO>(userRefDTO1, HttpStatus.OK));
-        given(restTemplate.exchange(eq(builder.toUriString()), eq(HttpMethod.GET), any(HttpEntity.class), eq(SandboxInfo.class))).willReturn(new ResponseEntity<SandboxInfo>(sandboxInfo1, HttpStatus.OK));
+        given(restTemplate.getForEntity(anyString(), eq(SandboxInfo.class))).willReturn(new ResponseEntity<SandboxInfo>(sandboxInfo1, HttpStatus.OK));
         mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_TRAINEE.name()));
 
         mvc.perform(post("/training-runs")
@@ -193,16 +187,6 @@ public class TrainingRunsConcurrentIT {
         List<TRAcquisitionLock> locks = trAcquisitionLockRepository.findAll();
         assertEquals(1, trainingRuns.size());
         assertEquals(1, locks.size());
-        RestTemplateException exception = new RestTemplateException("Sandbox not found.", "404 NOT_FOUND");
-        willThrow(exception).given(restTemplate).exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class));
-        mvc.perform(delete("/training-instances/{instanceId}/sandbox-instances", trainingInstance.getId())
-                .param("sandboxIds", sandboxInfoPageResult.getResults().get(0).getId().toString())
-                .contentType(MediaType.APPLICATION_JSON_VALUE));
-        mvc.perform(delete("/training-runs/"  + trainingRuns.get(0).getId()));
-
-        assertEquals(0, trainingRunRepository.findAll().size());
-        assertEquals(0, trAcquisitionLockRepository.findAll().size());
-
     }
 
     private void mockSpringSecurityContextForGet(List<String> roles) {

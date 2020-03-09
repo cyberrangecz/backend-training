@@ -1,6 +1,5 @@
 package cz.muni.ics.kypo.training.api.responses;
 
-import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 /**

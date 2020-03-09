@@ -54,7 +54,6 @@ public class TrainingRunRepositoryTest {
         trainingDefinition = new TrainingDefinition();
         trainingDefinition.setState(TDState.ARCHIVED);
         trainingDefinition.setTitle("training definition title");
-        trainingDefinition.setSandboxDefinitionRefId(1L);
         trainingDefinition.setBetaTestingGroup(betaTestingGroup);
         trainingDefinition.setLastEdited(LocalDateTime.now());
 

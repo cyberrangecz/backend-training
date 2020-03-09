@@ -170,7 +170,7 @@ public interface TrainingRunRepository extends JpaRepository<TrainingRun, Long>,
      */
     @Query("SELECT tr FROM TrainingRun tr JOIN FETCH tr.trainingInstance ti JOIN FETCH tr.participantRef pr JOIN FETCH tr.currentLevel WHERE ti.accessToken = :accessToken " +
             "AND pr.userRefId = :userRefId AND tr.sandboxInstanceRefId IS NOT NULL AND tr.state NOT LIKE 'FINISHED' ")
-    Optional<TrainingRun> findValidTrainingRunOfUser(@Param("accessToken") String accessToken, @Param("userRefId") Long userRefId);
+    Optional<TrainingRun> findRunningTrainingRunOfUser(@Param("accessToken") String accessToken, @Param("userRefId") Long userRefId);
 
     @Query("SELECT (COUNT(tr) > 0) FROM TrainingRun tr INNER JOIN tr.trainingInstance ti WHERE ti.id = :trainingInstanceId")
     boolean existsAnyForTrainingInstance(@Param("trainingInstanceId") Long trainingInstanceId);
