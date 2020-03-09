@@ -25,7 +25,7 @@ import cz.muni.ics.kypo.training.mapping.mapstruct.*;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.service.TrainingDefinitionService;
 import cz.muni.ics.kypo.training.service.UserService;
-import cz.muni.ics.kypo.training.service.impl.SecurityService;
+import cz.muni.ics.kypo.training.service.SecurityService;
 import org.modelmapper.internal.util.Assert;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
@@ -41,7 +41,7 @@ import java.util.stream.Collectors;
 
 @Service
 @Transactional
-public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
+public class TrainingDefinitionFacade {
 
     private TrainingDefinitionService trainingDefinitionService;
     private TrainingDefinitionMapper trainingDefinitionMapper;
@@ -53,10 +53,10 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
     private SecurityService securityService;
 
     @Autowired
-    public TrainingDefinitionFacadeImpl(TrainingDefinitionService trainingDefinitionService,
-                                        TrainingDefinitionMapper trainingDefMapper, GameLevelMapper gameLevelMapper,
-                                        InfoLevelMapper infoLevelMapper, AssessmentLevelMapper assessmentLevelMapper,
-                                        BasicLevelInfoMapper basicLevelInfoMapper, UserService userService, SecurityService securityService) {
+    public TrainingDefinitionFacade(TrainingDefinitionService trainingDefinitionService,
+                                    TrainingDefinitionMapper trainingDefMapper, GameLevelMapper gameLevelMapper,
+                                    InfoLevelMapper infoLevelMapper, AssessmentLevelMapper assessmentLevelMapper,
+                                    BasicLevelInfoMapper basicLevelInfoMapper, UserService userService, SecurityService securityService) {
         this.trainingDefinitionService = trainingDefinitionService;
         this.trainingDefinitionMapper = trainingDefMapper;
         this.gameLevelMapper = gameLevelMapper;
@@ -67,7 +67,12 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
         this.securityService = securityService;
     }
 
-    @Override
+    /**
+     * Finds specific Training Definition by id
+     *
+     * @param id of a Training Definition that would be returned
+     * @return specific {@link TrainingDefinitionByIdDTO}
+     */
     @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_TRAINEE)")
     @TransactionalRO
     public TrainingDefinitionByIdDTO findById(Long id) {
@@ -123,7 +128,13 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
         return levelDTOS;
     }
 
-    @Override
+    /**
+     * Find all Training Definitions.
+     *
+     * @param predicate represents a predicate (boolean-valued function) of one argument.
+     * @param pageable  pageable parameter with information about pagination.
+     * @return page of all {@link TrainingDefinitionDTO}
+     */
     @IsDesignerOrAdmin
     @TransactionalRO
     public PageResultResource<TrainingDefinitionDTO> findAll(Predicate predicate, Pageable pageable) {
@@ -134,14 +145,25 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
         return resource;
     }
 
-    @Override
+    /**
+     * Find all Training Definitions.
+     *
+     * @param state represents a string if the training definitions should be relased or not.
+     * @param pageable  pageable parameter with information about pagination.
+     * @return page of all {@link TrainingDefinitionInfoDTO} accessible for organizers
+     */
     @IsOrganizerOrAdmin
     @TransactionalRO
     public PageResultResource<TrainingDefinitionInfoDTO> findAllForOrganizers(String state, Pageable pageable) {
         return trainingDefinitionMapper.mapToPageResultResourceInfoDTO(trainingDefinitionService.findAllForOrganizers(state, pageable));
     }
 
-    @Override
+    /**
+     * Creates new training definition
+     *
+     * @param trainingDefinition to be created
+     * @return DTO of created definition, {@link TrainingDefinitionCreateDTO}
+     */
     @IsDesignerOrAdmin
     @TransactionalWO
     public TrainingDefinitionByIdDTO create(TrainingDefinitionCreateDTO trainingDefinition) {
@@ -158,8 +180,11 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
         return trainingDefinitionByIdDTO;
     }
 
-
-    @Override
+    /**
+     * Updates training definition
+     *
+     * @param trainingDefinitionUpdateDTO to be updated
+     */
     @IsDesignerOrAdmin
     @TransactionalWO
     public void update(TrainingDefinitionUpdateDTO trainingDefinitionUpdateDTO) {
@@ -197,7 +222,13 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
         return userRef;
     }
 
-    @Override
+    /**
+     * Clones Training Definition by id
+     *
+     * @param id    of definition to be cloned
+     * @param title the title of cloned definition
+     * @return DTO of cloned definition, {@link TrainingDefinitionByIdDTO}
+     */
     @IsDesignerOrAdmin
     @TransactionalWO
     public TrainingDefinitionByIdDTO clone(Long id, String title) {
@@ -207,7 +238,14 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
         return clonedDefinition;
     }
 
-    @Override
+    /**
+     * Swaps between levels. Swap basically means swapping the order attribute between these two levels.
+     *
+     * @param definitionId  - Id of definition containing levels, this training definition is updating its last edited column.
+     * @param swapLevelFrom - Id of a first level to be swapped.
+     * @param swapLevelTo   - Id of a second level to be swapped.
+     * @return the list of {@link BasicLevelInfoDTO} about all levels from given definition
+     */
     @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
             "or @securityService.isDesignerOfGivenTrainingDefinition(#definitionId)")
     @TransactionalWO
@@ -219,7 +257,14 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
         return gatherBasicLevelInfo(definitionId);
     }
 
-    @Override
+    /**
+     * Move level to the different position and modify orders of levels between moved level and new position.
+     *
+     * @param definitionId  - Id of definition containing levels, this training definition is updating its last edited column.
+     * @param levelIdToBeMoved - id of the level to be moved to the new position
+     * @param newPosition   - position where level will be moved
+     * @return the list of {@link BasicLevelInfoDTO} about all levels from given definition
+     */
     @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
             "or @securityService.isDesignerOfGivenTrainingDefinition(#definitionId)")
     @TransactionalWO
@@ -231,16 +276,26 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
         return gatherBasicLevelInfo(definitionId);
     }
 
-    @Override
+    /**
+     * Deletes specific training instance based on id
+     *
+     * @param id of definition to be deleted
+     */
     @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
-            "or @securityService.isDesignerOfGivenTrainingDefinition(#definitionId)")
+            "or @securityService.isDesignerOfGivenTrainingDefinition(#id)")
     @TransactionalWO
     public void delete(Long id) {
         Objects.requireNonNull(id);
         trainingDefinitionService.delete(id);
     }
 
-    @Override
+    /**
+     * deletes specific level by id
+     *
+     * @param definitionId - id of definition containing level to be deleted
+     * @param levelId      - id of level to be deleted
+     * @return the list of {@link BasicLevelInfoDTO} about all levels from given definition
+     */
     @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
             "or @securityService.isDesignerOfGivenTrainingDefinition(#definitionId)")
     @TransactionalWO
@@ -251,7 +306,12 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
         return gatherBasicLevelInfo(definitionId);
     }
 
-    @Override
+    /**
+     * updates game level from training definition
+     *
+     * @param definitionId - id of training definition containing level to be updated
+     * @param gameLevel    to be updated
+     */
     @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
             "or @securityService.isDesignerOfGivenTrainingDefinition(#definitionId)")
     @TransactionalWO
@@ -264,7 +324,12 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
         trainingDefinitionService.updateGameLevel(definitionId, gameLevelToUpdate);
     }
 
-    @Override
+    /**
+     * updates info level from training definition
+     *
+     * @param definitionId - id of training definition containing level to be updated
+     * @param infoLevel    to be updated
+     */
     @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
             "or @securityService.isDesignerOfGivenTrainingDefinition(#definitionId)")
     @TransactionalWO
@@ -274,7 +339,12 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
         trainingDefinitionService.updateInfoLevel(definitionId, infoLevelMapper.mapUpdateToEntity(infoLevel));
     }
 
-    @Override
+    /**
+     * updates assessment level from training definition
+     *
+     * @param definitionId    - id of training definition containing level to be updated
+     * @param assessmentLevel to be updated
+     */
     @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
             "or @securityService.isDesignerOfGivenTrainingDefinition(#definitionId)")
     @TransactionalWO
@@ -284,7 +354,12 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
         trainingDefinitionService.updateAssessmentLevel(definitionId, assessmentLevelMapper.mapUpdateToEntity(assessmentLevel));
     }
 
-    @Override
+    /**
+     * creates new info level in training definition
+     *
+     * @param definitionId - id of definition in which level will be created
+     * @return {@link BasicLevelInfoDTO} of new info level
+     */
     @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
             "or @securityService.isDesignerOfGivenTrainingDefinition(#definitionId)")
     @TransactionalWO
@@ -296,8 +371,12 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
         return levelInfoDTO;
     }
 
-
-    @Override
+    /**
+     * creates new game level in training definition
+     *
+     * @param definitionId - id of definition in which level will be created
+     * @return {@link BasicLevelInfoDTO} of new game level
+     */
     @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
             "or @securityService.isDesignerOfGivenTrainingDefinition(#definitionId)")
     @TransactionalWO
@@ -309,8 +388,12 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
         return levelInfoDTO;
     }
 
-
-    @Override
+    /**
+     * creates new assessment level in training definition
+     *
+     * @param definitionId - id of definition in which level will be created
+     * @return {@link BasicLevelInfoDTO} of new assessment level
+     */
     @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
             "or @securityService.isDesignerOfGivenTrainingDefinition(#definitionId)")
     @TransactionalWO
@@ -322,7 +405,12 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
         return levelInfoDTO;
     }
 
-    @Override
+    /**
+     * Finds specific level by id
+     *
+     * @param levelId - id of wanted level
+     * @return wanted {@link AbstractLevelDTO}
+     */
     @IsDesignerOrAdmin
     @TransactionalRO
     public AbstractLevelDTO findLevelById(Long levelId) {
@@ -341,14 +429,25 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
         return abstractLevelDTO;
     }
 
-    @Override
+    /**
+     * Get users with given role
+     *
+     * @param roleType the wanted role type
+     * @param pageable pageable parameter with information about pagination.
+     * @return list of users {@link UserRefDTO}
+     */
     @IsDesignerOrAdmin
     @TransactionalRO
     public PageResultResource<UserRefDTO> getUsersWithGivenRole(RoleType roleType, Pageable pageable, String givenName, String familyName) {
         return userService.getUsersByGivenRole(roleType, pageable, givenName, familyName);
     }
 
-    @Override
+    /**
+     * Switch state of definition to unreleased
+     *
+     * @param definitionId - id of training definition
+     * @param state        - new state of TD
+     */
     @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
             "or @securityService.isDesignerOfGivenTrainingDefinition(#definitionId)")
     public void switchState(Long definitionId, TDState state) {
@@ -364,14 +463,28 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
         return true;
     }
 
-    @Override
+    /**
+     * Retrieve all authors for given training definition.
+     *
+     * @param trainingDefinitionId id of the training definition for which to get the authors
+     * @param pageable pageable parameter with information about pagination.
+     * @param givenName optional parameter used for filtration
+     * @param familyName optional parameter used for filtration
+     * @return returns all authors in given training definition.
+     */
     @IsDesignerOrOrganizerOrAdmin
     public PageResultResource<UserRefDTO> getAuthors(Long trainingDefinitionId, Pageable pageable, String givenName, String familyName) {
         TrainingDefinition trainingDefinition = trainingDefinitionService.findById(trainingDefinitionId);
         return userService.getUsersRefDTOByGivenUserIds(trainingDefinition.getAuthors().stream().map(UserRef::getUserRefId).collect(Collectors.toSet()), pageable, givenName, familyName);
     }
 
-    @Override
+    /**
+     * Retrieve all beta testers for given training definition.
+     *
+     * @param trainingDefinitionId id of the training definition for which to get the beta testers
+     * @param pageable pageable parameter with information about pagination.
+     * @return returns all beta testers in given training definition.
+     */
     @IsDesignerOrOrganizerOrAdmin
     public PageResultResource<UserRefDTO> getBetaTesters(Long trainingDefinitionId, Pageable pageable) {
         TrainingDefinition trainingDefinition = trainingDefinitionService.findById(trainingDefinitionId);
@@ -383,7 +496,15 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
         return new PageResultResource<>(Collections.emptyList(), new PageResultResource.Pagination(0,0,0,0,0));
     }
 
-    @Override
+    /**
+     * Retrieve all designers not in the given training definition.
+     *
+     * @param trainingDefinitionId id of the training definition which users should be excluded from the result list.
+     * @param pageable pageable parameter with information about pagination.
+     * @param givenName optional parameter used for filtration
+     * @param familyName optional parameter used for filtration
+     * @return returns all designers not in the given training definition.
+     */
     @IsDesignerOrOrganizerOrAdmin
     @TransactionalRO
     public PageResultResource<UserRefDTO> getDesignersNotInGivenTrainingDefinition(Long trainingDefinitionId, Pageable pageable, String givenName, String familyName) {
@@ -394,7 +515,13 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
         return userService.getUsersByGivenRoleAndNotWithGivenIds(RoleType.ROLE_TRAINING_DESIGNER, excludedUsers, pageable, givenName, familyName);
     }
 
-    @Override
+    /**
+     * Concurrently add authors to the given training definition and remove authors from the training definition.
+     *
+     * @param trainingDefinitionId if of the training definition to be updated
+     * @param authorsAddition ids of the authors to be added to the training definition
+     * @param authorsRemoval ids of the authors to be removed from the training definition.
+     */
     @IsDesignerOrAdmin
     @TransactionalWO
     public void editAuthors(Long trainingDefinitionId, Set<Long> authorsAddition, Set<Long> authorsRemoval) {

@@ -19,7 +19,7 @@ import cz.muni.ics.kypo.training.persistence.model.UserRef;
 import cz.muni.ics.kypo.training.service.TrainingDefinitionService;
 import cz.muni.ics.kypo.training.service.TrainingInstanceService;
 import cz.muni.ics.kypo.training.service.UserService;
-import cz.muni.ics.kypo.training.service.impl.SecurityService;
+import cz.muni.ics.kypo.training.service.SecurityService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -32,7 +32,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
-public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
+public class TrainingInstanceFacade {
 
     private TrainingInstanceService trainingInstanceService;
     private TrainingDefinitionService trainingDefinitionService;
@@ -42,9 +42,9 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
     private SecurityService securityService;
 
     @Autowired
-    public TrainingInstanceFacadeImpl(TrainingInstanceService trainingInstanceService, TrainingDefinitionService trainingDefinitionService,
-                                      TrainingInstanceMapper trainingInstanceMapper, TrainingRunMapper trainingRunMapper, UserService userService,
-                                      SecurityService securityService) {
+    public TrainingInstanceFacade(TrainingInstanceService trainingInstanceService, TrainingDefinitionService trainingDefinitionService,
+                                  TrainingInstanceMapper trainingInstanceMapper, TrainingRunMapper trainingRunMapper, UserService userService,
+                                  SecurityService securityService) {
         this.trainingInstanceService = trainingInstanceService;
         this.trainingDefinitionService = trainingDefinitionService;
         this.trainingInstanceMapper = trainingInstanceMapper;
@@ -53,22 +53,38 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
         this.securityService = securityService;
     }
 
-    @Override
+    /**
+     * Finds specific Training Instance by id
+     *
+     * @param id of a Training Instance that would be returned
+     * @return specific {@link TrainingInstanceDTO} by id
+     */
     @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
-            "or @securityService.isOrganizerOfGivenTrainingInstance(#instanceId)")
+            "or @securityService.isOrganizerOfGivenTrainingInstance(#id)")
     @TransactionalRO
     public TrainingInstanceDTO findById(Long id) {
         return trainingInstanceMapper.mapToDTO(trainingInstanceService.findByIdIncludingDefinition(id));
     }
 
-    @Override
+    /**
+     * Find all Training Instances.
+     *
+     * @param predicate represents a predicate (boolean-valued function) of one argument.
+     * @param pageable  pageable parameter with information about pagination.
+     * @return page of all {@link TrainingInstanceFindAllResponseDTO}
+     */
     @IsOrganizerOrAdmin
     @TransactionalRO
     public PageResultResource<TrainingInstanceFindAllResponseDTO> findAll(Predicate predicate, Pageable pageable) {
         return trainingInstanceMapper.mapToPageResultResourceBasicView(trainingInstanceService.findAll(predicate, pageable));
     }
 
-    @Override
+    /**
+     * Updates training instance
+     *
+     * @param trainingInstanceUpdateDTO to be updated
+     * @return new access token if it was changed
+     */
     @IsOrganizerOrAdmin
     @TransactionalWO
     public String update(TrainingInstanceUpdateDTO trainingInstanceUpdateDTO) {
@@ -77,7 +93,12 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
         return trainingInstanceService.update(trainingInstance);
     }
 
-    @Override
+    /**
+     * Creates new training instance
+     *
+     * @param trainingInstanceCreateDTO to be created
+     * @return created {@link TrainingInstanceDTO}
+     */
     @IsOrganizerOrAdmin
     @TransactionalWO
     public TrainingInstanceDTO create(TrainingInstanceCreateDTO trainingInstanceCreateDTO) {
@@ -114,18 +135,26 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
         return userRef;
     }
 
-    @Override
+    /**
+     * Deletes specific training instance based on id
+     *
+     * @param id of training instance to be deleted
+     */
     @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
-            "or @securityService.isOrganizerOfGivenTrainingInstance(#instanceId)")
+            "or @securityService.isOrganizerOfGivenTrainingInstance(#id)")
     @TransactionalWO
     public void delete(Long id) {
         TrainingInstance trainingInstance = trainingInstanceService.findById(id);
         trainingInstanceService.delete(trainingInstance);
     }
 
-    @Override
+    /**
+     * Assign pool in training instance new training instance
+     *
+     * @param trainingInstanceAssignPoolIdDTO of training instance to be deleted
+     */
     @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
-            "or @securityService.isOrganizerOfGivenTrainingInstance(#instanceId)")
+            "or @securityService.isOrganizerOfGivenTrainingInstance(#trainingInstanceAssignPoolIdDTO.id)")
     @TransactionalWO
     public TrainingInstanceBasicInfoDTO assignPoolToTrainingInstance(TrainingInstanceAssignPoolIdDTO trainingInstanceAssignPoolIdDTO) {
         TrainingInstance trainingInstance = trainingInstanceService.findById(trainingInstanceAssignPoolIdDTO.getId());
@@ -136,9 +165,13 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
         return trainingInstanceMapper.mapEntityToTIBasicInfo(updatedTrainingInstance);
     }
 
-    @Override
+    /**
+     * Reassign pool in training instance  or assignes new training instance
+     *
+     * @param trainingInstanceAssignPoolIdDTO of training instance to be deleted
+     */
     @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
-            "or @securityService.isOrganizerOfGivenTrainingInstance(#instanceId)")
+            "or @securityService.isOrganizerOfGivenTrainingInstance(#trainingInstanceAssignPoolIdDTO.id)")
     @TransactionalWO
     public TrainingInstanceBasicInfoDTO reassignPoolToTrainingInstance(TrainingInstanceAssignPoolIdDTO trainingInstanceAssignPoolIdDTO) {
         TrainingInstance trainingInstance = trainingInstanceService.findById(trainingInstanceAssignPoolIdDTO.getId());
@@ -152,9 +185,16 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
         return trainingInstanceMapper.mapEntityToTIBasicInfo(updatedTrainingInstance);
     }
 
-    @Override
+    /**
+     * Finds all Training Runs by specific Training Instance.
+     *
+     * @param trainingInstanceId id of Training Instance whose Training Runs would be returned.
+     * @param isActive           if isActive attribute is True, only active runs are returned
+     * @param pageable           pageable parameter with information about pagination.
+     * @return Page of {@link TrainingRunDTO} of specific Training Instance
+     */
     @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
-            "or @securityService.isOrganizerOfGivenTrainingInstance(#instanceId)")
+            "or @securityService.isOrganizerOfGivenTrainingInstance(#trainingInstanceId)")
     @TransactionalRO
     public PageResultResource<TrainingRunDTO> findTrainingRunsByTrainingInstance(Long trainingInstanceId, Boolean isActive, Pageable pageable) {
         Page<TrainingRun> trainingRuns = trainingInstanceService.findTrainingRunsByTrainingInstance(trainingInstanceId, isActive, pageable);
@@ -168,7 +208,12 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
                 trainingRunDTO.setParticipantRef(userService.getUserRefDTOByUserRefId(trainingRunDTO.getParticipantRef().getUserRefId())));
     }
 
-    @Override
+    /**
+     * Check if instance can be deleted.
+     *
+     * @param trainingInstanceId the training instance id
+     * @return true if instance can be deleted, false if not and message. {@link TrainingInstanceIsFinishedInfoDTO}
+     */
     @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
             "or @securityService.isOrganizerOfGivenTrainingInstance(#trainingInstanceId)")
     @TransactionalRO
@@ -184,9 +229,17 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
         return infoDTO;
     }
 
-    @Override
+    /**
+     * Retrieve all organizers for given training instance .
+     *
+     * @param trainingInstanceId id of the training instance for which to get the organizers
+     * @param pageable pageable parameter with information about pagination.
+     * @param givenName optional parameter used for filtration
+     * @param familyName optional parameter used for filtration
+     * @return returns all organizers in given training instance.
+     */
     @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
-            "or @securityService.isOrganizerOfGivenTrainingInstance(#instanceId)")
+            "or @securityService.isOrganizerOfGivenTrainingInstance(#trainingInstanceId)")
     @TransactionalRO
     public PageResultResource<UserRefDTO> getOrganizersOfTrainingInstance(Long trainingInstanceId, Pageable pageable, String givenName, String familyName) {
         TrainingInstance trainingInstance = trainingInstanceService.findById(trainingInstanceId);
@@ -195,9 +248,17 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
                 .collect(Collectors.toSet()), pageable, givenName, familyName);
     }
 
-    @Override
+    /**
+     * Retrieve all organizers not in the given training instance.
+     *
+     * @param trainingInstanceId id of the training instance which users should be excluded from the result list.
+     * @param pageable pageable parameter with information about pagination.
+     * @param givenName optional parameter used for filtration
+     * @param familyName optional parameter used for filtration
+     * @return returns all organizers not in the given training instance.
+     */
     @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
-            "or @securityService.isOrganizerOfGivenTrainingInstance(#instanceId)")
+            "or @securityService.isOrganizerOfGivenTrainingInstance(#trainingInstanceId)")
     @TransactionalRO
     public PageResultResource<UserRefDTO> getOrganizersNotInGivenTrainingInstance(Long trainingInstanceId, Pageable pageable, String givenName, String familyName) {
         TrainingInstance trainingInstance = trainingInstanceService.findById(trainingInstanceId);
@@ -207,9 +268,15 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
         return userService.getUsersByGivenRoleAndNotWithGivenIds(RoleType.ROLE_TRAINING_ORGANIZER, excludedOrganizers, pageable, givenName, familyName);
     }
 
-    @Override
+    /**
+     * Concurrently add organizers to the given training instance and remove authors from the training instance.
+     *
+     * @param trainingInstanceId if of the training instance to be updated
+     * @param organizersAddition ids of the organizers to be added to the training instance
+     * @param organizersRemoval ids of the organizers to be removed from the training instance.
+     */
     @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
-            "or @securityService.isOrganizerOfGivenTrainingInstance(#instanceId)")
+            "or @securityService.isOrganizerOfGivenTrainingInstance(#trainingInstanceId)")
     @TransactionalWO
     public void editOrganizers(Long trainingInstanceId, Set<Long> organizersAddition, Set<Long> organizersRemoval) {
         TrainingInstance trainingInstance = trainingInstanceService.findById(trainingInstanceId);

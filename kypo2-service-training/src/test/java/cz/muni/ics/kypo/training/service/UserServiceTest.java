@@ -5,7 +5,6 @@ import cz.muni.ics.kypo.training.api.enums.RoleType;
 import cz.muni.ics.kypo.training.api.responses.PageResultResource;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.repository.*;
-import cz.muni.ics.kypo.training.service.impl.UserServiceImpl;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -51,12 +50,10 @@ public class UserServiceTest {
     private PageResultResource.Pagination pagination;
     private Pageable pageable;
 
-
-
     @Before
     public void init() {
         MockitoAnnotations.initMocks(this);
-        userService = new UserServiceImpl(restTemplate, userRefRepository);
+        userService = new UserService(restTemplate, userRefRepository);
         ReflectionTestUtils.setField(userService, "userAndGroupURI", "https://localhost:8083/kypo2-rest-user-and-group/");
 
         userRef1 = new UserRef();
@@ -73,7 +70,6 @@ public class UserServiceTest {
         userRefDTO2 = createUserRefDTO(20L, "Bc. Boris Makal", "Makal", "Boris", "772211@muni.cz", "https://oidc.muni.cz/oidc", null);
 
         pageable = PageRequest.of(0,5);
-
     }
 
     private UserRefDTO createUserRefDTO(Long userRefId, String fullName, String familyName, String givenName, String login, String iss, byte[] picture) {

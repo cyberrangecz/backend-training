@@ -2,7 +2,6 @@ package cz.muni.ics.kypo.training.service;
 
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.repository.*;
-import cz.muni.ics.kypo.training.service.impl.ExportImportServiceImpl;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -12,7 +11,6 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import java.time.LocalDateTime;
 import java.util.Optional;
 
 import static org.mockito.BDDMockito.*;
@@ -53,7 +51,7 @@ public class ExportImportServiceTest {
     @Before
     public void init() {
         MockitoAnnotations.initMocks(this);
-        exportImportService = new ExportImportServiceImpl(trainingDefinitionRepository, abstractLevelRepository, assessmentLevelRepository,
+        exportImportService = new ExportImportService(trainingDefinitionRepository, abstractLevelRepository, assessmentLevelRepository,
                 infoLevelRepository, gameLevelRepository, trainingInstanceRepository, trainingRunRepository);
 
         given(assessmentLevel.getId()).willReturn(1L);

@@ -14,8 +14,6 @@ import cz.muni.ics.kypo.training.persistence.model.TrainingInstance;
 import cz.muni.ics.kypo.training.persistence.model.TrainingRun;
 import cz.muni.ics.kypo.training.persistence.model.UserRef;
 import cz.muni.ics.kypo.training.persistence.repository.*;
-import cz.muni.ics.kypo.training.service.impl.SecurityService;
-import cz.muni.ics.kypo.training.service.impl.TrainingInstanceServiceImpl;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -88,7 +86,7 @@ public class TrainingInstanceServiceTest {
     @Before
     public void init() {
         MockitoAnnotations.initMocks(this);
-        trainingInstanceService = new TrainingInstanceServiceImpl(trainingInstanceRepository, accessTokenRepository,
+        trainingInstanceService = new TrainingInstanceService(trainingInstanceRepository, accessTokenRepository,
                 trainingRunRepository, organizerRefRepository, pythonRestTemplate, securityService, trainingEventsService,
                 trAcquisitionLockRepository);
 

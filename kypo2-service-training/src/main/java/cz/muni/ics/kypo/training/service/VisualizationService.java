@@ -1,18 +1,34 @@
 package cz.muni.ics.kypo.training.service;
 
 import cz.muni.ics.kypo.training.exceptions.EntityConflictException;
+import cz.muni.ics.kypo.training.exceptions.EntityErrorDetail;
 import cz.muni.ics.kypo.training.persistence.model.AbstractLevel;
 import cz.muni.ics.kypo.training.persistence.model.TrainingInstance;
 import cz.muni.ics.kypo.training.persistence.model.TrainingRun;
+import cz.muni.ics.kypo.training.persistence.model.enums.TRState;
+import cz.muni.ics.kypo.training.persistence.repository.AbstractLevelRepository;
+import cz.muni.ics.kypo.training.persistence.repository.UserRefRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
 
 import java.util.List;
 import java.util.Set;
 
-/**
- * The interface for Visualization service.
- *
- */
-public interface VisualizationService {
+@Service
+public class VisualizationService {
+
+    private AbstractLevelRepository abstractLevelRepository;
+    private UserRefRepository userRefRepository;
+    private SecurityService securityService;
+
+    @Autowired
+    public VisualizationService(AbstractLevelRepository abstractLevelRepository,
+                                SecurityService securityService, UserRefRepository userRefRepository) {
+        this.abstractLevelRepository = abstractLevelRepository;
+        this.securityService = securityService;
+        this.userRefRepository = userRefRepository;
+    }
 
     /**
      * Gets list of all levels for trainee of given Training Run.
@@ -21,7 +37,16 @@ public interface VisualizationService {
      * @return List of {@link AbstractLevel}s
      * @throws EntityConflictException training run is still running
      */
-    List<AbstractLevel> getLevelsForTraineeVisualization(TrainingRun trainingRun);
+    public List<AbstractLevel> getLevelsForTraineeVisualization(TrainingRun trainingRun) {
+        Assert.notNull(trainingRun, "Id of training run must not be null.");
+        if(securityService.isAdmin()) {
+            return abstractLevelRepository.findAllLevelsByTrainingDefinitionId(trainingRun.getTrainingInstance().getTrainingDefinition().getId());
+        } else if(trainingRun.getState().equals(TRState.RUNNING)) {
+            throw new EntityConflictException(new EntityErrorDetail(TrainingRun.class, "id", trainingRun.getId().getClass(), trainingRun.getId(),
+                    "Logged in user cannot access info for visualization because training run is still running."));
+        }
+        return abstractLevelRepository.findAllLevelsByTrainingDefinitionId(trainingRun.getTrainingInstance().getTrainingDefinition().getId());
+    }
 
     /**
      * Gets list of all levels for organizer of given Training Instance.
@@ -29,7 +54,10 @@ public interface VisualizationService {
      * @param trainingInstance the training instance for which to find all levels.
      * @return List of {@link AbstractLevel}s
      */
-    List<AbstractLevel> getLevelsForOrganizerVisualization(TrainingInstance trainingInstance);
+    public List<AbstractLevel> getLevelsForOrganizerVisualization(TrainingInstance trainingInstance) {
+        Assert.notNull(trainingInstance, "Id of training instance must not be null.");
+        return abstractLevelRepository.findAllLevelsByTrainingDefinitionId(trainingInstance.getTrainingDefinition().getId());
+    }
 
     /**
      * Get all participants ref ids in given training instance.
@@ -37,6 +65,7 @@ public interface VisualizationService {
      * @param trainingInstanceId id of Training Instance to gets participants ref ids.
      * @return list of participants ref ids.
      */
-    Set<Long> getAllParticipantsRefIdsForSpecificTrainingInstance(Long trainingInstanceId);
-
+    public Set<Long> getAllParticipantsRefIdsForSpecificTrainingInstance(Long trainingInstanceId) {
+        return userRefRepository.findParticipantsRefByTrainingInstanceId(trainingInstanceId);
+    }
 }

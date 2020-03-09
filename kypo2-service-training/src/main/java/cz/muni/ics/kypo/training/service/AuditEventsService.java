@@ -1,4 +1,4 @@
-package cz.muni.ics.kypo.training.service.impl;
+package cz.muni.ics.kypo.training.service;
 
 import cz.muni.csirt.kypo.elasticsearch.service.AuditService;
 import cz.muni.csirt.kypo.events.trainings.*;

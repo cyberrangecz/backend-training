@@ -25,7 +25,7 @@ import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.model.enums.TDState;
 import cz.muni.ics.kypo.training.service.TrainingDefinitionService;
 import cz.muni.ics.kypo.training.service.UserService;
-import cz.muni.ics.kypo.training.service.impl.SecurityService;
+import cz.muni.ics.kypo.training.service.SecurityService;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -110,7 +110,7 @@ public class TrainingDefinitionFacadeTest {
     @Before
     public void init() {
         MockitoAnnotations.initMocks(this);
-        trainingDefinitionFacade = new TrainingDefinitionFacadeImpl(trainingDefinitionService,
+        trainingDefinitionFacade = new TrainingDefinitionFacade(trainingDefinitionService,
                 trainingDefinitionMapper, gameLevelMapper, infoLevelMapper, assessmentLevelMapper, basicLevelInfoMapper, userService, securityService);
         beanMapping = new BeanMappingImpl(new ModelMapper());
         assessmentLevel = new AssessmentLevel();
