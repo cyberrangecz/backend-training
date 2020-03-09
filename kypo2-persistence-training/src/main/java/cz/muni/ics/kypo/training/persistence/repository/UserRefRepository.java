@@ -15,8 +15,7 @@ import java.util.Set;
  *
  */
 @Repository
-public interface UserRefRepository extends JpaRepository<UserRef, Long>,
-        QuerydslPredicateExecutor<UserRef> {
+public interface UserRefRepository extends JpaRepository<UserRef, Long>, QuerydslPredicateExecutor<UserRef> {
 
     /**
      * Find all users by userRefIds.

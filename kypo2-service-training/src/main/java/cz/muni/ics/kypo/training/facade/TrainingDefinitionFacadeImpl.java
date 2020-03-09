@@ -28,7 +28,6 @@ import cz.muni.ics.kypo.training.service.UserService;
 import cz.muni.ics.kypo.training.service.impl.SecurityService;
 import org.modelmapper.internal.util.Assert;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -140,19 +139,6 @@ public class TrainingDefinitionFacadeImpl implements TrainingDefinitionFacade {
     @TransactionalRO
     public PageResultResource<TrainingDefinitionInfoDTO> findAllForOrganizers(String state, Pageable pageable) {
         return trainingDefinitionMapper.mapToPageResultResourceInfoDTO(trainingDefinitionService.findAllForOrganizers(state, pageable));
-    }
-
-    @Override
-    @IsDesignerOrAdmin
-    @TransactionalRO
-    public PageResultResource<TrainingDefinitionInfoDTO> findAllBySandboxDefinitionId(Long sandboxDefinitionId, Pageable pageable) {
-        Page<TrainingDefinition> trainingDefinitionsPage = trainingDefinitionService.findAllBySandboxDefinitionId(sandboxDefinitionId, pageable);
-        List<TrainingDefinitionInfoDTO> trainingDefinitionInfoDTOS = new ArrayList<>();
-        for (TrainingDefinition trainingDefinition : trainingDefinitionsPage.getContent()) {
-            TrainingDefinitionInfoDTO trainingDefinitionInfoDTO = trainingDefinitionMapper.mapToInfoDTO(trainingDefinition);
-            trainingDefinitionInfoDTOS.add(trainingDefinitionInfoDTO);
-        }
-        return new PageResultResource<>(trainingDefinitionInfoDTOS, trainingDefinitionMapper.createPagination(trainingDefinitionsPage));
     }
 
     @Override

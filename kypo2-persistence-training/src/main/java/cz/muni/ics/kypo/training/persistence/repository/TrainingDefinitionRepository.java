@@ -3,9 +3,7 @@ package cz.muni.ics.kypo.training.persistence.repository;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.StringPath;
-import com.querydsl.jpa.JPQLQuery;
 import cz.muni.ics.kypo.training.persistence.model.QTrainingDefinition;
-import cz.muni.ics.kypo.training.persistence.model.TrainingInstance;
 import cz.muni.ics.kypo.training.persistence.model.enums.TDState;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -16,7 +14,6 @@ import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.querydsl.binding.QuerydslBinderCustomizer;
 import org.springframework.data.querydsl.binding.QuerydslBindings;
 import org.springframework.data.repository.query.Param;
-import org.springframework.stereotype.Repository;
 
 import cz.muni.ics.kypo.training.persistence.model.TrainingDefinition;
 
@@ -44,16 +41,6 @@ public interface TrainingDefinitionRepository
             return Optional.ofNullable(predicate);
         });
     }
-
-    /**
-     * Find all training definitions by their associated sand box definition ref.
-     *
-     * @param sandboxDefId the sandbox def id
-     * @param pageable     the pageable
-     * @return page of {@link TrainingDefinition}s associated to given sandbox definition
-     */
-    @Query("SELECT td FROM TrainingDefinition td WHERE td.sandboxDefinitionRefId = :sandboxDefId")
-    Page<TrainingDefinition> findAllBySandBoxDefinitionRefId(@Param("sandboxDefId") Long sandboxDefId, Pageable pageable);
 
     /**
      * Find all training definitions

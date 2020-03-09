@@ -34,15 +34,6 @@ public interface TrainingDefinitionService {
     Page<TrainingDefinition> findAll(Predicate predicate, Pageable pageable);
 
     /**
-     * Find all training definition with same sandbox definition
-     *
-     * @param sandboxDefinitionId - id of sandbox definition
-     * @param pageable            pageable parameter with information about pagination.
-     * @return all {@link TrainingDefinition}s with same sandbox definition
-     */
-    Page<TrainingDefinition> findAllBySandboxDefinitionId(Long sandboxDefinitionId, Pageable pageable);
-
-    /**
      * Updates given Training Definition
      *
      * @param trainingDefinition to be updated

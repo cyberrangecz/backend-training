@@ -8,7 +8,7 @@ import java.util.Objects;
  * Class representing attachments of Game Level
  *
  */
-@Entity(name = "Attachment")
+@Entity
 @Table(name = "attachment")
 public class Attachment extends AbstractEntity<Long> {
 

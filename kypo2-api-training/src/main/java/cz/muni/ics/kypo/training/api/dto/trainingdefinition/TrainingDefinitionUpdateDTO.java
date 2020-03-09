@@ -36,8 +36,6 @@ public class TrainingDefinitionUpdateDTO {
     @ApiModelProperty(value = "Group of organizers who is allowed to see the training definition.", required = true)
     @Valid
     private BetaTestingGroupUpdateDTO betaTestingGroup;
-    @ApiModelProperty(value = "Reference to the sandbox definition.", required = true, example = "1")
-    private Long sandboxDefinitionRefId;
     @ApiModelProperty(value = "Sign if stepper bar should be displayed.", required = true, example = "false")
     @NotNull(message = "{trainingdefinitionupdate.showStepperBar.NotNull.message}")
     private boolean showStepperBar;
@@ -169,24 +167,6 @@ public class TrainingDefinitionUpdateDTO {
     }
 
     /**
-     * Gets sandbox definition ref id.
-     *
-     * @return the sandbox definition ref id
-     */
-    public Long getSandboxDefinitionRefId() {
-        return sandboxDefinitionRefId;
-    }
-
-    /**
-     * Sets sandbox definition ref id.
-     *
-     * @param sandBoxDefinitionRef the sand box definition ref
-     */
-    public void setSandboxDefinitionRefId(Long sandBoxDefinitionRef) {
-        this.sandboxDefinitionRefId = sandBoxDefinitionRef;
-    }
-
-    /**
      * Gets if stepper bar is shown while in run.
      *
      * @return true if bar is shown
@@ -213,7 +193,6 @@ public class TrainingDefinitionUpdateDTO {
                 ", prerequisities=" + Arrays.toString(prerequisities) +
                 ", outcomes=" + Arrays.toString(outcomes) +
                 ", state=" + state +
-                ", sandboxDefinitionRefId=" + sandboxDefinitionRefId +
                 ", showStepperBar=" + showStepperBar +
                 '}';
     }

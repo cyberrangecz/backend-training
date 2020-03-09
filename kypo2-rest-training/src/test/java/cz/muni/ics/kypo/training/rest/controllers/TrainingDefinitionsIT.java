@@ -242,7 +242,6 @@ public class TrainingDefinitionsIT {
         trainingDefinitionCreateDTO.setDescription("testDescription");
         trainingDefinitionCreateDTO.setShowStepperBar(true);
         trainingDefinitionCreateDTO.setState(TDState.UNRELEASED);
-        trainingDefinitionCreateDTO.setSandboxDefinitionRefId(1L);
         trainingDefinitionCreateDTO.setBetaTestingGroup(betaTestingGroupCreateDTO);
 
         releasedTrainingDefinition = new TrainingDefinition();
@@ -250,9 +249,8 @@ public class TrainingDefinitionsIT {
         releasedTrainingDefinition.setDescription("released");
         releasedTrainingDefinition.setShowStepperBar(true);
         releasedTrainingDefinition.setState(cz.muni.ics.kypo.training.persistence.model.enums.TDState.RELEASED);
-        releasedTrainingDefinition.setSandboxDefinitionRefId(2L);
         releasedTrainingDefinition.setBetaTestingGroup(betaTestingGroup);
-        releasedTrainingDefinition.setAuthors(new HashSet<>(Arrays.asList(author1)));
+        releasedTrainingDefinition.setAuthors(new HashSet<>(List.of(author1)));
         releasedTrainingDefinition.setLastEdited(LocalDateTime.now());
 
         invalidDefinitionDTO = new TrainingDefinitionByIdDTO();
@@ -261,9 +259,8 @@ public class TrainingDefinitionsIT {
         unreleasedDefinition.setTitle("testTitle");
         unreleasedDefinition.setDescription("testDescription");
         unreleasedDefinition.setShowStepperBar(false);
-        unreleasedDefinition.setState(cz.muni.ics.kypo.training.persistence.model.enums.TDState.UNRELEASED);
-        unreleasedDefinition.setSandboxDefinitionRefId(1L);
         unreleasedDefinition.setBetaTestingGroup(betaTestingGroup2);
+        unreleasedDefinition.setState(cz.muni.ics.kypo.training.persistence.model.enums.TDState.UNRELEASED);
         unreleasedDefinition.setAuthors(new HashSet<>(Arrays.asList(author1)));
         unreleasedDefinition.setLastEdited(LocalDateTime.now());
 
@@ -272,7 +269,6 @@ public class TrainingDefinitionsIT {
         archivedTrainingDefinition.setDescription("archivedDefinitionDescription");
         archivedTrainingDefinition.setShowStepperBar(true);
         archivedTrainingDefinition.setState(cz.muni.ics.kypo.training.persistence.model.enums.TDState.ARCHIVED);
-        archivedTrainingDefinition.setSandboxDefinitionRefId(2L);
         archivedTrainingDefinition.setAuthors(Set.of(author1));
         archivedTrainingDefinition.setLastEdited(LocalDateTime.now());
 
@@ -281,7 +277,6 @@ public class TrainingDefinitionsIT {
         trainingDefinitionUpdateDTO.setDescription("newDescription");
         trainingDefinitionUpdateDTO.setShowStepperBar(true);
         trainingDefinitionUpdateDTO.setState(TDState.UNRELEASED);
-        trainingDefinitionUpdateDTO.setSandboxDefinitionRefId(1L);
         trainingDefinitionUpdateDTO.setBetaTestingGroup(betaTestingGroupUpdateDTO);
 
         invalidDefinitionUpdateDTO = new TrainingDefinitionUpdateDTO();
@@ -290,7 +285,6 @@ public class TrainingDefinitionsIT {
         updateForNonexistingDefinition.setId(100L);
         updateForNonexistingDefinition.setTitle("test");
         updateForNonexistingDefinition.setState(TDState.UNRELEASED);
-        updateForNonexistingDefinition.setSandboxDefinitionRefId(1L);
         updateForNonexistingDefinition.setBetaTestingGroup(betaTestingGroupUpdateDTO);
         updateForNonexistingDefinition.setShowStepperBar(true);
 
@@ -370,31 +364,6 @@ public class TrainingDefinitionsIT {
     }
 
     @Test
-    public void findAllTrainingDefinitionsBySandboxDefinitionId() throws Exception {
-        trainingDefinitionRepository.save(releasedTrainingDefinition);
-        trainingDefinitionRepository.save(archivedTrainingDefinition);
-        mockSpringSecurityContextForGet(List.of(RoleTypeSecurity.ROLE_TRAINING_ADMINISTRATOR.name()));
-
-        MockHttpServletResponse result = mvc.perform(get("/training-definitions/sandbox-definitions/" + releasedTrainingDefinition.getSandboxDefinitionRefId()))
-                .andExpect(status().isOk())
-                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-                .andReturn().getResponse();
-        PageResultResource<TrainingDefinitionInfoDTO> trainingDefinitionsPage = mapper.readValue(convertJsonBytesToString(result.getContentAsString()), new TypeReference<PageResultResource<TrainingDefinitionInfoDTO>>() {
-        });
-
-        TrainingDefinitionInfoDTO releasedTrainingDefinitionInfoDTO = new TrainingDefinitionInfoDTO();
-        releasedTrainingDefinitionInfoDTO.setId(releasedTrainingDefinition.getId());
-        releasedTrainingDefinitionInfoDTO.setState(TDState.RELEASED);
-        releasedTrainingDefinitionInfoDTO.setTitle(releasedTrainingDefinition.getTitle());
-
-        TrainingDefinitionInfoDTO archivedTrainingDefinitionInfoDTO = new TrainingDefinitionInfoDTO();
-        archivedTrainingDefinitionInfoDTO.setId(archivedTrainingDefinition.getId());
-        archivedTrainingDefinitionInfoDTO.setState(TDState.ARCHIVED);
-        archivedTrainingDefinitionInfoDTO.setTitle(archivedTrainingDefinition.getTitle());
-        assertTrue(trainingDefinitionsPage.getContent().containsAll(Set.of(archivedTrainingDefinitionInfoDTO, releasedTrainingDefinitionInfoDTO)));
-    }
-
-    @Test
     public void createTrainingDefinition() throws Exception {
         mockSpringSecurityContextForGet(List.of(RoleTypeSecurity.ROLE_TRAINING_DESIGNER.name()));
         PageResultResource<UserRefDTO> userRefDTOPageResultResource = new PageResultResource<>();
@@ -470,7 +439,6 @@ public class TrainingDefinitionsIT {
         assertEquals(updatedDefinition.getState().toString(), trainingDefinitionUpdateDTO.getState().toString());
         assertEquals(updatedDefinition.isShowStepperBar(), trainingDefinitionUpdateDTO.isShowStepperBar());
         assertEquals(updatedDefinition.getAuthors(), unreleasedDefinition.getAuthors());
-        assertEquals(updatedDefinition.getSandboxDefinitionRefId(), unreleasedDefinition.getSandboxDefinitionRefId());
     }
 
     @Test

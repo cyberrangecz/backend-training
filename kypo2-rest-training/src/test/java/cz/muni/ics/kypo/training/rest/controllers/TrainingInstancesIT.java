@@ -7,7 +7,8 @@ import com.google.gson.JsonObject;
 import cz.muni.csirt.kypo.elasticsearch.service.TrainingEventsService;
 import cz.muni.ics.kypo.commons.security.enums.AuthenticatedUserOIDCItems;
 import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
-import cz.muni.ics.kypo.training.api.responses.PageResultResource;
+import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceAssignPoolIdDTO;
+import cz.muni.ics.kypo.training.api.responses.*;
 import cz.muni.ics.kypo.training.api.dto.run.TrainingRunDTO;
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceCreateDTO;
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceDTO;
@@ -15,6 +16,8 @@ import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceUpdate
 import cz.muni.ics.kypo.training.api.enums.RoleType;
 import cz.muni.ics.kypo.training.converters.LocalDateTimeUTCSerializer;
 import cz.muni.ics.kypo.training.exceptions.EntityErrorDetail;
+import cz.muni.ics.kypo.training.exceptions.MicroserviceApiException;
+import cz.muni.ics.kypo.training.exceptions.RestTemplateException;
 import cz.muni.ics.kypo.training.mapping.mapstruct.TrainingInstanceMapperImpl;
 import cz.muni.ics.kypo.training.mapping.mapstruct.TrainingRunMapperImpl;
 import cz.muni.ics.kypo.training.persistence.model.*;
@@ -25,9 +28,6 @@ import cz.muni.ics.kypo.training.rest.ApiError;
 import cz.muni.ics.kypo.training.rest.CustomRestExceptionHandlerTraining;
 import cz.muni.ics.kypo.training.rest.controllers.config.DBTestUtil;
 import cz.muni.ics.kypo.training.rest.controllers.config.RestConfigTest;
-import cz.muni.ics.kypo.training.api.responses.PageResultResourcePython;
-import cz.muni.ics.kypo.training.api.responses.SandboxInfo;
-import cz.muni.ics.kypo.training.api.responses.SandboxPoolInfo;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -123,6 +123,8 @@ public class TrainingInstancesIT {
     private UserRefDTO userRefDTO1, userRefDTO2;
     private SandboxInfo sandboxInfo1, sandboxInfo2;
     private SandboxPoolInfo sandboxPoolInfo;
+    private LockedPoolInfo lockedPoolInfo;
+    private TrainingInstanceAssignPoolIdDTO trainingInstanceAssignPoolIdDTO;
 
 
     @SpringBootApplication
@@ -168,7 +170,6 @@ public class TrainingInstancesIT {
         trainingDefinition.setState(TDState.RELEASED);
         trainingDefinition.setShowStepperBar(true);
         trainingDefinition.setBetaTestingGroup(betaTestingGroup);
-        trainingDefinition.setSandboxDefinitionRefId(1L);
         trainingDefinition.setLastEdited(LocalDateTime.now());
         trainingDefinition.setAuthors(new HashSet<>(List.of(organizer1)));
         TrainingDefinition tD = trainingDefinitionRepository.save(trainingDefinition);
@@ -263,6 +264,13 @@ public class TrainingInstancesIT {
         trainingRun2.setSandboxInstanceRefId(sandboxInfo2.getId());
         trainingRun2.setParticipantRef(organizer1);
 
+        trainingInstanceAssignPoolIdDTO = new TrainingInstanceAssignPoolIdDTO();
+        trainingInstanceAssignPoolIdDTO.setId(1L);
+        trainingInstanceAssignPoolIdDTO.setPoolId(1L);
+
+        lockedPoolInfo = new LockedPoolInfo();
+        lockedPoolInfo.setId(1L);
+        lockedPoolInfo.setPool(1L);
     }
 
     @After
@@ -483,53 +491,66 @@ public class TrainingInstancesIT {
     }
 
     @Test
-    public void allocateSandboxes() throws Exception {
+    public void assignPool() throws Exception {
         futureTrainingInstance.setPoolId(1L);
         trainingInstanceRepository.save(futureTrainingInstance);
-        PageResultResourcePython<SandboxInfo> pageResult = new PageResultResourcePython<>();
-        pageResult.setResults(new ArrayList<>());
-        given(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
-                willReturn(new ResponseEntity<PageResultResourcePython<SandboxInfo>>(pageResult, HttpStatus.OK));
+        given(restTemplate.postForObject(anyString(), any(HttpEntity.class), any())).
+                willReturn(lockedPoolInfo);
         mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_ORGANIZER.name()));
-        mvc.perform(post("/training-instances/{instanceId}/sandbox-instances", futureTrainingInstance.getId())
+        mvc.perform(patch("/training-instances" + "/{instanceId}/" + "assign-pool", 1L)
+                .content(convertObjectToJsonBytes(trainingInstanceAssignPoolIdDTO))
                 .contentType(MediaType.APPLICATION_JSON_VALUE))
-                .andExpect(status().isAccepted());
+                .andExpect(status().isOk());
     }
 
     @Test
-    public void allocateSandboxesWithoutCreatedPool() throws Exception {
+    public void assignPoolWithMicroserviceException() throws Exception {
+        futureTrainingInstance.setPoolId(1L);
         trainingInstanceRepository.save(futureTrainingInstance);
-
+        given(restTemplate.postForObject(anyString(), any(HttpEntity.class), any())).
+                willThrow(RestTemplateException.class);
         mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_ORGANIZER.name()));
-        MockHttpServletResponse response = mvc.perform(post("/training-instances/{instanceId}/sandbox-instances", futureTrainingInstance.getId())
+        Exception exception = mvc.perform(patch("/training-instances" + "/{instanceId}/" + "assign-pool", 1L)
+                .content(convertObjectToJsonBytes(trainingInstanceAssignPoolIdDTO))
                 .contentType(MediaType.APPLICATION_JSON_VALUE))
-                .andExpect(status().isConflict())
-                .andReturn().getResponse();
-        ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
-        assertEquals(HttpStatus.CONFLICT, error.getStatus());
-        assertEntityDetailError(error.getEntityErrorDetail(), TrainingInstance.class, "id", futureTrainingInstance.getId().toString(),
-                "Pool for sandboxes is not created yet. Please create pool before allocating sandboxes.");
+                .andExpect(status().isNotFound())
+                .andReturn().getResolvedException();
+
+        assertEquals(MicroserviceApiException.class, exception.getClass());
+        assertEquals("Currently, it is not possible to lock and assign pool with (ID: " + trainingInstanceAssignPoolIdDTO.getPoolId() + ").", exception.getMessage());
     }
 
     @Test
-    public void allocateSandboxesWithFullPool() throws Exception {
-        futureTrainingInstance.setPoolId(3L);
-        futureTrainingInstance.setPoolSize(1);
-        PageResultResourcePython<SandboxInfo> pageResult = new PageResultResourcePython<>();
-        pageResult.setResults(List.of(sandboxInfo1));
-        given(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
-                willReturn(new ResponseEntity<PageResultResourcePython<SandboxInfo>>(pageResult, HttpStatus.OK));
-        trainingInstanceRepository.save(futureTrainingInstance);
+    public void reassignPool() throws Exception {
+        PoolInfoDto poolInfoDto = new PoolInfoDto();
+        poolInfoDto.setLock(1L);
 
+        futureTrainingInstance.setPoolId(1L);
+        trainingInstanceRepository.save(futureTrainingInstance);
+        given(restTemplate.postForObject(anyString(), any(HttpEntity.class), any())).
+                willReturn(lockedPoolInfo);
+        given(restTemplate.getForEntity(anyString(), any())).willReturn(new ResponseEntity<>(poolInfoDto, HttpStatus.OK));
         mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_ORGANIZER.name()));
-        MockHttpServletResponse response = mvc.perform(post("/training-instances/{instanceId}/sandbox-instances", futureTrainingInstance.getId())
+        mvc.perform(patch("/training-instances" + "/{instanceId}/" + "reassign-pool", 1L)
+                .content(convertObjectToJsonBytes(trainingInstanceAssignPoolIdDTO))
                 .contentType(MediaType.APPLICATION_JSON_VALUE))
-                .andExpect(status().isConflict())
-                .andReturn().getResponse();
-        ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
-        assertEquals(HttpStatus.CONFLICT, error.getStatus());
-        assertEntityDetailError(error.getEntityErrorDetail(), TrainingInstance.class, "id", futureTrainingInstance.getId().toString(),
-                "Pool of sandboxes of training instance is full.");
+                .andExpect(status().isOk());
+    }
+    @Test
+    public void reassignPoolWithMicroserviceException() throws Exception {
+        futureTrainingInstance.setPoolId(1L);
+        trainingInstanceRepository.save(futureTrainingInstance);
+        given(restTemplate.postForObject(anyString(), any(HttpEntity.class), any())).
+                willThrow(RestTemplateException.class);
+        mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_ORGANIZER.name()));
+        Exception exception = mvc.perform(patch("/training-instances" + "/{instanceId}/" + "reassign-pool", 1L)
+                .content(convertObjectToJsonBytes(trainingInstanceAssignPoolIdDTO))
+                .contentType(MediaType.APPLICATION_JSON_VALUE))
+                .andExpect(status().isNotFound())
+                .andReturn().getResolvedException();
+
+        assertEquals(MicroserviceApiException.class, exception.getClass());
+        assertEquals("Currently, it is not possible to lock and assign pool with (ID: " + trainingInstanceAssignPoolIdDTO.getPoolId() + ").", exception.getMessage());
     }
 
     @Test
@@ -565,20 +586,6 @@ public class TrainingInstancesIT {
         assertEquals(HttpStatus.NOT_FOUND, error.getStatus());
         assertEntityDetailError(error.getEntityErrorDetail(), TrainingInstance.class, "id", "100",
                 "Training instance not found.");
-    }
-
-    @Test
-    public void deleteSandboxes() throws Exception {
-        futureTrainingInstance.setPoolId(3L);
-
-        trainingInstanceRepository.save(futureTrainingInstance);
-        given(restTemplate.exchange(anyString(), eq(HttpMethod.DELETE), any(HttpEntity.class), eq(String.class))).
-                willReturn(new ResponseEntity<String>("", HttpStatus.OK));
-        mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_ORGANIZER.name()));
-        mvc.perform(delete("/training-instances/{instanceId}/sandbox-instances", futureTrainingInstance.getId())
-                .param("sandboxIds", sandboxInfo1.getId().toString(), sandboxInfo2.getId().toString())
-                .contentType(MediaType.APPLICATION_JSON_VALUE))
-                .andExpect(status().isOk());
     }
 
     private static String convertObjectToJsonBytes(Object object) throws IOException {

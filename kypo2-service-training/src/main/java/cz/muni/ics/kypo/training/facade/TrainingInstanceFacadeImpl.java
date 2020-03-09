@@ -9,6 +9,7 @@ import cz.muni.ics.kypo.training.api.dto.run.TrainingRunDTO;
 import cz.muni.ics.kypo.training.api.dto.traininginstance.*;
 import cz.muni.ics.kypo.training.api.enums.RoleType;
 import cz.muni.ics.kypo.training.api.responses.PageResultResource;
+import cz.muni.ics.kypo.training.api.responses.LockedPoolInfo;
 import cz.muni.ics.kypo.training.exceptions.EntityNotFoundException;
 import cz.muni.ics.kypo.training.mapping.mapstruct.TrainingInstanceMapper;
 import cz.muni.ics.kypo.training.mapping.mapstruct.TrainingRunMapper;
@@ -27,7 +28,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -58,11 +58,7 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
             "or @securityService.isOrganizerOfGivenTrainingInstance(#instanceId)")
     @TransactionalRO
     public TrainingInstanceDTO findById(Long id) {
-        Objects.requireNonNull(id);
-        TrainingInstanceDTO trainingInstanceDTO = trainingInstanceMapper.mapToDTO(trainingInstanceService.findByIdIncludingDefinition(id));
-        if (trainingInstanceDTO.getPoolId() != null)
-            trainingInstanceDTO.setSandboxesWithTrainingRun(trainingInstanceService.findIdsOfAllOccupiedSandboxesByTrainingInstance(trainingInstanceDTO.getId()));
-        return trainingInstanceDTO;
+        return trainingInstanceMapper.mapToDTO(trainingInstanceService.findByIdIncludingDefinition(id));
     }
 
     @Override
@@ -76,7 +72,6 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
     @IsOrganizerOrAdmin
     @TransactionalWO
     public String update(TrainingInstanceUpdateDTO trainingInstanceUpdateDTO) {
-        Objects.requireNonNull(trainingInstanceUpdateDTO);
         TrainingInstance trainingInstance = trainingInstanceMapper.mapUpdateToEntity(trainingInstanceUpdateDTO);
         trainingInstance.setTrainingDefinition(trainingDefinitionService.findById(trainingInstanceUpdateDTO.getTrainingDefinitionId()));
         return trainingInstanceService.update(trainingInstance);
@@ -86,7 +81,6 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
     @IsOrganizerOrAdmin
     @TransactionalWO
     public TrainingInstanceDTO create(TrainingInstanceCreateDTO trainingInstanceCreateDTO) {
-        Objects.requireNonNull(trainingInstanceCreateDTO);
         TrainingInstance trainingInstance = trainingInstanceMapper.mapCreateToEntity(trainingInstanceCreateDTO);
         trainingInstance.setTrainingDefinition(trainingDefinitionService.findById(trainingInstanceCreateDTO.getTrainingDefinitionId()));
         trainingInstance.setId(null);
@@ -125,7 +119,6 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
             "or @securityService.isOrganizerOfGivenTrainingInstance(#instanceId)")
     @TransactionalWO
     public void delete(Long id) {
-        Objects.requireNonNull(id);
         TrainingInstance trainingInstance = trainingInstanceService.findById(id);
         trainingInstanceService.delete(trainingInstance);
     }
@@ -134,20 +127,29 @@ public class TrainingInstanceFacadeImpl implements TrainingInstanceFacade {
     @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
             "or @securityService.isOrganizerOfGivenTrainingInstance(#instanceId)")
     @TransactionalWO
-    public void allocateSandboxes(Long instanceId, Integer count) {
-        TrainingInstance trainingInstance = trainingInstanceService.findById(instanceId);
-        trainingInstanceService.allocateSandboxes(trainingInstance, count);
+    public TrainingInstanceBasicInfoDTO assignPoolToTrainingInstance(TrainingInstanceAssignPoolIdDTO trainingInstanceAssignPoolIdDTO) {
+        TrainingInstance trainingInstance = trainingInstanceService.findById(trainingInstanceAssignPoolIdDTO.getId());
+        // lock pool and update pool
+        LockedPoolInfo lockedPoolInfo = trainingInstanceService.lockPool(trainingInstanceAssignPoolIdDTO.getId());
+        trainingInstance.setId(lockedPoolInfo.getPool());
+        TrainingInstance updatedTrainingInstance = trainingInstanceService.assignPoolToTrainingInstance(trainingInstance);
+        return trainingInstanceMapper.mapEntityToTIBasicInfo(updatedTrainingInstance);
     }
 
     @Override
     @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
             "or @securityService.isOrganizerOfGivenTrainingInstance(#instanceId)")
     @TransactionalWO
-    public void deleteSandboxes(Long instanceId, Set<Long> sandboxIds) {
-        TrainingInstance trainingInstance = trainingInstanceService.findById(instanceId);
-        for (Long idOfSandboxToDelete : sandboxIds) {
-            trainingInstanceService.deleteSandbox(trainingInstance.getId(), idOfSandboxToDelete);
-        }
+    public TrainingInstanceBasicInfoDTO reassignPoolToTrainingInstance(TrainingInstanceAssignPoolIdDTO trainingInstanceAssignPoolIdDTO) {
+        TrainingInstance trainingInstance = trainingInstanceService.findById(trainingInstanceAssignPoolIdDTO.getId());
+        // lock newly assigned pool
+        trainingInstanceService.lockPool(trainingInstanceAssignPoolIdDTO.getPoolId());
+        // unlock previously assigned pool
+        trainingInstanceService.unlockPool(trainingInstance.getId());
+
+        trainingInstance.setPoolId(trainingInstanceAssignPoolIdDTO.getPoolId());
+        TrainingInstance updatedTrainingInstance = trainingInstanceService.assignPoolToTrainingInstance(trainingInstance);
+        return trainingInstanceMapper.mapEntityToTIBasicInfo(updatedTrainingInstance);
     }
 
     @Override

@@ -31,8 +31,6 @@ public class TrainingDefinitionDTO {
     private TDState state;
     @ApiModelProperty(value = "Group of organizers who is allowed to see the training definition.", example = "14")
     private Long betaTestingGroupId;
-    @ApiModelProperty(value = "Reference to the sandbox definition.", example = "1")
-    private Long sandboxDefinitionRefId;
     @ApiModelProperty(value = "Sign if stepper bar should be displayed.", example = "false")
     private boolean showStepperBar;
     @ApiModelProperty(value = "Sign if training definition can be archived or not.", example = "false")
@@ -171,24 +169,6 @@ public class TrainingDefinitionDTO {
     }
 
     /**
-     * Gets sandbox definition ref id.
-     *
-     * @return the sandbox definition ref id
-     */
-    public Long getSandboxDefinitionRefId() {
-        return sandboxDefinitionRefId;
-    }
-
-    /**
-     * Sets sandbox definition ref id.
-     *
-     * @param sandBoxDefinitionRefId the sand box definition ref id
-     */
-    public void setSandboxDefinitionRefId(Long sandBoxDefinitionRefId) {
-        this.sandboxDefinitionRefId = sandBoxDefinitionRefId;
-    }
-
-    /**
      * Gets if stepper bar is shown while in run.
      *
      * @return true if bar is shown
@@ -270,7 +250,6 @@ public class TrainingDefinitionDTO {
                 ", outcomes=" + Arrays.toString(outcomes) +
                 ", state=" + state +
                 ", betaTestingGroupId=" + betaTestingGroupId +
-                ", sandboxDefinitionRefId=" + sandboxDefinitionRefId +
                 ", showStepperBar=" + showStepperBar +
                 ", canBeArchived=" + canBeArchived +
                 ", estimatedDuration=" + estimatedDuration +
@@ -286,12 +265,11 @@ public class TrainingDefinitionDTO {
                 Objects.equals(getId(), that.getId()) &&
                 Objects.equals(getTitle(), that.getTitle()) &&
                 Objects.equals(getDescription(), that.getDescription()) &&
-                Objects.equals(getState(), that.getState()) &&
-                Objects.equals(getSandboxDefinitionRefId(), that.getSandboxDefinitionRefId());
+                Objects.equals(getState(), that.getState());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getId(), getTitle(), getDescription(), getState(), getSandboxDefinitionRefId(), isCanBeArchived());
+        return Objects.hash(getId(), getTitle(), getDescription(), getState(), isCanBeArchived());
     }
 }

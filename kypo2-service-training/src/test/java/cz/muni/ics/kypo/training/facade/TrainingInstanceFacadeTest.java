@@ -3,12 +3,10 @@ package cz.muni.ics.kypo.training.facade;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.PathBuilder;
 import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
-import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceFindAllResponseDTO;
-import cz.muni.ics.kypo.training.api.responses.PageResultResource;
-import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceCreateDTO;
-import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceDTO;
-import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceUpdateDTO;
+import cz.muni.ics.kypo.training.api.dto.traininginstance.*;
 import cz.muni.ics.kypo.training.api.enums.RoleType;
+import cz.muni.ics.kypo.training.api.responses.LockedPoolInfo;
+import cz.muni.ics.kypo.training.api.responses.PageResultResource;
 import cz.muni.ics.kypo.training.exceptions.EntityConflictException;
 import cz.muni.ics.kypo.training.exceptions.EntityNotFoundException;
 import cz.muni.ics.kypo.training.mapping.mapstruct.*;
@@ -79,6 +77,8 @@ public class TrainingInstanceFacadeTest {
     private UserRefDTO organizerDTO1, organizerDTO2, organizerDTO3;
     private Pageable pageable;
     private PageResultResource.Pagination pagination;
+    private LockedPoolInfo lockedPoolInfo;
+    private TrainingInstanceAssignPoolIdDTO trainingInstanceAssignPoolIdDTO;
 
     @Before
     public void init() {
@@ -124,12 +124,19 @@ public class TrainingInstanceFacadeTest {
         trainingInstanceUpdate.setEndTime(LocalDateTime.now());
         trainingInstanceUpdate.setStartTime(LocalDateTime.now());
         trainingInstanceUpdate.setTrainingDefinitionId(1L);
+
+        lockedPoolInfo = new LockedPoolInfo();
+        lockedPoolInfo.setId(1L);
+        lockedPoolInfo.setPool(1L);
+
+        trainingInstanceAssignPoolIdDTO = new TrainingInstanceAssignPoolIdDTO();
+        trainingInstanceAssignPoolIdDTO.setId(1L);
+        trainingInstanceAssignPoolIdDTO.setPoolId(1L);
     }
 
     @Test
     public void findTrainingInstanceById() {
         given(trainingInstanceService.findByIdIncludingDefinition(trainingInstance1.getId())).willReturn(trainingInstance1);
-        given(trainingInstanceService.findIdsOfAllOccupiedSandboxesByTrainingInstance(trainingInstance1.getId())).willReturn(List.of(1L, 2L));
         trainingInstanceFacade.findById(trainingInstance1.getId());
         then(trainingInstanceService).should().findByIdIncludingDefinition(trainingInstance1.getId());
     }
@@ -192,37 +199,33 @@ public class TrainingInstanceFacadeTest {
     }
 
     @Test
-    public void allocateSandboxes() {
+    public void assignPoolToTrainingInstance() {
         given(trainingInstanceService.findById(anyLong())).willReturn(trainingInstance1);
-        trainingInstanceFacade.allocateSandboxes(trainingInstance1.getId(), null);
-        then(trainingInstanceService).should().allocateSandboxes(trainingInstance1, null);
+        given(trainingInstanceService.lockPool(anyLong())).willReturn(lockedPoolInfo);
+
+        trainingInstanceFacade.assignPoolToTrainingInstance(trainingInstanceAssignPoolIdDTO);
+        then(trainingInstanceService).should().lockPool(trainingInstanceAssignPoolIdDTO.getId());
     }
 
     @Test(expected = EntityConflictException.class)
     public void allocateSandboxesWithServiceException() {
         given(trainingInstanceService.findById(anyLong())).willReturn(trainingInstance1);
-        willThrow(EntityConflictException.class).given(trainingInstanceService).allocateSandboxes(trainingInstance1, null);
-        trainingInstanceFacade.allocateSandboxes(trainingInstance1.getId(), null);
+        willThrow(EntityConflictException.class).given(trainingInstanceService).lockPool(anyLong());
+        trainingInstanceFacade.assignPoolToTrainingInstance(trainingInstanceAssignPoolIdDTO);
     }
 
     @Test
-    public void deleteSandboxes() {
-        Set<Long> ids = new HashSet<>();
-        ids.add(1L);
-        ids.add(2L);
+    public void reassignPoolToTrainingInstance() {
         given(trainingInstanceService.findById(anyLong())).willReturn(trainingInstance1);
-        trainingInstanceFacade.deleteSandboxes(trainingInstance1.getId(), ids);
-        then(trainingInstanceService).should().deleteSandbox(trainingInstance1.getId(), 1L);
-        then(trainingInstanceService).should().deleteSandbox(trainingInstance1.getId(), 2L);
+        trainingInstanceFacade.reassignPoolToTrainingInstance(trainingInstanceAssignPoolIdDTO);
+        then(trainingInstanceService).should().lockPool(trainingInstanceAssignPoolIdDTO.getId());
     }
 
     @Test(expected = EntityConflictException.class)
     public void deleteSandboxesWithServiceException() {
-        Set<Long> ids = new HashSet<>();
-        ids.add(1L);
         given(trainingInstanceService.findById(anyLong())).willReturn(trainingInstance1);
-        willThrow(EntityConflictException.class).given(trainingInstanceService).deleteSandbox(trainingInstance1.getId(), 1L);
-        trainingInstanceFacade.deleteSandboxes(trainingInstance1.getId(), ids);
+        willThrow(EntityConflictException.class).given(trainingInstanceService).lockPool(anyLong());
+        trainingInstanceFacade.reassignPoolToTrainingInstance(trainingInstanceAssignPoolIdDTO);
     }
 
     @Test

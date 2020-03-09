@@ -191,32 +191,27 @@ public class TrainingDefinitionsRestControllerTest {
         trainingDefinition1.setState(TDState.UNRELEASED);
         trainingDefinition1.setTitle("test");
         trainingDefinition1.setAuthors(authorRefSet);
-        trainingDefinition1.setSandboxDefinitionRefId(1L);
 
         trainingDefinition2 = new TrainingDefinition();
         trainingDefinition2.setId(2L);
         trainingDefinition2.setState(TDState.PRIVATED);
         trainingDefinition2.setTitle("test");
         trainingDefinition2.setAuthors(authorRefSet);
-        trainingDefinition2.setSandboxDefinitionRefId(1L);
 
         trainingDefinition1DTO = new TrainingDefinitionByIdDTO();
         trainingDefinition1DTO.setId(1L);
         trainingDefinition1DTO.setState(cz.muni.ics.kypo.training.api.enums.TDState.UNRELEASED);
         trainingDefinition1DTO.setTitle("test");
-        trainingDefinition1DTO.setSandboxDefinitionRefId(1L);
 
         trainingDefinition2DTO = new TrainingDefinitionByIdDTO();
         trainingDefinition2DTO.setId(2L);
         trainingDefinition2DTO.setState(cz.muni.ics.kypo.training.api.enums.TDState.PRIVATED);
         trainingDefinition2DTO.setTitle("test");
-        trainingDefinition2DTO.setSandboxDefinitionRefId(1L);
 
         trainingDefinitionUpdateDTO = new TrainingDefinitionUpdateDTO();
         trainingDefinitionUpdateDTO.setId(4L);
         trainingDefinitionUpdateDTO.setState(cz.muni.ics.kypo.training.api.enums.TDState.UNRELEASED);
         trainingDefinitionUpdateDTO.setTitle("training definition title");
-        trainingDefinitionUpdateDTO.setSandboxDefinitionRefId(1L);
         trainingDefinitionUpdateDTO.setShowStepperBar(false);
         trainingDefinitionUpdateDTO.setBetaTestingGroup(betaTestingGroupUpdateDTO);
 
@@ -227,7 +222,6 @@ public class TrainingDefinitionsRestControllerTest {
         trainingDefinitionCreateDTO.setState(cz.muni.ics.kypo.training.api.enums.TDState.ARCHIVED);
         trainingDefinitionCreateDTO.setTitle("TD some title");
         trainingDefinitionCreateDTO.setShowStepperBar(true);
-        trainingDefinitionCreateDTO.setSandboxDefinitionRefId(1L);
         trainingDefinitionCreateDTO.setBetaTestingGroup(betaTestingGroupCreateDTO);
 
         abstractLevelDTO = new AbstractLevelDTO();

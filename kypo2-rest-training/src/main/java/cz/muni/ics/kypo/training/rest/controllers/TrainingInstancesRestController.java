@@ -6,12 +6,9 @@ import com.github.bohnman.squiggly.Squiggly;
 import com.github.bohnman.squiggly.util.SquigglyUtils;
 import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
-import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceFindAllResponseDTO;
+import cz.muni.ics.kypo.training.api.dto.traininginstance.*;
 import cz.muni.ics.kypo.training.api.responses.PageResultResource;
 import cz.muni.ics.kypo.training.api.dto.run.TrainingRunDTO;
-import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceCreateDTO;
-import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceDTO;
-import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceUpdateDTO;
 import cz.muni.ics.kypo.training.facade.TrainingInstanceFacade;
 import cz.muni.ics.kypo.training.persistence.model.TrainingInstance;
 import cz.muni.ics.kypo.training.exceptions.errors.JavaApiError;
@@ -24,6 +21,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.MultiValueMap;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -195,31 +193,38 @@ public class TrainingInstancesRestController {
         return ResponseEntity.ok().build();
     }
 
-    /**
-     * Allocate Sandboxes.
-     *
-     * @param instanceId the Training Instance id
-     * @param count      the number of Sandboxes tobe allocated
-     */
-    @ApiOperation(httpMethod = "POST",
-            value = "Allocate sandboxes",
-            nickname = "allocateSandboxes"
+    @ApiOperation(httpMethod = "PATCH",
+            value = "Assign pool to the training instance",
+            notes = "This can only be done by organizer of training instance or administrator",
+            nickname = "assignPool"
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Sandboxes have been allocated."),
+            @ApiResponse(code = 200, message = "Training instance updated."),
+            @ApiResponse(code = 400, message = "Given training instance is not valid.", response = JavaApiError.class),
             @ApiResponse(code = 404, message = "Training instance with given id not found.", response = JavaApiError.class),
+            @ApiResponse(code = 409, message = "The training instance cannot be updated for the specific reason stated in the error message.", response = JavaApiError.class),
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = JavaApiError.class)
     })
-    @PostMapping(path = "/{instanceId}/sandbox-instances")
-    public ResponseEntity<Void> allocateSandboxes(
-            @ApiParam(value = "Id of training instance for which sandboxes are allocated", required = true)
-            @PathVariable(value = "instanceId") Long instanceId,
-            @ApiParam(value = "Number of sandboxes that will be created", required = false)
-            @RequestParam(value = "count", required = false) Integer count) {
-        trainingInstanceFacade.allocateSandboxes(instanceId, count);
-        return new ResponseEntity<>(HttpStatus.ACCEPTED);
+    @PatchMapping(path = "/{id}/assign-pool")
+    public ResponseEntity<TrainingInstanceBasicInfoDTO> assignPool(@ApiParam(value = "Id of training instance to be deleted", required = true)
+                                           @Valid @RequestBody TrainingInstanceAssignPoolIdDTO trainingInstanceAssignPoolIdDTO) {
+        return ResponseEntity.ok(trainingInstanceFacade.assignPoolToTrainingInstance(trainingInstanceAssignPoolIdDTO));
     }
 
+    @ApiOperation(httpMethod = "PATCH",
+            value = "Reassign pool of training instance",
+            notes = "This can only be done by organizer of training instance or administrator",
+            nickname = "reassignPool"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Training instance updated."),
+            @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = JavaApiError.class)
+    })
+    @PatchMapping(path = "/{id}/reassign-pool")
+    public ResponseEntity<TrainingInstanceBasicInfoDTO> reassignPool(@ApiParam(value = "Id of training instance to be deleted", required = true)
+                                             @Valid @RequestBody TrainingInstanceAssignPoolIdDTO trainingInstanceAssignPoolIdDTO) {
+        return ResponseEntity.ok(trainingInstanceFacade.reassignPoolToTrainingInstance(trainingInstanceAssignPoolIdDTO));
+    }
 
     /**
      * Get all Training Runs by Training Instance id.
@@ -255,31 +260,6 @@ public class TrainingInstancesRestController {
                 trainingInstanceFacade.findTrainingRunsByTrainingInstance(instanceId, isActive, pageable);
         Squiggly.init(objectMapper, fields);
         return ResponseEntity.ok(SquigglyUtils.stringify(objectMapper, trainingRunResource));
-    }
-
-    /**
-     * Delete sandboxes.
-     *
-     * @param instanceId the instance id
-     * @param sandboxIds set of the sandbox ids
-     */
-    @ApiOperation(httpMethod = "DELETE",
-            value = "Delete sandboxes in OpenStack",
-            nickname = "deleteSandboxes",
-            notes = "Possible errors, when calling PythonAPI, are only logged into syslog."
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 202, message = "Sandboxes were removed from training instance"),
-            @ApiResponse(code = 404, message = "Training instance with given id not found.", response = JavaApiError.class),
-            @ApiResponse(code = 500, message = "Unexpected condition was encountered", response = JavaApiError.class)
-    })
-    @DeleteMapping(path = "/{instanceId}/sandbox-instances")
-    public ResponseEntity<Void> deleteSandboxes(@ApiParam(value = "Id of training instance for which sandboxes are deleted", required = true)
-                                                @PathVariable(value = "instanceId") Long instanceId,
-                                                @ApiParam(value = "Ids of sandboxes that will be deleted", required = true)
-                                                @RequestParam(value = "sandboxIds", required = true) Set<Long> sandboxIds) {
-        trainingInstanceFacade.deleteSandboxes(instanceId, sandboxIds);
-        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     /**

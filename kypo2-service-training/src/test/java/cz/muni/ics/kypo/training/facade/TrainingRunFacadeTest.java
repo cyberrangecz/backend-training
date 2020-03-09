@@ -186,7 +186,7 @@ public class TrainingRunFacadeTest {
     @Test
     public void accessTrainingRun() {
         given(trainingRunService.accessTrainingRun(anyString())).willReturn(trainingRun1);
-        given(trainingRunService.assignSandbox(any(TrainingRun.class))).willReturn(trainingRun1);
+        given(trainingRunService.assignSandbox(any(TrainingRun.class), anyLong())).willReturn(trainingRun1);
         Object result = trainingRunFacade.accessTrainingRun("password");
         assertEquals(AccessTrainingRunDTO.class, result.getClass());
         then(trainingRunService).should().accessTrainingRun("password");

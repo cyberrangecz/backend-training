@@ -4,7 +4,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.JsonObject;
 import cz.muni.ics.kypo.commons.security.enums.AuthenticatedUserOIDCItems;
-import cz.muni.ics.kypo.training.api.responses.PageResultResource;
 import cz.muni.ics.kypo.training.api.dto.IsCorrectFlagDTO;
 import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
 import cz.muni.ics.kypo.training.api.dto.hint.HintDTO;
@@ -14,8 +13,9 @@ import cz.muni.ics.kypo.training.api.dto.run.AccessedTrainingRunDTO;
 import cz.muni.ics.kypo.training.api.dto.run.TrainingRunByIdDTO;
 import cz.muni.ics.kypo.training.api.dto.run.TrainingRunDTO;
 import cz.muni.ics.kypo.training.api.enums.RoleType;
-import static cz.muni.ics.kypo.training.rest.controllers.util.ObjectConverter.*;
-
+import cz.muni.ics.kypo.training.api.responses.PageResultResource;
+import cz.muni.ics.kypo.training.api.responses.PageResultResourcePython;
+import cz.muni.ics.kypo.training.api.responses.SandboxInfo;
 import cz.muni.ics.kypo.training.exceptions.BadRequestException;
 import cz.muni.ics.kypo.training.exceptions.EntityErrorDetail;
 import cz.muni.ics.kypo.training.exceptions.RestTemplateException;
@@ -32,8 +32,6 @@ import cz.muni.ics.kypo.training.rest.ApiError;
 import cz.muni.ics.kypo.training.rest.CustomRestExceptionHandlerTraining;
 import cz.muni.ics.kypo.training.rest.controllers.config.DBTestUtil;
 import cz.muni.ics.kypo.training.rest.controllers.config.RestConfigTest;
-import cz.muni.ics.kypo.training.api.responses.SandboxInfo;
-import cz.muni.ics.kypo.training.api.responses.PageResultResourcePython;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.After;
@@ -76,6 +74,7 @@ import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.*;
 
+import static cz.muni.ics.kypo.training.rest.controllers.util.ObjectConverter.convertJsonBytesToObject;
 import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
@@ -224,7 +223,6 @@ public class TrainingRunsIT {
         trainingDefinition.setState(TDState.RELEASED);
         trainingDefinition.setShowStepperBar(true);
         trainingDefinition.setBetaTestingGroup(betaTestingGroup);
-        trainingDefinition.setSandboxDefinitionRefId(1L);
         trainingDefinition.setLastEdited(LocalDateTime.now());
         trainingDefinitionRepository.save(trainingDefinition);
 
@@ -381,8 +379,8 @@ public class TrainingRunsIT {
 
         given(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), eq(UserRefDTO.class))).
                 willReturn(new ResponseEntity<UserRefDTO>(userRefDTO1, HttpStatus.OK));
-        given(restTemplate.exchange(eq(builder.toUriString()), eq(HttpMethod.GET), any(HttpEntity.class), eq(SandboxInfo.class))).
-                willReturn(new ResponseEntity<SandboxInfo>(sandboxInfo1, HttpStatus.OK));
+        given(restTemplate.getForEntity(anyString(), any())).
+                willReturn(new ResponseEntity<>(sandboxInfo, HttpStatus.OK));
         mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_TRAINEE.name()));
         MockHttpServletResponse result = mvc.perform(post("/training-runs")
                 .param("accessToken", "pass-1234"))
@@ -480,7 +478,6 @@ public class TrainingRunsIT {
                 .andReturn().getResponse();
         ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
         assertEquals(HttpStatus.FORBIDDEN, error.getStatus());
-        assertEquals("There is no available sandbox, wait a minute and try again or ask organizer to allocate more sandboxes.", error.getMessage());
     }
 
     @Test

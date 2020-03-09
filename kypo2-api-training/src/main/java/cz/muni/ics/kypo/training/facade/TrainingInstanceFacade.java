@@ -56,12 +56,18 @@ public interface TrainingInstanceFacade {
     void delete(Long id);
 
     /**
-     * Allocates sandboxes for training instance
+     * Assign pool in training instance new training instance
      *
-     * @param instanceId the instance id
-     * @param count      number of sandboxes that will be allocated
+     * @param trainingInstance of training instance to be deleted
      */
-    void allocateSandboxes(Long instanceId, Integer count);
+    TrainingInstanceBasicInfoDTO assignPoolToTrainingInstance(TrainingInstanceAssignPoolIdDTO trainingInstance);
+
+    /**
+     * Reassign pool in training instance  or assignes new training instance
+     *
+     * @param trainingInstance of training instance to be deleted
+     */
+    TrainingInstanceBasicInfoDTO reassignPoolToTrainingInstance(TrainingInstanceAssignPoolIdDTO trainingInstance);
 
     /**
      * Finds all Training Runs by specific Training Instance.
@@ -72,14 +78,6 @@ public interface TrainingInstanceFacade {
      * @return Page of {@link TrainingRunDTO} of specific Training Instance
      */
     PageResultResource<TrainingRunDTO> findTrainingRunsByTrainingInstance(Long trainingInstanceId, Boolean isActive, Pageable pageable);
-
-    /**
-     * Deletes all failed sandboxes from training instance
-     *
-     * @param instanceId id of training instance for which failed sandboxes will be deleted and reallocated
-     * @param sandboxIds ids of sandboxes that will be deleted
-     */
-    void deleteSandboxes(Long instanceId, Set<Long> sandboxIds);
 
     /**
      * Check if instance can be deleted.

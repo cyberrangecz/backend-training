@@ -161,7 +161,6 @@ public class TrainingDefinitionServiceTest {
         trainingDefinition1.setDescription("test1");
         trainingDefinition1.setTitle("test1");
         trainingDefinition1.setState(TDState.RELEASED);
-        trainingDefinition1.setSandboxDefinitionRefId(1L);
         trainingDefinition1.setBetaTestingGroup(viewGroup);
         trainingDefinition1.setLastEdited(LocalDateTime.now().minusHours(24));
 
@@ -170,7 +169,6 @@ public class TrainingDefinitionServiceTest {
         trainingDefinition2.setDescription("test2");
         trainingDefinition2.setTitle("test2");
         trainingDefinition2.setState(TDState.UNRELEASED);
-        trainingDefinition2.setSandboxDefinitionRefId(1L);
 
         unreleasedDefinition = new TrainingDefinition();
         unreleasedDefinition.setId(4L);
@@ -220,21 +218,6 @@ public class TrainingDefinitionServiceTest {
 
         Page pr = trainingDefinitionService.findAll(predicate, PageRequest.of(0, 2));
         assertEquals(2, pr.getTotalElements());
-    }
-
-    @Test
-    public void findAllBySandboxDefinitionId() {
-        List<TrainingDefinition> expected = new ArrayList<>();
-        expected.add(trainingDefinition1);
-        expected.add(trainingDefinition2);
-
-        Page p = new PageImpl<>(expected);
-
-        given(trainingDefinitionRepository.findAllBySandBoxDefinitionRefId(any(Long.class), any(Pageable.class))).willReturn(p);
-
-        Page pr = trainingDefinitionRepository.findAllBySandBoxDefinitionRefId(1L, PageRequest.of(0, 2));
-        assertNotNull(pr);
-        assertEquals(expected.size(), pr.getTotalElements());
     }
 
     @Test
@@ -683,7 +666,6 @@ public class TrainingDefinitionServiceTest {
         assertArrayEquals(expected.getPrerequisities(), actual.getPrerequisities());
         assertEquals(expected.getState(), actual.getState());
         assertEquals(expected.getBetaTestingGroup(), actual.getBetaTestingGroup());
-        assertEquals(expected.getSandboxDefinitionRefId(), actual.getSandboxDefinitionRefId());
         assertEquals(expected.isShowStepperBar(), actual.isShowStepperBar());
     }
 

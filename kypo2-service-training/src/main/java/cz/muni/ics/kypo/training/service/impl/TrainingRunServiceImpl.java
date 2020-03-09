@@ -190,7 +190,23 @@ public class TrainingRunServiceImpl implements TrainingRunService {
 
     @Override
     public TrainingRun accessTrainingRun(String accessToken) {
-        Assert.hasLength(accessToken, "AccessToken cannot be null or empty.");
+        TrainingInstance trainingInstance = getTrainingInstanceForParticularAccessToken(accessToken);
+        Long participantRefId = securityService.getUserRefIdFromUserAndGroup();
+        Optional<TrainingRun> accessedTrainingRun = trainingRunRepository.findRunningTrainingRunOfUser(accessToken, participantRefId);
+        if (accessedTrainingRun.isPresent()) {
+            return resumeTrainingRun(accessedTrainingRun.get().getId());
+        }
+        trAquisitionLockToPreventManyRequestsFromSameUser(participantRefId, trainingInstance.getId(), accessToken);
+        List<AbstractLevel> levels = getAllLevelsForTRSortedByOrder(trainingInstance.getTrainingDefinition().getId());
+        TrainingRun trainingRun = getNewTrainingRun(levels.get(0), trainingInstance, LocalDateTime.now(Clock.systemUTC()), trainingInstance.getEndTime(), participantRefId);
+
+        assignSandbox(trainingRun, trainingInstance.getPoolId());
+        auditEventsService.auditTrainingRunStartedAction(trainingRun);
+        auditEventsService.auditLevelStartedAction(trainingRun);
+        return trainingRunRepository.save(trainingRun);
+    }
+
+    private TrainingInstance getTrainingInstanceForParticularAccessToken(String accessToken){
         TrainingInstance trainingInstance = trainingInstanceRepository.findByStartTimeAfterAndEndTimeBeforeAndAccessToken(LocalDateTime.now(Clock.systemUTC()), accessToken)
                 .orElseThrow(() -> new EntityNotFoundException(new EntityErrorDetail(TrainingInstance.class, "accessToken", accessToken.getClass(), accessToken,
                         "There is no active game session matching access token.")));
@@ -198,41 +214,69 @@ public class TrainingRunServiceImpl implements TrainingRunService {
             throw new EntityConflictException(new EntityErrorDetail(TrainingInstance.class, "id", trainingInstance.getId().getClass(), trainingInstance.getId(),
                     "At first organizer must allocate sandboxes for training instance."));
         }
-        Long participantRefId = securityService.getUserRefIdFromUserAndGroup();
-        Optional<TrainingRun> accessedTrainingRun = trainingRunRepository.findValidTrainingRunOfUser(trainingInstance.getAccessToken(), participantRefId);
-        if (accessedTrainingRun.isPresent()) {
-            return resumeTrainingRun(accessedTrainingRun.get().getId());
-        }
+        return trainingInstance;
+    }
+
+    private void trAquisitionLockToPreventManyRequestsFromSameUser(Long participantRefId, Long trainingInstanceId, String accessToken){
         try {
-            trAcquisitionLockRepository.save(new TRAcquisitionLock(participantRefId, trainingInstance.getId(), LocalDateTime.now()));
+            trAcquisitionLockRepository.save(new TRAcquisitionLock(participantRefId, trainingInstanceId, LocalDateTime.now(Clock.systemUTC())));
         } catch (DataIntegrityViolationException ex) {
             throw new TooManyRequestsException(new EntityErrorDetail(TrainingInstance.class, "accessToken", accessToken.getClass(), accessToken,
                     "Training run has been already accessed and cannot be created again. Please resume Training Run"));
         }
+    }
 
-        List<AbstractLevel> levels = abstractLevelRepository.findAllLevelsByTrainingDefinitionId(trainingInstance.getTrainingDefinition().getId());
+    private List<AbstractLevel> getAllLevelsForTRSortedByOrder(Long trainingDefinitionId){
+        List<AbstractLevel> levels = abstractLevelRepository.findAllLevelsByTrainingDefinitionId(trainingDefinitionId);
         if (levels.isEmpty()) {
-            throw new EntityNotFoundException(new EntityErrorDetail(TrainingDefinition.class, "id", Long.class, trainingInstance.getTrainingDefinition().getId(),
+            throw new EntityNotFoundException(new EntityErrorDetail(TrainingDefinition.class, "id", Long.class, trainingDefinitionId,
                     "No starting level available for this training definition."));
         }
         levels.sort(Comparator.comparing(AbstractLevel::getOrder));
-        TrainingRun trainingRun = getNewTrainingRun(levels.get(0), trainingInstance, TRState.RUNNING,
-                LocalDateTime.now(Clock.systemUTC()), trainingInstance.getEndTime(), participantRefId);
+        return levels;
+    }
+
+    private TrainingRun getNewTrainingRun(AbstractLevel currentLevel, TrainingInstance trainingInstance, LocalDateTime startTime, LocalDateTime endTime, Long participantRefId) {
+        TrainingRun newTrainingRun = new TrainingRun();
+        newTrainingRun.setCurrentLevel(currentLevel);
+
+        Optional<UserRef> userRefOpt = participantRefRepository.findUserByUserRefId(participantRefId);
+        if (userRefOpt.isPresent()) {
+            newTrainingRun.setParticipantRef(userRefOpt.get());
+        } else {
+            newTrainingRun.setParticipantRef(participantRefRepository.save(securityService.createUserRefEntityByInfoFromUserAndGroup()));
+        }
+        newTrainingRun.setAssessmentResponses("[]");
+        newTrainingRun.setState(TRState.RUNNING);
+        newTrainingRun.setTrainingInstance(trainingInstance);
+        newTrainingRun.setStartTime(startTime);
+        newTrainingRun.setEndTime(endTime);
+        return newTrainingRun;
+    }
+
+    public TrainingRun assignSandbox(TrainingRun trainingRun, long poolId) {
+        Long sandboxInstanceRef = getAndLockSandboxForTrainingRun(poolId);
+        trainingRun.setSandboxInstanceRefId(sandboxInstanceRef);
         return trainingRunRepository.save(trainingRun);
     }
 
-    @Override
-    public TrainingRun assignSandbox(TrainingRun trainingRun) {
+    private Long getAndLockSandboxForTrainingRun(Long poolId) {
+        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(kypoOpenStackURI + "/pools/" + poolId + "/sandboxes/get-and-lock/");
         try {
-            Long sandboxInstanceRef = getReadySandboxInstanceRef(trainingRun.getTrainingInstance().getPoolId());
-            trainingRun.setSandboxInstanceRefId(sandboxInstanceRef);
-            auditEventsService.auditTrainingRunStartedAction(trainingRun);
-            auditEventsService.auditLevelStartedAction(trainingRun);
-        } catch (ForbiddenException | InternalServerErrorException ex) {
-            trainingRunRepository.delete(trainingRun);
-            throw ex;
+            ResponseEntity<SandboxInfo> response =  pythonRestTemplate.getForEntity(builder.toString(), SandboxInfo.class);
+            if(response.getStatusCode().is2xxSuccessful()){
+                return response.getBody().getId();
+            } else {
+                throw new MicroserviceApiException("There is no available sandbox now for pool with (ID: " + poolId + ").", null);
+            }
+        } catch (NullPointerException ex) {
+            throw new ForbiddenException(ex.getMessage());
+        } catch (RestTemplateException ex) {
+            if (ex.getStatusCode().equals(HttpStatus.CONFLICT.toString())) {
+                throw new ForbiddenException("There is no available sandbox, wait a minute and try again or ask organizer to allocate more sandboxes.");
+            }
+            throw new MicroserviceApiException("Error when calling Python API to get unlocked sandbox from pool (ID: " + poolId + ")", new PythonApiError(ex.getMessage()));
         }
-        return trainingRunRepository.save(trainingRun);
     }
 
     @Override
@@ -253,43 +297,6 @@ public class TrainingRunServiceImpl implements TrainingRunService {
         }
         auditEventsService.auditTrainingRunResumedAction(trainingRun);
         return trainingRun;
-    }
-
-    private TrainingRun getNewTrainingRun(AbstractLevel currentLevel, TrainingInstance trainingInstance,
-                                          TRState state, LocalDateTime startTime, LocalDateTime endTime, Long participantRefId) {
-        TrainingRun newTrainingRun = new TrainingRun();
-        newTrainingRun.setCurrentLevel(currentLevel);
-
-        Optional<UserRef> userRefOpt = participantRefRepository.findUserByUserRefId(participantRefId);
-        if (userRefOpt.isPresent()) {
-            newTrainingRun.setParticipantRef(userRefOpt.get());
-        } else {
-            newTrainingRun.setParticipantRef(participantRefRepository.save(securityService.createUserRefEntityByInfoFromUserAndGroup()));
-        }
-        newTrainingRun.setAssessmentResponses("[]");
-        newTrainingRun.setState(TRState.RUNNING);
-        newTrainingRun.setTrainingInstance(trainingInstance);
-        newTrainingRun.setStartTime(startTime);
-        newTrainingRun.setEndTime(endTime);
-        return newTrainingRun;
-    }
-
-    private Long getReadySandboxInstanceRef(Long poolId) {
-        HttpHeaders httpHeaders = new HttpHeaders();
-        String url = kypoOpenStackURI + "/pools/" + poolId + "/sandboxes/unlocked/";
-        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(url);
-        try {
-            ResponseEntity<SandboxInfo> response = pythonRestTemplate.exchange(builder.toUriString(), HttpMethod.GET, new HttpEntity<>(httpHeaders), SandboxInfo.class);
-            SandboxInfo sandboxInfoResult = Objects.requireNonNull(response.getBody(), "There is no available sandbox, wait a minute and try again or ask organizer to allocate more sandboxes.");
-            return sandboxInfoResult.getId();
-        } catch (NullPointerException ex) {
-            throw new ForbiddenException(ex.getMessage());
-        } catch (RestTemplateException ex) {
-            if (ex.getStatusCode().equals(HttpStatus.CONFLICT.toString())) {
-                throw new ForbiddenException("There is no available sandbox, wait a minute and try again or ask organizer to allocate more sandboxes.");
-            }
-            throw new MicroserviceApiException("Error when calling Python API to get unlocked sandbox from pool (ID: " + poolId + ")", new PythonApiError(ex.getMessage()));
-        }
     }
 
     @Override

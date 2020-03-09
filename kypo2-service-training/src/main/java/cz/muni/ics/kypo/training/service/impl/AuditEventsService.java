@@ -227,7 +227,7 @@ public class AuditEventsService {
     private AuditInfoDTO createAuditUserInfo(TrainingRun trainingRun){
         TrainingInstance trainingInstance = trainingRun.getTrainingInstance();
         AuditInfoDTO auditInfoDTO = new AuditInfoDTO();
-        auditInfoDTO.setSandboxId(trainingInstance.getTrainingDefinition().getSandboxDefinitionRefId());
+        auditInfoDTO.setSandboxId(trainingRun.getSandboxInstanceRefId());
         auditInfoDTO.setPoolId(trainingInstance.getPoolId());
         auditInfoDTO.setTrainingRunId(trainingRun.getId());
         auditInfoDTO.setTrainingDefinitionId(trainingInstance.getTrainingDefinition().getId());

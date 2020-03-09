@@ -8,7 +8,7 @@ import java.util.Objects;
  * Access tokens are associated with Training instances.
  *
  */
-@Entity(name = "AccessToken")
+@Entity
 @Table(name = "access_token")
 public class AccessToken extends AbstractEntity<Long> {
 

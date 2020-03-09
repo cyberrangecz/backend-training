@@ -107,11 +107,6 @@ public class TrainingDefinitionServiceImpl implements TrainingDefinitionService 
     }
 
     @Override
-    public Page<TrainingDefinition> findAllBySandboxDefinitionId(Long sandboxDefinitionId, Pageable pageable) {
-        return trainingDefinitionRepository.findAllBySandBoxDefinitionRefId(sandboxDefinitionId, pageable);
-    }
-
-    @Override
     public void update(TrainingDefinition trainingDefinitionToUpdate) {
         Assert.notNull(trainingDefinitionToUpdate, "Input training definition must not be null");
         TrainingDefinition trainingDefinition = findById(trainingDefinitionToUpdate.getId());

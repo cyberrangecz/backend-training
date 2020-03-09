@@ -5,12 +5,14 @@ import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.PathBuilder;
 import cz.muni.csirt.kypo.elasticsearch.service.TrainingEventsService;
 import cz.muni.ics.kypo.commons.security.enums.AuthenticatedUserOIDCItems;
-import cz.muni.ics.kypo.training.api.responses.PageResultResourcePython;
 import cz.muni.ics.kypo.training.api.responses.SandboxInfo;
 import cz.muni.ics.kypo.training.api.responses.SandboxPoolInfo;
 import cz.muni.ics.kypo.training.exceptions.EntityConflictException;
 import cz.muni.ics.kypo.training.exceptions.EntityNotFoundException;
-import cz.muni.ics.kypo.training.persistence.model.*;
+import cz.muni.ics.kypo.training.persistence.model.TrainingDefinition;
+import cz.muni.ics.kypo.training.persistence.model.TrainingInstance;
+import cz.muni.ics.kypo.training.persistence.model.TrainingRun;
+import cz.muni.ics.kypo.training.persistence.model.UserRef;
 import cz.muni.ics.kypo.training.persistence.repository.*;
 import cz.muni.ics.kypo.training.service.impl.SecurityService;
 import cz.muni.ics.kypo.training.service.impl.TrainingInstanceServiceImpl;
@@ -23,7 +25,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
-import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -199,13 +200,6 @@ public class TrainingInstanceServiceTest {
         then(trainingInstanceRepository).should().save(trainingInstance2);
     }
 
-    @Test
-    public void createTrainingInstanceWithNull() {
-        thrown.expect(IllegalArgumentException.class);
-        thrown.expectMessage("Input training instance must not be null");
-        trainingInstanceService.create(null);
-    }
-
     @Test(expected = EntityConflictException.class)
     public void createTrainingInstanceWithInvalidTimes() {
         trainingInstanceService.create(trainingInstanceInvalidTime);
@@ -237,14 +231,6 @@ public class TrainingInstanceServiceTest {
         then(trainingInstanceRepository).should().delete(trainingInstance2);
     }
 
-    @Test
-    public void deleteTrainingInstanceWithNull() {
-        thrown.expect(IllegalArgumentException.class);
-        thrown.expectMessage("Input training instance" +
-                " must not be null");
-        trainingInstanceService.delete(null);
-    }
-
     @Test(expected = EntityConflictException.class)
     public void deleteTrainingInstanceWithAssignedTrainingRuns() {
         List<TrainingRun> runs = new ArrayList<>();
@@ -273,24 +259,6 @@ public class TrainingInstanceServiceTest {
     @Test(expected = EntityNotFoundException.class)
     public void findTrainingRunsByTrainingInstance_notContainedId() {
         trainingInstanceService.findTrainingRunsByTrainingInstance(10L, null, PageRequest.of(0, 2));
-    }
-
-    @Test(expected = EntityConflictException.class)
-    public void allocateSandboxesWithNotCreatedPool() {
-        given(trainingInstanceRepository.findById(trainingInstance2.getId())).willReturn(Optional.ofNullable(trainingInstance2));
-        trainingInstanceService.allocateSandboxes(trainingInstance2, null);
-    }
-
-
-    @Test(expected = EntityConflictException.class)
-    public void allocateSandboxesWithFullPool() {
-        PageResultResourcePython<SandboxInfo> pythonPage = new PageResultResourcePython<SandboxInfo>();
-        pythonPage.setResults(List.of(sandboxInfo1, sandboxInfo2));
-
-        given(trainingInstanceRepository.findById(instanceWithSB.getId())).willReturn(Optional.ofNullable(instanceWithSB));
-        given(pythonRestTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class)))
-                .willReturn(new ResponseEntity<PageResultResourcePython<SandboxInfo>>(pythonPage, HttpStatus.OK));
-        trainingInstanceService.allocateSandboxes(instanceWithSB, 1);
     }
 
     @After

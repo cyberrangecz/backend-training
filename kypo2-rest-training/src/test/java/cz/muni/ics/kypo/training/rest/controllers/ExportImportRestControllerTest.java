@@ -122,7 +122,6 @@ public class ExportImportRestControllerTest {
 		importTrainingDefinitionDTO.setLevels(Arrays.asList(infoLevelImportDTO,assessmentLevelDTO,gameLevelImportDTO));
 		importTrainingDefinitionDTO.setOutcomes(outcomes);
 		importTrainingDefinitionDTO.setPrerequisities(prerequisites);
-		importTrainingDefinitionDTO.setSandboxDefinitionRefId(1L);
 
 
 		ObjectMapper obj = new ObjectMapper();

@@ -37,8 +37,6 @@ public class TrainingDefinitionCreateDTO {
     @ApiModelProperty(value = "Sign if stepper bar should be displayed.", required = true, example = "true")
     @NotNull(message = "{trainingdefinitioncreate.showStepperBar.NotNull.message}")
     private boolean showStepperBar;
-    @ApiModelProperty(value = "Reference to the sandbox definition.", required = true, example = "1")
-    private Long sandboxDefinitionRefId;
 
     /**
      * Gets title.
@@ -166,34 +164,14 @@ public class TrainingDefinitionCreateDTO {
         this.showStepperBar = showStepperBar;
     }
 
-    /**
-     * Gets sandbox definition ref id.
-     *
-     * @return the sandbox definition ref id
-     */
-    public Long getSandboxDefinitionRefId() {
-        return sandboxDefinitionRefId;
-    }
-
-    /**
-     * Sets sandbox definition ref id.
-     *
-     * @param sandboxDefinitionRef the sandbox definition ref
-     */
-    public void setSandboxDefinitionRefId(Long sandboxDefinitionRef) {
-        this.sandboxDefinitionRefId = sandboxDefinitionRef;
-    }
 
     @Override
     public String toString() {
         return "TrainingDefinitionCreateDTO{" +
                 "title='" + title + '\'' +
                 ", description='" + description + '\'' +
-                ", prerequisities=" + Arrays.toString(prerequisities) +
-                ", outcomes=" + Arrays.toString(outcomes) +
                 ", state=" + state +
                 ", showStepperBar=" + showStepperBar +
-                ", sandboxDefinitionRefId=" + sandboxDefinitionRefId +
                 '}';
     }
 }

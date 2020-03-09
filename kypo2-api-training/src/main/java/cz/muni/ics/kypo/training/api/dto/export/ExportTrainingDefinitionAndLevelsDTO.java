@@ -31,8 +31,6 @@ public class ExportTrainingDefinitionAndLevelsDTO {
     private List<AbstractLevelExportDTO> levels = new ArrayList<>();
     @ApiModelProperty(value = "Estimated time (minutes) taken by the player to finish run created from this definition.", example = "5")
     private int estimatedDuration;
-    @ApiModelProperty(value = "Main identifier of sandbox definition associated with this training definition.", example = "1")
-    private Long sandboxDefinitionRefId;
 
     /**
      * Instantiates a new Export training definition and levels dto.
@@ -184,28 +182,14 @@ public class ExportTrainingDefinitionAndLevelsDTO {
         this.estimatedDuration = estimatedDuration;
     }
 
-    /**
-     * Gets sandbox definition ref id.
-     *
-     * @return the sandbox definition ref id
-     */
-    public Long getSandboxDefinitionRefId() {
-        return sandboxDefinitionRefId;
-    }
-
-    /**
-     * Sets sandbox definition ref id.
-     *
-     * @param sandboxDefinitionRefId the sandbox definition ref id
-     */
-    public void setSandboxDefinitionRefId(Long sandboxDefinitionRefId) {
-        this.sandboxDefinitionRefId = sandboxDefinitionRefId;
-    }
-
-    @Override public String toString() {
-        return "ExportTrainingDefinitionAndLevelsDTO{" + "title='" + title + '\'' + ", description='" + description + '\''
-            + ", prerequisities=" + Arrays.toString(prerequisities) + ", outcomes=" + Arrays.toString(outcomes) + ", state=" + state
-            + ", showStepperBar=" + showStepperBar + ", levels=" + levels + ", estimatedDuration=" + estimatedDuration
-            + ", sandboxDefinitionRefId=" + sandboxDefinitionRefId + '}';
+    @Override
+    public String toString() {
+        return "ExportTrainingDefinitionAndLevelsDTO{" +
+                "title='" + title + '\'' +
+                ", description='" + description + '\'' +
+                ", state=" + state +
+                ", showStepperBar=" + showStepperBar +
+                ", estimatedDuration=" + estimatedDuration +
+                '}';
     }
 }

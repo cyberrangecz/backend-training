@@ -38,15 +38,6 @@ public interface TrainingDefinitionFacade {
     PageResultResource<TrainingDefinitionDTO> findAll(Predicate predicate, Pageable pageable);
 
     /**
-     * Find all info(id, title, canEdit) about training definition with given sandbox definition
-     *
-     * @param sandboxDefinitionId - id of sandbox definition
-     * @param pageable  pageable parameter with information about pagination.
-     * @return page of all {@link TrainingDefinitionInfoDTO} with given sandbox definition
-     */
-    PageResultResource<TrainingDefinitionInfoDTO> findAllBySandboxDefinitionId(Long sandboxDefinitionId, Pageable pageable);
-
-    /**
      * Updates training definition
      *
      * @param trainingDefinition to be updated

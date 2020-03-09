@@ -13,7 +13,7 @@ import java.util.Set;
  * Training runs can be created based on instances.
  *
  */
-@Entity(name = "TrainingInstance")
+@Entity
 @Table(name = "training_instance")
 public class TrainingInstance extends AbstractEntity<Long> {
 
