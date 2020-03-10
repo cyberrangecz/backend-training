@@ -159,8 +159,8 @@ public class TrainingInstanceFacade {
     public TrainingInstanceBasicInfoDTO assignPoolToTrainingInstance(TrainingInstanceAssignPoolIdDTO trainingInstanceAssignPoolIdDTO) {
         TrainingInstance trainingInstance = trainingInstanceService.findById(trainingInstanceAssignPoolIdDTO.getId());
         // lock pool and update pool
-        LockedPoolInfo lockedPoolInfo = trainingInstanceService.lockPool(trainingInstanceAssignPoolIdDTO.getId());
-        trainingInstance.setId(lockedPoolInfo.getPool());
+        trainingInstanceService.lockPool(trainingInstanceAssignPoolIdDTO.getPoolId());
+        trainingInstance.setPoolId(trainingInstanceAssignPoolIdDTO.getPoolId());
         TrainingInstance updatedTrainingInstance = trainingInstanceService.assignPoolToTrainingInstance(trainingInstance);
         return trainingInstanceMapper.mapEntityToTIBasicInfo(updatedTrainingInstance);
     }
@@ -178,7 +178,7 @@ public class TrainingInstanceFacade {
         // lock newly assigned pool
         trainingInstanceService.lockPool(trainingInstanceAssignPoolIdDTO.getPoolId());
         // unlock previously assigned pool
-        trainingInstanceService.unlockPool(trainingInstance.getId());
+        trainingInstanceService.unlockPool(trainingInstance.getPoolId());
 
         trainingInstance.setPoolId(trainingInstanceAssignPoolIdDTO.getPoolId());
         TrainingInstance updatedTrainingInstance = trainingInstanceService.assignPoolToTrainingInstance(trainingInstance);
