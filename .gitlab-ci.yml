@@ -44,7 +44,6 @@ createTag:
   # create new tag
   - git tag -a $VERSION -m "$TAG_MESSAGE"
   - git push origin $VERSION -o ci.skip
-
   rules:
   - if: '$CI_COMMIT_BRANCH == "master"'
     changes:
