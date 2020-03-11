@@ -34,7 +34,7 @@ createTag:
   - export VERSION=$(cut -d ' ' -f1 $DEPLOYMENT_INFO_VERSION_FILE)
   - export TAG_MESSAGE=$(cut -d ' ' -f2- $DEPLOYMENT_INFO_VERSION_FILE)
   # update project versions in multi-module maven project
-  - mvn versions:set -DnewVersion=$VERSION -DgenerateBackupPoms=false
+  - mvn versions:set -DnewVersion=$VERSION -DgenerateBackupPoms=false -Dproprietary-repo-url=$PROPRIETARY_REPO_URL
   - git commit -am "Update pom.xml version based on GitLab tag. Done by CI."
   - git push -o ci.skip
   # update change log
