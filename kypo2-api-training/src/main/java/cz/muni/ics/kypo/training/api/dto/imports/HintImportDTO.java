@@ -7,7 +7,7 @@ import io.swagger.annotations.ApiModelProperty;
  *  Encapsulates information about Hint.
  *
  */
-@ApiModel(value = "HintDTO", description = "Imported hint.")
+@ApiModel(value = "HintImportDTO", description = "Imported hint.")
 public class HintImportDTO {
 
 	@ApiModelProperty(value = "Short textual description of the hint.", example = "Hint1")

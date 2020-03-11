@@ -13,7 +13,7 @@ import java.util.Set;
  * Encapsulates basic information about game level.
  */
 
-@ApiModel(value = "GameLevelDTO", description = "An assignment containing security tasks whose completion yields a flag.", parent = AbstractLevelDTO.class)
+@ApiModel(value = "GameLevelViewDTO", description = "An assignment containing security tasks whose completion yields a flag.", parent = AbstractLevelDTO.class)
 public class GameLevelViewDTO extends AbstractLevelDTO {
 
     @ApiModelProperty(value = "The information and experiences that are directed towards a participant.", example = "Play me")

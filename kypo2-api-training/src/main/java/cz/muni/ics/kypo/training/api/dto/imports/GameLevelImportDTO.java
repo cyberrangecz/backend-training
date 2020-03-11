@@ -10,6 +10,7 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -36,6 +37,8 @@ public class GameLevelImportDTO extends AbstractLevelImportDTO{
 	@NotNull(message = "{gamelevelimport.incorrectFlagLimit.NotEmpty.message}")
 	@Min(value = 0, message = "{gamelevelimport.incorrectFlagLimit.Min.message}")
 	private int incorrectFlagLimit;
+	@ApiModelProperty(value = "List of attachments.", example = "[]")
+	private List<AttachmentImportDTO> attachments;
 
 	/**
 	 * Gets flag.
@@ -143,6 +146,25 @@ public class GameLevelImportDTO extends AbstractLevelImportDTO{
 	 */
 	public void setIncorrectFlagLimit(int incorrectFlagLimit) {
 		this.incorrectFlagLimit = incorrectFlagLimit;
+	}
+
+
+	/**
+	 * Gets attachments.
+	 *
+	 * @return the list of attachments
+	 */
+	public List<AttachmentImportDTO> getAttachments() {
+		return attachments;
+	}
+
+	/**
+	 * Sets attachments.
+	 *
+	 * @param attachments the attachments
+	 */
+	public void setAttachments(List<AttachmentImportDTO> attachments) {
+		this.attachments = attachments;
 	}
 
 	@Override

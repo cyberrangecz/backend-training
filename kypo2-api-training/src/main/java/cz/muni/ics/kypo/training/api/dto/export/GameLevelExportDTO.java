@@ -1,9 +1,11 @@
 package cz.muni.ics.kypo.training.api.dto.export;
 
+import cz.muni.ics.kypo.training.api.dto.imports.AttachmentImportDTO;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -25,6 +27,9 @@ public class GameLevelExportDTO extends AbstractLevelExportDTO {
     private Set<HintExportDTO> hints = new HashSet<>();
     @ApiModelProperty(value = "How many times player can submit incorrect flag before displaying solution.", example = "5")
     private int incorrectFlagLimit;
+    @ApiModelProperty(value = "List of attachments.", example = "[]")
+    private List<AttachmentImportDTO> attachments;
+
 
     /**
      * Instantiates a new Game level export dto.
@@ -138,6 +143,24 @@ public class GameLevelExportDTO extends AbstractLevelExportDTO {
      */
     public void setIncorrectFlagLimit(int incorrectFlagLimit) {
         this.incorrectFlagLimit = incorrectFlagLimit;
+    }
+
+    /**
+     * Gets attachments.
+     *
+     * @return the list of attachments
+     */
+    public List<AttachmentImportDTO> getAttachments() {
+        return attachments;
+    }
+
+    /**
+     * Sets attachments.
+     *
+     * @param attachments the list of attachments
+     */
+    public void setAttachments(List<AttachmentImportDTO> attachments) {
+        this.attachments = attachments;
     }
 
     @Override
