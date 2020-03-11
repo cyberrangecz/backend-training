@@ -10,6 +10,7 @@ import cz.muni.ics.kypo.training.api.dto.imports.GameLevelImportDTO;
 import cz.muni.ics.kypo.training.api.dto.visualization.GameLevelVisualizationDTO;
 import cz.muni.ics.kypo.training.persistence.model.GameLevel;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 import org.mapstruct.ReportingPolicy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -21,7 +22,7 @@ import java.util.*;
  * DTOs classes. Code is generated during compile time.
  *
  */
-@Mapper(componentModel = "spring", uses = {HintMapper.class}, unmappedTargetPolicy = ReportingPolicy.IGNORE)
+@Mapper(componentModel = "spring", uses = {HintMapper.class, AttachmentMapper.class}, unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface GameLevelMapper extends ParentMapper{
     GameLevel mapToEntity(GameLevelDTO dto);
 

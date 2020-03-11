@@ -14,7 +14,7 @@ import java.util.List;
  * Encapsulates information about training definition and its levels.
  *
  */
-@ApiModel(value = "HintDTO", description = "A basic information about hint.")
+@ApiModel(value = "ImportTrainingDefinitionDTO", description = "A basic information about hint.")
 public class ImportTrainingDefinitionDTO {
 
 	@ApiModelProperty(value = "A name of the training/game (e.g., Photo Hunter) .", example = "TrainingDefinition2")
