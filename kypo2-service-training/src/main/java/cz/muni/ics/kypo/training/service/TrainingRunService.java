@@ -27,6 +27,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.*;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import org.springframework.web.client.RestTemplate;
@@ -126,33 +127,9 @@ public class TrainingRunService {
      * @param trainingRunId training run to delete
      */
     public void deleteTrainingRun(Long trainingRunId) {
-        TrainingRun trainingRun = trainingRunRepository.findById(trainingRunId).orElseThrow(() -> new EntityNotFoundException(
-                new EntityErrorDetail(TrainingRun.class, "id", trainingRunId.getClass(), trainingRunId, "Training run not found.")));
-        if (trainingRun.getSandboxInstanceRefId() == null) {
-            try {
-                HttpHeaders httpHeaders = new HttpHeaders();
-                httpHeaders.set("Accept", MediaType.APPLICATION_JSON_VALUE);
-                ResponseEntity<SandboxInfo> response = pythonRestTemplate.exchange(kypoOpenStackURI + "/sandboxes/" + trainingRun.getPreviousSandboxInstanceRefId() + "/", HttpMethod.GET, new HttpEntity<>(httpHeaders),
-                        new ParameterizedTypeReference<SandboxInfo>() {
-                        });
-                if (response.getStatusCode().is2xxSuccessful()) {
-                    throw new EntityConflictException(new EntityErrorDetail(TrainingRun.class, "id", trainingRunId.getClass(), trainingRun ,
-                            "Sandbox (id:" + trainingRun.getPreviousSandboxInstanceRefId() + ") previously assigned to the training run was not deleted in OpenStack. " +
-                                    "Please delete sandbox in OpenStack before you delete training run."));
-                }
-            } catch (RestTemplateException ex) {
-                if (!ex.getStatusCode().equals(HttpStatus.NOT_FOUND.toString())) {
-                    throw new MicroserviceApiException("Error when calling Python API to obtain info about sandbox (ID: " + trainingRun.getPreviousSandboxInstanceRefId() + ")", new PythonApiError(ex.getMessage()));
-                }
-                LOG.debug("Sandbox (ID:" + trainingRun.getPreviousSandboxInstanceRefId() + ") previously assigned to the training run (ID: " + trainingRunId + ") is not found in OpenStack because it was successfully deleted.");
-            }
-            trAcquisitionLockRepository.deleteByParticipantRefIdAndTrainingInstanceId(trainingRun.getParticipantRef().getUserRefId(), trainingRun.getTrainingInstance().getId());
-            trainingRunRepository.delete(trainingRun);
-        } else {
-            throw new EntityConflictException(new EntityErrorDetail(TrainingRun.class, "id", trainingRunId.getClass(), trainingRunId,
-                    "Could not delete training run with associated sandbox (id: " + trainingRun.getSandboxInstanceRefId() +
-                    "). Please firstly, delete associated sandbox."));
-        }
+        TrainingRun trainingRun = findById(trainingRunId);
+        trAcquisitionLockRepository.deleteByParticipantRefIdAndTrainingInstanceId(trainingRun.getParticipantRef().getUserRefId(), trainingRun.getTrainingInstance().getId());
+        trainingRunRepository.delete(trainingRun);
     }
 
     /**
@@ -258,7 +235,7 @@ public class TrainingRunService {
         if (accessedTrainingRun.isPresent()) {
             return resumeTrainingRun(accessedTrainingRun.get().getId());
         }
-        trAquisitionLockToPreventManyRequestsFromSameUser(participantRefId, trainingInstance.getId(), accessToken);
+        trAcquisitionLockToPreventManyRequestsFromSameUser(participantRefId, trainingInstance.getId(), accessToken);
         List<AbstractLevel> levels = getAllLevelsForTRSortedByOrder(trainingInstance.getTrainingDefinition().getId());
         TrainingRun trainingRun = getNewTrainingRun(levels.get(0), trainingInstance, LocalDateTime.now(Clock.systemUTC()), trainingInstance.getEndTime(), participantRefId);
 
@@ -279,7 +256,7 @@ public class TrainingRunService {
         return trainingInstance;
     }
 
-    private void trAquisitionLockToPreventManyRequestsFromSameUser(Long participantRefId, Long trainingInstanceId, String accessToken){
+    private void trAcquisitionLockToPreventManyRequestsFromSameUser(Long participantRefId, Long trainingInstanceId, String accessToken){
         try {
             trAcquisitionLockRepository.save(new TRAcquisitionLock(participantRefId, trainingInstanceId, LocalDateTime.now(Clock.systemUTC())));
         } catch (DataIntegrityViolationException ex) {
