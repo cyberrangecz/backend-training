@@ -7,6 +7,7 @@ import cz.muni.ics.kypo.training.api.dto.AuditInfoDTO;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
 import java.time.Clock;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -26,7 +27,7 @@ public class AuditEventsService {
     public void auditTrainingRunStartedAction(TrainingRun trainingRun) {
         AuditInfoDTO auditInfoDTO = createAuditUserInfo(trainingRun);
 
-        TrainingRunStarted trainingRunStarted = new TrainingRunStarted.TrainingRunStartedBuilder()
+        TrainingRunStarted trainingRunStarted = TrainingRunStarted.builder()
                 .sandboxId(auditInfoDTO.getSandboxId())
                 .poolId(auditInfoDTO.getPoolId())
                 .trainingDefinitionId(auditInfoDTO.getTrainingDefinitionId())
@@ -46,7 +47,7 @@ public class AuditEventsService {
         LevelType levelType = getLevelType(trainingRun.getCurrentLevel());
         AuditInfoDTO auditInfoDTO = createAuditUserInfo(trainingRun);
 
-        LevelStarted levelStarted = new LevelStarted.LevelStartedBuilder()
+        LevelStarted levelStarted = LevelStarted.builder()
                 .sandboxId(auditInfoDTO.getSandboxId())
                 .poolId(auditInfoDTO.getPoolId())
                 .trainingDefinitionId(auditInfoDTO.getTrainingDefinitionId())
@@ -69,7 +70,7 @@ public class AuditEventsService {
         LevelType levelType = getLevelType(trainingRun.getCurrentLevel());
         AuditInfoDTO auditInfoDTO = createAuditUserInfo(trainingRun);
 
-        LevelCompleted levelCompleted = new LevelCompleted.LevelCompletedBuilder()
+        LevelCompleted levelCompleted = LevelCompleted.builder()
                 .sandboxId(auditInfoDTO.getSandboxId())
                 .poolId(auditInfoDTO.getPoolId())
                 .poolId(auditInfoDTO.getPoolId())
@@ -90,7 +91,7 @@ public class AuditEventsService {
     public void auditHintTakenAction(TrainingRun trainingRun, Hint hint) {
         AuditInfoDTO auditInfoDTO = createAuditUserInfo(trainingRun);
 
-        HintTaken hintTaken = new HintTaken.HintTakenBuilder()
+        HintTaken hintTaken = HintTaken.builder()
                 .sandboxId(auditInfoDTO.getSandboxId())
                 .poolId(auditInfoDTO.getPoolId())
                 .trainingDefinitionId(auditInfoDTO.getTrainingDefinitionId())
@@ -111,7 +112,7 @@ public class AuditEventsService {
     public void auditSolutionDisplayedAction(TrainingRun trainingRun) {
         AuditInfoDTO auditInfoDTO = createAuditUserInfo(trainingRun);
 
-        SolutionDisplayed solutionDisplayed = new SolutionDisplayed.SolutionDisplayedBuilder()
+        SolutionDisplayed solutionDisplayed = SolutionDisplayed.builder()
                 .sandboxId(auditInfoDTO.getSandboxId())
                 .poolId(auditInfoDTO.getPoolId())
                 .trainingDefinitionId(auditInfoDTO.getTrainingDefinitionId())
@@ -130,7 +131,7 @@ public class AuditEventsService {
     public void auditCorrectFlagSubmittedAction(TrainingRun trainingRun, String flag) {
         AuditInfoDTO auditInfoDTO = createAuditUserInfo(trainingRun);
 
-        CorrectFlagSubmitted correctFlagSubmitted = new CorrectFlagSubmitted.CorrectFlagSubmittedBuilder()
+        CorrectFlagSubmitted correctFlagSubmitted = CorrectFlagSubmitted.builder()
                 .sandboxId(auditInfoDTO.getSandboxId())
                 .poolId(auditInfoDTO.getPoolId())
                 .trainingDefinitionId(auditInfoDTO.getTrainingDefinitionId())
@@ -149,7 +150,7 @@ public class AuditEventsService {
     public void auditWrongFlagSubmittedAction(TrainingRun trainingRun, String flag) {
         AuditInfoDTO auditInfoDTO = createAuditUserInfo(trainingRun);
 
-        WrongFlagSubmitted wrongFlagSubmitted = new WrongFlagSubmitted.WrongFlagSubmittedBuilder()
+        WrongFlagSubmitted wrongFlagSubmitted = WrongFlagSubmitted.builder()
                 .sandboxId(auditInfoDTO.getSandboxId())
                 .poolId(auditInfoDTO.getPoolId())
                 .trainingDefinitionId(auditInfoDTO.getTrainingDefinitionId())
@@ -169,7 +170,7 @@ public class AuditEventsService {
     public void auditAssessmentAnswersAction(TrainingRun trainingRun, String answers) {
         AuditInfoDTO auditInfoDTO = createAuditUserInfo(trainingRun);
 
-        AssessmentAnswers assessmentAnswers = new AssessmentAnswers.AssessmentAnswersBuilder()
+        AssessmentAnswers assessmentAnswers = AssessmentAnswers.builder()
                 .sandboxId(auditInfoDTO.getSandboxId())
                 .poolId(auditInfoDTO.getPoolId())
                 .trainingDefinitionId(auditInfoDTO.getTrainingDefinitionId())
@@ -188,7 +189,7 @@ public class AuditEventsService {
     public void auditTrainingRunEndedAction(TrainingRun trainingRun) {
         AuditInfoDTO auditInfoDTO = createAuditUserInfo(trainingRun);
 
-        TrainingRunEnded assessmentAnswers = new TrainingRunEnded.TrainingRunEndedBuilder()
+        TrainingRunEnded assessmentAnswers = TrainingRunEnded.builder()
                 .sandboxId(auditInfoDTO.getSandboxId())
                 .poolId(auditInfoDTO.getPoolId())
                 .trainingDefinitionId(auditInfoDTO.getTrainingDefinitionId())
@@ -209,7 +210,7 @@ public class AuditEventsService {
     public void auditTrainingRunResumedAction(TrainingRun trainingRun) {
         AuditInfoDTO auditInfoDTO = createAuditUserInfo(trainingRun);
 
-        TrainingRunResumed trainingRunResumed = new TrainingRunResumed.TrainingRunResumedBuilder()
+        TrainingRunResumed trainingRunResumed = TrainingRunResumed.builder()
                 .sandboxId(auditInfoDTO.getSandboxId())
                 .poolId(auditInfoDTO.getPoolId())
                 .trainingDefinitionId(auditInfoDTO.getTrainingDefinitionId())
@@ -224,7 +225,7 @@ public class AuditEventsService {
         auditService.saveTrainingRunEvent(trainingRunResumed);
     }
 
-    private AuditInfoDTO createAuditUserInfo(TrainingRun trainingRun){
+    private AuditInfoDTO createAuditUserInfo(TrainingRun trainingRun) {
         TrainingInstance trainingInstance = trainingRun.getTrainingInstance();
         AuditInfoDTO auditInfoDTO = new AuditInfoDTO();
         auditInfoDTO.setSandboxId(trainingRun.getSandboxInstanceRefId());

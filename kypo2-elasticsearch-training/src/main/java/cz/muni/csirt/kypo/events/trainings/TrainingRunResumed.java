@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonRootName;
 import cz.muni.csirt.kypo.elasticsearch.AbstractAuditPOJO;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.*;
 
 /**
  * This classes uses Builder pattern based on the following blog:
@@ -13,6 +14,10 @@ import io.swagger.annotations.ApiModelProperty;
  * <p>
  * Without that builder it is easy to mesh class parameters, e.g. trainingDefinitionId with trainingInstanceId.
  */
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
+@ToString
 @ApiModel(value = "Training Run Resumed", description = "Type of event from trainings.")
 @JsonRootName(value = "event")
 public class TrainingRunResumed extends AbstractAuditPOJO {
@@ -47,110 +52,5 @@ public class TrainingRunResumed extends AbstractAuditPOJO {
     @ApiModelProperty(value = "Id of player in the training run")
     @JsonProperty(value = "user_ref_id")
     private long userRefId;
-    @ApiModelProperty(value = "Issuer of player in the training run")
-    @JsonProperty(value = "iss")
-    private String iss;
 
-    private TrainingRunResumed(TrainingRunResumedBuilder builder) {
-        this.sandboxId = builder.sandboxId;
-        this.poolId = builder.poolId;
-        this.trainingDefinitionId = builder.trainingDefinitionId;
-        this.trainingInstanceId = builder.trainingInstanceId;
-        this.trainingRunId = builder.trainingRunId;
-        this.gameTime = builder.gameTime;
-        this.totalScore = builder.totalScore;
-        this.actualScoreInLevel = builder.actualScoreInLevel;
-        this.level = builder.level;
-        this.userRefId = builder.userRefId;
-        this.iss = builder.iss;
-    }
-
-    public static class TrainingRunResumedBuilder {
-        private long sandboxId;
-        private long poolId;
-        private long trainingDefinitionId;
-        private long trainingInstanceId;
-        private long trainingRunId;
-        private long gameTime;
-        private int totalScore;
-        private int actualScoreInLevel;
-        private long level;
-        private long userRefId;
-        private String iss;
-
-        public TrainingRunResumedBuilder sandboxId(long sandboxId) {
-            this.sandboxId = sandboxId;
-            return this;
-        }
-
-        public TrainingRunResumedBuilder poolId(long poolId) {
-            this.poolId = poolId;
-            return this;
-        }
-
-        public TrainingRunResumedBuilder trainingDefinitionId(long trainingDefinitionId) {
-            this.trainingDefinitionId = trainingDefinitionId;
-            return this;
-        }
-
-        public TrainingRunResumedBuilder trainingInstanceId(long trainingInstanceId) {
-            this.trainingInstanceId = trainingInstanceId;
-            return this;
-        }
-
-        public TrainingRunResumedBuilder trainingRunId(long trainingRunId) {
-            this.trainingRunId = trainingRunId;
-            return this;
-        }
-
-        public TrainingRunResumedBuilder gameTime(long gameTime) {
-            this.gameTime = gameTime;
-            return this;
-        }
-
-        public TrainingRunResumedBuilder totalScore(int totalScore) {
-            this.totalScore = totalScore;
-            return this;
-        }
-
-        public TrainingRunResumedBuilder actualScoreInLevel(int actualScoreInLevel) {
-            this.actualScoreInLevel = actualScoreInLevel;
-            return this;
-        }
-
-        public TrainingRunResumedBuilder level(long level) {
-            this.level = level;
-            return this;
-        }
-
-        public TrainingRunResumedBuilder userRefId(long userRefId) {
-            this.userRefId = userRefId;
-            return this;
-        }
-
-        public TrainingRunResumedBuilder iss(String iss) {
-            this.iss = iss;
-            return this;
-        }
-
-        public TrainingRunResumed build() {
-            return new TrainingRunResumed(this);
-        }
-    }
-
-    @Override
-    public String toString() {
-        return "TrainingRunResumed{" +
-                "sandboxId=" + sandboxId +
-                ", trainingDefinitionId=" + trainingDefinitionId +
-                ", trainingInstanceId=" + trainingInstanceId +
-                ", trainingRunId=" + trainingRunId +
-                ", gameTime=" + gameTime +
-                ", totalScore=" + totalScore +
-                ", actualScoreInLevel=" + actualScoreInLevel +
-                ", level=" + level +
-                ", userRefId=" + userRefId +
-                ", iss='" + iss + '\'' +
-                '}';
-    }
 }
