@@ -36,12 +36,11 @@ import java.util.Arrays;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.BDDMockito.willThrow;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = {InfoLevelMapperImpl.class, ExportImportMapperImpl.class, TrainingDefinitionMapperImpl.class,
         GameLevelMapperImpl.class, InfoLevelMapperImpl.class, AssessmentLevelMapperImpl.class,
-        UserRefMapperImpl.class, BetaTestingGroupMapperImpl.class, HintMapperImpl.class})
+        UserRefMapperImpl.class, BetaTestingGroupMapperImpl.class, HintMapperImpl.class, AttachmentMapperImpl.class})
 public class ExportImportFacadeTest {
 
     @Rule

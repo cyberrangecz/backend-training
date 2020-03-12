@@ -2,7 +2,6 @@ package cz.muni.ics.kypo.training.facade;
 
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.PathBuilder;
-import cz.muni.ics.kypo.training.api.responses.PageResultResource;
 import cz.muni.ics.kypo.training.api.dto.AbstractLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelUpdateDTO;
@@ -16,6 +15,7 @@ import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionUp
 import cz.muni.ics.kypo.training.api.enums.AssessmentType;
 import cz.muni.ics.kypo.training.api.enums.LevelType;
 import cz.muni.ics.kypo.training.api.enums.RoleType;
+import cz.muni.ics.kypo.training.api.responses.PageResultResource;
 import cz.muni.ics.kypo.training.exceptions.EntityNotFoundException;
 import cz.muni.ics.kypo.training.exceptions.InternalServerErrorException;
 import cz.muni.ics.kypo.training.mapping.mapstruct.*;
@@ -23,9 +23,9 @@ import cz.muni.ics.kypo.training.mapping.modelmapper.BeanMapping;
 import cz.muni.ics.kypo.training.mapping.modelmapper.BeanMappingImpl;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.model.enums.TDState;
+import cz.muni.ics.kypo.training.service.SecurityService;
 import cz.muni.ics.kypo.training.service.TrainingDefinitionService;
 import cz.muni.ics.kypo.training.service.UserService;
-import cz.muni.ics.kypo.training.service.SecurityService;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -56,7 +56,7 @@ import static org.mockito.BDDMockito.*;
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = {InfoLevelMapperImpl.class, TrainingDefinitionMapperImpl.class,
         UserRefMapperImpl.class, GameLevelMapperImpl.class, InfoLevelMapperImpl.class, BetaTestingGroupMapperImpl.class,
-        AssessmentLevelMapperImpl.class, HintMapperImpl.class, BasicLevelInfoMapperImpl.class})
+        AssessmentLevelMapperImpl.class, HintMapperImpl.class, BasicLevelInfoMapperImpl.class, AttachmentMapperImpl.class})
 public class TrainingDefinitionFacadeTest {
 
     @Rule
