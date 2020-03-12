@@ -41,7 +41,7 @@ import static org.mockito.BDDMockito.*;
 @SpringBootTest(classes = {InfoLevelMapperImpl.class, TrainingDefinitionMapperImpl.class,
         UserRefMapperImpl.class, GameLevelMapperImpl.class,
         InfoLevelMapperImpl.class, AssessmentLevelMapperImpl.class, HintMapperImpl.class,
-        BasicLevelInfoMapperImpl.class, TrainingRunMapperImpl.class, BetaTestingGroupMapperImpl.class})
+        BasicLevelInfoMapperImpl.class, TrainingRunMapperImpl.class, BetaTestingGroupMapperImpl.class, AttachmentMapperImpl.class})
 public class TrainingRunFacadeTest {
 
     @Autowired
