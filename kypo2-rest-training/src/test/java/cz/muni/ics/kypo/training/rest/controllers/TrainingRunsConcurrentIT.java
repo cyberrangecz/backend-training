@@ -9,8 +9,8 @@ import cz.muni.ics.kypo.training.api.enums.RoleType;
 import cz.muni.ics.kypo.training.api.responses.PageResultResourcePython;
 import cz.muni.ics.kypo.training.api.responses.SandboxInfo;
 import cz.muni.ics.kypo.training.persistence.model.*;
-import cz.muni.ics.kypo.training.persistence.model.enums.TDState;
 import cz.muni.ics.kypo.training.persistence.repository.*;
+import cz.muni.ics.kypo.training.persistence.util.TestDataFactory;
 import cz.muni.ics.kypo.training.rest.controllers.config.RestConfigTest;
 import org.junit.After;
 import org.junit.Before;
@@ -40,7 +40,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.client.RestTemplate;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -52,7 +51,7 @@ import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
 @RunWith(ConcurrentTestRunner.class)
-@ContextConfiguration(classes = {TrainingRunsRestController.class, TrainingInstancesRestController.class})
+@ContextConfiguration(classes = {TrainingRunsRestController.class, TrainingInstancesRestController.class, TestDataFactory.class})
 @DataJpaTest
 @Import(RestConfigTest.class)
 @TestPropertySource(properties = {"openstack-server.uri=http://localhost:8080"})
@@ -61,6 +60,8 @@ public class TrainingRunsConcurrentIT {
     private MockMvc mvc;
     private TestContextManager testContextManager;
 
+    @Autowired
+    private TestDataFactory testDataFactory;
     @Autowired
     private TrainingRunsRestController trainingRunsRestController;
     @Autowired
@@ -132,40 +133,20 @@ public class TrainingRunsConcurrentIT {
         UserRef organizer = new UserRef();
         organizer.setUserRefId(1L);
 
-        trainingDefinition = new TrainingDefinition();
-        trainingDefinition.setTitle("definition");
-        trainingDefinition.setState(TDState.RELEASED);
-        trainingDefinition.setShowStepperBar(true);
-        trainingDefinition.setLastEdited(LocalDateTime.now());
+        trainingDefinition = testDataFactory.getReleasedDefinition();
         trainingDefinitionRepository.save(trainingDefinition);
 
-        trainingInstance = new TrainingInstance();
-        trainingInstance.setStartTime(LocalDateTime.now().minusHours(24));
-        trainingInstance.setEndTime(LocalDateTime.now().plusHours(80));
-        trainingInstance.setTitle("futureInstance");
-        trainingInstance.setPoolSize(20);
-        trainingInstance.setPoolId(1L);
-        trainingInstance.setAccessToken("pass-1234");
+        trainingInstance = testDataFactory.getOngoingInstance();
         trainingInstance.setTrainingDefinition(trainingDefinition);
         trainingInstance.setOrganizers(new HashSet<>(Arrays.asList(organizer)));
         trainingInstance = trainingInstanceRepository.save(trainingInstance);
 
-        hint = new Hint();
-        hint.setTitle("hintTitle");
-        hint.setContent("hintContent");
-        hint.setHintPenalty(10);
+        hint = testDataFactory.getHint1();
 
-        gameLevel1 = new GameLevel();
-        gameLevel1.setTitle("testTitle");
-        gameLevel1.setContent("testContent");
-        gameLevel1.setFlag("testFlag");
-        gameLevel1.setSolution("testSolution");
-        gameLevel1.setSolutionPenalized(true);
-        gameLevel1.setMaxScore(30);
+        gameLevel1 = testDataFactory.getPenalizedLevel();
         gameLevel1.setHints(new HashSet<>(Arrays.asList(hint)));
         gameLevel1.setTrainingDefinition(trainingDefinition);
         gameLevel1.setOrder(1);
-        gameLevel1.setIncorrectFlagLimit(4);
         gameLevelRepository.save(gameLevel1);
     }
 
@@ -178,7 +159,7 @@ public class TrainingRunsConcurrentIT {
         mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_TRAINEE.name()));
 
         mvc.perform(post("/training-runs")
-                .param("accessToken", "pass-1234"));
+                .param("accessToken", trainingInstance.getAccessToken()));
     }
 
     @After

@@ -1,5 +1,6 @@
 package cz.muni.ics.kypo.training.persistence.repository;
 
+import cz.muni.ics.kypo.training.persistence.util.TestDataFactory;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -7,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -25,11 +27,13 @@ import static org.junit.Assert.assertNotNull;
 @RunWith(SpringRunner.class)
 @DataJpaTest
 @Import(PersistenceConfigTest.class)
+@ComponentScan(basePackages = "cz.muni.ics.kypo.training.persistence.util")
 public class InfoLevelRepositoryTest {
 
     @Autowired
     private TestEntityManager entityManager;
-
+    @Autowired
+    private TestDataFactory testDataFactory;
     @Autowired
     private InfoLevelRepository infoLevelRepository;
 
@@ -41,13 +45,8 @@ public class InfoLevelRepositoryTest {
 
     @Before
     public void init() {
-        infoLevel = new InfoLevel();
-        infoLevel.setTitle("infoLevel");
-        infoLevel.setContent("content for info level");
-
-        infoLevel2 = new InfoLevel();
-        infoLevel2.setTitle("infolevel2");
-        infoLevel2.setContent("content for info level2");
+        infoLevel = testDataFactory.getInfoLevel1();
+        infoLevel2 = testDataFactory.getInfoLevel2();
     }
 
     @Test
@@ -56,7 +55,7 @@ public class InfoLevelRepositoryTest {
         Optional<InfoLevel> infoLevelOptional = infoLevelRepository.findById(expectedId);
         InfoLevel iL = infoLevelOptional.orElseThrow(() -> new Exception("Training run should be found"));
         assertNotNull(iL.getId());
-        assertEquals("content for info level", iL.getContent());
+        assertEquals(infoLevel.getContent(), iL.getContent());
     }
 
     @Test

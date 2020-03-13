@@ -2,8 +2,7 @@ package cz.muni.ics.kypo.training.persistence.repository;
 
 import cz.muni.ics.kypo.training.persistence.config.PersistenceConfigTest;
 import cz.muni.ics.kypo.training.persistence.model.*;
-import cz.muni.ics.kypo.training.persistence.model.enums.AssessmentType;
-import cz.muni.ics.kypo.training.persistence.model.enums.TDState;
+import cz.muni.ics.kypo.training.persistence.util.TestDataFactory;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -11,11 +10,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import java.time.Clock;
-import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -25,13 +23,15 @@ import static org.junit.Assert.*;
 @RunWith(SpringRunner.class)
 @DataJpaTest
 @Import(PersistenceConfigTest.class)
+@ComponentScan(basePackages = "cz.muni.ics.kypo.training.persistence.util")
 public class AbstractLevelRepositoryTest {
 
     @Autowired
     private TestEntityManager entityManager;
-
     @Autowired
     private AbstractLevelRepository abstractLevelRepository;
+    @Autowired
+    private TestDataFactory testDataFactory;
 
     private GameLevel gameLevel, gameLevel2;
     private AssessmentLevel assessmentLevel;
@@ -44,46 +44,24 @@ public class AbstractLevelRepositoryTest {
 
     @Before
     public void setUp() {
-        trainingDefinition = new TrainingDefinition();
-        trainingDefinition.setTitle("tD");
-        trainingDefinition.setState(TDState.UNRELEASED);
-        trainingDefinition.setShowStepperBar(true);
-        trainingDefinition.setLastEdited(LocalDateTime.now(Clock.systemUTC()));
+        trainingDefinition = testDataFactory.getUnreleasedDefinition();
 
-        gameLevel = new GameLevel();
-        gameLevel.setFlag("flag1");
-        gameLevel.setContent("content1");
-        gameLevel.setSolution("solution1");
-        gameLevel.setSolutionPenalized(true);
-        gameLevel.setTitle("title1");
+        gameLevel = testDataFactory.getPenalizedLevel();
         gameLevel.setTrainingDefinition(trainingDefinition);
         gameLevel.setOrder(0);
-        gameLevel2 = new GameLevel();
-        gameLevel2.setFlag("flag2");
-        gameLevel2.setContent("content2");
-        gameLevel2.setSolution("solution2");
-        gameLevel2.setSolutionPenalized(false);
-        gameLevel2.setTitle("title2");
+        gameLevel2 = testDataFactory.getNonPenalizedLevel();
         gameLevel2.setTrainingDefinition(trainingDefinition);
         gameLevel2.setOrder(1);
 
-        assessmentLevel = new AssessmentLevel();
-        assessmentLevel.setQuestions("question1");
-        assessmentLevel.setInstructions("instruction1");
-        assessmentLevel.setAssessmentType(AssessmentType.TEST);
-        assessmentLevel.setTitle("title1");
+        assessmentLevel = testDataFactory.getTest();
         assessmentLevel.setTrainingDefinition(trainingDefinition);
         assessmentLevel.setOrder(2);
 
-        infoLevel = new InfoLevel();
-        infoLevel.setTitle("infoLevel");
-        infoLevel.setContent("content for info level");
+        infoLevel = testDataFactory.getInfoLevel1();
         infoLevel.setTrainingDefinition(trainingDefinition);
         infoLevel.setOrder(3);
 
-        infoLevel2 = new InfoLevel();
-        infoLevel2.setTitle("infoLevel2");
-        infoLevel2.setContent("content for info level2");
+        infoLevel2 = testDataFactory.getInfoLevel2();
         infoLevel2.setTrainingDefinition(trainingDefinition);
         infoLevel2.setOrder(4);
     }

@@ -1,10 +1,9 @@
 package cz.muni.ics.kypo.training.persistence.repository;
 
 import cz.muni.ics.kypo.training.persistence.config.PersistenceConfigTest;
-import cz.muni.ics.kypo.training.persistence.model.BetaTestingGroup;
 import cz.muni.ics.kypo.training.persistence.model.TrainingDefinition;
 import cz.muni.ics.kypo.training.persistence.model.TrainingInstance;
-import cz.muni.ics.kypo.training.persistence.model.enums.TDState;
+import cz.muni.ics.kypo.training.persistence.util.TestDataFactory;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -12,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -29,17 +29,18 @@ import static org.junit.Assert.assertTrue;
 @RunWith(SpringRunner.class)
 @DataJpaTest
 @Import(PersistenceConfigTest.class)
+@ComponentScan(basePackages = "cz.muni.ics.kypo.training.persistence.util")
 public class TrainingInstanceRepositoryTest {
 
     @Autowired
     private TestEntityManager entityManager;
-
+    @Autowired
+    private TestDataFactory testDataFactory;
     @Autowired
     private TrainingInstanceRepository trainingInstanceRepository;
 
     private TrainingInstance trainingInstance1, trainingInstance2;
     private TrainingDefinition trainingDefinition;
-    private BetaTestingGroup betaTestingGroup;
 
     @SpringBootApplication
     static class TestConfiguration {
@@ -47,28 +48,12 @@ public class TrainingInstanceRepositoryTest {
 
     @Before
     public void setUp() {
-        betaTestingGroup = new BetaTestingGroup();
+        trainingDefinition = testDataFactory.getReleasedDefinition();
 
-        trainingDefinition = new TrainingDefinition();
-        trainingDefinition.setTitle("test");
-        trainingDefinition.setState(TDState.RELEASED);
-        trainingDefinition.setBetaTestingGroup(betaTestingGroup);
-        trainingDefinition.setLastEdited(LocalDateTime.now(Clock.systemUTC()));
-
-        trainingInstance1 = new TrainingInstance();
-        trainingInstance2 = new TrainingInstance();
-        trainingInstance1.setStartTime(LocalDateTime.now(Clock.systemUTC()).minusMinutes(1));
-        trainingInstance1.setEndTime(LocalDateTime.now(Clock.systemUTC()).plusMinutes(1));
-        trainingInstance1.setTitle("Training instance 1");
-        trainingInstance1.setPoolSize(10);
-        trainingInstance1.setAccessToken("1Eh9A5l7Op5As8s0h9");
+        trainingInstance1 = testDataFactory.getOngoingInstance();
         trainingInstance1.setTrainingDefinition(entityManager.persist(trainingDefinition));
 
-        trainingInstance2.setStartTime(LocalDateTime.now(Clock.systemUTC()).minusMinutes(2));
-        trainingInstance2.setEndTime(LocalDateTime.now(Clock.systemUTC()).minusMinutes(1));
-        trainingInstance2.setTitle("Training instance 2");
-        trainingInstance2.setPoolSize(15);
-        trainingInstance2.setAccessToken("R8a9C7B4a2c8A2cN1E");
+        trainingInstance2 = testDataFactory.getConcludedInstance();
         trainingInstance2.setTrainingDefinition(entityManager.persist(trainingDefinition));
     }
 

@@ -1,5 +1,8 @@
 package cz.muni.ics.kypo.training.persistence.model;
 
+import cz.muni.ics.kypo.training.persistence.config.PersistenceConfigTest;
+import cz.muni.ics.kypo.training.persistence.model.enums.TRState;
+import cz.muni.ics.kypo.training.persistence.util.TestDataFactory;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -9,24 +12,23 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.junit4.SpringRunner;
-
-import cz.muni.ics.kypo.training.persistence.config.PersistenceConfigTest;
-import cz.muni.ics.kypo.training.persistence.model.enums.TRState;
-
-import java.time.LocalDateTime;
 
 import static org.junit.Assert.assertEquals;
 
 @RunWith(SpringRunner.class)
 @DataJpaTest
 @Import(PersistenceConfigTest.class)
+@ComponentScan(basePackages = "cz.muni.ics.kypo.training.persistence.util")
 public class TrainingRunEntityTest {
 
     @Rule
     public ExpectedException thrown = ExpectedException.none();
 
+    @Autowired
+    private TestDataFactory testDataFactory;
     @Autowired
     private TestEntityManager entityManager;
 
@@ -42,28 +44,17 @@ public class TrainingRunEntityTest {
 
     @Before
     public void init() {
-        trainingInstance = new TrainingInstance();
-        trainingDefinition = new TrainingDefinition();
-        infoLevel = new InfoLevel();
-        infoLevel.setTitle("infoLevel");
-        infoLevel.setContent("content for info level");
+        trainingInstance = testDataFactory.getOngoingInstance();
+        trainingDefinition = testDataFactory.getReleasedDefinition();
+        infoLevel = testDataFactory.getInfoLevel1();
 
         participantRef = new UserRef();
         participantRef.setUserRefId(3L);
-
-        trainingInstance.setAccessToken("b5f3dc27a09865be37cef07816c4f08cf5585b116a4e74b9387c3e43e3a25ec8");
-        trainingInstance.setStartTime(LocalDateTime.now());
-        trainingInstance.setEndTime(LocalDateTime.now());
-        trainingInstance.setTitle("title");
-
     }
 
     @Test
     public void saveShouldPersistData() {
-        trainingRun1 = new TrainingRun();
-        trainingRun1.setStartTime(LocalDateTime.now());
-        trainingRun1.setEndTime(LocalDateTime.now());
-        trainingRun1.setState(TRState.RUNNING);
+        trainingRun1 = testDataFactory.getRunningRun();
         trainingRun1.setCurrentLevel(entityManager.persist(infoLevel));
         trainingRun1.setParticipantRef(entityManager.persist(participantRef));
         trainingRun1.setTrainingInstance(entityManager.persist(trainingInstance));

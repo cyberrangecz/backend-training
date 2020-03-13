@@ -17,6 +17,13 @@
     </properties>
 
     <dependencies>
+        <dependency> <!-- reuse src/test/java code from persistence module! -->
+            <groupId>cz.muni.ics.kypo</groupId>
+            <artifactId>kypo2-persistence-training</artifactId>
+            <version>1.1.25</version>
+            <scope>test</scope>
+            <classifier>tests</classifier>
+        </dependency>
         <dependency>
             <groupId>cz.muni.ics.kypo</groupId>
             <artifactId>kypo2-persistence-training</artifactId>

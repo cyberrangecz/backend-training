@@ -24,10 +24,9 @@ import cz.muni.ics.kypo.training.mapping.mapstruct.HintMapperImpl;
 import cz.muni.ics.kypo.training.mapping.mapstruct.InfoLevelMapperImpl;
 import cz.muni.ics.kypo.training.mapping.mapstruct.TrainingRunMapperImpl;
 import cz.muni.ics.kypo.training.persistence.model.*;
-import cz.muni.ics.kypo.training.persistence.model.enums.AssessmentType;
-import cz.muni.ics.kypo.training.persistence.model.enums.TDState;
 import cz.muni.ics.kypo.training.persistence.model.enums.TRState;
 import cz.muni.ics.kypo.training.persistence.repository.*;
+import cz.muni.ics.kypo.training.persistence.util.TestDataFactory;
 import cz.muni.ics.kypo.training.rest.ApiError;
 import cz.muni.ics.kypo.training.rest.CustomRestExceptionHandlerTraining;
 import cz.muni.ics.kypo.training.rest.controllers.config.DBTestUtil;
@@ -84,7 +83,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
-@ContextConfiguration(classes = TrainingRunsRestController.class)
+@ContextConfiguration(classes = {TrainingRunsRestController.class, TestDataFactory.class})
 @DataJpaTest
 @Import(RestConfigTest.class)
 @TestPropertySource(properties = {"openstack-server.uri=http://localhost:8080"})
@@ -96,7 +95,8 @@ public class TrainingRunsIT {
 
     @Autowired
     private TrainingRunsRestController trainingRunsRestController;
-
+    @Autowired
+    private TestDataFactory testDataFactory;
     @Autowired
     private TrainingRunRepository trainingRunRepository;
     @Autowired
@@ -132,7 +132,6 @@ public class TrainingRunsIT {
     private InfoLevelMapperImpl infoLevelMapper;
 
     private TrainingRun trainingRun1, trainingRun2;
-    private AssessmentLevel assessmentLevel1;
     private GameLevel gameLevel1;
     private InfoLevel infoLevel1;
     private IsCorrectFlagDTO isCorrectFlagDTO;
@@ -186,27 +185,6 @@ public class TrainingRunsIT {
         userRefDTO2.setIss("https://oidc.muni.cz");
         userRefDTO2.setUserRefId(4L);
 
-        InfoLevel iL = new InfoLevel();
-        iL.setContent("content");
-        iL.setTitle("title");
-        iL.setMaxScore(50);
-        InfoLevel infoLevel = infoLevelRepository.save(iL);
-
-        GameLevel gL = new GameLevel();
-        gL.setContent("gameContent");
-        gL.setTitle("gameTitle");
-        gL.setSolution("gameSolution");
-        gL.setFlag("gameFlag");
-        gL.setSolutionPenalized(true);
-        GameLevel gameLevel = gameLevelRepository.save(gL);
-
-        AssessmentLevel aL = new AssessmentLevel();
-        aL.setAssessmentType(AssessmentType.TEST);
-        aL.setInstructions("instruction");
-        aL.setQuestions("[]");
-        aL.setTitle("assessmentTitle");
-        assessmentLevelRepository.save(aL);
-
         organizer = new UserRef();
         organizer.setUserRefId(1L);
         participant1 = new UserRef();
@@ -218,21 +196,10 @@ public class TrainingRunsIT {
         BetaTestingGroup betaTestingGroup = new BetaTestingGroup();
         betaTestingGroup.setOrganizers(new HashSet<>(Arrays.asList(organizer)));
 
-        trainingDefinition = new TrainingDefinition();
-        trainingDefinition.setTitle("definition");
-        trainingDefinition.setState(TDState.RELEASED);
-        trainingDefinition.setShowStepperBar(true);
-        trainingDefinition.setBetaTestingGroup(betaTestingGroup);
-        trainingDefinition.setLastEdited(LocalDateTime.now());
+        trainingDefinition = testDataFactory.getReleasedDefinition();
         trainingDefinitionRepository.save(trainingDefinition);
 
-        trainingInstance = new TrainingInstance();
-        trainingInstance.setStartTime(LocalDateTime.now().minusHours(24));
-        trainingInstance.setEndTime(LocalDateTime.now().plusHours(80));
-        trainingInstance.setTitle("futureInstance");
-        trainingInstance.setPoolSize(20);
-        trainingInstance.setPoolId(1L);
-        trainingInstance.setAccessToken("pass-1234");
+        trainingInstance = testDataFactory.getOngoingInstance();
         trainingInstance.setTrainingDefinition(trainingDefinition);
         trainingInstance.setOrganizers(new HashSet<>(Arrays.asList(organizer)));
         trainingInstanceRepository.save(trainingInstance);
@@ -240,70 +207,33 @@ public class TrainingRunsIT {
 
         nonExistentTrainingRunId = 100L;
 
-        hint = new Hint();
-        hint.setTitle("hintTitle");
-        hint.setContent("hintContent");
-        hint.setHintPenalty(10);
+        hint = testDataFactory.getHint1();
+        hintDTO = testDataFactory.getHintDTO();
 
-        hintDTO = new HintDTO();
-        hintDTO.setContent("hint content");
-        hintDTO.setTitle("hint title");
-
-        isCorrectFlagDTO = new IsCorrectFlagDTO();
-        isCorrectFlagDTO.setCorrect(true);
-        isCorrectFlagDTO.setRemainingAttempts(5);
-
-        infoLevel1 = new InfoLevel();
-        infoLevel1.setTitle("info1");
-        infoLevel1.setContent("testContent");
-        infoLevel1.setMaxScore(0);
+        infoLevel1 = testDataFactory.getInfoLevel1();
         infoLevel1.setTrainingDefinition(trainingDefinition);
         infoLevel1.setOrder(2);
         infoLevelRepository.save(infoLevel1);
 
-        assessmentLevel1 = new AssessmentLevel();
-        assessmentLevel1.setTitle("assessment1");
-        assessmentLevel1.setAssessmentType(cz.muni.ics.kypo.training.persistence.model.enums.AssessmentType.QUESTIONNAIRE);
-        assessmentLevel1.setInstructions("testInstructions");
-        assessmentLevel1.setQuestions("[]");
-        assessmentLevel1.setMaxScore(20);
-
-        gameLevel1 = new GameLevel();
-        gameLevel1.setTitle("testTitle");
-        gameLevel1.setContent("testContent");
-        gameLevel1.setFlag("testFlag");
-        gameLevel1.setSolution("testSolution");
-        gameLevel1.setSolutionPenalized(true);
-        gameLevel1.setMaxScore(30);
+        gameLevel1 = testDataFactory.getPenalizedLevel();
         gameLevel1.setHints(new HashSet<>(Arrays.asList(hint)));
         gameLevel1.setTrainingDefinition(trainingDefinition);
         gameLevel1.setOrder(1);
-        gameLevel1.setIncorrectFlagLimit(4);
         gameLevelRepository.save(gameLevel1);
 
-        trainingRun1 = new TrainingRun();
-        trainingRun1.setStartTime(LocalDateTime.now().minusHours(24));
-        trainingRun1.setEndTime(LocalDateTime.now().plusHours(48));
-        trainingRun1.setState(TRState.RUNNING);
-        trainingRun1.setIncorrectFlagCount(0);
-        trainingRun1.setSolutionTaken(false);
+        trainingRun1 = testDataFactory.getRunningRun();
         trainingRun1.setCurrentLevel(gameLevel1);
-        trainingRun1.setLevelAnswered(false);
         trainingRun1.setTrainingInstance(trainingInstance);
         trainingRun1.setParticipantRef(participant1);
-        trainingRun1.setSandboxInstanceRefId(1L);
 
-        trainingRun2 = new TrainingRun();
-        trainingRun2.setStartTime(LocalDateTime.now().plusHours(2));
-        trainingRun2.setEndTime(LocalDateTime.now().plusHours(4));
-        trainingRun2.setState(TRState.FINISHED);
-        trainingRun2.setIncorrectFlagCount(10);
-        trainingRun2.setSolutionTaken(true);
+        trainingRun2 = testDataFactory.getFinishedRun();
         trainingRun2.setCurrentLevel(infoLevel1);
-        trainingRun2.setLevelAnswered(false);
         trainingRun2.setTrainingInstance(trainingInstance);
         trainingRun2.setParticipantRef(participant2);
-        trainingRun2.setSandboxInstanceRefId(2L);
+
+        isCorrectFlagDTO = new IsCorrectFlagDTO();
+        isCorrectFlagDTO.setCorrect(true);
+        isCorrectFlagDTO.setRemainingAttempts(gameLevel1.getIncorrectFlagLimit() - trainingRun1.getIncorrectFlagCount());
 
         sandboxInfo = new SandboxInfo();
         sandboxInfo.setId(1L);
@@ -383,7 +313,7 @@ public class TrainingRunsIT {
                 willReturn(new ResponseEntity<>(sandboxInfo, HttpStatus.OK));
         mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_TRAINEE.name()));
         MockHttpServletResponse result = mvc.perform(post("/training-runs")
-                .param("accessToken", "pass-1234"))
+                .param("accessToken", trainingInstance.getAccessToken()))
                 .andExpect(status().isOk())
                 .andReturn().getResponse();
         JSONObject jsonObject = new JSONObject(result.getContentAsString());
@@ -404,7 +334,7 @@ public class TrainingRunsIT {
                 willReturn(new ResponseEntity<UserRefDTO>(userRefDTO1, HttpStatus.OK));
         mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_TRAINEE.name()));
         MockHttpServletResponse result = mvc.perform(post("/training-runs")
-                .param("accessToken", "pass-1234"))
+                .param("accessToken", trainingInstance.getAccessToken()))
                 .andExpect(status().isOk())
                 .andReturn().getResponse();
         JSONObject jsonObject = new JSONObject(result.getContentAsString());
@@ -424,7 +354,7 @@ public class TrainingRunsIT {
 
         mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_TRAINEE.name()));
         MockHttpServletResponse response = mvc.perform(post("/training-runs")
-                .param("accessToken", "pass-1234"))
+                .param("accessToken", trainingInstance.getAccessToken()))
                 .andExpect(status().isConflict())
                 .andReturn().getResponse();
         ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
@@ -448,7 +378,7 @@ public class TrainingRunsIT {
                 willReturn(new ResponseEntity<PageResultResourcePython<SandboxInfo>>(sandboxInfoPageResult, HttpStatus.OK));
         mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_TRAINEE.name()));
         MockHttpServletResponse response = mvc.perform(post("/training-runs")
-                .param("accessToken", "pass-1234"))
+                .param("accessToken", trainingInstance.getAccessToken()))
                 .andExpect(status().isNotFound())
                 .andReturn().getResponse();
         ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
@@ -473,7 +403,7 @@ public class TrainingRunsIT {
 
         mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_TRAINEE.name()));
         MockHttpServletResponse response = mvc.perform(post("/training-runs")
-                .param("accessToken", "pass-1234"))
+                .param("accessToken", trainingInstance.getAccessToken()))
                 .andExpect(status().isForbidden())
                 .andReturn().getResponse();
         ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
@@ -540,6 +470,7 @@ public class TrainingRunsIT {
 
     @Test
     public void getNextLevelNoLevelAnswered() throws Exception {
+        trainingRun2.setLevelAnswered(false);
         trainingRunRepository.save(trainingRun2);
 
         mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_ADMINISTRATOR.name()));
@@ -676,12 +607,11 @@ public class TrainingRunsIT {
     @Test
     public void isCorrectFlag() throws Exception {
         trainingRunRepository.save(trainingRun1);
-        isCorrectFlagDTO.setRemainingAttempts(gameLevel1.getIncorrectFlagLimit());
         mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_ADMINISTRATOR.name()));
 
         assertFalse(trainingRun1.isLevelAnswered());
         MockHttpServletResponse response = mvc.perform(get("/training-runs/{runId}/is-correct-flag", trainingRun1.getId())
-                .param("flag", "testFlag"))
+                .param("flag", gameLevel1.getFlag()))
                 .andExpect(status().isOk())
                 .andReturn().getResponse();
         assertEquals(isCorrectFlagDTO, mapper.readValue(response.getContentAsString(), IsCorrectFlagDTO.class));
@@ -692,7 +622,7 @@ public class TrainingRunsIT {
     public void isCorrectFlagWrongFlag() throws Exception {
         trainingRunRepository.save(trainingRun1);
 
-        isCorrectFlagDTO.setRemainingAttempts(gameLevel1.getIncorrectFlagLimit() - 1);
+        isCorrectFlagDTO.setRemainingAttempts(isCorrectFlagDTO.getRemainingAttempts() - 1);
         isCorrectFlagDTO.setCorrect(false);
         mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_ADMINISTRATOR.name()));
         given(restTemplate.exchange(eq(userAndGroupURI + "/users/" + trainingRun1.getParticipantRef().getUserRefId()), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).

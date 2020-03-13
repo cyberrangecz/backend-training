@@ -2,7 +2,7 @@ package cz.muni.ics.kypo.training.persistence.repository;
 
 import cz.muni.ics.kypo.training.persistence.config.PersistenceConfigTest;
 import cz.muni.ics.kypo.training.persistence.model.AssessmentLevel;
-import cz.muni.ics.kypo.training.persistence.model.enums.AssessmentType;
+import cz.muni.ics.kypo.training.persistence.util.TestDataFactory;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -18,18 +19,18 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 @RunWith(SpringRunner.class)
 @DataJpaTest
 @Import(PersistenceConfigTest.class)
+@ComponentScan(basePackages = "cz.muni.ics.kypo.training.persistence.util")
 public class AssessmentLevelRepositoryTest {
 
     @Autowired
     private TestEntityManager entityManager;
-
+    @Autowired
+    private TestDataFactory testDataFactory;
     @Autowired
     private AssessmentLevelRepository assessmentLevelRepository;
 
@@ -41,16 +42,8 @@ public class AssessmentLevelRepositoryTest {
 
     @Before
     public void setUp() {
-        assessmentLevel1 = new AssessmentLevel();
-        assessmentLevel1.setQuestions("question1");
-        assessmentLevel1.setInstructions("instruction1");
-        assessmentLevel1.setAssessmentType(AssessmentType.TEST);
-        assessmentLevel1.setTitle("title1");
-        assessmentLevel2 = new AssessmentLevel();
-        assessmentLevel2.setQuestions("question2");
-        assessmentLevel2.setInstructions("instruction2");
-        assessmentLevel2.setAssessmentType(AssessmentType.QUESTIONNAIRE);
-        assessmentLevel2.setTitle("title2");
+        assessmentLevel1 = testDataFactory.getTest();
+        assessmentLevel2 = testDataFactory.getQuestionnaire();
     }
 
     @Test

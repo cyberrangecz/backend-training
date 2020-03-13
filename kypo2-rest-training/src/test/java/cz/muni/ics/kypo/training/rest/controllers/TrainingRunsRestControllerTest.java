@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.querydsl.core.types.Predicate;
-import cz.muni.ics.kypo.training.api.responses.PageResultResource;
 import cz.muni.ics.kypo.training.api.dto.IsCorrectFlagDTO;
 import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelDTO;
@@ -15,12 +14,13 @@ import cz.muni.ics.kypo.training.api.dto.run.AccessTrainingRunDTO;
 import cz.muni.ics.kypo.training.api.dto.run.AccessedTrainingRunDTO;
 import cz.muni.ics.kypo.training.api.dto.run.TrainingRunByIdDTO;
 import cz.muni.ics.kypo.training.api.dto.run.TrainingRunDTO;
+import cz.muni.ics.kypo.training.api.responses.PageResultResource;
 import cz.muni.ics.kypo.training.exceptions.*;
 import cz.muni.ics.kypo.training.facade.TrainingRunFacade;
 import cz.muni.ics.kypo.training.mapping.mapstruct.*;
 import cz.muni.ics.kypo.training.persistence.model.TrainingRun;
 import cz.muni.ics.kypo.training.persistence.model.UserRef;
-import cz.muni.ics.kypo.training.persistence.model.enums.TRState;
+import cz.muni.ics.kypo.training.persistence.util.TestDataFactory;
 import cz.muni.ics.kypo.training.rest.ApiError;
 import cz.muni.ics.kypo.training.rest.CustomRestExceptionHandlerTraining;
 import org.junit.Before;
@@ -43,6 +43,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.mock.web.MockHttpServletResponse;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -63,6 +64,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest(classes = {InfoLevelMapperImpl.class, TrainingInstanceMapperImpl.class, UserRefMapperImpl.class,
         TrainingDefinitionMapperImpl.class, UserRefMapperImpl.class, TrainingRunMapperImpl.class,
         BetaTestingGroupMapperImpl.class})
+@ContextConfiguration(classes = {TestDataFactory.class})
 public class TrainingRunsRestControllerTest {
 
     private TrainingRunsRestController trainingRunsRestController;
@@ -73,6 +75,8 @@ public class TrainingRunsRestControllerTest {
     private MockMvc mockMvc;
 
     @Autowired
+    private TestDataFactory testDataFactory;
+    @Autowired
     TrainingRunMapper trainingRunMapper;
 
     @MockBean
@@ -80,7 +84,7 @@ public class TrainingRunsRestControllerTest {
     private ObjectMapper testObjectMapper = new ObjectMapper();
 
     private TrainingRun trainingRun1, trainingRun2;
-    private TrainingRunDTO trainingRun1DTO, trainingRun2DTO;
+    private TrainingRunDTO trainingRun1DTO;
     private Page p, pAccessed;
     private PageResultResource<TrainingRunDTO> trainingRunDTOPageResultResource;
     private PageResultResource<AccessedTrainingRunDTO> accessedTrainingRunDTOPage;
@@ -105,58 +109,40 @@ public class TrainingRunsRestControllerTest {
         participantDTO1 = createUserRefDTO(10L, "Bc. Dominik Meškal", "Meškal", "Dominik", "445533@muni.cz", "https://oidc.muni.cz/oidc", null);
         participantDTO2 = createUserRefDTO(20L, "Bc. Boris Makal", "Makal", "Boris", "772211@muni.cz", "https://oidc.muni.cz/oidc", null);
 
-        trainingRun1 = new TrainingRun();
+        trainingRun1 = testDataFactory.getFinishedRun();
         trainingRun1.setId(1L);
-        trainingRun1.setState(TRState.FINISHED);
         trainingRun1.setParticipantRef(participant1);
 
-        trainingRunByIdDTO = new TrainingRunByIdDTO();
+        trainingRunByIdDTO = testDataFactory.getTrainingRunByIdDTO();
         trainingRunByIdDTO.setId(1L);
-        trainingRunByIdDTO.setState(cz.muni.ics.kypo.training.api.enums.TRState.FINISHED);
 
-        trainingRun2 = new TrainingRun();
+        trainingRun2 = testDataFactory.getRunningRun();
         trainingRun2.setId(2L);
-        trainingRun2.setState(TRState.RUNNING);
 
-        trainingRun1DTO = new TrainingRunDTO();
+        trainingRun1DTO = testDataFactory.getTrainingRunDTO();
         trainingRun1DTO.setId(1L);
         trainingRun1DTO.setState(cz.muni.ics.kypo.training.api.enums.TRState.FINISHED);
 
-        trainingRun2DTO = new TrainingRunDTO();
-        trainingRun2DTO.setId(2L);
-        trainingRun2DTO.setState(cz.muni.ics.kypo.training.api.enums.TRState.RUNNING);
-
         accessTrainingRunDTO = new AccessTrainingRunDTO();
 
-        gameLevelDTO = new GameLevelDTO();
+        gameLevelDTO = testDataFactory.getGameLevelDTO();
         gameLevelDTO.setId(1L);
-        gameLevelDTO.setSolution("solution");
-        gameLevelDTO.setFlag("flag");
 
-        infoLevelDTO = new InfoLevelDTO();
+        infoLevelDTO = testDataFactory.getInfoLevelDTO();
         infoLevelDTO.setId(2L);
-        infoLevelDTO.setContent("content");
 
-        assessmentLevelDTO = new AssessmentLevelDTO();
+        assessmentLevelDTO = testDataFactory.getAssessmentLevelDTO();
         assessmentLevelDTO.setId(3L);
-        assessmentLevelDTO.setAssessmentType(cz.muni.ics.kypo.training.api.enums.AssessmentType.TEST);
-        assessmentLevelDTO.setInstructions("instructions");
-        assessmentLevelDTO.setQuestions("questions");
 
-        hintDTO = new HintDTO();
+        hintDTO = testDataFactory.getHintDTO();
         hintDTO.setId(1L);
-        hintDTO.setContent("hint content");
-        hintDTO.setTitle("hint title");
 
         isCorrectFlagDTO = new IsCorrectFlagDTO();
         isCorrectFlagDTO.setCorrect(true);
         isCorrectFlagDTO.setRemainingAttempts(2);
 
-        accessedTrainingRunDTO = new AccessedTrainingRunDTO();
+        accessedTrainingRunDTO = testDataFactory.getAccessedTrainingRunDTO();
         accessedTrainingRunDTO.setId(1L);
-        accessedTrainingRunDTO.setCurrentLevelOrder(1);
-        accessedTrainingRunDTO.setNumberOfLevels(5);
-        accessedTrainingRunDTO.setTitle("accessed training run");
         List<AccessedTrainingRunDTO> accessed = new ArrayList<>();
         accessed.add(accessedTrainingRunDTO);
         pAccessed = new PageImpl<>(accessed);

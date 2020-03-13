@@ -7,13 +7,13 @@ import com.google.gson.JsonObject;
 import cz.muni.csirt.kypo.elasticsearch.service.TrainingEventsService;
 import cz.muni.ics.kypo.commons.security.enums.AuthenticatedUserOIDCItems;
 import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
-import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceAssignPoolIdDTO;
-import cz.muni.ics.kypo.training.api.responses.*;
 import cz.muni.ics.kypo.training.api.dto.run.TrainingRunDTO;
+import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceAssignPoolIdDTO;
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceCreateDTO;
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceDTO;
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceUpdateDTO;
 import cz.muni.ics.kypo.training.api.enums.RoleType;
+import cz.muni.ics.kypo.training.api.responses.*;
 import cz.muni.ics.kypo.training.converters.LocalDateTimeUTCSerializer;
 import cz.muni.ics.kypo.training.exceptions.EntityErrorDetail;
 import cz.muni.ics.kypo.training.exceptions.MicroserviceApiException;
@@ -21,9 +21,8 @@ import cz.muni.ics.kypo.training.exceptions.RestTemplateException;
 import cz.muni.ics.kypo.training.mapping.mapstruct.TrainingInstanceMapperImpl;
 import cz.muni.ics.kypo.training.mapping.mapstruct.TrainingRunMapperImpl;
 import cz.muni.ics.kypo.training.persistence.model.*;
-import cz.muni.ics.kypo.training.persistence.model.enums.TDState;
-import cz.muni.ics.kypo.training.persistence.model.enums.TRState;
 import cz.muni.ics.kypo.training.persistence.repository.*;
+import cz.muni.ics.kypo.training.persistence.util.TestDataFactory;
 import cz.muni.ics.kypo.training.rest.ApiError;
 import cz.muni.ics.kypo.training.rest.CustomRestExceptionHandlerTraining;
 import cz.muni.ics.kypo.training.rest.controllers.config.DBTestUtil;
@@ -66,7 +65,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 import java.util.*;
 
 import static cz.muni.ics.kypo.training.rest.controllers.util.ObjectConverter.convertJsonBytesToObject;
@@ -79,12 +77,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
-@ContextConfiguration(classes = TrainingInstancesRestController.class)
+@ContextConfiguration(classes = {TestDataFactory.class, TrainingInstancesRestController.class})
 @DataJpaTest
 @Import(RestConfigTest.class)
 public class TrainingInstancesIT {
 
     private MockMvc mvc;
+    @Autowired
+    private TestDataFactory testDataFactory;
     @Autowired
     private ApplicationContext applicationContext;
     @Autowired
@@ -118,7 +118,6 @@ public class TrainingInstancesIT {
     private TrainingInstanceCreateDTO trainingInstanceCreateDTO;
     private TrainingInstanceUpdateDTO trainingInstanceUpdateDTO;
     private TrainingRun trainingRun1, trainingRun2;
-    private TrainingDefinition trainingDefinition;
     private UserRef organizer1, organizer2, participant1, participant2;
     private UserRefDTO userRefDTO1, userRefDTO2;
     private SandboxInfo sandboxInfo1, sandboxInfo2;
@@ -165,81 +164,39 @@ public class TrainingInstancesIT {
         BetaTestingGroup betaTestingGroup = new BetaTestingGroup();
         betaTestingGroup.setOrganizers(new HashSet<>(List.of(organizer1)));
 
-        trainingDefinition = new TrainingDefinition();
-        trainingDefinition.setTitle("definition");
-        trainingDefinition.setState(TDState.RELEASED);
-        trainingDefinition.setShowStepperBar(true);
-        trainingDefinition.setBetaTestingGroup(betaTestingGroup);
-        trainingDefinition.setLastEdited(LocalDateTime.now());
+        TrainingDefinition trainingDefinition = testDataFactory.getReleasedDefinition();
         trainingDefinition.setAuthors(new HashSet<>(List.of(organizer1)));
         TrainingDefinition tD = trainingDefinitionRepository.save(trainingDefinition);
 
-        futureTrainingInstance = new TrainingInstance();
-        futureTrainingInstance.setStartTime(LocalDateTime.now().plusHours(24));
-        futureTrainingInstance.setEndTime(LocalDateTime.now().plusHours(80));
-        futureTrainingInstance.setTitle("futureInstance");
-        futureTrainingInstance.setPoolSize(20);
-        futureTrainingInstance.setAccessToken("pass-1234");
+        futureTrainingInstance = testDataFactory.getFutureInstance();
         futureTrainingInstance.setTrainingDefinition(tD);
         futureTrainingInstance.setOrganizers(new HashSet<>(List.of(organizer1)));
 
-        finishedTrainingInstance = new TrainingInstance();
-        finishedTrainingInstance.setStartTime(LocalDateTime.now().minusHours(24));
-        finishedTrainingInstance.setEndTime(LocalDateTime.now().minusHours(2));
+        finishedTrainingInstance = testDataFactory.getConcludedInstance();
         finishedTrainingInstance.setTrainingDefinition(trainingDefinition);
-        finishedTrainingInstance.setTitle("Finished training instance");
-        finishedTrainingInstance.setAccessToken("token-1254");
-        finishedTrainingInstance.setPoolSize(5);
-        finishedTrainingInstance.setPoolId(8L);
         finishedTrainingInstance.setOrganizers(new HashSet<>(List.of(organizer1)));
 
-        notConcludedTrainingInstance = new TrainingInstance();
-        notConcludedTrainingInstance.setStartTime(LocalDateTime.now().minusHours(24));
-        notConcludedTrainingInstance.setEndTime(LocalDateTime.now().plusHours(24));
-        notConcludedTrainingInstance.setTitle("NotConcluded");
-        notConcludedTrainingInstance.setPoolSize(25);
-        notConcludedTrainingInstance.setAccessToken("key-9999");
+        notConcludedTrainingInstance = testDataFactory.getOngoingInstance();
         notConcludedTrainingInstance.setTrainingDefinition(tD);
         notConcludedTrainingInstance.setOrganizers(new HashSet<>(List.of(organizer1)));
 
-        trainingInstanceCreateDTO = new TrainingInstanceCreateDTO();
-        trainingInstanceCreateDTO.setStartTime(LocalDateTime.now(ZoneOffset.UTC).plusHours(24));
-        trainingInstanceCreateDTO.setEndTime(LocalDateTime.now().plusHours(80));
+        trainingInstanceCreateDTO = testDataFactory.getTrainingInstanceCreateDTO();
         trainingInstanceCreateDTO.setTrainingDefinitionId(tD.getId());
-        trainingInstanceCreateDTO.setTitle("newInstance");
-        trainingInstanceCreateDTO.setPoolSize(50);
-        trainingInstanceCreateDTO.setAccessToken("pass-1235");
 
-        trainingInstanceUpdateDTO = new TrainingInstanceUpdateDTO();
-        trainingInstanceUpdateDTO.setPoolSize(6);
-        trainingInstanceUpdateDTO.setStartTime(LocalDateTime.now().plusHours(4));
-        trainingInstanceUpdateDTO.setEndTime(LocalDateTime.now().plusHours(45));
-        trainingInstanceUpdateDTO.setTitle("Training instance to be updated");
+        trainingInstanceUpdateDTO = testDataFactory.getTrainingInstanceUpdateDTO();
         trainingInstanceUpdateDTO.setTrainingDefinitionId(trainingDefinition.getId());
 
-        InfoLevel iL = new InfoLevel();
-        iL.setContent("content");
-        iL.setTitle("title");
-        iL.setMaxScore(50);
+        InfoLevel iL = testDataFactory.getInfoLevel1();
         InfoLevel infoLevel = infoLevelRepository.save(iL);
 
-        trainingRun1 = new TrainingRun();
-        trainingRun1.setStartTime(LocalDateTime.now().plusHours(24));
-        trainingRun1.setEndTime(LocalDateTime.now().plusHours(48));
-        trainingRun1.setState(TRState.RUNNING);
-        trainingRun1.setIncorrectFlagCount(5);
-        trainingRun1.setSolutionTaken(false);
+        trainingRun1 = testDataFactory.getRunningRun();
         trainingRun1.setCurrentLevel(infoLevel);
         trainingRun1.setTrainingInstance(futureTrainingInstance);
         trainingRun1.setParticipantRef(participant2);
         trainingRun1.setSandboxInstanceRefId(sandboxInfo1.getId());
         trainingRun1.setParticipantRef(organizer1);
 
-        trainingRun2 = new TrainingRun();
-        trainingRun2.setStartTime(LocalDateTime.now().plusHours(2));
-        trainingRun2.setEndTime(LocalDateTime.now().plusHours(4));
-        trainingRun2.setState(TRState.RUNNING);
-        trainingRun2.setIncorrectFlagCount(10);
+        trainingRun2 = testDataFactory.getRunningRun();
         trainingRun2.setSolutionTaken(false);
         trainingRun2.setCurrentLevel(infoLevel);
         trainingRun2.setTrainingInstance(futureTrainingInstance);
