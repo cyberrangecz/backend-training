@@ -33,7 +33,6 @@ import org.springframework.web.bind.annotation.*;
 
 /**
  * The type Training runs rest controller.
- *
  */
 @Api(value = "/training-runs", tags = "Training runs", consumes = MediaType.APPLICATION_JSON_VALUE)
 @ApiResponses(value = {
@@ -74,8 +73,10 @@ public class TrainingRunsRestController {
     @DeleteMapping
     public ResponseEntity<Void> deleteTrainingRuns(
             @ApiParam(value = "Ids of training runs that will be deleted", required = true)
-            @RequestParam(value = "trainingRunIds", required = true) List<Long> trainingRunIds) {
-        trainingRunFacade.deleteTrainingRuns(trainingRunIds);
+            @RequestParam(value = "trainingRunIds", required = true) List<Long> trainingRunIds,
+            @ApiParam(value = "Indication if this training run must be deleted no matter of any check (force it)", required = false)
+            @RequestParam(value = "forceDelete", required = false) boolean forceDelete) {
+        trainingRunFacade.deleteTrainingRuns(trainingRunIds, forceDelete);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
@@ -96,8 +97,10 @@ public class TrainingRunsRestController {
     @DeleteMapping(path = "/{runId}")
     public ResponseEntity<Void> deleteTrainingRun(
             @ApiParam(value = "Id of training run that will be deleted", required = true)
-            @PathVariable(value = "runId", required = true) Long runId) {
-        trainingRunFacade.deleteTrainingRun(runId);
+            @PathVariable(value = "runId", required = true) Long runId,
+            @ApiParam(value = "Indication if this training run must be deleted no matter of any check (force it)", required = false)
+            @RequestParam(value = "forceDelete", required = false) boolean forceDelete) {
+        trainingRunFacade.deleteTrainingRun(runId, forceDelete);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 

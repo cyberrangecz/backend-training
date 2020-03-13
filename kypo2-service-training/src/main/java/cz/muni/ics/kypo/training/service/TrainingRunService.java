@@ -113,21 +113,16 @@ public class TrainingRunService {
     }
 
     /**
-     * Delete selected training runs.
-     *
-     * @param trainingRunIds training runs to delete
-     */
-    public void deleteTrainingRuns(List<Long> trainingRunIds) {
-        trainingRunIds.forEach(this::deleteTrainingRun);
-    }
-
-    /**
      * Delete selected training run.
      *
      * @param trainingRunId training run to delete
      */
-    public void deleteTrainingRun(Long trainingRunId) {
+    public void deleteTrainingRun(Long trainingRunId, boolean forceDelete) {
         TrainingRun trainingRun = findById(trainingRunId);
+        if (!forceDelete && trainingRun.getState().equals(TRState.RUNNING)) {
+            throw new EntityConflictException(new EntityErrorDetail(TrainingRun.class, "id", trainingRun.getId().getClass(), trainingRun.getId(),
+                    "Cannot delete training run that is running. Consider force delete."));
+        }
         trAcquisitionLockRepository.deleteByParticipantRefIdAndTrainingInstanceId(trainingRun.getParticipantRef().getUserRefId(), trainingRun.getTrainingInstance().getId());
         trainingRunRepository.delete(trainingRun);
     }
@@ -186,7 +181,7 @@ public class TrainingRunService {
      * Finds all Training Runs of specific Training Definition of logged in user.
      *
      * @param definitionId id of Training Definition
-     * @param pageable             pageable parameter with information about pagination.
+     * @param pageable     pageable parameter with information about pagination.
      * @return {@link TrainingRun}s of specific Training Definition of logged in user
      */
     public Page<TrainingRun> findAllByTrainingDefinitionAndParticipant(Long definitionId, Pageable pageable) {
@@ -198,7 +193,7 @@ public class TrainingRunService {
      * Finds all Training Runs of specific training definition.
      *
      * @param definitionId id of Training Definition whose Training Runs would be returned.
-     * @param pageable             pageable parameter with information about pagination.
+     * @param pageable     pageable parameter with information about pagination.
      * @return {@link TrainingRun}s of specific Training Definition
      */
     public Page<TrainingRun> findAllByTrainingDefinition(Long definitionId, Pageable pageable) {
@@ -224,8 +219,8 @@ public class TrainingRunService {
      *
      * @param accessToken of Training Instance.
      * @return accessed {@link TrainingRun}
-     * @throws EntityNotFoundException no active training instance for given access token, no starting level in training definition.
-     * @throws EntityConflictException pool of sandboxes is not created for training instance.
+     * @throws EntityNotFoundException  no active training instance for given access token, no starting level in training definition.
+     * @throws EntityConflictException  pool of sandboxes is not created for training instance.
      * @throws TooManyRequestsException training run has been already accessed.
      */
     public TrainingRun accessTrainingRun(String accessToken) {
@@ -245,7 +240,7 @@ public class TrainingRunService {
         return trainingRunRepository.save(trainingRun);
     }
 
-    private TrainingInstance getTrainingInstanceForParticularAccessToken(String accessToken){
+    private TrainingInstance getTrainingInstanceForParticularAccessToken(String accessToken) {
         TrainingInstance trainingInstance = trainingInstanceRepository.findByStartTimeAfterAndEndTimeBeforeAndAccessToken(LocalDateTime.now(Clock.systemUTC()), accessToken)
                 .orElseThrow(() -> new EntityNotFoundException(new EntityErrorDetail(TrainingInstance.class, "accessToken", accessToken.getClass(), accessToken,
                         "There is no active game session matching access token.")));
@@ -256,7 +251,7 @@ public class TrainingRunService {
         return trainingInstance;
     }
 
-    private void trAcquisitionLockToPreventManyRequestsFromSameUser(Long participantRefId, Long trainingInstanceId, String accessToken){
+    private void trAcquisitionLockToPreventManyRequestsFromSameUser(Long participantRefId, Long trainingInstanceId, String accessToken) {
         try {
             trAcquisitionLockRepository.save(new TRAcquisitionLock(participantRefId, trainingInstanceId, LocalDateTime.now(Clock.systemUTC())));
         } catch (DataIntegrityViolationException ex) {
@@ -265,7 +260,7 @@ public class TrainingRunService {
         }
     }
 
-    private List<AbstractLevel> getAllLevelsForTRSortedByOrder(Long trainingDefinitionId){
+    private List<AbstractLevel> getAllLevelsForTRSortedByOrder(Long trainingDefinitionId) {
         List<AbstractLevel> levels = abstractLevelRepository.findAllLevelsByTrainingDefinitionId(trainingDefinitionId);
         if (levels.isEmpty()) {
             throw new EntityNotFoundException(new EntityErrorDetail(TrainingDefinition.class, "id", Long.class, trainingDefinitionId,
@@ -308,8 +303,8 @@ public class TrainingRunService {
     private Long getAndLockSandboxForTrainingRun(Long poolId) {
         UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(kypoOpenStackURI + "/pools/" + poolId + "/sandboxes/get-and-lock/");
         try {
-            ResponseEntity<SandboxInfo> response =  pythonRestTemplate.getForEntity(builder.toString(), SandboxInfo.class);
-            if(response.getStatusCode().is2xxSuccessful()){
+            ResponseEntity<SandboxInfo> response = pythonRestTemplate.getForEntity(builder.toString(), SandboxInfo.class);
+            if (response.getStatusCode().is2xxSuccessful()) {
                 return response.getBody().getId();
             } else {
                 throw new MicroserviceApiException("There is no available sandbox now for pool with (ID: " + poolId + ").", null);
@@ -354,10 +349,10 @@ public class TrainingRunService {
      * Check given flag of given Training Run.
      *
      * @param runId id of Training Run to check flag.
-     * @param flag          string which player submit.
+     * @param flag  string which player submit.
      * @return true if flag is correct, false if flag is wrong.
      * @throws EntityNotFoundException training run is not found.
-     * @throws BadRequestException the current level of training run is not game level.
+     * @throws BadRequestException     the current level of training run is not game level.
      */
     public boolean isCorrectFlag(Long runId, String flag) {
         Assert.notNull(runId, MUST_NOT_BE_NULL);
@@ -408,7 +403,7 @@ public class TrainingRunService {
      * @param trainingRunId id of Training Run which current level gets solution for.
      * @return solution of current level.
      * @throws EntityNotFoundException training run is not found.
-     * @throws BadRequestException the current level of training run is not game level.
+     * @throws BadRequestException     the current level of training run is not game level.
      */
     public String getSolution(Long trainingRunId) {
         Assert.notNull(trainingRunId, MUST_NOT_BE_NULL);
@@ -435,7 +430,7 @@ public class TrainingRunService {
      * @param hintId        id of hint to be returned.
      * @return {@link Hint}
      * @throws EntityNotFoundException training run or hint is not found.
-     * @throws BadRequestException the current level of training run is not game level.
+     * @throws BadRequestException     the current level of training run is not game level.
      */
     public Hint getHint(Long trainingRunId, Long hintId) {
         Assert.notNull(trainingRunId, MUST_NOT_BE_NULL);
