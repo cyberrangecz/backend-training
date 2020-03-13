@@ -194,18 +194,6 @@ public class TrainingInstancesRestControllerTest {
     }
 
     @Test
-    public void deleteTrainingInstanceNotFound() throws Exception {
-        willThrow(new EntityNotFoundException()).given(trainingInstanceFacade).delete(any(Long.class));
-        MockHttpServletResponse response = mockMvc.perform(delete("/training-instances" + "/{id}", 1l)
-                .contentType(MediaType.APPLICATION_JSON_VALUE))
-                .andExpect(status().isNotFound())
-                .andReturn().getResponse();
-        ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
-        assertEquals(HttpStatus.NOT_FOUND, error.getStatus());
-        assertEquals("The requested entity could not be found", error.getMessage());
-    }
-
-    @Test
     public void assignPool() throws Exception {
         given(trainingInstanceFacade.assignPoolToTrainingInstance(1L, trainingInstanceAssignPoolIdDTO)).willReturn(trainingInstanceBasicInfoDTO);
         mockMvc.perform(patch("/training-instances" + "/{instanceId}/" + "assign-pool", 1L)

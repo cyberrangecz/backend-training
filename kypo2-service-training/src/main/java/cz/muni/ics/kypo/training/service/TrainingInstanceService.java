@@ -1,8 +1,6 @@
 package cz.muni.ics.kypo.training.service;
 
 import com.querydsl.core.types.Predicate;
-import cz.muni.csirt.kypo.elasticsearch.service.TrainingEventsService;
-import cz.muni.csirt.kypo.elasticsearch.service.exceptions.ElasticsearchTrainingServiceLayerException;
 import cz.muni.ics.kypo.training.api.responses.LockedPoolInfo;
 import cz.muni.ics.kypo.training.api.responses.PoolInfoDto;
 import cz.muni.ics.kypo.training.exceptions.*;
@@ -40,7 +38,6 @@ public class TrainingInstanceService {
     private AccessTokenRepository accessTokenRepository;
     private UserRefRepository organizerRefRepository;
     private SecurityService securityService;
-    private TrainingEventsService trainingEventsService;
     private TRAcquisitionLockRepository trAcquisitionLockRepository;
     @Qualifier("pythonRestTemplate")
     private RestTemplate pythonRestTemplate;
@@ -49,20 +46,18 @@ public class TrainingInstanceService {
     @Autowired
     public TrainingInstanceService(TrainingInstanceRepository trainingInstanceRepository, AccessTokenRepository accessTokenRepository,
                                    TrainingRunRepository trainingRunRepository, UserRefRepository organizerRefRepository,
-                                   RestTemplate pythonRestTemplate, SecurityService securityService, TrainingEventsService trainingEventsService,
-                                   TRAcquisitionLockRepository trAcquisitionLockRepository) {
+                                   RestTemplate pythonRestTemplate, SecurityService securityService, TRAcquisitionLockRepository trAcquisitionLockRepository) {
         this.trainingInstanceRepository = trainingInstanceRepository;
         this.trainingRunRepository = trainingRunRepository;
         this.accessTokenRepository = accessTokenRepository;
         this.organizerRefRepository = organizerRefRepository;
         this.securityService = securityService;
-        this.trainingEventsService = trainingEventsService;
         this.pythonRestTemplate = pythonRestTemplate;
         this.trAcquisitionLockRepository = trAcquisitionLockRepository;
     }
 
     /**
-     * Finds specific Training Instance by id
+     * Finds basic info about Training Instance by id
      *
      * @param instanceId of a Training Instance that would be returned
      * @return specific {@link TrainingInstance} by id
@@ -88,7 +83,7 @@ public class TrainingInstanceService {
      * Find all Training Instances.
      *
      * @param predicate represents a predicate (boolean-valued function) of one argument.
-     * @param pageable pageable parameter with information about pagination.
+     * @param pageable  pageable parameter with information about pagination.
      * @return all {@link TrainingInstance}s
      */
     public Page<TrainingInstance> findAll(Predicate predicate, Pageable pageable) {
@@ -162,25 +157,27 @@ public class TrainingInstanceService {
      * @throws EntityConflictException cannot be deleted for some reason.
      */
     public void delete(TrainingInstance trainingInstance) {
-        if (trainingRunRepository.existsAnyForTrainingInstance(trainingInstance.getId())) {
-            throw new EntityConflictException(new EntityErrorDetail(TrainingInstance.class, "id", trainingInstance.getId().getClass(), trainingInstance.getId(),
-                    "Training instance with already assigned training runs cannot be deleted. Please delete training runs assigned to training instance" +
-                    " and try again or contact administrator."));
-        }
         trainingInstanceRepository.delete(trainingInstance);
-        try {
-            trainingEventsService.deleteEventsByTrainingInstanceId(trainingInstance.getId());
-        } catch (ElasticsearchTrainingServiceLayerException io) {
-            LOG.error("Could not delete documents of this training instance from Elasticsearch. Please contact administrator to check if Elasticsearch is running.");
-        }
         LOG.debug("Training instance with id: {} deleted.", trainingInstance.getId());
+    }
+
+    /**
+     * deletes training instance
+     *
+     * @param id the training instance to be deleted.
+     * @throws EntityNotFoundException training instance is not found.
+     * @throws EntityConflictException cannot be deleted for some reason.
+     */
+    public void deleteById(Long id) {
+        trainingInstanceRepository.deleteById(id);
+        LOG.debug("Training instance with id: {} deleted.", id);
     }
 
     public TrainingInstance updateTrainingInstancePool(TrainingInstance trainingInstance) {
         return trainingInstanceRepository.saveAndFlush(trainingInstance);
     }
 
-    public LockedPoolInfo lockPool(Long poolId){
+    public LockedPoolInfo lockPool(Long poolId) {
         try {
             HttpHeaders httpHeaders = new HttpHeaders();
             httpHeaders.setContentType(MediaType.APPLICATION_JSON);
@@ -236,8 +233,8 @@ public class TrainingInstanceService {
      * Finds all Training Runs of specific Training Instance.
      *
      * @param instanceId id of Training Instance whose Training Runs would be returned.
-     * @param isActive           if isActive attribute is True, only active runs are returned
-     * @param pageable           pageable parameter with information about pagination.
+     * @param isActive   if isActive attribute is True, only active runs are returned
+     * @param pageable   pageable parameter with information about pagination.
      * @return {@link TrainingRun}s of specific {@link TrainingInstance}
      */
     public Page<TrainingRun> findTrainingRunsByTrainingInstance(Long instanceId, Boolean isActive, Pageable

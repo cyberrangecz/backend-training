@@ -11,7 +11,6 @@ import java.util.Set;
  * Class represents Training instance.
  * Training instances can be created based on definitions.
  * Training runs can be created based on instances.
- *
  */
 @Entity
 @Table(name = "training_instance")

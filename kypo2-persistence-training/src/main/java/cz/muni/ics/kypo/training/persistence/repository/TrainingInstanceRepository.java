@@ -24,7 +24,6 @@ import java.util.Optional;
 
 /**
  * The JPA repository interface to manage {@link TrainingInstance} instances.
- *
  */
 @Repository
 public interface TrainingInstanceRepository extends JpaRepository<TrainingInstance, Long>, QuerydslPredicateExecutor<TrainingInstance>, QuerydslBinderCustomizer<QTrainingInstance> {
@@ -81,7 +80,6 @@ public interface TrainingInstanceRepository extends JpaRepository<TrainingInstan
      */
     @EntityGraph(attributePaths = {"trainingDefinition.authors", "organizers"})
     Optional<TrainingInstance> findById(Long id);
-
 
     /**
      * Check if any training instances are associated with training definition

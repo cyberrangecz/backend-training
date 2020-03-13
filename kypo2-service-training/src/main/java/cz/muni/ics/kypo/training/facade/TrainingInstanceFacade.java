@@ -1,6 +1,7 @@
 package cz.muni.ics.kypo.training.facade;
 
 import com.querydsl.core.types.Predicate;
+import cz.muni.csirt.kypo.elasticsearch.service.TrainingEventsService;
 import cz.muni.ics.kypo.training.annotations.security.IsOrganizerOrAdmin;
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalRO;
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalWO;
@@ -9,7 +10,6 @@ import cz.muni.ics.kypo.training.api.dto.run.TrainingRunDTO;
 import cz.muni.ics.kypo.training.api.dto.traininginstance.*;
 import cz.muni.ics.kypo.training.api.enums.RoleType;
 import cz.muni.ics.kypo.training.api.responses.PageResultResource;
-import cz.muni.ics.kypo.training.api.responses.LockedPoolInfo;
 import cz.muni.ics.kypo.training.exceptions.EntityConflictException;
 import cz.muni.ics.kypo.training.exceptions.EntityErrorDetail;
 import cz.muni.ics.kypo.training.exceptions.EntityNotFoundException;
@@ -18,10 +18,7 @@ import cz.muni.ics.kypo.training.mapping.mapstruct.TrainingRunMapper;
 import cz.muni.ics.kypo.training.persistence.model.TrainingInstance;
 import cz.muni.ics.kypo.training.persistence.model.TrainingRun;
 import cz.muni.ics.kypo.training.persistence.model.UserRef;
-import cz.muni.ics.kypo.training.service.TrainingDefinitionService;
-import cz.muni.ics.kypo.training.service.TrainingInstanceService;
-import cz.muni.ics.kypo.training.service.UserService;
-import cz.muni.ics.kypo.training.service.SecurityService;
+import cz.muni.ics.kypo.training.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -38,17 +35,21 @@ public class TrainingInstanceFacade {
 
     private TrainingInstanceService trainingInstanceService;
     private TrainingDefinitionService trainingDefinitionService;
+    private TrainingRunService trainingRunService;
+    private TrainingEventsService trainingEventsService;
     private TrainingInstanceMapper trainingInstanceMapper;
     private TrainingRunMapper trainingRunMapper;
     private UserService userService;
     private SecurityService securityService;
 
     @Autowired
-    public TrainingInstanceFacade(TrainingInstanceService trainingInstanceService, TrainingDefinitionService trainingDefinitionService,
+    public TrainingInstanceFacade(TrainingInstanceService trainingInstanceService, TrainingDefinitionService trainingDefinitionService, TrainingRunService trainingRunService, TrainingEventsService trainingEventsService,
                                   TrainingInstanceMapper trainingInstanceMapper, TrainingRunMapper trainingRunMapper, UserService userService,
                                   SecurityService securityService) {
         this.trainingInstanceService = trainingInstanceService;
         this.trainingDefinitionService = trainingDefinitionService;
+        this.trainingRunService = trainingRunService;
+        this.trainingEventsService = trainingEventsService;
         this.trainingInstanceMapper = trainingInstanceMapper;
         this.trainingRunMapper = trainingRunMapper;
         this.userService = userService;
@@ -140,14 +141,29 @@ public class TrainingInstanceFacade {
     /**
      * Deletes specific training instance based on id
      *
-     * @param id of training instance to be deleted
+     * @param trainingInstanceId of training instance to be deleted
+     * @param forceDelete        indicates if this training run should be force deleted.
      */
     @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
-            "or @securityService.isOrganizerOfGivenTrainingInstance(#id)")
+            "or @securityService.isOrganizerOfGivenTrainingInstance(#trainingInstanceId)")
     @TransactionalWO
-    public void delete(Long id) {
-        TrainingInstance trainingInstance = trainingInstanceService.findById(id);
+    public void delete(Long trainingInstanceId, boolean forceDelete) {
+        TrainingInstance trainingInstance = trainingInstanceService.findById(trainingInstanceId);
+        if (forceDelete) {
+            Set<TrainingRun> trainingRunsInTrainingInstance = trainingRunService.findAllByTrainingInstanceId(trainingInstanceId);
+            trainingRunsInTrainingInstance.forEach(tr -> trainingRunService.deleteTrainingRun(tr.getId(), true));
+            trainingInstanceService.unlockPool(trainingInstance.getId());
+        } else if (!trainingInstanceService.checkIfInstanceIsFinished(trainingInstanceId) && trainingRunService.existsAnyForTrainingInstance(trainingInstanceId)) {
+            throw new EntityConflictException(new EntityErrorDetail(TrainingInstance.class, "id", Long.class,
+                    "Active training instance with already assigned training runs cannot be deleted. Please delete training runs assigned to training instance and try again."));
+            // not possible to delete active training instances with associated training runs
+        } else if (trainingInstance.getPoolId() != null) {
+            throw new EntityConflictException(new EntityErrorDetail(TrainingInstance.class, "id", Long.class,
+                    "First, you must unassign pool id from training instance then try it again."));
+            // not possible to delete training instance with associated pool
+        }
         trainingInstanceService.delete(trainingInstance);
+        trainingEventsService.deleteEventsByTrainingInstanceId(trainingInstanceId);
     }
 
     /**
