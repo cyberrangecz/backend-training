@@ -74,7 +74,7 @@ public class TrainingRunsRestController {
     public ResponseEntity<Void> deleteTrainingRuns(
             @ApiParam(value = "Ids of training runs that will be deleted", required = true)
             @RequestParam(value = "trainingRunIds", required = true) List<Long> trainingRunIds,
-            @ApiParam(value = "Indication if this training run must be deleted no matter of any check (force it)", required = true)
+            @ApiParam(value = "Indication if this training run must be deleted no matter of any check (force it)", required = false)
             @RequestParam(value = "forceDelete", required = false) boolean forceDelete) {
         trainingRunFacade.deleteTrainingRuns(trainingRunIds, forceDelete);
         return new ResponseEntity<>(HttpStatus.OK);
@@ -98,7 +98,7 @@ public class TrainingRunsRestController {
     public ResponseEntity<Void> deleteTrainingRun(
             @ApiParam(value = "Id of training run that will be deleted", required = true)
             @PathVariable(value = "runId", required = true) Long runId,
-            @ApiParam(value = "Indication if this training run must be deleted no matter of any check (force it)", required = true)
+            @ApiParam(value = "Indication if this training run must be deleted no matter of any check (force it)", required = false)
             @RequestParam(value = "forceDelete", required = false) boolean forceDelete) {
         trainingRunFacade.deleteTrainingRun(runId, forceDelete);
         return new ResponseEntity<>(HttpStatus.OK);
