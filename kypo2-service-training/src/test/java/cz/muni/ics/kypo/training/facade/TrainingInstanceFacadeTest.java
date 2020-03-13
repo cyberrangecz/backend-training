@@ -126,7 +126,6 @@ public class TrainingInstanceFacadeTest {
         lockedPoolInfo.setPool(1L);
 
         trainingInstanceAssignPoolIdDTO = new TrainingInstanceAssignPoolIdDTO();
-        trainingInstanceAssignPoolIdDTO.setId(1L);
         trainingInstanceAssignPoolIdDTO.setPoolId(1L);
     }
 
@@ -199,29 +198,29 @@ public class TrainingInstanceFacadeTest {
         given(trainingInstanceService.findById(anyLong())).willReturn(trainingInstance1);
         given(trainingInstanceService.lockPool(anyLong())).willReturn(lockedPoolInfo);
 
-        trainingInstanceFacade.assignPoolToTrainingInstance(trainingInstanceAssignPoolIdDTO);
-        then(trainingInstanceService).should().lockPool(trainingInstanceAssignPoolIdDTO.getId());
+        trainingInstanceFacade.assignPoolToTrainingInstance(trainingInstance1.getId(), trainingInstanceAssignPoolIdDTO);
+        then(trainingInstanceService).should().lockPool(trainingInstance1.getId());
     }
 
     @Test(expected = EntityConflictException.class)
     public void allocateSandboxesWithServiceException() {
         given(trainingInstanceService.findById(anyLong())).willReturn(trainingInstance1);
         willThrow(EntityConflictException.class).given(trainingInstanceService).lockPool(anyLong());
-        trainingInstanceFacade.assignPoolToTrainingInstance(trainingInstanceAssignPoolIdDTO);
+        trainingInstanceFacade.assignPoolToTrainingInstance(trainingInstance1.getId(), trainingInstanceAssignPoolIdDTO);
     }
 
     @Test
     public void reassignPoolToTrainingInstance() {
         given(trainingInstanceService.findById(anyLong())).willReturn(trainingInstance1);
-        trainingInstanceFacade.reassignPoolToTrainingInstance(trainingInstanceAssignPoolIdDTO);
-        then(trainingInstanceService).should().lockPool(trainingInstanceAssignPoolIdDTO.getId());
+        trainingInstanceFacade.unassignPoolInTrainingInstance(trainingInstance1.getId());
+        then(trainingInstanceService).should().lockPool(trainingInstance1.getId());
     }
 
     @Test(expected = EntityConflictException.class)
     public void deleteSandboxesWithServiceException() {
         given(trainingInstanceService.findById(anyLong())).willReturn(trainingInstance1);
         willThrow(EntityConflictException.class).given(trainingInstanceService).lockPool(anyLong());
-        trainingInstanceFacade.reassignPoolToTrainingInstance(trainingInstanceAssignPoolIdDTO);
+        trainingInstanceFacade.unassignPoolInTrainingInstance(trainingInstance1.getId());
     }
 
     @Test

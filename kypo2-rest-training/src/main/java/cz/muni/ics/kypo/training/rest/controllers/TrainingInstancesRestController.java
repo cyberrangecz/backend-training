@@ -29,7 +29,6 @@ import java.util.Set;
 
 /**
  * The type Training instances rest controller.
- *
  */
 @Api(value = "/training-instances", tags = "Training instances", consumes = MediaType.APPLICATION_JSON_VALUE)
 @ApiResponses(value = {
@@ -205,24 +204,26 @@ public class TrainingInstancesRestController {
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = JavaApiError.class)
     })
     @PatchMapping(path = "/{id}/assign-pool")
-    public ResponseEntity<TrainingInstanceBasicInfoDTO> assignPool(@ApiParam(value = "Id of training instance to be deleted", required = true)
-                                           @Valid @RequestBody TrainingInstanceAssignPoolIdDTO trainingInstanceAssignPoolIdDTO) {
-        return ResponseEntity.ok(trainingInstanceFacade.assignPoolToTrainingInstance(trainingInstanceAssignPoolIdDTO));
+    public ResponseEntity<TrainingInstanceBasicInfoDTO> assignPool(@ApiParam(value = "Id of training instance to be updated", required = true)
+                                                                   @PathVariable(value = "id") Long id,
+                                                                   @ApiParam(value = "Id of pool to be assigned to training instance", required = true)
+                                                                   @Valid @RequestBody TrainingInstanceAssignPoolIdDTO trainingInstanceAssignPoolIdDTO) {
+        return ResponseEntity.ok(trainingInstanceFacade.assignPoolToTrainingInstance(id, trainingInstanceAssignPoolIdDTO));
     }
 
     @ApiOperation(httpMethod = "PATCH",
-            value = "Reassign pool of training instance",
+            value = "Unassign pool of training instance",
             notes = "This can only be done by organizer of training instance or administrator",
-            nickname = "reassignPool"
+            nickname = "unassignPool"
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Training instance updated."),
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = JavaApiError.class)
     })
-    @PatchMapping(path = "/{id}/reassign-pool")
-    public ResponseEntity<TrainingInstanceBasicInfoDTO> reassignPool(@ApiParam(value = "Id of training instance to be deleted", required = true)
-                                             @Valid @RequestBody TrainingInstanceAssignPoolIdDTO trainingInstanceAssignPoolIdDTO) {
-        return ResponseEntity.ok(trainingInstanceFacade.reassignPoolToTrainingInstance(trainingInstanceAssignPoolIdDTO));
+    @PatchMapping(path = "/{id}/unassign-pool")
+    public ResponseEntity<TrainingInstanceBasicInfoDTO> unassignPool(@ApiParam(value = "Id of training instance to be deleted", required = true)
+                                                                     @PathVariable(value = "id") Long id) {
+        return ResponseEntity.ok(trainingInstanceFacade.unassignPoolInTrainingInstance(id));
     }
 
     /**
@@ -264,7 +265,7 @@ public class TrainingInstancesRestController {
     /**
      * Get requested organizers of training instance.
      *
-     * @param pageable   pageable parameter with information about pagination.
+     * @param pageable           pageable parameter with information about pagination.
      * @param trainingInstanceId id of training instance for which to get the organizers
      * @return List of users login and full name with role designer.
      */
@@ -282,12 +283,12 @@ public class TrainingInstancesRestController {
     @ApiPageableSwagger
     @GetMapping(path = "/{id}/organizers", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> getOrganizersOfTrainingInstance(@ApiParam(value = "ID of training instance for which to retrieve the organizers.", required = true)
-                                                                   @PathVariable(value = "id", required = true) Long trainingInstanceId,
-                                                                   @ApiParam(value = "Given name filter.", required = true)
-                                                                   @RequestParam(value = "givenName", required = false) String givenName,
-                                                                   @ApiParam(value = "Family name filter.", required = true)
-                                                                   @RequestParam(value = "familyName", required = false) String familyName,
-                                                                   Pageable pageable) {
+                                                                  @PathVariable(value = "id", required = true) Long trainingInstanceId,
+                                                                  @ApiParam(value = "Given name filter.", required = true)
+                                                                  @RequestParam(value = "givenName", required = false) String givenName,
+                                                                  @ApiParam(value = "Family name filter.", required = true)
+                                                                  @RequestParam(value = "familyName", required = false) String familyName,
+                                                                  Pageable pageable) {
         PageResultResource<UserRefDTO> designers = trainingInstanceFacade.getOrganizersOfTrainingInstance(trainingInstanceId, pageable, givenName, familyName);
         return ResponseEntity.ok(SquigglyUtils.stringify(objectMapper, designers));
     }
@@ -296,7 +297,7 @@ public class TrainingInstancesRestController {
      * Get requested organizers not in given training instance.
      *
      * @param trainingInstanceId id ot the training instance
-     * @param pageable   pageable parameter with information about pagination.
+     * @param pageable           pageable parameter with information about pagination.
      * @return List of users login and full name with role organizer.
      */
     @ApiOperation(httpMethod = "GET",
@@ -319,7 +320,7 @@ public class TrainingInstancesRestController {
                                                                           @RequestParam(value = "givenName", required = false) String givenName,
                                                                           @ApiParam(value = "Family name filter.", required = false)
                                                                           @RequestParam(value = "familyName", required = false) String familyName,
-                                                                           Pageable pageable) {
+                                                                          Pageable pageable) {
         PageResultResource<UserRefDTO> designers = trainingInstanceFacade.getOrganizersNotInGivenTrainingInstance(trainingInstanceId, pageable, givenName, familyName);
         return ResponseEntity.ok(SquigglyUtils.stringify(objectMapper, designers));
     }
@@ -329,7 +330,7 @@ public class TrainingInstancesRestController {
      *
      * @param trainingInstanceId id of training instance for which to retrieve organizers
      * @param organizersAddition ids of the organizers to be added to the training instance.
-     * @param organizersRemoval ids of the organizers to be removed from the training instance.
+     * @param organizersRemoval  ids of the organizers to be removed from the training instance.
      */
     @ApiOperation(httpMethod = "PUT",
             value = "Edit organizers.",
@@ -343,11 +344,11 @@ public class TrainingInstancesRestController {
     @ApiPageableSwagger
     @PutMapping(path = "/{id}/organizers", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Void> editOrganizers(@ApiParam(value = "ID of training instance to be updated.", required = true)
-                                            @PathVariable(value = "id", required = true) Long trainingInstanceId,
-                                            @ApiParam(value = "Ids of the organizers to be added to the training instance.")
-                                            @RequestParam(value = "organizersAddition", required = false) Set<Long> organizersAddition,
-                                            @ApiParam(value = "Ids of the organizers to be removed from the training instance.")
-                                            @RequestParam(value = "organizersRemoval", required = false) Set<Long> organizersRemoval) {
+                                               @PathVariable(value = "id", required = true) Long trainingInstanceId,
+                                               @ApiParam(value = "Ids of the organizers to be added to the training instance.")
+                                               @RequestParam(value = "organizersAddition", required = false) Set<Long> organizersAddition,
+                                               @ApiParam(value = "Ids of the organizers to be removed from the training instance.")
+                                               @RequestParam(value = "organizersRemoval", required = false) Set<Long> organizersRemoval) {
         trainingInstanceFacade.editOrganizers(trainingInstanceId, organizersAddition, organizersRemoval);
         return ResponseEntity.noContent().build();
     }

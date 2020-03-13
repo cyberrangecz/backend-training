@@ -10,6 +10,8 @@ import cz.muni.ics.kypo.training.api.dto.traininginstance.*;
 import cz.muni.ics.kypo.training.api.enums.RoleType;
 import cz.muni.ics.kypo.training.api.responses.PageResultResource;
 import cz.muni.ics.kypo.training.api.responses.LockedPoolInfo;
+import cz.muni.ics.kypo.training.exceptions.EntityConflictException;
+import cz.muni.ics.kypo.training.exceptions.EntityErrorDetail;
 import cz.muni.ics.kypo.training.exceptions.EntityNotFoundException;
 import cz.muni.ics.kypo.training.mapping.mapstruct.TrainingInstanceMapper;
 import cz.muni.ics.kypo.training.mapping.mapstruct.TrainingRunMapper;
@@ -154,34 +156,38 @@ public class TrainingInstanceFacade {
      * @param trainingInstanceAssignPoolIdDTO of training instance to be deleted
      */
     @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
-            "or @securityService.isOrganizerOfGivenTrainingInstance(#trainingInstanceAssignPoolIdDTO.id)")
+            "or @securityService.isOrganizerOfGivenTrainingInstance(#trainingInstanceId)")
     @TransactionalWO
-    public TrainingInstanceBasicInfoDTO assignPoolToTrainingInstance(TrainingInstanceAssignPoolIdDTO trainingInstanceAssignPoolIdDTO) {
-        TrainingInstance trainingInstance = trainingInstanceService.findById(trainingInstanceAssignPoolIdDTO.getId());
+    public TrainingInstanceBasicInfoDTO assignPoolToTrainingInstance(Long trainingInstanceId, TrainingInstanceAssignPoolIdDTO trainingInstanceAssignPoolIdDTO) {
+        TrainingInstance trainingInstance = trainingInstanceService.findById(trainingInstanceId);
+        if (trainingInstance.getPoolId() != null) {
+            throw new EntityConflictException(new EntityErrorDetail(TrainingInstance.class, "id", trainingInstance.getId().getClass(), trainingInstance.getId(), "Training instance already contains pool Id. Please first unassign pool id and then assign another pool again."));
+        }
         // lock pool and update pool
         trainingInstanceService.lockPool(trainingInstanceAssignPoolIdDTO.getPoolId());
         trainingInstance.setPoolId(trainingInstanceAssignPoolIdDTO.getPoolId());
-        TrainingInstance updatedTrainingInstance = trainingInstanceService.assignPoolToTrainingInstance(trainingInstance);
+        TrainingInstance updatedTrainingInstance = trainingInstanceService.updateTrainingInstancePool(trainingInstance);
         return trainingInstanceMapper.mapEntityToTIBasicInfo(updatedTrainingInstance);
     }
 
     /**
      * Reassign pool in training instance  or assignes new training instance
      *
-     * @param trainingInstanceAssignPoolIdDTO of training instance to be deleted
+     * @param trainingInstanceId of training instance to be deleted
      */
     @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
-            "or @securityService.isOrganizerOfGivenTrainingInstance(#trainingInstanceAssignPoolIdDTO.id)")
+            "or @securityService.isOrganizerOfGivenTrainingInstance(#trainingInstanceId)")
     @TransactionalWO
-    public TrainingInstanceBasicInfoDTO reassignPoolToTrainingInstance(TrainingInstanceAssignPoolIdDTO trainingInstanceAssignPoolIdDTO) {
-        TrainingInstance trainingInstance = trainingInstanceService.findById(trainingInstanceAssignPoolIdDTO.getId());
-        // lock newly assigned pool
-        trainingInstanceService.lockPool(trainingInstanceAssignPoolIdDTO.getPoolId());
+    public TrainingInstanceBasicInfoDTO unassignPoolInTrainingInstance(Long trainingInstanceId) {
+        TrainingInstance trainingInstance = trainingInstanceService.findById(trainingInstanceId);
+        if (trainingInstance.getPoolId() == null) {
+            throw new EntityConflictException(new EntityErrorDetail(TrainingInstance.class, "id", trainingInstance.getId().getClass(), trainingInstance.getId(), "The training instance does not contain any assigned pool already."));
+        }
         // unlock previously assigned pool
         trainingInstanceService.unlockPool(trainingInstance.getPoolId());
 
-        trainingInstance.setPoolId(trainingInstanceAssignPoolIdDTO.getPoolId());
-        TrainingInstance updatedTrainingInstance = trainingInstanceService.assignPoolToTrainingInstance(trainingInstance);
+        trainingInstance.setPoolId(null);
+        TrainingInstance updatedTrainingInstance = trainingInstanceService.updateTrainingInstancePool(trainingInstance);
         return trainingInstanceMapper.mapEntityToTIBasicInfo(updatedTrainingInstance);
     }
 
@@ -233,9 +239,9 @@ public class TrainingInstanceFacade {
      * Retrieve all organizers for given training instance .
      *
      * @param trainingInstanceId id of the training instance for which to get the organizers
-     * @param pageable pageable parameter with information about pagination.
-     * @param givenName optional parameter used for filtration
-     * @param familyName optional parameter used for filtration
+     * @param pageable           pageable parameter with information about pagination.
+     * @param givenName          optional parameter used for filtration
+     * @param familyName         optional parameter used for filtration
      * @return returns all organizers in given training instance.
      */
     @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
@@ -252,9 +258,9 @@ public class TrainingInstanceFacade {
      * Retrieve all organizers not in the given training instance.
      *
      * @param trainingInstanceId id of the training instance which users should be excluded from the result list.
-     * @param pageable pageable parameter with information about pagination.
-     * @param givenName optional parameter used for filtration
-     * @param familyName optional parameter used for filtration
+     * @param pageable           pageable parameter with information about pagination.
+     * @param givenName          optional parameter used for filtration
+     * @param familyName         optional parameter used for filtration
      * @return returns all organizers not in the given training instance.
      */
     @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
@@ -273,7 +279,7 @@ public class TrainingInstanceFacade {
      *
      * @param trainingInstanceId if of the training instance to be updated
      * @param organizersAddition ids of the organizers to be added to the training instance
-     * @param organizersRemoval ids of the organizers to be removed from the training instance.
+     * @param organizersRemoval  ids of the organizers to be removed from the training instance.
      */
     @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
             "or @securityService.isOrganizerOfGivenTrainingInstance(#trainingInstanceId)")
