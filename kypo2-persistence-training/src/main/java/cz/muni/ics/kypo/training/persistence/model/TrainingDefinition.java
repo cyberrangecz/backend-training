@@ -1,9 +1,8 @@
 package cz.muni.ics.kypo.training.persistence.model;
 
-import javax.persistence.*;
-
 import cz.muni.ics.kypo.training.persistence.model.enums.TDState;
 
+import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.util.*;
 

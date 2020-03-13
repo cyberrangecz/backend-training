@@ -2,6 +2,7 @@ package cz.muni.ics.kypo.training.persistence.repository;
 
 import cz.muni.ics.kypo.training.persistence.config.PersistenceConfigTest;
 import cz.muni.ics.kypo.training.persistence.model.GameLevel;
+import cz.muni.ics.kypo.training.persistence.util.TestDataFactory;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -9,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Import;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -23,11 +25,13 @@ import static org.junit.Assert.*;
 @RunWith(SpringRunner.class)
 @DataJpaTest
 @Import(PersistenceConfigTest.class)
+@ComponentScan(basePackages = "cz.muni.ics.kypo.training.persistence.util")
 public class GameLevelRepositoryTest {
 
     @Autowired
     private TestEntityManager entityManager;
-
+    @Autowired
+    private TestDataFactory testDataFactory;
     @Autowired
     private GameLevelRepository gameLevelRepository;
 
@@ -39,18 +43,8 @@ public class GameLevelRepositoryTest {
 
     @Before
     public void setUp() {
-        gameLevel1 = new GameLevel();
-        gameLevel1.setFlag("flag1");
-        gameLevel1.setContent("content1");
-        gameLevel1.setSolution("solution1");
-        gameLevel1.setSolutionPenalized(true);
-        gameLevel1.setTitle("title1");
-        gameLevel2 = new GameLevel();
-        gameLevel2.setFlag("flag2");
-        gameLevel2.setContent("content2");
-        gameLevel2.setSolution("solution2");
-        gameLevel2.setSolutionPenalized(true);
-        gameLevel2.setTitle("title2");
+        gameLevel1 = testDataFactory.getPenalizedLevel();
+        gameLevel2 = testDataFactory.getNonPenalizedLevel();
     }
 
     @Test

@@ -2,6 +2,7 @@ package cz.muni.ics.kypo.training.persistence.repository;
 
 import cz.muni.ics.kypo.training.persistence.config.PersistenceConfigTest;
 import cz.muni.ics.kypo.training.persistence.model.Hint;
+import cz.muni.ics.kypo.training.persistence.util.TestDataFactory;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -9,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Import;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -25,11 +27,13 @@ import static org.junit.Assert.assertNotNull;
 @RunWith(SpringRunner.class)
 @DataJpaTest
 @Import(PersistenceConfigTest.class)
+@ComponentScan(basePackages = "cz.muni.ics.kypo.training.persistence.util")
 public class HintRepositoryTest {
 
     @Autowired
     private TestEntityManager entityManager;
-
+    @Autowired
+    private TestDataFactory testDataFactory;
     @Autowired
     private HintRepository hintRepository;
 
@@ -41,14 +45,8 @@ public class HintRepositoryTest {
 
     @Before
     public void init() {
-        hint1 = new Hint();
-        hint1.setTitle("Basic hint");
-        hint1.setContent("content is not null");
-        hint1.setHintPenalty(5);
-        hint2 = new Hint();
-        hint2.setTitle("Basic hint 2");
-        hint2.setContent("content is not null");
-        hint2.setHintPenalty(2);
+        hint1 = testDataFactory.getHint1();
+        hint2 = testDataFactory.getHint2();
     }
 
     @Test

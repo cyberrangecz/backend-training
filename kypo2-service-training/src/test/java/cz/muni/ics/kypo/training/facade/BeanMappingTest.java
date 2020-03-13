@@ -1,14 +1,14 @@
 package cz.muni.ics.kypo.training.facade;
 
-import cz.muni.ics.kypo.training.api.responses.PageResultResource;
 import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
 import cz.muni.ics.kypo.training.api.dto.infolevel.InfoLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionByIdDTO;
+import cz.muni.ics.kypo.training.api.responses.PageResultResource;
 import cz.muni.ics.kypo.training.mapping.mapstruct.*;
 import cz.muni.ics.kypo.training.persistence.model.InfoLevel;
 import cz.muni.ics.kypo.training.persistence.model.TrainingDefinition;
 import cz.muni.ics.kypo.training.persistence.model.UserRef;
-import cz.muni.ics.kypo.training.persistence.model.enums.TDState;
+import cz.muni.ics.kypo.training.persistence.util.TestDataFactory;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.*;
@@ -24,10 +25,13 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 @RunWith(SpringRunner.class)
+@ContextConfiguration(classes = {TestDataFactory.class})
 @SpringBootTest(classes = {InfoLevelMapperImpl.class, TrainingDefinitionMapperImpl.class, UserRefMapperImpl.class,
-        BetaTestingGroupMapperImpl.class})
+        BetaTestingGroupMapperImpl.class, AttachmentMapperImpl.class})
 public class BeanMappingTest {
 
+    @Autowired
+    private TestDataFactory testDataFactory;
     @Autowired
     private InfoLevelMapperImpl infoLevelMapper;
     @Autowired
@@ -53,48 +57,35 @@ public class BeanMappingTest {
         aRDTO.setUserRefId(1L);
         aRDTO.setUserRefLogin("login");
 
-        tD = new TrainingDefinition();
+        tD = testDataFactory.getUnreleasedDefinition();
         tD.setId(1L);
-        tD.setTitle("TrainingDefinition");
-        tD.setDescription("description");
-        tD.setPrerequisities(new String[]{"p1", "p2"});
-        tD.setOutcomes(new String[]{"o1", "o2"});
-        tD.setState(TDState.RELEASED);
-        tD.setAuthors(new HashSet<>(List.of(aR)));
-        tD.setShowStepperBar(true);
 
         tDDTO = new TrainingDefinitionByIdDTO();
-        tDDTO.setId(1L);
-        tDDTO.setTitle("TrainingDefinition");
-        tDDTO.setDescription("description");
-        tDDTO.setPrerequisities(new String[]{"p1", "p2"});
-        tDDTO.setOutcomes(new String[]{"o1", "o2"});
+        tDDTO.setId(tD.getId());
+        tDDTO.setTitle(tD.getTitle());
+        tDDTO.setDescription(tD.getDescription());
+        tDDTO.setPrerequisities(tD.getPrerequisities());
+        tDDTO.setOutcomes(tD.getOutcomes());
         tDDTO.setState(cz.muni.ics.kypo.training.api.enums.TDState.UNRELEASED);
-        tDDTO.setShowStepperBar(true);
+        tDDTO.setShowStepperBar(tD.isShowStepperBar());
 
-        iL1 = new InfoLevel();
+        iL1 = testDataFactory.getInfoLevel1();
         iL1.setId(1L);
-        iL1.setContent("content1");
-        iL1.setMaxScore(10);
-        iL1.setTitle("title1");
 
-        iL2 = new InfoLevel();
+        iL2 = testDataFactory.getInfoLevel2();
         iL2.setId(2L);
-        iL2.setContent("content2");
-        iL2.setMaxScore(9);
-        iL2.setTitle("title2");
 
         iLDTO1 = new InfoLevelDTO();
-        iLDTO1.setId(1L);
-        iLDTO1.setContent("content1");
-        iLDTO1.setMaxScore(10);
-        iLDTO1.setTitle("title1");
+        iLDTO1.setId(iL1.getId());
+        iLDTO1.setContent(iL1.getContent());
+        iLDTO1.setMaxScore(iL1.getMaxScore());
+        iLDTO1.setTitle(iL1.getTitle());
 
         iLDTO2 = new InfoLevelDTO();
-        iLDTO2.setId(2L);
-        iLDTO2.setContent("content2");
-        iLDTO2.setMaxScore(9);
-        iLDTO2.setTitle("title2");
+        iLDTO2.setId(iL2.getId());
+        iLDTO2.setContent(iL2.getContent());
+        iLDTO2.setMaxScore(iL2.getMaxScore());
+        iLDTO2.setTitle(iL2.getTitle());
 
         levels = new ArrayList<>();
         levels.add(iL1);

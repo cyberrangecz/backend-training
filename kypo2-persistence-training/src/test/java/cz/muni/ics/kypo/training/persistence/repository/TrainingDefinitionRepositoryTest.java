@@ -1,7 +1,10 @@
 package cz.muni.ics.kypo.training.persistence.repository;
 
+import cz.muni.ics.kypo.training.persistence.config.PersistenceConfigTest;
 import cz.muni.ics.kypo.training.persistence.model.BetaTestingGroup;
+import cz.muni.ics.kypo.training.persistence.model.TrainingDefinition;
 import cz.muni.ics.kypo.training.persistence.model.UserRef;
+import cz.muni.ics.kypo.training.persistence.util.TestDataFactory;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -9,15 +12,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.junit4.SpringRunner;
-import cz.muni.ics.kypo.training.persistence.config.PersistenceConfigTest;
-import cz.muni.ics.kypo.training.persistence.model.TrainingDefinition;
-import cz.muni.ics.kypo.training.persistence.model.enums.TDState;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 import static junit.framework.TestCase.assertEquals;
@@ -26,11 +26,13 @@ import static junit.framework.TestCase.assertTrue;
 @RunWith(SpringRunner.class)
 @DataJpaTest
 @Import(PersistenceConfigTest.class)
+@ComponentScan(basePackages = "cz.muni.ics.kypo.training.persistence.util")
 public class TrainingDefinitionRepositoryTest {
 
     @Autowired
     private TestEntityManager entityManager;
-
+    @Autowired
+    private TestDataFactory testDataFactory;
     @Autowired
     private TrainingDefinitionRepository trainingDefinitionRepository;
 
@@ -53,36 +55,13 @@ public class TrainingDefinitionRepositoryTest {
         organizer1 = new UserRef();
         organizer1.setUserRefId(5L);
 
-        trainingDefinition1 = new TrainingDefinition();
-        trainingDefinition1.setTitle("test1");
-        trainingDefinition1.setState(TDState.RELEASED);
-        trainingDefinition1.setLastEdited(LocalDateTime.now());
+        trainingDefinition1 = testDataFactory.getReleasedDefinition();
+        trainingDefinition2 = testDataFactory.getUnreleasedDefinition();
 
-        trainingDefinition2 = new TrainingDefinition();
-        trainingDefinition2.setTitle("test2");
-        trainingDefinition2.setState(TDState.UNRELEASED);
-        trainingDefinition2.setLastEdited(LocalDateTime.now());
-
-        trainingDefinitionWithBG1 = new TrainingDefinition();
-        trainingDefinitionWithBG1.setTitle("test3");
-        trainingDefinitionWithBG1.setState(TDState.RELEASED);
-        trainingDefinitionWithBG1.setLastEdited(LocalDateTime.now());
-
-        trainingDefinitionWithBG2 = new TrainingDefinition();
-        trainingDefinitionWithBG2.setTitle("test4");
-        trainingDefinitionWithBG2.setState(TDState.UNRELEASED);
-        trainingDefinitionWithBG2.setLastEdited(LocalDateTime.now());
-
-        trainingDefinitionWithBG3 = new TrainingDefinition();
-        trainingDefinitionWithBG3.setTitle("test5");
-        trainingDefinitionWithBG3.setState(TDState.RELEASED);
-        trainingDefinitionWithBG3.setLastEdited(LocalDateTime.now());
-
-        trainingDefinitionWithBG4 = new TrainingDefinition();
-        trainingDefinitionWithBG4.setTitle("test6");
-        trainingDefinitionWithBG4.setState(TDState.UNRELEASED);
-        trainingDefinitionWithBG4.setLastEdited(LocalDateTime.now());
-
+        trainingDefinitionWithBG1 = testDataFactory.getReleasedDefinition();
+        trainingDefinitionWithBG2 = testDataFactory.getReleasedDefinition();
+        trainingDefinitionWithBG3 = testDataFactory.getReleasedDefinition();
+        trainingDefinitionWithBG4 = testDataFactory.getReleasedDefinition();
         viewGroup1 = new BetaTestingGroup();
         viewGroup2 = new BetaTestingGroup();
         viewGroup3 = new BetaTestingGroup();

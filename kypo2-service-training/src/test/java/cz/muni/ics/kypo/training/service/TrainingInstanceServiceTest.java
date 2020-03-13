@@ -14,6 +14,7 @@ import cz.muni.ics.kypo.training.persistence.model.TrainingInstance;
 import cz.muni.ics.kypo.training.persistence.model.TrainingRun;
 import cz.muni.ics.kypo.training.persistence.model.UserRef;
 import cz.muni.ics.kypo.training.persistence.repository.*;
+import cz.muni.ics.kypo.training.persistence.util.TestDataFactory;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -23,6 +24,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -36,6 +38,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.web.client.RestTemplate;
 
@@ -50,7 +53,11 @@ import static org.junit.Assert.assertEquals;
 import static org.mockito.BDDMockito.*;
 
 @RunWith(SpringRunner.class)
+@ContextConfiguration(classes = {TestDataFactory.class})
 public class TrainingInstanceServiceTest {
+
+    @Autowired
+    TestDataFactory testDataFactory;
 
     @Rule
     public ExpectedException thrown = ExpectedException.none();
@@ -78,8 +85,7 @@ public class TrainingInstanceServiceTest {
     @Mock
     private SandboxPoolInfo sandboxPoolInfo;
     private SandboxInfo sandboxInfo1 ,sandboxInfo2;
-    private TrainingInstance trainingInstance1, trainingInstance2, trainingInstanceInvalid, trainingInstanceInvalidTime, currentInstance,
-            instanceWithSB;
+    private TrainingInstance trainingInstance1, trainingInstance2;
     private TrainingRun trainingRun1, trainingRun2;
     private UserRef user;
 
@@ -90,53 +96,16 @@ public class TrainingInstanceServiceTest {
                 trainingRunRepository, organizerRefRepository, pythonRestTemplate, securityService, trainingEventsService,
                 trAcquisitionLockRepository);
 
-        trainingInstance1 = new TrainingInstance();
+        trainingInstance1 = testDataFactory.getConcludedInstance();
         trainingInstance1.setId(1L);
-        trainingInstance1.setTitle("test1");
-        trainingInstance1.setAccessToken("pass-9876");
-        trainingInstance1.setStartTime(LocalDateTime.now(Clock.systemUTC()).minusHours(5L));
-        trainingInstance1.setEndTime(LocalDateTime.now(Clock.systemUTC()).minusHours(1L));
         trainingInstance1.setTrainingDefinition(trainingDefinition);
-        trainingInstance1.setPoolSize(2);
-        trainingInstance1.setPoolId(1L);
-
-        instanceWithSB = new TrainingInstance();
-        instanceWithSB.setId(5L);
-        instanceWithSB.setTitle("test5");
-        instanceWithSB.setAccessToken("pass-9999");
-        instanceWithSB.setStartTime(LocalDateTime.now(Clock.systemUTC()).minusHours(5L));
-        instanceWithSB.setEndTime(LocalDateTime.now(Clock.systemUTC()).minusHours(1L));
-        instanceWithSB.setTrainingDefinition(trainingDefinition);
-        instanceWithSB.setPoolSize(2);
-        instanceWithSB.setPoolId(1L);
 
         user = new UserRef();
 
-        trainingInstance2 = new TrainingInstance();
+        trainingInstance2 = testDataFactory.getFutureInstance();
         trainingInstance2.setId(2L);
-        trainingInstance2.setTitle("test2");
-        trainingInstance2.setStartTime(LocalDateTime.now(Clock.systemUTC()).plusHours(1L));
-        trainingInstance2.setEndTime(LocalDateTime.now(Clock.systemUTC()).plusHours(5L));
-        trainingInstance2.setAccessToken("pass-1253");
         trainingInstance2.setTrainingDefinition(trainingDefinition);
         trainingInstance2.setPoolId(null);
-
-        trainingInstanceInvalid = new TrainingInstance();
-        trainingInstanceInvalid.setId(3L);
-        trainingInstanceInvalid.setTitle("test3Invalid");
-        trainingInstanceInvalid.setStartTime(LocalDateTime.now(Clock.systemUTC()).minusHours(1L));
-        trainingInstanceInvalid.setEndTime(LocalDateTime.now(Clock.systemUTC()).plusHours(1L));
-
-        trainingInstanceInvalidTime = new TrainingInstance();
-        trainingInstanceInvalidTime.setId(4L);
-        trainingInstanceInvalidTime.setTitle("test4InvalidTime");
-        trainingInstanceInvalidTime.setStartTime(LocalDateTime.now(Clock.systemUTC()).minusHours(1L));
-        trainingInstanceInvalidTime.setEndTime(LocalDateTime.now(Clock.systemUTC()).minusHours(10L));
-
-        currentInstance = new TrainingInstance();
-        currentInstance.setId(5L);
-        currentInstance.setStartTime(LocalDateTime.now(Clock.systemUTC()).minusHours(5L));
-        currentInstance.setEndTime(LocalDateTime.now(Clock.systemUTC()).plusHours(5L));
 
         trainingRun1 = new TrainingRun();
         trainingRun1.setId(1L);
@@ -200,7 +169,9 @@ public class TrainingInstanceServiceTest {
 
     @Test(expected = EntityConflictException.class)
     public void createTrainingInstanceWithInvalidTimes() {
-        trainingInstanceService.create(trainingInstanceInvalidTime);
+        trainingInstance1.setStartTime(LocalDateTime.now(Clock.systemUTC()).minusHours(1L));
+        trainingInstance1.setEndTime(LocalDateTime.now(Clock.systemUTC()).minusHours(10L));
+        trainingInstanceService.create(trainingInstance1);
     }
 
     @Test
@@ -219,8 +190,10 @@ public class TrainingInstanceServiceTest {
 
     @Test(expected = EntityConflictException.class)
     public void updateTrainingInstanceWithInvalidTimes() {
-        given(trainingInstanceRepository.findById(anyLong())).willReturn(Optional.of(trainingInstanceInvalidTime));
-        trainingInstanceService.update(trainingInstanceInvalidTime);
+        trainingInstance1.setStartTime(LocalDateTime.now(Clock.systemUTC()).minusHours(1L));
+        trainingInstance1.setEndTime(LocalDateTime.now(Clock.systemUTC()).minusHours(10L));
+        given(trainingInstanceRepository.findById(anyLong())).willReturn(Optional.of(trainingInstance1));
+        trainingInstanceService.update(trainingInstance1);
     }
 
     @Test

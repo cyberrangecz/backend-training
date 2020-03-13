@@ -9,12 +9,9 @@ import cz.muni.ics.kypo.training.api.dto.imports.GameLevelImportDTO;
 import cz.muni.ics.kypo.training.api.dto.imports.ImportTrainingDefinitionDTO;
 import cz.muni.ics.kypo.training.api.dto.imports.InfoLevelImportDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionByIdDTO;
-import cz.muni.ics.kypo.training.api.enums.AssessmentType;
-import cz.muni.ics.kypo.training.api.enums.LevelType;
 import cz.muni.ics.kypo.training.mapping.mapstruct.*;
 import cz.muni.ics.kypo.training.persistence.model.*;
-import cz.muni.ics.kypo.training.persistence.model.enums.TDState;
-import cz.muni.ics.kypo.training.persistence.model.enums.TRState;
+import cz.muni.ics.kypo.training.persistence.util.TestDataFactory;
 import cz.muni.ics.kypo.training.service.ExportImportService;
 import cz.muni.ics.kypo.training.service.TrainingDefinitionService;
 import cz.muni.ics.kypo.training.service.UserService;
@@ -27,10 +24,10 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.io.IOException;
-import java.time.LocalDateTime;
 import java.util.Arrays;
 
 import static org.junit.Assert.assertEquals;
@@ -38,6 +35,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 
 @RunWith(SpringRunner.class)
+@ContextConfiguration(classes = {TestDataFactory.class})
 @SpringBootTest(classes = {InfoLevelMapperImpl.class, ExportImportMapperImpl.class, TrainingDefinitionMapperImpl.class,
         GameLevelMapperImpl.class, InfoLevelMapperImpl.class, AssessmentLevelMapperImpl.class,
         UserRefMapperImpl.class, BetaTestingGroupMapperImpl.class, HintMapperImpl.class, AttachmentMapperImpl.class})
@@ -48,6 +46,8 @@ public class ExportImportFacadeTest {
 
     private ExportImportFacade exportImportFacade;
 
+    @Autowired
+    private TestDataFactory testDataFactory;
     @Autowired
     private ExportImportMapperImpl exportImportMapper;
     @Autowired
@@ -77,11 +77,6 @@ public class ExportImportFacadeTest {
     private GameLevel gameLevel;
     private InfoLevel infoLevel;
     private ImportTrainingDefinitionDTO importTrainingDefinitionDTO;
-    private InfoLevelImportDTO importInfoLevelDTO;
-    private AssessmentLevelImportDTO importAssessmentLevelDTO;
-    private GameLevelImportDTO importGameLevelDTO;
-    private TrainingInstance trainingInstance;
-    private TrainingRun trainingRun;
     private TrainingEventsService trainingEventsService;
 
     @Before
@@ -89,73 +84,39 @@ public class ExportImportFacadeTest {
         MockitoAnnotations.initMocks(this);
         exportImportFacade = new ExportImportFacade(exportImportService, exportImportMapper, gameLevelMapper,
                 infoLevelMapper, assessmentLevelMapper, trainingDefinitionService, trainingDefinitionMapper, objectMapper, trainingEventsService, userService, userRefMapper);
-        assessmentLevel = new AssessmentLevel();
+
+        assessmentLevel = testDataFactory.getTest();
         assessmentLevel.setId(1L);
-        assessmentLevel.setTitle("Assessment title");
 
-        gameLevel = new GameLevel();
+        gameLevel = testDataFactory.getPenalizedLevel();
         gameLevel.setId(2L);
-        gameLevel.setSolution("solution");
 
-        infoLevel = new InfoLevel();
+        infoLevel = testDataFactory.getInfoLevel1();
         infoLevel.setId(3L);
 
-        importAssessmentLevelDTO = new AssessmentLevelImportDTO();
-        importAssessmentLevelDTO.setTitle("Assessment title");
-        importAssessmentLevelDTO.setInstructions("intructions");
-        importAssessmentLevelDTO.setQuestions("questions");
-        importAssessmentLevelDTO.setAssessmentType(AssessmentType.TEST);
-        importAssessmentLevelDTO.setLevelType(LevelType.ASSESSMENT_LEVEL);
-        importAssessmentLevelDTO.setMaxScore(100);
+        AssessmentLevelImportDTO importAssessmentLevelDTO = testDataFactory.getAssessmentLevelImportDTO();
         importAssessmentLevelDTO.setOrder(3);
 
-        importGameLevelDTO = new GameLevelImportDTO();
-        importGameLevelDTO.setTitle("Game title");
-        importGameLevelDTO.setFlag("flag");
-        importGameLevelDTO.setLevelType(LevelType.GAME_LEVEL);
-        importGameLevelDTO.setContent("game level content here");
-        importGameLevelDTO.setSolution("port 5050");
-        importGameLevelDTO.setIncorrectFlagLimit(5);
+        GameLevelImportDTO importGameLevelDTO = testDataFactory.getGameLevelImportDTO();
         importGameLevelDTO.setOrder(2);
 
-        importInfoLevelDTO = new InfoLevelImportDTO();
-        importInfoLevelDTO.setTitle("Info level title");
-        importInfoLevelDTO.setLevelType(LevelType.INFO_LEVEL);
+        InfoLevelImportDTO importInfoLevelDTO = testDataFactory.getInfoLevelImportDTO();
         importInfoLevelDTO.setOrder(1);
-        importInfoLevelDTO.setMaxScore(0);
 
-        trainingDefinition = new TrainingDefinition();
+        trainingDefinition = testDataFactory.getReleasedDefinition();
         trainingDefinition.setId(1L);
-        trainingDefinition.setTitle("Training definition");
-        trainingDefinition.setDescription("description");
-        trainingDefinition.setState(TDState.RELEASED);
 
-        trainingDefinitionImported = new TrainingDefinition();
+        trainingDefinitionImported = testDataFactory.getUnreleasedDefinition();
         trainingDefinitionImported.setId(1L);
-        trainingDefinitionImported.setTitle("Uploaded " + "Training definition");
-        trainingDefinitionImported.setDescription("description");
-        trainingDefinitionImported.setState(TDState.UNRELEASED);
 
-        importTrainingDefinitionDTO = new ImportTrainingDefinitionDTO();
-        importTrainingDefinitionDTO.setTitle("Training definition");
-        importTrainingDefinitionDTO.setDescription("description");
-        importTrainingDefinitionDTO.setState(cz.muni.ics.kypo.training.api.enums.TDState.UNRELEASED);
+        importTrainingDefinitionDTO = testDataFactory.getImportTrainingDefinitionDTO();
         importTrainingDefinitionDTO.setLevels(Arrays.asList(importInfoLevelDTO, importGameLevelDTO, importAssessmentLevelDTO));
 
-        trainingInstance = new TrainingInstance();
-        trainingInstance.setAccessToken("pass-1234");
+        TrainingInstance trainingInstance = testDataFactory.getConcludedInstance();
         trainingInstance.setTrainingDefinition(trainingDefinition);
-        trainingInstance.setPoolSize(10);
-        trainingInstance.setTitle("title");
-        LocalDateTime time = LocalDateTime.now();
-        trainingInstance.setEndTime(time.minusHours(10));
-        trainingInstance.setStartTime(time.minusHours(20));
 
-        trainingRun = new TrainingRun();
+        TrainingRun trainingRun = testDataFactory.getFinishedRun();
         trainingRun.setTrainingInstance(trainingInstance);
-        trainingRun.setEndTime(time.minusHours(10));
-        trainingRun.setStartTime(time.minusHours(20));
-        trainingRun.setState(TRState.RUNNING);
     }
 
 	@Test

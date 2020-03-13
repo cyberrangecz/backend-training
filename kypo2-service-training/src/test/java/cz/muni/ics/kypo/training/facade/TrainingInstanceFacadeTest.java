@@ -13,10 +13,11 @@ import cz.muni.ics.kypo.training.mapping.mapstruct.*;
 import cz.muni.ics.kypo.training.persistence.model.TrainingDefinition;
 import cz.muni.ics.kypo.training.persistence.model.TrainingInstance;
 import cz.muni.ics.kypo.training.persistence.model.UserRef;
+import cz.muni.ics.kypo.training.persistence.util.TestDataFactory;
+import cz.muni.ics.kypo.training.service.SecurityService;
 import cz.muni.ics.kypo.training.service.TrainingDefinitionService;
 import cz.muni.ics.kypo.training.service.TrainingInstanceService;
 import cz.muni.ics.kypo.training.service.UserService;
-import cz.muni.ics.kypo.training.service.SecurityService;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -31,9 +32,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -44,15 +45,19 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.BDDMockito.*;
 
 @RunWith(SpringRunner.class)
+@ContextConfiguration(classes = {TestDataFactory.class})
 @SpringBootTest(classes = {TrainingInstanceMapperImpl.class, TrainingRunMapperImpl.class,
         TrainingDefinitionMapper.class, UserRefMapper.class, TrainingDefinitionMapperImpl.class,
-        UserRefMapperImpl.class, BetaTestingGroupMapperImpl.class})
+        UserRefMapperImpl.class, BetaTestingGroupMapperImpl.class, AttachmentMapperImpl.class})
 public class TrainingInstanceFacadeTest {
 
     @Rule
     public ExpectedException thrown = ExpectedException.none();
 
     private TrainingInstanceFacade trainingInstanceFacade;
+
+    @Autowired
+    TestDataFactory testDataFactory;
 
     @Autowired
     TrainingRunMapperImpl trainingRunMapper;
@@ -101,28 +106,19 @@ public class TrainingInstanceFacadeTest {
         organizerDTO2 = createUserRefDTO(20L, "Bc. Boris Makal", "Makal", "Boris", "772211@muni.cz", "https://oidc.muni.cz/oidc", null);
         organizerDTO3 = createUserRefDTO(30L, "Ing. Pavel Flákal", "Flákal", "Pavel", "221133@muni.cz", "https://oidc.muni.cz/oidc", null);
 
-        trainingInstance1 = new TrainingInstance();
+        trainingInstance1 = testDataFactory.getConcludedInstance();
         trainingInstance1.setId(1L);
-        trainingInstance1.setTitle("test");
-        trainingInstance1.setPoolId(1L);
-        trainingInstance1.setPoolSize(2);
         trainingInstance1.setOrganizers(new HashSet<>(Set.of(organizer1, organizer2)));
 
-        trainingInstance2 = new TrainingInstance();
+        trainingInstance2 = testDataFactory.getFutureInstance();
         trainingInstance2.setId(2L);
-        trainingInstance2.setTitle("test");
 
-        trainingInstanceCreate = new TrainingInstanceCreateDTO();
+        trainingInstanceCreate = testDataFactory.getTrainingInstanceCreateDTO();
         trainingInstanceCreate.setTitle("test");
         trainingInstanceCreate.setTrainingDefinitionId(1L);
 
-        trainingInstanceUpdate = new TrainingInstanceUpdateDTO();
+        trainingInstanceUpdate = testDataFactory.getTrainingInstanceUpdateDTO();
         trainingInstanceUpdate.setId(1L);
-        trainingInstanceUpdate.setTitle("title");
-        trainingInstanceUpdate.setAccessToken("hello");
-        trainingInstanceUpdate.setPoolSize(20);
-        trainingInstanceUpdate.setEndTime(LocalDateTime.now());
-        trainingInstanceUpdate.setStartTime(LocalDateTime.now());
         trainingInstanceUpdate.setTrainingDefinitionId(1L);
 
         lockedPoolInfo = new LockedPoolInfo();

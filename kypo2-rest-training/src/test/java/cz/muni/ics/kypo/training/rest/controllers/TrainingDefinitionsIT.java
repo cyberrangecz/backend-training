@@ -17,7 +17,10 @@ import cz.muni.ics.kypo.training.api.dto.gamelevel.GameLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.gamelevel.GameLevelUpdateDTO;
 import cz.muni.ics.kypo.training.api.dto.infolevel.InfoLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.infolevel.InfoLevelUpdateDTO;
-import cz.muni.ics.kypo.training.api.dto.trainingdefinition.*;
+import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionByIdDTO;
+import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionCreateDTO;
+import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionDTO;
+import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionUpdateDTO;
 import cz.muni.ics.kypo.training.api.enums.AssessmentType;
 import cz.muni.ics.kypo.training.api.enums.LevelType;
 import cz.muni.ics.kypo.training.api.enums.TDState;
@@ -30,6 +33,7 @@ import cz.muni.ics.kypo.training.mapping.mapstruct.InfoLevelMapperImpl;
 import cz.muni.ics.kypo.training.mapping.mapstruct.TrainingDefinitionMapperImpl;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.repository.*;
+import cz.muni.ics.kypo.training.persistence.util.TestDataFactory;
 import cz.muni.ics.kypo.training.rest.ApiError;
 import cz.muni.ics.kypo.training.rest.CustomRestExceptionHandlerTraining;
 import cz.muni.ics.kypo.training.rest.controllers.config.DBTestUtil;
@@ -74,7 +78,6 @@ import org.springframework.web.client.RestTemplate;
 import java.io.IOException;
 import java.net.URI;
 import java.sql.SQLException;
-import java.time.LocalDateTime;
 import java.util.*;
 
 import static cz.muni.ics.kypo.training.rest.controllers.util.ObjectConverter.convertJsonBytesToObject;
@@ -86,7 +89,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
-@ContextConfiguration(classes = TrainingDefinitionsRestController.class)
+@ContextConfiguration(classes = {TrainingDefinitionsRestController.class, TestDataFactory.class})
 @DataJpaTest
 @Import(RestConfigTest.class)
 public class TrainingDefinitionsIT {
@@ -97,6 +100,8 @@ public class TrainingDefinitionsIT {
     private MockMvc mvc;
     private static final Logger logger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(TrainingDefinitionsRestController.class);
 
+    @Autowired
+    private TestDataFactory testDataFactory;
     @Autowired
     private ApplicationContext applicationContext;
     @Autowired
@@ -183,119 +188,42 @@ public class TrainingDefinitionsIT {
         userRefDTO.setIss("https://oidc.muni.cz");
         userRefDTO.setUserRefId(1L);
 
-        gameLevel1 = new GameLevel();
-        gameLevel1.setTitle("testTitle");
-        gameLevel1.setContent("testContent");
-        gameLevel1.setFlag("testFlag");
-        gameLevel1.setSolution("testSolution");
-        gameLevel1.setSolutionPenalized(true);
-        gameLevel1.setMaxScore(25);
-
-        gameLevelUpdateDTO = new GameLevelUpdateDTO();
-        gameLevelUpdateDTO.setTitle("newTitle");
-        gameLevelUpdateDTO.setContent("newContent");
-        gameLevelUpdateDTO.setFlag("newFlag");
-        gameLevelUpdateDTO.setSolution("newSolution");
-        gameLevelUpdateDTO.setSolutionPenalized(false);
-        gameLevelUpdateDTO.setMaxScore(50);
-
+        gameLevel1 = testDataFactory.getPenalizedLevel();
+        gameLevelUpdateDTO = testDataFactory.getGameLevelUpdateDTO();
         invalidGameLevelUpdateDTO = new GameLevelUpdateDTO();
+        gameLevel2 = testDataFactory.getNonPenalizedLevel();
 
-        gameLevel2 = new GameLevel();
-        gameLevel2.setTitle("testTitle2");
-        gameLevel2.setContent("testContent2");
-        gameLevel2.setFlag("testFlag2");
-        gameLevel2.setSolution("testSolution2");
-        gameLevel2.setSolutionPenalized(false);
-        gameLevel2.setMaxScore(50);
-
-        infoLevel1 = new InfoLevel();
-        infoLevel1.setTitle("info1");
-        infoLevel1.setContent("testContent");
-        infoLevel1.setMaxScore(0);
-
-        infoLevelUpdateDTO = new InfoLevelUpdateDTO();
-        infoLevelUpdateDTO.setTitle("newTitle");
-        infoLevelUpdateDTO.setContent("newContent");
-
+        infoLevel1 = testDataFactory.getInfoLevel1();
+        infoLevelUpdateDTO = testDataFactory.getInfoLevelUpdateDTO();
         invalidInfoLevelUpdateDTO = new InfoLevelUpdateDTO();
 
-        assessmentLevel1 = new AssessmentLevel();
-        assessmentLevel1.setTitle("assessment1");
-        assessmentLevel1.setAssessmentType(cz.muni.ics.kypo.training.persistence.model.enums.AssessmentType.QUESTIONNAIRE);
-        assessmentLevel1.setInstructions("testInstructions");
+        assessmentLevel1 = testDataFactory.getQuestionnaire();
         assessmentLevel1.setQuestions("[]");
-        assessmentLevel1.setMaxScore(20);
-
-        assessmentLevelUpdateDTO = new AssessmentLevelUpdateDTO();
-        assessmentLevelUpdateDTO.setTitle("newTitle");
-        assessmentLevelUpdateDTO.setType(AssessmentType.TEST);
-        assessmentLevelUpdateDTO.setInstructions("newInstructions");
+        assessmentLevelUpdateDTO = testDataFactory.getAssessmentLevelUpdateDTO();
         assessmentLevelUpdateDTO.setQuestions("[]");
-        assessmentLevelUpdateDTO.setMaxScore(50);
-
         invalidAssessmentLevelUpdateDTO = new AssessmentLevelUpdateDTO();
+
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
-        trainingDefinitionCreateDTO = new TrainingDefinitionCreateDTO();
-        trainingDefinitionCreateDTO.setTitle("testTitle");
-        trainingDefinitionCreateDTO.setDescription("testDescription");
-        trainingDefinitionCreateDTO.setShowStepperBar(true);
-        trainingDefinitionCreateDTO.setState(TDState.UNRELEASED);
-        trainingDefinitionCreateDTO.setBetaTestingGroup(betaTestingGroupCreateDTO);
+        trainingDefinitionCreateDTO = testDataFactory.getTrainingDefinitionCreateDTO();
 
-        releasedTrainingDefinition = new TrainingDefinition();
-        releasedTrainingDefinition.setTitle("released");
-        releasedTrainingDefinition.setDescription("released");
-        releasedTrainingDefinition.setShowStepperBar(true);
-        releasedTrainingDefinition.setState(cz.muni.ics.kypo.training.persistence.model.enums.TDState.RELEASED);
-        releasedTrainingDefinition.setBetaTestingGroup(betaTestingGroup);
+        releasedTrainingDefinition = testDataFactory.getReleasedDefinition();
         releasedTrainingDefinition.setAuthors(new HashSet<>(List.of(author1)));
-        releasedTrainingDefinition.setLastEdited(LocalDateTime.now());
 
         invalidDefinitionDTO = new TrainingDefinitionByIdDTO();
 
-        unreleasedDefinition = new TrainingDefinition();
-        unreleasedDefinition.setTitle("testTitle");
-        unreleasedDefinition.setDescription("testDescription");
-        unreleasedDefinition.setShowStepperBar(false);
-        unreleasedDefinition.setBetaTestingGroup(betaTestingGroup2);
-        unreleasedDefinition.setState(cz.muni.ics.kypo.training.persistence.model.enums.TDState.UNRELEASED);
+        unreleasedDefinition = testDataFactory.getUnreleasedDefinition();
         unreleasedDefinition.setAuthors(new HashSet<>(Arrays.asList(author1)));
-        unreleasedDefinition.setLastEdited(LocalDateTime.now());
 
-        archivedTrainingDefinition = new TrainingDefinition();
-        archivedTrainingDefinition.setTitle("testArchivedDefinition");
-        archivedTrainingDefinition.setDescription("archivedDefinitionDescription");
-        archivedTrainingDefinition.setShowStepperBar(true);
-        archivedTrainingDefinition.setState(cz.muni.ics.kypo.training.persistence.model.enums.TDState.ARCHIVED);
+        archivedTrainingDefinition = testDataFactory.getArchivedDefinition();
         archivedTrainingDefinition.setAuthors(Set.of(author1));
-        archivedTrainingDefinition.setLastEdited(LocalDateTime.now());
 
-        trainingDefinitionUpdateDTO = new TrainingDefinitionUpdateDTO();
-        trainingDefinitionUpdateDTO.setTitle("newTitle");
-        trainingDefinitionUpdateDTO.setDescription("newDescription");
-        trainingDefinitionUpdateDTO.setShowStepperBar(true);
-        trainingDefinitionUpdateDTO.setState(TDState.UNRELEASED);
-        trainingDefinitionUpdateDTO.setBetaTestingGroup(betaTestingGroupUpdateDTO);
+        trainingDefinitionUpdateDTO = testDataFactory.getTrainingDefinitionUpdateDTO();
 
         invalidDefinitionUpdateDTO = new TrainingDefinitionUpdateDTO();
 
-        updateForNonexistingDefinition = new TrainingDefinitionUpdateDTO();
-        updateForNonexistingDefinition.setId(100L);
-        updateForNonexistingDefinition.setTitle("test");
-        updateForNonexistingDefinition.setState(TDState.UNRELEASED);
-        updateForNonexistingDefinition.setBetaTestingGroup(betaTestingGroupUpdateDTO);
-        updateForNonexistingDefinition.setShowStepperBar(true);
-
-        trainingInstance = new TrainingInstance();
-        trainingInstance.setPoolSize(5);
+        trainingInstance = testDataFactory.getOngoingInstance();
         trainingInstance.setOrganizers(Set.of(author1));
-        trainingInstance.setAccessToken("pref-7895");
-        trainingInstance.setTitle("Port scanning");
-        trainingInstance.setStartTime(LocalDateTime.now().minusHours(2));
-        trainingInstance.setEndTime(LocalDateTime.now().plusHours(2));
-
     }
 
     @After
@@ -453,7 +381,8 @@ public class TrainingDefinitionsIT {
 
     @Test
     public void updateTrainingDefinitionWithNonexistentDefinition() throws Exception {
-        MockHttpServletResponse response = mvc.perform(put("/training-definitions").content(convertObjectToJsonBytes(updateForNonexistingDefinition))
+        trainingDefinitionUpdateDTO.setId(100L);
+        MockHttpServletResponse response = mvc.perform(put("/training-definitions").content(convertObjectToJsonBytes(trainingDefinitionUpdateDTO))
                 .contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isNotFound())
                 .andReturn().getResponse();

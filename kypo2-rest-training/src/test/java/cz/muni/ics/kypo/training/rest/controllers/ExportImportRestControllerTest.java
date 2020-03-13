@@ -6,12 +6,10 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import cz.muni.ics.kypo.training.api.dto.archive.TrainingInstanceArchiveDTO;
 import cz.muni.ics.kypo.training.api.dto.export.FileToReturnDTO;
 import cz.muni.ics.kypo.training.api.dto.imports.*;
-import cz.muni.ics.kypo.training.api.enums.LevelType;
-import cz.muni.ics.kypo.training.api.enums.TDState;
 import cz.muni.ics.kypo.training.converters.LocalDateTimeDeserializer;
-import cz.muni.ics.kypo.training.exceptions.errors.JavaApiError;
 import cz.muni.ics.kypo.training.exceptions.EntityNotFoundException;
 import cz.muni.ics.kypo.training.facade.ExportImportFacade;
+import cz.muni.ics.kypo.training.persistence.util.TestDataFactory;
 import cz.muni.ics.kypo.training.rest.ApiError;
 import cz.muni.ics.kypo.training.rest.CustomRestExceptionHandlerTraining;
 import org.junit.Before;
@@ -19,6 +17,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.querydsl.SimpleEntityPathResolver;
 import org.springframework.data.querydsl.binding.QuerydslBindingsFactory;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
@@ -28,26 +27,34 @@ import org.springframework.http.MediaType;
 import org.springframework.http.converter.ByteArrayHttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.mock.web.MockHttpServletResponse;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import static cz.muni.ics.kypo.training.rest.controllers.util.ObjectConverter.convertJsonBytesToObject;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 
+import static cz.muni.ics.kypo.training.rest.controllers.util.ObjectConverter.convertJsonBytesToObject;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.BDDMockito.*;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.willThrow;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
+@ContextConfiguration(classes = {TestDataFactory.class})
 public class ExportImportRestControllerTest {
+
+	@Autowired
+	private TestDataFactory testDataFactory;
 
 	private ExportImportRestController exportImportRestController;
 
@@ -74,55 +81,21 @@ public class ExportImportRestControllerTest {
 				.setControllerAdvice(new CustomRestExceptionHandlerTraining())
 				.build();
 
-		trainingInstanceArchiveDTO = new TrainingInstanceArchiveDTO();
-		trainingInstanceArchiveDTO.setAccessToken("pass-123");
-		LocalDateTime startTime = LocalDateTime.now();
-		trainingInstanceArchiveDTO.setStartTime(startTime.minusHours(12));
-		trainingInstanceArchiveDTO.setEndTime(startTime.minusHours(5));
-		trainingInstanceArchiveDTO.setPoolSize(10);
-		trainingInstanceArchiveDTO.setTitle("title");
+		trainingInstanceArchiveDTO = testDataFactory.getTrainingInstanceArchiveDTO();
 
-		InfoLevelImportDTO infoLevelImportDTO = new InfoLevelImportDTO();
-		infoLevelImportDTO.setContent("string");
-		infoLevelImportDTO.setLevelType(LevelType.INFO_LEVEL);
-		infoLevelImportDTO.setMaxScore(0);
+		InfoLevelImportDTO infoLevelImportDTO = testDataFactory.getInfoLevelImportDTO();
 		infoLevelImportDTO.setOrder(0);
-		infoLevelImportDTO.setTitle("string");
 
-		AssessmentLevelImportDTO assessmentLevelDTO = new AssessmentLevelImportDTO();
-		assessmentLevelDTO.setLevelType(LevelType.ASSESSMENT_LEVEL);
-		assessmentLevelDTO.setMaxScore(0);
+		AssessmentLevelImportDTO assessmentLevelDTO = testDataFactory.getAssessmentLevelImportDTO();
 		assessmentLevelDTO.setOrder(1);
-		assessmentLevelDTO.setTitle("string");
 
-		HintImportDTO hintImportDTO = new HintImportDTO();
-		hintImportDTO.setContent("string");
-		hintImportDTO.setTitle("title");
+		HintImportDTO hintImportDTO = testDataFactory.getHintImportDTO();
 
-		GameLevelImportDTO gameLevelImportDTO = new GameLevelImportDTO();
-		gameLevelImportDTO.setEstimatedDuration(20);
-		gameLevelImportDTO.setFlag("string");
-		gameLevelImportDTO.setIncorrectFlagLimit(2);
-		gameLevelImportDTO.setSolution("string");
-		gameLevelImportDTO.setSolutionPenalized(true);
-		gameLevelImportDTO.setLevelType(LevelType.GAME_LEVEL);
-		gameLevelImportDTO.setMaxScore(20);
-		gameLevelImportDTO.setTitle("string");
+		GameLevelImportDTO gameLevelImportDTO = testDataFactory.getGameLevelImportDTO();
 		gameLevelImportDTO.setOrder(2);
 
-
-		String[] outcomes = {"string"};
-		String[] prerequisites = {"string"};
-
-		importTrainingDefinitionDTO = new ImportTrainingDefinitionDTO();
-		importTrainingDefinitionDTO.setTitle("string");
-		importTrainingDefinitionDTO.setState(TDState.PRIVATED);
-		importTrainingDefinitionDTO.setDescription("string");
-		importTrainingDefinitionDTO.setShowStepperBar(true);
+		importTrainingDefinitionDTO = testDataFactory.getImportTrainingDefinitionDTO();
 		importTrainingDefinitionDTO.setLevels(Arrays.asList(infoLevelImportDTO,assessmentLevelDTO,gameLevelImportDTO));
-		importTrainingDefinitionDTO.setOutcomes(outcomes);
-		importTrainingDefinitionDTO.setPrerequisities(prerequisites);
-
 
 		ObjectMapper obj = new ObjectMapper();
 		obj.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);

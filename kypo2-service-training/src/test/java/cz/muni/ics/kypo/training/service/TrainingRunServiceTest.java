@@ -11,10 +11,9 @@ import cz.muni.ics.kypo.training.exceptions.BadRequestException;
 import cz.muni.ics.kypo.training.exceptions.EntityConflictException;
 import cz.muni.ics.kypo.training.exceptions.EntityNotFoundException;
 import cz.muni.ics.kypo.training.persistence.model.*;
-import cz.muni.ics.kypo.training.persistence.model.enums.AssessmentType;
-import cz.muni.ics.kypo.training.persistence.model.enums.TDState;
 import cz.muni.ics.kypo.training.persistence.model.enums.TRState;
 import cz.muni.ics.kypo.training.persistence.repository.*;
+import cz.muni.ics.kypo.training.persistence.util.TestDataFactory;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.junit.*;
@@ -23,6 +22,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -33,6 +33,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.ResourceUtils;
 import org.springframework.web.client.RestTemplate;
@@ -40,14 +41,17 @@ import org.springframework.web.client.RestTemplate;
 import java.io.FileReader;
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.time.Month;
 import java.util.*;
 
 import static org.junit.Assert.*;
 import static org.mockito.BDDMockito.*;
 
 @RunWith(SpringRunner.class)
+@ContextConfiguration(classes = {TestDataFactory.class})
 public class TrainingRunServiceTest {
+
+    @Autowired
+    private TestDataFactory testDataFactory;
 
     @Rule
     public ExpectedException thrown = ExpectedException.none();
@@ -98,77 +102,48 @@ public class TrainingRunServiceTest {
         } catch (IOException | ParseException ex) {
         }
 
-
-        trainingDefinition = new TrainingDefinition();
+        trainingDefinition = testDataFactory.getReleasedDefinition();
         trainingDefinition.setId(1L);
-        trainingDefinition.setTitle("Title TrainingDefinition");
-        trainingDefinition.setState(TDState.RELEASED);
         trainingDefinition.setAuthors(new HashSet<>());
-        trainingDefinition.setShowStepperBar(true);
 
-        trainingDefinition2 = new TrainingDefinition();
+        trainingDefinition2 = testDataFactory.getUnreleasedDefinition();
         trainingDefinition2.setId(2L);
-        trainingDefinition2.setTitle("Title2");
 
-        trainingInstance2 = new TrainingInstance();
+        trainingInstance2 = testDataFactory.getConcludedInstance();
         trainingInstance2.setId(2L);
-        trainingInstance2.setAccessToken("keyword-1234");
         trainingInstance2.setTrainingDefinition(trainingDefinition2);
 
-        trainingInstance1 = new TrainingInstance();
+        trainingInstance1 = testDataFactory.getOngoingInstance();
         trainingInstance1.setId(1L);
-        trainingInstance1.setStartTime(LocalDateTime.now());
-        trainingInstance1.setEndTime(LocalDateTime.now().plusHours(1L));
-        trainingInstance1.setTitle("TrainingInstance1");
-        trainingInstance1.setPoolSize(5);
-        trainingInstance1.setPoolId(1L);
-        trainingInstance1.setAccessToken("keyword-5678");
         trainingInstance1.setTrainingDefinition(trainingDefinition);
 
         participantRef = new UserRef();
         participantRef.setId(1L);
         participantRef.setUserRefId(3L);
 
-        hint1 = new Hint();
+        hint1 = testDataFactory.getHint1();
         hint1.setId(1L);
-        hint1.setContent("hint1 content");
-        hint1.setHintPenalty(5);
 
-        gameLevel = new GameLevel();
+        gameLevel = testDataFactory.getPenalizedLevel();
         gameLevel.setId(1L);
-        gameLevel.setSolution("solution");
-        gameLevel.setMaxScore(20);
-        gameLevel.setContent("content");
-        gameLevel.setFlag("flag");
         gameLevel.setHints(new HashSet<>(Arrays.asList(hint1, hint2)));
         gameLevel.setOrder(0);
-        gameLevel.setIncorrectFlagLimit(5);
         gameLevel.setTrainingDefinition(trainingDefinition);
         hint1.setGameLevel(gameLevel);
 
-        gameLevel2 = new GameLevel();
+        gameLevel2 = testDataFactory.getNonPenalizedLevel();
         gameLevel2.setId(1L);
-        gameLevel2.setSolution("solution");
-        gameLevel2.setMaxScore(20);
-        gameLevel2.setContent("content");
-        gameLevel2.setFlag("flag");
         gameLevel2.setOrder(0);
-        gameLevel2.setIncorrectFlagLimit(5);
         gameLevel2.setTrainingDefinition(trainingDefinition2);
 
-        infoLevel = new InfoLevel();
+
+        infoLevel = testDataFactory.getInfoLevel1();
         infoLevel.setId(2L);
-        infoLevel.setContent("content");
-        infoLevel.setTitle("title");
-        infoLevel.setMaxScore(10);
         infoLevel.setOrder(1);
         infoLevel.setTrainingDefinition(trainingDefinition);
 
-        infoLevel2 = new InfoLevel();
+        infoLevel2 = testDataFactory.getInfoLevel2();
         infoLevel2.setId(2L);
-        infoLevel2.setContent("content");
-        infoLevel2.setTitle("title");
-        infoLevel2.setMaxScore(10);
         infoLevel2.setOrder(1);
         infoLevel2.setTrainingDefinition(trainingDefinition2);
 
@@ -176,35 +151,25 @@ public class TrainingRunServiceTest {
         sandboxInfo = new SandboxInfo();
         sandboxInfo.setId(7L);
 
-        trainingRun1 = new TrainingRun();
+        trainingRun1 = testDataFactory.getRunningRun();
         trainingRun1.setId(1L);
-        trainingRun1.setState(TRState.RUNNING);
         trainingRun1.setCurrentLevel(gameLevel);
-        trainingRun1.setSandboxInstanceRefId(sandboxInfo.getId());
         trainingRun1.setParticipantRef(participantRef);
         trainingRun1.setTrainingInstance(trainingInstance1);
-        trainingRun1.setStartTime(LocalDateTime.of(2019, Month.JANUARY, 3, 1, 1, 1));
-        trainingRun1.setEndTime(LocalDateTime.of(2019, Month.JANUARY, 3, 2, 1, 1));
         trainingRun1.setTrainingInstance(trainingInstance1);
 
-        trainingRun2 = new TrainingRun();
+        trainingRun2 = testDataFactory.getRunningRun();
         trainingRun2.setId(2L);
-        trainingRun2.setState(TRState.RUNNING);
         trainingRun2.setCurrentLevel(infoLevel);
         trainingRun2.setParticipantRef(participantRef);
         trainingRun2.setTrainingInstance(trainingInstance2);
-        trainingRun2.setStartTime(LocalDateTime.of(2019, Month.JANUARY, 3, 1, 1, 1));
-        trainingRun2.setEndTime(LocalDateTime.of(2019, Month.JANUARY, 3, 2, 1, 1));
 
-        assessmentLevel = new AssessmentLevel();
+        assessmentLevel = testDataFactory.getTest();
         assessmentLevel.setId(3L);
-        assessmentLevel.setTitle("Assessment level");
-        assessmentLevel.setAssessmentType(AssessmentType.TEST);
         assessmentLevel.setQuestions(questions);
 
         sandboxInfoPageResult = new PageResultResourcePython();
         sandboxInfoPageResult.setResults(new ArrayList<>(List.of(sandboxInfo)));
-
     }
 
     @Test
@@ -249,8 +214,8 @@ public class TrainingRunServiceTest {
 
     @Test(expected = EntityConflictException.class)
     public void accessTrainingRunWithoutAllocatedSandboxes() {
+        trainingInstance2.setPoolId(null);
         given(trainingInstanceRepository.findByStartTimeAfterAndEndTimeBeforeAndAccessToken(any(LocalDateTime.class), any(String.class))).willReturn(Optional.of(trainingInstance2));
-
         given(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
                 willReturn(new ResponseEntity<PageResultResourcePython>(new PageResultResourcePython<SandboxInfo>(), HttpStatus.OK));
         trainingRunService.accessTrainingRun("pass");
@@ -287,7 +252,7 @@ public class TrainingRunServiceTest {
     public void isCorrectFlag() {
         mockSpringSecurityContextForGet();
         given(trainingRunRepository.findByIdWithLevel(trainingRun1.getId())).willReturn(Optional.of(trainingRun1));
-        boolean isCorrect = trainingRunService.isCorrectFlag(trainingRun1.getId(), "flag");
+        boolean isCorrect = trainingRunService.isCorrectFlag(trainingRun1.getId(), gameLevel.getFlag());
         assertTrue(isCorrect);
         assertTrue(trainingRun1.isLevelAnswered());
     }
@@ -347,7 +312,7 @@ public class TrainingRunServiceTest {
     public void getRemainingAttempts() {
         given(trainingRunRepository.findByIdWithLevel(trainingRun1.getId())).willReturn(Optional.ofNullable(trainingRun1));
         int attempts = trainingRunService.getRemainingAttempts(trainingRun1.getId());
-        assertEquals(5, attempts);
+        assertEquals(gameLevel.getIncorrectFlagLimit() - trainingRun1.getIncorrectFlagCount(), attempts);
     }
 
     @Test(expected = BadRequestException.class)

@@ -14,6 +14,7 @@ import cz.muni.ics.kypo.training.facade.TrainingInstanceFacade;
 import cz.muni.ics.kypo.training.mapping.mapstruct.*;
 import cz.muni.ics.kypo.training.persistence.model.TrainingInstance;
 import cz.muni.ics.kypo.training.persistence.model.UserRef;
+import cz.muni.ics.kypo.training.persistence.util.TestDataFactory;
 import cz.muni.ics.kypo.training.rest.ApiError;
 import cz.muni.ics.kypo.training.rest.CustomRestExceptionHandlerTraining;
 import org.junit.Before;
@@ -36,12 +37,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.mock.web.MockHttpServletResponse;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.io.IOException;
-import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -59,10 +60,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = {InfoLevelMapperImpl.class, TrainingInstanceMapperImpl.class, TrainingDefinitionMapperImpl.class,
         UserRefMapperImpl.class, BetaTestingGroupMapperImpl.class})
+@ContextConfiguration(classes = {TestDataFactory.class})
 public class TrainingInstancesRestControllerTest {
 
     private TrainingInstancesRestController trainingInstancesRestController;
 
+    @Autowired
+    private TestDataFactory testDataFactory;
     @Autowired
     TrainingInstanceMapper trainingInstanceMapper;
 
@@ -109,38 +113,24 @@ public class TrainingInstancesRestControllerTest {
         organizerDTO2 = createUserRefDTO(20L, "Bc. Boris Makal", "Makal", "Boris", "772211@muni.cz", "https://oidc.muni.cz/oidc", null);
         organizerDTO3 = createUserRefDTO(30L, "Ing. Pavel Flákal", "Flákal", "Pavel", "221133@muni.cz", "https://oidc.muni.cz/oidc", null);
 
-        trainingInstance1 = new TrainingInstance();
+        trainingInstance1 = testDataFactory.getConcludedInstance();
         trainingInstance1.setId(1L);
-        trainingInstance1.setTitle("test1");
 
-        trainingInstance2 = new TrainingInstance();
+        trainingInstance2 = testDataFactory.getOngoingInstance();
         trainingInstance2.setId(2L);
-        trainingInstance2.setTitle("test2");
 
-        trainingInstance1DTO = new TrainingInstanceDTO();
+        trainingInstance1DTO = testDataFactory.getTrainingInstanceDTO();
         trainingInstance1DTO.setId(1L);
-        trainingInstance1DTO.setTitle("test1");
 
-        trainingInstance2DTO = new TrainingInstanceDTO();
+        trainingInstance2DTO = testDataFactory.getTrainingInstanceDTO();
         trainingInstance2DTO.setId(2L);
-        trainingInstance2DTO.setTitle("test2");
+        trainingInstance2DTO.setTitle("DTO2");
 
-        trainingInstanceCreateDTO = new TrainingInstanceCreateDTO();
-        trainingInstanceCreateDTO.setTitle("create instance title");
-        LocalDateTime startTime = LocalDateTime.now(Clock.systemUTC());
-        trainingInstanceCreateDTO.setStartTime(LocalDateTime.now(Clock.systemUTC()));
-        LocalDateTime endTime = LocalDateTime.now(Clock.systemUTC()).plusHours(10);
-        trainingInstanceCreateDTO.setEndTime(endTime);
-        trainingInstanceCreateDTO.setAccessToken("pass");
-        trainingInstanceCreateDTO.setPoolSize(20);
+        trainingInstanceCreateDTO = testDataFactory.getTrainingInstanceCreateDTO();
         trainingInstanceCreateDTO.setTrainingDefinitionId(1L);
 
-        trainingInstanceUpdateDTO = new TrainingInstanceUpdateDTO();
+        trainingInstanceUpdateDTO = testDataFactory.getTrainingInstanceUpdateDTO();
         trainingInstanceUpdateDTO.setId(5L);
-        trainingInstanceUpdateDTO.setTitle("update instance title");
-        trainingInstanceUpdateDTO.setStartTime(startTime.plusHours(1));
-        trainingInstanceUpdateDTO.setEndTime(endTime);
-        trainingInstanceUpdateDTO.setPoolSize(5);
         trainingInstanceUpdateDTO.setTrainingDefinitionId(1L);
 
         trainingInstanceAssignPoolIdDTO = new TrainingInstanceAssignPoolIdDTO();

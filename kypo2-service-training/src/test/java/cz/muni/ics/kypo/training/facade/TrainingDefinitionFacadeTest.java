@@ -5,24 +5,19 @@ import com.querydsl.core.types.dsl.PathBuilder;
 import cz.muni.ics.kypo.training.api.dto.AbstractLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelUpdateDTO;
-import cz.muni.ics.kypo.training.api.dto.betatestinggroup.BetaTestingGroupCreateDTO;
-import cz.muni.ics.kypo.training.api.dto.betatestinggroup.BetaTestingGroupUpdateDTO;
 import cz.muni.ics.kypo.training.api.dto.gamelevel.GameLevelUpdateDTO;
 import cz.muni.ics.kypo.training.api.dto.infolevel.InfoLevelUpdateDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionCreateDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionUpdateDTO;
-import cz.muni.ics.kypo.training.api.enums.AssessmentType;
 import cz.muni.ics.kypo.training.api.enums.LevelType;
 import cz.muni.ics.kypo.training.api.enums.RoleType;
 import cz.muni.ics.kypo.training.api.responses.PageResultResource;
 import cz.muni.ics.kypo.training.exceptions.EntityNotFoundException;
 import cz.muni.ics.kypo.training.exceptions.InternalServerErrorException;
 import cz.muni.ics.kypo.training.mapping.mapstruct.*;
-import cz.muni.ics.kypo.training.mapping.modelmapper.BeanMapping;
-import cz.muni.ics.kypo.training.mapping.modelmapper.BeanMappingImpl;
 import cz.muni.ics.kypo.training.persistence.model.*;
-import cz.muni.ics.kypo.training.persistence.model.enums.TDState;
+import cz.muni.ics.kypo.training.persistence.util.TestDataFactory;
 import cz.muni.ics.kypo.training.service.SecurityService;
 import cz.muni.ics.kypo.training.service.TrainingDefinitionService;
 import cz.muni.ics.kypo.training.service.UserService;
@@ -34,13 +29,13 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.ArrayList;
@@ -54,6 +49,7 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.BDDMockito.*;
 
 @RunWith(SpringRunner.class)
+@ContextConfiguration(classes = {TestDataFactory.class})
 @SpringBootTest(classes = {InfoLevelMapperImpl.class, TrainingDefinitionMapperImpl.class,
         UserRefMapperImpl.class, GameLevelMapperImpl.class, InfoLevelMapperImpl.class, BetaTestingGroupMapperImpl.class,
         AssessmentLevelMapperImpl.class, HintMapperImpl.class, BasicLevelInfoMapperImpl.class, AttachmentMapperImpl.class})
@@ -64,6 +60,8 @@ public class TrainingDefinitionFacadeTest {
 
     private TrainingDefinitionFacade trainingDefinitionFacade;
 
+    @Autowired
+    private TestDataFactory testDataFactory;
     @Autowired
     private TrainingDefinitionMapperImpl trainingDefinitionMapper;
     @Autowired
@@ -82,8 +80,6 @@ public class TrainingDefinitionFacadeTest {
     @Mock
     private UserService userService;
 
-    private BeanMapping beanMapping;
-
     private TrainingDefinition trainingDefinition1, trainingDefinition2;
     private TrainingDefinitionUpdateDTO trainingDefinitionUpdate;
     private TrainingDefinitionCreateDTO trainingDefinitionCreate;
@@ -97,28 +93,16 @@ public class TrainingDefinitionFacadeTest {
     private InfoLevel infoLevel;
     private InfoLevelUpdateDTO infoLevelUpdate;
 
-    private BetaTestingGroupUpdateDTO betaTestingGroupUpdateDTO;
-    private BetaTestingGroupCreateDTO betaTestingGroupCreateDTO;
-
     private UserRef author1, author2, author3;
     private UserRefDTO authorDTO1, authorDTO2, authorDTO3;
     private Pageable pageable;
     private PageResultResource.Pagination pagination;
-
-    private UserRefDTO userInfoDTO1, userInfoDTO2;
 
     @Before
     public void init() {
         MockitoAnnotations.initMocks(this);
         trainingDefinitionFacade = new TrainingDefinitionFacade(trainingDefinitionService,
                 trainingDefinitionMapper, gameLevelMapper, infoLevelMapper, assessmentLevelMapper, basicLevelInfoMapper, userService, securityService);
-        beanMapping = new BeanMappingImpl(new ModelMapper());
-        assessmentLevel = new AssessmentLevel();
-        assessmentLevel.setId(1L);
-        assessmentLevel.setOrder(1);
-
-        alUpdate = new AssessmentLevelUpdateDTO();
-        alUpdate.setId(2L);
 
         author1 = new UserRef();
         author1.setId(1L);
@@ -134,64 +118,38 @@ public class TrainingDefinitionFacadeTest {
         authorDTO2 = createUserRefDTO(20L, "Bc. Boris Makal", "Makal", "Boris", "772211@muni.cz", "https://oidc.muni.cz/oidc", null);
         authorDTO3 = createUserRefDTO(30L, "Ing. Pavel Flákal", "Flákal", "Pavel", "221133@muni.cz", "https://oidc.muni.cz/oidc", null);
 
-        gameLevel = new GameLevel();
+        gameLevel = testDataFactory.getPenalizedLevel();
         gameLevel.setId(2L);
         gameLevel.setOrder(2);
-        gameLevel.setSolution("solution");
 
-        gameLevelUpdate = new GameLevelUpdateDTO();
+        gameLevelUpdate = testDataFactory.getGameLevelUpdateDTO();
         gameLevelUpdate.setId(2L);
-        gameLevelUpdate.setTitle("title");
-        gameLevelUpdate.setContent("Content");
-        gameLevelUpdate.setEstimatedDuration(1000);
-        gameLevelUpdate.setFlag("flag1");
-        gameLevelUpdate.setIncorrectFlagLimit(4);
-        gameLevelUpdate.setSolutionPenalized(true);
-        gameLevelUpdate.setSolution("solution");
 
-        infoLevel = new InfoLevel();
+        infoLevel = testDataFactory.getInfoLevel1();
         infoLevel.setId(3L);
         infoLevel.setOrder(3);
 
-        infoLevelUpdate = new InfoLevelUpdateDTO();
+        infoLevelUpdate = testDataFactory.getInfoLevelUpdateDTO();
         infoLevelUpdate.setId(3L);
-        infoLevelUpdate.setTitle("some title");
-        infoLevelUpdate.setContent("some content");
 
-        alUpdate = new AssessmentLevelUpdateDTO();
-        alUpdate.setInstructions("instructions");
-        alUpdate.setMaxScore(50);
-        alUpdate.setQuestions("test");
-        alUpdate.setTitle("Some title");
-        alUpdate.setType(AssessmentType.QUESTIONNAIRE);
+        assessmentLevel = testDataFactory.getQuestionnaire();
+        assessmentLevel.setId(1L);
+        assessmentLevel.setOrder(1);
 
-        trainingDefinition1 = new TrainingDefinition();
+        alUpdate = testDataFactory.getAssessmentLevelUpdateDTO();
+        alUpdate.setId(2L);
+
+        trainingDefinition1 = testDataFactory.getReleasedDefinition();
         trainingDefinition1.setId(1L);
-        trainingDefinition1.setState(TDState.RELEASED);
         trainingDefinition1.setAuthors(new HashSet<>(Set.of(author1, author2)));
 
-        trainingDefinition2 = new TrainingDefinition();
+        trainingDefinition2 = testDataFactory.getUnreleasedDefinition();
         trainingDefinition2.setId(2L);
-        trainingDefinition2.setState(TDState.UNRELEASED);
 
-        betaTestingGroupUpdateDTO = new BetaTestingGroupUpdateDTO();
-        betaTestingGroupUpdateDTO.setOrganizersRefIds(Set.of());
-
-        trainingDefinitionUpdate = new TrainingDefinitionUpdateDTO();
+        trainingDefinitionUpdate = testDataFactory.getTrainingDefinitionUpdateDTO();
         trainingDefinitionUpdate.setId(1L);
-        trainingDefinitionUpdate.setState(cz.muni.ics.kypo.training.api.enums.TDState.UNRELEASED);
-        trainingDefinitionUpdate.setBetaTestingGroup(betaTestingGroupUpdateDTO);
 
-        betaTestingGroupCreateDTO = new BetaTestingGroupCreateDTO();
-        betaTestingGroupCreateDTO.setOrganizersRefIds(Set.of());
-
-        trainingDefinitionCreate = new TrainingDefinitionCreateDTO();
-        trainingDefinitionCreate.setDescription("TD desc");
-        trainingDefinitionCreate.setOutcomes(new String[0]);
-        trainingDefinitionCreate.setPrerequisities(new String[0]);
-        trainingDefinitionCreate.setState(cz.muni.ics.kypo.training.api.enums.TDState.ARCHIVED);
-        trainingDefinitionCreate.setTitle("TD some title");
-        trainingDefinitionCreate.setBetaTestingGroup(betaTestingGroupCreateDTO);
+        trainingDefinitionCreate = testDataFactory.getTrainingDefinitionCreateDTO();
     }
 
     @Test

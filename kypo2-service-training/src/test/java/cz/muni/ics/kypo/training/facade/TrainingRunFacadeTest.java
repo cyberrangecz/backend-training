@@ -10,10 +10,7 @@ import cz.muni.ics.kypo.training.exceptions.EntityNotFoundException;
 import cz.muni.ics.kypo.training.exceptions.InternalServerErrorException;
 import cz.muni.ics.kypo.training.mapping.mapstruct.*;
 import cz.muni.ics.kypo.training.persistence.model.*;
-import cz.muni.ics.kypo.training.persistence.model.enums.AssessmentType;
-import cz.muni.ics.kypo.training.persistence.model.enums.TDState;
-import cz.muni.ics.kypo.training.persistence.model.enums.TRState;
-import cz.muni.ics.kypo.training.service.TrainingInstanceService;
+import cz.muni.ics.kypo.training.persistence.util.TestDataFactory;
 import cz.muni.ics.kypo.training.service.TrainingRunService;
 import cz.muni.ics.kypo.training.service.UserService;
 import org.junit.Assert;
@@ -29,6 +26,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.ArrayList;
@@ -38,6 +36,7 @@ import static org.junit.Assert.*;
 import static org.mockito.BDDMockito.*;
 
 @RunWith(SpringRunner.class)
+@ContextConfiguration(classes = {TestDataFactory.class})
 @SpringBootTest(classes = {InfoLevelMapperImpl.class, TrainingDefinitionMapperImpl.class,
         UserRefMapperImpl.class, GameLevelMapperImpl.class,
         InfoLevelMapperImpl.class, AssessmentLevelMapperImpl.class, HintMapperImpl.class,
@@ -54,6 +53,8 @@ public class TrainingRunFacadeTest {
     InfoLevelMapperImpl infoLevelMapper;
     @Autowired
     HintMapperImpl hintMapper;
+    @Autowired
+    TestDataFactory testDataFactory;
 
     @Rule
     public ExpectedException thrown = ExpectedException.none();
@@ -64,14 +65,9 @@ public class TrainingRunFacadeTest {
     private TrainingRunService trainingRunService;
 
     @Mock
-    private TrainingInstanceService trainingInstanceService;
-
-    @Mock
     private UserService userService;
 
     private TrainingRun trainingRun1, trainingRun2;
-    private TrainingDefinition trainingDefinition;
-    private TrainingInstance trainingInstance;
     private Hint hint;
     private GameLevel gameLevel;
     private InfoLevel infoLevel;
@@ -89,59 +85,44 @@ public class TrainingRunFacadeTest {
         participant.setUserRefId(5L);
         participant.setId(1L);
 
-        trainingRun1 = new TrainingRun();
+        trainingRun1 = testDataFactory.getRunningRun();
         trainingRun1.setId(1L);
-        trainingRun1.setState(TRState.RUNNING);
-        trainingRun1.setSolutionTaken(false);
         trainingRun1.setParticipantRef(participant);
 
-        hint = new Hint();
+        hint = testDataFactory.getHint1();
         hint.setId(1L);
-        hint.setContent("Hint");
-        hint.setTitle("Hint Title");
 
         participantRefDTO = new UserRefDTO();
         participantRefDTO.setUserRefLogin("4457352@muni.cz");
         participantRefDTO.setUserRefId(2L);
 
 
-        trainingRun2 = new TrainingRun();
+        trainingRun2 = testDataFactory.getFinishedRun();
         trainingRun2.setId(2L);
-        trainingRun2.setState(TRState.FINISHED);
 
-        trainingDefinition = new TrainingDefinition();
+        TrainingDefinition trainingDefinition = testDataFactory.getReleasedDefinition();
         trainingDefinition.setId(1L);
-        trainingDefinition.setState(TDState.RELEASED);
-        trainingDefinition.setShowStepperBar(true);
 
-        gameLevel = new GameLevel();
+        gameLevel = testDataFactory.getPenalizedLevel();
         gameLevel.setId(1L);
-        gameLevel.setFlag("game flag");
-        gameLevel.setContent("game content");
         gameLevel.setTrainingDefinition(trainingDefinition);
         gameLevel.setOrder(0);
         trainingRun1.setCurrentLevel(gameLevel);
 
-        assessmentLevel = new AssessmentLevel();
+        assessmentLevel = testDataFactory.getTest();
         assessmentLevel.setId(2L);
-        assessmentLevel.setInstructions("Instructions");
-        assessmentLevel.setAssessmentType(AssessmentType.TEST);
         assessmentLevel.setOrder(1);
         assessmentLevel.setTrainingDefinition(trainingDefinition);
 
-        infoLevel = new InfoLevel();
+        infoLevel = testDataFactory.getInfoLevel1();
         infoLevel.setId(3L);
-        infoLevel.setContent("content");
         infoLevel.setOrder(2);
         infoLevel.setTrainingDefinition(trainingDefinition);
 
-        trainingInstance = new TrainingInstance();
+        TrainingInstance trainingInstance = testDataFactory.getConcludedInstance();
         trainingInstance.setId(1L);
-        trainingInstance.setTitle("test");
         trainingInstance.setTrainingDefinition(trainingDefinition);
         trainingRun1.setTrainingInstance(trainingInstance);
-
-
     }
 
     @Test

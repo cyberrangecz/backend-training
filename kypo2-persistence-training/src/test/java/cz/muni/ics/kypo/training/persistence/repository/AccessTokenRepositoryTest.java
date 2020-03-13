@@ -2,6 +2,7 @@ package cz.muni.ics.kypo.training.persistence.repository;
 
 import cz.muni.ics.kypo.training.persistence.config.PersistenceConfigTest;
 import cz.muni.ics.kypo.training.persistence.model.AccessToken;
+import cz.muni.ics.kypo.training.persistence.util.TestDataFactory;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -9,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -20,16 +22,17 @@ import static org.junit.Assert.*;
 @RunWith(SpringRunner.class)
 @DataJpaTest
 @Import(PersistenceConfigTest.class)
+@ComponentScan(basePackages = "cz.muni.ics.kypo.training.persistence.util")
 public class AccessTokenRepositoryTest {
 
     @Autowired
     private TestEntityManager entityManager;
-
+    @Autowired
+    private TestDataFactory testDataFactory;
     @Autowired
     private AccessTokenRepository accessTokenRepository;
 
     private AccessToken password1, password2;
-    private String accessToken1, accessToken2;
 
     @SpringBootApplication
     static class TestConfiguration {
@@ -37,12 +40,8 @@ public class AccessTokenRepositoryTest {
 
     @Before
     public void setUp() {
-        accessToken1 = "pass-1234";
-        accessToken2 = "pass-5678";
-        password1 = new AccessToken();
-        password1.setAccessToken(accessToken1);
-        password2 = new AccessToken();
-        password2.setAccessToken(accessToken2);
+        password1 = testDataFactory.getAccessToken1();
+        password2 = testDataFactory.getAccessToken2();
     }
 
     @Test
@@ -68,7 +67,7 @@ public class AccessTokenRepositoryTest {
     public void findOneByAccessToken() {
         entityManager.persist(password1);
         entityManager.persist(password2);
-        Optional<AccessToken> optionalPassword = accessTokenRepository.findOneByAccessToken(accessToken1);
+        Optional<AccessToken> optionalPassword = accessTokenRepository.findOneByAccessToken(password1.getAccessToken());
         assertTrue(optionalPassword.isPresent());
         assertEquals(password1, optionalPassword.get());
     }

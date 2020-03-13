@@ -2,8 +2,7 @@ package cz.muni.ics.kypo.training.persistence.repository;
 
 import cz.muni.ics.kypo.training.persistence.config.PersistenceConfigTest;
 import cz.muni.ics.kypo.training.persistence.model.*;
-import cz.muni.ics.kypo.training.persistence.model.enums.TDState;
-import cz.muni.ics.kypo.training.persistence.model.enums.TRState;
+import cz.muni.ics.kypo.training.persistence.util.TestDataFactory;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -11,13 +10,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -27,11 +26,13 @@ import static org.junit.Assert.*;
 @RunWith(SpringRunner.class)
 @DataJpaTest
 @Import(PersistenceConfigTest.class)
+@ComponentScan(basePackages = "cz.muni.ics.kypo.training.persistence.util")
 public class TrainingRunRepositoryTest {
 
     @Autowired
     private TestEntityManager entityManager;
-
+    @Autowired
+    private TestDataFactory testDataFactory;
     @Autowired
     private TrainingRunRepository trainingRunRepository;
 
@@ -40,7 +41,6 @@ public class TrainingRunRepositoryTest {
     private TrainingDefinition trainingDefinition;
     private InfoLevel infoLevel;
     private UserRef participantRef;
-    private BetaTestingGroup betaTestingGroup;
     private Pageable pageable;
 
     @SpringBootApplication
@@ -49,41 +49,23 @@ public class TrainingRunRepositoryTest {
 
     @Before
     public void init() {
-        betaTestingGroup = new BetaTestingGroup();
+        trainingDefinition = testDataFactory.getArchivedDefinition();
 
-        trainingDefinition = new TrainingDefinition();
-        trainingDefinition.setState(TDState.ARCHIVED);
-        trainingDefinition.setTitle("training definition title");
-        trainingDefinition.setBetaTestingGroup(betaTestingGroup);
-        trainingDefinition.setLastEdited(LocalDateTime.now());
-
-        infoLevel = new InfoLevel();
-        infoLevel.setTitle("infoLevel");
-        infoLevel.setContent("content for info level");
+        infoLevel = testDataFactory.getInfoLevel1();
 
         participantRef = new UserRef();
         participantRef.setUserRefId(1L);
 
-        trainingInstance = new TrainingInstance();
-        trainingInstance.setAccessToken("b5f3dc27a09865be37cef07816c4f08cf5585b116a4e74b9387c3e43e3a25ec8");
-        trainingInstance.setStartTime(LocalDateTime.now());
-        trainingInstance.setEndTime(LocalDateTime.now());
-        trainingInstance.setTitle("title");
+        trainingInstance = testDataFactory.getOngoingInstance();
         trainingInstance.setTrainingDefinition(entityManager.persist(trainingDefinition));
 
-        trainingRun2 = new TrainingRun();
-        trainingRun2.setStartTime(LocalDateTime.now());
-        trainingRun2.setEndTime(LocalDateTime.now());
-        trainingRun2.setState(TRState.RUNNING);
+        trainingRun2 = testDataFactory.getRunningRun();
         trainingRun2.setCurrentLevel(entityManager.persist(infoLevel));
         trainingRun2.setParticipantRef(entityManager.persist(participantRef));
         trainingRun2.setTrainingInstance(entityManager.persist(trainingInstance));
         trainingRun2.setSandboxInstanceRefId(1L);
 
-        trainingRun1 = new TrainingRun();
-        trainingRun1.setStartTime(LocalDateTime.now());
-        trainingRun1.setEndTime(LocalDateTime.now());
-        trainingRun1.setState(TRState.RUNNING);
+        trainingRun1 = testDataFactory.getFinishedRun();
         trainingRun1.setCurrentLevel(entityManager.persist(infoLevel));
         trainingRun1.setParticipantRef(entityManager.persist(participantRef));
         trainingRun1.setTrainingInstance(entityManager.persist(trainingInstance));
