@@ -105,28 +105,30 @@ public class TrainingRunFacade {
      * Delete selected training runs.
      *
      * @param trainingRunIds training runs to delete
+     * @param forceDelete    indicates if this training run should be force deleted.
      */
     @IsOrganizerOrAdmin
     @TransactionalWO
-    public void deleteTrainingRuns(List<Long> trainingRunIds) {
-        trainingRunService.deleteTrainingRuns(trainingRunIds);
+    public void deleteTrainingRuns(List<Long> trainingRunIds, boolean forceDelete) {
+        trainingRunIds.forEach(trainingRunId -> trainingRunService.deleteTrainingRun(trainingRunId, forceDelete));
     }
 
     /**
      * Delete selected training run.
      *
      * @param trainingRunId training run to delete
+     * @param forceDelete   indicates if this training run should be force deleted.
      */
     @IsOrganizerOrAdmin
     @TransactionalWO
-    public void deleteTrainingRun(Long trainingRunId) {
-        trainingRunService.deleteTrainingRun(trainingRunId);
+    public void deleteTrainingRun(Long trainingRunId, boolean forceDelete) {
+        trainingRunService.deleteTrainingRun(trainingRunId, forceDelete);
     }
 
     /**
      * Finds all Training Runs of logged in user.
      *
-     * @param pageable  pageable parameter with information about pagination.
+     * @param pageable    pageable parameter with information about pagination.
      * @param sortByTitle optional parameter. "asc" for ascending sort, "desc" for descending and null if sort is not wanted
      * @return Page of all {@link AccessedTrainingRunDTO} of logged in user.
      */
@@ -195,14 +197,14 @@ public class TrainingRunFacade {
      * Finds all Training Runs by specific Training Definition and logged in user.
      *
      * @param trainingDefinitionId id of Training Definition
-     * @param pageable  pageable parameter with information about pagination.
+     * @param pageable             pageable parameter with information about pagination.
      * @return Page of all {@link AccessedTrainingRunDTO} of logged in user and given definition.
      */
     @IsTrainee
     @TransactionalRO
     public PageResultResource<TrainingRunDTO> findAllByTrainingDefinitionAndParticipant(Long trainingDefinitionId, Pageable pageable) {
         Page<TrainingRun> trainingRuns = trainingRunService.findAllByTrainingDefinitionAndParticipant(trainingDefinitionId, pageable);
-        PageResultResource<TrainingRunDTO>  trainingRunDTOPageResultResource = trainingRunMapper.mapToPageResultResource(trainingRuns);
+        PageResultResource<TrainingRunDTO> trainingRunDTOPageResultResource = trainingRunMapper.mapToPageResultResource(trainingRuns);
         addParticipantsToTrainingRunDTOs(trainingRunDTOPageResultResource.getContent());
         return trainingRunDTOPageResultResource;
     }
@@ -211,14 +213,14 @@ public class TrainingRunFacade {
      * Finds all Training Runs of specific training definition.
      *
      * @param trainingDefinitionId id of Training Definition whose Training Runs would be returned.
-     * @param pageable  pageable parameter with information about pagination.
+     * @param pageable             pageable parameter with information about pagination.
      * @return Page of all {@link AccessedTrainingRunDTO} of given definition.
      */
     @IsTrainee
     @TransactionalRO
     public PageResultResource<TrainingRunDTO> findAllByTrainingDefinition(Long trainingDefinitionId, Pageable pageable) {
         Page<TrainingRun> trainingRuns = trainingRunService.findAllByTrainingDefinition(trainingDefinitionId, pageable);
-        PageResultResource<TrainingRunDTO>  trainingRunDTOPageResultResource = trainingRunMapper.mapToPageResultResource(trainingRuns);
+        PageResultResource<TrainingRunDTO> trainingRunDTOPageResultResource = trainingRunMapper.mapToPageResultResource(trainingRuns);
         addParticipantsToTrainingRunDTOs(trainingRunDTOPageResultResource.getContent());
         return trainingRunDTOPageResultResource;
     }
