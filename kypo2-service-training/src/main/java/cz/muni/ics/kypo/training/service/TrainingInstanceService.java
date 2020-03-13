@@ -218,17 +218,6 @@ public class TrainingInstanceService {
         return newPass;
     }
 
-    private void removeSandboxFromTrainingRun(Long sandboxId) {
-        Optional<TrainingRun> trainingRun = trainingRunRepository.findBySandboxInstanceRefId(sandboxId);
-        if (trainingRun.isPresent()) {
-            trainingRun.get().setState(TRState.ARCHIVED);
-            trainingRun.get().setSandboxInstanceRefId(null);
-            trainingRun.get().setPreviousSandboxInstanceRefId(sandboxId);
-            trAcquisitionLockRepository.deleteByParticipantRefIdAndTrainingInstanceId(trainingRun.get().getParticipantRef().getUserRefId(), trainingRun.get().getTrainingInstance().getId());
-            trainingRunRepository.save(trainingRun.get());
-        }
-    }
-
     /**
      * Finds all Training Runs of specific Training Instance.
      *
