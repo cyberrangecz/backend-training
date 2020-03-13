@@ -79,12 +79,10 @@ public class TrainingInstanceServiceTest {
     @Mock
     private SecurityService securityService;
     @Mock
-    private TrainingEventsService trainingEventsService;
-    @Mock
     private TrainingDefinition trainingDefinition;
     @Mock
     private SandboxPoolInfo sandboxPoolInfo;
-    private SandboxInfo sandboxInfo1 ,sandboxInfo2;
+    private SandboxInfo sandboxInfo1, sandboxInfo2;
     private TrainingInstance trainingInstance1, trainingInstance2;
     private TrainingRun trainingRun1, trainingRun2;
     private UserRef user;
@@ -93,8 +91,7 @@ public class TrainingInstanceServiceTest {
     public void init() {
         MockitoAnnotations.initMocks(this);
         trainingInstanceService = new TrainingInstanceService(trainingInstanceRepository, accessTokenRepository,
-                trainingRunRepository, organizerRefRepository, pythonRestTemplate, securityService, trainingEventsService,
-                trAcquisitionLockRepository);
+                trainingRunRepository, organizerRefRepository, pythonRestTemplate, securityService, trAcquisitionLockRepository);
 
         trainingInstance1 = testDataFactory.getConcludedInstance();
         trainingInstance1.setId(1L);

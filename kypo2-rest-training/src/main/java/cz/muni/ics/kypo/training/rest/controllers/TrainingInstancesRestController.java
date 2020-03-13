@@ -186,8 +186,10 @@ public class TrainingInstancesRestController {
     })
     @DeleteMapping(path = "/{id}")
     public ResponseEntity<Void> deleteTrainingInstance(@ApiParam(value = "Id of training instance to be deleted", required = true)
-                                                       @PathVariable(value = "id") Long id) {
-        trainingInstanceFacade.delete(id);
+                                                       @PathVariable(value = "id") Long id,
+                                                       @ApiParam(value = "Indication if this training run must be deleted no matter of any check (force it)", required = false)
+                                                       @RequestParam(value = "forceDelete", required = false) boolean forceDelete) {
+        trainingInstanceFacade.delete(id, forceDelete);
         return ResponseEntity.ok().build();
     }
 

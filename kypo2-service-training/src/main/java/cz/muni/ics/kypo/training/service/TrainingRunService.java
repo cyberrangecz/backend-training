@@ -26,6 +26,7 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.repository.query.Param;
 import org.springframework.http.*;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -116,6 +117,7 @@ public class TrainingRunService {
      * Delete selected training run.
      *
      * @param trainingRunId training run to delete
+     * @param forceDelete   delete training run in a force manner
      */
     public void deleteTrainingRun(Long trainingRunId, boolean forceDelete) {
         TrainingRun trainingRun = findById(trainingRunId);
@@ -128,6 +130,17 @@ public class TrainingRunService {
     }
 
     /**
+     * Checks whether any trainin runs exists for particular training instance
+     *
+     * @param trainingInstanceId
+     * @return
+     */
+    public boolean existsAnyForTrainingInstance(Long trainingInstanceId) {
+        return trainingRunRepository.existsAnyForTrainingInstance(trainingInstanceId);
+    }
+
+
+    /**
      * Finds all Training Runs of logged in user.
      *
      * @param pageable pageable parameter with information about pagination.
@@ -135,6 +148,13 @@ public class TrainingRunService {
      */
     public Page<TrainingRun> findAllByParticipantRefUserRefId(Pageable pageable) {
         return trainingRunRepository.findAllByParticipantRefId(securityService.getUserRefIdFromUserAndGroup(), pageable);
+    }
+
+    /**
+     * Finds all Training Runs of particular training instance.
+     */
+    public Set<TrainingRun> findAllByTrainingInstanceId(Long trainingInstanceId) {
+        return trainingRunRepository.findAllByTrainingInstanceId(trainingInstanceId);
     }
 
     private TrainingRun create(TrainingRun trainingRun) {

@@ -2,6 +2,7 @@ package cz.muni.ics.kypo.training.facade;
 
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.PathBuilder;
+import cz.muni.csirt.kypo.elasticsearch.service.TrainingEventsService;
 import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
 import cz.muni.ics.kypo.training.api.dto.traininginstance.*;
 import cz.muni.ics.kypo.training.api.enums.RoleType;
@@ -14,10 +15,7 @@ import cz.muni.ics.kypo.training.persistence.model.TrainingDefinition;
 import cz.muni.ics.kypo.training.persistence.model.TrainingInstance;
 import cz.muni.ics.kypo.training.persistence.model.UserRef;
 import cz.muni.ics.kypo.training.persistence.util.TestDataFactory;
-import cz.muni.ics.kypo.training.service.SecurityService;
-import cz.muni.ics.kypo.training.service.TrainingDefinitionService;
-import cz.muni.ics.kypo.training.service.TrainingInstanceService;
-import cz.muni.ics.kypo.training.service.UserService;
+import cz.muni.ics.kypo.training.service.*;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -67,7 +65,10 @@ public class TrainingInstanceFacadeTest {
 
     @Mock
     private TrainingInstanceService trainingInstanceService;
-
+    @Mock
+    private TrainingRunService trainingRunService;
+    @Mock
+    private TrainingEventsService trainingEventsService;
     @Mock
     private TrainingDefinitionService trainingDefinitionService;
     @Mock
@@ -88,9 +89,10 @@ public class TrainingInstanceFacadeTest {
     @Before
     public void init() {
         MockitoAnnotations.initMocks(this);
-        trainingInstanceFacade = new TrainingInstanceFacade(trainingInstanceService, trainingDefinitionService, trainingInstanceMapper, trainingRunMapper, userService, securityService);
+        trainingInstanceFacade = new TrainingInstanceFacade(trainingInstanceService, trainingDefinitionService, trainingRunService, trainingEventsService,
+                trainingInstanceMapper, trainingRunMapper, userService, securityService);
 
-        pageable = PageRequest.of(0,5);
+        pageable = PageRequest.of(0, 5);
 
         organizer1 = new UserRef();
         organizer1.setId(1L);
@@ -189,7 +191,7 @@ public class TrainingInstanceFacadeTest {
     @Test
     public void deleteTrainingInstance() {
         given(trainingInstanceService.findById(trainingInstance1.getId())).willReturn(trainingInstance1);
-        trainingInstanceFacade.delete(trainingInstance1.getId());
+        trainingInstanceFacade.delete(trainingInstance1.getId(), false);
         then(trainingInstanceService).should().delete(trainingInstance1);
     }
 
@@ -225,7 +227,7 @@ public class TrainingInstanceFacadeTest {
 
     @Test
     public void getOrganizersOfTrainingInstance() {
-        pagination = new PageResultResource.Pagination(0,2,5,2,1);
+        pagination = new PageResultResource.Pagination(0, 2, 5, 2, 1);
         given(trainingInstanceService.findById(trainingInstance1.getId())).willReturn(trainingInstance1);
         given(userService.getUsersRefDTOByGivenUserIds(Set.of(organizer1.getUserRefId(), organizer2.getUserRefId()), pageable, null, null)).willReturn(
                 new PageResultResource<>(List.of(organizerDTO1, organizerDTO2), pagination));
@@ -250,7 +252,7 @@ public class TrainingInstanceFacadeTest {
 
     @Test
     public void getOrganizersNotInGivenTrainingInstance() {
-        pagination = new PageResultResource.Pagination(0,1,1,1,1);
+        pagination = new PageResultResource.Pagination(0, 1, 1, 1, 1);
         given(trainingInstanceService.findById(trainingInstance1.getId())).willReturn(trainingInstance1);
         given(userService.getUsersByGivenRoleAndNotWithGivenIds(RoleType.ROLE_TRAINING_ORGANIZER, Set.of(organizer1.getUserRefId(), organizer2.getUserRefId()), pageable, null, null)).willReturn(
                 new PageResultResource<>(List.of(organizerDTO3), pagination));
@@ -269,16 +271,16 @@ public class TrainingInstanceFacadeTest {
     public void getOrganizersNotInGivenTrainingInstanceUserServiceError() {
         given(trainingInstanceService.findById(trainingInstance1.getId())).willReturn(trainingInstance1);
         willThrow(new EntityNotFoundException()).given(userService)
-                .getUsersByGivenRoleAndNotWithGivenIds(RoleType.ROLE_TRAINING_ORGANIZER,new HashSet<>(Set.of(organizer1.getUserRefId(), organizer2.getUserRefId())), pageable, null, null);
+                .getUsersByGivenRoleAndNotWithGivenIds(RoleType.ROLE_TRAINING_ORGANIZER, new HashSet<>(Set.of(organizer1.getUserRefId(), organizer2.getUserRefId())), pageable, null, null);
         trainingInstanceFacade.getOrganizersNotInGivenTrainingInstance(trainingInstance1.getId(), pageable, null, null);
     }
 
     @Test
     public void editOrganizers() {
-        PageResultResource.Pagination pagination = new PageResultResource.Pagination(0,1,999,1,1);
+        PageResultResource.Pagination pagination = new PageResultResource.Pagination(0, 1, 999, 1, 1);
         given(trainingInstanceService.findById(trainingInstance1.getId())).willReturn(trainingInstance1);
         given(securityService.getUserRefIdFromUserAndGroup()).willReturn(organizer1.getUserRefId());
-        given(userService.getUsersRefDTOByGivenUserIds(Set.of(organizer3.getUserRefId()), PageRequest.of(0,999), null, null)).willReturn(new PageResultResource<>(List.of(organizerDTO3), pagination));
+        given(userService.getUsersRefDTOByGivenUserIds(Set.of(organizer3.getUserRefId()), PageRequest.of(0, 999), null, null)).willReturn(new PageResultResource<>(List.of(organizerDTO3), pagination));
         given(userService.getUserByUserRefId(organizer3.getUserRefId())).willReturn(organizer3);
         trainingInstanceFacade.editOrganizers(trainingInstance1.getId(), new HashSet<>(Set.of(organizer3.getUserRefId())), new HashSet<>(Set.of(organizer2.getUserRefId())));
         Assert.assertEquals(2, trainingInstance1.getOrganizers().size());
@@ -287,10 +289,10 @@ public class TrainingInstanceFacadeTest {
 
     @Test
     public void editOrganizersRemoveLoggedInOrganizer() {
-        PageResultResource.Pagination pagination = new PageResultResource.Pagination(0,1,999,1,1);
+        PageResultResource.Pagination pagination = new PageResultResource.Pagination(0, 1, 999, 1, 1);
         given(trainingInstanceService.findById(trainingInstance1.getId())).willReturn(trainingInstance1);
         given(securityService.getUserRefIdFromUserAndGroup()).willReturn(organizer1.getUserRefId());
-        given(userService.getUsersRefDTOByGivenUserIds(Set.of(organizer3.getUserRefId()), PageRequest.of(0,999), null, null)).willReturn(new PageResultResource<>(List.of(organizerDTO3), pagination));
+        given(userService.getUsersRefDTOByGivenUserIds(Set.of(organizer3.getUserRefId()), PageRequest.of(0, 999), null, null)).willReturn(new PageResultResource<>(List.of(organizerDTO3), pagination));
         given(userService.getUserByUserRefId(organizer3.getUserRefId())).willReturn(organizer3);
         trainingInstanceFacade.editOrganizers(trainingInstance1.getId(), new HashSet<>(Set.of(organizer3.getUserRefId())), new HashSet<>(Set.of(organizer1.getUserRefId())));
         Assert.assertEquals(3, trainingInstance1.getOrganizers().size());
@@ -299,10 +301,10 @@ public class TrainingInstanceFacadeTest {
 
     @Test
     public void editOrganizersConcurrentlyRemoveAndAddOrganizerWhoIsNotInTrainingInstance() {
-        PageResultResource.Pagination pagination = new PageResultResource.Pagination(0,1,999,1,1);
+        PageResultResource.Pagination pagination = new PageResultResource.Pagination(0, 1, 999, 1, 1);
         given(trainingInstanceService.findById(trainingInstance1.getId())).willReturn(trainingInstance1);
         given(securityService.getUserRefIdFromUserAndGroup()).willReturn(organizer1.getUserRefId());
-        given(userService.getUsersRefDTOByGivenUserIds(Set.of(organizer3.getUserRefId()), PageRequest.of(0,999), null, null)).willReturn(new PageResultResource<>(List.of(organizerDTO3), pagination));
+        given(userService.getUsersRefDTOByGivenUserIds(Set.of(organizer3.getUserRefId()), PageRequest.of(0, 999), null, null)).willReturn(new PageResultResource<>(List.of(organizerDTO3), pagination));
         given(userService.getUserByUserRefId(organizer3.getUserRefId())).willReturn(organizer3);
         trainingInstanceFacade.editOrganizers(trainingInstance1.getId(), new HashSet<>(Set.of(organizer3.getUserRefId())), new HashSet<>(Set.of(organizer3.getUserRefId())));
         Assert.assertEquals(3, trainingInstance1.getOrganizers().size());
@@ -311,10 +313,10 @@ public class TrainingInstanceFacadeTest {
 
     @Test
     public void editOrganizersConcurrentlyRemoveAndAddOrganizerWhoIsInTrainingInstance() {
-        PageResultResource.Pagination pagination = new PageResultResource.Pagination(0,1,999,1,1);
+        PageResultResource.Pagination pagination = new PageResultResource.Pagination(0, 1, 999, 1, 1);
         given(trainingInstanceService.findById(trainingInstance1.getId())).willReturn(trainingInstance1);
         given(securityService.getUserRefIdFromUserAndGroup()).willReturn(organizer1.getUserRefId());
-        given(userService.getUsersRefDTOByGivenUserIds(Set.of(organizer2.getUserRefId()), PageRequest.of(0,999), null, null)).willReturn(new PageResultResource<>(List.of(organizerDTO2), pagination));
+        given(userService.getUsersRefDTOByGivenUserIds(Set.of(organizer2.getUserRefId()), PageRequest.of(0, 999), null, null)).willReturn(new PageResultResource<>(List.of(organizerDTO2), pagination));
         given(userService.getUserByUserRefId(organizer2.getUserRefId())).willReturn(organizer2);
         trainingInstanceFacade.editOrganizers(trainingInstance1.getId(), new HashSet<>(Set.of(organizer2.getUserRefId())), new HashSet<>(Set.of(organizer2.getUserRefId())));
         Assert.assertEquals(2, trainingInstance1.getOrganizers().size());
@@ -323,10 +325,10 @@ public class TrainingInstanceFacadeTest {
 
     @Test
     public void editOrganizersWithEmptySetOfRemovalAndAdditionSets() {
-        PageResultResource.Pagination pagination = new PageResultResource.Pagination(0,1,999,1,1);
+        PageResultResource.Pagination pagination = new PageResultResource.Pagination(0, 1, 999, 1, 1);
         given(trainingInstanceService.findById(trainingInstance1.getId())).willReturn(trainingInstance1);
         given(securityService.getUserRefIdFromUserAndGroup()).willReturn(organizer1.getUserRefId());
-        given(userService.getUsersRefDTOByGivenUserIds(Set.of(organizer3.getUserRefId()), PageRequest.of(0,999), null, null)).willReturn(new PageResultResource<>(List.of(organizerDTO3), pagination));
+        given(userService.getUsersRefDTOByGivenUserIds(Set.of(organizer3.getUserRefId()), PageRequest.of(0, 999), null, null)).willReturn(new PageResultResource<>(List.of(organizerDTO3), pagination));
         given(userService.getUserByUserRefId(organizer3.getUserRefId())).willReturn(organizer3);
         trainingInstanceFacade.editOrganizers(trainingInstance1.getId(), new HashSet<>(), new HashSet<>());
         Assert.assertEquals(2, trainingInstance1.getOrganizers().size());
@@ -335,7 +337,7 @@ public class TrainingInstanceFacadeTest {
 
     @Test
     public void editOrganizersRemove() {
-        PageResultResource.Pagination pagination = new PageResultResource.Pagination(0,1,999,1,1);
+        PageResultResource.Pagination pagination = new PageResultResource.Pagination(0, 1, 999, 1, 1);
         given(trainingInstanceService.findById(trainingInstance1.getId())).willReturn(trainingInstance1);
         given(securityService.getUserRefIdFromUserAndGroup()).willReturn(organizer1.getUserRefId());
         trainingInstanceFacade.editOrganizers(trainingInstance1.getId(), new HashSet<>(), new HashSet<>(Set.of(organizer1.getUserRefId(), organizer2.getUserRefId())));
@@ -346,10 +348,10 @@ public class TrainingInstanceFacadeTest {
     @Test
     public void editOrganizersAdd() {
         trainingInstance1.removeOrganizersByUserRefIds(Set.of(organizer2.getUserRefId()));
-        PageResultResource.Pagination pagination = new PageResultResource.Pagination(0,1,999,1,1);
+        PageResultResource.Pagination pagination = new PageResultResource.Pagination(0, 1, 999, 1, 1);
         given(trainingInstanceService.findById(trainingInstance1.getId())).willReturn(trainingInstance1);
         given(securityService.getUserRefIdFromUserAndGroup()).willReturn(organizer1.getUserRefId());
-        given(userService.getUsersRefDTOByGivenUserIds(Set.of(organizer3.getUserRefId(), organizer2.getUserRefId()), PageRequest.of(0,999), null, null)).willReturn(new PageResultResource<>(List.of(organizerDTO3, organizerDTO2), pagination));
+        given(userService.getUsersRefDTOByGivenUserIds(Set.of(organizer3.getUserRefId(), organizer2.getUserRefId()), PageRequest.of(0, 999), null, null)).willReturn(new PageResultResource<>(List.of(organizerDTO3, organizerDTO2), pagination));
         given(userService.getUserByUserRefId(organizer3.getUserRefId())).willReturn(organizer3);
         given(userService.getUserByUserRefId(organizer2.getUserRefId())).willReturn(organizer2);
         trainingInstanceFacade.editOrganizers(trainingInstance1.getId(), new HashSet<>(Set.of(organizer2.getUserRefId(), organizer3.getUserRefId())), new HashSet<>());
@@ -360,10 +362,10 @@ public class TrainingInstanceFacadeTest {
     @Test
     public void editOrganizersAddUserRefNotInDB() {
         trainingInstance1.removeOrganizersByUserRefIds(Set.of(organizer2.getUserRefId()));
-        PageResultResource.Pagination pagination = new PageResultResource.Pagination(0,1,999,1,1);
+        PageResultResource.Pagination pagination = new PageResultResource.Pagination(0, 1, 999, 1, 1);
         given(trainingInstanceService.findById(trainingInstance1.getId())).willReturn(trainingInstance1);
         given(securityService.getUserRefIdFromUserAndGroup()).willReturn(organizer1.getUserRefId());
-        given(userService.getUsersRefDTOByGivenUserIds(Set.of(organizer3.getUserRefId(), organizer2.getUserRefId()), PageRequest.of(0,999), null, null)).willReturn(new PageResultResource<>(List.of(organizerDTO3, organizerDTO2), pagination));
+        given(userService.getUsersRefDTOByGivenUserIds(Set.of(organizer3.getUserRefId(), organizer2.getUserRefId()), PageRequest.of(0, 999), null, null)).willReturn(new PageResultResource<>(List.of(organizerDTO3, organizerDTO2), pagination));
         given(userService.getUserByUserRefId(organizer3.getUserRefId())).willReturn(organizer3);
         willThrow(EntityNotFoundException.class).given(userService).getUserByUserRefId(organizer2.getUserRefId());
         given(userService.createUserRef(any(UserRef.class))).willReturn(organizer2);
