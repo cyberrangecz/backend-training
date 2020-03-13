@@ -101,13 +101,13 @@ public class TrainingInstancesRestControllerTest {
         trainingInstancesRestController = new TrainingInstancesRestController(trainingInstanceFacade, objectMapper);
         this.mockMvc = MockMvcBuilders.standaloneSetup(trainingInstancesRestController)
                 .setCustomArgumentResolvers(new PageableHandlerMethodArgumentResolver(),
-                    new QuerydslPredicateArgumentResolver(
-                            new QuerydslBindingsFactory(SimpleEntityPathResolver.INSTANCE), Optional.empty()))
+                        new QuerydslPredicateArgumentResolver(
+                                new QuerydslBindingsFactory(SimpleEntityPathResolver.INSTANCE), Optional.empty()))
                 .setMessageConverters(new MappingJackson2HttpMessageConverter())
                 .setControllerAdvice(new CustomRestExceptionHandlerTraining())
                 .build();
 
-        pageable = PageRequest.of(0,5);
+        pageable = PageRequest.of(0, 5);
 
         organizerDTO1 = createUserRefDTO(10L, "Bc. Dominik Meškal", "Meškal", "Dominik", "445533@muni.cz", "https://oidc.muni.cz/oidc", null);
         organizerDTO2 = createUserRefDTO(20L, "Bc. Boris Makal", "Makal", "Boris", "772211@muni.cz", "https://oidc.muni.cz/oidc", null);
@@ -134,7 +134,6 @@ public class TrainingInstancesRestControllerTest {
         trainingInstanceUpdateDTO.setTrainingDefinitionId(1L);
 
         trainingInstanceAssignPoolIdDTO = new TrainingInstanceAssignPoolIdDTO();
-        trainingInstanceAssignPoolIdDTO.setId(1L);
         trainingInstanceAssignPoolIdDTO.setPoolId(1L);
 
         trainingInstanceBasicInfoDTO = new TrainingInstanceBasicInfoDTO();
@@ -208,7 +207,7 @@ public class TrainingInstancesRestControllerTest {
 
     @Test
     public void assignPool() throws Exception {
-        given(trainingInstanceFacade.assignPoolToTrainingInstance(trainingInstanceAssignPoolIdDTO)).willReturn(trainingInstanceBasicInfoDTO);
+        given(trainingInstanceFacade.assignPoolToTrainingInstance(1L, trainingInstanceAssignPoolIdDTO)).willReturn(trainingInstanceBasicInfoDTO);
         mockMvc.perform(patch("/training-instances" + "/{instanceId}/" + "assign-pool", 1L)
                 .content(convertObjectToJsonBytes(trainingInstanceAssignPoolIdDTO))
                 .contentType(MediaType.APPLICATION_JSON_VALUE))
@@ -217,7 +216,7 @@ public class TrainingInstancesRestControllerTest {
 
     @Test
     public void assignPoolWithFacadeException() throws Exception {
-        willThrow(new EntityNotFoundException()).given(trainingInstanceFacade).assignPoolToTrainingInstance(any(TrainingInstanceAssignPoolIdDTO.class));
+        willThrow(new EntityNotFoundException()).given(trainingInstanceFacade).assignPoolToTrainingInstance(698L, any(TrainingInstanceAssignPoolIdDTO.class));
         MockHttpServletResponse response = mockMvc.perform(patch("/training-instances" + "/{instanceId}/" + "assign-pool", 698L)
                 .content(convertObjectToJsonBytes(trainingInstanceAssignPoolIdDTO))
                 .contentType(MediaType.APPLICATION_JSON_VALUE))
@@ -229,8 +228,8 @@ public class TrainingInstancesRestControllerTest {
     }
 
     @Test
-    public void reassignPool() throws Exception {
-        mockMvc.perform(patch("/training-instances" + "/{instanceId}/reassign-pool", 1L)
+    public void unassignPool() throws Exception {
+        mockMvc.perform(patch("/training-instances" + "/{instanceId}/unassign-pool", 1L)
                 .content(convertObjectToJsonBytes(trainingInstanceAssignPoolIdDTO))
                 .contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isOk());
@@ -238,7 +237,7 @@ public class TrainingInstancesRestControllerTest {
 
     @Test
     public void reassignSandboxesNotFound() throws Exception {
-        willThrow(new EntityNotFoundException()).given(trainingInstanceFacade).reassignPoolToTrainingInstance(any(TrainingInstanceAssignPoolIdDTO.class));
+        willThrow(new EntityNotFoundException()).given(trainingInstanceFacade).unassignPoolInTrainingInstance(698L);
         MockHttpServletResponse response = mockMvc.perform(patch("/training-instances" + "/{instanceId}/" + "reassign-pool", 698L)
                 .content(convertObjectToJsonBytes(trainingInstanceAssignPoolIdDTO))
                 .contentType(MediaType.APPLICATION_JSON_VALUE))
@@ -251,8 +250,8 @@ public class TrainingInstancesRestControllerTest {
 
     @Test
     public void getOrganizersNotInGivenTrainingInstance() throws Exception {
-        PageResultResource<UserRefDTO> expectedUsersRefDTOs = new PageResultResource<>(List.of(organizerDTO1, organizerDTO2),pagination);
-        pagination = new PageResultResource.Pagination(0,2,5,2,1);
+        PageResultResource<UserRefDTO> expectedUsersRefDTOs = new PageResultResource<>(List.of(organizerDTO1, organizerDTO2), pagination);
+        pagination = new PageResultResource.Pagination(0, 2, 5, 2, 1);
         given(trainingInstanceFacade.getOrganizersNotInGivenTrainingInstance(eq(trainingInstance1.getId()), any(Pageable.class), eq(null), eq(null))).willReturn(expectedUsersRefDTOs);
         given(objectMapper.writeValueAsString(any(Object.class))).willReturn(convertObjectToJsonBytes(expectedUsersRefDTOs));
 
@@ -291,12 +290,12 @@ public class TrainingInstancesRestControllerTest {
                 .param("organizersAddition", "1,2,3")
                 .param("organizersRemoval", "3,4"))
                 .andExpect(status().isNoContent());
-        then(trainingInstanceFacade).should().editOrganizers(trainingInstance1.getId(), Set.of(1L,2L,3L), Set.of(3L,4L));
+        then(trainingInstanceFacade).should().editOrganizers(trainingInstance1.getId(), Set.of(1L, 2L, 3L), Set.of(3L, 4L));
     }
 
     @Test
     public void editOrganizersTrainingInstanceNotFound() throws Exception {
-        willThrow(new EntityNotFoundException()).given(trainingInstanceFacade).editOrganizers(trainingInstance1.getId(), Set.of(1L,2L), Set.of(4L));
+        willThrow(new EntityNotFoundException()).given(trainingInstanceFacade).editOrganizers(trainingInstance1.getId(), Set.of(1L, 2L), Set.of(4L));
         MockHttpServletResponse response = mockMvc.perform(put("/training-instances/{id}/organizers", trainingInstance1.getId())
                 .param("organizersAddition", "1,2")
                 .param("organizersRemoval", "4"))
@@ -309,7 +308,7 @@ public class TrainingInstancesRestControllerTest {
 
     @Test
     public void editOrganizersUserAndGroupServiceError() throws Exception {
-        willThrow(new InternalServerErrorException("Unexpected error when calling user and group service.")).given(trainingInstanceFacade).editOrganizers(trainingInstance1.getId(), Set.of(1L,2L), Set.of(4L));
+        willThrow(new InternalServerErrorException("Unexpected error when calling user and group service.")).given(trainingInstanceFacade).editOrganizers(trainingInstance1.getId(), Set.of(1L, 2L), Set.of(4L));
         MockHttpServletResponse response = mockMvc.perform(put("/training-instances/{id}/organizers", trainingInstance1.getId())
                 .param("organizersAddition", "1,2")
                 .param("organizersRemoval", "4"))

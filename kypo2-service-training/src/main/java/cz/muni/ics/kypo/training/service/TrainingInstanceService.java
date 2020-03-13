@@ -176,7 +176,7 @@ public class TrainingInstanceService {
         LOG.debug("Training instance with id: {} deleted.", trainingInstance.getId());
     }
 
-    public TrainingInstance assignPoolToTrainingInstance(TrainingInstance trainingInstance) {
+    public TrainingInstance updateTrainingInstancePool(TrainingInstance trainingInstance) {
         return trainingInstanceRepository.saveAndFlush(trainingInstance);
     }
 

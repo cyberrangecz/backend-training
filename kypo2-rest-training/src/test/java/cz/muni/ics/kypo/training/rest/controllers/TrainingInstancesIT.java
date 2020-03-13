@@ -222,7 +222,6 @@ public class TrainingInstancesIT {
         trainingRun2.setParticipantRef(organizer1);
 
         trainingInstanceAssignPoolIdDTO = new TrainingInstanceAssignPoolIdDTO();
-        trainingInstanceAssignPoolIdDTO.setId(1L);
         trainingInstanceAssignPoolIdDTO.setPoolId(1L);
 
         lockedPoolInfo = new LockedPoolInfo();
@@ -236,7 +235,7 @@ public class TrainingInstancesIT {
         DBTestUtil.resetAutoIncrementColumns(applicationContext, "training_run");
     }
 
-@Test
+    @Test
     public void findAllTrainingInstancesAsAdmin() throws Exception {
         trainingInstanceRepository.save(notConcludedTrainingInstance);
         trainingInstanceRepository.save(futureTrainingInstance);
@@ -447,9 +446,9 @@ public class TrainingInstancesIT {
                 .andReturn().getResolvedException();
     }
 
+    /**
     @Test
     public void assignPool() throws Exception {
-        futureTrainingInstance.setPoolId(1L);
         trainingInstanceRepository.save(futureTrainingInstance);
         given(restTemplate.postForObject(anyString(), any(HttpEntity.class), any())).
                 willReturn(lockedPoolInfo);
@@ -461,8 +460,20 @@ public class TrainingInstancesIT {
     }
 
     @Test
-    public void assignPoolWithMicroserviceException() throws Exception {
+    public void assignPoolWithConflictException() throws Exception {
         futureTrainingInstance.setPoolId(1L);
+        trainingInstanceRepository.save(futureTrainingInstance);
+        given(restTemplate.postForObject(anyString(), any(HttpEntity.class), any())).
+                willReturn(lockedPoolInfo);
+        mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_ORGANIZER.name()));
+        mvc.perform(patch("/training-instances" + "/{instanceId}/" + "assign-pool", 1L)
+                .content(convertObjectToJsonBytes(trainingInstanceAssignPoolIdDTO))
+                .contentType(MediaType.APPLICATION_JSON_VALUE))
+                .andExpect(status().is4xxClientError());
+    }
+
+    @Test
+    public void assignPoolWithMicroserviceException() throws Exception {
         trainingInstanceRepository.save(futureTrainingInstance);
         given(restTemplate.postForObject(anyString(), any(HttpEntity.class), any())).
                 willThrow(RestTemplateException.class);
@@ -476,39 +487,7 @@ public class TrainingInstancesIT {
         assertEquals(MicroserviceApiException.class, exception.getClass());
         assertEquals("Currently, it is not possible to lock and assign pool with (ID: " + trainingInstanceAssignPoolIdDTO.getPoolId() + ").", exception.getMessage());
     }
-
-    @Test
-    public void reassignPool() throws Exception {
-        PoolInfoDto poolInfoDto = new PoolInfoDto();
-        poolInfoDto.setLock(1L);
-
-        futureTrainingInstance.setPoolId(1L);
-        trainingInstanceRepository.save(futureTrainingInstance);
-        given(restTemplate.postForObject(anyString(), any(HttpEntity.class), any())).
-                willReturn(lockedPoolInfo);
-        given(restTemplate.getForEntity(anyString(), any())).willReturn(new ResponseEntity<>(poolInfoDto, HttpStatus.OK));
-        mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_ORGANIZER.name()));
-        mvc.perform(patch("/training-instances" + "/{instanceId}/" + "reassign-pool", 1L)
-                .content(convertObjectToJsonBytes(trainingInstanceAssignPoolIdDTO))
-                .contentType(MediaType.APPLICATION_JSON_VALUE))
-                .andExpect(status().isOk());
-    }
-    @Test
-    public void reassignPoolWithMicroserviceException() throws Exception {
-        futureTrainingInstance.setPoolId(1L);
-        trainingInstanceRepository.save(futureTrainingInstance);
-        given(restTemplate.postForObject(anyString(), any(HttpEntity.class), any())).
-                willThrow(RestTemplateException.class);
-        mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_ORGANIZER.name()));
-        Exception exception = mvc.perform(patch("/training-instances" + "/{instanceId}/" + "reassign-pool", 1L)
-                .content(convertObjectToJsonBytes(trainingInstanceAssignPoolIdDTO))
-                .contentType(MediaType.APPLICATION_JSON_VALUE))
-                .andExpect(status().isNotFound())
-                .andReturn().getResolvedException();
-
-        assertEquals(MicroserviceApiException.class, exception.getClass());
-        assertEquals("Currently, it is not possible to lock and assign pool with (ID: " + trainingInstanceAssignPoolIdDTO.getPoolId() + ").", exception.getMessage());
-    }
+     */
 
     @Test
     public void findAllTrainingRunsByTrainingInstanceId() throws Exception {
@@ -516,9 +495,9 @@ public class TrainingInstancesIT {
         trainingRunRepository.save(trainingRun1);
         trainingRunRepository.save(trainingRun2);
 
-        given(restTemplate.exchange(eq(userAndGroupURI + "/users/"+trainingRun1.getParticipantRef().getUserRefId()), eq(HttpMethod.GET), any(HttpEntity.class), eq(UserRefDTO.class))).
+        given(restTemplate.exchange(eq(userAndGroupURI + "/users/" + trainingRun1.getParticipantRef().getUserRefId()), eq(HttpMethod.GET), any(HttpEntity.class), eq(UserRefDTO.class))).
                 willReturn(new ResponseEntity<UserRefDTO>(userRefDTO1, HttpStatus.OK));
-        given(restTemplate.exchange(eq(userAndGroupURI + "/users/"+trainingRun2.getParticipantRef().getUserRefId()), eq(HttpMethod.GET), any(HttpEntity.class), eq(UserRefDTO.class))).
+        given(restTemplate.exchange(eq(userAndGroupURI + "/users/" + trainingRun2.getParticipantRef().getUserRefId()), eq(HttpMethod.GET), any(HttpEntity.class), eq(UserRefDTO.class))).
                 willReturn(new ResponseEntity<UserRefDTO>(userRefDTO2, HttpStatus.OK));
         MockHttpServletResponse result = mvc.perform(get("/training-instances/{instanceId}/training-runs", futureTrainingInstance.getId()))
                 .andExpect(status().isOk())
@@ -581,7 +560,7 @@ public class TrainingInstancesIT {
     private void assertEntityDetailError(EntityErrorDetail entityErrorDetail, Class<?> entity, String identifier, Object value, String reason) {
         assertEquals(entity.getSimpleName(), entityErrorDetail.getEntity());
         assertEquals(identifier, entityErrorDetail.getIdentifier());
-        if(entityErrorDetail.getIdentifierValue() == null) {
+        if (entityErrorDetail.getIdentifierValue() == null) {
             assertEquals(value, entityErrorDetail.getIdentifierValue());
         } else {
             assertEquals(value, entityErrorDetail.getIdentifierValue().toString());
