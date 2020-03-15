@@ -3,6 +3,7 @@ package cz.muni.ics.kypo.training.service;
 import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.training.api.responses.LockedPoolInfo;
 import cz.muni.ics.kypo.training.api.responses.PoolInfoDto;
+import cz.muni.ics.kypo.training.enums.RoleTypeSecurity;
 import cz.muni.ics.kypo.training.exceptions.*;
 import cz.muni.ics.kypo.training.exceptions.errors.PythonApiError;
 import cz.muni.ics.kypo.training.persistence.model.*;
@@ -86,7 +87,7 @@ public class TrainingInstanceService {
      * @return all {@link TrainingInstance}s
      */
     public Page<TrainingInstance> findAll(Predicate predicate, Pageable pageable) {
-        if (securityService.isAdmin()) {
+        if (securityService.hasRole(RoleTypeSecurity.ROLE_TRAINING_ADMINISTRATOR)) {
             return trainingInstanceRepository.findAll(predicate, pageable);
         }
         Predicate loggedInUser = QTrainingInstance.trainingInstance.organizers.any().userRefId.eq(securityService.getUserRefIdFromUserAndGroup()).and(predicate);

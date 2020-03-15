@@ -19,6 +19,7 @@ import cz.muni.ics.kypo.training.persistence.model.UserRef;
 import cz.muni.ics.kypo.training.persistence.repository.TrainingDefinitionRepository;
 import cz.muni.ics.kypo.training.persistence.repository.TrainingInstanceRepository;
 import cz.muni.ics.kypo.training.persistence.repository.TrainingRunRepository;
+import org.modelmapper.internal.util.Assert;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
@@ -57,43 +58,35 @@ public class SecurityService {
     }
 
     public boolean isTraineeOfGivenTrainingRun(Long trainingRunId) {
-        TrainingRun trainingRun = trainingRunRepository.findById(trainingRunId).orElseThrow(() -> new EntityNotFoundException(new EntityErrorDetail(TrainingRun.class, "id", trainingRunId.getClass(),
-                trainingRunId, "The necessary permissions are required for a resource.")));
+        TrainingRun trainingRun = trainingRunRepository.findById(trainingRunId)
+                .orElseThrow(() -> new EntityNotFoundException(new EntityErrorDetail(TrainingRun.class, "id", trainingRunId.getClass(),
+                        trainingRunId, "The necessary permissions are required for a resource.")));
         return trainingRun.getParticipantRef().getUserRefId().equals(getUserRefIdFromUserAndGroup());
     }
 
     public boolean isOrganizerOfGivenTrainingInstance(Long instanceId) {
-        TrainingInstance trainingInstance = trainingInstanceRepository.findById(instanceId).orElseThrow(() -> new EntityNotFoundException(new EntityErrorDetail(TrainingInstance.class, "id", instanceId.getClass(),
-                instanceId, "The necessary permissions are required for a resource.")));
-        return trainingInstance.getOrganizers().stream().anyMatch(o -> o.getUserRefId().equals(getUserRefIdFromUserAndGroup()));
+        TrainingInstance trainingInstance = trainingInstanceRepository.findById(instanceId)
+                .orElseThrow(() -> new EntityNotFoundException(new EntityErrorDetail(TrainingInstance.class, "id", instanceId.getClass(),
+                        instanceId, "The necessary permissions are required for a resource.")));
+        return trainingInstance.getOrganizers().stream()
+                .anyMatch(o -> o.getUserRefId().equals(getUserRefIdFromUserAndGroup()));
     }
 
     public boolean isDesignerOfGivenTrainingDefinition(Long definitionId) {
-        TrainingDefinition trainingDefinition = trainingDefinitionRepository.findById(definitionId).orElseThrow(() -> new EntityNotFoundException(new EntityErrorDetail(TrainingDefinition.class,
-                "id", definitionId.getClass(), definitionId, "The necessary permissions are required for a resource.")));
-        return trainingDefinition.getAuthors().stream().anyMatch(a -> a.getUserRefId().equals(getUserRefIdFromUserAndGroup()));
+        TrainingDefinition trainingDefinition = trainingDefinitionRepository.findById(definitionId)
+                .orElseThrow(() -> new EntityNotFoundException(new EntityErrorDetail(TrainingDefinition.class,
+                        "id", definitionId.getClass(), definitionId, "The necessary permissions are required for a resource.")));
+        return trainingDefinition.getAuthors().stream()
+                .anyMatch(a -> a.getUserRefId().equals(getUserRefIdFromUserAndGroup()));
     }
 
-    public boolean isAdmin() {
+    public boolean hasRole(RoleTypeSecurity roleTypeSecurity) {
+        Assert.notNull("To test whether logged in user has particular role it is necessary to provide role type to check");
         OAuth2Authentication authentication = (OAuth2Authentication) SecurityContextHolder.getContext().getAuthentication();
         for (GrantedAuthority gA : authentication.getUserAuthentication().getAuthorities()) {
-            if (gA.getAuthority().equals(RoleTypeSecurity.ROLE_TRAINING_ADMINISTRATOR.name())) return true;
-        }
-        return false;
-    }
-
-    public boolean isDesigner() {
-        OAuth2Authentication authentication = (OAuth2Authentication) SecurityContextHolder.getContext().getAuthentication();
-        for (GrantedAuthority gA : authentication.getUserAuthentication().getAuthorities()) {
-            if (gA.getAuthority().equals(RoleTypeSecurity.ROLE_TRAINING_DESIGNER.name())) return true;
-        }
-        return false;
-    }
-
-    public boolean isOrganizer() {
-        OAuth2Authentication authentication = (OAuth2Authentication) SecurityContextHolder.getContext().getAuthentication();
-        for (GrantedAuthority gA : authentication.getUserAuthentication().getAuthorities()) {
-            if (gA.getAuthority().equals(RoleTypeSecurity.ROLE_TRAINING_ORGANIZER.name())) return true;
+            if (gA.getAuthority().equals(roleTypeSecurity.name())) {
+                return true;
+            }
         }
         return false;
     }
@@ -117,7 +110,6 @@ public class SecurityService {
     public UserRef createUserRefEntityByInfoFromUserAndGroup() {
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.setContentType(MediaType.APPLICATION_JSON);
-
         try {
             ResponseEntity<UserRefDTO> userInfoResponseEntity = restTemplate.exchange(userAndGroupURI + "/users/info", HttpMethod.GET, new HttpEntity<>(httpHeaders), new ParameterizedTypeReference<UserRefDTO>() {
             });

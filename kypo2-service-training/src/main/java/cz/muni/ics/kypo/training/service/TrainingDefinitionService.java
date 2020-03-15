@@ -1,6 +1,7 @@
 package cz.muni.ics.kypo.training.service;
 
 import com.querydsl.core.types.Predicate;
+import cz.muni.ics.kypo.training.enums.RoleTypeSecurity;
 import cz.muni.ics.kypo.training.exceptions.EntityConflictException;
 import cz.muni.ics.kypo.training.exceptions.EntityErrorDetail;
 import cz.muni.ics.kypo.training.exceptions.EntityNotFoundException;
@@ -78,7 +79,7 @@ public class TrainingDefinitionService {
      * @return all {@link TrainingDefinition}s
      */
     public Page<TrainingDefinition> findAll(Predicate predicate, Pageable pageable) {
-        if (securityService.isAdmin()) {
+        if (securityService.hasRole(RoleTypeSecurity.ROLE_TRAINING_ADMINISTRATOR)) {
             return trainingDefinitionRepository.findAll(predicate, pageable);
         }
         Long loggedInUserId = securityService.getUserRefIdFromUserAndGroup();
@@ -88,20 +89,20 @@ public class TrainingDefinitionService {
     /**
      * Finds all Training Definitions accessible to users with the role of organizer.
      *
-     * @param state represents a state of training definition if it is released or unreleased.
+     * @param state    represents a state of training definition if it is released or unreleased.
      * @param pageable pageable parameter with information about pagination.
      * @return all Training Definitions for organizers
      */
     public Page<TrainingDefinition> findAllForOrganizers(String state, Pageable pageable) {
         Long loggedInUserId = securityService.getUserRefIdFromUserAndGroup();
-        if(state != null && state.equals(TDState.RELEASED.name())) {
+        if (state != null && state.equals(TDState.RELEASED.name())) {
             return trainingDefinitionRepository.findAllForOrganizers(TDState.RELEASED, pageable);
         } else if (state != null && state.equals(TDState.UNRELEASED.name())) {
-            if (securityService.isAdmin()) {
-                if(state.equals(TDState.UNRELEASED.name())) {
+            if (securityService.hasRole(RoleTypeSecurity.ROLE_TRAINING_ADMINISTRATOR)) {
+                if (state.equals(TDState.UNRELEASED.name())) {
                     return trainingDefinitionRepository.findAllForOrganizers(TDState.UNRELEASED, pageable);
                 }
-            } else if (securityService.isDesigner() && securityService.isOrganizer()) {
+            } else if (securityService.hasRole(RoleTypeSecurity.ROLE_TRAINING_DESIGNER) && securityService.hasRole(RoleTypeSecurity.ROLE_TRAINING_ORGANIZER)) {
                 return trainingDefinitionRepository.findAllForDesignersAndOrganizersUnreleased(loggedInUserId, pageable);
             } else {
                 return trainingDefinitionRepository.findAllForOrganizersUnreleased(loggedInUserId, pageable);
@@ -197,9 +198,9 @@ public class TrainingDefinitionService {
     /**
      * Move level to the different position and modify orders of levels between moved level and new position.
      *
-     * @param definitionId  - Id of definition containing levels, this training definition is updating its last edited column.
+     * @param definitionId     - Id of definition containing levels, this training definition is updating its last edited column.
      * @param levelIdToBeMoved - id of the level to be moved to the new position
-     * @param newPosition   - position where level will be moved
+     * @param newPosition      - position where level will be moved
      * @throws EntityNotFoundException training definition or one of the levels is not found.
      * @throws EntityConflictException released or archived training definition cannot be modified.
      */
@@ -275,8 +276,8 @@ public class TrainingDefinitionService {
     /**
      * Updates game level in training definition
      *
-     * @param definitionId - id of training definition containing level to be updated
-     * @param gameLevelToUpdate    to be updated
+     * @param definitionId      - id of training definition containing level to be updated
+     * @param gameLevelToUpdate to be updated
      * @throws EntityNotFoundException training definition is not found.
      * @throws EntityConflictException level cannot be updated in released or archived training definition.
      */
@@ -288,7 +289,7 @@ public class TrainingDefinitionService {
                     gameLevelToUpdate.getId(), "Level was not found in definition (id: " + definitionId + ")."));
         GameLevel gameLevel = gameLevelRepository.findById(gameLevelToUpdate.getId()).orElseThrow(() ->
                 new EntityNotFoundException(new EntityErrorDetail(AbstractLevel.class, "id", gameLevelToUpdate.getId().getClass(),
-                gameLevelToUpdate.getId(), LEVEL_NOT_FOUND)));
+                        gameLevelToUpdate.getId(), LEVEL_NOT_FOUND)));
         gameLevelToUpdate.setOrder(gameLevel.getOrder());
         trainingDefinition.setEstimatedDuration(trainingDefinition.getEstimatedDuration() -
                 gameLevel.getEstimatedDuration() + gameLevelToUpdate.getEstimatedDuration());
@@ -300,8 +301,8 @@ public class TrainingDefinitionService {
     /**
      * Updates info level in training definition
      *
-     * @param definitionId - id of training definition containing level to be updated
-     * @param infoLevelToUpdate    to be updated
+     * @param definitionId      - id of training definition containing level to be updated
+     * @param infoLevelToUpdate to be updated
      * @throws EntityNotFoundException training definition is not found.
      * @throws EntityConflictException level cannot be updated in released or archived training definition.
      */
@@ -326,7 +327,7 @@ public class TrainingDefinitionService {
     /**
      * Updates assessment level in training definition
      *
-     * @param definitionId    - id of training definition containing level to be updated
+     * @param definitionId            - id of training definition containing level to be updated
      * @param assessmentLevelToUpdate to be updated
      * @throws EntityNotFoundException training definition is not found.
      * @throws EntityConflictException level cannot be updated in released or archived training definition.
@@ -369,7 +370,7 @@ public class TrainingDefinitionService {
         if (trainingInstanceRepository.existsAnyForTrainingDefinition(trainingDefinition.getId())) {
             throw new EntityConflictException(new EntityErrorDetail(TrainingDefinition.class, "id", definitionId.getClass(), definitionId,
                     "Cannot update training definition with already created training instance. " +
-                    "Remove training instance/s before updating training definition."));
+                            "Remove training instance/s before updating training definition."));
         }
 
         GameLevel newGameLevel = new GameLevel();
@@ -515,7 +516,7 @@ public class TrainingDefinitionService {
                     if (trainingInstanceRepository.existsAnyForTrainingDefinition(definitionId)) {
                         throw new EntityConflictException(new EntityErrorDetail(TrainingDefinition.class, "id", definitionId.getClass(), definitionId,
                                 "Cannot update training definition with already created training instance(s). " +
-                                "Remove training instance(s) before changing the state from released to unreleased training definition."));
+                                        "Remove training instance(s) before changing the state from released to unreleased training definition."));
                     }
                     trainingDefinition.setState((TDState.UNRELEASED));
                 }
@@ -592,7 +593,7 @@ public class TrainingDefinitionService {
         if (trainingInstanceRepository.existsAnyForTrainingDefinition(trainingDefinition.getId())) {
             throw new EntityConflictException(new EntityErrorDetail(TrainingDefinition.class, "id", trainingDefinition.getId().getClass(), trainingDefinition.getId(),
                     "Cannot update training definition with already created training instance. " +
-                    "Remove training instance/s before updating training definition."));
+                            "Remove training instance/s before updating training definition."));
         }
 
     }
