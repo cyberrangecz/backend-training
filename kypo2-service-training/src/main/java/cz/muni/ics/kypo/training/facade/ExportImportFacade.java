@@ -124,7 +124,7 @@ public class ExportImportFacade {
         return abstractLevelExportDTOs;
     }
 
-    private List<AbstractLevelArchiveDTO> mapAbstractLevelsToArchiveDTO(Long trainingDefinitionId){
+    private List<AbstractLevelArchiveDTO> mapAbstractLevelsToArchiveDTO(Long trainingDefinitionId) {
         List<AbstractLevelArchiveDTO> abstractLevelArchiveDTOs = new ArrayList<>();
         List<AbstractLevel> abstractLevels = trainingDefinitionService.findAllLevelsFromDefinition(trainingDefinitionId);
         abstractLevels.forEach(level -> {
@@ -184,64 +184,83 @@ public class ExportImportFacade {
     @IsOrganizerOrAdmin
     @TransactionalRO
     public FileToReturnDTO archiveTrainingInstance(Long trainingInstanceId) {
-        try(ByteArrayOutputStream baos = new ByteArrayOutputStream(); ZipOutputStream zos = new ZipOutputStream(baos)) {
+        try (ByteArrayOutputStream baos = new ByteArrayOutputStream();
+             ZipOutputStream zos = new ZipOutputStream(baos)) {
             TrainingInstance trainingInstance = exportImportService.findInstanceById(trainingInstanceId);
             this.checkIfInstanceIsNotFinished(trainingInstance);
+
             TrainingInstanceArchiveDTO archivedInstance = exportImportMapper.mapToDTO(trainingInstance);
             archivedInstance.setDefinitionId(trainingInstance.getTrainingDefinition().getId());
-            Set<Long> organizersRefIds = trainingInstance.getOrganizers().stream().map(UserRef::getUserRefId).collect(Collectors.toSet());
+            Set<Long> organizersRefIds = trainingInstance.getOrganizers().stream()
+                    .map(UserRef::getUserRefId)
+                    .collect(Collectors.toSet());
             archivedInstance.setOrganizersRefIds(new HashSet<>(organizersRefIds));
 
-            ZipEntry instanceEntry = new ZipEntry("training_instance-id" + trainingInstanceId + ".json" );
-            zos.putNextEntry(instanceEntry);
-            zos.write(objectMapper.writeValueAsBytes(archivedInstance));
+            writeTrainingInstanceGeneralInfo(zos, trainingInstance.getId(), archivedInstance);
+            writeTrainingInstanceOrganizersInfo(zos, trainingInstance.getId(), organizersRefIds);
+            writeTrainingDefinitionInfo(zos, trainingInstance);
 
-            ZipEntry organizersEntry = new ZipEntry("training_instance-id" + trainingInstanceId + "-organizers" + ".json" );
-            zos.putNextEntry(organizersEntry);
-            zos.write(objectMapper.writeValueAsBytes(getUsersRefExportDTO(organizersRefIds)));
-
-            TrainingDefinitionArchiveDTO tD = exportImportMapper.mapToArchiveDTO(exportImportService.findById(trainingInstance.getTrainingDefinition().getId()));
-            if (tD != null) {
-                tD.setLevels(mapAbstractLevelsToArchiveDTO(trainingInstance.getTrainingDefinition().getId()));
-
-                ZipEntry definitionEntry = new ZipEntry("training_definition-id" + trainingInstance.getTrainingDefinition().getId() + ".json" );
-                zos.putNextEntry(definitionEntry);
-                zos.write(objectMapper.writeValueAsBytes(tD));
-            }
-            Set<TrainingRun> runs = exportImportService.findRunsByInstanceId(trainingInstanceId);
             Set<Long> participantRefIds = new HashSet<>();
-            for (TrainingRun run : runs) {
-                TrainingRunArchiveDTO archivedRun = exportImportMapper.mapToArchiveDTO(run);
-                archivedRun.setInstanceId(trainingInstanceId);
-                archivedRun.setParticipantRefId(run.getParticipantRef().getUserRefId());
-                participantRefIds.add(run.getParticipantRef().getUserRefId());
-                ZipEntry runEntry = new ZipEntry("training_run-id" + run.getId() + ".json" );
-                zos.putNextEntry(runEntry);
-                zos.write(objectMapper.writeValueAsBytes(archivedRun));
-
-                List<Map<String, Object>> events = trainingEventsService.findAllEventsFromTrainingRun(trainingInstance.getTrainingDefinition().getId(), trainingInstanceId, run.getId());
-                ZipEntry eventsEntry = new ZipEntry("training_run-id" + run.getId() + "-events.json");
-                zos.putNextEntry(eventsEntry);
-                for (Map<String, Object> event : events) {
-                    zos.write(objectMapper.writer(new MinimalPrettyPrinter()).writeValueAsBytes(event));
-                    zos.write(System.lineSeparator().getBytes());
-                }
-            }
-            ZipEntry participantsEntry = new ZipEntry("training_instance-id" + trainingInstance.getId() + "-participants" + ".json" );
-            zos.putNextEntry(participantsEntry);
-            zos.write(objectMapper.writeValueAsBytes(getUsersRefExportDTO(participantRefIds)));
-
+            writeTrainingRunsInfo(zos, trainingInstance, participantRefIds);
+            writeTrainingInstanceParticipantRefIdsInfo(zos, trainingInstance, participantRefIds);
 
             zos.closeEntry();
-            zos.close();
             FileToReturnDTO fileToReturnDTO = new FileToReturnDTO();
             fileToReturnDTO.setContent(baos.toByteArray());
             fileToReturnDTO.setTitle(trainingInstance.getTitle());
-
             return fileToReturnDTO;
         } catch (IOException ex) {
             throw new InternalServerErrorException(ex);
         }
+    }
+
+    private void writeTrainingInstanceGeneralInfo(ZipOutputStream zos, Long trainingInstanceId, TrainingInstanceArchiveDTO archivedInstance) throws IOException {
+        ZipEntry instanceEntry = new ZipEntry("training_instance-id" + trainingInstanceId + ".json");
+        zos.putNextEntry(instanceEntry);
+        zos.write(objectMapper.writeValueAsBytes(archivedInstance));
+    }
+
+    private void writeTrainingRunsInfo(ZipOutputStream zos, TrainingInstance trainingInstance, Set<Long> participantRefIds) throws IOException {
+        Set<TrainingRun> runs = exportImportService.findRunsByInstanceId(trainingInstance.getId());
+        for (TrainingRun run : runs) {
+            TrainingRunArchiveDTO archivedRun = exportImportMapper.mapToArchiveDTO(run);
+            archivedRun.setInstanceId(trainingInstance.getId());
+            archivedRun.setParticipantRefId(run.getParticipantRef().getUserRefId());
+            participantRefIds.add(run.getParticipantRef().getUserRefId());
+            ZipEntry runEntry = new ZipEntry("training_run-id" + run.getId() + ".json");
+            zos.putNextEntry(runEntry);
+            zos.write(objectMapper.writeValueAsBytes(archivedRun));
+
+            List<Map<String, Object>> events = trainingEventsService.findAllEventsFromTrainingRun(trainingInstance.getTrainingDefinition().getId(), trainingInstance.getId(), run.getId());
+            ZipEntry eventsEntry = new ZipEntry("training_run-id" + run.getId() + "-events.json");
+            zos.putNextEntry(eventsEntry);
+            for (Map<String, Object> event : events) {
+                zos.write(objectMapper.writer(new MinimalPrettyPrinter()).writeValueAsBytes(event));
+                zos.write(System.lineSeparator().getBytes());
+            }
+        }
+    }
+
+    private void writeTrainingDefinitionInfo(ZipOutputStream zos, TrainingInstance trainingInstance) throws IOException {
+        TrainingDefinitionArchiveDTO tD = exportImportMapper.mapToArchiveDTO(exportImportService.findById(trainingInstance.getTrainingDefinition().getId()));
+        if (tD != null) {
+            tD.setLevels(mapAbstractLevelsToArchiveDTO(trainingInstance.getTrainingDefinition().getId()));
+            ZipEntry definitionEntry = new ZipEntry("training_definition-id" + trainingInstance.getTrainingDefinition().getId() + ".json");
+            zos.putNextEntry(definitionEntry);
+            zos.write(objectMapper.writeValueAsBytes(tD));
+        }
+    }
+
+    private void writeTrainingInstanceOrganizersInfo(ZipOutputStream zos, Long trainingInstanceId, Set<Long> organizersRefIds) throws IOException {
+        ZipEntry organizersEntry = new ZipEntry("training_instance-id" + trainingInstanceId + "-organizers" + ".json");
+        zos.putNextEntry(organizersEntry);
+        zos.write(objectMapper.writeValueAsBytes(getUsersRefExportDTO(organizersRefIds)));
+    }
+
+    private void writeTrainingInstanceParticipantRefIdsInfo(ZipOutputStream zos, TrainingInstance trainingInstance, Set<Long> participantRefIds) throws IOException {
+        ZipEntry participantsEntry = new ZipEntry("training_instance-id" + trainingInstance.getId() + "-participants" + ".json");
+        zos.putNextEntry(participantsEntry);
+        zos.write(objectMapper.writeValueAsBytes(getUsersRefExportDTO(participantRefIds)));
     }
 
     private List<UserRefExportDTO> getUsersRefExportDTO(Set<Long> usersRefIds) {
@@ -249,14 +268,13 @@ public class ExportImportFacade {
         List<UserRefExportDTO> users = new ArrayList<>();
         int page = 0;
         do {
-            usersResponse = userService.getUsersRefDTOByGivenUserIds(usersRefIds, PageRequest.of(page,999), null, null);
+            usersResponse = userService.getUsersRefDTOByGivenUserIds(usersRefIds, PageRequest.of(page, 999), null, null);
             users.addAll(userRefMapper.mapUserRefExportDTOToUserRefDTO(usersResponse.getContent()));
             page++;
 
         } while (usersResponse.getPagination().getTotalPages() != usersResponse.getPagination().getNumber());
         return users;
     }
-
 
     private void checkIfInstanceIsNotFinished(TrainingInstance trainingInstance) {
         LocalDateTime currentTime = LocalDateTime.now(Clock.systemUTC());
