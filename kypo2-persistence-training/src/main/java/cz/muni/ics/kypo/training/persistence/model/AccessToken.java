@@ -6,10 +6,15 @@ import java.util.Objects;
 /**
  * Class representing access token needed by trainee to start a Training run.
  * Access tokens are associated with Training instances.
- *
  */
 @Entity
 @Table(name = "access_token")
+@NamedQueries({
+        @NamedQuery(
+                name = "AccessToken.findOneByAccessToken",
+                query = "SELECT at FROM AccessToken at WHERE at.accessToken = :accessToken"
+        ),
+})
 public class AccessToken extends AbstractEntity<Long> {
 
     @Column(name = "access_token", nullable = false, unique = true)

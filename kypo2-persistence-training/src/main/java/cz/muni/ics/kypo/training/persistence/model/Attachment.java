@@ -6,7 +6,6 @@ import java.util.Objects;
 
 /**
  * Class representing attachments of Game Level
- *
  */
 @Entity
 @Table(name = "attachment")

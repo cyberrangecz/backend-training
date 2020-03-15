@@ -8,7 +8,6 @@ import cz.muni.ics.kypo.training.persistence.model.InfoLevel;
 
 /**
  * The JPA repository interface to manage {@link InfoLevel} instances.
- *
  */
 @Repository
 public interface InfoLevelRepository extends JpaRepository<InfoLevel, Long>, QuerydslPredicateExecutor<InfoLevel> {

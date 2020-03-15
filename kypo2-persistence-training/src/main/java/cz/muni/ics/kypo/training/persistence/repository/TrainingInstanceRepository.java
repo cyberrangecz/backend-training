@@ -49,7 +49,6 @@ public interface TrainingInstanceRepository extends JpaRepository<TrainingInstan
      * @param trainingDefId the training def id
      * @return the list of {@link TrainingInstance}s associated to {@link TrainingDefinition}
      */
-    @Query("SELECT ti FROM TrainingInstance ti JOIN FETCH ti.trainingDefinition td WHERE td.id = :trainingDefId")
     List<TrainingInstance> findAllByTrainingDefinitionId(@Param("trainingDefId") Long trainingDefId);
 
     /**
@@ -59,18 +58,11 @@ public interface TrainingInstanceRepository extends JpaRepository<TrainingInstan
      * @param pageable  the pageable
      * @return page of all {@link TrainingInstance}
      */
-    @EntityGraph(attributePaths = {"trainingDefinition.authors", "organizers", "trainingDefinition.betaTestingGroup", "trainingDefinition.betaTestingGroup.organizers"})
+    @EntityGraph(
+            value = "TrainingInstance.findAllAuthorsOrganizersBetaTestingGroupBetaTestingGroupOrganizers",
+            type = EntityGraph.EntityGraphType.FETCH
+    )
     Page<TrainingInstance> findAll(Predicate predicate, Pageable pageable);
-
-    /**
-     * Find training instance with start time in the past, end time in the future and by corresponding access token.
-     *
-     * @param time        the current time
-     * @param accessToken the access token
-     * @return {@link TrainingInstance} with start time in the past, end time in the future and by corresponding access token
-     */
-    @Query("SELECT ti FROM TrainingInstance ti JOIN FETCH ti.trainingDefinition WHERE ti.startTime < :date AND ti.endTime > :date AND ti.accessToken = :accessToken ")
-    Optional<TrainingInstance> findByStartTimeAfterAndEndTimeBeforeAndAccessToken(@Param("date") LocalDateTime time, @Param("accessToken") String accessToken);
 
     /**
      * Find training instance by id
@@ -78,8 +70,21 @@ public interface TrainingInstanceRepository extends JpaRepository<TrainingInstan
      * @param id id of training instance
      * @return {@link TrainingInstance}
      */
-    @EntityGraph(attributePaths = {"trainingDefinition.authors", "organizers"})
+    @EntityGraph(
+            value = "TrainingInstance.findByIdAuthorsOrganizers",
+            type = EntityGraph.EntityGraphType.FETCH
+    )
     Optional<TrainingInstance> findById(Long id);
+
+    /**
+     * Find training instance with start time in the past, end time in the future and by corresponding access token.
+     *
+     * @param datetime    the current time
+     * @param accessToken the access token
+     * @return {@link TrainingInstance} with start time in the past, end time in the future and by corresponding access token
+     */
+    Optional<TrainingInstance> findByStartTimeAfterAndEndTimeBeforeAndAccessToken(@Param("datetime") LocalDateTime datetime,
+                                                                                  @Param("accessToken") String accessToken);
 
     /**
      * Check if any training instances are associated with training definition
@@ -87,7 +92,6 @@ public interface TrainingInstanceRepository extends JpaRepository<TrainingInstan
      * @param trainingDefinitionId the training definition id
      * @return True if there are any instances associated with training definition
      */
-    @Query("SELECT (COUNT(ti) > 0) FROM TrainingInstance ti INNER JOIN ti.trainingDefinition td WHERE td.id = :trainingDefinitionId")
     boolean existsAnyForTrainingDefinition(@Param("trainingDefinitionId") Long trainingDefinitionId);
 
     /**
@@ -96,8 +100,6 @@ public interface TrainingInstanceRepository extends JpaRepository<TrainingInstan
      * @param instanceId the instance id
      * @return {@link TrainingInstance} including its associated {@link TrainingDefinition}
      */
-    @Query("SELECT ti FROM TrainingInstance ti LEFT OUTER JOIN FETCH ti.organizers JOIN FETCH"
-            + " ti.trainingDefinition td LEFT OUTER JOIN FETCH td.authors LEFT OUTER JOIN FETCH td.betaTestingGroup btg LEFT OUTER JOIN FETCH btg.organizers WHERE ti.id = :instanceId")
     Optional<TrainingInstance> findByIdIncludingDefinition(@Param("instanceId") Long instanceId);
 
 
@@ -108,6 +110,5 @@ public interface TrainingInstanceRepository extends JpaRepository<TrainingInstan
      * @param instanceId  the instance id
      * @return true if instance is finished, false if not
      */
-    @Query("SELECT (COUNT(ti) > 0) FROM TrainingInstance ti WHERE ti.id = :instanceId AND ti.endTime < :currentTime")
     boolean isFinished(@Param("instanceId") Long instanceId, @Param("currentTime") LocalDateTime currentTime);
 }

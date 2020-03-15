@@ -6,7 +6,6 @@ import java.util.Objects;
 /**
  * Class representing hints associated with game level that can be displayed by trainee if they are in need of help with
  * solving given level
- *
  */
 @Entity
 @Table(name = "hint")

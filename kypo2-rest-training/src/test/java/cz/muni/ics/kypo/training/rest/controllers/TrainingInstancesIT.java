@@ -16,8 +16,6 @@ import cz.muni.ics.kypo.training.api.enums.RoleType;
 import cz.muni.ics.kypo.training.api.responses.*;
 import cz.muni.ics.kypo.training.converters.LocalDateTimeUTCSerializer;
 import cz.muni.ics.kypo.training.exceptions.EntityErrorDetail;
-import cz.muni.ics.kypo.training.exceptions.MicroserviceApiException;
-import cz.muni.ics.kypo.training.exceptions.RestTemplateException;
 import cz.muni.ics.kypo.training.mapping.mapstruct.TrainingInstanceMapperImpl;
 import cz.muni.ics.kypo.training.mapping.mapstruct.TrainingRunMapperImpl;
 import cz.muni.ics.kypo.training.persistence.model.*;
@@ -71,7 +69,6 @@ import static cz.muni.ics.kypo.training.rest.controllers.util.ObjectConverter.co
 import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.doNothing;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;

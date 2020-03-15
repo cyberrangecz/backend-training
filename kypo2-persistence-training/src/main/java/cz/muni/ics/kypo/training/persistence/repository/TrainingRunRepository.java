@@ -50,8 +50,36 @@ public interface TrainingRunRepository extends JpaRepository<TrainingRun, Long>,
      * @param pageable  the pageable
      * @return page of all {@link TrainingRun}
      */
-    @EntityGraph(attributePaths = {"participantRef"})
+    @EntityGraph(
+            value = "TrainingRun.findAllParticipantRef",
+            type = EntityGraph.EntityGraphType.FETCH
+    )
     Page<TrainingRun> findAll(Predicate predicate, Pageable pageable);
+
+    /**
+     * Find all training runs associated with training instance.
+     *
+     * @param trainingInstanceId the training instance id
+     * @param pageable           the pageable
+     * @return the page of all {@link TrainingRun}s associated with {@link TrainingInstance}
+     */
+    @EntityGraph(
+            value = "TrainingRun.findAllParticipantRef",
+            type = EntityGraph.EntityGraphType.FETCH
+    )
+    Page<TrainingRun> findAllByTrainingInstanceId(Long trainingInstanceId, Pageable pageable);
+
+    /**
+     * Find all training runs associated with training instance.
+     *
+     * @param trainingInstanceId the training instance id
+     * @return the set of all {@link TrainingRun}s associated with {@link TrainingInstance}
+     */
+    @EntityGraph(
+            value = "TrainingRun.findAllParticipantRef",
+            type = EntityGraph.EntityGraphType.FETCH
+    )
+    Set<TrainingRun> findAllByTrainingInstanceId(Long trainingInstanceId);
 
     /**
      * Find training run by id
@@ -59,7 +87,10 @@ public interface TrainingRunRepository extends JpaRepository<TrainingRun, Long>,
      * @param id id of training run
      * @return {@link TrainingRun}
      */
-    @EntityGraph(attributePaths = {"participantRef", "trainingInstance"})
+    @EntityGraph(
+            value = "TrainingRun.findByIdParticipantRefTrainingInstance",
+            type = EntityGraph.EntityGraphType.FETCH
+    )
     Optional<TrainingRun> findById(Long id);
 
     /**
@@ -69,10 +100,6 @@ public interface TrainingRunRepository extends JpaRepository<TrainingRun, Long>,
      * @param pageable  the pageable
      * @return the page of all {@link TrainingRun}s accessed by participant
      */
-    @Query(value = "SELECT tr FROM TrainingRun tr JOIN FETCH tr.participantRef pr JOIN FETCH tr.trainingInstance ti " +
-            "JOIN FETCH ti.trainingDefinition WHERE pr.userRefId = :userRefId",
-            countQuery = "SELECT COUNT(tr) FROM TrainingRun tr INNER JOIN tr.participantRef pr INNER JOIN tr.trainingInstance ti " +
-                    "INNER JOIN ti.trainingDefinition WHERE pr.userRefId = :userRefId")
     Page<TrainingRun> findAllByParticipantRefId(@Param("userRefId") Long userRefId, Pageable pageable);
 
     /**
@@ -81,7 +108,6 @@ public interface TrainingRunRepository extends JpaRepository<TrainingRun, Long>,
      * @param trainingRunId the training run id
      * @return {@link TrainingRun} including {@link cz.muni.ics.kypo.training.persistence.model.AbstractLevel}
      */
-    @Query("SELECT tr FROM TrainingRun tr JOIN FETCH tr.currentLevel JOIN FETCH tr.trainingInstance ti JOIN FETCH ti.trainingDefinition WHERE tr.id= :trainingRunId")
     Optional<TrainingRun> findByIdWithLevel(@Param("trainingRunId") Long trainingRunId);
 
     /**
@@ -92,31 +118,9 @@ public interface TrainingRunRepository extends JpaRepository<TrainingRun, Long>,
      * @param pageable             the pageable
      * @return the page of all {@link TrainingRun}s by id of associated {@link cz.muni.ics.kypo.training.persistence.model.TrainingDefinition} that are accessible to participant
      */
-    @Query(value = "SELECT tr FROM TrainingRun tr JOIN FETCH tr.participantRef pr JOIN FETCH tr.trainingInstance ti JOIN FETCH "
-            + "ti.trainingDefinition td WHERE td.id = :trainingDefinitionId AND pr.userRefId = :userRefId",
-            countQuery = "SELECT COUNT(tr) FROM TrainingRun tr INNER JOIN tr.participantRef pr INNER JOIN tr.trainingInstance ti INNER JOIN " +
-                    "ti.trainingDefinition td WHERE td.id = :trainingDefinitionId AND pr.userRefId = :userRefId")
     Page<TrainingRun> findAllByTrainingDefinitionIdAndParticipantUserRefId(@Param("trainingDefinitionId") Long trainingDefinitionId,
-                                                                           @Param("userRefId") Long userRefId, Pageable pageable);
-
-    /**
-     * Find all training runs associated with training instance.
-     *
-     * @param trainingInstanceId the training instance id
-     * @param pageable           the pageable
-     * @return the page of all {@link TrainingRun}s associated with {@link TrainingInstance}
-     */
-    @EntityGraph(attributePaths = {"participantRef"})
-    Page<TrainingRun> findAllByTrainingInstanceId(Long trainingInstanceId, Pageable pageable);
-
-    /**
-     * Find all training runs associated with training instance.
-     *
-     * @param trainingInstanceId the training instance id
-     * @return the set of all {@link TrainingRun}s associated with {@link TrainingInstance}
-     */
-    @EntityGraph(attributePaths = {"participantRef"})
-    Set<TrainingRun> findAllByTrainingInstanceId(Long trainingInstanceId);
+                                                                           @Param("userRefId") Long userRefId,
+                                                                           Pageable pageable);
 
     /**
      * Find all active training runs by training instance id.
@@ -125,9 +129,8 @@ public interface TrainingRunRepository extends JpaRepository<TrainingRun, Long>,
      * @param pageable           the pageable
      * @return the page of all active {@link TrainingRun}s associated with given {@link TrainingInstance}
      */
-    @Query(value = "SELECT tr FROM TrainingRun tr JOIN FETCH tr.trainingInstance ti WHERE ti.id = :trainingInstanceId AND tr.state <> 'ARCHIVED'",
-            countQuery = "SELECT COUNT(tr) FROM TrainingRun tr INNER JOIN tr.trainingInstance ti WHERE ti.id = :trainingInstanceId AND tr.state <> 'ARCHIVED'")
-    Page<TrainingRun> findAllActiveByTrainingInstanceId(@Param("trainingInstanceId") Long trainingInstanceId, Pageable pageable);
+    Page<TrainingRun> findAllActiveByTrainingInstanceId(@Param("trainingInstanceId") Long trainingInstanceId,
+                                                        Pageable pageable);
 
     /**
      * Find all inactive training runs by training instance id.
@@ -136,9 +139,8 @@ public interface TrainingRunRepository extends JpaRepository<TrainingRun, Long>,
      * @param pageable           the pageable
      * @return the page of all inactive {@link TrainingRun}s associated with given {@link TrainingInstance}
      */
-    @Query(value = "SELECT tr FROM TrainingRun tr JOIN FETCH tr.trainingInstance ti WHERE ti.id = :trainingInstanceId AND tr.state = 'ARCHIVED'",
-            countQuery = "SELECT COUNT(tr) FROM TrainingRun tr INNER JOIN tr.trainingInstance ti WHERE ti.id = :trainingInstanceId AND tr.state = 'ARCHIVED'")
-    Page<TrainingRun> findAllInactiveByTrainingInstanceId(@Param("trainingInstanceId") Long trainingInstanceId, Pageable pageable);
+    Page<TrainingRun> findAllInactiveByTrainingInstanceId(@Param("trainingInstanceId") Long trainingInstanceId,
+                                                          Pageable pageable);
 
     /**
      * Find all training runs associated with training definition.
@@ -147,9 +149,8 @@ public interface TrainingRunRepository extends JpaRepository<TrainingRun, Long>,
      * @param pageable             the pageable
      * @return the page of all {@link TrainingRun}s associated with {@link cz.muni.ics.kypo.training.persistence.model.TrainingDefinition}
      */
-    @Query(value = "SELECT tr FROM TrainingRun tr JOIN FETCH tr.trainingInstance ti JOIN FETCH ti.trainingDefinition td WHERE td.id = :trainingDefinitionId",
-            countQuery = "SELECT COUNT(tr) FROM TrainingRun tr INNER JOIN tr.trainingInstance ti INNER JOIN ti.trainingDefinition td WHERE td.id = :trainingDefinitionId")
-    Page<TrainingRun> findAllByTrainingDefinitionId(@Param("trainingDefinitionId") Long trainingDefinitionId, Pageable pageable);
+    Page<TrainingRun> findAllByTrainingDefinitionId(@Param("trainingDefinitionId") Long trainingDefinitionId,
+                                                    Pageable pageable);
 
     /**
      * Delete all training runs by training instance.
@@ -157,7 +158,6 @@ public interface TrainingRunRepository extends JpaRepository<TrainingRun, Long>,
      * @param trainingInstanceId the training instance id
      */
     @Modifying
-    @Query("DELETE FROM TrainingRun tr WHERE tr.trainingInstance.id = :trainingInstanceId")
     void deleteTrainingRunsByTrainingInstance(@Param("trainingInstanceId") Long trainingInstanceId);
 
     /**
@@ -167,14 +167,8 @@ public interface TrainingRunRepository extends JpaRepository<TrainingRun, Long>,
      * @param userRefId   the user ref id
      * @return the {@link TrainingRun} by user and access token
      */
-    @Query("SELECT tr FROM TrainingRun tr JOIN FETCH tr.trainingInstance ti JOIN FETCH tr.participantRef pr JOIN FETCH tr.currentLevel WHERE ti.accessToken = :accessToken " +
-            "AND pr.userRefId = :userRefId AND tr.sandboxInstanceRefId IS NOT NULL AND tr.state NOT LIKE 'FINISHED' ")
     Optional<TrainingRun> findRunningTrainingRunOfUser(@Param("accessToken") String accessToken, @Param("userRefId") Long userRefId);
 
-    @Query("SELECT (COUNT(tr) > 0) FROM TrainingRun tr INNER JOIN tr.trainingInstance ti WHERE ti.id = :trainingInstanceId")
     boolean existsAnyForTrainingInstance(@Param("trainingInstanceId") Long trainingInstanceId);
-
-    @EntityGraph(attributePaths = {"participantRef"})
-    Optional<TrainingRun> findBySandboxInstanceRefId(Long sandboxId);
 
 }

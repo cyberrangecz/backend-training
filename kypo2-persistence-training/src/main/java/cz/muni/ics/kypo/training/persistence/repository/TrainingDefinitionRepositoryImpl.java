@@ -44,7 +44,7 @@ public class TrainingDefinitionRepositoryImpl extends QuerydslRepositorySupport 
                 .leftJoin(trainingDefinition.betaTestingGroup.organizers, organizers)
                 .where(authors.userRefId.eq(loggedInUserId).or(organizers.userRefId.eq(loggedInUserId)));
 
-        if(predicate != null) {
+        if (predicate != null) {
             query.where(predicate);
         }
         return getPage(query, pageable);

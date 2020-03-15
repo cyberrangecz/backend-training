@@ -8,7 +8,6 @@ import cz.muni.ics.kypo.training.persistence.model.AssessmentLevel;
 
 /**
  * The JPA repository interface to manage {@link AssessmentLevel} instances.
- *
  */
 @Repository
 public interface AssessmentLevelRepository extends JpaRepository<AssessmentLevel, Long>, QuerydslPredicateExecutor<AssessmentLevel> {

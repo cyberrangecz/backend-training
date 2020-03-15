@@ -12,8 +12,6 @@ import cz.muni.ics.kypo.training.persistence.model.enums.AssessmentType;
 import cz.muni.ics.kypo.training.persistence.model.enums.TDState;
 import cz.muni.ics.kypo.training.persistence.repository.*;
 import cz.muni.ics.kypo.training.persistence.util.TestDataFactory;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -37,11 +35,7 @@ import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.util.ReflectionTestUtils;
-import org.springframework.web.client.RestTemplate;
-import org.springframework.util.ResourceUtils;
-import cz.muni.ics.kypo.training.exceptions.EntityNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
+
 import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -570,11 +564,11 @@ public class TrainingDefinitionServiceTest {
 
     @Test
     public void findLevelById() {
-        given(abstractLevelRepository.findByIdIncludinDefinition(infoLevel.getId())).willReturn(Optional.of(infoLevel));
+        given(abstractLevelRepository.findByIdIncludingDefinition(infoLevel.getId())).willReturn(Optional.of(infoLevel));
         AbstractLevel abstractLevel = trainingDefinitionService.findLevelById(infoLevel.getId());
         assertTrue(abstractLevel instanceof InfoLevel);
         assertEquals(infoLevel.getId(), abstractLevel.getId());
-        then(abstractLevelRepository).should().findByIdIncludinDefinition(infoLevel.getId());
+        then(abstractLevelRepository).should().findByIdIncludingDefinition(infoLevel.getId());
     }
 
     @Test(expected = EntityNotFoundException.class)

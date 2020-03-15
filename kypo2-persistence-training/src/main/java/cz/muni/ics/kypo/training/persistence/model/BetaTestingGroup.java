@@ -8,7 +8,6 @@ import java.util.Set;
 
 /**
  * Group of users that can test Training runs created from unreleased Training Definition
- *
  */
 @Entity
 @Table(name = "beta_testing_group")
@@ -114,7 +113,6 @@ public class BetaTestingGroup extends AbstractEntity<Long> {
     public String toString() {
         return "BetaTestingGroup{" +
                 "id=" + super.getId() +
-                ", organizers=" + organizers +
                 '}';
     }
 }

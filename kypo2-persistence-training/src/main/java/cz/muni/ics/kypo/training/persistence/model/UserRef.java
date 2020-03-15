@@ -8,10 +8,26 @@ import java.util.Set;
 
 /**
  * Class representing DB reference for user and training instances and definition they can access
- *
  */
 @Entity
 @Table(name = "user_ref", uniqueConstraints = @UniqueConstraint(columnNames = {"user_ref_id"}))
+@NamedQueries({
+        @NamedQuery(
+                name = "UserRef.findUsers",
+                query = "SELECT ur FROM UserRef ur WHERE ur.userRefId IN :userRefId"
+        ),
+        @NamedQuery(
+                name = "UserRef.findUserByUserRefId",
+                query = "SELECT ur FROM UserRef ur WHERE ur.userRefId = :userRefId"
+        ),
+        @NamedQuery(
+                name = "UserRef.findParticipantsRefByTrainingInstanceId",
+                query = "SELECT pr.userRefId FROM TrainingRun tr " +
+                        "INNER JOIN tr.participantRef pr " +
+                        "INNER JOIN tr.trainingInstance ti " +
+                        "WHERE ti.id = :trainingInstanceId"
+        )
+})
 public class UserRef extends AbstractEntity<Long> {
 
     @Column(name = "user_ref_id", nullable = false)

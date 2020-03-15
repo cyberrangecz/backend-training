@@ -1,18 +1,16 @@
 package cz.muni.ics.kypo.training.persistence.model;
 
 import javax.persistence.*;
-import java.io.Serializable;
 import java.util.*;
 
 /**
  * Class specifying Abstract level as game level.
  * Game levels contain tasks for trainees to solve.
- *
  */
 @Entity
 @Table(name = "game_level")
 @PrimaryKeyJoinColumn(name = "id")
-public class GameLevel extends AbstractLevel implements Serializable {
+public class GameLevel extends AbstractLevel {
 
     @Column(name = "flag", nullable = false)
     private String flag;

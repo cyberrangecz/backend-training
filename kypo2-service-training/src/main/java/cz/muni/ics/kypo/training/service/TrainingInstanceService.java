@@ -6,7 +6,6 @@ import cz.muni.ics.kypo.training.api.responses.PoolInfoDto;
 import cz.muni.ics.kypo.training.exceptions.*;
 import cz.muni.ics.kypo.training.exceptions.errors.PythonApiError;
 import cz.muni.ics.kypo.training.persistence.model.*;
-import cz.muni.ics.kypo.training.persistence.model.enums.TRState;
 import cz.muni.ics.kypo.training.persistence.repository.*;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;

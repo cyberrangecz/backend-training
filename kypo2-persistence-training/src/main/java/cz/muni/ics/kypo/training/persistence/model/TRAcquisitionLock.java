@@ -6,10 +6,16 @@ import java.util.Objects;
 
 /**
  * The entity which prevents multiple training runs to be created in parallel threads. Basically it determines active training runs.
- *
  */
 @Entity
-@Table(name = "training_run_acquisition_lock", uniqueConstraints = @UniqueConstraint(columnNames = {"participant_ref_id", "training_instance_id"}))
+@Table(name = "training_run_acquisition_lock",
+        uniqueConstraints = @UniqueConstraint(columnNames = {"participant_ref_id", "training_instance_id"}))
+@NamedQueries({
+        @NamedQuery(
+                name = "TRAcquisitionLock.deleteByParticipantRefIdAndTrainingInstanceId",
+                query = "DELETE FROM TRAcquisitionLock tral WHERE tral.participantRefId = :participantRefId AND tral.trainingInstanceId = :trainingInstanceId"
+        )
+})
 public class TRAcquisitionLock extends AbstractEntity<Long> {
 
     @Column(name = "participant_ref_id")
