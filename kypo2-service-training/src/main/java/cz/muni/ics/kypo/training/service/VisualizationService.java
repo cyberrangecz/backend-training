@@ -16,6 +16,9 @@ import org.springframework.util.Assert;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * The type Visualization service.
+ */
 @Service
 public class VisualizationService {
 
@@ -23,6 +26,13 @@ public class VisualizationService {
     private UserRefRepository userRefRepository;
     private SecurityService securityService;
 
+    /**
+     * Instantiates a new Visualization service.
+     *
+     * @param abstractLevelRepository the abstract level repository
+     * @param securityService         the security service
+     * @param userRefRepository       the user ref repository
+     */
     @Autowired
     public VisualizationService(AbstractLevelRepository abstractLevelRepository,
                                 SecurityService securityService, UserRefRepository userRefRepository) {

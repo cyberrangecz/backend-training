@@ -17,6 +17,9 @@ import org.springframework.util.Assert;
 
 import java.io.IOException;
 
+/**
+ * The type Audit service.
+ */
 @Service
 public class AuditService {
 
@@ -24,6 +27,11 @@ public class AuditService {
 
     private ObjectMapper objectMapper;
 
+    /**
+     * Instantiates a new Audit service.
+     *
+     * @param objectMapper the object mapper
+     */
     @Autowired
     public AuditService(@Qualifier("objMapperForElasticsearch") ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
@@ -32,8 +40,9 @@ public class AuditService {
     /**
      * Method for saving general class into Elasticsearch under specific index and type.
      *
+     * @param <T>       the type parameter
      * @param pojoClass class saving to Elasticsearch
-     * @throws ElasticsearchTrainingServiceLayerException
+     * @throws ElasticsearchTrainingServiceLayerException the elasticsearch training service layer exception
      */
     public <T extends AbstractAuditPOJO> void saveTrainingRunEvent(T pojoClass) throws ElasticsearchTrainingServiceLayerException{
         Assert.notNull(pojoClass, "Null class could not be saved via audit method.");

@@ -12,6 +12,9 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+/**
+ * The type Training events rest controller.
+ */
 @Api(value = "/training-events", tags = "Training events", consumes = MediaType.APPLICATION_JSON_VALUE)
 @ApiResponses(value = {
         @ApiResponse(code = 401, message = "Full authentication is required to access this resource.", response = JavaApiError.class),
@@ -23,6 +26,11 @@ public class TrainingEventsRestController {
 
     private TrainingEventsService trainingEventsService;
 
+    /**
+     * Instantiates a new Training events rest controller.
+     *
+     * @param trainingEventsService the training events service
+     */
     @Autowired
     public TrainingEventsRestController(TrainingEventsService trainingEventsService) {
         this.trainingEventsService = trainingEventsService;

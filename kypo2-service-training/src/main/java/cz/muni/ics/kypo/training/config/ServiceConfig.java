@@ -31,6 +31,9 @@ import java.io.File;
 import java.nio.charset.Charset;
 import java.util.List;
 
+/**
+ * The type Service config.
+ */
 @Configuration
 @EnableAsync(proxyTargetClass = true)
 @Import({ElasticsearchServiceConfig.class, PersistenceConfig.class, ResourceServerSecurityConfig.class})
@@ -42,7 +45,6 @@ public class ServiceConfig {
     private RestTemplateHeaderModifierInterceptor restTemplateHeaderModifierInterceptor;
     @Autowired
     private ObjectMapper objectMapper;
-
     @Value("${server.ssl.trust-store: #{null}}")
     private String trustStore;
     @Value("${server.ssl.trust-store-password: #{null}}")
@@ -50,10 +52,18 @@ public class ServiceConfig {
     @Autowired
     private Environment env;
 
-
+    /**
+     * Instantiates a new Service config.
+     */
     public ServiceConfig() {
     }
 
+    /**
+     * Python rest template rest template.
+     *
+     * @return the rest template
+     * @throws Exception the exception
+     */
     @Bean
     @Qualifier("pythonRestTemplate")
     public RestTemplate pythonRestTemplate() throws Exception {
@@ -62,6 +72,12 @@ public class ServiceConfig {
         return restTemplate;
     }
 
+    /**
+     * Rest template rest template.
+     *
+     * @return the rest template
+     * @throws Exception the exception
+     */
     @Bean
     public RestTemplate restTemplate() throws Exception {
         return prepareRestTemplate();
@@ -98,7 +114,7 @@ public class ServiceConfig {
     /**
      * This configuration is necessary for sharing SecurityContext between worker threads (to pass SecurityContext to the @Async methods.)
      *
-     * @return
+     * @return method invoking factory bean
      */
     @Bean
     public MethodInvokingFactoryBean methodInvokingFactoryBean() {

@@ -19,12 +19,18 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.util.Objects;
 
+/**
+ * The type Training definition repository.
+ */
 @Repository
 public class TrainingDefinitionRepositoryImpl extends QuerydslRepositorySupport implements TrainingDefinitionRepositoryCustom {
 
     @PersistenceContext
     private EntityManager entityManager;
 
+    /**
+     * Instantiates a new Training definition repository.
+     */
     public TrainingDefinitionRepositoryImpl() {
         super(TrainingDefinition.class);
     }

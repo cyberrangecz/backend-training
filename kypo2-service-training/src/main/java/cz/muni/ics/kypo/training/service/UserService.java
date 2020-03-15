@@ -28,6 +28,9 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.*;
 
+/**
+ * The type User service.
+ */
 @Service
 public class UserService {
 
@@ -38,6 +41,12 @@ public class UserService {
     private RestTemplate restTemplate;
     private UserRefRepository userRefRepository;
 
+    /**
+     * Instantiates a new User service.
+     *
+     * @param restTemplate      the rest template
+     * @param userRefRepository the user ref repository
+     */
     public UserService(RestTemplate restTemplate, UserRefRepository userRefRepository) {
         this.restTemplate = restTemplate;
         this.userRefRepository = userRefRepository;
@@ -84,8 +93,8 @@ public class UserService {
      * Gets users with given user ref ids.
      *
      * @param userRefIds the user ref ids
-     * @param pageable pageable parameter with information about pagination.
-     * @param givenName optional parameter used for filtration
+     * @param pageable   pageable parameter with information about pagination.
+     * @param givenName  optional parameter used for filtration
      * @param familyName optional parameter used for filtration
      * @return the users with given user ref ids
      */
@@ -123,9 +132,9 @@ public class UserService {
     /**
      * Finds all logins of users that have role of designer
      *
-     * @param roleType the role type
-     * @param pageable pageable parameter with information about pagination.
-     * @param givenName optional parameter used for filtration
+     * @param roleType   the role type
+     * @param pageable   pageable parameter with information about pagination.
+     * @param givenName  optional parameter used for filtration
      * @param familyName optional parameter used for filtration
      * @return list of users with given role
      */
@@ -161,10 +170,10 @@ public class UserService {
     /**
      * Finds all logins of users that have role of designer
      *
-     * @param roleType the role type
+     * @param roleType   the role type
      * @param userRefIds ids of the users who should be excluded from the result set.
-     * @param pageable the pageable
-     * @param givenName optional parameter used for filtration
+     * @param pageable   the pageable
+     * @param givenName  optional parameter used for filtration
      * @param familyName optional parameter used for filtration
      * @return list of users with given role
      */
@@ -201,6 +210,7 @@ public class UserService {
 
     /**
      * Create new user reference
+     *
      * @param userRefToCreate user reference to be created
      * @return created {@link UserRef}
      */

@@ -169,6 +169,12 @@ public interface TrainingRunRepository extends JpaRepository<TrainingRun, Long>,
      */
     Optional<TrainingRun> findRunningTrainingRunOfUser(@Param("accessToken") String accessToken, @Param("userRefId") Long userRefId);
 
+    /**
+     * Exists any for training instance boolean.
+     *
+     * @param trainingInstanceId the training instance id
+     * @return the boolean
+     */
     boolean existsAnyForTrainingInstance(@Param("trainingInstanceId") Long trainingInstanceId);
 
 }

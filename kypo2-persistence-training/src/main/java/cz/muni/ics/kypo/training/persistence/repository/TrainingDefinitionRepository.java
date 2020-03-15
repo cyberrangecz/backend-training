@@ -77,8 +77,22 @@ public interface TrainingDefinitionRepository
      */
     Page<TrainingDefinition> findAllForOrganizers(@Param("state") TDState state, Pageable pageable);
 
+    /**
+     * Find all for organizers unreleased page.
+     *
+     * @param userRefId the user ref id
+     * @param pageable  the pageable
+     * @return the page
+     */
     Page<TrainingDefinition> findAllForOrganizersUnreleased(@Param("userRefId") Long userRefId, Pageable pageable);
 
+    /**
+     * Find all for designers and organizers unreleased page.
+     *
+     * @param userRefId the user ref id
+     * @param pageable  the pageable
+     * @return the page
+     */
     Page<TrainingDefinition> findAllForDesignersAndOrganizersUnreleased(@Param("userRefId") Long userRefId, Pageable pageable);
 
     /**

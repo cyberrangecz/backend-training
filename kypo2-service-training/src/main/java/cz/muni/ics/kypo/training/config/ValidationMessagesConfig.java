@@ -9,9 +9,17 @@ import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 import java.util.Arrays;
 import java.util.Locale;
 
+/**
+ * The type Validation messages config.
+ */
 @Configuration
 public class ValidationMessagesConfig {
 
+    /**
+     * Message source validation message source.
+     *
+     * @return the message source
+     */
     @Bean
     public MessageSource messageSourceValidation() {
         final ReloadableResourceBundleMessageSource source = new ReloadableResourceBundleMessageSource();
@@ -22,6 +30,11 @@ public class ValidationMessagesConfig {
         return source;
     }
 
+    /**
+     * Gets validator.
+     *
+     * @return the validator
+     */
     @Bean
     public LocalValidatorFactoryBean getValidator() {
         LocalValidatorFactoryBean bean = new LocalValidatorFactoryBean();
@@ -36,6 +49,8 @@ public class ValidationMessagesConfig {
      * en_US
      * <p>
      * en -> language; US -> country
+     *
+     * @param args the input arguments
      */
     public static void main(String[] args) {
         Locale[] locales = Locale.getAvailableLocales();

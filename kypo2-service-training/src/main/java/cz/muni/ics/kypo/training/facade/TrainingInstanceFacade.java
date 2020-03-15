@@ -30,6 +30,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+/**
+ * The type Training instance facade.
+ */
 @Service
 public class TrainingInstanceFacade {
 
@@ -42,6 +45,18 @@ public class TrainingInstanceFacade {
     private UserService userService;
     private SecurityService securityService;
 
+    /**
+     * Instantiates a new Training instance facade.
+     *
+     * @param trainingInstanceService   the training instance service
+     * @param trainingDefinitionService the training definition service
+     * @param trainingRunService        the training run service
+     * @param trainingEventsService     the training events service
+     * @param trainingInstanceMapper    the training instance mapper
+     * @param trainingRunMapper         the training run mapper
+     * @param userService               the user service
+     * @param securityService           the security service
+     */
     @Autowired
     public TrainingInstanceFacade(TrainingInstanceService trainingInstanceService, TrainingDefinitionService trainingDefinitionService, TrainingRunService trainingRunService, TrainingEventsService trainingEventsService,
                                   TrainingInstanceMapper trainingInstanceMapper, TrainingRunMapper trainingRunMapper, UserService userService,
@@ -169,7 +184,9 @@ public class TrainingInstanceFacade {
     /**
      * Assign pool in training instance new training instance
      *
+     * @param trainingInstanceId              the training instance id
      * @param trainingInstanceAssignPoolIdDTO of training instance to be deleted
+     * @return the training instance basic info dto
      */
     @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
             "or @securityService.isOrganizerOfGivenTrainingInstance(#trainingInstanceId)")
@@ -190,6 +207,7 @@ public class TrainingInstanceFacade {
      * Reassign pool in training instance  or assignes new training instance
      *
      * @param trainingInstanceId of training instance to be deleted
+     * @return the training instance basic info dto
      */
     @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
             "or @securityService.isOrganizerOfGivenTrainingInstance(#trainingInstanceId)")

@@ -11,16 +11,32 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * The type Training events service.
+ */
 @Service
 public class TrainingEventsService {
 
     private TrainingEventsDAO trainingEventsDAO;
 
+    /**
+     * Instantiates a new Training events service.
+     *
+     * @param trainingEventsDAO the training events dao
+     */
     @Autowired
     public TrainingEventsService(TrainingEventsDAO trainingEventsDAO) {
         this.trainingEventsDAO = trainingEventsDAO;
     }
 
+    /**
+     * Find all events by training definition and training instance id list.
+     *
+     * @param trainingDefinitionId the training definition id
+     * @param trainingInstanceId   the training instance id
+     * @return the list
+     * @throws ElasticsearchTrainingServiceLayerException the elasticsearch training service layer exception
+     */
     public List<Map<String, Object>> findAllEventsByTrainingDefinitionAndTrainingInstanceId(Long trainingDefinitionId, Long trainingInstanceId) throws ElasticsearchTrainingServiceLayerException {
         try {
             List<Map<String, Object>> eventsFromElasticsearch = trainingEventsDAO.findAllEventsByTrainingDefinitionAndTrainingInstanceId(trainingDefinitionId, trainingInstanceId);
@@ -32,6 +48,15 @@ public class TrainingEventsService {
         }
     }
 
+    /**
+     * Find all events from training run list.
+     *
+     * @param trainingDefinitionId the training definition id
+     * @param trainingInstanceId   the training instance id
+     * @param trainingRunId        the training run id
+     * @return the list
+     * @throws ElasticsearchTrainingServiceLayerException the elasticsearch training service layer exception
+     */
     public List<Map<String, Object>> findAllEventsFromTrainingRun(Long trainingDefinitionId, Long trainingInstanceId, Long trainingRunId) throws ElasticsearchTrainingServiceLayerException {
         try {
             List<Map<String, Object>> eventsFromElasticsearch = trainingEventsDAO.findAllEventsFromTrainingRun(trainingDefinitionId, trainingInstanceId, trainingRunId);
@@ -42,6 +67,12 @@ public class TrainingEventsService {
         }
     }
 
+    /**
+     * Delete events by training instance id.
+     *
+     * @param instanceId the instance id
+     * @throws ElasticsearchTrainingServiceLayerException the elasticsearch training service layer exception
+     */
     public void deleteEventsByTrainingInstanceId(Long instanceId) throws ElasticsearchTrainingServiceLayerException {
         try {
             trainingEventsDAO.deleteEventsByTrainingInstanceId(instanceId);
@@ -50,6 +81,13 @@ public class TrainingEventsService {
         }
     }
 
+    /**
+     * Delete events from training run.
+     *
+     * @param trainingInstanceId the training instance id
+     * @param trainingRunId      the training run id
+     * @throws ElasticsearchTrainingServiceLayerException the elasticsearch training service layer exception
+     */
     public void deleteEventsFromTrainingRun(Long trainingInstanceId, Long trainingRunId) throws ElasticsearchTrainingServiceLayerException {
         try {
             trainingEventsDAO.deleteEventsFromTrainingRun(trainingInstanceId, trainingRunId);

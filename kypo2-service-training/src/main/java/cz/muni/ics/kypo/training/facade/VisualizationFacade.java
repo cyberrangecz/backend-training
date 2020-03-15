@@ -30,6 +30,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * The type Visualization facade.
+ */
 @Service
 @Transactional
 public class VisualizationFacade {
@@ -45,6 +48,18 @@ public class VisualizationFacade {
     private HintMapper hintMapper;
     private UserService userService;
 
+    /**
+     * Instantiates a new Visualization facade.
+     *
+     * @param trainingRunService      the training run service
+     * @param trainingInstanceService the training instance service
+     * @param visualizationService    the visualization service
+     * @param hintMapper              the hint mapper
+     * @param gameLevelMapper         the game level mapper
+     * @param infoLevelMapper         the info level mapper
+     * @param assessmentLevelMapper   the assessment level mapper
+     * @param userService             the user service
+     */
     @Autowired
     public VisualizationFacade(TrainingRunService trainingRunService, TrainingInstanceService trainingInstanceService, VisualizationService visualizationService,
                                HintMapper hintMapper, GameLevelMapper gameLevelMapper, InfoLevelMapper infoLevelMapper,
@@ -57,6 +72,18 @@ public class VisualizationFacade {
         this.infoLevelMapper = infoLevelMapper;
         this.hintMapper = hintMapper;
         this.userService = userService;
+    }
+
+    /**
+     * Gather all the necessary information about the users with given ids.
+     *
+     * @param usersIds ids of the users to be retrieved.
+     * @param pageable pageable parameter with information about pagination.
+     * @return basic info about the users with given ids.
+     */
+    @IsDesignerOrOrganizerOrAdmin
+    public PageResultResource<UserRefDTO> getUsersByIds(Set<Long> usersIds, Pageable pageable) {
+        return userService.getUsersRefDTOByGivenUserIds(usersIds, pageable, null, null);
     }
 
     /**
@@ -88,7 +115,7 @@ public class VisualizationFacade {
         TrainingInstance trainingInstance = trainingInstanceService.findById(trainingInstanceId);
         TrainingDefinition trainingDefinitionOfTrainingRun = trainingInstance.getTrainingDefinition();
         return new VisualizationInfoDTO(trainingDefinitionOfTrainingRun.getId(), trainingDefinitionOfTrainingRun.getTitle(),
-                trainingDefinitionOfTrainingRun.getEstimatedDuration(),convertToAbstractLevelVisualizationDTO(visualizationService.getLevelsForOrganizerVisualization(trainingInstance)));
+                trainingDefinitionOfTrainingRun.getEstimatedDuration(), convertToAbstractLevelVisualizationDTO(visualizationService.getLevelsForOrganizerVisualization(trainingInstance)));
     }
 
     /**
@@ -104,7 +131,7 @@ public class VisualizationFacade {
         List<UserRefDTO> participants = new ArrayList<>();
         int page = 0;
         do {
-            participantsInfo = userService.getUsersRefDTOByGivenUserIds(participantsRefIds, PageRequest.of(page,999), null, null);
+            participantsInfo = userService.getUsersRefDTOByGivenUserIds(participantsRefIds, PageRequest.of(page, 999), null, null);
             participants.addAll(participantsInfo.getContent());
             page++;
         }
@@ -115,7 +142,7 @@ public class VisualizationFacade {
     private List<AbstractLevelVisualizationDTO> convertToAbstractLevelVisualizationDTO(List<AbstractLevel> abstractLevels) {
         List<AbstractLevelVisualizationDTO> visualizationLevelInfoDTOs = new ArrayList<>();
         abstractLevels.forEach(level -> {
-            if(level instanceof GameLevel) {
+            if (level instanceof GameLevel) {
                 GameLevelVisualizationDTO gameLevelVisualizationDTO = gameLevelMapper.mapToVisualizationGameLevelDTO((GameLevel) level);
                 gameLevelVisualizationDTO.setHints(hintMapper.mapToListDTO(((GameLevel) level).getHints()));
                 gameLevelVisualizationDTO.setLevelType(LevelType.GAME_LEVEL);
@@ -137,15 +164,4 @@ public class VisualizationFacade {
         return visualizationLevelInfoDTOs;
     }
 
-    /**
-     * Gather all the necessary information about the users with given ids.
-     *
-     * @param usersIds ids of the users to be retrieved.
-     * @param pageable  pageable parameter with information about pagination.
-     * @return basic info about the users with given ids.
-     */
-    @IsDesignerOrOrganizerOrAdmin
-    public PageResultResource<UserRefDTO> getUsersByIds(Set<Long> usersIds, Pageable pageable) {
-        return userService.getUsersRefDTOByGivenUserIds(usersIds, pageable, null, null);
-    }
 }

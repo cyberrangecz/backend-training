@@ -11,6 +11,9 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 
+/**
+ * The type Rest template header modifier interceptor.
+ */
 @Component
 public class RestTemplateHeaderModifierInterceptor implements ClientHttpRequestInterceptor {
 

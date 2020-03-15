@@ -25,6 +25,9 @@ import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.*;
 
+/**
+ * The type Training definition service.
+ */
 @Service
 public class TrainingDefinitionService {
 
@@ -44,6 +47,18 @@ public class TrainingDefinitionService {
     private static final String ARCHIVED_OR_RELEASED = "Cannot edit released or archived training definition.";
     private static final String LEVEL_NOT_FOUND = "Level not found.";
 
+    /**
+     * Instantiates a new Training definition service.
+     *
+     * @param trainingDefinitionRepository the training definition repository
+     * @param abstractLevelRepository      the abstract level repository
+     * @param infoLevelRepository          the info level repository
+     * @param gameLevelRepository          the game level repository
+     * @param assessmentLevelRepository    the assessment level repository
+     * @param trainingInstanceRepository   the training instance repository
+     * @param userRefRepository            the user ref repository
+     * @param securityService              the security service
+     */
     @Autowired
     public TrainingDefinitionService(TrainingDefinitionRepository trainingDefinitionRepository,
                                      AbstractLevelRepository abstractLevelRepository, InfoLevelRepository infoLevelRepository, GameLevelRepository gameLevelRepository,

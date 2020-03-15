@@ -62,6 +62,8 @@ public class TrainingRunsRestController {
      * Delete training runs.
      *
      * @param trainingRunIds the training run ids
+     * @param forceDelete    the force delete
+     * @return the response entity
      */
     @ApiOperation(httpMethod = "DELETE",
             value = "Delete training runs",
@@ -83,7 +85,9 @@ public class TrainingRunsRestController {
     /**
      * Delete a given training run.
      *
-     * @param runId the training run id
+     * @param runId       the training run id
+     * @param forceDelete the force delete
+     * @return the response entity
      */
     @ApiOperation(httpMethod = "DELETE",
             value = "Delete training run",
@@ -359,6 +363,7 @@ public class TrainingRunsRestController {
      * Finish training run.
      *
      * @param runId id of training run.
+     * @return the response entity
      */
     @ApiOperation(httpMethod = "PUT",
             value = "Finish training run",
@@ -383,6 +388,7 @@ public class TrainingRunsRestController {
      *
      * @param runId     id of training run.
      * @param responses to assessment
+     * @return the response entity
      */
     @ApiOperation(httpMethod = "PUT",
             value = "Evaluate responses to assessment",
@@ -425,6 +431,9 @@ public class TrainingRunsRestController {
         return ResponseEntity.ok(SquigglyUtils.stringify(objectMapper, participant));
     }
 
+    /**
+     * The type Training run rest resource.
+     */
     @ApiModel(value = "TrainingRunRestResource",
             description = "Content (Retrieved data) and meta information about REST API result page. Including page number, number of elements in page, size of elements, total number of elements and total number of pages")
     public static class TrainingRunRestResource extends PageResultResource<TrainingRunDTO> {

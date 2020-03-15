@@ -9,6 +9,9 @@ import java.lang.annotation.Retention;
 import static java.lang.annotation.ElementType.*;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
+/**
+ * The interface Api pageable swagger.
+ */
 @Target({METHOD, ANNOTATION_TYPE, TYPE})
 @Retention(RUNTIME)
 @ApiImplicitParams({

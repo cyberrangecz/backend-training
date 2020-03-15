@@ -11,7 +11,6 @@ import java.sql.Types;
 
 /**
  * Based on this post: https://stackoverflow.com/a/16049086
- *
  */
 public class StringJsonUserType implements UserType {
 

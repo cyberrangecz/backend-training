@@ -36,6 +36,9 @@ import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.*;
 
+/**
+ * The type Training run service.
+ */
 @Service
 public class TrainingRunService {
 
@@ -56,6 +59,19 @@ public class TrainingRunService {
     private RestTemplate pythonRestTemplate;
     private static final int PYTHON_RESULT_PAGE_SIZE = 1000;
 
+    /**
+     * Instantiates a new Training run service.
+     *
+     * @param trainingRunRepository       the training run repository
+     * @param abstractLevelRepository     the abstract level repository
+     * @param trainingInstanceRepository  the training instance repository
+     * @param participantRefRepository    the participant ref repository
+     * @param hintRepository              the hint repository
+     * @param auditEventsService          the audit events service
+     * @param securityService             the security service
+     * @param pythonRestTemplate          the python rest template
+     * @param trAcquisitionLockRepository the tr acquisition lock repository
+     */
     @Autowired
     public TrainingRunService(TrainingRunRepository trainingRunRepository, AbstractLevelRepository abstractLevelRepository,
                               TrainingInstanceRepository trainingInstanceRepository, UserRefRepository participantRefRepository,
@@ -129,8 +145,8 @@ public class TrainingRunService {
     /**
      * Checks whether any trainin runs exists for particular training instance
      *
-     * @param trainingInstanceId
-     * @return
+     * @param trainingInstanceId the training instance id
+     * @return boolean
      */
     public boolean existsAnyForTrainingInstance(Long trainingInstanceId) {
         return trainingRunRepository.existsAnyForTrainingInstance(trainingInstanceId);
@@ -149,6 +165,9 @@ public class TrainingRunService {
 
     /**
      * Finds all Training Runs of particular training instance.
+     *
+     * @param trainingInstanceId the training instance id
+     * @return the set
      */
     public Set<TrainingRun> findAllByTrainingInstanceId(Long trainingInstanceId) {
         return trainingRunRepository.findAllByTrainingInstanceId(trainingInstanceId);
@@ -309,6 +328,7 @@ public class TrainingRunService {
      * Connects available sandbox with given Training run.
      *
      * @param trainingRun that will be connected with sandbox
+     * @param poolId      the pool id
      * @return Training run with assigned sandbox
      */
     public TrainingRun assignSandbox(TrainingRun trainingRun, long poolId) {
