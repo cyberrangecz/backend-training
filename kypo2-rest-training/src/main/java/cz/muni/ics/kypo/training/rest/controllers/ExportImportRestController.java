@@ -10,6 +10,7 @@ import cz.muni.ics.kypo.training.api.dto.imports.ImportTrainingDefinitionDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionByIdDTO;
 import cz.muni.ics.kypo.training.facade.ExportImportFacade;
 import cz.muni.ics.kypo.training.exceptions.errors.JavaApiError;
+import cz.muni.ics.kypo.training.utils.AbstractFileExtensions;
 import io.swagger.annotations.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -22,7 +23,6 @@ import javax.validation.Valid;
 
 /**
  * The controller for export/import.
- *
  */
 @Api(value = "/", tags = "Export Imports", consumes = MediaType.APPLICATION_JSON_VALUE)
 @ApiResponses(value = {
@@ -71,8 +71,8 @@ public class ExportImportRestController {
             @PathVariable(value = "trainingDefinitionId") Long trainingDefinitionId) {
         FileToReturnDTO file = exportImportFacade.dbExport(trainingDefinitionId);
         HttpHeaders header = new HttpHeaders();
-        header.setContentType(new MediaType("application", "octet-stream") );
-        header.set("Content-Disposition", "inline; filename=" + file.getTitle() + ".json" );
+        header.setContentType(new MediaType("application", "octet-stream"));
+        header.set("Content-Disposition", "inline; filename=" + file.getTitle() + AbstractFileExtensions.JSON_FILE_EXTENSION);
         header.setContentLength(file.getContent().length);
         return new ResponseEntity<>(file.getContent(), header, HttpStatus.OK);
     }
@@ -118,19 +118,19 @@ public class ExportImportRestController {
             nickname = "archiveTrainingInstance",
             produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Training instance archived.", response = TrainingInstanceArchiveDTO.class),
-        @ApiResponse(code = 404, message = "Training instance not found.", response = JavaApiError.class),
-        @ApiResponse(code = 409, message = "Cannot archive instance that is not finished.", response = JavaApiError.class),
-        @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = JavaApiError.class)
+            @ApiResponse(code = 200, message = "Training instance archived.", response = TrainingInstanceArchiveDTO.class),
+            @ApiResponse(code = 404, message = "Training instance not found.", response = JavaApiError.class),
+            @ApiResponse(code = 409, message = "Cannot archive instance that is not finished.", response = JavaApiError.class),
+            @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = JavaApiError.class)
     })
     @GetMapping(path = "/exports/training-instances/{trainingInstanceId}", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     public ResponseEntity<byte[]> archiveTrainingInstance(
             @ApiParam(value = "Id of training instance", required = true)
-            @PathVariable(value = "trainingInstanceId") Long trainingInstanceId){
+            @PathVariable(value = "trainingInstanceId") Long trainingInstanceId) {
         FileToReturnDTO file = exportImportFacade.archiveTrainingInstance(trainingInstanceId);
         HttpHeaders header = new HttpHeaders();
-        header.setContentType(new MediaType("application", "octet-stream") );
-        header.set("Content-Disposition", "inline; filename=" + file.getTitle() + ".zip" );
+        header.setContentType(new MediaType("application", "octet-stream"));
+        header.set("Content-Disposition", "inline; filename=" + file.getTitle() + AbstractFileExtensions.ZIP_FILE_EXTENSION);
         header.setContentLength(file.getContent().length);
         return new ResponseEntity<>(file.getContent(), header, HttpStatus.OK);
     }

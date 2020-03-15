@@ -56,21 +56,21 @@ public class ServiceConfig {
 
     @Bean
     @Qualifier("pythonRestTemplate")
-    public RestTemplate pythonRestTemplate() throws Exception{
+    public RestTemplate pythonRestTemplate() throws Exception {
         RestTemplate restTemplate = prepareRestTemplate();
         restTemplate.setErrorHandler(new PythonApiResponseErrorHandler(objectMapper));
         return restTemplate;
     }
 
     @Bean
-    public RestTemplate restTemplate() throws Exception{
+    public RestTemplate restTemplate() throws Exception {
         return prepareRestTemplate();
     }
 
-    private RestTemplate prepareRestTemplate() throws Exception{
+    private RestTemplate prepareRestTemplate() throws Exception {
         RestTemplate restTemplate;
-        if(List.of(env.getActiveProfiles()).contains(SpringProfiles.PROD)) {
-            if(trustStore != null && trustStorePassword != null) {
+        if (List.of(env.getActiveProfiles()).contains(SpringProfiles.PROD)) {
+            if (trustStore != null && trustStorePassword != null) {
                 SSLContext sslContext = new SSLContextBuilder()
                         .loadTrustMaterial(new File(trustStore), trustStorePassword.toCharArray())
                         .setProtocol("TLSv1.2")
@@ -81,8 +81,7 @@ public class ServiceConfig {
                         .build();
                 HttpComponentsClientHttpRequestFactory factory = new HttpComponentsClientHttpRequestFactory(httpClient);
                 restTemplate = new RestTemplate(factory);
-            }
-            else {
+            } else {
                 throw new ExceptionInInitializerError("Path to trust store and trust store password must be defined.");
             }
         } else {
