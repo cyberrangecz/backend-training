@@ -5,6 +5,7 @@ import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.PathBuilder;
 import cz.muni.ics.kypo.commons.security.enums.AuthenticatedUserOIDCItems;
 import cz.muni.ics.kypo.training.api.enums.RoleType;
+import cz.muni.ics.kypo.training.enums.RoleTypeSecurity;
 import cz.muni.ics.kypo.training.exceptions.EntityConflictException;
 import cz.muni.ics.kypo.training.exceptions.EntityNotFoundException;
 import cz.muni.ics.kypo.training.persistence.model.*;
@@ -133,7 +134,7 @@ public class TrainingDefinitionServiceTest {
 
     @Test
     public void findAll() {
-        given(securityService.isAdmin()).willReturn(true);
+        given(securityService.hasRole(RoleTypeSecurity.ROLE_TRAINING_ADMINISTRATOR)).willReturn(true);
         List<TrainingDefinition> expected = new ArrayList<>();
         expected.add(unreleasedDefinition);
         expected.add(releasedDefinition);

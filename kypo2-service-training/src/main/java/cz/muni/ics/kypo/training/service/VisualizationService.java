@@ -1,5 +1,6 @@
 package cz.muni.ics.kypo.training.service;
 
+import cz.muni.ics.kypo.training.enums.RoleTypeSecurity;
 import cz.muni.ics.kypo.training.exceptions.EntityConflictException;
 import cz.muni.ics.kypo.training.exceptions.EntityErrorDetail;
 import cz.muni.ics.kypo.training.persistence.model.AbstractLevel;
@@ -39,9 +40,9 @@ public class VisualizationService {
      */
     public List<AbstractLevel> getLevelsForTraineeVisualization(TrainingRun trainingRun) {
         Assert.notNull(trainingRun, "Id of training run must not be null.");
-        if(securityService.isAdmin()) {
+        if (securityService.hasRole(RoleTypeSecurity.ROLE_TRAINING_ADMINISTRATOR)) {
             return abstractLevelRepository.findAllLevelsByTrainingDefinitionId(trainingRun.getTrainingInstance().getTrainingDefinition().getId());
-        } else if(trainingRun.getState().equals(TRState.RUNNING)) {
+        } else if (trainingRun.getState().equals(TRState.RUNNING)) {
             throw new EntityConflictException(new EntityErrorDetail(TrainingRun.class, "id", trainingRun.getId().getClass(), trainingRun.getId(),
                     "Logged in user cannot access info for visualization because training run is still running."));
         }
