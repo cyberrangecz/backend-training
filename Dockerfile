@@ -4,6 +4,7 @@ FROM maven:3.6.2-jdk-11-slim AS build
 ARG USERNAME=postgres
 ARG PASSWORD=postgres
 ARG POSTGRES_DB=training
+ARG PROJECT_ARTIFACT_ID=kypo2-rest-training
 
 ## default link to proprietary repository, e.g., Nexus repository
 ARG PROPRIETARY_REPO_URL=https://YOUR-PATH-TO-PROPRIETARY_REPO/repository/maven-public/
@@ -22,7 +23,7 @@ RUN /etc/init.d/postgresql start &&\
     mvn flyway:migrate -Djdbc.url="jdbc:postgresql://localhost:5432/$POSTGRES_DB" -Djdbc.username="$USERNAME" -Djdbc.password="$PASSWORD" &&\
     mkdir -p /var/log/supervisor &&\
     cp /app/supervisord.conf /etc/supervisor/supervisord.conf &&\
-    cp /app/kypo2-rest-training/target/kypo2-rest-training-*.jar /app/kypo-rest-training.jar
+    cp /app/$PROJECT_ARTIFACT_ID/target/$PROJECT_ARTIFACT_ID-*.jar /app/kypo-rest-training.jar
 
 WORKDIR /app
 EXPOSE 8083
