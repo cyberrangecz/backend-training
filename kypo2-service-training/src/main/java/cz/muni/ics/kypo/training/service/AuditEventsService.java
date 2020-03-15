@@ -13,17 +13,30 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 
+/**
+ * The type Audit events service.
+ */
 @Service
 public class AuditEventsService {
 
     private AuditService auditService;
 
+    /**
+     * Instantiates a new Audit events service.
+     *
+     * @param auditService the audit service
+     */
     @Autowired
     public AuditEventsService(AuditService auditService) {
         this.auditService = auditService;
     }
 
 
+    /**
+     * Audit training run started action.
+     *
+     * @param trainingRun the training run
+     */
     public void auditTrainingRunStartedAction(TrainingRun trainingRun) {
         AuditInfoDTO auditInfoDTO = createAuditUserInfo(trainingRun);
 
@@ -43,6 +56,11 @@ public class AuditEventsService {
         auditService.saveTrainingRunEvent(trainingRunStarted);
     }
 
+    /**
+     * Audit level started action.
+     *
+     * @param trainingRun the training run
+     */
     public void auditLevelStartedAction(TrainingRun trainingRun) {
         LevelType levelType = getLevelType(trainingRun.getCurrentLevel());
         AuditInfoDTO auditInfoDTO = createAuditUserInfo(trainingRun);
@@ -66,6 +84,11 @@ public class AuditEventsService {
         auditService.saveTrainingRunEvent(levelStarted);
     }
 
+    /**
+     * Audit level completed action.
+     *
+     * @param trainingRun the training run
+     */
     public void auditLevelCompletedAction(TrainingRun trainingRun) {
         LevelType levelType = getLevelType(trainingRun.getCurrentLevel());
         AuditInfoDTO auditInfoDTO = createAuditUserInfo(trainingRun);
@@ -88,6 +111,12 @@ public class AuditEventsService {
         auditService.saveTrainingRunEvent(levelCompleted);
     }
 
+    /**
+     * Audit hint taken action.
+     *
+     * @param trainingRun the training run
+     * @param hint        the hint
+     */
     public void auditHintTakenAction(TrainingRun trainingRun, Hint hint) {
         AuditInfoDTO auditInfoDTO = createAuditUserInfo(trainingRun);
 
@@ -109,6 +138,11 @@ public class AuditEventsService {
         auditService.saveTrainingRunEvent(hintTaken);
     }
 
+    /**
+     * Audit solution displayed action.
+     *
+     * @param trainingRun the training run
+     */
     public void auditSolutionDisplayedAction(TrainingRun trainingRun) {
         AuditInfoDTO auditInfoDTO = createAuditUserInfo(trainingRun);
 
@@ -128,6 +162,12 @@ public class AuditEventsService {
         auditService.saveTrainingRunEvent(solutionDisplayed);
     }
 
+    /**
+     * Audit correct flag submitted action.
+     *
+     * @param trainingRun the training run
+     * @param flag        the flag
+     */
     public void auditCorrectFlagSubmittedAction(TrainingRun trainingRun, String flag) {
         AuditInfoDTO auditInfoDTO = createAuditUserInfo(trainingRun);
 
@@ -147,6 +187,12 @@ public class AuditEventsService {
         auditService.saveTrainingRunEvent(correctFlagSubmitted);
     }
 
+    /**
+     * Audit wrong flag submitted action.
+     *
+     * @param trainingRun the training run
+     * @param flag        the flag
+     */
     public void auditWrongFlagSubmittedAction(TrainingRun trainingRun, String flag) {
         AuditInfoDTO auditInfoDTO = createAuditUserInfo(trainingRun);
 
@@ -167,6 +213,12 @@ public class AuditEventsService {
         auditService.saveTrainingRunEvent(wrongFlagSubmitted);
     }
 
+    /**
+     * Audit assessment answers action.
+     *
+     * @param trainingRun the training run
+     * @param answers     the answers
+     */
     public void auditAssessmentAnswersAction(TrainingRun trainingRun, String answers) {
         AuditInfoDTO auditInfoDTO = createAuditUserInfo(trainingRun);
 
@@ -186,6 +238,11 @@ public class AuditEventsService {
         auditService.saveTrainingRunEvent(assessmentAnswers);
     }
 
+    /**
+     * Audit training run ended action.
+     *
+     * @param trainingRun the training run
+     */
     public void auditTrainingRunEndedAction(TrainingRun trainingRun) {
         AuditInfoDTO auditInfoDTO = createAuditUserInfo(trainingRun);
 
@@ -207,6 +264,11 @@ public class AuditEventsService {
         auditService.saveTrainingRunEvent(assessmentAnswers);
     }
 
+    /**
+     * Audit training run resumed action.
+     *
+     * @param trainingRun the training run
+     */
     public void auditTrainingRunResumedAction(TrainingRun trainingRun) {
         AuditInfoDTO auditInfoDTO = createAuditUserInfo(trainingRun);
 

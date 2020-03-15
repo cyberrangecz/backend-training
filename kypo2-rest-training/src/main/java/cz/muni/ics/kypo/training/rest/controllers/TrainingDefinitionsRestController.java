@@ -39,7 +39,6 @@ import java.util.Set;
 
 /**
  * The type Training definitions rest controller.
- *
  */
 @Api(value = "/training-definitions", tags = "Training definitions", consumes = MediaType.APPLICATION_JSON_VALUE)
 @ApiResponses(value = {
@@ -131,9 +130,9 @@ public class TrainingDefinitionsRestController {
     /**
      * Get all Training Definitions for organizers.
      *
-     * @param state      training definition state (should be RELEASED or UNRELEASED)
-     * @param pageable   pageable parameter with information about pagination.
-     * @param fields     attributes of the object to be returned as the result.
+     * @param state    training definition state (should be RELEASED or UNRELEASED)
+     * @param pageable pageable parameter with information about pagination.
+     * @param fields   attributes of the object to be returned as the result.
      * @return all Training Definitions for organizers.
      */
     @ApiOperation(httpMethod = "GET",
@@ -193,6 +192,7 @@ public class TrainingDefinitionsRestController {
      * Update Training Definition.
      *
      * @param trainingDefinitionUpdateDTO the training definition to be updated
+     * @return the response entity
      */
     @ApiOperation(httpMethod = "PUT",
             value = "Update Training Definition",
@@ -277,9 +277,9 @@ public class TrainingDefinitionsRestController {
     /**
      * Move the given level to the specified position.
      *
-     * @param definitionId the Training Definition id
-     * @param levelIdToBeMoved  the level id from
-     * @param newPosition    position where move the given level
+     * @param definitionId     the Training Definition id
+     * @param levelIdToBeMoved the level id from
+     * @param newPosition      position where move the given level
      * @return the basic information about levels
      */
     @ApiOperation(httpMethod = "PUT",
@@ -308,6 +308,7 @@ public class TrainingDefinitionsRestController {
      * Delete Training Definition.
      *
      * @param id the id of definition to be deleted
+     * @return the response entity
      */
     @ApiOperation(httpMethod = "DELETE",
             value = "Delete training definition",
@@ -359,6 +360,7 @@ public class TrainingDefinitionsRestController {
      *
      * @param definitionId       the Training Definition id
      * @param gameLevelUpdateDTO the game level to be updated
+     * @return the response entity
      */
     @ApiOperation(httpMethod = "PUT",
             value = "Update game level",
@@ -387,6 +389,7 @@ public class TrainingDefinitionsRestController {
      *
      * @param definitionId       the definition id
      * @param infoLevelUpdateDTO the info level to be updated
+     * @return the response entity
      */
     @ApiOperation(httpMethod = "PUT",
             value = "Update info level",
@@ -415,6 +418,7 @@ public class TrainingDefinitionsRestController {
      *
      * @param definitionId             the definition id
      * @param assessmentLevelUpdateDTO the assessment level to be updated
+     * @return the response entity
      */
     @ApiOperation(httpMethod = "PUT",
             value = "Update assessment level",
@@ -509,6 +513,8 @@ public class TrainingDefinitionsRestController {
     /**
      * Get requested designers.
      *
+     * @param givenName  the given name
+     * @param familyName the family name
      * @param pageable   pageable parameter with information about pagination.
      * @return List of users login and full name with role designer.
      */
@@ -537,6 +543,8 @@ public class TrainingDefinitionsRestController {
     /**
      * Get requested organizers.
      *
+     * @param givenName  the given name
+     * @param familyName the family name
      * @param pageable   pageable parameter with information about pagination.
      * @return List of users login and full name with role designer.
      */
@@ -566,7 +574,9 @@ public class TrainingDefinitionsRestController {
      * Get requested designers not in given Training Definition.
      *
      * @param trainingDefinitionId id of the training definition
-     * @param pageable   pageable parameter with information about pagination.
+     * @param givenName            the given name
+     * @param familyName           the family name
+     * @param pageable             pageable parameter with information about pagination.
      * @return List of users login and full name with role designer.
      */
     @ApiOperation(httpMethod = "GET",
@@ -597,8 +607,8 @@ public class TrainingDefinitionsRestController {
     /**
      * Get requested beta testers for Training Definition.
      *
-     * @param pageable   pageable parameter with information about pagination.
      * @param trainingDefinitionId id of training definition for which to get beta testers
+     * @param pageable             pageable parameter with information about pagination.
      * @return List of beta testers and theirs info.
      */
     @ApiOperation(httpMethod = "GET",
@@ -624,8 +634,10 @@ public class TrainingDefinitionsRestController {
     /**
      * Get requested authors for Training Definition.
      *
-     * @param pageable   pageable parameter with information about pagination.
      * @param trainingDefinitionId id of training definition for which to retrieve authors
+     * @param givenName            the given name
+     * @param familyName           the family name
+     * @param pageable             pageable parameter with information about pagination.
      * @return List of users login and full name with role designer.
      */
     @ApiOperation(httpMethod = "GET",
@@ -656,8 +668,9 @@ public class TrainingDefinitionsRestController {
      * Concurrently add/remove authors with given ids to/from the Training Definition.
      *
      * @param trainingDefinitionId id of training definition for which to retrieve authors
-     * @param authorsAddition ids of the authors to be added to the training definition.
-     * @param authorsRemoval ids of the authors to be removed from the training definition.
+     * @param authorsAddition      ids of the authors to be added to the training definition.
+     * @param authorsRemoval       ids of the authors to be removed from the training definition.
+     * @return the response entity
      */
     @ApiOperation(httpMethod = "PUT",
             value = "Edit authors.",
@@ -687,6 +700,7 @@ public class TrainingDefinitionsRestController {
      *
      * @param definitionId the definition id
      * @param state        the new development state
+     * @return the response entity
      */
     @ApiOperation(httpMethod = "PUT",
             value = "Switch state of training definition",
@@ -719,6 +733,9 @@ public class TrainingDefinitionsRestController {
 
     }
 
+    /**
+     * The type User info rest resource.
+     */
     @ApiModel(value = "UserInfoRestResource",
             description = "Content (Retrieved data) and meta information about REST API result page. Including page number, number of elements in page, size of elements, total number of elements and total number of pages")
     public static class UserInfoRestResource extends PageResultResource<UserInfoDTO> {

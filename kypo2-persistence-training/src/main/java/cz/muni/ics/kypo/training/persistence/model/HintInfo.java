@@ -33,6 +33,7 @@ public class HintInfo {
      * @param hintId      unique identification number of Hint
      * @param hintTitle   title of Hint
      * @param hintContent content of Hint
+     * @param order       the order
      */
     public HintInfo(long gameLevelId, long hintId, String hintTitle, String hintContent, int order) {
         this.gameLevelId = gameLevelId;
@@ -114,18 +115,38 @@ public class HintInfo {
         this.hintContent = hintContent;
     }
 
+    /**
+     * Sets game level id.
+     *
+     * @param gameLevelId the game level id
+     */
     public void setGameLevelId(long gameLevelId) {
         this.gameLevelId = gameLevelId;
     }
 
+    /**
+     * Sets hint id.
+     *
+     * @param hintId the hint id
+     */
     public void setHintId(long hintId) {
         this.hintId = hintId;
     }
 
+    /**
+     * Gets order.
+     *
+     * @return the order
+     */
     public int getOrder() {
         return order;
     }
 
+    /**
+     * Sets order.
+     *
+     * @param order the order
+     */
     public void setOrder(int order) {
         this.order = order;
     }

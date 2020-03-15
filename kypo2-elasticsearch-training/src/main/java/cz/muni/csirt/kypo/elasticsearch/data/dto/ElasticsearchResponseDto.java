@@ -2,7 +2,6 @@ package cz.muni.csirt.kypo.elasticsearch.data.dto;
 
 /**
  * Encapsulates response from Elasticsearch.
- *
  */
 public class ElasticsearchResponseDto {
 

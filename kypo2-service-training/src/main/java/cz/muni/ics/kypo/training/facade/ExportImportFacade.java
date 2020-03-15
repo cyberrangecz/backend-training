@@ -42,6 +42,9 @@ import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+/**
+ * The type Export import facade.
+ */
 @Service
 @Transactional
 public class ExportImportFacade {
@@ -62,6 +65,21 @@ public class ExportImportFacade {
     private TrainingEventsService trainingEventsService;
     private UserRefMapper userRefMapper;
 
+    /**
+     * Instantiates a new Export import facade.
+     *
+     * @param exportImportService       the export import service
+     * @param exportImportMapper        the export import mapper
+     * @param gameLevelMapper           the game level mapper
+     * @param infoLevelMapper           the info level mapper
+     * @param assessmentLevelMapper     the assessment level mapper
+     * @param trainingDefinitionService the training definition service
+     * @param trainingDefinitionMapper  the training definition mapper
+     * @param objectMapper              the object mapper
+     * @param trainingEventsService     the training events service
+     * @param userService               the user service
+     * @param userRefMapper             the user ref mapper
+     */
     @Autowired
     public ExportImportFacade(ExportImportService exportImportService, ExportImportMapper exportImportMapper, GameLevelMapper gameLevelMapper,
                               InfoLevelMapper infoLevelMapper, AssessmentLevelMapper assessmentLevelMapper, TrainingDefinitionService trainingDefinitionService,

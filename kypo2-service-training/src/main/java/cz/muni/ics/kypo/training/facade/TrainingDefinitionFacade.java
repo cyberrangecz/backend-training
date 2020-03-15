@@ -39,6 +39,9 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * The type Training definition facade.
+ */
 @Service
 @Transactional
 public class TrainingDefinitionFacade {
@@ -52,6 +55,18 @@ public class TrainingDefinitionFacade {
     private UserService userService;
     private SecurityService securityService;
 
+    /**
+     * Instantiates a new Training definition facade.
+     *
+     * @param trainingDefinitionService the training definition service
+     * @param trainingDefMapper         the training def mapper
+     * @param gameLevelMapper           the game level mapper
+     * @param infoLevelMapper           the info level mapper
+     * @param assessmentLevelMapper     the assessment level mapper
+     * @param basicLevelInfoMapper      the basic level info mapper
+     * @param userService               the user service
+     * @param securityService           the security service
+     */
     @Autowired
     public TrainingDefinitionFacade(TrainingDefinitionService trainingDefinitionService,
                                     TrainingDefinitionMapper trainingDefMapper, GameLevelMapper gameLevelMapper,
@@ -148,8 +163,8 @@ public class TrainingDefinitionFacade {
     /**
      * Find all Training Definitions.
      *
-     * @param state represents a string if the training definitions should be relased or not.
-     * @param pageable  pageable parameter with information about pagination.
+     * @param state    represents a string if the training definitions should be relased or not.
+     * @param pageable pageable parameter with information about pagination.
      * @return page of all {@link TrainingDefinitionInfoDTO} accessible for organizers
      */
     @IsOrganizerOrAdmin
@@ -260,9 +275,9 @@ public class TrainingDefinitionFacade {
     /**
      * Move level to the different position and modify orders of levels between moved level and new position.
      *
-     * @param definitionId  - Id of definition containing levels, this training definition is updating its last edited column.
+     * @param definitionId     - Id of definition containing levels, this training definition is updating its last edited column.
      * @param levelIdToBeMoved - id of the level to be moved to the new position
-     * @param newPosition   - position where level will be moved
+     * @param newPosition      - position where level will be moved
      * @return the list of {@link BasicLevelInfoDTO} about all levels from given definition
      */
     @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
@@ -432,8 +447,10 @@ public class TrainingDefinitionFacade {
     /**
      * Get users with given role
      *
-     * @param roleType the wanted role type
-     * @param pageable pageable parameter with information about pagination.
+     * @param roleType   the wanted role type
+     * @param pageable   pageable parameter with information about pagination.
+     * @param givenName  the given name
+     * @param familyName the family name
      * @return list of users {@link UserRefDTO}
      */
     @IsDesignerOrAdmin
@@ -467,9 +484,9 @@ public class TrainingDefinitionFacade {
      * Retrieve all authors for given training definition.
      *
      * @param trainingDefinitionId id of the training definition for which to get the authors
-     * @param pageable pageable parameter with information about pagination.
-     * @param givenName optional parameter used for filtration
-     * @param familyName optional parameter used for filtration
+     * @param pageable             pageable parameter with information about pagination.
+     * @param givenName            optional parameter used for filtration
+     * @param familyName           optional parameter used for filtration
      * @return returns all authors in given training definition.
      */
     @IsDesignerOrOrganizerOrAdmin
@@ -482,7 +499,7 @@ public class TrainingDefinitionFacade {
      * Retrieve all beta testers for given training definition.
      *
      * @param trainingDefinitionId id of the training definition for which to get the beta testers
-     * @param pageable pageable parameter with information about pagination.
+     * @param pageable             pageable parameter with information about pagination.
      * @return returns all beta testers in given training definition.
      */
     @IsDesignerOrOrganizerOrAdmin
@@ -500,9 +517,9 @@ public class TrainingDefinitionFacade {
      * Retrieve all designers not in the given training definition.
      *
      * @param trainingDefinitionId id of the training definition which users should be excluded from the result list.
-     * @param pageable pageable parameter with information about pagination.
-     * @param givenName optional parameter used for filtration
-     * @param familyName optional parameter used for filtration
+     * @param pageable             pageable parameter with information about pagination.
+     * @param givenName            optional parameter used for filtration
+     * @param familyName           optional parameter used for filtration
      * @return returns all designers not in the given training definition.
      */
     @IsDesignerOrOrganizerOrAdmin
@@ -519,8 +536,8 @@ public class TrainingDefinitionFacade {
      * Concurrently add authors to the given training definition and remove authors from the training definition.
      *
      * @param trainingDefinitionId if of the training definition to be updated
-     * @param authorsAddition ids of the authors to be added to the training definition
-     * @param authorsRemoval ids of the authors to be removed from the training definition.
+     * @param authorsAddition      ids of the authors to be added to the training definition
+     * @param authorsRemoval       ids of the authors to be removed from the training definition.
      */
     @IsDesignerOrAdmin
     @TransactionalWO

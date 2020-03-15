@@ -37,6 +37,7 @@ public class Hint extends AbstractEntity<Long> {
      * @param content     text advice of the hint
      * @param hintPenalty score penalty trainee pays to display hint
      * @param gameLevel   game level associated with given hint
+     * @param order       the order
      */
     public Hint(String title, String content, Integer hintPenalty, GameLevel gameLevel, int order) {
         this.title = title;
@@ -136,10 +137,20 @@ public class Hint extends AbstractEntity<Long> {
         this.gameLevel = gameLevel;
     }
 
+    /**
+     * Gets order.
+     *
+     * @return the order
+     */
     public int getOrder() {
         return order;
     }
 
+    /**
+     * Sets order.
+     *
+     * @param order the order
+     */
     public void setOrder(int order) {
         this.order = order;
     }

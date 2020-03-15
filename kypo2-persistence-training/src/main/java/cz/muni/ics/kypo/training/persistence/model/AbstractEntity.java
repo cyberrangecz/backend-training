@@ -4,6 +4,8 @@ import javax.persistence.*;
 import java.io.Serializable;
 
 /**
+ * The type Abstract entity.
+ *
  * @param <PK> Primary key for a given entity.
  */
 @MappedSuperclass
@@ -14,13 +16,26 @@ public class AbstractEntity<PK extends Serializable> implements Serializable {
     @Column(name = "id", unique = true, nullable = false, insertable = false)
     private PK id;
 
+    /**
+     * Instantiates a new Abstract entity.
+     */
     public AbstractEntity() {
     }
 
+    /**
+     * Gets id.
+     *
+     * @return the id
+     */
     public PK getId() {
         return id;
     }
 
+    /**
+     * Sets id.
+     *
+     * @param id the id
+     */
     public void setId(PK id) {
         this.id = id;
     }

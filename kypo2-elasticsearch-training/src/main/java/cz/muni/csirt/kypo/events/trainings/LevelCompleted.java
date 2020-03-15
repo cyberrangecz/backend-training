@@ -8,12 +8,9 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.*;
 
+
 /**
- * This classes uses Builder pattern based on the following blog:
- *
- * @see <a href="https://blog.jayway.com/2012/02/07/builder-pattern-with-a-twist/">https://blog.jayway.com/2012/02/07/builder-pattern-with-a-twist/</a>
- * <p>
- * Without that builder it is easy to mesh class parameters, e.g. trainingDefinitionId with trainingInstanceId.
+ * The type Level completed.
  */
 @Builder
 @AllArgsConstructor

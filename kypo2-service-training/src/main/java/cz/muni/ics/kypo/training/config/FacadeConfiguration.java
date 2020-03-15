@@ -10,6 +10,9 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
+/**
+ * The type Facade configuration.
+ */
 @Configuration
 @EnableTransactionManagement
 @Import({ServiceConfig.class, ValidationMessagesConfig.class})
@@ -18,12 +21,22 @@ public class FacadeConfiguration {
 
     private static final Logger LOG = LoggerFactory.getLogger(FacadeConfiguration.class);
 
+    /**
+     * Model mapper model mapper.
+     *
+     * @return the model mapper
+     */
     @Bean
     public ModelMapper modelMapper() {
         LOG.debug("modelMapper()");
         return new ModelMapper();
     }
 
+    /**
+     * Username validator email validator.
+     *
+     * @return the email validator
+     */
     @Bean
     public EmailValidator usernameValidator() {
         LOG.debug("usernameValidator()");

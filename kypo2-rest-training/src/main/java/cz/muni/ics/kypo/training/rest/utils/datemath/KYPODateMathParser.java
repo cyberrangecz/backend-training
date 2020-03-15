@@ -49,7 +49,6 @@ import java.util.regex.Pattern;
  * }
  * </code>
  * </pre>
- *
  */
 @Component
 public class KYPODateMathParser {
@@ -66,6 +65,12 @@ public class KYPODateMathParser {
     private static final DateMathParser dateMathParser = new DateMathParser(new FormatDateTimeFormatter("YYYY.mm.dd", parser, Locale.ROOT));
 
 
+    /**
+     * Parse date long.
+     *
+     * @param date the date
+     * @return the long
+     */
     public long parseDate(final String date) {
         if (ONLY_DIGITS.matcher(date).matches()) {
             return Long.parseLong(date);

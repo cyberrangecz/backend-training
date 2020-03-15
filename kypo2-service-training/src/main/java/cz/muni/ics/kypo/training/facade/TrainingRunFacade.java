@@ -42,6 +42,9 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
+/**
+ * The type Training run facade.
+ */
 @Service
 public class TrainingRunFacade {
 
@@ -55,6 +58,17 @@ public class TrainingRunFacade {
     private HintMapper hintMapper;
     private UserService userService;
 
+    /**
+     * Instantiates a new Training run facade.
+     *
+     * @param trainingRunService    the training run service
+     * @param trainingRunMapper     the training run mapper
+     * @param gameLevelMapper       the game level mapper
+     * @param assessmentLevelMapper the assessment level mapper
+     * @param infoLevelMapper       the info level mapper
+     * @param hintMapper            the hint mapper
+     * @param userService           the user service
+     */
     @Autowired
     public TrainingRunFacade(TrainingRunService trainingRunService, TrainingRunMapper trainingRunMapper,
                              GameLevelMapper gameLevelMapper, AssessmentLevelMapper assessmentLevelMapper,

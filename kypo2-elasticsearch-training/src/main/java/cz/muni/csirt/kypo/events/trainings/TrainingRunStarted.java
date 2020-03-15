@@ -7,6 +7,9 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.*;
 
+/**
+ * The type Training run started.
+ */
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor

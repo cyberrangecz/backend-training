@@ -7,12 +7,16 @@ import io.swagger.util.Json;
 import org.apache.maven.plugin.logging.Log;
 
 /**
- *
  * That class is used to generate snake_case fields in REST API .adoc and .pdf documentation.
- *
  */
 public class CustomSwaggerReader extends SpringMvcApiReader {
 
+    /**
+     * Instantiates a new Custom swagger reader.
+     *
+     * @param swagger the swagger
+     * @param log     the log
+     */
     public CustomSwaggerReader(Swagger swagger, Log log) {
         super(swagger, log);
         Json.mapper().setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);

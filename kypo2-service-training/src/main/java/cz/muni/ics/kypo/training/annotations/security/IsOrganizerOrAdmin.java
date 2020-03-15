@@ -11,7 +11,6 @@ import java.lang.annotation.Target;
 /**
  * The custom annotation <i>@IsOrganizerOrAdmin<i/>. All methods annotated with this annotation expect the user has a role <strong>ROLE_TRAINING_ADMINISTRATOR<strong/>
  * or <strong>ROLE_TRAINING_ORGANIZER<strong/>.
- *
  */
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)

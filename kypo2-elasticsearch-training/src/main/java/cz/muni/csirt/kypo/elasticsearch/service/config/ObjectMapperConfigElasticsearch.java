@@ -7,9 +7,17 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+/**
+ * The type Object mapper config elasticsearch.
+ */
 @Configuration
 public class ObjectMapperConfigElasticsearch {
 
+    /**
+     * Object mapper object mapper.
+     *
+     * @return the object mapper
+     */
     @Bean("objMapperForElasticsearch")
     public ObjectMapper objectMapper() {
         ObjectMapper objectMapper = new ObjectMapper();

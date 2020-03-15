@@ -28,6 +28,9 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
+/**
+ * The type Custom rest exception handler training.
+ */
 @Order(Ordered.HIGHEST_PRECEDENCE)
 @RestControllerAdvice(basePackages = "cz.muni.ics.kypo.training")
 public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionHandler {
@@ -113,6 +116,13 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
 
     // Handling of own exceptions
 
+    /**
+     * Handle constraint violation response entity.
+     *
+     * @param ex  the ex
+     * @param req the req
+     * @return the response entity
+     */
     @ExceptionHandler({ConstraintViolationException.class})
     public ResponseEntity<Object> handleConstraintViolation(final ConstraintViolationException ex,
                                                             HttpServletRequest req) {
@@ -124,6 +134,14 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
         return new ResponseEntity<>(apiError, new HttpHeaders(), apiError.getStatus());
     }
 
+    /**
+     * Handle bad request exception response entity.
+     *
+     * @param ex      the ex
+     * @param request the request
+     * @param req     the req
+     * @return the response entity
+     */
     @ExceptionHandler(BadRequestException.class)
     public ResponseEntity<Object> handleBadRequestException(final BadRequestException ex, final WebRequest request, HttpServletRequest req) {
         final ApiError apiError = ApiError.of(
@@ -134,6 +152,14 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
         return new ResponseEntity<>(apiError, new HttpHeaders(), apiError.getStatus());
     }
 
+    /**
+     * Handle forbidden exception response entity.
+     *
+     * @param ex      the ex
+     * @param request the request
+     * @param req     the req
+     * @return the response entity
+     */
     @ExceptionHandler(ForbiddenException.class)
     public ResponseEntity<Object> handleForbiddenException(final ForbiddenException ex, final WebRequest request, HttpServletRequest req) {
         final ApiError apiError = ApiError.of(
@@ -144,6 +170,14 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
         return new ResponseEntity<>(apiError, new HttpHeaders(), apiError.getStatus());
     }
 
+    /**
+     * Handle internal server error exception response entity.
+     *
+     * @param ex      the ex
+     * @param request the request
+     * @param req     the req
+     * @return the response entity
+     */
     @ExceptionHandler(InternalServerErrorException.class)
     public ResponseEntity<Object> handleInternalServerErrorException(final InternalServerErrorException ex, final WebRequest request, HttpServletRequest req) {
         final ApiError apiError = ApiError.of(
@@ -154,6 +188,14 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
         return new ResponseEntity<>(apiError, new HttpHeaders(), apiError.getStatus());
     }
 
+    /**
+     * Handle entity not found exception response entity.
+     *
+     * @param ex      the ex
+     * @param request the request
+     * @param req     the req
+     * @return the response entity
+     */
     @ExceptionHandler({EntityNotFoundException.class})
     public ResponseEntity<Object> handleEntityNotFoundException(final EntityNotFoundException ex, final WebRequest request, HttpServletRequest req) {
         final ApiError apiError = ApiError.of(
@@ -165,6 +207,14 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
         return new ResponseEntity<>(apiError, new HttpHeaders(), apiError.getStatus());
     }
 
+    /**
+     * Handle spring access denied exception response entity.
+     *
+     * @param ex      the ex
+     * @param request the request
+     * @param req     the req
+     * @return the response entity
+     */
     @ExceptionHandler({AccessDeniedException.class})
     public ResponseEntity<Object> handleSpringAccessDeniedException(org.springframework.security.access.AccessDeniedException ex, WebRequest request, HttpServletRequest req) {
         final ApiError apiError = ApiError.of(
@@ -175,7 +225,15 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
         return new ResponseEntity<>(apiError, new HttpHeaders(), apiError.getStatus());
     }
 
-    // thrown from SERVICE layer (nullpointers, illegal argument etc.)
+    /**
+     * Handle illegal argument exception response entity.
+     *
+     * @param ex      the ex
+     * @param request the request
+     * @param req     the req
+     * @return the response entity
+     */
+// thrown from SERVICE layer (nullpointers, illegal argument etc.)
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<Object> handleIllegalArgumentException(final IllegalArgumentException ex, final WebRequest request, HttpServletRequest req) {
         final ApiError apiError = ApiError.of(
@@ -186,6 +244,14 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
         return new ResponseEntity<>(apiError, new HttpHeaders(), apiError.getStatus());
     }
 
+    /**
+     * Handle null pointer exception response entity.
+     *
+     * @param ex      the ex
+     * @param request the request
+     * @param req     the req
+     * @return the response entity
+     */
     @ExceptionHandler(NullPointerException.class)
     public ResponseEntity<Object> handleNullPointerException(final NullPointerException ex, final WebRequest request, HttpServletRequest req) {
         final ApiError apiError = ApiError.of(
@@ -198,6 +264,14 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
 
     // thrown from REST controllers
 
+    /**
+     * Handle entity conflict exception response entity.
+     *
+     * @param ex      the ex
+     * @param request the request
+     * @param req     the req
+     * @return the response entity
+     */
     @ExceptionHandler({EntityConflictException.class})
     public ResponseEntity<Object> handleEntityConflictException(final EntityConflictException ex, final WebRequest request,
                                                                 HttpServletRequest req) {
@@ -210,6 +284,14 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
         return new ResponseEntity<>(apiError, new HttpHeaders(), apiError.getStatus());
     }
 
+    /**
+     * Handle too many requests exception response entity.
+     *
+     * @param ex      the ex
+     * @param request the request
+     * @param req     the req
+     * @return the response entity
+     */
     @ExceptionHandler({TooManyRequestsException.class})
     public ResponseEntity<Object> handleTooManyRequestsException(final TooManyRequestsException ex, final WebRequest request,
                                                                 HttpServletRequest req) {
@@ -222,6 +304,14 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
         return new ResponseEntity<>(apiError, new HttpHeaders(), apiError.getStatus());
     }
 
+    /**
+     * Handle unprocessable entity exception response entity.
+     *
+     * @param ex      the ex
+     * @param request the request
+     * @param req     the req
+     * @return the response entity
+     */
     @ExceptionHandler({UnprocessableEntityException.class})
     public ResponseEntity<Object> handleUnprocessableEntityException(final UnprocessableEntityException ex, final WebRequest request,
                                                                      HttpServletRequest req) {
@@ -234,6 +324,14 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
         return new ResponseEntity<>(apiError, new HttpHeaders(), apiError.getStatus());
     }
 
+    /**
+     * Handle user and group api exception response entity.
+     *
+     * @param ex      the ex
+     * @param request the request
+     * @param req     the req
+     * @return the response entity
+     */
     @ExceptionHandler({MicroserviceApiException.class})
     public ResponseEntity<Object> handleUserAndGroupApiException(final MicroserviceApiException ex, final WebRequest request,
                                                                  HttpServletRequest req) {
@@ -246,6 +344,14 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
         return new ResponseEntity<>(apiError, new HttpHeaders(), apiError.getStatus());
     }
 
+    /**
+     * Handle all response entity.
+     *
+     * @param ex      the ex
+     * @param request the request
+     * @param req     the req
+     * @return the response entity
+     */
     @ExceptionHandler({Exception.class})
     public ResponseEntity<Object> handleAll(final Exception ex, final WebRequest request, HttpServletRequest req) {
         final ApiError apiError = ApiError.of(

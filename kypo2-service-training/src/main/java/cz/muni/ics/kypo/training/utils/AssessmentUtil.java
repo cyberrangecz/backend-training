@@ -18,11 +18,21 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * The type Assessment util.
+ */
 public class AssessmentUtil {
 
     private static Logger LOG = LoggerFactory.getLogger(AssessmentUtil.class);
 
 
+    /**
+     * Evaluate test int.
+     *
+     * @param questions the questions
+     * @param responses the responses
+     * @return the int
+     */
     public int evaluateTest(JSONArray questions, JSONArray responses) {
         LOG.info("Evaluating test");
         int receivedPoints = 0;
@@ -55,7 +65,8 @@ public class AssessmentUtil {
 
     /**
      * Method converts JSONArray to List<Integer>.
-     * @param jsonArray
+     *
+     * @param jsonArray the json array
      * @return list of integers
      */
     public List<Integer> convertJSONArrayToListOfInt(JSONArray jsonArray) {
@@ -71,6 +82,7 @@ public class AssessmentUtil {
 
     /**
      * Method gets user's answer for EMI question.
+     *
      * @param pairs list of individual answers to a specific question.
      * @return user mapping of choices
      */
@@ -85,6 +97,7 @@ public class AssessmentUtil {
 
     /**
      * Method gets correct choices for MCQ question.
+     *
      * @param question to get correct choices
      * @return list of correct choices orders
      */
@@ -101,6 +114,7 @@ public class AssessmentUtil {
 
     /**
      * Method gets correct choice text for FFQ question.
+     *
      * @param question to get correct choices
      * @return list of correct choices text
      */
@@ -117,6 +131,7 @@ public class AssessmentUtil {
 
     /**
      * Method gets correct mapping of choices for EMI question.
+     *
      * @param question to get correct mapping
      * @return map of correct choice mapping
      */
@@ -136,7 +151,8 @@ public class AssessmentUtil {
 
     /**
      * Method gets from assessment the question in given order.
-     * @param questions JSONArray of questions
+     *
+     * @param questions     JSONArray of questions
      * @param questionOrder in which question is in the assessment
      * @return question in the given order as JSONObject or null if there is no question in given order
      */
@@ -150,14 +166,13 @@ public class AssessmentUtil {
     }
 
 
-
     /**
      * Method evaluate a specific MCQ question.
+     *
      * @param question which is evaluating
-     * @param choices marked by user
+     * @param choices  marked by user
      * @return received points for the question
      */
-
     public int evaluateMCQQuestion(JSONObject question, JSONArray choices) {
         List<Integer> correctMCQ = getCorrectChoicesForMCQ(question);
         List<Integer> userChoices = convertJSONArrayToListOfInt(choices);
@@ -170,11 +185,11 @@ public class AssessmentUtil {
 
     /**
      * Method evaluate a specific FFQ question.
-     * @param question which is evaluating
+     *
+     * @param question   which is evaluating
      * @param userAnswer answer from user
      * @return received points for the question
      */
-
     public int evaluateFFQQuestion(JSONObject question, String userAnswer) {
         List<String> correctFFQ = getCorrectChoicesForFFQ(question);
         if (correctFFQ.contains(userAnswer.toLowerCase())) {
@@ -186,11 +201,11 @@ public class AssessmentUtil {
 
     /**
      * Method evaluate a specific EMI question.
+     *
      * @param question which is evaluating
-     * @param answers from user
+     * @param answers  from user
      * @return received points for the question
      */
-
     public int evaluateEMIQuestion(JSONObject question, JSONArray answers) {
         Map<Integer, Integer> userAnswers = getEMIAnswersFromUser(answers);
         Map<Integer, Integer> correctEMI = getCorrectChoicesForEMI(question);
@@ -204,9 +219,11 @@ public class AssessmentUtil {
 
     /**
      * Method to get certain assessment from array of assessments.
-     * @param assessmentPosition
-     * @param assessmentOrder
-     * @param assessments list of assessments in JSON format
+     *
+     * @param assessmentPosition the assessment position
+     * @param assessmentOrder    the assessment order
+     * @param assessments        list of assessments in JSON format
+     * @return the assessment for responses
      */
     public JSONObject getAssessmentForResponses(int assessmentPosition, int assessmentOrder, JSONArray assessments) {
         for (int k = 0; k < assessments.length(); k++) {
@@ -220,9 +237,10 @@ public class AssessmentUtil {
 
     /**
      * Method put answers from single assessment to questions.
-     * @param userName user who answer the question
-     * @param answers users answers for given questions
+     *
+     * @param answers   users answers for given questions
      * @param questions questions from certain assessment
+     * @param userName  user who answer the question
      */
     public void putAnswersToQuestions(JSONArray answers, JSONArray questions, String userName) {
         for (int a = 0; a < answers.length(); a++) {
@@ -239,8 +257,9 @@ public class AssessmentUtil {
 
     /**
      * Method add responses to assessment.
-     * @param responses responses from given user
-     * @param userName name of user
+     *
+     * @param responses   responses from given user
+     * @param userName    name of user
      * @param assessments list of assessment where to put responses
      */
     public void addResponsesToAssessments(JSONArray responses, String userName, JSONArray assessments) {
@@ -255,6 +274,7 @@ public class AssessmentUtil {
 
     /**
      * Method which validate questions from assessment.
+     *
      * @param questions to be validate
      * @throws IllegalArgumentException when questions are not valid.
      */

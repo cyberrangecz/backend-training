@@ -22,7 +22,6 @@ import java.util.Set;
 
 /**
  * The type Visualizations rest controller.
- *
  */
 @Api(value = "/visualizations", tags = "Visualizations", consumes = MediaType.APPLICATION_JSON_VALUE)
 @ApiResponses(value = {
@@ -42,7 +41,7 @@ public class VisualizationRestController {
      * Instantiates a new Visualization rest controller.
      *
      * @param visualizationFacade the visualization facade
-     * @param objectMapper      the object mapper
+     * @param objectMapper        the object mapper
      */
     @Autowired
     public VisualizationRestController(VisualizationFacade visualizationFacade, ObjectMapper objectMapper) {
@@ -97,7 +96,6 @@ public class VisualizationRestController {
     }
 
 
-
     /**
      * Gather all necessary information about participants of the given training instance.
      *
@@ -123,6 +121,7 @@ public class VisualizationRestController {
     /**
      * Gather all necessary information about users with given ids.
      *
+     * @param pageable the pageable
      * @param usersIds ids of users to retrieve.
      * @return necessary info about participants specific training instance.
      */

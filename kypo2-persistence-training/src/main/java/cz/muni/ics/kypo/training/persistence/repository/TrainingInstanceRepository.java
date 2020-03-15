@@ -101,13 +101,12 @@ public interface TrainingInstanceRepository extends JpaRepository<TrainingInstan
      * @return {@link TrainingInstance} including its associated {@link TrainingDefinition}
      */
     Optional<TrainingInstance> findByIdIncludingDefinition(@Param("instanceId") Long instanceId);
-
-
+    
     /**
      * Checks if training instance finished.
      *
-     * @param currentTime the current time
      * @param instanceId  the instance id
+     * @param currentTime the current time
      * @return true if instance is finished, false if not
      */
     boolean isFinished(@Param("instanceId") Long instanceId, @Param("currentTime") LocalDateTime currentTime);

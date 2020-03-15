@@ -26,6 +26,9 @@ import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.*;
 
+/**
+ * The type Training instance service.
+ */
 @Service
 public class TrainingInstanceService {
 
@@ -43,6 +46,17 @@ public class TrainingInstanceService {
     private RestTemplate pythonRestTemplate;
     private static final int PYTHON_RESULT_PAGE_SIZE = 1000;
 
+    /**
+     * Instantiates a new Training instance service.
+     *
+     * @param trainingInstanceRepository  the training instance repository
+     * @param accessTokenRepository       the access token repository
+     * @param trainingRunRepository       the training run repository
+     * @param organizerRefRepository      the organizer ref repository
+     * @param pythonRestTemplate          the python rest template
+     * @param securityService             the security service
+     * @param trAcquisitionLockRepository the tr acquisition lock repository
+     */
     @Autowired
     public TrainingInstanceService(TrainingInstanceRepository trainingInstanceRepository, AccessTokenRepository accessTokenRepository,
                                    TrainingRunRepository trainingRunRepository, UserRefRepository organizerRefRepository,
@@ -173,10 +187,22 @@ public class TrainingInstanceService {
         LOG.debug("Training instance with id: {} deleted.", id);
     }
 
+    /**
+     * Update training instance pool training instance.
+     *
+     * @param trainingInstance the training instance
+     * @return the training instance
+     */
     public TrainingInstance updateTrainingInstancePool(TrainingInstance trainingInstance) {
         return trainingInstanceRepository.saveAndFlush(trainingInstance);
     }
 
+    /**
+     * Lock pool locked pool info.
+     *
+     * @param poolId the pool id
+     * @return the locked pool info
+     */
     public LockedPoolInfo lockPool(Long poolId) {
         try {
             HttpHeaders httpHeaders = new HttpHeaders();
@@ -190,6 +216,11 @@ public class TrainingInstanceService {
         }
     }
 
+    /**
+     * Unlock pool.
+     *
+     * @param poolId the pool id
+     */
     public void unlockPool(Long poolId) {
         try {
             // get lock id from pool

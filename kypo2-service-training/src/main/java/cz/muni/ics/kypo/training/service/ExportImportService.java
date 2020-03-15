@@ -13,6 +13,9 @@ import org.springframework.util.Assert;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * The type Export import service.
+ */
 @Service
 public class ExportImportService {
 
@@ -27,6 +30,17 @@ public class ExportImportService {
     private TrainingInstanceRepository trainingInstanceRepository;
     private TrainingRunRepository trainingRunRepository;
 
+    /**
+     * Instantiates a new Export import service.
+     *
+     * @param trainingDefinitionRepository the training definition repository
+     * @param abstractLevelRepository      the abstract level repository
+     * @param assessmentLevelRepository    the assessment level repository
+     * @param infoLevelRepository          the info level repository
+     * @param gameLevelRepository          the game level repository
+     * @param trainingInstanceRepository   the training instance repository
+     * @param trainingRunRepository        the training run repository
+     */
     @Autowired
     public ExportImportService(TrainingDefinitionRepository trainingDefinitionRepository, AbstractLevelRepository abstractLevelRepository,
                                AssessmentLevelRepository assessmentLevelRepository, InfoLevelRepository infoLevelRepository,

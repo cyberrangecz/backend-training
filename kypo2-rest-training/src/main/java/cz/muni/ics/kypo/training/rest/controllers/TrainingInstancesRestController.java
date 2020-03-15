@@ -147,6 +147,7 @@ public class TrainingInstancesRestController {
      * Update Training Instance.
      *
      * @param trainingInstanceUpdateDTO the Training Instance to be updated
+     * @return the response entity
      */
     @ApiOperation(httpMethod = "PUT",
             value = "Update training instance",
@@ -170,7 +171,9 @@ public class TrainingInstancesRestController {
     /**
      * Delete Training Instance.
      *
-     * @param id id of the Training Instance to be deleted
+     * @param id          id of the Training Instance to be deleted
+     * @param forceDelete the force delete
+     * @return the response entity
      */
     @ApiOperation(httpMethod = "DELETE",
             value = "Delete training instance",
@@ -193,6 +196,13 @@ public class TrainingInstancesRestController {
         return ResponseEntity.ok().build();
     }
 
+    /**
+     * Assign pool response entity.
+     *
+     * @param id                              the id
+     * @param trainingInstanceAssignPoolIdDTO the training instance assign pool id dto
+     * @return the response entity
+     */
     @ApiOperation(httpMethod = "PATCH",
             value = "Assign pool to the training instance",
             notes = "This can only be done by organizer of training instance or administrator",
@@ -213,6 +223,12 @@ public class TrainingInstancesRestController {
         return ResponseEntity.ok(trainingInstanceFacade.assignPoolToTrainingInstance(id, trainingInstanceAssignPoolIdDTO));
     }
 
+    /**
+     * Unassign pool response entity.
+     *
+     * @param id the id
+     * @return the response entity
+     */
     @ApiOperation(httpMethod = "PATCH",
             value = "Unassign pool of training instance",
             notes = "This can only be done by organizer of training instance or administrator",
@@ -267,8 +283,10 @@ public class TrainingInstancesRestController {
     /**
      * Get requested organizers of training instance.
      *
-     * @param pageable           pageable parameter with information about pagination.
      * @param trainingInstanceId id of training instance for which to get the organizers
+     * @param givenName          the given name
+     * @param familyName         the family name
+     * @param pageable           pageable parameter with information about pagination.
      * @return List of users login and full name with role designer.
      */
     @ApiOperation(httpMethod = "GET",
@@ -299,6 +317,8 @@ public class TrainingInstancesRestController {
      * Get requested organizers not in given training instance.
      *
      * @param trainingInstanceId id ot the training instance
+     * @param givenName          the given name
+     * @param familyName         the family name
      * @param pageable           pageable parameter with information about pagination.
      * @return List of users login and full name with role organizer.
      */
@@ -333,6 +353,7 @@ public class TrainingInstancesRestController {
      * @param trainingInstanceId id of training instance for which to retrieve organizers
      * @param organizersAddition ids of the organizers to be added to the training instance.
      * @param organizersRemoval  ids of the organizers to be removed from the training instance.
+     * @return the response entity
      */
     @ApiOperation(httpMethod = "PUT",
             value = "Edit organizers.",

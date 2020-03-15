@@ -34,6 +34,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * The type Training events dao.
+ */
 @Repository
 public class TrainingEventsDAO extends AbstractElasticClientDAO {
 
@@ -47,12 +50,28 @@ public class TrainingEventsDAO extends AbstractElasticClientDAO {
     @Value("${elasticsearch.port:9200}")
     private String elasticsearchPort;
 
+    /**
+     * Instantiates a new Training events dao.
+     *
+     * @param restHighLevelClient the rest high level client
+     * @param objectMapper        the object mapper
+     * @param restTemplate        the rest template
+     */
     @Autowired
     public TrainingEventsDAO(RestHighLevelClient restHighLevelClient, ObjectMapper objectMapper, RestTemplate restTemplate) {
         super(restHighLevelClient, objectMapper);
         this.restTemplate = restTemplate;
     }
 
+    /**
+     * Find all events by training definition and training instance id list.
+     *
+     * @param trainingDefinitionId the training definition id
+     * @param trainingInstanceId   the training instance id
+     * @return the list
+     * @throws ElasticsearchTrainingDataLayerException the elasticsearch training data layer exception
+     * @throws IOException                             the io exception
+     */
     public List<Map<String, Object>> findAllEventsByTrainingDefinitionAndTrainingInstanceId(Long trainingDefinitionId, Long trainingInstanceId) throws ElasticsearchTrainingDataLayerException, IOException {
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
         searchSourceBuilder.query(QueryBuilders.matchAllQuery());
@@ -66,6 +85,16 @@ public class TrainingEventsDAO extends AbstractElasticClientDAO {
         return handleElasticsearchResponse(getRestHighLevelClient().search(searchRequest, RequestOptions.DEFAULT));
     }
 
+    /**
+     * Find all events from training run list.
+     *
+     * @param trainingDefinitionId the training definition id
+     * @param trainingInstanceId   the training instance id
+     * @param trainingRunId        the training run id
+     * @return the list
+     * @throws ElasticsearchTrainingDataLayerException the elasticsearch training data layer exception
+     * @throws IOException                             the io exception
+     */
     public List<Map<String, Object>> findAllEventsFromTrainingRun(Long trainingDefinitionId, Long trainingInstanceId, Long trainingRunId) throws ElasticsearchTrainingDataLayerException, IOException {
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
         searchSourceBuilder.query(QueryBuilders.termQuery(AbstractKypoElasticTermQueryFields.KYPO_ELASTICSEARCH_TRAINING_RUN_ID, trainingRunId));
@@ -82,11 +111,11 @@ public class TrainingEventsDAO extends AbstractElasticClientDAO {
     /**
      * <pre>{@code
      *  DELETE /kypo3.cz.muni.csirt.kypo.events.trainings.*.instance={instanceId}
-     * }
+     * }*
      * </pre>
      *
-     * @param trainingInstanceId
-     * @throws IOException
+     * @param trainingInstanceId the training instance id
+     * @throws ElasticsearchTrainingDataLayerException the elasticsearch training data layer exception
      */
     public void deleteEventsByTrainingInstanceId(Long trainingInstanceId) throws ElasticsearchTrainingDataLayerException {
         DeleteIndexRequest deleteIndexRequest = new DeleteIndexRequest(AbstractKypoIndexPath.KYPO3_EVENTS_INDEX + ".*" + ".instance=" + trainingInstanceId);
@@ -115,8 +144,9 @@ public class TrainingEventsDAO extends AbstractElasticClientDAO {
      * }
      * </pre>
      *
-     * @param trainingInstanceId
-     * @throws IOException
+     * @param trainingInstanceId the training instance id
+     * @param trainingRunId      the training run id
+     * @throws ElasticsearchTrainingDataLayerException the elasticsearch training data layer exception
      */
     public void deleteEventsFromTrainingRun(Long trainingInstanceId, Long trainingRunId) throws ElasticsearchTrainingDataLayerException {
         HttpHeaders httpHeaders = new HttpHeaders();
@@ -171,10 +201,10 @@ public class TrainingEventsDAO extends AbstractElasticClientDAO {
      * This is slowing down the retrieving process but becomes more easy to manipulate with that List of events.
      * </p>
      *
-     * @param trainingDefinitionId
-     * @param trainingInstanceId
-     * @return
-     * @throws IOException
+     * @param trainingDefinitionId the training definition id
+     * @param trainingInstanceId   the training instance id
+     * @return list
+     * @throws IOException the io exception
      */
     public List<AbstractAuditPOJO> findAllEventsByTrainingDefinitionAndTrainingInstanceIdObj(Long trainingDefinitionId, Long trainingInstanceId) throws IOException {
         List<AbstractAuditPOJO> events = new ArrayList<>();

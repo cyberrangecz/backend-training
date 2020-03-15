@@ -9,7 +9,6 @@ import java.lang.annotation.Target;
 
 /**
  * The custom annotation <i>@IsTrainee<i/>. All methods annotated with this annotation expect the user has a role <strong>ROLE_TRAINING_TRAINEE<strong/>.
- *
  */
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)

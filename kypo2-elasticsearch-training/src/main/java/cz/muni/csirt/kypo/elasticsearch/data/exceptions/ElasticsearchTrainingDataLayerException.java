@@ -2,7 +2,6 @@ package cz.muni.csirt.kypo.elasticsearch.data.exceptions;
 
 /**
  * The type Elasticsearch training data layer exception.
- *
  */
 public class ElasticsearchTrainingDataLayerException extends RuntimeException {
 

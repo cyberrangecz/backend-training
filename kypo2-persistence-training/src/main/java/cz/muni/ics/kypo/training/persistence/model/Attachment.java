@@ -19,9 +19,19 @@ public class Attachment extends AbstractEntity<Long> {
     @JoinColumn(name = "game_level_id")
     private GameLevel gameLevel;
 
+    /**
+     * Instantiates a new Attachment.
+     */
     public Attachment() {
     }
 
+    /**
+     * Instantiates a new Attachment.
+     *
+     * @param content      the content
+     * @param creationTime the creation time
+     * @param gameLevel    the game level
+     */
     public Attachment(String content, LocalDateTime creationTime, GameLevel gameLevel) {
         this.content = content;
         this.creationTime = creationTime;
@@ -36,26 +46,56 @@ public class Attachment extends AbstractEntity<Long> {
         super.setId(id);
     }
 
+    /**
+     * Gets content.
+     *
+     * @return the content
+     */
     public String getContent() {
         return content;
     }
 
+    /**
+     * Sets content.
+     *
+     * @param content the content
+     */
     public void setContent(String content) {
         this.content = content;
     }
 
+    /**
+     * Gets creation time.
+     *
+     * @return the creation time
+     */
     public LocalDateTime getCreationTime() {
         return creationTime;
     }
 
+    /**
+     * Sets creation time.
+     *
+     * @param creationTime the creation time
+     */
     public void setCreationTime(LocalDateTime creationTime) {
         this.creationTime = creationTime;
     }
 
+    /**
+     * Gets game level.
+     *
+     * @return the game level
+     */
     public GameLevel getGameLevel() {
         return gameLevel;
     }
 
+    /**
+     * Sets game level.
+     *
+     * @param gameLevel the game level
+     */
     public void setGameLevel(GameLevel gameLevel) {
         this.gameLevel = gameLevel;
     }
