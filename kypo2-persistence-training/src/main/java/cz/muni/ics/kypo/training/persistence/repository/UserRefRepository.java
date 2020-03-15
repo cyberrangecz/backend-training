@@ -12,7 +12,6 @@ import java.util.Set;
 
 /**
  * The JPA repository interface to manage {@link UserRef} instances.
- *
  */
 @Repository
 public interface UserRefRepository extends JpaRepository<UserRef, Long>, QuerydslPredicateExecutor<UserRef> {
@@ -23,7 +22,6 @@ public interface UserRefRepository extends JpaRepository<UserRef, Long>, Queryds
      * @param userRefId the user ref id
      * @return the set of {@link UserRef}
      */
-    @Query("SELECT ur FROM UserRef ur WHERE ur.userRefId IN :userRefId")
     Set<UserRef> findUsers(@Param("userRefId") Set<Long> userRefId);
 
     /**
@@ -32,7 +30,6 @@ public interface UserRefRepository extends JpaRepository<UserRef, Long>, Queryds
      * @param userRefId the user id
      * @return the {@link UserRef}
      */
-    @Query("SELECT ur FROM UserRef ur WHERE ur.userRefId = :userRefId")
     Optional<UserRef> findUserByUserRefId(@Param("userRefId") Long userRefId);
 
     /**
@@ -41,7 +38,6 @@ public interface UserRefRepository extends JpaRepository<UserRef, Long>, Queryds
      * @param trainingInstanceId id of the training instance
      * @return the {@link UserRef}
      */
-    @Query("SELECT pr.userRefId FROM TrainingRun tr INNER JOIN tr.participantRef pr INNER JOIN tr.trainingInstance ti WHERE ti.id = :trainingInstanceId")
     Set<Long> findParticipantsRefByTrainingInstanceId(@Param("trainingInstanceId") Long trainingInstanceId);
 
 }

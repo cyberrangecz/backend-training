@@ -474,7 +474,7 @@ public class TrainingDefinitionService {
      */
     public AbstractLevel findLevelById(Long levelId) {
         Assert.notNull(levelId, "Input level id must not be null.");
-        return abstractLevelRepository.findByIdIncludinDefinition(levelId)
+        return abstractLevelRepository.findByIdIncludingDefinition(levelId)
                 .orElseThrow(() -> new EntityNotFoundException(new EntityErrorDetail(AbstractLevel.class, "id", levelId.getClass(), levelId, "Level not found")));
     }
 

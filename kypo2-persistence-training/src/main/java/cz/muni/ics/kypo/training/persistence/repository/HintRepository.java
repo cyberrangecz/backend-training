@@ -8,7 +8,6 @@ import cz.muni.ics.kypo.training.persistence.model.Hint;
 
 /**
  * The JPA repository interface to manage {@link Hint} instances.
- *
  */
 @Repository
 public interface HintRepository extends JpaRepository<Hint, Long>, QuerydslPredicateExecutor<Hint> {

@@ -5,18 +5,16 @@ import org.hibernate.annotations.Type;
 import cz.muni.ics.kypo.training.persistence.model.enums.AssessmentType;
 
 import javax.persistence.*;
-import java.io.Serializable;
 import java.util.Objects;
 
 /**
  * Class specifying Abstract level as assessment level.
  * Assessment levels contain questions for trainees to answer.
- *
  */
 @Entity
 @Table(name = "assessment_level")
 @PrimaryKeyJoinColumn(name = "id")
-public class AssessmentLevel extends AbstractLevel implements Serializable {
+public class AssessmentLevel extends AbstractLevel {
 
     @Lob
     @Type(type = "org.hibernate.type.TextType")

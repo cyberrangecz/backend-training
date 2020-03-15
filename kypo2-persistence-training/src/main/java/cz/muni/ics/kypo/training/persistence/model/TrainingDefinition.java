@@ -9,10 +9,42 @@ import java.util.*;
 /**
  * Class represents Training definition.
  * Training instances can be created based on definitions.
- *
  */
 @Entity
 @Table(name = "training_definition")
+@NamedEntityGraphs({
+        @NamedEntityGraph(
+                name = "TrainingDefinition.findAllAuthorsBetaTestingGroupOrganizers",
+                attributeNodes = {
+                        @NamedAttributeNode(value = "authors"),
+                        @NamedAttributeNode(value = "betaTestingGroup", subgraph = "betaTestingGroup.organizers")
+                },
+                subgraphs = {
+                        @NamedSubgraph(name = "betaTestingGroup.organizers", attributeNodes = @NamedAttributeNode(value = "organizers"))
+                }
+        )
+})
+@NamedQueries({
+        @NamedQuery(
+                name = "TrainingDefinition.findAllForOrganizers",
+                query = "SELECT DISTINCT td FROM TrainingDefinition td WHERE td.state = :state"
+        ),
+        @NamedQuery(
+                name = "TrainingDefinition.findAllForOrganizersUnreleased",
+                query = "SELECT DISTINCT td FROM TrainingDefinition td " +
+                        "LEFT JOIN td.betaTestingGroup bt " +
+                        "LEFT JOIN bt.organizers org " +
+                        "WHERE org.userRefId = :userRefId AND td.state = 'UNRELEASED'"
+        ),
+        @NamedQuery(
+                name = "TrainingDefinition.findAllForDesignersAndOrganizersUnreleased",
+                query = "SELECT DISTINCT td FROM TrainingDefinition td " +
+                        "LEFT JOIN td.betaTestingGroup bt " +
+                        "LEFT JOIN bt.organizers org " +
+                        "LEFT JOIN td.authors aut " +
+                        "WHERE (aut.userRefId = :userRefId OR org.userRefId = :userRefId) AND td.state = 'UNRELEASED'"
+        )
+})
 public class TrainingDefinition extends AbstractEntity<Long> {
 
     @Column(name = "title", nullable = false)

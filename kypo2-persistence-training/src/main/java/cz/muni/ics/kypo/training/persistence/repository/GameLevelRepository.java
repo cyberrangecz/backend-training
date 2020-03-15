@@ -8,7 +8,6 @@ import cz.muni.ics.kypo.training.persistence.model.GameLevel;
 
 /**
  * The JPA repository interface to manage {@link GameLevel} instances.
- *
  */
 @Repository
 public interface GameLevelRepository extends JpaRepository<GameLevel, Long>, QuerydslPredicateExecutor<GameLevel> {

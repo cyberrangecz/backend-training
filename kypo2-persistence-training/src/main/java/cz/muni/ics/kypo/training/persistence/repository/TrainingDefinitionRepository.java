@@ -16,14 +16,15 @@ import org.springframework.data.querydsl.binding.QuerydslBindings;
 import org.springframework.data.repository.query.Param;
 
 import cz.muni.ics.kypo.training.persistence.model.TrainingDefinition;
+import org.springframework.stereotype.Repository;
 
 import java.util.Collection;
 import java.util.Optional;
 
 /**
  * The JPA repository interface to manage {@link TrainingDefinition} instances.
- *
  */
+@Repository
 public interface TrainingDefinitionRepository
         extends JpaRepository<TrainingDefinition, Long>, TrainingDefinitionRepositoryCustom, QuerydslPredicateExecutor<TrainingDefinition>, QuerydslBinderCustomizer<QTrainingDefinition> {
 
@@ -49,37 +50,35 @@ public interface TrainingDefinitionRepository
      * @param pageable  the pageable
      * @return page of all {@link TrainingDefinition}
      */
-    @EntityGraph(attributePaths = {"authors", "betaTestingGroup", "betaTestingGroup.organizers"})
+    @EntityGraph(
+            value = "TrainingDefinition.findAllAuthorsBetaTestingGroupOrganizers",
+            type = EntityGraph.EntityGraphType.FETCH
+    )
     Page<TrainingDefinition> findAll(Predicate predicate, Pageable pageable);
 
     /**
      * Find all training definitions
      *
-     * @param state     the state of training definition
-     * @param pageable  the pageable
+     * @param pageable the pageable
      * @return page of all {@link TrainingDefinition}
      */
-    @Query(value = "SELECT DISTINCT td FROM TrainingDefinition td WHERE td.state = :state",
-            countQuery = "SELECT COUNT(DISTINCT td) FROM TrainingDefinition td WHERE td.state = :state")
-    Page<TrainingDefinition> findAllForOrganizers(@Param("state") TDState state, Pageable pageable);
+    @EntityGraph(
+            value = "TrainingDefinition.findAllAuthorsBetaTestingGroupOrganizers",
+            type = EntityGraph.EntityGraphType.FETCH
+    )
+    Page<TrainingDefinition> findAll(Pageable pageable);
 
     /**
      * Find all training definitions
      *
-     * @param pageable  the pageable
+     * @param state    the state of training definition
+     * @param pageable the pageable
      * @return page of all {@link TrainingDefinition}
      */
-    @EntityGraph(attributePaths = {"authors", "betaTestingGroup", "betaTestingGroup.organizers"})
-    Page<TrainingDefinition> findAll(Pageable pageable);
+    Page<TrainingDefinition> findAllForOrganizers(@Param("state") TDState state, Pageable pageable);
 
-    @Query(value = "SELECT DISTINCT td FROM TrainingDefinition td LEFT JOIN td.betaTestingGroup bt LEFT JOIN bt.organizers org WHERE org.userRefId = :userRefId AND td.state = 'UNRELEASED'",
-            countQuery = "SELECT COUNT(DISTINCT td) FROM TrainingDefinition td LEFT JOIN td.betaTestingGroup bt LEFT JOIN bt.organizers org WHERE org.userRefId = :userRefId AND td.state = 'UNRELEASED'")
     Page<TrainingDefinition> findAllForOrganizersUnreleased(@Param("userRefId") Long userRefId, Pageable pageable);
 
-    @Query(value = "SELECT DISTINCT td FROM TrainingDefinition td LEFT JOIN td.betaTestingGroup bt LEFT JOIN bt.organizers org " +
-            "LEFT JOIN td.authors aut WHERE (aut.userRefId = :userRefId OR org.userRefId = :userRefId) AND td.state = 'UNRELEASED'",
-            countQuery = "SELECT COUNT(DISTINCT td) FROM TrainingDefinition td LEFT JOIN td.betaTestingGroup bt LEFT JOIN bt.organizers org " +
-                    "LEFT JOIN td.authors aut WHERE (aut.userRefId = :userRefId OR org.userRefId = :userRefId) AND td.state = 'UNRELEASED'")
     Page<TrainingDefinition> findAllForDesignersAndOrganizersUnreleased(@Param("userRefId") Long userRefId, Pageable pageable);
 
     /**
@@ -88,7 +87,9 @@ public interface TrainingDefinitionRepository
      * @param id the id of training definition
      * @return {@link TrainingDefinition}
      */
-    @EntityGraph(attributePaths = {"authors", "betaTestingGroup", "betaTestingGroup.organizers"})
+    @EntityGraph(
+            value = "TrainingDefinition.findAllAuthorsBetaTestingGroupOrganizers",
+            type = EntityGraph.EntityGraphType.FETCH
+    )
     Optional<TrainingDefinition> findById(Long id);
-
 }

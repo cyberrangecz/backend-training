@@ -14,6 +14,62 @@ import java.util.Set;
  */
 @Entity
 @Table(name = "training_instance")
+@NamedEntityGraphs({
+        @NamedEntityGraph(
+                name = "TrainingInstance.findAllAuthorsOrganizersBetaTestingGroupBetaTestingGroupOrganizers",
+                attributeNodes = {
+                        @NamedAttributeNode(value = "organizers"),
+                        @NamedAttributeNode(value = "trainingDefinition", subgraph = "trainingDefinition.authors"),
+                        @NamedAttributeNode(value = "trainingDefinition", subgraph = "trainingDefinition.betaTestingGroup")
+                },
+                subgraphs = {
+                        @NamedSubgraph(name = "trainingDefinition.authors", attributeNodes = @NamedAttributeNode(value = "authors")),
+                        @NamedSubgraph(name = "trainingDefinition.betaTestingGroup", attributeNodes = @NamedAttributeNode(value = "betaTestingGroup", subgraph = "betaTestingGroup.organizers")),
+                        @NamedSubgraph(name = "betaTestingGroup.organizers", attributeNodes = @NamedAttributeNode(value = "organizers"))
+                }
+        ),
+        @NamedEntityGraph(
+                name = "TrainingInstance.findByIdAuthorsOrganizers",
+                attributeNodes = {
+                        @NamedAttributeNode(value = "organizers"),
+                        @NamedAttributeNode(value = "trainingDefinition", subgraph = "trainingDefinition.authors")
+                },
+                subgraphs = {
+                        @NamedSubgraph(name = "trainingDefinition.authors", attributeNodes = @NamedAttributeNode(value = "authors"))
+                }
+        )
+})
+@NamedQueries({
+        @NamedQuery(
+                name = "TrainingInstance.findByStartTimeAfterAndEndTimeBeforeAndAccessToken",
+                query = "SELECT ti FROM TrainingInstance ti " +
+                        "JOIN FETCH ti.trainingDefinition td " +
+                        "WHERE ti.startTime < :datetime AND ti.endTime > :datetime AND ti.accessToken = :accessToken"
+        ),
+        @NamedQuery(
+                name = "TrainingInstance.findByIdIncludingDefinition",
+                query = "SELECT ti FROM TrainingInstance ti " +
+                        "LEFT OUTER JOIN FETCH ti.organizers " +
+                        "JOIN FETCH ti.trainingDefinition td " +
+                        "LEFT OUTER JOIN FETCH td.authors " +
+                        "LEFT OUTER JOIN FETCH td.betaTestingGroup btg " +
+                        "LEFT OUTER JOIN FETCH btg.organizers " +
+                        "WHERE ti.id = :instanceId"
+        ),
+        @NamedQuery(
+                name = "TrainingInstance.findAllByTrainingDefinitionId",
+                query = "SELECT ti FROM TrainingInstance ti JOIN FETCH ti.trainingDefinition td WHERE td.id = :trainingDefId"
+        ),
+        @NamedQuery(
+                name = "TrainingInstance.existsAnyForTrainingDefinition",
+                query = "SELECT (COUNT(ti) > 0) FROM TrainingInstance ti " +
+                        "INNER JOIN ti.trainingDefinition td WHERE td.id = :trainingDefinitionId"
+        ),
+        @NamedQuery(
+                name = "TrainingInstance.isFinished",
+                query = "SELECT (COUNT(ti) > 0) FROM TrainingInstance ti WHERE ti.id = :instanceId AND ti.endTime < :currentTime"
+        )
+})
 public class TrainingInstance extends AbstractEntity<Long> {
 
     @Column(name = "start_time", nullable = false)
@@ -249,8 +305,6 @@ public class TrainingInstance extends AbstractEntity<Long> {
                 ", title='" + title + '\'' +
                 ", poolSize=" + poolSize +
                 ", accessToken='" + accessToken + '\'' +
-                ", trainingDefinition=" + trainingDefinition +
-                ", organizers=" + organizers +
                 '}';
     }
 }
