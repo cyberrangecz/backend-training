@@ -1,1 +1,1 @@
-1.1.25  TestGitlabCI
+1.1.26  TestGitlabCI
