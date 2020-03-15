@@ -22,8 +22,9 @@ import cz.muni.ics.kypo.training.exceptions.InternalServerErrorException;
 import cz.muni.ics.kypo.training.mapping.mapstruct.*;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.service.ExportImportService;
-import cz.muni.ics.kypo.training.service.TrainingDefinitionService;
 import cz.muni.ics.kypo.training.service.UserService;
+import cz.muni.ics.kypo.training.service.TrainingDefinitionService;
+import cz.muni.ics.kypo.training.utils.AbstractFileExtensions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -215,7 +216,7 @@ public class ExportImportFacade {
     }
 
     private void writeTrainingInstanceGeneralInfo(ZipOutputStream zos, Long trainingInstanceId, TrainingInstanceArchiveDTO archivedInstance) throws IOException {
-        ZipEntry instanceEntry = new ZipEntry("training_instance-id" + trainingInstanceId + ".json");
+        ZipEntry instanceEntry = new ZipEntry("training_instance-id" + trainingInstanceId + AbstractFileExtensions.JSON_FILE_EXTENSION);
         zos.putNextEntry(instanceEntry);
         zos.write(objectMapper.writeValueAsBytes(archivedInstance));
     }
@@ -227,12 +228,12 @@ public class ExportImportFacade {
             archivedRun.setInstanceId(trainingInstance.getId());
             archivedRun.setParticipantRefId(run.getParticipantRef().getUserRefId());
             participantRefIds.add(run.getParticipantRef().getUserRefId());
-            ZipEntry runEntry = new ZipEntry("training_run-id" + run.getId() + ".json");
+            ZipEntry runEntry = new ZipEntry("training_run-id" + run.getId() + AbstractFileExtensions.JSON_FILE_EXTENSION);
             zos.putNextEntry(runEntry);
             zos.write(objectMapper.writeValueAsBytes(archivedRun));
 
             List<Map<String, Object>> events = trainingEventsService.findAllEventsFromTrainingRun(trainingInstance.getTrainingDefinition().getId(), trainingInstance.getId(), run.getId());
-            ZipEntry eventsEntry = new ZipEntry("training_run-id" + run.getId() + "-events.json");
+            ZipEntry eventsEntry = new ZipEntry("training_run-id" + run.getId() + "-events" + AbstractFileExtensions.JSON_FILE_EXTENSION);
             zos.putNextEntry(eventsEntry);
             for (Map<String, Object> event : events) {
                 zos.write(objectMapper.writer(new MinimalPrettyPrinter()).writeValueAsBytes(event));
@@ -245,20 +246,20 @@ public class ExportImportFacade {
         TrainingDefinitionArchiveDTO tD = exportImportMapper.mapToArchiveDTO(exportImportService.findById(trainingInstance.getTrainingDefinition().getId()));
         if (tD != null) {
             tD.setLevels(mapAbstractLevelsToArchiveDTO(trainingInstance.getTrainingDefinition().getId()));
-            ZipEntry definitionEntry = new ZipEntry("training_definition-id" + trainingInstance.getTrainingDefinition().getId() + ".json");
+            ZipEntry definitionEntry = new ZipEntry("training_definition-id" + trainingInstance.getTrainingDefinition().getId() + AbstractFileExtensions.JSON_FILE_EXTENSION);
             zos.putNextEntry(definitionEntry);
             zos.write(objectMapper.writeValueAsBytes(tD));
         }
     }
 
     private void writeTrainingInstanceOrganizersInfo(ZipOutputStream zos, Long trainingInstanceId, Set<Long> organizersRefIds) throws IOException {
-        ZipEntry organizersEntry = new ZipEntry("training_instance-id" + trainingInstanceId + "-organizers" + ".json");
+        ZipEntry organizersEntry = new ZipEntry("training_instance-id" + trainingInstanceId + "-organizers" + AbstractFileExtensions.JSON_FILE_EXTENSION);
         zos.putNextEntry(organizersEntry);
         zos.write(objectMapper.writeValueAsBytes(getUsersRefExportDTO(organizersRefIds)));
     }
 
     private void writeTrainingInstanceParticipantRefIdsInfo(ZipOutputStream zos, TrainingInstance trainingInstance, Set<Long> participantRefIds) throws IOException {
-        ZipEntry participantsEntry = new ZipEntry("training_instance-id" + trainingInstance.getId() + "-participants" + ".json");
+        ZipEntry participantsEntry = new ZipEntry("training_instance-id" + trainingInstance.getId() + "-participants" + AbstractFileExtensions.JSON_FILE_EXTENSION);
         zos.putNextEntry(participantsEntry);
         zos.write(objectMapper.writeValueAsBytes(getUsersRefExportDTO(participantRefIds)));
     }
