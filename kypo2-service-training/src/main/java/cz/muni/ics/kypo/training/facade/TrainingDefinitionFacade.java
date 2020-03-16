@@ -91,7 +91,6 @@ public class TrainingDefinitionFacade {
     @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_TRAINEE)")
     @TransactionalRO
     public TrainingDefinitionByIdDTO findById(Long id) {
-        Objects.requireNonNull(id);
         TrainingDefinition trainingDefinition = trainingDefinitionService.findById(id);
         TrainingDefinitionByIdDTO trainingDefinitionByIdDTO = trainingDefinitionMapper.mapToDTOById(trainingDefinition);
         trainingDefinitionByIdDTO.setLevels(gatherLevels(id));
@@ -182,7 +181,6 @@ public class TrainingDefinitionFacade {
     @IsDesignerOrAdmin
     @TransactionalWO
     public TrainingDefinitionByIdDTO create(TrainingDefinitionCreateDTO trainingDefinition) {
-        Objects.requireNonNull(trainingDefinition);
         TrainingDefinition newTrainingDefinition = trainingDefinitionMapper.mapCreateToEntity(trainingDefinition);
         if (trainingDefinition.getBetaTestingGroup() != null) {
             addOrganizersToTrainingDefinition(newTrainingDefinition, trainingDefinition.getBetaTestingGroup().getOrganizersRefIds());
@@ -203,7 +201,6 @@ public class TrainingDefinitionFacade {
     @IsDesignerOrAdmin
     @TransactionalWO
     public void update(TrainingDefinitionUpdateDTO trainingDefinitionUpdateDTO) {
-        Objects.requireNonNull(trainingDefinitionUpdateDTO);
         TrainingDefinition mappedTrainingDefinition = trainingDefinitionMapper.mapUpdateToEntity(trainingDefinitionUpdateDTO);
         TrainingDefinition trainingDefinition = trainingDefinitionService.findById(trainingDefinitionUpdateDTO.getId());
         mappedTrainingDefinition.setAuthors(new HashSet<>(trainingDefinition.getAuthors()));
@@ -247,7 +244,6 @@ public class TrainingDefinitionFacade {
     @IsDesignerOrAdmin
     @TransactionalWO
     public TrainingDefinitionByIdDTO clone(Long id, String title) {
-        Assert.notNull(id, "Given id of training definition to be cloned");
         TrainingDefinitionByIdDTO clonedDefinition = trainingDefinitionMapper.mapToDTOById(trainingDefinitionService.clone(id, title));
         clonedDefinition.setLevels(gatherLevels(clonedDefinition.getId()));
         return clonedDefinition;
@@ -265,9 +261,6 @@ public class TrainingDefinitionFacade {
             "or @securityService.isDesignerOfGivenTrainingDefinition(#definitionId)")
     @TransactionalWO
     public List<BasicLevelInfoDTO> swapLevels(Long definitionId, Long swapLevelFrom, Long swapLevelTo) {
-        Objects.requireNonNull(definitionId);
-        Objects.requireNonNull(swapLevelFrom);
-        Objects.requireNonNull(swapLevelTo);
         trainingDefinitionService.swapLevels(definitionId, swapLevelFrom, swapLevelTo);
         return gatherBasicLevelInfo(definitionId);
     }
@@ -284,9 +277,6 @@ public class TrainingDefinitionFacade {
             "or @securityService.isDesignerOfGivenTrainingDefinition(#definitionId)")
     @TransactionalWO
     public List<BasicLevelInfoDTO> moveLevel(Long definitionId, Long levelIdToBeMoved, Integer newPosition) {
-        Objects.requireNonNull(definitionId);
-        Objects.requireNonNull(levelIdToBeMoved);
-        Objects.requireNonNull(newPosition);
         trainingDefinitionService.moveLevel(definitionId, levelIdToBeMoved, newPosition);
         return gatherBasicLevelInfo(definitionId);
     }
@@ -300,7 +290,6 @@ public class TrainingDefinitionFacade {
             "or @securityService.isDesignerOfGivenTrainingDefinition(#id)")
     @TransactionalWO
     public void delete(Long id) {
-        Objects.requireNonNull(id);
         trainingDefinitionService.delete(id);
     }
 
@@ -315,8 +304,6 @@ public class TrainingDefinitionFacade {
             "or @securityService.isDesignerOfGivenTrainingDefinition(#definitionId)")
     @TransactionalWO
     public List<BasicLevelInfoDTO> deleteOneLevel(Long definitionId, Long levelId) {
-        Objects.requireNonNull(definitionId);
-        Objects.requireNonNull(levelId);
         trainingDefinitionService.deleteOneLevel(definitionId, levelId);
         return gatherBasicLevelInfo(definitionId);
     }
@@ -331,8 +318,6 @@ public class TrainingDefinitionFacade {
             "or @securityService.isDesignerOfGivenTrainingDefinition(#definitionId)")
     @TransactionalWO
     public void updateGameLevel(Long definitionId, GameLevelUpdateDTO gameLevel) {
-        Objects.requireNonNull(gameLevel);
-        Objects.requireNonNull(definitionId);
         GameLevel gameLevelToUpdate = gameLevelMapper.mapUpdateToEntity(gameLevel);
         for (Hint hint : gameLevelToUpdate.getHints())
             hint.setGameLevel(gameLevelToUpdate);
@@ -349,8 +334,6 @@ public class TrainingDefinitionFacade {
             "or @securityService.isDesignerOfGivenTrainingDefinition(#definitionId)")
     @TransactionalWO
     public void updateInfoLevel(Long definitionId, InfoLevelUpdateDTO infoLevel) {
-        Objects.requireNonNull(infoLevel);
-        Objects.requireNonNull(definitionId);
         trainingDefinitionService.updateInfoLevel(definitionId, infoLevelMapper.mapUpdateToEntity(infoLevel));
     }
 
@@ -364,8 +347,6 @@ public class TrainingDefinitionFacade {
             "or @securityService.isDesignerOfGivenTrainingDefinition(#definitionId)")
     @TransactionalWO
     public void updateAssessmentLevel(Long definitionId, AssessmentLevelUpdateDTO assessmentLevel) {
-        Objects.requireNonNull(assessmentLevel);
-        Objects.requireNonNull(definitionId);
         trainingDefinitionService.updateAssessmentLevel(definitionId, assessmentLevelMapper.mapUpdateToEntity(assessmentLevel));
     }
 
@@ -379,7 +360,6 @@ public class TrainingDefinitionFacade {
             "or @securityService.isDesignerOfGivenTrainingDefinition(#definitionId)")
     @TransactionalWO
     public BasicLevelInfoDTO createInfoLevel(Long definitionId) {
-        Objects.requireNonNull(definitionId);
         InfoLevel newInfoLevel = trainingDefinitionService.createInfoLevel(definitionId);
         BasicLevelInfoDTO levelInfoDTO = basicLevelInfoMapper.mapTo(newInfoLevel);
         levelInfoDTO.setLevelType(LevelType.INFO_LEVEL);
@@ -396,7 +376,6 @@ public class TrainingDefinitionFacade {
             "or @securityService.isDesignerOfGivenTrainingDefinition(#definitionId)")
     @TransactionalWO
     public BasicLevelInfoDTO createGameLevel(Long definitionId) {
-        Objects.requireNonNull(definitionId);
         GameLevel newGameLevel = trainingDefinitionService.createGameLevel(definitionId);
         BasicLevelInfoDTO levelInfoDTO = basicLevelInfoMapper.mapTo(newGameLevel);
         levelInfoDTO.setLevelType(LevelType.GAME_LEVEL);
@@ -413,7 +392,6 @@ public class TrainingDefinitionFacade {
             "or @securityService.isDesignerOfGivenTrainingDefinition(#definitionId)")
     @TransactionalWO
     public BasicLevelInfoDTO createAssessmentLevel(Long definitionId) {
-        Objects.requireNonNull(definitionId);
         AssessmentLevel newAssessmentLevel = trainingDefinitionService.createAssessmentLevel(definitionId);
         BasicLevelInfoDTO levelInfoDTO = basicLevelInfoMapper.mapTo(newAssessmentLevel);
         levelInfoDTO.setLevelType(LevelType.ASSESSMENT_LEVEL);
@@ -468,7 +446,6 @@ public class TrainingDefinitionFacade {
     @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
             "or @securityService.isDesignerOfGivenTrainingDefinition(#definitionId)")
     public void switchState(Long definitionId, TDState state) {
-        Objects.requireNonNull(definitionId);
         trainingDefinitionService.switchState(definitionId, state);
     }
 

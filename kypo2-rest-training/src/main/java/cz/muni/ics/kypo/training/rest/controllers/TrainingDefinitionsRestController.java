@@ -322,7 +322,7 @@ public class TrainingDefinitionsRestController {
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = JavaApiError.class)
     })
     @DeleteMapping(path = "/{id}")
-    public ResponseEntity<Void> deleteTrainingDefinition(@ApiParam(value = "Id of training definition to be deleted")
+    public ResponseEntity<Void> deleteTrainingDefinition(@ApiParam(value = "Id of training definition to be deleted", required = true)
                                                          @PathVariable("id") Long id) {
         trainingDefinitionFacade.delete(id);
         return ResponseEntity.ok().build();
@@ -348,9 +348,9 @@ public class TrainingDefinitionsRestController {
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = JavaApiError.class)
     })
     @DeleteMapping(path = "/{definitionId}/levels/{levelId}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Object> deleteOneLevel(@ApiParam(value = "Id of training definition from which level is deleted")
+    public ResponseEntity<Object> deleteOneLevel(@ApiParam(value = "Id of training definition from which level is deleted", required = true)
                                                  @PathVariable("definitionId") Long definitionId,
-                                                 @ApiParam(value = "Id of level to be deleted")
+                                                 @ApiParam(value = "Id of level to be deleted", required = true)
                                                  @PathVariable("levelId") Long levelId) {
         return ResponseEntity.ok(trainingDefinitionFacade.deleteOneLevel(definitionId, levelId));
     }

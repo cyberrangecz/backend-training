@@ -168,11 +168,6 @@ public class TrainingDefinitionServiceTest {
         then(trainingDefinitionRepository).should().save(tDcloned);
     }
 
-    @Test(expected = EntityNotFoundException.class)
-    public void cloneTrainingDefinitionWithNull() {
-        trainingDefinitionService.clone(null, "Clone of tD");
-    }
-
     @Test
     public void updateTrainingDefinition() {
         mockSpringSecurityContextForGet();
@@ -201,13 +196,6 @@ public class TrainingDefinitionServiceTest {
         trainingDefinitionService.update(unreleasedDefinition);
     }
 
-    @Test
-    public void updateTrainingDefinitionWithNull() {
-        thrown.expect(IllegalArgumentException.class);
-        thrown.expectMessage("Input training definition must not be null");
-        trainingDefinitionService.update(null);
-    }
-
     public void delete() {
         given(trainingDefinitionRepository.findById(unreleasedDefinition.getId())).willReturn(Optional.of(unreleasedDefinition));
         given(abstractLevelRepository.findById(infoLevel.getId())).willReturn(Optional.of(infoLevel));
@@ -226,11 +214,6 @@ public class TrainingDefinitionServiceTest {
     public void deleteWithCannotBeDeletedException() {
         given(trainingDefinitionRepository.findById(releasedDefinition.getId())).willReturn(Optional.of(releasedDefinition));
         trainingDefinitionService.delete(releasedDefinition.getId());
-    }
-
-    @Test(expected = EntityNotFoundException.class)
-    public void deleteWithNull() {
-        trainingDefinitionService.delete(null);
     }
 
     @Test(expected = EntityConflictException.class)
@@ -257,18 +240,6 @@ public class TrainingDefinitionServiceTest {
     public void deleteOneLevelWithCannotBeUpdatedException() {
         given(trainingDefinitionRepository.findById(releasedDefinition.getId())).willReturn(Optional.of(releasedDefinition));
         trainingDefinitionService.deleteOneLevel(releasedDefinition.getId(), any(Long.class));
-    }
-
-
-    @Test(expected = EntityNotFoundException.class)
-    public void deleteOneLevelWithNullDefinition() {
-        trainingDefinitionService.deleteOneLevel(null, infoLevel.getId());
-    }
-
-    @Test(expected = NullPointerException.class)
-    public void deleteOneLevelWithNullLevel() {
-        given(trainingDefinitionRepository.findById(unreleasedDefinition.getId())).willReturn(Optional.of(unreleasedDefinition));
-        trainingDefinitionService.deleteOneLevel(unreleasedDefinition.getId(), null);
     }
 
     @Test
@@ -299,18 +270,6 @@ public class TrainingDefinitionServiceTest {
         given(abstractLevelRepository.findById(assessmentLevel.getId())).willReturn(Optional.of(assessmentLevel));
         given(trainingDefinitionRepository.findById(unreleasedDefinition.getId())).willReturn(Optional.of(unreleasedDefinition));
         trainingDefinitionService.updateAssessmentLevel(unreleasedDefinition.getId(), level);
-    }
-
-    @Test(expected = EntityNotFoundException.class)
-    public void updateAssessmentLevelWithNullDefinition() {
-        trainingDefinitionService.updateAssessmentLevel(null, assessmentLevel);
-    }
-
-    @Test
-    public void updateAssessmentLevelWithNullLevel() {
-        given(trainingDefinitionRepository.findById(unreleasedDefinition.getId())).willReturn(Optional.of(unreleasedDefinition));
-        thrown.expect(NullPointerException.class);
-        trainingDefinitionService.updateAssessmentLevel(unreleasedDefinition.getId(), null);
     }
 
     @Test(expected = EntityConflictException.class)
@@ -349,18 +308,6 @@ public class TrainingDefinitionServiceTest {
         trainingDefinitionService.updateGameLevel(unreleasedDefinition.getId(), level);
     }
 
-    @Test(expected = EntityNotFoundException.class)
-    public void updateGameLevelWithNullDefinition() {
-        trainingDefinitionService.updateGameLevel(null, gameLevel);
-    }
-
-    @Test
-    public void updateGameLevelWithNullLevel() {
-        given(trainingDefinitionRepository.findById(unreleasedDefinition.getId())).willReturn(Optional.of(unreleasedDefinition));
-        thrown.expect(NullPointerException.class);
-        trainingDefinitionService.updateGameLevel(unreleasedDefinition.getId(), null);
-    }
-
     @Test(expected = EntityConflictException.class)
     public void updateGameLevelWithCreatedInstances() {
         given(trainingDefinitionRepository.findById(unreleasedDefinition.getId())).willReturn(Optional.of(unreleasedDefinition));
@@ -394,18 +341,6 @@ public class TrainingDefinitionServiceTest {
         given(abstractLevelRepository.findById(gameLevel.getId())).willReturn(Optional.of(gameLevel));
         given(trainingDefinitionRepository.findById(unreleasedDefinition.getId())).willReturn(Optional.of(unreleasedDefinition));
         trainingDefinitionService.updateInfoLevel(unreleasedDefinition.getId(), level);
-    }
-
-    @Test(expected = EntityNotFoundException.class)
-    public void updateInfoLevelWithNullDefinition() {
-        trainingDefinitionService.updateInfoLevel(null, infoLevel);
-    }
-
-    @Test
-    public void updateInfoLevelWithNullLevel() {
-        given(trainingDefinitionRepository.findById(unreleasedDefinition.getId())).willReturn(Optional.of(unreleasedDefinition));
-        thrown.expect(NullPointerException.class);
-        trainingDefinitionService.updateInfoLevel(unreleasedDefinition.getId(), null);
     }
 
     @Test(expected = EntityConflictException.class)
@@ -444,14 +379,6 @@ public class TrainingDefinitionServiceTest {
         trainingDefinitionService.createGameLevel(releasedDefinition.getId());
     }
 
-    @Test
-    public void createGameLevelWithNullDefinitionId() {
-        thrown.expect(IllegalArgumentException.class);
-        thrown.expectMessage("Definition id must not be null");
-        trainingDefinitionService.createGameLevel(null);
-
-    }
-
     @Test(expected = EntityConflictException.class)
     public void createGameLevelWithCreatedInstances() {
         given(trainingDefinitionRepository.findById(unreleasedDefinition.getId())).willReturn(Optional.of(unreleasedDefinition));
@@ -481,14 +408,6 @@ public class TrainingDefinitionServiceTest {
     public void createInfoLevelWithCannotBeUpdatedException() {
         given(trainingDefinitionRepository.findById(releasedDefinition.getId())).willReturn(Optional.of(releasedDefinition));
         trainingDefinitionService.createInfoLevel(releasedDefinition.getId());
-    }
-
-    @Test
-    public void createInfoLevelWithNullDefinitionId() {
-        thrown.expect(IllegalArgumentException.class);
-        thrown.expectMessage("Definition id must not be null");
-        trainingDefinitionService.createInfoLevel(null);
-
     }
 
     @Test(expected = EntityConflictException.class)
@@ -523,26 +442,11 @@ public class TrainingDefinitionServiceTest {
         trainingDefinitionService.createAssessmentLevel(releasedDefinition.getId());
     }
 
-    @Test
-    public void createAssessmentLevelWithNullDefinitionId() {
-        thrown.expect(IllegalArgumentException.class);
-        thrown.expectMessage("Definition id must not be null");
-        trainingDefinitionService.createAssessmentLevel(null);
-
-    }
-
     @Test(expected = EntityConflictException.class)
     public void createAssessmentLevelWithCreatedInstances() {
         given(trainingDefinitionRepository.findById(unreleasedDefinition.getId())).willReturn(Optional.of(unreleasedDefinition));
         given(trainingInstanceRepository.existsAnyForTrainingDefinition(unreleasedDefinition.getId())).willReturn(true);
         trainingDefinitionService.createAssessmentLevel(unreleasedDefinition.getId());
-    }
-
-    @Test
-    public void findAllLevelsFromDefinitionWithNullDefinitionId() {
-        thrown.expect(IllegalArgumentException.class);
-        thrown.expectMessage("Definition id must not be null");
-        trainingDefinitionService.findAllLevelsFromDefinition(null);
     }
 
     @Test
@@ -554,13 +458,6 @@ public class TrainingDefinitionServiceTest {
         TrainingDefinition tD = trainingDefinitionService.create(unreleasedDefinition);
         deepEquals(unreleasedDefinition, tD);
         then(trainingDefinitionRepository).should(times(1)).save(unreleasedDefinition);
-    }
-
-    @Test
-    public void createTrainingInstanceWithNull() {
-        thrown.expect(IllegalArgumentException.class);
-        thrown.expectMessage("Input training definition must not be null");
-        trainingDefinitionService.create(null);
     }
 
     @Test

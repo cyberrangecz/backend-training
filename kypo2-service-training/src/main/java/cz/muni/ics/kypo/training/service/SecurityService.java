@@ -19,7 +19,6 @@ import cz.muni.ics.kypo.training.persistence.model.UserRef;
 import cz.muni.ics.kypo.training.persistence.repository.TrainingDefinitionRepository;
 import cz.muni.ics.kypo.training.persistence.repository.TrainingInstanceRepository;
 import cz.muni.ics.kypo.training.persistence.repository.TrainingRunRepository;
-import org.modelmapper.internal.util.Assert;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
@@ -116,7 +115,6 @@ public class SecurityService {
      * @return the boolean
      */
     public boolean hasRole(RoleTypeSecurity roleTypeSecurity) {
-        Assert.notNull("To test whether logged in user has particular role it is necessary to provide role type to check");
         OAuth2Authentication authentication = (OAuth2Authentication) SecurityContextHolder.getContext().getAuthentication();
         for (GrantedAuthority gA : authentication.getUserAuthentication().getAuthorities()) {
             if (gA.getAuthority().equals(roleTypeSecurity.name())) {
@@ -178,6 +176,4 @@ public class SecurityService {
         mapper.registerModule(new JavaTimeModule()).disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
         return mapper.readValue(object, objectClass);
     }
-
-
 }

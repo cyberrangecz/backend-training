@@ -86,7 +86,6 @@ public class ExportImportService {
      * @return the list of all {@link AbstractLevel} that are associated with the {@link TrainingDefinition}.
      */
     public List<AbstractLevel> findAllLevelsFromDefinition(Long trainingDefinitionId) {
-        Assert.notNull(trainingDefinitionId, "Definition id must not be null");
         return abstractLevelRepository.findAllLevelsByTrainingDefinitionId(trainingDefinitionId);
     }
 
@@ -97,8 +96,6 @@ public class ExportImportService {
      * @param definition the {@link TrainingDefinition} to associate level with.
      */
     public void createLevel(AbstractLevel level, TrainingDefinition definition) {
-        Assert.notNull(level, "Input Level cannot be null");
-        Assert.notNull(definition, "Input definition cannot be null");
         level.setOrder(abstractLevelRepository.getCurrentMaxOrder(definition.getId()) + 1);
         level.setTrainingDefinition(definition);
         if (level instanceof AssessmentLevel) {
