@@ -198,17 +198,6 @@ public class TrainingInstanceServiceTest {
         then(trainingInstanceRepository).should().delete(trainingInstance2);
     }
 
-    @Test(expected = EntityConflictException.class)
-    public void deleteTrainingInstanceWithAssignedTrainingRuns() {
-        List<TrainingRun> runs = new ArrayList<>();
-        runs.add(trainingRun1);
-        runs.add(trainingRun2);
-        Page p = new PageImpl<>(runs);
-
-        given(trainingRunRepository.existsAnyForTrainingInstance(trainingInstance1.getId())).willReturn(true);
-        trainingInstanceService.delete(trainingInstance1);
-    }
-
     @Test
     public void findTrainingRunsByTrainingInstance() {
         List<TrainingRun> expected = new ArrayList<>();

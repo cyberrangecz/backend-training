@@ -25,6 +25,7 @@ import cz.muni.ics.kypo.training.api.enums.LevelType;
 import cz.muni.ics.kypo.training.api.responses.PageResultResource;
 import cz.muni.ics.kypo.training.mapping.mapstruct.*;
 import cz.muni.ics.kypo.training.persistence.model.*;
+import cz.muni.ics.kypo.training.service.SecurityService;
 import cz.muni.ics.kypo.training.service.TrainingRunService;
 import cz.muni.ics.kypo.training.service.UserService;
 import org.slf4j.Logger;
@@ -41,6 +42,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * The type Training run facade.
@@ -51,35 +53,39 @@ public class TrainingRunFacade {
     private static final Logger LOG = LoggerFactory.getLogger(TrainingRunFacade.class);
 
     private TrainingRunService trainingRunService;
+    private SecurityService securityService;
+    private UserService userService;
     private TrainingRunMapper trainingRunMapper;
     private GameLevelMapper gameLevelMapper;
     private AssessmentLevelMapper assessmentLevelMapper;
     private InfoLevelMapper infoLevelMapper;
     private HintMapper hintMapper;
-    private UserService userService;
+
 
     /**
      * Instantiates a new Training run facade.
      *
      * @param trainingRunService    the training run service
+     * @param securityService       the security service
+     * @param userService           the user service
      * @param trainingRunMapper     the training run mapper
      * @param gameLevelMapper       the game level mapper
      * @param assessmentLevelMapper the assessment level mapper
      * @param infoLevelMapper       the info level mapper
      * @param hintMapper            the hint mapper
-     * @param userService           the user service
      */
     @Autowired
-    public TrainingRunFacade(TrainingRunService trainingRunService, TrainingRunMapper trainingRunMapper,
-                             GameLevelMapper gameLevelMapper, AssessmentLevelMapper assessmentLevelMapper,
-                             InfoLevelMapper infoLevelMapper, HintMapper hintMapper, UserService userService) {
+    public TrainingRunFacade(TrainingRunService trainingRunService, SecurityService securityService, UserService userService,
+                             TrainingRunMapper trainingRunMapper, GameLevelMapper gameLevelMapper, AssessmentLevelMapper assessmentLevelMapper,
+                             InfoLevelMapper infoLevelMapper, HintMapper hintMapper) {
         this.trainingRunService = trainingRunService;
+        this.securityService = securityService;
+        this.userService = userService;
         this.trainingRunMapper = trainingRunMapper;
         this.gameLevelMapper = gameLevelMapper;
         this.assessmentLevelMapper = assessmentLevelMapper;
         this.infoLevelMapper = infoLevelMapper;
         this.hintMapper = hintMapper;
-        this.userService = userService;
     }
 
     /**
@@ -188,7 +194,18 @@ public class TrainingRunFacade {
     @IsTraineeOrAdmin
     @TransactionalWO
     public AccessTrainingRunDTO accessTrainingRun(String accessToken) {
-        TrainingRun trainingRun = trainingRunService.accessTrainingRun(accessToken);
+        TrainingInstance trainingInstance = trainingRunService.getTrainingInstanceForParticularAccessToken(accessToken);
+        // checking if the user is not accessing to his existing training run (resume action)
+        Long participantRefId = securityService.getUserRefIdFromUserAndGroup();
+        Optional<TrainingRun> accessedTrainingRun = trainingRunService.findRunningTrainingRunOfUser(accessToken, participantRefId);
+        if (accessedTrainingRun.isPresent()) {
+            TrainingRun trainingRun = trainingRunService.resumeTrainingRun(accessedTrainingRun.get().getId());
+            return convertToAccessTrainingRunDTO(trainingRun);
+        }
+        // Check if the user already clicked access training run, in that case, it returns an exception (it prevents concurrent accesses).
+        trainingRunService.trAcquisitionLockToPreventManyRequestsFromSameUser(participantRefId, trainingInstance.getId(), accessToken);
+        // During this action we create a new TrainingRun and lock and get sandbox from Django OpenStack API
+        TrainingRun trainingRun = trainingRunService.accessTrainingRun(trainingInstance, participantRefId);
         return convertToAccessTrainingRunDTO(trainingRun);
     }
 
