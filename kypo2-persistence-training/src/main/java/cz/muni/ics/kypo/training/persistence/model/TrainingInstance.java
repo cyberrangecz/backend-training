@@ -78,8 +78,6 @@ public class TrainingInstance extends AbstractEntity<Long> {
     private LocalDateTime endTime;
     @Column(name = "title", nullable = false)
     private String title;
-    @Column(name = "pool_size", nullable = false)
-    private int poolSize;
     @Column(name = "pool_id")
     private Long poolId;
     @Column(name = "access_token", nullable = false, unique = true)
@@ -184,24 +182,6 @@ public class TrainingInstance extends AbstractEntity<Long> {
     }
 
     /**
-     * Gets maximal size of pools that can be allocated for Training Instance
-     *
-     * @return the pool size
-     */
-    public int getPoolSize() {
-        return poolSize;
-    }
-
-    /**
-     * Sets maximal size of pools that can be allocated for Training Instance
-     *
-     * @param poolSize the pool size
-     */
-    public void setPoolSize(int poolSize) {
-        this.poolSize = poolSize;
-    }
-
-    /**
      * Gets unique identification number of sandbox pool associated with given Training instance
      *
      * @return the pool id
@@ -276,7 +256,7 @@ public class TrainingInstance extends AbstractEntity<Long> {
 
     @Override
     public int hashCode() {
-        return Objects.hash(accessToken, startTime, endTime, poolSize, title, trainingDefinition);
+        return Objects.hash(accessToken, startTime, endTime, title, trainingDefinition);
     }
 
     @Override
@@ -291,7 +271,6 @@ public class TrainingInstance extends AbstractEntity<Long> {
         return Objects.equals(accessToken, other.getAccessToken())
                 && Objects.equals(startTime, other.getStartTime())
                 && Objects.equals(endTime, other.getEndTime())
-                && Objects.equals(poolSize, other.getPoolSize())
                 && Objects.equals(title, other.getTitle())
                 && Objects.equals(trainingDefinition, other.getTrainingDefinition());
     }
@@ -303,7 +282,6 @@ public class TrainingInstance extends AbstractEntity<Long> {
                 ", startTime=" + startTime +
                 ", endTime=" + endTime +
                 ", title='" + title + '\'' +
-                ", poolSize=" + poolSize +
                 ", accessToken='" + accessToken + '\'' +
                 '}';
     }

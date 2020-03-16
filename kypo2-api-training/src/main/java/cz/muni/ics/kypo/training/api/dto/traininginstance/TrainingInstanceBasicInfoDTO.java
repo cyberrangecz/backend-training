@@ -24,8 +24,6 @@ public class TrainingInstanceBasicInfoDTO {
     private LocalDateTime endTime;
     @ApiModelProperty(value = "Short textual description of the training instance.", example = "Concluded Instance")
     private String title;
-    @ApiModelProperty(value = "Number of sandboxes that can be allocated.", example = "5")
-    private int poolSize;
     @ApiModelProperty(value = "Token used to access training run.", required = true, example = "hunter")
     private String accessToken;
     @ApiModelProperty(value = "Id of sandbox pool belonging to training instance", example = "1")
@@ -63,14 +61,6 @@ public class TrainingInstanceBasicInfoDTO {
         this.title = title;
     }
 
-    public int getPoolSize() {
-        return poolSize;
-    }
-
-    public void setPoolSize(int poolSize) {
-        this.poolSize = poolSize;
-    }
-
     public String getAccessToken() {
         return accessToken;
     }
@@ -94,7 +84,6 @@ public class TrainingInstanceBasicInfoDTO {
                 ", startTime=" + startTime +
                 ", endTime=" + endTime +
                 ", title='" + title + '\'' +
-                ", poolSize=" + poolSize +
                 ", accessToken='" + accessToken + '\'' +
                 ", poolId=" + poolId +
                 '}';

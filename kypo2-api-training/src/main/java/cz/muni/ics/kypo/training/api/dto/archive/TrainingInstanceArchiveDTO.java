@@ -28,8 +28,6 @@ public class TrainingInstanceArchiveDTO {
 	private LocalDateTime endTime;
 	@ApiModelProperty(value = "Short textual description of the training instance.", example = "Concluded Instance")
 	private String title;
-	@ApiModelProperty(value = "Number of sandboxes that can be allocated.", example = "5")
-	private int poolSize;
 	@ApiModelProperty(value = "Reference to organizersRefIds which organize training instance.")
 	private Set<Long> organizersRefIds;
 	@ApiModelProperty(value = "Token needed to access runs created from this definition", example = "pass-1234")
@@ -106,24 +104,6 @@ public class TrainingInstanceArchiveDTO {
 	}
 
 	/**
-	 * Gets pool size of training instance.
-	 *
-	 * @return the pool size
-	 */
-	public int getPoolSize() {
-		return poolSize;
-	}
-
-	/**
-	 * Sets pool size of training instance.
-	 *
-	 * @param poolSize the pool size
-	 */
-	public void setPoolSize(int poolSize) {
-		this.poolSize = poolSize;
-	}
-
-	/**
 	 * Gets organizersRefIds of training instance.
 	 *
 	 * @return the organizersRefIds
@@ -167,7 +147,6 @@ public class TrainingInstanceArchiveDTO {
 				", startTime=" + startTime +
 				", endTime=" + endTime +
 				", title='" + title + '\'' +
-				", poolSize=" + poolSize +
 				", organizersRefIds=" + organizersRefIds +
 				", accessToken='" + accessToken + '\'' +
 				'}';

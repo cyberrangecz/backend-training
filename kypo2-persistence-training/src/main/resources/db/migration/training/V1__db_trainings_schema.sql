@@ -85,7 +85,6 @@ create table training_instance (
     access_token varchar(255) not null,
     end_time timestamp not null,
     pool_id int8,
-    pool_size int4 not null,
     start_time timestamp not null,
     title varchar(255) not null,
     training_definition_id int8,
