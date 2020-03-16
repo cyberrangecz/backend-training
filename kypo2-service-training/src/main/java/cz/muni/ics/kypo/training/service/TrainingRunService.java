@@ -7,6 +7,7 @@ import com.github.fge.jsonschema.core.report.ProcessingReport;
 import com.github.fge.jsonschema.main.JsonSchemaFactory;
 import com.github.fge.jsonschema.main.JsonValidator;
 import com.querydsl.core.types.Predicate;
+import cz.muni.ics.kypo.training.annotations.transactions.TransactionalWO;
 import cz.muni.ics.kypo.training.api.responses.SandboxInfo;
 import cz.muni.ics.kypo.training.exceptions.*;
 import cz.muni.ics.kypo.training.exceptions.errors.PythonApiError;
@@ -27,6 +28,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.util.Assert;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -103,6 +105,7 @@ public class TrainingRunService {
     }
 
     /**
+     * /**
      * Finds specific Training Run by id including current level.
      *
      * @param runId of a Training Run with level that would be returned
@@ -146,7 +149,7 @@ public class TrainingRunService {
      * Checks whether any trainin runs exists for particular training instance
      *
      * @param trainingInstanceId the training instance id
-     * @return boolean
+     * @return boolean boolean
      */
     public boolean existsAnyForTrainingInstance(Long trainingInstanceId) {
         return trainingRunRepository.existsAnyForTrainingInstance(trainingInstanceId);
@@ -253,20 +256,14 @@ public class TrainingRunService {
     /**
      * Access training run based on given accessToken.
      *
-     * @param accessToken of Training Instance.
+     * @param trainingInstance the training instance
+     * @param participantRefId the participant ref id
      * @return accessed {@link TrainingRun}
      * @throws EntityNotFoundException  no active training instance for given access token, no starting level in training definition.
      * @throws EntityConflictException  pool of sandboxes is not created for training instance.
      * @throws TooManyRequestsException training run has been already accessed.
      */
-    public TrainingRun accessTrainingRun(String accessToken) {
-        TrainingInstance trainingInstance = getTrainingInstanceForParticularAccessToken(accessToken);
-        Long participantRefId = securityService.getUserRefIdFromUserAndGroup();
-        Optional<TrainingRun> accessedTrainingRun = trainingRunRepository.findRunningTrainingRunOfUser(accessToken, participantRefId);
-        if (accessedTrainingRun.isPresent()) {
-            return resumeTrainingRun(accessedTrainingRun.get().getId());
-        }
-        trAcquisitionLockToPreventManyRequestsFromSameUser(participantRefId, trainingInstance.getId(), accessToken);
+    public TrainingRun accessTrainingRun(TrainingInstance trainingInstance, Long participantRefId) {
         List<AbstractLevel> levels = getAllLevelsForTRSortedByOrder(trainingInstance.getTrainingDefinition().getId());
         TrainingRun trainingRun = getNewTrainingRun(levels.get(0), trainingInstance, LocalDateTime.now(Clock.systemUTC()), trainingInstance.getEndTime(), participantRefId);
 
@@ -276,7 +273,24 @@ public class TrainingRunService {
         return trainingRunRepository.save(trainingRun);
     }
 
-    private TrainingInstance getTrainingInstanceForParticularAccessToken(String accessToken) {
+    /**
+     * Find running training run of user optional.
+     *
+     * @param accessToken      the access token
+     * @param participantRefId the participant ref id
+     * @return the optional
+     */
+    public Optional<TrainingRun> findRunningTrainingRunOfUser(String accessToken, Long participantRefId) {
+        return trainingRunRepository.findRunningTrainingRunOfUser(accessToken, participantRefId);
+    }
+
+    /**
+     * Gets training instance for particular access token.
+     *
+     * @param accessToken the access token
+     * @return the training instance for particular access token
+     */
+    public TrainingInstance getTrainingInstanceForParticularAccessToken(String accessToken) {
         TrainingInstance trainingInstance = trainingInstanceRepository.findByStartTimeAfterAndEndTimeBeforeAndAccessToken(LocalDateTime.now(Clock.systemUTC()), accessToken)
                 .orElseThrow(() -> new EntityNotFoundException(new EntityErrorDetail(TrainingInstance.class, "accessToken", accessToken.getClass(), accessToken,
                         "There is no active game session matching access token.")));
@@ -287,7 +301,15 @@ public class TrainingRunService {
         return trainingInstance;
     }
 
-    private void trAcquisitionLockToPreventManyRequestsFromSameUser(Long participantRefId, Long trainingInstanceId, String accessToken) {
+    /**
+     * Tr acquisition lock to prevent many requests from the same user. This method is called in a new transaction that means that the existing one is suspended.
+     *
+     * @param participantRefId   the participant ref id
+     * @param trainingInstanceId the training instance id
+     * @param accessToken        the access token
+     */
+    @TransactionalWO(propagation = Propagation.REQUIRES_NEW)
+    public void trAcquisitionLockToPreventManyRequestsFromSameUser(Long participantRefId, Long trainingInstanceId, String accessToken) {
         try {
             trAcquisitionLockRepository.save(new TRAcquisitionLock(participantRefId, trainingInstanceId, LocalDateTime.now(Clock.systemUTC())));
         } catch (DataIntegrityViolationException ex) {

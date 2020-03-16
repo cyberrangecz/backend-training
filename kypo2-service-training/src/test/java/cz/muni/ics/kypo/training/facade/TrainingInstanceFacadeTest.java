@@ -190,6 +190,7 @@ public class TrainingInstanceFacadeTest {
 
     @Test
     public void deleteTrainingInstance() {
+        trainingInstance1.setPoolId(null);
         given(trainingInstanceService.findById(trainingInstance1.getId())).willReturn(trainingInstance1);
         trainingInstanceFacade.delete(trainingInstance1.getId(), false);
         then(trainingInstanceService).should().delete(trainingInstance1);
@@ -197,6 +198,7 @@ public class TrainingInstanceFacadeTest {
 
     @Test
     public void assignPoolToTrainingInstance() {
+        trainingInstance1.setPoolId(null);
         given(trainingInstanceService.findById(anyLong())).willReturn(trainingInstance1);
         given(trainingInstanceService.lockPool(anyLong())).willReturn(lockedPoolInfo);
 
@@ -211,17 +213,10 @@ public class TrainingInstanceFacadeTest {
         trainingInstanceFacade.assignPoolToTrainingInstance(trainingInstance1.getId(), trainingInstanceAssignPoolIdDTO);
     }
 
-    @Test
-    public void reassignPoolToTrainingInstance() {
-        given(trainingInstanceService.findById(anyLong())).willReturn(trainingInstance1);
-        trainingInstanceFacade.unassignPoolInTrainingInstance(trainingInstance1.getId());
-        then(trainingInstanceService).should().lockPool(trainingInstance1.getId());
-    }
-
     @Test(expected = EntityConflictException.class)
-    public void deleteSandboxesWithServiceException() {
+    public void unassignPoolWithConflictException() {
+        trainingInstance1.setPoolId(null);
         given(trainingInstanceService.findById(anyLong())).willReturn(trainingInstance1);
-        willThrow(EntityConflictException.class).given(trainingInstanceService).lockPool(anyLong());
         trainingInstanceFacade.unassignPoolInTrainingInstance(trainingInstance1.getId());
     }
 

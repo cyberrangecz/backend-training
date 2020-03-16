@@ -204,7 +204,7 @@ public class TrainingInstancesRestControllerTest {
 
     @Test
     public void assignPoolWithFacadeException() throws Exception {
-        willThrow(new EntityNotFoundException()).given(trainingInstanceFacade).assignPoolToTrainingInstance(698L, any(TrainingInstanceAssignPoolIdDTO.class));
+        willThrow(new EntityNotFoundException()).given(trainingInstanceFacade).assignPoolToTrainingInstance(anyLong(), any(TrainingInstanceAssignPoolIdDTO.class));
         MockHttpServletResponse response = mockMvc.perform(patch("/training-instances" + "/{instanceId}/" + "assign-pool", 698L)
                 .content(convertObjectToJsonBytes(trainingInstanceAssignPoolIdDTO))
                 .contentType(MediaType.APPLICATION_JSON_VALUE))
@@ -221,19 +221,6 @@ public class TrainingInstancesRestControllerTest {
                 .content(convertObjectToJsonBytes(trainingInstanceAssignPoolIdDTO))
                 .contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isOk());
-    }
-
-    @Test
-    public void reassignSandboxesNotFound() throws Exception {
-        willThrow(new EntityNotFoundException()).given(trainingInstanceFacade).unassignPoolInTrainingInstance(698L);
-        MockHttpServletResponse response = mockMvc.perform(patch("/training-instances" + "/{instanceId}/" + "reassign-pool", 698L)
-                .content(convertObjectToJsonBytes(trainingInstanceAssignPoolIdDTO))
-                .contentType(MediaType.APPLICATION_JSON_VALUE))
-                .andExpect(status().isNotFound())
-                .andReturn().getResponse();
-        ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
-        assertEquals(HttpStatus.NOT_FOUND, error.getStatus());
-        assertEquals("The requested entity could not be found", error.getMessage());
     }
 
     @Test
