@@ -104,8 +104,7 @@ public class TrainingInstanceService {
         if (securityService.hasRole(RoleTypeSecurity.ROLE_TRAINING_ADMINISTRATOR)) {
             return trainingInstanceRepository.findAll(predicate, pageable);
         }
-        Predicate loggedInUser = QTrainingInstance.trainingInstance.organizers.any().userRefId.eq(securityService.getUserRefIdFromUserAndGroup()).and(predicate);
-        return trainingInstanceRepository.findAll(loggedInUser, pageable);
+        return trainingInstanceRepository.findAll(predicate, pageable, securityService.getUserRefIdFromUserAndGroup());
     }
 
     /**

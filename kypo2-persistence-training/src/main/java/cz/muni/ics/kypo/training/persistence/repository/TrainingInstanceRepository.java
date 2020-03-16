@@ -26,7 +26,8 @@ import java.util.Optional;
  * The JPA repository interface to manage {@link TrainingInstance} instances.
  */
 @Repository
-public interface TrainingInstanceRepository extends JpaRepository<TrainingInstance, Long>, QuerydslPredicateExecutor<TrainingInstance>, QuerydslBinderCustomizer<QTrainingInstance> {
+public interface TrainingInstanceRepository extends JpaRepository<TrainingInstance, Long>, TrainingInstanceRepositoryCustom,
+        QuerydslPredicateExecutor<TrainingInstance>, QuerydslBinderCustomizer<QTrainingInstance> {
 
     /**
      * That method is used to make the query dsl string values case insensitive and also it supports partial matches in the database.
