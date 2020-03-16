@@ -26,10 +26,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.*;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
-import org.springframework.util.Assert;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -98,7 +98,6 @@ public class TrainingRunService {
      * @throws EntityNotFoundException training run is not found.
      */
     public TrainingRun findById(Long runId) {
-        Objects.requireNonNull(runId);
         return trainingRunRepository.findById(runId)
                 .orElseThrow(() -> new EntityNotFoundException(new EntityErrorDetail(TrainingRun.class, "id", runId.getClass(), runId,
                         "Training run not found.")));
@@ -113,7 +112,6 @@ public class TrainingRunService {
      * @throws EntityNotFoundException training run is not found.
      */
     public TrainingRun findByIdWithLevel(Long runId) {
-        Objects.requireNonNull(runId);
         return trainingRunRepository.findByIdWithLevel(runId).orElseThrow(() -> new EntityNotFoundException(
                 new EntityErrorDetail(TrainingRun.class, "id", runId.getClass(), runId, "Training run not found.")));
     }
@@ -177,7 +175,6 @@ public class TrainingRunService {
     }
 
     private TrainingRun create(TrainingRun trainingRun) {
-        Assert.notNull(trainingRun, "Input training run must not be empty.");
         return trainingRunRepository.save(trainingRun);
     }
 
@@ -189,7 +186,6 @@ public class TrainingRunService {
      * @throws EntityNotFoundException training run or level is not found.
      */
     public AbstractLevel getNextLevel(Long runId) {
-        Assert.notNull(runId, MUST_NOT_BE_NULL);
         TrainingRun trainingRun = findByIdWithLevel(runId);
         int currentLevelOrder = trainingRun.getCurrentLevel().getOrder();
         int maxLevelOrder = abstractLevelRepository.getCurrentMaxOrder(trainingRun.getCurrentLevel().getTrainingDefinition().getId());
@@ -224,7 +220,6 @@ public class TrainingRunService {
      * @return {@link TrainingRun}s of specific Training Definition of logged in user
      */
     public Page<TrainingRun> findAllByTrainingDefinitionAndParticipant(Long definitionId, Pageable pageable) {
-        Assert.notNull(definitionId, "Input training definition id must not be null.");
         return trainingRunRepository.findAllByTrainingDefinitionIdAndParticipantUserRefId(definitionId, securityService.getUserRefIdFromUserAndGroup(), pageable);
     }
 
@@ -236,7 +231,6 @@ public class TrainingRunService {
      * @return {@link TrainingRun}s of specific Training Definition
      */
     public Page<TrainingRun> findAllByTrainingDefinition(Long definitionId, Pageable pageable) {
-        Assert.notNull(definitionId, "Input training definition id must not be null.");
         return trainingRunRepository.findAllByTrainingDefinitionId(definitionId, pageable);
     }
 
@@ -248,10 +242,8 @@ public class TrainingRunService {
      * @throws EntityNotFoundException one of the levels is not found.
      */
     public List<AbstractLevel> getLevels(Long definitionId) {
-        Assert.notNull(definitionId, "Id of training definition must not be null.");
         return abstractLevelRepository.findAllLevelsByTrainingDefinitionId(definitionId);
     }
-
 
     /**
      * Access training run based on given accessToken.
@@ -386,7 +378,6 @@ public class TrainingRunService {
      * @throws EntityNotFoundException training run is not found.
      */
     public TrainingRun resumeTrainingRun(Long trainingRunId) {
-        Assert.notNull(trainingRunId, MUST_NOT_BE_NULL);
         TrainingRun trainingRun = findByIdWithLevel(trainingRunId);
         if (trainingRun.getState().equals(TRState.FINISHED) || trainingRun.getState().equals(TRState.ARCHIVED)) {
             throw new EntityConflictException(new EntityErrorDetail(TrainingRun.class, "id", trainingRunId.getClass(), trainingRunId,
@@ -414,8 +405,6 @@ public class TrainingRunService {
      * @throws BadRequestException     the current level of training run is not game level.
      */
     public boolean isCorrectFlag(Long runId, String flag) {
-        Assert.notNull(runId, MUST_NOT_BE_NULL);
-        Assert.hasLength(flag, "Submitted flag must not be nul nor empty.");
         TrainingRun trainingRun = findByIdWithLevel(runId);
         AbstractLevel level = trainingRun.getCurrentLevel();
         if (level instanceof GameLevel) {
@@ -444,7 +433,6 @@ public class TrainingRunService {
      * @return the remaining attempts
      */
     public int getRemainingAttempts(Long trainingRunId) {
-        Assert.notNull(trainingRunId, MUST_NOT_BE_NULL);
         TrainingRun trainingRun = findByIdWithLevel(trainingRunId);
         AbstractLevel level = trainingRun.getCurrentLevel();
         if (level instanceof GameLevel) {
@@ -465,7 +453,6 @@ public class TrainingRunService {
      * @throws BadRequestException     the current level of training run is not game level.
      */
     public String getSolution(Long trainingRunId) {
-        Assert.notNull(trainingRunId, MUST_NOT_BE_NULL);
         TrainingRun trainingRun = findByIdWithLevel(trainingRunId);
         AbstractLevel level = trainingRun.getCurrentLevel();
         if (level instanceof GameLevel) {
@@ -492,8 +479,6 @@ public class TrainingRunService {
      * @throws BadRequestException     the current level of training run is not game level.
      */
     public Hint getHint(Long trainingRunId, Long hintId) {
-        Assert.notNull(trainingRunId, MUST_NOT_BE_NULL);
-        Assert.notNull(hintId, "Input hint id must not be null.");
         TrainingRun trainingRun = findByIdWithLevel(trainingRunId);
         AbstractLevel level = trainingRun.getCurrentLevel();
         if (level instanceof GameLevel) {
@@ -529,7 +514,6 @@ public class TrainingRunService {
      * @throws EntityNotFoundException training run is not found.
      */
     public void finishTrainingRun(Long trainingRunId) {
-        Assert.notNull(trainingRunId, MUST_NOT_BE_NULL);
         TrainingRun trainingRun = findById(trainingRunId);
         int maxOrder = abstractLevelRepository.getCurrentMaxOrder(trainingRun.getCurrentLevel().getTrainingDefinition().getId());
         if (trainingRun.getCurrentLevel().getOrder() != maxOrder) {
@@ -558,7 +542,6 @@ public class TrainingRunService {
      * @throws EntityNotFoundException training run is not found.
      */
     public void evaluateResponsesToAssessment(Long trainingRunId, String responsesAsString) {
-        Assert.notNull(responsesAsString, "Response to assessment must not be null.");
         JSONArray responses = isResponseValid(responsesAsString);
         int points = 0;
         TrainingRun trainingRun = findByIdWithLevel(trainingRunId);

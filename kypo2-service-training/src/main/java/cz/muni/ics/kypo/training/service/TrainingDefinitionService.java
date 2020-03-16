@@ -19,11 +19,13 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
 
 import java.time.Clock;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 /**
  * The type Training definition service.
@@ -133,10 +135,7 @@ public class TrainingDefinitionService {
      * @return new {@link TrainingDefinition}
      */
     public TrainingDefinition create(TrainingDefinition trainingDefinition) {
-        Assert.notNull(trainingDefinition, "Input training definition must not be null");
-
         addLoggedInUserToTrainingDefinitionAsAuthor(trainingDefinition);
-
         LOG.info("Training definition with id: {} created.", trainingDefinition.getId());
         return trainingDefinitionRepository.save(trainingDefinition);
     }
@@ -149,7 +148,6 @@ public class TrainingDefinitionService {
      * @throws EntityConflictException released or archived training definition cannot be modified.
      */
     public void update(TrainingDefinition trainingDefinitionToUpdate) {
-        Assert.notNull(trainingDefinitionToUpdate, "Input training definition must not be null");
         TrainingDefinition trainingDefinition = findById(trainingDefinitionToUpdate.getId());
         checkIfCanBeUpdated(trainingDefinition);
         addLoggedInUserToTrainingDefinitionAsAuthor(trainingDefinitionToUpdate);
@@ -377,7 +375,6 @@ public class TrainingDefinitionService {
      * @throws EntityConflictException level cannot be created in released or archived training definition.
      */
     public GameLevel createGameLevel(Long definitionId) {
-        Assert.notNull(definitionId, "Definition id must not be null");
         TrainingDefinition trainingDefinition = findById(definitionId);
         if (!trainingDefinition.getState().equals(TDState.UNRELEASED))
             throw new EntityConflictException(new EntityErrorDetail(TrainingDefinition.class, "id", definitionId.getClass(), definitionId,
@@ -419,7 +416,6 @@ public class TrainingDefinitionService {
      * @throws EntityConflictException level cannot be created in released or archived training definition.
      */
     public InfoLevel createInfoLevel(Long definitionId) {
-        Assert.notNull(definitionId, "Definition id must not be null");
         TrainingDefinition trainingDefinition = findById(definitionId);
         checkIfCanBeUpdated(trainingDefinition);
 
@@ -443,7 +439,6 @@ public class TrainingDefinitionService {
      * @throws EntityConflictException level cannot be created in released or archived training definition.
      */
     public AssessmentLevel createAssessmentLevel(Long definitionId) {
-        Assert.notNull(definitionId, "Definition id must not be null");
         TrainingDefinition trainingDefinition = findById(definitionId);
         if (!trainingDefinition.getState().equals(TDState.UNRELEASED))
             throw new EntityConflictException(new EntityErrorDetail(TrainingDefinition.class, "id", definitionId.getClass(), definitionId,
@@ -477,7 +472,6 @@ public class TrainingDefinitionService {
      * @return list of {@link AbstractLevel} associated with training definition
      */
     public List<AbstractLevel> findAllLevelsFromDefinition(Long definitionId) {
-        Assert.notNull(definitionId, "Definition id must not be null");
         return abstractLevelRepository.findAllLevelsByTrainingDefinitionId(definitionId);
     }
 
@@ -489,7 +483,6 @@ public class TrainingDefinitionService {
      * @throws EntityNotFoundException level is not found.
      */
     public AbstractLevel findLevelById(Long levelId) {
-        Assert.notNull(levelId, "Input level id must not be null.");
         return abstractLevelRepository.findByIdIncludingDefinition(levelId)
                 .orElseThrow(() -> new EntityNotFoundException(new EntityErrorDetail(AbstractLevel.class, "id", levelId.getClass(), levelId, "Level not found")));
     }
@@ -501,7 +494,6 @@ public class TrainingDefinitionService {
      * @return the list of all {@link TrainingInstance}s associated with wanted {@link TrainingDefinition}
      */
     public List<TrainingInstance> findAllTrainingInstancesByTrainingDefinitionId(Long id) {
-        Assert.notNull(id, "Input definition id must not be null");
         return trainingInstanceRepository.findAllByTrainingDefinitionId(id);
     }
 

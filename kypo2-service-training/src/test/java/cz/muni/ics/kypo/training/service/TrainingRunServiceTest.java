@@ -442,13 +442,6 @@ public class TrainingRunServiceTest {
         assertEquals(trainingRun2.getState(), TRState.FINISHED);
     }
 
-    @Test
-    public void testFinishTrainingRunWithNullTrainingRunId() {
-        thrown.expect(IllegalArgumentException.class);
-        thrown.expectMessage("Input training run id must not be null.");
-        trainingRunService.finishTrainingRun(null);
-    }
-
     @Test(expected = EntityConflictException.class)
     public void testFinishTrainingRunWithNonLastLevel() {
         trainingRun1.setLevelAnswered(true);

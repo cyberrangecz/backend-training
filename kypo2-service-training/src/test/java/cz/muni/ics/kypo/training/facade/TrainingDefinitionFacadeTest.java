@@ -196,12 +196,6 @@ public class TrainingDefinitionFacadeTest {
         then(trainingDefinitionService).should().update(trainingDefinitionMapper.mapUpdateToEntity(trainingDefinitionUpdate));
     }
 
-    @Test
-    public void updateTrainingDefinitionWithNull() {
-        thrown.expect(NullPointerException.class);
-        trainingDefinitionFacade.update(null);
-    }
-
     @Test(expected = EntityNotFoundException.class)
     public void updateTrainingDefinitionWithFacadeLayerException() {
         BetaTestingGroup viewGroup = new BetaTestingGroup();
@@ -225,12 +219,6 @@ public class TrainingDefinitionFacadeTest {
     }
 
     @Test
-    public void createTrainingDefinitionWithNull() {
-        thrown.expect(NullPointerException.class);
-        trainingDefinitionFacade.create(null);
-    }
-
-    @Test
     public void cloneTrainingDefinition() {
         given(trainingDefinitionService.clone(trainingDefinition1.getId(), "title")).willReturn(trainingDefinition1);
         trainingDefinitionFacade.clone(trainingDefinition1.getId(), "title");
@@ -238,21 +226,9 @@ public class TrainingDefinitionFacadeTest {
     }
 
     @Test
-    public void cloneTrainingDefinitionWithNull() {
-        thrown.expect(IllegalArgumentException.class);
-        trainingDefinitionFacade.clone(null, "title");
-    }
-
-    @Test
     public void deleteTrainingDefinition() {
         trainingDefinitionFacade.delete(trainingDefinition1.getId());
         then(trainingDefinitionService).should().delete(trainingDefinition1.getId());
-    }
-
-    @Test
-    public void deleteTrainingDefinitionWithNull() {
-        thrown.expect(NullPointerException.class);
-        trainingDefinitionFacade.delete(null);
     }
 
     @Test(expected = EntityNotFoundException.class)
@@ -265,18 +241,6 @@ public class TrainingDefinitionFacadeTest {
     public void deleteOneLevel() {
         trainingDefinitionFacade.deleteOneLevel(trainingDefinition1.getId(), assessmentLevel.getId());
         then(trainingDefinitionService).should().deleteOneLevel(trainingDefinition1.getId(), assessmentLevel.getId());
-    }
-
-    @Test
-    public void deleteOneLevelWithNullDefinition() {
-        thrown.expect(NullPointerException.class);
-        trainingDefinitionFacade.deleteOneLevel(null, assessmentLevel.getId());
-    }
-
-    @Test
-    public void deleteOneLevelWithNullLevel() {
-        thrown.expect(NullPointerException.class);
-        trainingDefinitionFacade.deleteOneLevel(trainingDefinition1.getId(), null);
     }
 
     @Test(expected = EntityNotFoundException.class)
@@ -293,36 +257,11 @@ public class TrainingDefinitionFacadeTest {
     }
 
     @Test
-    public void updateAssessmentLevelWithNullDefinition() {
-        thrown.expect(NullPointerException.class);
-        trainingDefinitionFacade.updateAssessmentLevel(null, alUpdate);
-    }
-
-    @Test
-    public void updateAssessmentLevelWithNullLevel() {
-        thrown.expect(NullPointerException.class);
-        trainingDefinitionFacade.updateAssessmentLevel(trainingDefinition1.getId(), null);
-    }
-
-    @Test
     public void updateGameLevel() {
         trainingDefinitionFacade.updateGameLevel(trainingDefinition2.getId(), gameLevelUpdate);
         then(trainingDefinitionService).should().updateGameLevel(trainingDefinition2.getId(),
                 gameLevelMapper.mapUpdateToEntity(gameLevelUpdate));
     }
-
-    @Test
-    public void updateGameLevelWithNullDefinition() {
-        thrown.expect(NullPointerException.class);
-        trainingDefinitionFacade.updateGameLevel(null, gameLevelUpdate);
-    }
-
-    @Test
-    public void updateGameLevelWithNullLevel() {
-        thrown.expect(NullPointerException.class);
-        trainingDefinitionFacade.updateGameLevel(trainingDefinition2.getId(), null);
-    }
-
 
     @Test
     public void updateInfoLevel() {
@@ -332,30 +271,10 @@ public class TrainingDefinitionFacadeTest {
     }
 
     @Test
-    public void updateInfoLevelWithNullDefinition() {
-        thrown.expect(NullPointerException.class);
-        trainingDefinitionFacade.updateInfoLevel(null, infoLevelUpdate);
-    }
-
-    @Test
-    public void updateInfoLevelWithNullLevel() {
-        thrown.expect(NullPointerException.class);
-        trainingDefinitionFacade.updateInfoLevel(trainingDefinition2.getId(), null);
-    }
-
-
-
-    @Test
     public void createInfoLevel() {
         given(trainingDefinitionService.createInfoLevel(trainingDefinition1.getId())).willReturn(infoLevel);
         trainingDefinitionFacade.createInfoLevel(trainingDefinition1.getId());
         then(trainingDefinitionService).should().createInfoLevel(trainingDefinition1.getId());
-    }
-
-    @Test
-    public void createInfoLevelWithNullDefinitionId() {
-        thrown.expect(NullPointerException.class);
-        trainingDefinitionFacade.createInfoLevel(null);
     }
 
     @Test
@@ -366,22 +285,10 @@ public class TrainingDefinitionFacadeTest {
     }
 
     @Test
-    public void createGameLevelWithNullDefinitionId() {
-        thrown.expect(NullPointerException.class);
-        trainingDefinitionFacade.createGameLevel(null);
-    }
-
-    @Test
     public void createAssessmentLevel() {
         given(trainingDefinitionService.createAssessmentLevel(trainingDefinition1.getId())).willReturn(assessmentLevel);
         trainingDefinitionFacade.createAssessmentLevel(trainingDefinition1.getId());
         then(trainingDefinitionService).should().createAssessmentLevel(trainingDefinition1.getId());
-    }
-
-    @Test
-    public void createAssessmentLevelWithNullDefinitionId() {
-        thrown.expect(NullPointerException.class);
-        trainingDefinitionFacade.createAssessmentLevel(null);
     }
 
     @Test

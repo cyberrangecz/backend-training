@@ -8,7 +8,10 @@ import cz.muni.ics.kypo.training.annotations.transactions.TransactionalWO;
 import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
 import cz.muni.ics.kypo.training.api.enums.RoleType;
 import cz.muni.ics.kypo.training.api.responses.PageResultResource;
-import cz.muni.ics.kypo.training.exceptions.*;
+import cz.muni.ics.kypo.training.exceptions.EntityErrorDetail;
+import cz.muni.ics.kypo.training.exceptions.EntityNotFoundException;
+import cz.muni.ics.kypo.training.exceptions.InternalServerErrorException;
+import cz.muni.ics.kypo.training.exceptions.MicroserviceApiException;
 import cz.muni.ics.kypo.training.exceptions.errors.JavaApiError;
 import cz.muni.ics.kypo.training.persistence.model.UserRef;
 import cz.muni.ics.kypo.training.persistence.repository.UserRefRepository;
@@ -26,7 +29,9 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
 import java.net.URI;
-import java.util.*;
+import java.util.Collections;
+import java.util.Objects;
+import java.util.Set;
 
 /**
  * The type User service.
@@ -60,7 +65,6 @@ public class UserService {
      * @throws EntityNotFoundException UserRef was not found
      */
     public UserRef getUserByUserRefId(Long userRefId) {
-        Objects.requireNonNull(userRefId, "UserRef ID must not be null.");
         return userRefRepository.findUserByUserRefId(userRefId).orElseThrow(
                 () -> new EntityNotFoundException(new EntityErrorDetail(UserRef.class, "id", userRefId.getClass(), userRefId, "UserRef not found.")));
     }
@@ -73,7 +77,6 @@ public class UserService {
      * @throws EntityNotFoundException UserRef was not found
      */
     public UserRefDTO getUserRefDTOByUserRefId(Long id) {
-        Objects.requireNonNull(id, "UserRef ID must not be null.");
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.setContentType(MediaType.APPLICATION_JSON);
 
@@ -99,7 +102,6 @@ public class UserService {
      * @return the users with given user ref ids
      */
     public PageResultResource<UserRefDTO> getUsersRefDTOByGivenUserIds(Set<Long> userRefIds, Pageable pageable, String givenName, String familyName) {
-        Objects.requireNonNull(userRefIds, "UserRef IDs must not be null.");
         if(userRefIds.isEmpty()) {
             return new PageResultResource<>(Collections.emptyList(), new PageResultResource.Pagination(0, 0, pageable.getPageSize(), 0, 0 ));
         }
@@ -139,7 +141,6 @@ public class UserService {
      * @return list of users with given role
      */
     public PageResultResource<UserRefDTO> getUsersByGivenRole(RoleType roleType, Pageable pageable, String givenName, String familyName) {
-        Objects.requireNonNull(roleType, "Role type must not be null.");
         HttpHeaders httpHeaders = new HttpHeaders();
         UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(userAndGroupURI + "/roles/users");
         if(givenName != null) {
@@ -178,8 +179,6 @@ public class UserService {
      * @return list of users with given role
      */
     public PageResultResource<UserRefDTO> getUsersByGivenRoleAndNotWithGivenIds(RoleType roleType, Set<Long> userRefIds, Pageable pageable, String givenName, String familyName) {
-        Objects.requireNonNull(roleType, "Role type must not be null.");
-        Objects.requireNonNull(userRefIds, "UserRef IDs must not be null.");
         HttpHeaders httpHeaders = new HttpHeaders();
         UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(userAndGroupURI + "/roles/users-not-with-ids");
         if(givenName != null) {
@@ -216,7 +215,6 @@ public class UserService {
      */
     @TransactionalWO
     public UserRef createUserRef(UserRef userRefToCreate) {
-        Objects.requireNonNull(userRefToCreate, "UserRef must not be null.");
         UserRef userRef = userRefRepository.save(userRefToCreate);
         LOG.info("User ref with user_ref_id: {} created.", userRef.getUserRefId());
         return userRef;

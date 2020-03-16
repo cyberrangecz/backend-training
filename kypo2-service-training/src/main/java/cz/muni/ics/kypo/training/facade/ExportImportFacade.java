@@ -177,7 +177,6 @@ public class ExportImportFacade {
     @IsDesignerOrAdmin
     @TransactionalWO
     public TrainingDefinitionByIdDTO dbImport(ImportTrainingDefinitionDTO importTrainingDefinitionDTO) {
-        Objects.requireNonNull(importTrainingDefinitionDTO, "In dbImport() method the input parameter for ImportTrainingDefinitionDTO must not be empty.");
         importTrainingDefinitionDTO.setState(TDState.UNRELEASED);
         if (importTrainingDefinitionDTO.getTitle() != null && !importTrainingDefinitionDTO.getTitle().startsWith("Uploaded")) {
             importTrainingDefinitionDTO.setTitle("Uploaded " + importTrainingDefinitionDTO.getTitle());

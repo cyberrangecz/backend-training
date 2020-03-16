@@ -93,25 +93,11 @@ public class UserServiceTest {
     }
 
     @Test
-    public void getUserByUserRefIdWithNullId() {
-        thrown.expect(NullPointerException.class);
-        thrown.expectMessage("UserRef ID must not be null.");
-        userService.getUserByUserRefId(null);
-    }
-
-    @Test
     public void getUserRefDTOByUserRefId() {
         given(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), eq(UserRefDTO.class))).
                 willReturn(new ResponseEntity<UserRefDTO>(userRefDTO1, HttpStatus.OK));
         UserRefDTO foundUserRefDTO = userService.getUserRefDTOByUserRefId(userRef1.getUserRefId());
         Assert.assertEquals(userRefDTO1, foundUserRefDTO);
-    }
-
-    @Test
-    public void getUserRefDTOByUserRefIdWithNullId() {
-        thrown.expect(NullPointerException.class);
-        thrown.expectMessage("UserRef ID must not be null.");
-        userService.getUserRefDTOByUserRefId(null);
     }
 
     @Test
@@ -122,13 +108,6 @@ public class UserServiceTest {
         PageResultResource<UserRefDTO> userRefDTOPageResultResource = userService.getUsersRefDTOByGivenUserIds(Set.of(userRef1.getUserRefId(), userRef2.getUserRefId()), pageable, null, null);
         Assert.assertTrue(userRefDTOPageResultResource.getContent().containsAll(List.of(userRefDTO1, userRefDTO2)));
         Assert.assertEquals(pagination, userRefDTOPageResultResource.getPagination());
-    }
-
-    @Test
-    public void getUsersRefDTOByGivenUserIdsWithNullIds() {
-        thrown.expect(NullPointerException.class);
-        thrown.expectMessage("UserRef IDs must not be null.");
-        userService.getUsersRefDTOByGivenUserIds(null, pageable, null, null);
     }
 
     @Test
@@ -149,13 +128,6 @@ public class UserServiceTest {
     }
 
     @Test
-    public void getUsersByGivenRoleWithNullRole() {
-        thrown.expect(NullPointerException.class);
-        thrown.expectMessage("Role type must not be null.");
-        userService.getUsersByGivenRole(null, pageable, null, null);
-    }
-
-    @Test
     public void getUsersByGivenRoleAndNotWithGivenIds() {
         pagination = new PageResultResource.Pagination(0, 2, 5, 2, 1);
         given(restTemplate.exchange(any(URI.class), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
@@ -166,32 +138,11 @@ public class UserServiceTest {
     }
 
     @Test
-    public void getUsersByGivenRoleAndNotWithGivenIdsWithNullRole() {
-        thrown.expect(NullPointerException.class);
-        thrown.expectMessage("Role type must not be null.");
-        userService.getUsersByGivenRoleAndNotWithGivenIds(null, new HashSet<>(), pageable, null, null);
-    }
-
-    @Test
-    public void getUsersByGivenRoleAndNotWithGivenIdsWithNullIds() {
-        thrown.expect(NullPointerException.class);
-        thrown.expectMessage("UserRef IDs must not be null.");
-        userService.getUsersByGivenRoleAndNotWithGivenIds(RoleType.ROLE_TRAINING_DESIGNER, null, pageable, null, null);
-    }
-
-    @Test
     public void createUserRef() {
         UserRef userRef = new UserRef();
         userRef.setUserRefId(userRef1.getUserRefId());
         given(userRefRepository.save(userRef)).willReturn(userRef1);
         userService.createUserRef(userRef);
         then(userRefRepository).should().save(userRef);
-    }
-
-    @Test
-    public void createUserRefWithNullParameter() {
-        thrown.expect(NullPointerException.class);
-        thrown.expectMessage("UserRef must not be null.");
-        userService.createUserRef(null);
     }
 }

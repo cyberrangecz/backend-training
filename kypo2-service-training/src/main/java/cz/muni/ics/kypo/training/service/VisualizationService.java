@@ -49,7 +49,6 @@ public class VisualizationService {
      * @throws EntityConflictException training run is still running
      */
     public List<AbstractLevel> getLevelsForTraineeVisualization(TrainingRun trainingRun) {
-        Assert.notNull(trainingRun, "Id of training run must not be null.");
         if (securityService.hasRole(RoleTypeSecurity.ROLE_TRAINING_ADMINISTRATOR)) {
             return abstractLevelRepository.findAllLevelsByTrainingDefinitionId(trainingRun.getTrainingInstance().getTrainingDefinition().getId());
         } else if (trainingRun.getState().equals(TRState.RUNNING)) {
@@ -66,7 +65,6 @@ public class VisualizationService {
      * @return List of {@link AbstractLevel}s
      */
     public List<AbstractLevel> getLevelsForOrganizerVisualization(TrainingInstance trainingInstance) {
-        Assert.notNull(trainingInstance, "Id of training instance must not be null.");
         return abstractLevelRepository.findAllLevelsByTrainingDefinitionId(trainingInstance.getTrainingDefinition().getId());
     }
 

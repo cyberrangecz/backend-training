@@ -18,7 +18,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -259,7 +258,6 @@ public class TrainingInstanceService {
      */
     public Page<TrainingRun> findTrainingRunsByTrainingInstance(Long instanceId, Boolean isActive, Pageable
             pageable) {
-        Assert.notNull(instanceId, "Input training instance id must not be null.");
         trainingInstanceRepository.findById(instanceId)
                 .orElseThrow(() -> new EntityNotFoundException(new EntityErrorDetail(
                         TrainingInstance.class, "id", instanceId.getClass(), instanceId, "Training instance not found.")));
@@ -299,7 +297,6 @@ public class TrainingInstanceService {
      * @return Training instance
      */
     public TrainingInstance findByStartTimeAfterAndEndTimeBeforeAndAccessToken(String accessToken) {
-        Assert.hasLength(accessToken, "AccessToken cannot be null or empty.");
         return trainingInstanceRepository.findByStartTimeAfterAndEndTimeBeforeAndAccessToken(LocalDateTime.now(Clock.systemUTC()), accessToken)
                 .orElseThrow(() -> new EntityNotFoundException(new EntityErrorDetail(
                         TrainingInstance.class, "accessToken", accessToken.getClass(), accessToken, "There is no active game session matching access token.")));
