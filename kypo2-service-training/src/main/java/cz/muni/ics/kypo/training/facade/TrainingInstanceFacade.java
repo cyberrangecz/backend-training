@@ -169,12 +169,10 @@ public class TrainingInstanceFacade {
             trainingRunsInTrainingInstance.forEach(tr -> trainingRunService.deleteTrainingRun(tr.getId(), true));
             trainingInstanceService.unlockPool(trainingInstance.getId());
         } else if (!trainingInstanceService.checkIfInstanceIsFinished(trainingInstanceId) && trainingRunService.existsAnyForTrainingInstance(trainingInstanceId)) {
-            throw new EntityConflictException(new EntityErrorDetail(TrainingInstance.class, "id", Long.class,
-                    "Active training instance with already assigned training runs cannot be deleted. Please delete training runs assigned to training instance and try again."));
+            throw new EntityConflictException(new EntityErrorDetail(TrainingInstance.class, "Active training instance with already assigned training runs cannot be deleted. Please delete training runs assigned to training instance and try again."));
             // not possible to delete active training instances with associated training runs
         } else if (trainingInstance.getPoolId() != null) {
-            throw new EntityConflictException(new EntityErrorDetail(TrainingInstance.class, "id", Long.class,
-                    "First, you must unassign pool id from training instance then try it again."));
+            throw new EntityConflictException(new EntityErrorDetail(TrainingInstance.class, "First, you must unassign pool id from training instance then try it again."));
             // not possible to delete training instance with associated pool
         }
         trainingInstanceService.delete(trainingInstance);
