@@ -16,12 +16,14 @@ import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionBy
 import cz.muni.ics.kypo.training.api.enums.LevelType;
 import cz.muni.ics.kypo.training.api.enums.TDState;
 import cz.muni.ics.kypo.training.api.responses.PageResultResource;
+import cz.muni.ics.kypo.training.api.responses.SandboxDefinitionInfo;
 import cz.muni.ics.kypo.training.exceptions.EntityConflictException;
 import cz.muni.ics.kypo.training.exceptions.EntityErrorDetail;
 import cz.muni.ics.kypo.training.exceptions.InternalServerErrorException;
 import cz.muni.ics.kypo.training.mapping.mapstruct.*;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.service.ExportImportService;
+import cz.muni.ics.kypo.training.service.TrainingInstanceService;
 import cz.muni.ics.kypo.training.service.UserService;
 import cz.muni.ics.kypo.training.service.TrainingDefinitionService;
 import cz.muni.ics.kypo.training.utils.AbstractFileExtensions;
@@ -54,15 +56,15 @@ public class ExportImportFacade {
     private String kypoOpenStackURI;
 
     private ExportImportService exportImportService;
+    private TrainingDefinitionService trainingDefinitionService;
+    private TrainingEventsService trainingEventsService;
     private UserService userService;
     private ExportImportMapper exportImportMapper;
     private GameLevelMapper gameLevelMapper;
     private AssessmentLevelMapper assessmentLevelMapper;
     private InfoLevelMapper infoLevelMapper;
-    private TrainingDefinitionService trainingDefinitionService;
     private TrainingDefinitionMapper trainingDefinitionMapper;
     private ObjectMapper objectMapper;
-    private TrainingEventsService trainingEventsService;
     private UserRefMapper userRefMapper;
 
     /**
@@ -81,16 +83,18 @@ public class ExportImportFacade {
      * @param userRefMapper             the user ref mapper
      */
     @Autowired
-    public ExportImportFacade(ExportImportService exportImportService, ExportImportMapper exportImportMapper, GameLevelMapper gameLevelMapper,
-                              InfoLevelMapper infoLevelMapper, AssessmentLevelMapper assessmentLevelMapper, TrainingDefinitionService trainingDefinitionService,
-                              TrainingDefinitionMapper trainingDefinitionMapper, ObjectMapper objectMapper, TrainingEventsService trainingEventsService,
-                              UserService userService, UserRefMapper userRefMapper) {
+    public ExportImportFacade(ExportImportService exportImportService, TrainingDefinitionService trainingDefinitionService,
+                              TrainingEventsService trainingEventsService, UserService userService,
+                              ExportImportMapper exportImportMapper, GameLevelMapper gameLevelMapper,
+                              InfoLevelMapper infoLevelMapper, AssessmentLevelMapper assessmentLevelMapper,
+                              TrainingDefinitionMapper trainingDefinitionMapper, ObjectMapper objectMapper,
+                              UserRefMapper userRefMapper) {
         this.exportImportService = exportImportService;
+        this.trainingDefinitionService = trainingDefinitionService;
         this.exportImportMapper = exportImportMapper;
         this.gameLevelMapper = gameLevelMapper;
         this.infoLevelMapper = infoLevelMapper;
         this.assessmentLevelMapper = assessmentLevelMapper;
-        this.trainingDefinitionService = trainingDefinitionService;
         this.trainingDefinitionMapper = trainingDefinitionMapper;
         this.objectMapper = objectMapper;
         this.trainingEventsService = trainingEventsService;
@@ -222,6 +226,7 @@ public class ExportImportFacade {
             Set<Long> participantRefIds = new HashSet<>();
             writeTrainingRunsInfo(zos, trainingInstance, participantRefIds);
             writeTrainingInstanceParticipantRefIdsInfo(zos, trainingInstance, participantRefIds);
+            writeSandboxDefinitionInfo(zos, trainingInstance);
 
             zos.closeEntry();
             FileToReturnDTO fileToReturnDTO = new FileToReturnDTO();
@@ -229,7 +234,7 @@ public class ExportImportFacade {
             fileToReturnDTO.setTitle(trainingInstance.getTitle());
             return fileToReturnDTO;
         } catch (IOException ex) {
-            throw new InternalServerErrorException(ex);
+            throw new InternalServerErrorException("The .zip file was not created since there were some processing error.", ex);
         }
     }
 
@@ -280,6 +285,15 @@ public class ExportImportFacade {
         ZipEntry participantsEntry = new ZipEntry("training_instance-id" + trainingInstance.getId() + "-participants" + AbstractFileExtensions.JSON_FILE_EXTENSION);
         zos.putNextEntry(participantsEntry);
         zos.write(objectMapper.writeValueAsBytes(getUsersRefExportDTO(participantRefIds)));
+    }
+
+    private void writeSandboxDefinitionInfo(ZipOutputStream zos, TrainingInstance trainingInstance) throws IOException {
+        if (trainingInstance.getPoolId() != null) {
+            SandboxDefinitionInfo sandboxDefinitionInfo = exportImportService.getSandboxDefinitionId(trainingInstance.getPoolId());
+            ZipEntry sandboxDefinitionEntry = new ZipEntry("sandbox_definition-id" + sandboxDefinitionInfo.getId() + AbstractFileExtensions.JSON_FILE_EXTENSION);
+            zos.putNextEntry(sandboxDefinitionEntry);
+            zos.write(objectMapper.writeValueAsBytes(sandboxDefinitionInfo));
+        }
     }
 
     private List<UserRefExportDTO> getUsersRefExportDTO(Set<Long> usersRefIds) {

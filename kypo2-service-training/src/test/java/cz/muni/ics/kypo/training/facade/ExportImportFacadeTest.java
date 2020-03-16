@@ -82,8 +82,9 @@ public class ExportImportFacadeTest {
     @Before
     public void init() {
         MockitoAnnotations.initMocks(this);
-        exportImportFacade = new ExportImportFacade(exportImportService, exportImportMapper, gameLevelMapper,
-                infoLevelMapper, assessmentLevelMapper, trainingDefinitionService, trainingDefinitionMapper, objectMapper, trainingEventsService, userService, userRefMapper);
+        exportImportFacade = new ExportImportFacade(exportImportService, trainingDefinitionService, trainingEventsService,
+                userService, exportImportMapper, gameLevelMapper, infoLevelMapper, assessmentLevelMapper,
+                trainingDefinitionMapper, objectMapper, userRefMapper);
 
         assessmentLevel = testDataFactory.getTest();
         assessmentLevel.setId(1L);
