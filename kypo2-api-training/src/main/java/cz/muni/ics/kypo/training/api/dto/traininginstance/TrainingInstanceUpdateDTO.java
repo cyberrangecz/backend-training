@@ -32,11 +32,6 @@ public class TrainingInstanceUpdateDTO {
     @ApiModelProperty(value = "Short textual description of the training instance.", required = true, example = "Current Instance")
     @NotEmpty(message = "{traininginstanceupdate.title.NotEmpty.message}")
     private String title;
-    @ApiModelProperty(value = "Number of sandboxes that can be allocated.", required = true, example = "8")
-    @NotNull(message = "{traininginstanceupdate.poolSize.NotNull.message}")
-    @Min(value = 1, message = "{traininginstanceupdate.poolSize.Min.message}")
-    @Max(value = 100, message = "{traininginstanceupdate.poolSize.Max.message}")
-    private int poolSize;
     @ApiModelProperty(value = "AccessToken which will be modified and then used for accessing training run.", required = true, example = "hello-6578")
     @NotEmpty(message = "{traininginstanceupdate.accessToken.NotEmpty.message}")
     private String accessToken;
@@ -117,24 +112,6 @@ public class TrainingInstanceUpdateDTO {
     }
 
     /**
-     * Gets pool size.
-     *
-     * @return the pool size
-     */
-    public int getPoolSize() {
-        return poolSize;
-    }
-
-    /**
-     * Sets pool size.
-     *
-     * @param poolSize the pool size
-     */
-    public void setPoolSize(int poolSize) {
-        this.poolSize = poolSize;
-    }
-
-    /**
      * Gets access token.
      *
      * @return the access token
@@ -178,7 +155,6 @@ public class TrainingInstanceUpdateDTO {
                 ", startTime=" + startTime +
                 ", endTime=" + endTime +
                 ", title='" + title + '\'' +
-                ", poolSize=" + poolSize +
                 ", accessToken='" + accessToken + '\'' +
                 ", trainingDefinitionId=" + trainingDefinitionId +
                 '}';

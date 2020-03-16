@@ -28,8 +28,6 @@ public class TrainingInstanceDTO {
     private LocalDateTime endTime;
     @ApiModelProperty(value = "Short textual description of the training instance.", example = "Concluded Instance")
     private String title;
-    @ApiModelProperty(value = "Number of sandboxes that can be allocated.", example = "5")
-    private int poolSize;
     @ApiModelProperty(value = "Reference to training definition from which is training instance created.")
     private TrainingDefinitionByIdDTO trainingDefinition;
     @ApiModelProperty(value = "Token used to access training run.", required = true, example = "hunter")
@@ -112,24 +110,6 @@ public class TrainingInstanceDTO {
     }
 
     /**
-     * Gets pool size.
-     *
-     * @return the pool size
-     */
-    public int getPoolSize() {
-        return poolSize;
-    }
-
-    /**
-     * Sets pool size.
-     *
-     * @param poolSize the pool size
-     */
-    public void setPoolSize(int poolSize) {
-        this.poolSize = poolSize;
-    }
-
-    /**
      * Gets training definition.
      *
      * @return the training definition
@@ -203,7 +183,7 @@ public class TrainingInstanceDTO {
 
     @Override public String toString() {
         return "TrainingInstanceDTO{" + "id=" + id + ", startTime=" + startTime + ", endTime=" + endTime + ", title='" + title + '\''
-            + ", poolSize=" + poolSize + ", trainingDefinition=" + trainingDefinition + ", accessToken='"
+            + ", trainingDefinition=" + trainingDefinition + ", accessToken='"
             + accessToken + '\'' + ", poolId=" + poolId + '}';
     }
 
@@ -211,8 +191,7 @@ public class TrainingInstanceDTO {
     public boolean equals(Object object) {
         if (!(object instanceof TrainingInstanceDTO)) return false;
         TrainingInstanceDTO that = (TrainingInstanceDTO) object;
-        return getPoolSize() == that.getPoolSize() &&
-                Objects.equals(getId(), that.getId()) &&
+        return  Objects.equals(getId(), that.getId()) &&
                 Objects.equals(getTitle(), that.getTitle()) &&
                 Objects.equals(getAccessToken(), that.getAccessToken()) &&
                 Objects.equals(getPoolId(), that.getPoolId());
@@ -220,6 +199,6 @@ public class TrainingInstanceDTO {
 
     @Override
     public int hashCode() {
-        return Objects.hash(getId(), getTitle(), getPoolSize(), getAccessToken(), getPoolId());
+        return Objects.hash(getId(), getTitle(), getAccessToken(), getPoolId());
     }
 }

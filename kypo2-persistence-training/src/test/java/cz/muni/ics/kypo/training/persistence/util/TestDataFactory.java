@@ -111,19 +111,19 @@ public class TestDataFactory {
             20L, LocalDateTime.now(Clock.systemUTC()).minusHours(15));
 
     private TrainingInstance futureInstance = generateTrainingInstance(LocalDateTime.now(Clock.systemUTC()).plusHours(10),
-            LocalDateTime.now(Clock.systemUTC()).plusHours(20), "Future Instance", 25, 1L, "future-1111");
+            LocalDateTime.now(Clock.systemUTC()).plusHours(20), "Future Instance", 1L, "future-1111");
     private TrainingInstance ongoingInstance = generateTrainingInstance(LocalDateTime.now(Clock.systemUTC()).minusHours(10),
-            LocalDateTime.now(Clock.systemUTC()).plusHours(10), "Ongoing Instance", 12, 2L, "ongoing-2222");
+            LocalDateTime.now(Clock.systemUTC()).plusHours(10), "Ongoing Instance", 2L, "ongoing-2222");
     private TrainingInstance concludedInstance = generateTrainingInstance(LocalDateTime.now(Clock.systemUTC()).minusHours(20),
-            LocalDateTime.now(Clock.systemUTC()).minusHours(5), "Concluded Instance", 9, 3L, "concluded-3333");
+            LocalDateTime.now(Clock.systemUTC()).minusHours(5), "Concluded Instance", 3L, "concluded-3333");
     private TrainingInstanceCreateDTO trainingInstanceCreateDTO = generateTrainingInstanceCreateDTO(LocalDateTime.now(Clock.systemUTC()).plusHours(15),
-            LocalDateTime.now(Clock.systemUTC()).plusHours(22), "Create Instance", 64, "create");
+            LocalDateTime.now(Clock.systemUTC()).plusHours(22), "Create Instance", "create");
     private TrainingInstanceUpdateDTO trainingInstanceUpdateDTO = generateTrainingInstanceUpdateDTO(LocalDateTime.now(Clock.systemUTC()).plusHours(5),
-            LocalDateTime.now(Clock.systemUTC()).plusHours(7), "Update Instance", 12, "update");
+            LocalDateTime.now(Clock.systemUTC()).plusHours(7), "Update Instance", "update");
     private TrainingInstanceDTO trainingInstanceDTO = generateTrainingInstanceDTO(LocalDateTime.now(Clock.systemUTC()).plusHours(11),
-            LocalDateTime.now(Clock.systemUTC()).plusHours(22), "Instance DTO", 32, "DTO-5555", 10L);
+            LocalDateTime.now(Clock.systemUTC()).plusHours(22), "Instance DTO", "DTO-5555", 10L);
     private TrainingInstanceArchiveDTO trainingInstanceArchiveDTO = generateTrainingInstanceArchiveDTO(LocalDateTime.now(Clock.systemUTC()).minusHours(20),
-            LocalDateTime.now(Clock.systemUTC()).minusHours(10), "Archived instance", 11, "archived-6666");
+            LocalDateTime.now(Clock.systemUTC()).minusHours(10), "Archived instance", "archived-6666");
 
     private TrainingRun runningRun = generateTrainingRun(LocalDateTime.now(Clock.systemUTC()).minusHours(2), LocalDateTime.now(Clock.systemUTC()).plusHours(2),
             "logReference1", TRState.RUNNING, 2, true, 1L, 55,
@@ -383,13 +383,12 @@ public class TestDataFactory {
         return newTrainingDefinition;
     }
 
-    private TrainingInstance generateTrainingInstance(LocalDateTime starTime, LocalDateTime endTime, String title, int poolSize,
+    private TrainingInstance generateTrainingInstance(LocalDateTime starTime, LocalDateTime endTime, String title,
                                                       Long poolId, String accessToken){
         TrainingInstance newTrainingInstance = new TrainingInstance();
         newTrainingInstance.setStartTime(starTime);
         newTrainingInstance.setEndTime(endTime);
         newTrainingInstance.setTitle(title);
-        newTrainingInstance.setPoolSize(poolSize);
         newTrainingInstance.setPoolId(poolId);
         newTrainingInstance.setAccessToken(accessToken);
         return newTrainingInstance;
@@ -440,23 +439,21 @@ public class TestDataFactory {
     }
 
     private TrainingInstanceCreateDTO generateTrainingInstanceCreateDTO(LocalDateTime startTime, LocalDateTime endTime,
-                                                                        String title, int poolSize, String accessToken){
+                                                                        String title, String accessToken){
         TrainingInstanceCreateDTO trainingInstanceCreateDTO = new TrainingInstanceCreateDTO();
         trainingInstanceCreateDTO.setStartTime(startTime);
         trainingInstanceCreateDTO.setEndTime(endTime);
         trainingInstanceCreateDTO.setTitle(title);
-        trainingInstanceCreateDTO.setPoolSize(poolSize);
         trainingInstanceCreateDTO.setAccessToken(accessToken);
         return trainingInstanceCreateDTO;
     }
 
     private TrainingInstanceUpdateDTO generateTrainingInstanceUpdateDTO(LocalDateTime startTime, LocalDateTime endTime,
-                                                                        String title, int poolSize, String accessToken){
+                                                                        String title, String accessToken){
         TrainingInstanceUpdateDTO trainingInstanceUpdateDTO = new TrainingInstanceUpdateDTO();
         trainingInstanceUpdateDTO.setStartTime(startTime);
         trainingInstanceUpdateDTO.setEndTime(endTime);
         trainingInstanceUpdateDTO.setTitle(title);
-        trainingInstanceUpdateDTO.setPoolSize(poolSize);
         trainingInstanceUpdateDTO.setAccessToken(accessToken);
         return trainingInstanceUpdateDTO;
     }
@@ -576,13 +573,12 @@ public class TestDataFactory {
         return basicLevelInfoDTO;
     }
 
-    private TrainingInstanceDTO generateTrainingInstanceDTO(LocalDateTime start, LocalDateTime end, String title, int poolSize,
+    private TrainingInstanceDTO generateTrainingInstanceDTO(LocalDateTime start, LocalDateTime end, String title,
                                                             String accessToken, Long poolId){
         TrainingInstanceDTO trainingInstanceDTO = new TrainingInstanceDTO();
         trainingInstanceDTO.setStartTime(start);
         trainingInstanceDTO.setEndTime(end);
         trainingInstanceDTO.setTitle(title);
-        trainingInstanceDTO.setPoolSize(poolSize);
         trainingInstanceDTO.setAccessToken(accessToken);
         trainingInstanceDTO.setPoolId(poolId);
         return trainingInstanceDTO;
@@ -675,12 +671,11 @@ public class TestDataFactory {
         return hintImportDTO;
     }
 
-    private TrainingInstanceArchiveDTO generateTrainingInstanceArchiveDTO(LocalDateTime start, LocalDateTime end, String title, int poolSize, String accessToken){
+    private TrainingInstanceArchiveDTO generateTrainingInstanceArchiveDTO(LocalDateTime start, LocalDateTime end, String title, String accessToken){
         TrainingInstanceArchiveDTO trainingInstanceArchiveDTO = new TrainingInstanceArchiveDTO();
         trainingInstanceArchiveDTO.setStartTime(start);
         trainingInstanceArchiveDTO.setEndTime(end);
         trainingInstanceArchiveDTO.setTitle(title);
-        trainingInstanceArchiveDTO.setPoolSize(poolSize);
         trainingInstanceArchiveDTO.setAccessToken(accessToken);
         return trainingInstanceArchiveDTO;
     }

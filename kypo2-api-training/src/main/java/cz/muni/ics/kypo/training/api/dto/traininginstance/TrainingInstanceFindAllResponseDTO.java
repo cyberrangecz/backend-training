@@ -25,8 +25,6 @@ public class TrainingInstanceFindAllResponseDTO {
     private LocalDateTime endTime;
     @ApiModelProperty(value = "Short textual description of the training instance.", example = "Concluded Instance")
     private String title;
-    @ApiModelProperty(value = "Number of sandboxes that can be allocated.", example = "5")
-    private int poolSize;
     @ApiModelProperty(value = "Reference to training definition from which is training instance created.")
     private TrainingDefinitionByIdDTO trainingDefinition;
     @ApiModelProperty(value = "Token used to access training run.", required = true, example = "hunter")
@@ -112,24 +110,6 @@ public class TrainingInstanceFindAllResponseDTO {
     }
 
     /**
-     * Gets pool size.
-     *
-     * @return the pool size
-     */
-    public int getPoolSize() {
-        return poolSize;
-    }
-
-    /**
-     * Sets pool size.
-     *
-     * @param poolSize the pool size
-     */
-    public void setPoolSize(int poolSize) {
-        this.poolSize = poolSize;
-    }
-
-    /**
      * Gets training definition.
      *
      * @return the training definition
@@ -190,7 +170,6 @@ public class TrainingInstanceFindAllResponseDTO {
                 ", startTime=" + startTime +
                 ", endTime=" + endTime +
                 ", title='" + title + '\'' +
-                ", poolSize=" + poolSize +
                 ", accessToken='" + accessToken + '\'' +
                 ", poolId=" + poolId +
                 '}';
