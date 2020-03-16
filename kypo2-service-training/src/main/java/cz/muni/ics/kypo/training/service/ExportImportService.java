@@ -1,14 +1,20 @@
 package cz.muni.ics.kypo.training.service;
 
-import cz.muni.ics.kypo.training.exceptions.EntityErrorDetail;
-import cz.muni.ics.kypo.training.exceptions.EntityNotFoundException;
+import cz.muni.ics.kypo.training.api.responses.SandboxDefinitionInfo;
+import cz.muni.ics.kypo.training.exceptions.*;
+import cz.muni.ics.kypo.training.exceptions.errors.PythonApiError;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.repository.*;
 import cz.muni.ics.kypo.training.utils.AssessmentUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.List;
 import java.util.Set;
@@ -30,6 +36,9 @@ public class ExportImportService {
     private TrainingInstanceRepository trainingInstanceRepository;
     private TrainingRunRepository trainingRunRepository;
 
+    @Qualifier("pythonRestTemplate")
+    private RestTemplate pythonRestTemplate;
+
     /**
      * Instantiates a new Export import service.
      *
@@ -40,12 +49,13 @@ public class ExportImportService {
      * @param gameLevelRepository          the game level repository
      * @param trainingInstanceRepository   the training instance repository
      * @param trainingRunRepository        the training run repository
+     * @param pythonRestTemplate           the python rest template
      */
     @Autowired
     public ExportImportService(TrainingDefinitionRepository trainingDefinitionRepository, AbstractLevelRepository abstractLevelRepository,
                                AssessmentLevelRepository assessmentLevelRepository, InfoLevelRepository infoLevelRepository,
                                GameLevelRepository gameLevelRepository, TrainingInstanceRepository trainingInstanceRepository,
-                               TrainingRunRepository trainingRunRepository) {
+                               TrainingRunRepository trainingRunRepository, RestTemplate pythonRestTemplate) {
         this.trainingDefinitionRepository = trainingDefinitionRepository;
         this.abstractLevelRepository = abstractLevelRepository;
         this.assessmentLevelRepository = assessmentLevelRepository;
@@ -53,6 +63,7 @@ public class ExportImportService {
         this.infoLevelRepository = infoLevelRepository;
         this.trainingInstanceRepository = trainingInstanceRepository;
         this.trainingRunRepository = trainingRunRepository;
+        this.pythonRestTemplate = pythonRestTemplate;
     }
 
     /**
@@ -123,5 +134,22 @@ public class ExportImportService {
         return trainingRunRepository.findAllByTrainingInstanceId(trainingInstanceId);
     }
 
+    /**
+     * Gets sandbox definition id.
+     *
+     * @param poolId the pool id
+     * @return the sandbox definition id
+     */
+    public SandboxDefinitionInfo getSandboxDefinitionId(Long poolId) {
+        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(kypoOpenStackURI + "/pools/" + poolId + "/definition/");
+        try {
+            return pythonRestTemplate.getForObject(builder.toString(), SandboxDefinitionInfo.class);
+        } catch (RestTemplateException ex) {
+            if (ex.getStatusCode().equals(HttpStatus.CONFLICT.toString())) {
+                throw new ForbiddenException("There is no available sandbox definition for particular pool (ID: " + poolId + ").");
+            }
+            throw new MicroserviceApiException("Error when calling Python API to sandbox for particular pool (ID: " + poolId + ")", new PythonApiError(ex.getMessage()));
+        }
+    }
 
 }
