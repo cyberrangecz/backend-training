@@ -2,9 +2,9 @@ package cz.muni.ics.kypo.training.rest.controllers;
 
 import cz.muni.csirt.kypo.elasticsearch.service.TrainingEventsService;
 import cz.muni.csirt.kypo.elasticsearch.service.exceptions.ElasticsearchTrainingServiceLayerException;
-import cz.muni.ics.kypo.training.exceptions.errors.JavaApiError;
 import cz.muni.ics.kypo.training.exceptions.ResourceNotFoundException;
 import cz.muni.ics.kypo.training.exceptions.ResourceNotModifiedException;
+import cz.muni.ics.kypo.training.rest.ApiError;
 import io.swagger.annotations.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -17,8 +17,8 @@ import org.springframework.web.bind.annotation.*;
  */
 @Api(value = "/training-events", tags = "Training events", consumes = MediaType.APPLICATION_JSON_VALUE)
 @ApiResponses(value = {
-        @ApiResponse(code = 401, message = "Full authentication is required to access this resource.", response = JavaApiError.class),
-        @ApiResponse(code = 403, message = "The necessary permissions are required for a resource.", response = JavaApiError.class)
+        @ApiResponse(code = 401, message = "Full authentication is required to access this resource.", response = ApiError.class),
+        @ApiResponse(code = 403, message = "The necessary permissions are required for a resource.", response = ApiError.class)
 })
 @RestController
 @RequestMapping(path = "/training-events", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -50,7 +50,7 @@ public class TrainingEventsRestController {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "All events in particular training run by id was found.", responseContainer = "List"),
-            @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = JavaApiError.class)
+            @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiError.class)
     })
     @GetMapping(path = "/training-definitions/{trainingDefinitionId}/training-instances/{trainingInstanceId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> getAllEventsByTrainingDefinitionAndTrainingInstanceId(
@@ -78,7 +78,7 @@ public class TrainingEventsRestController {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "All events in particular training run by id was found.", responseContainer = "List"),
-            @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = JavaApiError.class)
+            @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiError.class)
     })
     @GetMapping(path = "/training-definitions/{trainingDefinitionId}/training-instances/{trainingInstanceId}/training-runs/{trainingRunId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> getAllEventsFromTrainingRun(
@@ -105,7 +105,7 @@ public class TrainingEventsRestController {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "All events in particular training run by id was were deleted."),
-            @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = JavaApiError.class)
+            @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiError.class)
     })
     @DeleteMapping(path = "/training-instances/{trainingInstanceId}/training-runs/{trainingRunId}")
     public ResponseEntity<Void> deleteEventsFromTrainingRun(

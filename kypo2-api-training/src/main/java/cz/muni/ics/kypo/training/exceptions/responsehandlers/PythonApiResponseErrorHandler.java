@@ -1,12 +1,17 @@
-package cz.muni.ics.kypo.training.exceptions;
+package cz.muni.ics.kypo.training.exceptions.responsehandlers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import cz.muni.ics.kypo.training.exceptions.CustomRestTemplateException;
+import cz.muni.ics.kypo.training.exceptions.errors.JavaApiError;
+import cz.muni.ics.kypo.training.exceptions.errors.PythonApiError;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.client.ClientHttpResponse;
+import org.springframework.util.StreamUtils;
 import org.springframework.web.client.ResponseErrorHandler;
 
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.util.Map;
+import java.net.URI;
+import java.nio.charset.Charset;
 
 import static org.springframework.http.HttpStatus.Series.CLIENT_ERROR;
 import static org.springframework.http.HttpStatus.Series.SERVER_ERROR;
@@ -36,10 +41,12 @@ public class PythonApiResponseErrorHandler implements ResponseErrorHandler {
 
     @Override
     public void handleError(ClientHttpResponse response) throws IOException {
-        if(!new InputStreamReader(response.getBody()).ready()) {
-            throw new RestTemplateException("Error from Python API. No specific message provided.", response.getStatusCode().toString());
+        String responseBody = StreamUtils.copyToString(response.getBody(), Charset.defaultCharset());
+        if(responseBody.isBlank()) {
+            throw new CustomRestTemplateException("Error from external microservice. No specific message provided.", response.getStatusCode());
         }
-        Map<String, Object> json = mapper.readValue(response.getBody(), Map.class);
-        throw new RestTemplateException((String) json.get("detail"), response.getStatusCode().toString());
+        PythonApiError pythonApiError = mapper.readValue(response.getBody(), PythonApiError.class);
+        pythonApiError.setStatus(response.getStatusCode());
+        throw new CustomRestTemplateException(pythonApiError);
     }
 }

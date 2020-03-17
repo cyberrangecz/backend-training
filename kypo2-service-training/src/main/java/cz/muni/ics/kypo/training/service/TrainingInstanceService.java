@@ -209,8 +209,8 @@ public class TrainingInstanceService {
             String url = kypoOpenStackURI + "/pools/" + poolId + "/locks/";
             UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(url);
             return pythonRestTemplate.postForObject(builder.toUriString(), new HttpEntity<>("{}", httpHeaders), LockedPoolInfo.class);
-        } catch (RestTemplateException ex) {
-            throw new MicroserviceApiException("Currently, it is not possible to lock and assign pool with (ID: " + poolId + ").", new PythonApiError(ex.getMessage()));
+        }catch (CustomRestTemplateException ex) {
+            throw new MicroserviceApiException("Currently, it is not possible to lock and assign pool with (ID: " + poolId + ").", ex.getApiSubError());
         }
     }
 
@@ -227,8 +227,8 @@ public class TrainingInstanceService {
             // unlock pool
             String urlUnlockPool = kypoOpenStackURI + "/pools/" + poolId + "/locks/" + poolInfoDto.getLock();
             pythonRestTemplate.delete(UriComponentsBuilder.fromUriString(urlUnlockPool).toString());
-        } catch (RestTemplateException ex) {
-            throw new MicroserviceApiException("Currently, it is not possible to unlock a pool with (ID: " + poolId + ").", new PythonApiError(ex.getMessage()));
+        } catch (CustomRestTemplateException ex) {
+            throw new MicroserviceApiException("Currently, it is not possible to unlock a pool with (ID: " + poolId + ").", ex.getApiSubError());
         }
     }
 

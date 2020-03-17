@@ -4,7 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import cz.muni.csirt.kypo.elasticsearch.service.config.ElasticsearchServiceConfig;
 import cz.muni.ics.kypo.commons.security.config.ResourceServerSecurityConfig;
 import cz.muni.ics.kypo.commons.security.enums.SpringProfiles;
-import cz.muni.ics.kypo.training.exceptions.PythonApiResponseErrorHandler;
+import cz.muni.ics.kypo.training.exceptions.responsehandlers.JavaApiResponseErrorHandler;
+import cz.muni.ics.kypo.training.exceptions.responsehandlers.PythonApiResponseErrorHandler;
 import cz.muni.ics.kypo.training.persistence.config.PersistenceConfig;
 import org.apache.http.client.HttpClient;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
@@ -14,10 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.MethodInvokingFactoryBean;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
+import org.springframework.context.annotation.*;
 import org.springframework.core.env.Environment;
 import org.springframework.http.client.ClientHttpRequestInterceptor;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
@@ -79,8 +77,12 @@ public class ServiceConfig {
      * @throws Exception the exception
      */
     @Bean
-    public RestTemplate restTemplate() throws Exception {
-        return prepareRestTemplate();
+    @Primary
+    @Qualifier("javaRestTemplate")
+    public RestTemplate javaRestTemplate() throws Exception{
+        RestTemplate restTemplate = prepareRestTemplate();
+        restTemplate.setErrorHandler(new JavaApiResponseErrorHandler(objectMapper));
+        return restTemplate;
     }
 
     private RestTemplate prepareRestTemplate() throws Exception {

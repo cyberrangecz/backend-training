@@ -7,11 +7,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalRO;
 import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
 import cz.muni.ics.kypo.training.enums.RoleTypeSecurity;
-import cz.muni.ics.kypo.training.exceptions.EntityErrorDetail;
-import cz.muni.ics.kypo.training.exceptions.EntityNotFoundException;
-import cz.muni.ics.kypo.training.exceptions.InternalServerErrorException;
-import cz.muni.ics.kypo.training.exceptions.MicroserviceApiException;
-import cz.muni.ics.kypo.training.exceptions.errors.JavaApiError;
+import cz.muni.ics.kypo.training.exceptions.*;
 import cz.muni.ics.kypo.training.persistence.model.TrainingDefinition;
 import cz.muni.ics.kypo.training.persistence.model.TrainingInstance;
 import cz.muni.ics.kypo.training.persistence.model.TrainingRun;
@@ -20,6 +16,7 @@ import cz.muni.ics.kypo.training.persistence.repository.TrainingDefinitionReposi
 import cz.muni.ics.kypo.training.persistence.repository.TrainingInstanceRepository;
 import cz.muni.ics.kypo.training.persistence.repository.TrainingRunRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
@@ -28,7 +25,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
-import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
@@ -48,7 +44,7 @@ public class SecurityService {
     private TrainingRunRepository trainingRunRepository;
     private TrainingDefinitionRepository trainingDefinitionRepository;
     private TrainingInstanceRepository trainingInstanceRepository;
-    private RestTemplate restTemplate;
+    private RestTemplate javaRestTemplate;
 
     /**
      * Instantiates a new Security service.
@@ -56,15 +52,15 @@ public class SecurityService {
      * @param trainingInstanceRepository   the training instance repository
      * @param trainingDefinitionRepository the training definition repository
      * @param trainingRunRepository        the training run repository
-     * @param restTemplate                 the rest template
+     * @param javaRestTemplate             the java rest template
      */
     @Autowired
     public SecurityService(TrainingInstanceRepository trainingInstanceRepository, TrainingDefinitionRepository trainingDefinitionRepository,
-                           TrainingRunRepository trainingRunRepository, RestTemplate restTemplate) {
+                           TrainingRunRepository trainingRunRepository, @Qualifier("javaRestTemplate") RestTemplate javaRestTemplate) {
         this.trainingDefinitionRepository = trainingDefinitionRepository;
         this.trainingInstanceRepository = trainingInstanceRepository;
         this.trainingRunRepository = trainingRunRepository;
-        this.restTemplate = restTemplate;
+        this.javaRestTemplate = javaRestTemplate;
     }
 
     /**
@@ -133,15 +129,11 @@ public class SecurityService {
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.setContentType(MediaType.APPLICATION_JSON);
         try {
-            ResponseEntity<UserRefDTO> userInfoResponseEntity = restTemplate.exchange(userAndGroupURI + "/users/info", HttpMethod.GET, new HttpEntity<>(httpHeaders), UserRefDTO.class);
+            ResponseEntity<UserRefDTO> userInfoResponseEntity = javaRestTemplate.exchange(userAndGroupURI + "/users/info", HttpMethod.GET, new HttpEntity<>(httpHeaders), UserRefDTO.class);
             UserRefDTO userRefDto = userInfoResponseEntity.getBody();
             return userRefDto.getUserRefId();
-        } catch (HttpClientErrorException ex) {
-            try {
-                throw new MicroserviceApiException("Error when calling UserAndGroup API to get info about logged in user.", convertJsonBytesToObject(ex.getResponseBodyAsString(), JavaApiError.class));
-            } catch (IOException ex1) {
-                throw new InternalServerErrorException("Unable to parse ApiError when calling UserAndGroup API");
-            }
+        } catch (CustomRestTemplateException ex) {
+            throw new MicroserviceApiException("Error when calling UserAndGroup API to get info about logged in user.", ex.getApiSubError());
         }
     }
 
@@ -154,19 +146,15 @@ public class SecurityService {
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.setContentType(MediaType.APPLICATION_JSON);
         try {
-            ResponseEntity<UserRefDTO> userInfoResponseEntity = restTemplate.exchange(userAndGroupURI + "/users/info", HttpMethod.GET, new HttpEntity<>(httpHeaders), new ParameterizedTypeReference<UserRefDTO>() {
+            ResponseEntity<UserRefDTO> userInfoResponseEntity = javaRestTemplate.exchange(userAndGroupURI + "/users/info", HttpMethod.GET, new HttpEntity<>(httpHeaders), new ParameterizedTypeReference<UserRefDTO>() {
             });
             UserRefDTO userRefDto = userInfoResponseEntity.getBody();
 
             UserRef userRef = new UserRef();
             userRef.setUserRefId(userRefDto.getUserRefId());
             return userRef;
-        } catch (HttpClientErrorException ex) {
-            try {
-                throw new MicroserviceApiException("Error when calling UserAndGroup API to get info about logged in user.", convertJsonBytesToObject(ex.getResponseBodyAsString(), JavaApiError.class));
-            } catch (IOException ex1) {
-                throw new InternalServerErrorException("Unable to parse ApiError when calling UserAndGroup API");
-            }
+        } catch (CustomRestTemplateException ex) {
+            throw new MicroserviceApiException("Error when calling UserAndGroup API to get info about logged in user.", ex.getApiSubError());
         }
     }
 

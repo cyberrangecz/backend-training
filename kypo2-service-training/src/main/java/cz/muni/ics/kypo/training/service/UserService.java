@@ -8,15 +8,13 @@ import cz.muni.ics.kypo.training.annotations.transactions.TransactionalWO;
 import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
 import cz.muni.ics.kypo.training.api.enums.RoleType;
 import cz.muni.ics.kypo.training.api.responses.PageResultResource;
-import cz.muni.ics.kypo.training.exceptions.EntityErrorDetail;
-import cz.muni.ics.kypo.training.exceptions.EntityNotFoundException;
-import cz.muni.ics.kypo.training.exceptions.InternalServerErrorException;
-import cz.muni.ics.kypo.training.exceptions.MicroserviceApiException;
+import cz.muni.ics.kypo.training.exceptions.*;
 import cz.muni.ics.kypo.training.exceptions.errors.JavaApiError;
 import cz.muni.ics.kypo.training.persistence.model.UserRef;
 import cz.muni.ics.kypo.training.persistence.repository.UserRefRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.data.domain.Pageable;
@@ -43,17 +41,17 @@ public class UserService {
 
     @Value("${user-and-group-server.uri}")
     private String userAndGroupURI;
-    private RestTemplate restTemplate;
+    private RestTemplate javaRestTemplate;
     private UserRefRepository userRefRepository;
 
     /**
      * Instantiates a new User service.
      *
-     * @param restTemplate      the rest template
+     * @param javaRestTemplate      the rest template
      * @param userRefRepository the user ref repository
      */
-    public UserService(RestTemplate restTemplate, UserRefRepository userRefRepository) {
-        this.restTemplate = restTemplate;
+    public UserService(@Qualifier("javaRestTemplate") RestTemplate javaRestTemplate, UserRefRepository userRefRepository) {
+        this.javaRestTemplate = javaRestTemplate;
         this.userRefRepository = userRefRepository;
     }
 
@@ -81,14 +79,10 @@ public class UserService {
         httpHeaders.setContentType(MediaType.APPLICATION_JSON);
 
         try {
-            ResponseEntity<UserRefDTO> userInfoResponseEntity = restTemplate.exchange(userAndGroupURI + "/users/" + id, HttpMethod.GET, new HttpEntity<>(httpHeaders), UserRefDTO.class);
+            ResponseEntity<UserRefDTO> userInfoResponseEntity = javaRestTemplate.exchange(userAndGroupURI + "/users/" + id, HttpMethod.GET, new HttpEntity<>(httpHeaders), UserRefDTO.class);
             return userInfoResponseEntity.getBody();
-        } catch (HttpClientErrorException ex) {
-            try {
-                throw new MicroserviceApiException("Error when calling UserAndGroup API to obtain info about user(ID: " + id + ")", convertJsonBytesToObject(ex.getResponseBodyAsString(), JavaApiError.class));
-            } catch (IOException ex1) {
-                throw new InternalServerErrorException("Unable to parse ApiError when calling UserAndGroup API");
-            }
+        } catch (CustomRestTemplateException ex) {
+            throw new MicroserviceApiException("Error when calling UserAndGroup API to obtain info about user(ID: " + id + ")", ex.getApiSubError());
         }
     }
 
@@ -118,16 +112,12 @@ public class UserService {
         builder.queryParam("size", pageable.getPageSize());
         URI uri = builder.build().encode().toUri();
         try {
-            ResponseEntity<PageResultResource<UserRefDTO>> usersResponse = restTemplate.exchange(uri, HttpMethod.GET, new HttpEntity<>(httpHeaders),
+            ResponseEntity<PageResultResource<UserRefDTO>> usersResponse = javaRestTemplate.exchange(uri, HttpMethod.GET, new HttpEntity<>(httpHeaders),
                     new ParameterizedTypeReference<PageResultResource<UserRefDTO>>() {
                     });
             return (Objects.requireNonNull(usersResponse.getBody()));
-        } catch (HttpClientErrorException ex) {
-            try {
-                throw new MicroserviceApiException("Error when calling UserAndGroup API to obtain users by IDs: " + userRefIds, convertJsonBytesToObject(ex.getResponseBodyAsString(), JavaApiError.class));
-            } catch (IOException ex1) {
-                throw new InternalServerErrorException("Unable to parse ApiError when calling UserAndGroup API");
-            }
+        } catch (CustomRestTemplateException ex) {
+            throw new MicroserviceApiException("Error when calling UserAndGroup API to obtain users by IDs: " + userRefIds, ex.getApiSubError());
         }
     }
 
@@ -154,17 +144,13 @@ public class UserService {
         builder.queryParam("size", pageable.getPageSize());
         URI uri = builder.build().encode().toUri();
         try {
-            ResponseEntity<PageResultResource<UserRefDTO>> usersResponse = restTemplate.exchange(uri, HttpMethod.GET, new HttpEntity<>(httpHeaders),
+            ResponseEntity<PageResultResource<UserRefDTO>> usersResponse = javaRestTemplate.exchange(uri, HttpMethod.GET, new HttpEntity<>(httpHeaders),
                     new ParameterizedTypeReference<PageResultResource<UserRefDTO>>() {
                     });
             return Objects.requireNonNull(usersResponse.getBody());
 
-        } catch (HttpClientErrorException ex) {
-            try {
-                throw new MicroserviceApiException("Error when calling UserAndGroup API to obtain users with role " + roleType.name(), convertJsonBytesToObject(ex.getResponseBodyAsString(), JavaApiError.class));
-            } catch (IOException ex1) {
-                throw new InternalServerErrorException("Unable to parse ApiError when calling UserAndGroup API");
-            }
+        } catch (CustomRestTemplateException ex) {
+            throw new MicroserviceApiException("Error when calling UserAndGroup API to obtain users with role " + roleType.name(), ex.getApiSubError());
         }
     }
 
@@ -193,17 +179,13 @@ public class UserService {
         builder.queryParam("size", pageable.getPageSize());
         URI uri = builder.build().encode().toUri();
         try {
-            ResponseEntity<PageResultResource<UserRefDTO>> usersResponse = restTemplate.exchange(uri, HttpMethod.GET, new HttpEntity<>(httpHeaders),
+            ResponseEntity<PageResultResource<UserRefDTO>> usersResponse = javaRestTemplate.exchange(uri, HttpMethod.GET, new HttpEntity<>(httpHeaders),
                     new ParameterizedTypeReference<PageResultResource<UserRefDTO>>() {
                     });
             return Objects.requireNonNull(usersResponse.getBody());
 
-        } catch (HttpClientErrorException ex) {
-            try {
-                throw new MicroserviceApiException("Error when calling UserAndGroup API to obtain users with role " + roleType.name() + " and IDs:", convertJsonBytesToObject(ex.getResponseBodyAsString(), JavaApiError.class));
-            } catch (IOException ex1) {
-                throw new InternalServerErrorException("Unable to parse ApiError when calling UserAndGroup API");
-            }
+        } catch (CustomRestTemplateException ex) {
+            throw new MicroserviceApiException("Error when calling UserAndGroup API to obtain users with role " + roleType.name() + " and IDs:", ex.getApiSubError());
         }
     }
 
