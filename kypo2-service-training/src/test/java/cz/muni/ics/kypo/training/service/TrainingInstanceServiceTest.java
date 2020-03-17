@@ -144,7 +144,7 @@ public class TrainingInstanceServiceTest {
         PathBuilder<TrainingInstance> tI = new PathBuilder<TrainingInstance>(TrainingInstance.class, "trainingInstance");
         Predicate predicate = tI.isNotNull();
 
-        given(trainingInstanceRepository.findAll(any(Predicate.class), any(Pageable.class))).willReturn(p);
+        given(trainingInstanceRepository.findAll(any(Predicate.class), any(Pageable.class), anyLong())).willReturn(p);
 
         Page pr = trainingInstanceService.findAll(predicate, PageRequest.of(0, 2));
         assertEquals(2, pr.getTotalElements());
