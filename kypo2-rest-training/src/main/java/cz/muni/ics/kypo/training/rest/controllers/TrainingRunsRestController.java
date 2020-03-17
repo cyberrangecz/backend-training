@@ -15,7 +15,7 @@ import cz.muni.ics.kypo.training.api.dto.run.TrainingRunByIdDTO;
 import cz.muni.ics.kypo.training.api.dto.run.TrainingRunDTO;
 import cz.muni.ics.kypo.training.facade.TrainingRunFacade;
 import cz.muni.ics.kypo.training.persistence.model.TrainingRun;
-import cz.muni.ics.kypo.training.exceptions.errors.JavaApiError;
+import cz.muni.ics.kypo.training.rest.ApiError;
 import cz.muni.ics.kypo.training.rest.utils.annotations.ApiPageableSwagger;
 import io.swagger.annotations.*;
 import cz.muni.ics.kypo.training.api.dto.hint.HintDTO;
@@ -36,8 +36,8 @@ import org.springframework.web.bind.annotation.*;
  */
 @Api(value = "/training-runs", tags = "Training runs", consumes = MediaType.APPLICATION_JSON_VALUE)
 @ApiResponses(value = {
-        @ApiResponse(code = 401, message = "Full authentication is required to access this resource.", response = JavaApiError.class),
-        @ApiResponse(code = 403, message = "The necessary permissions are required for a resource.", response = JavaApiError.class)
+        @ApiResponse(code = 401, message = "Full authentication is required to access this resource.", response = ApiError.class),
+        @ApiResponse(code = 403, message = "The necessary permissions are required for a resource.", response = ApiError.class)
 })
 @RestController
 @RequestMapping(value = "/training-runs", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -70,7 +70,7 @@ public class TrainingRunsRestController {
             nickname = "deleteTrainingRuns")
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Training runs were deleted"),
-            @ApiResponse(code = 500, message = "Unexpected condition was encountered", response = JavaApiError.class)
+            @ApiResponse(code = 500, message = "Unexpected condition was encountered", response = ApiError.class)
     })
     @DeleteMapping
     public ResponseEntity<Void> deleteTrainingRuns(
@@ -94,9 +94,9 @@ public class TrainingRunsRestController {
             nickname = "deleteTrainingRun")
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Training run was deleted"),
-            @ApiResponse(code = 404, message = "Training run not found.", response = JavaApiError.class),
-            @ApiResponse(code = 409, message = "Sandbox assigned to the training run was not successfully deleted.", response = JavaApiError.class),
-            @ApiResponse(code = 500, message = "Unexpected condition was encountered", response = JavaApiError.class)
+            @ApiResponse(code = 404, message = "Training run not found.", response = ApiError.class),
+            @ApiResponse(code = 409, message = "Sandbox assigned to the training run was not successfully deleted.", response = ApiError.class),
+            @ApiResponse(code = 500, message = "Unexpected condition was encountered", response = ApiError.class)
     })
     @DeleteMapping(path = "/{runId}")
     public ResponseEntity<Void> deleteTrainingRun(
@@ -123,8 +123,8 @@ public class TrainingRunsRestController {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Training run found.", response = TrainingRunDTO.class),
-            @ApiResponse(code = 404, message = "Training run not found.", response = JavaApiError.class),
-            @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = JavaApiError.class)
+            @ApiResponse(code = 404, message = "Training run not found.", response = ApiError.class),
+            @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiError.class)
     })
     @GetMapping(path = "/{runId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> findTrainingRunById(@ApiParam(value = "Training run Id", required = true) @PathVariable Long runId,
@@ -152,7 +152,7 @@ public class TrainingRunsRestController {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "All training runs found.", response = TrainingRunRestResource.class),
-            @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = JavaApiError.class)
+            @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiError.class)
     })
     @ApiPageableSwagger
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
@@ -181,9 +181,9 @@ public class TrainingRunsRestController {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Training run accessed.", response = AccessTrainingRunDTO.class),
-            @ApiResponse(code = 404, message = "There is no training instance with given accessToken or first level not found in database.", response = JavaApiError.class),
-            @ApiResponse(code = 500, message = "Some error occurred during getting info about sandboxes.", response = JavaApiError.class),
-            @ApiResponse(code = 503, message = "There is no available sandbox, wait a minute and try again.", response = JavaApiError.class)
+            @ApiResponse(code = 404, message = "There is no training instance with given accessToken or first level not found in database.", response = ApiError.class),
+            @ApiResponse(code = 500, message = "Some error occurred during getting info about sandboxes.", response = ApiError.class),
+            @ApiResponse(code = 503, message = "There is no available sandbox, wait a minute and try again.", response = ApiError.class)
     })
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<AccessTrainingRunDTO> accessTrainingRun(@ApiParam(value = "accessToken", required = true) @RequestParam(value = "accessToken", required = false) String accessToken) {
@@ -209,7 +209,7 @@ public class TrainingRunsRestController {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "All accessed training runs found.", response = AccessedTrainingRunDTO.class, responseContainer = "List"),
-            @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = JavaApiError.class)
+            @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiError.class)
     })
     @ApiPageableSwagger
     @GetMapping(path = "/accessible", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -241,8 +241,8 @@ public class TrainingRunsRestController {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Next level found.", response = AbstractLevelDTO.class),
-            @ApiResponse(code = 404, message = "There is no next level or could not be found in database.", response = JavaApiError.class),
-            @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = JavaApiError.class)
+            @ApiResponse(code = 404, message = "There is no next level or could not be found in database.", response = ApiError.class),
+            @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiError.class)
     })
     @GetMapping(path = "/{runId}/next-levels", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> getNextLevel(@ApiParam(value = "Training run ID", required = true) @PathVariable Long runId,
@@ -268,9 +268,9 @@ public class TrainingRunsRestController {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Solution found.", response = String.class),
-            @ApiResponse(code = 404, message = "Training run with given id cannot be found.", response = JavaApiError.class),
-            @ApiResponse(code = 400, message = "Current level is not game level and does not have solution.", response = JavaApiError.class),
-            @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = JavaApiError.class)
+            @ApiResponse(code = 404, message = "Training run with given id cannot be found.", response = ApiError.class),
+            @ApiResponse(code = 400, message = "Current level is not game level and does not have solution.", response = ApiError.class),
+            @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiError.class)
     })
     @GetMapping(path = "/{runId}/solutions", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> getSolution(@ApiParam(value = "Training run ID", required = true) @PathVariable Long runId) {
@@ -294,10 +294,10 @@ public class TrainingRunsRestController {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Hint found.", response = HintDTO.class),
-            @ApiResponse(code = 404, message = "Hint with given id not found.", response = JavaApiError.class),
-            @ApiResponse(code = 409, message = "Hint with given id is not in current level of training run.", response = JavaApiError.class),
-            @ApiResponse(code = 400, message = "Current level is not game level and does not have hints.", response = JavaApiError.class),
-            @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = JavaApiError.class)
+            @ApiResponse(code = 404, message = "Hint with given id not found.", response = ApiError.class),
+            @ApiResponse(code = 409, message = "Hint with given id is not in current level of training run.", response = ApiError.class),
+            @ApiResponse(code = 400, message = "Current level is not game level and does not have hints.", response = ApiError.class),
+            @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiError.class)
     })
     @GetMapping(path = "/{runId}/hints/{hintId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> getHint(@ApiParam(value = "Training run ID", required = true) @PathVariable Long runId,
@@ -325,9 +325,9 @@ public class TrainingRunsRestController {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Flag checked.", response = IsCorrectFlagDTO.class),
-            @ApiResponse(code = 404, message = "Training run with given id not found.", response = JavaApiError.class),
-            @ApiResponse(code = 400, message = "Current level is not game level and does not have flag.", response = JavaApiError.class),
-            @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = JavaApiError.class)
+            @ApiResponse(code = 404, message = "Training run with given id not found.", response = ApiError.class),
+            @ApiResponse(code = 400, message = "Current level is not game level and does not have flag.", response = ApiError.class),
+            @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiError.class)
     })
     @GetMapping(path = "/{runId}/is-correct-flag", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<IsCorrectFlagDTO> isCorrectFlag(@ApiParam(value = "Training run ID", required = true) @PathVariable Long runId,
@@ -349,9 +349,9 @@ public class TrainingRunsRestController {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Training run resumed.", response = AccessTrainingRunDTO.class),
-            @ApiResponse(code = 404, message = "Training run with given id not found.", response = JavaApiError.class),
-            @ApiResponse(code = 409, message = "Cannot resume finished training run.", response = JavaApiError.class),
-            @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = JavaApiError.class)
+            @ApiResponse(code = 404, message = "Training run with given id not found.", response = ApiError.class),
+            @ApiResponse(code = 409, message = "Cannot resume finished training run.", response = ApiError.class),
+            @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiError.class)
     })
     @GetMapping(path = "/{runId}/resumption", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<AccessTrainingRunDTO> resumeTrainingRun(@ApiParam(value = "Training run ID", required = true) @PathVariable Long runId) {
@@ -373,9 +373,9 @@ public class TrainingRunsRestController {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Training run finished."),
-            @ApiResponse(code = 404, message = "Training run with given id not found.", response = JavaApiError.class),
-            @ApiResponse(code = 409, message = "Cannot finish finished training run.", response = JavaApiError.class),
-            @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = JavaApiError.class)
+            @ApiResponse(code = 404, message = "Training run with given id not found.", response = ApiError.class),
+            @ApiResponse(code = 409, message = "Cannot finish finished training run.", response = ApiError.class),
+            @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiError.class)
     })
     @PutMapping(path = "/{runId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Void> finishTrainingRun(@ApiParam(value = "Training run ID", required = true) @PathVariable Long runId) {
@@ -397,9 +397,9 @@ public class TrainingRunsRestController {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 204, message = "Responses to assessment evaluated and stored."),
-            @ApiResponse(code = 409, message = "Current level of training is not assessment level or level has been already answered.", response = JavaApiError.class),
-            @ApiResponse(code = 404, message = "Training run with given id not found.", response = JavaApiError.class),
-            @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = JavaApiError.class)
+            @ApiResponse(code = 409, message = "Current level of training is not assessment level or level has been already answered.", response = ApiError.class),
+            @ApiResponse(code = 404, message = "Training run with given id not found.", response = ApiError.class),
+            @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiError.class)
     })
     @PutMapping(value = "/{runId}/assessment-evaluations", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Void> evaluateResponsesToAssessment(@ApiParam(value = "Training run ID", required = true) @PathVariable Long runId,
@@ -422,8 +422,8 @@ public class TrainingRunsRestController {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Participant found.", response = UserRefDTO.class),
-            @ApiResponse(code = 404, message = "Training run not found.", response = JavaApiError.class),
-            @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = JavaApiError.class)
+            @ApiResponse(code = 404, message = "Training run not found.", response = ApiError.class),
+            @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiError.class)
     })
     @GetMapping(path = "/{id}/participant", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> getParticipant(@PathVariable(value = "id", required = true) Long trainingRunId) {

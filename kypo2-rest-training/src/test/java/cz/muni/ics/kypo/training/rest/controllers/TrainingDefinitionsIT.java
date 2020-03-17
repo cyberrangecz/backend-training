@@ -33,8 +33,8 @@ import cz.muni.ics.kypo.training.mapping.mapstruct.InfoLevelMapperImpl;
 import cz.muni.ics.kypo.training.mapping.mapstruct.TrainingDefinitionMapperImpl;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.repository.*;
+import cz.muni.ics.kypo.training.rest.ApiEntityError;
 import cz.muni.ics.kypo.training.persistence.util.TestDataFactory;
-import cz.muni.ics.kypo.training.rest.ApiError;
 import cz.muni.ics.kypo.training.rest.CustomRestExceptionHandlerTraining;
 import cz.muni.ics.kypo.training.rest.controllers.config.DBTestUtil;
 import cz.muni.ics.kypo.training.rest.controllers.config.RestConfigTest;
@@ -125,7 +125,11 @@ public class TrainingDefinitionsIT {
     @Autowired
     private TrainingInstanceRepository trainingInstanceRepository;
     @Autowired
-    private RestTemplate restTemplate;
+    @Qualifier("javaRestTemplate")
+    private RestTemplate javaRestTemplate;
+    @Autowired
+    @Qualifier("pythonRestTemplate")
+    private RestTemplate pythonRestTemplate;
     @Autowired
     @Qualifier("objMapperRESTApi")
     private ObjectMapper mapper;
@@ -256,7 +260,7 @@ public class TrainingDefinitionsIT {
         MockHttpServletResponse response = mvc.perform(get("/training-definitions" + "/{id}", 100L))
                 .andExpect(status().isNotFound())
                 .andReturn().getResponse();
-        ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
+        ApiEntityError error = convertJsonBytesToObject(response.getContentAsString(), ApiEntityError.class);
         assertEquals(HttpStatus.NOT_FOUND, error.getStatus());
         assertEntityDetailError(error.getEntityErrorDetail(), TrainingDefinition.class, "id", "100",
                 "Training definition not found.");
@@ -297,9 +301,9 @@ public class TrainingDefinitionsIT {
         PageResultResource<UserRefDTO> userRefDTOPageResultResource = new PageResultResource<>();
         userRefDTOPageResultResource.setContent(List.of(userRefDTO));
 
-        given(restTemplate.exchange(any(URI.class), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
+        given(javaRestTemplate.exchange(any(URI.class), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
                 willReturn(new ResponseEntity<PageResultResource<UserRefDTO>>(userRefDTOPageResultResource, HttpStatus.OK));
-        given(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), eq(UserRefDTO.class))).
+        given(javaRestTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), eq(UserRefDTO.class))).
                 willReturn(new ResponseEntity<UserRefDTO>(userRefDTO, HttpStatus.OK));
 
         MockHttpServletResponse result = mvc.perform(post("/training-definitions").content(convertObjectToJsonBytes(trainingDefinitionCreateDTO))
@@ -319,9 +323,9 @@ public class TrainingDefinitionsIT {
         mockSpringSecurityContextForGet(List.of(RoleTypeSecurity.ROLE_TRAINING_DESIGNER.name()));
         PageResultResource<UserRefDTO> userRefDTOPageResultResource = new PageResultResource<>();
         userRefDTOPageResultResource.setContent(List.of(userRefDTO));
-        given(restTemplate.exchange(any(URI.class), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
+        given(javaRestTemplate.exchange(any(URI.class), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
                 willReturn(new ResponseEntity<PageResultResource<UserRefDTO>>(userRefDTOPageResultResource, HttpStatus.OK));
-        given(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), eq(UserRefDTO.class))).
+        given(javaRestTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), eq(UserRefDTO.class))).
                 willReturn(new ResponseEntity<UserRefDTO>(userRefDTO, HttpStatus.OK));
         trainingDefinitionCreateDTO.setBetaTestingGroup(null);
         MockHttpServletResponse result = mvc.perform(post("/training-definitions").content(convertObjectToJsonBytes(trainingDefinitionCreateDTO))
@@ -352,9 +356,9 @@ public class TrainingDefinitionsIT {
         trainingDefinitionUpdateDTO.setId(tD.getId());
         PageResultResource<UserRefDTO> userRefDTOPageResultResource = new PageResultResource<>();
         userRefDTOPageResultResource.setContent(List.of(userRefDTO));
-        given(restTemplate.exchange(any(URI.class), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
+        given(javaRestTemplate.exchange(any(URI.class), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
                 willReturn(new ResponseEntity<PageResultResource<UserRefDTO>>(userRefDTOPageResultResource, HttpStatus.OK));
-        given(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), eq(UserRefDTO.class))).
+        given(javaRestTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), eq(UserRefDTO.class))).
                 willReturn(new ResponseEntity<UserRefDTO>(userRefDTO, HttpStatus.OK));
         mvc.perform(put("/training-definitions").content(convertObjectToJsonBytes(trainingDefinitionUpdateDTO))
                 .contentType(MediaType.APPLICATION_JSON_VALUE))
@@ -386,7 +390,7 @@ public class TrainingDefinitionsIT {
                 .contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isNotFound())
                 .andReturn().getResponse();
-        ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
+        ApiEntityError error = convertJsonBytesToObject(response.getContentAsString(), ApiEntityError.class);
         assertEquals(HttpStatus.NOT_FOUND, error.getStatus());
         assertEntityDetailError(error.getEntityErrorDetail(), TrainingDefinition.class, "id", "100",
                 "Training definition not found.");
@@ -398,14 +402,14 @@ public class TrainingDefinitionsIT {
         trainingDefinitionUpdateDTO.setId(tD.getId());
         PageResultResource<UserRefDTO> userRefDTOPageResultResource = new PageResultResource<>();
         userRefDTOPageResultResource.setContent(List.of(userRefDTO));
-        given(restTemplate.exchange(any(URI.class), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
+        given(javaRestTemplate.exchange(any(URI.class), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
                 willReturn(new ResponseEntity<PageResultResource<UserRefDTO>>(userRefDTOPageResultResource, HttpStatus.OK));
 
         MockHttpServletResponse response = mvc.perform(put("/training-definitions").content(convertObjectToJsonBytes(trainingDefinitionUpdateDTO))
                 .contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isConflict())
                 .andReturn().getResponse();
-        ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
+        ApiEntityError error = convertJsonBytesToObject(response.getContentAsString(), ApiEntityError.class);
         assertEquals(HttpStatus.CONFLICT, error.getStatus());
         assertEntityDetailError(error.getEntityErrorDetail(), TrainingDefinition.class, "id", tD.getId().toString(),
                 "Cannot edit released or archived training definition.");
@@ -440,7 +444,7 @@ public class TrainingDefinitionsIT {
         MockHttpServletResponse response = mvc.perform(post("/training-definitions" + "/{id}", 100L).param("title", "title"))
                 .andExpect(status().isNotFound())
                 .andReturn().getResponse();
-        ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
+        ApiEntityError error = convertJsonBytesToObject(response.getContentAsString(), ApiEntityError.class);
         assertEquals(HttpStatus.NOT_FOUND, error.getStatus());
         assertEntityDetailError(error.getEntityErrorDetail(), TrainingDefinition.class, "id", "100",
                 "Training definition not found.");
@@ -481,7 +485,7 @@ public class TrainingDefinitionsIT {
                 unreleasedDefinition.getId(), 50, infoLevel1.getId()))
                 .andExpect(status().isNotFound())
                 .andReturn().getResponse();
-        ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
+        ApiEntityError error = convertJsonBytesToObject(response.getContentAsString(), ApiEntityError.class);
         assertEquals(HttpStatus.NOT_FOUND, error.getStatus());
         assertEntityDetailError(error.getEntityErrorDetail(), AbstractLevel.class, "id", "50",
                 "Level not found.");
@@ -498,7 +502,7 @@ public class TrainingDefinitionsIT {
                 unreleasedDefinition.getId(), infoLevel1.getId(), 50))
                 .andExpect(status().isNotFound())
                 .andReturn().getResponse();
-        ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
+        ApiEntityError error = convertJsonBytesToObject(response.getContentAsString(), ApiEntityError.class);
         assertEquals(HttpStatus.NOT_FOUND, error.getStatus());
         assertEntityDetailError(error.getEntityErrorDetail(), AbstractLevel.class, "id", "50",
                 "Level not found.");
@@ -531,7 +535,7 @@ public class TrainingDefinitionsIT {
         MockHttpServletResponse response = mvc.perform(delete("/training-definitions/{id}", 100L))
                 .andExpect(status().isNotFound())
                 .andReturn().getResponse();
-        ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
+        ApiEntityError error = convertJsonBytesToObject(response.getContentAsString(), ApiEntityError.class);
         assertEquals(HttpStatus.NOT_FOUND, error.getStatus());
         assertEntityDetailError(error.getEntityErrorDetail(), TrainingDefinition.class, "id", "100",
                 "Training definition not found.");
@@ -543,7 +547,7 @@ public class TrainingDefinitionsIT {
         MockHttpServletResponse response = mvc.perform(delete("/training-definitions/{Id}", tD.getId()))
                 .andExpect(status().isConflict())
                 .andReturn().getResponse();
-        ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
+        ApiEntityError error = convertJsonBytesToObject(response.getContentAsString(), ApiEntityError.class);
         assertEquals(HttpStatus.CONFLICT, error.getStatus());
         assertEntityDetailError(error.getEntityErrorDetail(), TrainingDefinition.class, "id", tD.getId().toString(),
                 "Cannot delete released training definition.");
@@ -558,7 +562,7 @@ public class TrainingDefinitionsIT {
         MockHttpServletResponse response = mvc.perform(delete("/training-definitions/{id}", unreleasedDefinition.getId()))
                 .andExpect(status().isConflict())
                 .andReturn().getResponse();
-        ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
+        ApiEntityError error = convertJsonBytesToObject(response.getContentAsString(), ApiEntityError.class);
         assertEquals(HttpStatus.CONFLICT, error.getStatus());
         assertEntityDetailError(error.getEntityErrorDetail(), TrainingDefinition.class, "id", unreleasedDefinition.getId().toString(),
                 "Cannot delete training definition with already created training instance. Remove training instance/s before deleting training definition.");
@@ -590,7 +594,7 @@ public class TrainingDefinitionsIT {
         MockHttpServletResponse response = mvc.perform(delete("/training-definitions/{definitionId}/levels/{levelId}", tD.getId(), 100L))
                 .andExpect(status().isNotFound())
                 .andReturn().getResponse();
-        ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
+        ApiEntityError error = convertJsonBytesToObject(response.getContentAsString(), ApiEntityError.class);
         assertEquals(HttpStatus.NOT_FOUND, error.getStatus());
         assertEntityDetailError(error.getEntityErrorDetail(), AbstractLevel.class, "id", "100",
                 "Level not found.");
@@ -602,7 +606,7 @@ public class TrainingDefinitionsIT {
         MockHttpServletResponse response = mvc.perform(delete("/training-definitions/{definitionId}/levels/{levelId}", 100L, gL.getId()))
                 .andExpect(status().isNotFound())
                 .andReturn().getResponse();
-        ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
+        ApiEntityError error = convertJsonBytesToObject(response.getContentAsString(), ApiEntityError.class);
         assertEquals(HttpStatus.NOT_FOUND, error.getStatus());
         assertEntityDetailError(error.getEntityErrorDetail(), TrainingDefinition.class, "id", "100",
                 "Training definition not found.");
@@ -615,7 +619,7 @@ public class TrainingDefinitionsIT {
         MockHttpServletResponse response = mvc.perform(delete("/training-definitions/{definitionId}/levels/{levelId}", tD.getId(), gL.getId()))
                 .andExpect(status().isConflict())
                 .andReturn().getResponse();
-        ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
+        ApiEntityError error = convertJsonBytesToObject(response.getContentAsString(), ApiEntityError.class);
         assertEquals(HttpStatus.CONFLICT, error.getStatus());
         assertEntityDetailError(error.getEntityErrorDetail(), AbstractLevel.class, "id", tD.getId().toString(),
                 "Cannot edit released or archived training definition.");
@@ -628,7 +632,7 @@ public class TrainingDefinitionsIT {
         MockHttpServletResponse response = mvc.perform(delete("/training-definitions/{definitionId}/levels/{levelId}", tD.getId(), gL.getId()))
                 .andExpect(status().isConflict())
                 .andReturn().getResponse();
-        ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
+        ApiEntityError error = convertJsonBytesToObject(response.getContentAsString(), ApiEntityError.class);
         assertEquals(HttpStatus.CONFLICT, error.getStatus());
         assertEntityDetailError(error.getEntityErrorDetail(), AbstractLevel.class, "id", tD.getId().toString(),
                 "Cannot edit released or archived training definition.");
@@ -676,7 +680,7 @@ public class TrainingDefinitionsIT {
                 .contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isConflict())
                 .andReturn().getResponse();
-        ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
+        ApiEntityError error = convertJsonBytesToObject(response.getContentAsString(), ApiEntityError.class);
         assertEquals(HttpStatus.CONFLICT, error.getStatus());
         assertEntityDetailError(error.getEntityErrorDetail(), TrainingDefinition.class, "id", tD.getId().toString(),
                 "Cannot edit released or archived training definition.");
@@ -692,7 +696,7 @@ public class TrainingDefinitionsIT {
                 .contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isConflict())
                 .andReturn().getResponse();
-        ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
+        ApiEntityError error = convertJsonBytesToObject(response.getContentAsString(), ApiEntityError.class);
         assertEquals(HttpStatus.CONFLICT, error.getStatus());
         assertEntityDetailError(error.getEntityErrorDetail(), TrainingDefinition.class, "id", tD.getId().toString(),
                 "Cannot edit released or archived training definition.");
@@ -705,7 +709,7 @@ public class TrainingDefinitionsIT {
                 .contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isNotFound())
                 .andReturn().getResponse();
-        ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
+        ApiEntityError error = convertJsonBytesToObject(response.getContentAsString(), ApiEntityError.class);
         assertEquals(HttpStatus.NOT_FOUND, error.getStatus());
         assertEntityDetailError(error.getEntityErrorDetail(), TrainingDefinition.class, "id", "100",
                 "Training definition not found.");
@@ -719,7 +723,7 @@ public class TrainingDefinitionsIT {
                 .contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isNotFound())
                 .andReturn().getResponse();
-        ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
+        ApiEntityError error = convertJsonBytesToObject(response.getContentAsString(), ApiEntityError.class);
         assertEquals(HttpStatus.NOT_FOUND, error.getStatus());
         assertEntityDetailError(error.getEntityErrorDetail(), AbstractLevel.class, "id", gameLevelUpdateDTO.getId().toString(),
                 "Level was not found in definition (id: " + tD.getId() + ").");
@@ -763,7 +767,7 @@ public class TrainingDefinitionsIT {
                 .contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isConflict())
                 .andReturn().getResponse();
-        ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
+        ApiEntityError error = convertJsonBytesToObject(response.getContentAsString(), ApiEntityError.class);
         assertEquals(HttpStatus.CONFLICT, error.getStatus());
         assertEntityDetailError(error.getEntityErrorDetail(), TrainingDefinition.class, "id", tD.getId().toString(),
                 "Cannot edit released or archived training definition.");
@@ -779,7 +783,7 @@ public class TrainingDefinitionsIT {
                 .contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isConflict())
                 .andReturn().getResponse();
-        ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
+        ApiEntityError error = convertJsonBytesToObject(response.getContentAsString(), ApiEntityError.class);
         assertEquals(HttpStatus.CONFLICT, error.getStatus());
         assertEntityDetailError(error.getEntityErrorDetail(), TrainingDefinition.class, "id", tD.getId().toString(),
                 "Cannot edit released or archived training definition.");
@@ -792,7 +796,7 @@ public class TrainingDefinitionsIT {
                 .contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isNotFound())
                 .andReturn().getResponse();
-        ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
+        ApiEntityError error = convertJsonBytesToObject(response.getContentAsString(), ApiEntityError.class);
         assertEquals(HttpStatus.NOT_FOUND, error.getStatus());
         assertEntityDetailError(error.getEntityErrorDetail(), TrainingDefinition.class, "id", "100",
                 "Training definition not found.");
@@ -806,7 +810,7 @@ public class TrainingDefinitionsIT {
                 .contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isNotFound())
                 .andReturn().getResponse();
-        ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
+        ApiEntityError error = convertJsonBytesToObject(response.getContentAsString(), ApiEntityError.class);
         assertEquals(HttpStatus.NOT_FOUND, error.getStatus());
         assertEntityDetailError(error.getEntityErrorDetail(), AbstractLevel.class, "id", infoLevelUpdateDTO.getId().toString(),
                 "Level was not found in definition (id: " + tD.getId() + ").");
@@ -854,7 +858,7 @@ public class TrainingDefinitionsIT {
                 .contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isConflict())
                 .andReturn().getResponse();
-        ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
+        ApiEntityError error = convertJsonBytesToObject(response.getContentAsString(), ApiEntityError.class);
         assertEquals(HttpStatus.CONFLICT, error.getStatus());
         assertEntityDetailError(error.getEntityErrorDetail(), TrainingDefinition.class, "id", tD.getId().toString(),
                 "Cannot edit released or archived training definition.");
@@ -870,7 +874,7 @@ public class TrainingDefinitionsIT {
                 .contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isConflict())
                 .andReturn().getResponse();
-        ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
+        ApiEntityError error = convertJsonBytesToObject(response.getContentAsString(), ApiEntityError.class);
         assertEquals(HttpStatus.CONFLICT, error.getStatus());
         assertEntityDetailError(error.getEntityErrorDetail(), TrainingDefinition.class, "id", tD.getId().toString(),
                 "Cannot edit released or archived training definition.");
@@ -883,7 +887,7 @@ public class TrainingDefinitionsIT {
                 .contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isNotFound())
                 .andReturn().getResponse();
-        ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
+        ApiEntityError error = convertJsonBytesToObject(response.getContentAsString(), ApiEntityError.class);
         assertEquals(HttpStatus.NOT_FOUND, error.getStatus());
         assertEntityDetailError(error.getEntityErrorDetail(), TrainingDefinition.class, "id", "100",
                 "Training definition not found.");
@@ -897,7 +901,7 @@ public class TrainingDefinitionsIT {
                 .contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isNotFound())
                 .andReturn().getResponse();
-        ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
+        ApiEntityError error = convertJsonBytesToObject(response.getContentAsString(), ApiEntityError.class);
         assertEquals(HttpStatus.NOT_FOUND, error.getStatus());
         assertEntityDetailError(error.getEntityErrorDetail(), AbstractLevel.class, "id", assessmentLevelUpdateDTO.getId().toString(),
                 "Level was not found in definition (id: " + tD.getId() + ").");
@@ -950,7 +954,7 @@ public class TrainingDefinitionsIT {
         MockHttpServletResponse response = mvc.perform(get("/training-definitions/levels/{id}", 100L))
                 .andExpect(status().isNotFound())
                 .andReturn().getResponse();
-        ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
+        ApiEntityError error = convertJsonBytesToObject(response.getContentAsString(), ApiEntityError.class);
         assertEquals(HttpStatus.NOT_FOUND, error.getStatus());
         assertEntityDetailError(error.getEntityErrorDetail(), AbstractLevel.class, "id", "100",
                 "Level not found");
@@ -1013,7 +1017,7 @@ public class TrainingDefinitionsIT {
         MockHttpServletResponse response = mvc.perform(post("/training-definitions/{definitionId}/levels/{levelType}", tD.getId(), cz.muni.ics.kypo.training.persistence.model.enums.LevelType.ASSESSMENT))
                 .andExpect(status().isConflict())
                 .andReturn().getResponse();
-        ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
+        ApiEntityError error = convertJsonBytesToObject(response.getContentAsString(), ApiEntityError.class);
         assertEquals(HttpStatus.CONFLICT, error.getStatus());
         assertEntityDetailError(error.getEntityErrorDetail(), TrainingDefinition.class, "id", tD.getId().toString(),
                 "Cannot create level in released or archived training definition");
@@ -1025,7 +1029,7 @@ public class TrainingDefinitionsIT {
         MockHttpServletResponse response = mvc.perform(post("/training-definitions/{definitionId}/levels/{levelType}", tD.getId(), cz.muni.ics.kypo.training.persistence.model.enums.LevelType.ASSESSMENT))
                 .andExpect(status().isConflict())
                 .andReturn().getResponse();
-        ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
+        ApiEntityError error = convertJsonBytesToObject(response.getContentAsString(), ApiEntityError.class);
         assertEquals(HttpStatus.CONFLICT, error.getStatus());
         assertEntityDetailError(error.getEntityErrorDetail(), TrainingDefinition.class, "id", tD.getId().toString(),
                 "Cannot create level in released or archived training definition");
@@ -1036,7 +1040,7 @@ public class TrainingDefinitionsIT {
         MockHttpServletResponse response = mvc.perform(post("/training-definitions/{definitionId}/levels/{levelType}", 100L, cz.muni.ics.kypo.training.persistence.model.enums.LevelType.ASSESSMENT))
                 .andExpect(status().isNotFound())
                 .andReturn().getResponse();
-        ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
+        ApiEntityError error = convertJsonBytesToObject(response.getContentAsString(), ApiEntityError.class);
         assertEquals(HttpStatus.NOT_FOUND, error.getStatus());
         assertEntityDetailError(error.getEntityErrorDetail(), TrainingDefinition.class, "id", "100",
                 "Training definition not found.");
@@ -1080,7 +1084,7 @@ public class TrainingDefinitionsIT {
                 .andExpect(status().isConflict())
                 .andReturn().getResponse();
         assertEquals(TDState.RELEASED.name(), releasedTrainingDefinition.getState().name());
-        ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
+        ApiEntityError error = convertJsonBytesToObject(response.getContentAsString(), ApiEntityError.class);
         assertEquals(HttpStatus.CONFLICT, error.getStatus());
         assertEntityDetailError(error.getEntityErrorDetail(), TrainingDefinition.class, "id", releasedTrainingDefinition.getId().toString(),
                 "Cannot update training definition with already created training instance(s). Remove training " +
@@ -1096,7 +1100,7 @@ public class TrainingDefinitionsIT {
                 .andExpect(status().isConflict())
                 .andReturn().getResponse();
         assertEquals(TDState.ARCHIVED.name(), archivedTrainingDefinition.getState().name());
-        ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
+        ApiEntityError error = convertJsonBytesToObject(response.getContentAsString(), ApiEntityError.class);
         assertEquals(HttpStatus.CONFLICT, error.getStatus());
         assertEntityDetailError(error.getEntityErrorDetail(), TrainingDefinition.class, "id", archivedTrainingDefinition.getId().toString(),
                 "Cannot switch from " + TDState.ARCHIVED.name() + " to " + TDState.UNRELEASED.name());

@@ -1,7 +1,6 @@
 package cz.muni.ics.kypo.training.exceptions;
 
 import cz.muni.ics.kypo.training.exceptions.errors.ApiSubError;
-import cz.muni.ics.kypo.training.exceptions.errors.JavaApiError;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 @ResponseStatus(reason = "Error when calling UserAndGroup API")
@@ -12,21 +11,21 @@ public class MicroserviceApiException extends RuntimeException{
         super();
     }
 
-    public MicroserviceApiException(ApiSubError userAndGroupError) {
+    public MicroserviceApiException(ApiSubError apiSubError) {
         super();
-        this.apiSubError = userAndGroupError;
+        this.apiSubError = apiSubError;
 
     }
 
-    public MicroserviceApiException(String message, ApiSubError userAndGroupError) {
+    public MicroserviceApiException(String message, ApiSubError apiSubError) {
         super(message);
-        this.apiSubError = userAndGroupError;
+        this.apiSubError = apiSubError;
     }
 
 
-    public MicroserviceApiException(ApiSubError userAndGroupError, Throwable cause) {
+    public MicroserviceApiException(ApiSubError apiSubError, Throwable cause) {
         super(cause);
-        this.apiSubError = userAndGroupError;
+        this.apiSubError = apiSubError;
 
     }
 

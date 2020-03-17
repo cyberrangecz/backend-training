@@ -18,7 +18,7 @@ import cz.muni.ics.kypo.training.api.responses.PageResultResourcePython;
 import cz.muni.ics.kypo.training.api.responses.SandboxInfo;
 import cz.muni.ics.kypo.training.exceptions.BadRequestException;
 import cz.muni.ics.kypo.training.exceptions.EntityErrorDetail;
-import cz.muni.ics.kypo.training.exceptions.RestTemplateException;
+import cz.muni.ics.kypo.training.exceptions.CustomRestTemplateException;
 import cz.muni.ics.kypo.training.mapping.mapstruct.GameLevelMapperImpl;
 import cz.muni.ics.kypo.training.mapping.mapstruct.HintMapperImpl;
 import cz.muni.ics.kypo.training.mapping.mapstruct.InfoLevelMapperImpl;
@@ -26,6 +26,7 @@ import cz.muni.ics.kypo.training.mapping.mapstruct.TrainingRunMapperImpl;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.model.enums.TRState;
 import cz.muni.ics.kypo.training.persistence.repository.*;
+import cz.muni.ics.kypo.training.rest.ApiEntityError;
 import cz.muni.ics.kypo.training.persistence.util.TestDataFactory;
 import cz.muni.ics.kypo.training.rest.ApiError;
 import cz.muni.ics.kypo.training.rest.CustomRestExceptionHandlerTraining;
@@ -120,7 +121,11 @@ public class TrainingRunsIT {
     @Autowired
     private GameLevelMapperImpl gameLevelMapper;
     @Autowired
-    private RestTemplate restTemplate;
+    @Qualifier("javaRestTemplate")
+    private RestTemplate javaRestTemplate;
+    @Autowired
+    @Qualifier("pythonRestTemplate")
+    private RestTemplate pythonRestTemplate;
     @Autowired
     @Qualifier("objMapperRESTApi")
     private ObjectMapper mapper;
@@ -251,7 +256,7 @@ public class TrainingRunsIT {
     public void findTrainingRunById() throws Exception {
         TrainingRun trainingRun = trainingRunRepository.save(trainingRun1);
 
-        given(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), eq(UserRefDTO.class))).
+        given(javaRestTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), eq(UserRefDTO.class))).
                 willReturn(new ResponseEntity<UserRefDTO>(userRefDTO1, HttpStatus.OK));
         MockHttpServletResponse result = mvc.perform(get("/training-runs/{id}", trainingRun.getId()))
                 .andExpect(status().isOk())
@@ -271,7 +276,7 @@ public class TrainingRunsIT {
         MockHttpServletResponse response = mvc.perform(get("/training-runs/{id}", 100L))
                 .andExpect(status().isNotFound())
                 .andReturn().getResponse();
-        ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
+        ApiEntityError error = convertJsonBytesToObject(response.getContentAsString(), ApiEntityError.class);
         assertEquals(HttpStatus.NOT_FOUND, error.getStatus());
         assertEntityDetailError(error.getEntityErrorDetail(), TrainingRun.class, "id", "100",
                 "Training run not found.");
@@ -281,9 +286,9 @@ public class TrainingRunsIT {
     public void findAllTrainingRuns() throws Exception {
         trainingRunRepository.save(trainingRun1);
         trainingRunRepository.save(trainingRun2);
-        given(restTemplate.exchange(eq(userAndGroupURI + "/users/" + trainingRun1.getParticipantRef().getUserRefId()), eq(HttpMethod.GET), any(HttpEntity.class), eq(UserRefDTO.class))).
+        given(javaRestTemplate.exchange(eq(userAndGroupURI + "/users/" + trainingRun1.getParticipantRef().getUserRefId()), eq(HttpMethod.GET), any(HttpEntity.class), eq(UserRefDTO.class))).
                 willReturn(new ResponseEntity<UserRefDTO>(userRefDTO1, HttpStatus.OK));
-        given(restTemplate.exchange(eq(userAndGroupURI + "/users/" + trainingRun2.getParticipantRef().getUserRefId()), eq(HttpMethod.GET), any(HttpEntity.class), eq(UserRefDTO.class))).
+        given(javaRestTemplate.exchange(eq(userAndGroupURI + "/users/" + trainingRun2.getParticipantRef().getUserRefId()), eq(HttpMethod.GET), any(HttpEntity.class), eq(UserRefDTO.class))).
                 willReturn(new ResponseEntity<UserRefDTO>(userRefDTO2, HttpStatus.OK));
         System.out.println(userAndGroupURI + "/users/" + trainingRun1.getParticipantRef().getUserRefId());
         System.out.println(userAndGroupURI + "/users/" + trainingRun2.getParticipantRef().getUserRefId());
@@ -307,9 +312,9 @@ public class TrainingRunsIT {
         String url = "http://localhost:8080" + "/pools/" + trainingInstance.getPoolId() + "/sandboxes/unlocked/";
         UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(url);
 
-        given(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), eq(UserRefDTO.class))).
+        given(javaRestTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), eq(UserRefDTO.class))).
                 willReturn(new ResponseEntity<UserRefDTO>(userRefDTO1, HttpStatus.OK));
-        given(restTemplate.getForEntity(anyString(), any())).
+        given(pythonRestTemplate.getForEntity(anyString(), any())).
                 willReturn(new ResponseEntity<>(sandboxInfo, HttpStatus.OK));
         mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_TRAINEE.name()));
         MockHttpServletResponse result = mvc.perform(post("/training-runs")
@@ -322,6 +327,7 @@ public class TrainingRunsIT {
         assertTrue(trainingRun.isPresent());
         assertEquals(gameLevel1, trainingRun.get().getCurrentLevel());
         assertEquals(trainingInstance, trainingRun.get().getTrainingInstance());
+
     }
 
     @Test
@@ -330,7 +336,7 @@ public class TrainingRunsIT {
         trainingRun1.setSandboxInstanceRefId(sandboxInfo.getId());
         trainingRunRepository.save(trainingRun1);
 
-        given(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), eq(UserRefDTO.class))).
+        given(javaRestTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), eq(UserRefDTO.class))).
                 willReturn(new ResponseEntity<UserRefDTO>(userRefDTO1, HttpStatus.OK));
         mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_TRAINEE.name()));
         MockHttpServletResponse result = mvc.perform(post("/training-runs")
@@ -349,7 +355,7 @@ public class TrainingRunsIT {
     public void accessTrainingRunWithTrainingInstanceWithoutSandboxes() throws Exception {
         trainingInstance.setPoolId(null);
         trainingInstanceRepository.save(trainingInstance);
-        given(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), eq(UserRefDTO.class))).
+        given(javaRestTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), eq(UserRefDTO.class))).
                 willReturn(new ResponseEntity<UserRefDTO>(userRefDTO1, HttpStatus.OK));
 
         mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_TRAINEE.name()));
@@ -357,7 +363,7 @@ public class TrainingRunsIT {
                 .param("accessToken", trainingInstance.getAccessToken()))
                 .andExpect(status().isConflict())
                 .andReturn().getResponse();
-        ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
+        ApiEntityError error = convertJsonBytesToObject(response.getContentAsString(), ApiEntityError.class);
         assertEquals(HttpStatus.CONFLICT, error.getStatus());
         assertEntityDetailError(error.getEntityErrorDetail(), TrainingInstance.class, "id", trainingInstance.getId().toString(),
                 "At first organizer must allocate sandboxes for training instance.");
@@ -372,16 +378,16 @@ public class TrainingRunsIT {
 
         gameLevel1.setTrainingDefinition(null);
         infoLevel1.setTrainingDefinition(null);
-        given(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), eq(UserRefDTO.class))).
+        given(javaRestTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), eq(UserRefDTO.class))).
                 willReturn(new ResponseEntity<UserRefDTO>(userRefDTO1, HttpStatus.OK));
-        given(restTemplate.exchange(eq(builder.toUriString()), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
+        given(javaRestTemplate.exchange(eq(builder.toUriString()), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
                 willReturn(new ResponseEntity<PageResultResourcePython<SandboxInfo>>(sandboxInfoPageResult, HttpStatus.OK));
         mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_TRAINEE.name()));
         MockHttpServletResponse response = mvc.perform(post("/training-runs")
                 .param("accessToken", trainingInstance.getAccessToken()))
                 .andExpect(status().isNotFound())
                 .andReturn().getResponse();
-        ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
+        ApiEntityError error = convertJsonBytesToObject(response.getContentAsString(), ApiEntityError.class);
         assertEquals(HttpStatus.NOT_FOUND, error.getStatus());
         assertEntityDetailError(error.getEntityErrorDetail(), TrainingDefinition.class, "id", trainingInstance.getTrainingDefinition().getId().toString(),
                 "No starting level available for this training definition.");
@@ -397,9 +403,9 @@ public class TrainingRunsIT {
         builder.queryParam("page", 1);
         builder.queryParam("page_size", 1000);
 
-        given(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), eq(UserRefDTO.class))).
+        given(javaRestTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), eq(UserRefDTO.class))).
                 willReturn(new ResponseEntity<UserRefDTO>(userRefDTO1, HttpStatus.OK));
-        willThrow(new RestTemplateException("No unlocked sandbox.", HttpStatus.CONFLICT.toString())).given(restTemplate).exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), eq(SandboxInfo.class));
+        willThrow(new CustomRestTemplateException("No unlocked sandbox.", HttpStatus.CONFLICT)).given(javaRestTemplate).exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), eq(SandboxInfo.class));
 
         mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_TRAINEE.name()));
         MockHttpServletResponse response = mvc.perform(post("/training-runs")
@@ -418,7 +424,7 @@ public class TrainingRunsIT {
                 .param("accessToken", "notFoundToken"))
                 .andExpect(status().isNotFound())
                 .andReturn().getResponse();
-        ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
+        ApiEntityError error = convertJsonBytesToObject(response.getContentAsString(), ApiEntityError.class);
         assertEquals(HttpStatus.NOT_FOUND, error.getStatus());
         assertEntityDetailError(error.getEntityErrorDetail(), TrainingInstance.class, "accessToken", "notFoundToken",
                 "There is no active game session matching access token.");
@@ -430,7 +436,7 @@ public class TrainingRunsIT {
         trainingRun1.setParticipantRef(participant1);
         trainingRunRepository.save(trainingRun1);
         trainingRunRepository.save(trainingRun2);
-        given(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
+        given(javaRestTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
                 willReturn(new ResponseEntity<UserRefDTO>(userRefDTO1, HttpStatus.OK));
 
         AccessedTrainingRunDTO expectedAccessTrainingRunDTO = new AccessedTrainingRunDTO();
@@ -478,7 +484,7 @@ public class TrainingRunsIT {
         MockHttpServletResponse response = mvc.perform(get("/training-runs/{runId}/next-levels", trainingRun2.getId()))
                 .andExpect(status().isConflict())
                 .andReturn().getResponse();
-        ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
+        ApiEntityError error = convertJsonBytesToObject(response.getContentAsString(), ApiEntityError.class);
         assertEquals(HttpStatus.CONFLICT, error.getStatus());
         assertEntityDetailError(error.getEntityErrorDetail(), TrainingRun.class, "id", trainingRun2.getId().toString(),
                 "You need to answer the level to move to the next level.");
@@ -493,7 +499,7 @@ public class TrainingRunsIT {
         MockHttpServletResponse response = mvc.perform(get("/training-runs/{runId}/next-levels", trainingRun2.getId()))
                 .andExpect(status().isNotFound())
                 .andReturn().getResponse();
-        ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
+        ApiEntityError error = convertJsonBytesToObject(response.getContentAsString(), ApiEntityError.class);
         assertEquals(HttpStatus.NOT_FOUND, error.getStatus());
         assertEntityDetailError(error.getEntityErrorDetail(), AbstractLevel.class, null, null,
                 "There is no next level for current training run (ID: 1).");
@@ -505,7 +511,7 @@ public class TrainingRunsIT {
         trainingRun1.setTotalScore(10 + gameLevel1.getMaxScore());
         trainingRunRepository.save(trainingRun1);
         assertFalse(trainingRun1.isSolutionTaken());
-        given(restTemplate.exchange(eq(userAndGroupURI + "/users/" + trainingRun1.getParticipantRef().getUserRefId()), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
+        given(javaRestTemplate.exchange(eq(userAndGroupURI + "/users/" + trainingRun1.getParticipantRef().getUserRefId()), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
                 willReturn(new ResponseEntity<UserRefDTO>(userRefDTO1, HttpStatus.OK));
         MockHttpServletResponse response = mvc.perform(get("/training-runs/{runId}/solutions", trainingRun1.getId()))
                 .andExpect(status().isOk())
@@ -521,7 +527,7 @@ public class TrainingRunsIT {
         trainingRun1.setSolutionTaken(true);
         trainingRunRepository.save(trainingRun1);
         assertTrue(trainingRun1.isSolutionTaken());
-        given(restTemplate.exchange(eq(userAndGroupURI + "/users/" + trainingRun1.getParticipantRef().getUserRefId()), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
+        given(javaRestTemplate.exchange(eq(userAndGroupURI + "/users/" + trainingRun1.getParticipantRef().getUserRefId()), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
                 willReturn(new ResponseEntity<UserRefDTO>(userRefDTO1, HttpStatus.OK));
         MockHttpServletResponse response = mvc.perform(get("/training-runs/{runId}/solutions", trainingRun1.getId()))
                 .andExpect(status().isOk())
@@ -548,7 +554,7 @@ public class TrainingRunsIT {
         MockHttpServletResponse response = mvc.perform(get("/training-runs/{runId}/solutions", nonExistentTrainingRunId))
                 .andExpect(status().isNotFound())
                 .andReturn().getResponse();
-        ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
+        ApiEntityError error = convertJsonBytesToObject(response.getContentAsString(), ApiEntityError.class);
         assertEquals(HttpStatus.NOT_FOUND, error.getStatus());
         assertEntityDetailError(error.getEntityErrorDetail(), TrainingRun.class, "id", nonExistentTrainingRunId.toString(),
                 "Training run not found.");
@@ -574,7 +580,7 @@ public class TrainingRunsIT {
         MockHttpServletResponse response = mvc.perform(get("/training-runs/{runId}/hints/{hintId}", trainingRun1.getId(), nonExistentHintId))
                 .andExpect(status().isNotFound())
                 .andReturn().getResponse();
-        ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
+        ApiEntityError error = convertJsonBytesToObject(response.getContentAsString(), ApiEntityError.class);
         assertEquals(HttpStatus.NOT_FOUND, error.getStatus());
         assertEntityDetailError(error.getEntityErrorDetail(), Hint.class, "id", nonExistentHintId.toString(),
                 "Hint not found.");
@@ -586,7 +592,7 @@ public class TrainingRunsIT {
         MockHttpServletResponse response = mvc.perform(get("/training-runs/{runId}/hints/{hintId}", nonExistentTrainingRunId, 1L))
                 .andExpect(status().isNotFound())
                 .andReturn().getResponse();
-        ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
+        ApiEntityError error = convertJsonBytesToObject(response.getContentAsString(), ApiEntityError.class);
         assertEquals(HttpStatus.NOT_FOUND, error.getStatus());
         assertEntityDetailError(error.getEntityErrorDetail(), TrainingRun.class, "id", nonExistentTrainingRunId.toString(),
                 "Training run not found.");
@@ -625,7 +631,7 @@ public class TrainingRunsIT {
         isCorrectFlagDTO.setRemainingAttempts(isCorrectFlagDTO.getRemainingAttempts() - 1);
         isCorrectFlagDTO.setCorrect(false);
         mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_ADMINISTRATOR.name()));
-        given(restTemplate.exchange(eq(userAndGroupURI + "/users/" + trainingRun1.getParticipantRef().getUserRefId()), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
+        given(javaRestTemplate.exchange(eq(userAndGroupURI + "/users/" + trainingRun1.getParticipantRef().getUserRefId()), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
                 willReturn(new ResponseEntity<UserRefDTO>(userRefDTO1, HttpStatus.OK));
 
         assertFalse(trainingRun1.isLevelAnswered());
@@ -730,9 +736,9 @@ public class TrainingRunsIT {
         expectedTakenHint.setId(hint.getId());
         expectedTakenHint.setTitle(hint.getTitle());
         expectedTakenHint.setContent(hint.getContent());
-        given(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
+        given(javaRestTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
                 willReturn(new ResponseEntity<SandboxInfo>(sandboxInfo1, HttpStatus.OK));
-        given(restTemplate.exchange(eq(userAndGroupURI + "/users/" + trainingRun1.getParticipantRef().getUserRefId()), eq(HttpMethod.GET), any(HttpEntity.class), eq(UserRefDTO.class))).
+        given(javaRestTemplate.exchange(eq(userAndGroupURI + "/users/" + trainingRun1.getParticipantRef().getUserRefId()), eq(HttpMethod.GET), any(HttpEntity.class), eq(UserRefDTO.class))).
                 willReturn(new ResponseEntity<UserRefDTO>(userRefDTO1, HttpStatus.OK));
         MockHttpServletResponse response = mvc.perform(get("/training-runs/{runId}/resumption", trainingRun1.getId()))
                 .andExpect(status().isOk())
@@ -759,7 +765,7 @@ public class TrainingRunsIT {
         MockHttpServletResponse response = mvc.perform(get("/training-runs/{runId}/resumption", trainingRun2.getId()))
                 .andExpect(status().isConflict())
                 .andReturn().getResponse();
-        ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
+        ApiEntityError error = convertJsonBytesToObject(response.getContentAsString(), ApiEntityError.class);
         assertEquals(HttpStatus.CONFLICT, error.getStatus());
         assertEntityDetailError(error.getEntityErrorDetail(), TrainingRun.class, "id", trainingRun2.getId().toString(),
                 "Cannot resume finished training run.");
@@ -774,7 +780,7 @@ public class TrainingRunsIT {
         MockHttpServletResponse response = mvc.perform(get("/training-runs/{runId}/resumption", trainingRun1.getId()))
                 .andExpect(status().isConflict())
                 .andReturn().getResponse();
-        ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
+        ApiEntityError error = convertJsonBytesToObject(response.getContentAsString(), ApiEntityError.class);
         assertEquals(HttpStatus.CONFLICT, error.getStatus());
         assertEntityDetailError(error.getEntityErrorDetail(), TrainingRun.class, "id", trainingRun1.getId().toString(),
                 "Cannot resume training run after end of training instance.");
@@ -787,7 +793,7 @@ public class TrainingRunsIT {
         MockHttpServletResponse response = mvc.perform(get("/training-runs/{runId}/resumption", trainingRun1.getId()))
                 .andExpect(status().isConflict())
                 .andReturn().getResponse();
-        ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
+        ApiEntityError error = convertJsonBytesToObject(response.getContentAsString(), ApiEntityError.class);
         assertEquals(HttpStatus.CONFLICT, error.getStatus());
         assertEntityDetailError(error.getEntityErrorDetail(), TrainingRun.class, "id", trainingRun1.getId().toString(),
                 "Sandbox of this training run was already deleted, you have to start new game.");
@@ -800,7 +806,7 @@ public class TrainingRunsIT {
         MockHttpServletResponse response = mvc.perform(get("/training-runs/{runId}/resumption", trainingRun2.getId()))
                 .andExpect(status().isConflict())
                 .andReturn().getResponse();
-        ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
+        ApiEntityError error = convertJsonBytesToObject(response.getContentAsString(), ApiEntityError.class);
         assertEquals(HttpStatus.CONFLICT, error.getStatus());
         assertEntityDetailError(error.getEntityErrorDetail(), TrainingRun.class, "id", trainingRun2.getId().toString(),
                 "Cannot resume finished training run.");
@@ -811,7 +817,7 @@ public class TrainingRunsIT {
         MockHttpServletResponse response = mvc.perform(get("/training-runs/{runId}/resumption", nonExistentTrainingRunId))
                 .andExpect(status().isNotFound())
                 .andReturn().getResponse();
-        ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
+        ApiEntityError error = convertJsonBytesToObject(response.getContentAsString(), ApiEntityError.class);
         assertEquals(HttpStatus.NOT_FOUND, error.getStatus());
         assertEntityDetailError(error.getEntityErrorDetail(), TrainingRun.class, "id", nonExistentTrainingRunId.toString(),
                 "Training run not found.");
@@ -832,7 +838,7 @@ public class TrainingRunsIT {
         MockHttpServletResponse response = mvc.perform(put("/training-runs/{runId}", trainingRun1.getId()))
                 .andExpect(status().isConflict())
                 .andReturn().getResponse();
-        ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
+        ApiEntityError error = convertJsonBytesToObject(response.getContentAsString(), ApiEntityError.class);
         assertEquals(HttpStatus.CONFLICT, error.getStatus());
         assertEntityDetailError(error.getEntityErrorDetail(), TrainingRun.class, "id", trainingRun1.getId().toString(),
                 "Cannot finish training run because current level is not last.");
@@ -846,7 +852,7 @@ public class TrainingRunsIT {
         MockHttpServletResponse response = mvc.perform(put("/training-runs/{runId}", trainingRun1.getId()))
                 .andExpect(status().isConflict())
                 .andReturn().getResponse();
-        ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
+        ApiEntityError error = convertJsonBytesToObject(response.getContentAsString(), ApiEntityError.class);
         assertEquals(HttpStatus.CONFLICT, error.getStatus());
         assertEntityDetailError(error.getEntityErrorDetail(), TrainingRun.class, "id", trainingRun1.getId().toString(),
                 "Cannot finish training run because current level is not answered.");
@@ -857,7 +863,7 @@ public class TrainingRunsIT {
         MockHttpServletResponse response = mvc.perform(put("/training-runs/{runId}", nonExistentTrainingRunId))
                 .andExpect(status().isNotFound())
                 .andReturn().getResponse();
-        ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
+        ApiEntityError error = convertJsonBytesToObject(response.getContentAsString(), ApiEntityError.class);
         assertEquals(HttpStatus.NOT_FOUND, error.getStatus());
         assertEntityDetailError(error.getEntityErrorDetail(), TrainingRun.class, "id", nonExistentTrainingRunId.toString(),
                 "Training run not found.");

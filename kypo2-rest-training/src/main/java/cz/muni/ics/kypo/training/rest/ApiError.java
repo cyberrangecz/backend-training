@@ -1,51 +1,51 @@
 package cz.muni.ics.kypo.training.rest;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import cz.muni.ics.kypo.training.exceptions.errors.ApiSubError;
-import cz.muni.ics.kypo.training.exceptions.EntityErrorDetail;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.springframework.http.HttpStatus;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
-
 /**
  * The type Api error.
  */
+@ApiModel(value = "ApiError", subTypes = {ApiEntityError.class, ApiMicroserviceError.class},
+        description = "Superclass for classes ApiEntityError and ApiMicroserviceError")
+@JsonSubTypes({
+        @JsonSubTypes.Type(value = ApiEntityError.class, name = "ApiEntityError"),
+        @JsonSubTypes.Type(value = ApiMicroserviceError.class, name = "ApiMicroserviceError")})
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class ApiError {
     /**
      * The Timestamp.
      */
     @ApiModelProperty(value = "The time when the exception occurred", example = "1574062900 (different for each type of exception)")
-    protected long timestamp;
+    private long timestamp;
     /**
      * The Status.
      */
     @ApiModelProperty(value = "The HTTP response status code", example = "404 Not found (different for each type of exception).")
-    protected HttpStatus status;
+    private HttpStatus status;
     /**
      * The Message.
      */
     @ApiModelProperty(value = "The specific description of the ApiError.", example = "The IDMGroup could not be found in database (different for each type of exception).")
-    protected String message;
+    private String message;
     /**
      * The Errors.
      */
     @ApiModelProperty(value = "The list of main reasons of the ApiError.", example = "[The requested resource was not found (different for each type of exception).]")
-    protected List<String> errors;
+    private List<String> errors;
     /**
      * The Path.
      */
     @ApiModelProperty(value = "The requested URI path which caused error.", example = "/kypo2-rest-user-and-group/api/v1/groups/1000 (different for each type of exception).")
-    protected String path;
-    @ApiModelProperty(value = "Entity detail related to the error.")
-    @JsonProperty("entity_error_detail")
-    private EntityErrorDetail entityErrorDetail;
-    @ApiModelProperty(value = "Detailed error from another microservice.")
-    private ApiSubError apiSubError;
+    private String path;
 
-    private ApiError() {
+    protected ApiError() {
     }
 
     /**
@@ -95,13 +95,7 @@ public class ApiError {
      * @return the api error
      */
     public static ApiError of(HttpStatus httpStatus, String message, List<String> errors) {
-        ApiError apiError = new ApiError();
-        apiError.setTimestamp(System.currentTimeMillis());
-        apiError.setStatus(httpStatus);
-        apiError.setMessage(message);
-        apiError.setErrors(errors);
-        apiError.setPath("");
-        return apiError;
+        return ApiError.of(httpStatus, message, errors, "");
     }
 
     /**
@@ -113,51 +107,8 @@ public class ApiError {
      * @return the api error
      */
     public static ApiError of(HttpStatus httpStatus, String message, String error) {
-        ApiError apiError = new ApiError();
-        apiError.setTimestamp(System.currentTimeMillis());
-        apiError.setStatus(httpStatus);
-        apiError.setMessage(message);
-        apiError.setError(error);
-        apiError.setPath("");
-        return apiError;
+        return ApiError.of(httpStatus, message, error, "");
     }
-
-    /**
-     * Gets entity error detail.
-     *
-     * @return the entity error detail
-     */
-    public EntityErrorDetail getEntityErrorDetail() {
-        return entityErrorDetail;
-    }
-
-    /**
-     * Sets entity error detail.
-     *
-     * @param entityErrorDetail the entity error detail
-     */
-    public void setEntityErrorDetail(EntityErrorDetail entityErrorDetail) {
-        this.entityErrorDetail = entityErrorDetail;
-    }
-
-    /**
-     * Gets api sub error.
-     *
-     * @return the api sub error
-     */
-    public ApiSubError getApiSubError() {
-        return apiSubError;
-    }
-
-    /**
-     * Sets api sub error.
-     *
-     * @param apiSubError the api sub error
-     */
-    public void setApiSubError(ApiSubError apiSubError) {
-        this.apiSubError = apiSubError;
-    }
-
     /**
      * Gets timestamp.
      *
@@ -265,8 +216,6 @@ public class ApiError {
                 ", message='" + message + '\'' +
                 ", errors=" + errors +
                 ", path='" + path + '\'' +
-                ", entityErrorDetail=" + entityErrorDetail +
-                ", apiSubError=" + apiSubError +
                 '}';
     }
 

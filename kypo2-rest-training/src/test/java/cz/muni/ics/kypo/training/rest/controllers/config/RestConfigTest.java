@@ -59,10 +59,20 @@ public class RestConfigTest {
 	}
 
 	@Bean
-	public RestTemplate restTemplate() {
-		RestTemplate rT = Mockito.mock(RestTemplate.class);
-		rT.getMessageConverters().add(0, new StringHttpMessageConverter(Charset.forName("UTF-8")));
-		return rT;
+	@Primary
+	@Qualifier("javaRestTemplate")
+	public RestTemplate javaRestTemplate() {
+		RestTemplate restTemplate = Mockito.mock(RestTemplate.class);
+		restTemplate.getMessageConverters().add(0, new StringHttpMessageConverter(Charset.forName("UTF-8")));
+		return restTemplate;
+	}
+
+	@Bean
+	@Qualifier("pythonRestTemplate")
+	public RestTemplate pythonRestTemplate() {
+		RestTemplate pythonRestTemplate = Mockito.mock(RestTemplate.class);
+		pythonRestTemplate.getMessageConverters().add(0, new StringHttpMessageConverter(Charset.forName("UTF-8")));
+		return pythonRestTemplate;
 	}
 
 	@Bean

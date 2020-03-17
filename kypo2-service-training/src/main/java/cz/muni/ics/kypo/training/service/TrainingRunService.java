@@ -45,7 +45,6 @@ import java.util.*;
 public class TrainingRunService {
 
     private static final Logger LOG = LoggerFactory.getLogger(TrainingRunService.class);
-    private static final String MUST_NOT_BE_NULL = "Input training run id must not be null.";
     @Value("${openstack-server.uri}")
     private String kypoOpenStackURI;
 
@@ -57,7 +56,6 @@ public class TrainingRunService {
     private AuditEventsService auditEventsService;
     private SecurityService securityService;
     private TRAcquisitionLockRepository trAcquisitionLockRepository;
-    @Qualifier("pythonRestTemplate")
     private RestTemplate pythonRestTemplate;
     private static final int PYTHON_RESULT_PAGE_SIZE = 1000;
 
@@ -78,7 +76,7 @@ public class TrainingRunService {
     public TrainingRunService(TrainingRunRepository trainingRunRepository, AbstractLevelRepository abstractLevelRepository,
                               TrainingInstanceRepository trainingInstanceRepository, UserRefRepository participantRefRepository,
                               HintRepository hintRepository, AuditEventsService auditEventsService, SecurityService securityService,
-                              RestTemplate pythonRestTemplate, TRAcquisitionLockRepository trAcquisitionLockRepository) {
+                              @Qualifier("pythonRestTemplate") RestTemplate pythonRestTemplate, TRAcquisitionLockRepository trAcquisitionLockRepository) {
         this.trainingRunRepository = trainingRunRepository;
         this.abstractLevelRepository = abstractLevelRepository;
         this.trainingInstanceRepository = trainingInstanceRepository;
@@ -362,11 +360,11 @@ public class TrainingRunService {
             }
         } catch (NullPointerException ex) {
             throw new ForbiddenException(ex.getMessage());
-        } catch (RestTemplateException ex) {
-            if (ex.getStatusCode().equals(HttpStatus.CONFLICT.toString())) {
+        } catch (CustomRestTemplateException ex) {
+            if (ex.getStatusCode() == HttpStatus.CONFLICT) {
                 throw new ForbiddenException("There is no available sandbox, wait a minute and try again or ask organizer to allocate more sandboxes.");
             }
-            throw new MicroserviceApiException("Error when calling Python API to get unlocked sandbox from pool (ID: " + poolId + ")", new PythonApiError(ex.getMessage()));
+            throw new MicroserviceApiException("Error when calling Python API to get unlocked sandbox from pool (ID: " + poolId + ")", ex.getApiSubError());
         }
     }
 

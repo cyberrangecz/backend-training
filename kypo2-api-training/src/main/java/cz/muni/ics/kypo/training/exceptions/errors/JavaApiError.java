@@ -1,25 +1,25 @@
 package cz.muni.ics.kypo.training.exceptions.errors;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import cz.muni.ics.kypo.training.api.dto.AbstractLevelDTO;
 import cz.muni.ics.kypo.training.exceptions.EntityErrorDetail;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.springframework.http.HttpStatus;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
-
+@ApiModel(value = "JavaApiError", description = "A detailed error from another Java mircorservice.", parent = ApiSubError.class)
 public class JavaApiError extends ApiSubError {
     @ApiModelProperty(value = "The time when the exception occurred", example = "1574062900 (different for each type of exception)")
-    protected long timestamp;
-    @ApiModelProperty(value = "The HTTP response status code", example = "404 Not found (different for each type of exception).")
-    protected HttpStatus status;
+    private long timestamp;
     @ApiModelProperty(value = "The specific description of the ApiError.", example = "The IDMGroup could not be found in database (different for each type of exception).")
-    protected String message;
+    private String message;
     @ApiModelProperty(value = "The list of main reasons of the ApiError.", example = "[The requested resource was not found (different for each type of exception).]")
-    protected List<String> errors;
+    private List<String> errors;
     @ApiModelProperty(value = "The requested URI path which caused error.", example = "/kypo2-rest-user-and-group/api/v1/groups/1000 (different for each type of exception).")
-    protected String path;
+    private String path;
     @ApiModelProperty(value = "Entity detail related to the error.")
     @JsonProperty("entity_error_detail")
     private EntityErrorDetail entityErrorDetail;
@@ -83,14 +83,6 @@ public class JavaApiError extends ApiSubError {
         this.timestamp = timestamp;
     }
 
-    public HttpStatus getStatus() {
-        return status;
-    }
-
-    public void setStatus(final HttpStatus status) {
-        this.status = status;
-    }
-
     public String getMessage() {
         return message;
     }
@@ -123,7 +115,7 @@ public class JavaApiError extends ApiSubError {
     public String toString() {
         return "ApiError{" +
                 "timestamp=" + timestamp +
-                ", status=" + status +
+                ", status=" + getStatus() +
                 ", message='" + message + '\'' +
                 ", errors=" + errors +
                 ", path='" + path + '\'' +
@@ -133,7 +125,7 @@ public class JavaApiError extends ApiSubError {
 
     @Override
     public int hashCode() {
-        return Objects.hash(timestamp, status, message, errors, path);
+        return Objects.hash(timestamp, getStatus(), message, errors, path);
     }
 
     @Override
@@ -148,7 +140,7 @@ public class JavaApiError extends ApiSubError {
         return Objects.equals(errors, other.getErrors()) &&
                 Objects.equals(message, other.getMessage()) &&
                 Objects.equals(path, other.getPath()) &&
-                Objects.equals(status, other.getStatus()) &&
+                Objects.equals(getStatus(), other.getStatus()) &&
                 Objects.equals(timestamp, other.getTimestamp());
     }
 
