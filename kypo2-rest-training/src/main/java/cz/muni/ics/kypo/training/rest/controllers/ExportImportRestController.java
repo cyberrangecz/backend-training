@@ -65,10 +65,10 @@ public class ExportImportRestController {
             @ApiResponse(code = 404, message = "Training definition and levels not found.", response = ApiError.class),
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiError.class)
     })
-    @GetMapping(path = "/exports/training-definitions/{trainingDefinitionId}", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    @GetMapping(path = "/exports/training-definitions/{definitionId}", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     public ResponseEntity<byte[]> getExportedTrainingDefinitionAndLevels(
             @ApiParam(value = "Id of training definition", required = true)
-            @PathVariable(value = "trainingDefinitionId") Long trainingDefinitionId) {
+            @PathVariable("definitionId") Long trainingDefinitionId) {
         FileToReturnDTO file = exportImportFacade.dbExport(trainingDefinitionId);
         HttpHeaders header = new HttpHeaders();
         header.setContentType(new MediaType("application", "octet-stream"));
@@ -123,10 +123,10 @@ public class ExportImportRestController {
             @ApiResponse(code = 409, message = "Cannot archive instance that is not finished.", response = ApiError.class),
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiError.class)
     })
-    @GetMapping(path = "/exports/training-instances/{trainingInstanceId}", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    @GetMapping(path = "/exports/training-instances/{instanceId}", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     public ResponseEntity<byte[]> archiveTrainingInstance(
             @ApiParam(value = "Id of training instance", required = true)
-            @PathVariable(value = "trainingInstanceId") Long trainingInstanceId) {
+            @PathVariable("instanceId") Long trainingInstanceId) {
         FileToReturnDTO file = exportImportFacade.archiveTrainingInstance(trainingInstanceId);
         HttpHeaders header = new HttpHeaders();
         header.setContentType(new MediaType("application", "octet-stream"));

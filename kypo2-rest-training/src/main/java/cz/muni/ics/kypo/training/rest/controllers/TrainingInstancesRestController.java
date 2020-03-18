@@ -73,9 +73,9 @@ public class TrainingInstancesRestController {
             @ApiResponse(code = 404, message = "Training instance with given id not found.", response = ApiError.class),
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiError.class)
     })
-    @GetMapping(path = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(path = "/{instanceId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> findTrainingInstanceById(
-            @ApiParam(value = "Training instance ID", required = true) @PathVariable Long id,
+            @ApiParam(value = "Training instance ID", required = true) @PathVariable("instanceId") Long id,
             @ApiParam(value = "Fields which should be returned in REST API response") @RequestParam(value = "fields", required = false) String fields) {
         TrainingInstanceDTO trainingInstanceResource = trainingInstanceFacade.findById(id);
         Squiggly.init(objectMapper, fields);
@@ -187,9 +187,9 @@ public class TrainingInstancesRestController {
             @ApiResponse(code = 409, message = "The training instance cannot be deleted for the specific reason stated in the error message.", response = ApiError.class),
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiError.class)
     })
-    @DeleteMapping(path = "/{id}")
+    @DeleteMapping(path = "/{instanceId}")
     public ResponseEntity<Void> deleteTrainingInstance(@ApiParam(value = "Id of training instance to be deleted", required = true)
-                                                       @PathVariable(value = "id") Long id,
+                                                       @PathVariable("instanceId") Long id,
                                                        @ApiParam(value = "Indication if this training run must be deleted no matter of any check (force it)", required = false)
                                                        @RequestParam(value = "forceDelete", required = false) boolean forceDelete) {
         trainingInstanceFacade.delete(id, forceDelete);
@@ -215,9 +215,9 @@ public class TrainingInstancesRestController {
             @ApiResponse(code = 409, message = "The training instance cannot be updated for the specific reason stated in the error message.", response = ApiError.class),
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiError.class)
     })
-    @PatchMapping(path = "/{id}/assign-pool")
+    @PatchMapping(path = "/{instanceId}/assign-pool")
     public ResponseEntity<TrainingInstanceBasicInfoDTO> assignPool(@ApiParam(value = "Id of training instance to be updated", required = true)
-                                                                   @PathVariable(value = "id") Long id,
+                                                                   @PathVariable("instanceId") Long id,
                                                                    @ApiParam(value = "Id of pool to be assigned to training instance", required = true)
                                                                    @Valid @RequestBody TrainingInstanceAssignPoolIdDTO trainingInstanceAssignPoolIdDTO) {
         return ResponseEntity.ok(trainingInstanceFacade.assignPoolToTrainingInstance(id, trainingInstanceAssignPoolIdDTO));
@@ -238,9 +238,9 @@ public class TrainingInstancesRestController {
             @ApiResponse(code = 200, message = "Training instance updated."),
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiError.class)
     })
-    @PatchMapping(path = "/{id}/unassign-pool")
+    @PatchMapping(path = "/{instanceId}/unassign-pool")
     public ResponseEntity<TrainingInstanceBasicInfoDTO> unassignPool(@ApiParam(value = "Id of training instance to be deleted", required = true)
-                                                                     @PathVariable(value = "id") Long id) {
+                                                                     @PathVariable("instanceId") Long id) {
         return ResponseEntity.ok(trainingInstanceFacade.unassignPoolInTrainingInstance(id));
     }
 
@@ -266,7 +266,7 @@ public class TrainingInstancesRestController {
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiError.class)
     })
     @GetMapping(path = "/{instanceId}/training-runs", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Object> findAllTrainingRunsByTrainingInstanceId(@ApiParam(value = "Training Instance Id", required = true) @PathVariable Long instanceId,
+    public ResponseEntity<Object> findAllTrainingRunsByTrainingInstanceId(@ApiParam(value = "Training Instance Id", required = true) @PathVariable("instanceId") Long instanceId,
                                                                           @ApiParam(value = "If only active or not active training runs should be returned.")
                                                                           @RequestParam(value = "isActive", required = false) Boolean isActive,
                                                                           @ApiParam(value = "Pagination support.") Pageable pageable,
@@ -301,9 +301,9 @@ public class TrainingInstancesRestController {
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiError.class)
     })
     @ApiPageableSwagger
-    @GetMapping(path = "/{id}/organizers", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(path = "/{instanceId}/organizers", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> getOrganizersOfTrainingInstance(@ApiParam(value = "ID of training instance for which to retrieve the organizers.", required = true)
-                                                                  @PathVariable(value = "id", required = true) Long trainingInstanceId,
+                                                                  @PathVariable("instanceId") Long trainingInstanceId,
                                                                   @ApiParam(value = "Given name filter.", required = true)
                                                                   @RequestParam(value = "givenName", required = false) String givenName,
                                                                   @ApiParam(value = "Family name filter.", required = true)
@@ -335,9 +335,9 @@ public class TrainingInstancesRestController {
 
     })
     @ApiPageableSwagger
-    @GetMapping(path = "{id}/organizers-not-in-training-instance", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(path = "{instanceId}/organizers-not-in-training-instance", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> getOrganizersNotInGivenTrainingInstance(@ApiParam(value = "ID of the training instance which do not contains organizers you want to retrieve.", required = true)
-                                                                          @PathVariable(value = "id") Long trainingInstanceId,
+                                                                          @PathVariable("instanceId") Long trainingInstanceId,
                                                                           @ApiParam(value = "Given name filter.", required = false)
                                                                           @RequestParam(value = "givenName", required = false) String givenName,
                                                                           @ApiParam(value = "Family name filter.", required = false)
@@ -365,9 +365,9 @@ public class TrainingInstancesRestController {
             @ApiResponse(code = 500, message = "Unexpected condition was encountered. Probably error during calling other microservice.", response = ApiError.class)
     })
     @ApiPageableSwagger
-    @PutMapping(path = "/{id}/organizers", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PutMapping(path = "/{instanceId}/organizers", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Void> editOrganizers(@ApiParam(value = "ID of training instance to be updated.", required = true)
-                                               @PathVariable(value = "id", required = true) Long trainingInstanceId,
+                                               @PathVariable("instanceId") Long trainingInstanceId,
                                                @ApiParam(value = "Ids of the organizers to be added to the training instance.")
                                                @RequestParam(value = "organizersAddition", required = false) Set<Long> organizersAddition,
                                                @ApiParam(value = "Ids of the organizers to be removed from the training instance.")

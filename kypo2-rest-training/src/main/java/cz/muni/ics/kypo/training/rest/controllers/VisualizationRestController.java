@@ -67,7 +67,7 @@ public class VisualizationRestController {
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiError.class)
     })
     @GetMapping(path = "/training-runs/{runId}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<VisualizationInfoDTO> gatherVisualizationInfoForTrainingRun(@ApiParam(value = "Training run ID", required = true) @PathVariable Long runId) {
+    public ResponseEntity<VisualizationInfoDTO> gatherVisualizationInfoForTrainingRun(@ApiParam(value = "Training run ID", required = true) @PathVariable("runId") Long runId) {
         VisualizationInfoDTO visualizationInfoAboutTrainingRunDTO = visualizationFacade.getVisualizationInfoAboutTrainingRun(runId);
         return ResponseEntity.ok(visualizationInfoAboutTrainingRunDTO);
     }
@@ -89,8 +89,8 @@ public class VisualizationRestController {
             @ApiResponse(code = 404, message = "Training instance with given id not found.", response = ApiError.class),
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiError.class)
     })
-    @GetMapping(path = "/training-instances/{trainingInstanceId}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<VisualizationInfoDTO> gatherVisualizationInfoForTrainingInstance(@ApiParam(value = "Training instance ID", required = true) @PathVariable Long trainingInstanceId) {
+    @GetMapping(path = "/training-instances/{instanceId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<VisualizationInfoDTO> gatherVisualizationInfoForTrainingInstance(@ApiParam(value = "Training instance ID", required = true) @PathVariable("instanceId") Long trainingInstanceId) {
         VisualizationInfoDTO visualizationInfoDTO = visualizationFacade.getVisualizationInfoAboutTrainingInstance(trainingInstanceId);
         return ResponseEntity.ok(visualizationInfoDTO);
     }
@@ -112,8 +112,8 @@ public class VisualizationRestController {
             @ApiResponse(code = 200, message = "Visualization info found.", response = UserRefDTO[].class),
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiError.class)
     })
-    @GetMapping(path = "/training-instances/{trainingInstanceId}/participants", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<UserRefDTO>> getParticipantsForGivenTrainingInstance(@ApiParam(value = "Training instance ID", required = true) @PathVariable Long trainingInstanceId) {
+    @GetMapping(path = "/training-instances/{instanceId}/participants", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<UserRefDTO>> getParticipantsForGivenTrainingInstance(@ApiParam(value = "Training instance ID", required = true) @PathVariable("instanceId") Long trainingInstanceId) {
         List<UserRefDTO> participants = visualizationFacade.getParticipantsForGivenTrainingInstance(trainingInstanceId);
         return ResponseEntity.ok(participants);
     }
