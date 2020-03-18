@@ -162,7 +162,7 @@ public class TrainingRunsConcurrentIT {
         String url = "http://localhost:8080" + "/pools/" + trainingInstance.getPoolId() + "/sandboxes/unlocked/";
         UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(url);
 
-        given(javaRestTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), eq(UserRefDTO.class))).willReturn(new ResponseEntity<UserRefDTO>(userRefDTO1, HttpStatus.OK));
+        given(javaRestTemplate.getForObject(anyString(), eq(UserRefDTO.class))).willReturn(userRefDTO1);
         given(javaRestTemplate.exchange(eq(userAndGroupURI + "/users/info"), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).willReturn(new ResponseEntity<UserRefDTO>(userRefDTO1, HttpStatus.OK));
         given(pythonRestTemplate.getForEntity(anyString(), eq(SandboxInfo.class))).willReturn(new ResponseEntity<SandboxInfo>(sandboxInfo1, HttpStatus.OK));
         mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_TRAINEE.name()));

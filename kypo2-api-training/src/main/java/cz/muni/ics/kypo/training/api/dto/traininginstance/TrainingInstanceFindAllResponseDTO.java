@@ -6,12 +6,9 @@ import cz.muni.ics.kypo.training.converters.LocalDateTimeUTCSerializer;
 import io.swagger.annotations.ApiModelProperty;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Encapsulates basic information about Training Instance
- *
  */
 public class TrainingInstanceFindAllResponseDTO {
 
@@ -35,7 +32,8 @@ public class TrainingInstanceFindAllResponseDTO {
     /**
      * Instantiates a new Training instance find all response dto.
      */
-    public TrainingInstanceFindAllResponseDTO(){}
+    public TrainingInstanceFindAllResponseDTO() {
+    }
 
     /**
      * Gets id.

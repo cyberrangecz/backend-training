@@ -18,9 +18,11 @@ import cz.muni.ics.kypo.training.api.dto.trainingdefinition.*;
 import cz.muni.ics.kypo.training.api.enums.LevelType;
 import cz.muni.ics.kypo.training.api.enums.RoleType;
 import cz.muni.ics.kypo.training.api.enums.TDState;
+import cz.muni.ics.kypo.training.enums.RoleTypeSecurity;
 import cz.muni.ics.kypo.training.exceptions.EntityConflictException;
 import cz.muni.ics.kypo.training.exceptions.EntityErrorDetail;
 import cz.muni.ics.kypo.training.exceptions.EntityNotFoundException;
+import cz.muni.ics.kypo.training.exceptions.InternalServerErrorException;
 import cz.muni.ics.kypo.training.mapping.mapstruct.*;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.service.TrainingDefinitionService;
@@ -28,6 +30,7 @@ import cz.muni.ics.kypo.training.service.UserService;
 import cz.muni.ics.kypo.training.service.SecurityService;
 import org.modelmapper.internal.util.Assert;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -94,7 +97,7 @@ public class TrainingDefinitionFacade {
         TrainingDefinition trainingDefinition = trainingDefinitionService.findById(id);
         TrainingDefinitionByIdDTO trainingDefinitionByIdDTO = trainingDefinitionMapper.mapToDTOById(trainingDefinition);
         trainingDefinitionByIdDTO.setLevels(gatherLevels(id));
-        if(trainingDefinition.getBetaTestingGroup() != null) {
+        if (trainingDefinition.getBetaTestingGroup() != null) {
             trainingDefinitionByIdDTO.setBetaTestingGroupId(trainingDefinition.getBetaTestingGroup().getId());
         }
         return trainingDefinitionByIdDTO;
@@ -152,7 +155,16 @@ public class TrainingDefinitionFacade {
     @IsDesignerOrAdmin
     @TransactionalRO
     public PageResultResource<TrainingDefinitionDTO> findAll(Predicate predicate, Pageable pageable) {
-        PageResultResource<TrainingDefinitionDTO> resource = trainingDefinitionMapper.mapToPageResultResource(trainingDefinitionService.findAll(predicate, pageable));
+        if (securityService.hasRole(RoleTypeSecurity.ROLE_TRAINING_ADMINISTRATOR)) {
+            return mapToDtoAndAddArchivingInfo(trainingDefinitionService.findAll(predicate, pageable));
+        } else {
+            Long loggedInUserId = securityService.getUserRefIdFromUserAndGroup();
+            return mapToDtoAndAddArchivingInfo(trainingDefinitionService.findAll(predicate, pageable, loggedInUserId));
+        }
+    }
+
+    private PageResultResource<TrainingDefinitionDTO> mapToDtoAndAddArchivingInfo(Page<TrainingDefinition> trainingDefinitionPage) {
+        PageResultResource<TrainingDefinitionDTO> resource = trainingDefinitionMapper.mapToPageResultResource(trainingDefinitionPage);
         for (TrainingDefinitionDTO trainingDefinitionDTO : resource.getContent()) {
             trainingDefinitionDTO.setCanBeArchived(checkIfCanBeArchived(trainingDefinitionDTO.getId()));
         }
@@ -169,7 +181,25 @@ public class TrainingDefinitionFacade {
     @IsOrganizerOrAdmin
     @TransactionalRO
     public PageResultResource<TrainingDefinitionInfoDTO> findAllForOrganizers(String state, Pageable pageable) {
-        return trainingDefinitionMapper.mapToPageResultResourceInfoDTO(trainingDefinitionService.findAllForOrganizers(state, pageable));
+        Long loggedInUserId = securityService.getUserRefIdFromUserAndGroup();
+        if (state != null && state.equals(cz.muni.ics.kypo.training.persistence.model.enums.TDState.RELEASED.name())) {
+            return trainingDefinitionMapper.mapToPageResultResourceInfoDTO(
+                    trainingDefinitionService.findAllForOrganizers(cz.muni.ics.kypo.training.persistence.model.enums.TDState.RELEASED, pageable));
+        } else if (state != null && state.equals(cz.muni.ics.kypo.training.persistence.model.enums.TDState.UNRELEASED.name())) {
+            if (securityService.hasRole(RoleTypeSecurity.ROLE_TRAINING_ADMINISTRATOR)) {
+                if (state.equals(cz.muni.ics.kypo.training.persistence.model.enums.TDState.UNRELEASED.name())) {
+                    return trainingDefinitionMapper.mapToPageResultResourceInfoDTO(
+                            trainingDefinitionService.findAllForOrganizers(cz.muni.ics.kypo.training.persistence.model.enums.TDState.UNRELEASED, pageable));
+                }
+            } else if (securityService.hasRole(RoleTypeSecurity.ROLE_TRAINING_DESIGNER) && securityService.hasRole(RoleTypeSecurity.ROLE_TRAINING_ORGANIZER)) {
+                return trainingDefinitionMapper.mapToPageResultResourceInfoDTO(
+                        trainingDefinitionService.findAllForDesignersAndOrganizersUnreleased(loggedInUserId, pageable));
+            } else {
+                return trainingDefinitionMapper.mapToPageResultResourceInfoDTO(
+                        trainingDefinitionService.findAllForOrganizersUnreleased(loggedInUserId, pageable));
+            }
+        }
+        throw new InternalServerErrorException("It is required to provide training definition state that is RELEASED or UNRELEASED");
     }
 
     /**
@@ -187,7 +217,7 @@ public class TrainingDefinitionFacade {
         }
         TrainingDefinition createdTrainingDefinition = trainingDefinitionService.create(newTrainingDefinition);
         TrainingDefinitionByIdDTO trainingDefinitionByIdDTO = trainingDefinitionMapper.mapToDTOById(createdTrainingDefinition);
-        if(createdTrainingDefinition.getBetaTestingGroup() != null) {
+        if (createdTrainingDefinition.getBetaTestingGroup() != null) {
             trainingDefinitionByIdDTO.setBetaTestingGroupId(createdTrainingDefinition.getBetaTestingGroup().getId());
         }
         return trainingDefinitionByIdDTO;
@@ -218,7 +248,7 @@ public class TrainingDefinitionFacade {
 
     private void addOrganizersToTrainingDefinition(TrainingDefinition trainingDefinition, Set<Long> userRefIds) {
         trainingDefinition.getBetaTestingGroup().setOrganizers(new HashSet<>());
-        PageResultResource<UserRefDTO> organizers = userService.getUsersRefDTOByGivenUserIds(userRefIds, PageRequest.of(0,999), null, null);
+        PageResultResource<UserRefDTO> organizers = userService.getUsersRefDTOByGivenUserIds(userRefIds, PageRequest.of(0, 999), null, null);
         for (UserRefDTO organizer : organizers.getContent()) {
             try {
                 trainingDefinition.getBetaTestingGroup().addOrganizer(userService.getUserByUserRefId(organizer.getUserRefId()));
@@ -482,12 +512,12 @@ public class TrainingDefinitionFacade {
     @IsDesignerOrOrganizerOrAdmin
     public PageResultResource<UserRefDTO> getBetaTesters(Long trainingDefinitionId, Pageable pageable) {
         TrainingDefinition trainingDefinition = trainingDefinitionService.findById(trainingDefinitionId);
-        if(trainingDefinition.getBetaTestingGroup() != null && !trainingDefinition.getBetaTestingGroup().getOrganizers().isEmpty()) {
+        if (trainingDefinition.getBetaTestingGroup() != null && !trainingDefinition.getBetaTestingGroup().getOrganizers().isEmpty()) {
             return userService.getUsersRefDTOByGivenUserIds(trainingDefinition.getBetaTestingGroup().getOrganizers().stream()
                     .map(UserRef::getUserRefId)
                     .collect(Collectors.toSet()), pageable, null, null);
         }
-        return new PageResultResource<>(Collections.emptyList(), new PageResultResource.Pagination(0,0,0,0,0));
+        return new PageResultResource<>(Collections.emptyList(), new PageResultResource.Pagination(0, 0, 0, 0, 0));
     }
 
     /**
@@ -521,11 +551,11 @@ public class TrainingDefinitionFacade {
     public void editAuthors(Long trainingDefinitionId, Set<Long> authorsAddition, Set<Long> authorsRemoval) {
         TrainingDefinition trainingDefinition = trainingDefinitionService.findById(trainingDefinitionId);
         Long loggedInUserRefId = securityService.getUserRefIdFromUserAndGroup();
-        if(authorsRemoval != null && !authorsRemoval.isEmpty()) {
+        if (authorsRemoval != null && !authorsRemoval.isEmpty()) {
             authorsRemoval.remove(loggedInUserRefId);
             trainingDefinition.removeAuthorsByUserRefIds(authorsRemoval);
         }
-        if(authorsAddition != null && !authorsAddition.isEmpty()) {
+        if (authorsAddition != null && !authorsAddition.isEmpty()) {
             addAuthorsToTrainingDefinition(trainingDefinition, authorsAddition);
         }
     }
@@ -534,11 +564,11 @@ public class TrainingDefinitionFacade {
         PageResultResource<UserRefDTO> authors;
         int page = 0;
         do {
-            authors = userService.getUsersRefDTOByGivenUserIds(userRefIds, PageRequest.of(page,999), null, null);
+            authors = userService.getUsersRefDTOByGivenUserIds(userRefIds, PageRequest.of(page, 999), null, null);
             Set<Long> actualAuthorsIds = trainingDefinition.getAuthors().stream().map(UserRef::getUserRefId).collect(Collectors.toSet());
             page++;
             for (UserRefDTO author : authors.getContent()) {
-                if(actualAuthorsIds.contains(author.getUserRefId())) {
+                if (actualAuthorsIds.contains(author.getUserRefId())) {
                     continue;
                 }
                 try {

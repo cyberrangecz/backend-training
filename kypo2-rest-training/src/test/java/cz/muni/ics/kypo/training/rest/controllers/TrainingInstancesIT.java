@@ -294,8 +294,8 @@ public class TrainingInstancesIT {
         userRefDTOPageResultResource.setContent(new ArrayList<>(List.of(userRefDTO1)));
         given(javaRestTemplate.exchange(any(URI.class), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
                 willReturn(new ResponseEntity<PageResultResource<UserRefDTO>>(userRefDTOPageResultResource, HttpStatus.OK));
-        given(javaRestTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), eq(UserRefDTO.class))).
-                willReturn(new ResponseEntity<UserRefDTO>(userRefDTO1, HttpStatus.OK));
+        given(javaRestTemplate.getForObject(anyString(), eq(UserRefDTO.class))).
+                willReturn(userRefDTO1);
         given(pythonRestTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(SandboxPoolInfo.class))).
                 willReturn(new ResponseEntity<SandboxPoolInfo>(sandboxPoolInfo, HttpStatus.OK));
         mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_ORGANIZER.name()));
@@ -333,8 +333,8 @@ public class TrainingInstancesIT {
 
         given(javaRestTemplate.exchange(any(URI.class), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
                 willReturn(new ResponseEntity<PageResultResource<UserRefDTO>>(userRefDTOPageResultResource, HttpStatus.OK));
-        given(javaRestTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), eq(UserRefDTO.class))).
-                willReturn(new ResponseEntity<UserRefDTO>(userRefDTO1, HttpStatus.OK));
+        given(javaRestTemplate.getForObject(anyString(), eq(UserRefDTO.class))).
+                willReturn(userRefDTO1);
         mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_ORGANIZER.name()));
         MockHttpServletResponse result = mvc.perform(put("/training-instances")
                 .content(convertObjectToJsonBytes(trainingInstanceUpdateDTO))

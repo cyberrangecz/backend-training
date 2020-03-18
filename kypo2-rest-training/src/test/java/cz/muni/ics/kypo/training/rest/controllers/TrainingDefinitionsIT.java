@@ -303,8 +303,8 @@ public class TrainingDefinitionsIT {
 
         given(javaRestTemplate.exchange(any(URI.class), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
                 willReturn(new ResponseEntity<PageResultResource<UserRefDTO>>(userRefDTOPageResultResource, HttpStatus.OK));
-        given(javaRestTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), eq(UserRefDTO.class))).
-                willReturn(new ResponseEntity<UserRefDTO>(userRefDTO, HttpStatus.OK));
+        given(javaRestTemplate.getForObject(anyString(), eq(UserRefDTO.class))).
+                willReturn(userRefDTO);
 
         MockHttpServletResponse result = mvc.perform(post("/training-definitions").content(convertObjectToJsonBytes(trainingDefinitionCreateDTO))
                 .contentType(MediaType.APPLICATION_JSON_VALUE))
@@ -325,8 +325,8 @@ public class TrainingDefinitionsIT {
         userRefDTOPageResultResource.setContent(List.of(userRefDTO));
         given(javaRestTemplate.exchange(any(URI.class), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
                 willReturn(new ResponseEntity<PageResultResource<UserRefDTO>>(userRefDTOPageResultResource, HttpStatus.OK));
-        given(javaRestTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), eq(UserRefDTO.class))).
-                willReturn(new ResponseEntity<UserRefDTO>(userRefDTO, HttpStatus.OK));
+        given(javaRestTemplate.getForObject(anyString(), eq(UserRefDTO.class))).
+                willReturn(userRefDTO);
         trainingDefinitionCreateDTO.setBetaTestingGroup(null);
         MockHttpServletResponse result = mvc.perform(post("/training-definitions").content(convertObjectToJsonBytes(trainingDefinitionCreateDTO))
                 .contentType(MediaType.APPLICATION_JSON_VALUE))
@@ -358,8 +358,8 @@ public class TrainingDefinitionsIT {
         userRefDTOPageResultResource.setContent(List.of(userRefDTO));
         given(javaRestTemplate.exchange(any(URI.class), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
                 willReturn(new ResponseEntity<PageResultResource<UserRefDTO>>(userRefDTOPageResultResource, HttpStatus.OK));
-        given(javaRestTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), eq(UserRefDTO.class))).
-                willReturn(new ResponseEntity<UserRefDTO>(userRefDTO, HttpStatus.OK));
+        given(javaRestTemplate.getForObject(anyString(), eq(UserRefDTO.class))).
+                willReturn(userRefDTO);
         mvc.perform(put("/training-definitions").content(convertObjectToJsonBytes(trainingDefinitionUpdateDTO))
                 .contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isNoContent());

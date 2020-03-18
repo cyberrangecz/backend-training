@@ -96,10 +96,18 @@ public class TrainingDefinitionService {
      * @return all {@link TrainingDefinition}s
      */
     public Page<TrainingDefinition> findAll(Predicate predicate, Pageable pageable) {
-        if (securityService.hasRole(RoleTypeSecurity.ROLE_TRAINING_ADMINISTRATOR)) {
-            return trainingDefinitionRepository.findAll(predicate, pageable);
-        }
-        Long loggedInUserId = securityService.getUserRefIdFromUserAndGroup();
+        return trainingDefinitionRepository.findAll(predicate, pageable);
+    }
+
+    /**
+     * Find all page.
+     *
+     * @param predicate      the predicate
+     * @param pageable       the pageable
+     * @param loggedInUserId the logged in user id
+     * @return the page
+     */
+    public Page<TrainingDefinition> findAll(Predicate predicate, Pageable pageable, Long loggedInUserId) {
         return trainingDefinitionRepository.findAll(predicate, pageable, loggedInUserId);
     }
 
@@ -110,22 +118,30 @@ public class TrainingDefinitionService {
      * @param pageable pageable parameter with information about pagination.
      * @return all Training Definitions for organizers
      */
-    public Page<TrainingDefinition> findAllForOrganizers(String state, Pageable pageable) {
-        Long loggedInUserId = securityService.getUserRefIdFromUserAndGroup();
-        if (state != null && state.equals(TDState.RELEASED.name())) {
-            return trainingDefinitionRepository.findAllForOrganizers(TDState.RELEASED, pageable);
-        } else if (state != null && state.equals(TDState.UNRELEASED.name())) {
-            if (securityService.hasRole(RoleTypeSecurity.ROLE_TRAINING_ADMINISTRATOR)) {
-                if (state.equals(TDState.UNRELEASED.name())) {
-                    return trainingDefinitionRepository.findAllForOrganizers(TDState.UNRELEASED, pageable);
-                }
-            } else if (securityService.hasRole(RoleTypeSecurity.ROLE_TRAINING_DESIGNER) && securityService.hasRole(RoleTypeSecurity.ROLE_TRAINING_ORGANIZER)) {
-                return trainingDefinitionRepository.findAllForDesignersAndOrganizersUnreleased(loggedInUserId, pageable);
-            } else {
-                return trainingDefinitionRepository.findAllForOrganizersUnreleased(loggedInUserId, pageable);
-            }
-        }
-        throw new InternalServerErrorException("It is required to provide training definition state that is RELEASED or UNRELEASED");
+    public Page<TrainingDefinition> findAllForOrganizers(TDState state, Pageable pageable) {
+        return trainingDefinitionRepository.findAllForOrganizers(state, pageable);
+    }
+
+    /**
+     * Find all for designers and organizers unreleased page.
+     *
+     * @param loggedInUserId the logged in user id
+     * @param pageable       the pageable
+     * @return the page
+     */
+    public Page<TrainingDefinition> findAllForDesignersAndOrganizersUnreleased(Long loggedInUserId, Pageable pageable) {
+        return trainingDefinitionRepository.findAllForDesignersAndOrganizersUnreleased(loggedInUserId, pageable);
+    }
+
+    /**
+     * Find all for organizers unreleased page.
+     *
+     * @param loggedInUserId the logged in user id
+     * @param pageable       the pageable
+     * @return the page
+     */
+    public Page<TrainingDefinition> findAllForOrganizersUnreleased(Long loggedInUserId, Pageable pageable) {
+        return trainingDefinitionRepository.findAllForOrganizersUnreleased(loggedInUserId, pageable);
     }
 
     /**
