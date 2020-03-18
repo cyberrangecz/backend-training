@@ -127,7 +127,8 @@ public class SecurityService {
      */
     public Long getUserRefIdFromUserAndGroup() {
         try {
-            return javaRestTemplate.getForObject(userAndGroupURI + "/users/info", UserRefDTO.class).getUserRefId();
+            UserRefDTO userRefDTO = javaRestTemplate.getForObject(userAndGroupURI + "/users/info", UserRefDTO.class);
+            return userRefDTO.getUserRefId();
         } catch (CustomRestTemplateException ex) {
             throw new MicroserviceApiException("Error when calling UserAndGroup API to get info about logged in user.", ex.getApiSubError());
         }

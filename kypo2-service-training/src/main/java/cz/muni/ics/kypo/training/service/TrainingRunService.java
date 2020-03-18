@@ -10,7 +10,6 @@ import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalWO;
 import cz.muni.ics.kypo.training.api.responses.SandboxInfo;
 import cz.muni.ics.kypo.training.exceptions.*;
-import cz.muni.ics.kypo.training.exceptions.errors.PythonApiError;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.model.enums.AssessmentType;
 import cz.muni.ics.kypo.training.persistence.model.enums.TRState;
@@ -27,7 +26,6 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.web.client.RestTemplate;
@@ -352,12 +350,11 @@ public class TrainingRunService {
     private Long getAndLockSandboxForTrainingRun(Long poolId) {
         UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(kypoOpenStackURI + "/pools/" + poolId + "/sandboxes/get-and-lock/");
         try {
-            ResponseEntity<SandboxInfo> response = pythonRestTemplate.getForEntity(builder.toString(), SandboxInfo.class);
-            if (response.getStatusCode().is2xxSuccessful()) {
-                return response.getBody().getId();
-            } else {
-                throw new MicroserviceApiException("There is no available sandbox now for pool with (ID: " + poolId + ").", null);
+            SandboxInfo sandboxInfo = pythonRestTemplate.getForObject(builder.toUriString(), SandboxInfo.class);
+            if (sandboxInfo != null) {
+                return sandboxInfo.getId();
             }
+            throw new ForbiddenException("There is no available sandbox, wait a minute and try again or ask organizer to allocate more sandboxes.");
         } catch (NullPointerException ex) {
             throw new ForbiddenException(ex.getMessage());
         } catch (CustomRestTemplateException ex) {

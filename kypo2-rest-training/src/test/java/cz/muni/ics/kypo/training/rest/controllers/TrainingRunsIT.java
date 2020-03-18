@@ -309,13 +309,10 @@ public class TrainingRunsIT {
 
     @Test
     public void accessTrainingRun() throws Exception {
-        String url = "http://localhost:8080" + "/pools/" + trainingInstance.getPoolId() + "/sandboxes/unlocked/";
-        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(url);
-
         given(javaRestTemplate.getForObject(anyString(), eq(UserRefDTO.class))).
                 willReturn(userRefDTO1);
-        given(pythonRestTemplate.getForEntity(anyString(), any())).
-                willReturn(new ResponseEntity<>(sandboxInfo, HttpStatus.OK));
+        given(pythonRestTemplate.getForObject(anyString(), any())).
+                willReturn(sandboxInfo);
         mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_TRAINEE.name()));
         MockHttpServletResponse result = mvc.perform(post("/training-runs")
                 .param("accessToken", trainingInstance.getAccessToken()))
@@ -327,7 +324,6 @@ public class TrainingRunsIT {
         assertTrue(trainingRun.isPresent());
         assertEquals(gameLevel1, trainingRun.get().getCurrentLevel());
         assertEquals(trainingInstance, trainingRun.get().getTrainingInstance());
-
     }
 
     @Test
@@ -903,7 +899,7 @@ public class TrainingRunsIT {
     private void assertEntityDetailError(EntityErrorDetail entityErrorDetail, Class<?> entity, String identifier, Object value, String reason) {
         assertEquals(entity.getSimpleName(), entityErrorDetail.getEntity());
         assertEquals(identifier, entityErrorDetail.getIdentifier());
-        if(entityErrorDetail.getIdentifierValue() == null) {
+        if (entityErrorDetail.getIdentifierValue() == null) {
             assertEquals(value, entityErrorDetail.getIdentifierValue());
         } else {
             assertEquals(value, entityErrorDetail.getIdentifierValue().toString());

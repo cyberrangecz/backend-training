@@ -136,7 +136,7 @@ public class ExportImportService {
     public SandboxDefinitionInfo getSandboxDefinitionId(Long poolId) {
         UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(kypoOpenStackURI + "/pools/" + poolId + "/definition/");
         try {
-            return pythonRestTemplate.getForObject(builder.toString(), SandboxDefinitionInfo.class);
+            return pythonRestTemplate.getForObject(builder.toUriString(), SandboxDefinitionInfo.class);
         } catch (CustomRestTemplateException ex) {
             if (ex.getStatusCode() == HttpStatus.CONFLICT) {
                 throw new ForbiddenException("There is no available sandbox definition for particular pool (ID: " + poolId + ").");

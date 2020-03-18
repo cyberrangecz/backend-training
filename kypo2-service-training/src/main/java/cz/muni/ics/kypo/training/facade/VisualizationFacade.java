@@ -147,7 +147,6 @@ public class VisualizationFacade {
                 gameLevelVisualizationDTO.setHints(hintMapper.mapToListDTO(((GameLevel) level).getHints()));
                 gameLevelVisualizationDTO.setLevelType(LevelType.GAME_LEVEL);
                 visualizationLevelInfoDTOs.add(gameLevelVisualizationDTO);
-
             } else if (level instanceof AssessmentLevel) {
                 AssessmentLevelVisualizationDTO assessmentLevelVisualizationDTO = assessmentLevelMapper.mapToVisualizationAssessmentLevelDTO((AssessmentLevel) level);
                 assessmentLevelVisualizationDTO.setLevelType(LevelType.ASSESSMENT_LEVEL);
