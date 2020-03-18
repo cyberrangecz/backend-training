@@ -94,8 +94,8 @@ public class UserServiceTest {
 
     @Test
     public void getUserRefDTOByUserRefId() {
-        given(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), eq(UserRefDTO.class))).
-                willReturn(new ResponseEntity<UserRefDTO>(userRefDTO1, HttpStatus.OK));
+        given(restTemplate.getForObject(anyString(), eq(UserRefDTO.class))).
+                willReturn(userRefDTO1);
         UserRefDTO foundUserRefDTO = userService.getUserRefDTOByUserRefId(userRef1.getUserRefId());
         Assert.assertEquals(userRefDTO1, foundUserRefDTO);
     }

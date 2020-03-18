@@ -1,6 +1,5 @@
 package cz.muni.ics.kypo.training.service;
 
-import cz.muni.ics.kypo.training.enums.RoleTypeSecurity;
 import cz.muni.ics.kypo.training.exceptions.EntityConflictException;
 import cz.muni.ics.kypo.training.exceptions.EntityErrorDetail;
 import cz.muni.ics.kypo.training.persistence.model.AbstractLevel;
@@ -11,7 +10,6 @@ import cz.muni.ics.kypo.training.persistence.repository.AbstractLevelRepository;
 import cz.muni.ics.kypo.training.persistence.repository.UserRefRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
 
 import java.util.List;
 import java.util.Set;
@@ -49,9 +47,7 @@ public class VisualizationService {
      * @throws EntityConflictException training run is still running
      */
     public List<AbstractLevel> getLevelsForTraineeVisualization(TrainingRun trainingRun) {
-        if (securityService.hasRole(RoleTypeSecurity.ROLE_TRAINING_ADMINISTRATOR)) {
-            return abstractLevelRepository.findAllLevelsByTrainingDefinitionId(trainingRun.getTrainingInstance().getTrainingDefinition().getId());
-        } else if (trainingRun.getState().equals(TRState.RUNNING)) {
+        if (trainingRun.getState().equals(TRState.RUNNING)) {
             throw new EntityConflictException(new EntityErrorDetail(TrainingRun.class, "id", trainingRun.getId().getClass(), trainingRun.getId(),
                     "Logged in user cannot access info for visualization because training run is still running."));
         }

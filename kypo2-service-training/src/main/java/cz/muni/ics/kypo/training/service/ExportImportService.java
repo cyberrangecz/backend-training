@@ -10,9 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -35,8 +33,6 @@ public class ExportImportService {
     private GameLevelRepository gameLevelRepository;
     private TrainingInstanceRepository trainingInstanceRepository;
     private TrainingRunRepository trainingRunRepository;
-
-    @Qualifier("pythonRestTemplate")
     private RestTemplate pythonRestTemplate;
 
     /**
@@ -55,7 +51,7 @@ public class ExportImportService {
     public ExportImportService(TrainingDefinitionRepository trainingDefinitionRepository, AbstractLevelRepository abstractLevelRepository,
                                AssessmentLevelRepository assessmentLevelRepository, InfoLevelRepository infoLevelRepository,
                                GameLevelRepository gameLevelRepository, TrainingInstanceRepository trainingInstanceRepository,
-                               TrainingRunRepository trainingRunRepository, RestTemplate pythonRestTemplate) {
+                               TrainingRunRepository trainingRunRepository, @Qualifier("pythonRestTemplate") RestTemplate pythonRestTemplate) {
         this.trainingDefinitionRepository = trainingDefinitionRepository;
         this.abstractLevelRepository = abstractLevelRepository;
         this.assessmentLevelRepository = assessmentLevelRepository;

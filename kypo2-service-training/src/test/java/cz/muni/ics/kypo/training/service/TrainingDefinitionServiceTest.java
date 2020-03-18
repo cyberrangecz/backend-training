@@ -134,7 +134,6 @@ public class TrainingDefinitionServiceTest {
 
     @Test
     public void findAll() {
-        given(securityService.hasRole(RoleTypeSecurity.ROLE_TRAINING_ADMINISTRATOR)).willReturn(true);
         List<TrainingDefinition> expected = new ArrayList<>();
         expected.add(unreleasedDefinition);
         expected.add(releasedDefinition);

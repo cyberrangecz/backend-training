@@ -72,8 +72,6 @@ public class TrainingInstanceServiceTest {
     @Mock
     private TrainingRunRepository trainingRunRepository;
     @Mock
-    private TRAcquisitionLockRepository trAcquisitionLockRepository;
-    @Mock
     private UserRefRepository organizerRefRepository;
     @Mock
     private SecurityService securityService;
@@ -90,7 +88,7 @@ public class TrainingInstanceServiceTest {
     public void init() {
         MockitoAnnotations.initMocks(this);
         trainingInstanceService = new TrainingInstanceService(trainingInstanceRepository, accessTokenRepository,
-                trainingRunRepository, organizerRefRepository, pythonRestTemplate, securityService, trAcquisitionLockRepository);
+                trainingRunRepository, organizerRefRepository, pythonRestTemplate, securityService);
 
         trainingInstance1 = testDataFactory.getConcludedInstance();
         trainingInstance1.setId(1L);
@@ -138,7 +136,6 @@ public class TrainingInstanceServiceTest {
         List<TrainingInstance> expected = new ArrayList<>();
         expected.add(trainingInstance1);
         expected.add(trainingInstance2);
-        given(securityService.getUserRefIdFromUserAndGroup()).willReturn(1L);
 
         Page p = new PageImpl<TrainingInstance>(expected);
         PathBuilder<TrainingInstance> tI = new PathBuilder<TrainingInstance>(TrainingInstance.class, "trainingInstance");
@@ -146,7 +143,7 @@ public class TrainingInstanceServiceTest {
 
         given(trainingInstanceRepository.findAll(any(Predicate.class), any(Pageable.class), anyLong())).willReturn(p);
 
-        Page pr = trainingInstanceService.findAll(predicate, PageRequest.of(0, 2));
+        Page pr = trainingInstanceService.findAll(predicate, PageRequest.of(0, 2), 1L);
         assertEquals(2, pr.getTotalElements());
     }
 
@@ -238,7 +235,7 @@ public class TrainingInstanceServiceTest {
         given(securityContext.getAuthentication()).willReturn(auth);
         given(auth.getUserAuthentication()).willReturn(auth);
         given(auth.getCredentials()).willReturn(sub);
-        given(auth.getAuthorities()).willReturn(Arrays.asList(new SimpleGrantedAuthority("ADMINISTRATOR")));
+        given(auth.getAuthorities()).willReturn(List.of(new SimpleGrantedAuthority("ADMINISTRATOR")));
         given(authentication.getDetails()).willReturn(auth);
     }
 

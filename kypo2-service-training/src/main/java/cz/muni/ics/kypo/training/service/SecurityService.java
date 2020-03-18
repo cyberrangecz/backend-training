@@ -126,12 +126,8 @@ public class SecurityService {
      * @return the user ref id from user and group
      */
     public Long getUserRefIdFromUserAndGroup() {
-        HttpHeaders httpHeaders = new HttpHeaders();
-        httpHeaders.setContentType(MediaType.APPLICATION_JSON);
         try {
-            ResponseEntity<UserRefDTO> userInfoResponseEntity = javaRestTemplate.exchange(userAndGroupURI + "/users/info", HttpMethod.GET, new HttpEntity<>(httpHeaders), UserRefDTO.class);
-            UserRefDTO userRefDto = userInfoResponseEntity.getBody();
-            return userRefDto.getUserRefId();
+            return javaRestTemplate.getForObject(userAndGroupURI + "/users/info", UserRefDTO.class).getUserRefId();
         } catch (CustomRestTemplateException ex) {
             throw new MicroserviceApiException("Error when calling UserAndGroup API to get info about logged in user.", ex.getApiSubError());
         }
@@ -143,13 +139,8 @@ public class SecurityService {
      * @return the user ref
      */
     public UserRef createUserRefEntityByInfoFromUserAndGroup() {
-        HttpHeaders httpHeaders = new HttpHeaders();
-        httpHeaders.setContentType(MediaType.APPLICATION_JSON);
         try {
-            ResponseEntity<UserRefDTO> userInfoResponseEntity = javaRestTemplate.exchange(userAndGroupURI + "/users/info", HttpMethod.GET, new HttpEntity<>(httpHeaders), new ParameterizedTypeReference<UserRefDTO>() {
-            });
-            UserRefDTO userRefDto = userInfoResponseEntity.getBody();
-
+            UserRefDTO userRefDto = javaRestTemplate.getForObject(userAndGroupURI + "/users/info", UserRefDTO.class);
             UserRef userRef = new UserRef();
             userRef.setUserRefId(userRefDto.getUserRefId());
             return userRef;

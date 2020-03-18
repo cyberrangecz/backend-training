@@ -256,8 +256,8 @@ public class TrainingRunsIT {
     public void findTrainingRunById() throws Exception {
         TrainingRun trainingRun = trainingRunRepository.save(trainingRun1);
 
-        given(javaRestTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), eq(UserRefDTO.class))).
-                willReturn(new ResponseEntity<UserRefDTO>(userRefDTO1, HttpStatus.OK));
+        given(javaRestTemplate.getForObject(anyString(), eq(UserRefDTO.class))).
+                willReturn(userRefDTO1);
         MockHttpServletResponse result = mvc.perform(get("/training-runs/{id}", trainingRun.getId()))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
@@ -286,10 +286,10 @@ public class TrainingRunsIT {
     public void findAllTrainingRuns() throws Exception {
         trainingRunRepository.save(trainingRun1);
         trainingRunRepository.save(trainingRun2);
-        given(javaRestTemplate.exchange(eq(userAndGroupURI + "/users/" + trainingRun1.getParticipantRef().getUserRefId()), eq(HttpMethod.GET), any(HttpEntity.class), eq(UserRefDTO.class))).
-                willReturn(new ResponseEntity<UserRefDTO>(userRefDTO1, HttpStatus.OK));
-        given(javaRestTemplate.exchange(eq(userAndGroupURI + "/users/" + trainingRun2.getParticipantRef().getUserRefId()), eq(HttpMethod.GET), any(HttpEntity.class), eq(UserRefDTO.class))).
-                willReturn(new ResponseEntity<UserRefDTO>(userRefDTO2, HttpStatus.OK));
+        given(javaRestTemplate.getForObject(eq(userAndGroupURI + "/users/" + trainingRun1.getParticipantRef().getUserRefId()), eq(UserRefDTO.class))).
+                willReturn(userRefDTO1);
+        given(javaRestTemplate.getForObject(eq(userAndGroupURI + "/users/" + trainingRun2.getParticipantRef().getUserRefId()), eq(UserRefDTO.class))).
+                willReturn(userRefDTO2);
         System.out.println(userAndGroupURI + "/users/" + trainingRun1.getParticipantRef().getUserRefId());
         System.out.println(userAndGroupURI + "/users/" + trainingRun2.getParticipantRef().getUserRefId());
         MockHttpServletResponse result = mvc.perform(get("/training-runs"))
@@ -312,8 +312,8 @@ public class TrainingRunsIT {
         String url = "http://localhost:8080" + "/pools/" + trainingInstance.getPoolId() + "/sandboxes/unlocked/";
         UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(url);
 
-        given(javaRestTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), eq(UserRefDTO.class))).
-                willReturn(new ResponseEntity<UserRefDTO>(userRefDTO1, HttpStatus.OK));
+        given(javaRestTemplate.getForObject(anyString(), eq(UserRefDTO.class))).
+                willReturn(userRefDTO1);
         given(pythonRestTemplate.getForEntity(anyString(), any())).
                 willReturn(new ResponseEntity<>(sandboxInfo, HttpStatus.OK));
         mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_TRAINEE.name()));
@@ -336,8 +336,8 @@ public class TrainingRunsIT {
         trainingRun1.setSandboxInstanceRefId(sandboxInfo.getId());
         trainingRunRepository.save(trainingRun1);
 
-        given(javaRestTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), eq(UserRefDTO.class))).
-                willReturn(new ResponseEntity<UserRefDTO>(userRefDTO1, HttpStatus.OK));
+        given(javaRestTemplate.getForObject(anyString(), eq(UserRefDTO.class))).
+                willReturn(userRefDTO1);
         mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_TRAINEE.name()));
         MockHttpServletResponse result = mvc.perform(post("/training-runs")
                 .param("accessToken", trainingInstance.getAccessToken()))
@@ -378,8 +378,8 @@ public class TrainingRunsIT {
 
         gameLevel1.setTrainingDefinition(null);
         infoLevel1.setTrainingDefinition(null);
-        given(javaRestTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), eq(UserRefDTO.class))).
-                willReturn(new ResponseEntity<UserRefDTO>(userRefDTO1, HttpStatus.OK));
+        given(javaRestTemplate.getForObject(anyString(), eq(UserRefDTO.class))).
+                willReturn(userRefDTO1);
         given(javaRestTemplate.exchange(eq(builder.toUriString()), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
                 willReturn(new ResponseEntity<PageResultResourcePython<SandboxInfo>>(sandboxInfoPageResult, HttpStatus.OK));
         mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_TRAINEE.name()));
@@ -403,8 +403,8 @@ public class TrainingRunsIT {
         builder.queryParam("page", 1);
         builder.queryParam("page_size", 1000);
 
-        given(javaRestTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), eq(UserRefDTO.class))).
-                willReturn(new ResponseEntity<UserRefDTO>(userRefDTO1, HttpStatus.OK));
+        given(javaRestTemplate.getForObject(anyString(), eq(UserRefDTO.class))).
+                willReturn(userRefDTO1);
         willThrow(new CustomRestTemplateException("No unlocked sandbox.", HttpStatus.CONFLICT)).given(javaRestTemplate).exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), eq(SandboxInfo.class));
 
         mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_TRAINEE.name()));
@@ -436,8 +436,8 @@ public class TrainingRunsIT {
         trainingRun1.setParticipantRef(participant1);
         trainingRunRepository.save(trainingRun1);
         trainingRunRepository.save(trainingRun2);
-        given(javaRestTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
-                willReturn(new ResponseEntity<UserRefDTO>(userRefDTO1, HttpStatus.OK));
+        given(javaRestTemplate.getForObject(anyString(), eq(UserRefDTO.class))).
+                willReturn(userRefDTO1);
 
         AccessedTrainingRunDTO expectedAccessTrainingRunDTO = new AccessedTrainingRunDTO();
         expectedAccessTrainingRunDTO.setId(trainingRun1.getId());

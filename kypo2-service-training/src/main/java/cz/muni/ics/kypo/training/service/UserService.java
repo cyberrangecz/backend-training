@@ -47,7 +47,7 @@ public class UserService {
     /**
      * Instantiates a new User service.
      *
-     * @param javaRestTemplate      the rest template
+     * @param javaRestTemplate  the rest template
      * @param userRefRepository the user ref repository
      */
     public UserService(@Qualifier("javaRestTemplate") RestTemplate javaRestTemplate, UserRefRepository userRefRepository) {
@@ -75,12 +75,8 @@ public class UserService {
      * @throws EntityNotFoundException UserRef was not found
      */
     public UserRefDTO getUserRefDTOByUserRefId(Long id) {
-        HttpHeaders httpHeaders = new HttpHeaders();
-        httpHeaders.setContentType(MediaType.APPLICATION_JSON);
-
         try {
-            ResponseEntity<UserRefDTO> userInfoResponseEntity = javaRestTemplate.exchange(userAndGroupURI + "/users/" + id, HttpMethod.GET, new HttpEntity<>(httpHeaders), UserRefDTO.class);
-            return userInfoResponseEntity.getBody();
+            return javaRestTemplate.getForObject(userAndGroupURI + "/users/" + id, UserRefDTO.class);
         } catch (CustomRestTemplateException ex) {
             throw new MicroserviceApiException("Error when calling UserAndGroup API to obtain info about user(ID: " + id + ")", ex.getApiSubError());
         }
@@ -96,15 +92,15 @@ public class UserService {
      * @return the users with given user ref ids
      */
     public PageResultResource<UserRefDTO> getUsersRefDTOByGivenUserIds(Set<Long> userRefIds, Pageable pageable, String givenName, String familyName) {
-        if(userRefIds.isEmpty()) {
-            return new PageResultResource<>(Collections.emptyList(), new PageResultResource.Pagination(0, 0, pageable.getPageSize(), 0, 0 ));
+        if (userRefIds.isEmpty()) {
+            return new PageResultResource<>(Collections.emptyList(), new PageResultResource.Pagination(0, 0, pageable.getPageSize(), 0, 0));
         }
         HttpHeaders httpHeaders = new HttpHeaders();
         UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(userAndGroupURI + "/users/ids");
-        if(givenName != null) {
+        if (givenName != null) {
             builder.queryParam("givenName", givenName);
         }
-        if(familyName != null) {
+        if (familyName != null) {
             builder.queryParam("familyName", familyName);
         }
         builder.queryParam("ids", StringUtils.collectionToDelimitedString(userRefIds, ","));
@@ -115,7 +111,7 @@ public class UserService {
             ResponseEntity<PageResultResource<UserRefDTO>> usersResponse = javaRestTemplate.exchange(uri, HttpMethod.GET, new HttpEntity<>(httpHeaders),
                     new ParameterizedTypeReference<PageResultResource<UserRefDTO>>() {
                     });
-            return (Objects.requireNonNull(usersResponse.getBody()));
+            return usersResponse.getBody();
         } catch (CustomRestTemplateException ex) {
             throw new MicroserviceApiException("Error when calling UserAndGroup API to obtain users by IDs: " + userRefIds, ex.getApiSubError());
         }
@@ -133,10 +129,10 @@ public class UserService {
     public PageResultResource<UserRefDTO> getUsersByGivenRole(RoleType roleType, Pageable pageable, String givenName, String familyName) {
         HttpHeaders httpHeaders = new HttpHeaders();
         UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(userAndGroupURI + "/roles/users");
-        if(givenName != null) {
+        if (givenName != null) {
             builder.queryParam("givenName", givenName);
         }
-        if(familyName != null) {
+        if (familyName != null) {
             builder.queryParam("familyName", familyName);
         }
         builder.queryParam("roleType", roleType.name());
@@ -147,8 +143,7 @@ public class UserService {
             ResponseEntity<PageResultResource<UserRefDTO>> usersResponse = javaRestTemplate.exchange(uri, HttpMethod.GET, new HttpEntity<>(httpHeaders),
                     new ParameterizedTypeReference<PageResultResource<UserRefDTO>>() {
                     });
-            return Objects.requireNonNull(usersResponse.getBody());
-
+            return usersResponse.getBody();
         } catch (CustomRestTemplateException ex) {
             throw new MicroserviceApiException("Error when calling UserAndGroup API to obtain users with role " + roleType.name(), ex.getApiSubError());
         }
@@ -167,10 +162,10 @@ public class UserService {
     public PageResultResource<UserRefDTO> getUsersByGivenRoleAndNotWithGivenIds(RoleType roleType, Set<Long> userRefIds, Pageable pageable, String givenName, String familyName) {
         HttpHeaders httpHeaders = new HttpHeaders();
         UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(userAndGroupURI + "/roles/users-not-with-ids");
-        if(givenName != null) {
+        if (givenName != null) {
             builder.queryParam("givenName", givenName);
         }
-        if(familyName != null) {
+        if (familyName != null) {
             builder.queryParam("familyName", familyName);
         }
         builder.queryParam("roleType", roleType.name());
@@ -182,8 +177,7 @@ public class UserService {
             ResponseEntity<PageResultResource<UserRefDTO>> usersResponse = javaRestTemplate.exchange(uri, HttpMethod.GET, new HttpEntity<>(httpHeaders),
                     new ParameterizedTypeReference<PageResultResource<UserRefDTO>>() {
                     });
-            return Objects.requireNonNull(usersResponse.getBody());
-
+            return usersResponse.getBody();
         } catch (CustomRestTemplateException ex) {
             throw new MicroserviceApiException("Error when calling UserAndGroup API to obtain users with role " + roleType.name() + " and IDs:", ex.getApiSubError());
         }
@@ -205,7 +199,7 @@ public class UserService {
     private static <T> T convertJsonBytesToObject(String object, Class<T> objectClass) throws IOException {
         ObjectMapper mapper = new ObjectMapper();
         mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
-        mapper.registerModule( new JavaTimeModule()).disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        mapper.registerModule(new JavaTimeModule()).disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
         return mapper.readValue(object, objectClass);
     }
 }

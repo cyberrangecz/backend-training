@@ -40,7 +40,6 @@ public class TrainingInstanceService {
     private AccessTokenRepository accessTokenRepository;
     private UserRefRepository organizerRefRepository;
     private SecurityService securityService;
-    private TRAcquisitionLockRepository trAcquisitionLockRepository;
     @Qualifier("pythonRestTemplate")
     private RestTemplate pythonRestTemplate;
     private static final int PYTHON_RESULT_PAGE_SIZE = 1000;
@@ -48,25 +47,23 @@ public class TrainingInstanceService {
     /**
      * Instantiates a new Training instance service.
      *
-     * @param trainingInstanceRepository  the training instance repository
-     * @param accessTokenRepository       the access token repository
-     * @param trainingRunRepository       the training run repository
-     * @param organizerRefRepository      the organizer ref repository
-     * @param pythonRestTemplate          the python rest template
-     * @param securityService             the security service
-     * @param trAcquisitionLockRepository the tr acquisition lock repository
+     * @param trainingInstanceRepository the training instance repository
+     * @param accessTokenRepository      the access token repository
+     * @param trainingRunRepository      the training run repository
+     * @param organizerRefRepository     the organizer ref repository
+     * @param pythonRestTemplate         the python rest template
+     * @param securityService            the security service
      */
     @Autowired
     public TrainingInstanceService(TrainingInstanceRepository trainingInstanceRepository, AccessTokenRepository accessTokenRepository,
                                    TrainingRunRepository trainingRunRepository, UserRefRepository organizerRefRepository,
-                                   RestTemplate pythonRestTemplate, SecurityService securityService, TRAcquisitionLockRepository trAcquisitionLockRepository) {
+                                   RestTemplate pythonRestTemplate, SecurityService securityService) {
         this.trainingInstanceRepository = trainingInstanceRepository;
         this.trainingRunRepository = trainingRunRepository;
         this.accessTokenRepository = accessTokenRepository;
         this.organizerRefRepository = organizerRefRepository;
         this.securityService = securityService;
         this.pythonRestTemplate = pythonRestTemplate;
-        this.trAcquisitionLockRepository = trAcquisitionLockRepository;
     }
 
     /**
@@ -100,10 +97,19 @@ public class TrainingInstanceService {
      * @return all {@link TrainingInstance}s
      */
     public Page<TrainingInstance> findAll(Predicate predicate, Pageable pageable) {
-        if (securityService.hasRole(RoleTypeSecurity.ROLE_TRAINING_ADMINISTRATOR)) {
-            return trainingInstanceRepository.findAll(predicate, pageable);
-        }
-        return trainingInstanceRepository.findAll(predicate, pageable, securityService.getUserRefIdFromUserAndGroup());
+        return trainingInstanceRepository.findAll(predicate, pageable);
+    }
+
+    /**
+     * Find all training instances based on the logged in user.
+     *
+     * @param predicate      the predicate
+     * @param pageable       the pageable
+     * @param loggedInUserId the logged in user id
+     * @return the page
+     */
+    public Page<TrainingInstance> findAll(Predicate predicate, Pageable pageable, Long loggedInUserId) {
+        return trainingInstanceRepository.findAll(predicate, pageable, loggedInUserId);
     }
 
     /**
