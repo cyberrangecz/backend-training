@@ -100,11 +100,11 @@ public class TrainingRunsConcurrentIT {
     private String userAndGroupURI;
 
     @SpringBootApplication
-    static class TestConfiguration{
+    static class TestConfiguration {
     }
 
     @Before
-    public void init() throws Exception{
+    public void init() throws Exception {
         testContextManager = new TestContextManager(getClass());
         testContextManager.prepareTestInstance(this);
         this.mvc = MockMvcBuilders.standaloneSetup(trainingRunsRestController, trainingInstancesRestController).build();
@@ -158,13 +158,9 @@ public class TrainingRunsConcurrentIT {
 
     @Test
     @ThreadCount(4)
-    public void concurrentAccessTrainingRun() throws Exception{
-        String url = "http://localhost:8080" + "/pools/" + trainingInstance.getPoolId() + "/sandboxes/unlocked/";
-        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(url);
-
+    public void concurrentAccessTrainingRun() throws Exception {
         given(javaRestTemplate.getForObject(anyString(), eq(UserRefDTO.class))).willReturn(userRefDTO1);
-        given(javaRestTemplate.exchange(eq(userAndGroupURI + "/users/info"), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).willReturn(new ResponseEntity<UserRefDTO>(userRefDTO1, HttpStatus.OK));
-        given(pythonRestTemplate.getForEntity(anyString(), eq(SandboxInfo.class))).willReturn(new ResponseEntity<SandboxInfo>(sandboxInfo1, HttpStatus.OK));
+        given(pythonRestTemplate.getForObject(anyString(), eq(SandboxInfo.class))).willReturn(sandboxInfo1);
         mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_TRAINEE.name()));
 
         mvc.perform(post("/training-runs")

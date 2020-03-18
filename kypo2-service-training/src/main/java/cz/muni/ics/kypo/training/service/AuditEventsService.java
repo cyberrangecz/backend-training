@@ -52,7 +52,6 @@ public class AuditEventsService {
                 .actualScoreInLevel(auditInfoDTO.getActualScoreInLevel())
                 .level(auditInfoDTO.getLevel())
                 .build();
-
         auditService.saveTrainingRunEvent(trainingRunStarted);
     }
 
@@ -80,7 +79,6 @@ public class AuditEventsService {
                 .maxScore(trainingRun.getCurrentLevel().getMaxScore())
                 .levelTitle(trainingRun.getCurrentLevel().getTitle())
                 .build();
-
         auditService.saveTrainingRunEvent(levelStarted);
     }
 
@@ -107,7 +105,6 @@ public class AuditEventsService {
                 .level(auditInfoDTO.getLevel())
                 .levelType(levelType)
                 .build();
-
         auditService.saveTrainingRunEvent(levelCompleted);
     }
 
@@ -260,7 +257,6 @@ public class AuditEventsService {
                 .startTime(trainingRun.getStartTime().atOffset(ZoneOffset.UTC).toInstant().toEpochMilli())
                 .endTime(System.currentTimeMillis())
                 .build();
-
         auditService.saveTrainingRunEvent(assessmentAnswers);
     }
 
@@ -300,7 +296,6 @@ public class AuditEventsService {
         auditInfoDTO.setLevel(trainingRun.getCurrentLevel().getId());
         auditInfoDTO.setTotalScore(trainingRun.getTotalScore());
         auditInfoDTO.setActualScoreInLevel(trainingRun.getMaxLevelScore() - trainingRun.getCurrentPenalty());
-
         return auditInfoDTO;
     }
 
