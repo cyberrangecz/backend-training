@@ -10,10 +10,8 @@ import cz.muni.ics.kypo.training.persistence.config.PersistenceConfig;
 import org.apache.http.client.HttpClient;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.impl.client.HttpClients;
-import org.apache.http.ssl.SSLContextBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.MethodInvokingFactoryBean;
 import org.springframework.context.annotation.*;
 import org.springframework.core.env.Environment;
@@ -25,7 +23,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.client.RestTemplate;
 
 import javax.net.ssl.SSLContext;
-import java.io.File;
 import java.nio.charset.Charset;
 import java.util.List;
 
@@ -43,10 +40,6 @@ public class ServiceConfig {
     private RestTemplateHeaderModifierInterceptor restTemplateHeaderModifierInterceptor;
     @Autowired
     private ObjectMapper objectMapper;
-    @Value("${server.ssl.trust-store: #{null}}")
-    private String trustStore;
-    @Value("${server.ssl.trust-store-password: #{null}}")
-    private String trustStorePassword;
     @Autowired
     private Environment env;
 
@@ -88,20 +81,12 @@ public class ServiceConfig {
     private RestTemplate prepareRestTemplate() throws Exception {
         RestTemplate restTemplate;
         if (List.of(env.getActiveProfiles()).contains(SpringProfiles.PROD)) {
-            if (trustStore != null && trustStorePassword != null) {
-                SSLContext sslContext = new SSLContextBuilder()
-                        .loadTrustMaterial(new File(trustStore), trustStorePassword.toCharArray())
-                        .setProtocol("TLSv1.2")
-                        .build();
-                SSLConnectionSocketFactory socketFactory = new SSLConnectionSocketFactory(sslContext);
-                HttpClient httpClient = HttpClients.custom()
-                        .setSSLSocketFactory(socketFactory)
-                        .build();
-                HttpComponentsClientHttpRequestFactory factory = new HttpComponentsClientHttpRequestFactory(httpClient);
-                restTemplate = new RestTemplate(factory);
-            } else {
-                throw new ExceptionInInitializerError("Path to trust store and trust store password must be defined.");
-            }
+            SSLConnectionSocketFactory socketFactory = new SSLConnectionSocketFactory(SSLContext.getInstance("TLSv1.2"));
+            HttpClient httpClient = HttpClients.custom()
+                    .setSSLSocketFactory(socketFactory)
+                    .build();
+            HttpComponentsClientHttpRequestFactory factory = new HttpComponentsClientHttpRequestFactory(httpClient);
+            restTemplate = new RestTemplate(factory);
         } else {
             restTemplate = new RestTemplate();
         }
