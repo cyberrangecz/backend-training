@@ -58,7 +58,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = {InfoLevelMapperImpl.class, TrainingInstanceMapperImpl.class, TrainingDefinitionMapperImpl.class,
+@SpringBootTest(classes = {TrainingInstanceMapperImpl.class, TrainingDefinitionMapperImpl.class,
         UserRefMapperImpl.class, BetaTestingGroupMapperImpl.class})
 @ContextConfiguration(classes = {TestDataFactory.class})
 public class TrainingInstancesRestControllerTest {
@@ -307,7 +307,6 @@ public class TrainingInstancesRestControllerTest {
     }
 
     private <T> T convertResultStringToDTO(String resultAsString, Class<T> claas) throws Exception {
-        System.out.println(resultAsString);
         return testObjectMapper.readValue(convertJsonBytesToString(resultAsString), claas);
     }
 

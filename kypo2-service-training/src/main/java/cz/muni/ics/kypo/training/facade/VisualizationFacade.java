@@ -5,13 +5,9 @@ import cz.muni.ics.kypo.training.annotations.security.IsTraineeOrAdmin;
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalRO;
 import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
 import cz.muni.ics.kypo.training.api.dto.visualization.*;
-import cz.muni.ics.kypo.training.api.enums.LevelType;
 import cz.muni.ics.kypo.training.api.responses.PageResultResource;
-import cz.muni.ics.kypo.training.exceptions.InternalServerErrorException;
-import cz.muni.ics.kypo.training.mapping.mapstruct.AssessmentLevelMapper;
-import cz.muni.ics.kypo.training.mapping.mapstruct.GameLevelMapper;
 import cz.muni.ics.kypo.training.mapping.mapstruct.HintMapper;
-import cz.muni.ics.kypo.training.mapping.mapstruct.InfoLevelMapper;
+import cz.muni.ics.kypo.training.mapping.mapstruct.LevelMapper;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.service.TrainingInstanceService;
 import cz.muni.ics.kypo.training.service.TrainingRunService;
@@ -42,11 +38,8 @@ public class VisualizationFacade {
     private TrainingRunService trainingRunService;
     private TrainingInstanceService trainingInstanceService;
     private VisualizationService visualizationService;
-    private GameLevelMapper gameLevelMapper;
-    private AssessmentLevelMapper assessmentLevelMapper;
-    private InfoLevelMapper infoLevelMapper;
-    private HintMapper hintMapper;
     private UserService userService;
+    private LevelMapper levelMapper;
 
     /**
      * Instantiates a new Visualization facade.
@@ -54,23 +47,16 @@ public class VisualizationFacade {
      * @param trainingRunService      the training run service
      * @param trainingInstanceService the training instance service
      * @param visualizationService    the visualization service
-     * @param hintMapper              the hint mapper
-     * @param gameLevelMapper         the game level mapper
-     * @param infoLevelMapper         the info level mapper
-     * @param assessmentLevelMapper   the assessment level mapper
+     * @param levelMapper             the level mapper
      * @param userService             the user service
      */
     @Autowired
-    public VisualizationFacade(TrainingRunService trainingRunService, TrainingInstanceService trainingInstanceService, VisualizationService visualizationService,
-                               HintMapper hintMapper, GameLevelMapper gameLevelMapper, InfoLevelMapper infoLevelMapper,
-                               AssessmentLevelMapper assessmentLevelMapper, UserService userService) {
+    public VisualizationFacade(TrainingRunService trainingRunService, TrainingInstanceService trainingInstanceService,
+                               VisualizationService visualizationService, UserService userService, LevelMapper levelMapper) {
         this.trainingRunService = trainingRunService;
         this.trainingInstanceService = trainingInstanceService;
         this.visualizationService = visualizationService;
-        this.gameLevelMapper = gameLevelMapper;
-        this.assessmentLevelMapper = assessmentLevelMapper;
-        this.infoLevelMapper = infoLevelMapper;
-        this.hintMapper = hintMapper;
+        this.levelMapper = levelMapper;
         this.userService = userService;
     }
 
@@ -141,25 +127,8 @@ public class VisualizationFacade {
 
     private List<AbstractLevelVisualizationDTO> convertToAbstractLevelVisualizationDTO(List<AbstractLevel> abstractLevels) {
         List<AbstractLevelVisualizationDTO> visualizationLevelInfoDTOs = new ArrayList<>();
-        abstractLevels.forEach(level -> {
-            if (level instanceof GameLevel) {
-                GameLevelVisualizationDTO gameLevelVisualizationDTO = gameLevelMapper.mapToVisualizationGameLevelDTO((GameLevel) level);
-                gameLevelVisualizationDTO.setHints(hintMapper.mapToListDTO(((GameLevel) level).getHints()));
-                gameLevelVisualizationDTO.setLevelType(LevelType.GAME_LEVEL);
-                visualizationLevelInfoDTOs.add(gameLevelVisualizationDTO);
-            } else if (level instanceof AssessmentLevel) {
-                AssessmentLevelVisualizationDTO assessmentLevelVisualizationDTO = assessmentLevelMapper.mapToVisualizationAssessmentLevelDTO((AssessmentLevel) level);
-                assessmentLevelVisualizationDTO.setLevelType(LevelType.ASSESSMENT_LEVEL);
-                visualizationLevelInfoDTOs.add(assessmentLevelVisualizationDTO);
-            } else if (level instanceof InfoLevel) {
-                InfoLevelVisualizationDTO infoLevelVisualizationDTO = infoLevelMapper.mapToVisualizationInfoLevelDTO((InfoLevel) level);
-                infoLevelVisualizationDTO.setLevelType(LevelType.INFO_LEVEL);
-                visualizationLevelInfoDTOs.add(infoLevelVisualizationDTO);
-            } else {
-                throw new InternalServerErrorException("Level with id: " + level.getId() + " in given training definition with id: " + level.getTrainingDefinition().getId() +
-                        " is not instance of assessment, game or info level.");
-            }
-        });
+        abstractLevels.forEach(level ->
+            visualizationLevelInfoDTOs.add(levelMapper.mapToVisualizationDTO(level)));
         return visualizationLevelInfoDTOs;
     }
 

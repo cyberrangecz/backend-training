@@ -36,9 +36,8 @@ import static org.mockito.BDDMockito.given;
 
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = {TestDataFactory.class})
-@SpringBootTest(classes = {InfoLevelMapperImpl.class, ExportImportMapperImpl.class, TrainingDefinitionMapperImpl.class,
-        GameLevelMapperImpl.class, InfoLevelMapperImpl.class, AssessmentLevelMapperImpl.class,
-        UserRefMapperImpl.class, BetaTestingGroupMapperImpl.class, HintMapperImpl.class, AttachmentMapperImpl.class})
+@SpringBootTest(classes = {LevelMapperImpl.class, ExportImportMapperImpl.class, TrainingDefinitionMapperImpl.class,
+        LevelMapperImpl.class, UserRefMapperImpl.class, BetaTestingGroupMapperImpl.class, HintMapperImpl.class, AttachmentMapperImpl.class})
 public class ExportImportFacadeTest {
 
     @Rule
@@ -51,11 +50,7 @@ public class ExportImportFacadeTest {
     @Autowired
     private ExportImportMapperImpl exportImportMapper;
     @Autowired
-    private GameLevelMapperImpl gameLevelMapper;
-    @Autowired
-    private InfoLevelMapperImpl infoLevelMapper;
-    @Autowired
-    private AssessmentLevelMapperImpl assessmentLevelMapper;
+    private LevelMapperImpl infoLevelMapper;
     @Autowired
     private TrainingDefinitionMapperImpl trainingDefinitionMapper;
     @Autowired
@@ -83,8 +78,7 @@ public class ExportImportFacadeTest {
     public void init() {
         MockitoAnnotations.initMocks(this);
         exportImportFacade = new ExportImportFacade(exportImportService, trainingDefinitionService, trainingEventsService,
-                userService, exportImportMapper, gameLevelMapper, infoLevelMapper, assessmentLevelMapper,
-                trainingDefinitionMapper, objectMapper, userRefMapper);
+                userService, exportImportMapper, infoLevelMapper, trainingDefinitionMapper, objectMapper, userRefMapper);
 
         assessmentLevel = testDataFactory.getTest();
         assessmentLevel.setId(1L);

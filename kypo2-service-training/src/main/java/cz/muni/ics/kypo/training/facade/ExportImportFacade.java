@@ -23,7 +23,6 @@ import cz.muni.ics.kypo.training.exceptions.InternalServerErrorException;
 import cz.muni.ics.kypo.training.mapping.mapstruct.*;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.service.ExportImportService;
-import cz.muni.ics.kypo.training.service.TrainingInstanceService;
 import cz.muni.ics.kypo.training.service.UserService;
 import cz.muni.ics.kypo.training.service.TrainingDefinitionService;
 import cz.muni.ics.kypo.training.utils.AbstractFileExtensions;
@@ -60,9 +59,7 @@ public class ExportImportFacade {
     private TrainingEventsService trainingEventsService;
     private UserService userService;
     private ExportImportMapper exportImportMapper;
-    private GameLevelMapper gameLevelMapper;
-    private AssessmentLevelMapper assessmentLevelMapper;
-    private InfoLevelMapper infoLevelMapper;
+    private LevelMapper levelMapper;
     private TrainingDefinitionMapper trainingDefinitionMapper;
     private ObjectMapper objectMapper;
     private UserRefMapper userRefMapper;
@@ -72,9 +69,7 @@ public class ExportImportFacade {
      *
      * @param exportImportService       the export import service
      * @param exportImportMapper        the export import mapper
-     * @param gameLevelMapper           the game level mapper
-     * @param infoLevelMapper           the info level mapper
-     * @param assessmentLevelMapper     the assessment level mapper
+     * @param levelMapper               the level mapper
      * @param trainingDefinitionService the training definition service
      * @param trainingDefinitionMapper  the training definition mapper
      * @param objectMapper              the object mapper
@@ -85,16 +80,13 @@ public class ExportImportFacade {
     @Autowired
     public ExportImportFacade(ExportImportService exportImportService, TrainingDefinitionService trainingDefinitionService,
                               TrainingEventsService trainingEventsService, UserService userService,
-                              ExportImportMapper exportImportMapper, GameLevelMapper gameLevelMapper,
-                              InfoLevelMapper infoLevelMapper, AssessmentLevelMapper assessmentLevelMapper,
+                              ExportImportMapper exportImportMapper, LevelMapper levelMapper,
                               TrainingDefinitionMapper trainingDefinitionMapper, ObjectMapper objectMapper,
                               UserRefMapper userRefMapper) {
         this.exportImportService = exportImportService;
         this.trainingDefinitionService = trainingDefinitionService;
         this.exportImportMapper = exportImportMapper;
-        this.gameLevelMapper = gameLevelMapper;
-        this.infoLevelMapper = infoLevelMapper;
-        this.assessmentLevelMapper = assessmentLevelMapper;
+        this.levelMapper = levelMapper;
         this.trainingDefinitionMapper = trainingDefinitionMapper;
         this.objectMapper = objectMapper;
         this.trainingEventsService = trainingEventsService;
@@ -129,42 +121,16 @@ public class ExportImportFacade {
     private List<AbstractLevelExportDTO> mapAbstractLevelToAbstractLevelDTO(Long trainingDefinitionId) {
         List<AbstractLevelExportDTO> abstractLevelExportDTOs = new ArrayList<>();
         List<AbstractLevel> abstractLevels = trainingDefinitionService.findAllLevelsFromDefinition(trainingDefinitionId);
-        abstractLevels.forEach(level -> {
-            if (level instanceof GameLevel) {
-                GameLevelExportDTO gameLevelExportDTO = gameLevelMapper.mapToGamelevelExportDTO((GameLevel) level);
-                gameLevelExportDTO.setLevelType(LevelType.GAME_LEVEL);
-                abstractLevelExportDTOs.add(gameLevelExportDTO);
-            } else if (level instanceof InfoLevel) {
-                InfoLevelExportDTO infoLevelExportDTO = infoLevelMapper.mapToInfoLevelExportDTO((InfoLevel) level);
-                infoLevelExportDTO.setLevelType(LevelType.INFO_LEVEL);
-                abstractLevelExportDTOs.add(infoLevelExportDTO);
-            } else {
-                AssessmentLevelExportDTO assessmentLevelExportDTO = assessmentLevelMapper.mapToAssessmentLevelExportDTO((AssessmentLevel) level);
-                assessmentLevelExportDTO.setLevelType(LevelType.ASSESSMENT_LEVEL);
-                abstractLevelExportDTOs.add(assessmentLevelExportDTO);
-            }
-        });
+        abstractLevels.forEach(level ->
+            abstractLevelExportDTOs.add(levelMapper.mapToExportDTO(level)));
         return abstractLevelExportDTOs;
     }
 
     private List<AbstractLevelArchiveDTO> mapAbstractLevelsToArchiveDTO(Long trainingDefinitionId) {
         List<AbstractLevelArchiveDTO> abstractLevelArchiveDTOs = new ArrayList<>();
         List<AbstractLevel> abstractLevels = trainingDefinitionService.findAllLevelsFromDefinition(trainingDefinitionId);
-        abstractLevels.forEach(level -> {
-            if (level instanceof GameLevel) {
-                GameLevelArchiveDTO gameLevelArchiveDTO = gameLevelMapper.mapToArchiveDTO((GameLevel) level);
-                gameLevelArchiveDTO.setLevelType(LevelType.GAME_LEVEL);
-                abstractLevelArchiveDTOs.add(gameLevelArchiveDTO);
-            } else if (level instanceof InfoLevel) {
-                InfoLevelArchiveDTO infoLevelArchiveDTO = infoLevelMapper.mapToArchiveDTO((InfoLevel) level);
-                infoLevelArchiveDTO.setLevelType(LevelType.INFO_LEVEL);
-                abstractLevelArchiveDTOs.add(infoLevelArchiveDTO);
-            } else {
-                AssessmentLevelArchiveDTO assessmentLevelArchiveDTO = assessmentLevelMapper.mapToArchiveDTO((AssessmentLevel) level);
-                assessmentLevelArchiveDTO.setLevelType(LevelType.ASSESSMENT_LEVEL);
-                abstractLevelArchiveDTOs.add(assessmentLevelArchiveDTO);
-            }
-        });
+        abstractLevels.forEach(level ->
+                abstractLevelArchiveDTOs.add(levelMapper.mapToArchiveDTO(level)));
         return abstractLevelArchiveDTOs;
     }
 
@@ -188,10 +154,10 @@ public class ExportImportFacade {
         levels.forEach(level -> {
             AbstractLevel newLevel;
             if (level.getLevelType().equals(LevelType.GAME_LEVEL))
-                newLevel = gameLevelMapper.mapImportToEntity((GameLevelImportDTO) level);
+                newLevel = levelMapper.mapImportToEntity((GameLevelImportDTO) level);
             else if (level.getLevelType().equals(LevelType.INFO_LEVEL))
-                newLevel = infoLevelMapper.mapImportToEntity((InfoLevelImportDTO) level);
-            else newLevel = assessmentLevelMapper.mapImportToEntity((AssessmentLevelImportDTO) level);
+                newLevel = levelMapper.mapImportToEntity((InfoLevelImportDTO) level);
+            else newLevel = levelMapper.mapImportToEntity((AssessmentLevelImportDTO) level);
             exportImportService.createLevel(newLevel, newTrainingDefinition);
         });
         return trainingDefinitionMapper.mapToDTOById(newTrainingDefinition);

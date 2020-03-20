@@ -19,9 +19,8 @@ import cz.muni.ics.kypo.training.api.responses.SandboxInfo;
 import cz.muni.ics.kypo.training.exceptions.BadRequestException;
 import cz.muni.ics.kypo.training.exceptions.EntityErrorDetail;
 import cz.muni.ics.kypo.training.exceptions.CustomRestTemplateException;
-import cz.muni.ics.kypo.training.mapping.mapstruct.GameLevelMapperImpl;
 import cz.muni.ics.kypo.training.mapping.mapstruct.HintMapperImpl;
-import cz.muni.ics.kypo.training.mapping.mapstruct.InfoLevelMapperImpl;
+import cz.muni.ics.kypo.training.mapping.mapstruct.LevelMapperImpl;
 import cz.muni.ics.kypo.training.mapping.mapstruct.TrainingRunMapperImpl;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.model.enums.TRState;
@@ -119,8 +118,6 @@ public class TrainingRunsIT {
     @Autowired
     private HintMapperImpl hintMapper;
     @Autowired
-    private GameLevelMapperImpl gameLevelMapper;
-    @Autowired
     @Qualifier("javaRestTemplate")
     private RestTemplate javaRestTemplate;
     @Autowired
@@ -134,7 +131,7 @@ public class TrainingRunsIT {
     private String userAndGroupURI;
 
     @Autowired
-    private InfoLevelMapperImpl infoLevelMapper;
+    private LevelMapperImpl infoLevelMapper;
 
     private TrainingRun trainingRun1, trainingRun2;
     private GameLevel gameLevel1;
@@ -290,8 +287,6 @@ public class TrainingRunsIT {
                 willReturn(userRefDTO1);
         given(javaRestTemplate.getForObject(eq(userAndGroupURI + "/users/" + trainingRun2.getParticipantRef().getUserRefId()), eq(UserRefDTO.class))).
                 willReturn(userRefDTO2);
-        System.out.println(userAndGroupURI + "/users/" + trainingRun1.getParticipantRef().getUserRefId());
-        System.out.println(userAndGroupURI + "/users/" + trainingRun2.getParticipantRef().getUserRefId());
         MockHttpServletResponse result = mvc.perform(get("/training-runs"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
@@ -302,7 +297,6 @@ public class TrainingRunsIT {
         trainingRunDTO1.setParticipantRef(userRefDTO1);
         TrainingRunDTO trainingRunDTO2 = trainingRunMapper.mapToDTO(trainingRun2);
         trainingRunDTO2.setParticipantRef(userRefDTO2);
-        System.out.println(trainingRunsPage.getContent());
         assertTrue(trainingRunsPage.getContent().contains(trainingRunDTO1));
         assertTrue(trainingRunsPage.getContent().contains(trainingRunDTO2));
     }
@@ -467,7 +461,7 @@ public class TrainingRunsIT {
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andReturn().getResponse();
         InfoLevelDTO infoLevelDTO = mapper.readValue(convertJsonBytesToString(response.getContentAsString()), InfoLevelDTO.class);
-        assertEquals(infoLevelDTO, infoLevelMapper.mapToDTO(infoLevel1));
+        assertEquals(infoLevelDTO, infoLevelMapper.mapToInfoLevelDTO(infoLevel1));
     }
 
     @Test

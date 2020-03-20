@@ -91,7 +91,7 @@ public class TrainingInstanceFacadeTest {
     public void init() {
         MockitoAnnotations.initMocks(this);
         trainingInstanceFacade = new TrainingInstanceFacade(trainingInstanceService, trainingDefinitionService, trainingRunService, trainingEventsService,
-                trainingInstanceMapper, trainingRunMapper, userService, securityService);
+                userService, securityService, trainingInstanceMapper, trainingRunMapper);
 
         pageable = PageRequest.of(0, 5);
 

@@ -129,7 +129,6 @@ public class ExportImportRestControllerTest {
 
 	@Test
 	public void importTrainingDefinition() throws Exception{
-		System.out.println(convertObjectToJsonBytes(importTrainingDefinitionDTO));
 		mockMvc.perform(post("/imports/training-definitions")
 				.contentType(MediaType.APPLICATION_JSON_VALUE)
 				.content(convertObjectToJsonBytes(importTrainingDefinitionDTO)))

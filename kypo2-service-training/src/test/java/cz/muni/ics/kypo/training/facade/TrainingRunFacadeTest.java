@@ -4,7 +4,6 @@ import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.PathBuilder;
 import cz.muni.ics.kypo.training.api.dto.IsCorrectFlagDTO;
 import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
-import cz.muni.ics.kypo.training.api.dto.run.AccessTrainingRunDTO;
 import cz.muni.ics.kypo.training.api.dto.run.TrainingRunDTO;
 import cz.muni.ics.kypo.training.exceptions.EntityNotFoundException;
 import cz.muni.ics.kypo.training.exceptions.InternalServerErrorException;
@@ -38,20 +37,15 @@ import static org.mockito.BDDMockito.*;
 
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = {TestDataFactory.class})
-@SpringBootTest(classes = {InfoLevelMapperImpl.class, TrainingDefinitionMapperImpl.class,
-        UserRefMapperImpl.class, GameLevelMapperImpl.class,
-        InfoLevelMapperImpl.class, AssessmentLevelMapperImpl.class, HintMapperImpl.class,
-        BasicLevelInfoMapperImpl.class, TrainingRunMapperImpl.class, BetaTestingGroupMapperImpl.class, AttachmentMapperImpl.class})
+@SpringBootTest(classes = {LevelMapperImpl.class, TrainingDefinitionMapperImpl.class, UserRefMapperImpl.class,
+        LevelMapperImpl.class, HintMapperImpl.class, TrainingRunMapperImpl.class, BetaTestingGroupMapperImpl.class,
+        AttachmentMapperImpl.class})
 public class TrainingRunFacadeTest {
 
     @Autowired
     TrainingRunMapperImpl trainingRunMapper;
     @Autowired
-    GameLevelMapperImpl gameLevelMapper;
-    @Autowired
-    AssessmentLevelMapperImpl assessmentLevelMapper;
-    @Autowired
-    InfoLevelMapperImpl infoLevelMapper;
+    LevelMapperImpl levelMapper;
     @Autowired
     HintMapperImpl hintMapper;
     @Autowired
@@ -80,8 +74,8 @@ public class TrainingRunFacadeTest {
     @Before
     public void init() {
         MockitoAnnotations.initMocks(this);
-        trainingRunFacade = new TrainingRunFacade(trainingRunService, securityService, userService, trainingRunMapper, gameLevelMapper,
-                assessmentLevelMapper, infoLevelMapper, hintMapper);
+        trainingRunFacade = new TrainingRunFacade(trainingRunService, securityService, userService, trainingRunMapper,
+                levelMapper, hintMapper);
 
         participant = new UserRef();
         participant.setUserRefId(5L);
