@@ -60,8 +60,8 @@ public class UserService {
      * @throws EntityNotFoundException UserRef was not found
      */
     public UserRef getUserByUserRefId(Long userRefId) {
-        return userRefRepository.findUserByUserRefId(userRefId).orElseThrow(
-                () -> new EntityNotFoundException(new EntityErrorDetail(UserRef.class, "id", userRefId.getClass(), userRefId, "UserRef not found.")));
+        return userRefRepository.findUserByUserRefId(userRefId).orElseThrow(() -> new EntityNotFoundException(new EntityErrorDetail(UserRef.class, "id", userRefId.getClass(), userRefId,
+                "UserRef not found.")));
     }
 
     /**

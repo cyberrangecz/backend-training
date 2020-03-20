@@ -54,8 +54,10 @@ public class TrainingEventsRestController {
     })
     @GetMapping(path = "/training-definitions/{definitionId}/training-instances/{instanceId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> getAllEventsByTrainingDefinitionAndTrainingInstanceId(
-            @ApiParam(value = "Training definition ID", required = true) @PathVariable("definitionId") Long trainingDefinitionId,
-            @ApiParam(value = "Training instance ID", required = true) @PathVariable("instanceId") Long trainingInstanceId) {
+            @ApiParam(value = "Training definition ID", required = true)
+            @PathVariable("definitionId") Long trainingDefinitionId,
+            @ApiParam(value = "Training instance ID", required = true)
+            @PathVariable("instanceId") Long trainingInstanceId) {
         try {
             return ResponseEntity.ok(trainingEventsService.findAllEventsByTrainingDefinitionAndTrainingInstanceId(trainingDefinitionId, trainingInstanceId));
         } catch (ElasticsearchTrainingServiceLayerException ex) {
@@ -82,9 +84,12 @@ public class TrainingEventsRestController {
     })
     @GetMapping(path = "/training-definitions/{definitionId}/training-instances/{instanceId}/training-runs/{runId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> getAllEventsFromTrainingRun(
-            @ApiParam(value = "Training definition ID", required = true) @PathVariable("definitionId") Long trainingDefinitionId,
-            @ApiParam(value = "Training instance ID", required = true) @PathVariable("instanceId") Long trainingInstanceId,
-            @ApiParam(value = "Training run ID", required = true) @PathVariable("runId") Long trainingRunId) {
+            @ApiParam(value = "Training definition ID", required = true)
+            @PathVariable("definitionId") Long trainingDefinitionId,
+            @ApiParam(value = "Training instance ID", required = true)
+            @PathVariable("instanceId") Long trainingInstanceId,
+            @ApiParam(value = "Training run ID", required = true)
+            @PathVariable("runId") Long trainingRunId) {
         try {
             return ResponseEntity.ok(trainingEventsService.findAllEventsFromTrainingRun(trainingDefinitionId, trainingInstanceId, trainingRunId));
         } catch (ElasticsearchTrainingServiceLayerException ex) {
@@ -109,8 +114,10 @@ public class TrainingEventsRestController {
     })
     @DeleteMapping(path = "/training-instances/{instanceId}/training-runs/{runId}")
     public ResponseEntity<Void> deleteEventsFromTrainingRun(
-            @ApiParam(value = "Training instance ID", required = true) @PathVariable("instanceId") Long trainingInstanceId,
-            @ApiParam(value = "Training run ID", required = true) @PathVariable("runId") Long trainingRunId) {
+            @ApiParam(value = "Training instance ID", required = true)
+            @PathVariable("instanceId") Long trainingInstanceId,
+            @ApiParam(value = "Training run ID", required = true)
+            @PathVariable("runId") Long trainingRunId) {
         try {
             trainingEventsService.deleteEventsFromTrainingRun(trainingInstanceId, trainingRunId);
             return new ResponseEntity<>(HttpStatus.OK);

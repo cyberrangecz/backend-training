@@ -63,8 +63,7 @@ public class TrainingDefinitionFacade {
     @Autowired
     public TrainingDefinitionFacade(TrainingDefinitionService trainingDefinitionService, UserService userService,
                                     SecurityService securityService, TrainingDefinitionMapper trainingDefMapper,
-                                    LevelMapper levelMapper
-    ) {
+                                    LevelMapper levelMapper) {
         this.trainingDefinitionService = trainingDefinitionService;
         this.userService = userService;
         this.securityService = securityService;
@@ -442,7 +441,9 @@ public class TrainingDefinitionFacade {
     private boolean checkIfCanBeArchived(Long definitionId) {
         List<TrainingInstance> instances = trainingDefinitionService.findAllTrainingInstancesByTrainingDefinitionId(definitionId);
         for (TrainingInstance trainingInstance : instances) {
-            if (trainingInstance.getEndTime().isAfter(LocalDateTime.now(Clock.systemUTC()))) return false;
+            if (trainingInstance.getEndTime().isAfter(LocalDateTime.now(Clock.systemUTC()))) {
+                return false;
+            }
         }
         return true;
     }
@@ -459,7 +460,10 @@ public class TrainingDefinitionFacade {
     @IsDesignerOrOrganizerOrAdmin
     public PageResultResource<UserRefDTO> getAuthors(Long trainingDefinitionId, Pageable pageable, String givenName, String familyName) {
         TrainingDefinition trainingDefinition = trainingDefinitionService.findById(trainingDefinitionId);
-        return userService.getUsersRefDTOByGivenUserIds(trainingDefinition.getAuthors().stream().map(UserRef::getUserRefId).collect(Collectors.toSet()), pageable, givenName, familyName);
+        return userService.getUsersRefDTOByGivenUserIds(trainingDefinition.getAuthors().stream()
+                        .map(UserRef::getUserRefId)
+                        .collect(Collectors.toSet()),
+                pageable, givenName, familyName);
     }
 
     /**
@@ -525,7 +529,9 @@ public class TrainingDefinitionFacade {
         int page = 0;
         do {
             authors = userService.getUsersRefDTOByGivenUserIds(userRefIds, PageRequest.of(page, 999), null, null);
-            Set<Long> actualAuthorsIds = trainingDefinition.getAuthors().stream().map(UserRef::getUserRefId).collect(Collectors.toSet());
+            Set<Long> actualAuthorsIds = trainingDefinition.getAuthors().stream()
+                    .map(UserRef::getUserRefId)
+                    .collect(Collectors.toSet());
             page++;
             for (UserRefDTO author : authors.getContent()) {
                 if (actualAuthorsIds.contains(author.getUserRefId())) {

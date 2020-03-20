@@ -90,7 +90,8 @@ public class VisualizationRestController {
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiError.class)
     })
     @GetMapping(path = "/training-instances/{instanceId}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<VisualizationInfoDTO> gatherVisualizationInfoForTrainingInstance(@ApiParam(value = "Training instance ID", required = true) @PathVariable("instanceId") Long trainingInstanceId) {
+    public ResponseEntity<VisualizationInfoDTO> gatherVisualizationInfoForTrainingInstance(@ApiParam(value = "Training instance ID", required = true)
+                                                                                           @PathVariable("instanceId") Long trainingInstanceId) {
         VisualizationInfoDTO visualizationInfoDTO = visualizationFacade.getVisualizationInfoAboutTrainingInstance(trainingInstanceId);
         return ResponseEntity.ok(visualizationInfoDTO);
     }
@@ -113,7 +114,8 @@ public class VisualizationRestController {
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiError.class)
     })
     @GetMapping(path = "/training-instances/{instanceId}/participants", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<UserRefDTO>> getParticipantsForGivenTrainingInstance(@ApiParam(value = "Training instance ID", required = true) @PathVariable("instanceId") Long trainingInstanceId) {
+    public ResponseEntity<List<UserRefDTO>> getParticipantsForGivenTrainingInstance(@ApiParam(value = "Training instance ID", required = true)
+                                                                                    @PathVariable("instanceId") Long trainingInstanceId) {
         List<UserRefDTO> participants = visualizationFacade.getParticipantsForGivenTrainingInstance(trainingInstanceId);
         return ResponseEntity.ok(participants);
     }
@@ -138,7 +140,8 @@ public class VisualizationRestController {
     @ApiPageableSwagger
     @GetMapping(path = "/users", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> getUsersByIds(Pageable pageable,
-                                                @ApiParam(value = "usersIds", required = true) @RequestParam Set<Long> usersIds) {
+                                                @ApiParam(value = "usersIds", required = true)
+                                                @RequestParam Set<Long> usersIds) {
         PageResultResource<UserRefDTO> visualizationInfoDTO = visualizationFacade.getUsersByIds(usersIds, pageable);
         return ResponseEntity.ok(SquigglyUtils.stringify(objectMapper, visualizationInfoDTO));
     }

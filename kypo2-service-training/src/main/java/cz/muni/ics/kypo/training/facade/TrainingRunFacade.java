@@ -63,12 +63,12 @@ public class TrainingRunFacade {
     /**
      * Instantiates a new Training run facade.
      *
-     * @param trainingRunService    the training run service
-     * @param securityService       the security service
-     * @param userService           the user service
-     * @param trainingRunMapper     the training run mapper
-     * @param levelMapper           the level mapper
-     * @param hintMapper            the hint mapper
+     * @param trainingRunService the training run service
+     * @param securityService    the security service
+     * @param userService        the user service
+     * @param trainingRunMapper  the training run mapper
+     * @param levelMapper        the level mapper
+     * @param hintMapper         the hint mapper
      */
     @Autowired
     public TrainingRunFacade(TrainingRunService trainingRunService, SecurityService securityService, UserService userService,

@@ -198,7 +198,8 @@ public class TrainingInstanceFacade {
     public TrainingInstanceBasicInfoDTO assignPoolToTrainingInstance(Long trainingInstanceId, TrainingInstanceAssignPoolIdDTO trainingInstanceAssignPoolIdDTO) {
         TrainingInstance trainingInstance = trainingInstanceService.findById(trainingInstanceId);
         if (trainingInstance.getPoolId() != null) {
-            throw new EntityConflictException(new EntityErrorDetail(TrainingInstance.class, "id", trainingInstance.getId().getClass(), trainingInstance.getId(), "Training instance already contains pool Id. Please first unassign pool id and then assign another pool again."));
+            throw new EntityConflictException(new EntityErrorDetail(TrainingInstance.class, "id", trainingInstance.getId().getClass(), trainingInstance.getId(),
+                    "Training instance already contains pool Id. Please first unassign pool id and then assign another pool again."));
         }
         // lock pool and update pool
         trainingInstanceService.lockPool(trainingInstanceAssignPoolIdDTO.getPoolId());
@@ -219,7 +220,8 @@ public class TrainingInstanceFacade {
     public TrainingInstanceBasicInfoDTO unassignPoolInTrainingInstance(Long trainingInstanceId) {
         TrainingInstance trainingInstance = trainingInstanceService.findById(trainingInstanceId);
         if (trainingInstance.getPoolId() == null) {
-            throw new EntityConflictException(new EntityErrorDetail(TrainingInstance.class, "id", trainingInstance.getId().getClass(), trainingInstance.getId(), "The training instance does not contain any assigned pool already."));
+            throw new EntityConflictException(new EntityErrorDetail(TrainingInstance.class, "id", trainingInstance.getId().getClass(), trainingInstance.getId(),
+                    "The training instance does not contain any assigned pool already."));
         }
         // unlock previously assigned pool
         trainingInstanceService.unlockPool(trainingInstance.getPoolId());

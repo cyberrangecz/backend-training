@@ -122,7 +122,7 @@ public class ExportImportFacade {
         List<AbstractLevelExportDTO> abstractLevelExportDTOs = new ArrayList<>();
         List<AbstractLevel> abstractLevels = trainingDefinitionService.findAllLevelsFromDefinition(trainingDefinitionId);
         abstractLevels.forEach(level ->
-            abstractLevelExportDTOs.add(levelMapper.mapToExportDTO(level)));
+                abstractLevelExportDTOs.add(levelMapper.mapToExportDTO(level)));
         return abstractLevelExportDTOs;
     }
 

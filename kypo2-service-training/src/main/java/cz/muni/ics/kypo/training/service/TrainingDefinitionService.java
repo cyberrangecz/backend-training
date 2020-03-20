@@ -84,8 +84,9 @@ public class TrainingDefinitionService {
      * @throws EntityNotFoundException training definition cannot be found
      */
     public TrainingDefinition findById(Long id) {
-        return trainingDefinitionRepository.findById(id).orElseThrow(
-                () -> new EntityNotFoundException(new EntityErrorDetail(TrainingDefinition.class, "id", Long.class, id, "Training definition not found.")));
+        return trainingDefinitionRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException(new EntityErrorDetail(TrainingDefinition.class, "id", Long.class, id,
+                        "Training definition not found.")));
     }
 
     /**
@@ -212,10 +213,10 @@ public class TrainingDefinitionService {
     public void swapLevels(Long definitionId, Long swapLevelFrom, Long swapLevelTo) {
         TrainingDefinition trainingDefinition = findById(definitionId);
         checkIfCanBeUpdated(trainingDefinition);
-        AbstractLevel swapAbstractLevelFrom = abstractLevelRepository.findById(swapLevelFrom).orElseThrow(() -> new EntityNotFoundException(
-                new EntityErrorDetail(AbstractLevel.class, "id", swapLevelFrom.getClass(), swapLevelFrom, LEVEL_NOT_FOUND)));
-        AbstractLevel swapAbstractLevelTo = abstractLevelRepository.findById(swapLevelTo).orElseThrow(() -> new EntityNotFoundException(
-                new EntityErrorDetail(AbstractLevel.class, "id", swapLevelTo.getClass(), swapLevelTo, LEVEL_NOT_FOUND)));
+        AbstractLevel swapAbstractLevelFrom = abstractLevelRepository.findById(swapLevelFrom)
+                .orElseThrow(() -> new EntityNotFoundException(new EntityErrorDetail(AbstractLevel.class, "id", swapLevelFrom.getClass(), swapLevelFrom, LEVEL_NOT_FOUND)));
+        AbstractLevel swapAbstractLevelTo = abstractLevelRepository.findById(swapLevelTo)
+                .orElseThrow(() -> new EntityNotFoundException(new EntityErrorDetail(AbstractLevel.class, "id", swapLevelTo.getClass(), swapLevelTo, LEVEL_NOT_FOUND)));
         int orderFromLevel = swapAbstractLevelFrom.getOrder();
         int orderToLevel = swapAbstractLevelTo.getOrder();
         swapAbstractLevelFrom.setOrder(orderToLevel);
@@ -242,8 +243,8 @@ public class TrainingDefinitionService {
         }
         TrainingDefinition trainingDefinition = findById(definitionId);
         checkIfCanBeUpdated(trainingDefinition);
-        AbstractLevel levelToBeMoved = abstractLevelRepository.findById(levelIdToBeMoved).orElseThrow(() -> new EntityNotFoundException(
-                new EntityErrorDetail(AbstractLevel.class, "id", levelIdToBeMoved.getClass(), levelIdToBeMoved, LEVEL_NOT_FOUND)));
+        AbstractLevel levelToBeMoved = abstractLevelRepository.findById(levelIdToBeMoved)
+                .orElseThrow(() -> new EntityNotFoundException(new EntityErrorDetail(AbstractLevel.class, "id", levelIdToBeMoved.getClass(), levelIdToBeMoved, LEVEL_NOT_FOUND)));
         if (levelToBeMoved.getOrder() == newPosition) {
             return;
         } else if (levelToBeMoved.getOrder() < newPosition) {
@@ -265,10 +266,12 @@ public class TrainingDefinitionService {
     public void delete(Long definitionId) {
         TrainingDefinition definition = findById(definitionId);
         if (definition.getState().equals(TDState.RELEASED))
-            throw new EntityConflictException(new EntityErrorDetail(TrainingDefinition.class, "id", definitionId.getClass(), definitionId, "Cannot delete released training definition."));
+            throw new EntityConflictException(new EntityErrorDetail(TrainingDefinition.class, "id", definitionId.getClass(), definitionId,
+                    "Cannot delete released training definition."));
         if (trainingInstanceRepository.existsAnyForTrainingDefinition(definitionId)) {
-            throw new EntityConflictException(new EntityErrorDetail(TrainingDefinition.class, "id", definitionId.getClass(), definitionId, "Cannot delete training definition with already created training instance. " +
-                    "Remove training instance/s before deleting training definition."));
+            throw new EntityConflictException(new EntityErrorDetail(TrainingDefinition.class, "id", definitionId.getClass(), definitionId,
+                    "Cannot delete training definition with already created training instance. " +
+                            "Remove training instance/s before deleting training definition."));
         }
         List<AbstractLevel> abstractLevels = abstractLevelRepository.findAllLevelsByTrainingDefinitionId(definitionId);
         abstractLevels.forEach(this::deleteLevel);
@@ -316,12 +319,11 @@ public class TrainingDefinitionService {
         if (!findLevelInDefinition(trainingDefinition, gameLevelToUpdate.getId()))
             throw new EntityNotFoundException(new EntityErrorDetail(AbstractLevel.class, "id", gameLevelToUpdate.getId().getClass(),
                     gameLevelToUpdate.getId(), "Level was not found in definition (id: " + definitionId + ")."));
-        GameLevel gameLevel = gameLevelRepository.findById(gameLevelToUpdate.getId()).orElseThrow(() ->
-                new EntityNotFoundException(new EntityErrorDetail(AbstractLevel.class, "id", gameLevelToUpdate.getId().getClass(),
+        GameLevel gameLevel = gameLevelRepository.findById(gameLevelToUpdate.getId())
+                .orElseThrow(() -> new EntityNotFoundException(new EntityErrorDetail(AbstractLevel.class, "id", gameLevelToUpdate.getId().getClass(),
                         gameLevelToUpdate.getId(), LEVEL_NOT_FOUND)));
         gameLevelToUpdate.setOrder(gameLevel.getOrder());
-        trainingDefinition.setEstimatedDuration(trainingDefinition.getEstimatedDuration() -
-                gameLevel.getEstimatedDuration() + gameLevelToUpdate.getEstimatedDuration());
+        trainingDefinition.setEstimatedDuration(trainingDefinition.getEstimatedDuration() - gameLevel.getEstimatedDuration() + gameLevelToUpdate.getEstimatedDuration());
         trainingDefinition.setLastEdited(getCurrentTimeInUTC());
         gameLevelToUpdate.setTrainingDefinition(trainingDefinition);
         gameLevelRepository.save(gameLevelToUpdate);
@@ -342,13 +344,12 @@ public class TrainingDefinitionService {
             throw new EntityNotFoundException(new EntityErrorDetail(AbstractLevel.class, "id", infoLevelToUpdate.getId().getClass(),
                     infoLevelToUpdate.getId(), "Level was not found in definition (id: " + definitionId + ")."));
 
-        InfoLevel infoLevel = infoLevelRepository.findById(infoLevelToUpdate.getId()).orElseThrow(() ->
-                new EntityNotFoundException(new EntityErrorDetail(AbstractLevel.class, "id", infoLevelToUpdate.getId().getClass(),
+        InfoLevel infoLevel = infoLevelRepository.findById(infoLevelToUpdate.getId())
+                .orElseThrow(() -> new EntityNotFoundException(new EntityErrorDetail(AbstractLevel.class, "id", infoLevelToUpdate.getId().getClass(),
                         infoLevelToUpdate.getId(), LEVEL_NOT_FOUND)));
         infoLevelToUpdate.setOrder(infoLevel.getOrder());
         trainingDefinition.setLastEdited(getCurrentTimeInUTC());
-        trainingDefinition.setEstimatedDuration(trainingDefinition.getEstimatedDuration() -
-                infoLevel.getEstimatedDuration() + infoLevelToUpdate.getEstimatedDuration());
+        trainingDefinition.setEstimatedDuration(trainingDefinition.getEstimatedDuration() - infoLevel.getEstimatedDuration() + infoLevelToUpdate.getEstimatedDuration());
         infoLevelToUpdate.setTrainingDefinition(trainingDefinition);
         infoLevelRepository.save(infoLevelToUpdate);
     }
@@ -368,15 +369,14 @@ public class TrainingDefinitionService {
             throw new EntityNotFoundException(new EntityErrorDetail(AbstractLevel.class, "id", assessmentLevelToUpdate.getId().getClass(),
                     assessmentLevelToUpdate.getId(), "Level was not found in definition (id: " + definitionId + ")."));
 
-        AssessmentLevel assessmentLevel = assessmentLevelRepository.findById(assessmentLevelToUpdate.getId()).orElseThrow(() ->
-                new EntityNotFoundException(new EntityErrorDetail(AbstractLevel.class, "id", assessmentLevelToUpdate.getId().getClass(),
+        AssessmentLevel assessmentLevel = assessmentLevelRepository.findById(assessmentLevelToUpdate.getId())
+                .orElseThrow(() -> new EntityNotFoundException(new EntityErrorDetail(AbstractLevel.class, "id", assessmentLevelToUpdate.getId().getClass(),
                         assessmentLevelToUpdate.getId(), LEVEL_NOT_FOUND)));
         if (!assessmentLevelToUpdate.getQuestions().equals(assessmentLevel.getQuestions())) {
             AssessmentUtil.validQuestions(assessmentLevelToUpdate.getQuestions());
         }
         assessmentLevelToUpdate.setOrder(assessmentLevel.getOrder());
-        trainingDefinition.setEstimatedDuration(trainingDefinition.getEstimatedDuration() -
-                assessmentLevel.getEstimatedDuration() + assessmentLevelToUpdate.getEstimatedDuration());
+        trainingDefinition.setEstimatedDuration(trainingDefinition.getEstimatedDuration() - assessmentLevel.getEstimatedDuration() + assessmentLevelToUpdate.getEstimatedDuration());
         trainingDefinition.setLastEdited(getCurrentTimeInUTC());
         assessmentLevelToUpdate.setTrainingDefinition(trainingDefinition);
         assessmentLevelRepository.save(assessmentLevelToUpdate);

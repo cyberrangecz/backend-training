@@ -72,8 +72,9 @@ public class TrainingInstanceService {
      * @throws EntityNotFoundException training instance is not found.
      */
     public TrainingInstance findById(Long instanceId) {
-        return trainingInstanceRepository.findById(instanceId).orElseThrow(() -> new EntityNotFoundException(new EntityErrorDetail(
-                TrainingInstance.class, "id", instanceId.getClass(), instanceId, "Training instance not found.")));
+        return trainingInstanceRepository.findById(instanceId)
+                .orElseThrow(() -> new EntityNotFoundException(new EntityErrorDetail(TrainingInstance.class, "id", instanceId.getClass(), instanceId,
+                        "Training instance not found.")));
     }
 
     /**
@@ -83,8 +84,9 @@ public class TrainingInstanceService {
      * @return the {@link TrainingInstance}
      */
     public TrainingInstance findByIdIncludingDefinition(Long instanceId) {
-        return trainingInstanceRepository.findByIdIncludingDefinition(instanceId).orElseThrow(() -> new EntityNotFoundException(new EntityErrorDetail(
-                TrainingInstance.class, "id", instanceId.getClass(), instanceId, "Training instance not found.")));
+        return trainingInstanceRepository.findByIdIncludingDefinition(instanceId)
+                .orElseThrow(() -> new EntityNotFoundException(new EntityErrorDetail(TrainingInstance.class, "id", instanceId.getClass(), instanceId,
+                        "Training instance not found.")));
     }
 
     /**
@@ -261,8 +263,8 @@ public class TrainingInstanceService {
     public Page<TrainingRun> findTrainingRunsByTrainingInstance(Long instanceId, Boolean isActive, Pageable
             pageable) {
         trainingInstanceRepository.findById(instanceId)
-                .orElseThrow(() -> new EntityNotFoundException(new EntityErrorDetail(
-                        TrainingInstance.class, "id", instanceId.getClass(), instanceId, "Training instance not found.")));
+                .orElseThrow(() -> new EntityNotFoundException(new EntityErrorDetail(TrainingInstance.class, "id", instanceId.getClass(), instanceId,
+                        "Training instance not found.")));
         if (isActive == null) {
             return trainingRunRepository.findAllByTrainingInstanceId(instanceId, pageable);
         } else if (isActive) {
@@ -300,7 +302,7 @@ public class TrainingInstanceService {
      */
     public TrainingInstance findByStartTimeAfterAndEndTimeBeforeAndAccessToken(String accessToken) {
         return trainingInstanceRepository.findByStartTimeAfterAndEndTimeBeforeAndAccessToken(LocalDateTime.now(Clock.systemUTC()), accessToken)
-                .orElseThrow(() -> new EntityNotFoundException(new EntityErrorDetail(
-                        TrainingInstance.class, "accessToken", accessToken.getClass(), accessToken, "There is no active game session matching access token.")));
+                .orElseThrow(() -> new EntityNotFoundException(new EntityErrorDetail(TrainingInstance.class, "accessToken", accessToken.getClass(), accessToken,
+                        "There is no active game session matching access token.")));
     }
 }
