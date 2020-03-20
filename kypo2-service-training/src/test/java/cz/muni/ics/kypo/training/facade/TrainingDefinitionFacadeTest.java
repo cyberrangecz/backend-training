@@ -51,9 +51,9 @@ import static org.mockito.BDDMockito.*;
 
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = {TestDataFactory.class})
-@SpringBootTest(classes = {InfoLevelMapperImpl.class, TrainingDefinitionMapperImpl.class,
-        UserRefMapperImpl.class, GameLevelMapperImpl.class, InfoLevelMapperImpl.class, BetaTestingGroupMapperImpl.class,
-        AssessmentLevelMapperImpl.class, HintMapperImpl.class, BasicLevelInfoMapperImpl.class, AttachmentMapperImpl.class})
+@SpringBootTest(classes = {LevelMapperImpl.class, TrainingDefinitionMapperImpl.class,
+        UserRefMapperImpl.class, LevelMapperImpl.class, BetaTestingGroupMapperImpl.class,
+        HintMapperImpl.class, AttachmentMapperImpl.class})
 public class TrainingDefinitionFacadeTest {
 
     @Rule
@@ -66,13 +66,7 @@ public class TrainingDefinitionFacadeTest {
     @Autowired
     private TrainingDefinitionMapperImpl trainingDefinitionMapper;
     @Autowired
-    private GameLevelMapperImpl gameLevelMapper;
-    @Autowired
-    private InfoLevelMapperImpl infoLevelMapper;
-    @Autowired
-    private AssessmentLevelMapperImpl assessmentLevelMapper;
-    @Autowired
-    private BasicLevelInfoMapperImpl basicLevelInfoMapper;
+    private LevelMapperImpl levelMapper;
 
     @Mock
     private TrainingDefinitionService trainingDefinitionService;
@@ -102,8 +96,8 @@ public class TrainingDefinitionFacadeTest {
     @Before
     public void init() {
         MockitoAnnotations.initMocks(this);
-        trainingDefinitionFacade = new TrainingDefinitionFacade(trainingDefinitionService,
-                trainingDefinitionMapper, gameLevelMapper, infoLevelMapper, assessmentLevelMapper, basicLevelInfoMapper, userService, securityService);
+        trainingDefinitionFacade = new TrainingDefinitionFacade(trainingDefinitionService, userService, securityService,
+                trainingDefinitionMapper, levelMapper);
 
         author1 = new UserRef();
         author1.setId(1L);
@@ -255,21 +249,21 @@ public class TrainingDefinitionFacadeTest {
     public void updateAssessmentLevel() {
         trainingDefinitionFacade.updateAssessmentLevel(trainingDefinition1.getId(), alUpdate);
         then(trainingDefinitionService).should().updateAssessmentLevel(trainingDefinition1.getId(),
-                assessmentLevelMapper.mapUpdateToEntity(alUpdate));
+                levelMapper.mapUpdateToEntity(alUpdate));
     }
 
     @Test
     public void updateGameLevel() {
         trainingDefinitionFacade.updateGameLevel(trainingDefinition2.getId(), gameLevelUpdate);
         then(trainingDefinitionService).should().updateGameLevel(trainingDefinition2.getId(),
-                gameLevelMapper.mapUpdateToEntity(gameLevelUpdate));
+                levelMapper.mapUpdateToEntity(gameLevelUpdate));
     }
 
     @Test
     public void updateInfoLevel() {
         trainingDefinitionFacade.updateInfoLevel(trainingDefinition2.getId(), infoLevelUpdate);
         then(trainingDefinitionService).should().updateInfoLevel(trainingDefinition2.getId(),
-                infoLevelMapper.mapUpdateToEntity(infoLevelUpdate));
+                levelMapper.mapUpdateToEntity(infoLevelUpdate));
     }
 
     @Test
@@ -298,7 +292,7 @@ public class TrainingDefinitionFacadeTest {
         given(trainingDefinitionService.findLevelById(gameLevel.getId())).willReturn(gameLevel);
         AbstractLevelDTO g = trainingDefinitionFacade.findLevelById(gameLevel.getId());
 
-        assertEquals(gameLevelMapper.mapToDTO(gameLevel), g);
+        assertEquals(levelMapper.mapToDTO(gameLevel), g);
         assertEquals(cz.muni.ics.kypo.training.api.enums.LevelType.GAME_LEVEL, g.getLevelType());
     }
 
@@ -307,7 +301,7 @@ public class TrainingDefinitionFacadeTest {
         given(trainingDefinitionService.findLevelById(infoLevel.getId())).willReturn(infoLevel);
         AbstractLevelDTO i = trainingDefinitionFacade.findLevelById(infoLevel.getId());
 
-        assertEquals(infoLevelMapper.mapToDTO(infoLevel), i);
+        assertEquals(levelMapper.mapToDTO(infoLevel), i);
         assertEquals(LevelType.INFO_LEVEL, i.getLevelType());
 
     }
@@ -317,7 +311,7 @@ public class TrainingDefinitionFacadeTest {
         given(trainingDefinitionService.findLevelById(assessmentLevel.getId())).willReturn(assessmentLevel);
         AbstractLevelDTO a = trainingDefinitionFacade.findLevelById(assessmentLevel.getId());
 
-        assertEquals(assessmentLevelMapper.mapToDTO(assessmentLevel), a);
+        assertEquals(levelMapper.mapToDTO(assessmentLevel), a);
         assertEquals(cz.muni.ics.kypo.training.api.enums.LevelType.ASSESSMENT_LEVEL, a.getLevelType());
     }
 

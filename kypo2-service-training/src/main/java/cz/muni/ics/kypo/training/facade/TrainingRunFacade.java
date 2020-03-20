@@ -56,9 +56,7 @@ public class TrainingRunFacade {
     private SecurityService securityService;
     private UserService userService;
     private TrainingRunMapper trainingRunMapper;
-    private GameLevelMapper gameLevelMapper;
-    private AssessmentLevelMapper assessmentLevelMapper;
-    private InfoLevelMapper infoLevelMapper;
+    private LevelMapper levelMapper;
     private HintMapper hintMapper;
 
 
@@ -69,22 +67,17 @@ public class TrainingRunFacade {
      * @param securityService       the security service
      * @param userService           the user service
      * @param trainingRunMapper     the training run mapper
-     * @param gameLevelMapper       the game level mapper
-     * @param assessmentLevelMapper the assessment level mapper
-     * @param infoLevelMapper       the info level mapper
+     * @param levelMapper           the level mapper
      * @param hintMapper            the hint mapper
      */
     @Autowired
     public TrainingRunFacade(TrainingRunService trainingRunService, SecurityService securityService, UserService userService,
-                             TrainingRunMapper trainingRunMapper, GameLevelMapper gameLevelMapper, AssessmentLevelMapper assessmentLevelMapper,
-                             InfoLevelMapper infoLevelMapper, HintMapper hintMapper) {
+                             TrainingRunMapper trainingRunMapper, LevelMapper levelMapper, HintMapper hintMapper) {
         this.trainingRunService = trainingRunService;
         this.securityService = securityService;
         this.userService = userService;
         this.trainingRunMapper = trainingRunMapper;
-        this.gameLevelMapper = gameLevelMapper;
-        this.assessmentLevelMapper = assessmentLevelMapper;
-        this.infoLevelMapper = infoLevelMapper;
+        this.levelMapper = levelMapper;
         this.hintMapper = hintMapper;
     }
 
@@ -430,16 +423,16 @@ public class TrainingRunFacade {
         AbstractLevelDTO abstractLevelDTO;
         if (abstractLevel instanceof AssessmentLevel) {
             AssessmentLevel assessmentLevel = (AssessmentLevel) abstractLevel;
-            abstractLevelDTO = assessmentLevelMapper.mapToDTO(assessmentLevel);
+            abstractLevelDTO = levelMapper.mapToAssessmentLevelDTO(assessmentLevel);
             abstractLevelDTO.setLevelType(LevelType.ASSESSMENT_LEVEL);
             deleteInfoAboutCorrectnessFromQuestions((AssessmentLevelDTO) abstractLevelDTO);
         } else if (abstractLevel instanceof GameLevel) {
             GameLevel gameLevel = (GameLevel) abstractLevel;
-            abstractLevelDTO = gameLevelMapper.mapToViewDTO(gameLevel);
+            abstractLevelDTO = levelMapper.mapToViewDTO(gameLevel);
             abstractLevelDTO.setLevelType(LevelType.GAME_LEVEL);
         } else {
             InfoLevel infoLevel = (InfoLevel) abstractLevel;
-            abstractLevelDTO = infoLevelMapper.mapToDTO(infoLevel);
+            abstractLevelDTO = levelMapper.mapToInfoLevelDTO(infoLevel);
             abstractLevelDTO.setLevelType(LevelType.INFO_LEVEL);
         }
         return abstractLevelDTO;

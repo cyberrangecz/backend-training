@@ -41,10 +41,10 @@ public class TrainingInstanceFacade {
     private TrainingDefinitionService trainingDefinitionService;
     private TrainingRunService trainingRunService;
     private TrainingEventsService trainingEventsService;
-    private TrainingInstanceMapper trainingInstanceMapper;
-    private TrainingRunMapper trainingRunMapper;
     private UserService userService;
     private SecurityService securityService;
+    private TrainingInstanceMapper trainingInstanceMapper;
+    private TrainingRunMapper trainingRunMapper;
 
     /**
      * Instantiates a new Training instance facade.
@@ -59,17 +59,17 @@ public class TrainingInstanceFacade {
      * @param securityService           the security service
      */
     @Autowired
-    public TrainingInstanceFacade(TrainingInstanceService trainingInstanceService, TrainingDefinitionService trainingDefinitionService, TrainingRunService trainingRunService, TrainingEventsService trainingEventsService,
-                                  TrainingInstanceMapper trainingInstanceMapper, TrainingRunMapper trainingRunMapper, UserService userService,
-                                  SecurityService securityService) {
+    public TrainingInstanceFacade(TrainingInstanceService trainingInstanceService, TrainingDefinitionService trainingDefinitionService, TrainingRunService trainingRunService,
+                                  TrainingEventsService trainingEventsService, UserService userService, SecurityService securityService,
+                                  TrainingInstanceMapper trainingInstanceMapper, TrainingRunMapper trainingRunMapper) {
         this.trainingInstanceService = trainingInstanceService;
         this.trainingDefinitionService = trainingDefinitionService;
         this.trainingRunService = trainingRunService;
         this.trainingEventsService = trainingEventsService;
-        this.trainingInstanceMapper = trainingInstanceMapper;
-        this.trainingRunMapper = trainingRunMapper;
         this.userService = userService;
         this.securityService = securityService;
+        this.trainingInstanceMapper = trainingInstanceMapper;
+        this.trainingRunMapper = trainingRunMapper;
     }
 
     /**

@@ -27,9 +27,7 @@ import cz.muni.ics.kypo.training.api.enums.TDState;
 import cz.muni.ics.kypo.training.api.responses.PageResultResource;
 import cz.muni.ics.kypo.training.enums.RoleTypeSecurity;
 import cz.muni.ics.kypo.training.exceptions.EntityErrorDetail;
-import cz.muni.ics.kypo.training.mapping.mapstruct.AssessmentLevelMapperImpl;
-import cz.muni.ics.kypo.training.mapping.mapstruct.GameLevelMapperImpl;
-import cz.muni.ics.kypo.training.mapping.mapstruct.InfoLevelMapperImpl;
+import cz.muni.ics.kypo.training.mapping.mapstruct.LevelMapperImpl;
 import cz.muni.ics.kypo.training.mapping.mapstruct.TrainingDefinitionMapperImpl;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.repository.*;
@@ -107,11 +105,7 @@ public class TrainingDefinitionsIT {
     @Autowired
     private TrainingDefinitionsRestController trainingDefinitionsRestController;
     @Autowired
-    private GameLevelMapperImpl gameLevelMapper;
-    @Autowired
-    private InfoLevelMapperImpl infoLevelMapper;
-    @Autowired
-    private AssessmentLevelMapperImpl assessmentLevelMapper;
+    private LevelMapperImpl levelMapper;
     @Autowired
     private TrainingDefinitionRepository trainingDefinitionRepository;
     @Autowired
@@ -249,7 +243,7 @@ public class TrainingDefinitionsIT {
                 .andReturn().getResponse();
 
         TrainingDefinitionByIdDTO definitionDTO = trainingDefinitionMapper.mapToDTOById(expected);
-        GameLevelDTO gameLevelDTO = gameLevelMapper.mapToDTO(gameLevel1);
+        GameLevelDTO gameLevelDTO = levelMapper.mapToGameLevelDTO(gameLevel1);
         gameLevelDTO.setLevelType(LevelType.GAME_LEVEL);
         definitionDTO.setLevels(new ArrayList<>(Collections.singleton(gameLevelDTO)));
         assertEquals(definitionDTO, mapper.readValue(convertJsonBytesToString(result.getContentAsString()), TrainingDefinitionByIdDTO.class));
@@ -422,7 +416,7 @@ public class TrainingDefinitionsIT {
         gameLevelRepository.save(gameLevel1);
         mockSpringSecurityContextForGet(List.of(RoleTypeSecurity.ROLE_TRAINING_DESIGNER.name()));
         TrainingDefinitionByIdDTO trainingDefinitionByIdDTO = trainingDefinitionMapper.mapToDTOById(tD);
-        trainingDefinitionByIdDTO.setLevels(List.of(gameLevelMapper.mapToDTO(gameLevel1)));
+        trainingDefinitionByIdDTO.setLevels(List.of(levelMapper.mapToDTO(gameLevel1)));
 
 
         MockHttpServletResponse result = mvc.perform(post("/training-definitions" + "/{id}", tD.getId()).param("title", "title"))
@@ -916,7 +910,7 @@ public class TrainingDefinitionsIT {
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andReturn().getResponse();
-        GameLevelDTO gameLevelDTO = gameLevelMapper.mapToDTO(gameLevel1);
+        GameLevelDTO gameLevelDTO = levelMapper.mapToGameLevelDTO(gameLevel1);
         gameLevelDTO.setLevelType(LevelType.GAME_LEVEL);
         assertEquals(gameLevelDTO, mapper.readValue(convertJsonBytesToString(result.getContentAsString()), GameLevelDTO.class));
     }
@@ -930,7 +924,7 @@ public class TrainingDefinitionsIT {
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andReturn().getResponse();
-        InfoLevelDTO infoLevelDTO = infoLevelMapper.mapToDTO(infoLevel1);
+        InfoLevelDTO infoLevelDTO = levelMapper.mapToInfoLevelDTO(infoLevel1);
         infoLevelDTO.setLevelType(LevelType.INFO_LEVEL);
         assertEquals(infoLevelDTO, mapper.readValue(convertJsonBytesToString(result.getContentAsString()), InfoLevelDTO.class));
     }
@@ -944,7 +938,7 @@ public class TrainingDefinitionsIT {
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andReturn().getResponse();
-        AssessmentLevelDTO assessmentLevelDTO = assessmentLevelMapper.mapToDTO(assessmentLevel1);
+        AssessmentLevelDTO assessmentLevelDTO = levelMapper.mapToAssessmentLevelDTO(assessmentLevel1);
         assessmentLevelDTO.setLevelType(LevelType.ASSESSMENT_LEVEL);
         assertEquals(assessmentLevelDTO, mapper.readValue(convertJsonBytesToString(result.getContentAsString()), AssessmentLevelDTO.class));
     }

@@ -8,11 +8,8 @@ import cz.muni.ics.kypo.training.annotations.transactions.TransactionalRO;
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalWO;
 import cz.muni.ics.kypo.training.api.responses.PageResultResource;
 import cz.muni.ics.kypo.training.api.dto.*;
-import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelUpdateDTO;
-import cz.muni.ics.kypo.training.api.dto.gamelevel.GameLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.gamelevel.GameLevelUpdateDTO;
-import cz.muni.ics.kypo.training.api.dto.infolevel.InfoLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.infolevel.InfoLevelUpdateDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.*;
 import cz.muni.ics.kypo.training.api.enums.LevelType;
@@ -28,7 +25,6 @@ import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.service.TrainingDefinitionService;
 import cz.muni.ics.kypo.training.service.UserService;
 import cz.muni.ics.kypo.training.service.SecurityService;
-import org.modelmapper.internal.util.Assert;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -50,39 +46,30 @@ import java.util.stream.Collectors;
 public class TrainingDefinitionFacade {
 
     private TrainingDefinitionService trainingDefinitionService;
-    private TrainingDefinitionMapper trainingDefinitionMapper;
-    private GameLevelMapper gameLevelMapper;
-    private InfoLevelMapper infoLevelMapper;
-    private AssessmentLevelMapper assessmentLevelMapper;
-    private BasicLevelInfoMapper basicLevelInfoMapper;
     private UserService userService;
     private SecurityService securityService;
+    private TrainingDefinitionMapper trainingDefinitionMapper;
+    private LevelMapper levelMapper;
 
     /**
      * Instantiates a new Training definition facade.
      *
      * @param trainingDefinitionService the training definition service
      * @param trainingDefMapper         the training def mapper
-     * @param gameLevelMapper           the game level mapper
-     * @param infoLevelMapper           the info level mapper
-     * @param assessmentLevelMapper     the assessment level mapper
-     * @param basicLevelInfoMapper      the basic level info mapper
+     * @param levelMapper               the level mapper
      * @param userService               the user service
      * @param securityService           the security service
      */
     @Autowired
-    public TrainingDefinitionFacade(TrainingDefinitionService trainingDefinitionService,
-                                    TrainingDefinitionMapper trainingDefMapper, GameLevelMapper gameLevelMapper,
-                                    InfoLevelMapper infoLevelMapper, AssessmentLevelMapper assessmentLevelMapper,
-                                    BasicLevelInfoMapper basicLevelInfoMapper, UserService userService, SecurityService securityService) {
+    public TrainingDefinitionFacade(TrainingDefinitionService trainingDefinitionService, UserService userService,
+                                    SecurityService securityService, TrainingDefinitionMapper trainingDefMapper,
+                                    LevelMapper levelMapper
+    ) {
         this.trainingDefinitionService = trainingDefinitionService;
-        this.trainingDefinitionMapper = trainingDefMapper;
-        this.gameLevelMapper = gameLevelMapper;
-        this.infoLevelMapper = infoLevelMapper;
-        this.assessmentLevelMapper = assessmentLevelMapper;
-        this.basicLevelInfoMapper = basicLevelInfoMapper;
         this.userService = userService;
         this.securityService = securityService;
+        this.trainingDefinitionMapper = trainingDefMapper;
+        this.levelMapper = levelMapper;
     }
 
     /**
@@ -125,24 +112,9 @@ public class TrainingDefinitionFacade {
 
     private List<AbstractLevelDTO> gatherLevels(Long definitionId) {
         List<AbstractLevel> levels = trainingDefinitionService.findAllLevelsFromDefinition(definitionId);
-        List<AbstractLevelDTO> levelDTOS = new ArrayList<>();
-
-        for (AbstractLevel abstractLevel : levels) {
-            if (abstractLevel instanceof GameLevel) {
-                GameLevelDTO lDTO = gameLevelMapper.mapToDTO((GameLevel) abstractLevel);
-                lDTO.setLevelType(LevelType.GAME_LEVEL);
-                levelDTOS.add(lDTO);
-            } else if (abstractLevel instanceof InfoLevel) {
-                InfoLevelDTO lDTO = infoLevelMapper.mapToDTO((InfoLevel) abstractLevel);
-                lDTO.setLevelType(LevelType.INFO_LEVEL);
-                levelDTOS.add(lDTO);
-            } else {
-                AssessmentLevelDTO lDTO = assessmentLevelMapper.mapToDTO((AssessmentLevel) abstractLevel);
-                lDTO.setLevelType(LevelType.ASSESSMENT_LEVEL);
-                levelDTOS.add(lDTO);
-            }
-        }
-        return levelDTOS;
+        return levels.stream()
+                .map(level -> this.levelMapper.mapToDTO(level))
+                .collect(Collectors.toList());
     }
 
     /**
@@ -348,7 +320,7 @@ public class TrainingDefinitionFacade {
             "or @securityService.isDesignerOfGivenTrainingDefinition(#definitionId)")
     @TransactionalWO
     public void updateGameLevel(Long definitionId, GameLevelUpdateDTO gameLevel) {
-        GameLevel gameLevelToUpdate = gameLevelMapper.mapUpdateToEntity(gameLevel);
+        GameLevel gameLevelToUpdate = levelMapper.mapUpdateToEntity(gameLevel);
         for (Hint hint : gameLevelToUpdate.getHints())
             hint.setGameLevel(gameLevelToUpdate);
         trainingDefinitionService.updateGameLevel(definitionId, gameLevelToUpdate);
@@ -364,7 +336,7 @@ public class TrainingDefinitionFacade {
             "or @securityService.isDesignerOfGivenTrainingDefinition(#definitionId)")
     @TransactionalWO
     public void updateInfoLevel(Long definitionId, InfoLevelUpdateDTO infoLevel) {
-        trainingDefinitionService.updateInfoLevel(definitionId, infoLevelMapper.mapUpdateToEntity(infoLevel));
+        trainingDefinitionService.updateInfoLevel(definitionId, levelMapper.mapUpdateToEntity(infoLevel));
     }
 
     /**
@@ -377,7 +349,7 @@ public class TrainingDefinitionFacade {
             "or @securityService.isDesignerOfGivenTrainingDefinition(#definitionId)")
     @TransactionalWO
     public void updateAssessmentLevel(Long definitionId, AssessmentLevelUpdateDTO assessmentLevel) {
-        trainingDefinitionService.updateAssessmentLevel(definitionId, assessmentLevelMapper.mapUpdateToEntity(assessmentLevel));
+        trainingDefinitionService.updateAssessmentLevel(definitionId, levelMapper.mapUpdateToEntity(assessmentLevel));
     }
 
     /**
@@ -391,7 +363,7 @@ public class TrainingDefinitionFacade {
     @TransactionalWO
     public BasicLevelInfoDTO createInfoLevel(Long definitionId) {
         InfoLevel newInfoLevel = trainingDefinitionService.createInfoLevel(definitionId);
-        BasicLevelInfoDTO levelInfoDTO = basicLevelInfoMapper.mapTo(newInfoLevel);
+        BasicLevelInfoDTO levelInfoDTO = levelMapper.mapTo(newInfoLevel);
         levelInfoDTO.setLevelType(LevelType.INFO_LEVEL);
         return levelInfoDTO;
     }
@@ -407,7 +379,7 @@ public class TrainingDefinitionFacade {
     @TransactionalWO
     public BasicLevelInfoDTO createGameLevel(Long definitionId) {
         GameLevel newGameLevel = trainingDefinitionService.createGameLevel(definitionId);
-        BasicLevelInfoDTO levelInfoDTO = basicLevelInfoMapper.mapTo(newGameLevel);
+        BasicLevelInfoDTO levelInfoDTO = levelMapper.mapTo(newGameLevel);
         levelInfoDTO.setLevelType(LevelType.GAME_LEVEL);
         return levelInfoDTO;
     }
@@ -423,7 +395,7 @@ public class TrainingDefinitionFacade {
     @TransactionalWO
     public BasicLevelInfoDTO createAssessmentLevel(Long definitionId) {
         AssessmentLevel newAssessmentLevel = trainingDefinitionService.createAssessmentLevel(definitionId);
-        BasicLevelInfoDTO levelInfoDTO = basicLevelInfoMapper.mapTo(newAssessmentLevel);
+        BasicLevelInfoDTO levelInfoDTO = levelMapper.mapTo(newAssessmentLevel);
         levelInfoDTO.setLevelType(LevelType.ASSESSMENT_LEVEL);
         return levelInfoDTO;
     }
@@ -437,19 +409,7 @@ public class TrainingDefinitionFacade {
     @IsDesignerOrAdmin
     @TransactionalRO
     public AbstractLevelDTO findLevelById(Long levelId) {
-        AbstractLevel abstractLevel = trainingDefinitionService.findLevelById(levelId);
-        AbstractLevelDTO abstractLevelDTO;
-        if (abstractLevel instanceof GameLevel) {
-            abstractLevelDTO = gameLevelMapper.mapToDTO((GameLevel) abstractLevel);
-            abstractLevelDTO.setLevelType(LevelType.GAME_LEVEL);
-        } else if (abstractLevel instanceof AssessmentLevel) {
-            abstractLevelDTO = assessmentLevelMapper.mapToDTO((AssessmentLevel) abstractLevel);
-            abstractLevelDTO.setLevelType(LevelType.ASSESSMENT_LEVEL);
-        } else {
-            abstractLevelDTO = infoLevelMapper.mapToDTO((InfoLevel) abstractLevel);
-            abstractLevelDTO.setLevelType(LevelType.INFO_LEVEL);
-        }
-        return abstractLevelDTO;
+        return levelMapper.mapToDTO(trainingDefinitionService.findLevelById(levelId));
     }
 
     /**
