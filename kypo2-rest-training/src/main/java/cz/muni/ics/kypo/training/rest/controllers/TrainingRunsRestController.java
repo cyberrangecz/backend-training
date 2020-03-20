@@ -194,7 +194,6 @@ public class TrainingRunsRestController {
      * Get all accessed Training Runs.
      *
      * @param pageable    pageable parameter with information about pagination.
-     * @param parameters  the parameters
      * @param fields      attributes of the object to be returned as the result.
      * @param sortByTitle "asc" for ascending alphabetical sort by title, "desc" for descending
      * @return all accessed Training Runs.
@@ -213,8 +212,6 @@ public class TrainingRunsRestController {
     @ApiPageableSwagger
     @GetMapping(path = "/accessible", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> getAllAccessedTrainingRuns(@ApiParam(value = "Pagination support.", required = false) Pageable pageable,
-                                                             @ApiParam(value = "Parameters for filtering the objects.", required = false)
-                                                             @RequestParam MultiValueMap<String, String> parameters,
                                                              @ApiParam(value = "Fields which should be returned in REST API response", required = false)
                                                              @RequestParam(value = "fields", required = false) String fields,
                                                              @ApiParam(value = "Sort by title attribute. As values us asc|desc", required = false, example = "asc")

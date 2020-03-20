@@ -250,7 +250,6 @@ public class TrainingInstancesRestController {
      * @param instanceId the Training Instance id
      * @param isActive   if true, only active Training Runs are returned
      * @param pageable   Pageable parameter with information about pagination.
-     * @param parameters the parameters
      * @param fields     attributes of the object to be returned as the result.
      * @return all Training Runs in given Training Instance.
      */
