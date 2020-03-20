@@ -67,7 +67,8 @@ public class VisualizationRestController {
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiError.class)
     })
     @GetMapping(path = "/training-runs/{runId}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<VisualizationInfoDTO> gatherVisualizationInfoForTrainingRun(@ApiParam(value = "Training run ID", required = true) @PathVariable("runId") Long runId) {
+    public ResponseEntity<VisualizationInfoDTO> gatherVisualizationInfoForTrainingRun(@ApiParam(value = "Training run ID", required = true)
+                                                                                      @PathVariable("runId") Long runId) {
         VisualizationInfoDTO visualizationInfoAboutTrainingRunDTO = visualizationFacade.getVisualizationInfoAboutTrainingRun(runId);
         return ResponseEntity.ok(visualizationInfoAboutTrainingRunDTO);
     }
