@@ -150,10 +150,4 @@ public class SecurityService {
         }
     }
 
-    private static <T> T convertJsonBytesToObject(String object, Class<T> objectClass) throws IOException {
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
-        mapper.registerModule(new JavaTimeModule()).disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-        return mapper.readValue(object, objectClass);
-    }
 }
