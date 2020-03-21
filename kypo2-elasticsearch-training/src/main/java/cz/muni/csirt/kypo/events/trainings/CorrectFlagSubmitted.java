@@ -12,8 +12,8 @@ import lombok.*;
  * The type Correct flag submitted.
  */
 @Builder
-@AllArgsConstructor
-@NoArgsConstructor
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 @ToString
 @JsonRootName(value = "event")
 public class CorrectFlagSubmitted extends AbstractAuditPOJO {

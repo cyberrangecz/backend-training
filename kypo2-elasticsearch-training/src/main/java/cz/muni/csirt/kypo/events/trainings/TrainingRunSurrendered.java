@@ -11,8 +11,8 @@ import lombok.*;
  * The type Training run surrendered.
  */
 @Builder
-@AllArgsConstructor
-@NoArgsConstructor
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 @ToString
 @ApiModel(value = "Training Run Surrendered", description = "Type of event from trainings (when training run is surrendered).")
 @JsonRootName(value = "event")

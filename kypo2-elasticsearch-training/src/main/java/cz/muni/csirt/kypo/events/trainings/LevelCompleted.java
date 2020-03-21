@@ -13,8 +13,8 @@ import lombok.*;
  * The type Level completed.
  */
 @Builder
-@AllArgsConstructor
-@NoArgsConstructor
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 @ToString
 @ApiModel(value = "Level Completed", description = "Type of event from trainings.")
 @JsonRootName(value = "event")

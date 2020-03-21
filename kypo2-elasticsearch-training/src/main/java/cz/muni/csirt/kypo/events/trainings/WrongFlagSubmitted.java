@@ -11,8 +11,8 @@ import lombok.*;
  * The type Wrong flag submitted.
  */
 @Builder
-@AllArgsConstructor
-@NoArgsConstructor
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 @ToString
 @ApiModel(value = "Wrong Flag Submitted", description = "Type of event from trainings.")
 @JsonRootName(value = "event")

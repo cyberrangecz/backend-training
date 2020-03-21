@@ -11,8 +11,8 @@ import lombok.*;
  * The type Solution displayed.
  */
 @Builder
-@AllArgsConstructor
-@NoArgsConstructor
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 @ToString
 @ApiModel(value = "Solution Displayed", description = "Type of event from trainings.")
 @JsonRootName(value = "event")

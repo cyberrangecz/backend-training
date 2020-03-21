@@ -11,8 +11,8 @@ import lombok.*;
  * The type Assessment answers.
  */
 @Builder
-@AllArgsConstructor
-@NoArgsConstructor
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 @ToString
 @ApiModel(value = "Assessment Answers Started", description = "Type of event from trainings.")
 @JsonRootName(value = "event")

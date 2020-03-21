@@ -12,8 +12,8 @@ import lombok.*;
  * The type Hint taken.
  */
 @Builder
-@AllArgsConstructor
-@NoArgsConstructor
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 @ToString
 @ApiModel(value = "Hint Taken", description = "Type of event from trainings.")
 @JsonRootName(value = "event")

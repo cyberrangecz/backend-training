@@ -11,8 +11,8 @@ import lombok.*;
  * The type Training run ended.
  */
 @Builder
-@AllArgsConstructor
-@NoArgsConstructor
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 @ToString
 @ApiModel(value = "Training Run Ended", description = "Type of event from trainings.")
 @JsonRootName(value = "event")
