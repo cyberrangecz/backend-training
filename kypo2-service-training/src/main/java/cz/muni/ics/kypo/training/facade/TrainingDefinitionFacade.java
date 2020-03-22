@@ -543,7 +543,6 @@ public class TrainingDefinitionFacade {
                     trainingDefinition.addAuthor(userService.createUserRef(createUserRefFromDTO(author)));
                 }
             }
-
         } while (authors.getPagination().getTotalPages() != page);
 
     }

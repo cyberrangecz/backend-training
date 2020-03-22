@@ -60,7 +60,8 @@ public class UserService {
      * @throws EntityNotFoundException UserRef was not found
      */
     public UserRef getUserByUserRefId(Long userRefId) {
-        return userRefRepository.findUserByUserRefId(userRefId).orElseThrow(() -> new EntityNotFoundException(new EntityErrorDetail(UserRef.class, "id", userRefId.getClass(), userRefId,
+        return userRefRepository.findUserByUserRefId(userRefId)
+                .orElseThrow(() -> new EntityNotFoundException(new EntityErrorDetail(UserRef.class, "id", userRefId.getClass(), userRefId,
                 "UserRef not found.")));
     }
 
@@ -106,8 +107,7 @@ public class UserService {
         URI uri = builder.build().encode().toUri();
         try {
             ResponseEntity<PageResultResource<UserRefDTO>> usersResponse = javaRestTemplate.exchange(uri, HttpMethod.GET, new HttpEntity<>(httpHeaders),
-                    new ParameterizedTypeReference<PageResultResource<UserRefDTO>>() {
-                    });
+                    new ParameterizedTypeReference<PageResultResource<UserRefDTO>>() {});
             return usersResponse.getBody();
         } catch (CustomRestTemplateException ex) {
             throw new MicroserviceApiException("Error when calling UserAndGroup API to obtain users by IDs: " + userRefIds, ex.getApiSubError());
@@ -138,8 +138,7 @@ public class UserService {
         URI uri = builder.build().encode().toUri();
         try {
             ResponseEntity<PageResultResource<UserRefDTO>> usersResponse = javaRestTemplate.exchange(uri, HttpMethod.GET, new HttpEntity<>(httpHeaders),
-                    new ParameterizedTypeReference<PageResultResource<UserRefDTO>>() {
-                    });
+                    new ParameterizedTypeReference<PageResultResource<UserRefDTO>>() {});
             return usersResponse.getBody();
         } catch (CustomRestTemplateException ex) {
             throw new MicroserviceApiException("Error when calling UserAndGroup API to obtain users with role " + roleType.name(), ex.getApiSubError());
@@ -172,8 +171,7 @@ public class UserService {
         URI uri = builder.build().encode().toUri();
         try {
             ResponseEntity<PageResultResource<UserRefDTO>> usersResponse = javaRestTemplate.exchange(uri, HttpMethod.GET, new HttpEntity<>(httpHeaders),
-                    new ParameterizedTypeReference<PageResultResource<UserRefDTO>>() {
-                    });
+                    new ParameterizedTypeReference<PageResultResource<UserRefDTO>>() {});
             return usersResponse.getBody();
         } catch (CustomRestTemplateException ex) {
             throw new MicroserviceApiException("Error when calling UserAndGroup API to obtain users with role " + roleType.name() + " and IDs:", ex.getApiSubError());

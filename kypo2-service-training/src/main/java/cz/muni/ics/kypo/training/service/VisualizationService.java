@@ -22,20 +22,16 @@ public class VisualizationService {
 
     private AbstractLevelRepository abstractLevelRepository;
     private UserRefRepository userRefRepository;
-    private SecurityService securityService;
 
     /**
      * Instantiates a new Visualization service.
      *
      * @param abstractLevelRepository the abstract level repository
-     * @param securityService         the security service
      * @param userRefRepository       the user ref repository
      */
     @Autowired
-    public VisualizationService(AbstractLevelRepository abstractLevelRepository,
-                                SecurityService securityService, UserRefRepository userRefRepository) {
+    public VisualizationService(AbstractLevelRepository abstractLevelRepository, UserRefRepository userRefRepository) {
         this.abstractLevelRepository = abstractLevelRepository;
-        this.securityService = securityService;
         this.userRefRepository = userRefRepository;
     }
 

@@ -209,9 +209,7 @@ public class TrainingInstanceService {
      */
     public LockedPoolInfo lockPool(Long poolId) {
         try {
-            String url = kypoOpenStackURI + "/pools/" + poolId + "/locks/";
-            UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(url);
-            return pythonRestTemplate.postForObject(builder.toUriString(), new HttpEntity<>("{}"), LockedPoolInfo.class);
+            return pythonRestTemplate.postForObject(kypoOpenStackURI + "/pools/{poolId}/locks/", new HttpEntity<>("{}"), LockedPoolInfo.class, Long.toString(poolId));
         } catch (CustomRestTemplateException ex) {
             throw new MicroserviceApiException("Currently, it is not possible to lock and assign pool with (ID: " + poolId + ").", ex.getApiSubError());
         }
@@ -225,12 +223,13 @@ public class TrainingInstanceService {
     public void unlockPool(Long poolId) {
         try {
             // get lock id from pool
-            String urlGetLockId = kypoOpenStackURI + "/pools/" + poolId + "/";
-            PoolInfoDto poolInfoDto = pythonRestTemplate.getForObject(UriComponentsBuilder.fromUriString(urlGetLockId).toUriString(), PoolInfoDto.class);
+            PoolInfoDto poolInfoDto = pythonRestTemplate.getForObject(kypoOpenStackURI + "/pools/{poolId}/", PoolInfoDto.class, Long.toString(poolId));
             // unlock pool
             if (poolInfoDto != null && poolInfoDto.getLock() != null) {
-                String urlUnlockPool = kypoOpenStackURI + "/pools/" + poolId + "/locks/" + poolInfoDto.getLock() + "/";
-                pythonRestTemplate.delete(UriComponentsBuilder.fromUriString(urlUnlockPool).toUriString());
+                Map<String, String> urlParameters = new HashMap<>();
+                urlParameters.put("poolId", Long.toString(poolId));
+                urlParameters.put("lockId", Long.toString(poolInfoDto.getLock()));
+                pythonRestTemplate.delete(kypoOpenStackURI + "/pools/{poolId}/locks/{lockId}/", urlParameters);
             }
         } catch (CustomRestTemplateException ex) {
             throw new MicroserviceApiException("Currently, it is not possible to unlock a pool with (ID: " + poolId + ").", ex.getApiSubError());
