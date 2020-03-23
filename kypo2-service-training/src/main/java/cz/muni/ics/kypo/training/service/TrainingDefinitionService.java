@@ -316,9 +316,10 @@ public class TrainingDefinitionService {
     public void updateGameLevel(Long definitionId, GameLevel gameLevelToUpdate) {
         TrainingDefinition trainingDefinition = findById(definitionId);
         checkIfCanBeUpdated(trainingDefinition);
-        if (!findLevelInDefinition(trainingDefinition, gameLevelToUpdate.getId()))
+        if (!findLevelInDefinition(trainingDefinition, gameLevelToUpdate.getId())) {
             throw new EntityNotFoundException(new EntityErrorDetail(AbstractLevel.class, "id", gameLevelToUpdate.getId().getClass(),
                     gameLevelToUpdate.getId(), "Level was not found in definition (id: " + definitionId + ")."));
+        }
         GameLevel gameLevel = gameLevelRepository.findById(gameLevelToUpdate.getId())
                 .orElseThrow(() -> new EntityNotFoundException(new EntityErrorDetail(AbstractLevel.class, "id", gameLevelToUpdate.getId().getClass(),
                         gameLevelToUpdate.getId(), LEVEL_NOT_FOUND)));
