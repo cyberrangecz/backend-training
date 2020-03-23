@@ -598,7 +598,7 @@ public class TrainingDefinitionService {
 
     private void cloneInfoLevel(AbstractLevel level, TrainingDefinition trainingDefinition){
         InfoLevel newInfoLevel = new InfoLevel();
-        modelMapper.map((InfoLevel) level, newInfoLevel);
+        modelMapper.map(level, newInfoLevel);
         newInfoLevel.setId(null);
         newInfoLevel.setTrainingDefinition(trainingDefinition);
         infoLevelRepository.save(newInfoLevel);
@@ -607,7 +607,7 @@ public class TrainingDefinitionService {
     private void cloneAssessmentLevel(AbstractLevel level, TrainingDefinition trainingDefinition){
         AssessmentUtil.validQuestions(((AssessmentLevel) level).getQuestions());
         AssessmentLevel newAssessmentLevel = new AssessmentLevel();
-        modelMapper.map((AssessmentLevel) level, newAssessmentLevel);
+        modelMapper.map(level, newAssessmentLevel);
         newAssessmentLevel.setId(null);
         newAssessmentLevel.setTrainingDefinition(trainingDefinition);
         assessmentLevelRepository.save(newAssessmentLevel);
@@ -615,7 +615,7 @@ public class TrainingDefinitionService {
 
     private void cloneGameLevel(AbstractLevel level, TrainingDefinition trainingDefinition){
         GameLevel newGameLevel = new GameLevel();
-        modelMapper.map((GameLevel) level, newGameLevel);
+        modelMapper.map(level, newGameLevel);
         newGameLevel.setId(null);
         newGameLevel.setHints(cloneHints(((GameLevel) level).getHints()));
         newGameLevel.setAttachments(cloneAttachments(((GameLevel) level).getAttachments()));
