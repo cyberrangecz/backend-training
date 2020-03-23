@@ -10,6 +10,7 @@ import cz.muni.ics.kypo.training.persistence.config.PersistenceConfig;
 import org.apache.http.client.HttpClient;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.ssl.SSLContextBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.config.MethodInvokingFactoryBean;
@@ -81,7 +82,10 @@ public class ServiceConfig {
     private RestTemplate prepareRestTemplate() throws Exception {
         RestTemplate restTemplate;
         if (List.of(env.getActiveProfiles()).contains(SpringProfiles.PROD)) {
-            SSLConnectionSocketFactory socketFactory = new SSLConnectionSocketFactory(SSLContext.getInstance("TLSv1.2"));
+            SSLContext sslContext = new SSLContextBuilder()
+                    .setProtocol("TLSv1.2")
+                    .build();
+            SSLConnectionSocketFactory socketFactory = new SSLConnectionSocketFactory(sslContext);
             HttpClient httpClient = HttpClients.custom()
                     .setSSLSocketFactory(socketFactory)
                     .build();
