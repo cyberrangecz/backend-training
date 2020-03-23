@@ -17,6 +17,7 @@ import cz.muni.ics.kypo.training.facade.TrainingRunFacade;
 import cz.muni.ics.kypo.training.persistence.model.TrainingRun;
 import cz.muni.ics.kypo.training.rest.ApiError;
 import cz.muni.ics.kypo.training.rest.utils.annotations.ApiPageableSwagger;
+import cz.muni.ics.kypo.training.validation.ValidAssessmentResponse;
 import io.swagger.annotations.*;
 import cz.muni.ics.kypo.training.api.dto.hint.HintDTO;
 
@@ -29,6 +30,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.MultiValueMap;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 /**
@@ -41,6 +43,7 @@ import org.springframework.web.bind.annotation.*;
 })
 @RestController
 @RequestMapping(value = "/training-runs", produces = MediaType.APPLICATION_JSON_VALUE)
+@Validated
 public class TrainingRunsRestController {
 
     private TrainingRunFacade trainingRunFacade;
@@ -409,7 +412,7 @@ public class TrainingRunsRestController {
     public ResponseEntity<Void> evaluateResponsesToAssessment(@ApiParam(value = "Training run ID", required = true)
                                                               @PathVariable("runId") Long runId,
                                                               @ApiParam(value = "Responses to assessment", required = true)
-                                                              @RequestBody String responses) {
+                                                              @ValidAssessmentResponse @RequestBody String responses) {
         trainingRunFacade.evaluateResponsesToAssessment(runId, responses);
         return ResponseEntity.noContent().build();
     }
