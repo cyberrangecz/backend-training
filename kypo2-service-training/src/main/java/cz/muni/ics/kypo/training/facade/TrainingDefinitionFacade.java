@@ -158,8 +158,8 @@ public class TrainingDefinitionFacade {
                     trainingDefinitionService.findAllForOrganizers(cz.muni.ics.kypo.training.persistence.model.enums.TDState.RELEASED, pageable));
         } else if (state == TDState.UNRELEASED) {
             if (securityService.hasRole(RoleTypeSecurity.ROLE_TRAINING_ADMINISTRATOR)) {
-                    return trainingDefinitionMapper.mapToPageResultResourceInfoDTO(
-                            trainingDefinitionService.findAllForOrganizers(cz.muni.ics.kypo.training.persistence.model.enums.TDState.UNRELEASED, pageable));
+                return trainingDefinitionMapper.mapToPageResultResourceInfoDTO(
+                        trainingDefinitionService.findAllForOrganizers(cz.muni.ics.kypo.training.persistence.model.enums.TDState.UNRELEASED, pageable));
             } else if (securityService.hasRole(RoleTypeSecurity.ROLE_TRAINING_DESIGNER) && securityService.hasRole(RoleTypeSecurity.ROLE_TRAINING_ORGANIZER)) {
                 return trainingDefinitionMapper.mapToPageResultResourceInfoDTO(
                         trainingDefinitionService.findAllForDesignersAndOrganizersUnreleased(loggedInUserId, pageable));
@@ -318,8 +318,9 @@ public class TrainingDefinitionFacade {
     @TransactionalWO
     public void updateGameLevel(Long definitionId, GameLevelUpdateDTO gameLevel) {
         GameLevel gameLevelToUpdate = levelMapper.mapUpdateToEntity(gameLevel);
-        for (Hint hint : gameLevelToUpdate.getHints())
+        for (Hint hint : gameLevelToUpdate.getHints()) {
             hint.setGameLevel(gameLevelToUpdate);
+        }
         trainingDefinitionService.updateGameLevel(definitionId, gameLevelToUpdate);
     }
 

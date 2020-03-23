@@ -169,10 +169,10 @@ public class TrainingRunFacade {
                 accessTrainingRunDTO.setTakenSolution(((GameLevel) trainingRun.getCurrentLevel()).getSolution());
             }
             trainingRun.getHintInfoList().forEach(hintInfo -> {
-                        if (hintInfo.getGameLevelId().equals(trainingRun.getCurrentLevel().getId())) {
-                            accessTrainingRunDTO.getTakenHints().add(hintMapper.mapToDTO(hintInfo));
-                        }
+                    if (hintInfo.getGameLevelId().equals(trainingRun.getCurrentLevel().getId())) {
+                        accessTrainingRunDTO.getTakenHints().add(hintMapper.mapToDTO(hintInfo));
                     }
+                }
             );
         }
         return accessTrainingRunDTO;
