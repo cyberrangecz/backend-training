@@ -17,7 +17,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.UriComponentsBuilder;
 
 import java.time.Clock;
 import java.time.LocalDateTime;
@@ -38,7 +37,6 @@ public class TrainingInstanceService {
     private AccessTokenRepository accessTokenRepository;
     private UserRefRepository organizerRefRepository;
     private SecurityService securityService;
-    @Qualifier("pythonRestTemplate")
     private RestTemplate pythonRestTemplate;
     private static final int PYTHON_RESULT_PAGE_SIZE = 1000;
 
@@ -55,7 +53,7 @@ public class TrainingInstanceService {
     @Autowired
     public TrainingInstanceService(TrainingInstanceRepository trainingInstanceRepository, AccessTokenRepository accessTokenRepository,
                                    TrainingRunRepository trainingRunRepository, UserRefRepository organizerRefRepository,
-                                   RestTemplate pythonRestTemplate, SecurityService securityService) {
+                                   @Qualifier("pythonRestTemplate") RestTemplate pythonRestTemplate, SecurityService securityService) {
         this.trainingInstanceRepository = trainingInstanceRepository;
         this.trainingRunRepository = trainingRunRepository;
         this.accessTokenRepository = accessTokenRepository;
@@ -144,7 +142,7 @@ public class TrainingInstanceService {
         addLoggedInUserAsOrganizerToTrainingInstance(trainingInstanceToUpdate);
         trainingInstanceToUpdate.setPoolId(trainingInstance.getPoolId());
         //check if new access token should be generated, if not original is kept
-        if(shouldGenerateNewToken(trainingInstance.getAccessToken(), trainingInstanceToUpdate.getAccessToken())){
+        if (shouldGenerateNewToken(trainingInstance.getAccessToken(), trainingInstanceToUpdate.getAccessToken())) {
             trainingInstanceToUpdate.setAccessToken(generateAccessToken(trainingInstanceToUpdate.getAccessToken()));
         } else {
             trainingInstanceToUpdate.setAccessToken(trainingInstance.getAccessToken());
@@ -153,7 +151,7 @@ public class TrainingInstanceService {
         return trainingInstanceToUpdate.getAccessToken();
     }
 
-    private void validateStartAndEndTime(TrainingInstance trainingInstance){
+    private void validateStartAndEndTime(TrainingInstance trainingInstance) {
         if (trainingInstance.getStartTime().isAfter(trainingInstance.getEndTime())) {
             throw new EntityConflictException(new EntityErrorDetail(TrainingInstance.class, "id",
                     trainingInstance.getId().getClass(), trainingInstance.getId(),
@@ -161,7 +159,7 @@ public class TrainingInstanceService {
         }
     }
 
-    private boolean shouldGenerateNewToken(String originalToken, String newToken){
+    private boolean shouldGenerateNewToken(String originalToken, String newToken) {
         //new token should not be generated if token in update equals original token or if token in update equals original token without PIN
         String tokenWithoutPin = originalToken.substring(0, originalToken.length() - 5);
         return !(newToken.equals(tokenWithoutPin) || originalToken.equals(newToken));
@@ -236,7 +234,7 @@ public class TrainingInstanceService {
      */
     public LockedPoolInfo lockPool(Long poolId) {
         try {
-            return pythonRestTemplate.postForObject(kypoOpenStackURI + "/pools/{poolId}/locks/", new HttpEntity<>("{}"), LockedPoolInfo.class, Long.toString(poolId));
+            return pythonRestTemplate.postForObject(kypoOpenStackURI + "/pools/{poolId}/locks", new HttpEntity<>("{}"), LockedPoolInfo.class, Long.toString(poolId));
         } catch (CustomRestTemplateException ex) {
             throw new MicroserviceApiException("Currently, it is not possible to lock and assign pool with (ID: " + poolId + ").", ex.getApiSubError());
         }
@@ -250,10 +248,10 @@ public class TrainingInstanceService {
     public void unlockPool(Long poolId) {
         try {
             // get lock id from pool
-            PoolInfoDto poolInfoDto = pythonRestTemplate.getForObject(kypoOpenStackURI + "/pools/{poolId}/", PoolInfoDto.class, Long.toString(poolId));
+            PoolInfoDto poolInfoDto = pythonRestTemplate.getForObject(kypoOpenStackURI + "/pools/{poolId}", PoolInfoDto.class, Long.toString(poolId));
             // unlock pool
             if (poolInfoDto != null && poolInfoDto.getLock() != null) {
-                pythonRestTemplate.delete(kypoOpenStackURI + "/pools/{poolId}/locks/{lockId}/", Long.toString(poolId), Long.toString(poolInfoDto.getLock()));
+                pythonRestTemplate.delete(kypoOpenStackURI + "/pools/{poolId}/locks/{lockId}", Long.toString(poolId), Long.toString(poolInfoDto.getLock()));
             }
         } catch (CustomRestTemplateException ex) {
             throw new MicroserviceApiException("Currently, it is not possible to unlock a pool with (ID: " + poolId + ").", ex.getApiSubError());

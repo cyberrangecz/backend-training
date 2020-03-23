@@ -346,7 +346,7 @@ public class TrainingRunService {
 
     private Long getAndLockSandboxForTrainingRun(Long poolId) {
         try {
-            SandboxInfo sandboxInfo = pythonRestTemplate.getForObject(kypoOpenStackURI + "/pools/{poolId}/sandboxes/get-and-lock/", SandboxInfo.class, Long.toString(poolId));
+            SandboxInfo sandboxInfo = pythonRestTemplate.getForObject(kypoOpenStackURI + "/pools/{poolId}/sandboxes/get-and-lock", SandboxInfo.class, Long.toString(poolId));
             if (sandboxInfo != null) {
                 return sandboxInfo.getId();
             }
