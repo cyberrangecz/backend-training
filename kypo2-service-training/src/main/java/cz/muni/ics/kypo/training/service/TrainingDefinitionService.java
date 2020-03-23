@@ -1,19 +1,18 @@
 package cz.muni.ics.kypo.training.service;
 
 import com.querydsl.core.types.Predicate;
-import cz.muni.ics.kypo.training.enums.RoleTypeSecurity;
 import cz.muni.ics.kypo.training.exceptions.EntityConflictException;
 import cz.muni.ics.kypo.training.exceptions.EntityErrorDetail;
 import cz.muni.ics.kypo.training.exceptions.EntityNotFoundException;
-import cz.muni.ics.kypo.training.exceptions.InternalServerErrorException;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.model.enums.AssessmentType;
 import cz.muni.ics.kypo.training.persistence.model.enums.TDState;
 import cz.muni.ics.kypo.training.persistence.repository.*;
 import cz.muni.ics.kypo.training.utils.AssessmentUtil;
+import org.dom4j.rule.Mode;
+import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
@@ -32,11 +31,11 @@ import java.util.Set;
  */
 @Service
 public class TrainingDefinitionService {
-
     private static final Logger LOG = LoggerFactory.getLogger(TrainingDefinitionService.class);
     @Value("${user-and-group-server.uri}")
     private String userAndGroupUrl;
 
+    private ModelMapper modelMapper;
     private TrainingDefinitionRepository trainingDefinitionRepository;
     private TrainingInstanceRepository trainingInstanceRepository;
     private AbstractLevelRepository abstractLevelRepository;
@@ -65,7 +64,7 @@ public class TrainingDefinitionService {
     public TrainingDefinitionService(TrainingDefinitionRepository trainingDefinitionRepository,
                                      AbstractLevelRepository abstractLevelRepository, InfoLevelRepository infoLevelRepository, GameLevelRepository gameLevelRepository,
                                      AssessmentLevelRepository assessmentLevelRepository, TrainingInstanceRepository trainingInstanceRepository,
-                                     UserRefRepository userRefRepository, SecurityService securityService) {
+                                     UserRefRepository userRefRepository, SecurityService securityService, ModelMapper modelMapper) {
         this.trainingDefinitionRepository = trainingDefinitionRepository;
         this.abstractLevelRepository = abstractLevelRepository;
         this.gameLevelRepository = gameLevelRepository;
@@ -74,6 +73,7 @@ public class TrainingDefinitionService {
         this.trainingInstanceRepository = trainingInstanceRepository;
         this.userRefRepository = userRefRepository;
         this.securityService = securityService;
+        this.modelMapper = modelMapper;
     }
 
     /**
@@ -185,7 +185,7 @@ public class TrainingDefinitionService {
     public TrainingDefinition clone(Long id, String title) {
         TrainingDefinition trainingDefinition = findById(id);
         TrainingDefinition clonedTrainingDefinition = new TrainingDefinition();
-        BeanUtils.copyProperties(trainingDefinition, clonedTrainingDefinition);
+        modelMapper.map(trainingDefinition, clonedTrainingDefinition);
         clonedTrainingDefinition.setId(null);
         clonedTrainingDefinition.setBetaTestingGroup(null);
 
@@ -585,45 +585,64 @@ public class TrainingDefinitionService {
         }
         levels.forEach(level -> {
             if (level instanceof AssessmentLevel) {
-                AssessmentUtil.validQuestions(((AssessmentLevel) level).getQuestions());
-                AssessmentLevel newAssessmentLevel = new AssessmentLevel();
-                BeanUtils.copyProperties(level, newAssessmentLevel);
-                newAssessmentLevel.setId(null);
-                newAssessmentLevel.setTrainingDefinition(clonedTrainingDefinition);
-                assessmentLevelRepository.save(newAssessmentLevel);
+                cloneAssessmentLevel(level, trainingDefinition);
             }
             if (level instanceof InfoLevel) {
-                InfoLevel newInfoLevel = new InfoLevel();
-                BeanUtils.copyProperties(level, newInfoLevel);
-                newInfoLevel.setId(null);
-                newInfoLevel.setTrainingDefinition(clonedTrainingDefinition);
-                infoLevelRepository.save(newInfoLevel);
+                cloneInfoLevel(level, clonedTrainingDefinition);
             }
             if (level instanceof GameLevel) {
-                GameLevel newGameLevel = new GameLevel();
-                BeanUtils.copyProperties(level, newGameLevel);
-                newGameLevel.setId(null);
-                newGameLevel.setHints(null);
-                Set<Hint> hints = new HashSet<>();
-                for (Hint hint : ((GameLevel) level).getHints()) {
-                    Hint newHint = new Hint();
-                    BeanUtils.copyProperties(hint, newHint);
-                    newHint.setId(null);
-                    hints.add(newHint);
-                }
-                Set<Attachment> attachments = new HashSet<>();
-                for (Attachment attachment : ((GameLevel) level).getAttachments()) {
-                    Attachment newAttachment = new Attachment();
-                    BeanUtils.copyProperties(attachment, newAttachment);
-                    newAttachment.setId(null);
-                    attachments.add(newAttachment);
-                }
-                newGameLevel.setHints(hints);
-                newGameLevel.setAttachments(attachments);
-                newGameLevel.setTrainingDefinition(clonedTrainingDefinition);
-                gameLevelRepository.save(newGameLevel);
+                cloneGameLevel(level, clonedTrainingDefinition);
             }
         });
+    }
+
+    private void cloneInfoLevel(AbstractLevel level, TrainingDefinition trainingDefinition){
+        InfoLevel newInfoLevel = new InfoLevel();
+        modelMapper.map((InfoLevel) level, newInfoLevel);
+        newInfoLevel.setId(null);
+        newInfoLevel.setTrainingDefinition(trainingDefinition);
+        infoLevelRepository.save(newInfoLevel);
+    }
+
+    private void cloneAssessmentLevel(AbstractLevel level, TrainingDefinition trainingDefinition){
+        AssessmentUtil.validQuestions(((AssessmentLevel) level).getQuestions());
+        AssessmentLevel newAssessmentLevel = new AssessmentLevel();
+        modelMapper.map((AssessmentLevel) level, newAssessmentLevel);
+        newAssessmentLevel.setId(null);
+        newAssessmentLevel.setTrainingDefinition(trainingDefinition);
+        assessmentLevelRepository.save(newAssessmentLevel);
+    }
+
+    private void cloneGameLevel(AbstractLevel level, TrainingDefinition trainingDefinition){
+        GameLevel newGameLevel = new GameLevel();
+        modelMapper.map((GameLevel) level, newGameLevel);
+        newGameLevel.setId(null);
+        newGameLevel.setHints(cloneHints(((GameLevel) level).getHints()));
+        newGameLevel.setAttachments(cloneAttachments(((GameLevel) level).getAttachments()));
+        newGameLevel.setTrainingDefinition(trainingDefinition);
+        gameLevelRepository.save(newGameLevel);
+    }
+
+    private Set<Hint> cloneHints(Set<Hint> hints){
+        Set<Hint> newHints = new HashSet<>();
+        for (Hint hint : hints){
+            Hint newHint = new Hint();
+            modelMapper.map(hint, newHint);
+            newHint.setId(null);
+            newHints.add(newHint);
+        }
+        return newHints;
+    }
+
+    private Set<Attachment> cloneAttachments(Set<Attachment> attachments){
+        Set<Attachment> newAttachments = new HashSet<>();
+        for (Attachment attachment : attachments) {
+            Attachment newAttachment = new Attachment();
+            modelMapper.map(attachment, newAttachment);
+            newAttachment.setId(null);
+            newAttachments.add(newAttachment);
+        }
+        return newAttachments;
     }
 
     private void checkIfCanBeUpdated(TrainingDefinition trainingDefinition) {
