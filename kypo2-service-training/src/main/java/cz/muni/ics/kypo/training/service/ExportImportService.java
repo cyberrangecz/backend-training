@@ -12,9 +12,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.UriComponentsBuilder;
 
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -125,7 +123,7 @@ public class ExportImportService {
      */
     public SandboxDefinitionInfo getSandboxDefinitionId(Long poolId) {
         try {
-            return pythonRestTemplate.getForObject(kypoOpenStackURI + "/pools/{poolId}/definition/", SandboxDefinitionInfo.class, Long.toString(poolId));
+            return pythonRestTemplate.getForObject(kypoOpenStackURI + "/pools/{poolId}/definition", SandboxDefinitionInfo.class, Long.toString(poolId));
         } catch (CustomRestTemplateException ex) {
             if (ex.getStatusCode() == HttpStatus.CONFLICT) {
                 throw new ForbiddenException("There is no available sandbox definition for particular pool (ID: " + poolId + ").");
