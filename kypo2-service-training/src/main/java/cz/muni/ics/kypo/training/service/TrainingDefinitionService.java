@@ -401,6 +401,17 @@ public class TrainingDefinitionService {
                     "Cannot update training definition with already created training instance. " +
                             "Remove training instance/s before updating training definition."));
         }
+        GameLevel newGameLevel = initializeNewGameLevel();
+        newGameLevel.setOrder(getNextOrder(definitionId));
+        newGameLevel.setTrainingDefinition(trainingDefinition);
+        GameLevel gameLevel = gameLevelRepository.save(newGameLevel);
+        trainingDefinition.setEstimatedDuration(trainingDefinition.getEstimatedDuration() + newGameLevel.getEstimatedDuration());
+        trainingDefinition.setLastEdited(getCurrentTimeInUTC());
+        LOG.info("Game level with id: {} created", gameLevel.getId());
+        return gameLevel;
+    }
+
+    private GameLevel initializeNewGameLevel(){
         GameLevel newGameLevel = new GameLevel();
         newGameLevel.setMaxScore(100);
         newGameLevel.setTitle("Title of game level");
@@ -410,13 +421,7 @@ public class TrainingDefinitionService {
         newGameLevel.setSolution("Solution of the game should be here");
         newGameLevel.setContent("The test entry should be here");
         newGameLevel.setEstimatedDuration(1);
-        newGameLevel.setOrder(getNextOrder(definitionId));
-        newGameLevel.setTrainingDefinition(trainingDefinition);
-        GameLevel gameLevel = gameLevelRepository.save(newGameLevel);
-        trainingDefinition.setEstimatedDuration(trainingDefinition.getEstimatedDuration() + newGameLevel.getEstimatedDuration());
-        trainingDefinition.setLastEdited(getCurrentTimeInUTC());
-        LOG.info("Game level with id: {} created", gameLevel.getId());
-        return gameLevel;
+        return newGameLevel;
     }
 
     private int getNextOrder(Long definitionId) {
@@ -465,13 +470,7 @@ public class TrainingDefinitionService {
                     "Cannot update training definition with already created training instance. " +
                             "Remove training instance/s before updating training definition."));
         }
-        AssessmentLevel newAssessmentLevel = new AssessmentLevel();
-        newAssessmentLevel.setTitle("Title of assessment level");
-        newAssessmentLevel.setMaxScore(0);
-        newAssessmentLevel.setAssessmentType(AssessmentType.QUESTIONNAIRE);
-        newAssessmentLevel.setInstructions("Instructions should be here");
-        newAssessmentLevel.setQuestions("[{\"answer_required\":false,\"order\":0,\"penalty\":0,\"points\":0,\"text\":\"Example Question\",\"question_type\":\"FFQ\",\"correct_choices\":[]}]");
-        newAssessmentLevel.setEstimatedDuration(1);
+        AssessmentLevel newAssessmentLevel = initializeNewAssessmentLevel();
         newAssessmentLevel.setOrder(getNextOrder(definitionId));
         newAssessmentLevel.setTrainingDefinition(trainingDefinition);
         AssessmentLevel assessmentLevel = assessmentLevelRepository.save(newAssessmentLevel);
@@ -479,6 +478,17 @@ public class TrainingDefinitionService {
         trainingDefinition.setLastEdited(getCurrentTimeInUTC());
         LOG.info("Assessment level with id: {} created.", assessmentLevel.getId());
         return assessmentLevel;
+    }
+
+    private AssessmentLevel initializeNewAssessmentLevel(){
+        AssessmentLevel newAssessmentLevel = new AssessmentLevel();
+        newAssessmentLevel.setTitle("Title of assessment level");
+        newAssessmentLevel.setMaxScore(0);
+        newAssessmentLevel.setAssessmentType(AssessmentType.QUESTIONNAIRE);
+        newAssessmentLevel.setInstructions("Instructions should be here");
+        newAssessmentLevel.setQuestions("[{\"answer_required\":false,\"order\":0,\"penalty\":0,\"points\":0,\"text\":\"Example Question\",\"question_type\":\"FFQ\",\"correct_choices\":[]}]");
+        newAssessmentLevel.setEstimatedDuration(1);
+        return newAssessmentLevel;
     }
 
     /**
