@@ -534,8 +534,6 @@ public class TrainingRunService {
      * @throws EntityNotFoundException training run is not found.
      */
     public void evaluateResponsesToAssessment(Long trainingRunId, String responsesAsString) {
-        JSONArray responses = new JSONArray(responsesAsString);
-        int points = 0;
         TrainingRun trainingRun = findByIdWithLevel(trainingRunId);
         if (!(trainingRun.getCurrentLevel() instanceof AssessmentLevel)) {
             throw new BadRequestException("Current level is not assessment level and cannot be evaluated.");
@@ -546,26 +544,33 @@ public class TrainingRunService {
         if (trainingRun.getAssessmentResponses() == null) {
             trainingRun.setAssessmentResponses("[]");
         }
-        AssessmentLevel assessmentLevel = (AssessmentLevel) trainingRun.getCurrentLevel();
-        JSONArray responsesJSON = new JSONArray(trainingRun.getAssessmentResponses());
-        JSONObject responseToCurrentAssessment = new JSONObject();
-        responseToCurrentAssessment.put("assessmentLevelId", trainingRun.getCurrentLevel().getId());
 
-
-        AssessmentUtil util = new AssessmentUtil();
-        responseToCurrentAssessment.put("answers", "[" + responses.toString() + "]");
-        if (assessmentLevel.getAssessmentType().equals(AssessmentType.QUESTIONNAIRE)) {
-            responseToCurrentAssessment.put("receivedPoints", 0);
-        } else {
-            points = util.evaluateTest(new JSONArray(assessmentLevel.getQuestions()), responses);
-            responseToCurrentAssessment.put("receivedPoints", points);
-            trainingRun.increaseTotalScore(points);
-        }
-        responsesJSON.put(responseToCurrentAssessment);
-        trainingRun.setAssessmentResponses(responsesJSON.toString());
+        JSONObject responseToCurrentAssessment = processCurrentAssessmentResponse(trainingRun, new JSONArray(responsesAsString));
+        JSONArray storedResponses = new JSONArray(trainingRun.getAssessmentResponses());
+        storedResponses.put(responseToCurrentAssessment);
+        trainingRun.setAssessmentResponses(storedResponses.toString());
         trainingRun.setLevelAnswered(true);
         auditEventsService.auditAssessmentAnswersAction(trainingRun, responsesAsString);
         auditEventsService.auditLevelCompletedAction(trainingRun);
+    }
+
+    private JSONObject processCurrentAssessmentResponse(TrainingRun trainingRun, JSONArray responses) {
+        int receivedPoints = 0;
+        AssessmentLevel assessmentLevel = (AssessmentLevel) trainingRun.getCurrentLevel();
+        // fill in assessment level id and raw answers of user
+        JSONObject responseToCurrentAssessment = new JSONObject();
+        responseToCurrentAssessment.put("assessmentLevelId", trainingRun.getCurrentLevel().getId());
+        responseToCurrentAssessment.put("answers", "[" + responses.toString() + "]");
+
+        // evaluate and compute points
+        if (assessmentLevel.getAssessmentType() == AssessmentType.QUESTIONNAIRE) {
+            responseToCurrentAssessment.put("receivedPoints", 0);
+        } else {
+            receivedPoints = AssessmentUtil.evaluateTest(new JSONArray(assessmentLevel.getQuestions()), responses);
+            responseToCurrentAssessment.put("receivedPoints", receivedPoints);
+            trainingRun.increaseTotalScore(receivedPoints);
+        }
+        return responseToCurrentAssessment;
     }
 
 }

@@ -33,7 +33,7 @@ public class AssessmentUtil {
      * @param responses the responses
      * @return the int
      */
-    public int evaluateTest(JSONArray questions, JSONArray responses) {
+    public static int evaluateTest(JSONArray questions, JSONArray responses) {
         LOG.info("Evaluating test");
         int receivedPoints = 0;
 
@@ -69,7 +69,7 @@ public class AssessmentUtil {
      * @param jsonArray the json array
      * @return list of integers
      */
-    public List<Integer> convertJSONArrayToListOfInt(JSONArray jsonArray) {
+    private static List<Integer> convertJSONArrayToListOfInt(JSONArray jsonArray) {
         List<Integer> userAnswers = new ArrayList<>();
         if (jsonArray.toList().isEmpty()) {
             return userAnswers;
@@ -86,7 +86,7 @@ public class AssessmentUtil {
      * @param pairs list of individual answers to a specific question.
      * @return user mapping of choices
      */
-    public Map<Integer,Integer> getEMIAnswersFromUser(JSONArray pairs) {
+    private static Map<Integer,Integer> getEMIAnswersFromUser(JSONArray pairs) {
         Map<Integer, Integer> userMapping = new HashMap<>();
         for (int k = 0; k < pairs.length(); k++) {
             JSONObject pairsXY = pairs.getJSONObject(k);
@@ -101,7 +101,7 @@ public class AssessmentUtil {
      * @param question to get correct choices
      * @return list of correct choices orders
      */
-    public List<Integer> getCorrectChoicesForMCQ (JSONObject question) {
+    private static List<Integer> getCorrectChoicesForMCQ (JSONObject question) {
         JSONArray allChoices = question.getJSONArray("choices");
         List<Integer> correctChoices = new ArrayList<>();
         for (int k = 0; k < allChoices.length(); k++) {
@@ -118,7 +118,7 @@ public class AssessmentUtil {
      * @param question to get correct choices
      * @return list of correct choices text
      */
-    public List<String> getCorrectChoicesForFFQ (JSONObject question) {
+    private static List<String> getCorrectChoicesForFFQ (JSONObject question) {
         JSONArray allChoices = question.getJSONArray("correct_choices");
         List<String> correctChoices = new ArrayList<>();
         for (int k = 0; k < allChoices.length(); k++) {
@@ -135,7 +135,7 @@ public class AssessmentUtil {
      * @param question to get correct mapping
      * @return map of correct choice mapping
      */
-    public Map<Integer, Integer> getCorrectChoicesForEMI (JSONObject question) {
+    private static Map<Integer, Integer> getCorrectChoicesForEMI (JSONObject question) {
         JSONArray allChoices = question.getJSONArray("correct_answers");
         Map<Integer,Integer> correctMapping = new HashMap<>();
         for (int k = 0; k < allChoices.length(); k++) {
@@ -156,7 +156,7 @@ public class AssessmentUtil {
      * @param questionOrder in which question is in the assessment
      * @return question in the given order as JSONObject or null if there is no question in given order
      */
-    public JSONObject getQuestionWithOrder (JSONArray questions, int questionOrder) {
+    private static JSONObject getQuestionWithOrder (JSONArray questions, int questionOrder) {
         for (int i = 0; i < questions.length(); i++) {
             if(questions.getJSONObject(i).getInt("order") == questionOrder) {
                 return questions.getJSONObject(i);
@@ -173,7 +173,7 @@ public class AssessmentUtil {
      * @param choices  marked by user
      * @return received points for the question
      */
-    public int evaluateMCQQuestion(JSONObject question, JSONArray choices) {
+    private static int evaluateMCQQuestion(JSONObject question, JSONArray choices) {
         List<Integer> correctMCQ = getCorrectChoicesForMCQ(question);
         List<Integer> userChoices = convertJSONArrayToListOfInt(choices);
         if (userChoices.containsAll(correctMCQ)) {
@@ -190,7 +190,7 @@ public class AssessmentUtil {
      * @param userAnswer answer from user
      * @return received points for the question
      */
-    public int evaluateFFQQuestion(JSONObject question, String userAnswer) {
+    private static int evaluateFFQQuestion(JSONObject question, String userAnswer) {
         List<String> correctFFQ = getCorrectChoicesForFFQ(question);
         if (correctFFQ.contains(userAnswer.toLowerCase())) {
             return question.getInt("points");
@@ -206,7 +206,7 @@ public class AssessmentUtil {
      * @param answers  from user
      * @return received points for the question
      */
-    public int evaluateEMIQuestion(JSONObject question, JSONArray answers) {
+    private static int evaluateEMIQuestion(JSONObject question, JSONArray answers) {
         Map<Integer, Integer> userAnswers = getEMIAnswersFromUser(answers);
         Map<Integer, Integer> correctEMI = getCorrectChoicesForEMI(question);
         if (userAnswers.equals(correctEMI)) {
