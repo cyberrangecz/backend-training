@@ -1,9 +1,14 @@
 package cz.muni.ics.kypo.training.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.querydsl.core.types.Predicate;
+import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentQuestion;
 import cz.muni.ics.kypo.training.exceptions.EntityConflictException;
 import cz.muni.ics.kypo.training.exceptions.EntityErrorDetail;
 import cz.muni.ics.kypo.training.exceptions.EntityNotFoundException;
+import cz.muni.ics.kypo.training.exceptions.InternalServerErrorException;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.model.enums.AssessmentType;
 import cz.muni.ics.kypo.training.persistence.model.enums.TDState;
@@ -44,6 +49,7 @@ public class TrainingDefinitionService {
     private AssessmentLevelRepository assessmentLevelRepository;
     private UserRefRepository userRefRepository;
     private SecurityService securityService;
+    private ObjectMapper objectMapper;
 
     private static final String ARCHIVED_OR_RELEASED = "Cannot edit released or archived training definition.";
     private static final String LEVEL_NOT_FOUND = "Level not found.";
@@ -64,7 +70,7 @@ public class TrainingDefinitionService {
     public TrainingDefinitionService(TrainingDefinitionRepository trainingDefinitionRepository,
                                      AbstractLevelRepository abstractLevelRepository, InfoLevelRepository infoLevelRepository, GameLevelRepository gameLevelRepository,
                                      AssessmentLevelRepository assessmentLevelRepository, TrainingInstanceRepository trainingInstanceRepository,
-                                     UserRefRepository userRefRepository, SecurityService securityService, ModelMapper modelMapper) {
+                                     UserRefRepository userRefRepository, SecurityService securityService, ModelMapper modelMapper, ObjectMapper objectMapper) {
         this.trainingDefinitionRepository = trainingDefinitionRepository;
         this.abstractLevelRepository = abstractLevelRepository;
         this.gameLevelRepository = gameLevelRepository;
@@ -74,6 +80,7 @@ public class TrainingDefinitionService {
         this.userRefRepository = userRefRepository;
         this.securityService = securityService;
         this.modelMapper = modelMapper;
+        this.objectMapper = objectMapper;
     }
 
     /**
@@ -480,13 +487,17 @@ public class TrainingDefinitionService {
         return assessmentLevel;
     }
 
-    private AssessmentLevel initializeNewAssessmentLevel(){
+    private AssessmentLevel initializeNewAssessmentLevel() {
         AssessmentLevel newAssessmentLevel = new AssessmentLevel();
         newAssessmentLevel.setTitle("Title of assessment level");
         newAssessmentLevel.setMaxScore(0);
         newAssessmentLevel.setAssessmentType(AssessmentType.QUESTIONNAIRE);
         newAssessmentLevel.setInstructions("Instructions should be here");
-        newAssessmentLevel.setQuestions("[{\"answer_required\":false,\"order\":0,\"penalty\":0,\"points\":0,\"text\":\"Example Question\",\"question_type\":\"FFQ\",\"correct_choices\":[]}]");
+        try {
+            newAssessmentLevel.setQuestions(objectMapper.writeValueAsString(List.of(new AssessmentQuestion())));
+        } catch (JsonProcessingException ex) {
+            throw new InternalServerErrorException("Could not serialize question when create new assessment level");
+        }
         newAssessmentLevel.setEstimatedDuration(1);
         return newAssessmentLevel;
     }

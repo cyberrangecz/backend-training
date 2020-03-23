@@ -1,5 +1,6 @@
 package cz.muni.ics.kypo.training.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.JsonObject;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.PathBuilder;
@@ -79,6 +80,8 @@ public class TrainingDefinitionServiceTest {
     private SecurityService securityService;
     @Mock
     private ModelMapper modelMapper;
+    @Mock
+    private ObjectMapper objectMapper;
 
     private TrainingDefinition unreleasedDefinition, releasedDefinition;
     private AssessmentLevel assessmentLevel;
@@ -93,7 +96,7 @@ public class TrainingDefinitionServiceTest {
         MockitoAnnotations.initMocks(this);
         trainingDefinitionService = new TrainingDefinitionService(trainingDefinitionRepository, abstractLevelRepository,
                 infoLevelRepository, gameLevelRepository, assessmentLevelRepository, trainingInstanceRepository, userRefRepository,
-                securityService, modelMapper);
+                securityService, modelMapper, objectMapper);
 
         ReflectionTestUtils.setField(trainingDefinitionService, "userAndGroupUrl", "https://localhost:8083/kypo2/api/v1/");
 

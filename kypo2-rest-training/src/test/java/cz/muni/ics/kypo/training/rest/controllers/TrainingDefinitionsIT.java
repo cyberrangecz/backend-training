@@ -6,6 +6,7 @@ import ch.qos.logback.core.Appender;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.google.gson.JsonObject;
 import cz.muni.ics.kypo.commons.security.enums.AuthenticatedUserOIDCItems;
 import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
@@ -990,6 +991,7 @@ public class TrainingDefinitionsIT {
 
     @Test
     public void createAssessmentLevel() throws Exception {
+        mapper.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
         TrainingDefinition trainingDefinition = trainingDefinitionRepository.save(unreleasedDefinition);
         mvc.perform(post("/training-definitions/{definitionId}/levels/{levelType}", trainingDefinition.getId(), cz.muni.ics.kypo.training.persistence.model.enums.LevelType.ASSESSMENT))
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON_VALUE))
@@ -1002,7 +1004,7 @@ public class TrainingDefinitionsIT {
         assertEquals(assessmentLevel.getTitle(), "Title of assessment level");
         assertEquals(assessmentLevel.getAssessmentType().toString(), AssessmentType.QUESTIONNAIRE.toString());
         assertEquals(assessmentLevel.getInstructions(), "Instructions should be here");
-        assertEquals(assessmentLevel.getQuestions(), "[{\"answer_required\":false,\"order\":0,\"penalty\":0,\"points\":0,\"text\":\"Example Question\",\"question_type\":\"FFQ\",\"correct_choices\":[]}]");
+        assertEquals(assessmentLevel.getQuestions(), "[ {\r\n  \"answer_required\" : false,\r\n  \"order\" : 0,\r\n  \"penalty\" : 0,\r\n  \"points\" : 0,\r\n  \"text\" : \"Example Question\",\r\n  \"question_type\" : \"FFQ\",\r\n  \"correct_choices\" : [ ]\r\n} ]");
     }
 
     @Test
