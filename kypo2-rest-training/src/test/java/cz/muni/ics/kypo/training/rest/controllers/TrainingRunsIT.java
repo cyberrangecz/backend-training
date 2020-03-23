@@ -726,6 +726,7 @@ public class TrainingRunsIT {
         expectedTakenHint.setId(hint.getId());
         expectedTakenHint.setTitle(hint.getTitle());
         expectedTakenHint.setContent(hint.getContent());
+        expectedTakenHint.setOrder(hint.getOrder());
         given(javaRestTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
                 willReturn(new ResponseEntity<SandboxInfo>(sandboxInfo1, HttpStatus.OK));
         given(javaRestTemplate.exchange(eq(userAndGroupURI + "/users/" + trainingRun1.getParticipantRef().getUserRefId()), eq(HttpMethod.GET), any(HttpEntity.class), eq(UserRefDTO.class))).
@@ -742,6 +743,7 @@ public class TrainingRunsIT {
             takenHints.add(mapper.readValue(arrayOfHints.getJSONObject(i).toString(), TakenHintDTO.class));
         }
         assertFalse(takenHints.isEmpty());
+
         assertTrue(takenHints.contains(expectedTakenHint));
         Optional<TrainingRun> trainingRun = trainingRunRepository.findById(trainingRunId);
         assertTrue(trainingRun.isPresent());

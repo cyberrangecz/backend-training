@@ -1,10 +1,13 @@
 package cz.muni.ics.kypo.training.mapping.mapstruct;
 
+import cz.muni.ics.kypo.training.api.dto.hint.TakenHintDTO;
 import cz.muni.ics.kypo.training.api.responses.PageResultResource;
 import cz.muni.ics.kypo.training.api.dto.export.HintExportDTO;
 import cz.muni.ics.kypo.training.api.dto.hint.HintDTO;
 import cz.muni.ics.kypo.training.persistence.model.Hint;
+import cz.muni.ics.kypo.training.persistence.model.HintInfo;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 import org.mapstruct.ReportingPolicy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -22,6 +25,11 @@ public interface HintMapper extends ParentMapper {
     Hint mapToEntity(HintDTO dto);
 
     HintDTO mapToDTO(Hint entity);
+
+    @Mapping(source = "hintId", target = "id")
+    @Mapping(source = "hintContent", target = "content")
+    @Mapping(source = "hintTitle", target = "title")
+    TakenHintDTO mapToDTO(HintInfo hintInfo);
 
     HintExportDTO mapToHintExportDTO(Hint entity);
 
