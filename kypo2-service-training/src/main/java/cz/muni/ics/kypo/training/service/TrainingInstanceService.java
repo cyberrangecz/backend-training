@@ -137,24 +137,51 @@ public class TrainingInstanceService {
      * @throws EntityConflictException cannot be updated for some reason.
      */
     public String update(TrainingInstance trainingInstanceToUpdate) {
-        TrainingInstance trainingInstance = trainingInstanceRepository.findById(trainingInstanceToUpdate.getId())
-                .orElseThrow(() -> new EntityNotFoundException(new EntityErrorDetail(TrainingInstance.class, "id",
-                        trainingInstanceToUpdate.getId().getClass(), trainingInstanceToUpdate.getId(), "Training instance not found.")));
-        if (trainingInstanceToUpdate.getStartTime().isAfter(trainingInstanceToUpdate.getEndTime())) {
-            throw new EntityConflictException(new EntityErrorDetail(TrainingInstance.class, "id",
-                    trainingInstanceToUpdate.getId().getClass(), trainingInstanceToUpdate.getId(), "End time must be later than start time."));
-        }
-        String shortPass = trainingInstance.getAccessToken().substring(0, trainingInstance.getAccessToken().length() - 5);
-        if (trainingInstanceToUpdate.getAccessToken().equals(shortPass) || trainingInstanceToUpdate.getAccessToken().equals(trainingInstance.getAccessToken())) {
-            trainingInstanceToUpdate.setAccessToken(trainingInstance.getAccessToken());
-        } else {
-            trainingInstanceToUpdate.setAccessToken(generateAccessToken(trainingInstanceToUpdate.getAccessToken()));
-        }
+        validateStartAndEndTime(trainingInstanceToUpdate);
+        TrainingInstance trainingInstance = findById(trainingInstanceToUpdate.getId());
+        //add original organizers and poolId to update
         trainingInstanceToUpdate.setOrganizers(new HashSet<>(trainingInstance.getOrganizers()));
         addLoggedInUserAsOrganizerToTrainingInstance(trainingInstanceToUpdate);
         trainingInstanceToUpdate.setPoolId(trainingInstance.getPoolId());
+        //check if new access token should be generated, if not original is kept
+        if(shouldGenerateNewToken(trainingInstance.getAccessToken(), trainingInstanceToUpdate.getAccessToken())){
+            trainingInstanceToUpdate.setAccessToken(generateAccessToken(trainingInstanceToUpdate.getAccessToken()));
+        } else {
+            trainingInstanceToUpdate.setAccessToken(trainingInstance.getAccessToken());
+        }
         trainingInstanceRepository.save(trainingInstanceToUpdate);
         return trainingInstanceToUpdate.getAccessToken();
+    }
+
+    private void validateStartAndEndTime(TrainingInstance trainingInstance){
+        if (trainingInstance.getStartTime().isAfter(trainingInstance.getEndTime())) {
+            throw new EntityConflictException(new EntityErrorDetail(TrainingInstance.class, "id",
+                    trainingInstance.getId().getClass(), trainingInstance.getId(),
+                    "End time must be later than start time."));
+        }
+    }
+
+    private boolean shouldGenerateNewToken(String originalToken, String newToken){
+        //new token should not be generated if token in update equals original token or if token in update equals original token without PIN
+        String tokenWithoutPin = originalToken.substring(0, originalToken.length() - 5);
+        return !(newToken.equals(tokenWithoutPin) || originalToken.equals(newToken));
+    }
+
+    private String generateAccessToken(String accessToken) {
+        String newPass = "";
+        boolean generated = false;
+        while (!generated) {
+            String pin = RandomStringUtils.random(4, false, true);
+            newPass = accessToken + "-" + pin;
+            Optional<AccessToken> pW = accessTokenRepository.findOneByAccessToken(newPass);
+            if (!pW.isPresent()) {
+                generated = true;
+            }
+        }
+        AccessToken newTokenInstance = new AccessToken();
+        newTokenInstance.setAccessToken(newPass);
+        accessTokenRepository.saveAndFlush(newTokenInstance);
+        return newPass;
     }
 
     private void addLoggedInUserAsOrganizerToTrainingInstance(TrainingInstance trainingInstance) {
@@ -231,23 +258,6 @@ public class TrainingInstanceService {
         } catch (CustomRestTemplateException ex) {
             throw new MicroserviceApiException("Currently, it is not possible to unlock a pool with (ID: " + poolId + ").", ex.getApiSubError());
         }
-    }
-
-    private String generateAccessToken(String accessToken) {
-        String newPass = "";
-        boolean generated = false;
-        while (!generated) {
-            String numPart = RandomStringUtils.random(4, false, true);
-            newPass = accessToken + "-" + numPart;
-            Optional<AccessToken> pW = accessTokenRepository.findOneByAccessToken(newPass);
-            if (!pW.isPresent()) {
-                generated = true;
-            }
-        }
-        AccessToken newTokenInstance = new AccessToken();
-        newTokenInstance.setAccessToken(newPass);
-        accessTokenRepository.saveAndFlush(newTokenInstance);
-        return newPass;
     }
 
     /**
