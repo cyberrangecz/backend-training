@@ -226,10 +226,10 @@ public class TrainingInstanceService {
             PoolInfoDto poolInfoDto = pythonRestTemplate.getForObject(kypoOpenStackURI + "/pools/{poolId}/", PoolInfoDto.class, Long.toString(poolId));
             // unlock pool
             if (poolInfoDto != null && poolInfoDto.getLock() != null) {
-                Map<String, String> urlParameters = new HashMap<>();
-                urlParameters.put("poolId", Long.toString(poolId));
-                urlParameters.put("lockId", Long.toString(poolInfoDto.getLock()));
-                pythonRestTemplate.delete(kypoOpenStackURI + "/pools/{poolId}/locks/{lockId}/", urlParameters);
+                Map<String, String> uriVariables = new HashMap<>();
+                uriVariables.put("poolId", Long.toString(poolId));
+                uriVariables.put("lockId", Long.toString(poolInfoDto.getLock()));
+                pythonRestTemplate.delete(kypoOpenStackURI + "/pools/{poolId}/locks/{lockId}/", uriVariables);
             }
         } catch (CustomRestTemplateException ex) {
             throw new MicroserviceApiException("Currently, it is not possible to unlock a pool with (ID: " + poolId + ").", ex.getApiSubError());
