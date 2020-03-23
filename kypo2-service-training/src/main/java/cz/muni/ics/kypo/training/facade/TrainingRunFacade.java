@@ -386,7 +386,7 @@ public class TrainingRunFacade {
                 }
             }
         }
-        return new PageResultResource<>(accessedTrainingRunDTOS, createPagination(trainingRuns));
+        return new PageResultResource<>(accessedTrainingRunDTOS, trainingRunMapper.createPagination(trainingRuns));
     }
 
     private TakenHintDTO convertToTakenHintDTO(HintInfo hintInfo) {
@@ -407,16 +407,6 @@ public class TrainingRunFacade {
         accessTrainingRunDTO.setInstanceId(trainingRun.getTrainingInstance().getId());
         accessTrainingRunDTO.setStartTime(trainingRun.getStartTime());
         return accessTrainingRunDTO;
-    }
-
-    private PageResultResource.Pagination createPagination(Page<?> objects) {
-        PageResultResource.Pagination pageMetadata = new PageResultResource.Pagination();
-        pageMetadata.setNumber(objects.getNumber());
-        pageMetadata.setNumberOfElements(objects.getNumberOfElements());
-        pageMetadata.setSize(objects.getSize());
-        pageMetadata.setTotalElements(objects.getTotalElements());
-        pageMetadata.setTotalPages(objects.getTotalPages());
-        return pageMetadata;
     }
 
     private AbstractLevelDTO getCorrectAbstractLevelDTO(AbstractLevel abstractLevel) {

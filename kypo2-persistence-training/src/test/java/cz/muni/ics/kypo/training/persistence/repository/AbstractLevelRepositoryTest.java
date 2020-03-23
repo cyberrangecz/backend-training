@@ -31,12 +31,15 @@ public class AbstractLevelRepositoryTest {
     @Autowired
     private AbstractLevelRepository abstractLevelRepository;
     @Autowired
+    private HintRepository hintRepository;
+    @Autowired
     private TestDataFactory testDataFactory;
 
     private GameLevel gameLevel, gameLevel2;
     private AssessmentLevel assessmentLevel;
     private InfoLevel infoLevel, infoLevel2;
     private TrainingDefinition trainingDefinition;
+    private Hint hint;
 
     @SpringBootApplication
     static class TestConfiguration {
@@ -46,12 +49,21 @@ public class AbstractLevelRepositoryTest {
     public void setUp() {
         trainingDefinition = testDataFactory.getUnreleasedDefinition();
 
+
+
         gameLevel = testDataFactory.getPenalizedLevel();
         gameLevel.setTrainingDefinition(trainingDefinition);
         gameLevel.setOrder(0);
         gameLevel2 = testDataFactory.getNonPenalizedLevel();
         gameLevel2.setTrainingDefinition(trainingDefinition);
         gameLevel2.setOrder(1);
+
+        hint = new Hint();
+        hint.setContent("sadas");
+        hint.setOrder(1);
+        hint.setTitle("tttt");
+        hint.setHintPenalty(5);
+        hint.setGameLevel(gameLevel);
 
         assessmentLevel = testDataFactory.getTest();
         assessmentLevel.setTrainingDefinition(trainingDefinition);
@@ -69,12 +81,15 @@ public class AbstractLevelRepositoryTest {
     @Test
     public void findById_gameLevel() {
         Long id = (Long) entityManager.persistAndGetId(gameLevel);
+        entityManager.persistAndFlush(hint);
         entityManager.persist(assessmentLevel);
         entityManager.persist(infoLevel);
         Optional<AbstractLevel> optionalGameLevel = abstractLevelRepository.findById(id);
         assertTrue(optionalGameLevel.isPresent());
         assertTrue(optionalGameLevel.get() instanceof GameLevel);
         assertEquals(gameLevel, optionalGameLevel.get());
+        System.out.println(gameLevel.getHints());
+        System.out.println(((GameLevel)optionalGameLevel.get()).getSolution());
     }
 
     @Test

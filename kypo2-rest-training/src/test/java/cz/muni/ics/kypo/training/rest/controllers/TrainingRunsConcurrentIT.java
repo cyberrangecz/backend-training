@@ -160,7 +160,7 @@ public class TrainingRunsConcurrentIT {
     @ThreadCount(4)
     public void concurrentAccessTrainingRun() throws Exception {
         given(javaRestTemplate.getForObject(anyString(), eq(UserRefDTO.class))).willReturn(userRefDTO1);
-        given(pythonRestTemplate.getForObject(anyString(), eq(SandboxInfo.class))).willReturn(sandboxInfo1);
+        given(pythonRestTemplate.getForObject(anyString(), any(), anyString())).willReturn(sandboxInfo1);
         mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_TRAINEE.name()));
 
         mvc.perform(post("/training-runs")
