@@ -305,7 +305,7 @@ public class TrainingRunsIT {
     public void accessTrainingRun() throws Exception {
         given(javaRestTemplate.getForObject(anyString(), eq(UserRefDTO.class))).
                 willReturn(userRefDTO1);
-        given(pythonRestTemplate.getForObject(anyString(), any())).
+        given(pythonRestTemplate.getForObject(anyString(), any(), anyString())).
                 willReturn(sandboxInfo);
         mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_TRAINEE.name()));
         MockHttpServletResponse result = mvc.perform(post("/training-runs")
