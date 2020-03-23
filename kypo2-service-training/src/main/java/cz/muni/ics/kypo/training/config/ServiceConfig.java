@@ -33,7 +33,7 @@ import java.util.List;
  */
 @Configuration
 @EnableAsync(proxyTargetClass = true)
-@Import({ElasticsearchServiceConfig.class, PersistenceConfig.class, ResourceServerSecurityConfig.class})
+@Import({ElasticsearchServiceConfig.class, PersistenceConfig.class, ResourceServerSecurityConfig.class, ObjectMapperConfiguration.class})
 @ComponentScan(basePackages = {"cz.muni.ics.kypo.training.service", "cz.muni.ics.kypo.training.config"})
 public class ServiceConfig {
 

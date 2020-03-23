@@ -1,6 +1,7 @@
 package cz.muni.ics.kypo.training.rest.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import cz.muni.ics.kypo.training.config.ObjectMapperConfiguration;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -19,7 +20,6 @@ import java.util.List;
  * Supported media types for .yml files -> https://stackoverflow.com/a/38000954/2892314
  */
 @Configuration
-@Import(ObjectMapperConfiguration.class)
 public class WebConfigRestTraining implements WebMvcConfigurer {
 
     private static final MediaType MEDIA_TYPE_YAML = MediaType.valueOf("text/yaml");

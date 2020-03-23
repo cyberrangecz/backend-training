@@ -1,4 +1,4 @@
-package cz.muni.ics.kypo.training.rest.config;
+package cz.muni.ics.kypo.training.config;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;
