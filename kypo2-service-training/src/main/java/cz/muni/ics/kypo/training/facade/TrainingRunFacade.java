@@ -170,7 +170,7 @@ public class TrainingRunFacade {
             }
             trainingRun.getHintInfoList().forEach(hintInfo -> {
                         if (hintInfo.getGameLevelId().equals(trainingRun.getCurrentLevel().getId())) {
-                            accessTrainingRunDTO.getTakenHints().add(convertToTakenHintDTO(hintInfo));
+                            accessTrainingRunDTO.getTakenHints().add(hintMapper.mapToDTO(hintInfo));
                         }
                     }
             );
@@ -387,14 +387,6 @@ public class TrainingRunFacade {
             }
         }
         return new PageResultResource<>(accessedTrainingRunDTOS, trainingRunMapper.createPagination(trainingRuns));
-    }
-
-    private TakenHintDTO convertToTakenHintDTO(HintInfo hintInfo) {
-        TakenHintDTO takenHintDTO = new TakenHintDTO();
-        takenHintDTO.setId(hintInfo.getHintId());
-        takenHintDTO.setContent(hintInfo.getHintContent());
-        takenHintDTO.setTitle(hintInfo.getHintTitle());
-        return takenHintDTO;
     }
 
     private AccessTrainingRunDTO convertToAccessTrainingRunDTO(TrainingRun trainingRun) {
