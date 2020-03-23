@@ -434,21 +434,26 @@ public class TrainingRunFacade {
 
     private void deleteInfoAboutCorrectnessFromQuestions(AssessmentLevelDTO assessmentLevelDTO) {
         try {
-            JsonNode jsonNode = JsonLoader.fromString(assessmentLevelDTO.getQuestions());
-            for (JsonNode question : jsonNode) {
+            JsonNode questions = JsonLoader.fromString(assessmentLevelDTO.getQuestions());
+            for (JsonNode question : questions) {
+                // remove correct answers to FFQ
                 ((ObjectNode) question).remove("correct_choices");
+                // remove correct answers to EMI questions
+                ((ObjectNode) question).remove("correct_answers");
                 if (question.has("choices")) {
-                    for (JsonNode choices : question.get("choices")) {
-                        ((ObjectNode) choices).remove("pair");
-                        ((ObjectNode) choices).remove("is_correct");
-
-                    }
+                    removeCorrectAnswersFromMCQ(question.get("choices"));
                 }
             }
-            assessmentLevelDTO.setQuestions(jsonNode.toString());
+            assessmentLevelDTO.setQuestions(questions.toString());
         } catch (IOException ex) {
             ex.printStackTrace();
         }
+    }
 
+    private void removeCorrectAnswersFromMCQ(JsonNode choices) {
+        for (JsonNode choice : choices) {
+            ((ObjectNode) choice).remove("pair");
+            ((ObjectNode) choice).remove("is_correct");
+        }
     }
 }
