@@ -354,39 +354,51 @@ public class TrainingRunFacade {
                 trainingRunDTO.setParticipantRef(userService.getUserRefDTOByUserRefId(trainingRunDTO.getParticipantRef().getUserRefId())));
     }
 
-
     private PageResultResource<AccessedTrainingRunDTO> convertToAccessedRunDTO(Page<TrainingRun> trainingRuns, String sortByTitle) {
         List<AccessedTrainingRunDTO> accessedTrainingRunDTOS = new ArrayList<>();
         for (TrainingRun trainingRun : trainingRuns) {
-            AccessedTrainingRunDTO accessedTrainingRunDTO = new AccessedTrainingRunDTO();
-            accessedTrainingRunDTO.setId(trainingRun.getId());
-            accessedTrainingRunDTO.setTitle(trainingRun.getTrainingInstance().getTitle());
-            accessedTrainingRunDTO.setTrainingInstanceStartDate(trainingRun.getTrainingInstance().getStartTime());
-            accessedTrainingRunDTO.setTrainingInstanceEndDate(trainingRun.getTrainingInstance().getEndTime());
-            accessedTrainingRunDTO.setInstanceId(trainingRun.getTrainingInstance().getId());
-            accessedTrainingRunDTO.setNumberOfLevels(trainingRunService.getMaxLevelOrder(trainingRun.getTrainingInstance().getTrainingDefinition().getId()) + 1);
-            accessedTrainingRunDTO.setCurrentLevelOrder(trainingRun.getCurrentLevel().getOrder() + 1);
-            boolean isTrainingRunFinished = trainingRun.isLevelAnswered() && accessedTrainingRunDTO.getCurrentLevelOrder() == accessedTrainingRunDTO.getNumberOfLevels();
-            boolean isTrainingInstanceRunning = LocalDateTime.now(Clock.systemUTC()).isBefore(accessedTrainingRunDTO.getTrainingInstanceEndDate());
-            if (isTrainingRunFinished || !isTrainingInstanceRunning) {
-                accessedTrainingRunDTO.setPossibleAction(Actions.RESULTS);
-            } else if (!isTrainingRunFinished && isTrainingInstanceRunning) {
-                accessedTrainingRunDTO.setPossibleAction(Actions.RESUME);
-            } else {
-                accessedTrainingRunDTO.setPossibleAction(Actions.NONE);
-            }
+            AccessedTrainingRunDTO accessedTrainingRunDTO = generateAccessedTrainingRunDTO(trainingRun);
             accessedTrainingRunDTOS.add(accessedTrainingRunDTO);
         }
+        return new PageResultResource<>(sortByTitle(accessedTrainingRunDTOS, sortByTitle), trainingRunMapper.createPagination(trainingRuns));
+    }
+
+    private List<AccessedTrainingRunDTO> sortByTitle(List<AccessedTrainingRunDTO> runs, String sortByTitle){
         if (sortByTitle != null && !sortByTitle.isBlank()) {
-            if (accessedTrainingRunDTOS.size() > 0) {
+            if (!runs.isEmpty()) {
                 if (sortByTitle.equals("asc")) {
-                    accessedTrainingRunDTOS.sort(Comparator.comparing(AccessedTrainingRunDTO::getTitle));
+                    runs.sort(Comparator.comparing(AccessedTrainingRunDTO::getTitle));
                 } else if (sortByTitle.equals("desc")) {
-                    accessedTrainingRunDTOS.sort(Comparator.comparing(AccessedTrainingRunDTO::getTitle).reversed());
+                    runs.sort(Comparator.comparing(AccessedTrainingRunDTO::getTitle).reversed());
                 }
             }
         }
-        return new PageResultResource<>(accessedTrainingRunDTOS, trainingRunMapper.createPagination(trainingRuns));
+        return runs;
+    }
+
+    private AccessedTrainingRunDTO generateAccessedTrainingRunDTO(TrainingRun trainingRun){
+        AccessedTrainingRunDTO accessedTrainingRunDTO = new AccessedTrainingRunDTO();
+        accessedTrainingRunDTO.setId(trainingRun.getId());
+        accessedTrainingRunDTO.setTitle(trainingRun.getTrainingInstance().getTitle());
+        accessedTrainingRunDTO.setTrainingInstanceStartDate(trainingRun.getTrainingInstance().getStartTime());
+        accessedTrainingRunDTO.setTrainingInstanceEndDate(trainingRun.getTrainingInstance().getEndTime());
+        accessedTrainingRunDTO.setInstanceId(trainingRun.getTrainingInstance().getId());
+        accessedTrainingRunDTO.setNumberOfLevels(trainingRunService.getMaxLevelOrder(trainingRun.getTrainingInstance().getTrainingDefinition().getId()) + 1);
+        accessedTrainingRunDTO.setCurrentLevelOrder(trainingRun.getCurrentLevel().getOrder() + 1);
+        accessedTrainingRunDTO.setPossibleAction(resolvePossibleActions(accessedTrainingRunDTO, trainingRun.isLevelAnswered()));
+        return accessedTrainingRunDTO;
+    }
+
+    private Actions resolvePossibleActions(AccessedTrainingRunDTO trainingRunDTO, boolean isCurrentLevelAnswered){
+        boolean isTrainingRunFinished = isCurrentLevelAnswered && trainingRunDTO.getCurrentLevelOrder() == trainingRunDTO.getNumberOfLevels();
+        boolean isTrainingInstanceRunning = LocalDateTime.now(Clock.systemUTC()).isBefore(trainingRunDTO.getTrainingInstanceEndDate());
+        if (isTrainingRunFinished || !isTrainingInstanceRunning) {
+            return Actions.RESULTS;
+        } else if (!isTrainingRunFinished && isTrainingInstanceRunning) {
+            return Actions.RESUME;
+        } else {
+            return Actions.NONE;
+        }
     }
 
     private AccessTrainingRunDTO convertToAccessTrainingRunDTO(TrainingRun trainingRun) {
