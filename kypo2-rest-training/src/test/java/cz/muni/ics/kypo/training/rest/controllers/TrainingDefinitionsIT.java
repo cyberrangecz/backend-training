@@ -951,7 +951,7 @@ public class TrainingDefinitionsIT {
         ApiEntityError error = convertJsonBytesToObject(response.getContentAsString(), ApiEntityError.class);
         assertEquals(HttpStatus.NOT_FOUND, error.getStatus());
         assertEntityDetailError(error.getEntityErrorDetail(), AbstractLevel.class, "id", "100",
-                "Level not found");
+                "Level not found.");
     }
 
     @Test
@@ -1082,7 +1082,7 @@ public class TrainingDefinitionsIT {
         assertEquals(HttpStatus.CONFLICT, error.getStatus());
         assertEntityDetailError(error.getEntityErrorDetail(), TrainingDefinition.class, "id", releasedTrainingDefinition.getId().toString(),
                 "Cannot update training definition with already created training instance(s). Remove training " +
-                "instance(s) before changing the state from released to unreleased training definition.");
+                        "instance(s) before changing the state from released to unreleased training definition.");
     }
 
     @Test
@@ -1155,7 +1155,7 @@ public class TrainingDefinitionsIT {
     private void assertEntityDetailError(EntityErrorDetail entityErrorDetail, Class<?> entity, String identifier, Object value, String reason) {
         assertEquals(entity.getSimpleName(), entityErrorDetail.getEntity());
         assertEquals(identifier, entityErrorDetail.getIdentifier());
-        if(entityErrorDetail.getIdentifierValue() == null) {
+        if (entityErrorDetail.getIdentifierValue() == null) {
             assertEquals(value, entityErrorDetail.getIdentifierValue());
         } else {
             assertEquals(value, entityErrorDetail.getIdentifierValue().toString());

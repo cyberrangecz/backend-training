@@ -1,5 +1,6 @@
 package cz.muni.ics.kypo.training.persistence.repository;
 
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
@@ -24,6 +25,14 @@ public interface AbstractLevelRepository extends JpaRepository<AbstractLevel, Lo
      * @return list of {@link AbstractLevel}s associated with {@link cz.muni.ics.kypo.training.persistence.model.TrainingDefinition}
      */
     List<AbstractLevel> findAllLevelsByTrainingDefinitionId(@Param("trainingDefinitionId") Long trainingDefinitionId);
+
+    /**
+     * Find first level for particular training definition
+     *
+     * @param trainingDefinitionId the training definition id
+     * @return {@link AbstractLevel}s associated with {@link cz.muni.ics.kypo.training.persistence.model.TrainingDefinition}
+     */
+    List<AbstractLevel> findFirstLevelByTrainingDefinitionId(@Param("trainingDefinitionId") Long trainingDefinitionId, Pageable pageable);
 
     /**
      * Find level in definition.
