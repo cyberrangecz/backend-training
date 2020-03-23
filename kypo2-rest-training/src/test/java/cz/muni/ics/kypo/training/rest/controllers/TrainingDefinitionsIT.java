@@ -180,7 +180,7 @@ public class TrainingDefinitionsIT {
 
         userRefDTO = new UserRefDTO();
         userRefDTO.setUserRefFullName("Ing. Mgr. MuDr. Boris Jadus");
-        userRefDTO.setUserRefLogin("445469@muni.cz");
+        userRefDTO.setUserRefSub("445469@muni.cz");
         userRefDTO.setUserRefGivenName("Boris");
         userRefDTO.setUserRefFamilyName("Jadus");
         userRefDTO.setIss("https://oidc.muni.cz");

@@ -130,7 +130,7 @@ public class TrainingRunsConcurrentIT {
 
         userRefDTO1 = new UserRefDTO();
         userRefDTO1.setUserRefFullName("Ing. Mgr. MuDr. Boris Jadus");
-        userRefDTO1.setUserRefLogin("445469@muni.cz");
+        userRefDTO1.setUserRefSub("445469@muni.cz");
         userRefDTO1.setUserRefGivenName("Boris");
         userRefDTO1.setUserRefFamilyName("Jadus");
         userRefDTO1.setIss("https://oidc.muni.cz");

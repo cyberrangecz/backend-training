@@ -72,13 +72,13 @@ public class UserServiceTest {
         pageable = PageRequest.of(0,5);
     }
 
-    private UserRefDTO createUserRefDTO(Long userRefId, String fullName, String familyName, String givenName, String login, String iss, byte[] picture) {
+    private UserRefDTO createUserRefDTO(Long userRefId, String fullName, String familyName, String givenName, String sub, String iss, byte[] picture) {
         UserRefDTO userRefDTO = new UserRefDTO();
         userRefDTO.setUserRefId(userRefId);
         userRefDTO.setUserRefFullName(fullName);
         userRefDTO.setUserRefFamilyName(familyName);
         userRefDTO.setUserRefGivenName(givenName);
-        userRefDTO.setUserRefLogin(login);
+        userRefDTO.setUserRefSub(sub);
         userRefDTO.setIss(iss);
         userRefDTO.setPicture(picture);
         return userRefDTO;

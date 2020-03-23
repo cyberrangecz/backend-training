@@ -430,10 +430,10 @@ public class TrainingDefinitionsRestControllerTest {
     @Test
     public void getDesigners() throws Exception {
         UserRefDTO user1 = new UserRefDTO();
-        user1.setUserRefLogin("peter@mail.muni.cz");
+        user1.setUserRefSub("peter@mail.muni.cz");
         user1.setUserRefFullName("Peter Parker");
         UserRefDTO user2 = new UserRefDTO();
-        user2.setUserRefLogin("dave@mail.muni.cz");
+        user2.setUserRefSub("dave@mail.muni.cz");
         user2.setUserRefFullName("David Holman");
         List<UserRefDTO> designers = Arrays.asList(user1, user2);
         String value = convertObjectToJsonBytes(designers);
