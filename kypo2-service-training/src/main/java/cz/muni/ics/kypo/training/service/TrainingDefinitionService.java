@@ -297,7 +297,9 @@ public class TrainingDefinitionService {
             deleteLevel(abstractLevelToDelete.get());
             List<AbstractLevel> levels = abstractLevelRepository.findAllLevelsByTrainingDefinitionId(definitionId);
             for (AbstractLevel level : levels) {
-                if (level.getOrder() > orderOfDeleted) level.setOrder(level.getOrder() - 1);
+                if (level.getOrder() > orderOfDeleted) {
+                    level.setOrder(level.getOrder() - 1);
+                }
             }
         } else {
             throw new EntityNotFoundException(new EntityErrorDetail(AbstractLevel.class, "id", levelId.getClass(), levelId, LEVEL_NOT_FOUND));
@@ -341,10 +343,10 @@ public class TrainingDefinitionService {
     public void updateInfoLevel(Long definitionId, InfoLevel infoLevelToUpdate) {
         TrainingDefinition trainingDefinition = findById(definitionId);
         checkIfCanBeUpdated(trainingDefinition);
-        if (!findLevelInDefinition(trainingDefinition, infoLevelToUpdate.getId()))
+        if (!findLevelInDefinition(trainingDefinition, infoLevelToUpdate.getId())) {
             throw new EntityNotFoundException(new EntityErrorDetail(AbstractLevel.class, "id", infoLevelToUpdate.getId().getClass(),
                     infoLevelToUpdate.getId(), "Level was not found in definition (id: " + definitionId + ")."));
-
+        }
         InfoLevel infoLevel = infoLevelRepository.findById(infoLevelToUpdate.getId())
                 .orElseThrow(() -> new EntityNotFoundException(new EntityErrorDetail(AbstractLevel.class, "id", infoLevelToUpdate.getId().getClass(),
                         infoLevelToUpdate.getId(), LEVEL_NOT_FOUND)));
@@ -366,10 +368,10 @@ public class TrainingDefinitionService {
     public void updateAssessmentLevel(Long definitionId, AssessmentLevel assessmentLevelToUpdate) {
         TrainingDefinition trainingDefinition = findById(definitionId);
         checkIfCanBeUpdated(trainingDefinition);
-        if (!findLevelInDefinition(trainingDefinition, assessmentLevelToUpdate.getId()))
+        if (!findLevelInDefinition(trainingDefinition, assessmentLevelToUpdate.getId())) {
             throw new EntityNotFoundException(new EntityErrorDetail(AbstractLevel.class, "id", assessmentLevelToUpdate.getId().getClass(),
                     assessmentLevelToUpdate.getId(), "Level was not found in definition (id: " + definitionId + ")."));
-
+        }
         AssessmentLevel assessmentLevel = assessmentLevelRepository.findById(assessmentLevelToUpdate.getId())
                 .orElseThrow(() -> new EntityNotFoundException(new EntityErrorDetail(AbstractLevel.class, "id", assessmentLevelToUpdate.getId().getClass(),
                         assessmentLevelToUpdate.getId(), LEVEL_NOT_FOUND)));
@@ -393,15 +395,15 @@ public class TrainingDefinitionService {
      */
     public GameLevel createGameLevel(Long definitionId) {
         TrainingDefinition trainingDefinition = findById(definitionId);
-        if (!trainingDefinition.getState().equals(TDState.UNRELEASED))
+        if (!trainingDefinition.getState().equals(TDState.UNRELEASED)) {
             throw new EntityConflictException(new EntityErrorDetail(TrainingDefinition.class, "id", definitionId.getClass(), definitionId,
                     "Cannot create level in released or archived training definition"));
+        }
         if (trainingInstanceRepository.existsAnyForTrainingDefinition(trainingDefinition.getId())) {
             throw new EntityConflictException(new EntityErrorDetail(TrainingDefinition.class, "id", definitionId.getClass(), definitionId,
                     "Cannot update training definition with already created training instance. " +
                             "Remove training instance/s before updating training definition."));
         }
-
         GameLevel newGameLevel = new GameLevel();
         newGameLevel.setMaxScore(100);
         newGameLevel.setTitle("Title of game level");
@@ -457,15 +459,15 @@ public class TrainingDefinitionService {
      */
     public AssessmentLevel createAssessmentLevel(Long definitionId) {
         TrainingDefinition trainingDefinition = findById(definitionId);
-        if (!trainingDefinition.getState().equals(TDState.UNRELEASED))
+        if (!trainingDefinition.getState().equals(TDState.UNRELEASED)) {
             throw new EntityConflictException(new EntityErrorDetail(TrainingDefinition.class, "id", definitionId.getClass(), definitionId,
                     "Cannot create level in released or archived training definition"));
+        }
         if (trainingInstanceRepository.existsAnyForTrainingDefinition(trainingDefinition.getId())) {
             throw new EntityConflictException(new EntityErrorDetail(TrainingDefinition.class, "id", definitionId.getClass(), definitionId,
                     "Cannot update training definition with already created training instance. " +
                             "Remove training instance/s before updating training definition."));
         }
-
         AssessmentLevel newAssessmentLevel = new AssessmentLevel();
         newAssessmentLevel.setTitle("Title of assessment level");
         newAssessmentLevel.setMaxScore(0);
@@ -501,7 +503,7 @@ public class TrainingDefinitionService {
      */
     public AbstractLevel findLevelById(Long levelId) {
         return abstractLevelRepository.findByIdIncludingDefinition(levelId)
-                .orElseThrow(() -> new EntityNotFoundException(new EntityErrorDetail(AbstractLevel.class, "id", levelId.getClass(), levelId, "Level not found")));
+                .orElseThrow(() -> new EntityNotFoundException(new EntityErrorDetail(AbstractLevel.class, "id", levelId.getClass(), levelId, LEVEL_NOT_FOUND)));
     }
 
     /**
@@ -553,12 +555,8 @@ public class TrainingDefinitionService {
     }
 
     private boolean findLevelInDefinition(TrainingDefinition trainingDefinition, Long levelId) {
-        Optional<AbstractLevel> abstractLevel = abstractLevelRepository.findLevelInDefinition(trainingDefinition.getId(), levelId);
-        if (abstractLevel.isPresent()) {
-            return true;
-        } else {
-            return false;
-        }
+        return abstractLevelRepository.findLevelInDefinition(trainingDefinition.getId(), levelId)
+                .isPresent();
     }
 
     private void cloneLevelsFromTrainingDefinition(TrainingDefinition trainingDefinition, TrainingDefinition clonedTrainingDefinition) {
@@ -619,7 +617,6 @@ public class TrainingDefinitionService {
                     "Cannot update training definition with already created training instance. " +
                             "Remove training instance/s before updating training definition."));
         }
-
     }
 
     private void deleteLevel(AbstractLevel level) {

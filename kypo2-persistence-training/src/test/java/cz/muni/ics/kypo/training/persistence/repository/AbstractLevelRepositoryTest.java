@@ -48,8 +48,7 @@ public class AbstractLevelRepositoryTest {
     @Before
     public void setUp() {
         trainingDefinition = testDataFactory.getUnreleasedDefinition();
-
-
+        entityManager.persistAndFlush(trainingDefinition);
 
         gameLevel = testDataFactory.getPenalizedLevel();
         gameLevel.setTrainingDefinition(trainingDefinition);

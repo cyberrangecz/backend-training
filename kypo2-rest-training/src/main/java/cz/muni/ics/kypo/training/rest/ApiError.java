@@ -19,34 +19,19 @@ import java.util.Objects;
         @JsonSubTypes.Type(value = ApiMicroserviceError.class, name = "ApiMicroserviceError")})
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ApiError {
-    /**
-     * The Timestamp.
-     */
+
     @ApiModelProperty(value = "The time when the exception occurred", example = "1574062900 (different for each type of exception)")
     private long timestamp;
-    /**
-     * The Status.
-     */
     @ApiModelProperty(value = "The HTTP response status code", example = "404 Not found (different for each type of exception).")
     private HttpStatus status;
-    /**
-     * The Message.
-     */
     @ApiModelProperty(value = "The specific description of the ApiError.", example = "The IDMGroup could not be found in database (different for each type of exception).")
     private String message;
-    /**
-     * The Errors.
-     */
     @ApiModelProperty(value = "The list of main reasons of the ApiError.", example = "[The requested resource was not found (different for each type of exception).]")
     private List<String> errors;
-    /**
-     * The Path.
-     */
     @ApiModelProperty(value = "The requested URI path which caused error.", example = "/kypo2-rest-user-and-group/api/v1/groups/1000 (different for each type of exception).")
     private String path;
 
-    protected ApiError() {
-    }
+    protected ApiError() {}
 
     /**
      * Of api error.

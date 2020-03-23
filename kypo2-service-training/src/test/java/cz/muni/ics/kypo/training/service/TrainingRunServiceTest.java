@@ -400,8 +400,8 @@ public class TrainingRunServiceTest {
     public void getNextLevel() {
         mockSpringSecurityContextForGet();
         List<AbstractLevel> levels = new ArrayList<>();
-        levels.add(infoLevel);
         levels.add(gameLevel);
+        levels.add(infoLevel);
 
         trainingRun1.setLevelAnswered(true);
         given(trainingRunRepository.findByIdWithLevel(any(Long.class))).willReturn(Optional.of(trainingRun1));

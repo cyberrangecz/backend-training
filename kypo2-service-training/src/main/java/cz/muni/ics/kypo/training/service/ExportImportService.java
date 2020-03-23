@@ -76,16 +76,6 @@ public class ExportImportService {
     }
 
     /**
-     * Find all levels associated with training definition with given id.
-     *
-     * @param trainingDefinitionId the id of definition which levels are to be found.
-     * @return the list of all {@link AbstractLevel} that are associated with the {@link TrainingDefinition}.
-     */
-    public List<AbstractLevel> findAllLevelsFromDefinition(Long trainingDefinitionId) {
-        return abstractLevelRepository.findAllLevelsByTrainingDefinitionId(trainingDefinitionId);
-    }
-
-    /**
      * Creates a level and connects it with training definition.
      *
      * @param level      the {@link AbstractLevel} to be created.

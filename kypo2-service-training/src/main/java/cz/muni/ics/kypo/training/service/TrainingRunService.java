@@ -24,12 +24,12 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
 import java.time.Clock;
@@ -193,10 +193,8 @@ public class TrainingRunService {
             throw new EntityNotFoundException(new EntityErrorDetail(AbstractLevel.class, "There is no next level for current training run (ID: " + runId + ")."));
         }
         List<AbstractLevel> levels = abstractLevelRepository.findAllLevelsByTrainingDefinitionId(trainingRun.getCurrentLevel().getTrainingDefinition().getId());
-        Collections.sort(levels, Comparator.comparing(AbstractLevel::getOrder));
         int nextLevelIndex = levels.indexOf(trainingRun.getCurrentLevel()) + 1;
         AbstractLevel abstractLevel = levels.get(nextLevelIndex);
-
         if (trainingRun.getCurrentLevel() instanceof InfoLevel) {
             auditEventsService.auditLevelCompletedAction(trainingRun);
         }
@@ -252,8 +250,8 @@ public class TrainingRunService {
      * @throws TooManyRequestsException training run has been already accessed.
      */
     public TrainingRun accessTrainingRun(TrainingInstance trainingInstance, Long participantRefId) {
-        List<AbstractLevel> levels = getAllLevelsForTRSortedByOrder(trainingInstance.getTrainingDefinition().getId());
-        TrainingRun trainingRun = getNewTrainingRun(levels.get(0), trainingInstance, LocalDateTime.now(Clock.systemUTC()), trainingInstance.getEndTime(), participantRefId);
+        AbstractLevel initialLevel = findFirstLevelForTrainingRun(trainingInstance.getTrainingDefinition().getId());
+        TrainingRun trainingRun = getNewTrainingRun(initialLevel, trainingInstance, LocalDateTime.now(Clock.systemUTC()), trainingInstance.getEndTime(), participantRefId);
 
         assignSandbox(trainingRun, trainingInstance.getPoolId());
         auditEventsService.auditTrainingRunStartedAction(trainingRun);
@@ -306,14 +304,13 @@ public class TrainingRunService {
         }
     }
 
-    private List<AbstractLevel> getAllLevelsForTRSortedByOrder(Long trainingDefinitionId) {
-        List<AbstractLevel> levels = abstractLevelRepository.findAllLevelsByTrainingDefinitionId(trainingDefinitionId);
+    private AbstractLevel findFirstLevelForTrainingRun(Long trainingDefinitionId) {
+        List<AbstractLevel> levels = abstractLevelRepository.findFirstLevelByTrainingDefinitionId(trainingDefinitionId, PageRequest.of(0, 1));
         if (levels.isEmpty()) {
             throw new EntityNotFoundException(new EntityErrorDetail(TrainingDefinition.class, "id", Long.class, trainingDefinitionId,
                     "No starting level available for this training definition."));
         }
-        levels.sort(Comparator.comparing(AbstractLevel::getOrder));
-        return levels;
+        return levels.get(0);
     }
 
     private TrainingRun getNewTrainingRun(AbstractLevel currentLevel, TrainingInstance trainingInstance, LocalDateTime startTime, LocalDateTime endTime, Long participantRefId) {
@@ -452,8 +449,9 @@ public class TrainingRunService {
         if (level instanceof GameLevel) {
             if (!trainingRun.isSolutionTaken()) {
                 trainingRun.setSolutionTaken(true);
-                if (((GameLevel) level).isSolutionPenalized())
+                if (((GameLevel) level).isSolutionPenalized()) {
                     trainingRun.setCurrentPenalty(trainingRun.getMaxLevelScore());
+                }
                 trainingRunRepository.save(trainingRun);
             }
             auditEventsService.auditSolutionDisplayedAction(trainingRun);
@@ -476,8 +474,9 @@ public class TrainingRunService {
         TrainingRun trainingRun = findByIdWithLevel(trainingRunId);
         AbstractLevel level = trainingRun.getCurrentLevel();
         if (level instanceof GameLevel) {
-            Hint hint = hintRepository.findById(hintId).orElseThrow(() -> new EntityNotFoundException(new EntityErrorDetail(Hint.class, "id", hintId.getClass(), hintId,
-                    "Hint not found.")));
+            Hint hint = hintRepository.findById(hintId)
+                    .orElseThrow(() -> new EntityNotFoundException(new EntityErrorDetail(Hint.class, "id", hintId.getClass(), hintId,
+                            "Hint not found.")));
             if (hint.getGameLevel().getId().equals(level.getId())) {
                 trainingRun.increaseCurrentPenalty(hint.getHintPenalty());
                 trainingRun.addHintInfo(new HintInfo(level.getId(), hint.getId(), hint.getTitle(), hint.getContent(), hint.getOrder()));
@@ -518,7 +517,6 @@ public class TrainingRunService {
             throw new EntityConflictException(new EntityErrorDetail(TrainingRun.class, "id", trainingRunId.getClass(), trainingRunId,
                     "Cannot finish training run because current level is not answered."));
         }
-
         trainingRun.setState(TRState.FINISHED);
         trainingRun.setEndTime(LocalDateTime.now(Clock.systemUTC()));
         trAcquisitionLockRepository.deleteByParticipantRefIdAndTrainingInstanceId(trainingRun.getParticipantRef().getUserRefId(), trainingRun.getTrainingInstance().getId());
@@ -582,7 +580,6 @@ public class TrainingRunService {
             } else {
                 throw new IllegalArgumentException("Given responses are not valid. \n" + report.iterator().next().toString());
             }
-
         } catch (IOException | ProcessingException ex) {
             throw new InternalServerErrorException(ex.getMessage());
         }

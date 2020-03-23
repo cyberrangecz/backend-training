@@ -29,6 +29,10 @@ import java.util.Objects;
                 query = "SELECT l FROM AbstractLevel l WHERE l.trainingDefinition.id = :trainingDefinitionId ORDER BY l.order"
         ),
         @NamedQuery(
+                name = "AbstractLevel.findFirstLevelByTrainingDefinitionId",
+                query = "SELECT l FROM AbstractLevel l WHERE l.trainingDefinition.id = :trainingDefinitionId ORDER BY l.order"
+        ),
+        @NamedQuery(
                 name = "AbstractLevel.findLevelInDefinition",
                 query = "SELECT l FROM AbstractLevel l WHERE l.trainingDefinition.id = :trainingDefinitionId AND l.id = :levelId"
         ),
