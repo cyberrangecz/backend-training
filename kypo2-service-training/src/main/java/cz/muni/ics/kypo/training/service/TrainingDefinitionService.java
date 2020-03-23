@@ -213,10 +213,8 @@ public class TrainingDefinitionService {
     public void swapLevels(Long definitionId, Long swapLevelFrom, Long swapLevelTo) {
         TrainingDefinition trainingDefinition = findById(definitionId);
         checkIfCanBeUpdated(trainingDefinition);
-        AbstractLevel swapAbstractLevelFrom = abstractLevelRepository.findById(swapLevelFrom)
-                .orElseThrow(() -> new EntityNotFoundException(new EntityErrorDetail(AbstractLevel.class, "id", swapLevelFrom.getClass(), swapLevelFrom, LEVEL_NOT_FOUND)));
-        AbstractLevel swapAbstractLevelTo = abstractLevelRepository.findById(swapLevelTo)
-                .orElseThrow(() -> new EntityNotFoundException(new EntityErrorDetail(AbstractLevel.class, "id", swapLevelTo.getClass(), swapLevelTo, LEVEL_NOT_FOUND)));
+        AbstractLevel swapAbstractLevelFrom = this.findLevelByIdWithoutDefinition(swapLevelFrom);
+        AbstractLevel swapAbstractLevelTo = this.findLevelByIdWithoutDefinition(swapLevelTo);
         int orderFromLevel = swapAbstractLevelFrom.getOrder();
         int orderToLevel = swapAbstractLevelTo.getOrder();
         swapAbstractLevelFrom.setOrder(orderToLevel);
@@ -243,8 +241,7 @@ public class TrainingDefinitionService {
         }
         TrainingDefinition trainingDefinition = findById(definitionId);
         checkIfCanBeUpdated(trainingDefinition);
-        AbstractLevel levelToBeMoved = abstractLevelRepository.findById(levelIdToBeMoved)
-                .orElseThrow(() -> new EntityNotFoundException(new EntityErrorDetail(AbstractLevel.class, "id", levelIdToBeMoved.getClass(), levelIdToBeMoved, LEVEL_NOT_FOUND)));
+        AbstractLevel levelToBeMoved = this.findLevelByIdWithoutDefinition(levelIdToBeMoved);
         if (levelToBeMoved.getOrder() == newPosition) {
             return;
         } else if (levelToBeMoved.getOrder() < newPosition) {
@@ -495,7 +492,7 @@ public class TrainingDefinitionService {
     }
 
     /**
-     * Finds specific level by id
+     * Finds specific level by id with associated training definition
      *
      * @param levelId - id of wanted level
      * @return wanted {@link AbstractLevel}
@@ -503,6 +500,18 @@ public class TrainingDefinitionService {
      */
     public AbstractLevel findLevelById(Long levelId) {
         return abstractLevelRepository.findByIdIncludingDefinition(levelId)
+                .orElseThrow(() -> new EntityNotFoundException(new EntityErrorDetail(AbstractLevel.class, "id", levelId.getClass(), levelId, LEVEL_NOT_FOUND)));
+    }
+
+    /**
+     * Finds specific level by id
+     *
+     * @param levelId - id of wanted level
+     * @return wanted {@link AbstractLevel}
+     * @throws EntityNotFoundException level is not found.
+     */
+    private AbstractLevel findLevelByIdWithoutDefinition(Long levelId) {
+        return abstractLevelRepository.findById(levelId)
                 .orElseThrow(() -> new EntityNotFoundException(new EntityErrorDetail(AbstractLevel.class, "id", levelId.getClass(), levelId, LEVEL_NOT_FOUND)));
     }
 
@@ -561,7 +570,7 @@ public class TrainingDefinitionService {
 
     private void cloneLevelsFromTrainingDefinition(TrainingDefinition trainingDefinition, TrainingDefinition clonedTrainingDefinition) {
         List<AbstractLevel> levels = abstractLevelRepository.findAllLevelsByTrainingDefinitionId(trainingDefinition.getId());
-        if (levels == null || levels.size() == 0) {
+        if (levels == null || levels.isEmpty()) {
             return;
         }
         levels.forEach(level -> {
