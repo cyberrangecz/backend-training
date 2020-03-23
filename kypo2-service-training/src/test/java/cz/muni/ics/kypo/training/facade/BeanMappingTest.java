@@ -52,7 +52,7 @@ public class BeanMappingTest {
 
         aRDTO = new UserRefDTO();
         aRDTO.setUserRefId(1L);
-        aRDTO.setUserRefLogin("login");
+        aRDTO.setUserRefSub("sub");
 
         tD = testDataFactory.getUnreleasedDefinition();
         tD.setId(1L);

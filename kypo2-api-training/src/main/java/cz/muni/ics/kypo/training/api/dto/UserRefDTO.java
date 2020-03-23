@@ -19,8 +19,8 @@ public class UserRefDTO {
     @ApiModelProperty(value = "Reference to user in another microservice and get his id", example = "1")
     private Long userRefId;
     @ApiModelProperty(value = "Reference to user in another microservice.", example = "441048@mail.muni.cz")
-    @JsonProperty("login")
-    private String userRefLogin;
+    @JsonProperty("sub")
+    private String userRefSub;
     @ApiModelProperty(value = "Reference to user in another microservice and get his full name", example = "Mgr. Ing. Pavel Šeda")
     @JsonProperty("full_name")
     private String userRefFullName;
@@ -36,21 +36,21 @@ public class UserRefDTO {
     private byte[] picture;
 
     /**
-     * Gets user ref login.
+     * Gets user ref sub.
      *
-     * @return the user ref login
+     * @return the user ref sub
      */
-    public String getUserRefLogin() {
-        return userRefLogin;
+    public String getUserRefSub() {
+        return userRefSub;
     }
 
     /**
-     * Sets user ref login.
+     * Sets user ref sub.
      *
-     * @param userRefLogin the user ref login
+     * @param userRefSub the user ref sub
      */
-    public void setUserRefLogin(String userRefLogin) {
-        this.userRefLogin = userRefLogin;
+    public void setUserRefSub(String userRefSub) {
+        this.userRefSub = userRefSub;
     }
 
     /**
@@ -167,7 +167,7 @@ public class UserRefDTO {
     @Override
     public String toString() {
         return "UserRefDTO{" +
-                ", userRefLogin='" + userRefLogin + '\'' +
+                ", userRefSub='" + userRefSub + '\'' +
                 ", userRefFullName='" + userRefFullName + '\'' +
                 ", userRefGivenName='" + userRefGivenName + '\'' +
                 ", userRefFamilyName='" + userRefFamilyName + '\'' +
@@ -182,7 +182,7 @@ public class UserRefDTO {
         if (!(o instanceof UserRefDTO)) return false;
         UserRefDTO that = (UserRefDTO) o;
         return Objects.equals(getUserRefId(), that.getUserRefId()) &&
-                Objects.equals(getUserRefLogin(), that.getUserRefLogin()) &&
+                Objects.equals(getUserRefSub(), that.getUserRefSub()) &&
                 Objects.equals(getUserRefFullName(), that.getUserRefFullName()) &&
                 Objects.equals(getUserRefGivenName(), that.getUserRefGivenName()) &&
                 Objects.equals(getUserRefFamilyName(), that.getUserRefFamilyName()) &&
@@ -191,6 +191,6 @@ public class UserRefDTO {
 
     @Override
     public int hashCode() {
-        return Objects.hash(getUserRefId(), getUserRefLogin(), getUserRefFullName(), getUserRefGivenName(), getUserRefFamilyName(), getIss());
+        return Objects.hash(getUserRefId(), getUserRefSub(), getUserRefFullName(), getUserRefGivenName(), getUserRefFamilyName(), getIss());
     }
 }

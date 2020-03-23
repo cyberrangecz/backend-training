@@ -173,7 +173,7 @@ public class TrainingRunsIT {
 
         userRefDTO1 = new UserRefDTO();
         userRefDTO1.setUserRefFullName("Ing. Mgr. MuDr. Boris Jadus");
-        userRefDTO1.setUserRefLogin("445469@muni.cz");
+        userRefDTO1.setUserRefSub("445469@muni.cz");
         userRefDTO1.setUserRefGivenName("Boris");
         userRefDTO1.setUserRefFamilyName("Jadus");
         userRefDTO1.setIss("https://oidc.muni.cz");
@@ -181,7 +181,7 @@ public class TrainingRunsIT {
 
         userRefDTO2 = new UserRefDTO();
         userRefDTO2.setUserRefFullName("Ing. Jan Chudý");
-        userRefDTO2.setUserRefLogin("445497@muni.cz");
+        userRefDTO2.setUserRefSub("445497@muni.cz");
         userRefDTO2.setUserRefGivenName("Jan");
         userRefDTO2.setUserRefFamilyName("Chudý");
         userRefDTO2.setIss("https://oidc.muni.cz");
