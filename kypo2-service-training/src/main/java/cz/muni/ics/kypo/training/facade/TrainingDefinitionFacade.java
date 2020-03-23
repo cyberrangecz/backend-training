@@ -151,17 +151,15 @@ public class TrainingDefinitionFacade {
      */
     @IsOrganizerOrAdmin
     @TransactionalRO
-    public PageResultResource<TrainingDefinitionInfoDTO> findAllForOrganizers(String state, Pageable pageable) {
+    public PageResultResource<TrainingDefinitionInfoDTO> findAllForOrganizers(TDState state, Pageable pageable) {
         Long loggedInUserId = securityService.getUserRefIdFromUserAndGroup();
-        if (state != null && state.equals(cz.muni.ics.kypo.training.persistence.model.enums.TDState.RELEASED.name())) {
+        if (state == TDState.RELEASED) {
             return trainingDefinitionMapper.mapToPageResultResourceInfoDTO(
                     trainingDefinitionService.findAllForOrganizers(cz.muni.ics.kypo.training.persistence.model.enums.TDState.RELEASED, pageable));
-        } else if (state != null && state.equals(cz.muni.ics.kypo.training.persistence.model.enums.TDState.UNRELEASED.name())) {
+        } else if (state == TDState.UNRELEASED) {
             if (securityService.hasRole(RoleTypeSecurity.ROLE_TRAINING_ADMINISTRATOR)) {
-                if (state.equals(cz.muni.ics.kypo.training.persistence.model.enums.TDState.UNRELEASED.name())) {
                     return trainingDefinitionMapper.mapToPageResultResourceInfoDTO(
                             trainingDefinitionService.findAllForOrganizers(cz.muni.ics.kypo.training.persistence.model.enums.TDState.UNRELEASED, pageable));
-                }
             } else if (securityService.hasRole(RoleTypeSecurity.ROLE_TRAINING_DESIGNER) && securityService.hasRole(RoleTypeSecurity.ROLE_TRAINING_ORGANIZER)) {
                 return trainingDefinitionMapper.mapToPageResultResourceInfoDTO(
                         trainingDefinitionService.findAllForDesignersAndOrganizersUnreleased(loggedInUserId, pageable));

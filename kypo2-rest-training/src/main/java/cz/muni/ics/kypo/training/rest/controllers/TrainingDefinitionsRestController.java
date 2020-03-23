@@ -146,7 +146,7 @@ public class TrainingDefinitionsRestController {
     @GetMapping(path = "/for-organizers", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> findAllTrainingDefinitionsForOrganizers(
             @ApiParam(value = "State of the training definition", required = true)
-            @RequestParam(value = "state", required = true) String state,
+            @RequestParam(value = "state") TDState state,
             Pageable pageable,
             @ApiParam(value = "Fields which should be returned in REST API response", required = false)
             @RequestParam(value = "fields", required = false) String fields) {
