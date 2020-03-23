@@ -259,11 +259,9 @@ public class TrainingInstanceService {
      * @param pageable   pageable parameter with information about pagination.
      * @return {@link TrainingRun}s of specific {@link TrainingInstance}
      */
-    public Page<TrainingRun> findTrainingRunsByTrainingInstance(Long instanceId, Boolean isActive, Pageable
-            pageable) {
-        trainingInstanceRepository.findById(instanceId)
-                .orElseThrow(() -> new EntityNotFoundException(new EntityErrorDetail(TrainingInstance.class, "id", instanceId.getClass(), instanceId,
-                        "Training instance not found.")));
+    public Page<TrainingRun> findTrainingRunsByTrainingInstance(Long instanceId, Boolean isActive, Pageable pageable) {
+        // check if instance exists
+        this.findById(instanceId);
         if (isActive == null) {
             return trainingRunRepository.findAllByTrainingInstanceId(instanceId, pageable);
         } else if (isActive) {
