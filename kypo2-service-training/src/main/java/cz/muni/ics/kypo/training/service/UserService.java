@@ -1,9 +1,5 @@
 package cz.muni.ics.kypo.training.service;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalWO;
 import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
 import cz.muni.ics.kypo.training.api.enums.RoleType;
@@ -23,7 +19,6 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.io.IOException;
 import java.net.URI;
 import java.util.Collections;
 import java.util.Set;
@@ -93,20 +88,12 @@ public class UserService {
         if (userRefIds.isEmpty()) {
             return new PageResultResource<>(Collections.emptyList(), new PageResultResource.Pagination(0, 0, pageable.getPageSize(), 0, 0));
         }
-        HttpHeaders httpHeaders = new HttpHeaders();
         UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(userAndGroupURI + "/users/ids");
-        if (givenName != null) {
-            builder.queryParam("givenName", givenName);
-        }
-        if (familyName != null) {
-            builder.queryParam("familyName", familyName);
-        }
+        setCommonParams(givenName, familyName, pageable, builder);
         builder.queryParam("ids", StringUtils.collectionToDelimitedString(userRefIds, ","));
-        builder.queryParam("page", pageable.getPageNumber());
-        builder.queryParam("size", pageable.getPageSize());
         URI uri = builder.build().encode().toUri();
         try {
-            ResponseEntity<PageResultResource<UserRefDTO>> usersResponse = javaRestTemplate.exchange(uri, HttpMethod.GET, new HttpEntity<>(httpHeaders),
+            ResponseEntity<PageResultResource<UserRefDTO>> usersResponse = javaRestTemplate.exchange(uri, HttpMethod.GET, HttpEntity.EMPTY,
                     new ParameterizedTypeReference<PageResultResource<UserRefDTO>>() {});
             return usersResponse.getBody();
         } catch (CustomRestTemplateException ex) {
@@ -124,20 +111,12 @@ public class UserService {
      * @return list of users with given role
      */
     public PageResultResource<UserRefDTO> getUsersByGivenRole(RoleType roleType, Pageable pageable, String givenName, String familyName) {
-        HttpHeaders httpHeaders = new HttpHeaders();
         UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(userAndGroupURI + "/roles/users");
-        if (givenName != null) {
-            builder.queryParam("givenName", givenName);
-        }
-        if (familyName != null) {
-            builder.queryParam("familyName", familyName);
-        }
+        setCommonParams(givenName, familyName, pageable, builder);
         builder.queryParam("roleType", roleType.name());
-        builder.queryParam("page", pageable.getPageNumber());
-        builder.queryParam("size", pageable.getPageSize());
         URI uri = builder.build().encode().toUri();
         try {
-            ResponseEntity<PageResultResource<UserRefDTO>> usersResponse = javaRestTemplate.exchange(uri, HttpMethod.GET, new HttpEntity<>(httpHeaders),
+            ResponseEntity<PageResultResource<UserRefDTO>> usersResponse = javaRestTemplate.exchange(uri, HttpMethod.GET, HttpEntity.EMPTY,
                     new ParameterizedTypeReference<PageResultResource<UserRefDTO>>() {});
             return usersResponse.getBody();
         } catch (CustomRestTemplateException ex) {
@@ -156,21 +135,13 @@ public class UserService {
      * @return list of users with given role
      */
     public PageResultResource<UserRefDTO> getUsersByGivenRoleAndNotWithGivenIds(RoleType roleType, Set<Long> userRefIds, Pageable pageable, String givenName, String familyName) {
-        HttpHeaders httpHeaders = new HttpHeaders();
         UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(userAndGroupURI + "/roles/users-not-with-ids");
-        if (givenName != null) {
-            builder.queryParam("givenName", givenName);
-        }
-        if (familyName != null) {
-            builder.queryParam("familyName", familyName);
-        }
+        setCommonParams(givenName, familyName, pageable, builder);
         builder.queryParam("roleType", roleType.name());
         builder.queryParam("ids", StringUtils.collectionToDelimitedString(userRefIds, ","));
-        builder.queryParam("page", pageable.getPageNumber());
-        builder.queryParam("size", pageable.getPageSize());
         URI uri = builder.build().encode().toUri();
         try {
-            ResponseEntity<PageResultResource<UserRefDTO>> usersResponse = javaRestTemplate.exchange(uri, HttpMethod.GET, new HttpEntity<>(httpHeaders),
+            ResponseEntity<PageResultResource<UserRefDTO>> usersResponse = javaRestTemplate.exchange(uri, HttpMethod.GET, HttpEntity.EMPTY,
                     new ParameterizedTypeReference<PageResultResource<UserRefDTO>>() {});
             return usersResponse.getBody();
         } catch (CustomRestTemplateException ex) {
@@ -189,5 +160,16 @@ public class UserService {
         UserRef userRef = userRefRepository.save(userRefToCreate);
         LOG.info("User ref with user_ref_id: {} created.", userRef.getUserRefId());
         return userRef;
+    }
+
+    private void setCommonParams(String givenName, String familyName, Pageable pageable, UriComponentsBuilder builder) {
+        if (givenName != null) {
+            builder.queryParam("givenName", givenName);
+        }
+        if (familyName != null) {
+            builder.queryParam("familyName", familyName);
+        }
+        builder.queryParam("page", pageable.getPageNumber());
+        builder.queryParam("size", pageable.getPageSize());
     }
 }
