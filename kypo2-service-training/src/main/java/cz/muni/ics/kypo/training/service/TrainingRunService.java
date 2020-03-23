@@ -534,7 +534,7 @@ public class TrainingRunService {
      * @throws EntityNotFoundException training run is not found.
      */
     public void evaluateResponsesToAssessment(Long trainingRunId, String responsesAsString) {
-        JSONArray responses = isResponseValid(responsesAsString);
+        JSONArray responses = new JSONArray(responsesAsString);
         int points = 0;
         TrainingRun trainingRun = findByIdWithLevel(trainingRunId);
         if (!(trainingRun.getCurrentLevel() instanceof AssessmentLevel)) {
@@ -568,20 +568,4 @@ public class TrainingRunService {
         auditEventsService.auditLevelCompletedAction(trainingRun);
     }
 
-    private JSONArray isResponseValid(String responses) {
-        try {
-            JsonNode n = JsonLoader.fromString(responses);
-            final JsonNode jsonSchema = JsonLoader.fromResource("/responses-schema.json");
-            final JsonSchemaFactory factory = JsonSchemaFactory.byDefault();
-            JsonValidator v = factory.getValidator();
-            ProcessingReport report = v.validate(jsonSchema, n);
-            if (report.toString().contains("success")) {
-                return new JSONArray(responses);
-            } else {
-                throw new IllegalArgumentException("Given responses are not valid. \n" + report.iterator().next().toString());
-            }
-        } catch (IOException | ProcessingException ex) {
-            throw new InternalServerErrorException(ex.getMessage());
-        }
-    }
 }
