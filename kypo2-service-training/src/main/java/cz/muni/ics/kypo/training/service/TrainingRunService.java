@@ -71,10 +71,15 @@ public class TrainingRunService {
      * @param trAcquisitionLockRepository the tr acquisition lock repository
      */
     @Autowired
-    public TrainingRunService(TrainingRunRepository trainingRunRepository, AbstractLevelRepository abstractLevelRepository,
-                              TrainingInstanceRepository trainingInstanceRepository, UserRefRepository participantRefRepository,
-                              HintRepository hintRepository, AuditEventsService auditEventsService, SecurityService securityService,
-                              @Qualifier("pythonRestTemplate") RestTemplate pythonRestTemplate, TRAcquisitionLockRepository trAcquisitionLockRepository) {
+    public TrainingRunService(TrainingRunRepository trainingRunRepository,
+                              AbstractLevelRepository abstractLevelRepository,
+                              TrainingInstanceRepository trainingInstanceRepository,
+                              UserRefRepository participantRefRepository,
+                              HintRepository hintRepository,
+                              AuditEventsService auditEventsService,
+                              SecurityService securityService,
+                              @Qualifier("pythonRestTemplate") RestTemplate pythonRestTemplate,
+                              TRAcquisitionLockRepository trAcquisitionLockRepository) {
         this.trainingRunRepository = trainingRunRepository;
         this.abstractLevelRepository = abstractLevelRepository;
         this.trainingInstanceRepository = trainingInstanceRepository;

@@ -42,7 +42,8 @@ public class UserService {
      * @param javaRestTemplate  the rest template
      * @param userRefRepository the user ref repository
      */
-    public UserService(@Qualifier("javaRestTemplate") RestTemplate javaRestTemplate, UserRefRepository userRefRepository) {
+    public UserService(@Qualifier("javaRestTemplate") RestTemplate javaRestTemplate,
+                       UserRefRepository userRefRepository) {
         this.javaRestTemplate = javaRestTemplate;
         this.userRefRepository = userRefRepository;
     }

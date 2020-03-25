@@ -51,8 +51,11 @@ public class VisualizationFacade {
      * @param userService             the user service
      */
     @Autowired
-    public VisualizationFacade(TrainingRunService trainingRunService, TrainingInstanceService trainingInstanceService,
-                               VisualizationService visualizationService, UserService userService, LevelMapper levelMapper) {
+    public VisualizationFacade(TrainingRunService trainingRunService,
+                               TrainingInstanceService trainingInstanceService,
+                               VisualizationService visualizationService,
+                               UserService userService,
+                               LevelMapper levelMapper) {
         this.trainingRunService = trainingRunService;
         this.trainingInstanceService = trainingInstanceService;
         this.visualizationService = visualizationService;

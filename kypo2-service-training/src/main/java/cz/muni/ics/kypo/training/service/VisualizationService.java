@@ -30,7 +30,8 @@ public class VisualizationService {
      * @param userRefRepository       the user ref repository
      */
     @Autowired
-    public VisualizationService(AbstractLevelRepository abstractLevelRepository, UserRefRepository userRefRepository) {
+    public VisualizationService(AbstractLevelRepository abstractLevelRepository,
+                                UserRefRepository userRefRepository) {
         this.abstractLevelRepository = abstractLevelRepository;
         this.userRefRepository = userRefRepository;
     }

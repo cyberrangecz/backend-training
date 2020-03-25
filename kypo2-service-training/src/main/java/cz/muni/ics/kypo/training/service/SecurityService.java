@@ -51,8 +51,10 @@ public class SecurityService {
      * @param javaRestTemplate             the java rest template
      */
     @Autowired
-    public SecurityService(TrainingInstanceRepository trainingInstanceRepository, TrainingDefinitionRepository trainingDefinitionRepository,
-                           TrainingRunRepository trainingRunRepository, @Qualifier("javaRestTemplate") RestTemplate javaRestTemplate) {
+    public SecurityService(TrainingInstanceRepository trainingInstanceRepository,
+                           TrainingDefinitionRepository trainingDefinitionRepository,
+                           TrainingRunRepository trainingRunRepository,
+                           @Qualifier("javaRestTemplate") RestTemplate javaRestTemplate) {
         this.trainingDefinitionRepository = trainingDefinitionRepository;
         this.trainingInstanceRepository = trainingInstanceRepository;
         this.trainingRunRepository = trainingRunRepository;

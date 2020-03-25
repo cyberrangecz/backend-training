@@ -56,7 +56,8 @@ public class TrainingRunsRestController {
      * @param objectMapper      the object mapper
      */
     @Autowired
-    public TrainingRunsRestController(TrainingRunFacade trainingRunFacade, ObjectMapper objectMapper) {
+    public TrainingRunsRestController(TrainingRunFacade trainingRunFacade,
+                                      ObjectMapper objectMapper) {
         this.trainingRunFacade = trainingRunFacade;
         this.objectMapper = objectMapper;
     }

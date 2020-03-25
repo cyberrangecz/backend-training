@@ -71,8 +71,12 @@ public class TrainingRunFacade {
      * @param hintMapper         the hint mapper
      */
     @Autowired
-    public TrainingRunFacade(TrainingRunService trainingRunService, SecurityService securityService, UserService userService,
-                             TrainingRunMapper trainingRunMapper, LevelMapper levelMapper, HintMapper hintMapper) {
+    public TrainingRunFacade(TrainingRunService trainingRunService,
+                             SecurityService securityService,
+                             UserService userService,
+                             TrainingRunMapper trainingRunMapper,
+                             LevelMapper levelMapper,
+                             HintMapper hintMapper) {
         this.trainingRunService = trainingRunService;
         this.securityService = securityService;
         this.userService = userService;

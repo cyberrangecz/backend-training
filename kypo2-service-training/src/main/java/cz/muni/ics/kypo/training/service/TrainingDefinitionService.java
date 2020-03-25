@@ -68,9 +68,15 @@ public class TrainingDefinitionService {
      */
     @Autowired
     public TrainingDefinitionService(TrainingDefinitionRepository trainingDefinitionRepository,
-                                     AbstractLevelRepository abstractLevelRepository, InfoLevelRepository infoLevelRepository, GameLevelRepository gameLevelRepository,
-                                     AssessmentLevelRepository assessmentLevelRepository, TrainingInstanceRepository trainingInstanceRepository,
-                                     UserRefRepository userRefRepository, SecurityService securityService, ModelMapper modelMapper, ObjectMapper objectMapper) {
+                                     AbstractLevelRepository abstractLevelRepository,
+                                     InfoLevelRepository infoLevelRepository,
+                                     GameLevelRepository gameLevelRepository,
+                                     AssessmentLevelRepository assessmentLevelRepository,
+                                     TrainingInstanceRepository trainingInstanceRepository,
+                                     UserRefRepository userRefRepository,
+                                     SecurityService securityService,
+                                     ModelMapper modelMapper,
+                                     ObjectMapper objectMapper) {
         this.trainingDefinitionRepository = trainingDefinitionRepository;
         this.abstractLevelRepository = abstractLevelRepository;
         this.gameLevelRepository = gameLevelRepository;

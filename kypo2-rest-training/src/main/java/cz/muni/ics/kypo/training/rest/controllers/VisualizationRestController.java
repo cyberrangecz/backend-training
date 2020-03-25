@@ -44,7 +44,8 @@ public class VisualizationRestController {
      * @param objectMapper        the object mapper
      */
     @Autowired
-    public VisualizationRestController(VisualizationFacade visualizationFacade, ObjectMapper objectMapper) {
+    public VisualizationRestController(VisualizationFacade visualizationFacade,
+                                       ObjectMapper objectMapper) {
         this.visualizationFacade = visualizationFacade;
         this.objectMapper = objectMapper;
     }

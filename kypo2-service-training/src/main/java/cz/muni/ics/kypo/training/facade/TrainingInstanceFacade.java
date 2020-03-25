@@ -59,9 +59,14 @@ public class TrainingInstanceFacade {
      * @param securityService           the security service
      */
     @Autowired
-    public TrainingInstanceFacade(TrainingInstanceService trainingInstanceService, TrainingDefinitionService trainingDefinitionService, TrainingRunService trainingRunService,
-                                  TrainingEventsService trainingEventsService, UserService userService, SecurityService securityService,
-                                  TrainingInstanceMapper trainingInstanceMapper, TrainingRunMapper trainingRunMapper) {
+    public TrainingInstanceFacade(TrainingInstanceService trainingInstanceService,
+                                  TrainingDefinitionService trainingDefinitionService,
+                                  TrainingRunService trainingRunService,
+                                  TrainingEventsService trainingEventsService,
+                                  UserService userService,
+                                  SecurityService securityService,
+                                  TrainingInstanceMapper trainingInstanceMapper,
+                                  TrainingRunMapper trainingRunMapper) {
         this.trainingInstanceService = trainingInstanceService;
         this.trainingDefinitionService = trainingDefinitionService;
         this.trainingRunService = trainingRunService;

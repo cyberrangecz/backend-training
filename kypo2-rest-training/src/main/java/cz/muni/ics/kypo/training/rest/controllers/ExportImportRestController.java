@@ -43,7 +43,8 @@ public class ExportImportRestController {
      * @param objectMapper       the object mapper
      */
     @Autowired
-    public ExportImportRestController(ExportImportFacade exportImportFacade, ObjectMapper objectMapper) {
+    public ExportImportRestController(ExportImportFacade exportImportFacade,
+                                      ObjectMapper objectMapper) {
         this.exportImportFacade = exportImportFacade;
         this.objectMapper = objectMapper;
     }

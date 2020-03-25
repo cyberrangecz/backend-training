@@ -46,10 +46,14 @@ public class ExportImportService {
      * @param pythonRestTemplate           the python rest template
      */
     @Autowired
-    public ExportImportService(TrainingDefinitionRepository trainingDefinitionRepository, AbstractLevelRepository abstractLevelRepository,
-                               AssessmentLevelRepository assessmentLevelRepository, InfoLevelRepository infoLevelRepository,
-                               GameLevelRepository gameLevelRepository, TrainingInstanceRepository trainingInstanceRepository,
-                               TrainingRunRepository trainingRunRepository, @Qualifier("pythonRestTemplate") RestTemplate pythonRestTemplate) {
+    public ExportImportService(TrainingDefinitionRepository trainingDefinitionRepository,
+                               AbstractLevelRepository abstractLevelRepository,
+                               AssessmentLevelRepository assessmentLevelRepository,
+                               InfoLevelRepository infoLevelRepository,
+                               GameLevelRepository gameLevelRepository,
+                               TrainingInstanceRepository trainingInstanceRepository,
+                               TrainingRunRepository trainingRunRepository,
+                               @Qualifier("pythonRestTemplate") RestTemplate pythonRestTemplate) {
         this.trainingDefinitionRepository = trainingDefinitionRepository;
         this.abstractLevelRepository = abstractLevelRepository;
         this.assessmentLevelRepository = assessmentLevelRepository;

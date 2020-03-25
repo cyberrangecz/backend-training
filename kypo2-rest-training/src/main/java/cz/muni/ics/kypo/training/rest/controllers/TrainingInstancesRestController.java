@@ -49,7 +49,8 @@ public class TrainingInstancesRestController {
      * @param objectMapper           the object mapper
      */
     @Autowired
-    public TrainingInstancesRestController(TrainingInstanceFacade trainingInstanceFacade, ObjectMapper objectMapper) {
+    public TrainingInstancesRestController(TrainingInstanceFacade trainingInstanceFacade,
+                                           ObjectMapper objectMapper) {
         this.trainingInstanceFacade = trainingInstanceFacade;
         this.objectMapper = objectMapper;
     }

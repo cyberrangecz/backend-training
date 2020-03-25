@@ -51,9 +51,12 @@ public class TrainingInstanceService {
      * @param securityService            the security service
      */
     @Autowired
-    public TrainingInstanceService(TrainingInstanceRepository trainingInstanceRepository, AccessTokenRepository accessTokenRepository,
-                                   TrainingRunRepository trainingRunRepository, UserRefRepository organizerRefRepository,
-                                   @Qualifier("pythonRestTemplate") RestTemplate pythonRestTemplate, SecurityService securityService) {
+    public TrainingInstanceService(TrainingInstanceRepository trainingInstanceRepository,
+                                   AccessTokenRepository accessTokenRepository,
+                                   TrainingRunRepository trainingRunRepository,
+                                   UserRefRepository organizerRefRepository,
+                                   @Qualifier("pythonRestTemplate") RestTemplate pythonRestTemplate,
+                                   SecurityService securityService) {
         this.trainingInstanceRepository = trainingInstanceRepository;
         this.trainingRunRepository = trainingRunRepository;
         this.accessTokenRepository = accessTokenRepository;

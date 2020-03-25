@@ -78,10 +78,14 @@ public class ExportImportFacade {
      * @param userRefMapper             the user ref mapper
      */
     @Autowired
-    public ExportImportFacade(ExportImportService exportImportService, TrainingDefinitionService trainingDefinitionService,
-                              TrainingEventsService trainingEventsService, UserService userService,
-                              ExportImportMapper exportImportMapper, LevelMapper levelMapper,
-                              TrainingDefinitionMapper trainingDefinitionMapper, ObjectMapper objectMapper,
+    public ExportImportFacade(ExportImportService exportImportService,
+                              TrainingDefinitionService trainingDefinitionService,
+                              TrainingEventsService trainingEventsService,
+                              UserService userService,
+                              ExportImportMapper exportImportMapper,
+                              LevelMapper levelMapper,
+                              TrainingDefinitionMapper trainingDefinitionMapper,
+                              ObjectMapper objectMapper,
                               UserRefMapper userRefMapper) {
         this.exportImportService = exportImportService;
         this.trainingDefinitionService = trainingDefinitionService;
