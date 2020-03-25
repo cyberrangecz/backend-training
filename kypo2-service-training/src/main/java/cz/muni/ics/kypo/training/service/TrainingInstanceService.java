@@ -18,6 +18,7 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import javax.validation.ConstraintViolationException;
 import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -29,8 +30,6 @@ import java.util.*;
 public class TrainingInstanceService {
 
     private static final Logger LOG = LoggerFactory.getLogger(TrainingInstanceService.class);
-    @Value("${openstack-server.uri}")
-    private String kypoOpenStackURI;
 
     private TrainingInstanceRepository trainingInstanceRepository;
     private TrainingRunRepository trainingRunRepository;
@@ -38,7 +37,6 @@ public class TrainingInstanceService {
     private UserRefRepository organizerRefRepository;
     private SecurityService securityService;
     private RestTemplate pythonRestTemplate;
-    private static final int PYTHON_RESULT_PAGE_SIZE = 1000;
 
     /**
      * Instantiates a new Training instance service.
@@ -237,9 +235,11 @@ public class TrainingInstanceService {
      */
     public LockedPoolInfo lockPool(Long poolId) {
         try {
-            return pythonRestTemplate.postForObject(kypoOpenStackURI + "/pools/{poolId}/locks", new HttpEntity<>("{}"), LockedPoolInfo.class, Long.toString(poolId));
+            return pythonRestTemplate.postForObject("/pools/{poolId}/locks", new HttpEntity<>("{}"), LockedPoolInfo.class, Long.toString(poolId));
         } catch (CustomRestTemplateException ex) {
             throw new MicroserviceApiException("Currently, it is not possible to lock and assign pool with (ID: " + poolId + ").", ex.getApiSubError());
+        } catch (ConstraintViolationException ex) {
+            throw new MicroserviceApiException("Error in response when calling sandbox service API to lock and assign pool with (ID: " + poolId + ").", ex);
         }
     }
 
@@ -251,13 +251,15 @@ public class TrainingInstanceService {
     public void unlockPool(Long poolId) {
         try {
             // get lock id from pool
-            PoolInfoDto poolInfoDto = pythonRestTemplate.getForObject(kypoOpenStackURI + "/pools/{poolId}", PoolInfoDto.class, Long.toString(poolId));
+            PoolInfoDto poolInfoDto = pythonRestTemplate.getForObject("/pools/{poolId}", PoolInfoDto.class, Long.toString(poolId));
             // unlock pool
             if (poolInfoDto != null && poolInfoDto.getLock() != null) {
-                pythonRestTemplate.delete(kypoOpenStackURI + "/pools/{poolId}/locks/{lockId}", Long.toString(poolId), Long.toString(poolInfoDto.getLock()));
+                pythonRestTemplate.delete("/pools/{poolId}/locks/{lockId}", Long.toString(poolId), Long.toString(poolInfoDto.getLock()));
             }
         } catch (CustomRestTemplateException ex) {
             throw new MicroserviceApiException("Currently, it is not possible to unlock a pool with (ID: " + poolId + ").", ex.getApiSubError());
+        } catch (ConstraintViolationException ex) {
+            throw new MicroserviceApiException("Error in response when calling sandbox service API to unlock a pool with (ID: " + poolId + ").", ex);
         }
     }
 

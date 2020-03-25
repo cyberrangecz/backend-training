@@ -10,7 +10,6 @@ import cz.muni.ics.kypo.training.persistence.repository.UserRefRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.*;
@@ -19,6 +18,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import javax.validation.ConstraintViolationException;
 import java.net.URI;
 import java.util.Collections;
 import java.util.Set;
@@ -31,8 +31,6 @@ public class UserService {
 
     private static final Logger LOG = LoggerFactory.getLogger(UserService.class);
 
-    @Value("${user-and-group-server.uri}")
-    private String userAndGroupURI;
     private RestTemplate javaRestTemplate;
     private UserRefRepository userRefRepository;
 
@@ -70,9 +68,11 @@ public class UserService {
      */
     public UserRefDTO getUserRefDTOByUserRefId(Long id) {
         try {
-            return javaRestTemplate.getForObject(userAndGroupURI + "/users/{id}", UserRefDTO.class, Long.toString(id));
+            return javaRestTemplate.getForObject("/users/{id}", UserRefDTO.class, Long.toString(id));
         } catch (CustomRestTemplateException ex) {
-            throw new MicroserviceApiException("Error when calling UserAndGroup API to obtain info about user(ID: " + id + ")", ex.getApiSubError());
+            throw new MicroserviceApiException("Error when calling UserAndGroup API to obtain info about user(ID: " + id + ").", ex.getApiSubError());
+        } catch (ConstraintViolationException ex) {
+            throw new MicroserviceApiException("Error in response when calling user management API to obtain info about user(ID: " + id + ")", ex);
         }
     }
 
@@ -89,7 +89,7 @@ public class UserService {
         if (userRefIds.isEmpty()) {
             return new PageResultResource<>(Collections.emptyList(), new PageResultResource.Pagination(0, 0, pageable.getPageSize(), 0, 0));
         }
-        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(userAndGroupURI + "/users/ids");
+        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl("/users/ids");
         setCommonParams(givenName, familyName, pageable, builder);
         builder.queryParam("ids", StringUtils.collectionToDelimitedString(userRefIds, ","));
         URI uri = builder.build().encode().toUri();
@@ -99,7 +99,9 @@ public class UserService {
                     });
             return usersResponse.getBody();
         } catch (CustomRestTemplateException ex) {
-            throw new MicroserviceApiException("Error when calling UserAndGroup API to obtain users by IDs: " + userRefIds, ex.getApiSubError());
+            throw new MicroserviceApiException("Error when calling UserAndGroup API to obtain users by IDs: " + userRefIds + ".", ex.getApiSubError());
+        } catch (ConstraintViolationException ex) {
+            throw new MicroserviceApiException("Error in response when calling user management API to obtain users by IDs: " + userRefIds + ".", ex);
         }
     }
 
@@ -113,7 +115,7 @@ public class UserService {
      * @return list of users with given role
      */
     public PageResultResource<UserRefDTO> getUsersByGivenRole(RoleType roleType, Pageable pageable, String givenName, String familyName) {
-        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(userAndGroupURI + "/roles/users");
+        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl("/roles/users");
         setCommonParams(givenName, familyName, pageable, builder);
         builder.queryParam("roleType", roleType.name());
         URI uri = builder.build().encode().toUri();
@@ -123,7 +125,9 @@ public class UserService {
                     });
             return usersResponse.getBody();
         } catch (CustomRestTemplateException ex) {
-            throw new MicroserviceApiException("Error when calling UserAndGroup API to obtain users with role " + roleType.name(), ex.getApiSubError());
+            throw new MicroserviceApiException("Error when calling UserAndGroup API to obtain users with role " + roleType.name() + ".", ex.getApiSubError());
+        } catch (ConstraintViolationException ex) {
+            throw new MicroserviceApiException("Error in response when calling user management API to obtain users with role " + roleType.name() + ".", ex);
         }
     }
 
@@ -138,7 +142,7 @@ public class UserService {
      * @return list of users with given role
      */
     public PageResultResource<UserRefDTO> getUsersByGivenRoleAndNotWithGivenIds(RoleType roleType, Set<Long> userRefIds, Pageable pageable, String givenName, String familyName) {
-        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(userAndGroupURI + "/roles/users-not-with-ids");
+        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl("/roles/users-not-with-ids");
         setCommonParams(givenName, familyName, pageable, builder);
         builder.queryParam("roleType", roleType.name());
         builder.queryParam("ids", StringUtils.collectionToDelimitedString(userRefIds, ","));
@@ -149,7 +153,9 @@ public class UserService {
                     });
             return usersResponse.getBody();
         } catch (CustomRestTemplateException ex) {
-            throw new MicroserviceApiException("Error when calling UserAndGroup API to obtain users with role " + roleType.name() + " and IDs:", ex.getApiSubError());
+            throw new MicroserviceApiException("Error when calling UserAndGroup API to obtain users with role " + roleType.name() + " and IDs: " + userRefIds + ".", ex.getApiSubError());
+        } catch (ConstraintViolationException ex) {
+            throw new MicroserviceApiException("Error in response when calling user management API to obtain users with role " + roleType.name() + " and IDs: " + userRefIds + ".", ex);
         }
     }
 

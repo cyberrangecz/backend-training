@@ -1,9 +1,5 @@
 package cz.muni.ics.kypo.training.service;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalRO;
 import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
 import cz.muni.ics.kypo.training.enums.RoleTypeSecurity;
@@ -25,17 +21,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.web.client.RestTemplate;
 
+import javax.validation.ConstraintViolationException;
+
 /**
  * The type Security service.
  */
 @Service
 @TransactionalRO(propagation = Propagation.REQUIRES_NEW)
 public class SecurityService {
-
-    @Value("${openstack-server.uri}")
-    private String kypoOpenStackURI;
-    @Value("${user-and-group-server.uri}")
-    private String userAndGroupURI;
 
     private TrainingRunRepository trainingRunRepository;
     private TrainingDefinitionRepository trainingDefinitionRepository;
@@ -125,10 +118,12 @@ public class SecurityService {
      */
     public Long getUserRefIdFromUserAndGroup() {
         try {
-            UserRefDTO userRefDTO = javaRestTemplate.getForObject(userAndGroupURI + "/users/info", UserRefDTO.class);
+            UserRefDTO userRefDTO = javaRestTemplate.getForObject("/users/info", UserRefDTO.class);
             return userRefDTO.getUserRefId();
         } catch (CustomRestTemplateException ex) {
             throw new MicroserviceApiException("Error when calling UserAndGroup API to get info about logged in user.", ex.getApiSubError());
+        } catch (ConstraintViolationException ex) {
+            throw new MicroserviceApiException("Error in response when calling user management API to get info about logged in user.", ex);
         }
     }
 
@@ -139,12 +134,14 @@ public class SecurityService {
      */
     public UserRef createUserRefEntityByInfoFromUserAndGroup() {
         try {
-            UserRefDTO userRefDto = javaRestTemplate.getForObject(userAndGroupURI + "/users/info", UserRefDTO.class);
+            UserRefDTO userRefDto = javaRestTemplate.getForObject("/users/info", UserRefDTO.class);
             UserRef userRef = new UserRef();
             userRef.setUserRefId(userRefDto.getUserRefId());
             return userRef;
         } catch (CustomRestTemplateException ex) {
             throw new MicroserviceApiException("Error when calling UserAndGroup API to get info about logged in user.", ex.getApiSubError());
+        } catch (ConstraintViolationException ex) {
+            throw new MicroserviceApiException("Error in response when calling user management API to get info about logged in user.", ex);
         }
     }
 

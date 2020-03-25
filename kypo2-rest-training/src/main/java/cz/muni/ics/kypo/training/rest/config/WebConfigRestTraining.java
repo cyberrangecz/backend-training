@@ -1,11 +1,9 @@
 package cz.muni.ics.kypo.training.rest.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import cz.muni.ics.kypo.training.config.ObjectMapperConfiguration;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;

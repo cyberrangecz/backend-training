@@ -337,7 +337,7 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
                                                                  HttpServletRequest req) {
         final ApiError apiError = ApiMicroserviceError.of(
                 HttpStatus.NOT_FOUND,
-                MicroserviceApiException.class.getAnnotation(ResponseStatus.class).reason(),
+                ex.getApiSubError() == null ? ex.getMessage() : MicroserviceApiException.class.getAnnotation(ResponseStatus.class).reason(),
                 getFullStackTrace(ex),
                 URL_PATH_HELPER.getRequestUri(req),
                 ex.getApiSubError());

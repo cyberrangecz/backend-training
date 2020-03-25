@@ -4,9 +4,9 @@ import javax.validation.constraints.NotNull;
 
 public class LockedPoolInfo {
 
-    @NotNull
+    @NotNull(message = "{lockedPoolInfo.id.NotNull.message}")
     private long id;
-    @NotNull
+    @NotNull(message = "{lockedPoolInfo.pool.NotNull.message}")
     private long pool;
 
     public long getId() {

@@ -3,6 +3,9 @@ package cz.muni.ics.kypo.training.exceptions;
 import cz.muni.ics.kypo.training.exceptions.errors.ApiSubError;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
+import javax.validation.ConstraintViolation;
+import javax.validation.ConstraintViolationException;
+
 @ResponseStatus(reason = "Error when calling UserAndGroup API")
 public class MicroserviceApiException extends RuntimeException{
     private ApiSubError apiSubError;
@@ -14,6 +17,11 @@ public class MicroserviceApiException extends RuntimeException{
     public MicroserviceApiException(ApiSubError apiSubError) {
         super();
         this.apiSubError = apiSubError;
+
+    }
+
+    public MicroserviceApiException(String message, ConstraintViolationException exception) {
+        super(message + " Constraint violations: " + exception.getConstraintViolations().toString());
 
     }
 

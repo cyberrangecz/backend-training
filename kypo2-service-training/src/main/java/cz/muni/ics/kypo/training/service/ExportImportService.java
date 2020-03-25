@@ -21,9 +21,6 @@ import java.util.Set;
 @Service
 public class ExportImportService {
 
-    @Value("${openstack-server.uri}")
-    private String kypoOpenStackURI;
-
     private TrainingDefinitionRepository trainingDefinitionRepository;
     private AbstractLevelRepository abstractLevelRepository;
     private AssessmentLevelRepository assessmentLevelRepository;
@@ -127,7 +124,7 @@ public class ExportImportService {
      */
     public SandboxDefinitionInfo getSandboxDefinitionId(Long poolId) {
         try {
-            return pythonRestTemplate.getForObject(kypoOpenStackURI + "/pools/{poolId}/definition", SandboxDefinitionInfo.class, Long.toString(poolId));
+            return pythonRestTemplate.getForObject("/pools/{poolId}/definition", SandboxDefinitionInfo.class, Long.toString(poolId));
         } catch (CustomRestTemplateException ex) {
             if (ex.getStatusCode() == HttpStatus.CONFLICT) {
                 throw new ForbiddenException("There is no available sandbox definition for particular pool (ID: " + poolId + ").");
