@@ -36,9 +36,8 @@ import java.util.Set;
  */
 @Service
 public class TrainingDefinitionService {
+
     private static final Logger LOG = LoggerFactory.getLogger(TrainingDefinitionService.class);
-    @Value("${user-and-group-server.uri}")
-    private String userAndGroupUrl;
 
     private ModelMapper modelMapper;
     private TrainingDefinitionRepository trainingDefinitionRepository;
@@ -424,7 +423,7 @@ public class TrainingDefinitionService {
         return gameLevel;
     }
 
-    private GameLevel initializeNewGameLevel(){
+    private GameLevel initializeNewGameLevel() {
         GameLevel newGameLevel = new GameLevel();
         newGameLevel.setMaxScore(100);
         newGameLevel.setTitle("Title of game level");
@@ -613,7 +612,7 @@ public class TrainingDefinitionService {
         });
     }
 
-    private void cloneInfoLevel(AbstractLevel level, TrainingDefinition trainingDefinition){
+    private void cloneInfoLevel(AbstractLevel level, TrainingDefinition trainingDefinition) {
         InfoLevel newInfoLevel = new InfoLevel();
         modelMapper.map(level, newInfoLevel);
         newInfoLevel.setId(null);
@@ -621,7 +620,7 @@ public class TrainingDefinitionService {
         infoLevelRepository.save(newInfoLevel);
     }
 
-    private void cloneAssessmentLevel(AbstractLevel level, TrainingDefinition trainingDefinition){
+    private void cloneAssessmentLevel(AbstractLevel level, TrainingDefinition trainingDefinition) {
         AssessmentUtil.validQuestions(((AssessmentLevel) level).getQuestions());
         AssessmentLevel newAssessmentLevel = new AssessmentLevel();
         modelMapper.map(level, newAssessmentLevel);
@@ -630,7 +629,7 @@ public class TrainingDefinitionService {
         assessmentLevelRepository.save(newAssessmentLevel);
     }
 
-    private void cloneGameLevel(AbstractLevel level, TrainingDefinition trainingDefinition){
+    private void cloneGameLevel(AbstractLevel level, TrainingDefinition trainingDefinition) {
         GameLevel newGameLevel = new GameLevel();
         modelMapper.map(level, newGameLevel);
         newGameLevel.setId(null);
@@ -640,9 +639,9 @@ public class TrainingDefinitionService {
         gameLevelRepository.save(newGameLevel);
     }
 
-    private Set<Hint> cloneHints(Set<Hint> hints){
+    private Set<Hint> cloneHints(Set<Hint> hints) {
         Set<Hint> newHints = new HashSet<>();
-        for (Hint hint : hints){
+        for (Hint hint : hints) {
             Hint newHint = new Hint();
             modelMapper.map(hint, newHint);
             newHint.setId(null);
@@ -651,7 +650,7 @@ public class TrainingDefinitionService {
         return newHints;
     }
 
-    private Set<Attachment> cloneAttachments(Set<Attachment> attachments){
+    private Set<Attachment> cloneAttachments(Set<Attachment> attachments) {
         Set<Attachment> newAttachments = new HashSet<>();
         for (Attachment attachment : attachments) {
             Attachment newAttachment = new Attachment();

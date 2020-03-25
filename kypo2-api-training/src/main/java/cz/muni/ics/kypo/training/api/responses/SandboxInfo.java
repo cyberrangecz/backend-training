@@ -7,9 +7,9 @@ import javax.validation.constraints.NotNull;
  */
 public class SandboxInfo {
 
-    @NotNull
+    @NotNull(message = "{sandboxInfo.id.NotNull.message}")
     private Long id;
-    @NotNull
+    @NotNull(message = "{sandboxInfo.locked.NotNull.message}")
     private boolean locked;
 
     /**

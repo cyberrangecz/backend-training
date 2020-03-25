@@ -11,9 +11,9 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.ssl.SSLContextBuilder;
-import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.MethodInvokingFactoryBean;
 import org.springframework.context.annotation.*;
 import org.springframework.core.env.Environment;
@@ -23,6 +23,7 @@ import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.DefaultUriBuilderFactory;
 
 import javax.net.ssl.SSLContext;
 import java.nio.charset.Charset;
@@ -33,14 +34,18 @@ import java.util.List;
  */
 @Configuration
 @EnableAsync(proxyTargetClass = true)
-@Import({ElasticsearchServiceConfig.class, PersistenceConfig.class, ResourceServerSecurityConfig.class, ObjectMapperConfiguration.class})
+@Import({ElasticsearchServiceConfig.class, PersistenceConfig.class, ResourceServerSecurityConfig.class, ObjectMappersConfiguration.class})
 @ComponentScan(basePackages = {"cz.muni.ics.kypo.training.service", "cz.muni.ics.kypo.training.config"})
 public class ServiceConfig {
 
-
+    @Value("${openstack-server.uri}")
+    private String kypoOpenStackURI;
+    @Value("${user-and-group-server.uri}")
+    private String userAndGroupURI;
     @Autowired
     private RestTemplateHeaderModifierInterceptor restTemplateHeaderModifierInterceptor;
     @Autowired
+    @Qualifier("restTemplateObjectMapper")
     private ObjectMapper objectMapper;
     @Autowired
     private Environment env;
@@ -61,6 +66,7 @@ public class ServiceConfig {
     @Qualifier("pythonRestTemplate")
     public RestTemplate pythonRestTemplate() throws Exception {
         RestTemplate restTemplate = prepareRestTemplate();
+        restTemplate.setUriTemplateHandler(new DefaultUriBuilderFactory(kypoOpenStackURI));
         restTemplate.setErrorHandler(new PythonApiResponseErrorHandler(objectMapper));
         return restTemplate;
     }
@@ -74,8 +80,9 @@ public class ServiceConfig {
     @Bean
     @Primary
     @Qualifier("javaRestTemplate")
-    public RestTemplate javaRestTemplate() throws Exception{
+    public RestTemplate javaRestTemplate() throws Exception {
         RestTemplate restTemplate = prepareRestTemplate();
+        restTemplate.setUriTemplateHandler(new DefaultUriBuilderFactory(userAndGroupURI));
         restTemplate.setErrorHandler(new JavaApiResponseErrorHandler(objectMapper));
         return restTemplate;
     }

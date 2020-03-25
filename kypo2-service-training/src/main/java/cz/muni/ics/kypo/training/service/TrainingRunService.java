@@ -1,11 +1,5 @@
 package cz.muni.ics.kypo.training.service;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.github.fge.jackson.JsonLoader;
-import com.github.fge.jsonschema.core.exceptions.ProcessingException;
-import com.github.fge.jsonschema.core.report.ProcessingReport;
-import com.github.fge.jsonschema.main.JsonSchemaFactory;
-import com.github.fge.jsonschema.main.JsonValidator;
 import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalWO;
 import cz.muni.ics.kypo.training.api.responses.SandboxInfo;
@@ -21,7 +15,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -31,7 +24,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.web.client.RestTemplate;
 
-import java.io.IOException;
+import javax.validation.ConstraintViolationException;
 import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -43,8 +36,6 @@ import java.util.*;
 public class TrainingRunService {
 
     private static final Logger LOG = LoggerFactory.getLogger(TrainingRunService.class);
-    @Value("${openstack-server.uri}")
-    private String kypoOpenStackURI;
 
     private TrainingRunRepository trainingRunRepository;
     private AbstractLevelRepository abstractLevelRepository;
@@ -55,7 +46,6 @@ public class TrainingRunService {
     private SecurityService securityService;
     private TRAcquisitionLockRepository trAcquisitionLockRepository;
     private RestTemplate pythonRestTemplate;
-    private static final int PYTHON_RESULT_PAGE_SIZE = 1000;
 
     /**
      * Instantiates a new Training run service.
@@ -351,18 +341,15 @@ public class TrainingRunService {
 
     private Long getAndLockSandboxForTrainingRun(Long poolId) {
         try {
-            SandboxInfo sandboxInfo = pythonRestTemplate.getForObject(kypoOpenStackURI + "/pools/{poolId}/sandboxes/get-and-lock", SandboxInfo.class, Long.toString(poolId));
-            if (sandboxInfo != null) {
-                return sandboxInfo.getId();
-            }
-            throw new ForbiddenException("There is no available sandbox, wait a minute and try again or ask organizer to allocate more sandboxes.");
-        } catch (NullPointerException ex) {
-            throw new ForbiddenException(ex.getMessage());
+            SandboxInfo sandboxInfo = pythonRestTemplate.getForObject("/pools/{poolId}/sandboxes/get-and-lock", SandboxInfo.class, Long.toString(poolId));
+            return sandboxInfo.getId();
         } catch (CustomRestTemplateException ex) {
             if (ex.getStatusCode() == HttpStatus.CONFLICT) {
                 throw new ForbiddenException("There is no available sandbox, wait a minute and try again or ask organizer to allocate more sandboxes.");
             }
-            throw new MicroserviceApiException("Error when calling Python API to get unlocked sandbox from pool (ID: " + poolId + ")", ex.getApiSubError());
+            throw new MicroserviceApiException("Error when calling sandbox service API to get unlocked sandbox from pool (ID: " + poolId + ")", ex.getApiSubError());
+        } catch (ConstraintViolationException ex) {
+            throw new MicroserviceApiException("Error in response when calling sandbox service API to get unlocked sandbox from pool (ID: " + poolId + ").", ex);
         }
     }
 

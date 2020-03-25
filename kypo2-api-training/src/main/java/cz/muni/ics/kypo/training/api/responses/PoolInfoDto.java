@@ -1,11 +1,17 @@
 package cz.muni.ics.kypo.training.api.responses;
 
-public class PoolInfoDto {
+import javax.validation.constraints.NotNull;
 
+public class PoolInfoDto {
+    @NotNull(message = "{poolInfoDTO.id.NotNull.message}")
     private Long id;
+    @NotNull(message = "{poolInfoDTO.definition.NotNull.message}")
     private Long definition;
+    @NotNull(message = "{poolInfoDTO.size.NotNull.message}")
     private Long size;
+    @NotNull(message = "{poolInfoDTO.maxSize.NotNull.message}")
     private Long maxSize;
+    @NotNull(message = "{poolInfoDTO.lock.NotNull.message}")
     private Long lock;
 
     public Long getId() {
