@@ -12,6 +12,7 @@ import cz.muni.ics.kypo.commons.security.enums.AuthenticatedUserOIDCItems;
 import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelUpdateDTO;
+import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentQuestion;
 import cz.muni.ics.kypo.training.api.dto.betatestinggroup.BetaTestingGroupCreateDTO;
 import cz.muni.ics.kypo.training.api.dto.betatestinggroup.BetaTestingGroupUpdateDTO;
 import cz.muni.ics.kypo.training.api.dto.gamelevel.GameLevelDTO;
@@ -24,6 +25,7 @@ import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionDT
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionUpdateDTO;
 import cz.muni.ics.kypo.training.api.enums.AssessmentType;
 import cz.muni.ics.kypo.training.api.enums.LevelType;
+import cz.muni.ics.kypo.training.api.enums.QuestionType;
 import cz.muni.ics.kypo.training.api.enums.TDState;
 import cz.muni.ics.kypo.training.api.responses.PageResultResource;
 import cz.muni.ics.kypo.training.enums.RoleTypeSecurity;
@@ -1004,7 +1006,6 @@ public class TrainingDefinitionsIT {
         assertEquals(assessmentLevel.getTitle(), "Title of assessment level");
         assertEquals(assessmentLevel.getAssessmentType().toString(), AssessmentType.QUESTIONNAIRE.toString());
         assertEquals(assessmentLevel.getInstructions(), "Instructions should be here");
-        assertEquals(assessmentLevel.getQuestions(), "[ {\n  \"answer_required\" : false,\n  \"order\" : 0,\n  \"penalty\" : 0,\n  \"points\" : 0,\n  \"text\" : \"Example Question\",\n  \"question_type\" : \"FFQ\",\n  \"correct_choices\" : [ ]\n} ]");
     }
 
     @Test
