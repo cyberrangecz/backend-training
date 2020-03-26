@@ -195,7 +195,7 @@ public class TrainingRunServiceTest {
         mockSpringSecurityContextForGet();
         UserRef participant = new UserRef();
         participant.setUserRefId(2L);
-        sandboxInfo.setLocked(false);
+        sandboxInfo.setLockId(false);
         PageResultResourcePython<SandboxInfo> pythonPage = new PageResultResourcePython<SandboxInfo>();
         pythonPage.setResults(List.of(sandboxInfo));
 
@@ -224,7 +224,7 @@ public class TrainingRunServiceTest {
 
     @Test(expected = EntityNotFoundException.class)
     public void accessTrainingRunWithoutStartingLevel() {
-        sandboxInfo.setLocked(false);
+        sandboxInfo.setLockId(false);
         PageResultResourcePython<SandboxInfo> pythonPage = new PageResultResourcePython<SandboxInfo>();
         pythonPage.setResults(List.of(sandboxInfo));
         given(trainingInstanceRepository.findByStartTimeAfterAndEndTimeBeforeAndAccessToken(any(LocalDateTime.class), any(String.class))).willReturn(Optional.of(trainingInstance1));

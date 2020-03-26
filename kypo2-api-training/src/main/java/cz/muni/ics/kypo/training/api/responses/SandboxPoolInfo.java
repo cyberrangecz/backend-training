@@ -10,12 +10,13 @@ import javax.validation.constraints.NotNull;
 public class SandboxPoolInfo {
     @NotNull(message = "{sandboxPoolInfo.id.NotNull.message}")
     private Long id;
-    @NotNull(message = "{sandboxPoolInfo.definition.NotNull.message}")
-    private Long definition;
+    @NotNull(message = "{sandboxPoolInfo.definitionId.NotNull.message}")
+    @JsonProperty(value = "definition_id")
+    private Long definitionId;
     @NotNull(message = "{sandboxPoolInfo.size.NotNull.message}")
     private Long size;
     @NotNull(message = "{sandboxPoolInfo.maxSize.NotNull.message}")
-    @JsonProperty("max_size")
+    @JsonProperty(value = "max_size")
     private Long maxSize;
 
     /**
@@ -37,21 +38,21 @@ public class SandboxPoolInfo {
     }
 
     /**
-     * Gets definition.
+     * Gets definitionId.
      *
-     * @return the definition
+     * @return the definitionId
      */
-    public Long getDefinition() {
-        return definition;
+    public Long getDefinitionId() {
+        return definitionId;
     }
 
     /**
-     * Sets definition.
+     * Sets definitionId.
      *
-     * @param definition the definition
+     * @param definitionId the definitionId
      */
-    public void setDefinition(Long definition) {
-        this.definition = definition;
+    public void setDefinitionId(Long definitionId) {
+        this.definitionId = definitionId;
     }
 
     /**
@@ -94,7 +95,7 @@ public class SandboxPoolInfo {
     public String toString() {
         return "SandboxPoolInfo{" +
                 "id=" + id +
-                ", definition=" + definition +
+                ", definitionId=" + definitionId +
                 ", size='" + size + '\'' +
                 ", maxSize=" + maxSize +
                 '}';

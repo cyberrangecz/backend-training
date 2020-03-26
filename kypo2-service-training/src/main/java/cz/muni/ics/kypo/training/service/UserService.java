@@ -89,7 +89,7 @@ public class UserService {
         if (userRefIds.isEmpty()) {
             return new PageResultResource<>(Collections.emptyList(), new PageResultResource.Pagination(0, 0, pageable.getPageSize(), 0, 0));
         }
-        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl("/users/ids");
+        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString("/users/ids");
         setCommonParams(givenName, familyName, pageable, builder);
         builder.queryParam("ids", StringUtils.collectionToDelimitedString(userRefIds, ","));
         URI uri = builder.build().encode().toUri();
@@ -115,7 +115,7 @@ public class UserService {
      * @return list of users with given role
      */
     public PageResultResource<UserRefDTO> getUsersByGivenRole(RoleType roleType, Pageable pageable, String givenName, String familyName) {
-        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl("/roles/users");
+        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString("/roles/users");
         setCommonParams(givenName, familyName, pageable, builder);
         builder.queryParam("roleType", roleType.name());
         URI uri = builder.build().encode().toUri();
@@ -142,7 +142,7 @@ public class UserService {
      * @return list of users with given role
      */
     public PageResultResource<UserRefDTO> getUsersByGivenRoleAndNotWithGivenIds(RoleType roleType, Set<Long> userRefIds, Pageable pageable, String givenName, String familyName) {
-        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl("/roles/users-not-with-ids");
+        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString("/roles/users-not-with-ids");
         setCommonParams(givenName, familyName, pageable, builder);
         builder.queryParam("roleType", roleType.name());
         builder.queryParam("ids", StringUtils.collectionToDelimitedString(userRefIds, ","));

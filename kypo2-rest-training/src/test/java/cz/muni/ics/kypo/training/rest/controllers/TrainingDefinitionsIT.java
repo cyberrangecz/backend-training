@@ -1004,7 +1004,7 @@ public class TrainingDefinitionsIT {
         assertEquals(assessmentLevel.getTitle(), "Title of assessment level");
         assertEquals(assessmentLevel.getAssessmentType().toString(), AssessmentType.QUESTIONNAIRE.toString());
         assertEquals(assessmentLevel.getInstructions(), "Instructions should be here");
-        assertEquals(assessmentLevel.getQuestions(), "[ {\r\n  \"answer_required\" : false,\r\n  \"order\" : 0,\r\n  \"penalty\" : 0,\r\n  \"points\" : 0,\r\n  \"text\" : \"Example Question\",\r\n  \"question_type\" : \"FFQ\",\r\n  \"correct_choices\" : [ ]\r\n} ]");
+        assertEquals(assessmentLevel.getQuestions(), "[ {\n  \"answer_required\" : false,\n  \"order\" : 0,\n  \"penalty\" : 0,\n  \"points\" : 0,\n  \"text\" : \"Example Question\",\n  \"question_type\" : \"FFQ\",\n  \"correct_choices\" : [ ]\n} ]");
     }
 
     @Test

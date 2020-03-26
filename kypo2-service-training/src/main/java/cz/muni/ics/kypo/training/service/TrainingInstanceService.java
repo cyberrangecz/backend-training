@@ -253,8 +253,8 @@ public class TrainingInstanceService {
             // get lock id from pool
             PoolInfoDto poolInfoDto = pythonRestTemplate.getForObject("/pools/{poolId}", PoolInfoDto.class, Long.toString(poolId));
             // unlock pool
-            if (poolInfoDto != null && poolInfoDto.getLock() != null) {
-                pythonRestTemplate.delete("/pools/{poolId}/locks/{lockId}", Long.toString(poolId), Long.toString(poolInfoDto.getLock()));
+            if (poolInfoDto != null && poolInfoDto.getLockId() != null) {
+                pythonRestTemplate.delete("/pools/{poolId}/locks/{lockId}", Long.toString(poolId), Long.toString(poolInfoDto.getLockId()));
             }
         } catch (CustomRestTemplateException ex) {
             throw new MicroserviceApiException("Currently, it is not possible to unlock a pool with (ID: " + poolId + ").", ex.getApiSubError());

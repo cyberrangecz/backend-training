@@ -23,6 +23,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.DefaultUriBuilderFactory;
 
 import java.net.URI;
 import java.util.*;
@@ -53,8 +54,9 @@ public class UserServiceTest {
     @Before
     public void init() {
         MockitoAnnotations.initMocks(this);
+        restTemplate.setUriTemplateHandler(new DefaultUriBuilderFactory("https://oidc.muni.cz/oidc"));
+
         userService = new UserService(restTemplate, userRefRepository);
-        ReflectionTestUtils.setField(userService, "userAndGroupURI", "https://localhost:8083/kypo2-rest-user-and-group/");
 
         userRef1 = new UserRef();
         userRef1.setId(1L);
@@ -94,7 +96,7 @@ public class UserServiceTest {
 
     @Test
     public void getUserRefDTOByUserRefId() {
-        given(restTemplate.getForObject(anyString(), eq(UserRefDTO.class))).
+        given(restTemplate.getForObject(anyString(), eq(UserRefDTO.class), anyString())).
                 willReturn(userRefDTO1);
         UserRefDTO foundUserRefDTO = userService.getUserRefDTOByUserRefId(userRef1.getUserRefId());
         Assert.assertEquals(userRefDTO1, foundUserRefDTO);
