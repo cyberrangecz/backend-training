@@ -1,18 +1,27 @@
 package cz.muni.ics.kypo.training.api.responses;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import javax.validation.constraints.NotNull;
 
 public class PoolInfoDto {
     @NotNull(message = "{poolInfoDTO.id.NotNull.message}")
     private Long id;
-    @NotNull(message = "{poolInfoDTO.definition.NotNull.message}")
-    private Long definition;
+    @NotNull(message = "{poolInfoDTO.definitionId.NotNull.message}")
+    @JsonProperty(value = "definition_id")
+    private Long definitionId;
     @NotNull(message = "{poolInfoDTO.size.NotNull.message}")
     private Long size;
     @NotNull(message = "{poolInfoDTO.maxSize.NotNull.message}")
+    @JsonProperty(value = "max_size")
     private Long maxSize;
-    @NotNull(message = "{poolInfoDTO.lock.NotNull.message}")
-    private Long lock;
+    @NotNull(message = "{poolInfoDTO.lockId.NotNull.message}")
+    @JsonProperty(value = "lock_id")
+    private Long lockId;
+    @JsonProperty(value = "rev")
+    private String rev;
+    @JsonProperty(value = "rev_sha")
+    private String revSha;
 
     public Long getId() {
         return id;
@@ -22,12 +31,12 @@ public class PoolInfoDto {
         this.id = id;
     }
 
-    public Long getDefinition() {
-        return definition;
+    public Long getDefinitionId() {
+        return definitionId;
     }
 
-    public void setDefinition(Long definition) {
-        this.definition = definition;
+    public void setDefinitionId(Long definitionId) {
+        this.definitionId = definitionId;
     }
 
     public Long getSize() {
@@ -46,22 +55,40 @@ public class PoolInfoDto {
         this.maxSize = maxSize;
     }
 
-    public Long getLock() {
-        return lock;
+    public Long getLockId() {
+        return lockId;
     }
 
-    public void setLock(Long lock) {
-        this.lock = lock;
+    public void setLockId(Long lockId) {
+        this.lockId = lockId;
+    }
+
+    public String getRev() {
+        return rev;
+    }
+
+    public void setRev(String rev) {
+        this.rev = rev;
+    }
+
+    public String getRevSha() {
+        return revSha;
+    }
+
+    public void setRevSha(String revSha) {
+        this.revSha = revSha;
     }
 
     @Override
     public String toString() {
         return "PoolInfoDto{" +
                 "id=" + id +
-                ", definition=" + definition +
+                ", definitionId=" + definitionId +
                 ", size=" + size +
                 ", maxSize=" + maxSize +
-                ", lock=" + lock +
+                ", lockId=" + lockId +
+                ", rev=" + rev +
+                ", revSha=" + revSha +
                 '}';
     }
 }

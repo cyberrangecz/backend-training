@@ -98,8 +98,6 @@ public class TrainingDefinitionServiceTest {
                 infoLevelRepository, gameLevelRepository, assessmentLevelRepository, trainingInstanceRepository, userRefRepository,
                 securityService, modelMapper, objectMapper);
 
-        ReflectionTestUtils.setField(trainingDefinitionService, "userAndGroupUrl", "https://localhost:8083/kypo2/api/v1/");
-
         infoLevel = testDataFactory.getInfoLevel1();
         infoLevel.setId(1L);
         infoLevel.setOrder(0);

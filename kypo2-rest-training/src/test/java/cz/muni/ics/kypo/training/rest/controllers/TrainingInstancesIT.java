@@ -160,7 +160,7 @@ public class TrainingInstancesIT {
 
         sandboxPoolInfo = new SandboxPoolInfo();
         sandboxPoolInfo.setId(15L);
-        sandboxPoolInfo.setDefinition(10L);
+        sandboxPoolInfo.setDefinitionId(10L);
         sandboxPoolInfo.setSize(0L);
 
         BetaTestingGroup betaTestingGroup = new BetaTestingGroup();
@@ -228,7 +228,7 @@ public class TrainingInstancesIT {
 
         lockedPoolInfo = new LockedPoolInfo();
         lockedPoolInfo.setId(1L);
-        lockedPoolInfo.setPool(1L);
+        lockedPoolInfo.setPoolId(1L);
     }
 
     @After
@@ -260,7 +260,7 @@ public class TrainingInstancesIT {
     @Test
     public void findTrainingInstanceById() throws Exception {
         trainingInstanceRepository.save(futureTrainingInstance);
-        sandboxInfo1.setLocked(true);
+        sandboxInfo1.setLockId(1);
 
         PageResultResourcePython<SandboxInfo> pageResult = new PageResultResourcePython<>();
         pageResult.setResults(new ArrayList<>(List.of(sandboxInfo1)));

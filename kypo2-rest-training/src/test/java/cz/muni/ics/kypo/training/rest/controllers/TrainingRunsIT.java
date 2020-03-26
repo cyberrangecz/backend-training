@@ -253,7 +253,7 @@ public class TrainingRunsIT {
     public void findTrainingRunById() throws Exception {
         TrainingRun trainingRun = trainingRunRepository.save(trainingRun1);
 
-        given(javaRestTemplate.getForObject(anyString(), eq(UserRefDTO.class))).
+        given(javaRestTemplate.getForObject(anyString(), eq(UserRefDTO.class), anyString())).
                 willReturn(userRefDTO1);
         MockHttpServletResponse result = mvc.perform(get("/training-runs/{id}", trainingRun.getId()))
                 .andExpect(status().isOk())
@@ -283,9 +283,9 @@ public class TrainingRunsIT {
     public void findAllTrainingRuns() throws Exception {
         trainingRunRepository.save(trainingRun1);
         trainingRunRepository.save(trainingRun2);
-        given(javaRestTemplate.getForObject(eq(userAndGroupURI + "/users/" + trainingRun1.getParticipantRef().getUserRefId()), eq(UserRefDTO.class))).
+        given(javaRestTemplate.getForObject(anyString(), eq(UserRefDTO.class), eq(userRefDTO1.getUserRefId().toString()))).
                 willReturn(userRefDTO1);
-        given(javaRestTemplate.getForObject(eq(userAndGroupURI + "/users/" + trainingRun2.getParticipantRef().getUserRefId()), eq(UserRefDTO.class))).
+        given(javaRestTemplate.getForObject(anyString(), eq(UserRefDTO.class), eq(userRefDTO2.getUserRefId().toString()))).
                 willReturn(userRefDTO2);
         MockHttpServletResponse result = mvc.perform(get("/training-runs"))
                 .andExpect(status().isOk())
@@ -395,7 +395,7 @@ public class TrainingRunsIT {
 
         given(javaRestTemplate.getForObject(anyString(), eq(UserRefDTO.class))).
                 willReturn(userRefDTO1);
-        willThrow(new CustomRestTemplateException("No unlocked sandbox.", HttpStatus.CONFLICT)).given(javaRestTemplate).exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), eq(SandboxInfo.class));
+        willThrow(new CustomRestTemplateException("No unlocked sandbox.", HttpStatus.CONFLICT)).given(pythonRestTemplate).getForObject(anyString(), eq(SandboxInfo.class), anyString());
 
         mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_TRAINEE.name()));
         MockHttpServletResponse response = mvc.perform(post("/training-runs")

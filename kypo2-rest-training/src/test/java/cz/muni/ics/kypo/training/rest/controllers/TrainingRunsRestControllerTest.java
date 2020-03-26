@@ -370,7 +370,7 @@ public class TrainingRunsRestControllerTest {
     @Test
     public void evaluateResponsesToAssessment() throws Exception {
         mockMvc.perform(put("/training-runs/{runId}/assessment-evaluations", trainingRun1.getId())
-        .content("responses"))
+                .content("responses"))
                 .andExpect(status().isNoContent());
         then(trainingRunFacade).should().evaluateResponsesToAssessment(trainingRun1.getId(), "responses");
     }

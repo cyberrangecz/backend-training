@@ -126,7 +126,7 @@ public class TrainingInstanceFacadeTest {
 
         lockedPoolInfo = new LockedPoolInfo();
         lockedPoolInfo.setId(1L);
-        lockedPoolInfo.setPool(1L);
+        lockedPoolInfo.setPoolId(1L);
 
         trainingInstanceAssignPoolIdDTO = new TrainingInstanceAssignPoolIdDTO();
         trainingInstanceAssignPoolIdDTO.setPoolId(1L);
