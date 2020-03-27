@@ -141,7 +141,9 @@ public class TrainingInstanceFacade {
         int page = 0;
         do {
             organizers = userService.getUsersRefDTOByGivenUserIds(userRefIdsOfOrganizers, PageRequest.of(page, 999), null, null);
-            Set<Long> actualOrganizersIds = trainingInstance.getOrganizers().stream().map(UserRef::getUserRefId).collect(Collectors.toSet());
+            Set<Long> actualOrganizersIds = trainingInstance.getOrganizers().stream()
+                                                    .map(UserRef::getUserRefId)
+                                                    .collect(Collectors.toSet());
             page++;
             for (UserRefDTO organizer : organizers.getContent()) {
                 if (actualOrganizersIds.contains(organizer.getUserRefId())) {
