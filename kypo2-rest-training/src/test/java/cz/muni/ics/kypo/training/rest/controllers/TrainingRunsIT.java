@@ -74,6 +74,7 @@ import reactor.core.publisher.Mono;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -747,7 +748,7 @@ public class TrainingRunsIT {
 
     @Test
     public void resumeTrainingRunOfFinishedTrainingInstance() throws Exception {
-        trainingInstance.setEndTime(LocalDateTime.now().minusHours(2));
+        trainingInstance.setEndTime(LocalDateTime.now(Clock.systemUTC()).minusHours(2));
         trainingInstanceRepository.save(trainingInstance);
         trainingRun1.setTrainingInstance(trainingInstance);
         trainingRunRepository.save(trainingRun1);

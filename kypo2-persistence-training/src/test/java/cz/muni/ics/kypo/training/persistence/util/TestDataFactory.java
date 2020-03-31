@@ -27,6 +27,10 @@ import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceDTO;
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceUpdateDTO;
 import cz.muni.ics.kypo.training.api.enums.Actions;
 import cz.muni.ics.kypo.training.api.enums.LevelType;
+import cz.muni.ics.kypo.training.api.responses.LockedPoolInfo;
+import cz.muni.ics.kypo.training.api.responses.PoolInfoDTO;
+import cz.muni.ics.kypo.training.api.responses.SandboxInfo;
+import cz.muni.ics.kypo.training.api.responses.SandboxPoolInfo;
 import cz.muni.ics.kypo.training.converters.LocalDateTimeUTCSerializer;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.model.enums.AssessmentType;
@@ -138,6 +142,11 @@ public class TestDataFactory {
             "logReference1", cz.muni.ics.kypo.training.api.enums.TRState.FINISHED, 7L);
     private AccessedTrainingRunDTO accessedTrainingRunDTO = generateAccessedTrainingRunDTO("Accessed run", LocalDateTime.now(Clock.systemUTC()).minusHours(8), LocalDateTime.now(Clock.systemUTC()).minusHours(4), 5,
             6, Actions.RESUME);
+
+    private PoolInfoDTO poolInfoDTO = generatePoolInfoDTO(1L, 1L, 5L, 10L, 5L, "sha", "revSha");
+    private SandboxInfo sandboxInfo = generateSandboxInfo(1L, 1, 4);
+    private SandboxPoolInfo sandboxPoolInfo = generateSandboxPoolInfo(1L, 1L, 10L, 5L);
+    private LockedPoolInfo lockedPoolInfo = generateLockedPoolInfo(1L, 1L);
 
     public AssessmentLevel getTest(){
         return clone(test, AssessmentLevel.class);
@@ -314,6 +323,22 @@ public class TestDataFactory {
 
     public TrainingInstanceArchiveDTO getTrainingInstanceArchiveDTO(){
         return clone(trainingInstanceArchiveDTO, TrainingInstanceArchiveDTO.class);
+    }
+
+    public PoolInfoDTO getPoolInfoDTO(){
+        return clone(poolInfoDTO, PoolInfoDTO.class);
+    }
+
+    public SandboxInfo getSandboxInfo(){
+        return clone(sandboxInfo, SandboxInfo.class);
+    }
+
+    public SandboxPoolInfo getSandboxPoolInfo(){
+        return clone(sandboxPoolInfo, SandboxPoolInfo.class);
+    }
+
+    public LockedPoolInfo getLockedPoolInfo(){
+        return clone(lockedPoolInfo, LockedPoolInfo.class);
     }
 
     private AssessmentLevel generateAssessmentLevel(String title, int maxScore, long estimatedDuration, int order,
@@ -678,6 +703,42 @@ public class TestDataFactory {
         trainingInstanceArchiveDTO.setTitle(title);
         trainingInstanceArchiveDTO.setAccessToken(accessToken);
         return trainingInstanceArchiveDTO;
+    }
+
+    private PoolInfoDTO generatePoolInfoDTO(Long id, Long definitionId, Long lockId, Long maxSize, Long size, String sha, String revSha){
+        PoolInfoDTO poolInfoDTO = new PoolInfoDTO();
+        poolInfoDTO.setId(id);
+        poolInfoDTO.setDefinitionId(definitionId);
+        poolInfoDTO.setLockId(lockId);
+        poolInfoDTO.setMaxSize(maxSize);
+        poolInfoDTO.setSize(size);
+        poolInfoDTO.setRev(sha);
+        poolInfoDTO.setRevSha(revSha);
+        return poolInfoDTO;
+    }
+
+    private SandboxInfo generateSandboxInfo(Long id, Integer lockId, Integer allocationUnit){
+        SandboxInfo sandboxInfo = new SandboxInfo();
+        sandboxInfo.setId(id);
+        sandboxInfo.setAllocationUnitId(allocationUnit);
+        sandboxInfo.setLockId(lockId);
+        return sandboxInfo;
+    }
+
+    private SandboxPoolInfo generateSandboxPoolInfo(Long id, Long definitionId, Long maxSize, Long size){
+        SandboxPoolInfo sandboxPoolInfo = new SandboxPoolInfo();
+        sandboxPoolInfo.setId(id);
+        sandboxPoolInfo.setDefinitionId(definitionId);
+        sandboxPoolInfo.setMaxSize(maxSize);
+        sandboxPoolInfo.setSize(size);
+        return sandboxPoolInfo;
+    }
+
+    private LockedPoolInfo generateLockedPoolInfo(Long id, Long poolId){
+        LockedPoolInfo lockedPoolInfo = new LockedPoolInfo();
+        lockedPoolInfo.setId(id);
+        lockedPoolInfo.setPoolId(poolId);
+        return lockedPoolInfo;
     }
 
     private <T> T clone(Object object, Class<T> tClass){

@@ -3,6 +3,7 @@ package cz.muni.ics.kypo.training.api.responses;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import javax.validation.constraints.NotNull;
+import java.util.Objects;
 
 public class LockedPoolInfo {
 
@@ -34,5 +35,19 @@ public class LockedPoolInfo {
                 "id=" + id +
                 ", poolId=" + poolId +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof LockedPoolInfo)) return false;
+        LockedPoolInfo that = (LockedPoolInfo) o;
+        return getId() == that.getId() &&
+                getPoolId() == that.getPoolId();
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getId(), getPoolId());
     }
 }

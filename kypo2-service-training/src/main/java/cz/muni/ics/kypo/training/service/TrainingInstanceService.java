@@ -2,7 +2,7 @@ package cz.muni.ics.kypo.training.service;
 
 import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.training.api.responses.LockedPoolInfo;
-import cz.muni.ics.kypo.training.api.responses.PoolInfoDto;
+import cz.muni.ics.kypo.training.api.responses.PoolInfoDTO;
 import cz.muni.ics.kypo.training.exceptions.*;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.repository.*;
@@ -254,11 +254,11 @@ public class TrainingInstanceService {
     public void unlockPool(Long poolId) {
         try {
             // get lock id from pool
-            PoolInfoDto poolInfoDto = sandboxServiceWebClient
+            PoolInfoDTO poolInfoDto = sandboxServiceWebClient
                     .get()
                     .uri("/pools/{poolId}", poolId)
                     .retrieve()
-                    .bodyToMono(PoolInfoDto.class)
+                    .bodyToMono(PoolInfoDTO.class)
                     .block();
             // unlock pool
             if (poolInfoDto != null && poolInfoDto.getLockId() != null) {
