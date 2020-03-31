@@ -20,6 +20,7 @@ public class InfoLevelUpdateDTO {
     @NotEmpty(message = "{infolevelupdate.title.NotEmpty.message}")
     protected String title;
     @ApiModelProperty(value = "The information and experiences that are directed towards a participant.", example = "Informational stuff")
+    @NotEmpty(message = "{infolevelupdate.content.NotEmpty.message}")
     private String content;
 
     /**

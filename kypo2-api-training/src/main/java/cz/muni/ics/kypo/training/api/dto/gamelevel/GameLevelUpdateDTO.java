@@ -30,8 +30,10 @@ public class GameLevelUpdateDTO {
     @Size(max = 50, message = "{gamelevelupdate.flag.Size.message}")
     private String flag;
     @ApiModelProperty(value = "The information and experiences that are directed towards an player.", example = "Play me")
+    @NotEmpty(message = "{gamelevelimport.solution.NotEmpty.message}")
     private String content;
     @ApiModelProperty(value = "Instruction how to get flag in game.", example = "This is how you do it")
+    @NotEmpty(message = "{gamelevelimport.solution.NotEmpty.message}")
     private String solution;
     @ApiModelProperty(value = "Sign if displaying of solution is penalized.", required = true, example = "false")
     @NotNull(message = "{gamelevelupdate.solutionPenalized.NotNull.message}")

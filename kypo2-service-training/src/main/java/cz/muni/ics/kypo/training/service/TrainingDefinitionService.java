@@ -5,10 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentQuestion;
-import cz.muni.ics.kypo.training.exceptions.EntityConflictException;
-import cz.muni.ics.kypo.training.exceptions.EntityErrorDetail;
-import cz.muni.ics.kypo.training.exceptions.EntityNotFoundException;
-import cz.muni.ics.kypo.training.exceptions.InternalServerErrorException;
+import cz.muni.ics.kypo.training.exceptions.*;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.model.enums.AssessmentType;
 import cz.muni.ics.kypo.training.persistence.model.enums.TDState;
@@ -334,6 +331,7 @@ public class TrainingDefinitionService {
         GameLevel gameLevel = gameLevelRepository.findById(gameLevelToUpdate.getId())
                 .orElseThrow(() -> new EntityNotFoundException(new EntityErrorDetail(AbstractLevel.class, "id", gameLevelToUpdate.getId().getClass(),
                         gameLevelToUpdate.getId(), LEVEL_NOT_FOUND)));
+        this.checkSumOfHintPenalties(gameLevelToUpdate);
         gameLevelToUpdate.setOrder(gameLevel.getOrder());
         trainingDefinition.setEstimatedDuration(trainingDefinition.getEstimatedDuration() - gameLevel.getEstimatedDuration() + gameLevelToUpdate.getEstimatedDuration());
         trainingDefinition.setLastEdited(getCurrentTimeInUTC());
@@ -696,6 +694,16 @@ public class TrainingDefinitionService {
             trainingDefinition.addAuthor(newUser);
         }
         trainingDefinition.setLastEdited(getCurrentTimeInUTC());
+    }
+
+    private void checkSumOfHintPenalties(GameLevel gameLevel) {
+        int sumHintPenalty = 0;
+        for (Hint hint : gameLevel.getHints()) {
+            sumHintPenalty += hint.getHintPenalty();
+        }
+        if(sumHintPenalty > gameLevel.getMaxScore()) {
+            throw new UnprocessableEntityException(new EntityErrorDetail(GameLevel.class, "id", Long.class, gameLevel.getId(), "Sum of hint penalties cannot be greater than maximal score of the game level."));
+        }
     }
 
 }

@@ -28,8 +28,10 @@ public class AssessmentLevelUpdateDTO {
     @Max(value = 100, message = "{assessmentlevelupdate.maxScore.Max.message}")
     private int maxScore;
     @ApiModelProperty(value = "Questions of assessment level to update.", example = "\"[{\"question_type\":\"FFQ\",\"text\":\"Which tool would you use to scan the open ports of a server?\",\"points\":6,\"penalty\":3,\"order\":0,\"answer_required\":true,\"correct_choices\":[\"nmap\",\"Nmap\"]}]\"")
+    @NotNull(message = "{assessmentlevelupdate.questions.NotNull.message}")
     private String questions;
     @ApiModelProperty(value = "Instructions of assessment level to update.", example = "Fill me up slowly")
+    @NotNull(message = "{assessmentlevelupdate.instructions.NotNull.message}")
     private String instructions;
     @ApiModelProperty(value = "Type of assessment level to update.", required = true, example = "TEST")
     @NotNull(message = "{assessmentlevelupdate.type.NotNull.message}")
