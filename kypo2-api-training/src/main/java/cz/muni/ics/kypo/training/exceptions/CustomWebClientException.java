@@ -6,7 +6,7 @@ import org.springframework.http.HttpStatus;
 /**
  * The type Rest template exception.
  */
-public class CustomRestTemplateException extends RuntimeException {
+public class CustomWebClientException extends RuntimeException {
     private HttpStatus statusCode;
     private ApiSubError apiSubError;
 
@@ -16,7 +16,7 @@ public class CustomRestTemplateException extends RuntimeException {
      * @param message    the message
      * @param statusCode the status code
      */
-    public CustomRestTemplateException(String message, HttpStatus statusCode) {
+    public CustomWebClientException(String message, HttpStatus statusCode) {
         super(message);
         this.statusCode = statusCode;
     }
@@ -28,7 +28,7 @@ public class CustomRestTemplateException extends RuntimeException {
      * @param ex         the ex
      * @param statusCode the status code
      */
-    public CustomRestTemplateException(String message, Throwable ex, HttpStatus statusCode) {
+    public CustomWebClientException(String message, Throwable ex, HttpStatus statusCode) {
         super(message, ex);
         this.statusCode = statusCode;
     }
@@ -38,7 +38,7 @@ public class CustomRestTemplateException extends RuntimeException {
      *
      * @param apiSubError detailed information about error.
      */
-    public CustomRestTemplateException(ApiSubError apiSubError) {
+    public CustomWebClientException(ApiSubError apiSubError) {
         super();
         this.apiSubError = apiSubError;
         this.statusCode = apiSubError.getStatus();
@@ -50,7 +50,7 @@ public class CustomRestTemplateException extends RuntimeException {
      * @param message    the message
      * @param apiSubError detailed information about error
      */
-    public CustomRestTemplateException(String message, ApiSubError apiSubError) {
+    public CustomWebClientException(String message, ApiSubError apiSubError) {
         super(message);
         this.apiSubError = apiSubError;
         this.statusCode = apiSubError.getStatus();
@@ -63,7 +63,7 @@ public class CustomRestTemplateException extends RuntimeException {
      * @param ex         the ex
      * @param apiSubError detailed information about error
      */
-    public CustomRestTemplateException(String message, Throwable ex, ApiSubError apiSubError) {
+    public CustomWebClientException(String message, Throwable ex, ApiSubError apiSubError) {
         super(message, ex);
         this.apiSubError = apiSubError;
         this.statusCode = apiSubError.getStatus();

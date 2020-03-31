@@ -1,10 +1,12 @@
 package cz.muni.ics.kypo.training.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalWO;
 import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
 import cz.muni.ics.kypo.training.api.enums.RoleType;
 import cz.muni.ics.kypo.training.api.responses.PageResultResource;
 import cz.muni.ics.kypo.training.exceptions.*;
+import cz.muni.ics.kypo.training.exceptions.errors.JavaApiError;
 import cz.muni.ics.kypo.training.persistence.model.UserRef;
 import cz.muni.ics.kypo.training.persistence.repository.UserRefRepository;
 import org.slf4j.Logger;
@@ -12,14 +14,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.*;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
-import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.UriComponentsBuilder;
+import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.util.UriBuilder;
 
-import javax.validation.ConstraintViolationException;
-import java.net.URI;
 import java.util.Collections;
 import java.util.Set;
 
@@ -31,18 +32,18 @@ public class UserService {
 
     private static final Logger LOG = LoggerFactory.getLogger(UserService.class);
 
-    private RestTemplate javaRestTemplate;
+    private WebClient userManagementServiceWebClient;
     private UserRefRepository userRefRepository;
 
     /**
      * Instantiates a new User service.
      *
-     * @param javaRestTemplate  the rest template
-     * @param userRefRepository the user ref repository
+     * @param userManagementServiceWebClient the rest template
+     * @param userRefRepository              the user ref repository
      */
-    public UserService(@Qualifier("javaRestTemplate") RestTemplate javaRestTemplate,
+    public UserService(@Qualifier("userManagementServiceWebClient") WebClient userManagementServiceWebClient,
                        UserRefRepository userRefRepository) {
-        this.javaRestTemplate = javaRestTemplate;
+        this.userManagementServiceWebClient = userManagementServiceWebClient;
         this.userRefRepository = userRefRepository;
     }
 
@@ -68,11 +69,14 @@ public class UserService {
      */
     public UserRefDTO getUserRefDTOByUserRefId(Long id) {
         try {
-            return javaRestTemplate.getForObject("/users/{id}", UserRefDTO.class, Long.toString(id));
-        } catch (CustomRestTemplateException ex) {
-            throw new MicroserviceApiException("Error when calling UserAndGroup API to obtain info about user(ID: " + id + ").", ex.getApiSubError());
-        } catch (ConstraintViolationException ex) {
-            throw new MicroserviceApiException("Error in response when calling user management API to obtain info about user(ID: " + id + ")", ex);
+            return userManagementServiceWebClient
+                .get()
+                .uri("/users/{id}", id)
+                .retrieve()
+                .bodyToMono(UserRefDTO.class)
+                .block();
+        } catch (CustomWebClientException ex) {
+            throw new MicroserviceApiException("Error when calling user management service API to obtain info about user(ID: " + id + ").", ex.getApiSubError());
         }
     }
 
@@ -89,19 +93,22 @@ public class UserService {
         if (userRefIds.isEmpty()) {
             return new PageResultResource<>(Collections.emptyList(), new PageResultResource.Pagination(0, 0, pageable.getPageSize(), 0, 0));
         }
-        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString("/users/ids");
-        setCommonParams(givenName, familyName, pageable, builder);
-        builder.queryParam("ids", StringUtils.collectionToDelimitedString(userRefIds, ","));
-        URI uri = builder.build().encode().toUri();
         try {
-            ResponseEntity<PageResultResource<UserRefDTO>> usersResponse = javaRestTemplate.exchange(uri, HttpMethod.GET, HttpEntity.EMPTY,
-                    new ParameterizedTypeReference<PageResultResource<UserRefDTO>>() {
-                    });
-            return usersResponse.getBody();
-        } catch (CustomRestTemplateException ex) {
-            throw new MicroserviceApiException("Error when calling UserAndGroup API to obtain users by IDs: " + userRefIds + ".", ex.getApiSubError());
-        } catch (ConstraintViolationException ex) {
-            throw new MicroserviceApiException("Error in response when calling user management API to obtain users by IDs: " + userRefIds + ".", ex);
+            return userManagementServiceWebClient
+                .get()
+                .uri(uriBuilder -> {
+                            uriBuilder
+                                    .path("/users/ids")
+                                    .queryParam("ids", StringUtils.collectionToDelimitedString(userRefIds, ","));
+                            this.setCommonParams(givenName, familyName, pageable, uriBuilder);
+                            return uriBuilder.build();
+                        }
+                )
+                .retrieve()
+                .bodyToMono(new ParameterizedTypeReference<PageResultResource<UserRefDTO>>() {})
+                .block();
+        } catch (CustomWebClientException ex) {
+            throw new MicroserviceApiException("Error when calling user management service API to obtain users by IDs: " + userRefIds + ".", ex.getApiSubError());
         }
     }
 
@@ -115,19 +122,22 @@ public class UserService {
      * @return list of users with given role
      */
     public PageResultResource<UserRefDTO> getUsersByGivenRole(RoleType roleType, Pageable pageable, String givenName, String familyName) {
-        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString("/roles/users");
-        setCommonParams(givenName, familyName, pageable, builder);
-        builder.queryParam("roleType", roleType.name());
-        URI uri = builder.build().encode().toUri();
         try {
-            ResponseEntity<PageResultResource<UserRefDTO>> usersResponse = javaRestTemplate.exchange(uri, HttpMethod.GET, HttpEntity.EMPTY,
-                    new ParameterizedTypeReference<PageResultResource<UserRefDTO>>() {
-                    });
-            return usersResponse.getBody();
-        } catch (CustomRestTemplateException ex) {
-            throw new MicroserviceApiException("Error when calling UserAndGroup API to obtain users with role " + roleType.name() + ".", ex.getApiSubError());
-        } catch (ConstraintViolationException ex) {
-            throw new MicroserviceApiException("Error in response when calling user management API to obtain users with role " + roleType.name() + ".", ex);
+            return userManagementServiceWebClient
+                .get()
+                .uri(uriBuilder -> {
+                            uriBuilder
+                                    .path("/roles/users")
+                                    .queryParam("roleType", roleType.name());
+                            this.setCommonParams(givenName, familyName, pageable, uriBuilder);
+                            return uriBuilder.build();
+                        }
+                )
+                .retrieve()
+                .bodyToMono(new ParameterizedTypeReference<PageResultResource<UserRefDTO>>() {})
+                .block();
+        } catch (CustomWebClientException ex) {
+            throw new MicroserviceApiException("Error when calling user management service API to obtain users with role " + roleType.name() + ".", ex.getApiSubError());
         }
     }
 
@@ -142,20 +152,23 @@ public class UserService {
      * @return list of users with given role
      */
     public PageResultResource<UserRefDTO> getUsersByGivenRoleAndNotWithGivenIds(RoleType roleType, Set<Long> userRefIds, Pageable pageable, String givenName, String familyName) {
-        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString("/roles/users-not-with-ids");
-        setCommonParams(givenName, familyName, pageable, builder);
-        builder.queryParam("roleType", roleType.name());
-        builder.queryParam("ids", StringUtils.collectionToDelimitedString(userRefIds, ","));
-        URI uri = builder.build().encode().toUri();
         try {
-            ResponseEntity<PageResultResource<UserRefDTO>> usersResponse = javaRestTemplate.exchange(uri, HttpMethod.GET, HttpEntity.EMPTY,
-                    new ParameterizedTypeReference<PageResultResource<UserRefDTO>>() {
-                    });
-            return usersResponse.getBody();
-        } catch (CustomRestTemplateException ex) {
-            throw new MicroserviceApiException("Error when calling UserAndGroup API to obtain users with role " + roleType.name() + " and IDs: " + userRefIds + ".", ex.getApiSubError());
-        } catch (ConstraintViolationException ex) {
-            throw new MicroserviceApiException("Error in response when calling user management API to obtain users with role " + roleType.name() + " and IDs: " + userRefIds + ".", ex);
+            return userManagementServiceWebClient
+                .get()
+                .uri(uriBuilder -> {
+                            uriBuilder
+                                    .path("/roles/users-not-with-ids")
+                                    .queryParam("roleType", roleType.name())
+                                    .queryParam("ids", StringUtils.collectionToDelimitedString(userRefIds, ","));
+                            this.setCommonParams(givenName, familyName, pageable, uriBuilder);
+                            return uriBuilder.build();
+                        }
+                )
+                .retrieve()
+                .bodyToMono(new ParameterizedTypeReference<PageResultResource<UserRefDTO>>() {})
+                .block();
+        } catch (CustomWebClientException ex) {
+            throw new MicroserviceApiException("Error when calling user management service API to obtain users with role " + roleType.name() + " and IDs: " + userRefIds + ".", ex.getApiSubError());
         }
     }
 
@@ -172,7 +185,7 @@ public class UserService {
         return userRef;
     }
 
-    private void setCommonParams(String givenName, String familyName, Pageable pageable, UriComponentsBuilder builder) {
+    private void setCommonParams(String givenName, String familyName, Pageable pageable, UriBuilder builder) {
         if (givenName != null) {
             builder.queryParam("givenName", givenName);
         }
@@ -181,5 +194,18 @@ public class UserService {
         }
         builder.queryParam("page", pageable.getPageNumber());
         builder.queryParam("size", pageable.getPageSize());
+    }
+
+    /**
+     * Check if response from external API is not null.
+     *
+     * @param object object to check
+     * @param message exception message if response is null
+     * @throws MicroserviceApiException if response is null
+     */
+    private void checkNonNull(Object object, String message) {
+        if (object == null) {
+            throw new MicroserviceApiException(message);
+        }
     }
 }

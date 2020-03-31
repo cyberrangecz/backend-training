@@ -4,6 +4,7 @@ import com.google.gson.JsonObject;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.PathBuilder;
 import cz.muni.ics.kypo.commons.security.enums.AuthenticatedUserOIDCItems;
+import cz.muni.ics.kypo.training.api.responses.LockedPoolInfo;
 import cz.muni.ics.kypo.training.api.responses.SandboxInfo;
 import cz.muni.ics.kypo.training.api.responses.SandboxPoolInfo;
 import cz.muni.ics.kypo.training.exceptions.EntityConflictException;
@@ -40,6 +41,7 @@ import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.reactive.function.client.WebClient;
 
 import java.time.Clock;
 import java.time.LocalDateTime;
@@ -66,7 +68,7 @@ public class TrainingInstanceServiceTest {
     @Mock
     private TrainingInstanceRepository trainingInstanceRepository;
     @Mock
-    private RestTemplate pythonRestTemplate;
+    private WebClient pythonWebClient;
     @Mock
     private AccessTokenRepository accessTokenRepository;
     @Mock
@@ -83,12 +85,13 @@ public class TrainingInstanceServiceTest {
     private TrainingInstance trainingInstance1, trainingInstance2;
     private TrainingRun trainingRun1, trainingRun2;
     private UserRef user;
+    private LockedPoolInfo lockedPoolInfo;
 
     @Before
     public void init() {
         MockitoAnnotations.initMocks(this);
         trainingInstanceService = new TrainingInstanceService(trainingInstanceRepository, accessTokenRepository,
-                trainingRunRepository, organizerRefRepository, pythonRestTemplate, securityService);
+                trainingRunRepository, organizerRefRepository, pythonWebClient, securityService);
 
         trainingInstance1 = testDataFactory.getConcludedInstance();
         trainingInstance1.setId(1L);
@@ -114,6 +117,8 @@ public class TrainingInstanceServiceTest {
 
         sandboxInfo2 = new SandboxInfo();
         sandboxInfo2.setId(3L);
+
+        lockedPoolInfo = new LockedPoolInfo();
     }
 
     @Test
@@ -153,8 +158,7 @@ public class TrainingInstanceServiceTest {
         given(trainingInstanceRepository.save(trainingInstance2)).willReturn(trainingInstance2);
         given(organizerRefRepository.save(any(UserRef.class))).willReturn(user);
         given(securityService.createUserRefEntityByInfoFromUserAndGroup()).willReturn(user);
-        given(pythonRestTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(SandboxPoolInfo.class))).
-                willReturn(new ResponseEntity<SandboxPoolInfo>(sandboxPoolInfo, HttpStatus.OK));
+
         TrainingInstance tI = trainingInstanceService.create(trainingInstance2);
         deepEquals(trainingInstance2, tI);
         then(trainingInstanceRepository).should().save(trainingInstance2);

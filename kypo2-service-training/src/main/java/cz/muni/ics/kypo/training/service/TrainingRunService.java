@@ -22,9 +22,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.reactive.function.client.WebClient;
 
-import javax.validation.ConstraintViolationException;
 import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -45,7 +44,7 @@ public class TrainingRunService {
     private AuditEventsService auditEventsService;
     private SecurityService securityService;
     private TRAcquisitionLockRepository trAcquisitionLockRepository;
-    private RestTemplate pythonRestTemplate;
+    private WebClient sandboxServiceWebClient;
 
     /**
      * Instantiates a new Training run service.
@@ -57,7 +56,7 @@ public class TrainingRunService {
      * @param hintRepository              the hint repository
      * @param auditEventsService          the audit events service
      * @param securityService             the security service
-     * @param pythonRestTemplate          the python rest template
+     * @param sandboxServiceWebClient     the python rest template
      * @param trAcquisitionLockRepository the tr acquisition lock repository
      */
     @Autowired
@@ -68,7 +67,7 @@ public class TrainingRunService {
                               HintRepository hintRepository,
                               AuditEventsService auditEventsService,
                               SecurityService securityService,
-                              @Qualifier("pythonRestTemplate") RestTemplate pythonRestTemplate,
+                              @Qualifier("sandboxServiceWebClient") WebClient sandboxServiceWebClient,
                               TRAcquisitionLockRepository trAcquisitionLockRepository) {
         this.trainingRunRepository = trainingRunRepository;
         this.abstractLevelRepository = abstractLevelRepository;
@@ -77,7 +76,7 @@ public class TrainingRunService {
         this.hintRepository = hintRepository;
         this.auditEventsService = auditEventsService;
         this.securityService = securityService;
-        this.pythonRestTemplate = pythonRestTemplate;
+        this.sandboxServiceWebClient = sandboxServiceWebClient;
         this.trAcquisitionLockRepository = trAcquisitionLockRepository;
     }
 
@@ -341,15 +340,18 @@ public class TrainingRunService {
 
     private Long getAndLockSandboxForTrainingRun(Long poolId) {
         try {
-            SandboxInfo sandboxInfo = pythonRestTemplate.getForObject("/pools/{poolId}/sandboxes/get-and-lock", SandboxInfo.class, Long.toString(poolId));
+            SandboxInfo sandboxInfo = sandboxServiceWebClient
+                    .get()
+                    .uri("/pools/{poolId}/sandboxes/get-and-lock", poolId)
+                    .retrieve()
+                    .bodyToMono(SandboxInfo.class)
+                    .block();
             return sandboxInfo.getId();
-        } catch (CustomRestTemplateException ex) {
+        } catch (CustomWebClientException ex) {
             if (ex.getStatusCode() == HttpStatus.CONFLICT) {
                 throw new ForbiddenException("There is no available sandbox, wait a minute and try again or ask organizer to allocate more sandboxes.");
             }
             throw new MicroserviceApiException("Error when calling sandbox service API to get unlocked sandbox from pool (ID: " + poolId + ")", ex.getApiSubError());
-        } catch (ConstraintViolationException ex) {
-            throw new MicroserviceApiException("Error in response when calling sandbox service API to get unlocked sandbox from pool (ID: " + poolId + ").", ex);
         }
     }
 

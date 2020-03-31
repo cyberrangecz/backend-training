@@ -1,7 +1,7 @@
 package cz.muni.ics.kypo.training.exceptions.responsehandlers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import cz.muni.ics.kypo.training.exceptions.CustomRestTemplateException;
+import cz.muni.ics.kypo.training.exceptions.CustomWebClientException;
 import cz.muni.ics.kypo.training.exceptions.errors.JavaApiError;
 import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.util.StreamUtils;
@@ -37,9 +37,9 @@ public class JavaApiResponseErrorHandler implements ResponseErrorHandler {
     public void handleError(ClientHttpResponse response) throws IOException {
         String responseBody = StreamUtils.copyToString(response.getBody(), Charset.defaultCharset());
         if(responseBody.isBlank()) {
-            throw new CustomRestTemplateException("Error from external microservice. No specific message provided.", response.getStatusCode());
+            throw new CustomWebClientException("Error from external microservice. No specific message provided.", response.getStatusCode());
         }
         JavaApiError javaApiError = mapper.readValue(responseBody, JavaApiError.class);
-        throw new CustomRestTemplateException(javaApiError);
+        throw new CustomWebClientException(javaApiError);
     }
 }

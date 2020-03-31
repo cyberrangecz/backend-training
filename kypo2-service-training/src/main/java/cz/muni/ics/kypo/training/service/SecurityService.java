@@ -13,15 +13,13 @@ import cz.muni.ics.kypo.training.persistence.repository.TrainingInstanceReposito
 import cz.muni.ics.kypo.training.persistence.repository.TrainingRunRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.reactive.function.client.WebClient;
 
-import javax.validation.ConstraintViolationException;
 
 /**
  * The type Security service.
@@ -33,7 +31,7 @@ public class SecurityService {
     private TrainingRunRepository trainingRunRepository;
     private TrainingDefinitionRepository trainingDefinitionRepository;
     private TrainingInstanceRepository trainingInstanceRepository;
-    private RestTemplate javaRestTemplate;
+    private WebClient userManagementWebClient;
 
     /**
      * Instantiates a new Security service.
@@ -41,17 +39,17 @@ public class SecurityService {
      * @param trainingInstanceRepository   the training instance repository
      * @param trainingDefinitionRepository the training definition repository
      * @param trainingRunRepository        the training run repository
-     * @param javaRestTemplate             the java rest template
+     * @param userManagementWebClient      the java rest template
      */
     @Autowired
     public SecurityService(TrainingInstanceRepository trainingInstanceRepository,
                            TrainingDefinitionRepository trainingDefinitionRepository,
                            TrainingRunRepository trainingRunRepository,
-                           @Qualifier("javaRestTemplate") RestTemplate javaRestTemplate) {
+                           @Qualifier("userManagementServiceWebClient") WebClient userManagementWebClient) {
         this.trainingDefinitionRepository = trainingDefinitionRepository;
         this.trainingInstanceRepository = trainingInstanceRepository;
         this.trainingRunRepository = trainingRunRepository;
-        this.javaRestTemplate = javaRestTemplate;
+        this.userManagementWebClient = userManagementWebClient;
     }
 
     /**
@@ -118,12 +116,16 @@ public class SecurityService {
      */
     public Long getUserRefIdFromUserAndGroup() {
         try {
-            UserRefDTO userRefDTO = javaRestTemplate.getForObject("/users/info", UserRefDTO.class);
+            UserRefDTO userRefDTO = userManagementWebClient
+                    .get()
+                    .uri("/users/info")
+                    .retrieve()
+                    .bodyToMono(UserRefDTO.class)
+                    .block();
+            checkNonNull(userRefDTO, "Returned null response when calling user management service API to get info about logged in user.");
             return userRefDTO.getUserRefId();
-        } catch (CustomRestTemplateException ex) {
-            throw new MicroserviceApiException("Error when calling UserAndGroup API to get info about logged in user.", ex.getApiSubError());
-        } catch (ConstraintViolationException ex) {
-            throw new MicroserviceApiException("Error in response when calling user management API to get info about logged in user.", ex);
+        } catch (CustomWebClientException ex) {
+            throw new MicroserviceApiException("Error when calling user management service API to get info about logged in user.", ex.getApiSubError());
         }
     }
 
@@ -134,14 +136,31 @@ public class SecurityService {
      */
     public UserRef createUserRefEntityByInfoFromUserAndGroup() {
         try {
-            UserRefDTO userRefDto = javaRestTemplate.getForObject("/users/info", UserRefDTO.class);
+            UserRefDTO userRefDTO = userManagementWebClient
+                    .get()
+                    .uri("/users/info")
+                    .retrieve()
+                    .bodyToMono(UserRefDTO.class)
+                    .block();
+            checkNonNull(userRefDTO, "Returned null response when calling user management service API to get info about logged in user.");
             UserRef userRef = new UserRef();
-            userRef.setUserRefId(userRefDto.getUserRefId());
+            userRef.setUserRefId(userRefDTO.getUserRefId());
             return userRef;
-        } catch (CustomRestTemplateException ex) {
-            throw new MicroserviceApiException("Error when calling UserAndGroup API to get info about logged in user.", ex.getApiSubError());
-        } catch (ConstraintViolationException ex) {
-            throw new MicroserviceApiException("Error in response when calling user management API to get info about logged in user.", ex);
+        } catch (CustomWebClientException ex) {
+            throw new MicroserviceApiException("Error when calling user management service API to get info about logged in user.", ex.getApiSubError());
+        }
+    }
+
+    /**
+     * Check if response from external API is not null.
+     *
+     * @param object object to check
+     * @param message exception message if response is null
+     * @throws MicroserviceApiException if response is null
+     */
+    private void checkNonNull(Object object, String message) {
+        if (object == null) {
+            throw new MicroserviceApiException(message);
         }
     }
 

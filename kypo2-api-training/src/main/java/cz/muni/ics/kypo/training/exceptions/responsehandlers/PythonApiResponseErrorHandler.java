@@ -1,16 +1,13 @@
 package cz.muni.ics.kypo.training.exceptions.responsehandlers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import cz.muni.ics.kypo.training.exceptions.CustomRestTemplateException;
-import cz.muni.ics.kypo.training.exceptions.errors.JavaApiError;
+import cz.muni.ics.kypo.training.exceptions.CustomWebClientException;
 import cz.muni.ics.kypo.training.exceptions.errors.PythonApiError;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.util.StreamUtils;
 import org.springframework.web.client.ResponseErrorHandler;
 
 import java.io.IOException;
-import java.net.URI;
 import java.nio.charset.Charset;
 
 import static org.springframework.http.HttpStatus.Series.CLIENT_ERROR;
@@ -43,10 +40,10 @@ public class PythonApiResponseErrorHandler implements ResponseErrorHandler {
     public void handleError(ClientHttpResponse response) throws IOException {
         String responseBody = StreamUtils.copyToString(response.getBody(), Charset.defaultCharset());
         if(responseBody.isBlank()) {
-            throw new CustomRestTemplateException("Error from external microservice. No specific message provided.", response.getStatusCode());
+            throw new CustomWebClientException("Error from external microservice. No specific message provided.", response.getStatusCode());
         }
         PythonApiError pythonApiError = mapper.readValue(response.getBody(), PythonApiError.class);
         pythonApiError.setStatus(response.getStatusCode());
-        throw new CustomRestTemplateException(pythonApiError);
+        throw new CustomWebClientException(pythonApiError);
     }
 }

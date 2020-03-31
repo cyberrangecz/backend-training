@@ -20,6 +20,10 @@ public class MicroserviceApiException extends RuntimeException{
 
     }
 
+    public MicroserviceApiException(String message) {
+        super(message);
+    }
+
     public MicroserviceApiException(String message, ConstraintViolationException exception) {
         super(message + " Constraint violations: " + exception.getConstraintViolations().toString());
 

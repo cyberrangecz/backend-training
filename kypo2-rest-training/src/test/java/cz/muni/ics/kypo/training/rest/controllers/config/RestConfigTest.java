@@ -1,7 +1,6 @@
 package cz.muni.ics.kypo.training.rest.controllers.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import cz.muni.csirt.kypo.elasticsearch.service.TrainingEventsService;
@@ -24,13 +23,11 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.data.jpa.convert.threeten.Jsr310JpaConverters;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
-import org.springframework.http.converter.StringHttpMessageConverter;
-import org.springframework.security.access.method.P;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.reactive.function.client.ExchangeFunction;
+import org.springframework.web.reactive.function.client.WebClient;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
-import java.nio.charset.Charset;
 
 @Configuration
 @ComponentScan(basePackages = {"cz.muni.ics.kypo.training.facade", "cz.muni.ics.kypo.training.mapping", "cz.muni.ics.kypo.training.service",
@@ -61,20 +58,33 @@ public class RestConfigTest {
 	}
 
 	@Bean
-	@Primary
-	@Qualifier("javaRestTemplate")
-	public RestTemplate javaRestTemplate() {
-		RestTemplate restTemplate = Mockito.mock(RestTemplate.class);
-		restTemplate.getMessageConverters().add(0, new StringHttpMessageConverter(Charset.forName("UTF-8")));
-		return restTemplate;
+	@Qualifier("userManagementExchangeFunction")
+	public ExchangeFunction userManagementExchangeFunction(){
+		return Mockito.mock(ExchangeFunction.class);
+	}
+
+
+	@Bean
+	@Qualifier("sandboxManagementExchangeFunction")
+	public ExchangeFunction sandboxManagementExchangeFunction(){
+		return Mockito.mock(ExchangeFunction.class);
 	}
 
 	@Bean
-	@Qualifier("pythonRestTemplate")
-	public RestTemplate pythonRestTemplate() {
-		RestTemplate pythonRestTemplate = Mockito.mock(RestTemplate.class);
-		pythonRestTemplate.getMessageConverters().add(0, new StringHttpMessageConverter(Charset.forName("UTF-8")));
-		return pythonRestTemplate;
+	@Primary
+	@Qualifier("userManagementServiceWebClient")
+	public WebClient userManagementServiceWebClient(){
+		return WebClient.builder()
+				.exchangeFunction(userManagementExchangeFunction())
+				.build();
+	}
+
+	@Bean
+	@Qualifier("sandboxServiceWebClient")
+	public WebClient sandboxServiceWebClient(){
+		return WebClient.builder()
+				.exchangeFunction(sandboxManagementExchangeFunction())
+				.build();
 	}
 
 	@Bean

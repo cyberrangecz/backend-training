@@ -34,8 +34,8 @@ public class ObjectMappersConfiguration {
      * @return the object mapper
      */
     @Bean
-    @Qualifier("restTemplateObjectMapper")
-    public ObjectMapper objectMapperForRestTemplate() {
+    @Qualifier("webClientObjectMapper")
+    public ObjectMapper webClientObjectMapper() {
         ObjectMapper objectMapper = initializeBasicObjectMapperConfig();
         objectMapper.registerModule(getSimpleValidationModule());
         return objectMapper;

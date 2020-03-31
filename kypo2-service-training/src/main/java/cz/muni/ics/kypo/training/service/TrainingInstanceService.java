@@ -11,14 +11,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.*;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.reactive.function.BodyInserters;
+import org.springframework.web.reactive.function.client.WebClient;
 
-import javax.validation.ConstraintViolationException;
 import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -36,7 +34,7 @@ public class TrainingInstanceService {
     private AccessTokenRepository accessTokenRepository;
     private UserRefRepository organizerRefRepository;
     private SecurityService securityService;
-    private RestTemplate pythonRestTemplate;
+    private WebClient sandboxServiceWebClient;
 
     /**
      * Instantiates a new Training instance service.
@@ -45,22 +43,23 @@ public class TrainingInstanceService {
      * @param accessTokenRepository      the access token repository
      * @param trainingRunRepository      the training run repository
      * @param organizerRefRepository     the organizer ref repository
-     * @param pythonRestTemplate         the python rest template
+     * @param sandboxServiceWebClient    the python rest template
      * @param securityService            the security service
      */
     @Autowired
+
     public TrainingInstanceService(TrainingInstanceRepository trainingInstanceRepository,
                                    AccessTokenRepository accessTokenRepository,
                                    TrainingRunRepository trainingRunRepository,
                                    UserRefRepository organizerRefRepository,
-                                   @Qualifier("pythonRestTemplate") RestTemplate pythonRestTemplate,
+                                   @Qualifier("sandboxServiceWebClient") WebClient sandboxServiceWebClient,
                                    SecurityService securityService) {
         this.trainingInstanceRepository = trainingInstanceRepository;
         this.trainingRunRepository = trainingRunRepository;
         this.accessTokenRepository = accessTokenRepository;
         this.organizerRefRepository = organizerRefRepository;
         this.securityService = securityService;
-        this.pythonRestTemplate = pythonRestTemplate;
+        this.sandboxServiceWebClient = sandboxServiceWebClient;
     }
 
     /**
@@ -235,11 +234,15 @@ public class TrainingInstanceService {
      */
     public LockedPoolInfo lockPool(Long poolId) {
         try {
-            return pythonRestTemplate.postForObject("/pools/{poolId}/locks", new HttpEntity<>("{}"), LockedPoolInfo.class, Long.toString(poolId));
-        } catch (CustomRestTemplateException ex) {
+            return sandboxServiceWebClient
+                    .post()
+                    .uri("/pools/{poolId}/locks", poolId)
+                    .body(BodyInserters.fromObject("{}"))
+                    .retrieve()
+                    .bodyToMono(LockedPoolInfo.class)
+                    .block();
+        } catch (CustomWebClientException ex) {
             throw new MicroserviceApiException("Currently, it is not possible to lock and assign pool with (ID: " + poolId + ").", ex.getApiSubError());
-        } catch (ConstraintViolationException ex) {
-            throw new MicroserviceApiException("Error in response when calling sandbox service API to lock and assign pool with (ID: " + poolId + ").", ex);
         }
     }
 
@@ -251,15 +254,22 @@ public class TrainingInstanceService {
     public void unlockPool(Long poolId) {
         try {
             // get lock id from pool
-            PoolInfoDto poolInfoDto = pythonRestTemplate.getForObject("/pools/{poolId}", PoolInfoDto.class, Long.toString(poolId));
+            PoolInfoDto poolInfoDto = sandboxServiceWebClient
+                    .get()
+                    .uri("/pools/{poolId}", poolId)
+                    .retrieve()
+                    .bodyToMono(PoolInfoDto.class)
+                    .block();
             // unlock pool
             if (poolInfoDto != null && poolInfoDto.getLockId() != null) {
-                pythonRestTemplate.delete("/pools/{poolId}/locks/{lockId}", Long.toString(poolId), Long.toString(poolInfoDto.getLockId()));
+                sandboxServiceWebClient
+                        .delete()
+                        .uri("/pools/{poolId}/locks/{lockId}", poolId, poolInfoDto.getLockId())
+                        .retrieve()
+                        .bodyToMono(Void.class);
             }
-        } catch (CustomRestTemplateException ex) {
+        } catch (CustomWebClientException ex) {
             throw new MicroserviceApiException("Currently, it is not possible to unlock a pool with (ID: " + poolId + ").", ex.getApiSubError());
-        } catch (ConstraintViolationException ex) {
-            throw new MicroserviceApiException("Error in response when calling sandbox service API to unlock a pool with (ID: " + poolId + ").", ex);
         }
     }
 

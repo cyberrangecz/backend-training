@@ -109,7 +109,7 @@ public class TrainingInstancesRestControllerTest {
 
         pageable = PageRequest.of(0, 5);
 
-        organizerDTO1 = createUserRefDTO(10L, "Bc. Dominik Meškal", "Meškal", "Dominik", "445533@muni.cz", "https://oidc.muni.cz/oidc", null);
+        organizerDTO1 = createUserRefDTO(10L, "Bc. Dominik Meskal", "Meskal", "Dominik", "445533@muni.cz", "https://oidc.muni.cz/oidc", null);
         organizerDTO2 = createUserRefDTO(20L, "Bc. Boris Makal", "Makal", "Boris", "772211@muni.cz", "https://oidc.muni.cz/oidc", null);
         organizerDTO3 = createUserRefDTO(30L, "Ing. Pavel Flákal", "Flákal", "Pavel", "221133@muni.cz", "https://oidc.muni.cz/oidc", null);
 

@@ -8,10 +8,9 @@ import cz.muni.ics.kypo.training.persistence.repository.*;
 import cz.muni.ics.kypo.training.utils.AssessmentUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.Set;
 
@@ -28,7 +27,7 @@ public class ExportImportService {
     private GameLevelRepository gameLevelRepository;
     private TrainingInstanceRepository trainingInstanceRepository;
     private TrainingRunRepository trainingRunRepository;
-    private RestTemplate pythonRestTemplate;
+    private WebClient sandboxServiceWebClient;
 
     /**
      * Instantiates a new Export import service.
@@ -40,7 +39,7 @@ public class ExportImportService {
      * @param gameLevelRepository          the game level repository
      * @param trainingInstanceRepository   the training instance repository
      * @param trainingRunRepository        the training run repository
-     * @param pythonRestTemplate           the python rest template
+     * @param sandboxServiceWebClient      the python rest template
      */
     @Autowired
     public ExportImportService(TrainingDefinitionRepository trainingDefinitionRepository,
@@ -50,7 +49,7 @@ public class ExportImportService {
                                GameLevelRepository gameLevelRepository,
                                TrainingInstanceRepository trainingInstanceRepository,
                                TrainingRunRepository trainingRunRepository,
-                               @Qualifier("pythonRestTemplate") RestTemplate pythonRestTemplate) {
+                               @Qualifier("sandboxServiceWebClient") WebClient sandboxServiceWebClient) {
         this.trainingDefinitionRepository = trainingDefinitionRepository;
         this.abstractLevelRepository = abstractLevelRepository;
         this.assessmentLevelRepository = assessmentLevelRepository;
@@ -58,7 +57,7 @@ public class ExportImportService {
         this.infoLevelRepository = infoLevelRepository;
         this.trainingInstanceRepository = trainingInstanceRepository;
         this.trainingRunRepository = trainingRunRepository;
-        this.pythonRestTemplate = pythonRestTemplate;
+        this.sandboxServiceWebClient = sandboxServiceWebClient;
     }
 
     /**
@@ -124,8 +123,13 @@ public class ExportImportService {
      */
     public SandboxDefinitionInfo getSandboxDefinitionId(Long poolId) {
         try {
-            return pythonRestTemplate.getForObject("/pools/{poolId}/definition", SandboxDefinitionInfo.class, Long.toString(poolId));
-        } catch (CustomRestTemplateException ex) {
+            return sandboxServiceWebClient
+                    .get()
+                    .uri("/pools/{poolId}/definition", poolId)
+                    .retrieve()
+                    .bodyToMono(SandboxDefinitionInfo.class)
+                    .block();
+        } catch (CustomWebClientException ex) {
             if (ex.getStatusCode() == HttpStatus.CONFLICT) {
                 throw new ForbiddenException("There is no available sandbox definition for particular pool (ID: " + poolId + ").");
             }

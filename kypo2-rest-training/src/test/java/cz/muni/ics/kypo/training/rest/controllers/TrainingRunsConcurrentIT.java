@@ -23,6 +23,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -34,18 +36,21 @@ import org.springframework.test.context.TestContextManager;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.reactive.function.client.ClientRequest;
+import org.springframework.web.reactive.function.client.ClientResponse;
+import org.springframework.web.reactive.function.client.ExchangeFunction;
+import reactor.core.publisher.Mono;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 
+import static cz.muni.ics.kypo.training.rest.controllers.util.ObjectConverter.convertObjectToJsonBytes;
 import static org.junit.Assert.assertEquals;
-import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.BDDMockito.willThrow;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
 @RunWith(ConcurrentTestRunner.class)
@@ -75,13 +80,14 @@ public class TrainingRunsConcurrentIT {
     @Autowired
     private GameLevelRepository gameLevelRepository;
     @Autowired
-    @Qualifier("javaRestTemplate")
-    private RestTemplate javaRestTemplate;
-    @Autowired
-    @Qualifier("pythonRestTemplate")
-    private RestTemplate pythonRestTemplate;
-    @Autowired
     private TRAcquisitionLockRepository trAcquisitionLockRepository;
+    @Autowired
+    @Qualifier("sandboxManagementExchangeFunction")
+    private ExchangeFunction sandboxManagementExchangeFunction;
+    @Autowired
+    @Qualifier("userManagementExchangeFunction")
+    private ExchangeFunction userManagementExchangeFunction;
+
 
     private GameLevel gameLevel1;
     private UserRefDTO userRefDTO1;
@@ -155,10 +161,9 @@ public class TrainingRunsConcurrentIT {
     @Test
     @ThreadCount(4)
     public void concurrentAccessTrainingRun() throws Exception {
-        given(javaRestTemplate.getForObject(anyString(), eq(UserRefDTO.class))).willReturn(userRefDTO1);
-        given(pythonRestTemplate.getForObject(anyString(), eq(SandboxInfo.class), anyString())).willReturn(sandboxInfo1);
+        given(userManagementExchangeFunction.exchange(any(ClientRequest.class))).willReturn(buildMockResponse(userRefDTO1));
+        given(sandboxManagementExchangeFunction.exchange(any(ClientRequest.class))).willReturn(buildMockResponse(sandboxInfo1));
         mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_TRAINEE.name()));
-
         mvc.perform(post("/training-runs")
                 .param("accessToken", trainingInstance.getAccessToken()));
     }
@@ -169,6 +174,14 @@ public class TrainingRunsConcurrentIT {
         List<TRAcquisitionLock> locks = trAcquisitionLockRepository.findAll();
         assertEquals(1, trainingRuns.size());
         assertEquals(1, locks.size());
+    }
+
+    private Mono<ClientResponse> buildMockResponse(Object body) throws IOException {
+        ClientResponse clientResponse = ClientResponse.create(HttpStatus.OK)
+                .body(convertObjectToJsonBytes(body))
+                .header(org.apache.http.HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .build();
+        return Mono.just(clientResponse);
     }
 
     private void mockSpringSecurityContextForGet(List<String> roles) {
@@ -191,5 +204,4 @@ public class TrainingRunsConcurrentIT {
         given(auth.getAuthorities()).willReturn(authorities);
         given(authentication.getDetails()).willReturn(auth);
     }
-
 }

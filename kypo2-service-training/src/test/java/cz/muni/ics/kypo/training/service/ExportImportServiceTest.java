@@ -11,6 +11,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.Optional;
 
@@ -26,7 +27,7 @@ public class ExportImportServiceTest {
     private static ExportImportService exportImportService;
 
     @Mock
-    private static RestTemplate pythonRestTemplate;
+    private static WebClient pythonWebClient;
     @Mock
     private static TrainingDefinitionRepository trainingDefinitionRepository;
     @Mock
@@ -55,7 +56,7 @@ public class ExportImportServiceTest {
     public void init() {
         MockitoAnnotations.initMocks(this);
         exportImportService = new ExportImportService(trainingDefinitionRepository, abstractLevelRepository, assessmentLevelRepository,
-                infoLevelRepository, gameLevelRepository, trainingInstanceRepository, trainingRunRepository, pythonRestTemplate);
+                infoLevelRepository, gameLevelRepository, trainingInstanceRepository, trainingRunRepository, pythonWebClient);
 
         given(assessmentLevel.getId()).willReturn(1L);
         given(assessmentLevel.getQuestions()).willReturn("[]");

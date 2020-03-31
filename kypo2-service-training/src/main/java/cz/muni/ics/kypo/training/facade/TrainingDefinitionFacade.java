@@ -424,7 +424,8 @@ public class TrainingDefinitionFacade {
     @IsDesignerOrAdmin
     @TransactionalRO
     public PageResultResource<UserRefDTO> getUsersWithGivenRole(RoleType roleType, Pageable pageable, String givenName, String familyName) {
-        return userService.getUsersByGivenRole(roleType, pageable, givenName, familyName);
+        Object result = userService.getUsersByGivenRole(roleType, pageable, givenName, familyName);
+        return (PageResultResource<UserRefDTO>) result;
     }
 
     /**

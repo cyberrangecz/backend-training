@@ -131,7 +131,7 @@ public class VisualizationFacade {
     private List<AbstractLevelVisualizationDTO> convertToAbstractLevelVisualizationDTO(List<AbstractLevel> abstractLevels) {
         List<AbstractLevelVisualizationDTO> visualizationLevelInfoDTOs = new ArrayList<>();
         abstractLevels.forEach(level ->
-            visualizationLevelInfoDTOs.add(levelMapper.mapToVisualizationDTO(level)));
+                visualizationLevelInfoDTOs.add(levelMapper.mapToVisualizationDTO(level)));
         return visualizationLevelInfoDTOs;
     }
 
