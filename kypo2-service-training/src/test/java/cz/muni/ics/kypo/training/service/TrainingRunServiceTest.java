@@ -7,9 +7,7 @@ import com.querydsl.core.types.dsl.PathBuilder;
 import cz.muni.ics.kypo.commons.security.enums.AuthenticatedUserOIDCItems;
 import cz.muni.ics.kypo.training.api.responses.PageResultResourcePython;
 import cz.muni.ics.kypo.training.api.responses.SandboxInfo;
-import cz.muni.ics.kypo.training.exceptions.BadRequestException;
-import cz.muni.ics.kypo.training.exceptions.EntityConflictException;
-import cz.muni.ics.kypo.training.exceptions.EntityNotFoundException;
+import cz.muni.ics.kypo.training.exceptions.*;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.model.enums.TRState;
 import cz.muni.ics.kypo.training.persistence.repository.*;
@@ -24,6 +22,7 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -35,12 +34,18 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.transaction.event.TransactionalEventListener;
 import org.springframework.util.ResourceUtils;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.reactive.function.client.ClientRequest;
+import org.springframework.web.reactive.function.client.ClientResponse;
+import org.springframework.web.reactive.function.client.ExchangeFunction;
 import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
 
 import java.io.FileReader;
 import java.io.IOException;
+import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -51,13 +56,13 @@ import static org.mockito.BDDMockito.*;
 @ContextConfiguration(classes = {TestDataFactory.class})
 public class TrainingRunServiceTest {
 
-    @Autowired
-    private TestDataFactory testDataFactory;
-
     @Rule
     public ExpectedException thrown = ExpectedException.none();
 
     private TrainingRunService trainingRunService;
+
+    @Autowired
+    private TestDataFactory testDataFactory;
 
     @Mock
     private TRAcquisitionLockRepository trAcquisitionLockRepository;
@@ -74,7 +79,9 @@ public class TrainingRunServiceTest {
     @Mock
     private HintRepository hintRepository;
     @Mock
-    private WebClient webClient, pythonWebClient;
+    private ExchangeFunction exchangeFunction;
+    @Mock
+    private WebClient sandboxServiceWebClient;
     @Mock
     private SecurityService securityService;
 
@@ -89,13 +96,15 @@ public class TrainingRunServiceTest {
     private TrainingDefinition trainingDefinition, trainingDefinition2;
     private JSONParser parser = new JSONParser();
     private String responses, questions;
-    private PageResultResourcePython sandboxInfoPageResult;
 
     @Before
     public void init() {
         MockitoAnnotations.initMocks(this);
+        sandboxServiceWebClient = WebClient.builder()
+                .exchangeFunction(exchangeFunction)
+                .build();
         trainingRunService = new TrainingRunService(trainingRunRepository, abstractLevelRepository, trainingInstanceRepository,
-                participantRefRepository, hintRepository, auditEventService, securityService, pythonWebClient, trAcquisitionLockRepository);
+                participantRefRepository, hintRepository, auditEventService, securityService, sandboxServiceWebClient, trAcquisitionLockRepository);
         parser = new JSONParser();
         try {
             questions = parser.parse(new FileReader(ResourceUtils.getFile("classpath:questions.json"))).toString();
@@ -137,7 +146,6 @@ public class TrainingRunServiceTest {
         gameLevel2.setOrder(0);
         gameLevel2.setTrainingDefinition(trainingDefinition2);
 
-
         infoLevel = testDataFactory.getInfoLevel1();
         infoLevel.setId(2L);
         infoLevel.setOrder(1);
@@ -147,7 +155,6 @@ public class TrainingRunServiceTest {
         infoLevel2.setId(2L);
         infoLevel2.setOrder(1);
         infoLevel2.setTrainingDefinition(trainingDefinition2);
-
 
         sandboxInfo = new SandboxInfo();
         sandboxInfo.setId(7L);
@@ -168,9 +175,6 @@ public class TrainingRunServiceTest {
         assessmentLevel = testDataFactory.getTest();
         assessmentLevel.setId(3L);
         assessmentLevel.setQuestions(questions);
-
-        sandboxInfoPageResult = new PageResultResourcePython();
-        sandboxInfoPageResult.setResults(new ArrayList<>(List.of(sandboxInfo)));
     }
 
     @Test
@@ -185,143 +189,24 @@ public class TrainingRunServiceTest {
     }
 
     @Test(expected = EntityNotFoundException.class)
-    public void getNonExistTrainingRunById() {
+    public void getTrainingRunById_NotFound() {
         Long id = 6L;
         trainingRunService.findById(id);
     }
 
-    /*
     @Test
-    public void accessTrainingRun() throws Exception{
-        mockSpringSecurityContextForGet();
-        UserRef participant = new UserRef();
-        participant.setUserRefId(2L);
-        sandboxInfo.setLockId(false);
-        PageResultResourcePython<SandboxInfo> pythonPage = new PageResultResourcePython<SandboxInfo>();
-        pythonPage.setResults(List.of(sandboxInfo));
+    public void findByIdWithLevel() {
+        given(trainingRunRepository.findByIdWithLevel(any(Long.class))).willReturn(Optional.of(trainingRun1));
 
-        given(securityService.getUserRefIdFromUserAndGroup()).willReturn(participantRef.getUserRefId());
-        given(trainingInstanceRepository.findByStartTimeAfterAndEndTimeBeforeAndAccessToken(any(LocalDateTime.class), eq(trainingInstance1.getAccessToken()))).willReturn(Optional.ofNullable(trainingInstance1));
-        given(pythonRestTemplate.getForEntity(anyString(), any())).
-                willReturn(new ResponseEntity<>(sandboxInfo, HttpStatus.OK));
-        given(abstractLevelRepository.findAllLevelsByTrainingDefinitionId(trainingInstance1.getTrainingDefinition().getId())).willReturn(new ArrayList<>(List.of(gameLevel, infoLevel)));
-        given(participantRefRepository.save(participant)).willReturn(participantRef);
-        given(trainingRunRepository.save(any(TrainingRun.class))).willReturn(trainingRun1);
-
-        trainingInstance1.setTrainingDefinition(trainingDefinition);
-        TrainingRun trainingRun = trainingRunService.accessTrainingRun(trainingInstance1.getAccessToken());
-        then(trAcquisitionLockRepository).should().save(any(TRAcquisitionLock.class));
-        assertEquals(trainingRun1, trainingRun);
-    }
-
-    @Test(expected = EntityConflictException.class)
-    public void accessTrainingRunWithoutAllocatedSandboxes() {
-        trainingInstance2.setPoolId(null);
-        given(trainingInstanceRepository.findByStartTimeAfterAndEndTimeBeforeAndAccessToken(any(LocalDateTime.class), any(String.class))).willReturn(Optional.of(trainingInstance2));
-        given(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
-                willReturn(new ResponseEntity<PageResultResourcePython>(new PageResultResourcePython<SandboxInfo>(), HttpStatus.OK));
-        trainingRunService.accessTrainingRun("pass");
+        Optional<TrainingRun> optionalTrainingRun = trainingRunRepository.findByIdWithLevel(trainingRun1.getId());
+        assertTrue(optionalTrainingRun.isPresent());
+        assertTrue(optionalTrainingRun.get().getCurrentLevel() instanceof GameLevel);
     }
 
     @Test(expected = EntityNotFoundException.class)
-    public void accessTrainingRunWithoutStartingLevel() {
-        sandboxInfo.setLockId(false);
-        PageResultResourcePython<SandboxInfo> pythonPage = new PageResultResourcePython<SandboxInfo>();
-        pythonPage.setResults(List.of(sandboxInfo));
-        given(trainingInstanceRepository.findByStartTimeAfterAndEndTimeBeforeAndAccessToken(any(LocalDateTime.class), any(String.class))).willReturn(Optional.of(trainingInstance1));
-        given(securityService.getUserRefIdFromUserAndGroup()).willReturn(1L);
-        given(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
-                willReturn(new ResponseEntity<PageResultResourcePython<SandboxInfo>>(pythonPage, HttpStatus.OK));
-        given(abstractLevelRepository.findById(anyLong())).willReturn(Optional.empty());
-        trainingRunService.accessTrainingRun("pass");
-        then(trAcquisitionLockRepository).should().save(new TRAcquisitionLock(1L, trainingInstance1.getId(), any(LocalDateTime.class)));
-    }
-    */
-
-    private void mockSpringSecurityContextForGet() {
-        JsonObject sub = new JsonObject();
-        sub.addProperty(AuthenticatedUserOIDCItems.SUB.getName(), "participant");
-        Authentication authentication = Mockito.mock(Authentication.class);
-        OAuth2Authentication auth = Mockito.mock(OAuth2Authentication.class);
-        SecurityContext securityContext = Mockito.mock(SecurityContext.class);
-        SecurityContextHolder.setContext(securityContext);
-        given(securityContext.getAuthentication()).willReturn(auth);
-        given(auth.getUserAuthentication()).willReturn(auth);
-        given(auth.getCredentials()).willReturn(sub);
-        given(authentication.getDetails()).willReturn(auth);
-    }
-
-    @Test
-    public void isCorrectFlag() {
-        mockSpringSecurityContextForGet();
-        given(trainingRunRepository.findByIdWithLevel(trainingRun1.getId())).willReturn(Optional.of(trainingRun1));
-        boolean isCorrect = trainingRunService.isCorrectFlag(trainingRun1.getId(), gameLevel.getFlag());
-        assertTrue(isCorrect);
-        assertTrue(trainingRun1.isLevelAnswered());
-    }
-
-    @Test
-    public void isCorrectFlagNotCorrect() {
-        mockSpringSecurityContextForGet();
-        given(trainingRunRepository.findByIdWithLevel(trainingRun1.getId())).willReturn(Optional.of(trainingRun1));
-        boolean isCorrect = trainingRunService.isCorrectFlag(trainingRun1.getId(), "wrong flag");
-        assertFalse(isCorrect);
-        assertFalse(trainingRun1.isLevelAnswered());
-    }
-
-    @Test(expected = BadRequestException.class)
-    public void isCorrectFlagOfNonGameLevel() {
-        given(trainingRunRepository.findByIdWithLevel(trainingRun2.getId())).willReturn(Optional.of(trainingRun2));
-        trainingRunService.isCorrectFlag(trainingRun2.getId(), "flag");
-    }
-
-    @Test
-    public void getSolution() {
-        mockSpringSecurityContextForGet();
-        trainingRun1.setTotalScore(40);
-        given(trainingRunRepository.findByIdWithLevel(trainingRun1.getId())).willReturn(Optional.of(trainingRun1));
-        String solution = trainingRunService.getSolution(trainingRun1.getId());
-        assertEquals(solution, gameLevel.getSolution());
-        assertFalse(trainingRun1.isLevelAnswered());
-    }
-
-    @Test
-    public void getAlreadyTakenSolution() {
-        mockSpringSecurityContextForGet();
-        trainingRun1.setSolutionTaken(true);
-        given(trainingRunRepository.findByIdWithLevel(trainingRun1.getId())).willReturn(Optional.of(trainingRun1));
-        String solution = trainingRunService.getSolution(trainingRun1.getId());
-        assertEquals(solution, gameLevel.getSolution());
-        assertFalse(trainingRun1.isLevelAnswered());
-    }
-
-    @Test(expected = BadRequestException.class)
-    public void getSolutionOfNonGameLevel() {
-        given(trainingRunRepository.findByIdWithLevel(trainingRun2.getId())).willReturn(Optional.of(trainingRun2));
-        trainingRunService.getSolution(trainingRun2.getId());
-    }
-
-    @Test
-    public void getHint() {
-        mockSpringSecurityContextForGet();
-        given(trainingRunRepository.findByIdWithLevel(any(Long.class))).willReturn(Optional.of(trainingRun1));
-        given(hintRepository.findById(any(Long.class))).willReturn(Optional.of(hint1));
-        Hint resultHint1 = trainingRunService.getHint(trainingRun1.getId(), hint1.getId());
-        assertEquals(hint1, resultHint1);
-        assertEquals(hint1.getHintPenalty(), (Integer) trainingRun1.getCurrentPenalty());
-    }
-
-    @Test
-    public void getRemainingAttempts() {
-        given(trainingRunRepository.findByIdWithLevel(trainingRun1.getId())).willReturn(Optional.ofNullable(trainingRun1));
-        int attempts = trainingRunService.getRemainingAttempts(trainingRun1.getId());
-        assertEquals(gameLevel.getIncorrectFlagLimit() - trainingRun1.getIncorrectFlagCount(), attempts);
-    }
-
-    @Test(expected = BadRequestException.class)
-    public void getHintOfNonGameLevel() {
-        given(trainingRunRepository.findByIdWithLevel(trainingRun2.getId())).willReturn(Optional.of(trainingRun2));
-        trainingRunService.getHint(trainingRun2.getId(), hint1.getId());
+    public void findById_LevelNotFound() {
+        given(trainingRunRepository.findByIdWithLevel(any(Long.class))).willReturn(Optional.empty());
+        trainingRunService.findByIdWithLevel(100L);
     }
 
     @Test
@@ -330,26 +215,74 @@ public class TrainingRunServiceTest {
         expected.add(trainingRun1);
         expected.add(trainingRun2);
 
-        Page p = new PageImpl<>(expected);
+        Page<TrainingRun> p = new PageImpl<>(expected);
         PathBuilder<TrainingRun> t = new PathBuilder<>(TrainingRun.class, "trainingRun");
         Predicate predicate = t.isNotNull();
-
         given(trainingRunRepository.findAll(any(Predicate.class), any(Pageable.class))).willReturn(p);
 
-        Page pr = trainingRunService.findAll(predicate, PageRequest.of(0, 2));
+        Page<TrainingRun> pr = trainingRunService.findAll(predicate, PageRequest.of(0, 2));
         assertEquals(2, pr.getTotalElements());
     }
 
     @Test
     public void findAll_empty() {
-        Page p = new PageImpl<>(new ArrayList<>());
+        Page<TrainingRun> p = new PageImpl<>(new ArrayList<>());
         PathBuilder<TrainingRun> t = new PathBuilder<>(TrainingRun.class, "trainingRun");
         Predicate predicate = t.isNotNull();
-
         given(trainingRunRepository.findAll(any(Predicate.class), any(Pageable.class))).willReturn(p);
 
-        Page pr = trainingRunRepository.findAll(predicate, PageRequest.of(0, 2));
+        Page<TrainingRun> pr = trainingRunRepository.findAll(predicate, PageRequest.of(0, 2));
         assertEquals(0, pr.getTotalElements());
+    }
+
+    @Test
+    public void deleteFinishedTrainingRun() {
+        trainingRun1.setState(TRState.FINISHED);
+        given(trainingRunRepository.findById(trainingRun1.getId())).willReturn(Optional.of(trainingRun1));
+        trainingRunService.deleteTrainingRun(trainingRun1.getId(), false);
+
+        then(trAcquisitionLockRepository).should().deleteByParticipantRefIdAndTrainingInstanceId(trainingRun1.getParticipantRef().getUserRefId(),
+                                                                                                 trainingRun1.getTrainingInstance().getId());
+        then(trainingRunRepository).should().delete(trainingRun1);
+    }
+
+    @Test(expected = EntityConflictException.class)
+    public void deleteRunningTrainingRun() {
+        trainingRun1.setState(TRState.RUNNING);
+        given(trainingRunRepository.findById(trainingRun1.getId())).willReturn(Optional.of(trainingRun1));
+        trainingRunService.deleteTrainingRun(trainingRun1.getId(), false);
+
+        then(trAcquisitionLockRepository).should(never()).deleteByParticipantRefIdAndTrainingInstanceId(trainingRun1.getParticipantRef().getUserRefId(),
+                trainingRun1.getTrainingInstance().getId());
+        then(trainingRunRepository).should(never()).delete(trainingRun1);
+    }
+
+    @Test
+    public void deleteRunningTrainingRun_Force() {
+        trainingRun1.setState(TRState.RUNNING);
+        given(trainingRunRepository.findById(trainingRun1.getId())).willReturn(Optional.of(trainingRun1));
+        trainingRunService.deleteTrainingRun(trainingRun1.getId(), true);
+
+        then(trAcquisitionLockRepository).should().deleteByParticipantRefIdAndTrainingInstanceId(trainingRun1.getParticipantRef().getUserRefId(),
+                trainingRun1.getTrainingInstance().getId());
+        then(trainingRunRepository).should().delete(trainingRun1);
+    }
+
+    @Test(expected = EntityNotFoundException.class)
+    public void deleteTrainingRun_NotFound() {
+        given(trainingRunRepository.findById(trainingRun1.getId())).willReturn(Optional.empty());
+        trainingRunService.deleteTrainingRun(trainingRun1.getId(), true);
+
+        then(trAcquisitionLockRepository).should().deleteByParticipantRefIdAndTrainingInstanceId(trainingRun1.getParticipantRef().getUserRefId(),
+                trainingRun1.getTrainingInstance().getId());
+        then(trainingRunRepository).should().delete(trainingRun1);
+    }
+
+    @Test
+    public void existsAnyForTrainingInstance() {
+        given(trainingRunRepository.existsAnyForTrainingInstance(trainingRun1.getTrainingInstance().getId())).willReturn(true);
+        boolean result = trainingRunService.existsAnyForTrainingInstance(trainingRun1.getTrainingInstance().getId());
+        assertTrue(result);
     }
 
     @Test
@@ -361,8 +294,56 @@ public class TrainingRunServiceTest {
         Page<TrainingRun> resultPage = trainingRunService.findAllByParticipantRefUserRefId(PageRequest.of(0, 2));
 
         assertEquals(expectedPage, resultPage);
-
         then(trainingRunRepository).should().findAllByParticipantRefId(participantRef.getUserRefId(), PageRequest.of(0, 2));
+    }
+
+
+
+    @Test
+    public void findAllByTrainingInstanceId() {
+        given(trainingRunRepository.findAllByTrainingInstanceId(trainingInstance1.getId())).willReturn(Set.of(trainingRun1, trainingRun2));
+        Set<TrainingRun> resultSet = trainingRunService.findAllByTrainingInstanceId(trainingRun1.getTrainingInstance().getId());
+        assertEquals(Set.of(trainingRun1, trainingRun2), resultSet);
+    }
+
+    @Test
+    public void getNextLevel() {
+        List<AbstractLevel> levels = new ArrayList<>();
+        levels.add(gameLevel);
+        levels.add(infoLevel);
+        trainingRun1.setLevelAnswered(true);
+        given(trainingRunRepository.findByIdWithLevel(any(Long.class))).willReturn(Optional.of(trainingRun1));
+        given(abstractLevelRepository.getCurrentMaxOrder(anyLong())).willReturn(infoLevel.getOrder());
+        given(abstractLevelRepository.findAllLevelsByTrainingDefinitionId(any(Long.class))).willReturn(levels);
+        given(trainingRunRepository.save(any(TrainingRun.class))).willReturn(trainingRun1);
+
+        AbstractLevel resultAbstractLevel = trainingRunService.getNextLevel(trainingRun1.getId());
+
+        assertEquals(trainingRun1.getCurrentLevel().getId(), resultAbstractLevel.getId());
+        assertEquals(trainingRun1.getMaxLevelScore(), infoLevel.getMaxScore());
+        assertTrue(trainingRun1.isLevelAnswered()); // because next level is info and it is always set to true
+        then(trainingRunRepository).should().findByIdWithLevel(trainingRun1.getId());
+        then(trainingRunRepository).should().save(trainingRun1);
+    }
+
+    @Test(expected = EntityNotFoundException.class)
+    public void getNextLevel_TrainingRunNotFound() {
+        given(trainingRunRepository.findByIdWithLevel(trainingRun1.getId())).willReturn(Optional.empty());
+        trainingRunService.getNextLevel(trainingRun1.getId());
+    }
+
+    @Test(expected = EntityConflictException.class)
+    public void getNextLevel_NotAnswered() {
+        given(trainingRunRepository.findByIdWithLevel(trainingRun1.getId())).willReturn(Optional.of(trainingRun1));
+        trainingRunService.getNextLevel(trainingRun1.getId());
+    }
+
+    @Test(expected = EntityNotFoundException.class)
+    public void getNextLevel_NoNextLevel() {
+        trainingRun2.setLevelAnswered(true);
+        given(trainingRunRepository.findByIdWithLevel(any(Long.class))).willReturn(Optional.of(trainingRun2));
+        given(abstractLevelRepository.getCurrentMaxOrder(anyLong())).willReturn(infoLevel2.getOrder());
+        trainingRunService.getNextLevel(trainingRun2.getId());
     }
 
     @Test
@@ -374,7 +355,6 @@ public class TrainingRunServiceTest {
         Page<TrainingRun> resultPage = trainingRunService.findAllByTrainingDefinitionAndParticipant(trainingDefinition2.getId(), PageRequest.of(0, 2));
 
         assertEquals(expectedPage, resultPage);
-
         then(trainingRunRepository).should().findAllByTrainingDefinitionIdAndParticipantUserRefId(trainingDefinition2.getId(), participantRef.getUserRefId(), PageRequest.of(0, 2));
     }
 
@@ -388,73 +368,127 @@ public class TrainingRunServiceTest {
     }
 
     @Test
-    public void findByIdWithLevel() {
-        given(trainingRunRepository.findByIdWithLevel(any(Long.class))).willReturn(Optional.of(trainingRun1));
-
-        Optional<TrainingRun> optionalTrainingRun = trainingRunRepository.findByIdWithLevel(trainingRun1.getId());
-
-        assertTrue(optionalTrainingRun.isPresent());
-        assertTrue(optionalTrainingRun.get().getCurrentLevel() instanceof GameLevel);
+    public void getLevels() {
+        given(abstractLevelRepository.findAllLevelsByTrainingDefinitionId(trainingDefinition.getId()))
+                .willReturn(List.of(gameLevel, gameLevel2, infoLevel));
+        List<AbstractLevel> result = trainingRunService.getLevels(trainingDefinition.getId());
+        assertEquals(List.of(gameLevel, gameLevel2, infoLevel), result);
     }
 
     @Test
-    public void getNextLevel() {
-        mockSpringSecurityContextForGet();
-        List<AbstractLevel> levels = new ArrayList<>();
-        levels.add(gameLevel);
-        levels.add(infoLevel);
-
-        trainingRun1.setLevelAnswered(true);
-        given(trainingRunRepository.findByIdWithLevel(any(Long.class))).willReturn(Optional.of(trainingRun1));
-        given(abstractLevelRepository.findAllLevelsByTrainingDefinitionId(any(Long.class))).willReturn(levels);
+    public void accessTrainingRun() throws Exception{
+        sandboxInfo.setLockId(1);
+        given(abstractLevelRepository.findFirstLevelByTrainingDefinitionId(eq(trainingInstance1.getTrainingDefinition().getId()), any(Pageable.class)))
+                .willReturn(List.of(gameLevel));
+        given(participantRefRepository.findUserByUserRefId(participantRef.getUserRefId()))
+                .willReturn(Optional.of(participantRef));
+        given(exchangeFunction.exchange(any(ClientRequest.class))).willReturn(buildMockResponse(sandboxInfo));
         given(trainingRunRepository.save(any(TrainingRun.class))).willReturn(trainingRun1);
-        given(abstractLevelRepository.getCurrentMaxOrder(anyLong())).willReturn(infoLevel.getOrder());
-        AbstractLevel resultAbstractLevel = trainingRunService.getNextLevel(trainingRun1.getId());
 
-        assertEquals(trainingRun1.getCurrentLevel().getId(), resultAbstractLevel.getId());
-        assertEquals(trainingRun1.getMaxLevelScore(), infoLevel.getMaxScore());
-        assertTrue(trainingRun1.isLevelAnswered()); // because next level is info and it is always set to true
-
-        then(trainingRunRepository).should().findByIdWithLevel(trainingRun1.getId());
-        then(trainingRunRepository).should().save(trainingRun1);
+        trainingInstance1.setTrainingDefinition(trainingDefinition);
+        TrainingRun trainingRun = trainingRunService.accessTrainingRun(trainingInstance1, participantRef.getId());
+        then(trainingRunRepository).should(times(2)).save(any(TrainingRun.class));
+        assertEquals(trainingRun1, trainingRun);
     }
 
-    @Test(expected = EntityConflictException.class)
-    public void getNextLevelNotAnswered() {
-        given(trainingRunRepository.findByIdWithLevel(trainingRun1.getId())).willReturn(Optional.of(trainingRun1));
-        trainingRunService.getNextLevel(trainingRun1.getId());
+    @Test
+    public void accessTrainingRun_NewParticipant() throws Exception{
+        UserRef newParticipant = new UserRef();
+        newParticipant.setUserRefId(participantRef.getUserRefId());
+        sandboxInfo.setLockId(1);
+        given(abstractLevelRepository.findFirstLevelByTrainingDefinitionId(eq(trainingInstance1.getTrainingDefinition().getId()), any(Pageable.class)))
+                .willReturn(List.of(gameLevel));
+        given(participantRefRepository.findUserByUserRefId(participantRef.getUserRefId()))
+                .willReturn(Optional.empty());
+        given(exchangeFunction.exchange(any(ClientRequest.class))).willReturn(buildMockResponse(sandboxInfo));
+        given(trainingRunRepository.save(any(TrainingRun.class))).willReturn(trainingRun1);
+        given(securityService.createUserRefEntityByInfoFromUserAndGroup()).willReturn(newParticipant);
+        given(participantRefRepository.save(newParticipant)).willReturn(participantRef);
+
+        trainingInstance1.setTrainingDefinition(trainingDefinition);
+        TrainingRun trainingRun = trainingRunService.accessTrainingRun(trainingInstance1, participantRef.getId());
+        then(trainingRunRepository).should(times(2)).save(any(TrainingRun.class));
+        then(participantRefRepository).should().save(any(UserRef.class));
+        assertEquals(trainingRun1, trainingRun);
     }
 
     @Test(expected = EntityNotFoundException.class)
-    public void getNextLevel_noNextLevel() {
-        trainingRun2.setLevelAnswered(true);
-        given(trainingRunRepository.findByIdWithLevel(any(Long.class))).willReturn(Optional.of(trainingRun2));
-        given(abstractLevelRepository.getCurrentMaxOrder(anyLong())).willReturn(infoLevel2.getOrder());
-        trainingRunService.getNextLevel(trainingRun2.getId());
+    public void accessTrainingRun_NoStartingLevel() {
+        trainingInstance1.setTrainingDefinition(trainingDefinition);
+        given(abstractLevelRepository.findFirstLevelByTrainingDefinitionId(eq(trainingInstance1.getTrainingDefinition().getId()), any(Pageable.class)))
+                .willReturn(List.of());
+        trainingRunService.accessTrainingRun(trainingInstance1, participantRef.getId());
+    }
+
+    @Test(expected = ForbiddenException.class)
+    public void accessTrainingRunWithoutAllocatedSandboxes() {
+        trainingInstance1.setTrainingDefinition(trainingDefinition);
+        given(abstractLevelRepository.findFirstLevelByTrainingDefinitionId(eq(trainingInstance1.getTrainingDefinition().getId()), any(Pageable.class)))
+                .willReturn(List.of(gameLevel));
+        given(participantRefRepository.findUserByUserRefId(participantRef.getUserRefId()))
+                .willReturn(Optional.of(participantRef));
+        willThrow(new CustomWebClientException("No sandboxes", HttpStatus.CONFLICT)).given(exchangeFunction).exchange(any(ClientRequest.class));
+        trainingRunService.accessTrainingRun(trainingInstance1, participantRef.getId());
+        then(trainingRunRepository).should(never()).save(any(TrainingRun.class));
+    }
+
+    @Test(expected = MicroserviceApiException.class)
+    public void accessTrainingRunWithSandboxServiceError() {
+        trainingInstance1.setTrainingDefinition(trainingDefinition);
+        given(abstractLevelRepository.findFirstLevelByTrainingDefinitionId(eq(trainingInstance1.getTrainingDefinition().getId()), any(Pageable.class)))
+                .willReturn(List.of(gameLevel));
+        given(participantRefRepository.findUserByUserRefId(participantRef.getUserRefId()))
+                .willReturn(Optional.of(participantRef));
+        willThrow(new CustomWebClientException("No sandboxes", HttpStatus.NOT_FOUND)).given(exchangeFunction).exchange(any(ClientRequest.class));
+        trainingRunService.accessTrainingRun(trainingInstance1, participantRef.getId());
+        then(trainingRunRepository).should(never()).save(any(TrainingRun.class));
     }
 
     @Test
-    public void testFinishTrainingRun() {
-        mockSpringSecurityContextForGet();
-        given(trainingRunRepository.findById(any(Long.class))).willReturn(Optional.of(trainingRun2));
-        given(abstractLevelRepository.getCurrentMaxOrder(anyLong())).willReturn(infoLevel2.getOrder());
-        trainingRunService.finishTrainingRun(trainingRun2.getId());
-        then(trAcquisitionLockRepository).should().deleteByParticipantRefIdAndTrainingInstanceId(trainingRun2.getParticipantRef().getUserRefId(), trainingRun2.getTrainingInstance().getId());
-        assertEquals(trainingRun2.getState(), TRState.FINISHED);
+    public void findRunningTrainingRunOfUser() {
+        given(trainingRunRepository.findRunningTrainingRunOfUser(trainingInstance1.getAccessToken(), participantRef.getUserRefId()))
+                .willReturn(Optional.of(trainingRun1));
+        Optional<TrainingRun> result = trainingRunService.findRunningTrainingRunOfUser(trainingInstance1.getAccessToken(), participantRef.getUserRefId());
+        assertTrue(result.isPresent());
     }
 
-    @Test(expected = EntityConflictException.class)
-    public void testFinishTrainingRunWithNonLastLevel() {
-        trainingRun1.setLevelAnswered(true);
-        given(trainingRunRepository.findById(any(Long.class))).willReturn(Optional.of(trainingRun1));
-        given(abstractLevelRepository.getCurrentMaxOrder(anyLong())).willReturn(infoLevel.getOrder());
-        trainingRunService.finishTrainingRun(trainingRun1.getId());
+    @Test
+    public void trAcquisitionLockToPreventManyRequestsFromSameUser() {
+        TRAcquisitionLock trAcquisitionLock = new TRAcquisitionLock(participantRef.getUserRefId(), trainingInstance1.getId(), LocalDateTime.now());
+        trainingRunService.trAcquisitionLockToPreventManyRequestsFromSameUser(participantRef.getUserRefId(), trainingInstance1.getId(), trainingInstance1.getAccessToken());
+        then(trAcquisitionLockRepository).should().save(trAcquisitionLock);
     }
 
-    @Test(expected = EntityConflictException.class)
-    public void testFinishTrainingRunWithNotAnsweredLevel() {
-        given(trainingRunRepository.findById(any(Long.class))).willReturn(Optional.of(trainingRun1));
-        trainingRunService.finishTrainingRun(trainingRun1.getId());
+    @Test(expected = TooManyRequestsException.class)
+    public void trAcquisitionLockToPreventManyRequestsFromSameUser_AlreadyExists() {
+        TRAcquisitionLock trAcquisitionLock = new TRAcquisitionLock(participantRef.getUserRefId(), trainingInstance1.getId(), LocalDateTime.now());
+        willThrow(DataIntegrityViolationException.class).given(trAcquisitionLockRepository).save(trAcquisitionLock);
+        trainingRunService.trAcquisitionLockToPreventManyRequestsFromSameUser(participantRef.getUserRefId(), trainingInstance1.getId(), trainingInstance1.getAccessToken());
+    }
+
+    @Test
+    public void assignSandbox() throws Exception {
+        trainingRun1.setSandboxInstanceRefId(null);
+        given(exchangeFunction.exchange(any(ClientRequest.class))).willReturn(buildMockResponse(sandboxInfo));
+        trainingRunService.assignSandbox(trainingRun1, trainingRun1.getTrainingInstance().getPoolId());
+        then(trainingRunRepository).should().save(trainingRun1);
+        assertEquals(sandboxInfo.getId(), trainingRun1.getSandboxInstanceRefId());
+    }
+
+    @Test(expected = ForbiddenException.class)
+    public void assignSandbox_NoAvailable() throws Exception {
+        trainingRun1.setSandboxInstanceRefId(null);
+        willThrow(new CustomWebClientException("No sandbox", HttpStatus.CONFLICT)).given(exchangeFunction).exchange(any(ClientRequest.class));
+        trainingRunService.assignSandbox(trainingRun1, trainingRun1.getTrainingInstance().getPoolId());
+        then(trainingRunRepository).should(never()).save(trainingRun1);
+    }
+
+    @Test(expected = MicroserviceApiException.class)
+    public void assignSandbox_MicroserviceException() throws Exception {
+        trainingRun1.setSandboxInstanceRefId(null);
+        willThrow(new CustomWebClientException("Some error", HttpStatus.NOT_FOUND)).given(exchangeFunction).exchange(any(ClientRequest.class));
+        trainingRunService.assignSandbox(trainingRun1, trainingRun1.getTrainingInstance().getPoolId());
+        then(trainingRunRepository).should(never()).save(trainingRun1);
     }
 
     @Test
@@ -466,29 +500,143 @@ public class TrainingRunServiceTest {
         assertTrue(trainingRun.getCurrentLevel() instanceof GameLevel);
     }
 
-    @Test(expected = EntityConflictException.class)
-    public void resumeTrainingRunWithDeletedSandbox() {
+    @Test(expected = EntityNotFoundException.class)
+    public void resumeTrainingRunWith_NotFound() {
         trainingRun1.setSandboxInstanceRefId(null);
+        given(trainingRunRepository.findByIdWithLevel(any(Long.class))).willReturn(Optional.empty());
+        trainingRunService.resumeTrainingRun(trainingRun1.getId());
+    }
+
+    @Test(expected = EntityConflictException.class)
+    public void resumeTrainingRun_Finished() {
+        trainingRun1.setState(TRState.FINISHED);
         given(trainingRunRepository.findByIdWithLevel(any(Long.class))).willReturn(Optional.of(trainingRun1));
         trainingRunService.resumeTrainingRun(trainingRun1.getId());
     }
 
     @Test(expected = EntityConflictException.class)
-    public void resumeFinishedTrainingRun() {
-        trainingRun1.setState(TRState.FINISHED);
+    public void resumeTrainingRun_TrainingInstanceFinished() {
+        trainingRun1.getTrainingInstance().setStartTime(LocalDateTime.now(Clock.systemUTC()).minusHours(2));
+        trainingRun1.getTrainingInstance().setEndTime(LocalDateTime.now(Clock.systemUTC()).minusHours(1));
+        given(trainingRunRepository.findByIdWithLevel(any(Long.class))).willReturn(Optional.of(trainingRun1));
+        trainingRunService.resumeTrainingRun(trainingRun1.getId());
+    }
+
+    @Test(expected = EntityConflictException.class)
+    public void resumeTrainingRun_DeletedSandbox() {
+        trainingRun1.setSandboxInstanceRefId(null);
         given(trainingRunRepository.findByIdWithLevel(any(Long.class))).willReturn(Optional.of(trainingRun1));
         trainingRunService.resumeTrainingRun(trainingRun1.getId());
     }
 
     @Test
     public void evaluateAndStoreResponses() {
-        mockSpringSecurityContextForGet();
         trainingRun1.setCurrentLevel(assessmentLevel);
         given(trainingRunRepository.findByIdWithLevel(any(Long.class))).willReturn(Optional.of(trainingRun1));
         trainingRunService.evaluateResponsesToAssessment(trainingRun1.getId(), responses);
 
         Assert.assertTrue(trainingRun1.getAssessmentResponses().contains("\"receivedPoints\":13"));
+    }
 
+    @Test
+    public void isCorrectFlag() {
+        int scoreBefore = trainingRun1.getTotalScore();
+        given(trainingRunRepository.findByIdWithLevel(trainingRun1.getId())).willReturn(Optional.of(trainingRun1));
+        boolean isCorrect = trainingRunService.isCorrectFlag(trainingRun1.getId(), gameLevel.getFlag());
+        assertTrue(isCorrect);
+        assertEquals(scoreBefore + (trainingRun1.getMaxLevelScore() - trainingRun1.getCurrentPenalty()), trainingRun1.getTotalScore());
+        assertTrue(trainingRun1.isLevelAnswered());
+    }
+
+    @Test
+    public void isCorrectFlag_NotCorrect() {
+        given(trainingRunRepository.findByIdWithLevel(trainingRun1.getId())).willReturn(Optional.of(trainingRun1));
+        boolean isCorrect = trainingRunService.isCorrectFlag(trainingRun1.getId(), "wrong flag");
+        assertFalse(isCorrect);
+        assertFalse(trainingRun1.isLevelAnswered());
+    }
+
+    @Test(expected = BadRequestException.class)
+    public void isCorrectFlagOfNonGameLevel() {
+        given(trainingRunRepository.findByIdWithLevel(trainingRun2.getId())).willReturn(Optional.of(trainingRun2));
+        trainingRunService.isCorrectFlag(trainingRun2.getId(), "flag");
+    }
+
+    @Test
+    public void getRemainingAttempts() {
+        given(trainingRunRepository.findByIdWithLevel(trainingRun1.getId())).willReturn(Optional.ofNullable(trainingRun1));
+        int attempts = trainingRunService.getRemainingAttempts(trainingRun1.getId());
+        assertEquals(gameLevel.getIncorrectFlagLimit() - trainingRun1.getIncorrectFlagCount(), attempts);
+    }
+
+    @Test
+    public void getSolution() {
+        trainingRun1.setTotalScore(40);
+        given(trainingRunRepository.findByIdWithLevel(trainingRun1.getId())).willReturn(Optional.of(trainingRun1));
+        String solution = trainingRunService.getSolution(trainingRun1.getId());
+        assertEquals(solution, gameLevel.getSolution());
+        assertFalse(trainingRun1.isLevelAnswered());
+    }
+
+    @Test
+    public void getSolution_AlreadyTaken() {
+        trainingRun1.setSolutionTaken(true);
+        given(trainingRunRepository.findByIdWithLevel(trainingRun1.getId())).willReturn(Optional.of(trainingRun1));
+        String solution = trainingRunService.getSolution(trainingRun1.getId());
+        assertEquals(solution, gameLevel.getSolution());
+        assertFalse(trainingRun1.isLevelAnswered());
+    }
+
+    @Test(expected = BadRequestException.class)
+    public void getSolution_NonGameLevel() {
+        given(trainingRunRepository.findByIdWithLevel(trainingRun2.getId())).willReturn(Optional.of(trainingRun2));
+        trainingRunService.getSolution(trainingRun2.getId());
+    }
+
+    @Test
+    public void getHint() {
+        given(trainingRunRepository.findByIdWithLevel(any(Long.class))).willReturn(Optional.of(trainingRun1));
+        given(hintRepository.findById(any(Long.class))).willReturn(Optional.of(hint1));
+        Hint resultHint1 = trainingRunService.getHint(trainingRun1.getId(), hint1.getId());
+        assertEquals(hint1, resultHint1);
+        assertEquals(hint1.getHintPenalty(), (Integer) trainingRun1.getCurrentPenalty());
+    }
+
+    @Test(expected = BadRequestException.class)
+    public void getHint_NonGameLevel() {
+        given(trainingRunRepository.findByIdWithLevel(trainingRun2.getId())).willReturn(Optional.of(trainingRun2));
+        trainingRunService.getHint(trainingRun2.getId(), hint1.getId());
+    }
+
+    @Test
+    public void testFinishTrainingRun() {
+        given(trainingRunRepository.findById(any(Long.class))).willReturn(Optional.of(trainingRun2));
+        given(abstractLevelRepository.getCurrentMaxOrder(anyLong())).willReturn(infoLevel2.getOrder());
+        trainingRunService.finishTrainingRun(trainingRun2.getId());
+        then(trAcquisitionLockRepository).should().deleteByParticipantRefIdAndTrainingInstanceId(trainingRun2.getParticipantRef().getUserRefId(), trainingRun2.getTrainingInstance().getId());
+        assertEquals(trainingRun2.getState(), TRState.FINISHED);
+    }
+
+    @Test(expected = EntityConflictException.class)
+    public void testFinishTrainingRun_NonLastLevel() {
+        trainingRun1.setLevelAnswered(true);
+        given(trainingRunRepository.findById(any(Long.class))).willReturn(Optional.of(trainingRun1));
+        given(abstractLevelRepository.getCurrentMaxOrder(anyLong())).willReturn(infoLevel.getOrder());
+        trainingRunService.finishTrainingRun(trainingRun1.getId());
+    }
+
+    @Test(expected = EntityConflictException.class)
+    public void testFinishTrainingRun_NotAnsweredLevel() {
+        given(trainingRunRepository.findById(any(Long.class))).willReturn(Optional.of(trainingRun1));
+        trainingRunService.finishTrainingRun(trainingRun1.getId());
+    }
+
+    private Mono<ClientResponse> buildMockResponse(Object body) throws IOException {
+        ClientResponse clientResponse = ClientResponse.create(HttpStatus.OK)
+                .body(convertObjectToJsonBytes(body))
+                .header(org.apache.http.HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .build();
+        return Mono.just(clientResponse);
     }
 
     private static String convertObjectToJsonBytes(Object object) throws IOException {
@@ -500,6 +648,4 @@ public class TrainingRunServiceTest {
     public void after() {
         reset(trainingRunRepository);
     }
-
-
 }
