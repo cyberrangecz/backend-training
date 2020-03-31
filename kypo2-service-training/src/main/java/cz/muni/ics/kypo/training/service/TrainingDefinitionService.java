@@ -204,7 +204,7 @@ public class TrainingDefinitionService {
 
         addLoggedInUserToTrainingDefinitionAsAuthor(clonedTrainingDefinition);
         clonedTrainingDefinition = trainingDefinitionRepository.save(clonedTrainingDefinition);
-        cloneLevelsFromTrainingDefinition(trainingDefinition, clonedTrainingDefinition);
+        cloneLevelsFromTrainingDefinition(trainingDefinition.getId(), clonedTrainingDefinition);
 
         LOG.info("Training definition with id: {} cloned.", trainingDefinition.getId());
         return clonedTrainingDefinition;
@@ -592,14 +592,14 @@ public class TrainingDefinitionService {
                 .isPresent();
     }
 
-    private void cloneLevelsFromTrainingDefinition(TrainingDefinition trainingDefinition, TrainingDefinition clonedTrainingDefinition) {
-        List<AbstractLevel> levels = abstractLevelRepository.findAllLevelsByTrainingDefinitionId(trainingDefinition.getId());
+    private void cloneLevelsFromTrainingDefinition(Long trainingDefinitionId, TrainingDefinition clonedTrainingDefinition) {
+        List<AbstractLevel> levels = abstractLevelRepository.findAllLevelsByTrainingDefinitionId(trainingDefinitionId);
         if (levels == null || levels.isEmpty()) {
             return;
         }
         levels.forEach(level -> {
             if (level instanceof AssessmentLevel) {
-                cloneAssessmentLevel(level, trainingDefinition);
+                cloneAssessmentLevel(level, clonedTrainingDefinition);
             }
             if (level instanceof InfoLevel) {
                 cloneInfoLevel(level, clonedTrainingDefinition);
