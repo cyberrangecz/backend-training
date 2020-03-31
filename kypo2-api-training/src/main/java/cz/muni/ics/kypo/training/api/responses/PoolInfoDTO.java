@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import javax.validation.constraints.NotNull;
 
-public class PoolInfoDto {
+public class PoolInfoDTO {
     @NotNull(message = "{poolInfoDTO.id.NotNull.message}")
     private Long id;
     @NotNull(message = "{poolInfoDTO.definitionId.NotNull.message}")
