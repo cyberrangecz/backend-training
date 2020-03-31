@@ -3,6 +3,11 @@ package cz.muni.ics.kypo.training.api.dto.imports;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
+
 /**
  *  Encapsulates information about Hint.
  *
@@ -11,10 +16,15 @@ import io.swagger.annotations.ApiModelProperty;
 public class HintImportDTO {
 
 	@ApiModelProperty(value = "Short textual description of the hint.", example = "Hint1")
+	@NotEmpty(message = "{hintimport.title.NotEmpty.message}")
 	private String title;
 	@ApiModelProperty(value = "The information and experiences that are directed towards a participant.", example = "Very good advice")
+	@NotEmpty(message = "{hintimport.content.NotEmpty.message}")
 	private String content;
 	@ApiModelProperty(value = "The number of points the participant loses after receiving the hint.", example = "10")
+	@NotNull(message = "{hintimport.hintPenalty.NotEmpty.message}")
+	@Min(value = 0, message = "{hintimport.hintPenalty.Min.message}")
+	@Max(value = 100, message = "{hintimport.hintPenalty.Max.message}")
 	private Integer hintPenalty;
 
 	/**
