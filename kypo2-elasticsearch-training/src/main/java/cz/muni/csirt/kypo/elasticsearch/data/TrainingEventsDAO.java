@@ -21,12 +21,17 @@ import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Repository;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.reactive.function.BodyInserter;
+import org.springframework.web.reactive.function.BodyInserters;
+import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -41,26 +46,22 @@ import java.util.concurrent.TimeUnit;
 public class TrainingEventsDAO extends AbstractElasticClientDAO {
 
     private static final int INDEX_DOCUMENTS_MAX_RETURN_NUMBER = 10_000;
-    private RestTemplate restTemplate;
 
-    @Value("${elasticsearch.protocol:http}")
-    private String elasticsearchProtocol;
-    @Value("${elasticsearch.ipaddress:localhost}")
-    private String elasticsearchIpAddress;
-    @Value("${elasticsearch.port:9200}")
-    private String elasticsearchPort;
+    private WebClient webClient;
 
     /**
      * Instantiates a new Training events dao.
      *
      * @param restHighLevelClient the rest high level client
      * @param objectMapper        the object mapper
-     * @param restTemplate        the rest template
+     * @param webClient           the web client
      */
     @Autowired
-    public TrainingEventsDAO(RestHighLevelClient restHighLevelClient, ObjectMapper objectMapper, RestTemplate restTemplate) {
+    public TrainingEventsDAO(RestHighLevelClient restHighLevelClient,
+                             ObjectMapper objectMapper,
+                             @Qualifier("elasticsearchWebClient") WebClient webClient) {
         super(restHighLevelClient, objectMapper);
-        this.restTemplate = restTemplate;
+        this.webClient = webClient;
     }
 
     /**
@@ -149,9 +150,6 @@ public class TrainingEventsDAO extends AbstractElasticClientDAO {
      * @throws ElasticsearchTrainingDataLayerException the elasticsearch training data layer exception
      */
     public void deleteEventsFromTrainingRun(Long trainingInstanceId, Long trainingRunId) throws ElasticsearchTrainingDataLayerException {
-        HttpHeaders httpHeaders = new HttpHeaders();
-        httpHeaders.setContentType(MediaType.APPLICATION_JSON);
-
         String objectToPost = "{\n" +
                 "  \"query\": { \n" +
                 "    \"match\": {\n" +
@@ -160,16 +158,18 @@ public class TrainingEventsDAO extends AbstractElasticClientDAO {
                 "  }\n" +
                 "}\n";
 
-        HttpEntity request = new HttpEntity<>(objectToPost, httpHeaders);
-
         ElasticsearchResponseDto elasticsearchResponseDto =
-                restTemplate.postForObject(elasticsearchProtocol + "://" + elasticsearchIpAddress + ":" + elasticsearchPort + "/"
-                        + AbstractKypoIndexPath.KYPO3_EVENTS_INDEX + ".*" + ".instance=" + trainingInstanceId + "/_delete_by_query", request, ElasticsearchResponseDto.class);
+                webClient
+                        .post()
+                        .uri("/" + AbstractKypoIndexPath.KYPO3_EVENTS_INDEX + ".*" + ".instance=" + trainingInstanceId + "/_delete_by_query")
+                        .body(BodyInserters.fromPublisher(Mono.just(objectToPost), String.class))
+                        .retrieve()
+                        .bodyToMono(ElasticsearchResponseDto.class)
+                        .block();
         if (elasticsearchResponseDto != null && !elasticsearchResponseDto.isAcknowledged()) {
             throw new ElasticsearchTrainingDataLayerException("Training run events was not deleted.");
         }
     }
-
 
     private List<Map<String, Object>> handleElasticsearchResponse(SearchResponse response) throws ElasticsearchTrainingDataLayerException {
         List<Map<String, Object>> events = new ArrayList<>();

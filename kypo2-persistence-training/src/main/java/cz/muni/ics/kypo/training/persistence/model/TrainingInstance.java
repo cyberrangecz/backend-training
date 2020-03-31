@@ -19,12 +19,13 @@ import java.util.Set;
                 name = "TrainingInstance.findAllAuthorsOrganizersBetaTestingGroupBetaTestingGroupOrganizers",
                 attributeNodes = {
                         @NamedAttributeNode(value = "organizers"),
-                        @NamedAttributeNode(value = "trainingDefinition", subgraph = "trainingDefinition.authors"),
-                        @NamedAttributeNode(value = "trainingDefinition", subgraph = "trainingDefinition.betaTestingGroup")
+                        @NamedAttributeNode(value = "trainingDefinition", subgraph = "trainingDefinition"),
                 },
                 subgraphs = {
-                        @NamedSubgraph(name = "trainingDefinition.authors", attributeNodes = @NamedAttributeNode(value = "authors")),
-                        @NamedSubgraph(name = "trainingDefinition.betaTestingGroup", attributeNodes = @NamedAttributeNode(value = "betaTestingGroup", subgraph = "betaTestingGroup.organizers")),
+                        @NamedSubgraph(name = "trainingDefinition", attributeNodes = {
+                                @NamedAttributeNode(value = "authors"),
+                                @NamedAttributeNode(value = "betaTestingGroup", subgraph = "betaTestingGroup.organizers")
+                        }),
                         @NamedSubgraph(name = "betaTestingGroup.organizers", attributeNodes = @NamedAttributeNode(value = "organizers"))
                 }
         ),

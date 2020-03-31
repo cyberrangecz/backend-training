@@ -336,8 +336,8 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
     public ResponseEntity<Object> handleUserAndGroupApiException(final MicroserviceApiException ex, final WebRequest request,
                                                                  HttpServletRequest req) {
         final ApiError apiError = ApiMicroserviceError.of(
-                HttpStatus.NOT_FOUND,
-                ex.getApiSubError() == null ? ex.getMessage() : MicroserviceApiException.class.getAnnotation(ResponseStatus.class).reason(),
+                HttpStatus.FORBIDDEN,
+                ex.getMessage(),
                 getFullStackTrace(ex),
                 URL_PATH_HELPER.getRequestUri(req),
                 ex.getApiSubError());

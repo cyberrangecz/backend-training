@@ -106,7 +106,7 @@ public class TrainingRunsRestControllerTest {
         participant1.setId(1L);
         participant1.setUserRefId(10L);
 
-        participantDTO1 = createUserRefDTO(10L, "Bc. Dominik Meškal", "Meškal", "Dominik", "445533@muni.cz", "https://oidc.muni.cz/oidc", null);
+        participantDTO1 = createUserRefDTO(10L, "Bc. Dominik Meskal", "Meskal", "Dominik", "445533@muni.cz", "https://oidc.muni.cz/oidc", null);
         participantDTO2 = createUserRefDTO(20L, "Bc. Boris Makal", "Makal", "Boris", "772211@muni.cz", "https://oidc.muni.cz/oidc", null);
 
         trainingRun1 = testDataFactory.getFinishedRun();

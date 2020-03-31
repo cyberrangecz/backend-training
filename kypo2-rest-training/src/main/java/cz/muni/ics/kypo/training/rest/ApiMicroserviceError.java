@@ -21,6 +21,10 @@ public class ApiMicroserviceError extends ApiError {
         ApiMicroserviceError apiMicroserviceError = new ApiMicroserviceError();
         apiMicroserviceError.setTimestamp(System.currentTimeMillis());
         apiMicroserviceError.setStatus(httpStatus);
+        if (apiSubError != null) {
+            apiMicroserviceError.setStatus(apiSubError.getStatus());
+        }
+        apiMicroserviceError.setStatus(httpStatus);
         apiMicroserviceError.setMessage(message);
         apiMicroserviceError.setErrors(errors);
         apiMicroserviceError.setPath(path);
@@ -31,6 +35,9 @@ public class ApiMicroserviceError extends ApiError {
     public static ApiError of(HttpStatus httpStatus, String message, String error, String path, ApiSubError apiSubError) {
         ApiMicroserviceError apiMicroserviceError = new ApiMicroserviceError();
         apiMicroserviceError.setTimestamp(System.currentTimeMillis());
+        if (apiSubError != null) {
+            apiMicroserviceError.setStatus(apiSubError.getStatus());
+        }
         apiMicroserviceError.setStatus(httpStatus);
         apiMicroserviceError.setMessage(message);
         apiMicroserviceError.setError(error);

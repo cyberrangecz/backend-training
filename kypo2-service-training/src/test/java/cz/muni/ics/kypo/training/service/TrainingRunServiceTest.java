@@ -37,6 +37,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.ResourceUtils;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.reactive.function.client.WebClient;
 
 import java.io.FileReader;
 import java.io.IOException;
@@ -73,7 +74,7 @@ public class TrainingRunServiceTest {
     @Mock
     private HintRepository hintRepository;
     @Mock
-    private RestTemplate restTemplate, pythonRestTemplate;
+    private WebClient webClient, pythonWebClient;
     @Mock
     private SecurityService securityService;
 
@@ -94,7 +95,7 @@ public class TrainingRunServiceTest {
     public void init() {
         MockitoAnnotations.initMocks(this);
         trainingRunService = new TrainingRunService(trainingRunRepository, abstractLevelRepository, trainingInstanceRepository,
-                participantRefRepository, hintRepository, auditEventService, securityService, pythonRestTemplate, trAcquisitionLockRepository);
+                participantRefRepository, hintRepository, auditEventService, securityService, pythonWebClient, trAcquisitionLockRepository);
         parser = new JSONParser();
         try {
             questions = parser.parse(new FileReader(ResourceUtils.getFile("classpath:questions.json"))).toString();
@@ -459,8 +460,6 @@ public class TrainingRunServiceTest {
     @Test
     public void resumeTrainingRun() {
         given(trainingRunRepository.findByIdWithLevel(any(Long.class))).willReturn(Optional.of(trainingRun1));
-        given(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
-                willReturn(new ResponseEntity<SandboxInfo>((sandboxInfo), HttpStatus.OK));
         TrainingRun trainingRun = trainingRunService.resumeTrainingRun(trainingRun1.getId());
 
         assertEquals(trainingRun.getId(), trainingRun1.getId());

@@ -20,7 +20,7 @@ public class ApiEntityError extends ApiError {
         ApiEntityError apiEntityError = new ApiEntityError();
         apiEntityError.setTimestamp(System.currentTimeMillis());
         apiEntityError.setStatus(httpStatus);
-        apiEntityError.setMessage(message);
+        apiEntityError.setMessage(generateMessage(entityErrorDetail, message));
         apiEntityError.setErrors(errors);
         apiEntityError.setPath(path);
         apiEntityError.setEntityErrorDetail(entityErrorDetail);
@@ -31,7 +31,7 @@ public class ApiEntityError extends ApiError {
         ApiEntityError apiEntityError = new ApiEntityError();
         apiEntityError.setTimestamp(System.currentTimeMillis());
         apiEntityError.setStatus(httpStatus);
-        apiEntityError.setMessage(message);
+        apiEntityError.setMessage(generateMessage(entityErrorDetail, message));
         apiEntityError.setError(error);
         apiEntityError.setPath(path);
         apiEntityError.setEntityErrorDetail(entityErrorDetail);
@@ -44,6 +44,18 @@ public class ApiEntityError extends ApiError {
 
     public static ApiError of(HttpStatus httpStatus, String message, String error, EntityErrorDetail entityErrorDetail) {
         return ApiEntityError.of(httpStatus, message, error, "", entityErrorDetail);
+    }
+
+    private static String generateMessage(EntityErrorDetail entityErrorDetail, String defaultMessage) {
+        if (entityErrorDetail != null && entityErrorDetail.getEntity() != null && entityErrorDetail.getIdentifier() != null) {
+            return "Resource " + entityErrorDetail.getEntity() + " ("
+                              + entityErrorDetail.getIdentifier() + ": "
+                              + entityErrorDetail.getIdentifierValue() + ") not found.";
+        } else  if (entityErrorDetail != null && entityErrorDetail.getReason() != null && !entityErrorDetail.getReason().isBlank()) {
+            return entityErrorDetail.getReason();
+        } else {
+            return defaultMessage;
+        }
     }
 
     /**

@@ -12,7 +12,6 @@ import cz.muni.ics.kypo.commons.security.enums.AuthenticatedUserOIDCItems;
 import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelUpdateDTO;
-import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentQuestion;
 import cz.muni.ics.kypo.training.api.dto.betatestinggroup.BetaTestingGroupCreateDTO;
 import cz.muni.ics.kypo.training.api.dto.betatestinggroup.BetaTestingGroupUpdateDTO;
 import cz.muni.ics.kypo.training.api.dto.gamelevel.GameLevelDTO;
@@ -25,7 +24,6 @@ import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionDT
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionUpdateDTO;
 import cz.muni.ics.kypo.training.api.enums.AssessmentType;
 import cz.muni.ics.kypo.training.api.enums.LevelType;
-import cz.muni.ics.kypo.training.api.enums.QuestionType;
 import cz.muni.ics.kypo.training.api.enums.TDState;
 import cz.muni.ics.kypo.training.api.responses.PageResultResource;
 import cz.muni.ics.kypo.training.enums.RoleTypeSecurity;
@@ -34,11 +32,12 @@ import cz.muni.ics.kypo.training.mapping.mapstruct.LevelMapperImpl;
 import cz.muni.ics.kypo.training.mapping.mapstruct.TrainingDefinitionMapperImpl;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.repository.*;
-import cz.muni.ics.kypo.training.rest.ApiEntityError;
 import cz.muni.ics.kypo.training.persistence.util.TestDataFactory;
+import cz.muni.ics.kypo.training.rest.ApiEntityError;
 import cz.muni.ics.kypo.training.rest.CustomRestExceptionHandlerTraining;
 import cz.muni.ics.kypo.training.rest.controllers.config.DBTestUtil;
 import cz.muni.ics.kypo.training.rest.controllers.config.RestConfigTest;
+import org.apache.http.HttpHeaders;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -53,14 +52,14 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Import;
-import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.querydsl.SimpleEntityPathResolver;
 import org.springframework.data.querydsl.binding.QuerydslBindingsFactory;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.data.web.querydsl.QuerydslPredicateArgumentResolver;
-import org.springframework.http.*;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.core.Authentication;
@@ -74,16 +73,17 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.reactive.function.client.ClientRequest;
+import org.springframework.web.reactive.function.client.ClientResponse;
+import org.springframework.web.reactive.function.client.ExchangeFunction;
+import reactor.core.publisher.Mono;
 
 import java.io.IOException;
-import java.net.URI;
-import java.sql.SQLException;
 import java.util.*;
 
 import static cz.muni.ics.kypo.training.rest.controllers.util.ObjectConverter.convertJsonBytesToObject;
 import static org.junit.Assert.*;
-import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -122,14 +122,12 @@ public class TrainingDefinitionsIT {
     @Autowired
     private TrainingInstanceRepository trainingInstanceRepository;
     @Autowired
-    @Qualifier("javaRestTemplate")
-    private RestTemplate javaRestTemplate;
-    @Autowired
-    @Qualifier("pythonRestTemplate")
-    private RestTemplate pythonRestTemplate;
-    @Autowired
     @Qualifier("objMapperRESTApi")
     private ObjectMapper mapper;
+
+    @Autowired
+    @Qualifier("userManagementExchangeFunction")
+    private ExchangeFunction exchangeFunction;
 
     @Autowired
     private TrainingDefinitionMapperImpl trainingDefinitionMapper;
@@ -147,6 +145,7 @@ public class TrainingDefinitionsIT {
     private AssessmentLevel assessmentLevel1;
     private AssessmentLevelUpdateDTO assessmentLevelUpdateDTO, invalidAssessmentLevelUpdateDTO;
     private UserRefDTO userRefDTO;
+
 
     @SpringBootApplication
     static class TestConfiguration {
@@ -228,9 +227,8 @@ public class TrainingDefinitionsIT {
     }
 
     @After
-    public void reset() throws SQLException {
+    public void reset() throws Exception {
         DBTestUtil.resetAutoIncrementColumns(applicationContext, "training_definition", "abstract_level");
-
     }
 
     @Test
@@ -297,11 +295,7 @@ public class TrainingDefinitionsIT {
         mockSpringSecurityContextForGet(List.of(RoleTypeSecurity.ROLE_TRAINING_DESIGNER.name()));
         PageResultResource<UserRefDTO> userRefDTOPageResultResource = new PageResultResource<>();
         userRefDTOPageResultResource.setContent(List.of(userRefDTO));
-
-        given(javaRestTemplate.exchange(any(URI.class), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
-                willReturn(new ResponseEntity<PageResultResource<UserRefDTO>>(userRefDTOPageResultResource, HttpStatus.OK));
-        given(javaRestTemplate.getForObject(anyString(), eq(UserRefDTO.class))).
-                willReturn(userRefDTO);
+        given(exchangeFunction.exchange(any(ClientRequest.class))).willReturn(buildMockResponse(userRefDTO));
 
         MockHttpServletResponse result = mvc.perform(post("/training-definitions").content(convertObjectToJsonBytes(trainingDefinitionCreateDTO))
                 .contentType(MediaType.APPLICATION_JSON_VALUE))
@@ -318,12 +312,8 @@ public class TrainingDefinitionsIT {
     @Test
     public void createTrainingDefinitionWithoutBetaTestingGroup() throws Exception {
         mockSpringSecurityContextForGet(List.of(RoleTypeSecurity.ROLE_TRAINING_DESIGNER.name()));
-        PageResultResource<UserRefDTO> userRefDTOPageResultResource = new PageResultResource<>();
-        userRefDTOPageResultResource.setContent(List.of(userRefDTO));
-        given(javaRestTemplate.exchange(any(URI.class), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
-                willReturn(new ResponseEntity<PageResultResource<UserRefDTO>>(userRefDTOPageResultResource, HttpStatus.OK));
-        given(javaRestTemplate.getForObject(anyString(), eq(UserRefDTO.class))).
-                willReturn(userRefDTO);
+        given(exchangeFunction.exchange(any(ClientRequest.class))).willReturn(buildMockResponse(userRefDTO));
+
         trainingDefinitionCreateDTO.setBetaTestingGroup(null);
         MockHttpServletResponse result = mvc.perform(post("/training-definitions").content(convertObjectToJsonBytes(trainingDefinitionCreateDTO))
                 .contentType(MediaType.APPLICATION_JSON_VALUE))
@@ -351,12 +341,8 @@ public class TrainingDefinitionsIT {
     public void updateTrainingDefinition() throws Exception {
         TrainingDefinition tD = trainingDefinitionRepository.save(unreleasedDefinition);
         trainingDefinitionUpdateDTO.setId(tD.getId());
-        PageResultResource<UserRefDTO> userRefDTOPageResultResource = new PageResultResource<>();
-        userRefDTOPageResultResource.setContent(List.of(userRefDTO));
-        given(javaRestTemplate.exchange(any(URI.class), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
-                willReturn(new ResponseEntity<PageResultResource<UserRefDTO>>(userRefDTOPageResultResource, HttpStatus.OK));
-        given(javaRestTemplate.getForObject(anyString(), eq(UserRefDTO.class))).
-                willReturn(userRefDTO);
+        given(exchangeFunction.exchange(any(ClientRequest.class))).willReturn(buildMockResponse(userRefDTO));
+
         mvc.perform(put("/training-definitions").content(convertObjectToJsonBytes(trainingDefinitionUpdateDTO))
                 .contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isNoContent());
@@ -399,8 +385,6 @@ public class TrainingDefinitionsIT {
         trainingDefinitionUpdateDTO.setId(tD.getId());
         PageResultResource<UserRefDTO> userRefDTOPageResultResource = new PageResultResource<>();
         userRefDTOPageResultResource.setContent(List.of(userRefDTO));
-        given(javaRestTemplate.exchange(any(URI.class), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class))).
-                willReturn(new ResponseEntity<PageResultResource<UserRefDTO>>(userRefDTOPageResultResource, HttpStatus.OK));
 
         MockHttpServletResponse response = mvc.perform(put("/training-definitions").content(convertObjectToJsonBytes(trainingDefinitionUpdateDTO))
                 .contentType(MediaType.APPLICATION_JSON_VALUE))
@@ -1166,5 +1150,12 @@ public class TrainingDefinitionsIT {
         assertEquals(reason, entityErrorDetail.getReason());
     }
 
+    private Mono<ClientResponse> buildMockResponse(Object body) throws IOException{
+        ClientResponse clientResponse = ClientResponse.create(HttpStatus.OK)
+                .body(convertObjectToJsonBytes(body))
+                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .build();
+        return Mono.just(clientResponse);
+    }
 }
 
