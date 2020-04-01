@@ -31,6 +31,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.Assert.*;
 import static org.mockito.BDDMockito.*;
@@ -70,6 +71,7 @@ public class TrainingRunFacadeTest {
     private AssessmentLevel assessmentLevel;
     private UserRefDTO participantRefDTO;
     private UserRef participant;
+    private TrainingInstance trainingInstance;
 
     @Before
     public void init() {
@@ -115,7 +117,7 @@ public class TrainingRunFacadeTest {
         infoLevel.setOrder(2);
         infoLevel.setTrainingDefinition(trainingDefinition);
 
-        TrainingInstance trainingInstance = testDataFactory.getConcludedInstance();
+        trainingInstance = testDataFactory.getConcludedInstance();
         trainingInstance.setId(1L);
         trainingInstance.setTrainingDefinition(trainingDefinition);
         trainingRun1.setTrainingInstance(trainingInstance);
@@ -160,16 +162,32 @@ public class TrainingRunFacadeTest {
         assertEquals(0, correctFlagDTO.getRemainingAttempts());
     }
 
-    /*
     @Test
     public void accessTrainingRun() {
-        given(trainingRunService.accessTrainingRun(anyString())).willReturn(trainingRun1);
-        given(trainingRunService.assignSandbox(any(TrainingRun.class), anyLong())).willReturn(trainingRun1);
-        Object result = trainingRunFacade.accessTrainingRun("password");
-        assertEquals(AccessTrainingRunDTO.class, result.getClass());
-        then(trainingRunService).should().accessTrainingRun("password");
+        given(trainingRunService.getTrainingInstanceForParticularAccessToken(anyString())).willReturn(trainingInstance);
+        given(securityService.getUserRefIdFromUserAndGroup()).willReturn(1L);
+        given(trainingRunService.findRunningTrainingRunOfUser(anyString(), anyLong())).willReturn(Optional.empty());
+        given(trainingRunService.accessTrainingRun(trainingInstance, 1L)).willReturn(trainingRun1);
+        trainingRunFacade.accessTrainingRun("password");
+        then(trainingRunService).should().trAcquisitionLockToPreventManyRequestsFromSameUser(1l, trainingInstance.getId(), "password");
+        then(trainingRunService).should().accessTrainingRun(trainingInstance, 1L);
     }
-    */
+
+    @Test
+    public void accessRunningTrainingRun() {
+        given(trainingRunService.getTrainingInstanceForParticularAccessToken(anyString())).willReturn(trainingInstance);
+        given(securityService.getUserRefIdFromUserAndGroup()).willReturn(1L);
+        given(trainingRunService.findRunningTrainingRunOfUser(anyString(), anyLong())).willReturn(Optional.of(trainingRun1));
+        given(trainingRunService.resumeTrainingRun(anyLong())).willReturn(trainingRun1);
+        trainingRunFacade.accessTrainingRun("password");
+        then(trainingRunService).should().resumeTrainingRun(anyLong());
+    }
+
+    @Test
+    public void deleteTrainingRun(){
+        trainingRunFacade.deleteTrainingRun(1L, true);
+        then(trainingRunService).should().deleteTrainingRun(1L, true);
+    }
 
     @Test
     public void getNextLevel() {
@@ -211,23 +229,4 @@ public class TrainingRunFacadeTest {
         UserRefDTO foundParticipantRefDTO = trainingRunFacade.getParticipant(trainingRun1.getId());
         Assert.assertEquals(participantRefDTO, foundParticipantRefDTO);
     }
-
-    @Test(expected = EntityNotFoundException.class)
-    public void getParticipantTrainingRunNotFound() {
-        willThrow(new EntityNotFoundException()).given(trainingRunService).findById(15L);
-        trainingRunFacade.getParticipant(15L);
-    }
-
-    @Test(expected = InternalServerErrorException.class)
-    public void getParticipantCallingUserAndGroupError() {
-        willThrow(new InternalServerErrorException()).given(trainingRunService).findById(15L);
-        trainingRunFacade.getParticipant(15L);
-    }
-
-    private void deepEquals(TrainingRun expected, TrainingRunDTO actual) {
-        assertEquals(expected.getId(), actual.getId());
-        assertEquals(expected.getState(), actual.getState());
-    }
-
 }
-
