@@ -3,10 +3,12 @@ package cz.muni.ics.kypo.training.facade;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.PathBuilder;
 import cz.muni.ics.kypo.training.api.dto.AbstractLevelDTO;
+import cz.muni.ics.kypo.training.api.dto.BasicLevelInfoDTO;
 import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelUpdateDTO;
 import cz.muni.ics.kypo.training.api.dto.gamelevel.GameLevelUpdateDTO;
 import cz.muni.ics.kypo.training.api.dto.infolevel.InfoLevelUpdateDTO;
+import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionByIdDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionCreateDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionUpdateDTO;
@@ -14,6 +16,7 @@ import cz.muni.ics.kypo.training.api.enums.LevelType;
 import cz.muni.ics.kypo.training.api.enums.RoleType;
 import cz.muni.ics.kypo.training.api.responses.PageResultResource;
 import cz.muni.ics.kypo.training.enums.RoleTypeSecurity;
+import cz.muni.ics.kypo.training.exceptions.EntityConflictException;
 import cz.muni.ics.kypo.training.exceptions.EntityNotFoundException;
 import cz.muni.ics.kypo.training.exceptions.InternalServerErrorException;
 import cz.muni.ics.kypo.training.mapping.mapstruct.*;
@@ -150,14 +153,14 @@ public class TrainingDefinitionFacadeTest {
     @Test
     public void findTrainingDefinitionById() {
         given(trainingDefinitionService.findById(1L)).willReturn(trainingDefinition1);
-        trainingDefinitionFacade.findById(1L);
+        given(trainingDefinitionService.findAllLevelsFromDefinition(anyLong())).willReturn(List.of(gameLevel));
+        TrainingDefinitionByIdDTO definition = trainingDefinitionFacade.findById(1L);
+        assertEquals(1, definition.getLevels().size());
+        AbstractLevelDTO level = definition.getLevels().get(0);
+        assertEquals(gameLevel.getTitle(), level.getTitle());
+        assertEquals(gameLevel.getOrder(), level.getOrder());
+        assertEquals(gameLevel.getId(), level.getId());
         then(trainingDefinitionService).should().findById(1L);
-    }
-
-    @Test(expected = EntityNotFoundException.class)
-    public void findTrainingDefinitionByIdWithFacadeLayerException() {
-        willThrow(EntityNotFoundException.class).given(trainingDefinitionService).findById(any(long.class));
-        trainingDefinitionFacade.findById(any(Long.class));
     }
 
     @Test
@@ -187,20 +190,15 @@ public class TrainingDefinitionFacadeTest {
         viewGroup.setId(1L);
         viewGroup.setOrganizers(Set.of());
         given(trainingDefinitionService.findById(anyLong())).willReturn(trainingDefinition1);
-        given(userService.getUsersRefDTOByGivenUserIds(anySet(), any(), eq(null), eq(null))).willReturn(new PageResultResource<>(new ArrayList<>()));
         trainingDefinitionFacade.update(trainingDefinitionUpdate);
         then(trainingDefinitionService).should().update(trainingDefinitionMapper.mapUpdateToEntity(trainingDefinitionUpdate));
     }
 
-    @Test(expected = EntityNotFoundException.class)
-    public void updateTrainingDefinitionWithFacadeLayerException() {
-        BetaTestingGroup viewGroup = new BetaTestingGroup();
-        viewGroup.setTrainingDefinition(trainingDefinition1);
-        viewGroup.setId(1L);
+    @Test(expected = EntityConflictException.class)
+    public void updateTrainingDefinitionRemovingBTG(){
+        trainingDefinitionUpdate.setBetaTestingGroup(null);
+        trainingDefinition1.setBetaTestingGroup(new BetaTestingGroup());
         given(trainingDefinitionService.findById(anyLong())).willReturn(trainingDefinition1);
-        given(userService.getUsersRefDTOByGivenUserIds(anySet(), any(Pageable.class), eq(null), eq(null))).willReturn(new PageResultResource<>(new ArrayList<>()));
-        willThrow(EntityNotFoundException.class).given(trainingDefinitionService)
-                .update(any(TrainingDefinition.class));
         trainingDefinitionFacade.update(trainingDefinitionUpdate);
     }
 
@@ -208,8 +206,6 @@ public class TrainingDefinitionFacadeTest {
     public void createTrainingDefinition() {
         given(trainingDefinitionService.create(trainingDefinitionMapper.mapCreateToEntity(trainingDefinitionCreate)))
                 .willReturn(trainingDefinitionMapper.mapCreateToEntity(trainingDefinitionCreate));
-        given(userService.getUserByUserRefId(anyLong())).willReturn(author1);
-        given(userService.getUsersRefDTOByGivenUserIds(anySet(), any(), eq(null), eq(null))).willReturn(new PageResultResource<>(new ArrayList<>()));
         trainingDefinitionFacade.create(trainingDefinitionCreate);
         then(trainingDefinitionService).should().create(trainingDefinitionMapper.mapCreateToEntity(trainingDefinitionCreate));
     }
@@ -217,7 +213,13 @@ public class TrainingDefinitionFacadeTest {
     @Test
     public void cloneTrainingDefinition() {
         given(trainingDefinitionService.clone(trainingDefinition1.getId(), "title")).willReturn(trainingDefinition1);
-        trainingDefinitionFacade.clone(trainingDefinition1.getId(), "title");
+        given(trainingDefinitionService.findAllLevelsFromDefinition(anyLong())).willReturn(List.of(gameLevel));
+        TrainingDefinitionByIdDTO definition = trainingDefinitionFacade.clone(trainingDefinition1.getId(), "title");
+        assertEquals(1, definition.getLevels().size());
+        AbstractLevelDTO level = definition.getLevels().get(0);
+        assertEquals(gameLevel.getTitle(), level.getTitle());
+        assertEquals(gameLevel.getOrder(), level.getOrder());
+        assertEquals(gameLevel.getId(), level.getId());
         then(trainingDefinitionService).should().clone(trainingDefinition1.getId(), "title");
     }
 
@@ -227,22 +229,10 @@ public class TrainingDefinitionFacadeTest {
         then(trainingDefinitionService).should().delete(trainingDefinition1.getId());
     }
 
-    @Test(expected = EntityNotFoundException.class)
-    public void deleteTrainingDefinitionWithFacadeLayerException() {
-        willThrow(EntityNotFoundException.class).given(trainingDefinitionService).delete(any(Long.class));
-        trainingDefinitionFacade.delete(1L);
-    }
-
     @Test
     public void deleteOneLevel() {
         trainingDefinitionFacade.deleteOneLevel(trainingDefinition1.getId(), assessmentLevel.getId());
         then(trainingDefinitionService).should().deleteOneLevel(trainingDefinition1.getId(), assessmentLevel.getId());
-    }
-
-    @Test(expected = EntityNotFoundException.class)
-    public void deleteOneLevelWithFacadeLayerException() {
-        willThrow(EntityNotFoundException.class).given(trainingDefinitionService).deleteOneLevel(any(Long.class), any(Long.class));
-        trainingDefinitionFacade.deleteOneLevel(1L, 1L);
     }
 
     @Test
@@ -269,21 +259,33 @@ public class TrainingDefinitionFacadeTest {
     @Test
     public void createInfoLevel() {
         given(trainingDefinitionService.createInfoLevel(trainingDefinition1.getId())).willReturn(infoLevel);
-        trainingDefinitionFacade.createInfoLevel(trainingDefinition1.getId());
+        BasicLevelInfoDTO level = trainingDefinitionFacade.createInfoLevel(trainingDefinition1.getId());
+        assertEquals(LevelType.INFO_LEVEL.name(), level.getLevelType().name());
+        assertEquals(level.getOrder(), level.getOrder());
+        assertEquals(level.getId(), level.getId());
+        assertEquals(level.getTitle(), level.getTitle());
         then(trainingDefinitionService).should().createInfoLevel(trainingDefinition1.getId());
     }
 
     @Test
     public void createGameLevel() {
         given(trainingDefinitionService.createGameLevel(trainingDefinition1.getId())).willReturn(gameLevel);
-        trainingDefinitionFacade.createGameLevel(trainingDefinition1.getId());
+        BasicLevelInfoDTO level = trainingDefinitionFacade.createGameLevel(trainingDefinition1.getId());
+        assertEquals(LevelType.GAME_LEVEL.name(), level.getLevelType().name());
+        assertEquals(level.getOrder(), level.getOrder());
+        assertEquals(level.getId(), level.getId());
+        assertEquals(level.getTitle(), level.getTitle());
         then(trainingDefinitionService).should().createGameLevel(trainingDefinition1.getId());
     }
 
     @Test
     public void createAssessmentLevel() {
         given(trainingDefinitionService.createAssessmentLevel(trainingDefinition1.getId())).willReturn(assessmentLevel);
-        trainingDefinitionFacade.createAssessmentLevel(trainingDefinition1.getId());
+        BasicLevelInfoDTO level = trainingDefinitionFacade.createAssessmentLevel(trainingDefinition1.getId());
+        assertEquals(LevelType.ASSESSMENT_LEVEL.name(), level.getLevelType().name());
+        assertEquals(level.getOrder(), level.getOrder());
+        assertEquals(level.getId(), level.getId());
+        assertEquals(level.getTitle(), level.getTitle());
         then(trainingDefinitionService).should().createAssessmentLevel(trainingDefinition1.getId());
     }
 
@@ -332,12 +334,6 @@ public class TrainingDefinitionFacadeTest {
         Assert.assertTrue(authors.getContent().containsAll(Set.of(authorDTO1, authorDTO2)));
     }
 
-    @Test(expected = EntityNotFoundException.class)
-    public void getAuthorsTrainingDefinitionNotFound() {
-        willThrow(new EntityNotFoundException()).given(trainingDefinitionService).findById(trainingDefinition1.getId());
-        trainingDefinitionFacade.getAuthors(trainingDefinition1.getId(), pageable, null, null);
-    }
-
     @Test
     public void getAuthorsNotInGivenTrainingDefinition() {
         pagination = new PageResultResource.Pagination(0,1,1,1,1);
@@ -349,12 +345,6 @@ public class TrainingDefinitionFacadeTest {
         assertTrue(organizersNotInTrainingInstance.getContent().contains(authorDTO3));
     }
 
-    @Test(expected = EntityNotFoundException.class)
-    public void getAuthorsNotInGivenTrainingDefinitionTrainingDefinitionNotFound() {
-        willThrow(new EntityNotFoundException()).given(trainingDefinitionService).findById(trainingDefinition1.getId());
-        trainingDefinitionFacade.getDesignersNotInGivenTrainingDefinition(trainingDefinition1.getId(), pageable, null, null);
-    }
-
     @Test
     public void getAuthorsNotInGivenTrainingInstanceUserServiceError() {
         given(trainingDefinitionService.findById(trainingDefinition1.getId())).willReturn(trainingDefinition1);
@@ -364,7 +354,6 @@ public class TrainingDefinitionFacadeTest {
         thrown.expectMessage("Error when calling User And Group endpoint.");
         trainingDefinitionFacade.getDesignersNotInGivenTrainingDefinition(trainingDefinition1.getId(), pageable, null, null);
     }
-
 
     @Test
     public void editAuthors() {
@@ -480,6 +469,10 @@ public class TrainingDefinitionFacadeTest {
     private void deepEquals(TrainingDefinition expected, TrainingDefinitionDTO actual) {
         assertEquals(expected.getId(), actual.getId());
         assertEquals(expected.getTitle(), actual.getTitle());
+        assertEquals(expected.getEstimatedDuration(), actual.getEstimatedDuration());
+        assertEquals(expected.getLastEdited(), actual.getLastEdited());
+        assertEquals(expected.getDescription(), actual.getDescription());
+        assertEquals(expected.getState().name(), actual.getState().name());
     }
 
 }
