@@ -39,8 +39,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import static org.mockito.BDDMockito.*;
 
 @RunWith(SpringRunner.class)
@@ -139,12 +138,6 @@ public class TrainingInstanceFacadeTest {
         then(trainingInstanceService).should().findByIdIncludingDefinition(trainingInstance1.getId());
     }
 
-    @Test(expected = EntityNotFoundException.class)
-    public void findNonexistentTrainingInstanceById() {
-        willThrow(EntityNotFoundException.class).given(trainingInstanceService).findByIdIncludingDefinition(1L);
-        trainingInstanceFacade.findById(1L);
-    }
-
     @Test
     public void findAllTrainingInstances() {
         List<TrainingInstance> expected = new ArrayList<>();
@@ -183,13 +176,6 @@ public class TrainingInstanceFacadeTest {
         then(trainingInstanceService).should().update(any(TrainingInstance.class));
     }
 
-    @Test(expected = EntityConflictException.class)
-    public void updateTrainingInstanceWithFacadeLayerException() {
-        given(userService.getUsersRefDTOByGivenUserIds(anySet(), any(Pageable.class), anyString(), anyString())).willReturn(new PageResultResource<>(new ArrayList<>()));
-        willThrow(EntityConflictException.class).given(trainingInstanceService).update(any(TrainingInstance.class));
-        trainingInstanceFacade.update(trainingInstanceUpdate);
-    }
-
     @Test
     public void deleteTrainingInstance() {
         trainingInstance1.setPoolId(null);
@@ -198,12 +184,26 @@ public class TrainingInstanceFacadeTest {
         then(trainingInstanceService).should().delete(trainingInstance1);
     }
 
+    @Test(expected = EntityConflictException.class)
+    public void deleteTrainingInstanceWithUnfinishedInstanceAndRuns(){
+        given(trainingInstanceService.findById(anyLong())).willReturn(trainingInstance1);
+        given(trainingInstanceService.checkIfInstanceIsFinished(anyLong())).willReturn(false);
+        given(trainingRunService.existsAnyForTrainingInstance(anyLong())).willReturn(true);
+        trainingInstanceFacade.delete(1L, false);
+    }
+
+    @Test(expected = EntityConflictException.class)
+    public void deleteTrainingInstanceWithLockedPool(){
+        trainingInstance1.setPoolId(1L);
+        given(trainingInstanceService.findById(anyLong())).willReturn(trainingInstance1);
+        trainingInstanceFacade.delete(1L, false);
+    }
+
     @Test
     public void assignPoolToTrainingInstance() {
         trainingInstance1.setPoolId(null);
         given(trainingInstanceService.findById(anyLong())).willReturn(trainingInstance1);
         given(trainingInstanceService.lockPool(anyLong())).willReturn(lockedPoolInfo);
-
         trainingInstanceFacade.assignPoolToTrainingInstance(trainingInstance1.getId(), trainingInstanceAssignPoolIdDTO);
         then(trainingInstanceService).should().lockPool(trainingInstance1.getId());
     }
@@ -215,12 +215,38 @@ public class TrainingInstanceFacadeTest {
         trainingInstanceFacade.assignPoolToTrainingInstance(trainingInstance1.getId(), trainingInstanceAssignPoolIdDTO);
     }
 
+    @Test
+    public void unassignPool(){
+        given(trainingInstanceService.findById(anyLong())).willReturn(trainingInstance1);
+        trainingInstanceFacade.unassignPoolInTrainingInstance(trainingInstance1.getId());
+        then(trainingInstanceService).should().unlockPool(anyLong());
+        then(trainingInstanceService).should().updateTrainingInstancePool(any(TrainingInstance.class));
+    }
+
     @Test(expected = EntityConflictException.class)
-    public void unassignPoolWithConflictException() {
+    public void unassignPoolWithNullPoolId() {
         trainingInstance1.setPoolId(null);
         given(trainingInstanceService.findById(anyLong())).willReturn(trainingInstance1);
         trainingInstanceFacade.unassignPoolInTrainingInstance(trainingInstance1.getId());
     }
+
+    @Test
+    public void checkIfInstanceCanBeDeleted_TRUE(){
+        given(trainingInstanceService.checkIfInstanceIsFinished(anyLong())).willReturn(true);
+        TrainingInstanceIsFinishedInfoDTO info = trainingInstanceFacade.checkIfInstanceCanBeDeleted(1L);
+        assertTrue(info.getHasFinished());
+        assertEquals("Training instance has already finished and can be safely deleted.", info.getMessage());
+    }
+
+    @Test
+    public void checkIfInstanceCanBeDeleted_FALSE(){
+        given(trainingInstanceService.checkIfInstanceIsFinished(anyLong())).willReturn(false);
+        TrainingInstanceIsFinishedInfoDTO info = trainingInstanceFacade.checkIfInstanceCanBeDeleted(1L);
+        assertFalse(info.getHasFinished());
+        assertEquals("WARNING: Training instance is still running! Are you sure you want to delete it?", info.getMessage());
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////
 
     @Test
     public void getOrganizersOfTrainingInstance() {
@@ -233,20 +259,6 @@ public class TrainingInstanceFacadeTest {
         assertTrue(organizersOfTrainingInstance.getContent().containsAll(Set.of(organizerDTO1, organizerDTO2)));
     }
 
-    @Test(expected = EntityNotFoundException.class)
-    public void getOrganizersOfTrainingInstanceTrainingInstanceNotFound() {
-        willThrow(new EntityNotFoundException()).given(trainingInstanceService).findById(trainingInstance1.getId());
-        trainingInstanceFacade.getOrganizersOfTrainingInstance(trainingInstance1.getId(), pageable, null, null);
-    }
-
-    @Test(expected = EntityNotFoundException.class)
-    public void getOrganizersOfTrainingInstanceTrainingInstanceUserServiceError() {
-        given(trainingInstanceService.findById(trainingInstance1.getId())).willReturn(trainingInstance1);
-        willThrow(new EntityNotFoundException()).given(userService)
-                .getUsersRefDTOByGivenUserIds(new HashSet<>(Set.of(organizer1.getUserRefId(), organizer2.getUserRefId())), pageable, null, null);
-        trainingInstanceFacade.getOrganizersOfTrainingInstance(trainingInstance1.getId(), pageable, null, null);
-    }
-
     @Test
     public void getOrganizersNotInGivenTrainingInstance() {
         pagination = new PageResultResource.Pagination(0, 1, 1, 1, 1);
@@ -256,20 +268,6 @@ public class TrainingInstanceFacadeTest {
         PageResultResource<UserRefDTO> organizersNotInTrainingInstance = trainingInstanceFacade.getOrganizersNotInGivenTrainingInstance(trainingInstance1.getId(), pageable, null, null);
         assertEquals(pagination.toString(), organizersNotInTrainingInstance.getPagination().toString());
         assertTrue(organizersNotInTrainingInstance.getContent().contains(organizerDTO3));
-    }
-
-    @Test(expected = EntityNotFoundException.class)
-    public void getOrganizersNotInGivenTrainingInstanceTrainingInstanceNotFound() {
-        willThrow(new EntityNotFoundException()).given(trainingInstanceService).findById(trainingInstance1.getId());
-        trainingInstanceFacade.getOrganizersNotInGivenTrainingInstance(trainingInstance1.getId(), pageable, null, null);
-    }
-
-    @Test(expected = EntityNotFoundException.class)
-    public void getOrganizersNotInGivenTrainingInstanceUserServiceError() {
-        given(trainingInstanceService.findById(trainingInstance1.getId())).willReturn(trainingInstance1);
-        willThrow(new EntityNotFoundException()).given(userService)
-                .getUsersByGivenRoleAndNotWithGivenIds(RoleType.ROLE_TRAINING_ORGANIZER, new HashSet<>(Set.of(organizer1.getUserRefId(), organizer2.getUserRefId())), pageable, null, null);
-        trainingInstanceFacade.getOrganizersNotInGivenTrainingInstance(trainingInstance1.getId(), pageable, null, null);
     }
 
     @Test
@@ -369,12 +367,6 @@ public class TrainingInstanceFacadeTest {
         trainingInstanceFacade.editOrganizers(trainingInstance1.getId(), new HashSet<>(Set.of(organizer2.getUserRefId(), organizer3.getUserRefId())), new HashSet<>());
         Assert.assertEquals(3, trainingInstance1.getOrganizers().size());
         Assert.assertTrue(trainingInstance1.getOrganizers().containsAll(Set.of(organizer1, organizer2, organizer3)));
-    }
-
-
-    private void deepEquals(TrainingInstance expected, TrainingInstanceDTO actual) {
-        assertEquals(expected.getId(), actual.getId());
-        assertEquals(expected.getTitle(), actual.getTitle());
     }
 
     private void deepEqualsTrainingInstanceFindAllView(TrainingInstance expected, TrainingInstanceFindAllResponseDTO actual) {
