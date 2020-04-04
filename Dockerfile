@@ -7,7 +7,7 @@ ARG POSTGRES_DB=training
 ARG PROJECT_ARTIFACT_ID=kypo2-rest-training
 
 ## default link to proprietary repository, e.g., Nexus repository
-ARG PROPRIETARY_REPO_URL=https://YOUR-PATH-TO-PROPRIETARY_REPO/repository/maven-public/
+ARG PROPRIETARY_REPO_URL=YOUR-PATH-TO-PROPRIETARY_REPO
 
 COPY ./ /app
 WORKDIR /app
