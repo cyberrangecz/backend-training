@@ -4,9 +4,6 @@ import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.PathBuilder;
 import cz.muni.ics.kypo.training.api.dto.IsCorrectFlagDTO;
 import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
-import cz.muni.ics.kypo.training.api.dto.run.TrainingRunDTO;
-import cz.muni.ics.kypo.training.exceptions.EntityNotFoundException;
-import cz.muni.ics.kypo.training.exceptions.InternalServerErrorException;
 import cz.muni.ics.kypo.training.mapping.mapstruct.*;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.util.TestDataFactory;
@@ -167,10 +164,10 @@ public class TrainingRunFacadeTest {
         given(trainingRunService.getTrainingInstanceForParticularAccessToken(anyString())).willReturn(trainingInstance);
         given(securityService.getUserRefIdFromUserAndGroup()).willReturn(1L);
         given(trainingRunService.findRunningTrainingRunOfUser(anyString(), anyLong())).willReturn(Optional.empty());
-        given(trainingRunService.accessTrainingRun(trainingInstance, 1L)).willReturn(trainingRun1);
+        given(trainingRunService.createTrainingRun(trainingInstance, 1L)).willReturn(trainingRun1);
         trainingRunFacade.accessTrainingRun("password");
         then(trainingRunService).should().trAcquisitionLockToPreventManyRequestsFromSameUser(1l, trainingInstance.getId(), "password");
-        then(trainingRunService).should().accessTrainingRun(trainingInstance, 1L);
+        then(trainingRunService).should().createTrainingRun(trainingInstance, 1L);
     }
 
     @Test

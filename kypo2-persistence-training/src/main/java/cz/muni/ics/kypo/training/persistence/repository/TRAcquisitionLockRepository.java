@@ -17,7 +17,7 @@ public interface TRAcquisitionLockRepository extends JpaRepository<TRAcquisition
     /**
      * Deletes Acquisition Lock by participant and training instance
      *
-     * @param participantRefId      - id of participant associated with lock
+     * @param participantRefId   - id of participant associated with lock
      * @param trainingInstanceId - id of training instance associated with lock
      */
     @Modifying
