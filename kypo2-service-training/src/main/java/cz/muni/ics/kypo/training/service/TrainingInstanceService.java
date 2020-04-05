@@ -237,7 +237,7 @@ public class TrainingInstanceService {
             return sandboxServiceWebClient
                     .post()
                     .uri("/pools/{poolId}/locks", poolId)
-                    .body(BodyInserters.fromObject("{}"))
+                    .body("{}", String.class)
                     .retrieve()
                     .bodyToMono(LockedPoolInfo.class)
                     .block();
