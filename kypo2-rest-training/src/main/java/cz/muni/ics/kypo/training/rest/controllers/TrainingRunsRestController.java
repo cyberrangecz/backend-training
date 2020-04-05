@@ -178,7 +178,7 @@ public class TrainingRunsRestController {
     @ApiOperation(httpMethod = "POST",
             value = "Access training run.",
             response = AccessTrainingRunDTO.class,
-            nickname = "accessTrainingRun",
+            nickname = "createTrainingRun",
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     @ApiResponses(value = {

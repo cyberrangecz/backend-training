@@ -15,7 +15,6 @@ import cz.muni.ics.kypo.training.api.dto.IsCorrectFlagDTO;
 import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.hint.HintDTO;
-import cz.muni.ics.kypo.training.api.dto.hint.TakenHintDTO;
 import cz.muni.ics.kypo.training.api.dto.run.AccessTrainingRunDTO;
 import cz.muni.ics.kypo.training.api.dto.run.AccessedTrainingRunDTO;
 import cz.muni.ics.kypo.training.api.dto.run.TrainingRunByIdDTO;
@@ -23,6 +22,7 @@ import cz.muni.ics.kypo.training.api.dto.run.TrainingRunDTO;
 import cz.muni.ics.kypo.training.api.enums.Actions;
 import cz.muni.ics.kypo.training.api.enums.LevelType;
 import cz.muni.ics.kypo.training.api.responses.PageResultResource;
+import cz.muni.ics.kypo.training.exceptions.*;
 import cz.muni.ics.kypo.training.mapping.mapstruct.*;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.service.SecurityService;
@@ -35,6 +35,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.time.Clock;
@@ -173,14 +174,18 @@ public class TrainingRunFacade {
                 accessTrainingRunDTO.setTakenSolution(((GameLevel) trainingRun.getCurrentLevel()).getSolution());
             }
             trainingRun.getHintInfoList().forEach(hintInfo -> {
-                    if (hintInfo.getGameLevelId().equals(trainingRun.getCurrentLevel().getId())) {
-                        accessTrainingRunDTO.getTakenHints().add(hintMapper.mapToDTO(hintInfo));
+                        if (hintInfo.getGameLevelId().equals(trainingRun.getCurrentLevel().getId())) {
+                            accessTrainingRunDTO.getTakenHints().add(hintMapper.mapToDTO(hintInfo));
+                        }
                     }
-                }
             );
         }
         return accessTrainingRunDTO;
     }
+
+    // user1 call
+    // user1 call
+    // user1 call
 
     /**
      * Access Training Run by logged in user based on given accessToken.
@@ -189,7 +194,7 @@ public class TrainingRunFacade {
      * @return {@link AccessTrainingRunDTO} response
      */
     @IsTraineeOrAdmin
-    @TransactionalWO
+    @Transactional
     public AccessTrainingRunDTO accessTrainingRun(String accessToken) {
         TrainingInstance trainingInstance = trainingRunService.getTrainingInstanceForParticularAccessToken(accessToken);
         // checking if the user is not accessing to his existing training run (resume action)
@@ -201,9 +206,28 @@ public class TrainingRunFacade {
         }
         // Check if the user already clicked access training run, in that case, it returns an exception (it prevents concurrent accesses).
         trainingRunService.trAcquisitionLockToPreventManyRequestsFromSameUser(participantRefId, trainingInstance.getId(), accessToken);
-        // During this action we create a new TrainingRun and lock and get sandbox from Django OpenStack API
-        TrainingRun trainingRun = trainingRunService.accessTrainingRun(trainingInstance, participantRefId);
-        return convertToAccessTrainingRunDTO(trainingRun);
+        try {
+            // During this action we create a new TrainingRun and lock and get sandbox from OpenStack Sandbox API
+            TrainingRun trainingRun = trainingRunService.createTrainingRun(trainingInstance, participantRefId);
+            trainingRunService.assignSandbox(trainingRun, trainingInstance.getPoolId());
+            return convertToAccessTrainingRunDTO(trainingRun);
+        } catch (EntityNotFoundException | EntityConflictException | ForbiddenException | MicroserviceApiException e) {
+            // delete/rollback acquisition lock when no training run either sandbox is assigned
+            trainingRunService.deleteTrAcquisitionLockToPreventManyRequestsFromSameUser(participantRefId, trainingInstance.getId());
+            throw e;
+        }
+    }
+
+    private AccessTrainingRunDTO convertToAccessTrainingRunDTO(TrainingRun trainingRun) {
+        AccessTrainingRunDTO accessTrainingRunDTO = new AccessTrainingRunDTO();
+        accessTrainingRunDTO.setTrainingRunID(trainingRun.getId());
+        accessTrainingRunDTO.setAbstractLevelDTO(getCorrectAbstractLevelDTO(trainingRun.getCurrentLevel()));
+        accessTrainingRunDTO.setShowStepperBar(trainingRun.getTrainingInstance().getTrainingDefinition().isShowStepperBar());
+        accessTrainingRunDTO.setInfoAboutLevels(getInfoAboutLevels(trainingRun.getCurrentLevel().getTrainingDefinition().getId()));
+        accessTrainingRunDTO.setSandboxInstanceRefId(trainingRun.getSandboxInstanceRefId());
+        accessTrainingRunDTO.setInstanceId(trainingRun.getTrainingInstance().getId());
+        accessTrainingRunDTO.setStartTime(trainingRun.getStartTime());
+        return accessTrainingRunDTO;
     }
 
     private List<BasicLevelInfoDTO> getInfoAboutLevels(Long definitionId) {
@@ -367,7 +391,7 @@ public class TrainingRunFacade {
         return new PageResultResource<>(sortByTitle(accessedTrainingRunDTOS, sortByTitle), trainingRunMapper.createPagination(trainingRuns));
     }
 
-    private List<AccessedTrainingRunDTO> sortByTitle(List<AccessedTrainingRunDTO> runs, String sortByTitle){
+    private List<AccessedTrainingRunDTO> sortByTitle(List<AccessedTrainingRunDTO> runs, String sortByTitle) {
         if (sortByTitle != null && !sortByTitle.isBlank()) {
             if (!runs.isEmpty()) {
                 if (sortByTitle.equals("asc")) {
@@ -380,7 +404,7 @@ public class TrainingRunFacade {
         return runs;
     }
 
-    private AccessedTrainingRunDTO generateAccessedTrainingRunDTO(TrainingRun trainingRun){
+    private AccessedTrainingRunDTO generateAccessedTrainingRunDTO(TrainingRun trainingRun) {
         AccessedTrainingRunDTO accessedTrainingRunDTO = new AccessedTrainingRunDTO();
         accessedTrainingRunDTO.setId(trainingRun.getId());
         accessedTrainingRunDTO.setTitle(trainingRun.getTrainingInstance().getTitle());
@@ -393,7 +417,7 @@ public class TrainingRunFacade {
         return accessedTrainingRunDTO;
     }
 
-    private Actions resolvePossibleActions(AccessedTrainingRunDTO trainingRunDTO, boolean isCurrentLevelAnswered){
+    private Actions resolvePossibleActions(AccessedTrainingRunDTO trainingRunDTO, boolean isCurrentLevelAnswered) {
         boolean isTrainingRunFinished = isCurrentLevelAnswered && trainingRunDTO.getCurrentLevelOrder() == trainingRunDTO.getNumberOfLevels();
         boolean isTrainingInstanceRunning = LocalDateTime.now(Clock.systemUTC()).isBefore(trainingRunDTO.getTrainingInstanceEndDate());
         if (isTrainingRunFinished || !isTrainingInstanceRunning) {
@@ -403,18 +427,6 @@ public class TrainingRunFacade {
         } else {
             return Actions.NONE;
         }
-    }
-
-    private AccessTrainingRunDTO convertToAccessTrainingRunDTO(TrainingRun trainingRun) {
-        AccessTrainingRunDTO accessTrainingRunDTO = new AccessTrainingRunDTO();
-        accessTrainingRunDTO.setTrainingRunID(trainingRun.getId());
-        accessTrainingRunDTO.setAbstractLevelDTO(getCorrectAbstractLevelDTO(trainingRun.getCurrentLevel()));
-        accessTrainingRunDTO.setShowStepperBar(trainingRun.getTrainingInstance().getTrainingDefinition().isShowStepperBar());
-        accessTrainingRunDTO.setInfoAboutLevels(getInfoAboutLevels(trainingRun.getCurrentLevel().getTrainingDefinition().getId()));
-        accessTrainingRunDTO.setSandboxInstanceRefId(trainingRun.getSandboxInstanceRefId());
-        accessTrainingRunDTO.setInstanceId(trainingRun.getTrainingInstance().getId());
-        accessTrainingRunDTO.setStartTime(trainingRun.getStartTime());
-        return accessTrainingRunDTO;
     }
 
     private AbstractLevelDTO getCorrectAbstractLevelDTO(AbstractLevel abstractLevel) {

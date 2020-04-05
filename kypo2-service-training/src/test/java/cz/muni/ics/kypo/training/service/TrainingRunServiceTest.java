@@ -1,11 +1,8 @@
 package cz.muni.ics.kypo.training.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.gson.JsonObject;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.PathBuilder;
-import cz.muni.ics.kypo.commons.security.enums.AuthenticatedUserOIDCItems;
-import cz.muni.ics.kypo.training.api.responses.PageResultResourcePython;
 import cz.muni.ics.kypo.training.api.responses.SandboxInfo;
 import cz.muni.ics.kypo.training.exceptions.*;
 import cz.muni.ics.kypo.training.persistence.model.*;
@@ -18,25 +15,17 @@ import org.junit.*;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.*;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.transaction.event.TransactionalEventListener;
 import org.springframework.util.ResourceUtils;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.reactive.function.client.ClientRequest;
 import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.client.ExchangeFunction;
@@ -386,7 +375,7 @@ public class TrainingRunServiceTest {
         given(trainingRunRepository.save(any(TrainingRun.class))).willReturn(trainingRun1);
 
         trainingInstance1.setTrainingDefinition(trainingDefinition);
-        TrainingRun trainingRun = trainingRunService.accessTrainingRun(trainingInstance1, participantRef.getId());
+        TrainingRun trainingRun = trainingRunService.createTrainingRun(trainingInstance1, participantRef.getId());
         then(trainingRunRepository).should(times(2)).save(any(TrainingRun.class));
         assertEquals(trainingRun1, trainingRun);
     }
@@ -406,7 +395,7 @@ public class TrainingRunServiceTest {
         given(participantRefRepository.save(newParticipant)).willReturn(participantRef);
 
         trainingInstance1.setTrainingDefinition(trainingDefinition);
-        TrainingRun trainingRun = trainingRunService.accessTrainingRun(trainingInstance1, participantRef.getId());
+        TrainingRun trainingRun = trainingRunService.createTrainingRun(trainingInstance1, participantRef.getId());
         then(trainingRunRepository).should(times(2)).save(any(TrainingRun.class));
         then(participantRefRepository).should().save(any(UserRef.class));
         assertEquals(trainingRun1, trainingRun);
@@ -417,7 +406,7 @@ public class TrainingRunServiceTest {
         trainingInstance1.setTrainingDefinition(trainingDefinition);
         given(abstractLevelRepository.findFirstLevelByTrainingDefinitionId(eq(trainingInstance1.getTrainingDefinition().getId()), any(Pageable.class)))
                 .willReturn(List.of());
-        trainingRunService.accessTrainingRun(trainingInstance1, participantRef.getId());
+        trainingRunService.createTrainingRun(trainingInstance1, participantRef.getId());
     }
 
     @Test(expected = ForbiddenException.class)
@@ -428,7 +417,7 @@ public class TrainingRunServiceTest {
         given(participantRefRepository.findUserByUserRefId(participantRef.getUserRefId()))
                 .willReturn(Optional.of(participantRef));
         willThrow(new CustomWebClientException("No sandboxes", HttpStatus.CONFLICT)).given(exchangeFunction).exchange(any(ClientRequest.class));
-        trainingRunService.accessTrainingRun(trainingInstance1, participantRef.getId());
+        trainingRunService.createTrainingRun(trainingInstance1, participantRef.getId());
         then(trainingRunRepository).should(never()).save(any(TrainingRun.class));
     }
 
@@ -440,7 +429,7 @@ public class TrainingRunServiceTest {
         given(participantRefRepository.findUserByUserRefId(participantRef.getUserRefId()))
                 .willReturn(Optional.of(participantRef));
         willThrow(new CustomWebClientException("No sandboxes", HttpStatus.NOT_FOUND)).given(exchangeFunction).exchange(any(ClientRequest.class));
-        trainingRunService.accessTrainingRun(trainingInstance1, participantRef.getId());
+        trainingRunService.createTrainingRun(trainingInstance1, participantRef.getId());
         then(trainingRunRepository).should(never()).save(any(TrainingRun.class));
     }
 

@@ -1,6 +1,7 @@
 package cz.muni.ics.kypo.training.service;
 
 import com.querydsl.core.types.Predicate;
+import cz.muni.ics.kypo.training.annotations.transactions.TransactionalRO;
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalWO;
 import cz.muni.ics.kypo.training.api.responses.SandboxInfo;
 import cz.muni.ics.kypo.training.exceptions.*;
@@ -21,7 +22,9 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import java.time.Clock;
@@ -164,10 +167,6 @@ public class TrainingRunService {
         return trainingRunRepository.findAllByTrainingInstanceId(trainingInstanceId);
     }
 
-    private TrainingRun create(TrainingRun trainingRun) {
-        return trainingRunRepository.save(trainingRun);
-    }
-
     /**
      * Gets next level of given Training Run and set new current level.
      *
@@ -239,17 +238,12 @@ public class TrainingRunService {
      * @param trainingInstance the training instance
      * @param participantRefId the participant ref id
      * @return accessed {@link TrainingRun}
-     * @throws EntityNotFoundException  no active training instance for given access token, no starting level in training definition.
-     * @throws EntityConflictException  pool of sandboxes is not created for training instance.
-     * @throws TooManyRequestsException training run has been already accessed.
+     * @throws EntityNotFoundException no active training instance for given access token, no starting level in training definition.
+     * @throws EntityConflictException pool of sandboxes is not created for training instance.
      */
-    public TrainingRun accessTrainingRun(TrainingInstance trainingInstance, Long participantRefId) {
+    public TrainingRun createTrainingRun(TrainingInstance trainingInstance, Long participantRefId) {
         AbstractLevel initialLevel = findFirstLevelForTrainingRun(trainingInstance.getTrainingDefinition().getId());
         TrainingRun trainingRun = getNewTrainingRun(initialLevel, trainingInstance, LocalDateTime.now(Clock.systemUTC()), trainingInstance.getEndTime(), participantRefId);
-
-        assignSandbox(trainingRun, trainingInstance.getPoolId());
-        auditEventsService.auditTrainingRunStartedAction(trainingRun);
-        auditEventsService.auditLevelStartedAction(trainingRun);
         return trainingRunRepository.save(trainingRun);
     }
 
@@ -291,11 +285,16 @@ public class TrainingRunService {
     @TransactionalWO(propagation = Propagation.REQUIRES_NEW)
     public void trAcquisitionLockToPreventManyRequestsFromSameUser(Long participantRefId, Long trainingInstanceId, String accessToken) {
         try {
-            trAcquisitionLockRepository.save(new TRAcquisitionLock(participantRefId, trainingInstanceId, LocalDateTime.now(Clock.systemUTC())));
+            trAcquisitionLockRepository.saveAndFlush(new TRAcquisitionLock(participantRefId, trainingInstanceId, LocalDateTime.now(Clock.systemUTC())));
         } catch (DataIntegrityViolationException ex) {
             throw new TooManyRequestsException(new EntityErrorDetail(TrainingInstance.class, "accessToken", accessToken.getClass(), accessToken,
                     "Training run has been already accessed and cannot be created again. Please resume Training Run"));
         }
+    }
+
+    @TransactionalWO(propagation = Propagation.REQUIRES_NEW)
+    public void deleteTrAcquisitionLockToPreventManyRequestsFromSameUser(Long participantRefId, Long trainingInstanceId) {
+        trAcquisitionLockRepository.deleteByParticipantRefIdAndTrainingInstanceId(participantRefId, trainingInstanceId);
     }
 
     private AbstractLevel findFirstLevelForTrainingRun(Long trainingDefinitionId) {
@@ -331,10 +330,14 @@ public class TrainingRunService {
      * @param trainingRun that will be connected with sandbox
      * @param poolId      the pool id
      * @return Training run with assigned sandbox
+     * @throws ForbiddenException       no available sandbox.
+     * @throws MicroserviceApiException error calling OpenStack Sandbox Service API
      */
     public TrainingRun assignSandbox(TrainingRun trainingRun, long poolId) {
         Long sandboxInstanceRef = getAndLockSandboxForTrainingRun(poolId);
         trainingRun.setSandboxInstanceRefId(sandboxInstanceRef);
+        auditEventsService.auditTrainingRunStartedAction(trainingRun);
+        auditEventsService.auditLevelStartedAction(trainingRun);
         return trainingRunRepository.save(trainingRun);
     }
 
@@ -351,7 +354,7 @@ public class TrainingRunService {
             if (ex.getStatusCode() == HttpStatus.CONFLICT) {
                 throw new ForbiddenException("There is no available sandbox, wait a minute and try again or ask organizer to allocate more sandboxes.");
             }
-            throw new MicroserviceApiException("Error when calling sandbox service API to get unlocked sandbox from pool (ID: " + poolId + ")", ex.getApiSubError());
+            throw new MicroserviceApiException("Error when calling OpenStack Sandbox Service API to get unlocked sandbox from pool (ID: " + poolId + ")", ex.getApiSubError());
         }
     }
 
