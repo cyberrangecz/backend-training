@@ -211,7 +211,7 @@ public class TrainingRunFacade {
             TrainingRun trainingRun = trainingRunService.createTrainingRun(trainingInstance, participantRefId);
             trainingRunService.assignSandbox(trainingRun, trainingInstance.getPoolId());
             return convertToAccessTrainingRunDTO(trainingRun);
-        } catch (EntityNotFoundException | EntityConflictException | ForbiddenException | MicroserviceApiException e) {
+        } catch (Exception e) {
             // delete/rollback acquisition lock when no training run either sandbox is assigned
             trainingRunService.deleteTrAcquisitionLockToPreventManyRequestsFromSameUser(participantRefId, trainingInstance.getId());
             throw e;
