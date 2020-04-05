@@ -16,6 +16,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
 
 import java.time.Clock;
 import java.time.LocalDateTime;
@@ -237,7 +238,7 @@ public class TrainingInstanceService {
             return sandboxServiceWebClient
                     .post()
                     .uri("/pools/{poolId}/locks", poolId)
-                    .body("{}", String.class)
+                    .body(Mono.just("{}"), String.class)
                     .retrieve()
                     .bodyToMono(LockedPoolInfo.class)
                     .block();
