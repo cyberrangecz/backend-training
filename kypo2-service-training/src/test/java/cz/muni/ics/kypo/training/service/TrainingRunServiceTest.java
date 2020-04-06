@@ -365,23 +365,20 @@ public class TrainingRunServiceTest {
     }
 
     @Test
-    public void accessTrainingRun() throws Exception{
-        sandboxInfo.setLockId(1);
+    public void createTrainingRun() throws Exception{
         given(abstractLevelRepository.findFirstLevelByTrainingDefinitionId(eq(trainingInstance1.getTrainingDefinition().getId()), any(Pageable.class)))
                 .willReturn(List.of(gameLevel));
         given(participantRefRepository.findUserByUserRefId(participantRef.getUserRefId()))
                 .willReturn(Optional.of(participantRef));
-        given(exchangeFunction.exchange(any(ClientRequest.class))).willReturn(buildMockResponse(sandboxInfo));
         given(trainingRunRepository.save(any(TrainingRun.class))).willReturn(trainingRun1);
 
-        trainingInstance1.setTrainingDefinition(trainingDefinition);
         TrainingRun trainingRun = trainingRunService.createTrainingRun(trainingInstance1, participantRef.getId());
-        then(trainingRunRepository).should(times(2)).save(any(TrainingRun.class));
+        then(trainingRunRepository).should().save(any(TrainingRun.class));
         assertEquals(trainingRun1, trainingRun);
     }
 
     @Test
-    public void accessTrainingRun_NewParticipant() throws Exception{
+    public void createTrainingRun_NewParticipant() throws Exception{
         UserRef newParticipant = new UserRef();
         newParticipant.setUserRefId(participantRef.getUserRefId());
         sandboxInfo.setLockId(1);
@@ -389,49 +386,36 @@ public class TrainingRunServiceTest {
                 .willReturn(List.of(gameLevel));
         given(participantRefRepository.findUserByUserRefId(participantRef.getUserRefId()))
                 .willReturn(Optional.empty());
-        given(exchangeFunction.exchange(any(ClientRequest.class))).willReturn(buildMockResponse(sandboxInfo));
         given(trainingRunRepository.save(any(TrainingRun.class))).willReturn(trainingRun1);
         given(securityService.createUserRefEntityByInfoFromUserAndGroup()).willReturn(newParticipant);
         given(participantRefRepository.save(newParticipant)).willReturn(participantRef);
 
-        trainingInstance1.setTrainingDefinition(trainingDefinition);
         TrainingRun trainingRun = trainingRunService.createTrainingRun(trainingInstance1, participantRef.getId());
-        then(trainingRunRepository).should(times(2)).save(any(TrainingRun.class));
+        then(trainingRunRepository).should().save(any(TrainingRun.class));
         then(participantRefRepository).should().save(any(UserRef.class));
         assertEquals(trainingRun1, trainingRun);
     }
 
     @Test(expected = EntityNotFoundException.class)
-    public void accessTrainingRun_NoStartingLevel() {
+    public void createTrainingRun_NoStartingLevel() {
         trainingInstance1.setTrainingDefinition(trainingDefinition);
         given(abstractLevelRepository.findFirstLevelByTrainingDefinitionId(eq(trainingInstance1.getTrainingDefinition().getId()), any(Pageable.class)))
                 .willReturn(List.of());
         trainingRunService.createTrainingRun(trainingInstance1, participantRef.getId());
     }
 
-    @Test(expected = ForbiddenException.class)
-    public void accessTrainingRunWithoutAllocatedSandboxes() {
+    @Test(expected = MicroserviceApiException.class)
+    public void createTrainingRun_UserManagementError() {
         trainingInstance1.setTrainingDefinition(trainingDefinition);
         given(abstractLevelRepository.findFirstLevelByTrainingDefinitionId(eq(trainingInstance1.getTrainingDefinition().getId()), any(Pageable.class)))
                 .willReturn(List.of(gameLevel));
         given(participantRefRepository.findUserByUserRefId(participantRef.getUserRefId()))
-                .willReturn(Optional.of(participantRef));
-        willThrow(new CustomWebClientException("No sandboxes", HttpStatus.CONFLICT)).given(exchangeFunction).exchange(any(ClientRequest.class));
+                .willReturn(Optional.empty());
+        willThrow(new MicroserviceApiException("Error when calling user managements service")).given(securityService).createUserRefEntityByInfoFromUserAndGroup();
         trainingRunService.createTrainingRun(trainingInstance1, participantRef.getId());
         then(trainingRunRepository).should(never()).save(any(TrainingRun.class));
     }
 
-    @Test(expected = MicroserviceApiException.class)
-    public void accessTrainingRunWithSandboxServiceError() {
-        trainingInstance1.setTrainingDefinition(trainingDefinition);
-        given(abstractLevelRepository.findFirstLevelByTrainingDefinitionId(eq(trainingInstance1.getTrainingDefinition().getId()), any(Pageable.class)))
-                .willReturn(List.of(gameLevel));
-        given(participantRefRepository.findUserByUserRefId(participantRef.getUserRefId()))
-                .willReturn(Optional.of(participantRef));
-        willThrow(new CustomWebClientException("No sandboxes", HttpStatus.NOT_FOUND)).given(exchangeFunction).exchange(any(ClientRequest.class));
-        trainingRunService.createTrainingRun(trainingInstance1, participantRef.getId());
-        then(trainingRunRepository).should(never()).save(any(TrainingRun.class));
-    }
 
     @Test
     public void findRunningTrainingRunOfUser() {
@@ -445,14 +429,20 @@ public class TrainingRunServiceTest {
     public void trAcquisitionLockToPreventManyRequestsFromSameUser() {
         TRAcquisitionLock trAcquisitionLock = new TRAcquisitionLock(participantRef.getUserRefId(), trainingInstance1.getId(), LocalDateTime.now());
         trainingRunService.trAcquisitionLockToPreventManyRequestsFromSameUser(participantRef.getUserRefId(), trainingInstance1.getId(), trainingInstance1.getAccessToken());
-        then(trAcquisitionLockRepository).should().save(trAcquisitionLock);
+        then(trAcquisitionLockRepository).should().saveAndFlush(trAcquisitionLock);
     }
 
     @Test(expected = TooManyRequestsException.class)
     public void trAcquisitionLockToPreventManyRequestsFromSameUser_AlreadyExists() {
         TRAcquisitionLock trAcquisitionLock = new TRAcquisitionLock(participantRef.getUserRefId(), trainingInstance1.getId(), LocalDateTime.now());
-        willThrow(DataIntegrityViolationException.class).given(trAcquisitionLockRepository).save(trAcquisitionLock);
+        willThrow(DataIntegrityViolationException.class).given(trAcquisitionLockRepository).saveAndFlush(trAcquisitionLock);
         trainingRunService.trAcquisitionLockToPreventManyRequestsFromSameUser(participantRef.getUserRefId(), trainingInstance1.getId(), trainingInstance1.getAccessToken());
+    }
+
+    @Test
+    public void deleteTrAcquisitionLockToPreventManyRequestsFromSameUser() {
+        trainingRunService.deleteTrAcquisitionLockToPreventManyRequestsFromSameUser(participantRef.getId(), trainingInstance1.getId());
+        then(trAcquisitionLockRepository).should().deleteByParticipantRefIdAndTrainingInstanceId(participantRef.getId(), trainingInstance1.getId());
     }
 
     @Test
@@ -461,6 +451,8 @@ public class TrainingRunServiceTest {
         given(exchangeFunction.exchange(any(ClientRequest.class))).willReturn(buildMockResponse(sandboxInfo));
         trainingRunService.assignSandbox(trainingRun1, trainingRun1.getTrainingInstance().getPoolId());
         then(trainingRunRepository).should().save(trainingRun1);
+        then(auditEventService).should().auditTrainingRunStartedAction(trainingRun1);
+        then(auditEventService).should().auditLevelStartedAction(trainingRun1);
         assertEquals(sandboxInfo.getId(), trainingRun1.getSandboxInstanceRefId());
     }
 
