@@ -1,9 +1,11 @@
 package cz.muni.ics.kypo.training.rest;
 
+import cz.muni.ics.kypo.training.exceptions.MicroserviceApiException;
 import cz.muni.ics.kypo.training.exceptions.errors.ApiSubError;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.ResponseStatus;
 
 import java.util.List;
 import java.util.Objects;
@@ -17,32 +19,25 @@ public class ApiMicroserviceError extends ApiError {
         super();
     }
 
+    private ApiMicroserviceError(HttpStatus httpStatus, String message, String path, ApiSubError apiSubError) {
+        super();
+        this.setStatus(apiSubError == null ? httpStatus : apiSubError.getStatus());
+        this.setMessage(message == null ? MicroserviceApiException.class.getAnnotation(ResponseStatus.class).reason() : message);
+        this.setMessage(message);
+        this.setPath(path);
+        this.setApiSubError(apiSubError);
+        this.setTimestamp(System.currentTimeMillis());
+    }
+
     public static ApiError of(HttpStatus httpStatus, String message, List<String> errors, String path, ApiSubError apiSubError) {
-        ApiMicroserviceError apiMicroserviceError = new ApiMicroserviceError();
-        apiMicroserviceError.setTimestamp(System.currentTimeMillis());
-        apiMicroserviceError.setStatus(httpStatus);
-        if (apiSubError != null) {
-            apiMicroserviceError.setStatus(apiSubError.getStatus());
-        }
-        apiMicroserviceError.setStatus(httpStatus);
-        apiMicroserviceError.setMessage(message);
+        ApiMicroserviceError apiMicroserviceError = new ApiMicroserviceError(httpStatus, message, path, apiSubError);
         apiMicroserviceError.setErrors(errors);
-        apiMicroserviceError.setPath(path);
-        apiMicroserviceError.setApiSubError(apiSubError);
         return apiMicroserviceError;
     }
 
     public static ApiError of(HttpStatus httpStatus, String message, String error, String path, ApiSubError apiSubError) {
-        ApiMicroserviceError apiMicroserviceError = new ApiMicroserviceError();
-        apiMicroserviceError.setTimestamp(System.currentTimeMillis());
-        if (apiSubError != null) {
-            apiMicroserviceError.setStatus(apiSubError.getStatus());
-        }
-        apiMicroserviceError.setStatus(httpStatus);
-        apiMicroserviceError.setMessage(message);
+        ApiMicroserviceError apiMicroserviceError = new ApiMicroserviceError(httpStatus, message, path, apiSubError);
         apiMicroserviceError.setError(error);
-        apiMicroserviceError.setPath(path);
-        apiMicroserviceError.setApiSubError(apiSubError);
         return apiMicroserviceError;
     }
 

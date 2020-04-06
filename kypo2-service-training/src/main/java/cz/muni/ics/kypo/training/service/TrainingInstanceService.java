@@ -72,8 +72,7 @@ public class TrainingInstanceService {
      */
     public TrainingInstance findById(Long instanceId) {
         return trainingInstanceRepository.findById(instanceId)
-                .orElseThrow(() -> new EntityNotFoundException(new EntityErrorDetail(TrainingInstance.class, "id", instanceId.getClass(), instanceId,
-                        "Training instance not found.")));
+                .orElseThrow(() -> new EntityNotFoundException(new EntityErrorDetail(TrainingInstance.class, "id", instanceId.getClass(), instanceId)));
     }
 
     /**
@@ -84,8 +83,7 @@ public class TrainingInstanceService {
      */
     public TrainingInstance findByIdIncludingDefinition(Long instanceId) {
         return trainingInstanceRepository.findByIdIncludingDefinition(instanceId)
-                .orElseThrow(() -> new EntityNotFoundException(new EntityErrorDetail(TrainingInstance.class, "id", instanceId.getClass(), instanceId,
-                        "Training instance not found.")));
+                .orElseThrow(() -> new EntityNotFoundException(new EntityErrorDetail(TrainingInstance.class, "id", instanceId.getClass(), instanceId)));
     }
 
     /**

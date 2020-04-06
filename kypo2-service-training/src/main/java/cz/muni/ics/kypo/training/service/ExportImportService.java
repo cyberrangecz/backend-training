@@ -70,7 +70,7 @@ public class ExportImportService {
     public TrainingDefinition findById(Long trainingDefinitionId) {
         return trainingDefinitionRepository.findById(trainingDefinitionId)
                 .orElseThrow(() -> new EntityNotFoundException(new EntityErrorDetail(TrainingDefinition.class, "id", trainingDefinitionId.getClass(),
-                        trainingDefinitionId, "Training definition not found.")));
+                        trainingDefinitionId)));
     }
 
     /**
@@ -102,7 +102,7 @@ public class ExportImportService {
     public TrainingInstance findInstanceById(Long trainingInstanceId) {
         return trainingInstanceRepository.findById(trainingInstanceId)
                 .orElseThrow(() -> new EntityNotFoundException(new EntityErrorDetail(TrainingInstance.class, "id", trainingInstanceId.getClass(),
-                        trainingInstanceId, "Training instance not found.")));
+                        trainingInstanceId)));
     }
 
     /**

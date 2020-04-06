@@ -198,7 +198,7 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
      */
     @ExceptionHandler({EntityNotFoundException.class})
     public ResponseEntity<Object> handleEntityNotFoundException(final EntityNotFoundException ex, final WebRequest request, HttpServletRequest req) {
-        final ApiError apiError = ApiEntityError.of(
+        final ApiEntityError apiError = ApiEntityError.of(
                 EntityNotFoundException.class.getAnnotation(ResponseStatus.class).value(),
                 EntityNotFoundException.class.getAnnotation(ResponseStatus.class).reason(),
                 getFullStackTrace(ex),
