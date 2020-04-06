@@ -183,10 +183,6 @@ public class TrainingRunFacade {
         return accessTrainingRunDTO;
     }
 
-    // user1 call
-    // user1 call
-    // user1 call
-
     /**
      * Access Training Run by logged in user based on given accessToken.
      *
