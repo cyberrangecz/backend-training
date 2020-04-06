@@ -94,8 +94,7 @@ public class TrainingDefinitionService {
      */
     public TrainingDefinition findById(Long id) {
         return trainingDefinitionRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException(new EntityErrorDetail(TrainingDefinition.class, "id", Long.class, id,
-                        "Training definition not found.")));
+                .orElseThrow(() -> new EntityNotFoundException(new EntityErrorDetail(TrainingDefinition.class, "id", Long.class, id)));
     }
 
     /**

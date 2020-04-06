@@ -258,7 +258,7 @@ public class TrainingDefinitionsIT {
         ApiEntityError error = convertJsonBytesToObject(response.getContentAsString(), ApiEntityError.class);
         assertEquals(HttpStatus.NOT_FOUND, error.getStatus());
         assertEntityDetailError(error.getEntityErrorDetail(), TrainingDefinition.class, "id", "100",
-                "Training definition not found.");
+                "Entity TrainingDefinition (id: 100) not found.");
     }
 
     @Test
@@ -376,7 +376,7 @@ public class TrainingDefinitionsIT {
         ApiEntityError error = convertJsonBytesToObject(response.getContentAsString(), ApiEntityError.class);
         assertEquals(HttpStatus.NOT_FOUND, error.getStatus());
         assertEntityDetailError(error.getEntityErrorDetail(), TrainingDefinition.class, "id", "100",
-                "Training definition not found.");
+                "Entity TrainingDefinition (id: 100) not found.");
     }
 
     @Test
@@ -428,7 +428,7 @@ public class TrainingDefinitionsIT {
         ApiEntityError error = convertJsonBytesToObject(response.getContentAsString(), ApiEntityError.class);
         assertEquals(HttpStatus.NOT_FOUND, error.getStatus());
         assertEntityDetailError(error.getEntityErrorDetail(), TrainingDefinition.class, "id", "100",
-                "Training definition not found.");
+                "Entity TrainingDefinition (id: 100) not found.");
     }
 
     @Test
@@ -519,7 +519,7 @@ public class TrainingDefinitionsIT {
         ApiEntityError error = convertJsonBytesToObject(response.getContentAsString(), ApiEntityError.class);
         assertEquals(HttpStatus.NOT_FOUND, error.getStatus());
         assertEntityDetailError(error.getEntityErrorDetail(), TrainingDefinition.class, "id", "100",
-                "Training definition not found.");
+                "Entity TrainingDefinition (id: 100) not found.");
     }
 
     @Test
@@ -590,7 +590,7 @@ public class TrainingDefinitionsIT {
         ApiEntityError error = convertJsonBytesToObject(response.getContentAsString(), ApiEntityError.class);
         assertEquals(HttpStatus.NOT_FOUND, error.getStatus());
         assertEntityDetailError(error.getEntityErrorDetail(), TrainingDefinition.class, "id", "100",
-                "Training definition not found.");
+                "Entity TrainingDefinition (id: 100) not found.");
     }
 
     @Test
@@ -693,7 +693,7 @@ public class TrainingDefinitionsIT {
         ApiEntityError error = convertJsonBytesToObject(response.getContentAsString(), ApiEntityError.class);
         assertEquals(HttpStatus.NOT_FOUND, error.getStatus());
         assertEntityDetailError(error.getEntityErrorDetail(), TrainingDefinition.class, "id", "100",
-                "Training definition not found.");
+                "Entity TrainingDefinition (id: 100) not found.");
     }
 
     @Test
@@ -780,7 +780,7 @@ public class TrainingDefinitionsIT {
         ApiEntityError error = convertJsonBytesToObject(response.getContentAsString(), ApiEntityError.class);
         assertEquals(HttpStatus.NOT_FOUND, error.getStatus());
         assertEntityDetailError(error.getEntityErrorDetail(), TrainingDefinition.class, "id", "100",
-                "Training definition not found.");
+                "Entity TrainingDefinition (id: 100) not found.");
     }
 
     @Test
@@ -871,7 +871,7 @@ public class TrainingDefinitionsIT {
         ApiEntityError error = convertJsonBytesToObject(response.getContentAsString(), ApiEntityError.class);
         assertEquals(HttpStatus.NOT_FOUND, error.getStatus());
         assertEntityDetailError(error.getEntityErrorDetail(), TrainingDefinition.class, "id", "100",
-                "Training definition not found.");
+                "Entity TrainingDefinition (id: 100) not found.");
     }
 
     @Test
@@ -1024,7 +1024,7 @@ public class TrainingDefinitionsIT {
         ApiEntityError error = convertJsonBytesToObject(response.getContentAsString(), ApiEntityError.class);
         assertEquals(HttpStatus.NOT_FOUND, error.getStatus());
         assertEntityDetailError(error.getEntityErrorDetail(), TrainingDefinition.class, "id", "100",
-                "Training definition not found.");
+                "Entity TrainingDefinition (id: 100) not found.");
     }
 
     @Test

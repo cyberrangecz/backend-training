@@ -92,8 +92,7 @@ public class TrainingRunService {
      */
     public TrainingRun findById(Long runId) {
         return trainingRunRepository.findById(runId)
-                .orElseThrow(() -> new EntityNotFoundException(new EntityErrorDetail(TrainingRun.class, "id", runId.getClass(), runId,
-                        "Training run not found.")));
+                .orElseThrow(() -> new EntityNotFoundException(new EntityErrorDetail(TrainingRun.class, "id", runId.getClass(), runId)));
     }
 
     /**
@@ -106,7 +105,7 @@ public class TrainingRunService {
      */
     public TrainingRun findByIdWithLevel(Long runId) {
         return trainingRunRepository.findByIdWithLevel(runId).orElseThrow(() -> new EntityNotFoundException(
-                new EntityErrorDetail(TrainingRun.class, "id", runId.getClass(), runId, "Training run not found.")));
+                new EntityErrorDetail(TrainingRun.class, "id", runId.getClass(), runId)));
     }
 
     /**

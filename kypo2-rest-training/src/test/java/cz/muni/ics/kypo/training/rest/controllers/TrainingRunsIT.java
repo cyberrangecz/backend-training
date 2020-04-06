@@ -279,7 +279,7 @@ public class TrainingRunsIT {
         ApiEntityError error = convertJsonBytesToObject(response.getContentAsString(), ApiEntityError.class);
         assertEquals(HttpStatus.NOT_FOUND, error.getStatus());
         assertEntityDetailError(error.getEntityErrorDetail(), TrainingRun.class, "id", "100",
-                "Training run not found.");
+                "Entity TrainingRun (id: 100) not found.");
     }
 
     @Test
@@ -537,7 +537,7 @@ public class TrainingRunsIT {
         ApiEntityError error = convertJsonBytesToObject(response.getContentAsString(), ApiEntityError.class);
         assertEquals(HttpStatus.NOT_FOUND, error.getStatus());
         assertEntityDetailError(error.getEntityErrorDetail(), TrainingRun.class, "id", nonExistentTrainingRunId.toString(),
-                "Training run not found.");
+                "Entity TrainingRun (id: 100) not found.");
     }
 
     @Test
@@ -575,7 +575,7 @@ public class TrainingRunsIT {
         ApiEntityError error = convertJsonBytesToObject(response.getContentAsString(), ApiEntityError.class);
         assertEquals(HttpStatus.NOT_FOUND, error.getStatus());
         assertEntityDetailError(error.getEntityErrorDetail(), TrainingRun.class, "id", nonExistentTrainingRunId.toString(),
-                "Training run not found.");
+                "Entity TrainingRun (id: 100) not found.");
 
     }
 
@@ -795,7 +795,7 @@ public class TrainingRunsIT {
         ApiEntityError error = convertJsonBytesToObject(response.getContentAsString(), ApiEntityError.class);
         assertEquals(HttpStatus.NOT_FOUND, error.getStatus());
         assertEntityDetailError(error.getEntityErrorDetail(), TrainingRun.class, "id", nonExistentTrainingRunId.toString(),
-                "Training run not found.");
+                "Entity TrainingRun (id: 100) not found.");
     }
 
     @Test
@@ -841,7 +841,7 @@ public class TrainingRunsIT {
         ApiEntityError error = convertJsonBytesToObject(response.getContentAsString(), ApiEntityError.class);
         assertEquals(HttpStatus.NOT_FOUND, error.getStatus());
         assertEntityDetailError(error.getEntityErrorDetail(), TrainingRun.class, "id", nonExistentTrainingRunId.toString(),
-                "Training run not found.");
+                "Entity TrainingRun (id: 100) not found.");
     }
 
 

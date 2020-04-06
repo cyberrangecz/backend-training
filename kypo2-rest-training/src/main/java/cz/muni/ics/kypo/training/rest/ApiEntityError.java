@@ -9,40 +9,39 @@ import java.util.List;
 import java.util.Objects;
 @ApiModel(value = "ApiEntityError", description = "A detailed error information related to the entity.", parent = ApiError.class)
 public class ApiEntityError extends ApiError {
-    @ApiModelProperty(value = "Entity detail related to the error.")
+    @ApiModelProperty(value = "Detail of the entity which is related to the error.")
     private EntityErrorDetail entityErrorDetail;
 
     private ApiEntityError() {
         super();
     }
 
-    public static ApiError of(HttpStatus httpStatus, String message, List<String> errors, String path, EntityErrorDetail entityErrorDetail) {
-        ApiEntityError apiEntityError = new ApiEntityError();
-        apiEntityError.setTimestamp(System.currentTimeMillis());
-        apiEntityError.setStatus(httpStatus);
-        apiEntityError.setMessage(generateMessage(entityErrorDetail, message));
+    private ApiEntityError(HttpStatus httpStatus, String message, String path, EntityErrorDetail entityErrorDetail) {
+        super();
+        this.setStatus(httpStatus);
+        this.setMessage(getMessage(entityErrorDetail, message));
+        this.setPath(path);
+        this.setTimestamp(System.currentTimeMillis());
+        this.setEntityErrorDetail(entityErrorDetail);
+    }
+
+    public static ApiEntityError of(HttpStatus httpStatus, String message, List<String> errors, String path, EntityErrorDetail entityErrorDetail) {
+        ApiEntityError apiEntityError = new ApiEntityError(httpStatus, message, path, entityErrorDetail);
         apiEntityError.setErrors(errors);
-        apiEntityError.setPath(path);
-        apiEntityError.setEntityErrorDetail(entityErrorDetail);
         return apiEntityError;
     }
 
-    public static ApiError of(HttpStatus httpStatus, String message, String error, String path, EntityErrorDetail entityErrorDetail) {
-        ApiEntityError apiEntityError = new ApiEntityError();
-        apiEntityError.setTimestamp(System.currentTimeMillis());
-        apiEntityError.setStatus(httpStatus);
-        apiEntityError.setMessage(generateMessage(entityErrorDetail, message));
+    public static ApiEntityError of(HttpStatus httpStatus, String message, String error, String path, EntityErrorDetail entityErrorDetail) {
+        ApiEntityError apiEntityError = new ApiEntityError(httpStatus, message, path, entityErrorDetail);
         apiEntityError.setError(error);
-        apiEntityError.setPath(path);
-        apiEntityError.setEntityErrorDetail(entityErrorDetail);
         return apiEntityError;
     }
 
-    public static ApiError of(HttpStatus httpStatus, String message, List<String> errors, EntityErrorDetail entityErrorDetail) {
+    public static ApiEntityError of(HttpStatus httpStatus, String message, List<String> errors, EntityErrorDetail entityErrorDetail) {
         return ApiEntityError.of(httpStatus, message, errors, "", entityErrorDetail);
     }
 
-    public static ApiError of(HttpStatus httpStatus, String message, String error, EntityErrorDetail entityErrorDetail) {
+    public static ApiEntityError of(HttpStatus httpStatus, String message, String error, EntityErrorDetail entityErrorDetail) {
         return ApiEntityError.of(httpStatus, message, error, "", entityErrorDetail);
     }
 
@@ -57,6 +56,14 @@ public class ApiEntityError extends ApiError {
             return defaultMessage;
         }
     }
+
+    private static String getMessage(EntityErrorDetail entityErrorDetail, String defaultMessage) {
+        if(entityErrorDetail == null) {
+            return defaultMessage;
+        }
+        return entityErrorDetail.getReason() == null ? defaultMessage : entityErrorDetail.getReason();
+    }
+
 
     /**
      * Gets entity error detail.

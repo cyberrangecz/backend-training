@@ -21,4 +21,18 @@ public class TooManyRequestsException extends ExceptionWithEntity {
     public TooManyRequestsException(Throwable cause) {
         super(cause);
     }
+
+    protected String createDefaultReason(EntityErrorDetail entityErrorDetail) {
+        StringBuilder reason = new StringBuilder("User has sent too many requests to obtain entity ")
+                .append(entityErrorDetail.getEntity());
+        if (entityErrorDetail.getIdentifier() != null && entityErrorDetail.getIdentifierValue() != null) {
+            reason.append(" (")
+                    .append(entityErrorDetail.getIdentifier())
+                    .append(": ")
+                    .append(entityErrorDetail.getIdentifierValue())
+                    .append(")");
+        }
+        reason.append(".");
+        return reason.toString();
+    }
 }

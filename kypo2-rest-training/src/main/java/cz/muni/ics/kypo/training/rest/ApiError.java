@@ -33,6 +33,14 @@ public class ApiError {
 
     protected ApiError() {}
 
+    private ApiError(HttpStatus httpStatus, String message, String path) {
+        this.status = httpStatus;
+        this.message = message;
+        this.path = path;
+        this.timestamp = System.currentTimeMillis();
+
+    }
+
     /**
      * Of api error.
      *
@@ -43,12 +51,8 @@ public class ApiError {
      * @return the api error
      */
     public static ApiError of(HttpStatus httpStatus, String message, List<String> errors, String path) {
-        ApiError apiError = new ApiError();
-        apiError.setTimestamp(System.currentTimeMillis());
-        apiError.setStatus(httpStatus);
-        apiError.setMessage(message);
+        ApiError apiError = new ApiError(httpStatus, message, path);
         apiError.setErrors(errors);
-        apiError.setPath(path);
         return apiError;
     }
 
@@ -62,12 +66,8 @@ public class ApiError {
      * @return the api error
      */
     public static ApiError of(HttpStatus httpStatus, String message, String error, String path) {
-        ApiError apiError = new ApiError();
-        apiError.setTimestamp(System.currentTimeMillis());
-        apiError.setStatus(httpStatus);
-        apiError.setMessage(message);
+        ApiError apiError = new ApiError(httpStatus, message, path);
         apiError.setError(error);
-        apiError.setPath(path);
         return apiError;
     }
 

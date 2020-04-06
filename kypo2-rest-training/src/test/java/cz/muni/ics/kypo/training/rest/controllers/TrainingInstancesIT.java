@@ -278,7 +278,7 @@ public class TrainingInstancesIT {
         ApiEntityError error = convertJsonBytesToObject(response.getContentAsString(), ApiEntityError.class);
         assertEquals(HttpStatus.NOT_FOUND, error.getStatus());
         assertEntityDetailError(error.getEntityErrorDetail(), TrainingInstance.class, "id", "100",
-                "Training instance not found.");
+                "Entity TrainingInstance (id: 100) not found.");
     }
 
     @Test
@@ -345,7 +345,7 @@ public class TrainingInstancesIT {
         ApiEntityError error = convertJsonBytesToObject(response.getContentAsString(), ApiEntityError.class);
         assertEquals(HttpStatus.NOT_FOUND, error.getStatus());
         assertEntityDetailError(error.getEntityErrorDetail(), TrainingDefinition.class, "id", "100",
-                "Training definition not found.");
+                "Entity TrainingDefinition (id: 100) not found.");
     }
 
     @Test
@@ -362,7 +362,7 @@ public class TrainingInstancesIT {
         ApiEntityError error = convertJsonBytesToObject(response.getContentAsString(), ApiEntityError.class);
         assertEquals(HttpStatus.NOT_FOUND, error.getStatus());
         assertEntityDetailError(error.getEntityErrorDetail(), TrainingInstance.class, "id", "500",
-                "Training instance not found.");
+                "Entity TrainingInstance (id: 500) not found.");
     }
 
     @Test
@@ -436,7 +436,7 @@ public class TrainingInstancesIT {
         ApiEntityError error = convertJsonBytesToObject(response.getContentAsString(), ApiEntityError.class);
         assertEquals(HttpStatus.NOT_FOUND, error.getStatus());
         assertEntityDetailError(error.getEntityErrorDetail(), TrainingInstance.class, "id", "100",
-                "Training instance not found.");
+                "Entity TrainingInstance (id: 100) not found.");
     }
 
     private static String convertObjectToJsonBytes(Object object) throws IOException {

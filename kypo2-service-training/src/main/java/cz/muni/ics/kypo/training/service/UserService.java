@@ -56,8 +56,7 @@ public class UserService {
      */
     public UserRef getUserByUserRefId(Long userRefId) {
         return userRefRepository.findUserByUserRefId(userRefId)
-                .orElseThrow(() -> new EntityNotFoundException(new EntityErrorDetail(UserRef.class, "id", userRefId.getClass(), userRefId,
-                        "UserRef not found.")));
+                .orElseThrow(() -> new EntityNotFoundException(new EntityErrorDetail(UserRef.class, "id", userRefId.getClass(), userRefId)));
     }
 
     /**
