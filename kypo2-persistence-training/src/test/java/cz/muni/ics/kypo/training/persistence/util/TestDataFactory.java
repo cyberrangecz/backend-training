@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import cz.muni.ics.kypo.training.api.dto.AbstractLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.BasicLevelInfoDTO;
+import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
 import cz.muni.ics.kypo.training.api.dto.archive.TrainingInstanceArchiveDTO;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelUpdateDTO;
@@ -147,6 +148,8 @@ public class TestDataFactory {
     private SandboxInfo sandboxInfo = generateSandboxInfo(1L, 1, 4);
     private SandboxPoolInfo sandboxPoolInfo = generateSandboxPoolInfo(1L, 1L, 10L, 5L);
     private LockedPoolInfo lockedPoolInfo = generateLockedPoolInfo(1L, 1L);
+    private UserRefDTO userRefDTO1 = generateUserRefDTO(10L, "Michael Bolt", "Bolt", "Michael", "445443@muni.cz", "https://oidc.muni.cz/oidc", null);
+    private UserRefDTO userRefDTO2 = generateUserRefDTO(10L, "Peter Most", "Most", "Peter", "114798@muni.cz", "https://oidc.muni.cz/oidc", null);
 
     public AssessmentLevel getTest(){
         return clone(test, AssessmentLevel.class);
@@ -340,6 +343,10 @@ public class TestDataFactory {
     public LockedPoolInfo getLockedPoolInfo(){
         return clone(lockedPoolInfo, LockedPoolInfo.class);
     }
+
+    public UserRefDTO getUserRefDTO1() { return clone(userRefDTO1, UserRefDTO.class);}
+
+    public UserRefDTO getUserRefDTO2() { return clone(userRefDTO2, UserRefDTO.class);}
 
     private AssessmentLevel generateAssessmentLevel(String title, int maxScore, long estimatedDuration, int order,
                                                     String questions, String instructions, AssessmentType assessmentType){
@@ -739,6 +746,18 @@ public class TestDataFactory {
         lockedPoolInfo.setId(id);
         lockedPoolInfo.setPoolId(poolId);
         return lockedPoolInfo;
+    }
+
+    private UserRefDTO generateUserRefDTO(Long userRefId, String fullName, String familyName, String givenName, String sub, String iss, byte[] picture) {
+        UserRefDTO userRefDTO = new UserRefDTO();
+        userRefDTO.setUserRefId(userRefId);
+        userRefDTO.setUserRefFullName(fullName);
+        userRefDTO.setUserRefFamilyName(familyName);
+        userRefDTO.setUserRefGivenName(givenName);
+        userRefDTO.setUserRefSub(sub);
+        userRefDTO.setIss(iss);
+        userRefDTO.setPicture(picture);
+        return userRefDTO;
     }
 
     private <T> T clone(Object object, Class<T> tClass){

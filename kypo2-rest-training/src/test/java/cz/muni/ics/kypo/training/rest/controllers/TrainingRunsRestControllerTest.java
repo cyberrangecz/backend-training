@@ -21,8 +21,10 @@ import cz.muni.ics.kypo.training.mapping.mapstruct.*;
 import cz.muni.ics.kypo.training.persistence.model.TrainingRun;
 import cz.muni.ics.kypo.training.persistence.model.UserRef;
 import cz.muni.ics.kypo.training.persistence.util.TestDataFactory;
+import cz.muni.ics.kypo.training.rest.ApiEntityError;
 import cz.muni.ics.kypo.training.rest.ApiError;
 import cz.muni.ics.kypo.training.rest.CustomRestExceptionHandlerTraining;
+import cz.muni.ics.kypo.training.rest.controllers.util.ObjectConverter;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -48,12 +50,12 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 import static cz.muni.ics.kypo.training.rest.controllers.util.ObjectConverter.convertJsonBytesToObject;
+import static cz.muni.ics.kypo.training.rest.controllers.util.ObjectConverter.convertObjectToJsonBytes;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.BDDMockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -81,11 +83,10 @@ public class TrainingRunsRestControllerTest {
 
     @MockBean
     private ObjectMapper objectMapper;
-    private ObjectMapper testObjectMapper = new ObjectMapper();
 
     private TrainingRun trainingRun1, trainingRun2;
     private TrainingRunDTO trainingRun1DTO;
-    private Page p, pAccessed;
+    private Page page, pageAccessed;
     private PageResultResource<TrainingRunDTO> trainingRunDTOPageResultResource;
     private PageResultResource<AccessedTrainingRunDTO> accessedTrainingRunDTOPage;
     private AccessTrainingRunDTO accessTrainingRunDTO;
@@ -96,7 +97,7 @@ public class TrainingRunsRestControllerTest {
     private AccessedTrainingRunDTO accessedTrainingRunDTO;
     private IsCorrectFlagDTO isCorrectFlagDTO;
     private TrainingRunByIdDTO trainingRunByIdDTO;
-    private UserRefDTO participantDTO1, participantDTO2;
+    private UserRefDTO participantDTO1;
     private UserRef participant1;
 
 
@@ -106,8 +107,7 @@ public class TrainingRunsRestControllerTest {
         participant1.setId(1L);
         participant1.setUserRefId(10L);
 
-        participantDTO1 = createUserRefDTO(10L, "Bc. Dominik Meskal", "Meskal", "Dominik", "445533@muni.cz", "https://oidc.muni.cz/oidc", null);
-        participantDTO2 = createUserRefDTO(20L, "Bc. Boris Makal", "Makal", "Boris", "772211@muni.cz", "https://oidc.muni.cz/oidc", null);
+        participantDTO1 = testDataFactory.getUserRefDTO1();
 
         trainingRun1 = testDataFactory.getFinishedRun();
         trainingRun1.setId(1L);
@@ -143,22 +143,16 @@ public class TrainingRunsRestControllerTest {
 
         accessedTrainingRunDTO = testDataFactory.getAccessedTrainingRunDTO();
         accessedTrainingRunDTO.setId(1L);
-        List<AccessedTrainingRunDTO> accessed = new ArrayList<>();
-        accessed.add(accessedTrainingRunDTO);
-        pAccessed = new PageImpl<>(accessed);
 
-        List<TrainingRun> expected = new ArrayList<>();
-        expected.add(trainingRun1);
-        expected.add(trainingRun2);
-
-        p = new PageImpl<>(expected);
+        pageAccessed = new PageImpl<>(List.of(accessedTrainingRunDTO));
+        page = new PageImpl<>(List.of(trainingRun1, trainingRun2));
 
         ObjectMapper obj = new ObjectMapper();
         obj.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
         obj.registerModule(new JavaTimeModule());
         given(objectMapper.getSerializationConfig()).willReturn(obj.getSerializationConfig());
 
-        trainingRunDTOPageResultResource = trainingRunMapper.mapToPageResultResource(p);
+        trainingRunDTOPageResultResource = trainingRunMapper.mapToPageResultResource(page);
 
         MockitoAnnotations.initMocks(this);
         trainingRunsRestController = new TrainingRunsRestController(trainingRunFacade, objectMapper);
@@ -169,16 +163,14 @@ public class TrainingRunsRestControllerTest {
                 .setMessageConverters(new MappingJackson2HttpMessageConverter(), new StringHttpMessageConverter())
                 .setControllerAdvice(new CustomRestExceptionHandlerTraining())
                 .build();
-
-
     }
 
     @Test
     public void findTrainingRunById() throws Exception {
-        given(trainingRunFacade.findById(any(Long.class))).willReturn(trainingRunByIdDTO);
-        String valueTr = convertObjectToJsonBytes(trainingRun1DTO);
-        given(objectMapper.writeValueAsString(any(Object.class))).willReturn(valueTr);
-        MockHttpServletResponse result = mockMvc.perform(get("/training-runs" + "/{runId}", 1l))
+        given(trainingRunFacade.findById(trainingRunByIdDTO.getId())).willReturn(trainingRunByIdDTO);
+        String trainingRunResponse = convertObjectToJsonBytes(trainingRun1DTO);
+        given(objectMapper.writeValueAsString(any(Object.class))).willReturn(trainingRunResponse);
+        MockHttpServletResponse result = mockMvc.perform(get("/training-runs" + "/{runId}", 1L))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andReturn().getResponse();
@@ -186,7 +178,7 @@ public class TrainingRunsRestControllerTest {
     }
 
     @Test
-    public void findTrainingRunByIdWithFacadeException() throws Exception {
+    public void findTrainingRunById_FacadeException() throws Exception {
         willThrow(new EntityNotFoundException()).given(trainingRunFacade).findById(any(Long.class));
         MockHttpServletResponse response = mockMvc.perform(get("/training-runs" + "/{runId}", 6l))
                 .andExpect(status().isNotFound())
@@ -198,27 +190,11 @@ public class TrainingRunsRestControllerTest {
 
     @Test
     public void findAllTrainingRuns() throws Exception {
-        String valueTr = convertObjectToJsonBytes(trainingRunDTOPageResultResource);
-        given(objectMapper.writeValueAsString(any(Object.class))).willReturn(valueTr);
+        String trainingRunsResponse = convertObjectToJsonBytes(trainingRunDTOPageResultResource);
+        given(objectMapper.writeValueAsString(any(Object.class))).willReturn(trainingRunsResponse);
         given(trainingRunFacade.findAll(any(Predicate.class), any(Pageable.class))).willReturn(trainingRunDTOPageResultResource);
 
         MockHttpServletResponse result = mockMvc.perform(get("/training-runs"))
-                .andExpect(status().isOk())
-                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-                .andReturn().getResponse();
-        assertEquals(convertObjectToJsonBytes(convertObjectToJsonBytes(trainingRunDTOPageResultResource)), result.getContentAsString());
-    }
-
-    @Test
-    public void getAllAccessedTrainingRuns() throws Exception {
-        accessedTrainingRunDTOPage = trainingRunMapper.mapToPageResultResourceAccessed(pAccessed);
-
-        String valueTr = convertObjectToJsonBytes(trainingRunDTOPageResultResource);
-        given(objectMapper.writeValueAsString(any(Object.class))).willReturn(valueTr);
-        given(trainingRunFacade.findAllAccessedTrainingRuns(any(Pageable.class), anyString())).willReturn(accessedTrainingRunDTOPage);
-
-        MockHttpServletResponse result = mockMvc.perform(get("/training-runs/accessible")
-                .param("sortByTitle", ""))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andReturn().getResponse();
@@ -236,17 +212,7 @@ public class TrainingRunsRestControllerTest {
     }
 
     @Test
-    public void accessTrainingRunWithNoSandbox() throws Exception {
-        willThrow(new ForbiddenException()).given(trainingRunFacade).accessTrainingRun("accessToken");
-        MockHttpServletResponse response = mockMvc.perform(post("/training-runs").param("accessToken", "accessToken"))
-                .andExpect(status().isForbidden())
-                .andReturn().getResponse();
-        ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
-        assertEquals(HttpStatus.FORBIDDEN, error.getStatus());
-    }
-
-    @Test
-    public void accessTrainingRunWithResourceNotFound() throws Exception {
+    public void accessTrainingRun_FacadeException() throws Exception {
         willThrow(new EntityNotFoundException()).given(trainingRunFacade).accessTrainingRun("accessToken");
         MockHttpServletResponse response = mockMvc.perform(post("/training-runs").param("accessToken", "accessToken"))
                 .andExpect(status().isNotFound())
@@ -257,17 +223,23 @@ public class TrainingRunsRestControllerTest {
     }
 
     @Test
-    public void accessTrainingRunWithUnexpectedError() throws Exception {
-        willThrow(new InternalServerErrorException()).given(trainingRunFacade).accessTrainingRun("accessToken");
-        MockHttpServletResponse response = mockMvc.perform(post("/training-runs").param("accessToken", "accessToken"))
-                .andExpect(status().isInternalServerError())
+    public void getAllAccessedTrainingRuns() throws Exception {
+        accessedTrainingRunDTOPage = trainingRunMapper.mapToPageResultResourceAccessed(pageAccessed);
+
+        String trainingRunDTOPageResponse = convertObjectToJsonBytes(trainingRunDTOPageResultResource);
+        given(objectMapper.writeValueAsString(any(Object.class))).willReturn(trainingRunDTOPageResponse);
+        given(trainingRunFacade.findAllAccessedTrainingRuns(any(Pageable.class), anyString())).willReturn(accessedTrainingRunDTOPage);
+
+        MockHttpServletResponse result = mockMvc.perform(get("/training-runs/accessible")
+                .param("sortByTitle", ""))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andReturn().getResponse();
-        ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
-        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, error.getStatus());
+        assertEquals(convertObjectToJsonBytes(convertObjectToJsonBytes(trainingRunDTOPageResultResource)), result.getContentAsString());
     }
 
     @Test
-    public void getNextLevelAssessment() throws Exception {
+    public void getNextLevel_Assessment() throws Exception {
         String valueTr = convertObjectToJsonBytes(assessmentLevelDTO);
         given(objectMapper.writeValueAsString(any(Object.class))).willReturn(valueTr);
         given(trainingRunFacade.getNextLevel(assessmentLevelDTO.getId())).willReturn(assessmentLevelDTO);
@@ -279,7 +251,7 @@ public class TrainingRunsRestControllerTest {
     }
 
     @Test
-    public void getNextLevelGame() throws Exception {
+    public void getNextLevel_Game() throws Exception {
         String valueTr = convertObjectToJsonBytes(gameLevelDTO);
         given(objectMapper.writeValueAsString(any(Object.class))).willReturn(valueTr);
         given(trainingRunFacade.getNextLevel(gameLevelDTO.getId())).willReturn(gameLevelDTO);
@@ -291,7 +263,7 @@ public class TrainingRunsRestControllerTest {
     }
 
     @Test
-    public void getNextLevelInfo() throws Exception {
+    public void getNextLevel_Info() throws Exception {
         String valueTr = convertObjectToJsonBytes(infoLevelDTO);
         given(objectMapper.writeValueAsString(any(Object.class))).willReturn(valueTr);
         given(trainingRunFacade.getNextLevel(infoLevelDTO.getId())).willReturn(infoLevelDTO);
@@ -302,6 +274,15 @@ public class TrainingRunsRestControllerTest {
         assertEquals(convertObjectToJsonBytes(convertObjectToJsonBytes(infoLevelDTO)), result.getContentAsString());
     }
 
+    @Test
+    public void getNextLevel_FacadeException() throws Exception {
+        willThrow(new EntityNotFoundException()).given(trainingRunFacade).getNextLevel(1L);
+        MockHttpServletResponse response = mockMvc.perform(get("/training-runs/{runId}/next-levels", 1L))
+                .andExpect(status().isNotFound())
+                .andReturn().getResponse();
+        ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiEntityError.class);
+        assertEquals(HttpStatus.NOT_FOUND, error.getStatus());
+    }
 
     @Test
     public void getSolution() throws Exception {
@@ -310,28 +291,17 @@ public class TrainingRunsRestControllerTest {
         MockHttpServletResponse result = mockMvc.perform(get("/training-runs/{runId}/solutions", 3L))
                 .andExpect(status().isOk())
                 .andReturn().getResponse();
-        assertEquals("Solution", result.getContentAsString().replace("\"", ""));
+        assertEquals("Solution", ObjectConverter.convertJsonBytesToObject(result.getContentAsString(), String.class));
     }
 
     @Test
-    public void getSolutionWithException() throws Exception {
+    public void getSolution_FacadeException() throws Exception {
         willThrow(new BadRequestException()).given(trainingRunFacade).getSolution(1L);
         MockHttpServletResponse response = mockMvc.perform(get("/training-runs/{runId}/solutions", 1L))
                 .andExpect(status().isBadRequest())
                 .andReturn().getResponse();
         ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
         assertEquals(HttpStatus.BAD_REQUEST, error.getStatus());
-    }
-
-    @Test
-    public void isCorrectFlag() throws Exception {
-        given(trainingRunFacade.isCorrectFlag(trainingRun1.getId(), "flag")).willReturn(isCorrectFlagDTO);
-        MockHttpServletResponse result = mockMvc.perform(get("/training-runs/{runId}/is-correct-flag", trainingRun1.getId())
-                .param("flag", "flag")
-                .param("solutionTaken", "true"))
-                .andExpect(status().isOk())
-                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-                .andReturn().getResponse();
     }
 
     @Test
@@ -347,7 +317,7 @@ public class TrainingRunsRestControllerTest {
     }
 
     @Test
-    public void getHintNotFound() throws Exception {
+    public void getHint_FacadeException() throws Exception {
         willThrow(new EntityNotFoundException()).given(trainingRunFacade).getHint(anyLong(), anyLong());
         MockHttpServletResponse response = mockMvc.perform(get("/training-runs/{runId}/hints/{hintId}", trainingRun1.getId(), hintDTO.getId()))
                 .andExpect(status().isNotFound())
@@ -358,13 +328,28 @@ public class TrainingRunsRestControllerTest {
     }
 
     @Test
-    public void getHintWrongLevelType() throws Exception {
-        willThrow(new BadRequestException()).given(trainingRunFacade).getHint(anyLong(), anyLong());
-        MockHttpServletResponse response = mockMvc.perform(get("/training-runs/{runId}/hints/{hintId}", trainingRun1.getId(), hintDTO.getId()))
-                .andExpect(status().isBadRequest())
+    public void isCorrectFlag() throws Exception {
+        given(trainingRunFacade.isCorrectFlag(trainingRun1.getId(), "flag")).willReturn(isCorrectFlagDTO);
+        MockHttpServletResponse result = mockMvc.perform(get("/training-runs/{runId}/is-correct-flag", trainingRun1.getId())
+                .param("flag", "flag")
+                .param("solutionTaken", "true"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andReturn().getResponse();
-        ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
-        assertEquals(HttpStatus.BAD_REQUEST, error.getStatus());
+        assertEquals(isCorrectFlagDTO, ObjectConverter.convertJsonBytesToObject(result.getContentAsString(), IsCorrectFlagDTO.class));
+    }
+
+    @Test
+    public void isCorrectFlag_FacadeException() throws Exception {
+        willThrow(new EntityNotFoundException()).given(trainingRunFacade).isCorrectFlag(anyLong(), anyString());
+        MockHttpServletResponse result = mockMvc.perform(get("/training-runs/{runId}/is-correct-flag", trainingRun1.getId())
+                .param("flag", "flag")
+                .param("solutionTaken", "true"))
+                .andExpect(status().isNotFound())
+                .andReturn().getResponse();
+        ApiError error = convertJsonBytesToObject(result.getContentAsString(), ApiError.class);
+        assertEquals(HttpStatus.NOT_FOUND, error.getStatus());
+        assertEquals("The requested entity could not be found", error.getMessage());
     }
 
     @Test
@@ -383,7 +368,7 @@ public class TrainingRunsRestControllerTest {
     }
 
     @Test
-    public void finishTrainingRunCannotFinish() throws Exception {
+    public void finishTrainingRun_FacadeException() throws Exception {
         willThrow(new EntityConflictException()).given(trainingRunFacade).finishTrainingRun(trainingRun1.getId());
         MockHttpServletResponse response = mockMvc.perform(put("/training-runs/{runId}", trainingRun1.getId()))
                 .andExpect(status().isConflict())
@@ -404,7 +389,6 @@ public class TrainingRunsRestControllerTest {
         assertEquals("The requested entity could not be found", error.getMessage());
     }
 
-
     @Test
     public void resumeTrainingRun() throws Exception {
         given(trainingRunFacade.resumeTrainingRun(trainingRun1.getId())).willReturn(accessTrainingRunDTO);
@@ -415,7 +399,7 @@ public class TrainingRunsRestControllerTest {
     }
 
     @Test
-    public void resumeTrainingRunCannotFinish() throws Exception {
+    public void resumeTrainingRun_FacadeException() throws Exception {
         willThrow(new EntityConflictException()).given(trainingRunFacade).resumeTrainingRun(trainingRun1.getId());
         MockHttpServletResponse response = mockMvc.perform(get("/training-runs/{runId}/resumption", trainingRun1.getId()))
                 .andExpect(status().isConflict())
@@ -426,28 +410,17 @@ public class TrainingRunsRestControllerTest {
     }
 
     @Test
-    public void resumeTrainingRunNotFound() throws Exception {
-        willThrow(new EntityNotFoundException()).given(trainingRunFacade).resumeTrainingRun(trainingRun1.getId());
-        MockHttpServletResponse response = mockMvc.perform(get("/training-runs/{runId}/resumption", trainingRun1.getId()))
-                .andExpect(status().isNotFound())
-                .andReturn().getResponse();
-        ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
-        assertEquals(HttpStatus.NOT_FOUND, error.getStatus());
-        assertEquals("The requested entity could not be found", error.getMessage());
-    }
-
-    @Test
     public void getParticipant() throws Exception {
         given(trainingRunFacade.getParticipant(trainingRun1.getId())).willReturn(participantDTO1);
         given(objectMapper.writeValueAsString(any(Object.class))).willReturn(convertObjectToJsonBytes(participantDTO1));
         MockHttpServletResponse result = mockMvc.perform(get("/training-runs/{runId}/participant", trainingRun1.getId()))
                 .andExpect(status().isOk())
                 .andReturn().getResponse();
-        assertEquals(participantDTO1, convertResultStringToDTO(result.getContentAsString(), UserRefDTO.class));
+        assertEquals(participantDTO1, convertJsonBytesToObject(convertJsonBytesToObject(result.getContentAsString()), UserRefDTO.class));
     }
 
     @Test
-    public void getParticipantTrainingRunNotFound() throws Exception {
+    public void getParticipant_FacadeException() throws Exception {
         willThrow(new EntityNotFoundException()).given(trainingRunFacade).getParticipant(trainingRun1.getId());
         MockHttpServletResponse response = mockMvc.perform(get("/training-runs/{runId}/participant", trainingRun1.getId()))
                 .andExpect(status().isNotFound())
@@ -456,43 +429,4 @@ public class TrainingRunsRestControllerTest {
         assertEquals(HttpStatus.NOT_FOUND, error.getStatus());
         assertEquals("The requested entity could not be found", error.getMessage());
     }
-
-    @Test
-    public void getParticipantUserAndGroupServiceError() throws Exception {
-        willThrow(new InternalServerErrorException()).given(trainingRunFacade).getParticipant(trainingRun1.getId());
-        MockHttpServletResponse response = mockMvc.perform(get("/training-runs/{runId}/participant", trainingRun1.getId()))
-                .andExpect(status().isInternalServerError())
-                .andReturn().getResponse();
-        ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
-        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, error.getStatus());
-    }
-
-
-    private UserRefDTO createUserRefDTO(Long userRefId, String fullName, String familyName, String givenName, String sub, String iss, byte[] picture) {
-        UserRefDTO userRefDTO = new UserRefDTO();
-        userRefDTO.setUserRefId(userRefId);
-        userRefDTO.setUserRefFullName(fullName);
-        userRefDTO.setUserRefFamilyName(familyName);
-        userRefDTO.setUserRefGivenName(givenName);
-        userRefDTO.setUserRefSub(sub);
-        userRefDTO.setIss(iss);
-        userRefDTO.setPicture(picture);
-        return userRefDTO;
-    }
-
-    private <T> T convertResultStringToDTO(String resultAsString, Class<T> claas) throws Exception {
-        return testObjectMapper.readValue(convertJsonBytesToString(resultAsString), claas);
-    }
-
-    private static String convertJsonBytesToString(String object) throws IOException {
-        ObjectMapper mapper = new ObjectMapper();
-        return mapper.readValue(object, String.class);
-    }
-
-    private static String convertObjectToJsonBytes(Object object) throws IOException {
-        ObjectMapper mapper = new ObjectMapper();
-        return mapper.writeValueAsString(object);
-    }
-
-
 }
