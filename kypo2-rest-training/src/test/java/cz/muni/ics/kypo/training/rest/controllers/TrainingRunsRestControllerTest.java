@@ -81,9 +81,6 @@ public class TrainingRunsRestControllerTest {
     @Autowired
     TrainingRunMapper trainingRunMapper;
 
-    @MockBean
-    private ObjectMapper objectMapper;
-
     private TrainingRun trainingRun1, trainingRun2;
     private TrainingRunDTO trainingRun1DTO;
     private Page page, pageAccessed;
@@ -147,15 +144,10 @@ public class TrainingRunsRestControllerTest {
         pageAccessed = new PageImpl<>(List.of(accessedTrainingRunDTO));
         page = new PageImpl<>(List.of(trainingRun1, trainingRun2));
 
-        ObjectMapper obj = new ObjectMapper();
-        obj.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
-        obj.registerModule(new JavaTimeModule());
-        given(objectMapper.getSerializationConfig()).willReturn(obj.getSerializationConfig());
-
         trainingRunDTOPageResultResource = trainingRunMapper.mapToPageResultResource(page);
 
         MockitoAnnotations.initMocks(this);
-        trainingRunsRestController = new TrainingRunsRestController(trainingRunFacade, objectMapper);
+        trainingRunsRestController = new TrainingRunsRestController(trainingRunFacade, new ObjectMapper());
         this.mockMvc = MockMvcBuilders.standaloneSetup(trainingRunsRestController)
                 .setCustomArgumentResolvers(new PageableHandlerMethodArgumentResolver(),
                         new QuerydslPredicateArgumentResolver(
@@ -168,13 +160,11 @@ public class TrainingRunsRestControllerTest {
     @Test
     public void findTrainingRunById() throws Exception {
         given(trainingRunFacade.findById(trainingRunByIdDTO.getId())).willReturn(trainingRunByIdDTO);
-        String trainingRunResponse = convertObjectToJsonBytes(trainingRun1DTO);
-        given(objectMapper.writeValueAsString(any(Object.class))).willReturn(trainingRunResponse);
         MockHttpServletResponse result = mockMvc.perform(get("/training-runs" + "/{runId}", 1L))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andReturn().getResponse();
-        assertEquals(convertObjectToJsonBytes(convertObjectToJsonBytes(trainingRun1DTO)), result.getContentAsString());
+        assertEquals(convertObjectToJsonBytes(convertObjectToJsonBytes(trainingRunByIdDTO)), result.getContentAsString());
     }
 
     @Test
@@ -190,8 +180,6 @@ public class TrainingRunsRestControllerTest {
 
     @Test
     public void findAllTrainingRuns() throws Exception {
-        String trainingRunsResponse = convertObjectToJsonBytes(trainingRunDTOPageResultResource);
-        given(objectMapper.writeValueAsString(any(Object.class))).willReturn(trainingRunsResponse);
         given(trainingRunFacade.findAll(any(Predicate.class), any(Pageable.class))).willReturn(trainingRunDTOPageResultResource);
 
         MockHttpServletResponse result = mockMvc.perform(get("/training-runs"))
@@ -226,8 +214,6 @@ public class TrainingRunsRestControllerTest {
     public void getAllAccessedTrainingRuns() throws Exception {
         accessedTrainingRunDTOPage = trainingRunMapper.mapToPageResultResourceAccessed(pageAccessed);
 
-        String trainingRunDTOPageResponse = convertObjectToJsonBytes(trainingRunDTOPageResultResource);
-        given(objectMapper.writeValueAsString(any(Object.class))).willReturn(trainingRunDTOPageResponse);
         given(trainingRunFacade.findAllAccessedTrainingRuns(any(Pageable.class), anyString())).willReturn(accessedTrainingRunDTOPage);
 
         MockHttpServletResponse result = mockMvc.perform(get("/training-runs/accessible")
@@ -235,13 +221,11 @@ public class TrainingRunsRestControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andReturn().getResponse();
-        assertEquals(convertObjectToJsonBytes(convertObjectToJsonBytes(trainingRunDTOPageResultResource)), result.getContentAsString());
+        assertEquals(convertObjectToJsonBytes(convertObjectToJsonBytes(accessedTrainingRunDTOPage)), result.getContentAsString());
     }
 
     @Test
     public void getNextLevel_Assessment() throws Exception {
-        String valueTr = convertObjectToJsonBytes(assessmentLevelDTO);
-        given(objectMapper.writeValueAsString(any(Object.class))).willReturn(valueTr);
         given(trainingRunFacade.getNextLevel(assessmentLevelDTO.getId())).willReturn(assessmentLevelDTO);
         MockHttpServletResponse result = mockMvc.perform(get("/training-runs/{runId}/next-levels", 3L))
                 .andExpect(status().isOk())
@@ -252,8 +236,6 @@ public class TrainingRunsRestControllerTest {
 
     @Test
     public void getNextLevel_Game() throws Exception {
-        String valueTr = convertObjectToJsonBytes(gameLevelDTO);
-        given(objectMapper.writeValueAsString(any(Object.class))).willReturn(valueTr);
         given(trainingRunFacade.getNextLevel(gameLevelDTO.getId())).willReturn(gameLevelDTO);
         MockHttpServletResponse result = mockMvc.perform(get("/training-runs/{runId}/next-levels", 1L))
                 .andExpect(status().isOk())
@@ -264,8 +246,6 @@ public class TrainingRunsRestControllerTest {
 
     @Test
     public void getNextLevel_Info() throws Exception {
-        String valueTr = convertObjectToJsonBytes(infoLevelDTO);
-        given(objectMapper.writeValueAsString(any(Object.class))).willReturn(valueTr);
         given(trainingRunFacade.getNextLevel(infoLevelDTO.getId())).willReturn(infoLevelDTO);
         MockHttpServletResponse result = mockMvc.perform(get("/training-runs/{runId}/next-levels", 2L))
                 .andExpect(status().isOk())
@@ -306,8 +286,6 @@ public class TrainingRunsRestControllerTest {
 
     @Test
     public void getHint() throws Exception {
-        String valueTr = convertObjectToJsonBytes(hintDTO);
-        given(objectMapper.writeValueAsString(any(Object.class))).willReturn(valueTr);
         given(trainingRunFacade.getHint(trainingRun1.getId(), hintDTO.getId())).willReturn(hintDTO);
         MockHttpServletResponse result = mockMvc.perform(get("/training-runs/{runId}/hints/{hintId}", trainingRun1.getId(), hintDTO.getId()))
                 .andExpect(status().isOk())
@@ -412,7 +390,6 @@ public class TrainingRunsRestControllerTest {
     @Test
     public void getParticipant() throws Exception {
         given(trainingRunFacade.getParticipant(trainingRun1.getId())).willReturn(participantDTO1);
-        given(objectMapper.writeValueAsString(any(Object.class))).willReturn(convertObjectToJsonBytes(participantDTO1));
         MockHttpServletResponse result = mockMvc.perform(get("/training-runs/{runId}/participant", trainingRun1.getId()))
                 .andExpect(status().isOk())
                 .andReturn().getResponse();

@@ -1,19 +1,16 @@
 package cz.muni.ics.kypo.training.rest.controllers;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.PropertyNamingStrategy;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
 import cz.muni.ics.kypo.training.api.dto.traininginstance.*;
 import cz.muni.ics.kypo.training.api.responses.PageResultResource;
-import cz.muni.ics.kypo.training.converters.LocalDateTimeDeserializer;
 import cz.muni.ics.kypo.training.exceptions.EntityNotFoundException;
-import cz.muni.ics.kypo.training.exceptions.InternalServerErrorException;
+import cz.muni.ics.kypo.training.exceptions.MicroserviceApiException;
 import cz.muni.ics.kypo.training.facade.TrainingInstanceFacade;
 import cz.muni.ics.kypo.training.mapping.mapstruct.*;
 import cz.muni.ics.kypo.training.persistence.model.TrainingInstance;
-import cz.muni.ics.kypo.training.persistence.model.UserRef;
 import cz.muni.ics.kypo.training.persistence.util.TestDataFactory;
 import cz.muni.ics.kypo.training.rest.ApiError;
 import cz.muni.ics.kypo.training.rest.CustomRestExceptionHandlerTraining;
@@ -24,7 +21,6 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -42,14 +38,12 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-import java.io.IOException;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
 import static cz.muni.ics.kypo.training.rest.controllers.util.ObjectConverter.convertJsonBytesToObject;
+import static cz.muni.ics.kypo.training.rest.controllers.util.ObjectConverter.convertObjectToJsonBytes;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.*;
@@ -75,30 +69,24 @@ public class TrainingInstancesRestControllerTest {
 
     private MockMvc mockMvc;
 
-    @MockBean
-    private ObjectMapper objectMapper;
-    private ObjectMapper testObjectMapper;
-
     private TrainingInstance trainingInstance1, trainingInstance2;
 
     private TrainingInstanceDTO trainingInstance1DTO, trainingInstance2DTO;
     private TrainingInstanceCreateDTO trainingInstanceCreateDTO;
     private TrainingInstanceUpdateDTO trainingInstanceUpdateDTO;
     private UserRefDTO organizerDTO1, organizerDTO2, organizerDTO3;
-    private UserRef participant1;
     private TrainingInstanceAssignPoolIdDTO trainingInstanceAssignPoolIdDTO;
     private TrainingInstanceBasicInfoDTO trainingInstanceBasicInfoDTO;
-    private Pageable pageable;
     private PageResultResource.Pagination pagination;
 
-    private Page p;
+    private Page page;
 
     private PageResultResource<TrainingInstanceFindAllResponseDTO> trainingInstanceDTOPageResultResource;
 
     @Before
-    public void init() {
+    public void init() throws Exception {
         MockitoAnnotations.initMocks(this);
-        trainingInstancesRestController = new TrainingInstancesRestController(trainingInstanceFacade, objectMapper);
+        trainingInstancesRestController = new TrainingInstancesRestController(trainingInstanceFacade, new ObjectMapper());
         this.mockMvc = MockMvcBuilders.standaloneSetup(trainingInstancesRestController)
                 .setCustomArgumentResolvers(new PageableHandlerMethodArgumentResolver(),
                         new QuerydslPredicateArgumentResolver(
@@ -107,11 +95,9 @@ public class TrainingInstancesRestControllerTest {
                 .setControllerAdvice(new CustomRestExceptionHandlerTraining())
                 .build();
 
-        pageable = PageRequest.of(0, 5);
-
-        organizerDTO1 = createUserRefDTO(10L, "Bc. Dominik Meskal", "Meskal", "Dominik", "445533@muni.cz", "https://oidc.muni.cz/oidc", null);
-        organizerDTO2 = createUserRefDTO(20L, "Bc. Boris Makal", "Makal", "Boris", "772211@muni.cz", "https://oidc.muni.cz/oidc", null);
-        organizerDTO3 = createUserRefDTO(30L, "Ing. Pavel Flákal", "Flákal", "Pavel", "221133@muni.cz", "https://oidc.muni.cz/oidc", null);
+        organizerDTO1 = testDataFactory.getUserRefDTO1();
+        organizerDTO2 = testDataFactory.getUserRefDTO2();
+        organizerDTO3 = testDataFactory.getUserRefDTO3();
 
         trainingInstance1 = testDataFactory.getConcludedInstance();
         trainingInstance1.setId(1L);
@@ -138,33 +124,23 @@ public class TrainingInstancesRestControllerTest {
 
         trainingInstanceBasicInfoDTO = new TrainingInstanceBasicInfoDTO();
 
-        List<TrainingInstance> expected = new ArrayList<>();
-        expected.add(trainingInstance1);
-        expected.add(trainingInstance2);
+        page = new PageImpl<>(List.of(trainingInstance1, trainingInstance2));
 
-        p = new PageImpl<>(expected);
-
-        ObjectMapper obj = new ObjectMapper();
-        obj.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
-        given(objectMapper.getSerializationConfig()).willReturn(obj.getSerializationConfig());
-
-        trainingInstanceDTOPageResultResource = trainingInstanceMapper.mapToPageResultResource(p);
+        trainingInstanceDTOPageResultResource = trainingInstanceMapper.mapToPageResultResource(page);
     }
 
     @Test
     public void findTrainingInstanceById() throws Exception {
         given(trainingInstanceFacade.findById(any(Long.class))).willReturn(trainingInstance1DTO);
-        String valueTi = convertObjectToJsonBytes(trainingInstance1DTO);
-        given(objectMapper.writeValueAsString(any(Object.class))).willReturn(valueTi);
-        MockHttpServletResponse result = mockMvc.perform(get("/training-instances" + "/{id}", 1l))
+        MockHttpServletResponse result = mockMvc.perform(get("/training-instances" + "/{id}", 1L))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andReturn().getResponse();
-        assertEquals(convertObjectToJsonBytes(convertObjectToJsonBytes(trainingInstance1DTO)), result.getContentAsString());
+        assertEquals(trainingInstance1DTO, convertJsonBytesToObject(result.getContentAsString(), TrainingInstanceDTO.class));
     }
 
     @Test
-    public void findTrainingInstanceByIdNotFound() throws Exception {
+    public void findTrainingInstanceById_NotFound() throws Exception {
         willThrow(new EntityNotFoundException()).given(trainingInstanceFacade).findById(any(Long.class));
         MockHttpServletResponse response = mockMvc.perform(get("/training-instances" + "/{id}", 6l))
                 .andExpect(status().isNotFound())
@@ -176,8 +152,6 @@ public class TrainingInstancesRestControllerTest {
 
     @Test
     public void findAllTrainingInstances() throws Exception {
-        String valueTi = convertObjectToJsonBytes(trainingInstanceDTOPageResultResource);
-        given(objectMapper.writeValueAsString(any(Object.class))).willReturn(valueTi);
         given(trainingInstanceFacade.findAll(any(Predicate.class), any(Pageable.class))).willReturn(trainingInstanceDTOPageResultResource);
         MockHttpServletResponse result = mockMvc.perform(get("/training-instances"))
                 .andExpect(status().isOk())
@@ -187,10 +161,71 @@ public class TrainingInstancesRestControllerTest {
     }
 
     @Test
+    public void createTrainingInstances() throws Exception {
+        given(trainingInstanceFacade.create(any(TrainingInstanceCreateDTO.class))).willReturn(trainingInstance1DTO);
+        MockHttpServletResponse result = mockMvc.perform(post("/training-instances")
+                .content(convertObjectToJsonBytes(trainingInstanceCreateDTO))
+                .contentType(MediaType.APPLICATION_JSON_VALUE))
+                .andExpect(status().isOk())
+                .andReturn().getResponse();
+        assertEquals(convertObjectToJsonBytes(convertObjectToJsonBytes(trainingInstance1DTO)), result.getContentAsString());
+    }
+
+    @Test
+    public void createTrainingInstances_FacadeException() throws Exception {
+        willThrow(new EntityNotFoundException()).given(trainingInstanceFacade).create(any(TrainingInstanceCreateDTO.class));
+        MockHttpServletResponse result = mockMvc.perform(post("/training-instances")
+                .content(convertObjectToJsonBytes(trainingInstanceCreateDTO))
+                .contentType(MediaType.APPLICATION_JSON_VALUE))
+                .andExpect(status().isNotFound())
+                .andReturn().getResponse();
+        ApiError error = convertJsonBytesToObject(result.getContentAsString(), ApiError.class);
+        assertEquals(HttpStatus.NOT_FOUND, error.getStatus());
+        assertEquals("The requested entity could not be found", error.getMessage());
+    }
+
+    @Test
+    public void updateTrainingInstances() throws Exception {
+        given(trainingInstanceFacade.update(any(TrainingInstanceUpdateDTO.class))).willReturn("new token");
+        MockHttpServletResponse result = mockMvc.perform(put("/training-instances")
+                .content(convertObjectToJsonBytes(trainingInstanceUpdateDTO))
+                .contentType(MediaType.APPLICATION_JSON_VALUE))
+                .andExpect(status().isOk())
+                .andReturn().getResponse();
+        assertEquals("new token", convertJsonBytesToObject(result.getContentAsString()));
+    }
+
+    @Test
+    public void updateTrainingInstances_FacadeException() throws Exception {
+        willThrow(new EntityNotFoundException()).given(trainingInstanceFacade).update(any(TrainingInstanceUpdateDTO.class));
+        MockHttpServletResponse result = mockMvc.perform(put("/training-instances")
+                .content(convertObjectToJsonBytes(trainingInstanceUpdateDTO))
+                .contentType(MediaType.APPLICATION_JSON_VALUE))
+                .andExpect(status().isNotFound())
+                .andReturn().getResponse();
+        ApiError error = convertJsonBytesToObject(result.getContentAsString(), ApiError.class);
+        assertEquals(HttpStatus.NOT_FOUND, error.getStatus());
+        assertEquals("The requested entity could not be found", error.getMessage());
+    }
+
+    @Test
     public void deleteTrainingInstance() throws Exception {
         mockMvc.perform(delete("/training-instances" + "/{id}", 1l)
                 .contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isOk());
+    }
+
+    @Test
+    public void deleteTrainingInstance_FacadeException() throws Exception {
+        willThrow(new EntityNotFoundException()).given(trainingInstanceFacade).delete(anyLong(), anyBoolean());
+        MockHttpServletResponse result = mockMvc.perform(delete("/training-instances" + "/{id}", 1L)
+                .queryParam("forceDelete", "true")
+                .contentType(MediaType.APPLICATION_JSON_VALUE))
+                .andExpect(status().isNotFound())
+                .andReturn().getResponse();
+        ApiError error = convertJsonBytesToObject(result.getContentAsString(), ApiError.class);
+        assertEquals(HttpStatus.NOT_FOUND, error.getStatus());
+        assertEquals("The requested entity could not be found", error.getMessage());
     }
 
     @Test
@@ -203,7 +238,7 @@ public class TrainingInstancesRestControllerTest {
     }
 
     @Test
-    public void assignPoolWithFacadeException() throws Exception {
+    public void assignPool_FacadeException() throws Exception {
         willThrow(new EntityNotFoundException()).given(trainingInstanceFacade).assignPoolToTrainingInstance(anyLong(), any(TrainingInstanceAssignPoolIdDTO.class));
         MockHttpServletResponse response = mockMvc.perform(patch("/training-instances" + "/{instanceId}/" + "assign-pool", 698L)
                 .content(convertObjectToJsonBytes(trainingInstanceAssignPoolIdDTO))
@@ -224,22 +259,33 @@ public class TrainingInstancesRestControllerTest {
     }
 
     @Test
-    public void getOrganizersNotInGivenTrainingInstance() throws Exception {
-        PageResultResource<UserRefDTO> expectedUsersRefDTOs = new PageResultResource<>(List.of(organizerDTO1, organizerDTO2), pagination);
-        pagination = new PageResultResource.Pagination(0, 2, 5, 2, 1);
-        given(trainingInstanceFacade.getOrganizersNotInGivenTrainingInstance(eq(trainingInstance1.getId()), any(Pageable.class), eq(null), eq(null))).willReturn(expectedUsersRefDTOs);
-        given(objectMapper.writeValueAsString(any(Object.class))).willReturn(convertObjectToJsonBytes(expectedUsersRefDTOs));
-
-        MockHttpServletResponse result = mockMvc.perform(get("/training-instances/{id}/organizers-not-in-training-instance", trainingInstance1.getId()))
-                .andExpect(status().isOk())
+    public void unassignPool_FacadeException() throws Exception {
+        willThrow(new MicroserviceApiException()).given(trainingInstanceFacade).unassignPoolInTrainingInstance(anyLong());
+        MockHttpServletResponse response = mockMvc.perform(patch("/training-instances" + "/{instanceId}/unassign-pool", 1L)
+                .content(convertObjectToJsonBytes(trainingInstanceAssignPoolIdDTO))
+                .contentType(MediaType.APPLICATION_JSON_VALUE))
+                .andExpect(status().isForbidden())
                 .andReturn().getResponse();
-        assertEquals(convertObjectToJsonBytes(expectedUsersRefDTOs), convertJsonBytesToString(result.getContentAsString()));
+        ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
+        assertEquals(HttpStatus.FORBIDDEN, error.getStatus());
     }
 
     @Test
-    public void getOrganizersNotInGivenTrainingInstanceNotFoundError() throws Exception {
-        willThrow(new EntityNotFoundException()).given(trainingInstanceFacade).getOrganizersNotInGivenTrainingInstance(eq(trainingInstance1.getId()), any(Pageable.class), eq(null), eq(null));
-        MockHttpServletResponse response = mockMvc.perform(get("/training-instances/{id}/organizers-not-in-training-instance", trainingInstance1.getId()))
+    public void getOrganizersOfGivenTrainingInstance() throws Exception {
+        PageResultResource<UserRefDTO> expectedUsersRefDTOs = new PageResultResource<>(List.of(organizerDTO1, organizerDTO2), pagination);
+        pagination = new PageResultResource.Pagination(0, 2, 5, 2, 1);
+        given(trainingInstanceFacade.getOrganizersOfTrainingInstance(eq(trainingInstance1.getId()), any(Pageable.class), eq(null), eq(null))).willReturn(expectedUsersRefDTOs);
+
+        MockHttpServletResponse result = mockMvc.perform(get("/training-instances/{id}/organizers", trainingInstance1.getId()))
+                .andExpect(status().isOk())
+                .andReturn().getResponse();
+        assertEquals(expectedUsersRefDTOs.getContent(),  convertJsonBytesToObject(convertJsonBytesToObject(result.getContentAsString()), new TypeReference<PageResultResource<UserRefDTO>>() {}).getContent());
+    }
+
+    @Test
+    public void getOrganizerOfGivenTrainingInstance_FacadeException() throws Exception {
+        willThrow(new EntityNotFoundException()).given(trainingInstanceFacade).getOrganizersOfTrainingInstance(eq(trainingInstance1.getId()), any(Pageable.class), eq(null), eq(null));
+        MockHttpServletResponse response = mockMvc.perform(get("/training-instances/{id}/organizers", trainingInstance1.getId()))
                 .andExpect(status().isNotFound())
                 .andReturn().getResponse();
         ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
@@ -248,16 +294,27 @@ public class TrainingInstancesRestControllerTest {
     }
 
     @Test
-    public void getOrganizersNotInGivenTrainingInstanceUserServiceError() throws Exception {
-        willThrow(new InternalServerErrorException("Unexpected error when calling user and group service.")).given(trainingInstanceFacade).getOrganizersNotInGivenTrainingInstance(eq(trainingInstance1.getId()), any(Pageable.class), eq(null), eq(null));
-        MockHttpServletResponse response = mockMvc.perform(get("/training-instances/{id}/organizers-not-in-training-instance", trainingInstance1.getId()))
-                .andExpect(status().isInternalServerError())
+    public void getOrganizersNotInGivenTrainingInstance() throws Exception {
+        PageResultResource<UserRefDTO> expectedUsersRefDTOs = new PageResultResource<>(List.of(organizerDTO1, organizerDTO2), pagination);
+        pagination = new PageResultResource.Pagination(0, 2, 5, 2, 1);
+        given(trainingInstanceFacade.getOrganizersNotInGivenTrainingInstance(eq(trainingInstance1.getId()), any(Pageable.class), eq(null), eq(null))).willReturn(expectedUsersRefDTOs);
+
+        MockHttpServletResponse result = mockMvc.perform(get("/training-instances/{id}/organizers-not-in-training-instance", trainingInstance1.getId()))
+                .andExpect(status().isOk())
                 .andReturn().getResponse();
-        ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
-        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, error.getStatus());
-        assertEquals("Unexpected error when calling user and group service.", error.getMessage());
+        assertEquals(expectedUsersRefDTOs.getContent(),  convertJsonBytesToObject(convertJsonBytesToObject(result.getContentAsString()), new TypeReference<PageResultResource<UserRefDTO>>() {}).getContent());
     }
 
+    @Test
+    public void getOrganizersNotInGivenTrainingInstance_FacadeException() throws Exception {
+        willThrow(new EntityNotFoundException()).given(trainingInstanceFacade).getOrganizersNotInGivenTrainingInstance(eq(trainingInstance1.getId()), any(Pageable.class), eq(null), eq(null));
+        MockHttpServletResponse response = mockMvc.perform(get("/training-instances/{id}/organizers-not-in-training-instance", trainingInstance1.getId()))
+                .andExpect(status().isNotFound())
+                .andReturn().getResponse();
+        ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
+        assertEquals(HttpStatus.NOT_FOUND, error.getStatus());
+        assertEquals("The requested entity could not be found", error.getMessage());
+    }
 
     @Test
     public void editOrganizers() throws Exception {
@@ -269,56 +326,15 @@ public class TrainingInstancesRestControllerTest {
     }
 
     @Test
-    public void editOrganizersTrainingInstanceNotFound() throws Exception {
-        willThrow(new EntityNotFoundException()).given(trainingInstanceFacade).editOrganizers(trainingInstance1.getId(), Set.of(1L, 2L), Set.of(4L));
+    public void editOrganizers_FacadeException() throws Exception {
+        willThrow(new MicroserviceApiException("Unexpected error when calling user and group service.")).given(trainingInstanceFacade).editOrganizers(trainingInstance1.getId(), Set.of(1L, 2L), Set.of(4L));
         MockHttpServletResponse response = mockMvc.perform(put("/training-instances/{id}/organizers", trainingInstance1.getId())
                 .param("organizersAddition", "1,2")
                 .param("organizersRemoval", "4"))
-                .andExpect(status().isNotFound())
+                .andExpect(status().isForbidden())
                 .andReturn().getResponse();
         ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
-        assertEquals(HttpStatus.NOT_FOUND, error.getStatus());
-        assertEquals("The requested entity could not be found", error.getMessage());
-    }
-
-    @Test
-    public void editOrganizersUserAndGroupServiceError() throws Exception {
-        willThrow(new InternalServerErrorException("Unexpected error when calling user and group service.")).given(trainingInstanceFacade).editOrganizers(trainingInstance1.getId(), Set.of(1L, 2L), Set.of(4L));
-        MockHttpServletResponse response = mockMvc.perform(put("/training-instances/{id}/organizers", trainingInstance1.getId())
-                .param("organizersAddition", "1,2")
-                .param("organizersRemoval", "4"))
-                .andExpect(status().isInternalServerError())
-                .andReturn().getResponse();
-        ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
-        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, error.getStatus());
+        assertEquals(HttpStatus.FORBIDDEN, error.getStatus());
         assertEquals("Unexpected error when calling user and group service.", error.getMessage());
-    }
-
-
-    private static String convertObjectToJsonBytes(Object object) throws IOException {
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.registerModule(new JavaTimeModule().addDeserializer(LocalDateTime.class, new LocalDateTimeDeserializer()));
-        return mapper.writeValueAsString(object);
-    }
-
-    private static String convertJsonBytesToString(String object) throws IOException {
-        ObjectMapper mapper = new ObjectMapper();
-        return mapper.readValue(object, String.class);
-    }
-
-    private <T> T convertResultStringToDTO(String resultAsString, Class<T> claas) throws Exception {
-        return testObjectMapper.readValue(convertJsonBytesToString(resultAsString), claas);
-    }
-
-    private UserRefDTO createUserRefDTO(Long userRefId, String fullName, String familyName, String givenName, String sub, String iss, byte[] picture) {
-        UserRefDTO userRefDTO = new UserRefDTO();
-        userRefDTO.setUserRefId(userRefId);
-        userRefDTO.setUserRefFullName(fullName);
-        userRefDTO.setUserRefFamilyName(familyName);
-        userRefDTO.setUserRefGivenName(givenName);
-        userRefDTO.setUserRefSub(sub);
-        userRefDTO.setIss(iss);
-        userRefDTO.setPicture(picture);
-        return userRefDTO;
     }
 }
