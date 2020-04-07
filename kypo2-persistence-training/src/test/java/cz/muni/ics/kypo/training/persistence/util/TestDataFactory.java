@@ -83,7 +83,8 @@ public class TestDataFactory {
     private InfoLevelDTO infoLevelDTO = generateInfoLevelDTO("Info DTO", 3, "DTO content");
 
     private AbstractLevelDTO abstractLevelDTO = generateAbstractLevelDTO("AbstractLevelDTO", 8, LevelType.GAME_LEVEL, 8);
-    private BasicLevelInfoDTO basicLevelInfoDTO = generateBasicLevelInfoDTO("Basic Level info", LevelType.GAME_LEVEL);
+    private BasicLevelInfoDTO basicGameLevelInfoDTO = generateBasicLevelInfoDTO("Basic Game Level info", LevelType.GAME_LEVEL);
+    private BasicLevelInfoDTO basicInfoLevelInfoDTO = generateBasicLevelInfoDTO("Basic Info Level info", LevelType.INFO_LEVEL);
 
     private AccessToken accessToken1 = generateAccessToken("test-0000");
     private AccessToken accessToken2 = generateAccessToken("token-9999");
@@ -293,8 +294,11 @@ public class TestDataFactory {
         return clone(abstractLevelDTO, AbstractLevelDTO.class);
     }
 
-    public BasicLevelInfoDTO getBasicLevelInfoDTO(){
-        return clone(basicLevelInfoDTO, BasicLevelInfoDTO.class);
+    public BasicLevelInfoDTO getBasicGameLevelInfoDTO(){
+        return clone(basicGameLevelInfoDTO, BasicLevelInfoDTO.class);
+    }
+    public BasicLevelInfoDTO getBasicInfoLevelInfoDTO(){
+        return clone(basicInfoLevelInfoDTO, BasicLevelInfoDTO.class);
     }
 
     public TrainingInstanceDTO getTrainingInstanceDTO(){

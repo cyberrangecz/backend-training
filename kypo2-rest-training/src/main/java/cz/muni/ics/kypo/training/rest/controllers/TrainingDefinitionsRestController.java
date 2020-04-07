@@ -564,8 +564,8 @@ public class TrainingDefinitionsRestController {
                                                 @ApiParam(value = "Family name filter.", required = false)
                                                 @RequestParam(value = "familyName", required = false) String familyName,
                                                 @ApiParam(value = "Pagination support.", required = false) Pageable pageable) {
-        PageResultResource<UserRefDTO> designers = trainingDefinitionFacade.getUsersWithGivenRole(RoleType.ROLE_TRAINING_ORGANIZER, pageable, givenName, familyName);
-        return ResponseEntity.ok(SquigglyUtils.stringify(objectMapper, designers));
+        PageResultResource<UserRefDTO> organizers = trainingDefinitionFacade.getUsersWithGivenRole(RoleType.ROLE_TRAINING_ORGANIZER, pageable, givenName, familyName);
+        return ResponseEntity.ok(SquigglyUtils.stringify(objectMapper, organizers));
     }
 
     /**
