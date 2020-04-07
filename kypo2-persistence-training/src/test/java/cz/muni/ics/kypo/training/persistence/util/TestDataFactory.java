@@ -149,7 +149,8 @@ public class TestDataFactory {
     private SandboxPoolInfo sandboxPoolInfo = generateSandboxPoolInfo(1L, 1L, 10L, 5L);
     private LockedPoolInfo lockedPoolInfo = generateLockedPoolInfo(1L, 1L);
     private UserRefDTO userRefDTO1 = generateUserRefDTO(10L, "Michael Bolt", "Bolt", "Michael", "445443@muni.cz", "https://oidc.muni.cz/oidc", null);
-    private UserRefDTO userRefDTO2 = generateUserRefDTO(10L, "Peter Most", "Most", "Peter", "114798@muni.cz", "https://oidc.muni.cz/oidc", null);
+    private UserRefDTO userRefDTO2 = generateUserRefDTO(12L, "Peter Most", "Most", "Peter", "114798@muni.cz", "https://oidc.muni.cz/oidc", null);
+    private UserRefDTO userRefDTO3 = generateUserRefDTO(14L, "John Nevel", "Nevel", "John", "139778@muni.cz", "https://oidc.muni.cz/oidc", null);
 
     public AssessmentLevel getTest(){
         return clone(test, AssessmentLevel.class);
@@ -345,8 +346,8 @@ public class TestDataFactory {
     }
 
     public UserRefDTO getUserRefDTO1() { return clone(userRefDTO1, UserRefDTO.class);}
-
     public UserRefDTO getUserRefDTO2() { return clone(userRefDTO2, UserRefDTO.class);}
+    public UserRefDTO getUserRefDTO3() { return clone(userRefDTO3, UserRefDTO.class);}
 
     private AssessmentLevel generateAssessmentLevel(String title, int maxScore, long estimatedDuration, int order,
                                                     String questions, String instructions, AssessmentType assessmentType){

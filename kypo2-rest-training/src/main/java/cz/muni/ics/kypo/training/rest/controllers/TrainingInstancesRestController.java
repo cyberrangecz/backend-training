@@ -81,8 +81,7 @@ public class TrainingInstancesRestController {
             @ApiParam(value = "Fields which should be returned in REST API response")
             @RequestParam(value = "fields", required = false) String fields) {
         TrainingInstanceDTO trainingInstanceResource = trainingInstanceFacade.findById(id);
-        Squiggly.init(objectMapper, fields);
-        return ResponseEntity.ok(SquigglyUtils.stringify(objectMapper, trainingInstanceResource));
+        return ResponseEntity.ok(trainingInstanceResource);
     }
 
     /**
@@ -130,7 +129,7 @@ public class TrainingInstancesRestController {
             consumes = MediaType.APPLICATION_JSON_VALUE
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Training instance created.", response = TrainingInstanceCreateDTO.class),
+            @ApiResponse(code = 200, message = "Training instance created.", response = TrainingInstanceDTO.class),
             @ApiResponse(code = 400, message = "Given training instance is not valid.", response = ApiError.class),
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiError.class)
     })

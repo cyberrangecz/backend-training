@@ -266,7 +266,7 @@ public class TrainingInstancesIT {
 
         TrainingInstanceDTO expectedInstanceDTO = trainingInstanceMapper.mapToDTO(futureTrainingInstance);
         expectedInstanceDTO.setSandboxesWithTrainingRun(List.of(sandboxInfo1.getId()));
-        TrainingInstanceDTO responseInstanceDTO = mapper.readValue(convertJsonBytesToString(result.getContentAsString()), TrainingInstanceDTO.class);
+        TrainingInstanceDTO responseInstanceDTO = mapper.readValue(result.getContentAsString(), TrainingInstanceDTO.class);
         assertEquals(expectedInstanceDTO, responseInstanceDTO);
     }
 
