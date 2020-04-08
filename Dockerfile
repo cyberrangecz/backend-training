@@ -11,7 +11,7 @@ ARG PROPRIETARY_REPO_URL=YOUR-PATH-TO-PROPRIETARY_REPO
 
 COPY ./ /app
 WORKDIR /app
-RUN echo $PROPRIETARY_REPO_URL && mvn clean install -DskipTests -Dproprietary-repo-url=$PROPRIETARY_REPO_URL
+RUN mvn clean install -DskipTests -Dproprietary-repo-url=$PROPRIETARY_REPO_URL
 RUN apt-get update && apt-get install -y supervisor postgresql rsyslog
 
 WORKDIR /app/kypo2-persistence-training
