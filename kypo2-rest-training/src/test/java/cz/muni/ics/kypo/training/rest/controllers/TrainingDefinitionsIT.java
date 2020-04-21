@@ -1085,7 +1085,7 @@ public class TrainingDefinitionsIT {
         ApiEntityError error = convertJsonBytesToObject(response.getContentAsString(), ApiEntityError.class);
         assertEquals(HttpStatus.CONFLICT, error.getStatus());
         assertEntityDetailError(error.getEntityErrorDetail(), TrainingDefinition.class, "id", releasedTrainingDefinition.getId().toString(),
-                "Cannot create level in released or archived training definition");
+                "Cannot edit released or archived training definition.");
     }
 
     @Test
@@ -1097,7 +1097,7 @@ public class TrainingDefinitionsIT {
         ApiEntityError error = convertJsonBytesToObject(response.getContentAsString(), ApiEntityError.class);
         assertEquals(HttpStatus.CONFLICT, error.getStatus());
         assertEntityDetailError(error.getEntityErrorDetail(), TrainingDefinition.class, "id", archivedTrainingDefinition.getId().toString(),
-                "Cannot create level in released or archived training definition");
+                "Cannot edit released or archived training definition.");
     }
 
     @Test
