@@ -523,6 +523,19 @@ public class TrainingRunService {
     }
 
     /**
+     * Archive training run.
+     *
+     * @param trainingRunId id of training run to be archived.
+     * @throws EntityNotFoundException training run is not found.
+     */
+    public void archiveTrainingRun(Long trainingRunId) {
+        TrainingRun trainingRun = findById(trainingRunId);
+        trainingRun.setState(TRState.ARCHIVED);
+        trAcquisitionLockRepository.deleteByParticipantRefIdAndTrainingInstanceId(trainingRun.getParticipantRef().getUserRefId(), trainingRun.getTrainingInstance().getId());
+        trainingRunRepository.save(trainingRun);
+    }
+
+    /**
      * Evaluate and store responses to assessment.
      *
      * @param trainingRunId     id of training run to be finished.

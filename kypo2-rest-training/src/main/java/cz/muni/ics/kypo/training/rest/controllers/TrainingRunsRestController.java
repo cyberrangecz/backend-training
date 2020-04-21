@@ -444,6 +444,30 @@ public class TrainingRunsRestController {
     }
 
     /**
+     * Archive training run.
+     *
+     * @param runId id of training run.
+     * @return the response entity
+     */
+    @ApiOperation(httpMethod = "PATCH",
+            value = "Archive training run",
+            nickname = "archiveTrainingRun",
+            notes = "The state of the Training run will be change to archived.",
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Training run archived."),
+            @ApiResponse(code = 404, message = "Training run with given id not found.", response = ApiError.class),
+            @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiError.class)
+    })
+    @PatchMapping(path = "/{runId}/archive", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Void> archiveTrainingRun(@ApiParam(value = "Training run ID", required = true)
+                                                  @PathVariable("runId") Long runId) {
+        trainingRunFacade.archiveTrainingRun(runId);
+        return ResponseEntity.ok().build();
+    }
+
+    /**
      * The type Training run rest resource.
      */
     @ApiModel(value = "TrainingRunRestResource",

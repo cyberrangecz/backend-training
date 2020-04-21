@@ -348,6 +348,18 @@ public class TrainingRunFacade {
     }
 
     /**
+     * Archive training run.
+     *
+     * @param trainingRunId id of Training Run to be archived.
+     */
+    @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
+            "or @securityService.isOrganizerOfGivenTrainingRun(#trainingRunId)")
+    @TransactionalWO
+    public void archiveTrainingRun(Long trainingRunId) {
+        trainingRunService.archiveTrainingRun(trainingRunId);
+    }
+
+    /**
      * Evaluate and store responses to assessment.
      *
      * @param trainingRunId     id of Training Run to be finish.
