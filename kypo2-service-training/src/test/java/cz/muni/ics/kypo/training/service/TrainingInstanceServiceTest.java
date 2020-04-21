@@ -21,6 +21,7 @@ import cz.muni.ics.kypo.training.persistence.model.UserRef;
 import cz.muni.ics.kypo.training.persistence.repository.*;
 import cz.muni.ics.kypo.training.persistence.util.TestDataFactory;
 import org.apache.http.HttpHeaders;
+import org.elasticsearch.client.Client;
 import org.json.HTTP;
 import org.junit.After;
 import org.junit.Before;
@@ -280,12 +281,8 @@ public class TrainingInstanceServiceTest {
     @Test
     public void unlockPool() throws Exception {
         poolInfoDTO.setId(trainingInstance1.getPoolId());
-        given(exchangeFunction.exchange(argThat(new ArgumentMatcher<ClientRequest>() {
-            @Override
-            public boolean matches(ClientRequest clientRequest) {
-                return clientRequest.url().equals(URI.create("/pools/" + poolInfoDTO.getId()));
-            }
-        }))).willReturn(buildMockResponse(poolInfoDTO));
+        ArgumentMatcher<ClientRequest> poolsRequest = clientRequest -> clientRequest.url().equals(URI.create("/pools/" + poolInfoDTO.getId()));
+        doReturn(buildMockResponse(poolInfoDTO)).when(exchangeFunction).exchange(argThat(poolsRequest));
         trainingInstanceService.unlockPool(trainingInstance1.getPoolId());
     }
 

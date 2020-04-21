@@ -20,9 +20,7 @@ import cz.muni.ics.kypo.training.api.dto.infolevel.InfoLevelUpdateDTO;
 import cz.muni.ics.kypo.training.api.dto.run.AccessedTrainingRunDTO;
 import cz.muni.ics.kypo.training.api.dto.run.TrainingRunByIdDTO;
 import cz.muni.ics.kypo.training.api.dto.run.TrainingRunDTO;
-import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionByIdDTO;
-import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionCreateDTO;
-import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionUpdateDTO;
+import cz.muni.ics.kypo.training.api.dto.trainingdefinition.*;
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceCreateDTO;
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceDTO;
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceUpdateDTO;
@@ -104,6 +102,12 @@ public class TestDataFactory {
     private TrainingDefinition archivedDefinition = generateTrainingDefinition("Archived definition", "Archived description",
             new String[]{"p5"}, new String[]{"o4", "o5", "o6"}, TDState.ARCHIVED, false,
             LocalDateTime.now(Clock.systemUTC()).minusHours(10));
+    private TrainingDefinitionDTO unreleasedDefinitionDTO = generateTrainingDefinitionDTO(unreleasedDefinition);
+    private TrainingDefinitionDTO releasedDefinitionDTO = generateTrainingDefinitionDTO(releasedDefinition);
+    private TrainingDefinitionDTO archivedDefinitionDTO = generateTrainingDefinitionDTO(archivedDefinition);
+    private TrainingDefinitionInfoDTO unreleasedDefinitionInfoDTO = generateTrainingDefinitionInfoDTO(unreleasedDefinition);
+    private TrainingDefinitionInfoDTO releasedDefinitionInfoDTO = generateTrainingDefinitionInfoDTO(releasedDefinition);
+    private TrainingDefinitionInfoDTO archivedDefinitionInfoDTO = generateTrainingDefinitionInfoDTO(archivedDefinition);
     private TrainingDefinitionCreateDTO trainingDefinitionCreateDTO = generateTrainingDefinitionCreateDTO("Training definition create DTO",
             "Creation of definition", new String[]{"p8", "p9"}, new String[]{"o8", "o9"}, cz.muni.ics.kypo.training.api.enums.TDState.UNRELEASED,
             true);
@@ -149,9 +153,16 @@ public class TestDataFactory {
     private SandboxInfo sandboxInfo = generateSandboxInfo(1L, 1, 4);
     private SandboxPoolInfo sandboxPoolInfo = generateSandboxPoolInfo(1L, 1L, 10L, 5L);
     private LockedPoolInfo lockedPoolInfo = generateLockedPoolInfo(1L, 1L);
+
     private UserRefDTO userRefDTO1 = generateUserRefDTO(10L, "Michael Bolt", "Bolt", "Michael", "445443@muni.cz", "https://oidc.muni.cz/oidc", null);
     private UserRefDTO userRefDTO2 = generateUserRefDTO(12L, "Peter Most", "Most", "Peter", "114798@muni.cz", "https://oidc.muni.cz/oidc", null);
     private UserRefDTO userRefDTO3 = generateUserRefDTO(14L, "John Nevel", "Nevel", "John", "139778@muni.cz", "https://oidc.muni.cz/oidc", null);
+    private UserRefDTO userRefDTO4 = generateUserRefDTO(17L, "Ted Mosby", "Mosby", "Ted", "139448@muni.cz", "https://oidc.muni.cz/oidc", null);
+
+    private UserRef userRef1 = generateUserRef( 10L);
+    private UserRef userRef2 = generateUserRef(12L);
+    private UserRef userRef3 = generateUserRef(14L);
+    private UserRef userRef4 = generateUserRef(17L);
 
     public AssessmentLevel getTest(){
         return clone(test, AssessmentLevel.class);
@@ -205,8 +216,32 @@ public class TestDataFactory {
         return clone(releasedDefinition, TrainingDefinition.class);
     }
 
-    public TrainingDefinition getArchivedDefinition(){
+    public TrainingDefinition getArchivedDefinition() {
         return clone(archivedDefinition, TrainingDefinition.class);
+    }
+
+    public TrainingDefinitionDTO getUnreleasedDefinitionDTO(){
+        return clone(unreleasedDefinitionDTO, TrainingDefinitionDTO.class);
+    }
+
+    public TrainingDefinitionDTO getReleasedDefinitionDTO(){
+        return clone(releasedDefinitionDTO, TrainingDefinitionDTO.class);
+    }
+
+    public TrainingDefinitionDTO getArchivedDefinitionDTO(){
+        return clone(archivedDefinitionDTO, TrainingDefinitionDTO.class);
+    }
+
+    public TrainingDefinitionInfoDTO getUnreleasedDefinitionInfoDTO(){
+        return clone(unreleasedDefinitionInfoDTO, TrainingDefinitionInfoDTO.class);
+    }
+
+    public TrainingDefinitionInfoDTO getReleasedDefinitionInfoDTO(){
+        return clone(releasedDefinitionInfoDTO, TrainingDefinitionInfoDTO.class);
+    }
+
+    public TrainingDefinitionInfoDTO getArchivedDefinitionInfoDTO(){
+        return clone(archivedDefinitionInfoDTO, TrainingDefinitionInfoDTO.class);
     }
 
     public TrainingInstance getFutureInstance(){
@@ -352,6 +387,13 @@ public class TestDataFactory {
     public UserRefDTO getUserRefDTO1() { return clone(userRefDTO1, UserRefDTO.class);}
     public UserRefDTO getUserRefDTO2() { return clone(userRefDTO2, UserRefDTO.class);}
     public UserRefDTO getUserRefDTO3() { return clone(userRefDTO3, UserRefDTO.class);}
+    public UserRefDTO getUserRefDTO4() { return clone(userRefDTO4, UserRefDTO.class);}
+
+
+    public UserRef getUserRef1() { return clone(userRef1, UserRef.class);}
+    public UserRef getUserRef2() { return clone(userRef2, UserRef.class);}
+    public UserRef getUserRef3() { return clone(userRef3, UserRef.class);}
+    public UserRef getUserRef4() { return clone(userRef4, UserRef.class);}
 
     private AssessmentLevel generateAssessmentLevel(String title, int maxScore, long estimatedDuration, int order,
                                                     String questions, String instructions, AssessmentType assessmentType){
@@ -418,6 +460,25 @@ public class TestDataFactory {
         newTrainingDefinition.setShowStepperBar(showStepperBar);
         newTrainingDefinition.setLastEdited(lastEdited);
         return newTrainingDefinition;
+    }
+
+    private TrainingDefinitionDTO generateTrainingDefinitionDTO(TrainingDefinition trainingDefinition){
+        TrainingDefinitionDTO trainingDefinitionDTO = new TrainingDefinitionDTO();
+        trainingDefinitionDTO.setTitle(trainingDefinition.getTitle());
+        trainingDefinitionDTO.setDescription(trainingDefinition.getDescription());
+        trainingDefinitionDTO.setPrerequisities(trainingDefinition.getPrerequisities());
+        trainingDefinitionDTO.setOutcomes(trainingDefinition.getOutcomes());
+        trainingDefinitionDTO.setState(mapToTDState(trainingDefinition.getState()));
+        trainingDefinitionDTO.setShowStepperBar(trainingDefinition.isShowStepperBar());
+        trainingDefinitionDTO.setLastEdited(trainingDefinition.getLastEdited());
+        return trainingDefinitionDTO;
+    }
+
+    private TrainingDefinitionInfoDTO generateTrainingDefinitionInfoDTO(TrainingDefinition trainingDefinition){
+        TrainingDefinitionInfoDTO trainingDefinitionInfoDTO = new TrainingDefinitionInfoDTO();
+        trainingDefinitionInfoDTO.setTitle(trainingDefinition.getTitle());
+        trainingDefinitionInfoDTO.setState(mapToTDState(trainingDefinition.getState()));
+        return trainingDefinitionInfoDTO;
     }
 
     private TrainingInstance generateTrainingInstance(LocalDateTime starTime, LocalDateTime endTime, String title,
@@ -753,6 +814,12 @@ public class TestDataFactory {
         return lockedPoolInfo;
     }
 
+    private UserRef generateUserRef(Long userRefId) {
+        UserRef userRef = new UserRef();
+        userRef.setUserRefId(userRefId);
+        return userRef;
+    }
+
     private UserRefDTO generateUserRefDTO(Long userRefId, String fullName, String familyName, String givenName, String sub, String iss, byte[] picture) {
         UserRefDTO userRefDTO = new UserRefDTO();
         userRefDTO.setUserRefId(userRefId);
@@ -772,5 +839,15 @@ public class TestDataFactory {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private cz.muni.ics.kypo.training.api.enums.TDState mapToTDState(TDState state) {
+        switch (state) {
+            case UNRELEASED: return cz.muni.ics.kypo.training.api.enums.TDState.UNRELEASED;
+            case RELEASED: return cz.muni.ics.kypo.training.api.enums.TDState.RELEASED;
+            case ARCHIVED: return cz.muni.ics.kypo.training.api.enums.TDState.ARCHIVED;
+            case PRIVATED: return cz.muni.ics.kypo.training.api.enums.TDState.PRIVATED;
+        }
+        return null;
     }
 }
