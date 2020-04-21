@@ -80,6 +80,20 @@ public class SecurityService {
     }
 
     /**
+     * Is organizer of given training run.
+     *
+     * @param trainingRunId the run id
+     * @return the boolean
+     */
+    public boolean isOrganizerOfGivenTrainingRun(Long trainingRunId) {
+        TrainingRun trainingRun = trainingRunRepository.findById(trainingRunId)
+                .orElseThrow(() -> new EntityNotFoundException(new EntityErrorDetail(TrainingRun.class, "id", trainingRunId.getClass(),
+                        trainingRunId, "The necessary permissions are required for a resource.")));
+        return trainingRun.getTrainingInstance().getOrganizers().stream()
+                .anyMatch(o -> o.getUserRefId().equals(getUserRefIdFromUserAndGroup()));
+    }
+
+    /**
      * Is designer of given training definition boolean.
      *
      * @param definitionId the definition id
