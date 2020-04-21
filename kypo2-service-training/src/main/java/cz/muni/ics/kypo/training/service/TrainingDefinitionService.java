@@ -401,15 +401,7 @@ public class TrainingDefinitionService {
      */
     public GameLevel createGameLevel(Long definitionId) {
         TrainingDefinition trainingDefinition = findById(definitionId);
-        if (!trainingDefinition.getState().equals(TDState.UNRELEASED)) {
-            throw new EntityConflictException(new EntityErrorDetail(TrainingDefinition.class, "id", definitionId.getClass(), definitionId,
-                    "Cannot create level in released or archived training definition"));
-        }
-        if (trainingInstanceRepository.existsAnyForTrainingDefinition(trainingDefinition.getId())) {
-            throw new EntityConflictException(new EntityErrorDetail(TrainingDefinition.class, "id", definitionId.getClass(), definitionId,
-                    "Cannot update training definition with already created training instance. " +
-                            "Remove training instance/s before updating training definition."));
-        }
+        checkIfCanBeUpdated(trainingDefinition);
         GameLevel newGameLevel = initializeNewGameLevel();
         newGameLevel.setOrder(getNextOrder(definitionId));
         newGameLevel.setTrainingDefinition(trainingDefinition);
@@ -470,15 +462,7 @@ public class TrainingDefinitionService {
      */
     public AssessmentLevel createAssessmentLevel(Long definitionId) {
         TrainingDefinition trainingDefinition = findById(definitionId);
-        if (!trainingDefinition.getState().equals(TDState.UNRELEASED)) {
-            throw new EntityConflictException(new EntityErrorDetail(TrainingDefinition.class, "id", definitionId.getClass(), definitionId,
-                    "Cannot create level in released or archived training definition"));
-        }
-        if (trainingInstanceRepository.existsAnyForTrainingDefinition(trainingDefinition.getId())) {
-            throw new EntityConflictException(new EntityErrorDetail(TrainingDefinition.class, "id", definitionId.getClass(), definitionId,
-                    "Cannot update training definition with already created training instance. " +
-                            "Remove training instance/s before updating training definition."));
-        }
+        checkIfCanBeUpdated(trainingDefinition);
         AssessmentLevel newAssessmentLevel = initializeNewAssessmentLevel();
         newAssessmentLevel.setOrder(getNextOrder(definitionId));
         newAssessmentLevel.setTrainingDefinition(trainingDefinition);
