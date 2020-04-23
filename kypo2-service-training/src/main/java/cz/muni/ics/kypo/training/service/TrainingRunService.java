@@ -531,6 +531,8 @@ public class TrainingRunService {
     public void archiveTrainingRun(Long trainingRunId) {
         TrainingRun trainingRun = findById(trainingRunId);
         trainingRun.setState(TRState.ARCHIVED);
+        trainingRun.setPreviousSandboxInstanceRefId(trainingRun.getSandboxInstanceRefId());
+        trainingRun.setSandboxInstanceRefId(null);
         trAcquisitionLockRepository.deleteByParticipantRefIdAndTrainingInstanceId(trainingRun.getParticipantRef().getUserRefId(), trainingRun.getTrainingInstance().getId());
         trainingRunRepository.save(trainingRun);
     }
