@@ -202,8 +202,8 @@ public class TrainingInstanceFacadeTest {
     @Test
     public void assignPoolToTrainingInstance() {
         trainingInstance1.setPoolId(null);
-        given(trainingInstanceService.findById(anyLong())).willReturn(trainingInstance1);
-        given(trainingInstanceService.lockPool(anyLong())).willReturn(lockedPoolInfo);
+        given(trainingInstanceService.findById(trainingInstance1.getId())).willReturn(trainingInstance1);
+        given(trainingInstanceService.lockPool(trainingInstance1.getPoolId())).willReturn(lockedPoolInfo);
         trainingInstanceFacade.assignPoolToTrainingInstance(trainingInstance1.getId(), trainingInstanceAssignPoolIdDTO);
         then(trainingInstanceService).should().lockPool(trainingInstance1.getId());
     }
