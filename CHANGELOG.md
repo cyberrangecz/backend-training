@@ -1,3 +1,11 @@
+* ee16240e -- Update pom.xml version based on GitLab tag. Done by CI.
+*   a82b3148 -- Merge branch '540-use-v-prefix-for-tags' into 'master'
+|\  
+| * 2a4effba -- Resolve "Use 'v' prefix for tags"
+|/  
+* e6d1a251 -- Update kypo2-training-prod.properties
+* 6b2d4777 -- Update kypo2-training-dev.properties
+* 9c0d4f1c -- CHANGELOG.md file updated with commits between the current and previous tag. Done by CI.
 * 2d809cf6 -- Update pom.xml version based on GitLab tag. Done by CI.
 * 43212206 -- security commons version updated.
 * ef106768 -- Update security-commons version.
