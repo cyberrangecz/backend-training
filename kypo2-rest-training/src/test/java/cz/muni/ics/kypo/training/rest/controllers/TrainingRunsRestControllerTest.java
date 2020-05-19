@@ -308,9 +308,10 @@ public class TrainingRunsRestControllerTest {
     @Test
     public void isCorrectFlag() throws Exception {
         given(trainingRunFacade.isCorrectFlag(trainingRun1.getId(), "flag")).willReturn(isCorrectFlagDTO);
-        MockHttpServletResponse result = mockMvc.perform(get("/training-runs/{runId}/is-correct-flag", trainingRun1.getId())
-                .param("flag", "flag")
-                .param("solutionTaken", "true"))
+        MockHttpServletResponse result = mockMvc.perform(post("/training-runs/{runId}/is-correct-flag", trainingRun1.getId())
+                .param("solutionTaken", "true")
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                .content(convertObjectToJsonBytes("flag")))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andReturn().getResponse();
@@ -320,9 +321,10 @@ public class TrainingRunsRestControllerTest {
     @Test
     public void isCorrectFlag_FacadeException() throws Exception {
         willThrow(new EntityNotFoundException()).given(trainingRunFacade).isCorrectFlag(anyLong(), anyString());
-        MockHttpServletResponse result = mockMvc.perform(get("/training-runs/{runId}/is-correct-flag", trainingRun1.getId())
-                .param("flag", "flag")
-                .param("solutionTaken", "true"))
+        MockHttpServletResponse result = mockMvc.perform(post("/training-runs/{runId}/is-correct-flag", trainingRun1.getId())
+                .param("solutionTaken", "true")
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                .content(convertObjectToJsonBytes("flag")))
                 .andExpect(status().isNotFound())
                 .andReturn().getResponse();
         ApiError error = convertJsonBytesToObject(result.getContentAsString(), ApiError.class);

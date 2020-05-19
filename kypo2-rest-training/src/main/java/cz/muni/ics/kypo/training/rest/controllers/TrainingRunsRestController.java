@@ -319,7 +319,7 @@ public class TrainingRunsRestController {
      * @param flag  submitted string.
      * @return True if flag is correct, false if flag is wrong.
      */
-    @ApiOperation(httpMethod = "GET",
+    @ApiOperation(httpMethod = "POST",
             value = "Check flag of game level",
             notes = "Current level of given training run must be game level",
             response = Boolean.class,
@@ -332,11 +332,11 @@ public class TrainingRunsRestController {
             @ApiResponse(code = 400, message = "Current level is not game level and does not have flag.", response = ApiError.class),
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiError.class)
     })
-    @GetMapping(path = "/{runId}/is-correct-flag", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(path = "/{runId}/is-correct-flag", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<IsCorrectFlagDTO> isCorrectFlag(@ApiParam(value = "Training run ID", required = true)
                                                           @PathVariable("runId") Long runId,
                                                           @ApiParam(value = "Submitted flag", required = true)
-                                                          @RequestParam(value = "flag") String flag) {
+                                                          @RequestBody String flag) {
         return ResponseEntity.ok(trainingRunFacade.isCorrectFlag(runId, flag));
     }
 
