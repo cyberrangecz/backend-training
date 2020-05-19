@@ -34,7 +34,8 @@ public class InfoLevelImportDTO extends AbstractLevelImportDTO{
 		this.content = content;
 	}
 
-	@Override public String toString() {
+	@Override
+	public String toString() {
 		return "InfoLevelImportDTO{" + "content='" + content + '\'' + '}';
 	}
 }
