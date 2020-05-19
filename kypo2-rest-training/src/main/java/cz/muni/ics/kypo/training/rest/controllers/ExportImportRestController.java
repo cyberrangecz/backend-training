@@ -63,7 +63,7 @@ public class ExportImportRestController {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Training definitions and levels found and exported.", response = ExportTrainingDefinitionAndLevelsDTO.class),
-            @ApiResponse(code = 404, message = "Training definition and levels not found.", response = ApiError.class),
+            @ApiResponse(code = 404, message = "Training definition not found.", response = ApiError.class),
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiError.class)
     })
     @GetMapping(path = "/exports/training-definitions/{definitionId}", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
@@ -94,6 +94,7 @@ public class ExportImportRestController {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Training definition imported.", response = TrainingDefinitionByIdDTO.class),
+            @ApiResponse(code = 422, message = "Sum of hints penalties in imported game level is greater than maximal score.", response = ApiError.class),
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiError.class)
     })
     @PostMapping(path = "/imports/training-definitions", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)

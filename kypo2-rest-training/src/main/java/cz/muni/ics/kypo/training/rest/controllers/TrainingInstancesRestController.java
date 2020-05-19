@@ -20,7 +20,6 @@ import org.springframework.data.querydsl.binding.QuerydslPredicate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -28,7 +27,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * The type Training instances rest controller.
+ * The rest controller for Training instances.
  */
 @Api(value = "/training-instances", tags = "Training instances", consumes = MediaType.APPLICATION_JSON_VALUE)
 @ApiResponses(value = {
@@ -70,8 +69,8 @@ public class TrainingInstancesRestController {
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Training instance found", response = TrainingInstanceDTO.class),
-            @ApiResponse(code = 404, message = "Training instance with given id not found.", response = ApiError.class),
+            @ApiResponse(code = 200, message = "The training instance has been found", response = TrainingInstanceDTO.class),
+            @ApiResponse(code = 404, message = "The training instance has not been found.", response = ApiError.class),
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiError.class)
     })
     @GetMapping(path = "/{instanceId}", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -99,7 +98,7 @@ public class TrainingInstancesRestController {
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "All training instances found.", response = TrainingInstanceRestResource.class),
+            @ApiResponse(code = 200, message = "The training instances have been found.", response = TrainingInstanceRestResource.class),
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiError.class)
     })
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
@@ -129,8 +128,10 @@ public class TrainingInstancesRestController {
             consumes = MediaType.APPLICATION_JSON_VALUE
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Training instance created.", response = TrainingInstanceDTO.class),
-            @ApiResponse(code = 400, message = "Given training instance is not valid.", response = ApiError.class),
+            @ApiResponse(code = 200, message = "The training instance has been created.", response = TrainingInstanceDTO.class),
+            @ApiResponse(code = 400, message = "The provided training instance is not valid.", response = ApiError.class),
+            @ApiResponse(code = 404, message = "The training definition has not been found.", response = ApiError.class),
+            @ApiResponse(code = 409, message = "The training instance start time and end time are not valid.", response = ApiError.class),
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiError.class)
     })
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -156,9 +157,9 @@ public class TrainingInstancesRestController {
             consumes = MediaType.APPLICATION_JSON_VALUE
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Training instance updated."),
-            @ApiResponse(code = 404, message = "The requested resource was not found", response = ApiError.class),
-            @ApiResponse(code = 409, message = "The requested resource was not deleted because of its finish time", response = ApiError.class),
+            @ApiResponse(code = 200, message = "The training instance has been updated."),
+            @ApiResponse(code = 404, message = "The training instance has not been found", response = ApiError.class),
+            @ApiResponse(code = 409, message = "The training instance start time and end time are not valid.", response = ApiError.class),
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiError.class)
     })
     @PutMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -181,9 +182,9 @@ public class TrainingInstancesRestController {
             nickname = "deleteTrainingInstance"
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Training instance updated."),
-            @ApiResponse(code = 400, message = "Given training instance is not valid.", response = ApiError.class),
-            @ApiResponse(code = 404, message = "Training instance with given id not found.", response = ApiError.class),
+            @ApiResponse(code = 200, message = "The training instance has been updated."),
+            @ApiResponse(code = 400, message = "The provided training instance is not valid.", response = ApiError.class),
+            @ApiResponse(code = 404, message = "The training instance has not been found.", response = ApiError.class),
             @ApiResponse(code = 409, message = "The training instance cannot be deleted for the specific reason stated in the error message.", response = ApiError.class),
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiError.class)
     })
@@ -209,9 +210,9 @@ public class TrainingInstancesRestController {
             nickname = "assignPool"
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Training instance updated."),
-            @ApiResponse(code = 400, message = "Given training instance is not valid.", response = ApiError.class),
-            @ApiResponse(code = 404, message = "Training instance with given id not found.", response = ApiError.class),
+            @ApiResponse(code = 200, message = "The training instance has been updated."),
+            @ApiResponse(code = 400, message = "The provided training instance is not valid.", response = ApiError.class),
+            @ApiResponse(code = 404, message = "The training instance has not been found.", response = ApiError.class),
             @ApiResponse(code = 409, message = "The training instance cannot be updated for the specific reason stated in the error message.", response = ApiError.class),
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiError.class)
     })
@@ -235,11 +236,12 @@ public class TrainingInstancesRestController {
             nickname = "unassignPool"
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Training instance updated."),
+            @ApiResponse(code = 200, message = "The pool has been unassigned."),
+            @ApiResponse(code = 409, message = "The training instance has not assigned pool.", response = ApiError.class),
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiError.class)
     })
     @PatchMapping(path = "/{instanceId}/unassign-pool")
-    public ResponseEntity<TrainingInstanceBasicInfoDTO> unassignPool(@ApiParam(value = "Id of training instance to be deleted", required = true)
+    public ResponseEntity<TrainingInstanceBasicInfoDTO> unassignPool(@ApiParam(value = "Id of training instance to unassign pool.", required = true)
                                                                      @PathVariable("instanceId") Long id) {
         return ResponseEntity.ok(trainingInstanceFacade.unassignPoolInTrainingInstance(id));
     }
@@ -261,7 +263,7 @@ public class TrainingInstancesRestController {
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "All training runs in given training instance found.", response = TrainingRunsRestController.TrainingRunRestResource.class),
+            @ApiResponse(code = 200, message = "The training runs have been found.", response = TrainingRunsRestController.TrainingRunRestResource.class),
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiError.class)
     })
     @GetMapping(path = "/{instanceId}/training-runs", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -295,8 +297,8 @@ public class TrainingInstancesRestController {
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Organizers for training instance found.", response = TrainingDefinitionsRestController.UserInfoRestResource.class),
-            @ApiResponse(code = 404, message = "Training instance not found.", response = ApiError.class),
+            @ApiResponse(code = 200, message = "The organizers have been found.", response = TrainingDefinitionsRestController.UserInfoRestResource.class),
+            @ApiResponse(code = 404, message = "The training instance has not been found.", response = ApiError.class),
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiError.class)
     })
     @ApiPageableSwagger
@@ -329,8 +331,8 @@ public class TrainingInstancesRestController {
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Organizers found.", response = TrainingDefinitionsRestController.UserInfoRestResource.class),
-            @ApiResponse(code = 404, message = "Training instance not found.", response = ApiError.class),
+            @ApiResponse(code = 200, message = "The organizers have been found.", response = TrainingDefinitionsRestController.UserInfoRestResource.class),
+            @ApiResponse(code = 404, message = "The training instance has not been found.", response = ApiError.class),
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiError.class)
 
     })
@@ -361,8 +363,8 @@ public class TrainingInstancesRestController {
             nickname = "editOrganizers"
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 204, message = "Organizers edited."),
-            @ApiResponse(code = 404, message = "Training instance with given id not found.", response = ApiError.class),
+            @ApiResponse(code = 204, message = "The organizers of training instance have been edited."),
+            @ApiResponse(code = 404, message = "The training instance has not been found.", response = ApiError.class),
             @ApiResponse(code = 500, message = "Unexpected condition was encountered. Probably error during calling other microservice.", response = ApiError.class)
     })
     @ApiPageableSwagger

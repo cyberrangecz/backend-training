@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * The type Visualizations rest controller.
+ * The rest controller for Visualizations.
  */
 @Api(value = "/visualizations", tags = "Visualizations", consumes = MediaType.APPLICATION_JSON_VALUE)
 @ApiResponses(value = {
