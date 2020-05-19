@@ -596,8 +596,9 @@ public class TrainingRunsIT {
         mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_ADMINISTRATOR.name()));
 
         assertFalse(trainingRun1.isLevelAnswered());
-        MockHttpServletResponse response = mvc.perform(get("/training-runs/{runId}/is-correct-flag", trainingRun1.getId())
-                .param("flag", gameLevel1.getFlag()))
+        MockHttpServletResponse response = mvc.perform(post("/training-runs/{runId}/is-correct-flag", trainingRun1.getId())
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                .content(convertObjectToJsonBytes(gameLevel1.getFlag())))
                 .andExpect(status().isOk())
                 .andReturn().getResponse();
         assertEquals(isCorrectFlagDTO, mapper.readValue(response.getContentAsString(), IsCorrectFlagDTO.class));
@@ -612,8 +613,9 @@ public class TrainingRunsIT {
         isCorrectFlagDTO.setCorrect(false);
         mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_ADMINISTRATOR.name()));
         assertFalse(trainingRun1.isLevelAnswered());
-        MockHttpServletResponse response = mvc.perform(get("/training-runs/{runId}/is-correct-flag", trainingRun1.getId())
-                .param("flag", "wrongFlag"))
+        MockHttpServletResponse response = mvc.perform(post("/training-runs/{runId}/is-correct-flag", trainingRun1.getId())
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                .content(convertObjectToJsonBytes("wrongFlag")))
                 .andExpect(status().isOk())
                 .andReturn().getResponse();
         assertEquals(isCorrectFlagDTO, mapper.readValue(response.getContentAsString(), IsCorrectFlagDTO.class));
@@ -631,8 +633,9 @@ public class TrainingRunsIT {
         mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_ADMINISTRATOR.name()));
 
         assertFalse(trainingRun1.isLevelAnswered());
-        MockHttpServletResponse response = mvc.perform(get("/training-runs/{runId}/is-correct-flag", trainingRun1.getId())
-                .param("flag", "wrongFlag"))
+        MockHttpServletResponse response = mvc.perform(post("/training-runs/{runId}/is-correct-flag", trainingRun1.getId())
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                .content(convertObjectToJsonBytes("wrongFlag")))
                 .andExpect(status().isOk())
                 .andReturn().getResponse();
         assertEquals(isCorrectFlagDTO, mapper.readValue(response.getContentAsString(), IsCorrectFlagDTO.class));
@@ -651,8 +654,9 @@ public class TrainingRunsIT {
         mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_ADMINISTRATOR.name()));
 
         assertFalse(trainingRun1.isLevelAnswered());
-        MockHttpServletResponse response = mvc.perform(get("/training-runs/{runId}/is-correct-flag", trainingRun1.getId())
-                .param("flag", "wrongFlag"))
+        MockHttpServletResponse response = mvc.perform(post("/training-runs/{runId}/is-correct-flag", trainingRun1.getId())
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                .content(convertObjectToJsonBytes("wrongFlag")))
                 .andExpect(status().isOk())
                 .andReturn().getResponse();
         assertEquals(isCorrectFlagDTO, mapper.readValue(response.getContentAsString(), IsCorrectFlagDTO.class));
@@ -665,8 +669,9 @@ public class TrainingRunsIT {
         trainingRunRepository.save(trainingRun2);
         mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_ADMINISTRATOR.name()));
 
-        Exception ex = mvc.perform(get("/training-runs/{runId}/is-correct-flag", trainingRun2.getId())
-                .param("flag", "gameFlag"))
+        Exception ex = mvc.perform(post("/training-runs/{runId}/is-correct-flag", trainingRun2.getId())
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                .content(convertObjectToJsonBytes("gameFlag")))
                 .andExpect(status().isBadRequest()).andReturn().getResolvedException();
 
         assertEquals(BadRequestException.class, Objects.requireNonNull(ex).getClass());
