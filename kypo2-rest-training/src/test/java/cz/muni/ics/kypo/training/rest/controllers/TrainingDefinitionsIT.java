@@ -477,7 +477,6 @@ public class TrainingDefinitionsIT {
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON_VALUE))
                 .andReturn().getResponse();
-        System.out.println(result.getContentAsString());
         Optional<TrainingDefinition> clonedTrainingDefinition = trainingDefinitionRepository.findById(2L);
         assertTrue(clonedTrainingDefinition.isPresent());
         assertEquals("title", clonedTrainingDefinition.get().getTitle());

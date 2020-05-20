@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.bohnman.squiggly.Squiggly;
 import com.github.bohnman.squiggly.util.SquigglyUtils;
 import com.querydsl.core.types.Predicate;
+import cz.muni.ics.kypo.training.api.dto.gamelevel.ValidateFlagDTO;
 import cz.muni.ics.kypo.training.api.responses.PageResultResource;
 import cz.muni.ics.kypo.training.api.dto.AbstractLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.IsCorrectFlagDTO;
@@ -31,6 +32,8 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
+import javax.validation.Valid;
 
 /**
  * The rest controller for Training runs.
@@ -336,8 +339,8 @@ public class TrainingRunsRestController {
     public ResponseEntity<IsCorrectFlagDTO> isCorrectFlag(@ApiParam(value = "Training run ID", required = true)
                                                           @PathVariable("runId") Long runId,
                                                           @ApiParam(value = "Submitted flag", required = true)
-                                                          @RequestBody String flag) {
-        return ResponseEntity.ok(trainingRunFacade.isCorrectFlag(runId, flag));
+                                                          @RequestBody @Valid ValidateFlagDTO validateFlagDTO) {
+        return ResponseEntity.ok(trainingRunFacade.isCorrectFlag(runId, validateFlagDTO.getFlag()));
     }
 
     /**

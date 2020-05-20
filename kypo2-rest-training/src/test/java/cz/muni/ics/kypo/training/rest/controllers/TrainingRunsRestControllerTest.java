@@ -8,6 +8,7 @@ import cz.muni.ics.kypo.training.api.dto.IsCorrectFlagDTO;
 import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.gamelevel.GameLevelDTO;
+import cz.muni.ics.kypo.training.api.dto.gamelevel.ValidateFlagDTO;
 import cz.muni.ics.kypo.training.api.dto.hint.HintDTO;
 import cz.muni.ics.kypo.training.api.dto.infolevel.InfoLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.run.AccessTrainingRunDTO;
@@ -96,6 +97,7 @@ public class TrainingRunsRestControllerTest {
     private TrainingRunByIdDTO trainingRunByIdDTO;
     private UserRefDTO participantDTO1;
     private UserRef participant1;
+    private ValidateFlagDTO validFlagDTO;
 
 
     @Before
@@ -140,6 +142,9 @@ public class TrainingRunsRestControllerTest {
 
         accessedTrainingRunDTO = testDataFactory.getAccessedTrainingRunDTO();
         accessedTrainingRunDTO.setId(1L);
+
+        validFlagDTO = new ValidateFlagDTO();
+        validFlagDTO.setFlag("flag");
 
         pageAccessed = new PageImpl<>(List.of(accessedTrainingRunDTO));
         page = new PageImpl<>(List.of(trainingRun1, trainingRun2));
@@ -311,7 +316,7 @@ public class TrainingRunsRestControllerTest {
         MockHttpServletResponse result = mockMvc.perform(post("/training-runs/{runId}/is-correct-flag", trainingRun1.getId())
                 .param("solutionTaken", "true")
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
-                .content(convertObjectToJsonBytes("flag")))
+                .content(convertObjectToJsonBytes(validFlagDTO)))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andReturn().getResponse();
@@ -324,7 +329,7 @@ public class TrainingRunsRestControllerTest {
         MockHttpServletResponse result = mockMvc.perform(post("/training-runs/{runId}/is-correct-flag", trainingRun1.getId())
                 .param("solutionTaken", "true")
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
-                .content(convertObjectToJsonBytes("flag")))
+                .content(convertObjectToJsonBytes(validFlagDTO)))
                 .andExpect(status().isNotFound())
                 .andReturn().getResponse();
         ApiError error = convertJsonBytesToObject(result.getContentAsString(), ApiError.class);

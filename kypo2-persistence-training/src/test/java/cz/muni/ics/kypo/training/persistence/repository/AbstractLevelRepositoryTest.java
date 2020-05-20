@@ -87,8 +87,6 @@ public class AbstractLevelRepositoryTest {
         assertTrue(optionalGameLevel.isPresent());
         assertTrue(optionalGameLevel.get() instanceof GameLevel);
         assertEquals(gameLevel, optionalGameLevel.get());
-        System.out.println(gameLevel.getHints());
-        System.out.println(((GameLevel)optionalGameLevel.get()).getSolution());
     }
 
     @Test
