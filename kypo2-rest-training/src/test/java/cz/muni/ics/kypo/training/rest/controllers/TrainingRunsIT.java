@@ -6,6 +6,7 @@ import com.google.gson.JsonObject;
 import cz.muni.ics.kypo.commons.security.enums.AuthenticatedUserOIDCItems;
 import cz.muni.ics.kypo.training.api.dto.IsCorrectFlagDTO;
 import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
+import cz.muni.ics.kypo.training.api.dto.gamelevel.ValidateFlagDTO;
 import cz.muni.ics.kypo.training.api.dto.hint.HintDTO;
 import cz.muni.ics.kypo.training.api.dto.hint.TakenHintDTO;
 import cz.muni.ics.kypo.training.api.dto.infolevel.InfoLevelDTO;
@@ -66,6 +67,7 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.reactive.function.client.ClientRequest;
 import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.client.ExchangeFunction;
@@ -151,6 +153,7 @@ public class TrainingRunsIT {
     private UserRef participant1, participant2, organizer;
     private UserRefDTO userRefDTO1, userRefDTO2;
     private UserRef participant;
+    private ValidateFlagDTO validFlagDTO, invalidFlagDTO;
     private PageResultResourcePython sandboxInfoPageResult;
 
     @SpringBootApplication
@@ -246,6 +249,12 @@ public class TrainingRunsIT {
 
         sandboxInfoPageResult = new PageResultResourcePython();
         sandboxInfoPageResult.setResults(Arrays.asList(sandboxInfo));
+
+        validFlagDTO = new ValidateFlagDTO();
+        validFlagDTO.setFlag(gameLevel1.getFlag());
+        invalidFlagDTO = new ValidateFlagDTO();
+        invalidFlagDTO.setFlag("wrong flag");
+
     }
 
     @After
@@ -598,7 +607,7 @@ public class TrainingRunsIT {
         assertFalse(trainingRun1.isLevelAnswered());
         MockHttpServletResponse response = mvc.perform(post("/training-runs/{runId}/is-correct-flag", trainingRun1.getId())
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
-                .content(convertObjectToJsonBytes(gameLevel1.getFlag())))
+                .content(convertObjectToJsonBytes(validFlagDTO)))
                 .andExpect(status().isOk())
                 .andReturn().getResponse();
         assertEquals(isCorrectFlagDTO, mapper.readValue(response.getContentAsString(), IsCorrectFlagDTO.class));
@@ -615,7 +624,7 @@ public class TrainingRunsIT {
         assertFalse(trainingRun1.isLevelAnswered());
         MockHttpServletResponse response = mvc.perform(post("/training-runs/{runId}/is-correct-flag", trainingRun1.getId())
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
-                .content(convertObjectToJsonBytes("wrongFlag")))
+                .content(convertObjectToJsonBytes(invalidFlagDTO)))
                 .andExpect(status().isOk())
                 .andReturn().getResponse();
         assertEquals(isCorrectFlagDTO, mapper.readValue(response.getContentAsString(), IsCorrectFlagDTO.class));
@@ -635,7 +644,7 @@ public class TrainingRunsIT {
         assertFalse(trainingRun1.isLevelAnswered());
         MockHttpServletResponse response = mvc.perform(post("/training-runs/{runId}/is-correct-flag", trainingRun1.getId())
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
-                .content(convertObjectToJsonBytes("wrongFlag")))
+                .content(convertObjectToJsonBytes(invalidFlagDTO)))
                 .andExpect(status().isOk())
                 .andReturn().getResponse();
         assertEquals(isCorrectFlagDTO, mapper.readValue(response.getContentAsString(), IsCorrectFlagDTO.class));
@@ -656,7 +665,7 @@ public class TrainingRunsIT {
         assertFalse(trainingRun1.isLevelAnswered());
         MockHttpServletResponse response = mvc.perform(post("/training-runs/{runId}/is-correct-flag", trainingRun1.getId())
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
-                .content(convertObjectToJsonBytes("wrongFlag")))
+                .content(convertObjectToJsonBytes(invalidFlagDTO)))
                 .andExpect(status().isOk())
                 .andReturn().getResponse();
         assertEquals(isCorrectFlagDTO, mapper.readValue(response.getContentAsString(), IsCorrectFlagDTO.class));
@@ -671,10 +680,22 @@ public class TrainingRunsIT {
 
         Exception ex = mvc.perform(post("/training-runs/{runId}/is-correct-flag", trainingRun2.getId())
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
-                .content(convertObjectToJsonBytes("gameFlag")))
+                .content(convertObjectToJsonBytes(invalidFlagDTO)))
                 .andExpect(status().isBadRequest()).andReturn().getResolvedException();
 
         assertEquals(BadRequestException.class, Objects.requireNonNull(ex).getClass());
+    }
+
+    @Test
+    public void isCorrectFlagEmptyFlag() throws Exception {
+        trainingRunRepository.save(trainingRun2);
+        mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_ADMINISTRATOR.name()));
+        invalidFlagDTO.setFlag("");
+        Exception ex = mvc.perform(post("/training-runs/{runId}/is-correct-flag", trainingRun2.getId())
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                .content(convertObjectToJsonBytes(invalidFlagDTO)))
+                .andExpect(status().isBadRequest()).andReturn().getResolvedException();
+        assertEquals(MethodArgumentNotValidException.class, Objects.requireNonNull(ex).getClass());
     }
 
     @Test
