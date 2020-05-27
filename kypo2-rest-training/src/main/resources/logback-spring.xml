@@ -29,7 +29,7 @@
     <appender name="AUDIT_CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
             <charset>UTF-8</charset>
-            <pattern>${kypo.audit.messages.format:-KYPO_PORTAL_EVENTS_AUDIT --- [%thread] %logger{5} --- %msg%n}</pattern>
+            <pattern>${kypo.audit.messages.format:-kypo-training --- KYPO_PORTAL_EVENTS_AUDIT [%thread] %logger{5} --- %msg%n}</pattern>
         </encoder>
     </appender>
 
