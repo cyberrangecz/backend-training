@@ -22,13 +22,7 @@ import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
 import org.springframework.stereotype.Repository;
-import org.springframework.web.client.RestTemplate;
-import org.springframework.web.reactive.function.BodyInserter;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
@@ -80,7 +74,7 @@ public class TrainingEventsDAO extends AbstractElasticClientDAO {
         searchSourceBuilder.size(INDEX_DOCUMENTS_MAX_RETURN_NUMBER);
         searchSourceBuilder.timeout(new TimeValue(5, TimeUnit.MINUTES));
 
-        SearchRequest searchRequest = new SearchRequest(AbstractKypoIndexPath.KYPO3_EVENTS_INDEX + ".*" + "_evt" + ".definition=" + trainingDefinitionId + ".instance=" + trainingInstanceId);
+        SearchRequest searchRequest = new SearchRequest(AbstractKypoIndexPath.KYPO_EVENTS_INDEX + ".*" + "_evt" + ".definition=" + trainingDefinitionId + ".instance=" + trainingInstanceId + "*");
         searchRequest.source(searchSourceBuilder);
 
         return handleElasticsearchResponse(getRestHighLevelClient().search(searchRequest, RequestOptions.DEFAULT));
@@ -103,7 +97,7 @@ public class TrainingEventsDAO extends AbstractElasticClientDAO {
         searchSourceBuilder.size(INDEX_DOCUMENTS_MAX_RETURN_NUMBER);
         searchSourceBuilder.timeout(new TimeValue(5, TimeUnit.MINUTES));
 
-        SearchRequest searchRequest = new SearchRequest(AbstractKypoIndexPath.KYPO3_EVENTS_INDEX + ".*" + "_evt" + ".definition=" + trainingDefinitionId + ".instance=" + trainingInstanceId);
+        SearchRequest searchRequest = new SearchRequest(AbstractKypoIndexPath.KYPO_EVENTS_INDEX + ".*" + "_evt" + ".definition=" + trainingDefinitionId + ".instance=" + trainingInstanceId + "*");
         searchRequest.source(searchSourceBuilder);
 
         return handleElasticsearchResponse(getRestHighLevelClient().search(searchRequest, RequestOptions.DEFAULT));
@@ -119,7 +113,7 @@ public class TrainingEventsDAO extends AbstractElasticClientDAO {
      * @throws ElasticsearchTrainingDataLayerException the elasticsearch training data layer exception
      */
     public void deleteEventsByTrainingInstanceId(Long trainingInstanceId) throws ElasticsearchTrainingDataLayerException {
-        DeleteIndexRequest deleteIndexRequest = new DeleteIndexRequest(AbstractKypoIndexPath.KYPO3_EVENTS_INDEX + ".*" + ".instance=" + trainingInstanceId);
+        DeleteIndexRequest deleteIndexRequest = new DeleteIndexRequest(AbstractKypoIndexPath.KYPO_EVENTS_INDEX + ".*" + ".instance=" + trainingInstanceId + "*");
         try {
             AcknowledgedResponse deleteIndexResponse = getRestHighLevelClient().indices().delete(deleteIndexRequest, RequestOptions.DEFAULT);
             if (!deleteIndexResponse.isAcknowledged()) {
@@ -128,7 +122,6 @@ public class TrainingEventsDAO extends AbstractElasticClientDAO {
         } catch (IOException e) {
             throw new ElasticsearchTrainingDataLayerException("Client could not connect to Elastic.");
         }
-
     }
 
     /**
@@ -161,7 +154,7 @@ public class TrainingEventsDAO extends AbstractElasticClientDAO {
         ElasticsearchResponseDto elasticsearchResponseDto =
                 webClient
                         .post()
-                        .uri("/" + AbstractKypoIndexPath.KYPO3_EVENTS_INDEX + ".*" + ".instance=" + trainingInstanceId + "/_delete_by_query")
+                        .uri("/" + AbstractKypoIndexPath.KYPO_EVENTS_INDEX + ".*" + ".instance=" + trainingInstanceId + "*" + "/_delete_by_query")
                         .body(BodyInserters.fromPublisher(Mono.just(objectToPost), String.class))
                         .retrieve()
                         .bodyToMono(ElasticsearchResponseDto.class)
@@ -223,7 +216,7 @@ public class TrainingEventsDAO extends AbstractElasticClientDAO {
         searchSourceBuilder.query(queryBuilder);
         searchSourceBuilder.timeout(new TimeValue(60, TimeUnit.SECONDS));
 
-        SearchRequest searchRequest = new SearchRequest(AbstractKypoIndexPath.KYPO3_EVENTS_INDEX + ".*");
+        SearchRequest searchRequest = new SearchRequest(AbstractKypoIndexPath.KYPO_EVENTS_INDEX + ".*");
         searchRequest.source(searchSourceBuilder);
 
         SearchResponse response = getRestHighLevelClient().search(searchRequest, RequestOptions.DEFAULT);
