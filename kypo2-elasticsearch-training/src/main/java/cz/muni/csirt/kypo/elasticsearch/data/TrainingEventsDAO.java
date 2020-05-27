@@ -21,6 +21,7 @@ import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Repository;
 
 import java.io.IOException;
@@ -44,8 +45,8 @@ public class TrainingEventsDAO extends AbstractElasticClientDAO {
      * @param objectMapper        the object mapper
      */
     @Autowired
-    public TrainingEventsDAO(RestHighLevelClient restHighLevelClient,
-                             ObjectMapper objectMapper) {
+    public TrainingEventsDAO(@Qualifier("kypoRestHighLevelClient") RestHighLevelClient restHighLevelClient,
+                             @Qualifier("objMapperForElasticsearch") ObjectMapper objectMapper) {
         super(restHighLevelClient, objectMapper);
     }
 
