@@ -1,3 +1,11 @@
+* af209ada -- Update pom.xml version based on GitLab tag. Done by CI.
+* d515f2fb -- Update VERSION.txt
+* 679b2f15 -- remove dot before wildcard.
+*   c9f6b696 -- Merge branch '548-change-elasticsearch-index' into 'master'
+|\  
+| * 689dfead -- change elasticsearch index .
+|/  
+* a223c610 -- CHANGELOG.md file updated with commits between the current and previous tag. Done by CI.
 * e1c41c71 -- Update pom.xml version based on GitLab tag. Done by CI.
 * 4153583a -- Update VERSION.txt
 * 74bd63b0 -- Update logback-spring.xml
