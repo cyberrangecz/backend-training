@@ -37,7 +37,7 @@
         <syslogHost>${kypo.audit.syslog.host:-localhost}</syslogHost>
         <port>${kypo.audit.syslog.port:-514}</port>
         <facility>AUDIT</facility>
-        <suffixPattern>${kypo.audit.messages.format:-KYPO_PORTAL_EVENTS_AUDIT --- [%thread] %logger{5} --- %msg%n}</suffixPattern>
+        <suffixPattern>${kypo.audit.messages.format:-kypo-training --- KYPO_PORTAL_EVENTS_AUDIT [%thread] %logger{5} --- %msg%n}</suffixPattern>
     </appender>
 
     <logger name="cz.muni.csirt.kypo.elasticsearch.service" level="INFO" additivity="false">
