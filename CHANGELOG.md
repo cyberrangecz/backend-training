@@ -1,5 +1,14 @@
-* af209ada -- Update pom.xml version based on GitLab tag. Done by CI.
-* d515f2fb -- Update VERSION.txt
+* b828d8f5 -- Update pom.xml version based on GitLab tag. Done by CI.
+* 45df7432 -- rest high level client to retrieve elasticsearch document was configured VERSION.txt
+* fb7ae1a2 -- configure elasticsearch resthighlevel client.
+* cf447a7e -- remove unused logging properties.
+*   a03de6a3 -- Merge branch 'master' of gitlab.ics.muni.cz:kypo-crp/backend-java/kypo2-training
+|\  
+| * 8b6e830a -- CHANGELOG.md file updated with commits between the current and previous tag. Done by CI.
+| * af209ada -- Update pom.xml version based on GitLab tag. Done by CI.
+| * d515f2fb -- Update VERSION.txt
+* | 9e740c3b --  remove web client from elasticsearch module.
+|/  
 * 679b2f15 -- remove dot before wildcard.
 *   c9f6b696 -- Merge branch '548-change-elasticsearch-index' into 'master'
 |\  
