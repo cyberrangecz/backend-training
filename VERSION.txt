@@ -1,1 +1,1 @@
-1.1.29  syslog appender added
+1.1.30  syslog appender added
