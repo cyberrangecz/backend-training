@@ -1,3 +1,33 @@
+* e1c41c71 -- Update pom.xml version based on GitLab tag. Done by CI.
+* 4153583a -- Update VERSION.txt
+* 74bd63b0 -- Update logback-spring.xml
+* 3a570a54 -- Update logback-spring.xml
+* 2d5d5582 -- Update kypo2-training-dev.properties
+* ce355791 -- Update kypo2-training-prod.properties
+* d78c22cd -- Update kypo2-training-prod.properties
+* 0e641b98 -- Update training.properties
+*   46f953fa -- Merge branch '547-change-elasticsearch-index-for-documents-retriaval' into 'master'
+|\  
+| * a666a468 -- change elasticsearch index
+|/  
+* 17cd24bb -- Update AbstractKypoIndexPath.java to kypo from kypo3
+*   3822284f -- Merge branch '545-create-dto-to-validate-flag-instead-of-raw-string' into 'master'
+|\  
+| * 10df7c89 -- Created ValidateFlagDTO
+|/  
+*   758950ac -- Merge branch '541-validate-flag-content-to-avoid-bugs-regarding-the-solution-flag-that-is-composed-to-symbols' into 'master'
+|\  
+| * 462579ce -- IsCorrectFlag endpoint - param flag changed to request body
+|/  
+*   4aca7cec -- Merge branch '544-rename-rsyslog-to-syslog' into 'master'
+|\  
+| * ac0b4c6c -- Resolve "RENAME RSYSLOG to SYSLOG"
+|/  
+*   fde81fdf -- Merge branch '505-check-swagger-messages-and-documentation-in-general' into 'master'
+|\  
+| * 8e8572ef -- Resolve "Check Swagger messages and documentation in general"
+|/  
+* 834a6afc -- CHANGELOG.md file updated with commits between the current and previous tag. Done by CI.
 * da8be0c8 -- Update pom.xml version based on GitLab tag. Done by CI.
 * 44de9ed9 -- Update VERSION.txt
 *   37e31298 -- Merge branch '542-add-syslogappender-for-audit-logs-in-logback-xml' into 'master'
