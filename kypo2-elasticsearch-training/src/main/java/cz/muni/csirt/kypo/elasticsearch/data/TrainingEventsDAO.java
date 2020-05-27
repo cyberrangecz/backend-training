@@ -74,7 +74,7 @@ public class TrainingEventsDAO extends AbstractElasticClientDAO {
         searchSourceBuilder.size(INDEX_DOCUMENTS_MAX_RETURN_NUMBER);
         searchSourceBuilder.timeout(new TimeValue(5, TimeUnit.MINUTES));
 
-        SearchRequest searchRequest = new SearchRequest(AbstractKypoIndexPath.KYPO_EVENTS_INDEX + ".*" + "_evt" + ".definition=" + trainingDefinitionId + ".instance=" + trainingInstanceId + "*");
+        SearchRequest searchRequest = new SearchRequest(AbstractKypoIndexPath.KYPO_EVENTS_INDEX + ".*" + ".definition=" + trainingDefinitionId + ".instance=" + trainingInstanceId + "*");
         searchRequest.source(searchSourceBuilder);
 
         return handleElasticsearchResponse(getRestHighLevelClient().search(searchRequest, RequestOptions.DEFAULT));
@@ -97,7 +97,7 @@ public class TrainingEventsDAO extends AbstractElasticClientDAO {
         searchSourceBuilder.size(INDEX_DOCUMENTS_MAX_RETURN_NUMBER);
         searchSourceBuilder.timeout(new TimeValue(5, TimeUnit.MINUTES));
 
-        SearchRequest searchRequest = new SearchRequest(AbstractKypoIndexPath.KYPO_EVENTS_INDEX + ".*" + "_evt" + ".definition=" + trainingDefinitionId + ".instance=" + trainingInstanceId + "*");
+        SearchRequest searchRequest = new SearchRequest(AbstractKypoIndexPath.KYPO_EVENTS_INDEX + ".*" + ".definition=" + trainingDefinitionId + ".instance=" + trainingInstanceId + "*");
         searchRequest.source(searchSourceBuilder);
 
         return handleElasticsearchResponse(getRestHighLevelClient().search(searchRequest, RequestOptions.DEFAULT));
