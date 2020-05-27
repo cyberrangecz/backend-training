@@ -21,10 +21,8 @@ import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Repository;
 import org.springframework.web.reactive.function.BodyInserters;
-import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
 import java.io.IOException;
@@ -41,21 +39,16 @@ public class TrainingEventsDAO extends AbstractElasticClientDAO {
 
     private static final int INDEX_DOCUMENTS_MAX_RETURN_NUMBER = 10_000;
 
-    private WebClient webClient;
-
     /**
      * Instantiates a new Training events dao.
      *
      * @param restHighLevelClient the rest high level client
      * @param objectMapper        the object mapper
-     * @param webClient           the web client
      */
     @Autowired
     public TrainingEventsDAO(RestHighLevelClient restHighLevelClient,
-                             ObjectMapper objectMapper,
-                             @Qualifier("elasticsearchWebClient") WebClient webClient) {
+                             ObjectMapper objectMapper) {
         super(restHighLevelClient, objectMapper);
-        this.webClient = webClient;
     }
 
     /**
@@ -125,42 +118,19 @@ public class TrainingEventsDAO extends AbstractElasticClientDAO {
     }
 
     /**
-     * Delete by query is not currently supported in Elasticsearch Rest High Level Client so the
-     *
-     * <pre>
-     * POST /kypo3.cz.muni.csirt.kypo.events.trainings.*.instance={instanceId}/_delete_by_query
-     * {
-     *      "query": {
-     *          "match": {
-     *              "training_run_id": givenId
-     *          }
-     *      }
-     * }
-     * </pre>
-     *
      * @param trainingInstanceId the training instance id
      * @param trainingRunId      the training run id
      * @throws ElasticsearchTrainingDataLayerException the elasticsearch training data layer exception
      */
     public void deleteEventsFromTrainingRun(Long trainingInstanceId, Long trainingRunId) throws ElasticsearchTrainingDataLayerException {
-        String objectToPost = "{\n" +
-                "  \"query\": { \n" +
-                "    \"match\": {\n" +
-                "      \"training_run_id\": " + trainingRunId + "\n" +
-                "    }\n" +
-                "  }\n" +
-                "}\n";
-
-        ElasticsearchResponseDto elasticsearchResponseDto =
-                webClient
-                        .post()
-                        .uri("/" + AbstractKypoIndexPath.KYPO_EVENTS_INDEX + "*" + ".instance=" + trainingInstanceId + "*" + "/_delete_by_query")
-                        .body(BodyInserters.fromPublisher(Mono.just(objectToPost), String.class))
-                        .retrieve()
-                        .bodyToMono(ElasticsearchResponseDto.class)
-                        .block();
-        if (elasticsearchResponseDto != null && !elasticsearchResponseDto.isAcknowledged()) {
-            throw new ElasticsearchTrainingDataLayerException("Training run events was not deleted.");
+        DeleteIndexRequest deleteIndexRequest = new DeleteIndexRequest(AbstractKypoIndexPath.KYPO_EVENTS_INDEX + "*" + ".instance=" + trainingInstanceId + ".run=" + trainingRunId + "*");
+        try {
+            AcknowledgedResponse deleteIndexResponse = getRestHighLevelClient().indices().delete(deleteIndexRequest, RequestOptions.DEFAULT);
+            if (!deleteIndexResponse.isAcknowledged()) {
+                throw new ElasticsearchTrainingDataLayerException("Client could not connect to Elastic.");
+            }
+        } catch (IOException e) {
+            throw new ElasticsearchTrainingDataLayerException("Client could not connect to Elastic.");
         }
     }
 
@@ -174,7 +144,7 @@ public class TrainingEventsDAO extends AbstractElasticClientDAO {
                     Map<String, Object> source = hit.getSourceAsMap();
                     events.add(source);
                 }
-                if (events.size() == 0) {
+                if (events.isEmpty()) {
                     throw new ElasticsearchTrainingDataLayerException("There are no events in this game.");
                 }
             }
