@@ -1,3 +1,10 @@
+* 9285c60e -- Update pom.xml version based on GitLab tag. Done by CI.
+* 30a3dff9 -- Update VERSION.txt
+*   8cf4feda -- Merge branch '549-fix-archive-training-instance' into 'master'
+|\  
+| * 04c764f6 -- archive TI fixed
+|/  
+* 68765a14 -- CHANGELOG.md file updated with commits between the current and previous tag. Done by CI.
 * b828d8f5 -- Update pom.xml version based on GitLab tag. Done by CI.
 * 45df7432 -- rest high level client to retrieve elasticsearch document was configured VERSION.txt
 * fb7ae1a2 -- configure elasticsearch resthighlevel client.
