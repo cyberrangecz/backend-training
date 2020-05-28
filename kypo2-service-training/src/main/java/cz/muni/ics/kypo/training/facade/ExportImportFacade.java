@@ -202,6 +202,7 @@ public class ExportImportFacade {
             writeSandboxDefinitionInfo(zos, trainingInstance);
 
             zos.closeEntry();
+            zos.close();
             FileToReturnDTO fileToReturnDTO = new FileToReturnDTO();
             fileToReturnDTO.setContent(baos.toByteArray());
             fileToReturnDTO.setTitle(trainingInstance.getTitle());
