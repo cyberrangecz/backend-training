@@ -1,1 +1,1 @@
-1.1.32  rest high level client to retrieve elasticsearch document was configured
+1.1.33  training instance export fixed
