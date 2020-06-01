@@ -56,7 +56,10 @@ public class WebClientConfig {
                     headers.add(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
                     headers.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
                 })
-                .filters(exchangeFilterFunctions -> exchangeFilterFunctions.add(addSecurityHeader()))
+                .filters(exchangeFilterFunctions -> {
+                    exchangeFilterFunctions.add(addSecurityHeader());
+                    exchangeFilterFunctions.add(openStackSandboxServiceExceptionHandlingFunction());
+                })
                 .build();
     }
 
@@ -76,7 +79,6 @@ public class WebClientConfig {
                 })
                 .filters(exchangeFilterFunctions -> {
                     exchangeFilterFunctions.add(addSecurityHeader());
-                    exchangeFilterFunctions.add(openStackSandboxServiceExceptionHandlingFunction());
                     exchangeFilterFunctions.add(userManagementServiceExceptionHandlingFunction());
                 })
                 .build();
