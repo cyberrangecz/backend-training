@@ -1,1 +1,1 @@
-1.1.33  training instance export fixed
+1.1.34  Exception handling improved
