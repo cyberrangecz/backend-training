@@ -1,18 +1,30 @@
-* 9285c60e -- Update pom.xml version based on GitLab tag. Done by CI.
-* 30a3dff9 -- Update VERSION.txt
-*   8cf4feda -- Merge branch '549-fix-archive-training-instance' into 'master'
+* 7698e0d1 -- Update pom.xml version based on GitLab tag. Done by CI.
+* 6c7c7700 -- Update VERSION.txt
+*   c3e3e64f -- Merge branch '550-repair-configuration-of-webclient-for-sandbox-service' into 'master'
 |\  
-| * 04c764f6 -- archive TI fixed
+| * a3af62f1 -- Exchange filter function moved to web client for sandbox service
+* | bf7f1944 -- Update pom.xml
 |/  
-* 68765a14 -- CHANGELOG.md file updated with commits between the current and previous tag. Done by CI.
-* b828d8f5 -- Update pom.xml version based on GitLab tag. Done by CI.
-* 45df7432 -- rest high level client to retrieve elasticsearch document was configured VERSION.txt
-* fb7ae1a2 -- configure elasticsearch resthighlevel client.
-* cf447a7e -- remove unused logging properties.
-*   a03de6a3 -- Merge branch 'master' of gitlab.ics.muni.cz:kypo-crp/backend-java/kypo2-training
+*   1ed754d2 -- Merge branch '546-check-the-code-and-remove-dev-profile-if-not-necessary' into 'master'
 |\  
-| * 8b6e830a -- CHANGELOG.md file updated with commits between the current and previous tag. Done by CI.
-| * af209ada -- Update pom.xml version based on GitLab tag. Done by CI.
+| * 15b81f65 -- Removed profiles DEV, PROD and all related stuff
+* | db43eaeb -- CHANGELOG.md file updated with commits between the current and previous tag. Done by CI.
+* | 9285c60e -- Update pom.xml version based on GitLab tag. Done by CI.
+* | 30a3dff9 -- Update VERSION.txt
+* |   8cf4feda -- Merge branch '549-fix-archive-training-instance' into 'master'
+|\ \  
+| * | 04c764f6 -- archive TI fixed
+|/ /  
+* | 68765a14 -- CHANGELOG.md file updated with commits between the current and previous tag. Done by CI.
+* | b828d8f5 -- Update pom.xml version based on GitLab tag. Done by CI.
+* | 45df7432 -- rest high level client to retrieve elasticsearch document was configured VERSION.txt
+* | fb7ae1a2 -- configure elasticsearch resthighlevel client.
+* | cf447a7e -- remove unused logging properties.
+* |   a03de6a3 -- Merge branch 'master' of gitlab.ics.muni.cz:kypo-crp/backend-java/kypo2-training
+|\ \  
+| * | 8b6e830a -- CHANGELOG.md file updated with commits between the current and previous tag. Done by CI.
+| * | af209ada -- Update pom.xml version based on GitLab tag. Done by CI.
+| |/  
 | * d515f2fb -- Update VERSION.txt
 * | 9e740c3b --  remove web client from elasticsearch module.
 |/  
