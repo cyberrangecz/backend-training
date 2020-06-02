@@ -449,8 +449,8 @@ public class TrainingRunService {
                     trainingRun.setCurrentPenalty(trainingRun.getMaxLevelScore());
                 }
                 trainingRunRepository.save(trainingRun);
+                auditEventsService.auditSolutionDisplayedAction(trainingRun);
             }
-            auditEventsService.auditSolutionDisplayedAction(trainingRun);
             return ((GameLevel) level).getSolution();
         } else {
             throw new BadRequestException("Current level is not game level and does not have solution.");
