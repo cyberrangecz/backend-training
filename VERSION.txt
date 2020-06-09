@@ -1,1 +1,1 @@
-1.1.34  Exception handling improved
+1.1.35  Migration to the new Nexus Repository Manager
