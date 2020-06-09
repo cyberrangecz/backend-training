@@ -1,3 +1,11 @@
+* 6cdc097a -- Update pom.xml version based on GitLab tag. Done by CI.
+* bcef5c98 -- Update VERSION.txt
+* 39005b42 -- Update security-commons version to the newest Nexus
+*   37a9e55d -- Merge branch '551-event-solutiontaken-is-audited-always-when-solution-is-taken' into 'master'
+|\  
+| * af03d911 -- Aduit event is moved to other place
+|/  
+* 85538ca5 -- CHANGELOG.md file updated with commits between the current and previous tag. Done by CI.
 * 7698e0d1 -- Update pom.xml version based on GitLab tag. Done by CI.
 * 6c7c7700 -- Update VERSION.txt
 *   c3e3e64f -- Merge branch '550-repair-configuration-of-webclient-for-sandbox-service' into 'master'
