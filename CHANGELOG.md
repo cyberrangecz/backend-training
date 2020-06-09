@@ -1,3 +1,7 @@
+* b627c196 -- Update pom.xml version based on GitLab tag. Done by CI.
+* f1634379 -- Update VERSION.txt
+* 210e0c18 -- Update .gitlab-ci.yml
+* 5c543945 -- CHANGELOG.md file updated with commits between the current and previous tag. Done by CI.
 * 6cdc097a -- Update pom.xml version based on GitLab tag. Done by CI.
 * bcef5c98 -- Update VERSION.txt
 * 39005b42 -- Update security-commons version to the newest Nexus
