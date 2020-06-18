@@ -1,3 +1,10 @@
+* 094d13e1 -- Update pom.xml version based on GitLab tag. Done by CI.
+* 64e29d1b -- Update VERSION.txt
+*   dbe18a3f -- Merge branch '537-unassign-pool-does-not-unlock-the-pool' into 'master'
+|\  
+| * 25984766 -- Resolve "Unassign pool does not unlock the pool"
+|/  
+* 68378616 -- CHANGELOG.md file updated with commits between the current and previous tag. Done by CI.
 * acbe8d50 -- Update pom.xml version based on GitLab tag. Done by CI.
 * 984fe84e -- Unassign pool from training instance also unlocks the pool
 * 985653b4 -- CHANGELOG.md file updated with commits between the current and previous tag. Done by CI.
