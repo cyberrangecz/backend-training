@@ -1,3 +1,6 @@
+* acbe8d50 -- Update pom.xml version based on GitLab tag. Done by CI.
+* 984fe84e -- Unassign pool from training instance also unlocks the pool
+* 985653b4 -- CHANGELOG.md file updated with commits between the current and previous tag. Done by CI.
 * b627c196 -- Update pom.xml version based on GitLab tag. Done by CI.
 * f1634379 -- Update VERSION.txt
 * 210e0c18 -- Update .gitlab-ci.yml
