@@ -8,8 +8,6 @@ import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.PathBuilder;
 import cz.muni.ics.kypo.training.api.responses.LockedPoolInfo;
 import cz.muni.ics.kypo.training.api.responses.PoolInfoDTO;
-import cz.muni.ics.kypo.training.api.responses.SandboxInfo;
-import cz.muni.ics.kypo.training.api.responses.SandboxPoolInfo;
 import cz.muni.ics.kypo.training.exceptions.CustomWebClientException;
 import cz.muni.ics.kypo.training.exceptions.EntityConflictException;
 import cz.muni.ics.kypo.training.exceptions.EntityNotFoundException;
@@ -18,11 +16,12 @@ import cz.muni.ics.kypo.training.persistence.model.TrainingDefinition;
 import cz.muni.ics.kypo.training.persistence.model.TrainingInstance;
 import cz.muni.ics.kypo.training.persistence.model.TrainingRun;
 import cz.muni.ics.kypo.training.persistence.model.UserRef;
-import cz.muni.ics.kypo.training.persistence.repository.*;
+import cz.muni.ics.kypo.training.persistence.repository.AccessTokenRepository;
+import cz.muni.ics.kypo.training.persistence.repository.TrainingInstanceRepository;
+import cz.muni.ics.kypo.training.persistence.repository.TrainingRunRepository;
+import cz.muni.ics.kypo.training.persistence.repository.UserRefRepository;
 import cz.muni.ics.kypo.training.persistence.util.TestDataFactory;
 import org.apache.http.HttpHeaders;
-import org.elasticsearch.client.Client;
-import org.json.HTTP;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -37,7 +36,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.*;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.web.reactive.function.client.ClientRequest;
@@ -281,8 +281,12 @@ public class TrainingInstanceServiceTest {
     @Test
     public void unlockPool() throws Exception {
         poolInfoDTO.setId(trainingInstance1.getPoolId());
-        ArgumentMatcher<ClientRequest> poolsRequest = clientRequest -> clientRequest.url().equals(URI.create("/pools/" + poolInfoDTO.getId()));
+        ArgumentMatcher<ClientRequest> poolsRequest =
+                clientRequest -> clientRequest.url().equals(URI.create("/pools/" + poolInfoDTO.getId()));
+        ArgumentMatcher<ClientRequest> deleteRequest =
+                clientRequest -> clientRequest.url().equals(URI.create("/pools/"+ poolInfoDTO.getId() +"/locks/"+ poolInfoDTO.getLockId() ));
         doReturn(buildMockResponse(poolInfoDTO)).when(exchangeFunction).exchange(argThat(poolsRequest));
+        doReturn(buildMockResponse(null)).when(exchangeFunction).exchange(argThat(deleteRequest));
         trainingInstanceService.unlockPool(trainingInstance1.getPoolId());
     }
 
