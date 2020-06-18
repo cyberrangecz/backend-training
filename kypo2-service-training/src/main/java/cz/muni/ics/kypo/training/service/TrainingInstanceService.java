@@ -265,7 +265,8 @@ public class TrainingInstanceService {
                         .delete()
                         .uri("/pools/{poolId}/locks/{lockId}", poolId, poolInfoDto.getLockId())
                         .retrieve()
-                        .bodyToMono(Void.class);
+                        .bodyToMono(Void.class)
+                        .block();
             }
         } catch (CustomWebClientException ex) {
             throw new MicroserviceApiException("Currently, it is not possible to unlock a pool with (ID: " + poolId + ").", ex.getApiSubError());
