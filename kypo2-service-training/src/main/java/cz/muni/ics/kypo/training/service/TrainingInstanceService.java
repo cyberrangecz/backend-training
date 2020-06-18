@@ -4,8 +4,14 @@ import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.training.api.responses.LockedPoolInfo;
 import cz.muni.ics.kypo.training.api.responses.PoolInfoDTO;
 import cz.muni.ics.kypo.training.exceptions.*;
-import cz.muni.ics.kypo.training.persistence.model.*;
-import cz.muni.ics.kypo.training.persistence.repository.*;
+import cz.muni.ics.kypo.training.persistence.model.AccessToken;
+import cz.muni.ics.kypo.training.persistence.model.TrainingInstance;
+import cz.muni.ics.kypo.training.persistence.model.TrainingRun;
+import cz.muni.ics.kypo.training.persistence.model.UserRef;
+import cz.muni.ics.kypo.training.persistence.repository.AccessTokenRepository;
+import cz.muni.ics.kypo.training.persistence.repository.TrainingInstanceRepository;
+import cz.muni.ics.kypo.training.persistence.repository.TrainingRunRepository;
+import cz.muni.ics.kypo.training.persistence.repository.UserRefRepository;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,14 +19,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
 import java.time.Clock;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.HashSet;
+import java.util.Optional;
+import java.util.Set;
 
 /**
  * The type Training instance service.
@@ -269,7 +277,9 @@ public class TrainingInstanceService {
                         .block();
             }
         } catch (CustomWebClientException ex) {
-            throw new MicroserviceApiException("Currently, it is not possible to unlock a pool with (ID: " + poolId + ").", ex.getApiSubError());
+            if(ex.getStatusCode() != HttpStatus.NOT_FOUND){
+                throw new MicroserviceApiException("Currently, it is not possible to unlock a pool with (ID: " + poolId + ").", ex.getApiSubError());
+            }
         }
     }
 
