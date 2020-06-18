@@ -1,3 +1,10 @@
+* 2a45097b -- Update pom.xml version based on GitLab tag. Done by CI.
+* 0f1ccd96 -- Update VERSION.txt
+*   d01f6132 -- Merge branch '552-fix-pool-unassign-process' into 'master'
+|\  
+| * 5ce803d0 -- Resolve "Fix pool unassign process"
+|/  
+* dbbddfa0 -- CHANGELOG.md file updated with commits between the current and previous tag. Done by CI.
 * 094d13e1 -- Update pom.xml version based on GitLab tag. Done by CI.
 * 64e29d1b -- Update VERSION.txt
 *   dbe18a3f -- Merge branch '537-unassign-pool-does-not-unlock-the-pool' into 'master'
