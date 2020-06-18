@@ -1,1 +1,1 @@
-1.1.36  Deployment of final jar from rest module to Nexus Repository
+1.1.37  Unassign pool from training instance also unlocks the pool
