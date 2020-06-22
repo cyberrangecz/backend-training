@@ -1,3 +1,10 @@
+* 8055fcdd -- Update pom.xml version based on GitLab tag. Done by CI.
+* 4fa45864 -- KYPO organizer is able to download TI results at any time.
+*   577e0865 -- Merge branch '553-kypo-user-designer-can-download-ti-results-any-time' into 'master'
+|\  
+| * 97293e4e -- Resolve "KYPO User (designer) can download TI results any time."
+|/  
+* 95c40aec -- CHANGELOG.md file updated with commits between the current and previous tag. Done by CI.
 * 2a45097b -- Update pom.xml version based on GitLab tag. Done by CI.
 * 0f1ccd96 -- Update VERSION.txt
 *   d01f6132 -- Merge branch '552-fix-pool-unassign-process' into 'master'
