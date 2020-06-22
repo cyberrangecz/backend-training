@@ -30,7 +30,6 @@ import javax.validation.Valid;
         @ApiResponse(code = 403, message = "The necessary permissions are required for a resource.", response = ApiError.class)
 })
 @RestController
-@RequestMapping(path = "/", produces = MediaType.APPLICATION_JSON_VALUE)
 public class ExportImportRestController {
 
     private ExportImportFacade exportImportFacade;

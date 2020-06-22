@@ -116,7 +116,11 @@ public class ExportImportFacade {
         try {
             FileToReturnDTO fileToReturnDTO = new FileToReturnDTO();
             fileToReturnDTO.setContent(objectMapper.writeValueAsBytes(dbExport));
-            fileToReturnDTO.setTitle(dbExport.getTitle());
+            if(dbExport != null && dbExport.getTitle() != null){
+                fileToReturnDTO.setTitle(dbExport.getTitle());
+            } else {
+                fileToReturnDTO.setTitle("");
+            }
             return fileToReturnDTO;
         } catch (IOException ex) {
             throw new InternalServerErrorException(ex);
@@ -183,7 +187,6 @@ public class ExportImportFacade {
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream();
              ZipOutputStream zos = new ZipOutputStream(baos)) {
             TrainingInstance trainingInstance = exportImportService.findInstanceById(trainingInstanceId);
-            this.checkIfInstanceIsNotFinished(trainingInstance);
 
             TrainingInstanceArchiveDTO archivedInstance = exportImportMapper.mapToDTO(trainingInstance);
             archivedInstance.setDefinitionId(trainingInstance.getTrainingDefinition().getId());
@@ -283,20 +286,14 @@ public class ExportImportFacade {
         return users;
     }
 
-    private void checkIfInstanceIsNotFinished(TrainingInstance trainingInstance) {
-        LocalDateTime currentTime = LocalDateTime.now(Clock.systemUTC());
-        if (currentTime.isBefore(trainingInstance.getEndTime()))
-            throw new EntityConflictException(new EntityErrorDetail(TrainingInstance.class, "id", trainingInstance.getId().getClass(),
-                    trainingInstance.getId(), "The training instance is not finished."));
-    }
-
     private void checkSumOfHintPenalties(GameLevel gameLevel) {
         int sumHintPenalties = 0;
         for (Hint hint : gameLevel.getHints()) {
             sumHintPenalties += hint.getHintPenalty();
         }
         if(sumHintPenalties > gameLevel.getMaxScore()) {
-            throw new UnprocessableEntityException(new EntityErrorDetail(GameLevel.class, "title", String.class, gameLevel.getTitle(),"Sum of hints penalties cannot be greater than maximal score of the game level."));     }
+            throw new UnprocessableEntityException(new EntityErrorDetail(GameLevel.class, "title", String.class, gameLevel.getTitle(),
+                    "Sum of hints penalties cannot be greater than maximal score of the game level."));     }
     }
 
 
