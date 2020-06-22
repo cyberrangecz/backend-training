@@ -1,1 +1,1 @@
-1.1.39  Unassign pool from training instance also unlocks the pool
+1.1.40  KYPO organizer is able to download TI results at any time.
