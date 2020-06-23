@@ -1,3 +1,10 @@
+* 96578fde -- Update pom.xml version based on GitLab tag. Done by CI.
+* a7a51b0e -- Update VERSION.txt
+*   8464ad82 -- Merge branch '557-remov-elasticsearch-documents-and-import-library-kypo-elasticsearch-documents' into 'master'
+|\  
+| * 3599d52a -- Removed package events.trainings and added elasticsearch documents dependency
+|/  
+* f4fcfeca -- CHANGELOG.md file updated with commits between the current and previous tag. Done by CI.
 * 8d97049a -- Update pom.xml version based on GitLab tag. Done by CI.
 * 91afd4d7 -- Update VERSION.txt
 *   6269b921 -- Merge branch '556-install-not-failing-with-test-failures' into 'master'
