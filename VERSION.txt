@@ -1,1 +1,1 @@
-1.1.42  KYPO organizer is able to change title of the running TI.
+1.1.43  KYPO elasticsearch documents are used from the kypo-elasticsearch-documents library.
