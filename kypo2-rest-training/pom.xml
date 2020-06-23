@@ -5,7 +5,7 @@
     <parent>
         <groupId>cz.muni.ics.kypo</groupId>
         <artifactId>kypo2-training</artifactId>
-        <version>1.1.42</version>
+        <version>1.1.43</version>
     </parent>
     <artifactId>kypo2-rest-training</artifactId>
     <packaging>jar</packaging>
@@ -14,7 +14,7 @@
         <dependency>
             <groupId>cz.muni.ics.kypo</groupId>
             <artifactId>kypo2-service-training</artifactId>
-            <version>1.1.42</version>
+            <version>1.1.43</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -94,7 +94,7 @@
         <dependency> <!-- reuse src/test/java code from persistence module! -->
             <groupId>cz.muni.ics.kypo</groupId>
             <artifactId>kypo2-persistence-training</artifactId>
-            <version>1.1.42</version>
+            <version>1.1.43</version>
             <scope>test</scope>
             <classifier>tests</classifier>
         </dependency>
