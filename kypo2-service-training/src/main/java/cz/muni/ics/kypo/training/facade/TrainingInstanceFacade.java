@@ -27,6 +27,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
+import java.time.Clock;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -115,9 +117,16 @@ public class TrainingInstanceFacade {
     @IsOrganizerOrAdmin
     @TransactionalWO
     public String update(TrainingInstanceUpdateDTO trainingInstanceUpdateDTO) {
-        TrainingInstance trainingInstance = trainingInstanceMapper.mapUpdateToEntity(trainingInstanceUpdateDTO);
-        trainingInstance.setTrainingDefinition(trainingDefinitionService.findById(trainingInstanceUpdateDTO.getTrainingDefinitionId()));
-        return trainingInstanceService.update(trainingInstance);
+        TrainingInstance trainingInstanceToUpdate = trainingInstanceMapper.mapUpdateToEntity(trainingInstanceUpdateDTO);
+        TrainingInstance trainingInstance = trainingInstanceService.findById(trainingInstanceUpdateDTO.getId());
+
+        if (LocalDateTime.now(Clock.systemUTC()).isAfter(trainingInstance.getStartTime()) &&
+                !trainingInstance.getTrainingDefinition().getId().equals(trainingInstanceUpdateDTO.getTrainingDefinitionId())) {
+            throw new EntityConflictException(new EntityErrorDetail(TrainingInstance.class, "id", Long.class, trainingInstance.getId(),
+                    "The training definition assigned to running training instance cannot be changed."));
+        }
+        trainingInstanceToUpdate.setTrainingDefinition(trainingDefinitionService.findById(trainingInstanceUpdateDTO.getTrainingDefinitionId()));
+        return trainingInstanceService.update(trainingInstanceToUpdate);
     }
 
     /**
