@@ -172,6 +172,10 @@ public class TrainingInstanceFacadeTest {
     @Test
     public void updateTrainingInstance() {
         given(userService.getUsersRefDTOByGivenUserIds(anySet(), any(Pageable.class), anyString(), anyString())).willReturn(new PageResultResource<>(new ArrayList<>()));
+        given(trainingInstanceService.findById(trainingInstanceUpdate.getId())).willReturn(trainingInstance1);
+        TrainingDefinition trainingDefinition = testDataFactory.getReleasedDefinition();
+        trainingDefinition.setId(1L);
+        trainingInstance1.setTrainingDefinition(trainingDefinition);
         trainingInstanceFacade.update(trainingInstanceUpdate);
         then(trainingInstanceService).should().update(any(TrainingInstance.class));
     }
