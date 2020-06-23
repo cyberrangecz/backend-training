@@ -67,6 +67,7 @@ import reactor.core.publisher.Mono;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -332,8 +333,9 @@ public class TrainingInstancesIT {
     }
 
     @Test
-    public void updateTrainingInstanceTrainingDefinitionNotFoundd() throws Exception {
-        trainingInstanceUpdateDTO.setId(100L);
+    public void updateTrainingInstanceTrainingDefinitionNotFound() throws Exception {
+        trainingInstanceRepository.save(futureTrainingInstance);
+        trainingInstanceUpdateDTO.setId(futureTrainingInstance.getId());
         trainingInstanceUpdateDTO.setAccessToken("preff");
         trainingInstanceUpdateDTO.setTrainingDefinitionId(100L);
         mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_ORGANIZER.name()));
@@ -346,6 +348,93 @@ public class TrainingInstancesIT {
         assertEquals(HttpStatus.NOT_FOUND, error.getStatus());
         assertEntityDetailError(error.getEntityErrorDetail(), TrainingDefinition.class, "id", "100",
                 "Entity TrainingDefinition (id: 100) not found.");
+    }
+
+    @Test
+    public void updateRunningTrainingInstanceDifferentTrainingDefinition() throws Exception {
+        TrainingDefinition trainingDefinition = testDataFactory.getReleasedDefinition();
+        trainingDefinition.setTitle("New training definition.");
+        trainingDefinitionRepository.save(trainingDefinition);
+
+        trainingInstanceRepository.save(notConcludedTrainingInstance);
+        trainingInstanceUpdateDTO.setId(notConcludedTrainingInstance.getId());
+        trainingInstanceUpdateDTO.setAccessToken("preff");
+        trainingInstanceUpdateDTO.setTrainingDefinitionId(trainingDefinition.getId());
+        mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_ORGANIZER.name()));
+        MockHttpServletResponse response = mvc.perform(put("/training-instances")
+                .content(convertObjectToJsonBytes(trainingInstanceUpdateDTO))
+                .contentType(MediaType.APPLICATION_JSON_VALUE))
+                .andExpect(status().isConflict())
+                .andReturn().getResponse();
+        ApiEntityError error = convertJsonBytesToObject(response.getContentAsString(), ApiEntityError.class);
+        assertEquals(HttpStatus.CONFLICT, error.getStatus());
+        assertEntityDetailError(error.getEntityErrorDetail(), TrainingInstance.class, "id", notConcludedTrainingInstance.getId().toString(),
+                "The training definition assigned to running training instance cannot be changed.");
+    }
+
+    @Test
+    public void updateRunningTrainingInstanceChangeStartTime() throws Exception {
+        trainingInstanceRepository.save(notConcludedTrainingInstance);
+        trainingInstanceUpdateDTO.setId(notConcludedTrainingInstance.getId());
+        trainingInstanceUpdateDTO.setStartTime(trainingInstanceUpdateDTO.getStartTime().plusMinutes(1));
+        given(exchangeFunction.exchange(any(ClientRequest.class))).willReturn(buildMockResponse(userRefDTO1));
+
+        trainingInstanceUpdateDTO.setAccessToken("preff");
+        trainingInstanceUpdateDTO.setTrainingDefinitionId(notConcludedTrainingInstance.getTrainingDefinition().getId());
+        mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_ORGANIZER.name()));
+        MockHttpServletResponse response = mvc.perform(put("/training-instances")
+                .content(convertObjectToJsonBytes(trainingInstanceUpdateDTO))
+                .contentType(MediaType.APPLICATION_JSON_VALUE))
+                .andExpect(status().isConflict())
+                .andReturn().getResponse();
+        ApiEntityError error = convertJsonBytesToObject(response.getContentAsString(), ApiEntityError.class);
+        assertEquals(HttpStatus.CONFLICT, error.getStatus());
+        assertEntityDetailError(error.getEntityErrorDetail(), TrainingInstance.class, "id", notConcludedTrainingInstance.getId().toString(),
+                "The start time of the running training instance cannot be changed. Only title can be updated.");
+    }
+
+    @Test
+    public void updateRunningTrainingInstanceChangeEndTime() throws Exception {
+        trainingInstanceRepository.save(notConcludedTrainingInstance);
+        trainingInstanceUpdateDTO.setId(notConcludedTrainingInstance.getId());
+        trainingInstanceUpdateDTO.setEndTime(trainingInstanceUpdateDTO.getEndTime().plusMinutes(2));
+        trainingInstanceUpdateDTO.setStartTime(notConcludedTrainingInstance.getStartTime());
+
+        given(exchangeFunction.exchange(any(ClientRequest.class))).willReturn(buildMockResponse(userRefDTO1));
+
+        trainingInstanceUpdateDTO.setTrainingDefinitionId(notConcludedTrainingInstance.getTrainingDefinition().getId());
+        mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_ORGANIZER.name()));
+        MockHttpServletResponse response = mvc.perform(put("/training-instances")
+                .content(convertObjectToJsonBytes(trainingInstanceUpdateDTO))
+                .contentType(MediaType.APPLICATION_JSON_VALUE))
+                .andExpect(status().isConflict())
+                .andReturn().getResponse();
+        ApiEntityError error = convertJsonBytesToObject(response.getContentAsString(), ApiEntityError.class);
+        assertEquals(HttpStatus.CONFLICT, error.getStatus());
+        assertEntityDetailError(error.getEntityErrorDetail(), TrainingInstance.class, "id", notConcludedTrainingInstance.getId().toString(),
+                "The end time of the running training instance cannot be changed. Only title can be updated.");
+    }
+
+    @Test
+    public void updateRunningTrainingInstanceChangeAccessToken() throws Exception {
+        trainingInstanceRepository.save(notConcludedTrainingInstance);
+        trainingInstanceUpdateDTO.setId(notConcludedTrainingInstance.getId());
+        trainingInstanceUpdateDTO.setAccessToken("some bad token");
+        trainingInstanceUpdateDTO.setStartTime(notConcludedTrainingInstance.getStartTime());
+        trainingInstanceUpdateDTO.setEndTime(notConcludedTrainingInstance.getEndTime());
+        given(exchangeFunction.exchange(any(ClientRequest.class))).willReturn(buildMockResponse(userRefDTO1));
+
+        trainingInstanceUpdateDTO.setTrainingDefinitionId(notConcludedTrainingInstance.getTrainingDefinition().getId());
+        mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_ORGANIZER.name()));
+        MockHttpServletResponse response = mvc.perform(put("/training-instances")
+                .content(convertObjectToJsonBytes(trainingInstanceUpdateDTO))
+                .contentType(MediaType.APPLICATION_JSON_VALUE))
+                .andExpect(status().isConflict())
+                .andReturn().getResponse();
+        ApiEntityError error = convertJsonBytesToObject(response.getContentAsString(), ApiEntityError.class);
+        assertEquals(HttpStatus.CONFLICT, error.getStatus());
+        assertEntityDetailError(error.getEntityErrorDetail(), TrainingInstance.class, "id", notConcludedTrainingInstance.getId().toString(),
+                "The access token of the running training instance cannot be changed. Only title can be updated.");
     }
 
     @Test
