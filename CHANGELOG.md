@@ -1,3 +1,15 @@
+* 8d97049a -- Update pom.xml version based on GitLab tag. Done by CI.
+* 91afd4d7 -- Update VERSION.txt
+*   6269b921 -- Merge branch '556-install-not-failing-with-test-failures' into 'master'
+|\  
+| * 47c2a372 -- maven install fails if test fail
+* | da31dbd1 -- Update VERSION.txt
+|/  
+*   c1af7298 -- Merge branch '554-designer-is-able-to-change-only-title-of-the-running-training-instance' into 'master'
+|\  
+| * af94f0f3 -- Resolve "Designer is able to change only title of the running training instance"
+|/  
+* 11881229 -- CHANGELOG.md file updated with commits between the current and previous tag. Done by CI.
 * 8055fcdd -- Update pom.xml version based on GitLab tag. Done by CI.
 * 4fa45864 -- KYPO organizer is able to download TI results at any time.
 *   577e0865 -- Merge branch '553-kypo-user-designer-can-download-ti-results-any-time' into 'master'
