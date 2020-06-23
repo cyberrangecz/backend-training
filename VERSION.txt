@@ -1,1 +1,1 @@
-1.1.41  KYPO organizer is able to change title of the running training instance.
+1.1.42  KYPO organizer is able to change title of the running TI.
