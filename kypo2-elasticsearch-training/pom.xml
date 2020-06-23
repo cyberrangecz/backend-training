@@ -12,6 +12,11 @@
 
     <dependencies>
         <dependency>
+            <groupId>cz.muni.ics.kypo</groupId>
+            <artifactId>kypo-elasticsearch-documents</artifactId>
+            <version>1.0.11</version>
+        </dependency>
+        <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter</artifactId>
         </dependency>

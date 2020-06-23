@@ -1,11 +1,10 @@
 package cz.muni.csirt.kypo.elasticsearch.data;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import cz.muni.csirt.kypo.elasticsearch.AbstractAuditPOJO;
-import cz.muni.csirt.kypo.elasticsearch.data.dto.ElasticsearchResponseDto;
 import cz.muni.csirt.kypo.elasticsearch.data.exceptions.ElasticsearchTrainingDataLayerException;
 import cz.muni.csirt.kypo.elasticsearch.data.indexpaths.AbstractKypoElasticTermQueryFields;
 import cz.muni.csirt.kypo.elasticsearch.data.indexpaths.AbstractKypoIndexPath;
+import cz.muni.csirt.kypo.events.AbstractAuditPOJO;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
