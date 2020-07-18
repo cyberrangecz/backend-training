@@ -57,36 +57,36 @@ import java.util.Set;
         @NamedQuery(
                 name = "TrainingRun.findAllByParticipantRefId",
                 query = "SELECT tr FROM TrainingRun tr " +
-                        "JOIN FETCH tr.participantRef pr " +
-                        "JOIN FETCH tr.trainingInstance ti " +
-                        "JOIN FETCH ti.trainingDefinition " +
+                        "INNER JOIN tr.participantRef pr " +
+                        "INNER JOIN tr.trainingInstance ti " +
+                        "INNER JOIN ti.trainingDefinition " +
                         "WHERE pr.userRefId = :userRefId"
         ),
         @NamedQuery(
                 name = "TrainingRun.findAllByTrainingDefinitionIdAndParticipantUserRefId",
                 query = "SELECT tr FROM TrainingRun tr " +
-                        "JOIN FETCH tr.participantRef pr " +
-                        "JOIN FETCH tr.trainingInstance ti " +
-                        "JOIN FETCH ti.trainingDefinition td " +
+                        "INNER JOIN tr.participantRef pr " +
+                        "INNER JOIN tr.trainingInstance ti " +
+                        "INNER JOIN ti.trainingDefinition td " +
                         "WHERE td.id = :trainingDefinitionId AND pr.userRefId = :userRefId"
         ),
         @NamedQuery(
                 name = "TrainingRun.findAllActiveByTrainingInstanceId",
                 query = "SELECT tr FROM TrainingRun tr " +
-                        "JOIN FETCH tr.trainingInstance ti " +
+                        "INNER JOIN tr.trainingInstance ti " +
                         "WHERE ti.id = :trainingInstanceId AND tr.state <> 'ARCHIVED'"
         ),
         @NamedQuery(
                 name = "TrainingRun.findAllInactiveByTrainingInstanceId",
                 query = "SELECT tr FROM TrainingRun tr " +
-                        "JOIN FETCH tr.trainingInstance ti " +
+                        "INNER JOIN tr.trainingInstance ti " +
                         "WHERE ti.id = :trainingInstanceId AND tr.state = 'ARCHIVED'"
         ),
         @NamedQuery(
                 name = "TrainingRun.findAllByTrainingDefinitionId",
                 query = "SELECT tr FROM TrainingRun tr " +
-                        "JOIN FETCH tr.trainingInstance ti " +
-                        "JOIN FETCH ti.trainingDefinition td " +
+                        "INNER JOIN tr.trainingInstance ti " +
+                        "INNER JOIN ti.trainingDefinition td " +
                         "WHERE td.id = :trainingDefinitionId"
         )
 })
