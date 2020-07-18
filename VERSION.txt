@@ -1,1 +1,1 @@
-1.1.43  KYPO elasticsearch documents are used from the kypo-elasticsearch-documents library.
+1.1.44  The bug with listing of more than 10 training runs is fixed.
