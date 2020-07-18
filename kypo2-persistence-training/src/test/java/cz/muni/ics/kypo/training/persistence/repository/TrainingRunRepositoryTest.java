@@ -2,6 +2,7 @@ package cz.muni.ics.kypo.training.persistence.repository;
 
 import cz.muni.ics.kypo.training.persistence.config.PersistenceConfigTest;
 import cz.muni.ics.kypo.training.persistence.model.*;
+import cz.muni.ics.kypo.training.persistence.model.enums.TRState;
 import cz.muni.ics.kypo.training.persistence.util.TestDataFactory;
 import org.junit.Before;
 import org.junit.Test;
@@ -36,7 +37,7 @@ public class TrainingRunRepositoryTest {
     @Autowired
     private TrainingRunRepository trainingRunRepository;
 
-    private TrainingRun trainingRun1, trainingRun2;
+    private TrainingRun trainingRun1, trainingRun2, archivedRun;
     private TrainingInstance trainingInstance;
     private TrainingDefinition trainingDefinition;
     private InfoLevel infoLevel;
@@ -71,7 +72,14 @@ public class TrainingRunRepositoryTest {
         trainingRun1.setTrainingInstance(entityManager.persist(trainingInstance));
         trainingRun1.setSandboxInstanceRefId(2L);
 
-        pageable = PageRequest.of(0, 10);
+        archivedRun = testDataFactory.getArchivedRun();
+        archivedRun.setCurrentLevel(entityManager.persist(infoLevel));
+        archivedRun.setParticipantRef(entityManager.persist(participantRef));
+        archivedRun.setTrainingInstance(entityManager.persist(trainingInstance));
+        archivedRun.setSandboxInstanceRefId(3L);
+
+
+        pageable = PageRequest.of(0, 4);
     }
 
     @Test
@@ -151,4 +159,95 @@ public class TrainingRunRepositoryTest {
         assertFalse(trainingRunsAfterDelete.getContent().contains(trainingRun2));
     }
 
+    @Test
+    public void findAllActiveByTrainingInstanceId() {
+        entityManager.persist(trainingRun1);
+        entityManager.persist(trainingRun2);
+        entityManager.persist(archivedRun);
+        Page<TrainingRun> trainingRuns = trainingRunRepository.findAllActiveByTrainingInstanceId(trainingInstance.getId(), pageable);
+        assertEquals(2, trainingRuns.getContent().size());
+        assertTrue(trainingRuns.getContent().contains(trainingRun1));
+        assertTrue(trainingRuns.getContent().contains(trainingRun2));
+        assertFalse(trainingRuns.getContent().contains(archivedRun));
+    }
+
+    @Test
+    public void findAllActiveByTrainingInstanceIdPaginationTest() {
+        entityManager.persist(trainingRun1);
+        entityManager.persist(trainingRun2);
+        pageable = PageRequest.of(0, 1);
+        Page<TrainingRun> trainingRuns = trainingRunRepository.findAllActiveByTrainingInstanceId(trainingInstance.getId(), pageable);
+        assertEquals(1, trainingRuns.getContent().size());
+
+        pageable = PageRequest.of(1, 1);
+        trainingRuns = trainingRunRepository.findAllActiveByTrainingInstanceId(trainingInstance.getId(), pageable);
+        assertEquals(1, trainingRuns.getContent().size());
+    }
+
+    @Test
+    public void findAllInactiveByTrainingInstanceIdPaginationTest() {
+        trainingRun1.setState(TRState.ARCHIVED);
+        entityManager.persist(trainingRun1);
+        entityManager.persist(archivedRun);
+        pageable = PageRequest.of(0, 1);
+        Page<TrainingRun> trainingRuns = trainingRunRepository.findAllInactiveByTrainingInstanceId(trainingInstance.getId(), pageable);
+        assertEquals(1, trainingRuns.getContent().size());
+
+        pageable = PageRequest.of(1, 1);
+        trainingRuns = trainingRunRepository.findAllInactiveByTrainingInstanceId(trainingInstance.getId(), pageable);
+        assertEquals(1, trainingRuns.getContent().size());
+    }
+
+    @Test
+    public void findAllByTrainingDefinitionIdPaginationTest(){
+        entityManager.persist(trainingRun1);
+        entityManager.persist(trainingRun2);
+        pageable = PageRequest.of(0, 1);
+        Page<TrainingRun> trainingRuns = trainingRunRepository.findAllByTrainingDefinitionId(trainingDefinition.getId(), pageable);
+        assertEquals(1, trainingRuns.getContent().size());
+
+        pageable = PageRequest.of(1, 1);
+        trainingRuns = trainingRunRepository.findAllByTrainingDefinitionId(trainingDefinition.getId(), pageable);
+        assertEquals(1, trainingRuns.getContent().size());
+    }
+
+    @Test
+    public void findAllByTrainingDefinitionIdAndUserRefIdPaginationTest(){
+        entityManager.persist(trainingRun1);
+        entityManager.persist(trainingRun2);
+        pageable = PageRequest.of(0, 1);
+        Page<TrainingRun> trainingRuns = trainingRunRepository.findAllByTrainingDefinitionIdAndParticipantUserRefId(trainingDefinition.getId(), participantRef.getUserRefId(), pageable);
+        assertEquals(1, trainingRuns.getContent().size());
+
+        pageable = PageRequest.of(1, 1);
+        trainingRuns = trainingRunRepository.findAllByTrainingDefinitionIdAndParticipantUserRefId(trainingDefinition.getId(), participantRef.getUserRefId(), pageable);
+        assertEquals(1, trainingRuns.getContent().size());
+    }
+
+    @Test
+    public void findAllByParticipantRefIdPaginationTest() {
+        entityManager.persist(trainingRun1);
+        entityManager.persist(trainingRun2);
+        pageable = PageRequest.of(0, 1);
+        Page<TrainingRun> trainingRuns = trainingRunRepository.findAllByParticipantRefId(participantRef.getUserRefId(), pageable);
+        assertEquals(1, trainingRuns.getContent().size());
+
+        pageable = PageRequest.of(1, 1);
+        trainingRuns = trainingRunRepository.findAllByParticipantRefId(participantRef.getUserRefId(), pageable);
+        assertEquals(1, trainingRuns.getContent().size());
+    }
+
+    @Test
+    public void findAllByTrainingInstanceIdPaginationTest() {
+        entityManager.persist(trainingRun1);
+        entityManager.persist(trainingRun2);
+        pageable = PageRequest.of(0, 1);
+        Page<TrainingRun> trainingRuns = trainingRunRepository.findAllByTrainingInstanceId(trainingInstance.getId(), pageable);
+        assertEquals(1, trainingRuns.getContent().size());
+
+        pageable = PageRequest.of(1, 1);
+        trainingRuns = trainingRunRepository.findAllByTrainingInstanceId(trainingInstance.getId(), pageable);
+        assertEquals(1, trainingRuns.getContent().size());
+
+    }
 }

@@ -13,6 +13,9 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Import;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.time.Clock;
@@ -111,5 +114,19 @@ public class TrainingInstanceRepositoryTest {
         List<TrainingInstance> instances = trainingInstanceRepository.findAllByTrainingDefinitionId(trainingDefinition.getId());
         assertTrue(instances.contains(trainingInstance1));
         assertTrue(instances.contains(trainingInstance2));
+    }
+
+    @Test
+    public void findAllPaginationTest(){
+        entityManager.persist(trainingInstance1);
+        entityManager.persist(trainingInstance2);
+
+        Pageable pageable = PageRequest.of(0,1);
+        Page<TrainingInstance> trainingInstances = trainingInstanceRepository.findAll(pageable);
+        assertEquals(1, trainingInstances.getContent().size());
+
+        pageable = PageRequest.of(1,1);
+        trainingInstances = trainingInstanceRepository.findAll(pageable);
+        assertEquals(1, trainingInstances.getContent().size());
     }
 }
