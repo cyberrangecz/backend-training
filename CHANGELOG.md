@@ -1,3 +1,10 @@
+* 3e9c3d93 -- Update pom.xml version based on GitLab tag. Done by CI.
+* 5653f856 -- Update VERSION.txt
+*   69d5e42d -- Merge branch '560-list-active-training-runs-of-instance-not-working' into 'master'
+|\  
+| * b6d6b22b -- Resolve "List active training runs of instance not working"
+|/  
+* afdd70ad -- CHANGELOG.md file updated with commits between the current and previous tag. Done by CI.
 * 96578fde -- Update pom.xml version based on GitLab tag. Done by CI.
 * a7a51b0e -- Update VERSION.txt
 *   8464ad82 -- Merge branch '557-remov-elasticsearch-documents-and-import-library-kypo-elasticsearch-documents' into 'master'
