@@ -31,7 +31,7 @@ public class GameLevelImportDTO extends AbstractLevelImportDTO{
 	@NotNull(message = "{gamelevelimport.solutionPenalized.NotNull.message}")
 	private boolean solutionPenalized;
 	@ApiModelProperty(value = "Information which helps player resolve the level.")
-	private Set<HintDTO> hints = new HashSet<>();
+	private Set<HintImportDTO> hints = new HashSet<>();
 	@ApiModelProperty(value = "How many times player can submit incorrect flag before displaying solution.", example = "5")
 	@NotNull(message = "{gamelevelimport.incorrectFlagLimit.NotEmpty.message}")
 	@Min(value = 0, message = "{gamelevelimport.incorrectFlagLimit.Min.message}")
@@ -117,7 +117,7 @@ public class GameLevelImportDTO extends AbstractLevelImportDTO{
 	 *
 	 * @return the set of {@link HintImportDTO}
 	 */
-	public Set<HintDTO> getHints() {
+	public Set<HintImportDTO> getHints() {
 		return hints;
 	}
 
@@ -126,7 +126,7 @@ public class GameLevelImportDTO extends AbstractLevelImportDTO{
 	 *
 	 * @param hints the set of {@link HintImportDTO}
 	 */
-	public void setHints(Set<HintDTO> hints) {
+	public void setHints(Set<HintImportDTO> hints) {
 		this.hints = hints;
 	}
 

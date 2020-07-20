@@ -18,11 +18,11 @@ import javax.validation.constraints.NotNull;
  */
 @ApiModel(value = "AbstractLevelImportDTO", subTypes = {GameLevelImportDTO.class, InfoLevelImportDTO.class, AssessmentLevelImportDTO.class},
 		description = "Superclass for classes GameLevelImportDTO, AssessmentLevelImportDTO and InfoLevelImportDTO")
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.EXISTING_PROPERTY, property = "level_type", visible = true)
 @JsonSubTypes({
-		@JsonSubTypes.Type(value = GameLevelImportDTO.class, name = "GameLevelImportDTO"),
-		@JsonSubTypes.Type(value = AssessmentLevelImportDTO.class, name = "AssessmentLevelImportDTO"),
-		@JsonSubTypes.Type(value = InfoLevelImportDTO.class, name = "InfoLevelImportDTO")})
+		@JsonSubTypes.Type(value = GameLevelImportDTO.class, name = "GAME_LEVEL"),
+		@JsonSubTypes.Type(value = AssessmentLevelImportDTO.class, name = "ASSESSMENT_LEVEL"),
+		@JsonSubTypes.Type(value = InfoLevelImportDTO.class, name = "INFO_LEVEL")})
 public class AbstractLevelImportDTO {
 
 	@ApiModelProperty(value = "Short textual description of the level.", example = "Game Level1")

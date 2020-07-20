@@ -129,6 +129,7 @@ public class ExportImportRestControllerTest {
 
 	@Test
 	public void importTrainingDefinition() throws Exception{
+		System.out.println(convertObjectToJsonBytes(importTrainingDefinitionDTO));
 		mockMvc.perform(post("/imports/training-definitions")
 				.contentType(MediaType.APPLICATION_JSON_VALUE)
 				.content(convertObjectToJsonBytes(importTrainingDefinitionDTO)))
@@ -138,6 +139,7 @@ public class ExportImportRestControllerTest {
 
 	private static String convertObjectToJsonBytes(Object object) throws IOException {
 		ObjectMapper mapper = new ObjectMapper();
+		mapper.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
 		mapper.registerModule(new JavaTimeModule().addDeserializer(LocalDateTime.class, new LocalDateTimeDeserializer()));
 		return mapper.writeValueAsString(object);
 	}

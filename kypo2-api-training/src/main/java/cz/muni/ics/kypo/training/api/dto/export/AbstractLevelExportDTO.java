@@ -11,11 +11,6 @@ import io.swagger.annotations.ApiModelProperty;
  * Extended by {@link AssessmentLevelExportDTO}, {@link GameLevelExportDTO} and {@link InfoLevelExportDTO}
  *
  */
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
-@JsonSubTypes({
-    @JsonSubTypes.Type(value = GameLevelExportDTO.class, name = "GameLevelImportDTO"),
-    @JsonSubTypes.Type(value = AssessmentLevelExportDTO.class, name = "AssessmentLevelImportDTO"),
-    @JsonSubTypes.Type(value = InfoLevelExportDTO.class, name = "InfoLevelImportDTO")})
 @ApiModel(value = "AbstractLevelExportDTO", subTypes = {GameLevelExportDTO.class, InfoLevelExportDTO.class, AssessmentLevelExportDTO.class},
         description = "Superclass for classes GameLevelExportDTO, InfoLevelExportDTO and AssessmentLevelExportDTO")
 public class AbstractLevelExportDTO {
