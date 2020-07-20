@@ -1,3 +1,10 @@
+* 49606e56 -- Update pom.xml version based on GitLab tag. Done by CI.
+* d394d340 -- Update VERSION.txt
+*   3caacca8 -- Merge branch '559-import-of-training-definition-is-not-working' into 'master'
+|\  
+| * e305add8 -- Resolve "Import of training definition is not working"
+|/  
+* 72c1de8e -- CHANGELOG.md file updated with commits between the current and previous tag. Done by CI.
 * 3e9c3d93 -- Update pom.xml version based on GitLab tag. Done by CI.
 * 5653f856 -- Update VERSION.txt
 *   69d5e42d -- Merge branch '560-list-active-training-runs-of-instance-not-working' into 'master'
