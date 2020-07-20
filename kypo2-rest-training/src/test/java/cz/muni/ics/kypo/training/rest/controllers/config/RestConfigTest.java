@@ -1,6 +1,7 @@
 package cz.muni.ics.kypo.training.rest.controllers.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import cz.muni.csirt.kypo.elasticsearch.service.TrainingEventsService;
