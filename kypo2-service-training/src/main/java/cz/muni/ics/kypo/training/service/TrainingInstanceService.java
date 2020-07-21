@@ -17,6 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -26,9 +27,7 @@ import reactor.core.publisher.Mono;
 
 import java.time.Clock;
 import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 /**
  * The type Training instance service.
@@ -61,8 +60,8 @@ public class TrainingInstanceService {
                                    AccessTokenRepository accessTokenRepository,
                                    TrainingRunRepository trainingRunRepository,
                                    UserRefRepository organizerRefRepository,
-                                   @Qualifier("sandboxServiceWebClient") WebClient sandboxServiceWebClient,
-                                   SecurityService securityService) {
+                                   SecurityService securityService,
+                                   @Qualifier("sandboxServiceWebClient") WebClient sandboxServiceWebClient) {
         this.trainingInstanceRepository = trainingInstanceRepository;
         this.trainingRunRepository = trainingRunRepository;
         this.accessTokenRepository = accessTokenRepository;

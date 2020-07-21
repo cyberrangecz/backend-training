@@ -33,6 +33,7 @@ import cz.muni.ics.kypo.training.rest.ApiError;
 import cz.muni.ics.kypo.training.rest.CustomRestExceptionHandlerTraining;
 import cz.muni.ics.kypo.training.rest.controllers.config.DBTestUtil;
 import cz.muni.ics.kypo.training.rest.controllers.config.RestConfigTest;
+import cz.muni.ics.kypo.training.service.ElasticsearchApiService;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.After;
@@ -124,6 +125,8 @@ public class TrainingRunsIT {
     private TrainingRunMapperImpl trainingRunMapper;
     @Autowired
     private HintMapperImpl hintMapper;
+    @Autowired
+    private ElasticsearchApiService elasticsearchApiServiceMock;
     @Autowired
     @Qualifier("objMapperRESTApi")
     private ObjectMapper mapper;

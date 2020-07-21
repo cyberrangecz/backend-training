@@ -1,7 +1,6 @@
 package cz.muni.csirt.kypo.elasticsearch.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import cz.muni.csirt.kypo.elasticsearch.data.exceptions.ElasticsearchTrainingDataLayerException;
 import cz.muni.csirt.kypo.elasticsearch.service.exceptions.ElasticsearchTrainingServiceLayerException;
 import cz.muni.csirt.kypo.events.AbstractAuditPOJO;
 import org.slf4j.Logger;
@@ -47,7 +46,7 @@ public class AuditService {
             pojoClass.setType(pojoClass.getClass().getName());
 
             logger.info(objectMapper.writeValueAsString(pojoClass));
-        } catch (IOException | ElasticsearchTrainingDataLayerException ex) {
+        } catch (IOException ex) {
             throw new ElasticsearchTrainingServiceLayerException(ex);
         }
     }

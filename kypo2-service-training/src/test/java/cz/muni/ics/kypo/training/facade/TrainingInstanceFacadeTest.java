@@ -2,7 +2,6 @@ package cz.muni.ics.kypo.training.facade;
 
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.PathBuilder;
-import cz.muni.csirt.kypo.elasticsearch.service.TrainingEventsService;
 import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
 import cz.muni.ics.kypo.training.api.dto.traininginstance.*;
 import cz.muni.ics.kypo.training.api.enums.RoleType;
@@ -68,7 +67,7 @@ public class TrainingInstanceFacadeTest {
     @Mock
     private TrainingRunService trainingRunService;
     @Mock
-    private TrainingEventsService trainingEventsService;
+    private ElasticsearchApiService elasticsearchApiService;
     @Mock
     private TrainingDefinitionService trainingDefinitionService;
     @Mock
@@ -89,8 +88,8 @@ public class TrainingInstanceFacadeTest {
     @Before
     public void init() {
         MockitoAnnotations.initMocks(this);
-        trainingInstanceFacade = new TrainingInstanceFacade(trainingInstanceService, trainingDefinitionService, trainingRunService, trainingEventsService,
-                userService, securityService, trainingInstanceMapper, trainingRunMapper);
+        trainingInstanceFacade = new TrainingInstanceFacade(trainingInstanceService, trainingDefinitionService, trainingRunService, userService,
+                elasticsearchApiService, securityService, trainingInstanceMapper, trainingRunMapper);
 
         pageable = PageRequest.of(0, 5);
 
