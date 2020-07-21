@@ -1,1 +1,1 @@
-1.1.45  Uploading modification of training definition.
+1.1.46  Preparation to kypo-elasticsearch service project.
