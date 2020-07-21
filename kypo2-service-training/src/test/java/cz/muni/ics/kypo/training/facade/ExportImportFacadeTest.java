@@ -1,7 +1,6 @@
 package cz.muni.ics.kypo.training.facade;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import cz.muni.csirt.kypo.elasticsearch.service.TrainingEventsService;
 import cz.muni.ics.kypo.training.api.dto.export.ExportTrainingDefinitionAndLevelsDTO;
 import cz.muni.ics.kypo.training.api.dto.export.FileToReturnDTO;
 import cz.muni.ics.kypo.training.api.dto.imports.AssessmentLevelImportDTO;
@@ -12,6 +11,7 @@ import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionBy
 import cz.muni.ics.kypo.training.mapping.mapstruct.*;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.util.TestDataFactory;
+import cz.muni.ics.kypo.training.service.ElasticsearchApiService;
 import cz.muni.ics.kypo.training.service.ExportImportService;
 import cz.muni.ics.kypo.training.service.TrainingDefinitionService;
 import cz.muni.ics.kypo.training.service.UserService;
@@ -72,13 +72,13 @@ public class ExportImportFacadeTest {
     private GameLevel gameLevel;
     private InfoLevel infoLevel;
     private ImportTrainingDefinitionDTO importTrainingDefinitionDTO;
-    private TrainingEventsService trainingEventsService;
+    private ElasticsearchApiService elasticsearchApiService;
 
     @Before
     public void init() {
         MockitoAnnotations.initMocks(this);
-        exportImportFacade = new ExportImportFacade(exportImportService, trainingDefinitionService, trainingEventsService,
-                userService, exportImportMapper, infoLevelMapper, trainingDefinitionMapper, objectMapper, userRefMapper);
+        exportImportFacade = new ExportImportFacade(exportImportService, trainingDefinitionService, userService,
+                elasticsearchApiService, exportImportMapper, infoLevelMapper, trainingDefinitionMapper, objectMapper, userRefMapper);
 
         assessmentLevel = testDataFactory.getTest();
         assessmentLevel.setId(1L);

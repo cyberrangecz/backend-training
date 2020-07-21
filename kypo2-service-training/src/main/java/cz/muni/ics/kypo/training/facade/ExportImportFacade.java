@@ -2,43 +2,48 @@ package cz.muni.ics.kypo.training.facade;
 
 import com.fasterxml.jackson.core.util.MinimalPrettyPrinter;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import cz.muni.csirt.kypo.elasticsearch.service.TrainingEventsService;
-import cz.muni.ics.kypo.training.annotations.security.IsDesignerOrOrganizerOrAdmin;
 import cz.muni.ics.kypo.training.annotations.security.IsDesignerOrAdmin;
+import cz.muni.ics.kypo.training.annotations.security.IsDesignerOrOrganizerOrAdmin;
 import cz.muni.ics.kypo.training.annotations.security.IsOrganizerOrAdmin;
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalRO;
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalWO;
 import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
-import cz.muni.ics.kypo.training.api.dto.archive.*;
-import cz.muni.ics.kypo.training.api.dto.export.*;
+import cz.muni.ics.kypo.training.api.dto.archive.AbstractLevelArchiveDTO;
+import cz.muni.ics.kypo.training.api.dto.archive.TrainingDefinitionArchiveDTO;
+import cz.muni.ics.kypo.training.api.dto.archive.TrainingInstanceArchiveDTO;
+import cz.muni.ics.kypo.training.api.dto.archive.TrainingRunArchiveDTO;
+import cz.muni.ics.kypo.training.api.dto.export.AbstractLevelExportDTO;
+import cz.muni.ics.kypo.training.api.dto.export.ExportTrainingDefinitionAndLevelsDTO;
+import cz.muni.ics.kypo.training.api.dto.export.FileToReturnDTO;
+import cz.muni.ics.kypo.training.api.dto.export.UserRefExportDTO;
 import cz.muni.ics.kypo.training.api.dto.imports.*;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionByIdDTO;
 import cz.muni.ics.kypo.training.api.enums.LevelType;
 import cz.muni.ics.kypo.training.api.enums.TDState;
 import cz.muni.ics.kypo.training.api.responses.PageResultResource;
 import cz.muni.ics.kypo.training.api.responses.SandboxDefinitionInfo;
-import cz.muni.ics.kypo.training.exceptions.EntityConflictException;
 import cz.muni.ics.kypo.training.exceptions.EntityErrorDetail;
 import cz.muni.ics.kypo.training.exceptions.InternalServerErrorException;
 import cz.muni.ics.kypo.training.exceptions.UnprocessableEntityException;
-import cz.muni.ics.kypo.training.mapping.mapstruct.*;
+import cz.muni.ics.kypo.training.mapping.mapstruct.ExportImportMapper;
+import cz.muni.ics.kypo.training.mapping.mapstruct.LevelMapper;
+import cz.muni.ics.kypo.training.mapping.mapstruct.TrainingDefinitionMapper;
+import cz.muni.ics.kypo.training.mapping.mapstruct.UserRefMapper;
 import cz.muni.ics.kypo.training.persistence.model.*;
+import cz.muni.ics.kypo.training.service.ElasticsearchApiService;
 import cz.muni.ics.kypo.training.service.ExportImportService;
-import cz.muni.ics.kypo.training.service.UserService;
 import cz.muni.ics.kypo.training.service.TrainingDefinitionService;
+import cz.muni.ics.kypo.training.service.UserService;
 import cz.muni.ics.kypo.training.utils.AbstractFileExtensions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.time.Clock;
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
@@ -52,18 +57,16 @@ import java.util.zip.ZipOutputStream;
 public class ExportImportFacade {
 
     private static final Logger LOG = LoggerFactory.getLogger(ExportImportFacade.class);
-    @Value("${openstack-server.uri}")
-    private String kypoOpenStackURI;
 
     private ExportImportService exportImportService;
     private TrainingDefinitionService trainingDefinitionService;
-    private TrainingEventsService trainingEventsService;
     private UserService userService;
     private ExportImportMapper exportImportMapper;
     private LevelMapper levelMapper;
     private TrainingDefinitionMapper trainingDefinitionMapper;
     private ObjectMapper objectMapper;
     private UserRefMapper userRefMapper;
+    private ElasticsearchApiService elasticsearchApiService;
 
     /**
      * Instantiates a new Export import facade.
@@ -74,15 +77,14 @@ public class ExportImportFacade {
      * @param trainingDefinitionService the training definition service
      * @param trainingDefinitionMapper  the training definition mapper
      * @param objectMapper              the object mapper
-     * @param trainingEventsService     the training events service
      * @param userService               the user service
      * @param userRefMapper             the user ref mapper
      */
     @Autowired
     public ExportImportFacade(ExportImportService exportImportService,
                               TrainingDefinitionService trainingDefinitionService,
-                              TrainingEventsService trainingEventsService,
                               UserService userService,
+                              ElasticsearchApiService elasticsearchApiService,
                               ExportImportMapper exportImportMapper,
                               LevelMapper levelMapper,
                               TrainingDefinitionMapper trainingDefinitionMapper,
@@ -90,11 +92,11 @@ public class ExportImportFacade {
                               UserRefMapper userRefMapper) {
         this.exportImportService = exportImportService;
         this.trainingDefinitionService = trainingDefinitionService;
+        this.elasticsearchApiService = elasticsearchApiService;
         this.exportImportMapper = exportImportMapper;
         this.levelMapper = levelMapper;
         this.trainingDefinitionMapper = trainingDefinitionMapper;
         this.objectMapper = objectMapper;
-        this.trainingEventsService = trainingEventsService;
         this.userService = userService;
         this.userRefMapper = userRefMapper;
     }
@@ -232,7 +234,7 @@ public class ExportImportFacade {
             zos.putNextEntry(runEntry);
             zos.write(objectMapper.writeValueAsBytes(archivedRun));
 
-            List<Map<String, Object>> events = trainingEventsService.findAllEventsFromTrainingRun(trainingInstance.getTrainingDefinition().getId(), trainingInstance.getId(), run.getId());
+            List<Map<String, Object>> events = elasticsearchApiService.findAllEventsFromTrainingRun(run);
             ZipEntry eventsEntry = new ZipEntry("training_run-id" + run.getId() + "-events" + AbstractFileExtensions.JSON_FILE_EXTENSION);
             zos.putNextEntry(eventsEntry);
             for (Map<String, Object> event : events) {

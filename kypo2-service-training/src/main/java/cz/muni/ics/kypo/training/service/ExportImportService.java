@@ -8,10 +8,13 @@ import cz.muni.ics.kypo.training.persistence.repository.*;
 import cz.muni.ics.kypo.training.utils.AssessmentUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -49,7 +52,8 @@ public class ExportImportService {
                                GameLevelRepository gameLevelRepository,
                                TrainingInstanceRepository trainingInstanceRepository,
                                TrainingRunRepository trainingRunRepository,
-                               @Qualifier("sandboxServiceWebClient") WebClient sandboxServiceWebClient) {
+                               @Qualifier("sandboxServiceWebClient") WebClient sandboxServiceWebClient)
+    {
         this.trainingDefinitionRepository = trainingDefinitionRepository;
         this.abstractLevelRepository = abstractLevelRepository;
         this.assessmentLevelRepository = assessmentLevelRepository;
@@ -136,5 +140,4 @@ public class ExportImportService {
             throw new MicroserviceApiException("Error when calling Python API to sandbox for particular pool (ID: " + poolId + ")", new PythonApiError(ex.getMessage()));
         }
     }
-
 }

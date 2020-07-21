@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import cz.muni.csirt.kypo.elasticsearch.service.TrainingEventsService;
+import cz.muni.ics.kypo.training.service.ElasticsearchApiService;
 import cz.muni.ics.kypo.training.validation.EmailValidator;
 import org.apache.catalina.connector.Connector;
 import org.apache.catalina.connector.Request;
@@ -32,7 +32,7 @@ import javax.servlet.http.HttpServletRequestWrapper;
 
 @Configuration
 @ComponentScan(basePackages = {"cz.muni.ics.kypo.training.facade", "cz.muni.ics.kypo.training.mapping", "cz.muni.ics.kypo.training.service",
-		"cz.muni.csirt.kypo.elasticsearch.service",	"cz.muni.csirt.kypo.elasticsearch.data"})
+		"cz.muni.csirt.kypo.elasticsearch.service"})
 @EntityScan(basePackages = {"cz.muni.ics.kypo.training.persistence.model", "cz.muni.ics.kypo.commons.persistence.model"},  basePackageClasses = Jsr310JpaConverters.class)
 @EnableJpaRepositories(basePackages = {"cz.muni.ics.kypo.training.persistence.repository", "cz.muni.ics.kypo.commons"})
 public class RestConfigTest {
@@ -72,6 +72,12 @@ public class RestConfigTest {
 	}
 
 	@Bean
+	@Qualifier("elasticsearchExchangeFunction")
+	public ExchangeFunction elasticsearchExchangeFunction(){
+		return Mockito.mock(ExchangeFunction.class);
+	}
+
+	@Bean
 	@Primary
 	@Qualifier("userManagementServiceWebClient")
 	public WebClient userManagementServiceWebClient(){
@@ -89,6 +95,14 @@ public class RestConfigTest {
 	}
 
 	@Bean
+	@Qualifier("elasticsearchServiceWebClient")
+	public WebClient elasticsearchServiceWebClient(){
+		return WebClient.builder()
+				.exchangeFunction(elasticsearchExchangeFunction())
+				.build();
+	}
+
+	@Bean
 	@Primary
 	@Qualifier("objMapperRESTApi")
 	public ObjectMapper objectMapper() {
@@ -101,8 +115,8 @@ public class RestConfigTest {
 
 	@Bean
 	@Primary
-	public TrainingEventsService trainingEventsServiceMock(){
-		return Mockito.mock(TrainingEventsService.class);
+	public ElasticsearchApiService elasticsearchApiServiceMock(){
+		return Mockito.mock(ElasticsearchApiService.class);
 	}
 
 	@Bean

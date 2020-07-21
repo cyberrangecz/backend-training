@@ -1,7 +1,6 @@
 package cz.muni.ics.kypo.training.facade;
 
 import com.querydsl.core.types.Predicate;
-import cz.muni.csirt.kypo.elasticsearch.service.TrainingEventsService;
 import cz.muni.ics.kypo.training.annotations.security.IsOrganizerOrAdmin;
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalRO;
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalWO;
@@ -42,11 +41,12 @@ public class TrainingInstanceFacade {
     private TrainingInstanceService trainingInstanceService;
     private TrainingDefinitionService trainingDefinitionService;
     private TrainingRunService trainingRunService;
-    private TrainingEventsService trainingEventsService;
     private UserService userService;
     private SecurityService securityService;
     private TrainingInstanceMapper trainingInstanceMapper;
     private TrainingRunMapper trainingRunMapper;
+    private ElasticsearchApiService elasticsearchApiService;
+
 
     /**
      * Instantiates a new Training instance facade.
@@ -54,26 +54,26 @@ public class TrainingInstanceFacade {
      * @param trainingInstanceService   the training instance service
      * @param trainingDefinitionService the training definition service
      * @param trainingRunService        the training run service
-     * @param trainingEventsService     the training events service
      * @param trainingInstanceMapper    the training instance mapper
      * @param trainingRunMapper         the training run mapper
      * @param userService               the user service
+     * @param elasticsearchApiService   the elasticsearch api service
      * @param securityService           the security service
      */
     @Autowired
     public TrainingInstanceFacade(TrainingInstanceService trainingInstanceService,
                                   TrainingDefinitionService trainingDefinitionService,
                                   TrainingRunService trainingRunService,
-                                  TrainingEventsService trainingEventsService,
                                   UserService userService,
+                                  ElasticsearchApiService elasticsearchApiService,
                                   SecurityService securityService,
                                   TrainingInstanceMapper trainingInstanceMapper,
                                   TrainingRunMapper trainingRunMapper) {
         this.trainingInstanceService = trainingInstanceService;
         this.trainingDefinitionService = trainingDefinitionService;
         this.trainingRunService = trainingRunService;
-        this.trainingEventsService = trainingEventsService;
         this.userService = userService;
+        this.elasticsearchApiService = elasticsearchApiService;
         this.securityService = securityService;
         this.trainingInstanceMapper = trainingInstanceMapper;
         this.trainingRunMapper = trainingRunMapper;
@@ -198,7 +198,7 @@ public class TrainingInstanceFacade {
             // not possible to delete training instance with associated pool
         }
         trainingInstanceService.delete(trainingInstance);
-        trainingEventsService.deleteEventsByTrainingInstanceId(trainingInstanceId);
+        elasticsearchApiService.deleteEventsByTrainingInstanceId(trainingInstance.getId());
     }
 
     /**

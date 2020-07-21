@@ -4,7 +4,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.google.gson.JsonObject;
-import cz.muni.csirt.kypo.elasticsearch.service.TrainingEventsService;
 import cz.muni.ics.kypo.commons.security.enums.AuthenticatedUserOIDCItems;
 import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
 import cz.muni.ics.kypo.training.api.dto.run.TrainingRunDTO;
@@ -28,6 +27,7 @@ import cz.muni.ics.kypo.training.rest.ApiEntityError;
 import cz.muni.ics.kypo.training.rest.CustomRestExceptionHandlerTraining;
 import cz.muni.ics.kypo.training.rest.controllers.config.DBTestUtil;
 import cz.muni.ics.kypo.training.rest.controllers.config.RestConfigTest;
+import cz.muni.ics.kypo.training.service.ElasticsearchApiService;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -67,7 +67,6 @@ import reactor.core.publisher.Mono;
 
 import java.io.IOException;
 import java.sql.SQLException;
-import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -112,7 +111,7 @@ public class TrainingInstancesIT {
     @Qualifier("objMapperRESTApi")
     private ObjectMapper mapper;
     @Autowired
-    private TrainingEventsService trainingEventsServiceMock;
+    private ElasticsearchApiService elasticsearchApiServiceMock;
     @Autowired
     @Qualifier("userManagementExchangeFunction")
     private ExchangeFunction exchangeFunction;
@@ -476,7 +475,7 @@ public class TrainingInstancesIT {
     public void deleteTrainingInstance() throws Exception {
         futureTrainingInstance.setPoolId(null);
         TrainingInstance tI = trainingInstanceRepository.save(futureTrainingInstance);
-        doNothing().when(trainingEventsServiceMock).deleteEventsByTrainingInstanceId(anyLong());
+        doNothing().when(elasticsearchApiServiceMock).deleteEventsByTrainingInstanceId(anyLong());
 
         mvc.perform(delete("/training-instances/{id}", tI.getId()))
                 .andExpect(status().isOk());

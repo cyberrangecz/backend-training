@@ -98,7 +98,7 @@ public class TrainingInstanceServiceTest {
                 .exchangeFunction(exchangeFunction)
                 .build();
         trainingInstanceService = new TrainingInstanceService(trainingInstanceRepository, accessTokenRepository,
-                trainingRunRepository, organizerRefRepository, sandboxServiceWebClient, securityService);
+                trainingRunRepository, organizerRefRepository, securityService, sandboxServiceWebClient);
 
         trainingInstance1 = testDataFactory.getConcludedInstance();
         trainingInstance1.setId(1L);
