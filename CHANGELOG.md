@@ -1,3 +1,10 @@
+* c5175616 -- Update pom.xml version based on GitLab tag. Done by CI.
+* 6793d27e -- Update VERSION.txt
+*   a90d249c -- Merge branch '558-prepare-project-for-furure-integration-with-kypo-elasticsearch-service' into 'master'
+|\  
+| * 2cd7b666 -- Resolve "Prepare project for furure integration with kypo-elasticsearch-service"
+|/  
+* 56246ff3 -- CHANGELOG.md file updated with commits between the current and previous tag. Done by CI.
 * 49606e56 -- Update pom.xml version based on GitLab tag. Done by CI.
 * d394d340 -- Update VERSION.txt
 *   3caacca8 -- Merge branch '559-import-of-training-definition-is-not-working' into 'master'
