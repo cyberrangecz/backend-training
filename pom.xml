@@ -27,6 +27,11 @@
         <!-- spring for swagger version -->
         <swagger.version>2.9.2</swagger.version>
         <swagger-annotations.version>1.5.22</swagger-annotations.version>
+        <swagger.directory>${basedir}/../doc-files</swagger.directory>
+        <swagger.skip>true</swagger.skip>
+
+        <!--        rest API documentation generation-->
+        <github.kongchen.version>3.1.8</github.kongchen.version>
 
         <!-- fast tests compilation -->
         <openclover.version>4.2.0</openclover.version>
@@ -57,7 +62,6 @@
         <squiggly.filter.jackson.version>1.3.11</squiggly.filter.jackson.version>
 
         <concurrent-junit.version>1.0.2</concurrent-junit.version>
-        <swagger-maven-plugin.version>3.1.8</swagger-maven-plugin.version>
 
         <!-- spring cloud -->
         <spring-cloud.version>Finchley.RELEASE</spring-cloud.version>
@@ -238,11 +242,6 @@
                 <groupId>com.vmlens</groupId>
                 <artifactId>concurrent-junit</artifactId>
                 <version>${concurrent-junit.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.github.kongchen</groupId>
-                <artifactId>swagger-maven-plugin</artifactId>
-                <version>${swagger-maven-plugin.version}</version>
             </dependency>
             <!-- filtering REST responses -->
             <dependency>
