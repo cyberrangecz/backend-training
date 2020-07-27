@@ -44,7 +44,8 @@ import java.util.Set;
                         "JOIN FETCH tr.currentLevel " +
                         "JOIN FETCH tr.trainingInstance ti " +
                         "JOIN FETCH ti.trainingDefinition " +
-                        "WHERE tr.id= :trainingRunId"
+                        "WHERE tr.id= :trainingRunId",
+                lockMode = LockModeType.PESSIMISTIC_WRITE
         ),
         @NamedQuery(
                 name = "TrainingRun.deleteTrainingRunsByTrainingInstance",

@@ -395,18 +395,20 @@ public class TrainingRunService {
         TrainingRun trainingRun = findByIdWithLevel(runId);
         AbstractLevel level = trainingRun.getCurrentLevel();
         if (level instanceof GameLevel) {
-            if (((GameLevel) level).getFlag().equals(flag)) {
+            if (trainingRun.isLevelAnswered()) {
+                throw new EntityConflictException(new EntityErrorDetail(TrainingRun.class, "id", Long.class, runId, "The flag of the current level of training run has been already corrected."));
+            }
+            GameLevel gameLevel = (GameLevel) level;
+            if (gameLevel.getFlag().equals(flag)) {
                 trainingRun.setLevelAnswered(true);
                 trainingRun.increaseTotalScore(trainingRun.getMaxLevelScore() - trainingRun.getCurrentPenalty());
                 auditEventsService.auditCorrectFlagSubmittedAction(trainingRun, flag);
                 auditEventsService.auditLevelCompletedAction(trainingRun);
                 return true;
-            } else if (trainingRun.getIncorrectFlagCount() == ((GameLevel) level).getIncorrectFlagLimit()) {
-                auditEventsService.auditWrongFlagSubmittedAction(trainingRun, flag);
-            } else {
+            } else if (trainingRun.getIncorrectFlagCount() != gameLevel.getIncorrectFlagLimit()) {
                 trainingRun.setIncorrectFlagCount(trainingRun.getIncorrectFlagCount() + 1);
-                auditEventsService.auditWrongFlagSubmittedAction(trainingRun, flag);
             }
+            auditEventsService.auditWrongFlagSubmittedAction(trainingRun, flag);
             return false;
         } else {
             throw new BadRequestException("Current level is not game level and does not have flag.");
