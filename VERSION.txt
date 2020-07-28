@@ -1,1 +1,1 @@
-1.1.46  Preparation to kypo-elasticsearch service project.
+1.1.47  Delete ES events in the process of deleting training run.
