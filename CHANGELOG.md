@@ -1,3 +1,27 @@
+* 3b56c2e7 -- Updated Swagger documentation generated.
+* 0954902e -- Update pom.xml version based on GitLab tag. Done by CI.
+* 1c0865a0 -- Update VERSION.txt
+*   f1aa1279 -- Merge branch '561-call-elasticsearch-service-to-delete-training-run-events-when-the-training-run-is-deleted' into 'master'
+|\  
+| * e65f0556 -- Resolve "Call elasticsearch service to delete training run events when the training run is deleted"
+|/  
+*   2fe66e29 -- Merge branch '565-change-the-name-of-generated-open-api-file-in-gitlab-ci' into 'master'
+|\  
+| * 354d2bc3 -- Changed the name of file in gitlab CI
+|/  
+*   bb71d194 -- Merge branch '564-query-to-find-training-run-with-level-cause-in-some-cases-jpasystemexception' into 'master'
+|\  
+| * 508eaf63 -- Annotation TransactionalRO in getVisualizationInfoAboutTrainingRun method changed to TransactionalWO
+|/  
+*   5e4ae45c -- Merge branch '563-automatically-generate-open-api-based-on-swagger' into 'master'
+|\  
+| * 094d92da -- Resolve "Automatically generate Open API based on Swagger"
+|/  
+*   5373472c -- Merge branch '562-use-pessimistic-write-lock-to-prevent-audit-same-events-multiple-times' into 'master'
+|\  
+| * 3c3e0aff -- Resolve "Use pessimistic write lock to prevent audit same events multiple times"
+|/  
+* 641a23ba -- CHANGELOG.md file updated with commits between the current and previous tag. Done by CI.
 * c5175616 -- Update pom.xml version based on GitLab tag. Done by CI.
 * 6793d27e -- Update VERSION.txt
 *   a90d249c -- Merge branch '558-prepare-project-for-furure-integration-with-kypo-elasticsearch-service' into 'master'
