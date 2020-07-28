@@ -45,6 +45,7 @@ public class TrainingRunService {
     private UserRefRepository participantRefRepository;
     private HintRepository hintRepository;
     private AuditEventsService auditEventsService;
+    private ElasticsearchApiService elasticsearchApiService;
     private SecurityService securityService;
     private TRAcquisitionLockRepository trAcquisitionLockRepository;
     private WebClient sandboxServiceWebClient;
@@ -69,6 +70,7 @@ public class TrainingRunService {
                               UserRefRepository participantRefRepository,
                               HintRepository hintRepository,
                               AuditEventsService auditEventsService,
+                              ElasticsearchApiService elasticsearchApiService,
                               SecurityService securityService,
                               @Qualifier("sandboxServiceWebClient") WebClient sandboxServiceWebClient,
                               TRAcquisitionLockRepository trAcquisitionLockRepository) {
@@ -78,6 +80,7 @@ public class TrainingRunService {
         this.participantRefRepository = participantRefRepository;
         this.hintRepository = hintRepository;
         this.auditEventsService = auditEventsService;
+        this.elasticsearchApiService = elasticsearchApiService;
         this.securityService = securityService;
         this.sandboxServiceWebClient = sandboxServiceWebClient;
         this.trAcquisitionLockRepository = trAcquisitionLockRepository;
@@ -131,6 +134,7 @@ public class TrainingRunService {
             throw new EntityConflictException(new EntityErrorDetail(TrainingRun.class, "id", trainingRun.getId().getClass(), trainingRun.getId(),
                     "Cannot delete training run that is running. Consider force delete."));
         }
+        elasticsearchApiService.deleteEventsFromTrainingRun(trainingRun.getTrainingInstance().getId(), trainingRunId);
         trAcquisitionLockRepository.deleteByParticipantRefIdAndTrainingInstanceId(trainingRun.getParticipantRef().getUserRefId(), trainingRun.getTrainingInstance().getId());
         trainingRunRepository.delete(trainingRun);
     }
