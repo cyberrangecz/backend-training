@@ -32,7 +32,7 @@ public class ElasticsearchApiService {
     }
 
     /**
-     * deletes events from elasticsearch for particular training instance
+     * Deletes events from elasticsearch for particular training instance
      *
      * @param trainingInstanceId id of the training instance whose events to delete.
      * @throws MicroserviceApiException error with specific message when calling elasticsearch microservice.
@@ -52,7 +52,7 @@ public class ElasticsearchApiService {
 
 
     /**
-     * obtain events from elasticsearch for particular training run
+     * Obtain events from elasticsearch for particular training run
      *
      * @param trainingRun thee training run whose events to obtain.
      * @throws MicroserviceApiException error with specific message when calling elasticsearch microservice.
@@ -69,6 +69,26 @@ public class ElasticsearchApiService {
                     .block();
         } catch (CustomWebClientException ex){
             throw new MicroserviceApiException("Error when calling Elasticsearch API for particular run (ID: "+ trainingRun.getId() +")", ex.getApiSubError());
+        }
+    }
+
+    /**
+     * Deletes events from elasticsearch for particular training run
+     *
+     * @param trainingInstanceId id of the training instance in which the training run is running.
+     * @param trainingRunId id of the training run whose events to delete.
+     * @throws MicroserviceApiException error with specific message when calling elasticsearch microservice.
+     */
+    public void deleteEventsFromTrainingRun(Long trainingInstanceId, Long trainingRunId){
+        try {
+            elasticsearchServiceWebClient
+                    .delete()
+                    .uri("/training-events/training-instances/{instanceId}/training-runs/{runId}", trainingInstanceId, trainingRunId)
+                    .retrieve()
+                    .bodyToMono(Void.class)
+                    .block();
+        } catch (CustomWebClientException ex){
+            throw new MicroserviceApiException("Error when calling Elasticsearch API to delete events for particular training run (ID: "+ trainingRunId +")", ex.getApiSubError());
         }
     }
 
