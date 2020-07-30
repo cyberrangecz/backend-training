@@ -9,8 +9,7 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 /**
- *  Encapsulates information about Hint.
- *
+ * Encapsulates information about Hint.
  */
 @ApiModel(value = "HintImportDTO", description = "Imported hint.")
 public class HintImportDTO {
@@ -22,10 +21,14 @@ public class HintImportDTO {
 	@NotEmpty(message = "{hintimport.content.NotEmpty.message}")
 	private String content;
 	@ApiModelProperty(value = "The number of points the participant loses after receiving the hint.", example = "10")
-	@NotNull(message = "{hintimport.hintPenalty.NotEmpty.message}")
+	@NotNull(message = "{hintimport.hintPenalty.NotNull.message}")
 	@Min(value = 0, message = "{hintimport.hintPenalty.Min.message}")
 	@Max(value = 100, message = "{hintimport.hintPenalty.Max.message}")
 	private Integer hintPenalty;
+	@NotNull(message = "{hintimport.order.NotNull.message}")
+	@Min(value = 0, message = "{hintimport.order.Min.message}")
+	@ApiModelProperty(value = "The order of hint in game level", example = "1")
+	private int order;
 
 	/**
 	 * Gets title.
@@ -81,12 +84,32 @@ public class HintImportDTO {
 		this.hintPenalty = hintPenalty;
 	}
 
+
+	/**
+	 * Gets order.
+	 *
+	 * @return the order
+	 */
+	public int getOrder() {
+		return order;
+	}
+
+	/**
+	 * Sets order.
+	 *
+	 * @param order the order
+	 */
+	public void setOrder(int order) {
+		this.order = order;
+	}
+
 	@Override
 	public String toString() {
 		return "HintImportDTO{" +
 				"title='" + title + '\'' +
 				", content='" + content + '\'' +
 				", hintPenalty=" + hintPenalty +
+				", order=" + order +
 				'}';
 	}
 }
