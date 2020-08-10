@@ -230,15 +230,23 @@ public class ExportImportFacade {
             archivedRun.setInstanceId(trainingInstance.getId());
             archivedRun.setParticipantRefId(run.getParticipantRef().getUserRefId());
             participantRefIds.add(run.getParticipantRef().getUserRefId());
-            ZipEntry runEntry = new ZipEntry("training_run-id" + run.getId() + AbstractFileExtensions.JSON_FILE_EXTENSION);
+            ZipEntry runEntry = new ZipEntry("training_runs/training_run-id" + run.getId() + AbstractFileExtensions.JSON_FILE_EXTENSION);
             zos.putNextEntry(runEntry);
             zos.write(objectMapper.writeValueAsBytes(archivedRun));
 
             List<Map<String, Object>> events = elasticsearchApiService.findAllEventsFromTrainingRun(run);
-            ZipEntry eventsEntry = new ZipEntry("training_run-id" + run.getId() + "-events" + AbstractFileExtensions.JSON_FILE_EXTENSION);
+            ZipEntry eventsEntry = new ZipEntry("training_events/training_run-id" + run.getId() + "-events" + AbstractFileExtensions.JSON_FILE_EXTENSION);
             zos.putNextEntry(eventsEntry);
             for (Map<String, Object> event : events) {
                 zos.write(objectMapper.writer(new MinimalPrettyPrinter()).writeValueAsBytes(event));
+                zos.write(System.lineSeparator().getBytes());
+            }
+
+            List<Map<String, Object>> bashCommands = elasticsearchApiService.findAllBashCommandsFromSandbox(run.getSandboxInstanceRefId());
+            ZipEntry bashCommandsEntry = new ZipEntry("command_histories/training_run-id" + run.getId() + "-user_actions" + AbstractFileExtensions.JSON_FILE_EXTENSION);
+            zos.putNextEntry(bashCommandsEntry);
+            for (Map<String, Object> command : bashCommands) {
+                zos.write(objectMapper.writer(new MinimalPrettyPrinter()).writeValueAsBytes(command));
                 zos.write(System.lineSeparator().getBytes());
             }
         }

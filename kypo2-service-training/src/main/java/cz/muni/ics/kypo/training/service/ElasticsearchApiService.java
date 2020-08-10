@@ -41,7 +41,7 @@ public class ElasticsearchApiService {
         try {
             elasticsearchServiceWebClient
                     .delete()
-                    .uri("/training-events/training-instances/{instanceId}", trainingInstanceId)
+                    .uri("/training-platform-events/training-instances/{instanceId}", trainingInstanceId)
                     .retrieve()
                     .bodyToMono(Void.class)
                     .block();
@@ -63,7 +63,7 @@ public class ElasticsearchApiService {
             Long instanceId = trainingRun.getTrainingInstance().getId();
             return elasticsearchServiceWebClient
                     .get()
-                    .uri("/training-events/training-definitions/{definitionId}/training-instances/{instanceId}/training-runs/{runId}", definitionId, instanceId, trainingRun.getId())
+                    .uri("/training-platform-events/training-definitions/{definitionId}/training-instances/{instanceId}/training-runs/{runId}", definitionId, instanceId, trainingRun.getId())
                     .retrieve()
                     .bodyToMono(new ParameterizedTypeReference<List<Map<String, Object>>>() {})
                     .block();
@@ -83,7 +83,7 @@ public class ElasticsearchApiService {
         try {
             elasticsearchServiceWebClient
                     .delete()
-                    .uri("/training-events/training-instances/{instanceId}/training-runs/{runId}", trainingInstanceId, trainingRunId)
+                    .uri("/training-platform-events/training-instances/{instanceId}/training-runs/{runId}", trainingInstanceId, trainingRunId)
                     .retrieve()
                     .bodyToMono(Void.class)
                     .block();
@@ -92,5 +92,30 @@ public class ElasticsearchApiService {
         }
     }
 
+    public List<Map<String, Object>> findAllBashCommandsFromSandbox(Long sandboxId){
+        try {
+            return elasticsearchServiceWebClient
+                    .get()
+                    .uri("/training-platform-commands/sandboxes/{sandboxId}", sandboxId)
+                    .retrieve()
+                    .bodyToMono(new ParameterizedTypeReference<List<Map<String, Object>>>() {})
+                    .block();
+        }catch (CustomWebClientException ex){
+            throw new MicroserviceApiException("Error when calling Elasticsearch API for particular sandbox (ID: "+ sandboxId +")", ex.getApiSubError());
+        }
+    }
 
+
+    public void deleteBashCommandsFromPool(Long poolId){
+        try{
+            elasticsearchServiceWebClient
+                    .delete()
+                    .uri("/training-platform-commands/sandboxes/{poolId}", poolId)
+                    .retrieve()
+                    .bodyToMono(Void.class)
+                    .block();
+        }catch (CustomWebClientException ex){
+            throw new MicroserviceApiException("Error when calling Elasticsearch API to delete bash commands for particular pool (ID: "+ poolId +")", ex.getApiSubError());
+        }
+    }
 }
