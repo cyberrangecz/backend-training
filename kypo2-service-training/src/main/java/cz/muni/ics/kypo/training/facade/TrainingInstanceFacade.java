@@ -199,6 +199,7 @@ public class TrainingInstanceFacade {
         }
         trainingInstanceService.delete(trainingInstance);
         elasticsearchApiService.deleteEventsByTrainingInstanceId(trainingInstance.getId());
+        elasticsearchApiService.deleteBashCommandsFromPool(trainingInstance.getPoolId());
     }
 
     /**
