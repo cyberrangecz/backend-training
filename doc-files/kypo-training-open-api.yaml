@@ -1,7 +1,7 @@
 ---
 swagger: "2.0"
 info:
-  version: "Version: 1.1.47"
+  version: "Version: 1.1.48"
   title: "KYPO2 Training - API Reference"
 host: "localhost:8080"
 basePath: "/kypo2-rest-training/api/v1"
@@ -3339,6 +3339,7 @@ definitions:
     type: "object"
     required:
     - "hintPenalty"
+    - "order"
     properties:
       title:
         type: "string"
@@ -3357,6 +3358,12 @@ definitions:
           \ hint."
         minimum: 0
         maximum: 100
+      order:
+        type: "integer"
+        format: "int32"
+        example: 1
+        description: "The order of hint in game level"
+        minimum: 0
     description: "Imported hint."
   ImportTrainingDefinitionDTO:
     type: "object"
