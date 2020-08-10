@@ -1,3 +1,16 @@
+* 63393a73 -- Updated Swagger documentation generated.
+* 3b85f0fe -- Update pom.xml version based on GitLab tag. Done by CI.
+* 904d1ab6 -- Update VERSION.txt
+*   3512f69b -- Merge branch '567-add-call-for-kypo-elasticsearch-service-to-retrieve-bash-commands-and-zip-it-to-the-exported' into 'master'
+|\  
+| * 81f1f49c -- Resolve "add call for kypo-elasticsearch-service to retrieve bash commands and zip it to the exported data"
+|/  
+* 1e2b2a65 -- Update .gitlab-ci.yml
+*   a7965c61 -- Merge branch '566-hint-order-is-missing-in-training-definition-import-dto' into 'master'
+|\  
+| * 908bcdee -- order added to HintImportDTO
+|/  
+* a3539e6f -- CHANGELOG.md file updated with commits between the current and previous tag. Done by CI.
 * 3b56c2e7 -- Updated Swagger documentation generated.
 * 0954902e -- Update pom.xml version based on GitLab tag. Done by CI.
 * 1c0865a0 -- Update VERSION.txt
