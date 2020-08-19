@@ -203,7 +203,6 @@ public class ExportImportFacade {
 
             Set<Long> participantRefIds = new HashSet<>();
             writeTrainingRunsInfo(zos, trainingInstance, participantRefIds);
-            writeTrainingInstanceParticipantRefIdsInfo(zos, trainingInstance, participantRefIds);
             writeSandboxDefinitionInfo(zos, trainingInstance);
 
             zos.closeEntry();
@@ -216,6 +215,7 @@ public class ExportImportFacade {
             throw new InternalServerErrorException("The .zip file was not created since there were some processing error.", ex);
         }
     }
+
 
     private void writeTrainingInstanceGeneralInfo(ZipOutputStream zos, Long trainingInstanceId, TrainingInstanceArchiveDTO archivedInstance) throws IOException {
         ZipEntry instanceEntry = new ZipEntry("training_instance-id" + trainingInstanceId + AbstractFileExtensions.JSON_FILE_EXTENSION);
@@ -266,12 +266,6 @@ public class ExportImportFacade {
         ZipEntry organizersEntry = new ZipEntry("training_instance-id" + trainingInstanceId + "-organizers" + AbstractFileExtensions.JSON_FILE_EXTENSION);
         zos.putNextEntry(organizersEntry);
         zos.write(objectMapper.writeValueAsBytes(getUsersRefExportDTO(organizersRefIds)));
-    }
-
-    private void writeTrainingInstanceParticipantRefIdsInfo(ZipOutputStream zos, TrainingInstance trainingInstance, Set<Long> participantRefIds) throws IOException {
-        ZipEntry participantsEntry = new ZipEntry("training_instance-id" + trainingInstance.getId() + "-participants" + AbstractFileExtensions.JSON_FILE_EXTENSION);
-        zos.putNextEntry(participantsEntry);
-        zos.write(objectMapper.writeValueAsBytes(getUsersRefExportDTO(participantRefIds)));
     }
 
     private void writeSandboxDefinitionInfo(ZipOutputStream zos, TrainingInstance trainingInstance) throws IOException {
