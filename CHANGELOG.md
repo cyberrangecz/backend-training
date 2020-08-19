@@ -1,3 +1,11 @@
+* 83937226 -- Updated Swagger documentation generated.
+* bff1db58 -- Update pom.xml version based on GitLab tag. Done by CI.
+* 1624ceca -- Update VERSION.txt
+*   439bceaf -- Merge branch '569-remove-user-information-from-the-exported-data' into 'master'
+|\  
+| * 5e011c02 -- export with anonymized users added.
+|/  
+* aa740580 -- CHANGELOG.md file updated with commits between the current and previous tag. Done by CI.
 * 63393a73 -- Updated Swagger documentation generated.
 * 3b85f0fe -- Update pom.xml version based on GitLab tag. Done by CI.
 * 904d1ab6 -- Update VERSION.txt
