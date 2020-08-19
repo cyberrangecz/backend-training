@@ -1,1 +1,1 @@
-1.1.48  Retrieve audited data including the Elasticsearch bash documents.
+1.1.49  Export only anonymized data.
