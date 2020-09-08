@@ -1,1 +1,1 @@
-1.1.49  Export only anonymized data.
+1.1.50  Export only anonymized data without organizers.
