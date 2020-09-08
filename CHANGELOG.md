@@ -1,3 +1,11 @@
+* ec4c163a -- Updated Swagger documentation generated.
+* e2baefa9 -- Update pom.xml version based on GitLab tag. Done by CI.
+* 4939eb11 -- Update VERSION.txt
+*   91eb8900 -- Merge branch '570-organizer-export-data-should-be-anonymized' into 'master'
+|\  
+| * aad5cf83 -- organizer data removed from export
+|/  
+* 213dca92 -- CHANGELOG.md file updated with commits between the current and previous tag. Done by CI.
 * 83937226 -- Updated Swagger documentation generated.
 * bff1db58 -- Update pom.xml version based on GitLab tag. Done by CI.
 * 1624ceca -- Update VERSION.txt
