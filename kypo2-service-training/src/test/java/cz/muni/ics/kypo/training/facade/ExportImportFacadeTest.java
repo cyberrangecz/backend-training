@@ -53,9 +53,6 @@ public class ExportImportFacadeTest {
     private LevelMapperImpl infoLevelMapper;
     @Autowired
     private TrainingDefinitionMapperImpl trainingDefinitionMapper;
-    @Autowired
-    private UserRefMapper userRefMapper;
-
 
     @Mock
     private ObjectMapper objectMapper;
@@ -77,8 +74,8 @@ public class ExportImportFacadeTest {
     @Before
     public void init() {
         MockitoAnnotations.initMocks(this);
-        exportImportFacade = new ExportImportFacade(exportImportService, trainingDefinitionService, userService,
-                elasticsearchApiService, exportImportMapper, infoLevelMapper, trainingDefinitionMapper, objectMapper, userRefMapper);
+        exportImportFacade = new ExportImportFacade(exportImportService, trainingDefinitionService, elasticsearchApiService,
+                exportImportMapper, infoLevelMapper, trainingDefinitionMapper, objectMapper);
 
         assessmentLevel = testDataFactory.getTest();
         assessmentLevel.setId(1L);

@@ -7,7 +7,6 @@ import cz.muni.ics.kypo.training.annotations.security.IsDesignerOrOrganizerOrAdm
 import cz.muni.ics.kypo.training.annotations.security.IsOrganizerOrAdmin;
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalRO;
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalWO;
-import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
 import cz.muni.ics.kypo.training.api.dto.archive.AbstractLevelArchiveDTO;
 import cz.muni.ics.kypo.training.api.dto.archive.TrainingDefinitionArchiveDTO;
 import cz.muni.ics.kypo.training.api.dto.archive.TrainingInstanceArchiveDTO;
@@ -15,12 +14,10 @@ import cz.muni.ics.kypo.training.api.dto.archive.TrainingRunArchiveDTO;
 import cz.muni.ics.kypo.training.api.dto.export.AbstractLevelExportDTO;
 import cz.muni.ics.kypo.training.api.dto.export.ExportTrainingDefinitionAndLevelsDTO;
 import cz.muni.ics.kypo.training.api.dto.export.FileToReturnDTO;
-import cz.muni.ics.kypo.training.api.dto.export.UserRefExportDTO;
 import cz.muni.ics.kypo.training.api.dto.imports.*;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionByIdDTO;
 import cz.muni.ics.kypo.training.api.enums.LevelType;
 import cz.muni.ics.kypo.training.api.enums.TDState;
-import cz.muni.ics.kypo.training.api.responses.PageResultResource;
 import cz.muni.ics.kypo.training.api.responses.SandboxDefinitionInfo;
 import cz.muni.ics.kypo.training.exceptions.EntityErrorDetail;
 import cz.muni.ics.kypo.training.exceptions.InternalServerErrorException;
@@ -28,17 +25,14 @@ import cz.muni.ics.kypo.training.exceptions.UnprocessableEntityException;
 import cz.muni.ics.kypo.training.mapping.mapstruct.ExportImportMapper;
 import cz.muni.ics.kypo.training.mapping.mapstruct.LevelMapper;
 import cz.muni.ics.kypo.training.mapping.mapstruct.TrainingDefinitionMapper;
-import cz.muni.ics.kypo.training.mapping.mapstruct.UserRefMapper;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.service.ElasticsearchApiService;
 import cz.muni.ics.kypo.training.service.ExportImportService;
 import cz.muni.ics.kypo.training.service.TrainingDefinitionService;
-import cz.muni.ics.kypo.training.service.UserService;
 import cz.muni.ics.kypo.training.utils.AbstractFileExtensions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -60,12 +54,10 @@ public class ExportImportFacade {
 
     private ExportImportService exportImportService;
     private TrainingDefinitionService trainingDefinitionService;
-    private UserService userService;
     private ExportImportMapper exportImportMapper;
     private LevelMapper levelMapper;
     private TrainingDefinitionMapper trainingDefinitionMapper;
     private ObjectMapper objectMapper;
-    private UserRefMapper userRefMapper;
     private ElasticsearchApiService elasticsearchApiService;
 
     /**
@@ -77,19 +69,15 @@ public class ExportImportFacade {
      * @param trainingDefinitionService the training definition service
      * @param trainingDefinitionMapper  the training definition mapper
      * @param objectMapper              the object mapper
-     * @param userService               the user service
-     * @param userRefMapper             the user ref mapper
      */
     @Autowired
     public ExportImportFacade(ExportImportService exportImportService,
                               TrainingDefinitionService trainingDefinitionService,
-                              UserService userService,
                               ElasticsearchApiService elasticsearchApiService,
                               ExportImportMapper exportImportMapper,
                               LevelMapper levelMapper,
                               TrainingDefinitionMapper trainingDefinitionMapper,
-                              ObjectMapper objectMapper,
-                              UserRefMapper userRefMapper) {
+                              ObjectMapper objectMapper) {
         this.exportImportService = exportImportService;
         this.trainingDefinitionService = trainingDefinitionService;
         this.elasticsearchApiService = elasticsearchApiService;
@@ -97,8 +85,6 @@ public class ExportImportFacade {
         this.levelMapper = levelMapper;
         this.trainingDefinitionMapper = trainingDefinitionMapper;
         this.objectMapper = objectMapper;
-        this.userService = userService;
-        this.userRefMapper = userRefMapper;
     }
 
     /**
@@ -198,11 +184,8 @@ public class ExportImportFacade {
             archivedInstance.setOrganizersRefIds(new HashSet<>(organizersRefIds));
 
             writeTrainingInstanceGeneralInfo(zos, trainingInstance.getId(), archivedInstance);
-            writeTrainingInstanceOrganizersInfo(zos, trainingInstance.getId(), organizersRefIds);
             writeTrainingDefinitionInfo(zos, trainingInstance);
-
-            Set<Long> participantRefIds = new HashSet<>();
-            writeTrainingRunsInfo(zos, trainingInstance, participantRefIds);
+            writeTrainingRunsInfo(zos, trainingInstance);
             writeSandboxDefinitionInfo(zos, trainingInstance);
 
             zos.closeEntry();
@@ -223,13 +206,12 @@ public class ExportImportFacade {
         zos.write(objectMapper.writeValueAsBytes(archivedInstance));
     }
 
-    private void writeTrainingRunsInfo(ZipOutputStream zos, TrainingInstance trainingInstance, Set<Long> participantRefIds) throws IOException {
+    private void writeTrainingRunsInfo(ZipOutputStream zos, TrainingInstance trainingInstance) throws IOException {
         Set<TrainingRun> runs = exportImportService.findRunsByInstanceId(trainingInstance.getId());
         for (TrainingRun run : runs) {
             TrainingRunArchiveDTO archivedRun = exportImportMapper.mapToArchiveDTO(run);
             archivedRun.setInstanceId(trainingInstance.getId());
             archivedRun.setParticipantRefId(run.getParticipantRef().getUserRefId());
-            participantRefIds.add(run.getParticipantRef().getUserRefId());
             ZipEntry runEntry = new ZipEntry("training_runs/training_run-id" + run.getId() + AbstractFileExtensions.JSON_FILE_EXTENSION);
             zos.putNextEntry(runEntry);
             zos.write(objectMapper.writeValueAsBytes(archivedRun));
@@ -262,12 +244,6 @@ public class ExportImportFacade {
         }
     }
 
-    private void writeTrainingInstanceOrganizersInfo(ZipOutputStream zos, Long trainingInstanceId, Set<Long> organizersRefIds) throws IOException {
-        ZipEntry organizersEntry = new ZipEntry("training_instance-id" + trainingInstanceId + "-organizers" + AbstractFileExtensions.JSON_FILE_EXTENSION);
-        zos.putNextEntry(organizersEntry);
-        zos.write(objectMapper.writeValueAsBytes(getUsersRefExportDTO(organizersRefIds)));
-    }
-
     private void writeSandboxDefinitionInfo(ZipOutputStream zos, TrainingInstance trainingInstance) throws IOException {
         if (trainingInstance.getPoolId() != null) {
             SandboxDefinitionInfo sandboxDefinitionInfo = exportImportService.getSandboxDefinitionId(trainingInstance.getPoolId());
@@ -275,19 +251,6 @@ public class ExportImportFacade {
             zos.putNextEntry(sandboxDefinitionEntry);
             zos.write(objectMapper.writeValueAsBytes(sandboxDefinitionInfo));
         }
-    }
-
-    private List<UserRefExportDTO> getUsersRefExportDTO(Set<Long> usersRefIds) {
-        PageResultResource<UserRefDTO> usersResponse;
-        List<UserRefExportDTO> users = new ArrayList<>();
-        int page = 0;
-        do {
-            usersResponse = userService.getUsersRefDTOByGivenUserIds(usersRefIds, PageRequest.of(page, 999), null, null);
-            users.addAll(userRefMapper.mapUserRefExportDTOToUserRefDTO(usersResponse.getContent()));
-            page++;
-
-        } while (usersResponse.getPagination().getTotalPages() != usersResponse.getPagination().getNumber());
-        return users;
     }
 
     private void checkSumOfHintPenalties(GameLevel gameLevel) {
