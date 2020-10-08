@@ -378,6 +378,11 @@ public class TrainingRunService {
             throw new EntityConflictException(new EntityErrorDetail(TrainingRun.class, "id", trainingRunId.getClass(), trainingRunId,
                     "Cannot resume training run after end of training instance."));
         }
+        if (trainingRun.getTrainingInstance().getPoolId() == null) {
+            throw new EntityConflictException(new EntityErrorDetail(TrainingRun.class, "id", trainingRunId.getClass(), trainingRunId,
+                    "The pool assignment of the appropriate training instance has been probably canceled. Please contact the organizer."));
+        }
+
         if (trainingRun.getSandboxInstanceRefId() == null) {
             throw new EntityConflictException(new EntityErrorDetail(TrainingRun.class, "id", trainingRunId.getClass(), trainingRunId,
                     "Sandbox of this training run was already deleted, you have to start new game."));
