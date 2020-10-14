@@ -112,9 +112,9 @@ public class TrainingDefinitionFacadeTest {
         author3.setId(3L);
         author3.setUserRefId(30L);
 
-        authorDTO1 = createUserRefDTO(10L, "Bc. Dominik Meškal", "Meškal", "Dominik", "445533@muni.cz", "https://oidc.muni.cz/oidc", null);
-        authorDTO2 = createUserRefDTO(20L, "Bc. Boris Makal", "Makal", "Boris", "772211@muni.cz", "https://oidc.muni.cz/oidc", null);
-        authorDTO3 = createUserRefDTO(30L, "Ing. Pavel Flákal", "Flákal", "Pavel", "221133@muni.cz", "https://oidc.muni.cz/oidc", null);
+        authorDTO1 = createUserRefDTO(10L, "Bc. Alexander Howell", "Howell", "Alexander", "mail1@muni.cz", "https://oidc.muni.cz/oidc", null);
+        authorDTO2 = createUserRefDTO(20L, "Bc. Peter Reeves", "Reeves", "Peter", "mail2@muni.cz", "https://oidc.muni.cz/oidc", null);
+        authorDTO3 = createUserRefDTO(30L, "Ing. Lee Nicholls", "Nicholls", "Lee", "mail3@muni.cz", "https://oidc.muni.cz/oidc", null);
 
         gameLevel = testDataFactory.getPenalizedLevel();
         gameLevel.setId(2L);

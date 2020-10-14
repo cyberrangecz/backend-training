@@ -155,10 +155,10 @@ public class TestDataFactory {
     private SandboxPoolInfo sandboxPoolInfo = generateSandboxPoolInfo(1L, 1L, 10L, 5L);
     private LockedPoolInfo lockedPoolInfo = generateLockedPoolInfo(1L, 1L);
 
-    private UserRefDTO userRefDTO1 = generateUserRefDTO(10L, "Michael Bolt", "Bolt", "Michael", "445443@muni.cz", "https://oidc.muni.cz/oidc", null);
-    private UserRefDTO userRefDTO2 = generateUserRefDTO(12L, "Peter Most", "Most", "Peter", "114798@muni.cz", "https://oidc.muni.cz/oidc", null);
-    private UserRefDTO userRefDTO3 = generateUserRefDTO(14L, "John Nevel", "Nevel", "John", "139778@muni.cz", "https://oidc.muni.cz/oidc", null);
-    private UserRefDTO userRefDTO4 = generateUserRefDTO(17L, "Ted Mosby", "Mosby", "Ted", "139448@muni.cz", "https://oidc.muni.cz/oidc", null);
+    private UserRefDTO userRefDTO1 = generateUserRefDTO(10L, "Michael Bolt", "Bolt", "Michael", "mail1@muni.cz", "https://oidc.muni.cz/oidc", null);
+    private UserRefDTO userRefDTO2 = generateUserRefDTO(12L, "Peter Most", "Most", "Peter", "mail2@muni.cz", "https://oidc.muni.cz/oidc", null);
+    private UserRefDTO userRefDTO3 = generateUserRefDTO(14L, "John Nevel", "Nevel", "John", "mail38@muni.cz", "https://oidc.muni.cz/oidc", null);
+    private UserRefDTO userRefDTO4 = generateUserRefDTO(17L, "Ted Mosby", "Mosby", "Ted", "mail4@muni.cz", "https://oidc.muni.cz/oidc", null);
 
     private UserRef userRef1 = generateUserRef( 10L);
     private UserRef userRef2 = generateUserRef(12L);

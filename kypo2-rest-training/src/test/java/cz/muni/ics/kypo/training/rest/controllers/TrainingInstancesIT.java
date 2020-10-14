@@ -208,16 +208,16 @@ public class TrainingInstancesIT {
         trainingRun2.setParticipantRef(participant1);
 
         userRefDTO1 = new UserRefDTO();
-        userRefDTO1.setUserRefFullName("Ing. Mgr. MuDr. Boris Jadus");
-        userRefDTO1.setUserRefSub("445469@muni.cz");
-        userRefDTO1.setUserRefGivenName("Boris");
-        userRefDTO1.setUserRefFamilyName("Jadus");
+        userRefDTO1.setUserRefFullName("Ing. John Doe");
+        userRefDTO1.setUserRefSub("mail1@muni.cz");
+        userRefDTO1.setUserRefGivenName("John");
+        userRefDTO1.setUserRefFamilyName("Doe");
         userRefDTO1.setIss("https://oidc.muni.cz");
         userRefDTO1.setUserRefId(3L);
 
         userRefDTO2 = new UserRefDTO();
         userRefDTO2.setUserRefFullName("Ing. Jan Chudý");
-        userRefDTO2.setUserRefSub("445497@muni.cz");
+        userRefDTO2.setUserRefSub("mail2@muni.cz");
         userRefDTO2.setUserRefGivenName("Jan");
         userRefDTO2.setUserRefFamilyName("Chudý");
         userRefDTO2.setIss("https://oidc.muni.cz");
@@ -540,7 +540,7 @@ public class TrainingInstancesIT {
             authorities.add(new SimpleGrantedAuthority(role));
         }
         JsonObject sub = new JsonObject();
-        sub.addProperty(AuthenticatedUserOIDCItems.SUB.getName(), "556978@muni.cz");
+        sub.addProperty(AuthenticatedUserOIDCItems.SUB.getName(), "mail3@muni.cz");
         sub.addProperty(AuthenticatedUserOIDCItems.NAME.getName(), "Ing. Michael Johnson");
         sub.addProperty(AuthenticatedUserOIDCItems.GIVEN_NAME.getName(), "Michael");
         sub.addProperty(AuthenticatedUserOIDCItems.FAMILY_NAME.getName(), "Johnson");

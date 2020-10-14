@@ -76,8 +76,8 @@ public class UserServiceTest {
         userRef3.setId(3L);
         userRef3.setUserRefId(30L);
 
-        userRefDTO1 = createUserRefDTO(10L, "Bc. Dominik Meškal", "Meškal", "Dominik", "445533@muni.cz", "https://oidc.muni.cz/oidc", null);
-        userRefDTO2 = createUserRefDTO(20L, "Bc. Boris Makal", "Makal", "Boris", "772211@muni.cz", "https://oidc.muni.cz/oidc", null);
+        userRefDTO1 = createUserRefDTO(10L, "Bc. Alexander Howell", "Howell", "Alexander", "mail1@muni.cz", "https://oidc.muni.cz/oidc", null);
+        userRefDTO2 = createUserRefDTO(20L, "Bc. Peter Reeves", "Reeves", "Peter", "mail2@muni.cz", "https://oidc.muni.cz/oidc", null);
 
         pageable = PageRequest.of(0, 5);
     }

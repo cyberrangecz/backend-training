@@ -89,8 +89,6 @@ public class ExportImportRestControllerTest {
 		AssessmentLevelImportDTO assessmentLevelDTO = testDataFactory.getAssessmentLevelImportDTO();
 		assessmentLevelDTO.setOrder(1);
 
-		HintImportDTO hintImportDTO = testDataFactory.getHintImportDTO();
-
 		GameLevelImportDTO gameLevelImportDTO = testDataFactory.getGameLevelImportDTO();
 		gameLevelImportDTO.setOrder(2);
 
