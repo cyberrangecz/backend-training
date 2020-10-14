@@ -103,9 +103,9 @@ public class TrainingInstanceFacadeTest {
         organizer3.setId(3L);
         organizer3.setUserRefId(30L);
 
-        organizerDTO1 = createUserRefDTO(10L, "Bc. Dominik Meškal", "Meškal", "Dominik", "445533@muni.cz", "https://oidc.muni.cz/oidc", null);
-        organizerDTO2 = createUserRefDTO(20L, "Bc. Boris Makal", "Makal", "Boris", "772211@muni.cz", "https://oidc.muni.cz/oidc", null);
-        organizerDTO3 = createUserRefDTO(30L, "Ing. Pavel Flákal", "Flákal", "Pavel", "221133@muni.cz", "https://oidc.muni.cz/oidc", null);
+        organizerDTO1 = createUserRefDTO(10L, "Bc. Alexander Howell", "Howell", "Alexander", "mail1@muni.cz", "https://oidc.muni.cz/oidc", null);
+        organizerDTO2 = createUserRefDTO(20L, "Bc. Peter Reeves", "Reeves", "Peter", "mail2@muni.cz", "https://oidc.muni.cz/oidc", null);
+        organizerDTO3 = createUserRefDTO(30L, "Ing. Lee Nicholls", "Nicholls", "Lee", "mail3@muni.cz", "https://oidc.muni.cz/oidc", null);
 
         trainingInstance1 = testDataFactory.getConcludedInstance();
         trainingInstance1.setId(1L);
@@ -249,8 +249,6 @@ public class TrainingInstanceFacadeTest {
         assertEquals("WARNING: Training instance is still running! Are you sure you want to delete it?", info.getMessage());
     }
 
-    ////////////////////////////////////////////////////////////////////////////////////////
-
     @Test
     public void getOrganizersOfTrainingInstance() {
         pagination = new PageResultResource.Pagination(0, 2, 5, 2, 1);
@@ -376,7 +374,6 @@ public class TrainingInstanceFacadeTest {
         assertEquals(expected.getId(), actual.getId());
         assertEquals(expected.getTitle(), actual.getTitle());
     }
-
 
     private UserRefDTO createUserRefDTO(Long userRefId, String fullName, String familyName, String givenName, String sub, String iss, byte[] picture) {
         UserRefDTO userRefDTO = new UserRefDTO();

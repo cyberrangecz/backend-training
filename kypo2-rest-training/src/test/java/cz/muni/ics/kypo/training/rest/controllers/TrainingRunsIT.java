@@ -18,7 +18,6 @@ import cz.muni.ics.kypo.training.api.responses.PageResultResource;
 import cz.muni.ics.kypo.training.api.responses.PageResultResourcePython;
 import cz.muni.ics.kypo.training.api.responses.SandboxInfo;
 import cz.muni.ics.kypo.training.exceptions.BadRequestException;
-import cz.muni.ics.kypo.training.exceptions.EntityErrorDetail;
 import cz.muni.ics.kypo.training.exceptions.CustomWebClientException;
 import cz.muni.ics.kypo.training.exceptions.EntityErrorDetail;
 import cz.muni.ics.kypo.training.mapping.mapstruct.HintMapperImpl;
@@ -155,7 +154,6 @@ public class TrainingRunsIT {
     private SandboxInfo sandboxInfo1, sandboxInfo2, sandboxInfo3;
     private UserRef participant1, participant2, organizer;
     private UserRefDTO userRefDTO1, userRefDTO2;
-    private UserRef participant;
     private ValidateFlagDTO validFlagDTO, invalidFlagDTO;
     private PageResultResourcePython sandboxInfoPageResult;
 
@@ -182,16 +180,16 @@ public class TrainingRunsIT {
         sandboxInfo3.setId(3L);
 
         userRefDTO1 = new UserRefDTO();
-        userRefDTO1.setUserRefFullName("Ing. Mgr. MuDr. Boris Jadus");
-        userRefDTO1.setUserRefSub("445469@muni.cz");
-        userRefDTO1.setUserRefGivenName("Boris");
-        userRefDTO1.setUserRefFamilyName("Jadus");
+        userRefDTO1.setUserRefFullName("Ing. John Doe");
+        userRefDTO1.setUserRefSub("mail1@muni.cz");
+        userRefDTO1.setUserRefGivenName("John");
+        userRefDTO1.setUserRefFamilyName("Doe");
         userRefDTO1.setIss("https://oidc.muni.cz");
         userRefDTO1.setUserRefId(3L);
 
         userRefDTO2 = new UserRefDTO();
         userRefDTO2.setUserRefFullName("Ing. Jan Chudý");
-        userRefDTO2.setUserRefSub("445497@muni.cz");
+        userRefDTO2.setUserRefSub("mail2@muni.cz");
         userRefDTO2.setUserRefGivenName("Jan");
         userRefDTO2.setUserRefFamilyName("Chudý");
         userRefDTO2.setIss("https://oidc.muni.cz");
@@ -885,7 +883,7 @@ public class TrainingRunsIT {
             authorities.add(new SimpleGrantedAuthority(role));
         }
         JsonObject sub = new JsonObject();
-        sub.addProperty(AuthenticatedUserOIDCItems.SUB.getName(), "556978@muni.cz");
+        sub.addProperty(AuthenticatedUserOIDCItems.SUB.getName(), "mail3@muni.cz");
         sub.addProperty(AuthenticatedUserOIDCItems.NAME.getName(), "Ing. Michael Johnson");
         sub.addProperty(AuthenticatedUserOIDCItems.GIVEN_NAME.getName(), "Michael");
         sub.addProperty(AuthenticatedUserOIDCItems.FAMILY_NAME.getName(), "Johnson");

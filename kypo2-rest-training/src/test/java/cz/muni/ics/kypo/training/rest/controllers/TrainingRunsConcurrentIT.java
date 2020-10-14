@@ -4,25 +4,20 @@ import com.anarsoft.vmlens.concurrent.junit.ConcurrentTestRunner;
 import com.anarsoft.vmlens.concurrent.junit.ThreadCount;
 import com.google.gson.JsonObject;
 import cz.muni.ics.kypo.commons.security.enums.AuthenticatedUserOIDCItems;
-import cz.muni.ics.kypo.training.api.dto.IsCorrectFlagDTO;
 import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
 import cz.muni.ics.kypo.training.api.dto.gamelevel.ValidateFlagDTO;
 import cz.muni.ics.kypo.training.api.enums.RoleType;
-import cz.muni.ics.kypo.training.api.responses.PageResultResourcePython;
 import cz.muni.ics.kypo.training.api.responses.SandboxInfo;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.repository.*;
 import cz.muni.ics.kypo.training.persistence.util.TestDataFactory;
-import cz.muni.ics.kypo.training.rest.ApiEntityError;
 import cz.muni.ics.kypo.training.rest.CustomRestExceptionHandlerTraining;
 import cz.muni.ics.kypo.training.rest.controllers.config.RestConfigTest;
 import cz.muni.ics.kypo.training.service.AuditEventsService;
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,14 +27,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
-import org.springframework.data.querydsl.SimpleEntityPathResolver;
-import org.springframework.data.querydsl.binding.QuerydslBindingsFactory;
-import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
-import org.springframework.data.web.querydsl.QuerydslPredicateArgumentResolver;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
-import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -57,19 +46,18 @@ import org.springframework.web.reactive.function.client.ExchangeFunction;
 import reactor.core.publisher.Mono;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 
-import static cz.muni.ics.kypo.training.rest.controllers.util.ObjectConverter.convertJsonBytesToObject;
 import static cz.muni.ics.kypo.training.rest.controllers.util.ObjectConverter.convertObjectToJsonBytes;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.times;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(ConcurrentTestRunner.class)
 @ContextConfiguration(classes = {TrainingRunsRestController.class, TrainingInstancesRestController.class, TestDataFactory.class})
@@ -147,10 +135,10 @@ public class TrainingRunsConcurrentIT {
         userRefRepository.saveAll(Set.of(participant1, participant2));
 
         userRefDTO1 = new UserRefDTO();
-        userRefDTO1.setUserRefFullName("Ing. Mgr. MuDr. Boris Jadus");
-        userRefDTO1.setUserRefSub("445469@muni.cz");
-        userRefDTO1.setUserRefGivenName("Boris");
-        userRefDTO1.setUserRefFamilyName("Jadus");
+        userRefDTO1.setUserRefFullName("Ing. John Doe");
+        userRefDTO1.setUserRefSub("mail@muni.cz");
+        userRefDTO1.setUserRefGivenName("John");
+        userRefDTO1.setUserRefFamilyName("Doe");
         userRefDTO1.setIss("https://oidc.muni.cz");
         userRefDTO1.setUserRefId(3L);
 
@@ -240,7 +228,7 @@ public class TrainingRunsConcurrentIT {
             authorities.add(new SimpleGrantedAuthority(role));
         }
         JsonObject sub = new JsonObject();
-        sub.addProperty(AuthenticatedUserOIDCItems.SUB.getName(), "556978@muni.cz");
+        sub.addProperty(AuthenticatedUserOIDCItems.SUB.getName(), "mail2@muni.cz");
         sub.addProperty(AuthenticatedUserOIDCItems.NAME.getName(), "Ing. Michael Johnson");
         sub.addProperty(AuthenticatedUserOIDCItems.GIVEN_NAME.getName(), "Michael");
         sub.addProperty(AuthenticatedUserOIDCItems.FAMILY_NAME.getName(), "Johnson");

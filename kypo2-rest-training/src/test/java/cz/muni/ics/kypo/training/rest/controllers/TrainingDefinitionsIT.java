@@ -1253,7 +1253,7 @@ public class TrainingDefinitionsIT {
             authorities.add(new SimpleGrantedAuthority(role));
         }
         JsonObject sub = new JsonObject();
-        sub.addProperty(AuthenticatedUserOIDCItems.SUB.getName(), "778932@muni.cz");
+        sub.addProperty(AuthenticatedUserOIDCItems.SUB.getName(), "mail@muni.cz");
         sub.addProperty(AuthenticatedUserOIDCItems.NAME.getName(), "Peter Černý");
         sub.addProperty(AuthenticatedUserOIDCItems.FAMILY_NAME.getName(), "Černý");
         sub.addProperty(AuthenticatedUserOIDCItems.GIVEN_NAME.getName(), "Peter");

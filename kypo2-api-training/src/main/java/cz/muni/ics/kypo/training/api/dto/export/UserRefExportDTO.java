@@ -9,13 +9,13 @@ import io.swagger.annotations.ApiModelProperty;
 @ApiModel(value = "UserRefExportDTO", description = "An exported information about user reference.")
 public class UserRefExportDTO {
 
-    @ApiModelProperty(value = "Reference to user in another microservice.", example = "441048@mail.muni.cz")
+    @ApiModelProperty(value = "Reference to user in another microservice.", example = "999999@mail.muni.cz")
     private String userRefLogin;
-    @ApiModelProperty(value = "Reference to user in another microservice and get his full name", example = "Mgr. Ing. Pavel Šeda")
+    @ApiModelProperty(value = "Reference to user in another microservice and get his full name", example = "Mgr. John Doe")
     private String userRefFullName;
-    @ApiModelProperty(value = "User given name", example = "Pavel")
+    @ApiModelProperty(value = "User given name", example = "John")
     private String userRefGivenName;
-    @ApiModelProperty(value = "User family name", example = "Seda")
+    @ApiModelProperty(value = "User family name", example = "Doe")
     private String userRefFamilyName;
     @ApiModelProperty(value = "Reference to user in another microservice and get his iss", example = "https://oidc.muni.cz")
     private String iss;

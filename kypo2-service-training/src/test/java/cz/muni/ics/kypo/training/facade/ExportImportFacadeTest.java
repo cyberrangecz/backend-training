@@ -14,7 +14,6 @@ import cz.muni.ics.kypo.training.persistence.util.TestDataFactory;
 import cz.muni.ics.kypo.training.service.ElasticsearchApiService;
 import cz.muni.ics.kypo.training.service.ExportImportService;
 import cz.muni.ics.kypo.training.service.TrainingDefinitionService;
-import cz.muni.ics.kypo.training.service.UserService;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -60,8 +59,6 @@ public class ExportImportFacadeTest {
     private TrainingDefinitionService trainingDefinitionService;
     @Mock
     private ExportImportService exportImportService;
-    @Mock
-    private UserService userService;
 
     private TrainingDefinition trainingDefinition;
     private TrainingDefinition trainingDefinitionImported;

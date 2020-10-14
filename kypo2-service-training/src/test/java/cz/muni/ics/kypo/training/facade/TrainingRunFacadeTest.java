@@ -88,7 +88,7 @@ public class TrainingRunFacadeTest {
         hint.setId(1L);
 
         participantRefDTO = new UserRefDTO();
-        participantRefDTO.setUserRefSub("4457352@muni.cz");
+        participantRefDTO.setUserRefSub("mail@muni.cz");
         participantRefDTO.setUserRefId(2L);
 
 
