@@ -187,7 +187,9 @@ public class TrainingInstanceFacade {
         if (forceDelete) {
             Set<TrainingRun> trainingRunsInTrainingInstance = trainingRunService.findAllByTrainingInstanceId(trainingInstanceId);
             trainingRunsInTrainingInstance.forEach(tr -> trainingRunService.deleteTrainingRun(tr.getId(), true));
-            trainingInstanceService.unlockPool(trainingInstance.getPoolId());
+            if (trainingInstance.getPoolId() != null) {
+                trainingInstanceService.unlockPool(trainingInstance.getPoolId());
+            }
         } else if (!trainingInstanceService.checkIfInstanceIsFinished(trainingInstanceId) && trainingRunService.existsAnyForTrainingInstance(trainingInstanceId)) {
             throw new EntityConflictException(new EntityErrorDetail(TrainingInstance.class, "id", Long.class, trainingInstanceId,
                     "Active training instance with already assigned training runs cannot be deleted. Please delete training runs assigned to training instance and try again."));
@@ -199,7 +201,6 @@ public class TrainingInstanceFacade {
         }
         trainingInstanceService.delete(trainingInstance);
         elasticsearchApiService.deleteEventsByTrainingInstanceId(trainingInstance.getId());
-        elasticsearchApiService.deleteBashCommandsFromPool(trainingInstance.getPoolId());
     }
 
     /**
