@@ -1,3 +1,21 @@
+* 7da6944a -- Updated Swagger documentation generated.
+* 29908770 -- Update pom.xml version based on GitLab tag. Done by CI.
+* c36c830a -- Update VERSION.txt -- Anonymize the developer information in the source code.
+* b267dec8 -- update security-commons dependency
+*   ec7bdd95 -- Merge branch '571-fix-resume-training-run-of-training-instance-with-unassigned-pool' into 'master'
+|\  
+| * de9b9973 -- Fixed assignment of pool to training instance during resume training run.
+* |   a8510296 -- Merge branch '572-fix-delete-training-instance-without-assigned-pool' into 'master'
+|\ \  
+| * | 3fa63928 -- Resolve "Fix delete training instance without assigned pool"
+|/ /  
+* |   fd157a3a -- Merge branch '573-remove-author-names-from-source-code' into 'master'
+|\ \  
+| |/  
+|/|   
+| * 684cebb0 -- Resolve "Remove author names from source code"
+|/  
+* f358427f -- CHANGELOG.md file updated with commits between the current and previous tag. Done by CI.
 * ec4c163a -- Updated Swagger documentation generated.
 * e2baefa9 -- Update pom.xml version based on GitLab tag. Done by CI.
 * 4939eb11 -- Update VERSION.txt
