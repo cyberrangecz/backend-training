@@ -1,7 +1,7 @@
 ---
 swagger: "2.0"
 info:
-  version: "Version: 1.1.50"
+  version: "Version: 1.1.51"
   title: "KYPO2 Training - API Reference"
 host: "localhost:8080"
 basePath: "/kypo2-rest-training/api/v1"
@@ -4319,19 +4319,19 @@ definitions:
         description: "Reference to user in another microservice and get his id"
       sub:
         type: "string"
-        example: "441048@mail.muni.cz"
+        example: "999999@mail.muni.cz"
         description: "Reference to user in another microservice."
       full_name:
         type: "string"
-        example: "Mgr. Ing. Pavel Šeda"
+        example: "Mgr. John Doe"
         description: "Reference to user in another microservice and get his full name"
       given_name:
         type: "string"
-        example: "Pavel"
+        example: "John"
         description: "User given name"
       family_name:
         type: "string"
-        example: "Seda"
+        example: "Doe"
         description: "User family name"
     description: "User information from user-and-group microservice is mapped to this\
       \ class and is also used to provide information about authors, participants,\
