@@ -1,1 +1,1 @@
-1.1.50  Export only anonymized data without organizers.
+1.1.51  Anonymize the developer information in the source code.
