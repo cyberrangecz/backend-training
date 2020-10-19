@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.List;
@@ -92,7 +93,7 @@ public class ElasticsearchApiService {
         }
     }
 
-    public List<Map<String, Object>> findAllBashCommandsFromSandbox(Long sandboxId){
+    public List<Map<String, Object>> findAllConsoleCommandsFromSandbox(Long sandboxId){
         try {
             return elasticsearchServiceWebClient
                     .get()
@@ -102,6 +103,21 @@ public class ElasticsearchApiService {
                     .block();
         }catch (CustomWebClientException ex){
             throw new MicroserviceApiException("Error when calling Elasticsearch API for particular sandbox (ID: "+ sandboxId +")", ex.getApiSubError());
+        }
+    }
+
+    public List<List<Map<String, Object>>> findAllConsoleCommandsFromSandboxAggregatedByTimeRanges(Integer sandboxId, List<String> timestampRanges){
+        try {
+            return elasticsearchServiceWebClient
+                    .get()
+                    .uri(uriBuilder -> uriBuilder.path("/training-platform-commands/sandboxes/{sandboxId}/ranges")
+                        .queryParam("ranges", StringUtils.collectionToDelimitedString(timestampRanges, ","))
+                        .build(sandboxId))
+                    .retrieve()
+                    .bodyToMono(new ParameterizedTypeReference<List<List<Map<String, Object>>>>() {})
+                    .block();
+        }catch (CustomWebClientException ex){
+            throw new MicroserviceApiException("Error when calling Elasticsearch API for particular commands of sandbox (ID: "+ sandboxId +")", ex.getApiSubError());
         }
     }
 
