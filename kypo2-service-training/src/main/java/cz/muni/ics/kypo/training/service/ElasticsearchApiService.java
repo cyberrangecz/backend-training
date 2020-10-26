@@ -106,15 +106,17 @@ public class ElasticsearchApiService {
         }
     }
 
-    public List<List<Map<String, Object>>> findAllConsoleCommandsFromSandboxAggregatedByTimeRanges(Integer sandboxId, List<String> timestampRanges){
+    public List<Map<String, Object>> findAllConsoleCommandsFromSandboxAndTimeRange(Integer sandboxId, Long from, Long to){
         try {
             return elasticsearchServiceWebClient
                     .get()
                     .uri(uriBuilder -> uriBuilder.path("/training-platform-commands/sandboxes/{sandboxId}/ranges")
-                        .queryParam("ranges", StringUtils.collectionToDelimitedString(timestampRanges, ","))
-                        .build(sandboxId))
+                            .queryParam("from", from)
+                            .queryParam("to", to)
+                            .build(sandboxId)
+                    )
                     .retrieve()
-                    .bodyToMono(new ParameterizedTypeReference<List<List<Map<String, Object>>>>() {})
+                    .bodyToMono(new ParameterizedTypeReference<List<Map<String, Object>>>() {})
                     .block();
         }catch (CustomWebClientException ex){
             throw new MicroserviceApiException("Error when calling Elasticsearch API for particular commands of sandbox (ID: "+ sandboxId +")", ex.getApiSubError());

@@ -219,7 +219,7 @@ public class ExportImportFacade {
             zos.write(objectMapper.writeValueAsBytes(archivedRun));
 
             List<Map<String, Object>> events = elasticsearchApiService.findAllEventsFromTrainingRun(run);
-            Map<Integer, String> levelStartTimestampMapping = writeEventsAndGetLevelStartTimestampMapping(zos, run, events);
+            Map<Integer, Long> levelStartTimestampMapping = writeEventsAndGetLevelStartTimestampMapping(zos, run, events);
             writeEventsByLevels(zos, run, events);
 
             List<Map<String, Object>> consoleCommands = elasticsearchApiService.findAllConsoleCommandsFromSandbox(run.getSandboxInstanceRefId());
@@ -229,17 +229,17 @@ public class ExportImportFacade {
         }
     }
 
-    private Map<Integer, String> writeEventsAndGetLevelStartTimestampMapping(ZipOutputStream zos, TrainingRun run, List<Map<String, Object>> events) throws IOException {
+    private Map<Integer, Long> writeEventsAndGetLevelStartTimestampMapping(ZipOutputStream zos, TrainingRun run, List<Map<String, Object>> events) throws IOException {
         ZipEntry eventsEntry = new ZipEntry("training_events/training_run-id" + run.getId() + "-events" + AbstractFileExtensions.JSON_FILE_EXTENSION);
         zos.putNextEntry(eventsEntry);
         //Obtain start timestamp of each level, so it can be used later
-        Map<Integer, String> levelStartTimestampMapping = new LinkedHashMap<>();
+        Map<Integer, Long> levelStartTimestampMapping = new LinkedHashMap<>();
 
         for (Map<String, Object> event : events) {
             zos.write(objectMapper.writer(new MinimalPrettyPrinter()).writeValueAsBytes(event));
             zos.write(System.lineSeparator().getBytes());
             if (event.get("type").equals(LevelStarted.class.getCanonicalName())) {
-                levelStartTimestampMapping.put(((Integer) event.get("level")), Instant.ofEpochMilli((Long) event.get("timestamp")).toString());
+                levelStartTimestampMapping.put(((Integer) event.get("level")), (Long) event.get("timestamp"));
             }
         }
         return levelStartTimestampMapping;
@@ -272,16 +272,16 @@ public class ExportImportFacade {
         }
     }
 
-    private void writeConsoleCommandsDetails(ZipOutputStream zos, Integer sandboxId, Map<Integer, String> levelStartTimestampMapping) throws IOException {
-        List<String> levelTimestampRanges = new ArrayList<>(levelStartTimestampMapping.values());
+    private void writeConsoleCommandsDetails(ZipOutputStream zos, Integer sandboxId, Map<Integer, Long> levelStartTimestampMapping) throws IOException {
+        List<Long> levelTimestampRanges = new ArrayList<>(levelStartTimestampMapping.values());
         List<Integer> levelIds = new ArrayList<>(levelStartTimestampMapping.keySet());
-        levelTimestampRanges.remove(0);
+        levelTimestampRanges.add(Long.MAX_VALUE);
 
-        List<List<Map<String, Object>>> consoleCommandsByLevel = elasticsearchApiService.findAllConsoleCommandsFromSandboxAggregatedByTimeRanges(sandboxId, levelTimestampRanges);
         for (int i = 0; i < levelIds.size(); i++) {
+            List<Map<String, Object>> consoleCommandsByLevel = elasticsearchApiService.findAllConsoleCommandsFromSandboxAndTimeRange(sandboxId, levelTimestampRanges.get(i), levelTimestampRanges.get(i+1));
             ZipEntry consoleCommandsEntryDetails = new ZipEntry("command_histories/sandbox-" + sandboxId + "-details" + "/level" + levelIds.get(i)+ "-useractions" + AbstractFileExtensions.JSON_FILE_EXTENSION);
             zos.putNextEntry(consoleCommandsEntryDetails);
-            for (Map<String, Object> command : consoleCommandsByLevel.get(i)) {
+            for (Map<String, Object> command : consoleCommandsByLevel) {
                 zos.write(objectMapper.writer(new MinimalPrettyPrinter()).writeValueAsBytes(command));
                 zos.write(System.lineSeparator().getBytes());
             }
