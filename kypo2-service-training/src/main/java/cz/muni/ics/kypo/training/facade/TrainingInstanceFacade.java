@@ -13,6 +13,7 @@ import cz.muni.ics.kypo.training.enums.RoleTypeSecurity;
 import cz.muni.ics.kypo.training.exceptions.EntityConflictException;
 import cz.muni.ics.kypo.training.exceptions.EntityErrorDetail;
 import cz.muni.ics.kypo.training.exceptions.EntityNotFoundException;
+import cz.muni.ics.kypo.training.exceptions.MicroserviceApiException;
 import cz.muni.ics.kypo.training.mapping.mapstruct.TrainingInstanceMapper;
 import cz.muni.ics.kypo.training.mapping.mapstruct.TrainingRunMapper;
 import cz.muni.ics.kypo.training.persistence.model.TrainingInstance;
@@ -189,6 +190,7 @@ public class TrainingInstanceFacade {
             trainingRunsInTrainingInstance.forEach(tr -> trainingRunService.deleteTrainingRun(tr.getId(), true));
             if (trainingInstance.getPoolId() != null) {
                 trainingInstanceService.unlockPool(trainingInstance.getPoolId());
+                deleteBashCommandsfromPool(trainingInstance.getPoolId());
             }
         } else if (!trainingInstanceService.checkIfInstanceIsFinished(trainingInstanceId) && trainingRunService.existsAnyForTrainingInstance(trainingInstanceId)) {
             throw new EntityConflictException(new EntityErrorDetail(TrainingInstance.class, "id", Long.class, trainingInstanceId,
@@ -201,6 +203,12 @@ public class TrainingInstanceFacade {
         }
         trainingInstanceService.delete(trainingInstance);
         elasticsearchApiService.deleteEventsByTrainingInstanceId(trainingInstance.getId());
+    }
+
+    private void deleteBashCommandsfromPool(Long poolId){
+        try {
+            elasticsearchApiService.deleteBashCommandsFromPool(poolId);
+        } catch (MicroserviceApiException ignored){ }
     }
 
     /**
@@ -243,6 +251,7 @@ public class TrainingInstanceFacade {
         }
         // unlock previously assigned pool
         trainingInstanceService.unlockPool(trainingInstance.getPoolId());
+        deleteBashCommandsfromPool(trainingInstance.getPoolId());
 
         trainingInstance.setPoolId(null);
         TrainingInstance updatedTrainingInstance = trainingInstanceService.updateTrainingInstancePool(trainingInstance);

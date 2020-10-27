@@ -8,7 +8,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.List;
@@ -128,7 +127,7 @@ public class ElasticsearchApiService {
         try{
             elasticsearchServiceWebClient
                     .delete()
-                    .uri("/training-platform-commands/sandboxes/{poolId}", poolId)
+                    .uri("/training-platform-commands/pools/{poolId}", poolId)
                     .retrieve()
                     .bodyToMono(Void.class)
                     .block();
