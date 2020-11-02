@@ -1,1 +1,1 @@
-1.1.51  Anonymize the developer information in the source code.
+1.1.52  Delete commands after pool unassign.
