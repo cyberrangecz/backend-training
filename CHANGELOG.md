@@ -1,3 +1,19 @@
+* 810e9257 -- Updated Swagger documentation generated.
+* 352fe10d -- Update pom.xml version based on GitLab tag. Done by CI.
+* 903dca9f -- Update VERSION.txt
+*   fe1b9d5f -- Merge branch '576-resolve-commands-deletion-after-pool-unassign' into 'master'
+|\  
+| * 4b8c84e9 -- Resolve "Resolve commands deletion after pool unassign"
+|/  
+*   6007e470 -- Merge branch '575-obtain-console-commands-level-by-level-when-export-training-instance' into 'master'
+|\  
+| * 83cde9c5 -- Commands for export training instance are obtained level by level.
+|/  
+*   a7c5f6ba -- Merge branch '574-enhance-the-training-archive-export-to-contain-the-detailed-information-about-training-run' into 'master'
+|\  
+| * 32532806 -- Resolve "Enhance the Training Archive Export to Contain the Detailed Information About Training Run"
+|/  
+* 7d78fbc9 -- CHANGELOG.md file updated with commits between the current and previous tag. Done by CI.
 * 7da6944a -- Updated Swagger documentation generated.
 * 29908770 -- Update pom.xml version based on GitLab tag. Done by CI.
 * c36c830a -- Update VERSION.txt -- Anonymize the developer information in the source code.
