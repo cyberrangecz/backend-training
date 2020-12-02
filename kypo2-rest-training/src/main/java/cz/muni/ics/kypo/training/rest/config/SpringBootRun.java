@@ -1,6 +1,5 @@
 package cz.muni.ics.kypo.training.rest.config;
 
-import cz.muni.ics.kypo.commons.swagger.SwaggerConfig;
 import cz.muni.ics.kypo.training.config.FacadeConfiguration;
 import cz.muni.ics.kypo.training.validation.AssessmentResponseSchemaConfiguration;
 import org.springframework.boot.SpringApplication;
@@ -15,7 +14,7 @@ import org.springframework.data.web.config.EnableSpringDataWebSupport;
  */
 @SpringBootApplication(scanBasePackages = "cz.muni.ics.kypo.training.rest")
 @EnableSpringDataWebSupport
-@Import({WebConfigRestTraining.class, FacadeConfiguration.class, SwaggerConfig.class, AssessmentResponseSchemaConfiguration.class})
+@Import({WebConfigRestTraining.class, FacadeConfiguration.class, AssessmentResponseSchemaConfiguration.class})
 public class SpringBootRun extends SpringBootServletInitializer {
 
     @Override
