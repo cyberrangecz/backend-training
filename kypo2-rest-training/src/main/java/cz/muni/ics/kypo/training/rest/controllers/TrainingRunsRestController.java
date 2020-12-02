@@ -38,7 +38,10 @@ import javax.validation.Valid;
 /**
  * The rest controller for Training runs.
  */
-@Api(value = "/training-runs", tags = "Training runs", consumes = MediaType.APPLICATION_JSON_VALUE)
+@Api(value = "/training-runs",
+     tags = "Training runs",
+     consumes = MediaType.APPLICATION_JSON_VALUE,
+     authorizations = @Authorization(value = "bearerAuth"))
 @ApiResponses(value = {
         @ApiResponse(code = 401, message = "Full authentication is required to access this resource.", response = ApiError.class),
         @ApiResponse(code = 403, message = "The necessary permissions are required for a resource.", response = ApiError.class)

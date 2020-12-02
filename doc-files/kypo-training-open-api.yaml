@@ -44,6 +44,8 @@ paths:
           description: "Unexpected condition was encountered."
           schema:
             $ref: "#/definitions/ApiError"
+      security:
+      - bearerAuth: []
   /exports/training-instances/{instanceId}:
     get:
       tags:
@@ -77,6 +79,8 @@ paths:
           description: "Unexpected condition was encountered."
           schema:
             $ref: "#/definitions/ApiError"
+      security:
+      - bearerAuth: []
   /imports/training-definitions:
     post:
       tags:
@@ -114,6 +118,8 @@ paths:
           description: "Unexpected condition was encountered."
           schema:
             $ref: "#/definitions/ApiError"
+      security:
+      - bearerAuth: []
   /training-definitions:
     get:
       tags:
@@ -163,6 +169,8 @@ paths:
           description: "Unexpected condition was encountered."
           schema:
             $ref: "#/definitions/ApiError"
+      security:
+      - bearerAuth: []
     post:
       tags:
       - "Training definitions"
@@ -198,6 +206,8 @@ paths:
           description: "Unexpected condition was encountered."
           schema:
             $ref: "#/definitions/ApiError"
+      security:
+      - bearerAuth: []
     put:
       tags:
       - "Training definitions"
@@ -234,6 +244,8 @@ paths:
           description: "Unexpected condition was encountered."
           schema:
             $ref: "#/definitions/ApiError"
+      security:
+      - bearerAuth: []
   /training-definitions/designers:
     get:
       tags:
@@ -286,6 +298,8 @@ paths:
           description: "Unexpected condition was encountered."
           schema:
             $ref: "#/definitions/ApiError"
+      security:
+      - bearerAuth: []
   /training-definitions/for-organizers:
     get:
       tags:
@@ -345,6 +359,8 @@ paths:
           description: "Unexpected condition was encountered."
           schema:
             $ref: "#/definitions/ApiError"
+      security:
+      - bearerAuth: []
   /training-definitions/levels/{levelId}:
     get:
       tags:
@@ -379,6 +395,8 @@ paths:
           description: "Unexpected condition was encountered."
           schema:
             $ref: "#/definitions/ApiError"
+      security:
+      - bearerAuth: []
   /training-definitions/organizers:
     get:
       tags:
@@ -437,6 +455,8 @@ paths:
           description: "Unexpected condition was encountered."
           schema:
             $ref: "#/definitions/ApiError"
+      security:
+      - bearerAuth: []
   /training-definitions/{definitionId}:
     get:
       tags:
@@ -471,6 +491,8 @@ paths:
           description: "Unexpected condition was encountered."
           schema:
             $ref: "#/definitions/ApiError"
+      security:
+      - bearerAuth: []
     post:
       tags:
       - "Training definitions"
@@ -504,6 +526,8 @@ paths:
           description: "Unexpected condition was encountered."
           schema:
             $ref: "#/definitions/ApiError"
+      security:
+      - bearerAuth: []
     delete:
       tags:
       - "Training definitions"
@@ -534,6 +558,8 @@ paths:
           description: "Unexpected condition was encountered."
           schema:
             $ref: "#/definitions/ApiError"
+      security:
+      - bearerAuth: []
   /training-definitions/{definitionId}/assessment-levels:
     put:
       tags:
@@ -577,6 +603,8 @@ paths:
           description: "Unexpected condition was encountered."
           schema:
             $ref: "#/definitions/ApiError"
+      security:
+      - bearerAuth: []
   /training-definitions/{definitionId}/authors:
     get:
       tags:
@@ -646,6 +674,8 @@ paths:
           description: "Unexpected condition was encountered."
           schema:
             $ref: "#/definitions/ApiError"
+      security:
+      - bearerAuth: []
     put:
       tags:
       - "Training definitions"
@@ -715,6 +745,8 @@ paths:
           description: "Unexpected condition was encountered."
           schema:
             $ref: "#/definitions/ApiError"
+      security:
+      - bearerAuth: []
   /training-definitions/{definitionId}/beta-testers:
     get:
       tags:
@@ -774,6 +806,8 @@ paths:
           description: "Unexpected condition was encountered."
           schema:
             $ref: "#/definitions/ApiError"
+      security:
+      - bearerAuth: []
   /training-definitions/{definitionId}/designers-not-in-training-definition:
     get:
       tags:
@@ -837,6 +871,8 @@ paths:
           description: "Unexpected condition was encountered."
           schema:
             $ref: "#/definitions/ApiError"
+      security:
+      - bearerAuth: []
   /training-definitions/{definitionId}/game-levels:
     put:
       tags:
@@ -880,6 +916,8 @@ paths:
           description: "Unexpected condition was encountered."
           schema:
             $ref: "#/definitions/ApiError"
+      security:
+      - bearerAuth: []
   /training-definitions/{definitionId}/info-levels:
     put:
       tags:
@@ -923,6 +961,8 @@ paths:
           description: "Unexpected condition was encountered."
           schema:
             $ref: "#/definitions/ApiError"
+      security:
+      - bearerAuth: []
   /training-definitions/{definitionId}/levels/{levelIdFrom}/swap-with/{levelIdTo}:
     put:
       tags:
@@ -971,6 +1011,8 @@ paths:
           description: "Unexpected condition was encountered."
           schema:
             $ref: "#/definitions/ApiError"
+      security:
+      - bearerAuth: []
   /training-definitions/{definitionId}/levels/{levelIdToBeMoved}/move-to/{newPosition}:
     put:
       tags:
@@ -1016,6 +1058,8 @@ paths:
           description: "Unexpected condition was encountered."
           schema:
             $ref: "#/definitions/ApiError"
+      security:
+      - bearerAuth: []
   /training-definitions/{definitionId}/levels/{levelId}:
     delete:
       tags:
@@ -1055,6 +1099,8 @@ paths:
           description: "Unexpected condition was encountered."
           schema:
             $ref: "#/definitions/ApiError"
+      security:
+      - bearerAuth: []
   /training-definitions/{definitionId}/levels/{levelType}:
     post:
       tags:
@@ -1106,6 +1152,8 @@ paths:
           description: "Unexpected condition was encountered."
           schema:
             $ref: "#/definitions/ApiError"
+      security:
+      - bearerAuth: []
   /training-definitions/{definitionId}/states/{state}:
     put:
       tags:
@@ -1146,6 +1194,8 @@ paths:
           description: "Unexpected condition was encountered."
           schema:
             $ref: "#/definitions/ApiError"
+      security:
+      - bearerAuth: []
   /training-instances:
     get:
       tags:
@@ -1176,6 +1226,8 @@ paths:
           description: "Unexpected condition was encountered."
           schema:
             $ref: "#/definitions/ApiError"
+      security:
+      - bearerAuth: []
     post:
       tags:
       - "Training instances"
@@ -1219,6 +1271,8 @@ paths:
           description: "Unexpected condition was encountered."
           schema:
             $ref: "#/definitions/ApiError"
+      security:
+      - bearerAuth: []
     put:
       tags:
       - "Training instances"
@@ -1253,6 +1307,8 @@ paths:
           description: "Unexpected condition was encountered."
           schema:
             $ref: "#/definitions/ApiError"
+      security:
+      - bearerAuth: []
   /training-instances/{instanceId}:
     get:
       tags:
@@ -1288,6 +1344,8 @@ paths:
           description: "Unexpected condition was encountered."
           schema:
             $ref: "#/definitions/ApiError"
+      security:
+      - bearerAuth: []
     delete:
       tags:
       - "Training instances"
@@ -1329,6 +1387,8 @@ paths:
           description: "Unexpected condition was encountered."
           schema:
             $ref: "#/definitions/ApiError"
+      security:
+      - bearerAuth: []
   /training-instances/{instanceId}/assign-pool:
     patch:
       tags:
@@ -1373,6 +1433,8 @@ paths:
           description: "Unexpected condition was encountered."
           schema:
             $ref: "#/definitions/ApiError"
+      security:
+      - bearerAuth: []
   /training-instances/{instanceId}/organizers:
     get:
       tags:
@@ -1441,6 +1503,8 @@ paths:
           description: "Unexpected condition was encountered."
           schema:
             $ref: "#/definitions/ApiError"
+      security:
+      - bearerAuth: []
     put:
       tags:
       - "Training instances"
@@ -1509,6 +1573,8 @@ paths:
             \ calling other microservice."
           schema:
             $ref: "#/definitions/ApiError"
+      security:
+      - bearerAuth: []
   /training-instances/{instanceId}/organizers-not-in-training-instance:
     get:
       tags:
@@ -1578,6 +1644,8 @@ paths:
           description: "Unexpected condition was encountered."
           schema:
             $ref: "#/definitions/ApiError"
+      security:
+      - bearerAuth: []
   /training-instances/{instanceId}/training-runs:
     get:
       tags:
@@ -1619,6 +1687,8 @@ paths:
           description: "Unexpected condition was encountered."
           schema:
             $ref: "#/definitions/ApiError"
+      security:
+      - bearerAuth: []
   /training-instances/{instanceId}/unassign-pool:
     patch:
       tags:
@@ -1648,6 +1718,8 @@ paths:
           description: "Unexpected condition was encountered."
           schema:
             $ref: "#/definitions/ApiError"
+      security:
+      - bearerAuth: []
   /training-runs:
     get:
       tags:
@@ -1701,6 +1773,8 @@ paths:
           description: "Unexpected condition was encountered."
           schema:
             $ref: "#/definitions/ApiError"
+      security:
+      - bearerAuth: []
     post:
       tags:
       - "Training runs"
@@ -1733,6 +1807,8 @@ paths:
           description: "Some error occurred during getting info about sandboxes."
           schema:
             $ref: "#/definitions/ApiError"
+      security:
+      - bearerAuth: []
     delete:
       tags:
       - "Training runs"
@@ -1764,6 +1840,8 @@ paths:
           description: "Unexpected condition was encountered"
           schema:
             $ref: "#/definitions/ApiError"
+      security:
+      - bearerAuth: []
   /training-runs/accessible:
     get:
       tags:
@@ -1825,6 +1903,8 @@ paths:
           description: "Unexpected condition was encountered."
           schema:
             $ref: "#/definitions/ApiError"
+      security:
+      - bearerAuth: []
   /training-runs/{runId}:
     get:
       tags:
@@ -1859,6 +1939,8 @@ paths:
           description: "Unexpected condition was encountered."
           schema:
             $ref: "#/definitions/ApiError"
+      security:
+      - bearerAuth: []
     put:
       tags:
       - "Training runs"
@@ -1890,6 +1972,8 @@ paths:
           description: "Unexpected condition was encountered."
           schema:
             $ref: "#/definitions/ApiError"
+      security:
+      - bearerAuth: []
     delete:
       tags:
       - "Training runs"
@@ -1926,6 +2010,8 @@ paths:
           description: "Unexpected condition was encountered"
           schema:
             $ref: "#/definitions/ApiError"
+      security:
+      - bearerAuth: []
   /training-runs/{runId}/archive:
     patch:
       tags:
@@ -1953,6 +2039,8 @@ paths:
           description: "Unexpected condition was encountered."
           schema:
             $ref: "#/definitions/ApiError"
+      security:
+      - bearerAuth: []
   /training-runs/{runId}/assessment-evaluations:
     put:
       tags:
@@ -1991,6 +2079,8 @@ paths:
           description: "Unexpected condition was encountered."
           schema:
             $ref: "#/definitions/ApiError"
+      security:
+      - bearerAuth: []
   /training-runs/{runId}/hints/{hintId}:
     get:
       tags:
@@ -2041,6 +2131,8 @@ paths:
           description: "Unexpected condition was encountered."
           schema:
             $ref: "#/definitions/ApiError"
+      security:
+      - bearerAuth: []
   /training-runs/{runId}/is-correct-flag:
     post:
       tags:
@@ -2080,6 +2172,8 @@ paths:
           description: "Unexpected condition was encountered."
           schema:
             $ref: "#/definitions/ApiError"
+      security:
+      - bearerAuth: []
   /training-runs/{runId}/next-levels:
     get:
       tags:
@@ -2115,6 +2209,8 @@ paths:
           description: "Unexpected condition was encountered."
           schema:
             $ref: "#/definitions/ApiError"
+      security:
+      - bearerAuth: []
   /training-runs/{runId}/participant:
     get:
       tags:
@@ -2144,6 +2240,8 @@ paths:
           description: "Unexpected condition was encountered."
           schema:
             $ref: "#/definitions/ApiError"
+      security:
+      - bearerAuth: []
   /training-runs/{runId}/resumption:
     get:
       tags:
@@ -2177,6 +2275,8 @@ paths:
           description: "Unexpected condition was encountered."
           schema:
             $ref: "#/definitions/ApiError"
+      security:
+      - bearerAuth: []
   /training-runs/{runId}/solutions:
     get:
       tags:
@@ -2211,6 +2311,8 @@ paths:
           description: "Unexpected condition was encountered."
           schema:
             $ref: "#/definitions/ApiError"
+      security:
+      - bearerAuth: []
   /visualizations/training-instances/{instanceId}:
     get:
       tags:
@@ -2240,6 +2342,8 @@ paths:
           description: "Unexpected condition was encountered."
           schema:
             $ref: "#/definitions/ApiError"
+      security:
+      - bearerAuth: []
   /visualizations/training-instances/{instanceId}/participants:
     get:
       tags:
@@ -2267,6 +2371,8 @@ paths:
           description: "Unexpected condition was encountered."
           schema:
             $ref: "#/definitions/ApiError"
+      security:
+      - bearerAuth: []
   /visualizations/training-runs/{runId}:
     get:
       tags:
@@ -2296,6 +2402,8 @@ paths:
           description: "Unexpected condition was encountered."
           schema:
             $ref: "#/definitions/ApiError"
+      security:
+      - bearerAuth: []
   /visualizations/users:
     get:
       tags:
@@ -2347,15 +2455,15 @@ paths:
           description: "Unexpected condition was encountered."
           schema:
             $ref: "#/definitions/ApiError"
+      security:
+      - bearerAuth: []
 securityDefinitions:
-  KYPO:
-    type: "oauth2"
-    authorizationUrl: "https://oidc.muni.cz/oidc/authorize"
-    flow: "implicit"
-    scopes:
-      openid: ""
-      email: ""
-      profile: ""
+  bearerAuth:
+    description: "Obtain bearer token from OIDC provider and enter the token in the\
+      \ following field. Use format 'Bearer {token}'"
+    type: "apiKey"
+    name: "Authorization"
+    in: "header"
 definitions:
   AbstractLevelDTO:
     type: "object"
