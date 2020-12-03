@@ -1,1 +1,1 @@
-1.1.52  Delete commands after pool unassign.
+1.1.53  New version of security commons without swagger UI configuration.
