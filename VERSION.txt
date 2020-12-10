@@ -1,1 +1,1 @@
-1.1.53  New version of security commons without swagger UI configuration.
+1.1.54  Setup CI to push docker image to gitlab registry.
