@@ -1,3 +1,19 @@
+* 2fcc2c70 -- Updated Swagger documentation generated.
+* 85df5071 -- Update pom.xml version based on GitLab tag. Done by CI.
+* 57f74e55 -- Update VERSION.txt
+*   1fcb899b -- Merge branch '583-setup-ci-to-push-docker-container-image-to-gitlab-registry' into 'master'
+|\  
+| * 300257ae -- Push docker image on new tag to gitlab registry.
+|/  
+*   55e5c101 -- Merge branch '582-update-gitlab-ci-yml-to-not-skip-ci-on-new-tag' into 'master'
+|\  
+| * 1631c9e3 -- Resolve "Update .gitlab-ci.yml to not skip CI on new tag"
+|/  
+*   0a7f043d -- Merge branch '581-setup-ci-to-push-docker-containers-on-new-tag' into 'master'
+|\  
+| * 077f6245 -- Setup CI to push docker container image to registry
+|/  
+* 0bb6164c -- CHANGELOG.md file updated with commits between the current and previous tag. Done by CI.
 * b929622f -- Updated Swagger documentation generated.
 * 1adcb2b1 -- Update pom.xml version based on GitLab tag. Done by CI.
 * 96f4d015 -- Update VERSION.txt
