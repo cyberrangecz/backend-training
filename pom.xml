@@ -71,7 +71,7 @@
         <!-- lombok -->
         <lombok.version>1.18.12</lombok.version>
 
-        <proprietary-repo-id>kypo-nexus</proprietary-repo-id>
+        <proprietary-repo-id>gitlab-maven</proprietary-repo-id>
     </properties>
 
     <repositories>
