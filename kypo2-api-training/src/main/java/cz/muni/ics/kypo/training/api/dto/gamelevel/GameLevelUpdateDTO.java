@@ -15,34 +15,35 @@ import java.util.*;
 public class GameLevelUpdateDTO {
 
     @ApiModelProperty(value = "Main identifier of level.", required = true, example = "1")
-    @NotNull(message = "{gamelevelupdate.id.NotNull.message}")
+    @NotNull(message = "{gameLevel.id.NotNull.message}")
     protected Long id;
     @ApiModelProperty(value = "Short textual description of the level.", required = true, example = "Game Level1")
-    @NotEmpty(message = "{gamelevelupdate.title.NotEmpty.message}")
+    @NotEmpty(message = "{gameLevel.title.NotEmpty.message}")
     protected String title;
     @ApiModelProperty(value = "The maximum score a participant can achieve during a level.", required = true, example = "20")
-    @NotNull(message = "{gamelevelupdate.maxScore.NotNull.message}")
-    @Min(value = 0, message = "{gamelevelupdate.maxScore.Min.message}")
-    @Max(value = 100, message = "{gamelevelupdate.maxScore.Max.message}")
+    @NotNull(message = "{gameLevel.maxScore.NotNull.message}")
+    @Min(value = 0, message = "{gameLevel.maxScore.Min.message}")
+    @Max(value = 100, message = "{gameLevel.maxScore.Max.message}")
     private int maxScore;
     @ApiModelProperty(value = "Keyword found in game, used for access next level.", required = true, example = "secretFlag")
-    @NotEmpty(message = "{gamelevelupdate.flag.NotEmpty.message}")
-    @Size(max = 50, message = "{gamelevelupdate.flag.Size.message}")
+    @NotEmpty(message = "{gameLevel.flag.NotEmpty.message}")
+    @Size(max = 50, message = "{gameLevel.flag.Size.message}")
     private String flag;
     @ApiModelProperty(value = "The information and experiences that are directed towards an player.", example = "Play me")
-    @NotEmpty(message = "{gamelevelimport.solution.NotEmpty.message}")
+    @NotEmpty(message = "{gameLevel.content.NotEmpty.message}")
     private String content;
     @ApiModelProperty(value = "Instruction how to get flag in game.", example = "This is how you do it")
-    @NotEmpty(message = "{gamelevelimport.solution.NotEmpty.message}")
+    @NotEmpty(message = "{gameLevel.solution.NotEmpty.message}")
     private String solution;
     @ApiModelProperty(value = "Sign if displaying of solution is penalized.", required = true, example = "false")
-    @NotNull(message = "{gamelevelupdate.solutionPenalized.NotNull.message}")
+    @NotNull(message = "{gameLevel.solutionPenalized.NotNull.message}")
     private boolean solutionPenalized;
     @ApiModelProperty(value = "Estimated time (minutes) taken by the player to solve the level.", example = "20")
     private int estimatedDuration;
     @ApiModelProperty(value = "How many times participant can submit incorrect flag before displaying solution.", required = true, example = "5")
-    @NotNull(message = "{gamelevelupdate.incorrectFlagLimit.NotEmpty.message}")
-    @Min(value = 0, message = "{gamelevelupdate.incorrectFlagLimit.Min.message}")
+    @NotNull(message = "{gameLevel.incorrectFlagLimit.NotNull.message}")
+    @Min(value = 0, message = "{gameLevel.incorrectFlagLimit.Min.message}")
+    @Max(value = 100, message = "{gameLevel.incorrectFlagLimit.Max.message}")
     private int incorrectFlagLimit;
     @ApiModelProperty(value = "Information which helps participant resolve the level.")
     private Set<HintDTO> hints = new HashSet<>();

@@ -20,7 +20,7 @@ import java.util.Set;
 public class TrainingDefinitionCreateDTO {
 
     @ApiModelProperty(value = "A name of the training/game (e.g., Photo Hunter) .", required = true, example = "Photo Hunter")
-    @NotEmpty(message = "{trainingdefinitioncreate.title.NotEmpty.message}")
+    @NotEmpty(message = "{trainingDefinition.title.NotEmpty.message}")
     private String title;
     @ApiModelProperty(value = "Description of training definition that is visible to the participant.", example = "Description of Photo Hunter")
     private String description;
@@ -29,13 +29,13 @@ public class TrainingDefinitionCreateDTO {
     @ApiModelProperty(value = "A list of knowledge and skills that the participant should learn by attending the training (if it is used for educational purposes) ", example = "[outcomes]")
     private String[] outcomes;
     @ApiModelProperty(value = "Current state of training definition.", required = true, example = "UNRELEASED")
-    @NotNull(message = "{trainingdefinitioncreate.state.NotNull.message}")
+    @NotNull(message = "{trainingDefinition.state.NotNull.message}")
     private TDState state;
     @ApiModelProperty(value = "Group of organizers who is allowed to see the training definition.", required = true)
     @Valid
     private BetaTestingGroupCreateDTO betaTestingGroup;
     @ApiModelProperty(value = "Sign if stepper bar should be displayed.", required = true, example = "true")
-    @NotNull(message = "{trainingdefinitioncreate.showStepperBar.NotNull.message}")
+    @NotNull(message = "{trainingDefinition.showStepperBar.NotNull.message}")
     private boolean showStepperBar;
 
     /**

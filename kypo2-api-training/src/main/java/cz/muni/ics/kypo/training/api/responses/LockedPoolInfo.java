@@ -7,9 +7,9 @@ import java.util.Objects;
 
 public class LockedPoolInfo {
 
-    @NotNull(message = "{lockedPoolInfo.id.NotNull.message}")
+    @NotNull(message = "{poolInfo.id.NotNull.message}")
     private long id;
-    @NotNull(message = "{lockedPoolInfo.poolId.NotNull.message}")
+    @NotNull(message = "{poolInfo.poolId.NotNull.message}")
     @JsonProperty(value = "pool_id")
     private long poolId;
 

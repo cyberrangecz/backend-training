@@ -18,7 +18,7 @@ import java.util.List;
 public class ImportTrainingDefinitionDTO {
 
 	@ApiModelProperty(value = "A name of the training/game (e.g., Photo Hunter) .", example = "TrainingDefinition2")
-	@NotEmpty(message = "{trainingdefinitionimport.title.NotEmpty.message}")
+	@NotEmpty(message = "{trainingDefinition.title.NotEmpty.message}")
 	private String title;
 	@ApiModelProperty(value = "Description of training definition that is visible to the participant.", example = "Unreleased training definition")
 	private String description;
@@ -27,10 +27,10 @@ public class ImportTrainingDefinitionDTO {
 	@ApiModelProperty(value = "A list of knowledge and skills that the participant should learn by attending the training (if it is used for educational purposes) ", example = "")
 	private String[] outcomes;
 	@ApiModelProperty(value = "Current state of training definition.", example = "UNRELEASED")
-	@NotNull(message = "{trainingdefinitionimport.state.NotNull.message}")
+	@NotNull(message = "{trainingDefinition.state.NotNull.message}")
 	private TDState state;
 	@ApiModelProperty(value = "Sign if stepper bar should be displayed.", example = "false")
-	@NotNull(message = "{trainingdefinitionimport.showStepperBar.NotNull.message}")
+	@NotNull(message = "{trainingDefinition.showStepperBar.NotNull.message}")
 	private boolean showStepperBar;
 	@ApiModelProperty(value = "Information about all levels in training definition.")
 	private List<AbstractLevelImportDTO> levels = new ArrayList<>();

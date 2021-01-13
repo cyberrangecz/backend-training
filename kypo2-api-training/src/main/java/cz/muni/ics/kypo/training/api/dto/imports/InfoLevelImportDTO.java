@@ -13,7 +13,7 @@ import javax.validation.constraints.NotEmpty;
 public class InfoLevelImportDTO extends AbstractLevelImportDTO{
 
 	@ApiModelProperty(value = "The information and experiences that are directed towards a participant.", example = "Informational stuff")
-	@NotEmpty(message = "{infolevelimport.content.NotEmpty.message}")
+	@NotEmpty(message = "{infoLevel.content.NotEmpty.message}")
 	private String content;
 
 	/**

@@ -19,7 +19,7 @@ import java.time.LocalDateTime;
 public class TrainingInstanceCreateDTO {
 
     @ApiModelProperty(value = "Date when training instance starts.", required = true, example = "2020-11-20T10:28:02.727Z")
-    @NotNull(message = "{traininginstancecreate.startTime.NotNull.message}")
+    @NotNull(message = "{trainingInstance.startTime.NotNull.message}")
     @JsonDeserialize(using = LocalDateTimeUTCDeserializer.class)
     private LocalDateTime startTime;
     @ApiModelProperty(value = "Date when training instance ends.", required = true, example = "2020-11-25T10:26:02.727Z")

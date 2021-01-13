@@ -14,13 +14,13 @@ import javax.validation.constraints.NotNull;
 public class AssessmentLevelImportDTO extends AbstractLevelImportDTO {
 
 	@ApiModelProperty(value = "Questions of assessment level to update.", example = "\"[{\"question_type\":\"FFQ\",\"text\":\"Which tool would you use to scan the open ports of a server?\",\"points\":6,\"penalty\":3,\"order\":0,\"answer_required\":true,\"correct_choices\":[\"nmap\",\"Nmap\"]}]\"")
-	@NotNull(message = "{assessmentlevelimport.questions.NotNull.message}")
+	@NotNull(message = "{assessmentLevel.questions.NotNull.message}")
 	private String questions;
 	@ApiModelProperty(value = "Instructions of assessment level to update.", example = "Fill me up slowly")
-	@NotNull(message = "{assessmentlevelimport.instructions.NotNull.message}")
+	@NotNull(message = "{assessmentLevel.instructions.NotNull.message}")
 	private String instructions;
 	@ApiModelProperty(value = "Type of assessment level to update.", required = true, example = "TEST")
-	@NotNull(message = "{assessmentlevelimport.type.NotNull.message}")
+	@NotNull(message = "{assessmentLevel.type.NotNull.message}")
 	private AssessmentType assessmentType;
 
 	/**
