@@ -13,7 +13,7 @@ import javax.validation.constraints.NotNull;
 public class TrainingInstanceAssignPoolIdDTO {
 
     @ApiModelProperty(value = "Pool associated with training instance.", example = "2", required = true)
-    @NotNull
+    @NotNull(message = "{assignPool.poolId.NotNull.message}")
     private Long poolId;
 
     public Long getPoolId() {

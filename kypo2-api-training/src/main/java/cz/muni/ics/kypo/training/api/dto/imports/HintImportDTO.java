@@ -15,18 +15,18 @@ import javax.validation.constraints.NotNull;
 public class HintImportDTO {
 
 	@ApiModelProperty(value = "Short textual description of the hint.", example = "Hint1")
-	@NotEmpty(message = "{hintimport.title.NotEmpty.message}")
+	@NotEmpty(message = "{hint.title.NotEmpty.message}")
 	private String title;
 	@ApiModelProperty(value = "The information and experiences that are directed towards a participant.", example = "Very good advice")
-	@NotEmpty(message = "{hintimport.content.NotEmpty.message}")
+	@NotEmpty(message = "{hint.content.NotEmpty.message}")
 	private String content;
 	@ApiModelProperty(value = "The number of points the participant loses after receiving the hint.", example = "10")
-	@NotNull(message = "{hintimport.hintPenalty.NotNull.message}")
-	@Min(value = 0, message = "{hintimport.hintPenalty.Min.message}")
-	@Max(value = 100, message = "{hintimport.hintPenalty.Max.message}")
+	@NotNull(message = "{hint.hintPenalty.NotNull.message}")
+	@Min(value = 0, message = "{hint.hintPenalty.Min.message}")
+	@Max(value = 100, message = "{hint.hintPenalty.Max.message}")
 	private Integer hintPenalty;
-	@NotNull(message = "{hintimport.order.NotNull.message}")
-	@Min(value = 0, message = "{hintimport.order.Min.message}")
+	@NotNull(message = "{hint.order.NotNull.message}")
+	@Min(value = 0, message = "{hint.order.Min.message}")
 	@ApiModelProperty(value = "The order of hint in game level", example = "1")
 	private int order;
 

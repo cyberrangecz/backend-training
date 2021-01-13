@@ -9,7 +9,7 @@ import java.util.Objects;
 @ApiModel(value = "AttachmentImportDTO", description = "Imported attachment.")
 public class AttachmentImportDTO {
     @ApiModelProperty(value = "URL link to file or website.")
-    @NotEmpty
+    @NotEmpty(message = "{attachment.content.NotEmpty.message}")
     private String content;
 
     public String getContent() {

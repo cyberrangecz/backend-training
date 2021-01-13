@@ -18,24 +18,24 @@ import java.util.Set;
 public class GameLevelImportDTO extends AbstractLevelImportDTO{
 
 	@ApiModelProperty(value = "Keyword found in game, used for access next level.", example = "secretFlag")
-	@NotEmpty(message = "{gamelevelimport.flag.NotEmpty.message}")
-	@Size(max = 50, message = "{gamelevelimport.flag.Size.message}")
+	@NotEmpty(message = "{gameLevel.flag.NotEmpty.message}")
+	@Size(max = 50, message = "{gameLevel.flag.Size.message}")
 	private String flag;
 	@ApiModelProperty(value = "The information and experiences that are directed towards a participant.", example = "Play me")
-	@NotEmpty(message = "{gamelevelimport.content.NotEmpty.message}")
+	@NotEmpty(message = "{gameLevel.content.NotEmpty.message}")
 	private String content;
 	@ApiModelProperty(value = "Instruction how to get flag in game.", example = "This is how you do it")
-	@NotEmpty(message = "{gamelevelimport.solution.NotEmpty.message}")
+	@NotEmpty(message = "{gameLevel.solution.NotEmpty.message}")
 	private String solution;
 	@ApiModelProperty(value = "Sign if displaying of solution is penalized.", example = "true")
-	@NotNull(message = "{gamelevelimport.solutionPenalized.NotNull.message}")
+	@NotNull(message = "{gameLevel.solutionPenalized.NotNull.message}")
 	private boolean solutionPenalized;
 	@ApiModelProperty(value = "Information which helps player resolve the level.")
 	private Set<HintImportDTO> hints = new HashSet<>();
 	@ApiModelProperty(value = "How many times player can submit incorrect flag before displaying solution.", example = "5")
-	@NotNull(message = "{gamelevelimport.incorrectFlagLimit.NotEmpty.message}")
-	@Min(value = 0, message = "{gamelevelimport.incorrectFlagLimit.Min.message}")
-	@Max(value = 100, message = "{gamelevelimport.incorrectFlagLimit.Max.message}")
+	@NotNull(message = "{gameLevel.incorrectFlagLimit.NotNull.message}")
+	@Min(value = 0, message = "{gameLevel.incorrectFlagLimit.Min.message}")
+	@Max(value = 100, message = "{gameLevel.incorrectFlagLimit.Max.message}")
 	private int incorrectFlagLimit;
 	@ApiModelProperty(value = "List of attachments.", example = "[]")
 	private List<AttachmentImportDTO> attachments;

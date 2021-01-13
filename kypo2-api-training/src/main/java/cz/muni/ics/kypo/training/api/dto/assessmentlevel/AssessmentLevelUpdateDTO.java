@@ -17,24 +17,24 @@ import javax.validation.constraints.NotNull;
 public class AssessmentLevelUpdateDTO {
 
     @ApiModelProperty(value = "Main identifier of level.", required = true, example = "8")
-    @NotNull(message = "{assessmentlevelupdate.id.NotNull.message}")
+    @NotNull(message = "{assessmentLevel.id.NotNull.message}")
     protected Long id;
     @ApiModelProperty(value = "Short textual description of the level.", required = true, example = "Assessment Level1")
-    @NotEmpty(message = "{assessmentlevelupdate.title.NotEmpty.message}")
+    @NotEmpty(message = "{assessmentLevel.title.NotEmpty.message}")
     private String title;
     @ApiModelProperty(value = "Maximum score of assessment level to update. Have to be filled in range from 0 to 100.", required = true, example = "40")
-    @NotNull(message = "{assessmentlevelupdate.maxScore.NotNull.message}")
-    @Min(value = 0, message = "{assessmentlevelupdate.maxScore.Min.message}")
-    @Max(value = 100, message = "{assessmentlevelupdate.maxScore.Max.message}")
+    @NotNull(message = "{assessmentLevel.maxScore.NotNull.message}")
+    @Min(value = 0, message = "{assessmentLevel.maxScore.Min.message}")
+    @Max(value = 100, message = "{assessmentLevel.maxScore.Max.message}")
     private int maxScore;
     @ApiModelProperty(value = "Questions of assessment level to update.", example = "\"[{\"question_type\":\"FFQ\",\"text\":\"Which tool would you use to scan the open ports of a server?\",\"points\":6,\"penalty\":3,\"order\":0,\"answer_required\":true,\"correct_choices\":[\"nmap\",\"Nmap\"]}]\"")
-    @NotNull(message = "{assessmentlevelupdate.questions.NotNull.message}")
+    @NotNull(message = "{assessmentLevel.questions.NotNull.message}")
     private String questions;
     @ApiModelProperty(value = "Instructions of assessment level to update.", example = "Fill me up slowly")
-    @NotNull(message = "{assessmentlevelupdate.instructions.NotNull.message}")
+    @NotNull(message = "{assessmentLevel.instructions.NotNull.message}")
     private String instructions;
     @ApiModelProperty(value = "Type of assessment level to update.", required = true, example = "TEST")
-    @NotNull(message = "{assessmentlevelupdate.type.NotNull.message}")
+    @NotNull(message = "{assessmentLevel.type.NotNull.message}")
     private AssessmentType type;
     @ApiModelProperty(value = "Estimated time (minutes) taken by the player to solve the level.", required = true, example = "5")
     private int estimatedDuration;

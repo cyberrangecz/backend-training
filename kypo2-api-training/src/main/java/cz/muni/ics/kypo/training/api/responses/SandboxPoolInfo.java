@@ -8,14 +8,14 @@ import javax.validation.constraints.NotNull;
  * Represents basic info about Sandbox pools.
  */
 public class SandboxPoolInfo {
-    @NotNull(message = "{sandboxPoolInfo.id.NotNull.message}")
+    @NotNull(message = "{poolInfo.id.NotNull.message}")
     private Long id;
-    @NotNull(message = "{sandboxPoolInfo.definitionId.NotNull.message}")
+    @NotNull(message = "{poolInfo.definitionId.NotNull.message}")
     @JsonProperty(value = "definition_id")
     private Long definitionId;
-    @NotNull(message = "{sandboxPoolInfo.size.NotNull.message}")
+    @NotNull(message = "{poolInfo.size.NotNull.message}")
     private Long size;
-    @NotNull(message = "{sandboxPoolInfo.maxSize.NotNull.message}")
+    @NotNull(message = "{poolInfo.maxSize.NotNull.message}")
     @JsonProperty(value = "max_size")
     private Long maxSize;
 

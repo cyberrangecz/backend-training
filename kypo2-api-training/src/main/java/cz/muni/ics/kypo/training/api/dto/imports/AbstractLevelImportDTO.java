@@ -26,18 +26,18 @@ import javax.validation.constraints.NotNull;
 public class AbstractLevelImportDTO {
 
 	@ApiModelProperty(value = "Short textual description of the level.", example = "Game Level1")
-	@NotEmpty(message = "{abstractlevelimport.title.NotEmpty.message}")
+	@NotEmpty(message = "{abstractLevel.title.NotEmpty.message}")
 	protected String title;
 	@ApiModelProperty(value = "The maximum score a participant can achieve during a level.", example = "20")
-	@NotNull(message = "{abstractlevelimport.maxScore.NotNull.message}")
-	@Min(value = 0, message = "{abstractlevelimport.maxScore.Min.message}")
-	@Max(value = 100, message = "{abstractlevelimport.maxScore.Max.message}")
+	@NotNull(message = "{abstractLevel.maxScore.NotNull.message}")
+	@Min(value = 0, message = "{abstractLevel.maxScore.Min.message}")
+	@Max(value = 100, message = "{abstractLevel.maxScore.Max.message}")
 	protected int maxScore;
 	@ApiModelProperty(value = "Type of the level.", example = "GAME")
-	@NotNull(message = "{abstractlevelimport.type.NotNull.message}")
+	@NotNull(message = "{abstractLevel.type.NotNull.message}")
 	protected LevelType levelType;
 	@ApiModelProperty(value = "Order of level, starts with 0", example = "2")
-	@NotNull(message = "{abstractlevelimport.order.NotNull.message}")
+	@NotNull(message = "{abstractLevel.order.NotNull.message}")
 	protected Integer order;
 	@ApiModelProperty(value = "Estimated time (minutes) taken by the player to solve the level.", example = "5")
 	protected Integer estimatedDuration;
