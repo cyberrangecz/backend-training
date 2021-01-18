@@ -246,19 +246,16 @@ public class ExportImportFacade {
     }
 
     private void writeEventsByLevels(ZipOutputStream zos, TrainingRun run, List<Map<String, Object>> events) throws IOException {
-        Integer currentLevel;
-        ZipEntry eventsDetailEntry;
-        for (int i = 1; i < events.size(); i++) {
-            if (events.get(i).get("type").equals(LevelStarted.class.getCanonicalName())) {
-                currentLevel = ((Integer) events.get(i).get("level"));
+        Integer currentLevel = ((Integer) events.get(0).get("level"));
+        ZipEntry eventsDetailEntry = new ZipEntry("training_events/training_run-id" + run.getId() + "-details" + "/level" + currentLevel + "-events" + AbstractFileExtensions.JSON_FILE_EXTENSION);
+        zos.putNextEntry(eventsDetailEntry);
+        for (Map<String, Object> event : events) {
+            if (!event.get("level").equals(currentLevel)) {
+                currentLevel = ((Integer) event.get("level"));
                 eventsDetailEntry = new ZipEntry("training_events/training_run-id" + run.getId() + "-details" + "/level" + currentLevel + "-events" + AbstractFileExtensions.JSON_FILE_EXTENSION);
                 zos.putNextEntry(eventsDetailEntry);
             }
-            if (i == 1) {
-                zos.write(objectMapper.writer(new MinimalPrettyPrinter()).writeValueAsBytes(events.get(0)));
-                zos.write(System.lineSeparator().getBytes());
-            }
-            zos.write(objectMapper.writer(new MinimalPrettyPrinter()).writeValueAsBytes(events.get(i)));
+            zos.write(objectMapper.writer(new MinimalPrettyPrinter()).writeValueAsBytes(event));
             zos.write(System.lineSeparator().getBytes());
         }
     }

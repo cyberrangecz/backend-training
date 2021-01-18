@@ -39,10 +39,10 @@ public class AuditService {
      * @param pojoClass class saving to Elasticsearch
      * @throws ElasticsearchTrainingServiceLayerException the elasticsearch training service layer exception
      */
-    public <T extends AbstractAuditPOJO> void saveTrainingRunEvent(T pojoClass) throws ElasticsearchTrainingServiceLayerException{
+    public <T extends AbstractAuditPOJO> void saveTrainingRunEvent(T pojoClass, long timestampDelay) throws ElasticsearchTrainingServiceLayerException{
         Assert.notNull(pojoClass, "Null class could not be saved via audit method.");
         try {
-            pojoClass.setTimestamp(System.currentTimeMillis());
+            pojoClass.setTimestamp(System.currentTimeMillis() + timestampDelay);
             pojoClass.setType(pojoClass.getClass().getName());
 
             logger.info(objectMapper.writeValueAsString(pojoClass));
