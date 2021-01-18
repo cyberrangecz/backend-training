@@ -4,6 +4,7 @@ import cz.muni.ics.kypo.training.api.enums.TDState;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
+import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
@@ -32,6 +33,7 @@ public class ImportTrainingDefinitionDTO {
 	@ApiModelProperty(value = "Sign if stepper bar should be displayed.", example = "false")
 	@NotNull(message = "{trainingDefinition.showStepperBar.NotNull.message}")
 	private boolean showStepperBar;
+	@Valid
 	@ApiModelProperty(value = "Information about all levels in training definition.")
 	private List<AbstractLevelImportDTO> levels = new ArrayList<>();
 	@ApiModelProperty(value = "Estimated time it takes to finish runs created from this definition.", example = "5")
