@@ -1,5 +1,6 @@
 package cz.muni.ics.kypo.training.rest.controllers;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -60,7 +61,6 @@ public class ExportImportRestControllerTest {
 
 	private MockMvc mockMvc;
 
-	@Mock
 	private ObjectMapper objectMapper;
 
 	@Mock
@@ -71,13 +71,17 @@ public class ExportImportRestControllerTest {
 
 	@Before
 	public void init(){
+		ObjectMapper objectMapper = new ObjectMapper();
+		objectMapper.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
+		objectMapper.enable(DeserializationFeature.READ_ENUMS_USING_TO_STRING);
+
 		MockitoAnnotations.initMocks(this);
 		exportImportRestController = new ExportImportRestController(exportImportFacade, objectMapper);
 		this.mockMvc = MockMvcBuilders.standaloneSetup(exportImportRestController)
 				.setCustomArgumentResolvers(new PageableHandlerMethodArgumentResolver(),
 						new QuerydslPredicateArgumentResolver(
 								new QuerydslBindingsFactory(SimpleEntityPathResolver.INSTANCE), Optional.empty()))
-				.setMessageConverters(new MappingJackson2HttpMessageConverter(), new ByteArrayHttpMessageConverter())
+				.setMessageConverters(new MappingJackson2HttpMessageConverter(objectMapper), new ByteArrayHttpMessageConverter())
 				.setControllerAdvice(new CustomRestExceptionHandlerTraining())
 				.build();
 
@@ -94,10 +98,6 @@ public class ExportImportRestControllerTest {
 
 		importTrainingDefinitionDTO = testDataFactory.getImportTrainingDefinitionDTO();
 		importTrainingDefinitionDTO.setLevels(Arrays.asList(infoLevelImportDTO,assessmentLevelDTO,gameLevelImportDTO));
-
-		ObjectMapper obj = new ObjectMapper();
-		obj.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
-		given(objectMapper.getSerializationConfig()).willReturn(obj.getSerializationConfig());
 	}
 
 	@Test
@@ -106,9 +106,7 @@ public class ExportImportRestControllerTest {
 		file.setContent(convertObjectToJsonBytes(trainingInstanceArchiveDTO).getBytes());
 		file.setTitle(trainingInstanceArchiveDTO.getTitle());
 		given(exportImportFacade.archiveTrainingInstance(any(Long.class))).willReturn(file);
-		String valueTi = convertObjectToJsonBytes(trainingInstanceArchiveDTO);
-		given(objectMapper.writeValueAsString(any(Object.class))).willReturn(valueTi);
-		
+
 		mockMvc.perform(get("/exports/training-instances" + "/{id}", 1L))
 				.andExpect(status().isOk())
 				.andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_OCTET_STREAM));
@@ -127,7 +125,6 @@ public class ExportImportRestControllerTest {
 
 	@Test
 	public void importTrainingDefinition() throws Exception{
-		System.out.println(convertObjectToJsonBytes(importTrainingDefinitionDTO));
 		mockMvc.perform(post("/imports/training-definitions")
 				.contentType(MediaType.APPLICATION_JSON_VALUE)
 				.content(convertObjectToJsonBytes(importTrainingDefinitionDTO)))

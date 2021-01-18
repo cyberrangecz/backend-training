@@ -4,6 +4,7 @@ import cz.muni.ics.kypo.training.api.dto.hint.HintDTO;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
+import javax.validation.Valid;
 import javax.validation.constraints.*;
 import java.util.*;
 
@@ -45,6 +46,7 @@ public class GameLevelUpdateDTO {
     @Min(value = 0, message = "{gameLevel.incorrectFlagLimit.Min.message}")
     @Max(value = 100, message = "{gameLevel.incorrectFlagLimit.Max.message}")
     private int incorrectFlagLimit;
+    @Valid
     @ApiModelProperty(value = "Information which helps participant resolve the level.")
     private Set<HintDTO> hints = new HashSet<>();
 

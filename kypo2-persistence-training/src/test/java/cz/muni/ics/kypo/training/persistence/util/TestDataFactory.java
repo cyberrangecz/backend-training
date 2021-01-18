@@ -592,6 +592,7 @@ public class TestDataFactory {
 
     private InfoLevelImportDTO generateInfoLevelImportDTO(String title, Integer estimatedDuration, String content){
         InfoLevelImportDTO infoLevelImportDTO = new InfoLevelImportDTO();
+        infoLevelImportDTO.setTitle(title);
         infoLevelImportDTO.setContent(content);
         infoLevelImportDTO.setLevelType(LevelType.INFO_LEVEL);
         infoLevelImportDTO.setEstimatedDuration(estimatedDuration);

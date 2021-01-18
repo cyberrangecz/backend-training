@@ -5,6 +5,7 @@ import cz.muni.ics.kypo.training.api.dto.hint.HintDTO;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
+import javax.validation.Valid;
 import javax.validation.constraints.*;
 import java.util.HashSet;
 import java.util.List;
@@ -30,6 +31,7 @@ public class GameLevelImportDTO extends AbstractLevelImportDTO{
 	@ApiModelProperty(value = "Sign if displaying of solution is penalized.", example = "true")
 	@NotNull(message = "{gameLevel.solutionPenalized.NotNull.message}")
 	private boolean solutionPenalized;
+	@Valid
 	@ApiModelProperty(value = "Information which helps player resolve the level.")
 	private Set<HintImportDTO> hints = new HashSet<>();
 	@ApiModelProperty(value = "How many times player can submit incorrect flag before displaying solution.", example = "5")
@@ -37,6 +39,7 @@ public class GameLevelImportDTO extends AbstractLevelImportDTO{
 	@Min(value = 0, message = "{gameLevel.incorrectFlagLimit.Min.message}")
 	@Max(value = 100, message = "{gameLevel.incorrectFlagLimit.Max.message}")
 	private int incorrectFlagLimit;
+	@Valid
 	@ApiModelProperty(value = "List of attachments.", example = "[]")
 	private List<AttachmentImportDTO> attachments;
 

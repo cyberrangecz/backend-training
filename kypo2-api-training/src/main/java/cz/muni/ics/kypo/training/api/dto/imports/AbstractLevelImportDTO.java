@@ -33,11 +33,12 @@ public class AbstractLevelImportDTO {
 	@Min(value = 0, message = "{abstractLevel.maxScore.Min.message}")
 	@Max(value = 100, message = "{abstractLevel.maxScore.Max.message}")
 	protected int maxScore;
-	@ApiModelProperty(value = "Type of the level.", example = "GAME")
+	@ApiModelProperty(value = "Type of the level.", example = "GAME_LEVEL")
 	@NotNull(message = "{abstractLevel.type.NotNull.message}")
 	protected LevelType levelType;
 	@ApiModelProperty(value = "Order of level, starts with 0", example = "2")
 	@NotNull(message = "{abstractLevel.order.NotNull.message}")
+	@Min(value = 0, message = "{abstractLevel.order.Min.message}")
 	protected Integer order;
 	@ApiModelProperty(value = "Estimated time (minutes) taken by the player to solve the level.", example = "5")
 	protected Integer estimatedDuration;
