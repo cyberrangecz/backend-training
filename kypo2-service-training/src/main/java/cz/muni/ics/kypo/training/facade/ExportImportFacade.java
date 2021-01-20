@@ -54,6 +54,9 @@ import java.util.zip.ZipOutputStream;
 public class ExportImportFacade {
 
     private static final Logger LOG = LoggerFactory.getLogger(ExportImportFacade.class);
+    private static final String LOGS_FOLDER = "logs";
+    private static final String EVENTS_FOLDER = "training_events";
+    private static final String RUNS_FOLDER = "training_runs";
 
     private ExportImportService exportImportService;
     private TrainingDefinitionService trainingDefinitionService;
@@ -214,7 +217,7 @@ public class ExportImportFacade {
             TrainingRunArchiveDTO archivedRun = exportImportMapper.mapToArchiveDTO(run);
             archivedRun.setInstanceId(trainingInstance.getId());
             archivedRun.setParticipantRefId(run.getParticipantRef().getUserRefId());
-            ZipEntry runEntry = new ZipEntry("training_runs/training_run-id" + run.getId() + AbstractFileExtensions.JSON_FILE_EXTENSION);
+            ZipEntry runEntry = new ZipEntry(RUNS_FOLDER + "/training_run-id" + run.getId() + AbstractFileExtensions.JSON_FILE_EXTENSION);
             zos.putNextEntry(runEntry);
             zos.write(objectMapper.writeValueAsBytes(archivedRun));
 
@@ -230,7 +233,7 @@ public class ExportImportFacade {
     }
 
     private Map<Integer, Long> writeEventsAndGetLevelStartTimestampMapping(ZipOutputStream zos, TrainingRun run, List<Map<String, Object>> events) throws IOException {
-        ZipEntry eventsEntry = new ZipEntry("training_events/training_run-id" + run.getId() + "-events" + AbstractFileExtensions.JSON_FILE_EXTENSION);
+        ZipEntry eventsEntry = new ZipEntry(EVENTS_FOLDER + "/training_run-id" + run.getId() + "-events" + AbstractFileExtensions.JSON_FILE_EXTENSION);
         zos.putNextEntry(eventsEntry);
         //Obtain start timestamp of each level, so it can be used later
         Map<Integer, Long> levelStartTimestampMapping = new LinkedHashMap<>();
@@ -247,12 +250,12 @@ public class ExportImportFacade {
 
     private void writeEventsByLevels(ZipOutputStream zos, TrainingRun run, List<Map<String, Object>> events) throws IOException {
         Integer currentLevel = ((Integer) events.get(0).get("level"));
-        ZipEntry eventsDetailEntry = new ZipEntry("training_events/training_run-id" + run.getId() + "-details" + "/level" + currentLevel + "-events" + AbstractFileExtensions.JSON_FILE_EXTENSION);
+        ZipEntry eventsDetailEntry = new ZipEntry(EVENTS_FOLDER + "/training_run-id" + run.getId() + "-details" + "/level" + currentLevel + "-events" + AbstractFileExtensions.JSON_FILE_EXTENSION);
         zos.putNextEntry(eventsDetailEntry);
         for (Map<String, Object> event : events) {
             if (!event.get("level").equals(currentLevel)) {
                 currentLevel = ((Integer) event.get("level"));
-                eventsDetailEntry = new ZipEntry("training_events/training_run-id" + run.getId() + "-details" + "/level" + currentLevel + "-events" + AbstractFileExtensions.JSON_FILE_EXTENSION);
+                eventsDetailEntry = new ZipEntry(EVENTS_FOLDER + "/training_run-id" + run.getId() + "-details" + "/level" + currentLevel + "-events" + AbstractFileExtensions.JSON_FILE_EXTENSION);
                 zos.putNextEntry(eventsDetailEntry);
             }
             zos.write(objectMapper.writer(new MinimalPrettyPrinter()).writeValueAsBytes(event));
@@ -261,7 +264,7 @@ public class ExportImportFacade {
     }
 
     private void writeConsoleCommands(ZipOutputStream zos, Integer sandboxId, List<Map<String, Object>> consoleCommands) throws IOException {
-        ZipEntry consoleCommandsEntry = new ZipEntry("command_histories/sandbox-" + sandboxId + "-useractions" + AbstractFileExtensions.JSON_FILE_EXTENSION);
+        ZipEntry consoleCommandsEntry = new ZipEntry(LOGS_FOLDER + "/sandbox-" + sandboxId + "-useractions" + AbstractFileExtensions.JSON_FILE_EXTENSION);
         zos.putNextEntry(consoleCommandsEntry);
         for (Map<String, Object> command : consoleCommands) {
             zos.write(objectMapper.writer(new MinimalPrettyPrinter()).writeValueAsBytes(command));
@@ -276,7 +279,7 @@ public class ExportImportFacade {
 
         for (int i = 0; i < levelIds.size(); i++) {
             List<Map<String, Object>> consoleCommandsByLevel = elasticsearchApiService.findAllConsoleCommandsFromSandboxAndTimeRange(sandboxId, levelTimestampRanges.get(i), levelTimestampRanges.get(i+1));
-            ZipEntry consoleCommandsEntryDetails = new ZipEntry("command_histories/sandbox-" + sandboxId + "-details" + "/level" + levelIds.get(i)+ "-useractions" + AbstractFileExtensions.JSON_FILE_EXTENSION);
+            ZipEntry consoleCommandsEntryDetails = new ZipEntry(LOGS_FOLDER + "/sandbox-" + sandboxId + "-details" + "/level" + levelIds.get(i)+ "-useractions" + AbstractFileExtensions.JSON_FILE_EXTENSION);
             zos.putNextEntry(consoleCommandsEntryDetails);
             for (Map<String, Object> command : consoleCommandsByLevel) {
                 zos.write(objectMapper.writer(new MinimalPrettyPrinter()).writeValueAsBytes(command));
