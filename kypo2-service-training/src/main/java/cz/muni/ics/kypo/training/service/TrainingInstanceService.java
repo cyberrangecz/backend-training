@@ -28,6 +28,7 @@ import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Optional;
+import java.util.Random;
 import java.util.Set;
 
 /**
@@ -191,10 +192,12 @@ public class TrainingInstanceService {
     }
 
     private String generateAccessToken(String accessToken) {
+        Random rand = new Random();
         String newPass = "";
         boolean generated = false;
         while (!generated) {
-            String pin = RandomStringUtils.random(4, false, true);
+            int firstNumber = rand.nextInt(5);
+            String pin = firstNumber + RandomStringUtils.random(3, false, true);
             newPass = accessToken + "-" + pin;
             Optional<AccessToken> pW = accessTokenRepository.findOneByAccessToken(newPass);
             if (!pW.isPresent()) {
