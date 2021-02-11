@@ -109,9 +109,6 @@ public class TrainingRunsConcurrentIT {
     private SandboxInfo sandboxInfo1;
     private TrainingRun trainingRunGameLevel, trainingRunAssessmentLevel;
 
-    @Value("${user-and-group-server.uri}")
-    private String userAndGroupURI;
-
     @SpringBootApplication
     static class TestConfiguration {
     }

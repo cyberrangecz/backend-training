@@ -34,11 +34,7 @@ COPY $PROJECT_ARTIFACT_ID /app/$PROJECT_ARTIFACT_ID
 # build training
 RUN cd /app && \
     mvn clean install -DskipTests -Dproprietary-repo-url=$PROPRIETARY_REPO_URL && \
-    cp /app/$PROJECT_ARTIFACT_ID/target/$PROJECT_ARTIFACT_ID-*.jar /app/kypo-rest-training.jar && \
-    cd /app/kypo2-persistence-training && \
-    /etc/init.d/postgresql start && \
-    mvn flyway:migrate -Djdbc.url="jdbc:postgresql://localhost:5432/$POSTGRES_DB" -Djdbc.username="$USERNAME" -Djdbc.password="$PASSWORD" && \
-    /etc/init.d/postgresql stop
+    cp /app/$PROJECT_ARTIFACT_ID/target/$PROJECT_ARTIFACT_ID-*.jar /app/kypo-rest-training.jar
 
 WORKDIR /app
 EXPOSE 8083
