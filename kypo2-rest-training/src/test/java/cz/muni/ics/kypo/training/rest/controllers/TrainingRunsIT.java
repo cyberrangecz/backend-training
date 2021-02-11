@@ -6,6 +6,8 @@ import com.google.gson.JsonObject;
 import cz.muni.ics.kypo.commons.security.enums.AuthenticatedUserOIDCItems;
 import cz.muni.ics.kypo.training.api.dto.IsCorrectFlagDTO;
 import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
+import cz.muni.ics.kypo.training.api.dto.gamelevel.GameLevelDTO;
+import cz.muni.ics.kypo.training.api.dto.gamelevel.GameLevelViewDTO;
 import cz.muni.ics.kypo.training.api.dto.gamelevel.ValidateFlagDTO;
 import cz.muni.ics.kypo.training.api.dto.hint.HintDTO;
 import cz.muni.ics.kypo.training.api.dto.hint.TakenHintDTO;
@@ -466,6 +468,25 @@ public class TrainingRunsIT {
                 .andReturn().getResponse();
         InfoLevelDTO infoLevelDTO = mapper.readValue(convertJsonBytesToString(response.getContentAsString()), InfoLevelDTO.class);
         assertEquals(infoLevelDTO, infoLevelMapper.mapToInfoLevelDTO(infoLevel1));
+    }
+
+    @Test
+    public void getNextLevelGameLevel() throws Exception {
+        infoLevel1.setOrder(1);
+        infoLevelRepository.save(infoLevel1);
+        gameLevel1.setOrder(2);
+        gameLevelRepository.save(gameLevel1);
+        trainingRun1.setCurrentLevel(infoLevel1);
+        trainingRunRepository.save(trainingRun1);
+
+        mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_ADMINISTRATOR.name()));
+
+        MockHttpServletResponse response = mvc.perform(get("/training-runs/{runId}/next-levels", trainingRun1.getId()))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andReturn().getResponse();
+        GameLevelViewDTO gameLevelDTO = mapper.readValue(convertJsonBytesToString(response.getContentAsString()), GameLevelViewDTO.class);
+        assertEquals(gameLevelDTO, infoLevelMapper.mapToViewDTO(gameLevel1));
     }
 
     @Test

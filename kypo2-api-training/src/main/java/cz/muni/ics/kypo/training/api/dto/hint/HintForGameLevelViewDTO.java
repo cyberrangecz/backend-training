@@ -15,6 +15,8 @@ public class HintForGameLevelViewDTO {
     private Long id;
     @ApiModelProperty(value = "Short textual description of the hint.", example = "Hint1")
     private String title;
+    @ApiModelProperty(value = "The number of points the participant loses after receiving the hint.", example = "10")
+    private Integer hintPenalty;
     @ApiModelProperty(value = "The order of hint in game level", example = "1")
     private int order;
 
@@ -60,6 +62,24 @@ public class HintForGameLevelViewDTO {
 
     public void setOrder(int order) {
         this.order = order;
+    }
+
+    /**
+     * Gets hint penalty.
+     *
+     * @return the hint penalty
+     */
+    public Integer getHintPenalty() {
+        return hintPenalty;
+    }
+
+    /**
+     * Sets hint penalty.
+     *
+     * @param hintPenalty the hint penalty
+     */
+    public void setHintPenalty(Integer hintPenalty) {
+        this.hintPenalty = hintPenalty;
     }
 
     @Override
