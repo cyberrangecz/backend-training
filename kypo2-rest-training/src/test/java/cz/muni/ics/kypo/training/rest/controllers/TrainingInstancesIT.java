@@ -116,9 +116,6 @@ public class TrainingInstancesIT {
     @Qualifier("userManagementExchangeFunction")
     private ExchangeFunction exchangeFunction;
 
-    @Value("${user-and-group-server.uri}")
-    private String userAndGroupURI;
-
     private TrainingInstance futureTrainingInstance, notConcludedTrainingInstance, finishedTrainingInstance;
     private TrainingInstanceCreateDTO trainingInstanceCreateDTO;
     private TrainingInstanceUpdateDTO trainingInstanceUpdateDTO;

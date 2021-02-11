@@ -135,8 +135,6 @@ public class TrainingRunsIT {
     @Autowired
     @Qualifier("userManagementExchangeFunction")
     private ExchangeFunction userManagementExchangeFunction;
-    @Value("${user-and-group-server.uri}")
-    private String userAndGroupURI;
 
     @Autowired
     private LevelMapperImpl infoLevelMapper;
