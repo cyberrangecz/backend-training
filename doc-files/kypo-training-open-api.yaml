@@ -1,7 +1,7 @@
 ---
 swagger: "2.0"
 info:
-  version: "Version: 1.1.54"
+  version: "Version: 1.1.55"
   title: "KYPO2 Training - API Reference"
 host: "localhost:8080"
 basePath: "/kypo2-rest-training/api/v1"
@@ -2560,7 +2560,7 @@ definitions:
         maximum: 100
       levelType:
         type: "string"
-        example: "GAME"
+        example: "GAME_LEVEL"
         description: "Type of the level."
         enum:
         - "INFO_LEVEL"
@@ -2571,6 +2571,7 @@ definitions:
         format: "int32"
         example: 2
         description: "Order of level, starts with 0"
+        minimum: 0
       estimatedDuration:
         type: "integer"
         format: "int32"
@@ -3360,6 +3361,7 @@ definitions:
         description: "How many times participant can submit incorrect flag before\
           \ displaying solution."
         minimum: 0
+        maximum: 100
       hints:
         type: "array"
         description: "Information which helps participant resolve the level."
@@ -3392,6 +3394,8 @@ definitions:
       description: "Information about game level needed for visualizations."
   HintDTO:
     type: "object"
+    required:
+    - "hintPenalty"
     properties:
       id:
         type: "integer"
@@ -3413,11 +3417,14 @@ definitions:
         example: 10
         description: "The number of points the participant loses after receiving the\
           \ hint."
+        minimum: 0
+        maximum: 100
       order:
         type: "integer"
         format: "int32"
         example: 1
         description: "The order of hint in game level"
+        minimum: 0
     description: "A brief textual description to aid the participant."
   HintExportDTO:
     type: "object"
@@ -3632,13 +3639,11 @@ definitions:
   Pageable:
     type: "object"
     properties:
-      sort:
-        $ref: "#/definitions/Sort"
       offset:
         type: "integer"
         format: "int64"
-      paged:
-        type: "boolean"
+      sort:
+        $ref: "#/definitions/Sort"
       unpaged:
         type: "boolean"
       pageNumber:
@@ -3647,6 +3652,8 @@ definitions:
       pageSize:
         type: "integer"
         format: "int32"
+      paged:
+        type: "boolean"
   Pagination:
     type: "object"
     properties:
