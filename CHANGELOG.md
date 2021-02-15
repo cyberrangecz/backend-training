@@ -1,3 +1,54 @@
+* 6ae4b8e5 -- Updated Swagger documentation generated.
+* 20ab245f -- Update pom.xml version based on GitLab tag. Done by CI.
+* d5408561 -- Update VERSION.txt
+*   1be2ae21 -- Merge branch '600-configure-flyway-to-update-database-schema-at-startup' into 'master'
+|\  
+| * d4837f65 -- Resolve "Configure Flyway to update database schema at startup"
+* |   b72d5704 -- Merge branch '601-modify-token-pin-generation' into 'master'
+|\ \  
+| * | 982af864 -- pin generates in range 0000 - 4999
+* | |   45e10b17 -- Merge branch '597-handle-insufficientauthenticationexception-when-user-is-not-authorized' into 'master'
+|\ \ \  
+| |/ /  
+|/| |   
+| * | 01644b9d -- InsufficientAuthenticationException handled.
+| |/  
+* |   b350a5d7 -- Merge branch '599-hint-penalty-is-not-returned-in-hintforgamelevelviewdto' into 'master'
+|\ \  
+| * | 26bfd897 -- Adde hint penalty attribute to HintForGameLevelViewDTO.
+|/ /  
+* |   67ad1766 -- Merge branch '598-remove-unused-variables-from-gitlab-ci-yml' into 'master'
+|\ \  
+| |/  
+|/|   
+| * 13c616f8 -- Update .gitlab-ci.yml
+|/  
+*   9522f4de -- Merge branch '595-rename-folder-command_histories-to-logs' into 'master'
+|\  
+| * e4158fb2 -- Renamed command_histories to logs and created constants of folders.
+|/  
+*   fbfb6b63 -- Merge branch '592-nested-objects-of-some-dtos-are-not-validated' into 'master'
+|\  
+| * 7cbdb2b1 -- Resolve "Nested objects of some DTOs are not validated"
+|/  
+*   b623451b -- Merge branch '594-events-in-the-exported-zip-file-of-the-training-instance-are-in-the-wrong-order' into 'master'
+|\  
+| * 3664e2e2 -- Added fillInCommonBuilderFields method in AuditEventsService. Timestamp delay parameter added in AuditService.
+|/  
+*   f1bfa8a2 -- Merge branch '591-add-more-explanatory-message-when-bad-request-400-occurs' into 'master'
+|\  
+| * 8f2252d2 -- Added methods to handle validation exception.
+* |   f0706243 -- Merge branch '593-rename-properties-of-the-validation-messages-in-resource-bundle' into 'master'
+|\ \  
+| |/  
+|/|   
+| * f33d3480 -- Resolve "Rename properties of the validation messages in resource bundle"
+|/  
+*   156f922e -- Merge branch '590-change-default-proprietary-repo-and-bump-new-versions-of-kypo-dependencies' into 'master'
+|\  
+| * ecbb7598 -- Default proprietary repo changed. Versions of KYPO dependenccies bumped.
+|/  
+* f5ff913e -- CHANGELOG.md file updated with commits between the current and previous tag. Done by CI.
 * 2fcc2c70 -- Updated Swagger documentation generated.
 * 85df5071 -- Update pom.xml version based on GitLab tag. Done by CI.
 * 57f74e55 -- Update VERSION.txt
