@@ -1,1 +1,1 @@
-1.1.54  Setup CI to push docker image to gitlab registry.
+1.1.55  Bug fixes and configuration of migrations during startup.
