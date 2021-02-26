@@ -33,7 +33,7 @@ create_tag:
   - export VERSION=$(grep -oP '^([^\s]*)' $DEPLOYMENT_INFO_VERSION_FILE)
   - export TAG_MESSAGE=$(grep -oP '(?<=\s)[^\s].*' $DEPLOYMENT_INFO_VERSION_FILE)
   # update project versions in a multi-module Maven project
-  - mvn versions:set -DnewVersion=$VERSION -DgenerateBackupPoms=false -Dproprietary-repo-url=$PROPRIETARY_REPO_URL
+  - mvn versions:set -DnewVersion=$VERSION -DgenerateBackupPoms=false
   - git commit -am "Update pom.xml version based on GitLab tag. Done by CI."
   # generate swagger documentation
   - mvn clean compile -DskipTests -Dswagger.skip=false -Dproprietary-repo-url=$PROPRIETARY_REPO_URL
