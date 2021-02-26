@@ -1,3 +1,9 @@
+* f30397bc -- Updated Swagger documentation generated.
+* 0bbb71d5 -- Update pom.xml version based on GitLab tag. Done by CI.
+* 23042bd2 -- Update VERSION.txt
+* c07ccae2 -- Update .gitlab-ci.yml
+* 738ceb7f -- Delete spring.log.2021-02-05.0.gz
+* a059ba76 -- CHANGELOG.md file updated with commits between the current and previous tag. Done by CI.
 * 6ae4b8e5 -- Updated Swagger documentation generated.
 * 20ab245f -- Update pom.xml version based on GitLab tag. Done by CI.
 * d5408561 -- Update VERSION.txt
