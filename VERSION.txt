@@ -1,1 +1,1 @@
-1.1.55  Bug fixes and configuration of migrations during startup.
+1.1.56  Bug fixes and configuration of migrations during startup.
