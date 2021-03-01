@@ -10,7 +10,7 @@ ARG PROJECT_ARTIFACT_ID=kypo2-rest-training
 ARG PROPRIETARY_REPO_URL=YOUR-PATH-TO-PROPRIETARY_REPO
 
 # install
-RUN apt-get update && apt-get install -y supervisor postgresql rsyslog
+RUN apt-get update && apt-get install -y supervisor postgresql rsyslog netcat
 
 # configure supervisor
 RUN mkdir -p /var/log/supervisor
@@ -24,6 +24,7 @@ RUN /etc/init.d/postgresql start && \
 # copy only essential parts
 COPY /etc/training.properties /app/etc/training.properties
 COPY supervisord.conf /app/supervisord.conf
+COPY entrypoint.sh /app/entrypoint.sh
 COPY pom.xml /app/pom.xml
 COPY kypo2-api-training /app/kypo2-api-training
 COPY kypo2-elasticsearch-training /app/kypo2-elasticsearch-training
@@ -32,10 +33,10 @@ COPY kypo2-service-training /app/kypo2-service-training
 COPY $PROJECT_ARTIFACT_ID /app/$PROJECT_ARTIFACT_ID
 
 # build training
-RUN cd /app && \
-    mvn clean install -DskipTests -Dproprietary-repo-url=$PROPRIETARY_REPO_URL && \
-    cp /app/$PROJECT_ARTIFACT_ID/target/$PROJECT_ARTIFACT_ID-*.jar /app/kypo-rest-training.jar
-
 WORKDIR /app
+RUN mvn clean install -DskipTests -Dproprietary-repo-url=$PROPRIETARY_REPO_URL && \
+    cp /app/$PROJECT_ARTIFACT_ID/target/$PROJECT_ARTIFACT_ID-*.jar /app/kypo-rest-training.jar && \
+    chmod a+x entrypoint.sh
+
 EXPOSE 8083
-ENTRYPOINT ["/usr/bin/supervisord", "-c", "/app/supervisord.conf"]
+ENTRYPOINT ["./entrypoint.sh"]
