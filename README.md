@@ -56,14 +56,13 @@ To build and run the project in docker it is necessary to prepare several config
 
 #### 2. Build Docker Image
 In the project root folder (folder with Dockerfile), run the following command:
-```
-sudo docker build -t {docker image name} .
+```shell
+$ sudo docker build \
+  --build-arg PROPRIETARY_REPO_URL=https://gitlab.ics.muni.cz/api/v4/projects/2358/packages/maven \
+  -t training-image \
+  .
 ```
 
-e.g.:
-```
-sudo docker build -t training-image .
-```
 
 Dockefile contains several default arguments:
 * USERNAME=postgres - the name of the user to connect to the database. 
@@ -77,22 +76,22 @@ Those arguments can be overwritten during the build of the image, by adding the 
 --build-arg {name of argument}={value of argument} 
 ``` 
 
-e.g.:
-```bash
-sudo docker build --build-arg PROPRIETARY_REPO_URL=https://nexus.csirt.muni.cz/repository/kypo-maven-group/ -t training-image .
-```
-
 #### 3. Start the Project
 Start the project by running docker container, but at first make sure that your ***OIDC Provider*** and [kypo2-user-and-group](https://gitlab.ics.muni.cz/muni-kypo-crp/backend-java/kypo2-user-and-group) service is running. Instead of usage of the PostgreSQL database, you can use the in-memory database H2. It just depends on the provided configuration. To run a docker container, run the following command: 
+```shell
+$  sudo docker run \
+   --name training-container -it \
+   --network host \
+   -p 8083:8083 \
+   training-image
+```
 
-```
-sudo docker run --name {container name} --network host -it -p {port in host}:{port in container} {docker image name}
-```
-e.g. with this command:
-```
-sudo docker run --name training-container --network host -it -p 8083:8083 training-image 
+Add the following option to use the custom property file:
+```shell
+-v {path to your config file}:/app/etc/training.properties
 ```
 
 To create a backup for your database add the following docker option:
+```shell
+-v db_data_training:/var/lib/postgresql/11/main/
 ```
--v db_data_uag:/var/lib/postgresql/11/main/
