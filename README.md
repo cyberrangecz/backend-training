@@ -95,3 +95,8 @@ To create a backup for your database add the following docker option:
 ```shell
 -v db_data_training:/var/lib/postgresql/11/main/
 ```
+
+Add the following environment variable to wait for other services until they are up and running:
+```shell
+-e SERVICE_PRECONDITION="localhost:8084, localhost:8082"
+```  
