@@ -322,7 +322,7 @@ public class TrainingRunsRestController {
      * Check if submitted flag is correct.
      *
      * @param runId the run id
-     * @param flag  submitted string.
+     * @param validateFlagDTO  submitted flag.
      * @return True if flag is correct, false if flag is wrong.
      */
     @ApiOperation(httpMethod = "POST",
@@ -418,7 +418,7 @@ public class TrainingRunsRestController {
     public ResponseEntity<Void> evaluateResponsesToAssessment(@ApiParam(value = "Training run ID", required = true)
                                                               @PathVariable("runId") Long runId,
                                                               @ApiParam(value = "Responses to assessment", required = true)
-                                                              @ValidAssessmentResponse @RequestBody String responses) {
+                                                              @ValidAssessmentResponse @RequestBody String  responses) {
         trainingRunFacade.evaluateResponsesToAssessment(runId, responses);
         return ResponseEntity.noContent().build();
     }

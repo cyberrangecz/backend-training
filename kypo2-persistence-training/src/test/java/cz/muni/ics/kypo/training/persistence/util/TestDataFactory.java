@@ -33,6 +33,7 @@ import cz.muni.ics.kypo.training.api.responses.SandboxInfo;
 import cz.muni.ics.kypo.training.api.responses.SandboxPoolInfo;
 import cz.muni.ics.kypo.training.converters.LocalDateTimeUTCSerializer;
 import cz.muni.ics.kypo.training.persistence.model.*;
+import cz.muni.ics.kypo.training.persistence.model.AssessmentLevel;
 import cz.muni.ics.kypo.training.persistence.model.enums.AssessmentType;
 import cz.muni.ics.kypo.training.persistence.model.enums.TDState;
 import cz.muni.ics.kypo.training.persistence.model.enums.TRState;
@@ -41,6 +42,8 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 import java.time.Clock;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Component
 public class TestDataFactory {
@@ -56,7 +59,7 @@ public class TestDataFactory {
     private AssessmentLevel questionnaire = generateAssessmentLevel("Questionnaire", 0, 15L,
             2, "List of other questions", "List of some instructions", AssessmentType.QUESTIONNAIRE);
     private AssessmentLevelUpdateDTO assessmentLevelUpdateDTO = generateAssessmentLevelUpdateDTO("New Assessment Title",
-            19, "New questions", "New instructions", cz.muni.ics.kypo.training.api.enums.AssessmentType.QUESTIONNAIRE, 9);
+            19,"New questions", "New instructions", cz.muni.ics.kypo.training.api.enums.AssessmentType.QUESTIONNAIRE, 9);
     private AssessmentLevelImportDTO assessmentLevelImportDTO = generateAssessmentLevelImportDTO("Assessment level import", 15,
             "Questions import", "Instructions import", cz.muni.ics.kypo.training.api.enums.AssessmentType.TEST, 22);
     private AssessmentLevelDTO assessmentLevelDTO = generateAssessmentLevelDTO("Assessment DTO", 100, 12, "DTO questions",

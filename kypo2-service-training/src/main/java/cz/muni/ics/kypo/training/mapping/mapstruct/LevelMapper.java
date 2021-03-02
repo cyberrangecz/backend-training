@@ -26,10 +26,8 @@ import cz.muni.ics.kypo.training.api.dto.infolevel.InfoLevelUpdateDTO;
 import cz.muni.ics.kypo.training.api.dto.visualization.InfoLevelVisualizationDTO;
 import cz.muni.ics.kypo.training.api.enums.LevelType;
 import cz.muni.ics.kypo.training.exceptions.InternalServerErrorException;
-import cz.muni.ics.kypo.training.persistence.model.AbstractLevel;
+import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.model.AssessmentLevel;
-import cz.muni.ics.kypo.training.persistence.model.GameLevel;
-import cz.muni.ics.kypo.training.persistence.model.InfoLevel;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.NullValueCheckStrategy;
@@ -70,7 +68,7 @@ public interface LevelMapper extends ParentMapper {
 
     AssessmentLevel mapImportToEntity(AssessmentLevelImportDTO dto);
 
-    BasicLevelInfoDTO mapTo(AssessmentLevel assesmentLevel);
+    BasicLevelInfoDTO mapTo(AssessmentLevel assessmentLevel);
 
     AssessmentLevelDTO mapToAssessmentLevelDTO(AssessmentLevel entity);
 

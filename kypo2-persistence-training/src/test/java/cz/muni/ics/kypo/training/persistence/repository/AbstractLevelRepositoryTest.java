@@ -2,6 +2,7 @@ package cz.muni.ics.kypo.training.persistence.repository;
 
 import cz.muni.ics.kypo.training.persistence.config.PersistenceConfigTest;
 import cz.muni.ics.kypo.training.persistence.model.*;
+import cz.muni.ics.kypo.training.persistence.model.AssessmentLevel;
 import cz.muni.ics.kypo.training.persistence.util.TestDataFactory;
 import org.junit.Before;
 import org.junit.Test;

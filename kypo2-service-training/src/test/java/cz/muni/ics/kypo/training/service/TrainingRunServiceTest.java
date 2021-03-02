@@ -6,6 +6,7 @@ import com.querydsl.core.types.dsl.PathBuilder;
 import cz.muni.ics.kypo.training.api.responses.SandboxInfo;
 import cz.muni.ics.kypo.training.exceptions.*;
 import cz.muni.ics.kypo.training.persistence.model.*;
+import cz.muni.ics.kypo.training.persistence.model.AssessmentLevel;
 import cz.muni.ics.kypo.training.persistence.model.enums.TRState;
 import cz.muni.ics.kypo.training.persistence.repository.*;
 import cz.muni.ics.kypo.training.persistence.util.TestDataFactory;
@@ -102,6 +103,7 @@ public class TrainingRunServiceTest {
             responses = parser.parse(new FileReader(ResourceUtils.getFile("classpath:responses.json"))).toString();
         } catch (IOException | ParseException ex) {
         }
+
 
         trainingDefinition = testDataFactory.getReleasedDefinition();
         trainingDefinition.setId(1L);

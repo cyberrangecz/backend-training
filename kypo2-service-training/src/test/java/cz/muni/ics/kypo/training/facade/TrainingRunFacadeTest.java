@@ -6,6 +6,7 @@ import cz.muni.ics.kypo.training.api.dto.IsCorrectFlagDTO;
 import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
 import cz.muni.ics.kypo.training.mapping.mapstruct.*;
 import cz.muni.ics.kypo.training.persistence.model.*;
+import cz.muni.ics.kypo.training.persistence.model.AssessmentLevel;
 import cz.muni.ics.kypo.training.persistence.util.TestDataFactory;
 import cz.muni.ics.kypo.training.service.SecurityService;
 import cz.muni.ics.kypo.training.service.TrainingRunService;

@@ -4,6 +4,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.bohnman.squiggly.util.SquigglyUtils;
 import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
 import cz.muni.ics.kypo.training.api.dto.visualization.VisualizationInfoDTO;
+import cz.muni.ics.kypo.training.api.dto.visualization.clustering.ClusteringVisualizationDTO;
+import cz.muni.ics.kypo.training.api.dto.visualization.commons.PlayerDataDTO;
+import cz.muni.ics.kypo.training.api.dto.visualization.leveltabs.LevelTabsLevelDTO;
+import cz.muni.ics.kypo.training.api.dto.visualization.timeline.TimelineDTO;
 import cz.muni.ics.kypo.training.api.dto.visualization.progress.VisualizationProgressDTO;
 import cz.muni.ics.kypo.training.api.responses.PageResultResource;
 import cz.muni.ics.kypo.training.facade.VisualizationFacade;
@@ -153,6 +157,102 @@ public class VisualizationRestController {
     }
 
     /**
+     * Get data for clustering visualizations.
+     *
+     * @param trainingInstanceId id of training instance.
+     * @return data for clustering visualizations.
+     */
+    @ApiOperation(httpMethod = "GET",
+            value = "Get necessary visualization info for training instance.",
+            response = ClusteringVisualizationDTO.class,
+            nickname = "getClusteringVisualizations",
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Data for visualization found.", response = ClusteringVisualizationDTO.class),
+            @ApiResponse(code = 404, message = "Training instance with given id not found.", response = ApiError.class),
+            @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiError.class)
+    })
+    @GetMapping(path = "/training-instances/{instanceId}/clustering", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<ClusteringVisualizationDTO> getClusteringVisualizations(@ApiParam(value = "Training instance ID", required = true)
+                                                                                  @PathVariable("instanceId") Long trainingInstanceId) {
+        ClusteringVisualizationDTO clusteringVisualizationDTO = visualizationFacade.getClusteringVisualizations(trainingInstanceId);
+        return ResponseEntity.ok(clusteringVisualizationDTO);
+    }
+
+    /**
+     * Get data for table dat visualizations.
+     *
+     * @param trainingInstanceId id of training instance.
+     * @return data for timeline visualizations.
+     */
+    @ApiOperation(httpMethod = "GET",
+            value = "Get necessary table visualization info for training instance.",
+            response = PlayerDataDTO[].class,
+            nickname = "getTableVisualizations",
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Data for visualization found.", response = PlayerDataDTO[].class),
+            @ApiResponse(code = 404, message = "Training instance with given id not found.", response = ApiError.class),
+            @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiError.class)
+    })
+    @GetMapping(path = "/training-instances/{instanceId}/table", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<PlayerDataDTO>> getTableVisualizations(@ApiParam(value = "Training instance ID", required = true)
+                                                                      @PathVariable("instanceId") Long trainingInstanceId) {
+        List<PlayerDataDTO> timelineVisualizationDTO = visualizationFacade.getTableVisualizations(trainingInstanceId);
+        return ResponseEntity.ok(timelineVisualizationDTO);
+    }
+
+    /**
+     * Get data for level tabs visualizations.
+     *
+     * @param trainingInstanceId id of training instance.
+     * @return data for level tabs visualizations.
+     */
+    @ApiOperation(httpMethod = "GET",
+            value = "Get necessary level tabs visualization info for training instance.",
+            response = LevelTabsLevelDTO[].class,
+            nickname = "getLevelTabsVisualizations",
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Data for visualization found.", response = LevelTabsLevelDTO[].class),
+            @ApiResponse(code = 404, message = "Training instance with given id not found.", response = ApiError.class),
+            @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiError.class)
+    })
+    @GetMapping(path = "/training-instances/{instanceId}/level-tabs", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<LevelTabsLevelDTO>> getLevelTabsVisualizations(@ApiParam(value = "Training instance ID", required = true)
+                                                                              @PathVariable("instanceId") Long trainingInstanceId) {
+        List<LevelTabsLevelDTO> timelineVisualizationDTO = visualizationFacade.getLevelTabsVisualizations(trainingInstanceId);
+        return ResponseEntity.ok(timelineVisualizationDTO);
+    }
+
+    /**
+     * Get data for timeline visualizations.
+     *
+     * @param trainingInstanceId id of training instance.
+     * @return data for timeline visualizations.
+     */
+    @ApiOperation(httpMethod = "GET",
+            value = "Get necessary timeline visualization info for training instance.",
+            response = TimelineDTO.class,
+            nickname = "getTimelineVisualizations",
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Data for visualization found.", response = TimelineDTO.class),
+            @ApiResponse(code = 404, message = "Training instance with given id not found.", response = ApiError.class),
+            @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiError.class)
+    })
+    @GetMapping(path = "/training-instances/{instanceId}/timeline", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<TimelineDTO> getTimelineVisualizations(@ApiParam(value = "Training instance ID", required = true)
+                                                                              @PathVariable("instanceId") Long trainingInstanceId) {
+        TimelineDTO timelineVisualizationDTO = visualizationFacade.getTimelineVisualizations(trainingInstanceId);
+        return ResponseEntity.ok(timelineVisualizationDTO);
+    }
+
+    /**
      * Gather all necessary information about levels of given training instance to visualize results of the training instance.
      *
      * @param trainingInstanceId id of training instance.
@@ -161,7 +261,7 @@ public class VisualizationRestController {
     @ApiOperation(httpMethod = "GET",
             value = "Get necessary visualization info for training instance.",
             response = VisualizationInfoDTO.class,
-            nickname = "gatherVisualizationInfoForTrainingInstance",
+            nickname = "gatherVisualizationInfoForTrainingInstanceProgress",
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     @ApiResponses(value = {

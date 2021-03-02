@@ -2,21 +2,19 @@ package cz.muni.ics.kypo.training.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentQuestion;
 import cz.muni.ics.kypo.training.exceptions.*;
 import cz.muni.ics.kypo.training.persistence.model.*;
+import cz.muni.ics.kypo.training.persistence.model.AssessmentLevel;
 import cz.muni.ics.kypo.training.persistence.model.enums.AssessmentType;
 import cz.muni.ics.kypo.training.persistence.model.enums.TDState;
 import cz.muni.ics.kypo.training.persistence.repository.*;
 import cz.muni.ics.kypo.training.utils.AssessmentUtil;
-import org.dom4j.rule.Mode;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -484,6 +482,7 @@ public class TrainingDefinitionService {
         } catch (JsonProcessingException ex) {
             throw new InternalServerErrorException("Could not serialize question when create new assessment level");
         }
+
         newAssessmentLevel.setEstimatedDuration(1);
         return newAssessmentLevel;
     }

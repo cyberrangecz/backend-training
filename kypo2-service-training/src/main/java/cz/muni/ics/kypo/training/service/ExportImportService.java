@@ -4,17 +4,15 @@ import cz.muni.ics.kypo.training.api.responses.SandboxDefinitionInfo;
 import cz.muni.ics.kypo.training.exceptions.*;
 import cz.muni.ics.kypo.training.exceptions.errors.PythonApiError;
 import cz.muni.ics.kypo.training.persistence.model.*;
+import cz.muni.ics.kypo.training.persistence.model.AssessmentLevel;
 import cz.muni.ics.kypo.training.persistence.repository.*;
 import cz.muni.ics.kypo.training.utils.AssessmentUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
-import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 /**

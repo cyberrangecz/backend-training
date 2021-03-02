@@ -5,9 +5,7 @@ import org.hibernate.annotations.Type;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Class represents Training run.

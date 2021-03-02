@@ -21,6 +21,7 @@ import cz.muni.ics.kypo.training.exceptions.EntityNotFoundException;
 import cz.muni.ics.kypo.training.exceptions.InternalServerErrorException;
 import cz.muni.ics.kypo.training.mapping.mapstruct.*;
 import cz.muni.ics.kypo.training.persistence.model.*;
+import cz.muni.ics.kypo.training.persistence.model.AssessmentLevel;
 import cz.muni.ics.kypo.training.persistence.util.TestDataFactory;
 import cz.muni.ics.kypo.training.service.SecurityService;
 import cz.muni.ics.kypo.training.service.TrainingDefinitionService;

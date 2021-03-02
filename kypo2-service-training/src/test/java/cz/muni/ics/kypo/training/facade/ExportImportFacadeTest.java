@@ -10,6 +10,7 @@ import cz.muni.ics.kypo.training.api.dto.imports.InfoLevelImportDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionByIdDTO;
 import cz.muni.ics.kypo.training.mapping.mapstruct.*;
 import cz.muni.ics.kypo.training.persistence.model.*;
+import cz.muni.ics.kypo.training.persistence.model.AssessmentLevel;
 import cz.muni.ics.kypo.training.persistence.util.TestDataFactory;
 import cz.muni.ics.kypo.training.service.ElasticsearchApiService;
 import cz.muni.ics.kypo.training.service.ExportImportService;

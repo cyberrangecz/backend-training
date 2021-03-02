@@ -1,4 +1,3 @@
-
 [
   {
     "question_type":             "FFQ",
@@ -8,11 +7,11 @@
     "order":            0,
     "answer_required":         true,
     "correct_choices":  [
-                        "viruses",
-                        "trojans",
-                        "worms",
-                        "bots"
-                      ]
+      "viruses",
+      "trojans",
+      "worms",
+      "bots"
+    ]
   },
   {
     "question_type":             "MCQ",
@@ -22,27 +21,27 @@
     "order":            1,
     "answer_required":         true,
     "choices":          [
-                          {
-                            "order":        0,
-                            "text":         "whitelisting file extensions",
-                            "is_correct":    true
-                          },
-                          {
-                            "order":         1,
-                            "text":         "limiting maximum file size",
-                            "is_correct":    true
-                          },
-                          {
-                            "order":        2,
-                            "text":        "using database triggers",
-                            "is_correct":   false
-                          },
-                          {
-                            "order":        3,
-                            "text":         "saving data to an NTFS volume",
-                            "is_correct":    false
-                          }
-                        ]
+      {
+        "order":        0,
+        "text":         "whitelisting file extensions",
+        "is_correct":    true
+      },
+      {
+        "order":         1,
+        "text":         "limiting maximum file size",
+        "is_correct":    true
+      },
+      {
+        "order":        2,
+        "text":        "using database triggers",
+        "is_correct":   false
+      },
+      {
+        "order":        3,
+        "text":         "saving data to an NTFS volume",
+        "is_correct":    false
+      }
+    ]
   },
   {
     "question_type":             "EMI",

@@ -36,9 +36,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Optional;
-import java.util.Set;
 
 import static cz.muni.ics.kypo.training.rest.controllers.util.ObjectConverter.convertJsonBytesToObject;
 import static org.junit.Assert.assertEquals;
@@ -61,6 +59,7 @@ public class ExportImportRestControllerTest {
 
 	private MockMvc mockMvc;
 
+	@Mock
 	private ObjectMapper objectMapper;
 
 	@Mock
@@ -105,8 +104,9 @@ public class ExportImportRestControllerTest {
 		FileToReturnDTO file = new FileToReturnDTO();
 		file.setContent(convertObjectToJsonBytes(trainingInstanceArchiveDTO).getBytes());
 		file.setTitle(trainingInstanceArchiveDTO.getTitle());
+		String valueTi = convertObjectToJsonBytes(trainingInstanceArchiveDTO);
+		given(objectMapper.writeValueAsString(any(Object.class))).willReturn(valueTi);
 		given(exportImportFacade.archiveTrainingInstance(any(Long.class))).willReturn(file);
-
 		mockMvc.perform(get("/exports/training-instances" + "/{id}", 1L))
 				.andExpect(status().isOk())
 				.andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_OCTET_STREAM));

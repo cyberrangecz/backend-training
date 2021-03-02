@@ -6,6 +6,7 @@ import com.querydsl.core.types.dsl.PathBuilder;
 import cz.muni.ics.kypo.training.exceptions.EntityConflictException;
 import cz.muni.ics.kypo.training.exceptions.EntityNotFoundException;
 import cz.muni.ics.kypo.training.persistence.model.*;
+import cz.muni.ics.kypo.training.persistence.model.AssessmentLevel;
 import cz.muni.ics.kypo.training.persistence.model.enums.AssessmentType;
 import cz.muni.ics.kypo.training.persistence.model.enums.TDState;
 import cz.muni.ics.kypo.training.persistence.repository.*;

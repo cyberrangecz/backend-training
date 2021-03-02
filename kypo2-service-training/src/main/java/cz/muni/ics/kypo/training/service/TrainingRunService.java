@@ -1,11 +1,11 @@
 package cz.muni.ics.kypo.training.service;
 
 import com.querydsl.core.types.Predicate;
-import cz.muni.ics.kypo.training.annotations.transactions.TransactionalRO;
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalWO;
 import cz.muni.ics.kypo.training.api.responses.SandboxInfo;
 import cz.muni.ics.kypo.training.exceptions.*;
 import cz.muni.ics.kypo.training.persistence.model.*;
+import cz.muni.ics.kypo.training.persistence.model.AssessmentLevel;
 import cz.muni.ics.kypo.training.persistence.model.enums.AssessmentType;
 import cz.muni.ics.kypo.training.persistence.model.enums.TRState;
 import cz.muni.ics.kypo.training.persistence.repository.*;
@@ -22,9 +22,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import java.time.Clock;
@@ -594,5 +592,6 @@ public class TrainingRunService {
         }
         return responseToCurrentAssessment;
     }
+
 
 }
