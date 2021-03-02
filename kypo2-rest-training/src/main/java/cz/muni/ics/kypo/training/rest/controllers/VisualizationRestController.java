@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.bohnman.squiggly.util.SquigglyUtils;
 import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
 import cz.muni.ics.kypo.training.api.dto.visualization.VisualizationInfoDTO;
+import cz.muni.ics.kypo.training.api.dto.visualization.progress.VisualizationProgressDTO;
 import cz.muni.ics.kypo.training.api.responses.PageResultResource;
 import cz.muni.ics.kypo.training.facade.VisualizationFacade;
 import cz.muni.ics.kypo.training.rest.ApiError;
@@ -149,5 +150,29 @@ public class VisualizationRestController {
                                                 @RequestParam Set<Long> usersIds) {
         PageResultResource<UserRefDTO> visualizationInfoDTO = visualizationFacade.getUsersByIds(usersIds, pageable);
         return ResponseEntity.ok(SquigglyUtils.stringify(objectMapper, visualizationInfoDTO));
+    }
+
+    /**
+     * Gather all necessary information about levels of given training instance to visualize results of the training instance.
+     *
+     * @param trainingInstanceId id of training instance.
+     * @return necessary info about levels for specific training instance and additional info about training definition.
+     */
+    @ApiOperation(httpMethod = "GET",
+            value = "Get necessary visualization info for training instance.",
+            response = VisualizationInfoDTO.class,
+            nickname = "gatherVisualizationInfoForTrainingInstance",
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Visualization info found.", response = VisualizationInfoDTO.class),
+            @ApiResponse(code = 404, message = "Training instance with given id not found.", response = ApiError.class),
+            @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiError.class)
+    })
+    @GetMapping(path = "/training-instances/{instanceId}/progress", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<VisualizationProgressDTO> gatherVisualizationInfoForTrainingInstanceProgress(@ApiParam(value = "Training instance ID", required = true)
+                                                                                                       @PathVariable("instanceId") Long trainingInstanceId) {
+        VisualizationProgressDTO visualizationProgressDTO = visualizationFacade.getProgressVisualizationAboutTrainingInstance(trainingInstanceId);
+        return ResponseEntity.ok(visualizationProgressDTO);
     }
 }

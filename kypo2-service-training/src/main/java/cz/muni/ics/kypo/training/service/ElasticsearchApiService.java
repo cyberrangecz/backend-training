@@ -1,7 +1,9 @@
 package cz.muni.ics.kypo.training.service;
 
+import cz.muni.csirt.kypo.events.AbstractAuditPOJO;
 import cz.muni.ics.kypo.training.exceptions.CustomWebClientException;
 import cz.muni.ics.kypo.training.exceptions.MicroserviceApiException;
+import cz.muni.ics.kypo.training.persistence.model.TrainingInstance;
 import cz.muni.ics.kypo.training.persistence.model.TrainingRun;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -122,12 +124,32 @@ public class ElasticsearchApiService {
         }
     }
 
+    /**
+     * Obtain events from elasticsearch for particular training instance.
+     *
+     * @param trainingInstance the training instance whose events to obtain.
+     * @return Aggregated events by user and levels.
+     * @throws MicroserviceApiException error with specific message when calling elasticsearch microservice.
+     */
+    public Map<Long, Map<Long, List<AbstractAuditPOJO>>> getAggregatedEventsByUsersAndLevels(TrainingInstance trainingInstance) {
+        try {
+            Long instanceId = trainingInstance.getId();
+            return elasticsearchServiceWebClient
+                    .get()
+                    .uri("/training-platform-events/training-instances/{instanceId}/aggregated/users/levels", instanceId)
+                    .retrieve()
+                    .bodyToMono(new ParameterizedTypeReference<Map<Long, Map<Long, List<AbstractAuditPOJO>>>>() {})
+                    .block();
+        } catch (CustomWebClientException ex){
+            throw new MicroserviceApiException("Error when calling Elasticsearch API for particular instance (ID: "+ trainingInstance.getId() +")", ex.getApiSubError());
+        }
+    }
 
     public void deleteBashCommandsFromPool(Long poolId){
         try{
             elasticsearchServiceWebClient
                     .delete()
-                    .uri("/training-platform-commands/pools/{poolId}", poolId)
+                    .uri("/training-platform-commands/pools/{poolIdfind}", poolId)
                     .retrieve()
                     .bodyToMono(Void.class)
                     .block();
@@ -136,3 +158,4 @@ public class ElasticsearchApiService {
         }
     }
 }
+

@@ -15,6 +15,8 @@ import java.util.Objects;
 @ApiModel(value = "GameLevelVisualizationDTO", description = "Information about game level needed for visualizations.", parent = AbstractLevelExportDTO.class)
 public class GameLevelVisualizationDTO extends AbstractLevelVisualizationDTO {
 
+    @ApiModelProperty(value = "The information and experiences that are directed towards a participant.", example = "Play me")
+    private String content;
     @ApiModelProperty(value = "Instruction how to get flag in game.", example = "This is how you do it")
     private String solution;
     @ApiModelProperty(value = "Keyword found in game, used for access next level.", example = "secretFlag")
@@ -30,6 +32,23 @@ public class GameLevelVisualizationDTO extends AbstractLevelVisualizationDTO {
     public GameLevelVisualizationDTO() {
     }
 
+    /**
+     * Gets content.
+     *
+     * @return the content
+     */
+    public String getContent() {
+        return content;
+    }
+
+    /**
+     * Sets content.
+     *
+     * @param content the content
+     */
+    public void setContent(String content) {
+        this.content = content;
+    }
 
     /**
      * Gets solution.

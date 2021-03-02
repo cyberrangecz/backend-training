@@ -7,5 +7,6 @@ target/
 nb-configuration.xml
 *.iml
 *.log
+spring.log*
 logs/
 .idea/
