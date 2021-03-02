@@ -1,6 +1,7 @@
 package cz.muni.ics.kypo.training.config;
 
 import cz.muni.ics.kypo.training.validation.EmailValidator;
+import io.swagger.models.Swagger;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

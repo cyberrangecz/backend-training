@@ -75,6 +75,48 @@ public class ElasticsearchApiService {
     }
 
     /**
+     * Obtain events from elasticsearch for particular training instance.
+     *
+     * @param trainingInstance the training instance whose events to obtain.
+     * @return Aggregated events by user and levels.
+     * @throws MicroserviceApiException error with specific message when calling elasticsearch microservice.
+     */
+    public Map<Long, Map<Long, List<AbstractAuditPOJO>>> getAggregatedEventsByLevelsAndUsers(TrainingInstance trainingInstance) {
+        try {
+            Long instanceId = trainingInstance.getId();
+            return elasticsearchServiceWebClient
+                    .get()
+                    .uri("/training-platform-events/training-instances/{instanceId}/aggregated/levels/users", instanceId)
+                    .retrieve()
+                    .bodyToMono(new ParameterizedTypeReference<Map<Long, Map<Long, List<AbstractAuditPOJO>>>>() {})
+                    .block();
+        } catch (CustomWebClientException ex){
+            throw new MicroserviceApiException("Error when calling Elasticsearch API for particular instance (ID: "+ trainingInstance.getId() +")", ex.getApiSubError());
+        }
+    }
+
+    /**
+     * Obtain events from elasticsearch for particular training instance.
+     *
+     * @param trainingInstance the training instance whose events to obtain.
+     * @return Aggregated events by user and levels.
+     * @throws MicroserviceApiException error with specific message when calling elasticsearch microservice.
+     */
+    public Map<Long, Map<Long, List<AbstractAuditPOJO>>> getAggregatedEventsByUsersAndLevels(TrainingInstance trainingInstance) {
+        try {
+            Long instanceId = trainingInstance.getId();
+            return elasticsearchServiceWebClient
+                    .get()
+                    .uri("/training-platform-events/training-instances/{instanceId}/aggregated/users/levels", instanceId)
+                    .retrieve()
+                    .bodyToMono(new ParameterizedTypeReference<Map<Long, Map<Long, List<AbstractAuditPOJO>>>>() {})
+                    .block();
+        } catch (CustomWebClientException ex){
+            throw new MicroserviceApiException("Error when calling Elasticsearch API for particular instance (ID: "+ trainingInstance.getId() +")", ex.getApiSubError());
+        }
+    }
+
+    /**
      * Deletes events from elasticsearch for particular training run
      *
      * @param trainingInstanceId id of the training instance in which the training run is running.
@@ -121,27 +163,6 @@ public class ElasticsearchApiService {
                     .block();
         }catch (CustomWebClientException ex){
             throw new MicroserviceApiException("Error when calling Elasticsearch API for particular commands of sandbox (ID: "+ sandboxId +")", ex.getApiSubError());
-        }
-    }
-
-    /**
-     * Obtain events from elasticsearch for particular training instance.
-     *
-     * @param trainingInstance the training instance whose events to obtain.
-     * @return Aggregated events by user and levels.
-     * @throws MicroserviceApiException error with specific message when calling elasticsearch microservice.
-     */
-    public Map<Long, Map<Long, List<AbstractAuditPOJO>>> getAggregatedEventsByUsersAndLevels(TrainingInstance trainingInstance) {
-        try {
-            Long instanceId = trainingInstance.getId();
-            return elasticsearchServiceWebClient
-                    .get()
-                    .uri("/training-platform-events/training-instances/{instanceId}/aggregated/users/levels", instanceId)
-                    .retrieve()
-                    .bodyToMono(new ParameterizedTypeReference<Map<Long, Map<Long, List<AbstractAuditPOJO>>>>() {})
-                    .block();
-        } catch (CustomWebClientException ex){
-            throw new MicroserviceApiException("Error when calling Elasticsearch API for particular instance (ID: "+ trainingInstance.getId() +")", ex.getApiSubError());
         }
     }
 

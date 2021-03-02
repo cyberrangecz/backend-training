@@ -1,4 +1,5 @@
 package cz.muni.ics.kypo.training.validation;
+
 import javax.validation.Constraint;
 import javax.validation.Payload;
 import java.lang.annotation.Documented;

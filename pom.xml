@@ -58,7 +58,7 @@
 
         <maven.surfare.plugin.version>2.22.0</maven.surfare.plugin.version>
         <apt-maven-plugin.version>1.1.3</apt-maven-plugin.version>
-        <!-- REST API filtering responses -->
+        <!-- REST API filtering respons -->
         <squiggly.filter.jackson.version>1.3.11</squiggly.filter.jackson.version>
 
         <concurrent-junit.version>1.0.2</concurrent-junit.version>
@@ -243,7 +243,7 @@
                 <artifactId>concurrent-junit</artifactId>
                 <version>${concurrent-junit.version}</version>
             </dependency>
-            <!-- filtering REST responses -->
+            <!-- filtering REST respons -->
             <dependency>
                 <groupId>com.github.bohnman</groupId>
                 <artifactId>squiggly-filter-jackson</artifactId>

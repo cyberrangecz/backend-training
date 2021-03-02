@@ -5,6 +5,7 @@ import cz.muni.csirt.kypo.events.AbstractAuditPOJO;
 import cz.muni.csirt.kypo.events.trainings.*;
 import cz.muni.csirt.kypo.events.trainings.enums.LevelType;
 import cz.muni.ics.kypo.training.persistence.model.*;
+import cz.muni.ics.kypo.training.persistence.model.AssessmentLevel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

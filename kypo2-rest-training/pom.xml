@@ -61,7 +61,7 @@
             <groupId>io.swagger</groupId>
             <artifactId>swagger-models</artifactId>
         </dependency>
-        <!-- filtering REST responses -->
+        <!-- filtering REST respons -->
         <dependency>
             <groupId>com.github.bohnman</groupId>
             <artifactId>squiggly-filter-jackson</artifactId>

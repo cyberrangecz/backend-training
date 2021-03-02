@@ -1,8 +1,8 @@
 package cz.muni.ics.kypo.training.persistence.model;
 
-import org.hibernate.annotations.Type;
 
 import cz.muni.ics.kypo.training.persistence.model.enums.AssessmentType;
+import org.hibernate.annotations.Type;
 
 import javax.persistence.*;
 import java.util.Objects;

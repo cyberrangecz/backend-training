@@ -222,6 +222,9 @@ public class ExportImportFacade {
             zos.write(objectMapper.writeValueAsBytes(archivedRun));
 
             List<Map<String, Object>> events = elasticsearchApiService.findAllEventsFromTrainingRun(run);
+            if (events.isEmpty()) {
+                continue;
+            }
             Map<Integer, Long> levelStartTimestampMapping = writeEventsAndGetLevelStartTimestampMapping(zos, run, events);
             writeEventsByLevels(zos, run, events);
 

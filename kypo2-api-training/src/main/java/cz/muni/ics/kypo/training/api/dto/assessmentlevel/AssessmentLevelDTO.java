@@ -5,7 +5,6 @@ import cz.muni.ics.kypo.training.api.enums.AssessmentType;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
-
 /**
  * Encapsulates information about assessment level. Inherits from {@link AbstractLevelDTO}
  *
