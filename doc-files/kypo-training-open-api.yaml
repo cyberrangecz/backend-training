@@ -1,7 +1,7 @@
 ---
 swagger: "2.0"
 info:
-  version: "Version: 1.1.57"
+  version: "Version: 1.1.58"
   title: "KYPO2 Training - API Reference"
 host: "localhost:8080"
 basePath: "/kypo2-rest-training/api/v1"
@@ -2344,6 +2344,70 @@ paths:
             $ref: "#/definitions/ApiError"
       security:
       - bearerAuth: []
+  /visualizations/training-instances/{instanceId}/clustering:
+    get:
+      tags:
+      - "Visualizations"
+      summary: "Get necessary visualization info for training instance."
+      description: ""
+      operationId: "getClusteringVisualizations"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "instanceId"
+        in: "path"
+        description: "Training instance ID"
+        required: true
+        type: "integer"
+        format: "int64"
+      responses:
+        200:
+          description: "Data for visualization found."
+          schema:
+            $ref: "#/definitions/ClusteringVisualizationDTO"
+        404:
+          description: "Training instance with given id not found."
+          schema:
+            $ref: "#/definitions/ApiError"
+        500:
+          description: "Unexpected condition was encountered."
+          schema:
+            $ref: "#/definitions/ApiError"
+      security:
+      - bearerAuth: []
+  /visualizations/training-instances/{instanceId}/level-tabs:
+    get:
+      tags:
+      - "Visualizations"
+      summary: "Get necessary level tabs visualization info for training instance."
+      description: ""
+      operationId: "getLevelTabsVisualizations"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "instanceId"
+        in: "path"
+        description: "Training instance ID"
+        required: true
+        type: "integer"
+        format: "int64"
+      responses:
+        200:
+          description: "Data for visualization found."
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/LevelTabsLevelDTO"
+        404:
+          description: "Training instance with given id not found."
+          schema:
+            $ref: "#/definitions/ApiError"
+        500:
+          description: "Unexpected condition was encountered."
+          schema:
+            $ref: "#/definitions/ApiError"
+      security:
+      - bearerAuth: []
   /visualizations/training-instances/{instanceId}/participants:
     get:
       tags:
@@ -2367,6 +2431,101 @@ paths:
             type: "array"
             items:
               $ref: "#/definitions/UserRefDTO"
+        500:
+          description: "Unexpected condition was encountered."
+          schema:
+            $ref: "#/definitions/ApiError"
+      security:
+      - bearerAuth: []
+  /visualizations/training-instances/{instanceId}/progress:
+    get:
+      tags:
+      - "Visualizations"
+      summary: "Get necessary visualization info for training instance."
+      description: ""
+      operationId: "gatherVisualizationInfoForTrainingInstanceProgress"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "instanceId"
+        in: "path"
+        description: "Training instance ID"
+        required: true
+        type: "integer"
+        format: "int64"
+      responses:
+        200:
+          description: "Visualization info found."
+          schema:
+            $ref: "#/definitions/VisualizationInfoDTO"
+        404:
+          description: "Training instance with given id not found."
+          schema:
+            $ref: "#/definitions/ApiError"
+        500:
+          description: "Unexpected condition was encountered."
+          schema:
+            $ref: "#/definitions/ApiError"
+      security:
+      - bearerAuth: []
+  /visualizations/training-instances/{instanceId}/table:
+    get:
+      tags:
+      - "Visualizations"
+      summary: "Get necessary table visualization info for training instance."
+      description: ""
+      operationId: "getTableVisualizations"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "instanceId"
+        in: "path"
+        description: "Training instance ID"
+        required: true
+        type: "integer"
+        format: "int64"
+      responses:
+        200:
+          description: "Data for visualization found."
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/PlayerDataDTO"
+        404:
+          description: "Training instance with given id not found."
+          schema:
+            $ref: "#/definitions/ApiError"
+        500:
+          description: "Unexpected condition was encountered."
+          schema:
+            $ref: "#/definitions/ApiError"
+      security:
+      - bearerAuth: []
+  /visualizations/training-instances/{instanceId}/timeline:
+    get:
+      tags:
+      - "Visualizations"
+      summary: "Get necessary timeline visualization info for training instance."
+      description: ""
+      operationId: "getTimelineVisualizations"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "instanceId"
+        in: "path"
+        description: "Training instance ID"
+        required: true
+        type: "integer"
+        format: "int64"
+      responses:
+        200:
+          description: "Data for visualization found."
+          schema:
+            $ref: "#/definitions/TimelineDTO"
+        404:
+          description: "Training instance with given id not found."
+          schema:
+            $ref: "#/definitions/ApiError"
         500:
           description: "Unexpected condition was encountered."
           schema:
@@ -2591,6 +2750,11 @@ definitions:
         type: "string"
         example: "Game Level1"
         description: "Short textual description of the level."
+      maxScore:
+        type: "integer"
+        format: "int32"
+        example: 20
+        description: "The maximum score a participant can achieve during a level."
       levelType:
         type: "string"
         example: "GAME"
@@ -2599,21 +2763,16 @@ definitions:
         - "INFO_LEVEL"
         - "GAME_LEVEL"
         - "ASSESSMENT_LEVEL"
-      order:
-        type: "integer"
-        format: "int32"
-        example: 1
-        description: "Order of level among levels in training definition."
-      maxScore:
-        type: "integer"
-        format: "int32"
-        example: 20
-        description: "The maximum score a participant can achieve during a level."
       estimatedDuration:
         type: "integer"
         format: "int64"
         example: 5
         description: "Estimated time taken by the player to resolve the level."
+      order:
+        type: "integer"
+        format: "int32"
+        example: 1
+        description: "Order of level among levels in training definition."
     description: "Superclass for classes GameLevelDTO, AssessmentLevelDTO and InfoLevelDTO"
   AccessTrainingRunDTO:
     type: "object"
@@ -3112,6 +3271,52 @@ definitions:
           type: "integer"
           format: "int64"
     description: "BetaTesting group to update. (Deprecated)"
+  ClusteringLevelDTO:
+    type: "object"
+    properties:
+      id:
+        type: "integer"
+        format: "int64"
+      order:
+        type: "integer"
+        format: "int32"
+      levelType:
+        type: "string"
+        enum:
+        - "INFO_LEVEL"
+        - "GAME_LEVEL"
+        - "ASSESSMENT_LEVEL"
+      title:
+        type: "string"
+      estimatedTime:
+        type: "integer"
+        format: "int64"
+      maxPoints:
+        type: "integer"
+        format: "int32"
+      maxTime:
+        type: "integer"
+        format: "int64"
+      averageTime:
+        type: "number"
+        format: "float"
+      averageScore:
+        type: "number"
+        format: "float"
+      playerData:
+        type: "array"
+        items:
+          $ref: "#/definitions/PlayerDataDTO"
+  ClusteringVisualizationDTO:
+    type: "object"
+    properties:
+      finalResults:
+        $ref: "#/definitions/GameResultsDTO"
+      levels:
+        type: "array"
+        items:
+          $ref: "#/definitions/ClusteringLevelDTO"
+    description: "Clustering visualization."
   EntityErrorDetail:
     type: "object"
     properties:
@@ -3374,6 +3579,11 @@ definitions:
     - $ref: "#/definitions/AbstractLevelVisualizationDTO"
     - type: "object"
       properties:
+        content:
+          type: "string"
+          example: "Play me"
+          description: "The information and experiences that are directed towards\
+            \ a participant."
         solution:
           type: "string"
           example: "This is how you do it"
@@ -3392,6 +3602,28 @@ definitions:
           items:
             $ref: "#/definitions/HintDTO"
       description: "Information about game level needed for visualizations."
+  GameResultsDTO:
+    type: "object"
+    properties:
+      estimatedTime:
+        type: "integer"
+        format: "int64"
+      maxPoints:
+        type: "integer"
+        format: "int32"
+      maxTime:
+        type: "integer"
+        format: "int64"
+      averageTime:
+        type: "number"
+        format: "float"
+      averageScore:
+        type: "number"
+        format: "float"
+      playerData:
+        type: "array"
+        items:
+          $ref: "#/definitions/PlayerDataDTO"
   HintDTO:
     type: "object"
     required:
@@ -3587,7 +3819,12 @@ definitions:
     allOf:
     - $ref: "#/definitions/AbstractLevelVisualizationDTO"
     - type: "object"
-      properties: {}
+      properties:
+        content:
+          type: "string"
+          example: "Informational stuff"
+          description: "The information and experiences that are directed towards\
+            \ a participant."
       description: "Information about info level needed for visualizations."
   IsCorrectFlagDTO:
     type: "object"
@@ -3636,6 +3873,81 @@ definitions:
           description: "Entity detail related to the error."
           $ref: "#/definitions/EntityErrorDetail"
       description: "A detailed error from another Java mircorservice."
+  LevelTabsHintDTO:
+    type: "object"
+    properties:
+      id:
+        type: "integer"
+        format: "int64"
+      order:
+        type: "integer"
+        format: "int32"
+      title:
+        type: "string"
+      penalty:
+        type: "integer"
+        format: "int32"
+  LevelTabsLevelDTO:
+    type: "object"
+    properties:
+      id:
+        type: "integer"
+        format: "int64"
+      order:
+        type: "integer"
+        format: "int32"
+      levelType:
+        type: "string"
+        enum:
+        - "INFO_LEVEL"
+        - "GAME_LEVEL"
+        - "ASSESSMENT_LEVEL"
+      title:
+        type: "string"
+      estimatedTime:
+        type: "integer"
+        format: "int64"
+      maxPoints:
+        type: "integer"
+        format: "int32"
+      content:
+        type: "string"
+      correctFlag:
+        type: "string"
+      hints:
+        type: "array"
+        items:
+          $ref: "#/definitions/LevelTabsHintDTO"
+      players:
+        type: "array"
+        items:
+          $ref: "#/definitions/LevelTabsPlayerDTO"
+      assessmentType:
+        type: "string"
+        enum:
+        - "TEST"
+        - "QUESTIONNAIRE"
+  LevelTabsPlayerDTO:
+    type: "object"
+    properties:
+      id:
+        type: "integer"
+        format: "int64"
+      score:
+        type: "integer"
+        format: "int64"
+      hints:
+        type: "integer"
+        format: "int32"
+      wrongFlags:
+        type: "array"
+        items:
+          type: "string"
+      time:
+        type: "integer"
+        format: "int64"
+      displayedSolution:
+        type: "boolean"
   Pageable:
     type: "object"
     properties:
@@ -3682,6 +3994,33 @@ definitions:
         format: "int32"
         example: 5
         description: "Total number of pages."
+  PlayerDataDTO:
+    type: "object"
+    properties:
+      id:
+        type: "integer"
+        format: "int64"
+      name:
+        type: "string"
+      score:
+        type: "integer"
+        format: "int32"
+      time:
+        type: "integer"
+        format: "int64"
+      finished:
+        type: "boolean"
+      picture:
+        type: "array"
+        items:
+          type: "string"
+          format: "byte"
+      avatarColor:
+        type: "string"
+      levels:
+        type: "array"
+        items:
+          $ref: "#/definitions/VisualizationAbstractLevelDTO"
   PythonApiError:
     allOf:
     - $ref: "#/definitions/ApiSubError"
@@ -3754,6 +4093,27 @@ definitions:
         example: 1
         description: "The order of hint in game level"
     description: "A taken brief textual description to aid the participant."
+  TimelineDTO:
+    type: "object"
+    properties:
+      estimatedTime:
+        type: "integer"
+        format: "int64"
+      levelPoints:
+        type: "array"
+        items:
+          type: "integer"
+          format: "int32"
+      maxTime:
+        type: "integer"
+        format: "int64"
+      averageTime:
+        type: "number"
+        format: "float"
+      playerData:
+        type: "array"
+        items:
+          $ref: "#/definitions/PlayerDataDTO"
   TrainingDefinitionByIdDTO:
     type: "object"
     properties:
@@ -4460,6 +4820,21 @@ definitions:
         type: "string"
         example: "flag"
         description: "Flag to be validated."
+  VisualizationAbstractLevelDTO:
+    type: "object"
+    properties:
+      id:
+        type: "integer"
+        format: "int64"
+      order:
+        type: "integer"
+        format: "int32"
+      levelType:
+        type: "string"
+        enum:
+        - "INFO_LEVEL"
+        - "GAME_LEVEL"
+        - "ASSESSMENT_LEVEL"
   VisualizationInfoDTO:
     type: "object"
     properties:
