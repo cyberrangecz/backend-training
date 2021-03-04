@@ -1,1 +1,1 @@
-1.1.59  Import microservice registration config class from security commons.
+1.1.60  Gitlab CI improvements.
