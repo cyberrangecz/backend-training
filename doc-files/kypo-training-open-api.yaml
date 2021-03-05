@@ -1,7 +1,7 @@
 ---
 swagger: "2.0"
 info:
-  version: "Version: 1.1.60"
+  version: "Version: 1.1.61"
   title: "KYPO2 Training - API Reference"
 host: "localhost:8080"
 basePath: "/kypo2-rest-training/api/v1"
@@ -3956,8 +3956,6 @@ definitions:
         format: "int64"
       sort:
         $ref: "#/definitions/Sort"
-      paged:
-        type: "boolean"
       unpaged:
         type: "boolean"
       pageNumber:
@@ -3966,6 +3964,8 @@ definitions:
       pageSize:
         type: "integer"
         format: "int32"
+      paged:
+        type: "boolean"
   Pagination:
     type: "object"
     properties:
@@ -4130,7 +4130,7 @@ definitions:
         type: "string"
         example: "Unreleased training definition"
         description: "Description of training definition that is visible to the participant."
-      prerequisities:
+      prerequisites:
         type: "array"
         description: "List of knowledge and skills necessary to complete the training."
         items:
@@ -4195,7 +4195,7 @@ definitions:
         type: "string"
         example: "Description of Photo Hunter"
         description: "Description of training definition that is visible to the participant."
-      prerequisities:
+      prerequisites:
         type: "array"
         example: "[HTML, http protocol]"
         description: "List of knowledge and skills necessary to complete the training."
@@ -4241,7 +4241,7 @@ definitions:
         type: "string"
         example: "Unreleased training definition"
         description: "Description of training definition that is visible to the participant."
-      prerequisities:
+      prerequisites:
         type: "array"
         description: "List of knowledge and skills necessary to complete the training."
         items:
@@ -4344,7 +4344,7 @@ definitions:
         type: "string"
         example: "Unreleased training definition"
         description: "Description of training definition that is visible to the participant."
-      prerequisities:
+      prerequisites:
         type: "array"
         example: "[phishing]"
         description: "List of knowledge and skills necessary to complete the training."
