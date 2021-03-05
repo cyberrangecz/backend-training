@@ -51,8 +51,8 @@ public class TrainingDefinition extends AbstractEntity<Long> {
     private String title;
     @Column(name = "description", nullable = true)
     private String description;
-    @Column(name = "prerequisities", nullable = true)
-    private String[] prerequisities;
+    @Column(name = "prerequisites", nullable = true)
+    private String[] prerequisites;
     @Column(name = "outcomes", nullable = true)
     private String[] outcomes;
     @Column(name = "state", length = 128, nullable = false)
@@ -134,18 +134,18 @@ public class TrainingDefinition extends AbstractEntity<Long> {
      *
      * @return the string [ ]
      */
-    public String[] getPrerequisities() {
-        return prerequisities;
+    public String[] getPrerequisites() {
+        return prerequisites;
     }
 
     /**
      * Sets skill prerequisites that trainee should have to be able to complete training runs created
      * from this Training definition
      *
-     * @param prerequisities the prerequisities
+     * @param prerequisites the prerequisites
      */
-    public void setPrerequisities(String[] prerequisities) {
-        this.prerequisities = prerequisities;
+    public void setPrerequisites(String[] prerequisites) {
+        this.prerequisites = prerequisites;
     }
 
     /**
@@ -297,7 +297,7 @@ public class TrainingDefinition extends AbstractEntity<Long> {
 
     @Override
     public int hashCode() {
-        return Objects.hash(description, outcomes, prerequisities, state, title);
+        return Objects.hash(description, outcomes, prerequisites, state, title);
     }
 
     @Override
@@ -311,7 +311,7 @@ public class TrainingDefinition extends AbstractEntity<Long> {
         TrainingDefinition other = (TrainingDefinition) obj;
         return Objects.equals(description, other.getDescription())
                 && Arrays.equals(outcomes, other.getOutcomes())
-                && Arrays.equals(prerequisities, other.getPrerequisities())
+                && Arrays.equals(prerequisites, other.getPrerequisites())
                 && Objects.equals(state, other.getState())
                 && Objects.equals(title, other.getTitle());
     }
@@ -322,7 +322,7 @@ public class TrainingDefinition extends AbstractEntity<Long> {
                 "id=" + super.getId() +
                 ", title='" + title + '\'' +
                 ", description='" + description + '\'' +
-                ", prerequisities=" + Arrays.toString(prerequisities) +
+                ", prerequisites=" + Arrays.toString(prerequisites) +
                 ", outcomes=" + Arrays.toString(outcomes) +
                 ", state=" + state +
                 ", showStepperBar=" + showStepperBar +

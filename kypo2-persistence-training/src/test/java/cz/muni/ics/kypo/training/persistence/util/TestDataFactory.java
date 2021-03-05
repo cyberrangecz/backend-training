@@ -42,8 +42,6 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 import java.time.Clock;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 @Component
 public class TestDataFactory {
@@ -458,7 +456,7 @@ public class TestDataFactory {
         TrainingDefinition newTrainingDefinition = new TrainingDefinition();
         newTrainingDefinition.setTitle(title);
         newTrainingDefinition.setDescription(description);
-        newTrainingDefinition.setPrerequisities(prerequisites);
+        newTrainingDefinition.setPrerequisites(prerequisites);
         newTrainingDefinition.setOutcomes(outcomes);
         newTrainingDefinition.setState(state);
         newTrainingDefinition.setShowStepperBar(showStepperBar);
@@ -470,7 +468,7 @@ public class TestDataFactory {
         TrainingDefinitionDTO trainingDefinitionDTO = new TrainingDefinitionDTO();
         trainingDefinitionDTO.setTitle(trainingDefinition.getTitle());
         trainingDefinitionDTO.setDescription(trainingDefinition.getDescription());
-        trainingDefinitionDTO.setPrerequisities(trainingDefinition.getPrerequisities());
+        trainingDefinitionDTO.setPrerequisites(trainingDefinition.getPrerequisites());
         trainingDefinitionDTO.setOutcomes(trainingDefinition.getOutcomes());
         trainingDefinitionDTO.setState(mapToTDState(trainingDefinition.getState()));
         trainingDefinitionDTO.setShowStepperBar(trainingDefinition.isShowStepperBar());
@@ -520,7 +518,7 @@ public class TestDataFactory {
         TrainingDefinitionCreateDTO trainingDefinitionCreateDTO = new TrainingDefinitionCreateDTO();
         trainingDefinitionCreateDTO.setTitle(title);
         trainingDefinitionCreateDTO.setDescription(description);
-        trainingDefinitionCreateDTO.setPrerequisities(prerequisites);
+        trainingDefinitionCreateDTO.setPrerequisites(prerequisites);
         trainingDefinitionCreateDTO.setOutcomes(outcomes);
         trainingDefinitionCreateDTO.setState(state);
         trainingDefinitionCreateDTO.setShowStepperBar(showStepperBar);
@@ -533,7 +531,7 @@ public class TestDataFactory {
         TrainingDefinitionUpdateDTO trainingDefinitionUpdateDTO = new TrainingDefinitionUpdateDTO();
         trainingDefinitionUpdateDTO.setTitle(title);
         trainingDefinitionUpdateDTO.setDescription(description);
-        trainingDefinitionUpdateDTO.setPrerequisities(prerequisites);
+        trainingDefinitionUpdateDTO.setPrerequisites(prerequisites);
         trainingDefinitionUpdateDTO.setOutcomes(outcomes);
         trainingDefinitionUpdateDTO.setState(state);
         trainingDefinitionUpdateDTO.setShowStepperBar(showStepperBar);
@@ -650,7 +648,7 @@ public class TestDataFactory {
         TrainingDefinitionByIdDTO trainingDefinitionByIdDTO = new TrainingDefinitionByIdDTO();
         trainingDefinitionByIdDTO.setTitle(title);
         trainingDefinitionByIdDTO.setDescription(description);
-        trainingDefinitionByIdDTO.setPrerequisities(prerequisites);
+        trainingDefinitionByIdDTO.setPrerequisites(prerequisites);
         trainingDefinitionByIdDTO.setOutcomes(outcomes);
         trainingDefinitionByIdDTO.setState(state);
         trainingDefinitionByIdDTO.setShowStepperBar(showStepperBar);

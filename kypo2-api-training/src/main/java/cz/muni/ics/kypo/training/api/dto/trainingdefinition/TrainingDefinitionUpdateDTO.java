@@ -27,7 +27,7 @@ public class TrainingDefinitionUpdateDTO {
     @ApiModelProperty(value = "Description of training definition that is visible to the participant.", example = "Unreleased training definition")
     private String description;
     @ApiModelProperty(value = "List of knowledge and skills necessary to complete the training.", example = "[phishing]")
-    private String[] prerequisities;
+    private String[] prerequisites;
     @ApiModelProperty(value = "A list of knowledge and skills that the participant should learn by attending the training (if it is used for educational purposes) ", example = "")
     private String[] outcomes;
     @ApiModelProperty(value = "Current state of training definition.", required = true, example = "UNRELEASED")
@@ -99,17 +99,17 @@ public class TrainingDefinitionUpdateDTO {
      *
      * @return the prerequisites.
      */
-    public String[] getPrerequisities() {
-        return prerequisities;
+    public String[] getPrerequisites() {
+        return prerequisites;
     }
 
     /**
      * Sets prerequisites.
      *
-     * @param prerequisities the prerequisites.
+     * @param prerequisites the prerequisites.
      */
-    public void setPrerequisities(String[] prerequisities) {
-        this.prerequisities = prerequisities;
+    public void setPrerequisites(String[] prerequisites) {
+        this.prerequisites = prerequisites;
     }
 
     /**
@@ -190,7 +190,7 @@ public class TrainingDefinitionUpdateDTO {
                 "id=" + id +
                 ", title='" + title + '\'' +
                 ", description='" + description + '\'' +
-                ", prerequisities=" + Arrays.toString(prerequisities) +
+                ", prerequisites=" + Arrays.toString(prerequisites) +
                 ", outcomes=" + Arrays.toString(outcomes) +
                 ", state=" + state +
                 ", showStepperBar=" + showStepperBar +

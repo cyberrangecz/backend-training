@@ -66,7 +66,7 @@ create table training_definition (
     last_edited timestamp not null,
     estimated_duration int8,
     outcomes bytea,
-    prerequisities bytea,
+    prerequisites bytea,
     show_stepper_bar boolean not null,
     state varchar(128) not null,
     title varchar(255) not null,
@@ -118,8 +118,6 @@ create table training_run (
     primary key (id)
 );
 
-
-
 create table hint_info(
   training_run_id bigserial not null,
   game_level_id bigserial not null,
@@ -128,8 +126,6 @@ create table hint_info(
   hint_content varchar(4096) not null,
   order_in_level int4 not null
 );
-
-
 
 create table user_ref (
    id  bigserial not null,

@@ -8,8 +8,6 @@ import io.swagger.annotations.ApiModelProperty;
 import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
-import java.util.Arrays;
-import java.util.Set;
 
 
 /**
@@ -25,7 +23,7 @@ public class TrainingDefinitionCreateDTO {
     @ApiModelProperty(value = "Description of training definition that is visible to the participant.", example = "Description of Photo Hunter")
     private String description;
     @ApiModelProperty(value = "List of knowledge and skills necessary to complete the training.", example = "[HTML, http protocol]")
-    private String[] prerequisities;
+    private String[] prerequisites;
     @ApiModelProperty(value = "A list of knowledge and skills that the participant should learn by attending the training (if it is used for educational purposes) ", example = "[outcomes]")
     private String[] outcomes;
     @ApiModelProperty(value = "Current state of training definition.", required = true, example = "UNRELEASED")
@@ -79,17 +77,17 @@ public class TrainingDefinitionCreateDTO {
      *
      * @return the prerequisites
      */
-    public String[] getPrerequisities() {
-        return prerequisities;
+    public String[] getPrerequisites() {
+        return prerequisites;
     }
 
     /**
      * Sets prerequisites.
      *
-     * @param prerequisities the prerequisites
+     * @param prerequisites the prerequisites
      */
-    public void setPrerequisities(String[] prerequisities) {
-        this.prerequisities = prerequisities;
+    public void setPrerequisites(String[] prerequisites) {
+        this.prerequisites = prerequisites;
     }
 
     /**
