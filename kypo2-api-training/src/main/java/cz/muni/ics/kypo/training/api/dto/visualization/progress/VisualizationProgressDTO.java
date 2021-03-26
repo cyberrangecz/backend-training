@@ -1,11 +1,8 @@
 package cz.muni.ics.kypo.training.api.dto.visualization.progress;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonView;
 import cz.muni.ics.kypo.training.api.dto.AbstractLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
-import cz.muni.ics.kypo.training.api.dto.visualization.AbstractLevelVisualizationDTO;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
@@ -24,8 +21,8 @@ public class VisualizationProgressDTO {
     @ApiModelProperty(value = "Information about all players in training instance.")
     private List<UserRefDTO> players;
     @ApiModelProperty(value = "Information about all levels in training definition.")
-    @JsonIgnoreProperties({"snapshot_hook", "training_definition", "hints", "incorrect_flag_limit"})
-    private List<AbstractLevelDTO> levels;
+    @JsonIgnoreProperties({"snapshot_hook", "training_definition", "hints.hint_penalty", "incorrect_flag_limit"})
+    private List<LevelDefinitionProgressDTO> levels;
     @ApiModelProperty(value = "Information about all levels in training definition.")
     private List<PlayerProgress> playerProgress;
 
@@ -61,11 +58,11 @@ public class VisualizationProgressDTO {
         this.players = players;
     }
 
-    public List<AbstractLevelDTO> getLevels() {
+    public List<LevelDefinitionProgressDTO> getLevels() {
         return levels;
     }
 
-    public void setLevels(List<AbstractLevelDTO> levels) {
+    public void setLevels(List<LevelDefinitionProgressDTO> levels) {
         this.levels = levels;
     }
 

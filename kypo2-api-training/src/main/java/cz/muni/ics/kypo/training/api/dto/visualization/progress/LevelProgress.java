@@ -1,5 +1,6 @@
 package cz.muni.ics.kypo.training.api.dto.visualization.progress;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonRootName;
 import cz.muni.csirt.kypo.events.AbstractAuditPOJO;
