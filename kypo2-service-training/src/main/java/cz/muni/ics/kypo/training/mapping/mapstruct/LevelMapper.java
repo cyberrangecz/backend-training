@@ -24,6 +24,7 @@ import cz.muni.ics.kypo.training.api.dto.imports.InfoLevelImportDTO;
 import cz.muni.ics.kypo.training.api.dto.infolevel.InfoLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.infolevel.InfoLevelUpdateDTO;
 import cz.muni.ics.kypo.training.api.dto.visualization.InfoLevelVisualizationDTO;
+import cz.muni.ics.kypo.training.api.dto.visualization.progress.LevelDefinitionProgressDTO;
 import cz.muni.ics.kypo.training.api.enums.LevelType;
 import cz.muni.ics.kypo.training.exceptions.InternalServerErrorException;
 import cz.muni.ics.kypo.training.persistence.model.*;
@@ -169,5 +170,25 @@ public interface LevelMapper extends ParentMapper {
                     " is not instance of assessment, game or info level.");
         }
         return abstractLevelExportDTO;
+    }
+
+    @Mapping(target = "levelType", constant = "GAME_LEVEL")
+    LevelDefinitionProgressDTO mapToLevelDefinitionProgressDTO(GameLevel entity);
+    @Mapping(target = "levelType", constant = "ASSESSMENT_LEVEL")
+    LevelDefinitionProgressDTO mapToLevelDefinitionProgressDTO(AssessmentLevel entity);
+    @Mapping(target = "levelType", constant = "INFO_LEVEL")
+    LevelDefinitionProgressDTO mapToLevelDefinitionProgressDTO(InfoLevel entity);
+
+    default LevelDefinitionProgressDTO mapToLevelDefinitionProgressDTO(AbstractLevel entity) {
+        if (entity instanceof GameLevel) {
+            return mapToLevelDefinitionProgressDTO((GameLevel) entity);
+        } else if (entity instanceof InfoLevel) {
+            return mapToLevelDefinitionProgressDTO((InfoLevel) entity);
+        } else if (entity instanceof AssessmentLevel) {
+            return mapToLevelDefinitionProgressDTO((AssessmentLevel) entity);
+        } else {
+            throw new InternalServerErrorException("Level with id: " + entity.getId() + " in given training definition with id: " + entity.getTrainingDefinition().getId() +
+                    " is not instance of assessment, game or info level.");
+        }
     }
 }

@@ -17,6 +17,7 @@ import cz.muni.ics.kypo.training.api.dto.visualization.clustering.GameResultsDTO
 import cz.muni.ics.kypo.training.api.dto.visualization.clustering.ClusteringLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.visualization.commons.PlayerDataDTO;
 import cz.muni.ics.kypo.training.api.dto.visualization.leveltabs.*;
+import cz.muni.ics.kypo.training.api.dto.visualization.progress.LevelDefinitionProgressDTO;
 import cz.muni.ics.kypo.training.api.dto.visualization.table.TableLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.visualization.timeline.TimelineDTO;
 import cz.muni.ics.kypo.training.api.dto.visualization.commons.VisualizationAbstractLevelDTO;
@@ -185,9 +186,9 @@ public class VisualizationFacade {
         visualizationProgressDTO.setPlayers(players);
 
         //Levels
-        List<AbstractLevelDTO> levels = trainingRunService.getLevels(trainingDefinitionOfTrainingRun.getId()).stream()
-                .map(level -> levelMapper.mapToDTO(level))
-                .sorted(Comparator.comparingInt(AbstractLevelDTO::getOrder))
+        List<LevelDefinitionProgressDTO> levels = trainingRunService.getLevels(trainingDefinitionOfTrainingRun.getId()).stream()
+                .map(level -> levelMapper.mapToLevelDefinitionProgressDTO(level))
+                .sorted(Comparator.comparingInt(LevelDefinitionProgressDTO::getOrder))
                 .collect(Collectors.toList());
         visualizationProgressDTO.setLevels(levels);
 
