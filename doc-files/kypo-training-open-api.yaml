@@ -1,7 +1,7 @@
 ---
 swagger: "2.0"
 info:
-  version: "Version: 1.1.61"
+  version: "Version: 1.1.62"
   title: "KYPO2 Training - API Reference"
 host: "localhost:8080"
 basePath: "/kypo2-rest-training/api/v1"
@@ -3956,6 +3956,8 @@ definitions:
         format: "int64"
       sort:
         $ref: "#/definitions/Sort"
+      paged:
+        type: "boolean"
       unpaged:
         type: "boolean"
       pageNumber:
@@ -3964,8 +3966,6 @@ definitions:
       pageSize:
         type: "integer"
         format: "int32"
-      paged:
-        type: "boolean"
   Pagination:
     type: "object"
     properties:
