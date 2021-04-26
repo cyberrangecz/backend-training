@@ -203,21 +203,21 @@ public class VisualizationFacade {
                 List<AbstractAuditPOJO> events = levelEvents.getValue();
                 LevelProgress levelProgress = new LevelProgress();
                 levelProgress.setLevelId(levelEvents.getKey());
-                levelProgress.setStartTime(events.get(0).getTimestamp());
-
-                if (events.get(events.size() - 1) instanceof LevelCompleted) {
-                    levelProgress.setState(LevelState.FINISHED);
-                    levelProgress.setEndTime(events.get(events.size() - 1).getTimestamp());
-                }
-
+                levelProgress.setState(LevelState.RUNNING);
                 //Count wrong flags number
                 int levelStartedEventIndex = 0;
                 if (events.get(0) instanceof TrainingRunStarted) {
                     levelStartedEventIndex = 1;
                 }
+                levelProgress.setStartTime(events.get(levelStartedEventIndex).getTimestamp());
                 if (((LevelStarted) events.get(levelStartedEventIndex)).getLevelType() == LevelType.GAME) {
-                    levelProgress.setWrongFlagsNumber(countWrongFlagsNumber(events));
-                    levelProgress.setHintsTaken(getTakenHints(events));
+                    this.countWrongFlagsAndAddTakenHints(levelProgress, events);
+                }
+
+                int levelCompletedEventIndex = getLevelCompletedEventIndex(events);
+                if (levelCompletedEventIndex != -1) {
+                    levelProgress.setState(LevelState.FINISHED);
+                    levelProgress.setEndTime(events.get(levelCompletedEventIndex).getTimestamp());
                 }
                 levelProgress.setEvents(events);
                 playerProgress.addLevelProgress(levelProgress);
@@ -228,24 +228,24 @@ public class VisualizationFacade {
         return visualizationProgressDTO;
     }
 
-    private int countWrongFlagsNumber(List<AbstractAuditPOJO> events) {
-        int counter = 0;
-        for (AbstractAuditPOJO event : events) {
-            if (event instanceof WrongFlagSubmitted) {
-                counter++;
-            }
+    private int getLevelCompletedEventIndex(List<AbstractAuditPOJO> events) {
+        AbstractAuditPOJO lastEvent = events.get(events.size() -1);
+        if (!(lastEvent instanceof LevelCompleted) && !(lastEvent instanceof TrainingRunEnded)) {
+            return -1;
         }
-        return counter;
+        return lastEvent instanceof TrainingRunEnded ? events.size() - 2 : events.size() - 1;
+
     }
 
-    private List<Long> getTakenHints(List<AbstractAuditPOJO> events) {
-        List<Long> takenHints = new ArrayList<>();
+    private void countWrongFlagsAndAddTakenHints(LevelProgress levelProgress, List<AbstractAuditPOJO> events) {
+        levelProgress.setWrongFlagsNumber(0L);
         for (AbstractAuditPOJO event : events) {
-            if (event instanceof HintTaken) {
-                takenHints.add(((HintTaken) event).getHintId());
+            if (event instanceof WrongFlagSubmitted) {
+                levelProgress.increaseWrongFlagsNumber();
+            } else if (event instanceof HintTaken) {
+                levelProgress.addHintTaken(((HintTaken) event).getHintId());
             }
         }
-        return takenHints;
     }
 
     private List<AbstractLevelVisualizationDTO> convertToAbstractLevelVisualizationDTO(List<AbstractLevel> abstractLevels) {
