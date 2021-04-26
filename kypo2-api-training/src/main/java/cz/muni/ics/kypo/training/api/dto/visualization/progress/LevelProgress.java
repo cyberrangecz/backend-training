@@ -1,17 +1,17 @@
 package cz.muni.ics.kypo.training.api.dto.visualization.progress;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonRootName;
 import cz.muni.csirt.kypo.events.AbstractAuditPOJO;
 import cz.muni.ics.kypo.training.api.enums.LevelState;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @ApiModel(value = "LevelProgress", description = "Progress in level of player.")
-@JsonRootName(value = "level_progress")
+@JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class LevelProgress {
 
     @ApiModelProperty(value = "User Ref ID.", required = true)
@@ -25,17 +25,16 @@ public class LevelProgress {
     private long startTime;
     @ApiModelProperty(value = "End time.", required = true)
     @JsonProperty(value = "end_time", required = true)
-    private long endTime;
+    private Long endTime;
     @ApiModelProperty(value = "Taken hints.", required = true)
     @JsonProperty(value = "hints_taken", required = true)
-    private List<Long> hintsTaken;
+    private List<Long> hintsTaken = new ArrayList<>();
     @ApiModelProperty(value = "Number of wrong flags.", required = true)
     @JsonProperty(value = "wrong_flags_number", required = true)
-    private long wrongFlagsNumber;
+    private Long wrongFlagsNumber;
     @ApiModelProperty(value = "Events belong to the respective level.", required = true)
     @JsonProperty(value = "events", required = true)
     private List<AbstractAuditPOJO> events;
-
 
     public long getLevelId() {
         return levelId;
@@ -61,11 +60,11 @@ public class LevelProgress {
         this.startTime = startTime;
     }
 
-    public long getEndTime() {
+    public Long getEndTime() {
         return endTime;
     }
 
-    public void setEndTime(long endTime) {
+    public void setEndTime(Long endTime) {
         this.endTime = endTime;
     }
 
@@ -77,12 +76,20 @@ public class LevelProgress {
         this.hintsTaken = hintsTaken;
     }
 
-    public long getWrongFlagsNumber() {
+    public void addHintTaken(Long hintId) {
+        this.hintsTaken.add(hintId);
+    }
+
+    public Long getWrongFlagsNumber() {
         return wrongFlagsNumber;
     }
 
-    public void setWrongFlagsNumber(long wrongFlagsNumber) {
+    public void setWrongFlagsNumber(Long wrongFlagsNumber) {
         this.wrongFlagsNumber = wrongFlagsNumber;
+    }
+
+    public void increaseWrongFlagsNumber() {
+        this.wrongFlagsNumber++;
     }
 
     public List<AbstractAuditPOJO> getEvents() {
