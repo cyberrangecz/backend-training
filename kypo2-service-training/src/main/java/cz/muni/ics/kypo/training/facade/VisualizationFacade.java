@@ -47,6 +47,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.time.Clock;
 import java.time.LocalDateTime;
@@ -342,7 +343,7 @@ public class VisualizationFacade {
         TrainingInstanceData trainingInstanceData = getTrainingInstanceData(trainingInstanceId, elasticsearchApiService::getAggregatedEventsByUsersAndLevels);
 
         TimelineDTO timelineDTO = new TimelineDTO();
-        timelineDTO.setEstimatedTime(trainingInstanceData.trainingDefinition.getEstimatedDuration());
+        timelineDTO.setEstimatedTime(TimeUnit.MINUTES.toMillis(trainingInstanceData.trainingDefinition.getEstimatedDuration()));
         timelineDTO.setLevelPoints(trainingInstanceData.levels.stream()
                 .map(AbstractLevel::getMaxScore)
                 .collect(Collectors.toList()));
@@ -382,7 +383,7 @@ public class VisualizationFacade {
         LevelTabsLevelDTO.LevelTabsLevelBuilder levelTabsLevelBuilder = new LevelTabsLevelDTO.LevelTabsLevelBuilder()
                 .id(level.getId())
                 .title(level.getTitle())
-                .estimatedTime(level.getEstimatedDuration())
+                .estimatedTime(TimeUnit.MINUTES.toMillis(level.getEstimatedDuration()))
                 .order(level.getOrder())
                 .maxPoints(level.getMaxScore());
         if (level instanceof GameLevel) {
@@ -459,7 +460,7 @@ public class VisualizationFacade {
                 .id(abstractLevel.getId())
                 .title(abstractLevel.getTitle())
                 .order(abstractLevel.getOrder())
-                .estimatedTime(abstractLevel.getEstimatedDuration());
+                .estimatedTime(TimeUnit.MINUTES.toMillis(abstractLevel.getEstimatedDuration()));
         if (abstractLevel instanceof GameLevel) {
             clusteringLevelBuilder.levelType(cz.muni.ics.kypo.training.api.enums.LevelType.GAME_LEVEL);
         } else if (abstractLevel instanceof InfoLevel) {
@@ -515,7 +516,7 @@ public class VisualizationFacade {
     private GameResultsDTO mapToFinalResultsDTO(TrainingInstanceData trainingInstanceData,
                                                 TrainingInstanceStatistics trainingInstanceStatistics) {
         GameResultsDTO finalResults = new GameResultsDTO();
-        finalResults.setEstimatedTime(trainingInstanceData.trainingDefinition.getEstimatedDuration());
+        finalResults.setEstimatedTime(TimeUnit.MINUTES.toMillis(trainingInstanceData.trainingDefinition.getEstimatedDuration()));
         finalResults.setMaxPoints(trainingInstanceData.levels.stream()
                 .mapToInt(AbstractLevel::getMaxScore)
                 .sum());
