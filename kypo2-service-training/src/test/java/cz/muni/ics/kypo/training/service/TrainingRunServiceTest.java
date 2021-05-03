@@ -595,7 +595,7 @@ public class TrainingRunServiceTest {
 
     @Test
     public void testFinishTrainingRun() {
-        given(trainingRunRepository.findById(any(Long.class))).willReturn(Optional.of(trainingRun2));
+        given(trainingRunRepository.findByIdWithLevel(any(Long.class))).willReturn(Optional.of(trainingRun2));
         given(abstractLevelRepository.getCurrentMaxOrder(anyLong())).willReturn(infoLevel2.getOrder());
         trainingRunService.finishTrainingRun(trainingRun2.getId());
         then(trAcquisitionLockRepository).should().deleteByParticipantRefIdAndTrainingInstanceId(trainingRun2.getParticipantRef().getUserRefId(), trainingRun2.getTrainingInstance().getId());
@@ -605,14 +605,14 @@ public class TrainingRunServiceTest {
     @Test(expected = EntityConflictException.class)
     public void testFinishTrainingRun_NonLastLevel() {
         trainingRun1.setLevelAnswered(true);
-        given(trainingRunRepository.findById(any(Long.class))).willReturn(Optional.of(trainingRun1));
+        given(trainingRunRepository.findByIdWithLevel(any(Long.class))).willReturn(Optional.of(trainingRun1));
         given(abstractLevelRepository.getCurrentMaxOrder(anyLong())).willReturn(infoLevel.getOrder());
         trainingRunService.finishTrainingRun(trainingRun1.getId());
     }
 
     @Test(expected = EntityConflictException.class)
     public void testFinishTrainingRun_NotAnsweredLevel() {
-        given(trainingRunRepository.findById(any(Long.class))).willReturn(Optional.of(trainingRun1));
+        given(trainingRunRepository.findByIdWithLevel(any(Long.class))).willReturn(Optional.of(trainingRun1));
         trainingRunService.finishTrainingRun(trainingRun1.getId());
     }
 

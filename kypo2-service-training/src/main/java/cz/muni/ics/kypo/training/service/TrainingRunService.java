@@ -512,7 +512,7 @@ public class TrainingRunService {
      * @throws EntityNotFoundException training run is not found.
      */
     public void finishTrainingRun(Long trainingRunId) {
-        TrainingRun trainingRun = findById(trainingRunId);
+        TrainingRun trainingRun = findByIdWithLevel(trainingRunId);
         int maxOrder = abstractLevelRepository.getCurrentMaxOrder(trainingRun.getCurrentLevel().getTrainingDefinition().getId());
         if (trainingRun.getCurrentLevel().getOrder() != maxOrder) {
             throw new EntityConflictException(new EntityErrorDetail(TrainingRun.class, "id", trainingRunId.getClass(), trainingRunId,
