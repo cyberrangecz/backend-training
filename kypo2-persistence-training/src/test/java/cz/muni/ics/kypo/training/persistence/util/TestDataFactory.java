@@ -634,7 +634,7 @@ public class TestDataFactory {
         ImportTrainingDefinitionDTO importTrainingDefinitionDTO = new ImportTrainingDefinitionDTO();
         importTrainingDefinitionDTO.setTitle(title);
         importTrainingDefinitionDTO.setDescription(description);
-        importTrainingDefinitionDTO.setPrerequisities(prerequisites);
+        importTrainingDefinitionDTO.setPrerequisites(prerequisites);
         importTrainingDefinitionDTO.setOutcomes(outcomes);
         importTrainingDefinitionDTO.setState(state);
         importTrainingDefinitionDTO.setShowStepperBar(showStepperBar);

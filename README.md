@@ -40,7 +40,7 @@ And the main project (parent maven project with packaging pom):
 
 ### Build and Start the Project Using Docker
 
-#### Prerequisities
+#### Prerequisites
 Install the following technology:
 
 Technology       | URL to Download
