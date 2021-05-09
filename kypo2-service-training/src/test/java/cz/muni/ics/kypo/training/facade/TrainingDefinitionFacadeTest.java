@@ -55,9 +55,9 @@ import static org.mockito.BDDMockito.*;
 
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = {TestDataFactory.class})
-@SpringBootTest(classes = {LevelMapperImpl.class, TrainingDefinitionMapperImpl.class,
-        UserRefMapperImpl.class, LevelMapperImpl.class, BetaTestingGroupMapperImpl.class,
-        HintMapperImpl.class, AttachmentMapperImpl.class})
+@SpringBootTest(classes = {LevelMapperImpl.class, TrainingDefinitionMapperImpl.class, UserRefMapperImpl.class,
+        LevelMapperImpl.class, BetaTestingGroupMapperImpl.class, QuestionMapperImpl.class, HintMapperImpl.class,
+        AttachmentMapperImpl.class})
 public class TrainingDefinitionFacadeTest {
 
     @Rule
@@ -238,6 +238,8 @@ public class TrainingDefinitionFacadeTest {
 
     @Test
     public void updateAssessmentLevel() {
+        given(trainingDefinitionService.updateAssessmentLevel(anyLong(), any(AssessmentLevel.class))).willReturn(levelMapper.mapUpdateToEntity(alUpdate));
+
         trainingDefinitionFacade.updateAssessmentLevel(trainingDefinition1.getId(), alUpdate);
         then(trainingDefinitionService).should().updateAssessmentLevel(trainingDefinition1.getId(),
                 levelMapper.mapUpdateToEntity(alUpdate));

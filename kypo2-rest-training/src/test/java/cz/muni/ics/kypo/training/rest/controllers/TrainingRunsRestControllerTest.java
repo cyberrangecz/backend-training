@@ -335,13 +335,13 @@ public class TrainingRunsRestControllerTest {
         assertEquals("The requested entity could not be found", error.getMessage());
     }
 
-    @Test
-    public void evaluateResponsesToAssessment() throws Exception {
-        mockMvc.perform(put("/training-runs/{runId}/assessment-evaluations", trainingRun1.getId())
-                .content("responses"))
-                .andExpect(status().isNoContent());
-        then(trainingRunFacade).should().evaluateResponsesToAssessment(trainingRun1.getId(), "responses");
-    }
+//    @Test
+//    public void evaluateResponsesToAssessment() throws Exception {
+//        mockMvc.perform(put("/training-runs/{runId}/assessment-evaluations", trainingRun1.getId())
+//                .content("responses"))
+//                .andExpect(status().isNoContent());
+//        then(trainingRunFacade).should().evaluateResponsesToAssessment(trainingRun1.getId(), "responses");
+//    }
 
     @Test
     public void finishTrainingRun() throws Exception {

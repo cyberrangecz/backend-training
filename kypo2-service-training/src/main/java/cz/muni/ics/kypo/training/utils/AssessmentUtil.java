@@ -270,26 +270,4 @@ public class AssessmentUtil {
         }
 
     }
-
-    /**
-     * Method which validate questions from assessment.
-     *
-     * @param questions to be validate
-     * @throws IllegalArgumentException when questions are not valid.
-     */
-    public static void validQuestions(String questions) {
-        try {
-            JsonNode n = JsonLoader.fromString(questions);
-            final JsonNode jsonSchema = JsonLoader.fromResource("/questions-schema.json");
-            final JsonSchemaFactory factory = JsonSchemaFactory.byDefault();
-            JsonValidator v = factory.getValidator();
-            ProcessingReport report = v.validate(jsonSchema, n);
-            if (!report.toString().contains("success")) {
-                throw new IllegalArgumentException("Given questions are not not valid .\n" + report.iterator().next());
-            }
-
-        } catch (IOException | ProcessingException ex) {
-            throw new InternalServerErrorException(ex.getMessage());
-        }
-    }
 }

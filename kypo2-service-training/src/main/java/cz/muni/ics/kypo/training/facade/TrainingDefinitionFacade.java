@@ -6,6 +6,7 @@ import cz.muni.ics.kypo.training.annotations.security.IsDesignerOrAdmin;
 import cz.muni.ics.kypo.training.annotations.security.IsOrganizerOrAdmin;
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalRO;
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalWO;
+import cz.muni.ics.kypo.training.api.dto.imports.AssessmentLevelImportDTO;
 import cz.muni.ics.kypo.training.api.responses.PageResultResource;
 import cz.muni.ics.kypo.training.api.dto.*;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelUpdateDTO;
@@ -16,13 +17,15 @@ import cz.muni.ics.kypo.training.api.enums.LevelType;
 import cz.muni.ics.kypo.training.api.enums.RoleType;
 import cz.muni.ics.kypo.training.api.enums.TDState;
 import cz.muni.ics.kypo.training.enums.RoleTypeSecurity;
-import cz.muni.ics.kypo.training.exceptions.EntityConflictException;
-import cz.muni.ics.kypo.training.exceptions.EntityErrorDetail;
-import cz.muni.ics.kypo.training.exceptions.EntityNotFoundException;
-import cz.muni.ics.kypo.training.exceptions.InternalServerErrorException;
+import cz.muni.ics.kypo.training.exceptions.*;
 import cz.muni.ics.kypo.training.mapping.mapstruct.*;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.model.AssessmentLevel;
+import cz.muni.ics.kypo.training.persistence.model.enums.AssessmentType;
+import cz.muni.ics.kypo.training.persistence.model.enums.QuestionType;
+import cz.muni.ics.kypo.training.persistence.model.question.ExtendedMatchingOption;
+import cz.muni.ics.kypo.training.persistence.model.question.ExtendedMatchingStatement;
+import cz.muni.ics.kypo.training.persistence.model.question.Question;
 import cz.muni.ics.kypo.training.service.TrainingDefinitionService;
 import cz.muni.ics.kypo.training.service.UserService;
 import cz.muni.ics.kypo.training.service.SecurityService;
@@ -344,13 +347,33 @@ public class TrainingDefinitionFacade {
      * updates assessment level from training definition
      *
      * @param definitionId    - id of training definition containing level to be updated
-     * @param assessmentLevel to be updated
+     * @param assessmentLevelToUpdate to be updated
      */
     @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
             "or @securityService.isDesignerOfGivenTrainingDefinition(#definitionId)")
     @TransactionalWO
-    public void updateAssessmentLevel(Long definitionId, AssessmentLevelUpdateDTO assessmentLevel) {
-        trainingDefinitionService.updateAssessmentLevel(definitionId, levelMapper.mapUpdateToEntity(assessmentLevel));
+    public void updateAssessmentLevel(Long definitionId, AssessmentLevelUpdateDTO assessmentLevelToUpdate) {
+        AssessmentLevel assessmentLevel = levelMapper.mapUpdateToEntity(assessmentLevelToUpdate);
+        if (assessmentLevel.getAssessmentType() == AssessmentType.TEST) {
+            this.checkAndSetCorrectOptionsOfStatements(assessmentLevel, assessmentLevelToUpdate);
+        }
+        trainingDefinitionService.updateAssessmentLevel(definitionId, assessmentLevel);
+
+    }
+
+    private void checkAndSetCorrectOptionsOfStatements(AssessmentLevel assessmentLevel, AssessmentLevelUpdateDTO assessmentLevelUpdateDTO) {
+        assessmentLevelUpdateDTO.getQuestions().stream()
+                .filter(questionDTO -> questionDTO.getQuestionType() == cz.muni.ics.kypo.training.api.enums.QuestionType.EMI)
+                .forEach(questionDTO -> questionDTO.getExtendedMatchingStatements()
+                        .forEach(statementDTO -> {
+                            if (statementDTO.getCorrectOptionOrder() == null) {
+                                throw new BadRequestException("You must set the correct option for the each statement in the assessment of the type TEST");
+                            }
+                            Question question = assessmentLevel.getQuestions().get(questionDTO.getOrder());
+                            ExtendedMatchingOption correctOption = question.getExtendedMatchingOptions().get(statementDTO.getCorrectOptionOrder());
+                            ExtendedMatchingStatement statementToUpdate = question.getExtendedMatchingStatements().get(statementDTO.getOrder());
+                            statementToUpdate.setExtendedMatchingOption(correctOption);
+                        }));
     }
 
     /**

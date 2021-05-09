@@ -9,9 +9,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.google.gson.JsonObject;
 import cz.muni.ics.kypo.commons.security.enums.AuthenticatedUserOIDCItems;
+import cz.muni.ics.kypo.training.api.dto.BasicLevelInfoDTO;
 import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelUpdateDTO;
+import cz.muni.ics.kypo.training.api.dto.assessmentlevel.question.ExtendedMatchingOptionDTO;
+import cz.muni.ics.kypo.training.api.dto.assessmentlevel.question.QuestionDTO;
 import cz.muni.ics.kypo.training.api.dto.gamelevel.GameLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.gamelevel.GameLevelUpdateDTO;
 import cz.muni.ics.kypo.training.api.dto.infolevel.InfoLevelDTO;
@@ -19,6 +22,7 @@ import cz.muni.ics.kypo.training.api.dto.infolevel.InfoLevelUpdateDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.*;
 import cz.muni.ics.kypo.training.api.enums.AssessmentType;
 import cz.muni.ics.kypo.training.api.enums.LevelType;
+import cz.muni.ics.kypo.training.api.enums.QuestionType;
 import cz.muni.ics.kypo.training.api.enums.TDState;
 import cz.muni.ics.kypo.training.api.responses.PageResultResource;
 import cz.muni.ics.kypo.training.enums.RoleTypeSecurity;
@@ -27,6 +31,8 @@ import cz.muni.ics.kypo.training.mapping.mapstruct.LevelMapperImpl;
 import cz.muni.ics.kypo.training.mapping.mapstruct.TrainingDefinitionMapperImpl;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.model.AssessmentLevel;
+import cz.muni.ics.kypo.training.persistence.model.question.ExtendedMatchingOption;
+import cz.muni.ics.kypo.training.persistence.model.question.Question;
 import cz.muni.ics.kypo.training.persistence.repository.*;
 import cz.muni.ics.kypo.training.persistence.util.TestDataFactory;
 import cz.muni.ics.kypo.training.rest.ApiEntityError;
@@ -35,6 +41,7 @@ import cz.muni.ics.kypo.training.rest.controllers.config.DBTestUtil;
 import cz.muni.ics.kypo.training.rest.controllers.config.RestConfigTest;
 import org.apache.http.HttpHeaders;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -75,8 +82,10 @@ import org.springframework.web.reactive.function.client.ExchangeFunction;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
+import javax.persistence.EntityManager;
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static cz.muni.ics.kypo.training.rest.controllers.util.ObjectConverter.convertJsonBytesToObject;
 import static cz.muni.ics.kypo.training.rest.controllers.util.ObjectConverter.convertObjectToJsonBytes;
@@ -122,6 +131,8 @@ public class TrainingDefinitionsIT {
     @Autowired
     private TrainingInstanceRepository trainingInstanceRepository;
     @Autowired
+    private EntityManager entityManager;
+    @Autowired
     @Qualifier("objMapperRESTApi")
     private ObjectMapper mapper;
 
@@ -147,7 +158,7 @@ public class TrainingDefinitionsIT {
     private GameLevelUpdateDTO gameLevelUpdateDTO, invalidGameLevelUpdateDTO;
     private InfoLevel infoLevel1;
     private InfoLevelUpdateDTO infoLevelUpdateDTO, invalidInfoLevelUpdateDTO;
-    private AssessmentLevel assessmentLevel1;
+    private AssessmentLevel assessmentLevelWithoutQuestions, assessmentLevelWithQuestions;
     private AssessmentLevelUpdateDTO assessmentLevelUpdateDTO, invalidAssessmentLevelUpdateDTO;
     private UserRefDTO organizerDTO1, organizerDTO2, authorDTO1, authorDTO2;
 
@@ -187,10 +198,9 @@ public class TrainingDefinitionsIT {
         infoLevelUpdateDTO = testDataFactory.getInfoLevelUpdateDTO();
         invalidInfoLevelUpdateDTO = new InfoLevelUpdateDTO();
 
-        assessmentLevel1 = testDataFactory.getQuestionnaire();
-        assessmentLevel1.setQuestions("[]");
-        assessmentLevelUpdateDTO = testDataFactory.getAssessmentLevelUpdateDTO();
-        assessmentLevelUpdateDTO.setQuestions("[]");
+        assessmentLevelWithoutQuestions = testDataFactory.getQuestionnaire();
+        this.createAssessmentLevelWithQuestions();
+        this.createAssessmentLevelUpdateDTO();
         invalidAssessmentLevelUpdateDTO = new AssessmentLevelUpdateDTO();
 
         trainingDefinitionCreateDTO = testDataFactory.getTrainingDefinitionCreateDTO();
@@ -221,6 +231,44 @@ public class TrainingDefinitionsIT {
         trainingInstance.setOrganizers(Set.of(author1));
 
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+    }
+
+    private void createAssessmentLevelWithQuestions() {
+        assessmentLevelWithQuestions = testDataFactory.getTest();
+        entityManager.persist(assessmentLevelWithQuestions);
+        Question freeFormQuestion = testDataFactory.getFreeFormQuestion();
+        freeFormQuestion.setAssessmentLevel(assessmentLevelWithQuestions);
+        entityManager.persist(freeFormQuestion);
+        freeFormQuestion.setChoices(testDataFactory.getQuestionChoices(3, "Free form option", Collections.nCopies(3, true), freeFormQuestion));
+
+        Question multipleChoiceQuestion = testDataFactory.getMultipleChoiceQuestion();
+        entityManager.persist(multipleChoiceQuestion);
+        multipleChoiceQuestion.setChoices(testDataFactory.getQuestionChoices(3, "Multiple choice option", List.of(true, false, true), multipleChoiceQuestion));
+
+        Question extendedMatchingItemsQuestion = testDataFactory.getExtendedMatchingItems();
+        entityManager.persist(extendedMatchingItemsQuestion);
+
+        List<ExtendedMatchingOption> extendedMatchingOptions = testDataFactory.getExtendedMatchingOptions(4, "Option ", extendedMatchingItemsQuestion);
+        extendedMatchingItemsQuestion.setExtendedMatchingOptions(extendedMatchingOptions);
+        extendedMatchingItemsQuestion.setExtendedMatchingStatements(testDataFactory.getExtendedMatchingItems(3, "Statement ", extendedMatchingItemsQuestion));
+        AtomicInteger index = new AtomicInteger();
+        extendedMatchingItemsQuestion.getExtendedMatchingStatements().forEach(item -> item.setExtendedMatchingOption(extendedMatchingOptions.get(index.getAndIncrement() % 4)));
+        assessmentLevelWithQuestions.setQuestions(new ArrayList<>(List.of(freeFormQuestion, multipleChoiceQuestion, extendedMatchingItemsQuestion)));
+    }
+
+    private void createAssessmentLevelUpdateDTO() {
+        assessmentLevelUpdateDTO = testDataFactory.getAssessmentLevelUpdateDTO();
+        QuestionDTO freeFormQuestionDTO = testDataFactory.getFreeFormQuestionDTO();
+        freeFormQuestionDTO.setChoices(testDataFactory.getQuestionChoiceDTOs(2, "Free form option update", Collections.nCopies(2, true)));
+
+        QuestionDTO multipleChoiceQuestionDTO = testDataFactory.getMultipleChoiceQuestionDTO();
+        multipleChoiceQuestionDTO.setChoices(testDataFactory.getQuestionChoiceDTOs(4, "Multiple choice option upudate", List.of(true, false, false, false)));
+
+        QuestionDTO extendedMatchingItemsQuestionDTO = testDataFactory.getExtendedMatchingItemsDTO();
+        List<ExtendedMatchingOptionDTO> extendedMatchingOptionDTOs = testDataFactory.getExtendedMatchingOptionDTOs(4, "Option ");
+        extendedMatchingItemsQuestionDTO.setExtendedMatchingOptions(extendedMatchingOptionDTOs);
+        extendedMatchingItemsQuestionDTO.setExtendedMatchingStatements(testDataFactory.getExtendedMatchingItemDTOs(3, "Statement ", List.of(3, 1, 2)));
+        assessmentLevelUpdateDTO.setQuestions(new ArrayList<>(List.of(freeFormQuestionDTO, multipleChoiceQuestionDTO, extendedMatchingItemsQuestionDTO)));
     }
 
     @After
@@ -578,17 +626,17 @@ public class TrainingDefinitionsIT {
     @Test
     public void deleteTrainingDefinition() throws Exception {
         trainingDefinitionRepository.save(unreleasedTrainingDefinition);
-        assessmentLevel1.setTrainingDefinition(unreleasedTrainingDefinition);
+        assessmentLevelWithoutQuestions.setTrainingDefinition(unreleasedTrainingDefinition);
         gameLevel1.setTrainingDefinition(unreleasedTrainingDefinition);
         infoLevel1.setTrainingDefinition(unreleasedTrainingDefinition);
-        assessmentLevelRepository.save(assessmentLevel1);
+        assessmentLevelRepository.save(assessmentLevelWithoutQuestions);
         gameLevelRepository.save(gameLevel1);
         infoLevelRepository.save(infoLevel1);
 
         mvc.perform(delete("/training-definitions" + "/{id}", unreleasedTrainingDefinition.getId()))
                 .andExpect(status().isOk());
         assertFalse(trainingDefinitionRepository.findById(unreleasedTrainingDefinition.getId()).isPresent());
-        assertFalse(assessmentLevelRepository.findById(assessmentLevel1.getId()).isPresent());
+        assertFalse(assessmentLevelRepository.findById(assessmentLevelWithoutQuestions.getId()).isPresent());
         assertFalse(gameLevelRepository.findById(gameLevel1.getId()).isPresent());
         assertFalse(infoLevelRepository.findById(infoLevel1.getId()).isPresent());
     }
@@ -674,6 +722,7 @@ public class TrainingDefinitionsIT {
 
     @Test
     public void deleteOneLevel_ReleasedDefinition() throws Exception {
+        gameLevel1.setTrainingDefinition(releasedTrainingDefinition);
         trainingDefinitionRepository.save(releasedTrainingDefinition);
         gameLevelRepository.save(gameLevel1);
         MockHttpServletResponse response = mvc.perform(delete("/training-definitions/{definitionId}/levels/{levelId}",
@@ -682,21 +731,22 @@ public class TrainingDefinitionsIT {
                 .andReturn().getResponse();
         ApiEntityError error = convertJsonBytesToObject(response.getContentAsString(), ApiEntityError.class);
         assertEquals(HttpStatus.CONFLICT, error.getStatus());
-        assertEntityDetailError(error.getEntityErrorDetail(), AbstractLevel.class, "id", releasedTrainingDefinition.getId().toString(),
+        assertEntityDetailError(error.getEntityErrorDetail(), AbstractLevel.class, "id", gameLevel1.getId().toString(),
                 "Cannot edit released or archived training definition.");
     }
 
     @Test
     public void deleteOneLevel_ArchivedDefinition() throws Exception {
-        trainingDefinitionRepository.save(releasedTrainingDefinition);
+        trainingDefinitionRepository.save(archivedTrainingDefinition);
+        gameLevel1.setTrainingDefinition(archivedTrainingDefinition);
         gameLevelRepository.save(gameLevel1);
         MockHttpServletResponse response = mvc.perform(delete("/training-definitions/{definitionId}/levels/{levelId}",
-                releasedTrainingDefinition.getId(), gameLevel1.getId()))
+                archivedTrainingDefinition.getId(), gameLevel1.getId()))
                 .andExpect(status().isConflict())
                 .andReturn().getResponse();
         ApiEntityError error = convertJsonBytesToObject(response.getContentAsString(), ApiEntityError.class);
         assertEquals(HttpStatus.CONFLICT, error.getStatus());
-        assertEntityDetailError(error.getEntityErrorDetail(), AbstractLevel.class, "id", releasedTrainingDefinition.getId().toString(),
+        assertEntityDetailError(error.getEntityErrorDetail(), AbstractLevel.class, "id", gameLevel1.getId().toString(),
                 "Cannot edit released or archived training definition.");
     }
 
@@ -789,7 +839,7 @@ public class TrainingDefinitionsIT {
         ApiEntityError error = convertJsonBytesToObject(response.getContentAsString(), ApiEntityError.class);
         assertEquals(HttpStatus.NOT_FOUND, error.getStatus());
         assertEntityDetailError(error.getEntityErrorDetail(), AbstractLevel.class, "id", gameLevelUpdateDTO.getId().toString(),
-                "Level was not found in definition (id: " + unreleasedTrainingDefinition.getId() + ").");
+                "Level not found.");
     }
 
     @Test
@@ -877,29 +927,68 @@ public class TrainingDefinitionsIT {
         ApiEntityError error = convertJsonBytesToObject(response.getContentAsString(), ApiEntityError.class);
         assertEquals(HttpStatus.NOT_FOUND, error.getStatus());
         assertEntityDetailError(error.getEntityErrorDetail(), AbstractLevel.class, "id", infoLevelUpdateDTO.getId().toString(),
-                "Level was not found in definition (id: " + unreleasedTrainingDefinition.getId() + ").");
+                "Level not found.");
 
     }
 
     @Test
-    public void updateAssessmentLevel() throws Exception {
+    public void updateAssessmentLevelWithoutQuestions() throws Exception {
         trainingDefinitionRepository.save(unreleasedTrainingDefinition);
-        assessmentLevelRepository.save(assessmentLevel1);
-        assessmentLevel1.setTrainingDefinition(unreleasedTrainingDefinition);
-        assessmentLevelUpdateDTO.setId(assessmentLevel1.getId());
+        assessmentLevelRepository.save(assessmentLevelWithoutQuestions);
+        assessmentLevelWithoutQuestions.setTrainingDefinition(unreleasedTrainingDefinition);
+        assessmentLevelUpdateDTO.setId(assessmentLevelWithoutQuestions.getId());
+        assertTrue(assessmentLevelWithoutQuestions.getQuestions().isEmpty());
 
         mvc.perform(put("/training-definitions/{definitionId}/assessment-levels",
                 unreleasedTrainingDefinition.getId()).content(convertObjectToJsonBytes(assessmentLevelUpdateDTO))
                 .contentType(MediaType.APPLICATION_JSON_VALUE))
-                .andExpect(status().isNoContent());
+                .andExpect(status().isNoContent())
+                .andReturn().getResponse();
 
-        Optional<AssessmentLevel> updatedAssessmentLevel = assessmentLevelRepository.findById(assessmentLevel1.getId());
+        Optional<AssessmentLevel> updatedAssessmentLevel = assessmentLevelRepository.findById(assessmentLevelWithoutQuestions.getId());
         assertTrue(updatedAssessmentLevel.isPresent());
         assertEquals(updatedAssessmentLevel.get().getTitle(), assessmentLevelUpdateDTO.getTitle());
         assertEquals(updatedAssessmentLevel.get().getAssessmentType().toString(), assessmentLevelUpdateDTO.getType().toString());
-        assertEquals(updatedAssessmentLevel.get().getQuestions(), assessmentLevelUpdateDTO.getQuestions());
+        assertEquals(assessmentLevelUpdateDTO.getQuestions().size(), updatedAssessmentLevel.get().getQuestions().size());
         assertEquals(updatedAssessmentLevel.get().getInstructions(), assessmentLevelUpdateDTO.getInstructions());
         assertEquals(updatedAssessmentLevel.get().getMaxScore(), assessmentLevelUpdateDTO.getMaxScore());
+        this.assertQuestionAfterUpdate(updatedAssessmentLevel.get());
+    }
+
+    @Test
+    public void updateAssessmentLevelWithQuestions() throws Exception {
+        trainingDefinitionRepository.save(unreleasedTrainingDefinition);
+        assessmentLevelWithQuestions.setTrainingDefinition(unreleasedTrainingDefinition);
+        assessmentLevelRepository.save(assessmentLevelWithQuestions);
+        assessmentLevelUpdateDTO.setId(assessmentLevelWithQuestions.getId());
+        assertFalse(assessmentLevelWithQuestions.getQuestions().isEmpty());
+
+        assessmentLevelWithQuestions.getQuestions().forEach(question -> {
+            if (question.getQuestionType() == cz.muni.ics.kypo.training.persistence.model.enums.QuestionType.FFQ) {
+                assertEquals(3, question.getChoices().size());
+            } else if (question.getQuestionType() == cz.muni.ics.kypo.training.persistence.model.enums.QuestionType.MCQ) {
+                assertEquals(3, question.getChoices().size());
+            } else if (question.getQuestionType() == cz.muni.ics.kypo.training.persistence.model.enums.QuestionType.EMI) {
+                assertEquals(4, question.getExtendedMatchingOptions().size());
+                assertEquals(3, question.getExtendedMatchingStatements().size());
+                question.getExtendedMatchingStatements().forEach(Assert::assertNotNull);
+            }
+        });
+
+        mvc.perform(put("/training-definitions/{definitionId}/assessment-levels",
+                unreleasedTrainingDefinition.getId()).content(convertObjectToJsonBytes(assessmentLevelUpdateDTO))
+                .contentType(MediaType.APPLICATION_JSON_VALUE))
+                .andExpect(status().isNoContent())
+                .andReturn().getResponse();
+
+        Optional<AssessmentLevel> updatedAssessmentLevel = assessmentLevelRepository.findById(assessmentLevelWithQuestions.getId());
+        assertTrue(updatedAssessmentLevel.isPresent());
+        assertEquals(updatedAssessmentLevel.get().getTitle(), assessmentLevelUpdateDTO.getTitle());
+        assertEquals(updatedAssessmentLevel.get().getAssessmentType().toString(), assessmentLevelUpdateDTO.getType().toString());
+        assertEquals(assessmentLevelUpdateDTO.getQuestions().size(), updatedAssessmentLevel.get().getQuestions().size());
+        assertEquals(updatedAssessmentLevel.get().getInstructions(), assessmentLevelUpdateDTO.getInstructions());
+        assertEquals(updatedAssessmentLevel.get().getMaxScore(), assessmentLevelUpdateDTO.getMaxScore());
+        this.assertQuestionAfterUpdate(updatedAssessmentLevel.get());
     }
 
     @Test
@@ -915,8 +1004,8 @@ public class TrainingDefinitionsIT {
     @Test
     public void updateAssessmentLevel_ReleasedDefinition() throws Exception {
         trainingDefinitionRepository.save(releasedTrainingDefinition);
-        assessmentLevelRepository.save(assessmentLevel1);
-        assessmentLevelUpdateDTO.setId(assessmentLevel1.getId());
+        assessmentLevelRepository.save(assessmentLevelWithoutQuestions);
+        assessmentLevelUpdateDTO.setId(assessmentLevelWithoutQuestions.getId());
 
         MockHttpServletResponse response = mvc.perform(put("/training-definitions/{definitionId}/assessment-levels", releasedTrainingDefinition.getId()).content(convertObjectToJsonBytes(assessmentLevelUpdateDTO))
                 .contentType(MediaType.APPLICATION_JSON_VALUE))
@@ -931,8 +1020,8 @@ public class TrainingDefinitionsIT {
     @Test
     public void updateAssessmentLevel_ArchivedDefinition() throws Exception {
         trainingDefinitionRepository.save(archivedTrainingDefinition);
-        assessmentLevelRepository.save(assessmentLevel1);
-        assessmentLevelUpdateDTO.setId(assessmentLevel1.getId());
+        assessmentLevelRepository.save(assessmentLevelWithoutQuestions);
+        assessmentLevelUpdateDTO.setId(assessmentLevelWithoutQuestions.getId());
 
         MockHttpServletResponse response = mvc.perform(put("/training-definitions/{definitionId}/assessment-levels",
                 archivedTrainingDefinition.getId()).content(convertObjectToJsonBytes(assessmentLevelUpdateDTO))
@@ -969,7 +1058,7 @@ public class TrainingDefinitionsIT {
         ApiEntityError error = convertJsonBytesToObject(response.getContentAsString(), ApiEntityError.class);
         assertEquals(HttpStatus.NOT_FOUND, error.getStatus());
         assertEntityDetailError(error.getEntityErrorDetail(), AbstractLevel.class, "id", assessmentLevelUpdateDTO.getId().toString(),
-                "Level was not found in definition (id: " + unreleasedTrainingDefinition.getId() + ").");
+                "Level not found.");
     }
 
     @Test
@@ -1003,13 +1092,13 @@ public class TrainingDefinitionsIT {
     @Test
     public void findAssessmentLevelById() throws Exception {
         trainingDefinitionRepository.save(unreleasedTrainingDefinition);
-        assessmentLevel1.setTrainingDefinition(unreleasedTrainingDefinition);
-        assessmentLevelRepository.save(assessmentLevel1);
-        MockHttpServletResponse result = mvc.perform(get("/training-definitions/levels/{id}", assessmentLevel1.getId()))
+        assessmentLevelWithoutQuestions.setTrainingDefinition(unreleasedTrainingDefinition);
+        assessmentLevelRepository.save(assessmentLevelWithoutQuestions);
+        MockHttpServletResponse result = mvc.perform(get("/training-definitions/levels/{id}", assessmentLevelWithoutQuestions.getId()))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andReturn().getResponse();
-        AssessmentLevelDTO assessmentLevelDTO = levelMapper.mapToAssessmentLevelDTO(assessmentLevel1);
+        AssessmentLevelDTO assessmentLevelDTO = levelMapper.mapToAssessmentLevelDTO(assessmentLevelWithoutQuestions);
         assessmentLevelDTO.setLevelType(LevelType.ASSESSMENT_LEVEL);
         assertEquals(assessmentLevelDTO, convertJsonBytesToObject(convertJsonBytesToObject(result.getContentAsString()), AssessmentLevelDTO.class));
     }
@@ -1028,11 +1117,13 @@ public class TrainingDefinitionsIT {
     @Test
     public void createGameLevel() throws Exception {
         TrainingDefinition trainingDefinition = trainingDefinitionRepository.save(unreleasedTrainingDefinition);
-        mvc.perform(post("/training-definitions/{definitionId}/levels/{levelType}", trainingDefinition.getId(), cz.muni.ics.kypo.training.persistence.model.enums.LevelType.GAME))
+        MockHttpServletResponse response = mvc.perform(post("/training-definitions/{definitionId}/levels/{levelType}", trainingDefinition.getId(), cz.muni.ics.kypo.training.persistence.model.enums.LevelType.GAME))
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON_VALUE))
-                .andExpect(status().isCreated());
+                .andExpect(status().isCreated())
+                .andReturn().getResponse();
 
-        Optional<GameLevel> optionalGameLevel = gameLevelRepository.findById(1L);
+        BasicLevelInfoDTO levelInfoDTO = convertJsonBytesToObject(convertJsonBytesToObject(response.getContentAsString()), BasicLevelInfoDTO.class);
+        Optional<GameLevel> optionalGameLevel = gameLevelRepository.findById(levelInfoDTO.getId());
         assertTrue(optionalGameLevel.isPresent());
         GameLevel gameLevel = optionalGameLevel.get();
         assertEquals(100, gameLevel.getMaxScore() );
@@ -1047,11 +1138,13 @@ public class TrainingDefinitionsIT {
     @Test
     public void createInfoLevel() throws Exception {
         TrainingDefinition trainingDefinition = trainingDefinitionRepository.save(unreleasedTrainingDefinition);
-        mvc.perform(post("/training-definitions/{definitionId}/levels/{levelType}", trainingDefinition.getId(), cz.muni.ics.kypo.training.persistence.model.enums.LevelType.INFO))
+        MockHttpServletResponse response = mvc.perform(post("/training-definitions/{definitionId}/levels/{levelType}", trainingDefinition.getId(), cz.muni.ics.kypo.training.persistence.model.enums.LevelType.INFO))
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON_VALUE))
-                .andExpect(status().isCreated());
+                .andExpect(status().isCreated())
+                .andReturn().getResponse();
 
-        Optional<InfoLevel> optionalInfoLevel = infoLevelRepository.findById(1L);
+        BasicLevelInfoDTO levelInfoDTO = convertJsonBytesToObject(convertJsonBytesToObject(response.getContentAsString()), BasicLevelInfoDTO.class);
+        Optional<InfoLevel> optionalInfoLevel = infoLevelRepository.findById(levelInfoDTO.getId());
         assertTrue(optionalInfoLevel.isPresent());
         InfoLevel infoLevel = optionalInfoLevel.get();
         assertEquals(0, infoLevel.getMaxScore());
@@ -1063,11 +1156,13 @@ public class TrainingDefinitionsIT {
     public void createAssessmentLevel() throws Exception {
         mapper.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
         TrainingDefinition trainingDefinition = trainingDefinitionRepository.save(unreleasedTrainingDefinition);
-        mvc.perform(post("/training-definitions/{definitionId}/levels/{levelType}", trainingDefinition.getId(), cz.muni.ics.kypo.training.persistence.model.enums.LevelType.ASSESSMENT))
+        MockHttpServletResponse response = mvc.perform(post("/training-definitions/{definitionId}/levels/{levelType}", trainingDefinition.getId(), cz.muni.ics.kypo.training.persistence.model.enums.LevelType.ASSESSMENT))
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON_VALUE))
-                .andExpect(status().isCreated());
+                .andExpect(status().isCreated())
+                .andReturn().getResponse();
 
-        Optional<AssessmentLevel> optionalAssessmentLevel = assessmentLevelRepository.findById(1L);
+        BasicLevelInfoDTO levelInfoDTO = convertJsonBytesToObject(convertJsonBytesToObject(response.getContentAsString()), BasicLevelInfoDTO.class);
+        Optional<AssessmentLevel> optionalAssessmentLevel = assessmentLevelRepository.findById(levelInfoDTO.getId());
         assertTrue(optionalAssessmentLevel.isPresent());
         AssessmentLevel assessmentLevel = optionalAssessmentLevel.get();
         assertEquals(0, assessmentLevel.getMaxScore());
@@ -1286,6 +1381,39 @@ public class TrainingDefinitionsIT {
                 .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                 .build();
         return Mono.just(clientResponse);
+    }
+
+    private void assertQuestionAfterUpdate(AssessmentLevel updatedAssessmentLevel) {
+        assessmentLevelUpdateDTO.getQuestions().forEach(questionDTO -> {
+            if (questionDTO.getQuestionType() == QuestionType.FFQ) {
+                Optional<Question> freeFormQuestion = updatedAssessmentLevel.getQuestions().stream()
+                        .filter(question -> question.getQuestionType() == cz.muni.ics.kypo.training.persistence.model.enums.QuestionType.FFQ)
+                        .findFirst();
+                assertTrue(freeFormQuestion.isPresent());
+                assertEquals(questionDTO.getChoices().size(), freeFormQuestion.get().getChoices().size());
+            } else if (questionDTO.getQuestionType() == QuestionType.MCQ) {
+                Optional<Question> multipleChoiceQuestion = updatedAssessmentLevel.getQuestions().stream()
+                        .filter(question -> question.getQuestionType() == cz.muni.ics.kypo.training.persistence.model.enums.QuestionType.MCQ)
+                        .findFirst();
+                assertTrue(multipleChoiceQuestion.isPresent());
+                assertEquals(questionDTO.getChoices().size(), multipleChoiceQuestion.get().getChoices().size());
+            } else {
+                Optional<Question> extendedMatchingItemsQuestion = updatedAssessmentLevel.getQuestions().stream()
+                        .filter(question -> question.getQuestionType() == cz.muni.ics.kypo.training.persistence.model.enums.QuestionType.EMI)
+                        .findFirst();
+                assertTrue(extendedMatchingItemsQuestion.isPresent());
+                assertEquals(questionDTO.getExtendedMatchingStatements().size(), extendedMatchingItemsQuestion.get().getExtendedMatchingStatements().size());
+                assertEquals(questionDTO.getExtendedMatchingOptions().size(), extendedMatchingItemsQuestion.get().getExtendedMatchingOptions().size());
+                AtomicInteger index = new AtomicInteger();
+                questionDTO.getExtendedMatchingStatements().forEach(emi -> {
+                    Integer optionOrder = extendedMatchingItemsQuestion.get().getExtendedMatchingStatements()
+                            .get(index.getAndIncrement())
+                            .getExtendedMatchingOption()
+                            .getOrder();
+                    assertEquals(optionOrder, emi.getCorrectOptionOrder());
+                });
+            }
+        });
     }
 }
 

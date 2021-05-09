@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.bohnman.squiggly.Squiggly;
 import com.github.bohnman.squiggly.util.SquigglyUtils;
 import com.querydsl.core.types.Predicate;
+import cz.muni.ics.kypo.training.api.dto.assessmentlevel.question.QuestionAnswerDTO;
 import cz.muni.ics.kypo.training.api.dto.gamelevel.ValidateFlagDTO;
 import cz.muni.ics.kypo.training.api.responses.PageResultResource;
 import cz.muni.ics.kypo.training.api.dto.AbstractLevelDTO;
@@ -418,7 +419,7 @@ public class TrainingRunsRestController {
     public ResponseEntity<Void> evaluateResponsesToAssessment(@ApiParam(value = "Training run ID", required = true)
                                                               @PathVariable("runId") Long runId,
                                                               @ApiParam(value = "Responses to assessment", required = true)
-                                                              @ValidAssessmentResponse @RequestBody String  responses) {
+                                                              @Valid @RequestBody List<QuestionAnswerDTO> responses) {
         trainingRunFacade.evaluateResponsesToAssessment(runId, responses);
         return ResponseEntity.noContent().build();
     }

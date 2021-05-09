@@ -2,16 +2,19 @@ package cz.muni.ics.kypo.training.service;
 
 import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalWO;
+import cz.muni.ics.kypo.training.api.dto.assessmentlevel.question.QuestionAnswerDTO;
 import cz.muni.ics.kypo.training.api.responses.SandboxInfo;
 import cz.muni.ics.kypo.training.exceptions.*;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.model.AssessmentLevel;
 import cz.muni.ics.kypo.training.persistence.model.enums.AssessmentType;
+import cz.muni.ics.kypo.training.persistence.model.enums.QuestionType;
 import cz.muni.ics.kypo.training.persistence.model.enums.TRState;
+import cz.muni.ics.kypo.training.persistence.model.question.ExtendedMatchingStatement;
+import cz.muni.ics.kypo.training.persistence.model.question.QuestionAnswer;
+import cz.muni.ics.kypo.training.persistence.model.question.QuestionChoice;
+import cz.muni.ics.kypo.training.persistence.model.question.Question;
 import cz.muni.ics.kypo.training.persistence.repository.*;
-import cz.muni.ics.kypo.training.utils.AssessmentUtil;
-import org.json.JSONArray;
-import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +31,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * The type Training run service.
@@ -46,6 +50,7 @@ public class TrainingRunService {
     private ElasticsearchApiService elasticsearchApiService;
     private SecurityService securityService;
     private TRAcquisitionLockRepository trAcquisitionLockRepository;
+    private QuestionAnswerRepository questionAnswerRepository;
     private WebClient sandboxServiceWebClient;
 
     /**
@@ -70,6 +75,7 @@ public class TrainingRunService {
                               AuditEventsService auditEventsService,
                               ElasticsearchApiService elasticsearchApiService,
                               SecurityService securityService,
+                              QuestionAnswerRepository questionAnswerRepository,
                               @Qualifier("sandboxServiceWebClient") WebClient sandboxServiceWebClient,
                               TRAcquisitionLockRepository trAcquisitionLockRepository) {
         this.trainingRunRepository = trainingRunRepository;
@@ -80,6 +86,7 @@ public class TrainingRunService {
         this.auditEventsService = auditEventsService;
         this.elasticsearchApiService = elasticsearchApiService;
         this.securityService = securityService;
+        this.questionAnswerRepository = questionAnswerRepository;
         this.sandboxServiceWebClient = sandboxServiceWebClient;
         this.trAcquisitionLockRepository = trAcquisitionLockRepository;
     }
@@ -132,6 +139,7 @@ public class TrainingRunService {
             throw new EntityConflictException(new EntityErrorDetail(TrainingRun.class, "id", trainingRun.getId().getClass(), trainingRun.getId(),
                     "Cannot delete training run that is running. Consider force delete."));
         }
+        questionAnswerRepository.deleteAllByTrainingRunId(trainingRunId);
         elasticsearchApiService.deleteEventsFromTrainingRun(trainingRun.getTrainingInstance().getId(), trainingRunId);
         trAcquisitionLockRepository.deleteByParticipantRefIdAndTrainingInstanceId(trainingRun.getParticipantRef().getUserRefId(), trainingRun.getTrainingInstance().getId());
         trainingRunRepository.delete(trainingRun);
@@ -550,10 +558,10 @@ public class TrainingRunService {
      * Evaluate and store responses to assessment.
      *
      * @param trainingRunId     id of training run to be finished.
-     * @param responsesAsString response to assessment to be evaluated
+     * @param answersToQuestions response to assessment to be evaluated
      * @throws EntityNotFoundException training run is not found.
      */
-    public void evaluateResponsesToAssessment(Long trainingRunId, String responsesAsString) {
+    public void evaluateResponsesToAssessment(Long trainingRunId, Map<Long, QuestionAnswerDTO> answersToQuestions) {
         TrainingRun trainingRun = findByIdWithLevel(trainingRunId);
         if (!(trainingRun.getCurrentLevel() instanceof AssessmentLevel)) {
             throw new BadRequestException("Current level is not assessment level and cannot be evaluated.");
@@ -561,37 +569,84 @@ public class TrainingRunService {
         if (trainingRun.isLevelAnswered())
             throw new EntityConflictException(new EntityErrorDetail(TrainingRun.class, "id", trainingRunId.getClass(), trainingRunId,
                     "Current level of the training run has been already answered."));
-        if (trainingRun.getAssessmentResponses() == null) {
-            trainingRun.setAssessmentResponses("[]");
+        List<QuestionAnswer> userAnswersToQuestions;
+        if (((AssessmentLevel) trainingRun.getCurrentLevel()).getAssessmentType() == AssessmentType.TEST) {
+            userAnswersToQuestions = this.gatherAndEvaluateAnswers(trainingRun, answersToQuestions);
+        } else {
+            userAnswersToQuestions = this.gatherAnswers(trainingRun, answersToQuestions);
         }
-
-        JSONObject responseToCurrentAssessment = processCurrentAssessmentResponse(trainingRun, new JSONArray(responsesAsString));
-        JSONArray storedResponses = new JSONArray(trainingRun.getAssessmentResponses());
-        storedResponses.put(responseToCurrentAssessment);
-        trainingRun.setAssessmentResponses(storedResponses.toString());
         trainingRun.setLevelAnswered(true);
-        auditEventsService.auditAssessmentAnswersAction(trainingRun, responsesAsString);
+        questionAnswerRepository.saveAll(userAnswersToQuestions);
+        auditEventsService.auditAssessmentAnswersAction(trainingRun, userAnswersToQuestions.toString());
         auditEventsService.auditLevelCompletedAction(trainingRun);
     }
 
-    private JSONObject processCurrentAssessmentResponse(TrainingRun trainingRun, JSONArray responses) {
-        int receivedPoints = 0;
-        AssessmentLevel assessmentLevel = (AssessmentLevel) trainingRun.getCurrentLevel();
-        // fill in assessment level id and raw answers of user
-        JSONObject responseToCurrentAssessment = new JSONObject();
-        responseToCurrentAssessment.put("assessmentLevelId", trainingRun.getCurrentLevel().getId());
-        responseToCurrentAssessment.put("answers", "[" + responses.toString() + "]");
-
-        // evaluate and compute points
-        if (assessmentLevel.getAssessmentType() == AssessmentType.QUESTIONNAIRE) {
-            responseToCurrentAssessment.put("receivedPoints", 0);
-        } else {
-            receivedPoints = AssessmentUtil.evaluateTest(new JSONArray(assessmentLevel.getQuestions()), responses);
-            responseToCurrentAssessment.put("receivedPoints", receivedPoints);
-            trainingRun.increaseTotalScore(receivedPoints);
+    private List<QuestionAnswer> gatherAndEvaluateAnswers(TrainingRun trainingRun, Map<Long, QuestionAnswerDTO> answersToQuestions) {
+        int points = 0;
+        List<QuestionAnswer> userAnswersToQuestions = new ArrayList<>();
+        for (Question question : ((AssessmentLevel) trainingRun.getCurrentLevel()).getQuestions()) {
+            userAnswersToQuestions.add(this.createQuestionAnswer(question, trainingRun, answersToQuestions.get(question.getId())));
+            switch (question.getQuestionType()) {
+                case MCQ:
+                    points += evaluateMCQ(question, answersToQuestions.get(question.getId()));
+                    break;
+                case FFQ:
+                    points += evaluateFFQ(question, answersToQuestions.get(question.getId()));
+                    break;
+                case EMI:
+                    points += evaluateEMI(question, answersToQuestions.get(question.getId()));
+                    break;
+                default:
+                    break;
+            }
         }
-        return responseToCurrentAssessment;
+        trainingRun.increaseTotalScore(points);
+        return userAnswersToQuestions;
     }
 
+    private List<QuestionAnswer> gatherAnswers(TrainingRun trainingRun, Map<Long, QuestionAnswerDTO> answersToQuestions) {
+        List<QuestionAnswer> userAnswersToQuestions = new ArrayList<>();
+        for (Question question : ((AssessmentLevel) trainingRun.getCurrentLevel()).getQuestions()) {
+            userAnswersToQuestions.add(this.createQuestionAnswer(question, trainingRun, answersToQuestions.get(question.getId())));
+        }
+        return userAnswersToQuestions;
 
+    }
+
+    private QuestionAnswer createQuestionAnswer(Question question, TrainingRun trainingRun, QuestionAnswerDTO answersToQuestion) {
+        QuestionAnswer questionAnswer = new QuestionAnswer(question, trainingRun);
+        if (question.getQuestionType() == QuestionType.EMI) {
+            Set<String> answers = question.getExtendedMatchingStatements().stream()
+                    .map(statement -> "{ statementOrder: '" + statement.getId() + "', optionOrder: '" + answersToQuestion.getExtendedMatchingPairs().get(statement.getOrder()))
+                    .collect(Collectors.toSet());
+            questionAnswer.setAnswers(answers);
+        } else {
+            questionAnswer.setAnswers(answersToQuestion.getAnswers());
+        }
+        return questionAnswer;
+    }
+
+    private int evaluateFFQ(Question question, QuestionAnswerDTO userAnswer) {
+        List<String> correctAnswers = question.getChoices().stream()
+                .map(QuestionChoice::getText)
+                .collect(Collectors.toList());
+        return correctAnswers.containsAll(userAnswer.getAnswers()) ? question.getPoints() : (-1) * question.getPenalty();
+    }
+    private int evaluateMCQ(Question question, QuestionAnswerDTO userAnswer) {
+        List<String> correctAnswers = question.getChoices().stream()
+                .filter(QuestionChoice::isCorrect)
+                .map(QuestionChoice::getText)
+                .collect(Collectors.toList());
+        return userAnswer.getAnswers().containsAll(correctAnswers) ? question.getPoints() : (-1) * question.getPenalty();
+    }
+    private int evaluateEMI(Question question, QuestionAnswerDTO userAnswer) {
+        for (ExtendedMatchingStatement extendedMatchingStatement : question.getExtendedMatchingStatements()) {
+            int expectedOptionOrder = extendedMatchingStatement.getExtendedMatchingOption().getOrder();
+            int answeredOptionOrder = userAnswer.getExtendedMatchingPairs().get(extendedMatchingStatement.getOrder());
+            if (expectedOptionOrder != answeredOptionOrder) {
+                return (-1) * question.getPenalty();
+            }
+        }
+        return question.getPoints();
+    }
 }

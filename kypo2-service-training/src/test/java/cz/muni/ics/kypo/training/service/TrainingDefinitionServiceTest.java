@@ -338,6 +338,7 @@ public class TrainingDefinitionServiceTest {
 
     @Test
     public void updateAssessmentLevel() {
+        assessmentLevel.setTrainingDefinition(unreleasedDefinition);
         given(trainingDefinitionRepository.findById(unreleasedDefinition.getId())).willReturn(Optional.of(unreleasedDefinition));
         given(abstractLevelRepository.findLevelInDefinition(anyLong(), anyLong())).willReturn(Optional.of(assessmentLevel));
         given(assessmentLevelRepository.findById(any(Long.class))).willReturn(Optional.of(assessmentLevel));
@@ -375,6 +376,7 @@ public class TrainingDefinitionServiceTest {
 
     @Test
     public void updateGameLevel() {
+        gameLevel.setTrainingDefinition(unreleasedDefinition);
         given(trainingDefinitionRepository.findById(anyLong())).willReturn(Optional.of(unreleasedDefinition));
         given(trainingInstanceRepository.existsAnyForTrainingDefinition(anyLong())).willReturn(false);
         given(gameLevelRepository.findById(anyLong())).willReturn(Optional.of(gameLevel));
@@ -411,6 +413,7 @@ public class TrainingDefinitionServiceTest {
 
     @Test
     public void updateInfoLevel() {
+        infoLevel.setTrainingDefinition(unreleasedDefinition);
         given(trainingDefinitionRepository.findById(unreleasedDefinition.getId())).willReturn(Optional.of(unreleasedDefinition));
         given(infoLevelRepository.findById(any(Long.class))).willReturn(Optional.of(infoLevel));
         given(abstractLevelRepository.findLevelInDefinition(anyLong(), anyLong())).willReturn(Optional.of(infoLevel));
@@ -519,7 +522,7 @@ public class TrainingDefinitionServiceTest {
         newAssessmentLevel.setAssessmentType(AssessmentType.QUESTIONNAIRE);
         newAssessmentLevel.setMaxScore(0);
         newAssessmentLevel.setInstructions("Instructions should be here");
-        newAssessmentLevel.setQuestions("[]");
+        newAssessmentLevel.setQuestions(new ArrayList<>());
         newAssessmentLevel.setOrder(12);
         given(trainingDefinitionRepository.findById(unreleasedDefinition.getId())).willReturn(Optional.of(unreleasedDefinition));
         given(assessmentLevelRepository.save(any(AssessmentLevel.class))).willReturn(newAssessmentLevel);

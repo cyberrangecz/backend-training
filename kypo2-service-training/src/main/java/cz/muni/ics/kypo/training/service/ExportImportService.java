@@ -85,7 +85,6 @@ public class ExportImportService {
         level.setOrder(abstractLevelRepository.getCurrentMaxOrder(definition.getId()) + 1);
         level.setTrainingDefinition(definition);
         if (level instanceof AssessmentLevel) {
-            AssessmentUtil.validQuestions(((AssessmentLevel) level).getQuestions());
             assessmentLevelRepository.save((AssessmentLevel) level);
         } else if (level instanceof InfoLevel) {
             infoLevelRepository.save((InfoLevel) level);
