@@ -1,8 +1,11 @@
 package cz.muni.ics.kypo.training.api.dto.archive;
 
+import cz.muni.ics.kypo.training.api.dto.assessmentlevel.question.QuestionDTO;
 import cz.muni.ics.kypo.training.api.enums.AssessmentType;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+
+import java.util.List;
 
 
 /**
@@ -11,9 +14,8 @@ import io.swagger.annotations.ApiModelProperty;
  */
 @ApiModel(value = "AssessmentLevelArchiveDTO", description = "Archived assessment level.", parent = AbstractLevelArchiveDTO.class)
 public class AssessmentLevelArchiveDTO extends AbstractLevelArchiveDTO{
-
-    @ApiModelProperty(value = "List of questions in this assessment as JSON.", example = "What is my mothers name?")
-    private String questions;
+    @ApiModelProperty(value = "List of questions in this assessment.", example = "What is my mothers name?")
+    private List<QuestionDTO> questions;
     @ApiModelProperty(value = "Assessment instructions for participant.", example = "Fill me up")
     private String instructions;
     @ApiModelProperty(value = "Type of assessment.", example = "TEST")
@@ -24,7 +26,7 @@ public class AssessmentLevelArchiveDTO extends AbstractLevelArchiveDTO{
      *
      * @return the questions
      */
-    public String getQuestions() {
+    public List<QuestionDTO> getQuestions() {
         return questions;
     }
 
@@ -33,7 +35,7 @@ public class AssessmentLevelArchiveDTO extends AbstractLevelArchiveDTO{
      *
      * @param questions the questions
      */
-    public void setQuestions(String questions) {
+    public void setQuestions(List<QuestionDTO> questions) {
         this.questions = questions;
     }
 
@@ -76,7 +78,6 @@ public class AssessmentLevelArchiveDTO extends AbstractLevelArchiveDTO{
     @Override
     public String toString() {
         return "AssessmentLevelArchiveDTO{" +
-                "questions='" + questions + '\'' +
                 ", instructions='" + instructions + '\'' +
                 ", assessmentType=" + assessmentType +
                 '}';

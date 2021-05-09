@@ -2,9 +2,13 @@ package cz.muni.ics.kypo.training.persistence.model;
 
 
 import cz.muni.ics.kypo.training.persistence.model.enums.AssessmentType;
+import cz.muni.ics.kypo.training.persistence.model.question.Question;
 import org.hibernate.annotations.Type;
 
 import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -16,10 +20,14 @@ import java.util.Objects;
 @PrimaryKeyJoinColumn(name = "id")
 public class AssessmentLevel extends AbstractLevel {
 
-    @Lob
-    @Type(type = "org.hibernate.type.TextType")
-    @Column(name = "questions", nullable = false)
-    private String questions;
+    @OrderBy("order asc")
+    @OneToMany(
+            mappedBy = "assessmentLevel",
+            cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REMOVE},
+            orphanRemoval = true,
+            fetch = FetchType.LAZY
+    )
+    private List<Question> questions = new ArrayList<>();
     @Column(name = "instructions", nullable = false)
     private String instructions;
     @Column(name = "assessment_type", length = 128, nullable = false)
@@ -39,7 +47,7 @@ public class AssessmentLevel extends AbstractLevel {
      * @param instructions   instructions to help trainee understand the questions
      * @param assessmentType type of assessment level. Types are QUESTIONNAIRE and TEST
      */
-    public AssessmentLevel(String questions, String instructions, AssessmentType assessmentType) {
+    public AssessmentLevel(List<Question> questions, String instructions, AssessmentType assessmentType) {
         super();
         this.questions = questions;
         this.instructions = instructions;
@@ -51,7 +59,7 @@ public class AssessmentLevel extends AbstractLevel {
      *
      * @return the questions
      */
-    public String getQuestions() {
+    public List<Question> getQuestions() {
         return questions;
     }
 
@@ -60,8 +68,10 @@ public class AssessmentLevel extends AbstractLevel {
      *
      * @param questions the questions
      */
-    public void setQuestions(String questions) {
+    public void setQuestions(List<Question> questions) {
         this.questions = questions;
+        this.questions.forEach(question -> question.setAssessmentLevel(this));
+        this.questions.sort(Comparator.comparingInt(Question::getOrder));
     }
 
     /**

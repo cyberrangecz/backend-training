@@ -1,8 +1,5 @@
 package cz.muni.ics.kypo.training.facade;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.github.fge.jackson.JsonLoader;
 import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.training.annotations.security.IsOrganizerOrAdmin;
 import cz.muni.ics.kypo.training.annotations.security.IsTrainee;
@@ -14,6 +11,7 @@ import cz.muni.ics.kypo.training.api.dto.BasicLevelInfoDTO;
 import cz.muni.ics.kypo.training.api.dto.IsCorrectFlagDTO;
 import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelDTO;
+import cz.muni.ics.kypo.training.api.dto.assessmentlevel.question.QuestionAnswerDTO;
 import cz.muni.ics.kypo.training.api.dto.hint.HintDTO;
 import cz.muni.ics.kypo.training.api.dto.run.AccessTrainingRunDTO;
 import cz.muni.ics.kypo.training.api.dto.run.AccessedTrainingRunDTO;
@@ -37,13 +35,14 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.IOException;
 import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * The type Training run facade.
@@ -363,12 +362,13 @@ public class TrainingRunFacade {
      * Evaluate and store responses to assessment.
      *
      * @param trainingRunId     id of Training Run to be finish.
-     * @param responsesAsString responses to assessment
+     * @param responsesToQuestions responses to assessment
      */
     @IsTrainee
     @TransactionalWO
-    public void evaluateResponsesToAssessment(Long trainingRunId, String responsesAsString) {
-        trainingRunService.evaluateResponsesToAssessment(trainingRunId, responsesAsString);
+    public void evaluateResponsesToAssessment(Long trainingRunId, List<QuestionAnswerDTO> responsesToQuestions) {
+        trainingRunService.evaluateResponsesToAssessment(trainingRunId, responsesToQuestions.stream()
+                .collect(Collectors.toMap(QuestionAnswerDTO::getQuestionId, Function.identity())));
     }
 
     /**
@@ -457,29 +457,9 @@ public class TrainingRunFacade {
     }
 
     private void deleteInfoAboutCorrectnessFromQuestions(AssessmentLevelDTO assessmentLevelDTO) {
-        try {
-            JsonNode questions = JsonLoader.fromString(assessmentLevelDTO.getQuestions());
-            for (JsonNode question : questions) {
-                // remove correct answers to FFQ
-                ((ObjectNode) question).remove("correct_choices");
-                // remove correct answers to EMI questions
-                ((ObjectNode) question).remove("correct_answers");
-                if (question.has("choices")) {
-                    removeCorrectAnswersFromMCQ(question.get("choices"));
-                }
-            }
-            assessmentLevelDTO.setQuestions(questions.toString());
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
+        assessmentLevelDTO.getQuestions().forEach(questionDTO -> {
+            questionDTO.getChoices().forEach(questionChoiceDTO -> questionChoiceDTO.setCorrect(null));
+            questionDTO.getExtendedMatchingStatements().forEach(statementDTO -> statementDTO.setCorrectOptionOrder(null));
+        });
     }
-
-    private void removeCorrectAnswersFromMCQ(JsonNode choices) {
-        for (JsonNode choice : choices) {
-            ((ObjectNode) choice).remove("pair");
-            ((ObjectNode) choice).remove("is_correct");
-        }
-    }
-
-
 }

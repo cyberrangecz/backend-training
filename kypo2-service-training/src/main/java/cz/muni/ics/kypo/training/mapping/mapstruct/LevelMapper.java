@@ -29,17 +29,14 @@ import cz.muni.ics.kypo.training.api.enums.LevelType;
 import cz.muni.ics.kypo.training.exceptions.InternalServerErrorException;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.model.AssessmentLevel;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.NullValueCheckStrategy;
-import org.mapstruct.ReportingPolicy;
+import org.mapstruct.*;
 
 /**
  * The InfoLevelMapper is an utility class to map items into data transfer objects. It provides the implementation of mappings between Java bean type InfoLevelMapper and
  * DTOs classes. Code is generated during compile time.
  *
  */
-@Mapper(componentModel = "spring", uses = {HintMapper.class, AttachmentMapper.class},
+@Mapper(componentModel = "spring", uses = {HintMapper.class, AttachmentMapper.class, QuestionMapper.class},
         nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS, unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface LevelMapper extends ParentMapper {
     // INFO LEVEL
@@ -77,6 +74,7 @@ public interface LevelMapper extends ParentMapper {
 
     AssessmentLevelVisualizationDTO mapToVisualizationAssessmentLevelDTO(AssessmentLevel entity);
 
+    @Mapping(source = "questions", target = "questions", qualifiedByName = "questionWithoutId")
     AssessmentLevelExportDTO mapToExportAssessmentLevelDTO(AssessmentLevel entity);
 
     // GAME LEVEL

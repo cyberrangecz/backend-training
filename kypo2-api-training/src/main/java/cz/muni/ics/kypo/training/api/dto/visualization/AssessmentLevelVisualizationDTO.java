@@ -4,11 +4,13 @@ package cz.muni.ics.kypo.training.api.dto.visualization;/**
      * @return the {@link AssessmentType}
      */
 
+import cz.muni.ics.kypo.training.api.dto.assessmentlevel.question.QuestionDTO;
 import cz.muni.ics.kypo.training.api.dto.imports.AbstractLevelImportDTO;
 import cz.muni.ics.kypo.training.api.enums.AssessmentType;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -21,7 +23,7 @@ public class AssessmentLevelVisualizationDTO extends AbstractLevelVisualizationD
     @ApiModelProperty(value = "Type of assessment.", example = "TEST")
     private AssessmentType assessmentType;
     @ApiModelProperty(value = "List of questions in this assessment as JSON.", example = "What is my mothers name?")
-    private String questions;
+    private List<QuestionDTO> questions;
 
     /**
      * Instantiates a new Assessment level visualization dto.
@@ -52,7 +54,7 @@ public class AssessmentLevelVisualizationDTO extends AbstractLevelVisualizationD
      *
      * @return the questions
      */
-    public String getQuestions() {
+    public List<QuestionDTO> getQuestions() {
         return questions;
     }
 
@@ -61,7 +63,7 @@ public class AssessmentLevelVisualizationDTO extends AbstractLevelVisualizationD
      *
      * @param questions the questions
      */
-    public void setQuestions(String questions) {
+    public void setQuestions(List<QuestionDTO> questions) {
         this.questions = questions;
     }
 
@@ -87,7 +89,6 @@ public class AssessmentLevelVisualizationDTO extends AbstractLevelVisualizationD
                 ", order=" + this.getOrder() +
                 ", maxScore=" + this.getMaxScore() +
                 ", assessmentType=" + assessmentType +
-                ", questions='" + questions + '\'' +
                 '}';
     }
 }

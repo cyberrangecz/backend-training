@@ -60,7 +60,7 @@ public class ExportImportServiceTest {
                 infoLevelRepository, gameLevelRepository, trainingInstanceRepository, trainingRunRepository, pythonWebClient);
 
         given(assessmentLevel.getId()).willReturn(1L);
-        given(assessmentLevel.getQuestions()).willReturn("[]");
+        given(assessmentLevel.getQuestions()).willReturn(new ArrayList<>());
         given(gameLevel.getId()).willReturn(2L);
         given(infoLevel.getId()).willReturn(3L);
 

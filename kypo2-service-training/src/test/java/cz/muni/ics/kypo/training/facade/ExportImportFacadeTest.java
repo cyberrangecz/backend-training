@@ -37,7 +37,8 @@ import static org.mockito.BDDMockito.given;
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = {TestDataFactory.class})
 @SpringBootTest(classes = {LevelMapperImpl.class, ExportImportMapperImpl.class, TrainingDefinitionMapperImpl.class,
-        LevelMapperImpl.class, UserRefMapperImpl.class, BetaTestingGroupMapperImpl.class, HintMapperImpl.class, AttachmentMapperImpl.class})
+        LevelMapperImpl.class, UserRefMapperImpl.class, BetaTestingGroupMapperImpl.class, HintMapperImpl.class,
+        QuestionMapperImpl.class, AttachmentMapperImpl.class,})
 public class ExportImportFacadeTest {
 
     @Rule

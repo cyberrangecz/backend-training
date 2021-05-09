@@ -13,14 +13,17 @@ import cz.muni.ics.kypo.training.api.dto.archive.AbstractLevelArchiveDTO;
 import cz.muni.ics.kypo.training.api.dto.archive.TrainingDefinitionArchiveDTO;
 import cz.muni.ics.kypo.training.api.dto.archive.TrainingInstanceArchiveDTO;
 import cz.muni.ics.kypo.training.api.dto.archive.TrainingRunArchiveDTO;
+import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelUpdateDTO;
 import cz.muni.ics.kypo.training.api.dto.export.AbstractLevelExportDTO;
 import cz.muni.ics.kypo.training.api.dto.export.ExportTrainingDefinitionAndLevelsDTO;
 import cz.muni.ics.kypo.training.api.dto.export.FileToReturnDTO;
 import cz.muni.ics.kypo.training.api.dto.imports.*;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionByIdDTO;
 import cz.muni.ics.kypo.training.api.enums.LevelType;
+import cz.muni.ics.kypo.training.api.enums.QuestionType;
 import cz.muni.ics.kypo.training.api.enums.TDState;
 import cz.muni.ics.kypo.training.api.responses.SandboxDefinitionInfo;
+import cz.muni.ics.kypo.training.exceptions.BadRequestException;
 import cz.muni.ics.kypo.training.exceptions.EntityErrorDetail;
 import cz.muni.ics.kypo.training.exceptions.InternalServerErrorException;
 import cz.muni.ics.kypo.training.exceptions.UnprocessableEntityException;
@@ -28,6 +31,10 @@ import cz.muni.ics.kypo.training.mapping.mapstruct.ExportImportMapper;
 import cz.muni.ics.kypo.training.mapping.mapstruct.LevelMapper;
 import cz.muni.ics.kypo.training.mapping.mapstruct.TrainingDefinitionMapper;
 import cz.muni.ics.kypo.training.persistence.model.*;
+import cz.muni.ics.kypo.training.persistence.model.enums.AssessmentType;
+import cz.muni.ics.kypo.training.persistence.model.question.ExtendedMatchingOption;
+import cz.muni.ics.kypo.training.persistence.model.question.ExtendedMatchingStatement;
+import cz.muni.ics.kypo.training.persistence.model.question.Question;
 import cz.muni.ics.kypo.training.service.ElasticsearchApiService;
 import cz.muni.ics.kypo.training.service.ExportImportService;
 import cz.muni.ics.kypo.training.service.TrainingDefinitionService;
@@ -163,10 +170,28 @@ public class ExportImportFacade {
                 newLevel = levelMapper.mapImportToEntity((InfoLevelImportDTO) level);
             } else {
                 newLevel = levelMapper.mapImportToEntity((AssessmentLevelImportDTO) level);
+                if (((AssessmentLevel) newLevel).getAssessmentType() == AssessmentType.TEST) {
+                    this.checkAndSetCorrectOptionsOfStatements((AssessmentLevel) newLevel, (AssessmentLevelImportDTO) level);
+                }
             }
             exportImportService.createLevel(newLevel, newTrainingDefinition);
         });
         return trainingDefinitionMapper.mapToDTOById(newTrainingDefinition);
+    }
+
+    private void checkAndSetCorrectOptionsOfStatements(AssessmentLevel assessmentLevel, AssessmentLevelImportDTO assessmentLevelImportDTO) {
+        assessmentLevelImportDTO.getQuestions().stream()
+                .filter(questionDTO -> questionDTO.getQuestionType() == cz.muni.ics.kypo.training.api.enums.QuestionType.EMI)
+                .forEach(questionDTO -> questionDTO.getExtendedMatchingStatements()
+                        .forEach(statementDTO -> {
+                            if (statementDTO.getCorrectOptionOrder() == null) {
+                                throw new BadRequestException("You must set the correct option for the each statement in the assessment of the type TEST");
+                            }
+                            Question question = assessmentLevel.getQuestions().get(questionDTO.getOrder());
+                            ExtendedMatchingOption correctOption = question.getExtendedMatchingOptions().get(statementDTO.getCorrectOptionOrder());
+                            ExtendedMatchingStatement statementToUpdate = question.getExtendedMatchingStatements().get(statementDTO.getOrder());
+                            statementToUpdate.setExtendedMatchingOption(correctOption);
+                        }));
     }
 
     /**

@@ -1,13 +1,17 @@
 package cz.muni.ics.kypo.training.api.dto.assessmentlevel;
 
+import cz.muni.ics.kypo.training.api.dto.assessmentlevel.question.QuestionDTO;
 import cz.muni.ics.kypo.training.api.enums.AssessmentType;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
+import javax.validation.Valid;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Encapsulates information needed to update assessment level.
@@ -27,9 +31,9 @@ public class AssessmentLevelUpdateDTO {
     @Min(value = 0, message = "{assessmentLevel.maxScore.Min.message}")
     @Max(value = 100, message = "{assessmentLevel.maxScore.Max.message}")
     private int maxScore;
-    @ApiModelProperty(value = "Questions of assessment level to update.", example = "\"[{\"question_type\":\"FFQ\",\"text\":\"Which tool would you use to scan the open ports of a server?\",\"points\":6,\"penalty\":3,\"order\":0,\"answer_required\":true,\"correct_choices\":[\"nmap\",\"Nmap\"]}]\"")
-    @NotNull(message = "{assessmentLevel.questions.NotNull.message}")
-    private String questions;
+    @ApiModelProperty(value = "Questions of assessment level to update.")
+    @Valid
+    private List<QuestionDTO> questions = new ArrayList<>();
     @ApiModelProperty(value = "Instructions of assessment level to update.", example = "Fill me up slowly")
     @NotNull(message = "{assessmentLevel.instructions.NotNull.message}")
     private String instructions;
@@ -98,7 +102,7 @@ public class AssessmentLevelUpdateDTO {
      *
      * @return the questions
      */
-    public String getQuestions() {
+    public List<QuestionDTO> getQuestions() {
         return questions;
     }
 
@@ -107,7 +111,7 @@ public class AssessmentLevelUpdateDTO {
      *
      * @param questions the questions
      */
-    public void setQuestions(String questions) {
+    public void setQuestions(List<QuestionDTO> questions) {
         this.questions = questions;
     }
 

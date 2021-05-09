@@ -1,8 +1,11 @@
 package cz.muni.ics.kypo.training.api.dto.export;
 
+import cz.muni.ics.kypo.training.api.dto.assessmentlevel.question.QuestionDTO;
 import cz.muni.ics.kypo.training.api.enums.AssessmentType;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+
+import java.util.List;
 
 /**
  * Encapsulates information about assessment level. Inherits from {@link AbstractLevelExportDTO}
@@ -12,7 +15,7 @@ import io.swagger.annotations.ApiModelProperty;
 public class AssessmentLevelExportDTO extends AbstractLevelExportDTO {
 
     @ApiModelProperty(value = "List of questions in this assessment as JSON.", example = "What is my mothers name?")
-    private String questions;
+    private List<QuestionDTO> questions;
     @ApiModelProperty(value = "Assessment instructions for participant.", example = "Fill me up")
     private String instructions;
     @ApiModelProperty(value = "Type of assessment.", example = "TEST")
@@ -23,7 +26,7 @@ public class AssessmentLevelExportDTO extends AbstractLevelExportDTO {
      *
      * @return the questions
      */
-    public String getQuestions() {
+    public List<QuestionDTO> getQuestions() {
         return questions;
     }
 
@@ -32,7 +35,7 @@ public class AssessmentLevelExportDTO extends AbstractLevelExportDTO {
      *
      * @param questions the questions
      */
-    public void setQuestions(String questions) {
+    public void setQuestions(List<QuestionDTO> questions) {
         this.questions = questions;
     }
 
@@ -75,7 +78,6 @@ public class AssessmentLevelExportDTO extends AbstractLevelExportDTO {
     @Override
     public String toString() {
         return "AssessmentLevelExportDTO{" +
-                "questions='" + questions + '\'' +
                 ", instructions='" + instructions + '\'' +
                 ", assessmentType=" + assessmentType +
                 '}';

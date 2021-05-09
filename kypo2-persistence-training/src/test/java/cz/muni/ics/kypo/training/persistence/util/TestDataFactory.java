@@ -12,6 +12,10 @@ import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
 import cz.muni.ics.kypo.training.api.dto.archive.TrainingInstanceArchiveDTO;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelUpdateDTO;
+import cz.muni.ics.kypo.training.api.dto.assessmentlevel.question.ExtendedMatchingStatementDTO;
+import cz.muni.ics.kypo.training.api.dto.assessmentlevel.question.ExtendedMatchingOptionDTO;
+import cz.muni.ics.kypo.training.api.dto.assessmentlevel.question.QuestionChoiceDTO;
+import cz.muni.ics.kypo.training.api.dto.assessmentlevel.question.QuestionDTO;
 import cz.muni.ics.kypo.training.api.dto.gamelevel.GameLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.gamelevel.GameLevelUpdateDTO;
 import cz.muni.ics.kypo.training.api.dto.hint.HintDTO;
@@ -35,13 +39,20 @@ import cz.muni.ics.kypo.training.converters.LocalDateTimeUTCSerializer;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.model.AssessmentLevel;
 import cz.muni.ics.kypo.training.persistence.model.enums.AssessmentType;
+import cz.muni.ics.kypo.training.persistence.model.enums.QuestionType;
 import cz.muni.ics.kypo.training.persistence.model.enums.TDState;
 import cz.muni.ics.kypo.training.persistence.model.enums.TRState;
+import cz.muni.ics.kypo.training.persistence.model.question.ExtendedMatchingStatement;
+import cz.muni.ics.kypo.training.persistence.model.question.ExtendedMatchingOption;
+import cz.muni.ics.kypo.training.persistence.model.question.Question;
+import cz.muni.ics.kypo.training.persistence.model.question.QuestionChoice;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.time.Clock;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Component
 public class TestDataFactory {
@@ -53,15 +64,23 @@ public class TestDataFactory {
             .setSerializationInclusion(JsonInclude.Include.NON_NULL);
 
     private AssessmentLevel test = generateAssessmentLevel("Test", 50, 10L,
-            1, "List of questions", "List of instructions", AssessmentType.TEST);
+            1, "List of instructions", AssessmentType.TEST);
     private AssessmentLevel questionnaire = generateAssessmentLevel("Questionnaire", 0, 15L,
-            2, "List of other questions", "List of some instructions", AssessmentType.QUESTIONNAIRE);
+            2, "List of some instructions", AssessmentType.QUESTIONNAIRE);
     private AssessmentLevelUpdateDTO assessmentLevelUpdateDTO = generateAssessmentLevelUpdateDTO("New Assessment Title",
             19,"New questions", "New instructions", cz.muni.ics.kypo.training.api.enums.AssessmentType.QUESTIONNAIRE, 9);
     private AssessmentLevelImportDTO assessmentLevelImportDTO = generateAssessmentLevelImportDTO("Assessment level import", 15,
             "Questions import", "Instructions import", cz.muni.ics.kypo.training.api.enums.AssessmentType.TEST, 22);
     private AssessmentLevelDTO assessmentLevelDTO = generateAssessmentLevelDTO("Assessment DTO", 100, 12, "DTO questions",
             "DTO instructions", cz.muni.ics.kypo.training.api.enums.AssessmentType.TEST);
+
+    private Question freeFormQuestion = generateQuestion(0, 2, 5, QuestionType.FFQ, "Text of free form question");
+    private Question multipleChoiceQuestion = generateQuestion(0, 2, 5, QuestionType.MCQ, "Text of free form question");
+    private Question extendedMatchingItems = generateQuestion(0, 2, 5, QuestionType.EMI, "Text of free form question");
+
+    private QuestionDTO freeFormQuestionDTO = generateQuestionDTO(0, 2, 5, cz.muni.ics.kypo.training.api.enums.QuestionType.FFQ, "Text of free form questionDTO");
+    private QuestionDTO multipleChoiceQuestionDTO = generateQuestionDTO(0, 2, 5, cz.muni.ics.kypo.training.api.enums.QuestionType.MCQ, "Text of free form questionDTO");
+    private QuestionDTO extendedMatchingItemsDTO = generateQuestionDTO(0, 2, 5, cz.muni.ics.kypo.training.api.enums.QuestionType.EMI, "Text of free form questionDTO");
 
     private GameLevel penalizedLevel = generateGameLevel("Penalized Game Level", 100, 20L,
             3, "SecretFlag", "Content of penalized level", "Solution of penalized level",
@@ -172,6 +191,68 @@ public class TestDataFactory {
 
     public AssessmentLevel getQuestionnaire(){
         return clone(questionnaire, AssessmentLevel.class);
+    }
+
+    public Question getFreeFormQuestion(){
+        return clone(freeFormQuestion, Question.class);
+    }
+    public Question getMultipleChoiceQuestion(){
+        return clone(multipleChoiceQuestion, Question.class);
+    }
+    public Question getExtendedMatchingItems(){
+        return clone(extendedMatchingItems, Question.class);
+    }
+    public List<ExtendedMatchingStatement> getExtendedMatchingItems(int numberOfItems, String itemPrefix, Question question){
+        List<ExtendedMatchingStatement> extendedMatchingStatements = new ArrayList<>();
+        for (int i = 0; i < numberOfItems; i++) {
+            extendedMatchingStatements.add(generateExtendedMatchingItem(i, itemPrefix + " " + i, question));
+        }
+        return extendedMatchingStatements;
+    }
+    public List<ExtendedMatchingOption> getExtendedMatchingOptions(int numberOfOptions, String optionPrefix, Question question){
+        List<ExtendedMatchingOption> extendedMatchingOptions = new ArrayList<>();
+        for (int i = 0; i < numberOfOptions; i++) {
+            extendedMatchingOptions.add(generateExtendedMatchingOption(i, optionPrefix + " " + i, question));
+        }
+        return extendedMatchingOptions;
+    }
+    public List<QuestionChoice> getQuestionChoices(int numberOfOptions, String choicePrefix, List<Boolean> correctness, Question question){
+        List<QuestionChoice> questionChoices = new ArrayList<>();
+        for (int i = 0; i < numberOfOptions; i++) {
+            questionChoices.add(generateQuestionChoice(i, choicePrefix + " " + i, correctness.get(i), question));
+        }
+        return questionChoices;
+    }
+
+    public QuestionDTO getFreeFormQuestionDTO(){
+        return clone(freeFormQuestionDTO, QuestionDTO.class);
+    }
+    public QuestionDTO getExtendedMatchingItemsDTO(){
+        return clone(multipleChoiceQuestionDTO, QuestionDTO.class);
+    }
+    public QuestionDTO getMultipleChoiceQuestionDTO(){
+        return clone(extendedMatchingItemsDTO, QuestionDTO.class);
+    }
+    public List<ExtendedMatchingStatementDTO> getExtendedMatchingItemDTOs(int numberOfItems, String itemPrefix, List<Integer> optionsMapping){
+        List<ExtendedMatchingStatementDTO> extendedMatchingItems = new ArrayList<>();
+        for (int i = 0; i < numberOfItems; i++) {
+            extendedMatchingItems.add(generateExtendedMatchingItemDTO(i, itemPrefix + " " + i, optionsMapping.get(i)));
+        }
+        return extendedMatchingItems;
+    }
+    public List<ExtendedMatchingOptionDTO> getExtendedMatchingOptionDTOs(int numberOfOptions, String optionPrefix){
+        List<ExtendedMatchingOptionDTO> extendedMatchingOptions = new ArrayList<>();
+        for (int i = 0; i < numberOfOptions; i++) {
+            extendedMatchingOptions.add(generateExtendedMatchingOptionDTO(i, optionPrefix + " " + i));
+        }
+        return extendedMatchingOptions;
+    }
+    public List<QuestionChoiceDTO> getQuestionChoiceDTOs(int numberOfOptions, String choicePrefix, List<Boolean> correctness){
+        List<QuestionChoiceDTO> questionChoices = new ArrayList<>();
+        for (int i = 0; i < numberOfOptions; i++) {
+            questionChoices.add(generateQuestionChoiceDTO(i, choicePrefix + " " + i, correctness.get(i)));
+        }
+        return questionChoices;
     }
 
     public GameLevel getPenalizedLevel(){
@@ -398,16 +479,83 @@ public class TestDataFactory {
     public UserRef getUserRef4() { return clone(userRef4, UserRef.class);}
 
     private AssessmentLevel generateAssessmentLevel(String title, int maxScore, long estimatedDuration, int order,
-                                                    String questions, String instructions, AssessmentType assessmentType){
+                                                    String instructions, AssessmentType assessmentType){
         AssessmentLevel newAssessmentLevel = new AssessmentLevel();
         newAssessmentLevel.setTitle(title);
         newAssessmentLevel.setMaxScore(maxScore);
         newAssessmentLevel.setEstimatedDuration(estimatedDuration);
         newAssessmentLevel.setOrder(order);
-        newAssessmentLevel.setQuestions(questions);
         newAssessmentLevel.setInstructions(instructions);
         newAssessmentLevel.setAssessmentType(assessmentType);
         return newAssessmentLevel;
+    }
+
+    private Question generateQuestion(int order, int penalty, int points, QuestionType questionType, String text){
+        Question newQuestion = new Question();
+        newQuestion.setOrder(order);
+        newQuestion.setPenalty(penalty);
+        newQuestion.setPoints(points);
+        newQuestion.setQuestionType(questionType);
+        newQuestion.setText(text);
+        return newQuestion;
+    }
+
+    private ExtendedMatchingOption generateExtendedMatchingOption(int optionOrder, String text, Question question){
+            ExtendedMatchingOption extendedMatchingOption = new ExtendedMatchingOption();
+            extendedMatchingOption.setOrder(optionOrder);
+            extendedMatchingOption.setText(text);
+            extendedMatchingOption.setQuestion(question);
+            return extendedMatchingOption;
+    }
+
+    private ExtendedMatchingStatement generateExtendedMatchingItem(int itemOrder, String itemText, Question question){
+        ExtendedMatchingStatement extendedMatchingStatement = new ExtendedMatchingStatement();
+        extendedMatchingStatement.setOrder(itemOrder);
+        extendedMatchingStatement.setText(itemText);
+        extendedMatchingStatement.setQuestion(question);
+        return extendedMatchingStatement;
+    }
+
+    private QuestionChoice generateQuestionChoice(int choiceOrder, String choiceText, boolean isCorrect, Question question){
+        QuestionChoice questionChoice = new QuestionChoice();
+        questionChoice.setOrder(choiceOrder);
+        questionChoice.setText(choiceText);
+        questionChoice.setCorrect(isCorrect);
+        questionChoice.setQuestion(question);
+        return questionChoice;
+    }
+
+    private QuestionDTO generateQuestionDTO(int order, int penalty, int points, cz.muni.ics.kypo.training.api.enums.QuestionType questionType, String text){
+        QuestionDTO newQuestion = new QuestionDTO();
+        newQuestion.setOrder(order);
+        newQuestion.setPenalty(penalty);
+        newQuestion.setPoints(points);
+        newQuestion.setQuestionType(questionType);
+        newQuestion.setText(text);
+        return newQuestion;
+    }
+
+    private ExtendedMatchingOptionDTO generateExtendedMatchingOptionDTO(int optionOrder, String text){
+        ExtendedMatchingOptionDTO extendedMatchingOption = new ExtendedMatchingOptionDTO();
+        extendedMatchingOption.setOrder(optionOrder);
+        extendedMatchingOption.setText(text);
+        return extendedMatchingOption;
+    }
+
+    private ExtendedMatchingStatementDTO generateExtendedMatchingItemDTO(int itemOrder, String text, int correctOptionOrder){
+        ExtendedMatchingStatementDTO extendedMatchingItem = new ExtendedMatchingStatementDTO();
+        extendedMatchingItem.setOrder(itemOrder);
+        extendedMatchingItem.setText(text);
+        extendedMatchingItem.setCorrectOptionOrder(correctOptionOrder);
+        return extendedMatchingItem;
+    }
+
+    private QuestionChoiceDTO generateQuestionChoiceDTO(int choiceOrder, String text, boolean isCorrect){
+        QuestionChoiceDTO questionChoice = new QuestionChoiceDTO();
+        questionChoice.setOrder(choiceOrder);
+        questionChoice.setText(text);
+        questionChoice.setCorrect(isCorrect);
+        return questionChoice;
     }
 
     private GameLevel generateGameLevel(String title, int maxScore, long estimatedDuration, int order, String flag,
@@ -577,7 +725,7 @@ public class TestDataFactory {
         AssessmentLevelUpdateDTO assessmentLevelUpdateDTO = new AssessmentLevelUpdateDTO();
         assessmentLevelUpdateDTO.setTitle(title);
         assessmentLevelUpdateDTO.setMaxScore(maxScore);
-        assessmentLevelUpdateDTO.setQuestions(question);
+//        assessmentLevelUpdateDTO.setQuestions(question);
         assessmentLevelUpdateDTO.setInstructions(instructions);
         assessmentLevelUpdateDTO.setType(type);
         assessmentLevelUpdateDTO.setEstimatedDuration(estimatedDuration);
@@ -606,7 +754,6 @@ public class TestDataFactory {
         assessmentLevelImportDTO.setTitle(title);
         assessmentLevelImportDTO.setEstimatedDuration(estimatedDuration);
         assessmentLevelImportDTO.setLevelType(LevelType.ASSESSMENT_LEVEL);
-        assessmentLevelImportDTO.setQuestions(questions);
         assessmentLevelImportDTO.setInstructions(instructions);
         assessmentLevelImportDTO.setAssessmentType(type);
         assessmentLevelImportDTO.setMaxScore(maxScore);
@@ -724,7 +871,6 @@ public class TestDataFactory {
         assessmentLevelDTO.setMaxScore(maxScore);
         assessmentLevelDTO.setLevelType(LevelType.ASSESSMENT_LEVEL);
         assessmentLevelDTO.setEstimatedDuration(estimatedDuration);
-        assessmentLevelDTO.setQuestions(questions);
         assessmentLevelDTO.setInstructions(instructions);
         assessmentLevelDTO.setAssessmentType(assessmentType);
         return assessmentLevelDTO;

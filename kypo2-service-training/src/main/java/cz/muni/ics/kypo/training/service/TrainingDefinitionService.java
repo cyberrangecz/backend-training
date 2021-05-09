@@ -1,16 +1,18 @@
 package cz.muni.ics.kypo.training.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.querydsl.core.types.Predicate;
-import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentQuestion;
 import cz.muni.ics.kypo.training.exceptions.*;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.model.AssessmentLevel;
 import cz.muni.ics.kypo.training.persistence.model.enums.AssessmentType;
+import cz.muni.ics.kypo.training.persistence.model.enums.QuestionType;
 import cz.muni.ics.kypo.training.persistence.model.enums.TDState;
+import cz.muni.ics.kypo.training.persistence.model.question.ExtendedMatchingOption;
+import cz.muni.ics.kypo.training.persistence.model.question.ExtendedMatchingStatement;
+import cz.muni.ics.kypo.training.persistence.model.question.QuestionChoice;
+import cz.muni.ics.kypo.training.persistence.model.question.Question;
 import cz.muni.ics.kypo.training.persistence.repository.*;
-import cz.muni.ics.kypo.training.utils.AssessmentUtil;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,10 +23,8 @@ import org.springframework.stereotype.Service;
 
 import java.time.Clock;
 import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * The type Training definition service.
@@ -321,13 +321,8 @@ public class TrainingDefinitionService {
     public void updateGameLevel(Long definitionId, GameLevel gameLevelToUpdate) {
         TrainingDefinition trainingDefinition = findById(definitionId);
         checkIfCanBeUpdated(trainingDefinition);
-        if (!findLevelInDefinition(trainingDefinition, gameLevelToUpdate.getId())) {
-            throw new EntityNotFoundException(new EntityErrorDetail(AbstractLevel.class, "id", gameLevelToUpdate.getId().getClass(),
-                    gameLevelToUpdate.getId(), "Level was not found in definition (id: " + definitionId + ")."));
-        }
-        GameLevel gameLevel = gameLevelRepository.findById(gameLevelToUpdate.getId())
-                .orElseThrow(() -> new EntityNotFoundException(new EntityErrorDetail(AbstractLevel.class, "id", gameLevelToUpdate.getId().getClass(),
-                        gameLevelToUpdate.getId(), LEVEL_NOT_FOUND)));
+        GameLevel gameLevel = findGameLevelById(gameLevelToUpdate.getId());
+        checkIfLevelPresentInDefinition(gameLevel, definitionId);
         this.checkSumOfHintPenalties(gameLevelToUpdate);
         gameLevelToUpdate.setOrder(gameLevel.getOrder());
         trainingDefinition.setEstimatedDuration(trainingDefinition.getEstimatedDuration() - gameLevel.getEstimatedDuration() + gameLevelToUpdate.getEstimatedDuration());
@@ -347,13 +342,8 @@ public class TrainingDefinitionService {
     public void updateInfoLevel(Long definitionId, InfoLevel infoLevelToUpdate) {
         TrainingDefinition trainingDefinition = findById(definitionId);
         checkIfCanBeUpdated(trainingDefinition);
-        if (!findLevelInDefinition(trainingDefinition, infoLevelToUpdate.getId())) {
-            throw new EntityNotFoundException(new EntityErrorDetail(AbstractLevel.class, "id", infoLevelToUpdate.getId().getClass(),
-                    infoLevelToUpdate.getId(), "Level was not found in definition (id: " + definitionId + ")."));
-        }
-        InfoLevel infoLevel = infoLevelRepository.findById(infoLevelToUpdate.getId())
-                .orElseThrow(() -> new EntityNotFoundException(new EntityErrorDetail(AbstractLevel.class, "id", infoLevelToUpdate.getId().getClass(),
-                        infoLevelToUpdate.getId(), LEVEL_NOT_FOUND)));
+        InfoLevel infoLevel = findInfoLevelById(infoLevelToUpdate.getId());
+        checkIfLevelPresentInDefinition(infoLevel, definitionId);
         infoLevelToUpdate.setOrder(infoLevel.getOrder());
         trainingDefinition.setLastEdited(getCurrentTimeInUTC());
         trainingDefinition.setEstimatedDuration(trainingDefinition.getEstimatedDuration() - infoLevel.getEstimatedDuration() + infoLevelToUpdate.getEstimatedDuration());
@@ -369,24 +359,16 @@ public class TrainingDefinitionService {
      * @throws EntityNotFoundException training definition is not found.
      * @throws EntityConflictException level cannot be updated in released or archived training definition.
      */
-    public void updateAssessmentLevel(Long definitionId, AssessmentLevel assessmentLevelToUpdate) {
+    public AssessmentLevel updateAssessmentLevel(Long definitionId, AssessmentLevel assessmentLevelToUpdate) {
         TrainingDefinition trainingDefinition = findById(definitionId);
         checkIfCanBeUpdated(trainingDefinition);
-        if (!findLevelInDefinition(trainingDefinition, assessmentLevelToUpdate.getId())) {
-            throw new EntityNotFoundException(new EntityErrorDetail(AbstractLevel.class, "id", assessmentLevelToUpdate.getId().getClass(),
-                    assessmentLevelToUpdate.getId(), "Level was not found in definition (id: " + definitionId + ")."));
-        }
-        AssessmentLevel assessmentLevel = assessmentLevelRepository.findById(assessmentLevelToUpdate.getId())
-                .orElseThrow(() -> new EntityNotFoundException(new EntityErrorDetail(AbstractLevel.class, "id", assessmentLevelToUpdate.getId().getClass(),
-                        assessmentLevelToUpdate.getId(), LEVEL_NOT_FOUND)));
-        if (!assessmentLevelToUpdate.getQuestions().equals(assessmentLevel.getQuestions())) {
-            AssessmentUtil.validQuestions(assessmentLevelToUpdate.getQuestions());
-        }
+        AssessmentLevel assessmentLevel = findAssessmentLevelById(assessmentLevelToUpdate.getId());
+        checkIfLevelPresentInDefinition(assessmentLevel, trainingDefinition.getId());
         assessmentLevelToUpdate.setOrder(assessmentLevel.getOrder());
         trainingDefinition.setEstimatedDuration(trainingDefinition.getEstimatedDuration() - assessmentLevel.getEstimatedDuration() + assessmentLevelToUpdate.getEstimatedDuration());
         trainingDefinition.setLastEdited(getCurrentTimeInUTC());
         assessmentLevelToUpdate.setTrainingDefinition(trainingDefinition);
-        assessmentLevelRepository.save(assessmentLevelToUpdate);
+        return assessmentLevelRepository.save(assessmentLevelToUpdate);
     }
 
     /**
@@ -477,12 +459,6 @@ public class TrainingDefinitionService {
         newAssessmentLevel.setMaxScore(0);
         newAssessmentLevel.setAssessmentType(AssessmentType.QUESTIONNAIRE);
         newAssessmentLevel.setInstructions("Instructions should be here");
-        try {
-            newAssessmentLevel.setQuestions(objectMapper.writeValueAsString(List.of(new AssessmentQuestion())));
-        } catch (JsonProcessingException ex) {
-            throw new InternalServerErrorException("Could not serialize question when create new assessment level");
-        }
-
         newAssessmentLevel.setEstimatedDuration(1);
         return newAssessmentLevel;
     }
@@ -569,10 +545,29 @@ public class TrainingDefinitionService {
         trainingDefinition.setLastEdited(getCurrentTimeInUTC());
     }
 
-    private boolean findLevelInDefinition(TrainingDefinition trainingDefinition, Long levelId) {
-        return abstractLevelRepository.findLevelInDefinition(trainingDefinition.getId(), levelId)
-                .isPresent();
+    private void checkIfLevelPresentInDefinition(AbstractLevel level, Long trainingDefinitionId) {
+        if (!level.getTrainingDefinition().getId().equals(trainingDefinitionId)) {
+            throw new EntityNotFoundException(new EntityErrorDetail(AbstractLevel.class, "id", level.getId().getClass(),
+                    level.getId(), "Level was not found in definition (id: " + trainingDefinitionId + ")."));
+        }
     }
+
+    private AssessmentLevel findAssessmentLevelById(Long id) {
+        return assessmentLevelRepository.findById(id).orElseThrow(() -> new EntityNotFoundException(
+                new EntityErrorDetail(AbstractLevel.class, "id", id.getClass(), id, LEVEL_NOT_FOUND)));
+    }
+
+    private GameLevel findGameLevelById(Long id) {
+        return gameLevelRepository.findById(id).orElseThrow(() -> new EntityNotFoundException(
+                new EntityErrorDetail(AbstractLevel.class, "id", id.getClass(), id, LEVEL_NOT_FOUND)));
+    }
+
+    private InfoLevel findInfoLevelById(Long id) {
+        return infoLevelRepository.findById(id).orElseThrow(() -> new EntityNotFoundException(
+                new EntityErrorDetail(AbstractLevel.class, "id", id.getClass(), id, LEVEL_NOT_FOUND)));
+    }
+
+
 
     private void cloneLevelsFromTrainingDefinition(Long trainingDefinitionId, TrainingDefinition clonedTrainingDefinition) {
         List<AbstractLevel> levels = abstractLevelRepository.findAllLevelsByTrainingDefinitionId(trainingDefinitionId);
@@ -581,7 +576,7 @@ public class TrainingDefinitionService {
         }
         levels.forEach(level -> {
             if (level instanceof AssessmentLevel) {
-                cloneAssessmentLevel(level, clonedTrainingDefinition);
+                cloneAssessmentLevel((AssessmentLevel) level, clonedTrainingDefinition);
             }
             if (level instanceof InfoLevel) {
                 cloneInfoLevel(level, clonedTrainingDefinition);
@@ -600,13 +595,75 @@ public class TrainingDefinitionService {
         infoLevelRepository.save(newInfoLevel);
     }
 
-    private void cloneAssessmentLevel(AbstractLevel level, TrainingDefinition trainingDefinition) {
-        AssessmentUtil.validQuestions(((AssessmentLevel) level).getQuestions());
+    private void cloneAssessmentLevel(AssessmentLevel level, TrainingDefinition trainingDefinition) {
         AssessmentLevel newAssessmentLevel = new AssessmentLevel();
         modelMapper.map(level, newAssessmentLevel);
         newAssessmentLevel.setId(null);
         newAssessmentLevel.setTrainingDefinition(trainingDefinition);
+        newAssessmentLevel.setQuestions(cloneQuestions(level.getQuestions()));
         assessmentLevelRepository.save(newAssessmentLevel);
+
+        for (Question question: level.getQuestions().stream()
+                .filter(question -> question.getQuestionType() == QuestionType.EMI)
+                .collect(Collectors.toList())) {
+            List<ExtendedMatchingStatement> extendedMatchingStatements = question.getExtendedMatchingStatements();
+            for (ExtendedMatchingStatement extendedMatchingStatement : extendedMatchingStatements) {
+                int ordersOfExtendedMatchingOption = extendedMatchingStatement.getExtendedMatchingOption().getOrder();
+                Question clonedQuestion = newAssessmentLevel.getQuestions().get(question.getOrder());
+                ExtendedMatchingStatement clonedExtendedMatchingStatement = clonedQuestion.getExtendedMatchingStatements().get(extendedMatchingStatement.getOrder());
+                clonedExtendedMatchingStatement.setExtendedMatchingOption(clonedQuestion.getExtendedMatchingOptions().stream()
+                        .filter(emo -> ordersOfExtendedMatchingOption == emo.getOrder())
+                        .findFirst().get()
+                );
+            }
+        }
+    }
+
+    private List<Question> cloneQuestions(List<Question> questions) {
+        List<Question> clonedQuestions = new ArrayList<>();
+        for (Question question : questions) {
+            Question clonedQuestion = new Question();
+            modelMapper.map(question, clonedQuestion);
+            clonedQuestion.setId(null);
+            question.setChoices(cloneQuestionChoices(question.getChoices()));
+            question.setExtendedMatchingStatements(cloneExtendedMatchingItems(question.getExtendedMatchingStatements()));
+            question.setExtendedMatchingOptions(cloneExtendedMatchingOptions(question.getExtendedMatchingOptions()));
+            clonedQuestions.add(clonedQuestion);
+        }
+        return clonedQuestions;
+    }
+
+    private List<QuestionChoice> cloneQuestionChoices(List<QuestionChoice> questionChoices) {
+        List<QuestionChoice> clonedQuestionChoices = new ArrayList<>();
+        for (QuestionChoice questionChoice : questionChoices) {
+            QuestionChoice clonedQuestionChoice = new QuestionChoice();
+            modelMapper.map(questionChoice, clonedQuestionChoice);
+            clonedQuestionChoice.setId(null);
+            clonedQuestionChoices.add(clonedQuestionChoice);
+        }
+        return clonedQuestionChoices;
+    }
+
+    private List<ExtendedMatchingStatement> cloneExtendedMatchingItems(List<ExtendedMatchingStatement> extendedMatchingStatements) {
+        List<ExtendedMatchingStatement> clonedEMIStatements = new ArrayList<>();
+        for (ExtendedMatchingStatement extendedMatchingStatement : extendedMatchingStatements) {
+            ExtendedMatchingStatement clonedExtendedMatchingStatement = new ExtendedMatchingStatement();
+            modelMapper.map(extendedMatchingStatement, clonedExtendedMatchingStatement);
+            clonedExtendedMatchingStatement.setId(null);
+            clonedEMIStatements.add(clonedExtendedMatchingStatement.getOrder(), clonedExtendedMatchingStatement);
+        }
+        return clonedEMIStatements;
+    }
+
+    private List<ExtendedMatchingOption> cloneExtendedMatchingOptions(List<ExtendedMatchingOption> extendedMatchingOptions) {
+        List<ExtendedMatchingOption> clonedEMIOptions = new ArrayList<>();
+        for (ExtendedMatchingOption extendedMatchingOption : extendedMatchingOptions) {
+            ExtendedMatchingOption clonedExtendedMatchingOption = new ExtendedMatchingOption();
+            modelMapper.map(extendedMatchingOption, clonedExtendedMatchingOption);
+            clonedExtendedMatchingOption.setId(null);
+            clonedEMIOptions.add(clonedExtendedMatchingOption.getOrder(), clonedExtendedMatchingOption);
+        }
+        return clonedEMIOptions;
     }
 
     private void cloneGameLevel(AbstractLevel level, TrainingDefinition trainingDefinition) {

@@ -1,10 +1,13 @@
 package cz.muni.ics.kypo.training.api.dto.imports;
 
+import cz.muni.ics.kypo.training.api.dto.assessmentlevel.question.QuestionDTO;
 import cz.muni.ics.kypo.training.api.enums.AssessmentType;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
 import javax.validation.constraints.NotNull;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Encapsulates information about assessment level. Inherits from {@link AbstractLevelImportDTO}
@@ -13,9 +16,9 @@ import javax.validation.constraints.NotNull;
 @ApiModel(value = "AssessmentLevelImportDTO", description = "Imported assessment level.", parent = AbstractLevelImportDTO.class)
 public class AssessmentLevelImportDTO extends AbstractLevelImportDTO {
 
-	@ApiModelProperty(value = "Questions of assessment level to update.", example = "\"[{\"question_type\":\"FFQ\",\"text\":\"Which tool would you use to scan the open ports of a server?\",\"points\":6,\"penalty\":3,\"order\":0,\"answer_required\":true,\"correct_choices\":[\"nmap\",\"Nmap\"]}]\"")
+	@ApiModelProperty(value = "Questions of assessment level to update.")
 	@NotNull(message = "{assessmentLevel.questions.NotNull.message}")
-	private String questions;
+	private List<QuestionDTO> questions = new ArrayList<>();
 	@ApiModelProperty(value = "Instructions of assessment level to update.", example = "Fill me up slowly")
 	@NotNull(message = "{assessmentLevel.instructions.NotNull.message}")
 	private String instructions;
@@ -28,7 +31,7 @@ public class AssessmentLevelImportDTO extends AbstractLevelImportDTO {
 	 *
 	 * @return the questions
 	 */
-	public String getQuestions() {
+	public List<QuestionDTO> getQuestions() {
 		return questions;
 	}
 
@@ -37,7 +40,7 @@ public class AssessmentLevelImportDTO extends AbstractLevelImportDTO {
 	 *
 	 * @param questions the questions
 	 */
-	public void setQuestions(String questions) {
+	public void setQuestions(List<QuestionDTO> questions) {
 		this.questions = questions;
 	}
 
