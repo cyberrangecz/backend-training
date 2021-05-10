@@ -224,6 +224,7 @@ public class VisualizationFacade {
                     levelProgress.setEndTime(events.get(levelCompletedEventIndex).getTimestamp());
                 }
                 levelProgress.setEvents(events);
+                playerProgress.setTrainingRunId(events.get(0).getTrainingRunId());
                 playerProgress.addLevelProgress(levelProgress);
             }
             playerProgresses.add(playerProgress);

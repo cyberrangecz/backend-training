@@ -15,6 +15,9 @@ public class PlayerProgress {
     @ApiModelProperty(value = "User Ref ID.", required = true)
     @JsonProperty(value = "user_ref_id", required = true)
     private long userRefId;
+    @ApiModelProperty(value = "Training Run ID.", required = true)
+    @JsonProperty(value = "training_run_id", required = true)
+    private long trainingRunId;
     @ApiModelProperty(value = "Levels ID.", required = true)
     @JsonProperty(value = "levels", required = true)
     private List<LevelProgress> levels;
@@ -32,6 +35,14 @@ public class PlayerProgress {
 
     public void setUserRefId(long userRefId) {
         this.userRefId = userRefId;
+    }
+
+    public long getTrainingRunId() {
+        return trainingRunId;
+    }
+
+    public void setTrainingRunId(long trainingRunId) {
+        this.trainingRunId = trainingRunId;
     }
 
     public List<LevelProgress> getLevels() {
