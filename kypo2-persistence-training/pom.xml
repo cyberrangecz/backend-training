@@ -18,8 +18,8 @@
         </dependency>
         <dependency>
             <groupId>cz.muni.ics.kypo</groupId>
-            <artifactId>kypo2-security-commons</artifactId>
-            <version>1.0.41</version>
+            <artifactId>kypo-security-commons</artifactId>
+            <version>1.0.42</version>
         </dependency>
         <!-- necessary for OpenJDK 11-->
         <dependency>
@@ -41,7 +41,6 @@
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
-        <!-- for formating LocalDateTime in JSON -->
         <!-- jackson -->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
@@ -128,10 +127,10 @@
                 <artifactId>flyway-maven-plugin</artifactId>
                 <version>${flyway.version}</version>
             </plugin>
-			<plugin>
-			    <groupId>org.apache.maven.plugins</groupId>
-			    <artifactId>maven-surefire-plugin</artifactId>
-			</plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+            </plugin>
         </plugins>
     </build>
 </project>
