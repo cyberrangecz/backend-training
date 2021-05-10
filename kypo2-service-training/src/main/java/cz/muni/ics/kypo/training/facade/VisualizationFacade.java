@@ -25,6 +25,9 @@ import cz.muni.ics.kypo.training.api.dto.visualization.timeline.TimelineLevelDTO
 import cz.muni.ics.kypo.training.api.dto.visualization.commons.EventDTO;
 import cz.muni.ics.kypo.training.api.enums.AssessmentType;
 import cz.muni.ics.kypo.training.api.responses.PageResultResource;
+import cz.muni.ics.kypo.training.exceptions.EntityConflictException;
+import cz.muni.ics.kypo.training.exceptions.EntityErrorDetail;
+import cz.muni.ics.kypo.training.exceptions.ResourceNotFoundException;
 import cz.muni.ics.kypo.training.mapping.mapstruct.LevelMapper;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.model.AssessmentLevel;
@@ -266,7 +269,8 @@ public class VisualizationFacade {
             "or @securityService.isOrganizerOfGivenTrainingInstance(#trainingInstanceId)")
     @TransactionalRO
     public ClusteringVisualizationDTO getClusteringVisualizations(Long trainingInstanceId) {
-        TrainingInstanceData trainingInstanceData = getTrainingInstanceData(trainingInstanceId, elasticsearchApiService::getAggregatedEventsByLevelsAndUsers);
+        TrainingInstanceData trainingInstanceData = getTrainingInstanceData(trainingInstanceId,
+                elasticsearchApiService::getAggregatedEventsByLevelsAndUsers, this::retrieveUserIdsFromEventsAggregatedByLevelsAndUsers);
         TrainingInstanceStatistics trainingInstanceStatistics = new TrainingInstanceStatistics();
         // Must be before getFinalResultsField() because of statistics
         List<ClusteringLevelDTO> levelsField = new ArrayList<>();
@@ -287,7 +291,8 @@ public class VisualizationFacade {
             "or @securityService.isOrganizerOfGivenTrainingInstance(#trainingInstanceId)")
     @TransactionalRO
     public List<PlayerDataDTO> getTableVisualizations(Long trainingInstanceId) {
-        TrainingInstanceData trainingInstanceData = getTrainingInstanceData(trainingInstanceId, elasticsearchApiService::getAggregatedEventsByUsersAndLevels);
+        TrainingInstanceData trainingInstanceData = getTrainingInstanceData(trainingInstanceId,
+                elasticsearchApiService::getAggregatedEventsByUsersAndLevels, this::retrieveUserIdsFromEventsAggregatedByUsersAndLevels);
 
         return trainingInstanceData.events.entrySet().stream().map(userEvents -> {
             AbstractAuditPOJO lastLevelEvent = null;
@@ -322,7 +327,8 @@ public class VisualizationFacade {
             "or @securityService.isOrganizerOfGivenTrainingInstance(#trainingInstanceId)")
     @TransactionalRO
     public List<LevelTabsLevelDTO> getLevelTabsVisualizations(Long trainingInstanceId) {
-        TrainingInstanceData trainingInstanceData = getTrainingInstanceData(trainingInstanceId, elasticsearchApiService::getAggregatedEventsByLevelsAndUsers);
+        TrainingInstanceData trainingInstanceData = getTrainingInstanceData(trainingInstanceId,
+                elasticsearchApiService::getAggregatedEventsByLevelsAndUsers, this::retrieveUserIdsFromEventsAggregatedByLevelsAndUsers);
         List<LevelTabsLevelDTO> levelTabsData = new ArrayList<>();
         for (AbstractLevel level : trainingInstanceData.levels) {
             levelTabsData.add(mapToLevelTabsLevelDTO(level, trainingInstanceData));
@@ -340,7 +346,8 @@ public class VisualizationFacade {
             "or @securityService.isOrganizerOfGivenTrainingInstance(#trainingInstanceId)")
     @TransactionalRO
     public TimelineDTO getTimelineVisualizations(Long trainingInstanceId) {
-        TrainingInstanceData trainingInstanceData = getTrainingInstanceData(trainingInstanceId, elasticsearchApiService::getAggregatedEventsByUsersAndLevels);
+        TrainingInstanceData trainingInstanceData = getTrainingInstanceData(trainingInstanceId,
+                elasticsearchApiService::getAggregatedEventsByUsersAndLevels, this::retrieveUserIdsFromEventsAggregatedByUsersAndLevels);
 
         TimelineDTO timelineDTO = new TimelineDTO();
         timelineDTO.setEstimatedTime(TimeUnit.MINUTES.toMillis(trainingInstanceData.trainingDefinition.getEstimatedDuration()));
@@ -407,10 +414,10 @@ public class VisualizationFacade {
         return levelTabsLevelBuilder.build();
     }
 
-    private List<LevelTabsPlayerDTO> mapToLevelTabsPlayerDTOs(Map<Long, Map<Long, List<AbstractAuditPOJO>>> eventsFromElasticsearch,
+    private List<LevelTabsPlayerDTO> mapToLevelTabsPlayerDTOs(Map<Long, Map<Long, List<AbstractAuditPOJO>>> events,
                                                               AbstractLevel level) {
         List<LevelTabsPlayerDTO> players = new ArrayList<>();
-        for (Map.Entry<Long, List<AbstractAuditPOJO>> userEvents : eventsFromElasticsearch.get(level.getId()).entrySet()) {
+        for (Map.Entry<Long, List<AbstractAuditPOJO>> userEvents : events.getOrDefault(level.getId(), Collections.emptyMap()).entrySet()) {
             AbstractAuditPOJO firstEvent = userEvents.getValue().get(0);
             AbstractAuditPOJO lastEvent = userEvents.getValue().get(userEvents.getValue().size() - 1);
 
@@ -469,7 +476,8 @@ public class VisualizationFacade {
             clusteringLevelBuilder.levelType(cz.muni.ics.kypo.training.api.enums.LevelType.ASSESSMENT_LEVEL);
         }
         LevelStatistics levelStatistics = new LevelStatistics();
-        for (Map.Entry<Long, List<AbstractAuditPOJO>> userLevelEvents : trainingInstanceData.events.get(abstractLevel.getId()).entrySet()) {
+        Map<Long, List<AbstractAuditPOJO>> levelEventsOfUsers = trainingInstanceData.events.getOrDefault(abstractLevel.getId(), Collections.emptyMap());
+        for (Map.Entry<Long, List<AbstractAuditPOJO>> userLevelEvents : levelEventsOfUsers.entrySet()) {
             AbstractAuditPOJO firstLevelEvent = userLevelEvents.getValue().get(0);
             AbstractAuditPOJO lastLevelEvent = userLevelEvents.getValue().get(userLevelEvents.getValue().size() - 1);
             UserRefDTO participantInfo = trainingInstanceData.participants.get(userLevelEvents.getKey());
@@ -534,17 +542,29 @@ public class VisualizationFacade {
     }
 
     private TrainingInstanceData getTrainingInstanceData(Long trainingInstanceId,
-                                                         Function<TrainingInstance, Map<Long, Map<Long, List<AbstractAuditPOJO>>>> aggregatedEventsFunction) {
+                                                         Function<TrainingInstance, Map<Long, Map<Long, List<AbstractAuditPOJO>>>> aggregatedEventsFunction,
+                                                         Function<Map<Long, Map<Long, List<AbstractAuditPOJO>>>, Set<Long>> usersIdsRetrieveFunction) {
         TrainingInstanceData trainingInstanceData = new TrainingInstanceData();
         trainingInstanceData.trainingInstance = trainingInstanceService.findById(trainingInstanceId);
         trainingInstanceData.trainingDefinition = trainingInstanceData.trainingInstance.getTrainingDefinition();
         trainingInstanceData.levels = trainingDefinitionService.findAllLevelsFromDefinition(trainingInstanceData.trainingInstance.getTrainingDefinition().getId());
         trainingInstanceData.events = aggregatedEventsFunction.apply(trainingInstanceData.trainingInstance);
-        trainingInstanceData.participants = userService.getUsersRefDTOByGivenUserIds(trainingInstanceData.events.keySet(), PageRequest.of(0, 999), null, null)
+        trainingInstanceData.participants = userService.getUsersRefDTOByGivenUserIds(usersIdsRetrieveFunction.apply(trainingInstanceData.events), PageRequest.of(0, 999), null, null)
                 .getContent()
                 .stream()
                 .collect(Collectors.toMap(UserRefDTO::getUserRefId, Function.identity()));
         return trainingInstanceData;
+    }
+
+    private Set<Long> retrieveUserIdsFromEventsAggregatedByLevelsAndUsers(Map<Long, Map<Long, List<AbstractAuditPOJO>>> events) {
+        return events.values()
+                .stream()
+                .flatMap(v -> v.keySet().stream())
+                .collect(Collectors.toSet());
+    }
+
+    private Set<Long> retrieveUserIdsFromEventsAggregatedByUsersAndLevels(Map<Long, Map<Long, List<AbstractAuditPOJO>>> events) {
+        return events.keySet();
     }
 
     private ProcessedLevelsData getProcessedLevelsData(List<AbstractLevel> levels, Map.Entry<Long, Map<Long, List<AbstractAuditPOJO>>> userEvents) {
