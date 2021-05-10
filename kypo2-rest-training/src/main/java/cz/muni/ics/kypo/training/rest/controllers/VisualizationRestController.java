@@ -23,15 +23,16 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
  * The rest controller for Visualizations.
  */
 @Api(value = "/visualizations",
-     tags = "Visualizations",
-     consumes = MediaType.APPLICATION_JSON_VALUE,
-     authorizations = @Authorization(value = "bearerAuth"))
+        tags = "Visualizations",
+        consumes = MediaType.APPLICATION_JSON_VALUE,
+        authorizations = @Authorization(value = "bearerAuth"))
 @ApiResponses(value = {
         @ApiResponse(code = 401, message = "Full authentication is required to access this resource.", response = ApiError.class),
         @ApiResponse(code = 403, message = "The necessary permissions are required for a resource.", response = ApiError.class)
@@ -80,6 +81,31 @@ public class VisualizationRestController {
                                                                                       @PathVariable("runId") Long runId) {
         VisualizationInfoDTO visualizationInfoAboutTrainingRunDTO = visualizationFacade.getVisualizationInfoAboutTrainingRun(runId);
         return ResponseEntity.ok(visualizationInfoAboutTrainingRunDTO);
+    }
+
+    /**
+     * Gather all commands in a training run.
+     *
+     * @param runId id of training run.
+     * @return the list of commands including its timestamp.
+     */
+    @ApiOperation(httpMethod = "GET",
+            value = "Get all commands in a training run.",
+            response = VisualizationInfoDTO.class,
+            nickname = "gatherAllCommandsInTrainingRun",
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Commands in training run.", response = VisualizationInfoDTO.class),
+            @ApiResponse(code = 404, message = "Training run with given id not found.", response = ApiError.class),
+            @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiError.class)
+    })
+    @GetMapping(path = "/training-instances/{instanceId}/training-runs/{runId}/commands", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<Map<String, Object>>> gatherAllCommandsInTrainingRun(@ApiParam(value = "Training instance ID", required = true)
+                                                                                    @PathVariable("instanceId") Long instanceId,
+                                                                                    @ApiParam(value = "Training run ID", required = true)
+                                                                                    @PathVariable("runId") Long runId) {
+        return ResponseEntity.ok(visualizationFacade.getAllCommandsInTrainingRun(instanceId, runId));
     }
 
     /**
@@ -247,7 +273,7 @@ public class VisualizationRestController {
     })
     @GetMapping(path = "/training-instances/{instanceId}/timeline", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<TimelineDTO> getTimelineVisualizations(@ApiParam(value = "Training instance ID", required = true)
-                                                                              @PathVariable("instanceId") Long trainingInstanceId) {
+                                                                 @PathVariable("instanceId") Long trainingInstanceId) {
         TimelineDTO timelineVisualizationDTO = visualizationFacade.getTimelineVisualizations(trainingInstanceId);
         return ResponseEntity.ok(timelineVisualizationDTO);
     }
@@ -271,7 +297,7 @@ public class VisualizationRestController {
     })
     @GetMapping(path = "/training-instances/{instanceId}/progress", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> gatherVisualizationInfoForTrainingInstanceProgress(@ApiParam(value = "Training instance ID", required = true)
-                                                                                                       @PathVariable("instanceId") Long trainingInstanceId) {
+                                                                                     @PathVariable("instanceId") Long trainingInstanceId) {
         VisualizationProgressDTO visualizationProgressDTO = visualizationFacade.getProgressVisualizationAboutTrainingInstance(trainingInstanceId);
         return ResponseEntity.ok(SquigglyUtils.stringify(objectMapper, visualizationProgressDTO));
     }

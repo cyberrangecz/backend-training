@@ -129,6 +129,22 @@ public class VisualizationFacade {
     }
 
     /**
+     * Gather all the necessary information about the training run needed to visualize the result.
+     *
+     * @param trainingRunId id of Training Run to gets info.
+     * @return the list of all commands in a sandbox.
+     */
+    @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
+            "or @securityService.isOrganizerOfGivenTrainingInstance(#instanceId)" +
+            "or @securityService.isTraineeOfGivenTrainingRun(#trainingRunId)")
+    @TransactionalWO
+    public List<Map<String, Object>> getAllCommandsInTrainingRun(Long instanceId, Long trainingRunId) {
+        TrainingRun trainingRun = trainingRunService.findById(trainingRunId);
+        Long sandboxInstanceRef = trainingRun.getSandboxInstanceRefId();
+        return elasticsearchApiService.findAllConsoleCommandsFromSandbox(sandboxInstanceRef);
+    }
+
+    /**
      * Gather all the necessary information about the training instance needed to visualize the result.
      *
      * @param trainingInstanceId id of Training Instance to gets info.
@@ -203,7 +219,7 @@ public class VisualizationFacade {
             PlayerProgress playerProgress = new PlayerProgress();
             playerProgress.setUserRefId(userEvents.getKey());
 
-            for (Map.Entry<Long, List<AbstractAuditPOJO>> levelEvents: userEvents.getValue().entrySet()) {
+            for (Map.Entry<Long, List<AbstractAuditPOJO>> levelEvents : userEvents.getValue().entrySet()) {
                 List<AbstractAuditPOJO> events = levelEvents.getValue();
                 LevelProgress levelProgress = new LevelProgress();
                 levelProgress.setLevelId(levelEvents.getKey());
@@ -234,7 +250,7 @@ public class VisualizationFacade {
     }
 
     private int getLevelCompletedEventIndex(List<AbstractAuditPOJO> events) {
-        AbstractAuditPOJO lastEvent = events.get(events.size() -1);
+        AbstractAuditPOJO lastEvent = events.get(events.size() - 1);
         if (!(lastEvent instanceof LevelCompleted) && !(lastEvent instanceof TrainingRunEnded)) {
             return -1;
         }
@@ -533,7 +549,7 @@ public class VisualizationFacade {
         for (Map.Entry<Long, AbstractAuditPOJO> lastEventOfUser : trainingInstanceStatistics.lastEventsOfParticipants.entrySet()) {
             UserRefDTO participantInfo = trainingInstanceData.participants.get(lastEventOfUser.getKey());
             finalResults.addPlayerData(new PlayerDataDTO(lastEventOfUser.getKey(), participantInfo.getUserRefFullName(), lastEventOfUser.getValue().getActualScoreInLevel(),
-                            lastEventOfUser.getValue().getGameTime(), lastEventOfUser.getValue() instanceof TrainingRunEnded, participantInfo.getPicture()));
+                    lastEventOfUser.getValue().getGameTime(), lastEventOfUser.getValue() instanceof TrainingRunEnded, participantInfo.getPicture()));
         }
         finalResults.setAverageScore(trainingInstanceStatistics.getAverageScore());
         finalResults.setMaxPoints(trainingInstanceStatistics.getMaxScore());
@@ -572,7 +588,7 @@ public class VisualizationFacade {
         ProcessedLevelsData processedLevelData = new ProcessedLevelsData();
         for (AbstractLevel abstractLevel : levels) {
             List<AbstractAuditPOJO> levelEvents = userEvents.getValue().get(abstractLevel.getId());
-            if(levelEvents == null) {
+            if (levelEvents == null) {
                 break;
             }
             ProcessedEventsData processedEventsData = getProcessedEventsData(abstractLevel.getOrder(), levelEvents);
@@ -669,10 +685,21 @@ public class VisualizationFacade {
             }
         }
 
-        public long getMaxTime() { return maxTime; }
-        public int getMaxScore() { return maxScore; }
-        public float getAverageTime() { return sumOfTrainingRunsTime == 0 ? 0 : sumOfTrainingRunsTime / numOfTrainingRunsForTime; }
-        public float getAverageScore() { return sumOfTrainingRunsScore == 0 ? 0 : sumOfTrainingRunsScore / numOfTrainingRunsForScore; }
+        public long getMaxTime() {
+            return maxTime;
+        }
+
+        public int getMaxScore() {
+            return maxScore;
+        }
+
+        public float getAverageTime() {
+            return sumOfTrainingRunsTime == 0 ? 0 : sumOfTrainingRunsTime / numOfTrainingRunsForTime;
+        }
+
+        public float getAverageScore() {
+            return sumOfTrainingRunsScore == 0 ? 0 : sumOfTrainingRunsScore / numOfTrainingRunsForScore;
+        }
     }
 
     private class LevelStatistics {
@@ -705,10 +732,21 @@ public class VisualizationFacade {
             }
         }
 
-        public long getMaxTime() { return maxTime; }
-        public int getMaxScore() { return maxScore; }
-        public float getAverageTime() { return sumOfLevelsTime == 0 ? 0 : sumOfLevelsTime / numOfLevelsForTime; }
-        public float getAverageScore() { return sumOfLevelsScore == 0 ? 0 : sumOfLevelsScore / numOfLevelsForScore; }
+        public long getMaxTime() {
+            return maxTime;
+        }
+
+        public int getMaxScore() {
+            return maxScore;
+        }
+
+        public float getAverageTime() {
+            return sumOfLevelsTime == 0 ? 0 : sumOfLevelsTime / numOfLevelsForTime;
+        }
+
+        public float getAverageScore() {
+            return sumOfLevelsScore == 0 ? 0 : sumOfLevelsScore / numOfLevelsForScore;
+        }
     }
 
     private class ProcessedLevelsData {
