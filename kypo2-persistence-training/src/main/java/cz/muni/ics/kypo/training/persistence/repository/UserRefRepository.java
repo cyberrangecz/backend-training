@@ -33,11 +33,10 @@ public interface UserRefRepository extends JpaRepository<UserRef, Long>, Queryds
     Optional<UserRef> findUserByUserRefId(@Param("userRefId") Long userRefId);
 
     /**
-     * Find all participants of given training instance.
+     * Find all participants ref ids of given training instance.
      *
      * @param trainingInstanceId id of the training instance
-     * @return the {@link UserRef}
+     * @return the ids of the participants
      */
-    Set<Long> findParticipantsRefByTrainingInstanceId(@Param("trainingInstanceId") Long trainingInstanceId);
-
+    Set<Long> findParticipantsRefIdsByTrainingInstanceId(@Param("trainingInstanceId") Long trainingInstanceId);
 }

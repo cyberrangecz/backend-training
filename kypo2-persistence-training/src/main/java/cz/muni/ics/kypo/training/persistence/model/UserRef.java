@@ -21,7 +21,7 @@ import java.util.Set;
                 query = "SELECT ur FROM UserRef ur WHERE ur.userRefId = :userRefId"
         ),
         @NamedQuery(
-                name = "UserRef.findParticipantsRefByTrainingInstanceId",
+                name = "UserRef.findParticipantsRefIdsByTrainingInstanceId",
                 query = "SELECT pr.userRefId FROM TrainingRun tr " +
                         "INNER JOIN tr.participantRef pr " +
                         "INNER JOIN tr.trainingInstance ti " +

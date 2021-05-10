@@ -42,7 +42,7 @@ public class TrainingInstanceService {
     private TrainingInstanceRepository trainingInstanceRepository;
     private TrainingRunRepository trainingRunRepository;
     private AccessTokenRepository accessTokenRepository;
-    private UserRefRepository organizerRefRepository;
+    private UserRefRepository userRefRepository;
     private SecurityService securityService;
     private WebClient sandboxServiceWebClient;
 
@@ -52,7 +52,7 @@ public class TrainingInstanceService {
      * @param trainingInstanceRepository the training instance repository
      * @param accessTokenRepository      the access token repository
      * @param trainingRunRepository      the training run repository
-     * @param organizerRefRepository     the organizer ref repository
+     * @param userRefRepository     the organizer ref repository
      * @param sandboxServiceWebClient    the python rest template
      * @param securityService            the security service
      */
@@ -61,13 +61,13 @@ public class TrainingInstanceService {
     public TrainingInstanceService(TrainingInstanceRepository trainingInstanceRepository,
                                    AccessTokenRepository accessTokenRepository,
                                    TrainingRunRepository trainingRunRepository,
-                                   UserRefRepository organizerRefRepository,
+                                   UserRefRepository userRefRepository,
                                    SecurityService securityService,
                                    @Qualifier("sandboxServiceWebClient") WebClient sandboxServiceWebClient) {
         this.trainingInstanceRepository = trainingInstanceRepository;
         this.trainingRunRepository = trainingRunRepository;
         this.accessTokenRepository = accessTokenRepository;
-        this.organizerRefRepository = organizerRefRepository;
+        this.userRefRepository = userRefRepository;
         this.securityService = securityService;
         this.sandboxServiceWebClient = sandboxServiceWebClient;
     }
@@ -211,12 +211,12 @@ public class TrainingInstanceService {
     }
 
     private void addLoggedInUserAsOrganizerToTrainingInstance(TrainingInstance trainingInstance) {
-        Optional<UserRef> authorOfTrainingInstance = organizerRefRepository.findUserByUserRefId(securityService.getUserRefIdFromUserAndGroup());
+        Optional<UserRef> authorOfTrainingInstance = userRefRepository.findUserByUserRefId(securityService.getUserRefIdFromUserAndGroup());
         if (authorOfTrainingInstance.isPresent()) {
             trainingInstance.addOrganizer(authorOfTrainingInstance.get());
         } else {
             UserRef userRef = securityService.createUserRefEntityByInfoFromUserAndGroup();
-            trainingInstance.addOrganizer(organizerRefRepository.save(userRef));
+            trainingInstance.addOrganizer(userRefRepository.save(userRef));
         }
     }
 
@@ -331,7 +331,7 @@ public class TrainingInstanceService {
      * @return {@link UserRef}s with corresponding userRefIds
      */
     public Set<UserRef> findUserRefsByUserRefIds(Set<Long> usersRefId) {
-        return organizerRefRepository.findUsers(usersRefId);
+        return userRefRepository.findUsers(usersRefId);
     }
 
     /**

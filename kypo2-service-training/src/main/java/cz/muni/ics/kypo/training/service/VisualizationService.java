@@ -68,6 +68,6 @@ public class VisualizationService {
      * @return list of participants ref ids.
      */
     public Set<Long> getAllParticipantsRefIdsForSpecificTrainingInstance(Long trainingInstanceId) {
-        return userRefRepository.findParticipantsRefByTrainingInstanceId(trainingInstanceId);
+        return userRefRepository.findParticipantsRefIdsByTrainingInstanceId(trainingInstanceId);
     }
 }
