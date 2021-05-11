@@ -2062,7 +2062,9 @@ paths:
         description: "Responses to assessment"
         required: true
         schema:
-          type: "string"
+          type: "array"
+          items:
+            $ref: "#/definitions/QuestionAnswerDTO"
       responses:
         204:
           description: "The responses to assessment has been evaluated and stored."
@@ -2524,6 +2526,43 @@ paths:
             $ref: "#/definitions/TimelineDTO"
         404:
           description: "Training instance with given id not found."
+          schema:
+            $ref: "#/definitions/ApiError"
+        500:
+          description: "Unexpected condition was encountered."
+          schema:
+            $ref: "#/definitions/ApiError"
+      security:
+      - bearerAuth: []
+  /visualizations/training-instances/{instanceId}/training-runs/{runId}/commands:
+    get:
+      tags:
+      - "Visualizations"
+      summary: "Get all commands in a training run."
+      description: ""
+      operationId: "gatherAllCommandsInTrainingRun"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "instanceId"
+        in: "path"
+        description: "Training instance ID"
+        required: true
+        type: "integer"
+        format: "int64"
+      - name: "runId"
+        in: "path"
+        description: "Training run ID"
+        required: true
+        type: "integer"
+        format: "int64"
+      responses:
+        200:
+          description: "Commands in training run."
+          schema:
+            $ref: "#/definitions/VisualizationInfoDTO"
+        404:
+          description: "Training run with given id not found."
           schema:
             $ref: "#/definitions/ApiError"
         500:
@@ -3080,9 +3119,11 @@ definitions:
     - type: "object"
       properties:
         questions:
-          type: "string"
+          type: "array"
           example: "What is my mothers name?"
           description: "List of questions in this assessment as JSON."
+          items:
+            $ref: "#/definitions/QuestionDTO"
         instructions:
           type: "string"
           example: "Fill me up"
@@ -3101,9 +3142,11 @@ definitions:
     - type: "object"
       properties:
         questions:
-          type: "string"
+          type: "array"
           example: "What is my mothers name?"
           description: "List of questions in this assessment as JSON."
+          items:
+            $ref: "#/definitions/QuestionDTO"
         instructions:
           type: "string"
           example: "Fill me up"
@@ -3126,12 +3169,10 @@ definitions:
       - "questions"
       properties:
         questions:
-          type: "string"
-          example: "\"[{\"question_type\":\"FFQ\",\"text\":\"Which tool would you\
-            \ use to scan the open ports of a server?\",\"points\":6,\"penalty\":3,\"\
-            order\":0,\"answer_required\":true,\"correct_choices\":[\"nmap\",\"Nmap\"\
-            ]}]\""
+          type: "array"
           description: "Questions of assessment level to update."
+          items:
+            $ref: "#/definitions/QuestionDTO"
         instructions:
           type: "string"
           example: "Fill me up slowly"
@@ -3151,7 +3192,6 @@ definitions:
     - "id"
     - "instructions"
     - "maxScore"
-    - "questions"
     - "title"
     - "type"
     properties:
@@ -3173,11 +3213,10 @@ definitions:
         minimum: 0
         maximum: 100
       questions:
-        type: "string"
-        example: "\"[{\"question_type\":\"FFQ\",\"text\":\"Which tool would you use\
-          \ to scan the open ports of a server?\",\"points\":6,\"penalty\":3,\"order\"\
-          :0,\"answer_required\":true,\"correct_choices\":[\"nmap\",\"Nmap\"]}]\""
+        type: "array"
         description: "Questions of assessment level to update."
+        items:
+          $ref: "#/definitions/QuestionDTO"
       instructions:
         type: "string"
         example: "Fill me up slowly"
@@ -3208,9 +3247,11 @@ definitions:
           - "TEST"
           - "QUESTIONNAIRE"
         questions:
-          type: "string"
+          type: "array"
           example: "What is my mothers name?"
           description: "List of questions in this assessment as JSON."
+          items:
+            $ref: "#/definitions/QuestionDTO"
       description: "Information about assessment level needed for visualizations."
   AttachmentImportDTO:
     type: "object"
@@ -3347,7 +3388,7 @@ definitions:
         type: "string"
         example: "Unreleased training definition"
         description: "Description of training definition that is visible to the participant."
-      prerequisities:
+      prerequisites:
         type: "array"
         description: "List of knowledge and skills necessary to complete the training."
         items:
@@ -3384,6 +3425,49 @@ definitions:
           \ from this definition."
     description: "An exported detailed information about training definition which\
       \ also include individual levels."
+  ExtendedMatchingOptionDTO:
+    type: "object"
+    properties:
+      id:
+        type: "integer"
+        format: "int64"
+        example: 1
+        description: "Main identifier of the extended matching option."
+      text:
+        type: "string"
+        example: "22"
+        description: "Text content of the extended matching option."
+      order:
+        type: "integer"
+        format: "int32"
+        example: 0
+        description: "The order of the option in question of type EMI."
+        minimum: 0
+  ExtendedMatchingStatementDTO:
+    type: "object"
+    properties:
+      id:
+        type: "integer"
+        format: "int64"
+        example: 1
+        description: "Main identifier of the extended matching statement."
+      text:
+        type: "string"
+        example: "SSH"
+        description: "Text content of the extended matching statement."
+      order:
+        type: "integer"
+        format: "int32"
+        example: 0
+        description: "The order of the statement in question of type EMI."
+        minimum: 0
+      correctOptionOrder:
+        type: "integer"
+        format: "int32"
+        example: 0
+        description: "The order of the correct option in the list of extended matching\
+          \ options."
+        minimum: 0
   GameLevelDTO:
     allOf:
     - $ref: "#/definitions/AbstractLevelDTO"
@@ -3726,7 +3810,7 @@ definitions:
         type: "string"
         example: "Unreleased training definition"
         description: "Description of training definition that is visible to the participant."
-      prerequisities:
+      prerequisites:
         type: "array"
         description: "List of knowledge and skills necessary to complete the training."
         items:
@@ -3956,8 +4040,6 @@ definitions:
         format: "int64"
       sort:
         $ref: "#/definitions/Sort"
-      paged:
-        type: "boolean"
       unpaged:
         type: "boolean"
       pageNumber:
@@ -3966,6 +4048,8 @@ definitions:
       pageSize:
         type: "integer"
         format: "int32"
+      paged:
+        type: "boolean"
   Pagination:
     type: "object"
     properties:
@@ -4037,6 +4121,118 @@ definitions:
           additionalProperties:
             type: "string"
       description: "A detailed error from another Python mircorservice."
+  QuestionAnswerDTO:
+    type: "object"
+    required:
+    - "questionId"
+    properties:
+      questionId:
+        type: "integer"
+        format: "int64"
+        example: 1
+        description: "ID of answered question"
+      answers:
+        type: "array"
+        example: "[\"An answer\"]"
+        description: "Answers to the question"
+        uniqueItems: true
+        items:
+          type: "string"
+      extendedMatchingPairs:
+        type: "object"
+        example: "{ \"1\": [2, 3]"
+        description: "Mapping of the answers to question of type extended matching\
+          \ items"
+        additionalProperties:
+          type: "integer"
+          format: "int32"
+  QuestionChoiceDTO:
+    type: "object"
+    required:
+    - "correct"
+    properties:
+      id:
+        type: "integer"
+        format: "int64"
+        example: 1
+        description: "Main identifier of the question choice."
+      text:
+        type: "string"
+        example: "Yes"
+        description: "Text content of the question choice."
+      correct:
+        type: "boolean"
+        example: true
+        description: "Sign if the choice is correct."
+      order:
+        type: "integer"
+        format: "int32"
+        example: 1
+        description: "The order of the choice in question of type MCQ or FFQ"
+        minimum: 0
+  QuestionDTO:
+    type: "object"
+    required:
+    - "answerRequired"
+    - "questionType"
+    properties:
+      id:
+        type: "integer"
+        format: "int64"
+        example: 1
+        description: "Main identifier of the question."
+      questionType:
+        type: "string"
+        example: "FFQ"
+        description: "Type of the question."
+        enum:
+        - "FFQ"
+        - "MCQ"
+        - "EMI"
+      text:
+        type: "string"
+        example: "What transport protocol is used for reliable transmission?"
+        description: "The content of the question."
+      points:
+        type: "integer"
+        format: "int32"
+        example: 10
+        description: "Number of points the participant will receive for the correct\
+          \ answering of the question."
+        minimum: 0
+      penalty:
+        type: "integer"
+        format: "int32"
+        example: 6
+        description: "Number of points the participant will lose for the incorrect\
+          \ answering of the question."
+        minimum: 0
+      order:
+        type: "integer"
+        format: "int32"
+        example: 0
+        description: "Order of the question, starts with 0"
+        minimum: 0
+      answerRequired:
+        type: "boolean"
+        example: true
+        description: "Sign if the question must be answered by the participant or\
+          \ not."
+      choices:
+        type: "array"
+        description: "Choices displayed to the participant in case of FFQ or MCQ."
+        items:
+          $ref: "#/definitions/QuestionChoiceDTO"
+      extendedMatchingOptions:
+        type: "array"
+        description: "Options displayed to the participant in case of EMI."
+        items:
+          $ref: "#/definitions/ExtendedMatchingOptionDTO"
+      extendedMatchingStatements:
+        type: "array"
+        description: "Statements displayed to the participant in case of EMI."
+        items:
+          $ref: "#/definitions/ExtendedMatchingStatementDTO"
   RoleDTO:
     type: "object"
     properties:
@@ -4064,9 +4260,9 @@ definitions:
   Sort:
     type: "object"
     properties:
-      sorted:
-        type: "boolean"
       unsorted:
+        type: "boolean"
+      sorted:
         type: "boolean"
       empty:
         type: "boolean"
