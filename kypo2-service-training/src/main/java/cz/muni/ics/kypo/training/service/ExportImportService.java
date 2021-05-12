@@ -134,7 +134,7 @@ public class ExportImportService {
             if (ex.getStatusCode() == HttpStatus.CONFLICT) {
                 throw new ForbiddenException("There is no available sandbox definition for particular pool (ID: " + poolId + ").");
             }
-            throw new MicroserviceApiException("Error when calling Python API to sandbox for particular pool (ID: " + poolId + ")", new PythonApiError(ex.getMessage()));
+            throw new MicroserviceApiException("Error when calling Python API to obtain sandbox definition info for particular pool (ID: " + poolId + ").", ex);
         }
     }
 }

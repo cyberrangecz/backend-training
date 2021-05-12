@@ -136,10 +136,9 @@ public class SecurityService {
                     .retrieve()
                     .bodyToMono(UserRefDTO.class)
                     .block();
-            checkNonNull(userRefDTO, "Returned null response when calling user management service API to get info about logged in user.");
             return userRefDTO.getUserRefId();
         } catch (CustomWebClientException ex) {
-            throw new MicroserviceApiException("Error when calling user management service API to get info about logged in user.", ex.getApiSubError());
+            throw new MicroserviceApiException("Error when calling user management service API to get info about logged in user.", ex);
         }
     }
 
@@ -156,26 +155,11 @@ public class SecurityService {
                     .retrieve()
                     .bodyToMono(UserRefDTO.class)
                     .block();
-            checkNonNull(userRefDTO, "Returned null response when calling user management service API to get info about logged in user.");
             UserRef userRef = new UserRef();
             userRef.setUserRefId(userRefDTO.getUserRefId());
             return userRef;
         } catch (CustomWebClientException ex) {
-            throw new MicroserviceApiException("Error when calling user management service API to get info about logged in user.", ex.getApiSubError());
+            throw new MicroserviceApiException("Error when calling user management service API to get info about logged in user.", ex);
         }
     }
-
-    /**
-     * Check if response from external API is not null.
-     *
-     * @param object object to check
-     * @param message exception message if response is null
-     * @throws MicroserviceApiException if response is null
-     */
-    private void checkNonNull(Object object, String message) {
-        if (object == null) {
-            throw new MicroserviceApiException(message);
-        }
-    }
-
 }

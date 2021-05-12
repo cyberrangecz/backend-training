@@ -9,7 +9,6 @@ import javax.validation.constraints.NotNull;
  */
 public class SandboxInfo {
 
-    @NotNull(message = "{sandboxInfo.id.NotNull.message}")
     private Long id;
     @JsonProperty(value = "lock_id")
     private Integer lockId;

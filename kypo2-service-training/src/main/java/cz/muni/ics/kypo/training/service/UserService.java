@@ -1,12 +1,10 @@
 package cz.muni.ics.kypo.training.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalWO;
 import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
 import cz.muni.ics.kypo.training.api.enums.RoleType;
 import cz.muni.ics.kypo.training.api.responses.PageResultResource;
 import cz.muni.ics.kypo.training.exceptions.*;
-import cz.muni.ics.kypo.training.exceptions.errors.JavaApiError;
 import cz.muni.ics.kypo.training.persistence.model.UserRef;
 import cz.muni.ics.kypo.training.persistence.repository.UserRefRepository;
 import org.slf4j.Logger;
@@ -14,8 +12,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -75,7 +71,7 @@ public class UserService {
                 .bodyToMono(UserRefDTO.class)
                 .block();
         } catch (CustomWebClientException ex) {
-            throw new MicroserviceApiException("Error when calling user management service API to obtain info about user(ID: " + id + ").", ex.getApiSubError());
+            throw new MicroserviceApiException("Error when calling user management service API to obtain info about user(ID: " + id + ").", ex);
         }
     }
 
@@ -107,7 +103,7 @@ public class UserService {
                 .bodyToMono(new ParameterizedTypeReference<PageResultResource<UserRefDTO>>() {})
                 .block();
         } catch (CustomWebClientException ex) {
-            throw new MicroserviceApiException("Error when calling user management service API to obtain users by IDs: " + userRefIds + ".", ex.getApiSubError());
+            throw new MicroserviceApiException("Error when calling user management service API to obtain users by IDs: " + userRefIds + ".", ex);
         }
     }
 
@@ -136,7 +132,7 @@ public class UserService {
                 .bodyToMono(new ParameterizedTypeReference<PageResultResource<UserRefDTO>>() {})
                 .block();
         } catch (CustomWebClientException ex) {
-            throw new MicroserviceApiException("Error when calling user management service API to obtain users with role " + roleType.name() + ".", ex.getApiSubError());
+            throw new MicroserviceApiException("Error when calling user management service API to obtain users with role " + roleType.name() + ".", ex);
         }
     }
 
@@ -167,7 +163,7 @@ public class UserService {
                 .bodyToMono(new ParameterizedTypeReference<PageResultResource<UserRefDTO>>() {})
                 .block();
         } catch (CustomWebClientException ex) {
-            throw new MicroserviceApiException("Error when calling user management service API to obtain users with role " + roleType.name() + " and IDs: " + userRefIds + ".", ex.getApiSubError());
+            throw new MicroserviceApiException("Error when calling user management service API to obtain users with role " + roleType.name() + " and IDs: " + userRefIds + ".", ex);
         }
     }
 
@@ -193,18 +189,5 @@ public class UserService {
         }
         builder.queryParam("page", pageable.getPageNumber());
         builder.queryParam("size", pageable.getPageSize());
-    }
-
-    /**
-     * Check if response from external API is not null.
-     *
-     * @param object object to check
-     * @param message exception message if response is null
-     * @throws MicroserviceApiException if response is null
-     */
-    private void checkNonNull(Object object, String message) {
-        if (object == null) {
-            throw new MicroserviceApiException(message);
-        }
     }
 }

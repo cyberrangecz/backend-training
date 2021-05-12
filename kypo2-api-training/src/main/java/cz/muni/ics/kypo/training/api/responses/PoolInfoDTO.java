@@ -5,17 +5,12 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import javax.validation.constraints.NotNull;
 
 public class PoolInfoDTO {
-    @NotNull(message = "{poolInfo.id.NotNull.message}")
     private Long id;
-    @NotNull(message = "{poolInfo.definitionId.NotNull.message}")
     @JsonProperty(value = "definition_id")
     private Long definitionId;
-    @NotNull(message = "{poolInfo.size.NotNull.message}")
     private Long size;
-    @NotNull(message = "{poolInfo.maxSize.NotNull.message}")
     @JsonProperty(value = "max_size")
     private Long maxSize;
-    @NotNull(message = "{poolInfo.lockId.NotNull.message}")
     @JsonProperty(value = "lock_id")
     private Long lockId;
     @JsonProperty(value = "rev")

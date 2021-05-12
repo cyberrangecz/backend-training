@@ -22,6 +22,7 @@ import cz.muni.ics.kypo.training.api.responses.SandboxInfo;
 import cz.muni.ics.kypo.training.exceptions.BadRequestException;
 import cz.muni.ics.kypo.training.exceptions.CustomWebClientException;
 import cz.muni.ics.kypo.training.exceptions.EntityErrorDetail;
+import cz.muni.ics.kypo.training.exceptions.errors.PythonApiError;
 import cz.muni.ics.kypo.training.mapping.mapstruct.HintMapperImpl;
 import cz.muni.ics.kypo.training.mapping.mapstruct.LevelMapperImpl;
 import cz.muni.ics.kypo.training.mapping.mapstruct.TrainingRunMapperImpl;
@@ -399,7 +400,7 @@ public class TrainingRunsIT {
         builder.queryParam("page", 1);
         builder.queryParam("page_size", 1000);
         given(userManagementExchangeFunction.exchange(any(ClientRequest.class))).willReturn(buildMockResponse(userRefDTO1));
-        willThrow(new CustomWebClientException("No unlocked sandbox.", HttpStatus.CONFLICT))
+        willThrow(new CustomWebClientException(HttpStatus.CONFLICT, PythonApiError.of("No unlocked sandbox.")))
                 .given(sandboxManagementExchangeFunction).exchange(any(ClientRequest.class));
 
         mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_TRAINEE.name()));

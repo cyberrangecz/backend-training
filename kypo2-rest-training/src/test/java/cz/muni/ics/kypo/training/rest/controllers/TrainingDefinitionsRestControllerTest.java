@@ -14,6 +14,7 @@ import cz.muni.ics.kypo.training.api.enums.RoleType;
 import cz.muni.ics.kypo.training.api.enums.TDState;
 import cz.muni.ics.kypo.training.api.responses.PageResultResource;
 import cz.muni.ics.kypo.training.exceptions.*;
+import cz.muni.ics.kypo.training.exceptions.errors.JavaApiError;
 import cz.muni.ics.kypo.training.facade.TrainingDefinitionFacade;
 import cz.muni.ics.kypo.training.mapping.mapstruct.*;
 import cz.muni.ics.kypo.training.persistence.model.*;
@@ -490,7 +491,7 @@ public class TrainingDefinitionsRestControllerTest {
 
     @Test
     public void getDesigners_MicroserviceError() throws Exception {
-        willThrow(new MicroserviceApiException("Error while getting users from user and group microservice."))
+        willThrow(new MicroserviceApiException("Error while getting users from user and group microservice.", HttpStatus.FORBIDDEN, JavaApiError.of("Detail")))
                 .given(trainingDefinitionFacade).getUsersWithGivenRole(eq(RoleType.ROLE_TRAINING_DESIGNER), any(Pageable.class), eq(null), eq(null));
         MockHttpServletResponse response = mockMvc.perform(get("/training-definitions/designers")
                         .contentType(MediaType.APPLICATION_JSON_VALUE))
@@ -498,7 +499,7 @@ public class TrainingDefinitionsRestControllerTest {
                         .andReturn().getResponse();
         ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
         assertEquals(HttpStatus.FORBIDDEN, error.getStatus());
-        assertEquals("Error while getting users from user and group microservice.", error.getMessage());
+        assertEquals("Error while getting users from user and group microservice. Detail", error.getMessage());
     }
 
     @Test
@@ -514,7 +515,7 @@ public class TrainingDefinitionsRestControllerTest {
 
     @Test
     public void getOrganizers_MicroserviceError() throws Exception {
-        willThrow(new MicroserviceApiException("Error while getting users from user and group microservice."))
+        willThrow(new MicroserviceApiException("Error while getting users from user and group microservice.", HttpStatus.FORBIDDEN, JavaApiError.of("Detail")))
                 .given(trainingDefinitionFacade).getUsersWithGivenRole(eq(RoleType.ROLE_TRAINING_ORGANIZER), any(Pageable.class), eq(null), eq(null));
         MockHttpServletResponse response = mockMvc.perform(get("/training-definitions/organizers")
                 .contentType(MediaType.APPLICATION_JSON_VALUE))
@@ -522,7 +523,7 @@ public class TrainingDefinitionsRestControllerTest {
                 .andReturn().getResponse();
         ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
         assertEquals(HttpStatus.FORBIDDEN, error.getStatus());
-        assertEquals("Error while getting users from user and group microservice.", error.getMessage());
+        assertEquals("Error while getting users from user and group microservice. Detail", error.getMessage());
     }
 
     @Test

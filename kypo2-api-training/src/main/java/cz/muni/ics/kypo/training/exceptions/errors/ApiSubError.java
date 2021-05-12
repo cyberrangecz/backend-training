@@ -10,14 +10,6 @@ import org.springframework.http.HttpStatus;
         @JsonSubTypes.Type(value = JavaApiError.class, name = "JavaApiError"),
         @JsonSubTypes.Type(value = PythonApiError.class, name = "PythonApiError")})
 public abstract class ApiSubError {
-    @ApiModelProperty(value = "The HTTP response status code", example = "404 Not found (different for each type of exception).")
-    private HttpStatus status;
 
-    public HttpStatus getStatus() {
-        return status;
-    }
-
-    public void setStatus(HttpStatus status) {
-        this.status = status;
-    }
+    public abstract String getMessage();
 }

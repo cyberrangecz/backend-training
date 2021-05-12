@@ -5,6 +5,8 @@ import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.PathBuilder;
 import cz.muni.ics.kypo.training.api.responses.SandboxInfo;
 import cz.muni.ics.kypo.training.exceptions.*;
+import cz.muni.ics.kypo.training.exceptions.errors.JavaApiError;
+import cz.muni.ics.kypo.training.exceptions.errors.PythonApiError;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.model.AssessmentLevel;
 import cz.muni.ics.kypo.training.persistence.model.enums.TRState;
@@ -419,7 +421,7 @@ public class TrainingRunServiceTest {
                 .willReturn(List.of(gameLevel));
         given(participantRefRepository.findUserByUserRefId(participantRef.getUserRefId()))
                 .willReturn(Optional.empty());
-        willThrow(new MicroserviceApiException("Error when calling user managements service")).given(securityService).createUserRefEntityByInfoFromUserAndGroup();
+        willThrow(new MicroserviceApiException(HttpStatus.CONFLICT, JavaApiError.of("Error when calling user managements service"))).given(securityService).createUserRefEntityByInfoFromUserAndGroup();
         trainingRunService.createTrainingRun(trainingInstance1, participantRef.getId());
         then(trainingRunRepository).should(never()).save(any(TrainingRun.class));
     }
@@ -467,7 +469,7 @@ public class TrainingRunServiceTest {
     @Test(expected = ForbiddenException.class)
     public void assignSandbox_NoAvailable() throws Exception {
         trainingRun1.setSandboxInstanceRefId(null);
-        willThrow(new CustomWebClientException("No sandbox", HttpStatus.CONFLICT)).given(exchangeFunction).exchange(any(ClientRequest.class));
+        willThrow(new CustomWebClientException(HttpStatus.CONFLICT, PythonApiError.of("No sandbox"))).given(exchangeFunction).exchange(any(ClientRequest.class));
         trainingRunService.assignSandbox(trainingRun1, trainingRun1.getTrainingInstance().getPoolId());
         then(trainingRunRepository).should(never()).save(trainingRun1);
     }
@@ -475,7 +477,7 @@ public class TrainingRunServiceTest {
     @Test(expected = MicroserviceApiException.class)
     public void assignSandbox_MicroserviceException() throws Exception {
         trainingRun1.setSandboxInstanceRefId(null);
-        willThrow(new CustomWebClientException("Some error", HttpStatus.NOT_FOUND)).given(exchangeFunction).exchange(any(ClientRequest.class));
+        willThrow(new CustomWebClientException(HttpStatus.NOT_FOUND, PythonApiError.of("Some error"))).given(exchangeFunction).exchange(any(ClientRequest.class));
         trainingRunService.assignSandbox(trainingRun1, trainingRun1.getTrainingInstance().getPoolId());
         then(trainingRunRepository).should(never()).save(trainingRun1);
     }

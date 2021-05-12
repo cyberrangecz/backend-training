@@ -21,9 +21,8 @@ public class ApiMicroserviceError extends ApiError {
 
     private ApiMicroserviceError(HttpStatus httpStatus, String message, String path, ApiSubError apiSubError) {
         super();
-        this.setStatus(apiSubError == null ? httpStatus : apiSubError.getStatus());
+        this.setStatus(httpStatus);
         this.setMessage(message == null ? MicroserviceApiException.class.getAnnotation(ResponseStatus.class).reason() : message);
-        this.setMessage(message);
         this.setPath(path);
         this.setApiSubError(apiSubError);
         this.setTimestamp(System.currentTimeMillis());

@@ -7,6 +7,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.springframework.http.HttpStatus;
 
+import java.beans.ConstructorProperties;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -16,6 +17,8 @@ public class JavaApiError extends ApiSubError {
     private long timestamp;
     @ApiModelProperty(value = "The specific description of the ApiError.", example = "The IDMGroup could not be found in database (different for each type of exception).")
     private String message;
+    @ApiModelProperty(value = "The HTTP response status code", example = "404 Not found (different for each type of exception).")
+    private HttpStatus status;
     @ApiModelProperty(value = "The list of main reasons of the ApiError.", example = "[The requested resource was not found (different for each type of exception).]")
     private List<String> errors;
     @ApiModelProperty(value = "The requested URI path which caused error.", example = "/kypo2-rest-user-and-group/api/v1/groups/1000 (different for each type of exception).")
@@ -24,47 +27,43 @@ public class JavaApiError extends ApiSubError {
     @JsonProperty("entity_error_detail")
     private EntityErrorDetail entityErrorDetail;
 
-    private JavaApiError() {
+    @ConstructorProperties({"message"})
+    private JavaApiError(String message) {
+        this.message = message;
     }
 
     public static JavaApiError of(HttpStatus httpStatus, String message, List<String> errors, String path) {
-        JavaApiError apiError = new JavaApiError();
-        apiError.setTimestamp(System.currentTimeMillis());
+        JavaApiError apiError = new JavaApiError(message);
         apiError.setStatus(httpStatus);
-        apiError.setMessage(message);
+        apiError.setTimestamp(System.currentTimeMillis());
         apiError.setErrors(errors);
         apiError.setPath(path);
         return apiError;
     }
 
     public static JavaApiError of(HttpStatus httpStatus, String message, String error, String path) {
-        JavaApiError apiError = new JavaApiError();
-        apiError.setTimestamp(System.currentTimeMillis());
+        JavaApiError apiError = new JavaApiError(message);
         apiError.setStatus(httpStatus);
-        apiError.setMessage(message);
+        apiError.setTimestamp(System.currentTimeMillis());
         apiError.setError(error);
         apiError.setPath(path);
         return apiError;
     }
 
     public static JavaApiError of(HttpStatus httpStatus, String message, List<String> errors) {
-        JavaApiError apiError = new JavaApiError();
-        apiError.setTimestamp(System.currentTimeMillis());
-        apiError.setStatus(httpStatus);
-        apiError.setMessage(message);
-        apiError.setErrors(errors);
-        apiError.setPath("");
-        return apiError;
+        return JavaApiError.of(httpStatus, message, errors, "");
     }
 
     public static JavaApiError of(HttpStatus httpStatus, String message, String error) {
-        JavaApiError apiError = new JavaApiError();
-        apiError.setTimestamp(System.currentTimeMillis());
-        apiError.setStatus(httpStatus);
-        apiError.setMessage(message);
-        apiError.setError(error);
-        apiError.setPath("");
-        return apiError;
+        return JavaApiError.of(httpStatus, message, error, "");
+    }
+
+    public static JavaApiError of(HttpStatus httpStatus, String message) {
+        return JavaApiError.of(httpStatus, message, "", "");
+    }
+
+    public static JavaApiError of(String message) {
+        return JavaApiError.of(null, message, "", "");
     }
 
     public EntityErrorDetail getEntityErrorDetail() {
@@ -83,12 +82,21 @@ public class JavaApiError extends ApiSubError {
         this.timestamp = timestamp;
     }
 
+    @Override
     public String getMessage() {
-        return message;
+        return message == null ? "No specific message provided." : message;
     }
 
     public void setMessage(final String message) {
         this.message = message;
+    }
+
+    public HttpStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(HttpStatus status) {
+        this.status = status;
     }
 
     public List<String> getErrors() {

@@ -12,6 +12,7 @@ import cz.muni.ics.kypo.training.exceptions.CustomWebClientException;
 import cz.muni.ics.kypo.training.exceptions.EntityConflictException;
 import cz.muni.ics.kypo.training.exceptions.EntityNotFoundException;
 import cz.muni.ics.kypo.training.exceptions.MicroserviceApiException;
+import cz.muni.ics.kypo.training.exceptions.errors.PythonApiError;
 import cz.muni.ics.kypo.training.persistence.model.TrainingDefinition;
 import cz.muni.ics.kypo.training.persistence.model.TrainingInstance;
 import cz.muni.ics.kypo.training.persistence.model.TrainingRun;
@@ -274,7 +275,7 @@ public class TrainingInstanceServiceTest {
 
     @Test(expected = MicroserviceApiException.class)
     public void lockPool_MicroserviceError() throws Exception {
-        willThrow(new CustomWebClientException("Error when trying to lock pool.", HttpStatus.CONFLICT)).given(exchangeFunction).exchange(any(ClientRequest.class));
+        willThrow(new CustomWebClientException(HttpStatus.CONFLICT, PythonApiError.of("Error when trying to lock pool."))).given(exchangeFunction).exchange(any(ClientRequest.class));
         trainingInstanceService.lockPool(lockedPoolInfo.getPoolId());
     }
 
@@ -292,7 +293,7 @@ public class TrainingInstanceServiceTest {
 
     @Test(expected = MicroserviceApiException.class)
     public void unlockPool_GetLockIdMicroserviceError() throws Exception {
-        willThrow(new CustomWebClientException("Cannot get lock id.", HttpStatus.CONFLICT)).given(exchangeFunction).exchange(any(ClientRequest.class));
+        willThrow(new CustomWebClientException(HttpStatus.CONFLICT, PythonApiError.of("Cannot get lock id."))).given(exchangeFunction).exchange(any(ClientRequest.class));
         trainingInstanceService.unlockPool(trainingInstance1.getPoolId());
     }
 
