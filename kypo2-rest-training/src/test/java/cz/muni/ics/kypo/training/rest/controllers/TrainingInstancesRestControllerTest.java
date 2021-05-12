@@ -8,6 +8,7 @@ import cz.muni.ics.kypo.training.api.dto.traininginstance.*;
 import cz.muni.ics.kypo.training.api.responses.PageResultResource;
 import cz.muni.ics.kypo.training.exceptions.EntityNotFoundException;
 import cz.muni.ics.kypo.training.exceptions.MicroserviceApiException;
+import cz.muni.ics.kypo.training.exceptions.errors.JavaApiError;
 import cz.muni.ics.kypo.training.facade.TrainingInstanceFacade;
 import cz.muni.ics.kypo.training.mapping.mapstruct.*;
 import cz.muni.ics.kypo.training.persistence.model.TrainingInstance;
@@ -260,7 +261,7 @@ public class TrainingInstancesRestControllerTest {
 
     @Test
     public void unassignPool_FacadeException() throws Exception {
-        willThrow(new MicroserviceApiException()).given(trainingInstanceFacade).unassignPoolInTrainingInstance(anyLong());
+        willThrow(new MicroserviceApiException(HttpStatus.FORBIDDEN, JavaApiError.of("Detail"))).given(trainingInstanceFacade).unassignPoolInTrainingInstance(anyLong());
         MockHttpServletResponse response = mockMvc.perform(patch("/training-instances" + "/{instanceId}/unassign-pool", 1L)
                 .content(convertObjectToJsonBytes(trainingInstanceAssignPoolIdDTO))
                 .contentType(MediaType.APPLICATION_JSON_VALUE))
@@ -327,7 +328,7 @@ public class TrainingInstancesRestControllerTest {
 
     @Test
     public void editOrganizers_FacadeException() throws Exception {
-        willThrow(new MicroserviceApiException("Unexpected error when calling user and group service.")).given(trainingInstanceFacade).editOrganizers(trainingInstance1.getId(), Set.of(1L, 2L), Set.of(4L));
+        willThrow(new MicroserviceApiException("Unexpected error when calling user and group service.", HttpStatus.FORBIDDEN, JavaApiError.of("Detail"))).given(trainingInstanceFacade).editOrganizers(trainingInstance1.getId(), Set.of(1L, 2L), Set.of(4L));
         MockHttpServletResponse response = mockMvc.perform(put("/training-instances/{id}/organizers", trainingInstance1.getId())
                 .param("organizersAddition", "1,2")
                 .param("organizersRemoval", "4"))
@@ -335,6 +336,6 @@ public class TrainingInstancesRestControllerTest {
                 .andReturn().getResponse();
         ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
         assertEquals(HttpStatus.FORBIDDEN, error.getStatus());
-        assertEquals("Unexpected error when calling user and group service.", error.getMessage());
+        assertEquals("Unexpected error when calling user and group service. Detail", error.getMessage());
     }
 }

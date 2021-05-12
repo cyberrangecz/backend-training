@@ -1,5 +1,6 @@
 package cz.muni.ics.kypo.training.config;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import cz.muni.ics.kypo.training.exceptions.CustomWebClientException;
 import cz.muni.ics.kypo.training.exceptions.errors.JavaApiError;
@@ -11,7 +12,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.codec.json.Jackson2JsonDecoder;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.security.oauth2.provider.authentication.OAuth2AuthenticationDetails;
@@ -41,7 +44,7 @@ public class WebClientConfig {
     private ObjectMapper objectMapper;
 
     @Autowired
-    public WebClientConfig(@Qualifier("webClientObjectMapper") ObjectMapper objectMapper) {
+    public WebClientConfig(ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
     }
 
@@ -106,9 +109,7 @@ public class WebClientConfig {
                     exchangeFilterFunctions.add(javaMicroserviceExceptionHandlingFunction());
                 })
                 .exchangeStrategies(ExchangeStrategies.builder()
-                        .codecs(configurer -> configurer
-                                .defaultCodecs()
-                                .maxInMemorySize(16 * 1024 * 1024))
+                        .codecs(configurer -> configurer.defaultCodecs().maxInMemorySize(16 * 1024 * 1024))
                         .build())
                 .build();
     }
@@ -129,22 +130,25 @@ public class WebClientConfig {
             if(clientResponse.statusCode().is4xxClientError() || clientResponse.statusCode().is5xxServerError()) {
                 return clientResponse.bodyToMono(String.class)
                     .flatMap(errorBody -> {
-                        if (errorBody == null || errorBody.isBlank()) {
-                            throw new CustomWebClientException("Error from external microservice. No specific message provided.", clientResponse.statusCode());
-                        }
-                        PythonApiError pythonApiError = null;
-                        try {
-                            pythonApiError = objectMapper.readValue(errorBody, PythonApiError.class);
-                            pythonApiError.setStatus(clientResponse.statusCode());
-                        } catch (IOException e) {
-                            throw new CustomWebClientException("Error from external microservice. No specific message provided.", clientResponse.statusCode());
-                        }
-                        throw new CustomWebClientException(pythonApiError);
+                        PythonApiError pythonApiError = obtainSuitablePythonApiError(errorBody);
+                        throw new CustomWebClientException(clientResponse.statusCode(), pythonApiError);
+
                     });
             } else {
                 return Mono.just(clientResponse);
             }
         });
+    }
+
+    private PythonApiError obtainSuitablePythonApiError(String errorBody) {
+        if (errorBody == null || errorBody.isBlank()) {
+            return PythonApiError.of("No specific detail provided.");
+        }
+        try {
+            return objectMapper.readValue(errorBody, PythonApiError.class);
+        } catch (IOException e) {
+            return PythonApiError.of("Could not obtain error detail. Error body is: " + errorBody);
+        }
     }
 
     private ExchangeFilterFunction javaMicroserviceExceptionHandlingFunction() {
@@ -152,17 +156,8 @@ public class WebClientConfig {
             if(clientResponse.statusCode().is4xxClientError() || clientResponse.statusCode().is5xxServerError()) {
                 return clientResponse.bodyToMono(String.class)
                     .flatMap(errorBody -> {
-                        if (errorBody == null || errorBody.isBlank()) {
-                            throw new CustomWebClientException("Error from external microservice. No specific message provided.", clientResponse.statusCode());
-                        }
-                        JavaApiError javaApiError = null;
-                        try {
-                            javaApiError = objectMapper.readValue(errorBody, JavaApiError.class);
-                            javaApiError.setStatus(clientResponse.statusCode());
-                        } catch (IOException e) {
-                            throw new CustomWebClientException("Error from external microservice. No specific message provided.", clientResponse.statusCode());
-                        }
-                        throw new CustomWebClientException(javaApiError);
+                        JavaApiError javaApiError = obtainSuitableJavaApiError(errorBody);
+                        throw new CustomWebClientException(clientResponse.statusCode(), javaApiError);
                     });
             } else {
                 return Mono.just(clientResponse);
@@ -170,4 +165,14 @@ public class WebClientConfig {
         });
     }
 
+    private JavaApiError obtainSuitableJavaApiError(String errorBody) {
+        if (errorBody == null || errorBody.isBlank()) {
+            return JavaApiError.of("No specific message provided.");
+        }
+        try {
+            return objectMapper.readValue(errorBody, JavaApiError.class);
+        } catch (IOException e) {
+            return JavaApiError.of("Could not obtain error message. Error body is: " + errorBody);
+        }
+    }
 }

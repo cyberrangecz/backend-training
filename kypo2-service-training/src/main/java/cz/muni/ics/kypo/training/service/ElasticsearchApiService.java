@@ -48,7 +48,7 @@ public class ElasticsearchApiService {
                     .bodyToMono(Void.class)
                     .block();
         } catch (CustomWebClientException ex){
-            throw new MicroserviceApiException("Error when calling Elasticsearch API to delete events for particular instance (ID: "+ trainingInstanceId +")", ex.getApiSubError());
+            throw new MicroserviceApiException("Error when calling Elasticsearch API to delete events for particular instance (ID: "+ trainingInstanceId +").", ex);
         }
     }
 
@@ -70,7 +70,7 @@ public class ElasticsearchApiService {
                     .bodyToMono(new ParameterizedTypeReference<List<Map<String, Object>>>() {})
                     .block();
         } catch (CustomWebClientException ex){
-            throw new MicroserviceApiException("Error when calling Elasticsearch API for particular run (ID: "+ trainingRun.getId() +")", ex.getApiSubError());
+            throw new MicroserviceApiException("Error when calling Elasticsearch API for particular run (ID: "+ trainingRun.getId() +").", ex);
         }
     }
 
@@ -91,7 +91,7 @@ public class ElasticsearchApiService {
                     .bodyToMono(new ParameterizedTypeReference<Map<Long, Map<Long, List<AbstractAuditPOJO>>>>() {})
                     .block();
         } catch (CustomWebClientException ex){
-            throw new MicroserviceApiException("Error when calling Elasticsearch API for particular instance (ID: "+ trainingInstance.getId() +")", ex.getApiSubError());
+            throw new MicroserviceApiException("Error when calling Elasticsearch API for particular instance (ID: "+ trainingInstance.getId() +").", ex);
         }
     }
 
@@ -112,7 +112,7 @@ public class ElasticsearchApiService {
                     .bodyToMono(new ParameterizedTypeReference<Map<Long, Map<Long, List<AbstractAuditPOJO>>>>() {})
                     .block();
         } catch (CustomWebClientException ex){
-            throw new MicroserviceApiException("Error when calling Elasticsearch API for particular instance (ID: "+ trainingInstance.getId() +")", ex.getApiSubError());
+            throw new MicroserviceApiException("Error when calling Elasticsearch API for particular instance (ID: "+ trainingInstance.getId() +").", ex);
         }
     }
 
@@ -132,7 +132,7 @@ public class ElasticsearchApiService {
                     .bodyToMono(Void.class)
                     .block();
         } catch (CustomWebClientException ex){
-            throw new MicroserviceApiException("Error when calling Elasticsearch API to delete events for particular training run (ID: "+ trainingRunId +")", ex.getApiSubError());
+            throw new MicroserviceApiException("Error when calling Elasticsearch API to delete events for particular training run (ID: "+ trainingRunId +").", ex);
         }
     }
 
@@ -145,7 +145,7 @@ public class ElasticsearchApiService {
                     .bodyToMono(new ParameterizedTypeReference<List<Map<String, Object>>>() {})
                     .block();
         }catch (CustomWebClientException ex){
-            throw new MicroserviceApiException("Error when calling Elasticsearch API for particular sandbox (ID: "+ sandboxId +")", ex.getApiSubError());
+            throw new MicroserviceApiException("Error when calling Elasticsearch API for particular sandbox (ID: "+ sandboxId +").", ex);
         }
     }
 
@@ -162,7 +162,7 @@ public class ElasticsearchApiService {
                     .bodyToMono(new ParameterizedTypeReference<List<Map<String, Object>>>() {})
                     .block();
         }catch (CustomWebClientException ex){
-            throw new MicroserviceApiException("Error when calling Elasticsearch API for particular commands of sandbox (ID: "+ sandboxId +")", ex.getApiSubError());
+            throw new MicroserviceApiException("Error when calling Elasticsearch API for particular commands of sandbox (ID: "+ sandboxId +").", ex);
         }
     }
 
@@ -175,7 +175,7 @@ public class ElasticsearchApiService {
                     .bodyToMono(Void.class)
                     .block();
         }catch (CustomWebClientException ex){
-            throw new MicroserviceApiException("Error when calling Elasticsearch API to delete bash commands for particular pool (ID: "+ poolId +")", ex.getApiSubError());
+            throw new MicroserviceApiException("Error when calling Elasticsearch API to delete bash commands for particular pool (ID: "+ poolId +").", ex);
         }
     }
 }

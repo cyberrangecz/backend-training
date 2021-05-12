@@ -13,60 +13,12 @@ public class CustomWebClientException extends RuntimeException {
     /**
      * Instantiates a new Rest template exception.
      *
-     * @param message    the message
-     * @param statusCode the status code
-     */
-    public CustomWebClientException(String message, HttpStatus statusCode) {
-        super(message);
-        this.statusCode = statusCode;
-    }
-
-    /**
-     * Instantiates a new Rest template exception.
-     *
-     * @param message    the message
-     * @param ex         the ex
-     * @param statusCode the status code
-     */
-    public CustomWebClientException(String message, Throwable ex, HttpStatus statusCode) {
-        super(message, ex);
-        this.statusCode = statusCode;
-    }
-
-    /**
-     * Instantiates a new Rest template exception.
-     *
      * @param apiSubError detailed information about error.
      */
-    public CustomWebClientException(ApiSubError apiSubError) {
+    public CustomWebClientException(HttpStatus httpStatus, ApiSubError apiSubError) {
         super();
         this.apiSubError = apiSubError;
-        this.statusCode = apiSubError.getStatus();
-    }
-
-    /**
-     * Instantiates a new Rest template exception.
-     *
-     * @param message    the message
-     * @param apiSubError detailed information about error
-     */
-    public CustomWebClientException(String message, ApiSubError apiSubError) {
-        super(message);
-        this.apiSubError = apiSubError;
-        this.statusCode = apiSubError.getStatus();
-    }
-
-    /**
-     * Instantiates a new Rest template exception.
-     *
-     * @param message    the message
-     * @param ex         the ex
-     * @param apiSubError detailed information about error
-     */
-    public CustomWebClientException(String message, Throwable ex, ApiSubError apiSubError) {
-        super(message, ex);
-        this.apiSubError = apiSubError;
-        this.statusCode = apiSubError.getStatus();
+        this.statusCode = httpStatus;
     }
 
     /**

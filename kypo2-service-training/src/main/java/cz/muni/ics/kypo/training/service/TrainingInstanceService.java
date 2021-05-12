@@ -270,7 +270,7 @@ public class TrainingInstanceService {
                     .bodyToMono(LockedPoolInfo.class)
                     .block();
         } catch (CustomWebClientException ex) {
-            throw new MicroserviceApiException("Currently, it is not possible to lock and assign pool with (ID: " + poolId + ").", ex.getApiSubError());
+            throw new MicroserviceApiException("Currently, it is not possible to lock and assign pool with (ID: " + poolId + ").", ex);
         }
     }
 
@@ -299,7 +299,7 @@ public class TrainingInstanceService {
             }
         } catch (CustomWebClientException ex) {
             if(ex.getStatusCode() != HttpStatus.NOT_FOUND){
-                throw new MicroserviceApiException("Currently, it is not possible to unlock a pool with (ID: " + poolId + ").", ex.getApiSubError());
+                throw new MicroserviceApiException("Currently, it is not possible to unlock a pool with (ID: " + poolId + ").", ex);
             }
         }
     }
