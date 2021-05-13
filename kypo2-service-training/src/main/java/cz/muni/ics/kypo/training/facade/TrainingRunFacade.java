@@ -23,6 +23,7 @@ import cz.muni.ics.kypo.training.api.responses.PageResultResource;
 import cz.muni.ics.kypo.training.mapping.mapstruct.*;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.model.AssessmentLevel;
+import cz.muni.ics.kypo.training.persistence.model.enums.TRState;
 import cz.muni.ics.kypo.training.service.SecurityService;
 import cz.muni.ics.kypo.training.service.TrainingRunService;
 import cz.muni.ics.kypo.training.service.UserService;
@@ -421,19 +422,16 @@ public class TrainingRunFacade {
         accessedTrainingRunDTO.setInstanceId(trainingRun.getTrainingInstance().getId());
         accessedTrainingRunDTO.setNumberOfLevels(trainingRunService.getMaxLevelOrder(trainingRun.getTrainingInstance().getTrainingDefinition().getId()) + 1);
         accessedTrainingRunDTO.setCurrentLevelOrder(trainingRun.getCurrentLevel().getOrder() + 1);
-        accessedTrainingRunDTO.setPossibleAction(resolvePossibleActions(accessedTrainingRunDTO, trainingRun.isLevelAnswered()));
+        accessedTrainingRunDTO.setPossibleAction(resolvePossibleActions(accessedTrainingRunDTO, trainingRun.getState()));
         return accessedTrainingRunDTO;
     }
 
-    private Actions resolvePossibleActions(AccessedTrainingRunDTO trainingRunDTO, boolean isCurrentLevelAnswered) {
-        boolean isTrainingRunFinished = isCurrentLevelAnswered && trainingRunDTO.getCurrentLevelOrder() == trainingRunDTO.getNumberOfLevels();
+    private Actions resolvePossibleActions(AccessedTrainingRunDTO trainingRunDTO, TRState trainingRunState) {
         boolean isTrainingInstanceRunning = LocalDateTime.now(Clock.systemUTC()).isBefore(trainingRunDTO.getTrainingInstanceEndDate());
-        if (isTrainingRunFinished || !isTrainingInstanceRunning) {
+        if (trainingRunState == TRState.FINISHED || !isTrainingInstanceRunning) {
             return Actions.RESULTS;
-        } else if (!isTrainingRunFinished && isTrainingInstanceRunning) {
-            return Actions.RESUME;
         } else {
-            return Actions.NONE;
+            return Actions.RESUME;
         }
     }
 
