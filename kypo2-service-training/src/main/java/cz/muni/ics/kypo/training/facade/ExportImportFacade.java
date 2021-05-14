@@ -253,7 +253,8 @@ public class ExportImportFacade {
             Map<Integer, Long> levelStartTimestampMapping = writeEventsAndGetLevelStartTimestampMapping(zos, run, events);
             writeEventsByLevels(zos, run, events);
 
-            List<Map<String, Object>> consoleCommands = elasticsearchApiService.findAllConsoleCommandsFromSandbox(run.getSandboxInstanceRefId());
+            Long sandboxInstanceRefId = run.getSandboxInstanceRefId() == null ? run.getPreviousSandboxInstanceRefId() : run.getSandboxInstanceRefId();
+            List<Map<String, Object>> consoleCommands = elasticsearchApiService.findAllConsoleCommandsFromSandbox(sandboxInstanceRefId);
             Integer sandboxId = (Integer) events.get(0).get("sandbox_id");
             writeConsoleCommands(zos, sandboxId, consoleCommands);
             writeConsoleCommandsDetails(zos, sandboxId, levelStartTimestampMapping);
