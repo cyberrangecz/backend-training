@@ -66,7 +66,7 @@ create table training_definition (
     last_edited timestamp not null,
     estimated_duration int8,
     outcomes bytea,
-    prerequisites bytea,
+    prerequisities bytea,
     show_stepper_bar boolean not null,
     state varchar(128) not null,
     title varchar(255) not null,
