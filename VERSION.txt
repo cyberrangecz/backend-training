@@ -1,1 +1,1 @@
-1.1.63  Fix progress visualization data. Last level contains values of fields state and end_time.
+1.1.64  Update dependencies libraries versions.
