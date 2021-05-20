@@ -1,1 +1,0 @@
-alter table training_definition rename column prerequisities to prerequisites;
