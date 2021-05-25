@@ -585,6 +585,10 @@ public class TrainingRunService {
         int points = 0;
         List<QuestionAnswer> userAnswersToQuestions = new ArrayList<>();
         for (Question question : ((AssessmentLevel) trainingRun.getCurrentLevel()).getQuestions()) {
+            QuestionAnswerDTO questionAnswerDTO = answersToQuestions.get(question.getId());
+            if (questionAnswerDTO == null) {
+                throw new BadRequestException("The question '" + question.getText() + "' must be answered.");
+            }
             userAnswersToQuestions.add(this.createQuestionAnswer(question, trainingRun, answersToQuestions.get(question.getId())));
             switch (question.getQuestionType()) {
                 case MCQ:
@@ -607,10 +611,14 @@ public class TrainingRunService {
     private List<QuestionAnswer> gatherAnswers(TrainingRun trainingRun, Map<Long, QuestionAnswerDTO> answersToQuestions) {
         List<QuestionAnswer> userAnswersToQuestions = new ArrayList<>();
         for (Question question : ((AssessmentLevel) trainingRun.getCurrentLevel()).getQuestions()) {
-            userAnswersToQuestions.add(this.createQuestionAnswer(question, trainingRun, answersToQuestions.get(question.getId())));
+            QuestionAnswerDTO questionAnswerDTO = answersToQuestions.get(question.getId());
+            if (questionAnswerDTO != null) {
+                userAnswersToQuestions.add(this.createQuestionAnswer(question, trainingRun, questionAnswerDTO));
+            } else if (question.isAnswerRequired()) {
+                throw new BadRequestException("The question '" + question.getText() + "' must be answered.");
+            }
         }
         return userAnswersToQuestions;
-
     }
 
     private QuestionAnswer createQuestionAnswer(Question question, TrainingRun trainingRun, QuestionAnswerDTO answersToQuestion) {
