@@ -1,5 +1,6 @@
 package cz.muni.ics.kypo.training.exceptions.errors;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import cz.muni.ics.kypo.training.api.dto.AbstractLevelDTO;
 import cz.muni.ics.kypo.training.exceptions.EntityErrorDetail;
@@ -12,6 +13,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 @ApiModel(value = "JavaApiError", description = "A detailed error from another Java mircorservice.", parent = ApiSubError.class)
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class JavaApiError extends ApiSubError {
     @ApiModelProperty(value = "The time when the exception occurred", example = "1574062900 (different for each type of exception)")
     private long timestamp;
