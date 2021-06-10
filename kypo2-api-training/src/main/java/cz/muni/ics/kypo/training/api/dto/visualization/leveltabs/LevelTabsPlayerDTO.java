@@ -10,6 +10,7 @@ import java.util.Objects;
 public class LevelTabsPlayerDTO {
 
     private Long id;
+    private Long trainingRunId;
     private long participantLevelScore;
     private Integer hints;
     private List<String> wrongFlags = new ArrayList<>();
@@ -22,6 +23,14 @@ public class LevelTabsPlayerDTO {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public Long getTrainingRunId() {
+        return trainingRunId;
+    }
+
+    public void setTrainingRunId(Long trainingRunId) {
+        this.trainingRunId = trainingRunId;
     }
 
     public long getParticipantLevelScore() {
@@ -67,7 +76,7 @@ public class LevelTabsPlayerDTO {
         this.time = time;
     }
 
-    public Boolean isDisplayedSolution() {
+    public Boolean getDisplayedSolution() {
         return displayedSolution;
     }
 
@@ -80,20 +89,20 @@ public class LevelTabsPlayerDTO {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         LevelTabsPlayerDTO that = (LevelTabsPlayerDTO) o;
-        return getParticipantLevelScore() == that.getParticipantLevelScore() &&
-                getTime() == that.getTime() &&
-                getId().equals(that.getId());
+        return Objects.equals(getId(), that.getId()) &&
+                Objects.equals(getTrainingRunId(), that.getTrainingRunId());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getId(), getParticipantLevelScore(), getTime());
+        return Objects.hash(getId(), getTrainingRunId());
     }
 
     @Override
     public String toString() {
         return "LevelTabPlayerDTO{" +
                 "id=" + id +
+                ", trainingRunId=" + trainingRunId +
                 ", participantLevelScore=" + participantLevelScore +
                 ", hints=" + hints +
                 ", wrongFlags=" + wrongFlags +

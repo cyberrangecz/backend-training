@@ -3,43 +3,34 @@ package cz.muni.ics.kypo.training.api.dto.visualization.commons;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.Objects;
-@JsonInclude(JsonInclude.Include.NON_EMPTY)
-public class PlayerDataDTO {
+
+public abstract class PlayerDataDTO {
 
     private Long id;
     private String name;
-    private int gameScore;
-    private int assessmentScore;
-    private long trainingTime;
-    private Boolean finished;
     private byte[] picture;
     private String avatarColor;
-    private List<VisualizationAbstractLevelDTO> levels = new ArrayList<>();
+    private Long trainingRunId;
+    private long trainingTime;
 
-    public PlayerDataDTO() {
-    }
-
-    public PlayerDataDTO(Long id,
-                         String name,
-                         int gameScore,
-                         int assessmentScore,
-                         long trainingTime,
-                         Boolean finished,
-                         byte[] picture) {
+    public PlayerDataDTO(Long id, String name, byte[] picture, Long trainingRunId) {
         this.id = id;
         this.name = name;
-        this.gameScore = gameScore;
-        this.assessmentScore = assessmentScore;
-        this.trainingTime = trainingTime;
-        this.finished = finished;
         this.picture = picture;
         this.avatarColor = extractAvatarColor(picture);
+        this.trainingRunId = trainingRunId;
+    }
+
+    public PlayerDataDTO(Long id, String name, byte[] picture, Long trainingRunId, long trainingTime) {
+        this(id, name, picture, trainingRunId);
+        this.trainingTime = trainingTime;
     }
 
     public Long getId() {
@@ -50,44 +41,20 @@ public class PlayerDataDTO {
         this.id = id;
     }
 
+    public Long getTrainingRunId() {
+        return trainingRunId;
+    }
+
+    public void setTrainingRunId(Long trainingRunId) {
+        this.trainingRunId = trainingRunId;
+    }
+
     public String getName() {
         return name;
     }
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public int getGameScore() {
-        return gameScore;
-    }
-
-    public void setGameScore(int gameScore) {
-        this.gameScore = gameScore;
-    }
-
-    public int getAssessmentScore() {
-        return assessmentScore;
-    }
-
-    public void setAssessmentScore(int assessmentScore) {
-        this.assessmentScore = assessmentScore;
-    }
-
-    public long getTrainingTime() {
-        return trainingTime;
-    }
-
-    public void setTrainingTime(long trainingTime) {
-        this.trainingTime = trainingTime;
-    }
-
-    public Boolean getFinished() {
-        return finished;
-    }
-
-    public void setFinished(Boolean finished) {
-        this.finished = finished;
     }
 
     public byte[] getPicture() {
@@ -107,16 +74,12 @@ public class PlayerDataDTO {
         this.avatarColor = avatarColor;
     }
 
-    public List<VisualizationAbstractLevelDTO> getLevels() {
-        return levels;
+    public long getTrainingTime() {
+        return trainingTime;
     }
 
-    public void setLevels(List<VisualizationAbstractLevelDTO> levels) {
-        this.levels = levels;
-    }
-
-    public void addTableLevel(VisualizationAbstractLevelDTO visualizationAbstractLevelDTO) {
-        this.levels.add(visualizationAbstractLevelDTO);
+    public void setTrainingTime(long trainingTime) {
+        this.trainingTime = trainingTime;
     }
 
     private String extractAvatarColor(byte[] picture) {
@@ -144,28 +107,22 @@ public class PlayerDataDTO {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         PlayerDataDTO that = (PlayerDataDTO) o;
-        return getGameScore() == that.getGameScore() &&
-                getAssessmentScore() == that.getAssessmentScore() &&
-                getTrainingTime() == that.getTrainingTime() &&
-                getFinished().equals(that.getFinished()) &&
-                getId().equals(that.getId()) &&
-                getName().equals(that.getName());
+        return Objects.equals(getId(), that.getId()) &&
+                Objects.equals(getTrainingRunId(), that.getTrainingRunId());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getId(), getName(), getGameScore(), getAssessmentScore(), getTrainingTime(), getFinished());
+        return Objects.hash(getId(), getTrainingRunId());
     }
 
     @Override
     public String toString() {
-        return "PlayerData{" +
+        return "PlayerDataDTO{" +
                 "id=" + id +
+                ", trainingRunId=" + trainingRunId +
                 ", name='" + name + '\'' +
-                ", gameScore=" + gameScore +
-                ", assessmentScore=" + assessmentScore +
                 ", trainingTime=" + trainingTime +
-                ", finished=" + finished +
                 '}';
     }
 }

@@ -226,8 +226,8 @@ public class VisualizationRestController {
     @GetMapping(path = "/training-instances/{instanceId}/table", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<PlayerDataDTO>> getTableVisualizations(@ApiParam(value = "Training instance ID", required = true)
                                                                       @PathVariable("instanceId") Long trainingInstanceId) {
-        List<PlayerDataDTO> timelineVisualizationDTO = visualizationFacade.getTableVisualizations(trainingInstanceId);
-        return ResponseEntity.ok(timelineVisualizationDTO);
+        List<PlayerDataDTO> tableVisualizationsDTO = visualizationFacade.getTableVisualizations(trainingInstanceId);
+        return ResponseEntity.ok(tableVisualizationsDTO);
     }
 
     /**
@@ -250,8 +250,8 @@ public class VisualizationRestController {
     @GetMapping(path = "/training-instances/{instanceId}/level-tabs", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<LevelTabsLevelDTO>> getLevelTabsVisualizations(@ApiParam(value = "Training instance ID", required = true)
                                                                               @PathVariable("instanceId") Long trainingInstanceId) {
-        List<LevelTabsLevelDTO> timelineVisualizationDTO = visualizationFacade.getLevelTabsVisualizations(trainingInstanceId);
-        return ResponseEntity.ok(timelineVisualizationDTO);
+        List<LevelTabsLevelDTO> levelTabsVisualizationsDTO = visualizationFacade.getLevelTabsVisualizations(trainingInstanceId);
+        return ResponseEntity.ok(levelTabsVisualizationsDTO);
     }
 
     /**

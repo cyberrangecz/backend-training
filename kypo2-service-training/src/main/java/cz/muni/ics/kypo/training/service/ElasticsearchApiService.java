@@ -81,12 +81,12 @@ public class ElasticsearchApiService {
      * @return Aggregated events by user and levels.
      * @throws MicroserviceApiException error with specific message when calling elasticsearch microservice.
      */
-    public Map<Long, Map<Long, List<AbstractAuditPOJO>>> getAggregatedEventsByLevelsAndUsers(TrainingInstance trainingInstance) {
+    public Map<Long, Map<Long, List<AbstractAuditPOJO>>> getAggregatedEventsByLevelsAndTrainingRuns(TrainingInstance trainingInstance) {
         try {
             Long instanceId = trainingInstance.getId();
             return elasticsearchServiceWebClient
                     .get()
-                    .uri("/training-platform-events/training-instances/{instanceId}/aggregated/levels/users", instanceId)
+                    .uri("/training-platform-events/training-instances/{instanceId}/aggregated/levels/training-runs", instanceId)
                     .retrieve()
                     .bodyToMono(new ParameterizedTypeReference<Map<Long, Map<Long, List<AbstractAuditPOJO>>>>() {})
                     .block();
@@ -102,12 +102,12 @@ public class ElasticsearchApiService {
      * @return Aggregated events by user and levels.
      * @throws MicroserviceApiException error with specific message when calling elasticsearch microservice.
      */
-    public Map<Long, Map<Long, List<AbstractAuditPOJO>>> getAggregatedEventsByUsersAndLevels(TrainingInstance trainingInstance) {
+    public Map<Long, Map<Long, List<AbstractAuditPOJO>>> getAggregatedEventsByTrainingRunsAndLevels(TrainingInstance trainingInstance) {
         try {
             Long instanceId = trainingInstance.getId();
             return elasticsearchServiceWebClient
                     .get()
-                    .uri("/training-platform-events/training-instances/{instanceId}/aggregated/users/levels", instanceId)
+                    .uri("/training-platform-events/training-instances/{instanceId}/aggregated/training-runs/levels", instanceId)
                     .retrieve()
                     .bodyToMono(new ParameterizedTypeReference<Map<Long, Map<Long, List<AbstractAuditPOJO>>>>() {})
                     .block();
