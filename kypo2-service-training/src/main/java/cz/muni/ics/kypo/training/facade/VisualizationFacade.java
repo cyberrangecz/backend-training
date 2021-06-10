@@ -11,18 +11,17 @@ import cz.muni.ics.kypo.training.annotations.transactions.TransactionalRO;
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalWO;
 import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
 import cz.muni.ics.kypo.training.api.dto.visualization.*;
-import cz.muni.ics.kypo.training.api.dto.visualization.clustering.ClusteringLevelPlayerDTO;
-import cz.muni.ics.kypo.training.api.dto.visualization.clustering.ClusteringVisualizationDTO;
-import cz.muni.ics.kypo.training.api.dto.visualization.clustering.GameResultsDTO;
-import cz.muni.ics.kypo.training.api.dto.visualization.clustering.ClusteringLevelDTO;
+import cz.muni.ics.kypo.training.api.dto.visualization.clustering.*;
 import cz.muni.ics.kypo.training.api.dto.visualization.commons.PlayerDataDTO;
 import cz.muni.ics.kypo.training.api.dto.visualization.leveltabs.*;
 import cz.muni.ics.kypo.training.api.dto.visualization.progress.LevelDefinitionProgressDTO;
 import cz.muni.ics.kypo.training.api.dto.visualization.table.TableLevelDTO;
+import cz.muni.ics.kypo.training.api.dto.visualization.table.TablePlayerDTO;
 import cz.muni.ics.kypo.training.api.dto.visualization.timeline.TimelineDTO;
 import cz.muni.ics.kypo.training.api.dto.visualization.commons.VisualizationAbstractLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.visualization.timeline.TimelineLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.visualization.commons.EventDTO;
+import cz.muni.ics.kypo.training.api.dto.visualization.timeline.TimelinePlayerDTO;
 import cz.muni.ics.kypo.training.api.enums.AssessmentType;
 import cz.muni.ics.kypo.training.api.responses.PageResultResource;
 import cz.muni.ics.kypo.training.mapping.mapstruct.LevelMapper;
@@ -209,7 +208,7 @@ public class VisualizationFacade {
                 .collect(Collectors.toList());
         visualizationProgressDTO.setLevels(levels);
 
-        Map<Long, Map<Long, List<AbstractAuditPOJO>>> eventsFromElasticsearch = elasticsearchApiService.getAggregatedEventsByUsersAndLevels(trainingInstance);
+        Map<Long, Map<Long, List<AbstractAuditPOJO>>> eventsFromElasticsearch = elasticsearchApiService.getAggregatedEventsByTrainingRunsAndLevels(trainingInstance);
 
         List<PlayerProgress> playerProgresses = new ArrayList<>();
         for (Map.Entry<Long, Map<Long, List<AbstractAuditPOJO>>> userEvents : eventsFromElasticsearch.entrySet()) {
@@ -284,7 +283,7 @@ public class VisualizationFacade {
     @TransactionalRO
     public ClusteringVisualizationDTO getClusteringVisualizations(Long trainingInstanceId) {
         TrainingInstanceData trainingInstanceData = getTrainingInstanceData(trainingInstanceId,
-                elasticsearchApiService::getAggregatedEventsByLevelsAndUsers, this::retrieveUserIdsFromEventsAggregatedByLevelsAndUsers);
+                elasticsearchApiService::getAggregatedEventsByLevelsAndTrainingRuns, this::retrieveRunsIdsFromEventsAggregatedByLevelsAndTrainingRuns);
         TrainingInstanceStatistics trainingInstanceStatistics = new TrainingInstanceStatistics();
         // Must be before getFinalResultsField() because of statistics
         List<ClusteringLevelDTO> levelsField = new ArrayList<>();
@@ -306,28 +305,25 @@ public class VisualizationFacade {
     @TransactionalRO
     public List<PlayerDataDTO> getTableVisualizations(Long trainingInstanceId) {
         TrainingInstanceData trainingInstanceData = getTrainingInstanceData(trainingInstanceId,
-                elasticsearchApiService::getAggregatedEventsByUsersAndLevels, this::retrieveUserIdsFromEventsAggregatedByUsersAndLevels);
+                elasticsearchApiService::getAggregatedEventsByTrainingRunsAndLevels, this::retrieveRunIdsFromEventsAggregatedByRunsAndLevels);
 
-        return trainingInstanceData.events.entrySet().stream().map(userEvents -> {
+        return trainingInstanceData.events.entrySet().stream().map(runEvents -> {
             AbstractAuditPOJO lastLevelEvent = null;
-            PlayerDataDTO tablePlayerDataDTO = new PlayerDataDTO();
-            UserRefDTO participantInfo = trainingInstanceData.participants.get(userEvents.getKey());
+            UserRefDTO participantInfo = trainingInstanceData.participantsByTrainingRuns.get(runEvents.getKey());
+            TablePlayerDTO tablePlayerDataDTO = new TablePlayerDTO(participantInfo, runEvents.getKey());
 
             for (AbstractLevel abstractLevel : trainingInstanceData.levels) {
-                List<AbstractAuditPOJO> levelEvents = userEvents.getValue().get(abstractLevel.getId());
+                List<AbstractAuditPOJO> levelEvents = runEvents.getValue().get(abstractLevel.getId());
                 if (levelEvents == null) {
                     break;
                 }
                 lastLevelEvent = levelEvents.get(levelEvents.size() - 1);
                 tablePlayerDataDTO.addTableLevel(mapToTableLevelDTO(abstractLevel.getId(), abstractLevel.getOrder(), levelEvents));
             }
-            tablePlayerDataDTO.setName(participantInfo.getUserRefFullName());
-            tablePlayerDataDTO.setId(userEvents.getKey());
             tablePlayerDataDTO.setGameScore(lastLevelEvent == null ? 0 : lastLevelEvent.getTotalGameScore());
             tablePlayerDataDTO.setAssessmentScore(lastLevelEvent == null ? 0 : lastLevelEvent.getTotalAssessmentScore());
             tablePlayerDataDTO.setFinished(lastLevelEvent instanceof TrainingRunEnded);
             tablePlayerDataDTO.setTrainingTime(lastLevelEvent == null ? 0 : lastLevelEvent.getGameTime());
-            tablePlayerDataDTO.setPicture(participantInfo.getPicture());
             return tablePlayerDataDTO;
         }).collect(Collectors.toList());
     }
@@ -343,7 +339,7 @@ public class VisualizationFacade {
     @TransactionalRO
     public List<LevelTabsLevelDTO> getLevelTabsVisualizations(Long trainingInstanceId) {
         TrainingInstanceData trainingInstanceData = getTrainingInstanceData(trainingInstanceId,
-                elasticsearchApiService::getAggregatedEventsByLevelsAndUsers, this::retrieveUserIdsFromEventsAggregatedByLevelsAndUsers);
+                elasticsearchApiService::getAggregatedEventsByLevelsAndTrainingRuns, this::retrieveRunsIdsFromEventsAggregatedByLevelsAndTrainingRuns);
         List<LevelTabsLevelDTO> levelTabsData = new ArrayList<>();
         for (AbstractLevel level : trainingInstanceData.levels) {
             levelTabsData.add(mapToLevelTabsLevelDTO(level, trainingInstanceData));
@@ -362,7 +358,7 @@ public class VisualizationFacade {
     @TransactionalRO
     public TimelineDTO getTimelineVisualizations(Long trainingInstanceId) {
         TrainingInstanceData trainingInstanceData = getTrainingInstanceData(trainingInstanceId,
-                elasticsearchApiService::getAggregatedEventsByUsersAndLevels, this::retrieveUserIdsFromEventsAggregatedByUsersAndLevels);
+                elasticsearchApiService::getAggregatedEventsByTrainingRunsAndLevels, this::retrieveRunIdsFromEventsAggregatedByRunsAndLevels);
 
         TimelineDTO timelineDTO = new TimelineDTO();
         timelineDTO.setEstimatedTime(TimeUnit.MINUTES.toMillis(trainingInstanceData.trainingDefinition.getEstimatedDuration()));
@@ -371,9 +367,9 @@ public class VisualizationFacade {
                 .collect(Collectors.toList()));
 
         TrainingInstanceStatistics trainingInstanceStatistics = new TrainingInstanceStatistics();
-        for (Map.Entry<Long, Map<Long, List<AbstractAuditPOJO>>> userEvents : trainingInstanceData.events.entrySet()) {
-            timelineDTO.addPlayerData(mapToTimelinePlayerDataDTO(trainingInstanceData.participants.get(userEvents.getKey()),
-                    trainingInstanceData.levels, userEvents, trainingInstanceStatistics));
+        for (Map.Entry<Long, Map<Long, List<AbstractAuditPOJO>>> runEvents : trainingInstanceData.events.entrySet()) {
+            timelineDTO.addPlayerData(mapToTimelinePlayerDataDTO(trainingInstanceData.participantsByTrainingRuns.get(runEvents.getKey()),
+                    trainingInstanceData.levels, runEvents, trainingInstanceStatistics));
         }
         timelineDTO.setAverageTime(trainingInstanceStatistics.getAverageTime());
         timelineDTO.setMaxParticipantTime(trainingInstanceStatistics.getMaxTime());
@@ -383,22 +379,19 @@ public class VisualizationFacade {
     // Private methods
     private PlayerDataDTO mapToTimelinePlayerDataDTO(UserRefDTO player,
                                                      List<AbstractLevel> levels,
-                                                     Map.Entry<Long, Map<Long, List<AbstractAuditPOJO>>> userEvents,
+                                                     Map.Entry<Long, Map<Long, List<AbstractAuditPOJO>>> runEvents,
                                                      TrainingInstanceStatistics trainingInstanceStatistics) {
-        AbstractAuditPOJO firstEvent = userEvents.getValue().get(levels.get(0).getId()).get(0);
-        PlayerDataDTO timelinePlayerDTO = new PlayerDataDTO();
-        timelinePlayerDTO.setId(userEvents.getKey());
-        timelinePlayerDTO.setName(player.getUserRefFullName());
-
-        ProcessedLevelsData processedLevelsData = getProcessedLevelsData(levels, userEvents);
-        timelinePlayerDTO.setTrainingTime(processedLevelsData.lastLevelEvent.getGameTime() - firstEvent.getGameTime());
-        timelinePlayerDTO.setGameScore(processedLevelsData.lastLevelEvent.getTotalGameScore());
-        timelinePlayerDTO.setAssessmentScore(processedLevelsData.lastLevelEvent.getTotalAssessmentScore());
+        AbstractAuditPOJO firstEvent = runEvents.getValue().get(levels.get(0).getId()).get(0);
+        ProcessedLevelsData processedLevelsData = getProcessedLevelsData(levels, runEvents);
         if (processedLevelsData.lastLevelEvent instanceof TrainingRunEnded) {
             trainingInstanceStatistics.addFinishedTrainingRun((TrainingRunEnded) processedLevelsData.lastLevelEvent);
         }
+        int gameScore = processedLevelsData.lastLevelEvent.getTotalGameScore();
+        int assessmentScore = processedLevelsData.lastLevelEvent.getTotalAssessmentScore();
+
+        TimelinePlayerDTO timelinePlayerDTO = new TimelinePlayerDTO(player, firstEvent.getTrainingRunId(), gameScore, assessmentScore);
+        timelinePlayerDTO.setTrainingTime(processedLevelsData.lastLevelEvent.getGameTime() - firstEvent.getGameTime());
         timelinePlayerDTO.setLevels(processedLevelsData.timelineLevels);
-        timelinePlayerDTO.setPicture(player.getPicture());
         return timelinePlayerDTO;
     }
 
@@ -434,16 +427,17 @@ public class VisualizationFacade {
     private List<LevelTabsPlayerDTO> mapToLevelTabsPlayerDTOs(Map<Long, Map<Long, List<AbstractAuditPOJO>>> events,
                                                               AbstractLevel level) {
         List<LevelTabsPlayerDTO> players = new ArrayList<>();
-        for (Map.Entry<Long, List<AbstractAuditPOJO>> userEvents : events.getOrDefault(level.getId(), Collections.emptyMap()).entrySet()) {
-            AbstractAuditPOJO firstEvent = userEvents.getValue().get(0);
-            AbstractAuditPOJO lastEvent = userEvents.getValue().get(userEvents.getValue().size() - 1);
+        for (Map.Entry<Long, List<AbstractAuditPOJO>> runEvents : events.getOrDefault(level.getId(), Collections.emptyMap()).entrySet()) {
+            AbstractAuditPOJO firstEvent = runEvents.getValue().get(0);
+            AbstractAuditPOJO lastEvent = runEvents.getValue().get(runEvents.getValue().size() - 1);
 
             LevelTabsPlayerDTO levelTabPlayerDTO = new LevelTabsPlayerDTO();
-            levelTabPlayerDTO.setId(userEvents.getKey());
+            levelTabPlayerDTO.setId(firstEvent.getUserRefId());
+            levelTabPlayerDTO.setTrainingRunId(firstEvent.getTrainingRunId());
             levelTabPlayerDTO.setDisplayedSolution(false);
             levelTabPlayerDTO.setTime(lastEvent.getGameTime() - firstEvent.getGameTime());
             levelTabPlayerDTO.setParticipantLevelScore(lastEvent.getActualScoreInLevel());
-            for (AbstractAuditPOJO userLevelEvent : userEvents.getValue()) {
+            for (AbstractAuditPOJO userLevelEvent : runEvents.getValue()) {
                 if (userLevelEvent instanceof SolutionDisplayed) {
                     levelTabPlayerDTO.setDisplayedSolution(true);
                 } else if (userLevelEvent instanceof HintTaken) {
@@ -493,12 +487,13 @@ public class VisualizationFacade {
             clusteringLevelBuilder.levelType(cz.muni.ics.kypo.training.api.enums.LevelType.ASSESSMENT_LEVEL);
         }
         LevelStatistics levelStatistics = new LevelStatistics();
-        Map<Long, List<AbstractAuditPOJO>> levelEventsOfUsers = trainingInstanceData.events.getOrDefault(abstractLevel.getId(), Collections.emptyMap());
-        for (Map.Entry<Long, List<AbstractAuditPOJO>> userLevelEvents : levelEventsOfUsers.entrySet()) {
-            AbstractAuditPOJO firstLevelEvent = userLevelEvents.getValue().get(0);
-            AbstractAuditPOJO lastLevelEvent = userLevelEvents.getValue().get(userLevelEvents.getValue().size() - 1);
-            UserRefDTO participantInfo = trainingInstanceData.participants.get(userLevelEvents.getKey());
-            ClusteringLevelPlayerDTO playerDataDTOForLevel = new ClusteringLevelPlayerDTO(userLevelEvents.getKey(), participantInfo.getUserRefFullName(), lastLevelEvent.getActualScoreInLevel(), lastLevelEvent.getGameTime() - firstLevelEvent.getGameTime(), lastLevelEvent instanceof LevelCompleted, participantInfo.getPicture());
+        Map<Long, List<AbstractAuditPOJO>> levelEventsOfTrainingRuns = trainingInstanceData.events.getOrDefault(abstractLevel.getId(), Collections.emptyMap());
+        for (Map.Entry<Long, List<AbstractAuditPOJO>> trainingRunLevelEvents : levelEventsOfTrainingRuns.entrySet()) {
+            AbstractAuditPOJO firstLevelEvent = trainingRunLevelEvents.getValue().get(0);
+            AbstractAuditPOJO lastLevelEvent = trainingRunLevelEvents.getValue().get(trainingRunLevelEvents.getValue().size() - 1);
+            UserRefDTO participantInfo = trainingInstanceData.participantsByTrainingRuns.get(trainingRunLevelEvents.getKey());
+            ClusteringLevelPlayerDTO playerDataDTOForLevel = new ClusteringLevelPlayerDTO(participantInfo, trainingRunLevelEvents.getKey(),
+                    lastLevelEvent.getGameTime() - firstLevelEvent.getGameTime(), lastLevelEvent.getActualScoreInLevel(), lastLevelEvent instanceof LevelCompleted);
             if (lastLevelEvent instanceof LevelCompleted || lastLevelEvent instanceof TrainingRunEnded) {
                 levelStatistics.updateStatistics(playerDataDTOForLevel.getTrainingTime(), playerDataDTOForLevel.getParticipantLevelScore());
 
@@ -506,7 +501,7 @@ public class VisualizationFacade {
                     trainingInstanceStatistics.addFinishedTrainingRun((TrainingRunEnded) lastLevelEvent);
                 }
             }
-            trainingInstanceStatistics.lastEventsOfParticipants.put(playerDataDTOForLevel.getId(), lastLevelEvent);
+            trainingInstanceStatistics.lastEventsOfTrainingRuns.put(playerDataDTOForLevel.getTrainingRunId(), lastLevelEvent);
             clusteringLevelBuilder.addPlayerData(playerDataDTOForLevel);
         }
         clusteringLevelBuilder.averageScore(levelStatistics.getAverageScore())
@@ -535,10 +530,10 @@ public class VisualizationFacade {
                                                 TrainingInstanceStatistics trainingInstanceStatistics) {
         GameResultsDTO finalResults = new GameResultsDTO();
         finalResults.setEstimatedTime(TimeUnit.MINUTES.toMillis(trainingInstanceData.trainingDefinition.getEstimatedDuration()));
-        for (Map.Entry<Long, AbstractAuditPOJO> lastEventOfUser : trainingInstanceStatistics.lastEventsOfParticipants.entrySet()) {
-            UserRefDTO participantInfo = trainingInstanceData.participants.get(lastEventOfUser.getKey());
-            finalResults.addPlayerData(new PlayerDataDTO(lastEventOfUser.getKey(), participantInfo.getUserRefFullName(), lastEventOfUser.getValue().getTotalGameScore(),
-                    lastEventOfUser.getValue().getTotalAssessmentScore(), lastEventOfUser.getValue().getGameTime(), lastEventOfUser.getValue() instanceof TrainingRunEnded, participantInfo.getPicture()));
+        for (Map.Entry<Long, AbstractAuditPOJO> lastEventOfTrainingRun : trainingInstanceStatistics.lastEventsOfTrainingRuns.entrySet()) {
+            UserRefDTO participantInfo = trainingInstanceData.participantsByTrainingRuns.get(lastEventOfTrainingRun.getKey());
+            finalResults.addPlayerData(new GameResultsPlayerDTO(participantInfo, lastEventOfTrainingRun.getKey(), lastEventOfTrainingRun.getValue().getGameTime(),
+                    lastEventOfTrainingRun.getValue().getTotalGameScore(), lastEventOfTrainingRun.getValue().getTotalAssessmentScore(), lastEventOfTrainingRun.getValue() instanceof TrainingRunEnded));
         }
         finalResults.setAverageScore(trainingInstanceStatistics.getAverageScore());
         finalResults.setAverageGameScore(trainingInstanceStatistics.getAverageGameScore());
@@ -553,27 +548,37 @@ public class VisualizationFacade {
 
     private TrainingInstanceData getTrainingInstanceData(Long trainingInstanceId,
                                                          Function<TrainingInstance, Map<Long, Map<Long, List<AbstractAuditPOJO>>>> aggregatedEventsFunction,
-                                                         Function<Map<Long, Map<Long, List<AbstractAuditPOJO>>>, Set<Long>> usersIdsRetrieveFunction) {
+                                                         Function<Map<Long, Map<Long, List<AbstractAuditPOJO>>>, Set<Long>> trainingRunsIdsRetrieveFunction) {
         TrainingInstanceData trainingInstanceData = new TrainingInstanceData();
         trainingInstanceData.trainingInstance = trainingInstanceService.findById(trainingInstanceId);
         trainingInstanceData.trainingDefinition = trainingInstanceData.trainingInstance.getTrainingDefinition();
         trainingInstanceData.levels = trainingDefinitionService.findAllLevelsFromDefinition(trainingInstanceData.trainingInstance.getTrainingDefinition().getId());
         trainingInstanceData.events = aggregatedEventsFunction.apply(trainingInstanceData.trainingInstance);
-        trainingInstanceData.participants = userService.getUsersRefDTOByGivenUserIds(usersIdsRetrieveFunction.apply(trainingInstanceData.events), PageRequest.of(0, 999), null, null)
+        Set<Long> trainingRunsIdsFromEvents = trainingRunsIdsRetrieveFunction.apply(trainingInstanceData.events);
+        Set<TrainingRun> trainingRuns = trainingRunService.findAllByTrainingInstanceId(trainingInstanceId)
+                .stream()
+                .filter(trainingRun -> trainingRunsIdsFromEvents.contains(trainingRun.getId()))
+                .collect(Collectors.toSet());
+        Set<Long> participantsIds = trainingRuns.stream()
+                .map(trainingRun -> trainingRun.getParticipantRef().getId())
+                .collect(Collectors.toSet());
+        Map<Long, UserRefDTO> participantsByIds = userService.getUsersRefDTOByGivenUserIds(participantsIds, PageRequest.of(0, 999), null, null)
                 .getContent()
                 .stream()
                 .collect(Collectors.toMap(UserRefDTO::getUserRefId, Function.identity()));
+        trainingInstanceData.participantsByTrainingRuns = trainingRuns.stream()
+                .collect(Collectors.toMap(TrainingRun::getId, trainingRun -> participantsByIds.get(trainingRun.getParticipantRef().getId())));
         return trainingInstanceData;
     }
 
-    private Set<Long> retrieveUserIdsFromEventsAggregatedByLevelsAndUsers(Map<Long, Map<Long, List<AbstractAuditPOJO>>> events) {
+    private Set<Long> retrieveRunsIdsFromEventsAggregatedByLevelsAndTrainingRuns(Map<Long, Map<Long, List<AbstractAuditPOJO>>> events) {
         return events.values()
                 .stream()
                 .flatMap(v -> v.keySet().stream())
                 .collect(Collectors.toSet());
     }
 
-    private Set<Long> retrieveUserIdsFromEventsAggregatedByUsersAndLevels(Map<Long, Map<Long, List<AbstractAuditPOJO>>> events) {
+    private Set<Long> retrieveRunIdsFromEventsAggregatedByRunsAndLevels(Map<Long, Map<Long, List<AbstractAuditPOJO>>> events) {
         return events.keySet();
     }
 
@@ -661,7 +666,7 @@ public class VisualizationFacade {
         int maxScore;
         int maxGameScore;
         int maxAssessmentScore;
-        Map<Long, AbstractAuditPOJO> lastEventsOfParticipants = new HashMap<>();
+        Map<Long, AbstractAuditPOJO> lastEventsOfTrainingRuns = new HashMap<>();
 
         public void addFinishedTrainingRun(TrainingRunEnded lastLevelEvent) {
             this.sumOfTrainingRunsTime += lastLevelEvent.getGameTime();
@@ -792,6 +797,6 @@ public class VisualizationFacade {
         TrainingInstance trainingInstance;
         List<AbstractLevel> levels;
         Map<Long, Map<Long, List<AbstractAuditPOJO>>> events;
-        Map<Long, UserRefDTO> participants;
+        Map<Long, UserRefDTO> participantsByTrainingRuns;
     }
 }
