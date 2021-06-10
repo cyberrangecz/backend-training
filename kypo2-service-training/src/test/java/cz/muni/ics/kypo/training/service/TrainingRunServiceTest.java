@@ -10,7 +10,6 @@ import cz.muni.ics.kypo.training.exceptions.errors.PythonApiError;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.model.AssessmentLevel;
 import cz.muni.ics.kypo.training.persistence.model.enums.TRState;
-import cz.muni.ics.kypo.training.persistence.model.question.QuestionAnswer;
 import cz.muni.ics.kypo.training.persistence.repository.*;
 import cz.muni.ics.kypo.training.persistence.util.TestDataFactory;
 import org.json.simple.parser.JSONParser;
@@ -531,11 +530,11 @@ public class TrainingRunServiceTest {
 
     @Test
     public void isCorrectFlag() {
-        int scoreBefore = trainingRun1.getTotalScore();
+        int scoreBefore = trainingRun1.getTotalGameScore() + trainingRun1.getTotalAssessmentScore();
         given(trainingRunRepository.findByIdWithLevel(trainingRun1.getId())).willReturn(Optional.of(trainingRun1));
         boolean isCorrect = trainingRunService.isCorrectFlag(trainingRun1.getId(), gameLevel.getFlag());
         assertTrue(isCorrect);
-        assertEquals(scoreBefore + (trainingRun1.getMaxLevelScore() - trainingRun1.getCurrentPenalty()), trainingRun1.getTotalScore());
+        assertEquals(scoreBefore + (trainingRun1.getMaxLevelScore() - trainingRun1.getCurrentPenalty()), trainingRun1.getTotalGameScore() + trainingRun1.getTotalAssessmentScore());
         assertTrue(trainingRun1.isLevelAnswered());
     }
 
@@ -562,7 +561,7 @@ public class TrainingRunServiceTest {
 
     @Test
     public void getSolution() {
-        trainingRun1.setTotalScore(40);
+        trainingRun1.setTotalGameScore(40);
         given(trainingRunRepository.findByIdWithLevel(trainingRun1.getId())).willReturn(Optional.of(trainingRun1));
         String solution = trainingRunService.getSolution(trainingRun1.getId());
         assertEquals(solution, gameLevel.getSolution());

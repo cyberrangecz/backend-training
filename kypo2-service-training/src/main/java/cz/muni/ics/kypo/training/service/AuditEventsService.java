@@ -200,7 +200,8 @@ public class AuditEventsService {
                .gameTime(computeGameTime(trainingRun.getStartTime()))
                .userRefId(trainingRun.getParticipantRef().getUserRefId())
                .level(trainingRun.getCurrentLevel().getId())
-               .totalScore(trainingRun.getTotalScore())
+               .totalGameScore(trainingRun.getTotalGameScore())
+               .totalAssessmentScore(trainingRun.getTotalAssessmentScore())
                .actualScoreInLevel(trainingRun.getMaxLevelScore() - trainingRun.getCurrentPenalty());
         return builder;
     }

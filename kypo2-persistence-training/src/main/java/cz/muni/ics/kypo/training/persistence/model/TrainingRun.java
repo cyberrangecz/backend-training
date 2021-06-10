@@ -117,8 +117,10 @@ public class TrainingRun extends AbstractEntity<Long> {
     @Type(type = "org.hibernate.type.TextType")
     @Column(name = "assessment_responses", nullable = true)
     private String assessmentResponses;
-    @Column(name = "total_score")
-    private int totalScore;
+    @Column(name = "total_game_score")
+    private int totalGameScore;
+    @Column(name = "total_assessment_score")
+    private int totalAssessmentScore;
     @Column(name = "max_level_score")
     private int maxLevelScore;
     @Column(name = "level_answered")
@@ -355,31 +357,72 @@ public class TrainingRun extends AbstractEntity<Long> {
     }
 
     /**
-     * Gets maximal score that can be gathered by trainee
+     * Gets maximal game level score that can be gathered by trainee
      *
      * @return the total score
      */
-    public int getTotalScore() {
-        return totalScore;
+    public int getTotalGameScore() {
+        return totalGameScore;
     }
 
     /**
-     * Sets maximal score that can be gathered by trainee
+     * Sets maximal game level score that can be gathered by trainee
      *
-     * @param totalScore the total score
+     * @param totalGameScore the total score
      */
-    public void setTotalScore(int totalScore) {
-        this.totalScore = totalScore;
+    public void setTotalGameScore(int totalGameScore) {
+        this.totalGameScore = totalGameScore;
+    }
+
+    public void decreaseTotalGameScore(int penalty) {
+        this.totalGameScore -= penalty;
     }
 
     /**
-     * Takes away points from total score
+     * Gets maximal assessment level score that can be gathered by trainee
+     *
+     * @return the total score
+     */
+    public int getTotalAssessmentScore() {
+        return totalAssessmentScore;
+    }
+
+    /**
+     * Sets maximal assessment level score that can be gathered by trainee
+     *
+     * @param totalAssessmentScore the total score
+     */
+    public void setTotalAssessmentScore(int totalAssessmentScore) {
+        this.totalAssessmentScore = totalAssessmentScore;
+    }
+
+    /**
+     * Takes away points from total assessment level score
      *
      * @param penalty the penalty
      */
-    public void decreaseTotalScore(int penalty) {
-        this.totalScore -= penalty;
+    public void decreaseTotalAssessmentScore(int penalty) {
+        this.totalAssessmentScore -= penalty;
     }
+
+    /**
+     * Increase total game level score.
+     *
+     * @param points the points
+     */
+    public void increaseTotalGameScore(int points) {
+        this.totalGameScore += points;
+    }
+
+    /**
+     * Increase total assessment score.
+     *
+     * @param points the points
+     */
+    public void increaseTotalAssessmentScore(int points) {
+        this.totalAssessmentScore += points;
+    }
+
 
     /**
      * Gets max level score.
@@ -406,15 +449,6 @@ public class TrainingRun extends AbstractEntity<Long> {
      */
     public void increaseCurrentPenalty(int penalty) {
         this.currentPenalty += penalty;
-    }
-
-    /**
-     * Increase total score.
-     *
-     * @param points the points
-     */
-    public void increaseTotalScore(int points) {
-        this.totalScore += points;
     }
 
     /**
@@ -545,7 +579,8 @@ public class TrainingRun extends AbstractEntity<Long> {
                 ", solutionTaken=" + solutionTaken +
                 ", currentLevel=" + currentLevel +
                 ", sandboxInstanceRefId=" + sandboxInstanceRefId +
-                ", totalScore=" + totalScore +
+                ", totalGameScore=" + totalGameScore +
+                ", totalAssessmentScore=" + totalAssessmentScore +
                 ", maxLevelScore=" + maxLevelScore +
                 ", levelAnswered=" + levelAnswered +
                 '}';

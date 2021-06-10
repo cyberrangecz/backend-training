@@ -14,7 +14,7 @@ public class TimelineLevelDTO extends VisualizationAbstractLevelDTO {
     private final Integer wrongFlags;
     private final Integer hintsTaken;
     private final long startTime;
-    private final int score;
+    private final int participantLevelScore;
     private final List<EventDTO> events;
     private final AssessmentType assessmentType;
 
@@ -26,7 +26,7 @@ public class TimelineLevelDTO extends VisualizationAbstractLevelDTO {
         this.wrongFlags = timelineLevelBuilder.wrongFlags;
         this.hintsTaken = timelineLevelBuilder.hintsTaken;
         this.assessmentType = timelineLevelBuilder.assessmentType;
-        this.score = timelineLevelBuilder.score;
+        this.participantLevelScore = timelineLevelBuilder.participantScore;
         this.events = timelineLevelBuilder.events;
         this.startTime = timelineLevelBuilder.startTime;
     }
@@ -55,8 +55,8 @@ public class TimelineLevelDTO extends VisualizationAbstractLevelDTO {
         return startTime;
     }
 
-    public int getScore() {
-        return score;
+    public int getParticipantLevelScore() {
+        return participantLevelScore;
     }
 
     public List<EventDTO> getEvents() {
@@ -69,13 +69,13 @@ public class TimelineLevelDTO extends VisualizationAbstractLevelDTO {
         if (o == null || getClass() != o.getClass()) return false;
         if (!super.equals(o)) return false;
         TimelineLevelDTO that = (TimelineLevelDTO) o;
-        return getScore() == that.getScore() &&
+        return getParticipantLevelScore() == that.getParticipantLevelScore() &&
                 Objects.equals(getEvents(), that.getEvents());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), getScore(), getEvents());
+        return Objects.hash(super.hashCode(), getParticipantLevelScore(), getEvents());
     }
 
     public static class TimelineLevelBuilder extends BaseBuilder<TimelineLevelDTO, TimelineLevelBuilder> {
@@ -85,7 +85,7 @@ public class TimelineLevelDTO extends VisualizationAbstractLevelDTO {
         private Integer hintsTaken;
         private AssessmentType assessmentType;
         private long startTime;
-        private int score;
+        private int participantScore;
         private List<EventDTO> events;
 
         @Override
@@ -123,8 +123,8 @@ public class TimelineLevelDTO extends VisualizationAbstractLevelDTO {
             return this;
         }
 
-        public TimelineLevelBuilder score(int score) {
-            this.score = score;
+        public TimelineLevelBuilder participantScore(int participantScore) {
+            this.participantScore = participantScore;
             return this;
         }
 

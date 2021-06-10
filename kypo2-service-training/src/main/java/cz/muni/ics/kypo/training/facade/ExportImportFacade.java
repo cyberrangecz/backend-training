@@ -172,11 +172,19 @@ public class ExportImportFacade {
                 newLevel = levelMapper.mapImportToEntity((AssessmentLevelImportDTO) level);
                 if (((AssessmentLevel) newLevel).getAssessmentType() == AssessmentType.TEST) {
                     this.checkAndSetCorrectOptionsOfStatements((AssessmentLevel) newLevel, (AssessmentLevelImportDTO) level);
+                    newLevel.setMaxScore(computeAssessmentLevelMaxScore((AssessmentLevel) newLevel));
                 }
             }
             exportImportService.createLevel(newLevel, newTrainingDefinition);
         });
         return trainingDefinitionMapper.mapToDTOById(newTrainingDefinition);
+    }
+
+    private int computeAssessmentLevelMaxScore(AssessmentLevel assessmentLevel) {
+        return assessmentLevel.getQuestions()
+                .stream()
+                .mapToInt(Question::getPoints)
+                .sum();
     }
 
     private void checkAndSetCorrectOptionsOfStatements(AssessmentLevel assessmentLevel, AssessmentLevelImportDTO assessmentLevelImportDTO) {

@@ -7,13 +7,13 @@ import java.util.Objects;
 public class TableLevelDTO extends VisualizationAbstractLevelDTO {
     private final Integer wrongFlags;
     private final Integer hintsTaken;
-    private final int score;
+    private final int participantLevelScore;
 
     public TableLevelDTO(TableLevelBuilder builder) {
         super(builder);
         this.wrongFlags = builder.wrongFlags;
         this.hintsTaken = builder.hintsTaken;
-        this.score = builder.score;
+        this.participantLevelScore = builder.score;
     }
 
     public Integer getWrongFlags() {
@@ -24,8 +24,8 @@ public class TableLevelDTO extends VisualizationAbstractLevelDTO {
         return hintsTaken;
     }
 
-    public int getScore() {
-        return score;
+    public int getParticipantLevelScore() {
+        return participantLevelScore;
     }
 
     @Override
@@ -34,12 +34,12 @@ public class TableLevelDTO extends VisualizationAbstractLevelDTO {
         if (o == null || getClass() != o.getClass()) return false;
         if (!super.equals(o)) return false;
         TableLevelDTO that = (TableLevelDTO) o;
-        return getScore() == that.getScore();
+        return getParticipantLevelScore() == that.getParticipantLevelScore();
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), getScore());
+        return Objects.hash(super.hashCode(), getParticipantLevelScore());
     }
 
     public static class TableLevelBuilder extends BaseBuilder<TableLevelDTO, TableLevelDTO.TableLevelBuilder> {

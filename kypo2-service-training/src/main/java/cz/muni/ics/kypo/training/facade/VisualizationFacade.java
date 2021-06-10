@@ -9,9 +9,9 @@ import cz.muni.ics.kypo.training.annotations.security.IsDesignerOrOrganizerOrAdm
 import cz.muni.ics.kypo.training.annotations.security.IsTraineeOrAdmin;
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalRO;
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalWO;
-import cz.muni.ics.kypo.training.api.dto.AbstractLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
 import cz.muni.ics.kypo.training.api.dto.visualization.*;
+import cz.muni.ics.kypo.training.api.dto.visualization.clustering.ClusteringLevelPlayerDTO;
 import cz.muni.ics.kypo.training.api.dto.visualization.clustering.ClusteringVisualizationDTO;
 import cz.muni.ics.kypo.training.api.dto.visualization.clustering.GameResultsDTO;
 import cz.muni.ics.kypo.training.api.dto.visualization.clustering.ClusteringLevelDTO;
@@ -25,9 +25,6 @@ import cz.muni.ics.kypo.training.api.dto.visualization.timeline.TimelineLevelDTO
 import cz.muni.ics.kypo.training.api.dto.visualization.commons.EventDTO;
 import cz.muni.ics.kypo.training.api.enums.AssessmentType;
 import cz.muni.ics.kypo.training.api.responses.PageResultResource;
-import cz.muni.ics.kypo.training.exceptions.EntityConflictException;
-import cz.muni.ics.kypo.training.exceptions.EntityErrorDetail;
-import cz.muni.ics.kypo.training.exceptions.ResourceNotFoundException;
 import cz.muni.ics.kypo.training.mapping.mapstruct.LevelMapper;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.model.AssessmentLevel;
@@ -326,9 +323,10 @@ public class VisualizationFacade {
             }
             tablePlayerDataDTO.setName(participantInfo.getUserRefFullName());
             tablePlayerDataDTO.setId(userEvents.getKey());
-            tablePlayerDataDTO.setScore(lastLevelEvent == null ? 0 : lastLevelEvent.getTotalScore());
+            tablePlayerDataDTO.setGameScore(lastLevelEvent == null ? 0 : lastLevelEvent.getTotalGameScore());
+            tablePlayerDataDTO.setAssessmentScore(lastLevelEvent == null ? 0 : lastLevelEvent.getTotalAssessmentScore());
             tablePlayerDataDTO.setFinished(lastLevelEvent instanceof TrainingRunEnded);
-            tablePlayerDataDTO.setTime(lastLevelEvent == null ? 0 : lastLevelEvent.getGameTime());
+            tablePlayerDataDTO.setTrainingTime(lastLevelEvent == null ? 0 : lastLevelEvent.getGameTime());
             tablePlayerDataDTO.setPicture(participantInfo.getPicture());
             return tablePlayerDataDTO;
         }).collect(Collectors.toList());
@@ -368,7 +366,7 @@ public class VisualizationFacade {
 
         TimelineDTO timelineDTO = new TimelineDTO();
         timelineDTO.setEstimatedTime(TimeUnit.MINUTES.toMillis(trainingInstanceData.trainingDefinition.getEstimatedDuration()));
-        timelineDTO.setLevelPoints(trainingInstanceData.levels.stream()
+        timelineDTO.setMaxScoreOfLevels(trainingInstanceData.levels.stream()
                 .map(AbstractLevel::getMaxScore)
                 .collect(Collectors.toList()));
 
@@ -378,7 +376,7 @@ public class VisualizationFacade {
                     trainingInstanceData.levels, userEvents, trainingInstanceStatistics));
         }
         timelineDTO.setAverageTime(trainingInstanceStatistics.getAverageTime());
-        timelineDTO.setMaxTime(trainingInstanceStatistics.getMaxTime());
+        timelineDTO.setMaxParticipantTime(trainingInstanceStatistics.getMaxTime());
         return timelineDTO;
     }
 
@@ -393,10 +391,12 @@ public class VisualizationFacade {
         timelinePlayerDTO.setName(player.getUserRefFullName());
 
         ProcessedLevelsData processedLevelsData = getProcessedLevelsData(levels, userEvents);
-        trainingInstanceStatistics.checkAndSetMaxTime(processedLevelsData.lastLevelEvent.getGameTime());
-        timelinePlayerDTO.setTime(processedLevelsData.lastLevelEvent.getGameTime() - firstEvent.getGameTime());
-        timelinePlayerDTO.setScore(processedLevelsData.lastLevelEvent.getTotalScore());
-        trainingInstanceStatistics.addTrainingRunTime(processedLevelsData.lastLevelEvent.getGameTime());
+        timelinePlayerDTO.setTrainingTime(processedLevelsData.lastLevelEvent.getGameTime() - firstEvent.getGameTime());
+        timelinePlayerDTO.setGameScore(processedLevelsData.lastLevelEvent.getTotalGameScore());
+        timelinePlayerDTO.setAssessmentScore(processedLevelsData.lastLevelEvent.getTotalAssessmentScore());
+        if (processedLevelsData.lastLevelEvent instanceof TrainingRunEnded) {
+            trainingInstanceStatistics.addFinishedTrainingRun((TrainingRunEnded) processedLevelsData.lastLevelEvent);
+        }
         timelinePlayerDTO.setLevels(processedLevelsData.timelineLevels);
         timelinePlayerDTO.setPicture(player.getPicture());
         return timelinePlayerDTO;
@@ -409,7 +409,7 @@ public class VisualizationFacade {
                 .title(level.getTitle())
                 .estimatedTime(TimeUnit.MINUTES.toMillis(level.getEstimatedDuration()))
                 .order(level.getOrder())
-                .maxPoints(level.getMaxScore());
+                .maxLevelScore(level.getMaxScore());
         if (level instanceof GameLevel) {
             levelTabsLevelBuilder
                     .levelType(cz.muni.ics.kypo.training.api.enums.LevelType.GAME_LEVEL)
@@ -442,7 +442,7 @@ public class VisualizationFacade {
             levelTabPlayerDTO.setId(userEvents.getKey());
             levelTabPlayerDTO.setDisplayedSolution(false);
             levelTabPlayerDTO.setTime(lastEvent.getGameTime() - firstEvent.getGameTime());
-            levelTabPlayerDTO.setScore(lastEvent.getActualScoreInLevel());
+            levelTabPlayerDTO.setParticipantLevelScore(lastEvent.getActualScoreInLevel());
             for (AbstractAuditPOJO userLevelEvent : userEvents.getValue()) {
                 if (userLevelEvent instanceof SolutionDisplayed) {
                     levelTabPlayerDTO.setDisplayedSolution(true);
@@ -498,19 +498,12 @@ public class VisualizationFacade {
             AbstractAuditPOJO firstLevelEvent = userLevelEvents.getValue().get(0);
             AbstractAuditPOJO lastLevelEvent = userLevelEvents.getValue().get(userLevelEvents.getValue().size() - 1);
             UserRefDTO participantInfo = trainingInstanceData.participants.get(userLevelEvents.getKey());
-            PlayerDataDTO playerDataDTOForLevel = new PlayerDataDTO(userLevelEvents.getKey(), participantInfo.getUserRefFullName(), lastLevelEvent.getActualScoreInLevel(),
-                    lastLevelEvent.getGameTime() - firstLevelEvent.getGameTime(), lastLevelEvent instanceof LevelCompleted, participantInfo.getPicture());
+            ClusteringLevelPlayerDTO playerDataDTOForLevel = new ClusteringLevelPlayerDTO(userLevelEvents.getKey(), participantInfo.getUserRefFullName(), lastLevelEvent.getActualScoreInLevel(), lastLevelEvent.getGameTime() - firstLevelEvent.getGameTime(), lastLevelEvent instanceof LevelCompleted, participantInfo.getPicture());
             if (lastLevelEvent instanceof LevelCompleted || lastLevelEvent instanceof TrainingRunEnded) {
-                levelStatistics.addLevelTime(playerDataDTOForLevel.getTime());
-                levelStatistics.checkAndSetMaxTime(playerDataDTOForLevel.getTime());
-                levelStatistics.addLevelScore(playerDataDTOForLevel.getScore());
-                levelStatistics.checkAndSetMaxScore(playerDataDTOForLevel.getScore());
+                levelStatistics.updateStatistics(playerDataDTOForLevel.getTrainingTime(), playerDataDTOForLevel.getParticipantLevelScore());
 
                 if (lastLevelEvent instanceof TrainingRunEnded) {
-                    trainingInstanceStatistics.addTrainingRunTime(lastLevelEvent.getGameTime());
-                    trainingInstanceStatistics.checkAndSetMaxTime(lastLevelEvent.getGameTime());
-                    trainingInstanceStatistics.addTrainingRunScore(lastLevelEvent.getTotalScore());
-                    trainingInstanceStatistics.checkAndSetMaxScore(lastLevelEvent.getTotalScore());
+                    trainingInstanceStatistics.addFinishedTrainingRun((TrainingRunEnded) lastLevelEvent);
                 }
             }
             trainingInstanceStatistics.lastEventsOfParticipants.put(playerDataDTOForLevel.getId(), lastLevelEvent);
@@ -518,8 +511,8 @@ public class VisualizationFacade {
         }
         clusteringLevelBuilder.averageScore(levelStatistics.getAverageScore())
                 .averageTime(levelStatistics.getAverageTime())
-                .maxPoints(levelStatistics.getMaxScore())
-                .maxTime(levelStatistics.getMaxTime());
+                .maxParticipantScore(levelStatistics.getMaxScore())
+                .maxParticipantTime(levelStatistics.getMaxTime());
         return clusteringLevelBuilder.build();
     }
 
@@ -542,19 +535,19 @@ public class VisualizationFacade {
                                                 TrainingInstanceStatistics trainingInstanceStatistics) {
         GameResultsDTO finalResults = new GameResultsDTO();
         finalResults.setEstimatedTime(TimeUnit.MINUTES.toMillis(trainingInstanceData.trainingDefinition.getEstimatedDuration()));
-        finalResults.setMaxPoints(trainingInstanceData.levels.stream()
-                .mapToInt(AbstractLevel::getMaxScore)
-                .sum());
-
         for (Map.Entry<Long, AbstractAuditPOJO> lastEventOfUser : trainingInstanceStatistics.lastEventsOfParticipants.entrySet()) {
             UserRefDTO participantInfo = trainingInstanceData.participants.get(lastEventOfUser.getKey());
-            finalResults.addPlayerData(new PlayerDataDTO(lastEventOfUser.getKey(), participantInfo.getUserRefFullName(), lastEventOfUser.getValue().getActualScoreInLevel(),
-                    lastEventOfUser.getValue().getGameTime(), lastEventOfUser.getValue() instanceof TrainingRunEnded, participantInfo.getPicture()));
+            finalResults.addPlayerData(new PlayerDataDTO(lastEventOfUser.getKey(), participantInfo.getUserRefFullName(), lastEventOfUser.getValue().getTotalGameScore(),
+                    lastEventOfUser.getValue().getTotalAssessmentScore(), lastEventOfUser.getValue().getGameTime(), lastEventOfUser.getValue() instanceof TrainingRunEnded, participantInfo.getPicture()));
         }
         finalResults.setAverageScore(trainingInstanceStatistics.getAverageScore());
-        finalResults.setMaxPoints(trainingInstanceStatistics.getMaxScore());
+        finalResults.setAverageGameScore(trainingInstanceStatistics.getAverageGameScore());
+        finalResults.setAverageAssessmentScore(trainingInstanceStatistics.getAverageAssessmentScore());
+        finalResults.setMaxParticipantScore(trainingInstanceStatistics.getMaxScore());
+        finalResults.setMaxParticipantGameScore(trainingInstanceStatistics.getMaxGameScore());
+        finalResults.setMaxParticipantAssessmentScore(trainingInstanceStatistics.getMaxAssessmentScore());
         finalResults.setAverageTime(trainingInstanceStatistics.getAverageTime());
-        finalResults.setMaxTime(trainingInstanceStatistics.getMaxTime());
+        finalResults.setMaxParticipantTime(trainingInstanceStatistics.getMaxTime());
         return finalResults;
     }
 
@@ -597,7 +590,7 @@ public class VisualizationFacade {
                     .order(abstractLevel.getOrder())
                     .startTime(levelEvents.get(0).getGameTime())
                     .events(processedEventsData.timelineEvents)
-                    .score(processedEventsData.lastLevelEvent.getActualScoreInLevel());
+                    .participantScore(processedEventsData.lastLevelEvent.getActualScoreInLevel());
 
             if (abstractLevel instanceof GameLevel) {
                 timelineLevelBuilder.levelType(cz.muni.ics.kypo.training.api.enums.LevelType.GAME_LEVEL)
@@ -619,9 +612,8 @@ public class VisualizationFacade {
     private ProcessedEventsData getProcessedEventsData(int levelOrder, List<AbstractAuditPOJO> levelEvents) {
         ProcessedEventsData processedEventsData = new ProcessedEventsData();
         for (AbstractAuditPOJO levelEvent : levelEvents) {
-            EventDTO eventDTO = new EventDTO(
-                    levelEvent.getGameTime(),
-                    levelEvent.getTotalScore() + levelEvent.getActualScoreInLevel());
+            int score = levelEvent.getTotalGameScore() + levelEvent.getTotalAssessmentScore() + levelEvent.getActualScoreInLevel();
+            EventDTO eventDTO = new EventDTO(levelEvent.getGameTime());
             if (levelEvent instanceof TrainingRunStarted) {
                 eventDTO.setText("Training run " + levelEvent.getTrainingRunId() + " started.");
             } else if (levelEvent instanceof LevelStarted) {
@@ -631,22 +623,28 @@ public class VisualizationFacade {
             } else if (levelEvent instanceof WrongFlagSubmitted) {
                 eventDTO.setText("Wrong flag submitted.");
             } else if (levelEvent instanceof CorrectFlagSubmitted) {
+                score -= levelEvent.getActualScoreInLevel();
                 processedEventsData.correctFlagTime = levelEvent.getGameTime();
                 eventDTO.setText("Correct flag submitted.");
             } else if (levelEvent instanceof SolutionDisplayed) {
+                score -= levelEvent.getActualScoreInLevel();
                 eventDTO.setText("Solution displayed.");
                 processedEventsData.solutionDisplayedTime = levelEvent.getGameTime();
             } else if (levelEvent instanceof LevelCompleted) {
+                score -= levelEvent.getActualScoreInLevel();
                 eventDTO.setText("Level " + levelOrder + " completed.");
             } else if (levelEvent instanceof TrainingRunEnded) {
+                score -= levelEvent.getActualScoreInLevel();
                 eventDTO.setText("Training run " + levelEvent.getTrainingRunId() + " ended.");
             } else if (levelEvent instanceof TrainingRunResumed) {
                 eventDTO.setText("Training run " + levelEvent.getTrainingRunId() + " resumed.");
             } else if (levelEvent instanceof TrainingRunSurrendered) {
                 eventDTO.setText("Training run " + levelEvent.getTrainingRunId() + " surrendered.");
             } else if (levelEvent instanceof AssessmentAnswers) {
+                score -= levelEvent.getActualScoreInLevel();
                 eventDTO.setText("Assessment answered.");
             }
+            eventDTO.setScore(score);
             processedEventsData.timelineEvents.add(eventDTO);
             processedEventsData.lastLevelEvent = levelEvent;
         }
@@ -656,21 +654,24 @@ public class VisualizationFacade {
     // Inner classes
     private class TrainingInstanceStatistics {
         float sumOfTrainingRunsTime;
-        float sumOfTrainingRunsScore;
-        int numOfTrainingRunsForTime;
-        int numOfTrainingRunsForScore;
+        float sumOfTrainingRunsGameScore;
+        float sumOfTrainingRunsAssessmentScore;
+        int numOfFinishedTrainingRuns;
         long maxTime;
         int maxScore;
+        int maxGameScore;
+        int maxAssessmentScore;
         Map<Long, AbstractAuditPOJO> lastEventsOfParticipants = new HashMap<>();
 
-        public void addTrainingRunTime(long trainingRunGameTime) {
-            this.sumOfTrainingRunsTime += trainingRunGameTime;
-            this.numOfTrainingRunsForTime++;
-        }
-
-        public void addTrainingRunScore(int trainingRunScore) {
-            this.sumOfTrainingRunsScore += trainingRunScore;
-            this.numOfTrainingRunsForScore++;
+        public void addFinishedTrainingRun(TrainingRunEnded lastLevelEvent) {
+            this.sumOfTrainingRunsTime += lastLevelEvent.getGameTime();
+            this.sumOfTrainingRunsGameScore += lastLevelEvent.getTotalGameScore();
+            this.sumOfTrainingRunsAssessmentScore += lastLevelEvent.getTotalAssessmentScore();
+            this.checkAndSetMaxTime(lastLevelEvent.getGameTime());
+            this.checkAndSetMaxScore(lastLevelEvent.getTotalGameScore() + lastLevelEvent.getTotalAssessmentScore());
+            this.checkAndSetGameMaxScore(lastLevelEvent.getTotalGameScore());
+            this.checkAndSetAssessmentMaxScore(lastLevelEvent.getTotalAssessmentScore());
+            this.numOfFinishedTrainingRuns++;
         }
 
         public void checkAndSetMaxTime(long maxTime) {
@@ -679,9 +680,21 @@ public class VisualizationFacade {
             }
         }
 
-        public void checkAndSetMaxScore(int maxScore) {
+        private void checkAndSetMaxScore(int maxScore) {
             if (maxScore > this.maxScore) {
                 this.maxScore = maxScore;
+            }
+        }
+
+        private void checkAndSetGameMaxScore(int maxGameScore) {
+            if (maxGameScore > this.maxGameScore) {
+                this.maxGameScore = maxGameScore;
+            }
+        }
+
+        private void checkAndSetAssessmentMaxScore(int maxAssessmentScore) {
+            if (maxAssessmentScore > this.maxAssessmentScore) {
+                this.maxAssessmentScore = maxAssessmentScore;
             }
         }
 
@@ -693,12 +706,28 @@ public class VisualizationFacade {
             return maxScore;
         }
 
+        public int getMaxGameScore() {
+            return maxGameScore;
+        }
+
+        public int getMaxAssessmentScore() {
+            return maxAssessmentScore;
+        }
+
         public float getAverageTime() {
-            return sumOfTrainingRunsTime == 0 ? 0 : sumOfTrainingRunsTime / numOfTrainingRunsForTime;
+            return sumOfTrainingRunsTime == 0 ? 0 : sumOfTrainingRunsTime / numOfFinishedTrainingRuns;
         }
 
         public float getAverageScore() {
-            return sumOfTrainingRunsScore == 0 ? 0 : sumOfTrainingRunsScore / numOfTrainingRunsForScore;
+            return (sumOfTrainingRunsGameScore + sumOfTrainingRunsAssessmentScore) == 0 ? 0 : (sumOfTrainingRunsGameScore + sumOfTrainingRunsAssessmentScore) / numOfFinishedTrainingRuns;
+        }
+
+        public float getAverageGameScore() {
+            return sumOfTrainingRunsGameScore == 0 ? 0 : sumOfTrainingRunsGameScore / numOfFinishedTrainingRuns;
+        }
+
+        public float getAverageAssessmentScore() {
+            return sumOfTrainingRunsAssessmentScore == 0 ? 0 : sumOfTrainingRunsAssessmentScore / numOfFinishedTrainingRuns;
         }
     }
 
@@ -707,26 +736,23 @@ public class VisualizationFacade {
         float sumOfLevelsScore;
         long maxTime;
         int maxScore;
-        int numOfLevelsForTime;
-        int numOfLevelsForScore;
+        int numOfParticipants;
 
-        public void addLevelTime(long levelTime) {
-            this.sumOfLevelsTime += levelTime;
-            this.numOfLevelsForTime++;
-        }
-
-        public void addLevelScore(int levelScore) {
+        public void updateStatistics(long trainingTime, int levelScore) {
+            this.sumOfLevelsTime += trainingTime;
             this.sumOfLevelsScore += levelScore;
-            this.numOfLevelsForScore++;
+            this.numOfParticipants++;
+            this.checkAndSetMaxTime(trainingTime);
+            this.checkAndSetMaxScore(levelScore);
         }
 
-        public void checkAndSetMaxTime(long maxTime) {
+        private void checkAndSetMaxTime(long maxTime) {
             if (maxTime > this.maxTime) {
                 this.maxTime = maxTime;
             }
         }
 
-        public void checkAndSetMaxScore(int maxScore) {
+        private void checkAndSetMaxScore(int maxScore) {
             if (maxScore > this.maxScore) {
                 this.maxScore = maxScore;
             }
@@ -741,11 +767,11 @@ public class VisualizationFacade {
         }
 
         public float getAverageTime() {
-            return sumOfLevelsTime == 0 ? 0 : sumOfLevelsTime / numOfLevelsForTime;
+            return sumOfLevelsTime == 0 ? 0 : sumOfLevelsTime / numOfParticipants;
         }
 
         public float getAverageScore() {
-            return sumOfLevelsScore == 0 ? 0 : sumOfLevelsScore / numOfLevelsForScore;
+            return sumOfLevelsScore == 0 ? 0 : sumOfLevelsScore / numOfParticipants;
         }
     }
 

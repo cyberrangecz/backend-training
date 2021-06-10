@@ -9,10 +9,14 @@ import java.util.Objects;
 public class GameResultsDTO {
 
     private long estimatedTime;
-    private int maxPoints;
-    private long maxTime;
+    private int maxParticipantScore;
+    private int maxParticipantGameScore;
+    private int maxParticipantAssessmentScore;
+    private long maxParticipantTime;
     private float averageTime;
     private float averageScore;
+    private float averageGameScore;
+    private float averageAssessmentScore;
     private List<PlayerDataDTO> playerData = new ArrayList<>();
 
     public long getEstimatedTime() {
@@ -23,20 +27,36 @@ public class GameResultsDTO {
         this.estimatedTime = estimatedTime;
     }
 
-    public int getMaxPoints() {
-        return maxPoints;
+    public int getMaxParticipantScore() {
+        return maxParticipantScore;
     }
 
-    public void setMaxPoints(int maxPoints) {
-        this.maxPoints = maxPoints;
+    public void setMaxParticipantScore(int maxParticipantScore) {
+        this.maxParticipantScore = maxParticipantScore;
     }
 
-    public long getMaxTime() {
-        return maxTime;
+    public int getMaxParticipantGameScore() {
+        return maxParticipantGameScore;
     }
 
-    public void setMaxTime(long maxTime) {
-        this.maxTime = maxTime;
+    public void setMaxParticipantGameScore(int maxParticipantGameScore) {
+        this.maxParticipantGameScore = maxParticipantGameScore;
+    }
+
+    public int getMaxParticipantAssessmentScore() {
+        return maxParticipantAssessmentScore;
+    }
+
+    public void setMaxParticipantAssessmentScore(int maxParticipantAssessmentScore) {
+        this.maxParticipantAssessmentScore = maxParticipantAssessmentScore;
+    }
+
+    public long getMaxParticipantTime() {
+        return maxParticipantTime;
+    }
+
+    public void setMaxParticipantTime(long maxParticipantTime) {
+        this.maxParticipantTime = maxParticipantTime;
     }
 
     public float getAverageTime() {
@@ -53,6 +73,22 @@ public class GameResultsDTO {
 
     public void setAverageScore(float averageScore) {
         this.averageScore = averageScore;
+    }
+
+    public float getAverageGameScore() {
+        return averageGameScore;
+    }
+
+    public void setAverageGameScore(float averageGameScore) {
+        this.averageGameScore = averageGameScore;
+    }
+
+    public float getAverageAssessmentScore() {
+        return averageAssessmentScore;
+    }
+
+    public void setAverageAssessmentScore(float averageAssessmentScore) {
+        this.averageAssessmentScore = averageAssessmentScore;
     }
 
     public List<PlayerDataDTO> getPlayerData() {
@@ -73,25 +109,34 @@ public class GameResultsDTO {
         if (o == null || getClass() != o.getClass()) return false;
         GameResultsDTO that = (GameResultsDTO) o;
         return getEstimatedTime() == that.getEstimatedTime() &&
-                getMaxPoints() == that.getMaxPoints() &&
-                getMaxTime() == that.getMaxTime() &&
+                getMaxParticipantScore() == that.getMaxParticipantScore() &&
+                getMaxParticipantGameScore() == that.getMaxParticipantGameScore() &&
+                getMaxParticipantAssessmentScore() == that.getMaxParticipantAssessmentScore() &&
+                getMaxParticipantTime() == that.getMaxParticipantTime() &&
                 getAverageTime() == that.getAverageTime() &&
-                getAverageScore() == that.getAverageScore();
+                getAverageGameScore() == that.getAverageGameScore() &&
+                getAverageAssessmentScore() == that.getAverageAssessmentScore();
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getEstimatedTime(), getMaxPoints(), getMaxTime(), getAverageTime(), getAverageScore());
+        return Objects.hash(getEstimatedTime(), getMaxParticipantScore(), getMaxParticipantGameScore(), getMaxParticipantAssessmentScore(), getMaxParticipantTime(),
+                getAverageTime(), getAverageGameScore(), getAverageAssessmentScore());
     }
+
 
     @Override
     public String toString() {
         return "GameResultsDTO{" +
                 "estimatedTime=" + estimatedTime +
-                ", maxPoints=" + maxPoints +
-                ", maxTime=" + maxTime +
+                ", maxParticipantScore=" + maxParticipantScore +
+                ", maxParticipantGameScore=" + maxParticipantGameScore +
+                ", maxParticipantAssessmentScore=" + maxParticipantAssessmentScore +
+                ", maxParticipantTime=" + maxParticipantTime +
                 ", averageTime=" + averageTime +
                 ", averageScore=" + averageScore +
+                ", averageGameScore=" + averageGameScore +
+                ", averageAssessmentScore=" + averageAssessmentScore +
                 '}';
     }
 }

@@ -11,9 +11,8 @@ public class EventDTO {
     public EventDTO() {
     }
 
-    public EventDTO(long time, int score) {
+    public EventDTO(long time) {
         this.time = time;
-        this.score = score;
     }
 
     public String getText() {
