@@ -9,8 +9,8 @@ import java.util.Objects;
 public class TimelineDTO {
 
     private long estimatedTime;
-    private List<Integer> levelPoints = new ArrayList<>();
-    private long maxTime;
+    private List<Integer> maxScoreOfLevels = new ArrayList<>();
+    private long maxParticipantTime;
     private float averageTime;
     private List<PlayerDataDTO> playerData = new ArrayList<>();
 
@@ -22,20 +22,20 @@ public class TimelineDTO {
         this.estimatedTime = estimatedTime;
     }
 
-    public List<Integer> getLevelPoints() {
-        return levelPoints;
+    public List<Integer> getMaxScoreOfLevels() {
+        return maxScoreOfLevels;
     }
 
-    public void setLevelPoints(List<Integer> levelPoints) {
-        this.levelPoints = levelPoints;
+    public void setMaxScoreOfLevels(List<Integer> maxScoreOfLevels) {
+        this.maxScoreOfLevels = maxScoreOfLevels;
     }
 
-    public long getMaxTime() {
-        return maxTime;
+    public long getMaxParticipantTime() {
+        return maxParticipantTime;
     }
 
-    public void setMaxTime(long maxTime) {
-        this.maxTime = maxTime;
+    public void setMaxParticipantTime(long maxParticipantTime) {
+        this.maxParticipantTime = maxParticipantTime;
     }
 
     public float getAverageTime() {
@@ -62,8 +62,8 @@ public class TimelineDTO {
     public String toString() {
         return "TimelineDTO{" +
                 "estimatedTime=" + estimatedTime +
-                ", levelPoints=" + levelPoints +
-                ", maxTime=" + maxTime +
+                ", maxScoreOfLevels=" + maxScoreOfLevels +
+                ", maxParticipantTime=" + maxParticipantTime +
                 ", averageTime=" + averageTime +
                 '}';
     }
@@ -74,13 +74,13 @@ public class TimelineDTO {
         if (o == null || getClass() != o.getClass()) return false;
         TimelineDTO that = (TimelineDTO) o;
         return getEstimatedTime() == that.getEstimatedTime() &&
-                getMaxTime() == that.getMaxTime() &&
+                getMaxParticipantTime() == that.getMaxParticipantTime() &&
                 getAverageTime() == that.getAverageTime() &&
-                Objects.equals(getLevelPoints(), that.getLevelPoints());
+                Objects.equals(getMaxScoreOfLevels(), that.getMaxScoreOfLevels());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getEstimatedTime(), getLevelPoints(), getMaxTime(), getAverageTime());
+        return Objects.hash(getEstimatedTime(), getMaxScoreOfLevels(), getMaxParticipantTime(), getAverageTime());
     }
 }

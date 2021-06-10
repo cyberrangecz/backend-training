@@ -11,18 +11,18 @@ public class ClusteringLevelDTO extends VisualizationAbstractLevelDTO {
 
     private final String title;
     private final long estimatedTime;
-    private final int maxPoints;
-    private final long maxTime;
+    private final int maxParticipantScore;
+    private final long maxParticipantTime;
     private final float averageTime;
     private final float averageScore;
-    private final List<PlayerDataDTO> playerData;
+    private final List<ClusteringLevelPlayerDTO> playerData;
 
     public ClusteringLevelDTO(ClusteringLevelBuilder builder) {
         super(builder);
         this.title = builder.title;
         this.estimatedTime = builder.estimatedTime;
-        this.maxPoints = builder.maxPoints;
-        this.maxTime = builder.maxTime;
+        this.maxParticipantScore = builder.maxParticipantScore;
+        this.maxParticipantTime = builder.maxParticipantTime;
         this.averageTime = builder.averageTime;
         this.averageScore = builder.averageScore;
         this.playerData = builder.playerData;
@@ -36,12 +36,12 @@ public class ClusteringLevelDTO extends VisualizationAbstractLevelDTO {
         return estimatedTime;
     }
 
-    public int getMaxPoints() {
-        return maxPoints;
+    public int getMaxParticipantScore() {
+        return maxParticipantScore;
     }
 
-    public long getMaxTime() {
-        return maxTime;
+    public long getMaxParticipantTime() {
+        return maxParticipantTime;
     }
 
     public float getAverageTime() {
@@ -52,7 +52,7 @@ public class ClusteringLevelDTO extends VisualizationAbstractLevelDTO {
         return averageScore;
     }
 
-    public List<PlayerDataDTO> getPlayerData() {
+    public List<ClusteringLevelPlayerDTO> getPlayerData() {
         return playerData;
     }
 
@@ -73,11 +73,11 @@ public class ClusteringLevelDTO extends VisualizationAbstractLevelDTO {
     public static class ClusteringLevelBuilder extends VisualizationAbstractLevelDTO.BaseBuilder<ClusteringLevelDTO, ClusteringLevelBuilder> {
         private String title;
         private long estimatedTime;
-        private int maxPoints;
-        private long maxTime;
+        private int maxParticipantScore;
+        private long maxParticipantTime;
         private float averageTime;
         private float averageScore;
-        private List<PlayerDataDTO> playerData = new ArrayList<>();
+        private List<ClusteringLevelPlayerDTO> playerData = new ArrayList<>();
 
         @Override
         protected ClusteringLevelBuilder getActualBuilder() {
@@ -94,13 +94,13 @@ public class ClusteringLevelDTO extends VisualizationAbstractLevelDTO {
             return this;
         }
 
-        public ClusteringLevelBuilder maxPoints(int maxPoints) {
-            this.maxPoints = maxPoints;
+        public ClusteringLevelBuilder maxParticipantScore(int maxParticipantScore) {
+            this.maxParticipantScore = maxParticipantScore;
             return this;
         }
 
-        public ClusteringLevelBuilder maxTime(long maxTime) {
-            this.maxTime = maxTime;
+        public ClusteringLevelBuilder maxParticipantTime(long maxParticipantTime) {
+            this.maxParticipantTime = maxParticipantTime;
             return this;
         }
 
@@ -114,12 +114,12 @@ public class ClusteringLevelDTO extends VisualizationAbstractLevelDTO {
             return this;
         }
 
-        public ClusteringLevelBuilder playerData(List<PlayerDataDTO> playerData) {
+        public ClusteringLevelBuilder playerData(List<ClusteringLevelPlayerDTO> playerData) {
             this.playerData = playerData;
             return this;
         }
 
-        public ClusteringLevelBuilder addPlayerData(PlayerDataDTO playerData) {
+        public ClusteringLevelBuilder addPlayerData(ClusteringLevelPlayerDTO playerData) {
             this.playerData.add(playerData);
             return this;
         }

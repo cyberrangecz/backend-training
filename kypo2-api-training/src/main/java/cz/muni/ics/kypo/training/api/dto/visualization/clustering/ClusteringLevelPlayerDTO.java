@@ -1,41 +1,35 @@
-package cz.muni.ics.kypo.training.api.dto.visualization.commons;
+package cz.muni.ics.kypo.training.api.dto.visualization.clustering;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
+import cz.muni.ics.kypo.training.api.dto.visualization.commons.PlayerDataDTO;
 
-import java.util.ArrayList;
-import java.util.List;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.Objects;
-@JsonInclude(JsonInclude.Include.NON_EMPTY)
-public class PlayerDataDTO {
+
+public class ClusteringLevelPlayerDTO {
 
     private Long id;
     private String name;
-    private int gameScore;
-    private int assessmentScore;
+    private int participantLevelScore;
     private long trainingTime;
     private Boolean finished;
     private byte[] picture;
     private String avatarColor;
-    private List<VisualizationAbstractLevelDTO> levels = new ArrayList<>();
 
-    public PlayerDataDTO() {
+    public ClusteringLevelPlayerDTO() {
     }
 
-    public PlayerDataDTO(Long id,
-                         String name,
-                         int gameScore,
-                         int assessmentScore,
-                         long trainingTime,
-                         Boolean finished,
-                         byte[] picture) {
+    public ClusteringLevelPlayerDTO(Long id,
+                                    String name,
+                                    int participantLevelScore,
+                                    long trainingTime,
+                                    Boolean finished,
+                                    byte[] picture) {
         this.id = id;
         this.name = name;
-        this.gameScore = gameScore;
-        this.assessmentScore = assessmentScore;
+        this.participantLevelScore = participantLevelScore;
         this.trainingTime = trainingTime;
         this.finished = finished;
         this.picture = picture;
@@ -58,20 +52,12 @@ public class PlayerDataDTO {
         this.name = name;
     }
 
-    public int getGameScore() {
-        return gameScore;
+    public int getParticipantLevelScore() {
+        return participantLevelScore;
     }
 
-    public void setGameScore(int gameScore) {
-        this.gameScore = gameScore;
-    }
-
-    public int getAssessmentScore() {
-        return assessmentScore;
-    }
-
-    public void setAssessmentScore(int assessmentScore) {
-        this.assessmentScore = assessmentScore;
+    public void setParticipantLevelScore(int participantLevelScore) {
+        this.participantLevelScore = participantLevelScore;
     }
 
     public long getTrainingTime() {
@@ -107,18 +93,6 @@ public class PlayerDataDTO {
         this.avatarColor = avatarColor;
     }
 
-    public List<VisualizationAbstractLevelDTO> getLevels() {
-        return levels;
-    }
-
-    public void setLevels(List<VisualizationAbstractLevelDTO> levels) {
-        this.levels = levels;
-    }
-
-    public void addTableLevel(VisualizationAbstractLevelDTO visualizationAbstractLevelDTO) {
-        this.levels.add(visualizationAbstractLevelDTO);
-    }
-
     private String extractAvatarColor(byte[] picture) {
         try {
             BufferedImage finalImage = ImageIO.read(new ByteArrayInputStream(picture));
@@ -144,8 +118,7 @@ public class PlayerDataDTO {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         PlayerDataDTO that = (PlayerDataDTO) o;
-        return getGameScore() == that.getGameScore() &&
-                getAssessmentScore() == that.getAssessmentScore() &&
+        return getParticipantLevelScore() == that.getGameScore() &&
                 getTrainingTime() == that.getTrainingTime() &&
                 getFinished().equals(that.getFinished()) &&
                 getId().equals(that.getId()) &&
@@ -154,16 +127,15 @@ public class PlayerDataDTO {
 
     @Override
     public int hashCode() {
-        return Objects.hash(getId(), getName(), getGameScore(), getAssessmentScore(), getTrainingTime(), getFinished());
+        return Objects.hash(getId(), getName(), getParticipantLevelScore(), getTrainingTime(), getFinished());
     }
 
     @Override
     public String toString() {
-        return "PlayerData{" +
+        return "ClusteringPlayerDTO{" +
                 "id=" + id +
                 ", name='" + name + '\'' +
-                ", gameScore=" + gameScore +
-                ", assessmentScore=" + assessmentScore +
+                ", gameScore=" + participantLevelScore +
                 ", trainingTime=" + trainingTime +
                 ", finished=" + finished +
                 '}';

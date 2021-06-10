@@ -416,7 +416,7 @@ public class TrainingRunService {
             GameLevel gameLevel = (GameLevel) level;
             if (gameLevel.getFlag().equals(flag)) {
                 trainingRun.setLevelAnswered(true);
-                trainingRun.increaseTotalScore(trainingRun.getMaxLevelScore() - trainingRun.getCurrentPenalty());
+                trainingRun.increaseTotalGameScore(trainingRun.getMaxLevelScore() - trainingRun.getCurrentPenalty());
                 auditEventsService.auditCorrectFlagSubmittedAction(trainingRun, flag);
                 auditEventsService.auditLevelCompletedAction(trainingRun);
                 return true;
@@ -582,7 +582,7 @@ public class TrainingRunService {
     }
 
     private List<QuestionAnswer> gatherAndEvaluateAnswers(TrainingRun trainingRun, Map<Long, QuestionAnswerDTO> answersToQuestions) {
-        int points = 0;
+        int score = 0;
         List<QuestionAnswer> userAnswersToQuestions = new ArrayList<>();
         for (Question question : ((AssessmentLevel) trainingRun.getCurrentLevel()).getQuestions()) {
             QuestionAnswerDTO questionAnswerDTO = answersToQuestions.get(question.getId());
@@ -592,19 +592,20 @@ public class TrainingRunService {
             userAnswersToQuestions.add(this.createQuestionAnswer(question, trainingRun, answersToQuestions.get(question.getId())));
             switch (question.getQuestionType()) {
                 case MCQ:
-                    points += evaluateMCQ(question, answersToQuestions.get(question.getId()));
+                    score += evaluateMCQ(question, answersToQuestions.get(question.getId()));
                     break;
                 case FFQ:
-                    points += evaluateFFQ(question, answersToQuestions.get(question.getId()));
+                    score += evaluateFFQ(question, answersToQuestions.get(question.getId()));
                     break;
                 case EMI:
-                    points += evaluateEMI(question, answersToQuestions.get(question.getId()));
+                    score += evaluateEMI(question, answersToQuestions.get(question.getId()));
                     break;
                 default:
                     break;
             }
         }
-        trainingRun.increaseTotalScore(points);
+        trainingRun.setCurrentPenalty(trainingRun.getMaxLevelScore() - score);
+        trainingRun.increaseTotalAssessmentScore(score);
         return userAnswersToQuestions;
     }
 

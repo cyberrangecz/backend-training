@@ -6,7 +6,6 @@ import com.google.gson.JsonObject;
 import cz.muni.ics.kypo.commons.security.enums.AuthenticatedUserOIDCItems;
 import cz.muni.ics.kypo.training.api.dto.IsCorrectFlagDTO;
 import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
-import cz.muni.ics.kypo.training.api.dto.gamelevel.GameLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.gamelevel.GameLevelViewDTO;
 import cz.muni.ics.kypo.training.api.dto.gamelevel.ValidateFlagDTO;
 import cz.muni.ics.kypo.training.api.dto.hint.HintDTO;
@@ -46,7 +45,6 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.ApplicationContext;
@@ -522,7 +520,7 @@ public class TrainingRunsIT {
     @Test
     public void getSolution() throws Exception {
         trainingRun1.setMaxLevelScore(gameLevel1.getMaxScore());
-        trainingRun1.setTotalScore(10 + gameLevel1.getMaxScore());
+        trainingRun1.setTotalGameScore(10 + gameLevel1.getMaxScore());
         trainingRunRepository.save(trainingRun1);
         assertFalse(trainingRun1.isSolutionTaken());
         MockHttpServletResponse response = mvc.perform(get("/training-runs/{runId}/solutions", trainingRun1.getId()))
@@ -535,7 +533,7 @@ public class TrainingRunsIT {
     @Test
     public void getSolutionSecondTime() throws Exception {
         trainingRun1.setMaxLevelScore(1);
-        trainingRun1.setTotalScore(11);
+        trainingRun1.setTotalGameScore(11);
         trainingRun1.setSolutionTaken(true);
         trainingRunRepository.save(trainingRun1);
         assertTrue(trainingRun1.isSolutionTaken());
@@ -544,7 +542,7 @@ public class TrainingRunsIT {
                 .andReturn().getResponse();
         assertEquals(((GameLevel) trainingRun1.getCurrentLevel()).getSolution(), convertJsonBytesToString(response.getContentAsString()));
         assertTrue(trainingRun1.isSolutionTaken());
-        assertEquals(11, trainingRun1.getTotalScore());
+        assertEquals(11, trainingRun1.getTotalGameScore());
     }
 
     @Test
@@ -573,7 +571,7 @@ public class TrainingRunsIT {
     @Test
     public void getHint() throws Exception {
         hintRepository.save(hint);
-        trainingRun1.setTotalScore(10 + gameLevel1.getMaxScore());
+        trainingRun1.setTotalGameScore(10 + gameLevel1.getMaxScore());
         trainingRun1.setMaxLevelScore(gameLevel1.getMaxScore());
         trainingRunRepository.save(trainingRun1);
         MockHttpServletResponse response = mvc.perform(get("/training-runs/{runId}/hints/{hintId}", trainingRun1.getId(), hint.getId()))

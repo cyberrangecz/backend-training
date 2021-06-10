@@ -14,7 +14,7 @@
         <dependency>
             <groupId>cz.muni.ics.kypo</groupId>
             <artifactId>kypo-elasticsearch-documents</artifactId>
-            <version>1.0.26</version>
+            <version>1.0.27</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>

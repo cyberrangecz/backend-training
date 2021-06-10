@@ -365,6 +365,11 @@ public class TrainingDefinitionService {
         AssessmentLevel assessmentLevel = findAssessmentLevelById(assessmentLevelToUpdate.getId());
         checkIfLevelPresentInDefinition(assessmentLevel, trainingDefinition.getId());
         assessmentLevelToUpdate.setOrder(assessmentLevel.getOrder());
+        assessmentLevelToUpdate.setMaxScore(assessmentLevelToUpdate
+                .getQuestions()
+                .stream()
+                .mapToInt(Question::getPoints)
+                .sum());
         trainingDefinition.setEstimatedDuration(trainingDefinition.getEstimatedDuration() - assessmentLevel.getEstimatedDuration() + assessmentLevelToUpdate.getEstimatedDuration());
         trainingDefinition.setLastEdited(getCurrentTimeInUTC());
         assessmentLevelToUpdate.setTrainingDefinition(trainingDefinition);

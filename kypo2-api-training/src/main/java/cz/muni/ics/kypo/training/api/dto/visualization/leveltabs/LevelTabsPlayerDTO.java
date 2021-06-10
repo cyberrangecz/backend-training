@@ -10,7 +10,7 @@ import java.util.Objects;
 public class LevelTabsPlayerDTO {
 
     private Long id;
-    private long score;
+    private long participantLevelScore;
     private Integer hints;
     private List<String> wrongFlags = new ArrayList<>();
     private long time;
@@ -24,12 +24,12 @@ public class LevelTabsPlayerDTO {
         this.id = id;
     }
 
-    public long getScore() {
-        return score;
+    public long getParticipantLevelScore() {
+        return participantLevelScore;
     }
 
-    public void setScore(long score) {
-        this.score = score;
+    public void setParticipantLevelScore(long participantLevelScore) {
+        this.participantLevelScore = participantLevelScore;
     }
 
     public Integer getHints() {
@@ -80,21 +80,21 @@ public class LevelTabsPlayerDTO {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         LevelTabsPlayerDTO that = (LevelTabsPlayerDTO) o;
-        return getScore() == that.getScore() &&
+        return getParticipantLevelScore() == that.getParticipantLevelScore() &&
                 getTime() == that.getTime() &&
                 getId().equals(that.getId());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getId(), getScore(), getTime());
+        return Objects.hash(getId(), getParticipantLevelScore(), getTime());
     }
 
     @Override
     public String toString() {
         return "LevelTabPlayerDTO{" +
                 "id=" + id +
-                ", score=" + score +
+                ", participantLevelScore=" + participantLevelScore +
                 ", hints=" + hints +
                 ", wrongFlags=" + wrongFlags +
                 ", time=" + time +
