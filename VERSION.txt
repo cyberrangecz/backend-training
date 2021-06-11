@@ -1,1 +1,1 @@
-1.1.64  Update dependencies libraries versions.
+1.1.65 Store assessment questions in the database as entities instead of a plain string, fixed structure of data for the overview visualizations, an endpoint to return all commands in a training run, differentiate total score for the game level and assessment level, audit questions answers in JSON format.
