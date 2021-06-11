@@ -626,7 +626,7 @@ public class TrainingRunService {
         QuestionAnswer questionAnswer = new QuestionAnswer(question, trainingRun);
         if (question.getQuestionType() == QuestionType.EMI) {
             Set<String> answers = question.getExtendedMatchingStatements().stream()
-                    .map(statement -> "{ statementOrder: '" + statement.getId() + "', optionOrder: '" + answersToQuestion.getExtendedMatchingPairs().get(statement.getOrder()))
+                    .map(statement -> "{ \"statementOrder\": " + statement.getOrder() + ", \"optionOrder\": " + answersToQuestion.getExtendedMatchingPairs().get(statement.getOrder()) + " }")
                     .collect(Collectors.toSet());
             questionAnswer.setAnswers(answers);
         } else {
