@@ -1,7 +1,7 @@
 ---
 swagger: "2.0"
 info:
-  version: "Version: 1.1.64"
+  version: "Version: 1.1.65"
   title: "KYPO2 Training - API Reference"
 host: "localhost:8080"
 basePath: "/kypo2-rest-training/api/v1"
@@ -3262,10 +3262,10 @@ definitions:
       estimatedTime:
         type: "integer"
         format: "int64"
-      maxPoints:
+      maxParticipantScore:
         type: "integer"
         format: "int32"
-      maxTime:
+      maxParticipantTime:
         type: "integer"
         format: "int64"
       averageTime:
@@ -3277,7 +3277,33 @@ definitions:
       playerData:
         type: "array"
         items:
-          $ref: "#/definitions/PlayerDataDTO"
+          $ref: "#/definitions/ClusteringLevelPlayerDTO"
+  ClusteringLevelPlayerDTO:
+    type: "object"
+    properties:
+      id:
+        type: "integer"
+        format: "int64"
+      name:
+        type: "string"
+      picture:
+        type: "array"
+        items:
+          type: "string"
+          format: "byte"
+      avatarColor:
+        type: "string"
+      trainingRunId:
+        type: "integer"
+        format: "int64"
+      trainingTime:
+        type: "integer"
+        format: "int64"
+      participantLevelScore:
+        type: "integer"
+        format: "int32"
+      finished:
+        type: "boolean"
   ClusteringVisualizationDTO:
     type: "object"
     properties:
@@ -3622,16 +3648,28 @@ definitions:
       estimatedTime:
         type: "integer"
         format: "int64"
-      maxPoints:
+      maxParticipantScore:
         type: "integer"
         format: "int32"
-      maxTime:
+      maxParticipantGameScore:
+        type: "integer"
+        format: "int32"
+      maxParticipantAssessmentScore:
+        type: "integer"
+        format: "int32"
+      maxParticipantTime:
         type: "integer"
         format: "int64"
       averageTime:
         type: "number"
         format: "float"
       averageScore:
+        type: "number"
+        format: "float"
+      averageGameScore:
+        type: "number"
+        format: "float"
+      averageAssessmentScore:
         type: "number"
         format: "float"
       playerData:
@@ -3993,7 +4031,7 @@ definitions:
       estimatedTime:
         type: "integer"
         format: "int64"
-      maxPoints:
+      maxLevelScore:
         type: "integer"
         format: "int32"
       content:
@@ -4019,7 +4057,10 @@ definitions:
       id:
         type: "integer"
         format: "int64"
-      score:
+      trainingRunId:
+        type: "integer"
+        format: "int64"
+      participantLevelScore:
         type: "integer"
         format: "int64"
       hints:
@@ -4088,14 +4129,6 @@ definitions:
         format: "int64"
       name:
         type: "string"
-      score:
-        type: "integer"
-        format: "int32"
-      time:
-        type: "integer"
-        format: "int64"
-      finished:
-        type: "boolean"
       picture:
         type: "array"
         items:
@@ -4103,10 +4136,12 @@ definitions:
           format: "byte"
       avatarColor:
         type: "string"
-      levels:
-        type: "array"
-        items:
-          $ref: "#/definitions/VisualizationAbstractLevelDTO"
+      trainingRunId:
+        type: "integer"
+        format: "int64"
+      trainingTime:
+        type: "integer"
+        format: "int64"
   PythonApiError:
     allOf:
     - $ref: "#/definitions/ApiSubError"
@@ -4297,12 +4332,12 @@ definitions:
       estimatedTime:
         type: "integer"
         format: "int64"
-      levelPoints:
+      maxScoreOfLevels:
         type: "array"
         items:
           type: "integer"
           format: "int32"
-      maxTime:
+      maxParticipantTime:
         type: "integer"
         format: "int64"
       averageTime:
@@ -5018,21 +5053,6 @@ definitions:
         type: "string"
         example: "flag"
         description: "Flag to be validated."
-  VisualizationAbstractLevelDTO:
-    type: "object"
-    properties:
-      id:
-        type: "integer"
-        format: "int64"
-      order:
-        type: "integer"
-        format: "int32"
-      levelType:
-        type: "string"
-        enum:
-        - "INFO_LEVEL"
-        - "GAME_LEVEL"
-        - "ASSESSMENT_LEVEL"
   VisualizationInfoDTO:
     type: "object"
     properties:
