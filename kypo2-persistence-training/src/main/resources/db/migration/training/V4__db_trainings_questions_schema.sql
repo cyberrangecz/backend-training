@@ -59,5 +59,5 @@ create table question_answers (
 
 alter table assessment_level drop column questions;
 alter table training_run drop column total_score;
-alter table training_run add column total_game_score int4;
-alter table training_run add column total_assessment_score int4;
+alter table training_run add column total_game_score int4 default (0);
+alter table training_run add column total_assessment_score int4 default (0);
