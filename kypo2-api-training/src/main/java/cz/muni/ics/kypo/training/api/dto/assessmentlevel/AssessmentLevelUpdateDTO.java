@@ -1,5 +1,6 @@
 package cz.muni.ics.kypo.training.api.dto.assessmentlevel;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.question.QuestionDTO;
 import cz.muni.ics.kypo.training.api.enums.AssessmentType;
 import io.swagger.annotations.ApiModel;
@@ -18,6 +19,7 @@ import java.util.List;
  *
  */
 @ApiModel(value = "AssessmentLevelUpdateDTO", description = "Assessment level to update.")
+@JsonIgnoreProperties(value = { "max_score" })
 public class AssessmentLevelUpdateDTO {
 
     @ApiModelProperty(value = "Main identifier of level.", required = true, example = "8")
@@ -26,11 +28,6 @@ public class AssessmentLevelUpdateDTO {
     @ApiModelProperty(value = "Short textual description of the level.", required = true, example = "Assessment Level1")
     @NotEmpty(message = "{assessmentLevel.title.NotEmpty.message}")
     private String title;
-    @ApiModelProperty(value = "Maximum score of assessment level to update. Have to be filled in range from 0 to 100.", required = true, example = "40")
-    @NotNull(message = "{assessmentLevel.maxScore.NotNull.message}")
-    @Min(value = 0, message = "{assessmentLevel.maxScore.Min.message}")
-    @Max(value = 100, message = "{assessmentLevel.maxScore.Max.message}")
-    private int maxScore;
     @ApiModelProperty(value = "Questions of assessment level to update.")
     @Valid
     private List<QuestionDTO> questions = new ArrayList<>();
@@ -77,24 +74,6 @@ public class AssessmentLevelUpdateDTO {
      */
     public void setTitle(String title) {
         this.title = title;
-    }
-
-    /**
-     * Gets max score.
-     *
-     * @return the max score
-     */
-    public int getMaxScore() {
-        return maxScore;
-    }
-
-    /**
-     * Sets max score.
-     *
-     * @param maxScore the max score
-     */
-    public void setMaxScore(int maxScore) {
-        this.maxScore = maxScore;
     }
 
     /**
@@ -170,7 +149,7 @@ public class AssessmentLevelUpdateDTO {
     }
 
     @Override public String toString() {
-        return "AssessmentLevelUpdateDTO{" + "id=" + id + ", title='" + title + '\'' + ", maxScore=" + maxScore + ", questions='"
+        return "AssessmentLevelUpdateDTO{" + "id=" + id + ", title='" + title + '\'' + ", questions='"
             + questions + '\'' + ", instructions='" + instructions + '\'' + ", type=" + type + ", estimatedDuration=" + estimatedDuration
             + '}';
     }
