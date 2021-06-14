@@ -951,7 +951,7 @@ public class TrainingDefinitionsIT {
         assertEquals(updatedAssessmentLevel.get().getAssessmentType().toString(), assessmentLevelUpdateDTO.getType().toString());
         assertEquals(assessmentLevelUpdateDTO.getQuestions().size(), updatedAssessmentLevel.get().getQuestions().size());
         assertEquals(updatedAssessmentLevel.get().getInstructions(), assessmentLevelUpdateDTO.getInstructions());
-        assertEquals(updatedAssessmentLevel.get().getMaxScore(), assessmentLevelUpdateDTO.getMaxScore());
+        assertEquals(updatedAssessmentLevel.get().getMaxScore(), assessmentLevelUpdateDTO.getQuestions().stream().mapToInt(QuestionDTO::getPoints).sum());
         this.assertQuestionAfterUpdate(updatedAssessmentLevel.get());
     }
 
@@ -987,7 +987,7 @@ public class TrainingDefinitionsIT {
         assertEquals(updatedAssessmentLevel.get().getAssessmentType().toString(), assessmentLevelUpdateDTO.getType().toString());
         assertEquals(assessmentLevelUpdateDTO.getQuestions().size(), updatedAssessmentLevel.get().getQuestions().size());
         assertEquals(updatedAssessmentLevel.get().getInstructions(), assessmentLevelUpdateDTO.getInstructions());
-        assertEquals(updatedAssessmentLevel.get().getMaxScore(), assessmentLevelUpdateDTO.getMaxScore());
+        assertEquals(updatedAssessmentLevel.get().getMaxScore(), assessmentLevelUpdateDTO.getQuestions().stream().mapToInt(QuestionDTO::getPoints).sum());
         this.assertQuestionAfterUpdate(updatedAssessmentLevel.get());
     }
 
