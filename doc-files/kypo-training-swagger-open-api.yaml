@@ -1,7 +1,7 @@
 ---
 swagger: "2.0"
 info:
-  version: "Version: 1.1.66"
+  version: "Version: 1.1.67"
   title: "KYPO2 Training - API Reference"
 host: "localhost:8080"
 basePath: "/kypo2-rest-training/api/v1"
@@ -3121,7 +3121,6 @@ definitions:
     - "estimatedDuration"
     - "id"
     - "instructions"
-    - "maxScore"
     - "title"
     - "type"
     properties:
@@ -3134,14 +3133,6 @@ definitions:
         type: "string"
         example: "Assessment Level1"
         description: "Short textual description of the level."
-      maxScore:
-        type: "integer"
-        format: "int32"
-        example: 40
-        description: "Maximum score of assessment level to update. Have to be filled\
-          \ in range from 0 to 100."
-        minimum: 0
-        maximum: 100
       questions:
         type: "array"
         description: "Questions of assessment level to update."
