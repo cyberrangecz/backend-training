@@ -1,1 +1,1 @@
-1.1.66 Set default value in SQL scirpt for total game and assessment score.
+1.1.67 Removed max score validation when updating the assessment level.
