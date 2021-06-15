@@ -3,24 +3,18 @@ package cz.muni.ics.kypo.training.facade;
 import com.fasterxml.jackson.core.util.MinimalPrettyPrinter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import cz.muni.csirt.kypo.events.trainings.LevelStarted;
-import cz.muni.csirt.kypo.events.trainings.TrainingRunStarted;
 import cz.muni.ics.kypo.training.annotations.security.IsDesignerOrAdmin;
 import cz.muni.ics.kypo.training.annotations.security.IsDesignerOrOrganizerOrAdmin;
 import cz.muni.ics.kypo.training.annotations.security.IsOrganizerOrAdmin;
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalRO;
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalWO;
-import cz.muni.ics.kypo.training.api.dto.archive.AbstractLevelArchiveDTO;
-import cz.muni.ics.kypo.training.api.dto.archive.TrainingDefinitionArchiveDTO;
-import cz.muni.ics.kypo.training.api.dto.archive.TrainingInstanceArchiveDTO;
-import cz.muni.ics.kypo.training.api.dto.archive.TrainingRunArchiveDTO;
-import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelUpdateDTO;
+import cz.muni.ics.kypo.training.api.dto.archive.*;
 import cz.muni.ics.kypo.training.api.dto.export.AbstractLevelExportDTO;
 import cz.muni.ics.kypo.training.api.dto.export.ExportTrainingDefinitionAndLevelsDTO;
 import cz.muni.ics.kypo.training.api.dto.export.FileToReturnDTO;
 import cz.muni.ics.kypo.training.api.dto.imports.*;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionByIdDTO;
 import cz.muni.ics.kypo.training.api.enums.LevelType;
-import cz.muni.ics.kypo.training.api.enums.QuestionType;
 import cz.muni.ics.kypo.training.api.enums.TDState;
 import cz.muni.ics.kypo.training.api.responses.SandboxDefinitionInfo;
 import cz.muni.ics.kypo.training.exceptions.BadRequestException;
@@ -35,6 +29,7 @@ import cz.muni.ics.kypo.training.persistence.model.enums.AssessmentType;
 import cz.muni.ics.kypo.training.persistence.model.question.ExtendedMatchingOption;
 import cz.muni.ics.kypo.training.persistence.model.question.ExtendedMatchingStatement;
 import cz.muni.ics.kypo.training.persistence.model.question.Question;
+import cz.muni.ics.kypo.training.persistence.model.question.QuestionAnswer;
 import cz.muni.ics.kypo.training.service.ElasticsearchApiService;
 import cz.muni.ics.kypo.training.service.ExportImportService;
 import cz.muni.ics.kypo.training.service.TrainingDefinitionService;
@@ -47,7 +42,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
@@ -64,6 +58,7 @@ public class ExportImportFacade {
     private static final String LOGS_FOLDER = "logs";
     private static final String EVENTS_FOLDER = "training_events";
     private static final String RUNS_FOLDER = "training_runs";
+    private static final String ASSESSMENTS_ANSWERS_FOLDER = "assessments_answers";
 
     private ExportImportService exportImportService;
     private TrainingDefinitionService trainingDefinitionService;
@@ -246,6 +241,7 @@ public class ExportImportFacade {
 
     private void writeTrainingRunsInfo(ZipOutputStream zos, TrainingInstance trainingInstance) throws IOException {
         Set<TrainingRun> runs = exportImportService.findRunsByInstanceId(trainingInstance.getId());
+        Map<Long, Map<Long, QuestionAnswersDetailsDTO>> assessmentsDetails = new HashMap<>();
         for (TrainingRun run : runs) {
             TrainingRunArchiveDTO archivedRun = exportImportMapper.mapToArchiveDTO(run);
             archivedRun.setInstanceId(trainingInstance.getId());
@@ -254,6 +250,7 @@ public class ExportImportFacade {
             zos.putNextEntry(runEntry);
             zos.write(objectMapper.writeValueAsBytes(archivedRun));
 
+            writeQuestionsAnswers(zos, run, assessmentsDetails);
             List<Map<String, Object>> events = elasticsearchApiService.findAllEventsFromTrainingRun(run);
             if (events.isEmpty()) {
                 continue;
@@ -266,6 +263,15 @@ public class ExportImportFacade {
             Integer sandboxId = (Integer) events.get(0).get("sandbox_id");
             writeConsoleCommands(zos, sandboxId, consoleCommands);
             writeConsoleCommandsDetails(zos, sandboxId, levelStartTimestampMapping);
+        }
+        writeAssessmentsDetails(zos, assessmentsDetails);
+    }
+
+    private void writeAssessmentsDetails(ZipOutputStream zos, Map<Long, Map<Long, QuestionAnswersDetailsDTO>> assessmentsDetails) throws IOException {
+        for(Map.Entry<Long, Map<Long, QuestionAnswersDetailsDTO>> assessmentDetails: assessmentsDetails.entrySet()) {
+            ZipEntry assessmentDetailsEntry = new ZipEntry(ASSESSMENTS_ANSWERS_FOLDER + "/assessment-id-" + assessmentDetails.getKey() + "-details" + AbstractFileExtensions.JSON_FILE_EXTENSION);
+            zos.putNextEntry(assessmentDetailsEntry);
+            zos.write(objectMapper.writer().writeValueAsBytes(assessmentDetails.getValue().values()));
         }
     }
 
@@ -297,6 +303,27 @@ public class ExportImportFacade {
             }
             zos.write(objectMapper.writer(new MinimalPrettyPrinter()).writeValueAsBytes(event));
             zos.write(System.lineSeparator().getBytes());
+        }
+    }
+
+    private void writeQuestionsAnswers(ZipOutputStream zos, TrainingRun run, Map<Long, Map<Long, QuestionAnswersDetailsDTO>> assessmentsDetails) throws IOException {
+        Map<Long, List<QuestionAnswer>> questionsAnswersByAssessments = exportImportService.findQuestionsAnswersOfAssessment(run.getId());
+        for (Map.Entry<Long, List<QuestionAnswer>> questionsAnswersByAssessment : questionsAnswersByAssessments.entrySet()) {
+            ZipEntry eventsDetailEntry = new ZipEntry(ASSESSMENTS_ANSWERS_FOLDER + "/training_run-id-" + run.getId() + "-assessments" + "/assessment-id-" + questionsAnswersByAssessment.getKey() + "-answers" + AbstractFileExtensions.JSON_FILE_EXTENSION);
+            zos.putNextEntry(eventsDetailEntry);
+
+            Map<Long, QuestionAnswersDetailsDTO> questionAnswersDetails = assessmentsDetails.getOrDefault(questionsAnswersByAssessment.getKey(), new HashMap<>());
+            for(QuestionAnswer questionAnswer : questionsAnswersByAssessment.getValue()) {
+                Question question = questionAnswer.getQuestion();
+                if (!questionAnswersDetails.containsKey(question.getId())) {
+                    questionAnswersDetails.put(question.getId(), new QuestionAnswersDetailsDTO(questionAnswer.getQuestion().getText()));
+                }
+                questionAnswersDetails.get(question.getId()).addAnswers(questionAnswer.getAnswers());
+                zos.write(objectMapper.writer(new MinimalPrettyPrinter()).writeValueAsBytes(new QuestionAnswerArchiveDTO(question.getText(), questionAnswer.getAnswers())));
+                zos.write(System.lineSeparator().getBytes());
+            }
+            assessmentsDetails.putIfAbsent(questionsAnswersByAssessment.getKey(), questionAnswersDetails);
+
         }
     }
 
