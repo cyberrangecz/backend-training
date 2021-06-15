@@ -4,6 +4,7 @@ import cz.muni.ics.kypo.training.api.responses.SandboxDefinitionInfo;
 import cz.muni.ics.kypo.training.exceptions.*;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.model.AssessmentLevel;
+import cz.muni.ics.kypo.training.persistence.model.question.QuestionAnswer;
 import cz.muni.ics.kypo.training.persistence.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -11,7 +12,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * The type Export import service.
@@ -22,6 +26,7 @@ public class ExportImportService {
     private TrainingDefinitionRepository trainingDefinitionRepository;
     private AbstractLevelRepository abstractLevelRepository;
     private AssessmentLevelRepository assessmentLevelRepository;
+    private QuestionAnswerRepository questionAnswerRepository;
     private InfoLevelRepository infoLevelRepository;
     private GameLevelRepository gameLevelRepository;
     private TrainingInstanceRepository trainingInstanceRepository;
@@ -44,6 +49,7 @@ public class ExportImportService {
     public ExportImportService(TrainingDefinitionRepository trainingDefinitionRepository,
                                AbstractLevelRepository abstractLevelRepository,
                                AssessmentLevelRepository assessmentLevelRepository,
+                               QuestionAnswerRepository questionAnswerRepository,
                                InfoLevelRepository infoLevelRepository,
                                GameLevelRepository gameLevelRepository,
                                TrainingInstanceRepository trainingInstanceRepository,
@@ -53,6 +59,7 @@ public class ExportImportService {
         this.trainingDefinitionRepository = trainingDefinitionRepository;
         this.abstractLevelRepository = abstractLevelRepository;
         this.assessmentLevelRepository = assessmentLevelRepository;
+        this.questionAnswerRepository = questionAnswerRepository;
         this.gameLevelRepository = gameLevelRepository;
         this.infoLevelRepository = infoLevelRepository;
         this.trainingInstanceRepository = trainingInstanceRepository;
@@ -134,5 +141,16 @@ public class ExportImportService {
             }
             throw new MicroserviceApiException("Error when calling Python API to obtain sandbox definition info for particular pool (ID: " + poolId + ").", ex);
         }
+    }
+
+    /**
+     * Gets all answers given by participant to assessment questions.
+     *
+     * @param trainingRunId the pool id
+     * @return the sandbox definition id
+     */
+    public Map<Long, List<QuestionAnswer>> findQuestionsAnswersOfAssessment(Long trainingRunId) {
+        return questionAnswerRepository.getAllByTrainingRunId(trainingRunId).stream()
+                .collect(Collectors.groupingBy(questionAnswer -> questionAnswer.getQuestion().getAssessmentLevel().getId()));
     }
 }
