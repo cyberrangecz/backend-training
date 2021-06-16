@@ -41,6 +41,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -273,17 +274,35 @@ public class VisualizationFacade {
     }
 
     /**
-     * Gather all the necessary information about the training instance to display clustering visualizations.
+     * Gather all the necessary information for organizer to display clustering visualizations.
      *
-     * @param trainingInstanceId id of Training Instance to gets info.
+     * @param trainingInstanceId id of training instance.
      * @return data for clustering visualizations.
      */
     @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
             "or @securityService.isOrganizerOfGivenTrainingInstance(#trainingInstanceId)")
     @TransactionalRO
-    public ClusteringVisualizationDTO getClusteringVisualizations(Long trainingInstanceId) {
-        TrainingInstanceData trainingInstanceData = getTrainingInstanceData(trainingInstanceId,
-                elasticsearchApiService::getAggregatedEventsByLevelsAndTrainingRuns, this::retrieveRunsIdsFromEventsAggregatedByLevelsAndTrainingRuns);
+    public ClusteringVisualizationDTO getClusteringVisualizationsForOrganizer(Long trainingInstanceId) {
+        return getClusteringVisualizations(trainingInstanceId, null);
+    }
+
+    /**
+     * Gather all the necessary information for trainee to display clustering visualizations.
+     *
+     * @param trainingRunId id of training run.
+     * @return data for clustering visualizations.
+     */
+    @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
+            "or @securityService.isTraineeOfGivenTrainingRun(#trainingRunId)")
+    @TransactionalWO
+    public ClusteringVisualizationDTO getClusteringVisualizationsForTrainee(Long trainingRunId) {
+        TrainingRun trainingRun = trainingRunService.findByIdWithLevel(trainingRunId);
+        return getClusteringVisualizations(trainingRun.getTrainingInstance().getId(), trainingRun.getId());
+    }
+
+    private ClusteringVisualizationDTO getClusteringVisualizations(Long trainingInstanceId, Long userRefIdToAnonymize) {
+        TrainingInstanceData trainingInstanceData = getTrainingInstanceData(trainingInstanceId, elasticsearchApiService::getAggregatedEventsByLevelsAndTrainingRuns,
+                this::retrieveRunsIdsFromEventsAggregatedByLevelsAndTrainingRuns, userRefIdToAnonymize);
         TrainingInstanceStatistics trainingInstanceStatistics = new TrainingInstanceStatistics();
         // Must be before getFinalResultsField() because of statistics
         List<ClusteringLevelDTO> levelsField = new ArrayList<>();
@@ -295,17 +314,35 @@ public class VisualizationFacade {
     }
 
     /**
-     * Gather all the necessary information about the training instance to display table visualizations.
+     * Gather all the necessary information for organizer to display table visualizations.
      *
-     * @param trainingInstanceId id of Training Instance to gets info.
+     * @param trainingInstanceId id of training instance.
      * @return data for table visualizations.
      */
     @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
             "or @securityService.isOrganizerOfGivenTrainingInstance(#trainingInstanceId)")
     @TransactionalRO
-    public List<PlayerDataDTO> getTableVisualizations(Long trainingInstanceId) {
+    public List<PlayerDataDTO> getTableVisualizationsForOrganizer(Long trainingInstanceId) {
+        return getTableVisualizations(trainingInstanceId, null);
+    }
+
+    /**
+     * Gather all the necessary information for trainee to display table visualizations.
+     *
+     * @param trainingRunId id of training run.
+     * @return data for table visualizations.
+     */
+    @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
+            "or @securityService.isTraineeOfGivenTrainingRun(#trainingRunId)")
+    @TransactionalWO
+    public List<PlayerDataDTO> getTableVisualizationsForTrainee(Long trainingRunId) {
+        TrainingRun trainingRun = trainingRunService.findByIdWithLevel(trainingRunId);
+        return getTableVisualizations(trainingRun.getTrainingInstance().getId(), trainingRun.getId());
+    }
+
+    private List<PlayerDataDTO> getTableVisualizations(Long trainingInstanceId, Long userRefIdToAnonymize) {
         TrainingInstanceData trainingInstanceData = getTrainingInstanceData(trainingInstanceId,
-                elasticsearchApiService::getAggregatedEventsByTrainingRunsAndLevels, this::retrieveRunIdsFromEventsAggregatedByRunsAndLevels);
+                elasticsearchApiService::getAggregatedEventsByTrainingRunsAndLevels, this::retrieveRunIdsFromEventsAggregatedByRunsAndLevels, userRefIdToAnonymize);
 
         return trainingInstanceData.events.entrySet().stream().map(runEvents -> {
             AbstractAuditPOJO lastLevelEvent = null;
@@ -338,8 +375,8 @@ public class VisualizationFacade {
             "or @securityService.isOrganizerOfGivenTrainingInstance(#trainingInstanceId)")
     @TransactionalRO
     public List<LevelTabsLevelDTO> getLevelTabsVisualizations(Long trainingInstanceId) {
-        TrainingInstanceData trainingInstanceData = getTrainingInstanceData(trainingInstanceId,
-                elasticsearchApiService::getAggregatedEventsByLevelsAndTrainingRuns, this::retrieveRunsIdsFromEventsAggregatedByLevelsAndTrainingRuns);
+        TrainingInstanceData trainingInstanceData = getTrainingInstanceData(trainingInstanceId, elasticsearchApiService::getAggregatedEventsByLevelsAndTrainingRuns,
+                this::retrieveRunsIdsFromEventsAggregatedByLevelsAndTrainingRuns, null);
         List<LevelTabsLevelDTO> levelTabsData = new ArrayList<>();
         for (AbstractLevel level : trainingInstanceData.levels) {
             levelTabsData.add(mapToLevelTabsLevelDTO(level, trainingInstanceData));
@@ -348,7 +385,7 @@ public class VisualizationFacade {
     }
 
     /**
-     * Gather all the necessary information about the training instance to display timeline visualizations.
+     * Gather all the necessary information for organizer to display timeline visualizations.
      *
      * @param trainingInstanceId id of Training Instance to gets info.
      * @return data for clustering visualizations.
@@ -356,9 +393,27 @@ public class VisualizationFacade {
     @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
             "or @securityService.isOrganizerOfGivenTrainingInstance(#trainingInstanceId)")
     @TransactionalRO
-    public TimelineDTO getTimelineVisualizations(Long trainingInstanceId) {
-        TrainingInstanceData trainingInstanceData = getTrainingInstanceData(trainingInstanceId,
-                elasticsearchApiService::getAggregatedEventsByTrainingRunsAndLevels, this::retrieveRunIdsFromEventsAggregatedByRunsAndLevels);
+    public TimelineDTO getTimelineVisualizationsForTrainingInstance(Long trainingInstanceId) {
+        return getTimelineVisualizations(trainingInstanceId, null);
+    }
+
+    /**
+     * Gather all the necessary information for trainee to display timeline visualizations.
+     *
+     * @param trainingRunId id of training run.
+     * @return data for clustering visualizations.
+     */
+    @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
+            "or @securityService.isTraineeOfGivenTrainingRun(#trainingRunId)")
+    @TransactionalWO
+    public TimelineDTO getTimelineVisualizationsForTrainee(Long trainingRunId) {
+        TrainingRun trainingRun = trainingRunService.findByIdWithLevel(trainingRunId);
+        return getTimelineVisualizations(trainingRun.getTrainingInstance().getId(), trainingRun.getId());
+    }
+
+    private TimelineDTO getTimelineVisualizations(Long trainingInstanceId, Long userRefIdToAnonymize) {
+        TrainingInstanceData trainingInstanceData = getTrainingInstanceData(trainingInstanceId, elasticsearchApiService::getAggregatedEventsByTrainingRunsAndLevels,
+                this::retrieveRunIdsFromEventsAggregatedByRunsAndLevels, userRefIdToAnonymize);
 
         TimelineDTO timelineDTO = new TimelineDTO();
         timelineDTO.setEstimatedTime(TimeUnit.MINUTES.toMillis(trainingInstanceData.trainingDefinition.getEstimatedDuration()));
@@ -548,7 +603,8 @@ public class VisualizationFacade {
 
     private TrainingInstanceData getTrainingInstanceData(Long trainingInstanceId,
                                                          Function<TrainingInstance, Map<Long, Map<Long, List<AbstractAuditPOJO>>>> aggregatedEventsFunction,
-                                                         Function<Map<Long, Map<Long, List<AbstractAuditPOJO>>>, Set<Long>> trainingRunsIdsRetrieveFunction) {
+                                                         Function<Map<Long, Map<Long, List<AbstractAuditPOJO>>>, Set<Long>> trainingRunsIdsRetrieveFunction,
+                                                         @Nullable Long currentTrainingRunId) {
         TrainingInstanceData trainingInstanceData = new TrainingInstanceData();
         trainingInstanceData.trainingInstance = trainingInstanceService.findById(trainingInstanceId);
         trainingInstanceData.trainingDefinition = trainingInstanceData.trainingInstance.getTrainingDefinition();
@@ -566,9 +622,23 @@ public class VisualizationFacade {
                 .getContent()
                 .stream()
                 .collect(Collectors.toMap(UserRefDTO::getUserRefId, Function.identity()));
+
+        if (currentTrainingRunId != null) {
+            participantsByIds.values().forEach(userRefDTO -> this.anonymizeTheUsers(userRefDTO, "other player"));
+        }
         trainingInstanceData.participantsByTrainingRuns = trainingRuns.stream()
                 .collect(Collectors.toMap(TrainingRun::getId, trainingRun -> participantsByIds.get(trainingRun.getParticipantRef().getId())));
+        if (currentTrainingRunId != null) {
+            this.anonymizeTheUsers(trainingInstanceData.participantsByTrainingRuns.get(currentTrainingRunId), "you");
+        }
         return trainingInstanceData;
+    }
+
+    private void anonymizeTheUsers(UserRefDTO participant, String anonymizedName) {
+        participant.setUserRefFamilyName(anonymizedName);
+        participant.setUserRefFullName(anonymizedName);
+        participant.setUserRefGivenName(anonymizedName);
+        participant.setUserRefSub(anonymizedName);
     }
 
     private Set<Long> retrieveRunsIdsFromEventsAggregatedByLevelsAndTrainingRuns(Map<Long, Map<Long, List<AbstractAuditPOJO>>> events) {

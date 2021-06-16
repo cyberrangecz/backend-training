@@ -183,15 +183,15 @@ public class VisualizationRestController {
     }
 
     /**
-     * Get data for clustering visualizations.
+     * Get data for clustering visualizations available for organizer.
      *
      * @param trainingInstanceId id of training instance.
      * @return data for clustering visualizations.
      */
     @ApiOperation(httpMethod = "GET",
-            value = "Get necessary visualization info for training instance.",
+            value = "Get necessary clustering visualization data for organizer.",
             response = ClusteringVisualizationDTO.class,
-            nickname = "getClusteringVisualizations",
+            nickname = "getClusteringVisualizationsForOrganizer",
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     @ApiResponses(value = {
@@ -200,22 +200,46 @@ public class VisualizationRestController {
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiError.class)
     })
     @GetMapping(path = "/training-instances/{instanceId}/clustering", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<ClusteringVisualizationDTO> getClusteringVisualizations(@ApiParam(value = "Training instance ID", required = true)
+    public ResponseEntity<ClusteringVisualizationDTO> getClusteringVisualizationsForOrganizer(@ApiParam(value = "Training instance ID", required = true)
                                                                                   @PathVariable("instanceId") Long trainingInstanceId) {
-        ClusteringVisualizationDTO clusteringVisualizationDTO = visualizationFacade.getClusteringVisualizations(trainingInstanceId);
+        ClusteringVisualizationDTO clusteringVisualizationDTO = visualizationFacade.getClusteringVisualizationsForOrganizer(trainingInstanceId);
         return ResponseEntity.ok(clusteringVisualizationDTO);
     }
 
     /**
-     * Get data for table dat visualizations.
+     * Get data for clustering visualizations available for trainee.
+     *
+     * @param trainingRunId id of training run.
+     * @return data for clustering visualizations.
+     */
+    @ApiOperation(httpMethod = "GET",
+            value = "Get necessary clustering visualization data for trainee.",
+            response = ClusteringVisualizationDTO.class,
+            nickname = "getClusteringVisualizationsForTrainee",
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Data for visualization found.", response = ClusteringVisualizationDTO.class),
+            @ApiResponse(code = 404, message = "Training run with given id not found.", response = ApiError.class),
+            @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiError.class)
+    })
+    @GetMapping(path = "/training-runs/{runId}/clustering", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<ClusteringVisualizationDTO> getClusteringVisualizationsForTrainee(@ApiParam(value = "Training run ID", required = true)
+                                                                                  @PathVariable("runId") Long trainingRunId) {
+        ClusteringVisualizationDTO clusteringVisualizationDTO = visualizationFacade.getClusteringVisualizationsForTrainee(trainingRunId);
+        return ResponseEntity.ok(clusteringVisualizationDTO);
+    }
+
+    /**
+     * Get data for table visualizations available for organizer.
      *
      * @param trainingInstanceId id of training instance.
      * @return data for timeline visualizations.
      */
     @ApiOperation(httpMethod = "GET",
-            value = "Get necessary table visualization info for training instance.",
+            value = "Get necessary table visualization data for organizer.",
             response = PlayerDataDTO[].class,
-            nickname = "getTableVisualizations",
+            nickname = "getTableVisualizationsForOrganizer",
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     @ApiResponses(value = {
@@ -224,9 +248,33 @@ public class VisualizationRestController {
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiError.class)
     })
     @GetMapping(path = "/training-instances/{instanceId}/table", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<PlayerDataDTO>> getTableVisualizations(@ApiParam(value = "Training instance ID", required = true)
+    public ResponseEntity<List<PlayerDataDTO>> getTableVisualizationsForOrganizer(@ApiParam(value = "Training instance ID", required = true)
                                                                       @PathVariable("instanceId") Long trainingInstanceId) {
-        List<PlayerDataDTO> tableVisualizationsDTO = visualizationFacade.getTableVisualizations(trainingInstanceId);
+        List<PlayerDataDTO> tableVisualizationsDTO = visualizationFacade.getTableVisualizationsForOrganizer(trainingInstanceId);
+        return ResponseEntity.ok(tableVisualizationsDTO);
+    }
+
+    /**
+     * Get data for table dat visualizations.
+     *
+     * @param runId id of training run.
+     * @return data for timeline visualizations.
+     */
+    @ApiOperation(httpMethod = "GET",
+            value = "Get necessary table visualization data for trainee.",
+            response = PlayerDataDTO[].class,
+            nickname = "getTableVisualizationsForTrainee",
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Data for visualization found.", response = PlayerDataDTO[].class),
+            @ApiResponse(code = 404, message = "Training run with given id not found.", response = ApiError.class),
+            @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiError.class)
+    })
+    @GetMapping(path = "/training-runs/{runId}/table", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<PlayerDataDTO>> getTableVisualizationsForTrainee(@ApiParam(value = "Training run ID", required = true)
+                                                                      @PathVariable("runId") Long runId) {
+        List<PlayerDataDTO> tableVisualizationsDTO = visualizationFacade.getTableVisualizationsForTrainee(runId);
         return ResponseEntity.ok(tableVisualizationsDTO);
     }
 
@@ -255,15 +303,15 @@ public class VisualizationRestController {
     }
 
     /**
-     * Get data for timeline visualizations.
+     * Get data for timeline visualizations available for organizer.
      *
      * @param trainingInstanceId id of training instance.
      * @return data for timeline visualizations.
      */
     @ApiOperation(httpMethod = "GET",
-            value = "Get necessary timeline visualization info for training instance.",
+            value = "Get necessary timeline visualization data for organizer.",
             response = TimelineDTO.class,
-            nickname = "getTimelineVisualizations",
+            nickname = "getTimelineVisualizationsForOrganizer",
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     @ApiResponses(value = {
@@ -272,9 +320,33 @@ public class VisualizationRestController {
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiError.class)
     })
     @GetMapping(path = "/training-instances/{instanceId}/timeline", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<TimelineDTO> getTimelineVisualizations(@ApiParam(value = "Training instance ID", required = true)
+    public ResponseEntity<TimelineDTO> getTimelineVisualizationsForOrganizer(@ApiParam(value = "Training instance ID", required = true)
                                                                  @PathVariable("instanceId") Long trainingInstanceId) {
-        TimelineDTO timelineVisualizationDTO = visualizationFacade.getTimelineVisualizations(trainingInstanceId);
+        TimelineDTO timelineVisualizationDTO = visualizationFacade.getTimelineVisualizationsForTrainingInstance(trainingInstanceId);
+        return ResponseEntity.ok(timelineVisualizationDTO);
+    }
+
+    /**
+     * Get data for timeline visualizations available for trainee.
+     *
+     * @param runId id of training run.
+     * @return data for timeline visualizations.
+     */
+    @ApiOperation(httpMethod = "GET",
+            value = "Get necessary timeline visualization data for trainee.",
+            response = TimelineDTO.class,
+            nickname = "getTimelineVisualizationsForTrainee",
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Data for visualization found.", response = TimelineDTO.class),
+            @ApiResponse(code = 404, message = "Training run with given id not found.", response = ApiError.class),
+            @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiError.class)
+    })
+    @GetMapping(path = "/training-runs/{runId}/timeline", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<TimelineDTO> getTimelineVisualizationsForTrainee(@ApiParam(value = "Training run ID", required = true)
+                                                                 @PathVariable("runId") Long runId) {
+        TimelineDTO timelineVisualizationDTO = visualizationFacade.getTimelineVisualizationsForTrainee(runId);
         return ResponseEntity.ok(timelineVisualizationDTO);
     }
 
