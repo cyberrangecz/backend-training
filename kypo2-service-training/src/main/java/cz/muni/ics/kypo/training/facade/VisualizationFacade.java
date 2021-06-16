@@ -186,7 +186,7 @@ public class VisualizationFacade {
     @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
             "or @securityService.isOrganizerOfGivenTrainingInstance(#trainingInstanceId)")
     @TransactionalRO
-    public VisualizationProgressDTO getProgressVisualizationAboutTrainingInstance(Long trainingInstanceId) {
+    public VisualizationProgressDTO getProgressVisualization(Long trainingInstanceId) {
         TrainingInstance trainingInstance = trainingInstanceService.findById(trainingInstanceId);
         TrainingDefinition trainingDefinitionOfTrainingRun = trainingInstance.getTrainingDefinition();
 
@@ -213,7 +213,7 @@ public class VisualizationFacade {
         List<PlayerProgress> playerProgresses = new ArrayList<>();
         for (Map.Entry<Long, Map<Long, List<AbstractAuditPOJO>>> userEvents : eventsFromElasticsearch.entrySet()) {
             PlayerProgress playerProgress = new PlayerProgress();
-            playerProgress.setUserRefId(userEvents.getKey());
+            playerProgress.setTrainingRunId(userEvents.getKey());
 
             for (Map.Entry<Long, List<AbstractAuditPOJO>> levelEvents : userEvents.getValue().entrySet()) {
                 List<AbstractAuditPOJO> events = levelEvents.getValue();
@@ -236,7 +236,7 @@ public class VisualizationFacade {
                     levelProgress.setEndTime(events.get(levelCompletedEventIndex).getTimestamp());
                 }
                 levelProgress.setEvents(events);
-                playerProgress.setTrainingRunId(events.get(0).getTrainingRunId());
+                playerProgress.setUserRefId(events.get(0).getUserRefId());
                 playerProgress.addLevelProgress(levelProgress);
             }
             playerProgresses.add(playerProgress);

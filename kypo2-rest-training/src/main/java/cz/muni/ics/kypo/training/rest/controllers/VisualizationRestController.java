@@ -296,9 +296,9 @@ public class VisualizationRestController {
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiError.class)
     })
     @GetMapping(path = "/training-instances/{instanceId}/progress", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Object> gatherVisualizationInfoForTrainingInstanceProgress(@ApiParam(value = "Training instance ID", required = true)
+    public ResponseEntity<Object> getProgressVisualizations(@ApiParam(value = "Training instance ID", required = true)
                                                                                      @PathVariable("instanceId") Long trainingInstanceId) {
-        VisualizationProgressDTO visualizationProgressDTO = visualizationFacade.getProgressVisualizationAboutTrainingInstance(trainingInstanceId);
+        VisualizationProgressDTO visualizationProgressDTO = visualizationFacade.getProgressVisualization(trainingInstanceId);
         return ResponseEntity.ok(SquigglyUtils.stringify(objectMapper, visualizationProgressDTO));
     }
 }
