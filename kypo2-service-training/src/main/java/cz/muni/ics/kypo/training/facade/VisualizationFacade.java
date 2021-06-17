@@ -346,19 +346,29 @@ public class VisualizationFacade {
 
         return trainingInstanceData.events.entrySet().stream().map(runEvents -> {
             AbstractAuditPOJO lastLevelEvent = null;
+            int unfinishedAssessmentLevelScore = 0;
+            int unfinishedGameLevelScore = 0;
+            AbstractLevel unfinishedLevel = null;
             UserRefDTO participantInfo = trainingInstanceData.participantsByTrainingRuns.get(runEvents.getKey());
             TablePlayerDTO tablePlayerDataDTO = new TablePlayerDTO(participantInfo, runEvents.getKey());
 
             for (AbstractLevel abstractLevel : trainingInstanceData.levels) {
                 List<AbstractAuditPOJO> levelEvents = runEvents.getValue().get(abstractLevel.getId());
-                if (levelEvents == null) {
-                    break;
+                if (levelEvents != null) {
+                    lastLevelEvent = levelEvents.get(levelEvents.size() - 1);
+                    unfinishedLevel = abstractLevel;
+                } else {
+                    levelEvents = Collections.emptyList();
                 }
-                lastLevelEvent = levelEvents.get(levelEvents.size() - 1);
-                tablePlayerDataDTO.addTableLevel(mapToTableLevelDTO(abstractLevel.getId(), abstractLevel.getOrder(), levelEvents));
+                tablePlayerDataDTO.addTableLevel(mapToTableLevelDTO(abstractLevel, levelEvents));
             }
-            tablePlayerDataDTO.setGameScore(lastLevelEvent == null ? 0 : lastLevelEvent.getTotalGameScore());
-            tablePlayerDataDTO.setAssessmentScore(lastLevelEvent == null ? 0 : lastLevelEvent.getTotalAssessmentScore());
+            if (!(lastLevelEvent instanceof TrainingRunEnded) && unfinishedLevel instanceof GameLevel) {
+                unfinishedGameLevelScore = lastLevelEvent.getActualScoreInLevel();
+            } else if (!(lastLevelEvent instanceof TrainingRunEnded) && unfinishedLevel instanceof AssessmentLevel) {
+                unfinishedAssessmentLevelScore = lastLevelEvent.getActualScoreInLevel();
+            }
+            tablePlayerDataDTO.setGameScore(lastLevelEvent == null ? 0 : lastLevelEvent.getTotalGameScore() + unfinishedGameLevelScore);
+            tablePlayerDataDTO.setAssessmentScore(lastLevelEvent == null ? 0 : lastLevelEvent.getTotalAssessmentScore() + unfinishedAssessmentLevelScore);
             tablePlayerDataDTO.setFinished(lastLevelEvent instanceof TrainingRunEnded);
             tablePlayerDataDTO.setTrainingTime(lastLevelEvent == null ? 0 : lastLevelEvent.getGameTime());
             return tablePlayerDataDTO;
@@ -438,9 +448,7 @@ public class VisualizationFacade {
                                                      TrainingInstanceStatistics trainingInstanceStatistics) {
         AbstractAuditPOJO firstEvent = runEvents.getValue().get(levels.get(0).getId()).get(0);
         ProcessedLevelsData processedLevelsData = getProcessedLevelsData(levels, runEvents);
-        if (processedLevelsData.lastLevelEvent instanceof TrainingRunEnded) {
-            trainingInstanceStatistics.addFinishedTrainingRun((TrainingRunEnded) processedLevelsData.lastLevelEvent);
-        }
+        trainingInstanceStatistics.addTrainingRun(processedLevelsData.lastLevelEvent);
         int gameScore = processedLevelsData.lastLevelEvent.getTotalGameScore();
         int assessmentScore = processedLevelsData.lastLevelEvent.getTotalAssessmentScore();
 
@@ -507,21 +515,23 @@ public class VisualizationFacade {
 
     }
 
-    private TableLevelDTO mapToTableLevelDTO(Long levelId, int levelOrder, List<AbstractAuditPOJO> levelEvents) {
+    private TableLevelDTO mapToTableLevelDTO(AbstractLevel abstractLevel, List<AbstractAuditPOJO> levelEvents) {
         TableLevelDTO.TableLevelBuilder tableLevelBuilder = new TableLevelDTO.TableLevelBuilder()
-                .id(levelId)
-                .order(levelOrder);
-        int levelStartedEventIndex = levelEvents.get(0) instanceof LevelStarted ? 0 : 1;
+                .id(abstractLevel.getId())
+                .order(abstractLevel.getOrder());
+        AbstractAuditPOJO lastLevelEvent = levelEvents.isEmpty() ? null : levelEvents.get(levelEvents.size() -1);
+        if (!levelEvents.isEmpty()) {
+            tableLevelBuilder.score(lastLevelEvent.getActualScoreInLevel());
+        }
 
-        if (((LevelStarted) levelEvents.get(levelStartedEventIndex)).getLevelType() == cz.muni.csirt.kypo.events.trainings.enums.LevelType.GAME) {
+        if (abstractLevel instanceof GameLevel) {
             tableLevelBuilder.levelType(cz.muni.ics.kypo.training.api.enums.LevelType.GAME_LEVEL);
             countHintsTakenAndWrongFlags(tableLevelBuilder, levelEvents);
-        } else if (((LevelStarted) levelEvents.get(levelStartedEventIndex)).getLevelType() == cz.muni.csirt.kypo.events.trainings.enums.LevelType.ASSESSMENT) {
+        } else if (abstractLevel instanceof AssessmentLevel) {
             tableLevelBuilder.levelType(cz.muni.ics.kypo.training.api.enums.LevelType.ASSESSMENT_LEVEL);
-        } else if (((LevelStarted) levelEvents.get(levelStartedEventIndex)).getLevelType() == cz.muni.csirt.kypo.events.trainings.enums.LevelType.INFO) {
+        } else if (abstractLevel instanceof InfoLevel) {
             tableLevelBuilder.levelType(cz.muni.ics.kypo.training.api.enums.LevelType.INFO_LEVEL);
         }
-        tableLevelBuilder.score(levelEvents.get(levelEvents.size() - 1).getActualScoreInLevel());
         return tableLevelBuilder.build();
 
     }
@@ -549,12 +559,11 @@ public class VisualizationFacade {
             UserRefDTO participantInfo = trainingInstanceData.participantsByTrainingRuns.get(trainingRunLevelEvents.getKey());
             ClusteringLevelPlayerDTO playerDataDTOForLevel = new ClusteringLevelPlayerDTO(participantInfo, trainingRunLevelEvents.getKey(),
                     lastLevelEvent.getGameTime() - firstLevelEvent.getGameTime(), lastLevelEvent.getActualScoreInLevel(), lastLevelEvent instanceof LevelCompleted);
-            if (lastLevelEvent instanceof LevelCompleted || lastLevelEvent instanceof TrainingRunEnded) {
-                levelStatistics.updateStatistics(playerDataDTOForLevel.getTrainingTime(), playerDataDTOForLevel.getParticipantLevelScore());
-
-                if (lastLevelEvent instanceof TrainingRunEnded) {
-                    trainingInstanceStatistics.addFinishedTrainingRun((TrainingRunEnded) lastLevelEvent);
-                }
+//            if (lastLevelEvent instanceof LevelCompleted || lastLevelEvent instanceof TrainingRunEnded) {
+            levelStatistics.updateStatistics(playerDataDTOForLevel.getTrainingTime(), playerDataDTOForLevel.getParticipantLevelScore());
+//            }
+            if (!(lastLevelEvent instanceof LevelCompleted)) {
+                trainingInstanceStatistics.addTrainingRun(lastLevelEvent);
             }
             trainingInstanceStatistics.lastEventsOfTrainingRuns.put(playerDataDTOForLevel.getTrainingRunId(), lastLevelEvent);
             clusteringLevelBuilder.addPlayerData(playerDataDTOForLevel);
@@ -736,7 +745,7 @@ public class VisualizationFacade {
         int maxAssessmentScore;
         Map<Long, AbstractAuditPOJO> lastEventsOfTrainingRuns = new HashMap<>();
 
-        public void addFinishedTrainingRun(TrainingRunEnded lastLevelEvent) {
+        public void addTrainingRun(AbstractAuditPOJO lastLevelEvent) {
             this.sumOfTrainingRunsTime += lastLevelEvent.getGameTime();
             this.sumOfTrainingRunsGameScore += lastLevelEvent.getTotalGameScore();
             this.sumOfTrainingRunsAssessmentScore += lastLevelEvent.getTotalAssessmentScore();

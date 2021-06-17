@@ -5,7 +5,7 @@ import cz.muni.ics.kypo.training.api.enums.LevelType;
 
 import java.util.Objects;
 
-@JsonInclude(JsonInclude.Include.NON_EMPTY)
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public abstract class VisualizationAbstractLevelDTO {
     private Long id;
     private int order;
