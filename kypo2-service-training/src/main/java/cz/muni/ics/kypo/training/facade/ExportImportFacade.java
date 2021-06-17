@@ -1,5 +1,6 @@
 package cz.muni.ics.kypo.training.facade;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.core.util.MinimalPrettyPrinter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import cz.muni.csirt.kypo.events.trainings.LevelStarted;
@@ -14,8 +15,10 @@ import cz.muni.ics.kypo.training.api.dto.export.ExportTrainingDefinitionAndLevel
 import cz.muni.ics.kypo.training.api.dto.export.FileToReturnDTO;
 import cz.muni.ics.kypo.training.api.dto.imports.*;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionByIdDTO;
+import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionDTO;
 import cz.muni.ics.kypo.training.api.enums.LevelType;
 import cz.muni.ics.kypo.training.api.enums.TDState;
+import cz.muni.ics.kypo.training.api.responses.PageResultResource;
 import cz.muni.ics.kypo.training.api.responses.SandboxDefinitionInfo;
 import cz.muni.ics.kypo.training.exceptions.BadRequestException;
 import cz.muni.ics.kypo.training.exceptions.EntityErrorDetail;
@@ -26,6 +29,7 @@ import cz.muni.ics.kypo.training.mapping.mapstruct.LevelMapper;
 import cz.muni.ics.kypo.training.mapping.mapstruct.TrainingDefinitionMapper;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.model.enums.AssessmentType;
+import cz.muni.ics.kypo.training.persistence.model.enums.QuestionType;
 import cz.muni.ics.kypo.training.persistence.model.question.ExtendedMatchingOption;
 import cz.muni.ics.kypo.training.persistence.model.question.ExtendedMatchingStatement;
 import cz.muni.ics.kypo.training.persistence.model.question.Question;
@@ -315,6 +319,12 @@ public class ExportImportFacade {
             Map<Long, QuestionAnswersDetailsDTO> questionAnswersDetails = assessmentsDetails.getOrDefault(questionsAnswersByAssessment.getKey(), new HashMap<>());
             for(QuestionAnswer questionAnswer : questionsAnswersByAssessment.getValue()) {
                 Question question = questionAnswer.getQuestion();
+                if (question.getQuestionType() == QuestionType.EMI) {
+                    Set<QuestionEMIAnswer> emiAnswers = objectMapper.readValue(questionAnswer.getAnswers().toString(), new TypeReference<Set<QuestionEMIAnswer>>() {});
+                    questionAnswer.setAnswers(emiAnswers.stream()
+                            .map(emiAnswer -> this.mapEmiAnswerToString(question, emiAnswer))
+                            .collect(Collectors.toSet()));
+                }
                 if (!questionAnswersDetails.containsKey(question.getId())) {
                     questionAnswersDetails.put(question.getId(), new QuestionAnswersDetailsDTO(questionAnswer.getQuestion().getText()));
                 }
@@ -325,6 +335,11 @@ public class ExportImportFacade {
             assessmentsDetails.putIfAbsent(questionsAnswersByAssessment.getKey(), questionAnswersDetails);
 
         }
+    }
+
+    private String mapEmiAnswerToString(Question question, QuestionEMIAnswer emiAnswer) {
+        return "{ statement: '" + question.getExtendedMatchingStatements().get(emiAnswer.getStatementOrder()).getText()
+             + "', option: '" + question.getExtendedMatchingOptions().get(emiAnswer.getOptionOrder()).getText()+ "' }";
     }
 
     private void writeConsoleCommands(ZipOutputStream zos, Integer sandboxId, List<Map<String, Object>> consoleCommands) throws IOException {
