@@ -1,1 +1,1 @@
-1.1.67 Removed max score validation when updating the assessment level.
+1.1.68 Export answers to the questions in an aggregated way, new endpoints to get overview visualization for trainee, bugifx - id of the user in progress visualization, bugfix - repaired clustering and table visualization data.
