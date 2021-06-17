@@ -297,7 +297,7 @@ public class VisualizationFacade {
     @TransactionalWO
     public ClusteringVisualizationDTO getClusteringVisualizationsForTrainee(Long trainingRunId) {
         TrainingRun trainingRun = trainingRunService.findByIdWithLevel(trainingRunId);
-        return getClusteringVisualizations(trainingRun.getTrainingInstance().getId(), trainingRun.getId());
+        return getClusteringVisualizations(trainingRun.getTrainingInstance().getId(), trainingRun.getParticipantRef().getUserRefId());
     }
 
     private ClusteringVisualizationDTO getClusteringVisualizations(Long trainingInstanceId, Long userRefIdToAnonymize) {
@@ -337,7 +337,7 @@ public class VisualizationFacade {
     @TransactionalWO
     public List<PlayerDataDTO> getTableVisualizationsForTrainee(Long trainingRunId) {
         TrainingRun trainingRun = trainingRunService.findByIdWithLevel(trainingRunId);
-        return getTableVisualizations(trainingRun.getTrainingInstance().getId(), trainingRun.getId());
+        return getTableVisualizations(trainingRun.getTrainingInstance().getId(), trainingRun.getParticipantRef().getUserRefId());
     }
 
     private List<PlayerDataDTO> getTableVisualizations(Long trainingInstanceId, Long userRefIdToAnonymize) {
@@ -408,7 +408,7 @@ public class VisualizationFacade {
     @TransactionalWO
     public TimelineDTO getTimelineVisualizationsForTrainee(Long trainingRunId) {
         TrainingRun trainingRun = trainingRunService.findByIdWithLevel(trainingRunId);
-        return getTimelineVisualizations(trainingRun.getTrainingInstance().getId(), trainingRun.getId());
+        return getTimelineVisualizations(trainingRun.getTrainingInstance().getId(), trainingRun.getParticipantRef().getUserRefId());
     }
 
     private TimelineDTO getTimelineVisualizations(Long trainingInstanceId, Long userRefIdToAnonymize) {
@@ -604,7 +604,7 @@ public class VisualizationFacade {
     private TrainingInstanceData getTrainingInstanceData(Long trainingInstanceId,
                                                          Function<TrainingInstance, Map<Long, Map<Long, List<AbstractAuditPOJO>>>> aggregatedEventsFunction,
                                                          Function<Map<Long, Map<Long, List<AbstractAuditPOJO>>>, Set<Long>> trainingRunsIdsRetrieveFunction,
-                                                         @Nullable Long currentTrainingRunId) {
+                                                         @Nullable Long userRefIdToAnonymize) {
         TrainingInstanceData trainingInstanceData = new TrainingInstanceData();
         trainingInstanceData.trainingInstance = trainingInstanceService.findById(trainingInstanceId);
         trainingInstanceData.trainingDefinition = trainingInstanceData.trainingInstance.getTrainingDefinition();
@@ -616,25 +616,23 @@ public class VisualizationFacade {
                 .filter(trainingRun -> trainingRunsIdsFromEvents.contains(trainingRun.getId()))
                 .collect(Collectors.toSet());
         Set<Long> participantsIds = trainingRuns.stream()
-                .map(trainingRun -> trainingRun.getParticipantRef().getId())
+                .map(trainingRun -> trainingRun.getParticipantRef().getUserRefId())
                 .collect(Collectors.toSet());
         Map<Long, UserRefDTO> participantsByIds = userService.getUsersRefDTOByGivenUserIds(participantsIds, PageRequest.of(0, 999), null, null)
                 .getContent()
                 .stream()
                 .collect(Collectors.toMap(UserRefDTO::getUserRefId, Function.identity()));
 
-        if (currentTrainingRunId != null) {
-            participantsByIds.values().forEach(userRefDTO -> this.anonymizeTheUsers(userRefDTO, "other player"));
+        if (userRefIdToAnonymize != null && !participantsByIds.isEmpty()) {
+            participantsByIds.values().forEach(userRefDTO -> this.anonymizeTheUser(userRefDTO, "other player"));
+            this.anonymizeTheUser(participantsByIds.get(userRefIdToAnonymize), "you");
         }
         trainingInstanceData.participantsByTrainingRuns = trainingRuns.stream()
-                .collect(Collectors.toMap(TrainingRun::getId, trainingRun -> participantsByIds.get(trainingRun.getParticipantRef().getId())));
-        if (currentTrainingRunId != null) {
-            this.anonymizeTheUsers(trainingInstanceData.participantsByTrainingRuns.get(currentTrainingRunId), "you");
-        }
+                .collect(Collectors.toMap(TrainingRun::getId, trainingRun -> participantsByIds.get(trainingRun.getParticipantRef().getUserRefId())));
         return trainingInstanceData;
     }
 
-    private void anonymizeTheUsers(UserRefDTO participant, String anonymizedName) {
+    private void anonymizeTheUser(UserRefDTO participant, String anonymizedName) {
         participant.setUserRefFamilyName(anonymizedName);
         participant.setUserRefFullName(anonymizedName);
         participant.setUserRefGivenName(anonymizedName);
