@@ -1,7 +1,7 @@
 ---
 swagger: "2.0"
 info:
-  version: "Version: 1.1.67"
+  version: "Version: 1.1.68"
   title: "KYPO2 Training - API Reference"
 host: "localhost:8080"
 basePath: "/kypo2-rest-training/api/v1"
@@ -2350,9 +2350,9 @@ paths:
     get:
       tags:
       - "Visualizations"
-      summary: "Get necessary visualization info for training instance."
+      summary: "Get necessary clustering visualization data for organizer."
       description: ""
-      operationId: "getClusteringVisualizations"
+      operationId: "getClusteringVisualizationsForOrganizer"
       produces:
       - "application/json"
       parameters:
@@ -2474,9 +2474,9 @@ paths:
     get:
       tags:
       - "Visualizations"
-      summary: "Get necessary table visualization info for training instance."
+      summary: "Get necessary table visualization data for organizer."
       description: ""
-      operationId: "getTableVisualizations"
+      operationId: "getTableVisualizationsForOrganizer"
       produces:
       - "application/json"
       parameters:
@@ -2507,9 +2507,9 @@ paths:
     get:
       tags:
       - "Visualizations"
-      summary: "Get necessary timeline visualization info for training instance."
+      summary: "Get necessary timeline visualization data for organizer."
       description: ""
-      operationId: "getTimelineVisualizations"
+      operationId: "getTimelineVisualizationsForOrganizer"
       produces:
       - "application/json"
       parameters:
@@ -2592,6 +2592,101 @@ paths:
           description: "Visualization info found."
           schema:
             $ref: "#/definitions/VisualizationInfoDTO"
+        404:
+          description: "Training run with given id not found."
+          schema:
+            $ref: "#/definitions/ApiError"
+        500:
+          description: "Unexpected condition was encountered."
+          schema:
+            $ref: "#/definitions/ApiError"
+      security:
+      - bearerAuth: []
+  /visualizations/training-runs/{runId}/clustering:
+    get:
+      tags:
+      - "Visualizations"
+      summary: "Get necessary clustering visualization data for trainee."
+      description: ""
+      operationId: "getClusteringVisualizationsForTrainee"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "runId"
+        in: "path"
+        description: "Training run ID"
+        required: true
+        type: "integer"
+        format: "int64"
+      responses:
+        200:
+          description: "Data for visualization found."
+          schema:
+            $ref: "#/definitions/ClusteringVisualizationDTO"
+        404:
+          description: "Training run with given id not found."
+          schema:
+            $ref: "#/definitions/ApiError"
+        500:
+          description: "Unexpected condition was encountered."
+          schema:
+            $ref: "#/definitions/ApiError"
+      security:
+      - bearerAuth: []
+  /visualizations/training-runs/{runId}/table:
+    get:
+      tags:
+      - "Visualizations"
+      summary: "Get necessary table visualization data for trainee."
+      description: ""
+      operationId: "getTableVisualizationsForTrainee"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "runId"
+        in: "path"
+        description: "Training run ID"
+        required: true
+        type: "integer"
+        format: "int64"
+      responses:
+        200:
+          description: "Data for visualization found."
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/PlayerDataDTO"
+        404:
+          description: "Training run with given id not found."
+          schema:
+            $ref: "#/definitions/ApiError"
+        500:
+          description: "Unexpected condition was encountered."
+          schema:
+            $ref: "#/definitions/ApiError"
+      security:
+      - bearerAuth: []
+  /visualizations/training-runs/{runId}/timeline:
+    get:
+      tags:
+      - "Visualizations"
+      summary: "Get necessary timeline visualization data for trainee."
+      description: ""
+      operationId: "getTimelineVisualizationsForTrainee"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "runId"
+        in: "path"
+        description: "Training run ID"
+        required: true
+        type: "integer"
+        format: "int64"
+      responses:
+        200:
+          description: "Data for visualization found."
+          schema:
+            $ref: "#/definitions/TimelineDTO"
         404:
           description: "Training run with given id not found."
           schema:
