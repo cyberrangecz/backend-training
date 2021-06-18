@@ -1,7 +1,7 @@
 ---
 swagger: "2.0"
 info:
-  version: "Version: 1.1.69"
+  version: "Version: 1.1.70"
   title: "KYPO2 Training - API Reference"
 host: "localhost:8080"
 basePath: "/kypo2-rest-training/api/v1"
@@ -2807,11 +2807,6 @@ definitions:
         type: "string"
         example: "Game Level1"
         description: "Short textual description of the level."
-      maxScore:
-        type: "integer"
-        format: "int32"
-        example: 20
-        description: "The maximum score a participant can achieve during a level."
       levelType:
         type: "string"
         example: "GAME"
@@ -3578,6 +3573,11 @@ definitions:
           description: "List of attachments."
           items:
             $ref: "#/definitions/AttachmentImportDTO"
+        maxScore:
+          type: "integer"
+          format: "int32"
+          example: 20
+          description: "The maximum score a participant can achieve during a level."
       description: "Exported game level."
   GameLevelImportDTO:
     allOf:
