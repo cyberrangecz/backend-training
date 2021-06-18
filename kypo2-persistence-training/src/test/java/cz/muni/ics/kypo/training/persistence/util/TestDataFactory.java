@@ -70,7 +70,7 @@ public class TestDataFactory {
     private AssessmentLevelUpdateDTO assessmentLevelUpdateDTO = generateAssessmentLevelUpdateDTO("New Assessment Title",
              "New instructions", cz.muni.ics.kypo.training.api.enums.AssessmentType.QUESTIONNAIRE, 9);
     private AssessmentLevelImportDTO assessmentLevelImportDTO = generateAssessmentLevelImportDTO("Assessment level import", 15,
-            "Questions import", "Instructions import", cz.muni.ics.kypo.training.api.enums.AssessmentType.TEST, 22);
+            "Questions import", "Instructions import", cz.muni.ics.kypo.training.api.enums.AssessmentType.TEST);
     private AssessmentLevelDTO assessmentLevelDTO = generateAssessmentLevelDTO("Assessment DTO", 100, 12, "DTO questions",
             "DTO instructions", cz.muni.ics.kypo.training.api.enums.AssessmentType.TEST);
 
@@ -749,14 +749,13 @@ public class TestDataFactory {
     }
 
     private AssessmentLevelImportDTO generateAssessmentLevelImportDTO(String title, Integer estimatedDuration, String questions, String instructions,
-                                                                      cz.muni.ics.kypo.training.api.enums.AssessmentType type, int maxScore){
+                                                                      cz.muni.ics.kypo.training.api.enums.AssessmentType type){
         AssessmentLevelImportDTO assessmentLevelImportDTO = new AssessmentLevelImportDTO();
         assessmentLevelImportDTO.setTitle(title);
         assessmentLevelImportDTO.setEstimatedDuration(estimatedDuration);
         assessmentLevelImportDTO.setLevelType(LevelType.ASSESSMENT_LEVEL);
         assessmentLevelImportDTO.setInstructions(instructions);
         assessmentLevelImportDTO.setAssessmentType(type);
-        assessmentLevelImportDTO.setMaxScore(maxScore);
         return assessmentLevelImportDTO;
     }
 
