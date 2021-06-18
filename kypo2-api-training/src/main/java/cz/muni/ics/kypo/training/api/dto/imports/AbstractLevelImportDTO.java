@@ -28,11 +28,6 @@ public class AbstractLevelImportDTO {
 	@ApiModelProperty(value = "Short textual description of the level.", example = "Game Level1")
 	@NotEmpty(message = "{abstractLevel.title.NotEmpty.message}")
 	protected String title;
-	@ApiModelProperty(value = "The maximum score a participant can achieve during a level.", example = "20")
-	@NotNull(message = "{abstractLevel.maxScore.NotNull.message}")
-	@Min(value = 0, message = "{abstractLevel.maxScore.Min.message}")
-	@Max(value = 100, message = "{abstractLevel.maxScore.Max.message}")
-	protected int maxScore;
 	@ApiModelProperty(value = "Type of the level.", example = "GAME_LEVEL")
 	@NotNull(message = "{abstractLevel.type.NotNull.message}")
 	protected LevelType levelType;
@@ -65,24 +60,6 @@ public class AbstractLevelImportDTO {
 	 */
 	public void setTitle(String title) {
 		this.title = title;
-	}
-
-	/**
-	 * Gets max score.
-	 *
-	 * @return the max score
-	 */
-	public int getMaxScore() {
-		return maxScore;
-	}
-
-	/**
-	 * Sets max score.
-	 *
-	 * @param maxScore the max score
-	 */
-	public void setMaxScore(int maxScore) {
-		this.maxScore = maxScore;
 	}
 
 	/**
@@ -142,7 +119,7 @@ public class AbstractLevelImportDTO {
 	}
 
 	@Override public String toString() {
-		return "AbstractLevelImportDTO{" + "title='" + title + '\'' + ", maxScore=" + maxScore + ", levelType=" + levelType + ", order=" + order
+		return "AbstractLevelImportDTO{" + "title='" + title + '\'' + ", levelType=" + levelType + ", order=" + order
 				+ ", estimatedDuration=" + estimatedDuration + '}';
 	}
 }

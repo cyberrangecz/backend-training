@@ -42,6 +42,11 @@ public class GameLevelImportDTO extends AbstractLevelImportDTO{
 	@Valid
 	@ApiModelProperty(value = "List of attachments.", example = "[]")
 	private List<AttachmentImportDTO> attachments;
+	@ApiModelProperty(value = "The maximum score a participant can achieve during a level.", example = "20")
+	@NotNull(message = "{abstractLevel.maxScore.NotNull.message}")
+	@Min(value = 0, message = "{abstractLevel.maxScore.Min.message}")
+	@Max(value = 100, message = "{abstractLevel.maxScore.Max.message}")
+	protected int maxScore;
 
 	/**
 	 * Gets flag.
@@ -170,12 +175,31 @@ public class GameLevelImportDTO extends AbstractLevelImportDTO{
 		this.attachments = attachments;
 	}
 
+	/**
+	 * Gets max score.
+	 *
+	 * @return the max score
+	 */
+	public int getMaxScore() {
+		return maxScore;
+	}
+
+	/**
+	 * Sets max score.
+	 *
+	 * @param maxScore the max score
+	 */
+	public void setMaxScore(int maxScore) {
+		this.maxScore = maxScore;
+	}
+
 	@Override
 	public String toString() {
 		return "GameLevelImportDTO{" +
 				"flag='" + flag + '\'' +
 				", content='" + content + '\'' +
 				", solution='" + solution + '\'' +
+				", maxScore=" + maxScore +
 				", solutionPenalized=" + solutionPenalized +
 				", hints=" + hints +
 				", incorrectFlagLimit=" + incorrectFlagLimit +
