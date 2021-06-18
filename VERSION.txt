@@ -1,1 +1,1 @@
-1.1.68 Export answers to the questions in an aggregated way, new endpoints to get overview visualization for trainee, bugifx - id of the user in progress visualization, bugfix - repaired clustering and table visualization data.
+1.1.69 Fix import training definition - validation of the max score in assessment and info level.
