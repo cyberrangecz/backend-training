@@ -29,6 +29,8 @@ public class GameLevelExportDTO extends AbstractLevelExportDTO {
     private int incorrectFlagLimit;
     @ApiModelProperty(value = "List of attachments.", example = "[]")
     private List<AttachmentImportDTO> attachments;
+    @ApiModelProperty(value = "The maximum score a participant can achieve during a level.", example = "20")
+    protected int maxScore;
 
 
     /**
@@ -161,6 +163,24 @@ public class GameLevelExportDTO extends AbstractLevelExportDTO {
      */
     public void setAttachments(List<AttachmentImportDTO> attachments) {
         this.attachments = attachments;
+    }
+
+    /**
+     * Gets max score.
+     *
+     * @return the max score
+     */
+    public int getMaxScore() {
+        return maxScore;
+    }
+
+    /**
+     * Sets max score.
+     *
+     * @param maxScore the max score
+     */
+    public void setMaxScore(int maxScore) {
+        this.maxScore = maxScore;
     }
 
     @Override

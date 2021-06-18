@@ -17,8 +17,6 @@ public class AbstractLevelExportDTO {
 
     @ApiModelProperty(value = "Short textual description of the level.", example = "Game Level1")
     protected String title;
-    @ApiModelProperty(value = "The maximum score a participant can achieve during a level.", example = "20")
-    protected int maxScore;
     @ApiModelProperty(value = "Type of the level.", example = "GAME")
     protected LevelType levelType;
     @ApiModelProperty(value = "Order of level, starts with 0", example = "2")
@@ -47,24 +45,6 @@ public class AbstractLevelExportDTO {
      */
     public void setTitle(String title) {
         this.title = title;
-    }
-
-    /**
-     * Gets max score.
-     *
-     * @return the max score
-     */
-    public int getMaxScore() {
-        return maxScore;
-    }
-
-    /**
-     * Sets max score.
-     *
-     * @param maxScore the max score
-     */
-    public void setMaxScore(int maxScore) {
-        this.maxScore = maxScore;
     }
 
     /**
@@ -122,7 +102,7 @@ public class AbstractLevelExportDTO {
     }
 
     @Override public String toString() {
-        return "AbstractLevelExportDTO{" + "title='" + title + '\'' + ", maxScore=" + maxScore + ", levelType=" + levelType + ", order="
+        return "AbstractLevelExportDTO{" + "title='" + title + '\'' + ", levelType=" + levelType + ", order="
             + order + ", estimatedDuration=" + estimatedDuration + '}';
     }
 }
