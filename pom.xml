@@ -56,7 +56,7 @@
         <!-- Add glassfish jaxb dependency to move to the OpenJDK 11 -->
         <squiggly.filter.jackson.version>1.3.18</squiggly.filter.jackson.version>
 
-        <maven.surfare.plugin.version>2.22.0</maven.surfare.plugin.version>
+        <maven.surfare.plugin.version>3.0.0-M5</maven.surfare.plugin.version>
         <apt-maven-plugin.version>1.1.3</apt-maven-plugin.version>
         <!-- REST API filtering respons -->
         <squiggly.filter.jackson.version>1.3.11</squiggly.filter.jackson.version>
