@@ -73,11 +73,6 @@
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-test</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
             <scope>runtime</scope>
@@ -128,7 +123,7 @@
                             <basePath>/kypo2-rest-training/api/v1</basePath>
                             <info>
                                 <title>KYPO2 Training - API Reference</title>
-                                <version>Version: ${version}</version>
+                                <version>Version: ${project.version}</version>
                             </info>
                             <securityDefinitions>
                                 <securityDefinition>
