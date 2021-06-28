@@ -2,11 +2,11 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>cz.muni.ics.kypo</groupId>
-    <artifactId>kypo2-training</artifactId>
+    <artifactId>kypo-training</artifactId>
     <version>1.1.70</version>
     <packaging>pom</packaging>
 
-    <name>KYPO2 Training</name>
+    <name>KYP2 Training</name>
 
     <parent>
         <groupId>org.springframework.boot</groupId>
@@ -330,10 +330,10 @@
     </build>
 
     <modules>
-        <module>kypo2-persistence-training</module>
-        <module>kypo2-service-training</module>
-        <module>kypo2-rest-training</module>
-        <module>kypo2-elasticsearch-training</module>
-        <module>kypo2-api-training</module>
+        <module>kypo-persistence-training</module>
+        <module>kypo-service-training</module>
+        <module>kypo-rest-training</module>
+        <module>kypo-elasticsearch-training</module>
+        <module>kypo-api-training</module>
     </modules>
 </project>
