@@ -77,7 +77,7 @@ Those arguments can be overwritten during the build of the image, by adding the 
 ``` 
 
 #### 3. Start the Project
-Start the project by running docker container, but at first make sure that your ***OIDC Provider*** and [kypo-user-and-group](https://gitlab.ics.muni.cz/muni-kypo-crp/backend-java/kypo2-user-and-group) service is running. Instead of usage of the PostgreSQL database, you can use the in-memory database H2. It just depends on the provided configuration. To run a docker container, run the following command: 
+Start the project by running docker container, but at first make sure that your ***OIDC Provider*** and [kypo-user-and-group](https://gitlab.ics.muni.cz/muni-kypo-crp/backend-java/kypo-user-and-group) service is running. Instead of usage of the PostgreSQL database, you can use the in-memory database H2. It just depends on the provided configuration. To run a docker container, run the following command: 
 ```shell
 $  sudo docker run \
    --name training-container -it \
