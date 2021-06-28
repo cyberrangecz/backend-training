@@ -4,7 +4,7 @@ FROM maven:3.6.2-jdk-11-slim AS build
 ARG USERNAME=postgres
 ARG PASSWORD=postgres
 ARG POSTGRES_DB=training
-ARG PROJECT_ARTIFACT_ID=kypo2-rest-training
+ARG PROJECT_ARTIFACT_ID=kypo-rest-training
 
 ## default link to proprietary repository, e.g., Nexus repository
 ARG PROPRIETARY_REPO_URL=YOUR-PATH-TO-PROPRIETARY_REPO
@@ -26,10 +26,10 @@ COPY /etc/training.properties /app/etc/training.properties
 COPY supervisord.conf /app/supervisord.conf
 COPY entrypoint.sh /app/entrypoint.sh
 COPY pom.xml /app/pom.xml
-COPY kypo2-api-training /app/kypo2-api-training
-COPY kypo2-elasticsearch-training /app/kypo2-elasticsearch-training
-COPY kypo2-persistence-training /app/kypo2-persistence-training
-COPY kypo2-service-training /app/kypo2-service-training
+COPY kypo-api-training /app/kypo-api-training
+COPY kypo-elasticsearch-training /app/kypo-elasticsearch-training
+COPY kypo-persistence-training /app/kypo-persistence-training
+COPY kypo-service-training /app/kypo-service-training
 COPY $PROJECT_ARTIFACT_ID /app/$PROJECT_ARTIFACT_ID
 
 # build training
