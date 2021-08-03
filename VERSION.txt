@@ -1,1 +1,2 @@
+1.1.72 Renaming flag to answer, renaming game level to training level.
 1.1.71 KYPO2 renamed to KYPO.
