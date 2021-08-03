@@ -1,7 +1,7 @@
 package cz.muni.ics.kypo.training.api.dto.imports;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import cz.muni.ics.kypo.training.api.dto.export.AbstractLevelExportDTO;
-import cz.muni.ics.kypo.training.api.dto.hint.HintDTO;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
@@ -12,33 +12,35 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Encapsulates information about game level. Inherits from {@link AbstractLevelImportDTO}
+ * Encapsulates information about training level. Inherits from {@link AbstractLevelImportDTO}
  *
  */
-@ApiModel(value = "GameLevelImportDTO", description = "Imported game level.", parent = AbstractLevelExportDTO.class)
-public class GameLevelImportDTO extends AbstractLevelImportDTO{
+@ApiModel(value = "TrainingLevelImportDTO", description = "Imported training level.", parent = AbstractLevelExportDTO.class)
+public class TrainingLevelImportDTO extends AbstractLevelImportDTO{
 
-	@ApiModelProperty(value = "Keyword found in game, used for access next level.", example = "secretFlag")
-	@NotEmpty(message = "{gameLevel.flag.NotEmpty.message}")
-	@Size(max = 50, message = "{gameLevel.flag.Size.message}")
-	private String flag;
+	@ApiModelProperty(value = "Keyword found in training, used for access next level.", example = "secretAnswer")
+	@NotEmpty(message = "{trainingLevel.answer.NotEmpty.message}")
+	@Size(max = 50, message = "{trainingLevel.answer.Size.message}")
+	@JsonAlias({"flag"})
+	private String answer;
 	@ApiModelProperty(value = "The information and experiences that are directed towards a participant.", example = "Play me")
-	@NotEmpty(message = "{gameLevel.content.NotEmpty.message}")
+	@NotEmpty(message = "{trainingLevel.content.NotEmpty.message}")
 	private String content;
-	@ApiModelProperty(value = "Instruction how to get flag in game.", example = "This is how you do it")
-	@NotEmpty(message = "{gameLevel.solution.NotEmpty.message}")
+	@ApiModelProperty(value = "Instruction how to get answer in training.", example = "This is how you do it")
+	@NotEmpty(message = "{trainingLevel.solution.NotEmpty.message}")
 	private String solution;
 	@ApiModelProperty(value = "Sign if displaying of solution is penalized.", example = "true")
-	@NotNull(message = "{gameLevel.solutionPenalized.NotNull.message}")
+	@NotNull(message = "{trainingLevel.solutionPenalized.NotNull.message}")
 	private boolean solutionPenalized;
 	@Valid
 	@ApiModelProperty(value = "Information which helps player resolve the level.")
 	private Set<HintImportDTO> hints = new HashSet<>();
-	@ApiModelProperty(value = "How many times player can submit incorrect flag before displaying solution.", example = "5")
-	@NotNull(message = "{gameLevel.incorrectFlagLimit.NotNull.message}")
-	@Min(value = 0, message = "{gameLevel.incorrectFlagLimit.Min.message}")
-	@Max(value = 100, message = "{gameLevel.incorrectFlagLimit.Max.message}")
-	private int incorrectFlagLimit;
+	@ApiModelProperty(value = "How many times player can submit incorrect answer before displaying solution.", example = "5")
+	@NotNull(message = "{trainingLevel.incorrectAnswerLimit.NotNull.message}")
+	@Min(value = 0, message = "{trainingLevel.incorrectAnswerLimit.Min.message}")
+	@Max(value = 100, message = "{trainingLevel.incorrectAnswerLimit.Max.message}")
+	@JsonAlias({"incorrect_flag_limit"})
+	private int incorrectAnswerLimit;
 	@Valid
 	@ApiModelProperty(value = "List of attachments.", example = "[]")
 	private List<AttachmentImportDTO> attachments;
@@ -49,21 +51,21 @@ public class GameLevelImportDTO extends AbstractLevelImportDTO{
 	protected int maxScore;
 
 	/**
-	 * Gets flag.
+	 * Gets answer.
 	 *
-	 * @return the flag
+	 * @return the answer
 	 */
-	public String getFlag() {
-		return flag;
+	public String getAnswer() {
+		return answer;
 	}
 
 	/**
-	 * Sets flag.
+	 * Sets answer.
 	 *
-	 * @param flag the flag
+	 * @param answer the answer
 	 */
-	public void setFlag(String flag) {
-		this.flag = flag;
+	public void setAnswer(String answer) {
+		this.answer = answer;
 	}
 
 	/**
@@ -139,21 +141,21 @@ public class GameLevelImportDTO extends AbstractLevelImportDTO{
 	}
 
 	/**
-	 * Gets incorrect flag limit.
+	 * Gets incorrect answer limit.
 	 *
-	 * @return the incorrect flag limit
+	 * @return the incorrect answer limit
 	 */
-	public int getIncorrectFlagLimit() {
-		return incorrectFlagLimit;
+	public int getIncorrectAnswerLimit() {
+		return incorrectAnswerLimit;
 	}
 
 	/**
-	 * Sets incorrect flag limit.
+	 * Sets incorrect answer limit.
 	 *
-	 * @param incorrectFlagLimit the incorrect flag limit
+	 * @param incorrectAnswerLimit the incorrect answer limit
 	 */
-	public void setIncorrectFlagLimit(int incorrectFlagLimit) {
-		this.incorrectFlagLimit = incorrectFlagLimit;
+	public void setIncorrectAnswerLimit(int incorrectAnswerLimit) {
+		this.incorrectAnswerLimit = incorrectAnswerLimit;
 	}
 
 
@@ -195,14 +197,14 @@ public class GameLevelImportDTO extends AbstractLevelImportDTO{
 
 	@Override
 	public String toString() {
-		return "GameLevelImportDTO{" +
-				"flag='" + flag + '\'' +
+		return "TrainingLevelImportDTO{" +
+				"answer='" + answer + '\'' +
 				", content='" + content + '\'' +
 				", solution='" + solution + '\'' +
 				", maxScore=" + maxScore +
 				", solutionPenalized=" + solutionPenalized +
 				", hints=" + hints +
-				", incorrectFlagLimit=" + incorrectFlagLimit +
+				", incorrectAnswerLimit=" + incorrectAnswerLimit +
 				'}';
 	}
 }

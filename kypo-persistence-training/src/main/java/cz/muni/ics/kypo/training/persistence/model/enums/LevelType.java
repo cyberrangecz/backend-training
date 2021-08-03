@@ -15,7 +15,7 @@ public enum LevelType {
      */
     INFO,
     /**
-     * Game level type.
+     * Training level type.
      */
-    GAME;
+    TRAINING;
 }

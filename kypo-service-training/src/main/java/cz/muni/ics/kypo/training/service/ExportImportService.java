@@ -28,7 +28,7 @@ public class ExportImportService {
     private AssessmentLevelRepository assessmentLevelRepository;
     private QuestionAnswerRepository questionAnswerRepository;
     private InfoLevelRepository infoLevelRepository;
-    private GameLevelRepository gameLevelRepository;
+    private TrainingLevelRepository trainingLevelRepository;
     private TrainingInstanceRepository trainingInstanceRepository;
     private TrainingRunRepository trainingRunRepository;
     private WebClient sandboxServiceWebClient;
@@ -40,7 +40,7 @@ public class ExportImportService {
      * @param abstractLevelRepository      the abstract level repository
      * @param assessmentLevelRepository    the assessment level repository
      * @param infoLevelRepository          the info level repository
-     * @param gameLevelRepository          the game level repository
+     * @param trainingLevelRepository      the training level repository
      * @param trainingInstanceRepository   the training instance repository
      * @param trainingRunRepository        the training run repository
      * @param sandboxServiceWebClient      the python rest template
@@ -51,7 +51,7 @@ public class ExportImportService {
                                AssessmentLevelRepository assessmentLevelRepository,
                                QuestionAnswerRepository questionAnswerRepository,
                                InfoLevelRepository infoLevelRepository,
-                               GameLevelRepository gameLevelRepository,
+                               TrainingLevelRepository trainingLevelRepository,
                                TrainingInstanceRepository trainingInstanceRepository,
                                TrainingRunRepository trainingRunRepository,
                                @Qualifier("sandboxServiceWebClient") WebClient sandboxServiceWebClient)
@@ -60,7 +60,7 @@ public class ExportImportService {
         this.abstractLevelRepository = abstractLevelRepository;
         this.assessmentLevelRepository = assessmentLevelRepository;
         this.questionAnswerRepository = questionAnswerRepository;
-        this.gameLevelRepository = gameLevelRepository;
+        this.trainingLevelRepository = trainingLevelRepository;
         this.infoLevelRepository = infoLevelRepository;
         this.trainingInstanceRepository = trainingInstanceRepository;
         this.trainingRunRepository = trainingRunRepository;
@@ -94,7 +94,7 @@ public class ExportImportService {
         } else if (level instanceof InfoLevel) {
             infoLevelRepository.save((InfoLevel) level);
         } else {
-            gameLevelRepository.save((GameLevel) level);
+            trainingLevelRepository.save((TrainingLevel) level);
         }
     }
 

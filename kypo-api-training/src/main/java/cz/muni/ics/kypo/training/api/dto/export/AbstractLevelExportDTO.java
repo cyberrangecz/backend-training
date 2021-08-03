@@ -1,23 +1,21 @@
 package cz.muni.ics.kypo.training.api.dto.export;
 
-import com.fasterxml.jackson.annotation.JsonSubTypes;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import cz.muni.ics.kypo.training.api.enums.LevelType;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
 /**
  * Encapsulates information about abstract level.
- * Extended by {@link AssessmentLevelExportDTO}, {@link GameLevelExportDTO} and {@link InfoLevelExportDTO}
+ * Extended by {@link AssessmentLevelExportDTO}, {@link TrainingLevelExportDTO} and {@link InfoLevelExportDTO}
  *
  */
-@ApiModel(value = "AbstractLevelExportDTO", subTypes = {GameLevelExportDTO.class, InfoLevelExportDTO.class, AssessmentLevelExportDTO.class},
-        description = "Superclass for classes GameLevelExportDTO, InfoLevelExportDTO and AssessmentLevelExportDTO")
+@ApiModel(value = "AbstractLevelExportDTO", subTypes = {TrainingLevelExportDTO.class, InfoLevelExportDTO.class, AssessmentLevelExportDTO.class},
+        description = "Superclass for classes TrainingLevelExportDTO, InfoLevelExportDTO and AssessmentLevelExportDTO")
 public class AbstractLevelExportDTO {
 
-    @ApiModelProperty(value = "Short textual description of the level.", example = "Game Level1")
+    @ApiModelProperty(value = "Short textual description of the level.", example = "Training Level1")
     protected String title;
-    @ApiModelProperty(value = "Type of the level.", example = "GAME")
+    @ApiModelProperty(value = "Type of the level.", example = "TRAINING")
     protected LevelType levelType;
     @ApiModelProperty(value = "Order of level, starts with 0", example = "2")
     protected int order;

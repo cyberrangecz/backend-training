@@ -1,7 +1,7 @@
 package cz.muni.ics.kypo.training.persistence.repository;
 
 import cz.muni.ics.kypo.training.persistence.config.PersistenceConfigTest;
-import cz.muni.ics.kypo.training.persistence.model.GameLevel;
+import cz.muni.ics.kypo.training.persistence.model.TrainingLevel;
 import cz.muni.ics.kypo.training.persistence.util.TestDataFactory;
 import org.junit.Before;
 import org.junit.Test;
@@ -26,16 +26,16 @@ import static org.junit.Assert.*;
 @DataJpaTest
 @Import(PersistenceConfigTest.class)
 @ComponentScan(basePackages = "cz.muni.ics.kypo.training.persistence.util")
-public class GameLevelRepositoryTest {
+public class TrainingLevelRepositoryTest {
 
     @Autowired
     private TestEntityManager entityManager;
     @Autowired
     private TestDataFactory testDataFactory;
     @Autowired
-    private GameLevelRepository gameLevelRepository;
+    private TrainingLevelRepository trainingLevelRepository;
 
-    private GameLevel gameLevel1, gameLevel2;
+    private TrainingLevel trainingLevel1, trainingLevel2;
 
     @SpringBootApplication
     static class TestConfiguration {
@@ -43,40 +43,40 @@ public class GameLevelRepositoryTest {
 
     @Before
     public void setUp() {
-        gameLevel1 = testDataFactory.getPenalizedLevel();
-        gameLevel2 = testDataFactory.getNonPenalizedLevel();
+        trainingLevel1 = testDataFactory.getPenalizedLevel();
+        trainingLevel2 = testDataFactory.getNonPenalizedLevel();
     }
 
     @Test
     public void findById() {
-        Long id = (Long) entityManager.persistAndGetId(gameLevel1);
-        Optional<GameLevel> optionalGameLevel = gameLevelRepository.findById(id);
-        assertTrue(optionalGameLevel.isPresent());
-        assertEquals(gameLevel1, optionalGameLevel.get());
+        Long id = (Long) entityManager.persistAndGetId(trainingLevel1);
+        Optional<TrainingLevel> optionalTrainingLevel = trainingLevelRepository.findById(id);
+        assertTrue(optionalTrainingLevel.isPresent());
+        assertEquals(trainingLevel1, optionalTrainingLevel.get());
     }
 
     @Test(expected = InvalidDataAccessApiUsageException.class)
     public void findById_nullableArgument() throws Exception {
-        entityManager.persist(gameLevel2);
-        Optional<GameLevel> optionalGameLevel = gameLevelRepository.findById(null);
+        entityManager.persist(trainingLevel2);
+        Optional<TrainingLevel> optionalTrainingLevel = trainingLevelRepository.findById(null);
     }
 
     @Test
     public void findAll() {
-        List<GameLevel> expectedGameLevel = Arrays.asList(gameLevel1, gameLevel2);
-        expectedGameLevel.stream().forEach(g -> entityManager.persist(g));
-        List<GameLevel> resultGameLevel = gameLevelRepository.findAll();
-        assertNotNull(resultGameLevel);
-        assertEquals(expectedGameLevel, resultGameLevel);
-        assertEquals(2, resultGameLevel.size());
+        List<TrainingLevel> expectedTrainingLevel = Arrays.asList(trainingLevel1, trainingLevel2);
+        expectedTrainingLevel.stream().forEach(g -> entityManager.persist(g));
+        List<TrainingLevel> resultTrainingLevel = trainingLevelRepository.findAll();
+        assertNotNull(resultTrainingLevel);
+        assertEquals(expectedTrainingLevel, resultTrainingLevel);
+        assertEquals(2, resultTrainingLevel.size());
     }
 
     @Test
     public void findAll_emptyDatabase() {
-        List<GameLevel> expectedGameLevel = new ArrayList<>();
-        List<GameLevel> resultGameLevel = gameLevelRepository.findAll();
-        assertNotNull(resultGameLevel);
-        assertEquals(expectedGameLevel, resultGameLevel);
-        assertEquals(0, resultGameLevel.size());
+        List<TrainingLevel> expectedTrainingLevel = new ArrayList<>();
+        List<TrainingLevel> resultTrainingLevel = trainingLevelRepository.findAll();
+        assertNotNull(resultTrainingLevel);
+        assertEquals(expectedTrainingLevel, resultTrainingLevel);
+        assertEquals(0, resultTrainingLevel.size());
     }
 }

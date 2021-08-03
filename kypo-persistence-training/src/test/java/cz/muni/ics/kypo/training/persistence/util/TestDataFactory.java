@@ -16,8 +16,8 @@ import cz.muni.ics.kypo.training.api.dto.assessmentlevel.question.ExtendedMatchi
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.question.ExtendedMatchingOptionDTO;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.question.QuestionChoiceDTO;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.question.QuestionDTO;
-import cz.muni.ics.kypo.training.api.dto.gamelevel.GameLevelDTO;
-import cz.muni.ics.kypo.training.api.dto.gamelevel.GameLevelUpdateDTO;
+import cz.muni.ics.kypo.training.api.dto.traininglevel.TrainingLevelDTO;
+import cz.muni.ics.kypo.training.api.dto.traininglevel.TrainingLevelUpdateDTO;
 import cz.muni.ics.kypo.training.api.dto.hint.HintDTO;
 import cz.muni.ics.kypo.training.api.dto.imports.*;
 import cz.muni.ics.kypo.training.api.dto.infolevel.InfoLevelDTO;
@@ -82,17 +82,17 @@ public class TestDataFactory {
     private QuestionDTO multipleChoiceQuestionDTO = generateQuestionDTO(0, 2, 5, cz.muni.ics.kypo.training.api.enums.QuestionType.MCQ, "Text of free form questionDTO");
     private QuestionDTO extendedMatchingItemsDTO = generateQuestionDTO(0, 2, 5, cz.muni.ics.kypo.training.api.enums.QuestionType.EMI, "Text of free form questionDTO");
 
-    private GameLevel penalizedLevel = generateGameLevel("Penalized Game Level", 100, 20L,
-            3, "SecretFlag", "Content of penalized level", "Solution of penalized level",
+    private TrainingLevel penalizedLevel = generateTrainingLevel("Penalized Training Level", 100, 20L,
+            3, "SecretAnswer", "Content of penalized level", "Solution of penalized level",
             true, 5);
-    private GameLevel nonPenalizedLevel = generateGameLevel("Non-Penalized Game Level", 50, 5L,
-            4, "PublicFlag", "Content of non-penalized level", "Solution of non-penalized level",
+    private TrainingLevel nonPenalizedLevel = generateTrainingLevel("Non-Penalized Training Level", 50, 5L,
+            4, "PublicAnswer", "Content of non-penalized level", "Solution of non-penalized level",
             false, 99);
-    private GameLevelUpdateDTO gameLevelUpdateDTO = generateGameLevelUpdateDTO("New Game Title", 99, "newFlag",
+    private TrainingLevelUpdateDTO trainingLevelUpdateDTO = generateTrainingLevelUpdateDTO("New Training Title", 99, "newAnswer",
             "New Content", "New solution", true, 66, 6);
-    private GameLevelImportDTO gameLevelImportDTO = generateGameLevelImportDTO("Game level import", 12, "ImportFlag", "Game level import content",
+    private TrainingLevelImportDTO trainingLevelImportDTO = generateTrainingLevelImportDTO("Training level import", 12, "ImportAnswer", "Game level import content",
             "import solution", true, 9, 100);
-    private GameLevelDTO gameLevelDTO = generateGameLevelDTO("DTO flag", "DTO game content", "DTO soulution", true, 8, "DTO game level",
+    private TrainingLevelDTO trainingLevelDTO = generateTrainingLevelDTO("DTO answer", "DTO training content", "DTO soulution", true, 8, "DTO training level",
             80, 25);
 
     private InfoLevel infoLevel1 = generateInfoLevel("Info level 1", 7L, 5, "Information");
@@ -101,8 +101,8 @@ public class TestDataFactory {
     private InfoLevelImportDTO infoLevelImportDTO = generateInfoLevelImportDTO("Info level import", 5, "Info level import content");
     private InfoLevelDTO infoLevelDTO = generateInfoLevelDTO("Info DTO", 3, "DTO content");
 
-    private AbstractLevelDTO abstractLevelDTO = generateAbstractLevelDTO("AbstractLevelDTO", 8, LevelType.GAME_LEVEL, 8);
-    private BasicLevelInfoDTO basicGameLevelInfoDTO = generateBasicLevelInfoDTO("Basic Game Level info", LevelType.GAME_LEVEL);
+    private AbstractLevelDTO abstractLevelDTO = generateAbstractLevelDTO("AbstractLevelDTO", 8, LevelType.TRAINING_LEVEL, 8);
+    private BasicLevelInfoDTO basicTrainingLevelInfoDTO = generateBasicLevelInfoDTO("Basic Training Level info", LevelType.TRAINING_LEVEL);
     private BasicLevelInfoDTO basicInfoLevelInfoDTO = generateBasicLevelInfoDTO("Basic Info Level info", LevelType.INFO_LEVEL);
 
     private AccessToken accessToken1 = generateAccessToken("test-0000");
@@ -255,12 +255,12 @@ public class TestDataFactory {
         return questionChoices;
     }
 
-    public GameLevel getPenalizedLevel(){
-        return clone(penalizedLevel, GameLevel.class);
+    public TrainingLevel getPenalizedLevel(){
+        return clone(penalizedLevel, TrainingLevel.class);
     }
 
-    public GameLevel getNonPenalizedLevel(){
-        return clone(nonPenalizedLevel, GameLevel.class);
+    public TrainingLevel getNonPenalizedLevel(){
+        return clone(nonPenalizedLevel, TrainingLevel.class);
     }
 
     public InfoLevel getInfoLevel1(){
@@ -380,8 +380,8 @@ public class TestDataFactory {
         return clone(trainingRunDTO, TrainingRunDTO.class);
     }
 
-    public GameLevelUpdateDTO getGameLevelUpdateDTO(){
-        return clone(gameLevelUpdateDTO, GameLevelUpdateDTO.class);
+    public TrainingLevelUpdateDTO getTrainingLevelUpdateDTO(){
+        return clone(trainingLevelUpdateDTO, TrainingLevelUpdateDTO.class);
     }
 
     public InfoLevelUpdateDTO getInfoLevelUpdateDTO(){
@@ -392,8 +392,8 @@ public class TestDataFactory {
         return clone(infoLevelImportDTO, InfoLevelImportDTO.class);
     }
 
-    public GameLevelImportDTO getGameLevelImportDTO(){
-        return clone(gameLevelImportDTO, GameLevelImportDTO.class);
+    public TrainingLevelImportDTO getTrainingLevelImportDTO(){
+        return clone(trainingLevelImportDTO, TrainingLevelImportDTO.class);
     }
 
     public AssessmentLevelImportDTO getAssessmentLevelImportDTO(){
@@ -412,8 +412,8 @@ public class TestDataFactory {
         return clone(abstractLevelDTO, AbstractLevelDTO.class);
     }
 
-    public BasicLevelInfoDTO getBasicGameLevelInfoDTO(){
-        return clone(basicGameLevelInfoDTO, BasicLevelInfoDTO.class);
+    public BasicLevelInfoDTO getBasicTrainingLevelInfoDTO(){
+        return clone(basicTrainingLevelInfoDTO, BasicLevelInfoDTO.class);
     }
     public BasicLevelInfoDTO getBasicInfoLevelInfoDTO(){
         return clone(basicInfoLevelInfoDTO, BasicLevelInfoDTO.class);
@@ -427,8 +427,8 @@ public class TestDataFactory {
         return clone(infoLevelDTO, InfoLevelDTO.class);
     }
 
-    public GameLevelDTO getGameLevelDTO(){
-        return clone(gameLevelDTO, GameLevelDTO.class);
+    public TrainingLevelDTO getTrainingLevelDTO(){
+        return clone(trainingLevelDTO, TrainingLevelDTO.class);
     }
 
     public AssessmentLevelDTO getAssessmentLevelDTO(){
@@ -558,19 +558,19 @@ public class TestDataFactory {
         return questionChoice;
     }
 
-    private GameLevel generateGameLevel(String title, int maxScore, long estimatedDuration, int order, String flag,
-                                        String content, String solution, boolean solutionPenalized, int incorrectFlagLimit){
-        GameLevel newGameLevel = new GameLevel();
-        newGameLevel.setTitle(title);
-        newGameLevel.setMaxScore(maxScore);
-        newGameLevel.setEstimatedDuration(estimatedDuration);
-        newGameLevel.setOrder(order);
-        newGameLevel.setFlag(flag);
-        newGameLevel.setContent(content);
-        newGameLevel.setSolution(solution);
-        newGameLevel.setSolutionPenalized(solutionPenalized);
-        newGameLevel.setIncorrectFlagLimit(incorrectFlagLimit);
-        return newGameLevel;
+    private TrainingLevel generateTrainingLevel(String title, int maxScore, long estimatedDuration, int order, String answer,
+                                            String content, String solution, boolean solutionPenalized, int incorrectAnswerLimit){
+        TrainingLevel newTrainingLevel = new TrainingLevel();
+        newTrainingLevel.setTitle(title);
+        newTrainingLevel.setMaxScore(maxScore);
+        newTrainingLevel.setEstimatedDuration(estimatedDuration);
+        newTrainingLevel.setOrder(order);
+        newTrainingLevel.setAnswer(answer);
+        newTrainingLevel.setContent(content);
+        newTrainingLevel.setSolution(solution);
+        newTrainingLevel.setSolutionPenalized(solutionPenalized);
+        newTrainingLevel.setIncorrectAnswerLimit(incorrectAnswerLimit);
+        return newTrainingLevel;
     }
 
     private InfoLevel generateInfoLevel(String title, long estimatedDuration, int order, String content){
@@ -643,17 +643,17 @@ public class TestDataFactory {
     }
 
     private TrainingRun generateTrainingRun(LocalDateTime startTime, LocalDateTime endTime, String eventLogReference, TRState state,
-                                            int incorrectFlagCount, boolean solutionTaken, Long SBIRefId, int totalGameScore,
+                                            int incorrectAnswerCount, boolean solutionTaken, Long SBIRefId, int totalTrainingScore,
                                             int totalAssessmentScore, int maxScore, boolean levelAnswered, Long previousSBIRefId, int currentPenalty){
         TrainingRun newTrainingRun = new TrainingRun();
         newTrainingRun.setStartTime(startTime);
         newTrainingRun.setEndTime(endTime);
         newTrainingRun.setEventLogReference(eventLogReference);
         newTrainingRun.setState(state);
-        newTrainingRun.setIncorrectFlagCount(incorrectFlagCount);
+        newTrainingRun.setIncorrectAnswerCount(incorrectAnswerCount);
         newTrainingRun.setSolutionTaken(solutionTaken);
         newTrainingRun.setSandboxInstanceRefId(SBIRefId);
-        newTrainingRun.setTotalGameScore(totalGameScore);
+        newTrainingRun.setTotalTrainingScore(totalTrainingScore);
         newTrainingRun.setTotalAssessmentScore(totalAssessmentScore);
         newTrainingRun.setMaxLevelScore(maxScore);
         newTrainingRun.setLevelAnswered(levelAnswered);
@@ -708,18 +708,18 @@ public class TestDataFactory {
         return trainingInstanceUpdateDTO;
     }
 
-    private GameLevelUpdateDTO generateGameLevelUpdateDTO(String title, int maxScore, String flag, String content, String solution,
-                                                          boolean solutionPenalized, int estimatedDuration, int incorrectFlagLimit){
-        GameLevelUpdateDTO gameLevelUpdateDTO = new GameLevelUpdateDTO();
-        gameLevelUpdateDTO.setTitle(title);
-        gameLevelUpdateDTO.setMaxScore(maxScore);
-        gameLevelUpdateDTO.setFlag(flag);
-        gameLevelUpdateDTO.setContent(content);
-        gameLevelUpdateDTO.setSolution(solution);
-        gameLevelUpdateDTO.setSolutionPenalized(solutionPenalized);
-        gameLevelUpdateDTO.setEstimatedDuration(estimatedDuration);
-        gameLevelUpdateDTO.setIncorrectFlagLimit(incorrectFlagLimit);
-        return gameLevelUpdateDTO;
+    private TrainingLevelUpdateDTO generateTrainingLevelUpdateDTO(String title, int maxScore, String answer, String content, String solution,
+                                                              boolean solutionPenalized, int estimatedDuration, int incorrectAnswerLimit){
+        TrainingLevelUpdateDTO trainingLevelUpdateDTO = new TrainingLevelUpdateDTO();
+        trainingLevelUpdateDTO.setTitle(title);
+        trainingLevelUpdateDTO.setMaxScore(maxScore);
+        trainingLevelUpdateDTO.setAnswer(answer);
+        trainingLevelUpdateDTO.setContent(content);
+        trainingLevelUpdateDTO.setSolution(solution);
+        trainingLevelUpdateDTO.setSolutionPenalized(solutionPenalized);
+        trainingLevelUpdateDTO.setEstimatedDuration(estimatedDuration);
+        trainingLevelUpdateDTO.setIncorrectAnswerLimit(incorrectAnswerLimit);
+        return trainingLevelUpdateDTO;
     }
 
     private AssessmentLevelUpdateDTO generateAssessmentLevelUpdateDTO(String title, String instructions,
@@ -759,19 +759,19 @@ public class TestDataFactory {
         return assessmentLevelImportDTO;
     }
 
-    private GameLevelImportDTO generateGameLevelImportDTO(String title, Integer estimatedDuration, String flag, String content, String solution, boolean solutionPenalized,
-                                                          int incorrectFlagLimit, int maxScore){
-        GameLevelImportDTO gameLevelImportDTO = new GameLevelImportDTO();
-        gameLevelImportDTO.setTitle(title);
-        gameLevelImportDTO.setEstimatedDuration(estimatedDuration);
-        gameLevelImportDTO.setLevelType(LevelType.GAME_LEVEL);
-        gameLevelImportDTO.setFlag(flag);
-        gameLevelImportDTO.setContent(content);
-        gameLevelImportDTO.setSolution(solution);
-        gameLevelImportDTO.setSolutionPenalized(solutionPenalized);
-        gameLevelImportDTO.setIncorrectFlagLimit(incorrectFlagLimit);
-        gameLevelImportDTO.setMaxScore(maxScore);
-        return gameLevelImportDTO;
+    private TrainingLevelImportDTO generateTrainingLevelImportDTO(String title, Integer estimatedDuration, String answer, String content, String solution, boolean solutionPenalized,
+                                                              int incorrectAnswerLimit, int maxScore){
+        TrainingLevelImportDTO trainingLevelImportDTO = new TrainingLevelImportDTO();
+        trainingLevelImportDTO.setTitle(title);
+        trainingLevelImportDTO.setEstimatedDuration(estimatedDuration);
+        trainingLevelImportDTO.setLevelType(LevelType.TRAINING_LEVEL);
+        trainingLevelImportDTO.setAnswer(answer);
+        trainingLevelImportDTO.setContent(content);
+        trainingLevelImportDTO.setSolution(solution);
+        trainingLevelImportDTO.setSolutionPenalized(solutionPenalized);
+        trainingLevelImportDTO.setIncorrectAnswerLimit(incorrectAnswerLimit);
+        trainingLevelImportDTO.setMaxScore(maxScore);
+        return trainingLevelImportDTO;
     }
 
     private ImportTrainingDefinitionDTO generateImportTrainingDefinitionDTO(String title, String description, String[] prerequisites,
@@ -875,18 +875,18 @@ public class TestDataFactory {
         return assessmentLevelDTO;
     }
 
-    private GameLevelDTO generateGameLevelDTO(String flag, String content, String solution, boolean solutionPenalized, int flagLimit, String title, int maxScore, int estimatedDuration){
-        GameLevelDTO gameLevelDTO = new GameLevelDTO();
-        gameLevelDTO.setFlag(flag);
-        gameLevelDTO.setContent(content);
-        gameLevelDTO.setSolution(solution);
-        gameLevelDTO.setSolutionPenalized(solutionPenalized);
-        gameLevelDTO.setIncorrectFlagLimit(flagLimit);
-        gameLevelDTO.setTitle(title);
-        gameLevelDTO.setMaxScore(maxScore);
-        gameLevelDTO.setLevelType(LevelType.GAME_LEVEL);
-        gameLevelDTO.setEstimatedDuration(estimatedDuration);
-        return gameLevelDTO;
+    private TrainingLevelDTO generateTrainingLevelDTO(String answer, String content, String solution, boolean solutionPenalized, int answerLimit, String title, int maxScore, int estimatedDuration){
+        TrainingLevelDTO trainingLevelDTO = new TrainingLevelDTO();
+        trainingLevelDTO.setAnswer(answer);
+        trainingLevelDTO.setContent(content);
+        trainingLevelDTO.setSolution(solution);
+        trainingLevelDTO.setSolutionPenalized(solutionPenalized);
+        trainingLevelDTO.setIncorrectAnswerLimit(answerLimit);
+        trainingLevelDTO.setTitle(title);
+        trainingLevelDTO.setMaxScore(maxScore);
+        trainingLevelDTO.setLevelType(LevelType.TRAINING_LEVEL);
+        trainingLevelDTO.setEstimatedDuration(estimatedDuration);
+        return trainingLevelDTO;
     }
 
     private AccessedTrainingRunDTO generateAccessedTrainingRunDTO(String title, LocalDateTime start, LocalDateTime end, int currentLevelOrder,

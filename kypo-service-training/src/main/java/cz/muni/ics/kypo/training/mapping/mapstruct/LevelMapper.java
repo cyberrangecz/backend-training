@@ -4,20 +4,20 @@ import cz.muni.ics.kypo.training.api.dto.AbstractLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.BasicLevelInfoDTO;
 import cz.muni.ics.kypo.training.api.dto.archive.AbstractLevelArchiveDTO;
 import cz.muni.ics.kypo.training.api.dto.archive.AssessmentLevelArchiveDTO;
-import cz.muni.ics.kypo.training.api.dto.archive.GameLevelArchiveDTO;
+import cz.muni.ics.kypo.training.api.dto.archive.TrainingLevelArchiveDTO;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelUpdateDTO;
 import cz.muni.ics.kypo.training.api.dto.export.AbstractLevelExportDTO;
 import cz.muni.ics.kypo.training.api.dto.export.AssessmentLevelExportDTO;
-import cz.muni.ics.kypo.training.api.dto.export.GameLevelExportDTO;
-import cz.muni.ics.kypo.training.api.dto.gamelevel.GameLevelDTO;
-import cz.muni.ics.kypo.training.api.dto.gamelevel.GameLevelUpdateDTO;
-import cz.muni.ics.kypo.training.api.dto.gamelevel.GameLevelViewDTO;
+import cz.muni.ics.kypo.training.api.dto.export.TrainingLevelExportDTO;
+import cz.muni.ics.kypo.training.api.dto.traininglevel.TrainingLevelDTO;
+import cz.muni.ics.kypo.training.api.dto.traininglevel.TrainingLevelUpdateDTO;
+import cz.muni.ics.kypo.training.api.dto.traininglevel.TrainingLevelViewDTO;
 import cz.muni.ics.kypo.training.api.dto.imports.AssessmentLevelImportDTO;
-import cz.muni.ics.kypo.training.api.dto.imports.GameLevelImportDTO;
+import cz.muni.ics.kypo.training.api.dto.imports.TrainingLevelImportDTO;
 import cz.muni.ics.kypo.training.api.dto.visualization.AbstractLevelVisualizationDTO;
 import cz.muni.ics.kypo.training.api.dto.visualization.AssessmentLevelVisualizationDTO;
-import cz.muni.ics.kypo.training.api.dto.visualization.GameLevelVisualizationDTO;
+import cz.muni.ics.kypo.training.api.dto.visualization.TrainingLevelVisualizationDTO;
 import cz.muni.ics.kypo.training.api.dto.archive.InfoLevelArchiveDTO;
 import cz.muni.ics.kypo.training.api.dto.export.InfoLevelExportDTO;
 import cz.muni.ics.kypo.training.api.dto.imports.InfoLevelImportDTO;
@@ -77,31 +77,31 @@ public interface LevelMapper extends ParentMapper {
     @Mapping(source = "questions", target = "questions", qualifiedByName = "questionWithoutId")
     AssessmentLevelExportDTO mapToExportAssessmentLevelDTO(AssessmentLevel entity);
 
-    // GAME LEVEL
-    GameLevel mapToEntity(GameLevelDTO dto);
+    // TRAINING LEVEL
+    TrainingLevel mapToEntity(TrainingLevelDTO dto);
 
-    GameLevel mapUpdateToEntity(GameLevelUpdateDTO dto);
+    TrainingLevel mapUpdateToEntity(TrainingLevelUpdateDTO dto);
 
-    GameLevel mapImportToEntity(GameLevelImportDTO dto);
+    TrainingLevel mapImportToEntity(TrainingLevelImportDTO dto);
 
-    BasicLevelInfoDTO mapTo(GameLevel gameLevel);
+    BasicLevelInfoDTO mapTo(TrainingLevel trainingLevel);
 
-    GameLevelDTO mapToGameLevelDTO(GameLevel entity);
+    TrainingLevelDTO mapToTrainingLevelDTO(TrainingLevel entity);
 
-    GameLevelVisualizationDTO mapToVisualizationGameLevelDTO(GameLevel entity);
+    TrainingLevelVisualizationDTO mapToVisualizationTrainingLevelDTO(TrainingLevel entity);
 
-    GameLevelExportDTO mapToExportGameLevelDTO(GameLevel entity);
+    TrainingLevelExportDTO mapToExportTrainingLevelDTO(TrainingLevel entity);
 
-    GameLevelArchiveDTO mapToArchiveGameLevelDTO(GameLevel entity);
+    TrainingLevelArchiveDTO mapToArchiveTrainingLevelDTO(TrainingLevel entity);
 
-    GameLevelViewDTO mapToViewDTO(GameLevel entity);
+    TrainingLevelViewDTO mapToViewDTO(TrainingLevel entity);
 
     // ABSTRACT
     default AbstractLevelDTO mapToDTO(AbstractLevel entity) {
         AbstractLevelDTO abstractLevelDTO;
-        if (entity instanceof GameLevel) {
-            abstractLevelDTO = mapToGameLevelDTO((GameLevel) entity);
-            abstractLevelDTO.setLevelType(LevelType.GAME_LEVEL);
+        if (entity instanceof TrainingLevel) {
+            abstractLevelDTO = mapToTrainingLevelDTO((TrainingLevel) entity);
+            abstractLevelDTO.setLevelType(LevelType.TRAINING_LEVEL);
         } else if (entity instanceof InfoLevel) {
             abstractLevelDTO = mapToInfoLevelDTO((InfoLevel) entity);
             abstractLevelDTO.setLevelType(LevelType.INFO_LEVEL);
@@ -110,7 +110,7 @@ public interface LevelMapper extends ParentMapper {
             abstractLevelDTO.setLevelType(LevelType.ASSESSMENT_LEVEL);
         } else {
             throw new InternalServerErrorException("Level with id: " + entity.getId() + " in given training definition with id: " + entity.getTrainingDefinition().getId() +
-                    " is not instance of assessment, game or info level.");
+                    " is not instance of assessment, training or info level.");
         }
 
         return abstractLevelDTO;
@@ -118,9 +118,9 @@ public interface LevelMapper extends ParentMapper {
 
     default AbstractLevelVisualizationDTO mapToVisualizationDTO(AbstractLevel entity) {
         AbstractLevelVisualizationDTO abstractLevelVisualizationDTO;
-        if (entity instanceof GameLevel) {
-            abstractLevelVisualizationDTO = mapToVisualizationGameLevelDTO((GameLevel) entity);
-            abstractLevelVisualizationDTO.setLevelType(LevelType.GAME_LEVEL);
+        if (entity instanceof TrainingLevel) {
+            abstractLevelVisualizationDTO = mapToVisualizationTrainingLevelDTO((TrainingLevel) entity);
+            abstractLevelVisualizationDTO.setLevelType(LevelType.TRAINING_LEVEL);
         } else if (entity instanceof InfoLevel) {
             abstractLevelVisualizationDTO = mapToVisualizationInfoLevelDTO((InfoLevel) entity);
             abstractLevelVisualizationDTO.setLevelType(LevelType.INFO_LEVEL);
@@ -129,16 +129,16 @@ public interface LevelMapper extends ParentMapper {
             abstractLevelVisualizationDTO.setLevelType(LevelType.ASSESSMENT_LEVEL);
         } else {
             throw new InternalServerErrorException("Level with id: " + entity.getId() + " in given training definition with id: " + entity.getTrainingDefinition().getId() +
-                    " is not instance of assessment, game or info level.");
+                    " is not instance of assessment, training or info level.");
         }
         return abstractLevelVisualizationDTO;
     }
 
     default AbstractLevelArchiveDTO mapToArchiveDTO(AbstractLevel entity) {
         AbstractLevelArchiveDTO abstractLevelArchiveDTO;
-        if (entity instanceof GameLevel) {
-            abstractLevelArchiveDTO = mapToArchiveGameLevelDTO((GameLevel) entity);
-            abstractLevelArchiveDTO.setLevelType(LevelType.GAME_LEVEL);
+        if (entity instanceof TrainingLevel) {
+            abstractLevelArchiveDTO = mapToArchiveTrainingLevelDTO((TrainingLevel) entity);
+            abstractLevelArchiveDTO.setLevelType(LevelType.TRAINING_LEVEL);
         } else if (entity instanceof InfoLevel) {
             abstractLevelArchiveDTO = mapToArchiveInfoLevelDTO((InfoLevel) entity);
             abstractLevelArchiveDTO.setLevelType(LevelType.INFO_LEVEL);
@@ -147,16 +147,16 @@ public interface LevelMapper extends ParentMapper {
             abstractLevelArchiveDTO.setLevelType(LevelType.ASSESSMENT_LEVEL);
         } else {
             throw new InternalServerErrorException("Level with id: " + entity.getId() + " in given training definition with id: " + entity.getTrainingDefinition().getId() +
-                    " is not instance of assessment, game or info level.");
+                    " is not instance of assessment, training or info level.");
         }
         return abstractLevelArchiveDTO;
     }
 
     default AbstractLevelExportDTO mapToExportDTO(AbstractLevel entity) {
         AbstractLevelExportDTO abstractLevelExportDTO;
-        if (entity instanceof GameLevel) {
-            abstractLevelExportDTO = mapToExportGameLevelDTO((GameLevel) entity);
-            abstractLevelExportDTO.setLevelType(LevelType.GAME_LEVEL);
+        if (entity instanceof TrainingLevel) {
+            abstractLevelExportDTO = mapToExportTrainingLevelDTO((TrainingLevel) entity);
+            abstractLevelExportDTO.setLevelType(LevelType.TRAINING_LEVEL);
         } else if (entity instanceof InfoLevel) {
             abstractLevelExportDTO = mapToExportInfoLevelDTO((InfoLevel) entity);
             abstractLevelExportDTO.setLevelType(LevelType.INFO_LEVEL);
@@ -165,28 +165,28 @@ public interface LevelMapper extends ParentMapper {
             abstractLevelExportDTO.setLevelType(LevelType.ASSESSMENT_LEVEL);
         } else {
             throw new InternalServerErrorException("Level with id: " + entity.getId() + " in given training definition with id: " + entity.getTrainingDefinition().getId() +
-                    " is not instance of assessment, game or info level.");
+                    " is not instance of assessment, training or info level.");
         }
         return abstractLevelExportDTO;
     }
 
-    @Mapping(target = "levelType", constant = "GAME_LEVEL")
-    LevelDefinitionProgressDTO mapToLevelDefinitionProgressDTO(GameLevel entity);
+    @Mapping(target = "levelType", constant = "TRAINING_LEVEL")
+    LevelDefinitionProgressDTO mapToLevelDefinitionProgressDTO(TrainingLevel entity);
     @Mapping(target = "levelType", constant = "ASSESSMENT_LEVEL")
     LevelDefinitionProgressDTO mapToLevelDefinitionProgressDTO(AssessmentLevel entity);
     @Mapping(target = "levelType", constant = "INFO_LEVEL")
     LevelDefinitionProgressDTO mapToLevelDefinitionProgressDTO(InfoLevel entity);
 
     default LevelDefinitionProgressDTO mapToLevelDefinitionProgressDTO(AbstractLevel entity) {
-        if (entity instanceof GameLevel) {
-            return mapToLevelDefinitionProgressDTO((GameLevel) entity);
+        if (entity instanceof TrainingLevel) {
+            return mapToLevelDefinitionProgressDTO((TrainingLevel) entity);
         } else if (entity instanceof InfoLevel) {
             return mapToLevelDefinitionProgressDTO((InfoLevel) entity);
         } else if (entity instanceof AssessmentLevel) {
             return mapToLevelDefinitionProgressDTO((AssessmentLevel) entity);
         } else {
             throw new InternalServerErrorException("Level with id: " + entity.getId() + " in given training definition with id: " + entity.getTrainingDefinition().getId() +
-                    " is not instance of assessment, game or info level.");
+                    " is not instance of assessment, training or info level.");
         }
     }
 }

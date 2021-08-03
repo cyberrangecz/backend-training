@@ -6,7 +6,6 @@ import cz.muni.ics.kypo.training.api.enums.LevelType;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
-import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
@@ -20,11 +19,11 @@ public class LevelDefinitionProgressDTO {
 
     @ApiModelProperty(value = "Main identifier of level.", example = "1")
     private Long id;
-    @ApiModelProperty(value = "Short textual description of the level.", example = "Game Level1")
+    @ApiModelProperty(value = "Short textual description of the level.", example = "Training Level1")
     private String title;
     @ApiModelProperty(value = "The maximum score a participant can achieve during a level.", example = "20")
     private int maxScore;
-    @ApiModelProperty(value = "Type of the level.", example = "GAME")
+    @ApiModelProperty(value = "Type of the level.", example = "TRAINING")
     private LevelType levelType;
     @ApiModelProperty(value = "Estimated time taken by the player to resolve the level.", example = "5")
     private int estimatedDuration;
@@ -32,9 +31,9 @@ public class LevelDefinitionProgressDTO {
     private int order;
     @ApiModelProperty(value = "The information and experiences that are directed towards a participant.", example = "Play me")
     private String content;
-    @ApiModelProperty(value = "Keyword found in game, used for access next level.", example = "secretFlag")
-    private String flag;
-    @ApiModelProperty(value = "Instruction how to get flag in game.", example = "This is how you do it")
+    @ApiModelProperty(value = "Keyword found in training, used for access next level.", example = "secretAnswer")
+    private String answer;
+    @ApiModelProperty(value = "Instruction how to get answer in training.", example = "This is how you do it")
     private String solution;
     @ApiModelProperty(value = "Sign if displaying of solution is penalized.", example = "true")
     private Boolean solutionPenalized;
@@ -154,21 +153,21 @@ public class LevelDefinitionProgressDTO {
     }
 
     /**
-     * Gets flag.
+     * Gets answer.
      *
-     * @return the flag
+     * @return the answer
      */
-    public String getFlag() {
-        return flag;
+    public String getAnswer() {
+        return answer;
     }
 
     /**
-     * Sets flag.
+     * Sets answer.
      *
-     * @param flag the flag
+     * @param answer the answer
      */
-    public void setFlag(String flag) {
-        this.flag = flag;
+    public void setAnswer(String answer) {
+        this.answer = answer;
     }
 
     /**

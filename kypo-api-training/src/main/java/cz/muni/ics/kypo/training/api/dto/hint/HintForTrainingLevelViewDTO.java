@@ -8,8 +8,8 @@ import java.util.Objects;
 /**
  * Encapsulates basic information about Hint
  */
-@ApiModel(value = "HintForGameLevelViewDTO", description = "Basic information about hint viewed in a game level.")
-public class HintForGameLevelViewDTO {
+@ApiModel(value = "HintForTrainingLevelViewDTO", description = "Basic information about hint viewed in a training level.")
+public class HintForTrainingLevelViewDTO {
 
     @ApiModelProperty(value = "Main identifier of hint.", example = "1")
     private Long id;
@@ -17,7 +17,7 @@ public class HintForGameLevelViewDTO {
     private String title;
     @ApiModelProperty(value = "The number of points the participant loses after receiving the hint.", example = "10")
     private Integer hintPenalty;
-    @ApiModelProperty(value = "The order of hint in game level", example = "1")
+    @ApiModelProperty(value = "The order of hint in training level", example = "1")
     private int order;
 
     /**
@@ -86,14 +86,14 @@ public class HintForGameLevelViewDTO {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        HintForGameLevelViewDTO that = (HintForGameLevelViewDTO) o;
+        HintForTrainingLevelViewDTO that = (HintForTrainingLevelViewDTO) o;
         return Objects.equals(id, that.id) &&
                 Objects.equals(title, that.title);
     }
 
     @Override
     public String toString() {
-        return "HintForGameLevelViewDTO{" +
+        return "HintForTrainingLevelViewDTO{" +
                 "id=" + id +
                 ", title='" + title + '\'' +
                 ", order=" + order +

@@ -7,7 +7,7 @@ import cz.muni.ics.kypo.training.api.dto.AbstractLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.BasicLevelInfoDTO;
 import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelUpdateDTO;
-import cz.muni.ics.kypo.training.api.dto.gamelevel.GameLevelUpdateDTO;
+import cz.muni.ics.kypo.training.api.dto.traininglevel.TrainingLevelUpdateDTO;
 import cz.muni.ics.kypo.training.api.dto.infolevel.InfoLevelUpdateDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.*;
 import cz.muni.ics.kypo.training.api.enums.RoleType;
@@ -19,6 +19,7 @@ import cz.muni.ics.kypo.training.facade.TrainingDefinitionFacade;
 import cz.muni.ics.kypo.training.mapping.mapstruct.*;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.model.AssessmentLevel;
+import cz.muni.ics.kypo.training.persistence.model.enums.LevelType;
 import cz.muni.ics.kypo.training.persistence.util.TestDataFactory;
 import cz.muni.ics.kypo.training.rest.ApiError;
 import cz.muni.ics.kypo.training.rest.CustomRestExceptionHandlerTraining;
@@ -77,8 +78,8 @@ public class TrainingDefinitionsRestControllerTest {
     private TrainingDefinitionCreateDTO trainingDefinitionCreateDTO;
     private TrainingDefinitionUpdateDTO trainingDefinitionUpdateDTO;
 
-    private GameLevel gameLevel;
-    private GameLevelUpdateDTO gameLevelUpdateDTO;
+    private TrainingLevel trainingLevel;
+    private TrainingLevelUpdateDTO trainingLevelUpdateDTO;
 
     private InfoLevel infoLevel;
     private InfoLevelUpdateDTO infoLevelUpdateDTO;
@@ -87,7 +88,7 @@ public class TrainingDefinitionsRestControllerTest {
     private AssessmentLevelUpdateDTO assessmentLevelUpdateDTO;
 
     private AbstractLevelDTO abstractLevelDTO;
-    private BasicLevelInfoDTO basicGameLevelInfoDTO, basicInfoLevelInfoDTO;
+    private BasicLevelInfoDTO basicTrainingLevelInfoDTO, basicInfoLevelInfoDTO;
 
     private UserRefDTO designerDTO1, designerDTO2, organizerDTO;
 
@@ -110,11 +111,11 @@ public class TrainingDefinitionsRestControllerTest {
                 .setControllerAdvice(new CustomRestExceptionHandlerTraining())
                 .build();
 
-        gameLevel = testDataFactory.getPenalizedLevel();
-        gameLevel.setId(1L);
+        trainingLevel = testDataFactory.getPenalizedLevel();
+        trainingLevel.setId(1L);
 
-        gameLevelUpdateDTO = testDataFactory.getGameLevelUpdateDTO();
-        gameLevelUpdateDTO.setId(2L);
+        trainingLevelUpdateDTO = testDataFactory.getTrainingLevelUpdateDTO();
+        trainingLevelUpdateDTO.setId(2L);
 
         infoLevel = testDataFactory.getInfoLevel1();
         infoLevel.setId(2L);
@@ -148,18 +149,18 @@ public class TrainingDefinitionsRestControllerTest {
 
         abstractLevelDTO.setId(1L);
 
-        basicGameLevelInfoDTO = testDataFactory.getBasicGameLevelInfoDTO();
-        basicGameLevelInfoDTO.setId(1L);
-        basicGameLevelInfoDTO.setOrder(1);
+        basicTrainingLevelInfoDTO = testDataFactory.getBasicTrainingLevelInfoDTO();
+        basicTrainingLevelInfoDTO.setId(1L);
+        basicTrainingLevelInfoDTO.setOrder(1);
 
-        basicInfoLevelInfoDTO = testDataFactory.getBasicGameLevelInfoDTO();
+        basicInfoLevelInfoDTO = testDataFactory.getBasicInfoLevelInfoDTO();
         basicInfoLevelInfoDTO.setId(2L);
         basicInfoLevelInfoDTO.setOrder(2);
 
         trainingDefinition1 = testDataFactory.getArchivedDefinition();
         trainingDefinition2 = testDataFactory.getReleasedDefinition();
 
-        basicLevelInfoDTOS = List.of(basicGameLevelInfoDTO, basicInfoLevelInfoDTO);
+        basicLevelInfoDTOS = List.of(basicTrainingLevelInfoDTO, basicInfoLevelInfoDTO);
         page = new PageImpl<>(List.of(trainingDefinition1, trainingDefinition2));
 
         trainingDefinitionInfoDTOPageResultResource = trainingDefinitionMapper.mapToPageResultResourceInfoDTO(page);
@@ -284,19 +285,19 @@ public class TrainingDefinitionsRestControllerTest {
 
     @Test
     public void swapLevels() throws Exception {
-        given(trainingDefinitionFacade.swapLevels(trainingDefinitionDTO1.getId(), gameLevel.getId(), infoLevel.getId())).willReturn(basicLevelInfoDTOS);
-        MockHttpServletResponse response = mockMvc.perform(put("/training-definitions/{definitionId}/levels/{levelIdFrom}/swap-with/{levelIdTo}", trainingDefinitionDTO1.getId(), gameLevel.getId(), infoLevel.getId())
+        given(trainingDefinitionFacade.swapLevels(trainingDefinitionDTO1.getId(), trainingLevel.getId(), infoLevel.getId())).willReturn(basicLevelInfoDTOS);
+        MockHttpServletResponse response = mockMvc.perform(put("/training-definitions/{definitionId}/levels/{levelIdFrom}/swap-with/{levelIdTo}", trainingDefinitionDTO1.getId(), trainingLevel.getId(), infoLevel.getId())
                 .contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isOk())
                 .andReturn().getResponse();
         assertEquals(basicLevelInfoDTOS, convertJsonBytesToObject(response.getContentAsString(), new TypeReference<List<BasicLevelInfoDTO>>(){}));
-        then(trainingDefinitionFacade).should().swapLevels(trainingDefinitionDTO1.getId(), gameLevel.getId(), infoLevel.getId());
+        then(trainingDefinitionFacade).should().swapLevels(trainingDefinitionDTO1.getId(), trainingLevel.getId(), infoLevel.getId());
     }
 
     @Test
     public void swapLevels_FacadeException() throws Exception {
-        willThrow(new EntityConflictException()).given(trainingDefinitionFacade).swapLevels(trainingDefinitionDTO1.getId(), gameLevel.getId(), infoLevel.getId());
-        MockHttpServletResponse response = mockMvc.perform(put("/training-definitions/{definitionId}/levels/{levelIdFrom}/swap-with/{levelIdTo}", trainingDefinitionDTO1.getId(), gameLevel.getId(), infoLevel.getId())
+        willThrow(new EntityConflictException()).given(trainingDefinitionFacade).swapLevels(trainingDefinitionDTO1.getId(), trainingLevel.getId(), infoLevel.getId());
+        MockHttpServletResponse response = mockMvc.perform(put("/training-definitions/{definitionId}/levels/{levelIdFrom}/swap-with/{levelIdTo}", trainingDefinitionDTO1.getId(), trainingLevel.getId(), infoLevel.getId())
                 .contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isConflict())
                 .andReturn().getResponse();
@@ -307,19 +308,19 @@ public class TrainingDefinitionsRestControllerTest {
 
     @Test
     public void moveLevel() throws Exception {
-        given(trainingDefinitionFacade.moveLevel(trainingDefinitionDTO1.getId(), gameLevel.getId(), gameLevel.getOrder() + 2)).willReturn(basicLevelInfoDTOS);
-        MockHttpServletResponse response = mockMvc.perform(put("/training-definitions/{definitionId}/levels/{levelIdToBeMoved}/move-to/{newPosition}", trainingDefinitionDTO1.getId(), gameLevel.getId(), gameLevel.getOrder() + 2)
+        given(trainingDefinitionFacade.moveLevel(trainingDefinitionDTO1.getId(), trainingLevel.getId(), trainingLevel.getOrder() + 2)).willReturn(basicLevelInfoDTOS);
+        MockHttpServletResponse response = mockMvc.perform(put("/training-definitions/{definitionId}/levels/{levelIdToBeMoved}/move-to/{newPosition}", trainingDefinitionDTO1.getId(), trainingLevel.getId(), trainingLevel.getOrder() + 2)
                 .contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isOk())
                 .andReturn().getResponse();
         assertEquals(basicLevelInfoDTOS, convertJsonBytesToObject(response.getContentAsString(), new TypeReference<List<BasicLevelInfoDTO>>(){}));
-        then(trainingDefinitionFacade).should().moveLevel(trainingDefinitionDTO1.getId(), gameLevel.getId(), gameLevel.getOrder() + 2);
+        then(trainingDefinitionFacade).should().moveLevel(trainingDefinitionDTO1.getId(), trainingLevel.getId(), trainingLevel.getOrder() + 2);
     }
 
     @Test
     public void moveLevel_FacadeException() throws Exception {
-        willThrow(new EntityConflictException()).given(trainingDefinitionFacade).moveLevel(trainingDefinitionDTO1.getId(), gameLevel.getId(), gameLevel.getOrder() + 2);
-        MockHttpServletResponse response = mockMvc.perform(put("/training-definitions/{definitionId}/levels/{levelIdToBeMoved}/move-to/{newPosition}", trainingDefinitionDTO1.getId(), gameLevel.getId(), gameLevel.getOrder() + 2)
+        willThrow(new EntityConflictException()).given(trainingDefinitionFacade).moveLevel(trainingDefinitionDTO1.getId(), trainingLevel.getId(), trainingLevel.getOrder() + 2);
+        MockHttpServletResponse response = mockMvc.perform(put("/training-definitions/{definitionId}/levels/{levelIdToBeMoved}/move-to/{newPosition}", trainingDefinitionDTO1.getId(), trainingLevel.getId(), trainingLevel.getOrder() + 2)
                 .contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isConflict())
                 .andReturn().getResponse();
@@ -349,15 +350,15 @@ public class TrainingDefinitionsRestControllerTest {
 
     @Test
     public void deleteLevel() throws Exception {
-        mockMvc.perform(delete("/training-definitions/{definitionId}/levels/{levelId}", trainingDefinitionDTO1.getId(), gameLevel.getId()))
+        mockMvc.perform(delete("/training-definitions/{definitionId}/levels/{levelId}", trainingDefinitionDTO1.getId(), trainingLevel.getId()))
                 .andExpect(status().isOk());
-        then(trainingDefinitionFacade).should().deleteOneLevel(trainingDefinitionDTO1.getId(), gameLevel.getId());
+        then(trainingDefinitionFacade).should().deleteOneLevel(trainingDefinitionDTO1.getId(), trainingLevel.getId());
     }
 
     @Test
     public void deleteLevel_FacadeException() throws Exception {
         willThrow(new EntityNotFoundException()).given(trainingDefinitionFacade).deleteOneLevel(any(Long.class), any(Long.class));
-        MockHttpServletResponse response = mockMvc.perform(delete("/training-definitions/{definitionId}/levels/{levelId}", trainingDefinitionDTO2.getId(), gameLevel.getId()))
+        MockHttpServletResponse response = mockMvc.perform(delete("/training-definitions/{definitionId}/levels/{levelId}", trainingDefinitionDTO2.getId(), trainingLevel.getId()))
                 .andExpect(status().isNotFound())
                 .andReturn().getResponse();
         ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
@@ -366,19 +367,19 @@ public class TrainingDefinitionsRestControllerTest {
     }
 
     @Test
-    public void updateGameLevel() throws Exception {
-        mockMvc.perform(put("/training-definitions/{definitionId}/game-levels", trainingDefinitionDTO1.getId())
-                .content(convertObjectToJsonBytes(gameLevelUpdateDTO))
+    public void updateTrainingLevel() throws Exception {
+        mockMvc.perform(put("/training-definitions/{definitionId}/training-levels", trainingDefinitionDTO1.getId())
+                .content(convertObjectToJsonBytes(trainingLevelUpdateDTO))
                 .contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isNoContent());
-        then(trainingDefinitionFacade).should().updateGameLevel(eq(trainingDefinitionDTO1.getId()), any(GameLevelUpdateDTO.class));
+        then(trainingDefinitionFacade).should().updateTrainingLevel(eq(trainingDefinitionDTO1.getId()), any(TrainingLevelUpdateDTO.class));
     }
 
     @Test
-    public void updateGameLevel_FacadeException() throws Exception {
-        willThrow(new EntityNotFoundException()).given(trainingDefinitionFacade).updateGameLevel(any(Long.class), any(GameLevelUpdateDTO.class));
-        MockHttpServletResponse response = mockMvc.perform(put("/training-definitions/{definitionId}/game-levels", trainingDefinitionDTO2.getId())
-                .content(convertObjectToJsonBytes(gameLevelUpdateDTO))
+    public void updateTrainingLevel_FacadeException() throws Exception {
+        willThrow(new EntityNotFoundException()).given(trainingDefinitionFacade).updateTrainingLevel(any(Long.class), any(TrainingLevelUpdateDTO.class));
+        MockHttpServletResponse response = mockMvc.perform(put("/training-definitions/{definitionId}/training-levels", trainingDefinitionDTO2.getId())
+                .content(convertObjectToJsonBytes(trainingLevelUpdateDTO))
                 .contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isNotFound())
                 .andReturn().getResponse();
@@ -442,8 +443,8 @@ public class TrainingDefinitionsRestControllerTest {
 
     @Test
     public void findLevelById_FacadeException() throws Exception {
-        willThrow(new EntityNotFoundException()).given(trainingDefinitionFacade).findLevelById(gameLevel.getId());
-        MockHttpServletResponse result = mockMvc.perform(get("/training-definitions/levels" + "/{levelId}", gameLevel.getId()))
+        willThrow(new EntityNotFoundException()).given(trainingDefinitionFacade).findLevelById(trainingLevel.getId());
+        MockHttpServletResponse result = mockMvc.perform(get("/training-definitions/levels" + "/{levelId}", trainingLevel.getId()))
                 .andExpect(status().isNotFound())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andReturn().getResponse();
@@ -454,20 +455,20 @@ public class TrainingDefinitionsRestControllerTest {
 
     @Test
     public void createLevel() throws Exception {
-        given(trainingDefinitionFacade.createGameLevel(any(Long.class))).willReturn(basicGameLevelInfoDTO);
-        MockHttpServletResponse result = mockMvc.perform(post("/training-definitions/{definitionId}/levels/{levelType}", trainingDefinitionDTO1.getId(), cz.muni.ics.kypo.training.persistence.model.enums.LevelType.GAME)
+        given(trainingDefinitionFacade.createTrainingLevel(any(Long.class))).willReturn(basicTrainingLevelInfoDTO);
+        MockHttpServletResponse result = mockMvc.perform(post("/training-definitions/{definitionId}/levels/{levelType}", trainingDefinitionDTO1.getId(), LevelType.TRAINING)
                 .contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isCreated())
                 .andReturn().getResponse();
         then(trainingDefinitionFacade).should(never()).createAssessmentLevel(trainingDefinitionDTO1.getId());
         then(trainingDefinitionFacade).should(never()).createInfoLevel(trainingDefinitionDTO1.getId());
-        assertEquals(basicGameLevelInfoDTO, convertJsonBytesToObject(convertJsonBytesToObject(result.getContentAsString()), BasicLevelInfoDTO.class));
+        assertEquals(basicTrainingLevelInfoDTO, convertJsonBytesToObject(convertJsonBytesToObject(result.getContentAsString()), BasicLevelInfoDTO.class));
     }
 
     @Test
     public void createLevel_FacadeException() throws Exception {
-        willThrow(new UnprocessableEntityException()).given(trainingDefinitionFacade).createGameLevel(trainingDefinitionDTO1.getId());
-        MockHttpServletResponse result = mockMvc.perform(post("/training-definitions/{definitionId}/levels/{levelType}", trainingDefinitionDTO1.getId(), cz.muni.ics.kypo.training.persistence.model.enums.LevelType.GAME)
+        willThrow(new UnprocessableEntityException()).given(trainingDefinitionFacade).createTrainingLevel(trainingDefinitionDTO1.getId());
+        MockHttpServletResponse result = mockMvc.perform(post("/training-definitions/{definitionId}/levels/{levelType}", trainingDefinitionDTO1.getId(), LevelType.TRAINING)
                 .contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isUnprocessableEntity())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))

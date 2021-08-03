@@ -3,12 +3,12 @@ package cz.muni.ics.kypo.training.api.dto.visualization.clustering;
 import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
 import cz.muni.ics.kypo.training.api.dto.visualization.commons.PlayerDataWithScoreDTO;
 
-public class GameResultsPlayerDTO extends PlayerDataWithScoreDTO {
+public class TrainingResultsPlayerDTO extends PlayerDataWithScoreDTO {
 
     private Boolean finished;
 
-    public GameResultsPlayerDTO(UserRefDTO userRef, Long trainingRunId, long trainingTime, Integer gameScore, Integer assessmentScore, Boolean finished) {
-        super(userRef.getUserRefId(), userRef.getUserRefFullName(), userRef.getPicture(), trainingRunId, trainingTime, gameScore, assessmentScore);
+    public TrainingResultsPlayerDTO(UserRefDTO userRef, Long trainingRunId, long trainingTime, Integer trainingScore, Integer assessmentScore, Boolean finished) {
+        super(userRef.getUserRefId(), userRef.getUserRefFullName(), userRef.getPicture(), trainingRunId, trainingTime, trainingScore, assessmentScore);
         this.finished = finished;
     }
 
@@ -22,11 +22,11 @@ public class GameResultsPlayerDTO extends PlayerDataWithScoreDTO {
 
     @Override
     public String toString() {
-        return "GameResultsPlayerDTO{" +
+        return "TrainingResultsPlayerDTO{" +
                 "id=" + getId() +
                 ", trainingRunId=" + getTrainingRunId() +
                 ", name='" + getName() + '\'' +
-                ", gameScore=" + getGameScore() +
+                ", trainingScore=" + getTrainingScore() +
                 ", assessmentScore=" + getAssessmentScore() +
                 ", trainingTime=" + getTrainingTime() +
                 ", finished=" + finished +

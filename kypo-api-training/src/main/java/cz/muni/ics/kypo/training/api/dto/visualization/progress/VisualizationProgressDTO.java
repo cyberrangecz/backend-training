@@ -16,12 +16,12 @@ public class VisualizationProgressDTO {
     private long startTime;
     @ApiModelProperty(value = "Estimated time it takes to finish runs created from this definition.")
     private long estimatedEndTime;
-    @ApiModelProperty(value = "A current time of the game.")
+    @ApiModelProperty(value = "A current time of the training.")
     private long currentTime;
     @ApiModelProperty(value = "Information about all players in training instance.")
     private List<UserRefDTO> players;
     @ApiModelProperty(value = "Information about all levels in training definition.")
-    @JsonIgnoreProperties({"snapshot_hook", "training_definition", "hints.hint_penalty", "incorrect_flag_limit"})
+    @JsonIgnoreProperties({"snapshot_hook", "training_definition", "hints.hint_penalty", "incorrect_answer_limit"})
     private List<LevelDefinitionProgressDTO> levels;
     @ApiModelProperty(value = "Information about all levels in training definition.")
     private List<PlayerProgress> playerProgress;

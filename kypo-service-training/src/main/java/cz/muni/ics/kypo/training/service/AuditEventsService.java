@@ -43,7 +43,7 @@ public class AuditEventsService {
                 fillInCommonBuilderFields(trainingRun, TrainingRunStarted.builder());
 
         TrainingRunStarted trainingRunStarted = trainingRunStartedBuilder
-                .gameTime(0L)
+                .trainingTime(0L)
                 .build();
         auditService.saveTrainingRunEvent(trainingRunStarted, 0L);
     }
@@ -114,36 +114,36 @@ public class AuditEventsService {
     }
 
     /**
-     * Audit correct flag submitted action.
+     * Audit correct answer submitted action.
      *
      * @param trainingRun the training run
-     * @param flag        the flag
+     * @param answer        the answer
      */
-    public void auditCorrectFlagSubmittedAction(TrainingRun trainingRun, String flag) {
-        CorrectFlagSubmitted.CorrectFlagSubmittedBuilder<?, ?> correctFlagSubmittedBuilder = (CorrectFlagSubmitted.CorrectFlagSubmittedBuilder<?, ?>)
-                fillInCommonBuilderFields(trainingRun, CorrectFlagSubmitted.builder());
+    public void auditCorrectAnswerSubmittedAction(TrainingRun trainingRun, String answer) {
+        CorrectAnswerSubmitted.CorrectAnswerSubmittedBuilder<?, ?> correctAnswerSubmittedBuilder = (CorrectAnswerSubmitted.CorrectAnswerSubmittedBuilder<?, ?>)
+                fillInCommonBuilderFields(trainingRun, CorrectAnswerSubmitted.builder());
 
-        CorrectFlagSubmitted correctFlagSubmitted = correctFlagSubmittedBuilder
-                .flagContent(flag)
+        CorrectAnswerSubmitted correctAnswerSubmitted = correctAnswerSubmittedBuilder
+                .answerContent(answer)
                 .build();
-        auditService.saveTrainingRunEvent(correctFlagSubmitted, 0L);
+        auditService.saveTrainingRunEvent(correctAnswerSubmitted, 0L);
     }
 
     /**
-     * Audit wrong flag submitted action.
+     * Audit wrong answer submitted action.
      *
      * @param trainingRun the training run
-     * @param flag        the flag
+     * @param answer        the answer
      */
-    public void auditWrongFlagSubmittedAction(TrainingRun trainingRun, String flag) {
-        WrongFlagSubmitted.WrongFlagSubmittedBuilder<?, ?> wrongFlagSubmittedBuilder = (WrongFlagSubmitted.WrongFlagSubmittedBuilder<?, ?>)
-                fillInCommonBuilderFields(trainingRun, WrongFlagSubmitted.builder());
+    public void auditWrongAnswerSubmittedAction(TrainingRun trainingRun, String answer) {
+        WrongAnswerSubmitted.WrongAnswerSubmittedBuilder<?, ?> wrongAnswerSubmittedBuilder = (WrongAnswerSubmitted.WrongAnswerSubmittedBuilder<?, ?>)
+                fillInCommonBuilderFields(trainingRun, WrongAnswerSubmitted.builder());
 
-        WrongFlagSubmitted wrongFlagSubmitted = wrongFlagSubmittedBuilder
-                .flagContent(flag)
-                .count(trainingRun.getIncorrectFlagCount())
+        WrongAnswerSubmitted wrongAnswerSubmitted = wrongAnswerSubmittedBuilder
+                .answerContent(answer)
+                .count(trainingRun.getIncorrectAnswerCount())
                 .build();
-        auditService.saveTrainingRunEvent(wrongFlagSubmitted, 0L);
+        auditService.saveTrainingRunEvent(wrongAnswerSubmitted, 0L);
     }
 
     /**
@@ -197,22 +197,22 @@ public class AuditEventsService {
                .trainingRunId(trainingRun.getId())
                .trainingInstanceId(trainingInstance.getId())
                .trainingDefinitionId(trainingInstance.getTrainingDefinition().getId())
-               .gameTime(computeGameTime(trainingRun.getStartTime()))
+               .trainingTime(computeTrainingTime(trainingRun.getStartTime()))
                .userRefId(trainingRun.getParticipantRef().getUserRefId())
                .level(trainingRun.getCurrentLevel().getId())
-               .totalGameScore(trainingRun.getTotalGameScore())
+               .totalTrainingScore(trainingRun.getTotalTrainingScore())
                .totalAssessmentScore(trainingRun.getTotalAssessmentScore())
                .actualScoreInLevel(trainingRun.getMaxLevelScore() - trainingRun.getCurrentPenalty());
         return builder;
     }
 
-    private long computeGameTime(LocalDateTime gameStartedTime) {
-        return ChronoUnit.MILLIS.between(gameStartedTime, LocalDateTime.now(Clock.systemUTC()));
+    private long computeTrainingTime(LocalDateTime trainingStartedTime) {
+        return ChronoUnit.MILLIS.between(trainingStartedTime, LocalDateTime.now(Clock.systemUTC()));
     }
 
     private LevelType getLevelType(AbstractLevel abstractLevel) {
-        if (abstractLevel instanceof GameLevel) {
-            return LevelType.GAME;
+        if (abstractLevel instanceof TrainingLevel) {
+            return LevelType.TRAINING;
         } else if (abstractLevel instanceof InfoLevel) {
             return LevelType.INFO;
         } else if (abstractLevel instanceof AssessmentLevel) {

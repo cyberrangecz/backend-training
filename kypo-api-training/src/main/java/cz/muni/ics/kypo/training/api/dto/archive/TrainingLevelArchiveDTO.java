@@ -1,48 +1,47 @@
-package cz.muni.ics.kypo.training.api.dto.gamelevel;
+package cz.muni.ics.kypo.training.api.dto.archive;
 
-import cz.muni.ics.kypo.training.api.dto.AbstractLevelDTO;
-import cz.muni.ics.kypo.training.api.dto.hint.HintDTO;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
- * Encapsulates information about game level. Inherits from {@link AbstractLevelDTO}
- *
+ * Encapsulates information about training level. Inherits from {@link AbstractLevelArchiveDTO}
+ * Used for archiving.
  */
-@ApiModel(value = "GameLevelDTO", description = "An assignment containing security tasks whose completion yields a flag.", parent = AbstractLevelDTO.class)
-public class GameLevelDTO extends AbstractLevelDTO {
+@ApiModel(value = "TrainingLevelArchiveDTO", description = "Archived training level.", parent = AbstractLevelArchiveDTO.class)
+public class TrainingLevelArchiveDTO extends AbstractLevelArchiveDTO{
 
-    @ApiModelProperty(value = "Keyword found in game, used for access next level.", example = "secretFlag")
-    private String flag;
+    @ApiModelProperty(value = "Keyword found in training, used for access next level.", example = "secretAnswer")
+    private String answer;
     @ApiModelProperty(value = "The information and experiences that are directed towards a participant.", example = "Play me")
     private String content;
-    @ApiModelProperty(value = "Instruction how to get flag in game.", example = "This is how you do it")
+    @ApiModelProperty(value = "Instruction how to get answer in training.", example = "This is how you do it")
     private String solution;
     @ApiModelProperty(value = "Sign if displaying of solution is penalized.", example = "true")
     private boolean solutionPenalized;
     @ApiModelProperty(value = "Information which helps player resolve the level.")
-    private Set<HintDTO> hints = new HashSet<>();
-    @ApiModelProperty(value = "How many times player can submit incorrect flag before displaying solution.", example = "5")
-    private int incorrectFlagLimit;
+    private Set<HintArchiveDTO> hints = new HashSet<>();
+    @ApiModelProperty(value = "How many times player can submit incorrect answer before displaying solution.", example = "5")
+    private int incorrectAnswerLimit;
 
     /**
-     * Gets flag.
+     * Gets answer.
      *
-     * @return the flag
+     * @return the answer
      */
-    public String getFlag() {
-        return flag;
+    public String getAnswer() {
+        return answer;
     }
 
     /**
-     * Sets flag.
+     * Sets answer.
      *
-     * @param flag the flag
+     * @param answer the answer
      */
-    public void setFlag(String flag) {
-        this.flag = flag;
+    public void setAnswer(String answer) {
+        this.answer = answer;
     }
 
     /**
@@ -84,7 +83,7 @@ public class GameLevelDTO extends AbstractLevelDTO {
     /**
      * Is solution penalized boolean.
      *
-     * @return true if incorrect solution is penalized
+     * @return the boolean
      */
     public boolean isSolutionPenalized() {
         return solutionPenalized;
@@ -102,48 +101,48 @@ public class GameLevelDTO extends AbstractLevelDTO {
     /**
      * Gets hints.
      *
-     * @return the set of {@link HintDTO}s
+     * @return the hints
      */
-    public Set<HintDTO> getHints() {
+    public Set<HintArchiveDTO> getHints() {
         return hints;
     }
 
     /**
      * Sets hints.
      *
-     * @param hints the set of {@link HintDTO}s
+     * @param hints the hints
      */
-    public void setHints(Set<HintDTO> hints) {
+    public void setHints(Set<HintArchiveDTO> hints) {
         this.hints = hints;
     }
 
     /**
-     * Gets incorrect flag limit.
+     * Gets incorrect answer limit.
      *
-     * @return the incorrect flag limit
+     * @return the incorrect answer limit
      */
-    public int getIncorrectFlagLimit() {
-        return incorrectFlagLimit;
+    public int getIncorrectAnswerLimit() {
+        return incorrectAnswerLimit;
     }
 
     /**
-     * Sets incorrect flag limit.
+     * Sets incorrect answer limit.
      *
-     * @param incorrectFlagLimit the incorrect flag limit
+     * @param incorrectAnswerLimit the incorrect answer limit
      */
-    public void setIncorrectFlagLimit(int incorrectFlagLimit) {
-        this.incorrectFlagLimit = incorrectFlagLimit;
+    public void setIncorrectAnswerLimit(int incorrectAnswerLimit) {
+        this.incorrectAnswerLimit = incorrectAnswerLimit;
     }
 
     @Override
     public String toString() {
-        return "GameLevelDTO{" +
-                "flag='" + flag + '\'' +
+        return "TrainingLevelArchiveDTO{" +
+                "answer='" + answer + '\'' +
                 ", content='" + content + '\'' +
                 ", solution='" + solution + '\'' +
                 ", solutionPenalized=" + solutionPenalized +
                 ", hints=" + hints +
-                ", incorrectFlagLimit=" + incorrectFlagLimit +
+                ", incorrectAnswerLimit=" + incorrectAnswerLimit +
                 '}';
     }
 }

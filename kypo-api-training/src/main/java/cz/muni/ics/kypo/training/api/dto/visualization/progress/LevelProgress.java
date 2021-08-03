@@ -29,9 +29,9 @@ public class LevelProgress {
     @ApiModelProperty(value = "Taken hints.", required = true)
     @JsonProperty(value = "hints_taken", required = true)
     private List<Long> hintsTaken = new ArrayList<>();
-    @ApiModelProperty(value = "Number of wrong flags.", required = true)
-    @JsonProperty(value = "wrong_flags_number", required = true)
-    private Long wrongFlagsNumber;
+    @ApiModelProperty(value = "Number of wrong answers.", required = true)
+    @JsonProperty(value = "wrong_answers_number", required = true)
+    private Long wrongAnswersNumber;
     @ApiModelProperty(value = "Events belong to the respective level.", required = true)
     @JsonProperty(value = "events", required = true)
     private List<AbstractAuditPOJO> events;
@@ -80,16 +80,16 @@ public class LevelProgress {
         this.hintsTaken.add(hintId);
     }
 
-    public Long getWrongFlagsNumber() {
-        return wrongFlagsNumber;
+    public Long getWrongAnswersNumber() {
+        return wrongAnswersNumber;
     }
 
-    public void setWrongFlagsNumber(Long wrongFlagsNumber) {
-        this.wrongFlagsNumber = wrongFlagsNumber;
+    public void setWrongAnswersNumber(Long wrongAnswersNumber) {
+        this.wrongAnswersNumber = wrongAnswersNumber;
     }
 
-    public void increaseWrongFlagsNumber() {
-        this.wrongFlagsNumber++;
+    public void increaseWrongAnswersNumber() {
+        this.wrongAnswersNumber++;
     }
 
     public List<AbstractAuditPOJO> getEvents() {
@@ -108,7 +108,7 @@ public class LevelProgress {
                 ", startTime=" + startTime +
                 ", endTime=" + endTime +
                 ", hintsTaken=" + hintsTaken +
-                ", wrongFlagsNumber=" + wrongFlagsNumber +
+                ", wrongAnswersNumber=" + wrongAnswersNumber +
                 ", events=" + events +
                 '}';
     }

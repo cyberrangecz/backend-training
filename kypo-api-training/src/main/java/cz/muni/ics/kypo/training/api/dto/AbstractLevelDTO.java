@@ -2,7 +2,7 @@ package cz.muni.ics.kypo.training.api.dto;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelDTO;
-import cz.muni.ics.kypo.training.api.dto.gamelevel.GameLevelDTO;
+import cz.muni.ics.kypo.training.api.dto.traininglevel.TrainingLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.infolevel.InfoLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.snapshothook.SnapshotHookDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionDTO;
@@ -14,25 +14,25 @@ import java.util.Objects;
 
 /**
  * Encapsulates information about abstract level.
- * Extended by {@link AssessmentLevelDTO}, {@link GameLevelDTO} and {@link InfoLevelDTO}
+ * Extended by {@link AssessmentLevelDTO}, {@link TrainingLevelDTO} and {@link InfoLevelDTO}
  *
  */
-@ApiModel(value = "AbstractLevelDTO", subTypes = {GameLevelDTO.class, InfoLevelDTO.class, AssessmentLevelDTO.class},
-        description = "Superclass for classes GameLevelDTO, AssessmentLevelDTO and InfoLevelDTO")
+@ApiModel(value = "AbstractLevelDTO", subTypes = {TrainingLevelDTO.class, InfoLevelDTO.class, AssessmentLevelDTO.class},
+        description = "Superclass for classes TrainingLevelDTO, AssessmentLevelDTO and InfoLevelDTO")
 @JsonSubTypes({
-        @JsonSubTypes.Type(value = GameLevelDTO.class, name = "GameLevelDTO"),
+        @JsonSubTypes.Type(value = TrainingLevelDTO.class, name = "TrainingLevelDTO"),
         @JsonSubTypes.Type(value = AssessmentLevelDTO.class, name = "AssessmentLevelDTO"),
         @JsonSubTypes.Type(value = InfoLevelDTO.class, name = "InfoLevelDTO")})
 public class AbstractLevelDTO {
 
     @ApiModelProperty(value = "Main identifier of level.", example = "1")
     protected Long id;
-    @ApiModelProperty(value = "Short textual description of the level.", example = "Game Level1")
+    @ApiModelProperty(value = "Short textual description of the level.", example = "Training Level1")
     protected String title;
     @ApiModelProperty(value = "The maximum score a participant can achieve during a level.", example = "20")
     protected int maxScore;
     protected SnapshotHookDTO snapshotHook;
-    @ApiModelProperty(value = "Type of the level.", example = "GAME")
+    @ApiModelProperty(value = "Type of the level.", example = "TRAINING")
     protected LevelType levelType;
     @ApiModelProperty(value = "Estimated time taken by the player to resolve the level.", example = "5")
     protected int estimatedDuration;

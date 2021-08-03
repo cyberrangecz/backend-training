@@ -2,7 +2,7 @@ package cz.muni.ics.kypo.training.facade;
 
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.PathBuilder;
-import cz.muni.ics.kypo.training.api.dto.IsCorrectFlagDTO;
+import cz.muni.ics.kypo.training.api.dto.IsCorrectAnswerDTO;
 import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
 import cz.muni.ics.kypo.training.mapping.mapstruct.*;
 import cz.muni.ics.kypo.training.persistence.model.*;
@@ -64,7 +64,7 @@ public class TrainingRunFacadeTest {
 
     private TrainingRun trainingRun1, trainingRun2;
     private Hint hint;
-    private GameLevel gameLevel;
+    private TrainingLevel trainingLevel;
     private InfoLevel infoLevel;
     private AssessmentLevel assessmentLevel;
     private UserRefDTO participantRefDTO;
@@ -99,11 +99,11 @@ public class TrainingRunFacadeTest {
         TrainingDefinition trainingDefinition = testDataFactory.getReleasedDefinition();
         trainingDefinition.setId(1L);
 
-        gameLevel = testDataFactory.getPenalizedLevel();
-        gameLevel.setId(1L);
-        gameLevel.setTrainingDefinition(trainingDefinition);
-        gameLevel.setOrder(0);
-        trainingRun1.setCurrentLevel(gameLevel);
+        trainingLevel = testDataFactory.getPenalizedLevel();
+        trainingLevel.setId(1L);
+        trainingLevel.setTrainingDefinition(trainingDefinition);
+        trainingLevel.setOrder(0);
+        trainingRun1.setCurrentLevel(trainingLevel);
 
         assessmentLevel = testDataFactory.getTest();
         assessmentLevel.setId(2L);
@@ -144,20 +144,20 @@ public class TrainingRunFacadeTest {
     }
 
     @Test
-    public void isCorrectFlagBeforeSolutionTaken() {
-        given(trainingRunService.isCorrectFlag(trainingRun1.getId(), "flag")).willReturn(true);
+    public void isCorrectAnswerBeforeSolutionTaken() {
+        given(trainingRunService.isCorrectAnswer(trainingRun1.getId(), "answer")).willReturn(true);
         given(trainingRunService.getRemainingAttempts(trainingRun1.getId())).willReturn(1);
-        IsCorrectFlagDTO correctFlagDTO = trainingRunFacade.isCorrectFlag(trainingRun1.getId(), "flag");
-        assertTrue(correctFlagDTO.isCorrect());
-        assertEquals(1, correctFlagDTO.getRemainingAttempts());
+        IsCorrectAnswerDTO correctAnswerDTO = trainingRunFacade.isCorrectAnswer(trainingRun1.getId(), "answer");
+        assertTrue(correctAnswerDTO.isCorrect());
+        assertEquals(1, correctAnswerDTO.getRemainingAttempts());
     }
 
     @Test
-    public void isCorrectFlagAfterSolutionTaken() {
-        given(trainingRunService.isCorrectFlag(trainingRun1.getId(), "flag")).willReturn(false);
-        IsCorrectFlagDTO correctFlagDTO = trainingRunFacade.isCorrectFlag(trainingRun1.getId(), "flag");
-        assertFalse(correctFlagDTO.isCorrect());
-        assertEquals(0, correctFlagDTO.getRemainingAttempts());
+    public void isCorrectAnswerAfterSolutionTaken() {
+        given(trainingRunService.isCorrectAnswer(trainingRun1.getId(), "answer")).willReturn(false);
+        IsCorrectAnswerDTO correctAnswerDTO = trainingRunFacade.isCorrectAnswer(trainingRun1.getId(), "answer");
+        assertFalse(correctAnswerDTO.isCorrect());
+        assertEquals(0, correctAnswerDTO.getRemainingAttempts());
     }
 
     @Test

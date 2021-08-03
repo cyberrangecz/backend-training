@@ -40,7 +40,7 @@ public class ExportImportServiceTest {
     @Mock
     private static InfoLevelRepository infoLevelRepository;
     @Mock
-    private static GameLevelRepository gameLevelRepository;
+    private static TrainingLevelRepository trainingLevelRepository;
     @Mock
     private static TrainingInstanceRepository trainingInstanceRepository;
     @Mock
@@ -49,7 +49,7 @@ public class ExportImportServiceTest {
     @Mock
     private static AssessmentLevel assessmentLevel;
     @Mock
-    private static GameLevel gameLevel;
+    private static TrainingLevel trainingLevel;
     @Mock
     private static InfoLevel infoLevel;
     @Mock
@@ -59,11 +59,11 @@ public class ExportImportServiceTest {
     public void init() {
         MockitoAnnotations.initMocks(this);
         exportImportService = new ExportImportService(trainingDefinitionRepository, abstractLevelRepository, assessmentLevelRepository,
-                questionAnswerRepository, infoLevelRepository, gameLevelRepository, trainingInstanceRepository, trainingRunRepository, pythonWebClient);
+                questionAnswerRepository, infoLevelRepository, trainingLevelRepository, trainingInstanceRepository, trainingRunRepository, pythonWebClient);
 
         given(assessmentLevel.getId()).willReturn(1L);
         given(assessmentLevel.getQuestions()).willReturn(new ArrayList<>());
-        given(gameLevel.getId()).willReturn(2L);
+        given(trainingLevel.getId()).willReturn(2L);
         given(infoLevel.getId()).willReturn(3L);
 
     }
@@ -73,11 +73,11 @@ public class ExportImportServiceTest {
         TrainingDefinition trainingDefinition = new TrainingDefinition();
 
         exportImportService.createLevel(assessmentLevel, trainingDefinition);
-        exportImportService.createLevel(gameLevel, trainingDefinition);
+        exportImportService.createLevel(trainingLevel, trainingDefinition);
         exportImportService.createLevel(infoLevel, trainingDefinition);
 
         then(assessmentLevelRepository).should().save(assessmentLevel);
-        then(gameLevelRepository).should().save(gameLevel);
+        then(trainingLevelRepository).should().save(trainingLevel);
         then(infoLevelRepository).should().save(infoLevel);
     }
 

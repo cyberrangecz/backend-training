@@ -8,7 +8,7 @@ import cz.muni.ics.kypo.training.annotations.transactions.TransactionalRO;
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalWO;
 import cz.muni.ics.kypo.training.api.dto.AbstractLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.BasicLevelInfoDTO;
-import cz.muni.ics.kypo.training.api.dto.IsCorrectFlagDTO;
+import cz.muni.ics.kypo.training.api.dto.IsCorrectAnswerDTO;
 import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.question.QuestionAnswerDTO;
@@ -169,12 +169,12 @@ public class TrainingRunFacade {
     public AccessTrainingRunDTO resumeTrainingRun(Long trainingRunId) {
         TrainingRun trainingRun = trainingRunService.resumeTrainingRun(trainingRunId);
         AccessTrainingRunDTO accessTrainingRunDTO = convertToAccessTrainingRunDTO(trainingRun);
-        if (trainingRun.getCurrentLevel() instanceof GameLevel) {
+        if (trainingRun.getCurrentLevel() instanceof TrainingLevel) {
             if (trainingRun.isSolutionTaken()) {
-                accessTrainingRunDTO.setTakenSolution(((GameLevel) trainingRun.getCurrentLevel()).getSolution());
+                accessTrainingRunDTO.setTakenSolution(((TrainingLevel) trainingRun.getCurrentLevel()).getSolution());
             }
             trainingRun.getHintInfoList().forEach(hintInfo -> {
-                        if (hintInfo.getGameLevelId().equals(trainingRun.getCurrentLevel().getId())) {
+                        if (hintInfo.getTrainingLevelId().equals(trainingRun.getCurrentLevel().getId())) {
                             accessTrainingRunDTO.getTakenHints().add(hintMapper.mapToDTO(hintInfo));
                         }
                     }
@@ -232,8 +232,8 @@ public class TrainingRunFacade {
         for (AbstractLevel abstractLevel : levels) {
             if (abstractLevel instanceof AssessmentLevel) {
                 infoAboutLevels.add(new BasicLevelInfoDTO(abstractLevel.getId(), abstractLevel.getTitle(), LevelType.ASSESSMENT_LEVEL, abstractLevel.getOrder()));
-            } else if (abstractLevel instanceof GameLevel) {
-                infoAboutLevels.add(new BasicLevelInfoDTO(abstractLevel.getId(), abstractLevel.getTitle(), LevelType.GAME_LEVEL, abstractLevel.getOrder()));
+            } else if (abstractLevel instanceof TrainingLevel) {
+                infoAboutLevels.add(new BasicLevelInfoDTO(abstractLevel.getId(), abstractLevel.getTitle(), LevelType.TRAINING_LEVEL, abstractLevel.getOrder()));
             } else {
                 infoAboutLevels.add(new BasicLevelInfoDTO(abstractLevel.getId(), abstractLevel.getTitle(), LevelType.INFO_LEVEL, abstractLevel.getOrder()));
             }
@@ -316,23 +316,23 @@ public class TrainingRunFacade {
     }
 
     /**
-     * Check given flag of given Training Run.
+     * Check given answer of given Training Run.
      *
-     * @param trainingRunId id of Training Run to check flag.
-     * @param flag          string which player submit.
-     * @return true if flag is correct, false if flag is wrong.
+     * @param trainingRunId id of Training Run to check answer.
+     * @param answer          string which player submit.
+     * @return true if answer is correct, false if answer is wrong.
      */
     @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
             "or @securityService.isTraineeOfGivenTrainingRun(#trainingRunId)")
     @TransactionalWO
-    public IsCorrectFlagDTO isCorrectFlag(Long trainingRunId, String flag) {
-        IsCorrectFlagDTO correctFlagDTO = new IsCorrectFlagDTO();
-        correctFlagDTO.setCorrect(trainingRunService.isCorrectFlag(trainingRunId, flag));
-        correctFlagDTO.setRemainingAttempts(trainingRunService.getRemainingAttempts(trainingRunId));
-        if (correctFlagDTO.getRemainingAttempts() == 0) {
-            correctFlagDTO.setSolution(getSolution(trainingRunId));
+    public IsCorrectAnswerDTO isCorrectAnswer(Long trainingRunId, String answer) {
+        IsCorrectAnswerDTO correctAnswerDTO = new IsCorrectAnswerDTO();
+        correctAnswerDTO.setCorrect(trainingRunService.isCorrectAnswer(trainingRunId, answer));
+        correctAnswerDTO.setRemainingAttempts(trainingRunService.getRemainingAttempts(trainingRunId));
+        if (correctAnswerDTO.getRemainingAttempts() == 0) {
+            correctAnswerDTO.setSolution(getSolution(trainingRunId));
         }
-        return correctFlagDTO;
+        return correctAnswerDTO;
     }
 
     /**
@@ -442,10 +442,10 @@ public class TrainingRunFacade {
             abstractLevelDTO = levelMapper.mapToAssessmentLevelDTO(assessmentLevel);
             abstractLevelDTO.setLevelType(LevelType.ASSESSMENT_LEVEL);
             deleteInfoAboutCorrectnessFromQuestions((AssessmentLevelDTO) abstractLevelDTO);
-        } else if (abstractLevel instanceof GameLevel) {
-            GameLevel gameLevel = (GameLevel) abstractLevel;
-            abstractLevelDTO = levelMapper.mapToViewDTO(gameLevel);
-            abstractLevelDTO.setLevelType(LevelType.GAME_LEVEL);
+        } else if (abstractLevel instanceof TrainingLevel) {
+            TrainingLevel trainingLevel = (TrainingLevel) abstractLevel;
+            abstractLevelDTO = levelMapper.mapToViewDTO(trainingLevel);
+            abstractLevelDTO.setLevelType(LevelType.TRAINING_LEVEL);
         } else {
             InfoLevel infoLevel = (InfoLevel) abstractLevel;
             abstractLevelDTO = levelMapper.mapToInfoLevelDTO(infoLevel);

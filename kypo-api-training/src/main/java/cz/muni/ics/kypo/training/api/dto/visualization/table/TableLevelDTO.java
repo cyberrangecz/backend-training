@@ -5,19 +5,19 @@ import cz.muni.ics.kypo.training.api.dto.visualization.commons.VisualizationAbst
 import java.util.Objects;
 
 public class TableLevelDTO extends VisualizationAbstractLevelDTO {
-    private final Integer wrongFlags;
+    private final Integer wrongAnswers;
     private final Integer hintsTaken;
     private final int participantLevelScore;
 
     public TableLevelDTO(TableLevelBuilder builder) {
         super(builder);
-        this.wrongFlags = builder.wrongFlags;
+        this.wrongAnswers = builder.wrongAnswers;
         this.hintsTaken = builder.hintsTaken;
         this.participantLevelScore = builder.score;
     }
 
-    public Integer getWrongFlags() {
-        return wrongFlags;
+    public Integer getWrongAnswers() {
+        return wrongAnswers;
     }
 
     public Integer getHintsTaken() {
@@ -43,7 +43,7 @@ public class TableLevelDTO extends VisualizationAbstractLevelDTO {
     }
 
     public static class TableLevelBuilder extends BaseBuilder<TableLevelDTO, TableLevelDTO.TableLevelBuilder> {
-        private Integer wrongFlags;
+        private Integer wrongAnswers;
         private Integer hintsTaken;
         private int score;
 
@@ -52,8 +52,8 @@ public class TableLevelDTO extends VisualizationAbstractLevelDTO {
             return this;
         }
 
-        public TableLevelDTO.TableLevelBuilder wrongFlags(Integer wrongFlags) {
-            this.wrongFlags = wrongFlags;
+        public TableLevelDTO.TableLevelBuilder wrongAnswers(Integer wrongAnswers) {
+            this.wrongAnswers = wrongAnswers;
             return this;
         }
 

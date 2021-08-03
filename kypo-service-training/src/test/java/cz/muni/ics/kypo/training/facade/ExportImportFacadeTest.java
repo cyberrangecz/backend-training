@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import cz.muni.ics.kypo.training.api.dto.export.ExportTrainingDefinitionAndLevelsDTO;
 import cz.muni.ics.kypo.training.api.dto.export.FileToReturnDTO;
 import cz.muni.ics.kypo.training.api.dto.imports.AssessmentLevelImportDTO;
-import cz.muni.ics.kypo.training.api.dto.imports.GameLevelImportDTO;
+import cz.muni.ics.kypo.training.api.dto.imports.TrainingLevelImportDTO;
 import cz.muni.ics.kypo.training.api.dto.imports.ImportTrainingDefinitionDTO;
 import cz.muni.ics.kypo.training.api.dto.imports.InfoLevelImportDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionByIdDTO;
@@ -65,7 +65,7 @@ public class ExportImportFacadeTest {
     private TrainingDefinition trainingDefinition;
     private TrainingDefinition trainingDefinitionImported;
     private AssessmentLevel assessmentLevel;
-    private GameLevel gameLevel;
+    private TrainingLevel trainingLevel;
     private InfoLevel infoLevel;
     private ImportTrainingDefinitionDTO importTrainingDefinitionDTO;
     private ElasticsearchApiService elasticsearchApiService;
@@ -79,8 +79,8 @@ public class ExportImportFacadeTest {
         assessmentLevel = testDataFactory.getTest();
         assessmentLevel.setId(1L);
 
-        gameLevel = testDataFactory.getPenalizedLevel();
-        gameLevel.setId(2L);
+        trainingLevel = testDataFactory.getPenalizedLevel();
+        trainingLevel.setId(2L);
 
         infoLevel = testDataFactory.getInfoLevel1();
         infoLevel.setId(3L);
@@ -88,7 +88,7 @@ public class ExportImportFacadeTest {
         AssessmentLevelImportDTO importAssessmentLevelDTO = testDataFactory.getAssessmentLevelImportDTO();
         importAssessmentLevelDTO.setOrder(3);
 
-        GameLevelImportDTO importGameLevelDTO = testDataFactory.getGameLevelImportDTO();
+        TrainingLevelImportDTO importGameLevelDTO = testDataFactory.getTrainingLevelImportDTO();
         importGameLevelDTO.setOrder(2);
 
         InfoLevelImportDTO importInfoLevelDTO = testDataFactory.getInfoLevelImportDTO();
@@ -114,7 +114,7 @@ public class ExportImportFacadeTest {
     public void dbExport() throws Exception {
         given(exportImportService.findById(trainingDefinition.getId())).willReturn(trainingDefinition);
         given(trainingDefinitionService.findLevelById(infoLevel.getId())).willReturn(infoLevel);
-        given(trainingDefinitionService.findLevelById(gameLevel.getId())).willReturn(gameLevel);
+        given(trainingDefinitionService.findLevelById(trainingLevel.getId())).willReturn(trainingLevel);
         given(trainingDefinitionService.findLevelById(assessmentLevel.getId())).willReturn(assessmentLevel);
         ExportTrainingDefinitionAndLevelsDTO exportedTrainingDefinition = exportImportMapper.mapToDTO(trainingDefinition);
         given(objectMapper.writeValueAsBytes(any(ExportTrainingDefinitionAndLevelsDTO.class))).willReturn(convertObjectToJsonBytes(exportedTrainingDefinition));

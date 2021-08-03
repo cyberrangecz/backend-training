@@ -5,7 +5,7 @@ import java.util.Objects;
 
 /**
  * Class representing levels from Training definition.
- * This class is extended by GameLevel, InfoLevel and AssessmentLevel.
+ * This class is extended by TrainingLevel, InfoLevel and AssessmentLevel.
  */
 @Entity
 @Table(name = "abstract_level")

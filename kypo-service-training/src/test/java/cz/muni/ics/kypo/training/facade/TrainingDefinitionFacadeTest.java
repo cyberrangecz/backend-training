@@ -6,7 +6,7 @@ import cz.muni.ics.kypo.training.api.dto.AbstractLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.BasicLevelInfoDTO;
 import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelUpdateDTO;
-import cz.muni.ics.kypo.training.api.dto.gamelevel.GameLevelUpdateDTO;
+import cz.muni.ics.kypo.training.api.dto.traininglevel.TrainingLevelUpdateDTO;
 import cz.muni.ics.kypo.training.api.dto.infolevel.InfoLevelUpdateDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionByIdDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionCreateDTO;
@@ -86,8 +86,8 @@ public class TrainingDefinitionFacadeTest {
     private AssessmentLevel assessmentLevel;
     private AssessmentLevelUpdateDTO alUpdate;
 
-    private GameLevel gameLevel;
-    private GameLevelUpdateDTO gameLevelUpdate;
+    private TrainingLevel trainingLevel;
+    private TrainingLevelUpdateDTO gameLevelUpdate;
 
     private InfoLevel infoLevel;
     private InfoLevelUpdateDTO infoLevelUpdate;
@@ -117,11 +117,11 @@ public class TrainingDefinitionFacadeTest {
         authorDTO2 = createUserRefDTO(20L, "Bc. Peter Reeves", "Reeves", "Peter", "mail2@muni.cz", "https://oidc.muni.cz/oidc", null);
         authorDTO3 = createUserRefDTO(30L, "Ing. Lee Nicholls", "Nicholls", "Lee", "mail3@muni.cz", "https://oidc.muni.cz/oidc", null);
 
-        gameLevel = testDataFactory.getPenalizedLevel();
-        gameLevel.setId(2L);
-        gameLevel.setOrder(2);
+        trainingLevel = testDataFactory.getPenalizedLevel();
+        trainingLevel.setId(2L);
+        trainingLevel.setOrder(2);
 
-        gameLevelUpdate = testDataFactory.getGameLevelUpdateDTO();
+        gameLevelUpdate = testDataFactory.getTrainingLevelUpdateDTO();
         gameLevelUpdate.setId(2L);
 
         infoLevel = testDataFactory.getInfoLevel1();
@@ -154,13 +154,13 @@ public class TrainingDefinitionFacadeTest {
     @Test
     public void findTrainingDefinitionById() {
         given(trainingDefinitionService.findById(1L)).willReturn(trainingDefinition1);
-        given(trainingDefinitionService.findAllLevelsFromDefinition(anyLong())).willReturn(List.of(gameLevel));
+        given(trainingDefinitionService.findAllLevelsFromDefinition(anyLong())).willReturn(List.of(trainingLevel));
         TrainingDefinitionByIdDTO definition = trainingDefinitionFacade.findById(1L);
         assertEquals(1, definition.getLevels().size());
         AbstractLevelDTO level = definition.getLevels().get(0);
-        assertEquals(gameLevel.getTitle(), level.getTitle());
-        assertEquals(gameLevel.getOrder(), level.getOrder());
-        assertEquals(gameLevel.getId(), level.getId());
+        assertEquals(trainingLevel.getTitle(), level.getTitle());
+        assertEquals(trainingLevel.getOrder(), level.getOrder());
+        assertEquals(trainingLevel.getId(), level.getId());
         then(trainingDefinitionService).should().findById(1L);
     }
 
@@ -214,13 +214,13 @@ public class TrainingDefinitionFacadeTest {
     @Test
     public void cloneTrainingDefinition() {
         given(trainingDefinitionService.clone(trainingDefinition1.getId(), "title")).willReturn(trainingDefinition1);
-        given(trainingDefinitionService.findAllLevelsFromDefinition(anyLong())).willReturn(List.of(gameLevel));
+        given(trainingDefinitionService.findAllLevelsFromDefinition(anyLong())).willReturn(List.of(trainingLevel));
         TrainingDefinitionByIdDTO definition = trainingDefinitionFacade.clone(trainingDefinition1.getId(), "title");
         assertEquals(1, definition.getLevels().size());
         AbstractLevelDTO level = definition.getLevels().get(0);
-        assertEquals(gameLevel.getTitle(), level.getTitle());
-        assertEquals(gameLevel.getOrder(), level.getOrder());
-        assertEquals(gameLevel.getId(), level.getId());
+        assertEquals(trainingLevel.getTitle(), level.getTitle());
+        assertEquals(trainingLevel.getOrder(), level.getOrder());
+        assertEquals(trainingLevel.getId(), level.getId());
         then(trainingDefinitionService).should().clone(trainingDefinition1.getId(), "title");
     }
 
@@ -247,8 +247,8 @@ public class TrainingDefinitionFacadeTest {
 
     @Test
     public void updateGameLevel() {
-        trainingDefinitionFacade.updateGameLevel(trainingDefinition2.getId(), gameLevelUpdate);
-        then(trainingDefinitionService).should().updateGameLevel(trainingDefinition2.getId(),
+        trainingDefinitionFacade.updateTrainingLevel(trainingDefinition2.getId(), gameLevelUpdate);
+        then(trainingDefinitionService).should().updateTrainingLevel(trainingDefinition2.getId(),
                 levelMapper.mapUpdateToEntity(gameLevelUpdate));
     }
 
@@ -272,13 +272,13 @@ public class TrainingDefinitionFacadeTest {
 
     @Test
     public void createGameLevel() {
-        given(trainingDefinitionService.createGameLevel(trainingDefinition1.getId())).willReturn(gameLevel);
-        BasicLevelInfoDTO level = trainingDefinitionFacade.createGameLevel(trainingDefinition1.getId());
-        assertEquals(LevelType.GAME_LEVEL.name(), level.getLevelType().name());
+        given(trainingDefinitionService.createTrainingLevel(trainingDefinition1.getId())).willReturn(trainingLevel);
+        BasicLevelInfoDTO level = trainingDefinitionFacade.createTrainingLevel(trainingDefinition1.getId());
+        assertEquals(LevelType.TRAINING_LEVEL.name(), level.getLevelType().name());
         assertEquals(level.getOrder(), level.getOrder());
         assertEquals(level.getId(), level.getId());
         assertEquals(level.getTitle(), level.getTitle());
-        then(trainingDefinitionService).should().createGameLevel(trainingDefinition1.getId());
+        then(trainingDefinitionService).should().createTrainingLevel(trainingDefinition1.getId());
     }
 
     @Test
@@ -294,11 +294,11 @@ public class TrainingDefinitionFacadeTest {
 
     @Test
     public void findLevelByIdGameLevel() {
-        given(trainingDefinitionService.findLevelById(gameLevel.getId())).willReturn(gameLevel);
-        AbstractLevelDTO g = trainingDefinitionFacade.findLevelById(gameLevel.getId());
+        given(trainingDefinitionService.findLevelById(trainingLevel.getId())).willReturn(trainingLevel);
+        AbstractLevelDTO g = trainingDefinitionFacade.findLevelById(trainingLevel.getId());
 
-        assertEquals(levelMapper.mapToDTO(gameLevel), g);
-        assertEquals(cz.muni.ics.kypo.training.api.enums.LevelType.GAME_LEVEL, g.getLevelType());
+        assertEquals(levelMapper.mapToDTO(trainingLevel), g);
+        assertEquals(LevelType.TRAINING_LEVEL, g.getLevelType());
     }
 
     @Test

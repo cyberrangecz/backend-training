@@ -15,7 +15,7 @@ import java.util.Objects;
  * Encapsulates information about Training Instance
  *
  */
-@ApiModel(value = "TrainingInstanceDTO", description = "A session of attending a concrete training, which involves a deployment of the training definition in one or more sandbox instances that are then assigned to participants. The instance comprises one or more game runs.")
+@ApiModel(value = "TrainingInstanceDTO", description = "A session of attending a concrete training, which involves a deployment of the training definition in one or more sandbox instances that are then assigned to participants. The instance comprises one or more training runs.")
 public class TrainingInstanceDTO {
 
     @ApiModelProperty(value = "Main identifier of training instance.", example = "1")

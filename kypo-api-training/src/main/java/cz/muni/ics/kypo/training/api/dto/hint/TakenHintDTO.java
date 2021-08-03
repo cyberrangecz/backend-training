@@ -17,7 +17,7 @@ public class TakenHintDTO {
     private String title;
     @ApiModelProperty(value = "The information and experiences that are directed towards a participant.", example = "Very good advice")
     private String content;
-    @ApiModelProperty(value = "The order of hint in game level", example = "1")
+    @ApiModelProperty(value = "The order of hint in training level", example = "1")
     private int order;
 
     /**

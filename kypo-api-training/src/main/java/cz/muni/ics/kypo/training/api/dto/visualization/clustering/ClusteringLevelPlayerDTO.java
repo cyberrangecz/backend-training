@@ -45,7 +45,7 @@ public class ClusteringLevelPlayerDTO extends PlayerDataDTO {
                 ", trainingRunId=" + getTrainingRunId() +
                 ", name='" + getName() + '\'' +
                 ", trainingTime=" + getTrainingTime() +
-                ", gameScore=" + participantLevelScore +
+                ", participantLevelScore=" + participantLevelScore +
                 ", finished=" + finished +
                 '}';
     }

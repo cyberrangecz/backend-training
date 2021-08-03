@@ -15,7 +15,7 @@ public class LevelTabsLevelDTO extends VisualizationAbstractLevelDTO {
     private final long estimatedTime;
     private final int maxLevelScore;
     private final String content;
-    private final String correctFlag;
+    private final String correctAnswer;
     private final List<LevelTabsHintDTO> hints;
     private final List<LevelTabsPlayerDTO> players;
     private final AssessmentType assessmentType;
@@ -27,7 +27,7 @@ public class LevelTabsLevelDTO extends VisualizationAbstractLevelDTO {
         this.estimatedTime = builder.estimatedTime;
         this.maxLevelScore = builder.maxLevelScore;
         this.content = builder.content;
-        this.correctFlag = builder.correctFlag;
+        this.correctAnswer = builder.correctAnswer;
         this.hints = builder.hints;
         this.players = builder.players;
         this.assessmentType = builder.assessmentType;
@@ -49,8 +49,8 @@ public class LevelTabsLevelDTO extends VisualizationAbstractLevelDTO {
         return content;
     }
 
-    public String getCorrectFlag() {
-        return correctFlag;
+    public String getCorrectAnswer() {
+        return correctAnswer;
     }
 
     public List<LevelTabsHintDTO> getHints() {
@@ -85,7 +85,7 @@ public class LevelTabsLevelDTO extends VisualizationAbstractLevelDTO {
         private long estimatedTime;
         private String content;
         private int maxLevelScore;
-        private String correctFlag;
+        private String correctAnswer;
         private List<LevelTabsHintDTO> hints;
         private List<LevelTabsPlayerDTO> players = new ArrayList<>();
         private AssessmentType assessmentType;
@@ -119,8 +119,8 @@ public class LevelTabsLevelDTO extends VisualizationAbstractLevelDTO {
             return actualClassBuilder;
         }
 
-        public LevelTabsLevelBuilder correctFlag(String correctFlag) {
-            this.correctFlag = correctFlag;
+        public LevelTabsLevelBuilder correctAnswer(String correctAnswer) {
+            this.correctAnswer = correctAnswer;
             return this;
         }
 

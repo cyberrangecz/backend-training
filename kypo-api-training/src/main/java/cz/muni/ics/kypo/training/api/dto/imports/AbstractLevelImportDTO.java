@@ -6,29 +6,29 @@ import cz.muni.ics.kypo.training.api.enums.LevelType;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
-import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 /**
  * Encapsulates information about abstract level.
- * Extended by {@link AssessmentLevelImportDTO}, {@link GameLevelImportDTO} and {@link InfoLevelImportDTO}
+ * Extended by {@link AssessmentLevelImportDTO}, {@link TrainingLevelImportDTO} and {@link InfoLevelImportDTO}
  *
  */
-@ApiModel(value = "AbstractLevelImportDTO", subTypes = {GameLevelImportDTO.class, InfoLevelImportDTO.class, AssessmentLevelImportDTO.class},
-		description = "Superclass for classes GameLevelImportDTO, AssessmentLevelImportDTO and InfoLevelImportDTO")
+@ApiModel(value = "AbstractLevelImportDTO", subTypes = {TrainingLevelImportDTO.class, InfoLevelImportDTO.class, AssessmentLevelImportDTO.class},
+		description = "Superclass for classes TrainingLevelImportDTO, AssessmentLevelImportDTO and InfoLevelImportDTO")
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.EXISTING_PROPERTY, property = "level_type", visible = true)
 @JsonSubTypes({
-		@JsonSubTypes.Type(value = GameLevelImportDTO.class, name = "GAME_LEVEL"),
+		@JsonSubTypes.Type(value = TrainingLevelImportDTO.class, name = "TRAINING_LEVEL"),
+		@JsonSubTypes.Type(value = TrainingLevelImportDTO.class, name = "GAME_LEVEL"),
 		@JsonSubTypes.Type(value = AssessmentLevelImportDTO.class, name = "ASSESSMENT_LEVEL"),
 		@JsonSubTypes.Type(value = InfoLevelImportDTO.class, name = "INFO_LEVEL")})
 public class AbstractLevelImportDTO {
 
-	@ApiModelProperty(value = "Short textual description of the level.", example = "Game Level1")
+	@ApiModelProperty(value = "Short textual description of the level.", example = "Training Level1")
 	@NotEmpty(message = "{abstractLevel.title.NotEmpty.message}")
 	protected String title;
-	@ApiModelProperty(value = "Type of the level.", example = "GAME_LEVEL")
+	@ApiModelProperty(value = "Type of the level.", example = "TRAINING_LEVEL")
 	@NotNull(message = "{abstractLevel.type.NotNull.message}")
 	protected LevelType levelType;
 	@ApiModelProperty(value = "Order of level, starts with 0", example = "2")

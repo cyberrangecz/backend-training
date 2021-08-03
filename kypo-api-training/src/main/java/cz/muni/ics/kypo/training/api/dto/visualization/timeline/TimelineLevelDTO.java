@@ -10,8 +10,8 @@ import java.util.Objects;
 public class TimelineLevelDTO extends VisualizationAbstractLevelDTO {
 
     private final Long solutionDisplayedTime;
-    private final Long correctFlagTime;
-    private final Integer wrongFlags;
+    private final Long correctAnswerTime;
+    private final Integer wrongAnswers;
     private final Integer hintsTaken;
     private final long startTime;
     private final int participantLevelScore;
@@ -22,8 +22,8 @@ public class TimelineLevelDTO extends VisualizationAbstractLevelDTO {
     public TimelineLevelDTO(TimelineLevelBuilder timelineLevelBuilder) {
         super(timelineLevelBuilder);
         this.solutionDisplayedTime = timelineLevelBuilder.solutionDisplayedTime;
-        this.correctFlagTime = timelineLevelBuilder.correctFlagTime;
-        this.wrongFlags = timelineLevelBuilder.wrongFlags;
+        this.correctAnswerTime = timelineLevelBuilder.correctAnswerTime;
+        this.wrongAnswers = timelineLevelBuilder.wrongAnswers;
         this.hintsTaken = timelineLevelBuilder.hintsTaken;
         this.assessmentType = timelineLevelBuilder.assessmentType;
         this.participantLevelScore = timelineLevelBuilder.participantScore;
@@ -31,16 +31,16 @@ public class TimelineLevelDTO extends VisualizationAbstractLevelDTO {
         this.startTime = timelineLevelBuilder.startTime;
     }
 
-    public Long getCorrectFlagTime() {
-        return correctFlagTime;
+    public Long getCorrectAnswerTime() {
+        return correctAnswerTime;
     }
 
     public Long getSolutionDisplayedTime() {
         return solutionDisplayedTime;
     }
 
-    public Integer getWrongFlags() {
-        return wrongFlags;
+    public Integer getWrongAnswers() {
+        return wrongAnswers;
     }
 
     public Integer getHintsTaken() {
@@ -80,8 +80,8 @@ public class TimelineLevelDTO extends VisualizationAbstractLevelDTO {
 
     public static class TimelineLevelBuilder extends BaseBuilder<TimelineLevelDTO, TimelineLevelBuilder> {
         private Long solutionDisplayedTime;
-        private Long correctFlagTime;
-        private Integer wrongFlags;
+        private Long correctAnswerTime;
+        private Integer wrongAnswers;
         private Integer hintsTaken;
         private AssessmentType assessmentType;
         private long startTime;
@@ -98,8 +98,8 @@ public class TimelineLevelDTO extends VisualizationAbstractLevelDTO {
             return this;
         }
 
-        public TimelineLevelBuilder wrongFlags(Integer wrongFlags) {
-            this.wrongFlags = wrongFlags;
+        public TimelineLevelBuilder wrongAnswers(Integer wrongAnswers) {
+            this.wrongAnswers = wrongAnswers;
             return this;
         }
 
@@ -108,8 +108,8 @@ public class TimelineLevelDTO extends VisualizationAbstractLevelDTO {
             return this;
         }
 
-        public TimelineLevelBuilder correctFlagTime(Long correctFlagTime) {
-            this.correctFlagTime = correctFlagTime;
+        public TimelineLevelBuilder correctAnswerTime(Long correctAnswerTime) {
+            this.correctAnswerTime = correctAnswerTime;
             return this;
         }
 

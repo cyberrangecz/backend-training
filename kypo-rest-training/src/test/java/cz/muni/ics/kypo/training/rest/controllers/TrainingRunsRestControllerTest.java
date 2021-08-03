@@ -2,11 +2,11 @@ package cz.muni.ics.kypo.training.rest.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.querydsl.core.types.Predicate;
-import cz.muni.ics.kypo.training.api.dto.IsCorrectFlagDTO;
+import cz.muni.ics.kypo.training.api.dto.IsCorrectAnswerDTO;
 import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelDTO;
-import cz.muni.ics.kypo.training.api.dto.gamelevel.GameLevelDTO;
-import cz.muni.ics.kypo.training.api.dto.gamelevel.ValidateFlagDTO;
+import cz.muni.ics.kypo.training.api.dto.traininglevel.TrainingLevelDTO;
+import cz.muni.ics.kypo.training.api.dto.traininglevel.ValidateAnswerDTO;
 import cz.muni.ics.kypo.training.api.dto.hint.HintDTO;
 import cz.muni.ics.kypo.training.api.dto.infolevel.InfoLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.run.AccessTrainingRunDTO;
@@ -31,7 +31,6 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -49,7 +48,6 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -88,14 +86,14 @@ public class TrainingRunsRestControllerTest {
     private AccessTrainingRunDTO accessTrainingRunDTO;
     private AssessmentLevelDTO assessmentLevelDTO;
     private InfoLevelDTO infoLevelDTO;
-    private GameLevelDTO gameLevelDTO;
+    private TrainingLevelDTO trainingLevelDTO;
     private HintDTO hintDTO;
     private AccessedTrainingRunDTO accessedTrainingRunDTO;
-    private IsCorrectFlagDTO isCorrectFlagDTO;
+    private IsCorrectAnswerDTO isCorrectAnswerDTO;
     private TrainingRunByIdDTO trainingRunByIdDTO;
     private UserRefDTO participantDTO1;
     private UserRef participant1;
-    private ValidateFlagDTO validFlagDTO;
+    private ValidateAnswerDTO validAnswerDTO;
 
 
     @Before
@@ -122,8 +120,8 @@ public class TrainingRunsRestControllerTest {
 
         accessTrainingRunDTO = new AccessTrainingRunDTO();
 
-        gameLevelDTO = testDataFactory.getGameLevelDTO();
-        gameLevelDTO.setId(1L);
+        trainingLevelDTO = testDataFactory.getTrainingLevelDTO();
+        trainingLevelDTO.setId(1L);
 
         infoLevelDTO = testDataFactory.getInfoLevelDTO();
         infoLevelDTO.setId(2L);
@@ -134,15 +132,15 @@ public class TrainingRunsRestControllerTest {
         hintDTO = testDataFactory.getHintDTO();
         hintDTO.setId(1L);
 
-        isCorrectFlagDTO = new IsCorrectFlagDTO();
-        isCorrectFlagDTO.setCorrect(true);
-        isCorrectFlagDTO.setRemainingAttempts(2);
+        isCorrectAnswerDTO = new IsCorrectAnswerDTO();
+        isCorrectAnswerDTO.setCorrect(true);
+        isCorrectAnswerDTO.setRemainingAttempts(2);
 
         accessedTrainingRunDTO = testDataFactory.getAccessedTrainingRunDTO();
         accessedTrainingRunDTO.setId(1L);
 
-        validFlagDTO = new ValidateFlagDTO();
-        validFlagDTO.setFlag("flag");
+        validAnswerDTO = new ValidateAnswerDTO();
+        validAnswerDTO.setAnswer("answer");
 
         pageAccessed = new PageImpl<>(List.of(accessedTrainingRunDTO));
         page = new PageImpl<>(List.of(trainingRun1, trainingRun2));
@@ -239,12 +237,12 @@ public class TrainingRunsRestControllerTest {
 
     @Test
     public void getNextLevel_Game() throws Exception {
-        given(trainingRunFacade.getNextLevel(gameLevelDTO.getId())).willReturn(gameLevelDTO);
+        given(trainingRunFacade.getNextLevel(trainingLevelDTO.getId())).willReturn(trainingLevelDTO);
         MockHttpServletResponse result = mockMvc.perform(get("/training-runs/{runId}/next-levels", 1L))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andReturn().getResponse();
-        assertEquals(convertObjectToJsonBytes(convertObjectToJsonBytes(gameLevelDTO)), result.getContentAsString());
+        assertEquals(convertObjectToJsonBytes(convertObjectToJsonBytes(trainingLevelDTO)), result.getContentAsString());
     }
 
     @Test
@@ -309,25 +307,25 @@ public class TrainingRunsRestControllerTest {
     }
 
     @Test
-    public void isCorrectFlag() throws Exception {
-        given(trainingRunFacade.isCorrectFlag(trainingRun1.getId(), "flag")).willReturn(isCorrectFlagDTO);
-        MockHttpServletResponse result = mockMvc.perform(post("/training-runs/{runId}/is-correct-flag", trainingRun1.getId())
+    public void isCorrectAnswer() throws Exception {
+        given(trainingRunFacade.isCorrectAnswer(trainingRun1.getId(), "answer")).willReturn(isCorrectAnswerDTO);
+        MockHttpServletResponse result = mockMvc.perform(post("/training-runs/{runId}/is-correct-answer", trainingRun1.getId())
                 .param("solutionTaken", "true")
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
-                .content(convertObjectToJsonBytes(validFlagDTO)))
+                .content(convertObjectToJsonBytes(validAnswerDTO)))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andReturn().getResponse();
-        assertEquals(isCorrectFlagDTO, ObjectConverter.convertJsonBytesToObject(result.getContentAsString(), IsCorrectFlagDTO.class));
+        assertEquals(isCorrectAnswerDTO, ObjectConverter.convertJsonBytesToObject(result.getContentAsString(), IsCorrectAnswerDTO.class));
     }
 
     @Test
-    public void isCorrectFlag_FacadeException() throws Exception {
-        willThrow(new EntityNotFoundException()).given(trainingRunFacade).isCorrectFlag(anyLong(), anyString());
-        MockHttpServletResponse result = mockMvc.perform(post("/training-runs/{runId}/is-correct-flag", trainingRun1.getId())
+    public void isCorrectAnswer_FacadeException() throws Exception {
+        willThrow(new EntityNotFoundException()).given(trainingRunFacade).isCorrectAnswer(anyLong(), anyString());
+        MockHttpServletResponse result = mockMvc.perform(post("/training-runs/{runId}/is-correct-answer", trainingRun1.getId())
                 .param("solutionTaken", "true")
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
-                .content(convertObjectToJsonBytes(validFlagDTO)))
+                .content(convertObjectToJsonBytes(validAnswerDTO)))
                 .andExpect(status().isNotFound())
                 .andReturn().getResponse();
         ApiError error = convertJsonBytesToObject(result.getContentAsString(), ApiError.class);

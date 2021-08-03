@@ -6,10 +6,10 @@ import com.github.bohnman.squiggly.Squiggly;
 import com.github.bohnman.squiggly.util.SquigglyUtils;
 import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.question.QuestionAnswerDTO;
-import cz.muni.ics.kypo.training.api.dto.gamelevel.ValidateFlagDTO;
+import cz.muni.ics.kypo.training.api.dto.traininglevel.ValidateAnswerDTO;
 import cz.muni.ics.kypo.training.api.responses.PageResultResource;
 import cz.muni.ics.kypo.training.api.dto.AbstractLevelDTO;
-import cz.muni.ics.kypo.training.api.dto.IsCorrectFlagDTO;
+import cz.muni.ics.kypo.training.api.dto.IsCorrectAnswerDTO;
 import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
 import cz.muni.ics.kypo.training.api.dto.run.AccessTrainingRunDTO;
 import cz.muni.ics.kypo.training.api.dto.run.AccessedTrainingRunDTO;
@@ -19,7 +19,6 @@ import cz.muni.ics.kypo.training.facade.TrainingRunFacade;
 import cz.muni.ics.kypo.training.persistence.model.TrainingRun;
 import cz.muni.ics.kypo.training.rest.ApiError;
 import cz.muni.ics.kypo.training.rest.utils.annotations.ApiPageableSwagger;
-import cz.muni.ics.kypo.training.validation.ValidAssessmentResponse;
 import io.swagger.annotations.*;
 import cz.muni.ics.kypo.training.api.dto.hint.HintDTO;
 
@@ -240,7 +239,7 @@ public class TrainingRunsRestController {
      */
     @ApiOperation(httpMethod = "GET",
             value = "Get level of given training run.",
-            notes = "Returns (assessment, game, info) level if any next level exists and training run as well",
+            notes = "Returns (assessment, training, info) level if any next level exists and training run as well",
             response = AbstractLevelDTO.class,
             nickname = "getNextLevel",
             produces = MediaType.APPLICATION_JSON_VALUE
@@ -261,14 +260,14 @@ public class TrainingRunsRestController {
     }
 
     /**
-     * Get solution of current game level.
+     * Get solution of current training level.
      *
      * @param runId of Training Run for which to get solution.
-     * @return Requested solution of game level.
+     * @return Requested solution of training level.
      */
     @ApiOperation(httpMethod = "GET",
-            value = "Get solution of game level.",
-            notes = "Returns solution if given training runs exists and current level is game level",
+            value = "Get solution of training level.",
+            notes = "Returns solution if given training runs exists and current level is training level",
             response = String.class,
             nickname = "getSolution",
             produces = MediaType.APPLICATION_JSON_VALUE
@@ -276,7 +275,7 @@ public class TrainingRunsRestController {
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "The solution has been found.", response = String.class),
             @ApiResponse(code = 404, message = "The training run has not been found.", response = ApiError.class),
-            @ApiResponse(code = 400, message = "Current level is not game level and does not have solution.", response = ApiError.class),
+            @ApiResponse(code = 400, message = "Current level is not training level and does not have solution.", response = ApiError.class),
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiError.class)
     })
     @GetMapping(path = "/{runId}/solutions", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -286,16 +285,16 @@ public class TrainingRunsRestController {
     }
 
     /**
-     * Get hint of current game level.
+     * Get hint of current training level.
      *
      * @param runId  of Training Run for which to get hint.
      * @param hintId the hint id
      * @param fields attributes of the object to be returned as the result.
-     * @return Requested hint of game level.
+     * @return Requested hint of training level.
      */
     @ApiOperation(httpMethod = "GET",
-            value = "Get hint of game level.",
-            notes = "Returns hint if given training runs exists and current level is game level",
+            value = "Get hint of training level.",
+            notes = "Returns hint if given training runs exists and current level is training level",
             response = String.class,
             nickname = "getHint",
             produces = MediaType.APPLICATION_JSON_VALUE
@@ -304,7 +303,7 @@ public class TrainingRunsRestController {
             @ApiResponse(code = 200, message = "The hint has been found.", response = HintDTO.class),
             @ApiResponse(code = 404, message = "The hint has not been found.", response = ApiError.class),
             @ApiResponse(code = 409, message = "The hint with given id is not in current level of training run.", response = ApiError.class),
-            @ApiResponse(code = 400, message = "Current level is not game level and does not have hints.", response = ApiError.class),
+            @ApiResponse(code = 400, message = "Current level is not training level and does not have hints.", response = ApiError.class),
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiError.class)
     })
     @GetMapping(path = "/{runId}/hints/{hintId}", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -320,31 +319,31 @@ public class TrainingRunsRestController {
     }
 
     /**
-     * Check if submitted flag is correct.
+     * Check if submitted answer is correct.
      *
      * @param runId the run id
-     * @param validateFlagDTO  submitted flag.
-     * @return True if flag is correct, false if flag is wrong.
+     * @param validateAnswerDTO  submitted answer.
+     * @return True if answer is correct, false if answer is wrong.
      */
     @ApiOperation(httpMethod = "POST",
-            value = "Check flag of game level",
-            notes = "Current level of given training run must be game level",
+            value = "Check answer of training level",
+            notes = "Current level of given training run must be training level",
             response = Boolean.class,
-            nickname = "isCorrectFlag",
+            nickname = "isCorrectAnswer",
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "The flag has been checked.", response = IsCorrectFlagDTO.class),
+            @ApiResponse(code = 200, message = "The answer has been checked.", response = IsCorrectAnswerDTO.class),
             @ApiResponse(code = 404, message = "The training run has not been found.", response = ApiError.class),
-            @ApiResponse(code = 400, message = "Current level is not game level and does not have flag.", response = ApiError.class),
+            @ApiResponse(code = 400, message = "Current level is not training level and does not have answer.", response = ApiError.class),
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiError.class)
     })
-    @PostMapping(path = "/{runId}/is-correct-flag", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<IsCorrectFlagDTO> isCorrectFlag(@ApiParam(value = "Training run ID", required = true)
+    @PostMapping(path = "/{runId}/is-correct-answer", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<IsCorrectAnswerDTO> isCorrectAnswer(@ApiParam(value = "Training run ID", required = true)
                                                           @PathVariable("runId") Long runId,
-                                                          @ApiParam(value = "Submitted flag", required = true)
-                                                          @RequestBody @Valid ValidateFlagDTO validateFlagDTO) {
-        return ResponseEntity.ok(trainingRunFacade.isCorrectFlag(runId, validateFlagDTO.getFlag()));
+                                                            @ApiParam(value = "Submitted answer", required = true)
+                                                          @RequestBody @Valid ValidateAnswerDTO validateAnswerDTO) {
+        return ResponseEntity.ok(trainingRunFacade.isCorrectAnswer(runId, validateAnswerDTO.getAnswer()));
     }
 
     /**

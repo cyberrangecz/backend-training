@@ -6,24 +6,24 @@ import io.swagger.annotations.ApiModelProperty;
 import java.util.Objects;
 
 /**
- * Response to attempt of flag input
+ * Response to attempt of answer input
  *
  */
-@ApiModel(value = "IsCorrectFlagDTO", description = "A response for the request about the validation of the flag. May also " +
+@ApiModel(value = "IsCorrectAnswerDTO", description = "A response for the request about the validation of the answer. May also " +
         "include solution if remaining attempts reach 0.")
-public class IsCorrectFlagDTO {
+public class IsCorrectAnswerDTO {
 
-    @ApiModelProperty(value = "True/false if flag has been correct/incorrect.", example = "false")
+    @ApiModelProperty(value = "True/false if answer has been correct/incorrect.", example = "false")
     private boolean isCorrect;
-    @ApiModelProperty(value = "Number of attempts to submit a bad flag.", example = "3")
+    @ApiModelProperty(value = "Number of attempts to submit a bad answer.", example = "3")
     private int remainingAttempts;
-    @ApiModelProperty(value = "Instruction how to get flag in game.", example = "This is how you do it")
+    @ApiModelProperty(value = "Instruction how to get answer in training.", example = "This is how you do it")
     private String solution;
 
     /**
      * Is correct boolean.
      *
-     * @return True if flag is correct
+     * @return True if answer is correct
      */
     public boolean isCorrect() {
         return isCorrect;
@@ -32,7 +32,7 @@ public class IsCorrectFlagDTO {
     /**
      * Sets correct.
      *
-     * @param correct True if flag is correct
+     * @param correct True if answer is correct
      */
     public void setCorrect(boolean correct) {
         isCorrect = correct;
@@ -76,8 +76,8 @@ public class IsCorrectFlagDTO {
 
     @Override
     public boolean equals(Object object) {
-        if (!(object instanceof IsCorrectFlagDTO)) return false;
-        IsCorrectFlagDTO that = (IsCorrectFlagDTO) object;
+        if (!(object instanceof IsCorrectAnswerDTO)) return false;
+        IsCorrectAnswerDTO that = (IsCorrectAnswerDTO) object;
         return isCorrect() == that.isCorrect() &&
                 getRemainingAttempts() == that.getRemainingAttempts() &&
                 Objects.equals(getSolution(), that.getSolution());
@@ -90,7 +90,7 @@ public class IsCorrectFlagDTO {
 
     @Override
     public String toString() {
-        return "IsCorrectFlagDTO{" +
+        return "IsCorrectAnswerDTO{" +
                 "isCorrect=" + isCorrect +
                 ", remainingAttempts=" + remainingAttempts +
                 '}';
