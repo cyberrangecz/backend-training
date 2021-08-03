@@ -6,11 +6,10 @@ import cz.muni.ics.kypo.training.annotations.security.IsDesignerOrAdmin;
 import cz.muni.ics.kypo.training.annotations.security.IsOrganizerOrAdmin;
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalRO;
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalWO;
-import cz.muni.ics.kypo.training.api.dto.imports.AssessmentLevelImportDTO;
+import cz.muni.ics.kypo.training.api.dto.traininglevel.TrainingLevelUpdateDTO;
 import cz.muni.ics.kypo.training.api.responses.PageResultResource;
 import cz.muni.ics.kypo.training.api.dto.*;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelUpdateDTO;
-import cz.muni.ics.kypo.training.api.dto.gamelevel.GameLevelUpdateDTO;
 import cz.muni.ics.kypo.training.api.dto.infolevel.InfoLevelUpdateDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.*;
 import cz.muni.ics.kypo.training.api.enums.LevelType;
@@ -22,7 +21,6 @@ import cz.muni.ics.kypo.training.mapping.mapstruct.*;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.model.AssessmentLevel;
 import cz.muni.ics.kypo.training.persistence.model.enums.AssessmentType;
-import cz.muni.ics.kypo.training.persistence.model.enums.QuestionType;
 import cz.muni.ics.kypo.training.persistence.model.question.ExtendedMatchingOption;
 import cz.muni.ics.kypo.training.persistence.model.question.ExtendedMatchingStatement;
 import cz.muni.ics.kypo.training.persistence.model.question.Question;
@@ -104,8 +102,8 @@ public class TrainingDefinitionFacade {
             basicLevelInfoDTO.setId(level.getId());
             basicLevelInfoDTO.setTitle(level.getTitle());
             basicLevelInfoDTO.setOrder(level.getOrder());
-            if (level instanceof GameLevel)
-                basicLevelInfoDTO.setLevelType(LevelType.GAME_LEVEL);
+            if (level instanceof TrainingLevel)
+                basicLevelInfoDTO.setLevelType(LevelType.TRAINING_LEVEL);
             else if (level instanceof AssessmentLevel)
                 basicLevelInfoDTO.setLevelType(LevelType.ASSESSMENT_LEVEL);
             else
@@ -314,20 +312,20 @@ public class TrainingDefinitionFacade {
     }
 
     /**
-     * updates game level from training definition
+     * updates training level from training definition
      *
      * @param definitionId - id of training definition containing level to be updated
-     * @param gameLevel    to be updated
+     * @param trainingLevel    to be updated
      */
     @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
             "or @securityService.isDesignerOfGivenTrainingDefinition(#definitionId)")
     @TransactionalWO
-    public void updateGameLevel(Long definitionId, GameLevelUpdateDTO gameLevel) {
-        GameLevel gameLevelToUpdate = levelMapper.mapUpdateToEntity(gameLevel);
-        for (Hint hint : gameLevelToUpdate.getHints()) {
-            hint.setGameLevel(gameLevelToUpdate);
+    public void updateTrainingLevel(Long definitionId, TrainingLevelUpdateDTO trainingLevel) {
+        TrainingLevel trainingLevelToUpdate = levelMapper.mapUpdateToEntity(trainingLevel);
+        for (Hint hint : trainingLevelToUpdate.getHints()) {
+            hint.setTrainingLevel(trainingLevelToUpdate);
         }
-        trainingDefinitionService.updateGameLevel(definitionId, gameLevelToUpdate);
+        trainingDefinitionService.updateTrainingLevel(definitionId, trainingLevelToUpdate);
     }
 
     /**
@@ -393,18 +391,18 @@ public class TrainingDefinitionFacade {
     }
 
     /**
-     * creates new game level in training definition
+     * creates new training level in training definition
      *
      * @param definitionId - id of definition in which level will be created
-     * @return {@link BasicLevelInfoDTO} of new game level
+     * @return {@link BasicLevelInfoDTO} of new training level
      */
     @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
             "or @securityService.isDesignerOfGivenTrainingDefinition(#definitionId)")
     @TransactionalWO
-    public BasicLevelInfoDTO createGameLevel(Long definitionId) {
-        GameLevel newGameLevel = trainingDefinitionService.createGameLevel(definitionId);
-        BasicLevelInfoDTO levelInfoDTO = levelMapper.mapTo(newGameLevel);
-        levelInfoDTO.setLevelType(LevelType.GAME_LEVEL);
+    public BasicLevelInfoDTO createTrainingLevel(Long definitionId) {
+        TrainingLevel newTrainingLevel = trainingDefinitionService.createTrainingLevel(definitionId);
+        BasicLevelInfoDTO levelInfoDTO = levelMapper.mapTo(newTrainingLevel);
+        levelInfoDTO.setLevelType(LevelType.TRAINING_LEVEL);
         return levelInfoDTO;
     }
 

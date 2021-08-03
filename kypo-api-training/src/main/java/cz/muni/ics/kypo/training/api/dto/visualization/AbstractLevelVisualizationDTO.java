@@ -10,20 +10,20 @@ import java.util.Objects;
 /**
  * Encapsulates information about abstract level.
  * Used for visualization.
- * Extended by {@link AssessmentLevelVisualizationDTO}, {@link GameLevelVisualizationDTO} and {@link InfoLevelVisualizationDTO}.
+ * Extended by {@link AssessmentLevelVisualizationDTO}, {@link TrainingLevelVisualizationDTO} and {@link InfoLevelVisualizationDTO}.
  */
-@ApiModel(value = "AbstractLevelVisualizationDTO", subTypes = {GameLevelVisualizationDTO.class, InfoLevelVisualizationDTO.class, AssessmentLevelVisualizationDTO.class},
-        description = "Superclass for classes GameLevelDTO, AssessmentLevelDTO and InfoLevelDTO")
+@ApiModel(value = "AbstractLevelVisualizationDTO", subTypes = {TrainingLevelVisualizationDTO.class, InfoLevelVisualizationDTO.class, AssessmentLevelVisualizationDTO.class},
+        description = "Superclass for classes TrainingLevelVisualizationDTO, AssessmentLevelVisualizationDTO and InfoLevelVisualizationDTO")
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public abstract class AbstractLevelVisualizationDTO {
 
     @ApiModelProperty(value = "Main identifier of level.", example = "1")
     private Long id;
-    @ApiModelProperty(value = "Short textual description of the level.", example = "Game Level1")
+    @ApiModelProperty(value = "Short textual description of the level.", example = "Training Level1")
     private String title;
     @ApiModelProperty(value = "The maximum score a participant can achieve during a level.", example = "20")
     private int maxScore;
-    @ApiModelProperty(value = "Type of the level.", example = "GAME")
+    @ApiModelProperty(value = "Type of the level.", example = "TRAINING")
     private LevelType levelType;
     @ApiModelProperty(value = "Estimated time taken by the player to resolve the level.", example = "5")
     private long estimatedDuration;

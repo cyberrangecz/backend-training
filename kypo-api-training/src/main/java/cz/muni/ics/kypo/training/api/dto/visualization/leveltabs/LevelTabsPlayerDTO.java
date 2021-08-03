@@ -13,7 +13,7 @@ public class LevelTabsPlayerDTO {
     private Long trainingRunId;
     private long participantLevelScore;
     private Integer hints;
-    private List<String> wrongFlags = new ArrayList<>();
+    private List<String> wrongAnswers = new ArrayList<>();
     private long time;
     private Boolean displayedSolution;
 
@@ -56,16 +56,16 @@ public class LevelTabsPlayerDTO {
         this.hints = hints;
     }
 
-    public List<String> getWrongFlags() {
-        return wrongFlags;
+    public List<String> getWrongAnswers() {
+        return wrongAnswers;
     }
 
-    public void addWrongFlag(String wrongFlag) {
-        this.wrongFlags.add(wrongFlag);
+    public void addWrongAnswer(String wrongAnswer) {
+        this.wrongAnswers.add(wrongAnswer);
     }
 
-    public void setWrongFlags(List<String> wrongFlags) {
-        this.wrongFlags = wrongFlags;
+    public void setWrongAnswers(List<String> wrongAnswers) {
+        this.wrongAnswers = wrongAnswers;
     }
 
     public long getTime() {
@@ -105,7 +105,7 @@ public class LevelTabsPlayerDTO {
                 ", trainingRunId=" + trainingRunId +
                 ", participantLevelScore=" + participantLevelScore +
                 ", hints=" + hints +
-                ", wrongFlags=" + wrongFlags +
+                ", wrongAnswers=" + wrongAnswers +
                 ", time=" + time +
                 ", displayedSolution=" + displayedSolution +
                 '}';

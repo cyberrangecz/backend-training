@@ -4,16 +4,16 @@ import javax.persistence.*;
 import java.util.*;
 
 /**
- * Class specifying Abstract level as game level.
- * Game levels contain tasks for trainees to solve.
+ * Class specifying Abstract level as training level.
+ * Training levels contain tasks for trainees to solve.
  */
 @Entity
-@Table(name = "game_level")
+@Table(name = "training_level")
 @PrimaryKeyJoinColumn(name = "id")
-public class GameLevel extends AbstractLevel {
+public class TrainingLevel extends AbstractLevel {
 
-    @Column(name = "flag", nullable = false)
-    private String flag;
+    @Column(name = "answer", nullable = false)
+    private String answer;
     @Lob
     @Column(name = "content", nullable = false)
     private String content;
@@ -23,45 +23,45 @@ public class GameLevel extends AbstractLevel {
     @Column(name = "solution_penalized", nullable = false)
     private boolean solutionPenalized;
     @OneToMany(
-            mappedBy = "gameLevel",
+            mappedBy = "trainingLevel",
             orphanRemoval = true
     )
     private Set<Attachment> attachments = new HashSet<>();
     @OneToMany(
-            mappedBy = "gameLevel",
+            mappedBy = "trainingLevel",
             cascade = CascadeType.ALL,
             orphanRemoval = true
     )
     private Set<Hint> hints = new HashSet<>();
-    @Column(name = "incorrect_flag_limit")
-    private int incorrectFlagLimit;
+    @Column(name = "incorrect_answer_limit")
+    private int incorrectAnswerLimit;
 
     /**
      * Used to fix missing foreign key in the child (Hint) of @OneToMany association.
      * <p>
-     * Hint entity was missing foreign key to GameLevel after persisting it.
+     * Hint entity was missing foreign key to TrainingLevel after persisting it.
      */
     @PrePersist
     private void prePersist() {
-        hints.forEach(hint -> hint.setGameLevel(this));
+        hints.forEach(hint -> hint.setTrainingLevel(this));
     }
 
     /**
-     * Gets flag that needs to be found by trainee to complete level
+     * Gets answer that needs to be found by trainee to complete level
      *
-     * @return the flag
+     * @return the answer
      */
-    public String getFlag() {
-        return flag;
+    public String getAnswer() {
+        return answer;
     }
 
     /**
-     * Sets flag that needs to be found by trainee to complete level
+     * Sets answer that needs to be found by trainee to complete level
      *
-     * @param flag the flag
+     * @param answer the answer
      */
-    public void setFlag(String flag) {
-        this.flag = flag;
+    public void setAnswer(String answer) {
+        this.answer = answer;
     }
 
     /**
@@ -146,7 +146,7 @@ public class GameLevel extends AbstractLevel {
     }
 
     /**
-     * Gets hints associated with game level
+     * Gets hints associated with training level
      *
      * @return the hints
      */
@@ -155,7 +155,7 @@ public class GameLevel extends AbstractLevel {
     }
 
     /**
-     * Adds hint to be associated with game level
+     * Adds hint to be associated with training level
      *
      * @param hint the hint
      */
@@ -164,7 +164,7 @@ public class GameLevel extends AbstractLevel {
     }
 
     /**
-     * Sets hints associated with game level
+     * Sets hints associated with training level
      *
      * @param hints the hints
      */
@@ -173,31 +173,31 @@ public class GameLevel extends AbstractLevel {
     }
 
     /**
-     * Gets number of attempts available to trainee to input incorrect flag before the solution is displayed
+     * Gets number of attempts available to trainee to input incorrect answer before the solution is displayed
      *
-     * @return the incorrect flag limit
+     * @return the incorrect answer limit
      */
-    public int getIncorrectFlagLimit() {
-        return incorrectFlagLimit;
+    public int getIncorrectAnswerLimit() {
+        return incorrectAnswerLimit;
     }
 
     /**
-     * Sets number of attempts available to trainee to input incorrect flag before the solution is displayed
+     * Sets number of attempts available to trainee to input incorrect answer before the solution is displayed
      *
-     * @param incorrectFlagLimit the incorrect flag limit
+     * @param incorrectAnswerLimit the incorrect answer limit
      */
-    public void setIncorrectFlagLimit(int incorrectFlagLimit) {
-        this.incorrectFlagLimit = incorrectFlagLimit;
+    public void setIncorrectAnswerLimit(int incorrectAnswerLimit) {
+        this.incorrectAnswerLimit = incorrectAnswerLimit;
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof GameLevel)) return false;
+        if (!(o instanceof TrainingLevel)) return false;
         if (!super.equals(o)) return false;
-        GameLevel gameLevel = (GameLevel) o;
-        return Objects.equals(getContent(), gameLevel.getContent()) &&
-                Objects.equals(getSolution(), gameLevel.getSolution());
+        TrainingLevel trainingLevel = (TrainingLevel) o;
+        return Objects.equals(getContent(), trainingLevel.getContent()) &&
+                Objects.equals(getSolution(), trainingLevel.getSolution());
     }
 
     @Override
@@ -207,12 +207,12 @@ public class GameLevel extends AbstractLevel {
 
     @Override
     public String toString() {
-        return "GameLevel{" +
-                "flag='" + flag + '\'' +
+        return "TrainingLevel{" +
+                "answer='" + answer + '\'' +
                 ", content='" + content + '\'' +
                 ", solution='" + solution + '\'' +
                 ", solutionPenalized=" + solutionPenalized +
-                ", incorrectFlagLimit=" + incorrectFlagLimit +
+                ", incorrectAnswerLimit=" + incorrectAnswerLimit +
                 '}';
     }
 }

@@ -1,4 +1,4 @@
-package cz.muni.ics.kypo.training.api.dto.gamelevel;
+package cz.muni.ics.kypo.training.api.dto.traininglevel;
 
 import cz.muni.ics.kypo.training.api.dto.hint.HintDTO;
 import io.swagger.annotations.ApiModel;
@@ -9,43 +9,43 @@ import javax.validation.constraints.*;
 import java.util.*;
 
 /**
- * Encapsulates information needed to update game level.
+ * Encapsulates information needed to update training level.
  *
  */
-@ApiModel(value = "GameLevelUpdateDTO", description = "Game level to update.")
-public class GameLevelUpdateDTO {
+@ApiModel(value = "TrainingLevelUpdateDTO", description = "Training level to update.")
+public class TrainingLevelUpdateDTO {
 
     @ApiModelProperty(value = "Main identifier of level.", required = true, example = "1")
-    @NotNull(message = "{gameLevel.id.NotNull.message}")
+    @NotNull(message = "{trainingLevel.id.NotNull.message}")
     protected Long id;
-    @ApiModelProperty(value = "Short textual description of the level.", required = true, example = "Game Level1")
-    @NotEmpty(message = "{gameLevel.title.NotEmpty.message}")
+    @ApiModelProperty(value = "Short textual description of the level.", required = true, example = "Training Level1")
+    @NotEmpty(message = "{trainingLevel.title.NotEmpty.message}")
     protected String title;
     @ApiModelProperty(value = "The maximum score a participant can achieve during a level.", required = true, example = "20")
-    @NotNull(message = "{gameLevel.maxScore.NotNull.message}")
-    @Min(value = 0, message = "{gameLevel.maxScore.Min.message}")
-    @Max(value = 100, message = "{gameLevel.maxScore.Max.message}")
+    @NotNull(message = "{trainingLevel.maxScore.NotNull.message}")
+    @Min(value = 0, message = "{trainingLevel.maxScore.Min.message}")
+    @Max(value = 100, message = "{trainingLevel.maxScore.Max.message}")
     private int maxScore;
-    @ApiModelProperty(value = "Keyword found in game, used for access next level.", required = true, example = "secretFlag")
-    @NotEmpty(message = "{gameLevel.flag.NotEmpty.message}")
-    @Size(max = 50, message = "{gameLevel.flag.Size.message}")
-    private String flag;
+    @ApiModelProperty(value = "Keyword found in training, used for access next level.", required = true, example = "secretAnswer")
+    @NotEmpty(message = "{trainingLevel.answer.NotEmpty.message}")
+    @Size(max = 50, message = "{trainingLevel.answer.Size.message}")
+    private String answer;
     @ApiModelProperty(value = "The information and experiences that are directed towards an player.", example = "Play me")
-    @NotEmpty(message = "{gameLevel.content.NotEmpty.message}")
+    @NotEmpty(message = "{trainingLevel.content.NotEmpty.message}")
     private String content;
-    @ApiModelProperty(value = "Instruction how to get flag in game.", example = "This is how you do it")
-    @NotEmpty(message = "{gameLevel.solution.NotEmpty.message}")
+    @ApiModelProperty(value = "Instruction how to get answer in training.", example = "This is how you do it")
+    @NotEmpty(message = "{trainingLevel.solution.NotEmpty.message}")
     private String solution;
     @ApiModelProperty(value = "Sign if displaying of solution is penalized.", required = true, example = "false")
-    @NotNull(message = "{gameLevel.solutionPenalized.NotNull.message}")
+    @NotNull(message = "{trainingLevel.solutionPenalized.NotNull.message}")
     private boolean solutionPenalized;
     @ApiModelProperty(value = "Estimated time (minutes) taken by the player to solve the level.", example = "20")
     private int estimatedDuration;
-    @ApiModelProperty(value = "How many times participant can submit incorrect flag before displaying solution.", required = true, example = "5")
-    @NotNull(message = "{gameLevel.incorrectFlagLimit.NotNull.message}")
-    @Min(value = 0, message = "{gameLevel.incorrectFlagLimit.Min.message}")
-    @Max(value = 100, message = "{gameLevel.incorrectFlagLimit.Max.message}")
-    private int incorrectFlagLimit;
+    @ApiModelProperty(value = "How many times participant can submit incorrect answer before displaying solution.", required = true, example = "5")
+    @NotNull(message = "{trainingLevel.incorrectAnswerLimit.NotNull.message}")
+    @Min(value = 0, message = "{trainingLevel.incorrectAnswerLimit.Min.message}")
+    @Max(value = 100, message = "{trainingLevel.incorrectAnswerLimit.Max.message}")
+    private int incorrectAnswerLimit;
     @Valid
     @ApiModelProperty(value = "Information which helps participant resolve the level.")
     private Set<HintDTO> hints = new HashSet<>();
@@ -69,21 +69,21 @@ public class GameLevelUpdateDTO {
     }
 
     /**
-     * Gets flag.
+     * Gets answer.
      *
-     * @return the flag
+     * @return the answer
      */
-    public String getFlag() {
-        return flag;
+    public String getAnswer() {
+        return answer;
     }
 
     /**
-     * Sets flag.
+     * Sets answer.
      *
-     * @param flag the flag
+     * @param answer the answer
      */
-    public void setFlag(String flag) {
-        this.flag = flag;
+    public void setAnswer(String answer) {
+        this.answer = answer;
     }
 
     /**
@@ -177,21 +177,21 @@ public class GameLevelUpdateDTO {
     }
 
     /**
-     * Gets incorrect flag limit.
+     * Gets incorrect answer limit.
      *
-     * @return the incorrect flag limit
+     * @return the incorrect answer limit
      */
-    public int getIncorrectFlagLimit() {
-        return incorrectFlagLimit;
+    public int getIncorrectAnswerLimit() {
+        return incorrectAnswerLimit;
     }
 
     /**
-     * Sets incorrect flag limit.
+     * Sets incorrect answer limit.
      *
-     * @param incorrectFlagLimit the incorrect flag limit
+     * @param incorrectAnswerLimit the incorrect answer limit
      */
-    public void setIncorrectFlagLimit(int incorrectFlagLimit) {
-        this.incorrectFlagLimit = incorrectFlagLimit;
+    public void setIncorrectAnswerLimit(int incorrectAnswerLimit) {
+        this.incorrectAnswerLimit = incorrectAnswerLimit;
     }
 
     /**
@@ -232,16 +232,16 @@ public class GameLevelUpdateDTO {
 
     @Override
     public String toString() {
-        return "GameLevelUpdateDTO{" +
+        return "TrainingLevelUpdateDTO{" +
                 "id=" + id +
                 ", title='" + title + '\'' +
                 ", maxScore=" + maxScore +
-                ", flag='" + flag + '\'' +
+                ", answer='" + answer + '\'' +
                 ", content='" + content + '\'' +
                 ", solution='" + solution + '\'' +
                 ", solutionPenalized=" + solutionPenalized +
                 ", estimatedDuration=" + estimatedDuration +
-                ", incorrectFlagLimit=" + incorrectFlagLimit +
+                ", incorrectAnswerLimit=" + incorrectAnswerLimit +
                 ", hints=" + hints +
                 '}';
     }

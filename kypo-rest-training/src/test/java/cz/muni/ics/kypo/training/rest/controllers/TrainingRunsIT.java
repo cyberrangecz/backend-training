@@ -4,10 +4,10 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.JsonObject;
 import cz.muni.ics.kypo.commons.security.enums.AuthenticatedUserOIDCItems;
-import cz.muni.ics.kypo.training.api.dto.IsCorrectFlagDTO;
+import cz.muni.ics.kypo.training.api.dto.IsCorrectAnswerDTO;
 import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
-import cz.muni.ics.kypo.training.api.dto.gamelevel.GameLevelViewDTO;
-import cz.muni.ics.kypo.training.api.dto.gamelevel.ValidateFlagDTO;
+import cz.muni.ics.kypo.training.api.dto.traininglevel.TrainingLevelViewDTO;
+import cz.muni.ics.kypo.training.api.dto.traininglevel.ValidateAnswerDTO;
 import cz.muni.ics.kypo.training.api.dto.hint.HintDTO;
 import cz.muni.ics.kypo.training.api.dto.hint.TakenHintDTO;
 import cz.muni.ics.kypo.training.api.dto.infolevel.InfoLevelDTO;
@@ -116,7 +116,7 @@ public class TrainingRunsIT {
     @Autowired
     private InfoLevelRepository infoLevelRepository;
     @Autowired
-    private GameLevelRepository gameLevelRepository;
+    private TrainingLevelRepository trainingLevelRepository;
     @Autowired
     private AssessmentLevelRepository assessmentLevelRepository;
     @Autowired
@@ -141,9 +141,9 @@ public class TrainingRunsIT {
     private LevelMapperImpl infoLevelMapper;
 
     private TrainingRun trainingRun1, trainingRun2;
-    private GameLevel gameLevel1;
+    private TrainingLevel trainingLevel1;
     private InfoLevel infoLevel1;
-    private IsCorrectFlagDTO isCorrectFlagDTO;
+    private IsCorrectAnswerDTO isCorrectAnswerDTO;
     private HintDTO hintDTO;
     private Hint hint;
     private SandboxInfo sandboxInfo;
@@ -153,7 +153,7 @@ public class TrainingRunsIT {
     private SandboxInfo sandboxInfo1, sandboxInfo2, sandboxInfo3;
     private UserRef participant1, participant2, organizer;
     private UserRefDTO userRefDTO1, userRefDTO2;
-    private ValidateFlagDTO validFlagDTO, invalidFlagDTO;
+    private ValidateAnswerDTO validAnswerDTO, invalidAnswerDTO;
     private PageResultResourcePython sandboxInfoPageResult;
 
     @SpringBootApplication
@@ -224,14 +224,14 @@ public class TrainingRunsIT {
         infoLevel1.setOrder(2);
         infoLevelRepository.save(infoLevel1);
 
-        gameLevel1 = testDataFactory.getPenalizedLevel();
-        gameLevel1.setHints(new HashSet<>(Arrays.asList(hint)));
-        gameLevel1.setTrainingDefinition(trainingDefinition);
-        gameLevel1.setOrder(1);
-        gameLevelRepository.save(gameLevel1);
+        trainingLevel1 = testDataFactory.getPenalizedLevel();
+        trainingLevel1.setHints(new HashSet<>(Arrays.asList(hint)));
+        trainingLevel1.setTrainingDefinition(trainingDefinition);
+        trainingLevel1.setOrder(1);
+        trainingLevelRepository.save(trainingLevel1);
 
         trainingRun1 = testDataFactory.getRunningRun();
-        trainingRun1.setCurrentLevel(gameLevel1);
+        trainingRun1.setCurrentLevel(trainingLevel1);
         trainingRun1.setTrainingInstance(trainingInstance);
         trainingRun1.setParticipantRef(participant1);
 
@@ -240,9 +240,9 @@ public class TrainingRunsIT {
         trainingRun2.setTrainingInstance(trainingInstance);
         trainingRun2.setParticipantRef(participant2);
 
-        isCorrectFlagDTO = new IsCorrectFlagDTO();
-        isCorrectFlagDTO.setCorrect(true);
-        isCorrectFlagDTO.setRemainingAttempts(gameLevel1.getIncorrectFlagLimit() - trainingRun1.getIncorrectFlagCount());
+        isCorrectAnswerDTO = new IsCorrectAnswerDTO();
+        isCorrectAnswerDTO.setCorrect(true);
+        isCorrectAnswerDTO.setRemainingAttempts(trainingLevel1.getIncorrectAnswerLimit() - trainingRun1.getIncorrectAnswerCount());
 
         sandboxInfo = new SandboxInfo();
         sandboxInfo.setId(1L);
@@ -250,10 +250,10 @@ public class TrainingRunsIT {
         sandboxInfoPageResult = new PageResultResourcePython();
         sandboxInfoPageResult.setResults(Arrays.asList(sandboxInfo));
 
-        validFlagDTO = new ValidateFlagDTO();
-        validFlagDTO.setFlag(gameLevel1.getFlag());
-        invalidFlagDTO = new ValidateFlagDTO();
-        invalidFlagDTO.setFlag("wrong flag");
+        validAnswerDTO = new ValidateAnswerDTO();
+        validAnswerDTO.setAnswer(trainingLevel1.getAnswer());
+        invalidAnswerDTO = new ValidateAnswerDTO();
+        invalidAnswerDTO.setAnswer("wrong answer");
 
     }
 
@@ -326,7 +326,7 @@ public class TrainingRunsIT {
         Long trainingRunId = jsonObject.getLong("trainingRunID");
         Optional<TrainingRun> trainingRun = trainingRunRepository.findById(trainingRunId);
         assertTrue(trainingRun.isPresent());
-        assertEquals(gameLevel1, trainingRun.get().getCurrentLevel());
+        assertEquals(trainingLevel1, trainingRun.get().getCurrentLevel());
         assertEquals(trainingInstance, trainingRun.get().getTrainingInstance());
     }
 
@@ -345,7 +345,7 @@ public class TrainingRunsIT {
         Long trainingRunId = jsonObject.getLong("trainingRunID");
         Optional<TrainingRun> trainingRun = trainingRunRepository.findById(trainingRunId);
         assertTrue(trainingRun.isPresent());
-        assertEquals(gameLevel1, trainingRun.get().getCurrentLevel());
+        assertEquals(trainingLevel1, trainingRun.get().getCurrentLevel());
         assertEquals(trainingInstance, trainingRun.get().getTrainingInstance());
     }
 
@@ -371,7 +371,7 @@ public class TrainingRunsIT {
         builder.queryParam("page", 1);
         builder.queryParam("page_size", 1000);
 
-        gameLevel1.setTrainingDefinition(null);
+        trainingLevel1.setTrainingDefinition(null);
         infoLevel1.setTrainingDefinition(null);
         given(userManagementExchangeFunction.exchange(any(ClientRequest.class))).willReturn(buildMockResponse(userRefDTO1));
 
@@ -421,7 +421,7 @@ public class TrainingRunsIT {
         ApiEntityError error = convertJsonBytesToObject(response.getContentAsString(), ApiEntityError.class);
         assertEquals(HttpStatus.NOT_FOUND, error.getStatus());
         assertEntityDetailError(error.getEntityErrorDetail(), TrainingInstance.class, "accessToken", "notFoundToken",
-                "There is no active game session matching access token.");
+                "There is no active training session matching access token.");
     }
 
 
@@ -468,11 +468,11 @@ public class TrainingRunsIT {
     }
 
     @Test
-    public void getNextLevelGameLevel() throws Exception {
+    public void getNextLevelTrainingLevel() throws Exception {
         infoLevel1.setOrder(1);
         infoLevelRepository.save(infoLevel1);
-        gameLevel1.setOrder(2);
-        gameLevelRepository.save(gameLevel1);
+        trainingLevel1.setOrder(2);
+        trainingLevelRepository.save(trainingLevel1);
         trainingRun1.setCurrentLevel(infoLevel1);
         trainingRunRepository.save(trainingRun1);
 
@@ -482,8 +482,8 @@ public class TrainingRunsIT {
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andReturn().getResponse();
-        GameLevelViewDTO gameLevelDTO = mapper.readValue(convertJsonBytesToString(response.getContentAsString()), GameLevelViewDTO.class);
-        assertEquals(gameLevelDTO, infoLevelMapper.mapToViewDTO(gameLevel1));
+        TrainingLevelViewDTO trainingLevelDTO = mapper.readValue(convertJsonBytesToString(response.getContentAsString()), TrainingLevelViewDTO.class);
+        assertEquals(trainingLevelDTO, infoLevelMapper.mapToViewDTO(trainingLevel1));
     }
 
     @Test
@@ -519,34 +519,34 @@ public class TrainingRunsIT {
 
     @Test
     public void getSolution() throws Exception {
-        trainingRun1.setMaxLevelScore(gameLevel1.getMaxScore());
-        trainingRun1.setTotalGameScore(10 + gameLevel1.getMaxScore());
+        trainingRun1.setMaxLevelScore(trainingLevel1.getMaxScore());
+        trainingRun1.setTotalTrainingScore(10 + trainingLevel1.getMaxScore());
         trainingRunRepository.save(trainingRun1);
         assertFalse(trainingRun1.isSolutionTaken());
         MockHttpServletResponse response = mvc.perform(get("/training-runs/{runId}/solutions", trainingRun1.getId()))
                 .andExpect(status().isOk())
                 .andReturn().getResponse();
-        assertEquals(((GameLevel) trainingRun1.getCurrentLevel()).getSolution(), convertJsonBytesToString(response.getContentAsString()));
+        assertEquals(((TrainingLevel) trainingRun1.getCurrentLevel()).getSolution(), convertJsonBytesToString(response.getContentAsString()));
         assertTrue(trainingRun1.isSolutionTaken());
     }
 
     @Test
     public void getSolutionSecondTime() throws Exception {
         trainingRun1.setMaxLevelScore(1);
-        trainingRun1.setTotalGameScore(11);
+        trainingRun1.setTotalTrainingScore(11);
         trainingRun1.setSolutionTaken(true);
         trainingRunRepository.save(trainingRun1);
         assertTrue(trainingRun1.isSolutionTaken());
         MockHttpServletResponse response = mvc.perform(get("/training-runs/{runId}/solutions", trainingRun1.getId()))
                 .andExpect(status().isOk())
                 .andReturn().getResponse();
-        assertEquals(((GameLevel) trainingRun1.getCurrentLevel()).getSolution(), convertJsonBytesToString(response.getContentAsString()));
+        assertEquals(((TrainingLevel) trainingRun1.getCurrentLevel()).getSolution(), convertJsonBytesToString(response.getContentAsString()));
         assertTrue(trainingRun1.isSolutionTaken());
-        assertEquals(11, trainingRun1.getTotalGameScore());
+        assertEquals(11, trainingRun1.getTotalTrainingScore());
     }
 
     @Test
-    public void getSolutionNotGameLevel() throws Exception {
+    public void getSolutionNotTrainingLevel() throws Exception {
         trainingRun1.setCurrentLevel(infoLevel1);
         trainingRunRepository.save(trainingRun1);
 
@@ -554,7 +554,7 @@ public class TrainingRunsIT {
                 .andExpect(status().isBadRequest())
                 .andReturn().getResolvedException();
         assertEquals(Objects.requireNonNull(ex).getClass(), BadRequestException.class);
-        assertTrue(ex.getMessage().contains("Current level is not game level and does not have solution."));
+        assertTrue(ex.getMessage().contains("Current level is not training level and does not have solution."));
     }
 
     @Test
@@ -571,8 +571,8 @@ public class TrainingRunsIT {
     @Test
     public void getHint() throws Exception {
         hintRepository.save(hint);
-        trainingRun1.setTotalGameScore(10 + gameLevel1.getMaxScore());
-        trainingRun1.setMaxLevelScore(gameLevel1.getMaxScore());
+        trainingRun1.setTotalTrainingScore(10 + trainingLevel1.getMaxScore());
+        trainingRun1.setMaxLevelScore(trainingLevel1.getMaxScore());
         trainingRunRepository.save(trainingRun1);
         MockHttpServletResponse response = mvc.perform(get("/training-runs/{runId}/hints/{hintId}", trainingRun1.getId(), hint.getId()))
                 .andExpect(status().isOk())
@@ -619,100 +619,100 @@ public class TrainingRunsIT {
     }
 
     @Test
-    public void isCorrectFlag() throws Exception {
+    public void isCorrectAnswer() throws Exception {
         trainingRunRepository.save(trainingRun1);
         mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_ADMINISTRATOR.name()));
 
         assertFalse(trainingRun1.isLevelAnswered());
-        MockHttpServletResponse response = mvc.perform(post("/training-runs/{runId}/is-correct-flag", trainingRun1.getId())
+        MockHttpServletResponse response = mvc.perform(post("/training-runs/{runId}/is-correct-answer", trainingRun1.getId())
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
-                .content(convertObjectToJsonBytes(validFlagDTO)))
+                .content(convertObjectToJsonBytes(validAnswerDTO)))
                 .andExpect(status().isOk())
                 .andReturn().getResponse();
-        assertEquals(isCorrectFlagDTO, mapper.readValue(response.getContentAsString(), IsCorrectFlagDTO.class));
+        assertEquals(isCorrectAnswerDTO, mapper.readValue(response.getContentAsString(), IsCorrectAnswerDTO.class));
         assertTrue(trainingRun1.isLevelAnswered());
     }
 
     @Test
-    public void isCorrectFlagWrongFlag() throws Exception {
+    public void isCorrectAnswerWrongAnswer() throws Exception {
         trainingRunRepository.save(trainingRun1);
 
-        isCorrectFlagDTO.setRemainingAttempts(isCorrectFlagDTO.getRemainingAttempts() - 1);
-        isCorrectFlagDTO.setCorrect(false);
+        isCorrectAnswerDTO.setRemainingAttempts(isCorrectAnswerDTO.getRemainingAttempts() - 1);
+        isCorrectAnswerDTO.setCorrect(false);
         mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_ADMINISTRATOR.name()));
         assertFalse(trainingRun1.isLevelAnswered());
-        MockHttpServletResponse response = mvc.perform(post("/training-runs/{runId}/is-correct-flag", trainingRun1.getId())
+        MockHttpServletResponse response = mvc.perform(post("/training-runs/{runId}/is-correct-answer", trainingRun1.getId())
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
-                .content(convertObjectToJsonBytes(invalidFlagDTO)))
+                .content(convertObjectToJsonBytes(invalidAnswerDTO)))
                 .andExpect(status().isOk())
                 .andReturn().getResponse();
-        assertEquals(isCorrectFlagDTO, mapper.readValue(response.getContentAsString(), IsCorrectFlagDTO.class));
+        assertEquals(isCorrectAnswerDTO, mapper.readValue(response.getContentAsString(), IsCorrectAnswerDTO.class));
         assertFalse(trainingRun1.isLevelAnswered());
     }
 
     @Test
-    public void isCorrectFlagWrongFlagFlagCountSameAsFlagLimit() throws Exception {
-        trainingRun1.setIncorrectFlagCount(gameLevel1.getIncorrectFlagLimit());
+    public void isCorrectAnswerWrongAnswerAnswerCountSameAsAnswerLimit() throws Exception {
+        trainingRun1.setIncorrectAnswerCount(trainingLevel1.getIncorrectAnswerLimit());
         trainingRunRepository.save(trainingRun1);
 
-        isCorrectFlagDTO.setRemainingAttempts(0);
-        isCorrectFlagDTO.setCorrect(false);
-        isCorrectFlagDTO.setSolution(gameLevel1.getSolution());
+        isCorrectAnswerDTO.setRemainingAttempts(0);
+        isCorrectAnswerDTO.setCorrect(false);
+        isCorrectAnswerDTO.setSolution(trainingLevel1.getSolution());
         mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_ADMINISTRATOR.name()));
 
         assertFalse(trainingRun1.isLevelAnswered());
-        MockHttpServletResponse response = mvc.perform(post("/training-runs/{runId}/is-correct-flag", trainingRun1.getId())
+        MockHttpServletResponse response = mvc.perform(post("/training-runs/{runId}/is-correct-answer", trainingRun1.getId())
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
-                .content(convertObjectToJsonBytes(invalidFlagDTO)))
+                .content(convertObjectToJsonBytes(invalidAnswerDTO)))
                 .andExpect(status().isOk())
                 .andReturn().getResponse();
-        assertEquals(isCorrectFlagDTO, mapper.readValue(response.getContentAsString(), IsCorrectFlagDTO.class));
+        assertEquals(isCorrectAnswerDTO, mapper.readValue(response.getContentAsString(), IsCorrectAnswerDTO.class));
         assertFalse(trainingRun1.isLevelAnswered());
         assertTrue(trainingRun1.isSolutionTaken());
     }
 
     @Test
-    public void isCorrectFlagWrongFlagFlagCountLessOneThanFlagCount() throws Exception {
-        trainingRun1.setIncorrectFlagCount(gameLevel1.getIncorrectFlagLimit() - 1);
+    public void isCorrectAnswerWrongAnswerAnswerCountLessOneThanAnswerCount() throws Exception {
+        trainingRun1.setIncorrectAnswerCount(trainingLevel1.getIncorrectAnswerLimit() - 1);
         trainingRunRepository.save(trainingRun1);
 
-        isCorrectFlagDTO.setRemainingAttempts(0);
-        isCorrectFlagDTO.setCorrect(false);
-        isCorrectFlagDTO.setSolution(gameLevel1.getSolution());
+        isCorrectAnswerDTO.setRemainingAttempts(0);
+        isCorrectAnswerDTO.setCorrect(false);
+        isCorrectAnswerDTO.setSolution(trainingLevel1.getSolution());
         mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_ADMINISTRATOR.name()));
 
         assertFalse(trainingRun1.isLevelAnswered());
-        MockHttpServletResponse response = mvc.perform(post("/training-runs/{runId}/is-correct-flag", trainingRun1.getId())
+        MockHttpServletResponse response = mvc.perform(post("/training-runs/{runId}/is-correct-answer", trainingRun1.getId())
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
-                .content(convertObjectToJsonBytes(invalidFlagDTO)))
+                .content(convertObjectToJsonBytes(invalidAnswerDTO)))
                 .andExpect(status().isOk())
                 .andReturn().getResponse();
-        assertEquals(isCorrectFlagDTO, mapper.readValue(response.getContentAsString(), IsCorrectFlagDTO.class));
+        assertEquals(isCorrectAnswerDTO, mapper.readValue(response.getContentAsString(), IsCorrectAnswerDTO.class));
         assertFalse(trainingRun1.isLevelAnswered());
         assertTrue(trainingRun1.isSolutionTaken());
     }
 
     @Test
-    public void isCorrectFlagNoGameLevel() throws Exception {
+    public void isCorrectAnswerNoGameLevel() throws Exception {
         trainingRunRepository.save(trainingRun2);
         mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_ADMINISTRATOR.name()));
 
-        Exception ex = mvc.perform(post("/training-runs/{runId}/is-correct-flag", trainingRun2.getId())
+        Exception ex = mvc.perform(post("/training-runs/{runId}/is-correct-answer", trainingRun2.getId())
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
-                .content(convertObjectToJsonBytes(invalidFlagDTO)))
+                .content(convertObjectToJsonBytes(invalidAnswerDTO)))
                 .andExpect(status().isBadRequest()).andReturn().getResolvedException();
 
         assertEquals(BadRequestException.class, Objects.requireNonNull(ex).getClass());
     }
 
     @Test
-    public void isCorrectFlagEmptyFlag() throws Exception {
+    public void isCorrectAnswerEmptyAnswer() throws Exception {
         trainingRunRepository.save(trainingRun2);
         mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_ADMINISTRATOR.name()));
-        invalidFlagDTO.setFlag("");
-        Exception ex = mvc.perform(post("/training-runs/{runId}/is-correct-flag", trainingRun2.getId())
+        invalidAnswerDTO.setAnswer("");
+        Exception ex = mvc.perform(post("/training-runs/{runId}/is-correct-answer", trainingRun2.getId())
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
-                .content(convertObjectToJsonBytes(invalidFlagDTO)))
+                .content(convertObjectToJsonBytes(invalidAnswerDTO)))
                 .andExpect(status().isBadRequest()).andReturn().getResolvedException();
         assertEquals(MethodArgumentNotValidException.class, Objects.requireNonNull(ex).getClass());
     }
@@ -744,7 +744,7 @@ public class TrainingRunsIT {
         JSONObject jsonObject = new JSONObject(response.getContentAsString());
         Long trainingRunId = jsonObject.getLong("trainingRunID");
         String takenSolution = jsonObject.getString("takenSolution");
-        assertEquals(gameLevel1.getSolution(), takenSolution);
+        assertEquals(trainingLevel1.getSolution(), takenSolution);
         Optional<TrainingRun> trainingRun = trainingRunRepository.findById(trainingRunId);
         assertTrue(trainingRun.isPresent());
         assertEquals(trainingRun1, trainingRun.get());
@@ -752,7 +752,7 @@ public class TrainingRunsIT {
 
     @Test
     public void resumeTrainingRunWithTakenHints() throws Exception {
-        trainingRun1.addHintInfo(new HintInfo(gameLevel1.getId(), hint.getId(), hint.getTitle(), hint.getContent(), hint.getOrder()));
+        trainingRun1.addHintInfo(new HintInfo(trainingLevel1.getId(), hint.getId(), hint.getTitle(), hint.getContent(), hint.getOrder()));
         trainingRunRepository.save(trainingRun1);
         TakenHintDTO expectedTakenHint = new TakenHintDTO();
         expectedTakenHint.setId(hint.getId());
@@ -816,7 +816,7 @@ public class TrainingRunsIT {
         ApiEntityError error = convertJsonBytesToObject(response.getContentAsString(), ApiEntityError.class);
         assertEquals(HttpStatus.CONFLICT, error.getStatus());
         assertEntityDetailError(error.getEntityErrorDetail(), TrainingRun.class, "id", trainingRun1.getId().toString(),
-                "Sandbox of this training run was already deleted, you have to start new game.");
+                "Sandbox of this training run was already deleted, you have to start new training.");
     }
 
     @Test

@@ -9,24 +9,24 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Encapsulates information about game level. Inherits from {@link AbstractLevelExportDTO}
+ * Encapsulates information about training level. Inherits from {@link AbstractLevelExportDTO}
  *
  */
-@ApiModel(value = "GameLevelExportDTO", description = "Exported game level.", parent = AbstractLevelExportDTO.class)
-public class GameLevelExportDTO extends AbstractLevelExportDTO {
+@ApiModel(value = "TrainingLevelExportDTO", description = "Exported training level.", parent = AbstractLevelExportDTO.class)
+public class TrainingLevelExportDTO extends AbstractLevelExportDTO {
 
-    @ApiModelProperty(value = "Keyword found in game, used for access next level.", example = "secretFlag")
-    private String flag;
+    @ApiModelProperty(value = "Keyword found in training, used for access next level.", example = "secretAnswer")
+    private String answer;
     @ApiModelProperty(value = "The information and experiences that are directed towards a participant.", example = "Play me")
     private String content;
-    @ApiModelProperty(value = "Instruction how to get flag in game.", example = "This is how you do it")
+    @ApiModelProperty(value = "Instruction how to get answer in training.", example = "This is how you do it")
     private String solution;
     @ApiModelProperty(value = "Sign if displaying of solution is penalized.", example = "true")
     private boolean solutionPenalized;
     @ApiModelProperty(value = "Information which helps player resolve the level.")
     private Set<HintExportDTO> hints = new HashSet<>();
-    @ApiModelProperty(value = "How many times player can submit incorrect flag before displaying solution.", example = "5")
-    private int incorrectFlagLimit;
+    @ApiModelProperty(value = "How many times player can submit incorrect answer before displaying solution.", example = "5")
+    private int incorrectAnswerLimit;
     @ApiModelProperty(value = "List of attachments.", example = "[]")
     private List<AttachmentImportDTO> attachments;
     @ApiModelProperty(value = "The maximum score a participant can achieve during a level.", example = "20")
@@ -34,27 +34,27 @@ public class GameLevelExportDTO extends AbstractLevelExportDTO {
 
 
     /**
-     * Instantiates a new Game level export dto.
+     * Instantiates a new Training level export dto.
      */
-    public GameLevelExportDTO() {
+    public TrainingLevelExportDTO() {
     }
 
     /**
-     * Gets flag.
+     * Gets answer.
      *
-     * @return the flag
+     * @return the answer
      */
-    public String getFlag() {
-        return flag;
+    public String getAnswer() {
+        return answer;
     }
 
     /**
-     * Sets flag.
+     * Sets answer.
      *
-     * @param flag the flag
+     * @param answer the answer
      */
-    public void setFlag(String flag) {
-        this.flag = flag;
+    public void setAnswer(String answer) {
+        this.answer = answer;
     }
 
     /**
@@ -130,21 +130,21 @@ public class GameLevelExportDTO extends AbstractLevelExportDTO {
     }
 
     /**
-     * Gets incorrect flag limit.
+     * Gets incorrect answer limit.
      *
-     * @return the incorrect flag limit
+     * @return the incorrect answer limit
      */
-    public int getIncorrectFlagLimit() {
-        return incorrectFlagLimit;
+    public int getIncorrectAnswerLimit() {
+        return incorrectAnswerLimit;
     }
 
     /**
-     * Sets incorrect flag limit.
+     * Sets incorrect answer limit.
      *
-     * @param incorrectFlagLimit the incorrect flag limit
+     * @param incorrectAnswerLimit the incorrect answer limit
      */
-    public void setIncorrectFlagLimit(int incorrectFlagLimit) {
-        this.incorrectFlagLimit = incorrectFlagLimit;
+    public void setIncorrectAnswerLimit(int incorrectAnswerLimit) {
+        this.incorrectAnswerLimit = incorrectAnswerLimit;
     }
 
     /**
@@ -185,13 +185,13 @@ public class GameLevelExportDTO extends AbstractLevelExportDTO {
 
     @Override
     public String toString() {
-        return "GameLevelExportDTO{" +
-                "flag='" + flag + '\'' +
+        return "TrainingLevelExportDTO{" +
+                "answer='" + answer + '\'' +
                 ", content='" + content + '\'' +
                 ", solution='" + solution + '\'' +
                 ", solutionPenalized=" + solutionPenalized +
                 ", hints=" + hints +
-                ", incorrectFlagLimit=" + incorrectFlagLimit +
+                ", incorrectAnswerLimit=" + incorrectAnswerLimit +
                 ", title='" + title + '\'' +
                 ", maxScore=" + maxScore +
                 ", levelType=" + levelType +

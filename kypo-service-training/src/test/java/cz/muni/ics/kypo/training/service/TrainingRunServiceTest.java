@@ -82,7 +82,7 @@ public class TrainingRunServiceTest {
     private SecurityService securityService;
 
     private TrainingRun trainingRun1, trainingRun2;
-    private GameLevel gameLevel, gameLevel2;
+    private TrainingLevel trainingLevel, trainingLevel2;
     private AssessmentLevel assessmentLevel;
     private InfoLevel infoLevel, infoLevel2;
     private Hint hint1, hint2;
@@ -132,17 +132,17 @@ public class TrainingRunServiceTest {
         hint1 = testDataFactory.getHint1();
         hint1.setId(1L);
 
-        gameLevel = testDataFactory.getPenalizedLevel();
-        gameLevel.setId(1L);
-        gameLevel.setHints(new HashSet<>(Arrays.asList(hint1, hint2)));
-        gameLevel.setOrder(0);
-        gameLevel.setTrainingDefinition(trainingDefinition);
-        hint1.setGameLevel(gameLevel);
+        trainingLevel = testDataFactory.getPenalizedLevel();
+        trainingLevel.setId(1L);
+        trainingLevel.setHints(new HashSet<>(Arrays.asList(hint1, hint2)));
+        trainingLevel.setOrder(0);
+        trainingLevel.setTrainingDefinition(trainingDefinition);
+        hint1.setTrainingLevel(trainingLevel);
 
-        gameLevel2 = testDataFactory.getNonPenalizedLevel();
-        gameLevel2.setId(1L);
-        gameLevel2.setOrder(0);
-        gameLevel2.setTrainingDefinition(trainingDefinition2);
+        trainingLevel2 = testDataFactory.getNonPenalizedLevel();
+        trainingLevel2.setId(1L);
+        trainingLevel2.setOrder(0);
+        trainingLevel2.setTrainingDefinition(trainingDefinition2);
 
         infoLevel = testDataFactory.getInfoLevel1();
         infoLevel.setId(2L);
@@ -159,7 +159,7 @@ public class TrainingRunServiceTest {
 
         trainingRun1 = testDataFactory.getRunningRun();
         trainingRun1.setId(1L);
-        trainingRun1.setCurrentLevel(gameLevel);
+        trainingRun1.setCurrentLevel(trainingLevel);
         trainingRun1.setParticipantRef(participantRef);
         trainingRun1.setTrainingInstance(trainingInstance1);
         trainingRun1.setTrainingInstance(trainingInstance1);
@@ -198,7 +198,7 @@ public class TrainingRunServiceTest {
 
         Optional<TrainingRun> optionalTrainingRun = trainingRunRepository.findByIdWithLevel(trainingRun1.getId());
         assertTrue(optionalTrainingRun.isPresent());
-        assertTrue(optionalTrainingRun.get().getCurrentLevel() instanceof GameLevel);
+        assertTrue(optionalTrainingRun.get().getCurrentLevel() instanceof TrainingLevel);
     }
 
     @Test(expected = EntityNotFoundException.class)
@@ -307,7 +307,7 @@ public class TrainingRunServiceTest {
     @Test
     public void getNextLevel() {
         List<AbstractLevel> levels = new ArrayList<>();
-        levels.add(gameLevel);
+        levels.add(trainingLevel);
         levels.add(infoLevel);
         trainingRun1.setLevelAnswered(true);
         given(trainingRunRepository.findByIdWithLevel(any(Long.class))).willReturn(Optional.of(trainingRun1));
@@ -368,15 +368,15 @@ public class TrainingRunServiceTest {
     @Test
     public void getLevels() {
         given(abstractLevelRepository.findAllLevelsByTrainingDefinitionId(trainingDefinition.getId()))
-                .willReturn(List.of(gameLevel, gameLevel2, infoLevel));
+                .willReturn(List.of(trainingLevel, trainingLevel2, infoLevel));
         List<AbstractLevel> result = trainingRunService.getLevels(trainingDefinition.getId());
-        assertEquals(List.of(gameLevel, gameLevel2, infoLevel), result);
+        assertEquals(List.of(trainingLevel, trainingLevel2, infoLevel), result);
     }
 
     @Test
     public void createTrainingRun() throws Exception{
         given(abstractLevelRepository.findFirstLevelByTrainingDefinitionId(eq(trainingInstance1.getTrainingDefinition().getId()), any(Pageable.class)))
-                .willReturn(List.of(gameLevel));
+                .willReturn(List.of(trainingLevel));
         given(participantRefRepository.findUserByUserRefId(participantRef.getUserRefId()))
                 .willReturn(Optional.of(participantRef));
         given(trainingRunRepository.save(any(TrainingRun.class))).willReturn(trainingRun1);
@@ -392,7 +392,7 @@ public class TrainingRunServiceTest {
         newParticipant.setUserRefId(participantRef.getUserRefId());
         sandboxInfo.setLockId(1);
         given(abstractLevelRepository.findFirstLevelByTrainingDefinitionId(eq(trainingInstance1.getTrainingDefinition().getId()), any(Pageable.class)))
-                .willReturn(List.of(gameLevel));
+                .willReturn(List.of(trainingLevel));
         given(participantRefRepository.findUserByUserRefId(participantRef.getUserRefId()))
                 .willReturn(Optional.empty());
         given(trainingRunRepository.save(any(TrainingRun.class))).willReturn(trainingRun1);
@@ -417,7 +417,7 @@ public class TrainingRunServiceTest {
     public void createTrainingRun_UserManagementError() {
         trainingInstance1.setTrainingDefinition(trainingDefinition);
         given(abstractLevelRepository.findFirstLevelByTrainingDefinitionId(eq(trainingInstance1.getTrainingDefinition().getId()), any(Pageable.class)))
-                .willReturn(List.of(gameLevel));
+                .willReturn(List.of(trainingLevel));
         given(participantRefRepository.findUserByUserRefId(participantRef.getUserRefId()))
                 .willReturn(Optional.empty());
         willThrow(new MicroserviceApiException(HttpStatus.CONFLICT, JavaApiError.of("Error when calling user managements service"))).given(securityService).createUserRefEntityByInfoFromUserAndGroup();
@@ -487,7 +487,7 @@ public class TrainingRunServiceTest {
         TrainingRun trainingRun = trainingRunService.resumeTrainingRun(trainingRun1.getId());
 
         assertEquals(trainingRun.getId(), trainingRun1.getId());
-        assertTrue(trainingRun.getCurrentLevel() instanceof GameLevel);
+        assertTrue(trainingRun.getCurrentLevel() instanceof TrainingLevel);
     }
 
     @Test(expected = EntityNotFoundException.class)
@@ -529,42 +529,42 @@ public class TrainingRunServiceTest {
 //    }
 
     @Test
-    public void isCorrectFlag() {
-        int scoreBefore = trainingRun1.getTotalGameScore() + trainingRun1.getTotalAssessmentScore();
+    public void isCorrectAnswer() {
+        int scoreBefore = trainingRun1.getTotalTrainingScore() + trainingRun1.getTotalAssessmentScore();
         given(trainingRunRepository.findByIdWithLevel(trainingRun1.getId())).willReturn(Optional.of(trainingRun1));
-        boolean isCorrect = trainingRunService.isCorrectFlag(trainingRun1.getId(), gameLevel.getFlag());
+        boolean isCorrect = trainingRunService.isCorrectAnswer(trainingRun1.getId(), trainingLevel.getAnswer());
         assertTrue(isCorrect);
-        assertEquals(scoreBefore + (trainingRun1.getMaxLevelScore() - trainingRun1.getCurrentPenalty()), trainingRun1.getTotalGameScore() + trainingRun1.getTotalAssessmentScore());
+        assertEquals(scoreBefore + (trainingRun1.getMaxLevelScore() - trainingRun1.getCurrentPenalty()), trainingRun1.getTotalTrainingScore() + trainingRun1.getTotalAssessmentScore());
         assertTrue(trainingRun1.isLevelAnswered());
     }
 
     @Test
-    public void isCorrectFlag_NotCorrect() {
+    public void isCorrectAnswer_NotCorrect() {
         given(trainingRunRepository.findByIdWithLevel(trainingRun1.getId())).willReturn(Optional.of(trainingRun1));
-        boolean isCorrect = trainingRunService.isCorrectFlag(trainingRun1.getId(), "wrong flag");
+        boolean isCorrect = trainingRunService.isCorrectAnswer(trainingRun1.getId(), "wrong answer");
         assertFalse(isCorrect);
         assertFalse(trainingRun1.isLevelAnswered());
     }
 
     @Test(expected = BadRequestException.class)
-    public void isCorrectFlagOfNonGameLevel() {
+    public void isCorrectAnswerOfNonGameLevel() {
         given(trainingRunRepository.findByIdWithLevel(trainingRun2.getId())).willReturn(Optional.of(trainingRun2));
-        trainingRunService.isCorrectFlag(trainingRun2.getId(), "flag");
+        trainingRunService.isCorrectAnswer(trainingRun2.getId(), "answer");
     }
 
     @Test
     public void getRemainingAttempts() {
         given(trainingRunRepository.findByIdWithLevel(trainingRun1.getId())).willReturn(Optional.ofNullable(trainingRun1));
         int attempts = trainingRunService.getRemainingAttempts(trainingRun1.getId());
-        assertEquals(gameLevel.getIncorrectFlagLimit() - trainingRun1.getIncorrectFlagCount(), attempts);
+        assertEquals(trainingLevel.getIncorrectAnswerLimit() - trainingRun1.getIncorrectAnswerCount(), attempts);
     }
 
     @Test
     public void getSolution() {
-        trainingRun1.setTotalGameScore(40);
+        trainingRun1.setTotalTrainingScore(40);
         given(trainingRunRepository.findByIdWithLevel(trainingRun1.getId())).willReturn(Optional.of(trainingRun1));
         String solution = trainingRunService.getSolution(trainingRun1.getId());
-        assertEquals(solution, gameLevel.getSolution());
+        assertEquals(solution, trainingLevel.getSolution());
         assertFalse(trainingRun1.isLevelAnswered());
     }
 
@@ -573,7 +573,7 @@ public class TrainingRunServiceTest {
         trainingRun1.setSolutionTaken(true);
         given(trainingRunRepository.findByIdWithLevel(trainingRun1.getId())).willReturn(Optional.of(trainingRun1));
         String solution = trainingRunService.getSolution(trainingRun1.getId());
-        assertEquals(solution, gameLevel.getSolution());
+        assertEquals(solution, trainingLevel.getSolution());
         assertFalse(trainingRun1.isLevelAnswered());
     }
 

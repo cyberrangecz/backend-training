@@ -38,7 +38,7 @@ public class TrainingDefinitionService {
     private TrainingDefinitionRepository trainingDefinitionRepository;
     private TrainingInstanceRepository trainingInstanceRepository;
     private AbstractLevelRepository abstractLevelRepository;
-    private GameLevelRepository gameLevelRepository;
+    private TrainingLevelRepository trainingLevelRepository;
     private InfoLevelRepository infoLevelRepository;
     private AssessmentLevelRepository assessmentLevelRepository;
     private UserRefRepository userRefRepository;
@@ -54,7 +54,7 @@ public class TrainingDefinitionService {
      * @param trainingDefinitionRepository the training definition repository
      * @param abstractLevelRepository      the abstract level repository
      * @param infoLevelRepository          the info level repository
-     * @param gameLevelRepository          the game level repository
+     * @param trainingLevelRepository      the training level repository
      * @param assessmentLevelRepository    the assessment level repository
      * @param trainingInstanceRepository   the training instance repository
      * @param userRefRepository            the user ref repository
@@ -64,7 +64,7 @@ public class TrainingDefinitionService {
     public TrainingDefinitionService(TrainingDefinitionRepository trainingDefinitionRepository,
                                      AbstractLevelRepository abstractLevelRepository,
                                      InfoLevelRepository infoLevelRepository,
-                                     GameLevelRepository gameLevelRepository,
+                                     TrainingLevelRepository trainingLevelRepository,
                                      AssessmentLevelRepository assessmentLevelRepository,
                                      TrainingInstanceRepository trainingInstanceRepository,
                                      UserRefRepository userRefRepository,
@@ -73,7 +73,7 @@ public class TrainingDefinitionService {
                                      ObjectMapper objectMapper) {
         this.trainingDefinitionRepository = trainingDefinitionRepository;
         this.abstractLevelRepository = abstractLevelRepository;
-        this.gameLevelRepository = gameLevelRepository;
+        this.trainingLevelRepository = trainingLevelRepository;
         this.infoLevelRepository = infoLevelRepository;
         this.assessmentLevelRepository = assessmentLevelRepository;
         this.trainingInstanceRepository = trainingInstanceRepository;
@@ -311,24 +311,24 @@ public class TrainingDefinitionService {
     }
 
     /**
-     * Updates game level in training definition
+     * Updates training level in training definition
      *
      * @param definitionId      - id of training definition containing level to be updated
-     * @param gameLevelToUpdate to be updated
+     * @param trainingLevelToUpdate to be updated
      * @throws EntityNotFoundException training definition is not found.
      * @throws EntityConflictException level cannot be updated in released or archived training definition.
      */
-    public void updateGameLevel(Long definitionId, GameLevel gameLevelToUpdate) {
+    public void updateTrainingLevel(Long definitionId, TrainingLevel trainingLevelToUpdate) {
         TrainingDefinition trainingDefinition = findById(definitionId);
         checkIfCanBeUpdated(trainingDefinition);
-        GameLevel gameLevel = findGameLevelById(gameLevelToUpdate.getId());
-        checkIfLevelPresentInDefinition(gameLevel, definitionId);
-        this.checkSumOfHintPenalties(gameLevelToUpdate);
-        gameLevelToUpdate.setOrder(gameLevel.getOrder());
-        trainingDefinition.setEstimatedDuration(trainingDefinition.getEstimatedDuration() - gameLevel.getEstimatedDuration() + gameLevelToUpdate.getEstimatedDuration());
+        TrainingLevel trainingLevel = findTrainingLevelById(trainingLevelToUpdate.getId());
+        checkIfLevelPresentInDefinition(trainingLevel, definitionId);
+        this.checkSumOfHintPenalties(trainingLevelToUpdate);
+        trainingLevelToUpdate.setOrder(trainingLevel.getOrder());
+        trainingDefinition.setEstimatedDuration(trainingDefinition.getEstimatedDuration() - trainingLevel.getEstimatedDuration() + trainingLevelToUpdate.getEstimatedDuration());
         trainingDefinition.setLastEdited(getCurrentTimeInUTC());
-        gameLevelToUpdate.setTrainingDefinition(trainingDefinition);
-        gameLevelRepository.save(gameLevelToUpdate);
+        trainingLevelToUpdate.setTrainingDefinition(trainingDefinition);
+        trainingLevelRepository.save(trainingLevelToUpdate);
     }
 
     /**
@@ -377,37 +377,37 @@ public class TrainingDefinitionService {
     }
 
     /**
-     * Creates new game level
+     * Creates new training level
      *
      * @param definitionId - id of definition in which level will be created
-     * @return new {@link GameLevel}
+     * @return new {@link TrainingLevel}
      * @throws EntityNotFoundException training definition is not found.
      * @throws EntityConflictException level cannot be created in released or archived training definition.
      */
-    public GameLevel createGameLevel(Long definitionId) {
+    public TrainingLevel createTrainingLevel(Long definitionId) {
         TrainingDefinition trainingDefinition = findById(definitionId);
         checkIfCanBeUpdated(trainingDefinition);
-        GameLevel newGameLevel = initializeNewGameLevel();
-        newGameLevel.setOrder(getNextOrder(definitionId));
-        newGameLevel.setTrainingDefinition(trainingDefinition);
-        GameLevel gameLevel = gameLevelRepository.save(newGameLevel);
-        trainingDefinition.setEstimatedDuration(trainingDefinition.getEstimatedDuration() + newGameLevel.getEstimatedDuration());
+        TrainingLevel newTrainingLevel = initializeNewTrainingLevel();
+        newTrainingLevel.setOrder(getNextOrder(definitionId));
+        newTrainingLevel.setTrainingDefinition(trainingDefinition);
+        TrainingLevel trainingLevel = trainingLevelRepository.save(newTrainingLevel);
+        trainingDefinition.setEstimatedDuration(trainingDefinition.getEstimatedDuration() + newTrainingLevel.getEstimatedDuration());
         trainingDefinition.setLastEdited(getCurrentTimeInUTC());
-        LOG.info("Game level with id: {} created", gameLevel.getId());
-        return gameLevel;
+        LOG.info("Training level with id: {} created", trainingLevel.getId());
+        return trainingLevel;
     }
 
-    private GameLevel initializeNewGameLevel() {
-        GameLevel newGameLevel = new GameLevel();
-        newGameLevel.setMaxScore(100);
-        newGameLevel.setTitle("Title of game level");
-        newGameLevel.setIncorrectFlagLimit(100);
-        newGameLevel.setFlag("Secret flag");
-        newGameLevel.setSolutionPenalized(true);
-        newGameLevel.setSolution("Solution of the game should be here");
-        newGameLevel.setContent("The test entry should be here");
-        newGameLevel.setEstimatedDuration(1);
-        return newGameLevel;
+    private TrainingLevel initializeNewTrainingLevel() {
+        TrainingLevel newTrainingLevel = new TrainingLevel();
+        newTrainingLevel.setMaxScore(100);
+        newTrainingLevel.setTitle("Title of training level");
+        newTrainingLevel.setIncorrectAnswerLimit(100);
+        newTrainingLevel.setAnswer("Secret answer");
+        newTrainingLevel.setSolutionPenalized(true);
+        newTrainingLevel.setSolution("Solution of the training should be here");
+        newTrainingLevel.setContent("The test entry should be here");
+        newTrainingLevel.setEstimatedDuration(1);
+        return newTrainingLevel;
     }
 
     private int getNextOrder(Long definitionId) {
@@ -562,8 +562,8 @@ public class TrainingDefinitionService {
                 new EntityErrorDetail(AbstractLevel.class, "id", id.getClass(), id, LEVEL_NOT_FOUND)));
     }
 
-    private GameLevel findGameLevelById(Long id) {
-        return gameLevelRepository.findById(id).orElseThrow(() -> new EntityNotFoundException(
+    private TrainingLevel findTrainingLevelById(Long id) {
+        return trainingLevelRepository.findById(id).orElseThrow(() -> new EntityNotFoundException(
                 new EntityErrorDetail(AbstractLevel.class, "id", id.getClass(), id, LEVEL_NOT_FOUND)));
     }
 
@@ -586,8 +586,8 @@ public class TrainingDefinitionService {
             if (level instanceof InfoLevel) {
                 cloneInfoLevel(level, clonedTrainingDefinition);
             }
-            if (level instanceof GameLevel) {
-                cloneGameLevel(level, clonedTrainingDefinition);
+            if (level instanceof TrainingLevel) {
+                cloneTrainingLevel(level, clonedTrainingDefinition);
             }
         });
     }
@@ -671,14 +671,14 @@ public class TrainingDefinitionService {
         return clonedEMIOptions;
     }
 
-    private void cloneGameLevel(AbstractLevel level, TrainingDefinition trainingDefinition) {
-        GameLevel newGameLevel = new GameLevel();
-        modelMapper.map(level, newGameLevel);
-        newGameLevel.setId(null);
-        newGameLevel.setHints(cloneHints(((GameLevel) level).getHints()));
-        newGameLevel.setAttachments(cloneAttachments(((GameLevel) level).getAttachments()));
-        newGameLevel.setTrainingDefinition(trainingDefinition);
-        gameLevelRepository.save(newGameLevel);
+    private void cloneTrainingLevel(AbstractLevel level, TrainingDefinition trainingDefinition) {
+        TrainingLevel newTrainingLevel = new TrainingLevel();
+        modelMapper.map(level, newTrainingLevel);
+        newTrainingLevel.setId(null);
+        newTrainingLevel.setHints(cloneHints(((TrainingLevel) level).getHints()));
+        newTrainingLevel.setAttachments(cloneAttachments(((TrainingLevel) level).getAttachments()));
+        newTrainingLevel.setTrainingDefinition(trainingDefinition);
+        trainingLevelRepository.save(newTrainingLevel);
     }
 
     private Set<Hint> cloneHints(Set<Hint> hints) {
@@ -721,7 +721,7 @@ public class TrainingDefinitionService {
         } else if (level instanceof InfoLevel) {
             infoLevelRepository.delete((InfoLevel) level);
         } else {
-            gameLevelRepository.delete((GameLevel) level);
+            trainingLevelRepository.delete((TrainingLevel) level);
         }
     }
 
@@ -740,13 +740,13 @@ public class TrainingDefinitionService {
         trainingDefinition.setLastEdited(getCurrentTimeInUTC());
     }
 
-    private void checkSumOfHintPenalties(GameLevel gameLevel) {
+    private void checkSumOfHintPenalties(TrainingLevel trainingLevel) {
         int sumHintPenalty = 0;
-        for (Hint hint : gameLevel.getHints()) {
+        for (Hint hint : trainingLevel.getHints()) {
             sumHintPenalty += hint.getHintPenalty();
         }
-        if(sumHintPenalty > gameLevel.getMaxScore()) {
-            throw new UnprocessableEntityException(new EntityErrorDetail(GameLevel.class, "id", Long.class, gameLevel.getId(), "Sum of hint penalties cannot be greater than maximal score of the game level."));
+        if(sumHintPenalty > trainingLevel.getMaxScore()) {
+            throw new UnprocessableEntityException(new EntityErrorDetail(TrainingLevel.class, "id", Long.class, trainingLevel.getId(), "Sum of hint penalties cannot be greater than maximal score of the training level."));
         }
     }
 

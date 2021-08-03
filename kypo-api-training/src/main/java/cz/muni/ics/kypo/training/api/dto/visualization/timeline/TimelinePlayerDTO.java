@@ -12,12 +12,12 @@ public class TimelinePlayerDTO extends PlayerDataWithScoreDTO {
     private List<VisualizationAbstractLevelDTO> levels = new ArrayList<>();
 
     public TimelinePlayerDTO(Long id, String name, byte[] picture, Long trainingRunId,
-                             Integer gameScore, Integer assessmentScore) {
-        super(id, name, picture, trainingRunId, gameScore, assessmentScore);
+                             Integer trainingScore, Integer assessmentScore) {
+        super(id, name, picture, trainingRunId, trainingScore, assessmentScore);
     }
 
-    public TimelinePlayerDTO(UserRefDTO userRef, Long trainingRunId, Integer gameScore, Integer assessmentScore) {
-        super(userRef.getUserRefId(), userRef.getUserRefFullName(), userRef.getPicture(), trainingRunId, gameScore, assessmentScore);
+    public TimelinePlayerDTO(UserRefDTO userRef, Long trainingRunId, Integer trainingScore, Integer assessmentScore) {
+        super(userRef.getUserRefId(), userRef.getUserRefFullName(), userRef.getPicture(), trainingRunId, trainingScore, assessmentScore);
     }
 
     public List<VisualizationAbstractLevelDTO> getLevels() {
@@ -38,7 +38,7 @@ public class TimelinePlayerDTO extends PlayerDataWithScoreDTO {
                 "id=" + getId() +
                 ", trainingRunId=" + getTrainingRunId() +
                 ", name='" + getName() + '\'' +
-                ", gameScore=" + getGameScore() +
+                ", trainingScore=" + getTrainingScore() +
                 ", assessmentScore=" + getAssessmentScore() +
                 ", trainingTime=" + getTrainingTime() +
                 '}';

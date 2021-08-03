@@ -100,8 +100,8 @@ public class TrainingRun extends AbstractEntity<Long> {
     @Column(name = "state", length = 128, nullable = false)
     @Enumerated(EnumType.STRING)
     private TRState state;
-    @Column(name = "incorrect_flag_count", nullable = false)
-    private int incorrectFlagCount;
+    @Column(name = "incorrect_answer_count", nullable = false)
+    private int incorrectAnswerCount;
     @Column(name = "solution_taken", nullable = false)
     private boolean solutionTaken;
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
@@ -117,8 +117,8 @@ public class TrainingRun extends AbstractEntity<Long> {
     @Type(type = "org.hibernate.type.TextType")
     @Column(name = "assessment_responses", nullable = true)
     private String assessmentResponses;
-    @Column(name = "total_game_score")
-    private int totalGameScore;
+    @Column(name = "total_training_score")
+    private int totalTrainingScore;
     @Column(name = "total_assessment_score")
     private int totalAssessmentScore;
     @Column(name = "max_level_score")
@@ -285,21 +285,21 @@ public class TrainingRun extends AbstractEntity<Long> {
     }
 
     /**
-     * Gets number of failed attempts by trainee to submit correct flag on current level
+     * Gets number of failed attempts by trainee to submit correct answer on current level
      *
-     * @return the incorrect flag count
+     * @return the incorrect answer count
      */
-    public int getIncorrectFlagCount() {
-        return incorrectFlagCount;
+    public int getIncorrectAnswerCount() {
+        return incorrectAnswerCount;
     }
 
     /**
      * Sets number of failed attempts trainee can submit on current level
      *
-     * @param incorrectFlagCount the incorrect flag count
+     * @param incorrectAnswerCount the incorrect answer count
      */
-    public void setIncorrectFlagCount(int incorrectFlagCount) {
-        this.incorrectFlagCount = incorrectFlagCount;
+    public void setIncorrectAnswerCount(int incorrectAnswerCount) {
+        this.incorrectAnswerCount = incorrectAnswerCount;
     }
 
     /**
@@ -357,40 +357,40 @@ public class TrainingRun extends AbstractEntity<Long> {
     }
 
     /**
-     * Gets maximal game level score that can be gathered by trainee
+     * Gets score achieved in training levels
      *
-     * @return the total score
+     * @return the total training score
      */
-    public int getTotalGameScore() {
-        return totalGameScore;
+    public int getTotalTrainingScore() {
+        return totalTrainingScore;
     }
 
     /**
-     * Sets maximal game level score that can be gathered by trainee
+     * Sets score achieved in training levels.
      *
-     * @param totalGameScore the total score
+     * @param totalTrainingScore the total training score
      */
-    public void setTotalGameScore(int totalGameScore) {
-        this.totalGameScore = totalGameScore;
+    public void setTotalTrainingScore(int totalTrainingScore) {
+        this.totalTrainingScore = totalTrainingScore;
     }
 
-    public void decreaseTotalGameScore(int penalty) {
-        this.totalGameScore -= penalty;
+    public void decreaseTotalTrainingScore(int penalty) {
+        this.totalTrainingScore -= penalty;
     }
 
     /**
-     * Gets maximal assessment level score that can be gathered by trainee
+     * Gets score achieved in assessment levels.
      *
-     * @return the total score
+     * @return the total assessment score
      */
     public int getTotalAssessmentScore() {
         return totalAssessmentScore;
     }
 
     /**
-     * Sets maximal assessment level score that can be gathered by trainee
+     * Sets score achieved in assessment levels.
      *
-     * @param totalAssessmentScore the total score
+     * @param totalAssessmentScore the total assessment score
      */
     public void setTotalAssessmentScore(int totalAssessmentScore) {
         this.totalAssessmentScore = totalAssessmentScore;
@@ -406,12 +406,12 @@ public class TrainingRun extends AbstractEntity<Long> {
     }
 
     /**
-     * Increase total game level score.
+     * Increase total training level score.
      *
      * @param points the points
      */
-    public void increaseTotalGameScore(int points) {
-        this.totalGameScore += points;
+    public void increaseTotalTrainingScore(int points) {
+        this.totalTrainingScore += points;
     }
 
     /**
@@ -470,7 +470,7 @@ public class TrainingRun extends AbstractEntity<Long> {
     }
 
     /**
-     * Gets hints associated to current game level
+     * Gets hints associated to current training level
      *
      * @return the hint info list
      */
@@ -479,7 +479,7 @@ public class TrainingRun extends AbstractEntity<Long> {
     }
 
     /**
-     * Adds hint to current game level
+     * Adds hint to current training level
      *
      * @param hintInfo the hint info
      */
@@ -488,7 +488,7 @@ public class TrainingRun extends AbstractEntity<Long> {
     }
 
     /**
-     * Removes hint to current game level
+     * Removes hint to current training level
      *
      * @param hintInfo the hint info
      */
@@ -544,7 +544,7 @@ public class TrainingRun extends AbstractEntity<Long> {
 
     @Override
     public int hashCode() {
-        return Objects.hash(currentLevel, eventLogReference, startTime, endTime, state, trainingInstance, incorrectFlagCount);
+        return Objects.hash(currentLevel, eventLogReference, startTime, endTime, state, trainingInstance, incorrectAnswerCount);
     }
 
     @Override
@@ -561,7 +561,7 @@ public class TrainingRun extends AbstractEntity<Long> {
                 && Objects.equals(startTime, other.getStartTime())
                 && Objects.equals(endTime, other.getEndTime())
                 && Objects.equals(state, other.getState())
-                && Objects.equals(incorrectFlagCount, other.getIncorrectFlagCount())
+                && Objects.equals(incorrectAnswerCount, other.getIncorrectAnswerCount())
                 && Objects.equals(trainingInstance, other.getTrainingInstance())
                 && Objects.equals(participantRef, other.getParticipantRef())
                 && Objects.equals(solutionTaken, other.isSolutionTaken());
@@ -575,11 +575,11 @@ public class TrainingRun extends AbstractEntity<Long> {
                 ", endTime=" + endTime +
                 ", eventLogReference='" + eventLogReference + '\'' +
                 ", state=" + state +
-                ", incorrectFlagCount=" + incorrectFlagCount +
+                ", incorrectAnswerCount=" + incorrectAnswerCount +
                 ", solutionTaken=" + solutionTaken +
                 ", currentLevel=" + currentLevel +
                 ", sandboxInstanceRefId=" + sandboxInstanceRefId +
-                ", totalGameScore=" + totalGameScore +
+                ", totalTrainingScore=" + totalTrainingScore +
                 ", totalAssessmentScore=" + totalAssessmentScore +
                 ", maxLevelScore=" + maxLevelScore +
                 ", levelAnswered=" + levelAnswered +

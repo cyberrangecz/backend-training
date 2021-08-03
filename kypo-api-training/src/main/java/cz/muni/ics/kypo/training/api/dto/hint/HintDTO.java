@@ -28,7 +28,7 @@ public class HintDTO {
     @Max(value = 100, message = "{hint.hintPenalty.Max.message}")
     @ApiModelProperty(value = "The number of points the participant loses after receiving the hint.", example = "10")
     private Integer hintPenalty;
-    @ApiModelProperty(value = "The order of hint in game level", example = "1")
+    @ApiModelProperty(value = "The order of hint in training level", example = "1")
     @Min(value = 0, message = "{hint.order.Min.message}")
     private int order;
 

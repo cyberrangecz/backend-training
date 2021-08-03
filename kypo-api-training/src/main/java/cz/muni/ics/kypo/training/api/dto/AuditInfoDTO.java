@@ -11,7 +11,7 @@ public class AuditInfoDTO {
     private long trainingRunId;
     private long trainingDefinitionId;
     private long trainingInstanceId;
-    private long gameTime;
+    private long trainingTime;
     private long level;
     private int totalScore;
     private int actualScoreInLevel;
@@ -131,21 +131,21 @@ public class AuditInfoDTO {
     }
 
     /**
-     * Gets game time.
+     * Gets training time.
      *
-     * @return the game time
+     * @return the training time
      */
-    public long getGameTime() {
-        return gameTime;
+    public long getTrainingTime() {
+        return trainingTime;
     }
 
     /**
-     * Sets game time.
+     * Sets training time.
      *
-     * @param gameTime the game time
+     * @param trainingTime the training time
      */
-    public void setGameTime(long gameTime) {
-        this.gameTime = gameTime;
+    public void setTrainingTime(long trainingTime) {
+        this.trainingTime = trainingTime;
     }
 
     /**
@@ -211,7 +211,7 @@ public class AuditInfoDTO {
                 ", trainingRunId=" + trainingRunId +
                 ", trainingDefinitionId=" + trainingDefinitionId +
                 ", trainingInstanceId=" + trainingInstanceId +
-                ", gameTime=" + gameTime +
+                ", trainingTime=" + trainingTime +
                 ", level=" + level +
                 ", totalScore=" + totalScore +
                 ", actualScoreInLevel=" + actualScoreInLevel +

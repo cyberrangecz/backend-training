@@ -10,7 +10,7 @@ import cz.muni.ics.kypo.training.api.enums.TDState;
 import cz.muni.ics.kypo.training.api.responses.PageResultResource;
 import cz.muni.ics.kypo.training.api.dto.*;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelUpdateDTO;
-import cz.muni.ics.kypo.training.api.dto.gamelevel.GameLevelUpdateDTO;
+import cz.muni.ics.kypo.training.api.dto.traininglevel.TrainingLevelUpdateDTO;
 import cz.muni.ics.kypo.training.api.dto.infolevel.InfoLevelUpdateDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionCreateDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionByIdDTO;
@@ -356,31 +356,31 @@ public class TrainingDefinitionsRestController {
     }
 
     /**
-     * Update game level.
+     * Update training level.
      *
      * @param definitionId       the Training Definition id
-     * @param gameLevelUpdateDTO the game level to be updated
+     * @param trainingLevelUpdateDTO the training level to be updated
      * @return the response entity
      */
     @ApiOperation(httpMethod = "PUT",
-            value = "Update game level",
+            value = "Update training level",
             notes = "Level can be updated only in unreleased training definition",
-            nickname = "updateGameLevel",
+            nickname = "updateTrainingLevel",
             consumes = MediaType.APPLICATION_JSON_VALUE
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 204, message = "The game level has been updated."),
-            @ApiResponse(code = 400, message = "The provided game level is not valid.", response = ApiError.class),
-            @ApiResponse(code = 404, message = "The game level has not been found in definition.", response = ApiError.class),
+            @ApiResponse(code = 204, message = "The training level has been updated."),
+            @ApiResponse(code = 400, message = "The provided training level is not valid.", response = ApiError.class),
+            @ApiResponse(code = 404, message = "The training level has not been found in definition.", response = ApiError.class),
             @ApiResponse(code = 409, message = "Cannot edit released or archived training definition.", response = ApiError.class),
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiError.class)
     })
-    @PutMapping(path = "/{definitionId}/game-levels", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Void> updateGameLevel(@ApiParam(value = "Id of definition to which level is assigned", required = true)
+    @PutMapping(path = "/{definitionId}/training-levels", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Void> updateTrainingLevel(@ApiParam(value = "Id of definition to which level is assigned", required = true)
                                                 @PathVariable("definitionId") Long definitionId,
-                                                @ApiParam(value = "Game level to be updated")
-                                                @RequestBody @Valid GameLevelUpdateDTO gameLevelUpdateDTO) {
-        trainingDefinitionFacade.updateGameLevel(definitionId, gameLevelUpdateDTO);
+                                                @ApiParam(value = "Training level to be updated")
+                                                @RequestBody @Valid TrainingLevelUpdateDTO trainingLevelUpdateDTO) {
+        trainingDefinitionFacade.updateTrainingLevel(definitionId, trainingLevelUpdateDTO);
         return ResponseEntity.noContent().build();
     }
 
@@ -494,13 +494,13 @@ public class TrainingDefinitionsRestController {
     @PostMapping(path = "/{definitionId}/levels/{levelType}")
     public ResponseEntity<Object> createLevel(@ApiParam(value = "Id of definition for which is level created", required = true)
                                               @PathVariable("definitionId") Long definitionId,
-                                              @ApiParam(value = "Level type", allowableValues = "GAME, ASSESSMENT, INFO", required = true)
+                                              @ApiParam(value = "Level type", allowableValues = "TRAINING, ASSESSMENT, INFO", required = true)
                                               @PathVariable("levelType") LevelType levelType,
                                               @ApiParam(value = "Fields which should be returned in REST API response", required = false)
                                               @RequestParam(value = "fields", required = false) String fields) {
         BasicLevelInfoDTO basicLevelInfoDTO;
-        if (levelType.equals(LevelType.GAME)) {
-            basicLevelInfoDTO = trainingDefinitionFacade.createGameLevel(definitionId);
+        if (levelType.equals(LevelType.TRAINING)) {
+            basicLevelInfoDTO = trainingDefinitionFacade.createTrainingLevel(definitionId);
         } else if (levelType.equals(LevelType.ASSESSMENT)) {
             basicLevelInfoDTO = trainingDefinitionFacade.createAssessmentLevel(definitionId);
         } else {

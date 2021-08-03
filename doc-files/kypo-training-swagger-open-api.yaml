@@ -2135,13 +2135,13 @@ paths:
             $ref: "#/definitions/ApiError"
       security:
       - bearerAuth: []
-  /training-runs/{runId}/is-correct-flag:
+  /training-runs/{runId}/is-correct-answer:
     post:
       tags:
       - "Training runs"
-      summary: "Check flag of game level"
+      summary: "Check answer of game level"
       description: "Current level of given training run must be game level"
-      operationId: "isCorrectFlag"
+      operationId: "isCorrectAnswer"
       produces:
       - "application/json"
       parameters:
@@ -2153,17 +2153,17 @@ paths:
         format: "int64"
       - in: "body"
         name: "body"
-        description: "Submitted flag"
+        description: "Submitted answer"
         required: true
         schema:
-          $ref: "#/definitions/ValidateFlagDTO"
+          $ref: "#/definitions/ValidateAnswerDTO"
       responses:
         200:
-          description: "The flag has been checked."
+          description: "The answer has been checked."
           schema:
-            $ref: "#/definitions/IsCorrectFlagDTO"
+            $ref: "#/definitions/IsCorrectAnswerDTO"
         400:
-          description: "Current level is not game level and does not have flag."
+          description: "Current level is not game level and does not have answer."
           schema:
             $ref: "#/definitions/ApiError"
         404:
@@ -3502,9 +3502,9 @@ definitions:
     - $ref: "#/definitions/AbstractLevelDTO"
     - type: "object"
       properties:
-        flag:
+        answer:
           type: "string"
-          example: "secretFlag"
+          example: "secretAnswer"
           description: "Keyword found in game, used for access next level."
         content:
           type: "string"
@@ -3514,7 +3514,7 @@ definitions:
         solution:
           type: "string"
           example: "This is how you do it"
-          description: "Instruction how to get flag in game."
+          description: "Instruction how to get answer in game."
         solutionPenalized:
           type: "boolean"
           example: true
@@ -3525,22 +3525,22 @@ definitions:
           uniqueItems: true
           items:
             $ref: "#/definitions/HintDTO"
-        incorrectFlagLimit:
+        incorrectAnswerLimit:
           type: "integer"
           format: "int32"
           example: 5
-          description: "How many times player can submit incorrect flag before displaying\
+          description: "How many times player can submit incorrect answer before displaying\
             \ solution."
       description: "An assignment containing security tasks whose completion yields\
-        \ a flag."
+        \ a answer."
   GameLevelExportDTO:
     allOf:
     - $ref: "#/definitions/AbstractLevelExportDTO"
     - type: "object"
       properties:
-        flag:
+        answer:
           type: "string"
-          example: "secretFlag"
+          example: "secretAnswer"
           description: "Keyword found in game, used for access next level."
         content:
           type: "string"
@@ -3550,7 +3550,7 @@ definitions:
         solution:
           type: "string"
           example: "This is how you do it"
-          description: "Instruction how to get flag in game."
+          description: "Instruction how to get answer in game."
         solutionPenalized:
           type: "boolean"
           example: true
@@ -3561,11 +3561,11 @@ definitions:
           uniqueItems: true
           items:
             $ref: "#/definitions/HintExportDTO"
-        incorrectFlagLimit:
+        incorrectAnswerLimit:
           type: "integer"
           format: "int32"
           example: 5
-          description: "How many times player can submit incorrect flag before displaying\
+          description: "How many times player can submit incorrect answer before displaying\
             \ solution."
         attachments:
           type: "array"
@@ -3584,13 +3584,13 @@ definitions:
     - $ref: "#/definitions/AbstractLevelImportDTO"
     - type: "object"
       required:
-      - "incorrectFlagLimit"
+      - "incorrectAnswerLimit"
       - "maxScore"
       - "solutionPenalized"
       properties:
-        flag:
+        answer:
           type: "string"
-          example: "secretFlag"
+          example: "secretAnswer"
           description: "Keyword found in game, used for access next level."
           minLength: 0
           maxLength: 50
@@ -3602,7 +3602,7 @@ definitions:
         solution:
           type: "string"
           example: "This is how you do it"
-          description: "Instruction how to get flag in game."
+          description: "Instruction how to get answer in game."
         solutionPenalized:
           type: "boolean"
           example: true
@@ -3613,11 +3613,11 @@ definitions:
           uniqueItems: true
           items:
             $ref: "#/definitions/HintImportDTO"
-        incorrectFlagLimit:
+        incorrectAnswerLimit:
           type: "integer"
           format: "int32"
           example: 5
-          description: "How many times player can submit incorrect flag before displaying\
+          description: "How many times player can submit incorrect answer before displaying\
             \ solution."
           minimum: 0
           maximum: 100
@@ -3638,9 +3638,9 @@ definitions:
   GameLevelUpdateDTO:
     type: "object"
     required:
-    - "flag"
+    - "answer"
     - "id"
-    - "incorrectFlagLimit"
+    - "incorrectAnswerLimit"
     - "maxScore"
     - "solutionPenalized"
     - "title"
@@ -3661,9 +3661,9 @@ definitions:
         description: "The maximum score a participant can achieve during a level."
         minimum: 0
         maximum: 100
-      flag:
+      answer:
         type: "string"
-        example: "secretFlag"
+        example: "secretAnswer"
         description: "Keyword found in game, used for access next level."
         minLength: 0
         maxLength: 50
@@ -3675,7 +3675,7 @@ definitions:
       solution:
         type: "string"
         example: "This is how you do it"
-        description: "Instruction how to get flag in game."
+        description: "Instruction how to get answer in game."
       solutionPenalized:
         type: "boolean"
         example: false
@@ -3685,11 +3685,11 @@ definitions:
         format: "int32"
         example: 20
         description: "Estimated time (minutes) taken by the player to solve the level."
-      incorrectFlagLimit:
+      incorrectAnswerLimit:
         type: "integer"
         format: "int32"
         example: 5
-        description: "How many times participant can submit incorrect flag before\
+        description: "How many times participant can submit incorrect answer before\
           \ displaying solution."
         minimum: 0
         maximum: 100
@@ -3713,10 +3713,10 @@ definitions:
         solution:
           type: "string"
           example: "This is how you do it"
-          description: "Instruction how to get flag in game."
-        flag:
+          description: "Instruction how to get answer in game."
+        answer:
           type: "string"
-          example: "secretFlag"
+          example: "secretAnswer"
           description: "Keyword found in game, used for access next level."
         solutionPenalized:
           type: "boolean"
@@ -3964,21 +3964,21 @@ definitions:
           description: "The information and experiences that are directed towards\
             \ a participant."
       description: "Information about info level needed for visualizations."
-  IsCorrectFlagDTO:
+  IsCorrectAnswerDTO:
     type: "object"
     properties:
       remainingAttempts:
         type: "integer"
         format: "int32"
         example: 3
-        description: "Number of attempts to submit a bad flag."
+        description: "Number of attempts to submit a bad answer."
       solution:
         type: "string"
         example: "This is how you do it"
-        description: "Instruction how to get flag in game."
+        description: "Instruction how to get answer in game."
       correct:
         type: "boolean"
-    description: "A response for the request about the validation of the flag. May\
+    description: "A response for the request about the validation of the answer. May\
       \ also include solution if remaining attempts reach 0."
   JavaApiError:
     allOf:
@@ -4122,7 +4122,7 @@ definitions:
         format: "int32"
       content:
         type: "string"
-      correctFlag:
+      correctAnswer:
         type: "string"
       hints:
         type: "array"
@@ -4152,7 +4152,7 @@ definitions:
       hints:
         type: "integer"
         format: "int32"
-      wrongFlags:
+      wrongAnswers:
         type: "array"
         items:
           type: "string"
@@ -4383,9 +4383,9 @@ definitions:
   Sort:
     type: "object"
     properties:
-      sorted:
-        type: "boolean"
       unsorted:
+        type: "boolean"
+      sorted:
         type: "boolean"
       empty:
         type: "boolean"
@@ -5130,15 +5130,15 @@ definitions:
     description: "User information from user-and-group microservice is mapped to this\
       \ class and is also used to provide information about authors, participants,\
       \ and organizers."
-  ValidateFlagDTO:
+  ValidateAnswerDTO:
     type: "object"
     required:
-    - "flag"
+    - "answer"
     properties:
-      flag:
+      answer:
         type: "string"
-        example: "flag"
-        description: "Flag to be validated."
+        example: "answer"
+        description: "Answer to be validated."
   VisualizationInfoDTO:
     type: "object"
     properties:

@@ -36,7 +36,7 @@ public class AbstractLevelRepositoryTest {
     @Autowired
     private TestDataFactory testDataFactory;
 
-    private GameLevel gameLevel, gameLevel2;
+    private TrainingLevel trainingLevel, trainingLevel2;
     private AssessmentLevel assessmentLevel;
     private InfoLevel infoLevel, infoLevel2;
     private TrainingDefinition trainingDefinition;
@@ -51,19 +51,19 @@ public class AbstractLevelRepositoryTest {
         trainingDefinition = testDataFactory.getUnreleasedDefinition();
         entityManager.persistAndFlush(trainingDefinition);
 
-        gameLevel = testDataFactory.getPenalizedLevel();
-        gameLevel.setTrainingDefinition(trainingDefinition);
-        gameLevel.setOrder(0);
-        gameLevel2 = testDataFactory.getNonPenalizedLevel();
-        gameLevel2.setTrainingDefinition(trainingDefinition);
-        gameLevel2.setOrder(1);
+        trainingLevel = testDataFactory.getPenalizedLevel();
+        trainingLevel.setTrainingDefinition(trainingDefinition);
+        trainingLevel.setOrder(0);
+        trainingLevel2 = testDataFactory.getNonPenalizedLevel();
+        trainingLevel2.setTrainingDefinition(trainingDefinition);
+        trainingLevel2.setOrder(1);
 
         hint = new Hint();
         hint.setContent("sadas");
         hint.setOrder(1);
         hint.setTitle("tttt");
         hint.setHintPenalty(5);
-        hint.setGameLevel(gameLevel);
+        hint.setTrainingLevel(trainingLevel);
 
         assessmentLevel = testDataFactory.getTest();
         assessmentLevel.setTrainingDefinition(trainingDefinition);
@@ -79,21 +79,21 @@ public class AbstractLevelRepositoryTest {
     }
 
     @Test
-    public void findById_gameLevel() {
-        Long id = (Long) entityManager.persistAndGetId(gameLevel);
+    public void findById_trainingLevel() {
+        Long id = (Long) entityManager.persistAndGetId(trainingLevel);
         entityManager.persistAndFlush(hint);
         entityManager.persist(assessmentLevel);
         entityManager.persist(infoLevel);
-        Optional<AbstractLevel> optionalGameLevel = abstractLevelRepository.findById(id);
-        assertTrue(optionalGameLevel.isPresent());
-        assertTrue(optionalGameLevel.get() instanceof GameLevel);
-        assertEquals(gameLevel, optionalGameLevel.get());
+        Optional<AbstractLevel> optionalTrainingLevel = abstractLevelRepository.findById(id);
+        assertTrue(optionalTrainingLevel.isPresent());
+        assertTrue(optionalTrainingLevel.get() instanceof TrainingLevel);
+        assertEquals(trainingLevel, optionalTrainingLevel.get());
     }
 
     @Test
     public void findById_infoLevel() {
         Long id = (Long) entityManager.persistAndGetId(infoLevel);
-        entityManager.persist(gameLevel);
+        entityManager.persist(trainingLevel);
         entityManager.persist(assessmentLevel);
         Optional<AbstractLevel> optionalInfoLevel = abstractLevelRepository.findById(id);
         assertTrue(optionalInfoLevel.isPresent());
@@ -104,8 +104,8 @@ public class AbstractLevelRepositoryTest {
     @Test
     public void findById_assesmentLevel() {
         Long id = (Long) entityManager.persistAndGetId(assessmentLevel);
-        entityManager.persist(gameLevel2);
-        entityManager.persist(gameLevel);
+        entityManager.persist(trainingLevel2);
+        entityManager.persist(trainingLevel);
         entityManager.persist(infoLevel);
         Optional<AbstractLevel> optionalAssesmentLevel = abstractLevelRepository.findById(id);
         assertTrue(optionalAssesmentLevel.isPresent());
@@ -114,22 +114,22 @@ public class AbstractLevelRepositoryTest {
     }
 
     @Test
-    public void findById_gameLevel_multipleOccurrences() {
+    public void findById_TrainingLevel_multipleOccurrences() {
         entityManager.persist(assessmentLevel);
-        entityManager.persist(gameLevel);
+        entityManager.persist(trainingLevel);
         entityManager.persist(infoLevel);
-        Long id = (Long) entityManager.persistAndGetId(gameLevel2);
+        Long id = (Long) entityManager.persistAndGetId(trainingLevel2);
         entityManager.persist(infoLevel2);
-        Optional<AbstractLevel> optionalGameLevel = abstractLevelRepository.findById(id);
-        assertTrue(optionalGameLevel.isPresent());
-        assertTrue(optionalGameLevel.get() instanceof GameLevel);
-        assertEquals(gameLevel2, optionalGameLevel.get());
+        Optional<AbstractLevel> optionalTrainingLevel = abstractLevelRepository.findById(id);
+        assertTrue(optionalTrainingLevel.isPresent());
+        assertTrue(optionalTrainingLevel.get() instanceof TrainingLevel);
+        assertEquals(trainingLevel2, optionalTrainingLevel.get());
     }
 
     @Test
     public void findAll() {
         entityManager.persist(trainingDefinition);
-        List<AbstractLevel> expectedAbstractLevels = Arrays.asList(gameLevel, infoLevel, assessmentLevel, infoLevel2, gameLevel2);
+        List<AbstractLevel> expectedAbstractLevels = Arrays.asList(trainingLevel, infoLevel, assessmentLevel, infoLevel2, trainingLevel2);
         expectedAbstractLevels.stream().forEach(a -> entityManager.persist(a));
         List<AbstractLevel> resultAbstractLevels = abstractLevelRepository.findAll();
         assertNotNull(resultAbstractLevels);
@@ -140,8 +140,8 @@ public class AbstractLevelRepositoryTest {
     @Test
     public void getCurrentMaxOrder(){
         entityManager.persist(trainingDefinition);
-        entityManager.persist(gameLevel);
-        entityManager.persist(gameLevel2);
+        entityManager.persist(trainingLevel);
+        entityManager.persist(trainingLevel2);
         entityManager.persist(assessmentLevel);
         entityManager.persist(infoLevel);
         entityManager.persist(infoLevel2);

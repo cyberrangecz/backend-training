@@ -1,7 +1,7 @@
-package cz.muni.ics.kypo.training.api.dto.gamelevel;
+package cz.muni.ics.kypo.training.api.dto.traininglevel;
 
 import cz.muni.ics.kypo.training.api.dto.AbstractLevelDTO;
-import cz.muni.ics.kypo.training.api.dto.hint.HintForGameLevelViewDTO;
+import cz.muni.ics.kypo.training.api.dto.hint.HintForTrainingLevelViewDTO;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
@@ -10,11 +10,11 @@ import java.util.Set;
 
 
 /**
- * Encapsulates basic information about game level.
+ * Encapsulates basic information about training level.
  */
 
-@ApiModel(value = "GameLevelViewDTO", description = "An assignment containing security tasks whose completion yields a flag.", parent = AbstractLevelDTO.class)
-public class GameLevelViewDTO extends AbstractLevelDTO {
+@ApiModel(value = "TrainingLevelViewDTO", description = "An assignment containing security tasks whose completion yields a answer.", parent = AbstractLevelDTO.class)
+public class TrainingLevelViewDTO extends AbstractLevelDTO {
 
     @ApiModelProperty(value = "The information and experiences that are directed towards a participant.", example = "Play me")
     private String content;
@@ -22,10 +22,10 @@ public class GameLevelViewDTO extends AbstractLevelDTO {
     private boolean solutionPenalized;
     @ApiModelProperty(value = "Estimated time (minutes) taken by the player to solve the level.", example = "25")
     private int estimatedDuration;
-    @ApiModelProperty(value = "How many times player can submit incorrect flag before displaying solution.", example = "5")
-    private int incorrectFlagLimit;
+    @ApiModelProperty(value = "How many times player can submit incorrect answer before displaying solution.", example = "5")
+    private int incorrectAnswerLimit;
     @ApiModelProperty(value = "Information which helps player resolve the level.")
-    private Set<HintForGameLevelViewDTO> hints = new HashSet<>();
+    private Set<HintForTrainingLevelViewDTO> hints = new HashSet<>();
 
 
     /**
@@ -73,48 +73,48 @@ public class GameLevelViewDTO extends AbstractLevelDTO {
     }
 
     /**
-     * Gets incorrect flag limit.
+     * Gets incorrect answer limit.
      *
-     * @return the incorrect flag limit
+     * @return the incorrect answer limit
      */
-    public int getIncorrectFlagLimit() {
-        return incorrectFlagLimit;
+    public int getIncorrectAnswerLimit() {
+        return incorrectAnswerLimit;
     }
 
     /**
-     * Sets incorrect flag limit.
+     * Sets incorrect answer limit.
      *
-     * @param incorrectFlagLimit the incorrect flag limit
+     * @param incorrectAnswerLimit the incorrect answer limit
      */
-    public void setIncorrectFlagLimit(int incorrectFlagLimit) {
-        this.incorrectFlagLimit = incorrectFlagLimit;
+    public void setIncorrectAnswerLimit(int incorrectAnswerLimit) {
+        this.incorrectAnswerLimit = incorrectAnswerLimit;
     }
 
     /**
      * Gets hints.
      *
-     * @return the set of {@link HintForGameLevelViewDTO}s
+     * @return the set of {@link HintForTrainingLevelViewDTO}s
      */
-    public Set<HintForGameLevelViewDTO> getHints() {
+    public Set<HintForTrainingLevelViewDTO> getHints() {
         return hints;
     }
 
     /**
      * Sets hints.
      *
-     * @param hints the set of {@link HintForGameLevelViewDTO}s
+     * @param hints the set of {@link HintForTrainingLevelViewDTO}s
      */
-    public void setHints(Set<HintForGameLevelViewDTO> hints) {
+    public void setHints(Set<HintForTrainingLevelViewDTO> hints) {
         this.hints = hints;
     }
 
     @Override
     public String toString() {
-        return "GameLevelViewDTO{" +
+        return "TrainingLevelViewDTO{" +
                 "content='" + content + '\'' +
                 ", solutionPenalized=" + solutionPenalized +
                 ", estimatedDuration=" + estimatedDuration +
-                ", incorrectFlagLimit=" + incorrectFlagLimit +
+                ", incorrectAnswerLimit=" + incorrectAnswerLimit +
                 ", hints=" + hints +
                 '}';
     }

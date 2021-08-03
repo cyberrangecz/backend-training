@@ -201,7 +201,7 @@ public class TrainingRunService {
             auditEventsService.auditLevelCompletedAction(trainingRun);
         }
         trainingRun.setCurrentLevel(abstractLevel);
-        trainingRun.setIncorrectFlagCount(0);
+        trainingRun.setIncorrectAnswerCount(0);
         trainingRunRepository.save(trainingRun);
         auditEventsService.auditLevelStartedAction(trainingRun);
 
@@ -276,7 +276,7 @@ public class TrainingRunService {
     public TrainingInstance getTrainingInstanceForParticularAccessToken(String accessToken) {
         TrainingInstance trainingInstance = trainingInstanceRepository.findByStartTimeAfterAndEndTimeBeforeAndAccessToken(LocalDateTime.now(Clock.systemUTC()), accessToken)
                 .orElseThrow(() -> new EntityNotFoundException(new EntityErrorDetail(TrainingInstance.class, "accessToken", accessToken.getClass(), accessToken,
-                        "There is no active game session matching access token.")));
+                        "There is no active training session matching access token.")));
         if (trainingInstance.getPoolId() == null) {
             throw new EntityConflictException(new EntityErrorDetail(TrainingInstance.class, "id", trainingInstance.getId().getClass(), trainingInstance.getId(),
                     "At first organizer must allocate sandboxes for training instance."));
@@ -391,42 +391,42 @@ public class TrainingRunService {
 
         if (trainingRun.getSandboxInstanceRefId() == null) {
             throw new EntityConflictException(new EntityErrorDetail(TrainingRun.class, "id", trainingRunId.getClass(), trainingRunId,
-                    "Sandbox of this training run was already deleted, you have to start new game."));
+                    "Sandbox of this training run was already deleted, you have to start new training."));
         }
         auditEventsService.auditTrainingRunResumedAction(trainingRun);
         return trainingRun;
     }
 
     /**
-     * Check given flag of given Training Run.
+     * Check given answer of given Training Run.
      *
-     * @param runId id of Training Run to check flag.
-     * @param flag  string which player submit.
-     * @return true if flag is correct, false if flag is wrong.
+     * @param runId id of Training Run to check answer.
+     * @param answer  string which player submit.
+     * @return true if answer is correct, false if answer is wrong.
      * @throws EntityNotFoundException training run is not found.
-     * @throws BadRequestException     the current level of training run is not game level.
+     * @throws BadRequestException     the current level of training run is not training level.
      */
-    public boolean isCorrectFlag(Long runId, String flag) {
+    public boolean isCorrectAnswer(Long runId, String answer) {
         TrainingRun trainingRun = findByIdWithLevel(runId);
         AbstractLevel level = trainingRun.getCurrentLevel();
-        if (level instanceof GameLevel) {
+        if (level instanceof TrainingLevel) {
             if (trainingRun.isLevelAnswered()) {
-                throw new EntityConflictException(new EntityErrorDetail(TrainingRun.class, "id", Long.class, runId, "The flag of the current level of training run has been already corrected."));
+                throw new EntityConflictException(new EntityErrorDetail(TrainingRun.class, "id", Long.class, runId, "The answer of the current level of training run has been already corrected."));
             }
-            GameLevel gameLevel = (GameLevel) level;
-            if (gameLevel.getFlag().equals(flag)) {
+            TrainingLevel trainingLevel = (TrainingLevel) level;
+            if (trainingLevel.getAnswer().equals(answer)) {
                 trainingRun.setLevelAnswered(true);
-                trainingRun.increaseTotalGameScore(trainingRun.getMaxLevelScore() - trainingRun.getCurrentPenalty());
-                auditEventsService.auditCorrectFlagSubmittedAction(trainingRun, flag);
+                trainingRun.increaseTotalTrainingScore(trainingRun.getMaxLevelScore() - trainingRun.getCurrentPenalty());
+                auditEventsService.auditCorrectAnswerSubmittedAction(trainingRun, answer);
                 auditEventsService.auditLevelCompletedAction(trainingRun);
                 return true;
-            } else if (trainingRun.getIncorrectFlagCount() != gameLevel.getIncorrectFlagLimit()) {
-                trainingRun.setIncorrectFlagCount(trainingRun.getIncorrectFlagCount() + 1);
+            } else if (trainingRun.getIncorrectAnswerCount() != trainingLevel.getIncorrectAnswerLimit()) {
+                trainingRun.setIncorrectAnswerCount(trainingRun.getIncorrectAnswerCount() + 1);
             }
-            auditEventsService.auditWrongFlagSubmittedAction(trainingRun, flag);
+            auditEventsService.auditWrongAnswerSubmittedAction(trainingRun, answer);
             return false;
         } else {
-            throw new BadRequestException("Current level is not game level and does not have flag.");
+            throw new BadRequestException("Current level is not training level and does not have answer.");
         }
     }
 
@@ -439,13 +439,13 @@ public class TrainingRunService {
     public int getRemainingAttempts(Long trainingRunId) {
         TrainingRun trainingRun = findByIdWithLevel(trainingRunId);
         AbstractLevel level = trainingRun.getCurrentLevel();
-        if (level instanceof GameLevel) {
+        if (level instanceof TrainingLevel) {
             if (trainingRun.isSolutionTaken()) {
                 return 0;
             }
-            return ((GameLevel) level).getIncorrectFlagLimit() - trainingRun.getIncorrectFlagCount();
+            return ((TrainingLevel) level).getIncorrectAnswerLimit() - trainingRun.getIncorrectAnswerCount();
         }
-        throw new BadRequestException("Current level is not game level and does not have flag.");
+        throw new BadRequestException("Current level is not training level and does not have answer.");
     }
 
     /**
@@ -454,23 +454,23 @@ public class TrainingRunService {
      * @param trainingRunId id of Training Run which current level gets solution for.
      * @return solution of current level.
      * @throws EntityNotFoundException training run is not found.
-     * @throws BadRequestException     the current level of training run is not game level.
+     * @throws BadRequestException     the current level of training run is not training level.
      */
     public String getSolution(Long trainingRunId) {
         TrainingRun trainingRun = findByIdWithLevel(trainingRunId);
         AbstractLevel level = trainingRun.getCurrentLevel();
-        if (level instanceof GameLevel) {
+        if (level instanceof TrainingLevel) {
             if (!trainingRun.isSolutionTaken()) {
                 trainingRun.setSolutionTaken(true);
-                if (((GameLevel) level).isSolutionPenalized()) {
+                if (((TrainingLevel) level).isSolutionPenalized()) {
                     trainingRun.setCurrentPenalty(trainingRun.getMaxLevelScore());
                 }
                 trainingRunRepository.save(trainingRun);
                 auditEventsService.auditSolutionDisplayedAction(trainingRun);
             }
-            return ((GameLevel) level).getSolution();
+            return ((TrainingLevel) level).getSolution();
         } else {
-            throw new BadRequestException("Current level is not game level and does not have solution.");
+            throw new BadRequestException("Current level is not training level and does not have solution.");
         }
     }
 
@@ -481,16 +481,16 @@ public class TrainingRunService {
      * @param hintId        id of hint to be returned.
      * @return {@link Hint}
      * @throws EntityNotFoundException training run or hint is not found.
-     * @throws BadRequestException     the current level of training run is not game level.
+     * @throws BadRequestException     the current level of training run is not training level.
      */
     public Hint getHint(Long trainingRunId, Long hintId) {
         TrainingRun trainingRun = findByIdWithLevel(trainingRunId);
         AbstractLevel level = trainingRun.getCurrentLevel();
-        if (level instanceof GameLevel) {
+        if (level instanceof TrainingLevel) {
             Hint hint = hintRepository.findById(hintId)
                     .orElseThrow(() -> new EntityNotFoundException(new EntityErrorDetail(Hint.class, "id", hintId.getClass(), hintId,
                             "Hint not found.")));
-            if (hint.getGameLevel().getId().equals(level.getId())) {
+            if (hint.getTrainingLevel().getId().equals(level.getId())) {
                 trainingRun.increaseCurrentPenalty(hint.getHintPenalty());
                 trainingRun.addHintInfo(new HintInfo(level.getId(), hint.getId(), hint.getTitle(), hint.getContent(), hint.getOrder()));
                 auditEventsService.auditHintTakenAction(trainingRun, hint);
@@ -499,7 +499,7 @@ public class TrainingRunService {
             throw new EntityConflictException(new EntityErrorDetail(Hint.class, "id", hintId.getClass(), hintId,
                     "Hint is not in current level of training run: " + trainingRunId + "."));
         } else {
-            throw new BadRequestException("Current level is not game level and does not have hints.");
+            throw new BadRequestException("Current level is not training level and does not have hints.");
         }
     }
 

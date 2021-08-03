@@ -33,7 +33,7 @@ public class AccessTrainingRunDTO {
     @ApiModelProperty(value = "Date when training run started.", example = "2016-10-19 10:23:54+02")
     @JsonSerialize(using = LocalDateTimeUTCSerializer.class)
     private LocalDateTime startTime;
-    @ApiModelProperty(value = "Sign if solution of current game level was taken", example = "true")
+    @ApiModelProperty(value = "Sign if solution of current training level was taken", example = "true")
     private String takenSolution;
     @ApiModelProperty(value = "All already taken hints.")
     private List<TakenHintDTO> takenHints = new ArrayList<>();

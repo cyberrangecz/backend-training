@@ -16,11 +16,11 @@ public class BasicLevelInfoDTO {
 
     @ApiModelProperty(value = "Main identifier of level.", example = "1")
     private Long id;
-    @ApiModelProperty(value = "Short textual description of the level.", example = "Game Level1")
+    @ApiModelProperty(value = "Short textual description of the level.", example = "Training Level1")
     private String title;
     @ApiModelProperty(value = "Order of level among levels in training definition.", example = "1")
     private int order;
-    @ApiModelProperty(value = "Type of the level.", example = "GAME")
+    @ApiModelProperty(value = "Type of the level.", example = "TRAINING")
     private LevelType levelType;
 
     /**

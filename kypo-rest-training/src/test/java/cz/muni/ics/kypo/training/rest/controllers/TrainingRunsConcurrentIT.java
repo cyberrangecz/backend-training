@@ -5,7 +5,7 @@ import com.anarsoft.vmlens.concurrent.junit.ThreadCount;
 import com.google.gson.JsonObject;
 import cz.muni.ics.kypo.commons.security.enums.AuthenticatedUserOIDCItems;
 import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
-import cz.muni.ics.kypo.training.api.dto.gamelevel.ValidateFlagDTO;
+import cz.muni.ics.kypo.training.api.dto.traininglevel.ValidateAnswerDTO;
 import cz.muni.ics.kypo.training.api.enums.RoleType;
 import cz.muni.ics.kypo.training.api.responses.SandboxInfo;
 import cz.muni.ics.kypo.training.persistence.model.*;
@@ -84,7 +84,7 @@ public class TrainingRunsConcurrentIT {
     @Autowired
     private UserRefRepository userRefRepository;
     @Autowired
-    private GameLevelRepository gameLevelRepository;
+    private TrainingLevelRepository trainingLevelRepository;
     @Autowired
     private AssessmentLevelRepository assessmentLevelRepository;
     @Autowired
@@ -100,14 +100,14 @@ public class TrainingRunsConcurrentIT {
     private AuditEventsService auditEventsService;
 
 
-    private GameLevel gameLevel;
+    private TrainingLevel trainingLevel;
     private AssessmentLevel assessmentLevel;
     private UserRefDTO userRefDTO1;
     private TrainingInstance trainingInstance;
     private TrainingDefinition trainingDefinition;
     private UserRef participant1, participant2;
     private SandboxInfo sandboxInfo1;
-    private TrainingRun trainingRunGameLevel, trainingRunAssessmentLevel;
+    private TrainingRun trainingRunTrainingLevel, trainingRunAssessmentLevel;
 
     @SpringBootApplication
     static class TestConfiguration {
@@ -146,11 +146,11 @@ public class TrainingRunsConcurrentIT {
         trainingInstance.setTrainingDefinition(trainingDefinition);
         trainingInstance = trainingInstanceRepository.save(trainingInstance);
 
-        gameLevel = testDataFactory.getPenalizedLevel();
-        gameLevel.setTrainingDefinition(trainingDefinition);
-        gameLevel.setOrder(1);
-        gameLevel.setIncorrectFlagLimit(3);
-        gameLevelRepository.save(gameLevel);
+        trainingLevel = testDataFactory.getPenalizedLevel();
+        trainingLevel.setTrainingDefinition(trainingDefinition);
+        trainingLevel.setOrder(1);
+        trainingLevel.setIncorrectAnswerLimit(3);
+        trainingLevelRepository.save(trainingLevel);
 
         assessmentLevel = testDataFactory.getQuestionnaire();
         assessmentLevel.setTrainingDefinition(trainingDefinition);
@@ -162,12 +162,12 @@ public class TrainingRunsConcurrentIT {
         trainingRunAssessmentLevel.setTrainingInstance(trainingInstance);
         trainingRunAssessmentLevel.setParticipantRef(participant2);
 
-        trainingRunGameLevel = this.testDataFactory.getRunningRun();
-        trainingRunGameLevel.setCurrentLevel(gameLevel);
-        trainingRunGameLevel.setIncorrectFlagCount(0);
-        trainingRunGameLevel.setTrainingInstance(trainingInstance);
-        trainingRunGameLevel.setParticipantRef(participant2);
-        trainingRunRepository.saveAll(Set.of(trainingRunAssessmentLevel, trainingRunGameLevel));
+        trainingRunTrainingLevel = this.testDataFactory.getRunningRun();
+        trainingRunTrainingLevel.setCurrentLevel(trainingLevel);
+        trainingRunTrainingLevel.setIncorrectAnswerCount(0);
+        trainingRunTrainingLevel.setTrainingInstance(trainingInstance);
+        trainingRunTrainingLevel.setParticipantRef(participant2);
+        trainingRunRepository.saveAll(Set.of(trainingRunAssessmentLevel, trainingRunTrainingLevel));
 
     }
 
@@ -193,14 +193,14 @@ public class TrainingRunsConcurrentIT {
 
     @Test
     @ThreadCount(4)
-    public void concurrentIsCorrectFlag() throws Exception {
-        ValidateFlagDTO validateFlagDTO = new ValidateFlagDTO();
-        validateFlagDTO.setFlag(gameLevel.getFlag());
+    public void concurrentIsCorrectAnswer() throws Exception {
+        ValidateAnswerDTO validateAnswerDTO = new ValidateAnswerDTO();
+        validateAnswerDTO.setAnswer(trainingLevel.getAnswer());
         mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_TRAINEE.name()));
-        mvc.perform(post("/training-runs/" + trainingRunGameLevel.getId() + "/is-correct-flag")
+        mvc.perform(post("/training-runs/" + trainingRunTrainingLevel.getId() + "/is-correct-answer")
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
-                .content(convertObjectToJsonBytes(validateFlagDTO)));
-        then(auditEventsService).should(times(1)).auditCorrectFlagSubmittedAction(any(), any());
+                .content(convertObjectToJsonBytes(validateAnswerDTO)));
+        then(auditEventsService).should(times(1)).auditCorrectAnswerSubmittedAction(any(), any());
     }
 
     @After

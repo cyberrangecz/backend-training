@@ -18,7 +18,7 @@ public class HintExportDTO {
     private String content;
     @ApiModelProperty(value = "The number of points the participant loses after receiving the hint.", example = "10")
     private Integer hintPenalty;
-    @ApiModelProperty(value = "The order of hint in game level", example = "1")
+    @ApiModelProperty(value = "The order of hint in training level", example = "1")
     private int order;
 
     /**

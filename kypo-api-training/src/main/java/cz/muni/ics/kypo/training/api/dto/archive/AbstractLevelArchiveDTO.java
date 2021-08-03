@@ -8,14 +8,14 @@ import io.swagger.annotations.ApiModelProperty;
 /**
  * Encapsulates information about abstract level.
  * Used for archiving.
- * Extended by {@link AssessmentLevelArchiveDTO}, {@link GameLevelArchiveDTO} and {@link InfoLevelArchiveDTO}.
+ * Extended by {@link AssessmentLevelArchiveDTO}, {@link TrainingLevelArchiveDTO} and {@link InfoLevelArchiveDTO}.
  */
 @JsonSubTypes({
-        @JsonSubTypes.Type(value = GameLevelArchiveDTO.class, name = "GameLevelArchiveDTO"),
+        @JsonSubTypes.Type(value = TrainingLevelArchiveDTO.class, name = "TrainingLevelArchiveDTO"),
         @JsonSubTypes.Type(value = AssessmentLevelArchiveDTO.class, name = "AssessmentLevelArchiveDTO"),
         @JsonSubTypes.Type(value = InfoLevelArchiveDTO.class, name = "InfoLevelArchiveDTO")})
-@ApiModel(value = "AbstractLevelArchiveDTO", subTypes = {GameLevelArchiveDTO.class, InfoLevelArchiveDTO.class, AssessmentLevelArchiveDTO.class},
-        description = "Superclass for classes GameLevelArchiveDTO, InfoLevelArchiveDTO and AssessmentLevelArchiveDTO")
+@ApiModel(value = "AbstractLevelArchiveDTO", subTypes = {TrainingLevelArchiveDTO.class, InfoLevelArchiveDTO.class, AssessmentLevelArchiveDTO.class},
+        description = "Superclass for classes TrainingLevelArchiveDTO, InfoLevelArchiveDTO and AssessmentLevelArchiveDTO")
 public class AbstractLevelArchiveDTO {
 
     /**
@@ -26,7 +26,7 @@ public class AbstractLevelArchiveDTO {
     /**
      * The Title.
      */
-    @ApiModelProperty(value = "Short textual description of the level.", example = "Game Level1")
+    @ApiModelProperty(value = "Short textual description of the level.", example = "Training Level1")
     protected String title;
     /**
      * The Max score.
@@ -36,7 +36,7 @@ public class AbstractLevelArchiveDTO {
     /**
      * The Level type.
      */
-    @ApiModelProperty(value = "Type of the level.", example = "GAME")
+    @ApiModelProperty(value = "Type of the level.", example = "TRAINING")
     protected LevelType levelType;
     /**
      * The Order.

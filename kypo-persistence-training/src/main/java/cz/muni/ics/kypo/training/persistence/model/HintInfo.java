@@ -9,8 +9,8 @@ import java.util.Objects;
  */
 @Embeddable
 public class HintInfo {
-    @Column(name = "game_level_id", nullable = false)
-    private long gameLevelId;
+    @Column(name = "training_level_id", nullable = false)
+    private long trainingLevelId;
     @Column(name = "hint_id", nullable = false)
     private long hintId;
     @Column(name = "hint_title", nullable = false)
@@ -29,14 +29,14 @@ public class HintInfo {
     /**
      * Instantiates a new Hint info
      *
-     * @param gameLevelId unique identification number of Game level associated with hint
+     * @param trainingLevelId unique identification number of Training level associated with hint
      * @param hintId      unique identification number of Hint
      * @param hintTitle   title of Hint
      * @param hintContent content of Hint
      * @param order       the order
      */
-    public HintInfo(long gameLevelId, long hintId, String hintTitle, String hintContent, int order) {
-        this.gameLevelId = gameLevelId;
+    public HintInfo(long trainingLevelId, long hintId, String hintTitle, String hintContent, int order) {
+        this.trainingLevelId = trainingLevelId;
         this.hintId = hintId;
         this.hintTitle = hintTitle;
         this.hintContent = hintContent;
@@ -44,21 +44,21 @@ public class HintInfo {
     }
 
     /**
-     * Gets unique identification number of Game level associated with hint
+     * Gets unique identification number of Training level associated with hint
      *
-     * @return the game level id
+     * @return the training level id
      */
-    public Long getGameLevelId() {
-        return gameLevelId;
+    public Long getTrainingLevelId() {
+        return trainingLevelId;
     }
 
     /**
-     * Sets unique identification number of Game level associated with hint
+     * Sets unique identification number of Training level associated with hint
      *
-     * @param gameLevelId the game level id
+     * @param trainingLevelId the training level id
      */
-    public void setGameLevelId(Long gameLevelId) {
-        this.gameLevelId = gameLevelId;
+    public void setTrainingLevelId(Long trainingLevelId) {
+        this.trainingLevelId = trainingLevelId;
     }
 
     /**
@@ -116,12 +116,12 @@ public class HintInfo {
     }
 
     /**
-     * Sets game level id.
+     * Sets training level id.
      *
-     * @param gameLevelId the game level id
+     * @param trainingLevelId the training level id
      */
-    public void setGameLevelId(long gameLevelId) {
-        this.gameLevelId = gameLevelId;
+    public void setTrainingLevelId(long trainingLevelId) {
+        this.trainingLevelId = trainingLevelId;
     }
 
     /**
@@ -155,20 +155,20 @@ public class HintInfo {
     public boolean equals(Object object) {
         if (!(object instanceof HintInfo)) return false;
         HintInfo hintInfo = (HintInfo) object;
-        return Objects.equals(getGameLevelId(), hintInfo.getGameLevelId()) &&
+        return Objects.equals(getTrainingLevelId(), hintInfo.getTrainingLevelId()) &&
                 Objects.equals(getHintId(), hintInfo.getHintId()) &&
                 Objects.equals(getHintTitle(), hintInfo.getHintTitle());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getGameLevelId(), getHintId(), getHintTitle());
+        return Objects.hash(getTrainingLevelId(), getHintId(), getHintTitle());
     }
 
     @Override
     public String toString() {
         return "HintInfo{" +
-                "gameLevelId=" + gameLevelId +
+                "trainingLevelId=" + trainingLevelId +
                 ", hintId=" + hintId +
                 ", hintTitle='" + hintTitle + '\'' +
                 ", hintContent='" + hintContent + '\'' +

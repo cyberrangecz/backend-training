@@ -6,16 +6,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public class GameResultsDTO {
+public class TrainingResultsDTO {
 
     private long estimatedTime;
     private int maxParticipantScore;
-    private int maxParticipantGameScore;
+    private int maxParticipantTrainingScore;
     private int maxParticipantAssessmentScore;
     private long maxParticipantTime;
     private float averageTime;
     private float averageScore;
-    private float averageGameScore;
+    private float averageTrainingScore;
     private float averageAssessmentScore;
     private List<PlayerDataDTO> playerData = new ArrayList<>();
 
@@ -35,12 +35,12 @@ public class GameResultsDTO {
         this.maxParticipantScore = maxParticipantScore;
     }
 
-    public int getMaxParticipantGameScore() {
-        return maxParticipantGameScore;
+    public int getMaxParticipantTrainingScore() {
+        return maxParticipantTrainingScore;
     }
 
-    public void setMaxParticipantGameScore(int maxParticipantGameScore) {
-        this.maxParticipantGameScore = maxParticipantGameScore;
+    public void setMaxParticipantTrainingScore(int maxParticipantTrainingScore) {
+        this.maxParticipantTrainingScore = maxParticipantTrainingScore;
     }
 
     public int getMaxParticipantAssessmentScore() {
@@ -75,12 +75,12 @@ public class GameResultsDTO {
         this.averageScore = averageScore;
     }
 
-    public float getAverageGameScore() {
-        return averageGameScore;
+    public float getAverageTrainingScore() {
+        return averageTrainingScore;
     }
 
-    public void setAverageGameScore(float averageGameScore) {
-        this.averageGameScore = averageGameScore;
+    public void setAverageTrainingScore(float averageTrainingScore) {
+        this.averageTrainingScore = averageTrainingScore;
     }
 
     public float getAverageAssessmentScore() {
@@ -107,35 +107,35 @@ public class GameResultsDTO {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        GameResultsDTO that = (GameResultsDTO) o;
+        TrainingResultsDTO that = (TrainingResultsDTO) o;
         return getEstimatedTime() == that.getEstimatedTime() &&
                 getMaxParticipantScore() == that.getMaxParticipantScore() &&
-                getMaxParticipantGameScore() == that.getMaxParticipantGameScore() &&
+                getMaxParticipantTrainingScore() == that.getMaxParticipantTrainingScore() &&
                 getMaxParticipantAssessmentScore() == that.getMaxParticipantAssessmentScore() &&
                 getMaxParticipantTime() == that.getMaxParticipantTime() &&
                 getAverageTime() == that.getAverageTime() &&
-                getAverageGameScore() == that.getAverageGameScore() &&
+                getAverageTrainingScore() == that.getAverageTrainingScore() &&
                 getAverageAssessmentScore() == that.getAverageAssessmentScore();
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getEstimatedTime(), getMaxParticipantScore(), getMaxParticipantGameScore(), getMaxParticipantAssessmentScore(), getMaxParticipantTime(),
-                getAverageTime(), getAverageGameScore(), getAverageAssessmentScore());
+        return Objects.hash(getEstimatedTime(), getMaxParticipantScore(), getMaxParticipantTrainingScore(), getMaxParticipantAssessmentScore(), getMaxParticipantTime(),
+                getAverageTime(), getAverageTrainingScore(), getAverageAssessmentScore());
     }
 
 
     @Override
     public String toString() {
-        return "GameResultsDTO{" +
+        return "TrainingResultsDTO{" +
                 "estimatedTime=" + estimatedTime +
                 ", maxParticipantScore=" + maxParticipantScore +
-                ", maxParticipantGameScore=" + maxParticipantGameScore +
+                ", maxParticipantTrainingScore=" + maxParticipantTrainingScore +
                 ", maxParticipantAssessmentScore=" + maxParticipantAssessmentScore +
                 ", maxParticipantTime=" + maxParticipantTime +
                 ", averageTime=" + averageTime +
                 ", averageScore=" + averageScore +
-                ", averageGameScore=" + averageGameScore +
+                ", averageTrainingScore=" + averageTrainingScore +
                 ", averageAssessmentScore=" + averageAssessmentScore +
                 '}';
     }

@@ -4,7 +4,7 @@ import javax.persistence.*;
 import java.util.Objects;
 
 /**
- * Class representing hints associated with game level that can be displayed by trainee if they are in need of help with
+ * Class representing hints associated with training level that can be displayed by trainee if they are in need of help with
  * solving given level
  */
 @Entity
@@ -19,8 +19,8 @@ public class Hint extends AbstractEntity<Long> {
     @Column(name = "hint_penalty", nullable = false)
     private Integer hintPenalty;
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "game_level_id")
-    private GameLevel gameLevel;
+    @JoinColumn(name = "training_level_id")
+    private TrainingLevel trainingLevel;
     @Column(name = "order_in_level", nullable = false)
     private int order;
 
@@ -36,14 +36,14 @@ public class Hint extends AbstractEntity<Long> {
      * @param title       title of the hint
      * @param content     text advice of the hint
      * @param hintPenalty score penalty trainee pays to display hint
-     * @param gameLevel   game level associated with given hint
+     * @param trainingLevel   training level associated with given hint
      * @param order       the order
      */
-    public Hint(String title, String content, Integer hintPenalty, GameLevel gameLevel, int order) {
+    public Hint(String title, String content, Integer hintPenalty, TrainingLevel trainingLevel, int order) {
         this.title = title;
         this.content = content;
         this.hintPenalty = hintPenalty;
-        this.gameLevel = gameLevel;
+        this.trainingLevel = trainingLevel;
         this.order = order;
     }
 
@@ -120,21 +120,21 @@ public class Hint extends AbstractEntity<Long> {
     }
 
     /**
-     * Gets game level associated with given hint
+     * Gets training level associated with given hint
      *
-     * @return the game level
+     * @return the training level
      */
-    public GameLevel getGameLevel() {
-        return gameLevel;
+    public TrainingLevel getTrainingLevel() {
+        return trainingLevel;
     }
 
     /**
-     * Sets game level associated with given hint
+     * Sets training level associated with given hint
      *
-     * @param gameLevel the game level
+     * @param trainingLevel the training level
      */
-    public void setGameLevel(GameLevel gameLevel) {
-        this.gameLevel = gameLevel;
+    public void setTrainingLevel(TrainingLevel trainingLevel) {
+        this.trainingLevel = trainingLevel;
     }
 
     /**

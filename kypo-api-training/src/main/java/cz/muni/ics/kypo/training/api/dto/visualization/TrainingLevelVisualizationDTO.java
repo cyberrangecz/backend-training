@@ -9,27 +9,27 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * Encapsulates information about game level. Inherits from {@link AbstractLevelVisualizationDTO}
+ * Encapsulates information about training level. Inherits from {@link AbstractLevelVisualizationDTO}
  * Used for visualization.
  */
-@ApiModel(value = "GameLevelVisualizationDTO", description = "Information about game level needed for visualizations.", parent = AbstractLevelExportDTO.class)
-public class GameLevelVisualizationDTO extends AbstractLevelVisualizationDTO {
+@ApiModel(value = "TrainingLevelVisualizationDTO", description = "Information about training level needed for visualizations.", parent = AbstractLevelExportDTO.class)
+public class TrainingLevelVisualizationDTO extends AbstractLevelVisualizationDTO {
 
     @ApiModelProperty(value = "The information and experiences that are directed towards a participant.", example = "Play me")
     private String content;
-    @ApiModelProperty(value = "Instruction how to get flag in game.", example = "This is how you do it")
+    @ApiModelProperty(value = "Instruction how to get answer in training.", example = "This is how you do it")
     private String solution;
-    @ApiModelProperty(value = "Keyword found in game, used for access next level.", example = "secretFlag")
-    private String flag;
+    @ApiModelProperty(value = "Keyword found in training, used for access next level.", example = "secretAnswer")
+    private String answer;
     @ApiModelProperty(value = "Sign if displaying of solution is penalized.", example = "true")
     private boolean solutionPenalized;
     @ApiModelProperty(value = "Information which helps player resolve the level.")
     private List<HintDTO> hints;
 
     /**
-     * Instantiates a new Game level visualization dto.
+     * Instantiates a new Training level visualization dto.
      */
-    public GameLevelVisualizationDTO() {
+    public TrainingLevelVisualizationDTO() {
     }
 
     /**
@@ -69,21 +69,21 @@ public class GameLevelVisualizationDTO extends AbstractLevelVisualizationDTO {
     }
 
     /**
-     * Gets flag.
+     * Gets answer.
      *
-     * @return the flag
+     * @return the answer
      */
-    public String getFlag() {
-        return flag;
+    public String getAnswer() {
+        return answer;
     }
 
     /**
-     * Sets flag.
+     * Sets answer.
      *
-     * @param flag the flag
+     * @param answer the answer
      */
-    public void setFlag(String flag) {
-        this.flag = flag;
+    public void setAnswer(String answer) {
+        this.answer = answer;
     }
 
     /**
@@ -124,19 +124,19 @@ public class GameLevelVisualizationDTO extends AbstractLevelVisualizationDTO {
 
     @Override
     public boolean equals(Object object) {
-        if (!(object instanceof GameLevelVisualizationDTO)) return false;
+        if (!(object instanceof TrainingLevelVisualizationDTO)) return false;
         if (!super.equals(object)) return false;
-        GameLevelVisualizationDTO that = (GameLevelVisualizationDTO) object;
-        return Objects.equals(this.getFlag(), that.getFlag());
+        TrainingLevelVisualizationDTO that = (TrainingLevelVisualizationDTO) object;
+        return Objects.equals(this.getAnswer(), that.getAnswer());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), getFlag());
+        return Objects.hash(super.hashCode(), getAnswer());
     }
     @Override
     public String toString() {
-        return "GameLevelVisualizationDTO{" +
+        return "TrainingLevelVisualizationDTO{" +
                 "id=" + this.getId() +
                 ", title='" + this.getTitle() + '\'' +
                 ", levelType=" + this.getLevelType() +
@@ -144,7 +144,7 @@ public class GameLevelVisualizationDTO extends AbstractLevelVisualizationDTO {
                 ", maxScore=" + this.getMaxScore() +
                 ", estimatedDuration=" + this.getEstimatedDuration() +
                 ", solution='" + solution + '\'' +
-                ", flag='" + flag + '\'' +
+                ", answer='" + answer + '\'' +
                 '}';
     }
 }

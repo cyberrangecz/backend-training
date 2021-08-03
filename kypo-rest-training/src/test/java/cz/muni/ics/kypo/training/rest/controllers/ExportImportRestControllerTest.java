@@ -92,11 +92,11 @@ public class ExportImportRestControllerTest {
 		AssessmentLevelImportDTO assessmentLevelDTO = testDataFactory.getAssessmentLevelImportDTO();
 		assessmentLevelDTO.setOrder(1);
 
-		GameLevelImportDTO gameLevelImportDTO = testDataFactory.getGameLevelImportDTO();
-		gameLevelImportDTO.setOrder(2);
+		TrainingLevelImportDTO trainingLevelImportDTO = testDataFactory.getTrainingLevelImportDTO();
+		trainingLevelImportDTO.setOrder(2);
 
 		importTrainingDefinitionDTO = testDataFactory.getImportTrainingDefinitionDTO();
-		importTrainingDefinitionDTO.setLevels(Arrays.asList(infoLevelImportDTO,assessmentLevelDTO,gameLevelImportDTO));
+		importTrainingDefinitionDTO.setLevels(Arrays.asList(infoLevelImportDTO,assessmentLevelDTO, trainingLevelImportDTO));
 	}
 
 	@Test

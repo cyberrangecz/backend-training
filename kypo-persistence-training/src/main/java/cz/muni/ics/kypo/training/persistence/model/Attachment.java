@@ -5,7 +5,7 @@ import java.time.LocalDateTime;
 import java.util.Objects;
 
 /**
- * Class representing attachments of Game Level
+ * Class representing attachments of Training Level
  */
 @Entity
 @Table(name = "attachment")
@@ -16,8 +16,8 @@ public class Attachment extends AbstractEntity<Long> {
     @Column(name = "creation_time", nullable = false)
     private LocalDateTime creationTime;
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "game_level_id")
-    private GameLevel gameLevel;
+    @JoinColumn(name = "training_level_id")
+    private TrainingLevel trainingLevel;
 
     /**
      * Instantiates a new Attachment.
@@ -30,12 +30,12 @@ public class Attachment extends AbstractEntity<Long> {
      *
      * @param content      the content
      * @param creationTime the creation time
-     * @param gameLevel    the game level
+     * @param trainingLevel    the training level
      */
-    public Attachment(String content, LocalDateTime creationTime, GameLevel gameLevel) {
+    public Attachment(String content, LocalDateTime creationTime, TrainingLevel trainingLevel) {
         this.content = content;
         this.creationTime = creationTime;
-        this.gameLevel = gameLevel;
+        this.trainingLevel = trainingLevel;
     }
 
     public Long getId() {
@@ -83,21 +83,21 @@ public class Attachment extends AbstractEntity<Long> {
     }
 
     /**
-     * Gets game level.
+     * Gets training level.
      *
-     * @return the game level
+     * @return the training level
      */
-    public GameLevel getGameLevel() {
-        return gameLevel;
+    public TrainingLevel getTrainingLevel() {
+        return trainingLevel;
     }
 
     /**
-     * Sets game level.
+     * Sets training level.
      *
-     * @param gameLevel the game level
+     * @param trainingLevel the training level
      */
-    public void setGameLevel(GameLevel gameLevel) {
-        this.gameLevel = gameLevel;
+    public void setTrainingLevel(TrainingLevel trainingLevel) {
+        this.trainingLevel = trainingLevel;
     }
 
     @Override

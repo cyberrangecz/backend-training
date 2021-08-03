@@ -7,19 +7,19 @@ import java.util.List;
 @ApiModel(value = "ClusteringVisualizationDTO", description = "Clustering visualization.")
 public class ClusteringVisualizationDTO {
 
-    private GameResultsDTO finalResults;
+    private TrainingResultsDTO finalResults;
     private List<ClusteringLevelDTO> levels;
 
-    public ClusteringVisualizationDTO(GameResultsDTO finalResults, List<ClusteringLevelDTO> levels) {
+    public ClusteringVisualizationDTO(TrainingResultsDTO finalResults, List<ClusteringLevelDTO> levels) {
         this.finalResults = finalResults;
         this.levels = levels;
     }
 
-    public GameResultsDTO getFinalResults() {
+    public TrainingResultsDTO getFinalResults() {
         return finalResults;
     }
 
-    public void setFinalResults(GameResultsDTO finalResults) {
+    public void setFinalResults(TrainingResultsDTO finalResults) {
         this.finalResults = finalResults;
     }
 

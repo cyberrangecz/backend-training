@@ -15,10 +15,8 @@ import cz.muni.ics.kypo.training.api.dto.export.ExportTrainingDefinitionAndLevel
 import cz.muni.ics.kypo.training.api.dto.export.FileToReturnDTO;
 import cz.muni.ics.kypo.training.api.dto.imports.*;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionByIdDTO;
-import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionDTO;
 import cz.muni.ics.kypo.training.api.enums.LevelType;
 import cz.muni.ics.kypo.training.api.enums.TDState;
-import cz.muni.ics.kypo.training.api.responses.PageResultResource;
 import cz.muni.ics.kypo.training.api.responses.SandboxDefinitionInfo;
 import cz.muni.ics.kypo.training.exceptions.BadRequestException;
 import cz.muni.ics.kypo.training.exceptions.EntityErrorDetail;
@@ -162,9 +160,9 @@ public class ExportImportFacade {
         List<AbstractLevelImportDTO> levels = importTrainingDefinitionDTO.getLevels();
         levels.forEach(level -> {
             AbstractLevel newLevel;
-            if (level.getLevelType().equals(LevelType.GAME_LEVEL)) {
-                newLevel = levelMapper.mapImportToEntity((GameLevelImportDTO) level);
-                checkSumOfHintPenalties((GameLevel) newLevel);
+            if (level.getLevelType().equals(LevelType.TRAINING_LEVEL)) {
+                newLevel = levelMapper.mapImportToEntity((TrainingLevelImportDTO) level);
+                checkSumOfHintPenalties((TrainingLevel) newLevel);
             } else if (level.getLevelType().equals(LevelType.INFO_LEVEL)) {
                 newLevel = levelMapper.mapImportToEntity((InfoLevelImportDTO) level);
             } else {
@@ -386,14 +384,14 @@ public class ExportImportFacade {
         }
     }
 
-    private void checkSumOfHintPenalties(GameLevel gameLevel) {
+    private void checkSumOfHintPenalties(TrainingLevel trainingLevel) {
         int sumHintPenalties = 0;
-        for (Hint hint : gameLevel.getHints()) {
+        for (Hint hint : trainingLevel.getHints()) {
             sumHintPenalties += hint.getHintPenalty();
         }
-        if(sumHintPenalties > gameLevel.getMaxScore()) {
-            throw new UnprocessableEntityException(new EntityErrorDetail(GameLevel.class, "title", String.class, gameLevel.getTitle(),
-                    "Sum of hints penalties cannot be greater than maximal score of the game level."));     }
+        if(sumHintPenalties > trainingLevel.getMaxScore()) {
+            throw new UnprocessableEntityException(new EntityErrorDetail(TrainingLevel.class, "title", String.class, trainingLevel.getTitle(),
+                    "Sum of hints penalties cannot be greater than maximal score of the training level."));     }
     }
 
 

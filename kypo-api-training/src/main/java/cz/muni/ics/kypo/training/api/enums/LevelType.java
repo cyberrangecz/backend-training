@@ -1,5 +1,8 @@
 package cz.muni.ics.kypo.training.api.enums;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
+import com.fasterxml.jackson.annotation.JsonCreator;
+
 /**
  * The enumeration of Level types.
  *
@@ -11,11 +14,24 @@ public enum LevelType {
      */
     INFO_LEVEL,
     /**
-     * Game level type.
+     * Training level type.
      */
-    GAME_LEVEL,
+    TRAINING_LEVEL,
     /**
      * Assessment level type.
      */
-    ASSESSMENT_LEVEL
+    ASSESSMENT_LEVEL;
+
+    @JsonCreator
+    public static LevelType createLevelType(String levelType) {
+        if (levelType.equals("GAME_LEVEL")) {
+            levelType = "TRAINING_LEVEL";
+        }
+        for (LevelType type : LevelType.values()) {
+            if (type.name().equals(levelType)) {
+                return type;
+            }
+        }
+        return null;
+    }
 }

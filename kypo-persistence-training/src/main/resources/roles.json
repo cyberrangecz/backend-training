@@ -17,7 +17,7 @@
   {
     "role_type": "ROLE_TRAINING_TRAINEE",
     "default": true,
-    "description": "This role is default and will allow you to access training run and play a game in KYPO Trainings."
+    "description": "This role is default and will allow you to access training run and play a training in KYPO Trainings."
   }
 
 ]
