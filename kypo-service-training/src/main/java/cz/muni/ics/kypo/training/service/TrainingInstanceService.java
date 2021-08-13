@@ -26,10 +26,8 @@ import reactor.core.publisher.Mono;
 
 import java.time.Clock;
 import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * The type Training instance service.
@@ -355,4 +353,18 @@ public class TrainingInstanceService {
                 .orElseThrow(() -> new EntityNotFoundException(new EntityErrorDetail(TrainingInstance.class, "accessToken", accessToken.getClass(), accessToken,
                         "There is no active training session matching access token.")));
     }
+
+
+    /**
+     * Find all IDs of the sandboxes that have been used in training instance.
+     *
+     * @param trainingInstanceId id of training instance.
+     */
+    public List<Long> findAllSandboxesUsedByTrainingInstanceId(Long trainingInstanceId) {
+        return trainingRunRepository.findAllByTrainingInstanceId(trainingInstanceId)
+                .stream()
+                .map(trainingRun -> trainingRun.getSandboxInstanceRefId() == null ? trainingRun.getPreviousSandboxInstanceRefId() : trainingRun.getSandboxInstanceRefId())
+                .collect(Collectors.toList());
+    }
+
 }

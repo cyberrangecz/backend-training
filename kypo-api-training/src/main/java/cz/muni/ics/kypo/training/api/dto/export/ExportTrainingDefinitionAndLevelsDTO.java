@@ -5,7 +5,6 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -31,6 +30,8 @@ public class ExportTrainingDefinitionAndLevelsDTO {
     private List<AbstractLevelExportDTO> levels = new ArrayList<>();
     @ApiModelProperty(value = "Estimated time (minutes) taken by the player to finish run created from this definition.", example = "5")
     private int estimatedDuration;
+    @ApiModelProperty(value = "Marking if levels flags/answers are randomly generated and are different for each trainee. Default is false.", example = "false")
+    private boolean variantSandboxes;
 
     /**
      * Instantiates a new Export training definition and levels dto.
@@ -182,6 +183,24 @@ public class ExportTrainingDefinitionAndLevelsDTO {
         this.estimatedDuration = estimatedDuration;
     }
 
+    /**
+     * Is variant answers boolean.
+     *
+     * @return the boolean
+     */
+    public boolean isVariantSandboxes() {
+        return variantSandboxes;
+    }
+
+    /**
+     * Sets variant answers.
+     *
+     * @param variantSandboxes the variant answers
+     */
+    public void setVariantSandboxes(boolean variantSandboxes) {
+        this.variantSandboxes = variantSandboxes;
+    }
+
     @Override
     public String toString() {
         return "ExportTrainingDefinitionAndLevelsDTO{" +
@@ -190,6 +209,7 @@ public class ExportTrainingDefinitionAndLevelsDTO {
                 ", state=" + state +
                 ", showStepperBar=" + showStepperBar +
                 ", estimatedDuration=" + estimatedDuration +
+                ", variantSandboxes=" + variantSandboxes +
                 '}';
     }
 }

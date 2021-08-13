@@ -35,6 +35,8 @@ public class TrainingDefinitionCreateDTO {
     @ApiModelProperty(value = "Sign if stepper bar should be displayed.", required = true, example = "true")
     @NotNull(message = "{trainingDefinition.showStepperBar.NotNull.message}")
     private boolean showStepperBar;
+    @ApiModelProperty(value = "Marking if levels flags/answers are randomly generated and are different for each trainee. Default is false.", example = "false")
+    private boolean variantSandboxes;
 
     /**
      * Gets title.
@@ -162,6 +164,24 @@ public class TrainingDefinitionCreateDTO {
         this.showStepperBar = showStepperBar;
     }
 
+    /**
+     * Is variant answers boolean.
+     *
+     * @return the boolean
+     */
+    public boolean isVariantSandboxes() {
+        return variantSandboxes;
+    }
+
+
+    /**
+     * Sets variant answers.
+     *
+     * @param variantSandboxes the variant answers
+     */
+    public void setVariantSandboxes(boolean variantSandboxes) {
+        this.variantSandboxes = variantSandboxes;
+    }
 
     @Override
     public String toString() {
@@ -170,6 +190,7 @@ public class TrainingDefinitionCreateDTO {
                 ", description='" + description + '\'' +
                 ", state=" + state +
                 ", showStepperBar=" + showStepperBar +
+                ", variantSandboxes=" + variantSandboxes +
                 '}';
     }
 }

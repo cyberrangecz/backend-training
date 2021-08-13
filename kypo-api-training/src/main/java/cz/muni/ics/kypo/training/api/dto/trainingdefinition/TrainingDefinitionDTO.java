@@ -40,6 +40,8 @@ public class TrainingDefinitionDTO {
     @ApiModelProperty(value = "Time of last edit done to definition.", example = "2017-10-19 10:23:54+02")
     @JsonSerialize(using = LocalDateTimeUTCSerializer.class)
     private LocalDateTime lastEdited;
+    @ApiModelProperty(value = "Marking if levels flags/answers are randomly generated and are different for each trainee. Default is false.", example = "false")
+    private boolean variantSandboxes;
 
 
     /**
@@ -240,6 +242,25 @@ public class TrainingDefinitionDTO {
         this.lastEdited = lastEdited;
     }
 
+    /**
+     * Is variant answers boolean.
+     *
+     * @return the boolean
+     */
+    public boolean isVariantSandboxes() {
+        return variantSandboxes;
+    }
+
+
+    /**
+     * Sets variant answers.
+     *
+     * @param variantSandboxes the variant answers
+     */
+    public void setVariantSandboxes(boolean variantSandboxes) {
+        this.variantSandboxes = variantSandboxes;
+    }
+
     @Override
     public String toString() {
         return "TrainingDefinitionDTO{" +
@@ -254,6 +275,7 @@ public class TrainingDefinitionDTO {
                 ", canBeArchived=" + canBeArchived +
                 ", estimatedDuration=" + estimatedDuration +
                 ", lastEdited=" + lastEdited +
+                ", variantSandboxes=" + variantSandboxes +
                 '}';
     }
 

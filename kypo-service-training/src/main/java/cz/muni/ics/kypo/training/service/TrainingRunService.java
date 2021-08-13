@@ -41,17 +41,18 @@ public class TrainingRunService {
 
     private static final Logger LOG = LoggerFactory.getLogger(TrainingRunService.class);
 
-    private TrainingRunRepository trainingRunRepository;
-    private AbstractLevelRepository abstractLevelRepository;
-    private TrainingInstanceRepository trainingInstanceRepository;
-    private UserRefRepository participantRefRepository;
-    private HintRepository hintRepository;
-    private AuditEventsService auditEventsService;
-    private ElasticsearchApiService elasticsearchApiService;
-    private SecurityService securityService;
-    private TRAcquisitionLockRepository trAcquisitionLockRepository;
-    private QuestionAnswerRepository questionAnswerRepository;
-    private WebClient sandboxServiceWebClient;
+    private final TrainingRunRepository trainingRunRepository;
+    private final AbstractLevelRepository abstractLevelRepository;
+    private final TrainingInstanceRepository trainingInstanceRepository;
+    private final UserRefRepository participantRefRepository;
+    private final HintRepository hintRepository;
+    private final AuditEventsService auditEventsService;
+    private final ElasticsearchApiService elasticsearchApiService;
+    private final AnswersStorageApiService answersStorageApiService;
+    private final SecurityService securityService;
+    private final TRAcquisitionLockRepository trAcquisitionLockRepository;
+    private final QuestionAnswerRepository questionAnswerRepository;
+    private final WebClient sandboxServiceWebClient;
 
     /**
      * Instantiates a new Training run service.
@@ -74,6 +75,7 @@ public class TrainingRunService {
                               HintRepository hintRepository,
                               AuditEventsService auditEventsService,
                               ElasticsearchApiService elasticsearchApiService,
+                              AnswersStorageApiService answersStorageApiService,
                               SecurityService securityService,
                               QuestionAnswerRepository questionAnswerRepository,
                               @Qualifier("sandboxServiceWebClient") WebClient sandboxServiceWebClient,
@@ -85,6 +87,7 @@ public class TrainingRunService {
         this.hintRepository = hintRepository;
         this.auditEventsService = auditEventsService;
         this.elasticsearchApiService = elasticsearchApiService;
+        this.answersStorageApiService = answersStorageApiService;
         this.securityService = securityService;
         this.questionAnswerRepository = questionAnswerRepository;
         this.sandboxServiceWebClient = sandboxServiceWebClient;
@@ -414,7 +417,10 @@ public class TrainingRunService {
                 throw new EntityConflictException(new EntityErrorDetail(TrainingRun.class, "id", Long.class, runId, "The answer of the current level of training run has been already corrected."));
             }
             TrainingLevel trainingLevel = (TrainingLevel) level;
-            if (trainingLevel.getAnswer().equals(answer)) {
+            String correctAnswer = trainingLevel.getTrainingDefinition().isVariantSandboxes() && trainingLevel.getAnswerVariableName() != null ?
+                    answersStorageApiService.getCorrectAnswerBySandboxIdAndVariableName(trainingRun.getSandboxInstanceRefId(), trainingLevel.getAnswerVariableName()) :
+                    trainingLevel.getAnswer();
+            if (correctAnswer.equals(answer)) {
                 trainingRun.setLevelAnswered(true);
                 trainingRun.increaseTotalTrainingScore(trainingRun.getMaxLevelScore() - trainingRun.getCurrentPenalty());
                 auditEventsService.auditCorrectAnswerSubmittedAction(trainingRun, answer);
@@ -557,7 +563,7 @@ public class TrainingRunService {
     /**
      * Evaluate and store responses to assessment.
      *
-     * @param trainingRunId     id of training run to be finished.
+     * @param trainingRunId      id of training run to be finished.
      * @param answersToQuestions response to assessment to be evaluated
      * @throws EntityNotFoundException training run is not found.
      */
@@ -641,6 +647,7 @@ public class TrainingRunService {
                 .collect(Collectors.toList());
         return correctAnswers.containsAll(userAnswer.getAnswers()) ? question.getPoints() : (-1) * question.getPenalty();
     }
+
     private int evaluateMCQ(Question question, QuestionAnswerDTO userAnswer) {
         List<String> correctAnswers = question.getChoices().stream()
                 .filter(QuestionChoice::isCorrect)
@@ -648,6 +655,7 @@ public class TrainingRunService {
                 .collect(Collectors.toList());
         return userAnswer.getAnswers().containsAll(correctAnswers) ? question.getPoints() : (-1) * question.getPenalty();
     }
+
     private int evaluateEMI(Question question, QuestionAnswerDTO userAnswer) {
         for (ExtendedMatchingStatement extendedMatchingStatement : question.getExtendedMatchingStatements()) {
             int expectedOptionOrder = extendedMatchingStatement.getExtendedMatchingOption().getOrder();

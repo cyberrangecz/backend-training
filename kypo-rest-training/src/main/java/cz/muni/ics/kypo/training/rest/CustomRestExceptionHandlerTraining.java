@@ -13,6 +13,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.InsufficientAuthenticationException;
+import org.springframework.validation.FieldError;
+import org.springframework.validation.ObjectError;
 import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -31,6 +33,7 @@ import javax.validation.ConstraintViolationException;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.List;
 
 /**
  * The type Custom rest exception handler training.
@@ -123,7 +126,7 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
                                                                   final HttpStatus status, final WebRequest request) {
         final ApiError apiError = ApiError.of(
                 HttpStatus.BAD_REQUEST,
-                ex.getBindingResult().getFieldErrors().stream().map(DefaultMessageSourceResolvable::getDefaultMessage)
+                ex.getBindingResult().getAllErrors().stream().map(DefaultMessageSourceResolvable::getDefaultMessage)
                         .collect(java.util.stream.Collectors.joining(", ")),
                 getFullStackTrace(ex),
                 request.getContextPath());

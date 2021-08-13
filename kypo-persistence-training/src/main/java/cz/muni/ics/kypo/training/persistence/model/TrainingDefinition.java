@@ -73,6 +73,8 @@ public class TrainingDefinition extends AbstractEntity<Long> {
     private long estimatedDuration;
     @Column(name = "last_edited", nullable = false)
     private LocalDateTime lastEdited;
+    @Column(name = "variant_sandboxes", nullable = false)
+    private boolean variantSandboxes;
 
     /**
      * Gets unique identification number of Training definition
@@ -295,6 +297,24 @@ public class TrainingDefinition extends AbstractEntity<Long> {
         this.lastEdited = lastEdited;
     }
 
+    /**
+     * Gets if answer are different for each trainee.
+     *
+     * @return true if answers are variant, false otherwise
+     */
+    public boolean isVariantSandboxes() {
+        return variantSandboxes;
+    }
+
+    /**
+     * Sets if level answers are different for each trainee.
+     *
+     * @param variantSandboxes true if answers are variant
+     */
+    public void setVariantSandboxes(boolean variantSandboxes) {
+        this.variantSandboxes = variantSandboxes;
+    }
+
     @Override
     public int hashCode() {
         return Objects.hash(description, outcomes, prerequisites, state, title);
@@ -328,6 +348,7 @@ public class TrainingDefinition extends AbstractEntity<Long> {
                 ", showStepperBar=" + showStepperBar +
                 ", estimatedDuration=" + estimatedDuration +
                 ", lastEdited=" + lastEdited +
+                ", variantSandboxes=" + variantSandboxes +
                 '}';
     }
 }

@@ -24,6 +24,8 @@ import cz.muni.ics.kypo.training.api.dto.visualization.commons.EventDTO;
 import cz.muni.ics.kypo.training.api.dto.visualization.timeline.TimelinePlayerDTO;
 import cz.muni.ics.kypo.training.api.enums.AssessmentType;
 import cz.muni.ics.kypo.training.api.responses.PageResultResource;
+import cz.muni.ics.kypo.training.api.responses.SandboxAnswersInfo;
+import cz.muni.ics.kypo.training.api.responses.VariantAnswer;
 import cz.muni.ics.kypo.training.mapping.mapstruct.LevelMapper;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.model.AssessmentLevel;
@@ -53,6 +55,7 @@ import java.time.Clock;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * The type Visualization facade.
@@ -67,6 +70,7 @@ public class VisualizationFacade {
     private TrainingInstanceService trainingInstanceService;
     private TrainingRunService trainingRunService;
     private VisualizationService visualizationService;
+    private AnswersStorageApiService answersStorageApiService;
     private ElasticsearchApiService elasticsearchApiService;
     private UserService userService;
     private LevelMapper levelMapper;
@@ -85,12 +89,14 @@ public class VisualizationFacade {
                                TrainingInstanceService trainingInstanceService,
                                TrainingRunService trainingRunService,
                                VisualizationService visualizationService,
+                               AnswersStorageApiService answersStorageApiService,
                                ElasticsearchApiService elasticsearchApiService,
                                UserService userService,
                                LevelMapper levelMapper) {
         this.trainingDefinitionService = trainingDefinitionService;
         this.trainingInstanceService = trainingInstanceService;
         this.trainingRunService = trainingRunService;
+        this.answersStorageApiService = answersStorageApiService;
         this.visualizationService = visualizationService;
         this.elasticsearchApiService = elasticsearchApiService;
         this.levelMapper = levelMapper;
@@ -191,6 +197,23 @@ public class VisualizationFacade {
         TrainingInstance trainingInstance = trainingInstanceService.findById(trainingInstanceId);
         TrainingDefinition trainingDefinitionOfTrainingRun = trainingInstance.getTrainingDefinition();
 
+        Map<Long, String> answerByLevelId = null;
+        Map<Long, String> answerVariableNameByLevelId = null;
+        Map<Long, Map<String, String>> answerBySandboxId = null;
+        Stream<AbstractLevel> abstractLevelStream = trainingDefinitionService.findAllLevelsFromDefinition(trainingDefinitionOfTrainingRun.getId())
+                .stream()
+                .filter(abstractLevel -> abstractLevel.getClass() == TrainingLevel.class);
+        if (trainingDefinitionOfTrainingRun.isVariantSandboxes()) {
+            answerVariableNameByLevelId = abstractLevelStream.collect(Collectors.toMap(AbstractLevel::getId, abstractLevel -> ((TrainingLevel) abstractLevel).getAnswerVariableName()));
+            answerBySandboxId = answersStorageApiService.getAnswersBySandboxIds(trainingInstanceService.findAllSandboxesUsedByTrainingInstanceId(trainingInstanceId))
+                    .getContent()
+                    .stream()
+                    .collect(Collectors.toMap(SandboxAnswersInfo::getSandboxRefId, sandboxAnswerInfo -> getAnswersByVariableNames(sandboxAnswerInfo.getVariantAnswers())));
+        } else {
+            answerByLevelId = abstractLevelStream.collect(Collectors.toMap(AbstractLevel::getId, abstractLevel -> ((TrainingLevel) abstractLevel).getAnswer()));
+        }
+
+
         VisualizationProgressDTO visualizationProgressDTO = new VisualizationProgressDTO();
         visualizationProgressDTO.setStartTime(trainingInstance.getStartTime().toEpochSecond(ZoneOffset.UTC));
         visualizationProgressDTO.setCurrentTime(LocalDateTime.now(Clock.systemUTC()).toEpochSecond(ZoneOffset.UTC));
@@ -211,6 +234,8 @@ public class VisualizationFacade {
 
         Map<Long, Map<Long, List<AbstractAuditPOJO>>> eventsFromElasticsearch = elasticsearchApiService.getAggregatedEventsByTrainingRunsAndLevels(trainingInstance);
 
+
+        //Player progress
         List<PlayerProgress> playerProgresses = new ArrayList<>();
         for (Map.Entry<Long, Map<Long, List<AbstractAuditPOJO>>> userEvents : eventsFromElasticsearch.entrySet()) {
             PlayerProgress playerProgress = new PlayerProgress();
@@ -221,6 +246,9 @@ public class VisualizationFacade {
                 LevelProgress levelProgress = new LevelProgress();
                 levelProgress.setLevelId(levelEvents.getKey());
                 levelProgress.setState(LevelState.RUNNING);
+                levelProgress.setAnswer(answerBySandboxId == null ?
+                        answerByLevelId.get(levelProgress.getLevelId()) :
+                        answerBySandboxId.get(levelEvents.getValue().get(0).getSandboxId()).get(answerVariableNameByLevelId.get(levelProgress.getLevelId())));
                 //Count wrong answers number
                 int levelStartedEventIndex = 0;
                 if (events.get(0) instanceof TrainingRunStarted) {
@@ -244,6 +272,10 @@ public class VisualizationFacade {
         }
         visualizationProgressDTO.setPlayerProgress(playerProgresses);
         return visualizationProgressDTO;
+    }
+
+    private Map<String, String> getAnswersByVariableNames(List<VariantAnswer> variantAnswers) {
+        return variantAnswers.stream().collect(Collectors.toMap(VariantAnswer::getAnswerIdentifier, VariantAnswer::getAnswerContent));
     }
 
     private int getLevelCompletedEventIndex(List<AbstractAuditPOJO> events) {

@@ -48,3 +48,6 @@ $$
     end;
 $$;
 
+alter table training_level add column if not exists answer_variable_name varchar(255);
+alter table training_level alter column answer drop not null;
+alter table training_definition add column if not exists variant_sandboxes boolean default (false);

@@ -80,6 +80,8 @@ public class TrainingRunServiceTest {
     private WebClient sandboxServiceWebClient;
     @Mock
     private SecurityService securityService;
+    @Mock
+    private AnswersStorageApiService answersStorageApiService;
 
     private TrainingRun trainingRun1, trainingRun2;
     private TrainingLevel trainingLevel, trainingLevel2;
@@ -100,8 +102,8 @@ public class TrainingRunServiceTest {
                 .exchangeFunction(exchangeFunction)
                 .build();
         trainingRunService = new TrainingRunService(trainingRunRepository, abstractLevelRepository, trainingInstanceRepository,
-                participantRefRepository, hintRepository, auditEventService, elasticsearchApiService, securityService, questionAnswerRepository,
-                sandboxServiceWebClient, trAcquisitionLockRepository);
+                participantRefRepository, hintRepository, auditEventService, elasticsearchApiService, answersStorageApiService,
+                securityService, questionAnswerRepository, sandboxServiceWebClient, trAcquisitionLockRepository);
         parser = new JSONParser();
         try {
             questions = parser.parse(new FileReader(ResourceUtils.getFile("classpath:questions.json"))).toString();

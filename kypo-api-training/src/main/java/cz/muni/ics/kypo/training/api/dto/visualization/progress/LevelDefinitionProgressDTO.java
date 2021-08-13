@@ -280,6 +280,7 @@ public class LevelDefinitionProgressDTO {
         return Objects.hash(getId(), getTitle(), getMaxScore(), getLevelType(), getEstimatedDuration(), getOrder());
     }
 
+
     @Override
     public String toString() {
         return "LevelDefinitionProgressDTO{" +
@@ -289,6 +290,10 @@ public class LevelDefinitionProgressDTO {
                 ", levelType=" + levelType +
                 ", estimatedDuration=" + estimatedDuration +
                 ", order=" + order +
+                ", content='" + content + '\'' +
+                ", answer='" + answer + '\'' +
+                ", solution='" + solution + '\'' +
+                ", solutionPenalized=" + solutionPenalized +
                 '}';
     }
 }
