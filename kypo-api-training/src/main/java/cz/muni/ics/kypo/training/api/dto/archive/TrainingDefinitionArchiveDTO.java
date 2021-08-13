@@ -32,6 +32,8 @@ public class TrainingDefinitionArchiveDTO {
     private List<AbstractLevelArchiveDTO> levels = new ArrayList<>();
     @ApiModelProperty(value = "Estimated time it takes to finish runs created from this definition.", example = "5")
     private int estimatedDuration;
+    @ApiModelProperty(value = "Marking if levels flags/answers are randomly generated and are different for each trainee. Default is false.", example = "false")
+    private boolean variantSandboxes;
 
     /**
      * Gets id.
@@ -195,4 +197,22 @@ public class TrainingDefinitionArchiveDTO {
         this.estimatedDuration = estimatedDuration;
     }
 
+    /**
+     * Is variant answers boolean.
+     *
+     * @return the boolean
+     */
+    public boolean isVariantSandboxes() {
+        return variantSandboxes;
+    }
+
+
+    /**
+     * Sets variant answers.
+     *
+     * @param variantSandboxes the variant answers
+     */
+    public void setVariantSandboxes(boolean variantSandboxes) {
+        this.variantSandboxes = variantSandboxes;
+    }
 }

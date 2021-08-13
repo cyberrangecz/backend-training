@@ -34,7 +34,7 @@ public class WebConfigRestTraining implements WebMvcConfigurer {
     @Bean
     public static PropertySourcesPlaceholderConfigurer propertyConfigInDev() {
         PropertySourcesPlaceholderConfigurer confPropertyPlaceholder = new PropertySourcesPlaceholderConfigurer();
-        confPropertyPlaceholder.setIgnoreUnresolvablePlaceholders(true);
+        confPropertyPlaceholder.setIgnoreUnresolvablePlaceholders(false);
         return confPropertyPlaceholder;
     }
 

@@ -35,6 +35,8 @@ public class LevelProgress {
     @ApiModelProperty(value = "Events belong to the respective level.", required = true)
     @JsonProperty(value = "events", required = true)
     private List<AbstractAuditPOJO> events;
+    @ApiModelProperty(value = "Keyword found in game, used for access next level.", example = "secretAnswer")
+    private String answer;
 
     public long getLevelId() {
         return levelId;
@@ -98,6 +100,14 @@ public class LevelProgress {
 
     public void setEvents(List<AbstractAuditPOJO> events) {
         this.events = events;
+    }
+
+    public String getAnswer() {
+        return answer;
+    }
+
+    public void setAnswer(String answer) {
+        this.answer = answer;
     }
 
     @Override

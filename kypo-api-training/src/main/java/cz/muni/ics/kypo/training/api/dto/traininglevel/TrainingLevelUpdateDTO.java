@@ -27,9 +27,11 @@ public class TrainingLevelUpdateDTO {
     @Max(value = 100, message = "{trainingLevel.maxScore.Max.message}")
     private int maxScore;
     @ApiModelProperty(value = "Keyword found in training, used for access next level.", required = true, example = "secretAnswer")
-    @NotEmpty(message = "{trainingLevel.answer.NotEmpty.message}")
     @Size(max = 50, message = "{trainingLevel.answer.Size.message}")
     private String answer;
+    @ApiModelProperty(value = "Identifier that is used to obtain answer from remote storage.", example = "username")
+    @Size(max = 50, message = "{trainingLevel.answerVariableName.Size.message}")
+    private String answerVariableName;
     @ApiModelProperty(value = "The information and experiences that are directed towards an player.", example = "Play me")
     @NotEmpty(message = "{trainingLevel.content.NotEmpty.message}")
     private String content;
@@ -84,6 +86,24 @@ public class TrainingLevelUpdateDTO {
      */
     public void setAnswer(String answer) {
         this.answer = answer;
+    }
+
+    /**
+     * Gets answer identifier.
+     *
+     * @return the answer identifier
+     */
+    public String getAnswerVariableName() {
+        return answerVariableName;
+    }
+
+    /**
+     * Sets answer identifier.
+     *
+     * @param answerVariableName the answer identifier
+     */
+    public void setAnswerVariableName(String answerVariableName) {
+        this.answerVariableName = answerVariableName;
     }
 
     /**
@@ -230,6 +250,7 @@ public class TrainingLevelUpdateDTO {
         this.hints = hints;
     }
 
+
     @Override
     public String toString() {
         return "TrainingLevelUpdateDTO{" +
@@ -237,6 +258,7 @@ public class TrainingLevelUpdateDTO {
                 ", title='" + title + '\'' +
                 ", maxScore=" + maxScore +
                 ", answer='" + answer + '\'' +
+                ", answerVariableName='" + answerVariableName + '\'' +
                 ", content='" + content + '\'' +
                 ", solution='" + solution + '\'' +
                 ", solutionPenalized=" + solutionPenalized +

@@ -27,6 +27,7 @@ import cz.muni.ics.kypo.training.persistence.model.question.Question;
 import cz.muni.ics.kypo.training.service.TrainingDefinitionService;
 import cz.muni.ics.kypo.training.service.UserService;
 import cz.muni.ics.kypo.training.service.SecurityService;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -324,6 +325,12 @@ public class TrainingDefinitionFacade {
         TrainingLevel trainingLevelToUpdate = levelMapper.mapUpdateToEntity(trainingLevel);
         for (Hint hint : trainingLevelToUpdate.getHints()) {
             hint.setTrainingLevel(trainingLevelToUpdate);
+        }
+        if (StringUtils.isBlank(trainingLevelToUpdate.getAnswer())) {
+            trainingLevelToUpdate.setAnswer(StringUtils.isBlank(trainingLevelToUpdate.getAnswer()) ? null : trainingLevelToUpdate.getAnswer());
+        }
+        if (StringUtils.isBlank(trainingLevelToUpdate.getAnswerVariableName())) {
+            trainingLevelToUpdate.setAnswerVariableName(null);
         }
         trainingDefinitionService.updateTrainingLevel(definitionId, trainingLevelToUpdate);
     }

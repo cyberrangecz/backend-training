@@ -8,7 +8,6 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -38,6 +37,8 @@ public class ImportTrainingDefinitionDTO {
 	private List<AbstractLevelImportDTO> levels = new ArrayList<>();
 	@ApiModelProperty(value = "Estimated time it takes to finish runs created from this definition.", example = "5")
 	private Integer estimatedDuration;
+	@ApiModelProperty(value = "Marking if levels flags/answers are randomly generated and are different for each trainee. Default is false.", example = "false")
+	private boolean variantSandboxes;
 
 	/**
 	 * Instantiates a new Import training definition dto.
@@ -190,6 +191,25 @@ public class ImportTrainingDefinitionDTO {
 		this.estimatedDuration = estimatedDuration;
 	}
 
+	/**
+	 * Is variant answers boolean.
+	 *
+	 * @return the boolean
+	 */
+	public boolean isVariantSandboxes() {
+		return variantSandboxes;
+	}
+
+
+	/**
+	 * Sets variant answers.
+	 *
+	 * @param variantSandboxes the variant answers
+	 */
+	public void setVariantSandboxes(boolean variantSandboxes) {
+		this.variantSandboxes = variantSandboxes;
+	}
+
 	@Override
 	public String toString() {
 		return "ImportTrainingDefinitionDTO{" +
@@ -198,6 +218,7 @@ public class ImportTrainingDefinitionDTO {
 				", state=" + state +
 				", showStepperBar=" + showStepperBar +
 				", estimatedDuration=" + estimatedDuration +
+				", variantSandboxes=" + variantSandboxes +
 				'}';
 	}
 }

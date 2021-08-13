@@ -1,6 +1,5 @@
 package cz.muni.ics.kypo.training.config;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import cz.muni.ics.kypo.training.exceptions.CustomWebClientException;
 import cz.muni.ics.kypo.training.exceptions.errors.JavaApiError;
@@ -12,9 +11,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.http.codec.json.Jackson2JsonDecoder;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.security.oauth2.provider.authentication.OAuth2AuthenticationDetails;
@@ -40,6 +37,8 @@ public class WebClientConfig {
     private String userAndGroupURI;
     @Value("${elasticsearch-service.uri}")
     private String elasticsearchServiceURI;
+    @Value("${answers-storage.uri}")
+    private String answersStorageURI;
 
     private ObjectMapper objectMapper;
 
@@ -111,6 +110,27 @@ public class WebClientConfig {
                 .exchangeStrategies(ExchangeStrategies.builder()
                         .codecs(configurer -> configurer.defaultCodecs().maxInMemorySize(16 * 1024 * 1024))
                         .build())
+                .build();
+    }
+
+    /**
+     * Answers storage web client.
+     *
+     * @return the web client
+     */
+    @Bean
+    @Qualifier("answersStorageWebClient")
+    public WebClient answersStorageWebClient() {
+        return WebClient.builder()
+                .baseUrl(answersStorageURI)
+                .defaultHeaders(headers -> {
+                    headers.add(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
+                    headers.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
+                })
+                .filters(exchangeFilterFunctions -> {
+                    exchangeFilterFunctions.add(addSecurityHeader());
+                    exchangeFilterFunctions.add(javaMicroserviceExceptionHandlingFunction());
+                })
                 .build();
     }
 

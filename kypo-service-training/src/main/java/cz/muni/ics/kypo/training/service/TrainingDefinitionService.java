@@ -13,6 +13,8 @@ import cz.muni.ics.kypo.training.persistence.model.question.ExtendedMatchingStat
 import cz.muni.ics.kypo.training.persistence.model.question.QuestionChoice;
 import cz.muni.ics.kypo.training.persistence.model.question.Question;
 import cz.muni.ics.kypo.training.persistence.repository.*;
+import io.netty.util.internal.StringUtil;
+import org.apache.commons.lang3.StringUtils;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -323,6 +325,7 @@ public class TrainingDefinitionService {
         checkIfCanBeUpdated(trainingDefinition);
         TrainingLevel trainingLevel = findTrainingLevelById(trainingLevelToUpdate.getId());
         checkIfLevelPresentInDefinition(trainingLevel, definitionId);
+        checkAnswerAndAnswerVariableName(trainingLevelToUpdate, trainingDefinition);
         this.checkSumOfHintPenalties(trainingLevelToUpdate);
         trainingLevelToUpdate.setOrder(trainingLevel.getOrder());
         trainingDefinition.setEstimatedDuration(trainingDefinition.getEstimatedDuration() - trainingLevel.getEstimatedDuration() + trainingLevelToUpdate.getEstimatedDuration());
@@ -387,7 +390,7 @@ public class TrainingDefinitionService {
     public TrainingLevel createTrainingLevel(Long definitionId) {
         TrainingDefinition trainingDefinition = findById(definitionId);
         checkIfCanBeUpdated(trainingDefinition);
-        TrainingLevel newTrainingLevel = initializeNewTrainingLevel();
+        TrainingLevel newTrainingLevel = initializeNewTrainingLevel(trainingDefinition.isVariantSandboxes());
         newTrainingLevel.setOrder(getNextOrder(definitionId));
         newTrainingLevel.setTrainingDefinition(trainingDefinition);
         TrainingLevel trainingLevel = trainingLevelRepository.save(newTrainingLevel);
@@ -397,12 +400,13 @@ public class TrainingDefinitionService {
         return trainingLevel;
     }
 
-    private TrainingLevel initializeNewTrainingLevel() {
+    private TrainingLevel initializeNewTrainingLevel(boolean variantSandboxes) {
         TrainingLevel newTrainingLevel = new TrainingLevel();
         newTrainingLevel.setMaxScore(100);
         newTrainingLevel.setTitle("Title of training level");
         newTrainingLevel.setIncorrectAnswerLimit(100);
         newTrainingLevel.setAnswer("Secret answer");
+        newTrainingLevel.setAnswerVariableName(variantSandboxes ? "secret-answer" : null);
         newTrainingLevel.setSolutionPenalized(true);
         newTrainingLevel.setSolution("Solution of the training should be here");
         newTrainingLevel.setContent("The test entry should be here");
@@ -750,4 +754,16 @@ public class TrainingDefinitionService {
         }
     }
 
+    private void checkAnswerAndAnswerVariableName(TrainingLevel trainingLevel, TrainingDefinition trainingDefinition) {
+        if (!trainingDefinition.isVariantSandboxes()) {
+            if (trainingLevel.getAnswerVariableName() != null) {
+                throw new BadRequestException("Field Correct Answer - Variable Name must be null.");
+            }
+            if (StringUtils.isBlank(trainingLevel.getAnswer())) {
+                throw new BadRequestException("Field Correct Answer - Static cannot be empty.");
+            }
+        } else if (StringUtils.isBlank(trainingLevel.getAnswer()) && StringUtils.isBlank(trainingLevel.getAnswerVariableName())) {
+            throw new BadRequestException("Either Correct Answer - Static or Correct Answer - Variable Name cannot be empty.");
+        }
+    }
 }

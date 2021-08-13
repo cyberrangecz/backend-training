@@ -12,8 +12,10 @@ import java.util.*;
 @PrimaryKeyJoinColumn(name = "id")
 public class TrainingLevel extends AbstractLevel {
 
-    @Column(name = "answer", nullable = false)
+    @Column(name = "answer")
     private String answer;
+    @Column(name = "answer_variable_name")
+    private String answerVariableName;
     @Lob
     @Column(name = "content", nullable = false)
     private String content;
@@ -62,6 +64,24 @@ public class TrainingLevel extends AbstractLevel {
      */
     public void setAnswer(String answer) {
         this.answer = answer;
+    }
+
+    /**
+     * Gets answer identifier that is used to obtain answer from remote storage.
+     *
+     * @return the answer identifier
+     */
+    public String getAnswerVariableName() {
+        return answerVariableName;
+    }
+
+    /**
+     * Sets answer identifier that is used to obtain answer from remote storage.
+     *
+     * @param answerVariableName the answer variable name
+     */
+    public void setAnswerVariableName(String answerVariableName) {
+        this.answerVariableName = answerVariableName;
     }
 
     /**

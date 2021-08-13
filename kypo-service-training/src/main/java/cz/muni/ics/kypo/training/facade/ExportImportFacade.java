@@ -36,6 +36,7 @@ import cz.muni.ics.kypo.training.service.ElasticsearchApiService;
 import cz.muni.ics.kypo.training.service.ExportImportService;
 import cz.muni.ics.kypo.training.service.TrainingDefinitionService;
 import cz.muni.ics.kypo.training.utils.AbstractFileExtensions;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -163,6 +164,8 @@ public class ExportImportFacade {
             if (level.getLevelType().equals(LevelType.TRAINING_LEVEL)) {
                 newLevel = levelMapper.mapImportToEntity((TrainingLevelImportDTO) level);
                 checkSumOfHintPenalties((TrainingLevel) newLevel);
+                setAnswerAndAnswerVariableNameToNullIfBlank((TrainingLevel) newLevel);
+                checkAnswerAndAnswerVariableName((TrainingLevel) newLevel, newTrainingDefinition);
             } else if (level.getLevelType().equals(LevelType.INFO_LEVEL)) {
                 newLevel = levelMapper.mapImportToEntity((InfoLevelImportDTO) level);
             } else {
@@ -175,6 +178,28 @@ public class ExportImportFacade {
             exportImportService.createLevel(newLevel, newTrainingDefinition);
         });
         return trainingDefinitionMapper.mapToDTOById(newTrainingDefinition);
+    }
+
+    private void setAnswerAndAnswerVariableNameToNullIfBlank(TrainingLevel trainingLevel) {
+        if (StringUtils.isBlank(trainingLevel.getAnswer())) {
+            trainingLevel.setAnswer(StringUtils.isBlank(trainingLevel.getAnswer()) ? null : trainingLevel.getAnswer());
+        }
+        if (StringUtils.isBlank(trainingLevel.getAnswerVariableName())) {
+            trainingLevel.setAnswerVariableName(null);
+        }
+    }
+
+    private void checkAnswerAndAnswerVariableName(TrainingLevel trainingLevel, TrainingDefinition trainingDefinition) {
+        if (!trainingDefinition.isVariantSandboxes()) {
+            if (trainingLevel.getAnswerVariableName() != null) {
+                throw new BadRequestException("Field Correct Answer - Variable Name must be null.");
+            }
+            if (StringUtils.isBlank(trainingLevel.getAnswer())) {
+                throw new BadRequestException("Field Correct Answer - Static cannot be empty.");
+            }
+        } else if (StringUtils.isBlank(trainingLevel.getAnswer()) && StringUtils.isBlank(trainingLevel.getAnswerVariableName())) {
+            throw new BadRequestException("Either Correct Answer - Static or Correct Answer - Variable Name cannot be empty.");
+        }
     }
 
     private int computeAssessmentLevelMaxScore(AssessmentLevel assessmentLevel) {

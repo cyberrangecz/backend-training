@@ -87,6 +87,12 @@ import java.util.*;
                         "INNER JOIN tr.trainingInstance ti " +
                         "INNER JOIN ti.trainingDefinition td " +
                         "WHERE td.id = :trainingDefinitionId"
+        ),
+        @NamedQuery(
+                name = "TrainingRun.findAllSandboxIdsByTrainingInstanceId",
+                query = "SELECT tr.sandboxInstanceRefId FROM TrainingRun tr " +
+                        "INNER JOIN tr.trainingInstance ti " +
+                        "WHERE ti.id = :trainingInstanceId"
         )
 })
 public class TrainingRun extends AbstractEntity<Long> {

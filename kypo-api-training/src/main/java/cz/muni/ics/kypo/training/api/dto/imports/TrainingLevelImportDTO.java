@@ -19,10 +19,11 @@ import java.util.Set;
 public class TrainingLevelImportDTO extends AbstractLevelImportDTO{
 
 	@ApiModelProperty(value = "Keyword found in training, used for access next level.", example = "secretAnswer")
-	@NotEmpty(message = "{trainingLevel.answer.NotEmpty.message}")
 	@Size(max = 50, message = "{trainingLevel.answer.Size.message}")
 	@JsonAlias({"flag"})
 	private String answer;
+	@ApiModelProperty(value = "Identifier that is used to obtain answer from remote storage.", example = "username")
+	private String answerVariableName;
 	@ApiModelProperty(value = "The information and experiences that are directed towards a participant.", example = "Play me")
 	@NotEmpty(message = "{trainingLevel.content.NotEmpty.message}")
 	private String content;
@@ -66,6 +67,24 @@ public class TrainingLevelImportDTO extends AbstractLevelImportDTO{
 	 */
 	public void setAnswer(String answer) {
 		this.answer = answer;
+	}
+
+	/**
+	 * Gets answer identifier.
+	 *
+	 * @return the answer identifier
+	 */
+	public String getAnswerVariableName() {
+		return answerVariableName;
+	}
+
+	/**
+	 * Sets answer identifier.
+	 *
+	 * @param answerVariableName the answer identifier
+	 */
+	public void setAnswerVariableName(String answerVariableName) {
+		this.answerVariableName = answerVariableName;
 	}
 
 	/**
@@ -195,16 +214,19 @@ public class TrainingLevelImportDTO extends AbstractLevelImportDTO{
 		this.maxScore = maxScore;
 	}
 
+
 	@Override
 	public String toString() {
 		return "TrainingLevelImportDTO{" +
 				"answer='" + answer + '\'' +
+				", answerVariableName='" + answerVariableName + '\'' +
 				", content='" + content + '\'' +
 				", solution='" + solution + '\'' +
-				", maxScore=" + maxScore +
 				", solutionPenalized=" + solutionPenalized +
 				", hints=" + hints +
 				", incorrectAnswerLimit=" + incorrectAnswerLimit +
+				", attachments=" + attachments +
+				", maxScore=" + maxScore +
 				'}';
 	}
 }
