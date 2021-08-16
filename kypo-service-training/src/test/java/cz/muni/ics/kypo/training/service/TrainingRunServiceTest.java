@@ -57,6 +57,8 @@ public class TrainingRunServiceTest {
     private TestDataFactory testDataFactory;
 
     @Mock
+    private SubmissionRepository submissionRepository;
+    @Mock
     private TRAcquisitionLockRepository trAcquisitionLockRepository;
     @Mock
     private TrainingRunRepository trainingRunRepository;
@@ -103,7 +105,7 @@ public class TrainingRunServiceTest {
                 .build();
         trainingRunService = new TrainingRunService(trainingRunRepository, abstractLevelRepository, trainingInstanceRepository,
                 participantRefRepository, hintRepository, auditEventService, elasticsearchApiService, answersStorageApiService,
-                securityService, questionAnswerRepository, sandboxServiceWebClient, trAcquisitionLockRepository);
+                securityService, questionAnswerRepository, sandboxServiceWebClient, trAcquisitionLockRepository, submissionRepository);
         parser = new JSONParser();
         try {
             questions = parser.parse(new FileReader(ResourceUtils.getFile("classpath:questions.json"))).toString();
@@ -242,7 +244,7 @@ public class TrainingRunServiceTest {
         trainingRunService.deleteTrainingRun(trainingRun1.getId(), false);
 
         then(trAcquisitionLockRepository).should().deleteByParticipantRefIdAndTrainingInstanceId(trainingRun1.getParticipantRef().getUserRefId(),
-                                                                                                 trainingRun1.getTrainingInstance().getId());
+                trainingRun1.getTrainingInstance().getId());
         then(trainingRunRepository).should().delete(trainingRun1);
     }
 
@@ -296,7 +298,6 @@ public class TrainingRunServiceTest {
         assertEquals(expectedPage, resultPage);
         then(trainingRunRepository).should().findAllByParticipantRefId(participantRef.getUserRefId(), PageRequest.of(0, 2));
     }
-
 
 
     @Test
@@ -376,7 +377,7 @@ public class TrainingRunServiceTest {
     }
 
     @Test
-    public void createTrainingRun() throws Exception{
+    public void createTrainingRun() throws Exception {
         given(abstractLevelRepository.findFirstLevelByTrainingDefinitionId(eq(trainingInstance1.getTrainingDefinition().getId()), any(Pageable.class)))
                 .willReturn(List.of(trainingLevel));
         given(participantRefRepository.findUserByUserRefId(participantRef.getUserRefId()))
@@ -389,7 +390,7 @@ public class TrainingRunServiceTest {
     }
 
     @Test
-    public void createTrainingRun_NewParticipant() throws Exception{
+    public void createTrainingRun_NewParticipant() throws Exception {
         UserRef newParticipant = new UserRef();
         newParticipant.setUserRefId(participantRef.getUserRefId());
         sandboxInfo.setLockId(1);
