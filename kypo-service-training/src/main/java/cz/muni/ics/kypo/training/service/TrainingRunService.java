@@ -9,6 +9,7 @@ import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.model.AssessmentLevel;
 import cz.muni.ics.kypo.training.persistence.model.enums.AssessmentType;
 import cz.muni.ics.kypo.training.persistence.model.enums.QuestionType;
+import cz.muni.ics.kypo.training.persistence.model.enums.SubmissionType;
 import cz.muni.ics.kypo.training.persistence.model.enums.TRState;
 import cz.muni.ics.kypo.training.persistence.model.question.ExtendedMatchingStatement;
 import cz.muni.ics.kypo.training.persistence.model.question.QuestionAnswer;
@@ -26,8 +27,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import javax.servlet.http.HttpServletRequest;
 import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -53,6 +57,7 @@ public class TrainingRunService {
     private final TRAcquisitionLockRepository trAcquisitionLockRepository;
     private final QuestionAnswerRepository questionAnswerRepository;
     private final WebClient sandboxServiceWebClient;
+    private final SubmissionRepository submissionRepository;
 
     /**
      * Instantiates a new Training run service.
@@ -79,7 +84,8 @@ public class TrainingRunService {
                               SecurityService securityService,
                               QuestionAnswerRepository questionAnswerRepository,
                               @Qualifier("sandboxServiceWebClient") WebClient sandboxServiceWebClient,
-                              TRAcquisitionLockRepository trAcquisitionLockRepository) {
+                              TRAcquisitionLockRepository trAcquisitionLockRepository,
+                              SubmissionRepository submissionRepository) {
         this.trainingRunRepository = trainingRunRepository;
         this.abstractLevelRepository = abstractLevelRepository;
         this.trainingInstanceRepository = trainingInstanceRepository;
@@ -92,6 +98,7 @@ public class TrainingRunService {
         this.questionAnswerRepository = questionAnswerRepository;
         this.sandboxServiceWebClient = sandboxServiceWebClient;
         this.trAcquisitionLockRepository = trAcquisitionLockRepository;
+        this.submissionRepository = submissionRepository;
     }
 
     /**
@@ -403,8 +410,8 @@ public class TrainingRunService {
     /**
      * Check given answer of given Training Run.
      *
-     * @param runId id of Training Run to check answer.
-     * @param answer  string which player submit.
+     * @param runId  id of Training Run to check answer.
+     * @param answer string which player submit.
      * @return true if answer is correct, false if answer is wrong.
      * @throws EntityNotFoundException training run is not found.
      * @throws BadRequestException     the current level of training run is not training level.
@@ -425,14 +432,36 @@ public class TrainingRunService {
                 trainingRun.increaseTotalTrainingScore(trainingRun.getMaxLevelScore() - trainingRun.getCurrentPenalty());
                 auditEventsService.auditCorrectAnswerSubmittedAction(trainingRun, answer);
                 auditEventsService.auditLevelCompletedAction(trainingRun);
+                auditSubmission(trainingRun, SubmissionType.CORRECT, answer);
                 return true;
             } else if (trainingRun.getIncorrectAnswerCount() != trainingLevel.getIncorrectAnswerLimit()) {
                 trainingRun.setIncorrectAnswerCount(trainingRun.getIncorrectAnswerCount() + 1);
             }
+            auditSubmission(trainingRun, SubmissionType.INCORRECT, answer);
             auditEventsService.auditWrongAnswerSubmittedAction(trainingRun, answer);
             return false;
         } else {
             throw new BadRequestException("Current level is not training level and does not have answer.");
+        }
+    }
+
+    private void auditSubmission(TrainingRun trainingRun, SubmissionType submissionType, String answer) {
+        Submission submission = new Submission();
+        submission.setDate(LocalDateTime.now(Clock.systemUTC()));
+        submission.setLevelId(trainingRun.getCurrentLevel());
+        submission.setTrainingRun(trainingRun);
+        submission.setProvided(answer);
+        submission.setType(submissionType);
+        submission.setIpAddress(getUserIpAddress());
+    }
+
+    private String getUserIpAddress() {
+        try {
+            HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
+            return request.getRemoteAddr();
+        } catch (NullPointerException ex) {
+            // when the method is called outside the HTTP request, e.g., from the tests
+            return "";
         }
     }
 
