@@ -1,8 +1,6 @@
 package cz.muni.ics.kypo.training.service;
 
 import com.querydsl.core.types.Predicate;
-import cz.muni.ics.kypo.training.api.responses.LockedPoolInfo;
-import cz.muni.ics.kypo.training.api.responses.PoolInfoDTO;
 import cz.muni.ics.kypo.training.exceptions.*;
 import cz.muni.ics.kypo.training.persistence.model.AccessToken;
 import cz.muni.ics.kypo.training.persistence.model.TrainingInstance;
@@ -16,13 +14,9 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.client.WebClient;
-import reactor.core.publisher.Mono;
 
 import java.time.Clock;
 import java.time.LocalDateTime;
@@ -37,12 +31,11 @@ public class TrainingInstanceService {
 
     private static final Logger LOG = LoggerFactory.getLogger(TrainingInstanceService.class);
 
-    private TrainingInstanceRepository trainingInstanceRepository;
-    private TrainingRunRepository trainingRunRepository;
-    private AccessTokenRepository accessTokenRepository;
-    private UserRefRepository userRefRepository;
-    private SecurityService securityService;
-    private WebClient sandboxServiceWebClient;
+    private final TrainingInstanceRepository trainingInstanceRepository;
+    private final TrainingRunRepository trainingRunRepository;
+    private final AccessTokenRepository accessTokenRepository;
+    private final UserRefRepository userRefRepository;
+    private final SecurityService securityService;
 
     /**
      * Instantiates a new Training instance service.
@@ -51,7 +44,6 @@ public class TrainingInstanceService {
      * @param accessTokenRepository      the access token repository
      * @param trainingRunRepository      the training run repository
      * @param userRefRepository     the organizer ref repository
-     * @param sandboxServiceWebClient    the python rest template
      * @param securityService            the security service
      */
     @Autowired
@@ -60,14 +52,12 @@ public class TrainingInstanceService {
                                    AccessTokenRepository accessTokenRepository,
                                    TrainingRunRepository trainingRunRepository,
                                    UserRefRepository userRefRepository,
-                                   SecurityService securityService,
-                                   @Qualifier("sandboxServiceWebClient") WebClient sandboxServiceWebClient) {
+                                   SecurityService securityService) {
         this.trainingInstanceRepository = trainingInstanceRepository;
         this.trainingRunRepository = trainingRunRepository;
         this.accessTokenRepository = accessTokenRepository;
         this.userRefRepository = userRefRepository;
         this.securityService = securityService;
-        this.sandboxServiceWebClient = sandboxServiceWebClient;
     }
 
     /**
@@ -250,56 +240,6 @@ public class TrainingInstanceService {
      */
     public TrainingInstance updateTrainingInstancePool(TrainingInstance trainingInstance) {
         return trainingInstanceRepository.saveAndFlush(trainingInstance);
-    }
-
-    /**
-     * Lock pool locked pool info.
-     *
-     * @param poolId the pool id
-     * @return the locked pool info
-     */
-    public LockedPoolInfo lockPool(Long poolId) {
-        try {
-            return sandboxServiceWebClient
-                    .post()
-                    .uri("/pools/{poolId}/locks", poolId)
-                    .body(Mono.just("{}"), String.class)
-                    .retrieve()
-                    .bodyToMono(LockedPoolInfo.class)
-                    .block();
-        } catch (CustomWebClientException ex) {
-            throw new MicroserviceApiException("Currently, it is not possible to lock and assign pool with (ID: " + poolId + ").", ex);
-        }
-    }
-
-    /**
-     * Unlock pool.
-     *
-     * @param poolId the pool id
-     */
-    public void unlockPool(Long poolId) {
-        try {
-            // get lock id from pool
-            PoolInfoDTO poolInfoDto = sandboxServiceWebClient
-                    .get()
-                    .uri("/pools/{poolId}", poolId)
-                    .retrieve()
-                    .bodyToMono(PoolInfoDTO.class)
-                    .block();
-            // unlock pool
-            if (poolInfoDto != null && poolInfoDto.getLockId() != null) {
-                sandboxServiceWebClient
-                        .delete()
-                        .uri("/pools/{poolId}/locks/{lockId}", poolId, poolInfoDto.getLockId())
-                        .retrieve()
-                        .bodyToMono(Void.class)
-                        .block();
-            }
-        } catch (CustomWebClientException ex) {
-            if(ex.getStatusCode() != HttpStatus.NOT_FOUND){
-                throw new MicroserviceApiException("Currently, it is not possible to unlock a pool with (ID: " + poolId + ").", ex);
-            }
-        }
     }
 
     /**

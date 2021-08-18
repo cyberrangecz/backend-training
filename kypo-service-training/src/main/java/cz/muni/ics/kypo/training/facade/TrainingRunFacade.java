@@ -53,12 +53,12 @@ public class TrainingRunFacade {
 
     private static final Logger LOG = LoggerFactory.getLogger(TrainingRunFacade.class);
 
-    private TrainingRunService trainingRunService;
-    private SecurityService securityService;
-    private UserService userService;
-    private TrainingRunMapper trainingRunMapper;
-    private LevelMapper levelMapper;
-    private HintMapper hintMapper;
+    private final TrainingRunService trainingRunService;
+    private final SecurityService securityService;
+    private final UserService userService;
+    private final TrainingRunMapper trainingRunMapper;
+    private final LevelMapper levelMapper;
+    private final HintMapper hintMapper;
 
 
     /**

@@ -20,6 +20,8 @@ import cz.muni.ics.kypo.training.persistence.model.TrainingInstance;
 import cz.muni.ics.kypo.training.persistence.model.TrainingRun;
 import cz.muni.ics.kypo.training.persistence.model.UserRef;
 import cz.muni.ics.kypo.training.service.*;
+import cz.muni.ics.kypo.training.service.api.ElasticsearchApiService;
+import cz.muni.ics.kypo.training.service.api.SandboxApiService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -39,14 +41,15 @@ import java.util.stream.Collectors;
 @Service
 public class TrainingInstanceFacade {
 
-    private TrainingInstanceService trainingInstanceService;
-    private TrainingDefinitionService trainingDefinitionService;
-    private TrainingRunService trainingRunService;
-    private UserService userService;
-    private SecurityService securityService;
-    private TrainingInstanceMapper trainingInstanceMapper;
-    private TrainingRunMapper trainingRunMapper;
-    private ElasticsearchApiService elasticsearchApiService;
+    private final TrainingInstanceService trainingInstanceService;
+    private final TrainingDefinitionService trainingDefinitionService;
+    private final TrainingRunService trainingRunService;
+    private final UserService userService;
+    private final SecurityService securityService;
+    private final TrainingInstanceMapper trainingInstanceMapper;
+    private final TrainingRunMapper trainingRunMapper;
+    private final ElasticsearchApiService elasticsearchApiService;
+    private final SandboxApiService sandboxApiService;
 
 
     /**
@@ -68,6 +71,7 @@ public class TrainingInstanceFacade {
                                   UserService userService,
                                   ElasticsearchApiService elasticsearchApiService,
                                   SecurityService securityService,
+                                  SandboxApiService sandboxApiService,
                                   TrainingInstanceMapper trainingInstanceMapper,
                                   TrainingRunMapper trainingRunMapper) {
         this.trainingInstanceService = trainingInstanceService;
@@ -76,6 +80,7 @@ public class TrainingInstanceFacade {
         this.userService = userService;
         this.elasticsearchApiService = elasticsearchApiService;
         this.securityService = securityService;
+        this.sandboxApiService = sandboxApiService;
         this.trainingInstanceMapper = trainingInstanceMapper;
         this.trainingRunMapper = trainingRunMapper;
     }
@@ -189,7 +194,7 @@ public class TrainingInstanceFacade {
             Set<TrainingRun> trainingRunsInTrainingInstance = trainingRunService.findAllByTrainingInstanceId(trainingInstanceId);
             trainingRunsInTrainingInstance.forEach(tr -> trainingRunService.deleteTrainingRun(tr.getId(), true));
             if (trainingInstance.getPoolId() != null) {
-                trainingInstanceService.unlockPool(trainingInstance.getPoolId());
+                sandboxApiService.unlockPool(trainingInstance.getPoolId());
                 deleteBashCommandsfromPool(trainingInstance.getPoolId());
             }
         } else if (!trainingInstanceService.checkIfInstanceIsFinished(trainingInstanceId) && trainingRunService.existsAnyForTrainingInstance(trainingInstanceId)) {
@@ -228,7 +233,7 @@ public class TrainingInstanceFacade {
                     "Training instance already contains pool Id. Please first unassign pool id and then assign another pool again."));
         }
         // lock pool and update pool
-        trainingInstanceService.lockPool(trainingInstanceAssignPoolIdDTO.getPoolId());
+        sandboxApiService.lockPool(trainingInstanceAssignPoolIdDTO.getPoolId());
         trainingInstance.setPoolId(trainingInstanceAssignPoolIdDTO.getPoolId());
         TrainingInstance updatedTrainingInstance = trainingInstanceService.updateTrainingInstancePool(trainingInstance);
         return trainingInstanceMapper.mapEntityToTIBasicInfo(updatedTrainingInstance);
@@ -250,7 +255,7 @@ public class TrainingInstanceFacade {
                     "The training instance does not contain any assigned pool already."));
         }
         // unlock previously assigned pool
-        trainingInstanceService.unlockPool(trainingInstance.getPoolId());
+        sandboxApiService.unlockPool(trainingInstance.getPoolId());
         deleteBashCommandsfromPool(trainingInstance.getPoolId());
 
         trainingInstance.setPoolId(null);

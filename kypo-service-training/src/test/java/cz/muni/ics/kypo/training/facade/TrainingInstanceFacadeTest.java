@@ -16,6 +16,8 @@ import cz.muni.ics.kypo.training.persistence.model.TrainingInstance;
 import cz.muni.ics.kypo.training.persistence.model.UserRef;
 import cz.muni.ics.kypo.training.persistence.util.TestDataFactory;
 import cz.muni.ics.kypo.training.service.*;
+import cz.muni.ics.kypo.training.service.api.ElasticsearchApiService;
+import cz.muni.ics.kypo.training.service.api.SandboxApiService;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -74,6 +76,8 @@ public class TrainingInstanceFacadeTest {
     private SecurityService securityService;
     @Mock
     private UserService userService;
+    @Mock
+    private SandboxApiService sandboxApiService;
 
     private TrainingInstance trainingInstance1, trainingInstance2;
     private TrainingInstanceCreateDTO trainingInstanceCreate;
@@ -88,8 +92,8 @@ public class TrainingInstanceFacadeTest {
     @Before
     public void init() {
         MockitoAnnotations.initMocks(this);
-        trainingInstanceFacade = new TrainingInstanceFacade(trainingInstanceService, trainingDefinitionService, trainingRunService, userService,
-                elasticsearchApiService, securityService, trainingInstanceMapper, trainingRunMapper);
+        trainingInstanceFacade = new TrainingInstanceFacade(trainingInstanceService, trainingDefinitionService, trainingRunService,
+                userService, elasticsearchApiService, securityService, sandboxApiService, trainingInstanceMapper, trainingRunMapper);
 
         pageable = PageRequest.of(0, 5);
 
@@ -206,15 +210,15 @@ public class TrainingInstanceFacadeTest {
     public void assignPoolToTrainingInstance() {
         trainingInstance1.setPoolId(null);
         given(trainingInstanceService.findById(trainingInstance1.getId())).willReturn(trainingInstance1);
-        given(trainingInstanceService.lockPool(trainingInstance1.getPoolId())).willReturn(lockedPoolInfo);
+        given(sandboxApiService.lockPool(trainingInstance1.getPoolId())).willReturn(lockedPoolInfo);
         trainingInstanceFacade.assignPoolToTrainingInstance(trainingInstance1.getId(), trainingInstanceAssignPoolIdDTO);
-        then(trainingInstanceService).should().lockPool(trainingInstance1.getId());
+        then(sandboxApiService).should().lockPool(trainingInstance1.getId());
     }
 
     @Test(expected = EntityConflictException.class)
     public void allocateSandboxesWithServiceException() {
         given(trainingInstanceService.findById(anyLong())).willReturn(trainingInstance1);
-        willThrow(EntityConflictException.class).given(trainingInstanceService).lockPool(anyLong());
+        willThrow(EntityConflictException.class).given(sandboxApiService).lockPool(anyLong());
         trainingInstanceFacade.assignPoolToTrainingInstance(trainingInstance1.getId(), trainingInstanceAssignPoolIdDTO);
     }
 
@@ -222,7 +226,7 @@ public class TrainingInstanceFacadeTest {
     public void unassignPool(){
         given(trainingInstanceService.findById(anyLong())).willReturn(trainingInstance1);
         trainingInstanceFacade.unassignPoolInTrainingInstance(trainingInstance1.getId());
-        then(trainingInstanceService).should().unlockPool(anyLong());
+        then(sandboxApiService).should().unlockPool(anyLong());
         then(trainingInstanceService).should().updateTrainingInstancePool(any(TrainingInstance.class));
     }
 

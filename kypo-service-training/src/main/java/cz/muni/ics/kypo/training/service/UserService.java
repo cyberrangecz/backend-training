@@ -28,8 +28,8 @@ public class UserService {
 
     private static final Logger LOG = LoggerFactory.getLogger(UserService.class);
 
-    private WebClient userManagementServiceWebClient;
-    private UserRefRepository userRefRepository;
+    private final WebClient userManagementServiceWebClient;
+    private final UserRefRepository userRefRepository;
 
     /**
      * Instantiates a new User service.

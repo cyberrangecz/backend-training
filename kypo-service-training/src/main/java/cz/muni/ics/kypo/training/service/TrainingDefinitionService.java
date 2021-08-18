@@ -36,16 +36,15 @@ public class TrainingDefinitionService {
 
     private static final Logger LOG = LoggerFactory.getLogger(TrainingDefinitionService.class);
 
-    private ModelMapper modelMapper;
-    private TrainingDefinitionRepository trainingDefinitionRepository;
-    private TrainingInstanceRepository trainingInstanceRepository;
-    private AbstractLevelRepository abstractLevelRepository;
-    private TrainingLevelRepository trainingLevelRepository;
-    private InfoLevelRepository infoLevelRepository;
-    private AssessmentLevelRepository assessmentLevelRepository;
-    private UserRefRepository userRefRepository;
-    private SecurityService securityService;
-    private ObjectMapper objectMapper;
+    private final ModelMapper modelMapper;
+    private final TrainingDefinitionRepository trainingDefinitionRepository;
+    private final TrainingInstanceRepository trainingInstanceRepository;
+    private final AbstractLevelRepository abstractLevelRepository;
+    private final TrainingLevelRepository trainingLevelRepository;
+    private final InfoLevelRepository infoLevelRepository;
+    private final AssessmentLevelRepository assessmentLevelRepository;
+    private final UserRefRepository userRefRepository;
+    private final SecurityService securityService;
 
     private static final String ARCHIVED_OR_RELEASED = "Cannot edit released or archived training definition.";
     private static final String LEVEL_NOT_FOUND = "Level not found.";
@@ -60,7 +59,6 @@ public class TrainingDefinitionService {
      * @param assessmentLevelRepository    the assessment level repository
      * @param trainingInstanceRepository   the training instance repository
      * @param userRefRepository            the user ref repository
-     * @param securityService              the security service
      */
     @Autowired
     public TrainingDefinitionService(TrainingDefinitionRepository trainingDefinitionRepository,
@@ -71,8 +69,7 @@ public class TrainingDefinitionService {
                                      TrainingInstanceRepository trainingInstanceRepository,
                                      UserRefRepository userRefRepository,
                                      SecurityService securityService,
-                                     ModelMapper modelMapper,
-                                     ObjectMapper objectMapper) {
+                                     ModelMapper modelMapper) {
         this.trainingDefinitionRepository = trainingDefinitionRepository;
         this.abstractLevelRepository = abstractLevelRepository;
         this.trainingLevelRepository = trainingLevelRepository;
@@ -82,7 +79,6 @@ public class TrainingDefinitionService {
         this.userRefRepository = userRefRepository;
         this.securityService = securityService;
         this.modelMapper = modelMapper;
-        this.objectMapper = objectMapper;
     }
 
     /**

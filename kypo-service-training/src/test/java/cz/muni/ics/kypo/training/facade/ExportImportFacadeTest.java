@@ -12,9 +12,10 @@ import cz.muni.ics.kypo.training.mapping.mapstruct.*;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.model.AssessmentLevel;
 import cz.muni.ics.kypo.training.persistence.util.TestDataFactory;
-import cz.muni.ics.kypo.training.service.ElasticsearchApiService;
+import cz.muni.ics.kypo.training.service.api.ElasticsearchApiService;
 import cz.muni.ics.kypo.training.service.ExportImportService;
 import cz.muni.ics.kypo.training.service.TrainingDefinitionService;
+import cz.muni.ics.kypo.training.service.api.SandboxApiService;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -60,6 +61,8 @@ public class ExportImportFacadeTest {
     @Mock
     private TrainingDefinitionService trainingDefinitionService;
     @Mock
+    private SandboxApiService sandboxApiService;
+    @Mock
     private ExportImportService exportImportService;
 
     private TrainingDefinition trainingDefinition;
@@ -74,7 +77,7 @@ public class ExportImportFacadeTest {
     public void init() {
         MockitoAnnotations.initMocks(this);
         exportImportFacade = new ExportImportFacade(exportImportService, trainingDefinitionService, elasticsearchApiService,
-                exportImportMapper, infoLevelMapper, trainingDefinitionMapper, objectMapper);
+                sandboxApiService, exportImportMapper, infoLevelMapper, trainingDefinitionMapper, objectMapper);
 
         assessmentLevel = testDataFactory.getTest();
         assessmentLevel.setId(1L);

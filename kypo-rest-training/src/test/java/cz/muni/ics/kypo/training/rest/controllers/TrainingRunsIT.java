@@ -34,7 +34,7 @@ import cz.muni.ics.kypo.training.rest.ApiError;
 import cz.muni.ics.kypo.training.rest.CustomRestExceptionHandlerTraining;
 import cz.muni.ics.kypo.training.rest.controllers.config.DBTestUtil;
 import cz.muni.ics.kypo.training.rest.controllers.config.RestConfigTest;
-import cz.muni.ics.kypo.training.service.ElasticsearchApiService;
+import cz.muni.ics.kypo.training.service.api.ElasticsearchApiService;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.After;

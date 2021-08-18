@@ -48,11 +48,11 @@ import java.util.stream.Collectors;
 @Transactional
 public class TrainingDefinitionFacade {
 
-    private TrainingDefinitionService trainingDefinitionService;
-    private UserService userService;
-    private SecurityService securityService;
-    private TrainingDefinitionMapper trainingDefinitionMapper;
-    private LevelMapper levelMapper;
+    private final TrainingDefinitionService trainingDefinitionService;
+    private final UserService userService;
+    private final SecurityService securityService;
+    private final TrainingDefinitionMapper trainingDefinitionMapper;
+    private final LevelMapper levelMapper;
 
     /**
      * Instantiates a new Training definition facade.
@@ -117,7 +117,7 @@ public class TrainingDefinitionFacade {
     private List<AbstractLevelDTO> gatherLevels(Long definitionId) {
         List<AbstractLevel> levels = trainingDefinitionService.findAllLevelsFromDefinition(definitionId);
         return levels.stream()
-                .map(level -> this.levelMapper.mapToDTO(level))
+                .map(this.levelMapper::mapToDTO)
                 .collect(Collectors.toList());
     }
 

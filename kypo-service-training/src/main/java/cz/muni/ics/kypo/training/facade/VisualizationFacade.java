@@ -34,6 +34,8 @@ import cz.muni.ics.kypo.training.api.dto.visualization.progress.PlayerProgress;
 import cz.muni.ics.kypo.training.api.dto.visualization.progress.VisualizationProgressDTO;
 import cz.muni.ics.kypo.training.api.enums.LevelState;
 import cz.muni.ics.kypo.training.service.*;
+import cz.muni.ics.kypo.training.service.api.AnswersStorageApiService;
+import cz.muni.ics.kypo.training.service.api.ElasticsearchApiService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -66,14 +68,14 @@ public class VisualizationFacade {
 
     private static final Logger LOG = LoggerFactory.getLogger(VisualizationFacade.class);
 
-    private TrainingDefinitionService trainingDefinitionService;
-    private TrainingInstanceService trainingInstanceService;
-    private TrainingRunService trainingRunService;
-    private VisualizationService visualizationService;
-    private AnswersStorageApiService answersStorageApiService;
-    private ElasticsearchApiService elasticsearchApiService;
-    private UserService userService;
-    private LevelMapper levelMapper;
+    private final TrainingDefinitionService trainingDefinitionService;
+    private final TrainingInstanceService trainingInstanceService;
+    private final TrainingRunService trainingRunService;
+    private final VisualizationService visualizationService;
+    private final AnswersStorageApiService answersStorageApiService;
+    private final ElasticsearchApiService elasticsearchApiService;
+    private final UserService userService;
+    private final LevelMapper levelMapper;
 
     /**
      * Instantiates a new Visualization facade.
@@ -227,7 +229,7 @@ public class VisualizationFacade {
 
         //Levels
         List<LevelDefinitionProgressDTO> levels = trainingRunService.getLevels(trainingDefinitionOfTrainingRun.getId()).stream()
-                .map(level -> levelMapper.mapToLevelDefinitionProgressDTO(level))
+                .map(levelMapper::mapToLevelDefinitionProgressDTO)
                 .sorted(Comparator.comparingInt(LevelDefinitionProgressDTO::getOrder))
                 .collect(Collectors.toList());
         visualizationProgressDTO.setLevels(levels);

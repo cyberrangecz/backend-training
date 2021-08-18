@@ -20,8 +20,8 @@ import java.util.Set;
 @Service
 public class VisualizationService {
 
-    private AbstractLevelRepository abstractLevelRepository;
-    private UserRefRepository userRefRepository;
+    private final AbstractLevelRepository abstractLevelRepository;
+    private final UserRefRepository userRefRepository;
 
     /**
      * Instantiates a new Visualization service.
