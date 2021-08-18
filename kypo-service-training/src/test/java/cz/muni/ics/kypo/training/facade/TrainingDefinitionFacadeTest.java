@@ -149,6 +149,8 @@ public class TrainingDefinitionFacadeTest {
         trainingDefinitionUpdate.setId(1L);
 
         trainingDefinitionCreate = testDataFactory.getTrainingDefinitionCreateDTO();
+        given(userService.getUserRefFromUserAndGroup()).willReturn(authorDTO1);
+
     }
 
     @Test

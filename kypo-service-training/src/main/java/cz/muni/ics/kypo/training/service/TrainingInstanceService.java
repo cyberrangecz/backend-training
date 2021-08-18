@@ -2,10 +2,7 @@ package cz.muni.ics.kypo.training.service;
 
 import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.training.exceptions.*;
-import cz.muni.ics.kypo.training.persistence.model.AccessToken;
-import cz.muni.ics.kypo.training.persistence.model.TrainingInstance;
-import cz.muni.ics.kypo.training.persistence.model.TrainingRun;
-import cz.muni.ics.kypo.training.persistence.model.UserRef;
+import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.repository.AccessTokenRepository;
 import cz.muni.ics.kypo.training.persistence.repository.TrainingInstanceRepository;
 import cz.muni.ics.kypo.training.persistence.repository.TrainingRunRepository;
@@ -31,11 +28,12 @@ public class TrainingInstanceService {
 
     private static final Logger LOG = LoggerFactory.getLogger(TrainingInstanceService.class);
 
-    private final TrainingInstanceRepository trainingInstanceRepository;
-    private final TrainingRunRepository trainingRunRepository;
-    private final AccessTokenRepository accessTokenRepository;
-    private final UserRefRepository userRefRepository;
-    private final SecurityService securityService;
+    private TrainingInstanceRepository trainingInstanceRepository;
+    private TrainingRunRepository trainingRunRepository;
+    private AccessTokenRepository accessTokenRepository;
+    private UserRefRepository userRefRepository;
+    private SecurityService securityService;
+    private UserService userService;
 
     /**
      * Instantiates a new Training instance service.
@@ -52,12 +50,14 @@ public class TrainingInstanceService {
                                    AccessTokenRepository accessTokenRepository,
                                    TrainingRunRepository trainingRunRepository,
                                    UserRefRepository userRefRepository,
-                                   SecurityService securityService) {
+                                   SecurityService securityService,
+                                   UserService userService) {
         this.trainingInstanceRepository = trainingInstanceRepository;
         this.trainingRunRepository = trainingRunRepository;
         this.accessTokenRepository = accessTokenRepository;
         this.userRefRepository = userRefRepository;
         this.securityService = securityService;
+        this.userService = userService;
     }
 
     /**
@@ -119,7 +119,7 @@ public class TrainingInstanceService {
                     "End time must be later than start time."));
         }
         addLoggedInUserAsOrganizerToTrainingInstance(trainingInstance);
-        return trainingInstanceRepository.save(trainingInstance);
+        return auditAndSave(trainingInstance);
     }
 
     /**
@@ -148,8 +148,7 @@ public class TrainingInstanceService {
                 trainingInstanceToUpdate.setAccessToken(trainingInstance.getAccessToken());
             }
         }
-        trainingInstanceRepository.save(trainingInstanceToUpdate);
-        return trainingInstanceToUpdate.getAccessToken();
+        return auditAndSave(trainingInstanceToUpdate).getAccessToken();
     }
 
     private void validateStartAndEndTime(TrainingInstance trainingInstance) {
@@ -233,16 +232,6 @@ public class TrainingInstanceService {
     }
 
     /**
-     * Update training instance pool training instance.
-     *
-     * @param trainingInstance the training instance
-     * @return the training instance
-     */
-    public TrainingInstance updateTrainingInstancePool(TrainingInstance trainingInstance) {
-        return trainingInstanceRepository.saveAndFlush(trainingInstance);
-    }
-
-    /**
      * Finds all Training Runs of specific Training Instance.
      *
      * @param instanceId id of Training Instance whose Training Runs would be returned.
@@ -307,4 +296,18 @@ public class TrainingInstanceService {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Sets audit attributes to training instance and save.
+     *
+     * @param trainingInstance the training instance to be saved.
+     */
+    public TrainingInstance auditAndSave(TrainingInstance trainingInstance) {
+        trainingInstance.setLastEdited(getCurrentTimeInUTC());
+        trainingInstance.setLastEditedBy(userService.getUserRefFromUserAndGroup().getUserRefFullName());
+        return trainingInstanceRepository.save(trainingInstance);
+    }
+
+    private LocalDateTime getCurrentTimeInUTC() {
+        return LocalDateTime.now(Clock.systemUTC());
+    }
 }

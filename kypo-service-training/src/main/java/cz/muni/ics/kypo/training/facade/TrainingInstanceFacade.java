@@ -235,7 +235,7 @@ public class TrainingInstanceFacade {
         // lock pool and update pool
         sandboxApiService.lockPool(trainingInstanceAssignPoolIdDTO.getPoolId());
         trainingInstance.setPoolId(trainingInstanceAssignPoolIdDTO.getPoolId());
-        TrainingInstance updatedTrainingInstance = trainingInstanceService.updateTrainingInstancePool(trainingInstance);
+        TrainingInstance updatedTrainingInstance = trainingInstanceService.auditAndSave(trainingInstance);
         return trainingInstanceMapper.mapEntityToTIBasicInfo(updatedTrainingInstance);
     }
 
@@ -259,7 +259,7 @@ public class TrainingInstanceFacade {
         deleteBashCommandsfromPool(trainingInstance.getPoolId());
 
         trainingInstance.setPoolId(null);
-        TrainingInstance updatedTrainingInstance = trainingInstanceService.updateTrainingInstancePool(trainingInstance);
+        TrainingInstance updatedTrainingInstance = trainingInstanceService.auditAndSave(trainingInstance);
         return trainingInstanceMapper.mapEntityToTIBasicInfo(updatedTrainingInstance);
     }
 
@@ -366,6 +366,7 @@ public class TrainingInstanceFacade {
         if (organizersAddition != null && !organizersAddition.isEmpty()) {
             addOrganizersToTrainingInstance(trainingInstance, organizersAddition);
         }
+        trainingInstanceService.auditAndSave(trainingInstance);
     }
 
 }

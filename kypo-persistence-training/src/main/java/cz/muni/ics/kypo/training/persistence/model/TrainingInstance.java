@@ -1,6 +1,7 @@
 package cz.muni.ics.kypo.training.persistence.model;
 
 import javax.persistence.*;
+import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.HashSet;
@@ -83,6 +84,10 @@ public class TrainingInstance extends AbstractEntity<Long> {
     private Long poolId;
     @Column(name = "access_token", nullable = false, unique = true)
     private String accessToken;
+    @Column(name = "last_edited", nullable = false)
+    private LocalDateTime lastEdited;
+    @Column(name = "last_edited_by", nullable = false)
+    private String lastEditedBy;
     @ManyToOne(fetch = FetchType.LAZY)
     private TrainingDefinition trainingDefinition;
     @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
@@ -198,6 +203,42 @@ public class TrainingInstance extends AbstractEntity<Long> {
      */
     public void setPoolId(Long poolId) {
         this.poolId = poolId;
+    }
+
+    /**
+     * Gets time of last edit done to Training Instance
+     *
+     * @return the last edited
+     */
+    public LocalDateTime getLastEdited() {
+        return lastEdited;
+    }
+
+    /**
+     * Sets time of last edit done to Training Instance
+     *
+     * @param lastEdited the last edited
+     */
+    public void setLastEdited(LocalDateTime lastEdited) {
+        this.lastEdited = lastEdited;
+    }
+
+    /**
+     * Gets the name of the user who has done the last edit in Training Instance
+     *
+     * @return the name of the user
+     */
+    public String getLastEditedBy() {
+        return lastEditedBy;
+    }
+
+    /**
+     * Sets the name of the user who has done the last edit in Training Instance
+     *
+     * @param lastEditedBy the name of the user
+     */
+    public void setLastEditedBy(String lastEditedBy) {
+        this.lastEditedBy = lastEditedBy;
     }
 
     /**
