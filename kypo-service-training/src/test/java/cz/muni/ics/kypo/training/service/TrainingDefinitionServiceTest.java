@@ -70,8 +70,6 @@ public class TrainingDefinitionServiceTest {
     private SecurityService securityService;
 
     private ModelMapper modelMapper = new ModelMapper();
-    @Mock
-    private ObjectMapper objectMapper;
 
     private TrainingDefinition unreleasedDefinition, releasedDefinition;
     private AssessmentLevel assessmentLevel;
@@ -86,7 +84,7 @@ public class TrainingDefinitionServiceTest {
         MockitoAnnotations.initMocks(this);
         trainingDefinitionService = new TrainingDefinitionService(trainingDefinitionRepository, abstractLevelRepository,
                 infoLevelRepository, trainingLevelRepository, assessmentLevelRepository, trainingInstanceRepository, userRefRepository,
-                securityService, modelMapper, objectMapper);
+                securityService, modelMapper);
 
         infoLevel = testDataFactory.getInfoLevel1();
         infoLevel.setId(1L);

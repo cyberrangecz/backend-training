@@ -28,8 +28,6 @@ public class ExportImportServiceTest {
     private static ExportImportService exportImportService;
 
     @Mock
-    private static WebClient pythonWebClient;
-    @Mock
     private static TrainingDefinitionRepository trainingDefinitionRepository;
     @Mock
     private static AbstractLevelRepository abstractLevelRepository;
@@ -59,7 +57,7 @@ public class ExportImportServiceTest {
     public void init() {
         MockitoAnnotations.initMocks(this);
         exportImportService = new ExportImportService(trainingDefinitionRepository, abstractLevelRepository, assessmentLevelRepository,
-                questionAnswerRepository, infoLevelRepository, trainingLevelRepository, trainingInstanceRepository, trainingRunRepository, pythonWebClient);
+                questionAnswerRepository, infoLevelRepository, trainingLevelRepository, trainingInstanceRepository, trainingRunRepository);
 
         given(assessmentLevel.getId()).willReturn(1L);
         given(assessmentLevel.getQuestions()).willReturn(new ArrayList<>());

@@ -20,7 +20,7 @@ import java.time.temporal.ChronoUnit;
 @Service
 public class AuditEventsService {
 
-    private AuditService auditService;
+    private final AuditService auditService;
 
     /**
      * Instantiates a new Audit events service.

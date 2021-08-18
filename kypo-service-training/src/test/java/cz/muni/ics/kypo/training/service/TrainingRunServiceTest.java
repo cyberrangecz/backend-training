@@ -12,6 +12,9 @@ import cz.muni.ics.kypo.training.persistence.model.AssessmentLevel;
 import cz.muni.ics.kypo.training.persistence.model.enums.TRState;
 import cz.muni.ics.kypo.training.persistence.repository.*;
 import cz.muni.ics.kypo.training.persistence.util.TestDataFactory;
+import cz.muni.ics.kypo.training.service.api.AnswersStorageApiService;
+import cz.muni.ics.kypo.training.service.api.ElasticsearchApiService;
+import cz.muni.ics.kypo.training.service.api.SandboxApiService;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.junit.*;
@@ -79,7 +82,7 @@ public class TrainingRunServiceTest {
     @Mock
     private ExchangeFunction exchangeFunction;
     @Mock
-    private WebClient sandboxServiceWebClient;
+    private SandboxApiService sandboxApiService;
     @Mock
     private SecurityService securityService;
     @Mock
@@ -100,12 +103,9 @@ public class TrainingRunServiceTest {
     @Before
     public void init() {
         MockitoAnnotations.initMocks(this);
-        sandboxServiceWebClient = WebClient.builder()
-                .exchangeFunction(exchangeFunction)
-                .build();
         trainingRunService = new TrainingRunService(trainingRunRepository, abstractLevelRepository, trainingInstanceRepository,
                 participantRefRepository, hintRepository, auditEventService, elasticsearchApiService, answersStorageApiService,
-                securityService, questionAnswerRepository, sandboxServiceWebClient, trAcquisitionLockRepository, submissionRepository);
+                securityService, questionAnswerRepository, sandboxApiService, trAcquisitionLockRepository, submissionRepository);
         parser = new JSONParser();
         try {
             questions = parser.parse(new FileReader(ResourceUtils.getFile("classpath:questions.json"))).toString();
@@ -460,7 +460,7 @@ public class TrainingRunServiceTest {
     @Test
     public void assignSandbox() throws Exception {
         trainingRun1.setSandboxInstanceRefId(null);
-        given(exchangeFunction.exchange(any(ClientRequest.class))).willReturn(buildMockResponse(sandboxInfo));
+        given(sandboxApiService.getAndLockSandbox(anyLong())).willReturn(sandboxInfo);
         trainingRunService.assignSandbox(trainingRun1, trainingRun1.getTrainingInstance().getPoolId());
         then(trainingRunRepository).should().save(trainingRun1);
         then(auditEventService).should().auditTrainingRunStartedAction(trainingRun1);
@@ -471,7 +471,7 @@ public class TrainingRunServiceTest {
     @Test(expected = ForbiddenException.class)
     public void assignSandbox_NoAvailable() throws Exception {
         trainingRun1.setSandboxInstanceRefId(null);
-        willThrow(new CustomWebClientException(HttpStatus.CONFLICT, PythonApiError.of("No sandbox"))).given(exchangeFunction).exchange(any(ClientRequest.class));
+        willThrow(new ForbiddenException("There is no available sandbox, wait a minute and try again or ask organizer to allocate more sandboxes.")).given(sandboxApiService).getAndLockSandbox(anyLong());
         trainingRunService.assignSandbox(trainingRun1, trainingRun1.getTrainingInstance().getPoolId());
         then(trainingRunRepository).should(never()).save(trainingRun1);
     }
@@ -479,7 +479,7 @@ public class TrainingRunServiceTest {
     @Test(expected = MicroserviceApiException.class)
     public void assignSandbox_MicroserviceException() throws Exception {
         trainingRun1.setSandboxInstanceRefId(null);
-        willThrow(new CustomWebClientException(HttpStatus.NOT_FOUND, PythonApiError.of("Some error"))).given(exchangeFunction).exchange(any(ClientRequest.class));
+        willThrow(new MicroserviceApiException("Error", new CustomWebClientException(HttpStatus.NOT_FOUND, PythonApiError.of("Some error")))).given(sandboxApiService).getAndLockSandbox(anyLong());
         trainingRunService.assignSandbox(trainingRun1, trainingRun1.getTrainingInstance().getPoolId());
         then(trainingRunRepository).should(never()).save(trainingRun1);
     }

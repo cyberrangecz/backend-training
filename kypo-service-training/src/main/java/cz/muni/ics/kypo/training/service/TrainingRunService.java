@@ -16,6 +16,9 @@ import cz.muni.ics.kypo.training.persistence.model.question.QuestionAnswer;
 import cz.muni.ics.kypo.training.persistence.model.question.QuestionChoice;
 import cz.muni.ics.kypo.training.persistence.model.question.Question;
 import cz.muni.ics.kypo.training.persistence.repository.*;
+import cz.muni.ics.kypo.training.service.api.AnswersStorageApiService;
+import cz.muni.ics.kypo.training.service.api.ElasticsearchApiService;
+import cz.muni.ics.kypo.training.service.api.SandboxApiService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,7 +59,7 @@ public class TrainingRunService {
     private final SecurityService securityService;
     private final TRAcquisitionLockRepository trAcquisitionLockRepository;
     private final QuestionAnswerRepository questionAnswerRepository;
-    private final WebClient sandboxServiceWebClient;
+    private final SandboxApiService sandboxApiService;
     private final SubmissionRepository submissionRepository;
 
     /**
@@ -69,7 +72,7 @@ public class TrainingRunService {
      * @param hintRepository              the hint repository
      * @param auditEventsService          the audit events service
      * @param securityService             the security service
-     * @param sandboxServiceWebClient     the python rest template
+     * @param sandboxApiService     the python rest template
      * @param trAcquisitionLockRepository the tr acquisition lock repository
      */
     @Autowired
@@ -83,7 +86,7 @@ public class TrainingRunService {
                               AnswersStorageApiService answersStorageApiService,
                               SecurityService securityService,
                               QuestionAnswerRepository questionAnswerRepository,
-                              @Qualifier("sandboxServiceWebClient") WebClient sandboxServiceWebClient,
+                              SandboxApiService sandboxApiService,
                               TRAcquisitionLockRepository trAcquisitionLockRepository,
                               SubmissionRepository submissionRepository) {
         this.trainingRunRepository = trainingRunRepository;
@@ -96,7 +99,7 @@ public class TrainingRunService {
         this.answersStorageApiService = answersStorageApiService;
         this.securityService = securityService;
         this.questionAnswerRepository = questionAnswerRepository;
-        this.sandboxServiceWebClient = sandboxServiceWebClient;
+        this.sandboxApiService = sandboxApiService;
         this.trAcquisitionLockRepository = trAcquisitionLockRepository;
         this.submissionRepository = submissionRepository;
     }
@@ -353,28 +356,11 @@ public class TrainingRunService {
      * @throws MicroserviceApiException error calling OpenStack Sandbox Service API
      */
     public TrainingRun assignSandbox(TrainingRun trainingRun, long poolId) {
-        Long sandboxInstanceRef = getAndLockSandboxForTrainingRun(poolId);
+        Long sandboxInstanceRef = sandboxApiService.getAndLockSandbox(poolId).getId();
         trainingRun.setSandboxInstanceRefId(sandboxInstanceRef);
         auditEventsService.auditTrainingRunStartedAction(trainingRun);
         auditEventsService.auditLevelStartedAction(trainingRun);
         return trainingRunRepository.save(trainingRun);
-    }
-
-    private Long getAndLockSandboxForTrainingRun(Long poolId) {
-        try {
-            SandboxInfo sandboxInfo = sandboxServiceWebClient
-                    .get()
-                    .uri("/pools/{poolId}/sandboxes/get-and-lock", poolId)
-                    .retrieve()
-                    .bodyToMono(SandboxInfo.class)
-                    .block();
-            return sandboxInfo.getId();
-        } catch (CustomWebClientException ex) {
-            if (ex.getStatusCode() == HttpStatus.CONFLICT) {
-                throw new ForbiddenException("There is no available sandbox, wait a minute and try again or ask organizer to allocate more sandboxes.");
-            }
-            throw new MicroserviceApiException("Error when calling OpenStack Sandbox Service API to get unlocked sandbox from pool (ID: " + poolId + ").", ex);
-        }
     }
 
     /**

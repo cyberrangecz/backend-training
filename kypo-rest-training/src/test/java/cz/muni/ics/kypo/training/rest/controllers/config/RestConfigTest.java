@@ -1,10 +1,9 @@
 package cz.muni.ics.kypo.training.rest.controllers.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import cz.muni.ics.kypo.training.service.ElasticsearchApiService;
+import cz.muni.ics.kypo.training.service.api.ElasticsearchApiService;
 import cz.muni.ics.kypo.training.validation.EmailValidator;
 import org.apache.catalina.connector.Connector;
 import org.apache.catalina.connector.Request;

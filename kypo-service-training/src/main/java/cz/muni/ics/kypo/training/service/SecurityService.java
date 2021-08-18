@@ -28,10 +28,10 @@ import org.springframework.web.reactive.function.client.WebClient;
 @TransactionalRO(propagation = Propagation.REQUIRES_NEW)
 public class SecurityService {
 
-    private TrainingRunRepository trainingRunRepository;
-    private TrainingDefinitionRepository trainingDefinitionRepository;
-    private TrainingInstanceRepository trainingInstanceRepository;
-    private WebClient userManagementWebClient;
+    private final TrainingRunRepository trainingRunRepository;
+    private final TrainingDefinitionRepository trainingDefinitionRepository;
+    private final TrainingInstanceRepository trainingInstanceRepository;
+    private final WebClient userManagementWebClient;
 
     /**
      * Instantiates a new Security service.

@@ -32,9 +32,10 @@ import cz.muni.ics.kypo.training.persistence.model.question.ExtendedMatchingOpti
 import cz.muni.ics.kypo.training.persistence.model.question.ExtendedMatchingStatement;
 import cz.muni.ics.kypo.training.persistence.model.question.Question;
 import cz.muni.ics.kypo.training.persistence.model.question.QuestionAnswer;
-import cz.muni.ics.kypo.training.service.ElasticsearchApiService;
+import cz.muni.ics.kypo.training.service.api.ElasticsearchApiService;
 import cz.muni.ics.kypo.training.service.ExportImportService;
 import cz.muni.ics.kypo.training.service.TrainingDefinitionService;
+import cz.muni.ics.kypo.training.service.api.SandboxApiService;
 import cz.muni.ics.kypo.training.utils.AbstractFileExtensions;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -63,13 +64,14 @@ public class ExportImportFacade {
     private static final String RUNS_FOLDER = "training_runs";
     private static final String ASSESSMENTS_ANSWERS_FOLDER = "assessments_answers";
 
-    private ExportImportService exportImportService;
-    private TrainingDefinitionService trainingDefinitionService;
-    private ExportImportMapper exportImportMapper;
-    private LevelMapper levelMapper;
-    private TrainingDefinitionMapper trainingDefinitionMapper;
-    private ObjectMapper objectMapper;
-    private ElasticsearchApiService elasticsearchApiService;
+    private final ExportImportService exportImportService;
+    private final TrainingDefinitionService trainingDefinitionService;
+    private final SandboxApiService sandboxApiService;
+    private final ElasticsearchApiService elasticsearchApiService;
+    private final ExportImportMapper exportImportMapper;
+    private final LevelMapper levelMapper;
+    private final TrainingDefinitionMapper trainingDefinitionMapper;
+    private final ObjectMapper objectMapper;
 
     /**
      * Instantiates a new Export import facade.
@@ -85,6 +87,7 @@ public class ExportImportFacade {
     public ExportImportFacade(ExportImportService exportImportService,
                               TrainingDefinitionService trainingDefinitionService,
                               ElasticsearchApiService elasticsearchApiService,
+                              SandboxApiService sandboxApiService,
                               ExportImportMapper exportImportMapper,
                               LevelMapper levelMapper,
                               TrainingDefinitionMapper trainingDefinitionMapper,
@@ -92,6 +95,7 @@ public class ExportImportFacade {
         this.exportImportService = exportImportService;
         this.trainingDefinitionService = trainingDefinitionService;
         this.elasticsearchApiService = elasticsearchApiService;
+        this.sandboxApiService = sandboxApiService;
         this.exportImportMapper = exportImportMapper;
         this.levelMapper = levelMapper;
         this.trainingDefinitionMapper = trainingDefinitionMapper;
@@ -402,7 +406,7 @@ public class ExportImportFacade {
 
     private void writeSandboxDefinitionInfo(ZipOutputStream zos, TrainingInstance trainingInstance) throws IOException {
         if (trainingInstance.getPoolId() != null) {
-            SandboxDefinitionInfo sandboxDefinitionInfo = exportImportService.getSandboxDefinitionId(trainingInstance.getPoolId());
+            SandboxDefinitionInfo sandboxDefinitionInfo = sandboxApiService.getSandboxDefinitionId(trainingInstance.getPoolId());
             ZipEntry sandboxDefinitionEntry = new ZipEntry("sandbox_definition-id" + sandboxDefinitionInfo.getId() + AbstractFileExtensions.JSON_FILE_EXTENSION);
             zos.putNextEntry(sandboxDefinitionEntry);
             zos.write(objectMapper.writeValueAsBytes(sandboxDefinitionInfo));

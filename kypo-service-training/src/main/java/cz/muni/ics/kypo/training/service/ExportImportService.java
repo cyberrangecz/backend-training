@@ -23,15 +23,14 @@ import java.util.stream.Collectors;
 @Service
 public class ExportImportService {
 
-    private TrainingDefinitionRepository trainingDefinitionRepository;
-    private AbstractLevelRepository abstractLevelRepository;
-    private AssessmentLevelRepository assessmentLevelRepository;
-    private QuestionAnswerRepository questionAnswerRepository;
-    private InfoLevelRepository infoLevelRepository;
-    private TrainingLevelRepository trainingLevelRepository;
-    private TrainingInstanceRepository trainingInstanceRepository;
-    private TrainingRunRepository trainingRunRepository;
-    private WebClient sandboxServiceWebClient;
+    private final TrainingDefinitionRepository trainingDefinitionRepository;
+    private final AbstractLevelRepository abstractLevelRepository;
+    private final AssessmentLevelRepository assessmentLevelRepository;
+    private final QuestionAnswerRepository questionAnswerRepository;
+    private final InfoLevelRepository infoLevelRepository;
+    private final TrainingLevelRepository trainingLevelRepository;
+    private final TrainingInstanceRepository trainingInstanceRepository;
+    private final TrainingRunRepository trainingRunRepository;
 
     /**
      * Instantiates a new Export import service.
@@ -43,7 +42,6 @@ public class ExportImportService {
      * @param trainingLevelRepository      the training level repository
      * @param trainingInstanceRepository   the training instance repository
      * @param trainingRunRepository        the training run repository
-     * @param sandboxServiceWebClient      the python rest template
      */
     @Autowired
     public ExportImportService(TrainingDefinitionRepository trainingDefinitionRepository,
@@ -53,8 +51,7 @@ public class ExportImportService {
                                InfoLevelRepository infoLevelRepository,
                                TrainingLevelRepository trainingLevelRepository,
                                TrainingInstanceRepository trainingInstanceRepository,
-                               TrainingRunRepository trainingRunRepository,
-                               @Qualifier("sandboxServiceWebClient") WebClient sandboxServiceWebClient)
+                               TrainingRunRepository trainingRunRepository)
     {
         this.trainingDefinitionRepository = trainingDefinitionRepository;
         this.abstractLevelRepository = abstractLevelRepository;
@@ -64,7 +61,6 @@ public class ExportImportService {
         this.infoLevelRepository = infoLevelRepository;
         this.trainingInstanceRepository = trainingInstanceRepository;
         this.trainingRunRepository = trainingRunRepository;
-        this.sandboxServiceWebClient = sandboxServiceWebClient;
     }
 
     /**
@@ -119,28 +115,6 @@ public class ExportImportService {
      */
     public Set<TrainingRun> findRunsByInstanceId(Long trainingInstanceId) {
         return trainingRunRepository.findAllByTrainingInstanceId(trainingInstanceId);
-    }
-
-    /**
-     * Gets sandbox definition id.
-     *
-     * @param poolId the pool id
-     * @return the sandbox definition id
-     */
-    public SandboxDefinitionInfo getSandboxDefinitionId(Long poolId) {
-        try {
-            return sandboxServiceWebClient
-                    .get()
-                    .uri("/pools/{poolId}/definition", poolId)
-                    .retrieve()
-                    .bodyToMono(SandboxDefinitionInfo.class)
-                    .block();
-        } catch (CustomWebClientException ex) {
-            if (ex.getStatusCode() == HttpStatus.CONFLICT) {
-                throw new ForbiddenException("There is no available sandbox definition for particular pool (ID: " + poolId + ").");
-            }
-            throw new MicroserviceApiException("Error when calling Python API to obtain sandbox definition info for particular pool (ID: " + poolId + ").", ex);
-        }
     }
 
     /**

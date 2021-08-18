@@ -1,4 +1,4 @@
-package cz.muni.ics.kypo.training.service;
+package cz.muni.ics.kypo.training.service.api;
 
 import cz.muni.ics.kypo.training.api.responses.PageResultResource;
 import cz.muni.ics.kypo.training.api.responses.SandboxAnswersInfo;
