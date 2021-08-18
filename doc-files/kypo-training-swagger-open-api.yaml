@@ -1,7 +1,7 @@
 ---
 swagger: "2.0"
 info:
-  version: "Version: 1.1.72"
+  version: "Version: 1.1.73"
   title: "KYPO Training - API Reference"
 host: "localhost:8080"
 basePath: "/kypo-rest-training/api/v1"
@@ -3454,6 +3454,11 @@ definitions:
         example: 5
         description: "Estimated time (minutes) taken by the player to finish run created\
           \ from this definition."
+      variantSandboxes:
+        type: "boolean"
+        example: false
+        description: "Marking if levels flags/answers are randomly generated and are\
+          \ different for each trainee. Default is false."
     description: "An exported detailed information about training definition which\
       \ also include individual levels."
   ExtendedMatchingOptionDTO:
@@ -3635,6 +3640,11 @@ definitions:
         format: "int32"
         example: 5
         description: "Estimated time it takes to finish runs created from this definition."
+      variantSandboxes:
+        type: "boolean"
+        example: false
+        description: "Marking if levels flags/answers are randomly generated and are\
+          \ different for each trainee. Default is false."
     description: "A basic information about hint."
   InfoLevelDTO:
     allOf:
@@ -4234,6 +4244,15 @@ definitions:
         format: "date-time"
         example: "2017-10-19 10:23:54+02"
         description: "Time of last edit done to definition."
+      lastEditedBy:
+        type: "string"
+        example: "John Doe"
+        description: "Name of the user who has done the last edit in definition."
+      variantSandboxes:
+        type: "boolean"
+        example: false
+        description: "Marking if levels flags/answers are randomly generated and are\
+          \ different for each trainee. Default is false."
     description: "A blueprint of abstract levels."
   TrainingDefinitionCreateDTO:
     type: "object"
@@ -4280,6 +4299,11 @@ definitions:
         type: "boolean"
         example: true
         description: "Sign if stepper bar should be displayed."
+      variantSandboxes:
+        type: "boolean"
+        example: false
+        description: "Marking if levels flags/answers are randomly generated and are\
+          \ different for each trainee. Default is false."
     description: "Training definition to create."
   TrainingDefinitionDTO:
     type: "object"
@@ -4340,6 +4364,15 @@ definitions:
         format: "date-time"
         example: "2017-10-19 10:23:54+02"
         description: "Time of last edit done to definition."
+      lastEditedBy:
+        type: "string"
+        example: "John Doe"
+        description: "Name of the user who has done the last edit in definition."
+      variantSandboxes:
+        type: "boolean"
+        example: false
+        description: "Marking if levels flags/answers are randomly generated and are\
+          \ different for each trainee. Default is false."
     description: "A blueprint of abstract levels."
   TrainingDefinitionInfoDTO:
     type: "object"
@@ -4428,6 +4461,11 @@ definitions:
         type: "boolean"
         example: false
         description: "Sign if stepper bar should be displayed."
+      variantSandboxes:
+        type: "boolean"
+        example: false
+        description: "Marking if levels flags/answers are randomly generated and are\
+          \ different for each trainee. Default is false."
     description: "Training definition to update."
   TrainingInstanceArchiveDTO:
     type: "object"
@@ -4593,6 +4631,15 @@ definitions:
         items:
           type: "integer"
           format: "int64"
+      lastEdited:
+        type: "string"
+        format: "date-time"
+        example: "2017-10-19 10:23:54+02"
+        description: "Time of last edit done to instance."
+      lastEditedBy:
+        type: "string"
+        example: "John Doe"
+        description: "Name of the user who has done the last edit in instance."
     description: "A session of attending a concrete training, which involves a deployment\
       \ of the training definition in one or more sandbox instances that are then\
       \ assigned to participants. The instance comprises one or more training runs."
@@ -4633,6 +4680,15 @@ definitions:
         format: "int64"
         example: 1
         description: "Id of sandbox pool belonging to training instance"
+      lastEdited:
+        type: "string"
+        format: "date-time"
+        example: "2017-10-19 10:23:54+02"
+        description: "Time of last edit done to instance."
+      lastEditedBy:
+        type: "string"
+        example: "John Doe"
+        description: "Name of the user who has done the last edit in instance."
   TrainingInstanceRestResource:
     type: "object"
     properties:
@@ -4698,6 +4754,10 @@ definitions:
           type: "string"
           example: "secretAnswer"
           description: "Keyword found in training, used for access next level."
+        answerVariableName:
+          type: "string"
+          example: "username"
+          description: "Identifier that is used to obtain answer from remote storage."
         content:
           type: "string"
           example: "Play me"
@@ -4734,6 +4794,10 @@ definitions:
           type: "string"
           example: "secretAnswer"
           description: "Keyword found in training, used for access next level."
+        answerVariableName:
+          type: "string"
+          example: "username"
+          description: "Identifier that is used to obtain answer from remote storage."
         content:
           type: "string"
           example: "Play me"
@@ -4786,6 +4850,10 @@ definitions:
           description: "Keyword found in training, used for access next level."
           minLength: 0
           maxLength: 50
+        answerVariableName:
+          type: "string"
+          example: "username"
+          description: "Identifier that is used to obtain answer from remote storage."
         content:
           type: "string"
           example: "Play me"
@@ -4857,6 +4925,12 @@ definitions:
         type: "string"
         example: "secretAnswer"
         description: "Keyword found in training, used for access next level."
+        minLength: 0
+        maxLength: 50
+      answerVariableName:
+        type: "string"
+        example: "username"
+        description: "Identifier that is used to obtain answer from remote storage."
         minLength: 0
         maxLength: 50
       content:
