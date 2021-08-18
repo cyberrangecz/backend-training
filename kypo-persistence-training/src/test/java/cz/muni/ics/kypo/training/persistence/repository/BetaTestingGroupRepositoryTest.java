@@ -46,6 +46,7 @@ public class BetaTestingGroupRepositoryTest {
         trainingDefinition1.setState(TDState.UNRELEASED);
         trainingDefinition1.setBetaTestingGroup(viewGroup1);
         trainingDefinition1.setLastEdited(LocalDateTime.now());
+        trainingDefinition1.setLastEditedBy("Jane Doe");
 
         viewGroup2 = new BetaTestingGroup();
 
@@ -54,6 +55,7 @@ public class BetaTestingGroupRepositoryTest {
         trainingDefinition2.setState(TDState.UNRELEASED);
         trainingDefinition2.setBetaTestingGroup(viewGroup2);
         trainingDefinition2.setLastEdited(LocalDateTime.now());
+        trainingDefinition2.setLastEditedBy("John Doe");
 
         entityManager.persist(trainingDefinition1);
         entityManager.persist(trainingDefinition2);

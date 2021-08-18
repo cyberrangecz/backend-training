@@ -1,8 +1,12 @@
 package cz.muni.ics.kypo.training.persistence.model;
 
 import cz.muni.ics.kypo.training.persistence.model.enums.TDState;
+import org.springframework.data.annotation.LastModifiedBy;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
+import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -73,6 +77,8 @@ public class TrainingDefinition extends AbstractEntity<Long> {
     private long estimatedDuration;
     @Column(name = "last_edited", nullable = false)
     private LocalDateTime lastEdited;
+    @Column(name = "last_edited_by", nullable = false)
+    private String lastEditedBy;
     @Column(name = "variant_sandboxes", nullable = false)
     private boolean variantSandboxes;
 
@@ -295,6 +301,24 @@ public class TrainingDefinition extends AbstractEntity<Long> {
      */
     public void setLastEdited(LocalDateTime lastEdited) {
         this.lastEdited = lastEdited;
+    }
+
+    /**
+     * Gets the name of the user who has done the last edit in Training Definition
+     *
+     * @return the name of the user
+     */
+    public String getLastEditedBy() {
+        return lastEditedBy;
+    }
+
+    /**
+     * Sets the name of the user who has done the last edit in Training Definition
+     *
+     * @param lastEditedBy the name of the user
+     */
+    public void setLastEditedBy(String lastEditedBy) {
+        this.lastEditedBy = lastEditedBy;
     }
 
     /**

@@ -3,6 +3,7 @@ package cz.muni.ics.kypo.training.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.PathBuilder;
+import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
 import cz.muni.ics.kypo.training.exceptions.EntityConflictException;
 import cz.muni.ics.kypo.training.exceptions.EntityNotFoundException;
 import cz.muni.ics.kypo.training.persistence.model.*;
@@ -68,6 +69,8 @@ public class TrainingDefinitionServiceTest {
     private UserRefRepository userRefRepository;
     @Mock
     private SecurityService securityService;
+    @Mock
+    private UserService userService;
 
     private ModelMapper modelMapper = new ModelMapper();
 
@@ -75,6 +78,8 @@ public class TrainingDefinitionServiceTest {
     private AssessmentLevel assessmentLevel;
     private TrainingLevel trainingLevel;
     private InfoLevel infoLevel;
+    private UserRefDTO userRefDTO;
+
 
     private Pageable pageable;
     private Predicate predicate;
@@ -84,7 +89,7 @@ public class TrainingDefinitionServiceTest {
         MockitoAnnotations.initMocks(this);
         trainingDefinitionService = new TrainingDefinitionService(trainingDefinitionRepository, abstractLevelRepository,
                 infoLevelRepository, trainingLevelRepository, assessmentLevelRepository, trainingInstanceRepository, userRefRepository,
-                securityService, modelMapper);
+                securityService, userService, modelMapper);
 
         infoLevel = testDataFactory.getInfoLevel1();
         infoLevel.setId(1L);
@@ -104,7 +109,11 @@ public class TrainingDefinitionServiceTest {
         releasedDefinition = testDataFactory.getReleasedDefinition();
         releasedDefinition.setId(2L);
 
+        userRefDTO = testDataFactory.getUserRefDTO1();
+
         pageable = PageRequest.of(0, 10);
+
+        given(userService.getUserRefFromUserAndGroup()).willReturn(userRefDTO);
     }
 
     @Test

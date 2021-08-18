@@ -132,6 +132,9 @@ public class TrainingInstanceFacadeTest {
 
         trainingInstanceAssignPoolIdDTO = new TrainingInstanceAssignPoolIdDTO();
         trainingInstanceAssignPoolIdDTO.setPoolId(1L);
+
+        given(userService.getUserRefFromUserAndGroup()).willReturn(organizerDTO1);
+
     }
 
     @Test
@@ -227,7 +230,7 @@ public class TrainingInstanceFacadeTest {
         given(trainingInstanceService.findById(anyLong())).willReturn(trainingInstance1);
         trainingInstanceFacade.unassignPoolInTrainingInstance(trainingInstance1.getId());
         then(sandboxApiService).should().unlockPool(anyLong());
-        then(trainingInstanceService).should().updateTrainingInstancePool(any(TrainingInstance.class));
+        then(trainingInstanceService).should().auditAndSave(any(TrainingInstance.class));
     }
 
     @Test(expected = EntityConflictException.class)

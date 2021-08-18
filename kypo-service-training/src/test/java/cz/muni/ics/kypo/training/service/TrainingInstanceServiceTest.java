@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.PathBuilder;
+import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
 import cz.muni.ics.kypo.training.api.responses.LockedPoolInfo;
 import cz.muni.ics.kypo.training.api.responses.PoolInfoDTO;
 import cz.muni.ics.kypo.training.exceptions.CustomWebClientException;
@@ -81,10 +82,13 @@ public class TrainingInstanceServiceTest {
     @Mock
     private SecurityService securityService;
     @Mock
+    private UserService userService;
+    @Mock
     private TrainingDefinition trainingDefinition;
     private TrainingInstance trainingInstance1, trainingInstance2;
     private TrainingRun trainingRun1, trainingRun2;
     private UserRef user;
+    private UserRefDTO userRefDTO;
     private LockedPoolInfo lockedPoolInfo;
     private PoolInfoDTO poolInfoDTO;
 
@@ -92,7 +96,7 @@ public class TrainingInstanceServiceTest {
     public void init() {
         MockitoAnnotations.initMocks(this);
         trainingInstanceService = new TrainingInstanceService(trainingInstanceRepository, accessTokenRepository,
-                trainingRunRepository, organizerRefRepository, securityService);
+                trainingRunRepository, organizerRefRepository, securityService, userService);
 
         trainingInstance1 = testDataFactory.getConcludedInstance();
         trainingInstance1.setId(1L);
@@ -113,8 +117,12 @@ public class TrainingInstanceServiceTest {
         trainingRun2.setId(2L);
         trainingRun2.setTrainingInstance(trainingInstance1);
 
+        userRefDTO = testDataFactory.getUserRefDTO1();
+
         lockedPoolInfo = testDataFactory.getLockedPoolInfo();
         poolInfoDTO = testDataFactory.getPoolInfoDTO();
+
+        given(userService.getUserRefFromUserAndGroup()).willReturn(userRefDTO);
     }
 
     @Test
@@ -210,6 +218,7 @@ public class TrainingInstanceServiceTest {
         given(trainingInstanceRepository.findById(any(Long.class))).willReturn(Optional.of(trainingInstance2));
         given(organizerRefRepository.save(any(UserRef.class))).willReturn(user);
         given(securityService.createUserRefEntityByInfoFromUserAndGroup()).willReturn(user);
+        given(trainingInstanceRepository.save(any(TrainingInstance.class))).willReturn(trainingInstance2);
 
         String token = trainingInstanceService.update(trainingInstance2);
 
@@ -223,6 +232,7 @@ public class TrainingInstanceServiceTest {
         given(trainingInstanceRepository.findById(any(Long.class))).willReturn(Optional.of(trainingInstance2));
         given(organizerRefRepository.findUserByUserRefId(user.getUserRefId())).willReturn(Optional.of(user));
         given(securityService.getUserRefIdFromUserAndGroup()).willReturn(user.getUserRefId());
+        given(trainingInstanceRepository.save(any(TrainingInstance.class))).willReturn(trainingInstance2);
 
         String token = trainingInstanceService.update(trainingInstance2);
 
@@ -251,12 +261,6 @@ public class TrainingInstanceServiceTest {
     public void deleteTrainingInstanceById() {
         trainingInstanceService.deleteById(trainingInstance2.getId());
         then(trainingInstanceRepository).should().deleteById(trainingInstance2.getId());
-    }
-
-    @Test
-    public void updateTrainingInstancePool() {
-        trainingInstanceService.updateTrainingInstancePool(trainingInstance1);
-        then(trainingInstanceRepository).should().saveAndFlush(trainingInstance1);
     }
 
 //    @Test

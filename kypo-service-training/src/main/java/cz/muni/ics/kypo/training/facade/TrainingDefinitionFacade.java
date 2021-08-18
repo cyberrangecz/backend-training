@@ -553,6 +553,7 @@ public class TrainingDefinitionFacade {
         if (authorsAddition != null && !authorsAddition.isEmpty()) {
             addAuthorsToTrainingDefinition(trainingDefinition, authorsAddition);
         }
+        trainingDefinitionService.auditAndSave(trainingDefinition);
     }
 
     private void addAuthorsToTrainingDefinition(TrainingDefinition trainingDefinition, Set<Long> userRefIds) {

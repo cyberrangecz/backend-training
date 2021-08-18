@@ -28,6 +28,12 @@ public class TrainingInstanceFindAllResponseDTO {
     private String accessToken;
     @ApiModelProperty(value = "Id of sandbox pool belonging to training instance", example = "1")
     private Long poolId;
+    @ApiModelProperty(value = "Time of last edit done to instance.", example = "2017-10-19 10:23:54+02")
+    @JsonSerialize(using = LocalDateTimeUTCSerializer.class)
+    private LocalDateTime lastEdited;
+    @ApiModelProperty(value = "Name of the user who has done the last edit in instance.", example = "John Doe")
+    private String lastEditedBy;
+
 
     /**
      * Instantiates a new Training instance find all response dto.
@@ -161,6 +167,42 @@ public class TrainingInstanceFindAllResponseDTO {
         this.poolId = poolId;
     }
 
+    /**
+     * Gets time of last edit.
+     *
+     * @return the last edited
+     */
+    public LocalDateTime getLastEdited() {
+        return lastEdited;
+    }
+
+    /**
+     * Sets time of last edit.
+     *
+     * @param lastEdited the last edited
+     */
+    public void setLastEdited(LocalDateTime lastEdited) {
+        this.lastEdited = lastEdited;
+    }
+
+    /**
+     * Gets the name of the user who has done the last edit in Training Instance
+     *
+     * @return the name of the user
+     */
+    public String getLastEditedBy() {
+        return lastEditedBy;
+    }
+
+    /**
+     * Sets the name of the user who has done the last edit in Training Instance
+     *
+     * @param lastEditedBy the name of the user
+     */
+    public void setLastEditedBy(String lastEditedBy) {
+        this.lastEditedBy = lastEditedBy;
+    }
+
     @Override
     public String toString() {
         return "TrainingInstanceFindAllResponseDTO{" +
@@ -169,6 +211,8 @@ public class TrainingInstanceFindAllResponseDTO {
                 ", endTime=" + endTime +
                 ", title='" + title + '\'' +
                 ", accessToken='" + accessToken + '\'' +
+                ", lastEdited='" + lastEdited + '\'' +
+                ", lastEditedBy='" + lastEditedBy + '\'' +
                 ", poolId=" + poolId +
                 '}';
     }

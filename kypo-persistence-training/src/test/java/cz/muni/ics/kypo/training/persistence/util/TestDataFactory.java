@@ -116,13 +116,13 @@ public class TestDataFactory {
 
     private TrainingDefinition unreleasedDefinition = generateTrainingDefinition("Unreleased definition", "Unreleased description",
             new String[]{"p1", "p2"}, new String[]{"o1", "o2"}, TDState.UNRELEASED, true,
-            LocalDateTime.now(Clock.systemUTC()).minusHours(1));
+            LocalDateTime.now(Clock.systemUTC()).minusHours(1), "John Doe");
     private TrainingDefinition releasedDefinition = generateTrainingDefinition("Released definition", "Released description",
             new String[]{"p3", "p4"}, new String[]{"o3"}, TDState.RELEASED, true,
-            LocalDateTime.now(Clock.systemUTC()).minusHours(5));
+            LocalDateTime.now(Clock.systemUTC()).minusHours(5), "John Doe");
     private TrainingDefinition archivedDefinition = generateTrainingDefinition("Archived definition", "Archived description",
             new String[]{"p5"}, new String[]{"o4", "o5", "o6"}, TDState.ARCHIVED, false,
-            LocalDateTime.now(Clock.systemUTC()).minusHours(10));
+            LocalDateTime.now(Clock.systemUTC()).minusHours(10), "Jane Doe");
     private TrainingDefinitionDTO unreleasedDefinitionDTO = generateTrainingDefinitionDTO(unreleasedDefinition);
     private TrainingDefinitionDTO releasedDefinitionDTO = generateTrainingDefinitionDTO(releasedDefinition);
     private TrainingDefinitionDTO archivedDefinitionDTO = generateTrainingDefinitionDTO(archivedDefinition);
@@ -600,7 +600,7 @@ public class TestDataFactory {
 
     private TrainingDefinition generateTrainingDefinition(String title, String description, String[] prerequisites,
                                                           String[] outcomes, TDState state, boolean showStepperBar,
-                                                          LocalDateTime lastEdited){
+                                                          LocalDateTime lastEdited, String lastEditedBy){
         TrainingDefinition newTrainingDefinition = new TrainingDefinition();
         newTrainingDefinition.setTitle(title);
         newTrainingDefinition.setDescription(description);
@@ -609,6 +609,7 @@ public class TestDataFactory {
         newTrainingDefinition.setState(state);
         newTrainingDefinition.setShowStepperBar(showStepperBar);
         newTrainingDefinition.setLastEdited(lastEdited);
+        newTrainingDefinition.setLastEditedBy(lastEditedBy);
         return newTrainingDefinition;
     }
 
@@ -639,6 +640,8 @@ public class TestDataFactory {
         newTrainingInstance.setTitle(title);
         newTrainingInstance.setPoolId(poolId);
         newTrainingInstance.setAccessToken(accessToken);
+        newTrainingInstance.setLastEdited(LocalDateTime.now().minusHours(5));
+        newTrainingInstance.setLastEditedBy("kypo-user");
         return newTrainingInstance;
     }
 

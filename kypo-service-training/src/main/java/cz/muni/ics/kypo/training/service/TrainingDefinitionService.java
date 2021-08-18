@@ -36,15 +36,16 @@ public class TrainingDefinitionService {
 
     private static final Logger LOG = LoggerFactory.getLogger(TrainingDefinitionService.class);
 
-    private final ModelMapper modelMapper;
-    private final TrainingDefinitionRepository trainingDefinitionRepository;
-    private final TrainingInstanceRepository trainingInstanceRepository;
-    private final AbstractLevelRepository abstractLevelRepository;
-    private final TrainingLevelRepository trainingLevelRepository;
-    private final InfoLevelRepository infoLevelRepository;
-    private final AssessmentLevelRepository assessmentLevelRepository;
-    private final UserRefRepository userRefRepository;
-    private final SecurityService securityService;
+    private ModelMapper modelMapper;
+    private TrainingDefinitionRepository trainingDefinitionRepository;
+    private TrainingInstanceRepository trainingInstanceRepository;
+    private AbstractLevelRepository abstractLevelRepository;
+    private TrainingLevelRepository trainingLevelRepository;
+    private InfoLevelRepository infoLevelRepository;
+    private AssessmentLevelRepository assessmentLevelRepository;
+    private UserRefRepository userRefRepository;
+    private SecurityService securityService;
+    private UserService userService;
 
     private static final String ARCHIVED_OR_RELEASED = "Cannot edit released or archived training definition.";
     private static final String LEVEL_NOT_FOUND = "Level not found.";
@@ -69,6 +70,7 @@ public class TrainingDefinitionService {
                                      TrainingInstanceRepository trainingInstanceRepository,
                                      UserRefRepository userRefRepository,
                                      SecurityService securityService,
+                                     UserService userService,
                                      ModelMapper modelMapper) {
         this.trainingDefinitionRepository = trainingDefinitionRepository;
         this.abstractLevelRepository = abstractLevelRepository;
@@ -78,6 +80,7 @@ public class TrainingDefinitionService {
         this.trainingInstanceRepository = trainingInstanceRepository;
         this.userRefRepository = userRefRepository;
         this.securityService = securityService;
+        this.userService = userService;
         this.modelMapper = modelMapper;
     }
 
@@ -158,7 +161,7 @@ public class TrainingDefinitionService {
     public TrainingDefinition create(TrainingDefinition trainingDefinition) {
         addLoggedInUserToTrainingDefinitionAsAuthor(trainingDefinition);
         LOG.info("Training definition with id: {} created.", trainingDefinition.getId());
-        return trainingDefinitionRepository.save(trainingDefinition);
+        return auditAndSave(trainingDefinition);
     }
 
     /**
@@ -173,7 +176,7 @@ public class TrainingDefinitionService {
         checkIfCanBeUpdated(trainingDefinition);
         addLoggedInUserToTrainingDefinitionAsAuthor(trainingDefinitionToUpdate);
         trainingDefinitionToUpdate.setEstimatedDuration(trainingDefinition.getEstimatedDuration());
-        trainingDefinitionRepository.save(trainingDefinitionToUpdate);
+        auditAndSave(trainingDefinitionToUpdate);
         LOG.info("Training definition with id: {} updated.", trainingDefinitionToUpdate.getId());
     }
 
@@ -198,7 +201,8 @@ public class TrainingDefinitionService {
         clonedTrainingDefinition.setAuthors(new HashSet<>());
 
         addLoggedInUserToTrainingDefinitionAsAuthor(clonedTrainingDefinition);
-        clonedTrainingDefinition = trainingDefinitionRepository.save(clonedTrainingDefinition);
+
+        clonedTrainingDefinition = auditAndSave(clonedTrainingDefinition);
         cloneLevelsFromTrainingDefinition(trainingDefinition.getId(), clonedTrainingDefinition);
 
         LOG.info("Training definition with id: {} cloned.", trainingDefinition.getId());
@@ -223,8 +227,7 @@ public class TrainingDefinitionService {
         int orderToLevel = swapAbstractLevelTo.getOrder();
         swapAbstractLevelFrom.setOrder(orderToLevel);
         swapAbstractLevelTo.setOrder(orderFromLevel);
-
-        trainingDefinition.setLastEdited(getCurrentTimeInUTC());
+        auditAndSave(trainingDefinition);
     }
 
     /**
@@ -254,7 +257,7 @@ public class TrainingDefinitionService {
             abstractLevelRepository.increaseOrderOfLevels(definitionId, newPosition, levelToBeMoved.getOrder() - 1);
         }
         levelToBeMoved.setOrder(newPosition);
-        trainingDefinition.setLastEdited(getCurrentTimeInUTC());
+        auditAndSave(trainingDefinition);
     }
 
     /**
@@ -305,7 +308,7 @@ public class TrainingDefinitionService {
         } else {
             throw new EntityNotFoundException(new EntityErrorDetail(AbstractLevel.class, "id", levelId.getClass(), levelId, LEVEL_NOT_FOUND));
         }
-        trainingDefinition.setLastEdited(getCurrentTimeInUTC());
+        auditAndSave(trainingDefinition);
     }
 
     /**
@@ -325,7 +328,7 @@ public class TrainingDefinitionService {
         this.checkSumOfHintPenalties(trainingLevelToUpdate);
         trainingLevelToUpdate.setOrder(trainingLevel.getOrder());
         trainingDefinition.setEstimatedDuration(trainingDefinition.getEstimatedDuration() - trainingLevel.getEstimatedDuration() + trainingLevelToUpdate.getEstimatedDuration());
-        trainingDefinition.setLastEdited(getCurrentTimeInUTC());
+        auditAndSave(trainingDefinition);
         trainingLevelToUpdate.setTrainingDefinition(trainingDefinition);
         trainingLevelRepository.save(trainingLevelToUpdate);
     }
@@ -344,8 +347,8 @@ public class TrainingDefinitionService {
         InfoLevel infoLevel = findInfoLevelById(infoLevelToUpdate.getId());
         checkIfLevelPresentInDefinition(infoLevel, definitionId);
         infoLevelToUpdate.setOrder(infoLevel.getOrder());
-        trainingDefinition.setLastEdited(getCurrentTimeInUTC());
         trainingDefinition.setEstimatedDuration(trainingDefinition.getEstimatedDuration() - infoLevel.getEstimatedDuration() + infoLevelToUpdate.getEstimatedDuration());
+        auditAndSave(trainingDefinition);
         infoLevelToUpdate.setTrainingDefinition(trainingDefinition);
         infoLevelRepository.save(infoLevelToUpdate);
     }
@@ -370,7 +373,7 @@ public class TrainingDefinitionService {
                 .mapToInt(Question::getPoints)
                 .sum());
         trainingDefinition.setEstimatedDuration(trainingDefinition.getEstimatedDuration() - assessmentLevel.getEstimatedDuration() + assessmentLevelToUpdate.getEstimatedDuration());
-        trainingDefinition.setLastEdited(getCurrentTimeInUTC());
+        auditAndSave(trainingDefinition);
         assessmentLevelToUpdate.setTrainingDefinition(trainingDefinition);
         return assessmentLevelRepository.save(assessmentLevelToUpdate);
     }
@@ -391,7 +394,7 @@ public class TrainingDefinitionService {
         newTrainingLevel.setTrainingDefinition(trainingDefinition);
         TrainingLevel trainingLevel = trainingLevelRepository.save(newTrainingLevel);
         trainingDefinition.setEstimatedDuration(trainingDefinition.getEstimatedDuration() + newTrainingLevel.getEstimatedDuration());
-        trainingDefinition.setLastEdited(getCurrentTimeInUTC());
+        auditAndSave(trainingDefinition);
         LOG.info("Training level with id: {} created", trainingLevel.getId());
         return trainingLevel;
     }
@@ -432,7 +435,7 @@ public class TrainingDefinitionService {
         newInfoLevel.setOrder(getNextOrder(definitionId));
         newInfoLevel.setTrainingDefinition(trainingDefinition);
         InfoLevel infoLevel = infoLevelRepository.save(newInfoLevel);
-        trainingDefinition.setLastEdited(getCurrentTimeInUTC());
+        auditAndSave(trainingDefinition);
         LOG.info("Info level with id: {} created.", infoLevel.getId());
         return infoLevel;
     }
@@ -453,7 +456,7 @@ public class TrainingDefinitionService {
         newAssessmentLevel.setTrainingDefinition(trainingDefinition);
         AssessmentLevel assessmentLevel = assessmentLevelRepository.save(newAssessmentLevel);
         trainingDefinition.setEstimatedDuration(trainingDefinition.getEstimatedDuration() + newAssessmentLevel.getEstimatedDuration());
-        trainingDefinition.setLastEdited(getCurrentTimeInUTC());
+        auditAndSave(trainingDefinition);
         LOG.info("Assessment level with id: {} created.", assessmentLevel.getId());
         return assessmentLevel;
     }
@@ -547,7 +550,18 @@ public class TrainingDefinitionService {
                 throw new EntityConflictException(new EntityErrorDetail(TrainingDefinition.class, "id", definitionId.getClass(), definitionId,
                         "Cannot switch from " + trainingDefinition.getState() + " to " + state));
         }
+        auditAndSave(trainingDefinition);
+    }
+
+    /**
+     * Sets audit attributes to training definition and save.
+     *
+     * @param trainingDefinition the training definition to be saved.
+     */
+    public TrainingDefinition auditAndSave(TrainingDefinition trainingDefinition) {
         trainingDefinition.setLastEdited(getCurrentTimeInUTC());
+        trainingDefinition.setLastEditedBy(userService.getUserRefFromUserAndGroup().getUserRefFullName());
+        return trainingDefinitionRepository.save(trainingDefinition);
     }
 
     private void checkIfLevelPresentInDefinition(AbstractLevel level, Long trainingDefinitionId) {
@@ -737,7 +751,6 @@ public class TrainingDefinitionService {
             UserRef newUser = securityService.createUserRefEntityByInfoFromUserAndGroup();
             trainingDefinition.addAuthor(newUser);
         }
-        trainingDefinition.setLastEdited(getCurrentTimeInUTC());
     }
 
     private void checkSumOfHintPenalties(TrainingLevel trainingLevel) {

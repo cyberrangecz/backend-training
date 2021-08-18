@@ -168,6 +168,24 @@ public class UserService {
     }
 
     /**
+     * Gets user ref id from user and group.
+     *
+     * @return the user ref id from user and group
+     */
+    public UserRefDTO getUserRefFromUserAndGroup() {
+        try {
+            return userManagementServiceWebClient
+                    .get()
+                    .uri("/users/info")
+                    .retrieve()
+                    .bodyToMono(UserRefDTO.class)
+                    .block();
+        } catch (CustomWebClientException ex) {
+            throw new MicroserviceApiException("Error when calling user management service API to get info about logged in user.", ex);
+        }
+    }
+
+    /**
      * Create new user reference
      *
      * @param userRefToCreate user reference to be created
