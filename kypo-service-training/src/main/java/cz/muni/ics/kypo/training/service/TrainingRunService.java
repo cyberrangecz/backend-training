@@ -72,7 +72,7 @@ public class TrainingRunService {
      * @param hintRepository              the hint repository
      * @param auditEventsService          the audit events service
      * @param securityService             the security service
-     * @param sandboxApiService     the python rest template
+     * @param sandboxApiService           the python rest template
      * @param trAcquisitionLockRepository the tr acquisition lock repository
      */
     @Autowired
@@ -153,6 +153,7 @@ public class TrainingRunService {
                     "Cannot delete training run that is running. Consider force delete."));
         }
         questionAnswerRepository.deleteAllByTrainingRunId(trainingRunId);
+        submissionRepository.deleteAllByTrainingRunId(trainingRunId);
         elasticsearchApiService.deleteEventsFromTrainingRun(trainingRun.getTrainingInstance().getId(), trainingRunId);
         trAcquisitionLockRepository.deleteByParticipantRefIdAndTrainingInstanceId(trainingRun.getParticipantRef().getUserRefId(), trainingRun.getTrainingInstance().getId());
         trainingRunRepository.delete(trainingRun);
