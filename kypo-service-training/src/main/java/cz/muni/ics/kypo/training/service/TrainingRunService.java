@@ -440,16 +440,12 @@ public class TrainingRunService {
         submission.setProvided(answer);
         submission.setType(submissionType);
         submission.setIpAddress(getUserIpAddress());
+        submissionRepository.save(submission);
     }
 
     private String getUserIpAddress() {
-        try {
-            HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
-            return request.getRemoteAddr();
-        } catch (NullPointerException ex) {
-            // when the method is called outside the HTTP request, e.g., from the tests
-            return "";
-        }
+        ServletRequestAttributes requestAttributes =  ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes());
+        return requestAttributes == null ? "" : requestAttributes.getRequest().getRemoteAddr();
     }
 
     /**
