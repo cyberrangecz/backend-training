@@ -173,7 +173,7 @@ public class TrainingDefinitionsIT {
                 .setCustomArgumentResolvers(new PageableHandlerMethodArgumentResolver(),
                         new QuerydslPredicateArgumentResolver(
                                 new QuerydslBindingsFactory(SimpleEntityPathResolver.INSTANCE), Optional.empty()))
-                .setMessageConverters(new MappingJackson2HttpMessageConverter())
+                .setMessageConverters(new MappingJackson2HttpMessageConverter(mapper))
                 .setControllerAdvice(new CustomRestExceptionHandlerTraining())
                 .build();
 

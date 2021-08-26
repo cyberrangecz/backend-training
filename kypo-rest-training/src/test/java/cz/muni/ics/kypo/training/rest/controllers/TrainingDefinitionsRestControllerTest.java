@@ -2,6 +2,7 @@ package cz.muni.ics.kypo.training.rest.controllers;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.training.api.dto.AbstractLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.BasicLevelInfoDTO;
@@ -101,13 +102,16 @@ public class TrainingDefinitionsRestControllerTest {
 
     @Before
     public void init() {
+        ObjectMapper snakeCaseMapper = new ObjectMapper();
+        snakeCaseMapper.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
+
         MockitoAnnotations.initMocks(this);
-        trainingDefinitionsRestController = new TrainingDefinitionsRestController(trainingDefinitionFacade, new ObjectMapper());
+        trainingDefinitionsRestController = new TrainingDefinitionsRestController(trainingDefinitionFacade, snakeCaseMapper);
         this.mockMvc = MockMvcBuilders.standaloneSetup(trainingDefinitionsRestController)
                 .setCustomArgumentResolvers(new PageableHandlerMethodArgumentResolver(),
                         new QuerydslPredicateArgumentResolver(
                                 new QuerydslBindingsFactory(SimpleEntityPathResolver.INSTANCE), Optional.empty()))
-                .setMessageConverters(new MappingJackson2HttpMessageConverter())
+                .setMessageConverters(new MappingJackson2HttpMessageConverter(snakeCaseMapper))
                 .setControllerAdvice(new CustomRestExceptionHandlerTraining())
                 .build();
 

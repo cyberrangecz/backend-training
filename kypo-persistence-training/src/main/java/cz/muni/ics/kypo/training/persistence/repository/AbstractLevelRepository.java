@@ -27,6 +27,15 @@ public interface AbstractLevelRepository extends JpaRepository<AbstractLevel, Lo
     List<AbstractLevel> findAllLevelsByTrainingDefinitionId(@Param("trainingDefinitionId") Long trainingDefinitionId);
 
     /**
+     * Find all levels by level ids.
+     *
+     * @param levelIds the ids of the levels
+     * @param trainingDefinitionId the training definition id
+     * @return list of {@link AbstractLevel}s with the given ids
+     */
+    List<AbstractLevel> findAllByIdIsInAndTrainingDefinitionId(List<Long> levelIds, Long trainingDefinitionId);
+
+    /**
      * Find first level for particular training definition
      *
      * @param trainingDefinitionId the training definition id

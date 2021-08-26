@@ -347,13 +347,11 @@ public class TrainingDefinitionServiceTest {
     public void updateAssessmentLevel() {
         assessmentLevel.setTrainingDefinition(unreleasedDefinition);
         given(trainingDefinitionRepository.findById(unreleasedDefinition.getId())).willReturn(Optional.of(unreleasedDefinition));
-        given(abstractLevelRepository.findLevelInDefinition(anyLong(), anyLong())).willReturn(Optional.of(assessmentLevel));
         given(assessmentLevelRepository.findById(any(Long.class))).willReturn(Optional.of(assessmentLevel));
 
         trainingDefinitionService.updateAssessmentLevel(unreleasedDefinition.getId(), assessmentLevel);
 
         then(trainingDefinitionRepository).should().findById(unreleasedDefinition.getId());
-        then(assessmentLevelRepository).should().findById(any(Long.class));
         then(assessmentLevelRepository).should().save(assessmentLevel);
     }
 
@@ -382,27 +380,24 @@ public class TrainingDefinitionServiceTest {
     }
 
     @Test
-    public void updateGameLevel() {
+    public void updateTrainingLevel() {
         trainingLevel.setTrainingDefinition(unreleasedDefinition);
         given(trainingDefinitionRepository.findById(anyLong())).willReturn(Optional.of(unreleasedDefinition));
-        given(trainingInstanceRepository.existsAnyForTrainingDefinition(anyLong())).willReturn(false);
         given(trainingLevelRepository.findById(anyLong())).willReturn(Optional.of(trainingLevel));
-        given(abstractLevelRepository.findLevelInDefinition(anyLong(), anyLong())).willReturn(Optional.of(trainingLevel));
         trainingDefinitionService.updateTrainingLevel(unreleasedDefinition.getId(), trainingLevel);
 
         then(trainingDefinitionRepository).should().findById(anyLong());
-        then(trainingLevelRepository).should().findById(anyLong());
         then(trainingLevelRepository).should().save(trainingLevel);
     }
 
     @Test(expected = EntityConflictException.class)
-    public void updateGameLevelWithReleasedDefinition() {
+    public void updateTrainingLevelWithReleasedDefinition() {
         given(trainingDefinitionRepository.findById(releasedDefinition.getId())).willReturn(Optional.of(releasedDefinition));
         trainingDefinitionService.updateTrainingLevel(releasedDefinition.getId(), any(TrainingLevel.class));
     }
 
     @Test(expected = EntityNotFoundException.class)
-    public void updateGameLevelWithLevelNotInDefinition() {
+    public void updateTrainingLevelWithLevelNotInDefinition() {
         TrainingLevel level = new TrainingLevel();
         level.setId(8L);
         given(abstractLevelRepository.findById(infoLevel.getId())).willReturn(Optional.of(infoLevel));
@@ -412,7 +407,7 @@ public class TrainingDefinitionServiceTest {
     }
 
     @Test(expected = EntityConflictException.class)
-    public void updateGameLevelWithCreatedInstances() {
+    public void updateTrainingLevelWithCreatedInstances() {
         given(trainingDefinitionRepository.findById(unreleasedDefinition.getId())).willReturn(Optional.of(unreleasedDefinition));
         given(trainingInstanceRepository.existsAnyForTrainingDefinition(unreleasedDefinition.getId())).willReturn(true);
         trainingDefinitionService.updateTrainingLevel(unreleasedDefinition.getId(), trainingLevel);
@@ -423,7 +418,6 @@ public class TrainingDefinitionServiceTest {
         infoLevel.setTrainingDefinition(unreleasedDefinition);
         given(trainingDefinitionRepository.findById(unreleasedDefinition.getId())).willReturn(Optional.of(unreleasedDefinition));
         given(infoLevelRepository.findById(any(Long.class))).willReturn(Optional.of(infoLevel));
-        given(abstractLevelRepository.findLevelInDefinition(anyLong(), anyLong())).willReturn(Optional.of(infoLevel));
 
         trainingDefinitionService.updateInfoLevel(unreleasedDefinition.getId(), infoLevel);
 
@@ -455,14 +449,14 @@ public class TrainingDefinitionServiceTest {
     }
 
     @Test
-    public void createGameLevel() {
+    public void createTrainingLevel() {
         TrainingLevel newTrainingLevel = new TrainingLevel();
         newTrainingLevel.setId(10L);
         newTrainingLevel.setMaxScore(100);
-        newTrainingLevel.setTitle("Title of game level");
+        newTrainingLevel.setTitle("Title of training level");
         newTrainingLevel.setIncorrectAnswerLimit(100);
         newTrainingLevel.setAnswer("Secret answer");
-        newTrainingLevel.setSolution("Solution of the game should be here");
+        newTrainingLevel.setSolution("Solution of the training should be here");
         newTrainingLevel.setSolutionPenalized(true);
         newTrainingLevel.setEstimatedDuration(1);
         newTrainingLevel.setOrder(10);
@@ -478,13 +472,13 @@ public class TrainingDefinitionServiceTest {
     }
 
     @Test(expected = EntityConflictException.class)
-    public void createGameLevelWithCannotBeUpdatedException() {
+    public void createTrainingLevelWithCannotBeUpdatedException() {
         given(trainingDefinitionRepository.findById(releasedDefinition.getId())).willReturn(Optional.of(releasedDefinition));
         trainingDefinitionService.createTrainingLevel(releasedDefinition.getId());
     }
 
     @Test(expected = EntityConflictException.class)
-    public void createGameLevelWithCreatedInstances() {
+    public void createTrainingLevelWithCreatedInstances() {
         given(trainingDefinitionRepository.findById(unreleasedDefinition.getId())).willReturn(Optional.of(unreleasedDefinition));
         given(trainingInstanceRepository.existsAnyForTrainingDefinition(unreleasedDefinition.getId())).willReturn(true);
         trainingDefinitionService.createTrainingLevel(unreleasedDefinition.getId());

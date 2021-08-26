@@ -240,15 +240,17 @@ public class TrainingDefinitionFacadeTest {
 
     @Test
     public void updateAssessmentLevel() {
-        given(trainingDefinitionService.updateAssessmentLevel(anyLong(), any(AssessmentLevel.class))).willReturn(levelMapper.mapUpdateToEntity(alUpdate));
-
+        assessmentLevel.setTrainingDefinition(trainingDefinition1);
+        given(trainingDefinitionService.updateAssessmentLevel(anyLong(), any())).willReturn(assessmentLevel);
         trainingDefinitionFacade.updateAssessmentLevel(trainingDefinition1.getId(), alUpdate);
         then(trainingDefinitionService).should().updateAssessmentLevel(trainingDefinition1.getId(),
                 levelMapper.mapUpdateToEntity(alUpdate));
     }
 
     @Test
-    public void updateGameLevel() {
+    public void updateTrainingLevel() {
+        trainingLevel.setTrainingDefinition(trainingDefinition1);
+        given(trainingDefinitionService.updateTrainingLevel(anyLong(), any())).willReturn(trainingLevel);
         trainingDefinitionFacade.updateTrainingLevel(trainingDefinition2.getId(), gameLevelUpdate);
         then(trainingDefinitionService).should().updateTrainingLevel(trainingDefinition2.getId(),
                 levelMapper.mapUpdateToEntity(gameLevelUpdate));
@@ -256,6 +258,8 @@ public class TrainingDefinitionFacadeTest {
 
     @Test
     public void updateInfoLevel() {
+        infoLevel.setTrainingDefinition(trainingDefinition1);
+        given(trainingDefinitionService.updateInfoLevel(anyLong(), any())).willReturn(infoLevel);
         trainingDefinitionFacade.updateInfoLevel(trainingDefinition2.getId(), infoLevelUpdate);
         then(trainingDefinitionService).should().updateInfoLevel(trainingDefinition2.getId(),
                 levelMapper.mapUpdateToEntity(infoLevelUpdate));

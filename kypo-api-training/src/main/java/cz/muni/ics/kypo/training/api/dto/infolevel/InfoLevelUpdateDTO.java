@@ -1,5 +1,7 @@
 package cz.muni.ics.kypo.training.api.dto.infolevel;
 
+import cz.muni.ics.kypo.training.api.dto.AbstractLevelUpdateDTO;
+import cz.muni.ics.kypo.training.api.enums.LevelType;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
@@ -11,52 +13,14 @@ import javax.validation.constraints.NotNull;
  *
  */
 @ApiModel(value = "InfoLevelUpdateDTO", description = "Info level to update.")
-public class InfoLevelUpdateDTO {
+public class InfoLevelUpdateDTO extends AbstractLevelUpdateDTO {
 
-    @ApiModelProperty(value = "Main identifier of level.", required = true, example = "4")
-    @NotNull(message = "{infoLevel.id.NotNull.message}")
-    protected Long id;
-    @ApiModelProperty(value = "Short textual description of the level.", required = true, example = "Info Level1")
-    @NotEmpty(message = "{infoLevel.title.NotEmpty.message}")
-    protected String title;
     @ApiModelProperty(value = "The information and experiences that are directed towards a participant.", example = "Informational stuff")
     @NotEmpty(message = "{infoLevel.content.NotEmpty.message}")
     private String content;
 
-    /**
-     * Gets id.
-     *
-     * @return the id
-     */
-    public Long getId() {
-        return id;
-    }
-
-    /**
-     * Sets id.
-     *
-     * @param id the id
-     */
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    /**
-     * Gets title.
-     *
-     * @return the title
-     */
-    public String getTitle() {
-        return title;
-    }
-
-    /**
-     * Sets title.
-     *
-     * @param title the title
-     */
-    public void setTitle(String title) {
-        this.title = title;
+    public InfoLevelUpdateDTO() {
+        this.levelType = LevelType.INFO_LEVEL;
     }
 
     /**

@@ -6,6 +6,7 @@ import com.google.gson.JsonObject;
 import cz.muni.ics.kypo.commons.security.enums.AuthenticatedUserOIDCItems;
 import cz.muni.ics.kypo.training.api.dto.IsCorrectAnswerDTO;
 import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
+import cz.muni.ics.kypo.training.api.dto.run.AccessTrainingRunDTO;
 import cz.muni.ics.kypo.training.api.dto.traininglevel.TrainingLevelViewDTO;
 import cz.muni.ics.kypo.training.api.dto.traininglevel.ValidateAnswerDTO;
 import cz.muni.ics.kypo.training.api.dto.hint.HintDTO;
@@ -35,8 +36,6 @@ import cz.muni.ics.kypo.training.rest.CustomRestExceptionHandlerTraining;
 import cz.muni.ics.kypo.training.rest.controllers.config.DBTestUtil;
 import cz.muni.ics.kypo.training.rest.controllers.config.RestConfigTest;
 import cz.muni.ics.kypo.training.service.api.ElasticsearchApiService;
-import org.json.JSONArray;
-import org.json.JSONObject;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -167,7 +166,7 @@ public class TrainingRunsIT {
                 .setCustomArgumentResolvers(new PageableHandlerMethodArgumentResolver(),
                         new QuerydslPredicateArgumentResolver(
                                 new QuerydslBindingsFactory(SimpleEntityPathResolver.INSTANCE), Optional.empty()))
-                .setMessageConverters(new MappingJackson2HttpMessageConverter())
+                .setMessageConverters(new MappingJackson2HttpMessageConverter(mapper))
                 .setControllerAdvice(new CustomRestExceptionHandlerTraining())
                 .build();
 
@@ -314,20 +313,23 @@ public class TrainingRunsIT {
 
     @Test
     public void accessTrainingRun() throws Exception {
-        given(userManagementExchangeFunction.exchange(any(ClientRequest.class))).willReturn(buildMockResponse(userRefDTO1));
+        given(userManagementExchangeFunction.exchange(any(ClientRequest.class))).willReturn(buildMockResponse(userRefDTO2));
         given(sandboxManagementExchangeFunction.exchange(any(ClientRequest.class))).willReturn(buildMockResponse(sandboxInfo));
 
+        List<TrainingRun> trainingRuns = trainingRunRepository.findAll();
+        assertTrue(trainingRuns.isEmpty());
+
         mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_TRAINEE.name()));
-        MockHttpServletResponse result = mvc.perform(post("/training-runs")
+        MockHttpServletResponse response = mvc.perform(post("/training-runs")
                 .param("accessToken", trainingInstance.getAccessToken()))
                 .andExpect(status().isOk())
                 .andReturn().getResponse();
-        JSONObject jsonObject = new JSONObject(result.getContentAsString());
-        Long trainingRunId = jsonObject.getLong("trainingRunID");
-        Optional<TrainingRun> trainingRun = trainingRunRepository.findById(trainingRunId);
-        assertTrue(trainingRun.isPresent());
-        assertEquals(trainingLevel1, trainingRun.get().getCurrentLevel());
-        assertEquals(trainingInstance, trainingRun.get().getTrainingInstance());
+        AccessTrainingRunDTO trainingRunDTO = convertJsonBytesToObject(response.getContentAsString(), AccessTrainingRunDTO.class);
+        Optional<TrainingRun> accessedTrainingRun = trainingRunRepository.findById(trainingRunDTO.getTrainingRunID());
+        assertTrue(accessedTrainingRun.isPresent());
+        assertEquals(trainingInstance.getId(), accessedTrainingRun.get().getTrainingInstance().getId());
+        assertEquals(trainingInstance.getId(), trainingRunDTO.getInstanceId());
+        assertEquals(trainingLevel1.getId(), trainingRunDTO.getAbstractLevelDTO().getId());
     }
 
     @Test
@@ -337,16 +339,15 @@ public class TrainingRunsIT {
         trainingRunRepository.save(trainingRun1);
         given(userManagementExchangeFunction.exchange(any(ClientRequest.class))).willReturn(buildMockResponse(userRefDTO1));
         mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_TRAINEE.name()));
-        MockHttpServletResponse result = mvc.perform(post("/training-runs")
+        MockHttpServletResponse response = mvc.perform(post("/training-runs")
                 .param("accessToken", trainingInstance.getAccessToken()))
                 .andExpect(status().isOk())
                 .andReturn().getResponse();
-        JSONObject jsonObject = new JSONObject(result.getContentAsString());
-        Long trainingRunId = jsonObject.getLong("trainingRunID");
-        Optional<TrainingRun> trainingRun = trainingRunRepository.findById(trainingRunId);
-        assertTrue(trainingRun.isPresent());
-        assertEquals(trainingLevel1, trainingRun.get().getCurrentLevel());
-        assertEquals(trainingInstance, trainingRun.get().getTrainingInstance());
+        AccessTrainingRunDTO trainingRunDTO = convertJsonBytesToObject(response.getContentAsString(), AccessTrainingRunDTO.class);
+        assertEquals(trainingRun1.getId(), trainingRunDTO.getTrainingRunID());
+        assertEquals(trainingInstance.getId(), trainingRunDTO.getInstanceId());
+        assertEquals(trainingLevel1.getId(), trainingRunDTO.getAbstractLevelDTO().getId());
+
     }
 
     @Test
@@ -723,15 +724,12 @@ public class TrainingRunsIT {
         MockHttpServletResponse response = mvc.perform(get("/training-runs/{runId}/resumption", trainingRun1.getId()))
                 .andExpect(status().isOk())
                 .andReturn().getResponse();
-        JSONObject jsonObject = new JSONObject(response.getContentAsString());
-        Long trainingRunId = jsonObject.getLong("trainingRunID");
-        Object takenSolution = jsonObject.get("takenSolution");
-        JSONArray arrayOfHints = jsonObject.getJSONArray("takenHints");
-        assertTrue(takenSolution.equals(null));
-        assertTrue(arrayOfHints.toList().isEmpty());
-        Optional<TrainingRun> trainingRun = trainingRunRepository.findById(trainingRunId);
-        assertTrue(trainingRun.isPresent());
-        assertEquals(trainingRun1, trainingRun.get());
+        AccessTrainingRunDTO trainingRunDTO = convertJsonBytesToObject(response.getContentAsString(), AccessTrainingRunDTO.class);
+        assertNull(trainingRunDTO.getTakenSolution());
+        assertTrue(trainingRunDTO.getTakenHints().isEmpty());
+        assertEquals(trainingRun1.getId(), trainingRunDTO.getTrainingRunID());
+        assertEquals(trainingInstance.getId(), trainingRunDTO.getInstanceId());
+        assertEquals(trainingLevel1.getId(), trainingRunDTO.getAbstractLevelDTO().getId());
     }
 
     @Test
@@ -741,13 +739,11 @@ public class TrainingRunsIT {
         MockHttpServletResponse response = mvc.perform(get("/training-runs/{runId}/resumption", trainingRun1.getId()))
                 .andExpect(status().isOk())
                 .andReturn().getResponse();
-        JSONObject jsonObject = new JSONObject(response.getContentAsString());
-        Long trainingRunId = jsonObject.getLong("trainingRunID");
-        String takenSolution = jsonObject.getString("takenSolution");
-        assertEquals(trainingLevel1.getSolution(), takenSolution);
-        Optional<TrainingRun> trainingRun = trainingRunRepository.findById(trainingRunId);
-        assertTrue(trainingRun.isPresent());
-        assertEquals(trainingRun1, trainingRun.get());
+        AccessTrainingRunDTO trainingRunDTO = convertJsonBytesToObject(response.getContentAsString(), AccessTrainingRunDTO.class);
+        assertEquals(trainingLevel1.getSolution(), trainingRunDTO.getTakenSolution());
+        assertEquals(trainingRun1.getId(), trainingRunDTO.getTrainingRunID());
+        assertEquals(trainingInstance.getId(), trainingRunDTO.getInstanceId());
+        assertEquals(trainingLevel1.getId(), trainingRunDTO.getAbstractLevelDTO().getId());
     }
 
     @Test
@@ -762,18 +758,10 @@ public class TrainingRunsIT {
         MockHttpServletResponse response = mvc.perform(get("/training-runs/{runId}/resumption", trainingRun1.getId()))
                 .andExpect(status().isOk())
                 .andReturn().getResponse();
-        JSONObject jsonObject = new JSONObject(response.getContentAsString());
-        Long trainingRunId = jsonObject.getLong("trainingRunID");
-        JSONArray arrayOfHints = jsonObject.getJSONArray("takenHints");
-        assertFalse(arrayOfHints.toList().isEmpty());
-        List<TakenHintDTO> takenHints = new ArrayList<>();
-        for (int i = 0; i < arrayOfHints.length(); i++) {
-            takenHints.add(mapper.readValue(arrayOfHints.getJSONObject(i).toString(), TakenHintDTO.class));
-        }
-        assertFalse(takenHints.isEmpty());
-
-        assertTrue(takenHints.contains(expectedTakenHint));
-        Optional<TrainingRun> trainingRun = trainingRunRepository.findById(trainingRunId);
+        AccessTrainingRunDTO accessTrainingRunDTO = convertJsonBytesToObject(response.getContentAsString(), AccessTrainingRunDTO.class);
+        assertFalse(accessTrainingRunDTO.getTakenHints().isEmpty());
+        assertTrue(accessTrainingRunDTO.getTakenHints().contains(expectedTakenHint));
+        Optional<TrainingRun> trainingRun = trainingRunRepository.findById(accessTrainingRunDTO.getTrainingRunID());
         assertTrue(trainingRun.isPresent());
         assertEquals(trainingRun1, trainingRun.get());
     }

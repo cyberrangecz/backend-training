@@ -1,6 +1,7 @@
 package cz.muni.ics.kypo.training.rest.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.training.api.dto.IsCorrectAnswerDTO;
 import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
@@ -147,13 +148,16 @@ public class TrainingRunsRestControllerTest {
 
         trainingRunDTOPageResultResource = trainingRunMapper.mapToPageResultResource(page);
 
+        ObjectMapper snakeCaseMapper = new ObjectMapper();
+        snakeCaseMapper.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
+
         MockitoAnnotations.initMocks(this);
-        trainingRunsRestController = new TrainingRunsRestController(trainingRunFacade, new ObjectMapper());
+        trainingRunsRestController = new TrainingRunsRestController(trainingRunFacade, snakeCaseMapper);
         this.mockMvc = MockMvcBuilders.standaloneSetup(trainingRunsRestController)
                 .setCustomArgumentResolvers(new PageableHandlerMethodArgumentResolver(),
                         new QuerydslPredicateArgumentResolver(
                                 new QuerydslBindingsFactory(SimpleEntityPathResolver.INSTANCE), Optional.empty()))
-                .setMessageConverters(new MappingJackson2HttpMessageConverter(), new StringHttpMessageConverter())
+                .setMessageConverters(new MappingJackson2HttpMessageConverter(snakeCaseMapper), new StringHttpMessageConverter())
                 .setControllerAdvice(new CustomRestExceptionHandlerTraining())
                 .build();
     }

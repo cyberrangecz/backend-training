@@ -1,6 +1,8 @@
 package cz.muni.ics.kypo.training.api.dto.traininglevel;
 
+import cz.muni.ics.kypo.training.api.dto.AbstractLevelUpdateDTO;
 import cz.muni.ics.kypo.training.api.dto.hint.HintDTO;
+import cz.muni.ics.kypo.training.api.enums.LevelType;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
@@ -13,14 +15,8 @@ import java.util.*;
  *
  */
 @ApiModel(value = "TrainingLevelUpdateDTO", description = "Training level to update.")
-public class TrainingLevelUpdateDTO {
+public class TrainingLevelUpdateDTO extends AbstractLevelUpdateDTO {
 
-    @ApiModelProperty(value = "Main identifier of level.", required = true, example = "1")
-    @NotNull(message = "{trainingLevel.id.NotNull.message}")
-    protected Long id;
-    @ApiModelProperty(value = "Short textual description of the level.", required = true, example = "Training Level1")
-    @NotEmpty(message = "{trainingLevel.title.NotEmpty.message}")
-    protected String title;
     @ApiModelProperty(value = "The maximum score a participant can achieve during a level.", required = true, example = "20")
     @NotNull(message = "{trainingLevel.maxScore.NotNull.message}")
     @Min(value = 0, message = "{trainingLevel.maxScore.Min.message}")
@@ -52,22 +48,8 @@ public class TrainingLevelUpdateDTO {
     @ApiModelProperty(value = "Information which helps participant resolve the level.")
     private Set<HintDTO> hints = new HashSet<>();
 
-    /**
-     * Gets id.
-     *
-     * @return the id
-     */
-    public Long getId() {
-        return id;
-    }
-
-    /**
-     * Sets id.
-     *
-     * @param id the id
-     */
-    public void setId(Long id) {
-        this.id = id;
+    public TrainingLevelUpdateDTO() {
+        this.levelType = LevelType.TRAINING_LEVEL;
     }
 
     /**
@@ -176,24 +158,6 @@ public class TrainingLevelUpdateDTO {
      */
     public void setEstimatedDuration(int estimatedDuration) {
         this.estimatedDuration = estimatedDuration;
-    }
-
-    /**
-     * Gets title.
-     *
-     * @return the title
-     */
-    public String getTitle() {
-        return title;
-    }
-
-    /**
-     * Sets title.
-     *
-     * @param title the title
-     */
-    public void setTitle(String title) {
-        this.title = title;
     }
 
     /**
