@@ -26,6 +26,7 @@ import org.springframework.stereotype.Service;
 import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -314,68 +315,104 @@ public class TrainingDefinitionService {
     /**
      * Updates training level in training definition
      *
-     * @param definitionId      - id of training definition containing level to be updated
-     * @param trainingLevelToUpdate to be updated
+     * @param definitionId - id of training definition containing level to be updated.
+     * @param updatedTrainingLevel - training level with updated data
      * @throws EntityNotFoundException training definition is not found.
      * @throws EntityConflictException level cannot be updated in released or archived training definition.
      */
-    public void updateTrainingLevel(Long definitionId, TrainingLevel trainingLevelToUpdate) {
+    public TrainingLevel updateTrainingLevel(Long definitionId, TrainingLevel updatedTrainingLevel) {
         TrainingDefinition trainingDefinition = findById(definitionId);
-        checkIfCanBeUpdated(trainingDefinition);
-        TrainingLevel trainingLevel = findTrainingLevelById(trainingLevelToUpdate.getId());
-        checkIfLevelPresentInDefinition(trainingLevel, definitionId);
-        checkAnswerAndAnswerVariableName(trainingLevelToUpdate, trainingDefinition);
-        this.checkSumOfHintPenalties(trainingLevelToUpdate);
-        trainingLevelToUpdate.setOrder(trainingLevel.getOrder());
-        trainingDefinition.setEstimatedDuration(trainingDefinition.getEstimatedDuration() - trainingLevel.getEstimatedDuration() + trainingLevelToUpdate.getEstimatedDuration());
-        auditAndSave(trainingDefinition);
-        trainingLevelToUpdate.setTrainingDefinition(trainingDefinition);
-        trainingLevelRepository.save(trainingLevelToUpdate);
+        this.checkIfCanBeUpdated(trainingDefinition);
+        TrainingLevel persistedTrainingLevel = findTrainingLevelById(updatedTrainingLevel.getId());
+        this.checkIfLevelPresentInDefinition(definitionId, persistedTrainingLevel);
+        return this.updateTrainingLevel(updatedTrainingLevel, persistedTrainingLevel);
+    }
+
+    /**
+     * Updates training level in training definition
+     *
+     * @param updatedTrainingLevel - training level with updated data
+     * @param persistedTrainingLevel - training level from database with old data.
+     * @throws EntityNotFoundException training definition is not found.
+     * @throws EntityConflictException level cannot be updated in released or archived training definition.
+     */
+    public TrainingLevel updateTrainingLevel(TrainingLevel updatedTrainingLevel, TrainingLevel persistedTrainingLevel) {
+        this.updateCommonLevelData(updatedTrainingLevel, persistedTrainingLevel);
+        this.checkSumOfHintPenalties(updatedTrainingLevel);
+        this.checkAnswerAndAnswerVariableName(updatedTrainingLevel, persistedTrainingLevel.getTrainingDefinition());
+        for (Hint hint : (updatedTrainingLevel).getHints()) {
+            hint.setTrainingLevel(updatedTrainingLevel);
+        }
+        return trainingLevelRepository.save(updatedTrainingLevel);
     }
 
     /**
      * Updates info level in training definition
      *
-     * @param definitionId      - id of training definition containing level to be updated
-     * @param infoLevelToUpdate to be updated
+     * @param definitionId - id of training definition containing level to be updated.
+     * @param updatedInfoLevel - info level with updated data
      * @throws EntityNotFoundException training definition is not found.
      * @throws EntityConflictException level cannot be updated in released or archived training definition.
      */
-    public void updateInfoLevel(Long definitionId, InfoLevel infoLevelToUpdate) {
+    public InfoLevel updateInfoLevel(Long definitionId, InfoLevel updatedInfoLevel) {
         TrainingDefinition trainingDefinition = findById(definitionId);
-        checkIfCanBeUpdated(trainingDefinition);
-        InfoLevel infoLevel = findInfoLevelById(infoLevelToUpdate.getId());
-        checkIfLevelPresentInDefinition(infoLevel, definitionId);
-        infoLevelToUpdate.setOrder(infoLevel.getOrder());
-        trainingDefinition.setEstimatedDuration(trainingDefinition.getEstimatedDuration() - infoLevel.getEstimatedDuration() + infoLevelToUpdate.getEstimatedDuration());
-        auditAndSave(trainingDefinition);
-        infoLevelToUpdate.setTrainingDefinition(trainingDefinition);
-        infoLevelRepository.save(infoLevelToUpdate);
+        this.checkIfCanBeUpdated(trainingDefinition);
+        InfoLevel persistedInfoLevel = findInfoLevelById(updatedInfoLevel.getId());
+        this.checkIfLevelPresentInDefinition(definitionId, persistedInfoLevel);
+        return this.updateInfoLevel(updatedInfoLevel, persistedInfoLevel);
+    }
+
+    /**
+     * Updates info level in training definition
+     *
+     * @param updatedInfoLevel - info level with updated data
+     * @param persistedInfoLevel - info level from database with old data
+     * @throws EntityNotFoundException training definition is not found.
+     * @throws EntityConflictException level cannot be updated in released or archived training definition.
+     */
+    public InfoLevel updateInfoLevel(InfoLevel updatedInfoLevel, InfoLevel persistedInfoLevel) {
+        this.updateCommonLevelData(updatedInfoLevel, persistedInfoLevel);
+        return infoLevelRepository.save(updatedInfoLevel);
     }
 
     /**
      * Updates assessment level in training definition
      *
-     * @param definitionId            - id of training definition containing level to be updated
-     * @param assessmentLevelToUpdate to be updated
+     * @param definitionId - - id of training definition containing level to be updated
+     * @param updatedAssessmentLevel - assessment level with updated data
      * @throws EntityNotFoundException training definition is not found.
      * @throws EntityConflictException level cannot be updated in released or archived training definition.
      */
-    public AssessmentLevel updateAssessmentLevel(Long definitionId, AssessmentLevel assessmentLevelToUpdate) {
+    public AssessmentLevel updateAssessmentLevel(Long definitionId, AssessmentLevel updatedAssessmentLevel) {
         TrainingDefinition trainingDefinition = findById(definitionId);
-        checkIfCanBeUpdated(trainingDefinition);
-        AssessmentLevel assessmentLevel = findAssessmentLevelById(assessmentLevelToUpdate.getId());
-        checkIfLevelPresentInDefinition(assessmentLevel, trainingDefinition.getId());
-        assessmentLevelToUpdate.setOrder(assessmentLevel.getOrder());
-        assessmentLevelToUpdate.setMaxScore(assessmentLevelToUpdate
-                .getQuestions()
-                .stream()
+        this.checkIfCanBeUpdated(trainingDefinition);
+        AssessmentLevel persistedAssessmentLevel = findAssessmentLevelById(updatedAssessmentLevel.getId());
+        this.checkIfLevelPresentInDefinition(definitionId, persistedAssessmentLevel);
+        return this.updateAssessmentLevel(updatedAssessmentLevel, persistedAssessmentLevel);
+    }
+
+    /**
+     * Updates assessment level in training definition
+     *
+     * @param updatedAssessmentLevel - assessment level with updated data
+     * @param persistedAssessmentLevel - assessment level from database with old data
+     * @throws EntityNotFoundException training definition is not found.
+     * @throws EntityConflictException level cannot be updated in released or archived training definition.
+     */
+    public AssessmentLevel updateAssessmentLevel(AssessmentLevel updatedAssessmentLevel, AssessmentLevel persistedAssessmentLevel) {
+        this.updateCommonLevelData(updatedAssessmentLevel, persistedAssessmentLevel);
+        updatedAssessmentLevel.setMaxScore(updatedAssessmentLevel.getQuestions().stream()
                 .mapToInt(Question::getPoints)
                 .sum());
-        trainingDefinition.setEstimatedDuration(trainingDefinition.getEstimatedDuration() - assessmentLevel.getEstimatedDuration() + assessmentLevelToUpdate.getEstimatedDuration());
-        auditAndSave(trainingDefinition);
-        assessmentLevelToUpdate.setTrainingDefinition(trainingDefinition);
-        return assessmentLevelRepository.save(assessmentLevelToUpdate);
+        return assessmentLevelRepository.save(updatedAssessmentLevel);
+    }
+
+    private void updateCommonLevelData(AbstractLevel updatedLevel, AbstractLevel persistedLevel) {
+        TrainingDefinition trainingDefinition = persistedLevel.getTrainingDefinition();
+        updatedLevel.setOrder(persistedLevel.getOrder());
+        updatedLevel.setTrainingDefinition(trainingDefinition);
+        trainingDefinition.setLastEdited(getCurrentTimeInUTC());
+        trainingDefinition.setEstimatedDuration(trainingDefinition.getEstimatedDuration() - persistedLevel.getEstimatedDuration() + updatedLevel.getEstimatedDuration());
     }
 
     /**
@@ -564,7 +601,7 @@ public class TrainingDefinitionService {
         return trainingDefinitionRepository.save(trainingDefinition);
     }
 
-    private void checkIfLevelPresentInDefinition(AbstractLevel level, Long trainingDefinitionId) {
+    private void checkIfLevelPresentInDefinition(Long trainingDefinitionId, AbstractLevel level) {
         if (!level.getTrainingDefinition().getId().equals(trainingDefinitionId)) {
             throw new EntityNotFoundException(new EntityErrorDetail(AbstractLevel.class, "id", level.getId().getClass(),
                     level.getId(), "Level was not found in definition (id: " + trainingDefinitionId + ")."));
@@ -717,7 +754,7 @@ public class TrainingDefinitionService {
         return newAttachments;
     }
 
-    private void checkIfCanBeUpdated(TrainingDefinition trainingDefinition) {
+    public void checkIfCanBeUpdated(TrainingDefinition trainingDefinition) {
         if (!trainingDefinition.getState().equals(TDState.UNRELEASED)) {
             throw new EntityConflictException(new EntityErrorDetail(TrainingDefinition.class, "id", trainingDefinition.getId().getClass(), trainingDefinition.getId(),
                     ARCHIVED_OR_RELEASED));

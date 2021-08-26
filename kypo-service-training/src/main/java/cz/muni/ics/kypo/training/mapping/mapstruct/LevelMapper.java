@@ -1,6 +1,7 @@
 package cz.muni.ics.kypo.training.mapping.mapstruct;
 
 import cz.muni.ics.kypo.training.api.dto.AbstractLevelDTO;
+import cz.muni.ics.kypo.training.api.dto.AbstractLevelUpdateDTO;
 import cz.muni.ics.kypo.training.api.dto.BasicLevelInfoDTO;
 import cz.muni.ics.kypo.training.api.dto.archive.AbstractLevelArchiveDTO;
 import cz.muni.ics.kypo.training.api.dto.archive.AssessmentLevelArchiveDTO;
@@ -31,6 +32,8 @@ import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.model.AssessmentLevel;
 import org.mapstruct.*;
 
+import java.util.List;
+
 /**
  * The InfoLevelMapper is an utility class to map items into data transfer objects. It provides the implementation of mappings between Java bean type InfoLevelMapper and
  * DTOs classes. Code is generated during compile time.
@@ -41,8 +44,6 @@ import org.mapstruct.*;
 public interface LevelMapper extends ParentMapper {
     // INFO LEVEL
     InfoLevel mapToEntity(InfoLevelDTO dto);
-
-    InfoLevel mapToEntity(InfoLevelUpdateDTO dto);
 
     BasicLevelInfoDTO mapTo(InfoLevel infoLevel);
 
@@ -80,6 +81,8 @@ public interface LevelMapper extends ParentMapper {
     // TRAINING LEVEL
     TrainingLevel mapToEntity(TrainingLevelDTO dto);
 
+    @Mapping(target = "answer", expression = "java(org.apache.commons.lang3.StringUtils.isBlank(dto.getAnswer()) ? null : dto.getAnswer())")
+    @Mapping(target = "answerVariableName", expression = "java(org.apache.commons.lang3.StringUtils.isBlank(dto.getAnswerVariableName()) ? null : dto.getAnswerVariableName())")
     TrainingLevel mapUpdateToEntity(TrainingLevelUpdateDTO dto);
 
     TrainingLevel mapImportToEntity(TrainingLevelImportDTO dto);
@@ -97,6 +100,22 @@ public interface LevelMapper extends ParentMapper {
     TrainingLevelViewDTO mapToViewDTO(TrainingLevel entity);
 
     // ABSTRACT
+
+    List<AbstractLevel> mapToLevels(List<AbstractLevelUpdateDTO> dtos);
+
+    default AbstractLevel mapToAbstractLevel(AbstractLevelUpdateDTO dto) {
+        if (dto.getLevelType() == LevelType.TRAINING_LEVEL) {
+            return mapUpdateToEntity((TrainingLevelUpdateDTO) dto);
+        } else if (dto.getLevelType() == LevelType.INFO_LEVEL) {
+            return mapUpdateToEntity((InfoLevelUpdateDTO) dto);
+        } else if (dto.getLevelType() == LevelType.ASSESSMENT_LEVEL) {
+            return mapUpdateToEntity((AssessmentLevelUpdateDTO) dto);
+        } else {
+            throw new InternalServerErrorException("Level with id: " + dto.getId() + " and with title: " + dto.getTitle() +
+                    " is not instance of assessment, training or info level.");
+        }
+    }
+
     default AbstractLevelDTO mapToDTO(AbstractLevel entity) {
         AbstractLevelDTO abstractLevelDTO;
         if (entity instanceof TrainingLevel) {

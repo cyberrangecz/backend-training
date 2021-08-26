@@ -443,6 +443,35 @@ public class TrainingDefinitionsRestController {
     }
 
     /**
+     * Update levels.
+     *
+     * @param definitionId       the definition id
+     * @param levelUpdateDTOS the levels to be updated
+     * @return the response entity
+     */
+    @ApiOperation(httpMethod = "PUT",
+            value = "Update levels",
+            notes = "Levels can be updated only in unreleased training definition.",
+            nickname = "updateLevels",
+            consumes = MediaType.APPLICATION_JSON_VALUE
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 204, message = "The levels has been updated."),
+            @ApiResponse(code = 400, message = "One of the provided levels is not valid.", response = ApiError.class),
+            @ApiResponse(code = 404, message = "One of the provided levels has not been found in definition.", response = ApiError.class),
+            @ApiResponse(code = 409, message = "Cannot edit released or archived training definition.", response = ApiError.class),
+            @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiError.class)
+    })
+    @PutMapping(path = "/{definitionId}/levels", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Void> updateLevels(@ApiParam(value = "Id of definition to which level is assigned", required = true)
+                                                @PathVariable("definitionId") Long definitionId,
+                                                @ApiParam(value = "Levels to be updated")
+                                                @RequestBody @Valid List<AbstractLevelUpdateDTO> levelUpdateDTOS) {
+        trainingDefinitionFacade.updateLevels(definitionId, levelUpdateDTOS);
+        return ResponseEntity.noContent().build();
+    }
+
+    /**
      * Find level by id.
      *
      * @param levelId the id of wanted level

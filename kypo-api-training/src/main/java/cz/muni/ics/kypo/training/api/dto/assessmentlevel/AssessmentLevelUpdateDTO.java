@@ -1,8 +1,10 @@
 package cz.muni.ics.kypo.training.api.dto.assessmentlevel;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import cz.muni.ics.kypo.training.api.dto.AbstractLevelUpdateDTO;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.question.QuestionDTO;
 import cz.muni.ics.kypo.training.api.enums.AssessmentType;
+import cz.muni.ics.kypo.training.api.enums.LevelType;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
@@ -20,14 +22,8 @@ import java.util.List;
  */
 @ApiModel(value = "AssessmentLevelUpdateDTO", description = "Assessment level to update.")
 @JsonIgnoreProperties(value = { "max_score" })
-public class AssessmentLevelUpdateDTO {
+public class AssessmentLevelUpdateDTO extends AbstractLevelUpdateDTO {
 
-    @ApiModelProperty(value = "Main identifier of level.", required = true, example = "8")
-    @NotNull(message = "{assessmentLevel.id.NotNull.message}")
-    protected Long id;
-    @ApiModelProperty(value = "Short textual description of the level.", required = true, example = "Assessment Level1")
-    @NotEmpty(message = "{assessmentLevel.title.NotEmpty.message}")
-    private String title;
     @ApiModelProperty(value = "Questions of assessment level to update.")
     @Valid
     private List<QuestionDTO> questions = new ArrayList<>();
@@ -40,40 +36,8 @@ public class AssessmentLevelUpdateDTO {
     @ApiModelProperty(value = "Estimated time (minutes) taken by the player to solve the level.", required = true, example = "5")
     private int estimatedDuration;
 
-    /**
-     * Gets id.
-     *
-     * @return the id
-     */
-    public Long getId() {
-        return id;
-    }
-
-    /**
-     * Sets id.
-     *
-     * @param id the id
-     */
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    /**
-     * Gets title.
-     *
-     * @return the title
-     */
-    public String getTitle() {
-        return title;
-    }
-
-    /**
-     * Sets title.
-     *
-     * @param title the title
-     */
-    public void setTitle(String title) {
-        this.title = title;
+    public AssessmentLevelUpdateDTO() {
+        this.levelType = LevelType.ASSESSMENT_LEVEL;
     }
 
     /**
@@ -148,9 +112,15 @@ public class AssessmentLevelUpdateDTO {
         this.estimatedDuration = estimatedDuration;
     }
 
-    @Override public String toString() {
-        return "AssessmentLevelUpdateDTO{" + "id=" + id + ", title='" + title + '\'' + ", questions='"
-            + questions + '\'' + ", instructions='" + instructions + '\'' + ", type=" + type + ", estimatedDuration=" + estimatedDuration
-            + '}';
+    @Override
+    public String toString() {
+        return "AssessmentLevelUpdateDTO{" +
+                "id=" + id +
+                ", title='" + title + '\'' +
+                ", levelType=" + levelType +
+                ", instructions='" + instructions + '\'' +
+                ", type=" + type +
+                ", estimatedDuration=" + estimatedDuration +
+                '}';
     }
 }

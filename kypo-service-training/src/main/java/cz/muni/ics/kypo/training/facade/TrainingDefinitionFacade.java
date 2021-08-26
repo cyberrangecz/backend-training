@@ -39,6 +39,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -313,6 +314,47 @@ public class TrainingDefinitionFacade {
     }
 
     /**
+     * updates info level from training definition
+     *
+     * @param definitionId - id of training definition containing levels to be updated
+     * @param updatedLevelDTOs  updated levels to be stored
+     */
+    @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
+            "or @securityService.isDesignerOfGivenTrainingDefinition(#definitionId)")
+    @TransactionalWO
+    public void updateLevels(Long definitionId, List<AbstractLevelUpdateDTO> updatedLevelDTOs) {
+        TrainingDefinition trainingDefinition = trainingDefinitionService.findById(definitionId);
+        trainingDefinitionService.checkIfCanBeUpdated(trainingDefinition);
+        Map<Long, AbstractLevel> persistedLevelsById = trainingDefinitionService.findAllLevelsFromDefinition(definitionId).stream()
+                .collect(Collectors.toMap(AbstractLevel::getId, Function.identity()));
+        updatedLevelDTOs.forEach(updatedLevelDTO -> {
+            AbstractLevel persistedLevel = persistedLevelsById.get(updatedLevelDTO.getId());
+            if(persistedLevel == null) {
+                throw new EntityNotFoundException(new EntityErrorDetail(AbstractLevel.class, "id", Long.class,
+                        updatedLevelDTO.getId(), "Level was not found in definition (id: " + definitionId + ")."));
+            }
+            switch (updatedLevelDTO.getLevelType()) {
+                case TRAINING_LEVEL:
+                    TrainingLevel updatedTrainingLevel = levelMapper.mapUpdateToEntity((TrainingLevelUpdateDTO) updatedLevelDTO);
+                    trainingDefinitionService.updateTrainingLevel(updatedTrainingLevel, (TrainingLevel) persistedLevel);
+                    break;
+                case INFO_LEVEL:
+                    InfoLevel updatedInfoLevel = levelMapper.mapUpdateToEntity((InfoLevelUpdateDTO) updatedLevelDTO);
+                    trainingDefinitionService.updateInfoLevel(updatedInfoLevel, (InfoLevel) persistedLevel);
+                    break;
+                case ASSESSMENT_LEVEL:
+                    AssessmentLevel updatedAssessmentLevel = levelMapper.mapUpdateToEntity((AssessmentLevelUpdateDTO) updatedLevelDTO);
+                    if (updatedAssessmentLevel.getAssessmentType() == AssessmentType.TEST) {
+                        this.checkAndSetCorrectOptionsOfStatements(updatedAssessmentLevel, (AssessmentLevelUpdateDTO) updatedLevelDTO);
+                    }
+                    trainingDefinitionService.updateAssessmentLevel(updatedAssessmentLevel, (AssessmentLevel) persistedLevel);
+                    break;
+            }
+        });
+        this.trainingDefinitionService.auditAndSave(trainingDefinition);
+    }
+
+    /**
      * updates training level from training definition
      *
      * @param definitionId - id of training definition containing level to be updated
@@ -323,16 +365,8 @@ public class TrainingDefinitionFacade {
     @TransactionalWO
     public void updateTrainingLevel(Long definitionId, TrainingLevelUpdateDTO trainingLevel) {
         TrainingLevel trainingLevelToUpdate = levelMapper.mapUpdateToEntity(trainingLevel);
-        for (Hint hint : trainingLevelToUpdate.getHints()) {
-            hint.setTrainingLevel(trainingLevelToUpdate);
-        }
-        if (StringUtils.isBlank(trainingLevelToUpdate.getAnswer())) {
-            trainingLevelToUpdate.setAnswer(StringUtils.isBlank(trainingLevelToUpdate.getAnswer()) ? null : trainingLevelToUpdate.getAnswer());
-        }
-        if (StringUtils.isBlank(trainingLevelToUpdate.getAnswerVariableName())) {
-            trainingLevelToUpdate.setAnswerVariableName(null);
-        }
-        trainingDefinitionService.updateTrainingLevel(definitionId, trainingLevelToUpdate);
+        TrainingLevel updatedTrainingLevel = trainingDefinitionService.updateTrainingLevel(definitionId, trainingLevelToUpdate);
+        this.trainingDefinitionService.auditAndSave(updatedTrainingLevel.getTrainingDefinition());
     }
 
     /**
@@ -345,7 +379,8 @@ public class TrainingDefinitionFacade {
             "or @securityService.isDesignerOfGivenTrainingDefinition(#definitionId)")
     @TransactionalWO
     public void updateInfoLevel(Long definitionId, InfoLevelUpdateDTO infoLevel) {
-        trainingDefinitionService.updateInfoLevel(definitionId, levelMapper.mapUpdateToEntity(infoLevel));
+        InfoLevel updatedInfoLevel = trainingDefinitionService.updateInfoLevel(definitionId, levelMapper.mapUpdateToEntity(infoLevel));
+        this.trainingDefinitionService.auditAndSave(updatedInfoLevel.getTrainingDefinition());
     }
 
     /**
@@ -362,8 +397,8 @@ public class TrainingDefinitionFacade {
         if (assessmentLevel.getAssessmentType() == AssessmentType.TEST) {
             this.checkAndSetCorrectOptionsOfStatements(assessmentLevel, assessmentLevelToUpdate);
         }
-        trainingDefinitionService.updateAssessmentLevel(definitionId, assessmentLevel);
-
+        AssessmentLevel updatedAssessmentLevel = trainingDefinitionService.updateAssessmentLevel(definitionId, assessmentLevel);
+        this.trainingDefinitionService.auditAndSave(updatedAssessmentLevel.getTrainingDefinition());
     }
 
     private void checkAndSetCorrectOptionsOfStatements(AssessmentLevel assessmentLevel, AssessmentLevelUpdateDTO assessmentLevelUpdateDTO) {
@@ -576,6 +611,5 @@ public class TrainingDefinitionFacade {
                 }
             }
         } while (authors.getPagination().getTotalPages() != page);
-
     }
 }

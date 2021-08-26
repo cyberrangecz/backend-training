@@ -24,12 +24,14 @@ public class ObjectConverter {
     public static String convertObjectToJsonBytes(Object object) throws IOException {
         ObjectMapper mapper = new ObjectMapper();
         mapper.registerModule(new JavaTimeModule().addSerializer(new LocalDateTimeUTCSerializer()));
+        mapper.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
         return mapper.writeValueAsString(object);
     }
 
     public static String convertJsonBytesToObject(String object) throws IOException {
         ObjectMapper mapper = new ObjectMapper();
         mapper.registerModule(new JavaTimeModule().addDeserializer(LocalDateTime.class, new LocalDateTimeDeserializer()));
+        mapper.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
         return mapper.readValue(object, String.class);
     }
 
@@ -38,6 +40,7 @@ public class ObjectConverter {
         mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
         mapper.registerModule( new JavaTimeModule())
                 .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        mapper.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
         return mapper.readValue(object, tTypeReference);
     }
 
@@ -45,6 +48,7 @@ public class ObjectConverter {
         ObjectMapper mapper = new ObjectMapper();
         mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
         mapper.registerModule( new JavaTimeModule().addDeserializer(LocalDateTime.class, new LocalDateTimeUTCDeserializer()));
+        mapper.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
         return mapper.readValue(object, objectClass);
     }
 
