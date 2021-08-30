@@ -312,6 +312,7 @@ public class TrainingInstancesIT {
         trainingInstanceRepository.save(futureTrainingInstance);
         trainingInstanceUpdateDTO.setAccessToken(futureTrainingInstance.getAccessToken());
         trainingInstanceUpdateDTO.setId(futureTrainingInstance.getId());
+        trainingInstanceUpdateDTO.setPoolId(futureTrainingInstance.getPoolId());
         given(exchangeFunction.exchange(any(ClientRequest.class))).willReturn(buildMockResponse(userRefDTO1));
 
         mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_ORGANIZER.name()));
@@ -332,6 +333,7 @@ public class TrainingInstancesIT {
     public void updateTrainingInstanceTrainingDefinitionNotFound() throws Exception {
         trainingInstanceRepository.save(futureTrainingInstance);
         trainingInstanceUpdateDTO.setId(futureTrainingInstance.getId());
+        trainingInstanceUpdateDTO.setPoolId(futureTrainingInstance.getPoolId());
         trainingInstanceUpdateDTO.setAccessToken("preff");
         trainingInstanceUpdateDTO.setTrainingDefinitionId(100L);
         mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_ORGANIZER.name()));
@@ -372,6 +374,7 @@ public class TrainingInstancesIT {
     public void updateRunningTrainingInstanceChangeStartTime() throws Exception {
         trainingInstanceRepository.save(notConcludedTrainingInstance);
         trainingInstanceUpdateDTO.setId(notConcludedTrainingInstance.getId());
+        trainingInstanceUpdateDTO.setPoolId(notConcludedTrainingInstance.getPoolId());
         trainingInstanceUpdateDTO.setStartTime(trainingInstanceUpdateDTO.getStartTime().plusMinutes(1));
         given(exchangeFunction.exchange(any(ClientRequest.class))).willReturn(buildMockResponse(userRefDTO1));
 
@@ -395,6 +398,7 @@ public class TrainingInstancesIT {
         trainingInstanceUpdateDTO.setId(notConcludedTrainingInstance.getId());
         trainingInstanceUpdateDTO.setEndTime(trainingInstanceUpdateDTO.getEndTime().plusMinutes(2));
         trainingInstanceUpdateDTO.setStartTime(notConcludedTrainingInstance.getStartTime());
+        trainingInstanceUpdateDTO.setPoolId(notConcludedTrainingInstance.getPoolId());
 
         given(exchangeFunction.exchange(any(ClientRequest.class))).willReturn(buildMockResponse(userRefDTO1));
 
@@ -415,6 +419,7 @@ public class TrainingInstancesIT {
     public void updateRunningTrainingInstanceChangeAccessToken() throws Exception {
         trainingInstanceRepository.save(notConcludedTrainingInstance);
         trainingInstanceUpdateDTO.setId(notConcludedTrainingInstance.getId());
+        trainingInstanceUpdateDTO.setPoolId(notConcludedTrainingInstance.getPoolId());
         trainingInstanceUpdateDTO.setAccessToken("some bad token");
         trainingInstanceUpdateDTO.setStartTime(notConcludedTrainingInstance.getStartTime());
         trainingInstanceUpdateDTO.setEndTime(notConcludedTrainingInstance.getEndTime());
@@ -456,6 +461,7 @@ public class TrainingInstancesIT {
         trainingInstanceUpdateDTO.setAccessToken("someToken");
         trainingInstanceUpdateDTO.setId(futureTrainingInstance.getId());
         trainingInstanceUpdateDTO.setEndTime(LocalDateTime.now().plusHours(2));
+        trainingInstanceUpdateDTO.setPoolId(futureTrainingInstance.getPoolId());
         mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_ORGANIZER.name()));
         MockHttpServletResponse response = mvc.perform(put("/training-instances")
                 .content(convertObjectToJsonBytes(trainingInstanceUpdateDTO))
