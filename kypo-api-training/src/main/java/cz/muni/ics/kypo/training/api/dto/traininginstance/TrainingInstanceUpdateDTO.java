@@ -38,6 +38,8 @@ public class TrainingInstanceUpdateDTO {
     @ApiModelProperty(value = "Reference to training definition from which is training instance created.", required = true, example = "1")
     @NotNull(message = "{traininginstanceupdate.trainingDefinition.NotNull.message}")
     private Long trainingDefinitionId;
+    @ApiModelProperty(value = "Id of sandbox pool assigned to training instance", example = "1")
+    private Long poolId;
 
     /**
      * Gets id.
@@ -147,6 +149,23 @@ public class TrainingInstanceUpdateDTO {
         this.trainingDefinitionId = trainingDefinitionId;
     }
 
+    /**
+     * Gets pool id.
+     *
+     * @return the pool id
+     */
+    public Long getPoolId() {
+        return poolId;
+    }
+
+    /**
+     * Sets pool id.
+     *
+     * @param poolId the pool id
+     */
+    public void setPoolId(Long poolId) {
+        this.poolId = poolId;
+    }
 
     @Override
     public String toString() {
@@ -157,6 +176,7 @@ public class TrainingInstanceUpdateDTO {
                 ", title='" + title + '\'' +
                 ", accessToken='" + accessToken + '\'' +
                 ", trainingDefinitionId=" + trainingDefinitionId +
+                ", poolId=" + poolId +
                 '}';
     }
 }

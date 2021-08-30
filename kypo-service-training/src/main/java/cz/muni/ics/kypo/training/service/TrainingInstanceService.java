@@ -133,10 +133,9 @@ public class TrainingInstanceService {
     public String update(TrainingInstance trainingInstanceToUpdate) {
         validateStartAndEndTime(trainingInstanceToUpdate);
         TrainingInstance trainingInstance = findById(trainingInstanceToUpdate.getId());
-        //add original organizers and poolId to update
+        //add original organizers to update
         trainingInstanceToUpdate.setOrganizers(new HashSet<>(trainingInstance.getOrganizers()));
         addLoggedInUserAsOrganizerToTrainingInstance(trainingInstanceToUpdate);
-        trainingInstanceToUpdate.setPoolId(trainingInstance.getPoolId());
         //check if TI is running, true - only title can be changed, false - any field can be changed
         if (LocalDateTime.now(Clock.systemUTC()).isAfter(trainingInstance.getStartTime())) {
             this.checkChangedFieldsOfRunningTrainingInstance(trainingInstanceToUpdate, trainingInstance);
