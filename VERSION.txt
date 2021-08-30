@@ -1,3 +1,4 @@
+1.1.74 Fix storage of the submissions, new endpoint to save multiple levels at once, assign/unassign the pool as part of the update training instance request.
 1.1.73 Integration of APG to the kypo training service.
 1.1.72 Renaming flag to answer, renaming game level to training level.
 1.1.71 KYPO2 renamed to KYPO.
