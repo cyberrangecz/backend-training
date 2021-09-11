@@ -37,6 +37,8 @@ public class TrainingDefinitionCreateDTO {
     private boolean showStepperBar;
     @ApiModelProperty(value = "Marking if levels flags/answers are randomly generated and are different for each trainee. Default is false.", example = "false")
     private boolean variantSandboxes;
+    @ApiModelProperty(value = "Sign if default levels should be created.", example = "false")
+    private boolean defaultContent;
 
     /**
      * Gets title.
@@ -183,6 +185,24 @@ public class TrainingDefinitionCreateDTO {
         this.variantSandboxes = variantSandboxes;
     }
 
+    /**
+     * Gets if he default levels are created along with the new training definition.
+     *
+     * @return true if default levels are created
+     */
+    public boolean isDefaultContent() {
+        return defaultContent;
+    }
+
+    /**
+     * Sets if the default levels are created along with the new training definition.
+     *
+     * @param defaultContent true if default levels should be created
+     */
+    public void setDefaultContent(boolean defaultContent) {
+        this.defaultContent = defaultContent;
+    }
+
     @Override
     public String toString() {
         return "TrainingDefinitionCreateDTO{" +
@@ -191,6 +211,7 @@ public class TrainingDefinitionCreateDTO {
                 ", state=" + state +
                 ", showStepperBar=" + showStepperBar +
                 ", variantSandboxes=" + variantSandboxes +
+                ", defaultContent=" + defaultContent +
                 '}';
     }
 }

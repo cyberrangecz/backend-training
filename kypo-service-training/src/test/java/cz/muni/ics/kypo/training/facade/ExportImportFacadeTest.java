@@ -139,7 +139,7 @@ public class ExportImportFacadeTest {
 
     @Test
     public void dbImport() {
-        given(trainingDefinitionService.create(any(TrainingDefinition.class))).willReturn(trainingDefinitionImported);
+        given(trainingDefinitionService.create(any(TrainingDefinition.class), any(Boolean.class))).willReturn(trainingDefinitionImported);
 
         TrainingDefinitionByIdDTO trainingDefinitionByIdDTO = exportImportFacade.dbImport(importTrainingDefinitionDTO);
         TrainingDefinitionByIdDTO trainingDefinitionByIdDTOImported = trainingDefinitionMapper.mapToDTOById(trainingDefinitionImported);

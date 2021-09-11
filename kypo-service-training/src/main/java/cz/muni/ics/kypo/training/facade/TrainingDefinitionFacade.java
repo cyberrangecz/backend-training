@@ -1,11 +1,17 @@
 package cz.muni.ics.kypo.training.facade;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.training.annotations.security.IsDesignerOrOrganizerOrAdmin;
 import cz.muni.ics.kypo.training.annotations.security.IsDesignerOrAdmin;
 import cz.muni.ics.kypo.training.annotations.security.IsOrganizerOrAdmin;
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalRO;
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalWO;
+import cz.muni.ics.kypo.training.api.dto.assessmentlevel.question.QuestionDTO;
 import cz.muni.ics.kypo.training.api.dto.traininglevel.TrainingLevelUpdateDTO;
 import cz.muni.ics.kypo.training.api.responses.PageResultResource;
 import cz.muni.ics.kypo.training.api.dto.*;
@@ -190,7 +196,7 @@ public class TrainingDefinitionFacade {
         if (trainingDefinition.getBetaTestingGroup() != null) {
             addOrganizersToTrainingDefinition(newTrainingDefinition, trainingDefinition.getBetaTestingGroup().getOrganizersRefIds());
         }
-        TrainingDefinition createdTrainingDefinition = trainingDefinitionService.create(newTrainingDefinition);
+        TrainingDefinition createdTrainingDefinition = trainingDefinitionService.create(newTrainingDefinition, trainingDefinition.isDefaultContent());
         TrainingDefinitionByIdDTO trainingDefinitionByIdDTO = trainingDefinitionMapper.mapToDTOById(createdTrainingDefinition);
         if (createdTrainingDefinition.getBetaTestingGroup() != null) {
             trainingDefinitionByIdDTO.setBetaTestingGroupId(createdTrainingDefinition.getBetaTestingGroup().getId());

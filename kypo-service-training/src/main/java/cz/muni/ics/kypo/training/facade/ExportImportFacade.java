@@ -161,7 +161,7 @@ public class ExportImportFacade {
         }
 
         TrainingDefinition newDefinition = exportImportMapper.mapToEntity(importTrainingDefinitionDTO);
-        TrainingDefinition newTrainingDefinition = trainingDefinitionService.create(newDefinition);
+        TrainingDefinition newTrainingDefinition = trainingDefinitionService.create(newDefinition, false);
         List<AbstractLevelImportDTO> levels = importTrainingDefinitionDTO.getLevels();
         levels.forEach(level -> {
             AbstractLevel newLevel;
