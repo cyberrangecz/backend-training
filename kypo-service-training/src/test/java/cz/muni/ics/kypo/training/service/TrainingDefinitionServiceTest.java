@@ -12,6 +12,7 @@ import cz.muni.ics.kypo.training.persistence.model.enums.AssessmentType;
 import cz.muni.ics.kypo.training.persistence.model.enums.TDState;
 import cz.muni.ics.kypo.training.persistence.repository.*;
 import cz.muni.ics.kypo.training.persistence.util.TestDataFactory;
+import org.hibernate.validator.internal.engine.ValidatorFactoryImpl;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -28,7 +29,10 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 
+import javax.validation.Validation;
+import javax.validation.Validator;
 import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -73,6 +77,7 @@ public class TrainingDefinitionServiceTest {
     private UserService userService;
 
     private ModelMapper modelMapper = new ModelMapper();
+    private Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
 
     private TrainingDefinition unreleasedDefinition, releasedDefinition;
     private AssessmentLevel assessmentLevel;
@@ -89,7 +94,7 @@ public class TrainingDefinitionServiceTest {
         MockitoAnnotations.initMocks(this);
         trainingDefinitionService = new TrainingDefinitionService(trainingDefinitionRepository, abstractLevelRepository,
                 infoLevelRepository, trainingLevelRepository, assessmentLevelRepository, trainingInstanceRepository, userRefRepository,
-                securityService, userService, modelMapper);
+                securityService, userService, validator, modelMapper);
 
         infoLevel = testDataFactory.getInfoLevel1();
         infoLevel.setId(1L);
@@ -552,7 +557,7 @@ public class TrainingDefinitionServiceTest {
         UserRef user = new UserRef();
         given(trainingDefinitionRepository.save(unreleasedDefinition)).willReturn(unreleasedDefinition);
         given(userRefRepository.findUserByUserRefId(anyLong())).willReturn(Optional.of(user));
-        TrainingDefinition tD = trainingDefinitionService.create(unreleasedDefinition);
+        TrainingDefinition tD = trainingDefinitionService.create(unreleasedDefinition, false);
         assertEquals(unreleasedDefinition, tD);
         then(trainingDefinitionRepository).should(times(1)).save(unreleasedDefinition);
     }
@@ -563,7 +568,7 @@ public class TrainingDefinitionServiceTest {
         given(trainingDefinitionRepository.save(unreleasedDefinition)).willReturn(unreleasedDefinition);
         given(userRefRepository.findUserByUserRefId(anyLong())).willReturn(Optional.empty());
         given(securityService.createUserRefEntityByInfoFromUserAndGroup()).willReturn(user);
-        TrainingDefinition tD = trainingDefinitionService.create(unreleasedDefinition);
+        TrainingDefinition tD = trainingDefinitionService.create(unreleasedDefinition, false);
         assertEquals(unreleasedDefinition, tD);
         then(trainingDefinitionRepository).should(times(1)).save(unreleasedDefinition);
     }

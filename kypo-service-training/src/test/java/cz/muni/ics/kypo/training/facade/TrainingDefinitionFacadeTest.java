@@ -207,10 +207,10 @@ public class TrainingDefinitionFacadeTest {
 
     @Test
     public void createTrainingDefinition() {
-        given(trainingDefinitionService.create(trainingDefinitionMapper.mapCreateToEntity(trainingDefinitionCreate)))
+        given(trainingDefinitionService.create(trainingDefinitionMapper.mapCreateToEntity(trainingDefinitionCreate), false))
                 .willReturn(trainingDefinitionMapper.mapCreateToEntity(trainingDefinitionCreate));
         trainingDefinitionFacade.create(trainingDefinitionCreate);
-        then(trainingDefinitionService).should().create(trainingDefinitionMapper.mapCreateToEntity(trainingDefinitionCreate));
+        then(trainingDefinitionService).should().create(trainingDefinitionMapper.mapCreateToEntity(trainingDefinitionCreate), false);
     }
 
     @Test

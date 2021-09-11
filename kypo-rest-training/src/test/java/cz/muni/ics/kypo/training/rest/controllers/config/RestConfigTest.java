@@ -24,6 +24,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.data.jpa.convert.threeten.Jsr310JpaConverters;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 import org.springframework.web.reactive.function.client.ExchangeFunction;
 import org.springframework.web.reactive.function.client.WebClient;
 
@@ -124,6 +125,12 @@ public class RestConfigTest {
 	public EmailValidator usernameValidator() {
 		LOG.debug("usernameValidator()");
 		return new EmailValidator();
+	}
+
+	@Bean
+	@Primary
+	public LocalValidatorFactoryBean getValidator() {
+		return new LocalValidatorFactoryBean();
 	}
 
 	@Bean

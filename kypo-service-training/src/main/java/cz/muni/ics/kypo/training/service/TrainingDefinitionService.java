@@ -1,6 +1,8 @@
 package cz.muni.ics.kypo.training.service;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.training.exceptions.*;
 import cz.muni.ics.kypo.training.persistence.model.*;
@@ -13,16 +15,22 @@ import cz.muni.ics.kypo.training.persistence.model.question.ExtendedMatchingStat
 import cz.muni.ics.kypo.training.persistence.model.question.QuestionChoice;
 import cz.muni.ics.kypo.training.persistence.model.question.Question;
 import cz.muni.ics.kypo.training.persistence.repository.*;
-import io.netty.util.internal.StringUtil;
+import cz.muni.ics.kypo.training.startup.DefaultLevels;
 import org.apache.commons.lang3.StringUtils;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.PostConstruct;
+import javax.validation.ConstraintViolation;
+import javax.validation.Validator;
+import java.io.File;
+import java.io.IOException;
 import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -47,6 +55,10 @@ public class TrainingDefinitionService {
     private UserRefRepository userRefRepository;
     private SecurityService securityService;
     private UserService userService;
+    private Validator validator;
+    @Value("${path.to.default.levels:}")
+    private String pathToDefaultLevels;
+    private DefaultLevels defaultLevels;
 
     private static final String ARCHIVED_OR_RELEASED = "Cannot edit released or archived training definition.";
     private static final String LEVEL_NOT_FOUND = "Level not found.";
@@ -72,6 +84,7 @@ public class TrainingDefinitionService {
                                      UserRefRepository userRefRepository,
                                      SecurityService securityService,
                                      UserService userService,
+                                     Validator validator,
                                      ModelMapper modelMapper) {
         this.trainingDefinitionRepository = trainingDefinitionRepository;
         this.abstractLevelRepository = abstractLevelRepository;
@@ -82,7 +95,27 @@ public class TrainingDefinitionService {
         this.userRefRepository = userRefRepository;
         this.securityService = securityService;
         this.userService = userService;
+        this.validator = validator;
         this.modelMapper = modelMapper;
+    }
+
+    @PostConstruct
+    private void loadDefaultLevels() {
+        pathToDefaultLevels = pathToDefaultLevels.isBlank() ? getClass().getResource("/default-levels.json").getPath() : pathToDefaultLevels;
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, true);
+        mapper.configure(DeserializationFeature.FAIL_ON_MISSING_CREATOR_PROPERTIES, true);
+        mapper.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
+        try {
+            defaultLevels = mapper.readValue(new File(pathToDefaultLevels), DefaultLevels.class);
+            Set<ConstraintViolation<DefaultLevels>> violations = this.validator.validate(defaultLevels);
+            if(!violations.isEmpty()){
+                throw new InternalServerErrorException("Could not load the default phases. Reason: " + violations.stream()
+                        .map(ConstraintViolation::getMessage).collect(Collectors.toList()));
+            }
+        } catch (IOException e) {
+            throw new InternalServerErrorException("Could not load file with the default levels.", e);
+        }
     }
 
     /**
@@ -159,8 +192,11 @@ public class TrainingDefinitionService {
      * @param trainingDefinition to be created
      * @return new {@link TrainingDefinition}
      */
-    public TrainingDefinition create(TrainingDefinition trainingDefinition) {
+    public TrainingDefinition create(TrainingDefinition trainingDefinition, boolean createDefaultContent) {
         addLoggedInUserToTrainingDefinitionAsAuthor(trainingDefinition);
+        if(createDefaultContent && defaultLevels != null) {
+            this.createDefaultLevels(trainingDefinition);
+        }
         LOG.info("Training definition with id: {} created.", trainingDefinition.getId());
         return auditAndSave(trainingDefinition);
     }
@@ -599,6 +635,29 @@ public class TrainingDefinitionService {
         trainingDefinition.setLastEdited(getCurrentTimeInUTC());
         trainingDefinition.setLastEditedBy(userService.getUserRefFromUserAndGroup().getUserRefFullName());
         return trainingDefinitionRepository.save(trainingDefinition);
+    }
+
+    private void createDefaultLevels(TrainingDefinition trainingDefinition) {
+        InfoLevel introInfoLevel = new InfoLevel();
+        introInfoLevel.setTrainingDefinition(trainingDefinition);
+        introInfoLevel.setTitle(defaultLevels.getIntroInfoLevel().getTitle());
+        introInfoLevel.setContent(defaultLevels.getIntroInfoLevel().getContent());
+        introInfoLevel.setEstimatedDuration(defaultLevels.getIntroInfoLevel().getEstimatedDuration());
+        introInfoLevel.setOrder(0);
+        infoLevelRepository.save(introInfoLevel);
+
+        TrainingLevel getAccessLevel = new TrainingLevel();
+        getAccessLevel.setOrder(1);
+        getAccessLevel.setTrainingDefinition(trainingDefinition);
+        getAccessLevel.setContent(defaultLevels.getGetAccessLevel().getContent());
+        getAccessLevel.setTitle(defaultLevels.getGetAccessLevel().getTitle());
+        getAccessLevel.setAnswer(defaultLevels.getGetAccessLevel().getAnswer());
+        getAccessLevel.setSolution(defaultLevels.getGetAccessLevel().getSolution());
+        getAccessLevel.setEstimatedDuration(defaultLevels.getGetAccessLevel().getEstimatedDuration());
+        getAccessLevel.setIncorrectAnswerLimit(100);
+        getAccessLevel.setTrainingDefinition(trainingDefinition);
+        trainingLevelRepository.save(getAccessLevel);
+        trainingDefinition.setEstimatedDuration(trainingDefinition.getEstimatedDuration() + introInfoLevel.getEstimatedDuration() + getAccessLevel.getEstimatedDuration());
     }
 
     private void checkIfLevelPresentInDefinition(Long trainingDefinitionId, AbstractLevel level) {
