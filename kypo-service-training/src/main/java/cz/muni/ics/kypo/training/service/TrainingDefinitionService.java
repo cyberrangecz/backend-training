@@ -740,9 +740,9 @@ public class TrainingDefinitionService {
             Question clonedQuestion = new Question();
             modelMapper.map(question, clonedQuestion);
             clonedQuestion.setId(null);
-            question.setChoices(cloneQuestionChoices(question.getChoices()));
-            question.setExtendedMatchingStatements(cloneExtendedMatchingItems(question.getExtendedMatchingStatements()));
-            question.setExtendedMatchingOptions(cloneExtendedMatchingOptions(question.getExtendedMatchingOptions()));
+            clonedQuestion.setChoices(cloneQuestionChoices(question.getChoices()));
+            clonedQuestion.setExtendedMatchingStatements(cloneExtendedMatchingItems(question.getExtendedMatchingStatements()));
+            clonedQuestion.setExtendedMatchingOptions(cloneExtendedMatchingOptions(question.getExtendedMatchingOptions()));
             clonedQuestions.add(clonedQuestion);
         }
         return clonedQuestions;
