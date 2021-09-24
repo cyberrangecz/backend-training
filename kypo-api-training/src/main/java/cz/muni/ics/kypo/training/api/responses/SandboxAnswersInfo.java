@@ -8,6 +8,7 @@ import java.util.List;
 public class SandboxAnswersInfo {
 
     @ApiModelProperty(value = "The identifier of a sandbox for that we store the answers", example = "12")
+    @JsonProperty("sandbox_ref_id")
     private Long sandboxRefId;
     @ApiModelProperty(value = "The answers for given sandbox")
     @JsonProperty("sandbox_answers")

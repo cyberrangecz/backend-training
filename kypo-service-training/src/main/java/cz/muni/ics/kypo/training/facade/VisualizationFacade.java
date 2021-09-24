@@ -57,7 +57,6 @@ import java.time.Clock;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * The type Visualization facade.
@@ -199,22 +198,21 @@ public class VisualizationFacade {
         TrainingInstance trainingInstance = trainingInstanceService.findById(trainingInstanceId);
         TrainingDefinition trainingDefinitionOfTrainingRun = trainingInstance.getTrainingDefinition();
 
-        Map<Long, String> answerByLevelId = null;
-        Map<Long, String> answerVariableNameByLevelId = null;
-        Map<Long, Map<String, String>> answerBySandboxId = null;
-        Stream<AbstractLevel> abstractLevelStream = trainingDefinitionService.findAllLevelsFromDefinition(trainingDefinitionOfTrainingRun.getId())
-                .stream()
-                .filter(abstractLevel -> abstractLevel.getClass() == TrainingLevel.class);
-        if (trainingDefinitionOfTrainingRun.isVariantSandboxes()) {
-            answerVariableNameByLevelId = abstractLevelStream.collect(Collectors.toMap(AbstractLevel::getId, abstractLevel -> ((TrainingLevel) abstractLevel).getAnswerVariableName()));
-            answerBySandboxId = answersStorageApiService.getAnswersBySandboxIds(trainingInstanceService.findAllSandboxesUsedByTrainingInstanceId(trainingInstanceId))
+        List<AbstractLevel> abstractLevels = trainingDefinitionService.findAllLevelsFromDefinition(trainingDefinitionOfTrainingRun.getId());
+        Map<Long, String> answerStaticByLevelId = abstractLevels.stream()
+                .filter(abstractLevel -> abstractLevel.getClass() == TrainingLevel.class && ((TrainingLevel) abstractLevel).getAnswer() != null)
+                .collect(Collectors.toMap(AbstractLevel::getId, abstractLevel -> ((TrainingLevel) abstractLevel).getAnswer()));
+        Map<Long, String> answerVariableNameByLevelId = abstractLevels.stream()
+                .filter(abstractLevel -> abstractLevel.getClass() == TrainingLevel.class && ((TrainingLevel) abstractLevel).getAnswerVariableName() != null)
+                .collect(Collectors.toMap(AbstractLevel::getId, abstractLevel -> ((TrainingLevel) abstractLevel).getAnswerVariableName()));
+        Map<Long, Map<String, String>> answersBySandboxId = new HashMap<>();
+        if (!answerVariableNameByLevelId.isEmpty()) {
+            // TODO cache the response because those data are not changing and frontend requests progress data periodically
+            answersBySandboxId = answersStorageApiService.getAnswersBySandboxIds(trainingInstanceService.findAllSandboxesUsedByTrainingInstanceId(trainingInstanceId))
                     .getContent()
                     .stream()
                     .collect(Collectors.toMap(SandboxAnswersInfo::getSandboxRefId, sandboxAnswerInfo -> getAnswersByVariableNames(sandboxAnswerInfo.getVariantAnswers())));
-        } else {
-            answerByLevelId = abstractLevelStream.collect(Collectors.toMap(AbstractLevel::getId, abstractLevel -> ((TrainingLevel) abstractLevel).getAnswer()));
         }
-
 
         VisualizationProgressDTO visualizationProgressDTO = new VisualizationProgressDTO();
         visualizationProgressDTO.setStartTime(trainingInstance.getStartTime().toEpochSecond(ZoneOffset.UTC));
@@ -243,14 +241,13 @@ public class VisualizationFacade {
             PlayerProgress playerProgress = new PlayerProgress();
             playerProgress.setTrainingRunId(userEvents.getKey());
 
-            for (Map.Entry<Long, List<AbstractAuditPOJO>> levelEvents : userEvents.getValue().entrySet()) {
+            Set<Map.Entry<Long, List<AbstractAuditPOJO>>> allUserEventsByLevelId = userEvents.getValue().entrySet();
+            Long sandboxId = allUserEventsByLevelId.iterator().next().getValue().get(0).getSandboxId();
+            for (Map.Entry<Long, List<AbstractAuditPOJO>> levelEvents : allUserEventsByLevelId) {
                 List<AbstractAuditPOJO> events = levelEvents.getValue();
                 LevelProgress levelProgress = new LevelProgress();
                 levelProgress.setLevelId(levelEvents.getKey());
                 levelProgress.setState(LevelState.RUNNING);
-                levelProgress.setAnswer(answerBySandboxId == null ?
-                        answerByLevelId.get(levelProgress.getLevelId()) :
-                        answerBySandboxId.get(levelEvents.getValue().get(0).getSandboxId()).get(answerVariableNameByLevelId.get(levelProgress.getLevelId())));
                 //Count wrong answers number
                 int levelStartedEventIndex = 0;
                 if (events.get(0) instanceof TrainingRunStarted) {
@@ -259,6 +256,9 @@ public class VisualizationFacade {
                 levelProgress.setStartTime(events.get(levelStartedEventIndex).getTimestamp());
                 if (((LevelStarted) events.get(levelStartedEventIndex)).getLevelType() == LevelType.TRAINING) {
                     this.countWrongAnswersAndAddTakenHints(levelProgress, events);
+                    levelProgress.setAnswer(answerStaticByLevelId.get(levelProgress.getLevelId()) == null ?
+                            answersBySandboxId.getOrDefault(sandboxId, new HashMap<>()).get(answerVariableNameByLevelId.get(levelProgress.getLevelId())) :
+                            answerStaticByLevelId.get(levelProgress.getLevelId()));
                 }
 
                 int levelCompletedEventIndex = getLevelCompletedEventIndex(events);
@@ -277,7 +277,7 @@ public class VisualizationFacade {
     }
 
     private Map<String, String> getAnswersByVariableNames(List<VariantAnswer> variantAnswers) {
-        return variantAnswers.stream().collect(Collectors.toMap(VariantAnswer::getAnswerIdentifier, VariantAnswer::getAnswerContent));
+        return variantAnswers.stream().collect(Collectors.toMap(VariantAnswer::getAnswerVariableName, VariantAnswer::getAnswerContent));
     }
 
     private int getLevelCompletedEventIndex(List<AbstractAuditPOJO> events) {
