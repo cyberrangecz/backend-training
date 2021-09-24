@@ -1,13 +1,16 @@
 package cz.muni.ics.kypo.training.api.responses;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModelProperty;
 
 public class VariantAnswer {
 
     @ApiModelProperty(value = "The content of the KYPO answer in particular (phase/level)", example = "nmap 192.168.0.1")
+    @JsonProperty("answer_content")
     private String answerContent;
     @ApiModelProperty(value = "The identifier of the KYPO answer", example = "sandbox-1-2-answer")
-    private String answerIdentifier;
+    @JsonProperty("answer_variable_name")
+    private String answerVariableName;
 
     public String getAnswerContent() {
         return answerContent;
@@ -17,19 +20,19 @@ public class VariantAnswer {
         this.answerContent = answerContent;
     }
 
-    public String getAnswerIdentifier() {
-        return answerIdentifier;
+    public String getAnswerVariableName() {
+        return answerVariableName;
     }
 
-    public void setAnswerIdentifier(String answerIdentifier) {
-        this.answerIdentifier = answerIdentifier;
+    public void setAnswerVariableName(String answerVariableName) {
+        this.answerVariableName = answerVariableName;
     }
 
     @Override
     public String toString() {
         return "VariantAnswer{" +
                 "answerContent='" + answerContent + '\'' +
-                ", answerIdentifier='" + answerIdentifier + '\'' +
+                ", answerVariableName='" + answerVariableName + '\'' +
                 '}';
     }
 }
