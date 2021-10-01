@@ -30,7 +30,9 @@ import javax.annotation.PostConstruct;
 import javax.validation.ConstraintViolation;
 import javax.validation.Validator;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -101,13 +103,13 @@ public class TrainingDefinitionService {
 
     @PostConstruct
     private void loadDefaultLevels() {
-        pathToDefaultLevels = pathToDefaultLevels.isBlank() ? getClass().getResource("/default-levels.json").getPath() : pathToDefaultLevels;
         ObjectMapper mapper = new ObjectMapper();
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, true);
         mapper.configure(DeserializationFeature.FAIL_ON_MISSING_CREATOR_PROPERTIES, true);
         mapper.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
         try {
-            defaultLevels = mapper.readValue(new File(pathToDefaultLevels), DefaultLevels.class);
+            InputStream inputStream = pathToDefaultLevels.isBlank() ? getClass().getResourceAsStream("/default-levels.json") : new FileInputStream(pathToDefaultLevels);
+            defaultLevels = mapper.readValue(inputStream, DefaultLevels.class);
             Set<ConstraintViolation<DefaultLevels>> violations = this.validator.validate(defaultLevels);
             if(!violations.isEmpty()){
                 throw new InternalServerErrorException("Could not load the default phases. Reason: " + violations.stream()
