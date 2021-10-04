@@ -4,7 +4,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.google.gson.JsonObject;
-import cz.muni.ics.kypo.commons.security.enums.AuthenticatedUserOIDCItems;
 import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
 import cz.muni.ics.kypo.training.api.dto.run.TrainingRunDTO;
 import cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceAssignPoolIdDTO;
@@ -69,6 +68,7 @@ import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.*;
 
+import static cz.muni.ics.kypo.commons.security.enums.OIDCItems.*;
 import static cz.muni.ics.kypo.training.rest.controllers.util.ObjectConverter.convertJsonBytesToObject;
 import static cz.muni.ics.kypo.training.rest.controllers.util.ObjectConverter.convertObjectToJsonBytes;
 import static org.junit.Assert.*;
@@ -536,10 +536,10 @@ public class TrainingInstancesIT {
             authorities.add(new SimpleGrantedAuthority(role));
         }
         JsonObject sub = new JsonObject();
-        sub.addProperty(AuthenticatedUserOIDCItems.SUB.getName(), "mail3@muni.cz");
-        sub.addProperty(AuthenticatedUserOIDCItems.NAME.getName(), "Ing. Michael Johnson");
-        sub.addProperty(AuthenticatedUserOIDCItems.GIVEN_NAME.getName(), "Michael");
-        sub.addProperty(AuthenticatedUserOIDCItems.FAMILY_NAME.getName(), "Johnson");
+        sub.addProperty(SUB.getName(), "mail3@muni.cz");
+        sub.addProperty(NAME.getName(), "Ing. Michael Johnson");
+        sub.addProperty(GIVEN_NAME.getName(), "Michael");
+        sub.addProperty(FAMILY_NAME.getName(), "Johnson");
         Authentication authentication = Mockito.mock(Authentication.class);
         OAuth2Authentication auth = Mockito.mock(OAuth2Authentication.class);
         SecurityContext securityContext = Mockito.mock(SecurityContext.class);
