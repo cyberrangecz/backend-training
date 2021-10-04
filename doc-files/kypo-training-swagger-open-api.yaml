@@ -1,7 +1,7 @@
 ---
 swagger: "2.0"
 info:
-  version: "Version: 1.1.74"
+  version: "Version: 1.1.75"
   title: "KYPO Training - API Reference"
 host: "localhost:8080"
 basePath: "/kypo-rest-training/api/v1"
@@ -3971,6 +3971,8 @@ definitions:
         format: "int64"
       sort:
         $ref: "#/definitions/Sort"
+      paged:
+        type: "boolean"
       unpaged:
         type: "boolean"
       pageNumber:
@@ -3979,8 +3981,6 @@ definitions:
       pageSize:
         type: "integer"
         format: "int32"
-      paged:
-        type: "boolean"
   Pagination:
     type: "object"
     properties:
@@ -4359,6 +4359,10 @@ definitions:
         example: false
         description: "Marking if levels flags/answers are randomly generated and are\
           \ different for each trainee. Default is false."
+      defaultContent:
+        type: "boolean"
+        example: false
+        description: "Sign if default levels should be created."
     description: "Training definition to create."
   TrainingDefinitionDTO:
     type: "object"
