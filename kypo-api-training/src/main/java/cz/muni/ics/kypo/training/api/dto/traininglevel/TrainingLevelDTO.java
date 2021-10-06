@@ -28,6 +28,8 @@ public class TrainingLevelDTO extends AbstractLevelDTO {
     private Set<HintDTO> hints = new HashSet<>();
     @ApiModelProperty(value = "How many times player can submit incorrect answer before displaying solution.", example = "5")
     private int incorrectAnswerLimit;
+    @ApiModelProperty(value = "Marking if flags/answers are randomly generated and are different for each trainee. Default is false.", example = "false")
+    private boolean variantAnswers;
 
     /**
      * Gets answer.
@@ -155,6 +157,23 @@ public class TrainingLevelDTO extends AbstractLevelDTO {
         this.incorrectAnswerLimit = incorrectAnswerLimit;
     }
 
+    /**
+     * Is variant answers boolean.
+     *
+     * @return the boolean
+     */
+    public boolean isVariantAnswers() {
+        return variantAnswers;
+    }
+
+    /**
+     * Sets variant answers.
+     *
+     * @param variantAnswers the variant answers
+     */
+    public void setVariantAnswers(boolean variantAnswers) {
+        this.variantAnswers = variantAnswers;
+    }
 
     @Override
     public String toString() {
@@ -166,6 +185,7 @@ public class TrainingLevelDTO extends AbstractLevelDTO {
                 ", solutionPenalized=" + solutionPenalized +
                 ", hints=" + hints +
                 ", incorrectAnswerLimit=" + incorrectAnswerLimit +
+                ", variantAnswers=" + variantAnswers +
                 '}';
     }
 }

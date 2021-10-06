@@ -47,6 +47,8 @@ public class TrainingLevelUpdateDTO extends AbstractLevelUpdateDTO {
     @Valid
     @ApiModelProperty(value = "Information which helps participant resolve the level.")
     private Set<HintDTO> hints = new HashSet<>();
+    @ApiModelProperty(value = "Marking if flags/answers are randomly generated and are different for each trainee. Default is false.", example = "false")
+    private boolean variantAnswers;
 
     public TrainingLevelUpdateDTO() {
         this.levelType = LevelType.TRAINING_LEVEL;
@@ -214,6 +216,23 @@ public class TrainingLevelUpdateDTO extends AbstractLevelUpdateDTO {
         this.hints = hints;
     }
 
+    /**
+     * Is variant answers boolean.
+     *
+     * @return the boolean
+     */
+    public boolean isVariantAnswers() {
+        return variantAnswers;
+    }
+
+    /**
+     * Sets variant answers.
+     *
+     * @param variantAnswers the variant answers
+     */
+    public void setVariantAnswers(boolean variantAnswers) {
+        this.variantAnswers = variantAnswers;
+    }
 
     @Override
     public String toString() {
@@ -229,6 +248,7 @@ public class TrainingLevelUpdateDTO extends AbstractLevelUpdateDTO {
                 ", estimatedDuration=" + estimatedDuration +
                 ", incorrectAnswerLimit=" + incorrectAnswerLimit +
                 ", hints=" + hints +
+                ", variantAnswers=" + variantAnswers +
                 '}';
     }
 }

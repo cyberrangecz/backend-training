@@ -44,8 +44,6 @@ public class TrainingDefinitionByIdDTO {
     private LocalDateTime lastEdited;
     @ApiModelProperty(value = "Name of the user who has done the last edit in definition.", example = "John Doe")
     private String lastEditedBy;
-    @ApiModelProperty(value = "Marking if levels flags/answers are randomly generated and are different for each trainee. Default is false.", example = "false")
-    private boolean variantSandboxes;
 
     /**
      * Gets id.
@@ -281,25 +279,6 @@ public class TrainingDefinitionByIdDTO {
         this.lastEditedBy = lastEditedBy;
     }
 
-    /**
-     * Is variant answers boolean.
-     *
-     * @return the boolean
-     */
-    public boolean isVariantSandboxes() {
-        return variantSandboxes;
-    }
-
-
-    /**
-     * Sets variant answers.
-     *
-     * @param variantSandboxes the variant answers
-     */
-    public void setVariantSandboxes(boolean variantSandboxes) {
-        this.variantSandboxes = variantSandboxes;
-    }
-
     @Override
     public boolean equals(Object object) {
         if (!(object instanceof TrainingDefinitionByIdDTO)) return false;
@@ -326,7 +305,6 @@ public class TrainingDefinitionByIdDTO {
                 ", canBeArchived=" + canBeArchived +
                 ", estimatedDuration=" + estimatedDuration +
                 ", lastEdited=" + lastEdited +
-                ", variantSandboxes=" + variantSandboxes +
                 '}';
     }
 }

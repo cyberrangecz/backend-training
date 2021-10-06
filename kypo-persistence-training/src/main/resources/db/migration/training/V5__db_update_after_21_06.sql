@@ -50,7 +50,7 @@ $$;
 
 alter table training_level add column if not exists answer_variable_name varchar(255);
 alter table training_level alter column answer drop not null;
-alter table training_definition add column if not exists variant_sandboxes boolean default (false);
+alter table training_level add column if not exists variant_answers boolean default (false);
 alter table training_definition add column if not exists last_edited_by varchar(127) not null default '';
 alter table training_instance add column if not exists last_edited timestamp not null default CURRENT_TIMESTAMP;
 alter table training_instance add column if not exists last_edited_by varchar(127) not null default '';

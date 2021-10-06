@@ -50,6 +50,8 @@ public class TrainingLevelImportDTO extends AbstractLevelImportDTO{
 	@Min(value = 0, message = "{abstractLevel.maxScore.Min.message}")
 	@Max(value = 100, message = "{abstractLevel.maxScore.Max.message}")
 	protected int maxScore;
+	@ApiModelProperty(value = "Marking if flags/answers are randomly generated and are different for each trainee. Default is false.", example = "false")
+	private boolean variantAnswers;
 
 	/**
 	 * Gets answer.
@@ -214,6 +216,23 @@ public class TrainingLevelImportDTO extends AbstractLevelImportDTO{
 		this.maxScore = maxScore;
 	}
 
+	/**
+	 * Is variant answers boolean.
+	 *
+	 * @return the boolean
+	 */
+	public boolean isVariantAnswers() {
+		return variantAnswers;
+	}
+
+	/**
+	 * Sets variant answers.
+	 *
+	 * @param variantAnswers the variant answers
+	 */
+	public void setVariantAnswers(boolean variantAnswers) {
+		this.variantAnswers = variantAnswers;
+	}
 
 	@Override
 	public String toString() {
@@ -227,6 +246,7 @@ public class TrainingLevelImportDTO extends AbstractLevelImportDTO{
 				", incorrectAnswerLimit=" + incorrectAnswerLimit +
 				", attachments=" + attachments +
 				", maxScore=" + maxScore +
+				", variantAnswers=" + variantAnswers +
 				'}';
 	}
 }
