@@ -21,7 +21,7 @@ public class Submission extends AbstractEntity<Long> implements Serializable {
     private String ipAddress;
     @JoinColumn(name = "level_id", nullable = false)
     @ManyToOne(fetch = FetchType.LAZY)
-    private AbstractLevel levelId;
+    private AbstractLevel level;
     @JoinColumn(name = "training_run_id", nullable = false)
     @ManyToOne(fetch = FetchType.LAZY)
     private TrainingRun trainingRun;
@@ -58,12 +58,12 @@ public class Submission extends AbstractEntity<Long> implements Serializable {
         this.ipAddress = ipAddress;
     }
 
-    public AbstractLevel getLevelId() {
-        return levelId;
+    public AbstractLevel getLevel() {
+        return level;
     }
 
-    public void setLevelId(AbstractLevel levelId) {
-        this.levelId = levelId;
+    public void setLevel(AbstractLevel level) {
+        this.level = level;
     }
 
     public TrainingRun getTrainingRun() {

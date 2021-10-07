@@ -3,7 +3,6 @@ package cz.muni.ics.kypo.training.service;
 import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalWO;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.question.QuestionAnswerDTO;
-import cz.muni.ics.kypo.training.api.responses.SandboxInfo;
 import cz.muni.ics.kypo.training.exceptions.*;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.model.AssessmentLevel;
@@ -22,19 +21,15 @@ import cz.muni.ics.kypo.training.service.api.SandboxApiService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
-import org.springframework.web.reactive.function.client.WebClient;
 
-import javax.servlet.http.HttpServletRequest;
 import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -435,7 +430,7 @@ public class TrainingRunService {
     private void auditSubmission(TrainingRun trainingRun, SubmissionType submissionType, String answer) {
         Submission submission = new Submission();
         submission.setDate(LocalDateTime.now(Clock.systemUTC()));
-        submission.setLevelId(trainingRun.getCurrentLevel());
+        submission.setLevel(trainingRun.getCurrentLevel());
         submission.setTrainingRun(trainingRun);
         submission.setProvided(answer);
         submission.setType(submissionType);
