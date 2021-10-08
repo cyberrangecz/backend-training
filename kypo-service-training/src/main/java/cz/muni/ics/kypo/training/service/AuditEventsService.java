@@ -117,7 +117,7 @@ public class AuditEventsService {
      * Audit correct answer submitted action.
      *
      * @param trainingRun the training run
-     * @param answer        the answer
+     * @param answer      the answer
      */
     public void auditCorrectAnswerSubmittedAction(TrainingRun trainingRun, String answer) {
         CorrectAnswerSubmitted.CorrectAnswerSubmittedBuilder<?, ?> correctAnswerSubmittedBuilder = (CorrectAnswerSubmitted.CorrectAnswerSubmittedBuilder<?, ?>)
@@ -133,7 +133,7 @@ public class AuditEventsService {
      * Audit wrong answer submitted action.
      *
      * @param trainingRun the training run
-     * @param answer        the answer
+     * @param answer      the answer
      */
     public void auditWrongAnswerSubmittedAction(TrainingRun trainingRun, String answer) {
         WrongAnswerSubmitted.WrongAnswerSubmittedBuilder<?, ?> wrongAnswerSubmittedBuilder = (WrongAnswerSubmitted.WrongAnswerSubmittedBuilder<?, ?>)
@@ -192,17 +192,19 @@ public class AuditEventsService {
 
     private AbstractAuditPOJO.AbstractAuditPOJOBuilder<?, ?> fillInCommonBuilderFields(TrainingRun trainingRun, AbstractAuditPOJO.AbstractAuditPOJOBuilder<?, ?> builder) {
         TrainingInstance trainingInstance = trainingRun.getTrainingInstance();
+        AbstractLevel trainingLevel = trainingRun.getCurrentLevel();
         builder.sandboxId(trainingRun.getSandboxInstanceRefId())
-               .poolId(trainingInstance.getPoolId())
-               .trainingRunId(trainingRun.getId())
-               .trainingInstanceId(trainingInstance.getId())
-               .trainingDefinitionId(trainingInstance.getTrainingDefinition().getId())
-               .trainingTime(computeTrainingTime(trainingRun.getStartTime()))
-               .userRefId(trainingRun.getParticipantRef().getUserRefId())
-               .level(trainingRun.getCurrentLevel().getId())
-               .totalTrainingScore(trainingRun.getTotalTrainingScore())
-               .totalAssessmentScore(trainingRun.getTotalAssessmentScore())
-               .actualScoreInLevel(trainingRun.getMaxLevelScore() - trainingRun.getCurrentPenalty());
+                .poolId(trainingInstance.getPoolId())
+                .trainingRunId(trainingRun.getId())
+                .trainingInstanceId(trainingInstance.getId())
+                .trainingDefinitionId(trainingInstance.getTrainingDefinition().getId())
+                .trainingTime(computeTrainingTime(trainingRun.getStartTime()))
+                .userRefId(trainingRun.getParticipantRef().getUserRefId())
+                .level(trainingLevel.getId())
+                .levelOrder(trainingLevel.getOrder())
+                .totalTrainingScore(trainingRun.getTotalTrainingScore())
+                .totalAssessmentScore(trainingRun.getTotalAssessmentScore())
+                .actualScoreInLevel(trainingRun.getMaxLevelScore() - trainingRun.getCurrentPenalty());
         return builder;
     }
 
