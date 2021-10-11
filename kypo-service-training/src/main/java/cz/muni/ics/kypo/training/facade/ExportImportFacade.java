@@ -169,7 +169,7 @@ public class ExportImportFacade {
                 newLevel = levelMapper.mapImportToEntity((TrainingLevelImportDTO) level);
                 checkSumOfHintPenalties((TrainingLevel) newLevel);
                 setAnswerAndAnswerVariableNameToNullIfBlank((TrainingLevel) newLevel);
-                checkAnswerAndAnswerVariableName((TrainingLevel) newLevel, newTrainingDefinition);
+                checkAnswerAndAnswerVariableName((TrainingLevel) newLevel);
             } else if (level.getLevelType().equals(LevelType.INFO_LEVEL)) {
                 newLevel = levelMapper.mapImportToEntity((InfoLevelImportDTO) level);
             } else {
@@ -193,16 +193,29 @@ public class ExportImportFacade {
         }
     }
 
-    private void checkAnswerAndAnswerVariableName(TrainingLevel trainingLevel, TrainingDefinition trainingDefinition) {
-        if (!trainingDefinition.isVariantSandboxes()) {
-            if (trainingLevel.getAnswerVariableName() != null) {
-                throw new BadRequestException("Field Correct Answer - Variable Name must be null.");
-            }
-            if (StringUtils.isBlank(trainingLevel.getAnswer())) {
-                throw new BadRequestException("Field Correct Answer - Static cannot be empty.");
-            }
-        } else if (StringUtils.isBlank(trainingLevel.getAnswer()) && StringUtils.isBlank(trainingLevel.getAnswerVariableName())) {
-            throw new BadRequestException("Either Correct Answer - Static or Correct Answer - Variable Name cannot be empty.");
+    private void checkAnswerAndAnswerVariableName(TrainingLevel trainingLevel) {
+        if (trainingLevel.isVariantAnswers()) {
+            this.checkAnswerVariableName(trainingLevel);
+        } else {
+            this.checkAnswer(trainingLevel);
+        }
+    }
+
+    private void checkAnswer(TrainingLevel trainingLevel) {
+        if (trainingLevel.getAnswerVariableName() != null) {
+            throw new BadRequestException("Field Correct Answer - Variable Name must be null.");
+        }
+        if (StringUtils.isBlank(trainingLevel.getAnswer())) {
+            throw new BadRequestException("Field Correct Answer - Static cannot be empty.");
+        }
+    }
+
+    private void checkAnswerVariableName(TrainingLevel trainingLevel) {
+        if (trainingLevel.getAnswer() != null) {
+            throw new BadRequestException("Field Correct Answer - Static must be null.");
+        }
+        if (StringUtils.isBlank(trainingLevel.getAnswerVariableName())) {
+            throw new BadRequestException("Field Correct Answer - Variable name cannot be empty.");
         }
     }
 

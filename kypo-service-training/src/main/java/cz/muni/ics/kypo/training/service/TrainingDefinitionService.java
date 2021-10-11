@@ -377,7 +377,7 @@ public class TrainingDefinitionService {
     public TrainingLevel updateTrainingLevel(TrainingLevel updatedTrainingLevel, TrainingLevel persistedTrainingLevel) {
         this.updateCommonLevelData(updatedTrainingLevel, persistedTrainingLevel);
         this.checkSumOfHintPenalties(updatedTrainingLevel);
-        this.checkAnswerAndAnswerVariableName(updatedTrainingLevel, persistedTrainingLevel.getTrainingDefinition());
+        this.checkAnswerAndAnswerVariableName(updatedTrainingLevel);
         for (Hint hint : (updatedTrainingLevel).getHints()) {
             hint.setTrainingLevel(updatedTrainingLevel);
         }
@@ -464,7 +464,7 @@ public class TrainingDefinitionService {
     public TrainingLevel createTrainingLevel(Long definitionId) {
         TrainingDefinition trainingDefinition = findById(definitionId);
         checkIfCanBeUpdated(trainingDefinition);
-        TrainingLevel newTrainingLevel = initializeNewTrainingLevel(trainingDefinition.isVariantSandboxes());
+        TrainingLevel newTrainingLevel = initializeNewTrainingLevel();
         newTrainingLevel.setOrder(getNextOrder(definitionId));
         newTrainingLevel.setTrainingDefinition(trainingDefinition);
         TrainingLevel trainingLevel = trainingLevelRepository.save(newTrainingLevel);
@@ -474,13 +474,12 @@ public class TrainingDefinitionService {
         return trainingLevel;
     }
 
-    private TrainingLevel initializeNewTrainingLevel(boolean variantSandboxes) {
+    private TrainingLevel initializeNewTrainingLevel() {
         TrainingLevel newTrainingLevel = new TrainingLevel();
         newTrainingLevel.setMaxScore(100);
         newTrainingLevel.setTitle("Title of training level");
         newTrainingLevel.setIncorrectAnswerLimit(100);
         newTrainingLevel.setAnswer("Secret answer");
-        newTrainingLevel.setAnswerVariableName(variantSandboxes ? "secret-answer" : null);
         newTrainingLevel.setSolutionPenalized(true);
         newTrainingLevel.setSolution("Solution of the training should be here");
         newTrainingLevel.setContent("The test entry should be here");
@@ -861,16 +860,29 @@ public class TrainingDefinitionService {
         }
     }
 
-    private void checkAnswerAndAnswerVariableName(TrainingLevel trainingLevel, TrainingDefinition trainingDefinition) {
-        if (!trainingDefinition.isVariantSandboxes()) {
-            if (trainingLevel.getAnswerVariableName() != null) {
-                throw new BadRequestException("Field Correct Answer - Variable Name must be null.");
-            }
-            if (StringUtils.isBlank(trainingLevel.getAnswer())) {
-                throw new BadRequestException("Field Correct Answer - Static cannot be empty.");
-            }
-        } else if (StringUtils.isBlank(trainingLevel.getAnswer()) && StringUtils.isBlank(trainingLevel.getAnswerVariableName())) {
-            throw new BadRequestException("Either Correct Answer - Static or Correct Answer - Variable Name cannot be empty.");
+    private void checkAnswerAndAnswerVariableName(TrainingLevel trainingLevel) {
+        if (trainingLevel.isVariantAnswers()) {
+            this.checkAnswerVariableName(trainingLevel);
+        } else {
+            this.checkAnswer(trainingLevel);
+        }
+    }
+
+    private void checkAnswer(TrainingLevel trainingLevel) {
+        if (trainingLevel.getAnswerVariableName() != null) {
+            throw new BadRequestException("Field Correct Answer - Variable Name must be null.");
+        }
+        if (StringUtils.isBlank(trainingLevel.getAnswer())) {
+            throw new BadRequestException("Field Correct Answer - Static cannot be empty.");
+        }
+    }
+
+    private void checkAnswerVariableName(TrainingLevel trainingLevel) {
+        if (trainingLevel.getAnswer() != null) {
+            throw new BadRequestException("Field Correct Answer - Static must be null.");
+        }
+        if (StringUtils.isBlank(trainingLevel.getAnswerVariableName())) {
+            throw new BadRequestException("Field Correct Answer - Variable name cannot be empty.");
         }
     }
 }

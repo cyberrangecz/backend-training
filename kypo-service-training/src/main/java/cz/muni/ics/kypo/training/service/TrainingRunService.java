@@ -406,7 +406,7 @@ public class TrainingRunService {
                 throw new EntityConflictException(new EntityErrorDetail(TrainingRun.class, "id", Long.class, runId, "The answer of the current level of training run has been already corrected."));
             }
             TrainingLevel trainingLevel = (TrainingLevel) level;
-            String correctAnswer = trainingLevel.getTrainingDefinition().isVariantSandboxes() && trainingLevel.getAnswerVariableName() != null ?
+            String correctAnswer = trainingLevel.isVariantAnswers() && trainingLevel.getAnswerVariableName() != null ?
                     answersStorageApiService.getCorrectAnswerBySandboxIdAndVariableName(trainingRun.getSandboxInstanceRefId(), trainingLevel.getAnswerVariableName()) :
                     trainingLevel.getAnswer();
             if (correctAnswer.equals(answer)) {

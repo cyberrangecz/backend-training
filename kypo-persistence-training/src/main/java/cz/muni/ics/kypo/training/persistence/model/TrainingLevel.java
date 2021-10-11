@@ -37,6 +37,8 @@ public class TrainingLevel extends AbstractLevel {
     private Set<Hint> hints = new HashSet<>();
     @Column(name = "incorrect_answer_limit")
     private int incorrectAnswerLimit;
+    @Column(name = "variant_answers", nullable = false)
+    private boolean variantAnswers;
 
     /**
      * Used to fix missing foreign key in the child (Hint) of @OneToMany association.
@@ -210,6 +212,24 @@ public class TrainingLevel extends AbstractLevel {
         this.incorrectAnswerLimit = incorrectAnswerLimit;
     }
 
+    /**
+     * Gets if answer are different for each trainee.
+     *
+     * @return true if answers are variant, false otherwise
+     */
+    public boolean isVariantAnswers() {
+        return variantAnswers;
+    }
+
+    /**
+     * Sets if level answers are different for each trainee.
+     *
+     * @param variantAnswers true if answers are variant
+     */
+    public void setVariantAnswers(boolean variantAnswers) {
+        this.variantAnswers = variantAnswers;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -233,6 +253,7 @@ public class TrainingLevel extends AbstractLevel {
                 ", solution='" + solution + '\'' +
                 ", solutionPenalized=" + solutionPenalized +
                 ", incorrectAnswerLimit=" + incorrectAnswerLimit +
+                ", variantAnswers=" + variantAnswers +
                 '}';
     }
 }
