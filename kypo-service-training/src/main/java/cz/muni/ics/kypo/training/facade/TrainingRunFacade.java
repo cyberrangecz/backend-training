@@ -6,10 +6,7 @@ import cz.muni.ics.kypo.training.annotations.security.IsTrainee;
 import cz.muni.ics.kypo.training.annotations.security.IsTraineeOrAdmin;
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalRO;
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalWO;
-import cz.muni.ics.kypo.training.api.dto.AbstractLevelDTO;
-import cz.muni.ics.kypo.training.api.dto.BasicLevelInfoDTO;
-import cz.muni.ics.kypo.training.api.dto.IsCorrectAnswerDTO;
-import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
+import cz.muni.ics.kypo.training.api.dto.*;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.question.QuestionAnswerDTO;
 import cz.muni.ics.kypo.training.api.dto.hint.HintDTO;
@@ -20,13 +17,13 @@ import cz.muni.ics.kypo.training.api.dto.run.TrainingRunDTO;
 import cz.muni.ics.kypo.training.api.enums.Actions;
 import cz.muni.ics.kypo.training.api.enums.LevelType;
 import cz.muni.ics.kypo.training.api.responses.PageResultResource;
+import cz.muni.ics.kypo.training.api.responses.VariantAnswer;
 import cz.muni.ics.kypo.training.mapping.mapstruct.*;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.model.AssessmentLevel;
 import cz.muni.ics.kypo.training.persistence.model.enums.TRState;
-import cz.muni.ics.kypo.training.service.SecurityService;
-import cz.muni.ics.kypo.training.service.TrainingRunService;
-import cz.muni.ics.kypo.training.service.UserService;
+import cz.muni.ics.kypo.training.service.*;
+import cz.muni.ics.kypo.training.service.api.AnswersStorageApiService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,10 +35,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Clock;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -54,6 +49,7 @@ public class TrainingRunFacade {
     private static final Logger LOG = LoggerFactory.getLogger(TrainingRunFacade.class);
 
     private final TrainingRunService trainingRunService;
+    private final AnswersStorageApiService answersStorageApiService;
     private final SecurityService securityService;
     private final UserService userService;
     private final TrainingRunMapper trainingRunMapper;
@@ -73,12 +69,14 @@ public class TrainingRunFacade {
      */
     @Autowired
     public TrainingRunFacade(TrainingRunService trainingRunService,
+                             AnswersStorageApiService answersStorageApiService,
                              SecurityService securityService,
                              UserService userService,
                              TrainingRunMapper trainingRunMapper,
                              LevelMapper levelMapper,
                              HintMapper hintMapper) {
         this.trainingRunService = trainingRunService;
+        this.answersStorageApiService = answersStorageApiService;
         this.securityService = securityService;
         this.userService = userService;
         this.trainingRunMapper = trainingRunMapper;
@@ -384,6 +382,47 @@ public class TrainingRunFacade {
     public UserRefDTO getParticipant(Long trainingRunId) {
         TrainingRun trainingRun = trainingRunService.findById(trainingRunId);
         return userService.getUserRefDTOByUserRefId(trainingRun.getParticipantRef().getUserRefId());
+    }
+
+    /**
+     * Gets correct answers of the given Training Run.
+     *
+     * @param trainingRunId id of Training Run which current level gets hint for.
+     * @return {@link CorrectAnswerDTO[]}
+     */
+    @IsOrganizerOrAdmin
+    @TransactionalWO
+    public List<CorrectAnswerDTO> getCorrectAnswers(Long trainingRunId) {
+        TrainingRun trainingRun = trainingRunService.findById(trainingRunId);
+        List<TrainingLevel> trainingLevels = trainingRunService.getLevels(trainingRun.getTrainingInstance().getTrainingDefinition().getId()).stream()
+                .filter(abstractLevel -> abstractLevel.getClass() == TrainingLevel.class)
+                .map(abstractLevel -> (TrainingLevel) abstractLevel)
+                .collect(Collectors.toList());
+        boolean isVariantSandboxes = trainingLevels.stream().anyMatch(TrainingLevel::isVariantAnswers);
+        Map<String, String> variantAnswers = isVariantSandboxes ? getVariantAnswers(trainingRun.getSandboxInstanceRefId()) : new HashMap<>();
+        return trainingLevels.stream()
+                .map(trainingLevel -> mapToCorrectAnswerDTO(trainingLevel, variantAnswers))
+                .collect(Collectors.toList());
+    }
+
+    private Map<String, String> getVariantAnswers(Long sandboxId) {
+        return answersStorageApiService.getAnswersBySandboxId(sandboxId)
+                .getVariantAnswers().stream()
+                .collect(Collectors.toMap(VariantAnswer::getAnswerVariableName, VariantAnswer::getAnswerContent));
+    }
+
+    private CorrectAnswerDTO mapToCorrectAnswerDTO(TrainingLevel trainingLevel, Map<String, String> variantAnswers) {
+        CorrectAnswerDTO correctAnswerDTO = new CorrectAnswerDTO();
+        correctAnswerDTO.setLevelId(trainingLevel.getId());
+        correctAnswerDTO.setLevelTitle(trainingLevel.getTitle());
+        correctAnswerDTO.setLevelOrder(trainingLevel.getOrder());
+        if(trainingLevel.isVariantAnswers()) {
+            correctAnswerDTO.setCorrectAnswer(variantAnswers.get(trainingLevel.getAnswerVariableName()) );
+            correctAnswerDTO.setVariableName(trainingLevel.getAnswerVariableName());
+        } else {
+            correctAnswerDTO.setCorrectAnswer(trainingLevel.getAnswer());
+        }
+        return correctAnswerDTO;
     }
 
     private void addParticipantsToTrainingRunDTOs(List<TrainingRunDTO> trainingRunDTOS) {

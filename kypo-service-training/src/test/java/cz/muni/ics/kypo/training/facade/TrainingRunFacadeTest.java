@@ -2,8 +2,11 @@ package cz.muni.ics.kypo.training.facade;
 
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.PathBuilder;
+import cz.muni.ics.kypo.training.api.dto.CorrectAnswerDTO;
 import cz.muni.ics.kypo.training.api.dto.IsCorrectAnswerDTO;
 import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
+import cz.muni.ics.kypo.training.api.responses.SandboxAnswersInfo;
+import cz.muni.ics.kypo.training.api.responses.VariantAnswer;
 import cz.muni.ics.kypo.training.mapping.mapstruct.*;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.model.AssessmentLevel;
@@ -11,6 +14,7 @@ import cz.muni.ics.kypo.training.persistence.util.TestDataFactory;
 import cz.muni.ics.kypo.training.service.SecurityService;
 import cz.muni.ics.kypo.training.service.TrainingRunService;
 import cz.muni.ics.kypo.training.service.UserService;
+import cz.muni.ics.kypo.training.service.api.AnswersStorageApiService;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -61,6 +65,8 @@ public class TrainingRunFacadeTest {
     private SecurityService securityService;
     @Mock
     private UserService userService;
+    @Mock
+    private AnswersStorageApiService answersStorageApiService;
 
     private TrainingRun trainingRun1, trainingRun2;
     private Hint hint;
@@ -70,11 +76,12 @@ public class TrainingRunFacadeTest {
     private UserRefDTO participantRefDTO;
     private UserRef participant;
     private TrainingInstance trainingInstance;
+    private TrainingDefinition trainingDefinition;
 
     @Before
     public void init() {
         MockitoAnnotations.initMocks(this);
-        trainingRunFacade = new TrainingRunFacade(trainingRunService, securityService, userService, trainingRunMapper,
+        trainingRunFacade = new TrainingRunFacade(trainingRunService, answersStorageApiService, securityService, userService, trainingRunMapper,
                 levelMapper, hintMapper);
 
         participant = new UserRef();
@@ -92,11 +99,10 @@ public class TrainingRunFacadeTest {
         participantRefDTO.setUserRefSub("mail@muni.cz");
         participantRefDTO.setUserRefId(2L);
 
-
         trainingRun2 = testDataFactory.getFinishedRun();
         trainingRun2.setId(2L);
 
-        TrainingDefinition trainingDefinition = testDataFactory.getReleasedDefinition();
+        trainingDefinition = testDataFactory.getReleasedDefinition();
         trainingDefinition.setId(1L);
 
         trainingLevel = testDataFactory.getPenalizedLevel();
@@ -208,12 +214,6 @@ public class TrainingRunFacadeTest {
         then(trainingRunService).should().getSolution(1L);
     }
 
-//    @Test
-//    public void evaluateResponsesToAssessment() {
-//        trainingRunFacade.evaluateResponsesToAssessment(trainingRun1.getId(), "response");
-//        then(trainingRunService).should().evaluateResponsesToAssessment(trainingRun1.getId(), "response");
-//    }
-
     @Test
     public void finishTrainingRun() {
         trainingRunFacade.finishTrainingRun(trainingRun1.getId());
@@ -226,5 +226,43 @@ public class TrainingRunFacadeTest {
         given(userService.getUserRefDTOByUserRefId(participant.getUserRefId())).willReturn(participantRefDTO);
         UserRefDTO foundParticipantRefDTO = trainingRunFacade.getParticipant(trainingRun1.getId());
         Assert.assertEquals(participantRefDTO, foundParticipantRefDTO);
+    }
+
+    @Test
+    public void getCorrectAnswers() {
+        TrainingLevel trainingLevelVariantAnswer = testDataFactory.getNonPenalizedLevel();
+        trainingLevelVariantAnswer.setId(6L);
+        trainingLevelVariantAnswer.setVariantAnswers(true);
+        trainingLevelVariantAnswer.setAnswerVariableName("username");
+        trainingLevelVariantAnswer.setAnswer(null);
+        VariantAnswer variantAnswer = new VariantAnswer();
+        variantAnswer.setAnswerVariableName("username");
+        variantAnswer.setAnswerContent("john");
+        SandboxAnswersInfo sandboxAnswersInfo = new SandboxAnswersInfo();
+        sandboxAnswersInfo.setSandboxRefId(trainingRun1.getSandboxInstanceRefId());
+        sandboxAnswersInfo.setVariantAnswers(new ArrayList<>(List.of(variantAnswer)));
+
+        List<AbstractLevel> levels = new ArrayList<>(List.of(trainingLevel, infoLevel, assessmentLevel, trainingLevelVariantAnswer));
+        given(trainingRunService.findById(trainingRun1.getId())).willReturn(trainingRun1);
+        given(trainingRunService.getLevels(trainingDefinition.getId())).willReturn(levels);
+        given(answersStorageApiService.getAnswersBySandboxId(trainingRun1.getSandboxInstanceRefId())).willReturn(sandboxAnswersInfo);
+        List<CorrectAnswerDTO> correctAnswers = trainingRunFacade.getCorrectAnswers(trainingRun1.getId());
+
+        assertEquals(2, correctAnswers.size());
+        assertTrue(correctAnswers.containsAll(List.of(
+                getCorrectAnswerDTO(trainingLevel, null),
+                getCorrectAnswerDTO(trainingLevelVariantAnswer, variantAnswer.getAnswerContent()))
+                )
+        );
+    }
+
+    private CorrectAnswerDTO getCorrectAnswerDTO(TrainingLevel trainingLevel, String correctVariantAnswer) {
+        CorrectAnswerDTO answerDTO = new CorrectAnswerDTO();
+        answerDTO.setLevelId(trainingLevel.getId());
+        answerDTO.setLevelTitle(trainingLevel.getTitle());
+        answerDTO.setLevelOrder(trainingLevel.getOrder());
+        answerDTO.setCorrectAnswer(correctVariantAnswer == null ? trainingLevel.getAnswer() : correctVariantAnswer);
+        answerDTO.setVariableName(trainingLevel.getAnswerVariableName());
+        return answerDTO;
     }
 }

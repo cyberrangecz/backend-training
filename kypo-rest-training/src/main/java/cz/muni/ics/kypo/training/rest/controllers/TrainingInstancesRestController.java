@@ -278,8 +278,7 @@ public class TrainingInstancesRestController {
                                                                                   Pageable pageable,
                                                                           @ApiParam(value = "Fields which should be returned in REST API response", required = false)
                                                                           @RequestParam(value = "fields", required = false) String fields) {
-        PageResultResource<TrainingRunDTO> trainingRunResource =
-                trainingInstanceFacade.findTrainingRunsByTrainingInstance(instanceId, isActive, pageable);
+        PageResultResource<TrainingRunDTO> trainingRunResource = trainingInstanceFacade.findTrainingRunsByTrainingInstance(instanceId, isActive, pageable);
         Squiggly.init(objectMapper, fields);
         return ResponseEntity.ok(SquigglyUtils.stringify(objectMapper, trainingRunResource));
     }
