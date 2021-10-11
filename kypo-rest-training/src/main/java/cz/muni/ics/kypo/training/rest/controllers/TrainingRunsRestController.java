@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.bohnman.squiggly.Squiggly;
 import com.github.bohnman.squiggly.util.SquigglyUtils;
 import com.querydsl.core.types.Predicate;
+import cz.muni.ics.kypo.training.api.dto.CorrectAnswerDTO;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.question.QuestionAnswerDTO;
 import cz.muni.ics.kypo.training.api.dto.traininglevel.ValidateAnswerDTO;
 import cz.muni.ics.kypo.training.api.responses.PageResultResource;
@@ -470,6 +471,35 @@ public class TrainingRunsRestController {
                                                   @PathVariable("runId") Long runId) {
         trainingRunFacade.archiveTrainingRun(runId);
         return ResponseEntity.ok().build();
+    }
+
+    /**
+     * Get correct answers of all training levels for the specific training run.
+     *
+     * @param runId  of Training Run for which to get correct answers.
+     * @param fields attributes of the object to be returned as the result.
+     * @return Requested correct answers of the training run.
+     */
+    @ApiOperation(httpMethod = "GET",
+            value = "Get correct answers of the training run.",
+            notes = "Returns non-empty list of answers if given training run exists and contains at least one training level",
+            response = CorrectAnswerDTO[].class,
+            nickname = "getCorrectAnswers",
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "The correct answers have been found.", response = CorrectAnswerDTO[].class),
+            @ApiResponse(code = 404, message = "The training run has not been found.", response = ApiError.class),
+            @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiError.class)
+    })
+    @GetMapping(path = "/{runId}/answers", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Object> getCorrectAnswers(@ApiParam(value = "Training run ID", required = true)
+                                          @PathVariable("runId") Long runId,
+                                          @ApiParam(value = "Fields which should be returned in REST API response", required = false)
+                                          @RequestParam(value = "fields", required = false) String fields) {
+        List<CorrectAnswerDTO> correctAnswerDTOs = trainingRunFacade.getCorrectAnswers(runId);
+        Squiggly.init(objectMapper, fields);
+        return ResponseEntity.ok(SquigglyUtils.stringify(objectMapper, correctAnswerDTOs));
     }
 
     /**
