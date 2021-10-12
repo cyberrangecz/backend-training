@@ -660,7 +660,8 @@ public class TrainingRunService {
                 .filter(QuestionChoice::isCorrect)
                 .map(QuestionChoice::getText)
                 .collect(Collectors.toList());
-        return userAnswer.getAnswers().containsAll(correctAnswers) ? question.getPoints() : (-1) * question.getPenalty();
+        return userAnswer.getAnswers().size() == correctAnswers.size() &&
+                userAnswer.getAnswers().containsAll(correctAnswers) ? question.getPoints() : (-1) * question.getPenalty();
     }
 
     private int evaluateEMI(Question question, QuestionAnswerDTO userAnswer) {
