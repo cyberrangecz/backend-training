@@ -1,7 +1,7 @@
 ---
 swagger: "2.0"
 info:
-  version: "Version: 1.1.75"
+  version: "Version: 1.1.76"
   title: "KYPO Training - API Reference"
 host: "localhost:8080"
 basePath: "/kypo-rest-training/api/v1"
@@ -2059,6 +2059,45 @@ paths:
             $ref: "#/definitions/ApiError"
       security:
       - bearerAuth: []
+  /training-runs/{runId}/answers:
+    get:
+      tags:
+      - "Training runs"
+      summary: "Get correct answers of the training run."
+      description: "Returns non-empty list of answers if given training run exists\
+        \ and contains at least one training level"
+      operationId: "getCorrectAnswers"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "runId"
+        in: "path"
+        description: "Training run ID"
+        required: true
+        type: "integer"
+        format: "int64"
+      - name: "fields"
+        in: "query"
+        description: "Fields which should be returned in REST API response"
+        required: false
+        type: "string"
+      responses:
+        200:
+          description: "The correct answers have been found."
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/CorrectAnswerDTO"
+        404:
+          description: "The training run has not been found."
+          schema:
+            $ref: "#/definitions/ApiError"
+        500:
+          description: "Unexpected condition was encountered."
+          schema:
+            $ref: "#/definitions/ApiError"
+      security:
+      - bearerAuth: []
   /training-runs/{runId}/archive:
     patch:
       tags:
@@ -3454,6 +3493,31 @@ definitions:
         items:
           $ref: "#/definitions/ClusteringLevelDTO"
     description: "Clustering visualization."
+  CorrectAnswerDTO:
+    type: "object"
+    properties:
+      levelId:
+        type: "integer"
+        format: "int64"
+        example: 1
+        description: "Main identifier of the training level."
+      levelTitle:
+        type: "string"
+        example: "Training Level1"
+        description: "Short textual description of the training level."
+      levelOrder:
+        type: "integer"
+        format: "int32"
+        example: 2
+        description: "Order of level, starts with 0"
+      correctAnswer:
+        type: "string"
+        example: "john"
+        description: "Correct answer (static or variable) of the training level."
+      variableName:
+        type: "string"
+        example: "username"
+        description: "Identifier of the variant answer."
   EntityErrorDetail:
     type: "object"
     properties:
@@ -4185,9 +4249,9 @@ definitions:
   Sort:
     type: "object"
     properties:
-      sorted:
-        type: "boolean"
       unsorted:
+        type: "boolean"
+      sorted:
         type: "boolean"
       empty:
         type: "boolean"
@@ -4303,11 +4367,6 @@ definitions:
         type: "string"
         example: "John Doe"
         description: "Name of the user who has done the last edit in definition."
-      variantSandboxes:
-        type: "boolean"
-        example: false
-        description: "Marking if levels flags/answers are randomly generated and are\
-          \ different for each trainee. Default is false."
     description: "A blueprint of abstract levels."
   TrainingDefinitionCreateDTO:
     type: "object"
@@ -4354,11 +4413,6 @@ definitions:
         type: "boolean"
         example: true
         description: "Sign if stepper bar should be displayed."
-      variantSandboxes:
-        type: "boolean"
-        example: false
-        description: "Marking if levels flags/answers are randomly generated and are\
-          \ different for each trainee. Default is false."
       defaultContent:
         type: "boolean"
         example: false
@@ -4427,11 +4481,6 @@ definitions:
         type: "string"
         example: "John Doe"
         description: "Name of the user who has done the last edit in definition."
-      variantSandboxes:
-        type: "boolean"
-        example: false
-        description: "Marking if levels flags/answers are randomly generated and are\
-          \ different for each trainee. Default is false."
     description: "A blueprint of abstract levels."
   TrainingDefinitionInfoDTO:
     type: "object"
@@ -4520,11 +4569,6 @@ definitions:
         type: "boolean"
         example: false
         description: "Sign if stepper bar should be displayed."
-      variantSandboxes:
-        type: "boolean"
-        example: false
-        description: "Marking if levels flags/answers are randomly generated and are\
-          \ different for each trainee. Default is false."
     description: "Training definition to update."
   TrainingInstanceArchiveDTO:
     type: "object"
@@ -4852,6 +4896,11 @@ definitions:
           example: 5
           description: "How many times player can submit incorrect answer before displaying\
             \ solution."
+        variantAnswers:
+          type: "boolean"
+          example: false
+          description: "Marking if flags/answers are randomly generated and are different\
+            \ for each trainee. Default is false."
       description: "An assignment containing security tasks whose completion yields\
         \ a answer."
   TrainingLevelExportDTO:
@@ -4963,6 +5012,11 @@ definitions:
           description: "The maximum score a participant can achieve during a level."
           minimum: 0
           maximum: 100
+        variantAnswers:
+          type: "boolean"
+          example: false
+          description: "Marking if flags/answers are randomly generated and are different\
+            \ for each trainee. Default is false."
       description: "Imported training level."
   TrainingLevelUpdateDTO:
     type: "object"
@@ -5042,6 +5096,11 @@ definitions:
         uniqueItems: true
         items:
           $ref: "#/definitions/HintDTO"
+      variantAnswers:
+        type: "boolean"
+        example: false
+        description: "Marking if flags/answers are randomly generated and are different\
+          \ for each trainee. Default is false."
     description: "Training level to update."
   TrainingLevelVisualizationDTO:
     allOf:
