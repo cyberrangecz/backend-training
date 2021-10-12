@@ -1,3 +1,4 @@
+1.1.76 Added attribute variant answers to training levels. Removed attribute variant sandboxes from definitions. Added level order into training events. Created endpoint to get correct answers for specific training runs. 
 1.1.75 Configuration of OIDC - supporting Microsoft Azure
 1.1.74 Fix storage of the submissions, new endpoint to save multiple levels at once, assign/unassign the pool as part of the update training instance request.
 1.1.73 Integration of APG to the kypo training service.
