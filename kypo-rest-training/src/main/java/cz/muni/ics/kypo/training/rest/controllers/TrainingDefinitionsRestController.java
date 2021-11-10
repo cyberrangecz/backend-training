@@ -6,6 +6,7 @@ import com.github.bohnman.squiggly.Squiggly;
 import com.github.bohnman.squiggly.util.SquigglyUtils;
 import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.commons.security.mapping.UserInfoDTO;
+import cz.muni.ics.kypo.training.api.dto.visualization.VisualizationInfoDTO;
 import cz.muni.ics.kypo.training.api.enums.TDState;
 import cz.muni.ics.kypo.training.api.responses.PageResultResource;
 import cz.muni.ics.kypo.training.api.dto.*;
@@ -30,6 +31,7 @@ import org.springframework.data.querydsl.binding.QuerydslPredicate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -47,6 +49,7 @@ import java.util.Set;
         @ApiResponse(code = 401, message = "Full authentication is required to access this resource.", response = ApiError.class),
         @ApiResponse(code = 403, message = "The necessary permissions are required for a resource.", response = ApiError.class)
 })
+@Validated
 @RestController
 @RequestMapping(path = "/training-definitions", produces = MediaType.APPLICATION_JSON_VALUE)
 public class TrainingDefinitionsRestController {
@@ -748,6 +751,28 @@ public class TrainingDefinitionsRestController {
             @PathVariable("state") TDState state) {
         trainingDefinitionFacade.switchState(definitionId, state);
         return ResponseEntity.noContent().build();
+    }
+
+    /**
+     * Check if the reference solution is defined for the given training definition.
+     *
+     * @param definitionId the training definition id
+     * @return true if at least one of the training levels has reference solution defined, false otherwise.
+     */
+    @ApiOperation(httpMethod = "GET",
+            value = "Get boolean value if the reference solution is defined or not.",
+            response = Boolean.class,
+            nickname = "hasReferenceSolution",
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "True - reference solution is defined, false - otherwise.", response = VisualizationInfoDTO.class),
+            @ApiResponse(code = 404, message = "Training definition not found.", response = ApiError.class)
+    })
+    @GetMapping(path = "/{definitionId}/has-reference-solution", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Boolean> hasReferenceSolution(
+            @ApiParam(value = "Training Definition ID", required = true) @PathVariable("definitionId") Long definitionId) {
+        return ResponseEntity.ok(trainingDefinitionFacade.hasReferenceSolution(definitionId));
     }
 
     @ApiModel(description = "Content (Retrieved data) and meta information about REST API result page. Including page number, number of elements in page, size of elements, total number of elements and total number of pages")

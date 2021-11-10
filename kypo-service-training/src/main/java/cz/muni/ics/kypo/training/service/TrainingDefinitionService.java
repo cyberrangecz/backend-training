@@ -29,14 +29,12 @@ import org.springframework.stereotype.Service;
 import javax.annotation.PostConstruct;
 import javax.validation.ConstraintViolation;
 import javax.validation.Validator;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -625,6 +623,31 @@ public class TrainingDefinitionService {
                         "Cannot switch from " + trainingDefinition.getState() + " to " + state));
         }
         auditAndSave(trainingDefinition);
+    }
+
+    /**
+     * Get reference solution of the training definition.
+     *
+     * @param trainingDefinitionId id of the training definition.
+     */
+    public List<TrainingLevel> getAllTrainingLevels(Long trainingDefinitionId) {
+        return findAllLevelsFromDefinition(trainingDefinitionId).stream()
+                .filter(abstractLevel -> abstractLevel.getClass() == TrainingLevel.class)
+                .map(abstractLevel -> (TrainingLevel) abstractLevel)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Check if the reference solution is defined for the given training definition.
+     *
+     * @param trainingDefinitionId the training definition id
+     * @return true if at least one of the training levels has reference solution defined, false otherwise.
+     */
+    public boolean hasReferenceSolution(Long trainingDefinitionId) {
+        if (!trainingDefinitionRepository.existsById(trainingDefinitionId)) {
+            throw new EntityNotFoundException(new EntityErrorDetail(TrainingDefinition.class, "id", Long.class, trainingDefinitionId));
+        }
+        return this.trainingLevelRepository.hasReferenceSolution(trainingDefinitionId);
     }
 
     /**

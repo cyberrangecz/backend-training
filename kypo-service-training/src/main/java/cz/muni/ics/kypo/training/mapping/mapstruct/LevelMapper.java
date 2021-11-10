@@ -31,6 +31,7 @@ import cz.muni.ics.kypo.training.exceptions.InternalServerErrorException;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.model.AssessmentLevel;
 import org.mapstruct.*;
+import org.mapstruct.factory.Mappers;
 
 import java.util.List;
 
@@ -39,7 +40,10 @@ import java.util.List;
  * DTOs classes. Code is generated during compile time.
  *
  */
-@Mapper(componentModel = "spring", uses = {HintMapper.class, AttachmentMapper.class, QuestionMapper.class},
+@Mapper(componentModel = "spring", uses = {
+        HintMapper.class, AttachmentMapper.class,
+        QuestionMapper.class, ReferenceSolutionNodeMapper.class
+        },
         nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS, unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface LevelMapper extends ParentMapper {
     // INFO LEVEL

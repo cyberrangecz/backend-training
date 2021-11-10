@@ -251,6 +251,20 @@ public class TrainingInstanceService {
     }
 
     /**
+     * Finds all finished Training Runs of specific Training Instance.
+     *
+     * @param instanceId id of Training Instance whose Training Runs would be returned.
+     * @param pageable   pageable parameter with information about pagination.
+     * @return {@link TrainingRun}s of specific {@link TrainingInstance}
+     */
+    public Page<TrainingRun> findFinishedTrainingRunsByTrainingInstance(Long instanceId, Pageable pageable) {
+        // check if instance exists
+        this.findById(instanceId);
+        return trainingRunRepository.findAllFinishedByTrainingInstanceId(instanceId, pageable);
+    }
+
+
+    /**
      * Find UserRefs by userRefId
      *
      * @param usersRefId of wanted UserRefs

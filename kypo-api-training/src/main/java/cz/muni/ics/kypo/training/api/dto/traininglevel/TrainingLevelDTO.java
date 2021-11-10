@@ -30,6 +30,7 @@ public class TrainingLevelDTO extends AbstractLevelDTO {
     private int incorrectAnswerLimit;
     @ApiModelProperty(value = "Marking if flags/answers are randomly generated and are different for each trainee. Default is false.", example = "false")
     private boolean variantAnswers;
+    private List<ReferenceSolutionNodeDTO> referenceSolution;
 
     /**
      * Gets answer.
@@ -173,6 +174,14 @@ public class TrainingLevelDTO extends AbstractLevelDTO {
      */
     public void setVariantAnswers(boolean variantAnswers) {
         this.variantAnswers = variantAnswers;
+    }
+
+    public List<ReferenceSolutionNodeDTO> getReferenceSolution() {
+        return referenceSolution;
+    }
+
+    public void setReferenceSolution(List<ReferenceSolutionNodeDTO> referenceSolution) {
+        this.referenceSolution = referenceSolution;
     }
 
     @Override

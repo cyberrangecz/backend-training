@@ -12,9 +12,11 @@ import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.model.AssessmentLevel;
 import cz.muni.ics.kypo.training.persistence.util.TestDataFactory;
 import cz.muni.ics.kypo.training.service.SecurityService;
+import cz.muni.ics.kypo.training.service.TrainingDefinitionService;
 import cz.muni.ics.kypo.training.service.TrainingRunService;
 import cz.muni.ics.kypo.training.service.UserService;
 import cz.muni.ics.kypo.training.service.api.AnswersStorageApiService;
+import cz.muni.ics.kypo.training.service.api.CommandFeedbackApiService;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -42,7 +44,7 @@ import static org.mockito.BDDMockito.*;
 @ContextConfiguration(classes = {TestDataFactory.class})
 @SpringBootTest(classes = {LevelMapperImpl.class, TrainingDefinitionMapperImpl.class, UserRefMapperImpl.class,
         LevelMapperImpl.class, HintMapperImpl.class, TrainingRunMapperImpl.class, BetaTestingGroupMapperImpl.class,
-        QuestionMapperImpl.class, AttachmentMapperImpl.class})
+        QuestionMapperImpl.class, AttachmentMapperImpl.class, ReferenceSolutionNodeMapperImpl.class})
 public class TrainingRunFacadeTest {
 
     @Autowired
@@ -62,11 +64,15 @@ public class TrainingRunFacadeTest {
     @Mock
     private TrainingRunService trainingRunService;
     @Mock
+    private TrainingDefinitionService trainingDefinitionService;
+    @Mock
     private SecurityService securityService;
     @Mock
     private UserService userService;
     @Mock
     private AnswersStorageApiService answersStorageApiService;
+    @Mock
+    private CommandFeedbackApiService commandFeedbackApiService;
 
     private TrainingRun trainingRun1, trainingRun2;
     private Hint hint;
@@ -81,8 +87,8 @@ public class TrainingRunFacadeTest {
     @Before
     public void init() {
         MockitoAnnotations.initMocks(this);
-        trainingRunFacade = new TrainingRunFacade(trainingRunService, answersStorageApiService, securityService, userService, trainingRunMapper,
-                levelMapper, hintMapper);
+        trainingRunFacade = new TrainingRunFacade(trainingRunService, trainingDefinitionService, answersStorageApiService,
+                securityService, userService, commandFeedbackApiService, trainingRunMapper, levelMapper, hintMapper);
 
         participant = new UserRef();
         participant.setUserRefId(5L);
@@ -189,8 +195,9 @@ public class TrainingRunFacadeTest {
 
     @Test
     public void deleteTrainingRun(){
-        trainingRunFacade.deleteTrainingRun(1L, true);
-        then(trainingRunService).should().deleteTrainingRun(1L, true);
+        given(trainingRunService.deleteTrainingRun(trainingRun1.getId(), true)).willReturn(trainingRun1);
+        trainingRunFacade.deleteTrainingRun(trainingRun1.getId(), true);
+        then(trainingRunService).should().deleteTrainingRun(trainingRun1.getId(), true);
     }
 
     @Test
@@ -216,8 +223,12 @@ public class TrainingRunFacadeTest {
 
     @Test
     public void finishTrainingRun() {
+        given(trainingRunService.finishTrainingRun(trainingRun1.getId())).willReturn(trainingRun1);
         trainingRunFacade.finishTrainingRun(trainingRun1.getId());
         then(trainingRunService).should().finishTrainingRun(trainingRun1.getId());
+        then(commandFeedbackApiService).should(never()).createTraineeGraph(any(), any(), any(), any());
+        then(commandFeedbackApiService).should(never()).createSummaryGraph(any(), any());
+        then(commandFeedbackApiService).should(never()).deleteSummaryGraph(any());
     }
 
     @Test

@@ -141,7 +141,7 @@ public class TrainingRunService {
      * @param trainingRunId training run to delete
      * @param forceDelete   delete training run in a force manner
      */
-    public void deleteTrainingRun(Long trainingRunId, boolean forceDelete) {
+    public TrainingRun deleteTrainingRun(Long trainingRunId, boolean forceDelete) {
         TrainingRun trainingRun = findById(trainingRunId);
         if (!forceDelete && trainingRun.getState().equals(TRState.RUNNING)) {
             throw new EntityConflictException(new EntityErrorDetail(TrainingRun.class, "id", trainingRun.getId().getClass(), trainingRun.getId(),
@@ -152,10 +152,11 @@ public class TrainingRunService {
         elasticsearchApiService.deleteEventsFromTrainingRun(trainingRun.getTrainingInstance().getId(), trainingRunId);
         trAcquisitionLockRepository.deleteByParticipantRefIdAndTrainingInstanceId(trainingRun.getParticipantRef().getUserRefId(), trainingRun.getTrainingInstance().getId());
         trainingRunRepository.delete(trainingRun);
+        return trainingRun;
     }
 
     /**
-     * Checks whether any trainin runs exists for particular training instance
+     * Checks whether any training runs exists for particular training instance
      *
      * @param trainingInstanceId the training instance id
      * @return boolean boolean
@@ -532,7 +533,7 @@ public class TrainingRunService {
      * @param trainingRunId id of training run to be finished.
      * @throws EntityNotFoundException training run is not found.
      */
-    public void finishTrainingRun(Long trainingRunId) {
+    public TrainingRun finishTrainingRun(Long trainingRunId) {
         TrainingRun trainingRun = findByIdWithLevel(trainingRunId);
         int maxOrder = abstractLevelRepository.getCurrentMaxOrder(trainingRun.getCurrentLevel().getTrainingDefinition().getId());
         if (trainingRun.getCurrentLevel().getOrder() != maxOrder) {
@@ -550,6 +551,7 @@ public class TrainingRunService {
             auditEventsService.auditLevelCompletedAction(trainingRun);
         }
         auditEventsService.auditTrainingRunEndedAction(trainingRun);
+        return trainingRun;
     }
 
     /**

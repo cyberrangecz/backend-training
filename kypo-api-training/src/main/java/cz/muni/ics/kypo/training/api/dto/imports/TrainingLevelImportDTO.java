@@ -2,11 +2,13 @@ package cz.muni.ics.kypo.training.api.dto.imports;
 
 import com.fasterxml.jackson.annotation.JsonAlias;
 import cz.muni.ics.kypo.training.api.dto.export.AbstractLevelExportDTO;
+import cz.muni.ics.kypo.training.api.dto.traininglevel.ReferenceSolutionNodeDTO;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
 import javax.validation.Valid;
 import javax.validation.constraints.*;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -52,6 +54,9 @@ public class TrainingLevelImportDTO extends AbstractLevelImportDTO{
 	protected int maxScore;
 	@ApiModelProperty(value = "Marking if flags/answers are randomly generated and are different for each trainee. Default is false.", example = "false")
 	private boolean variantAnswers;
+	@Valid
+	@ApiModelProperty(value = "Sequence of commands that leads to the level answer.", example = "false")
+	private List<ReferenceSolutionNodeDTO> referenceSolution = new ArrayList<>();
 
 	/**
 	 * Gets answer.
@@ -232,6 +237,25 @@ public class TrainingLevelImportDTO extends AbstractLevelImportDTO{
 	 */
 	public void setVariantAnswers(boolean variantAnswers) {
 		this.variantAnswers = variantAnswers;
+	}
+
+	/**
+	 * Gets reference solution fo the training level.
+	 *
+	 * @return the list of {@link ReferenceSolutionNodeDTO}s
+	 */
+	public List<ReferenceSolutionNodeDTO> getReferenceSolution() {
+		return referenceSolution;
+	}
+
+
+	/**
+	 * Sets reference solution of the training level.
+	 *
+	 * @param referenceSolution list of the reference solution node
+	 */
+	public void setReferenceSolution(List<ReferenceSolutionNodeDTO> referenceSolution) {
+		this.referenceSolution = referenceSolution;
 	}
 
 	@Override

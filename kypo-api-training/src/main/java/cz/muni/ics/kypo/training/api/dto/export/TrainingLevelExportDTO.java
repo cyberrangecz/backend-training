@@ -1,9 +1,12 @@
 package cz.muni.ics.kypo.training.api.dto.export;
 
 import cz.muni.ics.kypo.training.api.dto.imports.AttachmentImportDTO;
+import cz.muni.ics.kypo.training.api.dto.traininglevel.ReferenceSolutionNodeDTO;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
+import javax.validation.Valid;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -32,7 +35,9 @@ public class TrainingLevelExportDTO extends AbstractLevelExportDTO {
     @ApiModelProperty(value = "List of attachments.", example = "[]")
     private List<AttachmentImportDTO> attachments;
     @ApiModelProperty(value = "The maximum score a participant can achieve during a level.", example = "20")
-    protected int maxScore;
+    private int maxScore;
+    @ApiModelProperty(value = "Sequence of commands that leads to the level answer.", example = "false")
+    private List<ReferenceSolutionNodeDTO> referenceSolution = new ArrayList<>();
 
 
     /**
@@ -204,6 +209,24 @@ public class TrainingLevelExportDTO extends AbstractLevelExportDTO {
         this.maxScore = maxScore;
     }
 
+    /**
+     * Gets reference solution fo the training level.
+     *
+     * @return the list of {@link ReferenceSolutionNodeDTO}s
+     */
+    public List<ReferenceSolutionNodeDTO> getReferenceSolution() {
+        return referenceSolution;
+    }
+
+
+    /**
+     * Sets reference solution of the training level.
+     *
+     * @param referenceSolution list of the reference solution node
+     */
+    public void setReferenceSolution(List<ReferenceSolutionNodeDTO> referenceSolution) {
+        this.referenceSolution = referenceSolution;
+    }
 
     @Override
     public String toString() {

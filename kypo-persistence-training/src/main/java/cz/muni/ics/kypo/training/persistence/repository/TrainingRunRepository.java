@@ -143,6 +143,16 @@ public interface TrainingRunRepository extends JpaRepository<TrainingRun, Long>,
                                                           Pageable pageable);
 
     /**
+     * Find all finished training runs by training instance id.
+     *
+     * @param trainingInstanceId the training instance id
+     * @param pageable           the pageable
+     * @return the page of all finished {@link TrainingRun}s associated with given {@link TrainingInstance}
+     */
+    Page<TrainingRun> findAllFinishedByTrainingInstanceId(@Param("trainingInstanceId") Long trainingInstanceId,
+                                                          Pageable pageable);
+
+    /**
      * Find all training runs associated with training definition.
      *
      * @param trainingDefinitionId the training definition id

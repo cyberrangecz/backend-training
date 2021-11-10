@@ -12,6 +12,7 @@ import cz.muni.ics.kypo.training.mapping.mapstruct.*;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.model.AssessmentLevel;
 import cz.muni.ics.kypo.training.persistence.util.TestDataFactory;
+import cz.muni.ics.kypo.training.service.api.CommandFeedbackApiService;
 import cz.muni.ics.kypo.training.service.api.ElasticsearchApiService;
 import cz.muni.ics.kypo.training.service.ExportImportService;
 import cz.muni.ics.kypo.training.service.TrainingDefinitionService;
@@ -39,7 +40,7 @@ import static org.mockito.BDDMockito.given;
 @ContextConfiguration(classes = {TestDataFactory.class})
 @SpringBootTest(classes = {LevelMapperImpl.class, ExportImportMapperImpl.class, TrainingDefinitionMapperImpl.class,
         LevelMapperImpl.class, UserRefMapperImpl.class, BetaTestingGroupMapperImpl.class, HintMapperImpl.class,
-        QuestionMapperImpl.class, AttachmentMapperImpl.class,})
+        QuestionMapperImpl.class, AttachmentMapperImpl.class, ReferenceSolutionNodeMapperImpl.class})
 public class ExportImportFacadeTest {
 
     @Rule
@@ -64,6 +65,8 @@ public class ExportImportFacadeTest {
     private SandboxApiService sandboxApiService;
     @Mock
     private ExportImportService exportImportService;
+    @Mock
+    private CommandFeedbackApiService commandFeedbackApiService;
 
     private TrainingDefinition trainingDefinition;
     private TrainingDefinition trainingDefinitionImported;
@@ -77,7 +80,7 @@ public class ExportImportFacadeTest {
     public void init() {
         MockitoAnnotations.initMocks(this);
         exportImportFacade = new ExportImportFacade(exportImportService, trainingDefinitionService, elasticsearchApiService,
-                sandboxApiService, exportImportMapper, infoLevelMapper, trainingDefinitionMapper, objectMapper);
+                commandFeedbackApiService, sandboxApiService, exportImportMapper, infoLevelMapper, trainingDefinitionMapper, objectMapper);
 
         assessmentLevel = testDataFactory.getTest();
         assessmentLevel.setId(1L);

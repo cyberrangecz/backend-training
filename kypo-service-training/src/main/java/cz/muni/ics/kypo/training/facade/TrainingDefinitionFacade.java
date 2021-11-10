@@ -1,17 +1,13 @@
 package cz.muni.ics.kypo.training.facade;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.training.annotations.security.IsDesignerOrOrganizerOrAdmin;
 import cz.muni.ics.kypo.training.annotations.security.IsDesignerOrAdmin;
 import cz.muni.ics.kypo.training.annotations.security.IsOrganizerOrAdmin;
+import cz.muni.ics.kypo.training.annotations.security.IsTrainee;
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalRO;
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalWO;
-import cz.muni.ics.kypo.training.api.dto.assessmentlevel.question.QuestionDTO;
+import cz.muni.ics.kypo.training.api.dto.traininglevel.LevelReferenceSolutionDTO;
 import cz.muni.ics.kypo.training.api.dto.traininglevel.TrainingLevelUpdateDTO;
 import cz.muni.ics.kypo.training.api.responses.PageResultResource;
 import cz.muni.ics.kypo.training.api.dto.*;
@@ -33,7 +29,7 @@ import cz.muni.ics.kypo.training.persistence.model.question.Question;
 import cz.muni.ics.kypo.training.service.TrainingDefinitionService;
 import cz.muni.ics.kypo.training.service.UserService;
 import cz.muni.ics.kypo.training.service.SecurityService;
-import org.apache.commons.lang3.StringUtils;
+import cz.muni.ics.kypo.training.service.api.CommandFeedbackApiService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -45,6 +41,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -56,6 +53,7 @@ import java.util.stream.Collectors;
 public class TrainingDefinitionFacade {
 
     private final TrainingDefinitionService trainingDefinitionService;
+    private final CommandFeedbackApiService commandFeedbackApiService;
     private final UserService userService;
     private final SecurityService securityService;
     private final TrainingDefinitionMapper trainingDefinitionMapper;
@@ -72,11 +70,13 @@ public class TrainingDefinitionFacade {
      */
     @Autowired
     public TrainingDefinitionFacade(TrainingDefinitionService trainingDefinitionService,
+                                    CommandFeedbackApiService commandFeedbackApiService,
                                     UserService userService,
                                     SecurityService securityService,
                                     TrainingDefinitionMapper trainingDefMapper,
                                     LevelMapper levelMapper) {
         this.trainingDefinitionService = trainingDefinitionService;
+        this.commandFeedbackApiService = commandFeedbackApiService;
         this.userService = userService;
         this.securityService = securityService;
         this.trainingDefinitionMapper = trainingDefMapper;
@@ -302,6 +302,7 @@ public class TrainingDefinitionFacade {
     @TransactionalWO
     public void delete(Long id) {
         trainingDefinitionService.delete(id);
+        commandFeedbackApiService.deleteReferenceGraph(id);
     }
 
     /**
@@ -333,7 +334,8 @@ public class TrainingDefinitionFacade {
         trainingDefinitionService.checkIfCanBeUpdated(trainingDefinition);
         Map<Long, AbstractLevel> persistedLevelsById = trainingDefinitionService.findAllLevelsFromDefinition(definitionId).stream()
                 .collect(Collectors.toMap(AbstractLevel::getId, Function.identity()));
-        updatedLevelDTOs.forEach(updatedLevelDTO -> {
+        boolean referenceSolutionChanged = false;
+        for(var updatedLevelDTO : updatedLevelDTOs) {
             AbstractLevel persistedLevel = persistedLevelsById.get(updatedLevelDTO.getId());
             if(persistedLevel == null) {
                 throw new EntityNotFoundException(new EntityErrorDetail(AbstractLevel.class, "id", Long.class,
@@ -342,6 +344,8 @@ public class TrainingDefinitionFacade {
             switch (updatedLevelDTO.getLevelType()) {
                 case TRAINING_LEVEL:
                     TrainingLevel updatedTrainingLevel = levelMapper.mapUpdateToEntity((TrainingLevelUpdateDTO) updatedLevelDTO);
+                    referenceSolutionChanged = referenceSolutionChanged || !updatedTrainingLevel.getReferenceSolution()
+                            .equals(((TrainingLevel)persistedLevel).getReferenceSolution());
                     trainingDefinitionService.updateTrainingLevel(updatedTrainingLevel, (TrainingLevel) persistedLevel);
                     break;
                 case INFO_LEVEL:
@@ -356,8 +360,26 @@ public class TrainingDefinitionFacade {
                     trainingDefinitionService.updateAssessmentLevel(updatedAssessmentLevel, (AssessmentLevel) persistedLevel);
                     break;
             }
-        });
+        };
+        if (referenceSolutionChanged) {
+            updateReferenceSolution(definitionId);
+        }
+
         this.trainingDefinitionService.auditAndSave(trainingDefinition);
+    }
+
+    private void updateReferenceSolution(Long definitionId) {
+        AtomicBoolean isAnyReferenceSolution = new AtomicBoolean(false);
+        List<LevelReferenceSolutionDTO> referenceSolution = this.trainingDefinitionService
+                .getAllTrainingLevels(definitionId)
+                .stream()
+                .peek(level -> isAnyReferenceSolution.set(!level.getReferenceSolution().isEmpty()))
+                .map(level -> new LevelReferenceSolutionDTO(level.getId(), level.getOrder(), new ArrayList<>(ReferenceSolutionNodeMapper.INSTANCE.mapToSetDTO(level.getReferenceSolution()))))
+                .collect(Collectors.toList());
+        this.commandFeedbackApiService.deleteReferenceGraph(definitionId);
+        if(isAnyReferenceSolution.get()) {
+            this.commandFeedbackApiService.createReferenceGraph(definitionId, referenceSolution);
+        }
     }
 
     /**
@@ -595,6 +617,18 @@ public class TrainingDefinitionFacade {
             addAuthorsToTrainingDefinition(trainingDefinition, authorsAddition);
         }
         trainingDefinitionService.auditAndSave(trainingDefinition);
+    }
+
+    /**
+     * Check if the reference solution is defined for the given training definition.
+     *
+     * @param trainingDefinitionId the training definition id
+     * @return true if at least one of the training levels has reference solution defined, false otherwise.
+     */
+    @IsTrainee
+    @TransactionalRO
+    public boolean hasReferenceSolution(Long trainingDefinitionId) {
+        return trainingDefinitionService.hasReferenceSolution(trainingDefinitionId);
     }
 
     private void addAuthorsToTrainingDefinition(TrainingDefinition trainingDefinition, Set<Long> userRefIds) {

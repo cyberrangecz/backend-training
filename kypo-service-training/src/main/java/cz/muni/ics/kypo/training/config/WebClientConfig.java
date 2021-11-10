@@ -39,6 +39,8 @@ public class WebClientConfig {
     private String elasticsearchServiceURI;
     @Value("${answers-storage.uri}")
     private String answersStorageURI;
+    @Value("${command-feedback-service.uri}")
+    private String commandFeedbackServiceURI;
 
     private ObjectMapper objectMapper;
 
@@ -123,6 +125,26 @@ public class WebClientConfig {
     public WebClient answersStorageWebClient() {
         return WebClient.builder()
                 .baseUrl(answersStorageURI)
+                .defaultHeaders(headers -> {
+                    headers.add(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
+                    headers.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
+                })
+                .filters(exchangeFilterFunctions -> {
+                    exchangeFilterFunctions.add(addSecurityHeader());
+                    exchangeFilterFunctions.add(javaMicroserviceExceptionHandlingFunction());
+                })
+                .build();
+    }
+
+    /**
+     * Command feedback service web client.
+     *
+     * @return the web client
+     */
+    @Bean
+    public WebClient commandFeedbackServiceWebClient() {
+        return WebClient.builder()
+                .baseUrl(commandFeedbackServiceURI)
                 .defaultHeaders(headers -> {
                     headers.add(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
                     headers.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
