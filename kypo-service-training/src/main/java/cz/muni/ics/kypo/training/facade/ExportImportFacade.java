@@ -15,6 +15,8 @@ import cz.muni.ics.kypo.training.api.dto.export.ExportTrainingDefinitionAndLevel
 import cz.muni.ics.kypo.training.api.dto.export.FileToReturnDTO;
 import cz.muni.ics.kypo.training.api.dto.imports.*;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionByIdDTO;
+import cz.muni.ics.kypo.training.api.dto.traininglevel.LevelReferenceSolutionDTO;
+import cz.muni.ics.kypo.training.api.dto.traininglevel.ReferenceSolutionNodeDTO;
 import cz.muni.ics.kypo.training.api.enums.LevelType;
 import cz.muni.ics.kypo.training.api.enums.TDState;
 import cz.muni.ics.kypo.training.api.responses.SandboxDefinitionInfo;
@@ -24,6 +26,7 @@ import cz.muni.ics.kypo.training.exceptions.InternalServerErrorException;
 import cz.muni.ics.kypo.training.exceptions.UnprocessableEntityException;
 import cz.muni.ics.kypo.training.mapping.mapstruct.ExportImportMapper;
 import cz.muni.ics.kypo.training.mapping.mapstruct.LevelMapper;
+import cz.muni.ics.kypo.training.mapping.mapstruct.ReferenceSolutionNodeMapper;
 import cz.muni.ics.kypo.training.mapping.mapstruct.TrainingDefinitionMapper;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.model.enums.AssessmentType;
@@ -32,6 +35,7 @@ import cz.muni.ics.kypo.training.persistence.model.question.ExtendedMatchingOpti
 import cz.muni.ics.kypo.training.persistence.model.question.ExtendedMatchingStatement;
 import cz.muni.ics.kypo.training.persistence.model.question.Question;
 import cz.muni.ics.kypo.training.persistence.model.question.QuestionAnswer;
+import cz.muni.ics.kypo.training.service.api.CommandFeedbackApiService;
 import cz.muni.ics.kypo.training.service.api.ElasticsearchApiService;
 import cz.muni.ics.kypo.training.service.ExportImportService;
 import cz.muni.ics.kypo.training.service.TrainingDefinitionService;
@@ -47,6 +51,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -68,6 +73,7 @@ public class ExportImportFacade {
     private final TrainingDefinitionService trainingDefinitionService;
     private final SandboxApiService sandboxApiService;
     private final ElasticsearchApiService elasticsearchApiService;
+    private final CommandFeedbackApiService commandFeedbackApiService;
     private final ExportImportMapper exportImportMapper;
     private final LevelMapper levelMapper;
     private final TrainingDefinitionMapper trainingDefinitionMapper;
@@ -87,6 +93,7 @@ public class ExportImportFacade {
     public ExportImportFacade(ExportImportService exportImportService,
                               TrainingDefinitionService trainingDefinitionService,
                               ElasticsearchApiService elasticsearchApiService,
+                              CommandFeedbackApiService commandFeedbackApiService,
                               SandboxApiService sandboxApiService,
                               ExportImportMapper exportImportMapper,
                               LevelMapper levelMapper,
@@ -95,6 +102,7 @@ public class ExportImportFacade {
         this.exportImportService = exportImportService;
         this.trainingDefinitionService = trainingDefinitionService;
         this.elasticsearchApiService = elasticsearchApiService;
+        this.commandFeedbackApiService = commandFeedbackApiService;
         this.sandboxApiService = sandboxApiService;
         this.exportImportMapper = exportImportMapper;
         this.levelMapper = levelMapper;
@@ -163,7 +171,8 @@ public class ExportImportFacade {
         TrainingDefinition newDefinition = exportImportMapper.mapToEntity(importTrainingDefinitionDTO);
         TrainingDefinition newTrainingDefinition = trainingDefinitionService.create(newDefinition, false);
         List<AbstractLevelImportDTO> levels = importTrainingDefinitionDTO.getLevels();
-        levels.forEach(level -> {
+        List<AbstractLevel> createdLevels = new ArrayList<>();
+        for (AbstractLevelImportDTO level : levels) {
             AbstractLevel newLevel;
             if (level.getLevelType().equals(LevelType.TRAINING_LEVEL)) {
                 newLevel = levelMapper.mapImportToEntity((TrainingLevelImportDTO) level);
@@ -180,8 +189,25 @@ public class ExportImportFacade {
                 }
             }
             exportImportService.createLevel(newLevel, newTrainingDefinition);
-        });
+            createdLevels.add(newLevel);
+        }
+        createReferenceGraph(newTrainingDefinition, createdLevels);
         return trainingDefinitionMapper.mapToDTOById(newTrainingDefinition);
+    }
+
+    private void createReferenceGraph(TrainingDefinition trainingDefinition, List<AbstractLevel> createdLevels) {
+        AtomicBoolean isAnyReferenceSolution = new AtomicBoolean(false);
+        List<LevelReferenceSolutionDTO> referenceSolution = createdLevels.stream()
+                .filter(level -> level.getClass() == TrainingLevel.class)
+                .peek(level -> isAnyReferenceSolution.set(!((TrainingLevel) level).getReferenceSolution().isEmpty()))
+                .map(level -> new LevelReferenceSolutionDTO(
+                        level.getId(),
+                        level.getOrder(),
+                        new ArrayList<>(ReferenceSolutionNodeMapper.INSTANCE.mapToSetDTO(((TrainingLevel) level).getReferenceSolution()))))
+                .collect(Collectors.toList());
+        if(isAnyReferenceSolution.get()) {
+            this.commandFeedbackApiService.createReferenceGraph(trainingDefinition.getId(), referenceSolution);
+        }
     }
 
     private void setAnswerAndAnswerVariableNameToNullIfBlank(TrainingLevel trainingLevel) {

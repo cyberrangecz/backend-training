@@ -20,6 +20,7 @@ import cz.muni.ics.kypo.training.persistence.model.TrainingInstance;
 import cz.muni.ics.kypo.training.persistence.model.TrainingRun;
 import cz.muni.ics.kypo.training.persistence.model.UserRef;
 import cz.muni.ics.kypo.training.service.*;
+import cz.muni.ics.kypo.training.service.api.CommandFeedbackApiService;
 import cz.muni.ics.kypo.training.service.api.ElasticsearchApiService;
 import cz.muni.ics.kypo.training.service.api.SandboxApiService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,6 +51,7 @@ public class TrainingInstanceFacade {
     private final TrainingRunMapper trainingRunMapper;
     private final ElasticsearchApiService elasticsearchApiService;
     private final SandboxApiService sandboxApiService;
+    private final CommandFeedbackApiService commandFeedbackApiService;
 
 
     /**
@@ -73,7 +75,8 @@ public class TrainingInstanceFacade {
                                   SecurityService securityService,
                                   SandboxApiService sandboxApiService,
                                   TrainingInstanceMapper trainingInstanceMapper,
-                                  TrainingRunMapper trainingRunMapper) {
+                                  TrainingRunMapper trainingRunMapper,
+                                  CommandFeedbackApiService commandFeedbackApiService) {
         this.trainingInstanceService = trainingInstanceService;
         this.trainingDefinitionService = trainingDefinitionService;
         this.trainingRunService = trainingRunService;
@@ -83,6 +86,7 @@ public class TrainingInstanceFacade {
         this.sandboxApiService = sandboxApiService;
         this.trainingInstanceMapper = trainingInstanceMapper;
         this.trainingRunMapper = trainingRunMapper;
+        this.commandFeedbackApiService = commandFeedbackApiService;
     }
 
     /**
@@ -233,6 +237,7 @@ public class TrainingInstanceFacade {
             // not possible to delete training instance with associated pool
         }
         trainingInstanceService.delete(trainingInstance);
+        commandFeedbackApiService.deleteAllGraphsByTrainingInstance(trainingInstanceId);
         elasticsearchApiService.deleteEventsByTrainingInstanceId(trainingInstance.getId());
     }
 

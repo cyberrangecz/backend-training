@@ -82,6 +82,12 @@ import java.util.*;
                         "WHERE ti.id = :trainingInstanceId AND tr.state = 'ARCHIVED'"
         ),
         @NamedQuery(
+                name = "TrainingRun.findAllFinishedByTrainingInstanceId",
+                query = "SELECT tr FROM TrainingRun tr " +
+                        "INNER JOIN tr.trainingInstance ti " +
+                        "WHERE ti.id = :trainingInstanceId AND tr.state = 'FINISHED'"
+        ),
+        @NamedQuery(
                 name = "TrainingRun.findAllByTrainingDefinitionId",
                 query = "SELECT tr FROM TrainingRun tr " +
                         "INNER JOIN tr.trainingInstance ti " +

@@ -1,5 +1,7 @@
 package cz.muni.ics.kypo.training.persistence.model;
 
+import cz.muni.ics.kypo.training.persistence.converters.ReferenceSolutionConverter;
+
 import javax.persistence.*;
 import java.util.*;
 
@@ -35,6 +37,9 @@ public class TrainingLevel extends AbstractLevel {
             orphanRemoval = true
     )
     private Set<Hint> hints = new HashSet<>();
+    @Column(name = "reference_solution")
+    @Convert(converter = ReferenceSolutionConverter.class)
+    private Set<ReferenceSolutionNode> referenceSolution = new HashSet<>();
     @Column(name = "incorrect_answer_limit")
     private int incorrectAnswerLimit;
     @Column(name = "variant_answers", nullable = false)
@@ -192,6 +197,14 @@ public class TrainingLevel extends AbstractLevel {
      */
     public void setHints(Set<Hint> hints) {
         this.hints = hints;
+    }
+
+    public Set<ReferenceSolutionNode> getReferenceSolution() {
+        return referenceSolution;
+    }
+
+    public void setReferenceSolution(Set<ReferenceSolutionNode> referenceSolution) {
+        this.referenceSolution = referenceSolution;
     }
 
     /**

@@ -49,6 +49,9 @@ public class TrainingLevelUpdateDTO extends AbstractLevelUpdateDTO {
     private Set<HintDTO> hints = new HashSet<>();
     @ApiModelProperty(value = "Marking if flags/answers are randomly generated and are different for each trainee. Default is false.", example = "false")
     private boolean variantAnswers;
+    @Valid
+    @ApiModelProperty(value = "Sequence of commands that leads to the level answer.", example = "false")
+    private List<ReferenceSolutionNodeDTO> referenceSolution = new ArrayList<>();
 
     public TrainingLevelUpdateDTO() {
         this.levelType = LevelType.TRAINING_LEVEL;
@@ -232,6 +235,26 @@ public class TrainingLevelUpdateDTO extends AbstractLevelUpdateDTO {
      */
     public void setVariantAnswers(boolean variantAnswers) {
         this.variantAnswers = variantAnswers;
+    }
+
+
+    /**
+     * Gets reference solution fo the training level.
+     *
+     * @return the list of {@link ReferenceSolutionNodeDTO}s
+     */
+    public List<ReferenceSolutionNodeDTO> getReferenceSolution() {
+        return referenceSolution;
+    }
+
+
+    /**
+     * Sets reference solution of the training level.
+     *
+     * @param referenceSolution list of the reference solution node
+     */
+    public void setReferenceSolution(List<ReferenceSolutionNodeDTO> referenceSolution) {
+        this.referenceSolution = referenceSolution;
     }
 
     @Override

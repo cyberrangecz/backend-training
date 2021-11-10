@@ -14,6 +14,7 @@ import cz.muni.ics.kypo.training.api.dto.run.AccessTrainingRunDTO;
 import cz.muni.ics.kypo.training.api.dto.run.AccessedTrainingRunDTO;
 import cz.muni.ics.kypo.training.api.dto.run.TrainingRunByIdDTO;
 import cz.muni.ics.kypo.training.api.dto.run.TrainingRunDTO;
+import cz.muni.ics.kypo.training.api.dto.traininglevel.LevelReferenceSolutionDTO;
 import cz.muni.ics.kypo.training.api.enums.Actions;
 import cz.muni.ics.kypo.training.api.enums.LevelType;
 import cz.muni.ics.kypo.training.api.responses.PageResultResource;
@@ -24,6 +25,7 @@ import cz.muni.ics.kypo.training.persistence.model.AssessmentLevel;
 import cz.muni.ics.kypo.training.persistence.model.enums.TRState;
 import cz.muni.ics.kypo.training.service.*;
 import cz.muni.ics.kypo.training.service.api.AnswersStorageApiService;
+import cz.muni.ics.kypo.training.service.api.CommandFeedbackApiService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,6 +38,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -47,11 +50,14 @@ import java.util.stream.Collectors;
 public class TrainingRunFacade {
 
     private static final Logger LOG = LoggerFactory.getLogger(TrainingRunFacade.class);
+    private static final int TIME_TO_PROPAGATE_EVENTS = 5;
 
     private final TrainingRunService trainingRunService;
+    private final TrainingDefinitionService trainingDefinitionService;
     private final AnswersStorageApiService answersStorageApiService;
     private final SecurityService securityService;
     private final UserService userService;
+    private final CommandFeedbackApiService commandFeedbackApiService;
     private final TrainingRunMapper trainingRunMapper;
     private final LevelMapper levelMapper;
     private final HintMapper hintMapper;
@@ -69,17 +75,21 @@ public class TrainingRunFacade {
      */
     @Autowired
     public TrainingRunFacade(TrainingRunService trainingRunService,
+                             TrainingDefinitionService trainingDefinitionService,
                              AnswersStorageApiService answersStorageApiService,
                              SecurityService securityService,
                              UserService userService,
+                             CommandFeedbackApiService commandFeedbackApiService,
                              TrainingRunMapper trainingRunMapper,
                              LevelMapper levelMapper,
                              HintMapper hintMapper) {
         this.trainingRunService = trainingRunService;
+        this.trainingDefinitionService = trainingDefinitionService;
         this.answersStorageApiService = answersStorageApiService;
         this.securityService = securityService;
         this.userService = userService;
         this.trainingRunMapper = trainingRunMapper;
+        this.commandFeedbackApiService = commandFeedbackApiService;
         this.levelMapper = levelMapper;
         this.hintMapper = hintMapper;
     }
@@ -126,7 +136,16 @@ public class TrainingRunFacade {
     @IsOrganizerOrAdmin
     @TransactionalWO
     public void deleteTrainingRuns(List<Long> trainingRunIds, boolean forceDelete) {
-        trainingRunIds.forEach(trainingRunId -> trainingRunService.deleteTrainingRun(trainingRunId, forceDelete));
+        if(trainingRunIds.isEmpty()) {
+            return;
+        }
+        TrainingInstance trainingInstance = null;
+        for (Long trainingRunId : trainingRunIds) {
+            trainingInstance = trainingRunService.deleteTrainingRun(trainingRunId, forceDelete).getTrainingInstance();
+            commandFeedbackApiService.deleteTraineeGraph(trainingRunId);
+        }
+        commandFeedbackApiService.deleteSummaryGraph(trainingInstance.getId());
+        commandFeedbackApiService.createSummaryGraph(trainingInstance.getTrainingDefinition().getId(), trainingInstance.getId());
     }
 
     /**
@@ -138,7 +157,12 @@ public class TrainingRunFacade {
     @IsOrganizerOrAdmin
     @TransactionalWO
     public void deleteTrainingRun(Long trainingRunId, boolean forceDelete) {
-        trainingRunService.deleteTrainingRun(trainingRunId, forceDelete);
+        TrainingRun deletedTrainingRun = trainingRunService.deleteTrainingRun(trainingRunId, forceDelete);
+        commandFeedbackApiService.deleteTraineeGraph(trainingRunId);
+        TrainingInstance trainingInstance = deletedTrainingRun.getTrainingInstance();
+        TrainingDefinition trainingDefinition = trainingInstance.getTrainingDefinition();
+        commandFeedbackApiService.deleteSummaryGraph(trainingInstance.getId());
+        commandFeedbackApiService.createSummaryGraph(trainingDefinition.getId(), trainingInstance.getId());
     }
 
     /**
@@ -342,7 +366,26 @@ public class TrainingRunFacade {
             "or @securityService.isTraineeOfGivenTrainingRun(#trainingRunId)")
     @TransactionalWO
     public void finishTrainingRun(Long trainingRunId) {
-        trainingRunService.finishTrainingRun(trainingRunId);
+        TrainingRun finishedTrainingRun = trainingRunService.finishTrainingRun(trainingRunId);
+        waitToPropagateEvents();
+        createTraineeGraphAndUpdateSummaryGraph(finishedTrainingRun);
+    }
+
+    private void createTraineeGraphAndUpdateSummaryGraph(TrainingRun run) {
+        TrainingInstance instance = run.getTrainingInstance();
+        TrainingDefinition definition = instance.getTrainingDefinition();
+        AtomicBoolean isAnyReferenceSolution = new AtomicBoolean(false);
+        List<LevelReferenceSolutionDTO> referenceSolution = this.trainingDefinitionService
+                .getAllTrainingLevels(definition.getId())
+                .stream()
+                .peek(l -> isAnyReferenceSolution.set(!l.getReferenceSolution().isEmpty()))
+                .map(l -> new LevelReferenceSolutionDTO(l.getId(), l.getOrder(), new ArrayList<>(ReferenceSolutionNodeMapper.INSTANCE.mapToSetDTO(l.getReferenceSolution()))))
+                .collect(Collectors.toList());
+        if(isAnyReferenceSolution.get()) {
+            this.commandFeedbackApiService.createTraineeGraph(definition.getId(), instance.getId(), run.getId(), referenceSolution);
+            this.commandFeedbackApiService.deleteSummaryGraph(instance.getId());
+            this.commandFeedbackApiService.createSummaryGraph(definition.getId(), instance.getId());
+        }
     }
 
     /**
@@ -499,4 +542,12 @@ public class TrainingRunFacade {
             questionDTO.getExtendedMatchingStatements().forEach(statementDTO -> statementDTO.setCorrectOptionOrder(null));
         });
     }
+    private void waitToPropagateEvents() {
+        try {
+            TimeUnit.SECONDS.sleep(TIME_TO_PROPAGATE_EVENTS);
+        } catch(InterruptedException ex) {
+            Thread.currentThread().interrupt();
+        }
+    }
+
 }

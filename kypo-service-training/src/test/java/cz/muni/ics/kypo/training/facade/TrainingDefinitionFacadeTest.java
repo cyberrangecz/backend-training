@@ -26,6 +26,7 @@ import cz.muni.ics.kypo.training.persistence.util.TestDataFactory;
 import cz.muni.ics.kypo.training.service.SecurityService;
 import cz.muni.ics.kypo.training.service.TrainingDefinitionService;
 import cz.muni.ics.kypo.training.service.UserService;
+import cz.muni.ics.kypo.training.service.api.CommandFeedbackApiService;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -57,7 +58,7 @@ import static org.mockito.BDDMockito.*;
 @ContextConfiguration(classes = {TestDataFactory.class})
 @SpringBootTest(classes = {LevelMapperImpl.class, TrainingDefinitionMapperImpl.class, UserRefMapperImpl.class,
         LevelMapperImpl.class, BetaTestingGroupMapperImpl.class, QuestionMapperImpl.class, HintMapperImpl.class,
-        AttachmentMapperImpl.class})
+        AttachmentMapperImpl.class, ReferenceSolutionNodeMapperImpl.class})
 public class TrainingDefinitionFacadeTest {
 
     @Rule
@@ -74,6 +75,8 @@ public class TrainingDefinitionFacadeTest {
 
     @Mock
     private TrainingDefinitionService trainingDefinitionService;
+    @Mock
+    private CommandFeedbackApiService commandFeedbackApiService;
     @Mock
     private SecurityService securityService;
     @Mock
@@ -100,8 +103,8 @@ public class TrainingDefinitionFacadeTest {
     @Before
     public void init() {
         MockitoAnnotations.initMocks(this);
-        trainingDefinitionFacade = new TrainingDefinitionFacade(trainingDefinitionService, userService, securityService,
-                trainingDefinitionMapper, levelMapper);
+        trainingDefinitionFacade = new TrainingDefinitionFacade(trainingDefinitionService, commandFeedbackApiService,
+                userService, securityService, trainingDefinitionMapper, levelMapper);
 
         author1 = new UserRef();
         author1.setId(1L);
