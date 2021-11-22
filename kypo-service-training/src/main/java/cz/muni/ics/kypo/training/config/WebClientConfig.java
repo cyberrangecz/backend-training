@@ -39,8 +39,8 @@ public class WebClientConfig {
     private String elasticsearchServiceURI;
     @Value("${answers-storage.uri}")
     private String answersStorageURI;
-    @Value("${command-feedback-service.uri}")
-    private String commandFeedbackServiceURI;
+    @Value("${training-feedback-service.uri}")
+    private String trainingFeedbackServiceURI;
 
     private ObjectMapper objectMapper;
 
@@ -137,14 +137,14 @@ public class WebClientConfig {
     }
 
     /**
-     * Command feedback service web client.
+     * Training feedback service web client.
      *
      * @return the web client
      */
     @Bean
-    public WebClient commandFeedbackServiceWebClient() {
+    public WebClient trainingFeedbackServiceWebClient() {
         return WebClient.builder()
-                .baseUrl(commandFeedbackServiceURI)
+                .baseUrl(trainingFeedbackServiceURI)
                 .defaultHeaders(headers -> {
                     headers.add(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
                     headers.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
